@@ -1,0 +1,54 @@
+{
+  "Hepta_calls": 0,
+  "actual_diff_reconstructed_exact": true,
+  "all_manifest_payload_byte_pins_verified": 21,
+  "all_methods_from_Begin_through_Close_byte_identical": true,
+  "before_destructor_byte_identity_except_memory_include": true,
+  "findings": [],
+  "limits": [
+    "No C++ compiler, PLAN, clone, namespace, socket or device control was executed in this peer review. Author compile/PLAN metadata was not recast as an actual lifecycle PASS.",
+    "The new destruction_controls.cc was hash-verified but not source-reviewed or executed here. Old/new runtime counterexamples remain the author/root next qualification.",
+    "A failed held-proc ownership check deliberately leaves resources for enclosing process cleanup; this is not proof of eager destruction under resource exhaustion.",
+    "This change guards Impl deletion; it does not authorize a foreign caller to free or overwrite external Registry storage, provide concurrent lifetime safety, or qualify the platform dispatch lifecycle.",
+    "The previous concrete-gap report stays immutable and is not overwritten by this successor source review."
+  ],
+  "pins": {
+    "header": {
+      "bytes": 5985,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-registry-owner-destruction-source-freeze01/source/role_authorization.h",
+      "sha256": "a993173b2015dc5cb062ec7a157971fac451cd99c74181462a3428c5191491e3"
+    },
+    "manifest": {
+      "bytes": 4933,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-registry-owner-destruction-source-freeze01/SOURCE_PINS.json",
+      "sha256": "3cca0b23c8b84de8a072d13206ddf7fa2dc018be37f86f6c3dc8a1cf654432f0"
+    },
+    "patch": {
+      "bytes": 3802,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-registry-owner-destruction-source-freeze01/production.diff",
+      "sha256": "a334dadf36d2c16dcb049b27749283ec5bfadf275b355b92b2bb2385633e4ae7"
+    },
+    "source": {
+      "bytes": 39520,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-registry-owner-destruction-source-freeze01/source/role_authorization.cc",
+      "sha256": "ca6f41150ba51153d434e17547799a016d0c2d098316f3e508c33a57eb264ec8"
+    }
+  },
+  "production_or_runtime_qualified": false,
+  "reasoning": [
+    "The destructor now calls the preexisting nonmutating Impl ownership query before deleting Impl, and does not clear the shared pointer on a rejected caller. It restores its entry errno after either branch. This addresses the prior concrete unconditional-delete path at source level.",
+    "Initialize owns the unpublished Impl through local unique_ptr before self pidfd, namespace and proc proofs are ready. Every prepublication return destroys that unpublished allocation independently of the new public destructor guard. Only the final successful path publishes cleanup.release().",
+    "The FinishCreate header now distinguishes early owner-check failure and requires the existing same-owner Close handling rather than promising unconditional busy clearing. No state method implementation changed."
+  ],
+  "reviewed_paths": [
+    "Complete production.diff",
+    "Impl::OwnThread and its existing held-proc identity check",
+    "Destructor and complete Initialize success/failure control flow",
+    "Complete affected header comments",
+    "Unchanged Close/ownership relationship"
+  ],
+  "schema": 1,
+  "scope": "Exact 3802-byte owner destructor / unpublished Initialize cleanup delta and two header comments only",
+  "source_modified": false,
+  "state": "NARROW_SOURCE_DELTA_REVIEW_NO_NEW_BLOCKER_IDENTIFIED"
+}

@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "package": "local.pocket4.fdownerprobe.r11",
+  "version_code": 11,
+  "jni_symbol": "Java_local_pocket4_fdownerprobe_ProbeInstrumentation_runProbe",
+  "source_sha256": {
+    "AndroidManifest.xml": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+    "CASE_PLAN.json": "2391c5ae551e8ad7a958f79bab23d9fc6f54b3eba5bb8c90d5ee58bb6218efc4",
+    "actual/kernel_api/berberis/kernel_api/proc_maps_fd_owner.h": "7d51f020208821088ac3737eb73fa1ee0f3385c7e16d9fe23e0a530534dbf6a8",
+    "actual/kernel_api/berberis/kernel_api/proc_maps_open.h": "2fb3a518994aaf1c67a1355ecc8dd27177e28eea8ea89dade7d3c933988260bc",
+    "actual/kernel_api/berberis/kernel_api/proc_maps_path.h": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+    "actual/kernel_api/berberis/kernel_api/proc_maps_provenance.h": "e11e053aa0e33ece4ab166c2da618a4a559956675f52790b893d30f4ee1fb175",
+    "actual/kernel_api/proc_maps_fd_owner.cc": "bc19ffe8ecb7badbecd870f885dfcf66ebdffa22ddabe17e28af3aea5e4c6c2e",
+    "actual/kernel_api/proc_maps_open.cc": "04abd180090fbe86fddce1e5365067ceaa41dab114da99c32f13c13b54c68a62",
+    "actual/kernel_api/proc_maps_path.cc": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765",
+    "actual/kernel_api/proc_maps_provenance.cc": "0e46394a3862b24fbeb75f35f0e49a51295479aec8d678d05ebd693f2a3c6d7b",
+    "owned_cases.cc": "ac02b1cd39d8b4fc2102edcb714af70e2777676ccd212e6743d7c58870db5abd",
+    "owner_probe.cpp": "b76eda3c92c2295425715f8c72bc5ef0c1383d06e25718d6b7f6b825406917a6",
+    "src/local/pocket4/fdownerprobe/ProbeInstrumentation.java": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f"
+  },
+  "actual_candidate_sources": {
+    "actual/kernel_api/berberis/kernel_api/proc_maps_fd_owner.h": {
+      "sha256": "7d51f020208821088ac3737eb73fa1ee0f3385c7e16d9fe23e0a530534dbf6a8",
+      "source": "/workspace/scratch/94990735b266/native-work/copy-word-snapshot-03/kernel_api/include/berberis/kernel_api/proc_maps_fd_owner.h"
+    },
+    "actual/kernel_api/berberis/kernel_api/proc_maps_open.h": {
+      "sha256": "2fb3a518994aaf1c67a1355ecc8dd27177e28eea8ea89dade7d3c933988260bc",
+      "source": "/workspace/scratch/94990735b266/native-work/copy-word-snapshot-03/kernel_api/include/berberis/kernel_api/proc_maps_open.h"
+    },
+    "actual/kernel_api/berberis/kernel_api/proc_maps_path.h": {
+      "sha256": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+      "source": "/workspace/scratch/94990735b266/native-work/copy-word-snapshot-03/kernel_api/include/berberis/kernel_api/proc_maps_path.h"
+    },
+    "actual/kernel_api/berberis/kernel_api/proc_maps_provenance.h": {
+      "sha256": "e11e053aa0e33ece4ab166c2da618a4a559956675f52790b893d30f4ee1fb175",
+      "source": "/workspace/scratch/94990735b266/native-work/copy-word-snapshot-03/kernel_api/include/berberis/kernel_api/proc_maps_provenance.h"
+    },
+    "actual/kernel_api/proc_maps_fd_owner.cc": {
+      "sha256": "bc19ffe8ecb7badbecd870f885dfcf66ebdffa22ddabe17e28af3aea5e4c6c2e",
+      "source": "/workspace/scratch/94990735b266/native-work/copy-word-snapshot-03/kernel_api/proc_maps_fd_owner.cc"
+    },
+    "actual/kernel_api/proc_maps_open.cc": {
+      "sha256": "04abd180090fbe86fddce1e5365067ceaa41dab114da99c32f13c13b54c68a62",
+      "source": "/workspace/scratch/94990735b266/native-work/copy-word-snapshot-03/kernel_api/proc_maps_open.cc"
+    },
+    "actual/kernel_api/proc_maps_path.cc": {
+      "sha256": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765",
+      "source": "/workspace/scratch/94990735b266/native-work/copy-word-snapshot-03/kernel_api/proc_maps_path.cc"
+    },
+    "actual/kernel_api/proc_maps_provenance.cc": {
+      "sha256": "0e46394a3862b24fbeb75f35f0e49a51295479aec8d678d05ebd693f2a3c6d7b",
+      "source": "/workspace/scratch/94990735b266/native-work/copy-word-snapshot-03/kernel_api/proc_maps_provenance.cc"
+    }
+  },
+  "expected_observed_cases": 30,
+  "expected_pass_mask": "0x000000003fffffff",
+  "mandatory_copy_variants": [
+    "caller_word_syscall",
+    "owner_word_syscall",
+    "caller_typed_libc",
+    "owner_typed_libc"
+  ],
+  "legacy_copy_variants_are_diagnostic": true,
+  "actual_copy_seam_in_apk": false,
+  "production_candidate_ready": false,
+  "actual_android_executed": false,
+  "builder_contract": "existing pinned owner builder, x86_64 ABI/API24; compiles owner_probe.cpp with its local included source; no new linker flags or dependencies",
+  "archive_layout": "flat root files plus actual/ and src/; no enclosing fd-owner-probe-r13-source/ member",
+  "install_contract": "r11 package must be absent; install exact new APK, owned instrumentation once with nonce, capture and remove exact package",
+  "host_controller_evidence_sha256": "fe16fad9e2ccf8035d832a0784c256aa824cae564039ffff1f613682449aefae",
+  "source_compile_coverage": "actual native fd owner/path/provenance/open modules; ARM64 syscall adapter/full runtime and trusted factory positive identity are not included",
+  "known_production_gates": [
+    "metadata per-query owner EAGAIN/ENOMEM resources",
+    "ordinary negative open path -> maps race",
+    "full native source and broker qualification",
+    "all commercially installed apps acceptance remains external to this test"
+  ]
+}

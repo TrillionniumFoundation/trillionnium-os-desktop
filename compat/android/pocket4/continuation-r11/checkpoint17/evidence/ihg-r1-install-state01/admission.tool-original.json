@@ -1,0 +1,38 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-c",
+      "import hashlib,json,sys\nraw=sys.stdin.buffer.read(262145)\nassert hashlib.sha256(raw).hexdigest()=='44090ac12aaae91a9a849c68e8431c9bd9e0217349d68de96ed0ac798bdb7180'\np=json.loads(raw);src=p['files']['stage_execute.py'].encode('utf-8')\nassert hashlib.sha256(src).hexdigest()=='1f9ff268c96783749fb751c643bf91ec9315138774f4170d0ab514aba0b9a898'\nscope={'__name__':'owned_qa_stage','__file__':'/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01/source/stage_execute.py'}\nexec(compile(src,scope['__file__'],'exec'),scope)\nraise SystemExit(scope['main'](raw))\n"
+    ],
+    "created_unix_ms": 1793917231509,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1adcca195-fc05-5adf",
+    "idempotency_key": "pocket4-owned-ihg-qa-r1-install-state-01-20261105",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1adcca195-fc05-5adf",
+    "request_digest": "7e5d8a1a9d2f77e36d2454f64c146e3e37d69c079af3e30de6c7e9d17ccfb424",
+    "request_fingerprint": 9105585868523927523,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1adcca195-fc05-5adf"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1adcca195-fc05-5adf"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

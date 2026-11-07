@@ -1,0 +1,80 @@
+--- build02/build-template.py
++++ build03/build-template.py
+@@ -422,7 +422,8 @@
+     original = Path(path)
+     resolved = original.resolve(strict=True)
+     if roots is not None:
+-        require(within(resolved, roots), 'fixed source/dependency root escaped')
++        require(within(resolved, roots),
++                'fixed source/dependency root escaped: named='+str(original)+' resolved='+str(resolved))
+     require(len(INPUT_FD_EVENTS) < 16384, 'input FD event bound')
+     fd = os.open(resolved, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+     event = None
+@@ -476,6 +477,10 @@
+     names = shlex.split(payload)
+     require(0 < len(names) <= 2048 and len(names) == len(set(names)) and
+             all(Path(x).is_absolute() for x in names), 'dependency count/absolute name differs')
++    target_config = str(Path(CFG['aosp'])/'prebuilts/clang/host/linux-x86/clang-r584948b/android_libc++/ndk/aarch64/include/c++/v1/__config_site')
++    actual_configs = [name for name in names if Path(name).name == '__config_site']
++    require(actual_configs == [target_config],
++            'dependency set does not contain only the fixed ARM64 NDK __config_site: '+repr(actual_configs))
+     result = {}
+     total = 0
+     for name in names:
+@@ -544,8 +549,8 @@
+     report['resource_health'] = resources.record
+     try:
+         require(os.getuid() == os.geteuid() == 1000, 'ordinary operator only')
+-        require(CFG['kind'] == 'p4-marriott-proc-readlink-outer-tu-build02' and
+-                root == Path('/home/alex/work/pocket4-marriott-proc-readlink-outer-tu-02-20261106') and
++        require(CFG['kind'] == 'p4-marriott-proc-readlink-outer-tu-build03' and
++                root == Path('/home/alex/work/pocket4-marriott-proc-readlink-outer-tu-03-20261106') and
+                 aosp == Path('/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source'),
+                 'fixed work/source root differs')
+         resources.begin()
+@@ -590,6 +595,28 @@
+         require('#define BERBERIS_PROCMAPS_RAW_METADATA_OWNER 0' in raw_owner,
+                 'default ownership feature was changed')
+         report['original_default_zero_retained'] = True
++        # Match the actual SDK-device STL selection and fixed ARM64 NDK config.
++        # These are full actual readback pins, not inferred from the old host closure.
++        engineering = (
++            ('sdk_stl_selection', 'build/soong/cc/stl.go'),
++            ('target_header_selection', 'prebuilts/clang/host/linux-x86/soong/clangprebuilts.go'),
++            ('arm64_ndk_config', 'prebuilts/clang/host/linux-x86/clang-r584948b/android_libc++/ndk/aarch64/include/c++/v1/__config_site'),
++        )
++        report['android_cxx_configuration_before'] = {}
++        for role, relative in engineering:
++            path = aosp/relative
++            spec = CFG['android_cxx_configuration'][role]
++            _, row = read_input(path, 65536, spec, roots=[path])
++            report['android_cxx_configuration_before'][role] = row
++            watch[str(path)] = row
++            require(row == spec['actual_tuple'],
++                    'fixed Android C++ configuration source tuple differs: '+role)
++        ndk_config = aosp/engineering[2][1]
++        report['android_cxx_header_selection'] = {
++            'sdk_stl':'ndk_libc++_static','arch':'aarch64',
++            'first_include_directory':str(ndk_config.parent),
++            'only_allowed_config_leaf':str(ndk_config),
++            'host_config_authorized':False,'runtime_ABI_qualified':False}
+         # These paths are first-observed fixed source inputs, never executed tools.
+         # Their complete actual tuples are retained; no historical header qualification is borrowed.
+         anchors = [aosp/'external/googletest/googletest/Android.bp',
+@@ -605,7 +632,7 @@
+                         'fixed actual GTest provider shape differs')
+             report['new_anchor_inputs'][str(path)] = row
+             watch[str(path)] = row
+-        roots = [root/'source',
++        roots = [root/'source', ndk_config,
+                  aosp/'prebuilts/clang/host/linux-x86/clang-r584948b/include/c++/v1',
+                  aosp/'prebuilts/clang/host/linux-x86/clang-r584948b/lib/clang/22/include',
+                  aosp/'bionic/libc/include', aosp/'bionic/libc/kernel',
+@@ -613,6 +640,7 @@
+                  aosp/'libnativehelper/include_jni']
+         includes = [
+             ('-I', str(root/'source')),
++            ('-isystem', str(ndk_config.parent)),
+             ('-isystem', str(aosp/'prebuilts/clang/host/linux-x86/clang-r584948b/include/c++/v1')),
+             ('-I', str(aosp/'external/googletest/googletest/include')),
+             ('-I', str(aosp/'libnativehelper/include_jni')),

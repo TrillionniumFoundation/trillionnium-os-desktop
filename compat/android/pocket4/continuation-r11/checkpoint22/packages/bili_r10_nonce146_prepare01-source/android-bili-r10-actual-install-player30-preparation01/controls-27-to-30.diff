@@ -1,0 +1,106 @@
+--- frozen27/check_current_flow.py
++++ candidate30/check_current_flow.py
+@@ -13,7 +13,7 @@
+     return hashlib.sha256(raw).hexdigest()
+ 
+ def run_controls(payload):
+-    need(set(payload)=={'old_files','new_files','qa_source','adapter_source','failed01_validators','pins','binding_proof'},
++    need(set(payload)=={'old_files','new_files','qa_source','adapter_source','failed01_validators','pins','binding_proof','actual_install_originals'},
+          'EXACT_CURRENT_FLOW_CONTROL_INPUT')
+     rows=[]
+     def yes(name):
+@@ -358,11 +358,92 @@
+         yes('production_current_cleanup_entry_'+mode+'_without_Android_IO')
+ 
+     need(len(rows)==27 and len({x['name'] for x in rows})==27,'EXACT_CURRENT_ROUTE_AND_COMPONENT_CONTROLS')
++
++    # Run actual_install itself with all six exact safe originals. The historical
++    # instrumentation streams were intentionally not exported: only those two
++    # stream reads, their hashes and parse_completed are explicit memory I/O
++    # seams. This proves receipt/path admission, not a new historical wire parse.
++    originals=payload['actual_install_originals']
++    need(set(originals)=={'coordinator','stage','worker','worker_command','state_command','worker_stdout'},
++         'EXACT_SIX_ACTUAL_INSTALL_CONTROL_ORIGINALS')
++    for name,text in originals.items():
++        raw=text.encode()
++        need(pins['actual_install_originals'][name]=={'bytes':len(raw),'sha256':sha(raw)},
++             'EXACT_ACTUAL_INSTALL_CONTROL_PIN:'+name)
++    actual_rows={name:json.loads(text) for name,text in originals.items()}
++    need(actual_rows['worker']==actual_rows['worker_stdout'],'ACTUAL_WORKER_RAW_SEMANTIC_IDENTITY')
++    state_row=actual_rows['worker']['state']
++    prior_install=types.SimpleNamespace(APK_SHA=actual_rows['worker']['build']['APK']['sha256'],
++        APK_BYTES=actual_rows['worker']['build']['APK']['bytes'],
++        SIGNER_SHA=actual_rows['worker']['build']['signer_certificate_sha256'])
++    def actual_install_case(mode):
++        reads=[];parsed=[]
++        state_stdout=b'EXPLICIT_MEMORY_STATE_STDOUT_SEAM'
++        state_stderr=b''
++        state_stem=full.OLD_STEP/('command-%03d'%full.STATE_COMMAND_INDEX)
++        receipt_memory={str(full.INSTALL_RECORDS[name][0]):originals[name].encode()
++                        for name in ('coordinator','stage','worker','worker_command')}
++        receipt_memory[str(state_stem)+'.result.json']=originals['state_command'].encode()
++        def historical_read(path,maximum=1048576,expected=None,size=None):
++            name=str(path);reads.append(name)
++            if name==str(state_stem)+'.stdout':
++                need(maximum==1048576 and expected==state_row['stdout_sha256'] and size is None,
++                     'EXACT_ACTUAL_STATE_STDOUT_PIN_ARGUMENT')
++                return state_stdout
++            if name==str(state_stem)+'.stderr':
++                need(maximum==1048576 and expected==state_row['stderr_sha256'] and size is None,
++                     'EXACT_ACTUAL_STATE_STDERR_PIN_ARGUMENT')
++                return state_stderr
++            need(name in receipt_memory,'UNLISTED_FIXED_ACTUAL_INSTALL_RECEIPT_PATH')
++            raw=receipt_memory[name]
++            need(len(raw)<=maximum and (expected is None or sha(raw)==expected) and
++                 (size is None or len(raw)==size),'EXACT_ACTUAL_INSTALL_RECEIPT_MEMORY_PIN')
++            return raw
++        def historical_sha(raw):
++            return state_row['stdout_sha256'] if raw==state_stdout else sha(raw)
++        def historical_parse(out,err,returncode,request,uid):
++            need(out==state_stdout and err==state_stderr and returncode==0 and
++                 request=={'protocol':qa.PROTOCOL,'nonce':full.OLD_STATE_NONCE,'op':'state'} and
++                 uid==full.UID,'EXACT_ACTUAL_STATE_PARSE_ARGUMENTS')
++            parsed.append(True)
++            observed=copy.deepcopy(state_row)
++            observed.pop('recorder_command_result_sha256')
++            observed.pop('held_transport_returned_after_post_guard')
++            return observed
++        namespace=dict(full.actual_install.__globals__)
++        namespace.update(read=historical_read,sha=historical_sha)
++        if mode=='previous_step':namespace['OLD_STEP']=full.OLD_FLOW/'steps/install-state-r10-01'
++        if mode=='previous_packet':namespace['OLD_PACKET']='ae2e7ccb5cb6eb7a06b69b3e123d7830b01172b885557bb2eec3ba401426f078'
++        run=types.FunctionType(full.actual_install.__code__,namespace)
++        qa_boundary=types.SimpleNamespace(PROTOCOL=qa.PROTOCOL,parse_completed=historical_parse)
++        try:
++            value=run(prior_install,qa_boundary,actual_rows['worker']['build'])
++        except RuntimeError as error:
++            need(mode!='positive','ACTUAL_INSTALL_POSITIVE_REJECTED:'+str(error))
++            expected_error=('UNLISTED_FIXED_ACTUAL_INSTALL_RECEIPT_PATH' if mode=='previous_step'
++                            else 'ACTUAL_INSTALL02_SOURCE_AND_TERMINAL_REQUIRED')
++            need(str(error)==expected_error and not parsed,'EXACT_ACTUAL_INSTALL_FIRST_REJECTION')
++            return reads
++        need(mode=='positive' and value[0]==actual_rows['worker']['installed_before_state'] and
++             value[1]['uid']==full.UID and value[1]['state_wire_sha256']==full.OLD_STATE_WIRE and
++             value[1]['historical_state_used_as_current_baseline'] is False and len(parsed)==1 and
++             reads[-3:]==[str(state_stem)+suffix for suffix in ('.result.json','.stdout','.stderr')],
++             'PRODUCTION_ACTUAL_INSTALL_COMPLETE_ROUTE')
++        return reads
++    for mode in ('positive','previous_step','previous_packet'):
++        observed_reads=actual_install_case(mode)
++        need(len(observed_reads)==({'positive':7,'previous_step':5,'previous_packet':4}[mode]),
++             'ONCE_ACTUAL_RECEIPT_PATHS_ONLY')
++        yes('production_actual_install_original_receipt_route_'+mode)
++    need(len(rows)==30 and len({x['name'] for x in rows})==30,'EXACT_THIRTY_CURRENT_FLOW_CONTROLS')
++
+     return {'schema':'pocket4-bili-r10-current-player-component-controls-v1','all_passed':True,
+-            'count':27,'cases':rows,'unchanged_function_bodies':unchanged,
++            'count':30,'cases':rows,'unchanged_function_bodies':unchanged,
+             'compiled_runtime_sources_per_revision':6,'helper_contract_compiled':True,'helper_adapter_compiled':True,
+             'original_current_scope_controls':9,'additional_production_validator_controls':12,
+-            'current_factory_and_cleanup_route_controls':6,'route_IO_boundaries_are_memory_only':True,
++            'current_factory_and_cleanup_route_controls':6,'actual_install_receipt_route_controls':3,
++            'historical_state_streams_and_parse_are_explicit_memory_IO_seams':True,
++            'historical_state_streams_read_from_device':False,'route_IO_boundaries_are_memory_only':True,
+             'production_source_closure_and_video_extension_executed_in_memory':True,
+             'production_plan_validators_executed':['base','video','reveal','playback','first_search'],
+             'original_guards_preserved_with_explicit_current_route_and_packet_bound_delta':True,

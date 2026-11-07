@@ -1,0 +1,162 @@
+--- producer06-recovery04/compile.py
++++ producer07-audit02/compile.py
+@@ -10,25 +10,30 @@
+ import time
+ import traceback
+ 
+-CONTROL_REVISION = "producer06-deadline-recovery04"
+-BASE = Path("/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01")
++CONTROL_REVISION = "producer07-audit02"
++BASE = Path("/home/alex/work/pocket4-supervisor-lmkd-deadline-r11-build-06-recovery04")
+ SOURCE = BASE / "candidate"
+-OUT = Path("/home/alex/work/pocket4-supervisor-lmkd-deadline-r11-build-06-recovery04")
++OUT = Path("/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-02")
+ CANDIDATE = OUT / "candidate"
+ TARGET = OUT / "target"
+ CARGO = "/home/alex/.cargo/bin/cargo"
+-PRIOR_RECEIPT = BASE / "integration-producer-build-05/build-result.json"
+-PRIOR_RECEIPT_SHA = "1623811c108a7cac8af3460d828c063ed9e7064519d2d4e41d70bce4ab25e64c"
+-PRIOR_INVENTORY_SHA = "a603f4f2eeeb44ccf0063ddf44ee9be4986567b6befb9cc1799fd9f6664481a5"
+-ORIGINAL_DIFF_SHA = "0d9bd3796dee86faa1963791314d9be26cf0c55beaba57529a572a3bbd648f3a"
++PRIOR_RECEIPT = BASE / "compile-result.json"
++PRIOR_RECEIPT_SHA = "2eb658308593cf760b7f99bbc9e3d7762295ef18c4628b050221838ffa274d4f"
++PRIOR_INVENTORY_SHA = "731fcdae3856011a418e244b19b0568160f9316e94b31ba3aa6e75e423cab5eb"
++ORIGINAL_DIFF_SHA = "e4735859cde851b068d6f9697819e39c04bb20e93dfc4fc312a3e21681a9b5f3"
+ EXACT_OVERLAY = {
+-    "runtime/droidloom-pressure-relay/src/lib.rs":
+-        (44518, "ec0226b0025c6ffbff1b25aea61136437b061eaafa27d5b535dea288056338fa"),
+-    "runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs":
+-        (53648, "5e96483abd45383f4e4cd233ee7d7441aa5259d0c6b0d7d1fc934f81e9a36732"),
+-    "runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs":
+-        (37747, "5cceac40d2fff4f3a9234a0ecef9b04a2d0b6626f15e561f3f613472108fd715"),
++    'runtime/droidloom-pressure-relay/src/lib.rs': (44547, 'f2fd8a952171809256dd56ef75ff2ffe358b7e3c21279583d83ea20aea812c96'),
++    'runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs': (54968, '3f3f7cc1accb8921b0248adb3257e3737879e90b10bf377231389d5eb18453c1'),
++    'runtime/droidloom-supervisor/src/control.rs': (83587, '3818e0023f9dbc09a1b98986354147e5adc24f84f92b89e7f0db2f1872a54870'),
++    'runtime/droidloom-supervisor/src/development.rs': (95133, 'f73b823d53e7bd6a6daca9fff34f7c1ff5844ab39ba55171384414d6d58544c4'),
++    'runtime/droidloom-supervisor/src/lib.rs': (34441, '2de510605987aa6f5486bc0edf6d0400bca9c7a8f5768dc37d66c06df5bd440a'),
++    'runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs': (20910, 'ec021636841d88bb2cd52981c0143685593e87750b97073af99a7f3ea4f8038a'),
++    'runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs': (24407, '1c335ebf2c4892fae9cfae2081828e86ff121f0512ed9fbbb375e01d77f13137'),
++    'runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs': (24924, '959b554c7be8a8d00cefb8e76097977d9074ea5f553978cc1d454ce9791a7cf4'),
++    'runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs': (343, 'f2eb90f9ff902e342f351318a53acc7d8d3255e2cefa93cc7d0b2e8b0fb4353e'),
++    'runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs': (39599, '4011111e9e1a70dbcec449f1aa961204a8ab568671de29a4c7134b49d2c8ed92'),
+ }
++NEW_SOURCE_FILES = {'runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs'}
+ BINARIES = ["droidloomd", "droidloom-supervisor", "droidloom-psi-owner", "owned-ipc-controls"]
+ EXPECTED_TEST_TARGETS = {
+     ("droidloom_pressure_relay", "lib"),
+@@ -135,7 +140,7 @@
+              "complete source inventory bound exceeded")
+     return json_bytes(rows)
+ 
+-def plain_input_path(root, name):
++def plain_input_path(root, name, *, must_be_absent=False):
+     need(not name.startswith("/") and ".." not in Path(name).parts,
+          "invalid input relative path")
+     need(root.resolve(strict=True) == root, "source root is not a plain absolute directory")
+@@ -144,9 +149,19 @@
+     for part in parts[:-1]:
+         current = current / part
+         need(stat.S_ISDIR(current.lstat().st_mode), "source parent is not a real directory")
+-    need(stat.S_ISREG((root / name).lstat().st_mode),
+-         "source input is not a real regular file")
+-    return root / name
++    destination = root / name
++    if must_be_absent:
++        need(name in NEW_SOURCE_FILES, "only the frozen new module may be created")
++        try:
++            destination.lstat()
++        except FileNotFoundError:
++            pass
++        else:
++            raise RuntimeError("new source module already exists")
++    else:
++        need(stat.S_ISREG(destination.lstat().st_mode),
++             "source input is not a real regular file")
++    return destination
+ 
+ def inputs(root, expected):
+     result = {}
+@@ -155,7 +170,7 @@
+              "invalid input relative path")
+         data = read_regular(plain_input_path(root, name), SOURCE_LIMIT)
+         result[name] = {"bytes": len(data), "sha256": sha(data)}
+-    need(result == expected, "exact 31 input pins differ")
++    need(result == expected, "exact source input pins differ")
+     return result
+ 
+ def command_env(target):
+@@ -225,10 +240,12 @@
+          "wrong recovery payload revision")
+     need(cfg["original_diff_sha256"] == ORIGINAL_DIFF_SHA and
+          cfg["source_manifest_sha256"] ==
+-         "ad66ab3800fecbfc75bf10a5dcefbd46fad1a7fb642ff205b2d26cd10a010bf3",
++         "433b1e8e3cd97ba3b3fd7018ca7f899de3eae14ad84d011a5a54d05ba3f16b87",
+          "wrong recovered source lineage")
+     need(len(cfg["preimage"]) == 31 and
+-         set(cfg["overlays"]) == set(EXACT_OVERLAY), "wrong input/overlay set")
++         set(cfg["overlays"]) == set(EXACT_OVERLAY) and
++         set(cfg["overlays"]) - set(cfg["preimage"]) == NEW_SOURCE_FILES and
++         len(set(cfg["preimage"]) | set(cfg["overlays"])) == 32, "wrong input/overlay set")
+     for name, (size, digest) in EXACT_OVERLAY.items():
+         row = cfg["overlays"][name]
+         data = row["text"].encode("utf-8")
+@@ -586,15 +603,17 @@
+         put(OUT / "payload.json", json_bytes(cfg))
+         report["payload_sha256"] = sha(json_bytes(cfg))
+         prior_raw = read_regular(PRIOR_RECEIPT, 128 * 1024)
+-        need(sha(prior_raw) == PRIOR_RECEIPT_SHA, "actual producer05 receipt hash differs")
++        need(sha(prior_raw) == PRIOR_RECEIPT_SHA, "actual producer06 recovery04 receipt hash differs")
+         prior = json.loads(prior_raw)
+-        need(prior["success"] is True and prior["candidate"] == str(SOURCE) and
++        need(prior["success"] is True and prior["compile_only"] is True and
++             prior["revision"] == "producer06-deadline-recovery04" and
++             prior["candidate"] == str(SOURCE) and
+              prior["inputs_before"] == cfg["preimage"] and
+              prior["inputs_after"] == cfg["preimage"] and
+              prior["all_source_inventory_before_sha256"] == PRIOR_INVENTORY_SHA and
+              prior["all_source_inventory_after_sha256"] == PRIOR_INVENTORY_SHA,
+-             "actual producer05 receipt/source binding differs")
+-        put(OUT / "producer05-actual-build-result.json", prior_raw)
++             "actual producer06 recovery04 receipt/source binding differs")
++        put(OUT / "producer06-recovery04-actual-compile-result.json", prior_raw)
+         report["prior_build_receipt_sha256"] = PRIOR_RECEIPT_SHA
+         report["preimage_inputs"] = inputs(SOURCE, cfg["preimage"])
+         baseline = all_source(SOURCE)
+@@ -611,14 +630,20 @@
+         shutil.copytree(SOURCE, CANDIDATE, symlinks=True)
+         need(all_source(CANDIDATE) == baseline, "new copy does not match original inventory")
+         for name, row in cfg["overlays"].items():
+-            destination = plain_input_path(CANDIDATE, name)
+-            original = read_regular(destination, SOURCE_LIMIT)
+-            pin = cfg["preimage"][name]
+-            need(len(original) == pin["bytes"] and sha(original) == pin["sha256"],
+-                 "copied overlay preimage changed")
+-            put(OUT / "preimage" / name, original)
+-            fd = os.open(destination, os.O_WRONLY | os.O_TRUNC |
+-                         os.O_NOFOLLOW | os.O_CLOEXEC)
++            creating = name in NEW_SOURCE_FILES
++            destination = plain_input_path(CANDIDATE, name, must_be_absent=creating)
++            flags = os.O_WRONLY | os.O_NOFOLLOW | os.O_CLOEXEC
++            if creating:
++                need(name not in cfg["preimage"], "new source must have no preimage")
++                flags |= os.O_CREAT | os.O_EXCL
++            else:
++                original = read_regular(destination, SOURCE_LIMIT)
++                pin = cfg["preimage"][name]
++                need(len(original) == pin["bytes"] and sha(original) == pin["sha256"],
++                     "copied overlay preimage changed")
++                put(OUT / "preimage" / name, original)
++                flags |= os.O_TRUNC
++            fd = os.open(destination, flags, 0o600)
+             with os.fdopen(fd, "wb") as stream:
+                 stream.write(row["text"].encode("utf-8"))
+                 stream.flush()
+@@ -700,7 +725,7 @@
+         original_after = all_source(SOURCE)
+         report["original_source_inventory_after_sha256"] = sha(original_after)
+         need(original_after == baseline, "original source changed during compile")
+-        need(report["inputs_before"] == report["inputs_after"], "31 inputs changed during compile")
++        need(report["inputs_before"] == report["inputs_after"], "32 inputs changed during compile")
+         report["success"] = True
+     except Exception as failure:
+         report["error"] = type(failure).__name__ + ": " + str(failure)

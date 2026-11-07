@@ -1,0 +1,17 @@
+--- R6/AndroidManifest.xml
++++ R7/AndroidManifest.xml
+@@ -1,11 +1,11 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+-    package="org.droidloom.qa.bili.r6" android:versionCode="1" android:versionName="1">
++    package="org.droidloom.qa.bili.r7" android:versionCode="1" android:versionName="1">
+     <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="33" />
+     <queries><package android:name="tv.danmaku.bili" /></queries>
+     <application android:label="Owned Bili QA" android:debuggable="false"
+         android:testOnly="true" android:allowBackup="false" android:hasCode="true" />
+-    <instrumentation android:name="org.droidloom.qa.bili.r6.ActionRunner"
+-        android:targetPackage="org.droidloom.qa.bili.r6"
++    <instrumentation android:name="org.droidloom.qa.bili.r7.ActionRunner"
++        android:targetPackage="org.droidloom.qa.bili.r7"
+         android:functionalTest="true" android:handleProfiling="false" />
+ </manifest>

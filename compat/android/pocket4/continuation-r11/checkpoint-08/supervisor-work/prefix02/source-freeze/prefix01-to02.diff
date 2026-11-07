@@ -1,0 +1,83 @@
+--- prefix01/prefix_coordinator.py
++++ prefix02/prefix_coordinator.py
+@@ -213,7 +213,10 @@
+         value, directory = self.actor["identity"](fd)
+         try:
+             return {"host_pid": value["pid"], "parent_host_pid": value["parent"], "start_ticks": value["birth"],
+-                    "uids": value["uids"], "namespace_pids": value["nspid"], "cmdline": value["cmdline"],
++                    "uids": value["uids"], "namespace_pids": value["nspid"],
++                    # Match the pinned framework epoch representation of argv padding
++                    # only for this read-only Main view; actor/launch argv stays strict.
++                    "cmdline": [argument for argument in value["cmdline"] if argument],
+                     "cgroup": value["cgroup"], "executable": os.readlink("exe", dir_fd=directory),
+                     "namespaces": {name: os.readlink("ns/" + name, dir_fd=directory) for name in ("mnt", "pid")}}
+         finally:
+--- prefix01/test_prefix_coordinator.py
++++ prefix02/test_prefix_coordinator.py
+@@ -92,6 +92,9 @@
+     def test_original_legacy_wrapper_argv_rejected(self):
+         self.rejected(lambda p,v,t,r: r["actual_prefix"]["prefix"].__setitem__(4, "unshare"))
+ 
++    def test_startup_argv_empty_argument_remains_rejected(self):
++        self.rejected(lambda p,v,t,r: r["actual_prefix"]["prefix"].insert(4, ""))
++
+     def test_arbitrary_outside_owner_pidfd_is_not_sufficient(self):
+         self.rejected(lambda p,v,t,r: r["actual_prefix"].update(inherited_owner_pidfd_matches_exact_child=False))
+ 
+@@ -124,6 +127,56 @@
+         with self.assertRaises(RuntimeError):target.bind_unit(current,plan,"d"*32)
+         target.bind_unit(current,plan,"d"*32,retired_group_proven=True)
+ 
++class MainCaptureCanonicalControls(unittest.TestCase):
++    """Retained real cmdline data with an explicit identity/tempdir readlink seam.
++
++    No live Main PID or namespace is opened. This exercises only the actual
++    MainFence.capture presentation method with the observed 99-byte input.
++    """
++    def setUp(self):
++        raw = Path(__file__).with_name("main-cmdline-actual-diagnostic.json").read_bytes()
++        self.assertEqual(hashlib.sha256(raw).hexdigest(),
++                         "04bd2b638f389e850eb8ab15fa5f3701de20cb0e013b472a8dca4470ccf34f0a")
++        self.observation = json.loads(raw)
++        self.expected = self.observation["expected_original"]
++        self.raw = bytes.fromhex(self.observation["raw_cmdline_hex"])
++        self.assertEqual(len(self.raw), 99)
++        self.assertEqual(hashlib.sha256(self.raw).hexdigest(),
++                         "a040ad79b1dd989fba192973ca6847159da7cd570ba43bf848d9faed8dc13356")
++
++    def capture_fixture(self, raw):
++        expected = self.expected
++        value = {"pid": expected["host_pid"], "birth": expected["start_ticks"],
++                 "parent": expected["parent_host_pid"], "uids": expected["uids"],
++                 "nspid": expected["namespace_pids"], "cgroup": expected["cgroup"],
++                 "cmdline": raw.decode("utf-8", "strict").split("\0")[:-1]}
++        with tempfile.TemporaryDirectory() as root:
++            path = Path(root)
++            (path / "ns").mkdir()
++            (path / "exe").symlink_to(expected["executable"])
++            for name, link in expected["namespaces"].items():
++                (path / "ns" / name).symlink_to(link)
++            directory = os.open(path, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
++            try:
++                fence = object.__new__(target.MainFence)
++                fence.actor = {"identity": lambda _: (copy.deepcopy(value), os.dup(directory))}
++                return fence.capture(-1)  # The explicit seam never dereferences this sentinel.
++            finally:
++                os.close(directory)
++
++    def test_actual_99_byte_padding_matches_original_main_identity(self):
++        self.assertNotEqual(self.observation["actual_prefix_capture"], self.expected)
++        self.assertEqual(self.observation["actual_epoch_guard_capture"], self.expected)
++        self.assertEqual(self.capture_fixture(self.raw), self.expected)
++
++    def test_nonempty_main_argument_change_still_differs(self):
++        changed = self.raw.rstrip(b"\0") + b"\0--unexpected\0" + bytes(85)
++        actual = self.capture_fixture(changed)
++        self.assertIn("--unexpected", actual["cmdline"])
++        self.assertNotEqual(actual, self.expected)
++        self.assertEqual({k: v for k, v in actual.items() if k != "cmdline"},
++                         {k: v for k, v in self.expected.items() if k != "cmdline"})
++
+ class OwnedRecordControls(unittest.TestCase):
+     def test_create_only_atomic_publish_preserves_first_receipt(self):
+         with tempfile.TemporaryDirectory() as root:

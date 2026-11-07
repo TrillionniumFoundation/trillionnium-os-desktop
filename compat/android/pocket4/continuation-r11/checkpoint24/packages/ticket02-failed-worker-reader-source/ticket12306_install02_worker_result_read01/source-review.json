@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_LIMITED_BINDING_REVIEW",
+  "findings": [],
+  "scope": "Eight exact binding edits of the preserved Hilton failed single-worker reader.",
+  "confirmed": {
+    "full_actual_coordinator_and_terminal_pins_verified": true,
+    "failed_worker_result_exact": true,
+    "eight_edits_full_inverse": true,
+    "failed_terminal_and_parent_semantics_retained": true,
+    "read_exact_file_and_two_reads_signal_FD_finally_byte_identical": true,
+    "request_envelope_except_stdin_key_unchanged": true,
+    "all_original_references_preserved": true
+  },
+  "stage_evidence_boundary": {
+    "stage_full_original_verified": true,
+    "stage_ok": false,
+    "stage_error": "ACTUAL_INSTALL_STATE_NOT_QUALIFIED",
+    "stage_Main_before_after_equal": true,
+    "coordinator_primary_failure_preserved": true,
+    "coordinator_final_Main_secondary_failure_preserved": true,
+    "stage_used_as_runtime_authority": false,
+    "stage_final_equality_clears_intermediate_error": false,
+    "stage_controls_PASS_qualifies_installation": false
+  },
+  "limits": [
+    "No Python execution or worker file read performed by this candidate.",
+    "Installation remains UNKNOWN pending complete worker reconciliation.",
+    "Original held/named leaf and held-ancestor scope remains; no new root naming-stability or ambient FD assertion.",
+    "No assumed UID, target state or successful installation."
+  ],
+  "original_installation_replayed": false,
+  "installation_outcome_qualified": false,
+  "runtime_qualified": false,
+  "Hepta_calls": 0,
+  "local_exec_calls": 0,
+  "branch_ref_PR_mutations": 0
+}

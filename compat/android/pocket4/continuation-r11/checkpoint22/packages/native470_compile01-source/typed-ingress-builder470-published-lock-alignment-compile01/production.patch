@@ -1,0 +1,49 @@
+--- a/tools/droidloom-update/src/native_role_ingress.rs
++++ b/tools/droidloom-update/src/native_role_ingress.rs
+@@ -38,14 +38,14 @@
+ ];
+ const PROVIDER_ADDITIONS_JSON: &str = r#"[{"path":"external/kotlinx.coroutines","name":"platform/external/kotlinx.coroutines","commit":"16161f019a518241332c1cad686a3e9404c0d5cf","purpose":"Exact Android 17 superproject coroutine providers for real AndroidX and StructuredConcurrencyPerf dependencies"},{"path":"external/kotlinx.atomicfu","name":"platform/external/kotlinx.atomicfu","commit":"867bc63054d694773bd0aef56eeb51296f2f6b03","purpose":"Exact Android 17 superproject atomicfu source required by the real coroutine provider"},{"path":"frameworks/libs/systemui","name":"platform/frameworks/libs/systemui","commit":"11e04f60f563aed48e4ec080bd7bde06bae1b2f3","purpose":"Exact Android 17 tracinglib-platform and genuine compilelib providers","sparse_paths":["tracinglib/core/src","compilelib/src-release","compilelib/src-debug"]},{"path":"external/robolectric","name":"platform/external/robolectric","commit":"87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1","purpose":"Real Robolectric_all-target and its upstream implementation providers required by the parametric runner","sparse_paths":["soong","src/main/resources","annotations/src/main","junit/src/main","nativeruntime/src/main","pluginapi/src/main","resources/src/main","robolectric/src/main","sandbox/src/main","shadowapi/src/main","utils/src/main","utils/reflector/src/main","shadows/framework/src/main","shadows/httpclient/src/main","shadows/multidex/src/main","shadows/versioning/src/main","processor/src/main"]},{"path":"external/TestParameterInjector","name":"platform/external/TestParameterInjector","commit":"39be45d7f8988b7b051e14644bc6c51fe856b8f2","purpose":"Actual TestParameterInjector provider required by real Robolectric libraries","sparse_paths":["junit4/src/main"]},{"path":"external/snakeyaml","name":"platform/external/snakeyaml","commit":"629862ff4a73e7656df0ae02ae0cd24fabf603ae","purpose":"Genuine SnakeYAML implementation and Android patches required by TestParameterInjector","sparse_paths":["src/main","src/patches/android"]},{"path":"test/robolectric-extensions","name":"platform/test/robolectric-extensions","commit":"94254a13a5969eec7a4742320cc3f91e141d5593","purpose":"Real AOSP Robolectric plugin implementation required by Robolectric_all","sparse_paths":["plugins/src/main/java","clearcut-junit-listener/src/main/java"]},{"path":"packages/services/Car","name":"platform/packages/services/Car","commit":"9f04df65daa8b9a65ee05fd4039fe95446874d76","purpose":"Actual android.car and android.car.builtin.impl providers required by the upstream Robolectric host framework","sparse_paths":["aconfig","car-lib/src","car-lib/jni/large-parcelable/src","car-builtin-lib/src","car-builtin-lib/api","libs/car-internal-dep-lib/src","teams"]},{"path":"system/timezone","name":"platform/system/timezone","commit":"cbd571efcf6b551ba83a31147ec7a06182f8ec31","purpose":"Real robolectric_tzdata generator and timezone inputs","sparse_paths":["output_data"]},{"path":"tools/asuite","name":"platform/tools/asuite","commit":"744998cb744c401a5daa77170039ab6337ed7adb","purpose":"Exact Android 17 proto implementation used by the mandatory Robolectric Clearcut JUnit listener","sparse_paths":["atest/proto"]}]"#;
+ const SOURCE_LOCK: &str = "android/manifest/m2-role-ingress-hal-provider-source-lock.json";
+-const SOURCE_LOCK_BYTES: usize = 96934;
+-const SOURCE_LOCK_SHA: &str = "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd";
++const SOURCE_LOCK_BYTES: usize = 96957;
++const SOURCE_LOCK_SHA: &str = "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d";
+ const HAL_CAR_SOURCE_ADDITIONS: &[&str] = &[
+-    "cpp/vhal/client/src",
+     "cpp/vhal/client/include",
++    "cpp/vhal/client/src",
+     "cpp/car_binder_lib/largeParcelable/include",
+ ];
+-const HAL_NEURAL_PROJECT_JSON: &str = r#"{"path":"packages/modules/NeuralNetworks","name":"platform/packages/modules/NeuralNetworks","commit":"a44a9032ab9a8438c0e13aca765d6ee4edebba2c","purpose":"Exact Android 17 NNAPI type implementation and original defaults required by existing hardware neuralnetwork consumers","sparse_paths":["common/types/src","common/types/include","common/types/operations/src","common/types/operations/include"]}"#;
++const HAL_NEURAL_PROJECT_JSON: &str = r#"{"path":"packages/modules/NeuralNetworks","name":"platform/packages/modules/NeuralNetworks","commit":"a44a9032ab9a8438c0e13aca765d6ee4edebba2c","purpose":"Exact Android 17 superproject NNAPI utility defaults and complete native type providers required by the existing hardware interface consumers","sparse_paths":["common/types/include","common/types/operations/include","common/types/operations/src","common/types/src"]}"#;
+ const PATCH: &str = "android/native-role-ingress/typed-ingress02-framework.patch";
+ const PATCH_BYTES: usize = 17019;
+ const PATCH_SHA: &str =
+--- a/android/manifest/m2-role-ingress-hal-provider-source-lock.json
++++ b/android/manifest/m2-role-ingress-hal-provider-source-lock.json
+@@ -2652,8 +2652,8 @@
+         "car-builtin-lib/api",
+         "libs/car-internal-dep-lib/src",
+         "teams",
+-        "cpp/vhal/client/src",
+         "cpp/vhal/client/include",
++        "cpp/vhal/client/src",
+         "cpp/car_binder_lib/largeParcelable/include"
+       ]
+     },
+@@ -2679,12 +2679,12 @@
+       "path": "packages/modules/NeuralNetworks",
+       "name": "platform/packages/modules/NeuralNetworks",
+       "commit": "a44a9032ab9a8438c0e13aca765d6ee4edebba2c",
+-      "purpose": "Exact Android 17 NNAPI type implementation and original defaults required by existing hardware neuralnetwork consumers",
++      "purpose": "Exact Android 17 superproject NNAPI utility defaults and complete native type providers required by the existing hardware interface consumers",
+       "sparse_paths": [
+-        "common/types/src",
+         "common/types/include",
++        "common/types/operations/include",
+         "common/types/operations/src",
+-        "common/types/operations/include"
++        "common/types/src"
+       ]
+     }
+   ]

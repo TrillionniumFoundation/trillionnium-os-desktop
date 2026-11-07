@@ -1,0 +1,5 @@
+# Exact fresh Owner17 NORMAL01 runtime request
+
+Only the externally observed actual prepared SHA and stable key are filled into the already frozen runtime template. This local generator has not dispatched a request. Actual Host17 compile, 39 relay / 139 supervisor ordinary tests, two retirement tests, seven IPC controls, context/ABI3, and paired C16 DSO are bound by the preparation plan. Root must review the original actual prepared receipt and hold the runtime while heavy framework work occupies its resource window.
+
+The unchanged C16 generation-private init logger still requires both fresh generation markers before broker start. The Host17 guest bootstrap directory mode repair is not an Android LMKD or HWS health qualification; private crash-log WIP is excluded. Full-stream completeness and per-line writer attribution remain false. Original authority, ABI3, ACTIVE, Stop, retirement, Main and exact cleanup gates remain. Owner16's original failed broker receipt is preserved, not reclassified. Actual runtime success or failure and all cleanup evidence remain required; this package does not grant whole-App or production qualification.

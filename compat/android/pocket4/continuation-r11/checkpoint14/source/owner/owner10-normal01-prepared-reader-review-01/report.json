@@ -1,0 +1,82 @@
+{
+  "Hepta_calls": 0,
+  "actual_literal_delta": {
+    "all_five_functions_unchanged_after_kind_literal_inverse": true,
+    "byte_limit_unchanged_55139": true,
+    "external_actual_report_digest": true,
+    "inverse_transform_byte_exact": true,
+    "result_kind_label": true,
+    "root_name": true
+  },
+  "actual_prepare_authority": {
+    "bytes": 55139,
+    "durable": true,
+    "job": "1a1aad1125a-fc05-47a3",
+    "output_complete": true,
+    "path": "/opt/p4-owner10-normal-20261105-01-state/prepared.json",
+    "reported_by": "root",
+    "runtime_executed": false,
+    "sha256": "53f327728b4daf732653a189d690f0c1d4e6374aeab5f7b9df7d666598f978e3",
+    "terminal_exit": 0
+  },
+  "compile_source_only": true,
+  "guard_review": [
+    "Fixed one-file allowlist only; no directory scan, child spawn, filesystem mutation or runtime action.",
+    "All directory/file descriptors opened with NOFOLLOW/CLOEXEC; directory chain root-owned and not group/world writable.",
+    "Member regular root:root nlink1, bounded, no setid or writable group/world; held and named identity match.",
+    "Root identity and full pinned member are re-read before success; errors and close failures keep collection false.",
+    "Output is bounded gzip transport; qualification always false. Collection success does not qualify Owner or Android runtime."
+  ],
+  "isolated_root_python": [
+    "/usr/bin/sudo",
+    "-n",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "-"
+  ],
+  "mutations_to_frozen_source": false,
+  "reader_executed": false,
+  "request_delta": [
+    "stdin",
+    "idempotency_key"
+  ],
+  "request_stdin_equals_reader": true,
+  "resource_contract": {
+    "cpu_percent": 100,
+    "cwd": "/",
+    "memory_max_bytes": 134217728,
+    "nice": 10,
+    "timeout_seconds": 30
+  },
+  "result": "NO_NEW_CONCRETE_BLOCKER",
+  "reviewed": {
+    "manifest.json": {
+      "bytes": 830,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner10-normal01-prepared-read-freeze-01/manifest.json",
+      "sha256": "387ea3e982812c80a61306a37cceb19ec21f94e5b75334c1f73db2ee4c688ef4"
+    },
+    "read.py": {
+      "bytes": 4839,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner10-normal01-prepared-read-freeze-01/read.py",
+      "sha256": "a8e0de6540c20d189d6901854731cf6785630e4942b95754698fa78a07db56b4"
+    },
+    "request.json": {
+      "bytes": 5300,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner10-normal01-prepared-read-freeze-01/request.json",
+      "sha256": "c0c09d5119ee972cbd06e0000b1219abf00d3228682aff5c8d76184520b2e772"
+    },
+    "source.diff": {
+      "bytes": 812,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner10-normal01-prepared-read-freeze-01/source.diff",
+      "sha256": "ee1c51c1c1ff594d90e4a81f5453624ec2769dfc4c2598a13f21b3c1297c95ad"
+    },
+    "validation.json": {
+      "bytes": 782,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner10-normal01-prepared-read-freeze-01/validation.json",
+      "sha256": "b8687d2e0a78ccca637ca7d210231ca652dd68f43d43c83fe6d3b80cc1c62772"
+    }
+  },
+  "schema": 1,
+  "scope": "LOCAL_FULL_SOURCE_REVIEW_OF_FIXED_PROTECTED_PREPARED_READER_ONLY"
+}

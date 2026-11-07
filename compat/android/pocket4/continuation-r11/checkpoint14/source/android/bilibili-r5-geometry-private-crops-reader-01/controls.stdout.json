@@ -1,0 +1,52 @@
+{
+  "PNG_or_commercial_tree_read": false,
+  "controls": [
+    {
+      "accepted": true,
+      "case": "retained_failed_attempt_two_qualified_crops_only",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_attempt_rewritten_as_success",
+      "error": "ORIGINAL_FAIL_MUST_STAY_FAIL",
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_Main_change",
+      "error": "ORIGINAL_MAIN_CHAIN_CHANGED",
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_third_failed_crop_published",
+      "error": "THIRD_FAILED_CAPTURE_IS_NOT_AN_EXPORT_INPUT",
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_first_crop_unqualified",
+      "error": "PRIOR_CROP_QUALIFICATION_CHAIN_REQUIRED",
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_crop_path_substitution",
+      "error": "EXACT_PRIVATE_CROP_IDENTITY_REQUIRED",
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_changed_coordinates_during_second_capture",
+      "error": "PRIOR_CROP_SCOPE_CHANGED",
+      "expected_met": true
+    }
+  ],
+  "original_attempt_remains_failed": true,
+  "private_copy_or_chown_or_namespace_or_Android_operations": 0,
+  "schema": 1,
+  "scope": "actual validate_observations on retained safe JSON and explicit negative mutations",
+  "state": "PASS"
+}

@@ -1,0 +1,77 @@
+--- read01/read_trees.py
++++ read02/read_trees.py
+@@ -179,6 +179,10 @@
+     report['commands'].append(row)
+     process=None; selector=None; streams={}; buffers={'stdout':bytearray(),'stderr':bytearray()}
+     eof=set(); primary=None; after_error=None
++    def note_after_error(phase, error):
++        nonlocal after_error
++        if after_error is None: after_error=error
++        row.setdefault('secondary_errors',[]).append({'phase':phase,'error':error_row(error)})
+     try:
+         row['directory_before']=directory_snapshot(path,directory_fd)
+         args=[str(GIT),'--no-pager','--no-replace-objects',
+@@ -248,10 +252,21 @@
+                 row['returncode']=process.wait(timeout=2.0)
+                 row['joined']=True
+             except BaseException as error:
+-                after_error=error
+                 row['join_error']=error_row(error)
+-        if selector is not None: selector.close()
+-        for stream in streams.values(): stream.close()
++                note_after_error('child-join',error)
++        if selector is not None:
++            try:
++                selector.close()
++            except BaseException as error:
++                note_after_error('selector-close',error)
++        # Popen owns both pipes even if selector setup failed before registration.
++        if process is not None:
++            for name,stream in [('stdout',process.stdout),('stderr',process.stderr)]:
++                if stream is not None:
++                    try:
++                        stream.close()
++                    except BaseException as error:
++                        note_after_error(name+'-close',error)
+         for name in buffers:
+             row[name]=output_row(bytes(buffers[name]),name in eof)
+         try:
+@@ -259,9 +274,12 @@
+             require(row['directory_after']==row.get('directory_before'), 'repository directory changed during root tree observation')
+         except BaseException as error:
+             row['postcheck_error']=error_row(error)
+-            if after_error is None: after_error=error
++            note_after_error('directory-postcheck',error)
+         finally:
+-            os.close(directory_fd)
++            try:
++                os.close(directory_fd)
++            except BaseException as error:
++                note_after_error('directory-close',error)
+         row['finished_utc']=utc()
+     if primary is not None:
+         if after_error is not None: row['secondary_error']=error_row(after_error)
+@@ -306,14 +324,21 @@
+             except BaseException as error:
+                 fail(report,'tool-postcheck',error)
+             finally:
+-                os.close(git_fd)
++                try:
++                    os.close(git_fd)
++                except BaseException as error:
++                    fail(report,'git-close',error)
+         try:
+             require(resource_fd>=0 and before is not None, 'owned resource admission incomplete')
+             report['owned_resource_gate']=finish_resources(resource_fd,before,report)
+         except BaseException as error:
+             fail(report,'resource-postcheck',error)
+         finally:
+-            if resource_fd>=0: os.close(resource_fd)
++            if resource_fd>=0:
++                try:
++                    os.close(resource_fd)
++                except BaseException as error:
++                    fail(report,'resource-close',error)
+         report['all_started_children_joined']=all(c['joined'] for c in report['commands'] if c['child_pid'] is not None)
+         if not report['all_started_children_joined']:
+             fail(report,'child-join',RuntimeError('a started exact child was not joined'))

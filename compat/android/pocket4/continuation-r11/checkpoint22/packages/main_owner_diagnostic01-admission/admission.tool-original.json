@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "import signal,sys\nclass BudgetExpired(BaseException):\n def __str__(self):return \"READ_BUDGET_EXHAUSTED\"\ndef alarm_handler(signum,frame):raise BudgetExpired()\ndef stop_watchdog():\n signal.setitimer(signal.ITIMER_REAL,0)\n return True\nold_handler=signal.signal(signal.SIGALRM,alarm_handler)\nsignal.setitimer(signal.ITIMER_REAL,8.0)\ntry:\n import hashlib\n raw=sys.stdin.buffer.read(32769)\n assert len(raw)==22982 and hashlib.sha256(raw).hexdigest()==\"246e3c07125ce8227ec482310ab4fae3fcba68c390a210640bcd75ac15a61cbd\"\n scope={\"__name__\":\"fixed_daemon_owner_halt02_diagnostic\",\"__file__\":\"<fixed-daemon-owner-readonly>\",\"SOURCE_SHA256\":\"246e3c07125ce8227ec482310ab4fae3fcba68c390a210640bcd75ac15a61cbd\",\"BudgetExpired\":BudgetExpired,\"STOP_WATCHDOG\":stop_watchdog}\n exec(compile(raw,scope[\"__file__\"],\"exec\"),scope)\n code=scope[\"main\"]()\nfinally:\n stop_watchdog()\n signal.signal(signal.SIGALRM,old_handler)\nraise SystemExit(code)\n"
+    ],
+    "created_unix_ms": 1793970293364,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b0f64a74-fc05-7461",
+    "idempotency_key": "pocket4-daemon-owner-direct-children-halt02-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b0f64a74-fc05-7461",
+    "request_digest": "a44c6852da9347d4545bed06f1932f910a31d7f930f0d9bce733d902efa02834",
+    "request_fingerprint": 11838952225513883604,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b0f64a74-fc05-7461"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b0f64a74-fc05-7461"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

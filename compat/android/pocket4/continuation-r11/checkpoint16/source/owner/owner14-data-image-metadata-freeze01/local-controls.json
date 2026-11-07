@@ -1,0 +1,54 @@
+{
+  "debugfs_executed": false,
+  "device_runtime_executed": false,
+  "failed": 0,
+  "image_read": false,
+  "metadata_main_executed": false,
+  "passed": 10,
+  "qualification": false,
+  "read_metadata_sha256": "17994b929e569ad6a54b2918d373902242b8f300aaa4dc61093bdf53364f388d",
+  "schema": 1,
+  "scope": "retained actual JSON bindings and local owned temporary filesystem only",
+  "tests": [
+    {
+      "name": "actual failed runtime and exact cleanup bind without qualification",
+      "passed": true
+    },
+    {
+      "name": "foreign nonce rejected",
+      "passed": true
+    },
+    {
+      "name": "replacement fresh-image inode rejected",
+      "passed": true
+    },
+    {
+      "name": "incomplete outer cleanup rejected",
+      "passed": true
+    },
+    {
+      "name": "foreign Invocation rejected",
+      "passed": true
+    },
+    {
+      "name": "changed Main fence rejected",
+      "passed": true
+    },
+    {
+      "name": "incomplete typed retirement rejected",
+      "passed": true
+    },
+    {
+      "name": "real symlink image rejected before content read",
+      "passed": true
+    },
+    {
+      "name": "real multiply linked image rejected",
+      "passed": true
+    },
+    {
+      "name": "real named-path replacement rejected while original FD held",
+      "passed": true
+    }
+  ]
+}

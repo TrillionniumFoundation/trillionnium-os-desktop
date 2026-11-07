@@ -1,0 +1,128 @@
+--- a/Go6/make_requests.py
++++ b/Go5/make_requests.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Create local, immutable Go6 streaming requests. This program never submits a request."""
++"""Create local, immutable Go5 streaming requests. This program never submits a request."""
+ import argparse
+ import difflib
+ import hashlib
+@@ -7,16 +7,17 @@
+ from pathlib import Path
+ 
+ HERE = Path(__file__).resolve().parent
+-CONTROLLER_SHA = "edf9f49f9aa5b404eb49c4dd848c998efffc4929f38137a698ec77c0d1f48fc9"
+-FENCE_TEMPLATE_SHA = "e23ab62e00ad07e9cf6503d9f06396df454f6e088f4eb733f9a9e9f3817e86e4"
++CONTROLLER_SHA = "acf81b5192a4832061d6feb442f40aefd42df9c95c213d62cec71c57cf3158dd"
++FENCE_TEMPLATE_SHA = "edaa591199edc02309ab75cc6d112c15feb83e630a61e181e4ac122e272090f2"
+ SNAPSHOT_SHA = "f909bdfcaedfef29fcc1ba6a994c49bc21e99850204bac7e0565548bcd7139cb"
+ CANDIDATE_SHA = "4e2f7f9ea09c6977afbe8d97c040fd2f1344772429f78fe0f16edc913dadc7ba"
+ BASE_BUILDER_SHA = "6834ea57e4d0402bd5c6e6c405728a111af77fb54ea0e0bea407ba9647fa41b4"
+ GO_PATCH = "android/apex-compat/0008-soong-leaf-go-memory-budget.patch"
+-STREAMING_SHA = "6aaaf5ec96a75bb6480c202d6483a5b22bdd4963d6d3b66bbfad4d80ee5ed20e"
+-ROOT = "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go6-streaming-01"
+-PREPARE_KEY = "pocket4-native-combined05-go6-streaming-full-source-preparation-01-20261105"
+-BUILD_KEY = "pocket4-native-combined05-go6-streaming-fenced-cold-engine-flag0-build-01-20261105"
++STREAMING_SHA = "39211a784284ed319b6abbbe4b327a88896931d39c6bdb91fe727a9a7589325f"
++RUNTIME_BUILDER_SHA = "776435c88ca6ddb983456c639ca051e586731140394756f33abe53dc478357e3"
++ROOT = "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go5-streaming-01"
++PREPARE_KEY = "pocket4-native-combined05-go5-streaming-full-source-preparation-01-20261105"
++BUILD_KEY = "pocket4-native-combined05-go5-streaming-fenced-cold-engine-flag0-build-01-20261105"
+ 
+ 
+ def sha(raw):
+@@ -57,7 +58,7 @@
+     raw = controller()
+     wrapper = ("import sys,hashlib;raw=sys.stdin.buffer.read();expected=" + repr(CONTROLLER_SHA) +
+                ";assert hashlib.sha256(raw).hexdigest()==expected;"
+-               "scope={'__name__':'__main__','__file__':'<verified-combined05-go6-streaming-controller>',"
++               "scope={'__name__':'__main__','__file__':'<verified-combined05-go5-streaming-controller>',"
+                "'VERIFIED_CONTROLLER_SHA256':expected};"
+                "exec(compile(raw,'combined_build_streaming.py','exec'),scope,scope)")
+     return {"host": "pocket4", "executable": "/usr/bin/python3", "args": ["-I", "-c", wrapper, "--prepare"],
+@@ -71,12 +72,16 @@
+     builder = json.loads(builder_manifest_raw)
+     require(preparation["state"] == "PREPARED_NOT_BUILT" and
+             preparation["candidate_manifest_sha256"] == CANDIDATE_SHA and
+-            preparation["builder_manifest_sha256"] == BASE_BUILDER_SHA == sha(builder_manifest_raw),
+-            "actual Go6 streaming preparation binding differs")
++            preparation["builder_manifest_sha256"] == RUNTIME_BUILDER_SHA == sha(builder_manifest_raw) and
++            preparation["compiled_builder_manifest_sha256"] == BASE_BUILDER_SHA and
++            preparation["runtime_data_patch_sha256"] == STREAMING_SHA and
++            preparation["compiled_preimage_patch_sha256"] == "6aaaf5ec96a75bb6480c202d6483a5b22bdd4963d6d3b66bbfad4d80ee5ed20e" and
++            preparation["runtime_data_changed_files"] == [GO_PATCH] and preparation["Rust_recompiled"] is False,
++            "actual Go5 streaming preparation binding differs")
+     require(preparation["engine_file_count"] == 925 and len(preparation["engine_files"]) == 925 and
+             len(builder) == 450 and builder[GO_PATCH]["kind"] == "file" and
+             builder[GO_PATCH]["bytes"] == 583 and builder[GO_PATCH]["sha256"] == STREAMING_SHA,
+-            "actual source inventory is incomplete or does not use the unchanged Go6 patch")
++            "actual source inventory is incomplete or does not use the derived Go5 runtime patch")
+     require(preparation["base_and_candidate_unchanged"] is True and
+             preparation["feature_default_enabled"] is False and preparation["full_engine_built"] is False and
+             preparation["ART_built"] is False and preparation["factory_built"] is False and
+@@ -89,8 +94,8 @@
+             preparation["builder_sha256"] == 'ea80146d5fc47f9927dd16a1ad91b6b48f0b30f0ce043d4eaef53f0e84f482b6' and
+             preparation["Blueprint_streaming_patch_sha256"] == '9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307',
+             "actual matching streaming builder or its compilation receipt differs")
+-    require(builder_manifest_raw == read_pinned(HERE / "expected-copied-builder-source-manifest.json",
+-                                               BASE_BUILDER_SHA), "actual 450-file manifest differs")
++    require(builder_manifest_raw == read_pinned(HERE / "expected-runtime-builder-source-manifest.json",
++                                               RUNTIME_BUILDER_SHA), "actual 450-file manifest differs")
+     return preparation
+ 
+ 
+@@ -112,9 +117,10 @@
+     write_request(args.output_dir, {"exact-request.json": encoded(request)}, {
+         "state": "STREAMING_PREPARATION_REQUEST_NOT_SUBMITTED", "controller_sha256": CONTROLLER_SHA,
+         "new_root": ROOT, "candidate05_manifest_sha256": CANDIDATE_SHA,
+-        "base_builder_manifest_sha256": BASE_BUILDER_SHA, "Go6_patch_sha256": STREAMING_SHA,
++        "base_builder_manifest_sha256": BASE_BUILDER_SHA, "Go5_runtime_patch_sha256": STREAMING_SHA,
+         "actual_builder_compile_sha256": 'a1d8fe1e891c876baeff555b18fce9bafe6a895d379d9e55261c6df1981785de',
+         "Blueprint_streaming_patch_sha256": '9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307',
++        "expected_runtime_builder_manifest_sha256": RUNTIME_BUILDER_SHA,
+         "new_actual_builder_manifest_sha256": None, "actual_preparation_observed": False})
+ 
+ 
+@@ -123,8 +129,8 @@
+     builder_manifest_raw = read_pinned(args.builder_manifest, args.builder_manifest_sha256)
+     preparation = validate_actual_preparation(preparation_raw, builder_manifest_raw)
+     template = read_pinned(HERE / "fenced_build_streaming.template.py", FENCE_TEMPLATE_SHA).decode()
+-    require(template.count("ACTUAL_STREAMING_PREPARATION_SHA_REQUIRED") == 1, "template placeholder differs")
+-    fence = template.replace("ACTUAL_STREAMING_PREPARATION_SHA_REQUIRED", args.preparation_sha256)
++    require(template.count("ACTUAL_GO5_STREAMING_PREPARATION_SHA_REQUIRED") == 1, "template placeholder differs")
++    fence = template.replace("ACTUAL_GO5_STREAMING_PREPARATION_SHA_REQUIRED", args.preparation_sha256)
+     snapshot = read_pinned(HERE / "main_snapshot.py", SNAPSHOT_SHA).decode()
+     packet = {"schema": 1, "outer_source": fence, "outer_sha256": sha(fence.encode()),
+               "controller_source": controller().decode(), "snapshot_source": snapshot,
+@@ -133,13 +139,13 @@
+     wrapper = ("import sys,hashlib,json;raw=sys.stdin.buffer.read();assert hashlib.sha256(raw).hexdigest()==" +
+                repr(sha(packet_raw)) + ";packet=json.loads(raw);source=packet['outer_source'];"
+                "assert hashlib.sha256(source.encode()).hexdigest()==" + repr(sha(fence.encode())) + ";"
+-               "scope={'__name__':'__main__','__file__':'<verified-combined05-go6-streaming-fenced-build>','PACKET':packet};"
++               "scope={'__name__':'__main__','__file__':'<verified-combined05-go5-streaming-fenced-build>','PACKET':packet};"
+                "exec(compile(source,'fenced_build_streaming.py','exec'),scope,scope)")
+     request = {"host": "pocket4", "executable": "/usr/bin/python3",
+                "args": ["-I", "-c", wrapper, "--execute-once"], "cwd": "/home/alex/work",
+                "env": {"PYTHONDONTWRITEBYTECODE": "1"}, "stdin": packet_raw.decode(),
+                "idempotency_key": BUILD_KEY, "timeout_seconds": 6400, "cpu_quota_percent": 200,
+-               "memory_max_bytes": 11811160064, "nice": 10}
++               "memory_max_bytes": 10737418240, "nice": 10}
+     patch = ''.join(difflib.unified_diff(template.splitlines(True), fence.splitlines(True),
+                                         fromfile='a/fenced_build_streaming.template.py', tofile='b/fenced_build_streaming.py'))
+     write_request(args.output_dir, {"fenced_build_streaming.py": fence.encode(),
+@@ -150,12 +156,12 @@
+         "actual_preparation_sha256": args.preparation_sha256,
+         "actual_builder_manifest_sha256": preparation["builder_manifest_sha256"],
+         "base_builder_manifest_sha256": BASE_BUILDER_SHA,
+-        "candidate05_manifest_sha256": CANDIDATE_SHA, "Go6_patch_sha256": STREAMING_SHA,
++        "candidate05_manifest_sha256": CANDIDATE_SHA, "Go5_runtime_patch_sha256": STREAMING_SHA,
+         "actual_builder_compile_sha256": 'a1d8fe1e891c876baeff555b18fce9bafe6a895d379d9e55261c6df1981785de',
+         "Blueprint_streaming_patch_sha256": '9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307',
+         "Main_snapshot_source_sha256": SNAPSHOT_SHA, "main_observed_invariants_and_oom_gate": True,
+-        "resource_budget": {"cpu_quota_percent": 200, "memory_max_bytes": 11811160064,
+-                            "minimum_MemAvailable_bytes": 15032385536,
++        "resource_budget": {"cpu_quota_percent": 200, "memory_max_bytes": 10737418240,
++                            "minimum_MemAvailable_bytes": 13958643712,
+                             "minimum_SwapFree_bytes": 2147483648,
+                             "own_memory_swap_max_bytes": 1073741824, "normal_builder_jobs": 1,
+                             "admission_difference_bytes": 3221225472,

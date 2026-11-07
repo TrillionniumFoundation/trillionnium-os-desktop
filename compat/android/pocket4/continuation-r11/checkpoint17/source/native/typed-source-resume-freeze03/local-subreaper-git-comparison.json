@@ -1,0 +1,936 @@
+{
+  "schema": 1,
+  "state": "LOCAL_GIT_SUBREAPER_WAITID_COMPARISON_COMPLETE",
+  "uid": 0,
+  "results": [
+    {
+      "git_version": "git version 2.43.0",
+      "git_sha256": "2a8c18fbf43da9f692d75474c72bea9dfd796c260b0f3dfe456376abc3bbd668",
+      "original": {
+        "git": "/usr/bin/git",
+        "fixed": false,
+        "commands": [
+          {
+            "label": "fixture-origin-init",
+            "argv": [
+              "/usr/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-original/fixture-origin",
+              "init",
+              "--quiet",
+              "--initial-branch=main"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-origin-add",
+            "argv": [
+              "/usr/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-original/fixture-origin",
+              "add",
+              "marker"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-origin-commit",
+            "argv": [
+              "/usr/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-original/fixture-origin",
+              "-c",
+              "user.name=Owned source test",
+              "-c",
+              "user.email=owned-source-test@droidloom.invalid",
+              "commit",
+              "--quiet",
+              "-m",
+              "fixture"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-origin-HEAD",
+            "argv": [
+              "/usr/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-original/fixture-origin",
+              "rev-parse",
+              "HEAD"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "02eab1b20dc1debd1840aa6be88722d54a83babf89e236f047da5177a342e8a8",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-checkout-init",
+            "argv": [
+              "/usr/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-original/checkout",
+              "init",
+              "--quiet",
+              "--initial-branch=droidloom"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-local-fetch",
+            "argv": [
+              "/usr/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-original/checkout",
+              "-c",
+              "protocol.allow=never",
+              "-c",
+              "protocol.file.allow=always",
+              "fetch",
+              "--quiet",
+              "--depth=1",
+              "file:///workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-original/fixture-origin",
+              "de6e88fe673dda2c6f04416e034d0d3da1078dce"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-origin-configure",
+            "argv": [
+              "/usr/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-original/checkout",
+              "remote",
+              "add",
+              "origin",
+              "https://android.googlesource.com/platform/owned-resume-control"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-detached-checkout",
+            "argv": [
+              "/usr/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-original/checkout",
+              "checkout",
+              "--quiet",
+              "--detach",
+              "de6e88fe673dda2c6f04416e034d0d3da1078dce"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "completed-readonly-status",
+            "argv": [
+              "/usr/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-original/checkout",
+              "--no-optional-locks",
+              "status",
+              "--porcelain=v1",
+              "--untracked-files=all"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "legacy-final-verifier-status",
+            "argv": [
+              "/usr/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-original/checkout",
+              "status",
+              "--porcelain"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          }
+        ],
+        "late_reaped": [],
+        "maintenance_trace_events": [
+          {
+            "event": "child_start",
+            "sid": "20261106T003730.787516Z-H46c990d7-P0000000b",
+            "child_id": 0,
+            "pid": null,
+            "argv": [
+              "git",
+              "maintenance",
+              "run",
+              "--auto",
+              "--quiet"
+            ],
+            "name": null,
+            "code": null
+          },
+          {
+            "event": "cmd_name",
+            "sid": "20261106T003730.787516Z-H46c990d7-P0000000b/20261106T003730.792635Z-H46c990d7-P0000000c",
+            "child_id": null,
+            "pid": null,
+            "argv": null,
+            "name": "maintenance",
+            "code": null
+          },
+          {
+            "event": "child_start",
+            "sid": "20261106T003730.973532Z-H46c990d7-P0000000f",
+            "child_id": 3,
+            "pid": null,
+            "argv": [
+              "git",
+              "maintenance",
+              "run",
+              "--auto",
+              "--quiet"
+            ],
+            "name": null,
+            "code": null
+          },
+          {
+            "event": "cmd_name",
+            "sid": "20261106T003730.973532Z-H46c990d7-P0000000f/20261106T003730.995709Z-H46c990d7-P00000016",
+            "child_id": null,
+            "pid": null,
+            "argv": null,
+            "name": "maintenance",
+            "code": null
+          }
+        ],
+        "trace": {
+          "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-original/trace.jsonl",
+          "bytes": 68362,
+          "sha256": "9a12af867aa2dffb2a1a94b0fde2bf9b8d91af2d1daff0a7c63c57e74252dd8d"
+        },
+        "adopted_exited_child_count": 0,
+        "all_own_children_reaped": true,
+        "network_calls": 0
+      },
+      "fixed": {
+        "git": "/usr/bin/git",
+        "fixed": true,
+        "commands": [
+          {
+            "label": "fixture-origin-init",
+            "argv": [
+              "/usr/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-fixed/fixture-origin",
+              "init",
+              "--quiet",
+              "--initial-branch=main"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-origin-add",
+            "argv": [
+              "/usr/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-fixed/fixture-origin",
+              "add",
+              "marker"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-origin-commit",
+            "argv": [
+              "/usr/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-fixed/fixture-origin",
+              "-c",
+              "user.name=Owned source test",
+              "-c",
+              "user.email=owned-source-test@droidloom.invalid",
+              "commit",
+              "--quiet",
+              "-m",
+              "fixture"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-origin-HEAD",
+            "argv": [
+              "/usr/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-fixed/fixture-origin",
+              "rev-parse",
+              "HEAD"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "8039b39fe6f078945d2a24b5bcc4554a13e886a18e53c2f71f38fba386c8f438",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-checkout-init",
+            "argv": [
+              "/usr/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-fixed/checkout",
+              "init",
+              "--quiet",
+              "--initial-branch=droidloom"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-local-fetch",
+            "argv": [
+              "/usr/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-fixed/checkout",
+              "-c",
+              "protocol.allow=never",
+              "-c",
+              "protocol.file.allow=always",
+              "fetch",
+              "--quiet",
+              "--depth=1",
+              "file:///workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-fixed/fixture-origin",
+              "79fc30aaa7222e611d0cc1190282dc467b837052"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-origin-configure",
+            "argv": [
+              "/usr/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-fixed/checkout",
+              "remote",
+              "add",
+              "origin",
+              "https://android.googlesource.com/platform/owned-resume-control"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-detached-checkout",
+            "argv": [
+              "/usr/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-fixed/checkout",
+              "checkout",
+              "--quiet",
+              "--detach",
+              "79fc30aaa7222e611d0cc1190282dc467b837052"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "completed-readonly-status",
+            "argv": [
+              "/usr/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-fixed/checkout",
+              "--no-optional-locks",
+              "status",
+              "--porcelain=v1",
+              "--untracked-files=all"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "legacy-final-verifier-status",
+            "argv": [
+              "/usr/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-fixed/checkout",
+              "status",
+              "--porcelain"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          }
+        ],
+        "late_reaped": [],
+        "maintenance_trace_events": [],
+        "trace": {
+          "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/usr-fixed/trace.jsonl",
+          "bytes": 64589,
+          "sha256": "1064235ef04532fdc012abba355fff154f43b46068ac758487374ba00020bc9a"
+        },
+        "adopted_exited_child_count": 0,
+        "all_own_children_reaped": true,
+        "network_calls": 0
+      }
+    },
+    {
+      "git_version": "git version 2.51.1",
+      "git_sha256": "2dae8066ef4d6a926561b4b0eaca7b458d4f5b56bb83760656e6baa7fc3e974f",
+      "original": {
+        "git": "/usr/local/bin/git",
+        "fixed": false,
+        "commands": [
+          {
+            "label": "fixture-origin-init",
+            "argv": [
+              "/usr/local/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-original/fixture-origin",
+              "init",
+              "--quiet",
+              "--initial-branch=main"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-origin-add",
+            "argv": [
+              "/usr/local/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-original/fixture-origin",
+              "add",
+              "marker"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-origin-commit",
+            "argv": [
+              "/usr/local/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-original/fixture-origin",
+              "-c",
+              "user.name=Owned source test",
+              "-c",
+              "user.email=owned-source-test@droidloom.invalid",
+              "commit",
+              "--quiet",
+              "-m",
+              "fixture"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": [
+              {
+                "pid": 50,
+                "waitid_code": 1,
+                "waitid_status": 0,
+                "own_child_stat_error": {
+                  "errno": 2,
+                  "type": "FileNotFoundError"
+                },
+                "reaped_wait_status": 0
+              }
+            ]
+          },
+          {
+            "label": "fixture-origin-HEAD",
+            "argv": [
+              "/usr/local/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-original/fixture-origin",
+              "rev-parse",
+              "HEAD"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "632b671da67d9c7279613ab6a65ec02062cc2cc1d31708952185c1040e6c76a4",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-checkout-init",
+            "argv": [
+              "/usr/local/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-original/checkout",
+              "init",
+              "--quiet",
+              "--initial-branch=droidloom"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-local-fetch",
+            "argv": [
+              "/usr/local/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-original/checkout",
+              "-c",
+              "protocol.allow=never",
+              "-c",
+              "protocol.file.allow=always",
+              "fetch",
+              "--quiet",
+              "--depth=1",
+              "file:///workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-original/fixture-origin",
+              "c441139301aab1d4d8b4a46545985cd703d0d8d3"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": [
+              {
+                "pid": 61,
+                "waitid_code": 1,
+                "waitid_status": 0,
+                "own_child_stat_error": {
+                  "errno": 2,
+                  "type": "FileNotFoundError"
+                },
+                "reaped_wait_status": 0
+              }
+            ]
+          },
+          {
+            "label": "fixture-origin-configure",
+            "argv": [
+              "/usr/local/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-original/checkout",
+              "remote",
+              "add",
+              "origin",
+              "https://android.googlesource.com/platform/owned-resume-control"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-detached-checkout",
+            "argv": [
+              "/usr/local/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-original/checkout",
+              "checkout",
+              "--quiet",
+              "--detach",
+              "c441139301aab1d4d8b4a46545985cd703d0d8d3"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "completed-readonly-status",
+            "argv": [
+              "/usr/local/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-original/checkout",
+              "--no-optional-locks",
+              "status",
+              "--porcelain=v1",
+              "--untracked-files=all"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "legacy-final-verifier-status",
+            "argv": [
+              "/usr/local/bin/git",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-original/checkout",
+              "status",
+              "--porcelain"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          }
+        ],
+        "late_reaped": [],
+        "maintenance_trace_events": [
+          {
+            "event": "child_start",
+            "sid": "20261106T003732.190304Z-H46c990d7-P00000030",
+            "child_id": 0,
+            "pid": null,
+            "argv": [
+              "git",
+              "maintenance",
+              "run",
+              "--auto",
+              "--quiet",
+              "--detach"
+            ],
+            "name": null,
+            "code": null
+          },
+          {
+            "event": "cmd_name",
+            "sid": "20261106T003732.190304Z-H46c990d7-P00000030/20261106T003732.193840Z-H46c990d7-P00000031",
+            "child_id": null,
+            "pid": null,
+            "argv": null,
+            "name": "maintenance",
+            "code": null
+          },
+          {
+            "event": "child_start",
+            "sid": "20261106T003732.361720Z-H46c990d7-P00000035",
+            "child_id": 3,
+            "pid": null,
+            "argv": [
+              "git",
+              "maintenance",
+              "run",
+              "--auto",
+              "--quiet",
+              "--detach"
+            ],
+            "name": null,
+            "code": null
+          },
+          {
+            "event": "cmd_name",
+            "sid": "20261106T003732.361720Z-H46c990d7-P00000035/20261106T003732.378629Z-H46c990d7-P0000003c",
+            "child_id": null,
+            "pid": null,
+            "argv": null,
+            "name": "maintenance",
+            "code": null
+          }
+        ],
+        "trace": {
+          "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-original/trace.jsonl",
+          "bytes": 72566,
+          "sha256": "4cd8bf8fd7e39a918c06cb9b12834a347b6a1ed2014de7d39d26604f5661f15d"
+        },
+        "adopted_exited_child_count": 2,
+        "all_own_children_reaped": true,
+        "network_calls": 0
+      },
+      "fixed": {
+        "git": "/usr/local/bin/git",
+        "fixed": true,
+        "commands": [
+          {
+            "label": "fixture-origin-init",
+            "argv": [
+              "/usr/local/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-fixed/fixture-origin",
+              "init",
+              "--quiet",
+              "--initial-branch=main"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-origin-add",
+            "argv": [
+              "/usr/local/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-fixed/fixture-origin",
+              "add",
+              "marker"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-origin-commit",
+            "argv": [
+              "/usr/local/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-fixed/fixture-origin",
+              "-c",
+              "user.name=Owned source test",
+              "-c",
+              "user.email=owned-source-test@droidloom.invalid",
+              "commit",
+              "--quiet",
+              "-m",
+              "fixture"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-origin-HEAD",
+            "argv": [
+              "/usr/local/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-fixed/fixture-origin",
+              "rev-parse",
+              "HEAD"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "632b671da67d9c7279613ab6a65ec02062cc2cc1d31708952185c1040e6c76a4",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-checkout-init",
+            "argv": [
+              "/usr/local/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-fixed/checkout",
+              "init",
+              "--quiet",
+              "--initial-branch=droidloom"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-local-fetch",
+            "argv": [
+              "/usr/local/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-fixed/checkout",
+              "-c",
+              "protocol.allow=never",
+              "-c",
+              "protocol.file.allow=always",
+              "fetch",
+              "--quiet",
+              "--depth=1",
+              "file:///workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-fixed/fixture-origin",
+              "c441139301aab1d4d8b4a46545985cd703d0d8d3"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-origin-configure",
+            "argv": [
+              "/usr/local/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-fixed/checkout",
+              "remote",
+              "add",
+              "origin",
+              "https://android.googlesource.com/platform/owned-resume-control"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "fixture-detached-checkout",
+            "argv": [
+              "/usr/local/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-fixed/checkout",
+              "checkout",
+              "--quiet",
+              "--detach",
+              "c441139301aab1d4d8b4a46545985cd703d0d8d3"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "completed-readonly-status",
+            "argv": [
+              "/usr/local/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-fixed/checkout",
+              "--no-optional-locks",
+              "status",
+              "--porcelain=v1",
+              "--untracked-files=all"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          },
+          {
+            "label": "legacy-final-verifier-status",
+            "argv": [
+              "/usr/local/bin/git",
+              "-c",
+              "maintenance.auto=false",
+              "-c",
+              "gc.auto=0",
+              "-C",
+              "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-fixed/checkout",
+              "status",
+              "--porcelain"
+            ],
+            "returncode": 0,
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "subreaper_adopted_exited_children": []
+          }
+        ],
+        "late_reaped": [],
+        "maintenance_trace_events": [],
+        "trace": {
+          "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper-git-control02-actual/local-fixed/trace.jsonl",
+          "bytes": 65908,
+          "sha256": "33eb60aaf061fb23006047728f237f44df449889cdf65e9d0a20a96b52b1755e"
+        },
+        "adopted_exited_child_count": 0,
+        "all_own_children_reaped": true,
+        "network_calls": 0
+      }
+    }
+  ],
+  "local_children_proc_file_unavailable": true,
+  "observer": "waitid P_ALL WEXITED WNOHANG WNOWAIT, then exact own-child waitpid",
+  "worker_source": {
+    "file": "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper_git_control01.py",
+    "sha256": "9659a9d4f26e22d4b2a9a2964e1f438e4e9c1d419f5172230f66e8a2074a15b9"
+  },
+  "Rust_compiled_or_executed": false,
+  "Pocket4_execution": false,
+  "actual_target_PID_command_identities_proven": false,
+  "original_compile02_FAIL_preserved": true,
+  "Main_actions": 0
+}

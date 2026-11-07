@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "artifact": "independent-lmkd-freeze04-narrow-review",
+  "reviewed_utc": "2026-11-04T14:30:55.966470+00:00",
+  "state": "READ_ONLY_SOURCE_REVIEW_COMPLETE_NO_NEW_BLOCKER_IN_DECLARED_SCOPE",
+  "source_revision": "host-bootstrap-freeze-04",
+  "source_manifest_sha256": "0a2926b79240eaf5fd5556fd5c7d3bfd6058119b379b83996618097d9e06838d",
+  "reviewed_files": [
+    {
+      "path": "src/lib.rs",
+      "bytes": 43272,
+      "sha256": "527451ffc0639f1115b40d7024432f26db284ef14ea48ad4e87ff13909694fc7"
+    },
+    {
+      "path": "src/bin/owned_relay_canary.rs",
+      "bytes": 21837,
+      "sha256": "6782bca2611316bccc3f21eb69dde8472bd46fdffe95e3dbbd485b1d6f2b1ed4"
+    },
+    {
+      "path": "owned-relay/fixture_init.cpp",
+      "bytes": 38088,
+      "sha256": "ec0e7bc2dd978f71803526d8702a7753dc2c00ea565d79bb9be1dd0e9b891215"
+    },
+    {
+      "path": "src/lifecycle_bootstrap.rs",
+      "bytes": 41983,
+      "sha256": "450a7fc8fa807825c1473e204f6fac6fe1a6ff5d7c0b0245f9c8c337fa6d0306"
+    },
+    {
+      "path": "src/lifecycle_relay.rs",
+      "bytes": 15979,
+      "sha256": "4e83ecf32c213778baa1c18215e995b045da9af268ee9b96870e1a9a0f0025d7"
+    },
+    {
+      "path": "owned-relay/CANARY.md",
+      "bytes": 9218,
+      "sha256": "e5f2d67ca1cddb0bfe6edbccd279c16b20755f791cc3f468bd58ea2aadadf8e5"
+    }
+  ],
+  "scope": [
+    "Permanent failure after LeaseOwner revocation worker join panic",
+    "Owned actor / broker / private init identity and retirement ordering",
+    "Rejection of unexpected SCM_RIGHTS and closure of received descriptors",
+    "Child parent-death contract and inherited descriptor isolation"
+  ],
+  "findings": [
+    {
+      "id": "RETIREMENT_PANIC_FALSE_SUCCESS_CLOSED",
+      "previous_issue": "After worker.take() then failed join, a second finish_retirement could observe no worker and return success.",
+      "current_evidence": "finish_retirement checks retirement_poisoned before the worker loop or worker-none path; join failure sets it permanently. The source test retirement_panic_cannot_be_retried_into_success performs a real spawned-thread panic and checks both retirement calls fail and the latch remains true.",
+      "qualification": "Source reviewed. The new Rust test was not independently executed by this reviewer."
+    },
+    {
+      "id": "OWNED_LIFECYCLE_CHAIN",
+      "current_evidence": "Driver binds the exported owner pidfd to its exact Child, retains the init pidfd, binds READY scope to the exported cgroup inode, requires broker joined retirement before sending R, rejects same-living-cell replacement, then checks both owner/init pidfds exited and the owned domain is empty.",
+      "qualification": "No device or namespace execution by this reviewer. This does not qualify installed lifecycle integration or PSI pressure behavior."
+    },
+    {
+      "id": "UNEXPECTED_RIGHTS_CLOSED",
+      "current_evidence": "receive_byte uses MSG_CMSG_CLOEXEC, enumerates and closes every received SCM_RIGHTS descriptor before rejecting extra ancillary data or truncation."
+    },
+    {
+      "id": "PARENT_DEATH_AND_FD_SCOPE",
+      "current_evidence": "The actor is launched with PDEATHSIG and an exact parent check. The private init arms PDEATHSIG and checks its held owner pidfd before keep_two drops inherited descriptors. Only the owned gate/reply FDs 3 and 4 survive for the private init."
+    }
+  ],
+  "limits": [
+    "No independent cargo test or matching Rust build was run by this review.",
+    "No device, service, namespace, LMKD or pressure command was executed by this reviewer.",
+    "The frozen source manifest remains a source-freeze record. Device canary outcomes must be cited separately from root-owned execution evidence.",
+    "Installed supervisor recovery hook and full foreground / memory-pressure qualification remain open.",
+    "Source inspection does not prove all app compatibility or production readiness."
+  ],
+  "prior_review_unchanged": {
+    "path": "/workspace/scratch/94990735b266/acceptance-lmkd-host-admission-r1/report.json",
+    "sha256": "17afa686a4f8eb049b638e374d4fedd779e15cccd121e3e098267df818ef8970"
+  },
+  "device_operations": 0,
+  "local_source_mutations": 0,
+  "production_ready": false
+}

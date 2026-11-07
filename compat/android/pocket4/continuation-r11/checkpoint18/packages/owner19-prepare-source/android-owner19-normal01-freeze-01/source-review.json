@@ -1,0 +1,111 @@
+{
+  "schema": 1,
+  "kind": "owner19-normal01-source-prepare-review01",
+  "state": "SOURCE_AND_ACTUAL_SOURCE_CONTROLS_BOUND_PREPARE_NOT_SUBMITTED_RUNTIME_TEMPLATE_NOT_READY",
+  "prior_source_origin_tree": "d9ae6550f9c0a3a2dbea1211c68752aeb5ffcbaf",
+  "prior_prepare_request": {
+    "bytes": 299721,
+    "sha256": "0779ce7dc82b1255bf67856e5a6727db67467a05186b244e10f4795d8e9acd17",
+    "git_blob_sha": "6c0d7cce84a8d556593b5adace3ae51fc5c29991"
+  },
+  "prior_packet": {
+    "bytes": 223707,
+    "sha256": "6288e9c3ed46999b569397906666734b126b3e5d3b5e5d998f685eed25d1b365",
+    "git_blob_sha": "e192201bdf1505a7d6b27d53bba53b75fb2385e6"
+  },
+  "new_packet": {
+    "bytes": 229502,
+    "sha256": "11b2e248796afc0e5a5dc9c565300ff09f7ab39b803890beda0217ceffefebe0",
+    "git_blob_sha": "4cd2fb706b759b524747efa496330137e402ad86"
+  },
+  "new_sources": {
+    "actor.py": {
+      "bytes": 28108,
+      "sha256": "59c4892b95159fc29751b847c36375febc80e72f3051d5880920490e7450bc63"
+    },
+    "coordinator.py": {
+      "bytes": 14404,
+      "sha256": "fa8a77414a892bdede02dfa7ecf065a9376ee04c5dd7fe4a7630f6d3f9e9c12a"
+    },
+    "prepare.py": {
+      "bytes": 15280,
+      "sha256": "1c0f7dd9916b3aa406ed4d5bee0d7d53283aee2c6e25dbaf04addc0b24420124"
+    },
+    "owned.py": {
+      "bytes": 17466,
+      "sha256": "fb2371b148bac2faf644cbf30cb2fc959260e0d9af7c3424bba027f1dc62abfd"
+    },
+    "pinned_support.py": {
+      "bytes": 13377,
+      "sha256": "31e80cbcfb1b330b5daed3aefb1f4d29bbd10d94e703ce8cd1a1f42207deb40e"
+    },
+    "qualify.py": {
+      "bytes": 10249,
+      "sha256": "a843d4a0ac4da1dd1baa8707ff3d0f59e4ed4c3cd26fd6fa1eae2ed9f21a6fad"
+    },
+    "crash_log.py": {
+      "bytes": 35850,
+      "sha256": "3e9f0ff5d55c5ea0189173fada455820bf1a88ff3a1f15484893c6cbb2b2db68"
+    }
+  },
+  "new_attempt_nonce": "08eae45fbb6c6c42c38bd67a6bdcc20b1a6fbe915a3e0fa0ce182a51b58029ed",
+  "published_plan": {
+    "bytes": 85165,
+    "sha256": "be2bb696239d438552b1971f4fbe889ee9f66d08717e3559648ea14720579569",
+    "git_blob_sha": "929175d15350d9c9b415aa3e924c203ddf958375"
+  },
+  "expected_prepared_serialized_plan_sha256": "b3d57617068fde00a9f26d2f30818ae845899dc11f18a6d73d5ac656c71fe8c2",
+  "source_diff": {
+    "bytes": 7699,
+    "sha256": "b60cda2bebcc32fe3bd1185c401d77bd8c3a3d6f387ece31b9b18d69b6a19717",
+    "git_blob_sha": "71f895bacd0e52e2969bb85c1e4406b1b96db658"
+  },
+  "plan_diff": {
+    "bytes": 25289,
+    "sha256": "8e24aae60a7116d667b007b426cdd4c70be843dfa3206360c0e92ccd0dcc896e",
+    "git_blob_sha": "dd2198485b9a5c88d57e0411c9417ee3ec1eeadb"
+  },
+  "actual_source_controls": {
+    "job": "1a1aebb1819-fc05-61bd",
+    "origin_tree": "854a3d33dbd43f1ec2ae4a9d77c1a78b4524eed2",
+    "origin_path": "owner19_controls01/stdout.log",
+    "bytes": 2972,
+    "sha256": "e20483c632fc08b8a994080801fad7d0c6609c9a111fd6263e3bc797157c34a9",
+    "git_blob_sha": "44e39613e950cddd983a659d8cde171a111e86d4",
+    "scope": "15 exact-source controls with explicit synthetic I/O and connection seams only"
+  },
+  "independent_checks": {
+    "all_original_source_hashes_checked": true,
+    "actual_control_original_bytes_checked": true,
+    "all15_control_rows_and_qualification_flags_checked": true,
+    "old_lossless_plan_roundtrip_exact": true,
+    "old_prepare_packet_and_base64_wrapper_rebuilt_exact": true,
+    "new_packet_seven_sources_match": true,
+    "full_source_inverse_checks_passed": true,
+    "spec_inverse_root_and_canonical_hash_checked": true,
+    "original_request_resources_identical": true,
+    "all_unchanged_plan_values_equal": true,
+    "original_large_numeric_literals_preserved": true
+  },
+  "limits": {
+    "local_executor_unavailable": true,
+    "local_python_compile_or_tests_executed": false,
+    "remote_prepare_executed": false,
+    "remote_runtime_executed": false,
+    "real_logd_peer_qualified": false,
+    "live_special_bits_observed": false,
+    "old_Owner18_unique_metadata_failure_term_proved": false,
+    "full_Owner_normal_or_App_qualification": false
+  },
+  "preservation": {
+    "Main_and_pids12288": true,
+    "Host17_artifacts_and_ordinary39_139_7": true,
+    "C16_exact_DSO": true,
+    "original_LMKD": true,
+    "original_NORMAL_Stop_and_retirement": true,
+    "original_actor_bytes": true,
+    "original_peer_init_root_userns_uid0_and_domain_gates": true,
+    "old_failures_unchanged": true
+  },
+  "next": "Root review and single create-only prepare; full actual preparation must be bound before any future runtime."
+}

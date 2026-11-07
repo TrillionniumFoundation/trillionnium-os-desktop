@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "artifact": "isolated-signal-canary-preparation-r1",
+  "state": "FROZEN_PREPARATION_AND_READ_ONLY_CHECKS",
+  "frozen_utc": "2026-11-04T14:07:54.061457+00:00",
+  "deployed": false,
+  "entrypoints": [
+    "prepare.py"
+  ],
+  "runtime_runner_included": false,
+  "original_v5_source_sha256": "895ecbfec6d04170adf0dbc16a0fd18d3de0b78317efec86de1846295dfcddb8",
+  "device_input_index_sha256": "c00fde04f0100f5df217598d4e98e226c7fb6815b3366e2cc31666a858d927b8",
+  "r3_build_receipt_sha256": "55b2a7da86bbf7ddde0532f292b909a887625823fc89de82a1272ac99df33384",
+  "local_controls": {
+    "passed": 17,
+    "device_operations": 0,
+    "scope": "Pure receipt/parser controls only; measured R16 stdout plus declared synthetic binding fixtures"
+  },
+  "known_pending": [
+    "new native-engine build and complete host-suite execution",
+    "separate runtime adapter review and actual isolated Android execution",
+    "independent preparation source peer review"
+  ],
+  "files": {
+    "prepare.py": {
+      "sha256": "738924ea138e0fc5fb5e7d5a6f90bf1fffbc4c7555ce4d0b5c519346aae6e734",
+      "bytes": 29145
+    },
+    "assess.py": {
+      "sha256": "125547744b86686f80278bb7730fdb4352b4f3378376f03ea10f7553f879ec97",
+      "bytes": 6240
+    },
+    "verify_local.py": {
+      "sha256": "c016209182abc8de42430ded089ef187bfd2a77eb36cb49352837a1f37944e1f",
+      "bytes": 7421
+    },
+    "inputs-template.json": {
+      "sha256": "0ff2b67cd602a0afb24bf96360d84d0e21ba03b92fbd05984d1b71141bb4d2c5",
+      "bytes": 5252
+    },
+    "PREPARATION.md": {
+      "sha256": "1984b9d6f2ed011b2bb7a94ad9998dccaba322cc8ed94c1e6a258c68007ad9f7",
+      "bytes": 6333
+    },
+    "v5_original.py": {
+      "sha256": "895ecbfec6d04170adf0dbc16a0fd18d3de0b78317efec86de1846295dfcddb8",
+      "bytes": 45214
+    },
+    "local-controls.json": {
+      "sha256": "7c3ca0fb5cfd350f0939480d68f52599b96337dfd317ac457f66869d0d458139",
+      "bytes": 3116
+    }
+  }
+}

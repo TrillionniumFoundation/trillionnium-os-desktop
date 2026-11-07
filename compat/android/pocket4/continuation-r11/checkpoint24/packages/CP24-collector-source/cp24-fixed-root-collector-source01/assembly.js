@@ -1,0 +1,164 @@
+(function(H) {
+"use strict";
+const need=(v,m)=>{if(!v)throw Error(m);};
+const UNBOUND_CP24_AUTHORITY = null;
+const SHA1 = /^[0-9a-f]{40}$/;
+const SHA256 = /^[0-9a-f]{64}$/;
+const NAME = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/;
+function pinEqual(a,b) {
+ return a&&b&&a.bytes===b.bytes&&a.sha256===b.sha256&&a.git_blob_sha1===b.git_blob_sha1;
+}
+function original(raw,pin,label) {
+ need(pin&&Number.isSafeInteger(pin.bytes)&&pin.bytes>0&&
+      SHA1.test(pin.git_blob_sha1)&&SHA256.test(pin.sha256),label+" explicit pin");
+ const observed=verifyBlob(raw,pin.git_blob_sha1,pin.bytes);
+ need(observed.sha256===pin.sha256,label+" original SHA256");
+ return JSON.parse(raw);
+}
+function bindSeed(seedRaw,authority,parentCutRaw) {
+ // No fallback cut, seed, root list or network discovery exists in this source.
+ need(authority!==null&&authority!==undefined&&typeof authority==="object",
+      "CP24_SOURCE_ONLY_ROOT_AUTHORITY_UNBOUND");
+ need(authority.schema==="root-cp24-assembly-authority-v1"&&authority.checkpoint===24&&
+      typeof authority.cut_utc==="string"&&
+      /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC$/.test(authority.cut_utc)&&
+      SHA1.test(authority.base_commit)&&SHA1.test(authority.base_tree)&&
+      Number.isSafeInteger(authority.new_root_count)&&authority.new_root_count>0&&
+      authority.new_root_count<=10000&&
+      Number.isSafeInteger(authority.inherited_root_count)&&authority.inherited_root_count>0&&
+      authority.inherited_root_count<=100000,
+      "CP24_FIXED_ROOT_AUTHORITY_REQUIRED");
+ const seed=original(seedRaw,authority.seed,"CP24 seed");
+ need(seed.schema==="root-checkpoint24-fixed-seed-v1"&&
+      seed.cut_utc===authority.cut_utc&&seed.base_commit===authority.base_commit&&
+      seed.base_tree===authority.base_tree&&
+      pinEqual(seed.previous_cut_scope,authority.previous_cut_scope)&&
+      pinEqual(seed.previous_master,authority.previous_master)&&
+      Array.isArray(seed.new_roots)&&seed.new_roots.length===authority.new_root_count&&
+      Array.isArray(seed.canonical_inherited_roots)&&
+      seed.canonical_inherited_roots.length===authority.inherited_root_count,
+      "CP24_EXACT_SEED_SCOPE_REQUIRED");
+ need(authority.previous_master&&Number.isSafeInteger(authority.previous_master.bytes)&&
+      authority.previous_master.bytes>0&&SHA1.test(authority.previous_master.git_blob_sha1)&&
+      SHA256.test(authority.previous_master.sha256),"CP24_PARENT_MASTER_PIN_REQUIRED");
+ const parent=original(parentCutRaw,authority.previous_cut_scope,"CP23 cut_scope");
+ need(parent.schema==="pocket4-r11-cp23-canonical-root-cut-v3"&&parent.checkpoint===23&&
+      Array.isArray(parent.canonical_inherited_roots)&&Array.isArray(parent.packages),
+      "CP23_CANONICAL_PARENT_REQUIRED");
+ const inherited=[...parent.canonical_inherited_roots,
+   ...parent.packages.map(row=>({name:row.name,original_tree:row.original_tree,checkpoint:23}))];
+ need(inherited.length===authority.inherited_root_count,"CP24_PARENT_CANONICAL_COUNT");
+ const expected=new Map(),addresses=new Set();
+ for(const row of inherited) {
+  const address=String(row.checkpoint)+"/"+row.name;
+  need(typeof row.name==="string"&&NAME.test(row.name)&&typeof row.original_tree==="string"&&SHA1.test(row.original_tree)&&
+       Number.isSafeInteger(row.checkpoint)&&row.checkpoint>0&&row.checkpoint<=23&&
+       !expected.has(row.original_tree)&&!addresses.has(address),"CP23_CANONICAL_IDENTITY");
+  expected.set(row.original_tree,row);addresses.add(address);
+ }
+ for(const row of seed.canonical_inherited_roots) {
+  const prior=expected.get(row.original_tree);
+  need(prior&&row.name===prior.name&&row.checkpoint===prior.checkpoint,
+       "CP24_INHERITED_CANONICAL_CHANGED");
+ }
+ const binding={checkpoint:24,seed,seed_pin:{...authority.seed},authority,
+   parent_cut_scope_pin:{...authority.previous_cut_scope},
+   new_root_count:authority.new_root_count,inherited_root_count:authority.inherited_root_count};
+ binding.roots=canonical(seed,binding);
+ return binding;
+}
+function canonical(seed,binding) {
+ need(binding&&binding.checkpoint===24&&seed===binding.seed&&
+      seed.new_roots.length===binding.new_root_count&&
+      seed.canonical_inherited_roots.length===binding.inherited_root_count,
+      "CP24_BOUND_SEED_REQUIRED");
+ const roots=new Map(),names=new Set();
+ for(const row of seed.canonical_inherited_roots) {
+  need(!roots.has(row.original_tree),"duplicate inherited SHA");
+  roots.set(row.original_tree,{...row,kind:"inherited"});
+ }
+ for(const row of seed.new_roots) {
+  need(typeof row.name==="string"&&NAME.test(row.name)&&!names.has(row.name),"new package name");
+  need(typeof row.original_tree==="string"&&SHA1.test(row.original_tree)&&!roots.has(row.original_tree),"new root collision");
+  need(row.aliases===undefined||(Array.isArray(row.aliases)&&
+       row.aliases.every(x=>typeof x==="string"&&NAME.test(x))&&
+       new Set(row.aliases).size===row.aliases.length),"canonical aliases are labels only");
+  names.add(row.name);roots.set(row.original_tree,{...row,checkpoint:24,kind:"new"});
+ }
+ return roots;
+}
+function shallow(raw,sha) {
+ const object=typeof raw==="string"?JSON.parse(raw):raw;
+ need(object.sha===sha&&object.truncated===false&&Array.isArray(object.tree),"shallow tree identity/truncation");
+ const seen=new Set();
+ const entries=object.tree.map(e=>{
+  need(typeof e.path==="string"&&e.path&&e.path!=="."&&e.path!==".."&&!/[\\/\x00]/.test(e.path)&&!seen.has(e.path),"shallow tree name");seen.add(e.path);
+  need(/^[0-9a-f]{40}$/.test(e.sha),"entry SHA");
+  need((e.type==="tree"&&e.mode==="040000")||(e.type==="blob"&&e.mode==="100644"),"entry type/mode");
+  if(e.type==="blob")need(Number.isSafeInteger(e.size)&&e.size>=0,"leaf advertised size");
+  return {name:e.path,mode:e.mode,type:e.type,sha:e.sha,...(e.type==="blob"?{size:e.size}:{})};
+ });
+ need(H.treeHash(entries)===sha,"original directory Merkle mismatch "+sha);
+ return {sha,entries};
+}
+async function traverse(root,roots,getShallow) {
+ const directories=[],leaves=[],cuts=[],visiting=new Set();
+ async function visit(sha,path,depth) {
+  need(depth<=64&&!visiting.has(sha),"tree depth/cycle");
+  const cut=path?roots.get(sha):null;
+  if(cut){cuts.push({path,tree_sha:sha,checkpoint:cut.checkpoint,canonical_package:cut.name});return;}
+  visiting.add(sha);
+  const dir=await getShallow(sha);
+  need(dir.sha===sha,"cached shallow SHA");
+  directories.push({path,sha,entries:dir.entries.map(({name,mode,type,sha})=>({name,mode,type,sha}))});
+  need(directories.length<=100000,"directory count");
+  for(const e of dir.entries){
+   const p=path?path+"/"+e.name:e.name;
+   if(e.type==="tree")await visit(e.sha,p,depth+1);
+   else {leaves.push({path:p,mode:e.mode,git_blob_sha1:e.sha,bytes:e.size});need(leaves.length<=100000,"leaf count");}
+  }
+  visiting.delete(sha);
+ }
+ await visit(root.original_tree,"",0);
+ const order=(a,b)=>a.path<b.path?-1:a.path>b.path?1:0;
+ directories.sort(order);leaves.sort(order);cuts.sort(order);
+ need(!leaves.some(e=>e.path==="_original-tree.json"||e.path==="_dependency-mounts.json"),"reserved metadata collision");
+ return {name:root.name,original_tree:root.original_tree,aliases:[root.name,...(root.aliases||[])],directories,leaves,cuts};
+}
+function metadata(walk) {
+ const dep={schema:3,original_tree:walk.original_tree,canonical_root_key:"original_tree_sha",cuts:walk.cuts,scope:"Reconstruct each omitted directory from its exact canonical checkpoint package and recursively apply that package metadata; all original file body bytes are unchanged."};
+ const original={schema:3,original_tree:walk.original_tree,derived_reconstruction_map:true,not_original_API_response_bytes:true,directories:walk.directories,retained_leaf_count:walk.leaves.length,retained_body_bytes_unchanged:true};
+ return {"_dependency-mounts.json":JSON.stringify(dep,null,2)+"\n","_original-tree.json":JSON.stringify(original,null,2)+"\n"};
+}
+function verifyBlob(raw,sha,size) {
+ need(typeof raw==="string","blob is not text");
+ const bytes=H.utf8(raw);
+ need(bytes.length===size&&H.gitBlob(bytes)===sha,"blob full UTF8 size/Git mismatch "+sha);
+ return {bytes:bytes.length,sha256:H.sha256(bytes),git_blob_sha1:sha,encoding:"utf-8"};
+}
+function normalizedTree(rows) {
+ const dirs=new Map([["",[]]]),paths=new Set();
+ for(const row of rows) {
+  need(!paths.has(row.path)&&row.mode==="100644"&&/^[0-9a-f]{40}$/.test(row.git_blob_sha1),"normalized leaf collision/mode");paths.add(row.path);
+  const parts=row.path.split("/");need(parts.every(p=>p&&p!=="."&&p!==".."),"normalized path");
+  for(let i=1;i<parts.length;i++){const d=parts.slice(0,i).join("/");if(!dirs.has(d))dirs.set(d,[]);}
+  const parent=parts.slice(0,-1).join("/");
+  dirs.get(parent).push({name:parts.at(-1),type:"blob",mode:"100644",sha:row.git_blob_sha1});
+ }
+ const hashes=new Map();
+ for(const path of [...dirs.keys()].sort((a,b)=>b.split("/").length-a.split("/").length||b.length-a.length)){
+  const sha=H.treeHash(dirs.get(path));hashes.set(path,sha);
+  if(path){const parts=path.split("/"),parent=parts.slice(0,-1).join("/");dirs.get(parent).push({name:parts.at(-1),type:"tree",mode:"040000",sha});}
+ }
+ return {sha:hashes.get(""),directory_count:dirs.size,leaf_count:rows.length,logical_bytes:rows.reduce((n,r)=>n+r.bytes,0)};
+}
+function archiveReferenceDocuments(walk,pins) {
+ // JSON is retained as opaque original evidence. No JSON field becomes a root grant.
+ return walk.leaves.filter(row=>row.path.split("/").at(-1)==="archive-references.json")
+  .map(row=>{const p=pins[row.git_blob_sha1];need(p&&p.bytes===row.bytes,"archive reference full read");
+   return {path:row.path,original_tree:walk.original_tree,...p,
+     treatment:"opaque-original-leaf",JSON_links_followed:0,
+     roots_authorized_by_document:0};});
+}
+return {UNBOUND_CP24_AUTHORITY,bindSeed,canonical,shallow,traverse,metadata,verifyBlob,normalizedTree,archiveReferenceDocuments};
+})

@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys\nEXPECTED={\"bytes\":279647,\"sha256\":\"b1068b8058bd96f2c5f7d03e1feeaca4c2fd5c58bf4df44804c44dd98fac6fbb\"}\nSTAGE={\"bytes\":8352,\"sha256\":\"f747856c51daf57a26db97938d20018d20cb5f600b64ae2173dc069a9d51d2c4\"}\nwire=sys.stdin.buffer.read(EXPECTED['bytes']+1)\nif len(wire)!=EXPECTED['bytes'] or hashlib.sha256(wire).hexdigest()!=EXPECTED['sha256']:\n    raise RuntimeError('fixed composer transaction host transport length/hash mismatch')\nvalue=json.loads(wire)\nif type(value) is not dict or set(value)!={'schema','stage','packet'} or value['schema']!=1 or type(value['stage']) is not str:\n    raise RuntimeError('fixed composer transaction host envelope differs')\nstage=value['stage'].encode('utf-8')\nif len(stage)!=STAGE['bytes'] or hashlib.sha256(stage).hexdigest()!=STAGE['sha256']:\n    raise RuntimeError('fixed composer transaction host stage pin differs')\nscope={'__name__':'__stage__','__file__':'<fixed-composer-transaction-stage>'}\nexec(compile(stage,'<fixed-composer-transaction-stage>','exec'),scope,scope)\nscope['main'](value['packet'])\n"
+    ],
+    "created_unix_ms": 1793968969961,
+    "cwd": "/",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b0e218e9-fc05-7399",
+    "idempotency_key": "pocket4-composer-direct-registration-transaction-host-02-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b0e218e9-fc05-7399",
+    "request_digest": "89bd59fb6059eeda4c27a55dfabfffb1465d8a59099ad9e992eb4dca85ccd766",
+    "request_fingerprint": 9925188089982611162,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b0e218e9-fc05-7399"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b0e218e9-fc05-7399"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

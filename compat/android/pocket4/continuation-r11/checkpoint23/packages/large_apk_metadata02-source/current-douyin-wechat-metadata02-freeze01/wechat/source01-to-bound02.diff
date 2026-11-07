@@ -1,0 +1,23 @@
+--- a/read_target.py
++++ b/read_target.py
+@@ -18,9 +18,9 @@
+ import time
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-current-cell02-wechat-metadata-01')
++ROOT = Path('/home/alex/work/pocket4-current-cell02-wechat-metadata-02')
+ SOURCE_PATH = ROOT/'source/read_target.py'
+-NONCE = '114877d166a4f73465f00c807692ea17'
++NONCE = 'fb3593a2e4734bed7aec0f61d2024131'
+ PACKAGE = 'com.tencent.mm'
+ USER = 0
+ HISTORICAL_VERSION = 3200
+@@ -40,7 +40,7 @@
+ RESOLVE = ['/system/bin/cmd','package','resolve-activity','--brief','--user','0',
+            '-a','android.intent.action.MAIN','-c','android.intent.category.LAUNCHER',PACKAGE]
+ COMMANDS = [LIST, PATHS, RESOLVE, PATHS, LIST]
+-FILE_LIMIT = 256 * 1024 * 1024
++FILE_LIMIT = 512 * 1024 * 1024
+ TOTAL_LIMIT = 512 * 1024 * 1024
+ HASH_SECONDS = 45
+ FILE_COUNT = 16

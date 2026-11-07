@@ -1,0 +1,175 @@
+--- a/INPUTS.json
++++ b/INPUTS.json
+@@ -1,171 +1,1 @@
+-{
+-  "actual_build_sha256": "1289d422062dabcd68706d0e7fa39475687ca956b34a5e35e2a2c8fe90387cb2",
+-  "actual_build_stage_sha256": "6743f4f5780a6b916f9e5855ab956b01c073a5e06ff757941c6c5a4c32f2b253",
+-  "actual_prior_install_source_sha256": "9179d58761fbf41c04c1a32c4398c9d7a7a7b36add5bf75f8ec89e189a4ed7cf",
+-  "actual_receipt_acquisition": "Root stdout-backed deterministic writer reconstruction with exact original output size/SHA; not an independent held remote file readback",
+-  "actual_resolver_reference": {
+-    "actual_resolve_stdout_sha256": "59af12533664c47eb798f9141cb66151cb8478d878c86f843a559e4c553852e5",
+-    "component": "com.amazon.mShop.android.shopping/com.amazon.mShop.home.HomeActivity",
+-    "historical_resolution_not_launch_authority": true,
+-    "new_prelaunch_resolution_required": true,
+-    "prior_receipts": {
+-      "stage": {
+-        "bytes": 1599,
+-        "path": "/home/alex/work/pocket4-amazon-launcher-resolve-readonly-01/stage-result.json",
+-        "sha256": "9dfa012752b241b1c881514089684d13b56bcaa0250fb7fcb3d2c72633fdb29d"
+-      },
+-      "worker": {
+-        "bytes": 12204,
+-        "path": "/home/alex/work/pocket4-amazon-launcher-resolve-readonly-01/result.json",
+-        "sha256": "ebeaecf791eba4906502cd3167c08e735d826ffd565f7fdd45d66775c016c534"
+-      }
+-    }
+-  },
+-  "automatic_retry": false,
+-  "component": "com.amazon.mShop.android.shopping/com.amazon.mShop.home.HomeActivity",
+-  "installed_helper": {
+-    "apk_sha256": "f3a7bb2133049022a7d622d35ea2db3390d2804e51ebe344b1d5adcde4437118",
+-    "base_apk": "/data/app/~~GFIKD7lsOsvDFpGij6NI2w==/org.droidloom.qa.amazon.r1-yITq1-IsucEPX6hgN-6TqA==/base.apk",
+-    "bytes": 24720,
+-    "held_file": {
+-      "bytes": 24720,
+-      "device": 1811,
+-      "gid": 1000,
+-      "inode": 787880,
+-      "mode": 33188,
+-      "mtime_ns": 1793875272105926629,
+-      "nlink": 1,
+-      "uid": 1000
+-    },
+-    "package": "org.droidloom.qa.amazon.r1",
+-    "signer_bound_by_exact_signed_apk_bytes": "1f63759487a0b04e8da9b4088c11dbac8140bf63cb2d64d91460e2525924f424",
+-    "uid": 10175
+-  },
+-  "nonce": "115093066f53500d1c8f52105e3f2948",
+-  "observed_selector_reference": {
+-    "actual_assessment_sha256": "29d6a9fc5951cb7c9a1fa4e2a5e9b991ee424cfb9aebcfdad8f780cdcf522ac5",
+-    "actual_inspect_result_sha256": "e81b411f3e92d5d5064010f8879bb66662faddc133354c43ae9cc1bdf0e78011",
+-    "first_flow_source_manifest_sha256": "8c6d466e8e75dd4b2261205f61d72848dd6e9bf4b415f798272aba75a29152fb",
+-    "private_source_bytes": 67119,
+-    "private_source_sha256": "7ede8758b2f44c31b213c986210f8c1251437ef656749a5d4abaa11c3549fe2e",
+-    "raw_UI_in_source": false,
+-    "raw_retired_nodes_authorize_actions": false,
+-    "selector_scope": "Public search-entry resource/class/functional Search label only; reselected from action-bound fresh complete inspection"
+-  },
+-  "resolver_records": {
+-    "stage": {
+-      "bytes": 1599,
+-      "relative_path": "stage-result.json",
+-      "sha256": "9dfa012752b241b1c881514089684d13b56bcaa0250fb7fcb3d2c72633fdb29d"
+-    },
+-    "worker": {
+-      "bytes": 12204,
+-      "relative_path": "result.json",
+-      "sha256": "ebeaecf791eba4906502cd3167c08e735d826ffd565f7fdd45d66775c016c534"
+-    }
+-  },
+-  "schema": 1,
+-  "search_entry_plan": {
+-    "entry": {
+-      "nonces": {
+-        "action": "16a1ed05bd34a871afaa3f6cfd0c355f",
+-        "after": "b8a56a7e6f6b760f31c6991cbe39cac1",
+-        "before": "cfa96694cdabc75ae18faee9a5af971e",
+-        "inspect": "23745cbd6961a667d669967af3f5b697"
+-      },
+-      "operation": "click",
+-      "schema": 1,
+-      "selector": {
+-        "class": "android.widget.ImageButton",
+-        "content_desc": "Search",
+-        "resource_id": "com.amazon.mShop.android.shopping:id/chrome_search_box"
+-      }
+-    },
+-    "operation": "search_entry",
+-    "post": {
+-      "nonces": {
+-        "after": "1702c5d7c88a415dc7e241c819d57f48",
+-        "before": "2244058de84299f62f3cbfaa3b5865c7",
+-        "inspect": "24712917de7fcc45be1c0c3199423233"
+-      },
+-      "operation": "inspect",
+-      "schema": 1
+-    },
+-    "schema": 1,
+-    "stability": [
+-      {
+-        "nonces": {
+-          "after": "5109dfacfa3c60015bca58050e809a16",
+-          "before": "88ae1253d3f4c3cd2b61ae7265b44a72",
+-          "inspect": "7f98810d6a607d2d06eb970c6fbda1da"
+-        },
+-        "operation": "inspect",
+-        "schema": 1
+-      },
+-      {
+-        "nonces": {
+-          "after": "4e3b9661738a0ab2d34cd286ab3a5c86",
+-          "before": "a7405c4e52e5f2be1a739ef1bcd61cf3",
+-          "inspect": "b97868028aca1597a7ba631e3a1567cb"
+-        },
+-        "operation": "inspect",
+-        "schema": 1
+-      },
+-      {
+-        "nonces": {
+-          "after": "37adebcb62453f908af6f0bdbc74524e",
+-          "before": "6000dd80a6f665a6cec7fc9fcc681d1b",
+-          "inspect": "8303ac1a1f6967ff79e222812d169096"
+-        },
+-        "operation": "inspect",
+-        "schema": 1
+-      },
+-      {
+-        "nonces": {
+-          "after": "22b2d27c8a98287c0da93b290dcbff5c",
+-          "before": "e1f8be7e47311847352fcaa0a4c78b0c",
+-          "inspect": "8cdd5183d82a46a7eed25dbe4c0f6509"
+-        },
+-        "operation": "inspect",
+-        "schema": 1
+-      },
+-      {
+-        "nonces": {
+-          "after": "e62ca847506d78dc51a9d5b0856d0fdb",
+-          "before": "00b0db7edb523fc1d810d2062db19e00",
+-          "inspect": "930f8cc56c44f42ae92ba0c397ac8804"
+-        },
+-        "operation": "inspect",
+-        "schema": 1
+-      },
+-      {
+-        "nonces": {
+-          "after": "bb97702f966557cf81eb29ded2c8e290",
+-          "before": "46f36d7c17652c02d8fbe062f518cba7",
+-          "inspect": "d810dfa774399deaaebd8edd1d549eac"
+-        },
+-        "operation": "inspect",
+-        "schema": 1
+-      },
+-      {
+-        "nonces": {
+-          "after": "8ea7b1aa49f5940cb43746c5d7329463",
+-          "before": "f22b2cfda7666339df260229f0c5c768",
+-          "inspect": "b49246f06de30057ef0037b707fbe852"
+-        },
+-        "operation": "inspect",
+-        "schema": 1
+-      },
+-      {
+-        "nonces": {
+-          "after": "0873c085aa660df5d9466c0e97472265",
+-          "before": "6fa89fd689acb6877bafda3b86c90f49",
+-          "inspect": "bbe8fa5d6f909f02b167fc0ec36ad1c0"
+-        },
+-        "operation": "inspect",
+-        "schema": 1
+-      }
+-    ]
+-  },
+-  "target_artifact_reference_sha256": "f29fdd340a095b4686b27b5424b7651b0eb5a237b9fb123adb8b9f0d8ad46e35"
+-}
++{"UI_request_dispatched":false,"actual_build":{"APK":{"bytes":24720,"path":"/home/alex/work/pocket4-owned-amazon-qa-r4-build-01/owned-amazon-qa.apk","sha256":"0fcd5b21fb1dfeabd5fa5dede9805217a6f915a75f52cdb1b74216dbaa66a71d"},"build_receipt_sha256":"5b0a9e31451178b0017a979dd9a53a3fb05667e4d3dad91be1a8b188f4319e85","old_v2_provenance_inherited":false,"self_instrumentation":true,"signer_certificate_sha256":"40022ce8b76fe6262a1d3248172351c4222f68cdfa8a30eb71236ab3db2811d5","source_manifest_sha256":"089eb219f9ecf3ca25333828027e804442fb9d3d6b158f1eb55fc03a122fe03b","stage_receipt_sha256":"6f3c9d09ec39d5aa4aef52870fcb75fa1e1c74f70951ac0af52a75a8a5128f11"},"actual_fresh_nonce_source":{"app_count":32,"bytes":4127,"excluded_values":699,"generator":"secrets.token_hex(16)","job_id":"1a1b1dab6d3-fc05-7b25","order":["flow","stability.1.before","stability.1.inspect","stability.1.after","stability.2.before","stability.2.inspect","stability.2.after","stability.3.before","stability.3.inspect","stability.3.after","stability.4.before","stability.4.inspect","stability.4.after","stability.5.before","stability.5.inspect","stability.5.after","stability.6.before","stability.6.inspect","stability.6.after","stability.7.before","stability.7.inspect","stability.7.after","stability.8.before","stability.8.inspect","stability.8.after","entry.before","entry.inspect","entry.action","entry.after","post.before","post.inspect","post.after"],"sha256":"645709b58eddb44219b7362776001b9e79b7620f6755073f3280555ef77b2c2a","spec":{"bytes":32329,"sha256":"f8fcddaf16cf7223954a94c68ba7996557bf971782dd8a2a7379e05c079c0c58"},"values":["973c8962a6356166e145c3a05368d814","4304f1a7ff94add60f198e9e6e416b5a","d3a404935de5cd6d8aa12581a31a1721","686420cc9a63f1df328d951546325d3a","4c69b33c2f395fcea9bb2d9d46b12e0a","6e2fd93b0e9f33397d28ccec1aece6b5","65eae027cbb3c1d90b597fcaadf1d950","f41450b96ee4747d79b931bfe03165b2","79df981326cbb809a165243e1dbcf3b4","e312af369605c30008e64a63cfd545da","9e2e24ce7e1308eb24e7f603896a3630","8ec3da7ef0c773e5c6334218c11bc575","eb218365091b7928fccd22e5abdc90ac","ffd751558d7ce6d1ac2f7dd582745a68","88d662a142db608bbfeb4529d0093d51","aa25239408c599268cbf2ab9e41d3590","3795b440eac2fe22ab72fee6899d4763","f9bc4b5a9c662cdb5dd43697085f25a6","73ff9a0eee0c06979739dd8ee60a008a","30f6eabe4faf719b137619d5ed9fb54f","408ea8c45dae4b4f234c05e781dae711","2f90fb8e13b8968d6489b0fa7ee4a28b","abcd4e1dd9c5bc651ab44d7ffb0847e8","66b25b379464bb58197e4722b417b7f6","40ec5881ff1e8e1435fab1d4864bf563","1541d08c796b408c34a4ec9a26709c47","858340d3f74b1dbe2fb8762a7d015222","24b521ec19758b4c18e20332cfe27157","caf81af1b4ed9b021c556ce85c4ab561","13a17fdb8cb74e00634503f4ef6dc2a7","c8767cc3811bf872128005644d0947c5","7fa98495657031ad07e693914e7957ed"]},"actual_install_job":"1a1b1ac9446-fc05-7a33","actual_install_receipts":{"coordinator":{"bytes":4477,"sha256":"2847a9bbe0ba6ff88a1c447e07289594ab109b0acb9e21eb16526f15578dbe7e"},"stage":{"bytes":10458,"sha256":"bf272bce96a63693a10d598e6d88dfd743b62633cddcf61a376471476a7b52ed"},"state_command":{"bytes":443,"sha256":"6ce5ce647f444dd8fcffc29d7d895b7f9da7baf33762d52c060223fda024c8cf"},"worker":{"bytes":15579,"sha256":"d4d421e64403afcbcd7208d5d51768e8c7a87da978696291e0c7619a9f464567"},"worker_command":{"bytes":1857,"sha256":"77cde37b81d06702c01609a8084a262f4cef9bd9e8c34835d734678cf51f592e"},"worker_stdout":{"bytes":13449,"sha256":"a0b63dc180d760aa71b8e1fa656c337fb803def80327951d965329011b9b90db"}},"actual_install_source_manifest_sha256":"ed611217d1721dc5f0e30a4a6c5163c9f35c6f50404e0118e2e2deff6679b7bc","actual_resolver_reference":{"actual_resolve_stdout_sha256":"59af12533664c47eb798f9141cb66151cb8478d878c86f843a559e4c553852e5","component":"com.amazon.mShop.android.shopping/com.amazon.mShop.home.HomeActivity","historical_resolution_not_launch_authority":true,"new_prelaunch_resolution_required":true,"prior_receipts":{"stage":{"bytes":1599,"path":"/home/alex/work/pocket4-amazon-launcher-resolve-readonly-01/stage-result.json","sha256":"9dfa012752b241b1c881514089684d13b56bcaa0250fb7fcb3d2c72633fdb29d"},"worker":{"bytes":12204,"path":"/home/alex/work/pocket4-amazon-launcher-resolve-readonly-01/result.json","sha256":"ebeaecf791eba4906502cd3167c08e735d826ffd565f7fdd45d66775c016c534"}}},"actual_source_controls":{"bytes":5598,"control_source":{"bytes":28194,"sha256":"6a4f68593262292c30593291ea2d6952a3e5ce294bae0ff59a7b8eeb5c3238da"},"control_stdin_sha256":"f78f0daf69595d4a687ecaaa9ebb5dbc060b8723a413720ba3563e743ffeff15","count":42,"current_generation_controls":9,"current_owner_task_route_controls":3,"job_id":"1a1b1e525a6-fc05-7b61","production_constructor_and_plan_and_install_validators":true,"sha256":"b787cb7b6732fb5f765a9547a9489d0d424f9daee16a585543676b57b2be6ddb","synthetic_IO_only":true},"actual_target":{"artifacts":[{"held_file":{"bytes":108964755,"ctime_ns":1791397154845146986,"device":1811,"gid":1000,"inode":142748,"mode":33188,"mtime_ns":1791397154667142180,"nlink":1,"uid":1000},"path":"/data/app/~~f40Bc_Kdu4iCypk0HxKLuQ==/com.amazon.mShop.android.shopping-56ZHsYZNdUrqbmrqz8ZX0g==/base.apk","sha256":"4dedce3983286cd19e990de172d3db1155f7d5eeba4c8b2746bf12c1bb1c0089"},{"held_file":{"bytes":63904213,"ctime_ns":1791397154851320961,"device":1811,"gid":1000,"inode":142746,"mode":33188,"mtime_ns":1791397154851320961,"nlink":1,"uid":1000},"path":"/data/app/~~f40Bc_Kdu4iCypk0HxKLuQ==/com.amazon.mShop.android.shopping-56ZHsYZNdUrqbmrqz8ZX0g==/split_config.arm64_v8a.apk","sha256":"33fdd54130fd3b6a8161ef121e25ede85d79ac9c7ba18862b922aa8fb4754590"},{"held_file":{"bytes":4157085,"ctime_ns":1791397154845146986,"device":1811,"gid":1000,"inode":142747,"mode":33188,"mtime_ns":1791397154652050212,"nlink":1,"uid":1000},"path":"/data/app/~~f40Bc_Kdu4iCypk0HxKLuQ==/com.amazon.mShop.android.shopping-56ZHsYZNdUrqbmrqz8ZX0g==/split_config.xxhdpi.apk","sha256":"d8835c789ce742e6983b504afe4ba49fa0ce3671559fa8538ff9bd527e6f6f4e"}],"fresh_streaming_hashes":true,"metadata":{"package":"com.amazon.mShop.android.shopping","uid":10129,"user":0,"version_code":1243240206},"signer_independently_verified":false},"actual_target_APK_count":3,"all_six_original_install_pins":{"coordinator":{"bytes":4477,"git_blob":"1f1009f5f17d8911e4f19c2f1e7f8ea25bdff0e7","sha256":"2847a9bbe0ba6ff88a1c447e07289594ab109b0acb9e21eb16526f15578dbe7e"},"stage":{"bytes":10458,"git_blob":"179f055f4b3bed72c68ce96fdd7c605760f99f39","sha256":"bf272bce96a63693a10d598e6d88dfd743b62633cddcf61a376471476a7b52ed"},"state_command":{"bytes":443,"git_blob":"99a8a9adb853101c83d3def61603079539875b52","sha256":"6ce5ce647f444dd8fcffc29d7d895b7f9da7baf33762d52c060223fda024c8cf"},"worker":{"bytes":15579,"git_blob":"3372bd77618413e823438a64c5674a5b4bc1dc2d","sha256":"d4d421e64403afcbcd7208d5d51768e8c7a87da978696291e0c7619a9f464567"},"worker_command":{"bytes":1857,"git_blob":"4ea33e3bc80171ba9caa4274ea0d12f3a6f3c670","sha256":"77cde37b81d06702c01609a8084a262f4cef9bd9e8c34835d734678cf51f592e"},"worker_stdout":{"bytes":13449,"git_blob":"9e5afaa2f4cdf361dae68f2cc33a18afbbadcefa","sha256":"a0b63dc180d760aa71b8e1fa656c337fb803def80327951d965329011b9b90db"}},"automatic_retry":false,"business_success_verified":false,"component":"com.amazon.mShop.android.shopping/com.amazon.mShop.home.HomeActivity","current_baseline":{"baseline_sha256":"633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364","epoch_sha256":"7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c","guard_sha256":"96dbdaf7673d5298e6fe17cb1b7ebae29b37110ee59f31b0c927e2cb0ef4b150","historical_activation_sha256":"7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615","historical_verified_sha256":"2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387","qualification_sha256":"ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e","schema":"pocket4-main-current-baseline-v2"},"current_host_manifest_sha256":"002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff","current_install_INPUTS_count_matches_actual":true,"current_install_INPUTS_target_APK_count":3,"exact_success_budgets":{"inspection_durable_commands_formula":"27+9*k; 3<=k<=8","launch_durable_commands":12,"maximum_click_actions":1,"maximum_counts":{"click":1,"foreground":30,"helper_path":22,"helper_uid":22,"instrument":31,"stacks":20,"target_path":2,"target_uid":2},"maximum_helper_nonces":31,"maximum_inspection_durable_commands":99,"maximum_private_foreground_observations":30,"phase_seconds":{"cleanup":115,"inspect":175,"launch":175},"request_seconds":600,"total_nonces":32,"worker_seconds":{"cleanup":130,"inspect":190,"launch":190}},"failed_or_partial_observation_not_retried":true,"first_failure_attribution":{"current_primary_from_navigation_retained_first_failure":true,"independent_post_record_separate":true,"original_actual_failed_summary_preserved":true},"framework_exit_cause_resolved":false,"helper_package":"org.droidloom.qa.amazon.r4","helper_protocol":"pocket4-owned-amazon-qa-v4","helper_uid":10159,"historical_resolution_not_launch_authority":true,"installed_helper":{"apk_sha256":"0fcd5b21fb1dfeabd5fa5dede9805217a6f915a75f52cdb1b74216dbaa66a71d","base_apk":"/data/app/~~ltijd-ew7pYbq3vrboU8EQ==/org.droidloom.qa.amazon.r4-f4ISashDuJbVeEczF4BF6Q==/base.apk","bytes":24720,"held_file":{"bytes":24720,"device":1811,"gid":1000,"inode":656335,"mode":33188,"mtime_ns":1793982243720689487,"nlink":1,"uid":1000},"package":"org.droidloom.qa.amazon.r4","signer_bound_by_exact_signed_apk_bytes":"40022ce8b76fe6262a1d3248172351c4222f68cdfa8a30eb71236ab3db2811d5","uid":10159},"login_account_payment_booking_actions":0,"maximum_click_actions":1,"maximum_native_launches":1,"new_prelaunch_resolution_required":true,"nonce":"973c8962a6356166e145c3a05368d814","observed_selector_reference":{"actual_assessment_sha256":"29d6a9fc5951cb7c9a1fa4e2a5e9b991ee424cfb9aebcfdad8f780cdcf522ac5","actual_inspect_result_sha256":"e81b411f3e92d5d5064010f8879bb66662faddc133354c43ae9cc1bdf0e78011","first_flow_source_manifest_sha256":"8c6d466e8e75dd4b2261205f61d72848dd6e9bf4b415f798272aba75a29152fb","private_source_bytes":67119,"private_source_sha256":"7ede8758b2f44c31b213c986210f8c1251437ef656749a5d4abaa11c3549fe2e","raw_UI_in_source":false,"raw_retired_nodes_authorize_actions":false,"selector_scope":"Public search-entry resource/class/functional Search label only; reselected from action-bound fresh complete inspection"},"old_failed_unknown_actions_not_replayed":true,"original_full_tree_window_node_refresh_final_guards_preserved":true,"original_independent_after_state_finally_preserved":true,"prior_generation_install_metadata_not_rewritten":true,"resolver_records":{"stage":{"bytes":1599,"relative_path":"stage-result.json","sha256":"9dfa012752b241b1c881514089684d13b56bcaa0250fb7fcb3d2c72633fdb29d"},"worker":{"bytes":12204,"relative_path":"result.json","sha256":"ebeaecf791eba4906502cd3167c08e735d826ffd565f7fdd45d66775c016c534"}},"schema":3,"search_entry_plan":{"entry":{"nonces":{"action":"24b521ec19758b4c18e20332cfe27157","after":"caf81af1b4ed9b021c556ce85c4ab561","before":"1541d08c796b408c34a4ec9a26709c47","inspect":"858340d3f74b1dbe2fb8762a7d015222"},"operation":"click","schema":1,"selector":{"class":"android.widget.ImageButton","content_desc":"Search","resource_id":"com.amazon.mShop.android.shopping:id/chrome_search_box"}},"operation":"search_entry","post":{"nonces":{"after":"7fa98495657031ad07e693914e7957ed","before":"13a17fdb8cb74e00634503f4ef6dc2a7","inspect":"c8767cc3811bf872128005644d0947c5"},"operation":"inspect","schema":1},"schema":1,"stability":[{"nonces":{"after":"686420cc9a63f1df328d951546325d3a","before":"4304f1a7ff94add60f198e9e6e416b5a","inspect":"d3a404935de5cd6d8aa12581a31a1721"},"operation":"inspect","schema":1},{"nonces":{"after":"65eae027cbb3c1d90b597fcaadf1d950","before":"4c69b33c2f395fcea9bb2d9d46b12e0a","inspect":"6e2fd93b0e9f33397d28ccec1aece6b5"},"operation":"inspect","schema":1},{"nonces":{"after":"e312af369605c30008e64a63cfd545da","before":"f41450b96ee4747d79b931bfe03165b2","inspect":"79df981326cbb809a165243e1dbcf3b4"},"operation":"inspect","schema":1},{"nonces":{"after":"eb218365091b7928fccd22e5abdc90ac","before":"9e2e24ce7e1308eb24e7f603896a3630","inspect":"8ec3da7ef0c773e5c6334218c11bc575"},"operation":"inspect","schema":1},{"nonces":{"after":"aa25239408c599268cbf2ab9e41d3590","before":"ffd751558d7ce6d1ac2f7dd582745a68","inspect":"88d662a142db608bbfeb4529d0093d51"},"operation":"inspect","schema":1},{"nonces":{"after":"73ff9a0eee0c06979739dd8ee60a008a","before":"3795b440eac2fe22ab72fee6899d4763","inspect":"f9bc4b5a9c662cdb5dd43697085f25a6"},"operation":"inspect","schema":1},{"nonces":{"after":"2f90fb8e13b8968d6489b0fa7ee4a28b","before":"30f6eabe4faf719b137619d5ed9fb54f","inspect":"408ea8c45dae4b4f234c05e781dae711"},"operation":"inspect","schema":1},{"nonces":{"after":"40ec5881ff1e8e1435fab1d4864bf563","before":"abcd4e1dd9c5bc651ab44d7ffb0847e8","inspect":"66b25b379464bb58197e4722b417b7f6"},"operation":"inspect","schema":1}]},"search_readiness":{"future_stability_proven":false,"maximum_complete_no_action_sequences":8,"minimum_consecutive_equal":3,"minimum_observed_span_seconds":4,"qualification_seconds":30},"shared_helper_whole_process_tree_cleanup_qualified":false,"state":"ACTUAL_CURRENT_AMAZON_R4_INSTALL02_AND_OWNER_ROUTE_CONTROLS_BOUND_FRESH_FLOW_UNRUN","state_nonce":"7e2b1d49365866364ecaa9bf59942c87","state_recorder_command_result_sha256":"6ce5ce647f444dd8fcffc29d7d895b7f9da7baf33762d52c060223fda024c8cf","state_wire_sha256":"127c3094679c80a4eb1b13a5023c0959c47776fc56ef39dd9d14fff88f57c9ac","target_signer_independently_verified":false,"text_actions":0,"whole_app_production_ready":false}

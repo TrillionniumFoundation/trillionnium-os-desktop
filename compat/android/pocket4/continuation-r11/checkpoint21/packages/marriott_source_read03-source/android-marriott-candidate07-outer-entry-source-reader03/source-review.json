@@ -1,0 +1,51 @@
+{
+  "changes": [
+    "Fixed three exact manifest names and SHA256 values under the same candidate07 engine root.",
+    "Schema and successful file count identify this independent third read.",
+    "Only FD bound changes from 64 to 74, exactly two held no-follow walks per target: 24+24+26. No new operations."
+  ],
+  "limits": {
+    "actual_source_sizes": "NOT_OBSERVED; no size is guessed. Exceeding either existing bound fails without fallback or truncation.",
+    "file_bound": 65536,
+    "max_owned_fds": 74,
+    "output_bound": 262144
+  },
+  "native_merge_decision": "Kept separate: the requested Native lib.rs 97476-byte source exceeds this inherited 65536-byte per-file limit and needs independent authority/output bounds.",
+  "output": {
+    "failure_removes_utf8": true,
+    "fixed_file_names": [
+      "kernel_api/arm64/gen_syscall_emulation_arm64_to_x86_64-inl.h",
+      "tests/tests_apk/Android.bp",
+      "tests/tests_apk/jni/jni_test_main.cc"
+    ],
+    "metadata_closed_fields": [
+      "device",
+      "inode",
+      "mode",
+      "uid",
+      "gid",
+      "nlink",
+      "bytes",
+      "mtime_ns",
+      "ctime_ns"
+    ],
+    "no_binary_or_private_content": true,
+    "schema": "marriott-fixed-candidate07-outer-entry-source-read03",
+    "whole_utf8_only_on_complete": true
+  },
+  "purpose": "Close the exact generated arm64 syscall mapping and existing test APK/JNI entry before integrating the already frozen nine real syscall/FD/readlink tests.",
+  "schema": "marriott-candidate07-three-source-review03",
+  "source_qualification_limits": [
+    "The copied manifest identifies these source bytes; it is not installed Main or current App provenance.",
+    "No Python parsing, controls or remote execution has been performed for this derived request.",
+    "No result is treated as current Marriott reproduction or FD adapter runtime qualification."
+  ],
+  "state": "SOURCE_ONLY_NOT_DISPATCHED",
+  "unchanged": [
+    "Per-file 65536-byte full-read limit; output 262144-byte limit.",
+    "10-second observation deadline, 12-second self watchdog, 30-second process request timeout.",
+    "Root uid/gid context; all path components no-follow; regular single-link file; whole SHA256.",
+    "Two full reads and same held stat; separately reopened named path with exact final metadata.",
+    "One close attempt per owned FD, all errors retained, complete only if all three hashes and FD cleanup pass."
+  ]
+}

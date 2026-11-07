@@ -1,0 +1,21 @@
+--- template/check_stability.py
++++ bound/check_stability.py
+@@ -1,12 +1,12 @@
+ """Current IHG R4 Search, Destination and London input; synthetic I/O only."""
+ import ast,copy,hashlib,json,re,secrets,sys,types
+ from pathlib import PurePosixPath
+-CONTROL_INPUT_BYTES=None  # Bound only after actual R4 install and fresh nonce receipts.
+-CONTROL_INPUT_SHA256=None  # Bound only after actual R4 install and fresh nonce receipts.
+-CONTROL_SOURCE_PINS=None  # Bound only after actual R4 install and fresh nonce receipts.
+-CONTROL_EXCLUSION_COUNT=None  # Bound only after actual R4 install and fresh nonce receipts.
+-CONTROL_NONCE_RECEIPT=None  # Bound only after actual R4 install and fresh nonce receipts.
+-CONTROL_ACTUAL_INSTALL_PINS=None  # Bound only after actual R4 install and fresh nonce receipts.
++CONTROL_INPUT_BYTES=239605
++CONTROL_INPUT_SHA256="d0703f20ee338526ce4e2741913c14fb8dd224fbe1eda4242abff0cc97830039"
++CONTROL_SOURCE_PINS={"adapter":{"bytes":21676,"sha256":"4da61e732e72e8db4f0bea4134d7e538271abcfa261c8d2c50c76f13d2e76f1e"},"context":{"bytes":19574,"sha256":"9224e8c896dedbe2294618604d5e67972b535cef5bef58c5ef2e07752974ce91"},"contract":{"bytes":28757,"sha256":"5d83ba26324fd180abfd9069538a077a90a661d94c7a3d123694197b39430405"},"coordinator":{"bytes":46630,"sha256":"562629c6c00d40a41cdf6fe2edf3df01292fb6f78409f8fd08b7776f02bf7bb0"},"public_destination":{"bytes":42662,"sha256":"30738abe4b4ba740fd3e0c47de8437792f8d52a539e74afd5e140878e29a4076"},"stage":{"bytes":5193,"sha256":"09ad6954cada7348632a2d102bf20a49c63a4538bcac8bdc77a66462e1be3ef9"},"transport":{"bytes":15606,"sha256":"aa4836f35ea0251fbf3942033db2a45e37a882ebf6f7b6076b45c63970d5c516"}}
++CONTROL_EXCLUSION_COUNT=659
++CONTROL_NONCE_RECEIPT={"actual_helper_uid":10158,"bytes":2575,"count":40,"excluded_count":659,"excluded_sha256":"1cc2123d4223f0ed94f232c70264e847ebb91de2dba84e516f659dc56fcd36a3","generator":"secrets.token_hex(16)","git_blob":"b8bcfd1a535f3f6ecb2be8a0317d3a9342996961","job_id":"1a1b1c08bfd-fc05-7aa4","no_redraw":True,"sha256":"6bee83bf5f7e17a82314b9cd4d7f3f11b4bd565052a3a9081008ce5c05e1791e"}
++CONTROL_ACTUAL_INSTALL_PINS={"coordinator":{"bytes":4455,"sha256":"c1129d2c99210e47d12ca985b604ad0056d26c11d9c2d2f071fc3dc7e678ede4"},"stage":{"bytes":10553,"sha256":"ac3451c8a45ff6d0543cbb97e14d5619c116e83d2f71ccba0a1484e2e69c3a5b"},"worker":{"bytes":13294,"sha256":"e9c478188a0f71b5e2d6f8449e16858f9bf2b2f65980f91847027056539bfb03"}}
+ def run_task_discovery_route_controls(task_module, coordinator, qa):
+     """Execute production open_task_context with explicit in-memory I/O seams.
+ 

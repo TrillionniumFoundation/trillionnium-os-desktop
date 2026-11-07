@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_SOONG_GRAPH_FAILURE",
+  "parent_job": "1a1ae6b5a97-fc05-5f81",
+  "inner_terminal_sha256": "80f3508bab1884421af6db2f6d87537fd950100be009265b7e2efabc9b97fcdc",
+  "files": [
+    {
+      "path": "attempt-01/build.stdout",
+      "bytes": 73658,
+      "sha256": "f001d60ee86a9c0b5fe32ca98164b0bb1127826aa1e3c9ba97a7ce834c0d0e4e",
+      "blob": "8410bd2fbbfd91e4558d5427dfa48755c9eee11d"
+    },
+    {
+      "path": "attempt-01/build.stderr",
+      "bytes": 231244,
+      "sha256": "12c13559ad20843f350c14e16f32e149cf1c2c4f4ed339d9c862e0e1c2ad753b",
+      "blob": "39bab74f20b43c702302467439faf556964ebb45"
+    }
+  ],
+  "observations": [
+    "normal builder invoked strict two-target --make-mode -j1 framework-minus-apex libandroid_runtime with ALLOW_MISSING_DEPENDENCIES=false",
+    "stdout reached274/274 Soong bootstrap graph analysis, then failed at generated build.droidloom_x86_64.ninja",
+    "PlatformComposeSceneTransitionLayoutTests depends on undefined MotionTestDefaults at frameworks/base/packages/SystemUI/compose/scene/tests/Android.bp:25",
+    "StructuredConcurrencyPerfTests depends on undefined SystemUI_optimized_defaults at frameworks/base/tests/StructuredConcurrencyPerfTests/Android.bp:49"
+  ],
+  "source_projection_root_cause": "REQUIRES_FIXED_SOURCE_AND_PROJECTION_RULE_REVIEW; not inferred solely from absent journal",
+  "build_or_Java_JNI_qualification": false,
+  "old_failure_preserved": true,
+  "normal_build_replayed": false
+}

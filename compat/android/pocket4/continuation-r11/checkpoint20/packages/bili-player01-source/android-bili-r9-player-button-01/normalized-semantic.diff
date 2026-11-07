@@ -1,0 +1,62 @@
+--- R8/controls_reveal.py
++++ R9-normalized/controls_reveal.py
+
+--- R8/owned_navigation.py
++++ R9-normalized/owned_navigation.py
+@@ -124,7 +124,7 @@
+  require(c.get('owned_package_uid')==w.get('owned_package_uid')==UID and c.get('owned_package_retained_for_separate_UI_admission')is True and(w.get('package')==SELF)and(w.get('package_retained')is True)and(w.get('install_attempted')is True)and(w.get('install_success_observed')is True)and(w.get('state_attempted')is True)and(w.get('outcome_unknown')is False)and(w.get('runtime_recorder_manifest_sha256')==R4_MANIFEST)and(w.get('runtime_session_binding_sha256')==SESSION_SHA)and(w.get('build')==proof),'EXACT_INSTALLED_HELPER_AND_BUILD_REQUIRED')
+  require(w.get('final_Main_guard_passed')is True and w.get('held_binding_released')is True and(w.get('action_lock_released')is True)and(w.get('UI_actions')==w.get('audio_actions')==0)and(w.get('UiAutomation_connection_requested')is False)and(w.get('old_v2_helper_called')is False),'ACTUAL_INSTALL02_SCOPE_REQUIRED')
+  for row in(c,s):
+-  require(row.get('Main_before')==row.get('Main_after')and row['Main_before'].get('Main_epoch_sha256')==MAIN_EPOCH and(row['Main_before'].get('three_host_processes_match')is True)and(row['Main_before'].get('resource_limits_match')is True),'ACTUAL_INSTALL02_MAIN_CHAIN_REQUIRED')
++  require(row.get('Main_before')==row.get('Main_after')and row['Main_before'].get('Main_epoch_sha256')==MAIN_EPOCH and(row['Main_before'].get('three_host_processes_match')is True)and(row['Main_before'].get('resource_limits_match')is True)and(row['Main_before'].get('schema')=='pocket4-current-main-guard-v1')and(row['Main_before'].get('seven_processes_match')is True)and(row['Main_before'].get('current_baseline_sha256')==prior.BASELINE_SHA)and(row['Main_before'].get('current_baseline_qualification_sha256')==prior.QUALIFICATION_SHA),'ACTUAL_INSTALL02_MAIN_CHAIN_REQUIRED')
+  installed=w['installed_before_state']
+  require(installed==w.get('installed_after_state')and installed.get('package')==SELF and(installed.get('uid')==UID)and(installed.get('apk_sha256')==prior.APK_SHA)and(installed.get('bytes')==prior.APK_BYTES)and(installed.get('signer_bound_by_exact_signed_apk_bytes')==prior.SIGNER_SHA)and(installed==EXPECTED_INSTALLED_IDENTITY)and(installed['held_file']['nlink']==1),'ACTUAL_INSTALLED_APK_IDENTITY_REQUIRED')
+  previous=w['state']
+@@ -543,14 +543,14 @@
+   adapter.validate_plan(POST_PLAN,qa)
+   for stable_plan in[*STABILITY_PLANS,*QUERY_STABILITY_PLANS,*SUBMIT_STABILITY_PLANS,*RESULT_OBSERVATION_PLANS,SET_TEXT_PLAN,SUBMIT_PLAN,RESULTS_PLAN]:
+    adapter.validate_plan(stable_plan,qa)
+-  activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++  activation=ref.current_baseline()
+   epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'bili_inspect_epoch')
+   guard=lambda:ref.main_guard(activation,epoch)
+   result['Main_before']=guard()
+   recorder=prior.recorder_module()
+-  recorder.source_contract(R4_MANIFEST)[1].verify()
++  source,contract=recorder.source_contract(R4_MANIFEST);contract.verify()
+   common=['/usr/bin/python3','-I',str(prior.RECORDER_ROOT/'recorder.py')]
+-  initial=ref.run_cli('01-init',common+['init','--adapter-manifest-sha256',R4_MANIFEST,'--flow-dir',str(FLOW),'--activation-after',str(ref.ACTIVATION),'--activation-sha256',ref.ACTIVATION_SHA,'--package',ref.PACKAGE,'--component',ref.COMPONENT],25,evidence,guard)
++  initial=ref.run_cli('01-init',common+['init','--adapter-manifest-sha256',R4_MANIFEST,'--flow-dir',str(FLOW),'--current-baseline',str(ref.BASELINE),'--baseline-sha256',ref.BASELINE_SHA,'--package',source.PACKAGE,'--component',source.COMPONENT],25,evidence,guard)
+   require(initial.get('ok')is True and initial.get('scope_initialized')is True and(initial.get('epoch_sha256')==MAIN_EPOCH),'FRESH_ORIGINAL_FLOW_INIT_REQUIRED')
+   result['launch_worker_requested']=True
+   launched=ref.run_cli('02-launch',['/usr/bin/python3','-I',str(HERE/'owned_navigation.py'),'--worker-once','launch','--source-manifest-sha256',expected],180,evidence,guard)
+
+--- R8/playback_controls.py
++++ R9-normalized/playback_controls.py
+
+--- R8/post_foreground.py
++++ R9-normalized/post_foreground.py
+@@ -100,7 +100,7 @@
+    row['elapsed_ms']=int((time.monotonic()-started)*1000)
+    require(time.monotonic()-started<=DEADLINE_SECONDS,'POST_ACK_FOCUS_DEADLINE')
+    if value is not None:
+-    accepted=qa.scope({'package':value['package'],'uid':qa.UID,'user':0,'display':0,'activity':value['package']+'/'+value['activity'],'window_token':value['window_token'],'main_epoch_sha256':qa.MAIN_EPOCH})
++    accepted=qa.scope({'package':value['package'],'uid':qa.UID,'user':0,'display':0,'activity':value['package']+'/'+value['activity'],'window_token':value['window_token'],'main_epoch_sha256':qa.MAIN_EPOCH,'main_baseline_schema':qa.MAIN_BASELINE_SCHEMA,'main_baseline_sha256':qa.MAIN_BASELINE_SHA,'main_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA})
+     record['qualified']=True
+     record['accepted_scope']=accepted
+     return accepted
+
+--- R8/stage_execute.py
++++ R9-normalized/stage_execute.py
+@@ -46,7 +46,7 @@
+  require(not os.path.lexists(entry.FLOW),'FRESH_FLOW_REQUIRED')
+  prior=entry.load_prior()
+  ref=prior.references()
+- activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++ activation=ref.current_baseline()
+  epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'bili_inspect_stage_epoch')
+  before=ref.main_guard(activation,epoch)
+  os.umask(63)
+
+--- R8/video_navigation.py
++++ R9-normalized/video_navigation.py

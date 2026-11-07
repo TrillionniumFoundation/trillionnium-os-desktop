@@ -1,0 +1,76 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "242b214860a7e6689e3e4e3e3404e5c09872125f",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 2031,
+    "sha256": "7f4b5587334bf8c3c0700cb7fa5a02f243c2b22bdc0a84d0054abf2bfec14ff3",
+    "git_blob_sha1": "a21f0d84db12ca6e1780f4fdd8b4d8ac1b9ac150",
+    "retrieval": "shallow roots and complete uncropped descendant trees until canonical dependency cuts",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f3db015abaa26ed5b5aacea8b4f4a6378e7454ce"
+    },
+    {
+      "path": "droidloom-denial-endpoint--src--lib.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "60d0adb20667e856fc4f6377ce96320c880f52e0",
+      "bytes": 44175
+    },
+    {
+      "path": "droidloom-denial-ipc--src--lib.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "efae3d5c3ff3eb7702b2ba72722aa3170d2f878d",
+      "bytes": 42737
+    },
+    {
+      "path": "droidloom-denial-protocol--src--lib.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fde055fe9cd7d0f1af7a39e68d31cc989a49eaa9",
+      "bytes": 97476
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5c98d07be059bf38fb42ec98244cbcbf1ff363dd"
+    },
+    {
+      "path": "stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "22a82ae83cdc0c0ffcd8730666dc10fc24c72e0f",
+      "bytes": 212218
+    },
+    {
+      "path": "terminal-status.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0022ee8093b09e7b1c061f4ff3f760e6a63f86dd",
+      "bytes": 735
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "admission",
+      "original_tree": "f3db015abaa26ed5b5aacea8b4f4a6378e7454ce",
+      "checkpoint": 21,
+      "canonical_package": "native_denial_source_read01-admission"
+    },
+    {
+      "path": "source",
+      "original_tree": "5c98d07be059bf38fb42ec98244cbcbf1ff363dd",
+      "checkpoint": 21,
+      "canonical_package": "native_denial_source_read01-source"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

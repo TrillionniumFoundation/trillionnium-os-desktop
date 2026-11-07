@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "state": "COMBINED_SOURCE_FROZEN_PENDING_FULL_BUILD",
+  "candidate_root": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/overlay-reconstruction-09/candidate-04",
+  "source_manifest_sha256": "00a19fef1ca8e86a3da18eecfb16eedb41e9de55e2934b96987845fa8b749fbd",
+  "component_root": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/factory-v2-review-02",
+  "component_manifest_sha256": "c1a486413918f910af880768ac2ca87e81cbd79ecca8af89500a880d5db3a6a4",
+  "file_count": 948,
+  "engine_file_count": 925,
+  "base_manifest_sha256": "e70a86a4294115bad9c1ebca255a4f559ef38343398426549ed8517a6fe6f225",
+  "signal_pins_sha256": "6a24ef53595e9d8da458a626effbfca4280a5de18c90ad1d5dd036ad3e936bf2",
+  "signal_preimages_and_outputs": [
+    {
+      "path": "engine/guest_os_primitives/arm64/guest_context_arch.h",
+      "preimage_sha256": "ca4daaa682994ad830180291f3cef07375c5d938aa0ab9f58b45c5e15fff34cf",
+      "sha256": "c4234d83ce70c526d96cbd9b843dbca1e0645c18d7f371654552d2a8e2f07140"
+    },
+    {
+      "path": "engine/guest_os_primitives/guest_signal_handling.cc",
+      "preimage_sha256": "8c4052082617327c3c52126eb3124fa0a3259c4b36a380e61e7b20503277bbeb",
+      "sha256": "7ca556ea512b2262e2bf28709bbb7962d4ef5cb7e4c53c012437b6603fd9623a"
+    },
+    {
+      "path": "engine/guest_os_primitives/guest_signal_handling_arch.cc",
+      "preimage_sha256": "6097d09a396d77c516cf91c5b75abb3b0cbd1e7fccbcc1e1555b84e7d1292963",
+      "sha256": "5fc077ed8538255bac2ac921b1231a3bf60314659f85c79237d724c41f0460b5"
+    },
+    {
+      "path": "engine/guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h",
+      "preimage_sha256": "8a343fa094ac83a0411cbcfe82372881ff77f32f08cc5d5a8ae15cdf8ec11877",
+      "sha256": "ebcc5ac4e092c50916a0f9668c94d3cb2266cece0ff728bc19513e8f7eb218ca"
+    },
+    {
+      "path": "engine/guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h",
+      "preimage_sha256": "4b27ba2f90bee2c9e92c49d3f3b2beb6a07fb7ee27087d9e8e04d369603fa737",
+      "sha256": "90a35d504656e32520ab84968ae8a3b586264c835489d13f85f42444cb0764c0"
+    },
+    {
+      "path": "engine/guest_os_primitives/scoped_guest_signal_mask.h",
+      "preimage_sha256": null,
+      "sha256": "52c18a437a05e00be80420c39ef03d24b4ec86a2470b66b548c29d8888eecde9"
+    }
+  ],
+  "signal_overlap_with_metadata_delta": [],
+  "signal_applied_verbatim": true,
+  "declared_changed_paths": [
+    "engine/guest_os_primitives/arm64/guest_context_arch.h",
+    "engine/guest_os_primitives/guest_signal_handling.cc",
+    "engine/guest_os_primitives/guest_signal_handling_arch.cc",
+    "engine/guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h",
+    "engine/guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h",
+    "engine/guest_os_primitives/scoped_guest_signal_mask.h",
+    "engine/kernel_api/Android.bp",
+    "engine/kernel_api/include/berberis/kernel_api/proc_maps_factory_protocol.h",
+    "engine/kernel_api/include/berberis/kernel_api/proc_maps_generation_protocol.h",
+    "engine/kernel_api/include/berberis/kernel_api/proc_maps_provenance.h",
+    "engine/kernel_api/proc_maps_factory_wire.cc",
+    "engine/kernel_api/proc_maps_generation.cc",
+    "engine/kernel_api/proc_maps_provenance.cc",
+    "host-factory-v2/README.md",
+    "host-factory-v2/source/factory_context.cc",
+    "host-factory-v2/source/factory_context.h",
+    "host-factory-v2/source/factory_main.cc",
+    "platform/art/libnativebridge/droidloom_generation.cc",
+    "platform/art/libnativebridge/include/nativebridge/droidloom_generation_protocol.h",
+    "references/signal-mask-r1-pins.json",
+    "references/v2-component-SOURCE_PINS.json",
+    "tests/factory_wire_context_controls.cc"
+  ],
+  "unchanged_binary_inputs_never_text_decoded": true,
+  "published_signal_source_commit": "37dc01c6997f6e36975aa2bda894024958e43df0",
+  "patch_sha256": "e3603ed67c4efcfa20272e06e37875bd2c619b00754fa37ebecf4c60a8978963",
+  "whole_engine_build": false,
+  "whole_ART_build": false,
+  "service_started": false,
+  "Android_execution": false,
+  "production_ready": false,
+  "runtime_default_enabled": false,
+  "remaining": [
+    "full engine and ART matched build",
+    "old/mixed pair rejection and updater factory owner binding",
+    "actual trusted V2 positive and socket/rights/owner death/timeout/reaping controls",
+    "ordinary NOFILE=0 metadata remains EMFILE; no fallback guessed from a TMPFS result",
+    "outer translated ARM64 adapter qualification",
+    "repeat matching full host and owned signal gates for this combined candidate",
+    "canonical maps proof is TGID/maps only; arbitrary thread maps not claimed"
+  ],
+  "full_build_resource_note": "Root must review a fresh budget. Last signal fullbuild attempt04 used 2 CPU/11 GiB RAM/1 GiB swap; no full build is started by this job."
+}

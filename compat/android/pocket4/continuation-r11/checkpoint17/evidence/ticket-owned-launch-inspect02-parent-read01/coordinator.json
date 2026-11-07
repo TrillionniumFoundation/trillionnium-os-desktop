@@ -1,0 +1,145 @@
+{
+  "Bili_Flow_instantiated": false,
+  "Main_after": {
+    "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "resource_limits_match": true,
+    "three_host_processes_match": true,
+    "verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+  },
+  "Main_before": {
+    "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "resource_limits_match": true,
+    "three_host_processes_match": true,
+    "verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+  },
+  "actual_install": {
+    "actual_state_wire_sha256": "5e7878675d14282e0218735db7486461a508a3f776831b6a83fa936120fed907",
+    "installed": {
+      "apk_sha256": "b138eee4a638e90e02b4ea55a4cad3a6c5d24f7fb09b9e2536d4378f19a1dbdb",
+      "base_apk": "/data/app/~~HavxtLWUa1UnMAYK0YH31A==/org.droidloom.qa.ticket.r1-pnTW5dPyxhMgz63tfOmkTA==/base.apk",
+      "bytes": 24720,
+      "held_file": {
+        "bytes": 24720,
+        "device": 1811,
+        "gid": 1000,
+        "inode": 789223,
+        "mode": 33188,
+        "mtime_ns": 1793902188809997047,
+        "nlink": 1,
+        "uid": 1000
+      },
+      "package": "org.droidloom.qa.ticket.r1",
+      "signer_bound_by_exact_signed_apk_bytes": "91fbef4532e24cce6667f7f049e50ab227c14c622f3f6c7d7b05a3959595138b",
+      "uid": 10190
+    },
+    "no_prior_install_or_state_replayed": true,
+    "prior_install_source_sha256": "241b8d26caa2279001f32db3895efab87b07723c2b8fce61a971381c26f7cd69",
+    "prior_receipts": {
+      "coordinator": {
+        "bytes": 3074,
+        "sha256": "68ffcc7972aeff8943f6b206d04d974ca80d73d8d4defa4d5028231b519cac97"
+      },
+      "stage": {
+        "bytes": 1617,
+        "sha256": "c96402490ce14d783e999ddc18beaf7c3e29ffab783057291be72d59ab53fa94"
+      },
+      "worker": {
+        "bytes": 11213,
+        "sha256": "89f9880cf0ba18c52ec843eadee079433aa32c476a8a780ee5ddd9738fd51d9a"
+      }
+    }
+  },
+  "actual_resolution": {
+    "actual_resolve_stdout_sha256": "c2d47c9d1179d1f5350838e8dae3d70b49ade40028be9aa5234a9fc27fc6fe6e",
+    "component": "com.MobileTicket/.ui.activity.WelcomeGuideActivity",
+    "historical_resolution_not_launch_authority": true,
+    "new_prelaunch_resolution_required": true,
+    "prior_helper_identity_asserted": false,
+    "prior_receipts": {
+      "stage": {
+        "bytes": 1581,
+        "path": "/home/alex/work/pocket4-12306-artifact-launcher-readonly-01/stage-result.json",
+        "sha256": "a1b9008ac0dcc86d7b5e2bb51d65e92ee2a82ffe369d3533101c2ed36f93cd12"
+      },
+      "worker": {
+        "bytes": 8835,
+        "path": "/home/alex/work/pocket4-12306-artifact-launcher-readonly-01/result.json",
+        "sha256": "7ec1d8756cefd536a04d3459041dd302b49bc0e50047c8ddf1f83418bc444abb"
+      }
+    }
+  },
+  "audio_actions": 0,
+  "automatic_retry": false,
+  "business_success_verified": false,
+  "cleanup_not_authorized_without_exact_owned_scope": true,
+  "cleanup_requested": false,
+  "click_actions": 0,
+  "component": "com.MobileTicket/.ui.activity.WelcomeGuideActivity",
+  "error": {
+    "message": "01-launch did not complete exactly once with a preserved Main fence",
+    "phase": "coordinator",
+    "type": "RuntimeError"
+  },
+  "flow": "/home/alex/work/pocket4-ticket-owned-qa-r1-flow-fbda47500730b71354278064649b0bf9",
+  "helper_package": "org.droidloom.qa.ticket.r1",
+  "helper_uid": 10190,
+  "inspect_worker_requested": false,
+  "launch_worker_requested": true,
+  "maximum_native_launches": 1,
+  "nonce": "fbda47500730b71354278064649b0bf9",
+  "ok": false,
+  "old_v2_helper_called": false,
+  "owned_after": {
+    "cpu.max": "100000 100000",
+    "device": 30,
+    "inode": 31707446,
+    "memory.current": "28434432",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "536870912",
+    "memory.peak": "45371392",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "memory.swap.peak": "0",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ad88118b-fc05-5a29.service",
+    "pids.max": "128"
+  },
+  "owned_before": {
+    "cpu.max": "100000 100000",
+    "device": 30,
+    "inode": 31707446,
+    "memory.current": "27074560",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "536870912",
+    "memory.peak": "27074560",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "memory.swap.peak": "0",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ad88118b-fc05-5a29.service",
+    "pids.max": "128"
+  },
+  "package": "com.MobileTicket",
+  "package_mutations": 0,
+  "permission_grants": 0,
+  "possible_native_launch_outcome_requires_reconciliation": false,
+  "raw_UI_tree_private_only": true,
+  "retained_phase_results": {
+    "launch": {
+      "bytes": 6051,
+      "path": "/home/alex/work/pocket4-ticket-owned-qa-r1-flow-fbda47500730b71354278064649b0bf9/steps/launch-01/result.json",
+      "sha256": "078e0dcc74ff7719a08f04df81463f30e1540992e547fcabd3f8feda24a0792a"
+    }
+  },
+  "schema": 1,
+  "screenshots": 0,
+  "secondary_errors": [],
+  "settings_writes": 0,
+  "source_and_artifact_unchanged": true,
+  "source_manifest_sha256": "abb667a93f1e55b916da3b04bcebe05b28904655ff18cff1a1f1ef8b66a7b845",
+  "text_actions": 0,
+  "uid": 10121,
+  "whole_app_production_ready": false
+}

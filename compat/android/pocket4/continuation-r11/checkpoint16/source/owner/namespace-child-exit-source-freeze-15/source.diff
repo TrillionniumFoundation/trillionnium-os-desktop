@@ -1,0 +1,571 @@
+--- a/runtime/droidloom-pressure-relay/src/lib.rs
++++ b/runtime/droidloom-pressure-relay/src/lib.rs
+@@ -55,6 +55,11 @@
+     Io(&'static str, io::Error),
+     RelativeIo { name: String, flags: libc::c_int, base: Option<FileId>, error: io::Error },
+     Context(&'static str, Box<Error>),
++    LifecycleCapture {
++        cause: Box<Error>, pid: libc::pid_t, birth: u64,
++        pidfd: Option<FileId>, proc_dir: Option<FileId>,
++        poll_result: libc::c_int, poll_revents: libc::c_short, poll_errno: Option<i32>,
++    },
+     Reject(&'static str),
+ }
+ pub type Result<T> = std::result::Result<T, Error>;
+@@ -65,6 +70,8 @@
+             Self::RelativeIo { name, flags, base, error } => write!(f,
+                 "open relative pinned directory name={name:?} flags={flags:#x} base={base:?}: {error}"),
+             Self::Context(context, error) => write!(f, "{context}: {error}"),
++            Self::LifecycleCapture { cause, pid, birth, pidfd, proc_dir, poll_result, poll_revents, poll_errno } => write!(f,
++                "{cause}; after-error held pidfd observation pid={pid} birth={birth} pidfd={pidfd:?} proc_dir={proc_dir:?} poll_result={poll_result} revents={poll_revents:#x} errno={poll_errno:?}"),
+             Self::Reject(reason) => write!(f, "rejected: {reason}"),
+         }
+     }
+@@ -274,6 +281,22 @@
+         }
+         Ok(())
+     }
++    /// Preserve the original failed capture, then sample this same held pidfd
++    /// once without waiting. A ready result is later death evidence; zero is
++    /// only not-ready at this observation, never a successful identity check or
++    /// proof that the process was alive at the earlier failing namespace open.
++    fn observe_capture_failure(&self, cause: Error) -> Error {
++        let mut p = libc::pollfd { fd: self.pidfd.as_raw_fd(), events: libc::POLLIN, revents: 0 };
++        let poll_result = unsafe { libc::poll(&mut p, 1, 0) };
++        let poll_errno = if poll_result < 0 { io::Error::last_os_error().raw_os_error() } else { None };
++        let mut stat: libc::stat = unsafe { zeroed() };
++        let pidfd = if unsafe { libc::fstat(self.pidfd.as_raw_fd(), &mut stat) } == 0 {
++            Some(FileId { device: stat.st_dev as u64, inode: stat.st_ino as u64 })
++        } else { None };
++        Error::LifecycleCapture { cause: Box::new(cause), pid: self.pid, birth: self.start,
++            pidfd, proc_dir: FileId::of(&self.proc_dir).ok(), poll_result,
++            poll_revents: p.revents, poll_errno }
++    }
+ }
+ 
+ struct LifecycleSnapshot {
+@@ -282,6 +305,9 @@
+ }
+ impl LifecycleSnapshot {
+     fn capture(pin: &ProcessPin) -> Result<Self> {
++        Self::capture_inner(pin).map_err(|cause| pin.observe_capture_failure(cause))
++    }
++    fn capture_inner(pin: &ProcessPin) -> Result<Self> {
+         pin.live()?;
+         let status = parse_status(&read_at(&pin.proc_dir, "status", MAX_PROC_BYTES)?, pin.pid)?;
+         let namespaces = NamespacePins::capture(&pin.proc_dir)?;
+@@ -843,6 +869,79 @@
+             if self.0.try_wait().ok().flatten().is_none() { let _ = self.0.kill(); }
+             let _ = self.0.wait();
+         }
++    }
++    fn observation_owned_child() -> (RelativeIoChild, ProcessPin) {
++        use std::process::{Command, Stdio};
++        let child = RelativeIoChild(Command::new("/bin/cat").stdin(Stdio::piped())
++            .stdout(Stdio::null()).stderr(Stdio::null()).spawn().unwrap());
++        let pid = child.0.id() as libc::pid_t;
++        let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, pid, 0) };
++        assert!(raw >= 0);
++        let pidfd = unsafe { OwnedFd::from_raw_fd(raw as RawFd) };
++        let proc_dir = open_dir(&PathBuf::from(format!("/proc/{pid}"))).unwrap();
++        let start = process_birth(&read_at(&proc_dir, "stat", MAX_PROC_BYTES).unwrap(), pid).unwrap();
++        let pin = ProcessPin { pid, pidfd, proc_dir, start };
++        pin.live().unwrap();
++        (child, pin)
++    }
++    fn reap_observation_child(child: &mut RelativeIoChild) {
++        drop(child.0.stdin.take());
++        let deadline = Instant::now() + Duration::from_secs(2);
++        loop {
++            if let Some(status) = child.0.try_wait().unwrap() { assert!(status.success()); break; }
++            assert!(Instant::now() < deadline, "owned observation child did not exit");
++            thread::sleep(Duration::from_millis(1));
++        }
++    }
++    #[test]
++    fn failed_owned_lookup_keeps_errno_and_records_later_not_ready_pidfd() {
++        let (mut child, pin) = observation_owned_child();
++        // This is a real missing proc entry plus the production error observer,
++        // not a claim to reproduce an absent live pid_for_children namespace.
++        let cause = open_at(&pin.proc_dir, "droidloom-absent-observation", libc::O_RDONLY).unwrap_err();
++        let original = cause.to_string();
++        let error = pin.observe_capture_failure(cause);
++        assert!(error.to_string().starts_with(&original));
++        match error {
++            Error::LifecycleCapture { cause, pid, birth, pidfd, proc_dir, poll_result, poll_revents, poll_errno } => {
++                assert_eq!(pid, child.0.id() as libc::pid_t);
++                assert_eq!(birth, pin.birth());
++                assert!(pidfd.is_some());
++                assert_eq!(proc_dir, Some(FileId::of(&pin.proc_dir).unwrap()));
++                assert_eq!(poll_result, 0);
++                assert_eq!(poll_revents, 0);
++                assert_eq!(poll_errno, None);
++                match *cause {
++                    Error::RelativeIo { name, base, error, .. } => {
++                        assert_eq!(name, "droidloom-absent-observation");
++                        assert_eq!(base, proc_dir);
++                        assert_eq!(error.raw_os_error(), Some(libc::ENOENT));
++                    }
++                    other => panic!("original error replaced: {other}"),
++                }
++            }
++            other => panic!("missing post-error observation: {other}"),
++        }
++        pin.live().unwrap();
++        reap_observation_child(&mut child);
++    }
++    #[test]
++    fn failed_dead_owned_snapshot_stays_rejected_and_records_ready_pidfd() {
++        let (mut child, pin) = observation_owned_child();
++        reap_observation_child(&mut child);
++        let error = LifecycleSnapshot::capture(&pin).err().expect("dead snapshot accepted");
++        match error {
++            Error::LifecycleCapture { cause, pid, birth, poll_result, poll_revents, poll_errno, .. } => {
++                assert!(matches!(*cause, Error::Reject("process generation is dead")));
++                assert_eq!(pid, child.0.id() as libc::pid_t);
++                assert_eq!(birth, pin.birth());
++                assert_eq!(poll_result, 1);
++                assert_ne!(poll_revents & (libc::POLLIN | libc::POLLHUP), 0);
++                assert_eq!(poll_errno, None);
++            }
++            other => panic!("wrong original cause or post-error observation: {other}"),
++        }
++        assert!(pin.live().is_err());
+     }
+     #[test]
+     fn exited_owned_child_retains_exact_proc_base_and_role_without_revival() {
+--- a/runtime/droidloom-supervisor/src/development.rs
++++ b/runtime/droidloom-supervisor/src/development.rs
+@@ -315,7 +315,8 @@
+             .child
+             .try_wait()
+             .map_err(|source| io_error("poll Android namespace process", source))?;
+-        if status.is_some() {
++        if let Some(status) = status {
++            if let Some(relay) = &mut self.relay { relay.observe_child_exit(&self.child, status); }
+             self.cleanup()?;
+         } else if let Some(relay) = &self.relay {
+             relay.poll().map_err(|source| io_error("poll retained relay generation", source))?;
+@@ -350,26 +351,31 @@
+     ///
+     /// Returns signal, wait, or teardown failures.
+     pub fn stop(&mut self) -> Result<(), DevelopmentError> {
+-        if let Some(relay) = &self.relay {
++        let before_stop = self.child.try_wait();
++        if let Ok(Some(status)) = &before_stop {
++            // Preserve an exit that was already observable before this Stop;
++            // the later request must not turn it into an expected shutdown.
++            if let Some(relay) = &mut self.relay { relay.observe_child_exit(&self.child, *status); }
++            return self.cleanup();
++        }
++        if let Some(relay) = &mut self.relay {
+             // Continue to stop/reap the exact Child even if cancellation
+             // reports a fault; cleanup retains the failed generation.
+             let _ = relay.request_stop();
+         }
+-        if self
+-            .child
+-            .try_wait()
+-            .map_err(|source| io_error("poll Android namespace process before stopping", source))?
+-            .is_none()
++        if let Err(source) = before_stop {
++            return Err(io_error("poll Android namespace process before stopping", source));
++        }
+         {
+             signal_process(self.child.id(), libc::SIGTERM)?;
+             let deadline = Instant::now() + Duration::from_secs(10);
+             while Instant::now() < deadline {
+-                if self
++                if let Some(status) = self
+                     .child
+                     .try_wait()
+                     .map_err(|source| io_error("wait for Android shutdown", source))?
+-                    .is_some()
+                 {
++                    if let Some(relay) = &mut self.relay { relay.observe_child_exit(&self.child, status); }
+                     return self.cleanup();
+                 }
+                 thread::sleep(Duration::from_millis(50));
+@@ -381,9 +387,10 @@
+             self.child
+                 .kill()
+                 .map_err(|source| io_error("kill unresponsive Android namespace owner", source))?;
+-            self.child
++            let status = self.child
+                 .wait()
+                 .map_err(|source| io_error("reap Android namespace owner", source))?;
++            if let Some(relay) = &mut self.relay { relay.observe_child_exit(&self.child, status); }
+         }
+         self.cleanup()
+     }
+@@ -398,9 +405,11 @@
+             return Ok(());
+         }
+         if let Some(relay) = &mut self.relay {
+-            relay.retire_before_network(&mut self.child)
+-                .map_err(|source| io_error("retire exact init/broker/domain generation", source))?;
+-            self.termination_reason = relay.termination_reason().map(str::to_owned);
++            let retired = relay.retire_before_network(&mut self.child);
++            if self.termination_reason.is_none() {
++                self.termination_reason = relay.termination_reason().map(str::to_owned);
++            }
++            retired.map_err(|source| io_error("retire exact init/broker/domain generation", source))?;
+         }
+         if let Some(network) = self.network.as_mut() {
+             // Keep the exact remaining network owner and its recovery record
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs
+@@ -12,6 +12,8 @@
+ use std::fs::File;
+ use std::io;
+ use std::os::unix::fs::MetadataExt;
++use std::os::unix::process::ExitStatusExt;
++use std::process::ExitStatus;
+ use std::sync::{Arc, Mutex, MutexGuard};
+ 
+ const MAX_RECORDS: usize = 16;
+@@ -242,6 +244,22 @@
+ #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+ struct FailureRecord { origin: FailureOrigin, observed_monotonic_ns: u64, message: String }
+ 
++/// The exact parent's wait result, not an inferred init exit or signal sender.
++/// The process identity is the earlier live OwnerAttached observation. Missing
++/// identity makes the journal incomplete but must not discard the wait result.
++#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
++struct NamespaceOwnerExit {
++    host_pid: u32,
++    process: Option<ProcessRecord>,
++    observed_monotonic_ns: u64,
++    raw_status: i32,
++    exit_code: Option<i32>,
++    signal: Option<i32>,
++    core_dumped: bool,
++    explicit_stop_requested_before_observation: bool,
++    worker_retirement_started_before_observation: bool,
++}
++
+ /// Data-only, bounded lifecycle observations. This is not an enrollment,
+ /// pressure, cleanup or production qualification by itself. Missing milestones
+ /// and `recording_incomplete` must never be inferred as successful operations.
+@@ -264,6 +282,8 @@
+     first_failure: Option<FailureRecord>,
+     retirement_failure: Option<FailureRecord>,
+     cleanup_failure: Option<FailureRecord>,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    namespace_owner_exit: Option<NamespaceOwnerExit>,
+     records: Vec<Record>,
+ }
+ impl RelayLifecycleAudit {
+@@ -304,6 +324,18 @@
+         self.snapshot.records.push(Record {
+             sequence: self.snapshot.records.len() as u32 + 1, observed_monotonic_ns: now, detail: event,
+         });
++    }
++    fn failure(&mut self, origin: FailureOrigin, message: &str, observed_monotonic_ns: u64) {
++        let (message, truncated) = bounded(message);
++        if truncated { self.gap("audit failure text truncated"); }
++        let failure = FailureRecord { origin, observed_monotonic_ns, message };
++        if self.snapshot.first_failure.is_none() { self.snapshot.first_failure = Some(failure.clone()); }
++        if origin == FailureOrigin::Retirement && self.snapshot.retirement_failure.is_none() {
++            self.snapshot.retirement_failure = Some(failure.clone());
++        }
++        if origin == FailureOrigin::Cleanup && self.snapshot.cleanup_failure.is_none() {
++            self.snapshot.cleanup_failure = Some(failure);
++        }
+     }
+ }
+ 
+@@ -317,7 +349,8 @@
+             memory_max_bytes: 512 * 1024 * 1024, memory_high_bytes: 384 * 1024 * 1024,
+             memory_swap_max_bytes: 0, cpu_quota_us: 100000, cpu_period_us: 100000, tasks_max: 64,
+             recording_incomplete: false, recording_error: None, first_failure: None,
+-            retirement_failure: None, cleanup_failure: None, records: Vec::with_capacity(MAX_RECORDS),
++            retirement_failure: None, cleanup_failure: None, namespace_owner_exit: None,
++            records: Vec::with_capacity(MAX_RECORDS),
+         }, last_rank: 0,
+     })))
+ }
+@@ -331,6 +364,142 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    use std::io::Write;
++    use std::process::{Child, Command, Stdio};
++    use std::time::{Duration, Instant};
++
++    struct OwnedChild(Child);
++    impl Drop for OwnedChild {
++        fn drop(&mut self) {
++            if self.0.try_wait().ok().flatten().is_none() { let _ = self.0.kill(); }
++            let _ = self.0.wait();
++        }
++    }
++    fn owned_wait(audit: &Audit, exit_code: u8, signal: Option<i32>, bind: bool) -> (u32, ExitStatus) {
++        // An ordinary exact child, not a real Android namespace or an Owner
++        // retirement certificate. The production Process pin and audit method
++        // below observe the actual kernel identity and actual wait status.
++        let mut child = OwnedChild(Command::new("/bin/sh")
++            .args(["-c", &format!("read gate; exit {exit_code}")])
++            .stdin(Stdio::piped()).stdout(Stdio::null()).stderr(Stdio::null())
++            .spawn().unwrap());
++        let process = Process::from_child(&mut child.0).unwrap();
++        if bind { audit.record(process.observation().map(|process| Event::OwnerAttached { process })); }
++        if let Some(signal) = signal { process.signal(signal).unwrap(); }
++        else {
++            child.0.stdin.as_mut().unwrap().write_all(b"exit\n").unwrap();
++            drop(child.0.stdin.take());
++        }
++        let deadline = Instant::now() + Duration::from_secs(2);
++        let status = loop {
++            if let Some(status) = child.0.try_wait().unwrap() { break status; }
++            assert!(Instant::now() < deadline, "owned audit child did not exit");
++            std::thread::sleep(Duration::from_millis(2));
++        };
++        assert!(process.dead().unwrap());
++        (child.0.id(), status)
++    }
++
++    #[test]
++    fn unexpected_owned_hup_is_retained_before_later_stop_or_retirement() {
++        let audit = fixture();
++        let (pid, status) = owned_wait(&audit, 0, Some(libc::SIGHUP), true);
++        assert_eq!(status.signal(), Some(libc::SIGHUP));
++        audit.namespace_owner_exit(pid, status, false, false);
++        let first = audit.snapshot();
++        let exit = first.namespace_owner_exit.as_ref().unwrap();
++        assert_eq!(exit.host_pid, pid);
++        assert_eq!(exit.process.as_ref().unwrap().pid as u32, pid);
++        assert_eq!(exit.raw_status, status.into_raw());
++        assert_eq!(exit.signal, Some(libc::SIGHUP));
++        assert_eq!(exit.exit_code, None);
++        assert!(!exit.explicit_stop_requested_before_observation);
++        let cause = first.first_failure.as_ref().unwrap();
++        assert_eq!(cause.origin, FailureOrigin::Runtime);
++        assert!(cause.message.contains("signal=Some(1)"));
++        audit.namespace_owner_exit(pid, status, true, true);
++        audit.record(Ok(Event::Retiring));
++        audit.record(Ok(Event::Retired));
++        audit.record(Ok(Event::ResourcesRemoved));
++        audit.record(Ok(Event::ClaimReleased));
++        let retired = audit.snapshot();
++        assert_eq!(retired.namespace_owner_exit, first.namespace_owner_exit);
++        assert_eq!(retired.first_failure, first.first_failure);
++        assert_eq!(audit.first_failure_message().as_deref(), Some(cause.message.as_str()));
++        assert!(!retired.recording_incomplete);
++        assert_eq!(serde_json::from_slice::<RelayLifecycleAudit>(&serde_json::to_vec(&retired).unwrap()).unwrap(), retired);
++    }
++
++    #[test]
++    fn owned_nonzero_code_retains_the_actual_raw_wait_status() {
++        let audit = fixture();
++        let (pid, status) = owned_wait(&audit, 17, None, true);
++        assert_eq!(status.code(), Some(17));
++        audit.namespace_owner_exit(pid, status, false, false);
++        let result = audit.snapshot();
++        let exit = result.namespace_owner_exit.unwrap();
++        assert_eq!(exit.raw_status, status.into_raw());
++        assert_eq!(exit.exit_code, Some(17));
++        assert_eq!(exit.signal, None);
++        assert!(result.first_failure.unwrap().message.contains("exit_code=Some(17)"));
++    }
++
++    #[test]
++    fn explicit_stop_records_owned_term_without_inventing_runtime_failure() {
++        let audit = fixture();
++        let (pid, status) = owned_wait(&audit, 0, Some(libc::SIGTERM), true);
++        audit.namespace_owner_exit(pid, status, true, false);
++        let result = audit.snapshot();
++        let exit = result.namespace_owner_exit.unwrap();
++        assert_eq!(exit.signal, Some(libc::SIGTERM));
++        assert!(exit.explicit_stop_requested_before_observation);
++        assert!(result.first_failure.is_none());
++        assert!(!result.recording_incomplete);
++    }
++
++    #[test]
++    fn worker_retirement_keeps_the_earlier_failure_and_exact_child_status() {
++        let audit = fixture();
++        audit.failure(FailureOrigin::Runtime, "original enrollment failure");
++        let (pid, status) = owned_wait(&audit, 0, Some(libc::SIGTERM), true);
++        audit.namespace_owner_exit(pid, status, false, true);
++        audit.failure(FailureOrigin::Cleanup, "later cleanup failure");
++        let result = audit.snapshot();
++        assert_eq!(result.first_failure.unwrap().message, "original enrollment failure");
++        assert_eq!(result.cleanup_failure.unwrap().message, "later cleanup failure");
++        assert!(result.namespace_owner_exit.unwrap().worker_retirement_started_before_observation);
++    }
++
++    #[test]
++    fn successful_owned_exit_is_observed_without_reclassifying_android_shutdown() {
++        let audit = fixture();
++        let legacy = serde_json::to_vec(&audit.snapshot()).unwrap();
++        assert!(!String::from_utf8(legacy.clone()).unwrap().contains("namespace_owner_exit"));
++        let decoded: RelayLifecycleAudit = serde_json::from_slice(&legacy).unwrap();
++        assert!(decoded.namespace_owner_exit.is_none());
++        assert_eq!(serde_json::to_vec(&decoded).unwrap(), legacy);
++        let (pid, status) = owned_wait(&audit, 0, None, true);
++        assert!(status.success());
++        audit.namespace_owner_exit(pid, status, false, false);
++        let result = audit.snapshot();
++        assert_eq!(result.namespace_owner_exit.unwrap().exit_code, Some(0));
++        assert!(result.first_failure.is_none());
++        assert!(!result.recording_incomplete);
++    }
++
++    #[test]
++    fn missing_held_owner_identity_cannot_make_the_exit_record_complete() {
++        let audit = fixture();
++        let (pid, status) = owned_wait(&audit, 0, Some(libc::SIGHUP), false);
++        audit.namespace_owner_exit(pid, status, false, false);
++        let result = audit.snapshot();
++        let exit = result.namespace_owner_exit.unwrap();
++        assert_eq!(exit.raw_status, status.into_raw());
++        assert!(exit.process.is_none());
++        assert!(result.recording_incomplete);
++        assert!(result.recording_error.unwrap().contains("earlier held identity"));
++    }
++
+     #[test]
+     fn missing_observation_and_clock_or_order_failure_remain_incomplete() {
+         let audit = fixture();
+@@ -419,7 +588,7 @@
+             memory_swap_max_bytes: policy.memory_swap_max_bytes, cpu_quota_us: policy.cpu_quota_us,
+             cpu_period_us: policy.cpu_period_us, tasks_max: policy.tasks_max,
+             recording_incomplete: producer.is_err(), recording_error: producer.err().map(|e| bounded(&e.to_string()).0),
+-            first_failure: None, retirement_failure: None, cleanup_failure: None,
++            first_failure: None, retirement_failure: None, cleanup_failure: None, namespace_owner_exit: None,
+             records: Vec::with_capacity(MAX_RECORDS),
+         };
+         Self(Arc::new(Mutex::new(Journal { snapshot, last_rank: 0 })))
+@@ -443,19 +612,51 @@
+     }
+     pub(crate) fn failure(&self, origin: FailureOrigin, message: &str) {
+         let mut journal = self.lock();
+-        let (message, truncated) = bounded(message);
+-        if truncated { journal.gap("audit failure text truncated"); }
+         let observed_monotonic_ns = monotonic_ns().unwrap_or_else(|error| {
+             journal.gap(&error.to_string()); 0
+         });
+-        let failure = FailureRecord { origin, observed_monotonic_ns, message };
+-        if journal.snapshot.first_failure.is_none() { journal.snapshot.first_failure = Some(failure.clone()); }
+-        if origin == FailureOrigin::Retirement && journal.snapshot.retirement_failure.is_none() {
+-            journal.snapshot.retirement_failure = Some(failure.clone());
+-        }
+-        if origin == FailureOrigin::Cleanup && journal.snapshot.cleanup_failure.is_none() {
+-            journal.snapshot.cleanup_failure = Some(failure);
+-        }
++        journal.failure(origin, message, observed_monotonic_ns);
++    }
++    /// Called only with the retained std::process::Child's actual wait result,
++    /// before cleanup requests cancellation. A later Stop cannot reclassify an
++    /// already observed failure. No serialized field is lifecycle authority.
++    pub(crate) fn namespace_owner_exit(&self, host_pid: u32, status: ExitStatus,
++        explicit_stop_requested: bool, worker_retirement_started: bool) {
++        let mut journal = self.lock();
++        if let Some(original) = &journal.snapshot.namespace_owner_exit {
++            if original.host_pid != host_pid || original.raw_status != status.into_raw() {
++                journal.gap("namespace owner Child wait result changed");
++            }
++            return;
++        }
++        let observed_monotonic_ns = monotonic_ns().unwrap_or_else(|error| {
++            journal.gap(&error.to_string()); 0
++        });
++        let process = journal.snapshot.records.iter().find_map(|record| match &record.detail {
++            Event::OwnerAttached { process } if process.pid as u32 == host_pid => Some(process.clone()),
++            _ => None,
++        });
++        if process.is_none() { journal.gap("namespace owner exit lacks its earlier held identity"); }
++        journal.snapshot.namespace_owner_exit = Some(NamespaceOwnerExit {
++            host_pid, process, observed_monotonic_ns,
++            raw_status: status.into_raw(), exit_code: status.code(), signal: status.signal(),
++            core_dumped: status.core_dumped(),
++            explicit_stop_requested_before_observation: explicit_stop_requested,
++            worker_retirement_started_before_observation: worker_retirement_started,
++        });
++        // Successful Android shutdown is not reclassified as an error. For a
++        // failed wait status, these flags describe observed prior intent only;
++        // neither identifies the sender of a signal or the guest boot cause.
++        if !status.success() && !explicit_stop_requested && !worker_retirement_started {
++            journal.failure(FailureOrigin::Runtime, &format!(
++                "namespace owner Child exited before explicit stop or worker retirement: pid={host_pid} raw_status={} exit_code={:?} signal={:?} core_dumped={}",
++                status.into_raw(), status.code(), status.signal(), status.core_dumped()), observed_monotonic_ns);
++        }
++    }
++    /// First observed run/cleanup cause for status propagation after retirement.
++    /// This does not authorize retirement, resource removal or a new generation.
++    pub(crate) fn first_failure_message(&self) -> Option<String> {
++        self.lock().snapshot.first_failure.as_ref().map(|failure| failure.message.clone())
+     }
+     pub(crate) fn snapshot(&self) -> RelayLifecycleAudit { self.lock().snapshot.clone() }
+ }
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs
+@@ -19,7 +19,7 @@
+ use std::os::unix::fs::{FileExt, FileTypeExt, MetadataExt};
+ use std::os::unix::process::CommandExt;
+ use std::path::{Path, PathBuf};
+-use std::process::{Child, Command, Stdio};
++use std::process::{Child, Command, ExitStatus, Stdio};
+ use std::sync::{
+     Arc,
+     atomic::{AtomicU8, Ordering},
+@@ -604,6 +604,7 @@
+     worker: Option<Worker<Session>>,
+     failure: Option<String>,
+     termination_reason: Option<String>,
++    explicit_stop_requested: bool,
+     resources_removed: bool,
+     released: bool,
+ }
+@@ -661,6 +662,7 @@
+             worker: None,
+             failure: None,
+             termination_reason: None,
++            explicit_stop_requested: false,
+             resources_removed: false,
+             released: false,
+         }))
+@@ -850,8 +852,17 @@
+         }
+         Ok(())
+     }
+-    pub(crate) fn request_stop(&self) -> io::Result<()> {
++    pub(crate) fn request_stop(&mut self) -> io::Result<()> {
++        self.explicit_stop_requested = true;
+         self.cancel.request()
++    }
++    pub(crate) fn observe_child_exit(&mut self, child: &Child, status: ExitStatus) {
++        let phase = self.phase.load(Ordering::Acquire);
++        self.audit.namespace_owner_exit(child.id(), status, self.explicit_stop_requested,
++            matches!(phase, RETIRING | RETIRED));
++        if self.termination_reason.is_none() {
++            self.termination_reason = self.audit.first_failure_message();
++        }
+     }
+     pub(crate) fn audit(&self) -> RelayLifecycleAudit { self.audit.snapshot() }
+     pub(crate) fn record_cleanup_failure(&self, message: &str) {
+@@ -869,8 +880,10 @@
+         if self.resources_removed {
+             return Ok(());
+         }
++        let status = child.try_wait();
++        if let Ok(Some(status)) = &status { self.observe_child_exit(child, *status); }
+         self.cancel.request()?;
+-        if child.try_wait()?.is_none() {
++        if status?.is_none() {
+             return Err(error(
+                 "namespace Child has not been reaped before relay cleanup",
+             ));
+@@ -891,7 +904,10 @@
+         resources.prove_retired()?;
+         // Snapshot the original run failure while ownership is still held.
+         // Releasing resources successfully must not erase why the cell died.
+-        self.termination_reason = resources.reason.clone();
++        if self.termination_reason.is_none() {
++            self.termination_reason = self.audit.first_failure_message()
++                .or_else(|| resources.reason.clone());
++        }
+         let process = self
+             .process
+             .as_ref()

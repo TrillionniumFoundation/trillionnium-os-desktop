@@ -1,0 +1,56 @@
+--- r2/read_private_diagnostic.py
++++ r3/read_private_diagnostic.py
+@@ -13,22 +13,22 @@
+ import stat
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-bilibili-r2-search-entry-01')
+-FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r2-flow-69b2d59b9d416e3d6c082a3610b45b63')
++ROOT=Path('/home/alex/work/pocket4-bilibili-r3-search-entry-01')
++FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-a53815018fc65e6cbcac07538bdd7c7d')
+ STEP=FLOW/'steps/search-entry-01'
+-FLOW_NONCE='69b2d59b9d416e3d6c082a3610b45b63'
+-SOURCE_SHA='79498046a8ea1e38ebfdaa99a94eb4523f1101b2cb08218f8c9eb7e090deeb86'
++FLOW_NONCE='a53815018fc65e6cbcac07538bdd7c7d'
++SOURCE_SHA='383b699100f3f7529b8e8ffc95554e955ee6a50b8f89a1647f2c2c1602abe131'
+ TERMINAL={
+- 'coordinator.json':(ROOT/'result.json',6327,'a681a0dd988e97fe8b8923985f5ebcb364e2ff23a6e536269b0d6c1fbce185d2'),
+- 'stage.json':(ROOT/'stage-result.json',1768,'c573c78dc96e8c4978678a608034f329c1b8783fd5798e494cf3733a71030e7b')}
++ 'coordinator.json':(ROOT/'result.json',6327,'324a5d5e181be451748d3c2079ba86f306ee55658c6bc122fe400d72a84462e8'),
++ 'stage.json':(ROOT/'stage-result.json',1768,'90909e2429c7e1ec34e5eff1b3d4c6591f6e0a3e6f1e79ce10bdd9636a1aff62')}
+ NONCES={
+- 'before':'7f379363fab11375e075a03c842960ec',
+- 'inspect':'d09eae3f89850fa2ae08d7ff7397ba43',
+- 'action':'32275761f7cd00ae05a885f2732cc184',
+- 'after':'c9f88106b407b46ccb93ea594eb148b7',
+- 'post_before':'a84bcca86eceb025d3f1ac6a7b966997',
+- 'post_inspect':'24dae2a7972bcaacd44990d9b3a9112d',
+- 'post_after':'ce95537f902655940e154edf325623c6'}
++ 'before':'dc23f1f57cd8a8ee80c2716bca79f3ab',
++ 'inspect':'12f173af30cad43d067140ee40f0a4b4',
++ 'action':'246e02a25a3b85775a3c4f0cd691e719',
++ 'after':'6f7c8b80f94b51a01792bc22b4ca9ca8',
++ 'post_before':'89b5b4ed5dbdcc409554079f4b0ce86b',
++ 'post_inspect':'313bcbf4c643b9a1a1f844c181caa78e',
++ 'post_after':'57e6e78c397b74f943a487821002d8cd'}
+ FILES={name:row[0] for name,row in TERMINAL.items()}
+ FILES.update({'navigation.json':STEP/'result.json',
+  'worker-command-result.json':ROOT/'evidence/03-navigate.result.json',
+@@ -60,14 +60,14 @@
+     raise
+    first=os.fstat(fd)
+    need(stat.S_ISREG(first.st_mode) and first.st_nlink==1 and first.st_uid==0 and
+-        0<=first.st_size<=524288,'ROOT_PRIVATE_SINGLE_REGULAR_BOUND')
++        0<=first.st_size<=1048576,'ROOT_PRIVATE_SINGLE_REGULAR_BOUND')
+    chunks=[];count=0
+    while True:
+     need(time.monotonic()-self.started<8,'PRIVATE_READ_DEADLINE')
+-    part=os.read(fd,min(16384,524289-count))
++    part=os.read(fd,min(16384,1048577-count))
+     if not part:break
+     chunks.append(part);count+=len(part);self.bytes+=len(part)
+-    need(count<=524288 and self.bytes<=3145728,'PRIVATE_TOTAL_READ_BOUND')
++    need(count<=1048576 and self.bytes<=3145728,'PRIVATE_TOTAL_READ_BOUND')
+    last=os.fstat(fd)
+    keys=('st_dev','st_ino','st_mode','st_nlink','st_uid','st_gid','st_size','st_mtime_ns','st_ctime_ns')
+    need(count==first.st_size and all(getattr(first,k)==getattr(last,k) for k in keys),'PRIVATE_FILE_CHANGED')

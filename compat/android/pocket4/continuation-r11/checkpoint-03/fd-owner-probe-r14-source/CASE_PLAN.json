@@ -1,0 +1,77 @@
+{
+  "expected_cases": 30,
+  "order": [
+    "ordinary_proc_self",
+    "ordinary_proc_self_truncate",
+    "zero_size",
+    "negative_kernel_size",
+    "ordinary_procfd",
+    "input_output_alias",
+    "name_is_not_provenance",
+    "name_is_not_provenance_truncate",
+    "empty_path_procfd",
+    "relative_caller_dirfd",
+    "empty_path_not_symlink",
+    "ordinary_map_files_same_display_name",
+    "relative_symlink_alias_thread_self",
+    "ordinary_full_fd_table",
+    "ordinary_full_table_no_owner",
+    "ordinary_one_free_fd_slot",
+    "ordinary_one_slot_no_owner",
+    "publication_private_slot_reuse",
+    "publication_cloexec",
+    "unshared_caller_thread_self",
+    "readlink_private_fd_close_reuse",
+    "maps_inheritable",
+    "maps_cloexec",
+    "maps_opath",
+    "maps_directory_native_error",
+    "maps_exclusive_native_error",
+    "ordinary_open_admission_no_helper",
+    "maps_full_table_emfile_no_host_fallback",
+    "maps_one_slot_private_helpers",
+    "factory_emfile_never_falls_back"
+  ],
+  "actual_copy_api": true,
+  "no_copy_seam_in_apk": true,
+  "maps_formatter": "owned fixture; no commercial data",
+  "baseline_production_gates_remain": [
+    "owner per-query resource errors",
+    "ordinary alias-to-maps admission race"
+  ],
+  "base_r2_pins_sha256": "c55a5e902fbfe3275fa0f1ed4d58304b8cd1736a5f050b8482d99fb531e1d043",
+  "copy_word_r3_pins_sha256": "a001678ddda474957872ad475ef0e0d7c717ebeec15ee2cd506ac0e6126f73ca",
+  "copy_word_r3_patch_sha256": "bde5d497c97d6de19d73fb4e7f567c0edb3ac4f8ee65dd6e01217feab9001ac0",
+  "copy_controls": {
+    "mandatory": [
+      "caller all-word raw syscall",
+      "private-owner all-word raw syscall",
+      "caller typed libc API",
+      "private-owner typed libc API"
+    ],
+    "diagnostic_only": [
+      "caller original int varargs",
+      "private-owner original int varargs"
+    ],
+    "each_variant": [
+      "16 byte read exact",
+      "16 byte write exact",
+      "bad remote pointer 1 read EFAULT",
+      "bad remote pointer 1 write EFAULT",
+      "source unchanged"
+    ]
+  },
+  "fixture_notes": [
+    "kernel readlinkat baseline uses raw syscall so libc FORTIFY cannot abort the signed-int bufsiz boundary case",
+    "one capability child and seven case-group children have exclusive wait ownership; only normal-fork child fd tables are cleared",
+    "each case-group child uses PDEATHSIG and the parent watchdog; no application signal dispositions are changed",
+    "APK target remains package r11/version 11; must be absent before installing this distinct artifact"
+  ],
+  "statfs_portability_r4_patch_sha256": "7a008daef2c58a9528a936e041aa77501ac50551dbb2bcb8671009c1ba76da5c",
+  "statfs_portability_host_control": {
+    "cases": 26,
+    "failures": 0,
+    "report_sha256": "e608dc171bca144096f944841b72eecf5ac0b76359aff6d0ef5dcdd8606746f6",
+    "scope": "actual conversion template, signed and unsigned 8/32/64-bit targets; no NDK/device execution claim"
+  }
+}

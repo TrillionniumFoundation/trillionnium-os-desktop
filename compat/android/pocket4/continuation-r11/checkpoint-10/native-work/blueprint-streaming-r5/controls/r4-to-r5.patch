@@ -1,0 +1,36 @@
+--- r4/controls/owned_streaming_test.go
++++ r5/controls/owned_streaming_test.go
+@@ -141,8 +141,11 @@
+ 	}
+ 	var modules []*moduleInfo
+ 	for m := range ctx.iterateAllVariants() {
+-		if m.buildActionCacheKey != nil || m.incrementalRestored {
+-			t.Fatal("nonincremental fixture unexpectedly has a cache key or restored module")
++		if m.incrementalRestored {
++			t.Fatal("fresh-generation fixture unexpectedly restored a module")
++		}
++		if (m.buildActionCacheKey != nil) != incremental {
++			t.Fatal("fixture cache-key presence does not match requested incremental mode")
+ 		}
+ 		modules = append(modules, m)
+ 	}
+--- r4/controls/run_control.py
++++ r5/controls/run_control.py
+@@ -15,7 +15,7 @@
+ import time
+ 
+ SOURCE = Path('/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source')
+-ROOT = Path('/home/alex/work/pocket4-blueprint-streaming-controls-04-20261105')
++ROOT = Path('/home/alex/work/pocket4-blueprint-streaming-controls-05-20261105')
+ HERE = ROOT / 'source'
+ OUT = ROOT / 'attempt01'
+ GOROOT = SOURCE / 'prebuilts/go/linux-x86'
+@@ -23,7 +23,7 @@
+ PREIMAGE = 'e2b7bf50848ba9f9ac7078dae87c6b2e13ce7019ba997c71f90a04e602f1a9d4'
+ CANDIDATE = '1559969a55db1b682401c01264dd8ba96fa224781c3af277f0996a5050f7c9fa'
+ PATCH_SHA = '9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307'
+-TEST_SHA = '6e07b46d2fec835897fdc2bb444571d09ef41d01148d8c3940398e716d8594ef'
++TEST_SHA = '5a928d10fbaabab5a1198c9c4a5abe9281da091abdde923a2e0a500071e8fbc5'
+ SOURCE_PINS = {
+     'build/blueprint/context.go': PREIMAGE,
+     'build/blueprint/ninja_writer.go': '6b4b26e0d998ec64477634e0afdccb1d636fc852a4546d090748fe3e96654c0e',

@@ -1,0 +1,20 @@
+--- build02/make_request.py
++++ build03/make_request.py
+@@ -8,11 +8,12 @@
+ 
+ HERE=Path(__file__).resolve().parent
+ CORES={'listener-source-pins.json':HERE.parent/'factory-role-listener-source-freeze02',
+-       'owner-lifetime-source-pins.json':HERE.parent/'factory-role-lease-fixture-spawn-safety-freeze01'}
+-ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-listener-lifetime-host-build-02-20261105'
+-KEY='pocket4-role-listener-lifetime-host-build-02-20261105'
+-AUTHORITIES={'listener-source-pins.json': {'bytes': 9518, 'sha256': '7adaade107d05204015482abcee84431d8cd1bcc7776fea2a97dcd6488d210fb'}, 'owner-lifetime-source-pins.json': {'bytes': 1698, 'sha256': 'de1ef1fb3044b9bdc935fe32b812bb53e88aaf4be54b439df7d78f963e813209'}}
+-CONTROLLER_SHA='81c2367785b8ff173e2640ecb71c68604c186cc629e2e5d2963289a8b83761be'
++       'owner-lifetime-source-pins.json':HERE.parent/'factory-role-lease-fixture-spawn-safety-freeze01',
++       'listener-observer-source-pins.json':HERE.parent/'factory-role-listener-close-observer-source-freeze03'}
++ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-listener-lifetime-host-build-03-20261105'
++KEY='pocket4-role-listener-lifetime-host-build-03-20261105'
++AUTHORITIES={'listener-source-pins.json': {'bytes': 9518, 'sha256': '7adaade107d05204015482abcee84431d8cd1bcc7776fea2a97dcd6488d210fb'}, 'owner-lifetime-source-pins.json': {'bytes': 1698, 'sha256': 'de1ef1fb3044b9bdc935fe32b812bb53e88aaf4be54b439df7d78f963e813209'}, 'listener-observer-source-pins.json': {'bytes': 3052, 'sha256': '03fb2fa44f8e3917e31e72dd0c194dccedf66e4bc801d3cc767e977b462c363b'}}
++CONTROLLER_SHA='d5e14eea91e712a7546e40b1f17a34ac121813581191dcb84159706a33aaa7d1'
+ 
+ def pin(raw):return {'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+ def write(path,data):

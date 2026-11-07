@@ -1,0 +1,18 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/sudo",
+  "args": [
+    "-n",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "-"
+  ],
+  "cwd": "/home/alex/work",
+  "stdin": "import os,stat,json,hashlib,gzip,base64,time\nfrom pathlib import Path\nassert os.getuid()==os.geteuid()==0\nroot=Path('/home/alex/work/pocket4-owned-bili-qa-install-state-02')\nflow=Path('/home/alex/work/pocket4-bilibili-owned-qa-r1-flow-9eb2de4b3fa0576fd89afc046f8dfb23')\nspecs=[\n(root/'result.json',8192,3022,'85f7af26b6576fe850149768988077c78114487dd42d287858d9df8d71d9efa5'),\n(root/'stage-result.json',8192,2029,'5ade9f843cf0634cd2ebcab47c545c6bc52c2f7d4de79961fda73948b530c057'),\n(flow/'steps/install-state-02/result.json',262144,None,None),\n(root/'evidence/02-install-state.result.json',65536,None,None),\n(root/'evidence/02-install-state.stdout',262144,None,None),\n(root/'evidence/02-install-state.stderr',65536,None,None)]\nreport={'schema':1,'scope':'six fixed owned install-state02 evidence paths only','uid':os.geteuid(),'files':[],'source_changes':0,'Android_actions':0,'Main_actions':0,'no_retry':True}\ndef ident(s):return [s.st_dev,s.st_ino,s.st_mode,s.st_nlink,s.st_uid,s.st_gid,s.st_size,s.st_mtime_ns,s.st_ctime_ns]\nfor path,limit,size,digest in specs:\n row={'path':str(path),'limit':limit}\n fd=None\n try:\n  fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC)\n  before=os.fstat(fd)\n  assert stat.S_ISREG(before.st_mode) and before.st_nlink==1 and before.st_size<=limit\n  parts=[];n=0\n  while True:\n   part=os.read(fd,min(65536,limit+1-n))\n   if not part:break\n   parts.append(part);n+=len(part);assert n<=limit\n  data=b''.join(parts)\n  assert ident(before)==ident(os.fstat(fd))==ident(path.lstat()) and n==before.st_size\n  actual=hashlib.sha256(data).hexdigest()\n  assert size is None or n==size\n  assert digest is None or actual==digest\n  row.update(state='HELD_READ_VERIFIED',bytes=n,sha256=actual,identity=ident(before),text=data.decode('utf-8'))\n except Exception as error:\n  row.update(state='READ_FAILED',error=type(error).__name__+': '+str(error))\n finally:\n  if fd is not None:os.close(fd)\n report['files'].append(row)\nencoded=(json.dumps(report,sort_keys=True,ensure_ascii=False,indent=2)+'\\n').encode('utf-8')\nassert len(encoded)<=1048576\ncompressed=gzip.compress(encoded,mtime=0)\nprint(json.dumps({'schema':1,'encoding':'gzip+base64','bytes':len(encoded),'sha256':hashlib.sha256(encoded).hexdigest(),'data':base64.b64encode(compressed).decode('ascii')}),flush=True)\n",
+  "idempotency_key": "pocket4-owned-bili-qa-install-state-02-receipts-read-01-20261105",
+  "cpu_quota_percent": 25,
+  "memory_max_bytes": 134217728,
+  "nice": 15,
+  "timeout_seconds": 30
+}

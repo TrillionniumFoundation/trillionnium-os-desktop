@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "sources": [
+    {
+      "path": "actor.py",
+      "owner15_sha256": "af07d7ddb4034f0ea841fbcf53ef76ad37a009cd2b75ab433f8ea16526c5bf4d",
+      "consumer_candidate_sha256": "cffeba2516daad6ea6fcb08d4f965ba547038847c2a60458a32a07ea7dc2187a",
+      "new_sha256": "1a4e959d5b006c1331fa87cb05bb8e376c692df188474eba2c0a38138c66b442",
+      "new_bytes": 26836,
+      "reverse_profile_literals_exact": true,
+      "behavioral_delta_is_frozen_consumer_only": true,
+      "unchanged": false
+    },
+    {
+      "path": "coordinator.py",
+      "owner15_sha256": "374dccc6b6788f0a6254849cbc6e190bcdbe8b413e4972726ce55a7a40bfc0fd",
+      "consumer_candidate_sha256": "49b7a3bc7f9b198ce96c546d4ad4699c33d0e95b373af7b37be35e623d7b0b5b",
+      "new_sha256": "9947402bc927ec52f63bc4728e362ef1bb4f8a14f8e288111e6f425bcc8a14e0",
+      "new_bytes": 14404,
+      "reverse_profile_literals_exact": true,
+      "behavioral_delta_is_frozen_consumer_only": true,
+      "unchanged": false
+    },
+    {
+      "path": "prepare.py",
+      "owner15_sha256": "e8b334966a4e705d09281dbad49ea4f20018ca0a90b30ea058b43cf0a8be891d",
+      "consumer_candidate_sha256": "e8b334966a4e705d09281dbad49ea4f20018ca0a90b30ea058b43cf0a8be891d",
+      "new_sha256": "65211834b31c4b1548dbe5a962ba1b5825b63cb0c81ecc016f03a401674c6570",
+      "new_bytes": 15277,
+      "reverse_profile_literals_exact": true,
+      "behavioral_delta_is_frozen_consumer_only": true,
+      "unchanged": false
+    },
+    {
+      "path": "owned.py",
+      "owner15_sha256": "879ecb3df3165164124e12eac2f7a5549332b4909df2d6bed9d9055b685f05fb",
+      "consumer_candidate_sha256": "fb2371b148bac2faf644cbf30cb2fc959260e0d9af7c3424bba027f1dc62abfd",
+      "new_sha256": "fb2371b148bac2faf644cbf30cb2fc959260e0d9af7c3424bba027f1dc62abfd",
+      "new_bytes": 17466,
+      "reverse_profile_literals_exact": true,
+      "behavioral_delta_is_frozen_consumer_only": true,
+      "unchanged": false
+    },
+    {
+      "path": "pinned_support.py",
+      "owner15_sha256": "31e80cbcfb1b330b5daed3aefb1f4d29bbd10d94e703ce8cd1a1f42207deb40e",
+      "consumer_candidate_sha256": "31e80cbcfb1b330b5daed3aefb1f4d29bbd10d94e703ce8cd1a1f42207deb40e",
+      "new_sha256": "31e80cbcfb1b330b5daed3aefb1f4d29bbd10d94e703ce8cd1a1f42207deb40e",
+      "new_bytes": 13377,
+      "reverse_profile_literals_exact": true,
+      "behavioral_delta_is_frozen_consumer_only": true,
+      "unchanged": true
+    },
+    {
+      "path": "qualify.py",
+      "owner15_sha256": "a843d4a0ac4da1dd1baa8707ff3d0f59e4ed4c3cd26fd6fa1eae2ed9f21a6fad",
+      "consumer_candidate_sha256": "a843d4a0ac4da1dd1baa8707ff3d0f59e4ed4c3cd26fd6fa1eae2ed9f21a6fad",
+      "new_sha256": "a843d4a0ac4da1dd1baa8707ff3d0f59e4ed4c3cd26fd6fa1eae2ed9f21a6fad",
+      "new_bytes": 10249,
+      "reverse_profile_literals_exact": true,
+      "behavioral_delta_is_frozen_consumer_only": true,
+      "unchanged": true
+    }
+  ],
+  "fixed_guard_expression_checks": [
+    {
+      "case": "new_profile",
+      "accepted": true
+    },
+    {
+      "case": "new_paths",
+      "accepted": true
+    },
+    {
+      "case": "old_kind_rejected",
+      "accepted": false
+    },
+    {
+      "case": "short_nonce_rejected",
+      "accepted": false
+    },
+    {
+      "case": "old_unit_rejected",
+      "accepted": false
+    },
+    {
+      "case": "old_package_rejected",
+      "accepted": false
+    },
+    {
+      "case": "old_state_rejected",
+      "accepted": false
+    }
+  ],
+  "unchanged_sources": [
+    "pinned_support.py",
+    "qualify.py"
+  ],
+  "consumer_diff_sha256": "bc406e62f9a43b488a3a32ea0c8b2db114981e2cb36ec97221730975ff7c8828",
+  "no_runtime_module_imported_or_executed": true
+}

@@ -1,0 +1,46 @@
+--- a/fixture_context.py
++++ b/fixture_context.py
+@@ -1,6 +1,6 @@
+-"""Original NDK fixture Main-only context, never a commercial App Flow.
+-Unbound calls stop before Main/OS reads; installation requires the explicit held
+-admission, fresh Main guards and source verification at every original boundary.
++"""Original NDK runtime Main context, never a commercial App Flow.
++Unbound calls stop before Main/OS reads; run and retirement require an explicit
++held phase admission, fresh Main guards and source checks at every boundary.
+ Original R6 SourceContract verification, current8 guard, explicit discovery,
+ paired classpaths and held six-namespace entry are used without monkeypatching.
+ """
+@@ -169,10 +169,11 @@
+     if admission is None:
+         fixture.pending_gate()
+     fixture.validate_scope(scope)
+-    need(scope['phase']=='install' and scope['uid'] is None,'INSTALL_ONLY_ADMISSION_REQUIRED')
+-    admission.verify_install(sources,fixture,scope,step,deadline)
+-    # Only the separately pinned install worker supplies this live lease.
+-    # Run and retirement keep their original unbound entry points.
++    need(scope['phase'] in ('run','retire') and type(scope['uid']) is int,
++         'ACTUAL_OWN_RUNTIME_PHASE_ADMISSION_REQUIRED')
++    admission.verify_phase(sources,fixture,scope,step,deadline)
++    # Only the separately pinned runtime worker supplies this live phase lease.
++    # Installation is unavailable through this runtime source manifest.
+     sources.verify()
+     raw=sources.fixed_reference(INSTALLED_SHARED/'source_contract.py',CONTRACT_BYTES,CONTRACT_SHA)
+     source=sources.module(raw,INSTALLED_SHARED/'source_contract.py','ndk_shared_contract')
+@@ -188,7 +189,7 @@
+     _,epoch,_,_=current.source_modules()
+     target=None
+     def guard():
+-        admission.verify_install(sources,fixture,scope,step,deadline)
++        admission.verify_phase(sources,fixture,scope,step,deadline)
+         need(time.monotonic()<deadline,'FIXTURE_PHASE_DEADLINE')
+         sources.verify()
+         contract.verify()
+@@ -243,7 +244,7 @@
+             'same_current_Main8':True,'six_namespace_FDs':6,
+             'numeric_PID_namespace_entry':False,'private_body_exported':False}
+         def independent_guard():
+-            admission.verify_install(sources,fixture,scope,step,deadline)
++            admission.verify_phase(sources,fixture,scope,step,deadline)
+             sources.verify()
+             contract.verify()
+             return current.current_guard(baseline,action_attempted=False)

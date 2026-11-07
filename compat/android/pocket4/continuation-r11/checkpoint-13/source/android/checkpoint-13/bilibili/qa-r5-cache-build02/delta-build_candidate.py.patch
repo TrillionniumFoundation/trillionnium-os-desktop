@@ -1,0 +1,24 @@
+--- build01/build_candidate.py
++++ build02/build_candidate.py
+@@ -17,7 +17,7 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ PACKAGE = 'org.droidloom.qa.bili.r5'
+-OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-build-01')
++OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-build-02')
+ JDK = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86'
+ SDK_BASE = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts'
+ TOOLS = {
+@@ -237,10 +237,10 @@
+                 b'application-debuggable' not in badging and b'launchable-activity' not in badging, 'actual APK privilege/component differs')
+         for forbidden in (b'E: activity ',b'E: activity-alias ',b'E: service ',b'E: receiver ',b'E: provider '):
+             require(forbidden not in xml, 'unexpected actual APK component')
+-        require(re.search(rb'A: android:targetPackage\([^\n]*="org\.droidloom\.qa\.bili\.r4"',xml) is not None,
++        require(re.search(rb'A: android:targetPackage\([^\n]*="' + re.escape(PACKAGE.encode()) + rb'"',xml) is not None,
+                 'actual self instrumentation target required')
+         require(len(re.findall(rb'E: instrumentation(?:\s|$)',xml)) == 1 and
+-                len(re.findall(rb'A: android:name\([^\n]*="org\.droidloom\.qa\.bili\.r4\.ActionRunner"',xml)) == 1,
++                len(re.findall(rb'A: android:name\([^\n]*="' + re.escape(PACKAGE.encode()) + rb'\.ActionRunner"',xml)) == 1,
+                 'one exact actual instrumentation component required')
+         require(re.search(rb'A: android:testOnly\([^\n]*=\(type 0x12\)0xffffffff',xml) is not None and
+                 re.search(rb'A: android:debuggable\([^\n]*=\(type 0x12\)0x0\b',xml) is not None,

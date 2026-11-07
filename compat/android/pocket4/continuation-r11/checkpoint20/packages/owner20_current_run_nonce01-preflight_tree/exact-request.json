@@ -1,0 +1,19 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/python3",
+  "args": [
+    "-I",
+    "-c",
+    "import json,os,secrets\nassert os.getuid()==os.geteuid()==1000\nprint(json.dumps({'schema':'pocket4-owner20-current-run-nonce-v1','generator':'secrets.token_hex(32)','profile':'p4-owner20-normal-20261106-01','attempt_nonce':secrets.token_hex(32),'uid':os.getuid(),'source_only_nonce_generation':True,'Android_commands':0,'UI_actions':0,'owned_runtime_started':False},sort_keys=True,separators=(',',':')),flush=True)\n"
+  ],
+  "cwd": "/home/alex/work",
+  "env": {
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "stdin": "",
+  "idempotency_key": "pocket4-owner20-current-normal-fresh-nonce-01-20261106",
+  "timeout_seconds": 20,
+  "cpu_quota_percent": 25,
+  "memory_max_bytes": 67108864,
+  "nice": 10
+}

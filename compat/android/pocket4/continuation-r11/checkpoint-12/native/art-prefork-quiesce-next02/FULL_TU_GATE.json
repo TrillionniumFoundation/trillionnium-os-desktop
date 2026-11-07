@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ROUTE_NOT_IMPLEMENTED_NOT_EXECUTABLE",
+  "required_normal_updater_route": {
+    "existing_function": "android::build_targets",
+    "fixed_compile_targets": ["libart-runtime", "libnativebridge"],
+    "dependency_mode": "Strict",
+    "normal_source_projection_journal_and_lock_required": true,
+    "fresh_output_required": true,
+    "live_AOSP_manual_edit_allowed": false,
+    "new_cli_and_projection_implementation_required": true
+  },
+  "compile_flavors": [
+    {"macro": "DROIDLOOM_NATIVE_GENERATION_RUNTIME", "value": 0, "default_behavior_required": true},
+    {"macro": "DROIDLOOM_NATIVE_GENERATION_RUNTIME", "value": 1, "explicit_build_only_opt_in": true}
+  ],
+  "actual_compile_command_inputs_required": [
+    "art/runtime/runtime.cc",
+    "art/runtime/native_bridge_art_interface.cc",
+    "art/libnativebridge/native_bridge.cc",
+    "art/libnativebridge/droidloom_generation.cc"
+  ],
+  "actual_build_defaults_that_must_receive_the_same_macro": [
+    "libart-runtime_common_defaults",
+    "libnativebridge-defaults"
+  ],
+  "source_and_generated_dependency_closure_required": true,
+  "actual_static_archive_and_shared_ELF_binding_required": true,
+  "compiled_marker_alone_sufficient": false,
+  "runtime_call_order_control_is_separate": true,
+  "complete_APEX_link_sign_pair_and_lifecycle_required_after_TU_gate": true,
+  "installed_ART_binding": false,
+  "child_zygote_zero_cap_gate_resolved": false,
+  "source_currently_enabled_or_installed": false,
+  "Main_actions": 0
+}

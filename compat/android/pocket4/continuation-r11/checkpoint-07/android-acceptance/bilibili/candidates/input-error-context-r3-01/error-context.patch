@@ -1,0 +1,14 @@
+--- r2/source_contract.py
++++ r3/source_contract.py
+@@ -49,7 +49,10 @@
+     try:
+         first = os.fstat(fd)
+         require(stat.S_ISREG(first.st_mode) and first.st_nlink == 1 and first.st_size <= limit,
+-                "INPUT_SHAPE_OR_BOUND_CHANGED")
++                "INPUT_SHAPE_OR_BOUND_CHANGED: " + json.dumps({
++                    "path": str(path), "is_regular": stat.S_ISREG(first.st_mode),
++                    "mode": first.st_mode, "nlink": first.st_nlink,
++                    "size_bytes": first.st_size, "maximum_bytes": limit}, sort_keys=True))
+         chunks = []
+         count = 0
+         while count <= limit:

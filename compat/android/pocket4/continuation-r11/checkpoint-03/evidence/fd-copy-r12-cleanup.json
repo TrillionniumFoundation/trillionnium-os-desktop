@@ -1,0 +1,79 @@
+{
+  "phase": "remove",
+  "kind": "owner",
+  "package": "local.pocket4.fdownerprobe.r11",
+  "started_utc": "2026-11-04T14:36:56.491079+00:00",
+  "action_attempted": true,
+  "outcome_unknown": false,
+  "commands": [
+    {
+      "name": "packages-before",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "list",
+        "packages",
+        "-U",
+        "--show-versioncode",
+        "--user",
+        "0"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "b687ac00b47f5aaf8a9a6d4ea68ef57238ef7af084f3aeb919d5cfc1d762029f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "package-path",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "path",
+        "local.pocket4.fdownerprobe.r11"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "7044657cb9190c65fd44b1869ff136341285d128bc53792caa631d0e5e7bd4c1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "uninstall-owned-only",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "uninstall",
+        "--user",
+        "0",
+        "local.pocket4.fdownerprobe.r11"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "7fc0023a6402c7bd7abd98bb3e580968de4833eed07d88d1cc8d70819d69c7a0",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "packages-after",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "list",
+        "packages",
+        "-U",
+        "--show-versioncode",
+        "--user",
+        "0"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "367f6b94498c85098f0b9673e5eb4f41de679c8bcbfa2fddd6fae1178c1397bd",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+  "package_count_before": 183,
+  "installed_identity": {
+    "version_code": 11,
+    "uid": 10155
+  },
+  "apk_sha256": "ea0255d77c916c2e4adde186fb15188d7b1584d2c0d0cbd77977d8322b40d6c8",
+  "only_exact_owned_package_removed": true,
+  "ok": true,
+  "finished_utc": "2026-11-04T14:36:56.668551+00:00"
+}

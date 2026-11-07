@@ -1,0 +1,2098 @@
+--- parent/bestbuy_context.py
++++ candidate/ticket12306_context.py
+@@ -1,4 +1,4 @@
++"""12306-only install/state context using immutable shared recorder primitives.
+-"""BestBuy-only install/state context using immutable shared recorder primitives.
+ 
+ No Bili Flow or legacy client is instantiated. The actual Flow.command body,
+ held Main/root/classpath primitives and the target-specific BoundArun body are reused.
+@@ -14,9 +14,9 @@
+ import time
+ import types
+ 
++PACKAGE = 'com.MobileTicket'
++UID = 10121
++VERSION = 275
+-PACKAGE = 'com.bestbuy.android'
+-UID = 10130
+-VERSION = 2012312321
+ INSTALLED_SHARED = Path('/home/alex/work/pocket4-current-host-r6-source-01')
+ SHARED_MANIFEST = '002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff'
+ CONTRACT_SHA = 'f92d2598221c5bf65e783df39864879a2056da47f794680668b34df11f97da49'
+@@ -28,6 +28,10 @@
+ FILE_LIMIT = 256*1024*1024
+ TOTAL_LIMIT = 512*1024*1024
+ HASH_SECONDS = 45
++APK_COUNT = 1
++METADATA_RESULT_BYTES = 11978
++METADATA_RESULT_SHA = "f573eb50b3e0c2a098101035df116ba76bfdbf5f486e3dafb7588399661bb868"
++TARGET_REFERENCE_SHA = "57220958eacec13fb0b82755d4e22ffb6e02e42ecb05224103c6c5d37036db0c"
+ 
+ 
+ def require(ok, reason):
+@@ -47,7 +51,7 @@
+ 
+ def ordered_commands(qa, self_package, guest_apk, state_nonce):
+     require(qa.PACKAGE == PACKAGE and qa.UID == UID and
++            qa.SELF == self_package == 'org.droidloom.qa.ticket12306.r1', 'EXACT_TICKET12306_QA_SOURCE_REQUIRED')
+-            qa.SELF == self_package == 'org.droidloom.qa.bestbuy.r4', 'EXACT_BESTBUY_QA_SOURCE_REQUIRED')
+     state = {'protocol':qa.PROTOCOL,'nonce':state_nonce,'op':'state'}
+     qa.validate_request(state)
+     own_uid = ['/system/bin/cmd','package','list','packages','-U','--user','0',self_package]
+@@ -64,53 +68,133 @@
+     ]
+ 
+ 
++def qualify_target_metadata(value, artifact_reference):
++    """Qualify pinned public metadata; never extend the immutable Main baseline."""
++    exact = {'package':PACKAGE,'uid':UID,'user':0,'version_code':VERSION}
++    require(type(value) is dict and value.get('schema') == 1 and
++            value.get('ok') is True and value.get('error') is None and
++            value.get('secondary_errors') == [] and value.get('package') == PACKAGE and
++            value.get('metadata_before') == value.get('metadata_after') == exact and
++            all(type(value['metadata_before'][k]) is int for k in ('uid','user','version_code')) and
++            value.get('actual_package_UID_version_APK_chain_stable') is True and
++            value.get('package_read_commands_completed') == 5,
++            'ACTUAL_INDEPENDENT_FIXED_TARGET_METADATA_REQUIRED')
++    expected_scope = {'schema':'pocket4-fixed-new-target-metadata-scope-v1',
++        'current_baseline_schema':'pocket4-main-current-baseline-v2',
++        'epoch_sha256':CURRENT_EPOCH,'current_baseline_sha256':BASELINE_SHA,
++        'current_baseline_qualification_sha256':QUALIFICATION_SHA,
++        'package':PACKAGE,'user':0,'Bili_scope_reused':False,
++        'UID_version_APKs_and_data_directories_pending':True,
++        'baseline_packages_modified':False,'business_action_authority':False}
++    require(value.get('current_metadata_scope') == expected_scope and
++            type(value['current_metadata_scope']['user']) is int and
++            value.get('immutable_baseline_packages_modified') is False and
++            value.get('Bili_scope_modified') is False and
++            value.get('future_install_or_UI_requires_separate_target_scope') is True and
++            value.get('business_action_authority') is False and
++            value.get('whole_app_production_ready') is False,
++            'SEPARATE_CURRENT_TARGET_AUTHORITY_WITH_UNMODIFIED_BASELINE_REQUIRED')
++    main = value.get('Main_before')
++    require(type(main) is dict and main == value.get('Main_after') and
++            main.get('schema') == 'pocket4-current-main-guard-v2' and
++            main.get('Main_epoch_sha256') == CURRENT_EPOCH and
++            main.get('current_baseline_sha256') == BASELINE_SHA and
++            main.get('current_baseline_qualification_sha256') == QUALIFICATION_SHA and
++            value.get('final_Main_guard_passed') is True and
++            value.get('held_binding_released') is True and
++            value.get('action_lock_released') is True,
++            'ACTUAL_METADATA_CURRENT_MAIN_AND_CLOSURE_REQUIRED')
++    rows = value.get('command_observations')
++    resolver = ['/system/bin/cmd','package','resolve-activity','--brief','--user','0',
++                '-a','android.intent.action.MAIN','-c','android.intent.category.LAUNCHER',PACKAGE]
++    require(type(rows) is list and len(rows) == 5 and
++            [r.get('argv') for r in rows] == [LIST,PATHS,resolver,PATHS,LIST] and
++            [r.get('index') for r in rows] == list(range(1,6)) and
++            all(r.get('returncode') == 0 and r.get('spawned') is True and r.get('joined') is True and
++                r.get('host_timed_out') is False and r.get('first_error') is None and
++                r.get('secondary_errors') == [] and r.get('recorder_errors') == [] and
++                r.get('stderr_bytes') == 0 and r.get('Android_UI_action') is False for r in rows) and
++            all(type(value.get(k)) is int and value[k] == 0 for k in
++                ('App_launches','UI_actions','instrumentation_calls','permission_grants','settings_writes')) and
++            value.get('private_baseline_exported') is False and
++            value.get('target_data_directory_contents_read') is False and
++            value.get('APK_bytes_exported') is False,
++            'FIVE_COMPLETED_READONLY_METADATA_COMMANDS_REQUIRED')
++    require(type(artifact_reference) is dict and artifact_reference.get('target') == exact and
++            value.get('artifacts') == artifact_reference.get('artifacts') and
++            type(value.get('artifacts')) is list and len(value['artifacts']) == APK_COUNT and
++            value.get('apk_paths_before') == sorted(r['path'] for r in value['artifacts']) and
++            value.get('total_apk_bytes') == sum(r['held_file']['bytes'] for r in value['artifacts']),
++            'ACTUAL_METADATA_AND_BUILT_TARGET_ARTIFACT_REFERENCE_MUST_MATCH')
++    dirs = value.get('data_directories_before')
++    require(type(dirs) is list and dirs == value.get('data_directories_after') and len(dirs) == 2 and
++            [r.get('path') for r in dirs] == ['/data/user/0/'+PACKAGE,'/data/user_de/0/'+PACKAGE] and
++            value.get('target_directory_cleanup') == {'contents_read':False,'held_data_directory_FDs_closed':2},
++            'COMPLETE_INDEPENDENT_TARGET_DIRECTORY_PAIR_REQUIRED')
++    for row in dirs:
++        require(type(row) is dict and set(row) == {'path','device','inode','mode','uid','gid'} and
++                all(type(row[k]) is int and row[k] >= 0 for k in ('device','inode','mode','uid','gid')) and
++                row['inode'] > 0 and stat.S_ISDIR(row['mode']) and
++                row['uid'] == row['gid'] == UID,
++                'INDEPENDENT_TARGET_DIRECTORY_IDENTITY_REQUIRED')
++    return value
++
++
++def load_target_metadata(util, manifest, source_root):
++    require(manifest['files']['actual-target-metadata.json'] ==
++            {'bytes':METADATA_RESULT_BYTES,'sha256':METADATA_RESULT_SHA} and
++            manifest['files']['target-artifact-reference.json']['sha256'] == TARGET_REFERENCE_SHA,
++            'INDEPENDENT_TARGET_AUTHORITY_SOURCE_PINS_REQUIRED')
++    value = json.loads(util.read(source_root/'actual-target-metadata.json',
++        METADATA_RESULT_BYTES,METADATA_RESULT_SHA,METADATA_RESULT_BYTES))
++    reference = json.loads(util.read(source_root/'target-artifact-reference.json',
++        65536,TARGET_REFERENCE_SHA,manifest['files']['target-artifact-reference.json']['bytes']))
++    return qualify_target_metadata(value, reference)
++
++
+ def current_scope():
+     return {'schema':'pocket4-current-recorder-scope-v2',
+             'current_baseline_schema':'pocket4-main-current-baseline-v2',
+             'epoch_sha256':CURRENT_EPOCH,'current_baseline_sha256':BASELINE_SHA,
+             'current_baseline_qualification_sha256':QUALIFICATION_SHA,
++            'package':PACKAGE,'uid':UID,'user':0,
++            'target_metadata_authority_sha256':METADATA_RESULT_SHA,
++            'target_artifact_reference_sha256':TARGET_REFERENCE_SHA,
++            'target_authority_kind':'separately-qualified-fixed-target-metadata',
++            'immutable_baseline_packages_modified':False}
+-            'package':PACKAGE,'uid':UID,'user':0}
+ 
+ 
++def baseline_scope(ref, baseline, authority):
+-def baseline_scope(ref, baseline):
+     require(baseline.get('schema') == 'pocket4-main-current-baseline-v2' and
+             baseline.get('kind') == 'current-cell-generation' and
+             'main_deployed' not in baseline and baseline.get('deployment_performed') is False and
+             baseline['framework_epoch']['sha256'] == CURRENT_EPOCH == ref.EPOCH and
+             ref.BASELINE_SHA == BASELINE_SHA and ref.QUALIFICATION_SHA == QUALIFICATION_SHA and
+-            type(baseline['packages'].get(PACKAGE)) is int and baseline['packages'][PACKAGE] == UID and
+             baseline.get('framework_exit_cause_resolved') is False and
+             baseline.get('whole_app_production_ready') is False,
++            'TYPED_CURRENT_BASELINE_AND_INDEPENDENT_TARGET_REQUIRED')
++    # Separate pinned authority, never additions to B.packages/app_directories.
++    qualify_target_metadata(authority, {
++        'target':authority.get('metadata_before'),'artifacts':authority.get('artifacts')})
++    return current_scope()
+-            'TYPED_CURRENT_BASELINE_AND_ACTUAL_TARGET_UID_REQUIRED')
+-    for kind in ('user','user_de'):
+-        row = baseline['app_directories'][kind+'/0/'+PACKAGE]
+-        require(type(row) is dict and set(row) == {'device','inode','uid','gid'} and
+-                all(type(v) is int and v >= 0 for v in row.values()) and
+-                row['inode'] > 0 and row['uid'] == UID,
+-                'CURRENT_TARGET_DATA_DIRECTORY_BINDING_REQUIRED')
+-    return {'schema':'pocket4-current-recorder-scope-v2',
+-            'current_baseline_schema':baseline['schema'],
+-            'epoch_sha256':baseline['framework_epoch']['sha256'],
+-            'current_baseline_sha256':ref.BASELINE_SHA,
+-            'current_baseline_qualification_sha256':ref.QUALIFICATION_SHA,
+-            'package':PACKAGE,'uid':baseline['packages'][PACKAGE],'user':0}
+ 
+ 
++def verify_target_data(target, authority, binding):
+-def verify_target_data(target, baseline, binding):
+     target.verify()
+     raw, _ = target.read_file('/data/system/packages.list',1024*1024)
+     binding.package_uids(raw,{PACKAGE:UID})
+     del raw
+     for kind in ('user','user_de'):
+         relative = kind+'/0/'+PACKAGE
++        expected = authority['data_directories_before'][0 if kind == 'user' else 1]
++        require(expected['path'] == '/data/'+relative, 'FIXED_INDEPENDENT_TARGET_DIRECTORY_PATH_REQUIRED')
+-        expected = baseline['app_directories'][relative]
+         fd = target.open_root('/data/'+relative,os.O_PATH|os.O_DIRECTORY|os.O_NOFOLLOW)
+         primary = None
+         try:
+             value = os.fstat(fd)
+             require(stat.S_ISDIR(value.st_mode) and
++                    (value.st_dev,value.st_ino,value.st_mode,value.st_uid,value.st_gid) ==
++                    (expected['device'],expected['inode'],expected['mode'],expected['uid'],expected['gid']),
+-                    (value.st_dev,value.st_ino,value.st_uid,value.st_gid) ==
+-                    (expected['device'],expected['inode'],expected['uid'],expected['gid']),
+                     'CURRENT_TARGET_DATA_DIRECTORY_IDENTITY_CHANGED')
+         except BaseException as error:
+             primary = error
+@@ -163,7 +247,7 @@
+     def guard(self, attempted=False):
+         require(self.scope == current_scope() and type(self.scope.get('uid')) is int and
+                 type(self.scope.get('user')) is int, 'TYPED_CURRENT_TARGET_SCOPE_CHANGED')
++        require(type(attempted) is bool and not self.closed, 'OPEN_TICKET12306_CONTEXT_REQUIRED')
+-        require(type(attempted) is bool and not self.closed, 'OPEN_BESTBUY_CONTEXT_REQUIRED')
+         self.main_guard()
+         self.target.verify()
+         if self.artifacts is not None:
+@@ -176,8 +260,8 @@
+     def android(self, argv, timeout=20, *, mutation=False):
+         try:
+             require(not self.closed and not self.poisoned and not self._private_backend_transport,
++                    'CLOSED_OR_PRIVATE_TICKET12306_CONTEXT_FORBIDDEN')
++            require(self.next_command < len(self.plan), 'EXACT_TICKET12306_COMMAND_PLAN_EXHAUSTED')
+-                    'CLOSED_OR_PRIVATE_BESTBUY_CONTEXT_FORBIDDEN')
+-            require(self.next_command < len(self.plan), 'EXACT_BESTBUY_COMMAND_PLAN_EXHAUSTED')
+             expected = self.plan[self.next_command]
+             require(type(mutation) is bool and (list(argv),timeout,mutation) == expected,
+                     'ONLY_ORDERED_INSTALL_AND_NO_AUTOMATION_STATE_COMMANDS_ALLOWED')
+@@ -212,24 +296,27 @@
+ 
+ def open_context(ref, util, source_manifest, source_verify, source_root, step,
+                  transport, plan, result, deadline):
++    source = util.module(INSTALLED_SHARED/'source_contract.py',CONTRACT_SHA,'ticket12306_shared_contract')
+-    source = util.module(INSTALLED_SHARED/'source_contract.py',CONTRACT_SHA,'bestbuy_shared_contract')
+     contract = source.SourceContract(INSTALLED_SHARED/'source-manifest.json',SHARED_MANIFEST)
++    recorder = contract.load('recorder.py','ticket12306_shared_command_only')
++    held = contract.load('references/held_runtime_r5.py','ticket12306_actual_held_main')
++    binding = contract.load('main_binding.py','ticket12306_shared_classpath_only')
+-    recorder = contract.load('recorder.py','bestbuy_shared_command_only')
+-    held = contract.load('references/held_runtime_r5.py','bestbuy_actual_held_main')
+-    binding = contract.load('main_binding.py','bestbuy_shared_classpath_only')
+     activation = ref.current_baseline()
++    source_rows = source_verify(source_manifest)
++    authority = load_target_metadata(util,source_rows,source_root)
++    scope = baseline_scope(ref,activation,authority)
++    epoch = ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'ticket12306_fixed_epoch')
+-    scope = baseline_scope(ref,activation)
+-    epoch = ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'bestbuy_fixed_epoch')
+     target = None
+     def guard():
++        require(time.monotonic() < deadline,'TICKET12306_INSTALL_STATE_WORKER_DEADLINE')
+-        require(time.monotonic() < deadline,'BESTBUY_INSTALL_STATE_WORKER_DEADLINE')
+         source_verify(source_manifest)
+         contract.verify()
+         ref.read(recorder.APP,expected=recorder.APP_SHA)
+         util.read(source.HELPER_PATH,source.HELPER_BYTES,source.HELPER_SHA,source.HELPER_BYTES)
+         observation = ref.main_guard(activation,epoch)
++        require(observation == authority['Main_before'], 'INDEPENDENT_METADATA_AND_CURRENT_MAIN_DIFFER')
+         if target is not None:
++            verify_target_data(target,authority,binding)
+-            verify_target_data(target,activation,binding)
+         return observation
+     result['Main_before'] = guard()
+     result['shared_helper'] = source.verify_shared_helper()
+@@ -243,7 +330,7 @@
+     try:
+         target = held.HeldTarget(actual,source.HELPER_PATH,source.HELPER_SHA)
+         guard()
++        app = util.module(Path(recorder.APP),recorder.APP_SHA,'ticket12306_discovery_only')
+-        app = util.module(Path(recorder.APP),recorder.APP_SHA,'bestbuy_discovery_only')
+         init,discovered,status = current_discovery(util,source_manifest,source_verify,source_root,
+                                                     app,activation,epoch,guard)
+         require(init == expected['host_pid'] and status['host_pid'] == activation['status']['host_pid'],
+@@ -255,8 +342,11 @@
+         ref.write_new(step/'held-main-binding.json',{'target':target.record,'classpath':classpath,
+             'shared_helper':result['shared_helper'],'target_package':PACKAGE,'target_uid':UID,
+             'shared_recorder_primitive_manifest':SHARED_MANIFEST,
++            'ticket12306_runtime_source_manifest':source_manifest,'Bili_Flow_instantiated':False,
++            'current_target_scope':scope,'current_target_data_directory_count':2,
++            'independent_target_metadata_sha256':METADATA_RESULT_SHA,
++            'independent_target_artifact_reference_sha256':TARGET_REFERENCE_SHA,
++            'immutable_baseline_packages_modified':False})
+-            'bestbuy_runtime_source_manifest':source_manifest,'Bili_Flow_instantiated':False,
+-            'current_target_scope':scope,'current_target_data_directory_count':2})
+         return ctx,recorder,lambda:ref.main_guard(activation,epoch)
+     except BaseException as primary:
+         if target is not None:
+@@ -268,10 +358,10 @@
+ 
+ 
+ class ArtifactSet:
++    """The exact 1 installed commercial APKs, read-only and held to exit."""
+-    """The exact three installed commercial APKs, read-only and held to exit."""
+     def __init__(self, context, expected, reader):
+         require(expected['target'] == {'package':PACKAGE,'uid':UID,'user':0,'version_code':VERSION},
++                'ACTUAL_TICKET12306_METADATA_REFERENCE_REQUIRED')
+-                'ACTUAL_BESTBUY_METADATA_REFERENCE_REQUIRED')
+         self.context,self.expected,self.reader = context,expected,reader
+         self.opened = []
+         self.records = []
+@@ -279,53 +369,53 @@
+ 
+     def _metadata(self, raw):
+         value = self.reader.metadata(raw)
++        require(value == self.expected['target'],'ACTUAL_TICKET12306_UID_OR_VERSION_CHANGED')
+-        require(value == self.expected['target'],'ACTUAL_BESTBUY_UID_OR_VERSION_CHANGED')
+         return value
+ 
+     def _paths(self, raw):
+         values = self.reader.apk_paths(raw)
++        require(values == sorted(row['path'] for row in self.expected['artifacts']) and len(values) == APK_COUNT,
++                'ACTUAL_FIXED_TICKET12306_APK_PATH_CHANGED')
+-        require(values == sorted(row['path'] for row in self.expected['artifacts']) and len(values) == 3,
+-                'ACTUAL_THREE_BESTBUY_APK_PATH_CHANGED')
+         return values
+ 
+     def _hash(self, fd, expected, deadline):
+         first = identity(fd)
+         require(first == expected['held_file'] and stat.S_ISREG(first['mode']) and first['nlink'] == 1 and
+                 first['uid'] == first['gid'] == 1000 and not first['mode']&0o022 and
++                0 < first['bytes'] <= FILE_LIMIT,'ACTUAL_TICKET12306_APK_IDENTITY_CHANGED')
+-                0 < first['bytes'] <= FILE_LIMIT,'ACTUAL_BESTBUY_APK_IDENTITY_CHANGED')
+         os.lseek(fd,0,os.SEEK_SET)
+         digest = hashlib.sha256();count = 0
+         while True:
++            require(time.monotonic() < deadline,'TICKET12306_APK_STREAM_HASH_DEADLINE')
+-            require(time.monotonic() < deadline,'BESTBUY_APK_STREAM_HASH_DEADLINE')
+             block = os.read(fd,min(65536,first['bytes']+1-count))
+             if not block:
+                 break
+             count += len(block)
++            require(count <= first['bytes'],'TICKET12306_APK_GREW')
+-            require(count <= first['bytes'],'BESTBUY_APK_GREW')
+             digest.update(block)
+         require(count == first['bytes'] and identity(fd) == first and digest.hexdigest() == expected['sha256'],
++                'ACTUAL_TICKET12306_APK_CONTENT_CHANGED')
+-                'ACTUAL_BESTBUY_APK_CONTENT_CHANGED')
+         return {'path':expected['path'],'sha256':digest.hexdigest(),'held_file':first}
+ 
+     def before(self):
+         self._metadata(self.context.android(LIST,15))
+         self._paths(self.context.android(PATHS,15))
+         require(sum(row['held_file']['bytes'] for row in self.expected['artifacts']) <= TOTAL_LIMIT,
++                'FIXED_APK_TOTAL_BOUND')
+-                'THREE_APK_TOTAL_BOUND')
+         deadline = min(self.context.deadline,time.monotonic()+HASH_SECONDS)
+         for row in self.expected['artifacts']:
+             fd = self.context.target.open_root(row['path'],os.O_RDONLY|os.O_NOFOLLOW)
+             self.opened.append(fd)
+             self.records.append(self._hash(fd,row,deadline))
++        require(len(self.opened) == len(self.records) == APK_COUNT,'EXACT_FIXED_HELD_APKS_REQUIRED')
+-        require(len(self.opened) == len(self.records) == 3,'EXACT_THREE_HELD_APKS_REQUIRED')
+         self.context.artifacts = self
+         return {'metadata':self.expected['target'],'artifacts':self.records,
+                 'fresh_streaming_hashes':True,'signer_independently_verified':False}
+ 
+     def verify_held(self):
++        require(not self.closed and len(self.opened) == len(self.records) == APK_COUNT,'OPEN_FIXED_APK_SET_REQUIRED')
+-        require(not self.closed and len(self.opened) == len(self.records) == 3,'OPEN_THREE_APK_SET_REQUIRED')
+         for fd,row in zip(self.opened,self.records):
++            require(identity(fd) == row['held_file'],'HELD_TICKET12306_APK_CHANGED')
+-            require(identity(fd) == row['held_file'],'HELD_BESTBUY_APK_CHANGED')
+ 
+     def after(self):
+         self._paths(self.context.android(PATHS,15))
+@@ -340,10 +430,10 @@
+             after.append(self._hash(fd,row,deadline))
+             named = self.context.target.open_root(row['path'],os.O_RDONLY|os.O_NOFOLLOW)
+             try:
++                require(identity(named) == row['held_file'],'TICKET12306_APK_NAMED_PATH_CHANGED')
+-                require(identity(named) == row['held_file'],'BESTBUY_APK_NAMED_PATH_CHANGED')
+             finally:
+                 os.close(named)
++        require(after == self.records,'TICKET12306_APK_SET_CHANGED')
+-        require(after == self.records,'BESTBUY_APK_SET_CHANGED')
+         return {'metadata':self.expected['target'],'artifacts':after,
+                 'fresh_streaming_hashes':True,'signer_independently_verified':False}
+ 
+@@ -358,5 +448,5 @@
+                 failures.append(repr(error))
+         self.opened = []
+         self.context.artifacts = None
++        require(not failures,'TICKET12306_ARTIFACT_FD_CLOSE_FAILED: '+repr(failures))
+-        require(not failures,'BESTBUY_ARTIFACT_FD_CLOSE_FAILED: '+repr(failures))
+         return {'held_APK_FDs_closed':opened_count,'commercial_files_changed':False}
+--- parent/bestbuy_transport.py
++++ candidate/ticket12306_transport.py
+@@ -20,8 +20,8 @@
+ ANDROID_APP_SHA256 = "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66"
+ FRAMEWORK_EPOCH_SHA256 = '7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c'
+ HELD_HELPER_SHA256 = "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689"
++EXPECTED_PACKAGE = "com.MobileTicket"
++EXPECTED_UID = 10121
+-EXPECTED_PACKAGE = "com.bestbuy.android"
+-EXPECTED_UID = 10130
+ HOST_ENV = {"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "HOME": "/root", "LANG": "C.UTF-8"}
+ REQUIRED_ENV = {"PATH", "BOOTCLASSPATH", "DEX2OATBOOTCLASSPATH",
+                 "ANDROID_ROOT", "ANDROID_DATA", "ANDROID_ART_ROOT"}
+--- parent/install_state.py
++++ candidate/install_state.py
+@@ -1,10 +1,10 @@
+ #!/usr/bin/env python3
++"""One independent 12306 QA install and no-UiAutomation state observation.
+-"""One independent BestBuy QA install and no-UiAutomation state observation.
+ 
+ Default PLAN has no device or filesystem action. The exact signed new helper
+ must be absent, including retained records/all users. Only one explicit -R/-t
++install is allowed, with no retry or automatic uninstall. Commercial 12306
++is never launched; its exact 1 current APKs are held/read-only before and
+-install is allowed, with no retry or automatic uninstall. Commercial BestBuy
+-is never launched; its exact three current APKs are held/read-only before and
+ after. No Bili Flow, legacy helper, permission grant, settings, UI or audio.
+ """
+ import argparse
+@@ -21,25 +21,25 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
++ROOT = Path('/home/alex/work/pocket4-owned-ticket12306-qa-r1-install-state-01')
+-ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-02')
+ SOURCE = ROOT/'source'
+ WORKER_ROOT = ROOT/'worker'
+ STEP = WORKER_ROOT/'steps/install-state-01'
++NONCE = '5ddfa31acb7e6bc8f97288d059cf9dee'
++STATE_NONCE = 'c1f999ecfcfbf423641a2af8f0e2f7b8'
++SELF = 'org.droidloom.qa.ticket12306.r1'
++QA_ROOT = Path('/home/alex/work/pocket4-owned-ticket12306-qa-r1-source-01/source')
++QA_MANIFEST = "069639aa9c70c910c3d86b3016180264c12d479e08383b6c51fb374d9a7ee660"
++BUILD = Path('/home/alex/work/pocket4-owned-ticket12306-qa-r1-build-01/build-result.json')
++BUILD_SHA = "fcef45ec4a6be6a034ceedc12308bc5150846f08f4273c4655c89911a5aa3eb5"
++BUILD_BYTES = 23529
++STAGE = Path('/home/alex/work/pocket4-owned-ticket12306-qa-r1-source-01/stage-result.json')
++STAGE_SHA = "0bf30a72095a10a671c27c759085cd0cec858a3317555f02e01a3deb498cc485"
++STAGE_BYTES = 1967
++APK = Path('/home/alex/work/pocket4-owned-ticket12306-qa-r1-build-01/owned-ticket12306-qa.apk')
++APK_SHA = "148cd59566389abd4d64c38f181172c20fafffba85f75b917d9174c0af605cb1"
+-NONCE = 'b6275faedda72f2dec85914ab42b2b7b'
+-STATE_NONCE = 'a499f5a6a566ed0cebed5c98e234eede'
+-SELF = 'org.droidloom.qa.bestbuy.r4'
+-QA_ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r4-source-01/source')
+-QA_MANIFEST = 'cda79d5b01ebfd91d6b9148be6853c78495da92130fb4f153422daac7d14ad0b'
+-BUILD = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r4-build-01/build-result.json')
+-BUILD_SHA = '8bd0c70e64a543129aca0d8eeb08030bb135f95eb1be6bcda3b7933ac02433fb'
+-BUILD_BYTES = 23340
+-STAGE = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r4-source-01/stage-result.json')
+-STAGE_SHA = '037ffdf74d57b1cad24d40dd06754032ec4adbd50c9ef3e99b529471730089c7'
+-STAGE_BYTES = 1950
+-APK = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r4-build-01/owned-bestbuy-qa.apk')
+-APK_SHA = '708887e252bad787781768e4c96db9040444b4b32308381ec1d38af3deb0cc2c'
+ APK_BYTES = 24720
++SIGNER_SHA = "9e862a6399fcf73e29baaf1a3659fdc0d65c812c1024af2d3d1a99cb46dbf425"
+-SIGNER_SHA = '32b07f5c29e267541086154af0e5b0424cd53a65feb1b64f82b9277cccfb7c31'
+ REFERENCE_SHA = '0a4a9f0d02b2a62f2b902983e43360c751a8f1952fb9ae7399850b112cb50a89'
+ BASE_HOST_ROOT = Path('/home/alex/work/pocket4-current-host-r6-source-01')
+ RECORDER_MANIFEST = '002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff'
+@@ -48,20 +48,20 @@
+ CURRENT_EPOCH = '7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c'
+ BASELINE_SHA = '633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364'
+ QUALIFICATION_SHA = 'ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e'
++PARENT_HELPER_UID = 10160
++READER_SHA = "db0c54ed8b9e2fbf5763e174d01d74dac04edd368139e2af0d548beea093fd51"
++GUEST_DIR_NAME = 'pocket4-owned-ticket12306-qa-'+NONCE
+-PREVIOUS_HELPER_UID = 10155
+-READER_SHA = 'ce4ff1399953fe0d5e89bc0210ae9cdb323d1e08e436327df1521f6cb167ef77'
+-GUEST_DIR_NAME = 'pocket4-owned-bestbuy-qa-'+NONCE
+ GUEST_DIR = '/data/local/tmp/'+GUEST_DIR_NAME
++GUEST_APK = GUEST_DIR+'/owned-ticket12306-qa.apk'
+-GUEST_APK = GUEST_DIR+'/owned-bestbuy-qa.apk'
+ PACKAGE_LIST = ['/system/bin/cmd','package','list','packages','-u','-U','--user','all',SELF]
+ INSTALLED_ALL_USERS = ['/system/bin/cmd','package','list','packages','-U','--user','all',SELF]
+ INSTALL = ['/system/bin/cmd','package','install','-R','-t','--user','0','--pkg',SELF,GUEST_APK]
+ ACTION_LOCK_WAIT_SECONDS = 5.0
+ ACTION_LOCK_POLL_SECONDS = 0.05
+ WORK_SECONDS = 175
++EXPECTED_SOURCE_FILES = {'install_state.py','ticket12306_context.py','ticket12306_transport.py','stage_execute.py',
+-EXPECTED_SOURCE_FILES = {'install_state.py','bestbuy_context.py','bestbuy_transport.py','stage_execute.py',
+     'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',
++    'check_install_binding.py','references/target_metadata_parsers.py','target-artifact-reference.json', 'current_discovery.py', 'check_current_discovery.py', 'actual-target-metadata.json'}
+-    'check_install_binding.py','references/read_bestbuy.py','target-artifact-reference.json', 'current_discovery.py', 'check_current_discovery.py'}
+ 
+ def require(value, message):
+     if not value:
+@@ -201,7 +201,7 @@
+     match = re.fullmatch(re.escape('package:'+SELF+' uid:') + r'([0-9]+)\n', text)
+     require(match is not None, 'ONE_EXACT_NEW_PACKAGE_UID_REQUIRED')
+     uid = int(match[1])
++    require(10000 <= uid < 100000 and uid != PARENT_HELPER_UID and uid != 10121, 'NEW_APP_UID_REQUIRED')
+-    require(10000 <= uid < 100000 and uid != PREVIOUS_HELPER_UID and uid not in (10130,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190,10137,10196,10198,10203), 'NEW_APP_UID_REQUIRED')
+     return uid
+ 
+ class OwnedApk:
+@@ -230,7 +230,7 @@
+         require(self.directory_identity['uid'] == 0, 'OWNED_DIRECTORY_UID_CHANGED')
+         os.fchmod(self.directory, 0o711)
+         self.directory_identity = self.identity_of(self.directory)
++        self.file = os.open('owned-ticket12306-qa.apk', os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
+-        self.file = os.open('owned-bestbuy-qa.apk', os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
+                             0o600, dir_fd=self.directory)
+         self.file_created = True
+         count = 0
+@@ -258,11 +258,11 @@
+             if self.file_created:
+                 require(self.directory >= 0 and self.file >= 0, 'OWNED_FILE_FDS_REQUIRED')
+                 expected = os.fstat(self.file)
++                current = os.stat('owned-ticket12306-qa.apk', dir_fd=self.directory, follow_symlinks=False)
+-                current = os.stat('owned-bestbuy-qa.apk', dir_fd=self.directory, follow_symlinks=False)
+                 require(stat.S_ISREG(current.st_mode) and current.st_nlink == 1 and
+                         (current.st_dev,current.st_ino) == (expected.st_dev,expected.st_ino),
+                         'OWNED_APK_CLEANUP_IDENTITY_CHANGED')
++                os.unlink('owned-ticket12306-qa.apk', dir_fd=self.directory)
+-                os.unlink('owned-bestbuy-qa.apk', dir_fd=self.directory)
+                 os.fsync(self.directory)
+         except BaseException as error:
+             errors.append(error_record('owned_staged_file_retire',error))
+@@ -339,7 +339,7 @@
+ def verify_source(expected):
+     require(isinstance(expected,str) and re.fullmatch('[0-9a-f]{64}',expected),'EXTERNAL_SOURCE_PIN_REQUIRED')
+     manifest=json.loads(read(HERE/'SOURCE_PINS.json',131072,expected))
++    require(set(manifest['files']) == EXPECTED_SOURCE_FILES,'EXACT_TICKET12306_RUNTIME_SOURCE_SET_REQUIRED')
+-    require(set(manifest['files']) == EXPECTED_SOURCE_FILES,'EXACT_BESTBUY_RUNTIME_SOURCE_SET_REQUIRED')
+     for name,row in manifest['files'].items():
+         read(HERE/name,expected=row['sha256'],size=row['bytes'])
+     host_raw=read(HERE/'host/source-manifest.json',131072,RECORDER_MANIFEST)
+@@ -348,7 +348,7 @@
+     require(host_manifest.get('schema') == 2 and host_manifest.get('revision') == 6 and
+             host_manifest.get('artifact') == 'pocket4-bilibili-current-recorder-held-r6' and
+             row['sha256'] == REFERENCE_SHA and
++            manifest['files']['references/target_metadata_parsers.py']['sha256'] == READER_SHA,
+-            manifest['files']['references/read_bestbuy.py']['sha256'] == READER_SHA,
+             'EXACT_CURRENT_SHARED_REFERENCES_REQUIRED')
+     read(BASE_HOST_ROOT/'source-manifest.json',131072,RECORDER_MANIFEST,len(host_raw))
+     read(BASE_HOST_ROOT/'current_coordinator.py',131072,REFERENCE_SHA,row['bytes'])
+@@ -431,10 +431,10 @@
+     host_manifest=json.loads(read(HERE/'host/source-manifest.json',131072,RECORDER_MANIFEST))
+     qualify_host_stage(json.loads(read(HERE/'host-stage-actual.json',65536,HOST_STAGE_SHA,HOST_STAGE_BYTES)),host_manifest)
+     source=json.loads(read(QA_ROOT/'SOURCE_PINS.json',131072,QA_MANIFEST))
++    adapter=module(QA_ROOT/'qa_adapter.py',source['files']['qa_adapter.py']['sha256'],'ticket12306_actual_qa_adapter')
+-    adapter=module(QA_ROOT/'qa_adapter.py',source['files']['qa_adapter.py']['sha256'],'bestbuy_actual_qa_adapter')
+     manifest=adapter.own_source(QA_MANIFEST)
++    qa=adapter.load(QA_ROOT/'qa_contract.py',manifest['files']['qa_contract.py']['sha256'],'ticket12306_actual_qa_contract')
++    builder=adapter.load(QA_ROOT/'build_candidate.py',manifest['files']['build_candidate.py']['sha256'],'ticket12306_actual_qa_builder')
+-    qa=adapter.load(QA_ROOT/'qa_contract.py',manifest['files']['qa_contract.py']['sha256'],'bestbuy_actual_qa_contract')
+-    builder=adapter.load(QA_ROOT/'build_candidate.py',manifest['files']['build_candidate.py']['sha256'],'bestbuy_actual_qa_builder')
+     build_receipt=json.loads(read(BUILD,expected=BUILD_SHA,size=BUILD_BYTES))
+     args=types.SimpleNamespace(build_receipt=BUILD,build_receipt_sha256=BUILD_SHA,
+         source_manifest_sha256=QA_MANIFEST,apk_sha256=APK_SHA,signer_certificate_sha256=SIGNER_SHA)
+@@ -458,23 +458,23 @@
+             report.get('main_baseline_sha256') == BASELINE_SHA and
+             report.get('main_baseline_qualification_sha256') == QUALIFICATION_SHA,
+             'ACTUAL_32_SCOPE_AND_HOST_SESSION_CONTROLS_REQUIRED')
++    require(proof['APK'] == {'path':str(APK),'bytes':APK_BYTES,'sha256':APK_SHA},'EXACT_ACTUAL_TICKET12306_HELPER_APK_REQUIRED')
+-    require(proof['APK'] == {'path':str(APK),'bytes':APK_BYTES,'sha256':APK_SHA},'EXACT_ACTUAL_BESTBUY_HELPER_APK_REQUIRED')
+     stage=json.loads(read(STAGE,expected=STAGE_SHA,size=STAGE_BYTES))
+     require(stage.get('state') == 'OWNED_QA_APK_STATIC_BUILD_PASS_ANDROID_UNRUN' and
+             stage.get('source_manifest_sha256') == QA_MANIFEST and stage.get('build_returncode') == 0 and
+             stage.get('error') is None and stage.get('secondary_errors') == [] and
+             stage.get('build_result') == {'path':str(BUILD),'bytes':BUILD_BYTES,'sha256':BUILD_SHA},
++            'ACTUAL_TICKET12306_BUILD_STAGE_REQUIRED')
+-            'ACTUAL_BESTBUY_BUILD_STAGE_REQUIRED')
+     data=read(APK,APK_BYTES,APK_SHA,APK_BYTES)
+     proof['stage_receipt_sha256']=STAGE_SHA
++    require(adapter.SELF == qa.SELF == SELF and qa.PACKAGE == 'com.MobileTicket' and
++            qa.UID == 10121,'EXACT_DEDICATED_TICKET12306_QA_REQUIRED')
+-    require(adapter.SELF == qa.SELF == SELF and qa.PACKAGE == 'com.bestbuy.android' and
+-            qa.UID == 10130,'EXACT_DEDICATED_BESTBUY_QA_REQUIRED')
+     return adapter,qa,proof,data
+ 
+ 
+ def worker(expected):
+     manifest=verify_source(expected)
++    require(os.getuid()==os.geteuid()==0 and HERE==SOURCE and ROOT.is_dir(),'EXACT_ROOT_TICKET12306_WORKER_REQUIRED')
+-    require(os.getuid()==os.geteuid()==0 and HERE==SOURCE and ROOT.is_dir(),'EXACT_ROOT_BESTBUY_WORKER_REQUIRED')
+     require(not os.path.lexists(WORKER_ROOT),'FRESH_ONCE_WORKER_REQUIRED')
+     WORKER_ROOT.mkdir(mode=0o700)
+     (WORKER_ROOT/'steps').mkdir(mode=0o700)
+@@ -483,7 +483,7 @@
+     ref.write_new(WORKER_ROOT/'once.claim.json',{'nonce':NONCE,'state_nonce':STATE_NONCE,
+         'source_manifest_sha256':expected,'package':SELF,'automatic_retry':False})
+     result={'schema':1,'ok':False,'error':None,'secondary_errors':[],
++        'package':SELF,'target_package':'com.MobileTicket','nonce':NONCE,
+-        'package':SELF,'target_package':'com.bestbuy.android','nonce':NONCE,
+         'state_nonce':STATE_NONCE,'source_manifest_sha256':expected,
+         'install_attempted':False,'install_success_observed':False,'state_attempted':False,
+         'package_retained':False,'UI_actions':0,'audio_actions':0,'App_launches':0,
+@@ -494,16 +494,16 @@
+     started=time.monotonic()
+     try:
+         adapter,qa,proof,apk=qualified_inputs();result['build']=proof
++        context=module(HERE/'ticket12306_context.py',manifest['files']['ticket12306_context.py']['sha256'],'ticket12306_install_context')
++        transport=module(HERE/'ticket12306_transport.py',manifest['files']['ticket12306_transport.py']['sha256'],'ticket12306_r1_transport')
++        reader=module(HERE/'references/target_metadata_parsers.py',READER_SHA,'ticket12306_metadata_primitives')
+-        context=module(HERE/'bestbuy_context.py',manifest['files']['bestbuy_context.py']['sha256'],'bestbuy_install_context')
+-        transport=module(HERE/'bestbuy_transport.py',manifest['files']['bestbuy_transport.py']['sha256'],'bestbuy_r4_transport')
+-        reader=module(HERE/'references/read_bestbuy.py',READER_SHA,'bestbuy_metadata_primitives')
+         activation=ref.current_baseline()
++        epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'ticket12306_worker_epoch')
+-        epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'bestbuy_worker_epoch')
+         guard=lambda:ref.main_guard(activation,epoch)
+         result['Main_before_lock']=guard()
++        shared=module(context.INSTALLED_SHARED/'source_contract.py',context.CONTRACT_SHA,'ticket12306_command_contract')
+-        shared=module(context.INSTALLED_SHARED/'source_contract.py',context.CONTRACT_SHA,'bestbuy_command_contract')
+         shared_contract=shared.SourceContract(context.INSTALLED_SHARED/'source-manifest.json',context.SHARED_MANIFEST)
++        recorder=shared_contract.load('recorder.py','ticket12306_original_command_body')
+-        recorder=shared_contract.load('recorder.py','bestbuy_original_command_body')
+         phase='action_lock_admission';result['action_lock_admission']={}
+         lock=acquire_action_lock(recorder.ACTION_LOCK,result['action_lock_admission'])
+         guard()
+@@ -532,8 +532,8 @@
+         uid=uid_from(uid_raw);result['uid_command']=uid_command
+         session=adapter.Session(ctx,recorder,qa,proof,uid)
+         result['runtime_shared_recorder_manifest_sha256']=context.SHARED_MANIFEST
++        result['runtime_ticket_context_sha256']=manifest['files']['ticket12306_context.py']['sha256']
++        result['runtime_ticket_transport_sha256']=manifest['files']['ticket12306_transport.py']['sha256']
+-        result['runtime_ticket_context_sha256']=manifest['files']['bestbuy_context.py']['sha256']
+-        result['runtime_ticket_transport_sha256']=manifest['files']['bestbuy_transport.py']['sha256']
+         phase='installed_before_state';result['installed_before_state']=session.installed()
+         phase='one_state_only';result['state_attempted']=True
+         result['state']=session.instrument({'protocol':qa.PROTOCOL,'nonce':STATE_NONCE,'op':'state'})
+@@ -545,7 +545,7 @@
+         require(uid_from(all_rows)==uid,'NEW_HELPER_APPEARED_FOR_ANOTHER_USER_OR_UID')
+         result['all_users_after']=row_command
+         phase='target_APK_after';result['target_after']=artifacts.after()
++        require(result['target_before']==result['target_after'],'TICKET12306_TARGET_CHANGED_DURING_OWN_INSTALL')
+-        require(result['target_before']==result['target_after'],'BESTBUY_TARGET_CHANGED_DURING_OWN_INSTALL')
+         require(ctx.command_index==ctx.next_command==len(plan)==13,'EXACT_THIRTEEN_JOINED_COMMANDS_REQUIRED')
+         result['exact_command_count']=ctx.command_index
+         result['owned_package_uid']=uid;result['package_retained']=True;result['ok']=True
+@@ -557,7 +557,7 @@
+             except BaseException as error:remember(result,'staging_cleanup',error)
+         if artifacts is not None:
+             try:
++                if len(artifacts.records)==1 and 'target_after' not in result:
+-                if len(artifacts.records)==3 and 'target_after' not in result:
+                     result['failure_target_files_revalidated']=artifacts.revalidate_files()
+             except BaseException as error:remember(result,'failed_scope_target_revalidation',error)
+             try:result['target_FD_cleanup']=artifacts.close()
+@@ -588,7 +588,7 @@
+ 
+ def execute(expected):
+     verify_source(expected)
++    require(os.getuid()==os.geteuid()==0 and HERE==SOURCE,'EXACT_ROOT_TICKET12306_COORDINATOR_REQUIRED')
+-    require(os.getuid()==os.geteuid()==0 and HERE==SOURCE,'EXACT_ROOT_BESTBUY_COORDINATOR_REQUIRED')
+     ref=references()
+     require(not os.path.lexists(WORKER_ROOT),'NO_PARTIAL_WORKER_RETRY')
+     claim=json.loads(read(ROOT/'once.claim.json',65536))
+@@ -596,7 +596,7 @@
+             claim.get('automatic_retry') is False,'EXACT_ONCE_CLAIM_REQUIRED')
+     evidence=ROOT/'evidence';evidence.mkdir(mode=0o700)
+     result={'schema':1,'ok':False,'error':None,'secondary_errors':[],
++        'source_manifest_sha256':expected,'package':SELF,'target_package':'com.MobileTicket',
+-        'source_manifest_sha256':expected,'package':SELF,'target_package':'com.bestbuy.android',
+         'nonce':NONCE,'worker_root':str(WORKER_ROOT),'automatic_retry':False,
+         'UI_actions':0,'audio_actions':0,'App_launches':0,'whole_app_production_ready':False,
+         'old_v2_helper_called':False,'Bili_Flow_instantiated':False,'install_state_worker_requested':False}
+@@ -605,7 +605,7 @@
+         resource_before=prepare_owned_limits();result['owned_before']=resource_before
+         qualified_inputs()
+         activation=ref.current_baseline()
++        epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'ticket12306_coordinator_epoch')
+-        epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'bestbuy_coordinator_epoch')
+         guard=lambda:ref.main_guard(activation,epoch)
+         result['Main_before']=guard()
+         result['install_state_worker_requested']=True
+@@ -616,7 +616,7 @@
+                 durable.get('state_attempted') is True and durable.get('install_success_observed') is True and
+                 durable.get('package_retained') is True and durable.get('outcome_unknown') is False and
+                 durable.get('exact_command_count')==13 and durable.get('target_before')==durable.get('target_after'),
++                'EXACT_TICKET12306_INSTALL_STATE_DURABLE_SCOPE_REQUIRED')
+-                'EXACT_BESTBUY_INSTALL_STATE_DURABLE_SCOPE_REQUIRED')
+         result['owned_package_uid']=durable['owned_package_uid']
+         result['worker_result']={'path':str(WORKER_ROOT/'result.json'),'bytes':len(raw),'sha256':digest(raw)}
+         result['state_wire_sha256']=durable['state']['wire_sha256']
+@@ -657,7 +657,7 @@
+     require(re.fullmatch('[0-9a-f]{32}',NONCE) and re.fullmatch('[0-9a-f]{32}',STATE_NONCE) and
+             NONCE!=STATE_NONCE,'EXACT_DISTINCT_NONCES_REQUIRED')
+     if not a.execute_once and not a.worker_once:
++        print(json.dumps({'state':'PLAN_ONLY','package':SELF,'target':'com.MobileTicket',
+-        print(json.dumps({'state':'PLAN_ONLY','package':SELF,'target':'com.bestbuy.android',
+             'root':str(ROOT),'actual_build_sha256':BUILD_SHA,'APK_sha256':APK_SHA,'signer_sha256':SIGNER_SHA,
+             'install_argv':INSTALL,'state_nonce':STATE_NONCE,'UiAutomation_connection_requested':False,
+             'permission_grants':0,'UI_actions':0,'App_launches':0,'old_v2_helper_called':False,
+--- parent/stage_execute.py
++++ candidate/stage_execute.py
+@@ -1,14 +1,14 @@
+ #!/usr/bin/env python3
++"""Exact ticket12306 current-baseline install/state staging with its own target context."""
+-"""Exact bestbuy current-baseline install/state staging with its own target context."""
+ import hashlib,json,os,stat,sys,types
+ from pathlib import Path,PurePosixPath
++ROOT = Path('/home/alex/work/pocket4-owned-ticket12306-qa-r1-install-state-01')
+-ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-02')
+ SOURCE=ROOT/'source'
++NONCE = '5ddfa31acb7e6bc8f97288d059cf9dee'
+-NONCE = 'b6275faedda72f2dec85914ab42b2b7b'
+ REFERENCE_SHA = '0a4a9f0d02b2a62f2b902983e43360c751a8f1952fb9ae7399850b112cb50a89'
++FILES={'install_state.py','ticket12306_context.py','ticket12306_transport.py','stage_execute.py',
+-FILES={'install_state.py','bestbuy_context.py','bestbuy_transport.py','stage_execute.py',
+        'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',
++       'check_install_binding.py','references/target_metadata_parsers.py','target-artifact-reference.json', 'current_discovery.py', 'check_current_discovery.py', 'actual-target-metadata.json'}
+-       'check_install_binding.py','references/read_bestbuy.py','target-artifact-reference.json', 'current_discovery.py', 'check_current_discovery.py'}
+ BASE_ROOT = Path('/home/alex/work/pocket4-current-host-r6-source-01')
+ R6_MANIFEST = '002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff'
+ def require(value,reason):
+@@ -95,12 +95,12 @@
+     host_manifest=json.loads(files['host/source-manifest.json'])
+     ref,original,manifest=load_original_host(files)
+     baseline=ref.current_baseline()
++    context=load_text(files['ticket12306_context.py'],SOURCE/'ticket12306_context.py','current_target_context_controls')
++    transport=load_text(files['ticket12306_transport.py'],SOURCE/'ticket12306_transport.py','current_target_transport_controls')
+-    context=load_text(files['bestbuy_context.py'],SOURCE/'bestbuy_context.py','current_target_context_controls')
+-    transport=load_text(files['bestbuy_transport.py'],SOURCE/'bestbuy_transport.py','current_target_transport_controls')
+     controls_module=load_text(files['check_install_binding.py'],SOURCE/'check_install_binding.py','current_install_pure_controls')
+     controls=controls_module.run_controls(entry,actual_host,host_manifest,context,transport,baseline,ref,files,packet['source_manifest_sha256'])
++    require(controls['all_passed'] is True and controls['count']==75 and
++            len(controls['cases'])==75 and all(x['passed'] is True for x in controls['cases']),
+-    require(controls['all_passed'] is True and controls['count']==68 and
+-            len(controls['cases'])==68 and all(x['passed'] is True for x in controls['cases']),
+             'ACTUAL_CURRENT_APP_CONTEXT_CONTROLS_REQUIRED')
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'current_install_stage_epoch')
+     before=ref.main_guard(baseline,epoch)
+--- parent/make_request.py
++++ candidate/make_request.py
+@@ -7,9 +7,9 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
++KEY = 'pocket4-owned-ticket12306-qa-r1-current-r6-install-state-01-20261106'
++ROOT = '/home/alex/work/pocket4-owned-ticket12306-qa-r1-install-state-01'
++NONCE = '5ddfa31acb7e6bc8f97288d059cf9dee'
+-KEY = 'pocket4-owned-bestbuy-qa-r4-current-r6-install-state-02-20261106'
+-ROOT = '/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-02'
+-NONCE = 'b6275faedda72f2dec85914ab42b2b7b'
+ 
+ 
+ def sha(raw):
+--- parent/check_install_binding.py
++++ candidate/check_install_binding.py
+@@ -3,7 +3,7 @@
+ import types
+ import json
+ 
++CONTROL_COUNT = 75
+-CONTROL_COUNT = 68
+ 
+ def run_controls(entry, actual_host, manifest, context, transport, baseline, ref, files, source_manifest_sha256):
+     rows = []
+@@ -53,22 +53,31 @@
+     entry.require(entry.uid_from(('package:'+entry.SELF+' uid:99999\n').encode())==99999,
+                   'SYNTHETIC_UID_PARSER_POSITIVE')
+     yes('synthetic_uid_positive_not_actual_identity')
++    rejected('actual_parent_helper_uid_rejected',lambda:entry.uid_from(
++        ('package:'+entry.SELF+' uid:'+str(entry.PARENT_HELPER_UID)+'\n').encode()))
++    authority=context.qualify_target_metadata(json.loads(files['actual-target-metadata.json']),
++        json.loads(files['target-artifact-reference.json']))
++    scope=context.baseline_scope(ref,baseline,authority)
+-    rejected('previous_actual_helper_uid_rejected',lambda:entry.uid_from(
+-        ('package:'+entry.SELF+' uid:'+str(entry.PREVIOUS_HELPER_UID)+'\n').encode()))
+-    scope=context.baseline_scope(ref,baseline)
+     entry.require(scope==context.current_scope() and scope['package']==context.PACKAGE and
+                   scope['uid']==context.UID,'ACTUAL_CURRENT_SCOPE_CONSTRUCTION')
++    yes('actual_metadata_projects_separate_target_scope_without_changing_baseline')
+-    yes('actual_baseline_projects_own_target_scope')
+     def base_no(name,change):
+         value=copy.deepcopy(baseline);change(value)
++        rejected(name,lambda:context.baseline_scope(ref,value,authority))
+-        rejected(name,lambda:context.baseline_scope(ref,value))
+     base_no('old_baseline_schema',lambda v:v.update(schema='legacy-activation'))
+     base_no('forged_deployment_flag',lambda v:v.update(main_deployed=True))
+     base_no('old_framework_epoch',lambda v:v['framework_epoch'].update(sha256='48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'))
++    def authority_no(name,change):
++        value=copy.deepcopy(authority);change(value)
++        rejected(name,lambda:context.baseline_scope(ref,baseline,value))
++    def both_metadata(value,uid):
++        for key in ('metadata_before','metadata_after'):value[key]['uid']=uid
++    def both_directories(value,change):
++        for key in ('data_directories_before','data_directories_after'):change(value[key])
++    authority_no('wrong_target_uid',lambda v:both_metadata(v,10117))
++    authority_no('bool_target_uid',lambda v:both_metadata(v,True))
++    authority_no('missing_current_target_directory',lambda v:both_directories(v,lambda rows:rows.pop()))
++    authority_no('foreign_current_target_directory_owner',lambda v:both_directories(v,lambda rows:rows[0].update(uid=10117)))
+-    base_no('wrong_target_uid',lambda v:v['packages'].update({context.PACKAGE:10117}))
+-    base_no('bool_target_uid',lambda v:v['packages'].update({context.PACKAGE:True}))
+-    base_no('missing_current_target_directory',lambda v:v['app_directories'].pop('user_de/0/'+context.PACKAGE))
+-    base_no('foreign_current_target_directory_owner',lambda v:v['app_directories']['user/0/'+context.PACKAGE].update(uid=10117))
+     base_no('baseline_production_claim',lambda v:v.update(whole_app_production_ready=True))
+     base_no('previous_current_baseline_schema_rejected',lambda v:v.update(schema='pocket4-main-current-baseline-v1'))
+     base_no('previous_current_baseline_kind_rejected',lambda v:v.update(kind='current-framework-generation'))
+@@ -76,7 +85,7 @@
+         wrong=types.SimpleNamespace(EPOCH=ref.EPOCH,BASELINE_SHA=ref.BASELINE_SHA,
+                                     QUALIFICATION_SHA=ref.QUALIFICATION_SHA)
+         setattr(wrong,field,'0'*64)
++        rejected('wrong_reference_'+field.lower(),lambda wrong=wrong:context.baseline_scope(wrong,baseline,authority))
+-        rejected('wrong_reference_'+field.lower(),lambda wrong=wrong:context.baseline_scope(wrong,baseline))
+     calls={'Main':0,'target':0,'command':0}
+     def forbidden_command(*args,**kwargs):
+         calls['command']+=1
+@@ -117,19 +126,19 @@
+     rejected('guard_rejects_tampered_target_before_callbacks',lambda:ctx.guard())
+     entry.require(calls=={'Main':0,'target':0,'command':0},'PURE_CONTROL_CALLBACK_OR_COMMAND_ATTEMPTED')
+     qa_manifest=json.loads(entry.read(entry.QA_ROOT/'SOURCE_PINS.json',131072,entry.QA_MANIFEST))
++    qa=entry.module(entry.QA_ROOT/'qa_contract.py',qa_manifest['files']['qa_contract.py']['sha256'],'ticket12306_r1_install_plan_contract')
++    entry.require(qa.SELF==entry.SELF=='org.droidloom.qa.ticket12306.r1' and
++                  qa.PROTOCOL=='pocket4-owned-ticket12306-qa-v1','EXACT_INDEPENDENT_R1_PLAN_CONTRACT')
+-    qa=entry.module(entry.QA_ROOT/'qa_contract.py',qa_manifest['files']['qa_contract.py']['sha256'],'bestbuy_r4_install_plan_contract')
+-    entry.require(qa.SELF==entry.SELF=='org.droidloom.qa.bestbuy.r4' and
+-                  qa.PROTOCOL=='pocket4-owned-bestbuy-qa-v4','EXACT_R4_PLAN_CONTRACT')
+     actual_plan=context.ordered_commands(qa,entry.SELF,entry.GUEST_APK,entry.STATE_NONCE)
+     state_request={'protocol':qa.PROTOCOL,'nonce':entry.STATE_NONCE,'op':'state'}
+     qa.validate_request(state_request)
+     entry.require(len(actual_plan)==13 and actual_plan[0]==(context.LIST,15,False) and
+                   actual_plan[1]==(context.PATHS,15,False) and actual_plan[3]==(entry.INSTALL,40,True) and
+                   actual_plan[7]==(qa.instrumentation_argv(state_request),20,False) and
++                  sum(item[2] is True for item in actual_plan)==1,'ACTUAL_INDEPENDENT_R1_ORDERED_INSTALL_STATE_PLAN')
++    yes('production_ordered_commands_actual_independent_R1_contract_positive')
++    rejected('production_ordered_commands_parent_helper_package_rejected',lambda:context.ordered_commands(
++        qa,'org.droidloom.qa.bestbuy.r4',entry.GUEST_APK,entry.STATE_NONCE))
+-                  sum(item[2] is True for item in actual_plan)==1,'ACTUAL_R4_ORDERED_INSTALL_STATE_PLAN')
+-    yes('production_ordered_commands_actual_R4_contract_positive')
+-    rejected('production_ordered_commands_previous_R3_package_rejected',lambda:context.ordered_commands(
+-        qa,'org.droidloom.qa.bestbuy.r3',entry.GUEST_APK,entry.STATE_NONCE))
+     rows.extend(run_source_controls(entry,files,source_manifest_sha256))
+     discovery_controls = types.ModuleType('production_current_discovery_controls')
+     exec(compile(files['check_current_discovery.py'],'<current-discovery-controls>','exec'),discovery_controls.__dict__)
+@@ -137,6 +146,8 @@
+                                discovery_controls.LEGACY_SHA)
+     rows.extend(discovery_controls.run_discovery_controls(files['current_discovery.py'],baseline,legacy_source))
+     rows.extend(discovery_controls.run_context_route_controls(context,files,baseline,legacy_source,source_manifest_sha256))
++    rows.extend(run_independent_target_controls(entry,context,transport,baseline,ref,files,
++        source_manifest_sha256,discovery_controls,legacy_source,manifest))
+     entry.require(len(rows)==CONTROL_COUNT and len({x['name'] for x in rows})==CONTROL_COUNT,
+                   'EXACT_CURRENT_CONTEXT_CONTROL_COUNT')
+     return {'schema':'pocket4-current-app-install-context-controls-v1','all_passed':True,
+@@ -149,7 +160,10 @@
+             'owned_temporary_source_directories':True,'temporary_directories_removed':True,
+             'actual_R6_reference_read_only':True,'production_verify_source_calls':5,
+             'new_owner_discovery_controls':18,'production_discovery_and_Context_route_used':True,
++            'legacy_discover_failure_reproduced_in_memory':True,
++            'independent_target_authority_and_held_route_controls':7,
++            'immutable_baseline_packages_modified':False,
++            'new_target_held_IO_is_explicit_synthetic_seam':True}
+-            'legacy_discover_failure_reproduced_in_memory':True}
+ 
+ 
+ def run_source_controls(entry, files, expected):
+@@ -199,3 +213,218 @@
+         rejected('production_verify_source_payload_hash_changed_rejected')
+     entry.require(len(rows)==5,'EXACT_FIVE_SOURCE_CLOSURE_CONTROLS')
+     return rows
++
++def run_independent_target_controls(entry, context, transport, baseline, ref, files,
++                                    expected_manifest, discovery_controls, legacy_source, host_manifest):
++    """Real authority/open_context functions; filesystem/held-target I/O is explicit synthetic input."""
++    import hashlib
++    import os
++    import time
++    from pathlib import PurePosixPath
++    rows = []
++    authority = json.loads(files['actual-target-metadata.json'])
++    artifact = json.loads(files['target-artifact-reference.json'])
++    manifest = json.loads(files['SOURCE_PINS.json'])
++    root = PurePosixPath('/pure-owned-source')
++    original_baseline = copy.deepcopy(baseline)
++    def add(name): rows.append({'name':name,'passed':True})
++    def reject(name, code, call):
++        try:call()
++        except RuntimeError as error:
++            entry.require(str(error) == code, 'INDEPENDENT_TARGET_CONTROL_WRONG_FIRST_ERROR:'+name)
++        else:raise RuntimeError('INDEPENDENT_TARGET_NEGATIVE_ACCEPTED:'+name)
++        add(name)
++    reads = []
++    def memory_read(path, maximum=1048576, expected=None, size=None):
++        name = str(path.relative_to(root))
++        data = files[name]
++        entry.require(type(data) is bytes and len(data) <= maximum and
++                      (expected is None or hashlib.sha256(data).hexdigest() == expected) and
++                      (size is None or len(data) == size), 'EXACT_MEMORY_SOURCE_READ_REQUIRED')
++        reads.append(name)
++        return data
++    util = types.SimpleNamespace(read=memory_read)
++    observed = context.load_target_metadata(util,manifest,root)
++    entry.require(observed == authority and reads == ['actual-target-metadata.json','target-artifact-reference.json'] and
++                  context.baseline_scope(ref,baseline,observed) == context.current_scope() and
++                  baseline == original_baseline, 'PINNED_INDEPENDENT_TARGET_AUTHORITY_POSITIVE')
++    add('actual_metadata_loader_and_scope_preserve_original_baseline')
++    wrong = copy.deepcopy(manifest);wrong['files']['actual-target-metadata.json']['sha256'] = '0'*64
++    reads.clear()
++    reject('metadata_source_pin_rejected_before_read','INDEPENDENT_TARGET_AUTHORITY_SOURCE_PINS_REQUIRED',
++           lambda:context.load_target_metadata(util,wrong,root))
++    entry.require(reads == [], 'UNPINNED_AUTHORITY_READ_ATTEMPTED')
++    binding_row = host_manifest['files']['main_binding.py']
++    real_binding = entry.module(entry.BASE_HOST_ROOT/'main_binding.py',binding_row['sha256'],
++                                'independent_target_real_package_parser')
++    def io_fixture(directory_drift=False):
++        state = {'opened':[],'closed':[],'target_verify':0,'held_created':0,'held_closed':0,
++                 'Main':0,'writes':[],'commands':0}
++        records = {}; next_fd = [2000000000]
++        def allocate(row):
++            next_fd[0] += 1
++            fd = next_fd[0];records[fd] = row;state['opened'].append(fd)
++            return fd
++        def close(fd):
++            entry.require(fd in records and fd not in state['closed'], 'ONE_SYNTHETIC_FD_CLOSE')
++            state['closed'].append(fd)
++        def fstat(fd):
++            entry.require(fd in records and fd not in state['closed'], 'LIVE_SYNTHETIC_DIRECTORY_FD')
++            row = records[fd]
++            return types.SimpleNamespace(st_dev=row['device'],st_ino=row['inode'],
++                st_mode=row['mode'],st_uid=row['uid'],st_gid=row['gid'])
++        fake_os = types.SimpleNamespace(**{k:v for k,v in vars(os).items()
++                                          if k not in ('open','close','fstat')})
++        fake_os.close=close;fake_os.fstat=fstat
++        known = {r['path']:r for r in authority['data_directories_before']}
++        class Target:
++            def __init__(self, actual=None, helper_path=None, helper_sha=None):
++                state['held_created'] += 1
++                self.expected={'pid':baseline['framework_epoch']['binding']['processes']['init']['host_pid']}
++                self.helper_sha256=transport.HELD_HELPER_SHA256
++                self.record={'synthetic_held_target':True}
++            def verify(self):state['target_verify'] += 1
++            def read_file(self,path,maximum):
++                entry.require(path == '/data/system/packages.list' and maximum == 1024*1024,
++                              'ONE_PRIVATE_PACKAGE_LIST_IN_MEMORY')
++                return (context.PACKAGE+' '+str(context.UID)+'\n').encode(),{}
++            def open_root(self,path,flags):
++                entry.require(path in known and flags == os.O_PATH|os.O_DIRECTORY|os.O_NOFOLLOW,
++                              'EXACT_TWO_TARGET_DIRECTORY_PATHS')
++                row=copy.deepcopy(known[path])
++                if directory_drift:row['inode'] += 1
++                return allocate(row)
++            def close(self):state['held_closed'] += 1
++        namespace=dict(context.__dict__)
++        namespace['os']=fake_os
++        verify=types.FunctionType(context.verify_target_data.__code__,namespace)
++        return state,records,allocate,fake_os,Target,namespace,verify
++    state,records,allocate,fake_os,Target,namespace,verify=io_fixture()
++    verify(Target(),authority,real_binding)
++    entry.require(len(state['opened']) == 2 and state['closed'] == state['opened'] and
++                  state['target_verify'] == 2, 'LIVE_FIXED_DIRECTORIES_AND_FD_CLOSURE')
++    add('production_target_directory_revalidation_uses_real_package_parser')
++    state,records,allocate,fake_os,Target,namespace,verify=io_fixture(True)
++    reject('changed_live_target_directory_rejected_and_closed','CURRENT_TARGET_DATA_DIRECTORY_IDENTITY_CHANGED',
++           lambda:verify(Target(),authority,real_binding))
++    entry.require(len(state['opened']) == 1 and state['closed'] == state['opened'],
++                  'REJECTED_DIRECTORY_DESCRIPTOR_NOT_CLOSED')
++    def open_fixture(wrong_init=False, wrong_Main=False):
++        f=discovery_controls.Fixture(baseline,files['current_discovery.py'],legacy_source)
++        state,records,allocate,fake_os,Target,namespace,verify=io_fixture()
++        expected=baseline['framework_epoch']['binding']['processes']['init']
++        actual={'pid':expected['host_pid'],'start':str(expected['start_ticks']),
++            'uid':[str(x) for x in expected['uids']],'ppid':expected['parent_host_pid'],
++            'nspid':[str(x) for x in expected['namespace_pids']],
++            'exe':expected['executable'],'cgroup':'\n'.join(expected['cgroup']),
++            'ns':copy.deepcopy(expected['namespaces'])}
++        def open_proc(path,flags):
++            entry.require(path == '/proc/'+str(expected['host_pid']) and
++                flags == os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,
++                'ONLY_FIXED_CURRENT_INIT_PROC_OPEN')
++            return allocate({'synthetic_proc':True})
++        fake_os.open=open_proc
++        def proc_identity_at(fd,pid,deadline):
++            entry.require(fd in records and pid == expected['host_pid'], 'FIXED_INIT_HELD_IDENTITY_INPUT')
++            return copy.deepcopy(actual)
++        def forbidden(*args,**kwargs):
++            state['commands'] += 1
++            raise RuntimeError('INDEPENDENT_CONTEXT_ROUTE_CONTROL_COMMAND_FORBIDDEN')
++        recorder=types.SimpleNamespace(APP='/pure/original/android_app.py',APP_SHA='a'*64,
++            Flow=types.SimpleNamespace(command=forbidden),
++            write_new=lambda path,value:state['writes'].append((path,value)))
++        held=types.SimpleNamespace(proc_identity_at=proc_identity_at,HeldTarget=Target)
++        def main_classpaths(held_module,target,epoch_record,epoch_module,guard):
++            entry.require(held_module is held and epoch_record is baseline['framework_epoch'],
++                          'ORIGINAL_TWO_ROOT_CLASSPATH_BOUNDARY')
++            guard()
++            return dict(f.environment),{'synthetic_classpaths':True}
++        binding=types.SimpleNamespace(package_uids=real_binding.package_uids,
++            same_epoch_identity=real_binding.same_epoch_identity,main_classpaths=main_classpaths)
++        def contract_load(name,label):
++            return {'recorder.py':recorder,'references/held_runtime_r5.py':held,'main_binding.py':binding}[name]
++        contract=types.SimpleNamespace(sha256=context.SHARED_MANIFEST,load=contract_load,verify=lambda:None)
++        source=types.SimpleNamespace(HELPER_PATH=PurePosixPath('/pure/held-helper'),
++            HELPER_SHA=transport.HELD_HELPER_SHA256,HELPER_BYTES=7,
++            verify_shared_helper=lambda:{'synthetic_qualification':True})
++        def contract_constructor(path,expected_sha):
++            entry.require(path == context.INSTALLED_SHARED/'source-manifest.json' and
++                          expected_sha == context.SHARED_MANIFEST, 'ORIGINAL_R6_SOURCE_CONSTRUCTOR_ROUTE')
++            return contract
++        source.SourceContract=contract_constructor
++        def source_verify(expected_sha):
++            entry.require(expected_sha == expected_manifest, 'ORIGINAL_INSTALL_SOURCE_PIN_ROUTE')
++            return manifest
++        def module(path, expected_sha, name):
++            if path == context.INSTALLED_SHARED/'source_contract.py':
++                entry.require(expected_sha == context.CONTRACT_SHA, 'ORIGINAL_R6_CONTRACT_PIN_ROUTE')
++                return source
++            if path == context.Path(recorder.APP):
++                entry.require(expected_sha == recorder.APP_SHA, 'ORIGINAL_ANDROID_APP_PIN_ROUTE')
++                return f.app
++            entry.require(path == root/'current_discovery.py' and
++                          expected_sha == hashlib.sha256(files['current_discovery.py']).hexdigest(),
++                          'ORIGINAL_CURRENT_DISCOVERY_PIN_ROUTE')
++            if wrong_init:
++                current=types.SimpleNamespace(**vars(f.current))
++                original=f.current.discover_current
++                def discover(*args):
++                    init,env,status=original(*args)
++                    return init+1,env,status
++                current.discover_current=discover
++                return current
++            return f.current
++        def read(path, maximum=1048576, expected=None, size=None):
++            if path == source.HELPER_PATH:
++                entry.require(maximum == size == source.HELPER_BYTES and expected == source.HELPER_SHA,
++                              'ORIGINAL_SHARED_HELPER_PIN_ROUTE')
++                return b'seam-io'
++            return memory_read(path,maximum,expected,size)
++        util=types.SimpleNamespace(module=module,read=read)
++        def guard(baseline_value,epoch_value):
++            entry.require(baseline_value is baseline and epoch_value is f.epoch,
++                          'ORIGINAL_MAIN_GUARD_ARGUMENT_ROUTE')
++            state['Main'] += 1
++            value=copy.deepcopy(authority['Main_before'])
++            if wrong_Main:value['seven_processes_match']=False
++            return value
++        ref_view=types.SimpleNamespace(EPOCH=context.CURRENT_EPOCH,BASELINE_SHA=context.BASELINE_SHA,
++            QUALIFICATION_SHA=context.QUALIFICATION_SHA,current_baseline=lambda:baseline,
++            EPOCH_SOURCE='/pure/original/framework_epoch.py',EPOCH_SOURCE_SHA='b'*64,
++            read=lambda path,expected:b'pure-epoch',module=lambda raw,path,name:f.epoch,
++            main_guard=guard,write_new=lambda path,value:state['writes'].append((path,value)))
++        namespace['verify_target_data']=verify
++        opened=types.FunctionType(context.open_context.__code__,namespace)
++        result={};step=PurePosixPath('/pure-owned-step')
++        def invoke():
++            return opened(ref_view,util,expected_manifest,source_verify,root,step,
++                          transport,[],result,time.monotonic()+1000)
++        return f,state,result,invoke
++    f,state,result,invoke=open_fixture()
++    ctx,recorder,guard=invoke()
++    entry.require(ctx.scope == context.current_scope() and state['held_created'] == 1 and
++                  state['held_closed'] == 0 and f.status_calls == 1 and
++                  len(f.identity_calls) == 8 and state['Main'] >= 4 and
++                  len(state['writes']) == 1 and
++                  state['writes'][0][1]['target_package'] == context.PACKAGE and
++                  state['writes'][0][1]['target_uid'] == context.UID and
++                  state['writes'][0][1]['independent_target_metadata_sha256'] == context.METADATA_RESULT_SHA and
++                  state['commands'] == 0 and state['opened'] == state['closed'],
++                  'PRODUCTION_INDEPENDENT_OPEN_CONTEXT_MUST_REACH_HELD_RECORD')
++    ctx.close()
++    entry.require(state['held_closed'] == 1, 'SUCCESSFUL_SYNTHETIC_HELD_TARGET_CLOSE')
++    add('production_open_context_reaches_current_discovery_and_independent_held_record')
++    f,state,result,invoke=open_fixture(wrong_init=True)
++    reject('production_open_rejects_foreign_discovered_init_and_closes_held',
++           'FIXED_MAIN_DISCOVERY_CHANGED',invoke)
++    entry.require(state['held_created'] == state['held_closed'] == 1 and
++                  state['opened'] == state['closed'] and state['commands'] == 0 and
++                  state['writes'] == [], 'WRONG_DISCOVERED_INIT_CLOSURE_REQUIRED')
++    f,state,result,invoke=open_fixture(wrong_Main=True)
++    reject('production_open_rejects_current_Main_mismatch_before_held',
++           'INDEPENDENT_METADATA_AND_CURRENT_MAIN_DIFFER',invoke)
++    entry.require(state['held_created'] == 0 and state['opened'] == [] and
++                  state['commands'] == 0 and state['writes'] == [] and baseline == original_baseline,
++                  'MISMATCHED_MAIN_MUST_NOT_ENTER_OR_MUTATE_BASELINE')
++    entry.require(len(rows) == 7,'EXACT_SEVEN_INDEPENDENT_TARGET_CONTROLS')
++    return rows
+--- parent/check_current_discovery.py
++++ candidate/check_current_discovery.py
+@@ -195,9 +195,8 @@
+     from pathlib import PurePosixPath
+     source = files["current_discovery.py"]
+     context_name = context.PACKAGE
++    need(context_name == "com.MobileTicket", "EXACT_INDEPENDENT_TARGET_CONTEXT_REQUIRED")
++    context_source = files["ticket12306_context.py"]
+-    context_source = files[{"com.ihg.apps.android":"ihg_context.py",
+-        "com.amazon.mShop.android.shopping":"amazon_context.py",
+-        "com.bestbuy.android":"bestbuy_context.py"}[context_name]]
+     tree = ast.parse(context_source)
+     opened = [n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name == "open_context"]
+     need(len(opened) == 1,"ONE_PRODUCTION_OPEN_CONTEXT_REQUIRED")
+--- parent/references/read_bestbuy.py
++++ candidate/references/target_metadata_parsers.py
+@@ -1,99 +1,14 @@
++"""Fixed target metadata parsers only; original parser bodies preserved."""
++import re
+-#!/usr/bin/env python3
+-"""One fixed BestBuy metadata read, with the qualified held Main primitives.
+-
+-No App launch, instrumentation, v2 helper, permission or settings operation.
+-The original Bili Flow/BoundArun business scope is never instantiated or patched.
+-Only its pinned command-observation function and shared held-entry primitives
+-are reused. Default PLAN performs no file or device read.
+-"""
+-import argparse
+-import hashlib
+-import json
+-import os
+ from pathlib import Path
++PACKAGE = "com.MobileTicket"
+-import re
+-import stat
+-import time
+-import types
+-
+-ROOT = Path('/home/alex/work/pocket4-bestbuy-artifact-launcher-readonly-01')
+-SOURCE_PATH = ROOT/'source/read_bestbuy.py'
+-NONCE = '84c802283ac2ff38b19f671004194e54'
+-PACKAGE = 'com.bestbuy.android'
+ USER = 0
+-HISTORICAL_VERSION = 2012312321
+-INSTALLED_SOURCE = Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/source')
+-INSTALL_SHA = '6614f2eb92ffd2a339c733d6fc58262fbb918d3e9c8eb15cfca3fa275b8bd329'
+-INSTALL_BYTES = 34852
+-REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+-RECORDER_ROOT = INSTALLED_SOURCE/'recorder-r4'
+-RECORDER_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+-SOURCE_CONTRACT_SHA = '51c2b3dd7df80a8fcd4881eb7216f7292db77d39c01920f10feb650824919a7d'
+-LIST = ['/system/bin/cmd','package','list','packages','-U','--show-versioncode','--user','0',PACKAGE]
+-PATHS = ['/system/bin/cmd','package','path','--user','0',PACKAGE]
+-RESOLVE = ['/system/bin/cmd','package','resolve-activity','--brief','--user','0',
+-           '-a','android.intent.action.MAIN','-c','android.intent.category.LAUNCHER',PACKAGE]
+-COMMANDS = [LIST, PATHS, RESOLVE, PATHS, LIST]
+-FILE_LIMIT = 256 * 1024 * 1024
+-TOTAL_LIMIT = 512 * 1024 * 1024
+-HASH_SECONDS = 45
+ FILE_COUNT = 16
+-WORK_SECONDS = 140
+ 
+-
+ def need(value, message):
+     if not value:
+         raise RuntimeError(message)
+ 
+-
+-def sha(raw):
+-    return hashlib.sha256(raw).hexdigest()
+-
+-
+-def read(path, maximum=131072, expected=None, size=None):
+-    fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC)
+-    try:
+-        first=os.fstat(fd)
+-        need(stat.S_ISREG(first.st_mode) and first.st_nlink==1 and 0<=first.st_size<=maximum,
+-             'FIXED_INPUT_SHAPE_OR_BOUND')
+-        data=bytearray()
+-        while len(data)<=maximum:
+-            block=os.read(fd,min(65536,maximum+1-len(data)))
+-            if not block:break
+-            data.extend(block)
+-        last=os.fstat(fd)
+-        keys=('st_dev','st_ino','st_mode','st_nlink','st_uid','st_gid','st_size','st_mtime_ns','st_ctime_ns')
+-        need(len(data)==first.st_size and all(getattr(first,k)==getattr(last,k) for k in keys),
+-             'FIXED_INPUT_CHANGED')
+-        raw=bytes(data)
+-        need(expected is None or sha(raw)==expected,'FIXED_INPUT_SHA_CHANGED')
+-        need(size is None or len(raw)==size,'FIXED_INPUT_SIZE_CHANGED')
+-        return raw
+-    finally:os.close(fd)
+-
+-
+-def load(path, expected, name, size=None):
+-    raw=read(path,expected=expected,size=size)
+-    value=types.ModuleType(name);value.__file__=str(path)
+-    exec(compile(raw,str(path),'exec'),value.__dict__)
+-    return value
+-
+-
+-def error_row(phase, error):
+-    value={'phase':phase,'type':type(error).__name__,'message':str(error)}
+-    if isinstance(error,OSError):value['errno']=error.errno
+-    for key in ('command_observation','__notes__'):
+-        if hasattr(error,key):value[key]=getattr(error,key)
+-    return value
+-
+-
+-def remember(result, phase, error):
+-    row=error_row(phase,error)
+-    if result['error'] is None:result['error']=row
+-    else:result['secondary_errors'].append(row)
+-    result['ok']=False
+-
+-
+ def metadata(raw):
+     match=re.fullmatch(re.escape('package:'+PACKAGE)+r' versionCode:([0-9]+) uid:([0-9]+)\n',
+                        raw.decode('utf-8','strict'))
+@@ -102,7 +17,6 @@
+     need(0<version<2**63 and 10000<=uid<100000,'TICKET12306_METADATA_RANGE')
+     return {'package':PACKAGE,'user':USER,'uid':uid,'version_code':version}
+ 
+-
+ def apk_paths(raw):
+     text=raw.decode('utf-8','strict')
+     need(text.endswith('\n') and len(raw)<=16384,'TICKET12306_PATH_OUTPUT_BOUND')
+@@ -126,250 +40,5 @@
+          'ONE_TICKET12306_BASE_AND_ONE_INSTALL_DIRECTORY_REQUIRED')
+     return sorted(paths)
+ 
++if __name__ == "__main__":
++    raise SystemExit("PARSER_ONLY_NO_DEVICE_OR_FILESYSTEM_ENTRY")
+-
+-def component(raw):
+-    need(isinstance(raw,bytes) and 0<len(raw)<=4096,'RESOLVE_OUTPUT_BOUND')
+-    text=raw.decode('ascii','strict')
+-    need(text.endswith('\n') and '\x00' not in text and
+-         all(c=='\n' or 32<=ord(c)<127 for c in text),'RESOLVE_OUTPUT_TEXT_SHAPE')
+-    lines=text.splitlines()
+-    need(1<=len(lines)<=16,'RESOLVE_OUTPUT_LINE_BOUND')
+-    candidates=[line.strip() for line in lines if
+-        re.fullmatch(r'[A-Za-z0-9_.$]+/[A-Za-z0-9_.$]+',line.strip())]
+-    need(len(candidates)==1,'ONE_CURRENT_LAUNCHER_COMPONENT_REQUIRED')
+-    value=candidates[0]
+-    need(re.fullmatch(re.escape(PACKAGE)+r'/(?:\.[A-Za-z_][A-Za-z0-9_.$]*|[A-Za-z_][A-Za-z0-9_.$]*)',value)
+-         is not None,'LAUNCHER_MUST_BELONG_TO_EXACT_TICKET12306_PACKAGE')
+-    return {'package':PACKAGE,'user':0,'component':value,
+-        'query_action':'android.intent.action.MAIN','query_category':'android.intent.category.LAUNCHER',
+-        'resolve_stdout_sha256':sha(raw),'fallback_used':False,
+-        'launch_performed':False,'later_launch_requires_new_current_binding':True}
+-
+-
+-def identity(fd):
+-    s=os.fstat(fd)
+-    return {'device':s.st_dev,'inode':s.st_ino,'mode':s.st_mode,'uid':s.st_uid,'gid':s.st_gid,
+-            'nlink':s.st_nlink,'bytes':s.st_size,'mtime_ns':s.st_mtime_ns,'ctime_ns':s.st_ctime_ns}
+-
+-
+-class Context:
+-    """Only the exact pinned Flow.command method is used, never Flow.init/launch."""
+-    def __init__(self, recorder, contract, target, guard, result):
+-        self.recorder=recorder;self.contract=contract;self.target=target;self.check_main=guard
+-        self.result=result;self.step=ROOT/'evidence';self.command_index=0
+-        self.action_attempted=False;self.binding=types.SimpleNamespace(target=target)
+-        self.observations=[]
+-
+-    def guard(self, attempted=False):
+-        need(attempted is False and self.action_attempted is False,'READ_ONLY_ACTION_SCOPE_CHANGED')
+-        self.check_main();self.target.verify()
+-
+-    def command(self, arguments, environment):
+-        need(self.command_index<len(COMMANDS) and arguments==COMMANDS[self.command_index],
+-             'ONLY_FIVE_ORDERED_FIXED_READ_ONLY_COMMANDS_ALLOWED')
+-        self.guard()
+-        expected_index=self.command_index+1
+-        command=['/system/bin/env','-i']
+-        command += [key+'='+environment[key] for key in sorted(environment)]
+-        command += ['/system/xbin/su','2000','/system/bin/timeout','-k','2','10',*arguments]
+-        manager=None;entered=False;completed=None;primary=None;secondary=[]
+-        def fail(phase,error):
+-            nonlocal primary
+-            if primary is None:primary=error
+-            else:secondary.append(error_row(phase,error))
+-        try:
+-            manager=self.target.entry(command);argv,descriptors=manager.__enter__();entered=True
+-            need(len(descriptors)==7 and len(set(descriptors))==7 and
+-                 all(type(fd) is int and fd>=3 for fd in descriptors),'HELD_AUTHORITY_SET_DIFFERS')
+-            expected=[str(self.target.helper_path),'--parent-pid='+str(os.getpid()),
+-                      '--root-fd='+str(descriptors[0])]
+-            expected += ['--'+name+'-fd='+str(fd) for name,fd in
+-                         zip(('mnt','pid','uts','ipc','net','cgroup'),descriptors[1:])]
+-            need(list(argv)==expected+['--',*command],'EXACT_R4_HELD_PREFIX_AND_COMMAND_REQUIRED')
+-            completed=self.recorder.Flow.command(self,argv,15,mutation=False,label='Android command',
+-                pass_fds=tuple(descriptors),check=False,
+-                host_env={'PATH':'/usr/sbin:/usr/bin:/sbin:/bin','HOME':'/root','LANG':'C.UTF-8'})
+-            need(completed.recorder_spawned and completed.recorder_joined and
+-                 not completed.host_timed_out and completed.returncode==0 and
+-                 completed.recorder_errors==[],'EXACT_JOINED_READ_ONLY_COMMAND_REQUIRED')
+-            need(len(completed.stdout)<=16384 and completed.stderr==b'',
+-                 'ONE_PACKAGE_COMMAND_OUTPUT_BOUND_OR_STDERR')
+-        except BaseException as error:fail('read_command',error)
+-        finally:
+-            # Flow.command has already saved the first command observation.
+-            # Release and post-guard must run independently and cannot erase it.
+-            if entered:
+-                try:manager.__exit__(None,None,None)
+-                except BaseException as error:fail('entry_release',error)
+-            try:self.guard()
+-            except BaseException as error:fail('post_command_Main_guard',error)
+-            row={'index':self.command_index,'argv':arguments,'operation':'package_identity_or_launcher_read',
+-                 'Android_UI_action':False,'entry_entered':entered,
+-                 'first_error':error_row('command',primary) if primary else None,
+-                 'secondary_errors':secondary}
+-            if completed is not None:
+-                row.update(returncode=completed.returncode,joined=completed.recorder_joined,
+-                           spawned=completed.recorder_spawned,host_timed_out=completed.host_timed_out,
+-                           recorder_errors=completed.recorder_errors,
+-                           stdout_sha256=sha(completed.stdout),stdout_bytes=len(completed.stdout),
+-                           stderr_sha256=sha(completed.stderr),stderr_bytes=len(completed.stderr))
+-            row['command_receipt_path']=str(self.step/('command-%03d.result.json'%expected_index))
+-            self.observations.append(row)
+-        if primary is not None:
+-            for row in secondary:primary.add_note(json.dumps(row,sort_keys=True))
+-            raise primary
+-        return completed.stdout
+-
+-
+-def execute(source_sha):
+-    need(os.getuid()==os.geteuid()==0,'ROOT_FIXED_READ_ONLY_REQUIRED')
+-    need(Path(__file__).resolve()==SOURCE_PATH and re.fullmatch('[0-9a-f]{64}',source_sha),
+-         'EXACT_NEW_SOURCE_PATH_AND_EXTERNAL_PIN_REQUIRED')
+-    read(SOURCE_PATH,expected=source_sha)
+-    need(ROOT.is_dir() and not (ROOT/'claim.json').exists(),'FRESH_SINGLE_ATTEMPT_ROOT_REQUIRED')
+-    reference=load(INSTALLED_SOURCE/'references/readonly_r3_coordinator.py',REFERENCE_SHA,'ticket12306_main_reference')
+-    root_stat=ROOT.lstat()
+-    need(stat.S_ISDIR(root_stat.st_mode) and root_stat.st_uid==0 and not root_stat.st_mode&0o077,
+-         'ROOT_PRIVATE_NEW_EVIDENCE_DIRECTORY_REQUIRED')
+-    reference.write_new(ROOT/'claim.json',{'schema':1,'nonce':NONCE,'package':PACKAGE,
+-                                         'source_sha256':source_sha,'automatic_retry':False})
+-    (ROOT/'evidence').mkdir(mode=0o700)
+-    result={'schema':1,'scope':'one exact BestBuy user0 installed artifact and current launcher metadata read',
+-            'nonce':NONCE,'package':PACKAGE,'source_sha256':source_sha,'ok':False,
+-            'error':None,'secondary_errors':[],'UI_actions':0,'App_launches':0,
+-            'instrumentation_calls':0,'permission_grants':0,'settings_writes':0,
+-            'old_v2_helper_called':False,'Bili_scope_modified':False,'automatic_retry':False,
+-            'whole_app_production_ready':False,'signer_certificate_independently_verified':False,
+-            'APK_bytes_exported':False,'current_package_inventory_scanned_or_exported':False,
+-            'UID_version_APK_paths_are_current_observations_not_historical_assumptions':True,
+-            'historical_matrix_sha256':'05e74a719281abab717464978d85393dec8d0d528c1e7ccbd93691f156ce56e4'}
+-    target=ctx=None;lock=None;opened=[];phase='source';started=time.monotonic();guard=None
+-    try:
+-        source=load(RECORDER_ROOT/'source_contract.py',SOURCE_CONTRACT_SHA,'ticket12306_shared_source_contract')
+-        contract=source.SourceContract(RECORDER_ROOT/'source-manifest.json',RECORDER_MANIFEST)
+-        recorder=contract.load('recorder.py','ticket12306_command_reference')
+-        held=contract.load('references/held_runtime_r5.py','ticket12306_held_reference')
+-        binding=contract.load('main_binding.py','ticket12306_classpath_reference')
+-        transport=contract.load('bound_android_transport.py','ticket12306_environment_reference')
+-        install=load(INSTALLED_SOURCE/'install_state.py',INSTALL_SHA,'ticket12306_lock_reference',INSTALL_BYTES)
+-        activation=json.loads(reference.read(reference.ACTIVATION,expected=reference.ACTIVATION_SHA))
+-        verified=json.loads(reference.read(reference.VERIFIED,expected=reference.VERIFIED_SHA))
+-        need(activation['main_deployed'] is True and verified['main_deployed'] is True and
+-             verified['framework_epoch_sha256']==reference.EPOCH,'ACTIVATION_NOT_VERIFIED')
+-        epoch=reference.module(reference.read(reference.EPOCH_SOURCE,expected=reference.EPOCH_SOURCE_SHA),
+-                               reference.EPOCH_SOURCE,'ticket12306_epoch_reference')
+-        def fixed_guard(check_deadline=True):
+-            if check_deadline:
+-                need(time.monotonic()-started<WORK_SECONDS,'WHOLE_READ_DEADLINE')
+-            contract.verify();read(SOURCE_PATH,expected=source_sha)
+-            read(INSTALLED_SOURCE/'references/readonly_r3_coordinator.py',expected=REFERENCE_SHA)
+-            read(INSTALLED_SOURCE/'install_state.py',expected=INSTALL_SHA,size=INSTALL_BYTES)
+-            reference.read(recorder.APP,expected=recorder.APP_SHA)
+-            read(source.HELPER_PATH,maximum=source.HELPER_BYTES,
+-                 expected=source.HELPER_SHA,size=source.HELPER_BYTES)
+-            return reference.main_guard(activation,epoch)
+-        guard=fixed_guard
+-        result['Main_before']=guard()
+-        result['shared_helper']=source.verify_shared_helper()
+-        result['action_lock']={};phase='action_lock_admission'
+-        lock=install.acquire_action_lock(recorder.ACTION_LOCK,result['action_lock'])
+-        guard()
+-        expected=activation['framework_epoch']['binding']['processes']['init']
+-        phase='held_Main_binding'
+-        proc=os.open('/proc/'+str(expected['host_pid']),os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC)
+-        try:actual=held.proc_identity_at(proc,expected['host_pid'],time.monotonic()+3)
+-        finally:os.close(proc)
+-        need(binding.same_epoch_identity(actual,expected),'FIXED_MAIN_INIT_IDENTITY_CHANGED')
+-        target=held.HeldTarget(actual,source.HELPER_PATH,source.HELPER_SHA)
+-        guard()
+-        app=load(Path(recorder.APP),recorder.APP_SHA,'ticket12306_existing_discovery_reference',37574)
+-        init,discovered,status=app.discover()
+-        need(init==expected['host_pid'] and status['host_pid']==activation['status']['host_pid'],
+-             'FIXED_MAIN_DISCOVERY_CHANGED')
+-        values,classpath=binding.main_classpaths(held,target,activation['framework_epoch'],epoch,guard)
+-        need(all(discovered.get(key)==value for key,value in values.items()),'CLASSPATH_DISCOVERY_CHANGED')
+-        environment=transport.environment_values(discovered)
+-        reference.write_new(ROOT/'held-main-binding.json',{'target':target.record,'classpath':classpath,
+-                             'shared_helper':result['shared_helper'],'package_scope':PACKAGE})
+-        ctx=Context(recorder,contract,target,guard,result)
+-        phase='before_package_metadata';before=metadata(ctx.command(LIST,environment))
+-        result['metadata_before']=before
+-        need(activation['packages'].get(PACKAGE)==before['uid'],'TICKET12306_UID_CHANGED_FROM_FIXED_ACTIVATION')
+-        result['historical_version_code']=HISTORICAL_VERSION
+-        result['historical_version_still_matches']=before['version_code']==HISTORICAL_VERSION
+-        phase='before_package_paths';paths=apk_paths(ctx.command(PATHS,environment));result['apk_paths_before']=paths
+-        total=0;deadline=min(started+WORK_SECONDS,time.monotonic()+HASH_SECONDS);artifacts=[]
+-        phase='held_APK_hash'
+-        for path in paths:
+-            need(time.monotonic()<deadline,'APK_STREAM_HASH_DEADLINE')
+-            fd=target.open_root(path,os.O_RDONLY|os.O_NOFOLLOW);opened.append(fd)
+-            first=identity(fd)
+-            need(stat.S_ISREG(first['mode']) and first['nlink']==1 and
+-                 first['uid']==first['gid']==1000 and not first['mode']&0o022 and
+-                 0<first['bytes']<=FILE_LIMIT,'TICKET12306_INSTALLED_APK_SHAPE_OR_BOUND')
+-            need(total+first['bytes']<=TOTAL_LIMIT,'TICKET12306_APK_TOTAL_BOUND')
+-            digest=hashlib.sha256();count=0
+-            while True:
+-                need(time.monotonic()<deadline,'APK_STREAM_HASH_DEADLINE')
+-                block=os.read(fd,min(65536,first['bytes']+1-count))
+-                if not block:break
+-                count+=len(block);need(count<=first['bytes'],'APK_GREW_DURING_HASH');digest.update(block)
+-            need(count==first['bytes'] and identity(fd)==first,'APK_CHANGED_DURING_HASH')
+-            artifacts.append({'path':path,'sha256':digest.hexdigest(),'held_file':first})
+-            total+=count
+-        phase='current_launcher_resolution'
+-        result['launcher_resolution']=component(ctx.command(RESOLVE,environment))
+-        phase='after_package_paths'
+-        need(apk_paths(ctx.command(PATHS,environment))==paths,'TICKET12306_INSTALL_PATHS_CHANGED')
+-        phase='after_package_metadata';after=metadata(ctx.command(LIST,environment))
+-        result['metadata_after']=after;need(after==before,'TICKET12306_PACKAGE_METADATA_CHANGED')
+-        phase='held_APK_revalidation'
+-        for fd,row in zip(opened,artifacts):
+-            need(identity(fd)==row['held_file'],'HELD_APK_CHANGED_AFTER_PACKAGE_RECHECK')
+-            again=target.open_root(row['path'],os.O_RDONLY|os.O_NOFOLLOW)
+-            try:need(identity(again)==row['held_file'],'APK_PATH_NO_LONGER_NAMES_HELD_FILE')
+-            finally:os.close(again)
+-        need(ctx.command_index==len(COMMANDS)==5,'EXACT_FIVE_READ_COMMANDS_COMPLETED')
+-        target.verify();guard()
+-        result.update(artifacts=artifacts,total_apk_bytes=total,actual_package_UID_version_APK_chain_stable=True,
+-                      package_read_commands_completed=ctx.command_index,ok=True)
+-    except BaseException as error:remember(result,phase,error)
+-    finally:
+-        if ctx is not None:result['command_observations']=ctx.observations
+-        for fd in reversed(opened):
+-            try:os.close(fd)
+-            except BaseException as error:remember(result,'held_APK_fd_close',error)
+-        if target is not None:
+-            try:target.close();result['held_binding_released']=True
+-            except BaseException as error:remember(result,'held_binding_release',error)
+-        if guard is not None:
+-            try:
+-                result['Main_after']=guard(False)
+-                need(result.get('Main_before')==result['Main_after'],'MAIN_BEFORE_AFTER_DIFFER')
+-                result['final_Main_guard_passed']=True
+-            except BaseException as error:remember(result,'final_Main_guard',error)
+-        if lock is not None:
+-            try:os.close(lock);result['action_lock_released']=True
+-            except BaseException as error:remember(result,'action_lock_release',error)
+-        result['seconds']=time.monotonic()-started
+-    pin=reference.write_new(ROOT/'result.json',result)
+-    # This complete bounded result has no raw UI, unrelated package list or APK.
+-    envelope={'result_file':pin,'result':result}
+-    output=json.dumps(envelope,ensure_ascii=False,sort_keys=True,separators=(',',':'))
+-    need(len(output.encode())<=98304,'ONE_PACKAGE_RESULT_BOUND')
+-    print(output,flush=True)
+-    return 0 if result['ok'] else 1
+-
+-
+-def main(argv=None):
+-    p=argparse.ArgumentParser(description=__doc__)
+-    p.add_argument('--collect-once',action='store_true');p.add_argument('--source-sha256')
+-    a=p.parse_args(argv)
+-    if not a.collect_once:
+-        print(json.dumps({'state':'PLAN_ONLY','package':PACKAGE,'root':str(ROOT),'nonce':NONCE,
+-                          'ordered_commands':COMMANDS,'Android_UI_actions':0,'remote_actions':0}))
+-        return 0
+-    return execute(a.source_sha256)
+-
+-
+-if __name__=='__main__':raise SystemExit(main())
+--- parent/target-artifact-reference.json
++++ candidate/target-artifact-reference.json
+@@ -1,80 +1,85 @@
+ {
++  "schema": 1,
++  "package": "com.MobileTicket",
++  "uid": 10121,
++  "user": 0,
++  "version_code": 275,
++  "actual_metadata": {"tree":"0e41c4bc51f00ef141261316755f933cfb593f61","job":"1a1b22752af-fc05-7cab","blob":"4118c053d3da58dd50f00cf433eb5083b3adaed6","bytes":11978,"sha256":"f573eb50b3e0c2a098101035df116ba76bfdbf5f486e3dafb7588399661bb868"},
++  "current_APK_count": 1,
++  "current_artifacts": [
+-  "artifacts": [
+     {
+       "held_file": {
++        "bytes": 150377492,
++        "ctime_ns": 1791394388492211750,
+-        "bytes": 149277165,
+-        "ctime_ns": 1791397157052206558,
+         "device": 1811,
+         "gid": 1000,
++        "inode": 1522,
+-        "inode": 142759,
+         "mode": 33188,
++        "mtime_ns": 1791394388492211750,
+-        "mtime_ns": 1791397156944203643,
+         "nlink": 1,
+         "uid": 1000
+       },
++      "path": "/data/app/~~8WknGWY1_FaWNGDrKZ_NZg==/com.MobileTicket-nuq4iEBbbWYXMgd8cHBMIA==/base.apk",
++      "sha256": "c7e56101e5753002bba220ce40d07b00d4bc822e1eeef12bbe36ec9e2f8e272d"
+-      "path": "/data/app/~~4o1zzByRq2_9GDr5V_PDzg==/com.bestbuy.android-62Qf1Um9AmtxI8sp9cDOKA==/base.apk",
+-      "sha256": "74ff0f36a2fed0693960af8ec13ae18bef976b51df1433eec15ca195002339b3"
+-    },
+-    {
+-      "held_file": {
+-        "bytes": 93486949,
+-        "ctime_ns": 1791397157057277053,
+-        "device": 1811,
+-        "gid": 1000,
+-        "inode": 142757,
+-        "mode": 33188,
+-        "mtime_ns": 1791397157057277053,
+-        "nlink": 1,
+-        "uid": 1000
+-      },
+-      "path": "/data/app/~~4o1zzByRq2_9GDr5V_PDzg==/com.bestbuy.android-62Qf1Um9AmtxI8sp9cDOKA==/split_config.arm64_v8a.apk",
+-      "sha256": "ee64286a30d9127fc74deb734f66aaa67c2d4f0ca168138977378719fe01c5a3"
+-    },
+-    {
+-      "held_file": {
+-        "bytes": 2747579,
+-        "ctime_ns": 1791397157052206558,
+-        "device": 1811,
+-        "gid": 1000,
+-        "inode": 142758,
+-        "mode": 33188,
+-        "mtime_ns": 1791397156926874805,
+-        "nlink": 1,
+-        "uid": 1000
+-      },
+-      "path": "/data/app/~~4o1zzByRq2_9GDr5V_PDzg==/com.bestbuy.android-62Qf1Um9AmtxI8sp9cDOKA==/split_config.xxhdpi.apk",
+-      "sha256": "2b1574c80ab02b450ac2370067dc9bcfb828dcf1c3af8fb9d60f197d456f8f67"
+     }
+   ],
++  "current_total_APK_bytes": 150377492,
++  "current_launcher": {
++    "component": "com.MobileTicket/.ui.activity.WelcomeGuideActivity",
+-  "current_launcher_reference_only": {
+-    "component": "com.bestbuy.android/.activity.SplashActivity",
+     "fallback_used": false,
+     "later_launch_requires_new_current_binding": true,
+     "launch_performed": false,
++    "package": "com.MobileTicket",
+-    "package": "com.bestbuy.android",
+     "query_action": "android.intent.action.MAIN",
+     "query_category": "android.intent.category.LAUNCHER",
++    "resolve_stdout_sha256": "c2d47c9d1179d1f5350838e8dae3d70b49ade40028be9aa5234a9fc27fc6fe6e",
+-    "resolve_stdout_sha256": "43faf86d2f3d579d04f77ff4de2e5cf509a6b3487db46b4b804b14c3665f52d7",
+     "user": 0
+   },
++  "current_data_directories": [
++    {
++      "device": 1811,
++      "gid": 10121,
++      "inode": 142348,
++      "mode": 16832,
++      "path": "/data/user/0/com.MobileTicket",
++      "uid": 10121
++    },
++    {
++      "device": 1811,
++      "gid": 10121,
++      "inode": 142356,
++      "mode": 16832,
++      "path": "/data/user_de/0/com.MobileTicket",
++      "uid": 10121
++    }
++  ],
++  "current_baseline_receipt": {
++    "Main_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
++    "authenticated_owner_chain_matches": true,
++    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
++    "current_baseline_qualification_sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e",
++    "current_baseline_sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364",
++    "current_executable_and_root_backing_match": true,
++    "current_user_namespaces_match": true,
++    "framework_exit_cause_resolved": false,
++    "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
++    "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
++    "old_helpers_and_tasks_reauthorized": false,
++    "previous_current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
++    "production_ready": false,
++    "resource_limits_match": true,
++    "schema": "pocket4-current-main-guard-v2",
++    "seven_processes_match": true,
++    "three_host_processes_match": true
+-  "data_source": "Exact original full stdout reconstructed with original JSON writer shape; both result/stage emitted hashes matched. Not a second held remote file read.",
+-  "future_target_APK_hashes_and_UID_require_revalidation": true,
+-  "job": "1a1adfbdc24-fc05-5c5b",
+-  "remote_held_result_file_readback_performed": false,
+-  "runtime_UI_or_launch_actions": 0,
+-  "schema": 1,
+-  "signer_certificate_independently_verified": false,
+-  "source_reader_sha256": "ce4ff1399953fe0d5e89bc0210ae9cdb323d1e08e436327df1521f6cb167ef77",
+-  "state": "ACTUAL_READONLY_IDENTITY_REFERENCE_REQUIRES_FRESH_RUNTIME_REVALIDATION",
+-  "target": {
+-    "package": "com.bestbuy.android",
+-    "uid": 10130,
+-    "user": 0,
+-    "version_code": 2012312321
+   },
++  "data_source": "Exact public metadata result independently read from Git; original Root preserved producer bytes from NDJSON tokens. No second Android read, no inferred namespace timestamps.",
++  "commercial_signer_qualification": false,
++  "shared_helper_whole_process_tree_cleanup_qualified": false,
++  "fresh_launcher_resolution_before_any_future_launch_required": true,
++  "fresh_runtime_identity_revalidation_required": true,
++  "existing_metadata_scope_reused_for_actions": false,
++  "helper_UID": null,
++  "helper_APK": null,
++  "helper_signer": null,
++  "whole_app_production_ready": false
+-  "whole_app_production_ready": false,
+-  "worker_result": {
+-    "bytes": 10112,
+-    "sha256": "bd394cac42b9ab536c3646c4c6e5c6e755658855c1a4525aa26b9b73cf80f073"
+-  }
+ }
+--- parent/INPUTS.json
++++ candidate/INPUTS.json
+@@ -1,34 +1,42 @@
+ {
+   "schema": 2,
++  "state": "ACTUAL_BUILD_AND_METADATA_BOUND_INSTALL_UNRUN",
++  "helper_package": "org.droidloom.qa.ticket12306.r1",
+-  "state": "CURRENT_OWNER_FIX_ACTUAL_BOUND_INSTALL_UNRUN",
+-  "helper_package": "org.droidloom.qa.bestbuy.r4",
+   "helper_uid": null,
+   "target": {
++    "package": "com.MobileTicket",
++    "uid": 10121,
++    "user": 0,
++    "version_code": 275
+-    "package": "com.bestbuy.android",
+-    "uid": 10130,
+-    "user": 0
+   },
+   "commercial_artifact_reference": {
++    "bytes": 3513,
++    "sha256": "57220958eacec13fb0b82755d4e22ffb6e02e42ecb05224103c6c5d37036db0c"
++  },
++  "actual_independent_target_metadata": {
++    "bytes": 11978,
++    "sha256": "f573eb50b3e0c2a098101035df116ba76bfdbf5f486e3dafb7588399661bb868",
++    "git_blob": "4118c053d3da58dd50f00cf433eb5083b3adaed6",
++    "git_tree": "0e41c4bc51f00ef141261316755f933cfb593f61",
++    "job_id": "1a1b22752af-fc05-7cab"
+-    "bytes": 2863,
+-    "sha256": "4f866a6b65eb823a9b1cf4bbd870c41f82a634710be8f86f96322633654ffd8f"
+   },
+   "build": {
++    "path": "/home/alex/work/pocket4-owned-ticket12306-qa-r1-build-01/build-result.json",
++    "bytes": 23529,
++    "sha256": "fcef45ec4a6be6a034ceedc12308bc5150846f08f4273c4655c89911a5aa3eb5"
+-    "path": "/home/alex/work/pocket4-owned-bestbuy-qa-r4-build-01/build-result.json",
+-    "bytes": 23340,
+-    "sha256": "8bd0c70e64a543129aca0d8eeb08030bb135f95eb1be6bcda3b7933ac02433fb"
+   },
+   "build_stage": {
++    "path": "/home/alex/work/pocket4-owned-ticket12306-qa-r1-source-01/stage-result.json",
++    "bytes": 1967,
++    "sha256": "0bf30a72095a10a671c27c759085cd0cec858a3317555f02e01a3deb498cc485"
+-    "path": "/home/alex/work/pocket4-owned-bestbuy-qa-r4-source-01/stage-result.json",
+-    "bytes": 1950,
+-    "sha256": "037ffdf74d57b1cad24d40dd06754032ec4adbd50c9ef3e99b529471730089c7"
+   },
+   "APK": {
+-    "path": "/home/alex/work/pocket4-owned-bestbuy-qa-r4-build-01/owned-bestbuy-qa.apk",
+     "bytes": 24720,
++    "path": "/home/alex/work/pocket4-owned-ticket12306-qa-r1-build-01/owned-ticket12306-qa.apk",
++    "sha256": "148cd59566389abd4d64c38f181172c20fafffba85f75b917d9174c0af605cb1"
+-    "sha256": "708887e252bad787781768e4c96db9040444b4b32308381ec1d38af3deb0cc2c"
+   },
++  "signer_certificate_sha256": "9e862a6399fcf73e29baaf1a3659fdc0d65c812c1024af2d3d1a99cb46dbf425",
++  "qa_source_manifest_sha256": "069639aa9c70c910c3d86b3016180264c12d479e08383b6c51fb374d9a7ee660",
+-  "signer_certificate_sha256": "32b07f5c29e267541086154af0e5b0424cd53a65feb1b64f82b9277cccfb7c31",
+-  "qa_source_manifest_sha256": "cda79d5b01ebfd91d6b9148be6853c78495da92130fb4f153422daac7d14ad0b",
+   "current_host_source_root": "/home/alex/work/pocket4-current-host-r6-source-01",
+   "current_host_source_manifest_sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff",
+   "current_host_stage": {
+@@ -45,39 +53,44 @@
+     "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+   },
+   "nonces": {
++    "flow": "5ddfa31acb7e6bc8f97288d059cf9dee",
++    "state": "c1f999ecfcfbf423641a2af8f0e2f7b8"
+-    "flow": "b6275faedda72f2dec85914ab42b2b7b",
+-    "state": "a499f5a6a566ed0cebed5c98e234eede"
+   },
+   "actual_nonce_source": {
++    "bytes": 1453,
++    "sha256": "689fd9c3dc2f2e91b529635f3b4b52fb3ec273e7f066634e1c1d1cfae1085930",
++    "git_blob": "f1ed0b6990ad27ec673433690236941c8644a3ca",
+-    "bytes": 823,
+-    "sha256": "f2116e12e9e1edfd50e702cb1562c2e89a71866dc1081466b24aeaae6a064060",
+-    "git_blob": "968fe560cc70575fd0203c8d90877abc0467a598",
+     "fields": [
++      "ticket12306_r1_install_flow",
++      "ticket12306_r1_install_state"
+-      "bestbuy_r4_install_flow",
+-      "bestbuy_r4_install_state"
+     ],
+     "generator": "secrets.token_hex(16)",
++    "draws": 6,
++    "no_redraw": true,
++    "exclusion_count": 913,
++    "exclusion_sha256": "931a3d2e4b435b7953745b20a1a94ee9c0fcbdcfec07e04355baa66fdcb74444",
++    "global_count_after": 919
+-    "exclusion_count": 649,
+-    "exclusion_sha256": "fe089e0fc4de4f18762aa541e9efadba79aa14615749ef7ef0f6cf0fbfe5fbe8"
+   },
++  "parent_source_helper_uid_exclusion": {
++    "uid": 10160,
++    "package": "org.droidloom.qa.bestbuy.r4",
+-  "previous_helper_uid_exclusion": {
+-    "uid": 10155,
+     "actual_worker_result": {
++      "bytes": 15422,
++      "sha256": "f3ec3d475dcccb894c68bd3bb471d85976cfa39f38bf437250d501de47d7b3e3",
++      "git_blob": "ed8df6e48ba062706e72784d21a4c4b11f5db85e"
+-      "bytes": 14680,
+-      "sha256": "86c79c5ae8e2b730651a1c73db59d2bc9c28b4409199d4871ce4522a2b9ab0c5",
+-      "git_blob": "0e1015c205c5cf4ed3f20cc1fc71981b5862d1bb"
+     },
++    "source": "Current parent helper exclusion only. It is not a prior helper for this new target and gives no target runtime authority."
+-    "source": "exact historical prior-generation installed helper receipt; exclusion only"
+   },
+-  "retained_previous_helper_uid_exclusion": 10203,
+   "ordered_worker_Android_commands": 13,
++  "target_APK_count": 1,
+-  "target_APK_count": 3,
+   "target_APK_streaming_hashes_before_and_after": true,
++  "target_user_and_user_de_identity_authority": "complete fixed successful metadata receipt, then live packages.list and two O_PATH directory identities",
++  "target_metadata_authority_separate_from_Main_baseline": true,
++  "immutable_baseline_packages_modified": false,
+-  "target_user_and_user_de_current_baseline_identity": true,
+   "own_package_absence_required_all_users_including_uninstalled": true,
+   "install_replace_existing": false,
+   "UiAutomation_requested": false,
++  "source_qualification_controls": 75,
+-  "source_qualification_controls": 68,
+   "Bili_Flow_or_MainBinding_instantiated": false,
+   "whole_process_tree_cleanup_qualified": false,
+   "framework_exit_cause_resolved": false,
+@@ -103,20 +116,19 @@
+     "installed_android_app_modified": false,
+     "R6_source_and_manifest_modified": false,
+     "original_helper_APK_and_QA_source_modified": false,
++    "production_entry": "worker -> own open_context -> exact independent target metadata -> real current discovery -> held init/data/classes -> own Context"
+-    "production_entry": "worker -> original open_context -> current_discovery source-pin loader -> discover_current"
+   },
+   "original_install_source": {
++    "root": "/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-02",
+-    "bytes": 2255,
+-    "sha256": "5d589e1db470b7c774c147bde754162040c686f72d0b84f5e04c679ecac2c43a",
+-    "root": "/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-01",
+     "request": {
++      "bytes": 192074,
++      "sha256": "38286355f9e5d224ac757d9b84f0f2376be8a33befc06c9f9eee7b20c7415609",
++      "git_blob": "7bf195b13d6fa59f6ef9917908cfe0c85b529af2"
+-      "bytes": 156400,
+-      "sha256": "0626247d6ebce1334b44091c5c8a5c4fe60d6bf242fc9966afb11cfb96da9225"
+     },
++    "source": "read-only derivation parent, no target or action authority reused"
+-    "state": "UNRUN"
+   },
+-  "original_discover_failure_preserved": false,
+   "install_success_assumed": false,
++  "automatic_retry": false,
++  "controls_execution_status": "NOT_RUN_IN_THIS_PREPARATION",
++  "action_lock_admission": "original five-second EX|NB deadline; no lock clearing or bypass"
+-  "original_install_failure_replayed": false,
+-  "previous_reserved_unrun_pair_reused": true
+ }
+--- parent/README.md
++++ candidate/README.md
+@@ -1,11 +1,11 @@
++# 12306 R1 independent owned-helper install
+-# bestbuy R4 install and state on current cell baseline02
+ 
++This single request installs the new owned helper org.droidloom.qa.ticket12306.r1 and reads its no-UiAutomation state. The commercial target is com.MobileTicket, user 0, UID 10121, version 275, 1 APK(s). The helper UID remains unknown until the actual install/state receipts agree.
+-This create-only request binds the complete actual R6 source-stage receipt, the signed new helper build, and two newly generated installation nonces. The commercial target keeps its own original Context, target UID, current-baseline user/user_de directory identities, held classpaths, 3 held APK hashes, ordered 13-command policy and all cleanup paths. Shared R6 source verification does not instantiate the Bili Flow or MainBinding.
+ 
++The full successful metadata receipt and built helper artifact reference are staged byte-for-byte. The own Context checks both source pins, the full target UID/version/APK reference and both data-directory identities. It does not add packages or directories to the immutable Main baseline. Original R6 source/guard, current discovery, held init, packages.list, two root/classpath checks, recorder and cleanup boundaries remain active.
+-68 production-source and Context controls run before persistent staging or Android commands. They include the original five real verify_source fixtures, direct new-helper ordered-plan validation, the actual R6 publication receipt and rejected old generation/source/owner/user-namespace/FD cases. Actual execution of these installation controls remains pending until this request is admitted. The source-only host stage does not itself authorize runtime. The build remains an exact static prerequisite.
+ 
++The stage runs 75 controls: 68 inherited controls adapted to this fixed target and seven real authority/open_context routes with explicit synthetic I/O boundaries. They reach the actual metadata loader, target-data verification, current discovery, Context/BoundArun construction and held-binding record creation. They reject changed directory, source pin, Main observation and discovered init. These controls have not run during preparation and do not claim real held descriptors or Android observations.
+-The single install uses -R/-t and requires absence for all users including retained uninstalled package records. The fresh helper UID remains unknown until the actual package query; previous actual helper UIDs remain rejected. The state operation does not connect UiAutomation. This request has no App launch, inspect, click, text entry, permission grant or settings write. The staging file/directory, held descriptors and action lock are independently retired by the original worker. Failure preserves its first cause and unknown outcome and does not automatically replay or uninstall. Only the original direct owned-child join is qualified; whole-process-tree cleanup remains false. Old cells, tasks and helper receipts are historical evidence, with no transferred task or input authority. Framework exit attribution and whole-App business acceptance remain unresolved production gates.
+ 
++There are 13 ordered Android commands, exactly one fixed cmd package install -R -t --user 0 --pkg mutation. The others verify the commercial target, helper absence/identity or one state invocation. The helper must be absent for all users, including retained uninstalled records. The original action lock, once claim, worker budget, exact command policy, fresh APK hashes, state protocol, staging removal and FD/held cleanup remain. No automatic retry, uninstall, commercial launch, UI, settings, permissions or audio operation is provided.
+-## Current owner discovery correction 02
+ 
++The actual six-value source assigns only this target's flow/state pair; all 913 prior values were excluded with one draw per label. Values are retained after any failure. Failed or uncertain installation requires durable-evidence reconciliation. Installation gives no business flow or whole-app qualification.
+-The original android-app owner argv constant rejected the qualified baseline02 intermediary before any installation or state command. This successor uses its own pinned current_discovery module; the old reference remains unchanged. Status, the unique InputBridge, namespace, environment and paired-classpath checks remain. The complete actual launcher/intermediary/init/daemon identities and original full Main guard on both sides are required. No old task or failed input is replayed. The shared R6 source, helper APK, QA adapter/contract and target transport remain exact original bytes. Fifteen targeted discovery controls reproduce the old production failure and exercise the new complete identity gates, plus three controls exercise the actual source loader and own Context/bind route. All prior installation controls remain. New controls have not been executed locally.
+--- /dev/null
++++ candidate/actual-target-metadata.json
+@@ -0,0 +1,341 @@
++{
++  "APK_bytes_exported": false,
++  "App_launches": 0,
++  "Bili_scope_modified": false,
++  "Main_after": {
++    "Main_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
++    "authenticated_owner_chain_matches": true,
++    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
++    "current_baseline_qualification_sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e",
++    "current_baseline_sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364",
++    "current_executable_and_root_backing_match": true,
++    "current_user_namespaces_match": true,
++    "framework_exit_cause_resolved": false,
++    "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
++    "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
++    "old_helpers_and_tasks_reauthorized": false,
++    "previous_current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
++    "production_ready": false,
++    "resource_limits_match": true,
++    "schema": "pocket4-current-main-guard-v2",
++    "seven_processes_match": true,
++    "three_host_processes_match": true
++  },
++  "Main_before": {
++    "Main_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
++    "authenticated_owner_chain_matches": true,
++    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
++    "current_baseline_qualification_sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e",
++    "current_baseline_sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364",
++    "current_executable_and_root_backing_match": true,
++    "current_user_namespaces_match": true,
++    "framework_exit_cause_resolved": false,
++    "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
++    "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
++    "old_helpers_and_tasks_reauthorized": false,
++    "previous_current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
++    "production_ready": false,
++    "resource_limits_match": true,
++    "schema": "pocket4-current-main-guard-v2",
++    "seven_processes_match": true,
++    "three_host_processes_match": true
++  },
++  "UID_version_APK_paths_are_current_observations_not_historical_assumptions": true,
++  "UI_actions": 0,
++  "action_lock": {
++    "Android_actions_attempted": 0,
++    "acquired": true,
++    "attempts": 1,
++    "busy_attempts": 0,
++    "elapsed_seconds": 2.9323971830308437e-05,
++    "fd_closed_on_error": false,
++    "opened_identity": {
++      "device": 28,
++      "gid": 0,
++      "inode": 8312,
++      "mode": 33152,
++      "nlink": 1,
++      "uid": 0
++    },
++    "path": "/run/lock/android-digitalis-actions.lock",
++    "phase": "acquired",
++    "same_inode_confirmed": true,
++    "wait_limit_seconds": 5.0
++  },
++  "action_lock_released": true,
++  "actual_package_UID_version_APK_chain_stable": true,
++  "apk_paths_before": [
++    "/data/app/~~8WknGWY1_FaWNGDrKZ_NZg==/com.MobileTicket-nuq4iEBbbWYXMgd8cHBMIA==/base.apk"
++  ],
++  "artifacts": [
++    {
++      "held_file": {
++        "bytes": 150377492,
++        "ctime_ns": 1791394388492211750,
++        "device": 1811,
++        "gid": 1000,
++        "inode": 1522,
++        "mode": 33188,
++        "mtime_ns": 1791394388492211750,
++        "nlink": 1,
++        "uid": 1000
++      },
++      "path": "/data/app/~~8WknGWY1_FaWNGDrKZ_NZg==/com.MobileTicket-nuq4iEBbbWYXMgd8cHBMIA==/base.apk",
++      "sha256": "c7e56101e5753002bba220ce40d07b00d4bc822e1eeef12bbe36ec9e2f8e272d"
++    }
++  ],
++  "automatic_retry": false,
++  "business_action_authority": false,
++  "command_observations": [
++    {
++      "Android_UI_action": false,
++      "argv": [
++        "/system/bin/cmd",
++        "package",
++        "list",
++        "packages",
++        "-U",
++        "--show-versioncode",
++        "--user",
++        "0",
++        "com.MobileTicket"
++      ],
++      "command_receipt_path": "/home/alex/work/pocket4-current-cell02-ticket12306-metadata-01/evidence/command-001.result.json",
++      "entry_entered": true,
++      "first_error": null,
++      "host_timed_out": false,
++      "index": 1,
++      "joined": true,
++      "operation": "package_identity_or_launcher_read",
++      "recorder_errors": [],
++      "returncode": 0,
++      "secondary_errors": [],
++      "spawned": true,
++      "stderr_bytes": 0,
++      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
++      "stdout_bytes": 51,
++      "stdout_sha256": "43a1f07c5c5f2480838110fd715a2d148d1b25cef775bd607f20c3d2dcf037a2"
++    },
++    {
++      "Android_UI_action": false,
++      "argv": [
++        "/system/bin/cmd",
++        "package",
++        "path",
++        "--user",
++        "0",
++        "com.MobileTicket"
++      ],
++      "command_receipt_path": "/home/alex/work/pocket4-current-cell02-ticket12306-metadata-01/evidence/command-002.result.json",
++      "entry_entered": true,
++      "first_error": null,
++      "host_timed_out": false,
++      "index": 2,
++      "joined": true,
++      "operation": "package_identity_or_launcher_read",
++      "recorder_errors": [],
++      "returncode": 0,
++      "secondary_errors": [],
++      "spawned": true,
++      "stderr_bytes": 0,
++      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
++      "stdout_bytes": 96,
++      "stdout_sha256": "39a7906445cf1712e1fb83b7e145c64631c26a7b57186ea83fbbdedd1e61681b"
++    },
++    {
++      "Android_UI_action": false,
++      "argv": [
++        "/system/bin/cmd",
++        "package",
++        "resolve-activity",
++        "--brief",
++        "--user",
++        "0",
++        "-a",
++        "android.intent.action.MAIN",
++        "-c",
++        "android.intent.category.LAUNCHER",
++        "com.MobileTicket"
++      ],
++      "command_receipt_path": "/home/alex/work/pocket4-current-cell02-ticket12306-metadata-01/evidence/command-003.result.json",
++      "entry_entered": true,
++      "first_error": null,
++      "host_timed_out": false,
++      "index": 3,
++      "joined": true,
++      "operation": "package_identity_or_launcher_read",
++      "recorder_errors": [],
++      "returncode": 0,
++      "secondary_errors": [],
++      "spawned": true,
++      "stderr_bytes": 0,
++      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
++      "stdout_bytes": 127,
++      "stdout_sha256": "c2d47c9d1179d1f5350838e8dae3d70b49ade40028be9aa5234a9fc27fc6fe6e"
++    },
++    {
++      "Android_UI_action": false,
++      "argv": [
++        "/system/bin/cmd",
++        "package",
++        "path",
++        "--user",
++        "0",
++        "com.MobileTicket"
++      ],
++      "command_receipt_path": "/home/alex/work/pocket4-current-cell02-ticket12306-metadata-01/evidence/command-004.result.json",
++      "entry_entered": true,
++      "first_error": null,
++      "host_timed_out": false,
++      "index": 4,
++      "joined": true,
++      "operation": "package_identity_or_launcher_read",
++      "recorder_errors": [],
++      "returncode": 0,
++      "secondary_errors": [],
++      "spawned": true,
++      "stderr_bytes": 0,
++      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
++      "stdout_bytes": 96,
++      "stdout_sha256": "39a7906445cf1712e1fb83b7e145c64631c26a7b57186ea83fbbdedd1e61681b"
++    },
++    {
++      "Android_UI_action": false,
++      "argv": [
++        "/system/bin/cmd",
++        "package",
++        "list",
++        "packages",
++        "-U",
++        "--show-versioncode",
++        "--user",
++        "0",
++        "com.MobileTicket"
++      ],
++      "command_receipt_path": "/home/alex/work/pocket4-current-cell02-ticket12306-metadata-01/evidence/command-005.result.json",
++      "entry_entered": true,
++      "first_error": null,
++      "host_timed_out": false,
++      "index": 5,
++      "joined": true,
++      "operation": "package_identity_or_launcher_read",
++      "recorder_errors": [],
++      "returncode": 0,
++      "secondary_errors": [],
++      "spawned": true,
++      "stderr_bytes": 0,
++      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
++      "stdout_bytes": 51,
++      "stdout_sha256": "43a1f07c5c5f2480838110fd715a2d148d1b25cef775bd607f20c3d2dcf037a2"
++    }
++  ],
++  "current_metadata_scope": {
++    "Bili_scope_reused": false,
++    "UID_version_APKs_and_data_directories_pending": true,
++    "baseline_packages_modified": false,
++    "business_action_authority": false,
++    "current_baseline_qualification_sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e",
++    "current_baseline_schema": "pocket4-main-current-baseline-v2",
++    "current_baseline_sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364",
++    "epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
++    "package": "com.MobileTicket",
++    "schema": "pocket4-fixed-new-target-metadata-scope-v1",
++    "user": 0
++  },
++  "current_package_inventory_scanned_or_exported": false,
++  "data_directories_after": [
++    {
++      "device": 1811,
++      "gid": 10121,
++      "inode": 142348,
++      "mode": 16832,
++      "path": "/data/user/0/com.MobileTicket",
++      "uid": 10121
++    },
++    {
++      "device": 1811,
++      "gid": 10121,
++      "inode": 142356,
++      "mode": 16832,
++      "path": "/data/user_de/0/com.MobileTicket",
++      "uid": 10121
++    }
++  ],
++  "data_directories_before": [
++    {
++      "device": 1811,
++      "gid": 10121,
++      "inode": 142348,
++      "mode": 16832,
++      "path": "/data/user/0/com.MobileTicket",
++      "uid": 10121
++    },
++    {
++      "device": 1811,
++      "gid": 10121,
++      "inode": 142356,
++      "mode": 16832,
++      "path": "/data/user_de/0/com.MobileTicket",
++      "uid": 10121
++    }
++  ],
++  "error": null,
++  "final_Main_guard_passed": true,
++  "future_install_or_UI_requires_separate_target_scope": true,
++  "held_binding_released": true,
++  "historical_matrix_sha256": "05e74a719281abab717464978d85393dec8d0d528c1e7ccbd93691f156ce56e4",
++  "historical_version_code": 275,
++  "historical_version_still_matches": true,
++  "immutable_baseline_packages_modified": false,
++  "instrumentation_calls": 0,
++  "launcher_resolution": {
++    "component": "com.MobileTicket/.ui.activity.WelcomeGuideActivity",
++    "fallback_used": false,
++    "later_launch_requires_new_current_binding": true,
++    "launch_performed": false,
++    "package": "com.MobileTicket",
++    "query_action": "android.intent.action.MAIN",
++    "query_category": "android.intent.category.LAUNCHER",
++    "resolve_stdout_sha256": "c2d47c9d1179d1f5350838e8dae3d70b49ade40028be9aa5234a9fc27fc6fe6e",
++    "user": 0
++  },
++  "metadata_after": {
++    "package": "com.MobileTicket",
++    "uid": 10121,
++    "user": 0,
++    "version_code": 275
++  },
++  "metadata_before": {
++    "package": "com.MobileTicket",
++    "uid": 10121,
++    "user": 0,
++    "version_code": 275
++  },
++  "nonce": "4cb2f06a27a98652bffece9327f3f8a2",
++  "ok": true,
++  "old_v2_helper_called": false,
++  "package": "com.MobileTicket",
++  "package_read_commands_completed": 5,
++  "permission_grants": 0,
++  "private_baseline_exported": false,
++  "schema": 1,
++  "scope": "one exact 12306 user0 current-cell02 metadata observation",
++  "secondary_errors": [],
++  "seconds": 0.9770079829031602,
++  "settings_writes": 0,
++  "shared_helper": {
++    "binary_sha256": "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689",
++    "qualification_sha256": "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3",
++    "source_sha256": "adf5b08f7854bec061ab8d2a208f3414339701c816218881e6550afde2e6c31c",
++    "whole_process_tree_cleanup_qualified": false
++  },
++  "signer_certificate_independently_verified": false,
++  "source_sha256": "2df84be028f82ceda2d75fea66520096200924e937c474b52459bd5511170903",
++  "target_data_directory_contents_read": false,
++  "target_directory_cleanup": {
++    "contents_read": false,
++    "held_data_directory_FDs_closed": 2
++  },
++  "total_apk_bytes": 150377492,
++  "whole_app_production_ready": false
++}

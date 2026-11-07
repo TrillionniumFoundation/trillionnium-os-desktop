@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "state": "LOCAL_CONTROLS_PASS",
+  "rows": [
+    {
+      "name": "measured-svc",
+      "expected_rejection": false,
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "measured-smc-default",
+      "expected_rejection": false,
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "measured-smc-handler",
+      "expected_rejection": true,
+      "passed": true,
+      "error": "owned case did not pass"
+    },
+    {
+      "name": "measured-smc-mask-edit",
+      "expected_rejection": true,
+      "passed": true,
+      "error": "owned case did not pass"
+    },
+    {
+      "name": "reject-another-nonce",
+      "expected_rejection": true,
+      "passed": true,
+      "error": "case/nonce/package binding differs"
+    },
+    {
+      "name": "reject-timeout-despite-pass-payload",
+      "expected_rejection": true,
+      "passed": true,
+      "error": "instrumentation transport did not complete"
+    },
+    {
+      "name": "reject-multiple-completions",
+      "expected_rejection": true,
+      "passed": true,
+      "error": "one completed instrumentation result required"
+    },
+    {
+      "name": "reject-duplicate-json-key",
+      "expected_rejection": true,
+      "passed": true,
+      "error": "duplicate JSON key: phase"
+    },
+    {
+      "name": "reject-unreaped-child-with-pass-bits",
+      "expected_rejection": true,
+      "passed": true,
+      "error": "default child did not terminate/reap by SIGILL"
+    },
+    {
+      "name": "reject-duplicate-package-identity",
+      "expected_rejection": true,
+      "passed": true,
+      "error": "duplicate package identity"
+    },
+    {
+      "name": "synthetic-binding-structure-only",
+      "expected_rejection": false,
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "reject-cancelled-build",
+      "expected_rejection": true,
+      "passed": true,
+      "error": "candidate build not complete"
+    },
+    {
+      "name": "reject-stale-engine-hash",
+      "expected_rejection": true,
+      "passed": true,
+      "error": "engine hash not bound by build receipt"
+    },
+    {
+      "name": "reject-projected-source-difference",
+      "expected_rejection": true,
+      "passed": true,
+      "error": "candidate input/final receipt mismatch: effective_teto_files"
+    },
+    {
+      "name": "reject-consistent-receipts-with-wrong-candidate",
+      "expected_rejection": true,
+      "passed": true,
+      "error": "signal candidate projection differs: guest_os_primitives/arm64/guest_context_arch.h"
+    },
+    {
+      "name": "reject-final-receipt-as-inputs",
+      "expected_rejection": true,
+      "passed": true,
+      "error": "candidate inputs are not a pre-build receipt"
+    },
+    {
+      "name": "reject-no-host-suite-build",
+      "expected_rejection": true,
+      "passed": true,
+      "error": "complete host suite was not built"
+    }
+  ],
+  "device_operations": 0,
+  "services_started": 0,
+  "native_execution": false,
+  "synthetic_fixture_scope": "receipt admission only",
+  "durable_probe_readback_qualified_here": false,
+  "actual_isolated_Android_qualification": "NOT_RUN"
+}

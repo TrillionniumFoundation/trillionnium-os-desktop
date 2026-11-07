@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/94990735b266/android-owner16-runtime-log-bounds-work01/controls.py", line 265, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/scratch/94990735b266/android-owner16-runtime-log-bounds-work01/controls.py", line 242, in main
+    socket_control(owned, folder, wire)
+  File "/workspace/scratch/94990735b266/android-owner16-runtime-log-bounds-work01/controls.py", line 126, in socket_control
+    held = owned.Process(child.pid)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/94990735b266/android-owner16-runtime-log-bounds-work01/candidate/owned.py", line 192, in __init__
+    need(self.value['pid'] == pid, 'pidfd lookup differs')
+  File "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner15-normal01-freeze-01/source/pinned_support.py", line 11, in need
+    raise RuntimeError(message)
+RuntimeError: pidfd lookup differs

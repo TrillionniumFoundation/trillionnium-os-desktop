@@ -1,0 +1,29 @@
+{
+  "schema": "pocket4-root-ihg-current-install01-failure-v1",
+  "job": "1a1afc1f307-fc05-6b60",
+  "source_tree": "9ef0b51ede881f2cbe745d8c87c5b0237c87a25f",
+  "terminal_complete_durable": true,
+  "exit_code": 1,
+  "stage_error": {
+    "message": "'references/readonly_r3_coordinator.py'",
+    "phase": "stage_or_coordinator",
+    "type": "KeyError"
+  },
+  "actual_source_controls": 33,
+  "controls_all_passed": true,
+  "Main_before_after_equal": true,
+  "source_unchanged": true,
+  "stage_created": true,
+  "coordinator_result_absent": true,
+  "worker_root_absent": true,
+  "absence_reader_job": "1a1afc688ee-fc05-6b8c",
+  "failure_phase": "execute entry verify_source before coordinator setup/try/worker dispatch",
+  "no_Android_install_attempt": "Frozen control flow plus fixed worker/result absence; no worker was started by this source path.",
+  "root_cause": "Retained verify_source indexed removed references/readonly_r3_coordinator.py instead of current host source contract.",
+  "original_guard_preservation_claim_failed_to_check_new_manifest_interconnection": true,
+  "replay": false,
+  "automatic_retry": false,
+  "old_nonces_retired_for_new_attempt": true,
+  "helper_uid": null,
+  "whole_app_production_ready": false
+}

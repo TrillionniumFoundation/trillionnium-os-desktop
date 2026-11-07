@@ -1,0 +1,115 @@
+{
+  "schema": "pocket4-fixed-daemon-status-owner-source-review-v1",
+  "scope": "SOURCE_ONLY_PENDING_ROOT_REVIEW_AND_ACTUAL",
+  "source": {
+    "bytes": 32804,
+    "sha256": "2b82a1debb30498e2c8a5a557d5f8d74d843f28634bb10de18b64e047150cde4"
+  },
+  "historical_source": {
+    "bytes": 22982,
+    "sha256": "246e3c07125ce8227ec482310ab4fae3fcba68c390a210640bcd75ac15a61cbd",
+    "git_blob_sha": "bfad8422b864e8d8bb2ccb23ca506a7463ee23de"
+  },
+  "actual_owner": {
+    "job_id": "1a1b0f64a74-fc05-7461",
+    "tree": "c85e4a7cbf9a8e6a31a79e78f3fae305c97adb8b",
+    "blob": "7435fcf77357f9a7d7d6d5c6e45d85b53ad35692",
+    "stdout": {
+      "bytes": 9143,
+      "sha256": "73b17e4e3755cb681922463c784cab7ebacc76e14c23b7410b6d4c8d736f947c"
+    },
+    "owner_host_pid": 2747275,
+    "owner_start_ticks": 99050420,
+    "owner_parent_host_pid": 3588022,
+    "owner_identity_sha256": "3cfe9d4d411ecba738f07488604cd9a3a9a2585d10d9a1dbe9b6ac328cb59692"
+  },
+  "old_baseline": {
+    "path": "/home/alex/work/pocket4-main-current-baseline-01/baseline.private.json",
+    "bytes": 41844,
+    "sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+    "exported": false
+  },
+  "original_epoch": {
+    "path": "/home/alex/work/pocket4-current-host-r5-source-01/references/framework_epoch.py",
+    "bytes": 8658,
+    "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+    "blob": "ee85b38842efa8d935bbdc5b422c7804f059da92",
+    "modified": false,
+    "capture_android_called": false
+  },
+  "source_reference": [
+    [
+      "runtime/droidloom-supervisor/src/control.rs",
+      "2bed3026cc4f00c819de2ba7fd253165d29bebbb",
+      70656,
+      "8289b74fdf040d2bd3a85d12f4488a82bdab4e1c4c6844ab90fe113228d91200"
+    ],
+    [
+      "runtime/droidloom-supervisor/src/development.rs",
+      "6a49f47b24915f3f69f40e05dd56f9c3459ff742",
+      101180,
+      "7b3d817b669efbe3f1a6355b941c982a9d0380d40edda200cba699ac4aa4ae85"
+    ]
+  ],
+  "authority": "Source references are exact builder469 public sources. They do not establish that installed Main came from that source version. Live daemon and owner executable bytes/backing metadata must independently match the private qualified historical baseline before the request.",
+  "request": {
+    "command": "status",
+    "payload_utf8": "{\"command\":\"status\"}",
+    "socket": "/run/droidloom/control.sock",
+    "maximum_send_calls": 1,
+    "automatic_retry": false,
+    "peer": {
+      "pid": 3588022,
+      "uid": 0
+    },
+    "new_child_processes_by_client": 0,
+    "new_Android_commands_by_client": 0,
+    "requested_mutations": 0
+  },
+  "server_behavior": {
+    "reference_Status_calls_normal_poll_first": true,
+    "normal_poll_may_reap_exited_owner_and_teardown_existing_resources": true,
+    "reference_status_may_spawn_ip_netns_pids": true,
+    "reference_status_may_spawn_nsenter_getprop": true,
+    "server_children_or_Android_reads_not_independently_counted": true,
+    "no_Start_Stop_Restart_WaitReady_Launch_requested": true
+  },
+  "gates": [
+    "Pin private historical B and unchanged epoch module before loading.",
+    "Original daemon full identity, current boot, actual new-owner full identity SHA/birth/parent/program, pidfds, and unique daemon direct-child table.",
+    "Hold and hash both live executables with full original baseline file metadata and byte SHA.",
+    "Root-owned socket path held; root fixed daemon SO_PEERCRED before one fixed Status payload.",
+    "Strict bounded JSON with no duplicate/unknown/non-finite fields; raw message private and only bytes/SHA projected.",
+    "Independent complete owner/daemon re-observation, child table, pidfds, executable held/named metadata, socket held/named metadata, config SHA and boot after.",
+    "Every acquired held FD close attempted independently; unexpected received SCM_RIGHTS all registered then all closed before rejection; first close failure retained."
+  ],
+  "bounds": {
+    "read_and_watchdog_seconds": 15,
+    "outer_timeout_seconds": 30,
+    "source_bytes_max": 65536,
+    "status_response_bytes_max": 65536,
+    "status_message_bytes_max": 32768,
+    "each_executable_bytes_max": 134217728,
+    "memory_max_bytes": 134217728,
+    "cpu_quota_percent": 100
+  },
+  "controls": {
+    "inherited_actual_count": 20,
+    "new_status_and_peer_count": 11,
+    "new_received_FD_close_count": 2,
+    "total_expected": 33,
+    "python_compile_performed_here": false,
+    "python_controls_executed_here": false
+  },
+  "qualification": {
+    "owner_reply_may_bind_fixed_kernel_candidate": true,
+    "new_init_discovered": false,
+    "current_framework_qualified": false,
+    "new_baseline_created": false,
+    "old_task_cleanup_authorized": false,
+    "App_or_helper_runtime_authorized": false,
+    "installed_Main_source_version_verified": false,
+    "production_ready": false
+  },
+  "raw_private_exports": false
+}

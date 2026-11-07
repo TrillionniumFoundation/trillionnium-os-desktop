@@ -1,0 +1,159 @@
+{
+  "cases": [
+    {
+      "case": "original_full_sequence_guards_and_finally_AST_preserved_with_one_explicit_call_change",
+      "passed": true
+    },
+    {
+      "case": "immediate_expected",
+      "passed": true
+    },
+    {
+      "case": "explicit_null_then_expected",
+      "passed": true
+    },
+    {
+      "case": "two_nulls_then_expected",
+      "passed": true
+    },
+    {
+      "case": "duplicate_same_focus_preserves_original_unique_set",
+      "passed": true
+    },
+    {
+      "case": "multiple_then_zero_cannot_be_reclassified_by_later_zero",
+      "passed": true
+    },
+    {
+      "case": "foreign_then_zero_cannot_be_reclassified_by_later_zero",
+      "passed": true
+    },
+    {
+      "case": "foreign_user_cannot_be_reclassified_by_later_zero",
+      "passed": true
+    },
+    {
+      "case": "wrong_bili_activity_cannot_be_reclassified_by_later_zero",
+      "passed": true
+    },
+    {
+      "case": "no_focus_field_cannot_be_reclassified_by_later_zero",
+      "passed": true
+    },
+    {
+      "case": "malformed_focus_cannot_be_reclassified_by_later_zero",
+      "passed": true
+    },
+    {
+      "case": "mixed_null_and_focus_cannot_be_reclassified_by_later_zero",
+      "passed": true
+    },
+    {
+      "case": "valid_plus_malformed_cannot_be_reclassified_by_later_zero",
+      "passed": true
+    },
+    {
+      "case": "zero_then_multiple_distinct_focuses_stops_no_third_read",
+      "passed": true
+    },
+    {
+      "case": "zero_then_foreign_focus_stops_no_third_read",
+      "passed": true
+    },
+    {
+      "case": "explicit_null_exhausts_exact_three_samples_no_input_replay",
+      "passed": true
+    },
+    {
+      "case": "failed_command_1_stops_without_later_reclassification",
+      "passed": true
+    },
+    {
+      "case": "failed_command_2_stops_without_later_reclassification",
+      "passed": true
+    },
+    {
+      "case": "click_failure_keeps_original_unclassified_foreground_error_no_wait",
+      "passed": true
+    },
+    {
+      "case": "after_state_failure_keeps_original_unclassified_foreground_error_no_wait",
+      "passed": true
+    },
+    {
+      "case": "restoration_failure_keeps_original_unclassified_foreground_error_no_wait",
+      "passed": true
+    },
+    {
+      "case": "changed_owned_task_before_first_read_fails",
+      "passed": true
+    },
+    {
+      "case": "changed_owned_task_after_expected_read_fails",
+      "passed": true
+    },
+    {
+      "case": "late_expected_first_sample_does_not_qualify",
+      "passed": true
+    },
+    {
+      "case": "late_expected_after_zero_does_not_qualify",
+      "passed": true
+    },
+    {
+      "case": "Main_guard_failure_prevents_first_read",
+      "passed": true
+    },
+    {
+      "case": "original_final_install_identity_guard_still_fails",
+      "passed": true
+    },
+    {
+      "case": "original_complete_tree_guard_stops_before_input",
+      "passed": true
+    },
+    {
+      "case": "original_fresh_window_guard_stops_before_input",
+      "passed": true
+    },
+    {
+      "case": "used_first_plan_cannot_replay",
+      "passed": true
+    },
+    {
+      "case": "foreign_raw_window_text_never_exported",
+      "passed": true
+    }
+  ],
+  "count": 31,
+  "guard_proof": {
+    "copied_sequence_AST_identical_except_one_post_foreground_call": true,
+    "original_files": {
+      "backend": {
+        "path": "/workspace/scratch/94990735b266/android-bili-r3-video-foreground-reference-01/android_backend.py",
+        "sha256": "088be6d783e80006645a05b8c5b90cd100d3e38b6f3d4634dd499ab1de7898ae"
+      },
+      "qa_adapter": {
+        "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/source/qa_adapter.py",
+        "sha256": "1e939fb27aa4eaa9bb2fd79d7022ff4f48011fdf8824b0e7645bbc6f3308e1c8"
+      },
+      "qa_contract": {
+        "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/source/qa_contract.py",
+        "sha256": "871c784812063739a6ab976784fb38243af52266b0d9a95aa1244779ccd2c005"
+      },
+      "recorder": {
+        "path": "/workspace/scratch/94990735b266/android-qa-install-state-01/review-inputs/recorder.py",
+        "sha256": "5f25f22db55ba94e6ac895c2ce274b6959a274b64c9aa82bbc30d8c3c860f511"
+      }
+    },
+    "original_focus_regex_identical": true,
+    "sequence_AST_sha256": "c3d6215fde6c73ef4d65a2fea100a6297a6379ec6394ce9dbd82e399cfa2cde9",
+    "shared_objects_or_methods_monkeypatched": false
+  },
+  "ok": true,
+  "old04_outcome_unknown_retained": true,
+  "real_Android_Hepta_or_UI_actions": 0,
+  "schema": 1,
+  "shared_recorder_backend_adapter_modified": false,
+  "synthetic_public_input_seams_only": true
+}

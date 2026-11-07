@@ -1,0 +1,80 @@
+{
+  "schema": "pocket4-one-Status-child-evidence-source-review-v1",
+  "state": "FROZEN_SOURCE_ONLY_AWAITING_ROOT_REVIEW_AND_ONE_ACTUAL",
+  "source": {
+    "bytes": 46157,
+    "sha256": "6ea930832f5f42a9550c8f1544d15790d4dc2b32812e8adc3c3701c7e288ac92",
+    "git_blob": "040b107d13bdb1120ce3c81cb0e40df9db9275b5"
+  },
+  "request": {
+    "bytes": 48134,
+    "sha256": "cecd5aa61fd405257f6ad7a51611432568162a82f91eaa51ec8a775e21489193",
+    "git_blob": "44a2d4bffd8be9fb5b6cd088c9a97c67a88674f6",
+    "idempotency_key": "pocket4-current-baseline02-one-Status-child-evidence01-20261106"
+  },
+  "controls": {
+    "count": 24,
+    "original_actual_controls_retained": 10,
+    "new_controls": 14,
+    "Python_compile_or_controls_executed": false
+  },
+  "diagnostic_only": true,
+  "native_operation": {
+    "command": "Status",
+    "socket": "/run/droidloom/control.sock",
+    "maximum_requests": 1,
+    "exact_root_daemon_SO_PEERCRED": true,
+    "reply_size_max": 65536,
+    "deadline_seconds": 12,
+    "automatic_retry": false,
+    "internal_reference_may_spawn_ip_nsenter_getprop": true,
+    "reference_poll_may_reap_dead_owner": true,
+    "internal_side_effect_counts_not_asserted": true,
+    "client_children": 0,
+    "client_threads": 0
+  },
+  "sampling": {
+    "production_child_gate": "unchanged",
+    "maximum_inflight_cycles": 64,
+    "single_before_and_single_after_samples": true,
+    "interval_seconds": 0.01,
+    "first_rejection_stops_additional_sampling": true,
+    "original_failure_never_turned_success": true,
+    "original_exception_preserved_if_child_capture_or_same_reply_drain_fails": true,
+    "sampling_not_atomic_and_not_continuous": true,
+    "missing_raced_child_identity_explicitly_incomplete": true
+  },
+  "privacy": {
+    "unknown_command_line_executable_cgroup": "length/hash only; fixed public executable labels only",
+    "private_baseline": false,
+    "raw_Status_response_or_message": false,
+    "foreign_App_or_UI_content": false
+  },
+  "ancestry": {
+    "baseline": "baseline02",
+    "epoch": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "B": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364",
+    "Q": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e",
+    "before_and_final_original_guard_required": true,
+    "no_rebind": true,
+    "no_process_adoption": true
+  },
+  "limits": {
+    "tool_seconds": 30,
+    "self_watchdog_seconds": 25,
+    "read_budget_seconds": 25,
+    "memory_bytes": 134217728,
+    "cpu_percent": 100,
+    "public_output_max_bytes": 262144
+  },
+  "no_UI_install_launch_or_task_removal": true,
+  "no_other_process_signals": true,
+  "no_file_writes": true,
+  "new_Main_or_App_qualification": false,
+  "past_London_samples_filled": false,
+  "old_London_UNKNOWN_and_40_retired_unchanged": true,
+  "installed_Main_reference_source_version_verified": false,
+  "audit_tree": "89a90f7a6f1a63a52ca56c1c49007cc564c60e30",
+  "incomplete_sidecar_or_final_guard_failure_is_retained": true,
+  "validation_done": "V8 exact generation/source block/reference hash/24 case names only; Python actual pending"
+}

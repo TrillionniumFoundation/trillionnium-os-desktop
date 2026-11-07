@@ -1,0 +1,13 @@
+--- controller-reviewed-badfc916.py
++++ controller-reviewed-fb354f07.py
+@@ -738,7 +738,9 @@
+         snapshot = guard.capture_android(MAIN_INIT)
+         must(snapshot['sha256'] == MAIN_EPOCH, 'Main epoch differs from frozen binding')
+         main_root, own_root = MAIN_CGROUP, cgroup_path(os.getpid())
+-        must(str(cgroup_path(MAIN_INIT)).startswith(str(main_root) + '/'), 'Main init is outside fixed service cgroup')
++        init_cgroup = cgroup_path(MAIN_INIT)
++        must(init_cgroup == main_root or main_root in init_cgroup.parents,
++             'Main init is outside fixed service cgroup hierarchy')
+         guard_main(guard, snapshot, activation)
+         must(main_root != own_root and not str(own_root).startswith(str(main_root) + '/'), 'fixture shares Main cgroup')
+         own_before, main_before = cgroup_read(own_root), cgroup_read(main_root)

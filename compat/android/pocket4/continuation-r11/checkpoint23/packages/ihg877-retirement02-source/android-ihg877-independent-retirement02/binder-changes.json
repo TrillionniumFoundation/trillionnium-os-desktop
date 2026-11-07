@@ -1,0 +1,27 @@
+[
+  {
+    "label": "new-binder-name",
+    "old": "function bindIHG877IndependentRetirement(material,h)",
+    "new": "function bindIHG877IndependentRetirement02(material,h)"
+  },
+  {
+    "label": "new-exact-five-input-pins",
+    "old": " const expected={\"inputs\":{\"bytes\":10252,\"sha256\":\"025998ecaa02b5d6baf75bfaff2778ebd6e8fd1cccba7214613d3c62748b48f3\"},\"controller\":{\"bytes\":49697,\"sha256\":\"77df530902aac724010f994d771715e38177f0b991886816d4fd74db77e7678d\"},\"context\":{\"bytes\":10020,\"sha256\":\"5aa84393992f76ef04f781dcbb141a9f1cf84d544f9556d89055921d934a9fd3\"},\"historical\":{\"bytes\":27352,\"sha256\":\"01efab63ac15390b9a67863ba80eb489e4f2961e47fc00bc0e1a6f6a73bbec2d\"},\"priorRequest\":{\"bytes\":66846,\"sha256\":\"24b3735654e7f9d111410cc92222ca328d676321571a4977c369ff17460c983a\"}}",
+    "new": " const expected={\"inputs\":{\"bytes\":18382,\"sha256\":\"72e1dad8443b91ea32a1cd186d23287693de06f4255e4583904cbc0e8c0e4ca3\"},\"controller\":{\"bytes\":60788,\"sha256\":\"f7144a719220248318dacab1062c12514b0fedb9d75438d0e8d790b86f3c2321\"},\"context\":{\"bytes\":10020,\"sha256\":\"5aa84393992f76ef04f781dcbb141a9f1cf84d544f9556d89055921d934a9fd3\"},\"historical\":{\"bytes\":27352,\"sha256\":\"01efab63ac15390b9a67863ba80eb489e4f2961e47fc00bc0e1a6f6a73bbec2d\"},\"priorRequest\":{\"bytes\":103629,\"sha256\":\"b18fe0f952e652dd5f0b576ced7615531f4b9be5f6fd3a801ea032ad3d553620\"}}"
+  },
+  {
+    "label": "new-explicit-current-preservation",
+    "old": "parsed.native_reported_task_id===null&&parsed.original_launch_outcome===\"unknown_retained\",\"INDEPENDENT_SCOPE_INPUTS\");",
+    "new": "parsed.native_reported_task_id===null&&parsed.original_launch_outcome===\"unknown_retained\"&&\n  parsed.current_retirement02_baseline.schema===\"pocket4-independent-current-IHG877-retirement02-baseline-v1\"&&\n  JSON.stringify(parsed.current_retirement02_baseline.current_tasks)===\"[875,877,878]\"&&\n  JSON.stringify(parsed.current_retirement02_baseline.preserved_current_tasks)===\"[875,878]\",\"INDEPENDENT_SCOPE_INPUTS\");"
+  },
+  {
+    "label": "fresh-bootstrap-label",
+    "old": "fixed_independent_current_IHG877_retirement','__file__':'<verified-independent-current-IHG877-retirement>",
+    "new": "fixed_independent_current_IHG877_retirement02','__file__':'<verified-independent-current-IHG877-retirement02>"
+  },
+  {
+    "label": "new-key",
+    "old": "pocket4-ihg-r4-london877-current-Android-leaf-retirement01-20261106",
+    "new": "pocket4-ihg-r4-london877-current-Android-leaf-retirement02-20261106"
+  }
+]

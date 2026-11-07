@@ -1,0 +1,100 @@
+--- first-launch-inspect/amazon_task_context.py
++++ fresh-search-entry/amazon_task_context.py
+@@ -2,8 +2,8 @@
+ 
+ This module has no CLI or standalone execution. A separate frozen coordinator
+ must bind actual resolve/install/source receipts, a new private flow and Main.
+-Only launch, one read-only QA inspection sequence, and exact task retirement
+-are described here. No click/set-text/media/screenshot opcode is admitted.
++Only launch, bounded successful complete reads, one exact search-entry click,
++and exact task retirement are admitted. No set-text/media/screenshot opcode.
+ """
+ import json
+ import math
+@@ -36,11 +36,25 @@
+     def __init__(self,phase,qa,resolve,inspect_plan,step,read,selected_task):
+         need(phase in ('launch','inspect','cleanup'),'EXACT_AMAZON_PHASE_REQUIRED')
+         need(qa.PACKAGE==PACKAGE and qa.UID==UID and qa.SELF==SELF,'EXACT_AMAZON_CONTRACT_REQUIRED')
+-        need(inspect_plan['operation']=='inspect' and set(inspect_plan['nonces'])=={'before','inspect','after'},
+-             'ONLY_FIXED_READ_ONLY_INSPECT_PLAN_REQUIRED')
++        need(type(inspect_plan) is dict and set(inspect_plan)=={'schema','operation','stability','entry','post'} and
++             inspect_plan['schema']==1 and inspect_plan['operation']=='search_entry' and
++             len(inspect_plan['stability'])==4 and all(p['operation']=='inspect' for p in
++             [*inspect_plan['stability'],inspect_plan['post']]) and inspect_plan['entry']['operation']=='click' and
++             inspect_plan['entry']['selector']=={'resource_id':PACKAGE+':id/chrome_search_box',
++                'class':'android.widget.ImageButton','content_desc':'Search'},
++             'ONLY_FIXED_SEARCH_ENTRY_PLAN_REQUIRED')
++        self.plans=[*inspect_plan['stability'],inspect_plan['entry'],inspect_plan['post']]
++        self.request_ops={}
++        for plan in self.plans:
++            expected={'before','inspect','after'}|({'action'} if plan['operation']=='click' else set())
++            need(plan['schema']==1 and set(plan['nonces'])==expected,'EXACT_PHASE_NONCE_KEYS')
++            for name,nonce in plan['nonces'].items():
++                qa.nonce(nonce);need(nonce not in self.request_ops,'DISTINCT_PHASE_NONCES')
++                self.request_ops[nonce]=('inspect' if name=='inspect' else 'click' if name=='action' else 'state')
++        need(len(self.request_ops)==19,'EXACT_NINETEEN_HELPER_NONCES')
+         self.phase,self.qa,self.resolve,self.plan=phase,qa,list(resolve),inspect_plan
+         self.step,self.read,self.selected_task=step,read,selected_task
+-        self.counts={};self.used_nonces=set();self.remove_attempted=False
++        self.counts={};self.used_nonces=set();self.action_nonces=set();self.remove_attempted=False
+ 
+     def claim(self,name,limit):
+         count=self.counts.get(name,0)
+@@ -59,7 +73,7 @@
+             need(timeout==8 and not mutation and not private,'HELPER_METADATA_READ_ONLY')
+             # Inspect phase has an outer current identity pair and the original
+             # Session's own before/after pair. Other phases have only outer pair.
+-            self.claim('helper_uid' if argv==OWN_UID else 'helper_path',4 if self.phase=='inspect' else 2)
++            self.claim('helper_uid' if argv==OWN_UID else 'helper_path',2+2*len(self.plans) if self.phase=='inspect' else 2)
+             return
+         if argv==self.resolve:
+             need(self.phase=='launch' and timeout==15 and not mutation and not private,
+@@ -67,11 +81,11 @@
+             self.claim('resolve',1);return
+         if argv==STACKS:
+             need(not mutation and not private and timeout<=20,'TASK_SNAPSHOT_READ_ONLY')
+-            self.claim('stacks',33 if self.phase=='cleanup' else 2);return
++            self.claim('stacks',33 if self.phase=='cleanup' else 2*len(self.plans) if self.phase=='inspect' else 2);return
+         if argv==FOREGROUND:
+             need(self.phase=='inspect' and timeout==15 and not mutation and private,
+                  'ONLY_PRIVATE_CURRENT_FOREGROUND_READ')
+-            self.claim('foreground',3);return
++            self.claim('foreground',3*len(self.plans));return
+         if self.phase=='cleanup' and argv[:4]==['/system/bin/cmd','activity','stack','remove']:
+             # Full equality below, not a prefix-based permission grant.
+             selected=self.selected_task()
+@@ -81,23 +95,29 @@
+                  'ONLY_EXACT_NEW_OWNED_LEAF_REMOVAL')
+             need(not self.remove_attempted,'REMOVAL_CANNOT_BE_REPLAYED')
+             self.remove_attempted=True;return
+-        need(self.phase=='inspect' and timeout==20 and not mutation and not private,
++        need(self.phase=='inspect' and timeout==20 and not private,
+              'NO_OTHER_AMAZON_COMMAND_ADMITTED')
+         matches=[]
+-        for phase,nonce in self.plan['nonces'].items():
++        for nonce,operation in self.request_ops.items():
+             if nonce in self.used_nonces:
+                 continue
+             path=self.step/(nonce+'.request.json')
+             try:raw=self.read(path,65536)
+             except FileNotFoundError:continue
+             request=json.loads(raw)
+-            need(request.get('nonce')==nonce and request.get('op')==('inspect' if phase=='inspect' else 'state'),
++            need(request.get('nonce')==nonce and request.get('op')==operation,
+                  'FIXED_PHASE_REQUEST_REQUIRED')
+             self.qa.validate_request(request)
+             if self.qa.instrumentation_argv(request)==argv:
++                need(mutation==(operation=='click'),'ONLY_FIXED_CLICK_IS_MUTATING')
++                if operation=='click':
++                    need(nonce==self.plan['entry']['nonces']['action'] and
++                         request['inspection_nonce']==self.plan['entry']['nonces']['inspect'],
++                         'CLICK_MUST_USE_ITS_OWN_FRESH_INSPECTION')
+                 matches.append(nonce)
+-        need(len(matches)==1,'ONLY_ONE_CURRENT_SOURCE_BOUND_STATE_OR_INSPECT_REQUEST')
+-        self.used_nonces.add(matches[0]);self.claim('instrument',3)
++        need(len(matches)==1,'ONLY_ONE_CURRENT_SOURCE_BOUND_STATE_INSPECT_OR_ENTRY_CLICK_REQUEST')
++        self.used_nonces.add(matches[0]);self.claim('instrument',19)
++        if self.request_ops[matches[0]]=='click':self.action_nonces.add(matches[0])
+ 
+ 
+ class Flow:

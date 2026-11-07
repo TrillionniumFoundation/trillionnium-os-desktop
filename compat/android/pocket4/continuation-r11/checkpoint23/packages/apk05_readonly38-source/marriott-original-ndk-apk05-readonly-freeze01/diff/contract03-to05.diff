@@ -1,0 +1,34 @@
+--- baseline/fixture_contract.py
++++ candidate/fixture_contract.py
+@@ -41,7 +41,7 @@
+ 
+ def actual_build(raw, pin):
+     value = exact_bytes(raw,pin,67108864)
+-    need(value.get('kind') == 'p4-marriott-real-arm64-ndk-apk-build03' and
++    need(value.get('kind') == 'p4-marriott-real-arm64-ndk-apk-build05' and
+          value.get('success') is True and value.get('errors') == [] and
+          value.get('all_inputs_unchanged') is True and
+          value.get('post_input_errors') == [] and
+@@ -72,7 +72,7 @@
+          'EXACT_STATIC_23_NOT_RUNTIME_QUALIFICATION')
+     contract = value.get('APK_contract',{})
+     need(contract.get('package') == PACKAGE and contract.get('min_sdk') == 14 and
+-         contract.get('target_sdk') == 23 and contract.get('java_classes') == 2 and
++         contract.get('target_sdk') == 24 and contract.get('java_classes') == 2 and
+          contract.get('instrumentation') == 'android.test.InstrumentationTestRunner' and
+          contract.get('SDK_interfaces_packaged') is False and contract.get('runtime_executed') is False and
+          contract.get('runtime_must_use_instrumentation_with_nonempty_23_test_list') is True and
+@@ -91,11 +91,11 @@
+     need(type(artifact.get('bytes')) is int and 0 < artifact['bytes'] <= 33554432 and
+          re.fullmatch('[0-9a-f]{64}',artifact.get('sha256','')) and
+          artifact.get('path') ==
+-         '/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-03-20261106/ndk-tests.apk' and
++         '/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-05-20261106/ndk-tests.apk' and
+          artifact.get('resolved_path') == artifact['path'],
+          'FIXED_ACTUAL_APK_ARTIFACT_REQUIRED')
+     return {'build_result':dict(pin),'APK':artifact,'signer_sha256':contract['signature_certificate_sha256'],
+-            'native_members':members,'min_sdk':14,'target_sdk':23,'ABI':'arm64-v8a',
++            'native_members':members,'min_sdk':14,'target_sdk':24,'ABI':'arm64-v8a',
+             'runtime_qualified':False}
+ 
+ def terminal(raw, pin, job, stdout_bytes):

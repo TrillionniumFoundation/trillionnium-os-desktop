@@ -1,0 +1,15 @@
+# Producer06 deadline recovery03 — own resource gate
+
+Parent recovery02 remains unchanged at Git tree d19aee7e36c96807c36609147378acdede0bb3c5. All three Rust deadline06 source bodies still match their original frozen hashes. This revision changes only the Python compile/control wrappers, fresh output root, and stable keys. No request has been submitted.
+
+Both wrappers now retain a read-only FD to the controller’s exact unified cgroup. Before copy/build or any test execution, they verify cgroup v2, current PID membership, mount/cgroup namespace identities, one-CPU quota and the exact requested memory.max. They record current/peak/swap/limits and hierarchical memory.events. The final sample uses the same held directory and requires unchanged scope and limits, nondecreasing counters/peak, no preexisting or newly observed max/OOM/OOM-kill event, and current/peak no larger than the admitted cap. Resource sampling or FD-close failures preserve any earlier compile/test failure and make the result unsuccessful. The source never writes a cgroup file.
+
+The compile request remains non-root Python -I -B, CPU 100%, 1 GiB, nice 10, 600 seconds. Its fixed fresh root is /home/alex/work/pocket4-supervisor-lmkd-deadline-r11-build-06-recovery03. It only copies the pinned original source, overlays the exact three Rust files and invokes Cargo build plus test --no-run. The separate ordinary template remains CPU 100%, 512 MiB, nice 10, 180 seconds and is deliberately unusable until the successful actual compile receipt’s full external SHA is supplied. Original commands/test counts and held-ELF checks are unchanged.
+
+Actual local validation: 37 checks passed. These include Python AST, exact request/payload encoding, 31 pin-record binding to the original receipt, all three Rust bodies, definition-only PLAN with effects denied, missing ordinary SHA rejection, synthetic resource policy positives/negatives, first-failure preservation, and real owned temporary-directory nofollow/bounded-read/FD cleanup. There was no real cgroup sampling, Rust execution, Hepta call, Android startup or Main mutation in this validation.
+
+Resource evidence covers the final sample before receipt publication. It is explicitly not a whole-unit terminal proof. The coordinator must still inspect the original durable job terminal, its resource evidence and exact identity. No zero-swap assertion is made: swap limits/current/peak are observed without adding an unsupported request field or changing host policy.
+
+The recovered original producer05 build template is reference-only; never execute it. The original recovery02 and intermediate work01 bytes remain historical. The only delta after root’s work01 review is separately included in post-review-close-error.diff: a close failure cannot replace an earlier error or stop closure of the second retained FD.
+
+Full Rust Owner, real init barrier/HELLO/READY/COMMIT/enrollment, installed lifecycle and cross-generation recovery remain open. Expected 25 relay + 122 supervisor tests are expectations until actual matching compilation and the separate ordinary run succeed.

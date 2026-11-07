@@ -1,0 +1,18 @@
+--- frozen01/read_public_edit.py
++++ candidate02/read_public_edit.py
+@@ -307,11 +307,15 @@
+             'clickable':editor.get('clickable') is True,'bounds_positive':rect(editor.get('bounds')),
+             'inside_window_bounds':contains(inspection['window'].get('bounds'),editor.get('bounds')),
+             'class_complete':editor.get('class_truncated') is False,'resource_complete':editor.get('resource_id_truncated') is False,
++            'resource_utf8_bytes':len(editor['resource_id'].encode()),'resource_sha256':qa.sha(editor['resource_id'].encode()),
++            'resource_matches_target_id_namespace':bool(re.fullmatch(re.escape(qa.PACKAGE)+r':id/[A-Za-z0-9_]+',editor['resource_id'])),
+             'fixed_public_roles_matching_editor':roles(editor),
+             'fixed_resource_literal':editor.get('resource_id') if editor.get('resource_id') in PUBLIC_RESOURCES else None,
+             'unknown_resource_literal_exported':False,'finite_ancestor_limit':6,'ancestors':chain})
+     return {'fixed_class_EditText_count':len(editors),
+         'eligible_nonpassword_editable_set_text_count':sum(eligible(n) and n.get('editable') is True and n.get('supports_set_text') is True for n in editors),
++        'eligible_editors_with_request_bounded_target_resource_count':sum(row['eligible'] and row['editable'] and row['supports_set_text'] and
++            row['resource_matches_target_id_namespace'] and row['resource_utf8_bytes']<=256 for row in rows),
+         'public_label_counts':{role:len(values) for role,values in labels.items()},'editor_structure_rows':rows,
+         'node_paths_coordinates_unknown_text_descriptions_and_identifiers_exported':False,
+         'retired_nodes_are_not_current_action_authority':True,'input_or_click_requested':False,

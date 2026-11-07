@@ -1,0 +1,140 @@
+{
+  "schema": 1,
+  "full_six_source_diff_inverse_to_actual_R7_readiness02": true,
+  "independent_regenerated_request_exact": true,
+  "actual_four_originals_used_unmodified": true,
+  "exact_nanosecond_literal_from_raw_worker_preserved": true,
+  "nonce_pool_all_146_exact_and_ordered": true,
+  "source_proof": [
+    {
+      "name": "controls_reveal.py",
+      "original_bytes": 10056,
+      "original_sha256": "c47691958d04fc2179583617414b7e5f1f5819a6358cee376780270c9d29e9e0",
+      "bytes": 10056,
+      "sha256": "c5cb583d255197e53e3d2bfe01a6d501eca747c72c62aadb1701bcc2d42afea8",
+      "inverse_exact_after_declared_bindings": true,
+      "only_added_runtime_logic": []
+    },
+    {
+      "name": "owned_navigation.py",
+      "original_bytes": 59902,
+      "original_sha256": "f030b4a4c84ed8240f8deabb892e3528ca9d3fb26f38faa0047dd40f165ad197",
+      "bytes": 60088,
+      "sha256": "77975cc8ff7dd1dc28a894383c4157aa9457a9bdc17613c94aa7b1a2de4f5f24",
+      "inverse_exact_after_declared_bindings": true,
+      "only_added_runtime_logic": [
+        "reject_previous_helper_uid_10202",
+        "export_revalidated_safe_idle_metadata"
+      ]
+    },
+    {
+      "name": "playback_controls.py",
+      "original_bytes": 13317,
+      "original_sha256": "955cb60484bdc2f8dc27efb1953288ab40f88bd6536d4d5500036be9412f3342",
+      "bytes": 13317,
+      "sha256": "9e306fb35d658bd6c1217d884de25de252127a548e59c3e7f0299d5f56c60420",
+      "inverse_exact_after_declared_bindings": true,
+      "only_added_runtime_logic": []
+    },
+    {
+      "name": "post_foreground.py",
+      "original_bytes": 12607,
+      "original_sha256": "00127ad7bd5aaf03e9ca65596759051f62cd247bb747f33d9537875e91fed976",
+      "bytes": 12607,
+      "sha256": "f8009e20080105df5803a2245a71a3d80e249818ca93b9ac1e71fe8c90bdc123",
+      "inverse_exact_after_declared_bindings": true,
+      "only_added_runtime_logic": []
+    },
+    {
+      "name": "stage_execute.py",
+      "original_bytes": 5188,
+      "original_sha256": "7fffa0702cf1b7b613b8654674fc27dccdd9064c671c8d374972e9578a0c56f2",
+      "bytes": 5188,
+      "sha256": "ceabf424cd88a5812c6c36e7032a426ff5b87d3229c738694d39383e72fc8451",
+      "inverse_exact_after_declared_bindings": true,
+      "only_added_runtime_logic": []
+    },
+    {
+      "name": "video_navigation.py",
+      "original_bytes": 26257,
+      "original_sha256": "f66352948bc9cae0c351634a5e79978fca67ab1ec8652a6c0cfe59cda661aa27",
+      "bytes": 26257,
+      "sha256": "9f851e3d4c5b6fcce4cf2a44dfe78b89ff262cb5d2f7baf405e3b06d473c39b7",
+      "inverse_exact_after_declared_bindings": true,
+      "only_added_runtime_logic": []
+    }
+  ],
+  "assignment_replacements": [
+    {
+      "name": "SELF,UID",
+      "before": "SELF,UID=('org.droidloom.qa.bili.r8',10202)",
+      "after": "SELF,UID=('org.droidloom.qa.bili.r8',10204)"
+    },
+    {
+      "name": "INSTALL_ENTRY_SHA",
+      "before": "INSTALL_ENTRY_SHA='ca345bd6dd544a60c90f7f9aa2473dcf09e76845d7444071cdbbb14ed5327d51'",
+      "after": "INSTALL_ENTRY_SHA='02e046ac198309aea5fc227e73015f2e857a48c3a3c0f2bcdb508f493ae98a1d'"
+    },
+    {
+      "name": "INSTALL_ENTRY_BYTES",
+      "before": "INSTALL_ENTRY_BYTES=31986",
+      "after": "INSTALL_ENTRY_BYTES=32030"
+    },
+    {
+      "name": "INSTALL_MANIFEST_SHA",
+      "before": "INSTALL_MANIFEST_SHA='628512b7171e43303136956ba3cc2df10cf877808dd64672a662855c172f917a'",
+      "after": "INSTALL_MANIFEST_SHA='24262630242b244327a285e171c6936b00315705c541cb3d7506dfdeef49afbe'"
+    },
+    {
+      "name": "SESSION_SHA",
+      "before": "SESSION_SHA='67a1853844e2f51fa18d06ab194c558cb42175ff149963d4a0e9fde9ecfd42f0'",
+      "after": "SESSION_SHA='2c09ebd36105fdc79386ce929946c28fc5a60cc21ed902e083c3ee13f9d7655e'"
+    },
+    {
+      "name": "OLD_FLOW",
+      "before": "OLD_FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r8-flow-587084d5b51af906d6b05a12a3c30087')",
+      "after": "OLD_FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r8-flow-fd9784f9e464119899726c3b583243a8')"
+    },
+    {
+      "name": "OLD_STATE_NONCE",
+      "before": "OLD_STATE_NONCE='8e2223862f778b1cef69639be3a90ec8'",
+      "after": "OLD_STATE_NONCE='c296619272cb68fddb8923891ff0dff9'"
+    },
+    {
+      "name": "OLD_STATE_WIRE",
+      "before": "OLD_STATE_WIRE='5056a0b2fd938e9f71746490abc82e6d958598e423f1b7def30c919e65dc5033'",
+      "after": "OLD_STATE_WIRE='09a1ce3a7485afaca31e4d5ce91e6f739f812a30da6d8ab9a2f9d641f84b69b7'"
+    },
+    {
+      "name": "OLD_PACKET",
+      "before": "OLD_PACKET='c3792c5ee75c69de689614d433a1f8dc0b33dc4150aa54a5feaf32c2a3564433'",
+      "after": "OLD_PACKET='693f7d62ac1c7518bd772be74c9ed1a608c9b5e847a49647c743d0807c2f4d9e'"
+    },
+    {
+      "name": "INSTALL_JOB_ID",
+      "before": "INSTALL_JOB_ID='1a1ae75c02c-fc05-5fb1'",
+      "after": "INSTALL_JOB_ID='1a1af10c143-fc05-6578'"
+    },
+    {
+      "name": "STATE_COMMAND_INDEX",
+      "before": "STATE_COMMAND_INDEX=6",
+      "after": "STATE_COMMAND_INDEX=6"
+    },
+    {
+      "name": "STATE_COMMAND_SHA",
+      "before": "STATE_COMMAND_SHA='4a4641f7ee71b375964eeea67cade479a9e6491c8c111acb44e01fcafdf507b9'",
+      "after": "STATE_COMMAND_SHA='1abfc299ea09d1cd1f153f6c183835144abd83e59fd0445ced785658071e2b06'"
+    },
+    {
+      "name": "EXPECTED_INSTALLED_IDENTITY",
+      "before": "EXPECTED_INSTALLED_IDENTITY={'package':'org.droidloom.qa.bili.r8','uid':10202,'base_apk':'/data/app/~~a0m8Uc0EwHoFGqjnM42fBw==/org.droidloom.qa.bili.r8-Aw07vTf1ZgJyBoGdhZi9lA==/base.apk','apk_sha256':'f55b972a5ec968070ea0ea407f4a459913927c4693d0d9e949e6c472bcbcc641','bytes':37008,'held_file':{'device':1811,'inode':789313,'mode':33188,'uid':1000,'gid':1000,'bytes':37008,'mtime_ns':1793928316640489758,'nlink':1},'signer_bound_by_exact_signed_apk_bytes':'096152ac7ae183be9c713b61d8dac64eb789593b332fa8636536c2af80021391'}",
+      "after": "EXPECTED_INSTALLED_IDENTITY={'package':'org.droidloom.qa.bili.r8','uid':10204,'base_apk':'/data/app/~~MOz6kZUeUfYfK9xYAqmqdw==/org.droidloom.qa.bili.r8-nDz2ip1H2qXA5l1_V6b8hg==/base.apk','apk_sha256':'b576afe56b97160dc341fe15973f5afe23db03dc2961aedaa500f1527ec13122','bytes':37008,'held_file':{'device':1811,'inode':789374,'mode':33188,'uid':1000,'gid':1000,'bytes':37008,'mtime_ns':1793938474777519836,'nlink':1},'signer_bound_by_exact_signed_apk_bytes':'b1ec4d840f5dd85513d3b3c08fbf97d829b580d4c718d6bf30cce5a8270a457d'}"
+    },
+    {
+      "name": "INSTALL_RECORDS",
+      "before": "INSTALL_RECORDS={'coordinator':(Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/result.json'),3025,'163e123528634e09afd8912a888d50dea8bb67329b714a1f84950a2c249c275c'),'stage':(Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/stage-result.json'),2032,'b7c7243d36ed983895c362aae81755d3b96459c10e0ec2a6227d4b060e85ad9d'),'worker':(Path('/home/alex/work/pocket4-bilibili-owned-qa-r8-flow-587084d5b51af906d6b05a12a3c30087/steps/install-state-r8-01/result.json'),7546,'c75d83c021ecb53e2b9b41a94efab5fd5d16bdcde17075a5802e6e63760cd68e'),'worker_command':(Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/evidence/02-install-state.result.json'),1152,'f75eede68c9c9e17f19bb1fb4aa82f7893b6fd4198e06532109a56066bcbf19d')}",
+      "after": "INSTALL_RECORDS={'coordinator':(Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/result.json'),3025,'e734a7f5dea6de9f1b3e96727cc925fe422c74980d0e6692dc5f9412abf79676'),'stage':(Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/stage-result.json'),2032,'91ffb967b00952273ac8168c3cd29def9c2488d55d8c642537dce54d7fb9cdf0'),'worker':(Path('/home/alex/work/pocket4-bilibili-owned-qa-r8-flow-fd9784f9e464119899726c3b583243a8/steps/install-state-r8-01/result.json'),7589,'635f3ac450961ad5f05ee0e2204a79fdc0b95ada87307eee1a3bba277e1c29bd'),'worker_command':(Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/evidence/02-install-state.result.json'),1149,'60b8ca34712ac8d8257bec632f96d72cdcb7b149defcc0b9dec480b285300fec')}"
+    }
+  ],
+  "baseline_git_blob": "eb9dd55ce7911a420e80b89f1d7805133a1a246a"
+}

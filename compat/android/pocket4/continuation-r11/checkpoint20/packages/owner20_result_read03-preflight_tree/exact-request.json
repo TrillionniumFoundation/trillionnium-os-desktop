@@ -1,0 +1,18 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/sudo",
+  "args": [
+    "-n",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "-"
+  ],
+  "cwd": "/",
+  "stdin": "import hashlib,json,os,stat,sys,time\nEXPECTED_BYTES=728003\nEXPECTED_SHA=\"5cc813715a261701cad3be931b9e53145229dec7c803d828a1097e4fe4ad166b\"\nDEADLINE=time.monotonic()+8\ndef need(value,code):\n    if not value:raise RuntimeError(code)\ndef stamp(s):\n    return (s.st_dev,s.st_ino,s.st_mode,s.st_uid,s.st_gid,s.st_nlink,s.st_size,s.st_mtime_ns,s.st_ctime_ns)\ndef check():\n    need(time.monotonic()<DEADLINE,\"FIXED_READ_DEADLINE\")\nfds=[];first=None;close_errors=[];raw=None\ntry:\n    need(os.getuid()==os.geteuid()==0,\"OWN_STATIC_RESULT_ROOT_READ_REQUIRED\")\n    d=os.open(\"/\",os.O_PATH|os.O_DIRECTORY|os.O_CLOEXEC);fds.append(d)\n    for name in (\"opt\",\"p4-owner20-sdk-visibility-android-20261106-build-02\"):\n        check();parent=d\n        d=os.open(name,os.O_PATH|os.O_DIRECTORY|os.O_CLOEXEC|os.O_NOFOLLOW,dir_fd=parent);fds.append(d)\n        meta=os.fstat(d)\n        need(stat.S_ISDIR(meta.st_mode) and meta.st_uid==0 and not(meta.st_mode&0o022),\"OWN_STATIC_RESULT_DIRECTORY\")\n    fd=os.open(\"build-result.json\",os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW,dir_fd=d);fds.append(fd)\n    before=os.fstat(fd)\n    need(stat.S_ISREG(before.st_mode) and before.st_uid==0 and before.st_nlink==1 and not(before.st_mode&0o6022) and before.st_size==EXPECTED_BYTES,\"OWN_STATIC_RESULT_FILE\")\n    parts=[];count=0\n    while True:\n        check();part=os.read(fd,min(131072,EXPECTED_BYTES+1-count))\n        if not part:break\n        count+=len(part);need(count<=EXPECTED_BYTES,\"FIXED_RESULT_BYTE_BOUND\");parts.append(part)\n    raw=b\"\".join(parts)\n    need(len(raw)==EXPECTED_BYTES and hashlib.sha256(raw).hexdigest()==EXPECTED_SHA,\"EXACT_ORIGINAL_BUILD_RESULT\")\n    need(stamp(before)==stamp(os.fstat(fd))==stamp(os.stat(\"build-result.json\",dir_fd=d,follow_symlinks=False)),\"RESULT_HELD_AND_NAMED_UNCHANGED\")\nexcept BaseException as error:\n    first=error\nfinally:\n    for fd in reversed(fds):\n        try:os.close(fd)\n        except BaseException as error:close_errors.append(type(error).__name__)\nif first is not None:raise first\nneed(not close_errors,\"RESULT_DESCRIPTOR_CLOSE_FAILED\")\ncheck()\nmeta={\"schema\":1,\"state\":\"EXACT_STATIC_RESULT_HELD_AND_NAMED_READ_PASS\",\"bytes\":len(raw),\"sha256\":hashlib.sha256(raw).hexdigest(),\"file\":{k:getattr(before,k) for k in (\"st_dev\",\"st_ino\",\"st_mode\",\"st_uid\",\"st_gid\",\"st_nlink\",\"st_size\",\"st_mtime_ns\",\"st_ctime_ns\")},\"fds_closed\":len(fds),\"filesystem_writes\":0,\"Main_actions\":0,\"Android_actions\":0}\nos.write(sys.stderr.fileno(),(json.dumps(meta,sort_keys=True)+\"\\n\").encode())\ncheck();offset=0\nwhile offset<len(raw):\n    check();written=os.write(sys.stdout.fileno(),raw[offset:])\n    need(written>0,\"RESULT_STDOUT_SHORT_WRITE\");offset+=written\n",
+  "cpu_quota_percent": 25,
+  "memory_max_bytes": 134217728,
+  "nice": 15,
+  "timeout_seconds": 20,
+  "idempotency_key": "pocket4-owner20-static-build02-fixed-result-read03-20261106"
+}

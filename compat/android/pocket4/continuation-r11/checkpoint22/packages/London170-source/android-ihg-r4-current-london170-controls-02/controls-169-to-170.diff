@@ -1,0 +1,30 @@
+--- actual169/control-template.py
++++ candidate170/control-template.py
+@@ -1063,6 +1063,18 @@
+ for row in run_task_discovery_route_controls(context,base,qa):passed(row['name'])
+ assert len(cases)==169 and len({x['case'] for x in cases})==169,('current discovery route inventory changed',len(cases))
+ 
++
++# Exact current protocol remains a production admission gate. The old helper
++# view is synthetic; it grants no node authority and makes no I/O request.
++old_input_protocol=types.SimpleNamespace(PROTOCOL='pocket4-owned-ihg-qa-v3',
++    PUBLIC_SEARCH_QUERY=qa.PUBLIC_SEARCH_QUERY,nonce=qa.nonce)
++try:public.validate_pending_input_plan(old_input_protocol,copy.deepcopy(base.INPUT_PLAN))
++except RuntimeError as error:
++    assert str(error)=='EXACT_NODE_UNBOUND_PUBLIC_LONDON_INPUT_SPECIFICATION',str(error)
++else:raise AssertionError('previous R3 input protocol accepted')
++passed('London_previous_R3_protocol_rejected_by_production_pending_input_validator')
++assert len(cases)==170 and len({x['case'] for x in cases})==170,('R4 exact input protocol inventory changed',len(cases))
++
+ out={'schema':1,'ok':True,'state':'IHG_R4_CURRENT_SEARCH_DESTINATION_LONDON_PURE_CONTROLS_PASS','controls':cases,
+  'control_count':len(cases),'template_source_pins':TEMPLATE_PINS,'bound_source_pins':BOUND_PINS,
+  'control_stdin_sha256':hashlib.sha256(raw).hexdigest(),
+@@ -1072,7 +1084,7 @@
+  'file_writes':0,'Android_actions':0,'device_or_child_process_commands':0,'fresh_nonce_values':pool,
+  'nonce_material_is_prior_actual_not_regenerated':True,'nonce_values_disjoint_all_fixed_prior_literals':not bool(set(pool)&set(old)),
+  'nonce_exclusion_count':len(old),'production_Flow_and_BoundArun_constructors_executed':True,
+- 'production_typed_constructor_controls':17,'current_cell02_install_and_scope_controls':9,'current_owner_task_route_controls':3,'actual_prior_install_validator_executed':True,'production_qualified_initial_admission_executed':True,'actual_install_validation_performs_no_IO':True,'actual_Main_and_target_callbacks':False,
++ 'production_typed_constructor_controls':17,'current_cell02_install_and_scope_controls':9,'current_owner_task_route_controls':3,'current_public_input_protocol_controls':1,'actual_prior_install_validator_executed':True,'production_qualified_initial_admission_executed':True,'actual_install_validation_performs_no_IO':True,'actual_Main_and_target_callbacks':False,
+  'maximum_readiness_sequences':8,'readiness_qualification_seconds':20,'minimum_consecutive_samples':3,
+  'minimum_capture_span_ms':4000,'success_durable_commands_formula':'47+9*k; 3<=k<=8',
+  'maximum_success_durable_commands':119,'maximum_helper_nonces':39,'maximum_click_actions':2,'maximum_set_text_actions':1,'fixed_public_input':'London',

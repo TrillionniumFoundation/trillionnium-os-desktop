@@ -1,0 +1,29 @@
+--- a/framework_build.py
++++ b/framework_build.py
+@@ -183,11 +183,11 @@
+ BUILD_PARENT = P('/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106')
+ BUILD_SOURCE = BUILD_PARENT / 'builder-source'
+ BUILDER = BUILD_PARENT / 'attempt01/cargo-target/debug/droidloom-update'
+-BUILDER_SHA = None
+-BUILDER_BYTES = None
++BUILDER_SHA = "c758a1e12bbc1925cc36f8cde3b369ab8449ad1cf460a9854b42d627575627d8"
++BUILDER_BYTES = 34767856
+ BUILD_RESULT = BUILD_PARENT / 'attempt01/result.json'
+-BUILD_RESULT_SHA = None
+-BUILD_RESULT_BYTES = None
++BUILD_RESULT_SHA = "3636057b9a20fc895657064da3fb66d8ded7e69ebfa5a5b92072a51b33f29fd5"
++BUILD_RESULT_BYTES = 170316
+ SOURCE_MANIFEST_SHA = "88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701"
+ PREPARE_PARENT = OWNER / 'typed-framework-work-preparation-01-20261105'
+ PREPARATION = PREPARE_PARENT / 'attempt01/result.json'
+--- a/fenced_build.py
++++ b/fenced_build.py
+@@ -9,7 +9,7 @@
+ import subprocess
+ import time
+ 
+-CONTROLLER_SHA = None
++CONTROLLER_SHA = "73184ded80fbc33238713a47f4a4fa81e442b1e72d1cb464bd716529c410d227"
+ LIFECYCLE_SHA = '4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28'
+ ROOT_SUPERVISOR_SHA = 'f493a324cb5694f618d0fed3d5ed17ff90aa64924b671ea99550622f6090b5b7'
+ SNAPSHOT_SHA = '1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf'

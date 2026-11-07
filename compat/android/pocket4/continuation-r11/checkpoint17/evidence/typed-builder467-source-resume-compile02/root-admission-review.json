@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "full_production_diff_reviewed": true,
+  "full_compiler_diff_reviewed": true,
+  "full_minimal01_to02_join_failure_fix_reviewed": true,
+  "full_stage_and_transport_and_generator_reviewed": true,
+  "both_source_and_compile_manifests_all_payloads_verified": true,
+  "all_17_packet_members_exact": true,
+  "single_member_gzip_complete": true,
+  "exact_complete_parent_and_candidate_map_verified": true,
+  "source_delta": {
+    "replaced": 3,
+    "added": 1,
+    "unchanged": 462,
+    "total": 466
+  },
+  "original_controller_function_AST_unchanged_except": [
+    "execute",
+    "toolchain"
+  ],
+  "compile02_all_function_AST_equal_compile01": true,
+  "source_guards": "fresh HEAD/origin/sparse/clean verification; preserve empty interrupted index.lock identity; no force/reset/clean; both pipe readers join before propagation; wait first error retained; durable bounded progress; original verifier and work/source locks",
+  "expected_actual_gates": {
+    "updater_registered": 199,
+    "updater_tests": 9,
+    "source_registered": 20,
+    "source_resume_tests": 9,
+    "combined": 18
+  },
+  "resources": {
+    "cpu": 100,
+    "memory": 1073741824,
+    "nice": 15,
+    "request_seconds": 600,
+    "controller_seconds": 550
+  },
+  "actual_framework_staging_actions": 0,
+  "Main_actions": 0,
+  "network_downloads_permitted": false,
+  "original_failed_framework_and_old_compile01_preserved": true,
+  "automatic_retry": false,
+  "whole_app_production_ready": false
+}

@@ -1,0 +1,53 @@
+{
+  "scope": "local source and actual previously observed selection parser only; no Rust or remote execution",
+  "actual_selected_unique_packages": 49,
+  "registry_packages": 45,
+  "local_packages": 4,
+  "negative_parser_controls": [
+    {
+      "name": "outside-copy",
+      "rejected": true
+    },
+    {
+      "name": "unknown-output",
+      "rejected": true
+    },
+    {
+      "name": "ambiguous-package-source",
+      "rejected": true
+    }
+  ],
+  "changed_original_functions": [
+    "dependency_sources",
+    "execute"
+  ],
+  "unchanged_original_functions": [
+    "begin_resources",
+    "build_artifact",
+    "children",
+    "cleanup_children",
+    "command",
+    "exact_source_copy",
+    "finish_resources",
+    "hash_held",
+    "held",
+    "identity",
+    "pin_resolved",
+    "pinned_packet",
+    "portable",
+    "read_existing_config",
+    "real_directory",
+    "regular_tree",
+    "require",
+    "resource_events",
+    "resource_snapshot",
+    "resource_text",
+    "sha",
+    "toolchain",
+    "utc",
+    "verify_resolved",
+    "write_new"
+  ],
+  "original_seven_test_names_exact": true,
+  "fresh_actual_Rust_compile_run": false
+}

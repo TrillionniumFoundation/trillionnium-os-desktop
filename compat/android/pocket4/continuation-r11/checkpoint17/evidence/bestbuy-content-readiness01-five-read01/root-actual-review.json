@@ -1,0 +1,104 @@
+{
+  "Main_original_resource_guard_passed": true,
+  "actual_job": "1a1ae6e4376-fc05-5f91",
+  "all_held_bindings_and_flow_locks_released": true,
+  "all_three_held_APK_FDs_closed_each_phase": true,
+  "baseline_tasks_preserved": [
+    851,
+    1017
+  ],
+  "business_success_verified": false,
+  "cleanup_original_Flow_completed": true,
+  "commands": {
+    "cleanup": 11,
+    "inspect": 31,
+    "launch": 12
+  },
+  "failed_inspect_target_artifacts_rehashed_unchanged": true,
+  "failed_read_retried": false,
+  "failure": {
+    "action_attempted": false,
+    "helper_error": "TREE_DEPTH_BOUND",
+    "independent_after_state_completed_disconnected_and_matches_before": true,
+    "outcome_unknown": false,
+    "own_service_restoration_verified": true,
+    "partial_tree_not_qualified": true,
+    "phase": "third independent inspect",
+    "restoration_qualified_false_preserved": true,
+    "tree_observation": {
+      "attempted_nodes": 41,
+      "began_elapsed_ms": 953561850,
+      "capture": 1,
+      "child_limit": 64,
+      "complete": false,
+      "depth_limit": 32,
+      "emitted_nodes": 40,
+      "json_byte_limit": 458752,
+      "last_elapsed_ms": 953561937,
+      "max_attempted_depth": 33,
+      "max_observed_children": 3,
+      "node_limit": 512,
+      "purpose": "inspection",
+      "serialized_bytes": 0
+    }
+  },
+  "helper_UID_and_installed_bytes_unchanged": true,
+  "launch_and_inspect_action_locks_released": true,
+  "memory_events_all_zero": true,
+  "original_Main_guard_maps_equal": 13,
+  "originals": {
+    "cleanup": {
+      "bytes": 12210,
+      "sha256": "a20e12325d3b085952d5975ddc68576dca290d4b22428df6d7d670d109dd2c36"
+    },
+    "coordinator": {
+      "bytes": 7488,
+      "sha256": "7c88e8141e41984e1f7c8c78c421cf508d4c963927578e7448af34c7f631bab7"
+    },
+    "inspect": {
+      "bytes": 90075,
+      "sha256": "0396fc7a164485ef3e38a75346d8a474f0ea7f2f3dc41ca12e45d85a2e960707"
+    },
+    "launch": {
+      "bytes": 13318,
+      "sha256": "7fd39d50835a54958d4b187945b5ffd47315bc29af3e7a7cc0574b7440376b1a"
+    },
+    "stage": {
+      "bytes": 1838,
+      "sha256": "0660a94215afd10418b693f84e7218109c49f0f6d956c60b493d4d13de7d908b"
+    }
+  },
+  "owned_memory_peak_bytes": 372154368,
+  "owned_swap_peak_bytes": 0,
+  "owned_task_retired": 1018,
+  "rounds": [
+    {
+      "began_seconds": 0.008194087073206902,
+      "complete_catalog_all31zero": true,
+      "completed_seconds": 2.403107280959375,
+      "node_count": 12,
+      "restored": true,
+      "round": 1
+    },
+    {
+      "began_seconds": 10.021991232060827,
+      "complete_catalog_all31zero": true,
+      "completed_seconds": 12.491145748994313,
+      "node_count": 12,
+      "restored": true,
+      "round": 2
+    }
+  ],
+  "schema": 1,
+  "scope": "Observation failure after real empty-page waits, not demonstrated Main identity failure; exact task cleanup complete, App slot can advance",
+  "semantic_ready": false,
+  "terminal": {
+    "exit_code": 1,
+    "full_durable": true,
+    "stderr_bytes": 0,
+    "stdout_bytes": 772,
+    "stdout_sha256": "fb042f1ee55b78b280ad6d2aa727a74e20182785838c7345e2079d185bbd4556",
+    "timed_out": false
+  },
+  "whole_app_production_ready": false
+}

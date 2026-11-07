@@ -1,0 +1,74 @@
+{
+  "PNG_or_commercial_tree_read": false,
+  "Reader_changed_only_fixed_input_count_label": true,
+  "controls": [
+    {
+      "accepted": true,
+      "case": "retained_three_scoped_capture_successes_only",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_business_unknown_cleared",
+      "error": "ORIGINAL_UNKNOWN_BUSINESS_OUTCOME_RETAINED",
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_Main_change",
+      "error": "ORIGINAL_MAIN_CHAIN_CHANGED",
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_first_crop_unqualified",
+      "error": "PRIOR_CROP_QUALIFICATION_CHAIN_REQUIRED",
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_path_substitution",
+      "error": "EXACT_PRIVATE_CROP_IDENTITY_REQUIRED",
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_within_capture_absolute_move",
+      "error": "PRIOR_CROP_SCOPE_CHANGED",
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_previous_after_used_as_next_before",
+      "error": "EIGHTEEN_UNIQUE_ACTUAL_OBSERVATION_NONCES_REQUIRED",
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_bad_finish",
+      "error": "ACTUAL_SUCCESSFUL_INSPECTION_PHASES_REQUIRED",
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_missing_third_transaction",
+      "error": "EXACT_THREE_PUBLISHED_FRESH_TRANSACTIONS_REQUIRED",
+      "expected_met": true
+    }
+  ],
+  "exact_total_input_bytes": 2004542,
+  "private_copy_or_chown_or_namespace_or_Android_operations": 0,
+  "schema": 1,
+  "scope": "actual admission predicate on exact safe retained JSON plus explicit negative mutations; no filesystem reader or copy execution",
+  "source_sha256": "d3475cc4afd7fbbaeb60e27002fedcbf8fe9ba994be5ee9a8575da7032304b9f",
+  "state": "PASS",
+  "total_bound": 2097152,
+  "unchanged_source_definitions": [
+    "need",
+    "sha",
+    "open_directory",
+    "write_new",
+    "main"
+  ]
+}

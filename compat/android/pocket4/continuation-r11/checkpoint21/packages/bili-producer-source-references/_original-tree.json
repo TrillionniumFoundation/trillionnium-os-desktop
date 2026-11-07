@@ -1,0 +1,57 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "6f83716937d754826108450160f70e01e6fc7d43",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 3772,
+    "sha256": "25e976c4703282e4a3a4e11f64be6b19ffa4a0e77e9c16a524447e2f20c85ed5",
+    "git_blob_sha1": "c5c0c17434db1ad39cc925dfd31de51b9a915618",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "builder468_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "48335a3cb953c26fd90266d9221312186b90de60"
+    },
+    {
+      "path": "composer-service-control.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5ff38e3b531a6cbe48aa92c45f581ff8e7bcdb17",
+      "bytes": 30368
+    },
+    {
+      "path": "composer-task-control.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b9aa4e80581a7e4fdc814c0b1bcf320cd5284ebc",
+      "bytes": 16609
+    },
+    {
+      "path": "provenance.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5db7e3c2a1db395ccb75c8ed2b6fb2eb5c2156aa",
+      "bytes": 1135
+    },
+    {
+      "path": "task-control-lib.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ef22176682715fc604d37efaf7a2208ed0243d3d",
+      "bytes": 24083
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "builder468_actual",
+      "original_tree": "48335a3cb953c26fd90266d9221312186b90de60",
+      "checkpoint": 20,
+      "canonical_package": "native_compile03-actual_tree"
+    }
+  ],
+  "original_recursive_leaf_count": 12
+}

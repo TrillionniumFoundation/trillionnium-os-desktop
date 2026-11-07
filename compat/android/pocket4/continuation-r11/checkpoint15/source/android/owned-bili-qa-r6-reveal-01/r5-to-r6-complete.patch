@@ -1,0 +1,928 @@
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -1,11 +1,11 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+-    package="org.droidloom.qa.bili.r5" android:versionCode="1" android:versionName="1">
++    package="org.droidloom.qa.bili.r6" android:versionCode="1" android:versionName="1">
+     <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="33" />
+     <queries><package android:name="tv.danmaku.bili" /></queries>
+     <application android:label="Owned Bili QA" android:debuggable="false"
+         android:testOnly="true" android:allowBackup="false" android:hasCode="true" />
+-    <instrumentation android:name="org.droidloom.qa.bili.r5.ActionRunner"
+-        android:targetPackage="org.droidloom.qa.bili.r5"
++    <instrumentation android:name="org.droidloom.qa.bili.r6.ActionRunner"
++        android:targetPackage="org.droidloom.qa.bili.r6"
+         android:functionalTest="true" android:handleProfiling="false" />
+ </manifest>
+--- a/README.md
++++ b/README.md
+@@ -1,34 +1,31 @@
+-# Owned Bili QA R5: confirmed public cache clearing before window reads
++# Owned Bili QA R6: one current-player controls-reveal transaction
+ 
+-This independent self-instrumentation package is `org.droidloom.qa.bili.r5`, protocol `pocket4-owned-bili-qa-v5`. The pinned SDK 31 compile jar, minSdk 31, targetSdk 33, JDK 21 and build/signing chain remain. UI operations now require runtime API 34 or newer; `state` never connects UiAutomation. There is no Activity, native code, network or dangerous permission. Existing helpers and prior failures stay unchanged.
++This new self-instrumentation package is `org.droidloom.qa.bili.r6`, protocol `pocket4-owned-bili-qa-v6`. It targets itself, queries only `tv.danmaku.bili` UID 10117, and adds one operation, `reveal_controls`. R5 sources, installed helper, prior failures and actual successful samples remain unchanged. There is no Activity, native code, requested permission or network feature. Build-only does not install or invoke Android.
+ 
+-## Actual failure and candidate scope
++## Evidence and scope
+ 
+-R4 attempt `1a1aa49ae1a-fc05-4070` failed after the fixed public query edit was acknowledged. The subsequent inspection completed 21 enumerations from 2 to 1,910 ms within its 2,000 ms budget. Window 1303 stayed unfocused and inactive; the event serial advanced from 0 to 5, then stayed at 5. Host foreground before and after named the same Bili search activity. Independent after-state completed and matched before-state. The failed sequence kept restoration_qualified=false. Owned task 887 was removed, Home 851 retained, and Main/source/artifact checks passed. No submit, course click or capture occurred. Periodic rechecks alone did not close this failure; a cache or playback root cause is not established.
++The retired R5 controls-only reader actually examined two complete 153-node observations. Both had zero visible enabled clickable player descendants and no SeekBar. This explains why the existing ACTION_CLICK contract cannot select a pause/seek/reveal node in those observations. The controls reader's original stdout SHA256 is `1b910b63eeca23c80e283c4d7c4c8ebea3c8a2f9e3af6a5e431c68a01387c45b`. Those retired observations authorize no new action. Raw trees, account text and pixels are excluded from this source package.
+ 
+-R5 calls public `UiAutomation.clearCache()` on its own UiAutomation object immediately before every window query and requires an actual true return. Missing API, wrong signature, false, Exception or Error stops the inspection. InvocationTargetException is unwrapped to retain its original cause. The method is resolved through `UiAutomation.class.getMethod("clearCache")` and must be declared by UiAutomation, public, nonstatic, zero-argument and primitive-boolean-returning. Reflection preserves the compile-SDK-31 input while using the public API added in 34. There is no setAccessible, hidden API exemption, shell permission adoption or alternate fallback.
++R6 uses the original Session's new independent inspection, then the helper rereads its complete current tree and final window. Both hashes must match the inspected tree. The fixed course title/author hashes, exact Details activity, focused display-0 application window, two distinct SurfaceView geometries and their complete direct parents must qualify. The current control container must be empty, with no visible enabled clickable player node or SeekBar. The point is computed inside the current crop, at its center with a strict 16-pixel interior margin; arbitrary coordinates are not accepted.
+ 
+-The 2 s window budget, 100 ms maximum condition wait, 64-query limit, 8 s operation deadline and 12 s watchdog are unchanged. Clearing time counts against those deadlines. Every completed sample records actual clear confirmation. Failures retain bounded counters, last result and exception class without window text/titles. Python qualification requires all samples and the final successful census to have confirmed clearing. Focus, display 0, application type, package and complete-tree/window/action freshness remain mandatory. The 512-node/32-depth/64-child and result-byte bounds remain. Inputs and actions are never replayed.
++One DOWN and one UP use pointer 0, finger tool, touchscreen source, device 0 and explicit display 0. The event timestamps use uptimeMillis. The production TouchTransaction records attempts before injection; uncertain or failed DOWN/UP permits one CANCEL with a current timestamp, never a repeated DOWN/UP. Every created event has an independent recycle attempt. Primary and secondary failures remain distinct. A successful ACK is insufficient: the helper then reads a third complete tree and requires the same absolute window, crop, player roles and renderer-structure hash. The tree itself may change when controls appear; the complete pre-input tree freshness gate is unchanged.
+ 
+-## Primary sources and limits
++The result intentionally leaves `controls_revealed` null and business qualification false. A separately observed new control tree is required before selecting pause or seek. No pause, seek, Back, audio or continuous-playback qualification is added here. Post-input complete trees are private evidence, never source/public summary data.
+ 
+-The official API 33-to-34 diff lists public boolean clearCache():
+-https://developer.android.com/sdk/api_diff/34/changes/android.app.UiAutomation
++## Public API and bounded failure behavior
+ 
+-The observed AOSP method obtains its own connection's cache, returns false if absent, otherwise clears it and returns true:
+-https://android.googlesource.com/platform/frameworks/base/+/HEAD/core/java/android/app/UiAutomation.java
++The official MotionEvent reference lists the 16-argument public static obtain factory with explicit displayId as API 34. R6 resolves that exact public signature with getMethod, verifies declaring class/static/return type and requires runtime API >=34. It does not use setAccessible, a hidden display setter or a fallback factory. Compile SDK remains pinned API 31, minSdk 31 and targetSdk 33; reflection permits the public newer runtime API without changing those compiler inputs.
++https://developer.android.com/reference/android/view/MotionEvent
+ 
+-That observed source is Git blob `6f8e335cff804352090b4ba5ef2e8366a5e52a00`, SHA256 `1a311d87d471042b3c769af71afa9896fd5fbd49a1e13675b509c629a6c35c20`. An observed AOSP AccessibilityInteractionClient implementation returns cached windows when available before querying the service:
+-https://android.googlesource.com/platform/frameworks/base/+/9667c0817d7dbbc42e3eaacd3332ea5db09dda5e/core/java/android/view/accessibility/AccessibilityInteractionClient.java
++The official UiAutomation reference documents injectInputEvent as public API 18, returning injection acknowledgement and requiring caller event recycling. It also documents waiting for window animations/surface work. R6 invokes the existing non-suppressing UiAutomation connection with sync=true; it does not adopt shell permissions, grant permissions or change settings.
++https://developer.android.com/reference/android/app/UiAutomation
+ 
+-These sources establish the API and a possible mechanism. They are not bound to the installed Pocket4 framework. Actual new Android execution is required; no framework change is proposed.
++The 150 ms value is the DOWN/UP admission deadline. It is not a hard bound on a blocking Binder call or proof that Android held the pointer for only 150 ms. Hard process termination, VM Errors or a permanently blocked call cannot be guaranteed to execute Java cleanup. A failed/unknown command cannot be retried, and remains subject to the outer held Main guards, timeout, exact owned-task cleanup and later state evidence. The receipts explicitly deny atomic input target attribution: before/after window agreement cannot prove an atomic receiver binding.
+ 
+-## Validation and next admission
++Existing 2 s window readiness, 100 ms query cadence, 64-query limit, 8 s operation budget, 12 s watchdog, 512 nodes, depth 32, 64 children and 512 KiB result remain. Public own-connection cache clearing before each query, original ACTION_CLICK/ACTION_SET_TEXT behavior, accessibility state restoration and independent after-state are retained. R6 Session additionally requires unchanged post-action foreground for reveal_controls.
+ 
+-Fifteen host Java controls extract actual R4/R5 methods and execute real reflection. Android cache/windows, clock, condition wait and JSON are explicit seams. A synthetic cache-retention counterexample makes R4 fail after 21 reads and lets R5 qualify after five confirmed clears/reads. Other controls enforce false/exception/signature/API-level/deadline/focus/display/query-error rejection. This is not a replay of real Android caching. Twenty-four actual Python contract controls consume those generated observations and reject missing or inconsistent confirmations. Original Session, action and restoration logic remains unchanged.
++## Verification and next admission
+ 
+-The build-only entry creates fresh source/output roots and an owned signer. It does not install or invoke Main/UI. Subsequent admission must bind actual new build/APK/signer/UID/state receipts to a fresh flow through frozen R4 held transport. No older helper or success can satisfy those gates. Playback, audio and whole-App qualification remain open.
++The exact production TouchTransaction compiled under host JDK 17 and passed 16 controls. Inputs, clock and allocation are explicit seams; this is not Android input execution. Twenty-one Python controls run the actual complete-tree parser, player proof, request/receipt predicates and original Session finally with a command seam. They reject partial/wrong-display/wrong-course/extra-surface/interactive/buffering/moved geometry, caller coordinates, incomplete input ACK and cleanup errors. New helper Android compilation, installation and controls reveal are still unperformed.
+ 
+-R4 base manifest: `e54c6f0a2838f4332287224048c58f2884878b4c7bc7b3fd25be415cd0085c17`.
+-R4 failed coordinator: `96c7128251ac2ebbf5dd14e0af93534d083bddec8c46cd6ab0087ea4f6c3ea74`.
+-R4 failed stage: `8dae2d95e6095e8894730bb8be2c80b839745a7ecd1515120b0cd962304e13be`.
++The exact build request retains pinned SDK31/JDK21/aapt/D8/zipalign/apksigner, 11 commands, 1 CPU, 512 MiB RAM, swap 0, TasksMax 128 and fresh create-only source/output roots. Both Java production files are mandatory inputs. Actual APK hash, actual signer, source/tool receipts and installed UID must be bound before a later fresh owned flow. No old helper qualifies the new request. The host recorder/namespace transport remains the already pinned R4/R5 lineage; no alternate entry or old-v2 fallback is added.
+--- a/build-input-reference.json
++++ b/build-input-reference.json
+@@ -4,17 +4,21 @@
+     "sha256": "2a8cb152f9dea378ffc180c95ee4cbab1eb2b527c0dc9e176fd89bcee46119c6",
+     "was_read_and_all_seven_values_checked_before_disconnection": true
+   },
+-  "artifact": "owned-bili-qa-r3-pinned-tool-reference",
++  "artifact": "owned-bili-qa-r6-pinned-tool-reference",
+   "compile_sdk_api": 31,
+   "min_sdk": 31,
+   "new_helper_compilation_performed": false,
+   "original_reference_file_recovered": false,
+   "r3_actual_compilation_performed": false,
++  "r6_actual_compilation_performed": false,
+   "schema": 1,
+   "source_history": {
+     "actual_r2_build_result_bytes": 17188,
+     "actual_r2_build_result_sha256": "714be386573242c2763d6fb69f91e557a5f7537e33b30f75ccdaaebfb694deae",
++    "actual_r5_build02_result_bytes": 17188,
++    "actual_r5_build02_result_sha256": "9482c57026a8e29956bc339dad8a0ce5f6c74ebe835ea0620a09c988d04e5077",
+     "r2_receipt_is_prior_tool_evidence_not_r3_build_qualification": true,
++    "r5_is_prior_tool_evidence_not_r6_qualification": true,
+     "tool_table_reused_without_changes": true
+   },
+   "target_sdk": 33,
+--- a/build_candidate.py
++++ b/build_candidate.py
+@@ -16,8 +16,8 @@
+ import zipfile
+ 
+ HERE = Path(__file__).resolve().parent
+-PACKAGE = 'org.droidloom.qa.bili.r5'
+-OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-build-02')
++PACKAGE = 'org.droidloom.qa.bili.r6'
++OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r6-build-01')
+ JDK = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86'
+ SDK_BASE = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts'
+ TOOLS = {
+@@ -74,7 +74,7 @@
+         require(not path.is_absolute() and '..' not in path.parts and path.as_posix() == name, 'source relative path')
+         actual = file_pin(HERE / name, 1024 * 1024)
+         require(actual['sha256'] == row['sha256'] and actual['bytes'] == row['bytes'], 'source differs: ' + name)
+-    require({'AndroidManifest.xml', 'src/org/droidloom/qa/bili/r5/ActionRunner.java', 'qa_contract.py', 'build_candidate.py'} <= set(files), 'required sources missing')
++    require({'AndroidManifest.xml', 'src/org/droidloom/qa/bili/r6/ActionRunner.java', 'src/org/droidloom/qa/bili/r6/TouchTransaction.java', 'qa_contract.py', 'build_candidate.py'} <= set(files), 'required sources missing')
+     return files
+ 
+ 
+@@ -196,10 +196,10 @@
+     try:
+         for name in ('classes','dex','res','private-signing'):
+             (OUTPUT/name).mkdir(mode=0o700)
+-        source_java = HERE/'src/org/droidloom/qa/bili/r5/ActionRunner.java'
++        source_java = HERE/'src/org/droidloom/qa/bili/r6/ActionRunner.java'
+         command('javac', [tool['javac'], '-J-XX:ActiveProcessorCount=1', '-J-XX:+UseSerialGC', '-J-Xmx256m',
+             '-proc:none','-Xmaxerrs','20','-Xmaxwarns','20','-source','8','-target','8','-bootclasspath',resolved['android_jar'],
+-            '-d',str(OUTPUT/'classes'),str(source_java)])
++            '-d',str(OUTPUT/'classes'),str(source_java),str(source_java.with_name('TouchTransaction.java'))])
+         classes = sorted((OUTPUT/'classes').rglob('*.class'))
+         require(1 <= len(classes) <= 32 and all(x.is_file() and x.stat().st_size <= 262144 for x in classes), 'class output bound')
+         command('d8', java+['-cp',resolved['r8'],'com.android.tools.r8.D8','--lib',resolved['android_jar'],
+@@ -218,10 +218,10 @@
+         # pinned Java runtime. No platform/commercial signing key is consumed.
+         command('create-owned-signing-key', java+['-m','java.base/sun.security.tools.keytool.Main',
+             '-genkeypair','-noprompt','-storetype','PKCS12','-keystore',str(store),'-storepass:file',str(password),
+-            '-alias','owned-bili-qa-r5','-keyalg','RSA','-keysize','3072','-validity','3650',
+-            '-dname','CN=Pocket4 Owned Bili QA R5,O=Owned Test,C=US'])
++            '-alias','owned-bili-qa-r6','-keyalg','RSA','-keysize','3072','-validity','3650',
++            '-dname','CN=Pocket4 Owned Bili QA R6,O=Owned Test,C=US'])
+         command('sign', [tool['apksigner'],'sign','--ks',str(store),'--ks-pass','file:'+str(password),
+-            '--ks-key-alias','owned-bili-qa-r5','--min-sdk-version','31','--v1-signing-enabled','false',
++            '--ks-key-alias','owned-bili-qa-r6','--min-sdk-version','31','--v1-signing-enabled','false',
+             '--v2-signing-enabled','true','--v3-signing-enabled','true','--out',str(OUTPUT/'owned-bili-qa.apk'),
+             str(OUTPUT/'aligned.apk')])
+         signature = command('signature', [tool['apksigner'],'verify','--verbose','--print-certs','--min-sdk-version','31',str(OUTPUT/'owned-bili-qa.apk')])
+@@ -231,7 +231,7 @@
+         badging = command('badging', [tool['aapt'],'dump','badging',str(OUTPUT/'owned-bili-qa.apk')])
+         permissions = command('permissions', [tool['aapt'],'dump','permissions',str(OUTPUT/'owned-bili-qa.apk')])
+         xml = command('manifest', [tool['aapt'],'dump','xmltree',str(OUTPUT/'owned-bili-qa.apk'),'AndroidManifest.xml'])
+-        require(b"package: name='org.droidloom.qa.bili.r5' versionCode='1'" in badging and
++        require(b"package: name='org.droidloom.qa.bili.r6' versionCode='1'" in badging and
+                 b"sdkVersion:'31'" in badging and b"targetSdkVersion:'33'" in badging, 'actual APK package/SDK differs')
+         require(b'uses-permission' not in permissions and b'uses-permission' not in xml and
+                 b'application-debuggable' not in badging and b'launchable-activity' not in badging, 'actual APK privilege/component differs')
+--- a/make_build_request.py
++++ b/make_build_request.py
+@@ -5,7 +5,7 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-bili-qa-r5-static-build-02-20261105'
++KEY='pocket4-owned-bili-qa-r6-static-build-01-20261105'
+ 
+ 
+ def encode(value):
+--- a/qa_adapter.py
++++ b/qa_adapter.py
+@@ -18,7 +18,7 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ RECORDER_MANIFEST_SHA = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+-SELF = 'org.droidloom.qa.bili.r5'
++SELF = 'org.droidloom.qa.bili.r6'
+ BUILD_COMMANDS = ['javac','d8','aapt-package','align','create-owned-signing-key','sign',
+                   'signature','alignment','badging','permissions','manifest']
+ 
+@@ -78,14 +78,15 @@
+                 'SOURCE_RELATIVE_PATH_REQUIRED')
+         require(len(pinned(HERE/name, row['sha256'])) == row['bytes'], 'SOURCE_SIZE_CHANGED')
+     require({'qa_adapter.py','qa_contract.py','build_candidate.py','AndroidManifest.xml',
+-             'src/org/droidloom/qa/bili/r5/ActionRunner.java'} <= set(manifest['files']),
++             'src/org/droidloom/qa/bili/r6/ActionRunner.java',
++             'src/org/droidloom/qa/bili/r6/TouchTransaction.java'} <= set(manifest['files']),
+             'OWNED_SOURCE_CLOSURE_INCOMPLETE')
+     return manifest
+ 
+ 
+ def validate_plan(plan, qa):
+     require(isinstance(plan, dict) and plan.get('schema') == 1 and
+-            plan.get('operation') in ('state','inspect','click','set_text'), 'OWNED_PLAN_REQUIRED')
++            plan.get('operation') in ('state','inspect','click','set_text','reveal_controls'), 'OWNED_PLAN_REQUIRED')
+     op = plan['operation']; keys = {'schema','operation','nonces'}
+     if op in ('click','set_text'):
+         keys.add('selector')
+@@ -101,7 +102,7 @@
+                 re.fullmatch(r'tv\.danmaku\.bili:id/[A-Za-z0-9_]+',plan['selector']['resource_id']),
+                 'ONLY_OBSERVED_EXACT_EDIT_RESOURCE_AND_PUBLIC_QUERY')
+     require(set(plan) == keys and isinstance(plan['nonces'], dict), 'EXACT_PLAN_KEYS_REQUIRED')
+-    names = {'state'} if op == 'state' else {'before','inspect','after'} | ({'action'} if op in ('click','set_text') else set())
++    names = {'state'} if op == 'state' else {'before','inspect','after'} | ({'action'} if op in ('click','set_text','reveal_controls') else set())
+     require(set(plan['nonces']) == names, 'EXACT_PHASE_NONCES_REQUIRED')
+     values = [qa.nonce(value) for value in plan['nonces'].values()]
+     require(len(set(values)) == len(values), 'DISTINCT_PHASE_NONCES_REQUIRED')
+@@ -146,7 +147,7 @@
+     def __init__(self, flow, recorder, qa, proof, helper_uid):
+         require(flow.contract.sha256 == RECORDER_MANIFEST_SHA and not flow._private_backend_transport,
+                 'FROZEN_PUBLIC_RECORDER_TRANSPORT_REQUIRED')
+-        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10117,10125,10164,10165),
++        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10117,10125,10164,10165,10166,10169,10170,10175),
+                 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
+         self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
+         self.nonces = set()
+@@ -179,7 +180,7 @@
+         self.nonces.add(request['nonce'])
+         self.recorder.write_new(f.step/(request['nonce']+'.request.json'), request)
+         before = f.command_index
+-        out = f.android(qa.instrumentation_argv(request), 20, mutation=request['op'] in ('click','set_text'))
++        out = f.android(qa.instrumentation_argv(request), 20, mutation=request['op'] in ('click','set_text','reveal_controls'))
+         require(f.command_index == before+1, 'ONE_ACTUAL_HELD_COMMAND_REQUIRED')
+         stem = f.step/('command-%03d' % f.command_index)
+         raw = bounded(str(stem)+'.result.json', 65536); row = json.loads(raw)
+@@ -287,6 +288,17 @@
+                 require(middle['helper']['action_window'] == inspected['helper']['inspection']['window'],
+                         'ACKNOWLEDGED_ACTION_WINDOW_DIFFERS')
+                 result['set_text_acknowledged' if editing else 'click_acknowledged'] = True
++            elif plan['operation']=='reveal_controls':
++                fields=qa.reveal_request_fields(inspected['helper']['inspection'],scope)
++                action=request('action','reveal_controls',scope=scope,inspection_nonce=names['inspect'],
++                    inspection_sha256=inspected['wire_sha256'],**fields)
++                middle=None
++                middle=self.instrument(action)
++                require(middle['helper']['action_window']==inspected['helper']['inspection']['window'],
++                        'REVEAL_ACKNOWLEDGED_WINDOW_DIFFERS')
++                result['reveal_input_acknowledged']=True
++                result['controls_revealed']=None
++                result['post_input_inspection_sha256']=qa.sha(qa.canonical(middle['helper']['post_inspection']))
+         except BaseException as error:
+             remember('state_inspection_or_action',error)
+         finally:
+@@ -313,7 +325,7 @@
+             if scope is not None:
+                 try:
+                     result['foreground_after'] = self.foreground()
+-                    if plan['operation'] == 'inspect':
++                    if plan['operation'] in ('inspect','reveal_controls'):
+                         require(result['foreground_after'] == scope,'READ_ONLY_INSPECT_FOREGROUND_CHANGED')
+                 except BaseException as error:
+                     remember('post_foreground',error)
+@@ -374,7 +386,7 @@
+ 
+     try:
+         flow = recorder.Flow(flow_args)
+-        flow.begin(flow_args, mutation=plan['operation'] in ('click','set_text'))
++        flow.begin(flow_args, mutation=plan['operation'] in ('click','set_text','reveal_controls'))
+         action_lock = recorder.lock_file(recorder.ACTION_LOCK)
+         result.update(Session(flow, recorder, qa, proof, args.helper_uid).sequence(plan))
+         result['ok'] = True
+@@ -418,7 +430,7 @@
+     args = parser.parse_args()
+     if not args.execute_once:
+         print(json.dumps({'state':'PLAN_ONLY', 'package':SELF, 'recorder_manifest_sha256':RECORDER_MANIFEST_SHA,
+-            'operations':['state','inspect','click','set_text'], 'install_launch_task_cleanup_or_UI_actions':0,
++            'operations':['state','inspect','click','set_text','reveal_controls'], 'install_launch_task_cleanup_or_UI_actions':0,
+             'actual_build_install_and_runtime_qualification_required':True}))
+         return 0
+     require(all(getattr(args, name) is not None for name in ('source_manifest_sha256','build_receipt_sha256',
+--- a/qa_contract.py
++++ b/qa_contract.py
+@@ -5,8 +5,8 @@
+ import re
+ import zlib
+ 
+-PROTOCOL = 'pocket4-owned-bili-qa-v5'
+-SELF = 'org.droidloom.qa.bili.r5'
++PROTOCOL = 'pocket4-owned-bili-qa-v6'
++SELF = 'org.droidloom.qa.bili.r6'
+ COMPONENT = SELF + '/' + SELF + '.ActionRunner'
+ PACKAGE = 'tv.danmaku.bili'
+ UID = 10117
+@@ -81,7 +81,7 @@
+     nonce(value.get('nonce'))
+     op = value.get('op')
+     expected = {'protocol', 'nonce', 'op'}
+-    if op in ('inspect', 'click', 'set_text'):
++    if op in ('inspect', 'click', 'set_text','reveal_controls'):
+         expected.add('scope')
+         scope(value.get('scope'))
+     if op in ('click','set_text'):
+@@ -96,7 +96,12 @@
+         require(isinstance(value.get('node_resource_id'),str) and
+                 re.fullmatch(r'tv\.danmaku\.bili:id/[A-Za-z0-9_]+',value['node_resource_id']) and
+                 len(value['node_resource_id']) <= 256,'EXACT_EDIT_RESOURCE_REQUIRED')
+-    require(op in ('state', 'inspect', 'click', 'set_text') and set(value) == expected, 'EXACT_OPERATION_KEYS_REQUIRED')
++    if op == 'reveal_controls':
++        expected.update(('inspection_nonce','inspection_sha256','player_scope_sha256','viewport_bounds'))
++        require(nonce(value.get('inspection_nonce'))!=value['nonce'],'DISTINCT_REVEAL_NONCE_REQUIRED')
++        digest(value.get('inspection_sha256'));digest(value.get('player_scope_sha256'));reveal_rect(value.get('viewport_bounds'))
++        require(value['scope']['activity']==REVEAL_ACTIVITY,'REVEAL_EXACT_COURSE_ACTIVITY')
++    require(op in ('state', 'inspect', 'click', 'set_text','reveal_controls') and set(value) == expected, 'EXACT_OPERATION_KEYS_REQUIRED')
+     raw = canonical(value)
+     require(0 < len(raw) <= MAX_REQUEST, 'REQUEST_BOUND')
+     return raw
+@@ -164,7 +169,7 @@
+             value.get('op') == request['op'] and value.get('request_sha256') == sha(raw_request) and
+             value.get('wire_codec') == 'gzip-canonical-json-v1',
+             'RESULT_REQUEST_BINDING_FAILED')
+-    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10125, 10164, 10165) and value.get('self_uid') == helper_uid and
++    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10125, 10164, 10165, 10166, 10169, 10170, 10175) and value.get('self_uid') == helper_uid and
+             type(value.get('self_pid')) is int and value['self_pid'] > 1, 'INSTALLED_HELPER_IDENTITY_REQUIRED')
+     require(value.get('ok') is True and value.get('error') is None and value.get('secondary_errors') == [] and
+             value.get('claim_persistence_completed') is True and value.get('helper_work_completed') is True,
+@@ -206,6 +211,8 @@
+             require(observed_trees[0]['emitted_nodes'] == len(value['inspection']['nodes']) and
+                     observed_trees[0]['serialized_bytes'] == len(canonical(value['inspection'])),
+                     'COMPLETE_TREE_COUNTERS_MUST_MATCH_ACTUAL_INSPECTION')
++        elif request['op']=='reveal_controls':
++            assess_reveal(value,request,observed_window,observed_trees)
+         else:
+             require(value.get('action_attempted') is True and value.get('outcome_unknown') is True and
+                     value.get('node_action') == ('ACTION_SET_TEXT' if request['op']=='set_text' else 'ACTION_CLICK') and
+@@ -279,6 +286,8 @@
+         result['tree_observations'] = tree_observations(value['tree_observations'],request['op'],complete_required=False)
+     if 'window_observation' in value:
+         result['window_observation'] = window_observation(value['window_observation'],ready_required=False)
++    if request['op']=='reveal_controls' and 'touch' in value:
++        result['touch_observation']=touch_observation(value['touch'],False)
+     return result
+ 
+ 
+@@ -289,7 +298,8 @@
+     if operation=='state':
+         require(value==[],'STATE_CANNOT_ENUMERATE_TREES')
+         return value
+-    expected=['inspection'] if operation=='inspect' else ['action_target','action_final_window']
++    expected=(['inspection'] if operation=='inspect' else ['reveal_target','reveal_final_window','reveal_after']
++              if operation=='reveal_controls' else ['action_target','action_final_window'])
+     require(len(value)<=len(expected),'TREE_CAPTURE_COUNT_BOUND')
+     if complete_required:require(len(value)==len(expected),'COMPLETE_TREE_CAPTURE_SEQUENCE_REQUIRED')
+     keys={'capture','purpose','node_limit','depth_limit','child_limit','json_byte_limit','attempted_nodes',
+@@ -423,10 +433,154 @@
+             'node_resource_id':found[0]['resource_id']}
+ 
+ 
++# This source block is inserted verbatim into the new owned qa_contract.py.
++REVEAL_ACTIVITY=PACKAGE+'/com.bilibili.ship.theseus.detail.UnitedBizDetailsActivity'
++REVEAL_TITLE='7ff99f77d6b59f394c4c6c0ca167aded470663d4cef66215fcce841ed549afba'
++REVEAL_AUTHOR='3355707b07511199c7d280b9a77510b5e9b8698c7c7e4aedcf938805a3822d64'
++
++
++def reveal_rect(value):
++    require(type(value) is list and len(value)==4 and all(type(x) is int and 0<=x<=16384 for x in value)
++            and value[0]<value[2] and value[1]<value[3],'REVEAL_EXACT_POSITIVE_RECTANGLE')
++    return value
++
++
++def player_reveal_scope(inspection,host_scope,require_hidden=True):
++    inspect_record(inspection);scope(host_scope)
++    require(host_scope['activity']==REVEAL_ACTIVITY,'REVEAL_EXACT_COURSE_ACTIVITY')
++    nodes=inspection['nodes'];window=inspection['window']
++    def eligible(n):
++        return n.get('visible') is True and n.get('enabled') is True and n.get('password') is False and n.get('class_truncated') is False and n.get('resource_id_truncated') is False
++    def one(resource,kind,text_hash=None):
++        found=[n for n in nodes if n.get('resource_id')==resource and n.get('class')==kind and eligible(n) and
++               (text_hash is None or (n.get('text_truncated') is False and isinstance(n.get('text'),str) and
++                n.get('text_sha256')==text_hash==sha(n['text'].encode()))) ]
++        require(len(found)==1,'REVEAL_UNIQUE_PLAYER_ROLE_REQUIRED')
++        return found[0]
++    def under(n,parent):return n['path'].startswith(parent['path']+'/')
++    def inside(a,b):
++        reveal_rect(a);reveal_rect(b)
++        return b[0]<=a[0] and a[2]<=b[2] and b[1]<=a[1] and a[3]<=b[3]
++    title=one(PACKAGE+':id/title','android.widget.TextView',REVEAL_TITLE)
++    author=one(PACKAGE+':id/author_name','android.widget.TextView',REVEAL_AUTHOR)
++    area=one(PACKAGE+':id/video_area','android.widget.FrameLayout')
++    container=one(PACKAGE+':id/video_container','android.widget.FrameLayout')
++    overlay=one(PACKAGE+':id/video_area_float_layer_container','android.widget.FrameLayout')
++    toolbar=one(PACKAGE+':id/collapsing_toolbar','android.widget.FrameLayout')
++    full=reveal_rect(area['bounds']);crop=reveal_rect(overlay['bounds'])
++    require(full==container['bounds'] and crop==toolbar['bounds'] and crop!=full and
++            inside(crop,full) and inside(full,window['bounds']) and under(container,area) and under(overlay,area),
++            'REVEAL_ABSOLUTE_PLAYER_GEOMETRY')
++    surfaces=[n for n in nodes if n.get('class') in ('android.view.SurfaceView','android.view.TextureView')]
++    require(len(surfaces)==2 and all(n['class']=='android.view.SurfaceView' and eligible(n) and
++            n['resource_id']=='' and under(n,container) and not under(n,overlay) and not under(n,toolbar)
++            for n in surfaces),'REVEAL_EXACT_TWO_SURFACE_ROLES')
++    area_rows=[n for n in surfaces if n['bounds']==full];crop_rows=[n for n in surfaces if n['bounds']==crop]
++    require(len(area_rows)==len(crop_rows)==1,'REVEAL_EXACT_TWO_SURFACE_ROLES')
++    for n in nodes:
++        if under(n,container) and n['visible'] is True:
++            require(n['password'] is False,'REVEAL_PLAYER_PASSWORD_DESCENDANT')
++            text=n['text']
++            require(isinstance(text,str) and (not text or n['text_truncated'] is False),
++                    'REVEAL_PLAYER_TEXT_COMPLETENESS')
++            require(not text.startswith('Buffering...'),'REVEAL_BUFFERING_PLAYER_REJECTED')
++    if require_hidden:
++        controls=one(PACKAGE+':id/control_container','android.widget.FrameLayout')
++        require(under(controls,container) and type(controls['child_count']) is int and controls['child_count']==0
++                and controls['bounds']==crop,'REVEAL_CURRENT_HIDDEN_CONTROL_CONTAINER')
++        require(all(n.get('clickable') is False and n['class']!='android.widget.SeekBar'
++                    for n in nodes if under(n,area) and n['visible'] is True and n['enabled'] is True),
++                'REVEAL_ALREADY_INTERACTIVE_PLAYER_REJECTED')
++    by_path={n['path']:n for n in nodes};parents=set();render=[]
++    for role,node in (('area-sized',area_rows[0]),('crop-sized',crop_rows[0])):
++        require('/' in node['path'],'REVEAL_SURFACE_PARENT_PATH')
++        parent_path=node['path'].rsplit('/',1)[0];parent=by_path.get(parent_path)
++        require(parent is not None and eligible(parent) and under(parent,container) and
++                parent['class']=='android.widget.FrameLayout' and parent['resource_id']=='' and
++                parent['bounds']==node['bounds'] and parent_path not in parents,
++                'REVEAL_EXACT_DISTINCT_SURFACE_PARENTS')
++        parents.add(parent_path)
++        render.append({'role':role,'node_sha256':node['node_sha256'],
++                       'parent_node_sha256':parent['node_sha256'],'bounds':node['bounds']})
++    fixed=[{'role':role,'path_sha256':sha(node['path'].encode()),'bounds':node['bounds'],
++            'class':node['class'],'resource_id':node['resource_id']}
++           for role,node in (('area',area),('container',container),('overlay',overlay),('toolbar',toolbar))]
++    return {'scope':host_scope,'window':window,'window_sha256':inspection['window_sha256'],
++            'tree_sha256':inspection['tree_sha256'],'viewport_bounds':crop,'full_area_bounds':full,
++            'render_structure_sha256':sha(canonical({'fixed_roles':fixed,'surfaces':render})),
++            'title_text_sha256':title['text_sha256'],'author_text_sha256':author['text_sha256']}
++
++
++def same_reveal_frame(first,second):
++    keys=('scope','window','window_sha256','viewport_bounds','full_area_bounds','render_structure_sha256',
++          'title_text_sha256','author_text_sha256')
++    return all(first[key]==second[key] for key in keys)
++
++
++def reveal_request_fields(inspection,host_scope):
++    proof=player_reveal_scope(inspection,host_scope,True)
++    left,top,right,bottom=proof['viewport_bounds']
++    x=left+(right-left)//2;y=top+(bottom-top)//2
++    require(left+16<x<right-16 and top+16<y<bottom-16,'REVEAL_STRICT_INTERIOR_POINT_REQUIRED')
++    return {'player_scope_sha256':sha(canonical(proof)),'viewport_bounds':proof['viewport_bounds']}
++
++
++def touch_observation(value,success_required):
++    flags={'explicit_public_display_factory','down_attempted','down_acknowledged','up_attempted','up_acknowledged',
++           'cancel_creation_attempted','cancel_attempted','cancel_acknowledged','down_created','up_created','cancel_created',
++           'down_recycled','up_recycled','cancel_recycled','all_created_events_recycled','input_stream_terminated',
++           'atomic_input_target_attribution','business_success_verified'}
++    integers={'display','pointer_count','source','runtime_sdk','down_time_ms','up_admission_elapsed_ms',
++              'finished_time_ms','up_admission_budget_ms'}
++    keys=flags|integers|{'point','primary_error','secondary_errors','controls_revealed'}
++    require(type(value) is dict and set(value)==keys and len(canonical(value))<=8192 and
++            all(type(value[k]) is bool for k in flags) and all(type(value[k]) is int for k in integers),
++            'EXACT_BOUNDED_TOUCH_OBSERVATION')
++    require(value['display']==0 and value['pointer_count']==1 and value['source']==4098 and value['runtime_sdk']>=34 and
++            value['explicit_public_display_factory'] is True and type(value['point']) is list and len(value['point'])==2 and
++            all(type(x) is int and 0<=x<=16384 for x in value['point']) and value['up_admission_budget_ms']==150 and
++            value['atomic_input_target_attribution'] is False and value['controls_revealed'] is None and
++            value['business_success_verified'] is False and isinstance(value['secondary_errors'],list) and
++            all(isinstance(s,str) and len(s)<=160 for s in value['secondary_errors']) and
++            (value['primary_error'] is None or isinstance(value['primary_error'],str)),
++            'EXACT_PUBLIC_SINGLE_POINTER_INPUT_CONTRACT')
++    if success_required:
++        require(all(value[k] is True for k in ('down_attempted','down_acknowledged','up_attempted','up_acknowledged',
++                'down_created','up_created','down_recycled','up_recycled','all_created_events_recycled','input_stream_terminated'))
++                and all(value[k] is False for k in ('cancel_creation_attempted','cancel_attempted','cancel_acknowledged',
++                'cancel_created','cancel_recycled')) and value['primary_error'] is None and value['secondary_errors']==[] and
++                0<=value['up_admission_elapsed_ms']<=150 and 0<=value['down_time_ms']<=value['finished_time_ms'],
++                'ACTUAL_COMPLETE_DOWN_UP_AND_EVENT_CLEANUP_REQUIRED')
++    return value
++
++
++def assess_reveal(value,request,observed_window,observed_trees):
++    require(value.get('action_attempted') is True and value.get('outcome_unknown') is True and
++            value.get('inspection_nonce')==request['inspection_nonce'] and value.get('inspection_sha256')==request['inspection_sha256'] and
++            value.get('player_scope_sha256')==request['player_scope_sha256'] and value.get('strict_interior_margin_px')==16,
++            'REVEAL_CURRENT_REQUEST_BINDING_REQUIRED')
++    proof=value.get('player_scope')
++    require(type(proof) is dict and sha(canonical(proof))==request['player_scope_sha256'] and
++            proof['scope']==request['scope'] and proof['viewport_bounds']==request['viewport_bounds'] and
++            value.get('action_window')==proof['window'],'REVEAL_PLAYER_PROOF_BINDING_REQUIRED')
++    touch=touch_observation(value.get('touch'),True)
++    left,top,right,bottom=reveal_rect(request['viewport_bounds'])
++    require(touch['point']==[left+(right-left)//2,top+(bottom-top)//2] and
++            left+16<touch['point'][0]<right-16 and top+16<touch['point'][1]<bottom-16,
++            'REVEAL_EXACT_STRICT_INTERIOR_POINT')
++    after=inspect_record(value.get('post_inspection'));after_proof=player_reveal_scope(after,request['scope'],False)
++    require(value.get('post_player_scope')==after_proof and same_reveal_frame(proof,after_proof) and
++            value.get('scope_unchanged_after_input') is True and value.get('requires_independent_controls_readback') is True and
++            observed_window['selected_window_id']==value.get('connection_scoped_window_id')==after['connection_scoped_window_id'] and
++            observed_trees[2]['emitted_nodes']==len(after['nodes']) and
++            observed_trees[2]['serialized_bytes']==len(canonical(after)),
++            'REVEAL_ACTUAL_COMPLETE_POST_INPUT_ABSOLUTE_SCOPE_REQUIRED')
++
++
+ def assess_restoration(before, operation, after):
+     """These inputs must be parse_completed returns from three joined commands."""
+     first, middle, last = before['helper'], operation['helper'], after['helper']
+-    require(first['op'] == last['op'] == 'state' and middle['op'] in ('inspect','click','set_text'), 'STATE_OPERATION_STATE_SEQUENCE_REQUIRED')
++    require(first['op'] == last['op'] == 'state' and middle['op'] in ('inspect','click','set_text','reveal_controls'), 'STATE_OPERATION_STATE_SEQUENCE_REQUIRED')
+     require(len({first['nonce'], middle['nonce'], last['nonce']}) == 3, 'DISTINCT_PHASE_NONCES_REQUIRED')
+     require(first['self_uid'] == middle['self_uid'] == last['self_uid'], 'HELPER_UID_CHANGED')
+     require(first['state'] == middle['accessibility_state_before_connection'] == last['state'] and
+--- a/src/org/droidloom/qa/bili/r5/ActionRunner.java
++++ b/src/org/droidloom/qa/bili/r6/ActionRunner.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.bili.r5;
++package org.droidloom.qa.bili.r6;
+ 
+ import android.accessibilityservice.AccessibilityServiceInfo;
+ import android.app.Instrumentation;
+@@ -12,6 +12,8 @@
+ import android.os.SystemClock;
+ import android.util.Base64;
+ import android.util.SparseArray;
++import android.view.InputDevice;
++import android.view.MotionEvent;
+ import android.view.accessibility.AccessibilityEvent;
+ import android.view.accessibility.AccessibilityManager;
+ import android.view.accessibility.AccessibilityNodeInfo;
+@@ -39,9 +41,9 @@
+ 
+ /** An owned self-instrumentation; it never instruments the commercial app. */
+ public final class ActionRunner extends Instrumentation {
+-    static final String PROTOCOL = "pocket4-owned-bili-qa-v5";
++    static final String PROTOCOL = "pocket4-owned-bili-qa-v6";
+     static final String PACKAGE = "tv.danmaku.bili";
+-    static final String SELF = "org.droidloom.qa.bili.r5";
++    static final String SELF = "org.droidloom.qa.bili.r6";
+     static final String MAIN_EPOCH = "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f";
+     static final int TARGET_UID = 10117;
+     static final int MAX_REQUEST = 16384, MAX_RESULT = 524288, MAX_COMPRESSED_WIRE = 262144;
+@@ -171,6 +173,7 @@
+             if (op.equals("state")) keys(request, "protocol", "nonce", "op");
+             else if (op.equals("inspect")) keys(request, "protocol", "nonce", "op", "scope");
+             else if (op.equals("click")) keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "node_path", "node_sha256");
++            else if (op.equals("reveal_controls")) keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "player_scope_sha256", "viewport_bounds");
+             else if (op.equals("set_text")) {
+                 keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "node_path", "node_sha256", "node_resource_id", "value");
+                 need(PUBLIC_SEARCH_QUERY.equals(string(request, "value", 64)), "ONLY_FIXED_PUBLIC_SEARCH_QUERY_ALLOWED");
+@@ -200,7 +203,8 @@
+                     Capture captured = inspect(null, "inspection");
+                     try { result.put("inspection", captured.json); }
+                     finally { captured.close(); }
+-                } else act(request, result);
++                } else if (op.equals("reveal_controls")) revealControls(request, result);
++                else act(request, result);
+             }
+         } catch (Exception error) { primary = error; }
+         finally {
+@@ -245,7 +249,8 @@
+     }
+ 
+     static String errorCode(Exception error) {
+-        return error instanceof Rejected ? error.getMessage() : "EXCEPTION_" + error.getClass().getSimpleName();
++        return error instanceof Rejected || error instanceof TouchTransaction.Fault
++            ? error.getMessage() : "EXCEPTION_" + error.getClass().getSimpleName();
+     }
+     void writeNew(String name, byte[] value) throws Exception {
+         need(name.matches("[0-9a-f]{32}\\.(claim|result)\\.json"), "OWNED_FILENAME_REQUIRED");
+@@ -560,6 +565,257 @@
+             windows.close();
+         }
+     }
++    static final String REVEAL_ACTIVITY = PACKAGE + "/com.bilibili.ship.theseus.detail.UnitedBizDetailsActivity";
++    static final String REVEAL_TITLE = "7ff99f77d6b59f394c4c6c0ca167aded470663d4cef66215fcce841ed549afba";
++    static final String REVEAL_AUTHOR = "3355707b07511199c7d280b9a77510b5e9b8698c7c7e4aedcf938805a3822d64";
++
++    static int[] revealRect(JSONArray value) throws Exception {
++        need(value.length() == 4, "REVEAL_RECT_SHAPE");
++        int[] out = new int[4];
++        for (int i = 0; i < 4; i++) {
++            Object item = value.get(i);
++            need(item instanceof Integer || item instanceof Long, "REVEAL_RECT_INTEGER");
++            long number = ((Number) item).longValue();
++            need(number >= 0 && number <= 16384, "REVEAL_RECT_BOUND"); out[i] = (int) number;
++        }
++        need(out[0] < out[2] && out[1] < out[3], "REVEAL_RECT_POSITIVE"); return out;
++    }
++    static boolean revealInside(int[] a, int[] b) {
++        return b[0] <= a[0] && a[2] <= b[2] && b[1] <= a[1] && a[3] <= b[3];
++    }
++    static boolean revealEligible(JSONObject node) throws Exception {
++        return node.getBoolean("visible") && node.getBoolean("enabled") && !node.getBoolean("password")
++            && !node.getBoolean("class_truncated") && !node.getBoolean("resource_id_truncated");
++    }
++    static JSONObject revealOne(JSONArray nodes, String resource, String kind, String textHash) throws Exception {
++        JSONObject selected = null; int matches = 0;
++        for (int i = 0; i < nodes.length(); i++) {
++            JSONObject node = nodes.getJSONObject(i);
++            if (resource.equals(node.getString("resource_id")) && kind.equals(node.getString("class"))
++                && revealEligible(node)) {
++                if (textHash != null) {
++                    if (node.getBoolean("text_truncated") || !(node.opt("text") instanceof String)
++                        || !textHash.equals(node.getString("text_sha256"))
++                        || !textHash.equals(hash(node.getString("text").getBytes(StandardCharsets.UTF_8)))) continue;
++                }
++                selected = node; matches++;
++            }
++        }
++        need(matches == 1, "REVEAL_UNIQUE_PLAYER_ROLE_REQUIRED"); return selected;
++    }
++    static boolean revealUnder(JSONObject node, JSONObject parent) throws Exception {
++        return node.getString("path").startsWith(parent.getString("path") + "/");
++    }
++    static JSONObject revealPlayer(JSONObject inspection, JSONObject scope, boolean requireHiddenControls) throws Exception {
++        need(REVEAL_ACTIVITY.equals(scope.getString("activity")), "REVEAL_EXACT_COURSE_ACTIVITY");
++        need(inspection.getBoolean("complete") && "visible-non-password-subtrees".equals(inspection.getString("traversal")),
++             "REVEAL_COMPLETE_PLAYER_REQUIRED");
++        JSONObject window = inspection.getJSONObject("window"); JSONArray nodes = inspection.getJSONArray("nodes");
++        need(PACKAGE.equals(window.getString("package")) && window.getBoolean("focused")
++             && integer(window,"display") == 0 && integer(window,"type") == 1,
++             "REVEAL_FOCUSED_DISPLAY_ZERO_PLAYER_REQUIRED");
++        JSONObject title = revealOne(nodes,PACKAGE+":id/title","android.widget.TextView",REVEAL_TITLE);
++        JSONObject author = revealOne(nodes,PACKAGE+":id/author_name","android.widget.TextView",REVEAL_AUTHOR);
++        JSONObject area = revealOne(nodes,PACKAGE+":id/video_area","android.widget.FrameLayout",null);
++        JSONObject container = revealOne(nodes,PACKAGE+":id/video_container","android.widget.FrameLayout",null);
++        JSONObject overlay = revealOne(nodes,PACKAGE+":id/video_area_float_layer_container","android.widget.FrameLayout",null);
++        JSONObject toolbar = revealOne(nodes,PACKAGE+":id/collapsing_toolbar","android.widget.FrameLayout",null);
++        int[] full = revealRect(area.getJSONArray("bounds")), crop = revealRect(overlay.getJSONArray("bounds"));
++        need(Arrays.equals(full,revealRect(container.getJSONArray("bounds")))
++             && Arrays.equals(crop,revealRect(toolbar.getJSONArray("bounds"))) && !Arrays.equals(crop,full)
++             && revealInside(crop,full) && revealInside(full,revealRect(window.getJSONArray("bounds")))
++             && revealUnder(container,area) && revealUnder(overlay,area), "REVEAL_ABSOLUTE_PLAYER_GEOMETRY");
++        JSONObject areaSurface = null, cropSurface = null; int surfaceCount = 0, areaCount = 0, cropCount = 0;
++        for (int i = 0; i < nodes.length(); i++) {
++            JSONObject node = nodes.getJSONObject(i); String kind = node.getString("class");
++            if ("android.view.SurfaceView".equals(kind) || "android.view.TextureView".equals(kind)) {
++                surfaceCount++;
++                need("android.view.SurfaceView".equals(kind) && revealEligible(node)
++                     && node.getString("resource_id").isEmpty() && revealUnder(node,container)
++                     && !revealUnder(node,overlay) && !revealUnder(node,toolbar), "REVEAL_SURFACE_SCOPE");
++                int[] bounds = revealRect(node.getJSONArray("bounds"));
++                if (Arrays.equals(bounds,full)) { areaSurface = node; areaCount++; }
++                if (Arrays.equals(bounds,crop)) { cropSurface = node; cropCount++; }
++            }
++            if (revealUnder(node,container) && node.getBoolean("visible")) {
++                need(!node.getBoolean("password"), "REVEAL_PLAYER_PASSWORD_DESCENDANT");
++                String text = node.getString("text");
++                need(text.isEmpty() || !node.getBoolean("text_truncated"), "REVEAL_PLAYER_TEXT_COMPLETENESS");
++                need(!text.startsWith("Buffering..."), "REVEAL_BUFFERING_PLAYER_REJECTED");
++            }
++        }
++        need(surfaceCount == 2 && areaCount == 1 && cropCount == 1, "REVEAL_EXACT_TWO_SURFACE_ROLES");
++        if (requireHiddenControls) {
++            JSONObject controls = revealOne(nodes,PACKAGE+":id/control_container","android.widget.FrameLayout",null);
++            need(revealUnder(controls,container) && integer(controls,"child_count") == 0
++                 && canonical(controls.getJSONArray("bounds")).equals(canonical(overlay.getJSONArray("bounds"))),
++                 "REVEAL_CURRENT_HIDDEN_CONTROL_CONTAINER");
++            for (int i = 0; i < nodes.length(); i++) {
++                JSONObject node = nodes.getJSONObject(i);
++                if (revealUnder(node,area) && node.getBoolean("visible") && node.getBoolean("enabled"))
++                    need(!node.getBoolean("clickable") && !"android.widget.SeekBar".equals(node.getString("class")),
++                         "REVEAL_ALREADY_INTERACTIVE_PLAYER_REJECTED");
++            }
++        }
++        JSONArray surfaces = new JSONArray(); String priorParent = null;
++        JSONObject[] surfaceNodes = new JSONObject[]{areaSurface,cropSurface};
++        String[] roleNames = new String[]{"area-sized","crop-sized"};
++        for (int i = 0; i < surfaceNodes.length; i++) {
++            JSONObject node = surfaceNodes[i]; String path = node.getString("path");
++            int slash = path.lastIndexOf('/'); need(slash > 0, "REVEAL_SURFACE_PARENT_PATH");
++            String parentPath = path.substring(0,slash); JSONObject parent = null; int matches = 0;
++            for (int j = 0; j < nodes.length(); j++) {
++                JSONObject candidate = nodes.getJSONObject(j);
++                if (parentPath.equals(candidate.getString("path"))) { parent = candidate; matches++; }
++            }
++            need(matches == 1 && revealEligible(parent) && revealUnder(parent,container)
++                 && "android.widget.FrameLayout".equals(parent.getString("class"))
++                 && parent.getString("resource_id").isEmpty()
++                 && canonical(parent.getJSONArray("bounds")).equals(canonical(node.getJSONArray("bounds")))
++                 && !parentPath.equals(priorParent), "REVEAL_EXACT_DISTINCT_SURFACE_PARENTS");
++            priorParent = parentPath;
++            surfaces.put(new JSONObject().put("role",roleNames[i]).put("node_sha256",node.getString("node_sha256"))
++                .put("parent_node_sha256",parent.getString("node_sha256")).put("bounds",node.getJSONArray("bounds")));
++        }
++        JSONArray fixed = new JSONArray();
++        JSONObject[] fixedNodes = new JSONObject[]{area,container,overlay,toolbar};
++        String[] fixedNames = new String[]{"area","container","overlay","toolbar"};
++        for (int i = 0; i < fixedNodes.length; i++) {
++            JSONObject node = fixedNodes[i];
++            fixed.put(new JSONObject().put("role",fixedNames[i]).put("path_sha256",hash(node.getString("path").getBytes(StandardCharsets.UTF_8)))
++                .put("bounds",node.getJSONArray("bounds")).put("class",node.getString("class")).put("resource_id",node.getString("resource_id")));
++        }
++        JSONObject render = new JSONObject().put("fixed_roles",fixed).put("surfaces",surfaces);
++        return new JSONObject().put("scope",scope).put("window",window).put("window_sha256",inspection.getString("window_sha256"))
++            .put("tree_sha256",inspection.getString("tree_sha256")).put("viewport_bounds",overlay.getJSONArray("bounds"))
++            .put("full_area_bounds",area.getJSONArray("bounds")).put("render_structure_sha256",hashJson(render))
++            .put("title_text_sha256",title.getString("text_sha256")).put("author_text_sha256",author.getString("text_sha256"));
++    }
++    static boolean sameRevealFrame(JSONObject first, JSONObject second) throws Exception {
++        for (String key : new String[]{"scope","window","window_sha256","viewport_bounds","full_area_bounds",
++                "render_structure_sha256","title_text_sha256","author_text_sha256"})
++            if (!canonical(first.get(key)).equals(canonical(second.get(key)))) return false;
++        return true;
++    }
++    static Method publicDisplayMotionFactory() throws Exception {
++        need(Build.VERSION.SDK_INT >= 34, "REVEAL_PUBLIC_DISPLAY_MOTION_API_34_REQUIRED");
++        Method method = MotionEvent.class.getMethod("obtain",long.class,long.class,int.class,int.class,
++            MotionEvent.PointerProperties[].class,MotionEvent.PointerCoords[].class,int.class,int.class,
++            float.class,float.class,int.class,int.class,int.class,int.class,int.class,int.class);
++        need(method.getDeclaringClass() == MotionEvent.class && method.getReturnType() == MotionEvent.class
++             && Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers()),
++             "REVEAL_EXACT_PUBLIC_DISPLAY_MOTION_FACTORY");
++        return method;
++    }
++    static MotionEvent displayMotion(Method factory, int action, long downTime, long eventTime, int x, int y) throws Exception {
++        MotionEvent.PointerProperties properties = new MotionEvent.PointerProperties();
++        properties.id = 0; properties.toolType = MotionEvent.TOOL_TYPE_FINGER;
++        MotionEvent.PointerCoords coordinates = new MotionEvent.PointerCoords();
++        coordinates.x = x; coordinates.y = y; coordinates.pressure = action == MotionEvent.ACTION_DOWN ? 1 : 0;
++        coordinates.size = 1;
++        Object raw;
++        try {
++            raw = factory.invoke(null,downTime,eventTime,action,1,new MotionEvent.PointerProperties[]{properties},
++                new MotionEvent.PointerCoords[]{coordinates},0,0,1.0f,1.0f,0,0,InputDevice.SOURCE_TOUCHSCREEN,0,0,MotionEvent.CLASSIFICATION_NONE);
++        } catch (InvocationTargetException error) {
++            Throwable cause = error.getCause();
++            if (cause instanceof Exception) throw (Exception) cause;
++            throw error;
++        }
++        need(raw instanceof MotionEvent, "REVEAL_MOTION_EVENT_REQUIRED");
++        MotionEvent event = (MotionEvent) raw;
++        try {
++            need(event.getActionMasked() == action && event.getPointerCount() == 1 && event.getPointerId(0) == 0
++                 && event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER && event.getX() == x && event.getY() == y
++                 && event.getSource() == InputDevice.SOURCE_TOUCHSCREEN && event.getDownTime() == downTime
++                 && event.getEventTime() == eventTime, "REVEAL_EXACT_SINGLE_POINTER_EVENT");
++            return event;
++        } catch (Exception primary) {
++            try { event.recycle(); } catch (Exception secondary) { primary.addSuppressed(secondary); }
++            throw primary;
++        }
++    }
++    static JSONObject touchObservation(TouchTransaction.Observation value, int x, int y) throws Exception {
++        JSONArray secondary = new JSONArray(); for (String error : value.secondary) secondary.put(error);
++        return new JSONObject().put("display",0).put("point",new JSONArray().put(x).put(y)).put("pointer_count",1)
++            .put("source",InputDevice.SOURCE_TOUCHSCREEN).put("explicit_public_display_factory",true)
++            .put("runtime_sdk",Build.VERSION.SDK_INT).put("down_attempted",value.downAttempted).put("down_acknowledged",value.downAcknowledged)
++            .put("up_attempted",value.upAttempted).put("up_acknowledged",value.upAcknowledged)
++            .put("cancel_creation_attempted",value.cancelCreationAttempted).put("cancel_attempted",value.cancelAttempted)
++            .put("cancel_acknowledged",value.cancelAcknowledged).put("down_created",value.downCreated).put("up_created",value.upCreated)
++            .put("cancel_created",value.cancelCreated).put("down_recycled",value.downRecycled).put("up_recycled",value.upRecycled)
++            .put("cancel_recycled",value.cancelRecycled).put("all_created_events_recycled",value.allCreatedRecycled())
++            .put("input_stream_terminated",value.inputTerminated()).put("down_time_ms",value.downTime)
++            .put("up_admission_elapsed_ms",value.upAdmissionElapsed).put("finished_time_ms",value.finishedTime)
++            .put("up_admission_budget_ms",TouchTransaction.MAX_DOWN_TO_UP_ADMISSION_MS)
++            .put("primary_error",value.primary == null ? JSONObject.NULL : errorCode(value.primary)).put("secondary_errors",secondary)
++            .put("atomic_input_target_attribution",false).put("controls_revealed",JSONObject.NULL)
++            .put("business_success_verified",false);
++    }
++    void revealControls(JSONObject request, JSONObject result) throws Exception {
++        final Method factory = publicDisplayMotionFactory();
++        String priorNonce = string(request,"inspection_nonce",32), expectedHash = string(request,"inspection_sha256",64);
++        need(!priorNonce.equals(string(request,"nonce",32)) && expectedHash.matches("[0-9a-f]{64}"), "REVEAL_PRIOR_NONCE_AND_HASH");
++        byte[] bytes = readInspection(priorNonce); need(hash(bytes).equals(expectedHash), "REVEAL_PRIOR_WIRE_CHANGED");
++        JSONObject previous = new JSONObject(new String(bytes,StandardCharsets.UTF_8));
++        need(PROTOCOL.equals(previous.getString("protocol")) && "inspect".equals(previous.getString("op"))
++             && priorNonce.equals(previous.getString("nonce")) && previous.getBoolean("claim_persistence_completed")
++             && previous.getBoolean("helper_work_completed") && previous.getBoolean("ok") && !previous.getBoolean("action_attempted")
++             && previous.getJSONObject("restoration").getBoolean("service_info_verified"), "REVEAL_PRIOR_COMPLETE_INSPECTION");
++        final JSONObject scope = request.getJSONObject("scope");
++        need(canonical(scope).equals(canonical(previous.getJSONObject("host_scope_attestation"))), "REVEAL_PRIOR_SCOPE_CHANGED");
++        JSONObject expected = previous.getJSONObject("inspection");
++        long age = SystemClock.elapsedRealtime() - integer(expected,"observed_elapsed_ms");
++        need(age >= 0 && age <= MAX_INSPECTION_AGE_MS, "REVEAL_INSPECTION_TOO_OLD");
++        final String proofHash = string(request,"player_scope_sha256",64);
++        need(proofHash.matches("[0-9a-f]{64}"), "REVEAL_PLAYER_PROOF_HASH");
++        Capture current = inspect(null,"reveal_target");
++        try {
++            need(current.json.getString("tree_sha256").equals(expected.getString("tree_sha256"))
++                 && current.json.getString("window_sha256").equals(expected.getString("window_sha256")),
++                 "REVEAL_INSPECTED_TREE_OR_WINDOW_CHANGED");
++            final JSONObject proof = revealPlayer(current.json,scope,true);
++            need(hashJson(proof).equals(proofHash) && canonical(proof.getJSONArray("viewport_bounds"))
++                 .equals(canonical(request.getJSONArray("viewport_bounds"))), "REVEAL_PLAYER_PROOF_CHANGED");
++            Capture finalWindow = inspect(null,"reveal_final_window");
++            try {
++                need(finalWindow.windowId == current.windowId && finalWindow.json.getString("tree_sha256")
++                     .equals(current.json.getString("tree_sha256")) && hashJson(revealPlayer(finalWindow.json,scope,true)).equals(proofHash),
++                     "REVEAL_FINAL_ABSOLUTE_PLAYER_CHANGED");
++            } finally { finalWindow.close(); }
++            int[] crop = revealRect(proof.getJSONArray("viewport_bounds"));
++            final int x = crop[0] + (crop[2]-crop[0])/2, y = crop[1] + (crop[3]-crop[1])/2;
++            need(crop[0]+16 < x && x < crop[2]-16 && crop[1]+16 < y && y < crop[3]-16,
++                 "REVEAL_STRICT_INTERIOR_POINT_REQUIRED");
++            TouchTransaction.Observation touch = TouchTransaction.run(new TouchTransaction.Backend<MotionEvent>() {
++                @Override public long now() { return SystemClock.uptimeMillis(); }
++                @Override public MotionEvent obtain(int action,long downTime,long eventTime) throws Exception {
++                    return displayMotion(factory,action,downTime,eventTime,x,y);
++                }
++                @Override public void beforeDown() throws Exception { timeBound(); }
++                @Override public boolean inject(MotionEvent event) throws Exception {
++                    if (event.getActionMasked() == MotionEvent.ACTION_DOWN) actionAttempted = true;
++                    return automation.injectInputEvent(event,true);
++                }
++                @Override public void recycle(MotionEvent event) { event.recycle(); }
++            });
++            result.put("touch",touchObservation(touch,x,y)).put("inspection_nonce",priorNonce).put("inspection_sha256",expectedHash)
++                .put("player_scope_sha256",proofHash).put("player_scope",proof).put("action_window",current.json.getJSONObject("window"))
++                .put("connection_scoped_window_id",current.windowId).put("strict_interior_margin_px",16);
++            if (touch.primary != null) throw touch.primary;
++            need(touch.downAcknowledged && touch.upAcknowledged && touch.inputTerminated() && touch.allCreatedRecycled(),
++                 "REVEAL_INPUT_COMPLETION_REQUIRED");
++            Capture after = inspect(null,"reveal_after");
++            try {
++                JSONObject afterProof = revealPlayer(after.json,scope,false);
++                need(after.windowId == current.windowId && sameRevealFrame(proof,afterProof),
++                     "REVEAL_ABSOLUTE_SCOPE_CHANGED_DURING_INPUT");
++                result.put("post_inspection",after.json).put("post_player_scope",afterProof)
++                    .put("scope_unchanged_after_input",true).put("requires_independent_controls_readback",true);
++            } finally { after.close(); }
++        } finally { current.close(); }
++    }
++
+     void act(JSONObject request, JSONObject result) throws Exception {
+         final boolean editing = "set_text".equals(string(request, "op", 16));
+         String priorNonce = string(request, "inspection_nonce", 32);
+--- a/src/org/droidloom/qa/bili/r5/TouchTransaction.java
++++ b/src/org/droidloom/qa/bili/r6/TouchTransaction.java
+@@ -0,0 +1,102 @@
++package org.droidloom.qa.bili.r6;
++
++import java.util.ArrayList;
++import java.util.List;
++
++/** One fixed pointer stream; used unchanged by the Android adapter and host controls. */
++final class TouchTransaction<E> {
++    static final int DOWN = 0, UP = 1, CANCEL = 3;
++    static final long MAX_DOWN_TO_UP_ADMISSION_MS = 150;
++
++    interface Backend<E> {
++        long now();
++        E obtain(int action, long downTime, long eventTime) throws Exception;
++        void beforeDown() throws Exception;
++        boolean inject(E event) throws Exception;
++        void recycle(E event) throws Exception;
++    }
++    static final class Fault extends Exception {
++        Fault(String message) { super(message); }
++    }
++    static final class Observation {
++        boolean downAttempted, downAcknowledged, upAttempted, upAcknowledged;
++        boolean cancelCreationAttempted, cancelAttempted, cancelAcknowledged;
++        boolean downCreated, upCreated, cancelCreated;
++        boolean downRecycled, upRecycled, cancelRecycled;
++        long downTime, upAdmissionElapsed = -1, finishedTime;
++        Exception primary;
++        final List<String> secondary = new ArrayList<String>();
++        void remember(String phase, Exception error) {
++            if (primary == null) primary = error;
++            else secondary.add(phase + ":" + code(error));
++        }
++        boolean inputTerminated() { return !downAttempted || upAcknowledged || cancelAcknowledged; }
++        boolean allCreatedRecycled() {
++            return (!downCreated || downRecycled) && (!upCreated || upRecycled)
++                && (!cancelCreated || cancelRecycled);
++        }
++    }
++    static String code(Exception error) {
++        return error instanceof Fault ? error.getMessage() : "EXCEPTION_" + error.getClass().getSimpleName();
++    }
++    static void need(boolean value, String message) throws Fault {
++        if (!value) throw new Fault(message);
++    }
++
++    static <E> Observation run(Backend<E> backend) {
++        Observation out = new Observation();
++        E down = null, up = null, cancel = null;
++        try {
++            out.downTime = backend.now();
++            down = backend.obtain(DOWN, out.downTime, out.downTime);
++            need(down != null, "REVEAL_DOWN_EVENT_REQUIRED"); out.downCreated = true;
++            backend.beforeDown();
++            long admission = backend.now() - out.downTime;
++            need(admission >= 0 && admission <= MAX_DOWN_TO_UP_ADMISSION_MS,
++                 "REVEAL_DOWN_ADMISSION_DEADLINE");
++            out.downAttempted = true;
++            out.downAcknowledged = backend.inject(down);
++            need(out.downAcknowledged, "REVEAL_DOWN_NOT_ACKNOWLEDGED");
++            long now = backend.now(); out.upAdmissionElapsed = now - out.downTime;
++            need(out.upAdmissionElapsed >= 0 && out.upAdmissionElapsed <= MAX_DOWN_TO_UP_ADMISSION_MS,
++                 "REVEAL_UP_ADMISSION_DEADLINE");
++            up = backend.obtain(UP, out.downTime, now);
++            need(up != null, "REVEAL_UP_EVENT_REQUIRED"); out.upCreated = true;
++            long ready = backend.now() - out.downTime;
++            need(ready >= 0 && ready <= MAX_DOWN_TO_UP_ADMISSION_MS, "REVEAL_UP_CREATION_DEADLINE");
++            out.upAttempted = true;
++            out.upAcknowledged = backend.inject(up);
++            need(out.upAcknowledged, "REVEAL_UP_NOT_ACKNOWLEDGED");
++        } catch (Exception error) {
++            out.remember("pointer_stream", error);
++        } finally {
++            // A failed or uncertain DOWN/UP never causes another DOWN/UP. One
++            // CANCEL, with a current timestamp, is the only cleanup input.
++            if (out.downAttempted && !out.upAcknowledged) {
++                try {
++                    out.cancelCreationAttempted = true;
++                    cancel = backend.obtain(CANCEL, out.downTime, backend.now());
++                    need(cancel != null, "REVEAL_CANCEL_EVENT_REQUIRED"); out.cancelCreated = true;
++                    out.cancelAttempted = true;
++                    out.cancelAcknowledged = backend.inject(cancel);
++                    need(out.cancelAcknowledged, "REVEAL_CANCEL_NOT_ACKNOWLEDGED");
++                } catch (Exception error) { out.remember("pointer_cancel", error); }
++            }
++            if (up != null) {
++                try { backend.recycle(up); out.upRecycled = true; }
++                catch (Exception error) { out.remember("up_recycle", error); }
++            }
++            if (down != null) {
++                try { backend.recycle(down); out.downRecycled = true; }
++                catch (Exception error) { out.remember("down_recycle", error); }
++            }
++            if (cancel != null) {
++                try { backend.recycle(cancel); out.cancelRecycled = true; }
++                catch (Exception error) { out.remember("cancel_recycle", error); }
++            }
++            try { out.finishedTime = backend.now(); }
++            catch (Exception error) { out.remember("final_clock", error); }
++        }
++        return out;
++    }
++}
+--- a/stage_build.py
++++ b/stage_build.py
+@@ -8,8 +8,8 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-source-02')
+-OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-build-02')
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r6-source-01')
++OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r6-build-01')
+ MEMORY = 536870912
+ 
+ 

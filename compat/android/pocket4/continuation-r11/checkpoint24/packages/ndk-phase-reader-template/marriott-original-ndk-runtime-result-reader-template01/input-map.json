@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_FUTURE_ACTUAL_UNBOUND",
+  "function": "bindRuntimeResultReader(input,U)",
+  "template": "read-template.py",
+  "allowed_phases": [
+    "run",
+    "retire"
+  ],
+  "fixed_roots": {
+    "run": "/home/alex/work/pocket4-original-ndk-fixture-APK05-run-01",
+    "retire": "/home/alex/work/pocket4-original-ndk-fixture-APK05-retire-01"
+  },
+  "actual_inputs_required": [
+    "actual_summary",
+    "actual_terminal",
+    "job",
+    "phase"
+  ],
+  "nonce_original": {
+    "blob": "623fc4ec4e3f1d6498cc8073d68e50c65e266796",
+    "bytes": 989,
+    "sha256": "1c625b299ba3067436b13e12a3bdc89ef29296f571ec43452ee214d77a7cd7bf"
+  },
+  "nonce_terminal": {
+    "blob": "e519d13350b83104848448d79378533e3ca898af",
+    "bytes": 729,
+    "sha256": "e958d89377f8a3fcc6fdaa13948a721d63fea2b07afde768324eb7a09a33e95b"
+  },
+  "actual_runtime_result_bytes": null,
+  "actual_runtime_result_sha256": null,
+  "result_read_limit": 1048576,
+  "stdout_limit": 2097152,
+  "work_seconds": 20,
+  "outer_seconds": 30,
+  "memory_max_bytes": 134217728,
+  "cpu_quota_percent": 100,
+  "nice": 15,
+  "root_python": [
+    "/usr/bin/sudo",
+    "-n",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "-"
+  ]
+}

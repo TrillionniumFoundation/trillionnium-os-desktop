@@ -1,0 +1,61 @@
+--- registry-destruction/make_run_request.py
++++ listener/make_run_request.py
+@@ -7,12 +7,12 @@
+ import json
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT='/run/pocket4-registry-owner-destruction-host-run-01-20261105'
+-KEY='pocket4-registry-owner-destruction-host-runtime-01-20261105'
+-SOURCE_MANIFEST='3cca0b23c8b84de8a072d13206ddf7fa2dc018be37f86f6c3dc8a1cf654432f0'
+-TEMPLATE_SHA='0c8323ed5e097c4970e8ee4e003286a24da3410897b8f454a146195372c29da4'
+-PLAN_SHA='21f678d2cbdb91b27efdf9cef648d41c7d3524d9ab5135c1cf71d187d6e47a30'
+-BUILD_ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/registry-owner-destruction-host-build-01-20261105'
++ROOT='/run/pocket4-role-listener-lifetime-host-run-01-20261105'
++KEY='pocket4-role-listener-lifetime-host-runtime-01-20261105'
++SOURCE_MANIFEST='7adaade107d05204015482abcee84431d8cd1bcc7776fea2a97dcd6488d210fb'
++TEMPLATE_SHA='053e26699c72f98b98109eff218c549f029de5688d368e996c0af94348cb694d'
++PLAN_SHA='ad48e72af621816d6b5f9672cba8673aa8f2e11abe53013111bc4fd379928a30'
++BUILD_ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-listener-lifetime-host-build-01-20261105'
+ 
+ 
+ def pin(raw):return {'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+@@ -26,7 +26,7 @@
+     raw=build_path.read_bytes()
+     if len(raw)>262144:raise RuntimeError('actual build receipt exceeds the fixed bound')
+     build=json.loads(raw)
+-    source=(HERE/'run_destruction.template.py').read_text()
++    source=(HERE/'run_listener.template.py').read_text()
+     plan=(HERE/'CASE_PLAN.json').read_bytes()
+     if pin(source.encode())['sha256']!=TEMPLATE_SHA or pin(plan)['sha256']!=PLAN_SHA:
+         raise RuntimeError('reviewed run template or case plan changed')
+@@ -36,17 +36,18 @@
+     selected=[node for node in tree.body if isinstance(node,ast.FunctionDef)and
+               node.name in ['require','qualified_build']]
+     if len(selected)!=2:raise RuntimeError('matching receipt predicate missing')
+-    scope={'SOURCE_MANIFEST_SHA':SOURCE_MANIFEST}
++    scope={'SOURCE_MANIFEST_SHA':SOURCE_MANIFEST,'SOURCE_AUTHORITIES':json.loads(plan)['source_authorities'],
++           'ARMS':('lease-preimage','lease-candidate','listener')}
+     exec(compile(ast.Module(body=selected,type_ignores=[]),'frozen_build_predicate','exec'),scope)
+     scope['qualified_build'](build)
+-    elves={arm:build['artifacts'][arm]['elf']for arm in ['preimage','candidate']}
++    elves={arm:build['artifacts'][arm]['elf']for arm in ['lease-preimage','lease-candidate','listener']}
+     for arm,elf in elves.items():
+         if elf['path']!=BUILD_ROOT+'/build01/'+arm+'_controls' or not 0<elf['bytes']<=8*1024*1024:
+             raise RuntimeError('actual matching control ELF path or size differs: '+arm)
+     if source.count('PENDING_ACTUAL_BUILD_RESULT_SHA256')!=1:
+         raise RuntimeError('single actual build binding placeholder required')
+     source=source.replace('PENDING_ACTUAL_BUILD_RESULT_SHA256',pin(raw)['sha256']);ast.parse(source)
+-    files={'run_destruction.py':source,'actual-build-result.json':raw.decode(),'CASE_PLAN.json':plan.decode()}
++    files={'run_listener.py':source,'actual-build-result.json':raw.decode(),'CASE_PLAN.json':plan.decode()}
+     pins={name:pin(text.encode())for name,text in files.items()}
+     stage='''import hashlib,json,os,stat
+ from pathlib import Path
+@@ -82,7 +83,7 @@
+            (after.st_dev,after.st_ino)!=(named.st_dev,named.st_ino):
+             raise RuntimeError('root parent changed during create-only staging')
+     finally:os.close(parent)
+-    os.execve('/usr/bin/python3',['/usr/bin/python3','-I','-B',str(source/'run_destruction.py'),'--execute-once'],
++    os.execve('/usr/bin/python3',['/usr/bin/python3','-I','-B',str(source/'run_listener.py'),'--execute-once'],
+               {'PATH':'/usr/bin:/bin','HOME':'/root','LANG':'C','LC_ALL':'C'})
+ '''%(ROOT,pins)
+     entry=stage+'\nPACKET=json.loads('+repr(json.dumps(files,sort_keys=True))+')\nmain(PACKET)\n'

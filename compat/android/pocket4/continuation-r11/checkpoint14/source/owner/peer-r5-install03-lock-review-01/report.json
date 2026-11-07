@@ -1,0 +1,120 @@
+{
+  "actual_install03_qualified": false,
+  "actual_prior_failure_gate_result": true,
+  "actual_prior_failure_read_pins": [
+    {
+      "bytes": 3064,
+      "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/qa-r5-install-state02-failure-read01/coordinator.json",
+      "remote_path": "/home/alex/work/pocket4-owned-bili-qa-r5-install-state-02/result.json",
+      "sha256": "672d1fd70f97587eb0b49d3196ea9fcce90472079ec468b9c8cdfa604e7a6515"
+    },
+    {
+      "bytes": 2151,
+      "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/qa-r5-install-state02-failure-read01/stage.json",
+      "remote_path": "/home/alex/work/pocket4-owned-bili-qa-r5-install-state-02/stage-result.json",
+      "sha256": "f9b6c1698443b49ca1ff2470094c33c8275c7bbb056ecbe1fcc558c997b3e3af"
+    },
+    {
+      "bytes": 1594,
+      "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/qa-r5-install-state02-failure-read01/worker.json",
+      "remote_path": "/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-2b677053c75cb4e91aada7fd108071bf/steps/install-state-r5-02/result.json",
+      "sha256": "f145fc4f93818aaf86b4075835775c971e6276da62b356ea965626717c34fe71"
+    }
+  ],
+  "android_actions": 0,
+  "control_receipt_validation": {
+    "actual_flock_or_clock_seams_in_reviewed_control_source": false,
+    "all_cases_passed": true,
+    "reported_busy_elapsed_seconds": 5.05295906199899,
+    "reported_cases": 6,
+    "reported_returncode": 0,
+    "reviewer_reran_flock_controls": false,
+    "source_pin_matches": true,
+    "stdout_matches_embedded_actual_result": true
+  },
+  "findings": [
+    "No new concrete blocker found in the reviewed narrow delta.",
+    "One O_NOFOLLOW/CLOEXEC open, root-owned regular single-link FD; only flock EAGAIN is waitable, all attempts target this same FD.",
+    "Successful acquisition rechecks both held and named device/inode before returning, then original Main guard precedes Android command admission.",
+    "Deadline rejection closes only this function's own FD and preserves first EAGAIN; an FD-close error is recorded as secondary.",
+    "No deletion/reopen/unlock of another holder, no Android command replay, no old result/claim rewrite. Existing one-install/state path and original cleanup body remain unchanged.",
+    "Three fixed original failed receipts are size/SHA-bound and must prove no action, no unknown outcome, released held binding and equal Main snapshots before a new attempt."
+  ],
+  "full_functions_read": [
+    "prior_no_action_failure",
+    "acquire_action_lock",
+    "error_record",
+    "worker",
+    "read"
+  ],
+  "hepta_calls": 0,
+  "limitations": [
+    "The 5-second value is an admission deadline; the retained real-clock busy control returned after 5.05295906199899 seconds including scheduling/error cleanup. It did not admit after deadline.",
+    "The old EAGAIN source and external lock holder are not uniquely identified by the old receipt.",
+    "This review did not rerun six flock controls, execute install03, inspect private commercial UI or call Hepta.",
+    "No device installation, state, functional flow or whole-App readiness qualification is granted."
+  ],
+  "patch_rebuilt_exact_against_frozen02": true,
+  "prior_gate_execution_scope": "pure pinned JSON validation through original read function, only fixed remote-to-local path mapping; no device calls",
+  "production_delta_full_patch_read": true,
+  "qualified_inputs_ast_unchanged_except_one_prior_gate_call": true,
+  "reviewed_inputs": [
+    {
+      "bytes": 34852,
+      "path": "/workspace/scratch/94990735b266/android-qa-r5-install-state-03/install_state.py",
+      "sha256": "6614f2eb92ffd2a339c733d6fc58262fbb918d3e9c8eb15cfca3fa275b8bd329"
+    },
+    {
+      "bytes": 18938,
+      "path": "/workspace/scratch/94990735b266/android-qa-r5-install-state-03/r5-install02-to03.patch",
+      "sha256": "bb41b4a9d625b8a24129fd3be9cee2180d95187a9df4093580a2d7b4cb68416a"
+    },
+    {
+      "bytes": 10746,
+      "path": "/workspace/scratch/94990735b266/android-qa-r5-install-state-03/controls/action_lock_control.py",
+      "sha256": "0ce9d51c7f909218aa33591d7bbdb651bc5214ceebd1952864cdaeec4bfa54b5"
+    },
+    {
+      "bytes": 3957,
+      "path": "/workspace/scratch/94990735b266/android-qa-r5-install-state-03/controls/run01.json",
+      "sha256": "cde9375210fd6f3b6f36c28977149c07a2be109ea951ccd691c20350da6e930a"
+    },
+    {
+      "bytes": 3405,
+      "path": "/workspace/scratch/94990735b266/android-qa-r5-install-state-03/controls/run01.stdout",
+      "sha256": "042c28e2beab3f25968188379c9366d3cf6d4413112d35e6ec2f0df5ea41873d"
+    },
+    {
+      "bytes": 0,
+      "path": "/workspace/scratch/94990735b266/android-qa-r5-install-state-03/controls/run01.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2239,
+      "path": "/workspace/scratch/94990735b266/android-qa-r5-install-state-03/actual-prior-failure-review.json",
+      "sha256": "149ae1b9b7a2c40fb9600366c18696bd48ff5080ce8e2ed19f852f863ab8f67d"
+    },
+    {
+      "bytes": 1994,
+      "path": "/workspace/scratch/94990735b266/android-qa-r5-install-state-03/SOURCE_PINS.json",
+      "sha256": "7b69a52f2ee8f7471e3ad36a5f75a83be6093bfdf0e21b951b3bb36f3a2de811"
+    },
+    {
+      "bytes": 804,
+      "path": "/workspace/scratch/94990735b266/android-qa-r5-install-state-03/session_binding.py",
+      "sha256": "8f2dc867adf356ac65e64fde100e85f47003d369983c31deca768a618c37edfd"
+    },
+    {
+      "bytes": 15601,
+      "path": "/workspace/scratch/94990735b266/android-qa-r5-install-state-03/r4/bound_android_transport.py",
+      "sha256": "7edecc741b8a61bea30d885ab9107666aab9407d6a6928bf799bd8efd4b4a23b"
+    }
+  ],
+  "reviewer": "local_pocket4_inventory",
+  "schema": 1,
+  "scope": "independent narrow review of install02-to03 original action-lock admission and exact prior no-action failure chain",
+  "source_blocker_found": false,
+  "unchanged_existing_function_or_class_ast_count": 16,
+  "whole_app_production_ready": false,
+  "worker_original_finally_ast_unchanged": true
+}

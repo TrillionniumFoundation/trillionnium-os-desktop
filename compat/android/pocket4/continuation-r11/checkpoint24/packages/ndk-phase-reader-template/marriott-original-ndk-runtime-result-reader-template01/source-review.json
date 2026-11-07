@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_NO_RUNTIME_RESULT_YET",
+  "baseline": {
+    "blob": "c917f412c5adcd179de61007b80f05e65e2aa1e5",
+    "bytes": 12772,
+    "sha256": "50925a295b46558ac88366d69880d7d267fee03dc34f5a6e5a1e043b9383fe1a",
+    "actual_install_reader": "1a1b2f2069e-fc05-8040"
+  },
+  "current_runtime_sources": {
+    "tree": "daaf676d6b2d21c512bdf6972ff300823cb6e0a1",
+    "manifest": {
+      "bytes": 1050,
+      "sha256": "7ea8d117de4a6c4cbeceebc4d5d4cf56fd7f075f3cb068b8f3610be4283df582"
+    }
+  },
+  "unchanged_functions": [
+    "need",
+    "sha",
+    "read_exact_file",
+    "public_error",
+    "member"
+  ],
+  "changed_functions": [
+    "main"
+  ],
+  "changes": [
+    "Replace one fixed install result with one of the two predeclared runtime roots selected only by actual phase authority.",
+    "Require the real phase summary, independent full durable terminal, original actual assigned nonce, exact result bytes and SHA before generating any request.",
+    "Accept terminal succeeded/0 or failed/1 only when summary ok agrees; keep original failure and outcome_unknown fields.",
+    "Read only result.json twice with the original complete-content hash, NOFOLLOW walk, final held/named identity, and FD finalization function.",
+    "Check result source manifest, fixed package, actual installed UID, phase and exact attempt nonce; return untouched result bytes via base64.",
+    "Collection is not a test, cleanup, UID or runtime qualification."
+  ],
+  "original_complete_inverse_verified": true,
+  "original_read_exact_file_byte_identical": true,
+  "inherited_limits": {
+    "result_bytes": 1048576,
+    "stdout_bytes": 2097152,
+    "per_read_seconds": 10,
+    "total_work_seconds": 20,
+    "outer_seconds": 30,
+    "memory_bytes": 134217728,
+    "cpu_percent": 100,
+    "nice": 15
+  },
+  "ownership_boundary": "The original reader pins the exact file body and final held/named file identity. It does not newly claim all shared ancestor names remain unchanged throughout the read.",
+  "runtime_state": {
+    "actual60_not_used_as_future_runtime_result": true,
+    "run_result": null,
+    "retire_result": null,
+    "result_reader_request_generated": false,
+    "Python_executed": false,
+    "Android_or_Main_calls": 0
+  },
+  "allowed_storage": "Unreferenced immutable Git source package only; Root is sole dispatcher.",
+  "no_private_init_or_crash_body_in_scope": true
+}

@@ -1,0 +1,67 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "3eb1fe071a385eeb85d89059f14bf3edd874ceb1",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 1441,
+    "sha256": "bfebabece8d81e70e4b63c723cb5b04ea1133485c4126650ba6d653d8ca82c35",
+    "git_blob_sha1": "8c12c9b0af8b52b3223bcb3c0cb285f0cb9fffff",
+    "retrieval": "shallow roots and complete uncropped descendant trees until canonical dependency cuts",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "exact-request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9b3f3e4687374c14d535bc5f212c3a72d72bdac5",
+      "bytes": 24094
+    },
+    {
+      "path": "historical_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "27b98b43a9b0e961ac9d381bb350f1750b77cc4e"
+    },
+    {
+      "path": "request_amendment",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "07012aa7441b377e9d9390b394928874aed4973a"
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c53e5f024f2077b17ea8b1130db05044a4d67713",
+      "bytes": 2329
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "eb23acfc9df45213bea9c9270979839982419a98"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "historical_actual",
+      "original_tree": "27b98b43a9b0e961ac9d381bb350f1750b77cc4e",
+      "checkpoint": 21,
+      "canonical_package": "amazon_native007_read01-actual"
+    },
+    {
+      "path": "request_amendment",
+      "original_tree": "07012aa7441b377e9d9390b394928874aed4973a",
+      "checkpoint": 21,
+      "canonical_package": "ihg-amazon-no-bytecode-amendment"
+    },
+    {
+      "path": "source",
+      "original_tree": "eb23acfc9df45213bea9c9270979839982419a98",
+      "checkpoint": 21,
+      "canonical_package": "amazon_current_tasks01-source"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

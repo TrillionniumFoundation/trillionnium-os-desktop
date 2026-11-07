@@ -1,0 +1,85 @@
+{
+  "Android_started": false,
+  "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "Main_preserved_through_readback_and_cleanup": true,
+  "candidate_executed": true,
+  "cgroup_exists_after": false,
+  "cleanup_action": "none; completed unit already absent or inactive",
+  "commercial_app_qualification": false,
+  "original_invocation_id": "e095c04108114beb897f56be8eb3c665",
+  "remaining_owned_pids": [],
+  "result_sha256": "b8c9b01588d1c2a13c80ba1afc5765fcf6656147d26e630a7c2cf74f4f482283",
+  "source_directories_retained": true,
+  "state": "CANDIDATE_RECEIPT_REVALIDATED_AND_OWNED_PROCESS_CLEANUP_CONFIRMED",
+  "test_fixture_retained": true,
+  "unit": "p4-signal-host-candidate-9d630262872f.service",
+  "unit_after": {
+    "ActiveState": "inactive",
+    "ControlGroup": "",
+    "Description": "p4-signal-host-candidate-9d630262872f.service",
+    "ExecMainCode": "0",
+    "ExecMainStatus": "0",
+    "InvocationID": "",
+    "LoadState": "not-found",
+    "MainPID": "0",
+    "Result": "success",
+    "SubState": "dead"
+  },
+  "unit_before": {
+    "ActiveState": "inactive",
+    "ControlGroup": "",
+    "Description": "p4-signal-host-candidate-9d630262872f.service",
+    "ExecMainCode": "0",
+    "ExecMainStatus": "0",
+    "InvocationID": "",
+    "LoadState": "not-found",
+    "MainPID": "0",
+    "Result": "success",
+    "SubState": "dead"
+  },
+  "utc": "2026-11-04T16:05:42.599476+00:00",
+  "verified_suite": {
+    "arm": "candidate",
+    "assessment": {
+      "all_expected_registered_executed": true,
+      "completed_count": 3788,
+      "disabled": [
+        "Arm64LiteTranslateRegionDispatchTest.DISABLED_MemsetAarch64_FullBodyFrom0x49cc0_1024ByteZeroFill",
+        "Arm64TierCoverage.DISABLED_RegenerateTable"
+      ],
+      "executed_count": 3791,
+      "failed_cases": [],
+      "registered_count": 3793,
+      "skipped": {
+        "Arm64HeavyOptimizerFrontendTest.FcmpHBailsWithoutF16C": "F16C present; FCMP H lowers in-tier",
+        "Arm64HeavyOptimizerFrontendTest.FmaxvVecHBailsWithoutF16C": "F16C present; FMAXV H lowers in-tier",
+        "Arm64MmapNoreserveTest.UnrealSizedArenaReservesAddressSpaceWithoutCommittingRam": "opt-in policy is disabled"
+      }
+    },
+    "cpu": 6,
+    "engine_sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
+    "main_config": {
+      "framework_guard": {
+        "path": "/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py",
+        "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288"
+      },
+      "main_activation": {
+        "path": "/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json",
+        "sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615"
+      },
+      "main_resource_baseline": {
+        "cpu.max": "200000 100000",
+        "memory.high": "5368709120",
+        "memory.max": "6442450944",
+        "memory.swap.max": "max",
+        "pids.max": "12288"
+      }
+    },
+    "receipt": "/home/alex/work/pocket4-signal-host-candidate-r11-01-9d630262/result.json",
+    "sha256": "b8c9b01588d1c2a13c80ba1afc5765fcf6656147d26e630a7c2cf74f4f482283",
+    "tools": {
+      "/usr/bin/python3": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41",
+      "/usr/bin/systemctl": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082"
+    }
+  }
+}

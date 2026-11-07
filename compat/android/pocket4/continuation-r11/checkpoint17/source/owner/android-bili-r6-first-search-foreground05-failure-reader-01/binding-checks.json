@@ -1,0 +1,74 @@
+{
+  "Bili05_child_hashes_sizes_contents_not_observed_or_guessed": true,
+  "Reader_read_collect_Hepta_or_UI_calls": 0,
+  "cases": [
+    {
+      "case": "prior_actual_parent_shape_rebound_synthetic_not_Bili05_observation",
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "reject_extra_retained_phase",
+      "error": "EXACT_TWO_RETAINED_WORKER_PINS_REQUIRED",
+      "passed": true
+    },
+    {
+      "case": "reject_child_path_escape",
+      "error": "EXACT_PARENT_BOUND_PATH_BOUNDED_BYTES_AND_SHA_REQUIRED:navigation.json",
+      "passed": true
+    },
+    {
+      "case": "reject_boolean_size",
+      "error": "EXACT_PARENT_BOUND_PATH_BOUNDED_BYTES_AND_SHA_REQUIRED:navigation.json",
+      "passed": true
+    },
+    {
+      "case": "reject_oversized_child",
+      "error": "EXACT_PARENT_BOUND_PATH_BOUNDED_BYTES_AND_SHA_REQUIRED:navigation.json",
+      "passed": true
+    },
+    {
+      "case": "reject_launch_over_original_small_cap",
+      "error": "EXACT_PARENT_BOUND_PATH_BOUNDED_BYTES_AND_SHA_REQUIRED:launch.json",
+      "passed": true
+    },
+    {
+      "case": "reject_invalid_child_sha",
+      "error": "EXACT_PARENT_BOUND_PATH_BOUNDED_BYTES_AND_SHA_REQUIRED:navigation.json",
+      "passed": true
+    },
+    {
+      "case": "reject_duplicate_launch_mismatch",
+      "error": "DUPLICATE_PARENT_LAUNCH_PIN_DIFFERS",
+      "passed": true
+    },
+    {
+      "case": "reject_optional_duplicate_navigation_mismatch",
+      "error": "DUPLICATE_PARENT_NAVIGATION_PIN_DIFFERS",
+      "passed": true
+    },
+    {
+      "case": "reject_missing_cleanup_pin",
+      "error": "EXACT_PARENT_BOUND_PATH_BOUNDED_BYTES_AND_SHA_REQUIRED:cleanup.json",
+      "passed": true
+    },
+    {
+      "case": "reject_changed_stage_parent_pin",
+      "error": "ACTUAL_PARENT_COORDINATOR_CHAIN",
+      "passed": true
+    },
+    {
+      "case": "reject_changed_Main_chain",
+      "error": "ACTUAL_PARENT_MAIN_CHAIN",
+      "passed": true
+    },
+    {
+      "case": "reject_raw_UI_export",
+      "error": "RAW_UI_FIELD_FORBIDDEN_IN_SUMMARY_EXPORT",
+      "passed": true
+    }
+  ],
+  "fixture": "prior actual Bili04 parents with explicit synthetic literal rebindings only",
+  "passed": 13,
+  "schema": 1
+}

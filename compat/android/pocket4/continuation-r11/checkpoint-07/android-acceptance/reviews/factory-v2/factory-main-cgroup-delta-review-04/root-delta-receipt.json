@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "scope": "source correction to admit Main init at the fixed service root or its descendant; not runtime qualification",
+  "preimage_sha256": "badfc916b151999ff074847057f3a0e06421636c2d759ce10c3d8576e0203358",
+  "updated_sha256": "fb354f07b94d57eca9006c713a0ba0156e548d0f05284ebeaa2579e8b4ab862c",
+  "actual_evidence_sha256": "2e8f289fd98b4b5d4087b6fb62e43b4bc0633a2d84fb541d996e076fbc08ff9c",
+  "actual_evidence_pointer": "main_after/framework_binding/processes/init/cgroup",
+  "observed_init_cgroup": [
+    "0::/system.slice/droidloomd.service"
+  ],
+  "resources_always_read_from_fixed_service_root": true,
+  "Main_actions": 0,
+  "runtime_executed": false,
+  "patch": "--- a/controller-preimage-02.py\n+++ b/controller.py\n@@ -738,7 +738,9 @@\n         snapshot = guard.capture_android(MAIN_INIT)\n         must(snapshot['sha256'] == MAIN_EPOCH, 'Main epoch differs from frozen binding')\n         main_root, own_root = MAIN_CGROUP, cgroup_path(os.getpid())\n-        must(str(cgroup_path(MAIN_INIT)).startswith(str(main_root) + '/'), 'Main init is outside fixed service cgroup')\n+        init_cgroup = cgroup_path(MAIN_INIT)\n+        must(init_cgroup == main_root or main_root in init_cgroup.parents,\n+             'Main init is outside fixed service cgroup hierarchy')\n         guard_main(guard, snapshot, activation)\n         must(main_root != own_root and not str(own_root).startswith(str(main_root) + '/'), 'fixture shares Main cgroup')\n         own_before, main_before = cgroup_read(own_root), cgroup_read(main_root)\n"
+}

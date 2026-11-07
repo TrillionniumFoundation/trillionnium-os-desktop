@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "scope": "Independent readonly full staging-entry and exact build02/artifact/result-mode delta review; not a full controller re-review or actual namespace run",
+  "reviewed_manifest": {
+    "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-runtime02-freeze-01/SOURCE_PINS.json",
+    "bytes": 738,
+    "sha256": "d252732705c3be940a1bb40083c68784c07cc394590cd1840f96903946f47b9f"
+  },
+  "reviewed_payloads": [
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-runtime02-freeze-01/controller.py",
+      "bytes": 43521,
+      "sha256": "a039681fd250270c631309d2ff42320a9953234ada530b734de42afde93202f1"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-runtime02-freeze-01/exact-process-start-request.json",
+      "bytes": 45967,
+      "sha256": "0283c900588bb7b9e030735d48804ca9b11db24aef4959b66b106ed5dbf10219"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-runtime02-freeze-01/pins-and-result-mode.patch",
+      "bytes": 1404,
+      "sha256": "2086c0bc447476e8b0460e65348bac0a78fb8b60c74743e6a32cb214616fa071"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-runtime02-freeze-01/scope.json",
+      "bytes": 941,
+      "sha256": "400b3b52844c190b374bf242309528b761238d2dae2ea813b30585273ceff5f2"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-runtime02-freeze-01/stage_runtime.py",
+      "bytes": 1052,
+      "sha256": "4824e8e3bfbd5155bc219aabf58fb2c478d9ab692cc1a12d7c88e46763680177"
+    }
+  ],
+  "all_five_payload_pins_match": true,
+  "request_stdin_exact_controller": true,
+  "request_c_argument_exact_stage_source": true,
+  "stage_bytes": 1052,
+  "full_stage_source_read": true,
+  "compile_only_passed": true,
+  "preimage": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/factory-main-cgroup-delta-review-04/controller-reviewed-fb354f07.py",
+    "bytes": 43492,
+    "sha256": "fb354f07b94d57eca9006c713a0ba0156e548d0f05284ebeaa2579e8b4ab862c"
+  },
+  "delta_only_assignments": [
+    "BUILD",
+    "BUILD_SHA",
+    "AUDIT_SHA",
+    "ELFS"
+  ],
+  "delta_only_behavior": "Newly created result descriptor fchmod(0444) after flushing, before close; owning directory remains private until original retirement/final publication path.",
+  "all_other_AST_identical": true,
+  "findings": [],
+  "checks": [
+    "Full stage verifies exact command arguments and full controller hash before any fresh source directory/file creation, uses create-only no-follow/CLOEXEC file creation under a new root-owned 0700 directory, checks stored bytes and executes the already verified in-memory source.",
+    "The fixed request contains only the expected owned runtime root/source, one CPU, 512 MiB, nice10 and180-second tool timeout. No alternate command or automatic retry is introduced.",
+    "make_elfs still reads exact pinned build/audit records, requires successful unchanged-source build and clean worker closure, verifies each artifact content hash/size/ELF magic against the fixed constants and build record, then seals a root-owned private memfd.",
+    "save is called only for runtime-result.json, created with O_EXCL/O_NOFOLLOW relative to the held new output directory. Mode update targets that already owned descriptor, not an unrelated path.",
+    "Output is the own synthetic factory/client protocol and captured owned-child stdout/stderr plus Main framework/cgroup identity metadata. No commercial App journal/log/tombstone collector was added; complete activation body is not stored."
+  ],
+  "new_concrete_blocker_found": false,
+  "actual_build02_receipt_body_independently_reread": false,
+  "actual_build02_pins_authority": "Parent supplied exact actual-build02 pins; this review verified the full source/request use of them, and runtime retains strict byte comparison. No additional remote read was performed.",
+  "Hepta_calls": 0,
+  "controller_or_stage_executed": false,
+  "other_tests_repeated": false,
+  "Main_UI_Android_actions": 0,
+  "production_ready": false
+}

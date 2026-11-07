@@ -1,0 +1,290 @@
+--- a/art/libnativebridge/Android.bp
++++ b/art/libnativebridge/Android.bp
+@@ -50,7 +50,7 @@
+     ],
+ 
+     host_supported: true,
+-    srcs: ["native_bridge.cc"],
++    srcs: ["native_bridge.cc", "droidloom_generation.cc"],
+     header_libs: [
+         "libbase_headers",
+     ],
+--- a/art/libnativebridge/droidloom_generation.cc
++++ b/art/libnativebridge/droidloom_generation.cc
+@@ -0,0 +1,76 @@
++// SPDX-License-Identifier: Apache-2.0
++#include "droidloom_generation.h"
++#include "nativebridge/droidloom_generation_protocol.h"
++#include <dlfcn.h>
++#include <errno.h>
++#include <sys/syscall.h>
++#include <unistd.h>
++namespace android::droidloom_generation {
++namespace {
++using namespace droidloom::native_generation;
++Entry entry=nullptr;
++int process=0,last_error=0;
++int CurrentProcess() {return static_cast<int>(syscall(SYS_getpid));}
++bool Invoke(Operation operation,bool allow_private_child) {
++  if(entry==nullptr){last_error=EPROTONOSUPPORT;return false;}
++  const int current=CurrentProcess();
++  const uint32_t flags=allow_private_child && current!=process?static_cast<uint32_t>(kPrivateForkChild):0u;
++  const Request request=MakeRequest(operation,flags,current,process);
++  const int result=entry(&request);
++  last_error=result<0?-result:(result==0?0:EPROTO);
++  return result==0;
++}
++}
++bool Prepare(void* handle) {
++#if DROIDLOOM_NATIVE_GENERATION_RUNTIME
++  if(handle==nullptr || entry!=nullptr){last_error=EPROTO;return false;}
++  entry=reinterpret_cast<Entry>(dlsym(handle,kEngineSymbol));
++  if(entry==nullptr){last_error=EPROTONOSUPPORT;return false;}
++  const int current=CurrentProcess();
++  const Request request=MakeRequest(kPrepareMemory,0,current,0);
++  const int result=entry(&request);
++  last_error=result<0?-result:(result==0?0:EPROTO);
++  if(result!=0){entry=nullptr;return false;}
++  process=current;return true;
++#else
++  (void)handle;(void)&Invoke;return true;
++#endif
++}
++bool BeforeFork() {
++#if DROIDLOOM_NATIVE_GENERATION_RUNTIME
++  return Invoke(kBeforeZygoteFork,false);
++#else
++  return true;
++#endif
++}
++bool AfterSpecialize() {
++#if DROIDLOOM_NATIVE_GENERATION_RUNTIME
++  if(!Invoke(kAfterSpecialize,true))return false;
++  process=CurrentProcess();return true;
++#else
++  return true;
++#endif
++}
++bool BeforeUnload() {
++#if DROIDLOOM_NATIVE_GENERATION_RUNTIME
++  if(!Invoke(kBeforeUnload,true))return false;
++  entry=nullptr;process=0;return true;
++#else
++  return true;
++#endif
++}
++bool RequireReady() {
++#if DROIDLOOM_NATIVE_GENERATION_RUNTIME
++  return Invoke(kCheckReady,false);
++#else
++  return true;
++#endif
++}
++int LastError() {return last_error;}
++}
++extern "C" __attribute__((visibility("default"),used,retain)) const char DroidloomArtGenerationMarker[]=
++#if DROIDLOOM_NATIVE_GENERATION_RUNTIME
++  "DROIDLOOM_NATIVE_GENERATION=1;ROLE=ART_BRIDGE;ABI=1;PROTOCOL=DLOOMGE1-PROCMET1;";
++#else
++  "DROIDLOOM_NATIVE_GENERATION=0;ROLE=ART_BRIDGE;ABI=1;PROTOCOL=DLOOMGE1-PROCMET1;";
++#endif
+--- a/art/libnativebridge/droidloom_generation.h
++++ b/art/libnativebridge/droidloom_generation.h
+@@ -0,0 +1,15 @@
++// SPDX-License-Identifier: Apache-2.0
++#ifndef DROIDLOOM_ART_NATIVE_GENERATION_H_
++#define DROIDLOOM_ART_NATIVE_GENERATION_H_
++#ifndef DROIDLOOM_NATIVE_GENERATION_RUNTIME
++#define DROIDLOOM_NATIVE_GENERATION_RUNTIME 0
++#endif
++namespace android::droidloom_generation {
++bool Prepare(void* engine_handle);
++bool BeforeFork();
++bool AfterSpecialize();
++bool BeforeUnload();
++bool RequireReady();
++int LastError();
++}
++#endif
+--- a/art/libnativebridge/include/nativebridge/droidloom_generation_protocol.h
++++ b/art/libnativebridge/include/nativebridge/droidloom_generation_protocol.h
+@@ -0,0 +1,26 @@
++// SPDX-License-Identifier: Apache-2.0
++#ifndef DROIDLOOM_NATIVE_GENERATION_PROTOCOL_V1_H_
++#define DROIDLOOM_NATIVE_GENERATION_PROTOCOL_V1_H_
++#include <stdint.h>
++// Private platform/engine protocol. Does not extend NativeBridgeCallbacks.
++namespace droidloom::native_generation {
++inline constexpr uint32_t kVersion=1;
++inline constexpr uint64_t kProtocol0=UINT64_C(0x444c4f4f4d474531);
++inline constexpr uint64_t kProtocol1=UINT64_C(0x50524f434d455431);
++inline constexpr char kEngineSymbol[]="DroidloomBerberisGenerationV1";
++enum Operation : uint32_t {
++  kPrepareMemory=1, kBeforeZygoteFork=2, kAfterSpecialize=3, kBeforeUnload=4, kCheckReady=5
++};
++enum Flag : uint32_t {kPrivateForkChild=1, kChildZygote=2};
++struct Request {
++  uint32_t version, size, operation, flags;
++  int32_t caller_tgid, previous_tgid;
++  uint64_t protocol0, protocol1;
++};
++static_assert(sizeof(Request)==40);
++using Entry=int(*)(const Request*);
++inline Request MakeRequest(Operation operation,uint32_t flags,int32_t caller,int32_t previous) {
++  return {kVersion,sizeof(Request),operation,flags,caller,previous,kProtocol0,kProtocol1};
++}
++}
++#endif
+--- a/art/libnativebridge/include/nativebridge/native_bridge.h
++++ b/art/libnativebridge/include/nativebridge/native_bridge.h
+@@ -64,6 +64,10 @@
+ // close emulated file descriptors, after doPreload() in app-zygote.
+ void PreZygoteForkNativeBridge();
+ 
++// Droidloom private, explicitly paired ART/bridge/engine lifecycle V1.
++// Called after SpecializeCommon, including already-initialized app-zygote children.
++__attribute__((visibility("default"))) bool DroidloomNativeBridgePostSpecializeV1();
++
+ // Initialize the native bridge, if any. Should be called by Runtime::DidForkFromZygote. The JNIEnv*
+ // will be used to modify the app environment for the bridge.
+ bool InitializeNativeBridge(JNIEnv* env, const char* instruction_set);
+--- a/art/libnativebridge/libnativebridge.map.txt
++++ b/art/libnativebridge/libnativebridge.map.txt
+@@ -18,6 +18,7 @@
+ # libnativebridge symbols through dlopen/dlsym and hence bypasses the stub.
+ LIBNATIVEBRIDGE_1 {
+   global:
++    DroidloomNativeBridgePostSpecializeV1; # apex
+     NativeBridgeGetError; # apex
+     NativeBridgeInitialized; # apex
+     NativeBridgeGetTrampoline; # apex
+--- a/art/libnativebridge/native_bridge.cc
++++ b/art/libnativebridge/native_bridge.cc
+@@ -17,6 +17,7 @@
+ #define LOG_TAG "nativebridge"
+ 
+ #include "nativebridge/native_bridge.h"
++#include "droidloom_generation.h"
+ 
+ #include <dlfcn.h>
+ #include <errno.h>
+@@ -260,6 +261,13 @@
+           if (isCompatibleWith(NAMESPACE_VERSION)) {
+             // Store the handle for later.
+             g_native_bridge_handle = handle;
++            if (!droidloom_generation::Prepare(handle)) {
++              ALOGE("Droidloom generation protocol preparation failed: %d",
++                    droidloom_generation::LastError());
++              g_native_bridge_handle = nullptr;
++              g_callbacks = nullptr;
++              dlclose(handle);
++            }
+           } else {
+             ALOGW("Unsupported native bridge API in %s (is version %d not compatible with %d)",
+                   nb_library_filename,
+@@ -324,12 +332,31 @@
+ void PreZygoteForkNativeBridge() {
+   if (NativeBridgeInitialized()) {
+     if (isCompatibleWith(PRE_ZYGOTE_FORK_VERSION)) {
+-      return g_callbacks->preZygoteFork();
++      g_callbacks->preZygoteFork();
+     } else {
+       ALOGE("not compatible with version %d, preZygoteFork() isn't invoked",
+             PRE_ZYGOTE_FORK_VERSION);
+     }
+   }
++  // Run after the legacy callback's guest __android_log_close, and before
++  // ART waits for all non-zygote threads. No metadata query may reopen it.
++  if (g_native_bridge_handle != nullptr && g_state != NativeBridgeState::kClosed) {
++    LOG_ALWAYS_FATAL_IF(!droidloom_generation::BeforeFork(),
++                        "Droidloom owner did not quiesce before zygote fork: %d",
++                        droidloom_generation::LastError());
++  }
++}
++
++bool DroidloomNativeBridgePostSpecializeV1() {
++#if DROIDLOOM_NATIVE_GENERATION_RUNTIME
++  if (g_state != NativeBridgeState::kPreInitialized &&
++      g_state != NativeBridgeState::kInitialized) return false;
++  return droidloom_generation::AfterSpecialize();
++#else
++  // A newer ART cannot authorize a raw engine through an older/disabled
++  // bridge component. Default non-participating ART does not call this.
++  return false;
++#endif
+ }
+ 
+ // Set up the environment for the bridged app.
+@@ -407,6 +434,13 @@
+     }
+   }
+ 
++  if (!droidloom_generation::RequireReady()) {
++    ALOGE("Droidloom engine lacks a post-specialize generation grant: %d",
++          droidloom_generation::LastError());
++    UnloadNativeBridge();
++    g_had_error = true;
++    return false;
++  }
+   if (g_callbacks->initialize(g_runtime_callbacks, g_app_code_cache_dir, instruction_set)) {
+     // TODO(b/419835068): SetupEnvironment is likely not needed anymore and can be removed.
+     SetupEnvironment(g_callbacks, env, instruction_set);
+@@ -414,7 +448,11 @@
+     // We no longer need the code cache path, release the memory.
+     ReleaseAppCodeCacheDir();
+   } else {
+-    // Unload the library.
++    // An engine that started during the explicit grant must retire before
++    // its code is unmapped, including failed normal initialization.
++    LOG_ALWAYS_FATAL_IF(!droidloom_generation::BeforeUnload(),
++                        "Droidloom owner did not retire after initialize failure: %d",
++                        droidloom_generation::LastError());
+     dlclose(g_native_bridge_handle);
+     CloseNativeBridge(true);
+   }
+@@ -423,6 +461,15 @@
+ }
+ 
+ void UnloadNativeBridge() {
++  if (g_state == NativeBridgeState::kOpened ||
++      g_state == NativeBridgeState::kPreInitialized ||
++      g_state == NativeBridgeState::kInitialized) {
++    // Runtime::~Runtime reaches this before the ART teardown. A private
++    // child which will not use translation drops its copied owner state.
++    LOG_ALWAYS_FATAL_IF(!droidloom_generation::BeforeUnload(),
++                        "Droidloom owner did not retire before engine unload: %d",
++                        droidloom_generation::LastError());
++  }
+   // We expect only one place that calls UnloadNativeBridge: Runtime::DidForkFromZygote. At that
+   // point we are not multi-threaded, so we do not need locking here.
+ 
+--- a/art/runtime/native_bridge_art_interface.cc
++++ b/art/runtime/native_bridge_art_interface.cc
+@@ -115,6 +115,15 @@
+ }
+ 
+ void InitializeNativeBridge(JNIEnv* env, const char* instruction_set) {
++#if defined(DROIDLOOM_NATIVE_GENERATION_RUNTIME) && DROIDLOOM_NATIVE_GENERATION_RUNTIME
++  // InitNonZygoteOrPostFork reaches this after SpecializeCommon. This must
++  // precede the app-zygote early return below.
++  if (!android::DroidloomNativeBridgePostSpecializeV1()) {
++    LOG(ERROR) << "Droidloom NativeBridge generation V1 is unavailable or rejected";
++    android::UnloadNativeBridge();
++    return;
++  }
++#endif
+   if (android::NativeBridgeInitialized()) {
+     // This happens in apps forked from app-zygote, since native bridge
+     // is initialized in the zygote.
+@@ -148,3 +157,11 @@
+ }
+ 
+ }  // namespace art
++
++extern "C" __attribute__((visibility("default"),used,retain))
++const char DroidloomArtRuntimeGenerationMarker[] =
++#if defined(DROIDLOOM_NATIVE_GENERATION_RUNTIME) && DROIDLOOM_NATIVE_GENERATION_RUNTIME
++    "DROIDLOOM_NATIVE_GENERATION=1;ROLE=ART_RUNTIME;ABI=1;PROTOCOL=DLOOMGE1-PROCMET1;";
++#else
++    "DROIDLOOM_NATIVE_GENERATION=0;ROLE=ART_RUNTIME;ABI=1;PROTOCOL=DLOOMGE1-PROCMET1;";
++#endif

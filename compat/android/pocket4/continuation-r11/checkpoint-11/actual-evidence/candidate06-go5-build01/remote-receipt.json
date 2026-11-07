@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "job": "1a1a9c5961e-fc05-3787",
+  "status": {
+    "at_unix_ms": 1793849662688,
+    "audit_recorded": true,
+    "automatic_retry": false,
+    "cancelled": false,
+    "exit_code": 1,
+    "job_id": "1a1a9c5961e-fc05-3787",
+    "launch_nonce": "cd4dc49fc8d62b8fb49a2eb5f6692cb1",
+    "log_bytes": {
+      "stderr": {
+        "seen": 0,
+        "stored": 0
+      },
+      "stdout": {
+        "seen": 858,
+        "stored": 858
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_synced": {
+      "stderr": true,
+      "stdout": true
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "output_durable": true,
+    "state": "failed",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
+  },
+  "stdout": "{\"state\": \"FAILED\", \"error\": \"RuntimeError('less than 13 GiB MemAvailable for fresh Go5 streaming profile; no automatic retry')\", \"inner_returncode\": null, \"main_fence_assessment\": {\"main_fence_pass\": true, \"identity_or_limit_changes\": [], \"main_memory_event_deltas\": {\"low\": 0, \"high\": 0, \"max\": 0, \"oom\": 0, \"oom_kill\": 0, \"oom_group_kill\": 0, \"sock_throttled\": 0}, \"main_oom_delta_zero\": true, \"main_current_resource_deltas\": {\"memory.current\": 1064960, \"memory.swap.current\": 0, \"pids.current\": 3}, \"pressure_counter_increases_observed\": {}, \"unobserved_transient_effects_excluded\": false, \"causal_attribution_of_counter_changes\": false, \"scope\": \"Only the pinned pre/post invariants and OOM deltas are gated; full interval absence of interference is not claimed.\"}, \"terminal_sha256\": \"8b74d6b0351db5823c4e183c222783b94ada34369f1eede78289ac3b6d20146a\"}\n",
+  "request_sha256": "ffe8292ce1b183ab851dbb220185cc227cae481b15057ace196a8b7ca59068d1",
+  "build_subprocess_started": false,
+  "actual_rejection": "less than 13 GiB MemAvailable",
+  "fresh_numeric_MemAvailable_not_persisted_by_original_controller": true
+}

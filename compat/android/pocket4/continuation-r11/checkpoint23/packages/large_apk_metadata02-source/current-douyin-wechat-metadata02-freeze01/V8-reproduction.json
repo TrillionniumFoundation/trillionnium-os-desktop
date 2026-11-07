@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "ok": true,
+  "validation": "V8_EXACT_DERIVATION_ONLY",
+  "reproduced": [
+    "douyin/read_target.py",
+    "douyin/stage.py",
+    "douyin/stdin.json",
+    "douyin/transport.py",
+    "douyin/exact-request.json",
+    "douyin/binding-proof.json",
+    "douyin/source01-to-bound02.diff",
+    "douyin/stage01-to-bound02.diff",
+    "douyin/transport01-to-bound02.diff",
+    "wechat/read_target.py",
+    "wechat/stage.py",
+    "wechat/stdin.json",
+    "wechat/transport.py",
+    "wechat/exact-request.json",
+    "wechat/binding-proof.json",
+    "wechat/source01-to-bound02.diff",
+    "wechat/stage01-to-bound02.diff",
+    "wechat/transport01-to-bound02.diff"
+  ],
+  "packages": [
+    {
+      "id": "douyin",
+      "package": "com.ss.android.ugc.aweme",
+      "root": "/home/alex/work/pocket4-current-cell02-douyin-metadata-02",
+      "key": "pocket4-current-cell02-douyin-metadata-02-20261106",
+      "source": {
+        "bytes": 30072,
+        "sha256": "8a27a6e4ae24578e2134bb50990ca626253308cf3dcd1ef091b0194b9149b19c"
+      },
+      "request": {
+        "bytes": 46291,
+        "sha256": "c5ac39ff1e7cd18a754697755992c448e669c41b42748867c4b8cec47d339d64"
+      },
+      "source_inverse_exact": true,
+      "stage_inverse_exact": true,
+      "original_transport_reproduced": true
+    },
+    {
+      "id": "wechat",
+      "package": "com.tencent.mm",
+      "root": "/home/alex/work/pocket4-current-cell02-wechat-metadata-02",
+      "key": "pocket4-current-cell02-wechat-metadata-02-20261106",
+      "source": {
+        "bytes": 30060,
+        "sha256": "64e8aa785676e7bba89cef73865d607a2f627c2d748e10ca3c7ae0b753d4f187"
+      },
+      "request": {
+        "bytes": 46269,
+        "sha256": "93a0908ae7f40fa4a9d2c52a12961c566f660b2a0041f28833e4201c99a19524"
+      },
+      "source_inverse_exact": true,
+      "stage_inverse_exact": true,
+      "original_transport_reproduced": true
+    }
+  ],
+  "nonce_source_actual_qualified": true,
+  "all919_exclusions_checked": true,
+  "exact921_union_checked": true,
+  "nonce_producer_job": "1a1b2b9681b-fc05-7f7a",
+  "metadata02_dispatched": false,
+  "Python_compilation": "NOT_PERFORMED",
+  "device_execution": "UNRUN",
+  "whole_app_production_ready": false
+}

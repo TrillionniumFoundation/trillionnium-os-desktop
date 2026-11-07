@@ -1,0 +1,44 @@
+{
+  "actual_owner_lifecycle_qualified": false,
+  "candidate_input_count": 32,
+  "changed_existing_inputs": 9,
+  "compile_request": {
+    "bytes": 498225,
+    "idempotency_key": "p4-producer07-audit01-compile01-3ebfffa7a031e51a",
+    "sha256": "9ad4b2c6096049181a303ac51b15ba3001acab69029a610b2baeab39f28d02b7"
+  },
+  "compile_stdin": {
+    "bytes": 479109,
+    "sha256": "3ebfffa7a031e51a93e11b13a78dab731d4d063a5b4ab2fa3c73f55f6bf2228f"
+  },
+  "device_actions_performed": false,
+  "execution_status": "NOT_SUBMITTED",
+  "expected_library_tests": {
+    "droidloom-pressure-relay": 23,
+    "droidloom-supervisor": 119
+  },
+  "new_input": "runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs",
+  "prior_compile_receipt_sha256": "2eb658308593cf760b7f99bbc9e3d7762295ef18c4628b050221838ffa274d4f",
+  "remote_output": "/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01",
+  "resource_guard_unchanged": true,
+  "revision": "producer07-audit01",
+  "schema": 1,
+  "selected_test_targets": [
+    [
+      "droidloom_pressure_relay",
+      "lib"
+    ],
+    [
+      "droidloom_supervisor",
+      "lib"
+    ]
+  ],
+  "source_manifest_sha256": "c91fcbb5318d01848d00eb533ddef8b4bed4ad53b59c95a54db0e12315bb672d",
+  "source_origin": "/home/alex/work/pocket4-supervisor-lmkd-deadline-r11-build-06-recovery04/candidate",
+  "source_origin_inventory_sha256": "731fcdae3856011a418e244b19b0568160f9316e94b31ba3aa6e75e423cab5eb",
+  "source_tree": "52dd841fcdf47f5053116491bd74da62cd8504cd",
+  "targeted_retirement_expected_passed_filtered": [
+    1,
+    22
+  ]
+}

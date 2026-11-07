@@ -1,0 +1,462 @@
+{
+  "schema": "pocket4-r11-checkpoint22-reviewable",
+  "checkpoint": 22,
+  "cut_utc": "2026-11-06 18:44:23 UTC",
+  "parent_head": "0dfff88e6a4994c5ea0d545f0d5fb67e98a2c713",
+  "publication_state": "IMMUTABLE_CANDIDATE_FOR_CAS_PUBLICATION",
+  "whole_apps_ready": 0,
+  "launcher_apps": 45,
+  "commercial_apps_ready": 0,
+  "all_apps_production_ready": false,
+  "task_complete": false,
+  "Main_deployed": false,
+  "current_gate": "IHG_LAUNCH_UNKNOWN_RECONCILIATION_AND_FRESH_WHOLE_APP_ACCEPTANCE_PENDING",
+  "inherited_ledger": {
+    "manifest": {
+      "bytes": 5499361,
+      "sha256": "3826176d709c63958e496e026bcaaa9f7297ebb9dafb4d378cb7299c7eda7ac2",
+      "git_blob_sha1": "422f97266f4ff4426186bf2af41048d98fe79e4e"
+    },
+    "payload_rows_preserved": 16198,
+    "payload_bytes_preserved": 308818349,
+    "all_prior_FAIL_UNKNOWN_and_per_app_ledgers_retained": true,
+    "old_file_rows_preserved_in_exact_order": true,
+    "historical_raw_root_values_preserved_without_numeric_reserialization": true
+  },
+  "evidence_scope": {
+    "unique_original_archive_roots": 302,
+    "normalized_package_tree": "a1e139aec303ae12adc4a4bce924808e687f003d",
+    "package_files": 2721,
+    "package_bytes": 102778125,
+    "unique_leaf_blob_objects": 2169,
+    "canonical_prior_checkpoint_roots": 393,
+    "total_canonical_roots": 695,
+    "dependency_cuts": 223,
+    "original_leaf_bodies_byte_identical": true,
+    "derived_metadata_not_original_API_response_bytes": true,
+    "all_package_directory_Merkle_hashes_recomputed": true,
+    "all_unique_blob_bytes_size_SHA256_GitSHA1_verified": true,
+    "after_cut_results_included": false,
+    "private_baseline_and_raw_Owner_runtime_excluded": true,
+    "host_tests_not_Android_runtime_or_whole_app_acceptance": true
+  },
+  "Main": {
+    "current_baseline_qualified": true,
+    "baseline": {
+      "original_tree": "df158984ab6f8565c64db454acc7b9872f56a8a2",
+      "checkpoint": 22,
+      "canonical_package": "main_baseline02-actual"
+    },
+    "epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "current_framework_runtime_production_qualified": false,
+    "current_host_r6": {
+      "original_tree": "fef592dc0e96f99fb483b77233e8f95788e7a926",
+      "checkpoint": 22,
+      "canonical_package": "current_host_r6-actual"
+    },
+    "original_runtime_sources_and_guards_unchanged": true,
+    "qualified_identity_role_count": 8,
+    "original_unique_direct_child_guard_retained": true,
+    "Main_deployment_or_restart_performed": false,
+    "UI_acceptance_held": true,
+    "hold_reason": "Original IHG native launch completed with returncode1 and unknown outcome; original final Main guard failed. Later diagnostics cannot repair that historical window.",
+    "current_parent_diagnostic": {
+      "original_tree": "85c46d445798136265ad7b80921177a71b2e0f2e",
+      "checkpoint": 22,
+      "canonical_package": "main_parent_diagnostic01-actual",
+      "controls": 10,
+      "two_complete_TID_tables_equal": true,
+      "tracked_FDs_closed": 75,
+      "diagnostic_does_not_prove_historical_failure_cause": true
+    }
+  },
+  "helper_installs": {
+    "IHG": {
+      "original_tree": "89dca18ded58c4e090ae93a0c2bc5c1c7a666fb1",
+      "checkpoint": 22,
+      "canonical_package": "ihg_r4_install02-actual_raw",
+      "uid": 10158,
+      "controls": 69,
+      "commands": 13
+    },
+    "Amazon": {
+      "original_tree": "71946912bf3163b8eb4640aa161b940861df4cff",
+      "checkpoint": 22,
+      "canonical_package": "amazon_r4_install02-actual_raw",
+      "uid": 10159,
+      "controls": 68,
+      "commands": 13
+    },
+    "BestBuy": {
+      "original_tree": "6bd8858925aceeb89392f404a4d62b95fc68741b",
+      "checkpoint": 22,
+      "canonical_package": "bestbuy_r4_install02-actual_raw",
+      "uid": 10160,
+      "controls": 68,
+      "commands": 13
+    },
+    "Bilibili": {
+      "original_tree": "897fa68fea1d4162087bc9666d0de52a0c538a51",
+      "checkpoint": 22,
+      "canonical_package": "bili_r10_install02-actual_raw",
+      "uid": 10161,
+      "controls": 37,
+      "commands": 9
+    },
+    "helper_installation_is_not_whole_app_acceptance": true
+  },
+  "IHG": {
+    "whole_app_production_ready": false,
+    "current_helper_uid": 10158,
+    "target_uid": 10137,
+    "London170": {
+      "original_tree": "ddb93ccc68ee15ffa60f9235b2f8d85ba0fee2a6",
+      "checkpoint": 22,
+      "canonical_package": "ihg_london170_controls02-actual",
+      "controls_pass": 170,
+      "pure_host_only": true
+    },
+    "London_launch01": {
+      "original_tree": "6ca5b3c4b26fdb9f1738b3a908fd20b57919721a",
+      "checkpoint": 22,
+      "canonical_package": "ihg_r4_london_ui01-actual",
+      "job_id": "1a1b1f2759d-fc05-7ba5",
+      "outcome": "UNKNOWN_RETAINED",
+      "native_returncode": 1,
+      "native_timed_out": false,
+      "owned_native_child_joined": true,
+      "original_final_Main_guard_error": "OWNER_SINGLE_DIRECT_CHILD_REQUIRED",
+      "durable_commands": 7,
+      "click_actions": 0,
+      "text_actions": 0,
+      "all_40_nonces_retired": true,
+      "automatic_replay": false,
+      "cleanup_authority": false
+    },
+    "native007": {
+      "original_tree": "f263f4246200cb8d3f528050b29de7ca3bf8929f",
+      "checkpoint": 22,
+      "canonical_package": "ihg_r4_london_ui01_native007_read01-actual",
+      "controls_pass": 19,
+      "tracked_FDs_closed": 114,
+      "closed_error_child_matches": [],
+      "whole_error_attribution_proved": false,
+      "historical_prelaunch_tasks": [
+        875,
+        876
+      ],
+      "historical_scope_file_absent": true,
+      "live_Android_commands": 0,
+      "cleanup_authority": false
+    },
+    "current_two_stack_read01": {
+      "original_tree": "2e8757521fdb6a6a95d634737b3a0b46def0ea86",
+      "checkpoint": 22,
+      "canonical_package": "ihg-current-two-stack-read01-actual",
+      "state": "FAIL_BEFORE_ANDROID_COMMANDS",
+      "actual_Android_commands": 0,
+      "error": "EXPLICIT_SEARCH_DESTINATION_LONDON_POST_AND_EIGHT_NO_ACTION_READINESS_PLANS",
+      "equal_current_before_after_Main_observed": true,
+      "secondary_error": "MAIN_READ_WINDOW_CHANGED",
+      "secondary_error_cause": "Reader compared unavailable Main_after_locks with observed current maps; this does not establish actual Main drift.",
+      "fresh_tables_observed": 0
+    },
+    "next_gate": "Repair owned reader plan construction, required install_source_manifest argument and incomplete-window reporting; obtain fresh complete task observations without replay or cleanup."
+  },
+  "Bilibili": {
+    "whole_app_production_ready": false,
+    "current_helper_uid": 10161,
+    "player_controls": {
+      "original_tree": "0b5f14856a4cd3cc03ddc662872e41d97b6d9d6e",
+      "checkpoint": 22,
+      "canonical_package": "bili_r10_player30_controls02-actual",
+      "controls_pass": 30,
+      "actual_receipt_controls": 3,
+      "factory_cleanup_controls": 6,
+      "earlier_failed30_preserved": true
+    },
+    "fresh_UI": {
+      "original_tree": "6ae492c91706056c3b939dd30b4973503ece84d4",
+      "checkpoint": 22,
+      "canonical_package": "bili-current-player-ui-source",
+      "state": "SOURCE_READY_UNRUN_UI_HOLD",
+      "fresh_non_consumed_nonces": 146
+    },
+    "historical_player02_unknown_retained": true,
+    "historical_task873_retirement_does_not_qualify_new_epoch": true
+  },
+  "Amazon": {
+    "whole_app_production_ready": false,
+    "current_helper_uid": 10159,
+    "business_controls": {
+      "original_tree": "e24e05e58b037c874e226d97aad3ad5036cf677b",
+      "checkpoint": 22,
+      "canonical_package": "amazon_r4_business42_controls01-actual",
+      "controls_pass": 42
+    },
+    "fresh_UI": {
+      "original_tree": "e72d0a479accb539087513b6943ecf7e4ac201a8",
+      "checkpoint": 22,
+      "canonical_package": "amazon_r4_search_ui01-source",
+      "state": "SOURCE_READY_UNRUN_UI_HOLD",
+      "maximum_Search_clicks": 1,
+      "query_inputs": 0,
+      "fresh_non_consumed_nonces": 32
+    },
+    "historical_task874_unknown_retained": true,
+    "historical_32_nonces_retired": true
+  },
+  "BestBuy": {
+    "whole_app_production_ready": false,
+    "current_helper_uid": 10160,
+    "business_controls": {
+      "original_tree": "bca981de4deb2bef303f85c856bdf049534e0445",
+      "checkpoint": 22,
+      "canonical_package": "bestbuy_r4_business71_controls01-actual",
+      "controls_pass": 71
+    },
+    "fresh_UI": {
+      "original_tree": "6126e98f401a1cc6d98cd7838cbe4c05854fa30d",
+      "checkpoint": 22,
+      "canonical_package": "bestbuy_r4_readiness_ui01-source",
+      "state": "SOURCE_READY_UNRUN_UI_HOLD",
+      "readiness_rounds": 3,
+      "round_offsets_seconds": [
+        0,
+        10,
+        20
+      ],
+      "fresh_non_consumed_nonces": 10,
+      "input_actions": 0
+    }
+  },
+  "Marriott": {
+    "whole_app_production_ready": false,
+    "real_ARM64_APK03": {
+      "original_tree": "999febd5c46bfa058e7a1ecd47cc5c76cdd2df9a",
+      "checkpoint": 22,
+      "canonical_package": "marriott_real_apk_bound03-actual",
+      "job_id": "1a1b209747e-fc05-7c26",
+      "state": "REAL_COMPILE_LINK_PACKAGE_PASS",
+      "commands_joined_exit0": 50,
+      "ARM64_relocatable_objects": 16,
+      "links": 7,
+      "SDK_link_only_DSOs_not_packaged": 5,
+      "real_packaged_native_DSOs": 2,
+      "nonzero_registered_TestBody_symbols": 23,
+      "proc_maps_focus_TestBody_symbols": 12,
+      "APK": {
+        "bytes": 1397258,
+        "sha256": "1c43cfe52e31e9bea79279d0a95df18677bfe8f20581bac0f3ff24bf92db123b",
+        "min_sdk": 14,
+        "target_sdk": 23,
+        "signer_sha256": "5c4cd2e9980c58dd8a073705da7ab4134e71aeaa067ab1d04b7a43d6735fd8e3"
+      },
+      "full_report": {
+        "bytes": 9811525,
+        "sha256": "02b979004666268ae73814c809ffeba54de261e4c826a130af267fe717f3f46f",
+        "git_blob_sha1": "5a87771cf68532d1da5bd24f6dfe3a4dad624496"
+      },
+      "watched_paths": 976,
+      "input_FDs_closed": 10902,
+      "observer_FDs_closed": 428,
+      "own_memory_peak_bytes": 484413440,
+      "own_swap_observed_bytes": 0,
+      "whole_invocation_resource_qualified": false,
+      "swap_zero_claimed": false,
+      "original_50_kill_attempted_and_groupkill_flags_retained": true,
+      "installed": false,
+      "ARM64_tests_executed": false,
+      "ART_qualified": false
+    },
+    "exact_build_fix": "The header-free shared_lib.cc translation unit no longer requires a nonexistent __config_site dependency; its real C++ flags and source remain unchanged. Other six C++ translation units retain the exact ARM64 config dependency guard.",
+    "root_review": {
+      "original_tree": "c83e2628882b60698d0e03589fba78f863aef75a",
+      "checkpoint": 22,
+      "canonical_package": "marriott-apk03-root-review"
+    },
+    "independent_review": {
+      "original_tree": "a0836e967b8bd0ddf091813bdf864985c36b3e97",
+      "checkpoint": 22,
+      "canonical_package": "marriott-apk03-independent-review"
+    },
+    "readonly38_candidate": {
+      "original_tree": "2e4d9f6b52de88c929db15414aecbe0669dc504f",
+      "checkpoint": 22,
+      "canonical_package": "marriott-fixture-apk03-readonly-source",
+      "state": "SOURCE_READY_UNRUN_AT_FROZEN_CUT"
+    },
+    "fixture_installation_uid": null,
+    "fixture_installation_nonce": null,
+    "target23_bypass_authorized": false
+  },
+  "Native": {
+    "whole_app_production_ready": false,
+    "builder471": {
+      "original_tree": "d92f2fa7df4073f42300e033718659d471340621",
+      "checkpoint": 22,
+      "canonical_package": "native471_compile01-actual",
+      "state": "HOST_COMPILE_PASS_WITH_PRESSURE_OBSERVATIONS",
+      "commands": 68,
+      "focused_tests": 30,
+      "source_files": 500,
+      "source_projects": 225,
+      "own_memory_peak_bytes": 1073741824,
+      "memory_max_events": 1839,
+      "OOM_events": 0,
+      "swap_observed_bytes": 0,
+      "swap_max": "max",
+      "scope": "Exact SystemUI test-consumer projection with original fixture and journal restoration; providers retained."
+    },
+    "normal08": {
+      "original_tree": "995afe8063b1ec883ed8b3b5cca040e98bfaab65",
+      "checkpoint": 22,
+      "canonical_package": "native_normal08-actual",
+      "state": "REAL_SOONG_FAIL",
+      "job_id": "1a1b21946c4-fc05-7c5a",
+      "strict_targets": [
+        "framework-minus-apex",
+        "libandroid_runtime"
+      ],
+      "ALLOW_MISSING_DEPENDENCIES": false,
+      "elapsed_seconds": 258.772,
+      "failed_stage": "276/276 generating build.ninja",
+      "error": "hardware/interfaces/automotive/audiocontrol/aidl/default/Android.bp:24:1 example depends on undefined powerpolicyclient_defaults",
+      "prior_SystemUI_error_repeated": false,
+      "owned_child_reaped": true,
+      "source_after_qualified": true,
+      "journal_absent": true,
+      "all_capture_and_lifecycle_closed": true,
+      "own_memory_peak_bytes": 3164667904,
+      "own_swap_limit_bytes": 0,
+      "own_swap_current_bytes": 0,
+      "own_swap_peak_bytes": 0,
+      "own_memory_events_all_zero": true,
+      "Main_identity_and_limits_before_after_equal": true,
+      "Main_swap_current_delta_bytes": 122732544,
+      "whole_interval_noninterference_claimed": false,
+      "framework_Java_or_Android_JNI_artifacts_qualified": false
+    },
+    "automotive_consumer": {
+      "original_tree": "f14aa3972a511a8eae09001e092dbb5806af6992",
+      "checkpoint": 22,
+      "canonical_package": "normal08-automotive-consumer-read",
+      "bytes": 1869,
+      "sha256": "9c8a0aecfa46ce0f1874362fa9dfff6a34326f9bf569b6fe7206dd6db1b3c9a6",
+      "only_one_vendor_cc_binary": true,
+      "provider_modules_in_this_leaf": 0,
+      "next_fix": "Exact consumer-only projection with original fixture and journal recovery; retain all other automotive and AIDL providers."
+    },
+    "Wayland03": {
+      "original_tree": "e9998b495182c5358714271e201bc0e9b782f5c3",
+      "checkpoint": 22,
+      "canonical_package": "native_wayland_check03-actual",
+      "state": "WHOLE_BIN_CARGO_CHECK_PASS",
+      "commands": 15,
+      "lifecycle_controls": 3,
+      "vendor_packages": 193,
+      "vendor_files": 8004,
+      "cargo_packages_observed": 150,
+      "own_memory_peak_bytes": 1144393728,
+      "own_swap_observed_bytes": 0,
+      "memory_events_all_zero": true,
+      "swap_max": "max",
+      "linked_executable_qualified": false,
+      "Android_Binder_or_GPU_runtime_qualified": false
+    },
+    "Composer472": {
+      "original_tree": "1b58a7798437f4abe6ba0fe2d111ee94ee8c324e",
+      "checkpoint": 22,
+      "canonical_package": "native-composer-builder472-source",
+      "state": "SOURCE_READY_UNRUN",
+      "candidate_commands": 71,
+      "candidate_focused_tests": 32,
+      "existing_host112_not_repeated": true,
+      "Android_AIDL_and_GPU_runtime_qualified": false
+    },
+    "Main_deployed": false
+  },
+  "current_cell_metadata": [
+    {
+      "package": "com.MobileTicket",
+      "app": "12306",
+      "uid": 10121,
+      "version_code": 275,
+      "APK_count": 1,
+      "component": "com.MobileTicket/.ui.activity.WelcomeGuideActivity",
+      "original_tree": "0e41c4bc51f00ef141261316755f933cfb593f61",
+      "checkpoint": 22,
+      "canonical_package": "cell02_ticket12306_metadata01-actual"
+    },
+    {
+      "package": "com.hilton.android.hhonors",
+      "app": "Hilton",
+      "uid": 10135,
+      "version_code": 1004,
+      "APK_count": 4,
+      "component": "com.hilton.android.hhonors/com.mofo.android.hilton.core.activity.BootActivity",
+      "original_tree": "c6bd83d45273194cfc923bed8d6d39d017dae080",
+      "checkpoint": 22,
+      "canonical_package": "cell02_hilton_metadata01-actual"
+    },
+    {
+      "package": "com.united.mobile.android",
+      "app": "United",
+      "uid": 10133,
+      "version_code": 3617,
+      "APK_count": 4,
+      "component": "com.united.mobile.android/.ui.splash.SplashActivity",
+      "original_tree": "1e57b20f9f7783db37fa12d3edf43876a35e5a1b",
+      "checkpoint": 22,
+      "canonical_package": "cell02_united_metadata01-actual"
+    }
+  ],
+  "metadata_scope": {
+    "each_fixed_sequence": [
+      "LIST",
+      "PATH",
+      "RESOLVE",
+      "PATH",
+      "LIST"
+    ],
+    "total_commands_joined_exit0": 15,
+    "all_Main_windows_equal": true,
+    "target_data_FDs_closed": 6,
+    "launches": 0,
+    "UI_actions": 0,
+    "signer_independently_qualified": false,
+    "shared_whole_process_tree_cleanup_qualified": false,
+    "business_acceptance_authority": false,
+    "original_initial_scope_pending_flag_preserved": true,
+    "original_outputs_reconstructed_without_numeric_or_string_token_changes": true,
+    "original_bytes_and_SHA_equal_producer_direct_file_pins": true,
+    "separate_Root_disk_read_claimed": false
+  },
+  "nonce_ledger": {
+    "global_values": 890,
+    "original": {
+      "bytes": 33823,
+      "sha256": "62066a9a8b68629be8ea7bf0ec74f112ef5d7714d1a19fb61bdc815bddf5fa1e",
+      "git_blob_sha1": "2df00e13580bb0d17124263affd9e43c86ab6c14"
+    },
+    "latest_three_metadata_nonces_consumed": true,
+    "IHG_unknown_launch_pool_40_retired": true,
+    "unknown_admissions_or_launches_never_replayed": true
+  },
+  "pending": [
+    "Reconcile the IHG UNKNOWN launch using fresh guarded read-only state; do not replay original launch or reuse its 40 nonces.",
+    "Complete Marriott owned fixture installation and all 23 real ARM64 tests including 12 proc/maps cases; preserve SDK23 behavior and derive UID only from actual install.",
+    "Repair the exact automotive example consumer and repeat strict normal build only with a newly qualified builder.",
+    "Run frozen Composer472 host candidate, then real Android AIDL/Binder/GPU paths under separately qualified scope.",
+    "Resume fresh Bilibili player, Amazon Search and BestBuy public readiness flows after current-state reconciliation.",
+    "Expand current-cell metadata and business acceptance to remaining installed apps; complete all45 whole-app gates.",
+    "Resolve historical Owner init/producer visibility and crash causes without promoting host seam controls to runtime acceptance."
+  ],
+  "cut_policy": {
+    "fixed_cut_immutable": true,
+    "subsequent_results_require_later_checkpoint": true,
+    "failures_unknowns_and_resource_caveats_retained": true,
+    "original_unknown_actions_not_replayed": true,
+    "old_task_ids_do_not_authorize_current_cleanup": true
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "schema": "pocket4-fixed-three-parent-child-details-review-v1",
+  "state": "SOURCE_ONLY_NOT_EXECUTED",
+  "purpose": "Observe both complete kernel thread/child tables of all three fixed B02 parent edges without sending Status or Readiness and without changing the original uniqueness requirement.",
+  "parents": [
+    {
+      "role": "daemon",
+      "pid": 3588022,
+      "expected_child": 3268774
+    },
+    {
+      "role": "launcher",
+      "pid": 3268774,
+      "expected_child": 3268775
+    },
+    {
+      "role": "intermediary",
+      "pid": 3268775,
+      "expected_child": 3268779
+    }
+  ],
+  "preservation": [
+    "The original current_baseline_guard, baseline_policy, cell_ancestry and framework_epoch sources are pin-loaded unchanged.",
+    "All seven fixed process identities plus the intermediary, roots, namespaces, held/named executable metadata, previous-deployment lineage, engine metadata and cgroup limits keep their original before/after checks.",
+    "Every complete child table is passed to the original validate_child_table. Only its exact OWNER_SINGLE_DIRECT_CHILD_REQUIRED exception is reported as a diagnostic false gate; all shape/union/race errors remain errors.",
+    "The original ten policy controls remain byte-for-byte unchanged; eight new narrow child-projection controls run before actual observation."
+  ],
+  "private_projection": [
+    "No raw private baseline, unknown executable path, cmdline, cgroup text or FD target path is exported.",
+    "executable_sha256 is SHA256 of the executable path string, not executable content.",
+    "Observed child exe is opened O_PATH and only fstat metadata is read; no child executable content is read or hashed.",
+    "FD observations export numeric descriptor sets and closed known target classes; unknown targets export only UTF8 byte count and SHA256. No FD contents are read."
+  ],
+  "limits": {
+    "body_read_seconds": 8,
+    "self_watchdog_seconds": 12,
+    "tool_timeout_seconds": 15,
+    "memory_bytes": 134217728,
+    "cpu_quota_percent": 100,
+    "max_child_details": 64,
+    "max_fd_links": 256,
+    "max_fds_per_child": 128,
+    "child_detail_managed_acquisition_limit": 512,
+    "public_output_bytes": 262144
+  },
+  "result_semantics": {
+    "ok": "The bounded structural diagnostic completed with all retained baseline/source/identity/resource gates and FD retirement successful; this is not runtime admission.",
+    "all_child_details_complete": "Separate actual field; may be false if an observed child exited or a detail could not be completed. No stable identity is fabricated.",
+    "original_unique_requirement_met_both_samples": "Separate actual predicate from unchanged production policy. False remains false even when structural diagnostic ok is true.",
+    "current_Main_runtime_admitted": false,
+    "Main_runtime_requalified": false,
+    "past_failure_parent_attributed": false,
+    "cleanup_authority": false
+  },
+  "no_actions": {
+    "Status_RPC": 0,
+    "Readiness_RPC": 0,
+    "Android_commands": 0,
+    "namespace_entries": 0,
+    "child_processes": 0,
+    "action_lock_operations": 0,
+    "files_written": 0,
+    "external_signals": 0,
+    "install": 0,
+    "launch": 0,
+    "cleanup": 0
+  },
+  "actual_boundary": "No Python controls, live observations, current Main requalification or device action has been executed by this package. Later clean samples cannot identify the parent that failed in the past Ticket/London attempt.",
+  "original_historical_failures_preserved": true,
+  "root_only_dispatch": true
+}

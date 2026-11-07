@@ -1,0 +1,427 @@
+--- a/owned-relay/fixture_init.cpp
++++ b/owned-relay/fixture_init.cpp
+@@ -397,12 +397,56 @@
+         }
+     }
+     const U allocation_finished_ns=now_ns();
++    const U allocator_peak_bytes=allocator.allocated;
+     if(stale) {
+         check(stale_stop_ns!=0,"no acknowledged above-high full-total candidate before bounded ramp ended; trial incomplete");
+-        check(!cached_exit_ns&&pressure_current(events0)>SOFT,"stale control needs a retained above-high allocation");
++        check(!cached_exit_ns&&pressure_current(events0)>SOFT,"stale candidate needs an acknowledged above-high allocation");
++        // An ACK does not promise that kernel memory.high stalls have ended.
++        // Release only this allocator's owned mappings before starting aging;
++        // this qualifies a relieved-domain queue, not the independent effect
++        // of expiry while the accounting gate remains above high.
++        constexpr U relief_reserve=16*MiB;
++        for(const auto& child:children)verify_child(child);
++        verify_child(daemon);
++        check(read_text("/proc/"+std::to_string(daemon.pid)+"/status").find("State:\tT")!=std::string::npos,
++              "exact LMKD remains stopped before owned relief");
++        const U before_release_current=pressure_current(events0);
++        const std::string before_release_psi=counters("/sys/fs/cgroup/memory.pressure");
++        const U release_started_ns=now_ns();
++        check(child_command(allocator,'F')==0&&allocator.allocated==0,"acknowledged release of only owned allocator mappings");
++        const U release_ack_ns=now_ns(),relieved=pressure_current(events0);
++        check(relieved<=SOFT-relief_reserve,"owned pre-aging relief requires unchanged high minus reserve");
++        for(const auto& child:children)verify_child(child);
++        verify_child(daemon);
++        check(read_text("/proc/"+std::to_string(daemon.pid)+"/status").find("State:\tT")!=std::string::npos,
++              "exact LMKD remains stopped after owned relief");
++        const std::string after_release_psi=counters("/sys/fs/cgroup/memory.pressure");
++        const U relief_observed_ns=now_ns();
++        std::ostringstream relief;relief<<"{\"schema\":1,\"source\":\"owned-allocator-unmap-before-stale-aging\""
++            <<",\"allocator_pid\":"<<allocator.pid<<",\"allocator_uid\":"<<allocator.uid<<",\"allocator_start\":"<<allocator.start
++            <<",\"release_started_ns\":"<<release_started_ns<<",\"acknowledged_ns\":"<<release_ack_ns
++            <<",\"observed_ns\":"<<relief_observed_ns<<",\"before_bytes\":"<<allocator_peak_bytes
++            <<",\"after_bytes\":0,\"released_bytes\":"<<allocator_peak_bytes
++            <<",\"current_before\":"<<before_release_current<<",\"current_after\":"<<relieved
++            <<",\"reserve_bytes\":"<<relief_reserve<<",\"pressure_before\":"<<quote(before_release_psi)
++            <<",\"pressure_after\":"<<quote(after_release_psi)
++            <<",\"only_allocator_released\":true,\"all_targets_alive\":true,\"lmkd_stopped_verified\":true,\"budget_changed\":false}";
++        write_file("/evidence/pressure-relief.json",relief.str(),true);
++        const U age_current_before=pressure_current(events0);
++        check(age_current_before<=SOFT-relief_reserve,"pre-aging reserve retained");
+         const std::string before_age=counters("/sys/fs/cgroup/memory.pressure");
+-        pause_ms(2200);pressure_current(events0);
++        const U age_started_ns=now_ns();
++        do {pause_ms(10);} while(now_ns()-age_started_ns<2200000000ULL);
++        const U age_current_after=pressure_current(events0);
+         const std::string after_age=counters("/sys/fs/cgroup/memory.pressure");
++        const U age_completed_ns=now_ns();
++        std::ostringstream aging;aging<<"{\"schema\":1,\"source\":\"strict-quiet-after-owned-relief\""
++            <<",\"started_ns\":"<<age_started_ns<<",\"completed_ns\":"<<age_completed_ns
++            <<",\"required_quiet_ms\":2200,\"current_before\":"<<age_current_before<<",\"current_after\":"<<age_current_after
++            <<",\"pressure_before\":"<<quote(before_age)<<",\"pressure_after\":"<<quote(after_age)<<"}";
++        // Preserve the observed window even when the strict quiet check fails.
++        write_file("/evidence/stale-aging.json",aging.str(),true);
++        check(age_current_after<=SOFT-relief_reserve,"aging reserve retained");
+         check(psi_total(before_age,"some")==psi_total(after_age,"some")&&psi_total(before_age,"full")==psi_total(after_age,"full"),
+               "stale interval has new pressure stalls");
+         resume_ns=now_ns();signal_owned(daemon.pidfd,SIGCONT);
+@@ -465,7 +509,7 @@
+         <<",\"max\":"<<HARD<<",\"high\":"<<SOFT<<",\"first_kill_current_cap\":"<<FIRST_KILL_CAP
+         <<",\"peak_observed_current\":"<<pressure_peak<<",\"final_current\":"<<final_current
+         <<",\"cached_bytes\":"<<cached.allocated<<",\"foreground_bytes\":"<<children[1].allocated
+-        <<",\"allocator_bytes\":"<<allocator.allocated<<",\"pressure_start_ns\":"<<pressure_start_ns
++        <<",\"allocator_bytes\":"<<allocator_peak_bytes<<",\"pressure_start_ns\":"<<pressure_start_ns
+         <<",\"quiet_started_ns\":"<<quiet_started_ns<<",\"quiet_completed_ns\":"<<quiet_completed_ns
+         <<",\"allocation_finished_ns\":"<<allocation_finished_ns<<",\"stopped_ns\":"<<stopped_ns
+         <<",\"resume_ns\":"<<resume_ns<<",\"cached_exit_observed_ns\":"<<cached_exit_ns<<",\"quiet_end_ns\":"<<quiet_end_ns
+@@ -475,25 +519,13 @@
+         <<",\"kill_count\":"<<(stale?0:1)<<",\"protected_targets_alive\":true,\"budget_unchanged\":true";
+     if(stale)receipt<<",\"stale_ramp_stop\":{\"source\":\"owned-allocation-ACK-and-scoped-full-total\",\"candidate_only\":true"
+         <<",\"allocation_acknowledged_ns\":"<<allocation_ack_ns<<",\"observed_ns\":"<<stale_stop_ns
+-        <<",\"current\":"<<stale_stop_current<<",\"allocator_bytes\":"<<allocator.allocated
++        <<",\"current\":"<<stale_stop_current<<",\"allocator_bytes\":"<<allocator_peak_bytes
+         <<",\"full_before\":"<<full_before_pressure<<",\"full_at_stop\":"<<stale_stop_full
+-        <<",\"full_total_target_us\":700000,\"ramp_total_deadline_ms\":8000}";
++        <<",\"full_total_target_us\":700000,\"ramp_total_deadline_ms\":8000}"
++        <<",\"allocator_bytes_remaining\":"<<allocator.allocated
++        <<",\"stale_test_scope\":\"relieved-domain-aged-critical-queue\"";
+     receipt<<"}";
+     write_file("/evidence/pressure-workload.json",receipt.str(),true);
+-    if(stale) {
+-        // The above-high stale observation is already complete. Release only
+-        // this owned allocator's pages before retirement I/O; keep every
+-        // target alive and keep all budget/threshold values unchanged.
+-        const U released=allocator.allocated;
+-        check(child_command(allocator,'F')==0,"release only owned pressure allocation");
+-        const U released_at=now_ns(),relieved=pressure_current(events0);
+-        check(relieved<SOFT,"owned allocator release restores below-high cleanup headroom");
+-        for(const auto& child:children)verify_child(child);
+-        check(killcount(control)==0,"no victim during owned post-observation relief");
+-        write_file("/evidence/pressure-relief.json","{\"released_bytes\":"+std::to_string(released)+
+-            ",\"monotonic_ns\":"+std::to_string(released_at)+",\"current\":"+std::to_string(relieved)+
+-            ",\"all_targets_alive\":true,\"kill_count\":0,\"budget_changed\":false}",true);
+-    }
+     return !stale;
+ }
+ void run_phase(const std::string& phase) {
+--- a/owned-relay/qualify_pressure.py
++++ b/owned-relay/qualify_pressure.py
+@@ -88,7 +88,7 @@
+ def required_names(phase):
+     need(phase in ("pressure", "stale"), "only fixed pressure or stale phase")
+     return COMMON | ({"pressure-after.json", "cached-exit.json", "cached-kill-notification.json", "cached-kill-diagnostic.json"}
+-                     if phase == "pressure" else {"stale-after.json", "pressure-relief.json"})
++                     if phase == "pressure" else {"stale-after.json", "pressure-relief.json", "stale-aging.json"})
+ 
+ 
+ def load_evidence(directory, expected_manifest, expected_source, phase):
+@@ -349,8 +349,11 @@
+         stopped, resumed = integer(work["stopped_ns"], 1), integer(work["resume_ns"], 1)
+         need(quiet_end <= stopped <= start <= finished and finished + 2 * WINDOW <= resumed and
+              resumed + WINDOW <= end and work["cached_exit_observed_ns"] == 0 and work["kill_count"] == 0 and
+-             work["final_current"] > HIGH and data["stale-after.json"]["current"] > HIGH,
+-             "stale control did not retain above-high targets and zero kills")
++             integer(work["final_current"]) <= HIGH - 16 * MIB and
++             integer(data["stale-after.json"]["current"]) <= HIGH - 16 * MIB and
++             integer(work.get("allocator_bytes_remaining")) == 0 and
++             work.get("stale_test_scope") == "relieved-domain-aged-critical-queue",
++             "stale control lacks relieved-domain scope, reserve or zero kills")
+         stop = work.get("stale_ramp_stop")
+         need(type(stop) is dict and stop.get("source") == "owned-allocation-ACK-and-scoped-full-total" and
+              stop.get("candidate_only") is True, "acknowledged stale ramp-stop candidate required")
+@@ -365,15 +368,39 @@
+         queued_while_stopped = [event for event in events
+                                 if stopped <= event["observed_ns"] <= event["send_completed_ns"] < resumed]
+         need(queued_while_stopped, "no real pressure event was queued while exact LMKD was stopped")
+-        need(all(event["send_completed_ns"] < resumed and event["observed_ns"] + WINDOW < resumed for event in events),
++        need(all(event["send_completed_ns"] + WINDOW < resumed and event["observed_ns"] + WINDOW < resumed for event in events),
+              "stale queue has an unaged or later fresh event; trial inconclusive")
+         critical = any(event["level"] == 2 for event in queued_while_stopped)
+         need(critical, "no actual original critical event queued while stopped; stale trial inconclusive")
+-        relief = data["pressure-relief.json"]
+-        need(relief["released_bytes"] == work["allocator_bytes"] and end <= relief["monotonic_ns"] <= retired_ns and
+-             relief["current"] < HIGH and relief["all_targets_alive"] is True and relief["kill_count"] == 0 and
+-             relief["budget_changed"] is False and data["after-relay-hup.json"]["current"] < HIGH,
+-             "post-observation cleanup relief changed targets/budget or preceded stale observation")
++        relief, aging = data["pressure-relief.json"], data["stale-aging.json"]
++        allocator = targets["allocator"]
++        need(relief["schema"] == 1 and relief["source"] == "owned-allocator-unmap-before-stale-aging" and
++             (relief["allocator_pid"], relief["allocator_uid"], relief["allocator_start"]) ==
++             (allocator["pid"], allocator["uid"], allocator["start"]) and
++             relief["only_allocator_released"] is True and relief["all_targets_alive"] is True and
++             relief["lmkd_stopped_verified"] is True and relief["budget_changed"] is False,
++             "pre-aging relief is not bound to the exact owned allocator and stopped LMKD")
++        need(relief["before_bytes"] == relief["released_bytes"] == work["allocator_bytes"] and
++             integer(relief["after_bytes"]) == 0 and relief["reserve_bytes"] == 16 * MIB and
++             HIGH < integer(relief["current_before"]) <= CAP and
++             integer(relief["current_after"]) <= HIGH - 16 * MIB and
++             integer(data["after-relay-hup.json"]["current"]) <= HIGH - 16 * MIB,
++             "owned relief bytes or unchanged reserve differ")
++        need(aging["schema"] == 1 and aging["source"] == "strict-quiet-after-owned-relief" and
++             aging["required_quiet_ms"] == 2200 and
++             finished <= integer(relief["release_started_ns"], 1) <= integer(relief["acknowledged_ns"], 1) <=
++             integer(relief["observed_ns"], 1) <= integer(aging["started_ns"], 1) and
++             aging["started_ns"] + 2_200_000_000 <= integer(aging["completed_ns"], 1) <= resumed and
++             integer(aging["current_before"]) <= HIGH - 16 * MIB and
++             integer(aging["current_after"]) <= HIGH - 16 * MIB,
++             "strict aging did not follow acknowledged relief and retained reserve")
++        release_before, release_after = psi(relief["pressure_before"]), psi(relief["pressure_after"])
++        age_before, age_after = psi(aging["pressure_before"]), psi(aging["pressure_after"])
++        need(release_before["full"] >= stop["full_at_stop"] and
++             all(release_before[level] <= release_after[level] <= age_before[level] for level in ("some", "full")) and
++             age_before == age_after and age_after["some"] <= work["some_after"] and
++             age_after["full"] <= work["full_after"],
++             "pressure totals regressed or strict aging acquired new stalls")
+         status = "pass"
+     return {
+         "schema": 1, "phase": phase, "qualification_status": status,
+@@ -383,6 +410,10 @@
+         "native_critical_kill_decision_observed": critical_decision,
+         "stale_actual_queue_zero_kill_verified": phase == "stale",
+         "stale_actual_critical_queue_zero_kill_verified": phase == "stale" and critical,
++        "stale_after_allocator_relief_zero_kill_verified": phase == "stale" and critical,
++        "stale_test_scope": "relieved-domain-aged-critical-queue" if phase == "stale" else None,
++        "native_stale_drop_observed": False,
++        "above_high_stale_zero_kill_verified": False,
+         "critical_event_observed_in_phase": critical,
+         "quiet_live_lease_zero_kill_verified": True, "foreground_and_protected_preserved": True,
+         "native_defaults": ["some 70000 1000000", "full 700000 1000000"],
+--- a/owned-relay/test_qualify_pressure.py
++++ b/owned-relay/test_qualify_pressure.py
+@@ -23,7 +23,7 @@
+     psi1 = psi0.replace("some avg10=0.00 avg60=0.00 avg300=0.00 total=0", "some avg10=0.00 avg60=0.00 avg300=0.00 total=900000").replace("full avg10=0.00 avg60=0.00 avg300=0.00 total=0", "full avg10=0.00 avg60=0.00 avg300=0.00 total=750000")
+     active_end = 6_200_000_000 if phase == "pressure" else 8_400_000_000
+     retired = active_end + NS
+-    final_current = 350 * q.MIB if phase == "pressure" else 416 * q.MIB
++    final_current = 350 * q.MIB if phase == "pressure" else 226 * q.MIB
+     binaries = {"actor": "4" * 64, "driver": "5" * 64, "broker": "6" * 64, "android_lmkd": q.LMKD_SHA}
+     manifest = {"schema": 1, "phase": phase, "source_manifest_sha256": SOURCE_PIN,
+                 "matching_build_receipt_sha256": BUILD_PIN, "binaries_sha256": binaries}
+@@ -127,9 +127,24 @@
+             "full_before": 0, "full_at_stop": 750_000,
+             "full_total_target_us": 700_000, "ramp_total_deadline_ms": 8000,
+         }
+-        data["pressure-relief.json"] = {"released_bytes": 190 * q.MIB, "monotonic_ns": active_end + 10_000,
+-                                        "current": 226 * q.MIB, "all_targets_alive": True,
+-                                        "kill_count": 0, "budget_changed": False}
++        data["pressure-workload.json"].update(allocator_bytes_remaining=0,
++            stale_test_scope="relieved-domain-aged-critical-queue")
++        data["pressure-relief.json"] = {
++            "schema": 1, "source": "owned-allocator-unmap-before-stale-aging",
++            "allocator_pid": 7, "allocator_uid": 10005, "allocator_start": 104,
++            "release_started_ns": 4_910_000_000, "acknowledged_ns": 4_930_000_000,
++            "observed_ns": 4_940_000_000, "before_bytes": 190 * q.MIB, "after_bytes": 0,
++            "released_bytes": 190 * q.MIB, "current_before": 416 * q.MIB,
++            "current_after": 226 * q.MIB, "reserve_bytes": 16 * q.MIB,
++            "pressure_before": psi1, "pressure_after": psi1, "only_allocator_released": True,
++            "all_targets_alive": True, "lmkd_stopped_verified": True, "budget_changed": False,
++        }
++        data["stale-aging.json"] = {
++            "schema": 1, "source": "strict-quiet-after-owned-relief",
++            "started_ns": 4_950_000_000, "completed_ns": 7_150_000_000,
++            "required_quiet_ms": 2200, "current_before": 226 * q.MIB, "current_after": 226 * q.MIB,
++            "pressure_before": psi1, "pressure_after": psi1,
++        }
+         data["after-relay-hup.json"]["current"] = 226 * q.MIB
+     assert set(data) == q.required_names(phase)
+     return manifest, data
+@@ -192,6 +207,57 @@
+                 self.reject(lambda data, key=key, value=value:
+                             data["pressure-workload.json"]["stale_ramp_stop"].update({key: value}), "stale")
+ 
++    def test_relief_scope_does_not_claim_independent_native_expiry(self):
++        manifest, data = fixture("stale")
++        result = q.qualified(manifest, data, "stale")
++        self.assertEqual(result["stale_test_scope"], "relieved-domain-aged-critical-queue")
++        self.assertTrue(result["stale_after_allocator_relief_zero_kill_verified"])
++        self.assertFalse(result["native_stale_drop_observed"])
++        self.assertFalse(result["above_high_stale_zero_kill_verified"])
++
++    def test_pre_age_relief_requires_exact_allocator_ack_and_bytes(self):
++        for key, value in (("allocator_pid", 6), ("allocator_uid", 10002), ("allocator_start", 105),
++                           ("only_allocator_released", False), ("lmkd_stopped_verified", False),
++                           ("budget_changed", True), ("all_targets_alive", False),
++                           ("before_bytes", 189 * q.MIB), ("after_bytes", 1),
++                           ("released_bytes", 189 * q.MIB), ("acknowledged_ns", 4_900_000_000),
++                           ("acknowledged_ns", 5 * NS), ("release_started_ns", 4_800_000_000)):
++            with self.subTest(key=key, value=value):
++                self.reject(lambda data, key=key, value=value:
++                            data["pressure-relief.json"].update({key: value}), "stale")
++
++    def test_relief_and_aging_keep_original_headroom_reserve(self):
++        for file, key, value in (
++                ("pressure-relief.json", "reserve_bytes", 15 * q.MIB),
++                ("pressure-relief.json", "current_after", q.HIGH - 16 * q.MIB + 1),
++                ("stale-aging.json", "current_before", q.HIGH - 16 * q.MIB + 1),
++                ("stale-aging.json", "current_after", q.HIGH - 16 * q.MIB + 1),
++                ("pressure-workload.json", "final_current", q.HIGH - 16 * q.MIB + 1),
++                ("pressure-workload.json", "allocator_bytes_remaining", 1),
++                ("pressure-workload.json", "stale_test_scope", "above-high-independent-expiry")):
++            with self.subTest(file=file, key=key):
++                self.reject(lambda data, file=file, key=key, value=value:
++                            data[file].update({key: value}), "stale")
++
++    def test_aging_does_not_relax_duration_or_accept_new_stalls(self):
++        for key, value in (("required_quiet_ms", 2000), ("completed_ns", 7_149_999_999),
++                           ("started_ns", 4_939_999_999)):
++            self.reject(lambda data, key=key, value=value:
++                        data["stale-aging.json"].update({key: value}), "stale")
++        self.reject(lambda data: data["stale-aging.json"].update(
++            pressure_after=data["stale-aging.json"]["pressure_after"].replace("total=750000", "total=750001")), "stale")
++        self.reject(lambda data: data["pressure-relief.json"].update(
++            pressure_after=data["pressure-relief.json"]["pressure_after"].replace("total=750000", "total=749999")), "stale")
++
++    def test_stale_send_time_also_must_be_strictly_expired(self):
++        manifest, data = fixture("stale")
++        event = data["broker-pressure-audit.json"]["events"][1]
++        event.update(observed_ns=5_900_000_000, send_completed_ns=6_200_000_000)
++        with self.assertRaises(q.Rejected):
++            q.qualified(manifest, data, "stale")
++        event["send_completed_ns"] -= 1
++        self.assertTrue(q.qualified(manifest, data, "stale")["stale_after_allocator_relief_zero_kill_verified"])
++
+     def test_no_real_event_or_incomplete_audit_rejected(self):
+         def empty(data):
+             audit = data["broker-pressure-audit.json"]
+@@ -233,7 +299,7 @@
+             self.reject(lambda data, observed=observed: data["broker-pressure-audit.json"]["events"][1].update(
+                 observed_ns=observed, send_completed_ns=observed + 1), "stale")
+         self.reject(lambda data: data["pressure-workload.json"].update(kill_count=1), "stale")
+-        self.reject(lambda data: data["pressure-relief.json"].update(monotonic_ns=5 * NS), "stale")
++        self.reject(lambda data: data["pressure-relief.json"].update(acknowledged_ns=5 * NS), "stale")
+ 
+     def test_kernel_oom_budget_and_second_kill_rejected(self):
+         self.reject(lambda data: data["pressure-workload.json"].update(events_after=data["pressure-workload.json"]["events_after"].replace("oom_kill 0", "oom_kill 1")))
+--- a/owned-relay/PRESSURE.md
++++ b/owned-relay/PRESSURE.md
+@@ -1,10 +1,12 @@
+-# Owned PSI pressure and stale-queue continuation, revision09
++# Owned PSI pressure and stale-queue continuation, revision10
+ 
+-This is an uninstalled host/actor candidate. It does not change the Android r6 binary or its default 70/700/1000 ms PSI settings. Revision09 has local strict actor compilation and 23 synthetic Python controls; its matching device build and fresh positive/stale invocations are separate pending gates. Parent revision08 has an actual complete positive pass and an actual stale failure before aging/resume, described below. Those receipts retain their original source/binary identities.
++This is an uninstalled host/actor candidate. It preserves the Android r6 binary and its default 70/700/1000 ms PSI settings. Revision10 moves only the owned allocator's unmap before the stale aging interval and retains a strict quiet interval of at least 2200 ms. Its source, ordinary controls, matching device build and new positive/stale invocations have separate receipts. No revision09 runtime result qualifies revision10.
++
++Revision09 has an actual complete positive pass and an actual stale failure at the strict quiet check, before resume. That failure correctly detected continued scoped PSI growth after the allocation ACK. The new relieved-domain stale scope cannot independently prove that native expiry caused zero kills: the below-high accounting gate also applies. Native r6 exposes no per-event stale-drop execution audit, so the qualifier explicitly returns `native_stale_drop_observed:false` and `above_high_stale_zero_kill_verified:false`.
+ 
+ ## Fixed admission and scope
+ 
+-Use a new build directory, for example `/home/alex/work/pocket4-lmkd-host-pressure-r11-source-09`, and a new root/state/unit/invocation for each phase. The names below are proposed fresh names, not a statement that they exist. Never reuse a retired or failed cell. The coordinator owns all device actions and retains its existing Main epoch, health, resource-admission and other-session fence.
++Use a new build directory, for example `/home/alex/work/pocket4-lmkd-host-pressure-r11-source-10`, and a new root/state/unit/invocation for each phase. The names below are proposed fresh names, not a statement that they exist. Never reuse a retired or failed cell. The coordinator owns all device actions and retains its existing Main epoch, health, resource-admission and other-session fence.
+ 
+ | Boundary | Fixed value |
+ |---|---|
+@@ -23,7 +25,13 @@
+ 
+ The positive phase stops requesting allocations at the first observed cached pidfd exit. One already requested chunk may finish its bounded allocation/acknowledgement. The final reserve and cached size must return current below high after that single victim; otherwise the trial fails rather than allocating against the remaining foreground target. A medium-only event followed by a legitimate cached kill produces `partial_medium_only`, not a critical pass. The actor never continues pressure to force a critical event after a victim.
+ 
+-The separate `stale` phase stops only the exact owned LMKD through its pidfd after real enrollment. After each fully acknowledged 4 MiB request it checks the current charge and scoped full PSI total. At the first ACK with current above the original 384 MiB high and a full-total increase of at least 700000 microseconds since the quiet plateau, it stops issuing requests. No allocation remains outstanding. The full-total check is only a stop-allocation candidate; totals alone do not establish a critical kernel event or its one-second trigger window. The entire ramp still has its original 8000 ms deadline, not 8000 ms per step. It then waits 2200 ms with stationary scoped PSI totals and resumes that exact LMKD. Every actual queued event must already be older than its unchanged window; all targets stay alive and actual kill count remains zero during the next 1200 ms above-high observation. After this observation is complete, the allocator releases only its own pages while all processes stay alive. This creates cleanup headroom without changing memory budgets or erasing any queued event. The terminal joined audit must contain an actually queued original level-2 critical event observed while LMKD was stopped. A worker poll after the last allocation ACK is allowed only when its observed/send interval precedes resume and its unchanged one-second freshness window has strictly expired at resume. Every audit event must be expired; any later or fresh event still makes stale qualification inconclusive. A medium-only aged queue cannot pass this critical-stale qualification. The qualifier emits `stale_actual_critical_queue_zero_kill_verified:true` only after these checks; the external coordinator must require it along with `critical_event_observed_in_phase:true`.
++The separate `stale` phase pauses only the exact owned LMKD through its pidfd after real enrollment. After each fully acknowledged 4 MiB request it checks current charge and scoped full PSI total. At the first ACK above the original 384 MiB high with at least 700000 microseconds of full-total increase, it stops allocating. This is only a stop-allocation candidate; totals never replace the joined actual level-2 event. The entire ramp keeps its original 8000 ms deadline.
++
++While that exact LMKD remains stopped, the actor verifies every target and sends F only to its owned allocator. F unmaps that allocator's regions and acknowledges zero remaining bytes. The actor records the allocator PID/UID/start identity, released bytes, ACK and observation times, before/after current, and raw scoped PSI totals. It requires current at most high minus the existing 16 MiB reserve. Cached, foreground, protected and sentinel mappings are untouched, and memory budgets and PSI registrations are unchanged.
++
++Only after that receipt is written does the actor begin a strict quiet interval of at least 2200 ms, measured with the monotonic nanosecond clock. It records both PSI snapshots and currents before checking them, so a failed quiet interval remains reviewable. Any some/full total increase or lost reserve fails the trial. There is no adaptive extension or acceptance of a noisy interval. After resume, actual kill count must stay zero and all five targets must stay alive for the next 1200 ms and through exact LMKD reap and normal target cleanup.
++
++The joined host audit must still contain an original critical event queued while LMKD was stopped. Every actual event's observed and completed-send timestamps must be strictly more than one unchanged one-second window before resume; no later or fresh event is accepted. A medium-only queue, a total-only candidate, or an incomplete retirement audit cannot pass. The external coordinator must require `stale_actual_critical_queue_zero_kill_verified:true`, `stale_after_allocator_relief_zero_kill_verified:true`, `critical_event_observed_in_phase:true` and scope `relieved-domain-aged-critical-queue`. This is an actual aged critical queue with zero kills after owned pressure relief; it does not independently establish the native expiry branch or above-high stale behavior.
+ 
+ ## Matching build and ordinary controls
+ 
+@@ -42,20 +50,20 @@
+ sha256sum target/debug/droidloom-psi-owner target/debug/owned-relay-canary owned-relay/fixture-init
+ ```
+ 
+-Expected controls are 20 Rust tests, seven ordinary IPC controls, strict actor compilation, and 23 Python tests. The Python tests use explicitly synthetic evidence and temporary ordinary files; they do not prove kernel PSI, Android, or a native kill. The socketpair tests prove terminal packet framing/FD cleanup; they do not substitute for namespace admission.
++Expected controls are 20 Rust tests, seven ordinary IPC controls, strict actor compilation, and 28 Python tests. The Python tests use explicitly synthetic evidence and temporary ordinary files; they do not prove kernel PSI, Android, or a native kill. The socketpair tests prove terminal packet framing/FD cleanup; they do not substitute for namespace admission.
+ 
+-Use the actual build receipt's broker/driver/actor hashes. A nonmatching source, warning requiring correction, failed test, or missing terminal build result blocks a device trial. Parent freeze04 binaries cannot be relabelled revision09.
++Use the actual build receipt's broker/driver/actor hashes. A nonmatching source, warning requiring correction, failed test, or missing terminal build result blocks a device trial. Parent freeze04 binaries cannot be relabelled revision10.
+ 
+ ## Prepare one fresh positive cell
+ 
+ Only after the matching build and current device admission, the coordinator may prepare the fixed paths. Substitute `ACTOR_SHA` with the actual new matching actor hash.
+ 
+ ```sh
+-/home/alex/work/pocket4-lmkd-host-pressure-r11-source-09/target/debug/owned-relay-canary prepare \
+-  /opt/p4-lmkd-relay-pressure-r11-03/root \
+-  /run/p4-lmkd-relay-pressure-r11-03 \
+-  p4-lmkd-relay-pressure-r11-03.service \
+-  /home/alex/work/pocket4-lmkd-host-pressure-r11-source-09/owned-relay/fixture-init ACTOR_SHA \
++/home/alex/work/pocket4-lmkd-host-pressure-r11-source-10/target/debug/owned-relay-canary prepare \
++  /opt/p4-lmkd-relay-pressure-r11-04/root \
++  /run/p4-lmkd-relay-pressure-r11-04 \
++  p4-lmkd-relay-pressure-r11-04.service \
++  /home/alex/work/pocket4-lmkd-host-pressure-r11-source-10/owned-relay/fixture-init ACTOR_SHA \
+   /home/alex/work/pocket4-lmkd-enrollment-r6-android-build-01/link/lmkd-cgroup \
+   bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde
+ ```
+@@ -67,7 +75,7 @@
+ The coordinator obtains the six current Main namespace inodes in order `pid mnt cgroup ipc uts net`, and uses only that captured fence. Substitute those decimal values and the exact new broker/actor hashes. Preserve one returned systemd InvocationID for this single dispatch; a timeout reading the result is reconciled against the same invocation, never dispatched again.
+ 
+ ```sh
+-/usr/bin/systemd-run --unit=p4-lmkd-relay-pressure-r11-03.service --no-block --quiet \
++/usr/bin/systemd-run --unit=p4-lmkd-relay-pressure-r11-04.service --no-block --quiet \
+   --property=Type=exec --property=RemainAfterExit=yes \
+   '--property=Delegate=memory pids cpu' \
+   --property=MemoryMax=512M --property=MemoryHigh=infinity --property=MemorySwapMax=0 \
+@@ -76,13 +84,13 @@
+   --property=KillMode=control-group --property=LimitCORE=0 --property=LimitNOFILE=4096 \
+   --property=LimitFSIZE=1048576 --property=RestrictRealtime=yes --property=UMask=0022 \
+   --property=StandardInput=null \
+-  --property=StandardOutput=append:/run/p4-lmkd-relay-pressure-r11-03/unit.stdout \
+-  --property=StandardError=append:/run/p4-lmkd-relay-pressure-r11-03/unit.stderr \
+-  /home/alex/work/pocket4-lmkd-host-pressure-r11-source-09/target/debug/owned-relay-canary pressure \
+-  /opt/p4-lmkd-relay-pressure-r11-03/root /run/p4-lmkd-relay-pressure-r11-03 \
+-  p4-lmkd-relay-pressure-r11-03.service ACTOR_SHA \
++  --property=StandardOutput=append:/run/p4-lmkd-relay-pressure-r11-04/unit.stdout \
++  --property=StandardError=append:/run/p4-lmkd-relay-pressure-r11-04/unit.stderr \
++  /home/alex/work/pocket4-lmkd-host-pressure-r11-source-10/target/debug/owned-relay-canary pressure \
++  /opt/p4-lmkd-relay-pressure-r11-04/root /run/p4-lmkd-relay-pressure-r11-04 \
++  p4-lmkd-relay-pressure-r11-04.service ACTOR_SHA \
+   bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde \
+-  /home/alex/work/pocket4-lmkd-host-pressure-r11-source-09/target/debug/droidloom-psi-owner BROKER_SHA \
++  /home/alex/work/pocket4-lmkd-host-pressure-r11-source-10/target/debug/droidloom-psi-owner BROKER_SHA \
+   MAIN_PID_NS MAIN_MNT_NS MAIN_CGROUP_NS MAIN_IPC_NS MAIN_UTS_NS MAIN_NET_NS
+ ```
+ 
+@@ -90,7 +98,7 @@
+ 
+ ## Separate stale phase
+ 
+-After the positive invocation's receipts and exact teardown are reconciled, a stale trial needs its own admission and fresh root/state/unit, such as `p4-lmkd-relay-stale-r11-02.service`, `/opt/p4-lmkd-relay-stale-r11-02/root`, and `/run/p4-lmkd-relay-stale-r11-02`. Use the same new matched binaries, prepare those new paths, and change the invocation mode from `pressure` to `stale`. The limits and six freshly checked Main namespace values remain required. Do not automate a retry or reuse the positive tree.
++After the positive invocation's receipts and exact teardown are reconciled, a stale trial needs its own admission and fresh root/state/unit, such as `p4-lmkd-relay-stale-r11-03.service`, `/opt/p4-lmkd-relay-stale-r11-03/root`, and `/run/p4-lmkd-relay-stale-r11-03`. Use the same new matched binaries, prepare those new paths, and change the invocation mode from `pressure` to `stale`. The limits and six freshly checked Main namespace values remain required. Do not automate a retry or reuse the positive tree.
+ 
+ ## Evidence correlation
+ 
+@@ -102,7 +110,7 @@
+ {
+   "schema": 1,
+   "phase": "pressure",
+-  "source_manifest_sha256": "ACTUAL_REVISION09_SOURCE_MANIFEST_SHA",
++  "source_manifest_sha256": "ACTUAL_REVISION10_SOURCE_MANIFEST_SHA",
+   "matching_build_receipt_sha256": "ACTUAL_MATCHING_BUILD_RECEIPT_SHA",
+   "binaries_sha256": {
+     "actor": "ACTUAL_ACTOR_SHA",
+@@ -116,15 +124,15 @@
+ }
+ ```
+ 
+-This is a shape illustration, not a valid run manifest. The actual list must exactly equal `qualify_pressure.required_names(phase)`, with no missing, extra, duplicate or path-traversing name. It contains staging and namespace/root receipts, READY/ACTIVE/RETIRED/projection, joined pressure audit, driver/native completion, owned identities, actual pressure-file identity, workload, before/after samples and the complete five-target final cleanup classifications. Positive additionally requires exact cached pidfd SIGKILL, LMK_PROCKILL identity/RSS and owned native kill diagnostic. Stale additionally requires the complete ACK/current/full-total stop candidate inside `pressure-workload.json` and the post-observation owned-page release receipt. These local candidate values never replace the separately joined actual level-2 event audit. No commercial logs, APKs or secrets are needed.
++This is a shape illustration, not a valid run manifest. The actual list must exactly equal `qualify_pressure.required_names(phase)`, with no missing, extra, duplicate or path-traversing name. It contains staging and namespace/root receipts, READY/ACTIVE/RETIRED/projection, joined pressure audit, driver/native completion, owned identities, actual pressure-file identity, workload, before/after samples and the complete five-target final cleanup classifications. Positive additionally requires exact cached pidfd SIGKILL, LMK_PROCKILL identity/RSS and owned native kill diagnostic. Stale additionally requires the complete ACK/current/full-total stop candidate inside `pressure-workload.json`, the exact owned allocator pre-aging release receipt, and the retained strict quiet-window record. These local candidate values never replace the separately joined actual level-2 event audit. No commercial logs, APKs or secrets are needed.
+ 
+ The caller supplies both manifest hashes from outside the artifact, so a self-reported empty or substituted evidence list cannot authorize itself. The verifier opens only fixed regular basenames through a held directory FD, rejects symlinks and duplicate JSON keys, checks lengths/hashes and full input sets, and performs no process or unit action.
+ 
+ ```sh
+ python3 -B owned-relay/qualify_pressure.py \
+-  --evidence-dir /run/p4-lmkd-relay-pressure-r11-03/evidence \
++  --evidence-dir /run/p4-lmkd-relay-pressure-r11-04/evidence \
+   --manifest-sha256 ACTUAL_EXTERNAL_EVIDENCE_MANIFEST_SHA \
+-  --source-manifest-sha256 ACTUAL_REVISION09_SOURCE_MANIFEST_SHA \
++  --source-manifest-sha256 ACTUAL_REVISION10_SOURCE_MANIFEST_SHA \
+   --phase pressure
+ ```
+ 
+@@ -147,3 +155,11 @@
+ The distinct stale invocation `p4-lmkd-relay-stale-r11-01.service`, InvocationID `a93c3a72c2894ae3978037772e52ed98`, failed before aging/resume. Coordinator result SHA-256 is `d6946b8ad2f08bd4e1e33f169cc98c444a20be58ab28f6786d5127d6e1112dc8`. The original whole-ramp 8-second deadline expired while waiting for another allocation ACK after LMKD was paused. The failure sample retained current 425295872 bytes, full PSI total 5099540 microseconds, high events 1669, and zero max/OOM counters at that sample. No joined event audit or final outer counter receipt exists for that failed phase, so its sample is not a final-unit or stale qualification. Exact unit/cgroup cleanup and the Main fence were independently verified. The error suffix `Resource temporarily unavailable` came from the generic failure helper's current errno; it does not establish a failed mmap errno.
+ 
+ Revision09 removes the unnecessary stale ramp toward 416 MiB once its ACK/full-total candidate is reached. It does not increase the ramp deadline, pressure thresholds, 512 MiB budget, swap allowance, 35-second driver wait or 60-second unit bound. It also closes revision08's separate qualifier gap where any aged queued level could produce pass while the critical-event boolean was false. Both old invocations and failed receipts remain immutable. Changed actor/qualifier bytes require a new matching build and a new complete positive invocation before a fresh stale cell can be admitted.
++
++## Revision09 observations retained unchanged
++
++The positive invocation `p4-lmkd-relay-pressure-r11-03.service`, InvocationID `458cdfe53a534aa3ab5fbde97b579cb5`, has complete coordinator PASS with actual critical native cached kill, all other targets preserved, retained final outer resources, exact cleanup and unchanged Main. Its original result SHA-256 is `cf081ede4d6d757b522bd35b6280bda03a27e5517e0119e9dabb219cbd13e98a`. The 46-payload export is `13e2357c590b540d42bb6a745cfe9bb9429cdb0d68269ffd6a99bf54be9adb00`.
++
++The distinct stale invocation `p4-lmkd-relay-stale-r11-02.service`, InvocationID `005a5822bb0f427db5c238b9175c2384`, exited 1 at `stale interval has new pressure stalls`, before resume. Its result SHA-256 is `f028dd348031341f3ef8ed1f8f26b8e1ff87d8e560e919ddb5a807b07e9cc663`. The failure sample was 3270 ms after pressure-before, with current 414580736 bytes, scoped full total 1133676 microseconds, high events 619 and zero max/OOM counters at that sample. Terminal MemoryPeak was 417976320 bytes and MemorySwapPeak was zero. Its 32-payload export SHA-256 is `64c887b51f18b7b04275b0715d990aab422ec51be3e05357692b90d96b0354af`. Exact unit/cgroup cleanup and Main continuity were verified; there is no complete joined stale audit or native expiry execution proof. The generic errno suffix is not a separate allocation-failure diagnosis.
++
++Revision10 keeps both original results intact. It never treats the above failure as a passing stale check, never lowers thresholds, and never retries the retired cell. A new matching build and a complete same-revision positive invocation are prerequisites for a fresh stale invocation.

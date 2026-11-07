@@ -1,0 +1,286 @@
+--- buffer01/INPUTS.json
++++ geometry01/INPUTS.json
+@@ -1,6 +1,7 @@
+ {
+   "Android_actions_by_this_agent": 0,
+-  "R5_public_cache_clear_UI_runtime_unrun": true,
++  "R5_public_cache_clear_UI_runtime_unrun": false,
++  "R5_public_cache_clear_actual_observed_in_original_failed_flow": true,
+   "actual_build": {
+     "APK": {
+       "bytes": 24720,
+@@ -63,9 +64,30 @@
+   },
+   "actual_install_source_manifest_sha256": "7b69a52f2ee8f7471e3ad36a5f75a83be6093bfdf0e21b951b3bb36f3a2de811",
+   "actual_install_source_tree": "30c9e4b0cfe4656f1829a926f9b2e810cdf6bee5",
+-  "buffer_viewport_behavior_changed": false,
++  "actual_retained_structure_geometry": {
++    "area_and_container_bounds": [
++      320,
++      45,
++      1520,
++      1498
++    ],
++    "area_sized_and_crop_sized_surface_each_unique": true,
++    "diagnostic01_sha256": "4853c34166b422f074b66394bbeca1da09e3f522ff721a6e288a56a1aee4d0bc",
++    "diagnostic02_sha256": "4add570dcc3d680b469ca9b1133ffc6d76d9aa98cd4b21209943dea24dbc3143",
++    "first_single_surface_observation_not_complete_for_new_crop_gate": true,
++    "immediate_parents_distinct_empty_id_FrameLayouts_with_same_bounds_as_surface": true,
++    "overlay_and_toolbar_bounds": [
++      320,
++      45,
++      1520,
++      720
++    ],
++    "retired_tree_is_not_new_action_authority": true,
++    "two_surface_bounds_are_distinct": true
++  },
++  "buffer_viewport_behavior_changed": true,
+   "cache_cause_of_prior_failure_not_proven": true,
+-  "fixed_flow_nonce": "1d7f694a43a8a520665a43e26c5ac1cb",
++  "fixed_flow_nonce": "9e7c2a173b34236b7f96abc662295fd4",
+   "installed_identity": {
+     "apk_sha256": "16d3d1252b84accf0b454b8d9c3dd350031cca3a228cc9a772914d74a0c66b68",
+     "base_apk": "/data/app/~~Oe5CLAmhtH5r5QTWzbzukA==/org.droidloom.qa.bili.r5-i09w1S2dwR4iy8S_4bRb_Q==/base.apk",
+@@ -88,12 +110,21 @@
+   "new_unique_nonces": 149,
+   "no_new_clicks_or_opcodes": true,
+   "old_nonce_intersection": 0,
+-  "parent_source_manifest_sha256": "a8768a8c3d53ef8b543b57accfe8470d97e707c2982a111a2f2cc67a872121d5",
++  "parent_source_manifest_sha256": "2eeff204605c6165f6bda6cd11f99124d6074d25df98c2104cc8af1669a4a99f",
+   "previous_R4_buffer_flow_original_failure": {
+     "coordinator_sha256": "96c7128251ac2ebbf5dd14e0af93534d083bddec8c46cd6ab0087ea4f6c3ea74",
+     "first_cause": "NO_FOCUSED_APPLICATION_WINDOW after acknowledged public text edit; 21 unfocused reads; no submit/course/crop",
+     "job": "1a1aa49ae1a-fc05-4070",
+     "navigation_sha256": "fb9ff99563575b6f7798e3f50dad457325b374afe4eefac8d78878b5e04c4f14",
++    "state_remains": "FAIL"
++  },
++  "previous_R5_buffer_flow_original_failure": {
++    "coordinator_sha256": "46b0fa7515c906a94924f1726f2c8f52d4c31d4d2fed3d36394fcbd586d31ada",
++    "course_click_acknowledged": true,
++    "first_cause": "UNIQUE_CURRENT_PLAYER_STRUCTURE_REQUIRED: two eligible SurfaceViews, not failed focus or missing player",
++    "job": "1a1aadcfbb5-fc05-4837",
++    "navigation_sha256": "36193d4574839df942bc52442c2416b1a2500d51124cb079c251e6b87747786c",
++    "qualified_crop_or_playback": false,
+     "state_remains": "FAIL"
+   },
+   "previous_R5_install02_original_failure": {
+@@ -106,9 +137,10 @@
+   "qa_source_manifest_sha256": "83f642432c59f8e441f32402e278e9b52467a1a848e9d8e59eedaa22ed2a9577",
+   "qa_source_tree": "fa3ceddcc2046d54748ca052993c3ae23a261eff",
+   "schema": 1,
+-  "state": "SOURCE_ACTUAL_R5_INSTALL03_BOUND_ANDROID_UI_UNRUN",
++  "state": "SOURCE_ACTUAL_R5_BOUND_EXACT_PLAYER_GEOMETRY_ANDROID_UNRUN",
+   "state_command_index": 6,
+   "state_nonce": "2ad38fb92a0c5cfd6cde23b0c03c4ae6",
+   "state_wire_sha256": "d6ea152c1dcd395f02b2e0fe8002d98bcdf5203251463fd40ae6a17315ca9d98",
++  "viewport_change_scope": "exact unique area-sized and crop-sized render geometry; capture before/after structure hash",
+   "whole_app_ready": false
+ }
+--- buffer01/README.md
++++ geometry01/README.md
+@@ -1,15 +1,25 @@
+-# R5 fresh Bilibili public-course and viewport attempt
++# R5 fresh public-course player geometry attempt
+ 
+-This is one new owned flow, using the actual installed `org.droidloom.qa.bili.r5` UID 10170 and the unchanged frozen R4 held-namespace transport. The original Main epoch, source, artifact, namespace, action-lock and exact-task retirement guards remain mandatory. Install03 completed one explicit no-replacement install and one state command without connecting UiAutomation. Its original eleven files, exact signed APK, installed inode, before/after identity, state wire and command completion are consumed by the existing admission function. This flow does not install, replace, grant, reset data or call legacy v2.
++This is a new owned flow using the unchanged actual helper `org.droidloom.qa.bili.r5`, UID 10170, signed APK `16d3d125…c66b68`, original R4 held namespace transport and Main epoch `48cb65…`. The exact eleven install03 files, installed inode and before/after identity, no-UiAutomation state wire, actual build/signer/source chain, and original Main/action-lock/source/task cleanup gates remain mandatory. There is no install, replacement, grant, data reset, old v2 helper, or framework change.
+ 
+-The fresh 149 nonces have not been used. Navigation is the same as the previous R4 buffer/viewport attempt: a fresh launch, complete stable reads, one search-entry click, one fixed public query edit (`微积分`), one exact search submit and one uniquely selected public course card. The title is `Very Basic Calculus 000: Course Introduction`, with the original exact same-card uploader and duration contract. The selector is recomputed inside the click's own fresh inspection. The actual submit-bound inspection must still contain the fixed public query. Old trees, node paths, retired tasks and earlier success are never action authority.
++## Actual reason for this revision
+ 
+-Only the independently built and installed helper changes to R5. It uses the public `UiAutomation.clearCache()` method for its own connection, with successful boolean return required before every window query. SDK31 compilation uses strict public reflection; no hidden API, permission identity, fallback or framework change is introduced. The original two-second window deadline, eight-second helper work budget, twelve-second watchdog, query limits, display zero, focused application window, target package, complete tree and action freshness requirements stay intact. Actual install/state success did not exercise UiAutomation or prove the cache hypothesis. R4's 21-sample window failure stays FAILED.
++The previous R5 flow completed search entry, public `微积分` text entry, search submission, selected course click, and three detail observations, then failed `UNIQUE_CURRENT_PLAYER_STRUCTURE_REQUIRED`. Its original FAIL remains immutable. Two retained-file diagnostics confirmed that the initial one-SurfaceView layout changed into a stable two-SurfaceView layout. The first surface matched the area/container bounds, while the second matched the distinct overlay/toolbar bounds. Both covered the crop and were descendants of the same player container. Their immediate parents were distinct empty-ID FrameLayouts with matching bounds. The original unique-SurfaceView condition, rather than focus/window/package failure, rejected the later complete layout. No cache cause, playback, or sound is inferred.
+ 
+-A failed read or action preserves its first error, prevents later mutation and still performs the independent after-state and original finally cleanup. Successful read-only observations may be repeated only within the existing bounded stability/result/buffer loops. Actions are never replayed. The post-click foreground wait remains restricted to successful reads of a single null focus after the acknowledged course click; other invalid scope, package, command or guard outcomes stop immediately.
++Diagnostic02 is 21,877 bytes with SHA-256 `4add570dcc3d680b469ca9b1133ffc6d76d9aa98cd4b21209943dea24dbc3143`. It and the original failed runtime remain external exact evidence. Their retired task/tree/node paths cannot authorize a new operation.
+ 
+-After the course and three existing post-observations, the unchanged viewport module allows at most twelve successful read-only buffer observations in twenty-five seconds. A continuing buffer overlay remains a failed qualification. Captures use the existing held screencap and PNG path; the full frame is only in memory, and only a private bounded crop can be saved after an independent matching after-scope. Rebuffering is not converted to success. Private trees and pixels stay in the owned remote flow and do not enter Git or ordinary summaries. No frame-atomicity, playback, pause/resume, seek, cold-start or audio claim follows from this plan or from a viewport image alone.
++## Exact geometry change
+ 
+-The original cleanup removes only the newly owned task whose launch receipt and scope match, preserving all pre-existing tasks. Its failure remains failure. Runtime remains one CPU, 512 MiB, no swap, 128 tasks, the original worker deadlines and a 600-second outer limit. Root schedules the single reviewed request after other Main runtime work has finished. No Android action was executed while preparing this source.
++Only the production viewport predicate and its `same_scope` comparison change. A complete fresh tree must contain exactly two known render-class nodes, both eligible SurfaceViews with complete empty resource IDs and under the unique fixed container. Extra SurfaceViews, TextureViews, hidden/incomplete candidates, and render nodes outside the container fail. Each geometric role is selected by a unique equality constraint: one surface equals the area/container rectangle; the other equals the overlay/toolbar crop rectangle. The rectangles must differ, and crop must be contained in area, which must be contained in the focused display-zero target-package application window. No traversal-order or first-candidate selection is used.
+ 
+-The failed install02 attempt is also retained: it recorded no installation, no state command and no Android action. Install03 used a bounded same-inode original lock admission with unchanged mutual exclusion; this actual successful run acquired immediately, so its waiting branch remains qualified only by the separately recorded real two-process local controls. The navigation worker and original recorder action-lock behavior are unchanged here.
++Both surfaces require distinct, present, complete empty-ID FrameLayout parents below the container, with parent bounds matching their respective surface. Fixed role paths/classes/resource IDs/bounds and both surface/parent hashes form a deterministic render-structure hash. The independent after-observation must match that hash as well as the existing window, scope, crop, title, and author proof before any private crop is saved. A layout or parent-record change rejects publication even when the crop rectangle is unchanged. This authorizes one precise observation rectangle, not identification of the video-producing renderer or atomic attribution of a screenshot.
++
++The earlier single-surface layout is incomplete for this narrowly qualified two-role crop gate and fails. The source does not silently wait/retry failed inspections or widen the original time, count, or tree bounds. Rebuffering and any failed read remain failures.
++
++## Unchanged workflow and limits
++
++The fresh 149 nonces are disjoint from the failed R5 flow. Navigation uses the original fresh launch, stable complete reads, one search-entry click, one fixed public-query edit, one exact search submission, and one course-card click. The actual click-bound inspection recomputes the unique exact title `Very Basic Calculus 000: Course Introduction` plus same-card uploader and duration. Public input is checked in the submit action's own fresh inspection. Original Session/Java, independent after-state, post-click null-only focus synchronization, worker/finally, and exact newly owned task retirement are unchanged.
++
++After the original three post observations, the existing viewport loop remains at most twelve successful reads within twenty-five seconds. The original held screencap and PNG codec remain unchanged; full frames stay in memory, private crops are bounded and saved only after the independent scope check. Raw commercial trees and image pixels never enter Git or ordinary summaries. A crop or absent buffering label does not establish playback, pause/resume, seek, cold restart, audio output, or whole-App readiness.
++
++Resources remain one CPU, 512 MiB, no swap, 128 tasks, original inner deadlines, and a 600-second outer limit. Root schedules exactly one reviewed request. Fifteen local synthetic controls exercise both the old counterexample and the new production viewport/same_scope; outer scope/hash parsing is explicitly a seam. They are not Android, screenshot, or playback qualification. This new functional flow has not run.
+--- buffer01/make_request.py
++++ geometry01/make_request.py
+@@ -8,9 +8,9 @@
+ from pathlib import Path
+ 
+ HERE = Path(__file__).resolve().parent
+-KEY = 'pocket4-bilibili-r5-buffer-viewport-01-20261105'
+-ROOT = '/home/alex/work/pocket4-bilibili-r5-buffer-viewport-01'
+-NONCE = '1d7f694a43a8a520665a43e26c5ac1cb'
++KEY = 'pocket4-bilibili-r5-player-geometry-01-20261105'
++ROOT = '/home/alex/work/pocket4-bilibili-r5-player-geometry-01'
++NONCE = '9e7c2a173b34236b7f96abc662295fd4'
+ 
+ 
+ def sha(raw):
+--- buffer01/owned_navigation.py
++++ geometry01/owned_navigation.py
+@@ -16,25 +16,25 @@
+ import time
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-bilibili-r5-buffer-viewport-01')
++ROOT = Path('/home/alex/work/pocket4-bilibili-r5-player-geometry-01')
+ SOURCE = ROOT / 'source'
+-NONCE = '1d7f694a43a8a520665a43e26c5ac1cb'
++NONCE = '9e7c2a173b34236b7f96abc662295fd4'
+ FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-' + NONCE)
+-PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/expand_search', 'class': 'android.widget.LinearLayout', 'content_desc': 'Search bar, button'}, 'nonces': {'before': '018c4e621ba2c6db7432c04d49537b76', 'inspect': '34a0f8e94aeb3521c4b9c52c98809de8', 'action': '7b7fb2a0b2b7e030bfd2bb9bfbf57f95', 'after': 'cdfb9f70c1985474bf7ed31b6856f435'}}
+-POST_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '5cc3e2b8949bf90da0574a77fb66a74b', 'inspect': '5c2ae0a13f0c7dd6df2b2ad9b38e0587', 'after': '81d55875b8bc9ea77bbf81edc641eb97'}}
+-STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c5f7e8c28fd5e8dca25bdfff71260b5f', 'inspect': '48ff41384ee0210d8e6c1163af4f658a', 'after': '64c77ff51fabde7599e898c72a67ad44'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'be8655363eadd75d8b0a30e79bc8a66d', 'inspect': '168032717c189ef5653de7ad7f1390d2', 'after': '7ea6a6ef88b7dd58a06d89132c24f946'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'b6b61a532ae955dc49bcee335d516327', 'inspect': '97dc9496533ebf5264e5f724d5844945', 'after': 'b0a50d8e961dd767643ea6c049b28e63'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '9a4fa6c9bf58466fc361b74345d62f0b', 'inspect': 'b85c91c2b8b16e67eb4e440d3cf4f7ef', 'after': '98ab125171a73995979f1284bc7333f3'}}]
++PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/expand_search', 'class': 'android.widget.LinearLayout', 'content_desc': 'Search bar, button'}, 'nonces': {'before': '164744230849d97fc016f6c89158cf4f', 'inspect': 'c7844b1a3181d800ec0168c5f29f3809', 'action': 'd386a9169d61c5a2a11cb22a95dd4774', 'after': '6a5b7b2170c665d99fecaa1bdeb5fb3d'}}
++POST_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '332e90ff39811ae62c0de5fa5f846e8e', 'inspect': '5d9d19346fed898d6fc06ffef284fc16', 'after': 'f0464a74e774249ae4de34cc307543b9'}}
++STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '97963788afd91ad75df897150eba294f', 'inspect': '831131c19b042e33f946449f022c7caf', 'after': '12d1e6aa936e4c60222871340102cd53'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '9eb4a001e4aea7039c7b8140b7516ff7', 'inspect': '66e524ec9fc3ca07c8afa4d20e7fa3eb', 'after': '487d1c267b0cf27ff0cc59ef6331f6ac'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '0df5d43c4018311fd247bd1258944c32', 'inspect': '1a0a8916ad392c07107bc9921a27a93c', 'after': '7186595343e23601a22c294b7c80161d'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'ab13f41b60752d98c24317545bc1e0fc', 'inspect': 'a94ee37c32cf8a52fc77cd9502551bc5', 'after': 'aa260729812fb1027acdaa097473d1ff'}}]
+ STABILITY_SECONDS = 12
+ RESULT_OBSERVATION_SECONDS = 20
+-RESULT_OBSERVATION_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'a98c5d929247fda07cefaa02481299b0', 'inspect': 'ffc0508e0439519ab0d8946046785eb2', 'after': 'e30d86b876377baccf88eaf9b3081bf2'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'f067d4a1d910b2cfd9009c126bd90683', 'inspect': 'd8176a86ff3c681b5a9c6e57292a2657', 'after': 'db5ef5ad639afeafa81cb32615383e40'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'cd2ef7a3d9197ccc74bce39eea09a8c4', 'inspect': 'bd3267b3643be91c5433124a13980c84', 'after': 'cc1d4e1404cbdb2e532c54b558b8d3b2'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '902705d8af712a9e474b7f1ea7a6c60c', 'inspect': 'd038a39cf63d6fe70e3729be5c0c1177', 'after': '956b85727da68019c1bf9322b9ca842e'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'e8dffe7aae0621b254bbcd7e8a4b5aa3', 'inspect': '98db94fc6f25b373b1db76b56f094eb3', 'after': 'b3cdcd90c03383d7cf2da0ff6f513766'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'd00c74959e2456980b90f9165c2cee13', 'inspect': 'f218d191a4b93916db092d5020a4eecc', 'after': '06a9b73a29100a96056aa30f5c9fcbc9'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'ca856ba0bc06d309afe8bfdf6bc04940', 'inspect': '7f0f47958343a69742b80a1a48280080', 'after': 'd57659c91d8927bc96c38ce56b2e6dad'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'ab1a304b7ac8c9ac850543147a7274ef', 'inspect': 'd7b20a95358ddf00be24be183a7d16ae', 'after': '447aba3b7b402a80583218045dd3ed22'}}]
++RESULT_OBSERVATION_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '2485904773d1d91394a83f6a9921cd27', 'inspect': '7b113b7df152c0561241b5292e1e6937', 'after': '34b0546b2eb9ff55f6bd8547313e9a24'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'b828fd256766d157c81ed7db89bbf9af', 'inspect': '2dc3d6db41d32795c8124ae98375d8b2', 'after': '9f12c4460dc83e64a927448acab4a935'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c3e7183e911e9b1404745f726a5f8e99', 'inspect': '6bc7a915758b2919dc9669a360953d94', 'after': 'a362b96a8c00cf335b4fe2ae90d7c258'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '90649726c62fe7915ddbd5000570df97', 'inspect': '927f14e35df9a89d441cc1e77496690f', 'after': 'c51165270f9185a537efc4f7afc3104f'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '0d22217ae0f946050be19835946f0805', 'inspect': '4814efef4b1027a075e6836018fa8ae2', 'after': 'e746eefaea5c6049a5b0f6b0ba82a70e'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '83a479e9c9b2668c0226e5bec733666b', 'inspect': 'd9058b601adc97fdd04cf64eb2b0537d', 'after': 'a9a20640ab33e0b811eb7554caf78f44'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'ff7e941f510e9fb40c1d5c46ea0c8ca4', 'inspect': 'a9c61765e9c2e7d71b34b45bcc146153', 'after': '50b104483ee9adbce7a1b51d8c95e85b'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'd050c79f6b4023dfe79d81ed20eb8e1c', 'inspect': 'c07c4999932893817615846835de4b07', 'after': '3de7d433228ac1c433088f1af117bb4f'}}]
+ SEARCH_ACTIVITY = 'tv.danmaku.bili/com.bilibili.search2.main.BiliMainSearchActivity'
+ EDIT_SELECTOR = {'resource_id':'tv.danmaku.bili:id/search_src_text','class':'android.widget.EditText'}
+ SUBMIT_SELECTOR = {'resource_id':'tv.danmaku.bili:id/action_search','class':'android.widget.TextView'}
+ PUBLIC_QUERY = '微积分'
+-SET_TEXT_PLAN = {'schema': 1, 'operation': 'set_text', 'selector': {'resource_id': 'tv.danmaku.bili:id/search_src_text', 'class': 'android.widget.EditText'}, 'value': '微积分', 'nonces': {'before': 'b23f86d6aa2e5f7a8d32c27169492c85', 'inspect': 'd5217c1bc07f91a87754b25879365cf3', 'action': 'e5373406ea6bccafa3cfa9773d2301f6', 'after': '49aab549df7304ec1fdf84b521c662c5'}}
+-SUBMIT_PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/action_search', 'class': 'android.widget.TextView'}, 'nonces': {'before': 'fad3776b034fc6e857fea58d80b0f7bd', 'inspect': 'dba5f66dbeeed90192c34b6b389ad41f', 'action': '8bbfc201f8a9c643718a9869fac653e5', 'after': '42c500f30fd98213800de602502bb7e0'}}
+-RESULTS_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'acb69b90891ca077b7d0d9ba02c9e82a', 'inspect': 'c7146c2290eb41de04de9d6617e4b8da', 'after': 'dc1f10df4051aac1832971334ad349dc'}}
+-QUERY_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'b54d7e75c1540de9f2ca4404c5062150', 'inspect': '64dcabca44d5e0fac3797296dbe95429', 'after': 'c8645a78679e57d10e874b97b7b94575'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '6f84f192cc354b1ee3a47279e82216b6', 'inspect': '28cbadb45d2b8e24e20586a845ee1edb', 'after': '7c7e509fa4e0c8db97d97c661878833a'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '3977c5ff772fecec98104b1e9000e617', 'inspect': 'abf9b3041e4c98ad6c26a574c3a97ac8', 'after': 'faab84cff71e482f44a2d2bde730e9c8'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '2600f132fa3fea70b868964c5ab2bb55', 'inspect': '38f0fabd502ba025bbea00353928df1f', 'after': '2eef79dff9438290729f6c5ec6959317'}}]
+-SUBMIT_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '53fa75d20f17801e9377b8ed03b1c3d8', 'inspect': '6ab6382375c705e746e96ebd6c376f0b', 'after': '31141e729f8ceb948a2c15d4bc5b0a7c'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'ec14a4f7e4d59bd1cfee975f430e9946', 'inspect': 'a297c105dde114c6ed015cf2fd6e749c', 'after': '12bfd8e7ca2c8904aeac320b77bde8c5'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '49600953f078529dacea1fa390a37beb', 'inspect': 'a15ea27818fff06c9e8a188a203cb3c6', 'after': 'bf7f828df425fbf313b448c114696e5e'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '23665db72c16f8014cdec162db54ecfc', 'inspect': '0521cf421c6f4ccfa575263c6207ca7a', 'after': '14f42ea8dd7a87b58aa692ab93cd0bb2'}}]
++SET_TEXT_PLAN = {'schema': 1, 'operation': 'set_text', 'selector': {'resource_id': 'tv.danmaku.bili:id/search_src_text', 'class': 'android.widget.EditText'}, 'value': '微积分', 'nonces': {'before': '71fc66b556e90b03ab7be52e19318292', 'inspect': '7be301498468e72913a8d2de00cb6419', 'action': 'bcb19bfaa3a12927f2ff249ca1d4cd42', 'after': 'dbcb860ea98b1b951c2713091052daa5'}}
++SUBMIT_PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/action_search', 'class': 'android.widget.TextView'}, 'nonces': {'before': 'd8a1649e3867e548cb25f8b3b05ce463', 'inspect': '6d9c5504b2d2a8a92142df4348a3e1d3', 'action': '96140a65702afe96697a5a4b5a1b9e96', 'after': '3c10d9fa04530bb96417f9c9ddcd3fea'}}
++RESULTS_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '4a0c8aa70e27f6059e2f70215b2df4a5', 'inspect': '5017f3641bc4490357c0eda69cc66c2f', 'after': '93465d22c2e45c7f5fdbc2471754c755'}}
++QUERY_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '53f4a6b1c3a0baf6d736614723cfa5f1', 'inspect': '682e84a1da98862099ef7e9b7cdbaa1e', 'after': 'a4fe051e2be7b671963be040604caa47'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'd0d1c4bfaf33a2ae89d7565deb1b92cf', 'inspect': '5d893d6c9f1464b664832c61c8e01fdd', 'after': '7de4f97dc7d297730717e80b3154a7ae'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'ecb04af71fd74e77a6b8bed0cf692b3a', 'inspect': '76143812679a4abf998e719e604f5b20', 'after': '4486d9d19f95489788704be9bca48fa2'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'a391bd327051344843168dc1169e7ae3', 'inspect': 'bcf442823ac98a8b8d09a78d7bc5e732', 'after': '44b6734fcd998e79e8176ee413a29f16'}}]
++SUBMIT_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c00ad3183e8283f78334f590cb3fecfa', 'inspect': '888b974cc7bde4382bf4c4ec1083d5a6', 'after': 'dbd81dbcb0000da4db6c83a3a3cc1864'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'fad1f162a01756348d548393197a03de', 'inspect': '6eab49b99eb6d438b402b32c949551a7', 'after': '0d6ec99a42c47ff6342b3ccbae6651b6'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'e02f33912305499db6986380cc6cf2c4', 'inspect': 'e707dccafb9c3cba517ac4514e5dbb38', 'after': '2cb43cba66a3cd60f7fdab4e75255cb5'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '8f50880ea24a84ff364d1427e3825928', 'inspect': 'ae9f66788f84788b7cf0d413f0d4c7ce', 'after': 'ad637bf577f4ad6732e2658c0e8809d9'}}]
+ SELF, UID = 'org.droidloom.qa.bili.r5', 10170
+ BILI, BILI_UID = 'tv.danmaku.bili', 10117
+ INSTALL_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03')
+--- buffer01/stage_execute.py
++++ geometry01/stage_execute.py
+@@ -7,9 +7,9 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-bilibili-r5-buffer-viewport-01')
++ROOT = Path('/home/alex/work/pocket4-bilibili-r5-player-geometry-01')
+ SOURCE = ROOT/'source'
+-NONCE = '1d7f694a43a8a520665a43e26c5ac1cb'
++NONCE = '9e7c2a173b34236b7f96abc662295fd4'
+ FILES = {'owned_navigation.py','stage_execute.py','make_request.py','INPUTS.json','README.md','video_navigation.py','viewport_observation.py'}
+ 
+ 
+--- buffer01/video_navigation.py
++++ geometry01/video_navigation.py
+@@ -6,9 +6,9 @@
+ UPLOADER_SHA='3355707b07511199c7d280b9a77510b5e9b8698c7c7e4aedcf938805a3822d64'
+ DURATION_SHA='137ed61cdad38eb26c79124e18cb04925f8ac831f042169328a35d25520db3fa'
+ CARD_SELECTOR={'class':'android.view.ViewGroup'}
+-VIDEO_PLAN = {'schema': 1, 'operation': 'click', 'selector': {'class': 'android.view.ViewGroup'}, 'nonces': {'before': '7d2df34ebf9cffe2b736b9676cd17d36', 'inspect': 'aee9f7ac990c71b01b4e5c306b781628', 'action': 'c371cd77eb410c8ff4283a917eb3fcc0', 'after': 'caad57eeb2dc5725d260f1a300845148'}}
+-VIDEO_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'aec98e2a5beb6de686e74346a3f2fce6', 'inspect': '208f4a1000ce51026c7d6727ee88e0ea', 'after': '4c9cb8492ac6bcfa85eebbbb84264e12'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'afa10266f518cec9e300381e3dbab6e7', 'inspect': 'fa3446a580b1a64f6ecafd6953e3a56e', 'after': 'd1115dfe9d2f2800119dfb93bf5e0cd4'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'cab2f4c6acc3968a29b0f5c202e89ae8', 'inspect': '02f2dc11f17d0628469041a3cfcabb41', 'after': '4580048edd3700e3aab1946b4d5302a7'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '9f4838cb492d726a12015dd1b15516df', 'inspect': '5876c769fb95bc2f7feaf7070c15c8cd', 'after': '2057dc6bb7f55fe82f17a0a1ce80ce27'}}]
+-VIDEO_POST_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'edc49ad08b7aaa45fa29596f17dfaaaf', 'inspect': '91c41cc4b66c2500a5099891f490f3d9', 'after': 'bf3b0e3a4ac7d430e7e2d6bae6a863cb'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'e23bdc2b12c650b29c79de7712ec77d5', 'inspect': '6568a1c106dc6844494a501276feab6f', 'after': '970cace764448b7b278f64a88e36a4fb'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'd049ce62658f03e99c696ac964c476c5', 'inspect': '9b275ee12dfe763a6a2b492820bea86d', 'after': '69ccbcbe297facd6f774bd5222206509'}}]
++VIDEO_PLAN = {'schema': 1, 'operation': 'click', 'selector': {'class': 'android.view.ViewGroup'}, 'nonces': {'before': 'dd030870f50562d0546107d270064a14', 'inspect': '70ff8fb5000a27cb21b59b5f2ec249b4', 'action': '19aa5f6ca164e2fc0056f8cfb4ba3741', 'after': '5b25e966b20fb08d6d881c8083c15467'}}
++VIDEO_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '6463a90f0ff3bfbafd403b4f46b543c4', 'inspect': 'c0af8a509d56030f443215985df1d5e6', 'after': '71cec7faa7201ac394794d2f273727dc'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '82f3d574ec14e92bee0430916804ace3', 'inspect': '95214ee5686e193ad35dfaca4b72405f', 'after': 'e3cc61cc7295175eda626775b892453a'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c5af0ba49c45322439df203ba8ae9951', 'inspect': 'a5d69fdaa170c0d85110387879006e1b', 'after': '3aa7d34d80278da6761410306f130e9d'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '4f17ad8ff9344d96a49c12557f621818', 'inspect': '9724396ff9b3437876d2c56b0c4ca813', 'after': '272250a408a35d8f97f7f7f8e0a1335e'}}]
++VIDEO_POST_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '1eefc8bc69a1bd29fd4f07b4a6c84350', 'inspect': 'aca1c4ef204ec26a2542035bb460ea20', 'after': '632c1bd907e001c0940ae85395ecde5e'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '7f09f14a59779665d5fc36a08f49278a', 'inspect': '64162e32d58c50616caf39acef0b2e28', 'after': '6a3ee60c16ee6ced8c9c78707bab4f96'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '9a9b459e68d743a86577963e7590f097', 'inspect': '21c5a3a39c934cbc434963bc152897c6', 'after': '73c542635432833d5c2e73124542c750'}}]
+ 
+ 
+ def validate(adapter,qa,base_nonces):
+--- buffer01/viewport_observation.py
++++ geometry01/viewport_observation.py
+@@ -12,7 +12,7 @@
+ DETAILS='tv.danmaku.bili/com.bilibili.ship.theseus.detail.UnitedBizDetailsActivity'
+ TITLE='7ff99f77d6b59f394c4c6c0ca167aded470663d4cef66215fcce841ed549afba'
+ AUTHOR='3355707b07511199c7d280b9a77510b5e9b8698c7c7e4aedcf938805a3822d64'
+-NONCES = [['2eb22f9b06b2f8f4bf0c8cb28869eef2', '5758a443628adc4433103222d3c2d697', '6c7eba79353249d66961e277b2adfe79'], ['87c8566045712094c42cf8dfff4b7346', 'd3a6b1f2f4fda0f1b73256919a9f3114', '11f44f14c8ad5f2612c92b7ec9e98ed7'], ['7dbf29e4bad79943ddb275520f3e3aa4', '6eba31a0a4006c014926d047123794eb', 'a025bb1a9777e208db6a1244a226184c'], ['dde7556245a430e07ed883b1469c2559', '05b45f274fa18a27ff567ca09d5abc1a', 'f63faca5e9b1da11e0eb4e43be4e918c'], ['c41a30017d0c8a781dd52eff44f0ec68', '3258e62a03c881c176234f06c3913290', '7fe811c7a1921d23afb52f240893843b'], ['cd827069a3dd235d4ebf381291d07df0', 'c473f6c6e649fe1fa2fc33cef2c57240', 'f92d5fd522a300ccc9216e6b03245eb5'], ['8274841f1c5ea4548ed63d62340da9a2', '2510bbec65ca8b435ce464319c663af3', '8b7dc51d07e197489a3ccdeb40c05962'], ['94654992fd45eb3fc3d185ba8bfbfffe', '08858fa99387a0f3d0b95799b8cf708f', '4eeb5e77066ec3105ff6189a44e0b6b8'], ['6f26d53e2635cf3f339a17ad16e8d3ea', '92243562dedba6451eb22985ae465f35', 'ea11bee87b1ad5f34486d32c201cf2a5'], ['12413762008c59b34605508272872660', '056e6d808acc75a5330377d6d994dfb3', '8e9be61304a197b5136e6000702c9ca9'], ['ddae2f77106150ccef47e56d2b9ab402', '984e39b2e548a1dcba50ecd769517681', 'c7271eaffd3f24dfe12d389b37b69dcc'], ['d98357e4424ba68b773f5ef28ddb5cc7', '31e815b777c647b28b7d7ffbc07e58a8', '20fff707886b34af5deef594732cfa99'], ['eabbce9ad6913c74f089e9a507b20478', 'c2e317dda3cc6dbd4bb76dd1301f49c3', 'ce11a49e266a8772cf5d184b6becc148'], ['322374f798aaa5ffa899e8553f2ee145', '550802a0289303da898846ba02b325b0', '431f88ca063bfce813a97cba06425640'], ['04aa9c793879d3aa820e48ab286fc200', '8575229cc70788dbe9f8a230b99ad655', 'fc660042d58eb91c20290cc650a2e39c']]
++NONCES = [['a17d8eaace047ba4f552486225d57727', '0b5a977103ddc2cc454d545020b3f6fc', 'cee745fc466496a97fe1c9d64b5404f8'], ['8752e7ac524a37e5490d8fdd8bd323d3', '55434fbc05d21b45efca09dcec39027c', '4b4dd14bff878690cee20f187bcfc4d4'], ['90bd4cefc75f4284b319f07a5676c6f4', '0ce7877c11152a3904cd2f2bd51498ea', '4f44f03350884a5246ebbee56059a91a'], ['babbf00d4a979b77934cb3a6c1f456a3', 'da701d4ac79b93bba55eab41a5a2d4c7', '86019a396b87210ad6e1f82e5f8d0af0'], ['838933ced9c6eef5e88a7a0fd822b4e5', '26fdf1be0bba8ec32f212c6a7ba0e745', 'ae87bcb856e0ee8bff9a623daa8c7468'], ['31d6e3e27dd3b6690be4cf6dbd152d2a', 'cf1f045e93bcb1d991453f00975c9775', '55720ea3fabccdbc76528a6d4434a29d'], ['ce8bcc7087bbfd779116a38eba15dae5', 'cebbe8ab0a71733f3004f7a474dbef81', '4f802aa2f68e9eded7f3b35517bb8a63'], ['f77721b5cd90655d693bd0b81fc54d0c', '23c0a3d24125b4dcf00e7671df4970cf', '939724b29ac0a34b0faf0d31dcb67655'], ['cea2b345589d819052f9eacf3cdef32b', 'f9bddd387341f6c36f79e061dd2b70d7', '5718bf5d49a11ede0f4b73a7cacfca97'], ['5c007bf64da0ef9e35fa583e8be11067', '3301f1b4ff96647a779aa3e78753748e', '397164ba7768f81e03f8839434a00187'], ['1e78b002f0068f16922ff79ddd4b22d3', 'd0ef7c74eb0e11b419874a2eead9d574', '1da80d7874c9e0df25fe2cd1071246ec'], ['3fc386ef1ffb0f94ee59e58485ed7a4b', '4db1d3d2d5d7623acfd3c795c2fed8e1', '0818079f012597fbc6cc8cf32aab1107'], ['c611f4e986acdf0f34a7ab28e9d3d420', '318455c0b0e553e1929f99f9a54d6a7a', '574e61a6d16b96ad05bb09bb8ef03988'], ['7eddb4ab616d84c67de43f64d6de679d', '34fa3177e2acc4b90e6de0861078d42d', '36303b3d2e334452ecfe7a363c4cfcba'], ['734540d3033fd9e229db437c8912abd6', '358d57a1f9025d5c8c6791a6e8e3d397', 'e9306051f9624d78489a31ed7985a3b5']]
+ PLANS=[{'schema':1,'operation':'inspect','nonces':dict(zip(('before','inspect','after'),row))}for row in NONCES]
+ 
+ 
+@@ -41,26 +41,58 @@
+     container=one('tv.danmaku.bili:id/video_container','android.widget.FrameLayout')
+     overlay=one('tv.danmaku.bili:id/video_area_float_layer_container','android.widget.FrameLayout')
+     toolbar=one('tv.danmaku.bili:id/collapsing_toolbar','android.widget.FrameLayout')
+-    surfaces=[n for n in nodes if n['class']=='android.view.SurfaceView' and
+-        n['class_truncated'] is False and n['visible'] is True and n['enabled'] is True and
+-        n['password'] is False and n['path'].startswith(container['path']+'/')]
+-    base.require(len(surfaces)==1 and container['path'].startswith(area['path']+'/') and
+-        overlay['path'].startswith(area['path']+'/'),'UNIQUE_CURRENT_PLAYER_STRUCTURE_REQUIRED')
++    surfaces=[n for n in nodes if n['class'] in ('android.view.SurfaceView','android.view.TextureView')]
++    base.require(len(surfaces)==2 and all(n['class']=='android.view.SurfaceView' and
++        n['class_truncated'] is False and n['resource_id']=='' and n['resource_id_truncated'] is False and
++        n['visible'] is True and n['enabled'] is True and n['password'] is False and
++        n['path'].startswith(container['path']+'/') and
++        not n['path'].startswith(overlay['path']+'/') and
++        not n['path'].startswith(toolbar['path']+'/') for n in surfaces) and
++        container['path'].startswith(area['path']+'/') and
++        overlay['path'].startswith(area['path']+'/'),'EXACT_TWO_CURRENT_PLAYER_SURFACES_REQUIRED')
+     def inside(a,b):
+         return (all(type(v)is int for v in a+b) and len(a)==len(b)==4 and
+             b[0]<=a[0]<a[2]<=b[2] and b[1]<=a[1]<a[3]<=b[3])
+     crop=overlay['bounds']
+-    base.require(crop==toolbar['bounds'] and inside(crop,surfaces[0]['bounds']) and
+-        inside(surfaces[0]['bounds'],window['bounds']) and window['focused'] is True and
++    full=area['bounds']
++    base.require(full==container['bounds'] and crop==toolbar['bounds'] and crop!=full and
++        inside(crop,full) and inside(full,window['bounds']) and window['focused'] is True and
+         window['package']==base.BILI and window['display']==0 and window['type']==1,
+         'CURRENT_OVERLAY_CROP_MUST_BE_INSIDE_OBSERVED_WINDOW')
++    # Geometry assigns two unique observed roles. No traversal-order choice or
++    # claim about which renderer produces video/audio is made.
++    area_surfaces=[n for n in surfaces if n['bounds']==full]
++    crop_surfaces=[n for n in surfaces if n['bounds']==crop]
++    base.require(len(area_surfaces)==len(crop_surfaces)==1,
++        'UNIQUE_AREA_AND_CROP_SURFACE_GEOMETRY_REQUIRED')
++    by_path={n['path']:n for n in nodes};render_rows=[];parent_paths=[]
++    for role,rows in (('area-sized',area_surfaces),('crop-sized',crop_surfaces)):
++        node,=rows
++        parent_path=node['path'].rsplit('/',1)[0]
++        parent=by_path.get(parent_path)
++        base.require(parent is not None and parent_path.startswith(container['path']+'/') and
++            parent['class']=='android.widget.FrameLayout' and parent['class_truncated'] is False and
++            parent['resource_id']=='' and parent['resource_id_truncated'] is False and
++            parent['bounds']==node['bounds'],'EXACT_SURFACE_PARENT_STRUCTURE_REQUIRED')
++        parent_paths.append(parent_path)
++        render_rows.append({'role':role,'path_sha256':base.sha(node['path'].encode()),
++            'node_sha256':node['node_sha256'],'bounds':node['bounds'],
++            'parent_path_sha256':base.sha(parent_path.encode()),'parent_node_sha256':parent['node_sha256']})
++    base.require(len(set(parent_paths))==2,'DISTINCT_CURRENT_SURFACE_PARENTS_REQUIRED')
++    fixed_rows=[{'role':role,'path_sha256':base.sha(node['path'].encode()),
++                 'bounds':node['bounds'],'class':node['class'],'resource_id':node['resource_id']}
++        for role,node in (('area',area),('container',container),('overlay',overlay),('toolbar',toolbar))]
++    render_structure={'fixed_roles':fixed_rows,'surfaces':render_rows}
++    render_structure_sha256=base.sha(qa.canonical(render_structure))
+     descendants=[n for n in nodes if n['path'].startswith(container['path']+'/') and n['visible'] is True]
+     texts=[n for n in descendants if n['text']]
+     base.require(all(n['text_truncated'] is False for n in texts),'PLAYER_TEXT_COMPLETENESS_REQUIRED')
+     buffering=[n for n in texts if n['text'].startswith('Buffering...')]
+     base.require(len(buffering)<=1,'AMBIGUOUS_BUFFERING_OBSERVATION')
+     return {'scope':scope,'window':window,'window_sha256':inspection['window_sha256'],
+-        'crop':crop,'surface_bounds':surfaces[0]['bounds'],'title_text_sha256':TITLE,
++        'crop':crop,'surface_bounds':crop,'full_area_surface_bounds':full,
++        'render_structure':render_structure,'render_structure_sha256':render_structure_sha256,
++        'renderer_content_identity_proven':False,'title_text_sha256':TITLE,
+         'author_text_sha256':AUTHOR,'buffering_label_present':bool(buffering),
+         'buffering_label_sha256':buffering[0]['text_sha256'] if buffering else None,
+         'nonempty_player_text_count':len(texts),'video_only_pixels_proven':False}
+@@ -86,7 +118,8 @@
+ 
+ 
+ def same_scope(a,b):
+-    keys=('scope','window','window_sha256','crop','surface_bounds','title_text_sha256','author_text_sha256')
++    keys=('scope','window','window_sha256','crop','surface_bounds','title_text_sha256','author_text_sha256',
++          'full_area_surface_bounds','render_structure_sha256')
+     return all(a[k]==b[k]for k in keys)
+ 
+ 

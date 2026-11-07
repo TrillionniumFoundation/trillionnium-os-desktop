@@ -1,0 +1,27 @@
+{
+  "Main_actions": 0,
+  "arms": {
+    "candidate": {
+      "cases": [
+        "foreign_CLONE_VM_CLONE_FILES",
+        "foreign_CLONE_VM_private_fdtable",
+        "foreign_fork_COW",
+        "partial_initialization_EMFILE_cleanup"
+      ],
+      "direct_children_reaped": 3,
+      "state": "PASS_OWNER_DESTRUCTION_CONTROLS"
+    },
+    "preimage": {
+      "cases": [
+        "foreign_CLONE_VM_CLONE_FILES",
+        "partial_initialization_EMFILE_cleanup"
+      ],
+      "direct_children_reaped": 1,
+      "state": "OBSERVED_PREIMAGE_BUG_AND_CLEANUP_CONTROL"
+    }
+  },
+  "factory_service_started": false,
+  "platform_policy_qualified": false,
+  "production_source_manifest_sha256": "3cca0b23c8b84de8a072d13206ddf7fa2dc018be37f86f6c3dc8a1cf654432f0",
+  "schema": 1
+}

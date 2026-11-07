@@ -1,0 +1,213 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_BUILD_REQUEST_AWAITING_ROOT_REVIEW",
+  "target": {
+    "slug": "hilton",
+    "label": "Hilton",
+    "package": "com.hilton.android.hhonors",
+    "uid": 10135,
+    "version": 1004,
+    "apks": 4,
+    "tree": "c6bd83d45273194cfc923bed8d6d39d017dae080",
+    "job": "1a1b22928c9-fc05-7cb7",
+    "blob": "5e43bfe675aae41e387bc7752668eb08f1825a2d",
+    "bytes": 13997,
+    "sha256": "cd4f46876a1bd0b48289d6b6a9c8379b2480073b4a24849397f8d990cabeb0dd",
+    "reference_pin": {
+      "bytes": 5083,
+      "sha256": "a7ecc2530967eeb3d340b4d53cdab634223263b50e871382caaef8508c930f6a"
+    }
+  },
+  "helper_package": "org.droidloom.qa.hilton.r1",
+  "protocol": "pocket4-owned-hilton-qa-v1",
+  "new_helper_uid": null,
+  "new_APK_sha256": null,
+  "new_signer_sha256": null,
+  "parent": {
+    "source_tree": "1a17b2036c417ebe3dbb16ba756f555851aa1792",
+    "source_manifest": {
+      "bytes": 4251,
+      "sha256": "cda79d5b01ebfd91d6b9148be6853c78495da92130fb4f153422daac7d14ad0b"
+    },
+    "actual_build": {
+      "tree": "5d9e44ba322b9720a7e512fd97d5b6b9947dd682",
+      "blob": "1ab6f08ed46575bdc79d0caa86fea14113d93f18",
+      "bytes": 23340,
+      "sha256": "8bd0c70e64a543129aca0d8eeb08030bb135f95eb1be6bcda3b7933ac02433fb",
+      "qualified_source12commands32scope16deep": true
+    },
+    "actual_installed_helper": {
+      "blob": "ed8df6e48ba062706e72784d21a4c4b11f5db85e",
+      "bytes": 15422,
+      "sha256": "f3ec3d475dcccb894c68bd3bb471d85976cfa39f38bf437250d501de47d7b3e3",
+      "uid": 10160
+    }
+  },
+  "exact_transformations": [
+    {
+      "new_file": "AndroidManifest.xml",
+      "parent_file": "AndroidManifest.xml",
+      "parent_bytes": 728,
+      "parent_sha256": "68ea444b8f87d04c067fbf50209035817f67c1baa8bf8e84a19ac25e9b790005",
+      "new_bytes": 731,
+      "new_sha256": "91ae63b7fa85833ce396bef0352d384429ad2c4d2c9923fbe4d1892bc817be18",
+      "exact_inverse": true,
+      "edits": 3
+    },
+    {
+      "new_file": "build-input-reference.json",
+      "parent_file": "build-input-reference.json",
+      "parent_bytes": 4254,
+      "parent_sha256": "35715d1936075002a7afed3e79393595c6b45e0d8b18d2efbc87a25db6dd41e2",
+      "new_bytes": 4254,
+      "new_sha256": "35715d1936075002a7afed3e79393595c6b45e0d8b18d2efbc87a25db6dd41e2",
+      "exact_inverse": true,
+      "edits": 0
+    },
+    {
+      "new_file": "build_candidate.py",
+      "parent_file": "build_candidate.py",
+      "parent_bytes": 20160,
+      "parent_sha256": "1e27192139c4dad5c153d22bd94e56992c5c8dad209aedff0274829a370f95fb",
+      "new_bytes": 20150,
+      "new_sha256": "fcdcf1f9731f5251d31be7dd5f2fcb01b622109645b91a0f8f9e46bcf362dff3",
+      "exact_inverse": true,
+      "edits": 7
+    },
+    {
+      "new_file": "check_current_baseline.py",
+      "parent_file": "check_current_baseline.py",
+      "parent_bytes": 8992,
+      "parent_sha256": "eeb1dd72b701dc6de98eac8e8eba203f850266e0fc33a720050fcf675dd7fd58",
+      "new_bytes": 8986,
+      "new_sha256": "c6bdc85b7a6443fbe7ea480f4a55482b161d0eea39e53f8be363e4afe7ae079d",
+      "exact_inverse": true,
+      "edits": 7
+    },
+    {
+      "new_file": "controls/check_deep_tree.py",
+      "parent_file": "controls/check_deep_tree.py",
+      "parent_bytes": 11054,
+      "parent_sha256": "52e7c6dbad39bf581e19fc30e312e46eeef4eb6da8589bcdd4489933ec99839e",
+      "new_bytes": 11063,
+      "new_sha256": "ac9a19134b9e6057a71ec8829c46e65441998f8149b3d6018a3db6938af4131b",
+      "exact_inverse": true,
+      "edits": 4
+    },
+    {
+      "new_file": "make_build_request.py",
+      "parent_file": "make_build_request.py",
+      "parent_bytes": 2972,
+      "parent_sha256": "bb641d639c3bff53172e7c1de6dbeabfa87bfc502c7362fe12acc6f386fb2bfc",
+      "new_bytes": 2959,
+      "new_sha256": "34deb3a8a7ec39d3f38cab8518cd7891e2e068259240dda276309b3b2258137b",
+      "exact_inverse": true,
+      "edits": 3
+    },
+    {
+      "new_file": "qa_adapter.py",
+      "parent_file": "qa_adapter.py",
+      "parent_bytes": 21714,
+      "parent_sha256": "299538df75c772206aaaf96af164d99940ef6352d22b3c54d1d26c458b96cb77",
+      "new_bytes": 21626,
+      "new_sha256": "9ae793d0462521070573ef893324f6aa3277947cfd78630556e5019589b58c5b",
+      "exact_inverse": true,
+      "edits": 5
+    },
+    {
+      "new_file": "qa_contract.py",
+      "parent_file": "qa_contract.py",
+      "parent_bytes": 28794,
+      "parent_sha256": "4ed40507d3175339fd42be8622b257201d0ab540a68baf83a884bc128b144d46",
+      "new_bytes": 28716,
+      "new_sha256": "a83f7e07912bb667f4415a2c86612620de7594829ff127af2165b24f0098c9f6",
+      "exact_inverse": true,
+      "edits": 7
+    },
+    {
+      "new_file": "src/org/droidloom/qa/hilton/r1/ActionRunner.java",
+      "parent_file": "src/org/droidloom/qa/bestbuy/r4/ActionRunner.java",
+      "parent_bytes": 42348,
+      "parent_sha256": "25ebcf83726caf86316178956dc33af99de5736f0d1d042072f0853a2f757429",
+      "new_bytes": 42369,
+      "new_sha256": "c42fa6aab85e5bfc59a756a6233ae601e4d532189bc9e2b9c65d926eb1fa96aa",
+      "exact_inverse": true,
+      "edits": 6
+    },
+    {
+      "new_file": "stage_build.py",
+      "parent_file": "stage_build.py",
+      "parent_bytes": 7563,
+      "parent_sha256": "990a17a15403e93be8a060e7f087e23157e116da3b23452f91d6775fa8ced937",
+      "new_bytes": 7560,
+      "new_sha256": "84383d7183fd49a3dfc2cf310044fcc33c387c65878768344727bda813185f88",
+      "exact_inverse": true,
+      "edits": 2
+    }
+  ],
+  "semantic_changes": {
+    "new_target_package_UID_and_visibility": true,
+    "new_helper_package_protocol_and_paths": true,
+    "namespace_owns_no_prior_helper": true,
+    "helper_UID_denied": [
+      10135,
+      10160
+    ],
+    "old_unrelated_cell_UID_numbers_not_transferred": true,
+    "actual_parent_protocol_and_UID_negative_fixture": true,
+    "old_helper_target_runtime_scope_reused": false,
+    "actual_target_artifact_reference_lossless_numeric_tokens": true
+  },
+  "unchanged": {
+    "seven_tool_paths_and_hashes": true,
+    "build_input_reference_byte_identical": true,
+    "baseline02_R6_full_binding": true,
+    "work_budget8s_watchdog12s": true,
+    "tree_depth128_nodes512_children64": true,
+    "full_tree_window_refresh_target_one_action_restoration_guards": true,
+    "set_text_unreachable": true,
+    "parent_build_and_stage_resource_cleanup_behavior": true
+  },
+  "counts": {
+    "payload_files": 14,
+    "manifest_files": 13,
+    "build_commands": 12,
+    "scope_controls": 32,
+    "deep_protocol_controls": 16,
+    "new_tests_added": 0
+  },
+  "request": {
+    "bytes": 183517,
+    "sha256": "81cb6103b8872ff942091040dab43be38f1e82bab2673b3e5f30d10a22986a87",
+    "blob": "54c25a92245795ef6c6c2c9335019a405b4d349f",
+    "key": "pocket4-owned-hilton-qa-r1-cell02-fixed-metadata-build01-20261106"
+  },
+  "source_manifest": {
+    "bytes": 4774,
+    "sha256": "d8e2e4b4a0ed105a94cb08a67b3e0e45f1c68bbdfa500698c65c79400776c175",
+    "blob": "3e24a7492efebc49c0528e31986c207c1d94784a"
+  },
+  "remote_create_only": {
+    "source_root": "/home/alex/work/pocket4-owned-hilton-qa-r1-source-01",
+    "build_root": "/home/alex/work/pocket4-owned-hilton-qa-r1-build-01"
+  },
+  "resources": {
+    "timeout_seconds": 300,
+    "memory_max_bytes": 536870912,
+    "cpu_quota_percent": 100,
+    "nice": 10,
+    "own_swap_max": 0,
+    "own_tasks_max": 128
+  },
+  "intended_first_controller": "Separate fixed target owned launch, state/complete inspect/state and exact task cleanup only; no click or text input.",
+  "validation": {
+    "JavaScript_generator_executed": true,
+    "all_inverse_checks_true": true,
+    "full_packet_regenerated_byte_exact": true,
+    "Python_or_Java_compiled_here": false,
+    "Android_executed": false,
+    "helper_built": false,
+    "helper_installed": false,
+    "whole_app_ready": false
+  }
+}

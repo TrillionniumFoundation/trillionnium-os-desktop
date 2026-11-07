@@ -1,0 +1,183 @@
+{
+  "schema": 1,
+  "passed": 35,
+  "controls": [
+    {
+      "case": "full_success_wire_pause_fixed_role_current_three_captures",
+      "passed": true
+    },
+    {
+      "case": "full_success_wire_resume_fixed_role_current_three_captures",
+      "passed": true
+    },
+    {
+      "case": "unknown_transition",
+      "passed": true,
+      "error": "FIXED_PLAYER_TRANSITION_AND_CONTEXT_REQUIRED"
+    },
+    {
+      "case": "caller_node_forbidden",
+      "passed": true,
+      "error": "EXACT_OPERATION_KEYS_REQUIRED"
+    },
+    {
+      "case": "caller_coordinates_forbidden",
+      "passed": true,
+      "error": "EXACT_OPERATION_KEYS_REQUIRED"
+    },
+    {
+      "case": "arbitrary_selector_forbidden",
+      "passed": true,
+      "error": "EXACT_OPERATION_KEYS_REQUIRED"
+    },
+    {
+      "case": "same_context_action_nonce",
+      "passed": true,
+      "error": "DISTINCT_PLAYER_BUTTON_NONCE_REQUIRED"
+    },
+    {
+      "case": "wrong_context_activity",
+      "passed": true,
+      "error": "FIXED_PLAYER_TRANSITION_AND_CONTEXT_REQUIRED"
+    },
+    {
+      "case": "wrong_public_label",
+      "passed": true,
+      "error": "NODE_SELECTOR_NOT_UNIQUE_AND_ELIGIBLE"
+    },
+    {
+      "case": "duplicate_control",
+      "passed": true,
+      "error": "UNIQUE_CURRENT_PLAYBACK_RESOURCE_REQUIRED"
+    },
+    {
+      "case": "missing_control",
+      "passed": true,
+      "error": "UNIQUE_CURRENT_PLAYBACK_RESOURCE_REQUIRED"
+    },
+    {
+      "case": "wrong_control_parent",
+      "passed": true,
+      "error": "EXACT_CURRENT_PLAYER_DIRECT_CONTROL_REQUIRED"
+    },
+    {
+      "case": "wrong_renderer_parent",
+      "passed": true,
+      "error": "REVEAL_EXACT_DISTINCT_SURFACE_PARENTS"
+    },
+    {
+      "case": "wrong_geometry",
+      "passed": true,
+      "error": "REVEAL_ABSOLUTE_PLAYER_GEOMETRY"
+    },
+    {
+      "case": "missing_metadata",
+      "passed": true,
+      "error": "REVEAL_UNIQUE_PLAYER_ROLE_REQUIRED"
+    },
+    {
+      "case": "truncated_button_description",
+      "passed": true,
+      "error": "NODE_SELECTOR_NOT_UNIQUE_AND_ELIGIBLE"
+    },
+    {
+      "case": "disabled_button",
+      "passed": true,
+      "error": "NODE_SELECTOR_NOT_UNIQUE_AND_ELIGIBLE"
+    },
+    {
+      "case": "partial_tree",
+      "passed": true,
+      "error": "COMPLETE_INSPECTION_REQUIRED"
+    },
+    {
+      "case": "target_capture_tree_changed",
+      "passed": true,
+      "error": "CURRENT_PLAYER_WHOLE_TREE_WINDOW_OR_CAPTURE_ORDER_CHANGED"
+    },
+    {
+      "case": "final_capture_tree_changed",
+      "passed": true,
+      "error": "CURRENT_PLAYER_WHOLE_TREE_WINDOW_OR_CAPTURE_ORDER_CHANGED"
+    },
+    {
+      "case": "window_changed",
+      "passed": true,
+      "error": "CURRENT_PLAYER_WHOLE_TREE_WINDOW_OR_CAPTURE_ORDER_CHANGED"
+    },
+    {
+      "case": "different_connection_window",
+      "passed": true,
+      "error": "CURRENT_PLAYER_WHOLE_TREE_WINDOW_OR_CAPTURE_ORDER_CHANGED"
+    },
+    {
+      "case": "reversed_capture_time",
+      "passed": true,
+      "error": "CURRENT_PLAYER_WHOLE_TREE_WINDOW_OR_CAPTURE_ORDER_CHANGED"
+    },
+    {
+      "case": "missing_final_capture",
+      "passed": true,
+      "error": "COMPLETE_TREE_CAPTURE_SEQUENCE_REQUIRED"
+    },
+    {
+      "case": "stale_current_selection",
+      "passed": true,
+      "error": "CURRENT_PLAYER_SELECTION_FRESHNESS_REQUIRED"
+    },
+    {
+      "case": "changed_current_node",
+      "passed": true,
+      "error": "CURRENT_PLAYER_CAPTURE_ROLE_AND_CONTEXT_REQUIRED"
+    },
+    {
+      "case": "old_context_frame_changed",
+      "passed": true,
+      "error": "CURRENT_PLAYER_BUTTON_REQUEST_AND_ACK_REQUIRED"
+    },
+    {
+      "case": "false_ACK",
+      "passed": true,
+      "error": "CURRENT_PLAYER_BUTTON_REQUEST_AND_ACK_REQUIRED"
+    },
+    {
+      "case": "unsupported_atomicity_claim",
+      "passed": true,
+      "error": "CURRENT_PLAYER_BUTTON_REQUEST_AND_ACK_REQUIRED"
+    },
+    {
+      "case": "failure_finish_never_success",
+      "passed": true,
+      "error": "EXACT_SUCCESSFUL_FINISH_REQUIRED"
+    },
+    {
+      "case": "prior_context_tree_not_new_action_authority_current_full_tree_rechecks_still_required",
+      "passed": true
+    },
+    {
+      "case": "plan_rejects_arbitrary_selector",
+      "passed": true,
+      "error": "EXACT_PLAN_KEYS_REQUIRED"
+    },
+    {
+      "case": "old_R6_UID_not_R7",
+      "passed": true,
+      "error": "EXACT_NEW_OWNED_HELPER_UID_REQUIRED"
+    },
+    {
+      "case": "original_finally_after_action_failure_restores_state_no_retry",
+      "passed": true
+    },
+    {
+      "case": "original_finally_after_action_failure_with_secondary_no_retry",
+      "passed": true
+    }
+  ],
+  "actual_production_parser_predicates_and_Session": true,
+  "synthetic_public_data_and_command_IO_seams": true,
+  "Android_Hepta_or_UI_actions": 0,
+  "source_sha256": {
+    "qa_contract.py": "1f51c2cc9be74ff717d85660ecc567ef72dddf73fab6166efe2357bcec1502a5",
+    "qa_adapter.py": "a52fbb92f203681390261c3b90327c46490d7cb4038d033d143667298a8dde85"
+  }
+}

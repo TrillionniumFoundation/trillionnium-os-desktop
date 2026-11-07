@@ -1,0 +1,68 @@
+{
+  "schema": "p4-lmkd-enrollment-host-build-v1",
+  "actual_android_executed": false,
+  "started_utc": "2026-11-04T12:14:18.597068+00:00",
+  "source_sha256": {
+    "test_event_guard.py": "966bf1e553bcc08905878bbea3608831d22d4df8ac4e4492d0c81657a0d3f328",
+    "Cargo.lock": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03",
+    "build-01.json": "1878fc5c2faabaf3d4924d183c0a703bc8b602fb490d28a5656dd8fc7be79454",
+    "event_guard.py": "5dcab85e8021aa14b8555af2b2ff761e56a7938d692f67b1d7b9fac59a1b2012",
+    "owned_event_fixture.py": "516b55426cb1c708e545bc3fa4a1947a0ca5a22ae89d51a9c5c4eca51c31868e",
+    "Cargo.toml": "a4f31db859cf0606cf174779dfa520ff3ee3efdff229ecb7503f1f7e13756cd6",
+    "owned_registration_fixture.py": "41e9b120bdfe010a53f16190f3248cc5b4dbfa936fb97af394225bffac169985",
+    "README.md": "9f9deab188c5234a1b9165abefd2a8140d67764510e874a3d5469b4e1a278138",
+    "prior_run_fixture.py": "f1fc129b862dc924969164638f606e11c49293338039cbe61952797d0c603daf",
+    "src/event_fixture.rs": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54",
+    "src/psi.rs": "36d5a80c13ef982e3fb0e9cc8a7a055a193ba18b15531a93fd662b9c73d92e4b",
+    "src/lib.rs": "8bf8d918cc32290a0f850c2caa3a0fe745d1aa761a5d0f854af9a9e9fd8d1c38",
+    "src/enrollment.rs": "307159cd0a70c6166961e1481ced94089e564baa600158b86f6017b828603aaf",
+    "tests/data/grant.hex": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29",
+    "tests/data/request.hex": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede",
+    "src/bin/owned_ipc_controls.rs": "33ba770340d4db205ff52a46c31aacb0e1ee4f7512f1992af8b7e16b73fcd9a0"
+  },
+  "commands": [
+    {
+      "name": "build",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "--bin",
+        "owned-ipc-controls"
+      ],
+      "rc": 0,
+      "stdout": "",
+      "stderr": "   Compiling version_check v0.9.5\n   Compiling generic-array v0.14.7\n   Compiling typenum v1.20.1\n   Compiling block-buffer v0.10.4\n   Compiling crypto-common v0.1.7\n   Compiling libc v0.2.188\n   Compiling digest v0.10.7\n   Compiling cfg-if v1.0.4\n   Compiling cpufeatures v0.2.17\n   Compiling sha2 v0.10.9\n   Compiling droidloom-pressure-relay-owner-candidate v0.0.0 (/home/alex/work/pocket4-lmkd-enrollment-r11-host-01)\n    Finished `dev` profile [unoptimized] target(s) in 2.86s\n"
+    },
+    {
+      "name": "test",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "--lib",
+        "--bins"
+      ],
+      "rc": 0,
+      "stdout": "\nrunning 4 tests\ntest enrollment::tests::cross_language_wire_vectors_and_exact_contract ... ok\ntest enrollment::tests::request_rights_are_closed_before_admission ... ok\ntest psi::tests::exact_thresholds_and_bounded_progress_are_not_relaxed ... ok\ntest tests::poisoned_sender_lock_revokes_existing_real_capability_without_deadlock ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 2 tests\ntest event_fixture::tests::event_gate_rejects_wrong_generation_scope_threshold_sequence_future_and_exact_expiry ... ok\ntest event_fixture::tests::notification_alone_or_historical_high_cannot_certify_real_target_pressure ... ok\n\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "stderr": "   Compiling droidloom-pressure-relay-owner-candidate v0.0.0 (/home/alex/work/pocket4-lmkd-enrollment-r11-host-01)\n    Finished `test` profile [unoptimized] target(s) in 0.59s\n     Running unittests src/lib.rs (target/debug/deps/droidloom_pressure_relay_owner_candidate-d20f04e214b20b30)\n     Running unittests src/bin/owned_ipc_controls.rs (target/debug/deps/owned_ipc_controls-60c4b61e9c75e9c4)\n"
+    },
+    {
+      "name": "ordinary-ipc",
+      "argv": [
+        "/home/alex/work/pocket4-lmkd-enrollment-r11-host-01/target/debug/owned-ipc-controls"
+      ],
+      "rc": 0,
+      "stdout": "PASS host proc PID namespace matches getpid; proc and cgroup2 filesystems verified\nPASS kernel accepted credentials reject wrong UID\nPASS kernel accepted credentials reject wrong GID\nPASS pinned executable rejects a different trusted file\nPASS SO_PEERPIDFD retains dead connection generation after normal exit and reap\nPASS ordinary host child fails the required exact cgroup projection gate\nPASS owned children reaped, descriptors/socket cleaned, parent namespace/projection/membership unchanged\nRESULT PASS mode=host-negative-controls\n",
+      "stderr": ""
+    }
+  ],
+  "finished_utc": "2026-11-04T12:14:22.362707+00:00",
+  "success": true
+}

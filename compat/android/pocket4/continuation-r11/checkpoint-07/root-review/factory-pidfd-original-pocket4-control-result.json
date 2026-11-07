@@ -1,0 +1,98 @@
+{
+  "actual_factory_rejection_leak_reproduced": true,
+  "candidate_manifest_sha256": "00a19fef1ca8e86a3da18eecfb16eedb41e9de55e2934b96987845fa8b749fbd",
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-15",
+        "-std=gnu++20",
+        "-O1",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/overlay-reconstruction-09/candidate-04/engine/kernel_api/include",
+        "-I",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/overlay-reconstruction-09/candidate-04/host-factory-v2/source",
+        "/home/alex/work/pocket4-factory-v2-pidfd-rejection-control-01/control.cc",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/overlay-reconstruction-09/candidate-04/host-factory-v2/source/factory_context.cc",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/overlay-reconstruction-09/candidate-04/engine/kernel_api/proc_maps_factory_wire.cc",
+        "-o",
+        "/home/alex/work/pocket4-factory-v2-pidfd-rejection-control-01/control"
+      ],
+      "name": "compile",
+      "returncode": 0,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/work/pocket4-factory-v2-pidfd-rejection-control-01/control"
+      ],
+      "name": "actual-control",
+      "returncode": 0,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "{\"scope\":\"actual ValidateSocket and Receive only; owned local sockets; no service or namespace\",\"kernel\":\"7.0.0-38-generic\"}\n{\"case\":\"ordinary\",\"validate_socket_rc\":0,\"accepted_passpidfd\":0,\"receive_rc\":0,\"receive_errno\":0,\"adopted_scm_rights\":2,\"fds_after_rights_destructor_delta\":0,\"unowned_pidfds\":0,\"control_closed_leaks\":true,\"fd_table_restored\":true,\"finding_reproduced\":true}\n{\"case\":\"passpidfd\",\"validate_socket_rc\":0,\"accepted_passpidfd\":1,\"receive_rc\":-1,\"receive_errno\":71,\"adopted_scm_rights\":2,\"fds_after_rights_destructor_delta\":1,\"unowned_pidfds\":1,\"control_closed_leaks\":true,\"fd_table_restored\":true,\"finding_reproduced\":true}\n{\"all_control_descriptors_closed\":true}\n",
+      "stdout_sha256": "35da9f15fdac7d93c339e7ecf8b22e28da83653cd056637eca1e607c15f53635"
+    }
+  ],
+  "elf_sha256": "e9bc5e4898496db51116987f04560a19a371409af9cb77e3cb8ab6a1ba97827a",
+  "observed_rows": [
+    {
+      "kernel": "7.0.0-38-generic",
+      "scope": "actual ValidateSocket and Receive only; owned local sockets; no service or namespace"
+    },
+    {
+      "accepted_passpidfd": 0,
+      "adopted_scm_rights": 2,
+      "case": "ordinary",
+      "control_closed_leaks": true,
+      "fd_table_restored": true,
+      "fds_after_rights_destructor_delta": 0,
+      "finding_reproduced": true,
+      "receive_errno": 0,
+      "receive_rc": 0,
+      "unowned_pidfds": 0,
+      "validate_socket_rc": 0
+    },
+    {
+      "accepted_passpidfd": 1,
+      "adopted_scm_rights": 2,
+      "case": "passpidfd",
+      "control_closed_leaks": true,
+      "fd_table_restored": true,
+      "fds_after_rights_destructor_delta": 1,
+      "finding_reproduced": true,
+      "receive_errno": 71,
+      "receive_rc": -1,
+      "unowned_pidfds": 1,
+      "validate_socket_rc": 0
+    },
+    {
+      "all_control_descriptors_closed": true
+    }
+  ],
+  "schema": 1,
+  "scope": "actual ValidateSocket and Receive under owned Unix listener and sockets; no factory service, namespace or Android actions",
+  "source_inputs_after": {
+    "engine/kernel_api/include/berberis/kernel_api/proc_maps_factory_protocol.h": "b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9",
+    "engine/kernel_api/include/berberis/kernel_api/proc_maps_kernel_statfs.h": "77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0",
+    "engine/kernel_api/proc_maps_factory_wire.cc": "4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608",
+    "host-factory-v2/source/factory_context.cc": "afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a",
+    "host-factory-v2/source/factory_context.h": "b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1",
+    "host-factory-v2/source/factory_main.cc": "19abcf92feca3bd1ef46306e15fd8110c8e238c443a536625ba308f52fda45fb"
+  },
+  "source_inputs_before": {
+    "engine/kernel_api/include/berberis/kernel_api/proc_maps_factory_protocol.h": "b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9",
+    "engine/kernel_api/include/berberis/kernel_api/proc_maps_kernel_statfs.h": "77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0",
+    "engine/kernel_api/proc_maps_factory_wire.cc": "4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608",
+    "host-factory-v2/source/factory_context.cc": "afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a",
+    "host-factory-v2/source/factory_context.h": "b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1",
+    "host-factory-v2/source/factory_main.cc": "19abcf92feca3bd1ef46306e15fd8110c8e238c443a536625ba308f52fda45fb"
+  },
+  "source_sha256": "1ab026f372a40e1748dcee38d2b2b1eeaa091d422b0d3a901cd81abaa61ceaf2",
+  "success": true
+}

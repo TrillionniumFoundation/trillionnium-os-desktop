@@ -1,0 +1,63 @@
+--- admission01/make_request.py
++++ differential02/make_request.py
+@@ -1,16 +1,17 @@
+ #!/usr/bin/env python3
+-"""Freeze one exact lock-only request locally; never submit it."""
++"""Freeze one exact two-arm lock differential locally; never submit it."""
+ import ast
+ import hashlib
+ import json
+ from pathlib import Path
+ 
+ HERE = Path(__file__).resolve().parent
+-OUT = HERE.parent / 'action-lock-once-admission-01'
++OUT = HERE.parent / 'action-lock-differential-02'
+ EXPECTED = {
+-    'probe_lock.py': (16466, 'c98c6031edf12b7984c06553e429afcb4430f6e2dce7a10b143691b39a8a8368'),
++    'probe_lock.py': (35329, 'caad07035d43dd0e76d8cb0af33b455b2e77eff2aceb90d90c80f0162ee9a49d'),
+     'read_main_identity.py': (18537, '4b955afce019418e98282aa4af549ab1089afc040a5c8990b7713be5f8b4585e'),
+     'prior-ticket-launch.json': (6053, '13179fb6aa36a1fde53892cc6287994ae269e492199a94eb12eeafe83fe290cc'),
++    'prior-admission.json': (8816, 'cdbd347f32d7a48ec5e95106580208171f45fd3883c008c2e8aab30fa980624e'),
+ }
+ 
+ 
+@@ -41,10 +42,17 @@
+         body.decode('utf-8','strict')
+     assert not OUT.exists()
+     OUT.mkdir(mode=0o700)
+-    for name in tuple(EXPECTED)+('check_controls.py','controls01.stdout.json','controls01.stderr.txt',
+-                                 'controls01-receipt.json','README.md','source-review.json','make_request.py'):
+-        put(name,(HERE/name).read_bytes())
+-    put('source-manifest.json',dump(dict(schema=1,scope='single existing exact-lock nonblocking admission',
++    extras = ('check_controls.py', 'check_controls01.py', 'check_controls02.py',
++              'controls01.stdout.json', 'controls01.stderr.txt', 'controls01-receipt.json',
++              'controls02.stdout.json', 'controls02.stderr.txt', 'controls02-receipt.json',
++              'controls03.stdout.json', 'controls03.stderr.txt', 'controls03-receipt.json',
++              'debug_control01.py', 'debug_control01.stdout.json', 'debug_control01.stderr.txt',
++              'debug_control02.py', 'debug_control02.stdout.json', 'debug_control02.stderr.txt',
++              'README.md', 'source-review.json', 'make_request.py', 'verify_packet.py',
++              'admission01-to-differential02.patch', 'generator.diff')
++    for name in tuple(EXPECTED) + extras:
++        put(name, (HERE/name).read_bytes())
++    put('source-manifest.json',dump(dict(schema=1,scope='one existing exact-lock admission plus anonymous same-filesystem control',
+                                        files=[record(name,body) for name,body in bodies.items()])))
+     packet = dump(dict(schema=1,files={name:body.decode('utf-8') for name,body in bodies.items()}))
+     assert len(packet) <= 131072
+@@ -74,14 +82,14 @@
+     exec(compile(bodies[name], module.__file__, 'exec'), module.__dict__)
+     return module
+ support = load('read_main_identity.py', 'fixed_original_Main_identity_support')
+-probe = load('probe_lock.py', 'fixed_single_lock_admission')
+-raise SystemExit(probe.main(support, bodies['prior-ticket-launch.json'], ['--admit-once']))
++probe = load('probe_lock.py', 'fixed_two_arm_lock_differential')
++raise SystemExit(probe.main(support, bodies['prior-ticket-launch.json'], bodies['prior-admission.json'], ['--admit-once']))
+ '''.replace('EXPECTED_LITERAL',repr(EXPECTED)).replace('PACKET_BYTES',str(len(packet))).replace('PACKET_SHA',repr(sha(packet)))
+     ast.parse(wrapper)
+     put('wrapper.py',wrapper.encode())
+     request = dict(host='pocket4',executable='/usr/bin/sudo',args=['-n','/usr/bin/python3','-I','-B','-c',wrapper],
+                    cwd='/',env={'PYTHONDONTWRITEBYTECODE':'1'},stdin=packet.decode(),
+-                   idempotency_key='p4-action-lock-once-admission01-'+sha(packet)[:16],
++                   idempotency_key='p4-action-lock-differential02-'+sha(packet)[:16],
+                    cpu_quota_percent=100,memory_max_bytes=134217728,nice=10,timeout_seconds=30)
+     put('exact-request.json',dump(request))
+     print(json.dumps(dict(directory=str(OUT),request=record('exact-request.json',(OUT/'exact-request.json').read_bytes()),

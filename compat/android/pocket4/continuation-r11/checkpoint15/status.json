@@ -1,0 +1,356 @@
+{
+  "schema": 1,
+  "checkpoint": 15,
+  "snapshot_utc": "2026-11-05 13:39:25 UTC",
+  "state": "FIXED_EVIDENCE_CHECKPOINT_WORK_CONTINUES",
+  "current_status_key": "checkpoint15",
+  "whole_apps_ready": 0,
+  "launcher_apps": 45,
+  "all_apps_production_ready": false,
+  "whole_app_production_ready": false,
+  "production_release_qualified": false,
+  "main_engine_supervisor_deployed": false,
+  "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "main_baseline": {
+    "engine_revision": "R16",
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+    "new_deployment": false,
+    "unchanged_claim_scope": "Only the individual fences in included receipts; no continuous absence-of-interference claim."
+  },
+  "base_commit": "9e6bed241bcbf20986f505dbc0a5c70d211d6ab5",
+  "base_repository_tree": "66de9d3cca42f14f5c35a734eb6a92eb66ed9b1f",
+  "previous_manifest_sha256": "a64380d8b942448f5e97955a7bb5eadd16e59a4e1c5e03f520029e248ceb50c4",
+  "publication_scope": {
+    "fixed_candidate_index_sha256": "d29e9d42af97e63edddf58fc9a064418ebdd2f74cc2560816563f93c6578d6d1",
+    "fixed_candidate_payloads": 944,
+    "fixed_candidate_bytes": 13760757,
+    "fixed_candidate_checkpoint_subtree": "bf7aac44eab4838d6322ef29b5fa19d0dc63a3ca",
+    "new_checkpoint_documents": 2,
+    "new_payloads_including_documents": 946,
+    "inherited_payloads_unchanged": 7352,
+    "total_payloads_excluding_delivery_manifest": 8298,
+    "included_source_payloads": 801,
+    "included_evidence_payloads": 143,
+    "source_counts": {
+      "android": 270,
+      "native": 307,
+      "owner": 224
+    },
+    "old_root_README_preserved": true,
+    "snapshot_closed_to_late_additions": true,
+    "late_results_and_new_source": "Continue in the next checkpoint; this snapshot does not borrow their outcomes.",
+    "private_pixels_raw_commercial_UI_keys_and_binaries_added": false,
+    "task_completed": false
+  },
+  "launcher_matrix": {
+    "observed_at": "2026-11-04T12:00:30.044481+00:00",
+    "sha256": "05e74a719281abab717464978d85393dec8d0d528c1e7ccbd93691f156ce56e4",
+    "launcher_apps": 45,
+    "historical_installed_package_count": 182,
+    "new_helpers_have_no_launcher_components": true,
+    "whole_app_qualification_not_inferred_from_helper_pass": true
+  },
+  "owner": {
+    "diagnostics12": {
+      "state": "SOURCE_FROZEN",
+      "change": "Preserve the failed relative name, open flags, held base identity and lifecycle role while retaining the original errno.",
+      "boot_root_cause_proven": false
+    },
+    "producer13": {
+      "compile": "ACTUAL_PASS",
+      "ordinary": "ACTUAL_FAIL_PRESERVED",
+      "relay_passed": 35,
+      "relay_failed": 2,
+      "relay_total": 37,
+      "supervisor_and_IPC_after_failure_executed": false,
+      "repair": "Drain already queued AUDIT/RETIRED through the existing validator before sending RETIRE; a raced send failure requires complete matching terminal proof and exact owned-child exit. Bare HUP or death never supplies that proof; unresolved errors remain poisoned.",
+      "compile_receipt": {
+        "path": "checkpoint15/evidence/owner13-compile01/compile-result.json",
+        "bytes": 39831,
+        "sha256": "9a2cf0087ff99b6834fc2b3a963e03629a14acc21af1a8d67f2b5081bbb22e8e",
+        "git_blob_sha1": "cdf818bf93d2bec0ddf032d97b5ab7f1f78e475e"
+      },
+      "ordinary_receipt": {
+        "path": "checkpoint15/evidence/owner13-ordinary01/run-result.json",
+        "bytes": 20203,
+        "sha256": "cc26182f01c5241d6766dfb356263fa6efc7b6499a05684e0447895935ad523e",
+        "git_blob_sha1": "60e6ff87b32520fb6610e7ba111142630ec9c807"
+      }
+    },
+    "producer14": {
+      "compile": "ACTUAL_PASS",
+      "ordinary": "ACTUAL_PASS",
+      "production_bytes_relative_to13": "Unchanged before both cfg(test) modules; only the two fixture assumptions changed.",
+      "fixture_repairs": [
+        "Retain rejection of faulted=true/incomplete=false; use incomplete=true for the legal faulted terminal test packet. stop_reason=0 was not the defect.",
+        "Compare contextual dead-proc failure with raw SYS_openat on the same held procdir; preserve the actual ENOENT or ESRCH instead of assuming ENOENT."
+      ],
+      "relay_tests": 37,
+      "supervisor_tests": 122,
+      "IPC_controls": 7,
+      "public_retirement_targeted_controls": 2,
+      "targeted_passed_each": 1,
+      "targeted_filtered_each": 36,
+      "worker_context_passed": true,
+      "entry_ABI3_passed": true,
+      "compile_receipt": {
+        "path": "checkpoint15/evidence/owner14-compile01/compile-result.json",
+        "bytes": 39898,
+        "sha256": "a916592cc708dc76411b482a371214410bca4662f6ff72dccd5083d88872b6a6",
+        "git_blob_sha1": "5d69e8786681b6e4c7e182ea57c3f35de0df55bf"
+      },
+      "ordinary_receipt": {
+        "path": "checkpoint15/evidence/owner14-ordinary01/run-result.json",
+        "bytes": 37063,
+        "sha256": "d38caeef2c821b6136d51967ae5b7799b60e6796e5144ed67540bbde57c2ea91",
+        "git_blob_sha1": "30273b1b7e4fe82eca2dc168c212fbf88e257596"
+      },
+      "compile_memory_peak": 592470016,
+      "ordinary_memory_peak": 56147968,
+      "observed_memory_event_deltas_zero": true,
+      "observed_swap_current_and_peak_zero": true,
+      "swap_max": "max",
+      "whole_invocation_resource_qualified": false,
+      "Android_or_full_owner_runtime_qualified": false
+    },
+    "normal14": {
+      "prepared": "ACTUAL_PASS",
+      "prepared_receipt": {
+        "path": "checkpoint15/evidence/owner14-normal01-prepared-read01/prepared.json",
+        "bytes": 55139,
+        "sha256": "5771673f20af6833e070da267b0ad9bcbbf58c87e03542104ac57fb9a4466770",
+        "git_blob_sha1": "1e73e7b20ae8f46159b458be2732d6259dee0546"
+      },
+      "runtime_result_in_fixed_cut": false,
+      "runtime_state_in_this_snapshot": "PENDING_ACTUAL_LIFECYCLE_RESULT",
+      "runtime_executed_by_prepare": false,
+      "prepared_Main_three_fences_equal": true,
+      "prepared_namespace_or_network_changed": false,
+      "host_uid_available_at_prepare_observation": 61286,
+      "subordinate_start": 20900000,
+      "subordinate_count": 100000,
+      "availability_is_not_a_persistent_reservation": true,
+      "ACTIVE_enrollment_and_original_retirement_qualified": false
+    },
+    "reconciliation": {
+      "original_ACK_timeouts_preserved": true,
+      "read_only_no_match_is_not_proof_of_no_execution": true,
+      "ordinary14_actual_receipt_bound_to_original_stable_operation": true,
+      "new_key_replay_inferred": false
+    },
+    "installed_Main_lifecycle_qualified": false,
+    "RC_reinitialization_production_qualified": false
+  },
+  "native_registry_and_snapshot": {
+    "positive": {
+      "state": "ACTUAL_OWNED_MECHANISM_PASS",
+      "cases": 10,
+      "assertions": 1017,
+      "direct_children_reaped": 10,
+      "nested_children_reaped": 1,
+      "forced_cleanup": 0,
+      "unreaped": 0,
+      "receipt": {
+        "path": "checkpoint15/evidence/factory-role-positive-run02-read01/result.json",
+        "bytes": 11715,
+        "sha256": "bc5c8e59a963828c6c59a8b1cd183e575c8903fbb4efa850369a23666dd1dcd9",
+        "git_blob_sha1": "5be3e70143ddf08672d80ab556c706e38b8b852c"
+      }
+    },
+    "snapshot": {
+      "state": "ACTUAL_OWNED_ORDINARY_RDONLY_SEALED_SNAPSHOT_PASS",
+      "cases": 4,
+      "assertions": 355,
+      "direct_children_reaped": 4,
+      "forced_cleanup": 0,
+      "unreaped": 0,
+      "maps_formatter": "owned_fixture",
+      "build_receipt": {
+        "path": "checkpoint15/evidence/factory-role-snapshot-build01/result.json",
+        "bytes": 78562,
+        "sha256": "919f2a52ee0bfd5baa82c8b87f6b1d1b74d351d5a4a23ecb4516af5766ba08ab",
+        "git_blob_sha1": "7247f174382960bf5520ae4e09ae6a84b960cfb3"
+      },
+      "runtime_receipt": {
+        "path": "checkpoint15/evidence/factory-role-snapshot-run01-read01/result.json",
+        "bytes": 10710,
+        "sha256": "09ef82b92955dc00a447ff015b9253eb7295c89ff885468640d473956424f6b7",
+        "git_blob_sha1": "25270ba37424dbd5dbba9c868596a527d8c2952a"
+      }
+    },
+    "nofollow": {
+      "build": "ACTUAL_PASS_BUILD_ONLY",
+      "build_commands": 39,
+      "build_receipt": {
+        "path": "checkpoint15/evidence/factory-snapshot-nofollow-build01/result.json",
+        "bytes": 91682,
+        "sha256": "818bab5d2c0daead8cd597228480b15d7fc12ef7be06cd2b143f316c7f57a4e0",
+        "git_blob_sha1": "0ccd6f2139a53865e2904f57cdaf5a286e2a1374"
+      },
+      "runtime_in_this_cut": "ACK_UNKNOWN_AFTER_MCP_TIMEOUT",
+      "runtime_result_in_fixed_cut": false,
+      "original_ACK_record": {
+        "path": "checkpoint15/evidence/factory-snapshot-nofollow-run01/admission.tool-original.json",
+        "bytes": 149,
+        "sha256": "8845000a53997e48da4b59132ab907c8766d451096e077ed4e72c69bd64922b4",
+        "git_blob_sha1": "9d594a259ffea4057c2b2f3bed3c7037fbc05945"
+      }
+    },
+    "factory_service_started": false,
+    "Android_executed": false,
+    "Main_actions": 0,
+    "Main_identity_observed_by_mechanism_runs": false,
+    "platform_policy_qualified": false,
+    "enabled_ART_engine_pair_or_APEX_qualified": false,
+    "resource_boundary": "Observed own memory-event deltas and swap use are recorded; an unlimited swap.max is not a hard no-swap qualification."
+  },
+  "bilibili": {
+    "r5_fresh_before": {
+      "state": "ACTUAL_THREE_CAPTURE_TRANSACTIONS_AND_EXACT_TASK_CLEANUP_VERIFIED",
+      "helper_uid": 10170,
+      "fresh_before_after_samples": 3,
+      "within_capture_absolute_scope_equal": true,
+      "inter_transaction_movement_branch_exercised": false,
+      "owned_task_removed": 936,
+      "preexisting_task_preserved": 851,
+      "Main_before_after_equal": true,
+      "business_outcome_unknown_retained": true,
+      "business_success_verified": false,
+      "navigation_receipt": {
+        "path": "checkpoint15/evidence/bili-r5-player-fresh-before01-read01/originals/navigation.json",
+        "bytes": 268643,
+        "sha256": "b1cc104486632c7ec6c42d609c8c0d23c97a72ca3e2823c5ff48abc93bba7483",
+        "git_blob_sha1": "36d350f4544fd303ab3dd83db0c7123107495fe1"
+      },
+      "cleanup_receipt": {
+        "path": "checkpoint15/evidence/bili-r5-player-fresh-before01-read01/originals/cleanup.json",
+        "bytes": 446,
+        "sha256": "14ad1897af7ee9c0b8d220de63213f07a121aea640f363dd87d43d38b64e0eda",
+        "git_blob_sha1": "b80ae7ff768cd7d9cdf4a3258ddda0c135e8cc9a"
+      },
+      "retained_review": {
+        "path": "checkpoint15/source/android/bili-r5-fresh-before-actual-review-01/report.json",
+        "bytes": 12690,
+        "sha256": "8e3113fb94239fcf0a18ff0b314795bdbb3a60e577005e991da166fa90bfe7a8",
+        "git_blob_sha1": "d09ccda790367073c25035aad27a99e6920cf2bf"
+      },
+      "original_geometry_failure_preserved": true,
+      "images_in_checkpoint": false
+    },
+    "r6": {
+      "state_in_fixed_cut": "SOURCE_AND_BUILD_REQUEST_FROZEN_BUILD_ADMITTED",
+      "build_admission": {
+        "path": "checkpoint15/evidence/bili-r6-build01/admission.tool-original.json",
+        "bytes": 1547,
+        "sha256": "d154f0443d52240d2bdc2aa999d5514be8bc957de158100086be25dbbef591b6",
+        "git_blob_sha1": "a535fd4d0d98f75ce45d34705166f14a5d57f72c"
+      },
+      "build_dispatch_review": {
+        "path": "checkpoint15/evidence/bili-r6-build01/dispatch-review.json",
+        "bytes": 902,
+        "sha256": "bc90127aab50726d64aecc5cbdaf2032852a21bfe611aa8d68dac8d9499ba3da",
+        "git_blob_sha1": "cd74f001d7f8fc3bd6b58d7bef616196ba9fa655"
+      },
+      "final_build_receipt_in_fixed_cut": false,
+      "install_or_controls_reveal_result_in_fixed_cut": false
+    },
+    "continuous_playback_pause_seek_reopen_audio_and_atomic_producer_attribution_qualified": false,
+    "whole_app_production_ready": false
+  },
+  "amazon": {
+    "initial_launch_inspect": {
+      "state": "ACTUAL_SCOPED_PASS",
+      "owned_task_removed": 946,
+      "preexisting_task_preserved": 851,
+      "review": {
+        "path": "checkpoint15/source/android/amazon-launch-inspect-actual-review-01/report.json",
+        "bytes": 10052,
+        "sha256": "203c51e768f0a565579eabd814d4c033138142352380d02e6ce071e008775d07",
+        "git_blob_sha1": "248a4696387d83749c5b56fc2e9719c6d4b624f3"
+      },
+      "business_success_verified": false
+    },
+    "search_entry01": {
+      "state": "ACTUAL_FAILED_READINESS_GATE_PRESERVED",
+      "first_error": "TWO_CONSECUTIVE_COMPLETE_SEARCH_ENTRY_OBSERVATIONS_REQUIRED",
+      "readiness_observation_nodes": [
+        72,
+        220,
+        281,
+        464
+      ],
+      "separate_post_observation_nodes": 464,
+      "separate_post_does_not_reclassify_original_failure": true,
+      "click_commands": 0,
+      "owned_task_removed": 950,
+      "preexisting_task_preserved": 851,
+      "Main_exactly_preserved": true,
+      "review": {
+        "path": "checkpoint15/source/android/amazon-search-entry01-actual-review-01/report.json",
+        "bytes": 4839,
+        "sha256": "87f913d61835a31737b0710a5ee7b6014c44085360b74ee9776b7c690af5703c",
+        "git_blob_sha1": "6dc7f9cc2e7dbdcde507cfe6feaefc1fa53ab315"
+      },
+      "coordinator_receipt": {
+        "path": "checkpoint15/evidence/amazon-search-entry01-read01/coordinator.json",
+        "bytes": 7455,
+        "sha256": "196e7052241db76fda7a479fc28e3422396886db38069c519984997f49d4709d",
+        "git_blob_sha1": "4f9f3ed01ba37d5785720e97ed271a21faf35732"
+      }
+    },
+    "search_entry02": {
+      "state_in_fixed_cut": "SOURCE_AND_EXACT_REQUEST_FROZEN",
+      "maximum_successful_readiness_observations": 5,
+      "maximum_public_entry_clicks": 1,
+      "existing_total_seconds": 30,
+      "same_consecutive_full_identity_gate": true,
+      "fresh_helper_nonces": 22,
+      "runtime_result_in_fixed_cut": false,
+      "source_diff": {
+        "path": "checkpoint15/source/android/amazon-search-entry-02/search-entry01-to02.patch",
+        "bytes": 13207,
+        "sha256": "7fa6e6718fbe7c866613ae47262be13e52c8e499bf7501c6cb1cd3c351c6a672",
+        "git_blob_sha1": "55a34573b1f0642beb1a0288de6c0a2c599f8495"
+      }
+    },
+    "public_search_business_success_and_whole_app_qualified": false
+  },
+  "ticket12306": {
+    "artifact_launcher_readonly": "ACTUAL_PASS_WITH_NO_LAUNCH",
+    "package": "com.MobileTicket",
+    "uid": 10121,
+    "version_code": 275,
+    "APKs": 1,
+    "APK_bytes": 150377492,
+    "APK_sha256": "c7e56101e5753002bba220ce40d07b00d4bc822e1eeef12bbe36ec9e2f8e272d",
+    "observed_launcher": "com.MobileTicket/.ui.activity.WelcomeGuideActivity",
+    "launch_performed": false,
+    "actual_receipt": {
+      "path": "checkpoint15/evidence/12306-artifact-launcher-readonly01/result.json",
+      "bytes": 8835,
+      "sha256": "7ec1d8756cefd536a04d3459041dd302b49bc0e50047c8ddf1f83418bc444abb",
+      "git_blob_sha1": "97a4e362beb94cbfd57569abb2a396fe06d45d7c"
+    },
+    "actual_review": {
+      "path": "checkpoint15/source/android/12306-artifact-launcher-actual-review-01/report.json",
+      "bytes": 3427,
+      "sha256": "06cf6765437ab0c4a97c7810ee9ac9434fb34c0e3b5ca118d10bd9e63fe3391f",
+      "git_blob_sha1": "1e5cf49ca4f8ecb849db2fccf82faf9670ffdaba"
+    },
+    "helper_build_source": "FROZEN_BUILD_ONLY_SOURCE_AND_REQUEST",
+    "helper_final_build_or_install_receipt_in_fixed_cut": false,
+    "commercial_signer_independently_qualified": false,
+    "whole_app_production_ready": false
+  },
+  "pending": [
+    "Continue actual Owner bootstrap through ACTIVE/enrollment and exact original retirement; preparation and ordinary controls are not that qualification.",
+    "Retain original Owner13 and older Owner runtime failures and their cleanup distinctions; do not infer a boot cause from generic or later process errors.",
+    "Reconcile the NOFOLLOW runtime from its original operation; the fixed cut contains the ACK timeout and no runtime verdict.",
+    "Finish Bilibili controls, pause/seek/reopen, sustained playback and App-attributed audio with current observations and exact cleanup.",
+    "Execute and assess separately admitted Amazon search-entry02; retain search-entry01 readiness failure.",
+    "Continue the 12306 build/install and then separately authorized current-bound functional acceptance.",
+    "Continue the complete 45-App matrix and matched native platform integration; no whole-App or Main deployment qualification is supplied here."
+  ],
+  "late_evidence_policy": "This is the closed 13:39:25 UTC evidence slice. Later source, terminal results, diagnostics and repairs remain separate and will be published in the next checkpoint; work continues."
+}

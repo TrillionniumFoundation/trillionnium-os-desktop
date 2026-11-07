@@ -1,0 +1,65 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/sudo",
+  "args": [
+    "-n",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "-"
+  ],
+  "cwd": "/home/alex/work",
+  "idempotency_key": "p4-prefix02-prepare01-e44674269cbde046",
+  "cpu_quota_percent": 100,
+  "memory_max_bytes": 268435456,
+  "nice": 10,
+  "timeout_seconds": 180,
+  "source_bytes": 119097,
+  "source_sha256": "e44674269cbde046d4c66f6c0c553d7f130103fd8362e6c7568c42caec9fb64a",
+  "request_bytes": 125432,
+  "request_sha256": "04217449c4cc109471490abb9c801e8819ea30a6837d38923ef0637c2b6e0a09",
+  "manifest_sha256": "714518452e90c313c99c34094bc24c6a03265d15fcff62321b39998912a8609b",
+  "source_files": {
+    "full_prefix_control.py": {
+      "bytes": 30605,
+      "sha256": "1432b761fbc289877465c0a167b7ff213cd9c87f0086495ddfeecf7b55e65745"
+    },
+    "main-cmdline-actual-diagnostic.json": {
+      "bytes": 3419,
+      "sha256": "04bd2b638f389e850eb8ab15fa5f3701de20cb0e013b472a8dca4470ccf34f0a"
+    },
+    "prefix_coordinator.py": {
+      "bytes": 40434,
+      "sha256": "7b257af1c0b5493ff0a28528146a5ccad96a38bc190402ef1524644a27b9d2e0"
+    },
+    "prefix_probe.c": {
+      "bytes": 9662,
+      "sha256": "d088edf44d523a67e2881ce6c0715a4885664f11c5315938e04f52738c43a34a"
+    },
+    "test_prefix_control.py": {
+      "bytes": 8284,
+      "sha256": "ae1cbf8f7c74afb4b32ffaefc1674e5635777f66833ba7adaf5c4b1f86a4d887"
+    },
+    "test_prefix_coordinator.py": {
+      "bytes": 13397,
+      "sha256": "e93843852ac45479d0daeefed0fe2fd474deaa87c3596c0e7203f7703bbd5248"
+    }
+  },
+  "expected_fresh_Python_controls": 43,
+  "existing_native_probe_reused": {
+    "bytes": 21752,
+    "device": 66306,
+    "gid": 0,
+    "inode": 34481448,
+    "mode": 448,
+    "path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/bin/prefix-probe",
+    "sha256": "79b30f9fa4a1e7635ae4786a50372b3fcaa84ad619269476e40a1badd65c0e82",
+    "uid": 0
+  },
+  "new_native_build_performed": false,
+  "new_native_controls_executed": 0,
+  "prior_native_controls_referenced": 6,
+  "source_stage_submitted": false,
+  "namespace_or_runtime_execution": false,
+  "new_source_root": "/home/alex/work/pocket4-relay-prefix-r11-source-05-02"
+}

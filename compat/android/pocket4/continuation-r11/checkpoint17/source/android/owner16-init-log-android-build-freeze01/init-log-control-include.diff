@@ -1,0 +1,11 @@
+--- local/init_log_controls.c
++++ staged/init_log_controls.c
+@@ -1,7 +1,7 @@
+ /* Actual owned memfd/fd/env/exec controls. KernelLogger is an explicit seam;
+  * no Android library, namespace, root service or production constructor runs. */
+ #define DROIDLOOM_BARRIER_TESTING
+-#include "../candidate/android/init_relay_barrier.c"
++#include "init_relay_barrier.c"
+ #include <dirent.h>
+ #include <sys/mman.h>
+ #include <sys/wait.h>

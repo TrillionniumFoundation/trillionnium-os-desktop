@@ -1,0 +1,36 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-c",
+      "import sys,hashlib;raw=sys.stdin.buffer.read();assert len(raw)==4683 and hashlib.sha256(raw).hexdigest()=='e913f7b38a192e0a7357c6ba21ed17c715c4da441394dea31c4513b977924199';scope={'__name__':'__main__','__file__':'<pinned-fixed-art-role-java-callers-read>','SOURCE_SHA256':'e913f7b38a192e0a7357c6ba21ed17c715c4da441394dea31c4513b977924199'};exec(compile(raw,'read_sources.py','exec'),scope,scope)"
+    ],
+    "created_unix_ms": 1793864962290,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1aaaf10f2-fc05-4605",
+    "idempotency_key": "pocket4-native-art-role-java-callers-readonly-01-20261105",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1aaaf10f2-fc05-4605",
+    "request_digest": "f1a23395bb3103ccd8bdac61d5d4a0f9d1bde9373a59f32c256f3251ce5a5d0f",
+    "request_fingerprint": 17411535827551454156,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1aaaf10f2-fc05-4605"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1aaaf10f2-fc05-4605"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

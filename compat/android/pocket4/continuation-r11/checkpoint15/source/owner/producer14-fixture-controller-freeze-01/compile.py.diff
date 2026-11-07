@@ -1,0 +1,63 @@
+--- producer13/compile.py
++++ producer14/compile.py
+@@ -10,21 +10,20 @@
+ import time
+ import traceback
+ 
+-CONTROL_REVISION = 'producer13-retirement-terminal-drain01'
+-BASE = Path('/home/alex/work/pocket4-supervisor-lmkd-cause-r11-build-11-01')
++CONTROL_REVISION = 'producer14-retirement-fixture-repair01'
++BASE = Path('/home/alex/work/pocket4-supervisor-lmkd-drain-r11-build-13-01')
+ SOURCE = BASE / "candidate"
+-OUT = Path('/home/alex/work/pocket4-supervisor-lmkd-drain-r11-build-13-01')
++OUT = Path('/home/alex/work/pocket4-supervisor-lmkd-fixture-r11-build-14-01')
+ CANDIDATE = OUT / "candidate"
+ TARGET = OUT / "target"
+ CARGO = "/home/alex/.cargo/bin/cargo"
+ PRIOR_RECEIPT = BASE / "compile-result.json"
+-PRIOR_RECEIPT_SHA = 'a120890b2edeb1bf1adbe150f064987c55661420ac4021dc4d7ac9b023ad6ca6'
+-PRIOR_INVENTORY_SHA = 'd8847105e8bb2da699eda4e2e8eded8a71c6ef84c6bc1963a27e60291667bb46'
+-ORIGINAL_DIFF_SHA = '75b8eb18c2e057c06fde07ec3954b5dec972c516c118e264b998db0aa02dce34'
++PRIOR_RECEIPT_SHA = '9a2cf0087ff99b6834fc2b3a963e03629a14acc21af1a8d67f2b5081bbb22e8e'
++PRIOR_INVENTORY_SHA = 'bbd03d6760a2ab9e584d8ea3cfc84a8804b4ec0f144742f0e1a51e9f46d061a1'
++ORIGINAL_DIFF_SHA = '2af0e86d25b4288c5426037d532d95cdda99076afeeefe40f62d45356df21f43'
+ EXACT_OVERLAY = {
+-    'runtime/droidloom-pressure-relay/src/lib.rs': (50847, '0e87dd2e7d0da46a647b93d212e492887446fcc55e5aace6bc0cff3091eea10e'),
+-    'runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs': (86037, 'cf9b59ced14cd1594e59dd91f299a734c47cbba71fff5634c62c9d4c9d62c8b2'),
+-    'runtime/droidloom-pressure-relay/src/lifecycle_relay.rs': (16497, '143c8ab64ae6411847878718052cf361e1e11e7674803673005882dc0590f8a9'),
++    'runtime/droidloom-pressure-relay/src/lib.rs': (51658, '102456cf0a4754cf04c1f35fbf3c5b0f68b2edea981e21528f5b5e33fe58e9d8'),
++    'runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs': (86381, '08ffa252cf726c1aa54699918ec5152a2ef5cc8c60277b3ab67225556006e0d1'),
+ }
+ NEW_SOURCE_FILES = set()
+ BINARIES = ["droidloomd", "droidloom-supervisor", "droidloom-psi-owner", "owned-ipc-controls"]
+@@ -233,7 +232,7 @@
+          "wrong recovery payload revision")
+     need(cfg["original_diff_sha256"] == ORIGINAL_DIFF_SHA and
+          cfg["source_manifest_sha256"] ==
+-         "fab7226afa93d372a7ba7d025cd704ae4aba878f9fa5336490af72eca98e6593",
++         "6ae91802b992dba1d48c725e99e51a7daade464f4c5006f78575050f759bcccb",
+          "wrong recovered source lineage")
+     need(len(cfg["preimage"]) == 32 and
+          set(cfg["overlays"]) == set(EXACT_OVERLAY) and
+@@ -596,17 +595,17 @@
+         put(OUT / "payload.json", json_bytes(cfg))
+         report["payload_sha256"] = sha(json_bytes(cfg))
+         prior_raw = read_regular(PRIOR_RECEIPT, 128 * 1024)
+-        need(sha(prior_raw) == PRIOR_RECEIPT_SHA, "actual producer11 retained cause01 receipt hash differs")
++        need(sha(prior_raw) == PRIOR_RECEIPT_SHA, "actual producer13 terminal drain01 receipt hash differs")
+         prior = json.loads(prior_raw)
+         need(prior["success"] is True and prior["compile_only"] is True and
+-             prior["revision"] == "producer11-retirement-cause01" and
++             prior["revision"] == "producer13-retirement-terminal-drain01" and
+              prior["candidate"] == str(SOURCE) and
+              prior["inputs_before"] == cfg["preimage"] and
+              prior["inputs_after"] == cfg["preimage"] and
+              prior["all_source_inventory_before_sha256"] == PRIOR_INVENTORY_SHA and
+              prior["all_source_inventory_after_sha256"] == PRIOR_INVENTORY_SHA,
+-             "actual producer11 retained cause01 receipt/source binding differs")
+-        put(OUT / "producer11-retirement-cause01-actual-compile-result.json", prior_raw)
++             "actual producer13 terminal drain01 receipt/source binding differs")
++        put(OUT / "producer13-retirement-terminal-drain01-actual-compile-result.json", prior_raw)
+         report["prior_build_receipt_sha256"] = PRIOR_RECEIPT_SHA
+         report["preimage_inputs"] = inputs(SOURCE, cfg["preimage"])
+         baseline = all_source(SOURCE)

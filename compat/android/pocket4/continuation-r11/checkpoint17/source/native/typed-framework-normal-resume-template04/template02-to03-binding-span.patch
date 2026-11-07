@@ -1,0 +1,18 @@
+--- template02/bind_actual_compile.py
++++ template03/bind_actual_compile.py
+@@ -37,8 +37,13 @@
+              and isinstance(n.targets[0], ast.Name) and n.targets[0].id == name]
+     require(len(nodes) == 1, 'one fixed binding assignment is required: ' + name)
+     before = ast.get_source_segment(source, nodes[0])
+-    require(source.count(before) == 1, 'binding assignment is ambiguous')
+-    return source.replace(before, name + ' = ' + repr(value))
++    raw = source.encode('utf-8')
++    lines = raw.splitlines(keepends=True)
++    node = nodes[0]
++    start = sum(map(len, lines[:node.lineno-1])) + node.col_offset
++    end = sum(map(len, lines[:node.end_lineno-1])) + node.end_col_offset
++    require(raw[start:end].decode('utf-8') == before, 'binding assignment span differs')
++    return (raw[:start] + (name + ' = ' + repr(value)).encode('utf-8') + raw[end:]).decode('utf-8')
+ 
+ 
+ def literal(source, name):

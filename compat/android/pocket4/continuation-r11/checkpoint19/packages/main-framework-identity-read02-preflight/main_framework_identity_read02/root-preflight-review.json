@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "prior_actual": {
+    "job": "1a1af35a5df-fc05-66c9",
+    "stdout_bytes": 7425,
+    "stdout_sha256": "d344ed7b2f03addf5245dd1757f81c53093058e782a6da163a6644da2a978b1c",
+    "tree": "cfb3249b473a25249d5033bb41f8b1a890bcc5f8"
+  },
+  "source_bytes": 11602,
+  "source_sha256": "1fe8a4813901de264e17fd968244171f0e9458373fff936905e466ae8fe89fd7",
+  "unchanged_helpers": [
+    "need",
+    "check",
+    "read",
+    "statrow",
+    "process",
+    "service",
+    "cg"
+  ],
+  "fixed_scope": "birth-pinned surviving init direct children, then exact known zygote direct children only",
+  "maximum_children_per_parent": 256,
+  "maximum_zygote_candidates": 8,
+  "maximum_system_server_candidates_per_zygote": 8,
+  "internal_deadline_seconds": 20,
+  "parent_timeout_seconds": 40,
+  "systemctl_children_maximum": 2,
+  "systemctl_child_timeout_seconds": 3,
+  "Main_mutations": 0,
+  "Android_commands": 0,
+  "namespace_entry": false,
+  "private_app_text_output": false,
+  "new_epoch_authorized": false,
+  "old_epoch_reauthorized": false,
+  "review": "Root read whole new main and inherited helpers; exact names only, unrelated child cmdlines never output; known matching process metadata and cgroup counters only; anchor pidfd held throughout. New identities are diagnostic observations, not epoch acceptance."
+}

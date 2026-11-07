@@ -1,0 +1,322 @@
+{
+  "schema": 1,
+  "kind": "ROOT_SCOPED_ONCE_ONLY_PRIVATE_SIGNAL_A04_ADMISSION",
+  "admitted": true,
+  "main_deployment_admitted": false,
+  "commercial_app_actions_admitted": false,
+  "production_ready": false,
+  "whole_apps_ready": 0,
+  "source_manifest_sha256": "1825e327e039ac58779085444aa69896990eaa06f8fde24cfb4e98642508486a",
+  "input_sha256": "152cc16040fc50d6920800d0152e3efb324682f701ac4ef64fbc35951ab279a3",
+  "prepared_sha256": "d334430df461e2011781307992a7ae60e84a8a6cc34e2a0f118f2ccf070f2aa8",
+  "prepared_text_export_sha256": "3fe367665c606128b464d28603729f62f732db0eec355da8f347f34f392af334",
+  "source_files_read": {
+    "cleanup_owned.py": {
+      "bytes": 23861,
+      "sha256": "45661ea4b0c3d9de0708571cdab3521d6827bed1f2108abf6814493d812fdbd3"
+    },
+    "failure_evidence.py": {
+      "bytes": 8972,
+      "sha256": "3f10ff4d991c9d69a9c867ef9ab29b109d0d19cee85854489dc41162e0fd6f97"
+    },
+    "held_runtime.py": {
+      "bytes": 22691,
+      "sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4"
+    },
+    "prepare_runtime.py": {
+      "bytes": 7350,
+      "sha256": "31266773780a772720272dfb937a8fdde7a93dd4314cd0b9d1dfcfe6defdbc30"
+    },
+    "run.py": {
+      "bytes": 45009,
+      "sha256": "2198c2e0bd0a30a4afb6d4fef8998d07d327b83388fb974c2c7eb02da6c72a23"
+    }
+  },
+  "original_retained_v5_sha256": "895ecbfec6d04170adf0dbc16a0fd18d3de0b78317efec86de1846295dfcddb8",
+  "source_prep_sha256": "3f12e8bcde951712a20208aaeed04f1125bac58993ce1a3f5a93e4f950a9b103",
+  "actual_r5_cleanup_fixture_sha256": "790a1c8c371466aad66e5be5f76c963ba0858caace29dccb72cf8e0ff7cae00d",
+  "fixture_terminal": {
+    "at_unix_ms": 1793820752730,
+    "audit_recorded": true,
+    "automatic_retry": false,
+    "cancelled": false,
+    "exit_code": 0,
+    "job_id": "1a1a80c736e-fc05-2d78",
+    "launch_nonce": "88e54e10487340d81dfd7c3932905c21",
+    "log_bytes": {
+      "stderr": {
+        "seen": 0,
+        "stored": 0
+      },
+      "stdout": {
+        "seen": 250,
+        "stored": 250
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_synced": {
+      "stderr": true,
+      "stdout": true
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
+  },
+  "fixture_scope": "Actual exact MainPID0/empty root/live child subgroup, withheld launch observation and injected evidence-write failure; one stop, held original cgroup removed, original child exit/reaped, Main/source/resources unchanged. Injection remains a canary failure.",
+  "checks": {
+    "inputs": {
+      "at_unix_ms": 1793820886415,
+      "audit_recorded": true,
+      "automatic_retry": false,
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1a80e78c3-fc05-2d81",
+      "launch_nonce": "6d58e8850114e87c85a83f1cefca415f",
+      "log_bytes": {
+        "stderr": {
+          "seen": 0,
+          "stored": 0
+        },
+        "stdout": {
+          "seen": 1611,
+          "stored": 1611
+        }
+      },
+      "log_errors": {
+        "stderr": null,
+        "stdout": null
+      },
+      "log_synced": {
+        "stderr": true,
+        "stdout": true
+      },
+      "log_truncated": {
+        "stderr": false,
+        "stdout": false
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "terminal_publication_protocol": 1,
+      "timed_out": false
+    },
+    "preparation": {
+      "at_unix_ms": 1793820982401,
+      "audit_recorded": true,
+      "automatic_retry": false,
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1a80fcfc3-fc05-2d87",
+      "launch_nonce": "3ea98762f6f782b5dd6b5777c0b66926",
+      "log_bytes": {
+        "stderr": {
+          "seen": 0,
+          "stored": 0
+        },
+        "stdout": {
+          "seen": 1604,
+          "stored": 1604
+        }
+      },
+      "log_errors": {
+        "stderr": null,
+        "stdout": null
+      },
+      "log_synced": {
+        "stderr": true,
+        "stdout": true
+      },
+      "log_truncated": {
+        "stderr": false,
+        "stdout": false
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "terminal_publication_protocol": 1,
+      "timed_out": false
+    },
+    "runtime_admission": {
+      "at_unix_ms": 1793821229008,
+      "audit_recorded": true,
+      "automatic_retry": false,
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1a81398b0-fc05-2d92",
+      "launch_nonce": "d7cbefd9343f2d95eaf0ad510aec496e",
+      "log_bytes": {
+        "stderr": {
+          "seen": 0,
+          "stored": 0
+        },
+        "stdout": {
+          "seen": 250,
+          "stored": 250
+        }
+      },
+      "log_errors": {
+        "stderr": null,
+        "stdout": null
+      },
+      "log_synced": {
+        "stderr": true,
+        "stdout": true
+      },
+      "log_truncated": {
+        "stderr": false,
+        "stdout": false
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "terminal_publication_protocol": 1,
+      "timed_out": false
+    }
+  },
+  "expected_private": {
+    "name": "p4-signal-mask-r1-20261104-a04",
+    "host_uid": 2404,
+    "subid_start": 14300000,
+    "subid_count": 100000,
+    "cell_nonce": "aefbacbc3c7544a6aae0ee8b1bcfe80e",
+    "case_nonces": {
+      "r2-smc-default": "2af1bba2075e4a5a9610cc754fffeda6",
+      "r2-smc-handler": "05646f61d05a4f8d9a74f857bc021e4d",
+      "r2-svc": "424e6c028c3a4f99b69029a0c46e465e",
+      "r3-smc-mask-edit": "bd38db6e2bc1418ca3c177dd8bc3446d"
+    },
+    "copied_records": 86,
+    "fresh_images": [
+      {
+        "bytes": 8589934592,
+        "device": 66306,
+        "fresh_O_EXCL_created": true,
+        "inode": 110234132,
+        "name": "data.img",
+        "sha256_before_first_boot": "0216b11ef537c5f9225042abc03c7619ea9714ab97613b66b4ef8de6d4c0a999"
+      },
+      {
+        "bytes": 134217728,
+        "device": 66306,
+        "fresh_O_EXCL_created": true,
+        "inode": 110234189,
+        "name": "metadata.img",
+        "sha256_before_first_boot": "fc0c5b1a6e6fe8e81bb51e3b424f708c81f5260991eb25ef60a6e5af27427c81"
+      }
+    ],
+    "engine_sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
+    "spec_sha256": "2d8ffd08fd7e6c61af9c55f622b2e8f0b1d45f46b5f9d3d30e7b29ae8a3116c3",
+    "old_userdata_read": false
+  },
+  "main_binding_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "main_limits": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "12288"
+  },
+  "controller": {
+    "unit": "p4-signal-mask-r1-20261104-a04-controller-01.service",
+    "description": "p4-signal-mask-r1-20261104-a04 aefbacbc3c7544a6aae0ee8b1bcfe80e controller-01",
+    "argv": [
+      "/usr/bin/systemd-run",
+      "--unit=p4-signal-mask-r1-20261104-a04-controller-01.service",
+      "--property=Description=p4-signal-mask-r1-20261104-a04 aefbacbc3c7544a6aae0ee8b1bcfe80e controller-01",
+      "--property=Type=exec",
+      "--property=Restart=no",
+      "--property=RuntimeMaxSec=1500",
+      "--property=TimeoutStopSec=30",
+      "--property=KillMode=control-group",
+      "--property=OOMPolicy=stop",
+      "--property=CPUQuota=10%",
+      "--property=MemoryMax=256M",
+      "--property=MemorySwapMax=0",
+      "--property=TasksMax=128",
+      "--property=Nice=10",
+      "--property=UMask=0077",
+      "--wait",
+      "--pipe",
+      "--",
+      "/usr/bin/env",
+      "-i",
+      "PATH=/usr/bin:/bin",
+      "LANG=C",
+      "LC_ALL=C",
+      "PYTHONDONTWRITEBYTECODE=1",
+      "/usr/bin/python3",
+      "-I",
+      "/home/alex/work/pocket4-signal-runtime-r5-work-01/source-frozen-r5-03/run.py",
+      "run",
+      "--inputs",
+      "/home/alex/work/pocket4-signal-mask-a04-inputs-01.json",
+      "--inputs-sha256",
+      "152cc16040fc50d6920800d0152e3efb324682f701ac4ef64fbc35951ab279a3",
+      "--preparation-source",
+      "/home/alex/work/pocket4-owned-signal-host-r11-source-01/isolated-signal-canary-r1",
+      "--source-manifest",
+      "/home/alex/work/pocket4-signal-runtime-r5-work-01/source-frozen-r5-03/source-manifest.json",
+      "--source-manifest-sha256",
+      "1825e327e039ac58779085444aa69896990eaa06f8fde24cfb4e98642508486a",
+      "--host-wrapper-source-manifest",
+      "/home/alex/work/pocket4-owned-signal-host-r11-source-01/isolated-signal-canary-runtime-r1/source-manifest.json",
+      "--host-suite-receipt",
+      "/home/alex/work/pocket4-signal-host-candidate-r11-01-9d630262/result.json",
+      "--host-suite-sha256",
+      "b8c9b01588d1c2a13c80ba1afc5765fcf6656147d26e630a7c2cf74f4f482283",
+      "--host-launch-inputs",
+      "/home/alex/work/pocket4-owned-signal-host-r11-source-01/isolated-signal-canary-runtime-r1/host-launch-inputs.json",
+      "--host-launch-inputs-sha256",
+      "c313ea1f0d03474b05ee2ee8ae3bb74d0131d57469fb9dbf454d03745e3002fb",
+      "--namespace-helper",
+      "/home/alex/work/pocket4-owned-held-ns-runner-r4-01/held-namespace-entry",
+      "--namespace-helper-sha256",
+      "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689",
+      "--namespace-helper-source",
+      "/home/alex/work/pocket4-owned-held-ns-runner-r4-01/held_namespace_entry.rs",
+      "--namespace-helper-source-sha256",
+      "adf5b08f7854bec061ab8d2a208f3414339701c816218881e6550afde2e6c31c",
+      "--namespace-helper-qualification",
+      "/home/alex/work/pocket4-owned-held-ns-runner-r4-export-01/qualification.json",
+      "--namespace-helper-qualification-sha256",
+      "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3",
+      "--prepared-sha256",
+      "d334430df461e2011781307992a7ae60e84a8a6cc34e2a0f118f2ccf070f2aa8"
+    ],
+    "CPUQuota": "10%",
+    "MemoryMax": 268435456,
+    "MemorySwapMax": 0,
+    "TasksMax": 128,
+    "RuntimeMaxSec": 1500,
+    "TimeoutStopSec": 30,
+    "KillMode": "control-group",
+    "affinity_changed": false
+  },
+  "findings": [
+    "The previous classpath defect is addressed by held zygote proc/root/mount descriptors and paired simultaneous init-root/zygote-root jar identities and bounded hashes. Actual Android execution must still validate this path.",
+    "Actual four-case suite remains svc, smc-handler, smc-default, smc-mask-edit with distinct immutable preparation nonces and exact per-case UID/APK/epoch/engine mapping/result binding.",
+    "Original v5 service startup and resource bounds remain byte-identical; only the admitted R5 entry, diagnostics, classpath and cleanup integration replace their previous paths.",
+    "R5 exact generation cleanup and hierarchical cgroup retirement are the active cleanup. Failure saves are independent from cleanup; unknown generation must never license a stop.",
+    "Every frozen source, exact existing candidate host suite, entry qualification, tools, APKs, private images and full cell spec passed actual external runtime check. Root independently parsed all four generated receipts and all five 32-hex distinct nonces.",
+    "Original a01/a02/a03, fixture01 failure and its corrected review/recovery are retained. This is a new attempt, not a relabeled prior outcome."
+  ],
+  "limits": [
+    "No Main engine activation or publisher-app action.",
+    "Shared helper qualifies namespace entry, not escaped-descendant cleanup.",
+    "Only four owned synchronous signal contracts can be qualified; full app compatibility and all asynchronous signal semantics remain separate.",
+    "No automatic replay on ambiguous timeout or failed case. Reconcile the exact durable controller, claim and generation."
+  ]
+}

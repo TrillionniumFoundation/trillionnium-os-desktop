@@ -1,0 +1,28 @@
+--- a/controller-fb354.py
++++ b/controller.py
+@@ -28,12 +28,12 @@
+ import traceback
+ import types
+ 
+-BUILD = Path('/home/alex/work/pocket4-owned-factory-v2-host-build-01')
+-BUILD_SHA = 'adb1b0cb4bfa12d3d154c0538e931a7752046f8ab295e2bab77687615af6c81e'
+-AUDIT_SHA = 'bcef68b74b78a7b3e6b40354810fdf0a58c7ad3e5a89dde7f3487983cbf1ec3f'
++BUILD = Path('/home/alex/work/pocket4-owned-factory-v2-host-build-02')
++BUILD_SHA = 'fd4a8d8a3b4b037bdf9ee72992cda69544ce8c94ea44e46696d028c0ad041142'
++AUDIT_SHA = '838149e04b8672ab7ca262983d66c835fc7d7530efffee5cec6a6ed217b3afdf'
+ ELFS = {
+-    'factory': ('factory-v2-host', '4be02a35826c0d5db7c8bee6ce60aebb0ec9c378ff2923785ee025ddb0eaf415', 134096),
+-    'client': ('factory-client-host', '2a3582edd0fbb1cec9cfb0d2dfdf602305d0c4a1e9b791682305fd66b7a6846c', 335168),
++    'factory': ('factory-v2-host', 'dcb8989f4ac2557a6c69bfaf8b9ec38527327703d3f8c501c934da35496dffdc', 134912),
++    'client': ('factory-client-host', '28d8c920222f0b4d13515bc229c4aafc93c305e27d600b5436b79bb318b5af96', 337088),
+ }
+ GUARD = Path('/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py')
+ GUARD_SHA = 'f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288'
+@@ -701,6 +701,7 @@
+             stream.write(data)
+             stream.flush()
+             os.fsync(fd)
++        os.fchmod(fd, 0o444)
+     finally:
+         os.close(fd)
+     os.fsync(directory_fd)

@@ -1,0 +1,234 @@
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -2413,8 +2413,8 @@
+     Ok(())
+ }
+ 
+-// Read only the explicit production or metadata list. The complete 500-entry
+-// checkout remains an independent compiler/controller input authority.
++// Read only the explicit production or metadata list. The complete checkout
++// remains an independent compiler/controller input authority.
+ fn composer_retirement_fixed_inputs(
+     root: &Path, inputs: &[(&str, usize, &str)],
+ ) -> Result<serde_json::Value> {
+@@ -2489,6 +2489,29 @@
+     p.put(&path, metadata_only(&original)?)
+ }
+ 
++const COMPOSER_RETIREMENT_AUDIOCONTROL_EXAMPLE_BLUEPRINT: &str =
++    "hardware/interfaces/automotive/audiocontrol/aidl/default/Android.bp";
++
++fn project_composer_retirement_audiocontrol_example(
++    p: &mut Projection, source: &Path,
++) -> Result<()> {
++    use sha2::{Digest, Sha256};
++    // Only the separately validated two-target Composer service/AIDL-test route
++    // calls this projection. Keep the typed-ingress route and its own builder
++    // unchanged. The observed automotive example is not one of these targets.
++    // Preserve its package/license and entire journal preimage; do not change
++    // parent AIDL providers, sibling code, source locks, or global discovery.
++    let path = source.join(COMPOSER_RETIREMENT_AUDIOCONTROL_EXAMPLE_BLUEPRINT);
++    let original = fs::read_to_string(&path)?;
++    if original.len() != 1869
++        || format!("{:x}", Sha256::digest(original.as_bytes()))
++            != "9c8a0aecfa46ce0f1874362fa9dfff6a34326f9bf569b6fe7206dd6db1b3c9a6"
++    {
++        return fail(format!("Composer retirement exact Audiocontrol example Blueprint changed: {COMPOSER_RETIREMENT_AUDIOCONTROL_EXAMPLE_BLUEPRINT}"));
++    }
++    p.put(&path, metadata_only(&original)?)
++}
++
+ fn composer_retirement_record(path: &Path, value: serde_json::Value) -> Result<()> {
+     use std::io::Write;
+     use std::os::unix::fs::OpenOptionsExt;
+@@ -2849,6 +2872,7 @@
+     project_blueprints(&mut p, source, typed_ingress || composer_retirement)?;
+     if composer_retirement {
+         project_composer_retirement_systemui_tests(&mut p, source)?;
++        project_composer_retirement_audiocontrol_example(&mut p, source)?;
+     }
+     if audio_apex_only_build(targets) || minigbm_only_build(targets) {
+         // Select AOSP's original pinned host test-harness jars. Their actual
+@@ -3253,6 +3277,126 @@
+     use super::*;
+ 
+     #[test]
++    fn composer_retirement_audiocontrol_example_projection_keeps_metadata_and_sibling_sources() {
++        validate_composer_retirement_route(SoongDependencyMode::Strict,
++            COMPOSER_RETIREMENT_TARGETS, "droidloom_x86_64", None, false, None).unwrap();
++        assert_eq!(COMPOSER_RETIREMENT_TARGETS, &[
++            "android.hardware.graphics.composer3-service.droidloom",
++            "droidloom-composer-aidl-tests",
++        ]);
++        let original = include_str!(
++            "../../../android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp");
++        assert_eq!(original.matches("cc_binary {").count(), 1);
++        assert_eq!(original.matches("    name: \"").count(), 1);
++        assert_eq!(original.matches(
++            "    name: \"android.hardware.automotive.audiocontrol-service.example\",").count(), 1);
++        for name in [
++            "latest_android_hardware_audio_common_ndk_shared",
++            "latest_android_hardware_automotive_audiocontrol_ndk_shared",
++            "powerpolicyclient_defaults",
++            "car.audio.configuration.xsd.default",
++            "car.fade.configuration.xsd.default",
++        ] {
++            assert_eq!(original.matches(&format!("        \"{name}\",")).count(), 1);
++        }
++        let expected = concat!(
++            "package {\n",
++            "    // See: http://go/android-license-faq\n",
++            "    // A large-scale-change added 'default_applicable_licenses' to import\n",
++            "    // all of the 'license_kinds' from \"hardware_interfaces_license\"\n",
++            "    // to get the below license kinds:\n",
++            "    //   SPDX-license-identifier-Apache-2.0\n",
++            "    default_applicable_licenses: [\"hardware_interfaces_license\"],\n",
++            "}\n",
++        );
++        let fixture = tempfile::tempdir().unwrap();
++        let source = fixture.path().join("aosp-source");
++        let path = source.join(COMPOSER_RETIREMENT_AUDIOCONTROL_EXAMPLE_BLUEPRINT);
++        let parent = source.join("hardware/interfaces/automotive/audiocontrol/aidl/Android.bp");
++        let sibling = source.join("hardware/interfaces/automotive/audiocontrol/aidl/default/AudioControl.cpp");
++        let manifest = source.join(".droidloom-source-manifest.json");
++        let journal = fixture.path().join("projection.json");
++        // Explicit sentinels test write scope, not the content of real providers.
++        let sentinels = [
++            (&parent, "unchanged parent AIDL provider sentinel\n"),
++            (&sibling, "unchanged sibling implementation sentinel\n"),
++            (&manifest, "unchanged source manifest sentinel\n"),
++        ];
++        write(&path, original).unwrap();
++        for (p, value) in sentinels { write(p, value).unwrap(); }
++        {
++            let mut projection = Projection::new(journal.clone()).unwrap();
++            project_composer_retirement_audiocontrol_example(&mut projection, &source).unwrap();
++            assert_eq!(fs::read(&path).unwrap(), expected.as_bytes());
++            for (p, value) in sentinels {
++                assert_eq!(fs::read(p).unwrap(), value.as_bytes());
++            }
++            let originals: Vec<Original> =
++                serde_json::from_slice(&fs::read(&journal).unwrap()).unwrap();
++            assert_eq!(originals.len(), 1);
++            assert_eq!(originals[0].path, path);
++            assert_eq!(originals[0].bytes.as_deref(), Some(original.as_bytes()));
++        }
++        assert!(!journal.exists());
++        assert_eq!(fs::read(&path).unwrap(), original.as_bytes());
++        for (p, value) in sentinels { assert_eq!(fs::read(p).unwrap(), value.as_bytes()); }
++    }
++
++    #[test]
++    fn composer_retirement_audiocontrol_example_projection_rejects_source_drift_before_write() {
++        let original = include_str!(
++            "../../../android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp");
++        for changed in [
++            original.replacen("powerpolicyclient_defaults", "powerpolicyclient_changed", 1),
++            original.replacen("car.fade.configuration.xsd.default", "car.fade.configuration.xsd.changed", 1),
++            format!("{original}\n"),
++        ] {
++            assert_ne!(changed.as_bytes(), original.as_bytes());
++            let fixture = tempfile::tempdir().unwrap();
++            let source = fixture.path().join("aosp-source");
++            let path = source.join(COMPOSER_RETIREMENT_AUDIOCONTROL_EXAMPLE_BLUEPRINT);
++            let journal = fixture.path().join("projection.json");
++            write(&path, &changed).unwrap();
++            {
++                let mut projection = Projection::new(journal.clone()).unwrap();
++                let error = project_composer_retirement_audiocontrol_example(&mut projection, &source)
++                    .unwrap_err().to_string();
++                assert!(error.contains("Composer retirement exact Audiocontrol example Blueprint changed"));
++                assert!(error.contains(COMPOSER_RETIREMENT_AUDIOCONTROL_EXAMPLE_BLUEPRINT));
++                assert!(projection.originals.is_empty());
++                assert!(!journal.exists());
++                assert_eq!(fs::read(&path).unwrap(), changed.as_bytes());
++            }
++            assert!(!journal.exists());
++            assert_eq!(fs::read(&path).unwrap(), changed.as_bytes());
++        }
++    }
++
++    #[test]
++    fn composer_retirement_audiocontrol_example_projection_recovers_full_observed_original() {
++        let original = include_str!(
++            "../../../android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp");
++        let fixture = tempfile::tempdir().unwrap();
++        let source = fixture.path().join("aosp-source");
++        let path = source.join(COMPOSER_RETIREMENT_AUDIOCONTROL_EXAMPLE_BLUEPRINT);
++        let journal = fixture.path().join("projection.json");
++        write(&path, original).unwrap();
++        let mut projection = Projection::new(journal.clone()).unwrap();
++        project_composer_retirement_audiocontrol_example(&mut projection, &source).unwrap();
++        assert_ne!(fs::read(&path).unwrap(), original.as_bytes());
++        let originals: Vec<Original> =
++            serde_json::from_slice(&fs::read(&journal).unwrap()).unwrap();
++        assert_eq!(originals.len(), 1);
++        assert_eq!(originals[0].path, path);
++        assert_eq!(originals[0].bytes.as_deref(), Some(original.as_bytes()));
++        std::mem::forget(projection);
++        assert!(Projection::new(journal.clone()).is_err());
++        recover(&journal, &source).unwrap();
++        assert_eq!(fs::read(&path).unwrap(), original.as_bytes());
++        assert!(!journal.exists());
++    }
++
++    #[test]
+     fn composer_retirement_route_is_strict_and_disjoint_from_framework() {
+         let valid = |mode, targets, product, flavor, typed, staging| {
+             validate_composer_retirement_route(mode, targets, product, flavor, typed, staging)
+--- /dev/null
++++ b/android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp
+@@ -0,0 +1,53 @@
++// Copyright (C) 2020 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//       http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    // See: http://go/android-license-faq
++    // A large-scale-change added 'default_applicable_licenses' to import
++    // all of the 'license_kinds' from "hardware_interfaces_license"
++    // to get the below license kinds:
++    //   SPDX-license-identifier-Apache-2.0
++    default_applicable_licenses: ["hardware_interfaces_license"],
++}
++
++cc_binary {
++    name: "android.hardware.automotive.audiocontrol-service.example",
++    relative_install_path: "hw",
++    init_rc: ["audiocontrol-default.rc"],
++    vintf_fragments: ["audiocontrol-default.xml"],
++    vendor: true,
++    defaults: [
++        "latest_android_hardware_audio_common_ndk_shared",
++        "latest_android_hardware_automotive_audiocontrol_ndk_shared",
++        "powerpolicyclient_defaults",
++        "car.audio.configuration.xsd.default",
++        "car.fade.configuration.xsd.default",
++    ],
++    shared_libs: [
++        "android.hardware.audio.common@7.0-enums",
++        "libbinder_ndk",
++        "libcutils",
++        "liblog",
++        "libbase",
++        "libxml2",
++        "libutils",
++        "android.hardware.audiocontrol.internal",
++        "libaudio_aidl_conversion_common_ndk",
++    ],
++    srcs: [
++        "AudioControl.cpp",
++        "main.cpp",
++        "PowerPolicyClient.cpp",
++    ],
++}

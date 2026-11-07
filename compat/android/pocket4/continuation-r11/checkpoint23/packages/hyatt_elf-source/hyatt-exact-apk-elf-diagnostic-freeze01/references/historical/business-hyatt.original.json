@@ -1,0 +1,135 @@
+{
+  "abi": "arm64-v8a",
+  "activity_events": {
+    "activity_finish_reason": "starting-proc-removed",
+    "app_death_utc": "2026-11-04T14:47:44.353Z",
+    "app_start_utc": "2026-11-04T14:47:43.955Z",
+    "event_log_sha256": "d8fda18559d4868adbe5ea21f1a22d0114d6c47d6bfe94399f525b75091a5d32",
+    "temporary_task_removed_by_framework": true
+  },
+  "app": "Hyatt",
+  "archive_audit": {
+    "all_rehashes_passed": true,
+    "png_files": 0,
+    "raw_command_stdout_stderr_pairs": 19,
+    "sha256": "829eaba18a41db9739aba6f8f517a20c49bf804e1dcdd29bffa5aebeff48ec38",
+    "step_receipts": 3
+  },
+  "closure": {
+    "framework_epoch_preserved": true,
+    "no_completed_launch_scope": true,
+    "only_preexisting_home_task_remained": true,
+    "original_unknown_preserved": true,
+    "read_only": true,
+    "receipt_sha256": "d783cd8df379e7df6b048a3ce767c77e5424a0b0d871f15782b3158622420478",
+    "task_removal_attempted": false
+  },
+  "completed_utc": "2026-11-04T14:52:39.981544+00:00",
+  "diagnostics": {
+    "current_activity_sha256": "f0e853a1bbe053ed0d7521813ee5217a719e61aa416b14c21c07f6652e7e6b6d",
+    "package_metadata_sha256": "b95ea4ad9464da04f02d3d48f5cd3067c4f2aeafc48364869b86e95aa7964cb5",
+    "receipt_sha256": "4c1eea92857604db6cb49412d0b22112a8151012b750ab7d2558335ec6056e8d",
+    "uid_log_bytes": 0,
+    "uid_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "evidence_basis": "Publication agent executed one guarded native launch, inspected fresh exact-package crash/exit/activity evidence, and hashed the installed APK set through the actual Android namespace. Raw APKs, private paths and logs are excluded.",
+  "evidence_date_utc": "2026-11-04",
+  "flow": "hyatt-01",
+  "fresh_crash": {
+    "anr_record_observed": false,
+    "application_frame": "com.Hyatt.hyt.ProtectedHyattApplication.attachBaseContext",
+    "crash_buffer_sha256": "953af1aeb52bdc637f7f978e091c1b15a9270d0f270c537fa8988dea22099aeb",
+    "exception": "java.lang.UnsatisfiedLinkError",
+    "exit_info_sha256": "7a6d71229675fe88912622b32f14618a8746cea48082955f6ab4b31ea70c594f",
+    "exit_reason": 4,
+    "exit_reason_name": "APP_CRASH_EXCEPTION",
+    "exit_status": 0,
+    "exit_timestamp_utc": "2026-11-04T14:47:44.346Z",
+    "main_oom_observed": false,
+    "message": "Bad JNI version returned from JNI_OnLoad in libdexprotector.so: -500",
+    "native_library_basename": "libdexprotector.so",
+    "returned_jni_version": -500,
+    "thread": "main",
+    "timestamp_utc": "2026-11-04T14:47:44.344Z",
+    "underlying_library_return_reason_established": false
+  },
+  "health": {
+    "final_memory_current_bytes": 3211231232,
+    "main_full_avg10": 0,
+    "memory_high_event_counter_before_and_after": 14902,
+    "oom": 0,
+    "oom_group_kill": 0,
+    "oom_kill": 0
+  },
+  "installed_inputs": {
+    "apk_bytes_published": false,
+    "apks": [
+      {
+        "bytes": 138951987,
+        "filename": "base.apk",
+        "sha256": "418dbf6fd2a42f87b79cc4d0a806c1d13baec34b8f85f48104a6c855b6f7d5e2"
+      },
+      {
+        "bytes": 1192682,
+        "filename": "split_config.arm64_v8a.apk",
+        "sha256": "9fd69f616d5a20d549647690ffc0adc50631bf040400b7d0309ad1454dd1680f"
+      },
+      {
+        "bytes": 654090,
+        "filename": "split_config.xxhdpi.apk",
+        "sha256": "74892b430c50b442d3f9b19dd28083a6912bc96c229227bda7af1c82e62c3d12"
+      }
+    ],
+    "package_path_list_unchanged_before_and_after_hashing": true,
+    "private_ab_test_performed": false,
+    "receipt_sha256": "d783cd8df379e7df6b048a3ce767c77e5424a0b0d871f15782b3158622420478"
+  },
+  "launch": {
+    "attempts": 1,
+    "completed_task_receipt_obtained": false,
+    "native_command_returncode": 1,
+    "native_seconds": 6.182547662989236,
+    "native_stderr_sha256": "80fb0e76205c76eb18bfdccced7dd729eaf42d2e6d72f77eaef210efe05eb857",
+    "native_stdout_sha256": "e475dd228e57cec3db894c27810d1f826fcd4886bc1f295ac66f026b252986ce",
+    "native_timed_out": false,
+    "original_outcome_unknown": true,
+    "original_receipt_sha256": "362a5a7a3f1b2f71a98b493a883173a2b55c3f739512065826e570d5079c369a",
+    "original_recorder_returncode": 2,
+    "original_unknown_preserved": true,
+    "relaunch_attempted": false
+  },
+  "limitations": [
+    "The observed JNI version rejection is an exact startup exception. The library's internal reason for returning -500 is not established.",
+    "The deployed engine is pinned by Main activation. The App died before an actual-App maps receipt could be captured.",
+    "The installed base and split hashes are input bindings for a future fresh private comparison, not evidence that such a comparison has passed.",
+    "No retry, task-removal mutation, login, booking, account change, data reset, validation bypass or runtime change was performed."
+  ],
+  "min_sdk": 35,
+  "package": "com.Hyatt.hyt",
+  "production_ready": false,
+  "runtime": {
+    "activation_after_original_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "activation_verified_original_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "deployed_engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "deployed_presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "recorder_sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b"
+  },
+  "schema": "pocket4-current-business-flow-public-summary-v1",
+  "started_utc": "2026-11-04T14:47:43.718308+00:00",
+  "status": "FAIL_JNI_ONLOAD_BAD_VERSION_MINUS_500",
+  "target_sdk": 36,
+  "unqualified": {
+    "actual_app_engine_mapping": false,
+    "authentication": false,
+    "booking": false,
+    "hotel_detail": false,
+    "normal_reopen": false,
+    "private_runtime_ab": false,
+    "public_hotel_search": false,
+    "rendered_home": false,
+    "underlying_library_return_reason": false
+  },
+  "version_code": 26090096,
+  "version_name": "26.9.0"
+}

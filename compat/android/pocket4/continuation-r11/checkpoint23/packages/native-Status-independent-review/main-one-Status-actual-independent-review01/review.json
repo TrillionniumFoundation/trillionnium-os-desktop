@@ -1,0 +1,50 @@
+{
+  "schema": "one-Status-child-evidence-independent-review-v1",
+  "state": "ACTUAL_OBSERVATION_COMPLETE_ORIGINAL_GATE_REJECTED",
+  "actual": {
+    "tree": "c9466b22f297239cdfe70a0d0ce2d4255ff643d9",
+    "bytes": 16391,
+    "sha256": "1b3cbc951947af915a471c6dfce4a3f0d21dc80e94f050830f92e18de42be41e",
+    "git_blob": "7e0f7862f333226c5b75b51d22b06a3b4fbbe186"
+  },
+  "actual_controls_passed": 24,
+  "one_Status_only": true,
+  "first_failure": {
+    "parent": "daemon",
+    "host_pid": 3588022,
+    "expected_child": 3268774,
+    "complete_child_PIDs": [
+      2300136,
+      3268774
+    ],
+    "code": "OWNER_SINGLE_DIRECT_CHILD_REQUIRED"
+  },
+  "extra_child": {
+    "pid": 2300136,
+    "start_ticks_first_sample": 102548153,
+    "parent_first_sample": 3588022,
+    "second_identity": "PROCESS_IDENTITY_INCOMPLETE",
+    "stable_identity_qualified": false,
+    "executable_attribution": false
+  },
+  "expected_owner_complete_equal": true,
+  "complete_same_response_drained": true,
+  "final_original_Main_guard_equal_before": true,
+  "tracked_FDs_closed": 73,
+  "untracked_original_guard_internal_FDs_not_claimed": true,
+  "past_London_failure_attributed": false,
+  "installed_Main_source_version_verified": false,
+  "no_new_runtime_or_cleanup_authority": true,
+  "reference_call_chain": {
+    "control_rs": "8289b74fdf040d2bd3a85d12f4488a82bdab4e1c4c6844ab90fe113228d91200",
+    "body": "Status -> android_boot_snapshot -> android_init_pid -> android_namespace_pids(timeout/ip); snapshot -> android_properties(timeout/nsenter/getprop)",
+    "poll_before_dispatch": true,
+    "response_after_synchronous_handler": true,
+    "source_format_is_current_installed_authority": false
+  },
+  "consumer_findings": {
+    "CLI": "Status forwards Status and only displays message/ok; Start default and Wait use separate WaitReady; Launch retains fresh wait_for_android_init.",
+    "owned_current_discovery": "requires state running AND message substring Android is ready; lifecycle-only Status must not be silently substituted or its readiness guard removed",
+    "UI": "two fixed caller sources requested; current immutable Git paths returned 404"
+  }
+}

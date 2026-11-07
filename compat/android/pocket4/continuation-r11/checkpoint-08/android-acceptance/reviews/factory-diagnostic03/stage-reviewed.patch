@@ -1,0 +1,34 @@
+--- host02/stage_and_build02.py
++++ host03/stage_and_build03.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Create-only matched host source02 and build02; no service, namespace or Android execution."""
++"""Create-only matched host source03 and build03; no service, namespace or Android execution."""
+ import argparse
+ import hashlib
+ import json
+@@ -7,9 +7,9 @@
+ from pathlib import Path
+ import sys
+ 
+-SOURCE = Path('/home/alex/work/pocket4-owned-factory-v2-host-source-02')
+-OUT = Path('/home/alex/work/pocket4-owned-factory-v2-host-build-02')
+-EXPECTED = {'client_control.cc': {'sha256': 'cdcbbab212b5d4be64094d8050b46c96111cc4bfbc88b2a7348978962d94bd50', 'bytes': 15956}, 'bionic_branch_view.cc': {'sha256': '0eaf591282192e3675c44be6ad8ecb37441237082013cd8743b4f5d8ad664857', 'bytes': 784}, 'audit_worker_binary.py': {'sha256': 'bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9', 'bytes': 5841}, 'build_fixture.py': {'sha256': '2b4764804b9faaf735cb84c96000f3c3544de023371ba5727c5969fa38e7d57d', 'bytes': 13349}}
++SOURCE = Path('/home/alex/work/pocket4-owned-factory-v2-host-source-03')
++OUT = Path('/home/alex/work/pocket4-owned-factory-v2-host-build-03')
++EXPECTED = {'client_control.cc': {'sha256': 'bcfbc01d02c089d01f8bcd34fb939655055b51611dfde7621e31747948c962fb', 'bytes': 19946}, 'bionic_branch_view.cc': {'sha256': '0eaf591282192e3675c44be6ad8ecb37441237082013cd8743b4f5d8ad664857', 'bytes': 784}, 'audit_worker_binary.py': {'sha256': 'bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9', 'bytes': 5841}, 'build_fixture.py': {'sha256': '856cc25f68bc6c782f15517e12aba7f88ae3a6db7de7d91999dfa2e57a14c4f7', 'bytes': 13411}}
+ 
+ 
+ def main():
+@@ -39,9 +39,9 @@
+     if SOURCE.parent != Path('/home/alex/work') or OUT.parent != SOURCE.parent:
+         raise RuntimeError('fixed task roots required')
+     if SOURCE.exists() or SOURCE.is_symlink() or OUT.exists() or OUT.is_symlink():
+-        raise RuntimeError('source02 or build02 already exists; do not overwrite or retry')
++        raise RuntimeError('source03 or build03 already exists; do not overwrite or retry')
+     build = raw_files['build_fixture.py']
+-    scope = {'__name__': '_verified_host_build02_preflight', '__file__': str(SOURCE / 'build_fixture.py')}
++    scope = {'__name__': '_verified_host_build03_preflight', '__file__': str(SOURCE / 'build_fixture.py')}
+     exec(compile(build, str(SOURCE / 'build_fixture.py'), 'exec'), scope, scope)
+     scope['inventory']()
+     if scope['pin'](scope['COMPILER'])['sha256'] != scope['COMPILER_SHA']:

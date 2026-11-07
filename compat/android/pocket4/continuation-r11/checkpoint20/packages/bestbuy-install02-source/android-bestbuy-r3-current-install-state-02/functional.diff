@@ -1,0 +1,257 @@
+--- install01/install_state.py
++++ install02/install_state.py
+@@ -21,12 +21,12 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r3-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r3-install-state-02')
+ SOURCE = ROOT/'source'
+ WORKER_ROOT = ROOT/'worker'
+ STEP = WORKER_ROOT/'steps/install-state-01'
+-NONCE = 'c54ac38b58cbf6ac67a949462df0b9c3'
+-STATE_NONCE = '8709706b5d2e5dc7010afc1e89cd9fa5'
++NONCE = '97e9cacd2361c50bdca834b416f2aa47'
++STATE_NONCE = 'd56f2ff711a71596e1679716f3587b87'
+ SELF = 'org.droidloom.qa.bestbuy.r3'
+ QA_ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r3-source-03/source')
+ QA_MANIFEST = '2643a8f2f7b70189af51b940957ef195dbee6574be1779a585a41fedfec50051'
+@@ -342,9 +342,16 @@
+     require(set(manifest['files']) == EXPECTED_SOURCE_FILES,'EXACT_BESTBUY_RUNTIME_SOURCE_SET_REQUIRED')
+     for name,row in manifest['files'].items():
+         read(HERE/name,expected=row['sha256'],size=row['bytes'])
+-    require(manifest['files']['references/readonly_r3_coordinator.py']['sha256'] == REFERENCE_SHA and
++    host_raw=read(HERE/'host/source-manifest.json',131072,RECORDER_MANIFEST)
++    host_manifest=json.loads(host_raw)
++    row=host_manifest['files']['current_coordinator.py']
++    require(host_manifest.get('schema') == 2 and host_manifest.get('revision') == 5 and
++            host_manifest.get('artifact') == 'pocket4-bilibili-current-recorder-held-r5' and
++            row['sha256'] == REFERENCE_SHA and
+             manifest['files']['references/read_bestbuy.py']['sha256'] == READER_SHA,
+-            'EXACT_SHARED_REFERENCES_REQUIRED')
++            'EXACT_CURRENT_SHARED_REFERENCES_REQUIRED')
++    read(BASE_HOST_ROOT/'source-manifest.json',131072,RECORDER_MANIFEST,len(host_raw))
++    read(BASE_HOST_ROOT/'current_coordinator.py',131072,REFERENCE_SHA,row['bytes'])
+     return manifest
+ 
+ 
+
+--- install01/stage_execute.py
++++ install02/stage_execute.py
+@@ -2,9 +2,9 @@
+ """Exact bestbuy current-baseline install/state staging with its own target context."""
+ import hashlib,json,os,stat,sys,types
+ from pathlib import Path,PurePosixPath
+-ROOT=Path('/home/alex/work/pocket4-owned-bestbuy-qa-r3-install-state-01')
++ROOT=Path('/home/alex/work/pocket4-owned-bestbuy-qa-r3-install-state-02')
+ SOURCE=ROOT/'source'
+-NONCE='c54ac38b58cbf6ac67a949462df0b9c3'
++NONCE='97e9cacd2361c50bdca834b416f2aa47'
+ REFERENCE_SHA='fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2'
+ FILES={'install_state.py','bestbuy_context.py','bestbuy_transport.py','stage_execute.py',
+        'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',
+@@ -98,9 +98,9 @@
+     context=load_text(files['bestbuy_context.py'],SOURCE/'bestbuy_context.py','current_target_context_controls')
+     transport=load_text(files['bestbuy_transport.py'],SOURCE/'bestbuy_transport.py','current_target_transport_controls')
+     controls_module=load_text(files['check_install_binding.py'],SOURCE/'check_install_binding.py','current_install_pure_controls')
+-    controls=controls_module.run_controls(entry,actual_host,host_manifest,context,transport,baseline,ref)
+-    require(controls['all_passed'] is True and controls['count']==33 and
+-            len(controls['cases'])==33 and all(x['passed'] is True for x in controls['cases']),
++    controls=controls_module.run_controls(entry,actual_host,host_manifest,context,transport,baseline,ref,files,packet['source_manifest_sha256'])
++    require(controls['all_passed'] is True and controls['count']==38 and
++            len(controls['cases'])==38 and all(x['passed'] is True for x in controls['cases']),
+             'ACTUAL_CURRENT_APP_CONTEXT_CONTROLS_REQUIRED')
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'current_install_stage_epoch')
+     before=ref.main_guard(baseline,epoch)
+
+--- install01/make_request.py
++++ install02/make_request.py
+@@ -7,9 +7,9 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-bestbuy-qa-r3-current-r5-install-state-01-20261106'
+-ROOT='/home/alex/work/pocket4-owned-bestbuy-qa-r3-install-state-01'
+-NONCE='c54ac38b58cbf6ac67a949462df0b9c3'
++KEY='pocket4-owned-bestbuy-qa-r3-current-r5-install-state-02-20261106'
++ROOT='/home/alex/work/pocket4-owned-bestbuy-qa-r3-install-state-02'
++NONCE='97e9cacd2361c50bdca834b416f2aa47'
+ 
+ 
+ def sha(raw):
+
+--- install01/check_install_binding.py
++++ install02/check_install_binding.py
+@@ -1,10 +1,11 @@
+-"""Pure current-host and per-App Context construction controls; no device authority."""
++"""Current-host, per-App Context and owned temporary-source controls; no Android actions."""
+ import copy
+ import types
++import json
+ 
+-CONTROL_COUNT = 33
++CONTROL_COUNT = 38
+ 
+-def run_controls(entry, actual_host, manifest, context, transport, baseline, ref):
++def run_controls(entry, actual_host, manifest, context, transport, baseline, ref, files, source_manifest_sha256):
+     rows = []
+     def yes(name):
+         rows.append({'name':name,'passed':True})
+@@ -92,6 +93,7 @@
+     ctx.scope['package']='tv.danmaku.bili'
+     rejected('guard_rejects_tampered_target_before_callbacks',lambda:ctx.guard())
+     entry.require(calls=={'Main':0,'target':0,'command':0},'PURE_CONTROL_CALLBACK_OR_COMMAND_ATTEMPTED')
++    rows.extend(run_source_controls(entry,files,source_manifest_sha256))
+     entry.require(len(rows)==CONTROL_COUNT and len({x['name'] for x in rows})==CONTROL_COUNT,
+                   'EXACT_CURRENT_CONTEXT_CONTROL_COUNT')
+     return {'schema':'pocket4-current-app-install-context-controls-v1','all_passed':True,
+@@ -100,4 +102,55 @@
+             'production_Context_and_BoundArun_constructors_used':True,
+             'actual_qualified_baseline_only_in_memory':True,
+             'Bili_Flow_or_MainBinding_instantiated':False,'private_baseline_exported':False,
+-            'Android_commands':0,'UI_actions':0,'children':0,'filesystem_operations':0}
++            'Android_commands':0,'UI_actions':0,'children':0,
++            'owned_temporary_source_directories':True,'temporary_directories_removed':True,
++            'actual_R5_reference_read_only':True,'production_verify_source_calls':5}
++
++
++def run_source_controls(entry, files, expected):
++    """Run the production source gate in private temporary source directories."""
++    import tempfile
++    from pathlib import Path
++    rows=[]
++    entry.require(set(files)==entry.EXPECTED_SOURCE_FILES|{'SOURCE_PINS.json'},
++                  'TEMP_SOURCE_FIXTURE_EXACT_SET')
++    manifest=json.loads(files['host/source-manifest.json'])
++    coordinator=manifest['files']['current_coordinator.py']
++    host_manifest=entry.read(entry.BASE_HOST_ROOT/'source-manifest.json',131072,entry.RECORDER_MANIFEST)
++    host_source=entry.read(entry.BASE_HOST_ROOT/'current_coordinator.py',131072,
++                           entry.REFERENCE_SHA,coordinator['bytes'])
++    with tempfile.TemporaryDirectory(prefix='pocket4-current-source-control-') as temporary:
++        root=Path(temporary);source=root/'source';source.mkdir(mode=0o700)
++        for name,raw in files.items():
++            path=source/name;path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
++            path.write_bytes(raw);path.chmod(0o600)
++        isolated=types.ModuleType('pure_production_source_gate');isolated.__file__=str(source/'install_state.py')
++        exec(compile(files['install_state.py'],isolated.__file__,'exec'),isolated.__dict__)
++        actual=isolated.verify_source(expected)
++        entry.require(actual['files']==json.loads(files['SOURCE_PINS.json'])['files'],
++                      'ACTUAL_COMPLETE_PRODUCTION_SOURCE_GATE')
++        rows.append({'name':'production_verify_source_actual_R5_reference_positive','passed':True})
++        host=root/'host';host.mkdir(mode=0o700)
++        (host/'source-manifest.json').write_bytes(host_manifest)
++        (host/'current_coordinator.py').write_bytes(host_source)
++        isolated.BASE_HOST_ROOT=host
++        isolated.verify_source(expected)
++        rows.append({'name':'production_verify_source_private_reference_fixture_positive','passed':True})
++        def rejected(name):
++            try:
++                isolated.verify_source(expected)
++            except (RuntimeError,FileNotFoundError):
++                pass
++            else:
++                raise RuntimeError('SOURCE_REFERENCE_NEGATIVE_ACCEPTED:'+name)
++            rows.append({'name':name,'passed':True})
++        (host/'current_coordinator.py').unlink()
++        rejected('production_verify_source_missing_R5_coordinator_rejected')
++        (host/'current_coordinator.py').write_bytes(host_source+b'\n')
++        rejected('production_verify_source_wrong_R5_coordinator_hash_rejected')
++        (host/'current_coordinator.py').write_bytes(host_source)
++        original=(source/'README.md').read_bytes()
++        (source/'README.md').write_bytes(original+b'\n')
++        rejected('production_verify_source_payload_hash_changed_rejected')
++    entry.require(len(rows)==5,'EXACT_FIVE_SOURCE_CLOSURE_CONTROLS')
++    return rows
+
+--- install01/INPUTS.json
++++ install02/INPUTS.json
+@@ -45,12 +45,12 @@
+     "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+   },
+   "nonces": {
+-    "flow": "c54ac38b58cbf6ac67a949462df0b9c3",
+-    "state": "8709706b5d2e5dc7010afc1e89cd9fa5"
++    "flow": "97e9cacd2361c50bdca834b416f2aa47",
++    "state": "d56f2ff711a71596e1679716f3587b87"
+   },
+   "actual_nonce_source": {
+-    "bytes": 688,
+-    "sha256": "d40226ff41ae87cfd793fb8de7480fcdc656e0e6daeb2a7a86ba28ba83833222",
++    "bytes": 767,
++    "sha256": "0850251476f521a051a3f4c21a3150b0d368065e4f71a8981d9d9525ba1dddce",
+     "fields": [
+       "bestbuy_flow",
+       "bestbuy_state"
+@@ -73,7 +73,7 @@
+   "own_package_absence_required_all_users_including_uninstalled": true,
+   "install_replace_existing": false,
+   "UiAutomation_requested": false,
+-  "source_qualification_controls": 33,
++  "source_qualification_controls": 38,
+   "Bili_Flow_or_MainBinding_instantiated": false,
+   "whole_process_tree_cleanup_qualified": false,
+   "framework_exit_cause_resolved": false,
+
+--- install01/README.md
++++ install02/README.md
+@@ -2,4 +2,4 @@
+ 
+ The exact newly built signed helper is installed once with -R/-t after all-users absence checks. The target-specific Context preserves its 13-command plan, commercial APK streaming hashes, held namespace/classpath checks and cleanup. Its new scope comes only from the actual typed current baseline, with independent target UID and both user/user_de directory identities checked through the held root. The shared R5 source contract is a byte-verified source closure; no Bili Flow or Bili MainBinding is instantiated.
+ 
+-33 pure source controls run before root staging or any Android command. The helper UID remains unknown until actual installation. State does not connect UiAutomation. No launch, inspect, click, text, permission or settings action is requested. Failure is not automatically retried or uninstalled. Historical failed and unknown outcomes remain unchanged. The unresolved framework exit cause and business acceptance remain production gates. Only direct owned process join is inherited; whole-process-tree cleanup qualification remains false.
++38 source controls run before persistent root staging or any Android command: 33 existing source/context cases and five production verify_source cases using owned temporary source directories. Those temporary directories are removed before installation begins. The helper UID remains unknown until actual installation. State does not connect UiAutomation. No launch, inspect, click, text, permission or settings action is requested. Failure is not automatically retried or uninstalled. Historical failed and unknown outcomes remain unchanged. The unresolved framework exit cause and business acceptance remain production gates. Only direct owned process join is inherited; whole-process-tree cleanup qualification remains false.
+
+--- install01/SOURCE_PINS.json
++++ install02/SOURCE_PINS.json
+@@ -14,11 +14,11 @@
+   "files": {
+     "INPUTS.json": {
+       "bytes": 3411,
+-      "sha256": "e4142de39a7332a1da75169adf250fea53a00483054fc4da612a0a8c35f2e9d7"
++      "sha256": "96e6fb9c6258be366ec7291019ba5d74b9a58f2668c738f8df45872bc3ebd9d7"
+     },
+     "README.md": {
+-      "bytes": 1116,
+-      "sha256": "c6d8f6e74a5dab5ac1dba31d4d7d4277b6128e4ab9a6afab5670c30c4f449e9b"
++      "bytes": 1305,
++      "sha256": "9734397a5b1d3672c89f187a5bf6ecb60c4a5c0a09ca1b8554d832279e73cb7e"
+     },
+     "bestbuy_context.py": {
+       "bytes": 17269,
+@@ -29,8 +29,8 @@
+       "sha256": "96eca208b64f84fd2ed5efa9195be7c732a6a5f08599f99d4efa6078953be5ae"
+     },
+     "check_install_binding.py": {
+-      "bytes": 6887,
+-      "sha256": "0c81a32ab10a62bf03bac771de3f13c29963072350ec634ac10df8c802cc0ce2"
++      "bytes": 9999,
++      "sha256": "1da142b38dd5c55d6616a9145acdf700934b3a2975bae6fa5e63be876048c9cb"
+     },
+     "host-stage-actual.json": {
+       "bytes": 6851,
+@@ -41,20 +41,20 @@
+       "sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e"
+     },
+     "install_state.py": {
+-      "bytes": 37805,
+-      "sha256": "b10f2d5a077a82750f35677c635dbe88859c9953815931aa6141bd5d6deeeac3"
++      "bytes": 38283,
++      "sha256": "aac202a4ea87334a34dd900849cb82dbd3f2fb28b192a88f329bd7801880eba1"
+     },
+     "make_request.py": {
+       "bytes": 3056,
+-      "sha256": "2740419eb07cc85be93d5e5b72d50a955f42266c3b13dba4479c53cbb2a00285"
++      "sha256": "fd4d25535734fb600f17de8a394de3e000b5a2f2aeb36522af3b77efcdaa3709"
+     },
+     "references/read_bestbuy.py": {
+       "bytes": 21069,
+       "sha256": "ce4ff1399953fe0d5e89bc0210ae9cdb323d1e08e436327df1521f6cb167ef77"
+     },
+     "stage_execute.py": {
+-      "bytes": 9328,
+-      "sha256": "cc497e02295a14f568800f222f97bf6163ea5dcacb4152e68e659da901c94032"
++      "bytes": 9367,
++      "sha256": "6de34e072735e37d00b932a4a8b109bbb0e58fcaf5219274e13e415f259a350d"
+     },
+     "target-artifact-reference.json": {
+       "bytes": 2863,

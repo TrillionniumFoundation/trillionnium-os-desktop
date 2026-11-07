@@ -1,0 +1,47 @@
+--- a/source/role_admission.cc
++++ b/source/role_admission.cc
+@@ -87,8 +87,10 @@
+          bool active = false, int role_connection = -1) {
+   for (;;) {
+     if (Check(registry, owner, deadline, previous, handle, active, role_connection) < 0) return -1;
+-    const int control = owner.control_fd(), pidfd = owner.owner_pidfd();
+-    if (control < 0 || pidfd < 0) return -1;
++    const int control = owner.control_fd();
++    if (control < 0) return -1;
++    const int pidfd = owner.owner_pidfd();
++    if (pidfd < 0) return -1;
+     int timeout = static_cast<int>((deadline - *previous + 999999) / 1000000);
+     if (timeout > 100) timeout = 100;
+     pollfd items[3] = {{connection, static_cast<short>(events | POLLRDHUP), 0},
+--- a/source/role_session.cc
++++ b/source/role_session.cc
+@@ -134,10 +134,14 @@
+     const uint64_t remaining = deadline - *previous;
+     int timeout = static_cast<int>((remaining + 999999) / 1000000);
+     if (timeout > 100) timeout = 100;
++    const int control = owner.control_fd();
++    if (control < 0) return -1;
++    const int pidfd = owner.owner_pidfd();
++    if (pidfd < 0) return -1;
+     pollfd items[3] = {
+         {connection, static_cast<short>(events | POLLRDHUP), 0},
+-        {owner.control_fd(), static_cast<short>(POLLIN | POLLRDHUP), 0},
+-        {owner.owner_pidfd(), POLLIN, 0}};
++        {control, static_cast<short>(POLLIN | POLLRDHUP), 0},
++        {pidfd, POLLIN, 0}};
+     const int count = poll(items, 3, timeout);
+     if (count < 0) { if (errno == EINTR) continue; return -1; }
+     if (items[1].revents || items[2].revents) return Error(ECANCELED);
+@@ -341,7 +345,11 @@
+   if (registry.IsActive(handle) < 0 || owner.Verify() < 0) return CloseError(registry, handle, errno);
+   const int connection = registry.Connection(handle);
+   if (connection < 0) return CloseError(registry, handle, errno);
+-  if (connection == owner.control_fd() || connection == owner.owner_pidfd()) return CloseError(registry, handle, EINVAL);
++  const int control = owner.control_fd();
++  if (control < 0) return CloseError(registry, handle, errno);
++  const int pidfd = owner.owner_pidfd();
++  if (pidfd < 0) return CloseError(registry, handle, errno);
++  if (connection == control || connection == pidfd) return CloseError(registry, handle, EINVAL);
+   Received received;
+   for (;;) {
+     if (Wait(registry, handle, owner, connection, POLLIN, deadline, &previous, true) < 0) return CloseError(registry, handle, errno);

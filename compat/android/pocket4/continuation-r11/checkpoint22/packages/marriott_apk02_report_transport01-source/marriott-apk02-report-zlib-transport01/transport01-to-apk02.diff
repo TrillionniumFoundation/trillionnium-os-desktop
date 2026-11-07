@@ -1,0 +1,46 @@
+--- baseline/read.py
++++ candidate/read.py
+@@ -1,4 +1,4 @@
+-"""Fixed two-report lossless zlib transport. No report parsing or child execution."""
++"""Fixed one-report lossless zlib transport. No report parsing or child execution."""
+ import hashlib
+ import json
+ import os
+@@ -8,15 +8,12 @@
+ import time
+ import zlib
+ 
+-ROOT = '/home/alex/work/p4-report-transport01-20261106'
++ROOT = '/home/alex/work/p4-marriott-apk02-report-transport01-20261106'
+ PARENT = '/home/alex/work'
+ INPUTS = (
+-    ('marriott04', '/home/alex/work/pocket4-marriott-proc-readlink-outer-tu-04-20261106/build-result.json',
+-     4899108, '8a9e478a65606cb296bfc2e208ff11c0203f43902ae3245a8f931f28fc10165a',
+-     0o400, 'marriott04-build-result.json.zlib'),
+-    ('native_host01', '/home/alex/work/p4-retirement-ack-host01-20261106/attempt01/result.json',
+-     540943, '0d511ba553d1a34df9116c0e62cfcfbcabb00b96aafcde0d747f3419ffa4cf37',
+-     0o600, 'native-host01-result.json.zlib'),
++    ('marriott_apk02', '/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-02-20261106/build-result.json',
++     2778880, '4ac6808bb258b7595f1eafa1e1f76716288d47e7c0796d60d4ec748bc2f16cae',
++     0o400, 'marriott-apk02-build-result.json.zlib'),
+ )
+ STARTED = time.monotonic()
+ WORK_END = STARTED + 40.0
+@@ -28,7 +25,7 @@
+ DIRECTORIES = []
+ ERRORS = []
+ REPORT = {
+-    'schema': 1, 'kind': 'p4-fixed-report-zlib-transport01',
++    'schema': 1, 'kind': 'p4-fixed-marriott-apk02-report-zlib-transport01',
+     'collection_complete': False, 'report_contents_parsed': False,
+     'runtime_or_compile_qualification_asserted': False,
+     'source_files_modified': False, 'Main_actions': 0, 'Android_actions': 0,
+@@ -424,7 +421,7 @@
+     REPORT['elapsed_seconds'] = time.monotonic()-STARTED
+     REPORT['collection_complete'] = bool(not ERRORS and REPORT['all_tracked_owned_FDs_closed'] and
+         REPORT['control_deadline_met'] and REPORT['resource_health'].get('held_own_cgroup_gate_passed') and
+-        len(REPORT['records']) == 2 and all(x['output_complete'] for x in REPORT['records']))
++        len(REPORT['records']) == 1 and all(x['output_complete'] for x in REPORT['records']))
+     encoded = (json.dumps(REPORT, sort_keys=True, separators=(',',':'))+'\n').encode()
+     if len(encoded) > OUTPUT_MAX:
+         print(json.dumps({'kind': REPORT['kind'], 'collection_complete': False,

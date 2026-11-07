@@ -1,0 +1,43 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "5d7dfa6d44b3ea6a6c359880cfc99e9b3b35cbd7",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 4782,
+    "sha256": "3977a051df68ec4e2f90d9f519df823911b41ee8062dbacff3635d2867239865",
+    "git_blob_sha1": "6259012e4c4d3635e1756e1f013b0550525c4814",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "other_three_source_refs",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c03f76742055fe9b280e9cc7a3bbb739249d2777"
+    },
+    {
+      "path": "read-pin.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "464606c5eac137c19d324271f2007798e0e2f696",
+      "bytes": 532
+    },
+    {
+      "path": "task-launcher-main.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3d437b0c5d4672c34906989006a731a255bff436",
+      "bytes": 7949
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "other_three_source_refs",
+      "original_tree": "c03f76742055fe9b280e9cc7a3bbb739249d2777",
+      "checkpoint": 21,
+      "canonical_package": "bili-launcher-source-references"
+    }
+  ],
+  "original_recursive_leaf_count": 14
+}

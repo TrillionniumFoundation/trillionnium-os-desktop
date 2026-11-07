@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "state": "ROOT_INDEPENDENT_CP19_CANDIDATE_VERIFIED",
+  "verified_utc": "2026-11-06 05:46:07 UTC",
+  "cut_utc": "2026-11-06 05:14:25 UTC",
+  "parent_commit": "80e030d93be61d89550d8d3493d9eb60ddff45a2",
+  "proposed_root": "34cfe1a0723782bb5137688bea72e8ce38a65c66",
+  "changed_fields": [
+    "checkpoint",
+    "base_commit",
+    "base_tree",
+    "previous_manifest_sha256",
+    "inherited_payload_files",
+    "new_payload_files",
+    "files_excluding_manifest",
+    "bytes_excluding_manifest",
+    "files",
+    "new_payload_bytes",
+    "current_status_key"
+  ],
+  "added_fields": [
+    "checkpoint19_snapshot_utc",
+    "checkpoint19",
+    "checkpoint19_payload_tree_sha"
+  ],
+  "unchanged_raw_fields": 58,
+  "old_row_count": 12370,
+  "old_raw_file_prefix": true,
+  "all_old_rows_exact_order": true,
+  "new_payload": {
+    "tree": "c19ef2f84aa30978be73a8f319bfd9c7a422a92c",
+    "leaf_count": 500,
+    "logical_bytes": 9674672,
+    "directory_count_including_root": 283,
+    "recursive_entries": 782,
+    "truncated": false,
+    "all_paths_modes_sizes_blob_sha1_match": true,
+    "all_directory_tree_sha1_recomputed": true
+  },
+  "manifest_pins": {
+    "bytes": 4241192,
+    "sha256": "1c7824641869cade879228deee73b6705bd20c49b20fd9a1ad126bcac634109c",
+    "git_blob_sha1": "24bf28269e8cb1e89e722edc75681559a280eaa7"
+  },
+  "status_consistent": true,
+  "all_78_exact_tree_mounts": true,
+  "index_499_rows_and_self_row_match": true,
+  "all_9_metadata_originals_rehashed": true,
+  "ancestor_checks": [
+    {
+      "layer": "root",
+      "before": "0c29fdc46e190cd0b8de3e2c7e5c717909411ea6",
+      "after": "34cfe1a0723782bb5137688bea72e8ce38a65c66",
+      "only_changed_child": "compat"
+    },
+    {
+      "layer": "compat",
+      "before": "b3e4e51b701bc7b181b89e85eb630d37f85d6a37",
+      "after": "dd47a7b33c755c4f815ca32b2f5e9597c0bf4ac3",
+      "only_changed_child": "android"
+    },
+    {
+      "layer": "android",
+      "before": "5d1d671b20f26cc8f6e9cab340c30e24bcaae158",
+      "after": "06305a1851f6b7dd6a889279a6edd13b64fbd979",
+      "only_changed_child": "pocket4"
+    },
+    {
+      "layer": "pocket4",
+      "before": "990e2de361fc25c71f5f8d9d2c7641225f262073",
+      "after": "22790d6f12c0fb29db4aa775327893e716996362",
+      "only_changed_child": "continuation-r11"
+    }
+  ],
+  "continuation": {
+    "before": "fe31d4630992b0a0d2b6c4f8836112fe686cf5cf",
+    "after": "be85ab4c86f46da3cdc2ab9f4a663af86d0fce0f",
+    "before_entries": 23,
+    "after_entries": 24,
+    "all_old_siblings_preserved": true
+  },
+  "status_refs": 21,
+  "readme_links": 28,
+  "whole_apps_ready": 0,
+  "total_apps": 45,
+  "temporary_verifier_failure": "First recovery closure serialization lacked its recursive name; corrected before any Git or device mutation; no failed validation claim.",
+  "source_review_scope": "Earlier independent review and immutable original package pins retained in checkpoint19; resumed verification re-fetched complete old/new manifests, all 9 metadata originals, recursive payload and every changed ancestor. No original package content rewritten.",
+  "draft_PR": {
+    "number": 292,
+    "head": "80e030d93be61d89550d8d3493d9eb60ddff45a2",
+    "base": "d6f30a9e26f8fda71a0ab4aa88d30624b07dac56",
+    "draft": true,
+    "state": "open",
+    "body": {
+      "bytes": 38956,
+      "sha256": "d6c2cf1260343572c1b0caf902813a210ff17e23da7ce389853a7ffb4f80b311"
+    }
+  },
+  "old_epoch_invalid": true,
+  "new_epoch_qualified": false,
+  "UI_install_admissions": false
+}

@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "state": "FROZEN_SOURCE_UNRUN",
+  "purpose": "Read fixed locked Git source objects missing from the current sparse worktree; no materialization or build",
+  "parent_reader": {
+    "tree": "5083ef77dc26044e913600451347a8bcbcd41ff6",
+    "git_blob_sha1": "8ab9b6affedd36e77f0ca5dda700916567e43495",
+    "bytes": 9548,
+    "sha256": "ac60bf641eb961a8a5763abb118e20088dc3b644300f2aba10ffb849241801ab",
+    "actual_outcome": "FAILED_4_OF_5; missing ub-uiautomator worktree directory; original retained"
+  },
+  "new_authority": {
+    "published_manifest": {
+      "bytes": 97784,
+      "sha256": "73a4cc1da8371482164aab2bc149498d03f481f212bb85cb4fda22b6b10c958d"
+    },
+    "source_lock_sha256": "ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54",
+    "misc_commit": "be7c3a630b5dc5eb3260035d77a81b2f322754f8",
+    "git_tool": {
+      "path": "/usr/bin/git",
+      "bytes": 4547768,
+      "sha256": "ed8b2df973b28c0fb773b9c0dc0816d3ee2b3835bb932d9153c21417bb51b362",
+      "actual_observation_bytes": 31452,
+      "actual_observation_sha256": "60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb"
+    }
+  },
+  "fixed_requests": [
+    {
+      "path": "common",
+      "kind": "tree",
+      "maximum_bytes": 65536,
+      "max_entries": 256
+    },
+    {
+      "path": "common/robolectric",
+      "kind": "tree",
+      "maximum_bytes": 65536,
+      "max_entries": 256
+    },
+    {
+      "path": "common/robolectric/Android.bp",
+      "kind": "blob",
+      "maximum_bytes": 131072
+    },
+    {
+      "path": "common/ub-uiautomator",
+      "kind": "tree",
+      "maximum_bytes": 65536,
+      "max_entries": 256
+    },
+    {
+      "path": "common/ub-uiautomator/Android.bp",
+      "kind": "blob",
+      "maximum_bytes": 65536
+    }
+  ],
+  "changes": [
+    "Preserve exact owned WORK/source identity, fixed manifest/HEAD binding and held/named/ancestor checks.",
+    "Add exact whole Git ELF pin and execute held descriptor with a fixed one-child cat-file --batch command.",
+    "Reject includes, extra remotes/helpers, alternates, common-dir indirection and grafts; recheck fixed absences after. Permit only the exact producer's origin and blob:none promisor configuration.",
+    "Fresh origin equals the locked public upstream URL; environment is explicit with no inherited credentials, protocols disabled, no lazy-fetch and no helper path.",
+    "Bound stdout 512 KiB, stderr 16 KiB; parse five complete object frames and recompute each Git object SHA1.",
+    "Expose complete UTF8 Blueprint blobs and only three fixed public tree metadata lists, at most 256 entries each. No raw binary tree bytes are exported. Missing blob entries retain tree OIDs for possible exact upstream-body retrieval.",
+    "Preserve missing/error records, keep prior completed object rows when a later framing error occurs, join/close the owned child and every obtained FD on failure.",
+    "Keep original outer CPU25%,256MiB,nice15,60s; 5s qualification deadline, 2s exceptional owned-child join allowance, no successful qualification after the checked deadline."
+  ],
+  "source_tests": {
+    "Python_compile": false,
+    "Python_execution": false,
+    "device_execution": false,
+    "static_checks_only": true
+  },
+  "no_tools_scan": true,
+  "no_fetch_checkout_or_source_writes": true,
+  "no_Main_or_Android_actions": true,
+  "no_build_or_staging_reuse_qualification": true,
+  "root_review_required_before_sole_Root_dispatch": true,
+  "source_pin": {
+    "bytes": 21914,
+    "sha256": "3f93ee5482bb3f65e1cae3a612b0355218e47ad4fb6a3fec93e39cb7e4e72906",
+    "git_blob_sha1": "42ce9151266092fb10f170b32c17cb3108070ade"
+  },
+  "stdin_pin": {
+    "bytes": 22755,
+    "sha256": "9cfe5d3dc381d56c043bf91d6c3f2ad456f6e8a6fe3419daf0fc3a2f1ee6fe70",
+    "git_blob_sha1": "8bbbf1dcee2415004d7ebbed6fed264b32284344"
+  },
+  "request_pin": {
+    "bytes": 23590,
+    "sha256": "8bbd6782cb3833c84103a821df9461abdec4536185362fe0ba91e0d5ffc3fc50",
+    "git_blob_sha1": "f33bd1abf65d705b16a51548f1a05239e6e6b827"
+  },
+  "producer_filter_evidence": {
+    "source": "tools/droidloom-source/src/resume.rs",
+    "git_blob_sha1": "14ff227c62ef27dce51769704db7ff91e7d7ea04",
+    "bytes": 38414,
+    "sha256": "2026055997ba7d8392bada503d0e1c229cad13bba931f13b410457ac86daafe6",
+    "origin_tree": "f10fa3ce8dec4fbf1c901595540c7298618cb9bd",
+    "origin_path": "typed-ingress-builder467-source-resume-compile03/delta/tools/droidloom-source/src/resume.rs",
+    "fact": "The actual builder467 producer uses git fetch --quiet --depth=1 --filter=blob:none; missing worktree or local blob does not prove that a path is absent from the locked upstream tree."
+  },
+  "no_lazy_fetch_boundary": {
+    "mandatory_git_cli_argument": "--no-lazy-fetch",
+    "environment": "GIT_NO_LAZY_FETCH=1",
+    "protocols": "protocol.allow=never and GIT_ALLOW_PROTOCOL empty",
+    "helpers": "PATH and GIT_EXEC_PATH /nonexistent",
+    "unknown_cli_capability": "If this already-pinned Git does not support --no-lazy-fetch the command fails; no fallback or retry is generated."
+  },
+  "prior_unexecuted_freeze": {
+    "tree": "3ac633b5bb7cefcd636d151c55289524af93c9bb",
+    "prefix": "typed-framework-provider-locked-objects-reader01",
+    "source": {
+      "bytes": 21938,
+      "sha256": "1af67cad78e6610a749a63ac0a789760feaf0172e875f5d7099e915878397cff",
+      "git_blob_sha1": "e06d57687bfb3bfef1afb4c6eb5fc1da9860064c"
+    },
+    "request": {
+      "bytes": 23614,
+      "sha256": "3e561e65ba93c968df24b54c4316580fd6161aafb27167343e520b49dde7fd83",
+      "git_blob_sha1": "4c7253ae190b185e76331696bc6babac3fbf5988"
+    },
+    "device_execution": false,
+    "reason": "Root requested removal of the HOME override; read01 was not dispatched."
+  },
+  "change_from_read01": "Remove only the HOME key from the explicit child environment. No other production-source byte changes.",
+  "deadline_scope": "The same five-second qualification deadline includes whole Git ELF hash, manifest/config reads, child capture/join, object parsing, and final held/named checks. Output serialization/transport is not claimed to be a five-second hard execution kill. No Pocket4 timing measurement is asserted.",
+  "no_HOME_or_CODEX_HOME_variable_assigned": true
+}

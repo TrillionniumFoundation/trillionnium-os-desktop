@@ -1,0 +1,13 @@
+def current_discovery(util, source_manifest, source_verify, source_root,
+                      app, baseline, epoch, guard):
+    manifest = source_verify(source_manifest)
+    row = manifest['files']['current_discovery.py']
+    discovery = util.module(source_root/'current_discovery.py',row['sha256'],
+                            'owned_current_discovery')
+    require(discovery.BASELINE_SHA == BASELINE_SHA and
+            discovery.QUALIFICATION_SHA == QUALIFICATION_SHA and
+            discovery.MAIN_EPOCH == CURRENT_EPOCH,
+            'CURRENT_DISCOVERY_SOURCE_BINDING_REQUIRED')
+    return discovery.discover_current(app,baseline,epoch,guard)
+
+

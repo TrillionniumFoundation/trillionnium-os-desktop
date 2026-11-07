@@ -1,0 +1,26 @@
+--- a/kernel_api/proc_maps_provenance.cc
++++ b/kernel_api/proc_maps_provenance.cc
+@@ -114,13 +114,20 @@
+ 
+ template <typename T>
+ bool SignedField(uint64_t value, T* output) {
+-  static_assert(std::is_integral_v<T> && std::is_signed_v<T>);
++  static_assert(std::is_integral_v<T> && sizeof(T) <= sizeof(int64_t));
+   // memcpy preserves the specified two's-complement wire representation
+   // without an out-of-range unsigned-to-signed arithmetic conversion.
+   int64_t number;
+   memcpy(&number, &value, sizeof(number));
+-  if (number < std::numeric_limits<T>::min() || number > std::numeric_limits<T>::max()) {
+-    return false;
++  // The wire field is signed, but libc ABI declarations differ: for example
++  // statfs.f_bsize is signed on glibc and unsigned on Bionic x86_64. Reject
++  // negative-to-unsigned and every narrowing overflow before the final cast.
++  if constexpr (std::is_signed_v<T>) {
++    if (number < static_cast<int64_t>(std::numeric_limits<T>::min()) ||
++        number > static_cast<int64_t>(std::numeric_limits<T>::max())) return false;
++  } else {
++    if (number < 0 || static_cast<uint64_t>(number) >
++                          static_cast<uint64_t>(std::numeric_limits<T>::max())) return false;
+   }
+   *output = static_cast<T>(number);
+   return true;

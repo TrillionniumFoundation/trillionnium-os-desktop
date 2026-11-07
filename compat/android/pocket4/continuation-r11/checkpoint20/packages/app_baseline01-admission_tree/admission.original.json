@@ -1,0 +1,37 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys\nraw=sys.stdin.buffer.read(131073)\nassert len(raw)<=131072 and hashlib.sha256(raw).hexdigest()==\"755adbe166434d025e431b517f130bfca8ed713dadae8ca11227a3f2378c2bd6\"\np=json.loads(raw)\nsrc=p['files']['qualify_baseline.py'].encode('utf-8')\nassert hashlib.sha256(src).hexdigest()==\"a535b390d19b419cbda0e12a821e617e42167660d253b4dc945508f4140905e4\"\nscope={'__name__':'fixed_current_baseline_qualifier','__file__':'/home/alex/work/pocket4-main-current-baseline-01/source/qualify_baseline.py'}\nexec(compile(src,scope['__file__'],'exec'),scope)\nraise SystemExit(scope['main'](p))\n"
+    ],
+    "created_unix_ms": 1793946175772,
+    "cwd": "/",
+    "env_keys": [],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1af86491c-fc05-695b",
+    "idempotency_key": "pocket4-main-current-baseline01-755adbe166434d02",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1af86491c-fc05-695b",
+    "request_digest": "43739c935f9e699e5eb5ec9e63041e74d569a38c44da465bbd441903104f9362",
+    "request_fingerprint": 4860400579641239966,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1af86491c-fc05-695b"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1af86491c-fc05-695b"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

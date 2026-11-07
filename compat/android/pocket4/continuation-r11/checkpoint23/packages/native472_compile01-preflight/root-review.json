@@ -1,0 +1,90 @@
+{
+  "full_blobs": 43,
+  "bytes": 2974138,
+  "full_compiler_stage_production_diffs_read": true,
+  "controller_inverses": [
+    {
+      "name": "compile_builder.py",
+      "edits": 30,
+      "inverse_whole_bytes": true
+    },
+    {
+      "name": "stage.py",
+      "edits": 6,
+      "inverse_whole_bytes": true
+    },
+    {
+      "name": "make_request.js",
+      "edits": 7,
+      "inverse_whole_bytes": true
+    }
+  ],
+  "request_exact_reproduced": true,
+  "wire_exact_reproduced": true,
+  "request": {
+    "bytes": 646415,
+    "sha256": "ddb7f892a6c5b5278260d459989a10900d04fdea64a1d762e3333caac6244bf8",
+    "git_blob_sha1": "d214f98f609531a1b2ff6fea7b7159d8f88131a5"
+  },
+  "wire": {
+    "bytes": 598552,
+    "sha256": "2ff3b81084eff5835d0948091c226f557fc01e0a77e6acd2137a866843dd894a",
+    "git_blob_sha1": "3bf7fbf0748edfc1063295f51a29e61bbca68c49"
+  },
+  "source_map": {
+    "parent": 499,
+    "candidate": 500,
+    "unchanged": 489,
+    "replaced": 10,
+    "added": 1
+  },
+  "nine_ACK_sources_match_actual_Wayland03": true,
+  "host_compile_only": true,
+  "Soong_execution": false,
+  "Android_Binder_or_GPU_runtime": false,
+  "Main_deploy": false,
+  "prior_resource_pressure_caveat_retained": true,
+  "production_inverses": [
+    {
+      "path": "tools/droidloom-update/src/android.rs",
+      "edits": 23,
+      "original": {
+        "bytes": 294614,
+        "sha256": "eeea9718e16a40692dd4849fdfbc907bb65e5f7c6e205568034f408fe0803d39",
+        "git_blob_sha1": "bbaa6bffd423a7e1c6be1269a9d3bbb68fb9f3ff"
+      }
+    },
+    {
+      "path": "tools/droidloom-update/src/main.rs",
+      "edits": 5,
+      "original": {
+        "bytes": 21215,
+        "sha256": "c75a0b03c2f3827a946e360ea8747665e183cf9f495460c24e29d176ae678172",
+        "git_blob_sha1": "3f8e994d92900989b16d0f4e3e2edea8d4e34b5e"
+      }
+    }
+  ],
+  "strict_composer_route_full_code_reviewed": true,
+  "exact_targets": [
+    "android.hardware.graphics.composer3-service.droidloom",
+    "droidloom-composer-aidl-tests"
+  ],
+  "current225_lock_retained": true,
+  "existing_work_and_source_locks_retained": true,
+  "source_projection_journal_and_restore_retained": true,
+  "no_fallback_to_previous_lock": true,
+  "host_expected_commands": 71,
+  "host_expected_focused_tests": 32,
+  "host_expected_registered_tests": {
+    "updater": 213,
+    "source": 20
+  },
+  "old112_controls_not_repeated": true,
+  "ordinary_uid": 1000,
+  "memory_limit_bytes": 1073741824,
+  "cpu_quota_percent": 100,
+  "nice": 15,
+  "outer_timeout_seconds": 600,
+  "work_budget_seconds": 550,
+  "automatic_retry": false
+}

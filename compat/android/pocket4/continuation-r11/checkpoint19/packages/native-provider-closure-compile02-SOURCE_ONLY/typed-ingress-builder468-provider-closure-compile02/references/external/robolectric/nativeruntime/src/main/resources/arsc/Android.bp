@@ -1,0 +1,85 @@
+//
+// Copyright (C) 2024 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+genrule {
+    name: "font-resources-public",
+    out: ["values/public.xml"],
+    cmd: "mkdir -p $(genDir)/values; echo '<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+        " <resources>" +
+        " <public type=\"string\" name=\"config_bodyFontFamily\" id=\"0x01040211\" /> " +
+        " <public type=\"string\" name=\"config_headlineFontFamily\" id=\"0x01040287\" /> " +
+        " </resources>' > $(out)",
+}
+
+genrule {
+    name: "font-resources-compile-public",
+    tools: ["aapt2"],
+    srcs: [
+        ":font-resources-public",
+    ],
+    out: ["values_public.arsc.flat"],
+    cmd: "$(location aapt2) compile $(in) -o $(genDir)",
+}
+
+genrule {
+    name: "font-resources-config",
+    out: ["values/config.xml"],
+    cmd: "mkdir -p $(genDir)/values; echo '<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+        " <resources xmlns:xliff=\"urn:oasis:names:tc:xliff:document:1.2\">" +
+        " <string name=\"config_headlineFontFamily\" translatable=\"false\">plh-go-sans</string>" +
+        " <string name=\"config_bodyFontFamily\" translatable=\"false\">plh-go-sans-text</string>" +
+        " </resources>' > $(out)",
+}
+
+genrule {
+    name: "font-resources-compile-config",
+    tools: ["aapt2"],
+    srcs: [
+        ":font-resources-config",
+    ],
+    out: ["values_config.arsc.flat"],
+    cmd: "$(location aapt2) compile $(in) -o $(genDir)",
+}
+
+genrule {
+    name: "font-manifest",
+    out: ["FontAndroidManifest.xml"],
+    cmd: "echo '<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"" +
+        " package=\"android\"> <application/> </manifest>' > $(out)",
+}
+
+genrule {
+    name: "font-resources-apk",
+    tools: ["aapt2"],
+    // The first input file in the list must be the manifest
+    srcs: [
+        ":font-manifest",
+        ":font-resources-compile-public",
+        ":font-resources-compile-config",
+    ],
+    out: ["font-resources.apk"],
+    cmd: "$(location aapt2) link -o $(out) --manifest $(in)",
+}
+
+genrule {
+    name: "font-resources-arsc",
+    srcs: [":font-resources-apk"],
+    out: ["font_resources.arsc"],
+    cmd: "mkdir -p $(genDir)/font-resources-arsc && " +
+        "unzip -x $(in) resources.arsc -d $(genDir)/font-resources-arsc && " +
+        "mkdir -p $$(dirname $(out)) && " +
+        "mv $(genDir)/font-resources-arsc/resources.arsc $(out) && " +
+        "echo 'Created $(out)'",
+}

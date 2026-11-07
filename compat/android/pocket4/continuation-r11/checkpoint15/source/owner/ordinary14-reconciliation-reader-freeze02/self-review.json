@@ -1,0 +1,69 @@
+{
+  "approved_execution_fields_and_stdin_bound": true,
+  "deadline_contract": "10-second monotonic deadline checked before/after metadata reads and each enumerated entry; not an unconditional scheduling/I/O latency guarantee. The reader request itself has a separate 30-second tool limit.",
+  "exact_request": {
+    "bytes": 13334,
+    "sha256": "1a3987fc183d5ad4eda33f1e7ce4926369ccdba35ef041108e18ae7ea9a91ab8"
+  },
+  "held_path_and_IO_contract": [
+    "Every fixed jobs path component opened directory/no-follow; final owner UID1000",
+    "Only hex-pattern job directory names are opened; request.json regular UID1000 nlink1 no-follow/nonblocking, bounded and held/named identity rechecked",
+    "Only exact original execution tuple plus job_id/job_dir/stdin_path/digest metadata match permits fixed stdin.bin read",
+    "Every matching stdin must equal 35263 bytes and external SHA; unmatched argv/env/stdin/job IDs are not output",
+    "Every job/file/directory FD is closed in finally; collection errors and counts are retained without disclosing other-job data"
+  ],
+  "local_controls": {
+    "bytes": 1896,
+    "count": 31,
+    "file": "checks.json",
+    "scope": "Local exact parser/observed suffix shapes plus two owned temporary files; no real jobs root/main/ordinary execution",
+    "sha256": "2444b76dbb47022e392750665b04f94f7d4722968d53864ce952ee6369dff4f1"
+  },
+  "local_freeze_first_attempt": "An AST-only check used literal_eval on a multiplication expression and failed before writing bundle payloads; corrected by comparing its exact BinOp AST. No source or remote behavior changed.",
+  "numeric_field_contract": "Only exact numerical equality accepts int/float JSON representation of integral resource values; booleans, changed values, rounded values and nonnumeric strings reject",
+  "ordinary14_or_Android_executed": false,
+  "ordinary14_status": "UNKNOWN",
+  "output_contract": "At most eight matching tuples and 64KiB JSON. Exact match only after request plus held stdin and directory proof. Zero exact matches is NOT_FOUND_AT_OBSERVATION, even if collection was incomplete; no inference original call was invalid, no replay.",
+  "production_AST_checks": [
+    "No exec/eval/compile/dynamic import, subprocess or socket module",
+    "No os write/create/truncate/remove/mkdir/rename/kill/chmod/chown or execution primitives",
+    "Root/UID/file/entry/byte/time bounds fixed as literals"
+  ],
+  "request_key": "p4-owner14-ordinary-reconcile02-e11f28dbeddb49cc",
+  "request_submitted": false,
+  "revision02": {
+    "authority_matching_limits_zero_match_semantics_unchanged": true,
+    "execution_request_fields_unchanged_except_stdin_and_new_reader02_key": true,
+    "predecessor_manifest_sha256": "80bd259d39402dbc20ef5c9c3cbe14e9109479328a257da05e91d0d5007f1492",
+    "predecessor_submitted": false,
+    "production_functions_AST_unchanged": [
+      "close_fd",
+      "error_summary",
+      "identity",
+      "main",
+      "matching_metadata",
+      "open_jobs",
+      "read_regular",
+      "request_object",
+      "scan",
+      "tick",
+      "tuple_matches",
+      "unique_object"
+    ],
+    "root_observed_2550_inventory_shapes": {
+      "11-4-1": 1,
+      "11-4-2": 12,
+      "11-4-3": 510,
+      "11-4-4": 2027
+    },
+    "sole_production_change": "JOB_ID final hex segment accepts 1..4 characters",
+    "specific_predecessor_defect": "Four-hex-only suffix would reject 523 observed jobs and keep collection_complete false"
+  },
+  "schema": 1,
+  "scope": "Single fixed UID1000 read-only job metadata reconciliation; no ordinary tests, writes, namespace, task dispatch or Main action",
+  "source": {
+    "bytes": 12695,
+    "sha256": "e11f28dbeddb49cc6c6e72c3ec2b03497b204b449060a8f4e0e1cc439f7f254b"
+  },
+  "stdin_is_source_exact": true
+}

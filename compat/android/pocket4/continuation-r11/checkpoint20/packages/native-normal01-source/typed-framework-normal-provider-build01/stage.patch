@@ -1,0 +1,36 @@
+--- a/stage.py
++++ b/stage.py
+@@ -1,7 +1,7 @@
+ import hashlib,json,os,stat
+ from pathlib import Path,PurePosixPath
+-ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-resume-build-01-20261106')
+-EXPECTED = {'main_snapshot.py': {'bytes': 6778, 'sha256': 'f909bdfcaedfef29fcc1ba6a994c49bc21e99850204bac7e0565548bcd7139cb'}, 'frozen-work-inventory.py': {'bytes': 48443, 'sha256': '203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab'}, 'actual-work-preparation.json': {'bytes': 11091, 'sha256': 'ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c'}, 'expected-builder467-manifest.json': {'bytes': 91945, 'sha256': '71768da388021a870ef5f5516cc3efbfd956288a8fa74cb9b176b312f68d7605'}, 'prior-framework-inner-terminal.json': {'bytes': 28758, 'sha256': '139163acad47d9db707faa950e4b4dcecaf3e72b655bce8b6b3db089ce542bdf'}, 'prior-framework-outer-terminal.json': {'bytes': 1177, 'sha256': '3626270e88e72c4e46d8beee09b5351e1f7d53bab18043241204ca314855e04d'}, 'actual-staging-read03.json': {'bytes': 211213, 'sha256': 'c62f32b7002d043e4813eadd598f33d088a0f20cc9f562ddc19d35c2ccddf664'}, 'framework_build.py': {'bytes': 48395, 'sha256': '1d6f63947e5536c22978a6d30c3b35cc348d548409f772903eca1381d206e146'}, 'fenced_build.py': {'bytes': 9217, 'sha256': '624bc3f3feb8aca161cc4a63b5fefe95932a8714a4207ce3d419433b65d0be28'}, 'actual-builder467-result.json': {'bytes': 140163, 'sha256': 'cd9f61ca21dd83210299f24dd50b68f5aa7aeba7eab94ac9cada71271d660e28'}}
++ROOT = Path("/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-provider-build-01-20261106")
++EXPECTED = {"main_snapshot.py":{"bytes":14294,"sha256":"1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf"},"frozen-work-inventory.py":{"bytes":48443,"sha256":"203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab"},"actual-work-preparation.json":{"bytes":11091,"sha256":"ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c"},"expected-builder468-manifest.json":{"bytes":97525,"sha256":"e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee"},"prior-framework-inner-terminal.json":{"bytes":2246,"sha256":"80f3508bab1884421af6db2f6d87537fd950100be009265b7e2efabc9b97fcdc"},"prior-framework-outer-terminal.json":{"bytes":1150,"sha256":"2c36ab1cc9ff6f181855f195f9c5b7bc0f58e7fb99d9c76e4871e64b143bf059"},"actual-published-source-manifest.json":{"bytes":97784,"sha256":"73a4cc1da8371482164aab2bc149498d03f481f212bb85cb4fda22b6b10c958d"},"actual-native-prebuilt-Android.bp":{"bytes":1017,"sha256":"d1eca99403572ee9d481e777febac8d4e062f44fd8844285ffc452b17beb531a"},"actual-provider-source-lock.json":{"bytes":96322,"sha256":"5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7"},"framework_build.py":{"bytes":55314,"sha256":"26c69c112f3f4a255d5e8d7c6105e956d78f0ab91c791c6acbe5f3750844cff6"},"fenced_build.py":{"bytes":10273,"sha256":"c30bb4938087b61b66995bf6c3880c192e50fdb2ed231a5c8b13eeb319c4dbd0"},"actual-builder468-result.json":{"bytes":161423,"sha256":"871e78f7ad8f3f3a12c165297e4fe566d96cfe3a2ce64a0d0010cffdb647b6b8"},"pure_controls.py":{"bytes":9573,"sha256":"5c7139c4d21181d742cd43feb272cc14cc1f837b18804e633fa8c77836100c38"}}
+ def main(packet):
+     if os.getuid()!=1000 or os.geteuid()!=1000:raise RuntimeError('operator UID1000 required')
+     if set(packet)!=set(EXPECTED):raise RuntimeError('staged source member set differs')
+@@ -11,6 +11,14 @@
+         raw=text.encode('utf-8')
+         if len(raw)!=EXPECTED[name]['bytes'] or hashlib.sha256(raw).hexdigest()!=EXPECTED[name]['sha256']:
+             raise RuntimeError('staged source pin mismatch: '+name)
++    for name,text in packet.items():
++        if name.endswith('.py'):
++            compile(text,'<staged-'+name+'>','exec')
++    controls_scope={'__name__':'frozen_host_build_pure_controls','__file__':'<frozen-pure-controls>'}
++    exec(compile(packet['pure_controls.py'],'pure_controls.py','exec'),controls_scope,controls_scope)
++    controls=controls_scope['run'](packet)
++    if controls['state']!='PASS' or controls['passed']!=40:
++        raise RuntimeError('new host-only pure controls incomplete')
+     for parent in [ROOT.parent,*ROOT.parent.parents]:
+         if not stat.S_ISDIR(parent.lstat().st_mode):raise RuntimeError('owned root parent aliases non-directory')
+     parent=ROOT.parent.lstat()
+@@ -27,7 +35,7 @@
+         fd=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o400)
+         with os.fdopen(fd,'wb') as stream:
+             stream.write(text.encode('utf-8'));stream.flush();os.fsync(stream.fileno())
+-    raw=(json.dumps({'schema':1,'files':EXPECTED,'Main_actions':0,'only_owned_root_written':True},indent=2)+'\n').encode()
++    raw=(json.dumps({'schema':1,'files':EXPECTED,'pure_controls':controls,'Main_actions':0,'Android_actions':0,'old_QA_epoch_invalid':True,'new_QA_epoch_qualified':False,'only_owned_root_written':True},indent=2)+'\n').encode()
+     fd=os.open(ROOT/'stage-receipt.json',os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o400)
+     with os.fdopen(fd,'wb') as stream:stream.write(raw);stream.flush();os.fsync(stream.fileno())
+     scope={'__name__':'frozen_framework_main_fence','__file__':str(source/'fenced_build.py')}

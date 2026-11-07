@@ -1,0 +1,362 @@
+{
+  "actor_cgroup": "/system.slice/p4-signal-canary-controller-9b5f84fe06e4.service",
+  "adbd_before_cleanup": "stopped",
+  "arm": "signal-mask-r1",
+  "boot": {
+    "adbd": "stopped",
+    "android": "17",
+    "completed": "1",
+    "engine_sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
+    "sdk": "37",
+    "system_server_start_count": "1"
+  },
+  "cleanup": {
+    "errors": [],
+    "runtime_directories_retained_for_inspection": true,
+    "units": [
+      {
+        "description": "p4-signal-mask-r1-20261104-a01 9b5f84fe06e445c6bd1bd867e0c0f1e9 bus",
+        "group": "/system.slice/p4-signal-mask-r1-20261104-a01-bus.service",
+        "invocation": "cadf31b992ca4cc2bddd54ebae9a2337",
+        "role": "bus",
+        "unit": "p4-signal-mask-r1-20261104-a01-bus.service"
+      },
+      {
+        "description": "p4-signal-mask-r1-20261104-a01 9b5f84fe06e445c6bd1bd867e0c0f1e9 sway",
+        "group": "/system.slice/p4-signal-mask-r1-20261104-a01-sway.service",
+        "invocation": "cd169f9d6f6f418aadd43800b2828de4",
+        "role": "sway",
+        "unit": "p4-signal-mask-r1-20261104-a01-sway.service"
+      },
+      {
+        "description": "p4-signal-mask-r1-20261104-a01 9b5f84fe06e445c6bd1bd867e0c0f1e9 presenter",
+        "group": "/system.slice/p4-signal-mask-r1-20261104-a01-presenter.service",
+        "invocation": "ffdbea0ed5a54a88a61aae0244222617",
+        "role": "presenter",
+        "unit": "p4-signal-mask-r1-20261104-a01-presenter.service"
+      },
+      {
+        "description": "p4-signal-mask-r1-20261104-a01 9b5f84fe06e445c6bd1bd867e0c0f1e9 daemon",
+        "group": "/system.slice/p4-signal-mask-r1-20261104-a01-daemon.service",
+        "invocation": "a86d3e5b2e94486a83121f71142ea742",
+        "role": "daemon",
+        "unit": "p4-signal-mask-r1-20261104-a01-daemon.service"
+      }
+    ]
+  },
+  "commercial_app_claim": false,
+  "error": "EpochError('FRAMEWORK_PROCESS_SET_AMBIGUOUS_OR_MISSING')",
+  "finished_utc": "2026-11-04T16:14:25.482002+00:00",
+  "host_suite": {
+    "arm": "candidate",
+    "assessment": {
+      "all_expected_registered_executed": true,
+      "completed_count": 3788,
+      "disabled": [
+        "Arm64LiteTranslateRegionDispatchTest.DISABLED_MemsetAarch64_FullBodyFrom0x49cc0_1024ByteZeroFill",
+        "Arm64TierCoverage.DISABLED_RegenerateTable"
+      ],
+      "executed_count": 3791,
+      "failed_cases": [],
+      "registered_count": 3793,
+      "skipped": {
+        "Arm64HeavyOptimizerFrontendTest.FcmpHBailsWithoutF16C": "F16C present; FCMP H lowers in-tier",
+        "Arm64HeavyOptimizerFrontendTest.FmaxvVecHBailsWithoutF16C": "F16C present; FMAXV H lowers in-tier",
+        "Arm64MmapNoreserveTest.UnrealSizedArenaReservesAddressSpaceWithoutCommittingRam": "opt-in policy is disabled"
+      }
+    },
+    "cpu": 6,
+    "engine_sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
+    "main_config": {
+      "framework_guard": {
+        "path": "/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py",
+        "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288"
+      },
+      "main_activation": {
+        "path": "/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json",
+        "sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615"
+      },
+      "main_resource_baseline": {
+        "cpu.max": "200000 100000",
+        "memory.high": "5368709120",
+        "memory.max": "6442450944",
+        "memory.swap.max": "max",
+        "pids.max": "12288"
+      }
+    },
+    "receipt": "/home/alex/work/pocket4-signal-host-candidate-r11-01-9d630262/result.json",
+    "sha256": "b8c9b01588d1c2a13c80ba1afc5765fcf6656147d26e630a7c2cf74f4f482283",
+    "tools": {
+      "/usr/bin/python3": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41",
+      "/usr/bin/systemctl": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082"
+    }
+  },
+  "main_after": {
+    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "daemon": {
+      "ActiveState": "active",
+      "ControlGroup": "/system.slice/droidloomd.service",
+      "Description": "Droidloom Android cell lifecycle daemon",
+      "ExecStart": "{ path=/usr/bin/droidloomd ; argv[]=/usr/bin/droidloomd ; ignore_errors=no ; start_time=[Wed 2026-11-04 00:51:00 PST] ; stop_time=[n/a] ; pid=3588022 ; code=(null) ; status=0/0 }",
+      "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+      "LoadState": "loaded",
+      "MainPID": "3588022"
+    },
+    "data_directory": {
+      "device": 66306,
+      "gid": 0,
+      "inode": 111810947,
+      "uid": 0
+    },
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "framework_binding": {
+      "boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1",
+      "processes": {
+        "init": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service"
+          ],
+          "cmdline": [
+            "/init",
+            "second_stage"
+          ],
+          "executable": "/system/bin/init",
+          "host_pid": 3588093,
+          "namespace_pids": [
+            3588093,
+            1
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533284]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588092,
+          "start_ticks": 80797014,
+          "uids": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "surfaceflinger": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service/system/uid_1000/pid_672"
+          ],
+          "cmdline": [
+            "/system/bin/surfaceflinger"
+          ],
+          "executable": "/system/bin/surfaceflinger",
+          "host_pid": 3588912,
+          "namespace_pids": [
+            3588912,
+            672
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533284]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588093,
+          "start_ticks": 80797155,
+          "uids": [
+            1000,
+            1000,
+            1000,
+            1000
+          ]
+        },
+        "system_server": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service/system/uid_1000/pid_830"
+          ],
+          "cmdline": [
+            "system_server"
+          ],
+          "executable": "/system/bin/app_process64",
+          "host_pid": 3589120,
+          "namespace_pids": [
+            3589120,
+            830
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533727]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588887,
+          "start_ticks": 80797249,
+          "uids": [
+            1000,
+            1000,
+            1000,
+            1000
+          ]
+        },
+        "zygote64": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service/system/uid_0/pid_649"
+          ],
+          "cmdline": [
+            "zygote64"
+          ],
+          "executable": "/system/bin/app_process64",
+          "host_pid": 3588887,
+          "namespace_pids": [
+            3588887,
+            649
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533726]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588093,
+          "start_ticks": 80797153,
+          "uids": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "framework_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "resources": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    },
+    "retained_processes": {
+      "daemon_process": {
+        "cgroup": [
+          "0::/system.slice/droidloomd.service"
+        ],
+        "cmdline": [
+          "/usr/bin/droidloomd"
+        ],
+        "executable": "/usr/bin/droidloomd",
+        "host_pid": 3588022,
+        "namespace_pids": [
+          3588022
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026531832]",
+          "pid": "pid:[4026531836]"
+        },
+        "parent_host_pid": 1,
+        "start_ticks": 80796995,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "launcher_process": {
+        "cgroup": [
+          "0::/system.slice/droidloomd.service"
+        ],
+        "cmdline": [
+          "/usr/bin/python3",
+          "-I",
+          "/usr/local/libexec/droidloom-compat/unshare",
+          "--mount",
+          "--pid",
+          "--mount-proc",
+          "--ipc",
+          "--uts",
+          "--fork",
+          "--kill-child=TERM",
+          "--forward-signals",
+          "--propagation=private",
+          "/usr/bin/droidloom-supervisor",
+          "development-enter",
+          "--spec",
+          "/etc/droidloom/cell.json"
+        ],
+        "executable": "/usr/bin/python3.14",
+        "host_pid": 3588089,
+        "namespace_pids": [
+          3588089
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533281]",
+          "pid": "pid:[4026531836]"
+        },
+        "parent_host_pid": 3588022,
+        "start_ticks": 80797013,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "presenter_process": {
+        "cgroup": [
+          "0::/user.slice/user-1000.slice/user@1000.service/app.slice/droidloom.service"
+        ],
+        "cmdline": [
+          "/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland"
+        ],
+        "executable": "/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland",
+        "host_pid": 3588024,
+        "namespace_pids": [
+          3588024
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026531832]",
+          "pid": "pid:[4026531836]"
+        },
+        "parent_host_pid": 2472,
+        "start_ticks": 80796995,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      }
+    }
+  },
+  "main_preserved": true,
+  "main_resources_after": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "12288"
+  },
+  "main_resources_before": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "12288"
+  },
+  "owned_memory_events_zero": true,
+  "production_ready": false,
+  "schema": "isolated-owned-signal-runtime-r1",
+  "source_contract_after": {
+    "host_launch_inputs_sha256": "c313ea1f0d03474b05ee2ee8ae3bb74d0131d57469fb9dbf454d03745e3002fb",
+    "host_suite_sha256": "b8c9b01588d1c2a13c80ba1afc5765fcf6656147d26e630a7c2cf74f4f482283",
+    "input_sha256": "7c26c169216b014549e7842b0e69520c5e628788529605412103e7049a5376b6",
+    "preparation_manifest_sha256": "3f12e8bcde951712a20208aaeed04f1125bac58993ce1a3f5a93e4f950a9b103",
+    "prepared_sha256": "5f4ee1c62ea3e788703cec89b1b8da776ba839efdef277f06cd56c2a499f1786",
+    "runtime_manifest_sha256": "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5"
+  },
+  "source_contract_before": {
+    "host_launch_inputs_sha256": "c313ea1f0d03474b05ee2ee8ae3bb74d0131d57469fb9dbf454d03745e3002fb",
+    "host_suite_sha256": "b8c9b01588d1c2a13c80ba1afc5765fcf6656147d26e630a7c2cf74f4f482283",
+    "input_sha256": "7c26c169216b014549e7842b0e69520c5e628788529605412103e7049a5376b6",
+    "preparation_manifest_sha256": "3f12e8bcde951712a20208aaeed04f1125bac58993ce1a3f5a93e4f950a9b103",
+    "prepared_sha256": "5f4ee1c62ea3e788703cec89b1b8da776ba839efdef277f06cd56c2a499f1786",
+    "runtime_manifest_sha256": "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5"
+  },
+  "source_contract_preserved": true,
+  "started_utc": "2026-11-04T16:12:45.083442+00:00",
+  "state": "INCOMPLETE_OR_FAILED_NO_RETRY",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/alex/work/pocket4-owned-signal-host-r11-source-01/isolated-signal-canary-runtime-r1/run.py\", line 512, in main\n    scope[\"run\"]()\n    ~~~~~~~~~~~~^^\n  File \"/home/alex/work/pocket4-owned-signal-host-r11-source-01/isolated-signal-canary-r1/v5_original.py\", line 533, in run\n    run_probes()\n    ~~~~~~~~~~^^\n  File \"/home/alex/work/pocket4-owned-signal-host-r11-source-01/isolated-signal-canary-runtime-r1/run.py\", line 454, in run\n    s[\"PRIVATE_EPOCH\"] = s[\"current_guest_epoch\"]()\n                         ~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"/home/alex/work/pocket4-owned-signal-host-r11-source-01/isolated-signal-canary-r1/v5_original.py\", line 140, in current_guest_epoch\n    return EPOCH_GUARD['capture_android'](INIT['pid'])\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^\n  File \"/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py\", line 124, in capture_android\n    raise EpochError(\"FRAMEWORK_PROCESS_SET_AMBIGUOUS_OR_MISSING\")\npinned_signal_canary_epoch_guard.EpochError: FRAMEWORK_PROCESS_SET_AMBIGUOUS_OR_MISSING\n"
+}

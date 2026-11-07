@@ -1,0 +1,915 @@
+--- a/android/Android.bp
++++ b/android/Android.bp
+@@ -3,6 +3,7 @@
+     vendor: true,
+     srcs: ["init_relay_barrier.c"],
+     stl: "none",
++    shared_libs: ["libdl"],
+     cflags: ["-Wall", "-Wextra", "-Werror", "-fvisibility=hidden"],
+     version_script: "exported.map.txt",
+ }
+--- a/android/init_relay_barrier.c
++++ b/android/init_relay_barrier.c
+@@ -2,10 +2,13 @@
+  *
+  * Opt-in second-stage PID1 barrier. No thread, fork, pressure allocation, PSI
+  * threshold write or process signal occurs here. The constructor owns every
+- * supplied/received descriptor and closes them before returning to init.
++ * supplied/received authority descriptor and closes it before returning to
++ * init. An optional generation-private bounded log writer stays only in the
++ * cached logger, is CLOEXEC, and is never exported in a service environment.
+  */
+ #define _GNU_SOURCE
+ #include "init_relay_protocol.h"
++#include <dlfcn.h>
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <limits.h>
+@@ -257,7 +260,8 @@
+   if (memcmp(wire,expected,DIR_WIRE_SIZE)) { errno=EPROTO;goto done; }
+   dir_stage(failure,"finish");
+   if (operations->finish(operations->opaque)) goto done;
+-  /* All capability FDs except this one private control channel are gone.
++  /* All authority FDs except this one private control channel are gone.
++   * The optional bounded diagnostic writer is CLOEXEC and absent from env.
+    * Environment cleanup has succeeded. No fallible work follows final send. */
+   memcpy(wire,ready,DIR_WIRE_SIZE);dir_put(wire,12,DIR_DONE,4);
+   dir_stage(failure,"done-send");
+@@ -407,7 +411,8 @@
+ }
+ static int dir_finish_real(void *unused) {
+   (void)unused;
+-  const char *keys[]={DIR_ABI_ENV,DIR_REQUIRED_ENV,DIR_FD_ENV,DIR_NONCE_ENV,DIR_TIMEOUT_ENV};
++  const char *keys[]={DIR_ABI_ENV,DIR_REQUIRED_ENV,DIR_FD_ENV,DIR_NONCE_ENV,DIR_TIMEOUT_ENV,
++    DIR_LOG_ABI_ENV,DIR_LOG_FD_ENV};
+   for(size_t i=0;i<sizeof(keys)/sizeof(keys[0]);++i)if(unsetenv(keys[i]))return -1;
+   /* The barrier is not needed by init re-exec, service children or apps.
+    * Preserve the existing SELinux compatibility preload exactly. */
+@@ -457,12 +462,108 @@
+   static const char wanted[]="/init\0second_stage\0";
+   return used==sizeof(wanted)-1&&!memcmp(data,wanted,sizeof(wanted)-1)?0:-1;
+ }
++
++/* C++ calling convention is conditional on the exact observed ELF symbol,
++ * not a claim of a stable platform API. The fixed actual init/import and
++ * defining library evidence must be bound by the build/runtime controller.
++ * The host additionally requires the real logger-written nonce bytes after
++ * HELLO. A non-null dlsym result alone never admits the channel. */
++typedef void (*dir_kernel_logger)(int,int,const char *,const char *,unsigned,const char *);
++#define DIR_KERNEL_LOGGER_SYMBOL "_ZN7android4base12KernelLoggerENS0_5LogIdENS0_11LogSeverityEPKcS4_jS4_"
++
++static int dir_log_writer(int fd) {
++  struct stat st;struct statfs fs;
++  int flags=fcntl(fd,F_GETFL);if(flags<0)return -1;
++  int seals=fcntl(fd,F_GET_SEALS);if(seals<0)return -1;
++  if(fstat(fd,&st)||fstatfs(fd,&fs))return -1;
++  if(!S_ISREG(st.st_mode)||st.st_uid!=getuid()||st.st_gid!=getgid()||st.st_nlink!=0||
++     (st.st_mode&07777)!=0600||st.st_size!=DIR_LOG_CAPACITY||fs.f_type!=TMPFS_MAGIC||
++     (flags&O_ACCMODE)!=O_WRONLY||!(flags&O_NONBLOCK)||(flags&(O_APPEND|O_PATH))||
++     seals!=(F_SEAL_GROW|F_SEAL_SHRINK|F_SEAL_SEAL))return dir_error(EPROTO);
++  int descriptor=fcntl(fd,F_GETFD);if(descriptor<0)return -1;
++  if(fcntl(fd,F_SETFD,descriptor|FD_CLOEXEC))return -1;
++  off_t position=lseek(fd,0,SEEK_CUR);
++  if(position<0)return -1;
++  return position==0?0:dir_error(EPROTO);
++}
++
++/* The seam is solely the lookup/call of the actual library function. Owned
++ * controls exercise the real memfd, seals, fd flags, environment and exec;
++ * they do not certify the Android library or its cache implementation. */
++static int dir_prime_log(int fd,const char *nonce_text,dir_kernel_logger logger) {
++  int first=0;
++  char descriptor[16],message[128];
++  if(!logger)return dir_error(ENOSYS);
++  if(dir_log_writer(fd))return -1;
++  if(getenv("ANDROID_FILE__dev_kmsg"))return dir_error(EPROTO);
++  int n=snprintf(descriptor,sizeof(descriptor),"%d",fd);
++  int m=snprintf(message,sizeof(message),"P4_INIT_LOG_V1 nonce=%s",nonce_text);
++  if(n<=0||(size_t)n>=sizeof(descriptor)||m<=0||(size_t)m>=sizeof(message))return dir_error(EOVERFLOW);
++  if(setenv("ANDROID_FILE__dev_kmsg",descriptor,1))return -1;
++  /* LogId DEFAULT=0, LogSeverity INFO=2; this intentionally writes via the
++   * resolved library, never directly substitutes the expected marker. */
++  logger(0,2,"droidloom-init-log",__FILE__,0,message);
++  off_t position=lseek(fd,0,SEEK_CUR);
++  if(position<0)first=errno;
++  else if(position!=(off_t)(strlen("<6>droidloom-init-log: ")+(size_t)m+1))first=EPROTO;
++  if(unsetenv("ANDROID_FILE__dev_kmsg")&&!first)first=errno;
++  if(unsetenv(DIR_LOG_ABI_ENV)&&!first)first=errno;
++  if(unsetenv(DIR_LOG_FD_ENV)&&!first)first=errno;
++  if(first)return dir_error(first);
++  /* Verify the cached route once more after removing every diagnostic env
++   * key. A logger that only consulted the env on the first call is not enough
++   * evidence that later init logs will use this same private object. */
++  m=snprintf(message,sizeof(message),"P4_INIT_LOG_CACHED_V1 nonce=%s",nonce_text);
++  if(m<=0||(size_t)m>=sizeof(message))return dir_error(EOVERFLOW);
++  logger(0,2,"droidloom-init-log",__FILE__,0,message);
++  off_t after=lseek(fd,0,SEEK_CUR);
++  if(after<0)return -1;
++  if(after!=position+(off_t)(strlen("<6>droidloom-init-log: ")+(size_t)m+1))return dir_error(EPROTO);
++  return 0;
++}
++
++static int dir_setup_log(const char *nonce_text) {
++  const char *abi=getenv(DIR_LOG_ABI_ENV),*fdtext=getenv(DIR_LOG_FD_ENV);
++  if(!abi&&!fdtext)return 0; /* Existing ABI3/default behaviour is unchanged. */
++  unsigned fd=0;
++  if(!abi||strcmp(abi,"1")||dir_parse_decimal(fdtext,1023,&fd)||fd!=DIR_LOG_FD)
++    return dir_error(EPROTO);
++  if(dir_log_writer((int)fd))return -1;
++  dlerror();
++  void *symbol=dlsym(RTLD_DEFAULT,DIR_KERNEL_LOGGER_SYMBOL);
++  const char *lookup_error=dlerror();
++  if(!symbol||lookup_error)return dir_error(ENOSYS);
++  Dl_info definition;
++  if(!dladdr(symbol,&definition)||!definition.dli_fname||!definition.dli_sname||
++     definition.dli_saddr!=symbol||strcmp(definition.dli_sname,DIR_KERNEL_LOGGER_SYMBOL))
++    return dir_error(EPROTO);
++  const char *name=strrchr(definition.dli_fname,'/');
++  name=name?name+1:definition.dli_fname;
++  if(strcmp(name,"libbase.so")||definition.dli_fname[0]!='/'||
++     strnlen(definition.dli_fname,257)>256)return dir_error(EPROTO);
++  for(const unsigned char *p=(const unsigned char *)definition.dli_fname;*p;++p)
++    if(*p<0x21||*p>0x7e)return dir_error(EPROTO);
++  dir_kernel_logger logger;
++  _Static_assert(sizeof(logger)==sizeof(symbol),"native function-pointer representation differs");
++  memcpy(&logger,&symbol,sizeof(logger));
++  if(dir_prime_log((int)fd,nonce_text,logger))return -1;
++  /* Retain the actual defining object path as an observation. Its bytes/build
++   * are not certified by dladdr and must not be claimed as read here. */
++  char observation[512];int length=snprintf(observation,sizeof(observation),
++    "P4_INIT_LOG_DEFINITION_V1 object=%s symbol=%s",definition.dli_fname,DIR_KERNEL_LOGGER_SYMBOL);
++  if(length<=0||(size_t)length>=sizeof(observation))return dir_error(EOVERFLOW);
++  off_t before=lseek((int)fd,0,SEEK_CUR);if(before<0)return -1;
++  logger(0,2,"droidloom-init-log",__FILE__,0,observation);
++  off_t after=lseek((int)fd,0,SEEK_CUR);if(after<0)return -1;
++  return after==before+(off_t)(strlen("<6>droidloom-init-log: ")+(size_t)length+1)?0:dir_error(EPROTO);
++}
+ __attribute__((visibility("default"))) uint32_t droidloom_init_relay_barrier_abi(void) { return DIR_ABI; }
+ #ifndef DROIDLOOM_BARRIER_TESTING
+ __attribute__((constructor(101))) static void dir_constructor(void) {
+   const char *required=getenv(DIR_REQUIRED_ENV),*abi=getenv(DIR_ABI_ENV),*fdtext=getenv(DIR_FD_ENV);
+   const char *nonce_text=getenv(DIR_NONCE_ENV),*timeout=getenv(DIR_TIMEOUT_ENV);
+-  if(!required&&!abi&&!fdtext&&!nonce_text&&!timeout)return;
++  if(!required&&!abi&&!fdtext&&!nonce_text&&!timeout&&
++     !getenv(DIR_LOG_ABI_ENV)&&!getenv(DIR_LOG_FD_ENV))return;
+   unsigned fd=0,ms=0;unsigned char nonce[32];
+   const char *marker=getenv("DROIDLOOM_CELL");
+   if(!required||strcmp(required,"1")||!abi||strcmp(abi,DIR_ABI_TEXT)||!marker||strcmp(marker,"1")||
+@@ -474,6 +575,15 @@
+     _exit(127);
+   }
+   struct dir_failure failure;
++  if(dir_setup_log(nonce_text)) {
++    int first=errno?errno:EPROTO;
++    char message[160];int length=snprintf(message,sizeof(message),
++      "Droidloom init diagnostic logger setup failed closed errno=%d\n",first);
++    if(length>0&&(size_t)length<sizeof(message)){
++      ssize_t logged=write(STDERR_FILENO,message,(size_t)length);(void)logged;
++    }
++    _exit(127);
++  }
+   const struct dir_operations operations={dir_collect_real,dir_project_real,dir_finish_real,&failure};
+   if(dir_run((int)fd,nonce,ms,0,&operations,&failure)) {
+     char message[320];int length=dir_failure_line(message,sizeof(message),&failure);
+--- a/android/init_relay_protocol.h
++++ b/android/init_relay_protocol.h
+@@ -23,6 +23,11 @@
+ #define DIR_FD_ENV "DROIDLOOM_INIT_RELAY_FD"
+ #define DIR_NONCE_ENV "DROIDLOOM_INIT_RELAY_NONCE"
+ #define DIR_TIMEOUT_ENV "DROIDLOOM_INIT_RELAY_TIMEOUT_MS"
++/* Optional diagnostic extension. The five ABI3 frames are unchanged. */
++#define DIR_LOG_ABI_ENV "DROIDLOOM_INIT_LOG_ABI"
++#define DIR_LOG_FD_ENV "DROIDLOOM_INIT_LOG_FD"
++#define DIR_LOG_FD 202u
++#define DIR_LOG_CAPACITY (256u * 1024u)
+ #define DIR_LIBRARY_PATH "/droidloom/lmkd-bootstrap/libdroidloom_init_relay.so"
+ struct dir_context {
+   int control, peer_pidfd;
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs
+@@ -6,6 +6,7 @@
+ use super::capability::{self, Process};
+ use super::domain::{self, Identity};
+ use super::init_peer::Hello;
++use super::init_log;
+ use super::policy::{self, PressureRelaySpec};
+ use droidloom_pressure_relay::{BootstrapStatus, LifecycleBroker};
+ use serde::{Deserialize, Serialize};
+@@ -284,6 +285,8 @@
+     cleanup_failure: Option<FailureRecord>,
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     namespace_owner_exit: Option<NamespaceOwnerExit>,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    init_log: Option<init_log::Observation>,
+     records: Vec<Record>,
+ }
+ impl RelayLifecycleAudit {
+@@ -349,7 +352,7 @@
+             memory_max_bytes: 512 * 1024 * 1024, memory_high_bytes: 384 * 1024 * 1024,
+             memory_swap_max_bytes: 0, cpu_quota_us: 100000, cpu_period_us: 100000, tasks_max: 64,
+             recording_incomplete: false, recording_error: None, first_failure: None,
+-            retirement_failure: None, cleanup_failure: None, namespace_owner_exit: None,
++            retirement_failure: None, cleanup_failure: None, namespace_owner_exit: None, init_log: None,
+             records: Vec::with_capacity(MAX_RECORDS),
+         }, last_rank: 0,
+     })))
+@@ -501,6 +504,48 @@
+     }
+ 
+     #[test]
++    fn saturated_init_prefix_roundtrips_without_replacing_the_lifecycle_failure() {
++        let audit = fixture();
++        audit.failure(FailureOrigin::Runtime, "original init namespace failure");
++        let first = audit.snapshot().first_failure;
++        let capture = init_log::Capture::new([7; 32]).unwrap();
++        // Real owned memfd plus synthetic longest bytes, not an Android log.
++        (&*capture.writer().unwrap()).write_all(&vec![0xff; init_log::CAPACITY]).unwrap();
++        let record = capture.finish(false);
++        assert!(record.capacity_reached && record.held_fds_closed);
++        assert_eq!(record.captured_hex.len(), 512 * 1024);
++        audit.init_log(record.clone());
++        let result = audit.snapshot();
++        assert_eq!(result.first_failure, first);
++        assert!(!result.recording_incomplete);
++        let encoded = serde_json::to_vec(&result).unwrap();
++        assert!(encoded.len() > 512 * 1024 && encoded.len() < 1024 * 1024);
++        let decoded: RelayLifecycleAudit = serde_json::from_slice(&encoded).unwrap();
++        assert_eq!(decoded, result);
++        // A duplicate final observation is a recording gap, never a new
++        // lifecycle success or an overwrite of the first capture/failure.
++        audit.init_log(record);
++        assert!(audit.snapshot().recording_incomplete);
++        assert_eq!(audit.snapshot().first_failure, first);
++        assert_eq!(audit.snapshot().init_log, result.init_log);
++    }
++
++    #[test]
++    fn wrong_nonce_or_overbound_log_cannot_enter_the_retained_audit() {
++        for foreign in [false, true] {
++            let audit = fixture();
++            audit.failure(FailureOrigin::Admission, "original attach failure");
++            let mut record = init_log::Capture::new(if foreign { [8; 32] } else { [7; 32] })
++                .unwrap().finish(false);
++            if !foreign { record.captured_bytes = init_log::CAPACITY + 1; }
++            audit.init_log(record);
++            let result = audit.snapshot();
++            assert!(result.init_log.is_none() && result.recording_incomplete);
++            assert_eq!(result.first_failure.unwrap().message, "original attach failure");
++        }
++    }
++
++    #[test]
+     fn missing_observation_and_clock_or_order_failure_remain_incomplete() {
+         let audit = fixture();
+         audit.record(Err(domain::error("failed held-pidfd observation")));
+@@ -588,7 +633,7 @@
+             memory_swap_max_bytes: policy.memory_swap_max_bytes, cpu_quota_us: policy.cpu_quota_us,
+             cpu_period_us: policy.cpu_period_us, tasks_max: policy.tasks_max,
+             recording_incomplete: producer.is_err(), recording_error: producer.err().map(|e| bounded(&e.to_string()).0),
+-            first_failure: None, retirement_failure: None, cleanup_failure: None, namespace_owner_exit: None,
++            first_failure: None, retirement_failure: None, cleanup_failure: None, namespace_owner_exit: None, init_log: None,
+             records: Vec::with_capacity(MAX_RECORDS),
+         };
+         Self(Arc::new(Mutex::new(Journal { snapshot, last_rank: 0 })))
+@@ -659,4 +704,22 @@
+         self.lock().snapshot.first_failure.as_ref().map(|failure| failure.message.clone())
+     }
+     pub(crate) fn snapshot(&self) -> RelayLifecycleAudit { self.lock().snapshot.clone() }
+-}
++    /// Diagnostic data only. Preserve lifecycle first_failure and every
++    /// retirement gate even if logging was unavailable, full or incomplete.
++    pub(crate) fn init_log(&self, value: init_log::Observation) {
++        let mut journal = self.lock();
++        if journal.snapshot.init_log.is_some() {
++            journal.gap("init log final observation supplied twice");
++            return;
++        }
++        if value.nonce != journal.snapshot.nonce
++            || value.capacity_bytes != init_log::CAPACITY
++            || value.captured_bytes > init_log::CAPACITY
++            || value.captured_hex.len() != value.captured_bytes * 2
++        {
++            journal.gap("init log final observation binding/bound differs");
++            return;
++        }
++        journal.snapshot.init_log = Some(value);
++    }
++}
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
+@@ -1,11 +1,13 @@
+ //! Single-threaded namespace-entry half of the real init barrier.
+ //!
+ //! All inherited capabilities are sealed before a helper can execute. Only
+-//! the constructor channel is deliberately inherited by the final init exec;
+-//! the constructor closes it before init can start any service.
++//! the constructor channel and optional bounded diagnostic writer are inherited
++//! by the final init exec. The constructor closes the former and makes the
++//! latter CLOEXEC before services may start; neither opt-in survives in env.
+ use super::capability::{self, Artifact};
+ use super::domain::{self, Identity};
+ use super::init_peer;
++use super::init_log;
+ use super::policy::{self, PressureRelaySpec};
+ use crate::CellSpec;
+ use sha2::{Digest, Sha256};
+@@ -52,7 +54,8 @@
+     Ok(Sha256::digest(bytes).into())
+ }
+ pub(crate) fn clean_command_environment(command: &mut Command) {
+-    for key in ENTRY_ENV.into_iter().chain(INIT_ENV) {
++    for key in ENTRY_ENV.into_iter().chain(INIT_ENV)
++        .chain([init_log::ENTRY_ENV, init_log::ABI_ENV, init_log::FD_ENV]) {
+         command.env_remove(key);
+     }
+ }
+@@ -150,6 +153,7 @@
+ /// Private fields make a partial inherited contract unusable by later phases.
+ pub(crate) struct Entry {
+     channel: File,
++    init_log: Option<File>,
+     domain: File,
+     bootstrap_leaf: File,
+     bootstrap_identity: Identity,
+@@ -169,9 +173,11 @@
+     /// helpers or any process spawn. Failure always terminates that entry.
+     pub(crate) fn receive(spec: &CellSpec) -> io::Result<Option<Self>> {
+         let env: Vec<Option<OsString>> = ENTRY_ENV.iter().map(std::env::var_os).collect();
+-        let leaked_init = INIT_ENV.iter().any(|key| std::env::var_os(key).is_some());
++        let log_opt_in = std::env::var_os(init_log::ENTRY_ENV);
++        let leaked_init = INIT_ENV.iter().chain([&init_log::ABI_ENV, &init_log::FD_ENV])
++            .any(|key| std::env::var_os(key).is_some());
+         let Some(policy) = spec.pressure_relay.as_ref() else {
+-            if env.iter().any(Option::is_some) || leaked_init {
++            if env.iter().any(Option::is_some) || leaked_init || log_opt_in.is_some() {
+                 return Err(error("relay capability environment without relay policy"));
+             }
+             return Ok(None);
+@@ -180,6 +186,11 @@
+         // Do not construct owners until sealing has succeeded for all four.
+         for fd in FIXED {
+             close_on_exec(fd, true)?;
++        }
++        if log_opt_in.is_some() { close_on_exec(init_log::FD, true)?; }
++        if log_opt_in.as_deref().is_some_and(|value| value != std::ffi::OsStr::new(init_log::ABI))
++            || (log_opt_in.is_some() && std::env::var_os(init_log::LOGGER_ENV).is_some()) {
++            return Err(error("entry diagnostic opt-in or ambient logger environment differs"));
+         }
+         if leaked_init || env[0].as_deref() != Some(std::ffi::OsStr::new(ABI)) {
+             return Err(error("entry ABI or inherited init environment differs"));
+@@ -216,6 +227,13 @@
+         // exactly once; they have all just been sealed CLOEXEC.
+         let [channel, domain_fd, owner, executable] =
+             FIXED.map(|fd| unsafe { File::from_raw_fd(fd) });
++        let init_log = log_opt_in.map(|_| unsafe { File::from_raw_fd(init_log::FD) });
++        if let Some(log) = &init_log {
++            init_log::validate_writer(log)?;
++            if unsafe { libc::lseek(log.as_raw_fd(), 0, libc::SEEK_CUR) } != 0 {
++                return Err(error("entry diagnostic writer was already used"));
++            }
++        }
+         if unsafe { libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) } < 0 {
+             return Err(io::Error::last_os_error());
+         }
+@@ -245,6 +263,7 @@
+         pidfd_alive(&owner)?;
+         Ok(Some(Self {
+             channel,
++            init_log,
+             domain: domain_fd,
+             bootstrap_leaf,
+             bootstrap_identity,
+@@ -385,7 +404,14 @@
+             .env(INIT_ENV[2], init_peer::CONTROL_FD.to_string())
+             .env(INIT_ENV[3], policy::hex(&self.nonce))
+             .env(INIT_ENV[4], self.policy.bootstrap_timeout_ms.to_string());
++        if let Some(log) = &self.init_log {
++            init_log::validate_writer(log)?;
++            command.env_remove(init_log::LOGGER_ENV)
++                .env(init_log::ABI_ENV, init_log::ABI)
++                .env(init_log::FD_ENV, init_log::FD.to_string());
++        }
+         let control = self.channel.as_raw_fd();
++        let log = self.init_log.as_ref().map(AsRawFd::as_raw_fd);
+         let owner = self.owner.as_raw_fd();
+         let domain = self.domain.as_raw_fd();
+         let domain_identity = self.domain_identity;
+@@ -420,7 +446,9 @@
+                 }
+                 domain::validate_bootstrap_before_exec(domain, domain_identity,
+                                                        bootstrap, bootstrap_identity)?;
+-                close_on_exec(control, false)
++                close_on_exec(control, false)?;
++                if let Some(log) = log { close_on_exec(log, false)?; }
++                Ok(())
+             });
+         }
+         Ok(())
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/init_log.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/init_log.rs
+@@ -0,0 +1,343 @@
++//! A bounded, generation-private diagnostic sink, never lifecycle authority.
++//!
++//! The paired constructor primes the actual loaded KernelLogger with a nonce
++//! marker, then removes its temporary environment and seals the writer across
++//! exec. The host checks the bytes after the real HELLO identity admission.
++//! A fixed-size shmem file has no reader dependency and cannot grow on overflow.
++//! This captures a prefix, not a promise that every logger write succeeded.
++use super::domain::{self, Identity};
++use super::policy;
++use serde::{Deserialize, Serialize};
++use sha2::{Digest, Sha256};
++use std::fs::{File, OpenOptions};
++use std::io;
++use std::os::fd::{AsRawFd, FromRawFd, IntoRawFd, RawFd};
++use std::os::unix::fs::{FileExt, MetadataExt, OpenOptionsExt};
++use std::sync::{Arc, Mutex};
++
++pub(crate) const FD: RawFd = 202;
++pub(crate) const CAPACITY: usize = 256 * 1024;
++pub(crate) const ENTRY_ENV: &str = "DROIDLOOM_RELAY_ENTRY_INIT_LOG";
++pub(crate) const ABI_ENV: &str = "DROIDLOOM_INIT_LOG_ABI";
++pub(crate) const FD_ENV: &str = "DROIDLOOM_INIT_LOG_FD";
++pub(crate) const LOGGER_ENV: &str = "ANDROID_FILE__dev_kmsg";
++pub(crate) const ABI: &str = "1";
++const SEALS: i32 = libc::F_SEAL_GROW | libc::F_SEAL_SHRINK | libc::F_SEAL_SEAL;
++
++fn error(message: &'static str) -> io::Error { domain::error(message) }
++
++pub(crate) fn marker(nonce: &[u8; 32]) -> Vec<u8> {
++    format!("<6>droidloom-init-log: P4_INIT_LOG_V1 nonce={}\n<6>droidloom-init-log: P4_INIT_LOG_CACHED_V1 nonce={}\n",
++        policy::hex(nonce), policy::hex(nonce)).into_bytes()
++}
++
++/// Validate only the explicitly inherited diagnostic writer. A pipe, socket,
++/// ordinary file, arbitrary size, append position or writable growth is denied.
++pub(crate) fn validate_writer(file: &File) -> io::Result<Identity> {
++    let m = file.metadata()?;
++    let flags = unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFL) };
++    if flags < 0 { return Err(io::Error::last_os_error()); }
++    let seals = unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GET_SEALS) };
++    if seals < 0 { return Err(io::Error::last_os_error()); }
++    let mut fs: libc::statfs = unsafe { std::mem::zeroed() };
++    if unsafe { libc::fstatfs(file.as_raw_fd(), &mut fs) } < 0 {
++        return Err(io::Error::last_os_error());
++    }
++    if !m.is_file() || m.uid() != unsafe { libc::geteuid() }
++        || m.gid() != unsafe { libc::getegid() } || m.nlink() != 0
++        || m.mode() & 0o7777 != 0o600 || m.size() != CAPACITY as u64
++        || flags & libc::O_ACCMODE != libc::O_WRONLY || flags & libc::O_NONBLOCK == 0
++        || flags & (libc::O_APPEND | libc::O_PATH) != 0 || seals != SEALS
++        || fs.f_type as u64 != 0x0102_1994
++    {
++        return Err(error("init diagnostic writer identity/type/flags/seals differ"));
++    }
++    Identity::of(file)
++}
++
++#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
++pub(crate) struct Observation {
++    pub schema: u32,
++    pub nonce: String,
++    pub device: u64,
++    pub inode: u64,
++    pub capacity_bytes: usize,
++    pub marker_verified_after_held_init_hello: bool,
++    pub retirement_proven_before_capture: bool,
++    pub observed_writer_offset: Option<u64>,
++    pub captured_bytes: usize,
++    pub captured_sha256: String,
++    pub captured_hex: String,
++    pub capacity_reached: bool,
++    pub stream_completeness_claimed: bool,
++    pub exact_writer_per_line_proven: bool,
++    pub source_scope: String,
++    pub first_error: Option<String>,
++    pub secondary_errors: Vec<String>,
++    pub held_fds_closed: bool,
++}
++impl Observation {
++    fn remember(&mut self, message: String) {
++        let mut end = message.len().min(512);
++        while !message.is_char_boundary(end) { end -= 1; }
++        let message = message[..end].to_owned();
++        if self.first_error.is_none() { self.first_error = Some(message); }
++        else if self.secondary_errors.len() < 4 { self.secondary_errors.push(message); }
++    }
++}
++
++pub(crate) struct Capture {
++    read: Option<File>,
++    write: Option<File>,
++    identity: Identity,
++    nonce: [u8; 32],
++    admission_attempted: bool,
++    primed: bool,
++}
++
++/// Owner retains the same sink through every fallible attach/start step. A
++/// partially constructed Session or failed worker spawn cannot silently drop
++/// the only copy. Capture/close is still a single take of the actual two FDs.
++#[derive(Clone)]
++pub(crate) struct SharedCapture(Arc<Mutex<Option<Capture>>>);
++impl SharedCapture {
++    pub(crate) fn new(nonce: [u8; 32]) -> io::Result<Self> {
++        Ok(Self(Arc::new(Mutex::new(Some(Capture::new(nonce)?)))))
++    }
++    pub(crate) fn duplicate_writer(&self) -> io::Result<File> {
++        let held = self.0.lock().map_err(|_| error("init log owner lock poisoned"))?;
++        held.as_ref().ok_or_else(|| error("init log capture already finalized"))?.writer()?.try_clone()
++    }
++    pub(crate) fn require_marker(&self) -> io::Result<()> {
++        let mut held = self.0.lock().map_err(|_| error("init log owner lock poisoned"))?;
++        held.as_mut().ok_or_else(|| error("init log capture already finalized"))?.require_marker()
++    }
++    pub(crate) fn finish(&self, retired: bool) -> Option<Observation> {
++        let (capture, poisoned) = match self.0.lock() {
++            Ok(mut held) => (held.take(), false),
++            Err(poison) => (poison.into_inner().take(), true),
++        };
++        let mut result = capture?.finish(retired && !poisoned);
++        if poisoned { result.remember("init log owner lock poisoned".into()); }
++        Some(result)
++    }
++}
++impl Capture {
++    pub(crate) fn new(nonce: [u8; 32]) -> io::Result<Self> {
++        let fd = unsafe {
++            libc::memfd_create(c"droidloom-init-log".as_ptr(), libc::MFD_CLOEXEC | libc::MFD_ALLOW_SEALING)
++        };
++        if fd < 0 { return Err(io::Error::last_os_error()); }
++        let read = unsafe { File::from_raw_fd(fd) };
++        if unsafe { libc::fchmod(fd, 0o600) } < 0
++            || unsafe { libc::ftruncate(fd, CAPACITY as libc::off_t) } < 0
++        {
++            return Err(io::Error::last_os_error());
++        }
++        if unsafe { libc::fcntl(fd, libc::F_ADD_SEALS, SEALS) } < 0 {
++            return Err(io::Error::last_os_error());
++        }
++        // Reopening our own anonymous object creates a write-only OFD. The
++        // parent retains this OFD solely to observe its final offset; pread on
++        // the other OFD never changes the logger's position.
++        let write = OpenOptions::new().write(true)
++            .custom_flags(libc::O_NONBLOCK | libc::O_CLOEXEC)
++            .open(format!("/proc/self/fd/{fd}"))?;
++        let identity = validate_writer(&write)?;
++        if Identity::of(&read)? != identity { return Err(error("init log reopen changed inode")); }
++        let result = Self { read: Some(read), write: Some(write), identity, nonce,
++            admission_attempted: false, primed: false };
++        if result.position()? != 0 { return Err(error("new init log writer offset is not zero")); }
++        Ok(result)
++    }
++
++    pub(crate) fn writer(&self) -> io::Result<&File> {
++        self.write.as_ref().ok_or_else(|| error("init log writer was already consumed"))
++    }
++    fn reader(&self) -> io::Result<&File> {
++        self.read.as_ref().ok_or_else(|| error("init log reader was already consumed"))
++    }
++    fn position(&self) -> io::Result<u64> {
++        let value = unsafe { libc::lseek(self.writer()?.as_raw_fd(), 0, libc::SEEK_CUR) };
++        if value < 0 { return Err(io::Error::last_os_error()); }
++        if value as u64 > CAPACITY as u64 { return Err(error("init log offset exceeds fixed capacity")); }
++        Ok(value as u64)
++    }
++    fn validate(&self) -> io::Result<()> {
++        if validate_writer(self.writer()?)? != self.identity
++            || Identity::of(self.reader()?)? != self.identity
++        {
++            return Err(error("held init log identity changed"));
++        }
++        Ok(())
++    }
++    /// Called only after InitPeer::accept has retained the real init process,
++    /// executable and namespace proof, and before creating the relay broker.
++    pub(crate) fn require_marker(&mut self) -> io::Result<()> {
++        if self.admission_attempted { return Err(error("init logger marker admission is one attempt")); }
++        self.admission_attempted = true;
++        self.validate()?;
++        let expected = marker(&self.nonce);
++        if self.position()? < expected.len() as u64 {
++            return Err(error("actual init KernelLogger did not write its generation marker"));
++        }
++        let mut actual = vec![0; expected.len()];
++        self.reader()?.read_exact_at(&mut actual, 0)?;
++        if actual != expected { return Err(error("actual init logger marker differs")); }
++        self.validate()?;
++        self.primed = true;
++        Ok(())
++    }
++    /// Capture a stable prefix after retirement where possible. A failed
++    /// retirement is explicitly labelled; its diagnostic read cannot certify
++    /// that init stopped, that writes are complete, or that every line came
++    /// from PID1 (pre-exec fork children may share the cached descriptor).
++    pub(crate) fn finish(mut self, retired: bool) -> Observation {
++        let mut out = Observation {
++            schema: 1, nonce: policy::hex(&self.nonce), device: self.identity.device,
++            inode: self.identity.inode, capacity_bytes: CAPACITY,
++            marker_verified_after_held_init_hello: self.primed,
++            retirement_proven_before_capture: retired, observed_writer_offset: None,
++            captured_bytes: 0, captured_sha256: policy::hex(&Sha256::digest(b"")),
++            captured_hex: String::new(), capacity_reached: false,
++            stream_completeness_claimed: false, exact_writer_per_line_proven: false,
++            source_scope: "generation-private cached init logger; fork-before-exec writers not individually attributed".into(),
++            first_error: None, secondary_errors: Vec::new(), held_fds_closed: false,
++        };
++        let captured = (|| -> io::Result<()> {
++            self.validate()?;
++            let before = self.position()?;
++            out.observed_writer_offset = Some(before);
++            out.capacity_reached = before == CAPACITY as u64;
++            let mut raw = vec![0; before as usize];
++            self.reader()?.read_exact_at(&mut raw, 0)?;
++            out.captured_bytes = raw.len();
++            out.captured_sha256 = policy::hex(&Sha256::digest(&raw));
++            out.captured_hex = policy::hex(&raw);
++            self.validate()?;
++            if self.position()? != before {
++                return Err(error("init diagnostic writer moved during final capture"));
++            }
++            Ok(())
++        })();
++        if let Err(error) = captured { out.remember(error.to_string()); }
++        // Explicit one-attempt close evidence; never retry a possibly reused
++        // integer. The original capture error remains primary.
++        let mut all_closed = true;
++        for file in [self.write.take(), self.read.take()].into_iter().flatten() {
++            if unsafe { libc::close(file.into_raw_fd()) } < 0 {
++                all_closed = false;
++                out.remember(format!("close init diagnostic FD: {}", io::Error::last_os_error()));
++            }
++        }
++        out.held_fds_closed = all_closed;
++        out
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use std::io::Write;
++    use std::os::unix::process::CommandExt;
++    use std::process::Command;
++
++    #[test]
++    fn real_memfd_is_bounded_and_preserves_the_observed_prefix() {
++        let mut capture = Capture::new([7; 32]).unwrap();
++        // Explicit synthetic logger bytes; this is not Android ABI evidence.
++        let head = marker(&[7; 32]);
++        (&*capture.writer().unwrap()).write_all(&head).unwrap();
++        capture.require_marker().unwrap();
++        let tail = vec![b'x'; CAPACITY - head.len()];
++        (&*capture.writer().unwrap()).write_all(&tail).unwrap();
++        let overflow = (&*capture.writer().unwrap()).write(b"overflow").unwrap_err();
++        assert_eq!(overflow.raw_os_error(), Some(libc::EPERM));
++        let record = capture.finish(true);
++        assert!(record.marker_verified_after_held_init_hello && record.capacity_reached);
++        assert_eq!(record.captured_bytes, CAPACITY);
++        assert!(record.captured_hex.starts_with(&policy::hex(&head)));
++        assert!(record.held_fds_closed && record.first_error.is_none());
++        assert!(!record.stream_completeness_claimed && !record.exact_writer_per_line_proven);
++    }
++
++    #[test]
++    fn missing_or_foreign_marker_never_admits_a_generation() {
++        let mut capture = Capture::new([8; 32]).unwrap();
++        assert!(capture.require_marker().is_err());
++        (&*capture.writer().unwrap()).write_all(&marker(&[8; 32])).unwrap();
++        assert!(capture.require_marker().is_err());
++        let record = capture.finish(false);
++        assert!(!record.marker_verified_after_held_init_hello);
++        assert!(!record.retirement_proven_before_capture);
++        assert!(record.held_fds_closed);
++        let mut wrong = Capture::new([8; 32]).unwrap();
++        (&*wrong.writer().unwrap()).write_all(&marker(&[9; 32])).unwrap();
++        assert!(wrong.require_marker().is_err());
++        assert!(wrong.finish(false).held_fds_closed);
++    }
++
++    #[test]
++    fn ordinary_file_and_read_write_descriptor_are_not_log_writers() {
++        let capture = Capture::new([10; 32]).unwrap();
++        assert!(validate_writer(capture.reader().unwrap()).is_err());
++        assert!(validate_writer(&File::open("/dev/null").unwrap()).is_err());
++        assert!(capture.finish(false).held_fds_closed);
++    }
++
++    #[test]
++    fn attach_and_worker_start_error_seams_retain_the_owners_only_sink() {
++        for phase in ["later attach field", "worker start"] {
++            let owner = SharedCapture::new([12; 32]).unwrap();
++            let mut writer = owner.duplicate_writer().unwrap();
++            writer.write_all(&marker(&[12; 32])).unwrap();
++            drop(writer);
++            // Explicit failure seam around the actual shared type: later
++            // field construction or thread creation returns Err and drops
++            // the temporary Session copy. No HostContext/Android is invented.
++            let failed = (|| -> io::Result<()> {
++                let _partial_session = owner.clone();
++                Err(error(phase))
++            })().unwrap_err();
++            assert_eq!(failed.to_string(), phase);
++            let record = owner.finish(false).unwrap();
++            assert_eq!(record.captured_hex, policy::hex(&marker(&[12; 32])));
++            assert!(record.held_fds_closed);
++            assert!(!record.marker_verified_after_held_init_hello);
++            assert!(!record.retirement_proven_before_capture);
++            assert!(owner.finish(false).is_none());
++        }
++    }
++
++    #[test]
++    fn poisoned_capture_keeps_data_and_closes_without_claiming_retirement() {
++        let owner = SharedCapture::new([13; 32]).unwrap();
++        let thread_copy = owner.clone();
++        assert!(std::thread::spawn(move || {
++            let _guard = thread_copy.0.lock().unwrap();
++            panic!("owned diagnostic lock poison control");
++        }).join().is_err());
++        let record = owner.finish(true).unwrap();
++        assert!(!record.retirement_proven_before_capture);
++        assert!(record.held_fds_closed && record.first_error.unwrap().contains("poisoned"));
++        assert!(owner.finish(false).is_none());
++    }
++
++    #[test]
++    fn real_child_exec_does_not_receive_the_cloexec_writer() {
++        let capture = Capture::new([11; 32]).unwrap();
++        let raw = capture.writer().unwrap().as_raw_fd();
++        let mut command = Command::new("/bin/sh");
++        command.args(["-c", "test ! -e /proc/self/fd/202"]);
++        unsafe {
++            command.pre_exec(move || {
++                if libc::dup3(raw, FD, libc::O_CLOEXEC) < 0 {
++                    return Err(io::Error::last_os_error());
++                }
++                Ok(())
++            });
++        }
++        assert!(command.status().unwrap().success());
++        assert!(capture.finish(false).held_fds_closed);
++    }
++}
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs
+@@ -3,6 +3,7 @@
+ mod domain;
+ mod capability;
+ mod init_peer;
++mod init_log;
+ pub mod entry;
+ pub(crate) mod owner;
+ mod worker;
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs
+@@ -3,6 +3,7 @@
+ use super::audit::{Audit, Event, FailureOrigin, RelayLifecycleAudit, RetirementRecord};
+ use super::domain::{self, Domain, Identity};
+ use super::entry;
++use super::init_log;
+ use super::init_peer::{self, Hello, InitPeer};
+ use super::policy::{self, PressureRelaySpec};
+ use super::worker::Worker;
+@@ -307,6 +308,7 @@
+ 
+ struct Session {
+     audit: Audit,
++    init_log: init_log::SharedCapture,
+     host: Option<HostContext>,
+     owner: Process,
+     domain: Option<Arc<Domain>>,
+@@ -340,6 +342,9 @@
+                 let _ = relay(broker.revoke_unproven_control());
+             }
+             let _ = self.stop_exact_processes();
++            if let Some(log) = self.init_log.finish(false) {
++                self.audit.init_log(log);
++            }
+             // Worker::join records permanent poison and keeps this exact
+             // Session in its poisoned mutex. No handle is substituted.
+             std::panic::resume_unwind(payload);
+@@ -355,6 +360,9 @@
+         self.audit.record(Ok(Event::Retiring));
+         self.peer.close();
+         let retired = self.retire_generation();
++        if let Some(log) = self.init_log.finish(retired.is_ok()) {
++            self.audit.init_log(log);
++        }
+         if let Err(e) = retired {
+             self.audit.failure(FailureOrigin::Retirement, &e.to_string());
+             self.retirement_error = Some(e.to_string());
+@@ -379,6 +387,7 @@
+             &self.audit,
+         )?);
+         let hello = self.hello.as_ref().expect("retained actual init HELLO");
++        self.init_log.require_marker()?;
+         let spec = BootstrapSpec {
+             nonce: self.nonce,
+             uid: self.policy.lmkd_uid,
+@@ -583,6 +592,7 @@
+ 
+ pub(crate) struct Owner {
+     audit: Audit,
++    init_log: init_log::SharedCapture,
+     policy: PressureRelaySpec,
+     nonce: [u8; 32],
+     canonical_spec: [u8; 32],
+@@ -597,7 +607,7 @@
+     lmkd_image: Option<Artifact>,
+     channel_host: Option<File>,
+     channel_child: Option<File>,
+-    transfers: Option<[File; 3]>,
++    transfers: Option<[File; 4]>,
+     cancel: Arc<Cancel>,
+     phase: Arc<AtomicU8>,
+     process: Option<Process>,
+@@ -629,6 +639,7 @@
+         let nonce = PressureRelaySpec::nonce()?;
+         let canonical_spec = entry::spec_digest(spec)?;
+         let audit = Audit::new(&nonce, &canonical_spec, spec.host_uid, policy);
++        let init_log = init_log::SharedCapture::new(nonce)?;
+         let record = serde_json::to_vec(&serde_json::json!({"schema":1,"entry_abi":entry::ABI,
+             "host_uid":spec.host_uid,"nonce":policy::hex(&nonce),"canonical_spec_sha256":policy::hex(&canonical_spec),
+             "runtime":spec.runtime_dir,"domain_name":format!("g-{}",policy::hex(&nonce)),"pressure_relay":policy}))
+@@ -641,6 +652,7 @@
+         let (channel_host, channel_child) = init_peer::pair()?;
+         Ok(Some(Self {
+             audit,
++            init_log,
+             policy: policy.clone(),
+             nonce,
+             canonical_spec,
+@@ -688,6 +700,7 @@
+             .as_ref()
+             .ok_or_else(|| error("private endpoint not provisioned"))?
+             .validate()?;
++        let log_writer = self.init_log.duplicate_writer()?;
+         let sources = [
+             self.channel_child
+                 .as_ref()
+@@ -695,6 +708,7 @@
+                 .as_raw_fd(),
+             self.domain.android().as_raw_fd(),
+             self.entry_image.file().as_raw_fd(),
++            log_writer.as_raw_fd(),
+         ];
+         let pinned = sources.map(|fd| {
+             let raw = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 256) };
+@@ -704,8 +718,8 @@
+                 Ok(unsafe { File::from_raw_fd(raw) })
+             }
+         });
+-        let [a, b, c] = pinned;
+-        self.transfers = Some([a?, b?, c?]);
++        let [a, b, c, d] = pinned;
++        self.transfers = Some([a?, b?, c?, d?]);
+         let raw = self
+             .transfers
+             .as_ref()
+@@ -715,6 +729,8 @@
+         let parent = unsafe { libc::getpid() };
+         entry::clean_command_environment(command);
+         command
++            .env_remove(init_log::LOGGER_ENV)
++            .env(init_log::ENTRY_ENV, init_log::ABI)
+             .env(entry::ENTRY_ENV[0], entry::ABI)
+             .env(entry::ENTRY_ENV[1], policy::hex(&self.nonce))
+             .env(entry::ENTRY_ENV[2], policy::hex(&self.canonical_spec));
+@@ -731,6 +747,7 @@
+                     init_peer::CONTROL_FD,
+                     init_peer::DOMAIN_FD,
+                     init_peer::ENTRY_FD,
++                    init_log::FD,
+                 ]) {
+                     if libc::dup2(source, target) < 0 || libc::fcntl(target, libc::F_SETFD, 0) < 0 {
+                         return Err(io::Error::last_os_error());
+@@ -786,6 +803,7 @@
+             .try_clone()?;
+         let session = Session {
+             audit: self.audit.clone(),
++            init_log: self.init_log.clone(),
+             host: self.host.take(),
+             owner: process,
+             domain: Some(Arc::clone(&self.domain)),
+@@ -863,6 +881,12 @@
+         if self.termination_reason.is_none() {
+             self.termination_reason = self.audit.first_failure_message();
+         }
++        // Attach (including the worker spawn) may have failed before Session
++        // ran. The Owner still retains the same sink, so preserve its prefix
++        // without claiming init/domain retirement or replaying any phase.
++        if self.failure.is_some() {
++            if let Some(log) = self.init_log.finish(false) { self.audit.init_log(log); }
++        }
+     }
+     pub(crate) fn audit(&self) -> RelayLifecycleAudit { self.audit.snapshot() }
+     pub(crate) fn record_cleanup_failure(&self, message: &str) {
+@@ -981,6 +1005,7 @@
+         if !self.released {
+             let _ = self.cancel.request();
+         }
++        if let Some(log) = self.init_log.finish(false) { self.audit.init_log(log); }
+         // The persistent claim deliberately survives dropping this owner.
+     }
+ }

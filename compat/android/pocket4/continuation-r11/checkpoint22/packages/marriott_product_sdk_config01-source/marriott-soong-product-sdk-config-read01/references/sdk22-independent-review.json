@@ -1,0 +1,127 @@
+{
+  "FD_all_closed": true,
+  "FD_count": 667,
+  "actual_pin": {
+    "bytes": 79928,
+    "git_blob_sha": "3f4945ce31c1593552719edf530ce7654f33cf7e",
+    "sha256": "f952b570b665438b367f78fbef0a17232d78ced69463832b9d12b1316a700a83"
+  },
+  "control_met": true,
+  "elapsed": 0.007541332975961268,
+  "errors": [
+    {
+      "errno": 2,
+      "message": "[Errno 2] No such file or directory: 'soong.variables'",
+      "stage": "input:existing_soong_variables",
+      "type": "FileNotFoundError"
+    }
+  ],
+  "failed_role": "existing_soong_variables",
+  "field_verification_failures": [],
+  "full_reads": 42,
+  "original_expected_anchors_and_sources": 20,
+  "qualified_individual_rows": 21,
+  "resource_after": {
+    "identity": [
+      30,
+      34821055,
+      16877,
+      1000,
+      1000
+    ],
+    "limits": {
+      "cpu.max": "100000 100000",
+      "memory.high": "max",
+      "memory.max": "268435456",
+      "memory.swap.max": "max",
+      "pids.max": "30053"
+    },
+    "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1b19b46a3-fc05-79d7.service\n",
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "mount": [
+      "36",
+      "28",
+      "0:30",
+      "/",
+      "/sys/fs/cgroup",
+      "cgroup2"
+    ],
+    "namespace": {
+      "cgroup": [
+        5,
+        4026531835
+      ],
+      "mnt": [
+        5,
+        4026531832
+      ]
+    },
+    "values": {
+      "cgroup.procs": "66503\n66508",
+      "memory.current": "20357120",
+      "memory.peak": "20357120",
+      "memory.swap.current": "0"
+    }
+  },
+  "resource_before": {
+    "identity": [
+      30,
+      34821055,
+      16877,
+      1000,
+      1000
+    ],
+    "limits": {
+      "cpu.max": "100000 100000",
+      "memory.high": "max",
+      "memory.max": "268435456",
+      "memory.swap.max": "max",
+      "pids.max": "30053"
+    },
+    "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1b19b46a3-fc05-79d7.service\n",
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "mount": [
+      "36",
+      "28",
+      "0:30",
+      "/",
+      "/sys/fs/cgroup",
+      "cgroup2"
+    ],
+    "namespace": {
+      "cgroup": [
+        5,
+        4026531835
+      ],
+      "mnt": [
+        5,
+        4026531832
+      ]
+    },
+    "values": {
+      "cgroup.procs": "66503\n66508",
+      "memory.current": "19046400",
+      "memory.peak": "19046400",
+      "memory.swap.current": "0"
+    }
+  },
+  "rows": 22,
+  "scope": false,
+  "total_bytes": 306446
+}

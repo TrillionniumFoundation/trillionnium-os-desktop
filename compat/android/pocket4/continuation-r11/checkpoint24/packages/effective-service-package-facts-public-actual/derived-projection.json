@@ -1,0 +1,288 @@
+{
+  "schema": "root-derived-effective-service-package-facts-v1",
+  "derived_projection_not_original_command_output": true,
+  "both_tool_complete_before_after_file_info_equal": true,
+  "services": [
+    {
+      "prefix": "effective_system_daemon_read01",
+      "unit": "droidloomd.service",
+      "scope": "system",
+      "stdout": {
+        "bytes": 705,
+        "sha256": "f6853944b9e2c4b0ea54017686ba8f5dfea82fc7f66eb7b59ab4d19ab2043a58",
+        "git_blob_sha1": "6658c9c417cc03e63603b9f302a675e5d964947f"
+      },
+      "property_record_set_exact": true,
+      "Id_matches": true,
+      "MainPID": "3588022",
+      "MainPID_equals_prior": true,
+      "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+      "InvocationID_equals_prior": true,
+      "LoadState": "loaded",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled",
+      "NeedDaemonReload": "no",
+      "FragmentPath": {
+        "known": "/usr/lib/systemd/system/droidloomd.service",
+        "pin": {
+          "bytes": 42,
+          "sha256": "2f088d356a48ea9e2036aa3f937735fae6152f7b015f2d14543d35cc2cda0017",
+          "git_blob_sha1": "d83f773cf88a5e4caa1498bfef2f0eee58853915"
+        }
+      },
+      "DropInPaths": {
+        "empty": false,
+        "pin": {
+          "bytes": 285,
+          "sha256": "a774e7bad7fcf2c4d01199dcc470b0e638f9c40d38163986de26329e608cf7b5",
+          "git_blob_sha1": "d90f9d15975510372a51123a8e989d964a1bdc14"
+        },
+        "count_whitespace_tokens": 4
+      },
+      "ExecStart": {
+        "pin": {
+          "bytes": 148,
+          "sha256": "d2e9d38dca55bc4e54507d57cbaea4a57a2a2a698068b262d29bb523fbe97f76",
+          "git_blob_sha1": "9ed4f63c9a265c1a9067282d24a9c2c74a14aa3d"
+        },
+        "closed_single_struct_grammar": true,
+        "known_executable": "/usr/bin/droidloomd",
+        "argv_equals_only_known_executable": true,
+        "argv_pin": {
+          "bytes": 19,
+          "sha256": "8986b66807d1e600af3983446a56fad1dd19063df89a799cb9bcf1b2ad217c66",
+          "git_blob_sha1": "b9864339598c332ddf7475f9b3489fa538c57776"
+        },
+        "field_keys": [
+          "path",
+          "argv[]",
+          "ignore_errors",
+          "start_time",
+          "stop_time",
+          "pid",
+          "code",
+          "status"
+        ],
+        "argv_equals_single_observed_executable": true
+      },
+      "User": {
+        "value": "",
+        "empty_means_manager_default": true
+      },
+      "Group": {
+        "value": "",
+        "empty_means_manager_default": true
+      },
+      "dynamic_start_fields_do_not_prove_stability_outside_query": true
+    },
+    {
+      "prefix": "effective_user_session_read01",
+      "unit": "droidloom.service",
+      "scope": "user",
+      "stdout": {
+        "bytes": 619,
+        "sha256": "897c75a2d7c23ace85892bf9f004e9d0fa366a1f9b31ba6b73e0350077cad054",
+        "git_blob_sha1": "76c964fd169f1601901744334cce8dc931be3c55"
+      },
+      "property_record_set_exact": true,
+      "Id_matches": true,
+      "MainPID": "3588024",
+      "MainPID_equals_prior": true,
+      "InvocationID": "4f9049c783be4359b69523d88ab81d63",
+      "InvocationID_equals_prior": true,
+      "LoadState": "loaded",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled",
+      "NeedDaemonReload": "no",
+      "FragmentPath": {
+        "known": "/usr/lib/systemd/user/droidloom.service",
+        "pin": {
+          "bytes": 39,
+          "sha256": "4546541b2b7677e73a3b40124d0f30e54a7ef27160c7698141967bb7a6c8a3be",
+          "git_blob_sha1": "c4146b27b08b0c0153c9a2b463826caef8c67fb4"
+        }
+      },
+      "DropInPaths": {
+        "empty": false,
+        "pin": {
+          "bytes": 75,
+          "sha256": "35939fdcb753d6ad1c67b0b6f6590da62081cde056120edf4dec7387a99126ca",
+          "git_blob_sha1": "bf112a44f28bbf7f7e89a901214bb7ac90090a1d"
+        },
+        "count_whitespace_tokens": 1
+      },
+      "ExecStart": {
+        "pin": {
+          "bytes": 276,
+          "sha256": "afb80c5011327235cb37704137ab8fb3a9dea941eba39e2bf8bdc222a0d5c887",
+          "git_blob_sha1": "162a1d3abd49d357bc16fc6b1f92289f69a4408e"
+        },
+        "closed_single_struct_grammar": true,
+        "known_executable": null,
+        "argv_equals_only_known_executable": false,
+        "argv_pin": {
+          "bytes": 68,
+          "sha256": "0d433920a63f8f04fca106fadef67c50e189912d8593e7a33d645ba6e7e84ed9",
+          "git_blob_sha1": "a233621e47979db866c595eb8c3af29b3cd97a3a"
+        },
+        "field_keys": [
+          "path",
+          "argv[]",
+          "ignore_errors",
+          "start_time",
+          "stop_time",
+          "pid",
+          "code",
+          "status"
+        ],
+        "argv_equals_single_observed_executable": true
+      },
+      "User": {
+        "value": "",
+        "empty_means_manager_default": true
+      },
+      "Group": {
+        "value": "",
+        "empty_means_manager_default": true
+      },
+      "dynamic_start_fields_do_not_prove_stability_outside_query": true
+    },
+    {
+      "prefix": "effective_user_applications_read01",
+      "unit": "droidloom-applications.service",
+      "scope": "user",
+      "stdout": {
+        "bytes": 495,
+        "sha256": "00190ebc59a2210c87d517a8881ee4dfbc758f8344f168bf4605eac9a90418b1",
+        "git_blob_sha1": "7cf94a3605befb56fbb8f0de46f02af1c1532553"
+      },
+      "property_record_set_exact": true,
+      "Id_matches": true,
+      "MainPID": "3588091",
+      "MainPID_equals_prior": true,
+      "InvocationID": "c1113ca849d345b5a728205f7132427d",
+      "InvocationID_equals_prior": true,
+      "LoadState": "loaded",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "static",
+      "NeedDaemonReload": "no",
+      "FragmentPath": {
+        "known": "/usr/lib/systemd/user/droidloom-applications.service",
+        "pin": {
+          "bytes": 52,
+          "sha256": "01f94d26cf565efb3a7c641f738c35dc7919642b1bca24fd6ecd36cc801e4038",
+          "git_blob_sha1": "5dafb77b057bcf40f5d57af104435e76f92bdde7"
+        }
+      },
+      "DropInPaths": {
+        "empty": true,
+        "pin": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob_sha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        },
+        "count_whitespace_tokens": 0
+      },
+      "ExecStart": {
+        "pin": {
+          "bytes": 202,
+          "sha256": "bcc21683159725de77445a4e6dcbae2d939ae29dc50875a2a9b99842235fb7ba",
+          "git_blob_sha1": "d089fcbdad4b2935763e19e89fe82c02dd5c9ff4"
+        },
+        "closed_single_struct_grammar": true,
+        "known_executable": "/usr/bin/droidloom-applications",
+        "argv_equals_only_known_executable": true,
+        "argv_pin": {
+          "bytes": 31,
+          "sha256": "bf8ba518917d590c0ee430d836e959e4690202a51400a30c1f26a499521878ea",
+          "git_blob_sha1": "af6f2efa6445464e9a0a98b9e96325c108c5559c"
+        },
+        "field_keys": [
+          "path",
+          "argv[]",
+          "ignore_errors",
+          "start_time",
+          "stop_time",
+          "pid",
+          "code",
+          "status"
+        ],
+        "argv_equals_single_observed_executable": true
+      },
+      "User": {
+        "value": "",
+        "empty_means_manager_default": true
+      },
+      "Group": {
+        "value": "",
+        "empty_means_manager_default": true
+      },
+      "dynamic_start_fields_do_not_prove_stability_outside_query": true
+    }
+  ],
+  "package_database_search": {
+    "tool": "dpkg-query",
+    "exit_code": 1,
+    "stdout_pin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob_sha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    "stderr_pin": {
+      "bytes": 541,
+      "sha256": "e1d3101ef5854d5ea41db7489e6f8516fd9fad553034dce72db6a53d42e8cc8e",
+      "git_blob_sha1": "3915e66d2ab85c229b29d4e0fc0e2794b99d9930"
+    },
+    "paths": [
+      {
+        "path": "/usr/bin/droidloom-supervisor",
+        "dpkg_file_owner": "NO_MATCH_OBSERVED",
+        "owners": []
+      },
+      {
+        "path": "/usr/bin/droidloomd",
+        "dpkg_file_owner": "NO_MATCH_OBSERVED",
+        "owners": []
+      },
+      {
+        "path": "/usr/bin/droidloomctl",
+        "dpkg_file_owner": "NO_MATCH_OBSERVED",
+        "owners": []
+      },
+      {
+        "path": "/usr/bin/droidloom-applications",
+        "dpkg_file_owner": "NO_MATCH_OBSERVED",
+        "owners": []
+      },
+      {
+        "path": "/usr/lib/systemd/system/droidloomd.service",
+        "dpkg_file_owner": "NO_MATCH_OBSERVED",
+        "owners": []
+      },
+      {
+        "path": "/usr/lib/systemd/user/droidloom.service",
+        "dpkg_file_owner": "NO_MATCH_OBSERVED",
+        "owners": []
+      },
+      {
+        "path": "/usr/lib/systemd/user/droidloom-applications.service",
+        "dpkg_file_owner": "NO_MATCH_OBSERVED",
+        "owners": []
+      }
+    ],
+    "all_seven_arguments_accounted_for": true,
+    "unknown_diagnostics": 0,
+    "no_match_proves_unmanaged": false,
+    "package_ownership_route_not_finalized": true
+  },
+  "raw_stdout_stderr_and_log_chunks_archived": false,
+  "Main_guard_or_readiness_qualified": false,
+  "Main_or_service_mutations": 0,
+  "Android_actions": 0,
+  "no_shell": true,
+  "host_query_jobs": 4,
+  "whole_apps_ready": 0
+}

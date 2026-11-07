@@ -1,0 +1,16 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/python3",
+  "args": [
+    "-I",
+    "-B",
+    "-"
+  ],
+  "stdin": "import json,os,stat\npaths=['/','/home','/home/alex','/home/alex/work','/run','/run/user','/run/user/1000']\nrows=[]\nfor p in paths:\n try:\n  s=os.lstat(p);rows.append({'path':p,'device':s.st_dev,'inode':s.st_ino,'uid':s.st_uid,'gid':s.st_gid,'mode':stat.S_IMODE(s.st_mode),'type_dir':stat.S_ISDIR(s.st_mode),'symlink':stat.S_ISLNK(s.st_mode)})\n except FileNotFoundError:rows.append({'path':p,'absent':True})\nprint(json.dumps({'scope':'fixed output ancestor metadata only','uid':os.getuid(),'euid':os.geteuid(),'rows':rows,'writes':0}))\n",
+  "cwd": "/",
+  "cpu_quota_percent": 50,
+  "memory_max_bytes": 67108864,
+  "nice": 10,
+  "timeout_seconds": 15,
+  "idempotency_key": "p4-owner07-output-ancestors-read01-20261105"
+}

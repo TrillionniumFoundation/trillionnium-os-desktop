@@ -1,0 +1,12 @@
+--- baseline/property_visibility.py
++++ candidate/property_visibility.py
+@@ -356,7 +356,8 @@
+             'cold_cache_observation': False, 'property_writes': False,
+             'Main_actions': 0, 'source_qualified_before_reads': False,
+             'protocol_packets': 0, 'start_token_attempts': 0, 'finish_token_attempts': 0,
+-            'finish_token_sent': False, 'wire_records': [], 'held_fds_closed': False,
++            'finish_token_sent': False, 'wire_records': [], 'init_current_checks': [],
++             'held_fds_closed': False,
+             'property_visibility_qualified': False, 'original_Stop_delayed': False,
+             'build_result_sha256': EXPECTED_BUILD, 'source_manifest_sha256': EXPECTED_SOURCE}
+         try:

@@ -1,0 +1,53 @@
+--- journal01/collect-template.py
++++ journal02/collect-template.py
+@@ -115,18 +115,34 @@
+         need(isinstance(message, str), 'invalid journal message type')
+         message_bytes = message.encode('utf-8')
+     caller = item.get('SYSLOG_PID')
++    identifier = item.get('SYSLOG_IDENTIFIER')
+     matched_pid = isinstance(caller, str) and caller.isdigit() and int(caller) in CFG['owned_pids']
+     within = CFG['window_start_us'] <= tick <= CFG['window_end_us']
+-    named = any(marker in message_bytes.lower() for marker in
+-                (b'init:', b'init[', b'init(', b'ueventd:', b'apexd:', b'reboot:', b'rebooting'))
+-    # SYSLOG_IDENTIFIER is an additional named candidate, never a process identity proof.
+-    named = named or item.get('SYSLOG_IDENTIFIER') in ('init', 'ueventd', 'apexd')
+-    return tick, within and (matched_pid or named), {
+-        'timestamp_us': tick, 'message': message, 'syslog_pid': caller,
++    lower = message_bytes.lower()
++    # Limit this second read to service/cgroup failure context, not all init traffic.
++    service_failure = any(word in lower for word in
++        (b'bootstrap-apexd-failed', b'apexd-bootstrap', b'reboot_on_failure',
++         b'shutdown_command', b'reboot start', b'rebooting'))
++    cgroup_failure = any(word in lower for word in (b'cgroup', b'processgroup')) and any(
++        word in lower for word in (b'failed', b'error', b'cannot', b'could not', b'no such', b'permission', b'busy'))
++    startup = lower == b'init second stage started!'
++    named = identifier in ('init', 'libprocessgroup', 'processgroup', 'apexd', 'apexd-bootstrap')
++    keep = within and (matched_pid or named and (service_failure or cgroup_failure or startup))
++    source_tick = item.get('_SOURCE_MONOTONIC_TIMESTAMP')
++    source_boot = item.get('_SOURCE_BOOTTIME_TIMESTAMP')
++    for value in (source_tick, source_boot):
++        need(value is None or isinstance(value, str) and 1 <= len(value) <= 20 and value.isdigit(),
++             'invalid optional source timestamp')
++    return tick, keep, {
++        'journal_received_monotonic_us': tick,
++        'source_monotonic_us': None if source_tick is None else int(source_tick),
++        'source_boottime_us': None if source_boot is None else int(source_boot),
++        'message': message, 'syslog_pid': caller, 'syslog_identifier': identifier,
+         'syslog_pid_matches_recorded_host_pid_number': matched_pid,
+-        'attribution': 'FIXED_TIME_AND_TEXT_OR_PID_NUMBER_CANDIDATE; NOT_CAUSAL_PROOF',
++        'attribution': 'RECEIVE_TIME_AND_NARROW_TEXT_OR_PID_NUMBER_CANDIDATE; NO_BIRTH_ASSOCIATION',
+         'raw_bytes': len(raw), 'raw_sha256': sha(raw),
+         'raw_base64': base64.b64encode(raw).decode('ascii')}
++
+ 
+ 
+ def new_journal_report():
+@@ -267,7 +283,7 @@
+ 
+ 
+ def main():
+-    result = {'schema': 1, 'kind': 'owner08-normal01-fixed-journal-window-read01',
++    result = {'schema': 1, 'kind': 'owner08-normal01-fixed-journal-window-read02',
+         'collection_complete': False, 'qualification': False, 'runtime_executed': False,
+         'runtime_mutations_requested': False, 'config': CFG, 'errors': []}
+     fds = []

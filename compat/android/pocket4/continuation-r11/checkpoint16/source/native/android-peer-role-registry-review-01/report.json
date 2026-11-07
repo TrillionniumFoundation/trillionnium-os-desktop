@@ -1,0 +1,69 @@
+{
+  "actual_runtime_test_performed": false,
+  "additional_callsite_read": {
+    "bytes": 9965,
+    "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-snapshot-source-freeze01/source/role_snapshot.cc",
+    "scope": "FinishCreate failure handling only; complete file not rereviewed in this pass",
+    "sha256": "c2c14486d21e852a971835abd0f36631b4eb37b0a53fbcd5697cf4c11c8e4994"
+  },
+  "findings": [
+    {
+      "author_acknowledged_by_message": true,
+      "classification": "concrete source lifecycle gap; runtime triggering not tested",
+      "counterexample_scope": "If a foreign CLONE_VM process inherits this Registry object and reaches its RAII destruction, delete impl_ releases and changes the shared implementation/allocator and Slot/Descriptor memory. A separate FD table does not prevent those memory writes; CLONE_FILES would additionally share descriptor effects.",
+      "evidence": "The destructor directly deletes impl_. Owner/OwnThread gates protect state methods and Close, but are not called on this destruction path.",
+      "id": "REGISTRY-FOREIGN-SHARED-VM-DESTRUCTOR",
+      "location": "role_authorization.cc Registry::~Registry (line 451)",
+      "not_claimed": "No guest-to-factory invocation path, privilege escalation, current platform trigger or device regression is asserted. This source remains platform-disabled and normal receive/owned controls do not exercise this path.",
+      "required_followup": "A distinct revision must make owner-only destruction explicit and enforce it or make foreign destruction unreachable in the actual lifecycle. Preserve the old source and demonstrate the old/new owned boundary."
+    },
+    {
+      "classification": "API documentation overstatement; current snapshot wrapper closes this path",
+      "current_callsite_closure": "The frozen role_snapshot.cc explicitly calls registry.Close(handle) after FinishCreate failure, closes an already-created output and restores the primary creation or finish errno. That same-owner cleanup covers the current snapshot caller.",
+      "evidence": "An Owner() error returns before clearing slot.busy. The later Recheck failure revokes the slot, but the blanket clears-busy-on-failure wording is broader than the function.",
+      "id": "FINISHCREATE-FAILURE-CLEANUP-SCOPE",
+      "location": "role_authorization.h lines 117-119; cc FinishCreate Owner precheck",
+      "required_followup": "Narrow the header promise in the next revision. Do not treat this as a new blocker of the already-reviewed wrapper."
+    }
+  ],
+  "manifest_payloads_byte_verified": 52,
+  "read_sources": [
+    {
+      "bytes": 5539,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-protocol-freeze01/source/role_authorization.h",
+      "read_scope": "complete file",
+      "sha256": "320933ecda593fdb98b16b7bcd506d48ab81e15c0bd5903b38fe4dde49404d8c"
+    },
+    {
+      "bytes": 38998,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-protocol-freeze01/source/role_authorization.cc",
+      "read_scope": "complete file; Registry state/lifecycle focus",
+      "sha256": "5d9a43b4f9d51ddfe7896de563353c96f75856171d39c1af9a5816394247a03c"
+    }
+  ],
+  "review_limitations": [
+    "No C++ compile, namespace, socket, child, Android or Hepta action was executed in this review.",
+    "Existing fourteen receive/held-task controls were not rerun or reclassified. Registry positive/platform/runtime behavior remains unqualified.",
+    "factory_context parsing and any later dispatch/ack implementation were not comprehensively rereviewed.",
+    "No later owner-destructor candidate is covered by these old exact pins."
+  ],
+  "schema": 1,
+  "scope": "Frozen Registry grant/approval, caller lease, suspend/detach/attach, tombstone and owner cleanup; not a platform/runtime qualification",
+  "scoped_positive_observations": [
+    "Begin transfers connection ownership only after its complete checks and retains a kernel-pidfd-bound subject.",
+    "Revocation preserves the live subject pidfd and generation as a tombstone; poll errors do not count as process death.",
+    "A Suspended slot cannot reattach through another PID or a changed subject snapshot; the held caller task directory/birth lease is rechecked.",
+    "Suspend remains transport-dependent until explicit Detach, so an early HUP revokes. Correct acknowledgement-before-Detach ordering remains an owner event-loop obligation, not a fact proven by Registry alone.",
+    "AuthorizeCreate and FinishCreate retain/recheck the same caller directory and birth rather than reopening a numeric task path.",
+    "Descriptor reset preserves errno while closing known owned FDs; the shared-VM destructor issue is a separate ownership boundary."
+  ],
+  "source_manifest": {
+    "bytes": 8718,
+    "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-protocol-freeze01/SOURCE_PINS",
+    "sha256": "2d8b81f8cc7b8d3f41188e8cadb30f6ab5b30e2831af4fbade2ec0c632eaa285"
+  },
+  "source_modified": false,
+  "source_origin_tree_reported_by_author": "c4aea8b576e633f9021ff9bcf5c4352a20182fee",
+  "state": "SOURCE_REVIEW_WITH_CONCRETE_SHARED_VM_DESTRUCTOR_BOUNDARY",
+  "whole_platform_production_ready": false
+}

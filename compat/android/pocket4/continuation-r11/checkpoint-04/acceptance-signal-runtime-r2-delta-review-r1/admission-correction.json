@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "decision": "R2_RUNTIME_QUALIFICATION_WITHDRAWN;REQUIRE_R3_PINNED_VERIFIER_ORIGIN_FIX",
+  "supersedes_review_for_runtime_admission_sha256": "a82feeae4a329ecdaa0c4976d49f630bc36c29ce4336399d2efe2b6993961b83",
+  "original_review_preserved": true,
+  "actual_preparation_job": "1a1a76f0dd4-fc05-2b6c",
+  "original_tool_receipt_sha256": "21bc1818db5f6983e205c7884ddc8f04296055ca355e5cbaf22707645f8b1dd9",
+  "stderr": "Traceback (most recent call last):\n  File \"<stdin>\", line 47, in <module>\n  File \"/home/alex/work/pocket4-owned-signal-runtime-r11-source-02/isolated-signal-canary-runtime-r2/host_suite.py\", line 380, in verify_report\n    verify_source(HERE / \"source-manifest.json\", source_sha)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/alex/work/pocket4-owned-signal-runtime-r11-source-02/isolated-signal-canary-runtime-r2/host_suite.py\", line 85, in verify_source\n    manifest = read_pin({\"path\": str(path), \"sha256\": expected})\n  File \"/home/alex/work/pocket4-owned-signal-runtime-r11-source-02/isolated-signal-canary-runtime-r2/host_suite.py\", line 65, in read_pin\n    need(path.is_file() and sha(path) == row[\"sha256\"], \"input pin differs: \" + str(path))\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/alex/work/pocket4-owned-signal-runtime-r11-source-02/isolated-signal-canary-runtime-r2/host_suite.py\", line 42, in need\n    raise RuntimeError(message)\nRuntimeError: input pin differs: /home/alex/work/pocket4-owned-signal-runtime-r11-source-02/isolated-signal-canary-runtime-r2/source-manifest.json\n",
+  "finding": "r2 loads host_suite.py from the copied r2 directory, but verify_report internally verifies HERE/source-manifest.json against the r1 pin. Both the preparation coordinator and r2 admit have this origin mismatch.",
+  "root_review_correction": "The r2 delta review checked byte-identical host verifier code and the external r1 manifest but missed the verifier module HERE dependency. The original review does not authorize a working r2 runtime entry.",
+  "actual_failure_stage": "preparation coordinator host receipt verification, before prepare.py check-inputs/prepare invocation",
+  "Android_case_result": false,
+  "new_android_boot_attempt": false,
+  "source_order_evidence": "The failed verify_report call precedes saving Android inputs, nonce/image generation and starting services. Exact post-failure state is separately read back by the canary owner.",
+  "required_fix": "Load the verifier from the already fully verified r1 host-wrapper manifest directory, in both preparation and r3 admit. Keep the exact original host receipt and do not relabel native host suite execution.",
+  "original_role_ambiguity_from_a01_resolved": false,
+  "candidate_engine_changed": false,
+  "all_apps_production_ready": false
+}

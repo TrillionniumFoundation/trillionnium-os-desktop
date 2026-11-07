@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "reviewer": "native_bridge_repair",
+  "kind": "actual Android x86_64 NOFILE fixed-entry independent source/disassembly review",
+  "matching_build_result_sha256": "f3617407f8c624357f4bf9a9cc53e1e78a217b3c0b8bc9a51448c09569e2ea06",
+  "scope": "Manual review of the actual Start/Read/fallback/trampoline entries and source binding; worker closure uses the matched automatic final-ELF audits.",
+  "actual_inputs": {
+    "preimage-build_receipt.json": {
+      "bytes": 15363,
+      "sha256": "74ebff707f9e17d3080c0a6a01ed1e49de7dcee312c0c0e9eeee23bd63398d13",
+      "remote_path": "/home/alex/work/pocket4-nofile-owner-recovery03-android-build-01-20261105/preimage/build-attempt-1/build-result.json"
+    },
+    "preimage-worker_audit.json": {
+      "bytes": 4078,
+      "sha256": "e3784f0430620b2dc46ab07f7f319c0ab1585a9af9bf3b91100d55866db17fb7",
+      "remote_path": "/home/alex/work/pocket4-nofile-owner-recovery03-android-build-01-20261105/coordinator01/preimage-worker-audit.json"
+    },
+    "preimage-entry_disassembly.txt": {
+      "bytes": 40138,
+      "sha256": "3c734b3220e7f988a4eba5ed8aaa2133e479ba97383522d6f2adc174273cbc90",
+      "remote_path": "/home/alex/work/pocket4-nofile-owner-recovery03-android-build-01-20261105/coordinator01/preimage-entry-disassembly.txt"
+    },
+    "preimage-APK": {
+      "path": "/home/alex/work/pocket4-nofile-owner-recovery03-android-build-01-20261105/preimage/build-attempt-1/fdownerprobe.apk",
+      "bytes": 131486,
+      "sha256": "4b9ed48c486f3fc7737e6b618d08068836b5972f19fcc4d9f3b57d388877efab"
+    },
+    "preimage-ELF": {
+      "path": "/home/alex/work/pocket4-nofile-owner-recovery03-android-build-01-20261105/preimage/build-attempt-1/lib/x86_64/libfdownerprobe.so",
+      "bytes": 107040,
+      "sha256": "f1763844705e26a7a570f96441bf3bec1ecad946b5c177c202984000cedd27d1"
+    },
+    "candidate-build_receipt.json": {
+      "bytes": 15386,
+      "sha256": "e2ca85c5a05b3192b4c13c3f98085244b83c265240bd29e8da27091d924b0ebe",
+      "remote_path": "/home/alex/work/pocket4-nofile-owner-recovery03-android-build-01-20261105/candidate/build-attempt-1/build-result.json"
+    },
+    "candidate-worker_audit.json": {
+      "bytes": 5641,
+      "sha256": "9259b68bb3bf9da6e161fa21bcfa74628d52cfc2594b9d1377a1c97f9e01e5f7",
+      "remote_path": "/home/alex/work/pocket4-nofile-owner-recovery03-android-build-01-20261105/coordinator01/candidate-worker-audit.json"
+    },
+    "candidate-entry_disassembly.txt": {
+      "bytes": 47170,
+      "sha256": "722cdaa12905068ee8b9707a18b35e2dcb27daf74ffd47111b66311414813d80",
+      "remote_path": "/home/alex/work/pocket4-nofile-owner-recovery03-android-build-01-20261105/coordinator01/candidate-entry-disassembly.txt"
+    },
+    "candidate-APK": {
+      "path": "/home/alex/work/pocket4-nofile-owner-recovery03-android-build-01-20261105/candidate/build-attempt-1/fdownerprobe.apk",
+      "bytes": 131486,
+      "sha256": "58e1337a2c7143f637b25f38380e2499dd82f47c05c714bcf306a6fafe8cef53"
+    },
+    "candidate-ELF": {
+      "path": "/home/alex/work/pocket4-nofile-owner-recovery03-android-build-01-20261105/candidate/build-attempt-1/lib/x86_64/libfdownerprobe.so",
+      "bytes": 107680,
+      "sha256": "6dc5723d79f42fee6e1d59d37a726d873c624585ab00b732ea63f682a6b7df4f"
+    }
+  },
+  "both_22_source_files_matched_local_frozen_bytes": true,
+  "candidate": {
+    "ELF_sha256": "6dc5723d79f42fee6e1d59d37a726d873c624585ab00b732ea63f682a6b7df4f",
+    "Start": {
+      "address": "0x5650",
+      "clone_call": "0x5a07",
+      "trampoline": "0x4720",
+      "fixed_function": "Worker",
+      "function_address": "0x5f60",
+      "argument": "null",
+      "clone_flags": "0x350900",
+      "parent_and_child_tid": "0x3ec9c"
+    },
+    "fallback": {
+      "function_address": "0x68d0",
+      "clone_call": "0x6944",
+      "trampoline": "0x4720",
+      "fixed_function": "InheritedWorker",
+      "function_address_target": "0xdcf0",
+      "argument": "retained caller-stack Request at rbp-0x30",
+      "clone_flags": "0x350900",
+      "parent_and_child_tid": "0x3eca0",
+      "clear_tid_wait_loop": "0x694e..0x697d",
+      "result_copy_after_clear_tid": "0x697f..0x6995"
+    },
+    "fallback_admission": {
+      "Read_address": "0x6230",
+      "check": "0x6644 requires result -0x18; 0x664d..0x6655 allows only pin_failure 1 or 2",
+      "call": "0x665b",
+      "all_other_EMFILE_stages_preserved": true
+    },
+    "publication": {
+      "source": "Separate raw KernelStatfs is retained; Bionic host view alone is normalized",
+      "host_only_ST_VALID_clear": "0x676a",
+      "snapshot_memcpy": "0x6781",
+      "caller_context_checked_after_request": true,
+      "failure_does_not_publish_partial_snapshot": true,
+      "gate_and_signal_mask_cover_request_and_fallback": true
+    }
+  },
+  "preimage": {
+    "ELF_sha256": "f1763844705e26a7a570f96441bf3bec1ecad946b5c177c202984000cedd27d1",
+    "Start_address": "0x5680",
+    "clone_call": "0x5a0a",
+    "trampoline": "0x46b0",
+    "fixed_function": "Worker",
+    "function_address": "0x5f40",
+    "argument": "null",
+    "clone_flags": "0x350900",
+    "parent_and_child_tid": "0x3eb3c"
+  },
+  "trampoline_contract": {
+    "stack_alignment": 16,
+    "reserved_stack_bytes": 16,
+    "saved_entry_and_argument": true,
+    "parent_tid_equals_child_tid": true,
+    "CLONE_FILES": false,
+    "CLONE_SETTLS": false,
+    "clone_syscall": 56,
+    "exit_syscall": 60,
+    "only_indirect_call": "*(%rsp)",
+    "child_does_not_return_to_parent_stack": true
+  },
+  "no_new_concrete_entry_blocker_found": true,
+  "scoped_owned_Android_cycle_source_ready": true,
+  "Android_runtime_executed_by_reviewer": false,
+  "boundaries": [
+    "No Bionic pthread registration: app credential/root/mount/namespace/host-exit transitions remain unqualified.",
+    "Initial NOFILE=0 and first private-fork startup after NOFILE=0 remain expected rejection controls.",
+    "Trusted virtual O_PATH reopening under NOFILE=0 remains unqualified.",
+    "This is not Main deployment or complete runtime/factory/App qualification.",
+    "The actual coordinator recorded memory.max events276, peak1GiB, zero OOM deltas, no swap; not all events zero."
+  ],
+  "Main_actions": 0,
+  "production_ready": false
+}

@@ -1,0 +1,92 @@
+--- a/material.py
++++ b/material.py
+@@ -1,4 +1,4 @@
+-"""Two dedicated NDK run / independent retirement nonce draws.
++"""Two dedicated Hilton root02 install flow / state nonce draws.
+ No install, Main read, child, source mutation, or runtime admission occurs here.
+ The prior global pool is immutable input; a collision fails without redrawing.
+ """
+@@ -10,8 +10,8 @@
+ import signal
+ import time
+ 
+-KIND = 'pocket4-original-ndk-fixture-run-retire-nonce01'
+-PROFILE = 'pocket4-original-ndk-fixture-APK05-run-retire01'
++KIND = 'pocket4-hilton-install02-flow-state-nonce01'
++PROFILE = 'pocket4-owned-hilton-qa-r1-install-state-02'
+ POOL_RAW = r'''[
+   "00b0db7edb523fc1d810d2062db19e00",
+   "00d1dc3dde06ebff70c79f8582bd58cc",
+@@ -85,6 +85,7 @@
+   "10bb5bde6e3fe791a382e5d190a4ce16",
+   "114877d166a4f73465f00c807692ea17",
+   "115093066f53500d1c8f52105e3f2948",
++  "115e2e379e1befa8b824a3881956dac8",
+   "115eeb61b418f330118a05742b36e79b",
+   "116c01805c2aa32c3e579470000e1128",
+   "11d565d83022c5630a57ffd4401b744e",
+@@ -808,6 +809,7 @@
+   "dea4ea388ec0e98e9a17e542e24b402f",
+   "dec6d9ba9e15ff52c12549ddbecaa03a",
+   "def3447572e718bc263b37bd39393b90",
++  "def3ce316193da8b2d46ebea64db1380",
+   "df8cbecc2320b4701cb293304a870bbc",
+   "dfd242d811018c3098e0aa8515e2d309",
+   "dfdab228a3880703cc12abb54cf0f04e",
+@@ -939,9 +941,9 @@
+   "ffd751558d7ce6d1ac2f7dd582745a68"
+ ]
+ '''.encode('ascii')
+-POOL_BYTES = 35115
+-POOL_SHA256 = '8a718803f7dc905e5c92c3609164c19caf1b213d88b235511554e39403568e25'
+-POOL_GIT_BLOB = '269194afb3b365ca4995f6ff69a2e6539cff6ff7'
++POOL_BYTES = 35191
++POOL_SHA256 = '6da2b0b20dd7c1b109f7131ba253401843833b12fb27682a3f4bb18c6907e9d2'
++POOL_GIT_BLOB = '1a7c69c44fe893105f7125670dc889ca6127b097'
+ 
+ def require(value, code):
+     if not value:
+@@ -954,13 +956,13 @@
+     started = time.monotonic()
+     result = {
+         'schema': 1, 'kind': KIND, 'profile': PROFILE,
+-        'package': 'com.example.ndk_tests', 'target_package': 'com.example.ndk_tests',
+-        'phase': 'run_and_independent_retirement',
++        'package': 'org.droidloom.qa.hilton.r1', 'target_package': 'com.hilton.android.hhonors',
++        'phase': 'fresh_install_flow_and_state_root02',
+         'generator': 'secrets.token_hex(16)', 'draw_count': 0,
+-        'redraw_attempted': False, 'nonces': {'run_nonce': None, 'retire_nonce': None},
+-        'labels': ['run_nonce', 'retire_nonce'], 'requested_count': 2,
++        'redraw_attempted': False, 'nonces': {'hilton_install02_flow': None, 'hilton_install02_state': None},
++        'labels': ['hilton_install02_flow', 'hilton_install02_state'], 'requested_count': 2,
+         'exclusion_pool': {'bytes': POOL_BYTES, 'sha256': POOL_SHA256,
+-                           'git_blob_sha': POOL_GIT_BLOB, 'count': 924},
++                           'git_blob_sha': POOL_GIT_BLOB, 'count': 926},
+         'fresh_against_exact_pool': False, 'uid': os.getuid(), 'gid': os.getgid(),
+         'Main_reads': 0, 'Android_commands': 0, 'child_processes': 0,
+         'explicit_filesystem_reads': 0, 'explicit_filesystem_writes': 0,
+@@ -973,17 +975,17 @@
+         require(result['uid'] == 1000 and result['gid'] == 1000, 'ORDINARY_USER_REQUIRED')
+         require(len(POOL_RAW) == POOL_BYTES and
+                 hashlib.sha256(POOL_RAW).hexdigest() == POOL_SHA256,
+-                'EXACT_GLOBAL_924_BYTES_REQUIRED')
++                'EXACT_GLOBAL_926_BYTES_REQUIRED')
+         old = json.loads(POOL_RAW)
+-        require(type(old) is list and len(old) == 924 and len(set(old)) == 924 and
++        require(type(old) is list and len(old) == 926 and len(set(old)) == 926 and
+                 old == sorted(old) and all(type(x) is str and
+                 re.fullmatch('[0-9a-f]{32}', x) for x in old),
+-                'EXACT_UNIQUE_GLOBAL_924_SHAPE_REQUIRED')
+-        require({'e4b5a1bdac8be04ff2ea3188a6d946d6',
+-                 '06a571251aa6fcc77591494edda1f801'}.issubset(set(old)),
+-                'BOTH_ACTUAL_INSTALL_ATTEMPTS_MUST_REMAIN_EXCLUDED')
++                'EXACT_UNIQUE_GLOBAL_926_SHAPE_REQUIRED')
++        require({'2fd1a0e95fa54abae85ff1b6602a35c8',
++                 '8e54b63f8b86beb3e07bbf4e1c19d768'}.issubset(set(old)),
++                'ACTUAL_FAILED_HILTON01_FLOW_AND_STATE_MUST_REMAIN_EXCLUDED')
+         seen = set(old)
+-        for label in ('run_nonce', 'retire_nonce'):
++        for label in ('hilton_install02_flow', 'hilton_install02_state'):
+             result['draw_count'] += 1
+             candidate = secrets.token_hex(16)
+             require(type(candidate) is str and re.fullmatch('[0-9a-f]{32}', candidate),

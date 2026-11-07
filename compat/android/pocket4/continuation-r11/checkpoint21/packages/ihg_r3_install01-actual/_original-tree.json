@@ -1,0 +1,125 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "445c0b27c4db288c201dc99c3a801c1807d11571",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 196946,
+    "sha256": "6eb76f27da10336b9a0299bd980256049351d561d94446f0f13b6508e002b71b",
+    "git_blob_sha1": "1926a006e3850b865a37a39cd5b37dcaa7d382f6",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "coordinator.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5e35c247255efe5d88a7d05add5caa0f98df4ed3",
+      "bytes": 3961
+    },
+    {
+      "path": "install-stdout.original.jsonl",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4d4a70658f39a9b7bf2a0d2ba69b62338e6c0124",
+      "bytes": 672
+    },
+    {
+      "path": "install-terminal.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b2db6fb80506f6dde98b1fba20c8a03bda6e4edd",
+      "bytes": 729
+    },
+    {
+      "path": "install_admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c44eb9a781b1c33ac428ce504367dc57fce6c278"
+    },
+    {
+      "path": "reader-status-0.tool-original.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "41e53c91b5478a1a51c447c9a82a96ffe5ab8367",
+      "bytes": 78
+    },
+    {
+      "path": "reader-status-1.tool-original.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "103e530d6f05646b89b1132284c9006b3ddcfb3c",
+      "bytes": 733
+    },
+    {
+      "path": "reader-stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9eae3379e3bb1fa0178fc040dcd3b76aa3a862e4",
+      "bytes": 41583
+    },
+    {
+      "path": "reader_admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "44eb9f567c340c3b502be7871320bb5c395dcf90"
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5f4c6fc264fb9c380ad9aaf5035b287582a979c4",
+      "bytes": 1109
+    },
+    {
+      "path": "stage.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3f799497a7033d558cfbb6991a280cf382f1b853",
+      "bytes": 7082
+    },
+    {
+      "path": "state-command.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9e6ab65880bd4db78c7dd2ac9b77fa77f57a6bb7",
+      "bytes": 443
+    },
+    {
+      "path": "worker-command.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4950c812fcb115ef4b994ef0ac074a2076d1c936",
+      "bytes": 1598
+    },
+    {
+      "path": "worker-stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "abcab7ce05a89a85cdfa27fa34243de232754531",
+      "bytes": 11028
+    },
+    {
+      "path": "worker.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c3f37a9c936ef81a022d4d979fb410fb7082a917",
+      "bytes": 12552
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "install_admission",
+      "original_tree": "c44eb9a781b1c33ac428ce504367dc57fce6c278",
+      "checkpoint": 21,
+      "canonical_package": "ihg_r3_install01-admission"
+    },
+    {
+      "path": "reader_admission",
+      "original_tree": "44eb9f567c340c3b502be7871320bb5c395dcf90",
+      "checkpoint": 21,
+      "canonical_package": "ihg_r3_install_read01-admission"
+    }
+  ],
+  "original_recursive_leaf_count": 405
+}

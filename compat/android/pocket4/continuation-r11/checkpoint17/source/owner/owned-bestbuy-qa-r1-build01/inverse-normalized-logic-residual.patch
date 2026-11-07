@@ -1,0 +1,22 @@
+--- actual-IHG/qa_adapter.py
++++ BestBuy-inverse-normalized/qa_adapter.py
+@@ -146,7 +146,7 @@
+     def __init__(self, flow, recorder, qa, proof, helper_uid):
+         require(flow.contract.sha256 == RECORDER_MANIFEST_SHA and not flow._private_backend_transport,
+                 'FROZEN_PUBLIC_RECORDER_TRANSPORT_REQUIRED')
+-        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10137,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190),
++        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10137,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190,10137,10196),
+                 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
+         self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
+         self.nonces = set()
+--- actual-IHG/qa_contract.py
++++ BestBuy-inverse-normalized/qa_contract.py
+@@ -166,7 +166,7 @@
+             value.get('op') == request['op'] and value.get('request_sha256') == sha(raw_request) and
+             value.get('wire_codec') == 'gzip-canonical-json-v1',
+             'RESULT_REQUEST_BINDING_FAILED')
+-    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10121, 10129, 10117, 10125, 10164, 10165, 10166, 10169, 10170, 10175, 10184, 10190) and value.get('self_uid') == helper_uid and
++    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10121, 10129, 10117, 10125, 10164, 10165, 10166, 10169, 10170, 10175, 10184, 10190, 10137, 10196) and value.get('self_uid') == helper_uid and
+             type(value.get('self_pid')) is int and value['self_pid'] > 1, 'INSTALLED_HELPER_IDENTITY_REQUIRED')
+     require(value.get('ok') is True and value.get('error') is None and value.get('secondary_errors') == [] and
+             value.get('claim_persistence_completed') is True and value.get('helper_work_completed') is True,

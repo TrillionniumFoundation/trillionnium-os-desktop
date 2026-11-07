@@ -1,0 +1,249 @@
+--- retirement01/controller.py
++++ retirement02/controller.py
+@@ -4,7 +4,7 @@
+ ROOT=Path('/home/alex/work/pocket4-ihg-r4-public-london-input-01')
+ SOURCE=ROOT/'source'
+ FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r4-flow-ec4f2977574102b1e5869d2494e8416b')
++STEP_NAME='current-ihg877-independent-retirement-02'
+-STEP_NAME='current-ihg877-independent-retirement-01'
+ STEP=FLOW/'steps'/STEP_NAME
+ MARKER=STEP/'remove-attempted.json'
+ RECONCILIATION=STEP/'independent-current-retirement.json'
+@@ -316,6 +316,150 @@
+    primary.add_note('HISTORICAL_READER_FD_CLOSURE')
+ 
+ 
++def qualify_retirement02_saved_table(roots,tasks,prior_roots,prior_tasks,bound,exact_leaf):
++ need(prior_tasks=={875} and set(prior_roots)=={1},'ORIGINAL_PRESERVED875_CHAIN_REQUIRED')
++ need(bound['current_tasks']==[875,TASK,878] and bound['current_root_ids']==[1,TASK,878] and
++  bound['preserved_current_tasks']==[875,878] and bound['preserved_current_root_ids']==[1,878] and
++  tasks=={875,TASK,878} and set(roots)=={1,TASK,878},'EXACT_NEW_CURRENT_THREE_TASK_BASELINE')
++ need(sha(canon(roots))==bound['complete_parsed_roots_sha256'] and
++  set(bound['root_record_sha256'])=={'1',str(TASK),'878'} and
++  all(sha(canon(root))==bound['root_record_sha256'][str(rid)] for rid,root in roots.items()),
++  'EXACT_NEW_CURRENT_COMPLETE_ROOT_HASHES')
++ need(roots[1]==prior_roots[1] and exact_leaf(roots,TASK,PACKAGE) and
++  roots[TASK]['children']==[{'id':TASK,'component':COMPONENT,'user':0}] and
++  bound['target_component']==COMPONENT,'SAME_IHG877_AND_ORIGINAL875_COMPLETE_RECORDS')
++ other=roots[878];need(other['display']==0 and other['user']==0 and other['freeform'] is True and
++  len(other['children'])==1 and other['children'][0]['id']==878 and other['children'][0]['user']==0,
++  'EXACT_PRESERVED878_ROOT_AND_LEAF')
++ component=other['children'][0]['component'];raw=component.encode('utf-8','strict')
++ need(component.split('/')[0]!=PACKAGE and bound['foreign878_component']==
++  {'bytes':len(raw),'sha256':sha(raw),'package_is_IHG':False},'EXACT_FOREIGN878_HASH_ONLY_BINDING')
++ return {key:value for key,value in roots.items() if key!=TASK},set(tasks)-{TASK}
++
++def qualify_retirement02_fresh_table(roots,tasks,saved_roots,saved_tasks,preserved_roots,preserved_tasks,exact_leaf):
++ gate=qualify_task_set(roots,tasks,preserved_roots,preserved_tasks,TASK,exact_leaf)
++ if gate['status']=='exact_live_leaf':
++  need(roots==saved_roots and tasks==saved_tasks,'FRESH_COMPLETE_TABLE_DIFFERS_FROM_CURRENT_BASELINE02')
++ else:
++  need(gate=={'status':'already_absent','removal_allowed':False} and
++   roots==preserved_roots and tasks==preserved_tasks,'ABSENT877_REQUIRES_ALL_CURRENT_OTHER_CONTENT')
++ return gate
++
++def verify_retirement02_baseline(hist,inputs,prior_roots,prior_tasks,parse,exact_leaf):
++ bound=inputs['current_retirement02_baseline'];previous=bound['prior_failed_run']
++ need(bound['schema']=='pocket4-independent-current-IHG877-retirement02-baseline-v1' and
++  previous['source_sha256']=='c2f3d2e849d3d2dbabd58d5c6ebf35ad7cb6c729a153a94bf415f780fb94fbfc' and
++  previous['step_name']=='current-ihg877-independent-retirement-01' and previous['ok'] is False and
++  previous['first_error']=={'exception_type':'RuntimeError','fixed_code':'OTHER_TASK_SET_CHANGED',
++   'message_sha256':'822aca1d3693d9ce997c9600640cb0abbb958113cf18c14feb0c2bd957073bc3',
++   'phase':'current_complete_table_1','raw_message_exported':False} and
++  all(previous[key] is False for key in ('remove_requested','remove_acknowledged','removal_action_attempted',
++   'retirement_outcome_unknown')) and
++  previous['actual_command_count']==9 and previous['controls_passed']==38 and
++  previous['helper_UiAutomation_calls']==previous['native_launches']==0 and
++  previous['historical_launch_outcome']=='unknown_retained' and
++  previous['current_Main_window_complete'] is True and
++  all(previous[key]==MAIN_BEFORE_FIXED for key in ('Main_before_lock','Main_after_locks','Main_after')) and
++  previous['target_helper_before_after_unchanged'] is True and previous['target_FD_closed']==1 and
++  all(previous[key] is True for key in ('held_binding_released','flow_lock_released','global_action_lock_released')),
++  'EXACT_PRIOR_READ_ONLY_FAILED01_WITHOUT_REMOVE')
++ need(bound['actual_failed_retirement']=={'tree':'9398613a97fc015d4d202c50f1ffffcfa4213de6',
++  'blob':'eef5723a89f6e55c3cb6dec46d593e4b18d38178','bytes':24051,
++  'sha256':'dd040d4a5ac8050a2fd3d854e0dec74be386c048f33b68d0e4b200aaa4a79e9a'} and
++  bound['actual_saved_projection']=={'tree':'7e292c099ab91f6ee0baf677edaeeedae20f761f',
++  'blob':'690f9bf079567e23b9ac44194d5918fc92a5844c','bytes':6956,
++  'sha256':'c0a2ba798ead0f887b44f86a0e124e38762039d4b2bd9d309ad0ec648056ff70'} and
++  bound['saved_file_count']==2 and bound['independent_prior_Android_samples']==1 and
++  bound['foreign878_source_attributed'] is False and
++  bound['original_launch_outcome_unknown_retained'] is True and
++  bound['previous_retirement01_failure_retained'] is True and
++  bound['previous_retirement01_replayed'] is False and
++  bound['current_Main_requalified_by_saved_reader'] is False and
++  bound['cleanup_authority_created_by_saved_reader'] is False,'EXACT_ACTUAL_CURRENT_BASELINE02_PROVENANCE')
++ old_step=FLOW/'steps/current-ihg877-independent-retirement-01'
++ command=bound['command005']
++ need(command['path']==str(old_step/'command-005.result.json') and
++  {'bytes':command['bytes'],'sha256':command['sha256']}==
++   {'bytes':443,'sha256':'f887e2f9da435418a3c6da526efb258015a734c8b901ed29b62f0a7652c40879'},
++  'EXACT_PRIOR_COMMAND005_PIN')
++ record=hist.strict_json(read_exact(Path(command['path']),{key:command[key] for key in ('bytes','sha256')}))
++ need(record==command['record'],'ORIGINAL_FAILED01_COMMAND005_RECORD_UNCHANGED')
++ old_last=inputs['current_saved'][1]['command']
++ older=hist.strict_json(read_exact(Path(old_last['path']),{key:old_last[key] for key in ('bytes','sha256')}))
++ need(hist.utc(older['ended_utc'])<=hist.utc(record['ended_utc']),'NEW_CURRENT_BASELINE_OBSERVATION_ORDER')
++ expected_files=[old_step/'command-005.stdout',old_step/'before-stacks-01.txt']
++ need(type(bound['saved_files']) is list and len(bound['saved_files'])==2,'EXACT_TWO_SAVED_COPIES_REQUIRED')
++ observed=[]
++ for item,path in zip(bound['saved_files'],expected_files):
++  need(item['path']==str(path) and {'bytes':item['bytes'],'sha256':item['sha256']}==
++   {'bytes':1963,'sha256':'bf84e8d77523a712a7b4dc5712dea5ab7e65d7c0a6c3b285eed2b30baec18b8b'},
++   'EXACT_NEW_CURRENT_SAVED_FILE_ALLOWLIST')
++  raw=read_exact(path,{key:item[key] for key in ('bytes','sha256')},131072)
++  qualify_joined_command(record,raw,False)
++  roots,tasks=parse(raw.decode('utf-8','strict'))
++  kept_roots,kept_tasks=qualify_retirement02_saved_table(roots,tasks,prior_roots,prior_tasks,bound,exact_leaf)
++  need(sha(canon(roots[1]))==inputs['preserved_root1_sha256'] and
++   sha(canon(roots[TASK]))==inputs['current_root877_sha256'],'PRIOR875_AND877_FULL_CONTENT_UNCHANGED')
++  observed.append((raw,roots,tasks,kept_roots,kept_tasks))
++ need(observed[0]==observed[1] and
++  not os.path.lexists(old_step/'remove-attempted.json') and
++  not os.path.lexists(old_step/'independent-current-retirement.json'),
++  'FAILED01_TWO_COMPLETE_COPIES_NO_OLD_REMOVE_OR_SUCCESS')
++ _,roots,tasks,kept_roots,kept_tasks=observed[0]
++ safe={'schema':bound['schema'],'actual_failed_retirement':bound['actual_failed_retirement'],
++  'actual_saved_projection':bound['actual_saved_projection'],'prior_failed_step':previous['step_name'],
++  'prior_failure':'OTHER_TASK_SET_CHANGED','prior_remove_attempted':False,'prior_outcome_unknown':False,
++  'one_prior_Android_sample_in_two_files':True,'saved_files':bound['saved_files'],
++  'command005':{'path':command['path'],'bytes':command['bytes'],'sha256':command['sha256']},
++  'complete_current_roots_sha256':sha(canon(roots)),
++  'complete_preserved_roots_sha256':sha(canon(kept_roots)),
++  'current_tasks':sorted(tasks),'preserved_tasks':sorted(kept_tasks),
++  'root_record_sha256':bound['root_record_sha256'],'foreign878_source_attributed':False,
++  'foreign_component_names_exported':False,'historical_launch_outcome':'unknown_retained',
++  'fresh_complete_pair_still_required':True}
++ return roots,tasks,kept_roots,kept_tasks,safe
++
++def retirement02_gate_controls(exact_leaf):
++ cases=[]
++ def passed(name,value):need(value,'RETIREMENT02_CONTROL_'+name.upper());cases.append({'name':name,'passed':True})
++ def rejected(name,call):
++  try:call()
++  except RuntimeError:passed(name,True);return
++  raise RuntimeError('RETIREMENT02_NEGATIVE_ACCEPTED_'+name.upper())
++ def clone(value):return json.loads(json.dumps(value))
++ prior={1:{'display':0,'user':0,'freeform':False,'children':[{'id':875,'user':0,'component':'fixture.system/Fixture'}]}}
++ roots={**prior,TASK:{'display':0,'user':0,'freeform':True,
++  'children':[{'id':TASK,'user':0,'component':COMPONENT}]},
++  878:{'display':0,'user':0,'freeform':True,'children':[{'id':878,'user':0,'component':'fixture.other/Activity'}]}}
++ bound={'current_tasks':[875,TASK,878],'current_root_ids':[1,TASK,878],
++  'preserved_current_tasks':[875,878],'preserved_current_root_ids':[1,878],
++  'complete_parsed_roots_sha256':sha(canon(roots)),
++  'root_record_sha256':{str(key):sha(canon(value)) for key,value in roots.items()},
++  'target_component':COMPONENT,
++  'foreign878_component':{'bytes':len(b'fixture.other/Activity'),'sha256':sha(b'fixture.other/Activity'),'package_is_IHG':False}}
++ kept,ids=qualify_retirement02_saved_table(roots,{875,TASK,878},prior,{875},bound,exact_leaf)
++ passed('saved-three-task-current-baseline-preserves875-and878',set(kept)=={1,878} and ids=={875,878})
++ rejected('saved-current-complete-hash-drift-rejected',lambda:qualify_retirement02_saved_table(
++  roots,{875,TASK,878},prior,{875},{**bound,'complete_parsed_roots_sha256':'0'*64},exact_leaf))
++ def fresh(value,tasks):
++  return qualify_retirement02_fresh_table(value,tasks,roots,{875,TASK,878},kept,ids,exact_leaf)
++ passed('fresh-complete-three-task-table-required',
++  fresh(roots,{875,TASK,878})=={'status':'exact_live_leaf','removal_allowed':True})
++ passed('already-absent877-preserves-both-other-tasks-without-action',
++  fresh(kept,{875,878})=={'status':'already_absent','removal_allowed':False})
++ rejected('missing-preserved878-old-two-task-baseline-rejected',
++  lambda:fresh({key:value for key,value in roots.items() if key!=878},{875,TASK}))
++ changed={key:clone(value) for key,value in roots.items()}
++ changed[878]['children'][0]['component']='fixture.other/Changed'
++ rejected('changed-preserved878-complete-content-rejected',lambda:fresh(changed,{875,TASK,878}))
++ changed875={key:clone(value) for key,value in roots.items()}
++ changed875[1]['children'][0]['component']='fixture.system/Changed'
++ rejected('changed-preserved875-complete-content-rejected',lambda:fresh(changed875,{875,TASK,878}))
++ rejected('additional879-task-rejected',lambda:fresh({**roots,879:clone(roots[878])},{875,TASK,878,879}))
++ need(len(cases)==8,'EXACT_EIGHT_CURRENT_BASELINE02_CONTROLS')
++ return cases
++
++
+ def new_retirement_scope(source_sha):
+  return {'schema':'pocket4-independent-current-IHG-task-retirement-scope-v1',
+   'task':TASK,'component':COMPONENT,'package':PACKAGE,'uid':10137,'user':0,
+@@ -487,7 +631,7 @@
+ def run(source_sha256):
+  need(os.getuid()==os.geteuid()==0,'ROOT_CURRENT_RETIREMENT_REQUIRED')
+  os.umask(0o077)
++ result={'schema':'pocket4-independent-current-IHG877-retirement-v2','ok':False,
+- result={'schema':'pocket4-independent-current-IHG877-retirement-v1','ok':False,
+   'source_sha256':source_sha256,'step_name':STEP_NAME,'task':TASK,'errors':[],'command_records':[],
+   'historical_launch_outcome':'unknown_retained','original_launch_scope_created':False,
+   'native_reported_task_id':None,'historical_Main_after_filled':False,
+@@ -501,7 +645,8 @@
+   'helper_UiAutomation_calls':0,'old_helper_nonce_values_consumed':False,
+   'business_success_verified':False,'whole_app_production_ready':False}
+  flow=recorder=artifacts=session=action_lock=flow_lock=resources=q=entry=u=ref=guard=None
++ preserved_roots=preserved_tasks=None;current_baseline_roots=current_baseline_tasks=None
++ step_created=False;phase='fixed_historical_chain';began=time.monotonic()
+- preserved_roots=preserved_tasks=None;step_created=False;phase='fixed_historical_chain';began=time.monotonic()
+  def remember(where,error):result['errors'].append({'phase':where,**safe_error(error)})
+  def record_command(number):
+   path=str(STEP/('command-%03d.result.json'%number))
+@@ -533,6 +678,9 @@
+   exec(compile(HISTORICAL_PARSER_SOURCE,hist.__file__,'exec'),hist.__dict__)
+   scope,preserved_roots,preserved_tasks,parse,exact_leaf,historical=verify_historical(hist,INPUTS,read_exact,qualify_joined_command)
+   result['historical_chain']=historical
++  current_baseline_roots,current_baseline_tasks,preserved_roots,preserved_tasks,current_basis=verify_retirement02_baseline(
++   hist,INPUTS,preserved_roots,preserved_tasks,parse,exact_leaf)
++  result['independent_current_baseline02']=current_basis
+   need(not os.path.lexists(STEP) and not os.path.lexists(FLOW/'launch-scope.json'),'NO_CURRENT_RETIREMENT_OR_ORIGINAL_SCOPE_REPLAY')
+   entry_raw=read_exact(SOURCE/'owned_inspect.py',ENTRY_PIN)
+   entry=types.ModuleType('fixed_ihg_current_retirement_entry');entry.__file__=str(SOURCE/'owned_inspect.py')
+@@ -559,8 +707,8 @@
+   result['Main_before_lock']=guard()
+   need(result['Main_before_lock']==MAIN_BEFORE_FIXED,'FRESH_CURRENT_MAIN_BASELINE_DIFFERS')
+   result['controls']=task_set_controls(exact_leaf)+command_gate_controls()+current_main_window_controls()+independent_scope_controls(
++   owned,task,q.qa,q.resolver.RESOLVE,plans,exact_leaf,source_sha256)+open_context_route_controls(task,q,plans,scope,source_sha256)+retirement02_gate_controls(exact_leaf)
++  need(len(result['controls'])==46 and len({x['name'] for x in result['controls']})==46,'EXACT_FORTY_SIX_CONTROLS')
+-   owned,task,q.qa,q.resolver.RESOLVE,plans,exact_leaf,source_sha256)+open_context_route_controls(task,q,plans,scope,source_sha256)
+-  need(len(result['controls'])==38 and len({x['name'] for x in result['controls']})==38,'EXACT_THIRTY_EIGHT_CONTROLS')
+   result['flow_lock_admission']={};flow_lock=u.acquire_action_lock(FLOW/'flow.lock',result['flow_lock_admission'])
+   result['global_lock_admission']={};action_lock=u.acquire_action_lock(recorder.ACTION_LOCK,result['global_lock_admission'])
+   result['Main_after_locks']=guard()
+@@ -568,7 +716,8 @@
+   STEP.mkdir(mode=0o700);step_created=True
+   ref.write_new(STEP/'intent.json',{'schema':'pocket4-independent-current-retirement-intent-v1',
+    'source_sha256':source_sha256,'task':TASK,'component':COMPONENT,'historical_launch_outcome':'unknown_retained',
++   'native_reported_task_id':None,'current_preserved_tasks':[875,878],'original_task876_disappearance_attributed':False,
++   'independent_current_baseline02':current_basis,
+-   'native_reported_task_id':None,'current_preserved_tasks':[875],'original_task876_disappearance_attributed':False,
+    'maximum_remove_commands':1,'maximum_completion_reads':30,'maximum_total_commands':42,
+    'native_launches':0,'helper_instrumentation_calls':0,'automatic_retry':False})
+   def verify_runtime(value):
+@@ -580,6 +729,9 @@
+    for item in INPUTS['current_saved']:
+     read_exact(Path(item['path']),{k:item[k] for k in ('bytes','sha256')},131072)
+     read_exact(Path(item['command']['path']),{k:item['command'][k] for k in ('bytes','sha256')})
++   current_inputs=INPUTS['current_retirement02_baseline']
++   for item in current_inputs['saved_files']+[current_inputs['command005']]:
++    read_exact(Path(item['path']),{key:item[key] for key in ('bytes','sha256')},131072)
+    need(not os.path.lexists(FLOW/'launch-scope.json'),'ORIGINAL_LAUNCH_SCOPE_MUST_REMAIN_ABSENT')
+   phase='held_current_IHG_context'
+   flow,recorder,phase_guard=owned.open_independent_context(task,flow_type,ref,u,context,SOURCE_MANIFEST,verify_runtime,
+@@ -599,7 +751,8 @@
+    phase='current_complete_table_'+str(number)
+    raw,roots,tasks=current_table('before-stacks-%02d'%number)
+    need(flow.command_index==4+number and flow.action_attempted is False and not flow.launch_claimed,'ONLY_SIX_PRE_RETIREMENT_READS')
++   gate=qualify_retirement02_fresh_table(roots,tasks,current_baseline_roots,current_baseline_tasks,
++    preserved_roots,preserved_tasks,flow.tasks.exact_leaf)
+-   gate=qualify_task_set(roots,tasks,preserved_roots,preserved_tasks,TASK,flow.tasks.exact_leaf)
+    fresh.append((roots,tasks));result['before_tables'].append({**observed(raw,roots,tasks),'qualification':gate})
+    flow.guard()
+   need(fresh[0]==fresh[1] and result['before_tables'][0]['qualification']==result['before_tables'][1]['qualification'],
+@@ -715,13 +868,14 @@
+  result['ok']=complete
+  if complete:
+   try:
++   receipt={'schema':'pocket4-independent-current-IHG877-retirement-reconciliation-v2',
+-   receipt={'schema':'pocket4-independent-current-IHG877-retirement-reconciliation-v1',
+     'created_utc':recorder.now(),'source_sha256':source_sha256,'task':TASK,'component':COMPONENT,
+     'original_action_outcome':'unknown_retained','original_launch_scope_created':False,
+     'authorizes_original_action_replay':False,'native_reported_task_id':None,
+     'owned_current_Android_leaf_absent':True,'all_other_current_root_and_task_content_preserved':True,
+     'original_task876_disappearance_attributed':False,'entire_original_prelaunch_baseline_restored':False,
++    'actual_historical_chain':result['historical_chain'],
++    'independent_current_baseline02':result['independent_current_baseline02'],'before_tables':result['before_tables'],
+-    'actual_historical_chain':result['historical_chain'],'before_tables':result['before_tables'],
+     'independent_after':result['independent_after'],
+     'command_result_pins':[{k:row[k] for k in ('path','bytes','sha256')} for row in result['command_records']]}
+    ref.write_new(RECONCILIATION,receipt);raw=u.read(RECONCILIATION,65536)

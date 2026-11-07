@@ -1,0 +1,11 @@
+--- a/check_wayland.py
++++ b/check_wayland.py
+@@ -43,7 +43,7 @@
+ 
+ OWN_CARGO_HOME = ROOT/'cargo-home'
+ PREP_OUT = Path("/home/alex/work/p4-retirement-wayland-vendor-prep01-20261106")/'attempt01'
+-VENDOR_BINDING = {"vendor-prep-result.json":{"bytes":"__ACTUAL_PREP_RESULT_BYTES__","sha256":"__ACTUAL_PREP_RESULT_SHA256__"},"prepared-vendor-manifest.json":{"bytes":"__ACTUAL_VENDOR_MANIFEST_BYTES__","sha256":"__ACTUAL_VENDOR_MANIFEST_SHA256__"},"prepared-vendor-config.toml":{"bytes":"__ACTUAL_VENDOR_CONFIG_BYTES__","sha256":"__ACTUAL_VENDOR_CONFIG_SHA256__"}}
++VENDOR_BINDING = {"vendor-prep-result.json":{"bytes":179590,"sha256":"8b9f70cf5f4819b81821cc61ec6ef3d984c22af7b5611e26cfaa410293d4fade"},"prepared-vendor-manifest.json":{"bytes":4087264,"sha256":"6dc3f052db6f9498bfdb73cd3f4b4d3b1f7556c6192ac5dbac3c611e24f4fac7"},"prepared-vendor-config.toml":{"bytes":204,"sha256":"81459dfa6a26d6665e157a219053c0782db24f54eb45bd71043e9e0d29c5e20c"}}
+ def require(ok, message):
+     if not ok:
+         raise RuntimeError(message)

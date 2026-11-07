@@ -1,0 +1,136 @@
+{
+  "schema": "pocket4-current-host-r5-source-review-v1",
+  "state": "SOURCE_FROZEN_PYTHON_CONTROLS_NOT_RUN",
+  "source_manifest": {
+    "bytes": 3605,
+    "sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e"
+  },
+  "actual_baseline_result": {
+    "bytes": 7986,
+    "sha256": "4abe5092fe075e78602928d231987ac4a8394a72024dd2a535d8cff80d1ca066",
+    "blob": "813c03c26856513f4178bcd1665775bfc2a33848"
+  },
+  "actual_binding": {
+    "schema": "pocket4-main-current-baseline-v1",
+    "epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+    "baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+    "qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+    "guard_sha256": "0ee54ef97c073857609aedb4670395db084ceacc7d28558315647ab2ffbef679",
+    "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+  },
+  "actual_guard": {
+    "bytes": 9408,
+    "sha256": "0ee54ef97c073857609aedb4670395db084ceacc7d28558315647ab2ffbef679",
+    "blob": "258acc1fbb8e22ecf26ce975b775291c01760be5",
+    "provenance": "Root reconstructed exact original bytes from reviewed publisher and actual output pins; no independent private host path readback claimed."
+  },
+  "generator": {
+    "bytes": 44522,
+    "sha256": "218d012d5382fc63a371c0c50b8b2e10b04d4289eec2f6831896b454469284f0",
+    "V8_syntax_checked": true,
+    "V8_actual_binding_run": true,
+    "all_12_parent_inverse_byte_exact": true
+  },
+  "changed_runtime": [
+    "recorder.py",
+    "source_contract.py",
+    "main_binding.py",
+    "bound_android_transport.py",
+    "existing_ui_entry.py"
+  ],
+  "new_runtime": [
+    "current_baseline_guard.py",
+    "current_coordinator.py"
+  ],
+  "old_reference_7_byte_exact": true,
+  "coordinator_original_functions": {
+    "require": {
+      "bytes": 77,
+      "sha256": "579db6d84701eb53fead424145339b360e7baf729670ec5d9602ea7c80d07e9c",
+      "exact_parent_function": true
+    },
+    "digest": {
+      "bytes": 62,
+      "sha256": "50b76bfffc27cbd7a792c95d031f6fd8e49777b6241b96ed8c4c4773edc356cb",
+      "exact_parent_function": true
+    },
+    "read": {
+      "bytes": 982,
+      "sha256": "69e0e3dde14872a72c6e220f8327f08d452503cf6d6546834b592e3d877442eb",
+      "exact_parent_function": true
+    },
+    "write_new": {
+      "bytes": 686,
+      "sha256": "3c5b8dafc384ea4565b0b08f50a611c0e4257a7c8a3a347bf49deb6a345d5c28",
+      "exact_parent_function": true
+    },
+    "module": {
+      "bytes": 182,
+      "sha256": "7a2baee0b3d8c6fbc650a92a1b469b809885e30a840a64473a4c851850d98625",
+      "exact_parent_function": true
+    },
+    "run_cli": {
+      "bytes": 3825,
+      "sha256": "99b135c39294de45ba0a98852ee04c636890688028d54e8721756a2db9ab06f7",
+      "exact_parent_function": true
+    }
+  },
+  "behavior": {
+    "source_manifest_schema": 2,
+    "source_manifest_artifact": "pocket4-bilibili-current-recorder-held-r5",
+    "fixed_runtime_file_count": 14,
+    "flow_scope_schema": "pocket4-current-recorder-scope-v1",
+    "init_current_baseline_option": "--current-baseline",
+    "init_current_baseline_digest_option": "--baseline-sha256",
+    "old_init_options_not_accepted": true,
+    "old_flow_files_not_adopted": true,
+    "private_flow_baseline": "baseline.json",
+    "private_flow_qualification": "baseline-qualification.json",
+    "current_guard_before_new_flow_directory_write": true,
+    "original_flow_guard_retained_and_additional_current_guard": true,
+    "full_action_lock_task_cleanup_reconciliation_command_bodies_preserved": true,
+    "saved_child_scope_and_current_guard_bound": true,
+    "shared_native_helper_qualification_not_upgraded": true,
+    "unresolved_framework_exit_cause": true,
+    "current_coordinator_legacy_activation_aliases": false
+  },
+  "stage": {
+    "request_bytes": 599575,
+    "request_sha256": "170e4bd281f4dba6120dbf9aa96c58fe3f3bccaa54a9d30c92be5564e23b6919",
+    "source_bytes": 8509,
+    "source_sha256": "58cc5b9b472d10a1f8336a13f350059844a69b594d0de589e51becf4bc0c9c02",
+    "root": "/home/alex/work/pocket4-current-host-r5-source-01",
+    "source_only_create_once": true,
+    "pure_controls_count": 26,
+    "guards_before_after_final": true,
+    "payload_bound_bytes": 1048576,
+    "timeout_seconds": 60,
+    "own_deadline_seconds": 45,
+    "cpu_quota_percent": 25,
+    "memory_max_bytes": 201326592,
+    "namespace_entry": false,
+    "Android_commands": 0,
+    "helper_installs": 0,
+    "UI_actions": 0,
+    "no_old_source_or_baseline_modified": true,
+    "partial_source_never_adopted": true,
+    "all_owned_source_FDs_attempted_in_finally": true
+  },
+  "qualification": {
+    "local_python_run": false,
+    "actual_stage_run": false,
+    "actual_26_controls_pending": true,
+    "helper_installs": 0,
+    "UI_actions": 0,
+    "current_runtime_admitted": false,
+    "production_ready_count": 0
+  },
+  "outstanding": [
+    "Root complete source review and actual source stage/26 pure controls",
+    "Fresh per-app contexts must use typed current baseline APIs",
+    "New helper builds and actual install/read-only state identity closure",
+    "Fresh launch and business-flow acceptance",
+    "Unresolved framework SIGKILL sender and repeated-crash qualification"
+  ]
+}

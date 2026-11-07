@@ -1,0 +1,206 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_UNRUN",
+  "production_ready": false,
+  "actual_Python_or_Rust_execution": false,
+  "request": {
+    "pin": {
+      "bytes": 299448,
+      "sha256": "dda4287f5fd952192490f927bbbb2fab100f9f8b685370825b8b8156d6f3aa96",
+      "git_blob_sha1": "c5e5f34010fd3c69c185b867fe6771ca4141b45f"
+    },
+    "key": "pocket4-composer-direct-registration-transaction-host-01-20261106",
+    "stdin": {
+      "bytes": 276398,
+      "sha256": "908f844d212217d87495cd53469a1799ca2080813a59e5d6e485c35bfd5f187a",
+      "git_blob_sha1": "f3bc758d164b60fcb7d9a414afe01dbbba657047"
+    },
+    "stdin_under_1_MiB": true,
+    "dispatched": false
+  },
+  "production": {
+    "baseline": {
+      "bytes": 30368,
+      "sha256": "f2314f92862bab1d5354220ecb24954acdbbc536529daf36818b0a8974e1499c",
+      "git_blob_sha1": "5ff38e3b531a6cbe48aa92c45f581ff8e7bcdb17"
+    },
+    "candidate": {
+      "bytes": 42483,
+      "sha256": "7375c45596193c3458d9dcbd3b14c41f87930fbece3bae5e7bf2800934676273",
+      "git_blob_sha1": "b314f159c5e3d8f021e8efb7caac1e9741b0dfb2"
+    },
+    "patch": {
+      "bytes": 30836,
+      "sha256": "f809c6786cc8f2949fa5eb6260da32720789214902e714b621e15d7a4f369ca2",
+      "git_blob_sha1": "5dd2b27cb7b74b2b4e54f584acc0bd99aa566430"
+    },
+    "actual_source_authority": "builder469 499-file map; installed Main equivalence not proved",
+    "files_changed": 1,
+    "changed_existing_functions": [
+      "new",
+      "register_direct_task",
+      "retire_direct_task",
+      "reserve_with_kind",
+      "remove",
+      "remove_internal"
+    ],
+    "unchanged_existing_functions": [
+      "stage_bootstrap_display",
+      "display_connected",
+      "set_input_scale",
+      "is_retired",
+      "is_direct_task",
+      "direct_task_display",
+      "serve",
+      "serve_connection",
+      "handle",
+      "reserve",
+      "register_direct",
+      "bind",
+      "input_route_for_object",
+      "direct_task_route_for_object",
+      "request_id",
+      "control_error",
+      "backend",
+      "error_response"
+    ],
+    "new_private_functions": [
+      "matches",
+      "rollback_direct_locked",
+      "forget_direct_object",
+      "record_endpoint_call_locked",
+      "record_removal_locked",
+      "remove_internal_locked"
+    ],
+    "reverse_diff_roundtrip": {
+      "production_forward": true,
+      "production_inverse": true,
+      "work01_forward": true,
+      "work01_inverse": true
+    },
+    "stage_calls": "each exact object/display invocation recorded before I/O; no-call skip is not a backend success",
+    "cleanup": "record successful endpoint retirement separately; failures retain direct marker/registry/progress; no UnknownDisplay/BadDisplay-as-success",
+    "unresolved": "Denial registration may fail before local channel insertion; remote state still UNKNOWN, explicit retirement can remain unqualified",
+    "activation_function_unchanged": true,
+    "activation_error_does_not_rollback_Bound": true,
+    "operation_lock_order": "registration -> operation -> state; release operation/state during configure wait; cleanup under existing operation guard"
+  },
+  "fixture": {
+    "tests": {
+      "bytes": 23472,
+      "sha256": "c87d314841ac50f00943ae9181505755e8f262f538144e6979a9b63e15ecf298",
+      "git_blob_sha1": "2c34e17b1f1eb16a0d4f9d297d6af8ad8a8179cc"
+    },
+    "lib": {
+      "bytes": 9274,
+      "sha256": "84659a797076f73904e7437916f3a885902f06ae87282716c8142b51464df60f",
+      "git_blob_sha1": "158a7f5ecabbf171ed75439c9c166eaf388442e0"
+    },
+    "count": 27,
+    "real_production_prefix": true,
+    "real_Core_registry_and_protocol_crates": true,
+    "explicit_fake_adapters": [
+      "DenialPresentationSink",
+      "ComposerLifecycle"
+    ],
+    "Android_Binder_compile": false,
+    "old_5_second_configure_timeout_not_reduced": true,
+    "libtest_executed": false
+  },
+  "controller": {
+    "pin": {
+      "bytes": 78831,
+      "sha256": "30e03dd7793013de1e84b1f02d51a80f20fadcb73ed514cf327b43913c3cc0b0",
+      "git_blob_sha1": "f9ea327b2fca9277ab6c65ef7c92afc700c5ae35"
+    },
+    "unchanged_469_helper_names": [
+      "require",
+      "utc",
+      "sha",
+      "identity",
+      "held",
+      "write_new",
+      "real_directory",
+      "resource_text",
+      "resource_events",
+      "resource_snapshot",
+      "begin_resources",
+      "finish_resources",
+      "hash_held",
+      "regular_tree",
+      "portable",
+      "pinned_packet",
+      "exact_source_copy",
+      "read_existing_config",
+      "pin_resolved",
+      "verify_resolved",
+      "toolchain",
+      "qualify_cached_archive"
+    ],
+    "unchanged_helper_count": 22,
+    "compiler_origin": {
+      "bytes": 83194,
+      "sha256": "6e4b18a1116bdc709e5bda2084e79967699be918770731795806d1bc8634bec2",
+      "git_blob_sha1": "3345ba9845175b7b47761b3829e51727dad52304"
+    },
+    "compiler_origin_source_tree": "4d7f8434fd8efabba1f0bc1faccce6c6137eb344",
+    "owner20_origin": {
+      "bytes": 38732,
+      "sha256": "d12077133b1a974f82cc088f02f0f4fe9a573c93a1679f00f003d3d103aebe58",
+      "git_blob_sha1": "ef59ee980316a2317ba86a99c47572fb9afb0c12"
+    },
+    "owner20_reaper_class_byte_equal": true,
+    "command_delta": {
+      "bytes": 3244,
+      "sha256": "4519aed8ef9b11bcf1ad057f26833e01f7bd34bee3680af207c94ed15b000849",
+      "git_blob_sha1": "e57d91bc6160803fa13aa912be2c3bfd867da575"
+    },
+    "lifecycle_controls_delta": {
+      "bytes": 1134,
+      "sha256": "23bbcad59324ca1c6a9a4836cb074a6996e110764eb4fe3e1d12b18919b22e45",
+      "git_blob_sha1": "8b4f8e9f6344c558a99567a4666d70cad28b32fd"
+    },
+    "limits": {
+      "work_seconds": 450,
+      "tool_seconds": 600,
+      "memory_max": 1073741824,
+      "cpu_quota_percent": 100,
+      "nice": 15
+    },
+    "expected_commands": 42,
+    "prior_lifecycle_controls_required": 3,
+    "exact_focused_tests": 27,
+    "offline_lock_guard": "all selected registry source/version/checksum equal original Cargo.lock and exact qualified cache archive/source; path closure exactly five real crates plus host fixture",
+    "source_inventory_before_after": {
+      "original": 499,
+      "copied": 499,
+      "fixture": 4
+    },
+    "no_Android_or_Main_actions": true,
+    "root_or_namespace_changes": false,
+    "network_downloads": false,
+    "python_syntax_or_controls_executed": false
+  },
+  "request_reproducer": {
+    "request_equal": true,
+    "stdin_equal": true,
+    "stage_equal": true,
+    "boundary_equal": true,
+    "expected_equal": true
+  },
+  "peer_scope": "App agent fully read work02+27tests+I/O fixture and reported no definite blocker in the checked static paths; no execution or installed Main claim",
+  "predecessor_wip": {
+    "source": {
+      "bytes": 39679,
+      "sha256": "d25c0029296af436e243f48c7bd3fc26d7426d509d413ebed76ba071029482e1",
+      "git_blob_sha1": "a7679d215421dd00277f8275c0cb1db9fe417d63"
+    },
+    "source_only_unrun": true,
+    "not_dispatched": true
+  },
+  "native_normal05": {
+    "actual_state": "FAILED_RESOURCE_ADMISSION_BEFORE_BUILDER",
+    "actual_tree": "5d6cfbe633d1af6a9ed4bea8a9a764300b39ecf7",
+    "no06_request": true
+  }
+}

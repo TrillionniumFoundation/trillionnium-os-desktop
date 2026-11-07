@@ -1,0 +1,166 @@
+{
+  "schema": 1,
+  "edits": [
+    {
+      "file": "owned_navigation.py",
+      "from": "INSTALL_ROOT=Path(\"/home/alex/work/pocket4-owned-bili-qa-r10-install-state-01\")",
+      "to": "INSTALL_ROOT=Path(\"/home/alex/work/pocket4-owned-bili-qa-r10-install-state-02\")",
+      "why": "install02-root",
+      "count": 1
+    },
+    {
+      "file": "owned_navigation.py",
+      "from": "INSTALL_ENTRY_SHA=\"e3515ebf47dd3f8fd1b7a48141f868aed7e9582f24f806687327b9d6897560c0\"",
+      "to": "INSTALL_ENTRY_SHA=\"55458ecb899956dd3475c454a4f8993df036a2439992c32527a66cc852cb71c3\"",
+      "why": "install02-entry",
+      "count": 1
+    },
+    {
+      "file": "owned_navigation.py",
+      "from": "INSTALL_ENTRY_BYTES=38822",
+      "to": "INSTALL_ENTRY_BYTES=39575",
+      "why": "install02-entry-bytes",
+      "count": 1
+    },
+    {
+      "file": "owned_navigation.py",
+      "from": "INSTALL_MANIFEST_SHA=\"6d2a66f4c4920c8ed32f5738020a516bb4df1f6ca3e87f6d6d9e16744f988c42\"",
+      "to": "INSTALL_MANIFEST_SHA=\"e3cb2adbcfe46a47ca81ec3b5883f1e1a0cd806b21e964d75944e8fe5cd49387\"",
+      "why": "install02-manifest",
+      "count": 1
+    },
+    {
+      "file": "owned_navigation.py",
+      "from": "  flow=recorder.Flow(args)",
+      "to": "  flow=prior.current_flow_type(prior.verify_source(INSTALL_MANIFEST_SHA),recorder)(args)",
+      "why": "launch-and-navigation-current-flow",
+      "count": 1
+    },
+    {
+      "file": "owned_navigation.py",
+      "from": "def execute(expected):",
+      "to": "def cleanup_worker(expected):\n    \"\"\"Own cleanup entry; original R6 cleanup and completion semantics remain.\"\"\"\n    verify_source(expected)\n    require(os.getuid()==os.geteuid()==0 and HERE==SOURCE,'EXACT_ROOT_CLEANUP_REQUIRED')\n    prior=load_prior()\n    recorder=prior.recorder_module()\n    manifest=prior.verify_source(INSTALL_MANIFEST_SHA)\n    Flow=prior.current_flow_type(manifest,recorder)\n    now=recorder.now\n    write_new=recorder.write_new\n    args=types.SimpleNamespace(operation='cleanup',adapter_manifest_sha256=R6_MANIFEST,\n        flow_dir=FLOW,step='cleanup-01',\n        epoch_module=prior.RECORDER_ROOT/'references/framework_epoch.py',\n        task_source=prior.RECORDER_ROOT/'references/task_scope_baseline.py',\n        request=None,unknown_step=None,observation_step=None,postcondition=None)\n    os.umask(0o077)\n    flow=Flow(args)\n    mutation=True\n    result = {'ok': False, 'automatic_retry': False, 'action_attempted': False, 'outcome_unknown': False,\n              'business_success_verified': False}\n    try:\n        flow.begin(args, mutation)\n        result.update(flow.cleanup())\n        flow.guard(attempted=flow.action_attempted)\n        result['ok'] = True\n    except BaseException as exc:\n        result.update(error_type=type(exc).__name__, error=str(exc), outcome_unknown=flow.action_attempted)\n        if hasattr(exc, 'command_observation'):\n            result['command_observation'] = exc.command_observation\n        if hasattr(exc, 'details'):\n            result['transport_failure'] = exc.details\n    finally:\n        try:\n            flow.close()\n        except BaseException as exc:\n            result['ok'] = False\n            result['outcome_unknown'] = flow.action_attempted\n            if 'error' not in result:\n                result.update(error_type=type(exc).__name__, error='HELD_BINDING_RELEASE_FAILED')\n            result['release_error_type'] = type(exc).__name__\n    result.update(action_attempted=flow.action_attempted, ended_utc=now(), epoch_sha256=flow.scope['epoch_sha256'])\n    if flow.step is not None:\n        write_new(flow.step / 'result.json', result)\n    print(json.dumps(result, ensure_ascii=False))\n    if not result['ok']:\n        return 2\n    return 0\n\ndef execute(expected):",
+      "why": "own-exact-cleanup-entry",
+      "count": 1
+    },
+    {
+      "file": "owned_navigation.py",
+      "from": "cleanup=ref.run_cli('04-cleanup',['/usr/bin/python3','-I','-B',str(prior.RECORDER_ROOT/'recorder.py'),'cleanup','--adapter-manifest-sha256',R6_MANIFEST,'--flow-dir',str(FLOW),'--step','cleanup-01'],100,evidence,lambda:ref.main_guard(activation,epoch))",
+      "to": "cleanup=ref.run_cli('04-cleanup',['/usr/bin/python3','-I','-B',str(HERE/'owned_navigation.py'),'--cleanup-once','--source-manifest-sha256',expected],100,evidence,lambda:ref.main_guard(activation,epoch))",
+      "why": "cleanup-child-explicit-own-entry",
+      "count": 1
+    },
+    {
+      "file": "owned_navigation.py",
+      "from": " modes.add_argument('--worker-once',choices=('launch','navigate'))",
+      "to": " modes.add_argument('--worker-once',choices=('launch','navigate'))\n modes.add_argument('--cleanup-once',action='store_true')",
+      "why": "cleanup-CLI-exclusive-mode",
+      "count": 1
+    },
+    {
+      "file": "owned_navigation.py",
+      "from": " if not args.execute_once and args.worker_once is None:",
+      "to": " if not args.execute_once and args.worker_once is None and not args.cleanup_once:",
+      "why": "retain-default-plan",
+      "count": 1
+    },
+    {
+      "file": "owned_navigation.py",
+      "from": " return worker(args.source_manifest_sha256,args.worker_once)if args.worker_once else execute(args.source_manifest_sha256)",
+      "to": " if args.cleanup_once:return cleanup_worker(args.source_manifest_sha256)\n return worker(args.source_manifest_sha256,args.worker_once)if args.worker_once else execute(args.source_manifest_sha256)",
+      "why": "explicit-cleanup-dispatch",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "0<len(raw)<=131072",
+      "to": "0<len(raw)<=196608",
+      "why": "bounded-packet-for-current-route-source",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "sys.stdin.buffer.read(131073)",
+      "to": "sys.stdin.buffer.read(196609)",
+      "why": "same-bounded-read-limit",
+      "count": 1
+    }
+  ],
+  "complete_inverse_exact": true,
+  "original_source_pins": {
+    "controls_reveal.py": {
+      "bytes": 9968,
+      "sha256": "454dce74cf94886aec94c85cb6aaa70bfdde694e27b88a058b3933d0dc142424",
+      "git_blob": "c00d20ff96231f159f9c015ac5954d4730d02f45"
+    },
+    "owned_navigation.py": {
+      "bytes": 58697,
+      "sha256": "0f3bceae7cb3c98a1f332dcead76cdc7f428eb09b0ba3655fd43705540ee64cd",
+      "git_blob": "e54129cbeb99e66fc6529eeba2859bc229996d1a"
+    },
+    "playback_controls.py": {
+      "bytes": 13143,
+      "sha256": "585508e8558be36b1f66e0da692b5aed20da8ba4141bac73c3a22f33ca34afdf",
+      "git_blob": "3dc18a78ebb952dd79ea1a7c0ceed77a2ddbdd9c"
+    },
+    "post_foreground.py": {
+      "bytes": 12719,
+      "sha256": "00b42443a474df7b553edb906099d7ec5e68c908f42c5e5df356da1d9f634ea8",
+      "git_blob": "ea6acfaa2d5160edc9c718fbc65931598b904da6"
+    },
+    "stage_execute.py": {
+      "bytes": 5134,
+      "sha256": "31f313632dc1ba049f789c8c1f8205131674c3bb44bc1f2a6c5e7e27a0921bb1",
+      "git_blob": "c237f072610154b381aa2da9cc24c3c45bc05ca6"
+    },
+    "video_navigation.py": {
+      "bytes": 25815,
+      "sha256": "138b274a445a2c676926207767d906f9cf5fd06e86939f1970aaff0e5acb474f",
+      "git_blob": "f9458908f65e322a9f40f472a152caa701cd704c"
+    }
+  },
+  "new_source_pins": {
+    "controls_reveal.py": {
+      "bytes": 9968,
+      "sha256": "454dce74cf94886aec94c85cb6aaa70bfdde694e27b88a058b3933d0dc142424"
+    },
+    "owned_navigation.py": {
+      "bytes": 61087,
+      "sha256": "580a401ffc271dad51240d54dc6db5e7225a84e8025debb16c8ffb574671f527"
+    },
+    "playback_controls.py": {
+      "bytes": 13143,
+      "sha256": "585508e8558be36b1f66e0da692b5aed20da8ba4141bac73c3a22f33ca34afdf"
+    },
+    "post_foreground.py": {
+      "bytes": 12719,
+      "sha256": "00b42443a474df7b553edb906099d7ec5e68c908f42c5e5df356da1d9f634ea8"
+    },
+    "stage_execute.py": {
+      "bytes": 5134,
+      "sha256": "00f8691ccffa72d72a1b1ae73c8afc56b95cfbcf0684d0ad2ba2cc15e13dc9e2"
+    },
+    "video_navigation.py": {
+      "bytes": 25815,
+      "sha256": "138b274a445a2c676926207767d906f9cf5fd06e86939f1970aaff0e5acb474f"
+    }
+  },
+  "cleanup_correspondence": {
+    "original_main": "6a981cbca098c2cb23e03d41f7f1cb46d840befb56d1435a0940b5059f30301a",
+    "original_branch": "        if args.operation == 'admission':\n            result.update(flow.admission())\n        elif args.operation == 'launch':\n            result.update(flow.launch())\n        elif args.operation == 'ui':\n            result.update(flow.ui(args.request))\n        elif args.operation == 'exit-info':\n            flow.android(['/system/bin/dumpsys', 'activity', 'exit-info', flow.scope['package']], 20)\n            result['read_only_package_exit_info_captured'] = True\n        elif args.operation == 'engine-maps':\n            result.update(flow.engine_maps())\n        elif args.operation == 'reconcile':\n            result.update(flow.reconcile(args))\n        else:\n            result.update(flow.cleanup())\n",
+    "tail_original": "    result = {'ok': False, 'automatic_retry': False, 'action_attempted': False, 'outcome_unknown': False,\n              'business_success_verified': False}\n    try:\n        flow.begin(args, mutation)\n        if args.operation == 'admission':\n            result.update(flow.admission())\n        elif args.operation == 'launch':\n            result.update(flow.launch())\n        elif args.operation == 'ui':\n            result.update(flow.ui(args.request))\n        elif args.operation == 'exit-info':\n            flow.android(['/system/bin/dumpsys', 'activity', 'exit-info', flow.scope['package']], 20)\n            result['read_only_package_exit_info_captured'] = True\n        elif args.operation == 'engine-maps':\n            result.update(flow.engine_maps())\n        elif args.operation == 'reconcile':\n            result.update(flow.reconcile(args))\n        else:\n            result.update(flow.cleanup())\n        flow.guard(attempted=flow.action_attempted)\n        result['ok'] = True\n    except BaseException as exc:\n        result.update(error_type=type(exc).__name__, error=str(exc), outcome_unknown=flow.action_attempted)\n        if hasattr(exc, 'command_observation'):\n            result['command_observation'] = exc.command_observation\n        if hasattr(exc, 'details'):\n            result['transport_failure'] = exc.details\n    finally:\n        try:\n            flow.close()\n        except BaseException as exc:\n            result['ok'] = False\n            result['outcome_unknown'] = flow.action_attempted\n            if 'error' not in result:\n                result.update(error_type=type(exc).__name__, error='HELD_BINDING_RELEASE_FAILED')\n            result['release_error_type'] = type(exc).__name__\n    result.update(action_attempted=flow.action_attempted, ended_utc=now(), epoch_sha256=flow.scope['epoch_sha256'])\n    if flow.step is not None:\n        write_new(flow.step / 'result.json', result)\n    print(json.dumps(result, ensure_ascii=False))\n    if not result['ok']:\n        raise SystemExit(2)",
+    "tail_own": "    result = {'ok': False, 'automatic_retry': False, 'action_attempted': False, 'outcome_unknown': False,\n              'business_success_verified': False}\n    try:\n        flow.begin(args, mutation)\n        result.update(flow.cleanup())\n        flow.guard(attempted=flow.action_attempted)\n        result['ok'] = True\n    except BaseException as exc:\n        result.update(error_type=type(exc).__name__, error=str(exc), outcome_unknown=flow.action_attempted)\n        if hasattr(exc, 'command_observation'):\n            result['command_observation'] = exc.command_observation\n        if hasattr(exc, 'details'):\n            result['transport_failure'] = exc.details\n    finally:\n        try:\n            flow.close()\n        except BaseException as exc:\n            result['ok'] = False\n            result['outcome_unknown'] = flow.action_attempted\n            if 'error' not in result:\n                result.update(error_type=type(exc).__name__, error='HELD_BINDING_RELEASE_FAILED')\n            result['release_error_type'] = type(exc).__name__\n    result.update(action_attempted=flow.action_attempted, ended_utc=now(), epoch_sha256=flow.scope['epoch_sha256'])\n    if flow.step is not None:\n        write_new(flow.step / 'result.json', result)\n    print(json.dumps(result, ensure_ascii=False))\n    if not result['ok']:\n        return 2\n    return 0\n",
+    "specialization": "operation cleanup only; unchanged R6 result/try/guard/error/close/durable/print, SystemExit(2) to return2 for own main"
+  },
+  "no_module_monkeypatch": true,
+  "Flow_only_override_in_exact_install02_factory": "bind",
+  "runtime_source_count": 6,
+  "all_original_helpers_contracts_transports_preserved": true,
+  "source_packet_limit": 196608,
+  "original_packet_limit": 131072,
+  "per_source_limit_unchanged": 65536,
+  "actual_uid": null,
+  "actual_installed_source": "e3cb2adbcfe46a47ca81ec3b5883f1e1a0cd806b21e964d75944e8fe5cd49387",
+  "old_tasks_reauthorized": false,
+  "Python_executed": false
+}

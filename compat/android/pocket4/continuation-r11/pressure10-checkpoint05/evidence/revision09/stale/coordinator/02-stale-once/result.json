@@ -1,0 +1,227 @@
+{
+  "schema": 1,
+  "ok": false,
+  "scope": "one owned revision09 PIDFD-only minimal-root phase; no Main deployment",
+  "started_utc": "2026-11-04T17:13:20.057799+00:00",
+  "source_manifest_sha256": "c71f8aa93bb96f329177b7797a77d1b6f46238953450a9579b78547770f991b5",
+  "matching_build_receipt_sha256": "087a22519b0619be5a38440549a4730305bbfede6a046bbac347516dea0e962b",
+  "binaries_sha256": {
+    "actor": "e4a24055ff87b793cee0c8bfe11b1e9df48581cc0406024fbf93f2461b8cf06e",
+    "driver": "a9de6becc67b03ccc877ed54b64ee7c3c1b3398f546fb6464d9b52f707ebe00b",
+    "broker": "6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154",
+    "android_lmkd": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde"
+  },
+  "dispatch_attempted": true,
+  "outcome_unknown": false,
+  "forced_teardown": false,
+  "pressure_qualified": false,
+  "stale_qualified": false,
+  "stale_critical_qualified": false,
+  "partial_medium_only": false,
+  "all_apps_production_ready": false,
+  "phase": "stale",
+  "unit": "p4-lmkd-relay-stale-r11-02.service",
+  "coordinator_root": "/home/alex/work/pocket4-lmkd-pressure-r11-coordinator-05",
+  "state": "/run/p4-lmkd-relay-stale-r11-02",
+  "stage": "/opt/p4-lmkd-relay-stale-r11-02",
+  "positive_predecessor": {
+    "path": "/home/alex/work/pocket4-lmkd-pressure-r11-coordinator-04/02-pressure-once/result.json",
+    "sha256": "cf081ede4d6d757b522bd35b6280bda03a27e5517e0119e9dabb219cbd13e98a",
+    "partial_medium_only": false
+  },
+  "description": "p4-owned-r11-rev09-stale-e7771fbeeb192f3ee712e490f640bb62",
+  "main_namespaces": {
+    "pid": 4026533288,
+    "mnt": 4026533284,
+    "cgroup": 4026533394,
+    "ipc": 4026533286,
+    "uts": 4026533285,
+    "net": 4026533041
+  },
+  "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "available_memory_bytes": 15564791808,
+  "dispatch_returncode": 0,
+  "dispatch_stdout": "",
+  "dispatch_stderr": "",
+  "invocation_id": "005a5822bb0f427db5c238b9175c2384",
+  "resources_first_observed": {
+    "invocation_id": "005a5822bb0f427db5c238b9175c2384",
+    "cgroup_device": 30,
+    "cgroup_inode": 27826125,
+    "observed_monotonic_ns": 838109386071507,
+    "limits": {
+      "memory.max": "536870912",
+      "memory.high": "max",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "64"
+    },
+    "memory_events": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_current": 1835008,
+    "memory_peak": 1835008,
+    "swap_current": 0,
+    "swap_peak": 0,
+    "cgroup_events": "populated 1\nfrozen 0\n"
+  },
+  "terminal_status": {
+    "Description": "p4-owned-r11-rev09-stale-e7771fbeeb192f3ee712e490f640bb62",
+    "LoadState": "loaded",
+    "ActiveState": "failed",
+    "SubState": "failed",
+    "InvocationID": "005a5822bb0f427db5c238b9175c2384",
+    "MainPID": "0",
+    "Result": "exit-code",
+    "ExecMainStartTimestampMonotonic": "838109379171",
+    "ExecMainExitTimestampMonotonic": "838116431801",
+    "ExecMainPID": "184544",
+    "ExecMainCode": "1",
+    "ExecMainStatus": "1",
+    "ExecStart": "{ path=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-09/target/debug/owned-relay-canary ; argv[]=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-09/target/debug/owned-relay-canary stale /opt/p4-lmkd-relay-stale-r11-02/root /run/p4-lmkd-relay-stale-r11-02 p4-lmkd-relay-stale-r11-02.service e4a24055ff87b793cee0c8bfe11b1e9df48581cc0406024fbf93f2461b8cf06e bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde /home/alex/work/pocket4-lmkd-host-pressure-r11-source-09/target/debug/droidloom-psi-owner 6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154 4026533288 4026533284 4026533394 4026533286 4026533285 4026533041 ; ignore_errors=no ; start_time=[Wed 2026-11-04 09:13:20 PST] ; stop_time=[Wed 2026-11-04 09:13:27 PST] ; pid=184544 ; code=exited ; status=1 }",
+    "ControlGroup": "",
+    "MemoryPeak": "417976320",
+    "MemorySwapPeak": "0"
+  },
+  "error": "RuntimeError: owned unit did not exit normally with its retained successful invocation",
+  "traceback": "Traceback (most recent call last):\n  File \"<stdin>\", line 180, in main\n  File \"<stdin>\", line 24, in need\nRuntimeError: owned unit did not exit normally with its retained successful invocation\n",
+  "pre_stop_status": {
+    "Description": "p4-owned-r11-rev09-stale-e7771fbeeb192f3ee712e490f640bb62",
+    "LoadState": "loaded",
+    "ActiveState": "failed",
+    "SubState": "failed",
+    "InvocationID": "005a5822bb0f427db5c238b9175c2384",
+    "MainPID": "0",
+    "Result": "exit-code",
+    "ExecMainStartTimestampMonotonic": "838109379171",
+    "ExecMainExitTimestampMonotonic": "838116431801",
+    "ExecMainPID": "184544",
+    "ExecMainCode": "1",
+    "ExecMainStatus": "1",
+    "ExecStart": "{ path=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-09/target/debug/owned-relay-canary ; argv[]=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-09/target/debug/owned-relay-canary stale /opt/p4-lmkd-relay-stale-r11-02/root /run/p4-lmkd-relay-stale-r11-02 p4-lmkd-relay-stale-r11-02.service e4a24055ff87b793cee0c8bfe11b1e9df48581cc0406024fbf93f2461b8cf06e bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde /home/alex/work/pocket4-lmkd-host-pressure-r11-source-09/target/debug/droidloom-psi-owner 6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154 4026533288 4026533284 4026533394 4026533286 4026533285 4026533041 ; ignore_errors=no ; start_time=[Wed 2026-11-04 09:13:20 PST] ; stop_time=[Wed 2026-11-04 09:13:27 PST] ; pid=184544 ; code=exited ; status=1 }",
+    "ControlGroup": "",
+    "MemoryPeak": "417976320",
+    "MemorySwapPeak": "0"
+  },
+  "stop_returncode": 0,
+  "stop_stdout": "",
+  "stop_stderr": "",
+  "reset_failed_returncode": 0,
+  "reset_failed_stdout": "",
+  "reset_failed_stderr": "",
+  "post_stop_status": {
+    "Description": "p4-lmkd-relay-stale-r11-02.service",
+    "LoadState": "not-found",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "InvocationID": "",
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainStartTimestampMonotonic": "0",
+    "ExecMainExitTimestampMonotonic": "0",
+    "ExecMainPID": "0",
+    "ExecMainCode": "0",
+    "ExecMainStatus": "0",
+    "ControlGroup": "",
+    "MemoryPeak": "[not set]",
+    "MemorySwapPeak": "[not set]"
+  },
+  "owned_cgroup_after_stop": "absent",
+  "exact_owned_cleanup_verified": true,
+  "main_epoch_unchanged_after_cleanup": true,
+  "retained_files": {
+    "broker-active.json": {
+      "sha256": "62ea86a5b0fd35c6dc3b0b8b6269b17cd6a58cdbe13979cd85c0478109b0a601",
+      "bytes": 374
+    },
+    "broker-ready.json": {
+      "sha256": "4dc92e9734b450808511f23897813470f10fd5fc48993e3b4d4563f16d3e30ae",
+      "bytes": 374
+    },
+    "identities.json": {
+      "sha256": "94246e7f543b341396726e52913bd9431c2fae5bf933a8479e4a55a61bf9bcd8",
+      "bytes": 494
+    },
+    "inner-preflight.json": {
+      "sha256": "a9993516bfb13f1918fe35c3c166ca878a1ed57b3c2449ee382e43afcfd50bc9",
+      "bytes": 537
+    },
+    "lmkd-fds.txt": {
+      "sha256": "349f800dcaa5110939bc761c554595f3de83480a6b92137e98efedf839339c89",
+      "bytes": 857
+    },
+    "lmkd-maps.txt": {
+      "sha256": "0cb0b071ebbd8662e99b17d4efae39134fbcf534d61b1cf5ef9bceadb979a814",
+      "bytes": 4014
+    },
+    "lmkd-post-registration-fds.txt": {
+      "sha256": "2d652fe7ab71ee93d1e0d4a47415303eec50f091abda511113131745296fb5de",
+      "bytes": 923
+    },
+    "lmkd-post-registration-maps.txt": {
+      "sha256": "0cb0b071ebbd8662e99b17d4efae39134fbcf534d61b1cf5ef9bceadb979a814",
+      "bytes": 4014
+    },
+    "lmkd-post-registration-pressure-file.json": {
+      "sha256": "b97727c8c338ffa95e8dee43fdf3de641efa0b0c065747c43b2214b50d2bc2a1",
+      "bytes": 91
+    },
+    "lmkd-post-registration-status.txt": {
+      "sha256": "3ff7817b7d3e0b67100ac3048c2b90ab115ca4297a84e66feb795671ca203173",
+      "bytes": 1494
+    },
+    "lmkd-pressure-file.json": {
+      "sha256": "b97727c8c338ffa95e8dee43fdf3de641efa0b0c065747c43b2214b50d2bc2a1",
+      "bytes": 91
+    },
+    "lmkd-status.txt": {
+      "sha256": "d68f0cfa92168b3f15f9482b4d3d007f6af141ecdf43e059d28fce0090daa578",
+      "bytes": 1493
+    },
+    "logdw.records": {
+      "sha256": "3bcc40181d8e78b29f43bfafda8b70ad2053fbc96c0c56eb634f2531c49af386",
+      "bytes": 2263
+    },
+    "outer-preflight.json": {
+      "sha256": "3ce4d5bd1bf1e520b734aceb5988fb294836507016bd31b4f34ad8fbcc2b4cc8",
+      "bytes": 294
+    },
+    "phase-failure.json": {
+      "sha256": "2aa1947baf31ded6bdf1b3a2e228c7149f7688541a59d7eca3022146cad46985",
+      "bytes": 1562
+    },
+    "pressure-before.json": {
+      "sha256": "e8b75da5634dc5dcd14033a0ad43d3ee70908718c7c75faf360d84f1cc8e667a",
+      "bytes": 1537
+    },
+    "protocol-complete.json": {
+      "sha256": "d32807bf11def38a595783310bf96323849dd81fd61dd079471052ba04c27edf",
+      "bytes": 1530
+    },
+    "quiet-after.json": {
+      "sha256": "ba630bce969bc29174027f03d7e5b5c9a0533990deee5bf04d81d51fedfb3769",
+      "bytes": 1537
+    },
+    "quiet-before.json": {
+      "sha256": "7b845ac74c4797832abaa3408111b58ca60c72748f0e6eeab00e9dd7be8a3814",
+      "bytes": 1537
+    },
+    "relay-projection.json": {
+      "sha256": "9587f9df0cf47fa42c67d18f0dd0de2ca8e03f9bbc8549a7d9a90728f23aa909",
+      "bytes": 62
+    },
+    "staging-result.json": {
+      "sha256": "68e1dac7591a9c63f293f98f39c8780e2c50244c86fcd4a070b3d0e6ee64428a",
+      "bytes": 315
+    }
+  },
+  "unit.stdout": "",
+  "unit.stderr": "WARNING: linker: Warning: failed to find generated linker configuration from \"/linkerconfig/ld.config.txt\"\nWARNING: linker: Warning: failed to find generated linker configuration from \"/linkerconfig/ld.config.txt\"\nprivate fixture stopped: stale interval has new pressure stalls: Resource temporarily unavailable\nprivate fixture stopped: real protocol complete: Success\nowned-relay-canary: owned actor control failed\n",
+  "finished_utc": "2026-11-04T17:13:27.445809+00:00"
+}

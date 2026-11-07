@@ -1,0 +1,164 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_LOCK_BOUND_BUILDER_SOURCE_NOT_COMPILED",
+  "source_baseline": {
+    "compiled_builder_count": 462,
+    "manifest_sha256": "7eaf421cc911a8fec13945099f8d3758bada44b2331e4698dbefd472f535c8da",
+    "manifest_bytes": 91148,
+    "actual_build_report_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/paired-builder462-compile01-transport02/result.json",
+    "actual_build_report_bytes": 136350,
+    "actual_build_report_sha256": "f9a3dd01d9ebdb60a0e6a34ee99e3b1a2f646a30191eda3643cee5ca36ff544f",
+    "actual_build_state": "PASS",
+    "actual_24_targeted_tests_passed": 24,
+    "actual_registered_count": 197
+  },
+  "original_draft": {
+    "tree": "f4f80a67a761d5429ca9fa23f88c7f988f98dd8a",
+    "prefix": "typed-ingress-builder-draft01",
+    "native_role_ingress_sha256": "4dd06c627d9e2e4c49537224cba6b9b00b155a329608fade4bed95f654d8a1ab",
+    "preserved": true
+  },
+  "actual_lock_source": {
+    "tree": "04620916e15d0cf64e7b06e69f1730238de2c37d",
+    "prefix": "typed-ingress-source-lock-freeze02",
+    "lock_bytes": 86293,
+    "lock_sha256": "ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54",
+    "normal_source_library_executed_here": false
+  },
+  "static_checks": {
+    "reverse_new_production_pin_changes_exactly_recovers_old_module": true,
+    "three_draft_files_unchanged": [
+      "tools/droidloom-update/src/main.rs",
+      "tools/droidloom-update/src/android.rs",
+      "android/native-role-ingress/typed-ingress02-framework.patch"
+    ],
+    "unchanged_parent_entries": 460,
+    "expected_new_entries": 465,
+    "normal_locks_recover_projection_and_strict_mode_unmodified_from_draft": true
+  },
+  "source_delta": [
+    {
+      "path": "android/manifest/m2-role-ingress-source-lock.json",
+      "operation": "added",
+      "before": null,
+      "after": {
+        "kind": "file",
+        "sha256": "ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54",
+        "bytes": 86293,
+        "mode": 436
+      }
+    },
+    {
+      "path": "android/native-role-ingress/typed-ingress02-framework.patch",
+      "operation": "added",
+      "before": null,
+      "after": {
+        "kind": "file",
+        "sha256": "5a6258c4e60446956cb164ef6796a302e2fb9d48e7f41263572ed51f44015493",
+        "bytes": 17019,
+        "mode": 436
+      }
+    },
+    {
+      "path": "tools/droidloom-update/src/android.rs",
+      "operation": "changed",
+      "before": {
+        "kind": "file",
+        "sha256": "f61ab5f52f1eba7258c06dc0f42ae823d1dd66ac397d63e222b02e1ed4969d28",
+        "bytes": 265951,
+        "mode": 436
+      },
+      "after": {
+        "kind": "file",
+        "sha256": "32d465c001be935f2d460995257da40fed15026b7c805367c18bbc6cd81dac6b",
+        "bytes": 268218,
+        "mode": 436
+      }
+    },
+    {
+      "path": "tools/droidloom-update/src/main.rs",
+      "operation": "changed",
+      "before": {
+        "kind": "file",
+        "sha256": "aa6481c47b5adc3c7fc56af5a598b05cf945d5178d108c8050d2e2e01d7ada9c",
+        "bytes": 20107,
+        "mode": 436
+      },
+      "after": {
+        "kind": "file",
+        "sha256": "0a457dc7952eb531bdf7153ccce73f59ad1f2c39132045a6ea755b4ac10eeaa0",
+        "bytes": 21002,
+        "mode": 436
+      }
+    },
+    {
+      "path": "tools/droidloom-update/src/native_role_ingress.rs",
+      "operation": "added",
+      "before": null,
+      "after": {
+        "kind": "file",
+        "sha256": "760b1eae408e4bc68d84b1883152a0ef5eb5e7bb8f2de7e0a1ee8b39503c4a68",
+        "bytes": 17957,
+        "mode": 436
+      }
+    }
+  ],
+  "new_targeted_Rust_tests": {
+    "state": "NOT_RUN_NO_LOCAL_RUST_TOOLCHAIN",
+    "names": [
+      "native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate",
+      "native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions"
+    ],
+    "old_24_tests_to_retain": [
+      "android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes",
+      "android::tests::restoration_preserves_original_and_removes_created_file",
+      "android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch",
+      "android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout",
+      "android::patch_tests::interrupted_projection_recovers_before_next_build",
+      "tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets",
+      "tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory",
+      "native_generation::tests::legacy_and_disabled_preserve_the_disabled_mode",
+      "native_generation::tests::rejects_every_mixed_old_new_combination",
+      "native_generation::tests::enabled_triplet_requires_exact_contract",
+      "native_generation::tests::rejects_malformed_foreign_or_ambiguous_marker",
+      "native_generation::tests::rejects_foreign_elf_and_unrecognized_contract",
+      "native_generation::tests::rejects_symlinked_components",
+      "native_generation::tests::rejects_previous_protocol_for_each_role_and_mode",
+      "native_generation::tests::rejects_previous_protocol_inside_self_consistent_enabled_contract",
+      "native_generation::tests::rejects_previous_protocol_contract",
+      "native_generation::tests::real_ext4_apex_extraction_rejects_changed_nested_component",
+      "native_generation::tests::product_contract_generation_requires_enabled_triplet",
+      "native_generation::tests::product_contract_generation_is_create_only_and_binds_components",
+      "native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair",
+      "native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata",
+      "tests::native_generation_pair_cli_requires_one_explicit_product",
+      "native_generation_art::tests::output_rejects_source_overlap_alias_and_reuse",
+      "native_generation_art::tests::records_are_create_only_and_never_grant_runtime_readiness"
+    ],
+    "expected_new_registered_count": 199,
+    "expected_new_targeted_count": 26,
+    "registration_and_execution_not_yet_observed": true
+  },
+  "normal_framework_build": {
+    "targets": [
+      "framework-minus-apex",
+      "libandroid_runtime"
+    ],
+    "dependency_mode": "Strict",
+    "materialization": "Dedicated absent aosp-source or already exact new lock; no in-place widening of old lock workspace",
+    "required_existing_work_inputs": [
+      "mesa-source",
+      "python",
+      "framework-res.apk",
+      "mesa-tools/src/compiler/clc/mesa_clc",
+      "mesa-tools/src/compiler/spirv/vtn_bindgen2"
+    ],
+    "native_bridge_prepare_build_dependencies_not_yet_independently_read": true,
+    "complete_work_input_closure_qualified": false,
+    "complete_Java_and_Android_JNI_compiled": false,
+    "transitive_build_closure_qualified": false,
+    "runtime_authorization_enabled": false,
+    "Main_actions": 0
+  },
+  "local_checker_correction": "First local manifest script expected a nonexistent descriptive state; actual parent report state is PASS. Only this local assertion was corrected; original report and source were not modified."
+}

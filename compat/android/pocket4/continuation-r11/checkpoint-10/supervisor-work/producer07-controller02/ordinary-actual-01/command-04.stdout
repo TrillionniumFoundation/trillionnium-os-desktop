@@ -1,0 +1,8 @@
+PASS host proc PID namespace matches getpid; proc and cgroup2 filesystems verified
+PASS kernel accepted credentials reject wrong UID
+PASS kernel accepted credentials reject wrong GID
+PASS pinned executable rejects a different trusted file
+PASS SO_PEERPIDFD retains dead connection generation after normal exit and reap
+PASS ordinary host child fails the required exact cgroup projection gate
+PASS owned children reaped, descriptors/socket cleaned, parent namespace/projection/membership unchanged
+RESULT PASS mode=host-negative-controls

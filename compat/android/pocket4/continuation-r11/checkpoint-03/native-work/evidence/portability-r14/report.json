@@ -1,0 +1,203 @@
+{
+  "schema": 1,
+  "bounded_host_controls_expected": true,
+  "actual_android_ndk_build_executed": false,
+  "production_candidate_ready": false,
+  "field_control": {
+    "cases": 26,
+    "failures": 0,
+    "android_ndk_compile_claimed": false
+  },
+  "checks": [
+    {
+      "name": "baseline-field-compile",
+      "argv": [
+        "g++",
+        "-std=c++17",
+        "-O1",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-I",
+        "native-work/copy-word-snapshot-03/kernel_api/include",
+        "native-work/signed_field_portability_baseline.cc",
+        "native-work/copy-word-snapshot-03/kernel_api/proc_maps_fd_owner.cc",
+        "native-work/copy-word-snapshot-03/kernel_api/proc_maps_path.cc",
+        "-o",
+        "native-work/signed-field-portability-baseline"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "2657510906ca6a4e0e8fc91b10168e6efa64e8cec98b1435562ea743d95b20d2"
+    },
+    {
+      "name": "fixed-field-compile",
+      "argv": [
+        "g++",
+        "-std=c++17",
+        "-O1",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-I",
+        "native-work/portability-snapshot-04/kernel_api/include",
+        "native-work/signed_field_portability_regression.cc",
+        "native-work/portability-snapshot-04/kernel_api/proc_maps_fd_owner.cc",
+        "native-work/portability-snapshot-04/kernel_api/proc_maps_path.cc",
+        "-o",
+        "native-work/signed-field-portability-regression"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "fixed-field-control",
+      "argv": [
+        "native-work/signed-field-portability-regression"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "matched": true,
+      "stdout_sha256": "5708dd224e179f70a31d0307e5b874a807d4125e2262259c7fd982b05f7bf4d1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "actual-controller-compile",
+      "argv": [
+        "g++",
+        "-std=c++17",
+        "-O1",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-I",
+        "fd-owner-probe-r14-source",
+        "native-work/path-r14-host-controller.cc",
+        "-o",
+        "native-work/path-r14-host-controller"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "actual-controller-run",
+      "argv": [
+        "native-work/path-r14-host-controller"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "matched": true,
+      "stdout_sha256": "41d4be061c290156d63678c651ade2f40cc27d327b2ad4733964d06f38816f25",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": {
+        "pass": false,
+        "host_copy_seam": false,
+        "child_reaped": true,
+        "actual_source": {
+          "pass": false,
+          "expected_cases": 30,
+          "observed_cases": 30,
+          "pass_mask": "0x000000003fe7400c",
+          "first_failure": "ordinary_proc_self",
+          "path_suite_rc": 1,
+          "open_suite_rc": 0,
+          "path_last_child_signal": 0,
+          "path_last_child_exit": 1,
+          "normal_owned_children_reaped": true,
+          "actual_copy_api": true,
+          "broker_positive_identity_tested": false,
+          "maps_formatter": "owned_fixture",
+          "candidate_production_ready": false
+        }
+      }
+    },
+    {
+      "name": "host-seam-controller-compile",
+      "argv": [
+        "g++",
+        "-std=c++17",
+        "-O1",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-DP4_HOST_COPY_SEAM",
+        "-I",
+        "fd-owner-probe-r14-source",
+        "native-work/path-r14-host-controller.cc",
+        "native-work/r13_copy_test_seam.cc",
+        "-Wl,--wrap=syscall",
+        "-Wl,--wrap=process_vm_readv",
+        "-Wl,--wrap=process_vm_writev",
+        "-o",
+        "native-work/path-r14-controller-copy-seam"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "host-seam-controller-run",
+      "argv": [
+        "native-work/path-r14-controller-copy-seam"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "matched": true,
+      "stdout_sha256": "3e74ad4fd833a07ac9f53fec2114703b2a661e99e7a454546aad38a7a8bc7da9",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": {
+        "pass": true,
+        "host_copy_seam": true,
+        "child_reaped": true,
+        "actual_source": {
+          "pass": true,
+          "expected_cases": 30,
+          "observed_cases": 30,
+          "pass_mask": "0x000000003fffffff",
+          "first_failure": "",
+          "path_suite_rc": 0,
+          "open_suite_rc": 0,
+          "path_last_child_signal": 0,
+          "path_last_child_exit": 0,
+          "normal_owned_children_reaped": true,
+          "actual_copy_api": false,
+          "broker_positive_identity_tested": false,
+          "maps_formatter": "owned_fixture",
+          "candidate_production_ready": false
+        }
+      }
+    }
+  ],
+  "negative_semantics": [
+    "Signed wire negative values rejected for unsigned destination; output canary unchanged on rejection.",
+    "Signed destination preserves in-range signed values, including negative values as before.",
+    "All tested 8/32/64-bit narrowing overflow and underflow rejected."
+  ],
+  "scope": [
+    "Actual SignedField template and DecodeStatfs are included from the corrected source; unsigned-long instantiation models Bionic x86_64 field declarations, not a device run.",
+    "Both R14 host controllers use actual production source. The no-seam result remains a truthful self-copy EPERM failure; host seam is an explicitly labeled fixture-only control.",
+    "Lifecycle owner revision is not included."
+  ]
+}

@@ -1,0 +1,11 @@
+--- template01/run_snapshot.template.py
++++ template02/run_snapshot.template.py
+@@ -266,7 +266,7 @@
+             build['artifacts_unchanged_after'] is True and not build['tool_changes'] and
+             not build['dependency_changes'] and build['owned_resource_gate']['pass'] is True and
+             not build['cleanup']['forced_cleanup'] and not build['cleanup']['remaining'] and
+-            not build['cleanup']['errors'] and set(build['artifacts'])=={'control'},
++            not build['cleanup']['errors'] and set(build['artifacts'])=={'control','factory'},
+             'complete matching build-only authority required')
+     labels=[row['label'] for row in build['commands']]
+     require(len(labels)==len(set(labels)) and all(row['returncode']==0 and not row['timed_out']

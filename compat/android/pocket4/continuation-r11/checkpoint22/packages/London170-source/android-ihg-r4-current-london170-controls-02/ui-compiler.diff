@@ -1,0 +1,52 @@
+--- prior-169/build_ui.js
++++ current-170/build_ui.js
+@@ -21,8 +21,8 @@
+   eq(pin(actualControl.raw),actualControl.pin)&&h.git(actualControl.raw)===actualControl.git_blob,'ACTUAL_COMPLETE_CONTROLS');
+  const result=JSON.parse(actualControl.raw);
+  need(result.ok===true&&result.state==='IHG_R4_CURRENT_SEARCH_DESTINATION_LONDON_PURE_CONTROLS_PASS'&&
+-  result.control_count===169&&result.controls.length===169&&new Set(result.controls.map(x=>x.case)).size===169&&
+-  result.controls.every(x=>x.passed===true),'ALL_169_ACTUAL_CONTROLS_PASS');
++  result.control_count===170&&result.controls.length===170&&new Set(result.controls.map(x=>x.case)).size===170&&
++  result.controls.every(x=>x.passed===true),'ALL_170_ACTUAL_CONTROLS_PASS');
+  need(eq(result.bound_source_pins,bound.source_pins)&&eq(result.template_source_pins,bound.source_pins)&&
+   result.control_stdin_sha256===controlCandidate.packet_pin.sha256&&
+   result.bound_coordinator_sha256===bound.source_pins.coordinator.sha256&&result.bound_stage_sha256===bound.source_pins.stage.sha256,
+@@ -30,7 +30,7 @@
+  need(result.all_template_and_bound_python_compile===true&&result.original_Session_sequence_and_real_contract_summary_and_policy_executed===true&&
+   result.production_Flow_and_BoundArun_constructors_executed===true&&result.actual_prior_install_validator_executed===true&&
+   result.production_qualified_initial_admission_executed===true&&result.current_cell02_install_and_scope_controls===9&&
+-  result.current_owner_task_route_controls===3&&
++  result.current_owner_task_route_controls===3&&result.current_public_input_protocol_controls===1&&
+   result.Android_actions===0&&result.device_or_child_process_commands===0&&result.file_writes===0,'ACTUAL_PRODUCTION_CONTROL_BOUNDARIES');
+  need(eq(result.fresh_nonce_values,bound.fresh_nonces)&&result.nonce_exclusion_count===bound.nonce_exclusions.length&&
+   result.nonce_exclusion_count>=659&&result.nonce_values_disjoint_all_fixed_prior_literals===true&&
+@@ -41,7 +41,7 @@
+  const make=x=>ll.losslessJsonNodes(JSON.stringify(x)),put=(k,x)=>{root.fields[k]=make(x);},putNode=(k,x)=>{root.fields[k]=x;};
+  function plan(name){const m=bound.sources.coordinator.match(new RegExp('^'+name+'=(.*)$','m'));need(m,'EXACT_PLAN:'+name);return JSON.parse(m[1]);}
+  const search=plan('SEARCH_PLAN'),destination=plan('PLAN'),input=plan('INPUT_PLAN'),post=plan('POST_PLAN'),readiness=plan('SEARCH_READINESS_PLANS');
+- put('schema',4);put('state','ACTUAL_CURRENT_CELL02_IHG_R4_INSTALL02_AND_169_CONTROLS_BOUND_FRESH_LONDON_FLOW_UNRUN');
++ put('schema',4);put('state','ACTUAL_CURRENT_CELL02_IHG_R4_INSTALL02_AND_170_CONTROLS_BOUND_FRESH_LONDON_FLOW_UNRUN');
+  put('nonce',n.values[0]);put('helper_package',helper.binding.helper_package);put('helper_protocol',helper.binding.protocol);put('helper_uid',bound.actual_helper_uid);
+  put('current_baseline',host.binding);put('current_host_manifest_sha256',host.manifest_sha256);
+  put('current_host_source_root','/home/alex/work/pocket4-current-host-r6-source-01');
+@@ -52,9 +52,9 @@
+  const installRoot='/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-02';
+  put('actual_install_receipts',Object.fromEntries(Object.entries(bound.prior).map(([k,v])=>[k,{path:installRoot+'/'+v[0],bytes:v[1],sha256:v[2]}])));
+  put('all_six_original_install_pins',bound.install_pins);
+- put('actual_source_controls',{...actualControl.pin,job_id:actualControl.job_id,git_blob:actualControl.git_blob,count:169,
++ put('actual_source_controls',{...actualControl.pin,job_id:actualControl.job_id,git_blob:actualControl.git_blob,count:170,
+   control_source:controlCandidate.source_pin,control_stdin_sha256:result.control_stdin_sha256,
+-  production_Flow_BoundArun_Session_and_current_install_validators:true,synthetic_IO_only:true,current_generation_controls:9,current_owner_task_route_controls:3});
++  production_Flow_BoundArun_Session_and_current_install_validators:true,synthetic_IO_only:true,current_generation_controls:9,current_owner_task_route_controls:3,current_public_input_protocol_controls:1});
+  put('actual_fresh_nonce_source',{...bound.nonce_receipt,order:n.labels,values:n.values});
+  put('state_nonce',obj.state.helper.nonce);put('state_wire_sha256',obj.state.wire_sha256);
+  put('state_recorder_command_result_sha256',bound.install_pins.state_command.sha256);
+@@ -93,7 +93,7 @@
+   oldRequest.timeout_seconds===600&&oldRequest.nice===10,'ORIGINAL_RESOURCE_ENVELOPE');
+  const request={...oldRequest,args:['-n','/usr/bin/python3','-I','-B','-c',wrapper],stdin:packetRaw,idempotency_key:template.key};
+  return{files,stage_source:stage,inputs_raw:inputRaw,manifest_sha256:manifestSha,request,request_raw:JSON.stringify(request,null,2)+'\n',
+-  proof:{exact_seven_actual_tested_sources:true,actual_controls:169,actual_UID:bound.actual_helper_uid,
++  proof:{exact_seven_actual_tested_sources:true,actual_controls:170,actual_UID:bound.actual_helper_uid,
+    lossless_all_actual_metadata:true,current_baseline_v2:true,R6_source_manifest:host.manifest_sha256,
+    actual_fresh_nonce_count:40,excluded_values:bound.nonce_exclusions.length,stage_total_bound:131072,transport_packet_bound:transportBound,
+    packet:pin(packetRaw),original_resource_envelope_unchanged:true,explicit_outer_and_worker_no_bytecode:true,

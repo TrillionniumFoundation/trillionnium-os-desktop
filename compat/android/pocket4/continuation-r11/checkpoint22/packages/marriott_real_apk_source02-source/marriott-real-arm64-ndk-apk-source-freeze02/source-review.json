@@ -1,0 +1,168 @@
+{
+  "change": {
+    "actual_pins_added": [
+      "ndk_libcxx_static",
+      "ndk_libcxxabi",
+      "arm64_unwind",
+      "arm64_builtins",
+      "android_test_runner31",
+      "android_test_base31",
+      "android_test_mock31"
+    ],
+    "binder_inverse_exact": true,
+    "controller_inverse_exact": true,
+    "expected_classes_after": [
+      "android/app/Activity.class",
+      "android/os/Bundle.class",
+      "android/test/InstrumentationTestCase.class",
+      "android/test/InstrumentationTestRunner.class",
+      "android/test/mock/MockContext.class",
+      "junit/framework/Assert.class",
+      "junit/framework/TestCase.class"
+    ],
+    "expected_classes_before": [
+      "android/app/Activity.class",
+      "android/os/Bundle.class",
+      "android/test/InstrumentationTestCase.class",
+      "android/test/InstrumentationTestRunner.class",
+      "android/test/mock/MockContext.class",
+      "junit/framework/Assert.class",
+      "junit/framework/TestCase.class"
+    ],
+    "newKind": "p4-marriott-real-arm64-ndk-apk-build02",
+    "newRoot": "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-02-20261106",
+    "new_original_cpufeatures_sources": 3,
+    "observer_functions_inverse_exact": true,
+    "observer_roles": 13,
+    "oldKind": "p4-marriott-real-arm64-ndk-apk-build01",
+    "oldRoot": "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-01-20261106",
+    "original_sources_unchanged": 13
+  },
+  "checks": {
+    "Android_accessor_or_APK_executed": false,
+    "Python_parse_or_controls_executed": false,
+    "UTF8_base64_roundtrips": true,
+    "V8_whole_file_inverse_and_sha_checks": true,
+    "actual_SDK31_base_InstrumentationTestCase_membership": false,
+    "build02_qualification": false,
+    "compiler_executed": false,
+    "installation_or_Main_actions": false,
+    "old_config_actual_binder_reproduction_exact": true
+  },
+  "class_gate": {
+    "base_API": {
+      "bytes": 11869,
+      "git_blob_sha": "5153f6681917e791958d4299742687e058e2193d",
+      "sha256": "7688a5d24d1bf650876676d1fb81ef64def559b944fb0bc3408a868cde385163"
+    },
+    "base_declaration": "android.test.InstrumentationTestCase extends junit.framework.TestCase",
+    "current_framework_API_is_not_sdk31_jar_observation": true,
+    "exact_required_class_union_preserved": true,
+    "framework_commit": "94b4c163b7dfe5ce3607f7bb8456f9573f7de57d",
+    "framework_repository": "aosp-mirror/platform_frameworks_base",
+    "new_actual_check_required_in_build": true,
+    "old_runner_missing_Case_failure_not_reclassified": true,
+    "runner_API": {
+      "bytes": 23785,
+      "git_blob_sha": "b65b6d0198272236fdeaa1c1fe0dfe50af3fbb8b",
+      "sha256": "41e0bf1a679632b1c6e416aacaa47541c4fefa32ad8892d4a7c386ea4ef041b7"
+    },
+    "runner_declaration": "android.test.InstrumentationTestRunner"
+  },
+  "kind": "p4-marriott-real-apk02-input-source-correction",
+  "old_source_authority": {
+    "binder": {
+      "bytes": 6574,
+      "git_blob_sha": "d49c2075cb0184b6876c95dbd52f78145ee75d28",
+      "sha256": "d54e7cbf9e6009b4905879079f887250148d35bbc6ef1e3c0883e0be3e7b3cf4"
+    },
+    "observer": {
+      "bytes": 20847,
+      "git_blob_sha": "b480154ec235f538d2e0b34f41d2421b1f257260",
+      "sha256": "2eef8c4ba06d762a3f3a09796d54e81da43deae4691ab4afa7713ad5b987f390"
+    },
+    "pending_config": {
+      "bytes": 252849,
+      "git_blob_sha": "4d0e19adaa8533058358c43cfe4347db90856609",
+      "sha256": "913b14c04d01885832de34241bf74225ff2db324c234fae3091710947c65879f"
+    },
+    "template": {
+      "bytes": 84091,
+      "git_blob_sha": "9af9fcb40a81dc1e84f303f3bf2e8a7f16340639",
+      "sha256": "f04642414ed052a8cd0dad81ac62ef44d4504b8635706283460642046dc0ab8e"
+    },
+    "tree": "1c4c460bfcada4d4d96c41d3c03b8ed41d06c1b0"
+  },
+  "original_cpufeatures": {
+    "commit": "e0e58e67cd11713799cdf6b50ba5843d62881660",
+    "effective_ARM64_target_api": 21,
+    "new_paths": "only create-only files beneath fixed fresh build02/source/prebuilts/ndk",
+    "not_a_stub": true,
+    "old_shared_paths_absent": true,
+    "provider_module": "cpufeatures",
+    "provider_sdk_version": "minimum",
+    "repository": "aosp-mirror-neo/platform_prebuilts_ndk",
+    "shared_AOSP_writes": 0,
+    "source_expected_hashes_unchanged": true
+  },
+  "preserved": {
+    "C20_compiler_and_linker_tuples_unchanged": true,
+    "Java_APK_signing_and_readback_gates_unchanged": true,
+    "actual_ProductSDK_configuration_bytes_unchanged": true,
+    "actual_SDK22_failed_bytes_unchanged": true,
+    "command_join_and_escaped_child_retirement_unchanged": true,
+    "compiled_objects_expected": 16,
+    "compiler_commands_expected": 50,
+    "feature_default": 0,
+    "linked_libraries_expected": 7,
+    "manifest_min_sdk": 14,
+    "manifest_target_sdk": 23,
+    "new_FD_tests": 9,
+    "observed_CRT_SDK": 37,
+    "original_13_inline_sources_byte_identical": true,
+    "original_APP_native_target": 10000,
+    "original_GTest_and_cpufeatures_ARM64_targets": 21,
+    "prior_reader02_admission": "UNKNOWN_NOT_REISSUED",
+    "registry_tests": 23,
+    "required_ProcSelfMaps_tests": 12,
+    "resource_envelope": {
+      "cpu_quota_percent": 100,
+      "memory_max_bytes": 1073741824,
+      "nice": 15,
+      "pids_max": "actual inherited 30053, not claimed stricter",
+      "swap_max": "actual inherited max, not claimed stricter",
+      "timeout_seconds": 660
+    }
+  },
+  "prior_actual": {
+    "all_children_reaped_original": false,
+    "all_tracked_input_FDs_closed": true,
+    "commands": 0,
+    "complete_input_rows": 9,
+    "failed_input_rows": 4,
+    "failure_scope": "first_observe_apk13",
+    "first_error": "fixed own input observation failed",
+    "job_id": "1a1b1d0f68d-fc05-7aef",
+    "objects": 0,
+    "observer_fd_events_closed": 391,
+    "result": {
+      "bytes": 111417,
+      "git_blob_sha": "f59c2694902286022122348c4dabb1501649c331",
+      "sha256": "e6da9ff2059c14a176b2f3a55d60cfaebc22b4bc079ed01581c28406718065ba"
+    },
+    "stdout": {
+      "bytes": 600,
+      "git_blob_sha": "cbf3c3f7c90c552fd73ab13fbaa38653dbd5e933",
+      "sha256": "80968c82bdba762ce581e378e87fb6eb150ecd3ff9fa2f7e33079aac1a6b2a69"
+    },
+    "success": false,
+    "terminal": {
+      "bytes": 726,
+      "git_blob_sha": "6b8c4cc9a2d479056f9b8d56ba0ffb6260591112",
+      "sha256": "049fd5bff9c2f5375b240169f8d7d97aaa74549b0a3e6c1b1e660bf53d645345"
+    },
+    "tree": "4790b4ace6eea05bd51505e28a1e127c6d0f5fcc"
+  },
+  "schema": 1,
+  "status": "SOURCE_ONLY_NEVER_DISPATCHED"
+}

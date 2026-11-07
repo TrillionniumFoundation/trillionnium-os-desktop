@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "source_controller_sha256": "ba4dffc59b224b32e6f42f7f66222d35cdd62eecb82dabea67d05dc888635d6d",
+  "scope": "Main fenced build source review only; original combined04 full build is paused pending corrected candidate",
+  "main_snapshot_sha256": "f909bdfcaedfef29fcc1ba6a994c49bc21e99850204bac7e0565548bcd7139cb",
+  "fenced_build_sha256": "bc31ba59729166c7d87aebcfab699d5abc7f8433b58a34eee9cfea229b90adbc",
+  "full_source_review": true,
+  "actual_Main_snapshot_run": false,
+  "full_build_started": false,
+  "notes": [
+    "Root helper reads exact activation/config/guard plus current three host identities and complete framework epoch.",
+    "Resource comparisons bind the service-root cgroup and activation limits; OOM deltas gate, other event/resource changes are reported without causal attribution.",
+    "The build remains UID1000 and uses the previously reviewed builder source; only bounded readonly snapshots run as root.",
+    "Frozen 04 preparation succeeds but does not qualify the forthcoming SCM_PIDFD fix. New candidate/root/manifest/requests are required."
+  ]
+}

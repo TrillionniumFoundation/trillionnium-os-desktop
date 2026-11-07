@@ -1,0 +1,62 @@
+{
+  "schema": "pocket4-fixed-public-status-build-cargo-reader-v1",
+  "status": "SOURCE_ONLY_UNRUN",
+  "parent": {
+    "tree": "e7e98540f43a85261eb51b1eae14ecd624297e17",
+    "source": {
+      "blob": "94403189381e18479e1c445906005d405f43ead4",
+      "bytes": 10846,
+      "sha256": "fdcf25c3fa52938563a61fdd546d23717447045698423eba4b44efa8239bd2a5"
+    },
+    "request_status": "UNRUN_SUPERSEDED"
+  },
+  "fixed_sources": [
+    {
+      "path": "runtime/droidloom-supervisor/Cargo.toml",
+      "bytes": 844,
+      "kind": "file",
+      "mode": 436,
+      "sha256": "8a5c31742965d5226baadfae8f9ab3370cb1973b2761f4ab7395689c6425f20f"
+    },
+    {
+      "path": "runtime/droidloom-applications/Cargo.toml",
+      "bytes": 640,
+      "kind": "file",
+      "mode": 436,
+      "sha256": "a16f5016a22a5e94b2ae46007ebfac27bee9ea2d0164e28c61b06e2b8d48c747"
+    }
+  ],
+  "edits": [
+    {
+      "old": "Read exactly three public Cargo/CLI-test sources from owned builder469.",
+      "new": "Read exactly two public Cargo declarations from owned builder469."
+    },
+    {
+      "old": "PINS = [{\"path\":\"runtime/droidloom-supervisor/Cargo.toml\",\"bytes\":844,\"kind\":\"file\",\"mode\":436,\"sha256\":\"8a5c31742965d5226baadfae8f9ab3370cb1973b2761f4ab7395689c6425f20f\"},{\"path\":\"runtime/droidloom-applications/Cargo.toml\",\"bytes\":640,\"kind\":\"file\",\"mode\":436,\"sha256\":\"a16f5016a22a5e94b2ae46007ebfac27bee9ea2d0164e28c61b06e2b8d48c747\"},{\"path\":\"runtime/droidloom-supervisor/tests/cli_lifecycle.rs\",\"bytes\":8921,\"kind\":\"file\",\"mode\":436,\"sha256\":\"2f9d7803b6aa696951163c5694c1cb33bf01847548b7b8fbfd48340c30c4f0d7\"}]",
+      "new": "PINS = [{\"path\":\"runtime/droidloom-supervisor/Cargo.toml\",\"bytes\":844,\"kind\":\"file\",\"mode\":436,\"sha256\":\"8a5c31742965d5226baadfae8f9ab3370cb1973b2761f4ab7395689c6425f20f\"},{\"path\":\"runtime/droidloom-applications/Cargo.toml\",\"bytes\":640,\"kind\":\"file\",\"mode\":436,\"sha256\":\"a16f5016a22a5e94b2ae46007ebfac27bee9ea2d0164e28c61b06e2b8d48c747\"}]"
+    },
+    {
+      "old": "exact-builder469-Status-build-three-sources-readonly01",
+      "new": "exact-builder469-Status-build-Cargo-two-sources-readonly01"
+    },
+    {
+      "old": "len(RESULT['files']) == 3",
+      "new": "len(RESULT['files']) == 2"
+    }
+  ],
+  "complete_inverse_equal": true,
+  "all_functions_unchanged": true,
+  "cli_lifecycle_already_exact_Git_read": {
+    "url": "https://raw.githubusercontent.com/TrillionniumFoundation/trillionnium-os-desktop/5f3d73b486297a4cf1c999f62f953bbd3a42b55d/compat/android/pocket4/continuation-r11/checkpoint-04/lmkd-work/supervisor-cleanup-freeze-01/source/runtime/droidloom-supervisor/tests/cli_lifecycle.rs",
+    "bytes": 8921,
+    "sha256": "2f9d7803b6aa696951163c5694c1cb33bf01847548b7b8fbfd48340c30c4f0d7",
+    "git_blob": "c24babc92b48ec9a0b0a77de6ee5e395f049cbc4"
+  },
+  "manifest": {
+    "blob": "d2a3b1303336aeb7e8849ebb1bbf459a321ced8a",
+    "bytes": 99327,
+    "sha256": "88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701"
+  },
+  "installed_Main_same_source": false,
+  "Hepta_called": false
+}

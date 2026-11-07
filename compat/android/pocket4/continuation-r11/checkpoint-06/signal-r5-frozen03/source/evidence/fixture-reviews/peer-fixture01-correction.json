@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "reviewer": "/root/native_bridge_repair",
+  "review": "Correction to R5 owned fixture01 source review",
+  "supersedes_admission_opinion": {
+    "path": "reviews/r5-owned-fixture-source-review.json",
+    "sha256": "687ebe505156f95c8f51f2b809d7609cc242bae3d5738b50e6cc3fd9d705a235"
+  },
+  "files": {
+    "owned_cleanup_fixture.py": "331a069e658413f8986601b9dd91be5e470f1c8adae8a49533ce5f955eea560b",
+    "owned_cleanup_fixture_child.py": "9f3a087fd26608440a36791bfef0b1b99a60bf856e0d6ddfbb04f7f252d308e8"
+  },
+  "verdict": "OLD_FIXTURE_ADMISSION_OPINION_WITHDRAWN_CONFIRMED_STATIC_BLOCKER",
+  "production_ready": false,
+  "reviewer_executed_service": false,
+  "confirmed_source_defect": {
+    "field": "NONCE",
+    "value": "969694d682504cb2ae81bf178474c96e8",
+    "actual_hex_length": 33,
+    "required_hex_length": 32,
+    "consequence": "Actual OwnedCleanup.planned rejects this fixed row. The fixture creates its unit before invoking that validation, so its planned cleanup cannot authorize stopping the unit.",
+    "why_original_review_failed": "The reviewer read the strict planned() check but failed to evaluate the fixed nonce constant against it."
+  },
+  "runtime_report_source": "android_acceptance message: actual fixture01 created unit; cleanup rejected; stop_attempts=0; root exclusively handles exact recovery. This reviewer did not independently inspect or run the runtime.",
+  "required_new_revision": [
+    "Keep original source, runtime failure and review immutable.",
+    "Use a 32-hex fixed nonce in a new fixture only.",
+    "Call actual planned() before claim, directory creation or unit start.",
+    "Run an offline negative control proving the old 33-hex value reaches no actions."
+  ],
+  "limits": [
+    "No unit operation by this reviewer.",
+    "No claim about the independent init-barrier review is changed by this fixture-constant defect."
+  ]
+}

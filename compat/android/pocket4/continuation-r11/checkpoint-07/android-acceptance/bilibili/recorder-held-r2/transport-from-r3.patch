@@ -1,0 +1,42 @@
+--- a/references/bound_android_transport_r3.py
++++ b/bound_android_transport.py
+@@ -61,7 +61,7 @@
+             "ANDROID_ENVIRONMENT_KEYS_DIFFER")
+     result = {}
+     for key, value in values.items():
+-        require(isinstance(value, str) and value and "\0" not in value
++        require(isinstance(value, str) and (key not in REQUIRED_ENV or value) and "\0" not in value
+                 and len(value.encode("utf-8")) <= 65536,
+                 "ANDROID_ENVIRONMENT_VALUE_INVALID")
+         result[key] = value
+@@ -148,7 +148,7 @@
+                     all(isinstance(x, str) and x and "\0" not in x for x in args)
+                     and args[0].startswith("/"), "ANDROID_COMMAND_INVALID")
+             require(type(timeout) in (int, float) and math.isfinite(timeout)
+-                    and 6 <= timeout <= 70, "ANDROID_COMMAND_TIMEOUT_INVALID")
++                    and 0 < timeout <= 70, "ANDROID_COMMAND_TIMEOUT_INVALID")
+             self._check(False)
+             inner = max(1, timeout - 5)
+             command = ["/system/bin/env", "-i"]
+@@ -214,12 +214,20 @@
+                         "stdout_sha256": hashlib.sha256(completed.stdout).hexdigest(),
+                         "stderr_sha256": hashlib.sha256(completed.stderr).hexdigest(),
+                         "action_attempted": True, "outcome_unknown": completed.returncode != 0}
+-                    if completed.returncode in (124, 137):
++                    if getattr(completed, "host_timed_out", False):
++                        primary = TransportTimeout("HOST_COMMAND_TIMEOUT", timeout,
++                                                   returncode=completed.returncode)
++                    elif completed.returncode in (124, 137):
+                         primary = TransportTimeout("ANDROID_COMMAND_TIMEOUT", inner,
+                                                    returncode=completed.returncode)
+                     elif completed.returncode != 0:
+                         primary = TransportError("ANDROID_COMMAND_FAILED", attempted=True, unknown=True,
+                                                  returncode=completed.returncode)
++                    recorder_errors = getattr(completed, "recorder_errors", [])
++                    if recorder_errors:
++                        remember(TransportError("RECORDER_COMMAND_EVIDENCE_FAILED", attempted=True,
++                            unknown=True), "RECORDER_COMMAND_EVIDENCE_FAILED", "recorder_command_evidence",
++                            recorder_errors=recorder_errors)
+                 # This observation precedes lease exit: a release exception must
+                 # not erase a command that was already sent or replace its cause.
+                 try:

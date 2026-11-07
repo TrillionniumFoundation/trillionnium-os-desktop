@@ -1,0 +1,71 @@
+--- socket/controller-template.py
++++ cgroup/controller-template.py
+@@ -156,16 +156,16 @@
+ 
+ 
+ def main():
+-    report = {'schema': 1, 'kind': 'owned-foreign-socket-mount-mechanism01', 'success': False,
++    report = {'schema': 1, 'kind': 'owned-cgroup-repeat-mount-mechanism01', 'success': False,
+               'first_error': None, 'errors': [], 'commands': [], 'Android_executed': False,
+               'Main_modified': False, 'host_network_modified': False, 'production_qualified': False,
+-              'probe_nonce': CFG['nonce'], 'actual_normal03_runtime_sha256': CFG['normal03_runtime_sha256']}
++              'probe_nonce': CFG['nonce'], 'actual_normal08_runtime_sha256': CFG['normal08_runtime_sha256']}
+     root = Path(CFG['root']); created = False
+     guard = main_fence = None; modules = {}; handles = {}; tool_before = {}; deps_before = None
+     try:
+         need(os.getuid() == os.geteuid() == os.getgid() == os.getegid() == 0, 'root-only owned control')
+         need(re.fullmatch('[0-9a-f]{32}', CFG['nonce']) and
+-             str(root) == '/opt/p4-init-socket-projection-mechanism-20261105-01', 'fixed profile changed')
++             str(root) == '/opt/p4-cgroup-mount-mechanism-20261105-01', 'fixed profile changed')
+         decoded = {}
+         for name, item in CFG['sources'].items():
+             need(name in ('probe.c', 'pinned_support.py', 'resource_guard.py'), 'unexpected source')
+@@ -183,8 +183,8 @@
+         main_fence = support.MainFence({'main': CFG['main']}, support.__dict__)
+         report['Main_before'] = main_fence.check()
+         report['controller_user_namespace_before'] = list((lambda s: (s.st_dev, s.st_ino))(os.stat('/proc/self/ns/user')))
+-        need(report['controller_user_namespace_before'] == CFG['actual_normal03_user_namespace'],
+-             'original NORMAL03 user namespace differs')
++        need(report['controller_user_namespace_before'] == CFG['actual_normal08_user_namespace'],
++             'original NORMAL08 user namespace differs')
+         parent = os.open('/opt', os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW)
+         try:
+             s = os.fstat(parent); need(s.st_uid == s.st_gid == 0 and not s.st_mode & 0o022, 'unsafe /opt parent')
+@@ -220,19 +220,29 @@
+         handles['probe'] = os.open(root / 'probe', os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+         report['probe_before'] = observe(handles['probe'])
+         need(report['probe_before']['nlink'] == 1, 'new owned probe must have one link')
+-        result = command(report, root, [str(root / 'probe'), str(os.getpid())], handles['probe'], timeout=20)
++        result = command(report, root, [str(root / 'probe'), str(os.getpid()), str(guard.fd)],
++            handles['probe'], (guard.fd,), timeout=22)
+         control = json.loads(result['stdout']); report['kernel_control'] = control
+         need(control['nonce'] == CFG['nonce'] and control['success'] is True and control['Android_executed'] is False,
+              'kernel mechanism control did not qualify')
+-        need(control['parent_user_namespace'] == control['child_user_namespace'] == CFG['actual_normal03_user_namespace'],
+-             'kernel control user namespace topology differs from NORMAL03')
++        need(control['parent_user_namespace'] == control['child_user_namespace'] == CFG['actual_normal08_user_namespace'],
++             'kernel control user namespace topology differs from NORMAL08')
+         need(control['parent_mount_namespace'] != control['child_mount_namespace'] and
+-             control['raw_foreign_bind'] == {'rc': -1, 'errno': 22} and
+-             control['local_reopen_bind'] == control['detached_move'] == {'rc': 0, 'errno': 0},
+-             'foreign/local/detached outcomes differ')
++             control['parent_cgroup_namespace'] != control['child_cgroup_namespace'] and
++             control['first_a'] == control['fresh_b'] == {'rc': 0, 'errno': 0} and
++             control['repeat_a_recursiveprot'] == control['repeat_a_plain'] == {'rc': -1, 'errno': 16},
++             'first/repeated/fresh cgroup mount outcomes differ')
++        need(control['cgroup_controls_written'] is False and control['child_birth_ticks'] > 0 and
++             control['child_begin']['monotonic_ns'] <= control['child_end']['monotonic_ns'],
++             'mechanism identity, time or no-cgroup-write contract differs')
++        for label in ('domain', 'first_target', 'fresh_target'):
++            actual = control[label]
++            need([actual['device'], actual['inode']] == guard.identity and
++                 actual['uid'] == actual['gid'] == 0 and not actual['mode'] & 0o022,
++                 'mounted view does not match held finite invocation cgroup')
+         need(control['child_reaped'] and not control['forced_kill'] and control['child_wait_status'] == 0 and
+-             control['private_tmpfs_unmounted'] and control['received_fds_closed'] and
+-             control['same_inode_owner_mode_after_local_bind_and_move'], 'owned mechanism cleanup incomplete')
++             control['all_private_mounts_unmounted'] and control['inherited_domain_closed'],
++             'owned mechanism cleanup incomplete')
+         report['probe_after'] = observe(handles['probe']); need(report['probe_after'] == report['probe_before'], 'probe bytes changed')
+         report['success'] = True
+     except BaseException as error:

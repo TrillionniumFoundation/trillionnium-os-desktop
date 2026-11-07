@@ -1,0 +1,47 @@
+--- unbound/controls_reveal.py
++++ actual-install02/controls_reveal.py
+--- unbound/owned_navigation.py
++++ actual-install02/owned_navigation.py
+@@ -31,7 +31,7 @@
+ RESULTS_PLAN={'schema':1,'operation':'inspect','nonces':{'before':'__FRESH_NONCE_064__','inspect':'__FRESH_NONCE_065__','after':'__FRESH_NONCE_066__'}}
+ QUERY_STABILITY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'__FRESH_NONCE_067__','inspect':'__FRESH_NONCE_068__','after':'__FRESH_NONCE_069__'}},{'schema':1,'operation':'inspect','nonces':{'before':'__FRESH_NONCE_070__','inspect':'__FRESH_NONCE_071__','after':'__FRESH_NONCE_072__'}},{'schema':1,'operation':'inspect','nonces':{'before':'__FRESH_NONCE_073__','inspect':'__FRESH_NONCE_074__','after':'__FRESH_NONCE_075__'}},{'schema':1,'operation':'inspect','nonces':{'before':'__FRESH_NONCE_076__','inspect':'__FRESH_NONCE_077__','after':'__FRESH_NONCE_078__'}}]
+ SUBMIT_STABILITY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'__FRESH_NONCE_079__','inspect':'__FRESH_NONCE_080__','after':'__FRESH_NONCE_081__'}},{'schema':1,'operation':'inspect','nonces':{'before':'__FRESH_NONCE_082__','inspect':'__FRESH_NONCE_083__','after':'__FRESH_NONCE_084__'}},{'schema':1,'operation':'inspect','nonces':{'before':'__FRESH_NONCE_085__','inspect':'__FRESH_NONCE_086__','after':'__FRESH_NONCE_087__'}},{'schema':1,'operation':'inspect','nonces':{'before':'__FRESH_NONCE_088__','inspect':'__FRESH_NONCE_089__','after':'__FRESH_NONCE_090__'}}]
+-SELF,UID=("org.droidloom.qa.bili.r10",None)  # Actual R10 installation required.
++SELF,UID=("org.droidloom.qa.bili.r10",10161)
+ BILI,BILI_UID=('tv.danmaku.bili',10117)
+ INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-bili-qa-r10-install-state-02")
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+@@ -41,17 +41,17 @@
+ R6_MANIFEST="002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+ SESSION_SHA="d896b750b6e35fc859c773a5f9797c22c33631a9bfc4c3c4d327706438cf0013"
+ OLD_FLOW=Path("/home/alex/work/pocket4-bilibili-owned-qa-r10-flow-d5a77071f725e6bfb854effcd467cc99")
+-OLD_STEP=OLD_FLOW/'steps/install-state-r10-01'
++OLD_STEP=OLD_FLOW/'steps/install-state-r10-02'
+ OLD_STATE_NONCE="d6a0aab3fd95f4e006a35683d0bd2c7b"
+-OLD_STATE_WIRE=None  # Actual R10 original receipt required.
+-OLD_PACKET="ae2e7ccb5cb6eb7a06b69b3e123d7830b01172b885557bb2eec3ba401426f078"
++OLD_STATE_WIRE="268296f1292c8492a9f4b890d5b71660902c409c9cb4d969edc92da37ddbfff8"
++OLD_PACKET="17e887fe4fe8c4224f9184e7b19f33d35aaa1d32ffa2d6fad00e3c147dfbcc3b"
+ MAIN_EPOCH="7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c"
+ FILES={'owned_navigation.py','stage_execute.py','video_navigation.py','controls_reveal.py','playback_controls.py','post_foreground.py'}
+-INSTALL_JOB_ID=None  # Actual R10 original receipt required.
+-STATE_COMMAND_INDEX=None  # Actual R10 original receipt required.
+-STATE_COMMAND_SHA=None  # Actual R10 original receipt required.
+-EXPECTED_INSTALLED_IDENTITY=None  # Actual R10 original receipt required.
+-INSTALL_RECORDS=None  # Actual R10 original receipt required.
++INSTALL_JOB_ID="1a1b1bde074-fc05-7a95"
++STATE_COMMAND_INDEX=6
++STATE_COMMAND_SHA="478c39c1f80234d804a41a9f0953439f2847ef9b91fe22c88458c8150c66801a"
++EXPECTED_INSTALLED_IDENTITY={"package":"org.droidloom.qa.bili.r10","uid":10161,"base_apk":"/data/app/~~NzZOW-cLk1uEcP0X1D7JBg==/org.droidloom.qa.bili.r10-b-IV0CAHXnPLNPyQhJteKw==/base.apk","apk_sha256":"db20a0f098ce6d1e7cc69cfbb32971a138b9c722a46b13bcfda5333620da48be","bytes":37008,"held_file":{"device":1811,"inode":656349,"mode":33188,"uid":1000,"gid":1000,"bytes":37008,"mtime_ns":1793983377111706031,"nlink":1},"signer_bound_by_exact_signed_apk_bytes":"3dbfa52f2608bcad70a2ca32af90cc9e07c87ef22681a1a704a624d6f2fc66bd"}
++INSTALL_RECORDS={"coordinator":(Path("/home/alex/work/pocket4-owned-bili-qa-r10-install-state-02/result.json"),4415,"89f20a28d01c4b4798051f03ff72071714116e63a53c5ecacb11269a041959bf"),"stage":(Path("/home/alex/work/pocket4-owned-bili-qa-r10-install-state-02/stage-result.json"),7299,"e9ada57f1bce000382c4b6fc989a9150a2ae78662cbe2916fa48b9f8609e9a1e"),"worker":(Path("/home/alex/work/pocket4-bilibili-owned-qa-r10-flow-d5a77071f725e6bfb854effcd467cc99/steps/install-state-r10-02/result.json"),7596,"675ecd33a422691b39439b6df6c7d004a3475b47d358221e60aaf5bca5cf1461"),"worker_command":(Path("/home/alex/work/pocket4-owned-bili-qa-r10-install-state-02/evidence/02-install-state.result.json"),1855,"585f0875b0d3a6f81f74d5a293331a79ced50bf249925c0f0cae023327109673")}
+ def require(value,reason):
+  if not value:
+   raise RuntimeError(reason)
+--- unbound/playback_controls.py
++++ actual-install02/playback_controls.py
+--- unbound/post_foreground.py
++++ actual-install02/post_foreground.py
+--- unbound/stage_execute.py
++++ actual-install02/stage_execute.py
+--- unbound/video_navigation.py
++++ actual-install02/video_navigation.py

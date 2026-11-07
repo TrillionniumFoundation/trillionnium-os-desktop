@@ -1,0 +1,36 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-c",
+      "import sys,json,hashlib;raw=sys.stdin.buffer.read(524289);assert len(raw)<=524288 and hashlib.sha256(raw).hexdigest()=='7aa485723e5e062f492c479fc136c08474936366e062fd4d4ff55d4f3e1fb62e';packet=json.loads(raw);source=packet['stage_source'];assert hashlib.sha256(source.encode()).hexdigest()=='16ad64c60fabd4d71b72e367abc9cf56967c4ce76cea68558fa58e8a71cd02ba';scope={'__name__':'__main__','__file__':'<verified-owned-amazon-qa-build-stage>','PACKET':packet};exec(compile(source,'stage_build.py','exec'),scope,scope)"
+    ],
+    "created_unix_ms": 1793873669509,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1ab33ed85-fc05-4b5f",
+    "idempotency_key": "pocket4-owned-amazon-qa-r1-static-build-01-20261105",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1ab33ed85-fc05-4b5f",
+    "request_digest": "3f5d2dec05bcc0275ada7fcdc6b369eefb0da6e5594026b5016fc1dbec820b52",
+    "request_fingerprint": 4565856088955338791,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1ab33ed85-fc05-4b5f"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1ab33ed85-fc05-4b5f"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

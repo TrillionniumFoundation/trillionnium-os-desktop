@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "conclusion": "Actual compiled variadic process_vm flags argument-width bug verified by device controls; this Pocket4 Android environment does support the correctly formed self-memory copy calls.",
+  "r12_machine_code_report_sha256": "245ca224cb36051db897f400d03172214a399a6d45fcabf9719964e85a40056f",
+  "r14_actual_receipt_sha256": "9f7b3e4b89c9f02f31c197bf791ce73b0d740a5af8933698835c02b12d88eeb5",
+  "r14_apk_sha256": "955310faa458c967a4664ebf8c05aad4922857ed810d2faa1a174bd76ce55b6f",
+  "r14_application_uid": 10156,
+  "same_run_contrast": {
+    "legacy_caller": "all four calls -1/EINVAL(22)",
+    "correct_word_syscall_caller_and_owner": "16-byte read/write exact, invalid remote pointer EFAULT(14)",
+    "typed_libc_caller_and_owner": "16-byte read/write exact, invalid remote pointer EFAULT(14)",
+    "legacy_owner": "passes; consistent with accidental initialized stack upper word"
+  },
+  "machine_code_reason": "The r12 ELF stores int-zero with movl into only 4 bytes of the 8-byte seventh C-argument stack slot; corrected calls initialize the full flags word. Register-passed 32-bit integer moves zero-extend and do not have that memory-slot defect.",
+  "historic_stack_bits_directly_observed": false,
+  "actual_path_controls": {
+    "observed": 30,
+    "passed": 30,
+    "host_copy_seam": false,
+    "formatter": "owned fixture",
+    "trusted_factory_positive_identity": false
+  },
+  "exact_owned_cleanup_verified": true,
+  "production_main_changed": false,
+  "all_apps_ready": false,
+  "unchanged_reds": [
+    "per-query owner resources / NOFILE0",
+    "runtime integration lifecycle and namespace/credential binding",
+    "ordinary alias-to-maps admission race",
+    "trusted factory positive and commercial app acceptance"
+  ]
+}

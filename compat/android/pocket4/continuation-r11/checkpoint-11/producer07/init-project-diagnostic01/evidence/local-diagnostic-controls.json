@@ -1,0 +1,128 @@
+{
+  "Android_constructor_executed": false,
+  "Android_runtime_qualified": false,
+  "commands": [
+    {
+      "argv": [
+        "gcc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fPIC",
+        "-fvisibility=hidden",
+        "-shared",
+        "init_relay_barrier.c",
+        "-Wl,-z,relro,-z,now",
+        "-Wl,--version-script=exported.map.txt",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/init-project-repair-work-01/local-evidence-02/libdiagnostic.host.so"
+      ],
+      "expected_returncode": 0,
+      "kind": "strict-production-DSO",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "gcc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "diagnostic_controls.c",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/init-project-repair-work-01/local-evidence-02/diagnostic-controls"
+      ],
+      "expected_returncode": 0,
+      "kind": "strict-diagnostic-controls",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/init-project-repair-work-01/local-evidence-02/diagnostic-controls"
+      ],
+      "expected_returncode": 0,
+      "kind": "owned-diagnostic-controls",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"case\":\"root_group_write_rejected_with_metadata\",\"ok\":true}\n{\"case\":\"dev_world_write_rejected_with_metadata\",\"ok\":true}\n{\"case\":\"sockets_group_write_rejected_with_metadata\",\"ok\":true}\n{\"case\":\"preexisting_target_rejected\",\"ok\":true}\n{\"case\":\"mount_errno_survives_close_errors\",\"ok\":true}\n{\"case\":\"mounted_non_socket_rejected_with_metadata\",\"ok\":true}\n{\"case\":\"failure_line_bounded\",\"ok\":true}\n{\"ok\":true,\"owned_diagnostic_controls_passed\":7,\"Android_executed\":false,\"kernel_mount_executed\":false}\n"
+    },
+    {
+      "argv": [
+        "gcc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/init-project-repair-work-01/local-evidence-02/mutant/diagnostic_controls.c",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/init-project-repair-work-01/local-evidence-02/mutant-controls"
+      ],
+      "expected_returncode": 0,
+      "kind": "strict-mutant-controls",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/init-project-repair-work-01/local-evidence-02/mutant-controls"
+      ],
+      "expected_returncode": 1,
+      "kind": "missing-errno-preservation-is-detected",
+      "returncode": 1,
+      "stderr": "",
+      "stdout": "{\"case\":\"root_group_write_rejected_with_metadata\",\"ok\":false}\n"
+    }
+  ],
+  "host_protocol_controls_qualified": false,
+  "local_AF_UNIX_SEQPACKET_socket": {
+    "allowed": false,
+    "errno": 1,
+    "error": "[Errno 1] Operation not permitted"
+  },
+  "local_original_and_candidate_protocol_first_case_both_failed": true,
+  "mutant_failure_detected": true,
+  "namespace_or_kernel_mount_executed": false,
+  "owned_diagnostic_controls_passed": 7,
+  "schema": 1,
+  "source": {
+    "Android.bp": {
+      "bytes": 238,
+      "sha256": "abc3b2e9e13ca70e1f443757b3534da3eeda50c16997b297ee3806604c386a5c"
+    },
+    "close_errno_seam.h": {
+      "bytes": 364,
+      "sha256": "cd784c248f1e4bc5e023bb7c312da6cdde74e873863d167ad62e09a114f76c49"
+    },
+    "diagnostic_controls.c": {
+      "bytes": 4796,
+      "sha256": "c42bd08c10f6243e83233e3d654e18882ccd9c7edcc4892a2063c6facf7cd10e"
+    },
+    "exported.map.txt": {
+      "bytes": 84,
+      "sha256": "e5cacf61316cd57074bfcbf8117340d87e7c0b3be6208b20ca92f1b92965a74e"
+    },
+    "init_relay_barrier.c": {
+      "bytes": 20707,
+      "sha256": "e299aa9dc1baeba6cf2cbef958aea995226a7efff638d5cf268e77c268b99081"
+    },
+    "init_relay_protocol.h": {
+      "bytes": 1176,
+      "sha256": "5be7972ec8245bafd3226493ed1c5df0fcbadceb3447cf9cc9b0ccbc1d91fdcb"
+    },
+    "protocol_controls.c": {
+      "bytes": 15031,
+      "sha256": "ecbec2ae5672a50c3856a9a0d2067fc545f6b53ed7546bfb739cd459728da4bc"
+    }
+  }
+}

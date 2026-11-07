@@ -1,0 +1,11 @@
+# Matching OwnerLease and listener build only
+
+This fixed request stages twenty-one source/reference inputs, the two exact immutable source manifests, and one compiler controller beneath a fresh child of the previously held private native-owned-01 directory. The parent identity remains dev66306/inode34351895/UID1000/GID1000/mode0700. All stages are create-only and the original roots remain untouched.
+
+The ordinary UID1000 controller retains all twenty resource, held-file, compiler/dependency, process, timeout and cleanup helpers from the actual Registry destructor build. It binds that build's full actual receipt e2ac7f… and exact tool manifest51cd6f…; all resolved compiler programs and linked libraries must remain equal before/after. CPU100%,MemoryMax512MiB,nice15,180s inner/240s outer and one-core affinity remain unchanged. Swap limits are observed, not configured; an unlimited swap.max is not a bound. Main identity is not observed, and Main_actions is zero.
+
+Ten complete translation units produce exactly three independent ELFs: lease-preimage_controls, lease-candidate_controls and listener_controls. The two lease controls differ in the actual old/new OwnerLease cc/h; the Registry includes its repaired destructor and the listener approval handle accessor. Preprocessor dependency discovery must name the expected arm header, and the actual compiler MD must exactly equal its pre-observed held dependency set. Objects and final ELF bytes/identities are checked after the build. Each ELF has its own dynamic library closure.
+
+Only no-argument default PLAN is executed: expected lease case plan2/4 and listener case plan9 with9+9 children. No root control, listener bind, capability transition, runtime snapshot, Android, or Main action is requested. Root run requests must be generated later from the exact actual ELF receipts, with the lease comparison before the owned listener authorization cases.
+
+The source is listener freeze02, including the first-error getter consumer correction. OwnerLease's old preimage and its destructor control come from the exact owner-lifetime freeze02. The original fourteen transport controls and nine getter-seam controls keep their prior local scope; this compile is not their remote execution or platform qualification. The actual Android early typed root-parent policy producer remains unimplemented.

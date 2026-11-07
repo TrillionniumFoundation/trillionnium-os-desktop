@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "kind": "owner17_normal01_actual_source_binding",
+  "prepare_submitted": false,
+  "runtime_submitted": false,
+  "host_compile": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner17-host-mode-compile01/compile-result.json",
+    "bytes": 50235,
+    "sha256": "86c8078472a4e6ecc271ccb39e86cf8aba24bc7a4828dcabfdf3d3f38bbd5466"
+  },
+  "android_compile": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner16-android-log-build01/build-result.json",
+    "bytes": 661519,
+    "sha256": "2c53bba3ab02b396d2698dfd6e04d870ce69cc55724c6077003dca81ae9a2e0b"
+  },
+  "ordinary": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner17-host-ordinary01/run-result.json",
+    "bytes": 37889,
+    "sha256": "b6a1349a8b0d147d6dfe5b0defcef51ce4b3d478325d6bb104e02229c0a2c14a"
+  },
+  "ordinary_binding": {
+    "receipt_sha256": "b6a1349a8b0d147d6dfe5b0defcef51ce4b3d478325d6bb104e02229c0a2c14a",
+    "commands": 7,
+    "compiled_source_inputs": 33,
+    "tests": {
+      "droidloom-pressure-relay": 39,
+      "droidloom-supervisor": 139
+    },
+    "IPC": 7,
+    "targeted_retirement": [
+      {
+        "failed": 0,
+        "filtered_out": 38,
+        "ignored": 0,
+        "measured": 0,
+        "name": "lifecycle_bootstrap::tests::producer05_three_second_retirement_is_rejected_before_transport",
+        "passed": 1
+      },
+      {
+        "failed": 0,
+        "filtered_out": 38,
+        "ignored": 0,
+        "measured": 0,
+        "name": "lifecycle_bootstrap::tests::shared_retirement_bound_sends_exact_request_and_receives_terminal_ack",
+        "passed": 1
+      }
+    ],
+    "resources": {
+      "memory_peak": 58748928,
+      "memory_max": 536870912,
+      "observed_swap_current_and_peak_zero": true,
+      "memory_swap_max": "max",
+      "pids_max": 30053,
+      "all_memory_event_deltas_zero": true,
+      "whole_invocation_resource_qualified": false
+    },
+    "Owner_or_Android_runtime_qualified": false
+  },
+  "source_manifest_sha256": "dca55eadb80fe20905f4aadc2420ac89406fb9c019bea97a73e67526b408a845",
+  "prior_owner16_failure": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner16-runtime-read01/runtime-result.json",
+    "bytes": 382901,
+    "sha256": "04ed56c29b388b381bfeb13110607a8ee25b9a4d5a903c5bb421ef002f0214cb"
+  },
+  "prior_failure_not_reclassified": true,
+  "artifacts_bound_to_actual_builds": 5,
+  "LMKD_and_C16_DSO_exact_original_artifacts": true,
+  "base86_unchanged": true,
+  "six_runtime_sources_only_fixed_profile_literals": true,
+  "private_logdr_WIP_included": false,
+  "NORMAL_Stop_and_original_retirement_unchanged": true,
+  "Main_guard_and_original12288_limits_unchanged": true,
+  "fresh_live_Main_ID_resource_and_file_absence_checks_still_required": true,
+  "new_attempt_nonce": "822dfa28f800ad92dfd0c868ce2a44eb4c3e295aad3d0600f4dcc444128c77ab",
+  "synthetic_uid": 61288,
+  "subordinate_start": 22000000,
+  "subordinate_count": 100000,
+  "live_UID_subid_absence_not_observed_by_this_binder": true,
+  "CellSpec_host_uid_not_asserted_as_actual_init_credentials": true,
+  "Rust_field_order_verified_against_actual_unchanged_inputs": true,
+  "canonical_spec_sha256": "947e51218328012fb2d6b99d6d10e542d754129d0966bc57c324ae6598da6c4a",
+  "published_plan_sha256": "a8c1a5364a618e6f3d6556fc824ea493bff8b8255abcaccf37caa6a79f795427",
+  "expected_prepared_serialized_plan_sha256": "b06999b8082c918e51720a5fd678325e75d61d7e72d03fcfe3a7a7c2b75cd88a",
+  "prepare_packet_bytes": 186100,
+  "prepare_packet_sha256": "d7b7907e34b46690d3487b29bbca8ed4272799acfebace9fee94027f3e4d4166",
+  "prepare_stdin_bytes": 249224,
+  "prepare_stdin_sha256": "3b5f86094072fa732cf5fbfc10302a93153f28eeb3a48f0c5d0114413c8bd5cd",
+  "prepare_request_bytes": 249581,
+  "prepare_request_sha256": "665b33ff9fe0592ad52bcff97f2f279c8b787b7b094789c68b4f8d3425f9f7c5",
+  "idempotency_key": "p4-owner17-normal01-prepare01-3b5f86094072fa73",
+  "prepare_wrapper_unchanged": true,
+  "only_request_stdin_and_key_changed": true,
+  "runtime_template_requires_external_actual_prepared_digest": true,
+  "runtime_resource_window_dispatch_is_Root_only": true,
+  "prior_generation_logger_success_not_new_generation_qualification": true,
+  "production_ready": false,
+  "app_qualified": false,
+  "no_remote_action_by_this_binder": true
+}

@@ -1,0 +1,26 @@
+{
+  "schema": "pocket4-status-deployment-native-read-preflight-v1",
+  "state": "SOURCE_ONLY_NOT_DISPATCHED",
+  "tool": "heptaruntime_mac_controller_operation_start",
+  "requests": [
+    "systemctl-file-info.json",
+    "os-release-file-info.json",
+    "service-manager-scopes.json"
+  ],
+  "authorization": "Root expressly requested exact systemctl and OS/package facts; these are closed native read APIs only.",
+  "sources": {
+    "units": "Four actual packaging bodies, tree3058983a8d7367d7eea93a2ab4b99fde5fa15e6a; current unit names/paths also observed in inventory actual372f42d3f023b4cf92dfb81fb6a5006a5bf9348f.",
+    "systemctl": "Explicit fixed /usr/bin/systemctl authorized by Root; executable is only statted here, not run.",
+    "os_release": "Explicit fixed /etc/os-release authorized by Root; symlink target, if any, must come from this actual observation before a follow-up content read."
+  },
+  "followups": [
+    "Use actual service_status system/user observations to select exact show scopes. This API does not itself provide FragmentPath/DropInPaths/ExecStart.",
+    "Bind the observed /usr/bin/systemctl identity before bounded read-only show. No command is dispatched from these JSON documents.",
+    "Read OS identity only through the actual regular path or observed symlink resolution. Choose no package manager from guesses."
+  ],
+  "Main_actions": 0,
+  "service_mutations": 0,
+  "Android_actions": 0,
+  "new_Main_qualification": false,
+  "package_ownership_qualified": false
+}

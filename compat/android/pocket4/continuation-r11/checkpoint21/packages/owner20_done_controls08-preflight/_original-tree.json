@@ -1,0 +1,67 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "68b34e5887fb9ac17338456052fd439a0f830823",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 1441,
+    "sha256": "729d2b8d716b8f9e2cd52bb3654f9eaba85bc1efb5df4771accde2ad35e55a2b",
+    "git_blob_sha1": "37853ad54ce7dff1a1535ac271cdc99af2d35443",
+    "retrieval": "shallow roots and complete uncropped descendant trees until canonical dependency cuts",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "constructor_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0c41eefaaacdd038aeaa477c5b53dd6df4bb2c2e"
+    },
+    {
+      "path": "exact-request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f324c97b6946a921fb2be99b565c19ef4bdea856",
+      "bytes": 634794
+    },
+    {
+      "path": "normal02_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a8edc45333e61318b219db12a27ce756ec617fcc"
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1cd81ca2bf910b8e68181742483aaaa0373c1aee",
+      "bytes": 2476
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8e92d79f468852a3cd0a32f1197f23de22aee4cd"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "constructor_actual",
+      "original_tree": "0c41eefaaacdd038aeaa477c5b53dd6df4bb2c2e",
+      "checkpoint": 21,
+      "canonical_package": "owner20_constructor_controls07-actual"
+    },
+    {
+      "path": "normal02_actual",
+      "original_tree": "a8edc45333e61318b219db12a27ce756ec617fcc",
+      "checkpoint": 21,
+      "canonical_package": "owner20-normal02-safe-actual"
+    },
+    {
+      "path": "source",
+      "original_tree": "8e92d79f468852a3cd0a32f1197f23de22aee4cd",
+      "checkpoint": 21,
+      "canonical_package": "owner20_done_controls08-source"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

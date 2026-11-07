@@ -1,0 +1,20 @@
+--- read01/collect.py
++++ read02/collect.py
+@@ -8,7 +8,7 @@
+ import stat
+ import subprocess
+ 
+-ROOT=Path('/home/alex/work/pocket4-blueprint-streaming-builder-rust193-tools-readonly-01-20261105')
++ROOT=Path('/home/alex/work/pocket4-blueprint-streaming-builder-rust193-tools-readonly-02-20261105')
+ RUSTUP=Path('/home/alex/.cargo/bin/rustup')
+ REPOSITORY_TOOLCHAIN=Path('/home/alex/work/pocket4-signal-mask-r11-build-memory-01/builder-source/rust-toolchain.toml')
+ TOOLCHAIN='1.93.0'
+@@ -25,7 +25,7 @@
+     original=Path(path)
+     resolved=original.resolve(strict=True) if resolve else original
+     allowed=[Path('/home/alex/.rustup/toolchains'),Path('/usr/bin'),Path('/usr/lib')]
+-    if not (any(resolved.is_relative_to(root) for root in allowed) or resolved in [RUSTUP,REPOSITORY_TOOLCHAIN]):
++    if not (any(resolved.is_relative_to(root) for root in allowed) or resolved in [RUSTUP,REPOSITORY_TOOLCHAIN,Path('/usr/libexec/gcc/x86_64-linux-gnu/15/collect2')]):
+         raise RuntimeError('unexpected fixed query path: '+str(resolved))
+     fd=os.open(resolved,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW)
+     try:

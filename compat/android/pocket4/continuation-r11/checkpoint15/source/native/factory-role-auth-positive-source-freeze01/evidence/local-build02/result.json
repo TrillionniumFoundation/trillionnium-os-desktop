@@ -1,0 +1,83 @@
+{
+  "Main_actions": 0,
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++17",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-O2",
+        "-I/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-protocol-freeze01/source",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-protocol-freeze01/source/role_authorization.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-protocol-freeze01/source/factory_context.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-positive-work01/registry_controls.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-positive-work01/local-build02/registry_controls"
+      ],
+      "name": "compile",
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-positive-work01/local-build02/registry_controls"
+      ],
+      "name": "plan",
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 117,
+        "sha256": "14d63fc47d68d74c23dc02f962c8d2988b6b9c9e1d96435a44d52e427d7dd837"
+      }
+    }
+  ],
+  "compiler": {
+    "bytes": 1027128,
+    "path": "/usr/bin/x86_64-linux-gnu-g++-13",
+    "sha256": "52f1ddb33fe78b9441e0f42e9cd22c571f1101938e046c8a26582494e041cc73"
+  },
+  "compiler_unchanged_after": true,
+  "elf": {
+    "bytes": 105856,
+    "sha256": "7603f016b1160911b534026a6818130668672af9b15aca570585516e4657b29d"
+  },
+  "inputs": {
+    "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-positive-work01/registry_controls.cc": {
+      "bytes": 33032,
+      "sha256": "950c5ec5d00f53ec9897dc03219db94c41278b753fae0e5c88a6ea0aa72a8b94"
+    },
+    "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-protocol-freeze01/source/factory_context.cc": {
+      "bytes": 5377,
+      "sha256": "afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a"
+    },
+    "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-protocol-freeze01/source/factory_context.h": {
+      "bytes": 954,
+      "sha256": "b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1"
+    },
+    "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-protocol-freeze01/source/role_authorization.cc": {
+      "bytes": 38998,
+      "sha256": "5d9a43b4f9d51ddfe7896de563353c96f75856171d39c1af9a5816394247a03c"
+    },
+    "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-protocol-freeze01/source/role_authorization.h": {
+      "bytes": 5539,
+      "sha256": "320933ecda593fdb98b16b7bcd506d48ab81e15c0bd5903b38fe4dde49404d8c"
+    }
+  },
+  "inputs_unchanged_after": true,
+  "registry_positive_executed": false,
+  "schema": 1,
+  "scope": "LOCAL_COMPILE_AND_DEFAULT_PLAN_ONLY",
+  "state": "PASS_BUILD_ONLY"
+}

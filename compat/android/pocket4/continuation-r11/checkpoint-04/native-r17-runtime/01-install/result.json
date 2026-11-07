@@ -1,0 +1,71 @@
+{
+  "phase": "install",
+  "kind": "owner",
+  "package": "local.pocket4.fdownerprobe.r11",
+  "started_utc": "2026-11-04T16:27:23.438368+00:00",
+  "action_attempted": true,
+  "outcome_unknown": false,
+  "commands": [
+    {
+      "name": "packages-before",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "list",
+        "packages",
+        "-U",
+        "--show-versioncode",
+        "--user",
+        "0"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "367f6b94498c85098f0b9673e5eb4f41de679c8bcbfa2fddd6fae1178c1397bd",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "install",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "install",
+        "-t",
+        "--user",
+        "0",
+        "--abi",
+        "x86_64",
+        "-S",
+        "45470"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "7fc0023a6402c7bd7abd98bb3e580968de4833eed07d88d1cc8d70819d69c7a0",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "packages-after",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "list",
+        "packages",
+        "-U",
+        "--show-versioncode",
+        "--user",
+        "0"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "a5742c14de4f53f89c70e331970944a9ecb55e66ded13be407282604c5a1f396",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+  "package_count_before": 182,
+  "installed_identity": {
+    "version_code": 11,
+    "uid": 10159
+  },
+  "apk_sha256": "74f54c5b3bb48f4c14a6ea788b7e6df5ba80c4b2944a79be37e99a919f8dab83",
+  "all_preexisting_package_identities_preserved": true,
+  "ok": true,
+  "finished_utc": "2026-11-04T16:27:23.660472+00:00"
+}

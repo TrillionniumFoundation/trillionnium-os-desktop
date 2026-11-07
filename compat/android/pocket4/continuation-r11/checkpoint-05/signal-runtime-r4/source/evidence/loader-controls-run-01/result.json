@@ -1,0 +1,51 @@
+{
+  "Android_operations": 0,
+  "finished_utc": "2026-11-04T17:56:02.254425+00:00",
+  "rows": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "/home/alex/work/pocket4-signal-runtime-r4-work-01/source-candidate-r4/verify_local_runtime.py",
+        "--device-input-reference",
+        "/home/alex/work/pocket4-signal-runtime-r4-work-01/input-reference-01",
+        "--preparation-source",
+        "/home/alex/work/pocket4-signal-runtime-r4-work-01/preimage-preparation-r1"
+      ],
+      "name": "admission-loader",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_tail": "",
+      "stdout_sha256": "4b28945a0f6345af5de371682deb06ec4276759683175c6cd2cf6adb10394ee0"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "/home/alex/work/pocket4-signal-runtime-r4-work-01/source-candidate-r4/verify_cleanup_ast.py"
+      ],
+      "name": "retained-ast",
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_tail": "",
+      "stdout_sha256": "ce92ee22c2cc19b68bfb7897ce606ea06ade491d2a95f3102032a415db81a1bc"
+    }
+  ],
+  "schema": 1,
+  "services_started": 0,
+  "source_after": {
+    "failure_evidence.py": "5ebd74e2765c7f23df6f847ffa92abd6723ee73d0e31a6753938c871d3d5c82a",
+    "held_runtime.py": "eff78261dfd154e223a084e04b5fa8af63d0275735d17b29cf8b6f511cc37039",
+    "run.py": "2de643533cc5539cc67a7589ec4c76ddd5745fac49857070f5d7844529c5906a",
+    "verify_cleanup_ast.py": "ffe6259db61935476b999e3448f3a15480d586f8fc75059e2d6e522ff2f6b9b9",
+    "verify_local_runtime.py": "121720dae736255cf46300075d21b484cf0845a78b075a97e8a78e02d08dbad4"
+  },
+  "source_before": {
+    "failure_evidence.py": "5ebd74e2765c7f23df6f847ffa92abd6723ee73d0e31a6753938c871d3d5c82a",
+    "held_runtime.py": "eff78261dfd154e223a084e04b5fa8af63d0275735d17b29cf8b6f511cc37039",
+    "run.py": "2de643533cc5539cc67a7589ec4c76ddd5745fac49857070f5d7844529c5906a",
+    "verify_cleanup_ast.py": "ffe6259db61935476b999e3448f3a15480d586f8fc75059e2d6e522ff2f6b9b9",
+    "verify_local_runtime.py": "121720dae736255cf46300075d21b484cf0845a78b075a97e8a78e02d08dbad4"
+  },
+  "sources_unchanged": true
+}

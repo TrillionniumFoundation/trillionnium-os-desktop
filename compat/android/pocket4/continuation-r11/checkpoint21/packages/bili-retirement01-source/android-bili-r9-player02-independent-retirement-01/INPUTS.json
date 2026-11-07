@@ -1,0 +1,374 @@
+{
+  "schema": "pocket4-independent-native-launch-retirement-input-v1",
+  "task": 873,
+  "historical_launch_outcome": "unknown_retained",
+  "existing_launch_scope_must_remain_absent": true,
+  "actual_error_reader": {
+    "job_id": "1a1b08805b3-fc05-7134",
+    "git_tree": "0f004bb567015c359969a158e47c32033615c44f",
+    "git_blob": "c98c4f6f1740b893abc2930b7fa308bd79e43b47",
+    "bytes": 9670,
+    "sha256": "6cbb272c3c7849724d5e2fa48001d00505c8a52155fec27adda92ba24e2c30ec",
+    "source_sha256": "ba9e2350304b87e35168ee19166bece041930693ea4feedbab47624dd03ce9af"
+  },
+  "actual_error_projection": {
+    "bytes": 414,
+    "child": {
+      "bytes": 101,
+      "class_from_known_source_prefix": "control",
+      "private_payload_bytes": 72,
+      "private_payload_sha256": "d9978f2eac9307949c750dfac5ad76e6ebf53a5fd691be70865aba0fb27e04b6",
+      "sha256": "68f1625db93ceb92624cfaa5215e8cd74d2ec69a8e1097f86355934014265cdd",
+      "unknown_error_text_exported": false
+    },
+    "closed_error": {
+      "labelled_fields": {
+        "task": 873
+      },
+      "shape": "backend_different_registration_ownership"
+    },
+    "complete_closed_error_shape": true,
+    "complete_wrapper_match": true,
+    "first_rejection": null,
+    "fixed_opaque_prefix": {
+      "bytes": 22,
+      "position": 3,
+      "sha256": "5a4785013842061d851060668456459d7ba7263cee3dc1f933d03b10d2b59148"
+    },
+    "installed_binary_source_match": false,
+    "installed_source_version_verified": false,
+    "labelled_mentions_are_not_ownership_authority": true,
+    "native_exit_status": 1,
+    "opaque_prefix_semantics_known": false,
+    "public_timing_diagnostic": {
+      "first_line_has_exact_outer_prefix": true,
+      "known_numeric_fields": [
+        {
+          "label": "control",
+          "value_us": 152
+        },
+        {
+          "label": "policy",
+          "value_us": 133
+        },
+        {
+          "label": "wake",
+          "value_us": 9677
+        },
+        {
+          "label": "snapshot",
+          "value_us": 6666
+        },
+        {
+          "label": "permission_resolver",
+          "value_us": 5570
+        },
+        {
+          "label": "activity",
+          "value_us": 3137562
+        },
+        {
+          "label": "alias",
+          "value_us": 2
+        },
+        {
+          "label": "discovery",
+          "value_us": 86290
+        },
+        {
+          "label": "pending",
+          "value_us": 66
+        },
+        {
+          "label": "total",
+          "value_us": 3246122
+        }
+      ],
+      "known_stage_sum_us": 3246052,
+      "known_timing_marker_count_in_first_line": 1,
+      "line_count": 2,
+      "line_metadata": [
+        {
+          "bytes": 287,
+          "sha256": "e0c7260de0eb94327733f01bc570d9044024ba41572a189dc29b1fa2618be8da"
+        },
+        {
+          "bytes": 126,
+          "sha256": "557a6cb23e42b9f540c083e98bf7b4548205cb72ad3e4f39fbc4ad705d03fe87"
+        }
+      ],
+      "numeric_values_are_label_bound": true,
+      "prefix_before_timing": {
+        "bytes": 45,
+        "sha256": "7616009a4bbd0aeba03022d03bc5f61975941841f2e60b8a84411c69517a0f2e"
+      },
+      "tokens": [
+        {
+          "bytes": 23,
+          "known_marker": "droidloom-launch-timing",
+          "sha256": "ef2d6e3fa09dbdc74d9e9818b352a467db17128bc913219c777c8cbfd5d69aa9"
+        },
+        {
+          "bytes": 8,
+          "known_marker": "ok=false",
+          "sha256": "7c2005bf001c089e14505fae9fefb9db3e47662ceaa472cc7082a6f64b026e56"
+        },
+        {
+          "bytes": 18,
+          "known_marker": "policy_cached=true",
+          "sha256": "8ad8e36bc54f47f81f85481f4954c52bb7f367693950546f8fb400ba1eadda3b"
+        },
+        {
+          "bytes": 22,
+          "sha256": "5a4785013842061d851060668456459d7ba7263cee3dc1f933d03b10d2b59148"
+        },
+        {
+          "bytes": 14,
+          "known_time_label": "control",
+          "sha256": "9414c3d332f309f2f69c80e3645f715f579fe5ca77790a77898107e429e1b6a1",
+          "unsigned_bounded_decimal": true,
+          "value_us": 152
+        },
+        {
+          "bytes": 13,
+          "known_time_label": "policy",
+          "sha256": "0ccbe80e84b71b09ae65d2a5f5100bceab2663fe0bd5f2b87e4462bd23e69563",
+          "unsigned_bounded_decimal": true,
+          "value_us": 133
+        },
+        {
+          "bytes": 12,
+          "known_time_label": "wake",
+          "sha256": "48bfba3c755065222922d6bb594b43e20ef047d9ab4acdf054457cfc654e8d04",
+          "unsigned_bounded_decimal": true,
+          "value_us": 9677
+        },
+        {
+          "bytes": 16,
+          "known_time_label": "snapshot",
+          "sha256": "88bffe6c388448073823a082356abab75e60e5bc125fbe43842cc1947593ef69",
+          "unsigned_bounded_decimal": true,
+          "value_us": 6666
+        },
+        {
+          "bytes": 27,
+          "known_time_label": "permission_resolver",
+          "sha256": "30b4c33dae57090d5be8d15020cefb2637850be984cc073d2503952998a31d51",
+          "unsigned_bounded_decimal": true,
+          "value_us": 5570
+        },
+        {
+          "bytes": 19,
+          "known_time_label": "activity",
+          "sha256": "341aab7ed709f6b72d358f7f29a308a8e905804f845efb05159b0da8b3972025",
+          "unsigned_bounded_decimal": true,
+          "value_us": 3137562
+        },
+        {
+          "bytes": 10,
+          "known_time_label": "alias",
+          "sha256": "5545868bfdcc3b4c1da4a6127976719a9e4cd2e03db1cb6542df0acc8e2083de",
+          "unsigned_bounded_decimal": true,
+          "value_us": 2
+        },
+        {
+          "bytes": 18,
+          "known_time_label": "discovery",
+          "sha256": "587f09c838dd31a72368608a466011713ca9a949cc84a0f8b05f0e0491a16552",
+          "unsigned_bounded_decimal": true,
+          "value_us": 86290
+        },
+        {
+          "bytes": 13,
+          "known_time_label": "pending",
+          "sha256": "cb4f34faad554eb877d22bb1ea540f4d0476cc3bab229aa9a4c4efc2be893ad7",
+          "unsigned_bounded_decimal": true,
+          "value_us": 66
+        },
+        {
+          "bytes": 16,
+          "known_time_label": "total",
+          "sha256": "72c74355a9abcd28af7d7da5a5c220d491db3bba08917b13af74ff53d897324a",
+          "unsigned_bounded_decimal": true,
+          "value_us": 3246122
+        }
+      ],
+      "unknown_token_text_exported": false
+    },
+    "raw_message_exported": false,
+    "reference_source_format_match": false,
+    "semantic_cause_inferred": false,
+    "sha256": "06a69fd403766d93148369a9dc947283dc96f27be71e26e8295d510b2f4c62a3",
+    "source_format_reference_only": true,
+    "task_cleanup_authority_created": false,
+    "timing": {
+      "ok": false,
+      "pending_us": 66,
+      "policy_cached": true,
+      "recorded_stages": [
+        "control",
+        "policy",
+        "wake",
+        "snapshot",
+        "permission_resolver",
+        "activity",
+        "alias",
+        "discovery"
+      ],
+      "recording_is_not_success_attestation": true,
+      "stage_us": {
+        "activity": 3137562,
+        "alias": 2,
+        "control": 152,
+        "discovery": 86290,
+        "permission_resolver": 5570,
+        "policy": 133,
+        "snapshot": 6666,
+        "wake": 9677
+      },
+      "total_us": 3246122
+    },
+    "unclassified_labelled_task_mentions": [
+      873
+    ]
+  },
+  "actual_native_chain": {
+    "job_id": "1a1b03beb74-fc05-6f41",
+    "git_tree": "de1cdb5138b1392345f87bfb89304306d5c372a6",
+    "git_blob": "d0ec31c757eba754d82362424d528f1d77aa1b1d",
+    "bytes": 14924,
+    "sha256": "bcf94b903d33875c05ce18613eba42bdc90c7a1554403b83eeedf8897e0d8ca0"
+  },
+  "actual_previous_current_read": {
+    "job_id": "1a1b04cd17b-fc05-6f98",
+    "git_blob": "a03bfccf64914128be87f14b99d1416412e0679b",
+    "bytes": 5313,
+    "sha256": "59f3ffa181514451496e43dfc9929e80aef21f6a2fe4cb6db745e452388d69a1"
+  },
+  "worker_pin": {
+    "bytes": 5202,
+    "sha256": "037076b15c27611f83815ad243280a1ec8eae82416616c928c9106e17f7a12ca"
+  },
+  "scope_pin": {
+    "bytes": 1006,
+    "sha256": "ac6dea24873125a8ac322306786f9f5760fd20b0f1c8d06bc80a498e33eddc50"
+  },
+  "attempted_pin": {
+    "bytes": 1126,
+    "sha256": "aa6f6ceb01e87b64e1ab0dd2e539958146690b1e1370e1e22d88299239e384d1"
+  },
+  "prelaunch_stacks_pin": {
+    "bytes": 665,
+    "sha256": "4828128d5f155cfcbdd15b713ae6430eef36735163ca5ed53dd59a7409670e76"
+  },
+  "previous_current_stack_pin": {
+    "bytes": 1292,
+    "sha256": "a55391235b9bce5b34f61114e3f07b9ac37b15345903c854a5efa8eec5025e6f"
+  },
+  "previous_current_command_pin": {
+    "bytes": 445,
+    "sha256": "5aa774c4d740e3c635f069c051d77a0c65a839e3116efbc02e8c7a85dbe87ac2"
+  },
+  "historical_scope": {
+    "adapter_manifest_sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e",
+    "automatic_retry": false,
+    "component": "tv.danmaku.bili/tv.danmaku.bili.MainActivityV2",
+    "created_utc": "2026-11-06T09:03:08.279046+00:00",
+    "current_baseline_qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+    "current_baseline_schema": "pocket4-main-current-baseline-v1",
+    "current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+    "epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+    "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "package": "tv.danmaku.bili",
+    "recorder_sha256": "7101d2ab2cd4b73bf96cab1117c8d0177c2b290255c6946af52ec834115a7f44",
+    "schema": "pocket4-current-recorder-scope-v1",
+    "uid": 10117,
+    "user": 0
+  },
+  "historical_attempted": {
+    "scope": {
+      "adapter_manifest_sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e",
+      "automatic_retry": false,
+      "component": "tv.danmaku.bili/tv.danmaku.bili.MainActivityV2",
+      "created_utc": "2026-11-06T09:03:08.279046+00:00",
+      "current_baseline_qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+      "current_baseline_schema": "pocket4-main-current-baseline-v1",
+      "current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+      "epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+      "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+      "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+      "package": "tv.danmaku.bili",
+      "recorder_sha256": "7101d2ab2cd4b73bf96cab1117c8d0177c2b290255c6946af52ec834115a7f44",
+      "schema": "pocket4-current-recorder-scope-v1",
+      "uid": 10117,
+      "user": 0
+    },
+    "step": "launch-01",
+    "time_utc": "2026-11-06T09:03:09.034910+00:00"
+  },
+  "prelaunch_task_baseline": {
+    "task_ids": [
+      870
+    ],
+    "roots": [
+      {
+        "children": [
+          {
+            "is_exact_target_component": false,
+            "is_target_package": false,
+            "task_id": 870,
+            "user": 0
+          }
+        ],
+        "display_id": 0,
+        "freeform": false,
+        "root_id": 1,
+        "user": 0
+      }
+    ]
+  },
+  "previous_current_task_summary": {
+    "roots": [
+      {
+        "children": [
+          {
+            "is_exact_target_component": false,
+            "is_target_package": false,
+            "task_id": 870,
+            "user": 0
+          }
+        ],
+        "display_id": 0,
+        "freeform": false,
+        "root_id": 1,
+        "user": 0
+      },
+      {
+        "children": [
+          {
+            "is_exact_target_component": true,
+            "is_target_package": true,
+            "task_id": 873,
+            "user": 0
+          }
+        ],
+        "display_id": 0,
+        "freeform": true,
+        "root_id": 873,
+        "user": 0
+      }
+    ],
+    "task_ids": [
+      870,
+      873
+    ]
+  },
+  "guard_source_root": "/home/alex/work/pocket4-current-host-r5-source-01",
+  "guard_manifest_sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e",
+  "original_unknown_reclassified": false,
+  "installed_native_source_match_verified": false,
+  "cleanup_authority": "explicit_new_independent_retirement_only_after_complete_chain_and_fresh_same_leaf",
+  "maximum_remove_commands": 1,
+  "original_native_registration_replayed": false
+}

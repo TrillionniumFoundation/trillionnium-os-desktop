@@ -1,0 +1,35 @@
+--- owner10/check_prepared10.py
++++ owner11/check_prepared11.py
+@@ -5,8 +5,8 @@
+ import re
+ 
+ BASE = Path('/workspace/scratch/94990735b266')
+-SOURCE = BASE/'lmkd-recovery-20261105-01/owner10-normal01-freeze-01'
+-EVIDENCE = BASE/'root-recovery-20261104-02/evidence/owner10-normal01-prepared-read01'
++SOURCE = BASE/'lmkd-recovery-20261105-01/owner11-normal01-freeze-01'
++EVIDENCE = BASE/'lmkd-recovery-20261105-01/owner11-normal01-runtime-work-01'
+ OUT = Path(__file__).resolve().parent
+ 
+ 
+@@ -21,8 +21,8 @@
+ 
+ raw = (EVIDENCE/'prepared.json').read_bytes()
+ reader_raw = (EVIDENCE/'reader-report.json').read_bytes()
+-assert len(raw) == 55139 and sha(raw) == '53f327728b4daf732653a189d690f0c1d4e6374aeab5f7b9df7d666598f978e3'
+-assert len(reader_raw) == 61076 and sha(reader_raw) == '62addf99b256865994905b58add0e9b4a4520de5142211ebd713683cb798dd64'
++assert len(raw) == 55139 and sha(raw) == 'd48a503751555736dd85b54211a89c4a2b51371adf41c860f44cd3887b8c5bf5'
++assert len(reader_raw) == 61076 and sha(reader_raw) == '5e0b5b189cd3ad84a347d5edb3b6300641c7425789e8c33ebf6c4d412302ce7c'
+ actual, reader = json.loads(raw), json.loads(reader_raw)
+ assert reader['collection_complete'] is True and reader['errors'] == []
+ assert reader['files']['prepared.json']['content'].encode() == raw
+@@ -66,8 +66,8 @@
+ assert actual['presenter']['sha256'] == plan['presenter']['sha256']
+ assert actual['presenter']['path'] == plan['presenter']['path'] and actual['presenter']['bytes'] > 0
+ ids = actual['id_availability']
+-assert ids['available_at_observation'] is True and ids['host_uid'] == 61282 == plan['spec']['host_uid']
+-assert ids['subordinate_range'] == plan['spec']['subordinate_uids'] == plan['spec']['subordinate_gids'] == {'start': 20500000, 'count': 100000}
++assert ids['available_at_observation'] is True and ids['host_uid'] == 61283 == plan['spec']['host_uid']
++assert ids['subordinate_range'] == plan['spec']['subordinate_uids'] == plan['spec']['subordinate_gids'] == {'start': 20600000, 'count': 100000}
+ assert ids['reservation_created_in_passwd_or_subid_tables'] is False
+ assert len(actual['data_images']) == 2
+ for row, expected in zip(actual['data_images'], plan['data_images']):

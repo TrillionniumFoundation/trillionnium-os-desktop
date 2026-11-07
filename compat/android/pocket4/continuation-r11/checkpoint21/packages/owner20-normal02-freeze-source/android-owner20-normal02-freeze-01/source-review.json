@@ -1,0 +1,191 @@
+{
+  "actual_artifacts_tools_base_and_Main": {
+    "Host17_C16_and_LMKD_unchanged": true,
+    "SDK_accessor_not_executed_in_failed_normal01": true,
+    "SDK_static_build02_unchanged": true,
+    "base86_unchanged": true,
+    "current_Main_authority_unchanged": true,
+    "current_Main_must_revalidate_live_before_after": true,
+    "historical_deployment_is_lineage_only": true,
+    "original_Main_pids_max": 12288,
+    "private_Main_baseline_body_exported": false,
+    "tools8_unchanged": true
+  },
+  "actual_failure": {
+    "observer_error": "KeyError('init_current_checks')",
+    "observer_spawn_attempts": 0,
+    "original_runtime": {
+      "bytes": 774912,
+      "sha256": "f3f8afc6f8783b69fe5db48913586dc3f16bda63a4f8820aa1251cffb635bda1"
+    },
+    "producer_failure_cause_fixed_claimed": false,
+    "producer_failure_independent": true,
+    "retirement_and_current_Main_checks_passed": true,
+    "safe_projection": {
+      "bytes": 92277,
+      "sha256": "46427c74b60af66ba02262d323ec128b32ada64d71489c9541e939216c31b1a8"
+    }
+  },
+  "constructor_control_actual_review": {
+    "bytes": 1711,
+    "git_blob_sha": "45bd51ae9e15761f1c189a1c5f566d1184d02b89",
+    "sha256": "db35b4ff725b4169332c26be4ee564e9d813d5e7f00579f0713eed69ee52401d"
+  },
+  "constructor_source_tree": "182bcbf1a5a09d392c7834e0ed36bbedd426e7b3",
+  "coordinator_changes": "Only fixed unit/package/state literals use normal02.",
+  "exact_source_changes": [
+    {
+      "after": {
+        "bytes": 14666,
+        "git_blob_sha": "5740818f4392ca88616ae4d7aa5d9c4bd5c66330",
+        "sha256": "5ba8bf825c9185bd07c6b0be2a27b51df6b5c6ac3e363f61d3cd8383fa22d037"
+      },
+      "before": {
+        "bytes": 14666,
+        "git_blob_sha": "5a2daf3b887134220a171eb92273831e43658cc2",
+        "sha256": "870351d1655a0ef979a86cb03d4d65ef963a63b1548ba14185eee68d06a29a83"
+      },
+      "path": "source/coordinator.py"
+    },
+    {
+      "after": {
+        "bytes": 16896,
+        "git_blob_sha": "035c6237b9483bcb1a958bfc64f7d42aca81ae19",
+        "sha256": "69621b0c569aa4e72c1c55bdeeba97fd426442fbb25c2f7e03173b5aa42b060d"
+      },
+      "before": {
+        "bytes": 16896,
+        "git_blob_sha": "d7df679fa7c2e4f2a7c6a5e35a92cdaa3c940ea3",
+        "sha256": "abec8fdd96c566dd7b69edf831ccfe124ad9a6f2a8a71d0b26dbc69e6b5ab5ed"
+      },
+      "path": "source/prepare.py"
+    },
+    {
+      "after": {
+        "bytes": 68817,
+        "git_blob_sha": "a9cccddcf1f6c09ad23e6b05dcc14c02b4383495",
+        "sha256": "e5d993f3bc05cebb4c61c44c84976fca491c10714799a684fed16ef85cd87f8d"
+      },
+      "before": {
+        "bytes": 68777,
+        "git_blob_sha": "cc52acc6bebc58aa633db89f50b71e5247ece638",
+        "sha256": "8aa61f8a7a0e79511dc3bb49e4f4f857d7dc40b68a26e431cda0af0629bf56b2"
+      },
+      "path": "source/property_visibility.py"
+    }
+  ],
+  "five_other_runtime_sources_byte_identical": true,
+  "fresh_actual_attempt_nonce": {
+    "authority": {
+      "Android_actions": 0,
+      "Main_actions": 0,
+      "actual_source_schema": 1,
+      "actual_tree": "51d32e62406032e7a77814f14f19e6d3fbb6d692",
+      "count": 1,
+      "excluded_known_prior_attempt_and_generation": [
+        "eae6a2c3c00117d2a6a0f0f08949342de6a14cf8c2dbf695071e7a96b494661c",
+        "fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873"
+      ],
+      "generation_nonce_must_come_from_actual_producer": true,
+      "generator": "secrets.token_hex(32)",
+      "issuer_UID_in_stdout_observed": false,
+      "job_id": "1a1b0636596-fc05-7029",
+      "no_redraw": true,
+      "previous_attempt_reused": false,
+      "profile": "p4-owner20-normal-20261106-02",
+      "schema": "pocket4-owner20-normal02-actual-nonce-authority-v1",
+      "stdout": {
+        "bytes": 494,
+        "git_blob_sha": "2fae20db2cf77ed250c649e3cc2bd9e4179cb2fb",
+        "sha256": "bc04b8b7487204206eb1759a6920a5eef25b0807d777ab195534170951d9a202"
+      },
+      "terminal": {
+        "bytes": 729,
+        "git_blob_sha": "2f28f73030fcd0c6864dcb4e75cc403240071076",
+        "sha256": "f011320b13317ecafa5ec1de0cc12536aeaecbfd7205aec425ecae6848ec0b70"
+      }
+    },
+    "value": "01fc54ac9d2954bfc4700ab4ef3af465200114dc8eaa887f8ab440584b8d41a5"
+  },
+  "fresh_attempt_nonce_requires_actual_external_receipt": true,
+  "fresh_profile": "p4-owner20-normal-20261106-02",
+  "guards_unchanged": {
+    "ABI3": true,
+    "additional_retirement_only_ms": 1000,
+    "broker_and_owner_identity": true,
+    "host_monotonic_deadline_and_child_SIGALRM_default_unblocked": true,
+    "immediate_Stop": true,
+    "no_extra_property_token_or_read_during_retirement": true,
+    "original_actor_and_65_second_loop": true,
+    "original_four_children_retired_before_helper_finish": true,
+    "property_absolute_observation_ms": 2000,
+    "property_child_limit_one": true
+  },
+  "limitations": {
+    "Main_production_App_or_HWS_health_qualified": false,
+    "SDK_key_or_value_changed": false,
+    "abort_or_permission_gate_relaxed": false,
+    "actual_LMKD_credentials_capabilities_or_SELinux_equivalence": false,
+    "cold_cache_observation": false,
+    "producer_crash_cause_resolved": false,
+    "same_process_root_warmed_bionic_cache": true
+  },
+  "local_validation": {
+    "V8_full_diff_reconstruction": true,
+    "exact_UTF8_base64_roundtrip_required": true,
+    "full_frozen_pin_and_blob_readback_required": true,
+    "local_Python_execution": false,
+    "remote_agent_dispatch": false
+  },
+  "minimal_production_change": "Add one Capture-owned init_current_checks empty list before the existing _bind_init current-proof append; all other collector bytes are the frozen source02.",
+  "new_owned_package_state_data_images_and_unit_required": true,
+  "old_normal01_failed_attempt_preserved": true,
+  "prepare_changes": "Only fixed plan kind and preparation receipt label use normal02.",
+  "prepare_request": {
+    "bytes": 437973,
+    "key": "p4-owner20-normal02-prepare01-f58ac2bc67d8a902",
+    "packet": {
+      "bytes": 327392,
+      "git_blob_sha": "e97d07654ac67dcf7044f38093d75a573d91f5d0",
+      "sha256": "5eb788b56404f07a50a99233cda60932a5160121467cd21f00be578a968a9044"
+    },
+    "sha256": "b793bd82aff1e9433c2ef8eb23e436aef87a0f8d69d4e62c5e5ef7844940fc15",
+    "stdin": {
+      "bytes": 437612,
+      "git_blob_sha": "934fec98a249fb8ae0c25cd584d015d9fea3965c",
+      "sha256": "f58ac2bc67d8a90298a84dd7c3320ddcd5c7a3415af47e2c952ae33f02138188"
+    }
+  },
+  "runtime_binder_source_template_peer": {
+    "Python_executed": false,
+    "completed": true,
+    "full_new_prepare_packet_review_claimed": false,
+    "scope": "Native independently read the 31914-byte constructor binding template and actual07 stdout/terminal; no deterministic issue found. Final manifest pin and new exact fresh-nonce receipt binding are later passive changes for Root review."
+  },
+  "runtime_template": {
+    "Root_only_review_and_dispatch": true,
+    "actual_prepared_SHA_filled": false,
+    "only_two_future_actual_slots_allowed": true
+  },
+  "schema": "owner20-normal02-source-review-v1",
+  "source_diff": {
+    "bytes": 3344,
+    "git_blob_sha": "03f774c1591de4a1e04d486458a21c1252382b6a",
+    "sha256": "784165a40cc5459d6257c571a04469e38c3381a37bde9cabe2e54f63508ba09e"
+  },
+  "source_predecessor_tree": "eef453897f751c690ea1e2e26ec9602fb9572269",
+  "source_qualification": {
+    "actual_Main_bridge_controls_12_unchanged": true,
+    "constructor07_OS_hash_namespace_spawn_are_explicit_seams": true,
+    "constructor07_actual_cases": 11,
+    "constructor07_dependency_cases": 8,
+    "constructor07_old_error_reproduced": true,
+    "constructor07_real_children": 0,
+    "controls05_bad_base64_never_dispatched": true,
+    "old_Control01_04_failures_preserved": true,
+    "original_global_FD_equality_false_and_in_process_all_owned_false_preserved": true,
+    "original_host_controls_38_and_dependency8_unchanged_baseline_only": true,
+    "retained_dependency_release_requires_independent_terminal": true
+  },
+  "state": "FROZEN_SOURCE_AND_ACTUAL_CONTROLS_BOUND_PREPARE_ONLY"
+}

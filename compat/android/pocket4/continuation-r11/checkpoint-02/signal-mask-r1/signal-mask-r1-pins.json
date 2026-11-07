@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "candidate": "pocket4-r16-arm64-signal-mask-r1",
+  "state": "FROZEN_FOR_FULL_BUILD_AND_OWNED_QUALIFICATION",
+  "frozen_utc": "2026-11-04T13:13:52.845249+00:00",
+  "baseline": "exact device R16 receipts",
+  "changes": [
+    {
+      "path": "guest_os_primitives/arm64/guest_context_arch.h",
+      "preimage_sha256": "ca4daaa682994ad830180291f3cef07375c5d938aa0ab9f58b45c5e15fff34cf",
+      "sha256": "c4234d83ce70c526d96cbd9b843dbca1e0645c18d7f371654552d2a8e2f07140",
+      "bytes": 8640
+    },
+    {
+      "path": "guest_os_primitives/guest_signal_handling.cc",
+      "preimage_sha256": "8c4052082617327c3c52126eb3124fa0a3259c4b36a380e61e7b20503277bbeb",
+      "sha256": "7ca556ea512b2262e2bf28709bbb7962d4ef5cb7e4c53c012437b6603fd9623a",
+      "bytes": 28870
+    },
+    {
+      "path": "guest_os_primitives/guest_signal_handling_arch.cc",
+      "preimage_sha256": "6097d09a396d77c516cf91c5b75abb3b0cbd1e7fccbcc1e1555b84e7d1292963",
+      "sha256": "5fc077ed8538255bac2ac921b1231a3bf60314659f85c79237d724c41f0460b5",
+      "bytes": 6274
+    },
+    {
+      "path": "guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h",
+      "preimage_sha256": "8a343fa094ac83a0411cbcfe82372881ff77f32f08cc5d5a8ae15cdf8ec11877",
+      "sha256": "ebcc5ac4e092c50916a0f9668c94d3cb2266cece0ff728bc19513e8f7eb218ca",
+      "bytes": 3611
+    },
+    {
+      "path": "guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h",
+      "preimage_sha256": "4b27ba2f90bee2c9e92c49d3f3b2beb6a07fb7ee27087d9e8e04d369603fa737",
+      "sha256": "90a35d504656e32520ab84968ae8a3b586264c835489d13f85f42444cb0764c0",
+      "bytes": 6115
+    },
+    {
+      "path": "guest_os_primitives/scoped_guest_signal_mask.h",
+      "preimage_sha256": null,
+      "sha256": "52c18a437a05e00be80420c39ef03d24b4ec86a2470b66b548c29d8888eecde9",
+      "bytes": 2869
+    }
+  ],
+  "patch_sha256": "dc7d1cddb53a3d57b30c09d5688016ccef9b0691c38f0a62ea58ceb1b2a39a50",
+  "aggregate_format": "sha256 of UTF-8 lines: sha256 + two spaces + path + newline in changes order",
+  "aggregate_sha256": "a3e5771d03e3f5c22a45c7d6ddfe1d8809280cb077dc86f35327544879cdcf4d",
+  "validation": {
+    "patch_applies_to_exact_preimage_and_all_output_hashes_match": true,
+    "local_mask_controls_sha256": "cb2eac38839b30e34633a03e4acdc43ddd6caa0897897485c5513f9c92cf8ea9",
+    "local_scope": "Actual ProcessGuestSignal + ARM64 GuestContext with declared CPU/GuestCall fixture providers; real own-process Linux signal and sigreturn; not full translator/Android",
+    "baseline_six_controls": "ALL_FAIL_AS_EXPECTED",
+    "candidate_six_controls": "ALL_PASS",
+    "candidate_low64_tail_and_unblockable_filter": "PASS",
+    "peer_review": "IN_PROGRESS; root full build authorized to proceed",
+    "android_full_build": "ROOT_PENDING",
+    "android_owned_probe": "ROOT_PENDING"
+  },
+  "known_scope_limits": [
+    "Software pending-queue mask eligibility, rt_sigpending/sigtimedwait/signalfd protocol is preexisting incomplete and is not repaired by this patch; no claim all signal semantics production ready.",
+    "No commercial-app crash root cause is inferred from this owned-probe defect.",
+    "No pointer to a host frame is saved in queue, thread object or TLS; each explicit argument exists only during synchronous processing."
+  ],
+  "artifacts": {
+    "tests/build_mask_controls.py": "bb15bf88c25f25a1a2adab84091071ac8819a9dffdbb9259e5390ff43322842d",
+    "tests/mask_control.cc": "6d069cb63af13fdf59ecdaecf628b4802e91416d1867bf2ef1cfd25d0c458712",
+    "r1-baseline-pins.json": "27bb61dd1fc4101b79161ba3f4682e62e8f7b36eab98ae7c7b556f028ae62545",
+    "local-mask-controls-r2/report.json": "cb2eac38839b30e34633a03e4acdc43ddd6caa0897897485c5513f9c92cf8ea9",
+    "local-mask-controls-r2/baseline.stdout.jsonl": "4df2dac2f688b5b69e2c4cafa356b3ddd990a47f28f7fb3f345721b5b250ed91",
+    "local-mask-controls-r2/fixed.stdout.jsonl": "4ac2b0edea8f85aec5eb75c9de28628cf26122e9259133414f4629a4c637d0a1"
+  }
+}

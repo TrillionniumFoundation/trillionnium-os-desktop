@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "probe": "owned_real_metadata_r21_kernel_and_libc_statfs",
+  "actual_sources": true,
+  "raw_worker_only_fixed_snapshot": true,
+  "default_source_feature": 0,
+  "owned_probe_feature": 1,
+  "cases": [
+    "real_metadata_three_entrypoints_same_app_context",
+    "forged_app_owned_tag_and_matching_name_stay_ordinary",
+    "ordinary_O_PATH_metadata",
+    "warm_metadata_AS_1_and_explicit_restart",
+    "raw_private_fork_AS_1_real_metadata",
+    "full_caller_fdtable_real_metadata",
+    "bad_fd_snapshot_atomicity_and_caller_mask",
+    "quiesce_closes_generation_and_rejects_restart",
+    "12_restart_kernel_clear_tid_rounds",
+    "actual_caller_TID_private_fdtable",
+    "shared_VM_new_TGID_refuses_without_reset",
+    "NOFILE_0_metadata_EMFILE_known_red",
+    "raw_statfs_kernel_and_libc_dual_oracles_all_fields",
+    "raw_statfs_bad_fd_errno_and_metadata_output_atomicity",
+    "raw_statfs_guest_buffer_EFAULT_and_partial_copy_bounds",
+    "raw_statfs_NOFILE_0_EMFILE_known_red"
+  ],
+  "known_production_red_cases": [
+    11,
+    15
+  ],
+  "expected_mask": "0xffff",
+  "budgets": {
+    "controller_ms": 15000,
+    "direct_child_ms": 3000,
+    "nested_child_ms": 2000,
+    "reap_after_kill_ms": 1000,
+    "result_buffer_bytes": 98304
+  },
+  "own_children_only": true,
+  "raw_fork_inflight_request_covered": false,
+  "metadata_Fstat_QueryOrigin_positive_root_candidate_covered": false,
+  "metadata_Fstatfs_ordinary_tmpfs_raw_owner_covered": true,
+  "trusted_positive_O_PATH_reopen_covered": false,
+  "broker_positive_identity_tested": false,
+  "runtime_hooks_installed": false,
+  "credential_namespace_transition_guarantee": false,
+  "peer_review": "NOT_PERFORMED",
+  "actual_android_executed": false,
+  "candidate_production_ready": false,
+  "actual_elf_before_runtime_gate": {
+    "script": "audit_worker_binary.py",
+    "source_unchanged": true,
+    "apk_embedded_elf_match": true,
+    "objdump_before_after_matches_builder_pin": true,
+    "manual_start_only_fixed_worker_null_context_required": true
+  },
+  "limitations": [
+    "Explicit Start/Stop and direct raw-fork reset are probe calls; ART integration is not installed",
+    "Initial user namespace authority is PIDFD_THREAD namespace ioctl; startup can fail if actual platform lacks it",
+    "Per-request caller/worker snapshots do not prove arbitrary concurrent host-native root/mount/credential transitions",
+    "Supplementary groups limited to 128; larger set rejects qualification",
+    "No same-process resume after Quiesce; only a private-child reset permits a new generation",
+    "No original protected app files, network services, policies, or Main modifications",
+    "R20 actual host-libc behavior passed separately; R21 requires new actual binary audit and Android receipt",
+    "Complete fields are compared for owned memfd and procfs, whose controls do not mutate filesystem metadata; no exemption masks for unequal flags",
+    "V1 trusted virtual raw statfs is rejected until new versioned factory is implemented and independently qualified",
+    "No claim to run the outer translated ARM64 common.h adapter in this x86_64 APK"
+  ],
+  "inherits_r18_exact_core_sources": false,
+  "inherits_r19_assertions_unchanged": true,
+  "existing_12_case_logic_unchanged": true,
+  "dual_statfs_abi": {
+    "raw_type": "KernelStatfs, LP64 Linux ABI 120 bytes with every field offset/width asserted",
+    "host_type": "libc struct statfs; successful Bionic boundary clears ST_VALID in independent view",
+    "actual_oracles": [
+      "syscall(SYS_fstatfs, explicit machine-word fd, KernelStatfs*)",
+      "::fstatfs(fd, struct statfs*)"
+    ],
+    "complete_fields_and_flags": true,
+    "objects": [
+      "owned app memfd",
+      "actual own proc maps metadata; no content read"
+    ],
+    "guest_copy_function": "actual FstatfsForGuest -> FstatfsKernel -> CopyToCaller",
+    "kernel_metadata_error_atomicity": true,
+    "user_memory_failure_atomicity_claimed": false,
+    "legacy_virtual_v1_behavior": "EPROTONOSUPPORT, raw representation not inferred",
+    "real_arm64_translated_execution": false
+  }
+}

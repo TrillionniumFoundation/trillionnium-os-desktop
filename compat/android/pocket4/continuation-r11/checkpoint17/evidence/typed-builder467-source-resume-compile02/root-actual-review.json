@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "job_id": "1a1ae3b12ae-fc05-5e55",
+  "terminal": {
+    "at_unix_ms": 1793924534198,
+    "audit_recorded": true,
+    "automatic_retry": false,
+    "cancelled": false,
+    "exit_code": 1,
+    "job_id": "1a1ae3b12ae-fc05-5e55",
+    "launch_nonce": "54a49d63482c44fac6847ee32c0982bf",
+    "log_bytes": {
+      "stderr": {
+        "seen": 0,
+        "stored": 0
+      },
+      "stdout": {
+        "seen": 316,
+        "stored": 316
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_synced": {
+      "stderr": true,
+      "stdout": true
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "output_durable": true,
+    "state": "failed",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
+  },
+  "stdout": {
+    "schema": 1,
+    "job_id": "1a1ae3b12ae-fc05-5e55",
+    "terminal_output_complete": true,
+    "terminal_output_durable": true,
+    "stderr_bytes": 0,
+    "path": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1ae3b12ae-fc05-5e55/stdout.log",
+    "bytes": 316,
+    "sha256": "eb10d09bdd9ec8499543a20206858307c7b25444cbfe4b27968a37526763262a",
+    "version": "66306:50377883:316:1793924534076457148:1793924534076457148",
+    "chunks": [
+      {
+        "offset": 0,
+        "next_offset": 316,
+        "bytes": 316,
+        "sha256": "eb10d09bdd9ec8499543a20206858307c7b25444cbfe4b27968a37526763262a"
+      }
+    ]
+  },
+  "actual_result": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/typed-builder467-source-resume-compile02/result.json",
+    "bytes": 113537,
+    "sha256": "767fee452f043c654ceb205fee10f0fdba3801e397b1d9adaf24a1c03256bf54"
+  },
+  "independent_review": {
+    "Main_identity_observed": false,
+    "actual_error": {
+      "errno": null,
+      "filename": null,
+      "message": "command left owned children: projection-test-9",
+      "type": "RuntimeError"
+    },
+    "all_48_command_returncodes_zero": true,
+    "cleanup": {
+      "errors": [],
+      "forced_cleanup": true,
+      "initial_owned_children": [
+        3564056,
+        3564067
+      ],
+      "reaped": [
+        {
+          "pid": 3564056,
+          "status": 0
+        },
+        {
+          "pid": 3564067,
+          "status": 0
+        }
+      ],
+      "remaining": []
+    },
+    "main_actions": 0,
+    "ok": true,
+    "owned_memory_events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 388,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "owned_memory_peak": 1073741824,
+    "owned_memory_swap_peak": 20721664,
+    "source_config_unchanged": true,
+    "source_result_gates": 0,
+    "source_resume_build_qualified": false,
+    "swap_max_observed_only": "max",
+    "terminal_failure_preserved": true,
+    "updater_gates": 9
+  },
+  "whole_app_production_ready": false,
+  "automatic_retry": false
+}

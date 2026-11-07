@@ -1,0 +1,163 @@
+--- import-diagnostic03/runner-template.py
++++ import-provenance04/runner-template.py
+@@ -1,4 +1,4 @@
+-"""Pin-bound import-only FD diagnosis; no test cases or Android/Main entry."""
++"""Exact ctypes-import FD provenance; kernel metadata only, no target body."""
+ import ast
+ import base64
+ import hashlib
+@@ -15,7 +15,7 @@
+ PACKET_BYTES = __PACKET_BYTES__
+ PACKET_SHA = '__PACKET_SHA__'
+ PACKET_B64 = '__PACKET_B64__'
+-TEMP_ROOT = '/tmp/p4-owner20-property-import-diagnostic-03'
++TEMP_ROOT = '/tmp/p4-owner20-property-import-provenance-04'
+ NAMES = ('pid', 'pid_for_children', 'mnt', 'cgroup', 'user', 'net',
+          'ipc', 'uts', 'time', 'time_for_children')
+ 
+@@ -37,7 +37,7 @@
+         self.result['fd_diagnostic'] = {'identity_fields': ['fd','device','inode','mode','uid','gid','rdev'],
+             'identity_pool': self.identities, 'snapshots': self.snapshots,
+             'first_discrepancy': None, 'capture_cleanup': [],
+-            'ambient_contents_or_targets_read': False, 'only_self_proc_fd_enumerated': True}
++            'unrelated_ambient_contents_or_targets_read': False, 'only_self_proc_fd_enumerated': True}
+ 
+     @staticmethod
+     def info(fd):
+@@ -185,6 +185,119 @@
+ 
+ 
+ 
++
++def observe_ctypes_provenance(statement, observed, result):
++    """Read only the single added import FD's kernel metadata, never its body."""
++    row = {'attempted': True, 'collection_complete': False, 'first_error': None,
++           'secondary_errors': [], 'unknown_descriptor_closed': False,
++           'target_file_body_read': False, 'other_processes_inspected': False,
++           'owned_fdinfo_opened': False, 'owned_fdinfo_close_attempted': False,
++           'owned_fdinfo_closed': False}
++    result['ctypes_import_provenance'] = row
++    info_fd = None
++    def record(stage, error):
++        item = {'stage': stage, 'type': type(error).__name__,
++                'errno': getattr(error, 'errno', None), 'error': repr(error)[:512]}
++        if row['first_error'] is None:
++            row['first_error'] = item
++        else:
++            row['secondary_errors'].append(item)
++    def target_meta(fd):
++        st = os.fstat(fd)
++        return {'fd': fd, 'device': st.st_dev, 'inode': st.st_ino, 'mode': st.st_mode,
++                'uid': st.st_uid, 'gid': st.st_gid, 'rdev': st.st_rdev,
++                'nlink': st.st_nlink, 'bytes': st.st_size,
++                'mtime_ns': st.st_mtime_ns, 'ctime_ns': st.st_ctime_ns}
++    try:
++        need(statement['source'] == 'property_visibility.py' and statement['line'] == 9 and
++             statement['end_line'] == 9 and statement['node_type'] == 'Import' and
++             statement.get('import_names') == ['ctypes'] and statement['executed'] is True and
++             statement['source_sha256'] ==
++                 '8aa61f8a7a0e79511dc3bb49e4f4f857d7dc40b68a26e431cda0af0629bf56b2',
++             'ONLY_ACTUAL_CTYPES_IMPORT_BOUNDARY')
++        difference = result['fd_diagnostic']['first_discrepancy']
++        need(difference['before_snapshot'] == statement['before_fd_snapshot'] and
++             difference['after_snapshot'] == statement['after_fd_snapshot'] and
++             len(difference['added']) == 1 and not difference['removed'] and
++             not difference['changed'], 'EXACT_ONE_ADDED_IMPORT_FD_REQUIRED')
++        fd = int(difference['added'][0])
++        observed_index = observed.snapshots[statement['after_fd_snapshot']]['live'][str(fd)]
++        actual = observed.identities[observed_index]
++        expected = {'fd': fd, 'device': 66306, 'inode': 108020388,
++                    'mode': 33188, 'uid': 0, 'gid': 0, 'rdev': 0}
++        need(fd > 2 and actual == expected and FDObservation.info(fd) == expected,
++             'ACTUAL_ADDED_REGULAR_FD_IDENTITY_REQUIRED')
++        row['target_before'] = before = target_meta(fd)
++        row['target_fd_inheritable_before'] = os.get_inheritable(fd)
++        row['target_link_before'] = os.readlink('/proc/self/fd/' + str(fd))
++        row['single_actual_import_fd_link_read'] = True
++        need(0 < len(row['target_link_before'].encode('utf-8')) <= 4096,
++             'SELF_IMPORT_FD_LINK_BOUND')
++        row['python'] = {'version': sys.version, 'version_info': list(sys.version_info),
++                         'executable': sys.executable,
++                         'implementation': sys.implementation.name,
++                         'cache_tag': sys.implementation.cache_tag}
++        need(all(type(row['python'][key]) is str and
++                 len(row['python'][key].encode('utf-8')) <= 4096
++                 for key in ('version', 'executable', 'implementation', 'cache_tag')),
++             'PYTHON_PROVENANCE_BOUND')
++        row['modules'] = {}
++        for name in ('ctypes', '_ctypes'):
++            mod = sys.modules.get(name)
++            need(isinstance(mod, types.ModuleType), 'ACTUAL_CTYPES_MODULE_REQUIRED')
++            filename = vars(mod).get('__file__')
++            need(type(filename) is str and 0 < len(filename.encode('utf-8')) <= 4096,
++                 'ACTUAL_CTYPES_MODULE_FILE_METADATA_BOUND')
++            row['modules'][name] = {'file': filename, 'file_body_read': False}
++        info_fd = os.open('/proc/self/fdinfo/' + str(fd),
++                          os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
++        row['owned_fdinfo_opened'] = True
++        row['owned_fdinfo_identity'] = FDObservation.info(info_fd)
++        chunks = []; count = 0; deadline = time.monotonic() + 1.0
++        while True:
++            need(time.monotonic() < deadline, 'SELF_IMPORT_FDINFO_DEADLINE')
++            part = os.read(info_fd, min(1024, 4097 - count))
++            if not part:
++                break
++            count += len(part)
++            need(count <= 4096, 'SELF_IMPORT_FDINFO_BOUND')
++            chunks.append(part)
++        raw = b''.join(chunks)
++        text = raw.decode('ascii', 'strict')
++        fields = {}
++        for line in text.splitlines():
++            name, separator, value = line.partition(':')
++            need(separator and name in ('pos', 'flags', 'mnt_id', 'ino') and
++                 name not in fields and value.strip().isdigit(),
++                 'FIXED_REGULAR_FDINFO_METADATA_FIELDS')
++            fields[name] = value.strip()
++        need(set(fields) == {'pos', 'flags', 'mnt_id', 'ino'} and
++             int(fields['ino']) == before['inode'], 'SELF_FDINFO_INODE_BINDING')
++        row['fdinfo'] = {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(),
++                         'fields': fields, 'kernel_metadata_only': True}
++        row['target_link_after'] = os.readlink('/proc/self/fd/' + str(fd))
++        row['target_fd_inheritable_after'] = os.get_inheritable(fd)
++        row['target_after'] = target_meta(fd)
++        need(row['target_after'] == before and
++             row['target_link_after'] == row['target_link_before'] and
++             row['target_fd_inheritable_after'] == row['target_fd_inheritable_before'],
++             'ADDED_IMPORT_FD_CHANGED_DURING_METADATA_READ')
++    except BaseException as error:
++        record('import_provenance', error)
++    finally:
++        if info_fd is not None:
++            closing, info_fd = info_fd, None
++            row['owned_fdinfo_close_attempted'] = True
++            try:
++                os.close(closing); row['owned_fdinfo_closed'] = True
++            except BaseException as error:
++                record('owned_fdinfo_close', error)
++    row['collection_complete'] = (row['first_error'] is None and
++        row['owned_fdinfo_opened'] and row['owned_fdinfo_closed'] and
++        'target_after' in row)
++    return row
++
++
+ def execute_module_statements(source, module_name, source_name, observed, result):
+     """Execute the same pinned module statements in order, never its controls."""
+     parsed = ast.parse(source, filename=source_name, mode='exec')
+@@ -235,6 +348,7 @@
+                     # observed descriptor is not thereby owned or safe to close.
+                     result['first_statement_discrepancy'] = dict(row)
+                     result['diagnostic_collection_complete'] = True
++                    observe_ctypes_provenance(row, observed, result)
+                     change = RuntimeError('HOST_MODULE_STATEMENT_LIVE_FD_IDENTITY_CHANGED')
+                     if primary is None:
+                         primary = change
+@@ -252,7 +366,7 @@
+ 
+ 
+ def main():
+-    result = {'schema': 1, 'kind': 'owner20-property-import-diagnostic03-run',
++    result = {'schema': 1, 'kind': 'owner20-property-import-provenance04-run',
+         'success': False, 'errors': [], 'first_error': None,
+         'Android_executed': False, 'Android_property_reads_or_writes': False,
+         'namespace_entry_or_UID_changes': False, 'Main_access': False,

@@ -1,0 +1,165 @@
+{
+  "schema": "pocket4-current-owner-correction-inverse-v1",
+  "all_original_production_functions_and_modules_restored": true,
+  "edits": [
+    {
+      "file": "install_state.py",
+      "from": "/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-01",
+      "to": "/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-02",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-01",
+      "to": "/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-02",
+      "count": 1
+    },
+    {
+      "file": "make_request.py",
+      "from": "/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-01",
+      "to": "/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-02",
+      "count": 1
+    },
+    {
+      "file": "make_request.py",
+      "from": "pocket4-owned-bestbuy-qa-r4-current-r6-install-state-01-20261106",
+      "to": "pocket4-owned-bestbuy-qa-r4-current-r6-install-state-02-20261106",
+      "count": 1
+    },
+    {
+      "file": "install_state.py",
+      "from": "EXPECTED_SOURCE_FILES = {'install_state.py','bestbuy_context.py','bestbuy_transport.py','stage_execute.py',\n    'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',\n    'check_install_binding.py','references/read_bestbuy.py','target-artifact-reference.json'}",
+      "to": "EXPECTED_SOURCE_FILES = {'install_state.py','bestbuy_context.py','bestbuy_transport.py','stage_execute.py',\n    'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',\n    'check_install_binding.py','references/read_bestbuy.py','target-artifact-reference.json', 'current_discovery.py', 'check_current_discovery.py'}",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "FILES={'install_state.py','bestbuy_context.py','bestbuy_transport.py','stage_execute.py',\n       'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',\n       'check_install_binding.py','references/read_bestbuy.py','target-artifact-reference.json'}",
+      "to": "FILES={'install_state.py','bestbuy_context.py','bestbuy_transport.py','stage_execute.py',\n       'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',\n       'check_install_binding.py','references/read_bestbuy.py','target-artifact-reference.json', 'current_discovery.py', 'check_current_discovery.py'}",
+      "count": 1
+    },
+    {
+      "file": "bestbuy_context.py",
+      "from": "def open_context(",
+      "to": "def current_discovery(util, source_manifest, source_verify, source_root,\n                      app, baseline, epoch, guard):\n    manifest = source_verify(source_manifest)\n    row = manifest['files']['current_discovery.py']\n    discovery = util.module(source_root/'current_discovery.py',row['sha256'],\n                            'owned_current_discovery')\n    require(discovery.BASELINE_SHA == BASELINE_SHA and\n            discovery.QUALIFICATION_SHA == QUALIFICATION_SHA and\n            discovery.MAIN_EPOCH == CURRENT_EPOCH,\n            'CURRENT_DISCOVERY_SOURCE_BINDING_REQUIRED')\n    return discovery.discover_current(app,baseline,epoch,guard)\n\n\ndef open_context(",
+      "count": 1
+    },
+    {
+      "file": "bestbuy_context.py",
+      "from": "        init,discovered,status = app.discover()\n",
+      "to": "        init,discovered,status = current_discovery(util,source_manifest,source_verify,source_root,\n                                                    app,activation,epoch,guard)\n",
+      "count": 1
+    },
+    {
+      "file": "check_install_binding.py",
+      "from": "CONTROL_COUNT = 50",
+      "to": "CONTROL_COUNT = 68",
+      "count": 1
+    },
+    {
+      "file": "check_install_binding.py",
+      "from": "    rows.extend(run_source_controls(entry,files,source_manifest_sha256))\n",
+      "to": "    rows.extend(run_source_controls(entry,files,source_manifest_sha256))\n    discovery_controls = types.ModuleType('production_current_discovery_controls')\n    exec(compile(files['check_current_discovery.py'],'<current-discovery-controls>','exec'),discovery_controls.__dict__)\n    legacy_source = entry.read(entry.BASE_HOST_ROOT/'references/android_app.py',131072,\n                               discovery_controls.LEGACY_SHA)\n    rows.extend(discovery_controls.run_discovery_controls(files['current_discovery.py'],baseline,legacy_source))\n    rows.extend(discovery_controls.run_context_route_controls(context,files,baseline,legacy_source,source_manifest_sha256))\n",
+      "count": 1
+    },
+    {
+      "file": "check_install_binding.py",
+      "from": "'production_verify_source_calls':5}",
+      "to": "'production_verify_source_calls':5,\n            'new_owner_discovery_controls':18,'production_discovery_and_Context_route_used':True,\n            'legacy_discover_failure_reproduced_in_memory':True}",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "controls['count']==50",
+      "to": "controls['count']==68",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "len(controls['cases'])==50",
+      "to": "len(controls['cases'])==68",
+      "count": 1
+    }
+  ],
+  "nonce_bindings": [],
+  "original_source_pins": {
+    "install_state.py": {
+      "bytes": 40133,
+      "sha256": "9001218424bef33e96b1b17a929cd53865b6181b886b5447c6d5543791d13d9b"
+    },
+    "bestbuy_context.py": {
+      "bytes": 17264,
+      "sha256": "a82f3c8198858cd8f6c469d458b5c7f2b6a4fe9c078cff1e3f8dcca8eacef30a"
+    },
+    "bestbuy_transport.py": {
+      "bytes": 15605,
+      "sha256": "5666d94ba5d9c90a8ea8edd7b063ff4764b83b1bfafe4dd238018d720ab7d4a9"
+    },
+    "stage_execute.py": {
+      "bytes": 9377,
+      "sha256": "998afe3e36fc7a8fc0c50f25027e3e185b019f4cdd82b83852240f05fce7f82a"
+    },
+    "make_request.py": {
+      "bytes": 3067,
+      "sha256": "565c0a8fc8ffacc18adbc7c88e38cdc2299545d704df6035f4de14b492ce948f"
+    },
+    "check_install_binding.py": {
+      "bytes": 13229,
+      "sha256": "c9952f972787f6140e1ba9d04516c7bda3a4865e74011bdbf80159d9dba260a9"
+    },
+    "host/source-manifest.json": {
+      "bytes": 3757,
+      "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+    },
+    "host-stage-actual.json": {
+      "bytes": 10016,
+      "sha256": "e1718fcb3561488c88011f00de0d6e992ff51a64a355da87f1fcb867545fcba6"
+    },
+    "references/read_bestbuy.py": {
+      "bytes": 21069,
+      "sha256": "ce4ff1399953fe0d5e89bc0210ae9cdb323d1e08e436327df1521f6cb167ef77"
+    },
+    "target-artifact-reference.json": {
+      "bytes": 2863,
+      "sha256": "4f866a6b65eb823a9b1cf4bbd870c41f82a634710be8f86f96322633654ffd8f"
+    },
+    "INPUTS.json": {
+      "bytes": 3888,
+      "sha256": "da3cf98d84f63b76861464a97f70dc651f5e29fd84457b93974a0d65aa718b80"
+    },
+    "README.md": {
+      "bytes": 1886,
+      "sha256": "3658849daf73cd1ed5cb7a1f03ab4377243b7bfb5efa166c8848049e559b4cdd"
+    }
+  },
+  "unchanged_files": [
+    {
+      "name": "bestbuy_transport.py",
+      "bytes": 15605,
+      "sha256": "5666d94ba5d9c90a8ea8edd7b063ff4764b83b1bfafe4dd238018d720ab7d4a9"
+    },
+    {
+      "name": "host/source-manifest.json",
+      "bytes": 3757,
+      "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+    },
+    {
+      "name": "host-stage-actual.json",
+      "bytes": 10016,
+      "sha256": "e1718fcb3561488c88011f00de0d6e992ff51a64a355da87f1fcb867545fcba6"
+    },
+    {
+      "name": "references/read_bestbuy.py",
+      "bytes": 21069,
+      "sha256": "ce4ff1399953fe0d5e89bc0210ae9cdb323d1e08e436327df1521f6cb167ef77"
+    },
+    {
+      "name": "target-artifact-reference.json",
+      "bytes": 2863,
+      "sha256": "4f866a6b65eb823a9b1cf4bbd870c41f82a634710be8f86f96322633654ffd8f"
+    }
+  ],
+  "shared_R6_manifest_unchanged": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff",
+  "new_discover_inverse_to_exact_legacy": "16f04a727bd88767a39f6bcf31c1ce1c08a8baf2b87a3d7cfab51dd947578dec",
+  "Bili_sole_bind_argument_difference": null
+}

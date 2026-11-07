@@ -1,0 +1,66 @@
+{
+  "actual_Amazon_qualified": false,
+  "automatic_retry_authorized": false,
+  "control_report_scope": "The retained eight-control summary is tied to this source and explicitly uses synthetic command/lease seams. This review verifies its pins/scope, not an independently observed device or rerun result.",
+  "execution": {
+    "collector_executed": false,
+    "device_accessed": false,
+    "local_pin_AST_wrapper_checks": true,
+    "namespace_entered": false,
+    "new_control_suite_reexecuted": false,
+    "source_modified": false
+  },
+  "fully_read": [
+    {
+      "bytes": 19266,
+      "file": "read_amazon.py",
+      "sha256": "22a6552111154156004aff344d6929db436d5c3fe084893abea931f1399b0588"
+    },
+    {
+      "bytes": 3849,
+      "file": "stage_execute.py",
+      "sha256": "d1b4aef3a1a06db71424bde5467eea6b52d7954aa19ceab57b66df292c1bbb1d"
+    },
+    {
+      "bytes": 3053,
+      "file": "make_request.py",
+      "sha256": "62199ec331cf8879a00ff6cf334cc3526efd2a787555d06cef8b640da2d39564"
+    }
+  ],
+  "limits": [
+    "No actual Amazon UID/version/APK bytes or signer were observed by this review.",
+    "The 16KiB stdout gate follows original recorder capture, not a streaming limit.",
+    "WORK_SECONDS and HASH_SECONDS are admission checks; original child timeout and whole request budget bound execution/cleanup.",
+    "Package identity metadata is not business-flow or production readiness evidence."
+  ],
+  "local_checks_result": {
+    "bytes": 4944,
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/peer-amazon-artifact-reader-review-01/checks-result.json",
+    "sha256": "fc27874beb664dd968003e521f2c3bc5ffcea6892bc823f0827089c618f250a7"
+  },
+  "observations": [
+    "Context invokes the pinned unbound Flow.command method with self, mutation=False, label Android command, exactly seven held authority descriptors and check=False. Original method increments command_index and records actual child outcome before entry release; Context provides every field used by that path.",
+    "Exact ordered LIST,PATHS,PATHS,LIST admission and argv reconstruction cover both the seven-FD helper prefix and the command. A failed command exits execute; no retry or UI/launch branch is instantiated.",
+    "Once an entry has been entered, __exit__ and postguard are separately attempted. The first command or prefix failure is preserved, with release and postguard errors appended. Actual nonzero, timeout, unjoined or recorder-error outcomes cannot satisfy success.",
+    "APK files are opened through held target root and appended immediately to the owned FD list. Bounded streamed hashes require stable complete stat records; package path/UID/version are re-read while all files remain open, then each pathname must reopen to the same held identity. Reverse FD cleanup runs before target close, final Main guard, and own action lock close.",
+    "Stage claim and worker claim are create-only in one fixed root. Stage only reports success after rc0, exact source/nonce/package and worker ok, then independent final Main/source checks; stage failures cannot become readiness.",
+    "Twelve frozen files and eight dependency references have exact length/SHA verification. Packet source and embedded stage are byte-identical to the frozen sources; the full request and bounded wrapper reconstruct exactly."
+  ],
+  "result": "NO_NEW_CONFIRMED_BLOCKER_IN_REVIEWED_SCOPE",
+  "review_kind": "independent narrow source and local binding review",
+  "reviewer": "local_pocket4_inventory",
+  "schema": 1,
+  "scope": [
+    "actual Flow.command call compatibility and ordered four-command admission",
+    "entry exit, first error and independent post-Main guard",
+    "held APK descriptor lifecycle and before/after package/inode binding",
+    "exact create-only stage, packet and request exit binding"
+  ],
+  "selected_existing_source_read": [
+    "recorder.py Flow.command",
+    "held_runtime_r5.py HeldTarget identity/lease/entry/open_root/close and paired classpath reads",
+    "install_state.py acquire_action_lock",
+    "SourceContract/main guards and shared source references only; not a full fresh audit of the legacy recorder"
+  ],
+  "whole_app_production_ready": false
+}

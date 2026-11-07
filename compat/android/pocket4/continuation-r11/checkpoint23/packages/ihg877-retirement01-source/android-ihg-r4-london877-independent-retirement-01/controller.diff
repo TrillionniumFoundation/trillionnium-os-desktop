@@ -1,0 +1,877 @@
+--- actual-bili873/controller.py
++++ IHG877/controller.py
+@@ -1,22 +1,29 @@
++"""One independently authorized current IHG877 retirement; original London failure remains unknown."""
++import datetime,hashlib,json,math,os,re,stat,time,types
+-"""Independent retirement after one unknown native launch; original receipt stays unchanged."""
+-import datetime,hashlib,json,os,re,stat,time,types
+ from pathlib import Path
++ROOT=Path('/home/alex/work/pocket4-ihg-r4-public-london-input-01')
++SOURCE=ROOT/'source'
++FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r4-flow-ec4f2977574102b1e5869d2494e8416b')
++STEP_NAME='current-ihg877-independent-retirement-01'
++STEP=FLOW/'steps'/STEP_NAME
++MARKER=STEP/'remove-attempted.json'
++RECONCILIATION=STEP/'independent-current-retirement.json'
++PACKAGE='com.ihg.apps.android'
++COMPONENT=PACKAGE+'/'+PACKAGE+'.activity.MainActivity'
++TASK=877
++SOURCE_MANIFEST='24a8491dbb44faf1288869d278da96290597b7af1fcdcce12a72fd62bad9435f'
++ENTRY_PIN={'bytes':46630,'sha256':'562629c6c00d40a41cdf6fe2edf3df01292fb6f78409f8fd08b7776f02bf7bb0'}
+-FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r9-flow-474d7477074ea01fbc986e0d867924c1')
+-STEP_NAME='native-launch-retirement-01'
+-HOST_ROOT=Path('/home/alex/work/pocket4-current-host-r5-source-01')
+-HOST_MANIFEST='6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
+-RECORDER_SHA='7101d2ab2cd4b73bf96cab1117c8d0177c2b290255c6946af52ec834115a7f44'
+-PACKAGE='tv.danmaku.bili'
+-COMPONENT=PACKAGE+'/tv.danmaku.bili.MainActivityV2'
+-TASK=873
+-MARKER=FLOW/'native-launch-retirement-attempted-01.json'
+-RECONCILIATION=FLOW/'reconciliations/native-launch-retirement-01.json'
+ def need(value,code):
+  if not value:raise RuntimeError(code)
+ def sha(raw):return hashlib.sha256(raw).hexdigest()
++def pin(raw):return {'bytes':len(raw),'sha256':sha(raw)}
++def canon(value):return json.dumps(value,sort_keys=True,ensure_ascii=False,separators=(',',':')).encode()
++MAIN_BEFORE_FIXED=json.loads("{\"Main_epoch_sha256\":\"7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c\",\"authenticated_owner_chain_matches\":true,\"config_sha256\":\"f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc\",\"current_baseline_qualification_sha256\":\"ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e\",\"current_baseline_sha256\":\"633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364\",\"current_executable_and_root_backing_match\":true,\"current_user_namespaces_match\":true,\"framework_exit_cause_resolved\":false,\"historical_activation_sha256\":\"7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615\",\"historical_verified_sha256\":\"2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387\",\"old_helpers_and_tasks_reauthorized\":false,\"previous_current_baseline_sha256\":\"163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266\",\"production_ready\":false,\"resource_limits_match\":true,\"schema\":\"pocket4-current-main-guard-v2\",\"seven_processes_match\":true,\"three_host_processes_match\":true}")
++
++def read_exact(path,expected,maximum=65536):
++ need(type(expected) is dict and set(expected)=={'bytes','sha256'} and type(expected['bytes']) is int and
++  0<=expected['bytes']<=maximum,'EXACT_FILE_PIN_REQUIRED')
++ current=os.open('/',os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC);fd=None
+-def read_exact(path,pin):
+- # Only fixed pinned originals and published source; no directory traversal or discovery.
+- path=Path(path);current=os.open('/',os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC);fd=None
+  try:
+   for part in path.parts[1:-1]:
+    nxt=os.open(part,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=current)
+@@ -26,22 +33,22 @@
+    current=nxt
+   fd=os.open(path.name,os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=current)
+   first=os.fstat(fd)
++  need(stat.S_ISREG(first.st_mode) and first.st_nlink==1 and first.st_uid==0 and first.st_size==expected['bytes'],
++   'ROOT_SINGLE_REGULAR_EXACT_INPUT')
++  chunks=[];size=0
++  while True:
++   part=os.read(fd,min(65536,maximum+1-size))
+-  need(stat.S_ISREG(first.st_mode) and first.st_nlink==1 and first.st_uid in (0,1000) and
+-       first.st_size==pin['bytes'] and 0<=first.st_size<=131072,'EXACT_REGULAR_FILE_REQUIRED')
+-  chunks=[];count=0
+-  while count<=pin['bytes']:
+-   part=os.read(fd,min(16384,pin['bytes']+1-count))
+    if not part:break
++   size+=len(part);chunks.append(part);need(size<=maximum,'READ_BOUND')
++  last=os.fstat(fd)
++  fields=('st_dev','st_ino','st_mode','st_nlink','st_uid','st_gid','st_size','st_mtime_ns','st_ctime_ns')
++  need(size==first.st_size and all(getattr(first,k)==getattr(last,k) for k in fields),'EXACT_FILE_CHANGED')
++  raw=b''.join(chunks);need(pin(raw)==expected,'EXACT_FILE_SHA');return raw
+-   chunks.append(part);count+=len(part)
+-  last=os.fstat(fd);raw=b''.join(chunks)
+-  fields=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+-  need(count==pin['bytes'] and sha(raw)==pin['sha256'] and
+-       all(getattr(first,k)==getattr(last,k) for k in fields),'FIXED_ORIGINAL_CHANGED')
+-  return raw
+  finally:
+   try:
+    if fd is not None:os.close(fd)
+   finally:os.close(current)
++
+ def summary(roots,tasks):
+  need(0<len(roots)<=512 and 0<len(tasks)<=512,'CURRENT_TASK_COUNT_BOUND')
+  rows=[]
+@@ -59,8 +66,9 @@
+   rows.append({'root_id':rid,'display_id':root['display'],'user':root['user'],
+       'freeform':root['freeform'],'children':children})
+  return {'task_ids':sorted(tasks),'roots':rows}
++
+ def owned_command_record(number):
++ need(type(number) is int and 1<=number<=42,'FIXED_RETIREMENT_COMMAND_INDEX')
+- need(type(number) is int and 1<=number<=36,'FIXED_RETIREMENT_COMMAND_INDEX')
+  path=FLOW/'steps'/STEP_NAME/('command-%03d.result.json'%number)
+  fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC)
+  try:
+@@ -92,6 +100,7 @@
+        type(e['exception_type']) is str and re.fullmatch('[A-Za-z_][A-Za-z0-9_]{0,63}',e['exception_type']) and
+        (e['errno'] is None or type(e['errno']) is int),'FIXED_COMMAND_ERROR_METADATA')
+  return {'path':str(path),'bytes':len(raw),'sha256':sha(raw),'record':v}
++
+ def qualify_joined_command(record,raw,mutation):
+  need(type(mutation) is bool and isinstance(raw,bytes),'EXACT_COMMAND_OUTPUT_KIND')
+  need(record['returncode']==0 and record['spawned'] is True and
+@@ -149,6 +158,7 @@
+  need(exact_leaf(roots,task,PACKAGE),'RECONCILIATION_NOT_EXACT_OWNED_LEAF')
+  need(roots[task]['children'][0]['component']==COMPONENT,'EXACT_TARGET_COMPONENT_REQUIRED')
+  return {'status':'exact_live_leaf','removal_allowed':True}
++
+ def task_set_controls(exact_leaf):
+  rows=[]
+  def passed(name,value):need(value,'TASK_GATE_CONTROL_'+name.upper());rows.append({'name':name,'passed':True})
+@@ -157,250 +167,573 @@
+   except RuntimeError:passed(name,True);return
+   raise RuntimeError('TASK_GATE_CONTROL_ACCEPTED_'+name.upper())
+  base={1:{'display':0,'user':0,'freeform':False,
++  'children':[{'id':875,'user':0,'component':'fixture.system/Fixture'}]}}
+-  'children':[{'id':870,'user':0,'component':'fixture.system/Fixture'}]}}
+  target={'display':0,'user':0,'freeform':True,
++  'children':[{'id':877,'user':0,'component':COMPONENT}]}
++ def qualify(roots,tasks):return qualify_task_set(roots,tasks,base,{875},877,exact_leaf)
++ passed('exact_live_leaf',qualify({**base,877:target},{875,877})=={'status':'exact_live_leaf','removal_allowed':True})
++ passed('already_absent',qualify(base,{875})=={'status':'already_absent','removal_allowed':False})
++ rejected('preserved_task_missing',lambda:qualify({877:target},{877}))
++ rejected('unrelated_new_task',lambda:qualify({**base,877:target},{875,877,878}))
++ rejected('unrelated_new_root',lambda:qualify({**base,877:target,878:target},{875,877}))
++ rejected('foreign_component',lambda:qualify({**base,877:{**target,'children':[{'id':877,'user':0,'component':'other.app/Main'}]}},{875,877}))
++ rejected('wrong_same_package_component',lambda:qualify({**base,877:{**target,'children':[{'id':877,'user':0,'component':PACKAGE+'/Other'}]}},{875,877}))
++ rejected('wrong_display',lambda:qualify({**base,877:{**target,'display':1}},{875,877}))
++ rejected('wrong_user',lambda:qualify({**base,877:{**target,'user':1}},{875,877}))
++ rejected('non_leaf',lambda:qualify({**base,877:{**target,'children':target['children']+[{'id':878,'user':0,'component':COMPONENT}]}},{875,877}))
++ rejected('task_without_root',lambda:qualify(base,{875,877}))
++ rejected('preexisting_target_id',lambda:qualify_task_set(base,{875},base,{875},875,exact_leaf))
+-  'children':[{'id':873,'user':0,'component':COMPONENT}]}
+- def qualify(roots,tasks):return qualify_task_set(roots,tasks,base,{870},873,exact_leaf)
+- passed('exact_live_leaf',qualify({**base,873:target},{870,873})=={'status':'exact_live_leaf','removal_allowed':True})
+- passed('already_absent',qualify(base,{870})=={'status':'already_absent','removal_allowed':False})
+- rejected('preserved_task_missing',lambda:qualify({873:target},{873}))
+- rejected('unrelated_new_task',lambda:qualify({**base,873:target},{870,873,874}))
+- rejected('unrelated_new_root',lambda:qualify({**base,873:target,874:target},{870,873}))
+- rejected('foreign_component',lambda:qualify({**base,873:{**target,'children':[{'id':873,'user':0,'component':'other.app/Main'}]}},{870,873}))
+- rejected('wrong_same_package_component',lambda:qualify({**base,873:{**target,'children':[{'id':873,'user':0,'component':PACKAGE+'/Other'}]}},{870,873}))
+- rejected('wrong_display',lambda:qualify({**base,873:{**target,'display':1}},{870,873}))
+- rejected('wrong_user',lambda:qualify({**base,873:{**target,'user':1}},{870,873}))
+- rejected('non_leaf',lambda:qualify({**base,873:{**target,'children':target['children']+[{'id':874,'user':0,'component':COMPONENT}]}},{870,873}))
+- rejected('task_without_root',lambda:qualify(base,{870,873}))
+- rejected('preexisting_target_id',lambda:qualify_task_set(base,{870},base,{870},870,exact_leaf))
+  need(len(rows)==12,'TASK_GATE_CONTROL_COUNT')
+  return rows
+ 
++def current_read_plans(entry):
++ # Exact shape used by the fixed production worker, even for phase='launch'.
++ search_plan=json.loads(json.dumps(entry.SEARCH_PLAN));click_plan=json.loads(json.dumps(entry.PLAN))
++ input_plan=json.loads(json.dumps(entry.INPUT_PLAN))
++ post_plan=json.loads(json.dumps(entry.POST_PLAN));readiness_plans=json.loads(json.dumps(entry.SEARCH_READINESS_PLANS))
++ return {'search':search_plan,'destination':click_plan,'input':input_plan,'post':post_plan,'readiness':readiness_plans}
++
++def current_main_read_window(result):
++ keys=('Main_before_lock','Main_after_locks','Main_after')
++ sampled=[key for key in keys if key in result]
++ need('Main_after' in sampled,'INDEPENDENT_FINAL_MAIN_SAMPLE_REQUIRED')
++ need(all(type(result[key]) is dict and result[key]==MAIN_BEFORE_FIXED for key in sampled),
++  'MAIN_READ_WINDOW_CHANGED')
++ return {'sampled_fields':sampled,'all_available_samples_equal':True,'complete':sampled==list(keys),
++  'historical_Main_fields_used':False,'missing_samples_filled':False}
++
++def current_main_window_controls():
++ cases=[]
++ incomplete={'Main_before_lock':dict(MAIN_BEFORE_FIXED),'Main_after':dict(MAIN_BEFORE_FIXED)}
++ observed=current_main_read_window(incomplete)
++ need(observed=={'sampled_fields':['Main_before_lock','Main_after'],'all_available_samples_equal':True,
++  'complete':False,'historical_Main_fields_used':False,'missing_samples_filled':False} and
++  'Main_after_locks' not in incomplete,'EARLY_FAILURE_RETAINS_INCOMPLETE_CURRENT_WINDOW')
++ cases.append({'name':'early-failure-equal-current-samples-incomplete-without-false-drift','passed':True})
++ complete={key:dict(MAIN_BEFORE_FIXED) for key in ('Main_before_lock','Main_after_locks','Main_after')}
++ need(current_main_read_window(complete)['complete'] is True,'COMPLETE_CURRENT_MAIN_WINDOW')
++ cases.append({'name':'three-actual-current-samples-required-for-complete-window','passed':True})
++ for key in ('Main_after_locks','Main_after'):
++  changed={name:dict(value) for name,value in complete.items()}
++  changed[key]['Main_epoch_sha256']='0'*64
++  try:current_main_read_window(changed)
++  except RuntimeError as error:
++   need(str(error)=='MAIN_READ_WINDOW_CHANGED','WRONG_CURRENT_MAIN_DRIFT_REJECTION')
++   cases.append({'name':'sampled-'+key+'-drift-rejected','passed':True});continue
++  raise RuntimeError('CURRENT_MAIN_DRIFT_ACCEPTED')
++ need(len(cases)==4,'EXACT_FOUR_CURRENT_MAIN_WINDOW_CONTROLS')
++ return cases
++
++"""Private historical chain qualification for a new current IHG877 retirement scope."""
++def verify_historical(hist,inputs,read_exact,qualify_joined_command):
++ need(inputs['schema']=='pocket4-independent-current-IHG877-retirement-input-v1' and inputs['task']==TASK and
++  inputs['package']==PACKAGE and inputs['component']==COMPONENT and
++  inputs['original_launch_outcome']=='unknown_retained' and inputs['native_reported_task_id'] is None and
++  inputs['old_task876_disappearance_attributed'] is False,'EXACT_CURRENT_RETIREMENT_INPUTS')
++ r=hist.Reader();observed={};primary=None
++ def get(name):
++  expected=inputs['fixed_historical_files'][name]
++  need(expected['path']==str(hist.FILES[name]),'EXACT_HISTORICAL_ALLOWLIST_PATH')
++  raw=r.access(name,True);p={'bytes':expected['bytes'],'sha256':expected['sha256']}
++  need(pin(raw)==p,'FIXED_HISTORICAL_ORIGINAL_CHANGED')
++  observed[name]={'path':expected['path'],**p};return raw
+-def verify_historical_attribution():
+- need(type(INPUTS) is dict and INPUTS.get('schema')=='pocket4-independent-native-launch-retirement-input-v1' and
+-      INPUTS.get('task')==TASK and INPUTS.get('historical_launch_outcome')=='unknown_retained' and
+-      INPUTS.get('existing_launch_scope_must_remain_absent') is True,
+-      'ACTUAL_BOUND_RETIREMENT_INPUTS_REQUIRED')
+- need(sha(HISTORICAL_PARSER_SOURCE.encode())=='ba9e2350304b87e35168ee19166bece041930693ea4feedbab47624dd03ce9af',
+-      'EXACT_EXECUTED_ERROR_PARSER_SOURCE')
+- library=types.ModuleType('fixed_historical_native_error')
+- library.__file__='<verified-historical-native-error-reader>'
+- library.SOURCE_SHA256='ba9e2350304b87e35168ee19166bece041930693ea4feedbab47624dd03ce9af'
+- exec(compile(HISTORICAL_PARSER_SOURCE,library.__file__,'exec'),library.__dict__)
+- reader=library.Reader();raw={};primary=None
+  try:
++  fixed={name:get(name) for name in hist.PINS}
++  c,s,w=(hist.strict_json(fixed[k]) for k in ('coordinator','stage','worker'))
++  original=hist.qualify_worker(c,s,w)
++  parse,exact_leaf=hist.task_parser(fixed['task_parser'])
++  intent=hist.strict_json(get('native_intent'));native_result=hist.strict_json(get('native_result'))
++  hist.qualify_intent(intent,native_result,original)
++  streams={name:get('native_'+name) for name in ('stdout','stderr')}
++  for name,raw in streams.items():need(sha(raw)==hist.NATIVE_STREAMS[name],'ORIGINAL_NATIVE_STREAM_SHA')
++  projection=hist.classify_native(streams['stdout'],streams['stderr'])
++  need(projection==inputs['native_projection'] and projection['closed_child_matches']==[] and
++   projection['whole_error_attribution_qualified'] is False and
++   projection['task_cleanup_authority_created'] is False and projection['ok'] is False and
++   projection['host_pid']==3268774 and projection['stderr_exactly_repeats_complete_message'] is True,
++   'HISTORICAL_TIMEOUT_OBSERVATION_NOT_NATIVE_TASK_ATTRIBUTION')
++  scope=hist.strict_json(get('scope'));attempt=hist.strict_json(get('attempted'))
++  hist.qualify_scope(scope,attempt)
++  raw=get('prelaunch_stacks');recorded=get('prelaunch_stdout')
++  pr=hist.strict_json(get('prelaunch_result'));transport=hist.strict_json(get('prelaunch_transport'))
++  need(raw==recorded,'COMPLETE_PRELAUNCH_STDOUT_BYTES')
++  qualify_joined_command(pr,raw,False)
++  command_sha=sha(json.dumps(hist.STACKS,separators=(',',':')).encode())
++  need(transport.get('sequence')==6 and transport.get('epoch_sha256')==scope['epoch_sha256'] and
++   transport.get('package')==PACKAGE and transport.get('uid')==10137 and transport.get('command_sha256')==command_sha and
++   transport.get('returncode')==0 and transport.get('stdout_sha256')==sha(raw) and
++   transport.get('stdout_bytes')==len(raw) and transport.get('stderr_bytes')==0 and
++   transport.get('stderr_sha256')==sha(b'') and transport.get('outcome_unknown') is False and
++   transport.get('automatic_retry') is False and transport.get('numeric_pid_target_used') is False,
++   'EXACT_PRELAUNCH_HELD_TRANSPORT')
++  need(hist.utc(pr['ended_utc'])<=hist.utc(attempt['time_utc'])<=hist.utc(intent['started_utc'])<=hist.utc(native_result['ended_utc']),
++   'ORIGINAL_LAUNCH_TIME_ORDER')
++  old_roots,old_tasks=parse(raw.decode('utf-8','strict'))
++  need(hist.task_projection(raw,old_roots,old_tasks)==inputs['prelaunch'] and
++   old_tasks=={875,876} and TASK not in old_tasks and TASK not in old_roots and
++   not any(child['component'].split('/')[0]==PACKAGE for root in old_roots.values() for child in root['children']),
++   'NO_IHG_PACKAGE_OR_TASK877_IN_COMPLETE_ORIGINAL_PRELAUNCH')
++  need(r.access('launch_scope',False,optional=True) is None,'ORIGINAL_LAUNCH_SCOPE_MUST_REMAIN_ABSENT')
++  samples=[]
++  for number,row in enumerate(inputs['current_saved'],1):
++   expected_path=FLOW/'steps/native-launch-state-read-02'/('current-stacks-%02d.txt'%number)
++   command_path=FLOW/'steps/native-launch-state-read-02'/('command-%03d.result.json'%(number+4))
++   need(row['sample']==number and row['path']==str(expected_path) and row['command']['path']==str(command_path),
++    'EXACT_TWO_FIXED_SAVED_OBSERVATIONS')
++   raw=read_exact(expected_path,{k:row[k] for k in ('bytes','sha256')},131072)
++   cr=hist.strict_json(read_exact(command_path,{k:row['command'][k] for k in ('bytes','sha256')}))
++   qualify_joined_command(cr,raw,False)
++   need(hist.utc(native_result['ended_utc'])<=hist.utc(cr['ended_utc']),'SAVED_OBSERVATION_FOLLOWS_ORIGINAL_LAUNCH')
++   roots,tasks=parse(raw.decode('utf-8','strict'))
++   need(sha(canon(roots))==row['parsed_roots_sha256'] and tasks=={875,TASK} and set(roots)=={1,TASK} and
++    exact_leaf(roots,TASK,PACKAGE) and roots[TASK]['children']==[{'id':TASK,'component':COMPONENT,'user':0}] and
++    sha(canon(roots[1]))==inputs['preserved_root1_sha256'] and
++    sha(canon(roots[TASK]))==inputs['current_root877_sha256'] and roots[1]==old_roots[1],
++    'COMPLETE_SAVED_CURRENT_IHG877_AND_PRESERVED875')
++   samples.append((roots,tasks))
++  need(len(samples)==2 and samples[0]==samples[1],'EXACT_TWO_SAVED_TABLES_EQUAL')
++  preserved_roots={k:v for k,v in samples[0][0].items() if k!=TASK}
++  preserved_tasks=set(samples[0][1])-{TASK}
++  need(preserved_tasks==set(inputs['preserved_current_tasks'])=={875} and
++   set(preserved_roots)==set(inputs['preserved_current_root_ids'])=={1},'EXACT_CURRENT_PRESERVATION_BASELINE')
++  need(r.opened==r.closed,'HISTORICAL_READER_FD_CLOSURE')
++  safe={'fixed_historical_pins':observed,'actual_readers':inputs['evidence'],
++   'native_intent_component':hist.COMPONENT,'canonical_public_component':COMPONENT,
++   'component_not_present_in_original_prelaunch':True,'native_reported_task_id':None,
++   'historical_launch_outcome':'unknown_retained','original_missing_Main_after_retained':True,
++   'original_launch_scope_created':False,'original_task876_disappearance_attributed':False,
++   'original_prelaunch_tasks':[875,876],'historical_current_tasks':[875,TASK],
++   'preserved_current_tasks':[875],'entire_original_prelaunch_baseline_restored':False,
++   'current_installed_native_source_version_verified':False,'whole_error_attribution_qualified':False,
++   'reader_FDs_opened':r.opened,'reader_FDs_closed':r.closed,
++   'current_saved_file_pins':inputs['current_saved']}
++  return scope,preserved_roots,preserved_tasks,parse,exact_leaf,safe
+-  for name,pin in library.PINS.items():
+-   value=reader.access(name,True)
+-   need(len(value)==pin['bytes'] and sha(value)==pin['sha256'],'ORIGINAL_NATIVE_EVIDENCE_CHANGED')
+-   raw[name]=value
+-  worker=library.strict_json(raw['worker'])
+-  original=library.qualify_worker(worker)
+-  native_intent=library.strict_json(raw['native_intent']);native_result=library.strict_json(raw['native_result'])
+-  library.qualify_native(native_intent,native_result,original)
+-  parsed=library.pair_projection(raw['native_stdout'],raw['native_stderr'])
+-  need(parsed==INPUTS['actual_error_projection'],'ACTUAL_NATIVE_ERROR_PROJECTION_CHANGED')
+-  need(parsed['bytes']==414 and parsed['sha256']=='06a69fd403766d93148369a9dc947283dc96f27be71e26e8295d510b2f4c62a3' and
+-       parsed['complete_wrapper_match'] is True and parsed['complete_closed_error_shape'] is True and
+-       parsed['closed_error']=={'shape':'backend_different_registration_ownership','labelled_fields':{'task':TASK}} and
+-       parsed['task_cleanup_authority_created'] is False and
+-       parsed['reference_source_format_match'] is False and parsed['opaque_prefix_semantics_known'] is False and
+-       parsed['installed_source_version_verified'] is False,'EXACT_NATIVE_REPORTED_TASK_BINDING_REQUIRED')
+-  need(reader.opened==reader.closed,'HISTORICAL_READER_FD_CLOSURE')
+-  return {'worker_pin':library.WORKER_PIN,'native_file_pins':library.PINS,
+-          'reported_task':TASK,'reported_error':'backend_different_registration_ownership',
+-          'source_binary_match_proven':False,'conflict_underlying_cause_known':False,
+-          'historical_reader_FDs_opened':reader.opened,'historical_reader_FDs_closed':reader.closed,
+-          'native_started_utc':native_intent['started_utc'],'native_ended_utc':native_result['ended_utc']}
+  except BaseException as error:
++  primary=error;raise
+-  primary=error
+-  raise
+  finally:
++  if r.opened!=r.closed:
+-  if reader.opened!=reader.closed:
+    if primary is None:raise RuntimeError('HISTORICAL_READER_FD_CLOSURE')
+    primary.add_note('HISTORICAL_READER_FD_CLOSURE')
++
++
++def new_retirement_scope(source_sha):
++ return {'schema':'pocket4-independent-current-IHG-task-retirement-scope-v1',
++  'task':TASK,'component':COMPONENT,'package':PACKAGE,'uid':10137,'user':0,
++  'epoch_sha256':'7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c',
++  'baseline_sha256':'633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364',
++  'qualification_sha256':'ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e',
++  'source_sha256':source_sha,'prelaunch_absent':True,'cleanup_allowed':True,
++  'independent_current_scope':True,'original_launch_outcome':'unknown_retained',
++  'original_launch_scope_created':False,'authorizes_original_action_replay':False,
++  'native_reported_task_id':None}
++
++def independent_scope_controls(owned,task,qa,resolve,plans,exact_leaf,source_sha):
++ cases=[];bound=new_retirement_scope(source_sha)
++ def passed(name):cases.append({'name':name,'passed':True})
++ def rejected(name,call):
++  try:call()
++  except RuntimeError:passed(name);return
++  raise RuntimeError('INDEPENDENT_SCOPE_CONTROL_ACCEPTED')
++ need(owned.validate_retirement_scope(bound,source_sha),'NEW_SCOPE_POSITIVE');passed('exact-new-current-scope-positive')
++ rejected('source-pin-drift-rejected',lambda:owned.validate_retirement_scope(bound,'0'*64))
++ rejected('native-task-id-claim-rejected',lambda:owned.validate_retirement_scope({**bound,'native_reported_task_id':TASK},source_sha))
++ rejected('wrong-public-component-rejected',lambda:owned.validate_retirement_scope({**bound,'component':PACKAGE+'/Other'},source_sha))
++ cls=owned.make_flow_type(task,bound,source_sha)
++ def fixture():
++  f=object.__new__(cls);calls=[]
++  f.retirement_authority=None;f.retirement_counts={};f.retirement_remove_attempted=False
++  f.command_index=0;f.action_attempted=False;f.launch_claimed=False;f.poisoned=False;f.closed=False
++  f._private_backend_transport=False;f._android_mutation=False
++  f.guard=lambda attempted=False:None # Explicit Main/held IO seam, not runtime qualification.
++  f.tasks=types.SimpleNamespace(exact_leaf=exact_leaf)
++  f.policy=task.Policy('cleanup',qa,resolve,plans,Path('/synthetic-current-retirement'),lambda *a:None,f.selected_task)
++  def transport(argv,timeout):
++   calls.append((list(argv),timeout,f._android_mutation));f.command_index+=1
++   if f._android_mutation:f.action_attempted=True
++   return b'fixture'
++  f.transport=transport
++  return f,calls
++ f,calls=fixture()
++ rejected('unarmed-remove-before-transport-rejected',
++  lambda:f.android(['/system/bin/cmd','activity','stack','remove',str(TASK)],20,mutation=True))
++ need(calls==[] and f.command_index==0,'UNARMED_REMOVE_FORWARDED')
++ f,calls=fixture()
++ base={1:{'display':0,'user':0,'freeform':False,'children':[{'id':875,'user':0,'component':'fixture.system/Fixture'}]}}
++ roots={**base,TASK:{'display':0,'user':0,'freeform':True,'children':[{'id':TASK,'user':0,'component':COMPONENT}]}}
++ for argv,timeout in ((task.LIST,15),(task.PATHS,15),(task.OWN_UID,8),(task.OWN_PATH,8),(task.STACKS,20),(task.STACKS,20)):
++  f.android(list(argv),timeout)
++ f.arm_after_exact_pair(roots,{875,TASK},roots,{875,TASK},base,{875})
++ f.android(['/system/bin/cmd','activity','stack','remove',str(TASK)],20,mutation=True)
++ need(f.command_index==7 and f.action_attempted is True and f.policy.remove_attempted is True and
++  f.policy.counts=={'target_uid':1,'target_path':1,'helper_uid':1,'helper_path':1,'stacks':2} and
++  f.retirement_counts=={**f.policy.counts,'remove':1} and
++  calls[-1]==(['/system/bin/cmd','activity','stack','remove',str(TASK)],20,True),
++  'REAL_ORIGINAL_POLICY_AND_FLOW_ANDROID_DELEGATION')
++ passed('six-reads-new-scope-original-Policy-Flow-single-remove-route')
++ rejected('second-remove-never-forwarded',lambda:f.android(['/system/bin/cmd','activity','stack','remove',str(TASK)],20,mutation=True))
++ need(len(calls)==7,'SECOND_REMOVE_FORWARDED')
++ f,calls=fixture()
++ rejected('foreign-remove-never-forwarded',lambda:f.android(['/system/bin/cmd','activity','stack','remove','876'],20,mutation=True))
++ need(calls==[],'FOREIGN_REMOVE_FORWARDED')
++ f,calls=fixture();f.android(list(task.STACKS),0.125)
++ need(calls==[(list(task.STACKS),0.125,False)] and f.policy.counts=={'stacks':1},
++  'ORIGINAL_COMPLETION_FRACTIONAL_REMAINING_BUDGET')
++ passed('fractional-original-completion-timeout-delegates')
++ need(len(cases)==9,'EXACT_NINE_INDEPENDENT_SCOPE_CONTROLS')
++ return cases
++
++def open_context_route_controls(task,q,plans,scope,source_sha):
++ """Execute the real new open_context body; all OS/source/held I/O is explicitly synthetic."""
++ cases=[]
++ def run_fixture(mode):
++  module=types.ModuleType('synthetic_IO_only_owned_retirement_context')
++  exec(compile(OWNED_CONTEXT_SOURCE,'<exact-owned-context-with-explicit-IO-seams>','exec'),module.__dict__)
++  events=[];written=[];targets=[]
++  class P:
++   def __init__(self,value):self.value=value
++   def __truediv__(self,tail):return P(self.value+'/'+str(tail))
++   def __str__(self):return self.value
++   def is_dir(self):return True
++   def is_relative_to(self,root):return self.value.startswith(str(root)+'/')
++   def lstat(self):return types.SimpleNamespace(st_mode=stat.S_IFDIR|0o700,st_uid=0)
++  root=P('/synthetic/flow');step=root/'steps/current-retirement'
++  init={'host_pid':1};activation={'framework_epoch':{'binding':{'processes':{'init':init}}},'status':{'host_pid':2}}
++  expected_scope=json.loads(json.dumps(scope));epoch=object()
++  class Target:
++   def __init__(self,actual,path,digest):
++    need(actual==init,'FIXTURE_TARGET_IDENTITY');self.record=dict(actual);self.closed=False;targets.append(self)
++   def verify(self):need(not self.closed,'FIXTURE_CLOSED_TARGET')
++   def close(self):self.closed=True;events.append('held.close')
++  def proc_open(path,flags):
++   need(path=='/proc/1','FIXTURE_FIXED_PROC');events.append('proc.open');return 7
++  def proc_close(fd):
++   need(fd==7,'FIXTURE_FD');events.append('proc.close')
++  module.os=types.SimpleNamespace(open=proc_open,close=proc_close,O_RDONLY=os.O_RDONLY,
++   O_DIRECTORY=os.O_DIRECTORY,O_NOFOLLOW=os.O_NOFOLLOW,O_CLOEXEC=os.O_CLOEXEC)
++  recorder=types.SimpleNamespace(APP='/synthetic/app.py',APP_SHA='1'*64,
++   task_functions=lambda path:types.SimpleNamespace(exact_leaf=lambda *a:True))
++  held=types.SimpleNamespace(proc_identity_at=lambda fd,pid,deadline:dict(init),HeldTarget=Target)
++  def classpaths(held_arg,target_arg,framework,epoch_arg,guard):
++   guard();events.append('classpath');return {'CLASSPATH':'synthetic'},{'synthetic':True}
++  binding=types.SimpleNamespace(same_epoch_identity=lambda left,right:left==right,main_classpaths=classpaths)
++  def load(name,label):
++   need(name in ('recorder.py','references/held_runtime_r5.py','main_binding.py'),'FIXTURE_EXACT_MODULE')
++   return {'recorder.py':recorder,'references/held_runtime_r5.py':held,'main_binding.py':binding}[name]
++  contract=types.SimpleNamespace(sha256=task.CURRENT_HOST_MANIFEST,verify=lambda:events.append('contract.verify'),load=load)
++  source=types.SimpleNamespace(SourceContract=lambda path,pin:contract,HELPER_PATH=P('/synthetic/helper'),HELPER_BYTES=1,
++   HELPER_SHA='2'*64,verify_shared_helper=lambda:{'whole_process_tree_cleanup_qualified':False})
++  def module_read(path,*args,**kwargs):
++   value=str(path)
++   if value.endswith('/scope.json'):return canon(expected_scope)
++   if value.endswith('/baseline.json') or value=='/synthetic/baseline':return b'B'
++   if value.endswith('/baseline-qualification.json') or value=='/synthetic/qualification':return b'Q'
++   return b'x'
++  def load_module(path,pin,label):
++   return source if str(path).endswith('/source_contract.py') else types.SimpleNamespace()
++  util=types.SimpleNamespace(module=load_module,read=module_read,verify_source=lambda sha:None,HERE=P('/synthetic/install-source'))
++  def main_guard(baseline,epoch_arg):
++   need(baseline is activation and epoch_arg is epoch,'FIXTURE_MAIN_ARGUMENTS')
++   events.append('Main.guard');return dict(MAIN_BEFORE_FIXED)
++  def write_new(path,value):written.append((str(path),value))
++  ref=types.SimpleNamespace(current_baseline=lambda:activation,EPOCH_SOURCE='/synthetic/epoch.py',EPOCH_SOURCE_SHA='3'*64,
++   module=lambda *args:epoch,read=module_read,main_guard=main_guard,write_new=write_new,
++   BASELINE='/synthetic/baseline',BASELINE_SHA=task.CURRENT_BASELINE_SHA,
++   QUALIFICATION='/synthetic/qualification',QUALIFICATION_SHA=task.CURRENT_QUALIFICATION_SHA)
++  def discover(*args):
++   events.append('current.discovery')
++   return (99 if mode=='wrong_discovery_init' else 1),{'CLASSPATH':'synthetic'},{'host_pid':2}
++  context=types.SimpleNamespace(INSTALLED_SHARED=P('/synthetic/shared'),CONTRACT_SHA='4'*64,
++   SHARED_MANIFEST=task.CURRENT_HOST_MANIFEST,baseline_scope=lambda *args:{'package':PACKAGE,'uid':10137},
++   verify_target_data=lambda *args:None,current_discovery=discover)
++  transport=types.SimpleNamespace(FRAMEWORK_EPOCH_SHA256=task.CURRENT_EPOCH,
++   environment_values=lambda value:dict(value),BoundArun=lambda **kwargs:object())
++  def verify_runtime(value):
++   need(value==SOURCE_MANIFEST,'FIXTURE_SOURCE_ARGUMENT')
++   if mode=='reject_source':raise RuntimeError('SYNTHETIC_SOURCE_REJECTED')
++   events.append('source.verify')
++  flow_type=module.make_flow_type(task,new_retirement_scope(source_sha),source_sha)
++  result={}
++  try:
++   flow,actual_recorder,guard=module.open_independent_context(task,flow_type,ref,util,context,SOURCE_MANIFEST,verify_runtime,
++    root,step,transport,result,time.monotonic()+30,'cleanup',q.qa,plans,q.resolver.RESOLVE,expected_scope,
++    install_source_manifest=q.resolver.INSTALL_SOURCE_SHA)
++  except RuntimeError as error:
++   if mode=='reject_source':
++    need(str(error)=='SYNTHETIC_SOURCE_REJECTED' and not targets and not written and 'proc.open' not in events,
++     'SOURCE_FAILURE_BEFORE_HELD_IO')
++   elif mode=='wrong_discovery_init':
++    need(str(error)=='FIXED_MAIN_DISCOVERY_CHANGED' and len(targets)==1 and targets[0].closed and not written and
++     events.count('proc.open')==events.count('proc.close')==events.count('held.close')==1,
++     'WRONG_DISCOVERY_INIT_CLOSES_OWNED_HELD_TARGET')
++   else:raise
++   return
++  need(mode=='positive' and actual_recorder is recorder and isinstance(flow,flow_type) and
++   len(written)==1 and written[0][0]==str(step/'held-main-binding.json') and
++   written[0][1]['target_package']==PACKAGE and written[0][1]['target_uid']==10137 and
++   written[0][1]['amazon_task_runtime_source_manifest']==SOURCE_MANIFEST and
++   written[0][1]['Bili_Flow_instantiated'] is False and
++   flow.scope==expected_scope and flow.policy.phase=='cleanup' and
++   flow.retirement_authority is None and
++   events.count('proc.open')==events.count('proc.close')==1 and not targets[0].closed,
++   'REAL_OPEN_CONTEXT_REACHES_TYPED_HELD_BINDING_WITH_UID')
++  flow.close();need(targets[0].closed and events.count('held.close')==1,'RETURNED_FLOW_CLOSES_HELD_TARGET')
++ for mode,name in (('positive','real-open-context-reaches-held-binding-UID-and-original-Flow'),
++  ('reject_source','real-open-context-source-rejection-before-held-IO'),
++  ('wrong_discovery_init','real-open-context-wrong-discovery-init-closes-held-target')):
++  run_fixture(mode);cases.append({'name':name,'passed':True})
++ need(len(cases)==3,'EXACT_THREE_OPEN_CONTEXT_ROUTE_CONTROLS')
++ return cases
++
+ def run(source_sha256):
++ need(os.getuid()==os.geteuid()==0,'ROOT_CURRENT_RETIREMENT_REQUIRED')
+- need(os.getuid()==os.geteuid()==0,'ROOT_BOUND_RETIREMENT_REQUIRED')
+  os.umask(0o077)
++ result={'schema':'pocket4-independent-current-IHG877-retirement-v1','ok':False,
+- result={'schema':'pocket4-independent-native-launch-retirement-v1','ok':False,
+   'source_sha256':source_sha256,'step_name':STEP_NAME,'task':TASK,'errors':[],'command_records':[],
+   'historical_launch_outcome':'unknown_retained','original_launch_scope_created':False,
++  'native_reported_task_id':None,'historical_Main_after_filled':False,
++  'original_task876_disappearance_attributed':False,'entire_original_prelaunch_baseline_restored':False,
++  'native_registration_replayed':False,'Composer_control_remove_sent':False,'native_launches':0,
+-  'native_registration_replayed':False,'Composer_control_remove_sent':False,
+   'maximum_Android_task_remove_commands':1,'remove_requested':False,'remove_acknowledged':False,
+   'removal_action_attempted':False,'retirement_outcome_unknown':False,
+   'before_tables':[],'completion_observations':[],'independent_after_attempted':False,
++  'independent_after_completed':False,'global_action_lock_released':False,'flow_lock_released':False,
++  'held_binding_released':False,'whole_process_tree_cleanup_qualified':False,
++  'helper_UiAutomation_calls':0,'old_helper_nonce_values_consumed':False,
++  'business_success_verified':False,'whole_app_production_ready':False}
++ flow=recorder=artifacts=session=action_lock=flow_lock=resources=q=entry=u=ref=guard=None
++ preserved_roots=preserved_tasks=None;step_created=False;phase='fixed_historical_chain';began=time.monotonic()
++ def remember(where,error):result['errors'].append({'phase':where,**safe_error(error)})
+-  'independent_after_completed':False,'global_action_lock_acquired':False,
+-  'global_action_lock_released':False,'held_binding_released':False,
+-  'flow_lock_held_until_process_exit':True,'whole_process_tree_cleanup_qualified':False,
+-  'helper_UiAutomation_calls':0,'business_success_verified':False,'whole_app_production_ready':False}
+- flow=None;recorder=None;action_lock=None;baseline_roots=None;baseline_tasks=None
+- def remember(phase,error):result['errors'].append({'phase':phase,**safe_error(error)})
+  def record_command(number):
++  path=str(STEP/('command-%03d.result.json'%number))
++  existing=next((x for x in result['command_records'] if x['path']==path),None)
++  if existing is None:
++   existing=owned_command_record(number);result['command_records'].append(existing)
++  return existing['record']
+-  path=str(FLOW/'steps'/STEP_NAME/('command-%03d.result.json'%number))
+-  if not any(x['path']==path for x in result['command_records']):
+-   result['command_records'].append(owned_command_record(number))
+-  return next(x['record'] for x in result['command_records'] if x['path']==path)
+  def preserve(roots,tasks):
++  need(set(tasks)-{TASK}==set(preserved_tasks),'OTHER_TASK_SET_CHANGED')
++  need(set(roots)-{TASK}==set(preserved_roots),'OTHER_ROOT_SET_CHANGED')
++  need(all(roots.get(k)==v for k,v in preserved_roots.items()),'PREEXISTING_ROOT_CONTENT_CHANGED')
+-  need(set(tasks)-{TASK}==set(baseline_tasks),'OTHER_TASK_SET_CHANGED')
+-  need(set(roots)-{TASK}==set(baseline_roots),'OTHER_ROOT_SET_CHANGED')
+-  need(all(roots.get(k)==v for k,v in baseline_roots.items()),'PREEXISTING_ROOT_CONTENT_CHANGED')
+  def observed(raw,roots,tasks):
++  return {'raw_stack_pin':pin(raw),'tasks':summary(roots,tasks),
++   'complete_parsed_roots_sha256':sha(canon(roots)),
++   'other_complete_root_content_sha256':sha(canon({k:v for k,v in roots.items() if k!=TASK})),
++   'target_absent':TASK not in roots and TASK not in tasks,
++   'foreign_component_names_exported':False}
++ def current_table(label,timeout=20):
++  raw=flow.android(task.STACKS,timeout)
++  qualify_joined_command(record_command(flow.command_index),raw,False)
++  roots,tasks=flow.tasks.parse_stacks(raw.decode('utf-8','strict'))
++  need(len(roots)<=256 and len(tasks)<=512,'CURRENT_COMPLETE_TASK_TABLE_BOUND')
++  ref.write_new(STEP/(label+'.txt'),raw)
++  return raw,roots,tasks
+-  return {'raw_stack_bytes':len(raw.encode()),'raw_stack_sha256':sha(raw.encode()),
+-          'tasks':summary(roots,tasks),'target_absent':TASK not in roots and TASK not in tasks}
+  try:
++  need(pin(HISTORICAL_PARSER_SOURCE.encode())==HISTORICAL_PARSER_PIN,'EXACT_EXECUTED_NATIVE007_SOURCE')
++  hist=types.ModuleType('fixed_historical_IHG_native007');hist.__file__='<fixed-historical-IHG-native007>'
++  hist.SOURCE_SHA256=HISTORICAL_PARSER_PIN['sha256']
++  exec(compile(HISTORICAL_PARSER_SOURCE,hist.__file__,'exec'),hist.__dict__)
++  scope,preserved_roots,preserved_tasks,parse,exact_leaf,historical=verify_historical(hist,INPUTS,read_exact,qualify_joined_command)
++  result['historical_chain']=historical
++  need(not os.path.lexists(STEP) and not os.path.lexists(FLOW/'launch-scope.json'),'NO_CURRENT_RETIREMENT_OR_ORIGINAL_SCOPE_REPLAY')
++  entry_raw=read_exact(SOURCE/'owned_inspect.py',ENTRY_PIN)
++  entry=types.ModuleType('fixed_ihg_current_retirement_entry');entry.__file__=str(SOURCE/'owned_inspect.py')
++  exec(compile(entry_raw,entry.__file__,'exec'),entry.__dict__)
++  need(entry.HERE==SOURCE and entry.FLOW==FLOW and entry.PACKAGE==PACKAGE and entry.HELPER_UID==10158,
++   'EXACT_CURRENT_IHG_ENTRY')
++  q=entry.qualified(SOURCE_MANIFEST);u,ref=q.util,q.ref
++  task=entry.load(SOURCE/'ihg_task_context.py',q.manifest['files']['ihg_task_context.py']['sha256'],'fixed_IHG_original_task_context')
++  context=u.module(q.resolver.INSTALL_SOURCE/'ihg_context.py',q.resolver.CONTEXT_SHA,'fixed_IHG_install_artifact_context')
++  transport=u.module(q.resolver.INSTALL_SOURCE/'ihg_transport.py',q.resolver.TRANSPORT_SHA,'fixed_IHG_held_transport')
++  shared=u.module(context.INSTALLED_SHARED/'source_contract.py',context.CONTRACT_SHA,'fixed_current_source_contract')
++  contract=shared.SourceContract(context.INSTALLED_SHARED/'source-manifest.json',context.SHARED_MANIFEST)
++  recorder=contract.load('recorder.py','fixed_current_original_command')
++  activation=ref.current_baseline()
++  epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'fixed_current_epoch')
++  guard=lambda:ref.main_guard(activation,epoch)
++  need(pin(OWNED_CONTEXT_SOURCE.encode())==OWNED_CONTEXT_PIN,'EXACT_OWNED_RETIREMENT_CONTEXT')
++  owned=types.ModuleType('owned_IHG_current_retirement_context');owned.__file__='<verified-owned-IHG-retirement-context>'
++  exec(compile(OWNED_CONTEXT_SOURCE,owned.__file__,'exec'),owned.__dict__)
++  bound_scope=new_retirement_scope(source_sha256)
++  flow_type=owned.make_flow_type(task,bound_scope,source_sha256)
++  plans=current_read_plans(entry)
++  phase='admission';resources=u.prepare_owned_limits();result['owned_before']=resources
++  result['Main_before_lock']=guard()
++  need(result['Main_before_lock']==MAIN_BEFORE_FIXED,'FRESH_CURRENT_MAIN_BASELINE_DIFFERS')
++  result['controls']=task_set_controls(exact_leaf)+command_gate_controls()+current_main_window_controls()+independent_scope_controls(
++   owned,task,q.qa,q.resolver.RESOLVE,plans,exact_leaf,source_sha256)+open_context_route_controls(task,q,plans,scope,source_sha256)
++  need(len(result['controls'])==38 and len({x['name'] for x in result['controls']})==38,'EXACT_THIRTY_EIGHT_CONTROLS')
++  result['flow_lock_admission']={};flow_lock=u.acquire_action_lock(FLOW/'flow.lock',result['flow_lock_admission'])
++  result['global_lock_admission']={};action_lock=u.acquire_action_lock(recorder.ACTION_LOCK,result['global_lock_admission'])
++  result['Main_after_locks']=guard()
++  need(not os.path.lexists(STEP) and not os.path.lexists(FLOW/'launch-scope.json'),'NO_RETIREMENT_STEP_OR_OLD_SUCCESS_SCOPE')
++  STEP.mkdir(mode=0o700);step_created=True
++  ref.write_new(STEP/'intent.json',{'schema':'pocket4-independent-current-retirement-intent-v1',
++   'source_sha256':source_sha256,'task':TASK,'component':COMPONENT,'historical_launch_outcome':'unknown_retained',
++   'native_reported_task_id':None,'current_preserved_tasks':[875],'original_task876_disappearance_attributed':False,
++   'maximum_remove_commands':1,'maximum_completion_reads':30,'maximum_total_commands':42,
++   'native_launches':0,'helper_instrumentation_calls':0,'automatic_retry':False})
++  def verify_runtime(value):
++   entry.verify_source(value);u.verify_source(q.resolver.INSTALL_SOURCE_SHA)
++   entry.read(entry.RESOLVER_SOURCE,32768,entry.RESOLVER_SHA,entry.RESOLVER_BYTES)
++   read_exact(SOURCE/'owned_inspect.py',ENTRY_PIN)
++   for item in INPUTS['fixed_historical_files'].values():
++    read_exact(Path(item['path']),{k:item[k] for k in ('bytes','sha256')},131072)
++   for item in INPUTS['current_saved']:
++    read_exact(Path(item['path']),{k:item[k] for k in ('bytes','sha256')},131072)
++    read_exact(Path(item['command']['path']),{k:item['command'][k] for k in ('bytes','sha256')})
++   need(not os.path.lexists(FLOW/'launch-scope.json'),'ORIGINAL_LAUNCH_SCOPE_MUST_REMAIN_ABSENT')
++  phase='held_current_IHG_context'
++  flow,recorder,phase_guard=owned.open_independent_context(task,flow_type,ref,u,context,SOURCE_MANIFEST,verify_runtime,
++   FLOW,STEP,transport,result,began+175,'cleanup',q.qa,plans,q.resolver.RESOLVE,scope,
++   install_source_manifest=q.resolver.INSTALL_SOURCE_SHA)
++  need(flow.scope==scope and flow.tasks.parse_stacks is not None,'CURRENT_TYPED_CONTEXT_REQUIRED')
++  reference=json.loads(u.read(q.resolver.INSTALL_SOURCE/'target-artifact-reference.json',
++   expected=q.install_manifest['files']['target-artifact-reference.json']['sha256']))
++  reader=u.module(q.resolver.INSTALL_SOURCE/'references/read_ihg.py',u.READER_SHA,'current_IHG_artifact_parser')
++  artifacts=context.ArtifactSet(flow,reference,reader)
++  phase='current_target_before';result['target_before']=artifacts.before()
++  session=q.adapter.Session(flow,recorder,q.qa,q.proof,entry.HELPER_UID)
++  phase='current_helper_before';result['helper_before']=session.installed()
++  need(result['helper_before']==q.installed and flow.command_index==4,'EXACT_CURRENT_INSTALLED_HELPER')
++  fresh=[]
+-  result['historical_attribution']=verify_historical_attribution()
+-  need(not os.path.lexists(FLOW/'launch-scope.json') and not os.path.lexists(MARKER) and
+-       not os.path.lexists(RECONCILIATION),'NO_OLD_SCOPE_OR_RETIREMENT_REPLAY')
+-  saved_scope=json.loads(read_exact(FLOW/'scope.json',INPUTS['scope_pin']))
+-  attempted=json.loads(read_exact(FLOW/'launch-attempted.json',INPUTS['attempted_pin']))
+-  need(saved_scope==INPUTS['historical_scope'] and attempted==INPUTS['historical_attempted'] and
+-       attempted['scope']==saved_scope and attempted['step']=='launch-01' and
+-       saved_scope['component']==COMPONENT and saved_scope['user']==0 and
+-       saved_scope['automatic_retry'] is False,'EXACT_ORIGINAL_LAUNCH_SCOPE_AND_ATTEMPT')
+-  need(datetime.datetime.fromisoformat(saved_scope['created_utc'])<=
+-       datetime.datetime.fromisoformat(attempted['time_utc'])<=
+-       datetime.datetime.fromisoformat(result['historical_attribution']['native_started_utc'])<=
+-       datetime.datetime.fromisoformat(result['historical_attribution']['native_ended_utc']),
+-       'ORIGINAL_SCOPE_ATTEMPT_NATIVE_TIME_ORDER')
+-  baseline_raw=read_exact(FLOW/'steps/launch-01/prelaunch-stacks.txt',INPUTS['prelaunch_stacks_pin'])
+-  current_raw=read_exact(FLOW/'steps/native-reconciliation-stacks-read-01/command-002.stdout',
+-      INPUTS['previous_current_stack_pin'])
+-  previous_command=json.loads(read_exact(FLOW/'steps/native-reconciliation-stacks-read-01/command-002.result.json',
+-      INPUTS['previous_current_command_pin']))
+-  qualify_joined_command(previous_command,current_raw,False)
+-  need(datetime.datetime.fromisoformat(result['historical_attribution']['native_ended_utc'])<=
+-       datetime.datetime.fromisoformat(previous_command['ended_utc']),'CURRENT_OBSERVATION_FOLLOWS_NATIVE')
+-  manifest=json.loads(read_exact(HOST_ROOT/'source-manifest.json',{'bytes':3605,'sha256':HOST_MANIFEST}))
+-  need(manifest['files']['recorder.py']=={'bytes':41689,'sha256':RECORDER_SHA},'ORIGINAL_CURRENT_RECORDER_REQUIRED')
+-  recorder_raw=read_exact(HOST_ROOT/'recorder.py',manifest['files']['recorder.py'])
+-  recorder=types.ModuleType('original_current_bili_recorder_for_retirement')
+-  recorder.__file__=str(HOST_ROOT/'recorder.py')
+-  exec(compile(recorder_raw,recorder.__file__,'exec'),recorder.__dict__)
+-  args=types.SimpleNamespace(operation='cleanup',adapter_manifest_sha256=HOST_MANIFEST,flow_dir=FLOW,
+-   epoch_module=HOST_ROOT/'references/framework_epoch.py',
+-   task_source=HOST_ROOT/'references/task_scope_baseline.py',step=STEP_NAME,
+-   request={'purpose':'independent-owned-Android-leaf-retirement-after-unknown-native-launch',
+-    'historical_launch_outcome':'unknown_retained','task':TASK,
+-    'failed_worker_pin':INPUTS['worker_pin'],'actual_error_reader':INPUTS['actual_error_reader'],
+-    'maximum_remove_commands':1,'native_registration_replay':False},
+-   unknown_step=None,observation_step=None,postcondition=None)
+-  flow=recorder.Flow(args)
+-  need(not os.path.lexists(FLOW/'launch-scope.json') and not os.path.lexists(MARKER) and
+-       not os.path.lexists(RECONCILIATION),'NO_SCOPE_OR_RETIREMENT_CREATED_BEFORE_FLOW_LOCK')
+-  need(flow.scope==saved_scope and flow.scope['package']==PACKAGE and flow.scope['uid']==10117,
+-       'SAVED_FLOW_SCOPE_CHANGED')
+-  baseline_roots,baseline_tasks=flow.tasks.parse_stacks(baseline_raw.decode('utf-8','strict'))
+-  previous_roots,previous_tasks=flow.tasks.parse_stacks(current_raw.decode('utf-8','strict'))
+-  need(summary(baseline_roots,baseline_tasks)==INPUTS['prelaunch_task_baseline'] and
+-       summary(previous_roots,previous_tasks)==INPUTS['previous_current_task_summary'],
+-       'ACTUAL_STACK_PROJECTION_BINDING_CHANGED')
+-  need(qualify_task_set(previous_roots,previous_tasks,baseline_roots,baseline_tasks,TASK,flow.tasks.exact_leaf)['status']=='exact_live_leaf',
+-       'PREVIOUS_READ_DID_NOT_IDENTIFY_EXACT_NEW_LEAF')
+-  result['task_gate_controls']=task_set_controls(flow.tasks.exact_leaf)
+-  result['command_gate_controls']=command_gate_controls()
+-  flow.begin(args,mutation=True)
+-  action_lock=recorder.lock_file(recorder.ACTION_LOCK);result['global_action_lock_acquired']=True
+-  flow.guard();result['Main_before']=flow.current_guard.current_guard(flow.activation,action_attempted=False)
+   for number in (1,2):
++   phase='current_complete_table_'+str(number)
++   raw,roots,tasks=current_table('before-stacks-%02d'%number)
++   need(flow.command_index==4+number and flow.action_attempted is False and not flow.launch_claimed,'ONLY_SIX_PRE_RETIREMENT_READS')
++   gate=qualify_task_set(roots,tasks,preserved_roots,preserved_tasks,TASK,flow.tasks.exact_leaf)
++   fresh.append((roots,tasks));result['before_tables'].append({**observed(raw,roots,tasks),'qualification':gate})
+-   raw,roots,tasks=flow.stacks(timeout=20)
+-   need(flow.command_index==number and flow.action_attempted is False,'PRE_RETIREMENT_READS_ONLY')
+-   cr=record_command(number)
+-   qualify_joined_command(cr,raw.encode(),False)
+-   gate=qualify_task_set(roots,tasks,baseline_roots,baseline_tasks,TASK,flow.tasks.exact_leaf)
+-   result['before_tables'].append({**observed(raw,roots,tasks),'qualification':gate})
+    flow.guard()
++  need(fresh[0]==fresh[1] and result['before_tables'][0]['qualification']==result['before_tables'][1]['qualification'],
++   'FRESH_COMPLETE_TABLES_CHANGED_NO_RETRY')
+-  need(result['before_tables'][0]['tasks']==result['before_tables'][1]['tasks'] and
+-       result['before_tables'][0]['qualification']==result['before_tables'][1]['qualification'],
+-       'FRESH_TASK_IDENTITY_CHANGED_BETWEEN_SAMPLES')
+   result['before_tables_qualified']=True
+   if gate['status']=='already_absent':
+    result['already_absent_without_removal']=True
+   else:
++   phase='arm_new_current_scope'
++   flow.arm_after_exact_pair(fresh[0][0],fresh[0][1],fresh[1][0],fresh[1][1],preserved_roots,preserved_tasks)
++   ref.write_new(STEP/'new-current-retirement-scope.json',bound_scope);result['new_current_retirement_scope_armed']=True
+-   need(gate['removal_allowed'] is True,'CURRENT_EXACT_LEAF_REQUIRED')
+    flow.guard()
++   ref.write_new(MARKER,{'schema':'pocket4-independent-current-retirement-attempt-v1','scope':bound_scope,
++    'source_sha256':source_sha256,'time_utc':recorder.now(),'automatic_retry':False,
++    'original_launch_scope_created':False})
++   phase='one_exact_Android_remove877';result['remove_requested']=True
+-   marker={'schema':'pocket4-independent-native-launch-retirement-attempt-v1','step':STEP_NAME,
+-     'source_sha256':source_sha256,'task':TASK,'component':COMPONENT,
+-     'scope_sha256':INPUTS['scope_pin']['sha256'],'historical_launch_outcome':'unknown_retained',
+-     'actual_error_reader':INPUTS['actual_error_reader'],'time_utc':recorder.now(),'automatic_retry':False}
+-   recorder.write_new(MARKER,marker);result['remove_requested']=True
+    removed=flow.android(['/system/bin/cmd','activity','stack','remove',str(TASK)],20,mutation=True)
++   need(flow.command_index==7,'EXACT_SINGLE_REMOVE_INDEX')
++   qualify_joined_command(record_command(7),removed,True);result['remove_acknowledged']=True
++   completion_reads=0
+-   need(flow.command_index==3,'EXACTLY_ONE_REMOVE_COMMAND')
+-   qualify_joined_command(record_command(3),removed,True)
+-   result['remove_acknowledged']=True
+-   def completion_record(value):
+-    index=len(result['completion_observations'])+1
+-    recorder.write_new(flow.step/('retirement-private-readback-%02d.json'%index),value)
+-    need(type(value) is dict and type(value.get('raw_stacks')) is str,'COMPLETE_RETIREMENT_READBACK_REQUIRED')
+-    r,t=flow.tasks.parse_stacks(value['raw_stacks']);preserve(r,t)
+-    result['completion_observations'].append({'observation':index,**observed(value['raw_stacks'],r,t)})
+-    if TASK in t:
+-     need(r.get(TASK,{}).get('children')==[{'id':TASK,'component':COMPONENT,'user':0}],
+-          'TARGET_COMPONENT_CHANGED_DURING_RETIREMENT')
+    def completion_stacks(timeout):
++    nonlocal completion_reads
++    need(completion_reads<30,'COMPLETION_CAP_PRESERVES_INDEPENDENT_AFTER_SLOT')
++    completion_reads+=1
++    raw=flow.android(task.STACKS,timeout)
++    need(flow.command_index<=37,'THIRTY_COMPLETION_READS_BOUND')
+-    raw=flow.android(['/system/bin/cmd','activity','stack','list'],timeout)
+-    need(flow.command_index<=35,'RETIREMENT_READ_COUNT_BOUND')
+     qualify_joined_command(record_command(flow.command_index),raw,False)
+     return raw.decode('utf-8','strict')
++   def completion_record(value):
++    index=len(result['completion_observations'])+1
++    ref.write_new(STEP/('completion-private-%02d.json'%index),value)
++    need(type(value) is dict and type(value.get('raw_stacks')) is str,'COMPLETE_COMPLETION_TABLE')
++    roots,tasks=flow.tasks.parse_stacks(value['raw_stacks']);preserve(roots,tasks)
++    if TASK in tasks:
++     need(roots.get(TASK,{}).get('children')==[{'id':TASK,'component':COMPONENT,'user':0}],
++      'CURRENT_TARGET_CHANGED_DURING_RETIREMENT')
++    result['completion_observations'].append({'observation':index,**observed(value['raw_stacks'].encode(),roots,tasks)})
++   phase='original_bounded_removal_completion'
++   result['normal_completion']=flow.tasks.wait_for_removal(completion_stacks,TASK,PACKAGE,fresh[-1][1],completion_record)
+-   result['normal_completion']=flow.tasks.wait_for_removal(completion_stacks,TASK,PACKAGE,tasks,completion_record)
+    result['normal_removal_verified']=True
++ except BaseException as error:remember(phase,error)
+- except BaseException as error:remember('retirement',error)
+  finally:
++  if flow is not None and result.get('before_tables_qualified') is True:
+-  if flow is not None and flow.step is not None and result.get('before_tables_qualified') is True:
+    result['independent_after_attempted']=True
+    try:
++    raw,roots,tasks=current_table('independent-after-stacks')
++    preserve(roots,tasks);result['independent_after']=observed(raw,roots,tasks)
++    need(TASK not in tasks and TASK not in roots and roots==preserved_roots and tasks==preserved_tasks,
++     'EXACT_CURRENT_TARGET_ABSENT_AND_OTHER_CONTENT_PRESERVED')
+-    raw,roots,tasks=flow.stacks(timeout=20)
+-    need(flow.command_index<=36,'TOTAL_RETIREMENT_COMMAND_BOUND')
+-    qualify_joined_command(record_command(flow.command_index),raw.encode(),False)
+-    preserve(roots,tasks)
+-    result['independent_after']=observed(raw,roots,tasks)
+-    need(result['independent_after']['target_absent'] and roots==baseline_roots and tasks==baseline_tasks,
+-         'EXACT_TARGET_RETIREMENT_OR_BASELINE_RESTORATION_UNQUALIFIED')
+     result['independent_after_completed']=True
+    except BaseException as error:remember('independent_after',error)
++  if session is not None and artifacts is not None:
++   try:
++    result['helper_after']=session.installed()
++    need(result['helper_after']==result['helper_before'],'CURRENT_HELPER_CHANGED')
++    result['target_after']=artifacts.after()
++    need(result['target_after']==result['target_before'],'CURRENT_TARGET_CHANGED')
++   except BaseException as error:remember('current_package_metadata_after',error)
+-  if flow is not None and flow.step is not None:
+-   for number in range(1,min(flow.command_index,36)+1):
+-    try:record_command(number)
+-    except BaseException as error:remember('retained_command_%d'%number,error)
+   if flow is not None:
++   result['actual_command_count']=flow.command_index;result['removal_action_attempted']=flow.action_attempted
++   result['original_policy_counts']=dict(flow.policy.counts);result['owned_retirement_counts']=dict(flow.retirement_counts)
++   try:
++    need(not flow.launch_claimed and session is not None and session.nonces==set() and flow.policy.used_nonces==set(),
++     'NO_NATIVE_OR_HELPER_NONCE_CONSUMPTION')
++    need(flow.command_index<=42 and flow.policy.counts.get('stacks',0)<=33 and
++     flow.retirement_counts.get('remove',0)<=1,'EXACT_TOTAL_RETIREMENT_BOUNDS')
++    if not result['errors']:
++     need(all(flow.policy.counts.get(k)==2 for k in ('target_uid','target_path','helper_uid','helper_path')) and
++      sum(flow.retirement_counts.values())==flow.command_index and
++      flow.policy.counts=={k:v for k,v in flow.retirement_counts.items() if k!='remove'},
++      'EXACT_ORIGINAL_POLICY_AND_OWNED_COMMAND_COUNTS')
++    for number in range(1,min(flow.command_index,42)+1):
++     row=record_command(number)
++     output=u.read(STEP/('command-%03d.stdout'%number),131072)
++     if not result['errors']:qualify_joined_command(row,output,result['remove_requested'] and number==7)
++   except BaseException as error:remember('complete_command_and_nonce_accounting',error)
++  if artifacts is not None:
+-   result['removal_action_attempted']=bool(flow.action_attempted)
+    try:
++    if len(artifacts.records)==1 and 'target_after' not in result:result['failed_scope_files_revalidated']=artifacts.revalidate_files()
++   except BaseException as error:remember('failed_scope_file_revalidation',error)
++   try:result['target_FD_cleanup']=artifacts.close()
++   except BaseException as error:remember('target_FD_cleanup',error)
++  if flow is not None:
++   try:flow.guard(attempted=flow.action_attempted);result['final_held_guard_passed']=True
++   except BaseException as error:remember('final_held_guard',error)
+-    flow.guard(attempted=flow.action_attempted)
+-    result['Main_after']=flow.current_guard.current_guard(flow.activation,action_attempted=flow.action_attempted)
+-    need(result.get('Main_before')==result['Main_after'],'MAIN_OUTER_MAP_CHANGED')
+-    result['after_Main_guard']=True
+-   except BaseException as error:remember('after_Main_guard',error)
+    try:flow.close();result['held_binding_released']=True
+    except BaseException as error:remember('held_binding_release',error)
++  if guard is not None:
++   try:
++    result['Main_after']=guard();result['current_Main_window']=current_main_read_window(result)
++   except BaseException as error:remember('independent_final_Main',error)
++  for fd,name in ((action_lock,'global_action_lock'),(flow_lock,'flow_lock')):
++   if fd is not None:
++    try:os.close(fd);result[name+'_released']=True
++    except BaseException as error:remember(name+'_release',error)
++  if entry is not None:
++   try:
++    entry.qualified(SOURCE_MANIFEST)
++    need(not os.path.lexists(FLOW/'launch-scope.json'),'ORIGINAL_LAUNCH_SCOPE_MUST_REMAIN_ABSENT')
++    result['source_and_artifact_inputs_unchanged']=True
++   except BaseException as error:remember('final_source_closure',error)
++  if resources is not None:
++   try:result['owned_after']=u.owned_resources();u.resources_qualified(resources,result['owned_after'])
++   except BaseException as error:remember('final_owned_resources',error)
+-  if action_lock is not None:
+-   try:os.close(action_lock);result['global_action_lock_released']=True
+-   except BaseException as error:remember('global_action_lock_release',error)
+  complete=bool(not result['errors'] and result.get('before_tables_qualified') is True and
++  result['independent_after_completed'] and result.get('final_held_guard_passed') is True and
++  result.get('current_Main_window',{}).get('complete') is True and
++  result['held_binding_released'] and result['flow_lock_released'] and result['global_action_lock_released'] and
++  result.get('source_and_artifact_inputs_unchanged') is True and
++  result.get('target_FD_cleanup',{}).get('held_APK_FDs_closed')==1 and
+-  result['independent_after_completed'] and result.get('after_Main_guard') is True and
+-  result['held_binding_released'] and result['global_action_lock_released'] and
+   (result.get('already_absent_without_removal') is True or
+    (result['remove_acknowledged'] and result.get('normal_removal_verified') is True)))
+  result['ok']=complete
+- result['retirement_outcome_unknown']=result['removal_action_attempted'] and not complete
+- result['historical_launch_outcome']='unknown_retained'
+  if complete:
+   try:
++   receipt={'schema':'pocket4-independent-current-IHG877-retirement-reconciliation-v1',
+-   receipt={'schema':'pocket4-independent-native-launch-retirement-reconciliation-v1',
+     'created_utc':recorder.now(),'source_sha256':source_sha256,'task':TASK,'component':COMPONENT,
++    'original_action_outcome':'unknown_retained','original_launch_scope_created':False,
++    'authorizes_original_action_replay':False,'native_reported_task_id':None,
++    'owned_current_Android_leaf_absent':True,'all_other_current_root_and_task_content_preserved':True,
++    'original_task876_disappearance_attributed':False,'entire_original_prelaunch_baseline_restored':False,
++    'actual_historical_chain':result['historical_chain'],'before_tables':result['before_tables'],
++    'independent_after':result['independent_after'],
+-    'original_action_outcome':'unknown_retained','old_action_replayed':False,
+-    'original_launch_scope_created':False,'authorizes_future_action_replay':False,
+-    'owned_Android_leaf_absent':True,'preexisting_root_and_task_content_preserved':True,
+-    'actual_error_reader':INPUTS['actual_error_reader'],'historical_attribution':result['historical_attribution'],
+-    'before_tables':result['before_tables'],'independent_after':result['independent_after'],
+     'command_result_pins':[{k:row[k] for k in ('path','bytes','sha256')} for row in result['command_records']]}
++   ref.write_new(RECONCILIATION,receipt);raw=u.read(RECONCILIATION,65536)
++   result['independent_reconciliation_receipt']={'path':str(RECONCILIATION),**pin(raw)}
++  except BaseException as error:remember('new_independent_receipt',error);result['ok']=False
++ result['retirement_outcome_unknown']=bool(result['removal_action_attempted'] and not result['ok'])
++ if step_created:
++  try:ref.write_new(STEP/'result.json',result)
++  except BaseException as error:
++   remember('durable_retirement_result',error);result['ok']=False
++   result['retirement_outcome_unknown']=bool(result['removal_action_attempted'])
+-   recorder.write_new(RECONCILIATION,receipt)
+-   receipt_raw=recorder.read_regular(RECONCILIATION)
+-   result['independent_reconciliation_receipt']={'path':str(RECONCILIATION),'bytes':len(receipt_raw),'sha256':sha(receipt_raw)}
+-  except BaseException as error:remember('new_reconciliation_receipt',error);result['ok']=False
+- result['retirement_outcome_unknown']=result['removal_action_attempted'] and not result['ok']
+- if flow is not None and flow.step is not None:
+-  try:recorder.write_new(flow.step/'result.json',result)
+-  except BaseException as error:remember('durable_retirement_result',error);result['ok']=False
+- result['retirement_outcome_unknown']=result['removal_action_attempted'] and not result['ok']
+  data=(json.dumps(result,ensure_ascii=False,sort_keys=True,separators=(',',':'))+'\n').encode()
++ need(len(data)<=131072,'SAFE_RETIREMENT_OUTPUT_BOUND')
+- need(len(data)<=65536,'SAFE_RETIREMENT_OUTPUT_BOUND')
+  print(data.decode(),end='',flush=True)
+  return 0 if result['ok'] else 1

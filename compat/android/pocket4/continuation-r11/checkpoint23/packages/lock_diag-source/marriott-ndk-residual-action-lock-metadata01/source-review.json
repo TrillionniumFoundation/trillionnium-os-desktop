@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "kind": "marriott-ndk-residual-action-lock-metadata01",
+  "status": "SOURCE_ONLY_NEVER_DISPATCHED",
+  "source": {
+    "bytes": 18374,
+    "sha256": "a8df6f66b30cfa9def85de494b781926cbccbd48784ca94068678c02e643b05f",
+    "git_blob_sha1": "1c92fcb52eee007f87bc12129a359c949b20c816"
+  },
+  "reason": {
+    "actual_job": "1a1b2a4e11f-fc05-7f1d",
+    "actual_tree": "ccea42e7841e42eed9a94d3b142354b43e2d4535",
+    "actual_stdout": {
+      "bytes": 4749,
+      "sha256": "642be65fb1edc94b866c1f0bc578ae1d8801100f6d25ced64de4505c52fba6e8",
+      "git_blob_sha1": "4274e67bc55f3f9d2dabd253c5158663a808000d"
+    },
+    "errno": 11,
+    "stage": "existing_global_lock",
+    "lock_acquired": false,
+    "package_and_data_observation_started": false,
+    "old_install_outcome": "UNKNOWN"
+  },
+  "source_self_lock_review": {
+    "residual_source": {
+      "bytes": 27595,
+      "sha256": "35dedd754a3dc3bd865aba5b718633e20f7dff1da0657d760b3b0a782e231238",
+      "git_blob_sha1": "f8d1dd1babedac5d60e92dd2a5919d8f454cfed9"
+    },
+    "ActionLock_instances": 1,
+    "target_open_calls": 1,
+    "exclusive_nonblocking_attempts": 1,
+    "other_flock_call": "LOCK_UN only if acquired; actual acquired=false",
+    "pre_lock_sources_reviewed": [
+      "source_contract.py constructor/verify/load/verify_shared_helper",
+      "current_baseline_guard.py source_modules/load_current/current_guard",
+      "held_runtime_r5.py",
+      "main_binding.py",
+      "cell_ancestry.py",
+      "baseline_policy.py"
+    ],
+    "known_second_open_or_lock_route_found": false,
+    "live_holder_identity_not_inferred": true
+  },
+  "scope": {
+    "target": "/run/lock/android-digitalis-actions.lock",
+    "target_open": "O_PATH|O_NOFOLLOW|O_CLOEXEC",
+    "target_body_reads": 0,
+    "ancestor_edges": "Root, run, lock, proc and own proc/fdinfo directories are held; parent-name/held device/inode/mode/uid/gid checked before/after. Shared directory times are not equality gates.",
+    "proc_locks_reads": 2,
+    "proc_locks_each_max_bytes": 1048576,
+    "proc_locks_line_max": 16384,
+    "selected_record_max": 64,
+    "fdinfo": "Only the one freshly held target O_PATH descriptor in this process; two full reads.",
+    "self_view": "Read fixed proc/self numeric link, NOFOLLOW open that numeric self directory, verify alias and getpid before/after; both PID and mount namespace links recorded. Do not infer /proc is the unfiltered initial PID namespace.",
+    "holder_output": "Only exact dev-major/dev-minor/inode rows. Separate blocked waiters and OFDLCK -1. PIDs are candidates from this proc view, not birth/liveness/process-file authority.",
+    "holder_process_files_read": 0,
+    "unrelated_proc_records_exported": false,
+    "global_absence_or_historical_cause_claimed": false
+  },
+  "forbidden_actions": {
+    "flock_or_lockf_or_fcntl_lock": 0,
+    "unlock_or_lock_retry": 0,
+    "Main_or_Android": 0,
+    "namespace_entry": 0,
+    "signals_to_processes": 0,
+    "children": 0,
+    "file_mutation": 0,
+    "directory_enumeration": 0,
+    "package_data_read": 0
+  },
+  "lifecycle": {
+    "observation_seconds": 10,
+    "self_alarm_seconds": 12,
+    "outer_seconds": 45,
+    "CPU_percent": 100,
+    "memory_bytes": 134217728,
+    "nice": 15,
+    "FD_registration": "All acquisitions registered immediately before checks; every own close attempted once. Failed closes remain failed, no blind retry or ambient FD close.",
+    "first_error_preserved": true,
+    "close_errors_in_journal_prevent_complete": true,
+    "timer_mask_prechecked": true,
+    "prior_handler_restored": true,
+    "owned_resources_full_lifetime_qualified": false
+  },
+  "controls": {
+    "synthetic_parser_cases": 5,
+    "production_parser_called": true,
+    "Python_executed": false,
+    "case_names": [
+      "one_FLOCK_holder_exact_dev_inode",
+      "blocked_waiter_not_promoted_to_holder",
+      "OFD_minus_one_has_no_single_PID_authority",
+      "same_device_wrong_inode_excluded",
+      "malformed_complete_table_fails_closed"
+    ]
+  },
+  "original_pending_states": {
+    "residual_read01_not_replayed": true,
+    "old_install01_UNKNOWN": true,
+    "future_install_run_or_retire_authorized": false
+  },
+  "format_sources": [
+    "https://man7.org/linux/man-pages/man5/proc_locks.5.html",
+    "https://man7.org/linux/man-pages/man5/proc_pid_fdinfo.5.html"
+  ],
+  "prior_WIP": {
+    "bytes": 17956,
+    "sha256": "8fa9997a1801b1e5c9fe88ec697e237be2e3a63ed5e9556798dffb6a69727ab8",
+    "git_blob_sha1": "ddac873f2de937a429ecf04d7f3917012a90ad40",
+    "status": "SOURCE_ONLY_NEVER_DISPATCHED",
+    "final_delta": "Two exact hunks use own proc/self PID view without assuming its number equals getpid."
+  }
+}

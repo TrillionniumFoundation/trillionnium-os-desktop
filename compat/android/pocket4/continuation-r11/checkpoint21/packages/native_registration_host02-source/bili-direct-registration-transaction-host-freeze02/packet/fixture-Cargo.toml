@@ -1,0 +1,19 @@
+[package]
+name = "pocket4-direct-registration-transaction-controls"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+
+[workspace]
+resolver = "2"
+
+[lib]
+path = "src/lib.rs"
+doctest = false
+
+[dependencies]
+droidloom-composer = { path = "../builder-source/graphics/droidloom-composer" }
+droidloom-task-control = { path = "../builder-source/graphics/droidloom-task-control" }
+droidloom-denial-protocol = { path = "../builder-source/graphics/droidloom-denial-protocol" }
+droidloom-denial-ipc = { path = "../builder-source/graphics/droidloom-denial-ipc" }

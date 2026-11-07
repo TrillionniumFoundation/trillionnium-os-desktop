@@ -1,0 +1,87 @@
+--- search01/INPUTS.json
++++ destination01-template/INPUTS.json
+@@ -1,4 +1,20 @@
+ {
++  "destination_ancestor_observation": {
++    "bytes": 22299,
++    "sha256": "fc21205db14a40d3f38bc521c4a4183ff425abd2e6cb8c7b3ef367232dd57a06",
++    "git_blob": "7dae6d17e4b55d6758a5f23d7910dd17576317b2",
++    "retired_task": 1016,
++    "complete_nodes": 112,
++    "historical_structure_only": true,
++    "maximum_ancestor_levels": 6,
++    "each_public_form_role_unique": true,
++    "each_role_unique_eligible_clickable_ancestor_count": 1,
++    "historical_observed_ancestor_distance": 2,
++    "historical_node_path_or_resource_not_action_authority": true,
++    "direct_current_form_required": true,
++    "implicit_search_click_allowed": false,
++    "destination_input_supported_by_current_R1": false
++  },
+   "actual_build": {
+     "APK": {
+       "bytes": 24720,
+@@ -78,9 +94,9 @@
+   "hotel_search_results_verified": false,
+   "independent_post_plan": {
+     "nonces": {
++      "after": "IHG_DEST_NEW_NONCE_0000000000005",
++      "before": "IHG_DEST_NEW_NONCE_0000000000006",
++      "inspect": "IHG_DEST_NEW_NONCE_0000000000007"
+-      "after": "9ada2583466df5228313dfc4f6fab995",
+-      "before": "cd6f15f50a69d0fb2ee6a8d624b22871",
+-      "inspect": "2a1a045b9884b417390a9738ed6cadef"
+     },
+     "operation": "inspect",
+     "schema": 1
+@@ -105,9 +121,9 @@
+   },
+   "login_or_booking_verified": false,
+   "maximum_public_clicks": 1,
++  "nonce": "IHG_DEST_NEW_NONCE_0000000000000",
+-  "nonce": "c66c450fdd017a27e7c352a7b011cb21",
+   "original_full_tree_window_node_freshness_required": true,
++  "prior_search_public_role_observation": {
+-  "public_role_observation": {
+     "bytes": 12714,
+     "classes": [
+       "android.widget.FrameLayout",
+@@ -119,21 +135,21 @@
+     "self_or_direct_parent_candidates": 1,
+     "sha256": "ba438fee676cfdfad2bb8bfbf8e630fccc1d0d6ffc8dca13399b7538e19d02cc"
+   },
++  "public_destination_click_plan": {
+-  "public_search_click_plan": {
+     "nonces": {
++      "action": "IHG_DEST_NEW_NONCE_0000000000001",
++      "after": "IHG_DEST_NEW_NONCE_0000000000002",
++      "before": "IHG_DEST_NEW_NONCE_0000000000003",
++      "inspect": "IHG_DEST_NEW_NONCE_0000000000004"
+-      "action": "1679bbc2952884723c5ce771608ad9bb",
+-      "after": "86a49d6d6c0a7ce8dd9ece28041a5361",
+-      "before": "f70c8d573806dd953d0a8100549c8ce6",
+-      "inspect": "f4df2bd80baa518c6d51ced630c640a8"
+     },
+     "operation": "click",
+     "schema": 1,
+     "selector": {
++      "text": "Destination"
+-      "text": "Search"
+     }
+   },
++  "qualification": "Only one current public Destination ancestor click plus independent complete post observation; destination input semantics, hotel results, login and booking remain unverified",
++  "request_generated": false,
+-  "qualification": "Only independent public Search selected-state transition; hotel search, dates, accounts and booking remain unverified",
+-  "request_generated": true,
+   "resolver_records": {
+     "stage": {
+       "bytes": 1583,
+@@ -149,7 +165,7 @@
+   "schema": 1,
+   "shared_helper_whole_process_tree_cleanup_qualified": false,
+   "source_binding_is_frozen_install_request_not_execution_evidence": false,
++  "state": "ACTUAL_INSTALL_BOUND_FRESH_IHG_PUBLIC_DESTINATION_ENTRY_TEMPLATE_UNRUN",
+-  "state": "ACTUAL_INSTALL_BOUND_FRESH_IHG_PUBLIC_SEARCH_ENTRY_UNRUN",
+   "state_wire_sha256": "0b3460605e4e41b93e02cff418feea9526f03790e4d5c80be113939e3a59d4b2",
+   "whole_app_production_ready": false,
+   "worker_receipt": {

@@ -1,0 +1,111 @@
+{
+  "schema": 1,
+  "state": "LOCAL_CENSUS_AND_READINESS_CONTROLS_PASS",
+  "controls": [
+    {
+      "name": "exact-read-limit-accepted-and-one-extra-byte-rejected",
+      "passed": true,
+      "evidence_mode": "actual temporary file"
+    },
+    {
+      "name": "bounded-directory-enumeration-deduplicates-members",
+      "passed": true,
+      "evidence_mode": "actual files; declared synthetic cgroup fixture"
+    },
+    {
+      "name": "does-not-follow-cgroup-directory-symlink",
+      "passed": true,
+      "evidence_mode": "actual filesystem symlink"
+    },
+    {
+      "name": "invalid-pid-and-enumeration-bound-rejected",
+      "passed": true,
+      "evidence_mode": "actual files; declared bound seam"
+    },
+    {
+      "name": "missing-cgroup-file-error-is-retained",
+      "passed": true,
+      "evidence_mode": "actual removed fixture file"
+    },
+    {
+      "name": "actual-owned-proc-identity-read",
+      "passed": true,
+      "evidence_mode": "actual local process"
+    },
+    {
+      "name": "outside-cgroup-or-namespace-excluded-before-argv",
+      "passed": true,
+      "evidence_mode": "actual local process; declared mismatched expected identities"
+    },
+    {
+      "name": "actual-oversized-child-argv-is-not-retained",
+      "passed": true,
+      "evidence_mode": "actual owned child /proc"
+    },
+    {
+      "name": "reaped-owned-child-records-read-error",
+      "passed": true,
+      "evidence_mode": "actual owned child reaped"
+    },
+    {
+      "name": "unbounded-root-and-ambiguous-cgroup-rejected",
+      "passed": true,
+      "evidence_mode": "pure parser and no-read root gate"
+    },
+    {
+      "name": "first-strict-success-fixes-one-epoch",
+      "passed": true,
+      "evidence_mode": "explicit synthetic guard/census/clock"
+    },
+    {
+      "name": "fixed-epoch-cannot-be-recaptured",
+      "passed": true,
+      "evidence_mode": "explicit synthetic guard/census/clock"
+    },
+    {
+      "name": "only-initial-readiness-error-reobserved-with-first-error-retained",
+      "passed": true,
+      "evidence_mode": "explicit synthetic guard/census/clock"
+    },
+    {
+      "name": "30-second-deadline-no-epoch-or-case-after-exhaustion",
+      "passed": true,
+      "evidence_mode": "explicit synthetic guard/census/clock"
+    },
+    {
+      "name": "other-strict-guard-error-never-retried",
+      "passed": true,
+      "evidence_mode": "explicit synthetic guard/census/clock"
+    },
+    {
+      "name": "incomplete-census-retained-before-any-capture-or-case",
+      "passed": true,
+      "evidence_mode": "explicit synthetic guard/census/clock"
+    },
+    {
+      "name": "init-generation-mismatch-refuses-epoch",
+      "passed": true,
+      "evidence_mode": "explicit synthetic guard/census/clock"
+    },
+    {
+      "name": "late-strict-success-does-not-admit-action",
+      "passed": true,
+      "evidence_mode": "explicit synthetic guard/census/clock"
+    },
+    {
+      "name": "Main-epoch-change-stops-readiness-loop",
+      "passed": true,
+      "evidence_mode": "explicit synthetic guard/census/clock"
+    },
+    {
+      "name": "runtime-disallows-initial-wait-after-probe-action",
+      "passed": true,
+      "evidence_mode": "actual runtime method with explicit synthetic scope"
+    }
+  ],
+  "count": 20,
+  "device_operations": 0,
+  "owned_child_reaped": true,
+  "Android_qualification": "NOT_RUN",
+  "synthetic_tests_are_not_device_evidence": true
+}

@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "probe": "owned_real_metadata_r19_diagnostic",
+  "actual_sources": true,
+  "raw_worker_only_fixed_snapshot": true,
+  "default_source_feature": 0,
+  "owned_probe_feature": 1,
+  "cases": [
+    "real_metadata_three_entrypoints_same_app_context",
+    "forged_app_owned_tag_and_matching_name_stay_ordinary",
+    "ordinary_O_PATH_metadata",
+    "warm_metadata_AS_1_and_explicit_restart",
+    "raw_private_fork_AS_1_real_metadata",
+    "full_caller_fdtable_real_metadata",
+    "bad_fd_snapshot_atomicity_and_caller_mask",
+    "quiesce_closes_generation_and_rejects_restart",
+    "12_restart_kernel_clear_tid_rounds",
+    "actual_caller_TID_private_fdtable",
+    "shared_VM_new_TGID_refuses_without_reset",
+    "NOFILE_0_metadata_EMFILE_known_red"
+  ],
+  "known_production_red_cases": [
+    11
+  ],
+  "expected_mask": "0xfff",
+  "budgets": {
+    "controller_ms": 15000,
+    "direct_child_ms": 3000,
+    "nested_child_ms": 2000,
+    "reap_after_kill_ms": 1000
+  },
+  "own_children_only": true,
+  "raw_fork_inflight_request_covered": false,
+  "metadata_Fstat_QueryOrigin_positive_root_candidate_covered": false,
+  "metadata_Fstatfs_ordinary_tmpfs_raw_owner_covered": true,
+  "trusted_positive_O_PATH_reopen_covered": false,
+  "broker_positive_identity_tested": false,
+  "runtime_hooks_installed": false,
+  "credential_namespace_transition_guarantee": false,
+  "peer_review": "NOT_PERFORMED",
+  "actual_android_executed": false,
+  "candidate_production_ready": false,
+  "actual_elf_before_runtime_gate": {
+    "script": "audit_worker_binary.py",
+    "source_unchanged": true,
+    "apk_embedded_elf_match": true,
+    "objdump_before_after_matches_builder_pin": true,
+    "manual_start_only_fixed_worker_null_context_required": true
+  },
+  "limitations": [
+    "R18 actual Android failed metadata comparison; R19 diagnosis has not run until separate receipt.",
+    "Explicit Start/Stop and direct raw-fork reset are probe calls; ART integration is not installed",
+    "Initial user namespace authority is PIDFD_THREAD namespace ioctl; startup can fail if actual platform lacks it",
+    "Per-request caller/worker snapshots do not prove arbitrary concurrent host-native root/mount/credential transitions",
+    "Supplementary groups limited to 128; larger set rejects qualification",
+    "No same-process resume after Quiesce; only a private-child reset permits a new generation",
+    "No original protected app files, network services, policies, or Main modifications"
+  ],
+  "inherits_r18_exact_core_sources": true,
+  "r18_actual_android_result": {
+    "passed": false,
+    "mask": "0x840",
+    "start_succeeded": true,
+    "raw_read_succeeded": true,
+    "first_metadata_comparison_failed": true
+  },
+  "diagnostic_only_change": {
+    "core_sources_modified": false,
+    "existing_comparisons_relaxed": false,
+    "details": "Capture tagged, every stat/statfs field and raw bytes, actual sizeof/offsetof, earliest comparison stage before unchanged checks. Private-table pre-Check comparison also captured."
+  }
+}

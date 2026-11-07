@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "reviewer": "/root/native_bridge_repair",
+  "mode": "read-only source review; no compilation, tests, Hepta, mount or cgroup operation",
+  "manifest_sha256": "2bae8abc5cd0386762d9a675bfea00e19ab39034ff2c949b458687b50cde2b8a",
+  "all_manifest_payload_pins_match": true,
+  "source_diff_sha256": "e287d7137a691dec59ee920218dd5a6c04d0b4f75f50563222882ec54214433e",
+  "source_files": [
+    {
+      "path": "candidate/runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs",
+      "bytes": 28202,
+      "sha256": "89106424eb31511f1a8aafe59361c30a5f43637dcb02663dd1b295cec842d829"
+    },
+    {
+      "path": "candidate/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs",
+      "bytes": 29561,
+      "sha256": "6c43720ca585d22a772a42146dce7ecd2f05dc08e5895f4e133174bb079bb645"
+    },
+    {
+      "path": "candidate/runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs",
+      "bytes": 28247,
+      "sha256": "3d7d3ff5eed14fdcd270837dccb29fa03c6584fb5def611167d3f6b1f8436921"
+    }
+  ],
+  "scope": [
+    "Complete three-file production diff; Domain creation/validation and recursive retirement path",
+    "Entry inherited fd admission, image/project/configure/final pre_exec sequence",
+    "Hello validate and its bootstrap handshake call sites through DONE"
+  ],
+  "finding": "No concrete blocking defect found within this source delta and declared bootstrap scope.",
+  "supported_source_conclusions": [
+    "Host creates the named bootstrap child while Android root is empty, retains its identity, and leaves its subtree_control empty. empty_descendant correctly does not require pids.current on that controller-less leaf.",
+    "Entry joins Android before cgroup namespace sealing. project_cgroup first validates/mounts the sealed Android-root view, then writes only 0 to the held leaf cgroup.procs. It checks root sole self before migration and root local empty/leaf exact self afterwards.",
+    "ProjectionPhase closes admission after any partial attempt; configure_init consumes the prepared/Ready state once. Final registered callback rechecks the two held directory identities, root ownership, CLOEXEC, empty root and exact self membership with bounded raw reads.",
+    "Host Hello validation proves the received init process generation/namespaces before fresh bootstrap membership, repeats membership before final process-live proof, and its strict membership calls remain within HELLO/PROJECT handshake. The post-DONE steady domain check does not require leaf exact-self forever.",
+    "Existing recursive retirement still requires exact-owner proof and aggregate whole Android/outer emptiness before recursively removing descendants, including bootstrap. The leaf does not replace whole-tree retirement with a root-only cgroup.procs check."
+  ],
+  "limitations": [
+    "No actual Rust compile or namespace/entry execution performed by this reviewer. The two added unit tests were read but not run.",
+    "This source delta addresses the no-internal-process layout, not the separately observed repeat-cgroup2-mount EBUSY. Owner08 first-cause/caller attribution remains unproved.",
+    "Matching complete supervisor closure, actual CPU callback order in that build, and later Android behavior must be qualified by the owning agent/root. No production-ready or full-owner PASS claim."
+  ],
+  "modified_source_files": 0,
+  "remote_actions": 0
+}

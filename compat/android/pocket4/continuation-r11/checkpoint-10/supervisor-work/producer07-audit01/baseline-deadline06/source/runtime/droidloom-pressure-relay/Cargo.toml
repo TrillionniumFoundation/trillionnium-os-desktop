@@ -1,0 +1,19 @@
+[package]
+name = "droidloom-pressure-relay"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+autobins = false
+
+[dependencies]
+libc.workspace = true
+sha2.workspace = true
+
+[[bin]]
+name = "droidloom-psi-owner"
+path = "src/bin/droidloom_psi_owner.rs"
+
+[[bin]]
+name = "owned-ipc-controls"
+path = "src/bin/owned_ipc_controls.rs"

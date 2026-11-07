@@ -1,0 +1,41 @@
+--- amazon-artifact/stage_execute.py
++++ 12306-artifact-launcher/stage_execute.py
+@@ -6,9 +6,9 @@
+ from pathlib import Path
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-amazon-artifact-readonly-01')
+-SOURCE=ROOT/'source/read_amazon.py'
+-NONCE='42110205266d417c33e33607204a5d8d'
++ROOT=Path('/home/alex/work/pocket4-12306-artifact-launcher-readonly-01')
++SOURCE=ROOT/'source/read_12306.py'
++NONCE='a08bcaaa2480f0aafcdaa0d5ac6c315a'
+ REFERENCE=Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/source/references/readonly_r3_coordinator.py')
+ REFERENCE_SHA='e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ 
+@@ -21,13 +21,13 @@
+     assert 0<len(raw)<=32768 and hashlib.sha256(raw).hexdigest()==source_sha256
+     assert os.getuid()==os.geteuid()==0
+     assert ROOT.parent.resolve()==ROOT.parent and not os.path.lexists(ROOT)
+-    entry=types.ModuleType('amazon_metadata_fixed_entry');entry.__file__=str(SOURCE)
++    entry=types.ModuleType('ticket12306_metadata_fixed_entry');entry.__file__=str(SOURCE)
+     exec(compile(raw,str(SOURCE),'exec'),entry.__dict__)
+     assert entry.ROOT==ROOT and entry.SOURCE_PATH==SOURCE and entry.NONCE==NONCE
+-    ref=entry.load(REFERENCE,REFERENCE_SHA,'amazon_stage_main_reference')
++    ref=entry.load(REFERENCE,REFERENCE_SHA,'ticket12306_stage_main_reference')
+     activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),
+-                     ref.EPOCH_SOURCE,'amazon_stage_epoch')
++                     ref.EPOCH_SOURCE,'ticket12306_stage_epoch')
+     before=ref.main_guard(activation,epoch)
+     os.umask(0o077);ROOT.mkdir(mode=0o700)
+     result={'schema':1,'ok':False,'nonce':NONCE,'package':entry.PACKAGE,
+@@ -52,7 +52,7 @@
+         observed=json.loads(durable)
+         assert observed['nonce']==NONCE and observed['package']==entry.PACKAGE
+         assert observed['source_sha256']==source_sha256
+-        assert rc==0 and observed.get('ok') is True,'AMAZON_METADATA_READ_NOT_QUALIFIED'
++        assert rc==0 and observed.get('ok') is True,'TICKET12306_METADATA_READ_NOT_QUALIFIED'
+         result['ok']=True
+     except BaseException as error:remember('stage_or_metadata_read',error)
+     finally:

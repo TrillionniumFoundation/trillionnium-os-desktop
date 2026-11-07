@@ -1,0 +1,132 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling typenum v1.20.1
+   Compiling syn v3.0.2
+   Compiling utf8parse v0.2.2
+   Compiling libc v0.2.188
+   Compiling serde_core v1.0.229
+   Compiling anstyle-parse v1.0.0
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling colorchoice v1.0.5
+   Compiling cfg-if v1.0.4
+   Compiling anstyle-query v1.1.5
+   Compiling anstyle v1.0.14
+   Compiling getrandom v0.4.3
+   Compiling zmij v1.0.23
+   Compiling rustix v1.1.4
+   Compiling anstream v1.0.0
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling syn v2.0.119
+   Compiling clap_lex v1.1.0
+   Compiling bitflags v2.13.1
+   Compiling linux-raw-sys v0.12.1
+   Compiling serde_json v1.0.151
+   Compiling heck v0.5.0
+   Compiling strsim v0.11.1
+   Compiling thiserror v2.0.19
+   Compiling serde v1.0.229
+   Compiling clap_builder v4.6.0
+   Compiling clap_derive v4.6.1
+   Compiling digest v0.10.7
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.19
+   Compiling cpufeatures v0.2.17
+   Compiling itoa v1.0.18
+   Compiling once_cell v1.21.4
+   Compiling memchr v2.8.3
+   Compiling fastrand v2.5.0
+   Compiling tempfile v3.27.0
+   Compiling sha2 v0.10.9
+   Compiling clap v4.6.1
+   Compiling hex v0.4.3
+   Compiling droidloom-mesa v0.1.0 (/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/updater-pair-01/candidate/tools/droidloom-mesa)
+   Compiling droidloom-image v0.1.0 (/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/updater-pair-01/candidate/tools/droidloom-image)
+   Compiling droidloom-source v0.1.0 (/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/updater-pair-01/candidate/tools/droidloom-source)
+   Compiling droidloom-update v0.1.0 (/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/updater-pair-01/candidate/tools/droidloom-update)
+warning: function `private_ART_conscrypt_fuzzer_scope_preserves_other_modules` should have a snake case name
+    --> tools/droidloom-update/src/android.rs:4795:8
+     |
+4795 |     fn private_ART_conscrypt_fuzzer_scope_preserves_other_modules() {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `private_art_conscrypt_fuzzer_scope_preserves_other_modules`
+     |
+     = note: `#[warn(non_snake_case)]` (part of `#[warn(nonstandard_style)]`) on by default
+
+warning: `droidloom-update` (bin "droidloom-update" test) generated 1 warning
+    Finished `test` profile [unoptimized] target(s) in 23.32s
+     Running unittests src/main.rs (/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/updater-pair-01/target/debug/deps/droidloom_update-5dc7a7a56e8e7a9a)
++ "mke2fs" "-q" "-F" "-t" "ext4" "-d" "/tmp/.tmpIN5ibk/payload-tree" "/tmp/.tmpIN5ibk/apex_payload.img"
++ cd "/tmp/.tmpIN5ibk" && "zip" "-q" "/tmp/.tmpIN5ibk/com.android.art.apex" "apex_payload.img" "apex_pubkey"
++ "mkfs.erofs" "--workers=1" "/tmp/.tmpIN5ibk/bundle/var/lib/droidloom/images/images/system.img" "/tmp/.tmpIN5ibk/system-tree"
++ "fsck.erofs" "--extract=/tmp/generation-image-verify-zxg2dy/tree" "/tmp/.tmpIN5ibk/bundle/var/lib/droidloom/images/images/system.img"
++ "unzip" "-p" "/tmp/generation-image-verify-zxg2dy/tree/system/apex/com.android.art.apex" "apex_payload.img"
++ "unzip" "-p" "/tmp/generation-image-verify-zxg2dy/tree/system/apex/com.android.art.apex" "apex_pubkey"
++ "debugfs" "-R" "cat /lib64/libart.so" "/tmp/generation-apex-17pfHn/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "debugfs" "-R" "cat /lib64/libnativebridge.so" "/tmp/generation-apex-17pfHn/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "mkfs.erofs" "--workers=1" "/tmp/.tmpIN5ibk/bundle/var/lib/droidloom/images/images/system.img" "/tmp/.tmpIN5ibk/system-tree"
++ "fsck.erofs" "--extract=/tmp/generation-image-verify-iGWsrD/tree" "/tmp/.tmpIN5ibk/bundle/var/lib/droidloom/images/images/system.img"
++ "unzip" "-p" "/tmp/generation-image-verify-iGWsrD/tree/system/apex/com.android.art.apex" "apex_payload.img"
++ "unzip" "-p" "/tmp/generation-image-verify-iGWsrD/tree/system/apex/com.android.art.apex" "apex_pubkey"
++ "debugfs" "-R" "cat /lib64/libart.so" "/tmp/generation-apex-IEopRc/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "debugfs" "-R" "cat /lib64/libnativebridge.so" "/tmp/generation-apex-IEopRc/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "mke2fs" "-q" "-F" "-t" "ext4" "-d" "/tmp/.tmpvq62P7/payload-tree" "/tmp/.tmpvq62P7/apex_payload.img"
++ cd "/tmp/.tmpvq62P7" && "zip" "-q" "/tmp/.tmpvq62P7/com.android.art.apex" "apex_payload.img" "apex_pubkey"
++ "unzip" "-p" "/tmp/.tmpvq62P7/system-tree/system/apex/com.android.art.apex" "apex_payload.img"
++ "unzip" "-p" "/tmp/.tmpvq62P7/system-tree/system/apex/com.android.art.apex" "apex_pubkey"
++ "debugfs" "-R" "cat /lib64/libart.so" "/tmp/generation-apex-YKmEJF/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "debugfs" "-R" "cat /lib64/libnativebridge.so" "/tmp/generation-apex-YKmEJF/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "unzip" "-p" "/tmp/.tmpvq62P7/system-tree/system/apex/com.android.art.apex" "apex_payload.img"
++ "unzip" "-p" "/tmp/.tmpvq62P7/system-tree/system/apex/com.android.art.apex" "apex_pubkey"
++ "debugfs" "-R" "cat /lib64/libart.so" "/tmp/generation-apex-r1jgO2/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "debugfs" "-R" "cat /lib64/libnativebridge.so" "/tmp/generation-apex-r1jgO2/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "unzip" "-p" "/tmp/.tmpvq62P7/system-tree/system/apex/com.android.art.apex" "apex_payload.img"
++ "unzip" "-p" "/tmp/.tmpvq62P7/system-tree/system/apex/com.android.art.apex" "apex_pubkey"
++ "debugfs" "-R" "cat /lib64/libart.so" "/tmp/generation-apex-B6c1Ur/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "debugfs" "-R" "cat /lib64/libnativebridge.so" "/tmp/generation-apex-B6c1Ur/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "fakeroot" "--" "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/updater-pair-01/target/debug/deps/droidloom_update-5dc7a7a56e8e7a9a" "--exact" "native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata" "--nocapture"
++ "mke2fs" "-q" "-F" "-t" "ext4" "-d" "/tmp/.tmpokXge7/base/payload-tree" "/tmp/.tmpokXge7/base/apex_payload.img"
++ cd "/tmp/.tmpokXge7/base" && "zip" "-q" "/tmp/.tmpokXge7/base/com.android.art.apex" "apex_payload.img" "apex_pubkey"
++ "mke2fs" "-q" "-F" "-t" "ext4" "-d" "/tmp/.tmpokXge7/product-fixture/payload-tree" "/tmp/.tmpokXge7/product-fixture/apex_payload.img"
++ cd "/tmp/.tmpokXge7/product-fixture" && "zip" "-q" "/tmp/.tmpokXge7/product-fixture/com.android.art.apex" "apex_payload.img" "apex_pubkey"
++ "chown" "1000:2000" "/tmp/.tmpokXge7/base/system-tree/system/apex/com.android.art.apex"
++ "unzip" "-p" "/tmp/.tmpokXge7/product-fixture/system-tree/system/apex/com.android.art.apex" "apex_payload.img"
++ "unzip" "-p" "/tmp/.tmpokXge7/product-fixture/system-tree/system/apex/com.android.art.apex" "apex_pubkey"
++ "debugfs" "-R" "cat /lib64/libart.so" "/tmp/generation-apex-bxljuR/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "debugfs" "-R" "cat /lib64/libnativebridge.so" "/tmp/generation-apex-bxljuR/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "unzip" "-p" "/tmp/.tmpokXge7/base/system-tree/system/apex/com.android.art.apex" "apex_payload.img"
++ "unzip" "-p" "/tmp/.tmpokXge7/base/system-tree/system/apex/com.android.art.apex" "apex_pubkey"
++ "debugfs" "-R" "cat /lib64/libart.so" "/tmp/generation-apex-3a055u/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "debugfs" "-R" "cat /lib64/libnativebridge.so" "/tmp/generation-apex-3a055u/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "chown" "0:0" "/tmp/.tmpokXge7/base/system-tree/system/etc/droidloom-native-generation-pair.json"
++ "setfattr" "-n" "security.selinux" "-v" "u:object_r:system_file:s0" "/tmp/.tmpokXge7/base/system-tree/system/etc/droidloom-native-generation-pair.json"
++ "unzip" "-p" "/tmp/.tmpokXge7/base/system-tree/system/apex/com.android.art.apex" "apex_payload.img"
++ "unzip" "-p" "/tmp/.tmpokXge7/base/system-tree/system/apex/com.android.art.apex" "apex_pubkey"
++ "debugfs" "-R" "cat /lib64/libart.so" "/tmp/generation-apex-Q2pWZb/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "debugfs" "-R" "cat /lib64/libnativebridge.so" "/tmp/generation-apex-Q2pWZb/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "unzip" "-p" "/tmp/.tmpokXge7/base/system-tree/system/apex/com.android.art.apex" "apex_payload.img"
++ "unzip" "-p" "/tmp/.tmpokXge7/base/system-tree/system/apex/com.android.art.apex" "apex_pubkey"
++ "debugfs" "-R" "cat /lib64/libart.so" "/tmp/generation-apex-B27BiH/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "debugfs" "-R" "cat /lib64/libnativebridge.so" "/tmp/generation-apex-B27BiH/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
+     Running tests/dma_heap_layout.rs (/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/updater-pair-01/target/debug/deps/dma_heap_layout-63593ea9f07481fb)
+     Running tests/release_queue.rs (/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/updater-pair-01/target/debug/deps/release_queue-848c43480221ceec)

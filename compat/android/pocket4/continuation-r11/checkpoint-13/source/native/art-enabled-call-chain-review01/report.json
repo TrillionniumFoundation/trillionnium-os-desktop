@@ -1,0 +1,111 @@
+{
+  "Android_or_Hepta_execution": false,
+  "actual_ART_TU_build_performed_here": false,
+  "candidate07_or_451_modified": false,
+  "current_AOSP_reference_is_installed_ART_binary_binding": false,
+  "findings": [
+    {
+      "chain": [
+        "SpecializeCommon calls gCallPostForkChildHooks with is_child_zygote",
+        "ZygoteHooks_nativePostForkChild passes is_zygote to Runtime::InitNonZygoteOrPostFork",
+        "Runtime chooses kInitialize before child-zygote early return",
+        "InitializeNativeBridge(env,isa) takes no role; enabled hook calls no-argument DroidloomNativeBridgePostSpecializeV1",
+        "AfterSpecialize uses Invoke(kAfterSpecialize,true), which sets only kPrivateForkChild"
+      ],
+      "effect": "Declared kChildZygote is not transmitted; engine kAfterSpecialize does not distinguish that flag before Start.",
+      "id": "role-is-lost",
+      "status": "SOURCE_CONFIRMED"
+    },
+    {
+      "effect": "Where retained caps are present, existing Start correctly rejects. Skipping worker initialization alone does not implement required guest preload. The zero-cap gate must remain unchanged.",
+      "id": "child-zygote-capability-and-preload",
+      "source_facts": [
+        "CalculateCapabilities requests SETUID/SETGID/SETPCAP for child zygotes",
+        "nativeForkAndSpecialize intersects requested caps with actual effective capability mask, so this review does not assert every installed child has nonzero caps",
+        "SpecializeCommon applies permitted/effective/inheritable before post-fork hooks",
+        "Runtime comment and early return expressly require native bridge initialization for guest native doPreload",
+        "ReadContext rejects any nonzero effective/permitted/inheritable capability word and root IDs before Start can authorize an owner"
+      ],
+      "status": "SOURCE_CONFIRMED_CONDITIONAL"
+    },
+    {
+      "effect": "No proven app-zygote parent resumption contract. Do not add an Attach/ExecuteGuest lazy Start. The exact Java caller must be read before choosing a parent-only hook.",
+      "id": "parent-resume-contract",
+      "source_facts": [
+        "next02 flag1 PreZygoteFork calls the bridge before ART kernel-thread wait",
+        "BeforeZygoteFork closes generation with sticky QuiesceBeforeTransition",
+        "Current Runtime::PostZygoteFork only performs JIT work and ResetStats; it adds no owner resume hook",
+        "The current source set has not bound the Java parent/child invocation order for this native method"
+      ],
+      "status": "SOURCE_GAP_NOT_RUNTIME_PROVEN"
+    },
+    {
+      "effect": "These existing conservative refusals are not equivalence to all native syscall semantics. Host-native last-thread exit and transition coverage remain unqualified.",
+      "id": "guest-transition-policy",
+      "source_facts": [
+        "BeforeGuestSyscall explicitly rejects listed credential/root/mount/seccomp-changing requests with EOPNOTSUPP",
+        "Current read-side context comparisons can reject observed drift; they do not themselves prove that every host-native transition is intercepted",
+        "BeforeGuestExec/AfterGuestExecFailure and guest exit_group have explicit owner hooks"
+      ],
+      "status": "SOURCE_LIMIT"
+    }
+  ],
+  "next_minimum_work": [
+    "Preserve default0 and old snapshots. Bind any new role-specific platform API and engine behavior through an explicit matching contract, rather than changing the ABI of the existing exported no-argument function in place.",
+    "Propagate the real is_child_zygote role before a new owner can start; explicitly reject unsupported role before reset/start side effects until guest preload has a qualified mechanism. This is a rejection boundary, not child-zygote support.",
+    "Read the exact Java ZygoteHooks caller before selecting parent post-fork reactivation. Keep ordinary app after-Specialize startup before guest linker/constructor execution.",
+    "Compile complete ART translation units in both flags and run the actual paired-generation controls before considering activation."
+  ],
+  "production_ready": false,
+  "production_sources_modified": false,
+  "schema": 1,
+  "scope": "Read-only source analysis of exact current AOSP references and independent next03/engine candidate sources",
+  "source_files": [
+    {
+      "bytes": 130326,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/art-callers-read01/sources/frameworks/base/core/jni/com_android_internal_os_Zygote.cpp",
+      "sha256": "006e4c3a51fd32eef1d41b3c2553a907e9b7b33b2bf605706921852ba8854a9a"
+    },
+    {
+      "bytes": 19263,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/art-callers-read01/sources/art/runtime/native/dalvik_system_ZygoteHooks.cc",
+      "sha256": "6dfa390a355e55bdb2814a8af5f39e406b9949dca3dd14b9fbf313d78d0fee4b"
+    },
+    {
+      "bytes": 148153,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-normal-projection-next03/delta/android/native-generation-art/source/art/runtime/runtime.cc",
+      "sha256": "ec7105503380ec505dbe58b822a4ac46edb48311e6093eb3e396d0768e111bc3"
+    },
+    {
+      "bytes": 5919,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-normal-projection-next03/delta/android/native-generation-art/source/art/runtime/native_bridge_art_interface.cc",
+      "sha256": "d71e569e0f782ed461bdc167c6228e35414a02b209072b8cba9b7534bc8b3a5a"
+    },
+    {
+      "bytes": 24851,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-normal-projection-next03/delta/android/native-generation-art/source/art/libnativebridge/native_bridge.cc",
+      "sha256": "4fc33d917915886fccabaf76dbf7a6bee949cf08cd6b8ac9be429dc8614706a4"
+    },
+    {
+      "bytes": 2462,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-normal-projection-next03/delta/android/native-generation-art/source/art/libnativebridge/droidloom_generation.cc",
+      "sha256": "1e43381bdb0eba44777317bb1372346eca99322139c5b2662932724fdc82aa68"
+    },
+    {
+      "bytes": 1110,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-normal-projection-next03/delta/android/native-generation-art/source/art/libnativebridge/include/nativebridge/droidloom_generation_protocol.h",
+      "sha256": "913d7a0dd717ff9d697bc926906958029b1be7ba9fb612b57218bc40fe6e27dd"
+    },
+    {
+      "bytes": 9016,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-generation-v2-next01/references/current/engine/kernel_api/proc_maps_generation.cc",
+      "sha256": "82daaa0c7069303ca6d8f749efd75aa2d05857dce5128eb9642b6ed62f928ecf"
+    },
+    {
+      "bytes": 25457,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/candidate07-host-uapi-integration-01/delta/kernel_api/proc_maps_raw_metadata_owner.cc",
+      "sha256": "b8b8a2d4989082d244fd76287b03abc32e945535bc0676d63f1ea22787163427"
+    }
+  ],
+  "zero_caps_gate_relaxed": false
+}

@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_UNRUN",
+  "actual_source_tree": "a600ebe93c1553c1589ff2adfcd92b418a028d78",
+  "actual_failure_tree": "38e0ae52e9fb62df5228db90ab7fc8f8f85aae56",
+  "actual_job": "1a1b291a46e-fc05-7eb1",
+  "actual_terminal": {
+    "exit_code": 1,
+    "timed_out": false,
+    "output_complete": true,
+    "output_durable": true
+  },
+  "actual_first_error": {
+    "message": "TICKET12306_INSTALLED_APK_SHAPE_OR_BOUND",
+    "phase": "held_APK_hash",
+    "type": "RuntimeError"
+  },
+  "actual_commands": 2,
+  "actual_commands_all_rc0_joined": true,
+  "actual_Main_before_after_equal": true,
+  "actual_held_and_action_lock_closed": true,
+  "actual_data_FDs_closed": 2,
+  "actual_APK_identity_recorded": false,
+  "actual_failed_member": "UNKNOWN",
+  "original_UID_version": {
+    "package": "com.ss.android.ugc.aweme",
+    "uid": 10122,
+    "user": 0,
+    "version_code": 410001
+  },
+  "historical_version_still_matches": false,
+  "source_change_scope": [
+    "New independent childless diagnostic; original metadata producer, request, result and nonce are preserved.",
+    "R6 SourceContract and current guard remain exact original on-device files, reverified before/after.",
+    "Only original report and the one exact base.apk path authorize the APK observation.",
+    "The original first APK conjunction is decomposed into seven booleans; no old gate is changed.",
+    "No inherited Flow, PM command, app discover, classpath read, task action or APK hashing is called.",
+    "Caller-owned fixed init/proc/pidfd/six-namespace/root acquisitions are immediately journaled.",
+    "APK ancestors and leaf use O_PATH with O_NOFOLLOW, with held/named equality and final recheck.",
+    "Only existing action lock is opened O_RDONLY; one nonblocking flock and release, no wait/retry/create.",
+    "Exceptions preserve first error; final guard, name, FD close, or deadline failure prevents success."
+  ],
+  "borrowed_implementation_scope": {
+    "source_contract": "Unmodified fixed bytes; whole 14-file hash closure verified by original SourceContract.verify.",
+    "current_guard": "Unmodified fixed bytes; fixed identities/user namespaces/owner chain/root/executable metadata/resource limits, no fresh discovery.",
+    "held_runtime": "Unmodified proc_identity_at/pidfd_alive/NS_TYPES only; no entry or read_file.",
+    "helper_qualification": "Original verify_shared_helper reads its pinned qualification; helper binary is not executed.",
+    "FD_claim": "all_journal_FDs_closed covers this diagnostic's explicitly acquired descriptors; imported R6 helper close errors propagate. No whole-process ambient FD equality is asserted."
+  },
+  "deadline": {
+    "observation_seconds": 30,
+    "final_guard_absolute_seconds": 45,
+    "self_alarm_seconds": 55,
+    "outer_seconds": 65
+  },
+  "validation": {
+    "V8_source_hashes_request_and_reproduction": "PASS",
+    "Python_compilation": "NOT_PERFORMED",
+    "Python_controls": "NOT_PERFORMED",
+    "Hepta": "NOT_PERFORMED",
+    "peer": "NOT_PERFORMED"
+  },
+  "no_write_commands_APK_read_or_new_nonce": true,
+  "old_metadata_or_business_qualified": false
+}

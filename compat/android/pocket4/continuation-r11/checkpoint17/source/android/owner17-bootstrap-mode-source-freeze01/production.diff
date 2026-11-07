@@ -1,0 +1,206 @@
+--- preimage/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
++++ candidate/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
+@@ -12,7 +12,7 @@
+ use crate::CellSpec;
+ use sha2::{Digest, Sha256};
+ use std::cell::Cell;
+-use std::ffi::{CString, OsString};
++use std::ffi::{CStr, CString, OsString};
+ use std::fs::File;
+ use std::io::{self, Write};
+ use std::os::fd::{AsRawFd, FromRawFd, RawFd};
+@@ -317,15 +317,11 @@
+             policy::digest(&self.policy.lmkd_rc_sha256).map_err(error)?,
+             false,
+         )?;
+-        let droidloom = make_parent(&root, "droidloom")?;
+-        if unsafe { libc::mkdirat(droidloom.as_raw_fd(), c"lmkd-bootstrap".as_ptr(), 0o755) } != 0 {
+-            return Err(io::Error::last_os_error());
+-        }
+-        let directory = domain::named(
+-            &droidloom,
+-            "lmkd-bootstrap",
+-            libc::O_RDONLY | libc::O_DIRECTORY,
+-        )?;
++        // These two directories belong to the fresh synthetic guest tmpfs.
++        // The service intentionally retains a restrictive host umask; neither
++        // a mkdir mode nor a file bind can supply guest directory search bits.
++        let droidloom = bootstrap_directory(&root, &root, "droidloom", true)?;
++        let directory = bootstrap_directory(&root, &droidloom, "lmkd-bootstrap", false)?;
+         for (name, mode) in [("libdroidloom_init_relay.so", 0o644), ("lmkd", 0o755)] {
+             drop(domain::at(
+                 directory.as_raw_fd(),
+@@ -468,26 +464,101 @@
+     Ok(())
+ }
+ 
+-fn make_parent(root: &File, name: &str) -> io::Result<File> {
+-    let name = CString::new(name).map_err(|_| error("invalid fixed parent"))?;
+-    if unsafe { libc::mkdirat(root.as_raw_fd(), name.as_ptr(), 0o755) } != 0 {
+-        let e = io::Error::last_os_error();
+-        if e.kind() != io::ErrorKind::AlreadyExists {
+-            return Err(e);
+-        }
+-    }
+-    let file = domain::at(
+-        root.as_raw_fd(),
+-        &name,
+-        libc::O_RDONLY | libc::O_DIRECTORY,
+-        0,
+-    )?;
+-    let m = file.metadata()?;
+-    if m.uid() != 0 || m.mode() & 0o022 != 0 {
+-        return Err(error("bootstrap parent is writable by another role"));
++fn bootstrap_directory(
++    root: &File,
++    parent: &File,
++    name: &str,
++    allow_existing: bool,
++) -> io::Result<File> {
++    // prepare_image is called only after mount_synthetic_system_root creates
++    // this generation's new tmpfs. Refuse an existing host/partition bind:
++    // changing its inode mode would also change the source outside the guest.
++    let root_metadata = root.metadata()?;
++    let mut filesystem: libc::statfs = unsafe { std::mem::zeroed() };
++    if unsafe { libc::fstatfs(root.as_raw_fd(), &mut filesystem) } != 0 {
++        return Err(io::Error::last_os_error());
++    }
++    if filesystem.f_type != 0x0102_1994
++        || !root_metadata.is_dir()
++        || root_metadata.ino() != 1
++        || root_metadata.uid() != 0
++        || root_metadata.gid() != 0
++        || root_metadata.mode() & 0o7777 != 0o755
++    {
++        return Err(error("bootstrap root is not the owned synthetic tmpfs"));
++    }
++    let parent_metadata = parent.metadata()?;
++    if !parent_metadata.is_dir()
++        || parent_metadata.dev() != root_metadata.dev()
++        || parent_metadata.uid() != 0
++        || parent_metadata.gid() != 0
++        || parent_metadata.mode() & 0o7777 != 0o755
++    {
++        return Err(error("bootstrap parent is outside the owned guest tmpfs"));
++    }
++    let name = CString::new(name).map_err(|_| error("invalid fixed bootstrap directory"))?;
++    if name.as_bytes().is_empty() || name.as_bytes().contains(&b'/')
++        || name.as_bytes() == b"." || name.as_bytes() == b".."
++    {
++        return Err(error("bootstrap directory is not one fixed component"));
++    }
++    if unsafe { libc::mkdirat(parent.as_raw_fd(), name.as_ptr(), 0o755) } != 0 {
++        let first = io::Error::last_os_error();
++        if !allow_existing || first.kind() != io::ErrorKind::AlreadyExists {
++            return Err(first);
++        }
++    }
++    let file = domain::at(parent.as_raw_fd(), &name, libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
++    let before = file.metadata()?;
++    if !before.is_dir()
++        || before.dev() != root_metadata.dev()
++        || before.ino() == root_metadata.ino()
++        || before.uid() != 0
++        || before.gid() != 0
++        || before.mode() & 0o7022 != 0
++        || before.mode() & 0o700 != 0o700
++    {
++        return Err(error("bootstrap directory is not exclusively owned guest storage"));
++    }
++    make_guest_searchable(parent, &name, &file)?;
++    if Identity::of(root)? != (Identity { device: root_metadata.dev(), inode: root_metadata.ino() })
++        || Identity::of(parent)? != (Identity { device: parent_metadata.dev(), inode: parent_metadata.ino() })
++    {
++        return Err(error("bootstrap guest parents changed during mode application"));
+     }
+     Ok(file)
+ }
++
++// The caller has already proved UID/GID 0 and the generation's private tmpfs.
++// Keep the actual mode operation separate so an ordinary owned-file control
++// can exercise the syscall and named-inode checks without inventing root proof.
++fn make_guest_searchable(parent: &File, name: &CStr, file: &File) -> io::Result<()> {
++    let before = file.metadata()?;
++    let named_before = domain::at(parent.as_raw_fd(), name, libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
++    if !before.is_dir() || Identity::of(&named_before)? != Identity::of(file)? {
++        return Err(error("bootstrap guest directory changed before mode application"));
++    }
++    // Apply the explicit guest policy to the held inode, independently of the
++    // inherited process umask. Host package/data parents are never traversed
++    // or chmod'ed here. The payloads themselves remain pinned readonly binds.
++    if unsafe { libc::fchmod(file.as_raw_fd(), 0o755) } != 0 {
++        return Err(io::Error::last_os_error());
++    }
++    let after = file.metadata()?;
++    let named = domain::at(parent.as_raw_fd(), name, libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
++    let named_metadata = named.metadata()?;
++    if after.dev() != before.dev() || after.ino() != before.ino()
++        || after.uid() != before.uid() || after.gid() != before.gid()
++        || after.mode() & 0o7777 != 0o755
++        || named_metadata.dev() != after.dev() || named_metadata.ino() != after.ino()
++        || named_metadata.uid() != after.uid() || named_metadata.gid() != after.gid()
++        || named_metadata.mode() & 0o7777 != 0o755
++    {
++        return Err(error("bootstrap guest directory changed during mode application"));
++    }
++    Ok(())
++}
++
+ fn bind_readonly(root: &File, relative: &str, source: &File) -> io::Result<()> {
+     let target = domain::beneath(root, relative, libc::O_PATH)?;
+     if !target.metadata()?.is_file() || !source.metadata()?.is_file() {
+@@ -656,6 +727,54 @@
+ mod tests {
+     use super::*;
+     use std::os::unix::fs::symlink;
++    #[test]
++    fn guest_search_mode_changes_only_the_held_owned_directory() {
++        use std::os::unix::fs::PermissionsExt;
++        let host = tempfile::tempdir().unwrap();
++        std::fs::set_permissions(host.path(), std::fs::Permissions::from_mode(0o700)).unwrap();
++        let guest = host.path().join("guest");
++        std::fs::create_dir(&guest).unwrap();
++        std::fs::set_permissions(&guest, std::fs::Permissions::from_mode(0o700)).unwrap();
++        let parent = domain::directory(host.path()).unwrap();
++        let held = domain::named(&parent, "guest", libc::O_RDONLY | libc::O_DIRECTORY).unwrap();
++        let before = Identity::of(&held).unwrap();
++        make_guest_searchable(&parent, c"guest", &held).unwrap();
++        assert_eq!(Identity::of(&held).unwrap(), before);
++        assert_eq!(held.metadata().unwrap().mode() & 0o7777, 0o755);
++        assert_eq!(parent.metadata().unwrap().mode() & 0o7777, 0o700);
++    }
++    #[test]
++    fn guest_search_mode_rejects_replaced_or_symlink_name_before_chmod() {
++        use std::os::unix::fs::PermissionsExt;
++        let temp = tempfile::tempdir().unwrap();
++        let guest = temp.path().join("guest");
++        let moved = temp.path().join("moved");
++        std::fs::create_dir(&guest).unwrap();
++        std::fs::set_permissions(&guest, std::fs::Permissions::from_mode(0o700)).unwrap();
++        let parent = domain::directory(temp.path()).unwrap();
++        let held = domain::named(&parent, "guest", libc::O_RDONLY | libc::O_DIRECTORY).unwrap();
++        std::fs::rename(&guest, &moved).unwrap();
++        std::fs::create_dir(&guest).unwrap();
++        assert!(make_guest_searchable(&parent, c"guest", &held).is_err());
++        assert_eq!(held.metadata().unwrap().mode() & 0o7777, 0o700);
++        std::fs::remove_dir(&guest).unwrap();
++        symlink("moved", &guest).unwrap();
++        assert!(make_guest_searchable(&parent, c"guest", &held).is_err());
++        assert_eq!(held.metadata().unwrap().mode() & 0o7777, 0o700);
++    }
++    #[test]
++    fn guest_search_mode_preserves_failed_fchmod_errno() {
++        use std::os::unix::fs::PermissionsExt;
++        let temp = tempfile::tempdir().unwrap();
++        let guest = temp.path().join("guest");
++        std::fs::create_dir(&guest).unwrap();
++        std::fs::set_permissions(&guest, std::fs::Permissions::from_mode(0o700)).unwrap();
++        let parent = domain::directory(temp.path()).unwrap();
++        let held = domain::named(&parent, "guest", libc::O_PATH | libc::O_DIRECTORY).unwrap();
++        let error = make_guest_searchable(&parent, c"guest", &held).unwrap_err();
++        assert_eq!(error.raw_os_error(), Some(libc::EBADF));
++        assert_eq!(held.metadata().unwrap().mode() & 0o7777, 0o700);
++    }
+     #[test]
+     fn final_init_exec_contract_rejects_wrappers_and_other_stage() {
+         let mut command = Command::new("/init");

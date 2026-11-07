@@ -1,0 +1,17 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/sudo",
+  "args": [
+    "-n",
+    "/usr/bin/python3",
+    "-I",
+    "-"
+  ],
+  "cwd": "/home/alex/work",
+  "stdin": "import os,stat,hashlib,json\np='/home/alex/work/pocket4-signal-r5-fixture02-export-01'\nd=os.open(p,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC)\ns=os.fstat(d);assert s.st_uid==0 and stat.S_ISDIR(s.st_mode)\nf=os.open('bundle.json.gz',os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=d)\nsf=os.fstat(f);assert sf.st_uid==0 and stat.S_ISREG(sf.st_mode) and sf.st_nlink==1 and sf.st_size==4415\nb=os.read(f,4416);assert hashlib.sha256(b).hexdigest()=='5c2616dac812c8a7e4ddb47f08fd9fc4a204dda6163747a6ef9817307fce952c'\nos.fchmod(f,0o444);os.fchmod(d,0o755)\nprint(json.dumps({'state':'OWNED_EXPORT_PERMISSIONS_FIXED','directory_identity':[s.st_dev,s.st_ino],'file_identity':[sf.st_dev,sf.st_ino],'sha256':hashlib.sha256(b).hexdigest()}))\nos.close(f);os.close(d)\n",
+  "idempotency_key": "pocket4-r11-root-fixture02-export-exact-permissions-01",
+  "cpu_quota_percent": 5,
+  "memory_max_bytes": 67108864,
+  "nice": 10,
+  "timeout_seconds": 30
+}

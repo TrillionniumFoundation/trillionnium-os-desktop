@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "kind": "pocket4-original-ndk-runtime-source-and-host-controls-review01",
+  "status": "SOURCE_ONLY_UNEXECUTED_HOST_CONTROLS",
+  "source_manifest": {
+    "bytes": 1050,
+    "sha256": "7ea8d117de4a6c4cbeceebc4d5d4cf56fd7f075f3cb068b8f3610be4283df582"
+  },
+  "baseline": {
+    "install_source_manifest": {
+      "bytes": 1054,
+      "sha256": "684209fb84cf81921a1c65e8c52c7bf95db87ca0167d46badf8a8d974a2ba237"
+    },
+    "actual_install_result": {
+      "bytes": 11271,
+      "sha256": "e17df04e2eda0e0f489ec6fee992bcca2c5ae1fd584e9fc4e57a20334fb16143"
+    },
+    "install_job": "1a1b2e3bcfa-fc05-8021",
+    "installed_UID": 10162,
+    "actual_run_or_retire": false
+  },
+  "unchanged_production": [
+    "fixture_contract.py",
+    "fixture_transport.py",
+    "current_discovery.py"
+  ],
+  "unchanged_controls": [
+    "check_fixture.py",
+    "check_external_manifest.py"
+  ],
+  "changed_production": {
+    "fixture_context.py": "Only runtime run/retire admission; same live PhaseLease rechecked before entry, each Main guard and independent final Main. Full FixedSources and original shared source/helper/held Main gates remain.",
+    "fixture_phases.py": "Seven runtime source names; run/retire scope and actual UID qualification; enter one explicit phase lease; forward same lease to original fixed context. Original five/eight ordered commands, parsers, XML and finally remain.",
+    "phase_lease.py": "Install lease derived into two fixed phase roots; actual installation authority and new run/retire nonce required. Original ancestry held/named edges, existing global lock, own flow/step locks, claim and FD lifecycle retained.",
+    "phase_worker.py": "New actual controls/nonce/install bindings; fresh full original build/APK/install reads before and after; separate prior run actual required only for retire. Phase entry and plan failures are inside worker try/finally. Original Main/source gates and lease finally apply. Result/emission and independent terminal remain separate."
+  },
+  "controls": {
+    "fixture": 38,
+    "manifest": 4,
+    "lease": 12,
+    "wiring": 6,
+    "total": 60,
+    "actual_run_status": "NOT_PERFORMED",
+    "count_does_not_reuse_previous_50": true,
+    "lease_real_operations": "Only fixed fresh root-owned host fixture directories, their own action-lock file, real flock, rename, FD tracking and exact cleanup; no shared action lock or Main.",
+    "wiring_real_methods": [
+      "fixture_phases.run_original_once",
+      "fixture_phases.retire_once",
+      "fixture_phases.joined_command",
+      "fixture_context.open_context",
+      "fixture_context.baseline_binding"
+    ],
+    "wiring_explicit_seams": [
+      "synthetic complete Android outputs and private command receipt reads",
+      "synthetic Context/InstalledFixture held IO boundary",
+      "synthetic current baseline/source/helper/proc IO for open_context guard closure"
+    ],
+    "original_install_reference": "Production phase_worker.original_installation receives exact complete actual install result, summary and terminal through one explicit read seam; no current device qualification is inferred.",
+    "host_envelope": {
+      "root": "only own host control files; no Android/Main",
+      "work_seconds": 45,
+      "outer_seconds": 60,
+      "cpu_quota_percent": 100,
+      "memory_max_bytes": 268435456,
+      "nice": 15,
+      "isolated_no_bytecode": true,
+      "children": 0
+    }
+  },
+  "phase_authorities": {
+    "scope": "com.example.ndk_tests only; commercial scopes not inherited",
+    "run_root": "/home/alex/work/pocket4-original-ndk-fixture-APK05-run-01",
+    "retire_root": "/home/alex/work/pocket4-original-ndk-fixture-APK05-retire-01",
+    "run_commands": 5,
+    "retire_commands": 8,
+    "work_seconds": 175,
+    "run_terminal_and_original_result_required_before_retire": true,
+    "existing_global_lock": "/run/lock/android-digitalis-actions.lock",
+    "source_members": 7,
+    "complete_registry": 23,
+    "exact_XML_tests": 12,
+    "manifest_min_sdk": 14,
+    "manifest_target_sdk": 24,
+    "SDK_bypass": false,
+    "uninstall": false,
+    "feature_default_change": false
+  },
+  "acceptance": "Successful instrumentation alone never qualifies native tests. A separately bound retirement must preserve the original run result, stop only this installed package, obtain two complete empty own-UID observations and restored task IDs, then read fresh own XML with exact twelve successful ProcSelfMaps tests. Failed run may be retired without upgrading it to test acceptance.",
+  "limitations": {
+    "Python_controls_executed": false,
+    "Main_read": false,
+    "Android_command": false,
+    "phase_request_generated": false,
+    "kernel_pidfd_retirement_qualification": false,
+    "shared_helper_whole_process_tree_cleanup": false,
+    "whole_invocation_resource_observed_by_worker": false,
+    "signer_independently_read_on_device": false,
+    "old_install01_unknown_preserved": true,
+    "actual_install02_is_not_instrumentation": true
+  },
+  "peer_review": {
+    "agent": "app_recovery_resume",
+    "scope": "Only phase lease/context/phases routing in fixed source pins; no definite blocker in that scope. Worker/controls not included; no execution.",
+    "new_six_wiring_controls": "NOT_PERFORMED by peer at this freeze"
+  },
+  "actual_inputs_preserved_as_raw": true,
+  "nanosecond_integers_not_reserialized": true,
+  "dispatcher": "Root only"
+}

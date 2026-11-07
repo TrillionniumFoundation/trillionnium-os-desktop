@@ -1,0 +1,43 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "e86d792802013543a72dfc8a76dfb14e8b2eb66e",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 548727,
+    "sha256": "4ef5a7c76962e2a76da4c400c322c5dd6fd09c62567b3bcf34cc6450c4d38daf",
+    "git_blob_sha1": "1f66c3a7ca0d3eacb1a09687dd46a940f9d7315d",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "prior_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "df46ee65e9b18984db5733b0a95122d9152e36c9"
+    },
+    {
+      "path": "request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ce4333c5a538a9a9d4b50f8f6b87dd21f9fe708f",
+      "bytes": 1020
+    },
+    {
+      "path": "source.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0f1504df67af61dcf299b89879f522f9ee4f9143",
+      "bytes": 711
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "prior_actual",
+      "original_tree": "df46ee65e9b18984db5733b0a95122d9152e36c9",
+      "checkpoint": 21,
+      "canonical_package": "owner20-normal01-safe-actual"
+    }
+  ],
+  "original_recursive_leaf_count": 987
+}

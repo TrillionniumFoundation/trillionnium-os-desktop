@@ -1,0 +1,220 @@
+
+0000000000008af0 <berberis::proc_maps_provenance::FstatfsKernel(int, berberis::proc_maps_provenance::KernelStatfs*, berberis::proc_maps_provenance::Configuration const&)>:
+    8af0:      	pushq	%rbp
+    8af1:      	movq	%rsp, %rbp
+    8af4:      	pushq	%r15
+    8af6:      	pushq	%r14
+    8af8:      	pushq	%r13
+    8afa:      	pushq	%r12
+    8afc:      	pushq	%rbx
+    8afd:      	subq	$0x1348, %rsp           # imm = 0x1348
+    8b04:      	movq	%rdx, %r12
+    8b07:      	movq	%rsi, %rbx
+    8b0a:      	movl	%edi, %r15d
+    8b0d:      	callq	0x10720 <__errno@plt>
+    8b12:      	movq	%rax, %r14
+    8b15:      	movl	(%rax), %r13d
+    8b18:      	xorps	%xmm0, %xmm0
+    8b1b:      	movaps	%xmm0, -0x70(%rbp)
+    8b1f:      	movaps	%xmm0, -0x80(%rbp)
+    8b23:      	movaps	%xmm0, -0x90(%rbp)
+    8b2a:      	movaps	%xmm0, -0xa0(%rbp)
+    8b31:      	movaps	%xmm0, -0x60(%rbp)
+    8b35:      	movaps	%xmm0, -0x50(%rbp)
+    8b39:      	movaps	%xmm0, -0x40(%rbp)
+    8b3d:      	movq	$0x0, -0x30(%rbp)
+    8b45:      	movslq	%r15d, %rsi
+    8b48:      	leaq	-0xa0(%rbp), %rdx
+    8b4f:      	movl	$0x8a, %edi
+    8b54:      	xorl	%eax, %eax
+    8b56:      	callq	0x10790 <syscall@plt>
+    8b5b:      	testq	%rax, %rax
+    8b5e:      	js	0x8c46 <berberis::proc_maps_provenance::FstatfsKernel(int, berberis::proc_maps_provenance::KernelStatfs*, berberis::proc_maps_provenance::Configuration const&)+0x156>
+    8b64:      	cmpq	$0x1021994, -0xa0(%rbp) # imm = 0x1021994
+    8b6f:      	jne	0x8c4d <berberis::proc_maps_provenance::FstatfsKernel(int, berberis::proc_maps_provenance::KernelStatfs*, berberis::proc_maps_provenance::Configuration const&)+0x15d>
+    8b75:      	movq	%r12, -0x1370(%rbp)
+    8b7c:      	movabsq	$0x200000003, %rax      # imm = 0x200000003
+    8b86:      	movq	%rax, -0x1368(%rbp)
+    8b8d:      	leaq	-0x1360(%rbp), %rdi
+    8b94:      	movl	$0x138, %edx            # imm = 0x138
+    8b99:      	xorl	%esi, %esi
+    8b9b:      	callq	0x10770 <memset@plt>
+    8ba0:      	leaq	-0x1228(%rbp), %rdi
+    8ba7:      	movl	$0x1000, %edx           # imm = 0x1000
+    8bac:      	xorl	%esi, %esi
+    8bae:      	callq	0x10770 <memset@plt>
+    8bb3:      	leaq	-0x228(%rbp), %rdi
+    8bba:      	movl	$0x150, %edx            # imm = 0x150
+    8bbf:      	xorl	%esi, %esi
+    8bc1:      	callq	0x10770 <memset@plt>
+    8bc6:      	xorps	%xmm0, %xmm0
+    8bc9:      	movups	%xmm0, -0xd8(%rbp)
+    8bd0:      	movups	%xmm0, -0xc8(%rbp)
+    8bd7:      	movups	%xmm0, -0xb8(%rbp)
+    8bde:      	movq	$0x0, -0xa8(%rbp)
+    8be9:      	leaq	-0x1370(%rbp), %rsi
+    8bf0:      	movl	%r15d, %edi
+    8bf3:      	callq	0x8180 <berberis::proc_maps_provenance::(anonymous namespace)::ReadOwnedMetadata(int, berberis::proc_maps_provenance::(anonymous namespace)::MetadataRequest*)>
+    8bf8:      	testl	%eax, %eax
+    8bfa:      	js	0x8c46 <berberis::proc_maps_provenance::FstatfsKernel(int, berberis::proc_maps_provenance::KernelStatfs*, berberis::proc_maps_provenance::Configuration const&)+0x156>
+    8bfc:      	movq	-0xa8(%rbp), %rax
+    8c03:      	movq	%rax, 0x70(%rbx)
+    8c07:      	movups	-0xb8(%rbp), %xmm0
+    8c0e:      	movups	%xmm0, 0x60(%rbx)
+    8c12:      	movups	-0xc8(%rbp), %xmm0
+    8c19:      	movups	%xmm0, 0x50(%rbx)
+    8c1d:      	movups	-0xd8(%rbp), %xmm0
+    8c24:      	movups	%xmm0, 0x40(%rbx)
+    8c28:      	movups	-0x118(%rbp), %xmm0
+    8c2f:      	movups	-0x108(%rbp), %xmm1
+    8c36:      	movups	-0xf8(%rbp), %xmm2
+    8c3d:      	movups	-0xe8(%rbp), %xmm3
+    8c44:      	jmp	0x8c83 <berberis::proc_maps_provenance::FstatfsKernel(int, berberis::proc_maps_provenance::KernelStatfs*, berberis::proc_maps_provenance::Configuration const&)+0x193>
+    8c46:      	movl	$0xffffffff, %eax       # imm = 0xFFFFFFFF
+    8c4b:      	jmp	0x8c97 <berberis::proc_maps_provenance::FstatfsKernel(int, berberis::proc_maps_provenance::KernelStatfs*, berberis::proc_maps_provenance::Configuration const&)+0x1a7>
+    8c4d:      	movq	-0x30(%rbp), %rax
+    8c51:      	movq	%rax, 0x70(%rbx)
+    8c55:      	movaps	-0x40(%rbp), %xmm0
+    8c59:      	movups	%xmm0, 0x60(%rbx)
+    8c5d:      	movaps	-0x50(%rbp), %xmm0
+    8c61:      	movups	%xmm0, 0x50(%rbx)
+    8c65:      	movaps	-0x60(%rbp), %xmm0
+    8c69:      	movups	%xmm0, 0x40(%rbx)
+    8c6d:      	movaps	-0xa0(%rbp), %xmm0
+    8c74:      	movaps	-0x90(%rbp), %xmm1
+    8c7b:      	movaps	-0x80(%rbp), %xmm2
+    8c7f:      	movaps	-0x70(%rbp), %xmm3
+    8c83:      	movups	%xmm3, 0x30(%rbx)
+    8c87:      	movups	%xmm2, 0x20(%rbx)
+    8c8b:      	movups	%xmm1, 0x10(%rbx)
+    8c8f:      	movups	%xmm0, (%rbx)
+    8c92:      	movl	%r13d, (%r14)
+    8c95:      	xorl	%eax, %eax
+    8c97:      	addq	$0x1348, %rsp           # imm = 0x1348
+    8c9e:      	popq	%rbx
+    8c9f:      	popq	%r12
+    8ca1:      	popq	%r13
+    8ca3:      	popq	%r14
+    8ca5:      	popq	%r15
+    8ca7:      	popq	%rbp
+    8ca8:      	retq
+    8ca9:      	nopl	(%rax)
+
+0000000000008cb0 <berberis::proc_maps_provenance::FstatfsForGuest(int, void*, berberis::proc_maps_provenance::Configuration const&)>:
+    8cb0:      	pushq	%rbp
+    8cb1:      	movq	%rsp, %rbp
+    8cb4:      	pushq	%r15
+    8cb6:      	pushq	%r14
+    8cb8:      	pushq	%r13
+    8cba:      	pushq	%r12
+    8cbc:      	pushq	%rbx
+    8cbd:      	subq	$0x13d8, %rsp           # imm = 0x13D8
+    8cc4:      	movq	%rdx, %r12
+    8cc7:      	movq	%rsi, %r14
+    8cca:      	movl	%edi, %r15d
+    8ccd:      	xorps	%xmm0, %xmm0
+    8cd0:      	movaps	%xmm0, -0x70(%rbp)
+    8cd4:      	movaps	%xmm0, -0x80(%rbp)
+    8cd8:      	movaps	%xmm0, -0x90(%rbp)
+    8cdf:      	movaps	%xmm0, -0xa0(%rbp)
+    8ce6:      	movaps	%xmm0, -0x60(%rbp)
+    8cea:      	movaps	%xmm0, -0x50(%rbp)
+    8cee:      	movaps	%xmm0, -0x40(%rbp)
+    8cf2:      	movq	$0x0, -0x30(%rbp)
+    8cfa:      	callq	0x10720 <__errno@plt>
+    8cff:      	movq	%rax, %rbx
+    8d02:      	movl	(%rax), %r13d
+    8d05:      	movslq	%r15d, %rsi
+    8d08:      	xorps	%xmm0, %xmm0
+    8d0b:      	movaps	%xmm0, -0xc0(%rbp)
+    8d12:      	movaps	%xmm0, -0xd0(%rbp)
+    8d19:      	movaps	%xmm0, -0xe0(%rbp)
+    8d20:      	movaps	%xmm0, -0xf0(%rbp)
+    8d27:      	movaps	%xmm0, -0x100(%rbp)
+    8d2e:      	movaps	%xmm0, -0x110(%rbp)
+    8d35:      	movaps	%xmm0, -0x120(%rbp)
+    8d3c:      	movq	$0x0, -0xb0(%rbp)
+    8d47:      	leaq	-0x120(%rbp), %rdx
+    8d4e:      	movl	$0x8a, %edi
+    8d53:      	xorl	%eax, %eax
+    8d55:      	callq	0x10790 <syscall@plt>
+    8d5a:      	testq	%rax, %rax
+    8d5d:      	js	0x8edc <berberis::proc_maps_provenance::FstatfsForGuest(int, void*, berberis::proc_maps_provenance::Configuration const&)+0x22c>
+    8d63:      	cmpq	$0x1021994, -0x120(%rbp) # imm = 0x1021994
+    8d6e:      	jne	0x8e00 <berberis::proc_maps_provenance::FstatfsForGuest(int, void*, berberis::proc_maps_provenance::Configuration const&)+0x150>
+    8d74:      	movq	%r12, -0x13f0(%rbp)
+    8d7b:      	movabsq	$0x200000003, %rax      # imm = 0x200000003
+    8d85:      	movq	%rax, -0x13e8(%rbp)
+    8d8c:      	leaq	-0x13e0(%rbp), %rdi
+    8d93:      	movl	$0x12c0, %edx           # imm = 0x12C0
+    8d98:      	xorl	%esi, %esi
+    8d9a:      	callq	0x10770 <memset@plt>
+    8d9f:      	leaq	-0x13f0(%rbp), %rsi
+    8da6:      	movl	%r15d, %edi
+    8da9:      	callq	0x8180 <berberis::proc_maps_provenance::(anonymous namespace)::ReadOwnedMetadata(int, berberis::proc_maps_provenance::(anonymous namespace)::MetadataRequest*)>
+    8dae:      	testl	%eax, %eax
+    8db0:      	js	0x8edc <berberis::proc_maps_provenance::FstatfsForGuest(int, void*, berberis::proc_maps_provenance::Configuration const&)+0x22c>
+    8db6:      	movq	-0x128(%rbp), %rax
+    8dbd:      	movq	%rax, -0x30(%rbp)
+    8dc1:      	movups	-0x138(%rbp), %xmm0
+    8dc8:      	movaps	%xmm0, -0x40(%rbp)
+    8dcc:      	movups	-0x148(%rbp), %xmm0
+    8dd3:      	movaps	%xmm0, -0x50(%rbp)
+    8dd7:      	movups	-0x158(%rbp), %xmm0
+    8dde:      	movaps	%xmm0, -0x60(%rbp)
+    8de2:      	movups	-0x198(%rbp), %xmm0
+    8de9:      	movups	-0x188(%rbp), %xmm1
+    8df0:      	movups	-0x178(%rbp), %xmm2
+    8df7:      	movups	-0x168(%rbp), %xmm3
+    8dfe:      	jmp	0x8e48 <berberis::proc_maps_provenance::FstatfsForGuest(int, void*, berberis::proc_maps_provenance::Configuration const&)+0x198>
+    8e00:      	movq	-0xb0(%rbp), %rax
+    8e07:      	movq	%rax, -0x30(%rbp)
+    8e0b:      	movaps	-0xc0(%rbp), %xmm0
+    8e12:      	movaps	%xmm0, -0x40(%rbp)
+    8e16:      	movaps	-0xd0(%rbp), %xmm0
+    8e1d:      	movaps	%xmm0, -0x50(%rbp)
+    8e21:      	movaps	-0xe0(%rbp), %xmm0
+    8e28:      	movaps	%xmm0, -0x60(%rbp)
+    8e2c:      	movaps	-0x120(%rbp), %xmm0
+    8e33:      	movaps	-0x110(%rbp), %xmm1
+    8e3a:      	movaps	-0x100(%rbp), %xmm2
+    8e41:      	movaps	-0xf0(%rbp), %xmm3
+    8e48:      	movaps	%xmm3, -0x70(%rbp)
+    8e4c:      	movaps	%xmm2, -0x80(%rbp)
+    8e50:      	movaps	%xmm1, -0x90(%rbp)
+    8e57:      	movaps	%xmm0, -0xa0(%rbp)
+    8e5e:      	movl	%r13d, (%rbx)
+    8e61:      	xorl	%r15d, %r15d
+    8e64:      	movl	$0xba, %edi
+    8e69:      	xorl	%eax, %eax
+    8e6b:      	callq	0x10790 <syscall@plt>
+    8e70:      	leaq	-0xa0(%rbp), %rcx
+    8e77:      	movq	%rcx, -0x13f0(%rbp)
+    8e7e:      	movq	$0x78, -0x13e8(%rbp)
+    8e89:      	movq	%r14, -0x120(%rbp)
+    8e90:      	movq	$0x78, -0x118(%rbp)
+    8e9b:      	movslq	%eax, %rsi
+    8e9e:      	movq	$0x0, (%rsp)
+    8ea6:      	leaq	-0x13f0(%rbp), %rdx
+    8ead:      	leaq	-0x120(%rbp), %r8
+    8eb4:      	movl	$0x137, %edi            # imm = 0x137
+    8eb9:      	movl	$0x1, %ecx
+    8ebe:      	movl	$0x1, %r9d
+    8ec4:      	xorl	%eax, %eax
+    8ec6:      	callq	0x10790 <syscall@plt>
+    8ecb:      	testq	%rax, %rax
+    8ece:      	js	0x8edc <berberis::proc_maps_provenance::FstatfsForGuest(int, void*, berberis::proc_maps_provenance::Configuration const&)+0x22c>
+    8ed0:      	cmpq	$0x78, %rax
+    8ed4:      	je	0x8ee2 <berberis::proc_maps_provenance::FstatfsForGuest(int, void*, berberis::proc_maps_provenance::Configuration const&)+0x232>
+    8ed6:      	movl	$0xe, (%rbx)
+    8edc:      	movl	$0xffffffff, %r15d      # imm = 0xFFFFFFFF
+    8ee2:      	movl	%r15d, %eax
+    8ee5:      	addq	$0x13d8, %rsp           # imm = 0x13D8
+    8eec:      	popq	%rbx
+    8eed:      	popq	%r12
+    8eef:      	popq	%r13
+    8ef1:      	popq	%r14
+    8ef3:      	popq	%r15
+    8ef5:      	popq	%rbp
+    8ef6:      	retq
+    8ef7:      	nopw	(%rax,%rax)

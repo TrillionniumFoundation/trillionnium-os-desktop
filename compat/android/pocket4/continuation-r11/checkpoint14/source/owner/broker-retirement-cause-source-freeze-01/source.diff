@@ -1,0 +1,103 @@
+--- a/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs
++++ b/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs
+@@ -526,6 +526,35 @@
+         number(wire, 12, 4) == 0 && wire[16..48] == spec.nonce
+ }
+ 
++// Diagnostics only: borrow both original causes before the joined receipt is
++// consumed by PressureAudit. UTF-8 hex keeps one parseable line without losing
++// newlines or non-ASCII bytes. A stderr failure must not replace either cause,
++// change the retirement outcome, or acquire any lifecycle authority.
++fn report_retirement_cause(output: &mut impl Write, status: &BootstrapStatus,
++    relay_reason: Option<&str>, lifecycle_error: Option<&Error>) {
++    if relay_reason.is_none() && lifecycle_error.is_none() { return; }
++    let hex = |bytes: &[u8]| -> String {
++        const DIGITS: &[u8; 16] = b"0123456789abcdef";
++        let mut text = String::with_capacity(bytes.len() * 2);
++        for &byte in bytes {
++            text.push(DIGITS[(byte >> 4) as usize] as char);
++            text.push(DIGITS[(byte & 15) as usize] as char);
++        }
++        text
++    };
++    let optional_hex = |text: Option<&str>| -> String {
++        match text {
++            Some(value) => format!("\"{}\"", hex(value.as_bytes())),
++            None => "null".to_owned(),
++        }
++    };
++    let lifecycle_message = lifecycle_error.map(|error| error.to_string());
++    let _ = writeln!(output,
++        "droidloom-psi-owner: retirement-cause-v1 {{\"schema\":1,\"nonce\":\"{}\",\"authority_generation\":\"{}\",\"cgroup_device\":{},\"cgroup_inode\":{},\"granted\":{},\"faulted\":{},\"relay_reason_utf8_hex\":{},\"lifecycle_error_utf8_hex\":{}}}",
++        hex(&status.nonce), hex(&status.generation), status.cgroup.device, status.cgroup.inode,
++        status.granted, status.faulted, optional_hex(relay_reason), optional_hex(lifecycle_message.as_deref()));
++}
++
+ /// Production executable entry. Call once in a freshly exec'd, host-namespace
+ /// process leader with one inherited nonblocking seqpacket at fd 3. The exact
+ /// parent owns startup, endpoint projection, timeout policy and cell teardown.
+@@ -578,6 +607,7 @@
+                 status.state = BootstrapState::Retired;
+                 status.granted = receipt.was_granted();
+                 status.faulted = outcome.is_err() || receipt.reason().is_some();
++                report_retirement_cause(&mut io::stderr().lock(), &status, receipt.reason(), outcome.as_ref().err());
+                 let audit = PressureAudit::from_retirement(&status, receipt, super::psi::now_ns()?);
+                 // Joined-worker observations use this exact trusted parent
+                 // channel. They supply no authority and do not substitute for
+@@ -903,6 +933,56 @@
+         (audit, status)
+     }
+     #[test]
++    fn retirement_cause_diagnostic_preserves_specific_and_lifecycle_reasons() {
++        let (_, mut status) = empty_audit_and_status(); status.faulted = true;
++        let before = status.clone();
++        let reason = "specific rejection".to_owned();
++        let outcome: Result<()> = Err(Error::Reject("outer"));
++        let mut output = Vec::new();
++        report_retirement_cause(&mut output, &status, Some(&reason), outcome.as_ref().err());
++        let expected = format!(
++            "droidloom-psi-owner: retirement-cause-v1 {{\"schema\":1,\"nonce\":\"{}\",\"authority_generation\":\"{}\",\"cgroup_device\":3,\"cgroup_inode\":4,\"granted\":false,\"faulted\":true,\"relay_reason_utf8_hex\":\"73706563696669632072656a656374696f6e\",\"lifecycle_error_utf8_hex\":\"72656a65637465643a206f75746572\"}}\n",
++            "07".repeat(32), "06".repeat(32));
++        assert_eq!(String::from_utf8(output).unwrap(), expected);
++        assert_eq!(status, before); assert_eq!(reason, "specific rejection");
++        assert!(matches!(outcome, Err(Error::Reject("outer"))));
++    }
++    #[test]
++    fn retirement_cause_diagnostic_healthy_is_silent() {
++        struct NoWrite;
++        impl Write for NoWrite {
++            fn write(&mut self, _: &[u8]) -> io::Result<usize> { panic!("healthy diagnostic wrote"); }
++            fn flush(&mut self) -> io::Result<()> { panic!("healthy diagnostic flushed"); }
++        }
++        let (_, status) = empty_audit_and_status();
++        report_retirement_cause(&mut NoWrite, &status, None, None);
++    }
++    #[test]
++    fn retirement_cause_diagnostic_encodes_raw_utf8_once() {
++        let (_, mut status) = empty_audit_and_status(); status.faulted = true;
++        let reason = "line\n原因\t\"";
++        let mut output = Vec::new();
++        report_retirement_cause(&mut output, &status, Some(reason), None);
++        let text = String::from_utf8(output).unwrap();
++        assert_eq!(text.bytes().filter(|byte| *byte == b'\n').count(), 1);
++        assert!(text.contains("\"relay_reason_utf8_hex\":\"6c696e650ae58e9fe59ba00922\""));
++        assert!(text.contains("\"lifecycle_error_utf8_hex\":null"));
++        assert!(!text.contains(reason));
++    }
++    #[test]
++    fn retirement_cause_diagnostic_broken_owned_socket_preserves_outcome() {
++        let (mut writer, peer) = std::os::unix::net::UnixStream::pair().unwrap();
++        drop(peer);
++        assert_eq!(writer.write(b"probe").unwrap_err().kind(), io::ErrorKind::BrokenPipe);
++        let (_, mut status) = empty_audit_and_status(); status.faulted = true;
++        let before = status.clone();
++        let reason = "original admission reason".to_owned();
++        let outcome: Result<()> = Err(Error::Reject("original lifecycle result"));
++        report_retirement_cause(&mut writer, &status, Some(&reason), outcome.as_ref().err());
++        assert_eq!(status, before); assert_eq!(reason, "original admission reason");
++        assert!(matches!(outcome, Err(Error::Reject("original lifecycle result"))));
++    }
++    #[test]
+     fn producer05_three_second_retirement_is_rejected_before_transport() {
+         let (caller, peer) = sockets();
+         // Producer05 passed this exact argument to LifecycleBroker::retire.

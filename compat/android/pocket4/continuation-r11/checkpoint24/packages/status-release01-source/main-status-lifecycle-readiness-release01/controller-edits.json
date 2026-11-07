@@ -1,0 +1,87 @@
+[
+  {
+    "label": "fresh_short_owned_root",
+    "before": "ROOT = Path('/home/alex/work/p4-st02-20261106')",
+    "after": "ROOT = Path('/home/alex/work/p4-sr01-20261106')"
+  },
+  {
+    "label": "selected_release_profile_path_and_elf",
+    "before": "def actual_executable(raw, package_id, target_name, target_kind, source_path, test):\n    records = []\n    for line in raw.decode('utf-8').splitlines():\n        if not line.strip():\n            continue\n        item = json.loads(line)\n        if item.get('reason') == 'compiler-artifact' and item.get('package_id') == package_id and \\\n                item.get('target', {}).get('name') == target_name and item.get('executable'):\n            require(item['target']['kind'] == [target_kind] and\n                    item['target']['src_path'] == str(source_path) and\n                    item['profile']['test'] is test,\n                    'Cargo executable has a wrong target/source/profile')\n            records.append(Path(item['executable']))\n    require(len(records) == 1, 'expected actual executable missing or duplicate')\n    path = records[0]\n    require(path.is_relative_to(OUT/'cargo-target') and '..' not in path.parts,\n            'actual executable escaped the fresh owned Cargo target')\n    real_directory(path.parent)\n    data, pin = held(path, 128*1024*1024)\n    require(data[:4] == b'\\x7fELF' and pin['identity'][2] & 0o111,\n            'actual executable is not an executable regular ELF')\n    return path, pin\n\n",
+    "after": "def actual_executable(raw, package_id, target_name, target_kind, source_path, test):\n    records = []\n    for line in raw.decode('utf-8').splitlines():\n        if not line.strip():\n            continue\n        item = json.loads(line)\n        if item.get('reason') == 'compiler-artifact' and item.get('package_id') == package_id and \\\n                item.get('target', {}).get('name') == target_name and item.get('executable'):\n            require(item['target']['kind'] == [target_kind] and\n                    item['target']['src_path'] == str(source_path) and\n                    item['profile']['test'] is test,\n                    'Cargo executable has a wrong target/source/profile')\n            profile = item['profile']\n            require('debuginfo' in profile and profile.get('opt_level') == '3' and\n                    profile.get('debug_assertions') is False and\n                    profile.get('overflow_checks') is False and\n                    (profile.get('debuginfo') is None or\n                     type(profile['debuginfo']) is int and profile['debuginfo'] == 0),\n                    'actual selected executable is not the original workspace default release profile')\n            records.append((Path(item['executable']), dict(profile)))\n    require(len(records) == 1, 'expected actual executable missing or duplicate')\n    path, profile = records[0]\n    require(path.is_relative_to(OUT/'cargo-target/release') and '..' not in path.parts,\n            'actual executable escaped the fresh owned release Cargo target')\n    real_directory(path.parent)\n    data, pin = held(path, 128*1024*1024)\n    require(len(data) >= 64 and data[:6] == b'\\x7fELF\\x02\\x01' and\n            int.from_bytes(data[16:18], 'little') in (2, 3) and\n            int.from_bytes(data[18:20], 'little') == 62 and pin['identity'][2] & 0o111,\n            'actual release executable is not an executable regular x86_64 ELF64')\n    return path, pin, profile\n\n"
+  },
+  {
+    "label": "exact_debug_actual_parent",
+    "before": "def execute():\n",
+    "after": "def qualify_debug_parent(report):\n    raw, pin = pinned_packet('status-debug02-result.json',\n        '9fa8108aab968a2a7428906fea074c44010e7a12bac545d78361c04c27e9cae6')\n    parent = json.loads(raw)\n    require(pin['bytes'] == 144339 and parent['state'] == 'PASS' and\n            parent['compiled_status_protocol_qualified'] is True and\n            parent['source_delta']['actual_source_file_count'] == 502 and\n            parent['copied_manifest'] == {\n                'path':'/home/alex/work/p4-st02-20261106/attempt01/copied-status-source-manifest.json',\n                'bytes':99958, 'sha256':MANIFEST_CANDIDATE} and\n            parent['expected_dispatch_and_preserved_gate_tests'] == LIB_TESTS and\n            parent['expected_cli_tests'] == CLI_TESTS and\n            parent['focused_tests_passed'] == 15 and\n            [row['exact_name'] for row in parent['focused_result_gates']] == LIB_TESTS+CLI_TESTS and\n            all(row['summary_and_independent_result_agree'] is True and row['outer_results'] == 1\n                for row in parent['focused_result_gates']) and\n            parent['actual_registered_test_counts'] == {'supervisor_library':112, 'cli_lifecycle':7} and\n            len(parent['commands']) == 38 and\n            all(row['returncode'] == 0 and row['child_reaped'] is True and\n                row['owned_tree_cleanup_complete'] is True and row['pidfd_closed'] is True and\n                row['output_fds_closed'] is True and row['stdout_complete'] is True and\n                row['stderr_complete'] is True and row['timed_out'] is False and\n                row['first_error'] is None and row['secondary_errors'] == []\n                for row in parent['commands']),\n            'actual debug02 complete source and selected test authority differs')\n    require([row['name'] for row in parent['host_child_lifecycle_controls']] ==\n                ['timeout-descendant', 'escaped-descendant', 'pidfd-failure'] and\n            all(row['passed'] is True for row in parent['host_child_lifecycle_controls']) and\n            parent['owned_child_reaper']['final_children_empty'] is True and\n            parent['owned_child_reaper']['restored'] is True and\n            all(parent[label+'_baseline_established'] is True and\n                parent[label+'_unchanged_after'] is True\n                for label in ('original_source', 'copied_source', 'control_source')) and\n            parent['dependency_changes'] == parent['tool_changes'] == parent['artifact_changes'] == [] and\n            parent['cargo_configs_unchanged_after'] is True and\n            parent['observed_signals'] == parent['secondary_errors'] == [] and\n            parent['owned_resource_gate']['pass'] is True and\n            parent['owned_resource_fd_closed'] is True and\n            parent['Main_actions'] == 0 and parent['install_actions'] == 0 and\n            parent['Android_or_Soong_executed'] is False and parent['namespace_entry'] is False and\n            parent['deployed'] is False and parent['production_ready'] is False,\n            'actual debug02 cleanup, immutable inputs or no-deployment boundary differs')\n    names = {name for _, name, _ in HOST_BINARIES} | {'supervisor-libtest', 'cli-lifecycle-test'}\n    require(set(parent['actual_elfs']) == names, 'actual debug02 six-artifact set differs')\n    for name, row in parent['actual_elfs'].items():\n        path = PurePosixPath(row['path'])\n        require(path.is_relative_to('/home/alex/work/p4-st02-20261106/attempt01/cargo-target/debug') and\n                '..' not in path.parts and type(row['bytes']) is int and row['bytes'] > 0 and\n                re.fullmatch(r'[0-9a-f]{64}', row['sha256']) is not None and\n                (name in ('supervisor-libtest', 'cli-lifecycle-test') or path.name == name),\n                'actual debug02 original artifact path or content pin differs')\n    report['actual_debug02_authority'] = pin\n    report['debug_artifacts_are_release_artifacts'] = False\n    report['old_debug_ELFs_read_or_reused'] = False\n\ndef execute():\n"
+  },
+  {
+    "label": "separate_profile_observations",
+    "before": "    dependency_rows, tool_rows, config_rows, config_paths, artifact_pins = {}, [], [], [], {}\n",
+    "after": "    dependency_rows, tool_rows, config_rows, config_paths, artifact_pins = {}, [], [], [], {}\n    artifact_profiles = {}\n"
+  },
+  {
+    "label": "original_profile_authority",
+    "before": "        report['copied_manifest'] = write_new(OUT/'copied-status-source-manifest.json', new_raw)\n",
+    "after": "        report['copied_manifest'] = write_new(OUT/'copied-status-source-manifest.json', new_raw)\n        qualify_debug_parent(report)\n        workspace_raw, workspace_pin = held(COPIED/'Cargo.toml', 65536)\n        require(workspace_pin['bytes'] == 1996 and\n                workspace_pin['sha256'] == 'e33185d2fc5a65e0a4ed6df552e4f8f8f40c793ec07f7289ed27e3c0d5fa4e60' and\n                'profile' not in tomllib.loads(workspace_raw.decode('utf-8')),\n                'original workspace Cargo release-profile authority differs')\n        report['release_profile_source'] = {\n            'workspace_manifest':workspace_pin, 'workspace_profile_override':False,\n            'cargo_switch':'--release', 'selected_executable_opt_level':'3',\n            'selected_executable_debug_assertions':False, 'selected_executable_overflow_checks':False,\n            'selected_executable_debuginfo':0, 'dependency_build_profile_not_assumed':True,\n            'new_LTO_strip_or_panic_override':False}\n"
+  },
+  {
+    "label": "libtest_release",
+    "before": "lib_build = command([cargo, 'test', '--offline'",
+    "after": "lib_build = command([cargo, 'test', '--release', '--offline'"
+  },
+  {
+    "label": "cli_release",
+    "before": "cli_build = command([cargo, 'test', '--offline'",
+    "after": "cli_build = command([cargo, 'test', '--release', '--offline'"
+  },
+  {
+    "label": "binaries_release",
+    "before": "build = command([cargo, 'build', '--offline'",
+    "after": "build = command([cargo, 'build', '--release', '--offline'"
+  },
+  {
+    "label": "lib_unpack",
+    "before": "lib_binary, lib_pin = actual_executable(",
+    "after": "lib_binary, lib_pin, lib_profile = actual_executable("
+  },
+  {
+    "label": "lib_profile_retained",
+    "before": "artifact_pins['supervisor-libtest'] = lib_pin\n",
+    "after": "artifact_pins['supervisor-libtest'] = lib_pin\n        artifact_profiles['supervisor-libtest'] = lib_profile\n"
+  },
+  {
+    "label": "cli_unpack",
+    "before": "cli_binary, cli_pin = actual_executable(",
+    "after": "cli_binary, cli_pin, cli_profile = actual_executable("
+  },
+  {
+    "label": "cli_profile_retained",
+    "before": "artifact_pins['cli-lifecycle-test'] = cli_pin\n",
+    "after": "artifact_pins['cli-lifecycle-test'] = cli_pin\n        artifact_profiles['cli-lifecycle-test'] = cli_profile\n"
+  },
+  {
+    "label": "bins_unpack",
+    "before": "path, pin = actual_executable(build,",
+    "after": "path, pin, profile = actual_executable(build,"
+  },
+  {
+    "label": "bins_profile_retained",
+    "before": "            artifact_pins[name] = pin\n",
+    "after": "            artifact_pins[name] = pin\n            artifact_profiles[name] = profile\n"
+  },
+  {
+    "label": "actual_release_records",
+    "before": "        report['actual_elfs'] = artifact_pins\n",
+    "after": "        report['actual_elfs'] = artifact_pins\n        report['actual_executable_profiles'] = artifact_profiles\n        report['build_profile'] = 'release'\n"
+  },
+  {
+    "label": "release_completion",
+    "before": "        report['compiled_status_protocol_qualified'] = report['state'] == 'PASS'\n",
+    "after": "        report['compiled_status_protocol_qualified'] = report['state'] == 'PASS'\n        report['release_artifacts_qualified'] = (report['state'] == 'PASS' and\n            set(artifact_profiles) == {name for _, name, _ in HOST_BINARIES} |\n                {'supervisor-libtest', 'cli-lifecycle-test'})\n"
+  },
+  {
+    "label": "terminal_profile",
+    "before": "            'Main_actions':0, 'deployed':False, 'production_ready':False,\n            'commands':len(report['commands'])",
+    "after": "            'Main_actions':0, 'deployed':False, 'production_ready':False,\n            'build_profile':'release', 'release_artifacts_qualified':report['release_artifacts_qualified'],\n            'commands':len(report['commands'])"
+  }
+]

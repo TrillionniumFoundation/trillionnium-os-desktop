@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "state": "SOURCE_CANDIDATE_NOT_COMPILED",
+  "actual_preimage_sha256": "e2b7bf50848ba9f9ac7078dae87c6b2e13ce7019ba997c71f90a04e602f1a9d4",
+  "candidate_sha256": "1559969a55db1b682401c01264dd8ba96fa224781c3af277f0996a5050f7c9fa",
+  "changes": [
+    "For shard serialization only, select existing writeModuleAction when GetIncrementalEnabled is false"
+  ],
+  "unchanged": [
+    "Ten shard names and partitioning",
+    "Sorted module order",
+    "Incremental/cache/restored path",
+    "Singleton serialization",
+    "Go6 budget",
+    "Candidate05 engine source"
+  ],
+  "required_controls": [
+    "Complete-package old/fixed output equality",
+    "Actual writer failure propagation",
+    "Incremental-enabled routing",
+    "Matched compilation source manifest"
+  ],
+  "tests_run": false,
+  "OOM_victim_proven": false,
+  "full_engine_build_pass": false,
+  "Main_changes": 0
+}

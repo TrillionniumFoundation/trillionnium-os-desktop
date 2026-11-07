@@ -1,0 +1,224 @@
+--- build01/config-normalized.json
++++ build02/config-normalized.json
+@@ -69,9 +69,9 @@
+   },
+   "aosp": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source",
+   "apk13_observer": {
+-    "bytes": 20847,
++    "bytes": 21569,
+     "full_bytes_in_original_config": true,
+-    "sha256": "2eef8c4ba06d762a3f3a09796d54e81da43deae4691ab4afa7713ad5b987f390"
++    "sha256": "e423932478c0120867a11a8a5810bc768605945ebb132d673d3f954324029e59"
+   },
+   "apk_input_specifications": [
+     {
+@@ -103,24 +103,32 @@
+       "role": "android_jar31_anchor"
+     },
+     {
++      "expected_bytes": 24613594,
++      "expected_sha256": "b5503d3e2b52e541f73025feb6a16088290fd8091ac57ce568e02012f01a5251",
+       "format": "archive",
+       "maximum": 67108864,
+       "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/android_libc++/ndk/aarch64/lib/libc++_static.a",
+       "role": "ndk_libcxx_static"
+     },
+     {
++      "expected_bytes": 4930052,
++      "expected_sha256": "c0520f2e83ab27bd14c5079bc3b8629d07d234ef4b9f0bbf73647c51cfe7e865",
+       "format": "archive",
+       "maximum": 33554432,
+       "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/android_libc++/ndk/aarch64/lib/libc++abi.a",
+       "role": "ndk_libcxxabi"
+     },
+     {
++      "expected_bytes": 98856,
++      "expected_sha256": "b24d66e5a6871fc843ced3176c8e7305684ef80e56c496b2ddd92a182abcb86f",
+       "format": "archive",
+       "maximum": 16777216,
+       "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/lib/clang/22/lib/linux/aarch64/libunwind.a",
+       "role": "arm64_unwind"
+     },
+     {
++      "expected_bytes": 519610,
++      "expected_sha256": "1184a30e94d6aaa4c122e7eaf363861a61cf7a013f86e1b093b66027bbb9f2e5",
+       "format": "archive",
+       "maximum": 16777216,
+       "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/lib/clang/22/lib/linux/libclang_rt.builtins-aarch64-android.a",
+@@ -131,7 +139,7 @@
+       "expected_sha256": "736b4710cdcc7ce96816966a109c97b3553de44e082f73f76229f3af483518f0",
+       "format": "utf8",
+       "maximum": 65536,
+-      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/ndk/Android.bp",
++      "path": "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-02-20261106/source/prebuilts/ndk/Android.bp",
+       "role": "ndk_cpufeatures_provider"
+     },
+     {
+@@ -139,7 +147,7 @@
+       "expected_sha256": "e8992a9c2b044cab53df1e49c6910e92b21b084f7a834f63b46f4610b50ef044",
+       "format": "utf8",
+       "maximum": 1048576,
+-      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/ndk/current/sources/android/cpufeatures/cpu-features.c",
++      "path": "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-02-20261106/source/prebuilts/ndk/current/sources/android/cpufeatures/cpu-features.c",
+       "role": "ndk_cpufeatures_source"
+     },
+     {
+@@ -147,30 +155,36 @@
+       "expected_sha256": "122f6c71a49c553cd0a7e943f7db414eef4487e2e9f346117a141d5df3a7da74",
+       "format": "utf8",
+       "maximum": 65536,
+-      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/ndk/current/sources/android/cpufeatures/cpu-features.h",
++      "path": "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-02-20261106/source/prebuilts/ndk/current/sources/android/cpufeatures/cpu-features.h",
+       "role": "ndk_cpufeatures_header"
+     },
+     {
++      "expected_bytes": 25881,
++      "expected_sha256": "7bc39e415d8c8390709ba79e579aa110005e3e9d3971c618551d0af30f02abb6",
+       "format": "zip",
+       "maximum": 16777216,
+       "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.test.runner.jar",
+       "required_classes": [
+-        "android/test/InstrumentationTestCase.class",
+         "android/test/InstrumentationTestRunner.class"
+       ],
+       "role": "android_test_runner31"
+     },
+     {
++      "expected_bytes": 15873,
++      "expected_sha256": "a6e13d093428824b51f194a392af6ce0de92744f2a8ed3f7dd92c1145f433dcb",
+       "format": "zip",
+       "maximum": 16777216,
+       "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.test.base.jar",
+       "required_classes": [
+         "junit/framework/TestCase.class",
+-        "junit/framework/Assert.class"
++        "junit/framework/Assert.class",
++        "android/test/InstrumentationTestCase.class"
+       ],
+       "role": "android_test_base31"
+     },
+     {
++      "expected_bytes": 16410,
++      "expected_sha256": "b84c31f415cbccec029ee467d2ac0b3b021081161b6b924a1f9733e667a317e2",
+       "format": "zip",
+       "maximum": 16777216,
+       "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.test.mock.jar",
+@@ -307,7 +321,7 @@
+       "sha256": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758"
+     }
+   },
+-  "kind": "p4-marriott-real-arm64-ndk-apk-build01",
++  "kind": "p4-marriott-real-arm64-ndk-apk-build02",
+   "limits": {
+     "APK_static_build": true,
+     "ARM64_test_runtime": false,
+@@ -336,7 +350,10 @@
+     },
+     "apk13_reader02": {
+       "admission": "UNKNOWN_AND_NOT_REISSUED",
+-      "new_build_observes_same_13_fixed_paths_before_compiler": true,
++      "cpufeatures_three_paths_are_owned_exact_original_source_copies": true,
++      "new_build_observes_same_13_fixed_paths_before_compiler": false,
++      "new_build_observes_same_13_roles_before_compiler": true,
++      "observation_functions_unchanged_from_original": true,
+       "qualification_borrowed": false,
+       "source": {
+         "bytes": 20847,
+@@ -359,6 +376,32 @@
+       "git_blob": "65b73e78dbc48d7e62e2c9ca6276909b8b8efd16",
+       "sha256": "5cc813715a261701cad3be931b9e53145229dec7c803d828a1097e4fe4ad166b"
+     },
++    "cpufeatures_original_source": {
++      "commit": "e0e58e67cd11713799cdf6b50ba5843d62881660",
++      "original_expected_pins_match": true,
++      "repository": "aosp-mirror-neo/platform_prebuilts_ndk",
++      "shared_AOSP_modified": false,
++      "staged_owned_source_files": [
++        {
++          "bytes": 2354,
++          "git_blob_sha": "5fafadb70ab1883f5bdda2abb72a8a366783208a",
++          "path": "prebuilts/ndk/Android.bp",
++          "sha256": "736b4710cdcc7ce96816966a109c97b3553de44e082f73f76229f3af483518f0"
++        },
++        {
++          "bytes": 39503,
++          "git_blob_sha": "7569d3e5db2f293b9d5873de6fbeb6659bc78a2f",
++          "path": "prebuilts/ndk/current/sources/android/cpufeatures/cpu-features.c",
++          "sha256": "e8992a9c2b044cab53df1e49c6910e92b21b084f7a834f63b46f4610b50ef044"
++        },
++        {
++          "bytes": 11689,
++          "git_blob_sha": "d389908869cf1cf13d677541d0a6d01ba007fb54",
++          "path": "prebuilts/ndk/current/sources/android/cpufeatures/cpu-features.h",
++          "sha256": "122f6c71a49c553cd0a7e943f7db414eef4487e2e9f346117a141d5df3a7da74"
++        }
++      ]
++    },
+     "original_five_TU_report": {
+       "bytes": 636576,
+       "git_blob": "c26917a55bf7d362457a9ce6ffbcffd9c9882b10",
+@@ -393,6 +436,18 @@
+       },
+       "tree": "50cc65b085903267e9d36ca323f0c12322c10345"
+     },
++    "real_apk_build01_actual": {
++      "APK13_rows_complete": 9,
++      "APK13_rows_failed": 4,
++      "bytes": 111417,
++      "commands": 0,
++      "git_blob_sha": "f59c2694902286022122348c4dabb1501649c331",
++      "job": "1a1b1d0f68d-fc05-7aef",
++      "original_failure_preserved": true,
++      "sha256": "e6da9ff2059c14a176b2f3a55d60cfaebc22b4bc079ed01581c28406718065ba",
++      "success": false,
++      "tree": "4790b4ace6eea05bd51505e28a1e127c6d0f5fcc"
++    },
+     "reused_controller": {
+       "bytes": 38732,
+       "git_blob": "ef59ee980316a2317ba86a99c47572fb9afb0c12",
+@@ -406,6 +461,14 @@
+       "terminal_exit1_preserved": true,
+       "tree": "08bfc40e5d17aa47850692269f5674dbaae203ff"
+     },
++    "sdk31_class_gate_correction": {
++      "InstrumentationTestCase_required_in": "android.test.base.jar",
++      "InstrumentationTestRunner_required_in": "android.test.runner.jar",
++      "base_class_membership_not_yet_actually_observed": true,
++      "classes_not_deleted_from_qualification": true,
++      "original_base_jar_whole_pin_bound": true,
++      "original_runner_missing_class_failure_preserved": true
++    },
+     "three_source_actual": {
+       "bytes": 48482,
+       "git_blob": "e649d1be46367c7efb4fbddc30305d452b534ee1",
+@@ -580,7 +643,7 @@
+     "full_bytes_in_original_config": true,
+     "sha256": "4192389de077c41dc395d9f5b083d10372272c45aacb053697d3c24e94a25961"
+   },
+-  "root": "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-01-20261106",
++  "root": "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-02-20261106",
+   "schema": 1,
+   "script_only_pending_actuals": true,
+   "sdk_configuration_specifications": [
+@@ -863,6 +926,21 @@
+       "full_bytes_in_original_config": true,
+       "sha256": "081a3bb255200f6ff4b6a91d29a9c67850a84cd6f900399260279c95c02603ad"
+     },
++    "prebuilts/ndk/Android.bp": {
++      "bytes": 2354,
++      "full_bytes_in_original_config": true,
++      "sha256": "736b4710cdcc7ce96816966a109c97b3553de44e082f73f76229f3af483518f0"
++    },
++    "prebuilts/ndk/current/sources/android/cpufeatures/cpu-features.c": {
++      "bytes": 39503,
++      "full_bytes_in_original_config": true,
++      "sha256": "e8992a9c2b044cab53df1e49c6910e92b21b084f7a834f63b46f4610b50ef044"
++    },
++    "prebuilts/ndk/current/sources/android/cpufeatures/cpu-features.h": {
++      "bytes": 11689,
++      "full_bytes_in_original_config": true,
++      "sha256": "122f6c71a49c553cd0a7e943f7db414eef4487e2e9f346117a141d5df3a7da74"
++    },
+     "proc_self_maps_test.cc": {
+       "bytes": 12127,
+       "full_bytes_in_original_config": true,

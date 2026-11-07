@@ -1,0 +1,11 @@
+In file included from /usr/include/c++/13/cstddef:50,
+                 from /usr/include/c++/13/bits/memory_resource.h:38,
+                 from /usr/include/c++/13/vector:80,
+                 from /workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work01/controls/constructor.cc:11:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work01/preimage/bionic/libc/seccomp/seccomp_policy.cpp: In function ‘void ValidateSyscallArgInRange(filter&, __u32, __u32, __u32)’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work01/preimage/bionic/libc/seccomp/seccomp_policy.cpp:144:43: error: ‘arg_num’ is not a constant expression
+  144 |     const __u32 syscall_arg = syscall_arg(arg_num);
+      |                                           ^~~~~~~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work01/preimage/bionic/libc/seccomp/seccomp_policy.cpp:144:31: note: in expansion of macro ‘syscall_arg’
+  144 |     const __u32 syscall_arg = syscall_arg(arg_num);
+      |                               ^~~~~~~~~~~

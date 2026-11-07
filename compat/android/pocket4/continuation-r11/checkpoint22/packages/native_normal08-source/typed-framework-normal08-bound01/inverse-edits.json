@@ -1,0 +1,423 @@
+{
+  "schema": 1,
+  "semantics": "Sequential UTF-16 string offsets. Reverse records in reverse order, require exact after bytes at each offset, then replace with before. These source strings are ASCII in edited segments.",
+  "baseline_framework": {
+    "bytes": 62891,
+    "sha256": "85ec236e9cf3ec1b0efca053ee8f71f9a2f12c75b757b5a8c35172823ed3d87e",
+    "git_blob_sha1": "ec32b21b9a494b7ebfb7716530e38e437a0e2bf7"
+  },
+  "baseline_fence": {
+    "bytes": 25507,
+    "sha256": "e7df8f408e4b8050636d1247e44c50a763246d0329e9ddf0d8960a2a73e29912",
+    "git_blob_sha1": "8b7ed84e374bb24d18fbd87e867da94664f7cf1f"
+  },
+  "baseline_binder": {
+    "bytes": 17578,
+    "sha256": "9a62d67260ad08ee88b410518a6aa9b6e10f382062224d9c6a8c49a34a423d80",
+    "git_blob_sha1": "b7fe451d3ce4f10d18822bbf6cf15735a419610f"
+  },
+  "framework_template": {
+    "bytes": 62692,
+    "sha256": "e1f89dfb673c905c6b672817c17e5725e4b2fff8ca501d64269803342ed6385e",
+    "git_blob_sha1": "193e0d6578c6134e34144611500965c068e0495c"
+  },
+  "fence_template": {
+    "bytes": 25483,
+    "sha256": "7c24d472ef1adf37ff283d0760983fe570587bf8a3d52480caa5ce666b73bc35",
+    "git_blob_sha1": "7e583041b6139edbece427ceef17314c77c6ed17"
+  },
+  "binder": {
+    "bytes": 18449,
+    "sha256": "db011f56c40a4f13d455833fe7a61e1d6c228c6561ff1b4baa55758afe12b3bb",
+    "git_blob_sha1": "8e2e88ed2226415177a5a4f6c8a2209f34aa546e"
+  },
+  "framework_edits": [
+    {
+      "at": 8585,
+      "before": "ROOT = OWNER / 'typed-ingress-framework-provider-build-07-20261106'",
+      "after": "ROOT = OWNER / 'typed-ingress-framework-provider-build-08-20261106'"
+    },
+    {
+      "at": 8817,
+      "before": "/home/alex/work/pocket4-native-typed-ingress-builder470-published-lock-alignment-compile-01-20261106",
+      "after": "/home/alex/work/pocket4-native-typed-ingress-builder471-systemui-test-projection-compile-01-20261106"
+    },
+    {
+      "at": 9040,
+      "before": "BUILDER_SHA = \"fd6911bb3919757067c2948a0dac09c7f071beb9801273dd721e24c6d88ec23d\"",
+      "after": "BUILDER_SHA = \"__ACTUAL_BUILDER471_SHA256__\""
+    },
+    {
+      "at": 9085,
+      "before": "BUILDER_BYTES = 34767864",
+      "after": "BUILDER_BYTES = \"__ACTUAL_BUILDER471_BYTES__\""
+    },
+    {
+      "at": 9185,
+      "before": "BUILD_RESULT_SHA = \"f4e78f21dec485f59ff2149cb12298c070142dbad4e29b00a776729a376eea4c\"",
+      "after": "BUILD_RESULT_SHA = \"__ACTUAL_COMPILE471_RESULT_SHA256__\""
+    },
+    {
+      "at": 9242,
+      "before": "BUILD_RESULT_BYTES = 172040",
+      "after": "BUILD_RESULT_BYTES = \"__ACTUAL_COMPILE471_RESULT_BYTES__\""
+    },
+    {
+      "at": 9300,
+      "before": "SOURCE_MANIFEST_SHA = \"d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057\"",
+      "after": "SOURCE_MANIFEST_SHA = \"c29c7b05fcfdf3def918d2bc963c6fe0c25a0430c87249f3de781d5d8bf68ae0\""
+    },
+    {
+      "at": 10468,
+      "before": "EXPECTED_TESTS = [\"android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes\",\"android::tests::restoration_preserves_original_and_removes_created_file\",\"android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch\",\"android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout\",\"android::patch_tests::interrupted_projection_recovers_before_next_build\",\"tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets\",\"tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory\",\"native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate\",\"native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions\",\"android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata\",\"android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas\",\"android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged\",\"native_role_ingress::tests::provider_extension_rejects_unlisted_path_commit_metadata_or_project_change\",\"native_role_ingress::tests::published_workspace_selects_only_exact_current_or_previous_typed_lock\",\"native_role_ingress::tests::previous_typed_manifest_does_not_bypass_fresh_project_verification\",\"android::tests::typed_hal_provider_projection_restores_real_sources_and_keeps_consumers\",\"android::tests::typed_hal_provider_late_source_drift_restores_earlier_projections\",\"native_role_ingress::tests::hal_provider_extension_preserves_all_prior_projects_and_rejects_unlisted_changes\"]",
+      "after": "EXPECTED_TESTS = [\"android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes\",\"android::tests::restoration_preserves_original_and_removes_created_file\",\"android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch\",\"android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout\",\"android::patch_tests::interrupted_projection_recovers_before_next_build\",\"tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets\",\"tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory\",\"native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate\",\"native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions\",\"android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata\",\"android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas\",\"android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged\",\"native_role_ingress::tests::provider_extension_rejects_unlisted_path_commit_metadata_or_project_change\",\"native_role_ingress::tests::published_workspace_selects_only_exact_current_or_previous_typed_lock\",\"native_role_ingress::tests::previous_typed_manifest_does_not_bypass_fresh_project_verification\",\"android::tests::typed_hal_provider_projection_restores_real_sources_and_keeps_consumers\",\"android::tests::typed_hal_provider_late_source_drift_restores_earlier_projections\",\"native_role_ingress::tests::hal_provider_extension_preserves_all_prior_projects_and_rejects_unlisted_changes\",\"android::tests::typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths\",\"android::tests::typed_systemui_test_projection_rejects_wrong_source_before_journal_or_write\",\"android::tests::typed_systemui_test_projection_recovers_complete_original_from_durable_journal\"]\nEXPECTED_TEST_INDICES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,200,201,202]"
+    },
+    {
+      "at": 13880,
+      "before": "EXPECTED_COMPILE_LABELS = [\"cargo-version\",\"rustc-version\",\"linked-libraries-0\",\"linked-libraries-1\",\"linked-libraries-2\",\"linked-libraries-3\",\"linked-libraries-4\",\"linked-libraries-5\",\"linked-libraries-6\",\"linked-libraries-7\",\"image-linked-libraries-0\",\"image-linked-libraries-1\",\"image-linked-libraries-2\",\"image-linked-libraries-3\",\"image-linked-libraries-4\",\"image-linked-libraries-5\",\"image-linked-libraries-6\",\"image-linked-libraries-7\",\"image-linked-libraries-8\",\"image-linked-libraries-9\",\"image-linked-libraries-10\",\"image-linked-libraries-11\",\"image-linked-libraries-12\",\"image-linked-libraries-13\",\"image-linked-libraries-14\",\"workspace-no-deps\",\"selected-build\",\"selected-test\",\"builder-compile\",\"builder-help\",\"source-resume-cli-help\",\"builder-test-compile\",\"builder-test-list\",\"builder-test-help\",\"projection-test-0\",\"projection-test-1\",\"projection-test-2\",\"projection-test-3\",\"projection-test-4\",\"projection-test-5\",\"projection-test-6\",\"projection-test-7\",\"projection-test-8\",\"projection-test-9\",\"projection-test-10\",\"projection-test-11\",\"projection-test-12\",\"projection-test-13\",\"projection-test-14\",\"projection-test-15\",\"projection-test-16\",\"projection-test-17\",\"source-resume-selected-test\",\"source-resume-test-compile\",\"source-resume-test-list\",\"source-resume-test-help\",\"projection-test-100\",\"projection-test-101\",\"projection-test-102\",\"projection-test-103\",\"projection-test-104\",\"projection-test-105\",\"projection-test-106\",\"projection-test-107\",\"projection-test-108\"]",
+      "after": "EXPECTED_COMPILE_LABELS = [\"cargo-version\",\"rustc-version\",\"linked-libraries-0\",\"linked-libraries-1\",\"linked-libraries-2\",\"linked-libraries-3\",\"linked-libraries-4\",\"linked-libraries-5\",\"linked-libraries-6\",\"linked-libraries-7\",\"image-linked-libraries-0\",\"image-linked-libraries-1\",\"image-linked-libraries-2\",\"image-linked-libraries-3\",\"image-linked-libraries-4\",\"image-linked-libraries-5\",\"image-linked-libraries-6\",\"image-linked-libraries-7\",\"image-linked-libraries-8\",\"image-linked-libraries-9\",\"image-linked-libraries-10\",\"image-linked-libraries-11\",\"image-linked-libraries-12\",\"image-linked-libraries-13\",\"image-linked-libraries-14\",\"workspace-no-deps\",\"selected-build\",\"selected-test\",\"builder-compile\",\"builder-help\",\"source-resume-cli-help\",\"builder-test-compile\",\"builder-test-list\",\"builder-test-help\",\"projection-test-0\",\"projection-test-1\",\"projection-test-2\",\"projection-test-3\",\"projection-test-4\",\"projection-test-5\",\"projection-test-6\",\"projection-test-7\",\"projection-test-8\",\"projection-test-9\",\"projection-test-10\",\"projection-test-11\",\"projection-test-12\",\"projection-test-13\",\"projection-test-14\",\"projection-test-15\",\"projection-test-16\",\"projection-test-17\",\"projection-test-200\",\"projection-test-201\",\"projection-test-202\",\"source-resume-selected-test\",\"source-resume-test-compile\",\"source-resume-test-list\",\"source-resume-test-help\",\"projection-test-100\",\"projection-test-101\",\"projection-test-102\",\"projection-test-103\",\"projection-test-104\",\"projection-test-105\",\"projection-test-106\",\"projection-test-107\",\"projection-test-108\"]"
+    },
+    {
+      "at": 15435,
+      "before": "EXPECTED_SOURCE_DELTA = json.loads(\"{\\\"Cargo_lock_or_dependency_manifest_changed\\\":false,\\\"Go5_or_Blueprint_patch_changed\\\":false,\\\"Rust_source_files_changed\\\":1,\\\"actual_source_file_count\\\":499,\\\"added\\\":[],\\\"builder_revision_name\\\":\\\"470-published-lock-alignment\\\",\\\"changed_existing\\\":[\\\"android/manifest/m2-role-ingress-hal-provider-source-lock.json\\\",\\\"tools/droidloom-update/src/native_role_ingress.rs\\\"],\\\"engine_source_files_changed\\\":0,\\\"framework_sources_executed_or_built\\\":false,\\\"new_exact_provider_source_lock_added\\\":false,\\\"previous_source_locks_changed\\\":false,\\\"real_published_source_accessed\\\":false,\\\"real_source_staging_accessed\\\":false,\\\"runtime_authorization_enabled\\\":false,\\\"source_resume_library_changed\\\":false,\\\"typed_ingress_framework_patch_changed\\\":false,\\\"unchanged_existing\\\":497,\\\"new_exact_hal_provider_source_lock_added\\\":false,\\\"current_hal_source_lock_exact_metadata_and_order_aligned\\\":true}\")",
+      "after": "EXPECTED_SOURCE_DELTA = json.loads(\"{\\\"Cargo_lock_or_dependency_manifest_changed\\\":false,\\\"Go5_or_Blueprint_patch_changed\\\":false,\\\"Rust_source_files_changed\\\":1,\\\"actual_source_file_count\\\":500,\\\"added\\\":[\\\"android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp\\\"],\\\"builder_revision_name\\\":\\\"471-fixed-systemui-test-projection\\\",\\\"changed_existing\\\":[\\\"tools/droidloom-update/src/android.rs\\\"],\\\"current_hal_source_lock_unchanged\\\":true,\\\"engine_source_files_changed\\\":0,\\\"fixed_SystemUI_tests_BP_original_fixture_added\\\":true,\\\"framework_sources_executed_or_built\\\":false,\\\"new_exact_hal_provider_source_lock_added\\\":false,\\\"new_exact_provider_source_lock_added\\\":false,\\\"previous_source_locks_changed\\\":false,\\\"real_published_source_accessed\\\":false,\\\"real_source_staging_accessed\\\":false,\\\"runtime_authorization_enabled\\\":false,\\\"source_resume_library_changed\\\":false,\\\"typed_ingress_framework_patch_changed\\\":false,\\\"unchanged_existing\\\":498}\")"
+    },
+    {
+      "at": 12497,
+      "before": "PREVIOUS_ROOT = OWNER / 'typed-ingress-framework-provider-build-03-20261106'",
+      "after": "PREVIOUS_ROOT = OWNER / 'typed-ingress-framework-provider-build-07-20261106'"
+    },
+    {
+      "at": 12936,
+      "before": "PRIOR_INNER_SHA = '6a525b9838f43579bc41b1106891f2f734a0c2d92b0c5cc355f7ab02b39eb2a8'",
+      "after": "PRIOR_INNER_SHA = '7bb06799bc311b64541c1cb9fe23a5b0ce0796d0476e7eb1fcbc7ff37938f3a3'"
+    },
+    {
+      "at": 13021,
+      "before": "PRIOR_OUTER_SHA = '273ba8a236253ee3873074a26f568144397044ebcfdd6f153ab8712b29ff70cf'",
+      "after": "PRIOR_OUTER_SHA = '58aa37d06c97d507556b9fa141b7870053e931b11b307bc03671e54c71342c21'"
+    },
+    {
+      "at": 18482,
+      "before": "BUILDER470",
+      "after": "BUILDER471"
+    },
+    {
+      "at": 18633,
+      "before": "builder470",
+      "after": "builder471"
+    },
+    {
+      "at": 19412,
+      "before": "builder470",
+      "after": "builder471"
+    },
+    {
+      "at": 23951,
+      "before": "builder470",
+      "after": "builder471"
+    },
+    {
+      "at": 24940,
+      "before": "builder470",
+      "after": "builder471"
+    },
+    {
+      "at": 18771,
+      "before": "result['focused_tests_passed'] == 27 and result['updater_focused_tests_passed'] == 18",
+      "after": "result['focused_tests_passed'] == 30 and result['updater_focused_tests_passed'] == 21"
+    },
+    {
+      "at": 19068,
+      "before": "result['actual_registered_test_count'] == 208",
+      "after": "result['actual_registered_test_count'] == 211"
+    },
+    {
+      "at": 19301,
+      "before": "result['provider_closure_tests_passed'] == 6 and result['hal_provider_tests_passed'] == 3,",
+      "after": "result['provider_closure_tests_passed'] == 6 and result['hal_provider_tests_passed'] == 3 and\n            result['systemui_test_projection_tests_passed'] == 3,"
+    },
+    {
+      "at": 19473,
+      "before": "'actual builder471 compile01 and exact 27-control qualification differs'",
+      "after": "'actual builder471 compile01 and exact 30-control qualification differs'"
+    },
+    {
+      "at": 19878,
+      "before": "    for offset, names, count, elf_key, gates_key in [\n        (0, EXPECTED_TESTS, 208, 'test_elf', 'focused_result_gates'),\n        (100, EXPECTED_SOURCE_TESTS, 20, 'source_test_elf', 'source_resume_result_gates')]:",
+      "after": "    for indices, names, count, elf_key, gates_key in [\n        (EXPECTED_TEST_INDICES, EXPECTED_TESTS, 211, 'test_elf', 'focused_result_gates'),\n        (list(range(100, 109)), EXPECTED_SOURCE_TESTS, 20, 'source_test_elf', 'source_resume_result_gates')]:"
+    },
+    {
+      "at": 20291,
+      "before": "index = offset + position",
+      "after": "index = indices[position]"
+    },
+    {
+      "at": 22662,
+      "before": "    require(result['copied_manifest']['sha256'] == SOURCE_MANIFEST_SHA and\n            result['copied_manifest']['bytes'] == 99327 and delta == EXPECTED_SOURCE_DELTA and\n            delta['actual_source_file_count'] == 499 and delta['unchanged_existing'] == 497 and\n            delta['changed_existing'] == ['android/manifest/m2-role-ingress-hal-provider-source-lock.json',\n                'tools/droidloom-update/src/native_role_ingress.rs'] and delta['added'] == [] and\n            delta['builder_revision_name'] == '470-published-lock-alignment' and\n            result['actual_device_staging_reuse_qualified'] is False and\n            'HOME' not in result['build_environment'],\n            'builder source is not the exact reviewed 499-file published-lock successor')\n    require(result['observed_manifest_rebuilt_exactly'] is True and\n            result['observed_materialized_manifest_authority']['bytes'] == PUBLISHED_MANIFEST_BYTES and\n            result['observed_materialized_manifest_authority']['sha256'] == PUBLISHED_MANIFEST_SHA and\n            result['lock_alignment_derivation_authority']['sha256'] == '4b74519eee1909efa3ee0283fe67fa6432525a80bff5049bae29e159ad1ea222' and\n            result['actual_parent469_compile_authority']['sha256'] == '3636057b9a20fc895657064da3fb66d8ded7e69ebfa5a5b92072a51b33f29fd5' and\n            result['source_lock_writer'] == 'UNKNOWN',\n            'builder471 exact observed-lock derivation is incomplete')\n",
+      "after": "    require(result['copied_manifest']['sha256'] == SOURCE_MANIFEST_SHA and\n            result['copied_manifest']['bytes'] == 99548 and delta == EXPECTED_SOURCE_DELTA and\n            delta['actual_source_file_count'] == 500 and delta['unchanged_existing'] == 498 and\n            delta['changed_existing'] == ['tools/droidloom-update/src/android.rs'] and\n            delta['added'] == ['android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp'] and\n            delta['builder_revision_name'] == '471-fixed-systemui-test-projection' and\n            result['actual_device_staging_reuse_qualified'] is False and\n            'HOME' not in result['build_environment'],\n            'builder source is not the exact reviewed 500-file SystemUI test projection successor')\n    require(result['actual_parent470_compile_authority']['bytes'] == 172040 and\n            result['actual_parent470_compile_authority']['sha256'] == 'f4e78f21dec485f59ff2149cb12298c070142dbad4e29b00a776729a376eea4c' and\n            result['systemui_test_projection_authority']['bytes'] == 6531 and\n            result['systemui_test_projection_authority']['sha256'] == '17fe54cebd452ef14258461f0817b9cbc753ccb0619f28e7274e61879a89d762' and\n            result['systemui_test_original_fixture_authority']['bytes'] == 3392 and\n            result['systemui_test_original_fixture_authority']['sha256'] == 'f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da' and\n            result['unchanged_225_project_lock_authority']['bytes'] == 96957 and\n            result['unchanged_225_project_lock_authority']['sha256'] == EXTENDED_LOCK_SHA and\n            result['source_lock_writer'] == 'UNKNOWN',\n            'builder471 actual parent, exact test projection and unchanged current lock are incomplete')\n"
+    },
+    {
+      "at": 25303,
+      "before": "SOURCE_MANIFEST_SHA, 99327",
+      "after": "SOURCE_MANIFEST_SHA, 99548"
+    },
+    {
+      "at": 25404,
+      "before": "SOURCE_MANIFEST_SHA, 99327",
+      "after": "SOURCE_MANIFEST_SHA, 99548"
+    },
+    {
+      "at": 25473,
+      "before": "len(source_map) == 499",
+      "after": "len(source_map) == 500"
+    },
+    {
+      "at": 25512,
+      "before": "source_map[GO_PATCH]['sha256'] == GO_PATCH_SHA and",
+      "after": "source_map[GO_PATCH]['sha256'] == GO_PATCH_SHA and\n            source_map['android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp'] == {\n                'bytes': 3392, 'sha256': 'f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da'} and"
+    },
+    {
+      "at": 30023,
+      "before": "PRIOR_INNER_SHA, 5239",
+      "after": "PRIOR_INNER_SHA, 2898"
+    },
+    {
+      "at": 30144,
+      "before": "PRIOR_OUTER_SHA, 24689",
+      "after": "PRIOR_OUTER_SHA, 24693"
+    },
+    {
+      "at": 30774,
+      "before": "            inner['cleanup'] == json.loads(\"{\\\"complete\\\":true,\\\"children\\\":[{\\\"pid\\\":1658120,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1660273,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1661664,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1701325,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1705739,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1706758,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1707343,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1708163,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1708260,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1708418,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1708528,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1708635,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1708930,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1709675,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1709798,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1709941,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1710155,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1710260,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1710386,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1710502,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1710625,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1711033,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1711242,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1711346,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1711503,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1711663,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1716303,\\\"wait_status\\\":65280,\\\"reaped\\\":true}],\\\"errors\\\":[]}\") and",
+      "after": "            inner['cleanup'] == json.loads(\"{\\\"complete\\\":true,\\\"children\\\":[{\\\"pid\\\":216529,\\\"wait_status\\\":65280,\\\"reaped\\\":true}],\\\"errors\\\":[]}\") and"
+    },
+    {
+      "at": 31254,
+      "before": "f1458d03292c14c05b14fdfe76091cfd7b2ffe05df2bbb3480be8d2cd20a329b",
+      "after": "55402a33796cd7ab55fda66660b696eb871c72869d70fb2a3dda3f22d68daa82"
+    },
+    {
+      "at": 31363,
+      "before": "a517eefb94ef2116400ac329e0fb74cf74eb34379a726fb2b6403f74d8659ad8",
+      "after": "a164f7eed58c21aa7e5f307d70deabdc092ab732e80b23dff78b32cbc80be965"
+    },
+    {
+      "at": 39357,
+      "before": "'actual 499-file builder source changed'",
+      "after": "'actual 500-file builder source changed'"
+    },
+    {
+      "at": 43094,
+      "before": "'builder_source_files': 499, 'actual_host_compile_commands': 65, 'actual_exact_controls': 27",
+      "after": "'builder_source_files': 500, 'actual_host_compile_commands': 68, 'actual_exact_controls': 30"
+    },
+    {
+      "at": 43803,
+      "before": "'prior_reaped_children': 27",
+      "after": "'prior_reaped_children': 1"
+    },
+    {
+      "at": 25682,
+      "before": "'bytes': 3392, 'sha256': 'f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da'}",
+      "after": "'bytes': 3392, 'kind': 'file', 'mode': 420,\n                'sha256': 'f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da'}"
+    }
+  ],
+  "fence_edits": [
+    {
+      "at": 730,
+      "before": "typed-ingress-framework-provider-build-07-20261106",
+      "after": "typed-ingress-framework-provider-build-08-20261106"
+    },
+    {
+      "at": 240,
+      "before": "85ec236e9cf3ec1b0efca053ee8f71f9a2f12c75b757b5a8c35172823ed3d87e",
+      "after": "__BOUND_FRAMEWORK471_CONTROLLER_SHA256__"
+    }
+  ],
+  "binder_edits": [
+    {
+      "at": 215,
+      "before": "bindNormal07",
+      "after": "bindNormal08"
+    },
+    {
+      "at": 279,
+      "before": "normal06RequestText",
+      "after": "normal07RequestText"
+    },
+    {
+      "at": 8218,
+      "before": "normal06RequestText",
+      "after": "normal07RequestText"
+    },
+    {
+      "at": 8260,
+      "before": "normal06RequestText",
+      "after": "normal07RequestText"
+    },
+    {
+      "at": 14945,
+      "before": "normal06RequestText",
+      "after": "normal07RequestText"
+    },
+    {
+      "at": 677,
+      "before": "  const templatePins={\"main_snapshot.py\":{\"bytes\":14642,\"sha256\":\"264100ef85e1792c437a4f450050041141288a0f25a4387af5774c52d0dcea06\"},\"frozen-work-inventory.py\":{\"bytes\":48443,\"sha256\":\"203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab\"},\"actual-work-preparation.json\":{\"bytes\":11091,\"sha256\":\"ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c\"},\"expected-builder470-manifest.json\":{\"bytes\":99327,\"sha256\":\"d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057\"},\"prior-framework-inner-terminal.json\":{\"bytes\":5239,\"sha256\":\"6a525b9838f43579bc41b1106891f2f734a0c2d92b0c5cc355f7ab02b39eb2a8\"},\"prior-framework-outer-terminal.json\":{\"bytes\":24689,\"sha256\":\"273ba8a236253ee3873074a26f568144397044ebcfdd6f153ab8712b29ff70cf\"},\"actual-published-source-manifest.json\":{\"bytes\":108555,\"sha256\":\"afb23d210fda970a09482a14b9b38af1c92b5be505edd0eda2b76ce5ffc6067f\"},\"actual-native-prebuilt-Android.bp\":{\"bytes\":1017,\"sha256\":\"d1eca99403572ee9d481e777febac8d4e062f44fd8844285ffc452b17beb531a\"},\"actual-hal-provider-source-lock.json\":{\"bytes\":96957,\"sha256\":\"72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d\"},\"framework_build.py\":{\"bytes\":62877,\"sha256\":\"d2b0434c833e3d5b6de7b57c95de4bd9f71d50cea59e248264b6dc006d28128b\"},\"fenced_build.py\":{\"bytes\":25483,\"sha256\":\"309983909034e9f17597996ab7bd202e5119a56ee2a5bc0afa6f8d1c4b725f5a\"},\"pure_controls.py\":{\"bytes\":10982,\"sha256\":\"19d30bb230d148967d106cd43196baf402465a3c34b906ab25f08827951b7b3f\"},\"capture_lifecycle.py\":{\"bytes\":25240,\"sha256\":\"2dcf44609e6ef53e91b2d8e3a07c192fe65a7d44601f218dc8990272285d4dfe\"},\"root_snapshot_supervisor.py\":{\"bytes\":12041,\"sha256\":\"903ae227d9231a361c61fad6fd584c97a548bb5a41b09a4e5fa8824e13e02350\"},\"prior-normal02-outer-terminal.json\":{\"bytes\":24722,\"sha256\":\"42b2d7b8749047df9e1d40ddf9b70b3f3e187c39ce6a15dd0f5721610e814c00\"},\"actual-resource-observation01.json\":{\"bytes\":399,\"sha256\":\"feb95f82087d7c68a8c8c42b54cf267b8f9c343ce41e49bb8193e96f49f050da\"},\"actual-current225-source-manifest.json\":{\"bytes\":109252,\"sha256\":\"5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d\"}};",
+      "after": "  const templatePins={\"main_snapshot.py\":{\"bytes\":14642,\"sha256\":\"264100ef85e1792c437a4f450050041141288a0f25a4387af5774c52d0dcea06\"},\"frozen-work-inventory.py\":{\"bytes\":48443,\"sha256\":\"203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab\"},\"actual-work-preparation.json\":{\"bytes\":11091,\"sha256\":\"ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c\"},\"expected-builder471-manifest.json\":{\"bytes\":99548,\"sha256\":\"c29c7b05fcfdf3def918d2bc963c6fe0c25a0430c87249f3de781d5d8bf68ae0\"},\"prior-framework-inner-terminal.json\":{\"bytes\":2898,\"sha256\":\"7bb06799bc311b64541c1cb9fe23a5b0ce0796d0476e7eb1fcbc7ff37938f3a3\"},\"prior-framework-outer-terminal.json\":{\"bytes\":24693,\"sha256\":\"58aa37d06c97d507556b9fa141b7870053e931b11b307bc03671e54c71342c21\"},\"actual-published-source-manifest.json\":{\"bytes\":108555,\"sha256\":\"afb23d210fda970a09482a14b9b38af1c92b5be505edd0eda2b76ce5ffc6067f\"},\"actual-native-prebuilt-Android.bp\":{\"bytes\":1017,\"sha256\":\"d1eca99403572ee9d481e777febac8d4e062f44fd8844285ffc452b17beb531a\"},\"actual-hal-provider-source-lock.json\":{\"bytes\":96957,\"sha256\":\"72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d\"},\"framework_build.py\":{\"bytes\":62692,\"sha256\":\"e1f89dfb673c905c6b672817c17e5725e4b2fff8ca501d64269803342ed6385e\"},\"fenced_build.py\":{\"bytes\":25483,\"sha256\":\"7c24d472ef1adf37ff283d0760983fe570587bf8a3d52480caa5ce666b73bc35\"},\"pure_controls.py\":{\"bytes\":10982,\"sha256\":\"19d30bb230d148967d106cd43196baf402465a3c34b906ab25f08827951b7b3f\"},\"capture_lifecycle.py\":{\"bytes\":25240,\"sha256\":\"2dcf44609e6ef53e91b2d8e3a07c192fe65a7d44601f218dc8990272285d4dfe\"},\"root_snapshot_supervisor.py\":{\"bytes\":12041,\"sha256\":\"903ae227d9231a361c61fad6fd584c97a548bb5a41b09a4e5fa8824e13e02350\"},\"prior-normal02-outer-terminal.json\":{\"bytes\":24722,\"sha256\":\"42b2d7b8749047df9e1d40ddf9b70b3f3e187c39ce6a15dd0f5721610e814c00\"},\"actual-resource-observation01.json\":{\"bytes\":399,\"sha256\":\"feb95f82087d7c68a8c8c42b54cf267b8f9c343ce41e49bb8193e96f49f050da\"},\"actual-current225-source-manifest.json\":{\"bytes\":109252,\"sha256\":\"5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d\"}};"
+    },
+    {
+      "at": 2793,
+      "before": "  const oldRequestPin={\"bytes\":880950,\"sha256\":\"c23734fe3e400849fb173ea59bdd82e264b55573fe86b50cb6b4f739cde405e7\"};",
+      "after": "  const oldRequestPin={\"bytes\":1016082,\"sha256\":\"97dc97b1d6014c38060417a94f89ee158f5bcfa98915ed2fcb7fa6814b77b2b5\"};"
+    },
+    {
+      "at": 2910,
+      "before": "  const expectedTests=[\"android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes\",\"android::tests::restoration_preserves_original_and_removes_created_file\",\"android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch\",\"android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout\",\"android::patch_tests::interrupted_projection_recovers_before_next_build\",\"tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets\",\"tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory\",\"native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate\",\"native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions\",\"android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata\",\"android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas\",\"android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged\",\"native_role_ingress::tests::provider_extension_rejects_unlisted_path_commit_metadata_or_project_change\",\"native_role_ingress::tests::published_workspace_selects_only_exact_current_or_previous_typed_lock\",\"native_role_ingress::tests::previous_typed_manifest_does_not_bypass_fresh_project_verification\",\"android::tests::typed_hal_provider_projection_restores_real_sources_and_keeps_consumers\",\"android::tests::typed_hal_provider_late_source_drift_restores_earlier_projections\",\"native_role_ingress::tests::hal_provider_extension_preserves_all_prior_projects_and_rejects_unlisted_changes\"];",
+      "after": "  const expectedTests=[\"android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes\",\"android::tests::restoration_preserves_original_and_removes_created_file\",\"android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch\",\"android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout\",\"android::patch_tests::interrupted_projection_recovers_before_next_build\",\"tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets\",\"tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory\",\"native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate\",\"native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions\",\"android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata\",\"android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas\",\"android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged\",\"native_role_ingress::tests::provider_extension_rejects_unlisted_path_commit_metadata_or_project_change\",\"native_role_ingress::tests::published_workspace_selects_only_exact_current_or_previous_typed_lock\",\"native_role_ingress::tests::previous_typed_manifest_does_not_bypass_fresh_project_verification\",\"android::tests::typed_hal_provider_projection_restores_real_sources_and_keeps_consumers\",\"android::tests::typed_hal_provider_late_source_drift_restores_earlier_projections\",\"native_role_ingress::tests::hal_provider_extension_preserves_all_prior_projects_and_rejects_unlisted_changes\",\"android::tests::typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths\",\"android::tests::typed_systemui_test_projection_rejects_wrong_source_before_journal_or_write\",\"android::tests::typed_systemui_test_projection_recovers_complete_original_from_durable_journal\"];\n  const expectedIndices=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,200,201,202];"
+    },
+    {
+      "at": 5715,
+      "before": "  const expectedLabels=[\"cargo-version\",\"rustc-version\",\"linked-libraries-0\",\"linked-libraries-1\",\"linked-libraries-2\",\"linked-libraries-3\",\"linked-libraries-4\",\"linked-libraries-5\",\"linked-libraries-6\",\"linked-libraries-7\",\"image-linked-libraries-0\",\"image-linked-libraries-1\",\"image-linked-libraries-2\",\"image-linked-libraries-3\",\"image-linked-libraries-4\",\"image-linked-libraries-5\",\"image-linked-libraries-6\",\"image-linked-libraries-7\",\"image-linked-libraries-8\",\"image-linked-libraries-9\",\"image-linked-libraries-10\",\"image-linked-libraries-11\",\"image-linked-libraries-12\",\"image-linked-libraries-13\",\"image-linked-libraries-14\",\"workspace-no-deps\",\"selected-build\",\"selected-test\",\"builder-compile\",\"builder-help\",\"source-resume-cli-help\",\"builder-test-compile\",\"builder-test-list\",\"builder-test-help\",\"projection-test-0\",\"projection-test-1\",\"projection-test-2\",\"projection-test-3\",\"projection-test-4\",\"projection-test-5\",\"projection-test-6\",\"projection-test-7\",\"projection-test-8\",\"projection-test-9\",\"projection-test-10\",\"projection-test-11\",\"projection-test-12\",\"projection-test-13\",\"projection-test-14\",\"projection-test-15\",\"projection-test-16\",\"projection-test-17\",\"source-resume-selected-test\",\"source-resume-test-compile\",\"source-resume-test-list\",\"source-resume-test-help\",\"projection-test-100\",\"projection-test-101\",\"projection-test-102\",\"projection-test-103\",\"projection-test-104\",\"projection-test-105\",\"projection-test-106\",\"projection-test-107\",\"projection-test-108\"];",
+      "after": "  const expectedLabels=[\"cargo-version\",\"rustc-version\",\"linked-libraries-0\",\"linked-libraries-1\",\"linked-libraries-2\",\"linked-libraries-3\",\"linked-libraries-4\",\"linked-libraries-5\",\"linked-libraries-6\",\"linked-libraries-7\",\"image-linked-libraries-0\",\"image-linked-libraries-1\",\"image-linked-libraries-2\",\"image-linked-libraries-3\",\"image-linked-libraries-4\",\"image-linked-libraries-5\",\"image-linked-libraries-6\",\"image-linked-libraries-7\",\"image-linked-libraries-8\",\"image-linked-libraries-9\",\"image-linked-libraries-10\",\"image-linked-libraries-11\",\"image-linked-libraries-12\",\"image-linked-libraries-13\",\"image-linked-libraries-14\",\"workspace-no-deps\",\"selected-build\",\"selected-test\",\"builder-compile\",\"builder-help\",\"source-resume-cli-help\",\"builder-test-compile\",\"builder-test-list\",\"builder-test-help\",\"projection-test-0\",\"projection-test-1\",\"projection-test-2\",\"projection-test-3\",\"projection-test-4\",\"projection-test-5\",\"projection-test-6\",\"projection-test-7\",\"projection-test-8\",\"projection-test-9\",\"projection-test-10\",\"projection-test-11\",\"projection-test-12\",\"projection-test-13\",\"projection-test-14\",\"projection-test-15\",\"projection-test-16\",\"projection-test-17\",\"projection-test-200\",\"projection-test-201\",\"projection-test-202\",\"source-resume-selected-test\",\"source-resume-test-compile\",\"source-resume-test-list\",\"source-resume-test-help\",\"projection-test-100\",\"projection-test-101\",\"projection-test-102\",\"projection-test-103\",\"projection-test-104\",\"projection-test-105\",\"projection-test-106\",\"projection-test-107\",\"projection-test-108\"];"
+    },
+    {
+      "at": 7268,
+      "before": "  const expectedDelta={\"Cargo_lock_or_dependency_manifest_changed\":false,\"Go5_or_Blueprint_patch_changed\":false,\"Rust_source_files_changed\":1,\"actual_source_file_count\":499,\"added\":[],\"builder_revision_name\":\"470-published-lock-alignment\",\"changed_existing\":[\"android/manifest/m2-role-ingress-hal-provider-source-lock.json\",\"tools/droidloom-update/src/native_role_ingress.rs\"],\"engine_source_files_changed\":0,\"framework_sources_executed_or_built\":false,\"new_exact_provider_source_lock_added\":false,\"previous_source_locks_changed\":false,\"real_published_source_accessed\":false,\"real_source_staging_accessed\":false,\"runtime_authorization_enabled\":false,\"source_resume_library_changed\":false,\"typed_ingress_framework_patch_changed\":false,\"unchanged_existing\":497,\"new_exact_hal_provider_source_lock_added\":false,\"current_hal_source_lock_exact_metadata_and_order_aligned\":true};",
+      "after": "  const expectedDelta={\"Cargo_lock_or_dependency_manifest_changed\":false,\"Go5_or_Blueprint_patch_changed\":false,\"Rust_source_files_changed\":1,\"actual_source_file_count\":500,\"added\":[\"android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp\"],\"builder_revision_name\":\"471-fixed-systemui-test-projection\",\"changed_existing\":[\"tools/droidloom-update/src/android.rs\"],\"current_hal_source_lock_unchanged\":true,\"engine_source_files_changed\":0,\"fixed_SystemUI_tests_BP_original_fixture_added\":true,\"framework_sources_executed_or_built\":false,\"new_exact_hal_provider_source_lock_added\":false,\"new_exact_provider_source_lock_added\":false,\"previous_source_locks_changed\":false,\"real_published_source_accessed\":false,\"real_source_staging_accessed\":false,\"runtime_authorization_enabled\":false,\"source_resume_library_changed\":false,\"typed_ingress_framework_patch_changed\":false,\"unchanged_existing\":498};"
+    },
+    {
+      "at": 8175,
+      "before": "  const compileRoot=\"/home/alex/work/pocket4-native-typed-ingress-builder470-published-lock-alignment-compile-01-20261106\";",
+      "after": "  const compileRoot=\"/home/alex/work/pocket4-native-typed-ingress-builder471-systemui-test-projection-compile-01-20261106\";"
+    },
+    {
+      "at": 8299,
+      "before": "  const manifestSha=\"d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057\";",
+      "after": "  const manifestSha=\"c29c7b05fcfdf3def918d2bc963c6fe0c25a0430c87249f3de781d5d8bf68ae0\";"
+    },
+    {
+      "at": 8768,
+      "before": "actual Normal06 source request differs",
+      "after": "actual Normal07 source request differs"
+    },
+    {
+      "at": 9810,
+      "before": "result.focused_tests_passed===27&&result.updater_focused_tests_passed===18",
+      "after": "result.focused_tests_passed===30&&result.updater_focused_tests_passed===21"
+    },
+    {
+      "at": 9975,
+      "before": "result.hal_provider_tests_passed===3&&",
+      "after": "result.hal_provider_tests_passed===3&&result.systemui_test_projection_tests_passed===3&&"
+    },
+    {
+      "at": 10168,
+      "before": "result.actual_registered_test_count===208",
+      "after": "result.actual_registered_test_count===211"
+    },
+    {
+      "at": 10394,
+      "before": "actual fixed builder470 focused test scope incomplete",
+      "after": "actual fixed builder471 focused test scope incomplete"
+    },
+    {
+      "at": 10458,
+      "before": "result.commands.length===65",
+      "after": "result.commands.length===68"
+    },
+    {
+      "at": 10657,
+      "before": "  for(const[offset,names,count,elfKey,gatesKey]of [\n      [0,expectedTests,208,\"test_elf\",\"focused_result_gates\"],\n      [100,expectedSourceTests,20,\"source_test_elf\",\"source_resume_result_gates\"]]){",
+      "after": "  for(const[indices,names,count,elfKey,gatesKey]of [\n      [expectedIndices,expectedTests,211,\"test_elf\",\"focused_result_gates\"],\n      [Array.from({length:9},(_,i)=>100+i),expectedSourceTests,20,\"source_test_elf\",\"source_resume_result_gates\"]]){"
+    },
+    {
+      "at": 11049,
+      "before": "(offset+pos)",
+      "after": "indices[pos]"
+    },
+    {
+      "at": 11819,
+      "before": "  need(equal(result.source_delta,expectedDelta)&&result.copied_manifest.path===compileRoot+\"/attempt01/copied-builder-source-manifest.json\"&&\n       result.copied_manifest.bytes===99327&&result.copied_manifest.sha256===manifestSha&&\n       result.observed_manifest_rebuilt_exactly===true&&result.source_lock_writer===\"UNKNOWN\"&&\n       result.observed_materialized_manifest_authority.bytes===109252&&\n       result.observed_materialized_manifest_authority.sha256===\"5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d\"&&\n       result.lock_alignment_derivation_authority.sha256===\"4b74519eee1909efa3ee0283fe67fa6432525a80bff5049bae29e159ad1ea222\"&&\n       result.actual_parent469_compile_authority.sha256===\"3636057b9a20fc895657064da3fb66d8ded7e69ebfa5a5b92072a51b33f29fd5\",\n       \"actual builder source/observed-lock alignment differs\");\n",
+      "after": "  need(equal(result.source_delta,expectedDelta)&&result.copied_manifest.path===compileRoot+\"/attempt01/copied-builder-source-manifest.json\"&&\n       result.copied_manifest.bytes===99548&&result.copied_manifest.sha256===manifestSha&&result.source_lock_writer===\"UNKNOWN\"&&\n       result.actual_parent470_compile_authority.bytes===172040&&\n       result.actual_parent470_compile_authority.sha256===\"f4e78f21dec485f59ff2149cb12298c070142dbad4e29b00a776729a376eea4c\"&&\n       result.systemui_test_projection_authority.bytes===6531&&\n       result.systemui_test_projection_authority.sha256===\"17fe54cebd452ef14258461f0817b9cbc753ccb0619f28e7274e61879a89d762\"&&\n       result.systemui_test_original_fixture_authority.bytes===3392&&\n       result.systemui_test_original_fixture_authority.sha256===\"f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da\"&&\n       result.unchanged_225_project_lock_authority.bytes===96957&&\n       result.unchanged_225_project_lock_authority.sha256===\"72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d\",\n       \"actual builder source, parent470, fixed SystemUI test projection and unchanged lock differ\");\n"
+    },
+    {
+      "at": 14899,
+      "before": "BUILDER470",
+      "after": "BUILDER471"
+    },
+    {
+      "at": 14966,
+      "before": "BUILDER470",
+      "after": "BUILDER471"
+    },
+    {
+      "at": 15023,
+      "before": "COMPILE470",
+      "after": "COMPILE471"
+    },
+    {
+      "at": 15103,
+      "before": "COMPILE470",
+      "after": "COMPILE471"
+    },
+    {
+      "at": 15509,
+      "before": "FRAMEWORK470",
+      "after": "FRAMEWORK471"
+    },
+    {
+      "at": 15743,
+      "before": "actual-builder470-result.json",
+      "after": "actual-builder471-result.json"
+    },
+    {
+      "at": 15869,
+      "before": "const oldRoot=\"typed-ingress-framework-provider-build-06-20261106\",newRoot=\"typed-ingress-framework-provider-build-07-20261106\";",
+      "after": "const oldRoot=\"typed-ingress-framework-provider-build-07-20261106\",newRoot=\"typed-ingress-framework-provider-build-08-20261106\";"
+    },
+    {
+      "at": 17441,
+      "before": "old.idempotency_key.replace(\"-06-20261106\",\"-07-20261106\")",
+      "after": "old.idempotency_key.replace(\"-07-20261106\",\"-08-20261106\")"
+    },
+    {
+      "at": 18133,
+      "before": "ACTUAL470_BOUND_NORMAL07_NOT_EXECUTED",
+      "after": "ACTUAL471_BOUND_NORMAL08_NOT_EXECUTED"
+    },
+    {
+      "at": 18275,
+      "before": "focused_tests:27,compile_commands:65",
+      "after": "focused_tests:30,compile_commands:68"
+    }
+  ],
+  "actual_binding": {
+    "state": "ACTUAL471_BOUND_NORMAL08_NOT_EXECUTED",
+    "request": {
+      "bytes": 1022914,
+      "sha256": "7ac74723eaff25849512943bfe25ec87ec0eff36807f5b787f44862c31033c65"
+    },
+    "stdin": {
+      "bytes": 924773,
+      "sha256": "1f22d7e3cc22e4b9de17b3f8549eb35384806ade0679526c8eef934ec855e396"
+    },
+    "stage": {
+      "bytes": 5582,
+      "sha256": "c5a6e79cfcf193e4609bcfb797ed22b9daee2f8aa7700acc8c55aa0ed6dc5896"
+    },
+    "raw_actual_strings_preserved": true,
+    "focused_tests": 30,
+    "compile_commands": 68,
+    "normal_controls": 46,
+    "current_Main_snapshot_source_unchanged": true,
+    "source_writer": "UNKNOWN",
+    "Soong_or_Java_JNI_qualified": false
+  },
+  "template_literal_values": {
+    "BUILDER_SHA": "2ea23bbeee47e8404fc6d9b91a5b3c3fdc4e7afd70820fd8b388f1dd6ead19be",
+    "BUILDER_BYTES": 34770528,
+    "BUILD_RESULT_SHA": "466d01e56fa6579636be8e82eedbc4276c31ce3e6b390dc985fe3bc454ead1e9",
+    "BUILD_RESULT_BYTES": 181273
+  }
+}

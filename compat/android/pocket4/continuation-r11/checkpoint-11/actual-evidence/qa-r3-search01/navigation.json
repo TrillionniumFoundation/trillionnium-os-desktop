@@ -1,0 +1,671 @@
+{
+  "schema": 1,
+  "ok": false,
+  "error": {
+    "phase": "click_sequence",
+    "type": "ProtocolError",
+    "message": "EXACT_SUCCESSFUL_FINISH_REQUIRED",
+    "details": {
+      "previous_details": {
+        "previous_details": null,
+        "owned_helper_failure": {
+          "request_nonce": "246e02a25a3b85775a3c4f0cd691e719",
+          "operation": "click",
+          "qualified_success": false,
+          "command_result_sha256": "3c06609ac2a1fa52aaa16e0733630603ed0dfa3b4d7ba1fdc92c23124e0a186d",
+          "stdout_sha256": "6d6f3a70505458b4c20aad3570a565b76fc661f8a94598977821812887a04528",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "primary_error": {
+            "type": "ProtocolError",
+            "message": "EXACT_SUCCESSFUL_FINISH_REQUIRED"
+          },
+          "helper_rejection": {
+            "nonce": "246e02a25a3b85775a3c4f0cd691e719",
+            "op": "click",
+            "self_uid": 10166,
+            "self_pid": 354739,
+            "error": "INSPECTED_TREE_OR_WINDOW_CHANGED",
+            "claim_persistence_completed": true,
+            "helper_work_completed": true,
+            "action_attempted": false,
+            "outcome_unknown": false,
+            "started_elapsed_ms": 873400140,
+            "finished_elapsed_ms": 873400529,
+            "requires_post_termination_state_check": true,
+            "restoration": {
+              "connection_flags": 1,
+              "service_capabilities_after": 11,
+              "service_capabilities_before": 11,
+              "service_flags_after": 65554,
+              "service_flags_before": 65554,
+              "service_flags_during": 65618,
+              "service_info_captured": true,
+              "service_info_verified": true
+            },
+            "wire_sha256": "321ece79e07010e86da9f0ca4354088c203e9adb7c839a2157b6c325dff360a4",
+            "instrumentation_finish_code": 0,
+            "qualified_success": false,
+            "tree_observations": [
+              {
+                "attempted_nodes": 156,
+                "began_elapsed_ms": 873400150,
+                "capture": 1,
+                "child_limit": 64,
+                "complete": true,
+                "depth_limit": 32,
+                "emitted_nodes": 156,
+                "json_byte_limit": 458752,
+                "last_elapsed_ms": 873400528,
+                "max_attempted_depth": 17,
+                "max_observed_children": 6,
+                "node_limit": 512,
+                "purpose": "action_target",
+                "serialized_bytes": 139517
+              }
+            ],
+            "window_observation": {
+              "first": {
+                "displays": [
+                  0
+                ],
+                "elapsed_ms": 1,
+                "event_serial": 0,
+                "sample": 1,
+                "windows": [
+                  {
+                    "accessibility_focused": false,
+                    "active": false,
+                    "display": 0,
+                    "focused": false,
+                    "id": 896,
+                    "layer": 0,
+                    "type": 1
+                  }
+                ]
+              },
+              "last": {
+                "displays": [
+                  0
+                ],
+                "elapsed_ms": 21,
+                "event_serial": 2,
+                "sample": 3,
+                "windows": [
+                  {
+                    "accessibility_focused": false,
+                    "active": true,
+                    "display": 0,
+                    "focused": true,
+                    "id": 898,
+                    "layer": 1,
+                    "type": 1
+                  },
+                  {
+                    "accessibility_focused": false,
+                    "active": false,
+                    "display": 0,
+                    "focused": false,
+                    "id": 896,
+                    "layer": 0,
+                    "type": 1
+                  }
+                ]
+              },
+              "ready": true,
+              "requested_display": 0,
+              "samples": 3,
+              "selected_display": 0,
+              "selected_window_id": 898,
+              "selection": "exact-display-0-focused-application",
+              "wait_budget_ms": 2000,
+              "waited_ms": 21
+            }
+          }
+        }
+      },
+      "qa_sequence_observation": {
+        "installed_before": {
+          "package": "org.droidloom.qa.bili.r3",
+          "uid": 10166,
+          "base_apk": "/data/app/~~58ZzlhILZrK3YXJIAOd2Sw==/org.droidloom.qa.bili.r3-7PCm85vaNz_QxUEGrETHvg==/base.apk",
+          "apk_sha256": "a32348c8d4615872aa2ec04b9253cd89826aca31d92d6c208365745ff522d3c8",
+          "bytes": 24720,
+          "held_file": {
+            "device": 1811,
+            "inode": 789192,
+            "mode": 33188,
+            "uid": 1000,
+            "gid": 1000,
+            "bytes": 24720,
+            "mtime_ns": 1793846955546399347,
+            "nlink": 1
+          },
+          "signer_bound_by_exact_signed_apk_bytes": "2850f7ce24d73314634e48e187643c97436cecb9d96e54e771b62686e12fdf6f"
+        },
+        "old_v2_helper_called": false,
+        "business_success_verified": false,
+        "audio_verified": false,
+        "error": {
+          "phase": "state_inspection_or_action",
+          "type": "ProtocolError",
+          "message": "EXACT_SUCCESSFUL_FINISH_REQUIRED"
+        },
+        "secondary_errors": [],
+        "after_state_attempted": true,
+        "after_state_completed": true,
+        "restoration_qualified": false,
+        "owned_task": {
+          "task": 877,
+          "package": "tv.danmaku.bili",
+          "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "prelaunch_absent": true,
+          "cleanup_allowed": true,
+          "launch_step": "launch-01",
+          "prelaunch_task_ids": [
+            851
+          ],
+          "native_receipt_sha256": "5db39ba45974fa2adb78117dbf957b1d6d42fa8d315cd9a3b1cb7f173dab2ef3"
+        },
+        "foreground_before": {
+          "package": "tv.danmaku.bili",
+          "uid": 10117,
+          "user": 0,
+          "display": 0,
+          "activity": "tv.danmaku.bili/tv.danmaku.bili.MainActivityV2",
+          "window_token": "f49cdbd",
+          "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f"
+        },
+        "inspection_wire_sha256": "0130491bd9d6daccdd4096b8383bcf127276e4b40b97a6402d3882170396b967",
+        "post_termination_state": {
+          "nonce": "6f7c8b80f94b51a01792bc22b4ca9ca8",
+          "wire_sha256": "5c64d1041d03af9b32cc572b1e48e2390fb983c0f2d37e659e967e7d18daee9e",
+          "state": {
+            "accessibility_enabled": false,
+            "enabled_service_count": 0,
+            "enabled_services_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "touch_exploration_enabled": false
+          },
+          "helper_uid": 10166,
+          "ui_automation_connected": false
+        },
+        "post_state_matches_before": true,
+        "foreground_after": {
+          "package": "tv.danmaku.bili",
+          "uid": 10117,
+          "user": 0,
+          "display": 0,
+          "activity": "tv.danmaku.bili/tv.danmaku.bili.MainActivityV2",
+          "window_token": "f49cdbd",
+          "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f"
+        },
+        "installed_after": {
+          "package": "org.droidloom.qa.bili.r3",
+          "uid": 10166,
+          "base_apk": "/data/app/~~58ZzlhILZrK3YXJIAOd2Sw==/org.droidloom.qa.bili.r3-7PCm85vaNz_QxUEGrETHvg==/base.apk",
+          "apk_sha256": "a32348c8d4615872aa2ec04b9253cd89826aca31d92d6c208365745ff522d3c8",
+          "bytes": 24720,
+          "held_file": {
+            "device": 1811,
+            "inode": 789192,
+            "mode": 33188,
+            "uid": 1000,
+            "gid": 1000,
+            "bytes": 24720,
+            "mtime_ns": 1793846955546399347,
+            "nlink": 1
+          },
+          "signer_bound_by_exact_signed_apk_bytes": "2850f7ce24d73314634e48e187643c97436cecb9d96e54e771b62686e12fdf6f"
+        }
+      }
+    }
+  },
+  "secondary_errors": [],
+  "phase": "navigate",
+  "nonce": "a53815018fc65e6cbcac07538bdd7c7d",
+  "package": "tv.danmaku.bili",
+  "uid": 10117,
+  "helper_package": "org.droidloom.qa.bili.r3",
+  "helper_uid": 10166,
+  "source_manifest_sha256": "383b699100f3f7529b8e8ffc95554e955ee6a50b8f89a1647f2c2c1602abe131",
+  "runtime_recorder_manifest_sha256": "52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1",
+  "actual_install": {
+    "install_job": "1a1a99c4795-fc05-3651",
+    "receipts": {
+      "coordinator": {
+        "path": "/home/alex/work/pocket4-owned-bili-qa-r3-install-state-01/result.json",
+        "bytes": 3025,
+        "sha256": "99d70682c8ef114250968c51f47a7666fc5abf9adbf5ce845f434e486a996aba"
+      },
+      "stage": {
+        "path": "/home/alex/work/pocket4-owned-bili-qa-r3-install-state-01/stage-result.json",
+        "bytes": 2032,
+        "sha256": "53123402517c94227021340ed599342293dc426f8838ee2e83eb9ed938bff013"
+      },
+      "worker": {
+        "path": "/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-c387ae7ab75180244cca4d8f4e669284/steps/install-state-r3-01/result.json",
+        "bytes": 6995,
+        "sha256": "228bc9237058479eebbdf8df1c3bf1a5992381b6a3031714c73d85ccc5fb9c32"
+      },
+      "worker_command": {
+        "path": "/home/alex/work/pocket4-owned-bili-qa-r3-install-state-01/evidence/02-install-state.result.json",
+        "bytes": 1152,
+        "sha256": "549e936470977c15cc45a9d8542288047091e061428bc1cd03bbb94362c66358"
+      }
+    },
+    "state_wire_sha256": "4457b7fe6584cc672864b809d20dae1de44c854138809a7fd49a41d964d071c2",
+    "uid": 10166,
+    "APK_sha256": "a32348c8d4615872aa2ec04b9253cd89826aca31d92d6c208365745ff522d3c8",
+    "signer_certificate_sha256": "2850f7ce24d73314634e48e187643c97436cecb9d96e54e771b62686e12fdf6f",
+    "installed_identity": {
+      "package": "org.droidloom.qa.bili.r3",
+      "uid": 10166,
+      "base_apk": "/data/app/~~58ZzlhILZrK3YXJIAOd2Sw==/org.droidloom.qa.bili.r3-7PCm85vaNz_QxUEGrETHvg==/base.apk",
+      "apk_sha256": "a32348c8d4615872aa2ec04b9253cd89826aca31d92d6c208365745ff522d3c8",
+      "bytes": 24720,
+      "held_file": {
+        "device": 1811,
+        "inode": 789192,
+        "mode": 33188,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 24720,
+        "mtime_ns": 1793846955546399347,
+        "nlink": 1
+      },
+      "signer_bound_by_exact_signed_apk_bytes": "2850f7ce24d73314634e48e187643c97436cecb9d96e54e771b62686e12fdf6f"
+    },
+    "historical_state_reparsed": true,
+    "historical_state_used_as_current_baseline": false
+  },
+  "build": {
+    "build_receipt_sha256": "caa1b720b76e319580a912e7b66f2437747c0f8850c753d037bc91127c18f597",
+    "source_manifest_sha256": "91af9446dc2e749ecf3ef75967bfa2154eae8a94a73d9b4149e0574789a5d422",
+    "APK": {
+      "bytes": 24720,
+      "path": "/home/alex/work/pocket4-owned-bili-qa-r3-build-01/owned-bili-qa.apk",
+      "sha256": "a32348c8d4615872aa2ec04b9253cd89826aca31d92d6c208365745ff522d3c8"
+    },
+    "signer_certificate_sha256": "2850f7ce24d73314634e48e187643c97436cecb9d96e54e771b62686e12fdf6f",
+    "self_instrumentation": true,
+    "old_v2_provenance_inherited": false,
+    "stage_receipt_sha256": "42d68a0960b189863f19b95a6abdbfb8df127df1118245d10337d2cdae011584"
+  },
+  "automatic_retry": false,
+  "click_limit": 1,
+  "text_actions": 0,
+  "audio_actions": 0,
+  "permission_grants": 0,
+  "settings_writes": 0,
+  "old_v2_helper_called": false,
+  "raw_ui_tree_private_only": true,
+  "host_foreground_display_independently_verified": false,
+  "required_helper_display": 0,
+  "business_success_verified": false,
+  "whole_app_production_ready": false,
+  "business_outcome_unknown": true,
+  "live_installed_before": {
+    "package": "org.droidloom.qa.bili.r3",
+    "uid": 10166,
+    "base_apk": "/data/app/~~58ZzlhILZrK3YXJIAOd2Sw==/org.droidloom.qa.bili.r3-7PCm85vaNz_QxUEGrETHvg==/base.apk",
+    "apk_sha256": "a32348c8d4615872aa2ec04b9253cd89826aca31d92d6c208365745ff522d3c8",
+    "bytes": 24720,
+    "held_file": {
+      "device": 1811,
+      "inode": 789192,
+      "mode": 33188,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 24720,
+      "mtime_ns": 1793846955546399347,
+      "nlink": 1
+    },
+    "signer_bound_by_exact_signed_apk_bytes": "2850f7ce24d73314634e48e187643c97436cecb9d96e54e771b62686e12fdf6f"
+  },
+  "click_sequence_started": true,
+  "failed_click_sequence": {
+    "installed_before": {
+      "package": "org.droidloom.qa.bili.r3",
+      "uid": 10166,
+      "base_apk": "/data/app/~~58ZzlhILZrK3YXJIAOd2Sw==/org.droidloom.qa.bili.r3-7PCm85vaNz_QxUEGrETHvg==/base.apk",
+      "apk_sha256": "a32348c8d4615872aa2ec04b9253cd89826aca31d92d6c208365745ff522d3c8",
+      "bytes": 24720,
+      "held_file": {
+        "device": 1811,
+        "inode": 789192,
+        "mode": 33188,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 24720,
+        "mtime_ns": 1793846955546399347,
+        "nlink": 1
+      },
+      "signer_bound_by_exact_signed_apk_bytes": "2850f7ce24d73314634e48e187643c97436cecb9d96e54e771b62686e12fdf6f"
+    },
+    "old_v2_helper_called": false,
+    "business_success_verified": false,
+    "audio_verified": false,
+    "error": {
+      "phase": "state_inspection_or_action",
+      "type": "ProtocolError",
+      "message": "EXACT_SUCCESSFUL_FINISH_REQUIRED"
+    },
+    "secondary_errors": [],
+    "after_state_attempted": true,
+    "after_state_completed": true,
+    "restoration_qualified": false,
+    "owned_task": {
+      "task": 877,
+      "package": "tv.danmaku.bili",
+      "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "prelaunch_absent": true,
+      "cleanup_allowed": true,
+      "launch_step": "launch-01",
+      "prelaunch_task_ids": [
+        851
+      ],
+      "native_receipt_sha256": "5db39ba45974fa2adb78117dbf957b1d6d42fa8d315cd9a3b1cb7f173dab2ef3"
+    },
+    "foreground_before": {
+      "package": "tv.danmaku.bili",
+      "uid": 10117,
+      "user": 0,
+      "display": 0,
+      "activity": "tv.danmaku.bili/tv.danmaku.bili.MainActivityV2",
+      "window_token": "f49cdbd",
+      "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f"
+    },
+    "inspection_wire_sha256": "0130491bd9d6daccdd4096b8383bcf127276e4b40b97a6402d3882170396b967",
+    "post_termination_state": {
+      "nonce": "6f7c8b80f94b51a01792bc22b4ca9ca8",
+      "wire_sha256": "5c64d1041d03af9b32cc572b1e48e2390fb983c0f2d37e659e967e7d18daee9e",
+      "state": {
+        "accessibility_enabled": false,
+        "enabled_service_count": 0,
+        "enabled_services_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "touch_exploration_enabled": false
+      },
+      "helper_uid": 10166,
+      "ui_automation_connected": false
+    },
+    "post_state_matches_before": true,
+    "foreground_after": {
+      "package": "tv.danmaku.bili",
+      "uid": 10117,
+      "user": 0,
+      "display": 0,
+      "activity": "tv.danmaku.bili/tv.danmaku.bili.MainActivityV2",
+      "window_token": "f49cdbd",
+      "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f"
+    },
+    "installed_after": {
+      "package": "org.droidloom.qa.bili.r3",
+      "uid": 10166,
+      "base_apk": "/data/app/~~58ZzlhILZrK3YXJIAOd2Sw==/org.droidloom.qa.bili.r3-7PCm85vaNz_QxUEGrETHvg==/base.apk",
+      "apk_sha256": "a32348c8d4615872aa2ec04b9253cd89826aca31d92d6c208365745ff522d3c8",
+      "bytes": 24720,
+      "held_file": {
+        "device": 1811,
+        "inode": 789192,
+        "mode": 33188,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 24720,
+        "mtime_ns": 1793846955546399347,
+        "nlink": 1
+      },
+      "signer_bound_by_exact_signed_apk_bytes": "2850f7ce24d73314634e48e187643c97436cecb9d96e54e771b62686e12fdf6f"
+    }
+  },
+  "post_inspection_attempted": true,
+  "post_inspection_sequence": {
+    "installed_before": {
+      "package": "org.droidloom.qa.bili.r3",
+      "uid": 10166,
+      "base_apk": "/data/app/~~58ZzlhILZrK3YXJIAOd2Sw==/org.droidloom.qa.bili.r3-7PCm85vaNz_QxUEGrETHvg==/base.apk",
+      "apk_sha256": "a32348c8d4615872aa2ec04b9253cd89826aca31d92d6c208365745ff522d3c8",
+      "bytes": 24720,
+      "held_file": {
+        "device": 1811,
+        "inode": 789192,
+        "mode": 33188,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 24720,
+        "mtime_ns": 1793846955546399347,
+        "nlink": 1
+      },
+      "signer_bound_by_exact_signed_apk_bytes": "2850f7ce24d73314634e48e187643c97436cecb9d96e54e771b62686e12fdf6f"
+    },
+    "old_v2_helper_called": false,
+    "business_success_verified": false,
+    "audio_verified": false,
+    "error": null,
+    "secondary_errors": [],
+    "after_state_attempted": true,
+    "after_state_completed": true,
+    "restoration_qualified": true,
+    "owned_task": {
+      "task": 877,
+      "package": "tv.danmaku.bili",
+      "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "prelaunch_absent": true,
+      "cleanup_allowed": true,
+      "launch_step": "launch-01",
+      "prelaunch_task_ids": [
+        851
+      ],
+      "native_receipt_sha256": "5db39ba45974fa2adb78117dbf957b1d6d42fa8d315cd9a3b1cb7f173dab2ef3"
+    },
+    "foreground_before": {
+      "package": "tv.danmaku.bili",
+      "uid": 10117,
+      "user": 0,
+      "display": 0,
+      "activity": "tv.danmaku.bili/tv.danmaku.bili.MainActivityV2",
+      "window_token": "f49cdbd",
+      "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f"
+    },
+    "inspection_wire_sha256": "eaca492927dae4af7565808e1169b3ac719253d701bea565aef52c6aafae35da",
+    "post_termination_state": {
+      "nonce": "57e6e78c397b74f943a487821002d8cd",
+      "wire_sha256": "9f0e936170da12dceafd91305f73d2c65951f8c32d1cd0665b15547b0e89a339",
+      "state": {
+        "accessibility_enabled": false,
+        "enabled_service_count": 0,
+        "enabled_services_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "touch_exploration_enabled": false
+      },
+      "helper_uid": 10166,
+      "ui_automation_connected": false
+    },
+    "post_state_matches_before": true,
+    "accessibility_restoration": {
+      "accessibility_mode_restoration_verified": true,
+      "basis": "actual own-service readback plus independent no-automation state command after successful instrumentation termination",
+      "state_before": {
+        "accessibility_enabled": false,
+        "enabled_service_count": 0,
+        "enabled_services_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "touch_exploration_enabled": false
+      },
+      "state_after": {
+        "accessibility_enabled": false,
+        "enabled_service_count": 0,
+        "enabled_services_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "touch_exploration_enabled": false
+      },
+      "wire_sha256": [
+        "95cd7483b7000b958c8c5ae7fcc25a33d89c3531cc2d96757ea3cec12e9a9b43",
+        "eaca492927dae4af7565808e1169b3ac719253d701bea565aef52c6aafae35da",
+        "9f0e936170da12dceafd91305f73d2c65951f8c32d1cd0665b15547b0e89a339"
+      ],
+      "business_success_verified": false,
+      "whole_app_production_ready": false
+    },
+    "foreground_after": {
+      "package": "tv.danmaku.bili",
+      "uid": 10117,
+      "user": 0,
+      "display": 0,
+      "activity": "tv.danmaku.bili/tv.danmaku.bili.MainActivityV2",
+      "window_token": "f49cdbd",
+      "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f"
+    },
+    "installed_after": {
+      "package": "org.droidloom.qa.bili.r3",
+      "uid": 10166,
+      "base_apk": "/data/app/~~58ZzlhILZrK3YXJIAOd2Sw==/org.droidloom.qa.bili.r3-7PCm85vaNz_QxUEGrETHvg==/base.apk",
+      "apk_sha256": "a32348c8d4615872aa2ec04b9253cd89826aca31d92d6c208365745ff522d3c8",
+      "bytes": 24720,
+      "held_file": {
+        "device": 1811,
+        "inode": 789192,
+        "mode": 33188,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 24720,
+        "mtime_ns": 1793846955546399347,
+        "nlink": 1
+      },
+      "signer_bound_by_exact_signed_apk_bytes": "2850f7ce24d73314634e48e187643c97436cecb9d96e54e771b62686e12fdf6f"
+    }
+  },
+  "post_assessments": {
+    "before": {
+      "nonce": "89b5b4ed5dbdcc409554079f4b0ce86b",
+      "operation": "state",
+      "assessment_sha256": "7e16f3b3837f642f65c7399f476a1b5d73fb3737f2ae1690717f7b963b4a522f",
+      "assessment_bytes": 1758,
+      "wire_sha256": "95cd7483b7000b958c8c5ae7fcc25a33d89c3531cc2d96757ea3cec12e9a9b43",
+      "recorder_command_result_sha256": "4a9d0c4fce1920b9cf29d9be8ca9214ba93c0348447e3c81ffca15eeca27c254",
+      "actual_command_returncode": 0,
+      "actual_instrumentation_finish_code": -1
+    },
+    "inspect": {
+      "nonce": "313bcbf4c643b9a1a1f844c181caa78e",
+      "operation": "inspect",
+      "assessment_sha256": "1826a0c4e371925a1880d78e78af40ec3595146242bce251721349536d67f2ef",
+      "assessment_bytes": 203555,
+      "wire_sha256": "eaca492927dae4af7565808e1169b3ac719253d701bea565aef52c6aafae35da",
+      "recorder_command_result_sha256": "6fa17d8e8a7616298e180b7d4ac11dd2ff91cff9d7ab4b60c224ee33eaffd27a",
+      "actual_command_returncode": 0,
+      "actual_instrumentation_finish_code": -1,
+      "tree_sha256": "e4a0ca184fce9ef0daad426602252b1c476dae31527bb7b7c54897072fcaee08",
+      "window_sha256": "ec3232c5c7b1023c7e37a1248521fa7cc032186d7674f5d9cc65ef230ddd655d",
+      "node_count": 156,
+      "window": {
+        "package": "tv.danmaku.bili",
+        "display": 0,
+        "type": 1,
+        "focused": true
+      },
+      "window_observation": {
+        "first": {
+          "displays": [
+            0
+          ],
+          "elapsed_ms": 1,
+          "event_serial": 0,
+          "sample": 1,
+          "windows": [
+            {
+              "accessibility_focused": false,
+              "active": true,
+              "display": 0,
+              "focused": true,
+              "id": 902,
+              "layer": 1,
+              "type": 1
+            },
+            {
+              "accessibility_focused": false,
+              "active": false,
+              "display": 0,
+              "focused": false,
+              "id": 900,
+              "layer": 0,
+              "type": 1
+            }
+          ]
+        },
+        "last": {
+          "displays": [
+            0
+          ],
+          "elapsed_ms": 1,
+          "event_serial": 0,
+          "sample": 1,
+          "windows": [
+            {
+              "accessibility_focused": false,
+              "active": true,
+              "display": 0,
+              "focused": true,
+              "id": 902,
+              "layer": 1,
+              "type": 1
+            },
+            {
+              "accessibility_focused": false,
+              "active": false,
+              "display": 0,
+              "focused": false,
+              "id": 900,
+              "layer": 0,
+              "type": 1
+            }
+          ]
+        },
+        "ready": true,
+        "requested_display": 0,
+        "samples": 1,
+        "selected_display": 0,
+        "selected_window_id": 902,
+        "selection": "exact-display-0-focused-application",
+        "wait_budget_ms": 2000,
+        "waited_ms": 1
+      },
+      "connection_scoped_window_id": 902,
+      "tree_observations": [
+        {
+          "attempted_nodes": 156,
+          "began_elapsed_ms": 873402220,
+          "capture": 1,
+          "child_limit": 64,
+          "complete": true,
+          "depth_limit": 32,
+          "emitted_nodes": 156,
+          "json_byte_limit": 458752,
+          "last_elapsed_ms": 873402259,
+          "max_attempted_depth": 17,
+          "max_observed_children": 6,
+          "node_limit": 512,
+          "purpose": "inspection",
+          "serialized_bytes": 139517
+        }
+      ],
+      "complete": true,
+      "raw_tree_private_only": true
+    },
+    "after": {
+      "nonce": "57e6e78c397b74f943a487821002d8cd",
+      "operation": "state",
+      "assessment_sha256": "33da6993e20afc3cd598eabd9ba3cfb1ea966df29312d832ea1a57ac14cc8df7",
+      "assessment_bytes": 1758,
+      "wire_sha256": "9f0e936170da12dceafd91305f73d2c65951f8c32d1cd0665b15547b0e89a339",
+      "recorder_command_result_sha256": "cfa5d8d7c43fdd71957f013faf2f19dd8e6a351221fc5f2527c1d7d4b7a9cf4b",
+      "actual_command_returncode": 0,
+      "actual_instrumentation_finish_code": -1
+    }
+  },
+  "post_inspection_completed": true,
+  "scoped_click_and_post_observation_completed": false,
+  "navigation_effect_classification": "PENDING_PRIVATE_POST_TREE_REVIEW",
+  "next_business_action_requires_new_observation_and_admission": true,
+  "final_Main_guard_passed": true,
+  "held_binding_released": true,
+  "action_lock_released": true,
+  "action_attempted": true,
+  "outcome_unknown": true,
+  "ended_utc": "2026-11-05T03:01:33.468227+00:00"
+}

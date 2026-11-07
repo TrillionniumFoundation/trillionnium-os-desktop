@@ -1,0 +1,87 @@
+{
+  "schema": 1,
+  "state": "ROOT_REVIEW_REQUIRED_UNRUN",
+  "origin_source": {
+    "tree": "5ec9b92e71c8ab45b26b8fc49f824d6e7cef2bbb",
+    "blob": "2b09d988922bc97c7fe60edd041a3d6fd949f276",
+    "bytes": 21003,
+    "sha256": "42e75f6992c00f050dd59f5edfc73ee5da2aa2bbbc521058760ec106af3a238b"
+  },
+  "actual_input": {
+    "job": "1a1b299fafc-fc05-7edb",
+    "path": "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-05-20261106/build-result.json",
+    "bytes": 9811685,
+    "sha256": "d8eb53c924fa6a76bee19304bd8538bf2a57306b7e9bd6a55df8787d4ea33411",
+    "expected_uid": 1000,
+    "expected_gid": 1000,
+    "expected_mode": "0400",
+    "expected_nlink": 1,
+    "full_report_body_qualification_pending": true
+  },
+  "new_output": {
+    "root": "/home/alex/work/p4-marriott-apk05-report-transport01-20261106",
+    "file": "marriott-apk05-build-result.json.zlib",
+    "create_only": true,
+    "root_mode": "0700",
+    "file_mode": "0400",
+    "compression": "zlib",
+    "level": 6,
+    "maximum_compressed_bytes": 1048576,
+    "content_pin_pending_actual": true
+  },
+  "literal_changes": [
+    {
+      "from": "apk03",
+      "to": "apk05",
+      "count": 4
+    },
+    {
+      "from": "pocket4-marriott-real-arm64-ndk-apk-03-20261106",
+      "to": "pocket4-marriott-real-arm64-ndk-apk-05-20261106",
+      "count": 1
+    },
+    {
+      "from": "9811525",
+      "to": "9811685",
+      "count": 1
+    },
+    {
+      "from": "02b979004666268ae73814c809ffeba54de261e4c826a130af267fe717f3f46f",
+      "to": "d8eb53c924fa6a76bee19304bd8538bf2a57306b7e9bd6a55df8787d4ea33411",
+      "count": 1
+    }
+  ],
+  "validation": {
+    "exact_full_source_inverse": true,
+    "all_function_bodies_unchanged": true,
+    "request_only_stdin_and_key_changed": true,
+    "local_Python_executed": false,
+    "Hepta_called": false
+  },
+  "scope": {
+    "one_fixed_original_report_two_full_reads_and_named_recheck": true,
+    "source_file_unchanged": true,
+    "no_business_report_parse": true,
+    "no_Main_Android_or_child": true,
+    "no_directory_scan": true,
+    "only_fixed_own_compressed_file_created": true,
+    "source_and_tool_privileges_ordinary_UID1000": true
+  },
+  "bounds": {
+    "work_seconds": 40,
+    "control_seconds": 45,
+    "outer_seconds": 60,
+    "memory_bytes": 268435456,
+    "CPU100": true,
+    "nice15": true,
+    "stdout_metadata_bound": 131072
+  },
+  "decode": {
+    "function": "inflateZlibFixed(compressedBytes,9811685)",
+    "blob": "c6187dc0d03ca3b4fed4b41d93cbddfc74e22918",
+    "bytes": 3922,
+    "sha256": "8388b08b38de8b3848b0bb0c99c0d57f7acda4f0ad3db2b7992083daf1cadbc5",
+    "decoded_original_size_and_whole_SHA_required": true
+  },
+  "key": "p4-fixed-marriott-apk05-report-zlib-transport01-30428d9e5838bcfe"
+}

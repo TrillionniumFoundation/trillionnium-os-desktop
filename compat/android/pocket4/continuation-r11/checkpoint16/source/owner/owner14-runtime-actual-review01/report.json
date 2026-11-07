@@ -1,0 +1,97 @@
+{
+  "actor_first_error": {
+    "error": "RuntimeError('actual producer stopped or failed before ACTIVE')",
+    "stage": "normal"
+  },
+  "causal_limits": [
+    "SIGHUP is the observed exit result, not an identified sender or root cause.",
+    "No ACTIVE or enrollment occurred; valid faulted retirement does not qualify normal startup.",
+    "first_failure null does not establish absence of an earlier broker or init failure; fixed daemon logs are required.",
+    "Outer exact cleanup and Main checks do not replace original lifecycle qualification."
+  ],
+  "external_cleanup": {
+    "all_original_cleanup_fields_true": true,
+    "continuous_Main_observation_claimed": false,
+    "exact_actor_pid": 2204107,
+    "exact_invocation": "5ccbffb9ae354e719c6ee2dbb49ec7dd",
+    "four_exact_children_reaped_without_forced_kill": true,
+    "main_before_gate_after_equal": true,
+    "supports_root_UI_window_release_review": true
+  },
+  "inputs": [
+    {
+      "bytes": 9871,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner14-normal01-runtime-read01/stdout.log",
+      "sha256": "579ededaf211854b216bace705a85ea4476c097530659911cc21741b97eb675d"
+    },
+    {
+      "bytes": 63402,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner14-normal01-runtime-read01/reader-report.json",
+      "sha256": "bab22a85d0a9bce6287c5fe269305f6c707967942f904d8de5a37b0ff97e6580"
+    },
+    {
+      "bytes": 57774,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner14-normal01-runtime-read01/runtime-result.json",
+      "sha256": "954fa535427e79780cb3764d0eb28e2ab12b4a4af642c4bccf3244a4e1c97fea"
+    }
+  ],
+  "latest_status": {
+    "message": "Android cell exited with signal: 1 (SIGHUP)",
+    "state": "stopped"
+  },
+  "original_business_success": false,
+  "original_first_error": {
+    "error": "RuntimeError('owned unit authoritative terminal failed; actor first error={\\'error\\': \"RuntimeError(\\'actual producer stopped or failed before ACTIVE\\')\", \\'stage\\': \\'normal\\'}')",
+    "stage": "normal_coordinator"
+  },
+  "original_retirement": {
+    "audit_complete": true,
+    "broker_audit_incomplete": true,
+    "broker_faulted": true,
+    "broker_granted": false,
+    "cleanup_failure": null,
+    "events": [
+      "prepared",
+      "owner_attached",
+      "init_hello",
+      "broker_ready",
+      "init_project_sent",
+      "init_projected_accepted",
+      "init_commit_sent",
+      "init_done_accepted",
+      "retiring",
+      "broker_retired",
+      "processes_dead",
+      "domain_empty",
+      "retired",
+      "resources_removed",
+      "claim_released"
+    ],
+    "full_first_ACTIVE_then_Stop_qualified": false,
+    "registrations": [],
+    "retirement_failure": null,
+    "valid_broker_terminal_received": true
+  },
+  "outer_resources": {
+    "all_memory_events_zero": true,
+    "identity": {
+      "device": 30,
+      "inode": 30661922
+    },
+    "memory_high": 4831838208,
+    "memory_max": 5368709120,
+    "memory_peak": 594653184,
+    "pids_current_before_actor_exit": 1,
+    "swap_limit_current_peak_zero": true
+  },
+  "schema": 1,
+  "scope": "local independent verification of exact actual Owner14 original readback; no Hepta or new runtime",
+  "typed_init_observation": {
+    "birth": 91214848,
+    "external_kernel_lines_attributed": false,
+    "generation_nonce": "2ed65d40c2306643e6a2d42971c40cff410a7ce597eaae7e94ae42c9e30b2910",
+    "matches_actual_accepted_HELLO": true,
+    "pid": 2204228,
+    "three_clocks_non_atomic": true
+  }
+}

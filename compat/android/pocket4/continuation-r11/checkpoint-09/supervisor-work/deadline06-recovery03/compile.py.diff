@@ -1,0 +1,354 @@
+--- recovery02/compile.py
++++ recovery03/compile.py
+@@ -10,10 +10,10 @@
+ import time
+ import traceback
+ 
+-CONTROL_REVISION = "producer06-deadline-recovery02"
++CONTROL_REVISION = "producer06-deadline-recovery03"
+ BASE = Path("/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01")
+ SOURCE = BASE / "candidate"
+-OUT = Path("/home/alex/work/pocket4-supervisor-lmkd-deadline-r11-build-06-recovery02")
++OUT = Path("/home/alex/work/pocket4-supervisor-lmkd-deadline-r11-build-06-recovery03")
+ CANDIDATE = OUT / "candidate"
+ TARGET = OUT / "target"
+ CARGO = "/home/alex/.cargo/bin/cargo"
+@@ -248,6 +248,318 @@
+         result[name] = {"bytes": row["bytes"], "sha256": row["sha256"]}
+     return result
+ 
++"""Read-only health gate for the controller's exact, held cgroup v2 domain.
++
++This source is inlined unchanged into both recovery03 controllers. It never
++writes a cgroup file. Its final observation precedes receipt publication; the
++caller still needs the durable outer job terminal to qualify the whole unit.
++"""
++import ctypes
++import os
++import re
++import stat
++import time
++import traceback
++
++_RESOURCE_CGROUP2_MAGIC = 0x63677270
++_RESOURCE_BAD_EVENTS = ("max", "oom", "oom_kill", "oom_group_kill")
++_RESOURCE_LIMIT_NAMES = ("memory.max", "memory.high", "memory.swap.max",
++                         "cpu.max", "pids.max")
++_RESOURCE_NS_NAMES = ("mnt", "cgroup")
++
++
++def _resource_need(condition, message):
++    if not condition:
++        raise RuntimeError("own resource gate: " + message)
++
++
++def _resource_uint(text):
++    _resource_need(re.fullmatch(r"[0-9]+", text) is not None,
++                   "counter is not an unsigned decimal")
++    value = int(text)
++    _resource_need(value <= (1 << 64) - 1, "counter overflow")
++    return value
++
++
++def _resource_limit(text):
++    return "max" if text == "max" else _resource_uint(text)
++
++
++def _resource_counters(text):
++    result = {}
++    for line in text.splitlines():
++        fields = line.split()
++        _resource_need(len(fields) == 2 and fields[0] not in result,
++                       "malformed or repeated counter")
++        _resource_need(re.fullmatch(r"[a-z_]+", fields[0]) is not None,
++                       "invalid counter name")
++        result[fields[0]] = _resource_uint(fields[1])
++    _resource_need(bool(result), "empty counter record")
++    return result
++
++
++def _resource_membership(text):
++    _resource_need(text.endswith("\n") and text.count("\n") == 1 and
++                   text.startswith("0::/"), "not one unified cgroup membership")
++    relative = text[4:-1]
++    parts = relative.split("/")
++    _resource_need(bool(relative) and all(part not in ("", ".", "..")
++                                        for part in parts),
++                   "root or noncanonical cgroup membership")
++    return relative
++
++
++def _resource_identity(fd):
++    value = os.fstat(fd)
++    _resource_need(stat.S_ISDIR(value.st_mode), "held resource object is not a directory")
++    return [value.st_dev, value.st_ino]
++
++
++def _resource_fstype(fd):
++    library = ctypes.CDLL(None, use_errno=True)
++    function = library.fstatfs
++    function.argtypes = [ctypes.c_int, ctypes.c_void_p]
++    function.restype = ctypes.c_int
++    buffer = ctypes.create_string_buffer(256)
++    if function(fd, ctypes.byref(buffer)) != 0:
++        raise OSError(ctypes.get_errno(), "fstatfs own cgroup")
++    return ctypes.c_long.from_buffer(buffer).value
++
++
++def _resource_open_descendant(root_fd, relative):
++    # This helper never resolves a slash-containing name through an ambient
++    # pathname. In particular a replaced/symlink component is not followed.
++    parts = relative.split("/")
++    _resource_need(bool(relative) and all(part not in ("", ".", "..")
++                                        for part in parts), "invalid descendant")
++    current = os.dup(root_fd)
++    try:
++        for part in parts:
++            child = os.open(part, os.O_RDONLY | os.O_DIRECTORY |
++                            os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=current)
++            os.close(current)
++            current = child
++        return current
++    except BaseException:
++        os.close(current)
++        raise
++
++
++def _resource_read_at(directory, name, maximum=32768):
++    _resource_need("/" not in name and name not in ("", ".", ".."),
++                   "invalid fixed resource filename")
++    fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC,
++                 dir_fd=directory)
++    try:
++        _resource_need(stat.S_ISREG(os.fstat(fd).st_mode),
++                       "resource attribute is not a regular virtual file")
++        data = bytearray()
++        while True:
++            part = os.read(fd, min(4096, maximum + 1 - len(data)))
++            if not part:
++                break
++            data.extend(part)
++            _resource_need(len(data) <= maximum, "resource attribute exceeds bound")
++        return bytes(data).decode("ascii", errors="strict").strip()
++    finally:
++        os.close(fd)
++
++
++def _resource_self_membership():
++    with open("/proc/self/cgroup", "rt", encoding="ascii") as stream:
++        text = stream.read(4097)
++    _resource_need(len(text) <= 4096, "membership read exceeds bound")
++    return text, _resource_membership(text)
++
++
++def _resource_namespaces():
++    result = {}
++    for name in _RESOURCE_NS_NAMES:
++        value = os.stat("/proc/self/ns/" + name)
++        result[name] = [value.st_dev, value.st_ino]
++    return result
++
++
++def _resource_validate_snapshot(snapshot, expected_memory):
++    limits = snapshot["limits"]
++    _resource_need(limits["memory.max"] == expected_memory,
++                   "actual memory.max differs from admitted request")
++    quota, period = limits["cpu.max"]
++    _resource_need(isinstance(quota, int) and quota == period and period > 0,
++                   "actual CPU quota is not one CPU")
++    events = snapshot["memory_events"]
++    _resource_need(all(key in events for key in ("max", "oom", "oom_kill")),
++                   "required memory event counters absent")
++    _resource_need(snapshot["memory_current"] <= expected_memory and
++                   snapshot["memory_peak"] <= expected_memory,
++                   "observed memory current/peak exceeds admitted limit")
++
++
++def _resource_qualify(before, after, expected_memory):
++    _resource_validate_snapshot(before, expected_memory)
++    _resource_validate_snapshot(after, expected_memory)
++    for name in ("pid", "cgroup_identity", "mount_identity", "membership",
++                 "namespaces", "limits"):
++        _resource_need(before[name] == after[name], name + " changed")
++    _resource_need(before["started_monotonic_ns"] <= before["completed_monotonic_ns"] <=
++                   after["started_monotonic_ns"] <= after["completed_monotonic_ns"],
++                   "resource sample clock/order changed")
++    _resource_need(after["memory_peak"] >= before["memory_peak"],
++                   "memory.peak was reset")
++    old_events = before["memory_events"]
++    new_events = after["memory_events"]
++    _resource_need(set(old_events) == set(new_events), "memory counter set changed")
++    delta = {}
++    for key in old_events:
++        _resource_need(new_events[key] >= old_events[key], "memory counter decreased")
++        delta[key] = new_events[key] - old_events[key]
++    for key in _RESOURCE_BAD_EVENTS:
++        _resource_need(old_events.get(key, 0) == 0 and new_events.get(key, 0) == 0,
++                       "memory limit/OOM event observed: " + key)
++    return delta
++
++
++class OwnJobResources:
++    def __init__(self, expected_memory):
++        _resource_need(expected_memory in (1073741824, 536870912),
++                       "unexpected compile/control memory budget")
++        self.expected_memory = expected_memory
++        self.root_fd = None
++        self.fd = None
++        self.identity = None
++        self.mount_identity = None
++        self.membership = None
++        self.namespaces = None
++        self.pid = os.getpid()
++        self.begin_passed = False
++        self.record = {
++            "schema": 1, "held_own_cgroup_gate_passed": False,
++            "expected_memory_max": expected_memory, "expected_cpu_count": 1,
++            "cgroup_files_written": False,
++            "swap_zero_claimed": False,
++            "whole_invocation_resource_qualified": False,
++            "scope": "held own cgroup until final pre-receipt sample; durable outer terminal remains required",
++        }
++
++    def begin(self):
++        _resource_need(self.fd is None and not self.begin_passed, "resource begin replay")
++        self.membership, relative = _resource_self_membership()
++        self.namespaces = _resource_namespaces()
++        self.root_fd = os.open("/sys/fs/cgroup", os.O_RDONLY | os.O_DIRECTORY |
++                               os.O_NOFOLLOW | os.O_CLOEXEC)
++        _resource_need(_resource_fstype(self.root_fd) == _RESOURCE_CGROUP2_MAGIC,
++                       "mount root is not cgroup v2")
++        self.mount_identity = _resource_identity(self.root_fd)
++        self.fd = _resource_open_descendant(self.root_fd, relative)
++        _resource_need(_resource_fstype(self.fd) == _RESOURCE_CGROUP2_MAGIC,
++                       "held domain is not cgroup v2")
++        self.identity = _resource_identity(self.fd)
++        before = self.sample()
++        self.record["before"] = before
++        _resource_validate_snapshot(before, self.expected_memory)
++        for key in _RESOURCE_BAD_EVENTS:
++            _resource_need(before["memory_events"].get(key, 0) == 0,
++                           "nonzero initial memory limit/OOM counter: " + key)
++        self.begin_passed = True
++
++    def sample(self):
++        _resource_need(self.fd is not None and self.root_fd is not None,
++                       "no retained resource domain")
++        started = time.monotonic_ns()
++        _resource_need(os.getpid() == self.pid and
++                       _resource_identity(self.fd) == self.identity and
++                       _resource_identity(self.root_fd) == self.mount_identity,
++                       "held resource/process identity changed")
++        membership, _ = _resource_self_membership()
++        namespaces = _resource_namespaces()
++        _resource_need(membership == self.membership and namespaces == self.namespaces,
++                       "controller moved domain or namespace")
++        limits = {name: _resource_limit(_resource_read_at(self.fd, name))
++                  for name in _RESOURCE_LIMIT_NAMES if name != "cpu.max"}
++        cpu = _resource_read_at(self.fd, "cpu.max").split()
++        _resource_need(len(cpu) == 2, "malformed cpu.max")
++        limits["cpu.max"] = [_resource_limit(cpu[0]), _resource_uint(cpu[1])]
++        procs = [_resource_uint(line) for line in
++                 _resource_read_at(self.fd, "cgroup.procs").splitlines()]
++        _resource_need(self.pid in procs and len(procs) == len(set(procs)),
++                       "held domain does not contain the controller")
++        current = _resource_uint(_resource_read_at(self.fd, "memory.current"))
++        swap_current = _resource_uint(_resource_read_at(self.fd, "memory.swap.current"))
++        try:
++            swap_peak = _resource_uint(_resource_read_at(self.fd, "memory.swap.peak"))
++        except FileNotFoundError:
++            swap_peak = None
++        pids = _resource_uint(_resource_read_at(self.fd, "pids.current"))
++        domain_events = _resource_counters(_resource_read_at(self.fd, "cgroup.events"))
++        # Event counters are the final attribute read, after the peak/current
++        # observations. This is an interval sample, not an atomic snapshot.
++        peak = _resource_uint(_resource_read_at(self.fd, "memory.peak"))
++        events = _resource_counters(_resource_read_at(self.fd, "memory.events"))
++        final_membership, _ = _resource_self_membership()
++        _resource_need(final_membership == self.membership and
++                       _resource_namespaces() == self.namespaces and
++                       _resource_identity(self.fd) == self.identity,
++                       "resource scope changed during sample")
++        return {
++            "pid": self.pid, "cgroup_identity": self.identity,
++            "mount_identity": self.mount_identity, "membership": membership,
++            "namespaces": namespaces, "limits": limits,
++            "memory_current": current, "memory_peak": peak,
++            "memory_swap_current": swap_current, "memory_swap_peak": swap_peak,
++            "memory_events": events, "cgroup_events": domain_events,
++            "pids_current": pids, "direct_cgroup_procs": procs,
++            "started_monotonic_ns": started,
++            "completed_monotonic_ns": time.monotonic_ns(),
++        }
++
++    def finish(self):
++        after = self.sample()
++        self.record["after"] = after
++        _resource_need(self.begin_passed and "before" in self.record,
++                       "initial resource gate did not pass")
++        self.record["memory_event_delta"] = _resource_qualify(
++            self.record["before"], after, self.expected_memory)
++        self.record["held_own_cgroup_gate_passed"] = True
++
++    def close(self):
++        first_error = None
++        for attribute in ("fd", "root_fd"):
++            fd = getattr(self, attribute)
++            if fd is not None:
++                setattr(self, attribute, None)
++                try:
++                    os.close(fd)
++                except OSError as error:
++                    if first_error is None:
++                        first_error = error
++        if first_error is not None:
++            raise first_error
++
++
++def _resource_record_error(report, resources, error):
++    report["success"] = False
++    resources.record["held_own_cgroup_gate_passed"] = False
++    detail = type(error).__name__ + ": " + str(error)
++    report.setdefault("resource_gate_errors", []).append(detail)
++    if "error" not in report:
++        report["error"] = detail
++        report["traceback"] = traceback.format_exc()
++
++
++def finish_own_resource_gate(report, resources):
++    try:
++        resources.finish()
++    except Exception as error:
++        # A compile/test failure remains the primary error. A later collection
++        # problem cannot erase it or become an apparent cleanup success.
++        _resource_record_error(report, resources, error)
++    finally:
++        try:
++            resources.close()
++        except Exception as error:
++            _resource_record_error(report, resources, error)
++
++
+ import shutil
+ 
+ def compile_recovery(cfg):
+@@ -270,8 +582,11 @@
+         "memory_budget_bytes": 1073741824, "cpu_quota_percent": 100,
+         "uid": os.geteuid(), "pid": os.getpid(),
+     }
++    resources = OwnJobResources(1073741824)
++    report["resource_health"] = resources.record
+     before = None
+     try:
++        resources.begin()
+         put(OUT / "payload.json", json_bytes(cfg))
+         report["payload_sha256"] = sha(json_bytes(cfg))
+         prior_raw = read_regular(PRIOR_RECEIPT, 128 * 1024)
+@@ -404,6 +719,7 @@
+                 report["all_source_inventory_after_failure_sha256"] = sha(after_failure)
+             except Exception as capture:
+                 report["failure_collection_errors"].append(str(capture))
++    finish_own_resource_gate(report, resources)
+     report["finished_at"] = now()
+     raw = json_bytes(report)
+     put(OUT / "compile-result.json", raw)

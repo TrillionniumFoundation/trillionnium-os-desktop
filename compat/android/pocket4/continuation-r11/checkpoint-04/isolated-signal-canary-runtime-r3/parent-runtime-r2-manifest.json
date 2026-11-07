@@ -1,0 +1,93 @@
+{
+  "artifact": "isolated-signal-canary-runtime-r2",
+  "changes": [
+    "bounded owned cgroup framework census",
+    "30-second read-only initial strict epoch readiness for one exact error only",
+    "separate binding to already executed r1 host wrapper"
+  ],
+  "deployed": false,
+  "files": {
+    "REVISION.md": {
+      "bytes": 3115,
+      "sha256": "d2dc92fd436f340cd822744ff37da74aa0a60d618d4359afb0c0eb381204e8d3"
+    },
+    "RUNTIME.md": {
+      "bytes": 13274,
+      "sha256": "eb3c2f7207e8438c8a8f2004e5df5c6bcd2892ba61721ce53cd681568782538e"
+    },
+    "framework_census.py": {
+      "bytes": 14723,
+      "sha256": "9a88368e65b3157a7cb6238eb3de94194929f6cc55d658b33c5171d52ddd30a1"
+    },
+    "host-baseline-inputs-template.json": {
+      "bytes": 1377,
+      "sha256": "51e6138efa80568fd67578ad018e1de775a37617ba3aabc4ccb0683d665a8a4f"
+    },
+    "host-candidate-inputs-template.json": {
+      "bytes": 1696,
+      "sha256": "4f14a4e9c472153c9c246687b35ccc573059f43bf4966b36a0c1b12e82c8c9b1"
+    },
+    "host-launch-inputs.json": {
+      "bytes": 518,
+      "sha256": "c313ea1f0d03474b05ee2ee8ae3bb74d0131d57469fb9dbf454d03745e3002fb"
+    },
+    "host-test-contract.json": {
+      "bytes": 223064,
+      "sha256": "5e6fce662b8e08b8c0397b09df7425e60f522dde86847f2c86b899f38f24fc41"
+    },
+    "host_suite.py": {
+      "bytes": 30776,
+      "sha256": "5c405e08e6c12ddc69e04927b708d006f4eb8039af06649f75e8df63fc94c848"
+    },
+    "local-census-controls.json": {
+      "bytes": 3400,
+      "sha256": "513bd7b6b8fed33e6d4f334ad40b11e841468eb20a0d87ff8c333140a217324a"
+    },
+    "local-host-parser-controls.json": {
+      "bytes": 4332,
+      "sha256": "19573a95106fd43d97e9ad473eee03ecc64905dc111e0c4f78947496b3e07d65"
+    },
+    "local-runtime-controls.json": {
+      "bytes": 4859,
+      "sha256": "4b28945a0f6345af5de371682deb06ec4276759683175c6cd2cf6adb10394ee0"
+    },
+    "parent-runtime-r1-manifest.json": {
+      "bytes": 2703,
+      "sha256": "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5"
+    },
+    "r16-host-layout.json": {
+      "bytes": 1467,
+      "sha256": "e369b6bce365bd2553be7193bdeea22975d0e26d13d4bb73e826f10b6be78cd2"
+    },
+    "run.py": {
+      "bytes": 35129,
+      "sha256": "00555a0b69cb0034c342ea42b7e5367270f255d6c651f5e3dc378a32fac6594c"
+    },
+    "verify_census_local.py": {
+      "bytes": 11258,
+      "sha256": "e8f1981dfc267f517dc2f763c1ec99c2e87dca58a45724afe556e2a903c9f5ce"
+    },
+    "verify_host_local.py": {
+      "bytes": 4875,
+      "sha256": "4f9a962694dbf1a6530e7c5ca0c94d4939a6340736f9a9164aa9a06222ef7685"
+    },
+    "verify_local_runtime.py": {
+      "bytes": 7220,
+      "sha256": "121720dae736255cf46300075d21b484cf0845a78b075a97e8a78e02d08dbad4"
+    }
+  },
+  "host_qualification_wrapper_manifest_sha256": "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5",
+  "local_controls": {
+    "Android_run": "NOT_RUN",
+    "actual_device_operations": 0,
+    "admission_and_loader": 13,
+    "census_and_readiness": 20,
+    "host_parser": 19
+  },
+  "parent_manifest_sha256": "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5",
+  "peer_review": "PENDING_PARENT_INDEPENDENT_REVIEW",
+  "preparation_manifest_sha256": "3f12e8bcde951712a20208aaeed04f1125bac58993ce1a3f5a93e4f950a9b103",
+  "production_ready": false,
+  "schema": 1,
+  "state": "FROZEN_SOURCE_NOT_DEVICE_EXECUTED"
+}

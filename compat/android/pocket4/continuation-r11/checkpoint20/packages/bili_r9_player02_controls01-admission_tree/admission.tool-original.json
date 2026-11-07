@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys,types\nraw=sys.stdin.buffer.read(524289)\nassert 0<len(raw)<=524288 and hashlib.sha256(raw).hexdigest()=='43d578eb31181c002f4167dea94310a71cf73963feac77db1546d2c8c1818975'\np=json.loads(raw)\nassert set(p)=={'schema','control_source','control_sha256','payload'} and p['schema']==1\nsource=p['control_source'].encode('utf-8')\nassert hashlib.sha256(source).hexdigest()==p['control_sha256']=='04d9787b8d98e9c5b3317879a9a6e57256619d78f7c86b28f13fcd1c0d726945'\nmodule=types.ModuleType('pure_bili_r9_player02_component_controls');module.__file__='<check_current_flow.py>'\nexec(compile(source,module.__file__,'exec'),module.__dict__)\nresult=module.run_controls(p['payload'])\nassert result['all_passed'] is True and result['count']==21 and len(result['cases'])==21 and all(x['passed'] is True for x in result['cases'])\nmanifest=(json.dumps({'files':p['payload']['pins']['new'],'schema':1},sort_keys=True,separators=(',',':'))+'\\n').encode('utf-8')\nassert hashlib.sha256(manifest).hexdigest()=='296da6728d720584339eb47e47801e0c458c3427d06e3a593acdc2f0bc3c6e5d'\nresult['new_source_manifest_sha256']=hashlib.sha256(manifest).hexdigest()\nresult['control_source_sha256']=p['control_sha256']\nresult['packet_sha256']=hashlib.sha256(raw).hexdigest()\nresult['actual_install_binding']=p['payload']['binding_proof']\nencoded=json.dumps(result,sort_keys=True,separators=(',',':'))\nassert len(encoded.encode())<=32768\nprint(encoded,flush=True)\n"
+    ],
+    "created_unix_ms": 1793954756443,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b009375b-fc05-6d9d",
+    "idempotency_key": "pocket4-bili-r9-player02-component-controls01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b009375b-fc05-6d9d",
+    "request_digest": "1b4f34b9a5dcac7553018da55cbd22725d1ae926850c782c847d061fe1ed234b",
+    "request_fingerprint": 1967849534140492917,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b009375b-fc05-6d9d"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b009375b-fc05-6d9d"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

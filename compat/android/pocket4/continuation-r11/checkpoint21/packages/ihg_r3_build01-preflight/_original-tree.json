@@ -1,0 +1,43 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "81b9d37768d9e1347fb23d0b9a6acc0f6d35fdc5",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 9148,
+    "sha256": "4f9186368f5a1b6f34f06aa5d951de54e706006ce5bad9223791929482cc04e9",
+    "git_blob_sha1": "9ee4ec161a836dd9b907d5d697906de729f409a2",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "exact-request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ddab79a387f4a811c75e89268f94be55873ababa",
+      "bytes": 176548
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e45a70c4025c5046f0de723d404a9b609ae93bba",
+      "bytes": 2849
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d121dfd5e11369590df51fa771cdf019bd0fa0b1"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "source",
+      "original_tree": "d121dfd5e11369590df51fa771cdf019bd0fa0b1",
+      "checkpoint": 21,
+      "canonical_package": "ihg-r3-build01-source"
+    }
+  ],
+  "original_recursive_leaf_count": 23
+}

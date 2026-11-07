@@ -1,0 +1,188 @@
+{
+  "schema": 1,
+  "host_control_expected": true,
+  "actual_android_executed": false,
+  "production_ready": false,
+  "compile_argv": [
+    "g++",
+    "-std=c++17",
+    "-O1",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-pthread",
+    "-fno-exceptions",
+    "-fno-rtti",
+    "-I",
+    "fd-owner-probe-r15-source",
+    "native-work/lifecycle-r15-host-controller.cc",
+    "-o",
+    "native-work/lifecycle-r15-host-controller"
+  ],
+  "compile_exit": 0,
+  "run_exit": 0,
+  "host_controller_sha256": "04c083a183562a44ef9181354cab6272a266091b5b61f5eb9635ddf8da611224",
+  "host_fixture_source_sha256": "06223f5c2ee06326e123acf722169a18fc19062958593ceb470cd35d26d4b024",
+  "actual_package_controller_sha256": "f3f0e8a3bd9b88b01512b4615e82365372b4fb05cf1ca552a91932be7cee5a12",
+  "case_source_sha256": "e8313eb549318439b137768de460fb5fad97f3433fcba9769990f5dfddd616b4",
+  "stdout_sha256": "3cfa550766b61bc172e563c8696aec894b6e17ad809db43821e91a6ec54a4e7c",
+  "result": {
+    "probe": "owned_reusable_metadata_lifecycle_r15",
+    "pass": true,
+    "child_reaped": true,
+    "direct_children_started": 12,
+    "direct_children_reaped": 12,
+    "expected_cases": 12,
+    "observed_cases": 12,
+    "expected_behavior_mask": "0x0000000000000fff",
+    "timeout": false,
+    "cases": [
+      {
+        "case": "prewarmed_actual_RLIMIT_AS_1_metadata",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "prewarmed_reject_new_pthread_EAGAIN",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "stop_inflight_closes_admission_and_restart",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "stop_during_paused_startup_no_reopen",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "raw_clone_private_fork_inflight",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "libc_fork_atfork_inflight",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "CLONE_VM_new_TGID_gate_parent_survives",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "startup_EAGAIN_explicit_retry",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "join_failure_sticky_poison",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "actual_caller_unshared_fdtable",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "caller_mask_preserved",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "RLIMIT_NOFILE_0_still_EMFILE_known_red",
+        "expected_behavior_observed": true,
+        "known_production_red": true,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      }
+    ],
+    "application_uid": 0,
+    "resource_fixture": {
+      "tmpfs_fstatfs_uses_real_owner": true,
+      "fstat_queryorigin_candidate_shape": true
+    },
+    "known_reds": [
+      "RLIMIT_NOFILE=0 metadata remains EMFILE",
+      "CLONE_VM new TGID is a containment rejection, not guest support",
+      "runtime lifecycle hooks not installed",
+      "credential/root/mount transitions unqualified",
+      "ordinary alias-to-maps admission race remains"
+    ],
+    "fault_injections": [
+      "pthread_create EAGAIN",
+      "pthread_join EIO after real worker exit"
+    ],
+    "host_copy_seam": false,
+    "runtime_hooks_installed": false,
+    "candidate_production_ready": false,
+    "broker_positive_identity_tested": false
+  },
+  "scope_notes": [
+    "No process_vm copy seam. Metadata controls operate on owned native structures.",
+    "pthread creation/join wrappers forward native libc except explicitly labelled EAGAIN/EIO negative controls and deterministic startup pausing.",
+    "Host UID0 candidate-shape fstat/queryorigin path is not inferred for Android app UID: the result records that difference. Ordinary tmpfs fstatfs uses the owner for both.",
+    "Mask case enters with SIGUSR1 blocked and checks exact low64 preservation before restoring the original mask."
+  ]
+}

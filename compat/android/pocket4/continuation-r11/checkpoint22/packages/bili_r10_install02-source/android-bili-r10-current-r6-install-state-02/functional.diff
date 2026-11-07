@@ -1,0 +1,139 @@
+--- original01/install_state.py
++++ current-owner02/install_state.py
+@@ -20,12 +20,12 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r10-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r10-install-state-02')
+ SOURCE = ROOT / 'source'
+ NONCE = 'd5a77071f725e6bfb854effcd467cc99'
+ STATE_NONCE = 'd6a0aab3fd95f4e006a35683d0bd2c7b'
+ FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r10-flow-' + NONCE)
+-STEP = 'install-state-r10-01'
++STEP = 'install-state-r10-02'
+ SELF = 'org.droidloom.qa.bili.r10'
+ QA_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r10-source-01/source')
+ QA_MANIFEST = '52ababa77e144bdb43f0f6fde4483e2f8cb43dcf8c431590b02b068d2715f9f2'
+@@ -58,7 +58,7 @@
+ ACTION_LOCK_POLL_SECONDS = 0.05
+ EXPECTED_SOURCE_FILES = {'install_state.py', 'stage_execute.py', 'make_request.py',
+                          'INPUTS.json', 'README.md', 'host/source-manifest.json',
+-                         'host-stage-actual.json', 'session_binding.py', 'check_install_binding.py'}
++                         'host-stage-actual.json', 'session_binding.py', 'check_install_binding.py', 'current_discovery.py', 'check_current_discovery.py', 'current_flow.py'}
+ 
+ 
+ def require(value, message):
+@@ -435,6 +435,18 @@
+                 'authority_fds_closed':True, 'recursive_cleanup':False}
+ 
+ 
++def current_flow_type(runtime_manifest, recorder):
++    discovery = module(HERE/'current_discovery.py',
++        runtime_manifest['files']['current_discovery.py']['sha256'],'owned_current_discovery')
++    factory = module(HERE/'current_flow.py',
++        runtime_manifest['files']['current_flow.py']['sha256'],'owned_current_flow')
++    require(factory.R6_MANIFEST == RECORDER_MANIFEST and
++            factory.MAIN_EPOCH == CURRENT_EPOCH and factory.BASELINE_SHA == BASELINE_SHA and
++            factory.QUALIFICATION_SHA == QUALIFICATION_SHA,
++            'CURRENT_FLOW_FACTORY_SOURCE_BINDING_REQUIRED')
++    return factory.flow_type(recorder,discovery)
++
++
+ def worker(expected):
+     runtime_manifest = verify_source(expected)
+     require(os.getuid() == os.geteuid() == 0 and HERE == SOURCE and ROOT.is_dir(), 'EXACT_ROOT_WORKER_REQUIRED')
+@@ -455,7 +467,7 @@
+     flow = stage = None; action_lock = None
+     try:
+         result['admission_phase'] = 'flow_constructor'
+-        flow = recorder.Flow(flow_args)
++        flow = current_flow_type(runtime_manifest,recorder)(flow_args)
+         result['admission_phase'] = 'flow_begin'
+         flow.begin(flow_args, mutation=True)
+         result['admission_phase'] = 'action_lock_acquisition'
+
+--- original01/stage_execute.py
++++ current-owner02/stage_execute.py
+@@ -2,12 +2,12 @@
+ """Exact root-owned R10 install/state staging on the actual current host R6 source."""
+ import hashlib,json,os,stat,sys,types
+ from pathlib import Path,PurePosixPath
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r10-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r10-install-state-02')
+ SOURCE=ROOT/'source'
+ NONCE = 'd5a77071f725e6bfb854effcd467cc99'
+ REFERENCE_SHA = '0a4a9f0d02b2a62f2b902983e43360c751a8f1952fb9ae7399850b112cb50a89'
+ FILES={'install_state.py','stage_execute.py','make_request.py','INPUTS.json','README.md',
+-       'host/source-manifest.json','host-stage-actual.json','session_binding.py','check_install_binding.py'}
++       'host/source-manifest.json','host-stage-actual.json','session_binding.py','check_install_binding.py', 'current_discovery.py', 'check_current_discovery.py', 'current_flow.py'}
+ BASE_ROOT = Path('/home/alex/work/pocket4-current-host-r6-source-01')
+ R6_MANIFEST = '002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff'
+ def require(value,reason):
+@@ -112,13 +112,14 @@
+     require(digest(files['host-stage-actual.json'])==entry.HOST_STAGE_SHA and
+             len(files['host-stage-actual.json'])==entry.HOST_STAGE_BYTES,'ACTUAL_HOST_STAGE_RECEIPT_PIN')
+     host_manifest=json.loads(files['host/source-manifest.json'])
+-    controls_module=load_text(files['check_install_binding.py'],SOURCE/'check_install_binding.py','current_install_pure_controls')
+-    controls=controls_module.run_controls(entry,actual_host,host_manifest)
+-    require(controls['all_passed'] is True and controls['count']==19 and
+-            len(controls['cases'])==19 and all(x['passed'] is True for x in controls['cases']),
+-            'ACTUAL_CURRENT_INSTALL_SOURCE_CONTROLS_REQUIRED')
+     ref,original,manifest=load_original_host(files)
+     baseline=ref.current_baseline()
++    recorder=original.load('recorder.py','actual_R6_recorder_controls')
++    controls_module=load_text(files['check_install_binding.py'],SOURCE/'check_install_binding.py','current_install_pure_controls')
++    controls=controls_module.run_controls(entry,actual_host,host_manifest,files,baseline,recorder)
++    require(controls['all_passed'] is True and controls['count']==37 and
++            len(controls['cases'])==37 and all(x['passed'] is True for x in controls['cases']),
++            'ACTUAL_CURRENT_INSTALL_SOURCE_CONTROLS_REQUIRED')
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'current_install_stage_epoch')
+     before=ref.main_guard(baseline,epoch)
+     os.umask(0o077);ROOT.mkdir(mode=0o700)
+
+--- original01/make_request.py
++++ current-owner02/make_request.py
+@@ -7,8 +7,8 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY = 'pocket4-owned-bili-qa-r10-current-r6-install-state-01-20261106'
+-ROOT = '/home/alex/work/pocket4-owned-bili-qa-r10-install-state-01'
++KEY = 'pocket4-owned-bili-qa-r10-current-r6-install-state-02-20261106'
++ROOT = '/home/alex/work/pocket4-owned-bili-qa-r10-install-state-02'
+ NONCE = 'd5a77071f725e6bfb854effcd467cc99'
+ 
+ 
+
+--- original01/session_binding.py
++++ current-owner02/session_binding.py
+
+--- original01/check_install_binding.py
++++ current-owner02/check_install_binding.py
+@@ -1,6 +1,7 @@
+ """Pure install current-host binding controls; all fixtures remain non-device evidence."""
+ import copy
+-def run_controls(entry,actual_host,manifest):
++import types
++def run_controls(entry,actual_host,manifest,files,baseline,recorder):
+     rows=[]
+     entry.qualify_host_stage(actual_host,manifest)
+     rows.append({'name':'complete_actual_host_stage_accepted','passed':True})
+@@ -49,6 +50,14 @@
+     except RuntimeError:pass
+     else:raise RuntimeError('OLD_R9_HELPER_UID_ACCEPTED')
+     rows.append({'name':'old_actual_R9_uid_rejected','passed':True})
+-    entry.require(len(rows)==19,'EXACT_INSTALL_BINDING_CONTROL_COUNT')
+-    return {'schema':'pocket4-R10-install-current-host-controls-v2','all_passed':True,'count':19,'cases':rows,
+-            'synthetic_UID_is_not_installed_UID':True,'Android_commands':0,'UI_actions':0,'children':0}
++    discovery_controls = types.ModuleType('production_current_discovery_controls')
++    exec(compile(files['check_current_discovery.py'],'<current-discovery-controls>','exec'),discovery_controls.__dict__)
++    legacy_source = entry.read(entry.BASE_HOST_ROOT/'references/android_app.py',131072,
++                               discovery_controls.LEGACY_SHA)
++    rows.extend(discovery_controls.run_discovery_controls(files['current_discovery.py'],baseline,legacy_source))
++    rows.extend(discovery_controls.run_bili_route_controls(entry,files,baseline,legacy_source,recorder))
++    entry.require(len(rows)==37,'EXACT_INSTALL_BINDING_CONTROL_COUNT')
++    return {'schema':'pocket4-R10-install-current-host-controls-v2','all_passed':True,'count':37,'cases':rows,
++            'synthetic_UID_is_not_installed_UID':True,'Android_commands':0,'UI_actions':0,'children':0,
++            'new_owner_discovery_controls':18,'production_discovery_and_Bili_bind_route_used':True,
++            'legacy_discover_failure_reproduced_in_memory':True}

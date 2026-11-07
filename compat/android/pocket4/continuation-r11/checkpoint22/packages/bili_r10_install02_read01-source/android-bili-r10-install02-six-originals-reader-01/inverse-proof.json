@@ -1,0 +1,153 @@
+{
+  "schema": 1,
+  "parent_source": {
+    "bytes": 13857,
+    "sha256": "801c70bbb8c6ca516b0c0931b215b702dabaa58b0bda1326c3bb826080943c6e",
+    "git_blob_sha1": "52648e67d2bab78885eb87ad6f8e4e73aaf710cd"
+  },
+  "candidate_source": {
+    "bytes": 13979,
+    "sha256": "44014ce78ec4317aa5875404f32a56c0cc475201237519c085702846bb665f2a",
+    "git_blob_sha1": "fc0646f2a4b63594fb4dabc8f9249a233d38a5c1"
+  },
+  "edits": [
+    {
+      "index": 56,
+      "from": "IHG R4 install02",
+      "to": "Bili R10 install02",
+      "why": "description"
+    },
+    {
+      "index": 248,
+      "from": "ROOT = Path(\"/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-02\")",
+      "to": "ROOT = Path(\"/home/alex/work/pocket4-owned-bili-qa-r10-install-state-02\")",
+      "why": "actual-root"
+    },
+    {
+      "index": 322,
+      "from": "STEP = ROOT/'worker'",
+      "to": "STEP = Path(\"/home/alex/work/pocket4-bilibili-owned-qa-r10-flow-d5a77071f725e6bfb854effcd467cc99/steps/install-state-r10-02\")",
+      "why": "actual-recorder-step"
+    },
+    {
+      "index": 457,
+      "from": "3d004706f9adf4411761495fdc6ed859",
+      "to": "d6a0aab3fd95f4e006a35683d0bd2c7b",
+      "why": "state-nonce"
+    },
+    {
+      "index": 776,
+      "from": "bc503e63d113d5ddd32aba526e7d0075",
+      "to": "d5a77071f725e6bfb854effcd467cc99",
+      "why": "flow-nonce"
+    },
+    {
+      "index": 502,
+      "from": "org.droidloom.qa.ihg.r4",
+      "to": "org.droidloom.qa.bili.r10",
+      "why": "own-package"
+    },
+    {
+      "index": 541,
+      "from": "pocket4-owned-ihg-qa-v4",
+      "to": "pocket4-owned-bili-qa-v10",
+      "why": "protocol"
+    },
+    {
+      "index": 568,
+      "from": "PINS = {\"coordinator.json\": (4455, \"c1129d2c99210e47d12ca985b604ad0056d26c11d9c2d2f071fc3dc7e678ede4\"), \"stage.json\": (10553, \"ac3451c8a45ff6d0543cbb97e14d5619c116e83d2f71ccba0a1484e2e69c3a5b\")}",
+      "to": "PINS = {\"coordinator.json\": (4415, \"89f20a28d01c4b4798051f03ff72071714116e63a53c5ecacb11269a041959bf\"), \"stage.json\": (7299, \"e9ada57f1bce000382c4b6fc989a9150a2ae78662cbe2916fa48b9f8609e9a1e\")}",
+      "why": "actual-external-parents"
+    },
+    {
+      "index": 827,
+      "from": "bb9957023531b018d95f4a6e747fa71691bf566e53e158c5935db410ea7a8aa6",
+      "to": "e3cb2adbcfe46a47ca81ec3b5883f1e1a0cd806b21e964d75944e8fe5cd49387",
+      "why": "actual-source-manifest"
+    },
+    {
+      "index": 1058,
+      "from": "evidence/01-install-state.result.json",
+      "to": "evidence/02-install-state.result.json",
+      "why": "actual-worker-command-path"
+    },
+    {
+      "index": 1129,
+      "from": "evidence/01-install-state.stdout",
+      "to": "evidence/02-install-state.stdout",
+      "why": "actual-worker-stdout-path"
+    },
+    {
+      "index": 1189,
+      "from": "STEP/'steps/install-state-01/command-008.result.json'",
+      "to": "STEP/'command-006.result.json'",
+      "why": "actual-recorder-state-index6"
+    },
+    {
+      "index": 5387,
+      "from": "EXACT_ACTUAL_IHG_R4_PARENT_",
+      "to": "EXACT_ACTUAL_BILI_R10_PARENT_",
+      "why": "error-label"
+    },
+    {
+      "index": 5551,
+      "from": "EXACT_ACTUAL_IHG_R4_PARENT_",
+      "to": "EXACT_ACTUAL_BILI_R10_PARENT_",
+      "why": "error-label"
+    },
+    {
+      "index": 6445,
+      "from": "    require(worker.get('package')==PACKAGE and worker.get('target_package')=='com.ihg.apps.android' and\n            worker.get('nonce')==INSTALL_NONCE and worker.get('state_nonce')==NONCE and\n            worker.get('source_manifest_sha256')==SOURCE_SHA and worker.get('UI_actions')==0 and\n            worker.get('App_launches')==0 and worker.get('audio_actions')==0 and\n            worker.get('UiAutomation_connection_requested') is False and\n            worker.get('permission_grants')==0 and worker.get('settings_writes')==0 and\n            type(worker.get('ok')) is bool and isinstance(worker.get('secondary_errors'),list),\n            'EXACT_NO_UI_OWNED_WORKER_REQUIRED')\n    for key,wanted in {\n        'runtime_shared_recorder_manifest_sha256':'002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff',\n        'runtime_ticket_context_sha256':\"88c3d181a1176a447db4426df04125ce51f77ed03736eb79c1a00bb1544f4364\",\n        'runtime_ticket_transport_sha256':'aa4836f35ea0251fbf3942033db2a45e37a882ebf6f7b6076b45c63970d5c516',\n    }.items():",
+      "to": "    # Bili's original worker is recorder/session based. Its exact pinned parent\n    # binds the staged source; it does not emit the three custom-App Context\n    # fields (target_package/source_manifest/App_launches/settings_writes).\n    require(worker.get('package')==PACKAGE and\n            worker.get('nonce')==INSTALL_NONCE and worker.get('state_nonce')==NONCE and\n            worker.get('UI_actions')==0 and worker.get('audio_actions')==0 and\n            worker.get('UiAutomation_connection_requested') is False and\n            worker.get('permission_grants')==0 and worker.get('old_v2_helper_called') is False and\n            worker.get('automatic_retry') is False and\n            type(worker.get('ok')) is bool and isinstance(worker.get('secondary_errors'),list),\n            'EXACT_NO_UI_OWNED_WORKER_REQUIRED')\n    for key,wanted in {\n        'runtime_recorder_manifest_sha256':'002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff',\n        'runtime_session_binding_sha256':'d896b750b6e35fc859c773a5f9797c22c33631a9bfc4c3c4d327706438cf0013',\n    }.items():",
+      "why": "real-Bili-worker-schema"
+    },
+    {
+      "index": 7702,
+      "from": "fb4f9847fa94967ae59e3e7c2a50a1664a0f14f320e6e7e45e755b138589add6",
+      "to": "52ababa77e144bdb43f0f6fde4483e2f8cb43dcf8c431590b02b068d2715f9f2",
+      "why": "actual-Bili-QA-source"
+    },
+    {
+      "index": 7823,
+      "from": "89d725554bab2a0939c631fbb70c21c97b4f30612f35598cd51d0c0e8e125204",
+      "to": "db20a0f098ce6d1e7cc69cfbb32971a138b9c722a46b13bcfda5333620da48be",
+      "why": "actual-Bili-APK"
+    },
+    {
+      "index": 10132,
+      "from": "command.get('name')=='01-install-state'",
+      "to": "command.get('name')=='02-install-state'",
+      "why": "actual-command-name"
+    },
+    {
+      "index": 12598,
+      "from": "'parent_bound':True,'index':8",
+      "to": "'parent_bound':True,'index':6",
+      "why": "state-index-metadata"
+    },
+    {
+      "index": 12756,
+      "from": "exact-owned-ihg-r4-install02-originals",
+      "to": "exact-owned-bili-r10-install02-originals",
+      "why": "scope"
+    },
+    {
+      "index": 13039,
+      "from": "'state_command_index':8",
+      "to": "'state_command_index':6",
+      "why": "result-state-index"
+    }
+  ],
+  "complete_inverse_exact": true,
+  "checks": {
+    "production_worker_path": true,
+    "exact_command02": true,
+    "recorder_session_keys": true,
+    "no_custom_context_worker_fields": true,
+    "session_source_pin": true,
+    "worker_step_result_and_public_stdout": true,
+    "original_reader_IO_and_privacy_byte_equal": true,
+    "original_request_resources_preserved": true
+  },
+  "Python_executed": false
+}

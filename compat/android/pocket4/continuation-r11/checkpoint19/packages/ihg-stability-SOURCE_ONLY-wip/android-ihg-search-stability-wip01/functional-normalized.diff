@@ -1,0 +1,336 @@
+--- old-normalized/public_destination.py
++++ source-only-wip/public_destination.py
+@@ -1,6 +1,8 @@
+ """Explicit fresh Search then Destination; independent final read, no text input."""
+ import copy
+ import re
++import math
++import time
+ 
+ FORM_ROLES=('destination','dates','rooms_guests')
+ MAX_ANCESTORS=6
+@@ -134,11 +136,106 @@
+         'historical_node_or_task_used_as_authority':False}
+     return selector,selected,safe
+ 
++
++def search_readiness_sample(qa,helper,scope,owned_task):
++    """Safe identity of a current complete public Search observation, no node export."""
++    inspection=qa.inspect_record(helper['inspection'])
++    _,node,safe=search_selector(qa,inspection)
++    counters=qa.tree_observations(helper['tree_observations'],'inspect',True)
++    need(len(counters)==1 and counters[0]['complete'] is True and
++         counters[0]['emitted_nodes']==len(inspection['nodes']),
++         'COMPLETE_SEARCH_READINESS_CAPTURE_REQUIRED')
++    capture=counters[0]
++    need(type(capture['began_elapsed_ms']) is int and type(capture['last_elapsed_ms']) is int and
++         0<=capture['began_elapsed_ms']<=capture['last_elapsed_ms'],
++         'MONOTONIC_SEARCH_READINESS_CAPTURE_REQUIRED')
++    current_scope=qa.scope(scope)
++    identity={'tree_sha256':inspection['tree_sha256'],'window_sha256':inspection['window_sha256'],
++              'node':node,'foreground':current_scope,'owned_task':owned_task}
++    return {'identity_sha256':qa.sha(qa.canonical(identity)),
++            'tree_sha256':inspection['tree_sha256'],'window_sha256':inspection['window_sha256'],
++            'capture_began_elapsed_ms':capture['began_elapsed_ms'],
++            'capture_last_elapsed_ms':capture['last_elapsed_ms'],
++            'node_count':len(inspection['nodes']),'public_search_role':safe,
++            'complete':True,'scope':copy.deepcopy(current_scope),'owned_task':copy.deepcopy(owned_task),
++            'node_exported':False,'connection_scoped_window_id_compared_across_invocations':False}
++
++
++def qualify_search_readiness(qa,session,installed,plans,result,summary,clock=None):
++    """Finite complete reads; time span qualifies samples, never a future action."""
++    need(len(plans)==8 and all(p['operation']=='inspect' for p in plans),
++         'EIGHT_FIXED_NO_ACTION_SEARCH_READINESS_PLANS_REQUIRED')
++    if clock is None:clock=time.monotonic
++    began=clock();previous_clock=began
++    need(type(began) in (int,float) and math.isfinite(began),'FINITE_SEARCH_READINESS_CLOCK_REQUIRED')
++    deadline=began+20
++    result['search_readiness_observations']=[]
++    first_task=first_scope=last_key=None
++    run_count=0;run_began=None;previous_capture_last=None
++    for index,plan in enumerate(plans):
++        now=clock()
++        need(type(now) in (int,float) and math.isfinite(now) and previous_clock<=now<deadline,
++             'SEARCH_READINESS_QUALIFICATION_DEADLINE')
++        previous_clock=now
++        if hasattr(session,'sequence_observation'):del session.sequence_observation
++        seq=session.sequence(plan)
++        need(seq['installed_before']==seq['installed_after']==installed and
++             seq.get('after_state_completed') is True and seq.get('restoration_qualified') is True and
++             seq.get('post_state_matches_before') is True and
++             seq['foreground_before']==seq['foreground_after'] and
++             seq['post_termination_state']['ui_automation_connected'] is False,
++             'ORIGINAL_SEARCH_READINESS_STATE_RESTORATION_REQUIRED')
++        current=session.search_readiness_samples[plan['nonces']['inspect']]
++        need(current['owned_task']==seq['owned_task'] and current['scope']==seq['foreground_before'],
++             'SEARCH_READINESS_CURRENT_TASK_AND_SCOPE_REQUIRED')
++        if first_task is None:
++            first_task=copy.deepcopy(seq['owned_task']);first_scope=copy.deepcopy(seq['foreground_before'])
++        need(seq['owned_task']==first_task and seq['foreground_before']==first_scope,
++             'SEARCH_READINESS_OWNED_TASK_OR_FOREGROUND_CHANGED')
++        need(previous_capture_last is None or current['capture_began_elapsed_ms']>=previous_capture_last,
++             'SEARCH_READINESS_CAPTURE_TIME_MOVED_BACKWARD')
++        previous_capture_last=current['capture_last_elapsed_ms']
++        now=clock()
++        need(type(now) in (int,float) and math.isfinite(now) and previous_clock<=now<=deadline,
++             'SEARCH_READINESS_QUALIFICATION_DEADLINE')
++        previous_clock=now
++        if current['identity_sha256']==last_key:
++            run_count+=1
++        else:
++            last_key=current['identity_sha256'];run_count=1
++            run_began=current['capture_began_elapsed_ms']
++        span=current['capture_last_elapsed_ms']-run_began
++        assessments=summary(seq,plan)
++        need(assessments['inspect']['wire_sha256']==seq['inspection_wire_sha256'] and
++             assessments['inspect']['tree_sha256']==current['tree_sha256'] and
++             assessments['inspect']['window_sha256']==current['window_sha256'],
++             'SEARCH_READINESS_SAFE_ASSESSMENT_BINDING_REQUIRED')
++        result['search_readiness_observations'].append({'index':index+1,'sequence':seq,
++            'assessments':assessments,'observation':current,'consecutive_equal':run_count,
++            'capture_span_ms':span,'qualified':run_count>=3 and span>=4000})
++        if run_count>=3 and span>=4000:
++            session.search_readiness_qualified=True
++            session.search_readiness_identity=last_key
++            session.search_readiness_owned_task=first_task
++            result['search_readiness_qualified']=True
++            result['search_readiness_count']=index+1
++            result['search_readiness_capture_span_ms']=span
++            result['search_readiness_future_stability_proven']=False
++            return
++    raise RuntimeError('SEARCH_READINESS_NOT_STABLE_WITHIN_EIGHT_COMPLETE_READS')
++
++def make_session(adapter,flow,recorder,qa,proof,helper_uid,search_plan,click_plan,post_plan,readiness_plans):
+-def make_session(adapter,flow,recorder,qa,proof,helper_uid,search_plan,click_plan,post_plan):
+     """Two explicit fresh roles; original Session.sequence and helper guards remain."""
+     class PublicSearchDestinationSession(adapter.Session):
+         def __init__(self):
+             super().__init__(flow,recorder,qa,proof,helper_uid)
++            self.readiness_inspection_nonces={plan['nonces']['inspect'] for plan in readiness_plans}
++            need(len(readiness_plans)==len(self.readiness_inspection_nonces)==8,
++                 'EIGHT_DISTINCT_READINESS_INSPECTIONS_REQUIRED')
++            self.search_readiness_samples={}
++            self.search_readiness_qualified=False
++            self.search_readiness_identity=None
++            self.search_readiness_owned_task=None
+             self.public_search_proof=None
+             self.public_search_entry=None
+             self.public_destination_proof=None
+@@ -164,10 +261,23 @@
+                          'QUALIFIED_SEARCH_AND_SAME_OWNED_TASK_BEFORE_DESTINATION_REQUIRED')
+                 self.action_requests_admitted.add(role)
+             assessed=super().instrument(request)
++            if request['nonce'] in self.readiness_inspection_nonces:
++                need(request['op']=='inspect' and request['nonce'] not in self.search_readiness_samples and
++                     self.search_readiness_qualified is False and not self.action_requests_admitted,
++                     'ONE_FRESH_NO_ACTION_SEARCH_READINESS_OBSERVATION_REQUIRED')
++                self.search_readiness_samples[request['nonce']]=search_readiness_sample(qa,assessed['helper'],
++                    request['scope'],self.sequence_observation['owned_task'])
++            elif request['nonce']==search_plan['nonces']['inspect']:
+-            if request['nonce']==search_plan['nonces']['inspect']:
+                 need(request['op']=='inspect' and self.public_search_proof is None and
+                      not self.action_requests_admitted,
+                      'ONE_CURRENT_EXPLICIT_SEARCH_INSPECTION_REQUIRED')
++                need(self.search_readiness_qualified is True and
++                     self.sequence_observation['owned_task']==self.search_readiness_owned_task,
++                     'QUALIFIED_CURRENT_SEARCH_READINESS_REQUIRED')
++                current=search_readiness_sample(qa,assessed['helper'],request['scope'],
++                    self.sequence_observation['owned_task'])
++                need(current['identity_sha256']==self.search_readiness_identity,
++                     'SEARCH_CHANGED_AFTER_READINESS_NO_ACTION')
+                 selector,node,safe=search_selector(qa,assessed['helper']['inspection'])
+                 search_plan['selector']=selector
+                 adapter.validate_plan(search_plan,qa)
+@@ -202,10 +312,14 @@
+             return assessed
+     return PublicSearchDestinationSession()
+ 
++def run_sequences(qa,session,installed,search_plan,click_plan,post_plan,readiness_plans,result,summary,remember):
+-def run_sequences(qa,session,installed,search_plan,click_plan,post_plan,result,summary,remember):
+     """First Search must finish before fresh Destination; post-read always runs."""
++    result['search_readiness_started']=True
++    current_phase='search_readiness'
+-    result['search_sequence_started']=True
+     try:
++        qualify_search_readiness(qa,session,installed,readiness_plans,result,summary)
++        result['search_sequence_started']=True
++        current_phase='explicit_public_search_click'
+         if hasattr(session,'sequence_observation'):del session.sequence_observation
+         seq=session.sequence(search_plan)
+         result['search_sequence']=seq
+@@ -234,8 +348,10 @@
+             if hasattr(session,'sequence_observation'):result['failed_click_sequence']=session.sequence_observation
+             remember('public_destination_click',error)
+     except BaseException as error:
++        if hasattr(session,'sequence_observation'):
++            result['failed_search_readiness_sequence' if current_phase=='search_readiness' else
++                   'failed_search_sequence']=session.sequence_observation
++        remember(current_phase,error)
+-        if hasattr(session,'sequence_observation'):result['failed_search_sequence']=session.sequence_observation
+-        remember('explicit_public_search_click',error)
+     finally:
+         # Even a failed or ambiguous first click never causes a second input.
+         # Preserve a verified semantic observation without turning a later
+--- old-normalized/ihg_task_context.py
++++ source-only-wip/ihg_task_context.py
+@@ -36,15 +36,20 @@
+     def __init__(self,phase,qa,resolve,inspect_plan,step,read,selected_task):
+         need(phase in ('launch','inspect','cleanup'),'EXACT_AMAZON_PHASE_REQUIRED')
+         need(qa.PACKAGE==PACKAGE and qa.UID==UID and qa.SELF==SELF,'EXACT_AMAZON_CONTRACT_REQUIRED')
++        need(set(inspect_plan)=={'search','destination','post','readiness'} and
+-        need(set(inspect_plan)=={'search','destination','post'} and
+              all(inspect_plan[role]['operation']=='click' and
+                  set(inspect_plan[role]['nonces'])=={'before','inspect','action','after'}
+                  for role in ('search','destination')) and
++             inspect_plan['post']['operation']=='inspect' and set(inspect_plan['post']['nonces'])=={'before','inspect','after'} and
++             isinstance(inspect_plan['readiness'],list) and len(inspect_plan['readiness'])==8 and
++             all(plan['operation']=='inspect' and set(plan['nonces'])=={'before','inspect','after'}
++                 for plan in inspect_plan['readiness']),
++             'EXPLICIT_SEARCH_DESTINATION_POST_AND_EIGHT_NO_ACTION_READINESS_PLANS')
++        flat={role:inspect_plan[role] for role in ('search','destination','post')}
++        flat.update({'readiness_'+str(index+1):plan for index,plan in enumerate(inspect_plan['readiness'])})
++        values=[n for plan in flat.values() for n in plan['nonces'].values()]
++        need(len(values)==len(set(values))==35,'THIRTY_FIVE_DISTINCT_CURRENT_HELPER_NONCES')
++        self.phase,self.qa,self.resolve,self.plan=phase,qa,list(resolve),flat
+-             inspect_plan['post']['operation']=='inspect' and set(inspect_plan['post']['nonces'])=={'before','inspect','after'},
+-             'ONLY_EXPLICIT_SEARCH_DESTINATION_AND_INDEPENDENT_POST_PLANS')
+-        values=[n for plan in inspect_plan.values() for n in plan['nonces'].values()]
+-        need(len(values)==len(set(values))==11,'ELEVEN_DISTINCT_CURRENT_HELPER_NONCES')
+-        self.phase,self.qa,self.resolve,self.plan=phase,qa,list(resolve),inspect_plan
+         self.step,self.read,self.selected_task=step,read,selected_task
+         self.counts={};self.used_nonces=set();self.remove_attempted=False
+ 
+@@ -63,8 +68,8 @@
+             return
+         if argv in (OWN_UID,OWN_PATH):
+             need(timeout==8 and not mutation and not private,'HELPER_METADATA_READ_ONLY')
++            # Up to eight read-only sequences plus three original sequences and outer pair.
++            self.claim('helper_uid' if argv==OWN_UID else 'helper_path',24 if self.phase=='inspect' else 2)
+-            # Three original sequences each have before/after pairs, plus outer pair.
+-            self.claim('helper_uid' if argv==OWN_UID else 'helper_path',8 if self.phase=='inspect' else 2)
+             return
+         if argv==self.resolve:
+             need(self.phase=='launch' and timeout==15 and not mutation and not private,
+@@ -72,11 +77,11 @@
+             self.claim('resolve',1);return
+         if argv==STACKS:
+             need(not mutation and not private and timeout<=20,'TASK_SNAPSHOT_READ_ONLY')
++            self.claim('stacks',33 if self.phase=='cleanup' else 22 if self.phase=='inspect' else 2);return
+-            self.claim('stacks',33 if self.phase=='cleanup' else 6 if self.phase=='inspect' else 2);return
+         if argv==FOREGROUND:
+             need(self.phase=='inspect' and timeout==15 and not mutation and private,
+                  'ONLY_PRIVATE_CURRENT_FOREGROUND_READ')
++            self.claim('foreground',33);return
+-            self.claim('foreground',9);return
+         if self.phase=='cleanup' and argv[:4]==['/system/bin/cmd','activity','stack','remove']:
+             # Full equality below, not a prefix-based permission grant.
+             selected=self.selected_task()
+@@ -105,7 +110,7 @@
+                     matches.append((nonce,operation))
+         need(len(matches)==1,'ONLY_ONE_CURRENT_SOURCE_BOUND_HELPER_REQUEST')
+         nonce,operation=matches[0]
++        self.used_nonces.add(nonce);self.claim('instrument',35)
+-        self.used_nonces.add(nonce);self.claim('instrument',11)
+         if operation=='click':self.claim('click',2)
+ 
+ 
+--- old-normalized/owned_inspect.py
++++ source-only-wip/owned_inspect.py
+@@ -29,6 +29,7 @@
+ SEARCH_PLAN={"schema":1,"operation":"click","selector":{"text":"Search"},"nonces":{"before":"IHG_READINESS_000000000000000001","inspect":"IHG_READINESS_000000000000000002","action":"IHG_READINESS_000000000000000003","after":"IHG_READINESS_000000000000000004"}}
+ PLAN={"schema":1,"operation":"click","selector":{"text":"Destination"},"nonces":{"before":"IHG_READINESS_000000000000000005","inspect":"IHG_READINESS_000000000000000006","action":"IHG_READINESS_000000000000000007","after":"IHG_READINESS_000000000000000008"}}
+ POST_PLAN={"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000009","inspect":"IHG_READINESS_000000000000000010","after":"IHG_READINESS_000000000000000011"}}
++SEARCH_READINESS_PLANS=[{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000012","inspect":"IHG_READINESS_000000000000000013","after":"IHG_READINESS_000000000000000014"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000015","inspect":"IHG_READINESS_000000000000000016","after":"IHG_READINESS_000000000000000017"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000018","inspect":"IHG_READINESS_000000000000000019","after":"IHG_READINESS_000000000000000020"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000021","inspect":"IHG_READINESS_000000000000000022","after":"IHG_READINESS_000000000000000023"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000024","inspect":"IHG_READINESS_000000000000000025","after":"IHG_READINESS_000000000000000026"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000027","inspect":"IHG_READINESS_000000000000000028","after":"IHG_READINESS_000000000000000029"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000030","inspect":"IHG_READINESS_000000000000000031","after":"IHG_READINESS_000000000000000032"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000033","inspect":"IHG_READINESS_000000000000000034","after":"IHG_READINESS_000000000000000035"}}]
+ INSTALL_ROOT=Path('/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01')
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+ INSTALL_SOURCE_SHA='eec0bb01cbc2440918800026c2d1260bdc62fbab1f377776b9fccf7467596902'
+@@ -184,17 +185,23 @@
+     actual_component=actual_resolver(records,INSTALLED)
+     adapter,qa,proof,apk=util.qualified_inputs();del apk
+     adapter.validate_plan(SEARCH_PLAN,qa);adapter.validate_plan(PLAN,qa);adapter.validate_plan(POST_PLAN,qa)
++    need(len(SEARCH_READINESS_PLANS)==8,'EIGHT_READINESS_PLANS_REQUIRED')
++    for plan in SEARCH_READINESS_PLANS:
++        adapter.validate_plan(plan,qa)
++        need(plan['operation']=='inspect','READINESS_MUST_BE_NO_ACTION')
+     need(qa.PACKAGE==PACKAGE and qa.UID==UID and qa.SELF==SELF and adapter.SELF==SELF,
+          'DEDICATED_IHG_HELPER_SOURCE_REQUIRED')
++    values=[NONCE,*SEARCH_PLAN['nonces'].values(),*PLAN['nonces'].values(),*POST_PLAN['nonces'].values(),
++            *(nonce for plan in SEARCH_READINESS_PLANS for nonce in plan['nonces'].values())]
++    need(len(values)==len(set(values))==36 and STATE_NONCE not in values and
++         all(re.fullmatch('[0-9a-f]{32}',v) for v in values),'EXACT_NEW_FLOW_AND_THIRTY_FIVE_HELPER_NONCES')
+-    values=[NONCE,*SEARCH_PLAN['nonces'].values(),*PLAN['nonces'].values(),*POST_PLAN['nonces'].values()]
+-    need(len(values)==len(set(values))==12 and STATE_NONCE not in values and
+-         all(re.fullmatch('[0-9a-f]{32}',v) for v in values),'EXACT_NEW_FLOW_AND_ELEVEN_HELPER_NONCES')
+     inputs=json.loads(read(HERE/'INPUTS.json',65536))
+     need(inputs['nonce']==NONCE and inputs['component']==COMPONENT and inputs['installed_helper']==INSTALLED
+          and inputs['resolver_records']=={k:{'relative_path':v[0],'bytes':v[1],'sha256':v[2]} for k,v in RESOLVER_RECORDS.items()},
+          'EXACT_RUNTIME_INPUT_RECORD_REQUIRED')
+     need(inputs['explicit_search_click_plan']==SEARCH_PLAN and inputs['public_destination_click_plan']==PLAN and
++         inputs['independent_post_plan']==POST_PLAN and inputs['search_readiness_plans']==SEARCH_READINESS_PLANS,
++         'EXACT_SEARCH_READINESS_AND_SEARCH_DESTINATION_PLANS_REQUIRED')
+-         inputs['independent_post_plan']==POST_PLAN,'EXACT_EXPLICIT_SEARCH_DESTINATION_PLANS_REQUIRED')
+     public_destination=load(HERE/'public_destination.py',manifest['files']['public_destination.py']['sha256'],'fresh_public_destination_observation')
+     # Interface-only binding for the unchanged phase body; no resolver action
+     # is run here and the prior five-command receipt has no helper assertion.
+@@ -269,14 +276,14 @@
+     need(os.getuid()==os.geteuid()==0 and HERE==SOURCE and phase in PHASE_SECONDS,'EXACT_ROOT_PHASE_REQUIRED')
+     q=qualified(expected);u,ref=q.util,q.ref
+     search_plan=json.loads(json.dumps(SEARCH_PLAN));click_plan=json.loads(json.dumps(PLAN))
++    post_plan=json.loads(json.dumps(POST_PLAN));readiness_plans=json.loads(json.dumps(SEARCH_READINESS_PLANS))
++    plans={'search':search_plan,'destination':click_plan,'post':post_plan,'readiness':readiness_plans}
+-    post_plan=json.loads(json.dumps(POST_PLAN))
+-    plans={'search':search_plan,'destination':click_plan,'post':post_plan}
+     step=FLOW/'steps'/(phase+'-01')
+     result={'schema':1,'ok':False,'error':None,'secondary_errors':[],'phase':phase,'nonce':NONCE,
+         'source_manifest_sha256':expected,'package':PACKAGE,'uid':UID,'helper_package':SELF,'helper_uid':HELPER_UID,
+         'actual_install':q.install,'actual_resolution':q.resolution,'build':q.proof,
+         'automatic_retry':False,'Bili_Flow_instantiated':False,'old_v2_helper_called':False,
++        'maximum_click_actions':2,'maximum_no_action_search_readiness_sequences':8,'text_actions':0,'screenshots':0,'audio_actions':0,'permission_grants':0,'settings_writes':0,
+-        'maximum_click_actions':2,'text_actions':0,'screenshots':0,'audio_actions':0,'permission_grants':0,'settings_writes':0,
+         'raw_UI_tree_private_only':True,'whole_app_production_ready':False,'business_success_verified':False,
+         'host_foreground_display_independently_verified':False,'required_helper_display':0}
+     flow=artifacts=session=guard=flow_lock=action_lock=None
+@@ -317,7 +324,7 @@
+         reader=u.module(q.resolver.INSTALL_SOURCE/'references/read_ihg.py',u.READER_SHA,'amazon_artifact_parser')
+         artifacts=context.ArtifactSet(flow,reference,reader)
+         current='target_before';result['target_before']=artifacts.before()
++        session=(q.public_destination.make_session(q.adapter,flow,recorder,q.qa,q.proof,HELPER_UID,search_plan,click_plan,post_plan,readiness_plans)
+-        session=(q.public_destination.make_session(q.adapter,flow,recorder,q.qa,q.proof,HELPER_UID,search_plan,click_plan,post_plan)
+                  if phase=='inspect' else q.adapter.Session(flow,recorder,q.qa,q.proof,HELPER_UID))
+         current='helper_before';result['helper_before']=session.installed()
+         need(result['helper_before']==q.installed,'ACTUAL_INSTALLED_HELPER_CHANGED')
+@@ -332,7 +339,7 @@
+             result['owned_task']=flow.selected_task()
+         elif phase=='inspect':
+             current='explicit_search_destination_sequences'
++            q.public_destination.run_sequences(q.qa,session,q.installed,search_plan,click_plan,post_plan,readiness_plans,result,
+-            q.public_destination.run_sequences(q.qa,session,q.installed,search_plan,click_plan,post_plan,result,
+                 lambda seq,plan:assessment_summary(q,step,seq,plan),lambda phase,error:u.remember(result,phase,error))
+         else:
+             current='exact_owned_cleanup';selected=flow.selected_task();result['owned_task']=selected
+@@ -353,12 +360,18 @@
+                 'resolve':1,'stacks':2} and flow.command_index==12 and flow.launch_claimed is True,
+                 'EXACT_LAUNCH_COMMAND_COUNTS_REQUIRED')
+         if phase=='inspect' and result['error'] is None:
++            count=result.get('search_readiness_count')
++            need(type(count) is int and 3<=count<=8 and result.get('search_readiness_qualified') is True and
++                 len(result['search_readiness_observations'])==count,
++                 'EXACT_QUALIFIED_NO_ACTION_READINESS_COUNT_REQUIRED')
++            used_readiness={nonce for plan in SEARCH_READINESS_PLANS[:count] for nonce in plan['nonces'].values()}
++            need(flow.policy.counts=={'target_uid':2,'target_path':2,'helper_uid':8+2*count,'helper_path':8+2*count,
++                'stacks':6+2*count,'instrument':11+3*count,'foreground':9+3*count,'click':2} and
++                flow.command_index==37+9*count and
++                flow.policy.used_nonces==set(SEARCH_PLAN['nonces'].values())|set(PLAN['nonces'].values())|set(POST_PLAN['nonces'].values())|used_readiness and
+-            need(flow.policy.counts=={'target_uid':2,'target_path':2,'helper_uid':8,'helper_path':8,
+-                'stacks':6,'instrument':11,'foreground':9,'click':2} and flow.command_index==37 and
+-                flow.policy.used_nonces==set(SEARCH_PLAN['nonces'].values())|set(PLAN['nonces'].values())|set(POST_PLAN['nonces'].values()) and
+                 flow.action_attempted is True and result.get('destination_click_and_observation_completed') is True and
+                 result.get('explicit_search_then_destination_completed') is True,
++                'EXACT_BOUNDED_READINESS_TWO_PUBLIC_CLICKS_AND_POST_COUNTS_REQUIRED')
+-                'EXACT_TWO_EXPLICIT_PUBLIC_CLICKS_AND_INDEPENDENT_READ_COUNTS_REQUIRED')
+         result['ok']=result['error'] is None and result['secondary_errors']==[]
+     except BaseException as error:
+         if session is not None and hasattr(session,'sequence_observation'):
+--- old-normalized/stage_execute.py
++++ source-only-wip/stage_execute.py

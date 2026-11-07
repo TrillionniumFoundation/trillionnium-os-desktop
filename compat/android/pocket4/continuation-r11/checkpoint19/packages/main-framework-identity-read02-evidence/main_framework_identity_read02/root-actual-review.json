@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "job_id": "1a1af40155f-fc05-6713",
+  "stdout_pin": {
+    "path": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1af40155f-fc05-6713/stdout.log",
+    "bytes": 11204,
+    "sha256": "b49bbb4276c5a95de610956c878b0d23a1abdde0a8411bea310dbaca585396a6",
+    "version": "66306:54438856:11204:1793941576140609381:1793941576140609381",
+    "chunks": [
+      {
+        "offset": 0,
+        "next_offset": 11204,
+        "bytes": 11204,
+        "sha256": "b49bbb4276c5a95de610956c878b0d23a1abdde0a8411bea310dbaca585396a6"
+      }
+    ]
+  },
+  "state": "NEW_FRAMEWORK_IDENTITIES_OBSERVED_OLD_EPOCH_INVALID",
+  "fixed_init": {
+    "pid": 3588093,
+    "start_ticks": 80797014,
+    "root": {
+      "device": 106,
+      "inode": 1
+    },
+    "pid_namespace": "pid:[4026533288]"
+  },
+  "new_zygote": {
+    "pid": 90360,
+    "start_ticks": 96586437,
+    "mount_namespace": "mnt:[4026533070]",
+    "cgroup": "0::/system.slice/droidloomd.service/system/uid_0/pid_1160345"
+  },
+  "new_system_server": {
+    "pid": 90516,
+    "start_ticks": 96586493,
+    "mount_namespace": "mnt:[4026533239]",
+    "cgroup": "0::/system.slice/droidloomd.service/system/uid_1000/pid_1160408"
+  },
+  "boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1",
+  "boot_unchanged": true,
+  "old_framework_still_missing": {
+    "system_server": {
+      "error": {
+        "errno": 2,
+        "type": "FileNotFoundError"
+      },
+      "expected_start_ticks": 80797249,
+      "pid": 3589120
+    },
+    "zygote": {
+      "error": {
+        "errno": 2,
+        "type": "FileNotFoundError"
+      },
+      "expected_start_ticks": 80797153,
+      "pid": 3588887
+    }
+  },
+  "stable_init_child_list": true,
+  "stable_zygote_child_list": true,
+  "child_read_races": 0,
+  "Main_service_identity_unchanged": true,
+  "MainPID": "3588022",
+  "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+  "Main_daemon_restart_observed": false,
+  "system_server_exit_cause_proved": false,
+  "new_epoch_authorized": false,
+  "new_UI_or_installs_admissible": false,
+  "Main_mutations": 0,
+  "Android_commands": 0,
+  "private_data_exported": false
+}

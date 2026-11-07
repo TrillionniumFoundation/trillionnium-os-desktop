@@ -1,0 +1,123 @@
+{
+  "schema": "pocket4-new-cell-helper-review-v1",
+  "state": "SOURCE_FROZEN_BUILD_REQUEST_UNSUBMITTED",
+  "app": "bestbuy",
+  "revision": 4,
+  "source_root": "/home/alex/work/pocket4-owned-bestbuy-qa-r4-source-01",
+  "output_root": "/home/alex/work/pocket4-owned-bestbuy-qa-r4-build-01",
+  "binding": {
+    "schema": "pocket4-current-baseline-helper-source-binding-v2",
+    "state": "STATIC_SOURCE_ONLY_ANDROID_UNRUN",
+    "app": "bestbuy",
+    "target_package": "com.bestbuy.android",
+    "target_uid": 10130,
+    "helper_package": "org.droidloom.qa.bestbuy.r4",
+    "protocol": "pocket4-owned-bestbuy-qa-v4",
+    "current_baseline_schema": "pocket4-main-current-baseline-v2",
+    "current_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "current_baseline": {
+      "bytes": 44959,
+      "path": "/home/alex/work/pocket4-main-current-baseline-02/baseline.private.json",
+      "sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364"
+    },
+    "current_qualification": {
+      "bytes": 5565,
+      "path": "/home/alex/work/pocket4-main-current-baseline-02/qualification.json",
+      "sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e"
+    },
+    "actual_baseline_result": {
+      "job_id": "1a1b1378566-fc05-76f7",
+      "git_tree": "df158984ab6f8565c64db454acc7b9872f56a8a2",
+      "git_blob": "3cb41fac4621cf346d94be170f187251785c38ff",
+      "bytes": 13221,
+      "sha256": "107bf1487ace30a38c113057812a0a18415e3430640f11db0b5131e462d05269"
+    },
+    "host_recorder_source_manifest": {
+      "path": "/home/alex/work/pocket4-current-host-r6-source-01/source-manifest.json",
+      "bytes": 3757,
+      "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+    },
+    "parent_source_manifest_sha256": "2643a8f2f7b70189af51b940957ef195dbee6574be1779a585a41fedfec50051",
+    "previous_helper_uid_exclusion": {
+      "uid": 10155,
+      "actual_worker_result": {
+        "bytes": 14680,
+        "sha256": "86c79c5ae8e2b730651a1c73db59d2bc9c28b4409199d4871ce4522a2b9ab0c5",
+        "git_blob": "0e1015c205c5cf4ed3f20cc1fc71981b5862d1bb"
+      },
+      "source": "exact historical installed helper receipt; exclusion only, no new cell authority"
+    },
+    "owned_helper_uid": null,
+    "APK_sha256": null,
+    "signer_sha256": null,
+    "helper_built": false,
+    "helper_installed": false,
+    "UI_actions": 0,
+    "old_helpers_and_tasks_reauthorized": false,
+    "unresolved_framework_exit_cause": true,
+    "whole_app_production_ready": false
+  },
+  "parent_source_manifest": {
+    "bytes": 3568,
+    "sha256": "2643a8f2f7b70189af51b940957ef195dbee6574be1779a585a41fedfec50051",
+    "git_blob": "dd75ffeae59874ce3a1aff17503547e0814dcce7"
+  },
+  "new_source_manifest": {
+    "bytes": 4251,
+    "sha256": "cda79d5b01ebfd91d6b9148be6853c78495da92130fb4f153422daac7d14ad0b"
+  },
+  "unchanged_references": [
+    {
+      "name": "build-input-reference.json",
+      "bytes": 4254,
+      "sha256": "35715d1936075002a7afed3e79393595c6b45e0d8b18d2efbc87a25db6dd41e2"
+    },
+    {
+      "name": "target-artifact-reference.json",
+      "bytes": 3087,
+      "sha256": "b6d66a9f78fc7e9b5a9e6792d62531b835e25a4d8a4b1b4607463e40bae7f43a"
+    }
+  ],
+  "changes": [
+    "New helper package/protocol revision and create-only source/build roots/key.",
+    "Java + production Python scope bind actual baseline02/v2, exact R6 host manifest, and new recorder scope-v2.",
+    "Prior actual helper UID is excluded in both Session and parse_completed production predicates; the negative wire fixture uses matching old self_uid/helper_uid.",
+    "Original App-specific input, complete-tree/window/refresh, restoration, unknown-result, time and resource predicates are retained.",
+    "Original 21 scope cases retained plus eleven direct parser/Session/protocol/previous-generation cases; both count and case-array builder gates require32.",
+    "Build request adds explicit -B beside -I; original pinned tools/build commands and owned-unit limits stay unchanged."
+  ],
+  "controls": {
+    "current_scope_expected": 32,
+    "current_scope_source": {
+      "bytes": 8992,
+      "sha256": "eeb1dd72b701dc6de98eac8e8eba203f850266e0fc33a720050fcf675dd7fd58"
+    },
+    "app_specific": {
+      "synthetic_deep_tree": 16
+    },
+    "Python_executed": false,
+    "Java_executed": false
+  },
+  "request": {
+    "bytes": 179401,
+    "sha256": "b3d0e2f264d8c751c2437ed0f5ea70825b4178eb3ebd8cbe9a1843d304605fa3",
+    "stdin_bytes": 171989,
+    "stdin_sha256": "260dd8e93f22977507f69ada673e4d76344922bf437f4bdf92269b1b8432f149",
+    "key": "pocket4-owned-bestbuy-qa-r4-cell02-633912ff4595ce89-host-002ee581a4bb-build01",
+    "timeout_seconds": 300,
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 536870912
+  },
+  "production_diff": {
+    "bytes": 32604,
+    "sha256": "419932d6cf31a010d1821d1a78df9321cb6845ea972dc1964173c6ac3557b85a"
+  },
+  "actual_APK": null,
+  "actual_signer": null,
+  "new_helper_UID": null,
+  "old_helpers_and_tasks_reauthorized": false,
+  "UI_actions": 0,
+  "install_actions": 0,
+  "framework_exit_cause_resolved": false,
+  "whole_app_production_ready": false
+}

@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys\nraw=sys.stdin.buffer.read(262145)\nassert hashlib.sha256(raw).hexdigest()=='5b448074bee9caa56e1a798048f20172f3fce49df67f806dc3bb0e91fd45c70d'\np=json.loads(raw);src=p['files']['stage_execute.py'].encode('utf-8')\nassert hashlib.sha256(src).hexdigest()=='34218f2bc9b79d7d643b3a2cf314c7336597513aed0ce5e30366ea2530c71173'\nscope={'__name__':'owned_qa_stage','__file__':'/home/alex/work/pocket4-owned-united-qa-r1-install-state-01/source/stage_execute.py'}\nexec(compile(src,scope['__file__'],'exec'),scope)\nraise SystemExit(scope['main'](raw))\n"
+    ],
+    "created_unix_ms": 1794006243042,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b31ad6e2-fc05-80a1",
+    "idempotency_key": "pocket4-owned-united-qa-r1-current-r6-install-state-01-schema03-555605cd54a46e4f",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b31ad6e2-fc05-80a1",
+    "request_digest": "40b8bb1e5b282982a1fb022248fd31f9566480b8b50392823fb2f9123bf39bb0",
+    "request_fingerprint": 4663683153194920322,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b31ad6e2-fc05-80a1"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b31ad6e2-fc05-80a1"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

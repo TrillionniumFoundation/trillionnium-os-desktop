@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "state": "FAILED",
+  "builder_returncode": -15,
+  "error": "InterruptedError('owned build controller received signal 15')",
+  "seconds": 774.404197033029,
+  "finished_utc": "2026-11-04T23:34:35.133839+00:00",
+  "cleanup": {
+    "complete": true,
+    "children": [
+      {
+        "pid": 720972,
+        "wait_status": 65280,
+        "reaped": true
+      },
+      {
+        "pid": 725951,
+        "wait_status": 9,
+        "reaped": true
+      },
+      {
+        "pid": 720939,
+        "wait_status": 9,
+        "reaped": true
+      },
+      {
+        "pid": 725948,
+        "wait_status": 15,
+        "reaped": true
+      },
+      {
+        "pid": 721162,
+        "wait_status": 9,
+        "reaped": true
+      }
+    ],
+    "errors": []
+  },
+  "stdout_sha256": "48f7b7e15f2701256c517b3a88544a0e4162e2c6e971ead75c5c075fbcaf7600",
+  "stderr_sha256": "3f7cd0a4705c1e412f4ab5975cbf5e3f278c80582240ec389b7f949a57b26f99",
+  "memory_events": "low 0\nhigh 0\nmax 3447\noom 1\noom_kill 1\noom_group_kill 0\nsock_throttled 0\n",
+  "memory_peak": "11811164160",
+  "memory_swap_peak": "1073741824",
+  "source_projection_journal_present": true,
+  "artifact_gate": null,
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "service_started": false,
+  "all_apps_ready": false,
+  "owned_resource_gate": {
+    "pass": false,
+    "error": "RuntimeError('owned OOM kill observed; build is not qualified')"
+  }
+}

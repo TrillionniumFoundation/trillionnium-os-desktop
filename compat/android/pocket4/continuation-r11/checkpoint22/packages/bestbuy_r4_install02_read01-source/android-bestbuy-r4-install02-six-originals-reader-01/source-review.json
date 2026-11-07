@@ -1,0 +1,125 @@
+{
+  "schema": 1,
+  "state": "SOURCE_REVIEWED_UNRUN",
+  "base": {
+    "tree": "8ad1f0be49757c104d1ad7d95fb5193b2973c6e4",
+    "source": {
+      "bytes": 13857,
+      "sha256": "801c70bbb8c6ca516b0c0931b215b702dabaa58b0bda1326c3bb826080943c6e",
+      "git_blob_sha1": "52648e67d2bab78885eb87ad6f8e4e73aaf710cd"
+    },
+    "request": {
+      "bytes": 14593,
+      "sha256": "fa0cb289253a36a49d51e5816361522347c3951411096103cd2ec07e0821d130",
+      "git_blob_sha1": "79d65f8c93c9c93e5e035c90387e466bacfbcc1c"
+    },
+    "actual_ihg_six_originals_tree": "89dca18ded58c4e090ae93a0c2bc5c1c7a666fb1"
+  },
+  "actual_parent_pins": {
+    "coordinator": {
+      "path": "/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-02/result.json",
+      "bytes": 4466,
+      "sha256": "5f7403e89de4a10f2f348b2ec24905a7f9998c53c77119459d3a69efaf4dd8f1"
+    },
+    "stage": {
+      "path": "/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-02/stage-result.json",
+      "bytes": 10445,
+      "sha256": "edf83bb4d07bdd6eb63e5349d7c3389cfbe040c53f7285f94ee65562b9173370"
+    }
+  },
+  "source_manifest_sha256": "330c599ce962f5d86a8ef10e7a4daf8c6d9b41c89b2d242d3c3ee67f57cdb1b6",
+  "changes": [
+    {
+      "from": "IHG R4",
+      "to": "BestBuy R4",
+      "count": 1
+    },
+    {
+      "from": "IHG_R4",
+      "to": "BESTBUY_R4",
+      "count": 2
+    },
+    {
+      "from": "ihg-r4",
+      "to": "bestbuy-r4",
+      "count": 1
+    },
+    {
+      "from": "org.droidloom.qa.ihg.r4",
+      "to": "org.droidloom.qa.bestbuy.r4",
+      "count": 1
+    },
+    {
+      "from": "pocket4-owned-ihg-qa-v4",
+      "to": "pocket4-owned-bestbuy-qa-v4",
+      "count": 1
+    },
+    {
+      "from": "pocket4-owned-ihg-qa-r4-install-state-02",
+      "to": "pocket4-owned-bestbuy-qa-r4-install-state-02",
+      "count": 1
+    },
+    {
+      "from": "com.ihg.apps.android",
+      "to": "com.bestbuy.android",
+      "count": 1
+    },
+    {
+      "from": "3d004706f9adf4411761495fdc6ed859",
+      "to": "a499f5a6a566ed0cebed5c98e234eede",
+      "count": 1
+    },
+    {
+      "from": "bc503e63d113d5ddd32aba526e7d0075",
+      "to": "b6275faedda72f2dec85914ab42b2b7b",
+      "count": 1
+    },
+    {
+      "from": "(4455, \"c1129d2c99210e47d12ca985b604ad0056d26c11d9c2d2f071fc3dc7e678ede4\")",
+      "to": "(4466, \"5f7403e89de4a10f2f348b2ec24905a7f9998c53c77119459d3a69efaf4dd8f1\")",
+      "count": 1
+    },
+    {
+      "from": "(10553, \"ac3451c8a45ff6d0543cbb97e14d5619c116e83d2f71ccba0a1484e2e69c3a5b\")",
+      "to": "(10445, \"edf83bb4d07bdd6eb63e5349d7c3389cfbe040c53f7285f94ee65562b9173370\")",
+      "count": 1
+    },
+    {
+      "from": "bb9957023531b018d95f4a6e747fa71691bf566e53e158c5935db410ea7a8aa6",
+      "to": "330c599ce962f5d86a8ef10e7a4daf8c6d9b41c89b2d242d3c3ee67f57cdb1b6",
+      "count": 1
+    },
+    {
+      "from": "88c3d181a1176a447db4426df04125ce51f77ed03736eb79c1a00bb1544f4364",
+      "to": "fed91b109d375984eac188546759b6fe203ea2321e45c43e2989dacd929b2343",
+      "count": 1
+    },
+    {
+      "from": "aa4836f35ea0251fbf3942033db2a45e37a882ebf6f7b6076b45c63970d5c516",
+      "to": "5666d94ba5d9c90a8ea8edd7b063ff4764b83b1bfafe4dd238018d720ab7d4a9",
+      "count": 1
+    },
+    {
+      "from": "fb4f9847fa94967ae59e3e7c2a50a1664a0f14f320e6e7e45e755b138589add6",
+      "to": "cda79d5b01ebfd91d6b9148be6853c78495da92130fb4f153422daac7d14ad0b",
+      "count": 1
+    },
+    {
+      "from": "89d725554bab2a0939c631fbb70c21c97b4f30612f35598cd51d0c0e8e125204",
+      "to": "708887e252bad787781768e4c96db9040444b4b32308381ec1d38af3deb0cc2c",
+      "count": 1
+    }
+  ],
+  "whole_source_inverse_exact": true,
+  "logic_changes": false,
+  "schema_note": "Actual frozen BestBuy producer retains runtime_ticket_context_sha256 and runtime_ticket_transport_sha256; keep those keys and bind BestBuy source values. Do not infer runtime_bestbuy field names.",
+  "state_command_index": 8,
+  "state_index_basis": "Exact 13-command source ordered_commands. Actual state parent SHA must match fixed command-008 metadata before export.",
+  "original_failure_and_unknown_preserved": true,
+  "raw_instrumentation_streams_read": false,
+  "private_UI_exported": false,
+  "success_assumed": false,
+  "helper_uid_assumed": false,
+  "Python_compiled_or_executed_here": false,
+  "Hepta_dispatched": false
+}

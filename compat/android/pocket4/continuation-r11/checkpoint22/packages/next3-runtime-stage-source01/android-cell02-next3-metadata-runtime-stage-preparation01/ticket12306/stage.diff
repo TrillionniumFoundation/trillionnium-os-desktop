@@ -1,0 +1,60 @@
+--- a/stage_execute.py
++++ b/ticket12306/stage_execute.py
+@@ -6,26 +6,33 @@
+ from pathlib import Path
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-12306-artifact-launcher-readonly-01')
+-SOURCE=ROOT/'source/read_12306.py'
+-NONCE='a08bcaaa2480f0aafcdaa0d5ac6c315a'
+-REFERENCE=Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/source/references/readonly_r3_coordinator.py')
+-REFERENCE_SHA='e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
++ROOT=Path('/home/alex/work/pocket4-current-cell02-ticket12306-metadata-01')
++SOURCE=ROOT/'source/read_target.py'
++NONCE='__FRESH_METADATA_NONCE__'
++REFERENCE=Path('/home/alex/work/pocket4-current-host-r6-source-01/current_coordinator.py')
++REFERENCE_SHA='0a4a9f0d02b2a62f2b902983e43360c751a8f1952fb9ae7399850b112cb50a89'
++DISCOVERY_SHA='9ed0069897faebba50cec3d93b08da54f1c791d6e2e775d26ec798c38b227886'
++DISCOVERY_BYTES=8332
+ 
+ 
+ def main(packet,source_sha256):
+     # The exact request independently pins both this stage and all stdin bytes.
+-    assert type(packet) is dict and set(packet)=={'schema','nonce','source'}
++    assert type(packet) is dict and set(packet)=={'schema','nonce','source','discovery'}
++    assert len(NONCE)==32 and all(c in '0123456789abcdef' for c in NONCE)
+     assert packet['schema']==1 and packet['nonce']==NONCE and type(packet['source']) is str
+     raw=packet['source'].encode('utf-8')
++    assert type(packet['discovery']) is str
++    discovery=packet['discovery'].encode('utf-8')
++    assert len(discovery)==DISCOVERY_BYTES and hashlib.sha256(discovery).hexdigest()==DISCOVERY_SHA
+     assert 0<len(raw)<=32768 and hashlib.sha256(raw).hexdigest()==source_sha256
+     assert os.getuid()==os.geteuid()==0
+     assert ROOT.parent.resolve()==ROOT.parent and not os.path.lexists(ROOT)
+     entry=types.ModuleType('ticket12306_metadata_fixed_entry');entry.__file__=str(SOURCE)
+     exec(compile(raw,str(SOURCE),'exec'),entry.__dict__)
+     assert entry.ROOT==ROOT and entry.SOURCE_PATH==SOURCE and entry.NONCE==NONCE
+-    ref=entry.load(REFERENCE,REFERENCE_SHA,'ticket12306_stage_main_reference')
+-    activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++    assert entry.PACKAGE=="com.MobileTicket" and entry.DISCOVERY_SHA==DISCOVERY_SHA and entry.DISCOVERY_BYTES==DISCOVERY_BYTES
++    ref=entry.load(REFERENCE,REFERENCE_SHA,'ticket12306_stage_main_reference',7442)
++    activation=ref.current_baseline()
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),
+                      ref.EPOCH_SOURCE,'ticket12306_stage_epoch')
+     before=ref.main_guard(activation,epoch)
+@@ -44,6 +51,7 @@
+                       'automatic_retry':False})
+         SOURCE.parent.mkdir(mode=0o700)
+         ref.write_new(SOURCE,raw,mode=0o444)
++        ref.write_new(SOURCE.parent/'current_discovery.py',discovery,mode=0o444)
+         rc=entry.execute(source_sha256)
+         result['worker_returncode']=rc
+         durable=ref.read(ROOT/'result.json',98304)
+@@ -62,6 +70,7 @@
+         except BaseException as error:remember('stage_final_Main',error)
+         try:
+             ref.read(SOURCE,32768,source_sha256)
++            ref.read(SOURCE.parent/'current_discovery.py',DISCOVERY_BYTES,DISCOVERY_SHA)
+             result['source_unchanged']=True
+         except BaseException as error:remember('stage_final_source',error)
+         try:pin=ref.write_new(ROOT/'stage-result.json',result)

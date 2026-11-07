@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "addendum_utc": "2026-11-06 03:42:50 UTC",
+  "original_cut_utc": "2026-11-06 03:37:05 UTC",
+  "original_allowlist_tree": "011652a6e448e62b32760c0fd6dccfa0b97f9a55",
+  "original_63_unchanged": true,
+  "additional_trees": [
+    {
+      "name": "native-normal-resume-original-terminal-results",
+      "tree": "0ba8dd91447b525a3a206e92d57bb02bf15508d9",
+      "reason": "Historical actual failed normal resume originals; preserve original timestamps and failure"
+    },
+    {
+      "name": "native-normal-resume-original-build-logs",
+      "tree": "1d7a219ace8a961bc75e235488d0b0fcee4931a9",
+      "reason": "Historical actual strict Soong failure stdout/stderr after all214 project sync"
+    },
+    {
+      "name": "native-normal-resume-actual-review-release",
+      "tree": "946547afd60db809e3bcfdca825b9a21fc0afe75",
+      "reason": "Historical actual failed build review and heavy release"
+    },
+    {
+      "name": "owner19-private-packets-safe-derived",
+      "tree": "04ab6a7d9f2582f162b67aafa9a535b43e33460d",
+      "reason": "New after-cut successful fixed private read metadata and derived system-only stack fields; raw stdout and packet bytes excluded"
+    }
+  ],
+  "after_cut_facts": {
+    "Owner19_private_reader": {
+      "job": "1a1aeec0fbd-fc05-641e",
+      "state": "succeeded",
+      "exit_code": 0,
+      "stdout_private": true,
+      "stdout_bytes": 40335,
+      "stdout_sha256": "9fd586ee720e95a566ca12f4effed5405644c24ddc513a6459fb1481af1fd429",
+      "packet_bytes": 28314,
+      "packet_sha256": "34fe9d3ec735cf18e8852b453cdf2616f32498bedf966346ac66a34ef4ba9deb",
+      "safe_derived_only": true,
+      "first_analysis": "13 SIGABRT libc records; five lmkd matching libmemevents static constructor stack; four netd matching libnetd_updatable_init stack. Upstream abort reason not established; bounded prefix not complete log stream."
+    }
+  },
+  "unchanged_qualification": {
+    "whole_app_ready": 0,
+    "total_apps": 45,
+    "Owner19_runtime_success": false,
+    "Native_Java_JNI_build_qualified": false
+  },
+  "private_originals_must_not_be_added": true,
+  "root_ref_publication_not_yet_admitted": true
+}

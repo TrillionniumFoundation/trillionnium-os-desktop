@@ -1,0 +1,103 @@
+--- a/video_navigation.py
++++ b/video_navigation.py
+@@ -6,9 +6,9 @@
+ UPLOADER_SHA='3355707b07511199c7d280b9a77510b5e9b8698c7c7e4aedcf938805a3822d64'
+ DURATION_SHA='137ed61cdad38eb26c79124e18cb04925f8ac831f042169328a35d25520db3fa'
+ CARD_SELECTOR={'class':'android.view.ViewGroup'}
+-VIDEO_PLAN = {'schema': 1, 'operation': 'click', 'selector': {'class': 'android.view.ViewGroup'}, 'nonces': {'before': 'd20885e561729c0a85f1c662aae10c92', 'inspect': '710069ade2b8afe9644d110e87e546e6', 'action': '0e243e168a03bb302b0379df52a9350f', 'after': '93f209a749219f2b6b622961fe6a7e1e'}}
+-VIDEO_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '1d1bd265b032220f4c658119b4600862', 'inspect': 'a691e6ceceb56179792d0ad0dc132009', 'after': '0e7b880c19073e9999299558997ac6f2'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '60b8bf7fd22e097839257698ff982b90', 'inspect': '430fa4e7b1baf7fb3c92677a24e19b13', 'after': 'e8e23785c3135148419024a63460535b'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'bb391c1272e1a34835a55288fb85b61c', 'inspect': '6fe2069f0cd572fe62ab2bf4e3bc3a21', 'after': 'eda42f87a8305b601df06e3bd23a45eb'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '75faaa5bdee2e32c35880103f6692b97', 'inspect': '37b5850c013738e02e6c04549108beb4', 'after': '9519dd122c13b2dc2e30def56a6e7350'}}]
+-VIDEO_POST_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'bcd45157d4ea8a6345510441362e4f14', 'inspect': '1df84e9e6460ae4f3c5c5ea26e9eb2e1', 'after': 'f2bcb6d3078e37487ccf66d55ad3872c'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '7a27b42cd9cb4f063a076131afbcd60c', 'inspect': 'f7099324a9ca5fce533791edcee259b4', 'after': '50b9d2517628b84685bf299354cc5354'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '76c699d4c104e09b3cc899d2930a13ea', 'inspect': 'fbd329d56435789c7f313a3096348afa', 'after': '7509a13ebc742056e9427a9c0fd6131f'}}]
++VIDEO_PLAN = {'schema': 1, 'operation': 'click', 'selector': {'class': 'android.view.ViewGroup'}, 'nonces': {'before': '3517b8cd76cf94e36e445cc79ca22467', 'inspect': '6510cc582a41afb901e063078b179882', 'action': '14eb24aff0dbd586c39ba7fba6094453', 'after': '97ced09017dfa8fd194e86c5c5890dd9'}}
++VIDEO_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '20e6ec6eae8c788df25107c78f7f65d0', 'inspect': '2ebabb4580f33cf9ad57140b4fe801ec', 'after': 'f0afcb34214e18a61f0e24a6d2d4f088'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '0e40ee428b1802946e165e63ce1284f8', 'inspect': 'eebfcabe7fdd69ebdcdb0d0e8f0b1ca9', 'after': 'fbd3938038365d963032558f6285b180'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'f95986a310fe0b743fd299d6f994257c', 'inspect': '08123a2e06f44f43de9d59bf28435ed0', 'after': '5b965bcf62dd02fdcf59accddb3af8fb'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'dbad76b6cba9452d98d3e0795ba0deae', 'inspect': '971a289fdbd75c6672b7fd2a2a1c040c', 'after': '0040f394b6c1e890e91fde1fb04c4177'}}]
++VIDEO_POST_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '8a067b622b94cb172c9725d8ef790c66', 'inspect': '398c4c1e657492e87988a94118a62a92', 'after': '2f3a462d70949410653ce426bb7b3b88'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'df2e5028226cc2c15cccfdd9f25da467', 'inspect': '3f7858cdb360d46171bd8374512c29af', 'after': 'df704853a61ec1984c0f67c018ef036b'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '640922b4951680276e25d620d87fde61', 'inspect': 'f932776f27a4677b3ab4a6cb292584cd', 'after': '31cc28f57233d9d95409ad649f57bf22'}}]
+ 
+ 
+ def validate(adapter,qa,base_nonces):
+@@ -114,9 +114,85 @@
+             target,proof=select_course(base,qa,inspection,scope)
+             result['video_action_bound_selection']=proof
+             return target
+-    session.qa=CourseContract()
++    original_foreground=session.foreground
++    had_foreground='foreground' in session.__dict__
++    old_foreground=session.__dict__.get('foreground')
++    post_calls=0
++    def post_foreground():
++        nonlocal post_calls
++        observed=session.sequence_observation
++        if not (observed.get('click_acknowledged') is True and
++                observed.get('after_state_completed') is True and
++                observed.get('restoration_qualified') is True and
++                observed.get('error') is None and observed.get('secondary_errors')==[]):
++            return original_foreground()
++        base.require(post_calls==0,'ONLY_ONE_ACKNOWLEDGED_POST_FOREGROUND_CALL')
++        post_calls+=1
++        return await_post_foreground(base,session,original_foreground,result)
++    session.qa=CourseContract();session.foreground=post_foreground
+     try:return session.sequence(json.loads(json.dumps(VIDEO_PLAN)))
+-    finally:session.qa=qa
++    finally:
++        session.qa=qa
++        if had_foreground:session.foreground=old_foreground
++        else:del session.foreground
++
++
++def await_post_foreground(base,session,original_foreground,result):
++    """Only a successful dump containing one exact null focus can be reread.
++
++    This runs after this sequence's acknowledged click AND independent state
++    restoration. It never retries an action, failed transport or unknown focus
++    shape. The original Session.foreground/parser still authorize every result.
++    Raw dumps remain private in memory and are discarded, as in the original.
++    """
++    flow=session.flow;began=time.monotonic();first_null=None
++    record={'maximum_samples':6,'deadline_seconds':3,'samples':[],
++        'qualified':False,'read_only':True,'action_replayed':False,
++        'only_exact_single_null_may_wait':True,'raw_window_text_exported':False}
++    result['video_post_foreground_transition']=record
++    for index in range(1,7):
++        remaining=3-(time.monotonic()-began)
++        if remaining<=0:
++            if first_null is not None:
++                first_null.add_note('POST_FOREGROUND_READ_DEADLINE_EXHAUSTED');raise first_null
++            raise RuntimeError('POST_FOREGROUND_READ_DEADLINE_EXHAUSTED')
++        old_android=flow.android;had_android='android' in flow.__dict__
++        old_android_attr=flow.__dict__.get('android');census=None;calls=0
++        def capture(argv,timeout=30,**kwargs):
++            nonlocal calls,census
++            base.require(calls==0 and argv==['/system/bin/dumpsys','window','displays'] and
++                timeout==15 and kwargs=={'mutation':False},'ONLY_ORIGINAL_READ_ONLY_FOREGROUND_COMMAND')
++            calls+=1
++            raw=old_android(argv,min(timeout,remaining),**kwargs)
++            # Reaching here requires the original held transport's successful
++            # return and post guard. No partial or failed command is sampled.
++            base.require(isinstance(raw,bytes) and len(raw)<=262144,'POST_FOREGROUND_OUTPUT_BOUND')
++            lines=[line.strip()for line in raw.decode('utf-8','strict').splitlines()if 'mCurrentFocus='in line]
++            census={'raw_bytes':len(raw),'raw_sha256':base.sha(raw),'focus_line_count':len(lines),
++                'exact_single_null':lines==['mCurrentFocus=null'],'successful_held_return':True}
++            return raw
++        flow.android=capture;value=None;error=None
++        try:value=original_foreground()
++        except BaseException as caught:error=caught
++        finally:
++            if had_android:flow.android=old_android_attr
++            else:del flow.android
++        elapsed=int((time.monotonic()-began)*1000)
++        sample={'sample':index,'elapsed_ms':elapsed,'command_count':calls,'census':census,
++            'error':None if error is None else {'type':type(error).__name__,'message':str(error)}}
++        record['samples'].append(sample)
++        if error is None:
++            base.require(calls==1 and census is not None,'ONE_ORIGINAL_FOREGROUND_READ_REQUIRED')
++            if time.monotonic()-began>3:
++                raise RuntimeError('POST_FOREGROUND_SCOPE_OBSERVED_AFTER_DEADLINE')
++            record['qualified']=True;record['scope']=value
++            return value
++        allowed=(type(error).__name__=='ControlError' and str(error)=='FOREGROUND_UNVERIFIED' and
++            calls==1 and census is not None and census['exact_single_null'] is True)
++        if not allowed:raise error
++        if first_null is None:first_null=error
++        if index==6 or time.monotonic()-began>=3:
++            first_null.add_note('BOUNDED_NULL_FOREGROUND_OBSERVATION_EXHAUSTED');raise first_null
+ 
+ 
+ def run(base,prior,qa,flow,session,installed,result):

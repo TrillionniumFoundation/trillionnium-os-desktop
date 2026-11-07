@@ -1,0 +1,211 @@
+{
+  "AndroidManifest.xml": {
+    "parent_path": "AndroidManifest.xml",
+    "parent": {
+      "bytes": 713,
+      "sha256": "9cb1559db62e76cce2cd119fa18c2350f798ced64ef2f9b61fcc6c3af3c06d4b"
+    },
+    "generated": {
+      "bytes": 713,
+      "sha256": "3f6477a30be4d480e171be6559c8eeb67005530ba65fb3a4f9fdfda6c502832e"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.ihg.r1",
+        "next": "org.droidloom.qa.ihg.r2",
+        "count": 3
+      }
+    ]
+  },
+  "build-input-reference.json": {
+    "historical_reference_unchanged": true
+  },
+  "build_candidate.py": {
+    "parent_path": "build_candidate.py",
+    "parent": {
+      "bytes": 17970,
+      "sha256": "e2f23c8be58cd839069fe0476c877ee6706c96b9c06c73f656801ffca8f9b2df"
+    },
+    "generated": {
+      "bytes": 19309,
+      "sha256": "06a2ab52ecef98efc46552199157d716dac46a48020919580f6e0e9fa726781b"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.ihg.r1",
+        "next": "org.droidloom.qa.ihg.r2",
+        "count": 2
+      },
+      {
+        "old": "org/droidloom/qa/ihg/r1",
+        "next": "org/droidloom/qa/ihg/r2",
+        "count": 2
+      },
+      {
+        "old": "owned-ihg-qa-r1",
+        "next": "owned-ihg-qa-r2",
+        "count": 3
+      },
+      {
+        "old": "        source_java = HERE/'src/org/droidloom/qa/ihg/r2/ActionRunner.java'",
+        "next": "        baseline_scope={'__file__':str(HERE/'check_current_baseline.py'),'__name__':'owned_current_baseline_scope_controls'}\n        exec(compile((HERE/'check_current_baseline.py').read_bytes(),str(HERE/'check_current_baseline.py'),'exec'),baseline_scope)\n        baseline_controls=baseline_scope['run_controls']()\n        require(baseline_controls['all_passed'] is True and baseline_controls['count']==12 and\n                len(baseline_controls['cases'])==12 and all(x['passed'] is True for x in baseline_controls['cases']) and\n                baseline_controls['production_contract_sha256']==source['qa_contract.py']['sha256'] and\n                baseline_controls['main_epoch_sha256']=='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2' and\n                baseline_controls['main_baseline_schema']=='pocket4-main-current-baseline-v1' and\n                baseline_controls['main_baseline_sha256']=='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266' and\n                baseline_controls['main_baseline_qualification_sha256']=='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6',\n                'ACTUAL_CURRENT_BASELINE_SCOPE_CONTROLS_REQUIRED')\n        result['current_baseline_scope_controls']={'source_sha256':source['check_current_baseline.py']['sha256'],'report':baseline_controls}\n        source_java = HERE/'src/org/droidloom/qa/ihg/r2/ActionRunner.java'",
+        "count": 1
+      }
+    ]
+  },
+  "make_build_request.py": {
+    "parent_path": "make_build_request.py",
+    "parent": {
+      "bytes": 2934,
+      "sha256": "030fee6784892695949c23b254824f9cb55be17e22ca5fe89ad359b2751ad885"
+    },
+    "generated": {
+      "bytes": 2942,
+      "sha256": "a67e8cb5804fe3bd199ab616057637ff178e6e09667e1678a8a1af60109a33ef"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "owned-ihg-qa-r1",
+        "next": "owned-ihg-qa-r2",
+        "count": 1
+      },
+      {
+        "old": "KEY='pocket4-owned-ihg-qa-r2-static-build-01-20261105'",
+        "next": "KEY='pocket4-owned-ihg-qa-r2-current-163e3e3914f4ccbb-build01'",
+        "count": 1
+      }
+    ]
+  },
+  "qa_adapter.py": {
+    "parent_path": "qa_adapter.py",
+    "parent": {
+      "bytes": 20785,
+      "sha256": "0918dca47db8451baf1cb74fc6c50934e7c87a97e25aff6cc7a568ac21a091f9"
+    },
+    "generated": {
+      "bytes": 20990,
+      "sha256": "a7ac198addeb737a81ba5f22eeb85f8a0e773ceea06e7d12bec56212d0d71e8b"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.ihg.r1",
+        "next": "org.droidloom.qa.ihg.r2",
+        "count": 1
+      },
+      {
+        "old": "org/droidloom/qa/ihg/r1",
+        "next": "org/droidloom/qa/ihg/r2",
+        "count": 1
+      },
+      {
+        "old": "'main_epoch_sha256':self.qa.MAIN_EPOCH})",
+        "next": "'main_epoch_sha256':self.qa.MAIN_EPOCH, 'main_baseline_schema':self.qa.MAIN_BASELINE_SCHEMA,\n            'main_baseline_sha256':self.qa.MAIN_BASELINE_SHA,\n            'main_baseline_qualification_sha256':self.qa.MAIN_BASELINE_QUALIFICATION_SHA})",
+        "count": 1
+      }
+    ]
+  },
+  "qa_contract.py": {
+    "parent_path": "qa_contract.py",
+    "parent": {
+      "bytes": 28150,
+      "sha256": "573fdcd691ed51b76f965151b74b38cfcbd12ed5aa972d668146ae136744d7e1"
+    },
+    "generated": {
+      "bytes": 28714,
+      "sha256": "e48cc66772f7340ddb2e70abbc1f6151ea3c3300e17b7468aadeae3cf4372f4a"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.ihg.r1",
+        "next": "org.droidloom.qa.ihg.r2",
+        "count": 1
+      },
+      {
+        "old": "pocket4-owned-ihg-qa-v1",
+        "next": "pocket4-owned-ihg-qa-v2",
+        "count": 1
+      },
+      {
+        "old": "MAIN_EPOCH = '48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'",
+        "next": "MAIN_EPOCH = '734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'\nMAIN_BASELINE_SCHEMA = 'pocket4-main-current-baseline-v1'\nMAIN_BASELINE_SHA = '163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'\nMAIN_BASELINE_QUALIFICATION_SHA = 'f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'",
+        "count": 1
+      },
+      {
+        "old": "'window_token', 'main_epoch_sha256'}",
+        "next": "'window_token', 'main_epoch_sha256', 'main_baseline_schema', 'main_baseline_sha256', 'main_baseline_qualification_sha256'}",
+        "count": 1
+      },
+      {
+        "old": "value['display'] == 0 and value['main_epoch_sha256'] == MAIN_EPOCH,",
+        "next": "value['display'] == 0 and value['main_epoch_sha256'] == MAIN_EPOCH and\n            value['main_baseline_schema'] == MAIN_BASELINE_SCHEMA and\n            value['main_baseline_sha256'] == MAIN_BASELINE_SHA and\n            value['main_baseline_qualification_sha256'] == MAIN_BASELINE_QUALIFICATION_SHA,",
+        "count": 1
+      }
+    ]
+  },
+  "src/org/droidloom/qa/ihg/r2/ActionRunner.java": {
+    "parent_path": "src/org/droidloom/qa/ihg/r1/ActionRunner.java",
+    "parent": {
+      "bytes": 41449,
+      "sha256": "806274b1b565a1b6ae9339cc65d91ccfa63098857dd1a227d9d30b9ed70aee8e"
+    },
+    "generated": {
+      "bytes": 42194,
+      "sha256": "d44f0581322f116fb514f90f035980f907f6f61c9f7e7f227bf29553dd6ffdf2"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.ihg.r1",
+        "next": "org.droidloom.qa.ihg.r2",
+        "count": 2
+      },
+      {
+        "old": "pocket4-owned-ihg-qa-v1",
+        "next": "pocket4-owned-ihg-qa-v2",
+        "count": 1
+      },
+      {
+        "old": "    static final String MAIN_EPOCH = \"48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f\";",
+        "next": "    static final String MAIN_EPOCH = \"734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2\";\n    static final String MAIN_BASELINE_SCHEMA = \"pocket4-main-current-baseline-v1\";\n    static final String MAIN_BASELINE_SHA = \"163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266\";\n    static final String MAIN_BASELINE_QUALIFICATION_SHA = \"f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6\";",
+        "count": 1
+      },
+      {
+        "old": "keys(scope, \"package\", \"uid\", \"user\", \"display\", \"activity\", \"window_token\", \"main_epoch_sha256\");",
+        "next": "keys(scope, \"package\", \"uid\", \"user\", \"display\", \"activity\", \"window_token\", \"main_epoch_sha256\", \"main_baseline_schema\", \"main_baseline_sha256\", \"main_baseline_qualification_sha256\");",
+        "count": 1
+      },
+      {
+        "old": "        need(MAIN_EPOCH.equals(string(scope, \"main_epoch_sha256\", 64)), \"HOST_EPOCH_ATTESTATION_REQUIRED\");",
+        "next": "        need(MAIN_EPOCH.equals(string(scope, \"main_epoch_sha256\", 64)), \"HOST_EPOCH_ATTESTATION_REQUIRED\");\n        need(MAIN_BASELINE_SCHEMA.equals(string(scope, \"main_baseline_schema\", 64))\n            && MAIN_BASELINE_SHA.equals(string(scope, \"main_baseline_sha256\", 64))\n            && MAIN_BASELINE_QUALIFICATION_SHA.equals(string(scope, \"main_baseline_qualification_sha256\", 64)),\n            \"HOST_CURRENT_BASELINE_ATTESTATION_REQUIRED\");",
+        "count": 1
+      }
+    ]
+  },
+  "stage_build.py": {
+    "parent_path": "stage_build.py",
+    "parent": {
+      "bytes": 7551,
+      "sha256": "20047bba5dcd0e7a18fe7b1899a8682a2ba05debb025c855211659599547fcf7"
+    },
+    "generated": {
+      "bytes": 7551,
+      "sha256": "11a38d8301c25250dd5797f1eb9f7451d490789626fc81cfbc18e4658065a737"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "owned-ihg-qa-r1",
+        "next": "owned-ihg-qa-r2",
+        "count": 2
+      }
+    ]
+  },
+  "target-artifact-reference.json": {
+    "historical_reference_unchanged": true
+  }
+}

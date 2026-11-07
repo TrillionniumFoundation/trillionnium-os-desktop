@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "revision": "owned-arm64-signal-probe-r3",
+  "reviewer": "/root/native_bridge_repair",
+  "recorded_utc": "2026-11-04T13:29:49.082172+00:00",
+  "status": "NO_NEW_BLOCKER_IN_DECLARED_SYNCHRONOUS_OWNED_SCOPE",
+  "reviewed_native_files": {
+    "native/probe_abi.h": "c445f923888768d4e688c2761f578575b253429dd62279a14237dc0f2de2f589",
+    "native/signal_probe.c": "2e5c94e2c976f51b6b071e5677a52b5b353afc2402e939a5db015a5f3a591255",
+    "native/probe_arm64.S": "5f4cb56e646194e8d1c6255d28f41c9a870df119d83b7138c6f6954369f84544"
+  },
+  "pins_sha256": "1a17f89bf0ab6d03cc6d592528735c23012c3af38bc3b57cae008659631fc456",
+  "findings": [
+    "Full guest uc_sigmask low64 must equal the pre-handler entered kernel mask.",
+    "Staged edit requires requested KILL/STOP bits and a second raw live-mask query equal to the earlier handler mask; existing successful-query and expected handler-mask checks constrain this comparison.",
+    "Post-handler raw mask sample occurs immediately after assembly return and before sigaction/mask cleanup. Full64 comparison checks applied user mask edits and filtered KILL/STOP.",
+    "Harness cleanup cannot cause an implementation that ignores uc_sigmask edits to pass."
+  ],
+  "scope_limits": [
+    "Source review only; root owns actual Android compilation and R16/candidate negative/positive execution.",
+    "No claim for asynchronous software-pending queue or commercial application behavior."
+  ],
+  "frozen_sources_changed": false
+}

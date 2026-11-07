@@ -1,0 +1,132 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_UNRUN",
+  "root": "/home/alex/work/pocket4-composer-direct-registration-transaction-host-02-20261106",
+  "prior_freeze": {
+    "tree": "a9829273e86834806b5a341741a8750a659ab22f",
+    "source": {
+      "bytes": 78831,
+      "sha256": "30e03dd7793013de1e84b1f02d51a80f20fadcb73ed514cf327b43913c3cc0b0",
+      "git_blob_sha1": "f9ea327b2fca9277ab6c65ef7c92afc700c5ae35"
+    },
+    "production": {
+      "bytes": 42483,
+      "sha256": "7375c45596193c3458d9dcbd3b14c41f87930fbece3bae5e7bf2800934676273",
+      "git_blob_sha1": "b314f159c5e3d8f021e8efb7caac1e9741b0dfb2"
+    },
+    "fixture": {
+      "bytes": 9274,
+      "sha256": "84659a797076f73904e7437916f3a885902f06ae87282716c8142b51464df60f",
+      "git_blob_sha1": "158a7f5ecabbf171ed75439c9c166eaf388442e0"
+    },
+    "tests": {
+      "bytes": 23472,
+      "sha256": "c87d314841ac50f00943ae9181505755e8f262f538144e6979a9b63e15ecf298",
+      "git_blob_sha1": "2c34e17b1f1eb16a0d4f9d297d6af8ad8a8179cc"
+    },
+    "fixture_manifest": {
+      "bytes": 574,
+      "sha256": "49dad84ffccc546f8c4889b87c85ff68143376d7ebebcf92be08259a4296da97",
+      "git_blob_sha1": "ad041fae37d97cc86814c101762d2149da285593"
+    }
+  },
+  "current_controller": {
+    "bytes": 82034,
+    "sha256": "b21d6e05ee67ac138b277dba6b74463fd75088d55dadaa445eee5ec2cd1ce11b",
+    "git_blob_sha1": "72e81b0d79927abe895d90cf04c60272d4c107a8"
+  },
+  "controller_full_diff": {
+    "bytes": 7587,
+    "sha256": "d0b4fd980506677eb198afcf6fd94f6ad5d2c0e1bf3205b2ae2e8f61d8429e03",
+    "git_blob_sha1": "1d986f3845e0ab3f647f71b79aa2e08d4724b128"
+  },
+  "controller_normalized_diff": {
+    "bytes": 7256,
+    "sha256": "ecd295f5dd37c35a1f0c939e01c60bd75213012f11eaadff48e30a925e30b3b1",
+    "git_blob_sha1": "c7b1d3235e55f5a11e312646d3840a99153d39a5"
+  },
+  "changes": [
+    "Fresh independent host-02 root and idempotency key; host01 source and actual FAIL retained.",
+    "Create-only seed of exact held original Cargo.lock in the new fixture, followed by one ordinary offline metadata resolution instead of generate-lockfile.",
+    "Retain original subsequent --offline --locked metadata, unchanged strict old-lock/checksum/45-archive gate and --offline --locked test compile.",
+    "Record the three immutable fixture source leaves immediately after composition; record the four-leaf baseline only after inventory/static-source/held-lock qualification.",
+    "On an early failure, a missing full baseline reports NOT_ESTABLISHED or STATIC_SOURCE_ONLY_LOCK_NOT_QUALIFIED, with null full-source unchanged claim. Known static drift still causes FAIL; any PASS still requires the full baseline to remain equal."
+  ],
+  "unchanged": {
+    "production_candidate": true,
+    "all_27_test_source": true,
+    "fixture_Cargo": true,
+    "fixture_IO_adapters": true,
+    "candidate_499_map": true,
+    "selected_dependencies_function": true,
+    "qualify_fixture_compile_function": true,
+    "focused_test_function": true,
+    "inherited_compiler_helpers_22": true,
+    "OwnChildReaper": true,
+    "owned_command": true,
+    "three_lifecycle_controls": true,
+    "stage_body": true,
+    "transport_body": true,
+    "five_authorities": true,
+    "resource_profile": true
+  },
+  "validation": {
+    "source": {
+      "bytes": 82034,
+      "sha256": "b21d6e05ee67ac138b277dba6b74463fd75088d55dadaa445eee5ec2cd1ce11b",
+      "git_blob_sha1": "72e81b0d79927abe895d90cf04c60272d4c107a8"
+    },
+    "diff": {
+      "bytes": 7587,
+      "sha256": "d0b4fd980506677eb198afcf6fd94f6ad5d2c0e1bf3205b2ae2e8f61d8429e03",
+      "git_blob_sha1": "1d986f3845e0ab3f647f71b79aa2e08d4724b128"
+    },
+    "semantic": {
+      "bytes": 7256,
+      "sha256": "ecd295f5dd37c35a1f0c939e01c60bd75213012f11eaadff48e30a925e30b3b1",
+      "git_blob_sha1": "c7b1d3235e55f5a11e312646d3840a99153d39a5"
+    },
+    "production_and_tests_changed": false,
+    "selected_dependencies_exact": true,
+    "qualify_fixture_compile_exact": true,
+    "fixture_focused_test_exact": true,
+    "inverse_both_directions": true,
+    "Python_executed": false,
+    "request_regenerated_exact_in_V8": true,
+    "source_code_execution": false,
+    "Cargo_execution": false,
+    "Rust_execution": false,
+    "Hepta_dispatched": false,
+    "refs_changed": false
+  },
+  "actual_failure_evidence": {
+    "result": {
+      "bytes": 60246,
+      "sha256": "bdcd8f8ec2b2317cf0f7ae91d2376a4b4fd06e85b0d3b985b2e352b49584c78a",
+      "git_blob_sha1": "44e881a288cc6223498f33811b48bfcacc4aaa6e"
+    },
+    "lock_diagnosis": {
+      "bytes": 6613,
+      "sha256": "187d768bac52020e536b83e5a106cb8bbe643d114346fcb542c13f33cd524628",
+      "git_blob_sha1": "0c50f27520a194c4f56d445596ddc488e25770df"
+    },
+    "actual_protocol_tree": "242b214860a7e6689e3e4e3e3404e5c09872125f"
+  },
+  "primary_reference_for_Cargo_behavior": [
+    {
+      "url": "https://doc.rust-lang.org/cargo/commands/cargo-generate-lockfile.html",
+      "point": "generate-lockfile rebuilds package choices; keeping this command after a copied seed would not preserve the original choices."
+    },
+    {
+      "url": "https://doc.rust-lang.org/cargo/reference/resolver.html#lock-file",
+      "point": "Ordinary dependency resolution prioritizes compatible existing lock entries. The unchanged exact-version/checksum/archive checks independently reject any unsupported new choice before compile."
+    }
+  ],
+  "production_ready": false,
+  "remaining_blockers": [
+    "Expected-object cleanup guard in the real Denial provider is still absent from this independent coordinator-only test candidate.",
+    "No wire Destroy completion acknowledgement is provided by the observed protocol; no send/unknown error is promoted to remote retirement.",
+    "No installed Main source equivalence, framework artifacts, Android Binder compile, or app acceptance is inferred."
+  ],
+  "budget": "One actual host attempt after Root review. No automatic retry or fallback dependency refresh."
+}

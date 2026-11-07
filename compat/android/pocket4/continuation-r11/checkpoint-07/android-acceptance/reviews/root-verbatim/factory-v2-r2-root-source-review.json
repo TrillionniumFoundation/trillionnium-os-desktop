@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "component_manifest_sha256": "d087c114ecbeb76086abc2d91736d5f9fcbfa9e093cdff32bb63771f434cc202",
+  "all_text_payloads_verified": 30,
+  "old_production_preimages_equal_reviewed_r1": true,
+  "complete_production_patch_review": true,
+  "factory_sha256": "18d8134ed6c2077088104d9b5dc22ccfe1c93f73a87ee880595a9eb89821e2b9",
+  "client_sha256": "f4e6685f5b689d3b408dc6aa7723e36b2174e6e2545e743fbb5c5896f6142137",
+  "notes": [
+    "Only complete SOL_SOCKET SCM_PIDFD is treated as its one installed descriptor and closed before EPROTO. Credentials and unknown non-FD metadata are not closed as descriptors.",
+    "Client receive stage moved to an actual private production helper; root-peer checks remain before and immutable snapshot provenance checks remain after.",
+    "Existing malformed-frame, SCM_RIGHTS, truncation and error-reply behavior retained.",
+    "34 local real-socketpair controls passed and 13 preimage rows failed; original listener leakage separately reproduced on Pocket4 kernel7.0.0-38.",
+    "Fixed listener/combined compilation/full engine/runtime are pending matching new candidate05 artifacts."
+  ],
+  "source_accepted_for_matching_gates": true,
+  "fixed_Pocket4_runtime_verified": false,
+  "Android_or_Main_actions": false,
+  "production_ready": false
+}

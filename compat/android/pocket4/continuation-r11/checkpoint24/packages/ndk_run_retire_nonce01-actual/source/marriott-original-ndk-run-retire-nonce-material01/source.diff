@@ -1,0 +1,92 @@
+--- a/ticket_nonce_material.py
++++ b/ndk_phase_nonce_material.py
+@@ -1,4 +1,4 @@
+-"""Two dedicated install/state nonce draws for ticket12306 helper install02.
++"""Two dedicated NDK run / independent retirement nonce draws.
+ No install, Main read, child, source mutation, or runtime admission occurs here.
+ The prior global pool is immutable input; a collision fails without redrawing.
+ """
+@@ -10,8 +10,8 @@
+ import signal
+ import time
+ 
+-KIND = 'pocket4-ticket12306-helper-install02-nonce01'
+-PROFILE = 'pocket4-owned-ticket12306-qa-r1-install-state-02'
++KIND = 'pocket4-original-ndk-fixture-run-retire-nonce01'
++PROFILE = 'pocket4-original-ndk-fixture-APK05-run-retire01'
+ POOL_RAW = r'''[
+   "00b0db7edb523fc1d810d2062db19e00",
+   "00d1dc3dde06ebff70c79f8582bd58cc",
+@@ -142,6 +142,7 @@
+   "1f23f4b7d046808cac9cc14dfe343bd1",
+   "1f77313238173418835945d3f7c2f02b",
+   "1fc299e7a69bf0612c2156975d83e546",
++  "1feb4f390c5fb40171037480e860dbba",
+   "200c0b8efc03d9d63045f74a8f98dc3f",
+   "201b51636d4f8298972b44cab28d5ba3",
+   "207a27f4d0adde0789e43a471f9ed738",
+@@ -510,6 +511,7 @@
+   "8f12ec4ba963a9f0bf39add82b54dd48",
+   "8f6f6ad60800c506ce051750a146c98d",
+   "8fafa42a850d898445d904ef0407117b",
++  "8ffcdb5b0a9375e930ad69386479da3a",
+   "90941ba23da7867c6320ff45419951b2",
+   "90be196e59f452b0800efbcf7b4db2b7",
+   "914de88838ae6e60b296c16399ae29e5",
+@@ -937,9 +939,9 @@
+   "ffd751558d7ce6d1ac2f7dd582745a68"
+ ]
+ '''.encode('ascii')
+-POOL_BYTES = 35039
+-POOL_SHA256 = '31d5455e4c3cbe6f1951d032a45d94c442c2535ce3eddc3f745769f7a8969520'
+-POOL_GIT_BLOB = '0f6ff7b838f0dfaa0d933b65a5bbd38ad98e471a'
++POOL_BYTES = 35115
++POOL_SHA256 = '8a718803f7dc905e5c92c3609164c19caf1b213d88b235511554e39403568e25'
++POOL_GIT_BLOB = '269194afb3b365ca4995f6ff69a2e6539cff6ff7'
+ 
+ def require(value, code):
+     if not value:
+@@ -952,13 +954,13 @@
+     started = time.monotonic()
+     result = {
+         'schema': 1, 'kind': KIND, 'profile': PROFILE,
+-        'package': 'org.droidloom.qa.ticket12306.r1', 'target_package': 'com.MobileTicket',
+-        'phase': 'install_state',
++        'package': 'com.example.ndk_tests', 'target_package': 'com.example.ndk_tests',
++        'phase': 'run_and_independent_retirement',
+         'generator': 'secrets.token_hex(16)', 'draw_count': 0,
+-        'redraw_attempted': False, 'nonces': {'flow_nonce': None, 'state_nonce': None},
+-        'labels': ['flow_nonce', 'state_nonce'], 'requested_count': 2,
++        'redraw_attempted': False, 'nonces': {'run_nonce': None, 'retire_nonce': None},
++        'labels': ['run_nonce', 'retire_nonce'], 'requested_count': 2,
+         'exclusion_pool': {'bytes': POOL_BYTES, 'sha256': POOL_SHA256,
+-                           'git_blob_sha': POOL_GIT_BLOB, 'count': 922},
++                           'git_blob_sha': POOL_GIT_BLOB, 'count': 924},
+         'fresh_against_exact_pool': False, 'uid': os.getuid(), 'gid': os.getgid(),
+         'Main_reads': 0, 'Android_commands': 0, 'child_processes': 0,
+         'explicit_filesystem_reads': 0, 'explicit_filesystem_writes': 0,
+@@ -971,17 +973,17 @@
+         require(result['uid'] == 1000 and result['gid'] == 1000, 'ORDINARY_USER_REQUIRED')
+         require(len(POOL_RAW) == POOL_BYTES and
+                 hashlib.sha256(POOL_RAW).hexdigest() == POOL_SHA256,
+-                'EXACT_GLOBAL_922_BYTES_REQUIRED')
++                'EXACT_GLOBAL_924_BYTES_REQUIRED')
+         old = json.loads(POOL_RAW)
+-        require(type(old) is list and len(old) == 922 and len(set(old)) == 922 and
++        require(type(old) is list and len(old) == 924 and len(set(old)) == 924 and
+                 old == sorted(old) and all(type(x) is str and
+                 re.fullmatch('[0-9a-f]{32}', x) for x in old),
+-                'EXACT_UNIQUE_GLOBAL_922_SHAPE_REQUIRED')
+-        require({'5ddfa31acb7e6bc8f97288d059cf9dee',
+-                 'c1f999ecfcfbf423641a2af8f0e2f7b8'}.issubset(set(old)),
+-                'ORIGINAL_FAILED_INSTALL_PAIR_MUST_REMAIN_EXCLUDED')
++                'EXACT_UNIQUE_GLOBAL_924_SHAPE_REQUIRED')
++        require({'e4b5a1bdac8be04ff2ea3188a6d946d6',
++                 '06a571251aa6fcc77591494edda1f801'}.issubset(set(old)),
++                'BOTH_ACTUAL_INSTALL_ATTEMPTS_MUST_REMAIN_EXCLUDED')
+         seen = set(old)
+-        for label in ('flow_nonce', 'state_nonce'):
++        for label in ('run_nonce', 'retire_nonce'):
+             result['draw_count'] += 1
+             candidate = secrets.token_hex(16)
+             require(type(candidate) is str and re.fullmatch('[0-9a-f]{32}', candidate),

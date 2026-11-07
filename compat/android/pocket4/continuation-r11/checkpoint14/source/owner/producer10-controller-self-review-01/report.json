@@ -1,0 +1,339 @@
+{
+  "schema": "p4-producer10-controller-delta-self-review-v1",
+  "scope": "Complete compile09-to10/run09-to10 delta, exact packet/default config/source inventory/resource and cleanup preservation; no actual Cargo or device execution.",
+  "baseline_actual_compile": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/producer09-cgroup-compile01/result.json",
+    "bytes": 39858,
+    "sha256": "415c12d44b3f2c568c8914126f61c4844b6a1238a565eabc488b8145c64eaae1"
+  },
+  "baseline_actual_success": true,
+  "baseline_revision": "producer09-cgroup-handoff01",
+  "baseline_inventory_before_after": "6c1abf6ede0fb5ffd5379c6491a20800705cb59a3da867dabafd71970c0d2e47",
+  "baseline_inventory_equal": true,
+  "artifacts": [
+    {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer10-broker-controller-freeze-01/compile.py.diff",
+      "bytes": 4063,
+      "sha256": "81e38a18d045486366839d1ec45125a45e792f5be2f5189fda335617bb5e1f45"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer10-broker-controller-freeze-01/run.py.diff",
+      "bytes": 4835,
+      "sha256": "7884946b569f4200a76f0457e0413bcd8e23bee51e0402afb36e3e4fb081b12a"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer10-broker-controller-freeze-01/compile.py",
+      "bytes": 34300,
+      "sha256": "99b6b686c37a28379754500012a745b4977d5c28b7e096bd83a8bb1ca17d22dc"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer10-broker-controller-freeze-01/run.py",
+      "bytes": 35255,
+      "sha256": "4ecb3aaea95d2b8f8973c91f05f2b82ffc5561066a4fad9c1f5ae6e1a2fa8442"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer10-broker-controller-freeze-01/payload.json",
+      "bytes": 114259,
+      "sha256": "abccd45711564ea0ca8baeae393e335ea0945b39ba088d3a64001fa2f40acf48"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer10-broker-controller-freeze-01/compile-request.json",
+      "bytes": 154348,
+      "sha256": "a8bf41631e0b56beeae705528bcefe0dd2031ff9e36799868e4f31e7c07cc872"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer10-broker-controller-freeze-01/compile-stdin.py",
+      "bytes": 148598,
+      "sha256": "5924f9950559aae11b1947ff75e8fd7179aa0a5c5857ee8e5483c399b02f74a7"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer10-broker-controller-freeze-01/resource_guard.py",
+      "bytes": 13535,
+      "sha256": "4192389de077c41dc395d9f5b083d10372272c45aacb053697d3c24e94a25961"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer10-broker-controller-freeze-01/validation.json",
+      "bytes": 3586,
+      "sha256": "1cd7e95b26ccb5c646b4cc36f5efb438e72b96b729fe5ea5d1f7789f5dcde025"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer10-broker-controller-freeze-01/manifest.json",
+      "bytes": 2083,
+      "sha256": "a1c6465c29ba583b9530802bbc571d3be02165e57761184a389aed142a8ca12e"
+    }
+  ],
+  "exact_request_without_stdin": {
+    "args": [
+      "-I",
+      "-B",
+      "-"
+    ],
+    "cpu_quota_percent": 100,
+    "cwd": "/home/alex/work",
+    "executable": "/usr/bin/python3",
+    "host": "pocket4",
+    "idempotency_key": "p4-producer10-broker01-compile01-5924f9950559aae1",
+    "memory_max_bytes": 1073741824,
+    "nice": 10,
+    "timeout_seconds": 600
+  },
+  "request_envelope_unchanged_from_actual09_except_stdin_and_key": true,
+  "packet_embedded_json_bytes_equal_payload": true,
+  "packet_controller_AST_equal_compile_file": true,
+  "default_validate_config_accepts_exact_payload": true,
+  "old_config_or_mutated_payload_eight_local_controls_rejected": true,
+  "base_inputs_exactly_equal_actual09_before_and_after": {
+    "Cargo.lock": {
+      "bytes": 51976,
+      "sha256": "ee4ea5f370adc8a1861c4b5496c775a06b34fc733cb89eb0d873ab1eb2df0b98"
+    },
+    "Cargo.toml": {
+      "bytes": 2036,
+      "sha256": "1bae47451d41445b30933e0cd787ba5833842ea693c9e6231ee1281583323e85"
+    },
+    "runtime/droidloom-pressure-relay/Cargo.toml": {
+      "bytes": 349,
+      "sha256": "373050126db407c8ff001dabf59e62b29bea1ebfefa76fbdd578e1d0aabecb34"
+    },
+    "runtime/droidloom-pressure-relay/src/ancestry.rs": {
+      "bytes": 6882,
+      "sha256": "3a5fe5ce5fe921ca36b1ae0e8f92e2dff3d240cd29fb1e3e86a2d329cc847fc5"
+    },
+    "runtime/droidloom-pressure-relay/src/bin/droidloom_psi_owner.rs": {
+      "bytes": 753,
+      "sha256": "d4e35cc52529d0f5ad779fe57b0fbd49743ee58f2c16b45a8d46cae9e346bc93"
+    },
+    "runtime/droidloom-pressure-relay/src/bin/owned_ipc_controls.rs": {
+      "bytes": 31007,
+      "sha256": "83d49c67ee264b4d765f98d4b99155bd8ad8de74ff9d38fd16333ad013066c56"
+    },
+    "runtime/droidloom-pressure-relay/src/enrollment.rs": {
+      "bytes": 19506,
+      "sha256": "1321146aaaa4c0ff1865eab54568c1da821abc53d5c094473d936486d3da5363"
+    },
+    "runtime/droidloom-pressure-relay/src/event_fixture.rs": {
+      "bytes": 23424,
+      "sha256": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54"
+    },
+    "runtime/droidloom-pressure-relay/src/lib.rs": {
+      "bytes": 44547,
+      "sha256": "f2fd8a952171809256dd56ef75ff2ffe358b7e3c21279583d83ea20aea812c96"
+    },
+    "runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs": {
+      "bytes": 54968,
+      "sha256": "3f3f7cc1accb8921b0248adb3257e3737879e90b10bf377231389d5eb18453c1"
+    },
+    "runtime/droidloom-pressure-relay/src/lifecycle_relay.rs": {
+      "bytes": 16229,
+      "sha256": "29516250e21cfa6c8bdeedd676155fe34d53c608021e070a5c03635bba13950a"
+    },
+    "runtime/droidloom-pressure-relay/src/pressure_audit.rs": {
+      "bytes": 20193,
+      "sha256": "e68d76f8ce24b1994ddd3620fc04f4f25ac35e9e909e41f399b694443403f08c"
+    },
+    "runtime/droidloom-pressure-relay/src/psi.rs": {
+      "bytes": 16179,
+      "sha256": "4e8f566ed27250dd2055a03a5a06b6eda9937341400bb0aac9ccf6f08f101ba2"
+    },
+    "runtime/droidloom-pressure-relay/tests/data/grant.hex": {
+      "bytes": 353,
+      "sha256": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29"
+    },
+    "runtime/droidloom-pressure-relay/tests/data/request.hex": {
+      "bytes": 289,
+      "sha256": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede"
+    },
+    "runtime/droidloom-supervisor/Cargo.toml": {
+      "bytes": 954,
+      "sha256": "e2cee314482ae0d1782287e8de54ab238129fc914275c4122b6847c2e31850e9"
+    },
+    "runtime/droidloom-supervisor/src/control.rs": {
+      "bytes": 83587,
+      "sha256": "3818e0023f9dbc09a1b98986354147e5adc24f84f92b89e7f0db2f1872a54870"
+    },
+    "runtime/droidloom-supervisor/src/development.rs": {
+      "bytes": 95133,
+      "sha256": "f73b823d53e7bd6a6daca9fff34f7c1ff5844ab39ba55171384414d6d58544c4"
+    },
+    "runtime/droidloom-supervisor/src/development_network.rs": {
+      "bytes": 27453,
+      "sha256": "11a214c3d344cbe9fab82b99a3aab759217db128d781273f5c0573f60d010f1b"
+    },
+    "runtime/droidloom-supervisor/src/generation_claim.rs": {
+      "bytes": 15267,
+      "sha256": "2d37a43e58ba05c5ec014775174c4907effe1ac44b2604593a141197ba16ab32"
+    },
+    "runtime/droidloom-supervisor/src/lib.rs": {
+      "bytes": 34441,
+      "sha256": "2de510605987aa6f5486bc0edf6d0400bca9c7a8f5768dc37d66c06df5bd440a"
+    },
+    "runtime/droidloom-supervisor/src/linux_plan.rs": {
+      "bytes": 39632,
+      "sha256": "e9be621e1cf8d9536b8ade216a67b1f002768e4299ae2aa15e742f006c0f301b"
+    },
+    "runtime/droidloom-supervisor/src/main.rs": {
+      "bytes": 2872,
+      "sha256": "9b97063e9d41e21aa5b028d24328ea976186b9ecc6c2d28725653139792444d8"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs": {
+      "bytes": 20910,
+      "sha256": "ec021636841d88bb2cd52981c0143685593e87750b97073af99a7f3ea4f8038a"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs": {
+      "bytes": 24407,
+      "sha256": "1c335ebf2c4892fae9cfae2081828e86ff121f0512ed9fbbb375e01d77f13137"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs": {
+      "bytes": 30475,
+      "sha256": "7bfeffd8f71e8e6bb92c5445fb585e828a6eedb77ba57bd0c76b259a99cad5a1"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs": {
+      "bytes": 29561,
+      "sha256": "43617fab408b379f7fe6c413931be8bbe4db032c94a5ed084d030989dcd700cc"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs": {
+      "bytes": 28235,
+      "sha256": "f3fdb0736697e2a6e06328a38178c7db07127ecc23b50e92d40d241f9a311892"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs": {
+      "bytes": 343,
+      "sha256": "f2eb90f9ff902e342f351318a53acc7d8d3255e2cefa93cc7d0b2e8b0fb4353e"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs": {
+      "bytes": 39599,
+      "sha256": "4011111e9e1a70dbcec449f1aa961204a8ab568671de29a4c7134b49d2c8ed92"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/policy.rs": {
+      "bytes": 10781,
+      "sha256": "eac34bb8e3dd1f7cf14bb74753554209e550beb413895871993a7bdfc03681b4"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs": {
+      "bytes": 6054,
+      "sha256": "c63978f9e77ce1e93ee2562dc6c7326b8593785897b0356d3cc341f8f466a562"
+    }
+  },
+  "overlay_candidates": {
+    "runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs": {
+      "bytes": 65775,
+      "sha256": "2ed8fb3bd597e9881584ebce997692d9a1c4f1eba564d9603c875e763a039264"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs": {
+      "bytes": 39607,
+      "sha256": "5b011974c71d4a5d96091ea98cd55ffe3f69c0a4abe28eb71c9fea58c8a04994"
+    }
+  },
+  "root_and_lineage_constants": {
+    "CONTROL_REVISION": "producer10-broker-holding01",
+    "BASE": "/home/alex/work/pocket4-supervisor-lmkd-cgroup-r11-build-09-01",
+    "SOURCE": "/home/alex/work/pocket4-supervisor-lmkd-cgroup-r11-build-09-01/candidate",
+    "OUT": "/home/alex/work/pocket4-supervisor-lmkd-broker-r11-build-10-01",
+    "CANDIDATE": "/home/alex/work/pocket4-supervisor-lmkd-broker-r11-build-10-01/candidate",
+    "TARGET": "/home/alex/work/pocket4-supervisor-lmkd-broker-r11-build-10-01/target",
+    "PRIOR_RECEIPT": "/home/alex/work/pocket4-supervisor-lmkd-cgroup-r11-build-09-01/compile-result.json",
+    "PRIOR_RECEIPT_SHA": "415c12d44b3f2c568c8914126f61c4844b6a1238a565eabc488b8145c64eaae1",
+    "PRIOR_INVENTORY_SHA": "6c1abf6ede0fb5ffd5379c6491a20800705cb59a3da867dabafd71970c0d2e47"
+  },
+  "changed_function_or_class_AST": {
+    "compile.py": [
+      "validate_config",
+      "compile_recovery"
+    ],
+    "run.py": [
+      "validate_config",
+      "ordinary_recovery"
+    ]
+  },
+  "unchanged_function_or_class_AST": {
+    "compile.py": [
+      "need",
+      "sha",
+      "now",
+      "json_bytes",
+      "stamp",
+      "read_regular",
+      "file_pin",
+      "put",
+      "all_source",
+      "plain_input_path",
+      "inputs",
+      "command_env",
+      "run_command",
+      "candidate_input_pins",
+      "_resource_need",
+      "_resource_uint",
+      "_resource_limit",
+      "_resource_counters",
+      "_resource_membership",
+      "_resource_identity",
+      "_resource_fstype",
+      "_resource_open_descendant",
+      "_resource_read_at",
+      "_resource_self_membership",
+      "_resource_namespaces",
+      "_resource_validate_snapshot",
+      "_resource_qualify",
+      "OwnJobResources",
+      "_resource_record_error",
+      "finish_own_resource_gate"
+    ],
+    "run.py": [
+      "need",
+      "sha",
+      "now",
+      "json_bytes",
+      "stamp",
+      "read_regular",
+      "file_pin",
+      "put",
+      "all_source",
+      "plain_input_path",
+      "inputs",
+      "command_env",
+      "run_command",
+      "candidate_input_pins",
+      "_resource_need",
+      "_resource_uint",
+      "_resource_limit",
+      "_resource_counters",
+      "_resource_membership",
+      "_resource_identity",
+      "_resource_fstype",
+      "_resource_open_descendant",
+      "_resource_read_at",
+      "_resource_self_membership",
+      "_resource_namespaces",
+      "_resource_validate_snapshot",
+      "_resource_qualify",
+      "OwnJobResources",
+      "_resource_record_error",
+      "finish_own_resource_gate",
+      "fd_digest",
+      "test_summary",
+      "run_from_args"
+    ]
+  },
+  "resource_guard_exact_original_bytes": true,
+  "unchanged_gate_summary": [
+    "Create-only fresh candidate/target; complete original source inventory before/after copy and before/after compile.",
+    "Held own unified cgroup FD, namespace/dev-inode and membership checks, exact CPU1/memory1GiB/swap0 and resource events/peak gates.",
+    "Existing bounded command launch/timeout/terminate/reap/first-error/secondary-error and output retention code is unchanged.",
+    "Four exact binary build targets and two selected library test artifacts with --lib --no-run; no integration test execution.",
+    "Ordinary execution retains actual held ELF identity/digest and requires this revision actual compile SHA before running.",
+    "Main/deployment/Android/namespace/host-network/pressure actions are absent from these controllers."
+  ],
+  "only_ordinary_count_changes": {
+    "relay_library_expected": 26,
+    "supervisor_library_expected": 122,
+    "targeted_public_retirement_expected_each": {
+      "passed": 1,
+      "filtered": 25
+    },
+    "IPC_expected": 7,
+    "worker_context_and_entry_ABI3_unchanged": true
+  },
+  "actual_compile10_observed": false,
+  "actual_Rust_controls_executed_by_this_review": false,
+  "full_Owner_or_Android_qualified": false,
+  "Hepta_dispatched": false,
+  "source_or_old_results_changed": false
+}

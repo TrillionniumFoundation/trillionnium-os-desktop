@@ -1,0 +1,291 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_COMPOSER_RETIREMENT_ENTRY_NOT_COMPILED",
+  "source_tree": "b2d82d53ce3739c85318fb7aa242cb887c8ea0a0",
+  "baseline": {
+    "manifest": {
+      "bytes": 99327,
+      "sha256": "d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057"
+    },
+    "compile_result": {
+      "bytes": 172040,
+      "sha256": "f4e78f21dec485f59ff2149cb12298c070142dbad4e29b00a776729a376eea4c"
+    }
+  },
+  "candidate": {
+    "manifest": {
+      "bytes": 99523,
+      "sha256": "fcbf72b891d9a9bbbcd015777e50cc3ade436f25732a603b51de261eab9cb27a",
+      "git_blob_sha1": "fb2f8303d265c0497171545c1a9356beb213d873"
+    },
+    "source_files": 500,
+    "unchanged": 489,
+    "replaced": [
+      "graphics/droidloom-composer-aidl/src/denial.rs",
+      "graphics/droidloom-composer-service/src/control.rs",
+      "graphics/droidloom-composer-service/src/main.rs",
+      "graphics/droidloom-composer/src/denial.rs",
+      "graphics/droidloom-denial-endpoint/src/lib.rs",
+      "graphics/droidloom-denial-protocol/src/lib.rs",
+      "graphics/droidloom-wayland/src/layers.rs",
+      "graphics/droidloom-wayland/src/main.rs",
+      "tools/droidloom-update/src/android.rs",
+      "tools/droidloom-update/src/main.rs"
+    ],
+    "added": [
+      "graphics/droidloom-wayland/src/retirement.rs"
+    ],
+    "source_delta": [
+      "graphics/droidloom-composer-aidl/src/denial.rs",
+      "graphics/droidloom-composer-service/src/control.rs",
+      "graphics/droidloom-composer-service/src/main.rs",
+      "graphics/droidloom-composer/src/denial.rs",
+      "graphics/droidloom-denial-endpoint/src/lib.rs",
+      "graphics/droidloom-denial-protocol/src/lib.rs",
+      "graphics/droidloom-wayland/src/layers.rs",
+      "graphics/droidloom-wayland/src/main.rs",
+      "graphics/droidloom-wayland/src/retirement.rs",
+      "tools/droidloom-update/src/android.rs",
+      "tools/droidloom-update/src/main.rs"
+    ]
+  },
+  "scope": {
+    "schema": 1,
+    "status": "SOURCE_ONLY_NOT_COMPILED_OR_ADMITTED",
+    "entry": "composer-retirement-build",
+    "target_product": "droidloom_x86_64",
+    "target_release": "cp2a",
+    "target_build_variant": "userdebug",
+    "targets": [
+      "android.hardware.graphics.composer3-service.droidloom",
+      "droidloom-composer-aidl-tests"
+    ],
+    "dependency_mode": "Strict",
+    "ALLOW_MISSING_DEPENDENCIES": false,
+    "planned_argv": [
+      "<actual-qualified-new-builder>",
+      "--source",
+      "<exact-candidate-checkout>",
+      "--jobs",
+      "1",
+      "composer-retirement-build",
+      "--work",
+      "<existing-qualified-prepared-workspace>",
+      "--out",
+      "<fresh-absolute-output>"
+    ],
+    "work_locks": [
+      "package-build.lock",
+      "aosp-source-update.lock"
+    ],
+    "projection_journal": "source-projection.json",
+    "source_lock": {
+      "path": "android/manifest/m2-role-ingress-hal-provider-source-lock.json",
+      "bytes": 96957,
+      "sha256": "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d",
+      "git_blob_sha1": "5f8c5958c1ee2564503f908bc5d4d50d3fab761a",
+      "projects": 225
+    },
+    "manifest": "expected-source-manifest.json",
+    "map_entries": 500,
+    "map_delta_from_actual470": {
+      "baseline_entries": 499,
+      "candidate_entries": 500,
+      "unchanged": 489,
+      "replaced": [
+        "graphics/droidloom-composer-aidl/src/denial.rs",
+        "graphics/droidloom-composer-service/src/control.rs",
+        "graphics/droidloom-composer-service/src/main.rs",
+        "graphics/droidloom-composer/src/denial.rs",
+        "graphics/droidloom-denial-endpoint/src/lib.rs",
+        "graphics/droidloom-denial-protocol/src/lib.rs",
+        "graphics/droidloom-wayland/src/layers.rs",
+        "graphics/droidloom-wayland/src/main.rs",
+        "tools/droidloom-update/src/android.rs",
+        "tools/droidloom-update/src/main.rs"
+      ],
+      "added": [
+        "graphics/droidloom-wayland/src/retirement.rs"
+      ],
+      "old_ACK_map_current_lock_and_role_source_corrected": true
+    },
+    "read_fresh_every_project_before_reconcile": true,
+    "reconcile_and_verify_existing_source_functions_unmodified": true,
+    "resume_or_prior_lock_fallback": false,
+    "existing_native_bridge_prepare_source_and_prepare_build_unchanged": true,
+    "complete_ACK_production_inputs": [
+      {
+        "path": "graphics/droidloom-denial-protocol/src/lib.rs",
+        "bytes": 105464,
+        "sha256": "6c7f8df133f2a9e55bd375da4b39dcba5b00d0c4c3ba6531a6b8be329ebce41c",
+        "git_blob_sha1": "fb29a413332dc9f4cb5322e84d40f781508b1032"
+      },
+      {
+        "path": "graphics/droidloom-denial-endpoint/src/lib.rs",
+        "bytes": 63752,
+        "sha256": "062b65857160eb6e3aeba2a78c4ce3d8503c02572f24353f8c944d950e52308c",
+        "git_blob_sha1": "39363dd8c0c0e4c6633296dee7cb573f961ca610"
+      },
+      {
+        "path": "graphics/droidloom-wayland/src/retirement.rs",
+        "bytes": 11118,
+        "sha256": "383f4c6f7490c8568f1853af6e9449fdb35bdb088348de4a9856d75f97306873",
+        "git_blob_sha1": "d797b00f75fc130d5c0f0f92d7731f5528bcd7bb"
+      },
+      {
+        "path": "graphics/droidloom-wayland/src/main.rs",
+        "bytes": 110131,
+        "sha256": "0f56264e971db9f246d8db34d7fd5de157fd389a97bfb34492a6f53376d27459",
+        "git_blob_sha1": "b114c5c8ca1849023db96ed4c6bd53aa458e8c99"
+      },
+      {
+        "path": "graphics/droidloom-wayland/src/layers.rs",
+        "bytes": 35990,
+        "sha256": "d0a81ce5339c5020496e9b73e007d52ee206449827269b272e4ef6ef43df5ecc",
+        "git_blob_sha1": "d32be7082e630809c61138bc26fd13dfd3f7f914"
+      },
+      {
+        "path": "graphics/droidloom-composer-aidl/src/denial.rs",
+        "bytes": 50513,
+        "sha256": "d6f13720da4267ff46f369617faecbb8c6446eca2c624e381c1ff51ddaebbf09",
+        "git_blob_sha1": "26fe28e2ba93d9da67ff37ca3eea3dfc3d915035"
+      },
+      {
+        "path": "graphics/droidloom-composer/src/denial.rs",
+        "bytes": 25541,
+        "sha256": "ed0080cd33a3a4fa67b3a0c2e95bc274ab38e992ec073ab01d87b910bf2db3c8",
+        "git_blob_sha1": "fd37ada2f192ddb93dd1540cc0231002c4fc7c88"
+      },
+      {
+        "path": "graphics/droidloom-composer-service/src/main.rs",
+        "bytes": 19202,
+        "sha256": "567c60fd293f35e2e0957db6f38bc967cc0c3fa90354b98491d461a7decdb4ce",
+        "git_blob_sha1": "ddcd40355ea661ea58d2656ee6c12c8df065b459"
+      },
+      {
+        "path": "graphics/droidloom-composer-service/src/control.rs",
+        "bytes": 42491,
+        "sha256": "d3d9f4b763a6e80b6549119e42b4d6c3c6ab7368359f3cc71d2e090f05a881ca",
+        "git_blob_sha1": "fecbb07d6b750937dcebd1c21d3fba6661b34831"
+      }
+    ],
+    "checkout_declarations": [
+      {
+        "path": "Android.bp",
+        "bytes": 13561,
+        "sha256": "5f124886cad4dbf79ddac0c71bb2a8743f235ec218c8821d0b9befaf08f1fd80"
+      },
+      {
+        "path": "android/hardware/composer/aidl-lock.json",
+        "bytes": 863,
+        "sha256": "7b128d4738e1b645571c6e03b8d29de5c2e8d8a4d53b56b9e53832c9652d5077"
+      },
+      {
+        "path": "android/hardware/composer/service-contract.json",
+        "bytes": 2636,
+        "sha256": "18470ab9ce8ee4262871275a3eaf3fe98085d8d820696a69430cccd748e799ac"
+      }
+    ],
+    "fixed_SystemUI_child_projection": {
+      "path": "frameworks/base/packages/SystemUI/tests/Android.bp",
+      "original": {
+        "bytes": 3392,
+        "sha256": "f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da",
+        "git_blob_sha1": "6a36068e1286d9969307d47659f52e5606bb503f"
+      },
+      "removed_exact_modules": [
+        "SystemUITests_defaults",
+        "SystemUITests",
+        "SystemUITests_systemui_accessibility",
+        "SystemUITests_presubmit",
+        "SystemUI_test_fixtures"
+      ],
+      "package_license_and_three_parent_providers_preserved": true,
+      "independent_composer_only_call": true,
+      "typed_471_candidate_not_changed": true,
+      "whole_generated_variant_graph_qualified": false
+    },
+    "focused_tests": [
+      "tests::composer_retirement_cli_requires_exact_workspace_and_fresh_output",
+      "android::tests::composer_retirement_route_is_strict_and_disjoint_from_framework",
+      "android::tests::composer_retirement_fixed_sources_reject_alias_drift_and_restore_projection",
+      "android::tests::composer_retirement_workspace_rejects_prior_lock_and_manifest_only",
+      "android::tests::composer_retirement_exact_systemui_projection_rejects_drift_and_recovers"
+    ],
+    "source_tests_executed": false,
+    "android_tests_built": false,
+    "android_tests_executed": false,
+    "artifacts_link_qualified": false,
+    "Binder_ABI_qualified": false,
+    "Wayland_GPU_runtime_qualified": false,
+    "Main_actions": 0,
+    "installation": false,
+    "deployment": false,
+    "compiler_or_normal_request_generated": false
+  },
+  "ACK_SOURCE_PINS": {
+    "candidate-composer-main.rs": {
+      "bytes": 19202,
+      "path": "graphics/droidloom-composer-service/src/main.rs",
+      "sha256": "567c60fd293f35e2e0957db6f38bc967cc0c3fa90354b98491d461a7decdb4ce"
+    },
+    "candidate-control.rs": {
+      "bytes": 42491,
+      "path": "graphics/droidloom-composer-service/src/control.rs",
+      "sha256": "d3d9f4b763a6e80b6549119e42b4d6c3c6ab7368359f3cc71d2e090f05a881ca"
+    },
+    "candidate-core-denial.rs": {
+      "bytes": 25541,
+      "path": "graphics/droidloom-composer/src/denial.rs",
+      "sha256": "ed0080cd33a3a4fa67b3a0c2e95bc274ab38e992ec073ab01d87b910bf2db3c8"
+    },
+    "candidate-endpoint.rs": {
+      "bytes": 63752,
+      "path": "graphics/droidloom-denial-endpoint/src/lib.rs",
+      "sha256": "062b65857160eb6e3aeba2a78c4ce3d8503c02572f24353f8c944d950e52308c"
+    },
+    "candidate-engine-retirement.rs": {
+      "bytes": 11118,
+      "path": "graphics/droidloom-wayland/src/retirement.rs",
+      "sha256": "383f4c6f7490c8568f1853af6e9449fdb35bdb088348de4a9856d75f97306873"
+    },
+    "candidate-protocol.rs": {
+      "bytes": 105464,
+      "path": "graphics/droidloom-denial-protocol/src/lib.rs",
+      "sha256": "6c7f8df133f2a9e55bd375da4b39dcba5b00d0c4c3ba6531a6b8be329ebce41c"
+    },
+    "candidate-provider.rs": {
+      "bytes": 50513,
+      "path": "graphics/droidloom-composer-aidl/src/denial.rs",
+      "sha256": "d6f13720da4267ff46f369617faecbb8c6446eca2c624e381c1ff51ddaebbf09"
+    },
+    "candidate-wayland-layers.rs": {
+      "bytes": 35990,
+      "path": "graphics/droidloom-wayland/src/layers.rs",
+      "sha256": "d0a81ce5339c5020496e9b73e007d52ee206449827269b272e4ef6ef43df5ecc"
+    },
+    "candidate-wayland-main.rs": {
+      "bytes": 110131,
+      "path": "graphics/droidloom-wayland/src/main.rs",
+      "sha256": "0f56264e971db9f246d8db34d7fd5de157fd389a97bfb34492a6f53376d27459"
+    }
+  },
+  "new_focused_tests": [
+    "tests::composer_retirement_cli_requires_exact_workspace_and_fresh_output",
+    "android::tests::composer_retirement_route_is_strict_and_disjoint_from_framework",
+    "android::tests::composer_retirement_fixed_sources_reject_alias_drift_and_restore_projection",
+    "android::tests::composer_retirement_workspace_rejects_prior_lock_and_manifest_only",
+    "android::tests::composer_retirement_exact_systemui_projection_rejects_drift_and_recovers"
+  ],
+  "host_compile_performed": false,
+  "actual_Wayland03": {
+    "report": {
+      "bytes": 81805,
+      "sha256": "57546b6c6c2d4e05aea6099097944cdbe6746bbcc0124768a314414ec5663abd",
+      "git_blob_sha1": "4a5e4bdf1cfa1db0e7e412259568ff0d7445648b"
+    },
+    "whole_crate_check_only": true,
+    "linked_binary_or_GPU_runtime_qualified": false
+  },
+  "separate_from_typed_builder471": true
+}

@@ -1,0 +1,71 @@
+{
+  "bounds": {
+    "expected_total_two_pass_reads": 1545724,
+    "input_read_bytes_limit": 2097152,
+    "max_fds": 16,
+    "outer_seconds": 30,
+    "output_utf8_limit": 131072,
+    "packet_bytes": 28314,
+    "packet_count": 257,
+    "packet_limit": 5120,
+    "record_limit": 2048,
+    "seconds": 8
+  },
+  "checks": {
+    "actual_257_frame_counts_first_last_headers_required": true,
+    "all_opened_fds_retained_until_finally_close": true,
+    "close_error_blocks_export": true,
+    "each_component_nofollow_root_owned_nonwritable_to_group_other": true,
+    "exact_report_source_packet_pins": true,
+    "final_directory_identity_rechecked": true,
+    "held_named_file_metadata_and_full_hash_checked_twice": true,
+    "no_raw_init_log_or_runtime_body_emission": true,
+    "no_source_import_or_execution": true,
+    "no_subprocess_network_namespace_or_new_runtime": true,
+    "only_fixed_three_files": true,
+    "original_failure_and_retirement_authority_checked": true,
+    "packet_actual_device_inode_mode_bound": true,
+    "packet_header_byte_exact": true,
+    "private_packet_export_only_after_all_checks_and_closes": true
+  },
+  "limits": [
+    "Retained three-file verification is a sequenced held-descriptor observation, not an atomic filesystem snapshot.",
+    "Directory identity compares device/inode/type/mode/owner, not unrelated directory timestamps.",
+    "Retained retirement/Main authority is not a fresh /proc or Main probe.",
+    "The capture and this read do not qualify ACTIVE, HWS health, LMKD health, full log completeness, or business success.",
+    "Runtime report body and source are read internally only; stdout contains PRIVATE base64 of only the fixed packet file and must not be uploaded to Git or chat."
+  ],
+  "request": {
+    "bytes": 19136,
+    "git_blob_sha": "931a36c5b7495d6b077f9a794de8c86346b3e551",
+    "sha256": "f34db6274aa67f583a578096895e7b0b34c8f8b99638751547f794ac4f83a0aa"
+  },
+  "schema": 1,
+  "scope": "Fixed private export of a retained Owner19 crash-buffer file; source/request are publishable, runtime output and packet contents are private",
+  "source": {
+    "bytes": 18420,
+    "git_blob_sha": "1aac2791590d9adef986ba17ded0227bbbf8cc3b",
+    "sha256": "216e0a668376d7e4e4e765e715a6e0afa7961b8efc5a22889e0adff1380835d9"
+  },
+  "source_origin": {
+    "packet_parser": {
+      "packet_header_exact": {
+        "bytes": 1276,
+        "git_blob_sha": "a8635b24485c8bb71f024f96d87268051f390336",
+        "sha256": "24ea6d23d0f31c082072b21713916a7fae341b94860241fa7f066d88c682b9c2"
+      },
+      "source_bytes": 35850,
+      "source_path": "/opt/p4-owner19-normal-20261105-01/source/crash_log.py",
+      "source_sha256": "3e9f0ff5d55c5ea0189173fada455820bf1a88ff3a1f15484893c6cbb2b2db68"
+    },
+    "reader_template": "owner19-runtime-reader-template01/read-template.py",
+    "template_sha256": "ea591b09a14dd721b571470555b164382d87f19c3613b32e2591a72ded6d2d69"
+  },
+  "validation": {
+    "device_execution_performed": false,
+    "local_python_execution_performed": false,
+    "local_python_syntax_or_AST_performed": false,
+    "reason": "Local executor unavailable; this candidate requires Root full review before its one authorized read.",
+    "v8_exact_hash_and_source_comparison": true
+  }
+}

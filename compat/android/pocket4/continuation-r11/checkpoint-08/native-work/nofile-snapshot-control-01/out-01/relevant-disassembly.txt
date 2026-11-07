@@ -1,0 +1,81 @@
+00000000000017d0 <OwnedFdSnapshotClone>:
+    17d0:	and    $0xfffffffffffffff0,%rsi
+    17d4:	sub    $0x10,%rsi
+    17d8:	mov    %rcx,(%rsi)
+    17db:	mov    %r8,0x8(%rsi)
+    17df:	mov    %rdx,%r10
+    17e2:	xor    %r8d,%r8d
+    17e5:	mov    $0x38,%eax
+    17ea:	syscall
+    17ec:	test   %rax,%rax
+    17ef:	jne    1806 <OwnedFdSnapshotClone+0x36>
+    17f1:	xor    %ebp,%ebp
+    17f3:	mov    0x8(%rsp),%rdi
+    17f8:	call   *(%rsp)
+    17fb:	mov    %eax,%edi
+    17fd:	mov    $0x3c,%eax
+    1802:	syscall
+    1804:	ud2
+    1806:	ret
+    1807:	nopw   0x0(%rax,%rax,1)
+
+0000000000001810 <OwnedFdSnapshotWorker>:
+    1810:	endbr64
+    1814:	push   %rbp
+    1815:	xor    %r10d,%r10d
+    1818:	xor    %r8d,%r8d
+    181b:	xor    %r9d,%r9d
+    181e:	push   %rbx
+    181f:	mov    %rdi,%rbx
+    1822:	mov    $0xca,%eax
+    1827:	add    $0x8,%rdi
+    182b:	mov    $0x81,%esi
+    1830:	mov    $0x7fffffff,%edx
+    1835:	movl   $0x1,0x8(%rbx)
+    183c:	syscall
+    183e:	mov    $0xca,%ebp
+    1843:	lea    0xc(%rbx),%rdi
+    1847:	mov    $0x80,%esi
+    184c:	jmp    1860 <OwnedFdSnapshotWorker+0x50>
+    184e:	xchg   %ax,%ax
+    1850:	xor    %r10d,%r10d
+    1853:	xor    %r8d,%r8d
+    1856:	xor    %r9d,%r9d
+    1859:	xor    %edx,%edx
+    185b:	mov    %rbp,%rax
+    185e:	syscall
+    1860:	mov    (%rdi),%eax
+    1862:	test   %eax,%eax
+    1864:	je     1850 <OwnedFdSnapshotWorker+0x40>
+    1866:	movslq (%rbx),%rdi
+    1869:	lea    0x18(%rbx),%rsi
+    186d:	xor    %r10d,%r10d
+    1870:	xor    %r8d,%r8d
+    1873:	xor    %r9d,%r9d
+    1876:	xor    %edx,%edx
+    1878:	mov    $0x5,%eax
+    187d:	syscall
+    187f:	test   %rax,%rax
+    1882:	js     1895 <OwnedFdSnapshotWorker+0x85>
+    1884:	lea    0xa8(%rbx),%rsi
+    188b:	movslq (%rbx),%rdi
+    188e:	mov    $0x8a,%eax
+    1893:	syscall
+    1895:	mov    %eax,0x4(%rbx)
+    1898:	xor    %eax,%eax
+    189a:	movl   $0x1,0x10(%rbx)
+    18a1:	pop    %rbx
+    18a2:	pop    %rbp
+    18a3:	ret
+    18a4:	data16 cs nopw 0x0(%rax,%rax,1)
+    18af:	nop
+
+00000000000018d0 <SpawnOwnedFdSnapshot(void*, std::atomic<int>*, OwnedSnapshotRequest*)>:
+    18d0:	endbr64
+    18d4:	mov    %rdx,%r8
+    18d7:	lea    -0xce(%rip),%rcx        # 1810 <OwnedFdSnapshotWorker>
+    18de:	mov    %rsi,%rdx
+    18e1:	mov    %rdi,%rsi
+    18e4:	mov    $0x350900,%edi
+    18e9:	jmp    17d0 <OwnedFdSnapshotClone>
+    18ee:	xchg   %ax,%ax

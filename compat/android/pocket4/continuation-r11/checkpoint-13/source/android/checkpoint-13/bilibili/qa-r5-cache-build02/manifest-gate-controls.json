@@ -1,0 +1,75 @@
+{
+  "actual_AST_require_and_gate_executed": true,
+  "actual_owned_manifest_stdout": {
+    "bytes": 1501,
+    "sha256": "825a53459b0fc3406d328aad3350624f9b658b150a2fbf56f3a908f46de4185d"
+  },
+  "controls": [
+    {
+      "accepted": false,
+      "case": "original_gates_actual_R5",
+      "error": {
+        "message": "actual self instrumentation target required",
+        "type": "RuntimeError"
+      },
+      "expected_met": true,
+      "gate": "actual self instrumentation target required"
+    },
+    {
+      "accepted": false,
+      "case": "original_gates_actual_R5",
+      "error": {
+        "message": "one exact actual instrumentation component required",
+        "type": "RuntimeError"
+      },
+      "expected_met": true,
+      "gate": "one exact actual instrumentation component required"
+    },
+    {
+      "accepted": true,
+      "case": "fixed_gates_actual_R5",
+      "error": null,
+      "expected_met": true,
+      "gate": "actual self instrumentation target required"
+    },
+    {
+      "accepted": true,
+      "case": "fixed_gates_actual_R5",
+      "error": null,
+      "expected_met": true,
+      "gate": "one exact actual instrumentation component required"
+    },
+    {
+      "accepted": false,
+      "case": "fixed_gates_derived_wrong_R4",
+      "error": {
+        "message": "actual self instrumentation target required",
+        "type": "RuntimeError"
+      },
+      "expected_met": true,
+      "gate": "actual self instrumentation target required"
+    },
+    {
+      "accepted": false,
+      "case": "fixed_gates_derived_wrong_R4",
+      "error": {
+        "message": "one exact actual instrumentation component required",
+        "type": "RuntimeError"
+      },
+      "expected_met": true,
+      "gate": "one exact actual instrumentation component required"
+    }
+  ],
+  "negative_input": "Actual retained owned XML with only package r5 -> r4 substitution",
+  "new_Android_build_or_install_or_UI_actions": 0,
+  "original_builder": {
+    "bytes": 17964,
+    "sha256": "b9fb7be9645337f3f65e49d9cfc54e2a46722df453e2526ef87c8f411f02c0d4"
+  },
+  "revised_builder": {
+    "bytes": 17982,
+    "sha256": "41db4bdcace799bde2e7135d02852ffe7d5060f52ce34259b8e98eebb839ce31"
+  },
+  "schema": 1,
+  "state": "PASS"
+}

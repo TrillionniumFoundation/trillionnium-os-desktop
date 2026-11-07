@@ -1,0 +1,395 @@
+{
+  "Android_constructor_executed": false,
+  "actual_compiled_entry_abi_passed": true,
+  "all_source_inventory_after_sha256": "b3f4b9273fca52500a42a2e588935707d570ca551dfb6c9fde78e68deab4187a",
+  "all_source_inventory_before_sha256": "b3f4b9273fca52500a42a2e588935707d570ca551dfb6c9fde78e68deab4187a",
+  "candidate": "/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/candidate",
+  "cgroup_namespace_mount_network_or_pressure_effects": false,
+  "commands": [
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/rustfmt",
+        "--edition",
+        "2024",
+        "runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs",
+        "runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs",
+        "runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs",
+        "runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs",
+        "runtime/droidloom-supervisor/src/relay_lifecycle/policy.rs",
+        "runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-pressure-relay",
+        "--",
+        "--test-threads=1"
+      ],
+      "returncode": 0,
+      "stderr": "   Compiling droidloom-pressure-relay v0.1.0 (/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/candidate/runtime/droidloom-pressure-relay)\n    Finished `test` profile [unoptimized] target(s) in 1.76s\n     Running unittests src/lib.rs (/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-core-build-01/target/debug/deps/droidloom_pressure_relay-358016de748e6c1f)\n     Running unittests src/bin/droidloom_psi_owner.rs (/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-core-build-01/target/debug/deps/droidloom_psi_owner-2e2bec521cb72503)\n     Running unittests src/bin/owned_ipc_controls.rs (/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-core-build-01/target/debug/deps/owned_ipc_controls-d893e35567f43b1b)\n   Doc-tests droidloom_pressure_relay\n",
+      "stderr_sha256": "9577ceab6c6da85f5647335d15b1d4f90ce69b5a8cc648e1fb47e95c9933f09f",
+      "stdout": "\nrunning 21 tests\ntest ancestry::tests::held_ancestry_accepts_only_root_and_real_descendants ... ok\ntest ancestry::tests::moving_an_owned_directory_revokes_a_previously_held_chain ... ok\ntest ancestry::tests::replacing_the_same_name_does_not_replace_a_held_generation ... ok\ntest enrollment::tests::cross_language_wire_vectors_and_exact_contract ... ok\ntest enrollment::tests::request_rights_are_closed_before_admission ... ok\ntest lifecycle_bootstrap::tests::audit_and_terminal_packet_survive_peer_close_with_exact_framing ... ok\ntest lifecycle_bootstrap::tests::bootstrap_codec_is_fixed_and_rejects_reserved_policy ... ok\ntest lifecycle_bootstrap::tests::bootstrap_parent_channel_rejects_extra_rights_and_old_nonce_commands ... ok\ntest lifecycle_bootstrap::tests::inherited_rights_are_cloexec_and_owned_on_reject ... ok\ntest lifecycle_bootstrap::tests::malformed_packet_closes_all_transferred_rights ... ok\ntest lifecycle_bootstrap::tests::progress_audit_rejects_and_closes_unexpected_rights ... ok\ntest lifecycle_bootstrap::tests::terminal_status_survives_peer_close_but_never_certifies_pressure ... ok\ntest lifecycle_relay::tests::cancellation_fd_is_real_bounded_and_idempotent ... ok\ntest lifecycle_relay::tests::live_lifecycle_pidfd_is_not_a_replacement_certificate ... ok\ntest lifecycle_relay::tests::one_lifecycle_claim_survives_failure_and_concurrent_clones ... ok\ntest pressure_audit::tests::actual_trigger_audit_codec_and_bounds ... ok\ntest pressure_audit::tests::incomplete_or_lowered_threshold_audit_cannot_qualify ... ok\ntest psi::tests::cancellation_keeps_priority_but_accounts_for_consumed_psi_tail ... ok\ntest psi::tests::exact_thresholds_and_bounded_progress_are_not_relaxed ... ok\ntest tests::poisoned_sender_lock_revokes_existing_real_capability_without_deadlock ... ok\ntest tests::retirement_panic_cannot_be_retried_into_success ... ok\n\ntest result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 2 tests\ntest event_fixture::tests::event_gate_rejects_wrong_generation_scope_threshold_sequence_future_and_exact_expiry ... ok\ntest event_fixture::tests::notification_alone_or_historical_high_cannot_certify_real_target_pressure ... ok\n\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "stdout_sha256": "162daf17070b03ae7244535286a0b80ab5bea507991e7f95d1ae17f31021bd7f"
+    },
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-supervisor",
+        "--",
+        "--test-threads=1"
+      ],
+      "returncode": 0,
+      "stderr": "   Compiling droidloom-supervisor v0.1.0 (/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/candidate/runtime/droidloom-supervisor)\nwarning: function `duplicate` is never used\n  --> runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs:58:15\n   |\n58 | pub(crate) fn duplicate(raw: RawFd) -> io::Result<File> {\n   |               ^^^^^^^^^\n   |\n   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: methods `envelope_identity` and `removed` are never used\n   --> runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs:296:19\n    |\n247 | impl Domain {\n    | ----------- methods in this implementation\n...\n296 |     pub(crate) fn envelope_identity(&self) -> Identity {\n    |                   ^^^^^^^^^^^^^^^^^\n...\n389 |     pub(crate) fn removed(&self) -> bool {\n    |                   ^^^^^^^\n\nwarning: method `proc` is never used\n   --> runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs:180:19\n    |\n124 | impl Process {\n    | ------------ method in this implementation\n...\n180 |     pub(crate) fn proc(&self) -> &File {\n    |                   ^^^^\n\nwarning: method `failed_resources` is never used\n  --> runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs:95:19\n   |\n14 | impl<T: Send + 'static> Worker<T> {\n   | --------------------------------- method in this implementation\n...\n95 |     pub(crate) fn failed_resources(&self) -> io::Result<MutexGuard<'_, T>> {\n   |                   ^^^^^^^^^^^^^^^^\n\nwarning: missing documentation for a constant\n  --> runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs:21:1\n   |\n21 | pub const ABI: &str = \"droidloom-relay-entry-v1\";\n   | ^^^^^^^^^^^^^^^^^^^\n   |\n   = note: requested on the command line with `-W missing-docs`\n\nwarning: `droidloom-supervisor` (lib) generated 5 warnings\nwarning: function `task_profiles` is never used\n   --> runtime/droidloom-supervisor/examples/../src/cpu_placement.rs:205:15\n    |\n205 | pub(crate) fn task_profiles(source: &str) -> io::Result<String> {\n    |               ^^^^^^^^^^^^^\n    |\n    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: function `graphics_service` is never used\n   --> runtime/droidloom-supervisor/examples/../src/cpu_placement.rs:317:15\n    |\n317 | pub(crate) fn graphics_service(source: &str) -> io::Result<String> {\n    |               ^^^^^^^^^^^^^^^^\n\nwarning: `droidloom-supervisor` (example \"cpu-placement-probe\") generated 2 warnings\nwarning: `droidloom-supervisor` (lib test) generated 4 warnings (4 duplicates)\n    Finished `test` profile [unoptimized] target(s) in 7.02s\n     Running unittests src/lib.rs (/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-core-build-01/target/debug/deps/droidloom_supervisor-526bcdc774eeed68)\n     Running unittests src/main.rs (/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-core-build-01/target/debug/deps/droidloom_supervisor-6c46c64397332009)\n     Running unittests src/bin/droidloomctl.rs (/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-core-build-01/target/debug/deps/droidloomctl-1672994340db2530)\n     Running unittests src/bin/droidloomd.rs (/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-core-build-01/target/debug/deps/droidloomd-b5d25e776addbecd)\n     Running tests/cli_diagnostics.rs (/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-core-build-01/target/debug/deps/cli_diagnostics-0cad8dd908c90995)\n     Running tests/cli_install.rs (/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-core-build-01/target/debug/deps/cli_install-0f8cfeceb3b36b52)\n     Running tests/cli_lifecycle.rs (/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-core-build-01/target/debug/deps/cli_lifecycle-a8dffe7624f532a6)\n   Doc-tests droidloom_supervisor\n",
+      "stderr_sha256": "f30d5636d18b11a6a6913af97025ed342f5a1ac1566fe6665d0a2aecd79166c0",
+      "stdout": "\nrunning 108 tests\ntest control::apk::tests::descriptor_survives_unlink_and_is_close_on_exec ... ok\ntest control::apk::tests::legacy_json_needs_no_descriptor ... ok\ntest control::apk::tests::package_command_receives_apk_on_standard_input ... ok\ntest control::apk::tests::rejects_multiple_and_truncated_descriptors ... ok\ntest control::apk::tests::rejects_non_files_empty_oversized_and_non_zip_inputs ... ok\ntest control::apk::tests::requires_explicit_package_manager_success ... ok\ntest control::apk::tests::stdin_install_ends_with_size_not_a_bare_dash_option ... ok\ntest control::diagnostics::tests::crash_report_keeps_native_traces_when_activity_service_is_down ... ok\ntest control::diagnostics::tests::logs_use_installed_uid_even_when_the_process_is_dead ... ok\ntest control::diagnostics::tests::oversized_output_keeps_bounded_tail_and_announces_truncation ... ok\ntest control::diagnostics::tests::timed_out_commands_report_failure ... ok\ntest control::progress::tests::fragmented_progress_and_result_are_delivered_before_disconnect ... ok\ntest control::progress::tests::full_accept_queue_is_reported_without_blocking_connect ... ok\ntest control::progress::tests::legacy_result_without_newline_still_works ... ok\ntest control::progress::tests::partial_response_and_progress_only_disconnect_do_not_report_success ... ok\ntest control::progress::tests::progress_envelope_preserves_strict_request_validation ... ok\ntest control::progress::tests::silent_and_chatty_daemons_both_have_a_wall_clock_deadline ... ok\ntest control::tests::application_catalog_protocol_round_trip_is_explicit ... ok\ntest control::tests::boot_complete_does_not_hide_a_failed_input_service ... ok\ntest control::tests::boot_progress_uses_observed_services_and_checks_every_readiness_gate ... ok\ntest control::tests::boot_wait_reports_changes_and_a_stall_has_the_last_phase_and_log_commands ... ok\ntest control::tests::daemon_loop_keeps_serving_after_an_owned_cleanup_failure ... ok\ntest control::tests::daemon_retains_failed_cleanup_across_poll_stop_shutdown_and_reentry ... ok\ntest control::tests::daemon_stop_keeps_the_exact_child_after_real_exit_and_cleanup_failure ... ok\ntest control::tests::install_missing_file_fails_before_connecting ... ok\ntest control::tests::install_transport_delivers_open_file_and_preserves_android_failure ... ok\ntest control::tests::launch_resolution_validation_and_old_clients ... ok\ntest control::tests::local_daemon_status_and_stopped_teardown_are_idempotent ... ok\ntest control::tests::only_missing_android_services_are_treated_as_boot_progress ... ok\ntest control::tests::only_root_or_the_exact_cell_owner_is_authorized ... ok\ntest control::tests::package_and_component_validation_reject_shell_syntax ... ok\ntest control::tests::persistent_density_protocol_round_trip_is_explicit ... ok\ntest control::tests::protocol_round_trip_is_explicit ... ok\ntest cpu_placement::service_tests::preserves_bootstrap_import_and_other_service_policies ... ok\ntest cpu_placement::tests::boot_policy_respects_capacity_classes_and_homogeneous_fallback ... ok\ntest cpu_placement::tests::translates_placement_without_dropping_unrelated_actions ... ok\ntest development::tests::android_file_override_source_must_be_a_regular_file ... ok\ntest development::tests::android_init_override_must_be_a_regular_executable_file ... ok\ntest development::tests::android_sparse_magic_is_little_endian_uapi_value ... ok\ntest development::tests::binder_ioctl_matches_linux_uapi ... ok\ntest development::tests::cleanup_failure_repeats_until_the_owned_runtime_is_removed ... ok\ntest development::tests::development_base_accepts_erofs_and_raw_ext4 ... ok\ntest development::tests::development_base_rejects_unknown_images ... ok\ntest development::tests::development_cgroups_keep_unavailable_v1_controllers_optional ... ok\ntest development::tests::linux_device_numbers_decode_render_node ... ok\ntest development::tests::loop_device_minors_follow_host_partition_geometry ... ok\ntest development::tests::loop_device_minors_reject_overflow_and_out_of_range_devices ... ok\ntest development::tests::native_media_heap_preflight_rejects_regular_files_and_symlinks ... ok\ntest development::tests::pci_render_node_projection_includes_bounded_libdrm_identity ... ok\ntest development::tests::render_node_sysfs_projection_contains_only_selected_metadata ... ok\ntest development::tests::storage_identity_uses_installed_media_provider_not_media_rw_or_other_apps ... ok\ntest development_network::tests::cell_and_gateway_use_the_same_bounded_subnet ... ok\ntest development_network::tests::failed_forwarding_restore_keeps_the_original_recovery_record ... ok\ntest development_network::tests::failed_network_effect_retains_itself_and_lower_ownership_steps ... ok\ntest development_network::tests::failed_record_removal_does_not_replay_a_successful_forwarding_restore ... ok\ntest development_network::tests::network_objects_are_stable_and_interface_names_fit_linux ... ok\ntest gapps::tests::fresh_only_data_preserves_existing_users_and_rejects_implicit_disable ... ok\ntest gapps::tests::update_invalidates_only_google_parser_cache_without_following_links ... ok\ntest generation_claim::tests::abandoned_claim_survives_handle_and_store_reconstruction ... ok\ntest generation_claim::tests::live_owned_child_prevents_release_and_later_retry_stays_poisoned ... ok\ntest generation_claim::tests::private_owner_directory_and_record_bounds_are_required ... ok\ntest generation_claim::tests::replacing_marker_inode_cannot_release_another_generation ... ok\ntest generation_claim::tests::successful_owned_child_retirement_releases_exact_marker_once ... ok\ntest generation_claim::tests::symlink_or_malformed_existing_inode_never_grants_admission ... ok\ntest linux_plan::tests::android_file_overrides_are_read_only_but_mappable ... ok\ntest linux_plan::tests::android_init_override_is_read_only_but_executable ... ok\ntest linux_plan::tests::android_runtime_directories_are_private_read_only_projections ... ok\ntest linux_plan::tests::android_writable_storage_uses_dedicated_images ... ok\ntest linux_plan::tests::binder_and_partition_allowlists_are_exact ... ok\ntest linux_plan::tests::device_plan_contains_one_render_node_and_no_host_device_tree ... ok\ntest linux_plan::tests::explicit_shared_storage_is_idmapped_and_unmounted_before_data ... ok\ntest linux_plan::tests::gapps_selects_only_product_and_system_ext_before_boot ... ok\ntest linux_plan::tests::native_media_heap_adds_only_the_explicit_read_only_allocation_device ... ok\ntest linux_plan::tests::network_objects_are_bounded_and_tagged ... ok\ntest linux_plan::tests::plan_uses_transaction_order_and_reverse_teardown ... ok\ntest package_cache::tests::clean_data_image_needs_no_cache_directory ... ok\ntest package_cache::tests::drops_stale_systemui_manifests_without_touching_other_apps_or_symlinks ... ok\ntest relay_lifecycle::capability::tests::actual_held_artifact_detects_content_and_inode_change ... ok\ntest relay_lifecycle::capability::tests::actual_owned_child_pidfd_retains_death_after_reap ... ok\ntest relay_lifecycle::capability::tests::privileged_exec_mode_cannot_clear_the_parent_death_contract ... ok\ntest relay_lifecycle::capability::tests::received_ordinary_descriptor_cannot_be_promoted_to_process_authority ... ok\ntest relay_lifecycle::domain::tests::finite_numbers_and_bounded_reads_reject_ambiguous_or_unlimited_input ... ok\ntest relay_lifecycle::domain::tests::foreign_filesystem_is_rejected_without_creating_a_cgroup ... ok\ntest relay_lifecycle::domain::tests::relative_capability_traversal_rejects_escape_and_symlink ... ok\ntest relay_lifecycle::entry::tests::init_alias_cannot_escape_the_private_image ... ok\ntest relay_lifecycle::entry::tests::ordinary_file_does_not_substitute_for_entry_owner_pidfd ... ok\ntest relay_lifecycle::entry::tests::sealed_fixed_capabilities_do_not_reach_an_ordinary_exec ... ok\ntest relay_lifecycle::entry::tests::wrong_or_missing_dynamic_loader_cannot_open_init_barrier ... ok\ntest relay_lifecycle::init_peer::tests::actual_scm_rights_are_closed_on_invalid_ancillary_or_phase ... ok\ntest relay_lifecycle::init_peer::tests::exact_wire_rejects_old_abi_nonce_and_phase ... ok\ntest relay_lifecycle::init_peer::tests::kernel_credentials_are_required_and_terminal_packet_survives_hup ... ok\ntest relay_lifecycle::owner::tests::altered_broker_marker_cannot_authorize_directory_cleanup ... ok\ntest relay_lifecycle::owner::tests::cancellation_remains_latched_across_repeated_stop_requests ... ok\ntest relay_lifecycle::policy::tests::finite_budget_and_authority_have_no_implicit_defaults ... ok\ntest relay_lifecycle::policy::tests::nonce_and_digest_roundtrip_are_strict ... ok\ntest relay_lifecycle::policy::tests::unlimited_or_guest_writable_authorities_are_rejected ... ok\ntest relay_lifecycle::worker::tests::incomplete_join_keeps_the_thread_and_owned_record ... ok\ntest relay_lifecycle::worker::tests::panic_and_second_join_never_release_owned_child ... ok\ntest tests::complete_start_and_teardown_are_strictly_ordered ... ok\ntest tests::every_start_failure_rolls_back_completed_stages ... ok\ntest tests::graphics_backend_is_explicit_and_bounded ... ok\ntest tests::native_media_backend_roundtrips_with_only_a_read_only_system_heap ... ok\ntest tests::rollback_residue_remains_owned_and_is_retryable ... ok\ntest tests::spec_rejects_card_nodes_and_host_uid_aliasing ... ok\ntest tests::spec_rejects_unsafe_and_duplicate_shared_storage_names ... ok\ntest tests::spec_rejects_unsafe_or_duplicate_android_file_overrides ... ok\ntest tests::spec_rejects_unsafe_or_overlapping_runtime_directories ... ok\ntest tests::teardown_of_absent_cell_is_successful_and_explicit ... ok\n\ntest result: ok. 108 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 2 tests\ntest diagnostics_send_typed_requests_and_render_text_or_json ... ok\ntest invalid_limits_fail_before_connecting_to_the_daemon ... ok\n\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\n\n\nrunning 2 tests\ntest install_preserves_package_manager_results_in_text_and_json ... ok\ntest install_rejects_missing_and_invalid_apks_before_connecting ... ok\n\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\n\n\nrunning 6 tests\ntest explicit_mode_reaches_service_and_restart_preserves_it ... ok\ntest internal_cell_operations_do_not_recurse_into_systemd ... ok\ntest lifecycle_controls_the_whole_user_service ... ok\ntest lifecycle_rejects_a_symlink_runtime_directory ... ok\ntest service_failure_is_reported ... ok\ntest start_waits_for_boot_and_keeps_progress_out_of_json ... ok\n\ntest result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.74s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "stdout_sha256": "59511c398e4d28a7b75aae9be7ca653e16b3793aaf32ce4e8e96b526dceea6b6"
+    },
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-pressure-relay",
+        "-p",
+        "droidloom-supervisor",
+        "--bins"
+      ],
+      "returncode": 0,
+      "stderr": "warning: function `duplicate` is never used\n  --> runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs:58:15\n   |\n58 | pub(crate) fn duplicate(raw: RawFd) -> io::Result<File> {\n   |               ^^^^^^^^^\n   |\n   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: methods `envelope_identity` and `removed` are never used\n   --> runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs:296:19\n    |\n247 | impl Domain {\n    | ----------- methods in this implementation\n...\n296 |     pub(crate) fn envelope_identity(&self) -> Identity {\n    |                   ^^^^^^^^^^^^^^^^^\n...\n389 |     pub(crate) fn removed(&self) -> bool {\n    |                   ^^^^^^^\n\nwarning: method `proc` is never used\n   --> runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs:180:19\n    |\n124 | impl Process {\n    | ------------ method in this implementation\n...\n180 |     pub(crate) fn proc(&self) -> &File {\n    |                   ^^^^\n\nwarning: method `failed_resources` is never used\n  --> runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs:95:19\n   |\n14 | impl<T: Send + 'static> Worker<T> {\n   | --------------------------------- method in this implementation\n...\n95 |     pub(crate) fn failed_resources(&self) -> io::Result<MutexGuard<'_, T>> {\n   |                   ^^^^^^^^^^^^^^^^\n\nwarning: missing documentation for a constant\n  --> runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs:21:1\n   |\n21 | pub const ABI: &str = \"droidloom-relay-entry-v1\";\n   | ^^^^^^^^^^^^^^^^^^^\n   |\n   = note: requested on the command line with `-W missing-docs`\n\nwarning: `droidloom-supervisor` (lib) generated 5 warnings\n   Compiling droidloom-pressure-relay v0.1.0 (/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/candidate/runtime/droidloom-pressure-relay)\n    Finished `dev` profile [unoptimized] target(s) in 0.56s\n",
+      "stderr_sha256": "404ae51e8443699723c5d2cd857a27dca995d5090edb805b01fc25c6c4d902cd",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-core-build-01/target/debug/owned-ipc-controls"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "PASS host proc PID namespace matches getpid; proc and cgroup2 filesystems verified\nPASS kernel accepted credentials reject wrong UID\nPASS kernel accepted credentials reject wrong GID\nPASS pinned executable rejects a different trusted file\nPASS SO_PEERPIDFD retains dead connection generation after normal exit and reap\nPASS ordinary host child fails the required exact cgroup projection gate\nPASS owned children reaped, descriptors/socket cleaned, parent namespace/projection/membership unchanged\nRESULT PASS mode=host-negative-controls\n",
+      "stdout_sha256": "98937a37108468c33b29e28d43b313962a9c9a18f0a4687a3b284ab842b61e7f"
+    },
+    {
+      "argv": [
+        "/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-core-build-01/target/debug/owned-ipc-controls",
+        "--worker-context-control"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "PASS leader-origin token rejects fork/new-worker construction and validates actual worker namespaces\nRESULT PASS mode=worker-context-without-namespace-or-pressure-effects\n",
+      "stdout_sha256": "b0bcf8f731b8b6509f29c6756c7f735c6bcd753dace1b24a0048b2aab6906b57"
+    },
+    {
+      "argv": [
+        "/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-core-build-01/target/debug/droidloom-supervisor",
+        "relay-entry-abi"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "droidloom-relay-entry-v1\n",
+      "stdout_sha256": "36311fe9af8bb613c317a13ce486796d0ce5379b9a5e90f2c1b3941cf1cffe8a"
+    }
+  ],
+  "default_policy_remains_legacy_none": true,
+  "finished_at": "2026-11-04T20:00:20.791989+00:00",
+  "inputs_after": {
+    "Cargo.lock": {
+      "bytes": 51976,
+      "sha256": "ee4ea5f370adc8a1861c4b5496c775a06b34fc733cb89eb0d873ab1eb2df0b98"
+    },
+    "Cargo.toml": {
+      "bytes": 2036,
+      "sha256": "1bae47451d41445b30933e0cd787ba5833842ea693c9e6231ee1281583323e85"
+    },
+    "runtime/droidloom-pressure-relay/Cargo.toml": {
+      "bytes": 349,
+      "sha256": "373050126db407c8ff001dabf59e62b29bea1ebfefa76fbdd578e1d0aabecb34"
+    },
+    "runtime/droidloom-pressure-relay/src/ancestry.rs": {
+      "bytes": 6882,
+      "sha256": "3a5fe5ce5fe921ca36b1ae0e8f92e2dff3d240cd29fb1e3e86a2d329cc847fc5"
+    },
+    "runtime/droidloom-pressure-relay/src/bin/droidloom_psi_owner.rs": {
+      "bytes": 753,
+      "sha256": "d4e35cc52529d0f5ad779fe57b0fbd49743ee58f2c16b45a8d46cae9e346bc93"
+    },
+    "runtime/droidloom-pressure-relay/src/bin/owned_ipc_controls.rs": {
+      "bytes": 31007,
+      "sha256": "83d49c67ee264b4d765f98d4b99155bd8ad8de74ff9d38fd16333ad013066c56"
+    },
+    "runtime/droidloom-pressure-relay/src/enrollment.rs": {
+      "bytes": 19506,
+      "sha256": "1321146aaaa4c0ff1865eab54568c1da821abc53d5c094473d936486d3da5363"
+    },
+    "runtime/droidloom-pressure-relay/src/event_fixture.rs": {
+      "bytes": 23424,
+      "sha256": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54"
+    },
+    "runtime/droidloom-pressure-relay/src/lib.rs": {
+      "bytes": 44492,
+      "sha256": "cb3c05d3e2508bb5fa5a6212b99dc77ef72f7a9a2db509430f8cda71fae95400"
+    },
+    "runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs": {
+      "bytes": 50933,
+      "sha256": "c28b2c31ac14ebfea2d3aec0650bff6ed6b708e329115d2e67b3ae8f013374be"
+    },
+    "runtime/droidloom-pressure-relay/src/lifecycle_relay.rs": {
+      "bytes": 16229,
+      "sha256": "29516250e21cfa6c8bdeedd676155fe34d53c608021e070a5c03635bba13950a"
+    },
+    "runtime/droidloom-pressure-relay/src/pressure_audit.rs": {
+      "bytes": 20193,
+      "sha256": "e68d76f8ce24b1994ddd3620fc04f4f25ac35e9e909e41f399b694443403f08c"
+    },
+    "runtime/droidloom-pressure-relay/src/psi.rs": {
+      "bytes": 16179,
+      "sha256": "4e8f566ed27250dd2055a03a5a06b6eda9937341400bb0aac9ccf6f08f101ba2"
+    },
+    "runtime/droidloom-pressure-relay/tests/data/grant.hex": {
+      "bytes": 353,
+      "sha256": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29"
+    },
+    "runtime/droidloom-pressure-relay/tests/data/request.hex": {
+      "bytes": 289,
+      "sha256": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede"
+    },
+    "runtime/droidloom-supervisor/Cargo.toml": {
+      "bytes": 954,
+      "sha256": "e2cee314482ae0d1782287e8de54ab238129fc914275c4122b6847c2e31850e9"
+    },
+    "runtime/droidloom-supervisor/src/control.rs": {
+      "bytes": 73000,
+      "sha256": "e15e5bb552e6e12406522b7fa9f992770db349f65bc55126c5bdf218824c6df3"
+    },
+    "runtime/droidloom-supervisor/src/development.rs": {
+      "bytes": 91967,
+      "sha256": "591e87b7ec03b5f91b2ac36f715e9c572aa5a895c5f7f382c6623eea462c0ab9"
+    },
+    "runtime/droidloom-supervisor/src/development_network.rs": {
+      "bytes": 27453,
+      "sha256": "11a214c3d344cbe9fab82b99a3aab759217db128d781273f5c0573f60d010f1b"
+    },
+    "runtime/droidloom-supervisor/src/generation_claim.rs": {
+      "bytes": 15267,
+      "sha256": "2d37a43e58ba05c5ec014775174c4907effe1ac44b2604593a141197ba16ab32"
+    },
+    "runtime/droidloom-supervisor/src/lib.rs": {
+      "bytes": 34420,
+      "sha256": "4588181c5c6d509412d0678e9da312788f66073a45d274b946f73b26b356237d"
+    },
+    "runtime/droidloom-supervisor/src/linux_plan.rs": {
+      "bytes": 39632,
+      "sha256": "e9be621e1cf8d9536b8ade216a67b1f002768e4299ae2aa15e742f006c0f301b"
+    },
+    "runtime/droidloom-supervisor/src/main.rs": {
+      "bytes": 2872,
+      "sha256": "9b97063e9d41e21aa5b028d24328ea976186b9ecc6c2d28725653139792444d8"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs": {
+      "bytes": 22209,
+      "sha256": "571a2789ed396f7e667fe82efd85315cea758e7f01599f7741eaaf44c3b13577"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs": {
+      "bytes": 20072,
+      "sha256": "64b091b3fd4427fe5353659dbf9f5440e661427b9518ce6f9116a8d7026d2732"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs": {
+      "bytes": 25141,
+      "sha256": "03daeb285c846344fe6763bcdd44ea571d9f26caa6bb3c35ca01233b55719ea8"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs": {
+      "bytes": 24291,
+      "sha256": "cf9019d5993627ddb974e65bcb9d583e1911c33d54aec973b439bcb1345a7dda"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs": {
+      "bytes": 223,
+      "sha256": "85048032af0a842a6a2866c45e8f8f8cc7308a2d1cc4a070ff0031fc43672dd8"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs": {
+      "bytes": 36724,
+      "sha256": "2b1415c34bc5620aa9c3e41f28dad8f1d4cca8a43e355c0ab6ebeb361a205048"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/policy.rs": {
+      "bytes": 10781,
+      "sha256": "eac34bb8e3dd1f7cf14bb74753554209e550beb413895871993a7bdfc03681b4"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs": {
+      "bytes": 6037,
+      "sha256": "47f4f6088e734c5b6798469015f6afe9f2feec377d0b265a035888c92a6dd81f"
+    }
+  },
+  "inputs_before": {
+    "Cargo.lock": {
+      "bytes": 51976,
+      "sha256": "ee4ea5f370adc8a1861c4b5496c775a06b34fc733cb89eb0d873ab1eb2df0b98"
+    },
+    "Cargo.toml": {
+      "bytes": 2036,
+      "sha256": "1bae47451d41445b30933e0cd787ba5833842ea693c9e6231ee1281583323e85"
+    },
+    "runtime/droidloom-pressure-relay/Cargo.toml": {
+      "bytes": 349,
+      "sha256": "373050126db407c8ff001dabf59e62b29bea1ebfefa76fbdd578e1d0aabecb34"
+    },
+    "runtime/droidloom-pressure-relay/src/ancestry.rs": {
+      "bytes": 6882,
+      "sha256": "3a5fe5ce5fe921ca36b1ae0e8f92e2dff3d240cd29fb1e3e86a2d329cc847fc5"
+    },
+    "runtime/droidloom-pressure-relay/src/bin/droidloom_psi_owner.rs": {
+      "bytes": 753,
+      "sha256": "d4e35cc52529d0f5ad779fe57b0fbd49743ee58f2c16b45a8d46cae9e346bc93"
+    },
+    "runtime/droidloom-pressure-relay/src/bin/owned_ipc_controls.rs": {
+      "bytes": 31007,
+      "sha256": "83d49c67ee264b4d765f98d4b99155bd8ad8de74ff9d38fd16333ad013066c56"
+    },
+    "runtime/droidloom-pressure-relay/src/enrollment.rs": {
+      "bytes": 19506,
+      "sha256": "1321146aaaa4c0ff1865eab54568c1da821abc53d5c094473d936486d3da5363"
+    },
+    "runtime/droidloom-pressure-relay/src/event_fixture.rs": {
+      "bytes": 23424,
+      "sha256": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54"
+    },
+    "runtime/droidloom-pressure-relay/src/lib.rs": {
+      "bytes": 44492,
+      "sha256": "cb3c05d3e2508bb5fa5a6212b99dc77ef72f7a9a2db509430f8cda71fae95400"
+    },
+    "runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs": {
+      "bytes": 50933,
+      "sha256": "c28b2c31ac14ebfea2d3aec0650bff6ed6b708e329115d2e67b3ae8f013374be"
+    },
+    "runtime/droidloom-pressure-relay/src/lifecycle_relay.rs": {
+      "bytes": 16229,
+      "sha256": "29516250e21cfa6c8bdeedd676155fe34d53c608021e070a5c03635bba13950a"
+    },
+    "runtime/droidloom-pressure-relay/src/pressure_audit.rs": {
+      "bytes": 20193,
+      "sha256": "e68d76f8ce24b1994ddd3620fc04f4f25ac35e9e909e41f399b694443403f08c"
+    },
+    "runtime/droidloom-pressure-relay/src/psi.rs": {
+      "bytes": 16179,
+      "sha256": "4e8f566ed27250dd2055a03a5a06b6eda9937341400bb0aac9ccf6f08f101ba2"
+    },
+    "runtime/droidloom-pressure-relay/tests/data/grant.hex": {
+      "bytes": 353,
+      "sha256": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29"
+    },
+    "runtime/droidloom-pressure-relay/tests/data/request.hex": {
+      "bytes": 289,
+      "sha256": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede"
+    },
+    "runtime/droidloom-supervisor/Cargo.toml": {
+      "bytes": 954,
+      "sha256": "e2cee314482ae0d1782287e8de54ab238129fc914275c4122b6847c2e31850e9"
+    },
+    "runtime/droidloom-supervisor/src/control.rs": {
+      "bytes": 73000,
+      "sha256": "e15e5bb552e6e12406522b7fa9f992770db349f65bc55126c5bdf218824c6df3"
+    },
+    "runtime/droidloom-supervisor/src/development.rs": {
+      "bytes": 91967,
+      "sha256": "591e87b7ec03b5f91b2ac36f715e9c572aa5a895c5f7f382c6623eea462c0ab9"
+    },
+    "runtime/droidloom-supervisor/src/development_network.rs": {
+      "bytes": 27453,
+      "sha256": "11a214c3d344cbe9fab82b99a3aab759217db128d781273f5c0573f60d010f1b"
+    },
+    "runtime/droidloom-supervisor/src/generation_claim.rs": {
+      "bytes": 15267,
+      "sha256": "2d37a43e58ba05c5ec014775174c4907effe1ac44b2604593a141197ba16ab32"
+    },
+    "runtime/droidloom-supervisor/src/lib.rs": {
+      "bytes": 34420,
+      "sha256": "4588181c5c6d509412d0678e9da312788f66073a45d274b946f73b26b356237d"
+    },
+    "runtime/droidloom-supervisor/src/linux_plan.rs": {
+      "bytes": 39632,
+      "sha256": "e9be621e1cf8d9536b8ade216a67b1f002768e4299ae2aa15e742f006c0f301b"
+    },
+    "runtime/droidloom-supervisor/src/main.rs": {
+      "bytes": 2872,
+      "sha256": "9b97063e9d41e21aa5b028d24328ea976186b9ecc6c2d28725653139792444d8"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs": {
+      "bytes": 22209,
+      "sha256": "571a2789ed396f7e667fe82efd85315cea758e7f01599f7741eaaf44c3b13577"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs": {
+      "bytes": 20072,
+      "sha256": "64b091b3fd4427fe5353659dbf9f5440e661427b9518ce6f9116a8d7026d2732"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs": {
+      "bytes": 25141,
+      "sha256": "03daeb285c846344fe6763bcdd44ea571d9f26caa6bb3c35ca01233b55719ea8"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs": {
+      "bytes": 24291,
+      "sha256": "cf9019d5993627ddb974e65bcb9d583e1911c33d54aec973b439bcb1345a7dda"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs": {
+      "bytes": 223,
+      "sha256": "85048032af0a842a6a2866c45e8f8f8cc7308a2d1cc4a070ff0031fc43672dd8"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs": {
+      "bytes": 36724,
+      "sha256": "2b1415c34bc5620aa9c3e41f28dad8f1d4cca8a43e355c0ab6ebeb361a205048"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/policy.rs": {
+      "bytes": 10781,
+      "sha256": "eac34bb8e3dd1f7cf14bb74753554209e550beb413895871993a7bdfc03681b4"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs": {
+      "bytes": 6037,
+      "sha256": "47f4f6088e734c5b6798469015f6afe9f2feec377d0b265a035888c92a6dd81f"
+    }
+  },
+  "installed_files_changed": false,
+  "local_opt_in_source_wired": true,
+  "new_source_under_host_validation": true,
+  "ordinary_ipc_passed": 7,
+  "peer02_frozen_snapshot": {
+    "archive_bytes": 163832,
+    "archive_sha256": "fa6507150f7b9f2703d98dd75a6a772eac3a26d8aa36fa1a92e0c9ac53600325",
+    "files": 30,
+    "manifest_sha256": "2159f620d04ebd31b435fd32ff8e170c8dc5990de8ae3a3dc811506cb2ffae0e",
+    "root": "/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-peer-review-02"
+  },
+  "production_receiver_Android_executed": false,
+  "runtime_qualified": false,
+  "runtime_started": false,
+  "rust_tests_passed": {
+    "droidloom-pressure-relay": 23,
+    "droidloom-supervisor": 118
+  },
+  "schema": 1,
+  "started_at": "2026-11-04T20:00:09.104451+00:00",
+  "submitted_delta_sha256": "974f0fcefd6e7ead333e9b19f0fc63981bd35cba53be12da1011805e6cd5f3fb",
+  "success": true,
+  "worker_context_passed": true
+}

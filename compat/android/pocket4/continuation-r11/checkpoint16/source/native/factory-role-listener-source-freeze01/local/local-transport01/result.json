@@ -1,0 +1,166 @@
+{
+  "Android_execution": false,
+  "Main_actions": 0,
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++17",
+        "-O2",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fstack-protector-strong",
+        "-I/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-work01/candidate/source",
+        "-I/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-work01/candidate/include",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-work01/candidate/source/factory_context.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-work01/candidate/source/role_authorization.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-work01/candidate/source/role_session.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-work01/candidate/source/role_admission.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-work01/candidate/source/role_snapshot.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-work01/candidate/source/proc_maps_factory_wire.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-work01/candidate/controls/admission_response_controls.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-work01/local-transport01/admission_response_controls"
+      ],
+      "name": "compile",
+      "returncode": 0,
+      "seconds": 4.355318604997592,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-work01/local-transport01/admission_response_controls"
+      ],
+      "name": "transport",
+      "returncode": 0,
+      "seconds": 0.018894872002420016,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 737,
+        "sha256": "c8b14ebb6dd9fd1d1d4e16563f96cfc74c98d4e778609f67dffd947f757bbaed"
+      }
+    }
+  ],
+  "compiler": {
+    "bytes": 1027128,
+    "path": "/usr/bin/x86_64-linux-gnu-g++-13",
+    "sha256": "52f1ddb33fe78b9441e0f42e9cd22c571f1101938e046c8a26582494e041cc73"
+  },
+  "compiler_unchanged": true,
+  "error": null,
+  "listener_accept_executed": false,
+  "root_authorization_executed": false,
+  "schema": 1,
+  "source_before": {
+    "controls/admission_response_controls.cc": {
+      "bytes": 10084,
+      "sha256": "bcb287f7b6bdc94a9261f6c4da70bd5cb84ae329e23a3250717e3466696917b6"
+    },
+    "controls/lease_destruction_controls.cc": {
+      "bytes": 15017,
+      "sha256": "0d487929a3f1a7668266eda2a8585fd987723bf8ef81fe501c9bbaffe05105cc"
+    },
+    "controls/response_controls.cc": {
+      "bytes": 9438,
+      "sha256": "c781a70468345b6d7fea058c9be72d08659f94717d11c7059dad51197692dfe7"
+    },
+    "controls/session_controls.cc": {
+      "bytes": 18873,
+      "sha256": "f9e34a1d2af57bc8b94557aaac04acef406e0783bd22bf33e59e167cf93e27b8"
+    },
+    "controls/snapshot_controls.cc": {
+      "bytes": 17634,
+      "sha256": "4a2b14b4e5056974128670c50e445ebe5aa9df240778e9bf33a51f293df802b6"
+    },
+    "include/berberis/kernel_api/proc_maps_factory_protocol.h": {
+      "bytes": 5051,
+      "sha256": "b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9"
+    },
+    "include/berberis/kernel_api/proc_maps_kernel_statfs.h": {
+      "bytes": 2480,
+      "sha256": "77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0"
+    },
+    "include/berberis/kernel_api/proc_maps_linux_compat.h": {
+      "bytes": 2072,
+      "sha256": "131d1eef8d9f789876c965fa2d827b21a59fc64ab7886fa1f78d95623114370c"
+    },
+    "include/berberis/kernel_api/proc_maps_snapshot_reopen.h": {
+      "bytes": 2557,
+      "sha256": "175107cadc296ab714acb83d40f0559fd8bd5f4505ca73f48861d509d3a07977"
+    },
+    "references/registry_controls.cc": {
+      "bytes": 33258,
+      "sha256": "5ea30aeb58eebeb09542e9ee68c07e1be7ff92fedcc3141f4d336490458e1a94"
+    },
+    "references/registry_destruction_controls.preimage.cc": {
+      "bytes": 12355,
+      "sha256": "4657b472cc15dc6e6fcd992d69739062df805b490ca8f2ff5113de23ad5ee614"
+    },
+    "references/snapshot_verification.h": {
+      "bytes": 3409,
+      "sha256": "685f329d9cbe7aa663fac37d71373655fe9ba95473bbcc3e14cf64d5ce0cb9a2"
+    },
+    "source/factory_context.cc": {
+      "bytes": 5377,
+      "sha256": "afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a"
+    },
+    "source/factory_context.h": {
+      "bytes": 954,
+      "sha256": "b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1"
+    },
+    "source/factory_main.cc": {
+      "bytes": 28804,
+      "sha256": "d9a8f398856536025cabdcaeee2e27b7ca7ccf04634f5a2bcd87bfc9306ed837"
+    },
+    "source/proc_maps_factory_wire.cc": {
+      "bytes": 8661,
+      "sha256": "4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608"
+    },
+    "source/role_admission.cc": {
+      "bytes": 10988,
+      "sha256": "fd8cfc69c02523f3d09beab1c6f9ebd4c31229658e6c662bb7bd30d09d5ead22"
+    },
+    "source/role_admission.h": {
+      "bytes": 2505,
+      "sha256": "1813fd99e8e8335e7bf45859ceae236d4c2f0dd1bb7dfb44bb78f27609eece4b"
+    },
+    "source/role_authorization.cc": {
+      "bytes": 39949,
+      "sha256": "d860c7222e8f5025b19de98a8ed7aceb01d72cd12351a80c93876d8fb8ce5cf5"
+    },
+    "source/role_authorization.h": {
+      "bytes": 6393,
+      "sha256": "aa1baefc5b86091d3c9679182356c0be69896958ad472e1aee8d14c0218e4780"
+    },
+    "source/role_session.cc": {
+      "bytes": 19932,
+      "sha256": "95c2d46f0eb6df9e96996db04aca3d8a43e001b8ac2fcdaacefd028c63c7513e"
+    },
+    "source/role_session.h": {
+      "bytes": 3987,
+      "sha256": "958eda04a3236ce58482e714a4bf83e50222bc4fc9134adbd6685821f31dddcf"
+    },
+    "source/role_snapshot.cc": {
+      "bytes": 11168,
+      "sha256": "f234d00e9823411c9cd55a7e3c6ea52cac505b08c7dbf96894e5b8487dd3e335"
+    },
+    "source/role_snapshot.h": {
+      "bytes": 1868,
+      "sha256": "ee2f92791ad055959f4444e7078553780c53d27e0f649e6920bad954f9bc4ca4"
+    }
+  },
+  "source_unchanged": true,
+  "state": "PASS_LOCAL_ADMISSION_TRANSPORT_ONLY"
+}

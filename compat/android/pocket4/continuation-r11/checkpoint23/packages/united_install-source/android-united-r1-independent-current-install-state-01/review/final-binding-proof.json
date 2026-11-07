@@ -1,0 +1,89 @@
+{
+  "schema": "next3-independent-install-final-binding-v1",
+  "state": "FROZEN_ACTUAL_BOUND_INSTALL_UNRUN",
+  "helper_uid": null,
+  "target": {
+    "package": "com.united.mobile.android",
+    "uid": 10133,
+    "user": 0,
+    "version_code": 3617
+  },
+  "control_count": 75,
+  "Python_controls_executed": false,
+  "old_baseline_modified": false,
+  "nonce_actual": {
+    "bytes": 1453,
+    "sha256": "689fd9c3dc2f2e91b529635f3b4b52fb3ec273e7f066634e1c1d1cfae1085930",
+    "git_blob": "f1ed0b6990ad27ec673433690236941c8644a3ca"
+  },
+  "assigned_labels": [
+    "united_r1_install_flow",
+    "united_r1_install_state"
+  ],
+  "flow_nonce": "3d4d2496058c6c7cb4e520d15505b38d",
+  "state_nonce": "dd1180e836d21668b8840551fcb48225",
+  "final_binding_edits": [
+    {
+      "file": "install_state.py",
+      "label": "actual flow install_state.py",
+      "offset": 858,
+      "old": "NONCE = '__FRESH_INSTALL_FLOW__'",
+      "replacement": "NONCE = '3d4d2496058c6c7cb4e520d15505b38d'"
+    },
+    {
+      "file": "stage_execute.py",
+      "label": "actual flow stage_execute.py",
+      "offset": 283,
+      "old": "NONCE = '__FRESH_INSTALL_FLOW__'",
+      "replacement": "NONCE = '3d4d2496058c6c7cb4e520d15505b38d'"
+    },
+    {
+      "file": "make_request.py",
+      "label": "actual flow make_request.py",
+      "offset": 361,
+      "old": "NONCE = '__FRESH_INSTALL_FLOW__'",
+      "replacement": "NONCE = '3d4d2496058c6c7cb4e520d15505b38d'"
+    },
+    {
+      "file": "install_state.py",
+      "label": "actual state",
+      "offset": 901,
+      "old": "STATE_NONCE = '__FRESH_INSTALL_STATE__'",
+      "replacement": "STATE_NONCE = 'dd1180e836d21668b8840551fcb48225'"
+    },
+    {
+      "file": "stage_execute.py",
+      "label": "75 actual production controls count",
+      "offset": 6435,
+      "old": "controls['count']==68",
+      "replacement": "controls['count']==75"
+    },
+    {
+      "file": "stage_execute.py",
+      "label": "75 actual cases count",
+      "offset": 6473,
+      "old": "len(controls['cases'])==68",
+      "replacement": "len(controls['cases'])==75"
+    }
+  ],
+  "inverse_to_unbound_template_exact": true,
+  "source_manifest": {
+    "bytes": 2860,
+    "sha256": "c649f01392a089c831cbf52ba79a95bcf52d5ae40324ffac5585b7a523e229dc",
+    "git_blob": "c7f4d396aa454c400c87c99c5144dcadd64fd6db"
+  },
+  "packet": {
+    "bytes": 202354,
+    "sha256": "5bfafbccbbc79c82b321e477d9c521db99ff21bbe71c8a801272ef52fc1e22c2",
+    "git_blob": "6bd00899d1b9609037c633d9c0771ec57d62eace"
+  },
+  "exact_request": {
+    "bytes": 214390,
+    "sha256": "a79110658e78fd8874e4912e2e558a04ad91ad88fd20cc9f434073e42e0f7175",
+    "git_blob": "a1dfdbaa574eeb9a57689bcbd896d5217a19f87b"
+  },
+  "source_files": 15,
+  "packet_files": 16,
+  "ordered_commands": 13,
+  "UI_or_commercial_launch": false
+}

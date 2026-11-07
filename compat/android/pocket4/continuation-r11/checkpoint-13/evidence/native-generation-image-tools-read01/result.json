@@ -1,0 +1,238 @@
+{
+  "schema": 1,
+  "state": "FAIL",
+  "started_utc": "2026-11-05T05:01:58.444806+00:00",
+  "Main_actions": 0,
+  "commands_executed": 0,
+  "builds_started": 0,
+  "image_or_mount_actions": 0,
+  "install_update_actions": 0,
+  "tools": {
+    "zip": {
+      "requested_path": "/usr/bin/zip",
+      "resolved_path": "/usr/bin/zip",
+      "bytes": 212064,
+      "sha256": "4497470bb70f9ecb837817cc9de0d479951a3f25ef252c0bbcc9667af8c4a8c6",
+      "uid": 0,
+      "held_before": [
+        66306,
+        108004971,
+        33261,
+        212064,
+        1770065684000000000,
+        1791083677308048845
+      ],
+      "held_after": [
+        66306,
+        108004971,
+        33261,
+        212064,
+        1770065684000000000,
+        1791083677308048845
+      ],
+      "named_after": [
+        66306,
+        108004971,
+        33261,
+        212064,
+        1770065684000000000,
+        1791083677308048845
+      ],
+      "is_ELF": true
+    },
+    "unzip": {
+      "requested_path": "/usr/bin/unzip",
+      "resolved_path": "/usr/bin/unzip",
+      "bytes": 195184,
+      "sha256": "908a7d41dfe105c724737cb7f355f474186f51d645829af522265f01492a0cc7",
+      "uid": 0,
+      "held_before": [
+        66306,
+        108007831,
+        33261,
+        195184,
+        1762526369000000000,
+        1791083663861803374
+      ],
+      "held_after": [
+        66306,
+        108007831,
+        33261,
+        195184,
+        1762526369000000000,
+        1791083663861803374
+      ],
+      "named_after": [
+        66306,
+        108007831,
+        33261,
+        195184,
+        1762526369000000000,
+        1791083663861803374
+      ],
+      "is_ELF": true
+    }
+  },
+  "backend_observations": [],
+  "fakeroot_backend_selection_qualified": false,
+  "dynamic_library_closure_qualified": false,
+  "purpose": "Read exact existing image-test tools and complete fakeroot wrapper before any tool execution.",
+  "owned_resources_before": {
+    "observed_utc": "2026-11-05T05:01:58.445156+00:00",
+    "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1aa15c80d-fc05-3cc4.service",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1aa15c80d-fc05-3cc4.service",
+    "directory_identity": [
+      30,
+      29409216
+    ],
+    "controller_pid": 1268464,
+    "fields": {
+      "cgroup.procs": "1268460\n1268464",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.current": "17494016",
+      "memory.peak": "17494016",
+      "memory.high": "max",
+      "memory.max": "134217728",
+      "memory.swap.current": "0",
+      "memory.swap.peak": "0",
+      "memory.swap.max": "max",
+      "cpu.max": "25000 100000"
+    },
+    "events": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    }
+  },
+  "error": "RuntimeError('required fixed test tool absent from controlled PATH: debugfs')",
+  "error_detail": {
+    "type": "RuntimeError",
+    "errno": null,
+    "filename": null
+  },
+  "owned_resources_after": {
+    "observed_utc": "2026-11-05T05:01:58.447280+00:00",
+    "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1aa15c80d-fc05-3cc4.service",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1aa15c80d-fc05-3cc4.service",
+    "directory_identity": [
+      30,
+      29409216
+    ],
+    "controller_pid": 1268464,
+    "fields": {
+      "cgroup.procs": "1268460\n1268464",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.current": "18018304",
+      "memory.peak": "18018304",
+      "memory.high": "max",
+      "memory.max": "134217728",
+      "memory.swap.current": "0",
+      "memory.swap.peak": "0",
+      "memory.swap.max": "max",
+      "cpu.max": "25000 100000"
+    },
+    "events": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    }
+  },
+  "owned_memory_peak": 18018304,
+  "owned_memory_swap_peak": 0,
+  "owned_memory_events_delta": {
+    "low": 0,
+    "high": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "sock_throttled": 0
+  },
+  "owned_resource_gate": {
+    "pass": true,
+    "before": {
+      "observed_utc": "2026-11-05T05:01:58.445156+00:00",
+      "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1aa15c80d-fc05-3cc4.service",
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1aa15c80d-fc05-3cc4.service",
+      "directory_identity": [
+        30,
+        29409216
+      ],
+      "controller_pid": 1268464,
+      "fields": {
+        "cgroup.procs": "1268460\n1268464",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.current": "17494016",
+        "memory.peak": "17494016",
+        "memory.high": "max",
+        "memory.max": "134217728",
+        "memory.swap.current": "0",
+        "memory.swap.peak": "0",
+        "memory.swap.max": "max",
+        "cpu.max": "25000 100000"
+      },
+      "events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    "after": {
+      "observed_utc": "2026-11-05T05:01:58.447280+00:00",
+      "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1aa15c80d-fc05-3cc4.service",
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1aa15c80d-fc05-3cc4.service",
+      "directory_identity": [
+        30,
+        29409216
+      ],
+      "controller_pid": 1268464,
+      "fields": {
+        "cgroup.procs": "1268460\n1268464",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.current": "18018304",
+        "memory.peak": "18018304",
+        "memory.high": "max",
+        "memory.max": "134217728",
+        "memory.swap.current": "0",
+        "memory.swap.peak": "0",
+        "memory.swap.max": "max",
+        "cpu.max": "25000 100000"
+      },
+      "events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    "memory_events_delta": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak": 18018304,
+    "memory_swap_peak": 0,
+    "resource_settings_changed": false,
+    "swap_max_observed_only": "max"
+  },
+  "finished_utc": "2026-11-05T05:01:58.447322+00:00"
+}

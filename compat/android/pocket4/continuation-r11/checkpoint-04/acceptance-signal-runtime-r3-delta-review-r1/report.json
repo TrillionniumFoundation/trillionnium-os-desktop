@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "decision": "R3_SOURCE_CONTEXT_FIX_QUALIFIED_FOR_FRESH_A03_PREPARE_AND_CHECK;BOUND_RUN_ENTRY_REVIEW_REQUIRED",
+  "source_manifest_sha256": "546b68b714b0f9c5721e6a9c03acbc68bafc63abe0cacd1d7c4e268bfcda24fe",
+  "payload_files_verified": 20,
+  "run_sha256": "fe2536e3ac510b811c3b079e5791ecb2eb015bec4163b5a0fb73b8e85542c8e7",
+  "framework_census_sha256": "9a88368e65b3157a7cb6238eb3de94194929f6cc55d658b33c5171d52ddd30a1",
+  "prepare_coordinator_sha256": "276579f5ee0e966b9fb03fde775d9d85731f2409050c647c767fe29428817918",
+  "input_sha256": "48830abbdf42313576ecdfba9891ab4b93e6599bd938d6978713dfc9c0114492",
+  "fresh_attempt": {
+    "data": "/var/lib/p4-signal-mask-r1-20261104-a03",
+    "evidence": "/home/alex/work/pocket4-signal-canary-mask-r1-20261104-a03",
+    "host_uid": 2403,
+    "name": "p4-signal-mask-r1-20261104-a03",
+    "runtime": "/run/p4-signal-mask-r1-20261104-a03",
+    "stage": "/opt/p4-signal-mask-r1-20261104-a03",
+    "subid_start": 14200000,
+    "user_runtime": "/run/user/1000/p4-signal-mask-r1-20261104-a03"
+  },
+  "independent_real_source_controls": {
+    "r2_wrong_context_rejected": "input pin differs: /workspace/scratch/94990735b266/isolated-signal-canary-runtime-r2/source-manifest.json",
+    "r3_module_here_matches_original_r1": true,
+    "complete_original_r1_source_verification_passed": true,
+    "full_host_test_receipt_reexecuted_locally": false
+  },
+  "findings": [
+    "Both new preparation and runtime admit call the same qualified_host_wrapper; it first verifies the complete frozen original r1 manifest, compares the three immutable host code/contract/layout records, and loads the verifier from that original directory.",
+    "No HERE variable is overwritten and no old native suite is relabeled as r3 execution.",
+    "The r2 owned census code is byte identical. Existing action, engine mapping and cleanup behavior is retained.",
+    "a02 actual loader rejection and complete absence readback remain separate from a01 role capture failure. Neither attempt yields a signal case result.",
+    "Fresh a03 roots/UID/subordinate range are input-bound; no a01/a02 data image or case nonce is reused."
+  ],
+  "actual_r3_Android_execution_by_this_review": false,
+  "production_deployment_approved": false,
+  "complete_original_wrapper_review_claimed": false,
+  "all_apps_production_ready": false
+}

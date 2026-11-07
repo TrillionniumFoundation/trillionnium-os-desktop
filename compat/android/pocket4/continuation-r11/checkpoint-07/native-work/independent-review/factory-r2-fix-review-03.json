@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "status": "SCM_PIDFD_RECEIVE_CLEANUP_FIX_REVIEWED_WITH_INDEPENDENT_LOCAL_REPRODUCTION",
+  "original_review_unchanged": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/report.json",
+    "bytes": 9947,
+    "sha256": "97df93040351c81e7c9a2370f45316cd61e1f735c4883608fa469c2ff5fd6eae"
+  },
+  "device_original_failure_addendum_unchanged": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/review-addendum-02.json",
+    "bytes": 2663,
+    "sha256": "3ddddbd7fcbef6cf89f18f9a19cf866a93b953edc94f19b0d973f2e6b9aa9a5a"
+  },
+  "frozen_source_pins": {
+    "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/SOURCE_PINS.json",
+    "bytes": 5800,
+    "sha256": "d087c114ecbeb76086abc2d91736d5f9fcbfa9e093cdff32bb63771f434cc202"
+  },
+  "complete_manifest_entries_verified": 30,
+  "production_files": [
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/source/factory_main.cc",
+      "bytes": 28588,
+      "sha256": "18d8134ed6c2077088104d9b5dc22ccfe1c93f73a87ee880595a9eb89821e2b9"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/engine-delta/proc_maps_provenance.cc",
+      "bytes": 32621,
+      "sha256": "f4e6685f5b689d3b408dc6aa7723e36b2174e6e2545e743fbb5c5896f6142137"
+    }
+  ],
+  "reviewed_control_source": {
+    "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/tests/ancillary_controls.cc",
+    "bytes": 8991,
+    "sha256": "c791c4286d00d8fb3e936f750104aa76cd3afee32005b5afc7c4b916ee513a3d"
+  },
+  "author_report_read_not_reexecuted": {
+    "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/controls-01/report.json",
+    "bytes": 5884,
+    "sha256": "7f23a0fbb64341fdabb687c394a145aa69b71118413912392ac7b45dd60a7447"
+  },
+  "independent_actual_control": {
+    "source": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/receive_fixed_socketpair_control.cc",
+      "bytes": 5082,
+      "sha256": "eb5690657891581cb4847e8a116e45e5af01f54a76fcfa859969fe441b5f158d"
+    },
+    "receipt": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/fixed-independent-control-result.json",
+      "bytes": 1081,
+      "sha256": "eaa8876510597fa5b52c5eab312aa8ba01701e0a38d22f2558c1cd760dc6ca53"
+    },
+    "stdout": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/fixed-independent-run.stdout.jsonl",
+      "bytes": 706,
+      "sha256": "71e1b0f86818af2248938b7db154968eb8c6fdc0bb897c56d61bee9ea7775f8b"
+    },
+    "kernel": "6.18.57",
+    "baseline_ordinary": "Receive 0; 2 SCM_RIGHTS adopted, descriptor delta0",
+    "PASSPIDFD": "Receive -1/EPROTO71, extra installed pidfd now closed; descriptor delta0",
+    "all_owned_fds_closed": true,
+    "recvmsg_poll_seams": false
+  },
+  "review_findings": [
+    "Known SCM_PIDFD with a complete int is adopted into existing Fd RAII and closed before protocol rejection. SCM_CREDENTIALS and unknown non-FD payloads are not interpreted as descriptors.",
+    "Factory keeps existing SCM_RIGHTS adoption and malformed/truncated framing rejection. The additional pidfd does not enter the two-rights success protocol.",
+    "Client ReceiveSnapshotReply extraction remains between root-peer authorization/send and post-receive QueryPinned. Existing successful/error fd-count checks, errno handling and final output RAII remain on the original path.",
+    "The author controls exercise real sockets/recvmsg/ancillary, including credentials, truncation and repeated rejection. Their explicit preimage client extraction is not a full original CreateSnapshot execution.",
+    "No new concrete blocking defect was found within these two receive-stage changes."
+  ],
+  "not_qualified": [
+    "matching Pocket4 fixed inherited-listener execution",
+    "complete factory service and host fixture controller execution",
+    "matching Android NDK build",
+    "complete CreateSnapshot peer authorization and trusted provenance positive",
+    "ART APEX/runtime lifecycle",
+    "Main deployment",
+    "commercial app readiness"
+  ],
+  "independent_source_mutations": false,
+  "remote_calls": 0,
+  "Android_UI_audio": false,
+  "production_ready": false
+}

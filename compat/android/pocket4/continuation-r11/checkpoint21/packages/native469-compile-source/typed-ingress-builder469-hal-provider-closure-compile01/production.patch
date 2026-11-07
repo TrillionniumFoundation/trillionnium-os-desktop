@@ -1,0 +1,391 @@
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -508,6 +508,28 @@
+         "tools/asuite/atest/Android.bp" => (4006,
+             "c38865f4312919d6452897db8e2e9341919ccb659c7a537ae20690a866e891e1",
+             &[]),
++        "packages/services/Car/cpp/vhal/client/Android.bp" => (1705,
++            "d27df8040413d7575e066bded28bf04c72a62436dab9659b553eb1ae88819098",
++            &[("cc_defaults", "vhalclient_defaults"),
++              ("cc_library", "libvhalclient")]),
++        "packages/services/Car/cpp/car_binder_lib/largeParcelable/Android.bp" => (1355,
++            "66b33bf0a2234c0f301dfabed4e5ab7e69562d4bed111cedc6cd81ffa68ecfb8",
++            &[("cc_defaults", "android-automotive-large-parcelable-defaults"),
++              ("cc_library", "android-automotive-large-parcelable-lib")]),
++        "packages/modules/NeuralNetworks/Android.bp" => (1726,
++            "f408846ebf2fcbf1fc3075a312b2c388888bedd5bd7be96efb07301a9085ad08",
++            &[("cc_defaults", "neuralnetworks_defaults")]),
++        "packages/modules/NeuralNetworks/common/Android.bp" => (13060,
++            "4153fd69cfeabb40bcefa51456a6b3747d835e96698150ed4e8bb950eba1f265",
++            &[("cc_defaults", "neuralnetworks_cl_defaults")]),
++        "packages/modules/NeuralNetworks/common/types/Android.bp" => (3279,
++            "f3a14a68f3d0c918f44099b318fc22c8ff0067b4ddbc55b6c8e29177dff6487d",
++            &[("cc_defaults", "neuralnetworks_utils_defaults"),
++              ("cc_library_headers", "neuralnetworks_types_headers"),
++              ("cc_defaults", "neuralnetworks_types_defaults"),
++              ("cc_library_static", "neuralnetworks_types"),
++              ("cc_library_static", "neuralnetworks_types_experimental"),
++              ("cc_library_static", "neuralnetworks_types_cl")]),
+         _ => return metadata_only(original),
+     };
+     if original.len() != bytes || format!("{:x}", Sha256::digest(original.as_bytes())) != sha {
+@@ -528,6 +550,25 @@
+     Ok(projected)
+ }
+ 
++const TYPED_INGRESS_HAL_BLUEPRINTS: &[&str] = &[
++    "packages/services/Car/cpp/vhal/client/Android.bp",
++    "packages/services/Car/cpp/car_binder_lib/largeParcelable/Android.bp",
++    "packages/modules/NeuralNetworks/Android.bp",
++    "packages/modules/NeuralNetworks/common/Android.bp",
++    "packages/modules/NeuralNetworks/common/types/Android.bp",
++];
++
++fn project_typed_ingress_hal_blueprints(p: &mut Projection, source: &Path) -> Result<()> {
++    for relative in TYPED_INGRESS_HAL_BLUEPRINTS {
++        let path = source.join(relative);
++        let original = fs::read_to_string(&path)?;
++        // Only new upstream providers are projected. The existing hardware
++        // consumers remain byte-for-byte intact, including all defaults edges.
++        p.put(&path, typed_ingress_shared_blueprint(relative, &original)?)?;
++    }
++    Ok(())
++}
++
+ fn project_blueprints(p: &mut Projection, source: &Path, typed_ingress: bool) -> Result<()> {
+     // In this exact Android17 sparse product, the original Connectivity Module
+     // SDK is the source for framework-connectivity-b; no source implementation
+@@ -598,6 +639,7 @@
+             let original = fs::read_to_string(&path)?;
+             p.put(&path, typed_ingress_shared_blueprint(relative, &original)?)?;
+         }
++        project_typed_ingress_hal_blueprints(p, source)?;
+     }
+     let permission = source.join("packages/modules/Permission/framework-s/Android.bp");
+     let mut text = fs::read_to_string(&permission)?;
+@@ -3009,6 +3051,21 @@
+         ("tools/asuite/atest/Android.bp",
+          include_str!("../../../android/native-role-ingress/provider-fixtures/asuite-atest-metadata.Android.bp"),
+          "cf7439663957b768c8a14064f65637122fb4ad5788216a67d8bd9dad8d7215ca"),
++        ("packages/services/Car/cpp/vhal/client/Android.bp",
++         include_str!("../../../android/native-role-ingress/provider-fixtures/car-vhal-client.Android.bp"),
++         "19c13fe0d2c46091266998a8a39dd8eee9235b05abb8b4772db026ec4290d12d"),
++        ("packages/services/Car/cpp/car_binder_lib/largeParcelable/Android.bp",
++         include_str!("../../../android/native-role-ingress/provider-fixtures/car-large-parcelable.Android.bp"),
++         "7d1e2ed8e52279903ab3f15ef4e4ff3ede2d41a03fc3903006bf73685167f8d9"),
++        ("packages/modules/NeuralNetworks/Android.bp",
++         include_str!("../../../android/native-role-ingress/provider-fixtures/neuralnetworks-root.Android.bp"),
++         "e063e7c1b86cf20657d591f83432371ff9465c3706edf56fbd0686f0753c0d12"),
++        ("packages/modules/NeuralNetworks/common/Android.bp",
++         include_str!("../../../android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp"),
++         "9e4477760e24bc5c7c5b44cf0bf20010bab8e09eee282dde4fd114d1b76a3dad"),
++        ("packages/modules/NeuralNetworks/common/types/Android.bp",
++         include_str!("../../../android/native-role-ingress/provider-fixtures/neuralnetworks-types.Android.bp"),
++         "3c4f7ac57497efa7e5f7a40b20a8cb5ea70a8587258fcc89b1472f026ca824d1"),
+     ];
+ 
+     #[test]
+@@ -3042,6 +3099,81 @@
+                    metadata_only(source).unwrap());
+     }
+     #[test]
++    fn typed_hal_provider_projection_restores_real_sources_and_keeps_consumers() {
++        use sha2::{Digest, Sha256};
++        assert_eq!(TYPED_INGRESS_HAL_BLUEPRINTS.len(), 5);
++        assert_eq!(SHARED_PROVIDER_FIXTURES.len(), 29);
++        let fixture = tempfile::tempdir().unwrap();
++        let source = fixture.path().join("aosp-source");
++        let journal = fixture.path().join("projection.json");
++        for relative in TYPED_INGRESS_HAL_BLUEPRINTS {
++            let (_, original, _) = SHARED_PROVIDER_FIXTURES.iter()
++                .find(|row| row.0 == *relative).unwrap();
++            write(&source.join(relative), original.as_bytes()).unwrap();
++        }
++        let consumers = [
++            ("hardware/interfaces/automotive/remoteaccess/hal/default/Android.bp",
++             include_str!("../../../android/native-role-ingress/provider-fixtures/hardware-remote-access.Android.bp")),
++            ("hardware/interfaces/neuralnetworks/utils/common/Android.bp",
++             include_str!("../../../android/native-role-ingress/provider-fixtures/hardware-neural-common.Android.bp")),
++        ];
++        for (relative, original) in consumers {
++            write(&source.join(relative), original.as_bytes()).unwrap();
++        }
++        let mut projection = Projection::new(journal.clone()).unwrap();
++        project_typed_ingress_hal_blueprints(&mut projection, &source).unwrap();
++        assert!(journal.exists());
++        for relative in TYPED_INGRESS_HAL_BLUEPRINTS {
++            let (_, _, expected_sha) = SHARED_PROVIDER_FIXTURES.iter()
++                .find(|row| row.0 == *relative).unwrap();
++            let projected = fs::read(source.join(relative)).unwrap();
++            assert_eq!(&format!("{:x}", Sha256::digest(&projected)), expected_sha);
++        }
++        for (relative, original) in consumers {
++            assert_eq!(fs::read(source.join(relative)).unwrap(), original.as_bytes());
++        }
++        projection.restore().unwrap();
++        assert!(!journal.exists());
++        for relative in TYPED_INGRESS_HAL_BLUEPRINTS {
++            let (_, original, _) = SHARED_PROVIDER_FIXTURES.iter()
++                .find(|row| row.0 == *relative).unwrap();
++            assert_eq!(fs::read(source.join(relative)).unwrap(), original.as_bytes());
++        }
++    }
++
++    #[test]
++    fn typed_hal_provider_late_source_drift_restores_earlier_projections() {
++        let fixture = tempfile::tempdir().unwrap();
++        let source = fixture.path().join("aosp-source");
++        let journal = fixture.path().join("projection.json");
++        for relative in TYPED_INGRESS_HAL_BLUEPRINTS {
++            let (_, original, _) = SHARED_PROVIDER_FIXTURES.iter()
++                .find(|row| row.0 == *relative).unwrap();
++            write(&source.join(relative), original.as_bytes()).unwrap();
++        }
++        let bad_path = *TYPED_INGRESS_HAL_BLUEPRINTS.last().unwrap();
++        let (_, original, _) = SHARED_PROVIDER_FIXTURES.iter()
++            .find(|row| row.0 == bad_path).unwrap();
++        let changed = format!("{original}\n");
++        write(&source.join(bad_path), changed.as_bytes()).unwrap();
++        {
++            let mut projection = Projection::new(journal.clone()).unwrap();
++            let error = project_typed_ingress_hal_blueprints(&mut projection, &source)
++                .unwrap_err().to_string();
++            assert!(error.contains("typed ingress shared provider source changed"));
++            assert!(error.contains(bad_path));
++            assert!(journal.exists());
++        }
++        assert!(!journal.exists());
++        for relative in TYPED_INGRESS_HAL_BLUEPRINTS {
++            let (_, original, _) = SHARED_PROVIDER_FIXTURES.iter()
++                .find(|row| row.0 == *relative).unwrap();
++            let expected = if *relative == bad_path { changed.as_bytes() } else { original.as_bytes() };
++            assert_eq!(fs::read(source.join(relative)).unwrap(), expected);
++        }
++    }
++
++    #[test]
+     fn native_engine_mode_rejects_widening_before_command_mutation() {
+         for targets in [
+             &[][..], &["berberis_arm64_host_tests"][..], &["droidloom-native-bridge"][..],
+--- a/tools/droidloom-update/src/native_role_ingress.rs
++++ b/tools/droidloom-update/src/native_role_ingress.rs
+@@ -16,7 +16,7 @@
+ pub const TARGETS: &[&str] = &["framework-minus-apex", "libandroid_runtime"];
+ const ORIGINAL_LOCK: &str = "android/manifest/m2-sparse-source-lock.json";
+ const PREVIOUS_SOURCE_LOCK: &str = "android/manifest/m2-role-ingress-source-lock.json";
+-const SOURCE_LOCK: &str = "android/manifest/m2-role-ingress-provider-source-lock.json";
++const PROVIDER_SOURCE_LOCK: &str = "android/manifest/m2-role-ingress-provider-source-lock.json";
+ const ORIGINAL_LOCK_BYTES: usize = 84522;
+ const ORIGINAL_LOCK_SHA: &str =
+     "4d8f2d047254268305f4802d9dd67bebdfd162d836664c733ecc07e2f9ced178";
+@@ -26,8 +26,8 @@
+ const PREVIOUS_SOURCE_LOCK_SHA: &str =
+     "ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54";
+ // Exact upstream provider closure, independently checked against the previous typed lock.
+-const SOURCE_LOCK_BYTES: usize = 96322;
+-const SOURCE_LOCK_SHA: &str = "5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7";
++const PROVIDER_SOURCE_LOCK_BYTES: usize = 96322;
++const PROVIDER_SOURCE_LOCK_SHA: &str = "5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7";
+ const PROVIDER_EXTENSIONS: &[(&str, &[&str])] = &[
+     ("platform_testing", &["libraries/motion/src", "libraries/motion/compose/src", "libraries/motion/compose/values/src", "libraries/screenshot/src/main", "libraries/screenshot/proto", "libraries/uiautomator-helpers/src", "libraries/runner/src/main/java", "libraries/device-collectors/src/main/java", "libraries/collectors-helper/adservices/src", "libraries/collectors-helper/app/src", "libraries/collectors-helper/generic/src", "libraries/collectors-helper/jank/src", "libraries/collectors-helper/lyric/src", "libraries/collectors-helper/memory/src", "libraries/collectors-helper/perfetto/src", "libraries/collectors-helper/power/src", "libraries/collectors-helper/simpleperf/src", "libraries/collectors-helper/system/src", "libraries/collectors-helper/utilities/src", "libraries/junitxml/src"]),
+     ("prebuilts/sdk", &["current/androidx", "18/public", "current/multidex", "current/test", "current/support/v7/appcompat/res", "current/support/manifests/android-support-v7-appcompat"]),
+@@ -37,6 +37,15 @@
+     ("prebuilts/tools", &["common/m2/repository/com/almworks/sqlite4java/libsqlite4java-linux-amd64/0.282", "common/m2/repository/com/almworks/sqlite4java/libsqlite4java-linux-i386/0.282", "common/m2/repository/com/almworks/sqlite4java/libsqlite4java-osx/0.282", "common/m2/repository/com/almworks/sqlite4java/sqlite4java-win32-x64/0.282", "common/m2/repository/com/almworks/sqlite4java/sqlite4java-win32-x86/0.282", "common/m2/repository/com/almworks/sqlite4java/sqlite4java/0.282", "common/m2/repository/com/android/support/test/monitor/1.0.2-alpha1", "common/m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/2.0", "common/m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/2.1", "common/m2/repository/com/google/dagger/dagger-compiler/2.7", "common/m2/repository/com/google/dagger/dagger-producers/2.7", "common/m2/repository/com/google/dagger/dagger/2.7", "common/m2/repository/com/google/devtools/ksp/symbol-processing-api/1.4.10-dev-experimental-20201110", "common/m2/repository/com/google/guava/guava/23.0", "common/m2/repository/com/google/guava/guava/listenablefuture/1.0", "common/m2/repository/com/google/http-client/google-http-client-jackson2/1.28.0", "common/m2/repository/com/google/inject/guice/3.0", "common/m2/repository/com/google/j2objc/j2objc-annotations/1.1", "common/m2/repository/com/google/testing/compile/compile-testing/0.19", "common/m2/repository/com/intellij/core-analysis", "common/m2/repository/com/sampullara/cli/1.1.2", "common/m2/repository/com/squareup/kotlinpoet/1.8.0", "common/m2/repository/com/squareup/okhttp/okhttp/2.7.4", "common/m2/repository/com/squareup/okhttp4/okhttp/4.0.0", "common/m2/repository/com/squareup/okio/okio/1.9.0", "common/m2/repository/com/squareup/wire/wire-runtime-jvm/4.7.0", "common/m2/repository/com/thoughtworks/xstream/xstream/1.4.8", "common/m2/repository/commons-codec/commons-codec/1.10", "common/m2/repository/commons-io/commons-io/2.4", "common/m2/repository/io/grpc/grpc-all/1.0.3", "common/m2/repository/io/grpc/grpc-context/1.0.3", "common/m2/repository/io/grpc/grpc-core/1.0.3", "common/m2/repository/io/grpc/grpc-netty-shaded/1.56.0", "common/m2/repository/io/grpc/grpc-okhttp/1.0.3", "common/m2/repository/io/grpc/grpc-protobuf-lite/1.0.3", "common/m2/repository/io/grpc/grpc-stub/1.0.3", "common/m2/repository/io/reactivex/rxjava2/rxjava/2.2.9", "common/m2/repository/javax/annotation/javax.annotation-api/1.2", "common/m2/repository/javax/annotation/javax.annotation-api/1.3.2", "common/m2/repository/javax/inject/javax.inject/1", "common/m2/repository/joda-time/joda-time/2.9.1", "common/m2/repository/kotlinx/html/jvm/0.6.8", "common/m2/repository/me/leolin/ShortcutBadger/1.1.13", "common/m2/repository/net/bytebuddy/byte-buddy-agent/1.14.18", "common/m2/repository/net/bytebuddy/byte-buddy/1.14.18", "common/m2/repository/net/java/dev/jna/jna/3.4.0", "common/m2/repository/net/sf/jopt-simple/jopt-simple/4.9", "common/m2/repository/net/sf/trove4j/trove4j/1.1", "common/m2/repository/org/apache/ant/ant/1.8.0", "common/m2/repository/org/apache/commons/commons-lang3/3.4", "common/m2/repository/org/apache/httpcomponents/httpclient/4.0.3", "common/m2/repository/org/apache/httpcomponents/httpcore/4.0.1", "common/m2/repository/org/apache/james/apache-mime4j-core/0.7.2", "common/m2/repository/org/apache/james/apache-mime4j-dom/0.7.2", "common/m2/repository/org/apache/maven/maven-ant-tasks/2.1.3", "common/m2/repository/org/assertj/assertj-core/3.8.0", "common/m2/repository/org/codehaus/mojo/animal-sniffer-annotations/1.14", "common/m2/repository/org/jetbrains/intellij/deps/trove4j/1.0.20181211", "common/m2/repository/org/jetbrains/markdown/0.1.41", "common/m2/repository/org/jsoup/jsoup/1.8.3", "common/m2/repository/org/mockito/mockito-core/4.8.1", "common/m2/repository/org/mockito/mockito-core/5.14.2", "common/m2/repository/org/mockito/mockito-inline/4.8.1", "common/m2/repository/org/reactivestreams/reactive-streams/1.0.2", "common/m2/repository/org/xerial/sqlite-jdbc/3.28.0", "common/m2/repository/ru/yole/jkid"]),
+ ];
+ const PROVIDER_ADDITIONS_JSON: &str = r#"[{"path":"external/kotlinx.coroutines","name":"platform/external/kotlinx.coroutines","commit":"16161f019a518241332c1cad686a3e9404c0d5cf","purpose":"Exact Android 17 superproject coroutine providers for real AndroidX and StructuredConcurrencyPerf dependencies"},{"path":"external/kotlinx.atomicfu","name":"platform/external/kotlinx.atomicfu","commit":"867bc63054d694773bd0aef56eeb51296f2f6b03","purpose":"Exact Android 17 superproject atomicfu source required by the real coroutine provider"},{"path":"frameworks/libs/systemui","name":"platform/frameworks/libs/systemui","commit":"11e04f60f563aed48e4ec080bd7bde06bae1b2f3","purpose":"Exact Android 17 tracinglib-platform and genuine compilelib providers","sparse_paths":["tracinglib/core/src","compilelib/src-release","compilelib/src-debug"]},{"path":"external/robolectric","name":"platform/external/robolectric","commit":"87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1","purpose":"Real Robolectric_all-target and its upstream implementation providers required by the parametric runner","sparse_paths":["soong","src/main/resources","annotations/src/main","junit/src/main","nativeruntime/src/main","pluginapi/src/main","resources/src/main","robolectric/src/main","sandbox/src/main","shadowapi/src/main","utils/src/main","utils/reflector/src/main","shadows/framework/src/main","shadows/httpclient/src/main","shadows/multidex/src/main","shadows/versioning/src/main","processor/src/main"]},{"path":"external/TestParameterInjector","name":"platform/external/TestParameterInjector","commit":"39be45d7f8988b7b051e14644bc6c51fe856b8f2","purpose":"Actual TestParameterInjector provider required by real Robolectric libraries","sparse_paths":["junit4/src/main"]},{"path":"external/snakeyaml","name":"platform/external/snakeyaml","commit":"629862ff4a73e7656df0ae02ae0cd24fabf603ae","purpose":"Genuine SnakeYAML implementation and Android patches required by TestParameterInjector","sparse_paths":["src/main","src/patches/android"]},{"path":"test/robolectric-extensions","name":"platform/test/robolectric-extensions","commit":"94254a13a5969eec7a4742320cc3f91e141d5593","purpose":"Real AOSP Robolectric plugin implementation required by Robolectric_all","sparse_paths":["plugins/src/main/java","clearcut-junit-listener/src/main/java"]},{"path":"packages/services/Car","name":"platform/packages/services/Car","commit":"9f04df65daa8b9a65ee05fd4039fe95446874d76","purpose":"Actual android.car and android.car.builtin.impl providers required by the upstream Robolectric host framework","sparse_paths":["aconfig","car-lib/src","car-lib/jni/large-parcelable/src","car-builtin-lib/src","car-builtin-lib/api","libs/car-internal-dep-lib/src","teams"]},{"path":"system/timezone","name":"platform/system/timezone","commit":"cbd571efcf6b551ba83a31147ec7a06182f8ec31","purpose":"Real robolectric_tzdata generator and timezone inputs","sparse_paths":["output_data"]},{"path":"tools/asuite","name":"platform/tools/asuite","commit":"744998cb744c401a5daa77170039ab6337ed7adb","purpose":"Exact Android 17 proto implementation used by the mandatory Robolectric Clearcut JUnit listener","sparse_paths":["atest/proto"]}]"#;
++const SOURCE_LOCK: &str = "android/manifest/m2-role-ingress-hal-provider-source-lock.json";
++const SOURCE_LOCK_BYTES: usize = 96934;
++const SOURCE_LOCK_SHA: &str = "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd";
++const HAL_CAR_SOURCE_ADDITIONS: &[&str] = &[
++    "cpp/vhal/client/src",
++    "cpp/vhal/client/include",
++    "cpp/car_binder_lib/largeParcelable/include",
++];
++const HAL_NEURAL_PROJECT_JSON: &str = r#"{"path":"packages/modules/NeuralNetworks","name":"platform/packages/modules/NeuralNetworks","commit":"a44a9032ab9a8438c0e13aca765d6ee4edebba2c","purpose":"Exact Android 17 NNAPI type implementation and original defaults required by existing hardware neuralnetwork consumers","sparse_paths":["common/types/src","common/types/include","common/types/operations/src","common/types/operations/include"]}"#;
+ const PATCH: &str = "android/native-role-ingress/typed-ingress02-framework.patch";
+ const PATCH_BYTES: usize = 17019;
+ const PATCH_SHA: &str =
+@@ -245,11 +254,46 @@
+     Ok(())
+ }
+ 
++fn validate_hal_provider_lock_extension(previous: &Value, expanded: &Value) -> Result<()> {
++    let mut expected = previous.clone();
++    let projects = expected.get_mut("projects").and_then(Value::as_array_mut)
++        .ok_or("previous provider lock lacks projects")?;
++    let indices: Vec<_> = projects.iter().enumerate()
++        .filter(|(_, project)| project.get("path").and_then(Value::as_str) == Some("packages/services/Car"))
++        .map(|(index, _)| index).collect();
++    if indices.len() != 1 {
++        return fail("HAL provider closure requires the exact existing Car project");
++    }
++    let paths = projects[indices[0]].get_mut("sparse_paths").and_then(Value::as_array_mut)
++        .ok_or("Car provider lock lacks sparse paths")?;
++    for addition in HAL_CAR_SOURCE_ADDITIONS {
++        let value = Value::String((*addition).to_owned());
++        if paths.contains(&value) {
++            return fail("HAL provider closure repeats an existing Car source path");
++        }
++        paths.push(value);
++    }
++    if paths.len() > 256 {
++        return fail("HAL provider closure exceeds the existing sparse path bound");
++    }
++    let addition: Value = serde_json::from_str(HAL_NEURAL_PROJECT_JSON)?;
++    let path = addition.get("path").and_then(Value::as_str)
++        .ok_or("HAL NeuralNetworks project lacks a path")?;
++    if projects.iter().any(|project| project.get("path").and_then(Value::as_str) == Some(path)) {
++        return fail("HAL provider closure replaces an existing project");
++    }
++    projects.push(addition);
++    if &expected != expanded {
++        return fail("HAL provider closure changed the prior provider lock or fixed source additions");
++    }
++    Ok(())
++}
++
+ fn materialized_lock_is_previous(value: &Value) -> Result<bool> {
+     match value.get("source_lock_sha256").and_then(Value::as_str) {
+         Some(SOURCE_LOCK_SHA) => Ok(false),
+-        Some(PREVIOUS_SOURCE_LOCK_SHA) => Ok(true),
+-        _ => fail("typed provider source workspace belongs to neither exact permitted typed lock"),
++        Some(PROVIDER_SOURCE_LOCK_SHA) => Ok(true),
++        _ => fail("typed HAL provider workspace belongs to neither exact permitted provider lock"),
+     }
+ }
+ 
+@@ -257,18 +301,23 @@
+     let original = fixed_file(&repo.join(ORIGINAL_LOCK), Pin {
+         bytes: ORIGINAL_LOCK_BYTES, sha256: ORIGINAL_LOCK_SHA,
+     })?;
++    let previous = fixed_file(&repo.join(PREVIOUS_SOURCE_LOCK), Pin {
++        bytes: PREVIOUS_SOURCE_LOCK_BYTES, sha256: PREVIOUS_SOURCE_LOCK_SHA,
++    })?;
++    let providers = fixed_file(&repo.join(PROVIDER_SOURCE_LOCK), Pin {
++        bytes: PROVIDER_SOURCE_LOCK_BYTES, sha256: PROVIDER_SOURCE_LOCK_SHA,
++    })?;
+     let path = repo.join(SOURCE_LOCK);
+     let expanded = fixed_file(&path, Pin {
+         bytes: SOURCE_LOCK_BYTES, sha256: SOURCE_LOCK_SHA,
+     })?;
+-    let previous = fixed_file(&repo.join(PREVIOUS_SOURCE_LOCK), Pin {
+-        bytes: PREVIOUS_SOURCE_LOCK_BYTES, sha256: PREVIOUS_SOURCE_LOCK_SHA,
+-    })?;
+     let previous_value: Value = serde_json::from_slice(&previous)?;
++    let provider_value: Value = serde_json::from_slice(&providers)?;
+     validate_lock_extension(&serde_json::from_slice(&original)?, &previous_value)?;
+-    validate_provider_lock_extension(&previous_value, &serde_json::from_slice(&expanded)?)?;
+-    // The normal source library validates the full lock schema, exact revisions,
+-    // URL policy, path bounds and every materialized Git project separately.
++    validate_provider_lock_extension(&previous_value, &provider_value)?;
++    validate_hal_provider_lock_extension(&provider_value, &serde_json::from_slice(&expanded)?)?;
++    // Every historical lock is pinned. The normal source library still checks
++    // the schema, revisions, URL/path bounds and each materialized Git project.
+     droidloom_source::load_lock(&path)?;
+     Ok(path)
+ }
+@@ -289,9 +338,9 @@
+             let manifest: Value = serde_json::from_slice(&bounded_file(
+                 &source.join(".droidloom-source-manifest.json"), 1024 * 1024)?)?;
+             if materialized_lock_is_previous(&manifest)? {
+-                let previous_path = lock_path.with_file_name("m2-role-ingress-source-lock.json");
++                let previous_path = lock_path.with_file_name("m2-role-ingress-provider-source-lock.json");
+                 fixed_file(&previous_path, Pin {
+-                    bytes: PREVIOUS_SOURCE_LOCK_BYTES, sha256: PREVIOUS_SOURCE_LOCK_SHA,
++                    bytes: PROVIDER_SOURCE_LOCK_BYTES, sha256: PROVIDER_SOURCE_LOCK_SHA,
+                 })?;
+                 let previous = droidloom_source::load_lock(&previous_path)?;
+                 droidloom_source::verify_materialized(&previous_path, &previous, source)?;
+@@ -390,7 +439,9 @@
+         "source_lock": lock, "source_lock_sha256": hash(&lock)?,
+         "original_source_lock_sha256": ORIGINAL_LOCK_SHA,
+         "previous_typed_source_lock_sha256": PREVIOUS_SOURCE_LOCK_SHA,
++        "previous_provider_source_lock_sha256": PROVIDER_SOURCE_LOCK_SHA,
+         "provider_source_lock_extension_exact": true,
++        "hal_provider_source_lock_extension_exact": true,
+         "typed_ingress_sources": INPUTS, "unchanged_framework_module_definitions": BLUEPRINTS,
+         "source_projection": projection_inventory,
+         "required_compiled_Java_sources": ["frameworks/base/core/java/com/android/internal/os/Zygote.java",
+@@ -445,6 +496,9 @@
+         let expanded = fixed_file(&repo.join(PREVIOUS_SOURCE_LOCK), Pin {
+             bytes: PREVIOUS_SOURCE_LOCK_BYTES, sha256: PREVIOUS_SOURCE_LOCK_SHA,
+         }).unwrap();
++        let providers = fixed_file(&repo.join(PROVIDER_SOURCE_LOCK), Pin {
++            bytes: PROVIDER_SOURCE_LOCK_BYTES, sha256: PROVIDER_SOURCE_LOCK_SHA,
++        }).unwrap();
+         let current = fixed_file(&repo.join(SOURCE_LOCK), Pin {
+             bytes: SOURCE_LOCK_BYTES, sha256: SOURCE_LOCK_SHA,
+         }).unwrap();
+@@ -461,6 +515,7 @@
+         let manifest = scratch.path().join("android/manifest");
+         fs::create_dir_all(&manifest).unwrap();
+         fs::write(scratch.path().join(ORIGINAL_LOCK), &original).unwrap();
++        fs::write(scratch.path().join(PROVIDER_SOURCE_LOCK), providers).unwrap();
+         fs::write(scratch.path().join(SOURCE_LOCK), current).unwrap();
+         fs::write(scratch.path().join(PREVIOUS_SOURCE_LOCK), serde_json::to_vec_pretty(&changed).unwrap())
+             .unwrap();
+@@ -477,7 +532,7 @@
+     fn provider_extension_rejects_unlisted_path_commit_metadata_or_project_change() {
+         let repo = repository();
+         let previous: Value = serde_json::from_slice(&fs::read(repo.join(PREVIOUS_SOURCE_LOCK)).unwrap()).unwrap();
+-        let expanded: Value = serde_json::from_slice(&fs::read(repo.join(SOURCE_LOCK)).unwrap()).unwrap();
++        let expanded: Value = serde_json::from_slice(&fs::read(repo.join(PROVIDER_SOURCE_LOCK)).unwrap()).unwrap();
+         validate_provider_lock_extension(&previous, &expanded).unwrap();
+         let mut changed = expanded.clone();
+         changed["projects"][0]["commit"] = Value::String("0000000000000000000000000000000000000000".to_owned());
+@@ -497,10 +552,38 @@
+     }
+ 
+     #[test]
++    fn hal_provider_extension_preserves_all_prior_projects_and_rejects_unlisted_changes() {
++        let repo = repository();
++        let previous_raw = fs::read(repo.join(PROVIDER_SOURCE_LOCK)).unwrap();
++        let previous: Value = serde_json::from_slice(&previous_raw).unwrap();
++        let expanded: Value = serde_json::from_slice(&fs::read(repo.join(SOURCE_LOCK)).unwrap()).unwrap();
++        validate_hal_provider_lock_extension(&previous, &expanded).unwrap();
++        assert_eq!(previous["projects"].as_array().unwrap().len(), 224);
++        assert_eq!(expanded["projects"].as_array().unwrap().len(), 225);
++        let mut changed = expanded.clone();
++        changed["projects"].as_array_mut().unwrap().last_mut().unwrap()["commit"] =
++            Value::String("0000000000000000000000000000000000000000".to_owned());
++        assert!(validate_hal_provider_lock_extension(&previous, &changed).is_err());
++        let mut changed = expanded.clone();
++        let car = changed["projects"].as_array_mut().unwrap().iter_mut()
++            .find(|project| project["path"] == "packages/services/Car").unwrap();
++        car["sparse_paths"].as_array_mut().unwrap().remove(0);
++        assert!(validate_hal_provider_lock_extension(&previous, &changed).is_err());
++        let mut changed = expanded.clone();
++        changed["projects"].as_array_mut().unwrap().pop();
++        assert!(validate_hal_provider_lock_extension(&previous, &changed).is_err());
++        let mut changed = expanded.clone();
++        changed["policy"]["unobserved_relaxation"] = Value::Bool(true);
++        assert!(validate_hal_provider_lock_extension(&previous, &changed).is_err());
++        assert_eq!(fs::read(repo.join(PROVIDER_SOURCE_LOCK)).unwrap(), previous_raw);
++    }
++
++    #[test]
+     fn published_workspace_selects_only_exact_current_or_previous_typed_lock() {
+         assert!(!materialized_lock_is_previous(&serde_json::json!({"source_lock_sha256": SOURCE_LOCK_SHA})).unwrap());
+-        assert!(materialized_lock_is_previous(&serde_json::json!({"source_lock_sha256": PREVIOUS_SOURCE_LOCK_SHA})).unwrap());
++        assert!(materialized_lock_is_previous(&serde_json::json!({"source_lock_sha256": PROVIDER_SOURCE_LOCK_SHA})).unwrap());
+         for value in [serde_json::json!({"source_lock_sha256": ORIGINAL_LOCK_SHA}),
++                      serde_json::json!({"source_lock_sha256": PREVIOUS_SOURCE_LOCK_SHA}),
+                       serde_json::json!({"source_lock_sha256": "unknown"}),
+                       serde_json::json!({}), serde_json::json!(null)] {
+             assert!(materialized_lock_is_previous(&value).is_err());
+@@ -513,13 +596,13 @@
+         let repo = repository();
+         let current_path = source_lock_path(&repo).unwrap();
+         let current = droidloom_source::load_lock(&current_path).unwrap();
+-        let previous = droidloom_source::load_lock(&repo.join(PREVIOUS_SOURCE_LOCK)).unwrap();
++        let previous = droidloom_source::load_lock(&repo.join(PROVIDER_SOURCE_LOCK)).unwrap();
+         let scratch = tempfile::tempdir().unwrap();
+         let source = scratch.path().join("aosp-source");
+         fs::create_dir(&source).unwrap();
+         let manifest = serde_json::to_vec_pretty(&serde_json::json!({
+             "schema_version": 1,
+-            "source_lock_sha256": PREVIOUS_SOURCE_LOCK_SHA,
++            "source_lock_sha256": PROVIDER_SOURCE_LOCK_SHA,
+             "plan": droidloom_source::build_plan(&previous).unwrap(),
+         })).unwrap();
+         let manifest_path = source.join(".droidloom-source-manifest.json");

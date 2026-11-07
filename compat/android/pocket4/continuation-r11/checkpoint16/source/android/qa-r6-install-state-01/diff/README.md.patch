@@ -1,0 +1,41 @@
+--- r5-install03/README.md
++++ r6-install01/README.md
+@@ -1,11 +1,32 @@
+-# R5 install/state03: bounded original action-lock admission
++# Exact R6 installation and state — first attempt
+ 
+-This fresh attempt uses the actual build02 APK and signer unchanged. Install/state02 remains FAILED. Its original six-file collector shows BlockingIOError EAGAIN before installation or state, no Android action or unknown outcome, and unchanged Main. The original recorder lock function can leak its newly opened descriptor when flock fails; process exit eventually closes it. The original receipt has no traceback or acquisition phase, so it does not identify the external holder or prove that every possible lower-level I/O source of EAGAIN is excluded.
++This frozen source derives the original R5 install03 worker and coordinator. The
++new R6 package uses a fresh source root, flow and two nonces. It requires both
++installed and retained uninstalled package records to be absent across users.
++Installation uses the original explicit `-R -t --user 0 --pkg` command, with no
++grants, replacement fallback or retry. Other owned helpers remain unchanged.
+ 
+-The new worker records admission phases and errno. Its small admission helper opens the original action-lock pathname once with NOFOLLOW/CLOEXEC, verifies a root-owned single-link regular file, and keeps that same descriptor and inode. Only LOCK_EX|LOCK_NB EAGAIN is waited for, for at most five seconds inside the existing 190-second worker and 300-second outer timeouts. It never removes, replaces or unlocks another holder's lock and never reopens the pathname while waiting. A successful acquisition must still match the named inode; Main is rechecked before the first Android command. On failure its own descriptor is closed, and a close error is secondary to the original failure. Expiry preserves the original EAGAIN and refuses all later actions.
++The complete actual R6 build and stage receipts, 32,912-byte APK and signer are
++externally pinned in INPUTS.json and in the worker. The original frozen R6
++adapter validates all ten source files, seven tool pins, eleven joined build
++commands, exact self-instrumentation manifest, APK and signer before any Android
++command. Root separately reconciles the authoritative original build job. The
++installation and state request have not run; the installed UID is unknown.
+ 
+-The original failed coordinator/stage/worker bytes and their receipt chain are required inputs to this new attempt. The old claim, flow, nonces and failed results are never resumed or rewritten. The fixed package must still be absent across all users and retained uninstalled records; installation still uses explicit -R -t, without replacement, grant, fallback or uninstall. Exactly one no-UiAutomation state follows a successful exact install and actual APK/signer/UID verification. R1–R4 and legacy v2 are untouched.
++After installation, the original R6 Session verifies the actual installed base
++APK and new UID, runs only state with UiAutomation disconnected, rechecks the
++installed identity and verifies the single all-users package record. No R6
++reveal or other UI input is requested by this package installation transaction.
+ 
+-The frozen R4 held transport, original recorder source and source manifest, Main fences, action semantics, state contract, owned staging inode cleanup and all resource limits are retained. No Java/APK rebuild or UI action is introduced. Actual installed UID and state remain unknown until this new attempt runs. No whole-App readiness is claimed.
++The R5-specific no-action install02 prerequisite is removed because R6 is a
++new package's first attempt. Its original failure and review stay unchanged;
++no old helper qualification is inherited. The same-inode five-second EX|NB lock
++admission, post-lock Main recheck, R4 held namespace/root transport and original
++worker/coordinator finally blocks remain unchanged. Failed or unknown installs
++are retained for exact reconciliation. Cleanup removes only the held-inode
++owned temporary APK and directory, with no recursive deletion.
+ 
+-Six local controls use actual two-process flock and real clocks, with only owned temporary lock files and bounded child processes. They reproduce the original EAGAIN plus one-descriptor leak, verify the new deadline and zero follow-on admission, verify release then exclusive acquisition, verify a second process can acquire after our close, reject a replacement pathname without reopening it, and close the descriptor after an actual multi-link metadata rejection. No flock or clock syscall seam, device operation or private commercial UI is used.
++The helper is retained after actual identity/state qualification for a separate
++reviewed UI request. Pause, seek, audio, commercial data, account state and
++engine deployment are outside this request. Whole-app readiness stays false.
++Root owns eventual one-time execution and exact retained receipt collection.

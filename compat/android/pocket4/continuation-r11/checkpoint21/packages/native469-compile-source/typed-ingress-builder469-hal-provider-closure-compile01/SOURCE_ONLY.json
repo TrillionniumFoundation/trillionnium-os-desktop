@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_UNRUN",
+  "source_files": 499,
+  "old_files_retained": 491,
+  "changed_existing": [
+    "tools/droidloom-update/src/android.rs",
+    "tools/droidloom-update/src/native_role_ingress.rs"
+  ],
+  "new_files": [
+    "android/manifest/m2-role-ingress-hal-provider-source-lock.json",
+    "android/native-role-ingress/provider-fixtures/car-large-parcelable.Android.bp",
+    "android/native-role-ingress/provider-fixtures/car-vhal-client.Android.bp",
+    "android/native-role-ingress/provider-fixtures/hardware-neural-common.Android.bp",
+    "android/native-role-ingress/provider-fixtures/hardware-remote-access.Android.bp",
+    "android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp",
+    "android/native-role-ingress/provider-fixtures/neuralnetworks-root.Android.bp",
+    "android/native-role-ingress/provider-fixtures/neuralnetworks-types.Android.bp"
+  ],
+  "unchanged": 489,
+  "projects": 225,
+  "prior_projects": 224,
+  "provider_files": 29,
+  "original_provider_bodies": 71,
+  "new_controls": [
+    "android::tests::typed_hal_provider_projection_restores_real_sources_and_keeps_consumers",
+    "android::tests::typed_hal_provider_late_source_drift_restores_earlier_projections",
+    "native_role_ingress::tests::hal_provider_extension_preserves_all_prior_projects_and_rejects_unlisted_changes"
+  ],
+  "compile_qualified": false,
+  "normal_build_qualified": false,
+  "whole_apps_ready": 0,
+  "total_apps": 45,
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "no_ref_or_PR_change": true
+}

@@ -1,0 +1,363 @@
+{
+  "schema": 1,
+  "base": {
+    "bytes": 59292,
+    "sha256": "03f0b4aecba20149ad7f1301ea823eb5e7e5ba1efa00d08c92c4fa7ecf482132",
+    "git_blob_sha1": "1923d4f0473449e1cd82961c7882969ca93eaeca"
+  },
+  "template": {
+    "bytes": 62362,
+    "sha256": "abb6c1ba7c791e73c48d3411de3426b4cc3850d0f34a64124326cf937bf67887",
+    "git_blob_sha1": "6022afb9321888f23b67b7e721adf36ff674302b"
+  },
+  "framework_edits": [
+    {
+      "label": "fresh normal04 root",
+      "old": "ROOT = OWNER / 'typed-ingress-framework-provider-build-03-20261106'",
+      "new": "ROOT = OWNER / 'typed-ingress-framework-provider-build-04-20261106'",
+      "count": 1
+    },
+    {
+      "label": "469 actual compile fixed parent",
+      "old": "BUILD_PARENT = P('/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106')",
+      "new": "BUILD_PARENT = P('/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106')",
+      "count": 1
+    },
+    {
+      "label": "future ELF hash unbound",
+      "old": "BUILDER_SHA = \"8bf78794705a62f0a60d00af64cdd25e2b798739e445575c3d3cca5e566f4cf6\"",
+      "new": "BUILDER_SHA = None",
+      "count": 1
+    },
+    {
+      "label": "future ELF bytes unbound",
+      "old": "BUILDER_BYTES = 34722200",
+      "new": "BUILDER_BYTES = None",
+      "count": 1
+    },
+    {
+      "label": "future result hash unbound",
+      "old": "BUILD_RESULT_SHA = \"871e78f7ad8f3f3a12c165297e4fe566d96cfe3a2ce64a0d0010cffdb647b6b8\"",
+      "new": "BUILD_RESULT_SHA = None",
+      "count": 1
+    },
+    {
+      "label": "future result bytes unbound",
+      "old": "BUILD_RESULT_BYTES = 161423",
+      "new": "BUILD_RESULT_BYTES = None",
+      "count": 1
+    },
+    {
+      "label": "new map pin",
+      "old": "SOURCE_MANIFEST_SHA = \"e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee\"",
+      "new": "SOURCE_MANIFEST_SHA = \"88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701\"",
+      "count": 1
+    },
+    {
+      "label": "new and previous provider locks",
+      "old": "EXTENDED_LOCK_SHA = '5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7'",
+      "new": "EXTENDED_LOCK_SHA = 'c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd'\nPREVIOUS_PROVIDER_LOCK_SHA = '5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7'",
+      "count": 1
+    },
+    {
+      "label": "three actual HAL tests",
+      "old": "EXPECTED_TESTS = [\"android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes\",\"android::tests::restoration_preserves_original_and_removes_created_file\",\"android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch\",\"android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout\",\"android::patch_tests::interrupted_projection_recovers_before_next_build\",\"tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets\",\"tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory\",\"native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate\",\"native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions\",\"android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata\",\"android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas\",\"android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged\",\"native_role_ingress::tests::provider_extension_rejects_unlisted_path_commit_metadata_or_project_change\",\"native_role_ingress::tests::published_workspace_selects_only_exact_current_or_previous_typed_lock\",\"native_role_ingress::tests::previous_typed_manifest_does_not_bypass_fresh_project_verification\"]",
+      "new": "EXPECTED_TESTS = [\"android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes\",\"android::tests::restoration_preserves_original_and_removes_created_file\",\"android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch\",\"android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout\",\"android::patch_tests::interrupted_projection_recovers_before_next_build\",\"tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets\",\"tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory\",\"native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate\",\"native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions\",\"android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata\",\"android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas\",\"android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged\",\"native_role_ingress::tests::provider_extension_rejects_unlisted_path_commit_metadata_or_project_change\",\"native_role_ingress::tests::published_workspace_selects_only_exact_current_or_previous_typed_lock\",\"native_role_ingress::tests::previous_typed_manifest_does_not_bypass_fresh_project_verification\",\"android::tests::typed_hal_provider_projection_restores_real_sources_and_keeps_consumers\",\"android::tests::typed_hal_provider_late_source_drift_restores_earlier_projections\",\"native_role_ingress::tests::hal_provider_extension_preserves_all_prior_projects_and_rejects_unlisted_changes\"]",
+      "count": 1
+    },
+    {
+      "label": "prior completed failed normal03",
+      "old": "PREVIOUS_ROOT = OWNER / 'typed-ingress-framework-resume-build-01-20261106'",
+      "new": "PREVIOUS_ROOT = OWNER / 'typed-ingress-framework-provider-build-03-20261106'",
+      "count": 1
+    },
+    {
+      "label": "actual published224 manifest",
+      "old": "PUBLISHED_MANIFEST_SHA = '73a4cc1da8371482164aab2bc149498d03f481f212bb85cb4fda22b6b10c958d'\nPUBLISHED_MANIFEST_BYTES = 97784",
+      "new": "PUBLISHED_MANIFEST_SHA = 'afb23d210fda970a09482a14b9b38af1c92b5be505edd0eda2b76ce5ffc6067f'\nPUBLISHED_MANIFEST_BYTES = 108555",
+      "count": 1
+    },
+    {
+      "label": "prior actual inner pin",
+      "old": "PRIOR_INNER_SHA = '80f3508bab1884421af6db2f6d87537fd950100be009265b7e2efabc9b97fcdc'",
+      "new": "PRIOR_INNER_SHA = '6a525b9838f43579bc41b1106891f2f734a0c2d92b0c5cc355f7ab02b39eb2a8'",
+      "count": 1
+    },
+    {
+      "label": "prior actual outer pin",
+      "old": "PRIOR_OUTER_SHA = '2c36ab1cc9ff6f181855f195f9c5b7bc0f58e7fb99d9c76e4871e64b143bf059'",
+      "new": "PRIOR_OUTER_SHA = '273ba8a236253ee3873074a26f568144397044ebcfdd6f153ab8712b29ff70cf'",
+      "count": 1
+    },
+    {
+      "label": "65 actual command labels",
+      "old": "EXPECTED_COMPILE_LABELS = [\"cargo-version\",\"rustc-version\",\"linked-libraries-0\",\"linked-libraries-1\",\"linked-libraries-2\",\"linked-libraries-3\",\"linked-libraries-4\",\"linked-libraries-5\",\"linked-libraries-6\",\"linked-libraries-7\",\"image-linked-libraries-0\",\"image-linked-libraries-1\",\"image-linked-libraries-2\",\"image-linked-libraries-3\",\"image-linked-libraries-4\",\"image-linked-libraries-5\",\"image-linked-libraries-6\",\"image-linked-libraries-7\",\"image-linked-libraries-8\",\"image-linked-libraries-9\",\"image-linked-libraries-10\",\"image-linked-libraries-11\",\"image-linked-libraries-12\",\"image-linked-libraries-13\",\"image-linked-libraries-14\",\"workspace-no-deps\",\"selected-build\",\"selected-test\",\"builder-compile\",\"builder-help\",\"source-resume-cli-help\",\"builder-test-compile\",\"builder-test-list\",\"builder-test-help\",\"projection-test-0\",\"projection-test-1\",\"projection-test-2\",\"projection-test-3\",\"projection-test-4\",\"projection-test-5\",\"projection-test-6\",\"projection-test-7\",\"projection-test-8\",\"projection-test-9\",\"projection-test-10\",\"projection-test-11\",\"projection-test-12\",\"projection-test-13\",\"projection-test-14\",\"source-resume-selected-test\",\"source-resume-test-compile\",\"source-resume-test-list\",\"source-resume-test-help\",\"projection-test-100\",\"projection-test-101\",\"projection-test-102\",\"projection-test-103\",\"projection-test-104\",\"projection-test-105\",\"projection-test-106\",\"projection-test-107\",\"projection-test-108\"]",
+      "new": "EXPECTED_COMPILE_LABELS = [\"cargo-version\",\"rustc-version\",\"linked-libraries-0\",\"linked-libraries-1\",\"linked-libraries-2\",\"linked-libraries-3\",\"linked-libraries-4\",\"linked-libraries-5\",\"linked-libraries-6\",\"linked-libraries-7\",\"image-linked-libraries-0\",\"image-linked-libraries-1\",\"image-linked-libraries-2\",\"image-linked-libraries-3\",\"image-linked-libraries-4\",\"image-linked-libraries-5\",\"image-linked-libraries-6\",\"image-linked-libraries-7\",\"image-linked-libraries-8\",\"image-linked-libraries-9\",\"image-linked-libraries-10\",\"image-linked-libraries-11\",\"image-linked-libraries-12\",\"image-linked-libraries-13\",\"image-linked-libraries-14\",\"workspace-no-deps\",\"selected-build\",\"selected-test\",\"builder-compile\",\"builder-help\",\"source-resume-cli-help\",\"builder-test-compile\",\"builder-test-list\",\"builder-test-help\",\"projection-test-0\",\"projection-test-1\",\"projection-test-2\",\"projection-test-3\",\"projection-test-4\",\"projection-test-5\",\"projection-test-6\",\"projection-test-7\",\"projection-test-8\",\"projection-test-9\",\"projection-test-10\",\"projection-test-11\",\"projection-test-12\",\"projection-test-13\",\"projection-test-14\",\"projection-test-15\",\"projection-test-16\",\"projection-test-17\",\"source-resume-selected-test\",\"source-resume-test-compile\",\"source-resume-test-list\",\"source-resume-test-help\",\"projection-test-100\",\"projection-test-101\",\"projection-test-102\",\"projection-test-103\",\"projection-test-104\",\"projection-test-105\",\"projection-test-106\",\"projection-test-107\",\"projection-test-108\"]",
+      "count": 1
+    },
+    {
+      "label": "499 exact actual expected delta",
+      "old": "EXPECTED_SOURCE_DELTA = json.loads(\"{\\\"Cargo_lock_or_dependency_manifest_changed\\\":false,\\\"Go5_or_Blueprint_patch_changed\\\":false,\\\"Rust_source_files_changed\\\":2,\\\"actual_source_file_count\\\":491,\\\"added\\\":[\\\"android/manifest/m2-role-ingress-provider-source-lock.json\\\",\\\"android/native-role-ingress/provider-fixtures/SystemUI.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/asuite-atest-metadata.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/asuite-proto.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/car-builtin.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/car-jni.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/car-lib.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/clearcut-junit-listener.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/icu4j.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/motion.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/robolectric-aosp-plugins.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/robolectric-pluginapi.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/robolectric-processor.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/robolectric-resources.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/robolectric-robolectric.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/robolectric-root.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/robolectric-sandbox.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/robolectric-shadowapi.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/robolectric-shadows-httpclient.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/robolectric-shadows-versioning.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/robolectric-utils-reflector.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/robolectric-utils.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/runner.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/screenshot.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/test-parameter.Android.bp\\\"],\\\"builder_revision_name\\\":\\\"468-provider-closure\\\",\\\"changed_existing\\\":[\\\"tools/droidloom-update/src/android.rs\\\",\\\"tools/droidloom-update/src/native_role_ingress.rs\\\"],\\\"engine_source_files_changed\\\":0,\\\"framework_sources_executed_or_built\\\":false,\\\"new_exact_provider_source_lock_added\\\":true,\\\"previous_source_locks_changed\\\":false,\\\"real_published_source_accessed\\\":false,\\\"real_source_staging_accessed\\\":false,\\\"runtime_authorization_enabled\\\":false,\\\"source_resume_library_changed\\\":false,\\\"typed_ingress_framework_patch_changed\\\":false,\\\"unchanged_existing\\\":464}\")",
+      "new": "EXPECTED_SOURCE_DELTA = json.loads(\"{\\\"Cargo_lock_or_dependency_manifest_changed\\\":false,\\\"Go5_or_Blueprint_patch_changed\\\":false,\\\"Rust_source_files_changed\\\":2,\\\"actual_source_file_count\\\":499,\\\"added\\\":[\\\"android/manifest/m2-role-ingress-hal-provider-source-lock.json\\\",\\\"android/native-role-ingress/provider-fixtures/car-large-parcelable.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/car-vhal-client.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/hardware-neural-common.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/hardware-remote-access.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/neuralnetworks-root.Android.bp\\\",\\\"android/native-role-ingress/provider-fixtures/neuralnetworks-types.Android.bp\\\"],\\\"builder_revision_name\\\":\\\"469-hal-provider-closure\\\",\\\"changed_existing\\\":[\\\"tools/droidloom-update/src/android.rs\\\",\\\"tools/droidloom-update/src/native_role_ingress.rs\\\"],\\\"engine_source_files_changed\\\":0,\\\"framework_sources_executed_or_built\\\":false,\\\"new_exact_provider_source_lock_added\\\":false,\\\"previous_source_locks_changed\\\":false,\\\"real_published_source_accessed\\\":false,\\\"real_source_staging_accessed\\\":false,\\\"runtime_authorization_enabled\\\":false,\\\"source_resume_library_changed\\\":false,\\\"typed_ingress_framework_patch_changed\\\":false,\\\"unchanged_existing\\\":489,\\\"new_exact_hal_provider_source_lock_added\\\":true}\")",
+      "count": 1
+    },
+    {
+      "label": "required actual source label",
+      "old": "ACTUAL_BUILDER468_COMPILE03_REQUIRED",
+      "new": "ACTUAL_BUILDER469_COMPILE01_REQUIRED",
+      "count": 1
+    },
+    {
+      "label": "actual future result staged name",
+      "old": "actual-builder468-result.json",
+      "new": "actual-builder469-result.json",
+      "count": 1
+    },
+    {
+      "label": "future actual focused counts",
+      "old": "result['focused_tests_passed'] == 24 and result['updater_focused_tests_passed'] == 15",
+      "new": "result['focused_tests_passed'] == 27 and result['updater_focused_tests_passed'] == 18",
+      "count": 1
+    },
+    {
+      "label": "registered total",
+      "old": "result['actual_registered_test_count'] == 205",
+      "new": "result['actual_registered_test_count'] == 208",
+      "count": 1
+    },
+    {
+      "label": "HAL result count",
+      "old": "result['provider_closure_tests_passed'] == 6,",
+      "new": "result['provider_closure_tests_passed'] == 6 and result['hal_provider_tests_passed'] == 3,",
+      "count": 1
+    },
+    {
+      "label": "actual result diagnostic",
+      "old": "actual builder468 compile03 and exact 24-control qualification differs",
+      "new": "actual builder469 compile01 and exact 27-control qualification differs",
+      "count": 1
+    },
+    {
+      "label": "focused independent logfile count",
+      "old": "(0, EXPECTED_TESTS, 205, 'test_elf', 'focused_result_gates')",
+      "new": "(0, EXPECTED_TESTS, 208, 'test_elf', 'focused_result_gates')",
+      "count": 1
+    },
+    {
+      "label": "new actual source map sizes",
+      "old": "97525",
+      "new": "99327",
+      "count": 3
+    },
+    {
+      "label": "new map delta counts",
+      "old": "delta['actual_source_file_count'] == 491 and delta['unchanged_existing'] == 464",
+      "new": "delta['actual_source_file_count'] == 499 and delta['unchanged_existing'] == 489",
+      "count": 1
+    },
+    {
+      "label": "new additions count",
+      "old": "len(delta['added']) == 25",
+      "new": "len(delta['added']) == 8",
+      "count": 1
+    },
+    {
+      "label": "new revision",
+      "old": "delta['builder_revision_name'] == '468-provider-closure'",
+      "new": "delta['builder_revision_name'] == '469-hal-provider-closure'",
+      "count": 1
+    },
+    {
+      "label": "new source diagnostic",
+      "old": "builder source is not the exact reviewed 491-file provider-closure successor",
+      "new": "builder source is not the exact reviewed 499-file HAL-provider successor",
+      "count": 1
+    },
+    {
+      "label": "new expected manifest staged name",
+      "old": "expected-builder468-manifest.json",
+      "new": "expected-builder469-manifest.json",
+      "count": 1
+    },
+    {
+      "label": "map complete count",
+      "old": "len(source_map) == 491",
+      "new": "len(source_map) == 499",
+      "count": 1
+    },
+    {
+      "label": "four lock map binding",
+      "old": "source_map['android/manifest/m2-role-ingress-provider-source-lock.json']['sha256'] == EXTENDED_LOCK_SHA,",
+      "new": "source_map['android/manifest/m2-role-ingress-provider-source-lock.json']['sha256'] == PREVIOUS_PROVIDER_LOCK_SHA and\n            source_map['android/manifest/m2-role-ingress-hal-provider-source-lock.json']['sha256'] == EXTENDED_LOCK_SHA,",
+      "count": 1
+    },
+    {
+      "label": "prior terminal sizes",
+      "old": "PRIOR_INNER_SHA, 2246",
+      "new": "PRIOR_INNER_SHA, 5239",
+      "count": 1
+    },
+    {
+      "label": "prior outer size",
+      "old": "PRIOR_OUTER_SHA, 1150",
+      "new": "PRIOR_OUTER_SHA, 24689",
+      "count": 1
+    },
+    {
+      "label": "prior actual 27 child records",
+      "old": "inner['cleanup'] == {'complete': True,\n                'children': [{'pid': 3779001, 'wait_status': 65280, 'reaped': True}], 'errors': []}",
+      "new": "inner['cleanup'] == json.loads(\"{\\\"complete\\\":true,\\\"children\\\":[{\\\"pid\\\":1658120,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1660273,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1661664,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1701325,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1705739,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1706758,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1707343,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1708163,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1708260,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1708418,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1708528,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1708635,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1708930,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1709675,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1709798,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1709941,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1710155,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1710260,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1710386,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1710502,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1710625,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1711033,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1711242,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1711346,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1711503,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1711663,\\\"wait_status\\\":0,\\\"reaped\\\":true},{\\\"pid\\\":1716303,\\\"wait_status\\\":65280,\\\"reaped\\\":true}],\\\"errors\\\":[]}\")",
+      "count": 1
+    },
+    {
+      "label": "prior stdout",
+      "old": "'f001d60ee86a9c0b5fe32ca98164b0bb1127826aa1e3c9ba97a7ce834c0d0e4e'",
+      "new": "'f1458d03292c14c05b14fdfe76091cfd7b2ffe05df2bbb3480be8d2cd20a329b'",
+      "count": 1
+    },
+    {
+      "label": "prior stderr and zero swap",
+      "old": "inner['stderr_sha256'] == '12c13559ad20843f350c14e16f32e149cf1c2c4f4ed339d9c862e0e1c2ad753b',",
+      "new": "inner['stderr_sha256'] == 'a517eefb94ef2116400ac329e0fb74cf74eb34379a726fb2b6403f74d8659ad8' and\n            inner['memory_swap_max'] == inner['memory_swap_current'] == inner['memory_swap_peak'] == '0' and\n            inner['owned_resource_gate']['zero_swap_limit_and_current_observed_after'] is True,",
+      "count": 1
+    },
+    {
+      "label": "prior actual capture retirement facts",
+      "old": "            'prior fixed Main fence result differs')\n    published, row",
+      "new": "            'prior fixed Main fence result differs')\n    controls = outer['capture_lifecycle_controls']\n    require(outer['before_observed'] is True and outer['after_observed'] is True and\n            controls['state'] == 'PASS' and controls['passed'] == 4 and\n            len(controls['rows']) == 4 and all(row['passed'] is True and\n                row['owned_children_empty'] is True and row['Main_read_performed'] is False\n                for row in controls['rows']),\n            'prior four actual owned lifecycle controls are incomplete')\n    captures = outer['capture_lifecycle_receipts']\n    phases = ['control-root-timeout', 'control-root-escaped', 'control-root-pidfd',\n              'control-outer-pidfd', 'before', 'after']\n    require([row['phase'] for row in captures] == phases,\n            'prior six actual capture retirement records differ')\n    for row in captures:\n        command = row['command']\n        require(row['outer_subreaper']['final_children_empty'] is True and\n                row['within_absolute_outer_deadline'] is True and not row['secondary_errors'] and\n                command['child_reaped'] is True and command['owned_tree_cleanup_complete'] is True and\n                command['pidfd_closed'] is True and command['all_acquired_fds_closed'] is True and\n                command['retirement_within_deadline'] is True and\n                not command['remaining_owned_children'] and not command['secondary_errors'],\n                'prior owned capture was not completely retired')\n        if row['phase'] == 'control-outer-pidfd':\n            require(row['qualified_success'] is False and command['returncode'] == -9 and\n                    row['first_error']['errno'] == 24 and command['first_error']['errno'] == 24,\n                    'prior expected pidfd allocation failure was relabeled')\n        else:\n            require(row['qualified_success'] is True and command['qualified_success'] is True and\n                    command['returncode'] == 0 and row['first_error'] is None and\n                    command['first_error'] is None, 'prior capture failed unexpectedly')\n    published, row",
+      "count": 1
+    },
+    {
+      "label": "prior published lock",
+      "old": "published['source_lock_sha256'] == PREVIOUS_TYPED_LOCK_SHA",
+      "new": "published['source_lock_sha256'] == PREVIOUS_PROVIDER_LOCK_SHA",
+      "count": 1
+    },
+    {
+      "label": "prior published count",
+      "old": "len(published['plan']['projects']) == 214",
+      "new": "len(published['plan']['projects']) == 224",
+      "count": 1
+    },
+    {
+      "label": "monotonic count metadata",
+      "old": "'previous_locked_projects': 214, 'new_locked_projects': 224",
+      "new": "'previous_locked_projects': 224, 'new_locked_projects': 225",
+      "count": 1
+    },
+    {
+      "label": "observe new builder complete",
+      "old": "actual 491-file builder source changed",
+      "new": "actual 499-file builder source changed",
+      "count": 1
+    },
+    {
+      "label": "plan actual compile counts",
+      "old": "'builder_source_files': 491, 'actual_host_compile_commands': 62, 'actual_exact_controls': 24",
+      "new": "'builder_source_files': 499, 'actual_host_compile_commands': 65, 'actual_exact_controls': 27",
+      "count": 1
+    },
+    {
+      "label": "source plan",
+      "old": "fresh verification of the published 214-project exact old lock, then normal monotonic reconciliation to 224 locked projects and 8 root links",
+      "new": "fresh verification of the published 224-project exact previous provider lock, then normal monotonic reconciliation to 225 locked projects and 8 root links",
+      "count": 1
+    },
+    {
+      "label": "prior children plan",
+      "old": "'prior_outer_failure_sha256': PRIOR_OUTER_SHA, 'prior_reaped_children': 1",
+      "new": "'prior_outer_failure_sha256': PRIOR_OUTER_SHA, 'prior_reaped_children': 27",
+      "count": 1
+    },
+    {
+      "label": "prior normal profile actual",
+      "old": "'prior_normal_peak_bytes': 7947964416, 'prior_normal_swap_peak_bytes': 50835456",
+      "new": "'prior_normal_peak_bytes': 8141615104, 'prior_normal_swap_peak_bytes': 0",
+      "count": 1
+    },
+    {
+      "label": "explicit historical static profile",
+      "old": "'actual_static_compile_peak_bytes': 1073741824, 'actual_static_compile_memory_max_events': 1732",
+      "new": "'prior_builder468_static_compile_peak_bytes': 1073741824, 'prior_builder468_static_compile_memory_max_events': 1732",
+      "count": 1
+    },
+    {
+      "label": "new complete manifest count",
+      "old": "len(document['plan']['projects']) == 224",
+      "new": "len(document['plan']['projects']) == 225",
+      "count": 1
+    },
+    {
+      "label": "new completion proof input",
+      "old": "inputs['provider_source_lock_extension_exact'] is True and",
+      "new": "inputs['provider_source_lock_extension_exact'] is True and\n             inputs['previous_provider_source_lock_sha256'] == PREVIOUS_PROVIDER_LOCK_SHA and\n             inputs['hal_provider_source_lock_extension_exact'] is True and",
+      "count": 1
+    },
+    {
+      "label": "new normal completed lock",
+      "old": "lock, _ = json_pin(BUILD_SOURCE / 'android/manifest/m2-role-ingress-provider-source-lock.json',\n                       EXTENDED_LOCK_SHA, 96322)",
+      "new": "lock, _ = json_pin(BUILD_SOURCE / 'android/manifest/m2-role-ingress-hal-provider-source-lock.json',\n                       EXTENDED_LOCK_SHA, 96934)",
+      "count": 1
+    },
+    {
+      "label": "completion total",
+      "old": "'actual_published_manifest': manifest_pin, 'published_projects': 224",
+      "new": "'actual_published_manifest': manifest_pin, 'published_projects': 225",
+      "count": 1
+    }
+  ],
+  "pure_edits": [
+    {
+      "label": "HAL current lock staged name",
+      "old": "packet['actual-provider-source-lock.json']",
+      "new": "packet['actual-hal-provider-source-lock.json']",
+      "count": 1
+    },
+    {
+      "label": "complete225 bound",
+      "old": "need(len(lock['projects']) == 224",
+      "new": "need(len(lock['projects']) == 225",
+      "count": 1
+    },
+    {
+      "label": "complete225 case",
+      "old": "'complete_expected_224_project_plan'",
+      "new": "'complete_expected_225_project_plan'",
+      "count": 1
+    },
+    {
+      "label": "prior224 hash negative",
+      "old": "framework['PREVIOUS_TYPED_LOCK_SHA']",
+      "new": "framework['PREVIOUS_PROVIDER_LOCK_SHA']",
+      "count": 1
+    },
+    {
+      "label": "actual old224 case",
+      "old": "'actual_old_214_manifest_is_not_current_completion'",
+      "new": "'actual_old_224_manifest_is_not_current_completion'",
+      "count": 1
+    }
+  ],
+  "fence_edits": [
+    {
+      "label": "unbound controller digest",
+      "old": "CONTROLLER_SHA = '03f0b4aecba20149ad7f1301ea823eb5e7e5ba1efa00d08c92c4fa7ecf482132'",
+      "new": "CONTROLLER_SHA = None",
+      "count": 1
+    },
+    {
+      "label": "fresh normal04 root",
+      "old": "ROOT = Path(\"/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-provider-build-03-20261106\")",
+      "new": "ROOT = Path(\"/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-provider-build-04-20261106\")",
+      "count": 1
+    }
+  ],
+  "all_inverse_exact": true,
+  "future_actual_fields": [
+    "BUILDER_SHA",
+    "BUILDER_BYTES",
+    "BUILD_RESULT_SHA",
+    "BUILD_RESULT_BYTES"
+  ],
+  "request_generated": false
+}

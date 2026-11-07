@@ -1,0 +1,252 @@
+--- install01/install_state.py
++++ install02/install_state.py
+@@ -21,12 +21,12 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-02')
+ SOURCE = ROOT/'source'
+ WORKER_ROOT = ROOT/'worker'
+ STEP = WORKER_ROOT/'steps/install-state-01'
+-NONCE = '92b900dd770f1834f96b7dd1a6bfdf6c'
+-STATE_NONCE = 'a2fdf5a5645ea0b2c5367defa5deb409'
++NONCE = 'd7f36b0afc9a26c79639aca6f21e37f2'
++STATE_NONCE = '6c71a5c324a1c669572981cc38e4f82b'
+ SELF = 'org.droidloom.qa.ihg.r2'
+ QA_ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-source-02/source')
+ QA_MANIFEST = 'aac50aec5289c542268c8cff29a07d91ef1be68eb57acb4474c6196850836d38'
+@@ -342,9 +342,16 @@
+     require(set(manifest['files']) == EXPECTED_SOURCE_FILES,'EXACT_AMAZON_RUNTIME_SOURCE_SET_REQUIRED')
+     for name,row in manifest['files'].items():
+         read(HERE/name,expected=row['sha256'],size=row['bytes'])
+-    require(manifest['files']['references/readonly_r3_coordinator.py']['sha256'] == REFERENCE_SHA and
++    host_raw=read(HERE/'host/source-manifest.json',131072,RECORDER_MANIFEST)
++    host_manifest=json.loads(host_raw)
++    row=host_manifest['files']['current_coordinator.py']
++    require(host_manifest.get('schema') == 2 and host_manifest.get('revision') == 5 and
++            host_manifest.get('artifact') == 'pocket4-bilibili-current-recorder-held-r5' and
++            row['sha256'] == REFERENCE_SHA and
+             manifest['files']['references/read_ihg.py']['sha256'] == READER_SHA,
+-            'EXACT_SHARED_REFERENCES_REQUIRED')
++            'EXACT_CURRENT_SHARED_REFERENCES_REQUIRED')
++    read(BASE_HOST_ROOT/'source-manifest.json',131072,RECORDER_MANIFEST,len(host_raw))
++    read(BASE_HOST_ROOT/'current_coordinator.py',131072,REFERENCE_SHA,row['bytes'])
+     return manifest
+ 
+ 
+
+--- install01/stage_execute.py
++++ install02/stage_execute.py
+@@ -2,9 +2,9 @@
+ """Exact ihg current-baseline install/state staging with its own target context."""
+ import hashlib,json,os,stat,sys,types
+ from pathlib import Path,PurePosixPath
+-ROOT=Path('/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-01')
++ROOT=Path('/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-02')
+ SOURCE=ROOT/'source'
+-NONCE='92b900dd770f1834f96b7dd1a6bfdf6c'
++NONCE='d7f36b0afc9a26c79639aca6f21e37f2'
+ REFERENCE_SHA='fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2'
+ FILES={'install_state.py','ihg_context.py','ihg_transport.py','stage_execute.py',
+        'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',
+@@ -98,9 +98,9 @@
+     context=load_text(files['ihg_context.py'],SOURCE/'ihg_context.py','current_target_context_controls')
+     transport=load_text(files['ihg_transport.py'],SOURCE/'ihg_transport.py','current_target_transport_controls')
+     controls_module=load_text(files['check_install_binding.py'],SOURCE/'check_install_binding.py','current_install_pure_controls')
+-    controls=controls_module.run_controls(entry,actual_host,host_manifest,context,transport,baseline,ref)
+-    require(controls['all_passed'] is True and controls['count']==33 and
+-            len(controls['cases'])==33 and all(x['passed'] is True for x in controls['cases']),
++    controls=controls_module.run_controls(entry,actual_host,host_manifest,context,transport,baseline,ref,files,packet['source_manifest_sha256'])
++    require(controls['all_passed'] is True and controls['count']==38 and
++            len(controls['cases'])==38 and all(x['passed'] is True for x in controls['cases']),
+             'ACTUAL_CURRENT_APP_CONTEXT_CONTROLS_REQUIRED')
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'current_install_stage_epoch')
+     before=ref.main_guard(baseline,epoch)
+
+--- install01/make_request.py
++++ install02/make_request.py
+@@ -7,9 +7,9 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-ihg-qa-r2-current-r5-install-state-01-20261106'
+-ROOT='/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-01'
+-NONCE='92b900dd770f1834f96b7dd1a6bfdf6c'
++KEY='pocket4-owned-ihg-qa-r2-current-r5-install-state-02-20261106'
++ROOT='/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-02'
++NONCE='d7f36b0afc9a26c79639aca6f21e37f2'
+ 
+ 
+ def sha(raw):
+
+--- install01/check_install_binding.py
++++ install02/check_install_binding.py
+@@ -1,10 +1,11 @@
+-"""Pure current-host and per-App Context construction controls; no device authority."""
++"""Current-host, per-App Context and owned temporary-source controls; no Android actions."""
+ import copy
+ import types
++import json
+ 
+-CONTROL_COUNT = 33
++CONTROL_COUNT = 38
+ 
+-def run_controls(entry, actual_host, manifest, context, transport, baseline, ref):
++def run_controls(entry, actual_host, manifest, context, transport, baseline, ref, files, source_manifest_sha256):
+     rows = []
+     def yes(name):
+         rows.append({'name':name,'passed':True})
+@@ -92,6 +93,7 @@
+     ctx.scope['package']='tv.danmaku.bili'
+     rejected('guard_rejects_tampered_target_before_callbacks',lambda:ctx.guard())
+     entry.require(calls=={'Main':0,'target':0,'command':0},'PURE_CONTROL_CALLBACK_OR_COMMAND_ATTEMPTED')
++    rows.extend(run_source_controls(entry,files,source_manifest_sha256))
+     entry.require(len(rows)==CONTROL_COUNT and len({x['name'] for x in rows})==CONTROL_COUNT,
+                   'EXACT_CURRENT_CONTEXT_CONTROL_COUNT')
+     return {'schema':'pocket4-current-app-install-context-controls-v1','all_passed':True,
+@@ -100,4 +102,55 @@
+             'production_Context_and_BoundArun_constructors_used':True,
+             'actual_qualified_baseline_only_in_memory':True,
+             'Bili_Flow_or_MainBinding_instantiated':False,'private_baseline_exported':False,
+-            'Android_commands':0,'UI_actions':0,'children':0,'filesystem_operations':0}
++            'Android_commands':0,'UI_actions':0,'children':0,
++            'owned_temporary_source_directories':True,'temporary_directories_removed':True,
++            'actual_R5_reference_read_only':True,'production_verify_source_calls':5}
++
++
++def run_source_controls(entry, files, expected):
++    """Run the production source gate in private temporary source directories."""
++    import tempfile
++    from pathlib import Path
++    rows=[]
++    entry.require(set(files)==entry.EXPECTED_SOURCE_FILES|{'SOURCE_PINS.json'},
++                  'TEMP_SOURCE_FIXTURE_EXACT_SET')
++    manifest=json.loads(files['host/source-manifest.json'])
++    coordinator=manifest['files']['current_coordinator.py']
++    host_manifest=entry.read(entry.BASE_HOST_ROOT/'source-manifest.json',131072,entry.RECORDER_MANIFEST)
++    host_source=entry.read(entry.BASE_HOST_ROOT/'current_coordinator.py',131072,
++                           entry.REFERENCE_SHA,coordinator['bytes'])
++    with tempfile.TemporaryDirectory(prefix='pocket4-current-source-control-') as temporary:
++        root=Path(temporary);source=root/'source';source.mkdir(mode=0o700)
++        for name,raw in files.items():
++            path=source/name;path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
++            path.write_bytes(raw);path.chmod(0o600)
++        isolated=types.ModuleType('pure_production_source_gate');isolated.__file__=str(source/'install_state.py')
++        exec(compile(files['install_state.py'],isolated.__file__,'exec'),isolated.__dict__)
++        actual=isolated.verify_source(expected)
++        entry.require(actual['files']==json.loads(files['SOURCE_PINS.json'])['files'],
++                      'ACTUAL_COMPLETE_PRODUCTION_SOURCE_GATE')
++        rows.append({'name':'production_verify_source_actual_R5_reference_positive','passed':True})
++        host=root/'host';host.mkdir(mode=0o700)
++        (host/'source-manifest.json').write_bytes(host_manifest)
++        (host/'current_coordinator.py').write_bytes(host_source)
++        isolated.BASE_HOST_ROOT=host
++        isolated.verify_source(expected)
++        rows.append({'name':'production_verify_source_private_reference_fixture_positive','passed':True})
++        def rejected(name):
++            try:
++                isolated.verify_source(expected)
++            except (RuntimeError,FileNotFoundError):
++                pass
++            else:
++                raise RuntimeError('SOURCE_REFERENCE_NEGATIVE_ACCEPTED:'+name)
++            rows.append({'name':name,'passed':True})
++        (host/'current_coordinator.py').unlink()
++        rejected('production_verify_source_missing_R5_coordinator_rejected')
++        (host/'current_coordinator.py').write_bytes(host_source+b'\n')
++        rejected('production_verify_source_wrong_R5_coordinator_hash_rejected')
++        (host/'current_coordinator.py').write_bytes(host_source)
++        original=(source/'README.md').read_bytes()
++        (source/'README.md').write_bytes(original+b'\n')
++        rejected('production_verify_source_payload_hash_changed_rejected')
++    entry.require(len(rows)==5,'EXACT_FIVE_SOURCE_CLOSURE_CONTROLS')
++    return rows
+
+--- install01/INPUTS.json
++++ install02/INPUTS.json
+@@ -45,12 +45,12 @@
+     "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+   },
+   "nonces": {
+-    "flow": "92b900dd770f1834f96b7dd1a6bfdf6c",
+-    "state": "a2fdf5a5645ea0b2c5367defa5deb409"
++    "flow": "d7f36b0afc9a26c79639aca6f21e37f2",
++    "state": "6c71a5c324a1c669572981cc38e4f82b"
+   },
+   "actual_nonce_source": {
+-    "bytes": 688,
+-    "sha256": "d40226ff41ae87cfd793fb8de7480fcdc656e0e6daeb2a7a86ba28ba83833222",
++    "bytes": 767,
++    "sha256": "0850251476f521a051a3f4c21a3150b0d368065e4f71a8981d9d9525ba1dddce",
+     "fields": [
+       "ihg_flow",
+       "ihg_state"
+@@ -72,7 +72,7 @@
+   "own_package_absence_required_all_users_including_uninstalled": true,
+   "install_replace_existing": false,
+   "UiAutomation_requested": false,
+-  "source_qualification_controls": 33,
++  "source_qualification_controls": 38,
+   "Bili_Flow_or_MainBinding_instantiated": false,
+   "whole_process_tree_cleanup_qualified": false,
+   "framework_exit_cause_resolved": false,
+
+--- install01/README.md
++++ install02/README.md
+@@ -2,4 +2,4 @@
+ 
+ The exact newly built signed helper is installed once with -R/-t after all-users absence checks. The target-specific Context preserves its 13-command plan, commercial APK streaming hashes, held namespace/classpath checks and cleanup. Its new scope comes only from the actual typed current baseline, with independent target UID and both user/user_de directory identities checked through the held root. The shared R5 source contract is a byte-verified source closure; no Bili Flow or Bili MainBinding is instantiated.
+ 
+-33 pure source controls run before root staging or any Android command. The helper UID remains unknown until actual installation. State does not connect UiAutomation. No launch, inspect, click, text, permission or settings action is requested. Failure is not automatically retried or uninstalled. Historical failed and unknown outcomes remain unchanged. The unresolved framework exit cause and business acceptance remain production gates. Only direct owned process join is inherited; whole-process-tree cleanup qualification remains false.
++38 source controls run before persistent root staging or any Android command: 33 existing source/context cases and five production verify_source cases using owned temporary source directories. Those temporary directories are removed before installation begins. The helper UID remains unknown until actual installation. State does not connect UiAutomation. No launch, inspect, click, text, permission or settings action is requested. Failure is not automatically retried or uninstalled. Historical failed and unknown outcomes remain unchanged. The unresolved framework exit cause and business acceptance remain production gates. Only direct owned process join is inherited; whole-process-tree cleanup qualification remains false.
+
+--- install01/SOURCE_PINS.json
++++ install02/SOURCE_PINS.json
+@@ -14,15 +14,15 @@
+   "files": {
+     "INPUTS.json": {
+       "bytes": 3308,
+-      "sha256": "8291a404d13cee1a1b1f2ba0d6b5d91fea541066c7dc4bd86236c20a0ec52bc7"
++      "sha256": "c7c81c6ac685fa5d4817f324ec931fdae0f0a574805153ee2aac897053428ea3"
+     },
+     "README.md": {
+-      "bytes": 1112,
+-      "sha256": "1e7dd56ec2e6a49257bcc5b76e17ed278ee34b2d16aa3a23afa13aabf9538d4d"
++      "bytes": 1301,
++      "sha256": "53d08acc7009fcda1e3569a1a56fcac8c2a8a71c79782d7881f3a0ec9d061e2a"
+     },
+     "check_install_binding.py": {
+-      "bytes": 6887,
+-      "sha256": "0c81a32ab10a62bf03bac771de3f13c29963072350ec634ac10df8c802cc0ce2"
++      "bytes": 9999,
++      "sha256": "1da142b38dd5c55d6616a9145acdf700934b3a2975bae6fa5e63be876048c9cb"
+     },
+     "host-stage-actual.json": {
+       "bytes": 6851,
+@@ -41,20 +41,20 @@
+       "sha256": "27e07fbaaccca4e5113e1750a3b7baa9d05048a1e8588f09cdc8f9ed5cf44089"
+     },
+     "install_state.py": {
+-      "bytes": 37652,
+-      "sha256": "68e14392f23ee0c5c7a872c3d2abe54288bb22b1e04e80921caa56a21cf57036"
++      "bytes": 38130,
++      "sha256": "b76a9a81e7c7c2ac11a880c9f8a82cb2209a2abc44468edf5c76bd13af798db3"
+     },
+     "make_request.py": {
+       "bytes": 3048,
+-      "sha256": "0379f05acd36b91fc8dd4c8306d7b8cad0835a69a31168dc1d23004d13cc64a5"
++      "sha256": "6046fb1fea1b675caa75f335685bd35a7ef4ece7ac74eec0ce265aa0d06df0a8"
+     },
+     "references/read_ihg.py": {
+       "bytes": 21052,
+       "sha256": "51ecf1c0a12d8bfa9ed721265e14c4f06ef3eff72cbf5840de9569eb09797d40"
+     },
+     "stage_execute.py": {
+-      "bytes": 9292,
+-      "sha256": "df967163a20fd9b00a44aced823b21532de74459d73a33de0d18553a63b3671e"
++      "bytes": 9331,
++      "sha256": "a866fbb89bbff805449ef6a32ea8cf1faa68dd74ae126e406b88a23fef8c8ded"
+     },
+     "target-artifact-reference.json": {
+       "bytes": 1846,

@@ -1,0 +1,188 @@
+--- fresh02/owned_navigation.py
++++ content-ready03-normalized/owned_navigation.py
+@@ -425,7 +425,7 @@
+     module.reveal = types.ModuleType('fixed_player_controls_reveal')
+     module.reveal.__file__ = str(path)
+     exec(compile(read(path, 65536, pin['sha256'], pin['bytes']), str(path), 'exec'), module.reveal.__dict__)
+-    plans += [module.VIDEO_PLAN, *module.VIDEO_STABILITY_PLANS, *module.VIDEO_POST_PLANS]
++    plans += [module.VIDEO_PLAN, *module.VIDEO_STABILITY_PLANS, *module.VIDEO_POST_PLANS, *module.CONTENT_READY_PLANS]
+     module.reveal.validate(adapter, qa, [NONCE, *(n for p in plans for n in p['nonces'].values())])
+     path = HERE / 'playback_controls.py'
+     pin = manifest['files'][path.name]
+@@ -451,7 +451,7 @@
+     for stable_plan in [*STABILITY_PLANS, *QUERY_STABILITY_PLANS, *SUBMIT_STABILITY_PLANS, *RESULT_OBSERVATION_PLANS, SET_TEXT_PLAN, SUBMIT_PLAN, RESULTS_PLAN]:
+         adapter.validate_plan(stable_plan, qa)
+     step = 'launch-01' if phase == 'launch' else 'pause-resume-01'
+-    args = types.SimpleNamespace(operation='launch' if phase == 'launch' else 'owned-qa', adapter_manifest_sha256=R4_MANIFEST, flow_dir=FLOW, epoch_module=prior.RECORDER_ROOT / 'references/framework_epoch.py', task_source=prior.RECORDER_ROOT / 'references/task_scope_baseline.py', step=step, request={'phase': phase, 'nonce': NONCE, 'plan': plan, 'post_plan': POST_PLAN, 'stability_plans': STABILITY_PLANS, 'set_text_plan': SET_TEXT_PLAN, 'submit_plan': SUBMIT_PLAN, 'results_plan': RESULTS_PLAN, 'query_stability_plans': QUERY_STABILITY_PLANS, 'submit_stability_plans': SUBMIT_STABILITY_PLANS, 'result_observation_plans': RESULT_OBSERVATION_PLANS, 'video_plan': video.VIDEO_PLAN, 'video_post_plans': video.VIDEO_POST_PLANS, 'reveal_plan': video.reveal.REVEAL_PLAN, 'reveal_post_plan': video.reveal.POST_PLAN, 'playback_plans': video.playback.PAIRS, 'actual_install': admission}, unknown_step=None, observation_step=None, postcondition=None)
++    args = types.SimpleNamespace(operation='launch' if phase == 'launch' else 'owned-qa', adapter_manifest_sha256=R4_MANIFEST, flow_dir=FLOW, epoch_module=prior.RECORDER_ROOT / 'references/framework_epoch.py', task_source=prior.RECORDER_ROOT / 'references/task_scope_baseline.py', step=step, request={'phase': phase, 'nonce': NONCE, 'plan': plan, 'post_plan': POST_PLAN, 'stability_plans': STABILITY_PLANS, 'set_text_plan': SET_TEXT_PLAN, 'submit_plan': SUBMIT_PLAN, 'results_plan': RESULTS_PLAN, 'query_stability_plans': QUERY_STABILITY_PLANS, 'submit_stability_plans': SUBMIT_STABILITY_PLANS, 'result_observation_plans': RESULT_OBSERVATION_PLANS, 'video_plan': video.VIDEO_PLAN, 'video_post_plans': video.VIDEO_POST_PLANS, 'content_ready_plans': video.CONTENT_READY_PLANS, 'reveal_plan': video.reveal.REVEAL_PLAN, 'reveal_post_plan': video.reveal.POST_PLAN, 'playback_plans': video.playback.PAIRS, 'actual_install': admission}, unknown_step=None, observation_step=None, postcondition=None)
+     result = {'schema': 1, 'ok': False, 'error': None, 'secondary_errors': [], 'phase': phase, 'nonce': NONCE, 'package': BILI, 'uid': BILI_UID, 'helper_package': SELF, 'helper_uid': UID, 'source_manifest_sha256': expected, 'runtime_recorder_manifest_sha256': R4_MANIFEST, 'actual_install': admission, 'build': proof, 'automatic_retry': False, 'click_limit': 5, 'text_action_limit': 1, 'reveal_input_limit': 1, 'audio_actions': 0, 'permission_grants': 0, 'settings_writes': 0, 'old_v2_helper_called': False, 'raw_ui_tree_private_only': True, 'host_foreground_display_independently_verified': False, 'required_helper_display': 0, 'business_success_verified': False, 'whole_app_production_ready': False, 'business_outcome_unknown': True}
+     flow = None
+     action_lock = None
+@@ -475,7 +475,7 @@
+                 video.run(types.SimpleNamespace(**globals()), prior, qa, flow, session, installed, result)
+                 if result['error'] is None:
+                     video.playback.run(types.SimpleNamespace(**globals()), prior, qa, video.reveal, flow, session, installed, result)
+-        result['ok'] = result['error'] is None and result['secondary_errors'] == [] and (phase == 'launch' or (result.get('query_submission_controls_completed') is True and result.get('results_container_content_observed') is True and (result.get('video_click_and_observations_completed') is True) and (result.get('controls_reveal_and_observation_completed') is True) and (result.get('playback_button_transitions_completed') is True)))
++        result['ok'] = result['error'] is None and result['secondary_errors'] == [] and (phase == 'launch' or (result.get('query_submission_controls_completed') is True and result.get('results_container_content_observed') is True and (result.get('video_click_and_observations_completed') is True) and (result.get('player_content_readiness_completed') is True) and (result.get('controls_reveal_and_observation_completed') is True) and (result.get('playback_button_transitions_completed') is True)))
+     except BaseException as error:
+         if session is not None and hasattr(session, 'sequence_observation'):
+             result['failed_inspection_sequence'] = session.sequence_observation
+@@ -520,7 +520,7 @@
+         stable = value.get('pre_action_stability', {})
+         require(stable.get('qualified') is True and stable.get('maximum_sequences') == 4 and (stable.get('deadline_seconds') == STABILITY_SECONDS) and (stable.get('future_action_still_requires_original_strict_freshness') is True), 'ACTUAL_PRE_ACTION_COMPLETE_TREE_STABILITY_REQUIRED')
+         require(value.get('search_page_stability', {}).get('before_set_text', {}).get('qualified') is True and value.get('search_page_stability', {}).get('before_submit', {}).get('qualified') is True and (value.get('submit_admission', {}).get('public_value_observed') is True) and (value.get('submit_action_bound_value', {}).get('public_value_observed') is True), 'ACTUAL_EDIT_AND_SUBMIT_POSTCONDITION_REQUIRED')
+-        require(value.get('action_attempted') is True and value.get('video_click_and_observations_completed') is True and (value.get('controls_reveal_and_observation_completed') is True) and (value.get('playback_button_transitions_completed') is True) and (value.get('results_container_content_observed') is True) and (value.get('result_content_observation', {}).get('qualified') is True) and (value.get('scoped_click_and_post_observation_completed') is True) and (value.get('query_submission_controls_completed') is True) and (value.get('final_results_inspection_completed') is True) and (value.get('business_outcome_unknown') is True) and (value.get('business_success_verified') is False), 'CLICK_OBSERVATION_SCOPE_MUST_RETAIN_UNKNOWN_BUSINESS_OUTCOME')
++        require(value.get('action_attempted') is True and value.get('video_click_and_observations_completed') is True and (value.get('player_content_readiness_completed') is True) and (value.get('player_content_readiness', {}).get('qualified') is True) and (value.get('controls_reveal_and_observation_completed') is True) and (value.get('playback_button_transitions_completed') is True) and (value.get('results_container_content_observed') is True) and (value.get('result_content_observation', {}).get('qualified') is True) and (value.get('scoped_click_and_post_observation_completed') is True) and (value.get('query_submission_controls_completed') is True) and (value.get('final_results_inspection_completed') is True) and (value.get('business_outcome_unknown') is True) and (value.get('business_success_verified') is False), 'CLICK_OBSERVATION_SCOPE_MUST_RETAIN_UNKNOWN_BUSINESS_OUTCOME')
+     return (value, {'path': str(path), 'bytes': len(raw), 'sha256': sha(raw)})
+ 
+ def owned_scope():
+@@ -569,11 +569,12 @@
+         result['navigation_worker_requested'] = True
+         observed = ref.run_cli('03-navigate', ['/usr/bin/python3', '-I', str(HERE / 'owned_navigation.py'), '--worker-once', 'navigate', '--source-manifest-sha256', expected], 240, evidence, guard)
+         navigated, result['navigation_result'] = durable_phase(observed, 'navigate')
+-        result['navigation'] = {'foreground': navigated['controls_reveal_observation']['final_scope'], 'controls_reveal_observation': navigated['controls_reveal_observation'], 'playback_button_observation': navigated['playback_button_observation'], 'video_selection': navigated['video_action_bound_selection'], 'video_stability': navigated['video_stability'], 'video_click_assessments': navigated['video_click_assessments'], 'video_post_observations': navigated['video_post_observations'], 'result_content_observation': navigated['result_content_observation'], 'observed_results_assessments': navigated['observed_results_assessments'], 'results_content_classification': navigated['results_content_classification'], 'query_submission_controls_completed': navigated['query_submission_controls_completed'], 'public_query_sha256': sha(PUBLIC_QUERY.encode()), 'search_page_stability': navigated['search_page_stability'], 'set_text_assessments': navigated['set_text_assessments'], 'submit_assessments': navigated['submit_assessments'], 'submit_action_bound_value': navigated['submit_action_bound_value'], 'results_assessments': navigated['results_assessments'], 'pre_action_stability': navigated['pre_action_stability'], 'selector': PLAN['selector'], 'click_assessments': navigated['click_assessments'], 'post_assessments': navigated['post_assessments'], 'click_restoration': navigated['click_sequence']['accessibility_restoration'], 'post_restoration': navigated['post_inspection_sequence']['accessibility_restoration'], 'click_acknowledged': True, 'post_inspection_completed': True, 'business_outcome_unknown': True, 'effect_classification': 'PENDING_PRIVATE_POST_TREE_REVIEW'}
++        result['navigation'] = {'foreground': navigated['controls_reveal_observation']['final_scope'], 'controls_reveal_observation': navigated['controls_reveal_observation'], 'playback_button_observation': navigated['playback_button_observation'], 'video_selection': navigated['video_action_bound_selection'], 'video_stability': navigated['video_stability'], 'video_click_assessments': navigated['video_click_assessments'], 'video_post_observations': navigated['video_post_observations'], 'player_content_readiness': navigated['player_content_readiness'], 'result_content_observation': navigated['result_content_observation'], 'observed_results_assessments': navigated['observed_results_assessments'], 'results_content_classification': navigated['results_content_classification'], 'query_submission_controls_completed': navigated['query_submission_controls_completed'], 'public_query_sha256': sha(PUBLIC_QUERY.encode()), 'search_page_stability': navigated['search_page_stability'], 'set_text_assessments': navigated['set_text_assessments'], 'submit_assessments': navigated['submit_assessments'], 'submit_action_bound_value': navigated['submit_action_bound_value'], 'results_assessments': navigated['results_assessments'], 'pre_action_stability': navigated['pre_action_stability'], 'selector': PLAN['selector'], 'click_assessments': navigated['click_assessments'], 'post_assessments': navigated['post_assessments'], 'click_restoration': navigated['click_sequence']['accessibility_restoration'], 'post_restoration': navigated['post_inspection_sequence']['accessibility_restoration'], 'click_acknowledged': True, 'post_inspection_completed': True, 'business_outcome_unknown': True, 'effect_classification': 'PENDING_PRIVATE_POST_TREE_REVIEW'}
+         result['scoped_click_and_post_observation_completed'] = True
+         result['query_submission_controls_completed'] = True
+         result['results_container_content_observed'] = True
+         result['video_click_and_observations_completed'] = True
++        result['player_content_readiness_completed'] = True
+         result['controls_reveal_and_observation_completed'] = True
+         result['playback_button_transitions_completed'] = True
+         result['ok'] = True
+--- fresh02/stage_execute.py
++++ content-ready03-normalized/stage_execute.py
+@@ -66,7 +66,7 @@
+         durable_raw = entry.read(ROOT / 'result.json')
+         result['coordinator_result'] = {'path': str(ROOT / 'result.json'), 'bytes': len(durable_raw), 'sha256': sha(durable_raw)}
+         durable = json.loads(durable_raw)
+-        require(code == 0 and durable.get('ok') is True and (durable.get('owned_task_absent_after_cleanup') is True) and (durable.get('scoped_click_and_post_observation_completed') is True) and (durable.get('query_submission_controls_completed') is True) and (durable.get('results_container_content_observed') is True) and (durable.get('video_click_and_observations_completed') is True) and (durable.get('controls_reveal_and_observation_completed') is True) and (durable.get('playback_button_transitions_completed') is True) and (durable.get('business_success_verified') is False), 'OWNED_BUTTON_TRANSITIONS_CLEANUP_NOT_QUALIFIED')
++        require(code == 0 and durable.get('ok') is True and (durable.get('owned_task_absent_after_cleanup') is True) and (durable.get('scoped_click_and_post_observation_completed') is True) and (durable.get('query_submission_controls_completed') is True) and (durable.get('results_container_content_observed') is True) and (durable.get('video_click_and_observations_completed') is True) and (durable.get('player_content_readiness_completed') is True) and (durable.get('controls_reveal_and_observation_completed') is True) and (durable.get('playback_button_transitions_completed') is True) and (durable.get('business_success_verified') is False), 'OWNED_BUTTON_TRANSITIONS_CLEANUP_NOT_QUALIFIED')
+         result['ok'] = True
+     except BaseException as error:
+         prior.remember(result, 'stage_or_coordinator', error)
+--- fresh02/video_navigation.py
++++ content-ready03-normalized/video_navigation.py
+@@ -8,14 +8,16 @@
+ VIDEO_PLAN = {'schema': 1, 'operation': 'click', 'selector': {'class': 'android.view.ViewGroup'}, 'nonces': {'before': '0a456cb4075cbb4adbceb4f042e20573', 'inspect': 'f984e01d33aaa12a925c67d9b4fd1515', 'action': 'ca4a6ff6766ab52a62fa00d515e194da', 'after': '0aa88de0ad767991665c5db41d7cab46'}}
+ VIDEO_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '5e23f2c2ae3a65f1eacd5b253193c651', 'inspect': 'ac345281c969c4c5026c23ac68b7374d', 'after': 'ce062da0fa84b8884d5e68191364b167'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '9e14fe77a375d888b5c638d0e0f0125f', 'inspect': '5e8a88742ddf7e96a02775f6b70b30d5', 'after': '8b65dbe7dafd93fa222a97edd0182e1e'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '9a5c82f903565cf231d31ef5cbb66ce9', 'inspect': '7dd9719ab4ddd4e3813869cde1359ee7', 'after': '5793e2c55669b3d1095c5e7963202b64'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'ea846b6adb002e012c95dc8f41f70efd', 'inspect': '98ef26997c8df609afa19122bc15ee20', 'after': '8d35100af7b9fd99df163d12286386f8'}}]
+ VIDEO_POST_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '30b7d5cf1d55dac9a4af772e179ce134', 'inspect': '03a44ed6a80c58478341f0ed4c9051ba', 'after': 'eb9047dd70f36bc4e50bd985f73f38c0'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'b6ec02a0cf75b9a1b9557e614a521641', 'inspect': '4f20a4ef19dd3a66b8f6770cdba7b8d8', 'after': '8a3d738d73e06705950573af6fcfc16d'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '400fc1d4713d44daeb13b8af9f926a8a', 'inspect': '75b18ea61c126b869c8598097cefc528', 'after': 'c70c260c66c7d1898bebbfceedc9544a'}}]
++CONTENT_READY_SECONDS = 12
++CONTENT_READY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '252221956d349646f37db0ec65c651c2', 'inspect': '677e7169b9dd1218a07ae713fda6de53', 'after': '322bbd8214649aa459a2f07d3b1ded48'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '604c0b7600d76c7989836403bc78632e', 'inspect': '67c2f3531cbbdb27dbd7b133897d23dd', 'after': 'c62e42c1d218d861fdb8639733fb39af'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '8f50dcaaee145520cb93ba4619b3f59d', 'inspect': '07d248c62380a518ab91e459559134fc', 'after': '210120adc2e9d238cd2471ca266830e0'}}]
+ 
+ def validate(adapter, qa, base_nonces):
+-    plans = [VIDEO_PLAN, *VIDEO_STABILITY_PLANS, *VIDEO_POST_PLANS]
++    plans = [VIDEO_PLAN, *VIDEO_STABILITY_PLANS, *VIDEO_POST_PLANS, *CONTENT_READY_PLANS]
+     for plan in plans:
+         adapter.validate_plan(plan, qa)
+     values = [n for plan in plans for n in plan['nonces'].values()]
+-    qa.require(len(values) == len(set(values)) == 25 and (not set(values) & set(base_nonces)), 'FRESH_DISTINCT_VIDEO_NONCES_REQUIRED')
+-    qa.require(VIDEO_PLAN['selector'] == CARD_SELECTOR and VIDEO_PLAN['operation'] == 'click' and (len(VIDEO_STABILITY_PLANS) == 4) and (len(VIDEO_POST_PLANS) == 3) and all((p['operation'] == 'inspect' for p in [*VIDEO_STABILITY_PLANS, *VIDEO_POST_PLANS])), 'ONLY_ONE_OBSERVED_COURSE_CLICK_ALLOWED')
++    qa.require(len(values) == len(set(values)) == 34 and (not set(values) & set(base_nonces)), 'FRESH_DISTINCT_VIDEO_NONCES_REQUIRED')
++    qa.require(VIDEO_PLAN['selector'] == CARD_SELECTOR and VIDEO_PLAN['operation'] == 'click' and (len(VIDEO_STABILITY_PLANS) == 4) and (len(VIDEO_POST_PLANS) == 3) and (len(CONTENT_READY_PLANS) == 3) and all((p['operation'] == 'inspect' for p in [*VIDEO_STABILITY_PLANS, *VIDEO_POST_PLANS, *CONTENT_READY_PLANS])), 'ONLY_ONE_OBSERVED_COURSE_CLICK_ALLOWED')
+ 
+ def select_course(base, qa, inspection, scope):
+     """Select a current direct parent by three exact UTF-8 content digests.
+@@ -181,9 +183,92 @@
+             first_null.add_note('BOUNDED_NULL_FOREGROUND_OBSERVATION_EXHAUSTED')
+             raise first_null
+ 
++def content_status(qa, inspection, scope):
++    """Original full proof, or the narrowly observed absent-metadata shape.
++
++    A waitable shape authorizes only another independent no-action inspection.
++    It never creates a player proof or substitutes for the reveal admission.
++    """
++    try:
++        proof = qa.player_reveal_scope(inspection, scope, True)
++    except qa.ProtocolError as error:
++        if str(error) != 'REVEAL_UNIQUE_PLAYER_ROLE_REQUIRED':
++            raise
++        nodes = inspection['nodes']
++        counts = {}
++        missing = []
++        qa.require(all((n.get('class_truncated') is False and n.get('resource_id_truncated') is False for n in nodes)), 'CONTENT_READY_ROLE_FIELDS_MUST_BE_COMPLETE')
++
++        def eligible(n, kind):
++            return n.get('class') == kind and n.get('visible') is True and (n.get('enabled') is True) and (n.get('password') is False) and (n.get('class_truncated') is False) and (n.get('resource_id_truncated') is False)
++
++        def rows(resource):
++            return [n for n in nodes if n.get('resource_id') == qa.PACKAGE + ':id/' + resource]
++        for resource, digest in (('title', qa.REVEAL_TITLE), ('author_name', qa.REVEAL_AUTHOR)):
++            found = rows(resource)
++            counts[resource] = len(found)
++            qa.require(len(found) <= 1 and all((eligible(n, 'android.widget.TextView') and n.get('text_truncated') is False and isinstance(n.get('text'), str) and (n.get('text_sha256') == digest == qa.sha(n['text'].encode())) for n in found)), 'CONTENT_READY_PRESENT_METADATA_MUST_MATCH')
++            if not found:
++                missing.append(resource)
++        qa.require(bool(missing), 'CONTENT_READY_ONLY_ABSENT_METADATA_MAY_WAIT')
++        for resource in ('video_area', 'video_container', 'video_area_float_layer_container', 'collapsing_toolbar', 'control_container'):
++            found = rows(resource)
++            counts[resource] = len(found)
++            qa.require(len(found) == 1 and eligible(found[0], 'android.widget.FrameLayout'), 'CONTENT_READY_FIXED_PLAYER_ROLE_CHANGED')
++        surfaces = [n for n in nodes if n.get('class') in ('android.view.SurfaceView', 'android.view.TextureView')]
++        qa.require(len(surfaces) == 2 and all((eligible(n, 'android.view.SurfaceView') for n in surfaces)), 'CONTENT_READY_OBSERVED_RENDERER_SHAPE_CHANGED')
++        qa.require(not any((n.get('visible') is True and isinstance(n.get('text'), str) and n['text'].startswith('Buffering...') for n in nodes)), 'CONTENT_READY_BUFFERING_SHAPE_CHANGED')
++        return {'ready': False, 'wait_permitted': True, 'missing_metadata_roles': missing, 'fixed_resource_counts': counts, 'surface_view_count': 2, 'texture_view_count': 0, 'original_predicate_error': {'type': type(error).__name__, 'message': str(error)}}
++    return {'ready': True, 'wait_permitted': False, 'original_full_player_proof': proof}
++
++def content_observation(base, qa, flow, installed, sequence, summaries, plan, anchor):
++    scope = anchor['foreground_after']
++    base.require(sequence.get('error') is None and sequence.get('secondary_errors') == [] and (sequence['installed_before'] == sequence['installed_after'] == installed) and (sequence['owned_task'] == anchor['owned_task']) and (sequence['foreground_before'] == sequence['foreground_after'] == scope) and (sequence['after_state_completed'] is True) and (sequence['restoration_qualified'] is True) and (sequence['post_state_matches_before'] is True) and (sequence['accessibility_restoration']['state_after'] == anchor['accessibility_restoration']['state_after']), 'CONTENT_READY_CURRENT_OWNED_SCOPE_IDENTITY_AND_RESTORATION_REQUIRED')
++    row = summaries['inspect']
++    base.require(row['nonce'] == plan['nonces']['inspect'] and row['wire_sha256'] == sequence['inspection_wire_sha256'], 'CONTENT_READY_EXACT_INSPECTION_NONCE_WIRE')
++    helper, pin = reveal.assessment(base, qa, flow, row['nonce'], 'inspect', scope, row['wire_sha256'])
++    base.require(pin['assessment_bytes'] == row['assessment_bytes'] and pin['assessment_sha256'] == row['assessment_sha256'] and (helper.get('action_attempted') is False) and (helper.get('outcome_unknown') is False) and (helper['restoration']['service_info_verified'] is True), 'CONTENT_READY_NO_ACTION_EXACT_ASSESSMENT_REQUIRED')
++    inspection = helper['inspection']
++    return {'scope': scope, 'owned_task': sequence['owned_task'], 'assessments': summaries, 'accessibility_restoration': sequence['accessibility_restoration'], 'after_state_completed': True, 'restoration_qualified': True, 'action_attempted': False, 'outcome_unknown': False, 'node_count': len(inspection['nodes']), 'tree_sha256': inspection['tree_sha256'], 'window_sha256': inspection['window_sha256'], 'status': content_status(qa, inspection, scope)}
++
++def await_player_content(base, prior, qa, flow, session, installed, result, sequence, summaries):
++    began = time.monotonic()
++    anchor = result['video_click_sequence']
++    window = None
++    record = {'qualified': False, 'maximum_additional_sequences': 3, 'deadline_seconds': CONTENT_READY_SECONDS, 'deadline_kind': 'readiness admission and qualification; original finally may complete', 'original_worker_deadline_unchanged': True, 'observations': [], 'failed_reads_retried': False, 'additional_input_actions': 0, 'future_reveal_requires_original_full_fresh_inspection': True}
++    result['player_content_readiness'] = record
++    for index in range(4):
++        base.require(time.monotonic() - began < CONTENT_READY_SECONDS, 'PLAYER_CONTENT_READINESS_DEADLINE')
++        plan = VIDEO_POST_PLANS[-1] if index == 0 else CONTENT_READY_PLANS[index - 1]
++        if index:
++            before = getattr(session, 'sequence_observation', None)
++            try:
++                sequence = session.sequence(json.loads(json.dumps(plan)))
++            except BaseException:
++                current = getattr(session, 'sequence_observation', None)
++                if current is not None and current is not before:
++                    record['failed_sequence'] = current
++                raise
++            summaries = base.assessment_summary(prior, qa, flow.step, sequence, plan)
++        observed = content_observation(base, qa, flow, installed, sequence, summaries, plan, anchor)
++        observed.update(index=index, source='existing_last_video_post' if index == 0 else 'additional_no_action_read', elapsed_ms=int((time.monotonic() - began) * 1000))
++        record['observations'].append(observed)
++        if window is None:
++            window = observed['window_sha256']
++        base.require(observed['window_sha256'] == window, 'CONTENT_READY_WINDOW_CHANGED')
++        base.require(time.monotonic() - began < CONTENT_READY_SECONDS, 'PLAYER_CONTENT_READINESS_DEADLINE')
++        if observed['status']['ready']:
++            record['qualified'] = True
++            record['additional_sequences_used'] = index
++            result['player_content_readiness_completed'] = True
++            return
++        base.require(observed['status']['wait_permitted'] is True, 'CONTENT_READY_WAIT_NOT_AUTHORIZED')
++    raise RuntimeError('PLAYER_CONTENT_METADATA_NOT_READY_IN_BOUNDED_READS')
++
+ def run(base, prior, qa, flow, session, installed, result):
+     result['video_click_and_observations_completed'] = False
+     result['video_click_sequence_started'] = False
++    result['player_content_readiness_completed'] = False
+     try:
+         base.require(result.get('query_submission_controls_completed') is True and result.get('results_container_content_observed') is True, 'ACTUAL_CURRENT_QUERY_CONTENT_REQUIRED')
+         stable_course(base, prior, qa, flow, session, installed, result)
+@@ -219,4 +304,9 @@
+     result['business_outcome_unknown'] = True
+     result['playback_or_audio_success_inferred'] = False
+     if result['video_click_and_observations_completed']:
++        try:
++            await_player_content(base, prior, qa, flow, session, installed, result, sequence, summaries)
++        except BaseException as error:
++            prior.remember(result, 'player_content_readiness', error)
++    if result['player_content_readiness_completed'] and result['error'] is None and (result['secondary_errors'] == []):
+         reveal.run(base, prior, qa, flow, session, installed, result)

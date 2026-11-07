@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "scope": "Bounded read only of exactly two configuration paths observed in actual service diagnostic03. No configuration change, baseline rebinding or runtime authority.",
+  "root_full_source_read": true,
+  "source": {
+    "bytes": 8554,
+    "sha256": "75c6417b697b913a258a3947a172b4c4382ca40cff39df92fa2e82065fc4138d"
+  },
+  "all_payload_pins_verified": 6,
+  "stdin_byte_equal_source": true,
+  "wrapper_hash_bound": true,
+  "paths": [
+    "/etc/systemd/system.control/droidloomd.service.d/50-TasksMax.conf",
+    "/etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf"
+  ],
+  "bounds": {
+    "file_max": 16384,
+    "total_max": 32768,
+    "seconds": 5
+  },
+  "no_symlink_components": true,
+  "held_and_named_second_full_hash": true,
+  "no_child_started_by_reader": true,
+  "Main_mutations": 0,
+  "runtime_authorized": false
+}

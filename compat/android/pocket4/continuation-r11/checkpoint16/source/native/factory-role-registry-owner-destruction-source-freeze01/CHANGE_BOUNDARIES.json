@@ -1,0 +1,29 @@
+{
+  "Close_preserves_owner_held_proc_proof": {
+    "Impl_proc_self_pidfd_self_owner_unchanged": true,
+    "call_chain": [
+      "Close -> OwnThread -> Find -> Revoke",
+      "Revoke -> Reset(Slot&) -> retain revoked subject PIDFD"
+    ],
+    "slot_only": true
+  },
+  "all_begin_approve_attach_create_finish_suspend_detach_release_sweep_close_functions_byte_identical": true,
+  "all_prior_capture_sender_identity_and_frame_helpers_byte_identical": true,
+  "allocator_hook": false,
+  "changed_files": [
+    "source/role_authorization.cc",
+    "source/role_authorization.h"
+  ],
+  "controls_executed": false,
+  "factory_context_and_original_registry_fixture_byte_identical": true,
+  "implementation_changes": [
+    "owner-only Impl destruction with errno preservation",
+    "local unique_ptr for partially constructed unpublished Impl"
+  ],
+  "new_control_baseline_cases_declared": 2,
+  "new_control_candidate_cases_declared": 4,
+  "platform_qualified": false,
+  "post_compile_source_pins_only": true,
+  "remote_actions": 0,
+  "state": "SOURCE_AND_LOCAL_COMPILE_PLAN_ONLY"
+}

@@ -1,0 +1,50 @@
+{
+  "Android_SDK_compile_performed": false,
+  "Android_or_UI_actions": 0,
+  "Java_reflection_executed": true,
+  "actual_public_reflection_method_extracted": true,
+  "actual_window_method_bodies_extracted": true,
+  "expected_controls": 15,
+  "method_substitution_only": "Object.wait -> owned fake-clock await",
+  "new_sha256": "c167e7bcd3c378cf2689f725413cc74c34b134b014dc80d848d0e6619531c77c",
+  "old_sha256": "b23761d82d2bf176b20545ace7798ca81e78c03dc007d8152618a754962926ee",
+  "runs": [
+    {
+      "case": "window",
+      "exit_code": 0,
+      "java_sha256": "a90dd7198b0515ef91164498598a7fb2d3d3bda7549ade1212e45ddcd29334e3",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "94f682f3b506c466f37d3846cab87b838ca102b3ece537ea8a513737dc9829e7"
+    },
+    {
+      "case": "nonpublic",
+      "exit_code": 0,
+      "java_sha256": "9dcba98cf157461802e1b07bd17eef1b0e9c20fbb107b110c1d729cca177aebc",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "5fea1586648a19014e99263f25f152ca40794b384d42187f70a57c0e99dfce60"
+    },
+    {
+      "case": "wrong_return",
+      "exit_code": 0,
+      "java_sha256": "98b3b674474425d0999e219943afde19b0f53e6e542368080b22dac2e7970e61",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "cd4fff2d3221a130933e28e974772ea393917bec8c943ce17fc61c1451523ba6"
+    },
+    {
+      "case": "static",
+      "exit_code": 0,
+      "java_sha256": "7361d4399f59e75d1ff4475601b4899f931e256e6902c5e4be387c2475ca71ba",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "65168f431b0d5c59488a44b606b87d0858a3b901699d5eb49ad88a58f9846722"
+    }
+  ],
+  "runtime_cache_cause_proven": false,
+  "schema": 1,
+  "seams": [
+    "UiAutomation public API and cache/window enumeration",
+    "elapsed clock",
+    "condition wait",
+    "JSON storage"
+  ],
+  "state": "PASS"
+}

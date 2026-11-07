@@ -1,0 +1,143 @@
+{
+  "scope": "local strict two-arm compilation; default PLAN; root-only rejection; actual final worker closure audit",
+  "positive_26_cases_executed": false,
+  "Android_execution": false,
+  "source_sha256": "62c53acf7a58054a3ff4ea83e051a5630405955fe79cc59dcccc99b37e4264ef",
+  "compiler": {
+    "path": "/usr/bin/x86_64-linux-gnu-g++-13",
+    "sha256": "52f1ddb33fe78b9441e0f42e9cd22c571f1101938e046c8a26582494e041cc73"
+  },
+  "objdump": {
+    "path": "/usr/bin/x86_64-linux-gnu-objdump",
+    "sha256": "7fd25a9f02382a952fe983e40bd41aa12127d1bbe3f4dc5c93ea13d03279a2f5"
+  },
+  "cpu": 0,
+  "arms": [
+    {
+      "arm": "candidate",
+      "compile_argv": [
+        "/usr/bin/g++",
+        "-std=c++20",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-Iactual",
+        "owned_nofile_controls.cc",
+        "actual/proc_maps_factory_wire.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-03/candidate"
+      ],
+      "runs": [
+        {
+          "label": "default-plan",
+          "argv": [
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-03/candidate"
+          ],
+          "returncode": 0,
+          "stdout_sha256": "3aeae30a70c08ac73f8addc8a7881b97d122ecc4e69a00959dc7dff0b7d66427",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "label": "root-admission-negative",
+          "argv": [
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-03/candidate",
+            "--root-rejection-only"
+          ],
+          "returncode": 0,
+          "stdout_sha256": "420376643490d53e043738b2dd027d9d4adbf86d2e0f7f29d55602e8d1e6569d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "label": "final-worker-audit",
+          "argv": [
+            "/usr/bin/python3",
+            "-I",
+            "-B",
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/audit_two_workers.py",
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-03/candidate",
+            "--objdump",
+            "/usr/bin/objdump",
+            "--output",
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-03/candidate-audit.json"
+          ],
+          "returncode": 0,
+          "stdout_sha256": "ce72b5e3943a8fa724a46d9d06f101a52bc85ff0b568d528838a48edbbd0052c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "compile_returncode": 0,
+      "elf": {
+        "bytes": 117720,
+        "sha256": "e0f18d6ecef47485e294edada163a2b0019ae184fc6fd99d4f1b46e1f7287c34"
+      },
+      "elf_unchanged_after": true
+    },
+    {
+      "arm": "preimage",
+      "compile_argv": [
+        "/usr/bin/g++",
+        "-std=c++20",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-DOWNED_USE_PREIMAGE=1",
+        "-Iactual",
+        "owned_nofile_controls.cc",
+        "actual/proc_maps_factory_wire.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-03/preimage"
+      ],
+      "runs": [
+        {
+          "label": "default-plan",
+          "argv": [
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-03/preimage"
+          ],
+          "returncode": 0,
+          "stdout_sha256": "7d1873bc0731bdf15c5f4dcc616349371e4480b9e96f55149e6fdee00f2ae0dc",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "label": "root-admission-negative",
+          "argv": [
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-03/preimage",
+            "--root-rejection-only"
+          ],
+          "returncode": 0,
+          "stdout_sha256": "420376643490d53e043738b2dd027d9d4adbf86d2e0f7f29d55602e8d1e6569d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "label": "final-worker-audit",
+          "argv": [
+            "/usr/bin/python3",
+            "-I",
+            "-B",
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/audit_worker_binary.py",
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-03/preimage",
+            "--objdump",
+            "/usr/bin/objdump",
+            "--output",
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-03/preimage-audit.json"
+          ],
+          "returncode": 0,
+          "stdout_sha256": "ce668ecf5eb27a156467d08d7cc70ae70fe7592aa20a40cc23642dcf53fe7648",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "compile_returncode": 0,
+      "elf": {
+        "bytes": 117264,
+        "sha256": "cfcb0a97e00fa88de8d14de9ab27592f856d9c00f2cf06c6234cac00360ebd05"
+      },
+      "elf_unchanged_after": true
+    }
+  ],
+  "source_unchanged_after": true,
+  "tools_unchanged_after": true,
+  "pass": true
+}

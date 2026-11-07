@@ -1,0 +1,88 @@
+{
+  "schema": 1,
+  "success": true,
+  "passed": 18,
+  "controls": [
+    {
+      "case": "single_external_request_and_stdin_bound",
+      "passed": true
+    },
+    {
+      "case": "exact_execution_tuple_matches",
+      "passed": true
+    },
+    {
+      "case": "Owner14_shared_argv_different_resources_rejected",
+      "passed": true
+    },
+    {
+      "case": "cpu_quota_percent_boolean_rejected",
+      "passed": true
+    },
+    {
+      "case": "memory_max_bytes_boolean_rejected",
+      "passed": true
+    },
+    {
+      "case": "nice_boolean_rejected",
+      "passed": true
+    },
+    {
+      "case": "timeout_seconds_boolean_rejected",
+      "passed": true
+    },
+    {
+      "case": "all_scan_limits_exact",
+      "passed": true
+    },
+    {
+      "case": "actual_138246_byte_read_spans_original_65536_chunks",
+      "passed": true
+    },
+    {
+      "case": "actual_large_stdin_pin_matches",
+      "passed": true
+    },
+    {
+      "case": "different_size_reads_zero_body_bytes",
+      "passed": true
+    },
+    {
+      "case": "same_size_different_hash_is_not_target",
+      "passed": true
+    },
+    {
+      "case": "existing_total_budget_rejects_before_body_read",
+      "passed": true
+    },
+    {
+      "case": "metadata_limit_still_rejects_138246",
+      "passed": true
+    },
+    {
+      "case": "owned_scan_exact_single_target_only",
+      "passed": true
+    },
+    {
+      "case": "owned_scan_does_not_read_excluded_stdin",
+      "passed": true
+    },
+    {
+      "case": "owned_scan_exhausted_without_errors_or_close_failures",
+      "passed": true
+    },
+    {
+      "case": "all_owned_FDs_and_temporary_directories_released",
+      "passed": true
+    }
+  ],
+  "scope": "actual local owned files and synthetic metadata only",
+  "source_sha256": "c9a8154c9c9f3de09f5f34120b4f6244361cdebdf1da0899773443ce20fd14d3",
+  "source_expected_UID": 1000,
+  "test_module_UID_seam": 0,
+  "actual_worker_jobs_directory_opened": false,
+  "actual_reconciliation_reader_main_executed": false,
+  "approved_runtime_executed": false,
+  "Hepta_called": false,
+  "real_submission_or_execution_state_proved": false
+}

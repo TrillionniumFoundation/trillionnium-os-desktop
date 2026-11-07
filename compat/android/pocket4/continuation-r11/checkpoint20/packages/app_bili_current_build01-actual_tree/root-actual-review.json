@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_STATIC_PASS_WITH_HOST_R5_INTEGRATION_GAP_FOUND_NO_RUNTIME_ADMISSION",
+  "app": "bili",
+  "job_id": "1a1af91b6b6-fc05-69b6",
+  "source_tree": "228be7d38879153946b9030516bfa90eb758af20",
+  "preflight_tree": "7e96854cda936dda901346ddf74b5399dc095907",
+  "admission_tree": "18bdfa729d04d09cb1c7ca144cabc818e28e6536",
+  "build_result": {
+    "path": "/home/alex/work/pocket4-owned-bili-qa-r9-build-01/build-result.json",
+    "bytes": 31461,
+    "sha256": "2bbc15ffbcb6ff2fd6ae21414c72de67a76c914ff36a0be745edac9cb0e9a2b6",
+    "version": "66306:33605829:31461:1793946936231268006:1793946936231268006",
+    "chunks": [
+      {
+        "offset": 0,
+        "next_offset": 31461,
+        "bytes": 31461,
+        "sha256": "2bbc15ffbcb6ff2fd6ae21414c72de67a76c914ff36a0be745edac9cb0e9a2b6"
+      }
+    ]
+  },
+  "stage_result": {
+    "path": "/home/alex/work/pocket4-owned-bili-qa-r9-source-01/stage-result.json",
+    "bytes": 1935,
+    "sha256": "3e0cbb29618104d894562c88b3ae671edc981e7f25a550cd4ddbfee01e643789",
+    "version": "66306:33471707:1935:1793946936232730140:1793946936232730140",
+    "chunks": [
+      {
+        "offset": 0,
+        "next_offset": 1935,
+        "bytes": 1935,
+        "sha256": "3e0cbb29618104d894562c88b3ae671edc981e7f25a550cd4ddbfee01e643789"
+      }
+    ]
+  },
+  "commands": 13,
+  "new_current_scope_cases": 12,
+  "existing_Java_idle_cases": 22,
+  "existing_Python_idle_cases": 32,
+  "all_children_joined": true,
+  "source_tools_unchanged": true,
+  "APK": {
+    "bytes": 37008,
+    "path": "/home/alex/work/pocket4-owned-bili-qa-r9-build-01/owned-bili-qa.apk",
+    "sha256": "6046b22cfeea1c11b8570651fbca91a280ae6cb2466909c43b3580136cb68f8d"
+  },
+  "signer": "162a42a430e3dbd1ecd028c63a266548a5cd2c7165824a4c21b936f4347eec6a",
+  "resource_after": {
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1af91b6b6-fc05-69b6.service",
+    "device": 30,
+    "inode": 33212528,
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.current": "134336512",
+    "memory.peak": "280715264",
+    "memory.swap.current": "0",
+    "memory.swap.peak": "0",
+    "cgroup.procs": "676452\n676454"
+  },
+  "discovered_integration_gap": "qa_adapter.RECORDER_MANIFEST_SHA still binds old host R4; forthcoming host R5 would be rejected. Source freeze02 will bind R5/B/Q/epoch with fresh create-only build paths and new keys. This actual remains static-only history.",
+  "Android_installed": false,
+  "UI_actions": 0,
+  "whole_app_production_ready": false,
+  "build_replay_authorized": false
+}

@@ -1,0 +1,41 @@
+{
+  "approved_execution_fields_and_stdin_bound": true,
+  "deadline_contract": "10-second monotonic deadline checked before/after metadata reads and each enumerated entry; not an unconditional scheduling/I/O latency guarantee. The reader request itself has a separate 30-second tool limit.",
+  "exact_request": {
+    "bytes": 13332,
+    "sha256": "225b6b144bd85842b8ff24d000406db8eff99291d25196941516a3b3c559f32a"
+  },
+  "held_path_and_IO_contract": [
+    "Every fixed jobs path component opened directory/no-follow; final owner UID1000",
+    "Only hex-pattern job directory names are opened; request.json regular UID1000 nlink1 no-follow/nonblocking, bounded and held/named identity rechecked",
+    "Only exact original execution tuple plus job_id/job_dir/stdin_path/digest metadata match permits fixed stdin.bin read",
+    "Every matching stdin must equal 35263 bytes and external SHA; unmatched argv/env/stdin/job IDs are not output",
+    "Every job/file/directory FD is closed in finally; collection errors and counts are retained without disclosing other-job data"
+  ],
+  "local_controls": {
+    "bytes": 1472,
+    "count": 19,
+    "file": "checks.json",
+    "scope": "Parser/AST and two private temporary files only; real jobs root and production main not executed",
+    "sha256": "f9ae2ff2735a516ed9d636e81abee118c957af5f1970a05c020799c7249ee94b"
+  },
+  "local_freeze_first_attempt": "An AST-only check used literal_eval on a multiplication expression and failed before writing bundle payloads; corrected by comparing its exact BinOp AST. No source or remote behavior changed.",
+  "numeric_field_contract": "Only exact numerical equality accepts int/float JSON representation of integral resource values; booleans, changed values, rounded values and nonnumeric strings reject",
+  "ordinary14_or_Android_executed": false,
+  "ordinary14_status": "UNKNOWN",
+  "output_contract": "At most eight matching tuples and 64KiB JSON. Exact match only after request plus held stdin and directory proof. Zero exact matches is NOT_FOUND_AT_OBSERVATION, even if collection was incomplete; no inference original call was invalid, no replay.",
+  "production_AST_checks": [
+    "No exec/eval/compile/dynamic import, subprocess or socket module",
+    "No os write/create/truncate/remove/mkdir/rename/kill/chmod/chown or execution primitives",
+    "Root/UID/file/entry/byte/time bounds fixed as literals"
+  ],
+  "request_key": "p4-owner14-ordinary-reconcile01-10456f0c86e2732c",
+  "request_submitted": false,
+  "schema": 1,
+  "scope": "Single fixed UID1000 read-only job metadata reconciliation; no ordinary tests, writes, namespace, task dispatch or Main action",
+  "source": {
+    "bytes": 12693,
+    "sha256": "10456f0c86e2732c187f240167f963f1bbc64ed6db2d511ba7c4a7c77d7a90d8"
+  },
+  "stdin_is_source_exact": true
+}

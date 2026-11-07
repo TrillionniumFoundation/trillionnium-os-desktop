@@ -1,0 +1,139 @@
+--- video-open-transition-01/owned_navigation.py
++++ buffer-viewport-01/owned_navigation.py
+@@ -16,25 +16,25 @@
+ import time
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-bilibili-r3-video-open-transition-01')
++ROOT = Path('/home/alex/work/pocket4-bilibili-r3-buffer-viewport-01')
+ SOURCE = ROOT / 'source'
+-NONCE = '506fd8e9af5d12c0f74349c568bfbb01'
++NONCE = '614405e5763ede7dfe55575bf2d2c2ae'
+ FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-' + NONCE)
+-PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/expand_search', 'class': 'android.widget.LinearLayout', 'content_desc': 'Search bar, button'}, 'nonces': {'before': '6fb52f20c0f31e5b47dfcc14891524b6', 'inspect': '8cc836fb9f7d107612a7570e8e3b5e59', 'action': '14fb6d364576021171ce3d9f215eb3bb', 'after': '493037967815c43850fa043f8fa70b4e'}}
+-POST_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '848896c6ab9f05940f84f50535830c18', 'inspect': '252dd23ff2c576153e5a2c1cafc6689c', 'after': 'c805a5238c5dea91d679de111c63bea9'}}
+-STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '13866287c7c0d17040fdd9963693f1ba', 'inspect': 'a378c308acc48db92b0edda5d3b7803d', 'after': '6d7c2b25ca0f90e39f483e82a32249b0'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '59fee276e89c88113aa638f314af69c9', 'inspect': '0a398f4d4d88a7fddf238049cf67aa35', 'after': '58e3dd99a12f06decb48160234882f0d'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c4324d77e34b53c22bfb0c24b20ca86b', 'inspect': '2cf118196c405e588875c2a674aea1f8', 'after': 'e45f9b28e5ff1f8707145da2fefdb3c2'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'f3e9a7cb07ea6106738d2d3a006d0b17', 'inspect': '69513d2631731de10e9790b88d815f21', 'after': '12a1ae8e8fdfad53c1ddc70c9acf8000'}}]
++PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/expand_search', 'class': 'android.widget.LinearLayout', 'content_desc': 'Search bar, button'}, 'nonces': {'before': 'ed11dbe2d8154b1397f9b06868158733', 'inspect': 'e19f0a8cbc3ab521680baacff2341781', 'action': 'f792f8fa365a686fd45c8b4f041a97e6', 'after': 'c7d7df82552b81fe6d1926643c9faa15'}}
++POST_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '1306c0d620b7b7cc9e54e1970333b0ce', 'inspect': 'b6275d4098b36698fe2b552bee8e4047', 'after': '2ecb0309aa7e639df48e20d9417e0dea'}}
++STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '7852fca1597760006f9cfa6b4405c389', 'inspect': '07d3cb39545c74f6b5315dcb3eb7a561', 'after': '5b7de3ccf4e500448149e13a49fa603b'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '9626f46613ffbe3dc9b13c5fd9b2f4a5', 'inspect': 'ef0788ca682b52cad1211ff62528c456', 'after': '7c09c525b925a7dc31f6a1872db73666'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'be45f14f38ebc24f54d6310e7b11a8e3', 'inspect': '055dfb5942c95d9db24f24d50a95c081', 'after': '710f49872b6fe3b194821c0531d61805'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'ebf407f3970153e533c24e4738c11152', 'inspect': '13ee7f8ebfbdd9bf57513cea167cb4f4', 'after': '08810ce7d43acdb92a2d19a8fa75d1b4'}}]
+ STABILITY_SECONDS = 12
+ RESULT_OBSERVATION_SECONDS = 20
+-RESULT_OBSERVATION_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c35e39aba8ebde7070c590c6f1453e52', 'inspect': '5b197465d8e0c60be1fc7b6374ea9598', 'after': '0ab0dc81446b09c3d7b4bd296fbbcaf8'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'fc046be50343fffcc2b0a1521fa9e36c', 'inspect': 'a8db044378d1bd25b903dbfc90c36249', 'after': '22160e370b84b38eb8950eef88f0284f'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'd5a8e59a7567fd7f181441250f9a6649', 'inspect': '2019f8819c5b8a1c96e025b19afa501c', 'after': '029dc111da5805f46ac48964f122bce7'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '337bdfc3e897d2b13c9e65a7c7c8bae8', 'inspect': '36760d8c870d7900c34cb69fb48183b1', 'after': 'e92c7ff35ae6893182b571a93a374fc0'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c45e3db88b9d3cfe177ad81d0d337386', 'inspect': 'ef700f4351fe392c9e7719fcf0320b3f', 'after': '047454b56c575b0ed365d5643dd6578f'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '9e52b354aa4fbe7a30f39facf03bb3b8', 'inspect': '7142e9a15377e0cbd4a8e4570d7c953a', 'after': '51aa880e480362004a93b300730f47ab'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '1b11aaad4cac3567d97b8d9dc58375ce', 'inspect': '95e82068cfe568b3bf37eebdd86dcd55', 'after': 'cf28e6583b779c32e22f571dd1adfaef'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '3923f06e47bc2cf555ec158010e17e11', 'inspect': '4fdd58a95acddd677567dae0c5772d72', 'after': '2fa1b839690d547d6f0d4fec5eb3a4bd'}}]
++RESULT_OBSERVATION_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '51f7545f7748b71bd62a1ed02c945067', 'inspect': '5f12a09b118da1e8e5e83fde6ea74697', 'after': '3d5c532659ac3d0a84f5cb8a9fc0a2f9'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'dd9dcec4042e8f5fd51538b61a4fd76f', 'inspect': '0a6ae483eea1392f455890826986763e', 'after': 'db48988a4936dd430177a5ab5b8788f6'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '4fa926d6d75a9e7f2aa3a08148370bc5', 'inspect': 'de86803f1d501cea823160ba58e2f90f', 'after': '65542901454ef67be33c57daf1556fba'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'a0fd907d141ef94aa33f3bea39629e0c', 'inspect': '80a268890102394e96db4307f68dac6c', 'after': '55baa4d270c666b4165640f23a2ba673'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '824087ad0e75a252b55b88311ebcfca7', 'inspect': 'e2d9c67b67d80746aa16ecf19d97ff44', 'after': '5e3e90778aaf7476e7a7a24d2c0f0724'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '53d433aedcd426e0fbe3f3bb71d7bd26', 'inspect': '7b0766509b6a8bc01198e3583a0ad19d', 'after': 'cd671e843d78fc12e18c8e31a2081a05'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '64de0163c568928c28839ad392af527e', 'inspect': '47e56240ae7328d2e9f46c724d76ac1a', 'after': 'a091377172925ad0c34a8bd9297be9e9'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '055cf988fdffd0482984c5b105270810', 'inspect': '46b6d197e4b7386d4a67fb952103dcad', 'after': '3f7b2ead05c89a76c11eddb158d400bb'}}]
+ SEARCH_ACTIVITY = 'tv.danmaku.bili/com.bilibili.search2.main.BiliMainSearchActivity'
+ EDIT_SELECTOR = {'resource_id':'tv.danmaku.bili:id/search_src_text','class':'android.widget.EditText'}
+ SUBMIT_SELECTOR = {'resource_id':'tv.danmaku.bili:id/action_search','class':'android.widget.TextView'}
+ PUBLIC_QUERY = '微积分'
+-SET_TEXT_PLAN = {'schema': 1, 'operation': 'set_text', 'selector': {'resource_id': 'tv.danmaku.bili:id/search_src_text', 'class': 'android.widget.EditText'}, 'value': '微积分', 'nonces': {'before': 'e119729b6a8a94beb3d13cf9883288c3', 'inspect': '7d3aa4935a6d3813754c754a90313b0e', 'action': '77643e82f59899f24bfba64e65a59839', 'after': '6e151a9cb8132af3aea4e26f8df18cce'}}
+-SUBMIT_PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/action_search', 'class': 'android.widget.TextView'}, 'nonces': {'before': 'fba2bd3cb350c54dae6666326384e0db', 'inspect': '27d20f355590afd0018a742b084020fa', 'action': 'ceea4b344e85b0cb3bbb20b6fd64db1c', 'after': 'b3d017b0ec20d79c5f0e77c5c80c16f1'}}
+-RESULTS_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '3283028c836a7d06305ab2d5dd8107b7', 'inspect': '4ea5a5d44b3643dd599d2094d83662fc', 'after': '33f088e664d4f8f8592c603f33ab6346'}}
+-QUERY_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'e1193d55c08d9ca8c82c69ee152f2dc7', 'inspect': 'c18f4cc2c5e50a3a1cb66b05fe28b6dc', 'after': 'aa7e7a7d13ddb4f0c6a07f1899306bd6'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '46b1204748bf53d2df8eac0f2a248e16', 'inspect': 'aed471ff94ebdfef9af4a3e2157e43ce', 'after': '85aa3d5d664c3cfdfbe6fa08fa15c94a'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'f3a74c07b9a6448f31b4004c993844d0', 'inspect': '783030b6a1c032f561c3961bf360c476', 'after': '69c3f662a51a5806897fa1f57f5132ff'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '1acdc63ced6208995d8cb153d375d6bf', 'inspect': '5984eb68347c3426f0a435b4dcdeb52f', 'after': 'b6dee663c1b710d38c4f78f43889bf77'}}]
+-SUBMIT_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '4f5919702ef6317e8f476600384db181', 'inspect': '60519769355f2aeffe56b686d576113d', 'after': 'e3f80a08dadc6167aac2bac132b838a1'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '54911aa7d5c6eabcef59a4ed835f871f', 'inspect': '1aa9efa7b0ce50b1b744a9290213d8ef', 'after': '51a733da783ea2694e2321b56ba5b080'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'dab982931c9d8230b65e6a71e807c477', 'inspect': '641d30ad2f9f032b64cf7d6b2f7ae14e', 'after': 'a6bf5a0d0011fa633568ce46d04b19bd'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '428e4b87fa92234c6430e8ede889f379', 'inspect': '77226f0b2c55adc709f4d3df928ae673', 'after': '905caf7ed768d5f22758545dc87d6751'}}]
++SET_TEXT_PLAN = {'schema': 1, 'operation': 'set_text', 'selector': {'resource_id': 'tv.danmaku.bili:id/search_src_text', 'class': 'android.widget.EditText'}, 'value': '微积分', 'nonces': {'before': 'ba27844de2413751138fc2f78ca12b88', 'inspect': 'f637ac19ebe964f6cde3d799607acfac', 'action': '98b83d626045bd693fee6931f6fbfcec', 'after': 'b6c714b95eb37e4fd1b5f225d12a41e0'}}
++SUBMIT_PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/action_search', 'class': 'android.widget.TextView'}, 'nonces': {'before': '69f97cd14f06ac03f63afb0f898cafd4', 'inspect': 'a911dfa3376b8a1005962940dffad6e6', 'action': 'b126eb50445d17d39719503f34af4fce', 'after': '501d36a4916d0a89b1b7e11be272ff34'}}
++RESULTS_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '21f94fe302822a8077f1d77ee2d8eab6', 'inspect': '84c514510f00d8ae09732b8b09b54560', 'after': '17b0c5aec228b9f07534cf688ee63412'}}
++QUERY_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'b9a734da399b36daf34fc1ba817a147a', 'inspect': 'b8425f869df6a2374f72eaf3aeef1c1e', 'after': 'e406a456c4dcd224991c224534594a7d'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'cb5e2ca46eccaccd7fe739f30e2b8a4e', 'inspect': '563c123813abf6bbe66768ba3c740274', 'after': '16867b8a07ce315ac597a5a9052654f8'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '7a7251effb82b8a3752624db9f127888', 'inspect': '1e99d1a1c3c248b2bf9cc763493a691d', 'after': 'aeabb4ba4fa49772135ce7209fee5104'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'eb95e1938193460ffdfb04bb6ee78d77', 'inspect': '8701080f4dbd27e13abe9f0503654cb4', 'after': '43aa941c189577f4c50d072b01648afa'}}]
++SUBMIT_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c5396fb4f75d502500a287e773eb5abc', 'inspect': '92e9fd7e983d3e66f4c72970bd515b2b', 'after': 'a1359dae39e42d7a8052a2cfdd10fccd'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '93a4e5619f7f749103ded13d54a5d222', 'inspect': '8c67d711a3e61b40b035d6af8ef205c5', 'after': '3c328f7be35d91584781fbb93e035546'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'a542fb58a31214d7b6c53e1e3f787b12', 'inspect': '138f33ac3f36ddc1cd7ab9c3793f8a12', 'after': 'd92527f5c7050f917c173d66455e56f6'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '7c695ff20def32be7b8a1c7707c51262', 'inspect': '275feced920f0aee1e53c26e2c0d0290', 'after': 'fb542400fecbf2b05800fb7fd5c7e99c'}}]
+ SELF, UID = 'org.droidloom.qa.bili.r3', 10166
+ BILI, BILI_UID = 'tv.danmaku.bili', 10117
+ INSTALL_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r3-install-state-01')
+@@ -50,7 +50,7 @@
+ OLD_STATE_WIRE = '4457b7fe6584cc672864b809d20dae1de44c854138809a7fd49a41d964d071c2'
+ OLD_PACKET = 'dab5a1e73b422fa009b07a0fc6fe048981ac143273d3628f442945fd753a8286'
+ MAIN_EPOCH = '48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'
+-FILES = {'owned_navigation.py','stage_execute.py','make_request.py','INPUTS.json','README.md','video_navigation.py'}
++FILES = {'owned_navigation.py','stage_execute.py','make_request.py','INPUTS.json','README.md','video_navigation.py','viewport_observation.py'}
+ # Exact actual r3 install/readback values. No r1/r2 UID or artifact is inherited.
+ INSTALL_JOB_ID = '1a1a99c4795-fc05-3651'
+ STATE_COMMAND_INDEX = 6
+@@ -129,7 +129,7 @@
+ def verify_source(expected):
+     require(isinstance(expected,str) and re.fullmatch('[0-9a-f]{64}',expected),'EXTERNAL_SOURCE_PIN_REQUIRED')
+     manifest = json.loads(read(HERE/'SOURCE_PINS.json',65536,expected))
+-    require(set(manifest['files']) == FILES,'EXACT_SIX_FILE_SOURCE_REQUIRED')
++    require(set(manifest['files']) == FILES,'EXACT_SEVEN_FILE_SOURCE_REQUIRED')
+     for name,row in manifest['files'].items():
+         read(HERE/name,65536,row['sha256'],row['bytes'])
+     return manifest
+@@ -600,6 +600,11 @@
+     plans=[PLAN,POST_PLAN,SET_TEXT_PLAN,SUBMIT_PLAN,RESULTS_PLAN,
+         *STABILITY_PLANS,*QUERY_STABILITY_PLANS,*SUBMIT_STABILITY_PLANS,*RESULT_OBSERVATION_PLANS]
+     module.validate(adapter,qa,[NONCE,*(n for p in plans for n in p['nonces'].values())])
++    path=HERE/'viewport_observation.py';pin=manifest['files'][path.name]
++    module.viewport=types.ModuleType('fixed_player_viewport');module.viewport.__file__=str(path)
++    exec(compile(read(path,65536,pin['sha256'],pin['bytes']),str(path),'exec'),module.viewport.__dict__)
++    plans += [module.VIDEO_PLAN,*module.VIDEO_STABILITY_PLANS,*module.VIDEO_POST_PLANS]
++    module.viewport.validate(adapter,qa,[NONCE,*(n for p in plans for n in p['nonces'].values())])
+     return module
+ 
+ 
+@@ -614,12 +619,12 @@
+     plan = adapter.validate_plan(fixed_plan(),qa)
+     adapter.validate_plan(POST_PLAN,qa)
+     for stable_plan in [*STABILITY_PLANS,*QUERY_STABILITY_PLANS,*SUBMIT_STABILITY_PLANS,*RESULT_OBSERVATION_PLANS,SET_TEXT_PLAN,SUBMIT_PLAN,RESULTS_PLAN]: adapter.validate_plan(stable_plan,qa)
+-    step = 'launch-01' if phase == 'launch' else 'video-open-transition-01'
++    step = 'launch-01' if phase == 'launch' else 'buffer-viewport-01'
+     args = types.SimpleNamespace(operation='launch' if phase == 'launch' else 'owned-qa',
+         adapter_manifest_sha256=R4_MANIFEST,flow_dir=FLOW,
+         epoch_module=prior.RECORDER_ROOT/'references/framework_epoch.py',
+         task_source=prior.RECORDER_ROOT/'references/task_scope_baseline.py',step=step,
+-        request={'phase':phase,'nonce':NONCE,'plan':plan,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'result_observation_plans':RESULT_OBSERVATION_PLANS,'video_plan':video.VIDEO_PLAN,'video_post_plans':video.VIDEO_POST_PLANS,'actual_install':admission},
++        request={'phase':phase,'nonce':NONCE,'plan':plan,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'result_observation_plans':RESULT_OBSERVATION_PLANS,'video_plan':video.VIDEO_PLAN,'video_post_plans':video.VIDEO_POST_PLANS,'viewport_plans':video.viewport.PLANS,'actual_install':admission},
+         unknown_step=None,observation_step=None,postcondition=None)
+     result = {'schema':1,'ok':False,'error':None,'secondary_errors':[],
+         'phase':phase,'nonce':NONCE,'package':BILI,'uid':BILI_UID,'helper_package':SELF,'helper_uid':UID,
+@@ -654,7 +659,7 @@
+         result['ok'] = result['error'] is None and result['secondary_errors'] == [] and (
+             phase == 'launch' or (result.get('query_submission_controls_completed') is True and
+                                  result.get('results_container_content_observed') is True and
+-                                 result.get('video_click_and_observations_completed') is True))
++                                 result.get('video_click_and_observations_completed') is True and result.get('buffer_viewport_observation_completed') is True))
+     except BaseException as error:
+         if session is not None and hasattr(session,'sequence_observation'):
+             result['failed_inspection_sequence'] = session.sequence_observation
+@@ -691,7 +696,7 @@
+ 
+ 
+ def durable_phase(observed, phase):
+-    step = 'launch-01' if phase == 'launch' else 'video-open-transition-01'
++    step = 'launch-01' if phase == 'launch' else 'buffer-viewport-01'
+     path = FLOW/'steps'/step/'result.json'
+     raw = read(path); value = json.loads(raw)
+     require(observed == value and value.get('ok') is True and value.get('phase') == phase and
+@@ -713,6 +718,7 @@
+                 'ACTUAL_EDIT_AND_SUBMIT_POSTCONDITION_REQUIRED')
+         require(value.get('action_attempted') is True and
+                 value.get('video_click_and_observations_completed') is True and
++                value.get('buffer_viewport_observation_completed') is True and
+                 value.get('results_container_content_observed') is True and
+                 value.get('result_content_observation',{}).get('qualified') is True and
+                 value.get('scoped_click_and_post_observation_completed') is True and
+@@ -785,8 +791,9 @@
+         observed = ref.run_cli('03-navigate',['/usr/bin/python3','-I',str(HERE/'owned_navigation.py'),
+             '--worker-once','navigate','--source-manifest-sha256',expected],240,evidence,guard)
+         navigated,result['navigation_result'] = durable_phase(observed,'navigate')
+-        result['navigation'] = {'foreground':navigated['video_post_observations'][-1]['foreground'],
+-            'video_selection':navigated['video_action_bound_selection'],
++        result['navigation'] = {'foreground':navigated['buffer_viewport_observation']['final_scope'],
++            'buffer_viewport_observation':navigated['buffer_viewport_observation'],
++             'video_selection':navigated['video_action_bound_selection'],
+             'video_stability':navigated['video_stability'],
+             'video_click_assessments':navigated['video_click_assessments'],
+             'video_post_observations':navigated['video_post_observations'],
+@@ -810,6 +817,7 @@
+         result['query_submission_controls_completed'] = True
+         result['results_container_content_observed'] = True
+         result['video_click_and_observations_completed'] = True
++        result['buffer_viewport_observation_completed'] = True
+         result['ok'] = True
+     except BaseException as error:
+         prior.remember(result,'coordinator',error)
+@@ -882,7 +890,7 @@
+     args = parser.parse_args(); fixed_plan()
+     if not args.execute_once and args.worker_once is None:
+         print(json.dumps({'state':'PLAN_ONLY','root':str(ROOT),'flow':str(FLOW),'helper_uid':UID,
+-            'operation':'original launch + fixed public query + fresh exact course-card click + three private observations + exact-task cleanup',
++            'operation':'original launch/query/course open + bounded buffer reads + private viewport crops + exact-task cleanup',
+             'plan':PLAN,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'result_observation_plans':RESULT_OBSERVATION_PLANS,'click_limit':3,'text_action_limit':1,'audio_actions':0,'old_v2_helper_called':False,
+             'private_raw_tree_not_for_Git':True,'remote_actions':0}))
+         return 0

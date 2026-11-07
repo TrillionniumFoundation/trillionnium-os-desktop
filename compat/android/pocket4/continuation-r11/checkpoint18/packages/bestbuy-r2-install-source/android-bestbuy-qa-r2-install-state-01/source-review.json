@@ -1,0 +1,184 @@
+{
+  "actual_build_review": {
+    "bytes": 3371,
+    "git_blob_sha": "395ae391d2508abb567332753e2d958322e49e21",
+    "sha256": "058d5314d4416169ee8cd998228e192538cd9c6b198f65cf1ebc219db4a44de9"
+  },
+  "baseline": {
+    "prefix": "android-bestbuy-qa-r1-install-state-01/",
+    "request": {
+      "bytes": 124755,
+      "git_blob_sha": "d37bc3bbe06de81a651e4a20c069262ff259a41a",
+      "sha256": "c098824d33d370889570e7ab7678ab515136b7af6d78271d7cfd4e1e9cc652df"
+    },
+    "tree": "b68139626c8813a6f42f45c43ead111ec0c372ee"
+  },
+  "check_count": 15,
+  "checks": [
+    "original exact11 packet member names",
+    "all10 source rows exact and per-file bounds",
+    "new packet manifest hash nonce and exact source bytes",
+    "unchanged full bytes bestbuy_transport.py",
+    "unchanged full bytes references/read_bestbuy.py",
+    "unchanged full bytes references/readonly_r3_coordinator.py",
+    "unchanged full bytes target-artifact-reference.json",
+    "complete inverse-byte comparison install_state.py",
+    "complete inverse-byte comparison bestbuy_context.py",
+    "complete inverse-byte comparison stage_execute.py",
+    "complete inverse-byte comparison make_request.py",
+    "original fixed request resources/argv prefix/cwd/env",
+    "no new runtime source dependencies",
+    "metadata and actual reviewed artifact chain",
+    "all original long nanosecond literals retained as raw source"
+  ],
+  "key": "pocket4-owned-bestbuy-qa-r2-install-state-01-20261106",
+  "kind": "bestbuy-r2-install-state-only-source-review",
+  "literal_changes": [
+    {
+      "count": 1,
+      "file": "install_state.py",
+      "old": "/home/alex/work/pocket4-owned-bestbuy-qa-r1-install-state-01",
+      "replacement": "/home/alex/work/pocket4-owned-bestbuy-qa-r2-install-state-01"
+    },
+    {
+      "count": 1,
+      "file": "install_state.py",
+      "old": "1a52aa80a32d02e2ed1b8e00f7f76875",
+      "replacement": "2501969dfcbe4bb492e5401c0bfcf420"
+    },
+    {
+      "count": 1,
+      "file": "install_state.py",
+      "old": "d729c482ea77502f37ebd7a5ec57d115",
+      "replacement": "233184c3820388b9fb3567c7ec726cbb"
+    },
+    {
+      "count": 1,
+      "file": "install_state.py",
+      "old": "org.droidloom.qa.bestbuy.r1",
+      "replacement": "org.droidloom.qa.bestbuy.r2"
+    },
+    {
+      "count": 2,
+      "file": "install_state.py",
+      "old": "/home/alex/work/pocket4-owned-bestbuy-qa-r1-source-01",
+      "replacement": "/home/alex/work/pocket4-owned-bestbuy-qa-r2-source-02"
+    },
+    {
+      "count": 1,
+      "file": "install_state.py",
+      "old": "1dc5ae021d8b4d3165ac81dd09aef7035651118a9a81380139bdd1caaef668f8",
+      "replacement": "f7f13e75bf38518581581a2851714a3bb67a169dddeec1d444de2150398f01f9"
+    },
+    {
+      "count": 2,
+      "file": "install_state.py",
+      "old": "/home/alex/work/pocket4-owned-bestbuy-qa-r1-build-01",
+      "replacement": "/home/alex/work/pocket4-owned-bestbuy-qa-r2-build-02"
+    },
+    {
+      "count": 1,
+      "file": "install_state.py",
+      "old": "e0cdcc62bd7e59b696864ce0e244e2c5f441707692c334758dd0e343c6d095cd",
+      "replacement": "b4e419dca29b41925f86766a904412fbaf13a46fa64d9c3a51e3487a19334158"
+    },
+    {
+      "count": 1,
+      "file": "install_state.py",
+      "old": "BUILD_BYTES = 17438\n",
+      "replacement": "BUILD_BYTES = 19100\n"
+    },
+    {
+      "count": 1,
+      "file": "install_state.py",
+      "old": "c01137e4488d93d9d878fe6007c03b99e7bef328a25303591dd0510369984b83",
+      "replacement": "45eee95f5bb1438a7696a89c0fb0f19469c63b58bb9ceb3a068a1da5c5e1a0f5"
+    },
+    {
+      "count": 1,
+      "file": "install_state.py",
+      "old": "33bc63541bc4bc4a42503bd1205f96c8e09f203e5ee512fed3a5e0c426720646",
+      "replacement": "2959c657a8c0c970da80f45b5986aa34d63b0faa8df6cd0c0010a0d730a1bc54"
+    },
+    {
+      "count": 1,
+      "file": "install_state.py",
+      "old": "0c8d51e314e4f8bdff2febd869845752562db7cd7c4182781ff748e479176918",
+      "replacement": "a9e3b67e42cab6f94aa3679ea71bdcc74be04f8aa93d3534b0923d4367c6e7ea"
+    },
+    {
+      "count": 1,
+      "file": "install_state.py",
+      "old": "10184,10190,10137,10196), 'NEW_APP_UID_REQUIRED'",
+      "replacement": "10184,10190,10137,10196,10198), 'NEW_APP_UID_REQUIRED'"
+    },
+    {
+      "count": 1,
+      "file": "bestbuy_context.py",
+      "old": "org.droidloom.qa.bestbuy.r1",
+      "replacement": "org.droidloom.qa.bestbuy.r2"
+    },
+    {
+      "count": 1,
+      "file": "stage_execute.py",
+      "old": "/home/alex/work/pocket4-owned-bestbuy-qa-r1-install-state-01",
+      "replacement": "/home/alex/work/pocket4-owned-bestbuy-qa-r2-install-state-01"
+    },
+    {
+      "count": 1,
+      "file": "stage_execute.py",
+      "old": "1a52aa80a32d02e2ed1b8e00f7f76875",
+      "replacement": "2501969dfcbe4bb492e5401c0bfcf420"
+    },
+    {
+      "count": 1,
+      "file": "make_request.py",
+      "old": "pocket4-owned-bestbuy-qa-r1-install-state-01-20261105",
+      "replacement": "pocket4-owned-bestbuy-qa-r2-install-state-01-20261106"
+    },
+    {
+      "count": 1,
+      "file": "make_request.py",
+      "old": "/home/alex/work/pocket4-owned-bestbuy-qa-r1-install-state-01",
+      "replacement": "/home/alex/work/pocket4-owned-bestbuy-qa-r2-install-state-01"
+    },
+    {
+      "count": 1,
+      "file": "make_request.py",
+      "old": "1a52aa80a32d02e2ed1b8e00f7f76875",
+      "replacement": "2501969dfcbe4bb492e5401c0bfcf420"
+    }
+  ],
+  "old_R1_source_and_failures_retained": true,
+  "request": {
+    "bytes": 125500,
+    "git_blob_sha": "cc19cf11c1ca536dfba6756949c4b4703b2ed73b",
+    "sha256": "4c4d2afc1be15ff45867276b2b7d938972baf364767e3145f582d7e8e3811fea"
+  },
+  "schema": 1,
+  "scope": {
+    "UI_actions": 0,
+    "UiAutomation_requested": false,
+    "audio_actions": 0,
+    "commercial_App_launches": 0,
+    "helper_UID_observed": false,
+    "install_commands": 1,
+    "instrumentation_state_commands": 1,
+    "permission_grants": 0,
+    "settings_writes": 0,
+    "whole_app_production_ready": false
+  },
+  "semantic_delta": "New R2 package/build/source/signature binding, fresh root/key/install/state nonces, and deny old R1 helper UID10198. No inherited function body changed except that UID exclusion and ordered_commands exact SELF literal. All original command, lock, authority, APK, Main, finally and resource gates retained.",
+  "source_manifest": {
+    "bytes": 1448,
+    "git_blob_sha": "20a8cfd23e811ee5f9a0e401109d05622988ec16",
+    "sha256": "39ec2549b1db692666e4f047ec35b3e118b37c50159fe7fc70388e2c7a579ea1"
+  },
+  "state": "FROZEN_EXACT_REQUEST_NOT_SUBMITTED",
+  "stdin": {
+    "bytes": 120510,
+    "git_blob_sha": "b9a89776e2b8423631cd2c56baa58c48e8acb277",
+    "sha256": "eddf09bf8e195c159ac1d3100d4785226bc45a728e2e66e2f4ad7d13be025173"
+  },
+  "validation_method": "V8 lossless original-record checks, complete old packet/wrapper reconstruction, exact literal reverse-byte proofs. No local Python syntax/AST/controls/PLAN or device execution; local executor unavailable."
+}

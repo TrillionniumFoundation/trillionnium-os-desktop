@@ -1,0 +1,88 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "234bfebcce532462add7b5c8fac0b3bba36192c4",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 2197,
+    "sha256": "a18854670c363d6a1b7e5615b987f31f4cf8069e3d322d80b5353b21b14fa512",
+    "git_blob_sha1": "5d1bb28c732b14cd4bc5a33bd2677931b6b1df86",
+    "retrieval": "shallow roots and complete uncropped descendant trees until canonical dependency cuts",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5458908387af331dbcf796c898b217298fb8d690"
+    },
+    {
+      "path": "preflight",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "290d20a9ea169540f370adec171916aa1a07580b"
+    },
+    {
+      "path": "read-proof.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2a257d9927505031252690e7550389d1dc2be26a",
+      "bytes": 1379
+    },
+    {
+      "path": "result.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d68ee8b5baf2245cce391e39c5476fc86d2a545a",
+      "bytes": 180539
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "76172172260095175ea07b356b56ed715dd4f961",
+      "bytes": 2054
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1e7fb4d6fc4a158fc64599fe951b46986347ed64"
+    },
+    {
+      "path": "stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4a592039de2511c9955f4fc2a0c3a7cc3caf16a9",
+      "bytes": 723
+    },
+    {
+      "path": "terminal.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2c3e6f4476efe0936df35cd9a67403b5144044e6",
+      "bytes": 729
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "admission",
+      "original_tree": "5458908387af331dbcf796c898b217298fb8d690",
+      "checkpoint": 21,
+      "canonical_package": "native_registration_host02-admission"
+    },
+    {
+      "path": "preflight",
+      "original_tree": "290d20a9ea169540f370adec171916aa1a07580b",
+      "checkpoint": 21,
+      "canonical_package": "native_registration_host02-preflight"
+    },
+    {
+      "path": "source",
+      "original_tree": "1e7fb4d6fc4a158fc64599fe951b46986347ed64",
+      "checkpoint": 21,
+      "canonical_package": "native_registration_host02-source"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

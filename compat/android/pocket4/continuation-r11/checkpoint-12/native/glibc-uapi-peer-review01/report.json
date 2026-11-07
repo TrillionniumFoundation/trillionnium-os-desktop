@@ -1,0 +1,83 @@
+{
+  "actual_UAPI_reference_pins": [
+    {
+      "bytes": 1079,
+      "path": "bionic/libc/kernel/uapi/linux/memfd.h",
+      "sha256": "24e894727f8a3c2006518f9212a8cd5ba9fbcd052dd59d21d733ce0c37554408"
+    },
+    {
+      "bytes": 2161,
+      "path": "bionic/libc/kernel/uapi/linux/nsfs.h",
+      "sha256": "8d35b522ad9aae7349c2c44731134c5cc0e09666c699435d3a17fc9a5b020c4e"
+    },
+    {
+      "bytes": 3270,
+      "path": "bionic/libc/kernel/uapi/linux/magic.h",
+      "sha256": "a19adbb7cc90971e2e3091330db60b6d50c73a9dc9d18593977e99c84a26680a"
+    },
+    {
+      "bytes": 2614,
+      "path": "bionic/libc/kernel/uapi/linux/fcntl.h",
+      "sha256": "16b49ad579ee4708380d0f4cbae0d25ff50b9ff91fa1ff19a16b7a46646a8776"
+    },
+    {
+      "bytes": 2540,
+      "path": "bionic/libc/kernel/uapi/asm-generic/fcntl.h",
+      "sha256": "0344cc9d595fd81deb2c0bdce745c189448f7955ffc0618ffc7be20bbfd4b509"
+    },
+    {
+      "bytes": 10553,
+      "path": "bionic/libc/kernel/uapi/asm-x86/asm/unistd_64.h",
+      "sha256": "f5932f5da1d4bbec377207d7694a1918d6362174a840a271efa346977128b8d6"
+    }
+  ],
+  "conclusion": "NO_NEW_CONFIRMED_BLOCKER_IN_UAPI_PORTABILITY_DELTA",
+  "findings": [
+    "All four existing implementation bodies are byte-for-byte unchanged after removing include directives; the new behavior is header availability and missing constant definitions.",
+    "The memfd flags, namespace ioctl/type magic, fcntl seal operations and four x86_64 syscall numbers match the six supplied actual Bionic UAPI source files and the F_LINUX_SPECIFIC_BASE value.",
+    "Missing declarations are guarded with ifndef; existing declarations are checked by static_assert. The syscall fallback is limited to x86_64 without ILP32, so the LP64 numbers are not injected into x32 or another architecture.",
+    "The compatibility header uses the actual compiler/sysroot includes and conditional availability, without importing a different host UAPI tree. It does not add a successful fallback for a rejected syscall or weaken a runtime identity/capability check."
+  ],
+  "not_performed": [
+    "No compiler, test binary, namespace, Android runtime, kernel syscall or Hepta operation was executed for this review.",
+    "The complete original four implementation files were not re-reviewed as runtime algorithms; this review confirms their include-only delta.",
+    "The five complete translation-unit matching compile and full engine build remain separate actual gates."
+  ],
+  "patch": {
+    "bytes": 3979,
+    "sha256": "18081c62360f1be6b31d433fcb9200d0078d84edeeccafe2badf030f49aa7c9a"
+  },
+  "production_ready": false,
+  "reviewed_candidate_pins": [
+    {
+      "bytes": 2072,
+      "path": "kernel_api/include/berberis/kernel_api/proc_maps_linux_compat.h",
+      "sha256": "131d1eef8d9f789876c965fa2d827b21a59fc64ab7886fa1f78d95623114370c"
+    },
+    {
+      "bytes": 20989,
+      "path": "kernel_api/proc_maps_fd_owner.cc",
+      "sha256": "35a4b8cb00d40f85e4173a74939222f189f21ee842df00d0bb21c2f441ac3d8a"
+    },
+    {
+      "bytes": 7082,
+      "path": "kernel_api/proc_maps_path.cc",
+      "sha256": "fc2083c33c14b95b97d84f17c277bf077b005f72036f81f8ca399a03b21aaff7"
+    },
+    {
+      "bytes": 32628,
+      "path": "kernel_api/proc_maps_provenance.cc",
+      "sha256": "a5954f296ac863d641f90973e231840cc8aba9ad88f60ae1631e1096e263df21"
+    },
+    {
+      "bytes": 25457,
+      "path": "kernel_api/proc_maps_raw_metadata_owner.cc",
+      "sha256": "b8b8a2d4989082d244fd76287b03abc32e945535bc0676d63f1ea22787163427"
+    }
+  ],
+  "reviewer": "local_pocket4_inventory",
+  "runtime_qualification": false,
+  "schema": 1,
+  "scope": "complete 3979-byte portability patch and 2072-byte new header; include-only identity verification in four existing private C++ implementation files",
+  "source_mutated": false
+}

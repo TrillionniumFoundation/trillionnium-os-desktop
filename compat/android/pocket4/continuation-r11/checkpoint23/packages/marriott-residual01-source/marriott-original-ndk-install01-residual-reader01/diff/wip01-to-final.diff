@@ -1,0 +1,39 @@
+--- WIP/read_residual.py
++++ final/read_residual.py
+@@ -243,7 +243,7 @@
+         result['action_lock']=self.observation
+ 
+ def package_projection(raw):
+-    need(type(raw) is bytes and len(raw)<=TABLE_LIMIT and
++    need(type(raw) is bytes and 0<len(raw)<=TABLE_LIMIT and
+          b'\0' not in raw,'PACKAGE_TABLE_BYTE_SHAPE')
+     found=[]
+     for line in raw.decode('utf-8','strict').splitlines():
+@@ -275,7 +275,7 @@
+         else:
+             raise RuntimeError('PARSER_NEGATIVE_CONTROL_ACCEPTED')
+         cases.append({'name':name,'passed':True})
+-    accepted('empty-table-absent',b'',False,None)
++    accepted('nonselected-package-absent',b'org.example.synthetic 10123\n',False,None)
+     accepted('other-and-suffixed-package-not-selected',
+              b'org.example.synthetic 10123\ncom.example.ndk_tests.extra 10124\n',False,None)
+     accepted('single-selected-row-present',b'com.example.ndk_tests 10234 synthetic\n',True,10234)
+@@ -313,7 +313,7 @@
+     fd=journal.take(target.open_root(PACKAGE_LIST,os.O_RDONLY|os.O_NOFOLLOW),'packages.list')
+     before=identity(fd)
+     need(stat.S_ISREG(before['mode']) and before['nlink']==1 and
+-         0<=before['bytes']<=TABLE_LIMIT,'PACKAGE_TABLE_REGULAR_BOUND')
++         0<before['bytes']<=TABLE_LIMIT,'PACKAGE_TABLE_REGULAR_BOUND')
+     parts=[];count=0
+     while True:
+         deadline()
+@@ -507,6 +507,9 @@
+             all(not x['present'] for x in result['data_directories_before']))
+         result['observed_package_UID']=first['observed_UID']
+         result['absence_scope']='Only two complete packages.list reads and two exact data leaves; no PM all-user or APK-path assertion.'
++        result['observation_completed_seconds']=time.monotonic()-START
++        need(result['observation_completed_seconds']<OBSERVATION_SECONDS,
++             'PACKAGE_AND_DATA_OBSERVATION_COMPLETED_TOO_LATE')
+         stage='original_result_after'
+         again=read_exact_file(FAILED_RESULT,1048576,FAILED_PIN)
+         result['fixed_file_helpers_returned_after_close']+=1

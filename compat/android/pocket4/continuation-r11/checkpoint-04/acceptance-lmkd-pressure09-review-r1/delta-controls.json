@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "actual09_runtime_executed": false,
+  "source_sha256": {
+    "lmkd-work/host-pressure-freeze-08/owned-relay/qualify_pressure.py": "8715fc60396624d8dd8e3c8547ba4eccaee0a70065bdef8016a14e6a6730a8b9",
+    "lmkd-work/pressure-source-next-09/owned-relay/qualify_pressure.py": "271d0d95f5532fface42fbe25f55787e455291c23a23a26ed74b23a4e08b88d5",
+    "lmkd-work/pressure-source-next-09/owned-relay/fixture_init.cpp": "80d7bbce9f449f299a35ffbe82c51b6d4e45b306c275b07109d3fd2af4c410da",
+    "lmkd-work/pressure-source-next-09/owned-relay/test_qualify_pressure.py": "8b7fc71ff6f12172dee56ed922c7ba9fa245140f777b868dab4241e2aa3491f0"
+  },
+  "checks": [
+    {
+      "name": "same medium-only aged queue is old pass/new reject",
+      "old_status": "pass",
+      "old_critical": false,
+      "new": {
+        "rejected": true,
+        "reason": "no actual original critical event queued while stopped; stale trial inconclusive"
+      }
+    },
+    {
+      "name": "critical event exactly one window old remains rejected",
+      "rejected": true,
+      "reason": "stale queue has an unaged or later fresh event; trial inconclusive"
+    },
+    {
+      "name": "critical packet delivered after resume remains rejected",
+      "rejected": true,
+      "reason": "queued event time/freshness mismatch"
+    },
+    {
+      "name": "above-high totals without any event remain rejected",
+      "rejected": true,
+      "reason": "actual kernel/queued audit is incomplete or empty"
+    },
+    {
+      "name": "retained actual08 positive still assessed as critical by09 qualifier",
+      "pass": true,
+      "actual09_runtime_executed": false,
+      "source_evidence_remains08": "ffe555f1913e2d3f540ec115298580ddb95849e797926511e13acb0eab126de6"
+    }
+  ],
+  "all_controls_observed": true,
+  "all_apps_production_ready": false
+}

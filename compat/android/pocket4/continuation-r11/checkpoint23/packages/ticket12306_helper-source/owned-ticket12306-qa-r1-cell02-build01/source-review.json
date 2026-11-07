@@ -1,0 +1,213 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_BUILD_REQUEST_AWAITING_ROOT_REVIEW",
+  "target": {
+    "slug": "ticket12306",
+    "label": "12306",
+    "package": "com.MobileTicket",
+    "uid": 10121,
+    "version": 275,
+    "apks": 1,
+    "tree": "0e41c4bc51f00ef141261316755f933cfb593f61",
+    "job": "1a1b22752af-fc05-7cab",
+    "blob": "4118c053d3da58dd50f00cf433eb5083b3adaed6",
+    "bytes": 11978,
+    "sha256": "f573eb50b3e0c2a098101035df116ba76bfdbf5f486e3dafb7588399661bb868",
+    "reference_pin": {
+      "bytes": 3513,
+      "sha256": "57220958eacec13fb0b82755d4e22ffb6e02e42ecb05224103c6c5d37036db0c"
+    }
+  },
+  "helper_package": "org.droidloom.qa.ticket12306.r1",
+  "protocol": "pocket4-owned-ticket12306-qa-v1",
+  "new_helper_uid": null,
+  "new_APK_sha256": null,
+  "new_signer_sha256": null,
+  "parent": {
+    "source_tree": "1a17b2036c417ebe3dbb16ba756f555851aa1792",
+    "source_manifest": {
+      "bytes": 4251,
+      "sha256": "cda79d5b01ebfd91d6b9148be6853c78495da92130fb4f153422daac7d14ad0b"
+    },
+    "actual_build": {
+      "tree": "5d9e44ba322b9720a7e512fd97d5b6b9947dd682",
+      "blob": "1ab6f08ed46575bdc79d0caa86fea14113d93f18",
+      "bytes": 23340,
+      "sha256": "8bd0c70e64a543129aca0d8eeb08030bb135f95eb1be6bcda3b7933ac02433fb",
+      "qualified_source12commands32scope16deep": true
+    },
+    "actual_installed_helper": {
+      "blob": "ed8df6e48ba062706e72784d21a4c4b11f5db85e",
+      "bytes": 15422,
+      "sha256": "f3ec3d475dcccb894c68bd3bb471d85976cfa39f38bf437250d501de47d7b3e3",
+      "uid": 10160
+    }
+  },
+  "exact_transformations": [
+    {
+      "new_file": "AndroidManifest.xml",
+      "parent_file": "AndroidManifest.xml",
+      "parent_bytes": 728,
+      "parent_sha256": "68ea444b8f87d04c067fbf50209035817f67c1baa8bf8e84a19ac25e9b790005",
+      "new_bytes": 735,
+      "new_sha256": "4cf69c1abe5077129b17395dee697352751a2029303a603de0f8ad5a167cdcce",
+      "exact_inverse": true,
+      "edits": 3
+    },
+    {
+      "new_file": "build-input-reference.json",
+      "parent_file": "build-input-reference.json",
+      "parent_bytes": 4254,
+      "parent_sha256": "35715d1936075002a7afed3e79393595c6b45e0d8b18d2efbc87a25db6dd41e2",
+      "new_bytes": 4254,
+      "new_sha256": "35715d1936075002a7afed3e79393595c6b45e0d8b18d2efbc87a25db6dd41e2",
+      "exact_inverse": true,
+      "edits": 0
+    },
+    {
+      "new_file": "build_candidate.py",
+      "parent_file": "build_candidate.py",
+      "parent_bytes": 20160,
+      "parent_sha256": "1e27192139c4dad5c153d22bd94e56992c5c8dad209aedff0274829a370f95fb",
+      "new_bytes": 20213,
+      "new_sha256": "6596c4e61ed65f2db59468c10c8100b30c9c27e6dcddb0c8309d255f117ebd81",
+      "exact_inverse": true,
+      "edits": 7
+    },
+    {
+      "new_file": "check_current_baseline.py",
+      "parent_file": "check_current_baseline.py",
+      "parent_bytes": 8992,
+      "parent_sha256": "eeb1dd72b701dc6de98eac8e8eba203f850266e0fc33a720050fcf675dd7fd58",
+      "new_bytes": 8996,
+      "new_sha256": "d9c1191b9f93555af67bc19852a938fdd077a0bcf01ff9a88c472207b4dcd431",
+      "exact_inverse": true,
+      "edits": 7
+    },
+    {
+      "new_file": "controls/check_deep_tree.py",
+      "parent_file": "controls/check_deep_tree.py",
+      "parent_bytes": 11054,
+      "parent_sha256": "52e7c6dbad39bf581e19fc30e312e46eeef4eb6da8589bcdd4489933ec99839e",
+      "new_bytes": 11058,
+      "new_sha256": "95a2bc748ce18a164cf21567e1bb3f1f5a04a661864c2ac9c049c910d0b58df4",
+      "exact_inverse": true,
+      "edits": 4
+    },
+    {
+      "new_file": "make_build_request.py",
+      "parent_file": "make_build_request.py",
+      "parent_bytes": 2972,
+      "parent_sha256": "bb641d639c3bff53172e7c1de6dbeabfa87bfc502c7362fe12acc6f386fb2bfc",
+      "new_bytes": 2969,
+      "new_sha256": "ad5c130c0453fa86c46f1b50f57217650be1dc07178837f82df7b9184f22c7c8",
+      "exact_inverse": true,
+      "edits": 3
+    },
+    {
+      "new_file": "qa_adapter.py",
+      "parent_file": "qa_adapter.py",
+      "parent_bytes": 21714,
+      "parent_sha256": "299538df75c772206aaaf96af164d99940ef6352d22b3c54d1d26c458b96cb77",
+      "new_bytes": 21644,
+      "new_sha256": "04b7b5de6e73ce8b427c889e243ea54bc4450e7ac361f6a673617fa85af2e793",
+      "exact_inverse": true,
+      "edits": 5
+    },
+    {
+      "new_file": "qa_contract.py",
+      "parent_file": "qa_contract.py",
+      "parent_bytes": 28794,
+      "parent_sha256": "4ed40507d3175339fd42be8622b257201d0ab540a68baf83a884bc128b144d46",
+      "new_bytes": 28690,
+      "new_sha256": "ce7a93ba2fdcf3a31ed0b70a3774b5af8e7c6ec952dc699878f083a4500d0eb8",
+      "exact_inverse": true,
+      "edits": 7
+    },
+    {
+      "new_file": "src/org/droidloom/qa/ticket12306/r1/ActionRunner.java",
+      "parent_file": "src/org/droidloom/qa/bestbuy/r4/ActionRunner.java",
+      "parent_bytes": 42348,
+      "parent_sha256": "25ebcf83726caf86316178956dc33af99de5736f0d1d042072f0853a2f757429",
+      "new_bytes": 42351,
+      "new_sha256": "e48286d24f4efca9eb213a73429512595ac7834aa3c0d22d3eeb2022db227b4d",
+      "exact_inverse": true,
+      "edits": 6
+    },
+    {
+      "new_file": "stage_build.py",
+      "parent_file": "stage_build.py",
+      "parent_bytes": 7563,
+      "parent_sha256": "990a17a15403e93be8a060e7f087e23157e116da3b23452f91d6775fa8ced937",
+      "new_bytes": 7575,
+      "new_sha256": "668bc695315245b4ecefee2ea46feea353ebfbd68da5fb57c0ff9fbbb68b014d",
+      "exact_inverse": true,
+      "edits": 2
+    }
+  ],
+  "semantic_changes": {
+    "new_target_package_UID_and_visibility": true,
+    "new_helper_package_protocol_and_paths": true,
+    "namespace_owns_no_prior_helper": true,
+    "helper_UID_denied": [
+      10121,
+      10160
+    ],
+    "old_unrelated_cell_UID_numbers_not_transferred": true,
+    "actual_parent_protocol_and_UID_negative_fixture": true,
+    "old_helper_target_runtime_scope_reused": false,
+    "actual_target_artifact_reference_lossless_numeric_tokens": true
+  },
+  "unchanged": {
+    "seven_tool_paths_and_hashes": true,
+    "build_input_reference_byte_identical": true,
+    "baseline02_R6_full_binding": true,
+    "work_budget8s_watchdog12s": true,
+    "tree_depth128_nodes512_children64": true,
+    "full_tree_window_refresh_target_one_action_restoration_guards": true,
+    "set_text_unreachable": true,
+    "parent_build_and_stage_resource_cleanup_behavior": true
+  },
+  "counts": {
+    "payload_files": 14,
+    "manifest_files": 13,
+    "build_commands": 12,
+    "scope_controls": 32,
+    "deep_protocol_controls": 16,
+    "new_tests_added": 0
+  },
+  "request": {
+    "bytes": 181662,
+    "sha256": "78cf3b0e67074583acec3b1bc5590b37a99c4c29f7071389252392811868a639",
+    "blob": "29b428d389dcc4b18ed35919e92c0144de7a188c",
+    "key": "pocket4-owned-ticket12306-qa-r1-cell02-fixed-metadata-build01-20261106"
+  },
+  "source_manifest": {
+    "bytes": 4784,
+    "sha256": "069639aa9c70c910c3d86b3016180264c12d479e08383b6c51fb374d9a7ee660",
+    "blob": "c26ccdad19b48c438ca61deceb5dfa31d31684ba"
+  },
+  "remote_create_only": {
+    "source_root": "/home/alex/work/pocket4-owned-ticket12306-qa-r1-source-01",
+    "build_root": "/home/alex/work/pocket4-owned-ticket12306-qa-r1-build-01"
+  },
+  "resources": {
+    "timeout_seconds": 300,
+    "memory_max_bytes": 536870912,
+    "cpu_quota_percent": 100,
+    "nice": 10,
+    "own_swap_max": 0,
+    "own_tasks_max": 128
+  },
+  "intended_first_controller": "Separate fixed target owned launch, state/complete inspect/state and exact task cleanup only; no click or text input.",
+  "validation": {
+    "JavaScript_generator_executed": true,
+    "all_inverse_checks_true": true,
+    "full_packet_regenerated_byte_exact": true,
+    "Python_or_Java_compiled_here": false,
+    "Android_executed": false,
+    "helper_built": false,
+    "helper_installed": false,
+    "whole_app_ready": false
+  }
+}

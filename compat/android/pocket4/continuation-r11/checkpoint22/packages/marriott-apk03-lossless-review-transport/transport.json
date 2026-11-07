@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "kind": "lossless_transport_for_complete_original_report_review",
+  "original": {
+    "bytes": 9811525,
+    "sha256": "02b979004666268ae73814c809ffeba54de261e4c826a130af267fe717f3f46f",
+    "git_blob_sha1": "5a87771cf68532d1da5bd24f6dfe3a4dad624496"
+  },
+  "compressed": {
+    "bytes": 796084,
+    "sha256": "55fff428e02d2f80c90d8e56a6a6cb6eebc49f3f0f2c2b90c76bf71f9e3f13dc",
+    "encoding": "zlib;base64",
+    "parts": [
+      {
+        "name": "report.zlib.base64.part0",
+        "bytes": 524288,
+        "sha256": "ec84ae8006c7d76dc59c1b10092769fb14f47a3e64221799b3543f1d0785a45b",
+        "git_blob_sha1": "2c554688b71fc8b4119e9ec65a6624589a7b0c01"
+      },
+      {
+        "name": "report.zlib.base64.part1",
+        "bytes": 537160,
+        "sha256": "1c19d1d59dab2431a891a4cc7d42a80f9dcd897b553078b4de2268095e572335",
+        "git_blob_sha1": "f780ae7a804773fefa5dad11b773dce2345aa69c"
+      }
+    ]
+  },
+  "rule": "Concatenate exact base64 parts in order, decode once, verify compressed size/SHA, inflate with expected original length, verify original SHA and Git blob, decode UTF8 losslessly. No original JSON reserialization.",
+  "inflater": {
+    "bytes": 3922,
+    "sha256": "8388b08b38de8b3848b0bb0c99c0d57f7acda4f0ad3db2b7992083daf1cadbc5",
+    "git_blob_sha1": "c6187dc0d03ca3b4fed4b41d93cbddfc74e22918"
+  }
+}

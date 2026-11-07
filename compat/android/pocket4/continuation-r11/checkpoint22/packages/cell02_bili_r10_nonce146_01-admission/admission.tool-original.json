@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,os,re,secrets,sys\nraw=sys.stdin.buffer.read(131073)\nassert 0<len(raw)<=131072 and hashlib.sha256(raw).hexdigest()==\"c72f73bc4a413106297dd833f0de334f6502f336893df31c9831b3f1ebc6b6a2\"\np=json.loads(raw)\nassert p['schema']=='pocket4-bili-r10-current-owner-player-fresh146-spec-v1'\nassert os.getuid()==os.geteuid()==1000\nassert p['count']==146 and len(p['labels'])==len(set(p['labels']))==146\nassert len(p['mapping'])==146 and [x['label'] for x in p['mapping']]==p['labels']\nassert p['exclude_count']==len(p['exclude_values'])==len(set(p['exclude_values']))==741\nassert all(type(v) is str and re.fullmatch('[0-9a-f]{32}',v) for v in p['exclude_values'])\nassert p['actual_helper_UID']==10161 and p['source_only'] is True and p['UI_request_created'] is False\nassert p['exact_one_draw_per_value'] is True and p['no_redraw'] is True\npool=[secrets.token_hex(16) for _ in range(146)]\nassert len(pool)==len(set(pool))==146 and not set(pool)&set(p['exclude_values'])\nprint(json.dumps({'schema':'pocket4-bili-r10-current-owner-player-fresh146-v1',\n 'spec':{'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()},'count':146,\n 'labels':p['labels'],'values':pool,'exclude_count':741,'all_distinct_and_old_values_excluded':True,\n 'actual_helper_UID':p['actual_helper_UID'],'generator':'secrets.token_hex(16)','uid':os.getuid(),'no_redraw':True,\n 'source_only_nonce_generation':True,'file_writes':0,'child_processes':0,'Android_commands':0,'App_launches':0,'UI_actions':0},sort_keys=True,separators=(',',':')),flush=True)\n"
+    ],
+    "created_unix_ms": 1793986608835,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b1ef3ec3-fc05-7b90",
+    "idempotency_key": "pocket4-current-bili-r10-owner-fresh146-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b1ef3ec3-fc05-7b90",
+    "request_digest": "f3eed4296774dd16da7c1610e87a43af262473ec992f4c627ad4b3e34589ef0c",
+    "request_fingerprint": 17577219669968084246,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b1ef3ec3-fc05-7b90"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b1ef3ec3-fc05-7b90"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

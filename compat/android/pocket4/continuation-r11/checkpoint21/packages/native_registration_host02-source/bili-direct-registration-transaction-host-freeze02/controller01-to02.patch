@@ -1,0 +1,122 @@
+--- a/compile_fixture.py
++++ b/compile_fixture.py
+@@ -19,7 +19,7 @@
+ import time
+ import tomllib
+ 
+-ROOT = Path("/home/alex/work/pocket4-composer-direct-registration-transaction-host-01-20261106")
++ROOT = Path("/home/alex/work/pocket4-composer-direct-registration-transaction-host-02-20261106")
+ HERE = ROOT/'control-source'
+ OUT = ROOT/'attempt01'
+ COPIED = ROOT/'builder-source'
+@@ -1113,6 +1113,7 @@
+     original_rows = {}
+     candidate_rows = {}
+     fixture_rows = {}
++    fixture_static_rows = {}
+     dependency_rows = {}
+     tool_rows = []
+     config_rows = []
+@@ -1198,6 +1199,11 @@
+                                   'after':candidate_expected[CONTROL_PATH],'unchanged_files':498,
+                                   'source_files':499,'Android_AIDL_adapters_changed':False}
+         report['fixture_composition'] = fixture_inputs()
++        fixture_observed = regular_tree(FIXTURE,8,1024*1024)
++        require(set(fixture_observed) == {'Cargo.toml','src/lib.rs','src/control_under_test.rs'},
++                'fresh three-leaf fixture source inventory differs')
++        fixture_static_rows = fixture_observed
++        report['fixture_static_inputs'] = write_new(OUT/'fixture-static-inputs-before.json',fixture_static_rows)
+         selected_tools, compiler_rows = toolchain(report, env)
+         tool_rows.extend(compiler_rows)
+         report['tool_inputs'] = write_new(OUT/'tool-inputs-before.json', tool_rows)
+@@ -1222,13 +1228,32 @@
+                 'unqualified Cargo configuration is present')
+         report['cargo_config_inputs_before'] = config_rows
+         report['build_environment'] = env
+-        command([str(selected_tools['cargo']),'generate-lockfile','--offline'],
+-                FIXTURE,env,'fixture-lock-generation',report['commands'],30)
+-        generated_lock_raw, generated_lock_pin = held(FIXTURE/'Cargo.lock',1024*1024)
+         original_lock_raw, original_lock_pin = held(COPIED/'Cargo.lock',1024*1024)
+         require(original_lock_pin == candidate_rows['Cargo.lock'], 'immutable original Cargo.lock changed')
+-        report['generated_fixture_lock'] = generated_lock_pin
+         report['original_lock'] = original_lock_pin
++        # Seed only the new owned fixture. generate-lockfile would discard
++        # existing choices and select newer cached versions, as host01 did.
++        report['fixture_lock_seed'] = write_new(FIXTURE/'Cargo.lock',original_lock_raw)
++        seed_raw, seed_pin = held(FIXTURE/'Cargo.lock',1024*1024)
++        require(seed_raw == original_lock_raw and
++                seed_pin['bytes'] == original_lock_pin['bytes'] and
++                seed_pin['sha256'] == original_lock_pin['sha256'],
++                'new fixture lock seed is not the exact immutable original')
++        report['fixture_lock_seed_held'] = seed_pin
++        # Metadata may reconcile this new fixture's package graph once.
++        # No Rust is compiled; the unchanged locked-metadata/original-lock/
++        # actual-45-archive gates below must pass before compilation.
++        command([str(selected_tools['cargo']),'metadata','--offline','--format-version','1'],
++                FIXTURE,env,'fixture-lock-reconciliation',report['commands'],30)
++        generated_lock_raw, generated_lock_pin = held(FIXTURE/'Cargo.lock',1024*1024)
++        report['generated_fixture_lock'] = generated_lock_pin
++        fixture_observed = regular_tree(FIXTURE,8,1024*1024)
++        require(set(fixture_observed) == {'Cargo.toml','Cargo.lock','src/lib.rs','src/control_under_test.rs'} and
++                fixture_observed['Cargo.lock'] == generated_lock_pin and
++                {path:row for path,row in fixture_observed.items() if path != 'Cargo.lock'} == fixture_static_rows,
++                'fixture resolver changed static source or its held lock inventory')
++        fixture_rows = fixture_observed
++        report['fixture_inputs'] = write_new(OUT/'fixture-inputs-before.json',fixture_rows)
+         metadata_raw = command([str(selected_tools['cargo']),'metadata','--offline','--locked',
+                                 '--format-version','1'],FIXTURE,env,'fixture-metadata',report['commands'],30)
+         registry_raw, registry_pin = pinned_packet('registry-result.json',
+@@ -1244,11 +1269,6 @@
+             tomllib.loads(generated_lock_raw.decode()))
+         report['dependency_inputs'] = write_new(OUT/'dependency-inputs-before.json',
+                                                 {'packages':packages,'files':dependency_rows})
+-        fixture_rows = regular_tree(FIXTURE,8,1024*1024)
+-        require(set(fixture_rows) == {'Cargo.toml','Cargo.lock','src/lib.rs','src/control_under_test.rs'} and
+-                fixture_rows['Cargo.lock'] == generated_lock_pin,
+-                'fresh fixture source inventory differs')
+-        report['fixture_inputs'] = write_new(OUT/'fixture-inputs-before.json',fixture_rows)
+         built = command([str(selected_tools['cargo']),'test','--offline','--locked','-j','1',
+                          '--lib','--no-run','--message-format=json-render-diagnostics'],
+                          FIXTURE,env,'fixture-compile',report['commands'],180)
+@@ -1304,7 +1324,6 @@
+         for label, root, before in [
+             ('original_source',BASE_SOURCE,original_rows),
+             ('copied_source',COPIED,candidate_rows),
+-            ('fixture_source',FIXTURE,fixture_rows),
+         ]:
+             try:
+                 unchanged = bool(before) and regular_tree(root) == before
+@@ -1312,6 +1331,33 @@
+                 require(unchanged, label+' full source identity/content changed or never qualified')
+             except Exception as error:
+                 secondary(label+'_after',error)
++        # A missing full baseline is not evidence of a source mutation.
++        # Still protect the three immutable source leaves if they were created.
++        report['fixture_source_unchanged_after'] = None
++        report['fixture_static_source_unchanged_after'] = None
++        report['fixture_baseline_state'] = 'NOT_ESTABLISHED'
++        try:
++            if fixture_rows:
++                current = regular_tree(FIXTURE,8,1024*1024)
++                unchanged = current == fixture_rows
++                report['fixture_source_unchanged_after'] = unchanged
++                report['fixture_static_source_unchanged_after'] = (
++                    {path:row for path,row in current.items() if path != 'Cargo.lock'} == fixture_static_rows)
++                report['fixture_baseline_state'] = 'FULL_FOUR_LEAF_BASELINE'
++                require(unchanged, 'qualified fixture source identity/content changed')
++            elif fixture_static_rows:
++                current = regular_tree(FIXTURE,8,1024*1024)
++                unchanged = ({path:row for path,row in current.items() if path != 'Cargo.lock'} ==
++                             fixture_static_rows and
++                             set(current) <= set(fixture_static_rows) | {'Cargo.lock'})
++                report['fixture_static_source_unchanged_after'] = unchanged
++                report['fixture_baseline_state'] = 'STATIC_SOURCE_ONLY_LOCK_NOT_QUALIFIED'
++                require(unchanged, 'qualified fixture static source identity/content changed')
++            if report['state'] == 'PASS':
++                require(report['fixture_source_unchanged_after'] is True,
++                        'successful fixture run lacks its full immutable baseline')
++        except Exception as error:
++            secondary('fixture_source_after',error)
+         changes = []
+         for path,row in dependency_rows.items():
+             try:

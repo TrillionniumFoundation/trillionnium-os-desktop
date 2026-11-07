@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "kind": "owner10_runtime_single_report_reader_self_review",
+  "reviewed_utc": "2026-11-05T09:05:54.279607+00:00",
+  "source": {
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner10-normal01-runtime-read-freeze-01/read.py",
+    "bytes": 4860,
+    "sha256": "8bc30adc948c02e4edf211c138819a794aed5fe2ba2ae938d72c65b3089b0859"
+  },
+  "request": {
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner10-normal01-runtime-read-freeze-01/request.json",
+    "bytes": 5320,
+    "sha256": "4268e0397c5eed1ca2efab861e5883eadc031198be40e25bcdf0790e65155ba3"
+  },
+  "manifest": {
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner10-normal01-runtime-read-freeze-01/manifest.json",
+    "bytes": 829,
+    "sha256": "bf697d121ed696344003c4ca26bfe0d1eac97cd288cca638d877df9a1e6e74a1"
+  },
+  "diff": {
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner10-normal01-runtime-read-freeze-01/source.diff",
+    "bytes": 2126,
+    "sha256": "1f91b2967c588d24a0e7d1d3467f27b4eb2a1a982340c37945822ba03c82cc9d"
+  },
+  "external_original_runtime": {
+    "job": "1a1aaf055a6-fc05-48de",
+    "path": "/opt/p4-owner10-normal-20261105-01-state/runtime-result.json",
+    "bytes": 58161,
+    "sha256": "019d04a084f1cc7f028cfefc3277eb51e9dea6a89efc663c52daeff3e14b8190",
+    "terminal_exit": 1,
+    "durable": true,
+    "output_complete": true,
+    "runtime_qualified": false
+  },
+  "checks": {
+    "all_frozen_payload_hashes_verified": true,
+    "full_source_and_full_diff_read": true,
+    "AST_compile_only_passed": true,
+    "exact_inverse_to_actual_prepared_reader": true,
+    "only_request_stdin_and_idempotency_key_changed": true,
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-"
+    ],
+    "fixed_single_member": true,
+    "held_root_owned_no_follow_FD_and_named_identity_gates_preserved": true,
+    "actual_bytes_and_sha_before_publish_preserved": true,
+    "second_read_of_same_member_preserved": true,
+    "original_all_FD_finally_cleanup_and_error_collection_preserved": true,
+    "no_scan_subprocess_write_chmod_or_runtime_action": true
+  },
+  "limits": {
+    "member_bytes": 1048576,
+    "envelope_bytes": 2097152,
+    "compressed_bytes": 1048576,
+    "CPU_percent": 100,
+    "memory_max_bytes": 134217728,
+    "timeout_seconds": 30,
+    "nice": 10
+  },
+  "idempotency_key": "p4-owner10-normal01-runtime-read01-8bc30adc948c02e4",
+  "reader_execution_performed": false,
+  "qualification": false,
+  "first_failure_preserved": "normal RuntimeError(actual producer stopped or failed before ACTIVE); underlying cause awaits original record and logs",
+  "verdict": "NO_NEW_BLOCKER_IN_FIXED_READ_ONLY_BINDING"
+}

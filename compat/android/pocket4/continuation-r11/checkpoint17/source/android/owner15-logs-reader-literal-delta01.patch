@@ -1,0 +1,33 @@
+--- owner14-normal01-logs-freeze-01/collect.py
++++ android-owner15-normal01-logs-reader-01/collect.py
+@@ -1,14 +1,14 @@
+ #!/usr/bin/env python3
+-"""Read only the retired Owner14 NORMAL01 attempt's fixed records and helper logs."""
++"""Read only the retired Owner15 NORMAL01 attempt's fixed records and helper logs."""
+ import hashlib, json, os, stat, sys, traceback
+ from pathlib import PurePosixPath
+ 
+-ROOT = '/opt/p4-owner14-normal-20261105-01-state'
+-ATTEMPT = '4b8b529f0b32b58c89a18cbc6adc43884b5c5cd3c5acde5d68c656a073aa0cf7'
+-PREPARED_SHA = '5771673f20af6833e070da267b0ad9bcbbf58c87e03542104ac57fb9a4466770'
+-RUNTIME_SHA = '954fa535427e79780cb3764d0eb28e2ab12b4a4af642c4bccf3244a4e1c97fea'
+-INVOCATION = '5ccbffb9ae354e719c6ee2dbb49ec7dd'
+-ACTOR_PID = 2204107
++ROOT = '/opt/p4-owner15-normal-20261105-01-state'
++ATTEMPT = '7524a823ccabd18edd4bb65a6424a37362514dd7ec66ba913fc83a508b3be5ab'
++PREPARED_SHA = 'cdcf0db96db1c7100c17faa5c4b0926b544f8c41b8da8960e49788dee3926de8'
++RUNTIME_SHA = '6d35b126c24604d373175479c9bc69e0246a45c05f2061bb8f8077399f0926d5'
++INVOCATION = '3390cef640ed48b597413bcbbcdf3bac'
++ACTOR_PID = 2875997
+ RECORDS = ('preparation-claim.json', 'prepared.json', 'coordinator-claim.json',
+            'gate.json', 'runtime-claim.json', 'actor-result.json', 'runtime-result.json')
+ LOGS = tuple(role + '.' + stream for role in ('bus', 'sway', 'presenter', 'daemon')
+@@ -61,7 +61,7 @@
+         os.close(fd)
+ 
+ def main():
+-    report = {'schema': 1, 'kind': 'owner14-normal01-retired-evidence-read01',
++    report = {'schema': 1, 'kind': 'owner15-normal01-retired-evidence-read01',
+               'collection_complete': False, 'qualification': False,
+               'runtime_executed': False, 'mutations': False,
+               'root': ROOT, 'attempt_nonce': ATTEMPT, 'files': {}, 'errors': []}

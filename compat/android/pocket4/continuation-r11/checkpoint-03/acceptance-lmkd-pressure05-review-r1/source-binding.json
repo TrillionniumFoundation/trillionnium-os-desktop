@@ -1,0 +1,6 @@
+{
+  "source": "/workspace/scratch/94990735b266/lmkd-work/host-pressure-freeze-05/owned-relay/fixture_init.cpp",
+  "sha256": "77dd1bcd0a8a86a5df0a3b1f61a723b608310b2eb7e140acc2388e6b596e7fbb",
+  "exact_statement": "for(auto& c:children) {if(alive_fd(c.pidfd)){child_command(c,'Q');await_exit(c.pid,c.pidfd,&st,2000);check(WIFEXITED(st)&&WEXITSTATUS(st)==0,\"normal fixture cleanup\");}close(c.command);close(c.reply);close(c.pidfd);}",
+  "scope": "Only frozen cleanup statement is executed, with an exact local owned child already SIGKILLed. No full fixture, Android, cgroup or PSI run."
+}

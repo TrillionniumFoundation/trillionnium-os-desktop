@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "kind": "derived-exact-daemon-prestart-semantics",
+  "derived": true,
+  "source_original": {
+    "bytes": 753,
+    "sha256": "22a22bd498ce17b7ffd4b2349b2be81a557a8ba48f94325ca2c95c24e6993f2c",
+    "git_blob_sha1": "dd19c33edc3ff6aa088effe367b8d0fdcffec3ff"
+  },
+  "source_info_original": {
+    "bytes": 431,
+    "sha256": "f59591b1b609a9c1052e6c3c01640aaee811b29681b9015cba21a6c17ec7bb32",
+    "git_blob_sha1": "75ef14108ea8e15d1baea615548de54f8835344d"
+  },
+  "source_read_original": {
+    "bytes": 1123,
+    "sha256": "3b396c56f08360062d692fb812fcc01c77ce391bab90e843c95a4bf3dd6a6f83",
+    "git_blob_sha1": "25ff959312788b4484f7b88ac7f8fb55beba8b28"
+  },
+  "same_file_info_read_version": true,
+  "path": {
+    "bytes": 53,
+    "sha256": "8ae8160c72830930f6f105cefc16fad30b8834565c61ba01d1a2adc939052664",
+    "git_blob_sha1": "0e583674b6ee5cd6ba289d3e3e98795bcd2010f4"
+  },
+  "metadata": {
+    "acl_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gid": 0,
+    "link_count": 1,
+    "metadata_platform": "linux",
+    "mode": 493,
+    "uid": 0,
+    "xattr_names": [],
+    "xattr_sha256": {}
+  },
+  "interpreter": "/usr/bin/python3 -I",
+  "config_prefix": {
+    "bytes": 13,
+    "sha256": "b8e0a9ad1962ce6d4a5b754017c3eb819c80c22c9c6c6bd5f4d19ae336241b51",
+    "git_blob_sha1": "e1ba25e79285e91ccebf49a8379433e357ece93a"
+  },
+  "config_filename_uses_current_uname_release": true,
+  "required_config_line": "CONFIG_VMAP_STACK=y",
+  "compatibility_library_path": {
+    "bytes": 55,
+    "sha256": "a0e17db60fd5b94b999742f574d70a72777f435f4618397b7031908ad45a9e8b",
+    "git_blob_sha1": "1213bd1d6ec065948413d39b553ef58d28faef64"
+  },
+  "required_compatibility_library_sha256": "a2b1445b68a9bff4ab23687c66668579b57fbc5122df055d212a51a60049a64c",
+  "source_operations": [
+    "query current kernel release",
+    "read current-kernel configuration",
+    "require exact full configuration line",
+    "read existing compatibility library",
+    "compare full SHA256",
+    "print success or exit failure"
+  ],
+  "subprocess_calls": 0,
+  "file_writes": 0,
+  "network_calls": 0,
+  "script_was_executed": false,
+  "current_kernel_config_or_library_checked_by_this_read": false,
+  "no_new_deployment_authority": true,
+  "private_paths_or_raw_bodies_exported": false
+}

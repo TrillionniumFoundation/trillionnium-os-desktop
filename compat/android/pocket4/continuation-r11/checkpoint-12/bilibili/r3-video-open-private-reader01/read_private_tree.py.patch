@@ -1,0 +1,106 @@
+--- a/read_private_tree.py
++++ b/read_private_tree.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""PRIVATE UI evidence export for one completed owned r3 inspection.
++"""PRIVATE export of one independent successful read after a FAILED flow.
+ 
+ The source is publishable; collected commercial UI nodes are not. The caller
+ must keep the decoded result in a private evidence directory outside Git.
+@@ -15,16 +15,18 @@
+ import time
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-bilibili-r3-results-observe-01')
+-FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-6af0a9c20e8c06d7237d8635c46a166a')
+-STEP=FLOW/'steps/results-observe-01'
+-NONCE='9e22d4f5a36dd2f762cf1a2858c9c301'
+-FLOW_NONCE='6af0a9c20e8c06d7237d8635c46a166a'
+-COORDINATOR_SHA='2743104fae8764747a7b0444095b5f4185f126cbbc1f9223cfdbcf5f4ac73dad'
+-COORDINATOR_BYTES=102342
+-STAGE_SHA='f327e820eb2b9ea98d1c2e5175cabb868cbb1c67cda94b79e8274c2fe8f2accf'
+-STAGE_BYTES=1647
+-SOURCE_SHA='9015920277c0f732d8668bc8176d5ab1ec08576013908f922050e17494b5ed6e'
++ROOT=Path('/home/alex/work/pocket4-bilibili-r3-video-open-01')
++FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-7561068625f1b605caacbe007f99ccd1')
++STEP=FLOW/'steps/video-open-01'
++NONCE='1df84e9e6460ae4f3c5c5ea26e9eb2e1'
++FLOW_NONCE='7561068625f1b605caacbe007f99ccd1'
++COORDINATOR_SHA='6aba41ba7e5282e759e8af39fe8fb0bc18f9ce41aafd9407408680d98dd7f0be'
++COORDINATOR_BYTES=6332
++STAGE_SHA='fec96b8c21e2d59db03a842140a1ace571a25d7dfe2ad7dc58d5f9de9ee60fa2'
++STAGE_BYTES=1771
++SOURCE_SHA='6426ed88fba950f49c4fdc8c4f21d321f5fdc852318e1df3de3c0ee927ac3164'
++PHASE_SHA='526be5a089308cb1a0a1918b2b18c27a5b1150fdfd234600a0dc7b67cfd6561c'
++PHASE_BYTES=154798
+ QA_SOURCE=Path('/home/alex/work/pocket4-owned-bili-qa-r3-source-01/source/qa_contract.py')
+ QA_SHA='6789ec1fef825d9738a6f59a14611dc2d60adc994b093f1ee4cfa9eb75ef9470'
+ FILES={ROOT/'result.json':0,ROOT/'stage-result.json':0,STEP/'result.json':0,
+@@ -85,37 +87,33 @@
+     c=json.loads(reader.read(ROOT/'result.json',COORDINATOR_SHA,COORDINATOR_BYTES))
+     s=json.loads(reader.read(ROOT/'stage-result.json',STAGE_SHA,STAGE_BYTES))
+     for value in (c,s):
+-        need(value.get('ok') is True and value.get('error') is None and value.get('secondary_errors')==[] and
+-             value.get('source_manifest_sha256')==SOURCE_SHA and value.get('nonce')==FLOW_NONCE and
+-             value.get('Main_before')==value.get('Main_after'),'EXACT_SUCCESSFUL_COMPLETED_FLOW_REQUIRED')
++        need(value.get('ok') is False and isinstance(value.get('error'),dict) and
++             value.get('secondary_errors')==[] and value.get('source_manifest_sha256')==SOURCE_SHA and
++             value.get('nonce')==FLOW_NONCE and value.get('Main_before')==value.get('Main_after'),
++             'EXACT_ORIGINAL_FAILED_FLOW_REQUIRED')
+     need(c.get('owned_task_absent_after_cleanup') is True and c.get('source_and_artifact_unchanged') is True and
+          s.get('coordinator_result')=={'path':str(ROOT/'result.json'),'bytes':COORDINATOR_BYTES,'sha256':COORDINATOR_SHA},
+          'COMPLETED_ORIGINAL_CLEANUP_AND_STAGE_BINDING_REQUIRED')
+-    pin=c.get('navigation_result')
+-    need(isinstance(pin,dict) and pin.get('path')==str(STEP/'result.json'),'FIXED_INSPECT_SUMMARY_REQUIRED')
+-    phase_raw=reader.read(STEP/'result.json',pin['sha256'],pin['bytes']);phase=json.loads(phase_raw)
+-    need(phase.get('ok') is True and phase.get('phase')=='navigate' and phase.get('helper_uid')==10166 and
++    phase_raw=reader.read(STEP/'result.json',PHASE_SHA,PHASE_BYTES);phase=json.loads(phase_raw)
++    need(phase.get('ok') is False and phase.get('phase')=='navigate' and phase.get('helper_uid')==10166 and
+          phase.get('helper_package')=='org.droidloom.qa.bili.r3' and
+          phase.get('source_manifest_sha256')==SOURCE_SHA and phase.get('nonce')==FLOW_NONCE and
+          phase.get('final_Main_guard_passed') is True and phase.get('held_binding_released') is True and
+-         phase.get('action_lock_released') is True and phase.get('outcome_unknown') is True and
+-         phase.get('scoped_click_and_post_observation_completed') is True and
+-         phase.get('query_submission_controls_completed') is True and
+-         phase.get('final_results_inspection_completed') is True and
+-         phase.get('results_container_content_observed') is True and
+-         phase.get('result_content_observation',{}).get('qualified') is True and
+-         phase.get('business_outcome_unknown') is True,
+-         'EXACT_SUCCESSFUL_PRIVATE_INSPECT_PHASE_REQUIRED')
+-    metadata=phase['observed_results_assessments']['inspect']
+-    selected=phase['result_content_observation']['selected_additional_sequence']
+-    need(type(selected) is int and 0<=selected<=8,'BOUNDED_SELECTED_RESULTS_OBSERVATION_REQUIRED')
+-    matches=[row for row in phase['result_content_observation']['observations']
+-             if row.get('additional_sequence')==selected]
+-    need(len(matches)==1 and matches[0]['assessments']['inspect']==metadata and
+-         matches[0]['postcondition'].get('container_content_observed') is True and
+-         matches[0]['postcondition'].get('loading_control_count')==0 and
+-         matches[0]['postcondition'].get('visible_pager_descendants',0)>0,
+-         'ACTUAL_SELECTED_CONTENT_OBSERVATION_REQUIRED')
++         phase.get('action_lock_released') is True and phase.get('secondary_errors')==[] and
++         phase.get('error',{}).get('phase')=='video_open' and
++         phase.get('error',{}).get('message')=='FOREGROUND_UNVERIFIED',
++         'EXACT_FAILED_VIDEO_FOREGROUND_PHASE_REQUIRED')
++    failed=phase.get('failed_video_sequence',{})
++    need(failed.get('click_acknowledged') is True and failed.get('after_state_completed') is True and
++         failed.get('restoration_qualified') is True and failed.get('secondary_errors')==[] and
++         failed.get('error')=={'phase':'post_foreground','type':'ControlError','message':'FOREGROUND_UNVERIFIED'},
++         'ORIGINAL_ACK_WITH_POST_FOREGROUND_FAILURE_REQUIRED')
++    observations=phase.get('video_post_observations')
++    need(isinstance(observations,list) and len(observations)==1 and observations[0].get('index')==1 and
++         observations[0].get('restoration_qualified') is True and observations[0].get('after_state_completed') is True and
++         observations[0]['foreground']['activity']=='tv.danmaku.bili/com.bilibili.ship.theseus.detail.UnitedBizDetailsActivity',
++         'ONE_ACTUAL_INDEPENDENT_SUCCESSFUL_PRIVATE_READ_REQUIRED')
++    metadata=observations[0]['assessments']['inspect']
+     need(metadata.get('nonce')==NONCE and metadata.get('operation')=='inspect' and
+          metadata.get('actual_command_returncode')==0 and metadata.get('actual_instrumentation_finish_code')==-1,
+          'EXACT_SUCCESSFUL_INSPECT_ASSESSMENT_REQUIRED')
+@@ -148,6 +146,8 @@
+         'assessment_sha256':sha(raw),'wire_sha256':assessed['wire_sha256'],
+         'helper_package':'org.droidloom.qa.bili.r3','helper_uid':10166,'inspection_nonce':NONCE,
+         'scope':helper['host_scope_attestation'],'inspection':inspection,'window_observation':window,
++        'original_flow_failed_and_preserved':True,'post_observation_index':1,
++        'original_click_ACK_and_after_state_observed':True,'original_post_foreground_failure':'FOREGROUND_UNVERIFIED',
+         'tree_observations':counters,
+         'observed_tree_from_already_retired_task':True,'reuse_for_click_forbidden':True,
+         'next_action_requires_fresh_launch_and_fresh_inspection':True,

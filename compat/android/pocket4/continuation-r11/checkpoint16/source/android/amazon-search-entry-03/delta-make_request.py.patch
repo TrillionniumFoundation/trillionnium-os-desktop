@@ -1,0 +1,18 @@
+--- search-entry02/make_request.py
++++ search-entry03/make_request.py
+@@ -3,11 +3,11 @@
+ import argparse,hashlib,json,os
+ from pathlib import Path
+ HERE=Path(__file__).resolve().parent
+-MANIFEST_SHA='5d75eb9bd3eef99f4e5aa22a1aa39ae154ac714859bc381141bd3c1daf0909a4'
+-STAGE_SHA='8a6e30b960483f51a36aead25923674d153c4452b6327fadf0242199406d4eee'
++MANIFEST_SHA='2242c0a160894629fedb9f97c0347fa2765af44ac9a57b69fe2fe6bd5c3f60fb'
++STAGE_SHA='7e2dc94b4c817e6d268b2060c3954fa3b306f5dd4d01eaace21fa1d9cb6cfaa6'
+ STAGE_BYTES=5043
+-NONCE='d0e92c1920c92a57e7e7d0d915fc1bde'
+-KEY='pocket4-amazon-owned-search-entry-02-20261105'
++NONCE='ec46de5bfc594294a385a785deea3e9a'
++KEY='pocket4-amazon-owned-search-entry-03-20261105'
+ def main():
+     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--write-once',action='store_true');p.add_argument('--output',type=Path);a=p.parse_args()
+     if not a.write_once:

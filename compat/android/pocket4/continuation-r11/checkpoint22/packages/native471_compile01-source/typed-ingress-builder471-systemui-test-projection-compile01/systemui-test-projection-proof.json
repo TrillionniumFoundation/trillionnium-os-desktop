@@ -1,0 +1,164 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_FIXED_SYSTEMUI_TEST_PROJECTION_NOT_COMPILED",
+  "baseline": {
+    "generation": 470,
+    "source_tree": "4c998944aa7d11dc79a694ae518d64dc7b98ac10",
+    "manifest": {
+      "bytes": 99327,
+      "sha256": "d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057",
+      "git_blob": "f738ecebf679d7c91a7fde5adc8608552db3d468"
+    },
+    "compile_result": {
+      "bytes": 172040,
+      "sha256": "f4e78f21dec485f59ff2149cb12298c070142dbad4e29b00a776729a376eea4c",
+      "git_blob": "671877636ccc37b65838223b418025f8ebc055f8"
+    },
+    "android": {
+      "bytes": 294614,
+      "kind": "file",
+      "mode": 436,
+      "sha256": "eeea9718e16a40692dd4849fdfbc907bb65e5f7c6e205568034f408fe0803d39",
+      "git_blob": "bbaa6bffd423a7e1c6be1269a9d3bbb68fb9f3ff"
+    }
+  },
+  "candidate": {
+    "generation": 471,
+    "manifest": {
+      "bytes": 99548,
+      "sha256": "c29c7b05fcfdf3def918d2bc963c6fe0c25a0430c87249f3de781d5d8bf68ae0",
+      "git_blob": "59b849acb5fb6f96a642a2f8c9f27701306fc511"
+    },
+    "source_files": 500,
+    "unchanged": 498,
+    "changed_existing": [
+      "tools/droidloom-update/src/android.rs"
+    ],
+    "added": [
+      "android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp"
+    ],
+    "source_delta": [
+      "android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp",
+      "tools/droidloom-update/src/android.rs"
+    ],
+    "delta_pins": {
+      "tools/droidloom-update/src/android.rs": {
+        "bytes": 301533,
+        "sha256": "7bbe16d118fe610ae42e9c1b906b65aee5ceeb0804cdbaee93ee61ab5b271629",
+        "git_blob": "ffcc678a07d760acf10b38ad0671543f0539d661"
+      },
+      "android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp": {
+        "bytes": 3392,
+        "sha256": "f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da",
+        "git_blob": "6a36068e1286d9969307d47659f52e5606bb503f"
+      }
+    }
+  },
+  "scope": {
+    "route": "native-role-ingress-build",
+    "targets": [
+      "framework-minus-apex",
+      "libandroid_runtime"
+    ],
+    "dependency_mode": "Strict",
+    "ALLOW_MISSING_DEPENDENCIES": "false",
+    "source_path": "frameworks/base/packages/SystemUI/tests/Android.bp",
+    "original": {
+      "bytes": 3392,
+      "sha256": "f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da",
+      "git_blob_sha1": "6a36068e1286d9969307d47659f52e5606bb503f"
+    },
+    "official_commit": "94b4c163b7dfe5ce3607f7bb8456f9573f7de57d",
+    "original_url": "https://raw.githubusercontent.com/aosp-mirror/platform_frameworks_base/94b4c163b7dfe5ce3607f7bb8456f9573f7de57d/packages/SystemUI/tests/Android.bp",
+    "excluded_modules": [
+      "SystemUITests_defaults",
+      "SystemUITests",
+      "SystemUITests_systemui_accessibility",
+      "SystemUITests_presubmit",
+      "SystemUI_test_fixtures"
+    ],
+    "projected": {
+      "bytes": 183,
+      "sha256": "42118873220b0cc4d07e21a961052ddd5d81ab67be8df5d7c9dba9bd966aaeb5",
+      "git_blob": "53cfc4c0ae972a7e30a82d5a19eba74e4b0df6c6"
+    },
+    "package_and_license_reference_preserved": true,
+    "full_original_in_fixture_and_existing_restore_journal": true,
+    "parent_three_provider_stanzas_unchanged": true,
+    "other_SystemUI_subdirectories_not_enumerated_or_changed": true,
+    "non_typed_modes_unchanged": true,
+    "no_find_ignore_added": true,
+    "original_two_locks_and_projection_restore_unchanged": true
+  },
+  "source_lock": {
+    "path": "android/manifest/m2-role-ingress-hal-provider-source-lock.json",
+    "bytes": 96957,
+    "kind": "file",
+    "mode": 436,
+    "sha256": "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d",
+    "project_count": 225,
+    "root_links": 8,
+    "unchanged": true,
+    "writer": "UNKNOWN"
+  },
+  "evidence": {
+    "normal07_actual_tree": "8dece274c70366c22ff71248b2362c4cf8790719",
+    "normal07_job": "1a1b1bceb2f-fc05-7a8e",
+    "inner_terminal": {
+      "bytes": 2898,
+      "sha256": "7bb06799bc311b64541c1cb9fe23a5b0ce0796d0476e7eb1fcbc7ff37938f3a3",
+      "git_blob_sha1": "a9edc4b6e1f83c7203f6043b2a7d9f1deffb32d5"
+    },
+    "stdout": {
+      "bytes": 72477,
+      "sha256": "55402a33796cd7ab55fda66660b696eb871c72869d70fb2a3dda3f22d68daa82",
+      "git_blob_sha1": "09e3516120e810bf1a9c45a921c482ef84fc4bc4"
+    },
+    "stderr": {
+      "bytes": 63011,
+      "sha256": "a164f7eed58c21aa7e5f307d70deabdc092ab732e80b23dff78b32cbc80be965",
+      "git_blob_sha1": "de29e691cf65c46bdc4f6b462d450759168fcaab"
+    },
+    "actual_first_error": "\"SystemUITests_defaults\" depends on undefined module \"systemui-non-platform-apis-defaults\"",
+    "same_file_next_unresolved_edge": "SystemUITests_defaults.static_libs -> SystemUI-tests (parent module intentionally not retained)",
+    "prior_failure_retained": true
+  },
+  "dependency_boundary": {
+    "method": "Exact pinned direct/defaults/source-group inspection, not a generated complete Soong variant graph.",
+    "root_target_blueprint": {
+      "bytes": 28696,
+      "sha256": "9039665725aa013a88f222430e33a1a3e662e23ec87090f253592ee28ec2f545",
+      "git_blob_sha1": "a6f637645e008ecf4e69623b3b5b043db5eec7ed"
+    },
+    "jni_target_blueprint": {
+      "bytes": 24394,
+      "sha256": "1a440df74ccbaa2c5b57173bf9f767ba0e4fbcf20c5f39b1ffd485de31b73470",
+      "git_blob_sha1": "7b9844f7df73bfd6722f36f7bd82a2f8f11b4153"
+    },
+    "core_source_blueprint": {
+      "bytes": 32692,
+      "sha256": "bde0ed0b9eae4dda4170e84d700c2acf445938f107dd0c094e2cfd1535578fd4",
+      "git_blob_sha1": "aef8f8cc1cf3ec958aae15707c219c0947f77471"
+    },
+    "separate_install_dependencies_module_not_selected": true,
+    "no_claim_all_transitive_variants_proven": true,
+    "SystemUI_application_tests_not_built_by_this_route": true,
+    "any_remaining_required_dependency_fails_Strict": true
+  },
+  "validation": {
+    "production_inverse_to_actual470": true,
+    "inverse_edits": 6,
+    "old_29_provider_fixture_expectations_unchanged": true,
+    "new_fixture_count": 30,
+    "new_focused_tests": [
+      "android::tests::typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths",
+      "android::tests::typed_systemui_test_projection_rejects_wrong_source_before_journal_or_write",
+      "android::tests::typed_systemui_test_projection_recovers_complete_original_from_durable_journal"
+    ],
+    "new_tests_executed": false,
+    "host_compile_performed": false,
+    "Soong_build_performed": false,
+    "Java_JNI_artifacts_qualified": false,
+    "production_ready": false
+  }
+}

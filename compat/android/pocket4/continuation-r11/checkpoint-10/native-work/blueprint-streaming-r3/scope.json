@@ -1,0 +1,22 @@
+{
+  "revision": "r3",
+  "prior_r2_failed_before_Go": true,
+  "source_symlinks": {
+    "pathtools/testdata/dangling/a/a/f": "../../f",
+    "pathtools/testdata/dangling/b": "a",
+    "pathtools/testdata/dangling/c": "a/a",
+    "pathtools/testdata/dangling/d": "c",
+    "pathtools/testdata/dangling/dangling": "missing",
+    "pathtools/testdata/dangling/e": "a/a/a",
+    "pathtools/testdata/symlinks/b": "a",
+    "pathtools/testdata/symlinks/c": "a/a",
+    "pathtools/testdata/symlinks/d": "c",
+    "pathtools/testdata/symlinks/e": "a/a/a"
+  },
+  "following_source_symlinks": false,
+  "arbitrary_source_symlinks": "rejected with exact path",
+  "production_patch_unchanged": true,
+  "Go_test_source_unchanged": true,
+  "owned_resource_functions_unchanged": true,
+  "Go_compiled_locally": false
+}

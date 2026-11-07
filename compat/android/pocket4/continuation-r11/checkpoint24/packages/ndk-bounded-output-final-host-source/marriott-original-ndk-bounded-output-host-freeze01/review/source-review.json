@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_HOST_TEST_REQUEST_NOT_EXECUTED",
+  "purpose": "Replace the fixture-only process-wide file-size limit with bounded private log capture.",
+  "exact_current_sources": {
+    "fixture_context.py": {
+      "bytes": 42038,
+      "sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c",
+      "git_blob_sha1": "b0f7bf2a855cff9d09b87be6aeee4fb9e643f990"
+    },
+    "fixture_transport.py": {
+      "bytes": 15455,
+      "sha256": "8c4aa937cbc56f3d0eaf104da1782704ce3578256dd8b1fbb0963650a6d08692",
+      "git_blob_sha1": "575c930285bef22bca65ec5c571b4a0b7857729b"
+    },
+    "fixture_contract.py": {
+      "bytes": 25331,
+      "sha256": "1b027dc076f0ee5d89df1e95ae76fddeacab1adaafb5e77e4b05b63f47593261",
+      "git_blob_sha1": "6b76abcc871c4ba084f53e529d3dd96168e301aa"
+    },
+    "recorder.py": {
+      "bytes": 41689,
+      "sha256": "c63cbdca615a609ebb41bcb25db6b770f43c4488c46a8f7b1dbee4bc462b4e64",
+      "git_blob_sha1": "bf71c5720c8afe7da2f5cf9fe44ae03d87999d9a"
+    },
+    "check_bounded_output.py": {
+      "bytes": 29153,
+      "sha256": "6e553b8eff7dc48446ac626190df13af67c96566777f137f011b229c1d71b619",
+      "git_blob_sha1": "bfdb77bbb3331cd37e3245a81f2690bfdd008929"
+    }
+  },
+  "production_sources_changed": [
+    "fixture_context.py",
+    "fixture_transport.py"
+  ],
+  "original_runtime_source_tree": "daaf676d6b2d21c512bdf6972ff300823cb6e0a1",
+  "unchanged_shared_R6_recorder": {
+    "bytes": 41689,
+    "sha256": "c63cbdca615a609ebb41bcb25db6b770f43c4488c46a8f7b1dbee4bc462b4e64",
+    "git_blob_sha1": "bf71c5720c8afe7da2f5cf9fe44ae03d87999d9a"
+  },
+  "change_scope": {
+    "context": "Add CommandCaptureError and _OwnedCommandCapture; replace command_with_bound; add selectors/signal imports. Original Context/open_context/InstalledFixture and Main/held/lease/source/phase code remain byte-identical.",
+    "transport": "Only output/capture first-error routing before generic return-code classification; an already observed nonzero exit remains primary over later capture/close errors.",
+    "private_stream_cap_each": 262144,
+    "overflow_observation_bound_each": 262145,
+    "process_file_size_limit_changed": false,
+    "output_capture": "Concurrent nonblocking pipes; full EOF is required for complete capture. Persist only each bounded prefix in exclusive private stdout/stderr files; preserve original R6 intent/receipt names and original now/write_new function bodies.",
+    "lifecycle": "One newly started session. pidfd and getpgid/getsid checks anchor only the unreaped direct leader. WNOHANG|WNOWAIT observes it without reaping. Group signal precedes any Popen.wait; no poll/communicate. At most five seconds for direct-child retirement, with closed FD ledger and actual timestamps. No group signal after reaping begins.",
+    "first_error": "A capture error that precedes any observed nonzero leader exit remains primary over cleanup-induced nonzero status. Prior observed Android failure stays primary; fsync/close errors remain secondary. Timeout/overflow evidence is retained, never reclassified as success.",
+    "scope_not_qualified": [
+      "Escaped sessions or Binder descendants",
+      "New Main/Android execution or namespace entry",
+      "Original rc153 cause",
+      "Any twelve-test acceptance"
+    ]
+  },
+  "host_controls": {
+    "real_children": 5,
+    "real_cases": [
+      "own_artifact_larger_than_log_cap",
+      "both_streams_exactly_at_cap",
+      "stdout_overflow_preserves_primary",
+      "stderr_overflow_preserves_primary",
+      "timeout_retires_own_child"
+    ],
+    "no_child_order_controls": 2,
+    "pure_cases": [
+      "capture_error_before_cleanup_rc_is_primary",
+      "observed_nonzero_exit_precedes_late_capture_error"
+    ],
+    "fixed_executable": "/usr/bin/python3",
+    "child_flags": [
+      "-I",
+      "-B"
+    ],
+    "fixed_create_only_root": "/home/alex/work/pocket4-ndk-bounded-output-host-controls01",
+    "files": "Seven synthetic own regular authority files; fixed own case directories, intent/result/stdout/stderr and one >1 MiB own artifact. All cleanup uses held own directory FDs; no directory scan.",
+    "declared_seams": [
+      "Context Main/target guard is synthetic and does no Main read.",
+      "Two overflow tests use real BoundArun with synthetic held entry and the real own-host-child runner; the synthetic helper argv is never executed.",
+      "Two order controls use real remember and BoundArun with an explicit CompletedProcess seam, without a child."
+    ],
+    "before_after": [
+      "ambient FD map",
+      "host credentials/namespaces",
+      "unchanged RLIMIT_FSIZE",
+      "timer/umask restoration",
+      "all known fixture files and directory FDs closed/removed"
+    ],
+    "Python_execution": "NOT_PERFORMED; to be established by Root's one exact request.",
+    "outer_request": {
+      "cpu_quota_percent": 100,
+      "memory_max_bytes": 268435456,
+      "nice": 15,
+      "timeout_seconds": 60
+    },
+    "controller_alarm_seconds": 45,
+    "output_report_maximum_bytes": 131072,
+    "Main_calls": 0,
+    "Android_calls": 0,
+    "network_calls": 0,
+    "shared_source_writes": 0,
+    "actual_runtime_nonce_consumed": false
+  },
+  "original_run": {
+    "job": "1a1b31bedf5-fc05-80a3",
+    "actual_tree": "7333355118e72ac917f01b28ffd15c5b759bd97a",
+    "state": "FAILED_OUTCOME_UNKNOWN_PRESERVED"
+  },
+  "retirement": {
+    "job": "1a1b32953c8-fc05-80dd",
+    "actual_tree": "5c0b84bf452f69c7c6446742ae228d5c31200665",
+    "independent_review_tree": "792476f4f31a624bd14dd2b60fe4abaaf85fe7e8",
+    "fixed_scope_retirement_passed": true,
+    "twelve_tests_qualified": false
+  },
+  "future_runtime": "No new run/retire request or nonce is generated here. A future runtime needs actual successful host controls, fresh phase material/root, a new exact source binding, and the actual successful retirement authority."
+}

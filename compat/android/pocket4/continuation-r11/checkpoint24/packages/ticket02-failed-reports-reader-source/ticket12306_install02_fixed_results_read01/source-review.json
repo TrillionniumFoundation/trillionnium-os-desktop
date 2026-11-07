@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_LIMITED_REVIEW_NOT_EXECUTED",
+  "scope": "Exact authority binding of the original Hilton failed two-file collector to Ticket02 actual stdout/terminal.",
+  "seed_tree": "b03735ad15e00042506cf5485d55d67509369c42",
+  "findings": [],
+  "source_scope_correction": {
+    "seed_scope_original_field": "scope_unknown_until_full_worker",
+    "seed_scope_original_value": false,
+    "seed_scope_is_authority": false,
+    "correct_scope_unknown_until_full_worker": true,
+    "installation_outcome": "UNKNOWN_UNTIL_WORKER_ORIGINAL_REVIEW",
+    "worker_not_yet_read": true,
+    "scope_original_preserved": true
+  },
+  "confirmed": {
+    "all_five_seed_leaves_preserved_raw": true,
+    "stdout_two_lines_match_both_fixed_files": true,
+    "failed_terminal_state_exit_and_full_output_match": true,
+    "seven_exact_edits_invert_to_original": true,
+    "read_exact_file_byte_identical": true,
+    "summary_gate_all_four_reads_signal_and_FD_finally_byte_identical": true,
+    "request_envelope_except_stdin_and_key_unchanged": true,
+    "worker_path_or_pin_guessed": false,
+    "original_installation_replayed": false
+  },
+  "known_summary_errors": {
+    "primary": "coordinator / RuntimeError / 01-install-state did not complete exactly once with a preserved Main fence",
+    "secondary": "coordinator_final_Main / RuntimeError / OWNER_SINGLE_DIRECT_CHILD_REQUIRED"
+  },
+  "limits": [
+    "No coordinator/stage file has been read by this candidate yet.",
+    "Worker outcome and installation details remain UNKNOWN until separately bound full-original review.",
+    "No Python compilation/execution or runtime FD qualification performed here.",
+    "The original reader's held-ancestor/held-and-named-leaf scope is preserved; no new root-path name stability or ambient FD assertion is claimed."
+  ],
+  "installation_outcome_qualified": false,
+  "runtime_qualified": false,
+  "Python_executed": false,
+  "Hepta_calls": 0,
+  "local_exec_calls": 0,
+  "branch_ref_PR_mutations": 0
+}

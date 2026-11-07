@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "strategy": "reuse the exact existing root-owned host probe; do not rewrite/recompile or call this a new native build",
+  "prior_build_result_path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/build-result.json",
+  "prior_build_result_sha256": "1e70d9df93309ff5be991f0a20e4b5b4493e57a0b64fcc3881075e652a5ae712",
+  "actual_prior_probe": {
+    "bytes": 21752,
+    "device": 66306,
+    "gid": 0,
+    "inode": 34481448,
+    "mode": 448,
+    "path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/bin/prefix-probe",
+    "sha256": "79b30f9fa4a1e7635ae4786a50372b3fcaa84ad619269476e40a1badd65c0e82",
+    "uid": 0
+  },
+  "probe_C_source_bytes": 9662,
+  "probe_C_source_sha256": "d088edf44d523a67e2881ce6c0715a4885664f11c5315938e04f52738c43a34a",
+  "source_in_old_root": "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/source/prefix_probe.c",
+  "source_in_new_root": "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/source/prefix_probe.c",
+  "required_stage_checks": [
+    "exact original build receipt",
+    "original probe device/inode/bytes/mode/root owner/full SHA/no file caps",
+    "old and copied C source exact same SHA",
+    "all new source pins unchanged across fresh Python controls"
+  ],
+  "prior_actual_native_ordinary_controls": 6,
+  "new_native_controls_claimed": 0,
+  "probe_Android_execution": false
+}

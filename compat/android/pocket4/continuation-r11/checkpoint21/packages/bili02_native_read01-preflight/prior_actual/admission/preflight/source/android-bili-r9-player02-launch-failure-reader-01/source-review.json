@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_PENDING_ROOT_REVIEW_AND_ACTUAL_READ",
+  "actual_job": "1a1b018f0f9-fc05-6e0c",
+  "source": {
+    "bytes": 12697,
+    "sha256": "1e3f6f3d4c1435012a69e9e6ff535d659782fde11fc4b38e53acc25f69c9a0d4"
+  },
+  "old_reader": {
+    "bytes": 12501,
+    "sha256": "643d08a34b7a8b6be88daea5114b77cb98a69f2c067f4088192bfc9d0a6b6b75"
+  },
+  "flow_request": {
+    "bytes": 133854,
+    "sha256": "a9512b22315d8d343ab3cf7d6718079d5c5d4372ee885de5308724eaab3b6778"
+  },
+  "flow_source_manifest_sha256": "296da6728d720584339eb47e47801e0c458c3427d06e3a593acdc2f0bc3c6e5d",
+  "flow_nonce": "474d7477074ea01fbc986e0d867924c1",
+  "external_parents": {
+    "coordinator": {
+      "path": "/home/alex/work/pocket4-bilibili-r9-pause-resume-02/result.json",
+      "bytes": 6749,
+      "sha256": "66c18006c5d86e0cd86a6585a94be35ef4bf2ed815b9634cea93eeb916950c36"
+    },
+    "stage": {
+      "path": "/home/alex/work/pocket4-bilibili-r9-pause-resume-02/stage-result.json",
+      "bytes": 2665,
+      "sha256": "54099482c05b463f8151e7a92e5ef9bbe4d3f2381fc00c98b4a7012454b2d272"
+    }
+  },
+  "changes": [
+    "Replace failed-navigation five-required model with exact failed-launch parent scope (launch requested, navigation not requested).",
+    "Read fixed 02-launch command only through retained_phase_commands.launch pin; bind exact argv and parent-pinned stdout/stderr.",
+    "Export stdout only if valid safe JSON and exact current R9 launch-worker identity. Non-JSON output remains private; stderr only closed exception-class counters and hashes.",
+    "Read launch/cleanup/scope only when exact bounded fixed path pins occur in the fixed parent; preserve missing or unknown cleanup claims.",
+    "Fixed O_PATH no-follow probes of launch receipt, cleanup receipt, launch-scope and launch-attempted paths export presence metadata only, never content qualification.",
+    "Preserve 8s, 2MiB read and 3MiB bundle bounds, root-single-regular and before/after fd stat checks. Nested finally ensures directory close attempted even if leaf close raises.",
+    "Plain base64 envelope, no UI/device/process calls, no writes or replay. Explicit opened/closed accounting."
+  ],
+  "original_retention_source": "playback_controls.py retain_phase_results",
+  "command_source": "current_coordinator.py run_cli",
+  "Python_compiled": false,
+  "Python_controls_executed": false,
+  "cleanup_release_authorized": false,
+  "Main_integrity_qualified_by_reader": false,
+  "whole_app_production_ready": false
+}

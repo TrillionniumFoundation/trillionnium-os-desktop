@@ -1,0 +1,11 @@
+{
+  "build_qualification": false,
+  "cause": "ast.literal_eval does not evaluate the declared JDK/SDK_BASE name expressions in TOOLS",
+  "error_type": "ValueError",
+  "fix": "Compare exact AST values of TOOLS, JDK and SDK_BASE; no source semantics change",
+  "message_prefix": "malformed node or string on line 24: <ast.Name",
+  "no_production_source_or_runtime_executed": true,
+  "phase": "static_same_tools_table_check",
+  "schema": 1,
+  "state": "LOCAL_CHECK_IMPLEMENTATION_ERROR"
+}

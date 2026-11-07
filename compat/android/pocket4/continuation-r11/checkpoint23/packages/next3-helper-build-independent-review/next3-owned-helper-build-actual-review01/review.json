@@ -1,0 +1,103 @@
+{
+  "schema": "next3-build-independent-review-v1",
+  "validation": "Pure JS of complete original build and stage bytes. No local Python, Java, device or new build executed.",
+  "local_review_correction": "Initial checker compared stage.source with source root without the /source suffix; corrected to the documented source directory and preserved exact root/output checks. Production source and actual reports unchanged.",
+  "apps": [
+    {
+      "slug": "ticket12306",
+      "actual_build": {
+        "bytes": 23529,
+        "sha256": "fcef45ec4a6be6a034ceedc12308bc5150846f08f4273c4655c89911a5aa3eb5",
+        "blob": "6f6b5cbf1247415dd9b6f7e0d379a3719ce6b49a",
+        "tree": "d3658ea015ab963d33e3a30a2b1e885be3f7da74"
+      },
+      "actual_stage": {
+        "bytes": 1967,
+        "sha256": "0bf30a72095a10a671c27c759085cd0cec858a3317555f02e01a3deb498cc485",
+        "blob": "ee0559e46dfdaf1c34a3e9fb35492a224769b4ee"
+      },
+      "state": "ACTUAL_STATIC_BUILD_INDEPENDENTLY_QUALIFIED",
+      "source_manifest_sha256": "069639aa9c70c910c3d86b3016180264c12d479e08383b6c51fb374d9a7ee660",
+      "source_files": 13,
+      "command_count": 12,
+      "scope_controls": 32,
+      "deep_protocol_controls": 16,
+      "tool_values_unchanged_lossless": true,
+      "scope_controls_not_scanner_execution": true,
+      "APK": {
+        "bytes": 24720,
+        "path": "/home/alex/work/pocket4-owned-ticket12306-qa-r1-build-01/owned-ticket12306-qa.apk",
+        "sha256": "148cd59566389abd4d64c38f181172c20fafffba85f75b917d9174c0af605cb1"
+      },
+      "signer_certificate_sha256": "9e862a6399fcf73e29baaf1a3659fdc0d65c812c1024af2d3d1a99cb46dbf425",
+      "helper_UID": null,
+      "installed": false,
+      "UI_or_launch": false,
+      "whole_app_production_ready": false
+    },
+    {
+      "slug": "hilton",
+      "actual_build": {
+        "bytes": 23290,
+        "sha256": "7f54f1941d8ecc6c780b1cb42ad2de51f7f76369e3d2d406df4c434490db8ca3",
+        "blob": "4d42c20a5092021a85fc4ff9b0b4286a6264b935",
+        "tree": "2d1d0206c6a31fb714dec4c95a83b8980ff9ca4f"
+      },
+      "actual_stage": {
+        "bytes": 1947,
+        "sha256": "bf11dbe06054dbd7471bcf1fdad4c24e9c2bc611f132ae15207124ed3ce75f14",
+        "blob": "7b9e9d21d836208be9352c4102590669a51dfeba"
+      },
+      "state": "ACTUAL_STATIC_BUILD_INDEPENDENTLY_QUALIFIED",
+      "source_manifest_sha256": "d8e2e4b4a0ed105a94cb08a67b3e0e45f1c68bbdfa500698c65c79400776c175",
+      "source_files": 13,
+      "command_count": 12,
+      "scope_controls": 32,
+      "deep_protocol_controls": 16,
+      "tool_values_unchanged_lossless": true,
+      "scope_controls_not_scanner_execution": true,
+      "APK": {
+        "bytes": 24720,
+        "path": "/home/alex/work/pocket4-owned-hilton-qa-r1-build-01/owned-hilton-qa.apk",
+        "sha256": "7274d57e7f8d776f6a028afcea67edab2cb167064753a8ddfc6332b2e25333f4"
+      },
+      "signer_certificate_sha256": "748e14bf5b68f31f7d23bce5997dd89edc90944c697cc9e43c8c6868cf81be68",
+      "helper_UID": null,
+      "installed": false,
+      "UI_or_launch": false,
+      "whole_app_production_ready": false
+    },
+    {
+      "slug": "united",
+      "actual_build": {
+        "bytes": 23290,
+        "sha256": "3f3b22b58eea4daf77b979e82fc7389bd076eb2c3056de5208bace8fa17c21b4",
+        "blob": "4db6a49cd539f057b3f4d42aa8a78f3e73ce4140",
+        "tree": "9add84f90dbb3c8906a71ff37cfac019372dbaf6"
+      },
+      "actual_stage": {
+        "bytes": 1946,
+        "sha256": "3d0e795709fbafbfa7fcc348152ac620ed0352e806d4147ee3ca30301ecba099",
+        "blob": "e31a70395dabe5c94f6fc08d6052d480d71d843a"
+      },
+      "state": "ACTUAL_STATIC_BUILD_INDEPENDENTLY_QUALIFIED",
+      "source_manifest_sha256": "1317ce458785a654ff04c82e340c08774e71b3c925662af1996b4ccb0e2a1dd6",
+      "source_files": 13,
+      "command_count": 12,
+      "scope_controls": 32,
+      "deep_protocol_controls": 16,
+      "tool_values_unchanged_lossless": true,
+      "scope_controls_not_scanner_execution": true,
+      "APK": {
+        "bytes": 24720,
+        "path": "/home/alex/work/pocket4-owned-united-qa-r1-build-01/owned-united-qa.apk",
+        "sha256": "6cecb979ae1b50148df2010cb9a3aa2fb7423c52d652b618f94afb33abad7400"
+      },
+      "signer_certificate_sha256": "ff4dad8b3251ae18d60fda3bb6c9c8de5928ceb1ffdf86fe797315bde1311859",
+      "helper_UID": null,
+      "installed": false,
+      "UI_or_launch": false,
+      "whole_app_production_ready": false
+    }
+  ]
+}

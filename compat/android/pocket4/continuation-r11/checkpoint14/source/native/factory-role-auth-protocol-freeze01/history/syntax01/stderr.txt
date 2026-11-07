@@ -1,0 +1,128 @@
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc: In function ‘bool droidloom::proc_maps_factory::role_v1::DecodeRequest(const unsigned char*, size_t, Request*)’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:267:3: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  267 |   if(!ValidRequest(r))return false;*result=r;return true;
+      |   ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:267:36: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  267 |   if(!ValidRequest(r))return false;*result=r;return true;
+      |                                    ^
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc: In function ‘bool droidloom::proc_maps_factory::role_v1::EncodeRequest(const Request&, unsigned char*)’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:270:3: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  270 |   if(!output||!ValidRequest(r))return false;unsigned char bytes[kWireBytes]{};
+      |   ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:270:45: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  270 |   if(!output||!ValidRequest(r))return false;unsigned char bytes[kWireBytes]{};
+      |                                             ^~~~~~~~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc: In function ‘int droidloom::proc_maps_factory::role_v1::ConfigureIdentityReception(int, bool)’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:279:3: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  279 |   if(CheckSocket(socket,listener,false)<0)return -1;const int on=1;
+      |   ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:279:53: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  279 |   if(CheckSocket(socket,listener,false)<0)return -1;const int on=1;
+      |                                                     ^~~~~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc: In function ‘int droidloom::proc_maps_factory::role_v1::Receive(int, Received*)’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:301:7: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  301 |       if(size!=sizeof(int))valid=false;++pidfds;
+      |       ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:301:40: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  301 |       if(size!=sizeof(int))valid=false;++pidfds;
+      |                                        ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:311:3: error: this ‘for’ clause does not guard... [-Werror=misleading-indentation]
+  311 |   for(unsigned i=0;i<2;++i)result->rights_[i]=std::move(value.rights_[i]);result->received_=true;return 0;
+      |   ^~~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:311:75: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+  311 |   for(unsigned i=0;i<2;++i)result->rights_[i]=std::move(value.rights_[i]);result->received_=true;return 0;
+      |                                                                           ^~~~~~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc: In member function ‘int droidloom::proc_maps_factory::role_v1::Registry::Impl::Owner() const’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:325:5: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  325 |     if(!SameInfo(now,self.info))return Error(ESTALE);return 0;
+      |     ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:325:54: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  325 |     if(!SameInfo(now,self.info))return Error(ESTALE);return 0;
+      |                                                      ^~~~~~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc: In member function ‘void droidloom::proc_maps_factory::role_v1::Registry::Impl::Reset(Slot&)’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:328:30: error: converting to ‘droidloom::proc_maps_factory::role_v1::Descriptor’ from initializer list would use explicit constructor ‘droidloom::proc_maps_factory::role_v1::Descriptor::Descriptor(int)’ [-Werror]
+  328 |   void Reset(Slot& s){s=Slot{};}
+      |                              ^
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:328:30: note: in C++11 and above a default constructor can be explicit
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:328:30: error: converting to ‘droidloom::proc_maps_factory::role_v1::Descriptor’ from initializer list would use explicit constructor ‘droidloom::proc_maps_factory::role_v1::Descriptor::Descriptor(int)’ [-Werror]
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:328:30: note: in C++11 and above a default constructor can be explicit
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:328:30: error: converting to ‘droidloom::proc_maps_factory::role_v1::Descriptor’ from initializer list would use explicit constructor ‘droidloom::proc_maps_factory::role_v1::Descriptor::Descriptor(int)’ [-Werror]
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:328:30: note: in C++11 and above a default constructor can be explicit
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:328:30: error: converting to ‘droidloom::proc_maps_factory::role_v1::Descriptor’ from initializer list would use explicit constructor ‘droidloom::proc_maps_factory::role_v1::Descriptor::Descriptor(int)’ [-Werror]
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:328:30: note: in C++11 and above a default constructor can be explicit
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:328:30: error: converting to ‘droidloom::proc_maps_factory::role_v1::Descriptor’ from initializer list would use explicit constructor ‘droidloom::proc_maps_factory::role_v1::Descriptor::Descriptor(int)’ [-Werror]
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:328:30: note: in C++11 and above a default constructor can be explicit
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:328:30: error: converting to ‘droidloom::proc_maps_factory::role_v1::Descriptor’ from initializer list would use explicit constructor ‘droidloom::proc_maps_factory::role_v1::Descriptor::Descriptor(int)’ [-Werror]
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:328:30: note: in C++11 and above a default constructor can be explicit
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:328:30: error: converting to ‘droidloom::proc_maps_factory::role_v1::Descriptor’ from initializer list would use explicit constructor ‘droidloom::proc_maps_factory::role_v1::Descriptor::Descriptor(int)’ [-Werror]
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:328:30: note: in C++11 and above a default constructor can be explicit
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc: In member function ‘int droidloom::proc_maps_factory::role_v1::Registry::Begin(droidloom::proc_maps_factory::role_v1::Descriptor*, const droidloom::proc_maps_factory::role_v1::Received&, droidloom::proc_maps_factory::role_v1::Challenge*)’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:359:3: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  359 |   if(index==kMaximumGrants)return Error(ENOSPC);if(impl_->serial==UINT64_MAX)return Error(EOVERFLOW);
+      |   ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:359:49: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  359 |   if(index==kMaximumGrants)return Error(ENOSPC);if(impl_->serial==UINT64_MAX)return Error(EOVERFLOW);
+      |                                                 ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:362:3: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  362 |   if(amount<0)return -1;if(amount!=sizeof(token)||!Nonzero(token,sizeof(token)))return Error(EIO);
+      |   ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:362:25: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  362 |   if(amount<0)return -1;if(amount!=sizeof(token)||!Nonzero(token,sizeof(token)))return Error(EIO);
+      |                         ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc: In member function ‘int droidloom::proc_maps_factory::role_v1::Registry::Approve(int, const droidloom::proc_maps_factory::role_v1::Received&)’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:378:3: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  378 |   if(!slot)return Error(ENOENT);if(slot->phase!=Impl::Phase::kPending)return Error(EALREADY);
+      |   ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:378:33: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  378 |   if(!slot)return Error(ENOENT);if(slot->phase!=Impl::Phase::kPending)return Error(EALREADY);
+      |                                 ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc: In member function ‘int droidloom::proc_maps_factory::role_v1::Registry::IsActive(droidloom::proc_maps_factory::role_v1::GrantHandle)’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:395:3: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  395 |   if(!impl_||impl_->Owner()<0)return -1;auto* slot=impl_->Find(handle);if(!slot)return Error(ENOENT);
+      |   ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:395:41: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  395 |   if(!impl_||impl_->Owner()<0)return -1;auto* slot=impl_->Find(handle);if(!slot)return Error(ENOENT);
+      |                                         ^~~~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc: In member function ‘int droidloom::proc_maps_factory::role_v1::Registry::Connection(droidloom::proc_maps_factory::role_v1::GrantHandle) const’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:400:3: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  400 |   if(!impl_||impl_->Owner()<0)return -1;auto* slot=impl_->Find(handle);return slot?slot->connection.get():Error(ENOENT);
+      |   ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:400:41: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  400 |   if(!impl_||impl_->Owner()<0)return -1;auto* slot=impl_->Find(handle);return slot?slot->connection.get():Error(ENOENT);
+      |                                         ^~~~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc: In member function ‘int droidloom::proc_maps_factory::role_v1::Registry::AuthorizeCreate(droidloom::proc_maps_factory::role_v1::GrantHandle, const droidloom::proc_maps_factory::role_v1::Received&, droidloom::proc_maps_factory::role_v1::SnapshotAuthority*)’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:404:3: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  404 |   if(impl_->Owner()<0)return -1;auto* slot=impl_->Find(handle);if(!slot)return Error(ENOENT);
+      |   ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:404:33: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  404 |   if(impl_->Owner()<0)return -1;auto* slot=impl_->Find(handle);if(!slot)return Error(ENOENT);
+      |                                 ^~~~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc: In member function ‘int droidloom::proc_maps_factory::role_v1::Registry::FinishCreate(droidloom::proc_maps_factory::role_v1::GrantHandle)’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:421:3: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  421 |   if(!impl_||impl_->Owner()<0)return -1;auto* slot=impl_->Find(handle);if(!slot||!slot->busy)return Error(EINVAL);
+      |   ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:421:41: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  421 |   if(!impl_||impl_->Owner()<0)return -1;auto* slot=impl_->Find(handle);if(!slot||!slot->busy)return Error(EINVAL);
+      |                                         ^~~~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc: In member function ‘int droidloom::proc_maps_factory::role_v1::Registry::Release(droidloom::proc_maps_factory::role_v1::GrantHandle, const droidloom::proc_maps_factory::role_v1::Received&)’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:426:3: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  426 |   if(impl_->Owner()<0)return -1;auto* slot=impl_->Find(handle);if(!slot)return Error(ENOENT);
+      |   ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:426:33: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  426 |   if(impl_->Owner()<0)return -1;auto* slot=impl_->Find(handle);if(!slot)return Error(ENOENT);
+      |                                 ^~~~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc: In member function ‘int droidloom::proc_maps_factory::role_v1::Registry::Sweep()’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:433:3: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  433 |   if(!impl_||impl_->Owner()<0)return -1;const uint64_t now=Now();if(!now)return Error(EIO);
+      |   ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:433:41: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  433 |   if(!impl_||impl_->Owner()<0)return -1;const uint64_t now=Now();if(!now)return Error(EIO);
+      |                                         ^~~~~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc: In member function ‘void droidloom::proc_maps_factory::role_v1::Registry::Close(droidloom::proc_maps_factory::role_v1::GrantHandle)’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:439:3: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  439 |   if(!impl_||impl_->Owner()<0)return;auto* slot=impl_->Find(handle);if(slot)impl_->Reset(*slot);
+      |   ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc:439:38: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  439 |   if(!impl_||impl_->Owner()<0)return;auto* slot=impl_->Find(handle);if(slot)impl_->Reset(*slot);
+      |                                      ^~~~
+cc1plus: all warnings being treated as errors

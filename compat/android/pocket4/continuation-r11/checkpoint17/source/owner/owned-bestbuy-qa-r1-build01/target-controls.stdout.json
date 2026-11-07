@@ -1,0 +1,334 @@
+{
+  "actual_Android_or_build_actions": 0,
+  "actual_BESTBUY_Java_compile_APK_signer_or_UI_qualification": false,
+  "actual_manifest_reference_sha256": "825a53459b0fc3406d328aad3350624f9b658b150a2fbf56f3a908f46de4185d",
+  "controls": [
+    {
+      "accepted": true,
+      "case": "exact_current_BESTBUY_scope",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_old_Amazon_package",
+      "error": {
+        "message": "FIXED_MAIN_BESTBUY_SCOPE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_old_Amazon_UID",
+      "error": {
+        "message": "FIXED_MAIN_BESTBUY_SCOPE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_old_Bili_UID",
+      "error": {
+        "message": "FIXED_MAIN_BESTBUY_SCOPE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_old_Ticket_package",
+      "error": {
+        "message": "FIXED_MAIN_BESTBUY_SCOPE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_old_Ticket_UID",
+      "error": {
+        "message": "FIXED_MAIN_BESTBUY_SCOPE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_old_IHG_package",
+      "error": {
+        "message": "FIXED_MAIN_BESTBUY_SCOPE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_old_IHG_UID",
+      "error": {
+        "message": "FIXED_MAIN_BESTBUY_SCOPE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_other_display",
+      "error": {
+        "message": "FIXED_MAIN_BESTBUY_SCOPE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_other_Main",
+      "error": {
+        "message": "FIXED_MAIN_BESTBUY_SCOPE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_regex_wildcard_activity",
+      "error": {
+        "message": "HOST_ACTIVITY_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_regex_wildcard_middle_dot",
+      "error": {
+        "message": "HOST_ACTIVITY_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "exact_current_click_request_shape",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "state_request_no_scope_or_UI",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "request_rejects_set_text",
+      "error": {
+        "message": "BESTBUY_READ_INSPECT_CLICK_ONLY",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "request_rejects_reveal_controls",
+      "error": {
+        "message": "BESTBUY_READ_INSPECT_CLICK_ONLY",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "request_rejects_back",
+      "error": {
+        "message": "BESTBUY_READ_INSPECT_CLICK_ONLY",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "request_rejects_grant",
+      "error": {
+        "message": "BESTBUY_READ_INSPECT_CLICK_ONLY",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_old_Amazon_protocol",
+      "error": {
+        "message": "PROTOCOL_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_old_IHG_protocol",
+      "error": {
+        "message": "PROTOCOL_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "exact_inspect_plan",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "plan_rejects_set_text_before_selector",
+      "error": {
+        "message": "OWNED_PLAN_REQUIRED",
+        "type": "RuntimeError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "actual_XML_manifest_contract",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "standalone_old_flow_execution_denied",
+      "error": {
+        "message": "DEDICATED_BESTBUY_HELD_FLOW_ADMISSION_REQUIRED",
+        "type": "RuntimeError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "actual_assessor_rejects_prior_or_target_UID_10130",
+      "error": {
+        "message": "INSTALLED_HELPER_IDENTITY_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "actual_assessor_rejects_prior_or_target_UID_10121",
+      "error": {
+        "message": "INSTALLED_HELPER_IDENTITY_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "actual_assessor_rejects_prior_or_target_UID_10129",
+      "error": {
+        "message": "INSTALLED_HELPER_IDENTITY_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "actual_assessor_rejects_prior_or_target_UID_10170",
+      "error": {
+        "message": "INSTALLED_HELPER_IDENTITY_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "actual_assessor_rejects_prior_or_target_UID_10175",
+      "error": {
+        "message": "INSTALLED_HELPER_IDENTITY_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "actual_assessor_rejects_prior_or_target_UID_10184",
+      "error": {
+        "message": "INSTALLED_HELPER_IDENTITY_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "actual_assessor_rejects_prior_or_target_UID_10190",
+      "error": {
+        "message": "INSTALLED_HELPER_IDENTITY_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "actual_assessor_rejects_prior_or_target_UID_10137",
+      "error": {
+        "message": "INSTALLED_HELPER_IDENTITY_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "actual_assessor_rejects_prior_or_target_UID_10196",
+      "error": {
+        "message": "INSTALLED_HELPER_IDENTITY_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "UID_predicate_accepts_distinct_synthetic_UID_not_installed_qualification",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "actual_old_manifest_rejected:actual self instrumentation target required",
+      "error": {
+        "message": "actual self instrumentation target required",
+        "type": "RuntimeError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "derived_new_manifest_predicate:actual self instrumentation target required",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "actual_old_manifest_rejected:one exact actual instrumentation component required",
+      "error": {
+        "message": "one exact actual instrumentation component required",
+        "type": "RuntimeError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "derived_new_manifest_predicate:one exact actual instrumentation component required",
+      "error": null,
+      "expected_met": true
+    }
+  ],
+  "count": 38,
+  "schema": 1,
+  "state": "PASS",
+  "static_Java_operation_gate_precedes_nonce_claim_and_UI": true,
+  "synthetic": [
+    "OwnedSyntheticActivity and node path only validate request shape",
+    "New-package XML is derived only for actual production Python regex expressions",
+    "UID control extracts the actual predicate without constructing a Session"
+  ]
+}

@@ -1,0 +1,69 @@
+--- a/frozen-combined04.py
++++ b/combined_build05.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Owned candidate04 preparation and normal full engine build. Default: plan."""
++"""Owned candidate05 preparation and normal full engine build. Default: plan."""
+ import argparse
+ import ctypes
+ import datetime
+@@ -18,9 +18,9 @@
+ P = pathlib.Path
+ OWNER = P("/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01")
+ COMPOSITION = OWNER / "overlay-reconstruction-09"
+-CANDIDATE = COMPOSITION / "candidate-04"
+-MANIFEST = COMPOSITION / "candidate-04-source-manifest.json"
+-MANIFEST_SHA = "00a19fef1ca8e86a3da18eecfb16eedb41e9de55e2934b96987845fa8b749fbd"
++CANDIDATE = COMPOSITION / "candidate-05"
++MANIFEST = COMPOSITION / "candidate-05-source-manifest.json"
++MANIFEST_SHA = "4e2f7f9ea09c6977afbe8d97c040fd2f1344772429f78fe0f16edc913dadc7ba"
+ BUILDER_ORIGIN = P("/home/alex/work/pocket4-signal-mask-r11-build-memory-01/builder-source")
+ BUILDER_MANIFEST = BUILDER_ORIGIN.parent / "builder-source-after.json"
+ BUILDER_MANIFEST_SHA = "e7c225bd2842c260d9f4149aca3c4483ed31c569efb31068b6d787892bd17017"
+@@ -35,7 +35,7 @@
+ TETO_BASE = "917021cf3ecd077eb1581146a79d2265011755b8"
+ TETO_URL = "https://github.com/denialwm/teto.git"
+ WORK = P("/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1")
+-ROOT = OWNER / "full-build-combined04-01"
++ROOT = OWNER / "full-build-combined05-01"
+ BUILD_SOURCE = ROOT / "builder-source"
+ ENGINE_SOURCE = ROOT / "engine-working"
+ OUT = ROOT / "android-out"
+@@ -44,6 +44,8 @@
+ SWAP_MAX = 1024**3
+ MIN_AVAILABLE = 15 * 1024**3
+ FEATURE = "BERBERIS_PROCMAPS_RAW_METADATA_OWNER"
++MATCHED_GATE = COMPOSITION / "combined-ancillary-controls-07/report.json"
++MATCHED_GATE_SHA = 'e53c3e9e5846d36f971bae6140c394b837fa54525c0e2df4ac153c9ef5540803'
+ DISABLED_MARKER = b"DROIDLOOM_NATIVE_GENERATION=0;ROLE=ENGINE;ABI=1;PROTOCOL=DLOOMGE1-PROCMET2;"
+ ENABLED_MARKER = b"DROIDLOOM_NATIVE_GENERATION=1;ROLE=ENGINE;ABI=1;PROTOCOL=DLOOMGE1-PROCMET2;"
+ EXTERNAL_FIELDS = ("schema_version", "source", "source_lock_sha256", "native_bridge_lock_sha256",
+@@ -138,7 +140,19 @@
+             all(field in reference for field in EXTERNAL_FIELDS), "incomplete reference input schema")
+     return reference
+ 
++def matched_gate_contract():
++    require(digest(MATCHED_GATE) == MATCHED_GATE_SHA, "matched candidate05 gate changed")
++    gate = json.loads(MATCHED_GATE.read_bytes())
++    require(gate["state"] == "MATCHED_SMALL_GATES_PASSED" and
++            gate["source_manifest_sha256"] == MANIFEST_SHA and
++            gate["source_unchanged"] is True and gate["all_commands_pass"] is True and
++            gate["actual_host_adapter_checks"] == 8 and gate["actual_ancillary_cases"] == 34 and
++            gate["actual_listener_inheritance_fixed"] is True and
++            len(gate["commands"]) == 8 and all(row["returncode"] == 0 for row in gate["commands"]),
++            "matched candidate05 gate is not complete")
++
+ def source_contract():
++    matched_gate_contract()
+     for root in (CANDIDATE, BUILDER_ORIGIN, R16):
+         no_alias(root)
+     require(digest(MANIFEST) == MANIFEST_SHA, "candidate manifest changed")
+@@ -465,7 +479,7 @@
+     subreaper()
+     require(child_ids() == [], "controller has preexisting children or cannot enumerate its own children")
+     ATTEMPT.mkdir(mode=0o700)
+-    claim = {"schema": 1, "state": "STARTING_COMBINED04_FLAG0_FULL_BUILD",
++    claim = {"schema": 1, "state": "STARTING_COMBINED05_FLAG0_FULL_BUILD",
+              "started_utc": utc(), "preparation_sha256": expected_sha, "plan": plan(),
+              "mem_available_before": memory["MemAvailable"], "cpu_affinity_before": affinity,
+              "cpu_affinity": selected, "unit": unit, "normal_builder_lock_and_recovery": True,

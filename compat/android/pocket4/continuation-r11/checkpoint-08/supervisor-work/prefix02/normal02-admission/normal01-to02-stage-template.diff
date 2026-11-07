@@ -1,0 +1,99 @@
+--- normal01/stage-template.py
++++ normal02/stage-template.py
+@@ -9,10 +9,12 @@
+ import traceback
+ 
+ CFG = __CFG__
+-ROOT = "/home/alex/work/pocket4-relay-prefix-r11-source-05-01"
++ROOT = "/home/alex/work/pocket4-relay-prefix-r11-source-05-02"
++PRIOR = "/home/alex/work/pocket4-relay-prefix-r11-source-05-01"
++PRIOR_SHA = "1e70d9df93309ff5be991f0a20e4b5b4493e57a0b64fcc3881075e652a5ae712"
+ BASE = "/home/alex/work/pocket4-relay-prefix-r11-owned"
+-PLAN_NAME = "normal-plan-01.json"
+-REPORT_NAME = "normal-plan-01-preflight.json"
++PLAN_NAME = "normal-plan-02.json"
++REPORT_NAME = "normal-plan-02-preflight.json"
+ ENV = {"PATH": "/usr/bin:/bin", "LANG": "C", "LC_ALL": "C", "PYTHONDONTWRITEBYTECODE": "1"}
+ 
+ def need(value, message):
+@@ -66,15 +68,19 @@
+         os.fsync(stream.fileno())
+     os.fsync(directory)
+ 
+-def verify_inputs(root, source, binary, base):
++def verify_inputs(root, source, prior, binary, base):
+     raw, _ = read_file(root, "build-result.json", 65536)
+     need(sha(raw) == CFG["build_result_sha256"], "actual matching build receipt differs")
+     receipt = json.loads(raw)
+     need(receipt["success"] is True and receipt["inputs_before"] == receipt["inputs_after"]
+          == CFG["inputs"] and receipt["source_freeze_manifest_sha256"] == CFG["freeze_manifest_sha256"],
+          "matching source closure differs")
+-    need(receipt["python_tests_passed"] == {"test_prefix_control.py": 16, "test_prefix_coordinator.py": 24}
+-         and receipt["native_ordinary_controls_passed"] == 6, "matching controls not complete")
++    need(receipt["python_tests_passed"] == {"test_prefix_control.py": 16, "test_prefix_coordinator.py": 27}
++         and receipt["native_probe_reuse_verified"] is True
++         and receipt["new_native_build_performed"] is False
++         and receipt["new_native_controls_executed"] == 0
++         and receipt["prior_native_ordinary_controls_referenced"] == 6
++         and receipt["prior_build_result_sha256"] == PRIOR_SHA, "matching controls not complete")
+     for key in ("namespace_actions", "network_actions", "systemd_unit_actions", "Android_operations", "Main_actions"):
+         need(receipt[key] == 0, "matching build had unexpected actions")
+     need(receipt["actual_Rust_Owner_executed"] is False and receipt["runtime_prefix_qualified"] is False
+@@ -82,9 +88,15 @@
+     for name, expected in CFG["inputs"].items():
+         data, _ = read_file(source, name, 65536)
+         need({"bytes": len(data), "sha256": sha(data)} == expected, "frozen input differs: " + name)
++    old_raw, _ = read_file(prior, "build-result.json", 65536)
++    need(sha(old_raw) == PRIOR_SHA, "original native build receipt differs")
++    previous_build = json.loads(old_raw)
++    need(previous_build["success"] is True
++         and previous_build["native_ordinary_controls_passed"] == 6, "original native controls incomplete")
+     data, s = read_file(binary, "prefix-probe", 65536)
+-    pin = receipt["probe"]
+-    need(pin["path"] == ROOT + "/bin/prefix-probe" and pin["sha256"] == CFG["probe_sha256"]
++    pin = receipt["probe_before"]
++    need(pin == receipt["probe_after"] == previous_build["probe"], "reused probe receipt differs")
++    need(pin["path"] == PRIOR + "/bin/prefix-probe" and pin["sha256"] == CFG["probe_sha256"]
+          and len(data) == pin["bytes"] and sha(data) == pin["sha256"]
+          and [s.st_dev, s.st_ino] == [pin["device"], pin["inode"]]
+          and stat.S_IMODE(s.st_mode) == pin["mode"] == 0o700, "actual compiled probe differs")
+@@ -92,10 +104,12 @@
+     previous = receipt["owned_attempt_base"]
+     need(previous["path"] == BASE and [held.st_dev, held.st_ino] == [previous["device"], previous["inode"]],
+          "original owned attempt base differs")
+-    current = os.stat(ROOT, follow_symlinks=False)
+-    held = os.fstat(root)
+-    need([current.st_dev, current.st_ino] == [held.st_dev, held.st_ino], "staged source root was replaced")
+-    return {"all_five_inputs_exact": True, "probe_sha256": pin["sha256"],
++    for path, descriptor in ((ROOT, root), (PRIOR, prior), (BASE, base)):
++        current = os.stat(path, follow_symlinks=False)
++        held = os.fstat(descriptor)
++        need([current.st_dev, current.st_ino] == [held.st_dev, held.st_ino], "held directory path was replaced")
++    return {"all_six_inputs_exact": True, "probe_sha256": pin["sha256"],
++            "original_native_build_result_sha256": PRIOR_SHA,
+             "build_result_sha256": CFG["build_result_sha256"], "original_root_and_base_held": True}
+ 
+ need(os.getuid() == os.geteuid() == os.getgid() == os.getegid() == 0, "exact root caller required")
+@@ -108,10 +122,11 @@
+ try:
+     root = private_directory(ROOT); handles.append(root)
+     source = private_directory("source", root); handles.append(source)
+-    binary = private_directory("bin", root); handles.append(binary)
++    prior = private_directory(PRIOR); handles.append(prior)
++    binary = private_directory("bin", prior); handles.append(binary)
+     base = private_directory(BASE); handles.append(base)
+     try:
+-        report["inputs_before"] = verify_inputs(root, source, binary, base)
++        report["inputs_before"] = verify_inputs(root, source, prior, binary, base)
+         plan = base64.b64decode(CFG["plan_base64"], validate=True)
+         need(sha(plan) == CFG["plan_sha256"], "embedded external plan differs")
+         value = json.loads(plan)
+@@ -131,7 +146,7 @@
+         need(checked["read_only_plan_checked"] is True and checked["nonce"] == CFG["nonce"]
+              and checked["runtime_started"] is False and checked["Android_operations"] == 0,
+              "read-only check result differs")
+-        report["inputs_after"] = verify_inputs(root, source, binary, base)
++        report["inputs_after"] = verify_inputs(root, source, prior, binary, base)
+         need(read_file(root, PLAN_NAME, 65536)[0] == plan, "external plan changed during check")
+         report["success"] = True
+     except BaseException as error:

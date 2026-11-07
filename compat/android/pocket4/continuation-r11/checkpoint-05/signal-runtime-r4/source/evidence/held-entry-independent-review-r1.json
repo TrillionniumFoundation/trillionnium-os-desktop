@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "artifact": "held-namespace-entry-independent-source-review-r1",
+  "reviewer": "android_acceptance",
+  "review_method": "Full source read; read-only review. No independent namespace command was executed by this reviewer.",
+  "reviewed_source": {
+    "path": "/home/alex/work/pocket4-owned-held-ns-runner-r4-01/held_namespace_entry.rs",
+    "bytes": 6653,
+    "sha256": "adf5b08f7854bec061ab8d2a208f3414339701c816218881e6550afde2e6c31c"
+  },
+  "binary_sha256_supplied_and_bound_by_qualification": "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689",
+  "conclusion": "No blocking defect identified within the stated descriptor-bound entry and direct-child lifecycle scope.",
+  "reviewed_properties": [
+    "Command target selection uses the received namespace/root descriptors, without a numeric target PID.",
+    "Mandatory option/FD validation rejects duplicated options, authority FD numbers below 3, reused authority FD numbers and wrong namespace types.",
+    "All supplied authority descriptors are marked FD_CLOEXEC before the command exec; the caller must pass only that exact descriptor set.",
+    "Namespace entry is followed by fchdir(held_root), chroot('.'), chdir('/'), and fork into the selected PID namespace.",
+    "The launcher parent is checked around PR_SET_PDEATHSIG. The entry child sets its own parent-death signal then polls the held parent pidfd, avoiding getppid()==0 ambiguity across PID namespaces.",
+    "The parent closes its authority copies, waits for the exact child, handles EINTR and reports that child's result."
+  ],
+  "required_caller_boundaries": [
+    "The caller must bind and verify that all namespace and root descriptors belong to one intended process generation.",
+    "The caller must keep all command subprocesses joined before releasing authority FDs.",
+    "PDEATHSIG does not cover the full descendant process tree: it is not inherited by forked children and may be cleared by credential changes such as su.",
+    "Existing command deadlines, exact package cleanup, full owned cell/systemd cleanup and final readback remain required.",
+    "Input qualification does not establish private Android signal behavior or commercial app readiness."
+  ],
+  "parent_actual_qualification": {
+    "path": "/home/alex/work/pocket4-owned-held-ns-runner-r4-export-01/qualification.json",
+    "sha256": "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3",
+    "scope": "Parent-executed 14 host controls, six-namespace entry and Main read-only entry; not independent execution by this reviewer."
+  },
+  "whole_wrapper_review_completed": false,
+  "production_ready": false
+}

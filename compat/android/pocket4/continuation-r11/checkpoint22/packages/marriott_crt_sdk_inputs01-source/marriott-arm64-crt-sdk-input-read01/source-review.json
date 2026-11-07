@@ -1,0 +1,119 @@
+{
+  "baseline": {
+    "admission_state": "UNKNOWN_ROOT_RECONCILING_DO_NOT_RESUBMIT",
+    "source": {
+      "bytes": 20847,
+      "git_blob_sha": "b480154ec235f538d2e0b34f41d2421b1f257260",
+      "sha256": "2eef8c4ba06d762a3f3a09796d54e81da43deae4691ab4afa7713ad5b987f390"
+    },
+    "tree": "07d2786ae6f54884469af9a0ee8ed8f6dcccf53d"
+  },
+  "byte_verification": {
+    "all20_reference_bodies_rehashed": true,
+    "all_other_request_fields_equal_baseline": true,
+    "full_patch_reconstructs_candidate": true,
+    "key_matches_source_sha_prefix": true,
+    "stdin_equals_source": true
+  },
+  "checks_not_performed": [
+    "Python syntax or local execution",
+    "remote input collection",
+    "CRT compilation",
+    "SDK interface generation",
+    "ARM64 DSO link",
+    "APK construction",
+    "Android runtime"
+  ],
+  "full_source_diff": {
+    "bytes": 17543,
+    "git_blob_sha": "f74d36b49f1525bd6200a471b6018dcadf1ccb44",
+    "sha256": "cace743207f8953ec1982d3286b54c00e039cc0b5fc77534bfb9edce695cf61f"
+  },
+  "kind": "p4-marriott-crt-sdk-reader01-static-review",
+  "notes": [
+    "Candidate source pins are upstream expectations, not observations of local checkout; any absence or mismatch fails without fallback.",
+    "The fixed configuration files are not known to exist or match before this request. Their complete bytes/hash and selected public fields will be recorded if observed.",
+    "Original resource/FD/deadline guards and corrected bounded proc-file EOF loops remain. Original reader02 is untouched.",
+    "SDK link interfaces are official original Soong outputs for link-time resolution only, never packaged as runtime implementations.",
+    "Existing archive/zip parsing functions are byte-identical inherited code and unreachable from the fixed 22 input formats."
+  ],
+  "output_scope": {
+    "all_source_binary_bodies": false,
+    "generated_public_api_map_only": true,
+    "no_device_private_data": true,
+    "other_configuration_values_exported": false,
+    "soong_variables_only_four_public_sdk_fields": true
+  },
+  "read_scope": {
+    "aggregate_declared_maximum": 2424832,
+    "api_map_maximum": 65536,
+    "each_path_NOFOLLOW_all_components": true,
+    "exact_public_source_candidates": 17,
+    "first_observation_configuration_candidates": 2,
+    "fixed_inputs": 22,
+    "full_reads_per_input": 2,
+    "global_full_read_ceiling": 16777216,
+    "held_named_complete_metadata_before_after": true,
+    "per_source_maximum": 65536,
+    "previous_actual_anchors": 3,
+    "soong_variables_maximum": 1048576
+  },
+  "request": {
+    "bytes": 29432,
+    "git_blob_sha": "09b81ff3c2463a7025a40ad3bbe1cced80792c3d",
+    "sha256": "525f214918db11e4e7139dbdd0e8315cd2a8b1ef4f8b22fb36e49bdd49c9dca1"
+  },
+  "resources": {
+    "Android": 0,
+    "Main": 0,
+    "children_started": 0,
+    "control_seconds": 45,
+    "cpu_quota_percent": 100,
+    "enumerations": 0,
+    "network": 0,
+    "nice": 15,
+    "outer_seconds": 60,
+    "requested_memory": 268435456,
+    "swap_or_pids_tightening_claimed": false,
+    "work_seconds": 40,
+    "writes": 0
+  },
+  "schema": 1,
+  "source": {
+    "bytes": 28136,
+    "git_blob_sha": "06623d4ff266da843432f3ea7fb03ba5b26f87d7",
+    "sha256": "03bbd14e9fe5e97a61cc957a6f9c580b4272f44163dac743e9b276004c1b6176"
+  },
+  "source_delta": {
+    "added_functions": [
+      "strict_configuration_json",
+      "sdk_configuration_facts",
+      "join_sdk_configuration"
+    ],
+    "all_other_function_text_identical": true,
+    "changed_existing_functions": [
+      "observe",
+      "main"
+    ],
+    "top_level": "new fixed 22 inputs, released API map, kind, import re, reduced total byte ceiling",
+    "unchanged_existing_functions": [
+      "alarm",
+      "need",
+      "tick",
+      "error",
+      "take",
+      "close",
+      "info",
+      "open_absolute",
+      "digest",
+      "read_complete",
+      "archive_facts",
+      "zip_facts",
+      "small_self",
+      "at_text",
+      "resource_snapshot"
+    ]
+  },
+  "status": "SOURCE_ONLY_NOT_EXECUTED"
+}
+

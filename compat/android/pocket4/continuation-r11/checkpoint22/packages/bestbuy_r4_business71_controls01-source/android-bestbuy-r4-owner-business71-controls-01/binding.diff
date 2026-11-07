@@ -1,0 +1,76 @@
+--- template/coordinator
++++ actual-bound/coordinator
+@@ -17,12 +17,12 @@
+ HERE=Path(__file__).resolve().parent
+ ROOT=Path("/home/alex/work/pocket4-bestbuy-r4-current-content-readiness-01")
+ SOURCE=ROOT/'source'
+-NONCE='__FRESH_FLOW__'
++NONCE='dfdab228a3880703cc12abb54cf0f04e'
+ FLOW=Path('/home/alex/work/pocket4-bestbuy-owned-qa-r4-flow-'+NONCE)
+ PACKAGE='com.bestbuy.android'
+ UID=10130
+ SELF="org.droidloom.qa.bestbuy.r4"
+-HELPER_UID=None  # Actual R4 installation required.
++HELPER_UID=10160
+ 
+ CURRENT_HOST_MANIFEST="002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+ CURRENT_BASELINE_SCHEMA="pocket4-main-current-baseline-v2"
+@@ -30,7 +30,7 @@
+ CURRENT_BASELINE_SHA="633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364"
+ CURRENT_QUALIFICATION_SHA="ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e"
+ COMPONENT=PACKAGE+'/.activity.SplashActivity'
+-PLANS=[{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '__FRESH_ROUND_1_BEFORE__', 'inspect': '__FRESH_ROUND_1_INSPECT__', 'after': '__FRESH_ROUND_1_AFTER__'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '__FRESH_ROUND_2_BEFORE__', 'inspect': '__FRESH_ROUND_2_INSPECT__', 'after': '__FRESH_ROUND_2_AFTER__'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '__FRESH_ROUND_3_BEFORE__', 'inspect': '__FRESH_ROUND_3_INSPECT__', 'after': '__FRESH_ROUND_3_AFTER__'}}]
++PLANS=[{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '6edf6d8422ada9b6b2efa986eb5638a3', 'inspect': '5c96342a18f5078d5c365d1dcec5eddf', 'after': '6ffa3217b00898d5e18f2e0d23604d98'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '80281c0611018b1d90cddc5ef391850d', 'inspect': '1f77313238173418835945d3f7c2f02b', 'after': '0867514cb42b535db53b7c4a7073007b'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '4f10143e45e60279e54c171a5e8f7642', 'inspect': '0787a84da3625abea182c42ec1f67efe', 'after': '9244ba07405cb69936f3597565c646d2'}}]
+ INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-02")
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+ INSTALL_SOURCE_SHA="330c599ce962f5d86a8ef10e7a4daf8c6d9b41c89b2d242d3c3ee67f57cdb1b6"
+@@ -39,9 +39,9 @@
+ CONTEXT_SHA="fed91b109d375984eac188546759b6fe203ea2321e45c43e2989dacd929b2343"
+ TRANSPORT_SHA="5666d94ba5d9c90a8ea8edd7b063ff4764b83b1bfafe4dd238018d720ab7d4a9"
+ STATE_NONCE="a499f5a6a566ed0cebed5c98e234eede"
+-STATE_WIRE=None  # Actual R4 installation closure required.
+-INSTALLED=None  # Actual R4 installation closure required.
+-PRIOR=None  # Actual R4 installation closure required.
++STATE_WIRE="cec83d28fd8c7e165b6e547d79ec57d5ead05ef78be5c8a9b4dff2cf6ffb9cc4"
++INSTALLED={"apk_sha256":"708887e252bad787781768e4c96db9040444b4b32308381ec1d38af3deb0cc2c","base_apk":"/data/app/~~s1BfWM3SkuOhKkPBu_lctw==/org.droidloom.qa.bestbuy.r4-ShAz09XbvTfAbjSKTrM6Tg==/base.apk","bytes":24720,"held_file":{"bytes":24720,"device":1811,"gid":1000,"inode":656342,"mode":33188,"mtime_ns":1793982642805572447,"nlink":1,"uid":1000},"package":"org.droidloom.qa.bestbuy.r4","signer_bound_by_exact_signed_apk_bytes":"32b07f5c29e267541086154af0e5b0424cd53a65feb1b64f82b9277cccfb7c31","uid":10160}
++PRIOR={"coordinator":("result.json",4466,"5f7403e89de4a10f2f348b2ec24905a7f9998c53c77119459d3a69efaf4dd8f1"),"stage":("stage-result.json",10445,"edf83bb4d07bdd6eb63e5349d7c3389cfbe040c53f7285f94ee65562b9173370"),"worker":("worker/result.json",15422,"f3ec3d475dcccb894c68bd3bb471d85976cfa39f38bf437250d501de47d7b3e3")}
+ RESOLVER_ROOT=Path('/home/alex/work/pocket4-bestbuy-artifact-launcher-readonly-01')
+ # The five-command metadata source is already an exact pinned install input.
+ RESOLVER_SOURCE=INSTALL_SOURCE/'references/read_bestbuy.py'
+--- template/context
++++ actual-bound/context
+@@ -18,7 +18,7 @@
+ PACKAGE='com.bestbuy.android'
+ UID=10130
+ SELF="org.droidloom.qa.bestbuy.r4"
+-HELPER_UID=None  # Actual R4 installation required.
++HELPER_UID=10160
+ 
+ CURRENT_HOST_MANIFEST="002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+ CURRENT_BASELINE_SCHEMA="pocket4-main-current-baseline-v2"
+--- template/business
++++ actual-bound/business
+@@ -7,7 +7,7 @@
+ import hashlib
+ import time
+ 
+-HELPER_UID=None  # Actual R4 installation required.
++HELPER_UID=10160
+ MAX_ROUNDS=3
+ QUALIFICATION_SECONDS=30.0
+ ROUND_OFFSETS_SECONDS=(0.0,10.0,20.0)
+--- template/stage
++++ actual-bound/stage
+@@ -8,7 +8,7 @@
+ 
+ ROOT=Path("/home/alex/work/pocket4-bestbuy-r4-current-content-readiness-01")
+ SOURCE=ROOT/'source'
+-NONCE='__FRESH_FLOW__'
++NONCE='dfdab228a3880703cc12abb54cf0f04e'
+ FILES={'bestbuy_readiness.py', 'owned_inspect.py', 'INPUTS.json', 'bestbuy_task_context.py'}
+ REFERENCE=Path('/home/alex/work/pocket4-current-host-r6-source-01/current_coordinator.py')
+ REFERENCE_SHA="0a4a9f0d02b2a62f2b902983e43360c751a8f1952fb9ae7399850b112cb50a89"
+--- template/contract
++++ actual-bound/contract
+--- template/adapter
++++ actual-bound/adapter

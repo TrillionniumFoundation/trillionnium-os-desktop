@@ -1,0 +1,110 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_HOST_RUST_COMPILE_AND_24_CONTROLS_PASS",
+  "job_id": "1a1af6ada1d-fc05-6854",
+  "request": {
+    "bytes": 967630,
+    "sha256": "c90957ea91b80c3ac86c2d268fc2037700d52c97aa213452618fc2d800aad18b",
+    "git_blob_sha1": "2e79c5c8ba99d643ef5a042232b87a2b8b71b089"
+  },
+  "result": {
+    "path": "/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106/attempt01/result.json",
+    "bytes": 161423,
+    "sha256": "871e78f7ad8f3f3a12c165297e4fe566d96cfe3a2ce64a0d0010cffdb647b6b8",
+    "version": "66306:35833288:161423:1793944418367736923:1793944418367736923",
+    "chunks": [
+      {
+        "offset": 0,
+        "next_offset": 65536,
+        "bytes": 65536,
+        "sha256": "bd4e84d291dbc833719e25507bf4b8d707fb2fd1ca8ec4bcbfaca959a35ddcdd"
+      },
+      {
+        "offset": 65536,
+        "next_offset": 131072,
+        "bytes": 65536,
+        "sha256": "30fb34aa1b10d20282b3477a7b2efc58e31bffc4ff7b61f9d0f9314c6ad2e082"
+      },
+      {
+        "offset": 131072,
+        "next_offset": 161423,
+        "bytes": 30351,
+        "sha256": "ce8d618d3d4fd4ad591f610b57e0e1013c7dcc0ecb88e718f0c9533a33aa5d36"
+      }
+    ]
+  },
+  "stdout": {
+    "path": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1af6ada1d-fc05-6854/stdout.log",
+    "bytes": 652,
+    "sha256": "6cfdfd02cab70214d9582ea57f4532ccd65974402d262ce708634df4020b7114",
+    "version": "66306:54954987:652:1793944418368435645:1793944418368435645",
+    "chunks": [
+      {
+        "offset": 0,
+        "next_offset": 652,
+        "bytes": 652,
+        "sha256": "6cfdfd02cab70214d9582ea57f4532ccd65974402d262ce708634df4020b7114"
+      }
+    ]
+  },
+  "source_tree": "e82614d6fd3dd47528397aaab2bfa70f7bf84c5f",
+  "commands_successful": 62,
+  "updater_controls": 15,
+  "source_resume_controls": 9,
+  "all_24_names_and_independent_results_match": true,
+  "registered_updater_tests": 205,
+  "registered_source_tests": 20,
+  "all_registered_tests_not_claimed_run": true,
+  "source_map_files": 491,
+  "unchanged_parent_files": 464,
+  "Rust_source_replacements": 2,
+  "new_text_files": 25,
+  "all_original_copied_sources_dependencies_tools_Cargo_configs_unchanged": true,
+  "remaining_owned_children": 0,
+  "forced_cleanup": false,
+  "builder_elf": {
+    "bytes": 34722200,
+    "identity": [
+      66306,
+      37772209,
+      33216,
+      34722200,
+      {
+        "exact_number": "1793944408604120085"
+      },
+      {
+        "exact_number": "1793944408636121120"
+      }
+    ],
+    "path": "/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106/attempt01/cargo-target/debug/droidloom-update",
+    "sha256": "8bf78794705a62f0a60d00af64cdd25e2b798739e445575c3d3cca5e566f4cf6"
+  },
+  "own_resource_gate": {
+    "passed": true,
+    "cpu_max": "100000 100000",
+    "memory_max": "1073741824",
+    "memory_peak": 1073741824,
+    "memory_swap_peak": 0,
+    "memory_events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 1732,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "swap_max_observed_only": "max",
+    "settings_changed": false
+  },
+  "memory_pressure_qualification": "Own memory.max event counter increased by 1732 and peak reached the 1GiB cap; zero observed OOM kills does not imply no memory pressure or prove Main noninterference.",
+  "Main_actions": 0,
+  "Main_identity_observed": false,
+  "real_image_tests": 0,
+  "pairing_tests": 0,
+  "ART_tests": 0,
+  "Soong_Java_JNI_qualified": false,
+  "normal_build_pending": true,
+  "whole_apps_ready": 0,
+  "total_apps": 45
+}

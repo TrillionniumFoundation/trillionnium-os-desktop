@@ -1,0 +1,24 @@
+--- runtime02/run_listener.template.py
++++ runtime03/run_listener.template.py
+@@ -245,17 +245,16 @@
+         return fd,pin
+     except BaseException:os.close(fd);raise
+ 
+-ROOT=Path('/run/pocket4-role-listener-lifetime-host-run-02-20261105')
++ROOT=Path('/run/pocket4-role-listener-lifetime-host-run-03-20261105')
+ HERE=ROOT/'control-source'
+ OUT=ROOT/'run01'
+-BUILD_ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-listener-lifetime-host-build-02-20261105')
++BUILD_ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-listener-lifetime-host-build-03-20261105')
+ SOURCE=BUILD_ROOT/'source'
+ BUILD_RESULT=BUILD_ROOT/'build01/result.json'
+ BUILD_RESULT_SHA='PENDING_ACTUAL_BUILD_RESULT_SHA256'
+-CASE_PLAN_SHA='b440df29027c3b0516ef09e457346a1577d42545a4e373e69d1b22821f055a9a'
++CASE_PLAN_SHA='f027f6c7f25f7859b4f7c432858506f7e1f844adadea5d1a6e8b00800e9d272d'
+ SOURCE_MANIFEST_SHA='7adaade107d05204015482abcee84431d8cd1bcc7776fea2a97dcd6488d210fb'
+-SOURCE_AUTHORITIES={'listener-source-pins.json':{'bytes':9518,'sha256':SOURCE_MANIFEST_SHA},
+-                    'owner-lifetime-source-pins.json':{'bytes':1698,'sha256':'de1ef1fb3044b9bdc935fe32b812bb53e88aaf4be54b439df7d78f963e813209'}}
++SOURCE_AUTHORITIES={'listener-source-pins.json': {'bytes': 9518, 'sha256': '7adaade107d05204015482abcee84431d8cd1bcc7776fea2a97dcd6488d210fb'}, 'owner-lifetime-source-pins.json': {'bytes': 1698, 'sha256': 'de1ef1fb3044b9bdc935fe32b812bb53e88aaf4be54b439df7d78f963e813209'}, 'listener-observer-source-pins.json': {'bytes': 3052, 'sha256': '03fb2fa44f8e3917e31e72dd0c194dccedf66e4bc801d3cc767e977b462c363b'}}
+ ARMS=('lease-preimage','lease-candidate','listener')
+ DEADLINE=None
+ 

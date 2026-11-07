@@ -1,0 +1,95 @@
+--- pending/install_state.py
++++ actual-bound/install_state.py
+@@ -31,15 +31,15 @@
+ QA_ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-source-01/source')
+ QA_MANIFEST = 'ab971f5b361f1d97b8036c954a6b88734b7faedbeed6349b873ead85fa79d5f3'
+ BUILD = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-build-01/build-result.json')
+-BUILD_SHA = None
+-BUILD_BYTES = None
++BUILD_SHA = '26a45b337c5dad2bd98b18ce093b321b8c0805de7cb9d759d5dd4088be05a053'
++BUILD_BYTES = 17246
+ STAGE = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-source-01/stage-result.json')
+-STAGE_SHA = None
+-STAGE_BYTES = None
++STAGE_SHA = '94bfea341c50b648a2da13752044434cff04e74b7e7549c0d0e0b10c2ce77c41'
++STAGE_BYTES = 1935
+ APK = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-build-01/owned-ihg-qa.apk')
+-APK_SHA = None
+-APK_BYTES = None
+-SIGNER_SHA = None
++APK_SHA = '3f3164062d8b4f0ebd49d631953ef1a667ec315d2ab7ac0fab8b3b933a6b7324'
++APK_BYTES = 24720
++SIGNER_SHA = 'c1502f9d917628e7c64a03b197e1edb2a641a3171afba15b15311aeb23954553'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ READER_SHA = '51ecf1c0a12d8bfa9ed721265e14c4f06ef3eff72cbf5840de9569eb09797d40'
+ GUEST_DIR_NAME = 'pocket4-owned-ihg-qa-'+NONCE
+--- pending/INPUTS.json
++++ actual-bound/INPUTS.json
+@@ -1,11 +1,23 @@
+ {
+-  "APK": null,
++  "APK": {
++    "bytes": 24720,
++    "path": "/home/alex/work/pocket4-owned-ihg-qa-r1-build-01/owned-ihg-qa.apk",
++    "sha256": "3f3164062d8b4f0ebd49d631953ef1a667ec315d2ab7ac0fab8b3b933a6b7324"
++  },
+   "Bili_Flow_used": false,
+   "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+   "UiAutomation_requested": false,
+-  "actual_build_job": null,
+-  "actual_build_review": null,
+-  "build_receipt": null,
++  "actual_build_job": "1a1adb57912-fc05-5ab0",
++  "actual_build_review": {
++    "bytes": 2447,
++    "path": "/workspace/scratch/94990735b266/android-ihg-r1-build-actual-review-01/review.json",
++    "sha256": "f433570b1aaf5ef08d4c73c8db68e2deabc548fe46e935d5807ce09fb726de08"
++  },
++  "build_receipt": {
++    "bytes": 17246,
++    "path": "/home/alex/work/pocket4-owned-ihg-qa-r1-build-01/build-result.json",
++    "sha256": "26a45b337c5dad2bd98b18ce093b321b8c0805de7cb9d759d5dd4088be05a053"
++  },
+   "commands": 13,
+   "helper_UID": "MUST_BE_OBSERVED_AFTER_NEW_INSTALL",
+   "install_commands": 1,
+@@ -28,12 +40,16 @@
+   },
+   "old_v2_helper_called": false,
+   "owned_package": "org.droidloom.qa.ihg.r1",
+-  "purpose": "PENDING actual IHG build: dedicated helper install and no-UiAutomation state only",
++  "purpose": "Install one exact new IHG self-instrumentation helper and observe no-UiAutomation state once",
+   "schema": 1,
+-  "signer_certificate_sha256": null,
++  "signer_certificate_sha256": "c1502f9d917628e7c64a03b197e1edb2a641a3171afba15b15311aeb23954553",
+   "source_manifest_sha256": "ab971f5b361f1d97b8036c954a6b88734b7faedbeed6349b873ead85fa79d5f3",
+-  "stage_receipt": null,
+-  "state": "PENDING_ACTUAL_IHG_BUILD_BINDING_NO_REQUEST",
++  "stage_receipt": {
++    "bytes": 1935,
++    "path": "/home/alex/work/pocket4-owned-ihg-qa-r1-source-01/stage-result.json",
++    "sha256": "94bfea341c50b648a2da13752044434cff04e74b7e7549c0d0e0b10c2ce77c41"
++  },
++  "state": "ACTUAL_STATIC_BUILD_BOUND_INSTALL_STATE_ANDROID_UNRUN",
+   "target": {
+     "package": "com.ihg.apps.android",
+     "uid": 10137,
+--- pending/README.md
++++ actual-bound/README.md
+@@ -1,13 +1,5 @@
+-# Pending IHG install and state source
++IHG owned helper install/state, bound to actual static build 1a1adb57912-fc05-5ab0.
+ 
+-This local template preserves the actual 12306 install/state lifecycle and the
+-same exact ordered thirteen-command plan. It changes the dedicated package,
+-target UID/version, observed one-APK reference, actual IHG metadata parser,
+-source roots, and fresh nonces. Main, held file identity/hash revalidation,
+-original global action lock, original after-state, first error and staged-file
+-cleanup remain. The original standalone Bili business Flow is never used.
++The source, build, stage, signed APK and signer are fixed in INPUTS.json and install_state.py. The exact helper must be absent including retained records/all users. The original 13-command transaction stages the signed APK once, performs one -R/-t install, observes the new UID, verifies installed bytes before and after one state instrumentation that cannot connect UiAutomation, and revalidates the current commercial target APK. No helper UID is assumed before installation.
+ 
+-Actual IHG build/stage/APK/signer values are intentionally None. No source
+-manifest or request is emitted. Bind the independently collected matching real
+-IHG build/stage receipts before freezing this template. The new helper's UID
+-can only be learned and verified after the separately admitted install.
++Commercial IHG is not launched in this request. Main identity, held transport, global action lock, first/secondary errors, exact staging cleanup, target file cleanup, and once-only/no automatic retry behavior are preserved from the reviewed Ticket R1 install template. The exact helper remains installed for separately admitted launch/inspect. A successful install/state does not qualify the whole app for production.

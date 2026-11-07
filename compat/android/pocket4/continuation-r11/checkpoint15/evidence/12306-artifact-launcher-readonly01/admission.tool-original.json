@@ -1,0 +1,38 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-c",
+      "import hashlib,json,sys;raw=sys.stdin.buffer.read(32769);assert len(raw)==21514 and hashlib.sha256(raw).hexdigest()=='1434c14b21c34f2a99e365589bcf0bc49ba5c0fdbdea5c6cfc8f77432ef637de';stage='#!/usr/bin/env python3\\n\"\"\"Create one fixed private metadata source root; no retry or UI entry.\"\"\"\\nimport hashlib\\nimport json\\nimport os\\nfrom pathlib import Path\\nimport types\\n\\nROOT=Path(\\'/home/alex/work/pocket4-12306-artifact-launcher-readonly-01\\')\\nSOURCE=ROOT/\\'source/read_12306.py\\'\\nNONCE=\\'a08bcaaa2480f0aafcdaa0d5ac6c315a\\'\\nREFERENCE=Path(\\'/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/source/references/readonly_r3_coordinator.py\\')\\nREFERENCE_SHA=\\'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd\\'\\n\\n\\ndef main(packet,source_sha256):\\n    # The exact request independently pins both this stage and all stdin bytes.\\n    assert type(packet) is dict and set(packet)=={\\'schema\\',\\'nonce\\',\\'source\\'}\\n    assert packet[\\'schema\\']==1 and packet[\\'nonce\\']==NONCE and type(packet[\\'source\\']) is str\\n    raw=packet[\\'source\\'].encode(\\'utf-8\\')\\n    assert 0<len(raw)<=32768 and hashlib.sha256(raw).hexdigest()==source_sha256\\n    assert os.getuid()==os.geteuid()==0\\n    assert ROOT.parent.resolve()==ROOT.parent and not os.path.lexists(ROOT)\\n    entry=types.ModuleType(\\'ticket12306_metadata_fixed_entry\\');entry.__file__=str(SOURCE)\\n    exec(compile(raw,str(SOURCE),\\'exec\\'),entry.__dict__)\\n    assert entry.ROOT==ROOT and entry.SOURCE_PATH==SOURCE and entry.NONCE==NONCE\\n    ref=entry.load(REFERENCE,REFERENCE_SHA,\\'ticket12306_stage_main_reference\\')\\n    activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))\\n    epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),\\n                     ref.EPOCH_SOURCE,\\'ticket12306_stage_epoch\\')\\n    before=ref.main_guard(activation,epoch)\\n    os.umask(0o077);ROOT.mkdir(mode=0o700)\\n    result={\\'schema\\':1,\\'ok\\':False,\\'nonce\\':NONCE,\\'package\\':entry.PACKAGE,\\n            \\'source_sha256\\':source_sha256,\\'Main_before\\':before,\\'error\\':None,\\n            \\'secondary_errors\\':[],\\'automatic_retry\\':False,\\'Android_UI_actions\\':0,\\n            \\'App_launches\\':0,\\'instrumentation_calls\\':0,\\'whole_app_production_ready\\':False}\\n    def remember(phase,error):\\n        row={\\'phase\\':phase,\\'type\\':type(error).__name__,\\'message\\':str(error)}\\n        if result[\\'error\\'] is None:result[\\'error\\']=row\\n        else:result[\\'secondary_errors\\'].append(row)\\n        result[\\'ok\\']=False\\n    try:\\n        ref.write_new(ROOT/\\'stage-claim.json\\',{\\'nonce\\':NONCE,\\'source_sha256\\':source_sha256,\\n                      \\'automatic_retry\\':False})\\n        SOURCE.parent.mkdir(mode=0o700)\\n        ref.write_new(SOURCE,raw,mode=0o444)\\n        rc=entry.execute(source_sha256)\\n        result[\\'worker_returncode\\']=rc\\n        durable=ref.read(ROOT/\\'result.json\\',98304)\\n        result[\\'worker_result\\']={\\'path\\':str(ROOT/\\'result.json\\'),\\'bytes\\':len(durable),\\n                                \\'sha256\\':hashlib.sha256(durable).hexdigest()}\\n        observed=json.loads(durable)\\n        assert observed[\\'nonce\\']==NONCE and observed[\\'package\\']==entry.PACKAGE\\n        assert observed[\\'source_sha256\\']==source_sha256\\n        assert rc==0 and observed.get(\\'ok\\') is True,\\'TICKET12306_METADATA_READ_NOT_QUALIFIED\\'\\n        result[\\'ok\\']=True\\n    except BaseException as error:remember(\\'stage_or_metadata_read\\',error)\\n    finally:\\n        try:\\n            result[\\'Main_after\\']=ref.main_guard(activation,epoch)\\n            assert result[\\'Main_after\\']==before,\\'STAGE_MAIN_CHANGED\\'\\n        except BaseException as error:remember(\\'stage_final_Main\\',error)\\n        try:\\n            ref.read(SOURCE,32768,source_sha256)\\n            result[\\'source_unchanged\\']=True\\n        except BaseException as error:remember(\\'stage_final_source\\',error)\\n        try:pin=ref.write_new(ROOT/\\'stage-result.json\\',result)\\n        except BaseException as error:remember(\\'stage_result_write\\',error);pin=None\\n        print(json.dumps({\\'stage_result\\':pin,\\'stage\\':result},ensure_ascii=False,\\n                         sort_keys=True,separators=(\\',\\',\\':\\')),flush=True)\\n    return 0 if result[\\'ok\\'] else 1\\n';assert hashlib.sha256(stage.encode()).hexdigest()=='c44e3c24acb5ebc688d776362cfd9b26bdf2df889cd2d2cc858f76343989b5df';scope={\"__name__\":\"ticket12306_fixed_metadata_stage\",\"__file__\":\"<verified-ticket12306-stage>\"};exec(compile(stage,\"stage_execute.py\",\"exec\"),scope);raise SystemExit(scope[\"main\"](json.loads(raw),'77e6a5056f0de303ab8d81b0864999cdbf5d244442eb31d48c65ce49f4981d9d'))"
+    ],
+    "created_unix_ms": 1793881884316,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1abb1469c-fc05-4fcf",
+    "idempotency_key": "pocket4-12306-artifact-launcher-readonly-01-20261105",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1abb1469c-fc05-4fcf",
+    "request_digest": "282dccd0720a503b39544a398a4cd755e0c6d6ac68c4e0b6ab891d0633873a11",
+    "request_fingerprint": 2895195331107639355,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1abb1469c-fc05-4fcf"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1abb1469c-fc05-4fcf"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

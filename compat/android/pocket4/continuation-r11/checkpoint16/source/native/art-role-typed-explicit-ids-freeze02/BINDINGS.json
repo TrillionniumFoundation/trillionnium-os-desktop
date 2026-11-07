@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "base_tree": "c0e1260012d096f32e52eb5615f705f9aa5cbecd",
+  "base_prefix": "art-role-typed-ingress-freeze01",
+  "base_source_pins_sha256": "73da8babb8cc62e5a841087f6a6937c674bef7ecb877777ddd189ff0696d947a",
+  "changed_production_path": "frameworks/base/core/java/com/android/internal/os/ZygoteArguments.java",
+  "four_inherited_production_files": [
+    {
+      "path": "candidate/frameworks/base/core/java/com/android/internal/os/Zygote.java",
+      "bytes": 67438,
+      "sha256": "9e7ea15e973700f1222ad285638e89833cb6c3463e80d2baf8b03121ed92cbd3",
+      "git_blob_sha1": "f001806e302c2908692db5d9976691246210d164"
+    },
+    {
+      "path": "candidate/frameworks/base/core/java/com/android/internal/os/ZygoteConnection.java",
+      "bytes": 27831,
+      "sha256": "7a23ad09acc3017db09348bf198d74d0fb53cd6c7be66af81918306229f7e516",
+      "git_blob_sha1": "5857cbf65d3e08dfb2b4f38b09c3f4456f8e6463"
+    },
+    {
+      "path": "candidate/frameworks/base/core/jni/com_android_internal_os_Zygote.cpp",
+      "bytes": 132241,
+      "sha256": "72d8cf730e8e3ec4ff4b88106e73e076eab7e761a405a5d854e62e7a5fadc095",
+      "git_blob_sha1": "b7eb89ca6050d9ae9a51f7f337b6bfcc123e967c"
+    },
+    {
+      "path": "candidate/frameworks/base/core/jni/droidloom_app_zygote_spec.h",
+      "bytes": 1647,
+      "sha256": "a73c497e4979fcb23b996b8d8d98c63eb48fe1eebe65d7ff9ec87d7d4ab8d1ca",
+      "git_blob_sha1": "457c9ddb50ccb9aca5481d3c1132db1e3122096c"
+    }
+  ],
+  "original_failure": "freeze01 checked mUidSpecified/mGidSpecified only after applyUidSecurityPolicy, which sets both for peer defaults; these fields do not prove explicit request inputs. The native endpoint was and remains disabled.",
+  "repair": "Two private parser-only bits, set only after the corresponding integer parses successfully; the explicit-role guard requires these bits plus all existing policy checks.",
+  "ordinary_path_unchanged": true,
+  "native_entry_unchanged": true,
+  "JNI_signature_unchanged": true,
+  "early_policy_or_parent_approval_implemented": false,
+  "factory_role_enabled": false,
+  "Java_compiled": false,
+  "Android_executed": false,
+  "new_runtime_tests_executed": false,
+  "prior_native20_scope": "Unchanged four native test inputs in freeze01; not rerun and not Java parser coverage."
+}

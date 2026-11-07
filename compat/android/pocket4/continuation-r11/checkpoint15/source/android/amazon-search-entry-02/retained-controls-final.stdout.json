@@ -1,0 +1,36 @@
+{
+  "actions_executed": 0,
+  "candidate_runtime_qualification": "NOT_RUN",
+  "cases": [
+    {
+      "calls": 4,
+      "case": "original_four_read_limit_reproduces_actual_identity_failure",
+      "expected_met": true
+    },
+    {
+      "calls": 5,
+      "case": "candidate_fifth_complete_identity_matches_fourth",
+      "expected_met": true,
+      "stable_pair": [
+        3,
+        4
+      ]
+    },
+    {
+      "calls": 5,
+      "case": "even_matching_fifth_identity_at_original_deadline_rejected",
+      "expected_met": true
+    }
+  ],
+  "count": 3,
+  "device_calls": 0,
+  "raw_private_UI_read": false,
+  "schema": 1,
+  "seams": [
+    "current_inspection returns retained safe identity only",
+    "selector uses prior eligibility and equal complete fourth/fifth identity",
+    "sequence and clock model retained summary order and elapsed values"
+  ],
+  "state": "PASS",
+  "trace_sha256": "4c5939d99e9efacde15178c26bc27b7fcc111708dbae2a3122761b0737ca81ee"
+}

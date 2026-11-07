@@ -1,0 +1,287 @@
+{
+  "schema": 1,
+  "reviewer": "native_bridge_repair",
+  "scope": "full actual matching build receipt and local pure binding gate; no runtime execution",
+  "actual_result": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/factory-snapshot-nofollow-build01/result.json",
+    "bytes": 91682,
+    "sha256": "818bab5d2c0daead8cd597228480b15d7fc12ef7be06cd2b143f316c7f57a4e0"
+  },
+  "root_reported_job": "1a1abd12dbc-fc05-50c3",
+  "build_state": "PASS_BUILD_ONLY",
+  "commands": {
+    "count": 39,
+    "all_returncode_zero": true,
+    "timeouts": 0,
+    "labels": [
+      "compiler-version",
+      "resolve-cc1plus",
+      "resolve-collect2",
+      "resolve-as",
+      "resolve-ld",
+      "resolve-file-crt1.o",
+      "resolve-file-crti.o",
+      "resolve-file-crtn.o",
+      "resolve-file-crtbeginS.o",
+      "resolve-file-crtendS.o",
+      "resolve-file-libgcc.a",
+      "resolve-file-libgcc_s.so",
+      "resolve-file-libstdc++.so",
+      "resolve-file-libc.so",
+      "tool-libraries-0",
+      "tool-libraries-2",
+      "tool-libraries-3",
+      "tool-libraries-4",
+      "tool-libraries-5",
+      "tool-libraries-6",
+      "tool-libraries-14",
+      "dependencies-authorization",
+      "dependencies-context",
+      "dependencies-wire",
+      "dependencies-snapshot",
+      "dependencies-control",
+      "dependencies-factory",
+      "compile-authorization",
+      "compile-context",
+      "compile-wire",
+      "compile-snapshot",
+      "compile-control",
+      "compile-factory",
+      "link-control",
+      "control-libraries",
+      "default-plan",
+      "link-factory",
+      "factory-libraries",
+      "factory-default-plan"
+    ]
+  },
+  "source_inputs_checked": [
+    {
+      "path": "build_nofollow.py",
+      "bytes": 26483,
+      "sha256": "15b2e0140a10477f06a02afcf0fa38cdfa6523294edce38f77598d18201fd86f"
+    },
+    {
+      "path": "controls/snapshot_controls.cc",
+      "bytes": 17634,
+      "sha256": "4a2b14b4e5056974128670c50e445ebe5aa9df240778e9bf33a51f293df802b6"
+    },
+    {
+      "path": "include/berberis/kernel_api/proc_maps_factory_protocol.h",
+      "bytes": 5051,
+      "sha256": "b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9"
+    },
+    {
+      "path": "include/berberis/kernel_api/proc_maps_kernel_statfs.h",
+      "bytes": 2480,
+      "sha256": "77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0"
+    },
+    {
+      "path": "include/berberis/kernel_api/proc_maps_linux_compat.h",
+      "bytes": 2072,
+      "sha256": "131d1eef8d9f789876c965fa2d827b21a59fc64ab7886fa1f78d95623114370c"
+    },
+    {
+      "path": "include/berberis/kernel_api/proc_maps_snapshot_reopen.h",
+      "bytes": 2557,
+      "sha256": "175107cadc296ab714acb83d40f0559fd8bd5f4505ca73f48861d509d3a07977"
+    },
+    {
+      "path": "nofollow-source-pins.json",
+      "bytes": 4866,
+      "sha256": "310e7370a78cc63f0ad72527fbeb37f58f884fdf3ca45ee0acc37e1aee46ad36"
+    },
+    {
+      "path": "references/factory_main.v2.cc",
+      "bytes": 28588,
+      "sha256": "18d8134ed6c2077088104d9b5dc22ccfe1c93f73a87ee880595a9eb89821e2b9"
+    },
+    {
+      "path": "references/registry_controls.cc",
+      "bytes": 33258,
+      "sha256": "5ea30aeb58eebeb09542e9ee68c07e1be7ff92fedcc3141f4d336490458e1a94"
+    },
+    {
+      "path": "source/factory_context.cc",
+      "bytes": 5377,
+      "sha256": "afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a"
+    },
+    {
+      "path": "source/factory_context.h",
+      "bytes": 954,
+      "sha256": "b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1"
+    },
+    {
+      "path": "source/factory_main.cc",
+      "bytes": 28804,
+      "sha256": "d9a8f398856536025cabdcaeee2e27b7ca7ccf04634f5a2bcd87bfc9306ed837"
+    },
+    {
+      "path": "source/proc_maps_factory_wire.cc",
+      "bytes": 8661,
+      "sha256": "4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608"
+    },
+    {
+      "path": "source/role_authorization.cc",
+      "bytes": 38998,
+      "sha256": "5d9a43b4f9d51ddfe7896de563353c96f75856171d39c1af9a5816394247a03c"
+    },
+    {
+      "path": "source/role_authorization.h",
+      "bytes": 5539,
+      "sha256": "320933ecda593fdb98b16b7bcd506d48ab81e15c0bd5903b38fe4dde49404d8c"
+    },
+    {
+      "path": "source/role_snapshot.cc",
+      "bytes": 10185,
+      "sha256": "87667dbd72333545ec7a8ff731874f22217bc74f37e54f31eaf43969c4050b62"
+    },
+    {
+      "path": "source/role_snapshot.h",
+      "bytes": 1243,
+      "sha256": "24ca056261cf6928bcd0be38f9669290287ac5529629cc77901313060af97bd4"
+    }
+  ],
+  "six_complete_translation_units": {
+    "authorization": 181,
+    "context": 38,
+    "control": 306,
+    "factory": 177,
+    "snapshot": 159,
+    "wire": 116
+  },
+  "unique_dependency_count": 327,
+  "source_authority": {
+    "bytes": 4866,
+    "identity": [
+      66306,
+      36972662,
+      33024,
+      4866,
+      1793883977098978249,
+      1793883977098978249
+    ],
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/nofollow-source-pins.json",
+    "sha256": "310e7370a78cc63f0ad72527fbeb37f58f884fdf3ca45ee0acc37e1aee46ad36"
+  },
+  "source_and_artifacts_unchanged": true,
+  "tool_changes": [],
+  "dependency_changes": [],
+  "artifacts": {
+    "control": {
+      "default_plan": {
+        "Main_actions": 0,
+        "factory_service_started": false,
+        "owned_cases": 5,
+        "state": "PLAN_ONLY"
+      },
+      "elf": {
+        "bytes": 129640,
+        "identity": [
+          66306,
+          36972762,
+          33216,
+          129640,
+          1793883980079792960,
+          1793883980079821064
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/snapshot_controls",
+        "sha256": "5471a0d4a29431398818f8320a2613f7d3c6ba1eebeeaa49803cd6d222e054fe"
+      }
+    },
+    "factory": {
+      "default_plan": {
+        "production_ready": false,
+        "protocol": 2,
+        "service_started": false,
+        "state": "DISABLED_REQUIRES_PINNED_INHERITED_OWNER"
+      },
+      "elf": {
+        "bytes": 46648,
+        "identity": [
+          66306,
+          36972769,
+          33216,
+          46648,
+          1793883980164278363,
+          1793883980164304403
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/factory_v2",
+        "sha256": "177ea99aca0f745e1341fe274f598d8a938c3cc6c48182f9d221f1978313a947"
+      }
+    }
+  },
+  "resource": {
+    "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abd12dbc-fc05-50c3.service",
+    "directory_identity": [
+      30,
+      30573893
+    ],
+    "memory_max": "536870912",
+    "cpu_max": "100000 100000",
+    "peak": 161501184,
+    "swap_peak_observed": 0,
+    "swap_max_observed_only": "max",
+    "events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "gate_pass": true
+  },
+  "cleanup": {
+    "errors": [],
+    "forced_cleanup": false,
+    "initial_owned_children": [],
+    "reaped": [],
+    "remaining": []
+  },
+  "template01_blocker": "mutually contradictory exact artifact sets; preserved, never executed",
+  "template02_change": "first exact set requires both control and factory, retaining all later factory gates",
+  "qualification": {
+    "build_only": true,
+    "five_case_runtime": false,
+    "CAP_DAC_READ_SEARCH_observed": false,
+    "kernel_handle_reopen_positive": false,
+    "factory_service_started": false,
+    "Android_execution": false,
+    "platform_policy": false,
+    "Main_identity_observed": false,
+    "Main_actions": 0
+  },
+  "actual_receipt_controls": [
+    {
+      "case": "frozen_template01_rejects_actual_two_artifact_receipt",
+      "observed": "REJECT",
+      "error": "complete matching build-only authority required",
+      "expected": true
+    },
+    {
+      "case": "template02_accepts_actual_two_artifact_receipt",
+      "observed": "ACCEPT",
+      "expected": true
+    },
+    {
+      "case": "factory_artifact_missing_rejected",
+      "observed": "REJECT",
+      "error": "complete matching build-only authority required",
+      "expected": true
+    },
+    {
+      "case": "control_artifact_missing_rejected",
+      "observed": "REJECT",
+      "error": "complete matching build-only authority required",
+      "expected": true
+    },
+    {
+      "case": "factory_service_started_rejected",
+      "observed": "REJECT",
+      "error": "matching standalone V2 factory default-disabled contract differs",
+      "expected": true
+    }
+  ]
+}

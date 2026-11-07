@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "state": "SOURCE_FROZEN_ACTUAL_HISTORICAL_BOUND_CURRENT_READ_UNRUN",
+  "prior_actual": {
+    "bytes": 10704,
+    "sha256": "b41485c17c1079544eb8674f6a9e040bd4133c0501cf64fef01111a2e2e3e23f",
+    "job_id": "1a1b0c2a75b-fc05-72ae",
+    "git_blob": "b88994238ae409346703e6d5613b6282c50eb223",
+    "git_tree": "27b98b43a9b0e961ac9d381bb350f1750b77cc4e",
+    "controls": 12,
+    "FDs_closed": 108
+  },
+  "source": {
+    "bytes": 22612,
+    "sha256": "57b4ce695df3e1e6b58e80ec11a7895759cdb5ffa9d6fac6846a6e34297acea6"
+  },
+  "request": {
+    "bytes": 24084,
+    "sha256": "b93fde99bd83c8658f90220815e21c3ebd1c89af2794759fde1505ce1d24f26f"
+  },
+  "source_template": {
+    "bytes": 19881,
+    "sha256": "2f98627c6a1d01d45566c51a9591679eda5ac3e751b98136920d5954141fb45c",
+    "git_blob": "865c607ca2be938ea49f1b7d8fc8c8d4847b57b3"
+  },
+  "literal_only_template_binding": true,
+  "source_closure": {
+    "original_current_Amazon_entry": {
+      "bytes": 40297,
+      "sha256": "7f64037f79317f2e370e0504f75032b945756521984009f0cdc5f068c721bab5",
+      "git_blob": "a47f16268e582aff9f806f588db0310bc6423c75"
+    },
+    "original_Amazon_context": {
+      "bytes": 19305,
+      "sha256": "2e289f656da8f9e2420be4d4ff97a1ec5ec021c9a3c2d69e8b709d9f2b0a08ff",
+      "git_blob": "666c924bfa3ed28a7d063c05f55d0e228a8281ee"
+    },
+    "original_current_adapter": {
+      "bytes": 23240,
+      "sha256": "368fc40f2e02c94673a3b993c64d129d63cee0673660a309656cb55250fb239c",
+      "git_blob": "2d98926f40d1004f5317f4fd26ca3a7bf7a40c69"
+    },
+    "source_manifest": "452b2c85207d60d5e47efbeafc05f49ecae416fabf6988fb7362100d55d6e46c",
+    "full_original_qualified_open_task_context_Policy_Flow_BoundArun_and_SourceContract_retained": true,
+    "Bili_Flow_instantiated": false,
+    "installed_helper_UID": 10154,
+    "target_APKs": 3
+  },
+  "command_order": [
+    "target metadata",
+    "target APK paths",
+    "helper UID",
+    "helper APK paths",
+    "current stacks 1",
+    "current stacks 2",
+    "helper UID",
+    "helper APK paths",
+    "target APK paths",
+    "target metadata"
+  ],
+  "command_gates": {
+    "five_exact_argv_each_maximum": 2,
+    "timeouts": {
+      "target": 15,
+      "helper": 8,
+      "stacks": 20
+    },
+    "mutation": false,
+    "maximum_total": 10,
+    "gate_controls": 11,
+    "original_Policy_admit_preserved": true
+  },
+  "cleanup": {
+    "new_step_create_only": true,
+    "previous_receipts_unchanged": true,
+    "all_current_commands_owned_joined_required": true,
+    "three_APKs_rehashed_and_closed": true,
+    "held_binding_closed": true,
+    "flow_and_global_locks_closed": true,
+    "independent_final_Main": true
+  },
+  "resources": {
+    "memory_max_bytes": 536870912,
+    "cpu_quota_percent": 100,
+    "nice": 10,
+    "request_seconds": 240,
+    "held_context_seconds": 175
+  },
+  "original_failure": {
+    "action_attempted": true,
+    "outcome_unknown": true,
+    "closed_error_task": 874,
+    "whole_error_attribution_qualified": false,
+    "current_task_state_not_yet_observed": true,
+    "task_cleanup_authority": false
+  },
+  "limited_peer": "Android agent fully pinned/read the ReadOnlyView, gate_controls, original Context/Policy/Session.installed call interfaces; no definite blocker in that scope. No Python execution or full ArtifactSet/native actual chain peer qualification.",
+  "validation": {
+    "binder_pure_JS_executed": true,
+    "full_actual_native007_independently_pinned": true,
+    "Python_compile_or_controls_executed": false,
+    "device_requests_dispatched": false
+  },
+  "task_removal_or_native_launch_allowed": false,
+  "whole_app_production_ready": false
+}

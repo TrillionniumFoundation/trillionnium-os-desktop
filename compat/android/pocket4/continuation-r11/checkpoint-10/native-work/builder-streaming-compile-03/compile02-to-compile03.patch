@@ -1,0 +1,153 @@
+--- compile02/compile_builder.py
++++ compile03/compile_builder.py
+@@ -13,6 +13,8 @@
+ import sys
+ import time
+ import tomllib
++import tarfile
++from pathlib import PurePosixPath
+ 
+ def require(ok, message):
+     if not ok:
+@@ -188,7 +190,7 @@
+             'resource_settings_changed':False, 'swap_max_observed_only':after['fields']['memory.swap.max']}
+ 
+ BASE_SOURCE = Path('/home/alex/work/pocket4-signal-mask-r11-build-memory-01/builder-source')
+-ROOT = Path('/home/alex/work/pocket4-blueprint-streaming-builder-450-compile-02-20261105')
++ROOT = Path('/home/alex/work/pocket4-blueprint-streaming-builder-450-compile-03-20261105')
+ HERE = ROOT/'control-source'
+ OUT = ROOT/'attempt01'
+ COPIED = ROOT/'builder-source'
+@@ -397,7 +399,64 @@
+     require(selected, 'empty selected dependency tree')
+     return selected
+ 
+-def dependency_sources(metadata, build_tree, test_tree, observed_tree):
++def qualify_cached_archive(archive,directory,name,version,expected):
++    fd=os.open(archive,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW)
++    try:
++        before=os.fstat(fd)
++        require(stat.S_ISREG(before.st_mode) and 0<before.st_size<=32*1024*1024,'archive type/size outside bound')
++        digest=hashlib.sha256();size=0
++        while True:
++            chunk=os.read(fd,65536)
++            if not chunk:break
++            size+=len(chunk);require(size<=32*1024*1024,'archive grew beyond bound');digest.update(chunk)
++        archive_pin={'path':str(archive),'bytes':size,'sha256':digest.hexdigest(),'identity':identity(before)}
++        require(size==before.st_size and digest.hexdigest()==expected,'existing archive checksum differs from original Cargo.lock')
++        source_before=regular_tree(directory,4096,64*1024*1024)
++        os.lseek(fd,0,os.SEEK_SET)
++        files={};directories=set();total=0;prefix=name+'-'+version+'/'
++        with os.fdopen(os.dup(fd),'rb') as stream,tarfile.open(fileobj=stream,mode='r:gz') as packed:
++            for member in packed:
++                require(time.monotonic()<DEADLINE,'bounded registry observation deadline exhausted')
++                if member.isdir() and member.name.rstrip('/')==name+'-'+version:
++                    require('' not in directories,'duplicate archive root directory')
++                    directories.add('');continue
++                require(member.name.startswith(prefix) and not member.name.startswith('/'),'unexpected archive root')
++                relative=member.name[len(prefix):]
++                path=PurePosixPath(relative)
++                require(relative and '..' not in path.parts and str(path)==relative.rstrip('/'),'noncanonical archive member')
++                require(len(files)+len(directories)<4096,'archive member count exceeds bound')
++                if member.isdir():
++                    require(relative not in directories,'duplicate archive directory')
++                    directories.add(relative);continue
++                require(member.isfile() and relative not in files,'archive alias, special file or duplicate rejected')
++                require(0<=member.size<=16*1024*1024 and total+member.size<=64*1024*1024,'archive expansion exceeds bound')
++                reader=packed.extractfile(member);require(reader is not None,'archive regular member unreadable')
++                member_hash=hashlib.sha256();member_size=0
++                while True:
++                    chunk=reader.read(65536)
++                    if not chunk:break
++                    member_size+=len(chunk);require(member_size<=member.size,'archive member exceeded declared size');member_hash.update(chunk)
++                require(member_size==member.size,'archive member truncated')
++                total+=member_size
++                require(relative in source_before and source_before[relative]['bytes']==member_size and
++                        source_before[relative]['sha256']==member_hash.hexdigest(),'extracted source differs from locked archive: '+str(directory/relative))
++                files[relative]={'bytes':member_size,'sha256':member_hash.hexdigest(),'extracted':source_before[relative]}
++        require(files,'empty source archive')
++        extra={name:row for name,row in source_before.items() if name not in files}
++        require(regular_tree(directory,4096,64*1024*1024)==source_before,'extracted source changed during archive comparison')
++        require(identity(before)==identity(os.fstat(fd))==identity(archive.lstat()),'archive changed during comparison')
++        comparison={'archive':archive_pin,'archive_matches_lock':True,'archive_files':len(files),'archive_bytes':total,
++                'every_archive_file_matches_held_extracted_source':True,'extra_extracted_files':extra,
++                'extra_files_are_only_cargo_marker':set(extra)<=set(['.cargo-ok']),
++                'source_inventory':write_new(OUT/(name+'-'+version+'-source.json'),{'archive_files':files,'extras':extra}),
++                'source_unchanged_after':True}
++        require(set(extra)=={'.cargo-ok'} and extra['.cargo-ok']['bytes']==7 and
++                extra['.cargo-ok']['sha256']=='afbf9d0f3560b0fd7795e81c42a0a79ee6b6fc67e064f77826aee642cad28d91',
++                'extracted package has unqualified extra files or an altered Cargo marker')
++        return comparison,source_before,archive_pin
++    finally:os.close(fd)
++
++def dependency_sources(metadata, build_tree, test_tree, observed_tree, registry_authority):
+     require(metadata['resolve'] is None and metadata['workspace_root']==str(COPIED),
+             'no-deps metadata must describe only the exact copied workspace')
+     packages={p['id']:p for p in metadata['packages']}
+@@ -445,25 +504,30 @@
+             candidates.append(candidate)
+         require(len(candidates)==1, 'selected package must have one existing local registry source: '+name+'@'+version)
+         directory=candidates[0]
+-        rows=regular_tree(directory,4096,64*1024*1024)
+-        checksum_raw,checksum_pin=held(directory/'.cargo-checksum.json',4*1024*1024)
+-        checksums=json.loads(checksum_raw)
+-        require(checksums['package']==package['checksum'],
+-                'registry package checksum differs from original Cargo.lock: '+name+'@'+version)
+-        for filename,digest in checksums['files'].items():
+-            require(filename in rows and rows[filename]['sha256']==digest,
+-                    'registry source checksum mismatch: '+name+'@'+version+'/'+filename)
++        observed=registry_authority.get((name,version))
++        require(observed is not None and observed['source_directory']==str(directory) and
++                observed['expected_lock_checksum']==package['checksum'] and
++                observed['comparison']['archive_matches_lock'] is True and
++                observed['comparison']['every_archive_file_matches_held_extracted_source'] is True,
++                'selected source differs from actual locked-archive authority')
++        archive=CARGO_HOME/'registry/cache'/directory.parent.name/(name+'-'+version+'.crate')
++        require(str(archive)==observed['expected_archive_path'],'actual archive source location changed')
++        real_directory(archive.parent)
++        comparison,rows,archive_pin=qualify_cached_archive(archive,directory,name,version,package['checksum'])
++        require(archive_pin['sha256']==observed['comparison']['archive']['sha256'],'actual archive digest changed')
++        collected[str(archive)]=archive_pin
+         manifest_raw,manifest_pin=held(directory/'Cargo.toml',1024*1024)
+         manifest=tomllib.loads(manifest_raw.decode())
+         require(manifest['package']['name']==name and manifest['package']['version']==version and
+-                rows['Cargo.toml']==manifest_pin and rows['.cargo-checksum.json']==checksum_pin,
++                rows['Cargo.toml']==manifest_pin,
+                 'cached package manifest/checksum changed or names a different package')
+         for row in rows.values():
+             require(len(collected)<16384, 'complete dependency inventory too large')
+             collected[row['path']]=row
+         package_id=package['source']+'#'+name+'@'+version
+         descriptions.append({'id':package_id,'kind':'offline-registry','manifest':str(directory/'Cargo.toml'),
+-                             'recorded_files':len(rows),'package_checksum':checksums['package']})
++                             'recorded_files':len(rows),'package_checksum':package['checksum'],
++                             'archive':archive_pin,'archive_to_source':comparison['source_inventory']})
+     require(sum(p['kind']=='offline-registry' for p in descriptions)==45 and len(descriptions)==49,
+             'selected existing dependency closure count changed')
+     return roots[0],descriptions,collected
+@@ -596,7 +660,16 @@
+         for label,edges in [('selected-build','normal,build'),('selected-test','normal,build,dev')]:
+             trees.append(command([str(tools['cargo']),'tree','--offline','--locked','-p','droidloom-update','--target','x86_64-unknown-linux-gnu',
+                                   '--edges',edges,'--prefix','none','--format','{p}','--color','never'],COPIED,env,label,report['commands'],30))
+-        package_id,packages,dependency_rows=dependency_sources(metadata,trees[0],trees[1],observed_tree)
++        registry_raw,registry_pin=pinned_packet('registry-result.json','b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993')
++        registry=json.loads(registry_raw)
++        require(registry['state']=='PASS' and registry['collection_complete'] is True and
++                registry['all_45_archive_and_source_matches'] is True and registry['authorities_unchanged_after'] is True and
++                registry['owned_resource_gate']['pass'] is True and len(registry['packages'])==45,
++                'actual existing archive/source qualification is incomplete')
++        registry_authority={(r['name'],r['version']):r for r in registry['packages']}
++        require(len(registry_authority)==45,'duplicate registry authority package')
++        report['actual_registry_archive_authority']=registry_pin
++        package_id,packages,dependency_rows=dependency_sources(metadata,trees[0],trees[1],observed_tree,registry_authority)
+         report['dependency_inputs']=write_new(OUT/'dependency-inputs-before.json',{'packages':packages,'files':dependency_rows})
+         common=[str(tools['cargo']),'--offline','--locked','-j','1','-p','droidloom-update','--bin','droidloom-update']
+         build=command([common[0],'build',*common[1:],'--message-format=json-render-diagnostics'],COPIED,env,'builder-compile',report['commands'],240)
+@@ -626,6 +699,7 @@
+     except Exception as error:
+         report['state']='FAIL'
+         report['error']=repr(error)
++        report['error_detail']={'type':type(error).__name__,'message':str(error),'errno':getattr(error,'errno',None),'filename':getattr(error,'filename',None)}
+     finally:
+         signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGTERM,signal.SIGINT})
+         report['observed_signals']=OBSERVED_SIGNALS

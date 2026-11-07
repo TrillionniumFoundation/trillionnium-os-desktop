@@ -1,0 +1,19 @@
+--- a/wayland01-selected-helpers.py
++++ b/wayland01-selected-helpers.py
+@@ -73,7 +73,7 @@
+         'cgroup.procs','memory.events','memory.current','memory.peak','memory.high','memory.max',
+         'memory.swap.current','memory.swap.peak','memory.swap.max','cpu.max']}
+     require(str(os.getpid()) in fields['cgroup.procs'].split(), 'controller is not in the held invocation')
+-    require(fields['memory.max'] == '2147483648' and fields['cpu.max'] == '100000 100000', 'owned resource limits do not match the request')
++    require(fields['memory.max'] == '536870912' and fields['cpu.max'] == '100000 100000', 'owned resource limits do not match the request')
+     for key in ['memory.current','memory.peak','memory.swap.current','memory.swap.peak']:
+         require(fields[key].isdigit(), 'invalid owned resource counter: '+key)
+     return {'observed_utc':utc(), 'membership':membership, 'path':str(path),
+@@ -257,6 +257,6 @@
+     report['resource_admission_observed_bytes'] = values
+     report['resource_admission_qualified'] = False
+     require(values['MemAvailable'] >= MINIMUM_MEM_AVAILABLE,
+-            'less than 4 GiB MemAvailable for independent 2 GiB Wayland check; no retry')
++            'less than 1 GiB MemAvailable for independent 512 MiB source preparation; no retry')
+     report['resource_admission_qualified'] = True
+ 

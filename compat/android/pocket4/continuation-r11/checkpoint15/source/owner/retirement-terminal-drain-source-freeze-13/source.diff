@@ -1,0 +1,541 @@
+--- producer11/runtime/droidloom-pressure-relay/src/lib.rs
++++ producer13/runtime/droidloom-pressure-relay/src/lib.rs
+@@ -53,6 +53,8 @@
+ #[derive(Debug)]
+ pub enum Error {
+     Io(&'static str, io::Error),
++    RelativeIo { name: String, flags: libc::c_int, base: Option<FileId>, error: io::Error },
++    Context(&'static str, Box<Error>),
+     Reject(&'static str),
+ }
+ pub type Result<T> = std::result::Result<T, Error>;
+@@ -60,11 +62,19 @@
+     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+         match self {
+             Self::Io(context, error) => write!(f, "{context}: {error}"),
++            Self::RelativeIo { name, flags, base, error } => write!(f,
++                "open relative pinned directory name={name:?} flags={flags:#x} base={base:?}: {error}"),
++            Self::Context(context, error) => write!(f, "{context}: {error}"),
+             Self::Reject(reason) => write!(f, "rejected: {reason}"),
+         }
+     }
+ }
+ impl std::error::Error for Error {}
++impl Error {
++    // Adds provenance only. The original typed I/O error/errno remains owned;
++    // no retry, fallback, authority change or success conversion is introduced.
++    fn context(self, context: &'static str) -> Self { Self::Context(context, Box::new(self)) }
++}
+ fn err(context: &'static str) -> Error { Error::Io(context, io::Error::last_os_error()) }
+ fn io_err(context: &'static str, error: io::Error) -> Error { Error::Io(context, error) }
+ 
+@@ -99,7 +109,13 @@
+ fn open_at(base: &File, name: &str, flags: libc::c_int) -> Result<File> {
+     let c = CString::new(name).map_err(|_| Error::Reject("embedded NUL"))?;
+     let fd = unsafe { libc::openat(base.as_raw_fd(), c.as_ptr(), flags | libc::O_CLOEXEC) };
+-    if fd < 0 { return Err(err("open relative pinned directory")); }
++    if fd < 0 {
++        // Capture errno BEFORE the diagnostic fstat. Failure to observe the
++        // held base identity does not replace the original openat failure.
++        let error = io::Error::last_os_error();
++        return Err(Error::RelativeIo { name: name.to_owned(), flags: flags | libc::O_CLOEXEC,
++            base: FileId::of(base).ok(), error });
++    }
+     Ok(unsafe { File::from_raw_fd(fd) })
+ }
+ #[repr(C)]
+@@ -440,10 +456,10 @@
+     pub fn budget(&self) -> Budget { self.budget }
+     pub fn root_id(&self) -> FileId { self.root_id }
+     pub fn validate(&self) -> Result<()> {
+-        self.owner.live()?;
+-        self.init.live()?;
+-        self.owner_snapshot.matches(&self.owner)?;
+-        self.init_snapshot.matches(&self.init)?;
++        self.owner.live().map_err(|error| error.context("lifecycle owner liveness"))?;
++        self.init.live().map_err(|error| error.context("lifecycle init liveness"))?;
++        self.owner_snapshot.matches(&self.owner).map_err(|error| error.context("lifecycle owner identity"))?;
++        self.init_snapshot.matches(&self.init).map_err(|error| error.context("lifecycle init identity"))?;
+         if FileId::of(&self.root)? != self.root_id || Budget::read(&self.root)? != self.budget {
+             return Err(Error::Reject("cell cgroup generation or budget changed"));
+         }
+@@ -767,6 +783,105 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    struct RelativeIoDirectory(PathBuf);
++    impl RelativeIoDirectory {
++        fn create() -> Self {
++            use std::os::unix::fs::DirBuilderExt;
++            let mut nonce = [0u8; 8];
++            assert_eq!(unsafe { libc::getrandom(nonce.as_mut_ptr().cast(), nonce.len(), 0) }, nonce.len() as isize);
++            let path = std::env::temp_dir().join(format!("p4-relative-io-{}-{:016x}",
++                unsafe { libc::getpid() }, u64::from_le_bytes(nonce)));
++            fs::DirBuilder::new().mode(0o700).create(&path).unwrap();
++            Self(path)
++        }
++    }
++    impl Drop for RelativeIoDirectory {
++        fn drop(&mut self) { let _ = fs::remove_dir_all(&self.0); }
++    }
++    #[test]
++    fn missing_relative_entry_retains_real_errno_name_and_held_base() {
++        let directory = RelativeIoDirectory::create();
++        let base = open_dir(&directory.0).unwrap();
++        let expected = FileId::of(&base).unwrap();
++        let name = "absent\n\"entry";
++        let error = open_at(&base, name, libc::O_RDONLY | libc::O_NOFOLLOW).unwrap_err();
++        // A later failing syscall must not overwrite the retained open errno.
++        assert_eq!(unsafe { libc::close(-1) }, -1);
++        let message = error.to_string();
++        assert!(!message.contains('\n'));
++        assert!(message.contains("absent\\n\\\"entry"));
++        match error {
++            Error::RelativeIo { name: observed, flags, base, error } => {
++                assert_eq!(observed, name);
++                assert_eq!(flags, libc::O_RDONLY | libc::O_NOFOLLOW | libc::O_CLOEXEC);
++                assert_eq!(base, Some(expected));
++                assert_eq!(error.raw_os_error(), Some(libc::ENOENT));
++            }
++            other => panic!("unexpected error: {other}"),
++        }
++    }
++    #[test]
++    fn relative_error_does_not_follow_a_rejected_symlink() {
++        let directory = RelativeIoDirectory::create();
++        fs::write(directory.0.join("target"), b"owned unchanged target").unwrap();
++        std::os::unix::fs::symlink("target", directory.0.join("link")).unwrap();
++        let base = open_dir(&directory.0).unwrap();
++        match open_at(&base, "link", libc::O_RDONLY | libc::O_NOFOLLOW).unwrap_err() {
++            Error::RelativeIo { name, flags, base: observed, error } => {
++                assert_eq!(name, "link");
++                assert_eq!(flags, libc::O_RDONLY | libc::O_NOFOLLOW | libc::O_CLOEXEC);
++                assert_eq!(observed, Some(FileId::of(&base).unwrap()));
++                assert_eq!(error.raw_os_error(), Some(libc::ELOOP));
++            }
++            other => panic!("unexpected error: {other}"),
++        }
++        assert_eq!(fs::read(directory.0.join("target")).unwrap(), b"owned unchanged target");
++    }
++    struct RelativeIoChild(std::process::Child);
++    impl Drop for RelativeIoChild {
++        fn drop(&mut self) {
++            if self.0.try_wait().ok().flatten().is_none() { let _ = self.0.kill(); }
++            let _ = self.0.wait();
++        }
++    }
++    #[test]
++    fn exited_owned_child_retains_exact_proc_base_and_role_without_revival() {
++        use std::process::{Command, Stdio};
++        let mut child = RelativeIoChild(Command::new("/bin/cat").stdin(Stdio::piped())
++            .stdout(Stdio::null()).stderr(Stdio::null()).spawn().unwrap());
++        let pid = child.0.id() as libc::pid_t;
++        let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, pid, 0) };
++        assert!(raw >= 0);
++        let pidfd = unsafe { OwnedFd::from_raw_fd(raw as RawFd) };
++        let proc_dir = open_dir(&PathBuf::from(format!("/proc/{pid}"))).unwrap();
++        let proc_id = FileId::of(&proc_dir).unwrap();
++        let start = process_birth(&read_at(&proc_dir, "stat", MAX_PROC_BYTES).unwrap(), pid).unwrap();
++        let pin = ProcessPin { pid, pidfd, proc_dir, start };
++        pin.live().unwrap();
++        drop(child.0.stdin.take());
++        let deadline = Instant::now() + Duration::from_secs(2);
++        loop {
++            if let Some(status) = child.0.try_wait().unwrap() { assert!(status.success()); break; }
++            assert!(Instant::now() < deadline, "owned child did not exit within test bound");
++            thread::sleep(Duration::from_millis(1));
++        }
++        assert!(matches!(pin.live(), Err(Error::Reject("process generation is dead"))));
++        let error = open_at(&pin.proc_dir, "ns/mnt", libc::O_RDONLY).unwrap_err()
++            .context("lifecycle init identity");
++        assert!(error.to_string().starts_with("lifecycle init identity: open relative pinned directory"));
++        match error {
++            Error::Context("lifecycle init identity", inner) => match *inner {
++                Error::RelativeIo { name, base, error, .. } => {
++                    assert_eq!(name, "ns/mnt");
++                    assert_eq!(base, Some(proc_id));
++                    assert_eq!(error.raw_os_error(), Some(libc::ENOENT));
++                }
++                other => panic!("unexpected nested error: {other}"),
++            },
++            other => panic!("unexpected error: {other}"),
++        }
++        // No authenticate, replacement PID lookup, retry or namespace action.
++    }
+     #[test]
+     fn retirement_panic_cannot_be_retried_into_success() {
+         let raw = unsafe { libc::eventfd(0, libc::EFD_CLOEXEC | libc::EFD_NONBLOCK) }; assert!(raw >= 0);
+--- producer11/runtime/droidloom-pressure-relay/src/lifecycle_relay.rs
++++ producer13/runtime/droidloom-pressure-relay/src/lifecycle_relay.rs
+@@ -211,8 +211,8 @@
+     let outcome = (|| -> Result<()> {
+         loop {
+             if cancelled(cancel.as_raw_fd())? { return Ok(()); }
+-            host.validate_host_view()?;
+-            authority.validate()?;
++            host.validate_host_view().map_err(|error| error.context("relay service host view"))?;
++            authority.validate().map_err(|error| error.context("relay service authority"))?;
+             if let Some(grant) = pending.as_mut() {
+                 if grant.owner().is_retired() { return Err(Error::Reject("active PSI lease revoked")); }
+                 let mut descriptor = libc::pollfd { fd: cancel.as_raw_fd(), events: libc::POLLIN, revents: 0 };
+@@ -242,10 +242,12 @@
+             // Closing the listener also drops all queued unaccepted clients.
+             drop(listener.take());
+             phase.store(RelayPhase::Enrolling as u8, Ordering::Release);
+-            let grant = host.admit_enrollment(connection, Arc::clone(&authority), Duration::from_millis(1000))?;
++            let grant = host.admit_enrollment(connection, Arc::clone(&authority), Duration::from_millis(1000))
++                .map_err(|error| error.context("admit accepted LMKD peer"))?;
+             pending = Some(grant);  // retain ownership before another fallible call
+             if cancelled(cancel.as_raw_fd())? { return Ok(()); }
+-            pending.as_mut().expect("just stored pending grant").send_once(&host, &authority)?;
++            pending.as_mut().expect("just stored pending grant").send_once(&host, &authority)
++                .map_err(|error| error.context("send admitted LMKD grant"))?;
+             granted = true;
+             phase.store(RelayPhase::Active as u8, Ordering::Release);
+         }
+--- producer11/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs
++++ producer13/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs
+@@ -657,6 +657,7 @@
+     audit: Option<PressureAudit>,
+     retirement_requested: bool,
+     retirement_seen: bool,
++    retirement_poisoned: bool,
+     joined: bool,
+     retired: Arc<AtomicBool>,
+ }
+@@ -728,7 +729,8 @@
+         };
+         // No fallible operation between spawn and returning retained ownership.
+         Ok(Self { child, running: None, channel, executable, host, spec, layout, inputs: Some(inputs), attempted: false,
+-            ready: None, latest: None, audit: None, retirement_requested: false, retirement_seen: false, joined: false, retired })
++            ready: None, latest: None, audit: None, retirement_requested: false, retirement_seen: false,
++            retirement_poisoned: false, joined: false, retired })
+     }
+     pub fn pid(&self) -> u32 { self.child.id() }
+     pub fn latest_status(&self) -> Option<&BootstrapStatus> { self.latest.as_ref() }
+@@ -795,7 +797,7 @@
+     /// while init is still held in its constructor.
+     pub fn ready_for_init_commit(&self) -> Result<()> {
+         self.host.validate_current_thread()?;
+-        if !self.attempted || self.joined || self.retirement_requested || self.retirement_seen ||
++        if !self.attempted || self.joined || self.retirement_requested || self.retirement_seen || self.retirement_poisoned ||
+             self.latest.as_ref().is_none_or(|s| s.state != BootstrapState::Ready || s.faulted || s.granted) {
+             return Err(Error::Reject("broker no longer holds its initial READY"));
+         }
+@@ -865,29 +867,73 @@
+     /// both a valid joined-worker RETIRED packet AND reaping the exact broker.
+     /// This still does not certify that the old Android owner/init have died.
+     pub fn retire(&mut self, timeout: Duration) -> Result<bool> {
++        if self.retirement_poisoned { return Err(Error::Reject("broker retirement is poisoned; retain exact generation")); }
+         if self.joined { return Ok(true); }
+         if !self.attempted || self.ready.is_none() { return Err(Error::Reject("bootstrap incomplete; retain failed owner")); }
+         let deadline = Deadline::new(timeout)?;
+-        if !self.retirement_seen && !self.retirement_requested {
+-            self.retirement_requested = true;
+-            self.spec.request_retirement(unsafe { BorrowedFd::borrow_raw(self.channel.as_raw_fd()) }, timeout)?;
+-        }
+-        while !self.retirement_seen {
+-            let remaining = deadline.0.saturating_duration_since(Instant::now());
+-            if remaining < Duration::from_millis(1) { return Ok(false); }
+-            self.receive_progress(remaining)?;
+-        }
+-        loop {
+-            if let Some(exit) = self.child.try_wait().map_err(|e| io_err("reap exact lifecycle broker", e))? {
+-                let faulted = self.latest.as_ref().expect("retirement status").faulted;
+-                if exit.code() != Some(if faulted { 1 } else { 0 }) {
+-                    return Err(Error::Reject("broker exit disagrees with retirement receipt"));
++        let attempt = (|| -> Result<bool> {
++            let mut request_error = None;
++            if !self.retirement_seen && !self.retirement_requested {
++                // A broker can retire on its own error and close after writing its
++                // AUDIT/RETIRED pair. Drain actual input before trying to write to
++                // that closed peer; bare EOF still fails the unchanged receiver.
++                while !self.retirement_seen {
++                    if deadline.0.saturating_duration_since(Instant::now()) < Duration::from_millis(1) {
++                        return Ok(false);
++                    }
++                    let mut p = libc::pollfd { fd: self.channel.as_raw_fd(),
++                        events: libc::POLLIN | libc::POLLRDHUP, revents: 0 };
++                    if unsafe { libc::poll(&mut p, 1, 0) } < 0 {
++                        if io::Error::last_os_error().kind() == io::ErrorKind::Interrupted { continue; }
++                        return Err(err("poll retirement input"));
++                    }
++                    if p.revents & (libc::POLLIN | BAD) == 0 { break; }
++                    let remaining = deadline.0.saturating_duration_since(Instant::now());
++                    if remaining < Duration::from_millis(1) { return Ok(false); }
++                    // The existing terminal receiver decides whether data may
++                    // be drained with HUP/ERR; this poll supplies no evidence.
++                    self.receive_progress(remaining)?;
+                 }
+-                self.joined = true; self.retired.store(true, Ordering::Release); return Ok(true);
+-            }
+-            if Instant::now() >= deadline.0 { return Ok(false); }
+-            thread::sleep(Duration::from_millis(1));
+-        }
++                if !self.retirement_seen {
++                    let remaining = deadline.0.saturating_duration_since(Instant::now());
++                    if remaining < Duration::from_millis(1) { return Ok(false); }
++                    self.retirement_requested = true; // never replay the command
++                    request_error = self.spec.request_retirement(
++                        unsafe { BorrowedFd::borrow_raw(self.channel.as_raw_fd()) }, remaining).err();
++                }
++            }
++            let terminal = (|| -> Result<bool> {
++                // Close can also race the readiness check above. A failed send is
++                // not retirement evidence: only the same full receiver plus exact
++                // Child reap can discharge it. Otherwise keep that first error.
++                while !self.retirement_seen {
++                    let remaining = deadline.0.saturating_duration_since(Instant::now());
++                    if remaining < Duration::from_millis(1) { return Ok(false); }
++                    self.receive_progress(remaining)?;
++                }
++                loop {
++                    if let Some(exit) = self.child.try_wait().map_err(|e| io_err("reap exact lifecycle broker", e))? {
++                        let faulted = self.latest.as_ref().expect("retirement status").faulted;
++                        if exit.code() != Some(if faulted { 1 } else { 0 }) {
++                            return Err(Error::Reject("broker exit disagrees with retirement receipt"));
++                        }
++                        self.joined = true; self.retired.store(true, Ordering::Release); return Ok(true);
++                    }
++                    if Instant::now() >= deadline.0 { return Ok(false); }
++                    thread::sleep(Duration::from_millis(1));
++                }
++            })();
++            match (terminal, request_error) {
++                (Ok(true), _) => Ok(true),
++                (_, Some(error)) => Err(error),
++                (result, None) => result,
++            }
++        })();
++        // A malformed/failed retirement cannot be retried into a clean
++        // certificate by consuming a valid tail left after the first error.
++        // Ok(false) retains an unfinished wait and remains resumable.
++        if attempt.is_err() { self.retirement_poisoned = true; }
++        attempt
+     }
+     /// Only before ANY bootstrap send, stopping/reaping this exact child proves
+     /// there was no authority or PSI owner. After initialize starts, failures
+@@ -931,6 +977,223 @@
+             budget, granted: false, faulted: false, incomplete: false, registrations: RegistrationAudit::default(),
+             observations: 0, packets_queued: 0, stop_reason: 0, events: EventAuditTrail::default(), retired_monotonic_ns: 10 };
+         (audit, status)
++    }
++    // This is a post-READY transport/reap fixture, not bootstrap authority.
++    // Only this test module seeds READY. Production constructors, their
++    // leader-origin requirement and all sixteen-handle checks are unchanged.
++    // Python merely sends Rust-encoded frames on the inherited owned socket;
++    // it implements no alternate protocol decoder or qualification logic.
++    const RETIREMENT_PEER: &str = r#"
++import socket, sys
++raw = sys.stdin.buffer.read(32769)
++assert len(raw) <= 32768
++lines = raw.splitlines()
++assert len(lines) >= 3
++code = int(lines[0]); assert code in (0, 1)
++request = bytes.fromhex(lines[1].decode())
++hold = lines[2] == b'1'
++frames = [bytes.fromhex(line.decode()) for line in lines[3:]]
++assert len(sys.argv) == 3
++channel = socket.socket(fileno=int(sys.argv[1]))
++control = socket.socket(fileno=int(sys.argv[2]))
++assert channel.type == control.type == socket.SOCK_SEQPACKET
++channel.settimeout(2)
++control.settimeout(2)
++assert control.send(b'R') == 1
++assert control.recv(2) == b'G'
++if request:
++    assert channel.recv(len(request) + 1) == request
++for frame in frames:
++    assert channel.send(frame) == len(frame)
++if hold:
++    assert control.recv(2) == b'X'
++channel.close(); control.close()
++sys.exit(code)
++"#;
++    struct RetirementOwnedChild(Option<std::process::Child>);
++    impl Drop for RetirementOwnedChild {
++        fn drop(&mut self) {
++            if let Some(child) = self.0.as_mut() {
++                if child.try_wait().ok().flatten().is_none() { let _ = child.kill(); }
++                let _ = child.wait();
++            }
++        }
++    }
++    struct RetirementFixture { broker: LifecycleBroker, control: OwnedFd }
++    impl Drop for RetirementFixture {
++        fn drop(&mut self) {
++            if self.broker.child.try_wait().ok().flatten().is_none() { let _ = self.broker.child.kill(); }
++            let _ = self.broker.child.wait();
++        }
++    }
++    impl RetirementFixture {
++        fn wait_exact_exit_without_reaping(&self) {
++            let pin = self.broker.running.as_ref().unwrap();
++            let deadline = Instant::now() + Duration::from_secs(2);
++            loop {
++                let mut p = libc::pollfd { fd: pin.pidfd.as_raw_fd(), events: libc::POLLIN, revents: 0 };
++                let count = unsafe { libc::poll(&mut p, 1, 10) };
++                assert!(count >= 0);
++                if p.revents & libc::POLLIN != 0 { return; }
++                assert_eq!(p.revents, 0);
++                assert!(Instant::now() < deadline, "owned retirement peer failed to exit");
++            }
++        }
++        fn release_exit(&self) {
++            send_packet(self.control.as_raw_fd(), b"X", &[],
++                &mut Deadline::new(Duration::from_secs(1)).unwrap()).unwrap();
++        }
++    }
++    fn retirement_fixture(frames: Vec<Vec<u8>>, code: i32, wait_request: bool, hold: bool) -> RetirementFixture {
++        use std::io::{Seek, SeekFrom};
++        use std::os::unix::process::CommandExt;
++        use std::process::{Command, Stdio};
++        fn high(fd: RawFd) -> OwnedFd {
++            let value = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 64) };
++            assert!(value >= 0);
++            unsafe { OwnedFd::from_raw_fd(value) }
++        }
++        fn hex(data: &[u8]) -> String { data.iter().map(|v| format!("{v:02x}")).collect() }
++        let request = if wait_request {
++            let mut wire = [0; RETIRE_SIZE]; wire[..8].copy_from_slice(b"P4RET01!");
++            put(&mut wire, 8, 1, 4); wire[16..].copy_from_slice(&spec().nonce); hex(&wire)
++        } else { String::new() };
++        let mut input = format!("{code}\n{request}\n{}\n", u8::from(hold));
++        for frame in frames { input.push_str(&hex(&frame)); input.push('\n'); }
++        assert!(input.len() <= 32768);
++        let raw = unsafe { libc::memfd_create(c"owned-retirement-input".as_ptr(), libc::MFD_CLOEXEC | libc::MFD_ALLOW_SEALING) };
++        assert!(raw >= 0);
++        let mut input_file = unsafe { File::from_raw_fd(raw) };
++        input_file.write_all(input.as_bytes()).unwrap();
++        input_file.seek(SeekFrom::Start(0)).unwrap();
++        assert_eq!(unsafe { libc::fcntl(input_file.as_raw_fd(), libc::F_ADD_SEALS,
++            libc::F_SEAL_WRITE | libc::F_SEAL_GROW | libc::F_SEAL_SHRINK | libc::F_SEAL_SEAL) }, 0);
++        let (channel, peer) = sockets();
++        let (control, peer_control) = sockets();
++        let peer_high = high(peer.as_raw_fd()); let control_high = high(peer_control.as_raw_fd());
++        let image = File::open("/usr/bin/python3").unwrap();
++        let digest = executable_digest(&image).unwrap();
++        let executable = ExecutablePin::from_lifecycle(image, digest).unwrap();
++        let image_high = high(executable.file.as_raw_fd());
++        let source = peer_high.as_raw_fd(); let ctl = control_high.as_raw_fd();
++        let parent_pid = unsafe { libc::getpid() };
++        let mut command = Command::new(format!("/proc/self/fd/{}", image_high.as_raw_fd()));
++        command.args(["-I", "-B", "-c", RETIREMENT_PEER])
++            .arg(source.to_string()).arg(ctl.to_string()).stdin(Stdio::from(input_file))
++            .stdout(Stdio::null()).stderr(Stdio::null());
++        unsafe {
++            command.pre_exec(move || {
++                if libc::fcntl(source, libc::F_SETFD, 0) < 0 || libc::fcntl(ctl, libc::F_SETFD, 0) < 0 ||
++                    libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) < 0 {
++                    return Err(io::Error::last_os_error());
++                }
++                if libc::getppid() != parent_pid { return Err(io::Error::other("owned fixture parent changed")); }
++                Ok(())
++            });
++        }
++        let mut child = RetirementOwnedChild(Some(command.spawn().unwrap()));
++        drop(peer); drop(peer_control); drop(peer_high); drop(control_high); drop(image_high);
++        let (ready, rights) = receive_packet(control.as_raw_fd(), 1,
++            &mut Deadline::new(Duration::from_secs(2)).unwrap(), false).unwrap();
++        assert_eq!(ready, b"R"); assert!(rights.is_empty());
++        // Capture real host/proc/thread identities for the test object. This
++        // test-only assembly does not exercise/claim public leader-origin or
++        // successful bootstrap admission; retire never opens that barrier.
++        let proc_root = open_dir(Path::new("/proc")).unwrap();
++        let self_pid = unsafe { libc::getpid() };
++        let self_proc = open_at(&proc_root, &self_pid.to_string(), libc::O_RDONLY | libc::O_DIRECTORY | libc::O_NOFOLLOW).unwrap();
++        let self_birth = process_birth(&read_at(&self_proc, "stat", MAX_PROC_BYTES).unwrap(), self_pid).unwrap();
++        let host_namespaces = NamespacePins::capture(&self_proc).unwrap();
++        let host = HostContext { proc_root, cgroup_mount: open_dir(Path::new("/sys/fs/cgroup")).unwrap(),
++            self_proc, self_pid, self_birth, host_namespaces };
++        host.validate_current_thread().unwrap();
++        let running = host.pin_owned_child(child.0.as_mut().unwrap()).unwrap();
++        executable.matches(&open_at(&running.proc_dir, "exe", libc::O_RDONLY).unwrap(), true).unwrap();
++        let (_, mut ready) = empty_audit_and_status(); ready.state = BootstrapState::Ready;
++        let broker = LifecycleBroker { child: child.0.take().unwrap(), running: Some(running), channel,
++            executable, host, spec: spec(), layout: BootstrapLayout::HoldingLeafV3, inputs: None,
++            attempted: true, latest: Some(ready.clone()), ready: Some(ready), audit: None,
++            retirement_requested: false, retirement_seen: false, retirement_poisoned: false, joined: false,
++            retired: Arc::new(AtomicBool::new(false)) };
++        let fixture = RetirementFixture { broker, control };
++        send_packet(fixture.control.as_raw_fd(), b"G", &[],
++            &mut Deadline::new(Duration::from_secs(1)).unwrap()).unwrap();
++        fixture
++    }
++    #[test]
++    fn retirement_drains_owned_terminal_before_closed_peer_request() {
++        for faulted in [false, true] {
++            let (mut audit, mut status) = empty_audit_and_status();
++            audit.faulted = faulted; status.faulted = faulted;
++            let mut owned = retirement_fixture(vec![audit.encode().unwrap().to_vec(), status.encode().to_vec()],
++                if faulted { 1 } else { 0 }, false, false);
++            owned.wait_exact_exit_without_reaping();
++            // Preserve the real old send-first failure without changing the
++            // state of the broker: no RETIRE can be delivered to this peer.
++            assert!(owned.broker.spec.request_retirement(
++                unsafe { BorrowedFd::borrow_raw(owned.broker.channel.as_raw_fd()) }, MAX_LIFECYCLE_IO_TIMEOUT).is_err());
++            assert!(owned.broker.retire(MAX_LIFECYCLE_IO_TIMEOUT).unwrap());
++            assert!(!owned.broker.retirement_requested);
++            assert_eq!(owned.broker.latest_status(), Some(&status));
++            assert_eq!(owned.broker.pressure_audit(), Some(&audit));
++            assert!(owned.broker.retired.load(Ordering::Acquire));
++            assert!(owned.broker.retire(MAX_LIFECYCLE_IO_TIMEOUT).unwrap());
++        }
++    }
++    #[test]
++    fn retirement_live_owned_peer_receives_one_exact_request() {
++        let (audit, status) = empty_audit_and_status();
++        let mut owned = retirement_fixture(vec![audit.encode().unwrap().to_vec(), status.encode().to_vec()], 0, true, false);
++        assert!(owned.broker.retire(MAX_LIFECYCLE_IO_TIMEOUT).unwrap());
++        assert!(owned.broker.retirement_requested);
++        assert_eq!(owned.broker.pressure_audit(), Some(&audit));
++        assert_eq!(owned.broker.child.try_wait().unwrap().unwrap().code(), Some(0));
++    }
++    #[test]
++    fn retirement_does_not_promote_dead_unbound_or_incomplete_peer() {
++        let (audit, status) = empty_audit_and_status();
++        let audit_wire = audit.encode().unwrap().to_vec(); let status_wire = status.encode().to_vec();
++        let mut nonce = status.clone(); nonce.nonce[0] ^= 1;
++        let mut generation = audit.clone(); generation.authority_generation[0] ^= 1;
++        let mut scope = status.clone(); scope.cgroup.inode += 1;
++        let mut flags = status.clone(); flags.faulted = true;
++        let mut active = status.clone(); active.state = BootstrapState::Active; active.granted = true;
++        let cases = [
++            ("bare EOF and exact death", vec![], 0),
++            ("status without joined audit", vec![status_wire.clone()], 0),
++            ("audit without terminal", vec![audit_wire.clone()], 0),
++            ("wrong nonce", vec![audit_wire.clone(), nonce.encode().to_vec()], 0),
++            ("wrong generation", vec![generation.encode().unwrap().to_vec(), status_wire.clone()], 0),
++            ("wrong scope", vec![audit_wire.clone(), scope.encode().to_vec()], 0),
++            ("inconsistent flags", vec![audit_wire.clone(), flags.encode().to_vec()], 1),
++            ("replayed audit", vec![audit_wire.clone(), audit_wire.clone(), status_wire.clone()], 0),
++            ("ACTIVE only then death", vec![active.encode().to_vec()], 0),
++            ("exit disagrees with terminal", vec![audit_wire, status_wire], 1),
++        ];
++        for (label, frames, code) in cases {
++            let mut owned = retirement_fixture(frames, code, false, false);
++            owned.wait_exact_exit_without_reaping();
++            assert!(owned.broker.retire(MAX_LIFECYCLE_IO_TIMEOUT).is_err(), "{label}");
++            assert!(!owned.broker.retirement_complete(), "{label}");
++            assert!(owned.broker.pressure_audit().is_none(), "{label}");
++            assert!(!owned.broker.retired.load(Ordering::Acquire), "{label}");
++            assert!(owned.broker.retire(MAX_LIFECYCLE_IO_TIMEOUT).is_err(), "{label}: retry");
++            assert!(!owned.broker.retirement_complete(), "{label}: retry");
++        }
++    }
++    #[test]
++    fn retirement_terminal_alone_cannot_replace_exact_child_exit() {
++        let (audit, status) = empty_audit_and_status();
++        let mut owned = retirement_fixture(vec![audit.encode().unwrap().to_vec(), status.encode().to_vec()], 0, false, true);
++        assert_eq!(owned.broker.receive_progress(MAX_LIFECYCLE_IO_TIMEOUT).unwrap(), &status);
++        assert!(!owned.broker.retire(Duration::from_millis(100)).unwrap());
++        assert!(owned.broker.retirement_seen);
++        assert!(!owned.broker.retirement_complete());
++        assert!(owned.broker.pressure_audit().is_none());
++        assert!(!owned.broker.retired.load(Ordering::Acquire));
++        owned.release_exit();
++        assert!(owned.broker.retire(MAX_LIFECYCLE_IO_TIMEOUT).unwrap());
++        assert_eq!(owned.broker.pressure_audit(), Some(&audit));
+     }
+     #[test]
+     fn retirement_cause_diagnostic_preserves_specific_and_lifecycle_reasons() {

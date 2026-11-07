@@ -1,0 +1,33 @@
+--- a/android/manifest/m2-role-ingress-hal-provider-source-lock.json
++++ b/android/manifest/m2-role-ingress-hal-provider-source-lock.json
+@@ -2651,7 +2651,10 @@
+         "car-builtin-lib/src",
+         "car-builtin-lib/api",
+         "libs/car-internal-dep-lib/src",
+-        "teams"
++        "teams",
++        "cpp/vhal/client/src",
++        "cpp/vhal/client/include",
++        "cpp/car_binder_lib/largeParcelable/include"
+       ]
+     },
+     {
+@@ -2671,6 +2674,18 @@
+       "sparse_paths": [
+         "atest/proto"
+       ]
++    },
++    {
++      "path": "packages/modules/NeuralNetworks",
++      "name": "platform/packages/modules/NeuralNetworks",
++      "commit": "a44a9032ab9a8438c0e13aca765d6ee4edebba2c",
++      "purpose": "Exact Android 17 NNAPI type implementation and original defaults required by existing hardware neuralnetwork consumers",
++      "sparse_paths": [
++        "common/types/src",
++        "common/types/include",
++        "common/types/operations/src",
++        "common/types/operations/include"
++      ]
+     }
+   ]
+ }

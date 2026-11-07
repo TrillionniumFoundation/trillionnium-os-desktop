@@ -1,0 +1,46 @@
+{
+  "candidate_findings": [
+    "Before each attempted Session.sequence, run records the previous observation object. Failed attribution now requires a non-null new object by identity; the input also requires input_sequence_started.",
+    "A prior course/open guard failure cannot attribute an older sequence as a new input. An installed-before failure that leaves the old object untouched cannot attribute it to either current sequence.",
+    "prior.remember remains in both exception paths. The first exception remains primary, the independent inspect still runs exactly once after an attempted input, and it cannot turn the input failure into success.",
+    "Only run changes at top-level function AST. Successful proof/installed/scope gates, fixed plans, single input, independent final inspect and outcome predicate are unchanged by this delta."
+  ],
+  "confirmed_original_gap": "On an installed-before failure, Session may retain its prior sequence_observation object. The original exception handler attributed that old object to the failed input and again to the independent read. The aggregate already failed; this was not an aggregate false PASS.",
+  "inputs": {
+    "candidate": {
+      "bytes": 10981,
+      "path": "/workspace/scratch/94990735b266/android-bili-r6-reveal-controls-work01/controls_reveal.py",
+      "sha256": "8836a366f995f07470210c1ab2d6e25e265572bc1c8aed3685f30a94cf7c8a9b"
+    },
+    "patch": {
+      "bytes": 2869,
+      "path": "/workspace/scratch/94990735b266/android-bili-r6-reveal-controls-work01/observation-attribution-01-to02.patch",
+      "sha256": "6f1ca063be55aacce0f53e160fd609439a836e003848e6ffee515d3aac0b004e"
+    },
+    "preimage": {
+      "bytes": 10600,
+      "path": "/workspace/scratch/94990735b266/android-bili-r6-reveal-controls-work01/controls_reveal-preimage-01.py",
+      "sha256": "58c16c4b70d13a9e6d32a047f8b4da7484ef702a6629deeab1757a7c760d1ce5"
+    }
+  },
+  "limitations": [
+    "No actual Android/UI success is inferred. Current helper UID/artifact qualification is a separate authority.",
+    "Object-identity attribution depends on the existing Session publishing a new observation object; this review does not replace its complete protocol gates."
+  ],
+  "publication_owner": "android_acceptance; Native must not duplicate-map this peer report",
+  "reviewer": "native_bridge_repair",
+  "schema": 1,
+  "scope": "Read original controls_reveal run and exact 2869-byte attribution patch; no Java or installed helper execution. Prior complete original source review is preserved as a gap, not retroactively green.",
+  "state": "NO_NEW_BLOCKER_IN_DIAGNOSTIC_ATTRIBUTION_DELTA",
+  "verification": {
+    "Hepta_calls": 0,
+    "author_reported_11_controls_not_independently_rerun": true,
+    "changed_top_level_functions": [
+      "run"
+    ],
+    "controls_executed_by_this_reviewer": false,
+    "device_actions": 0,
+    "exact_full_diff": true,
+    "three_file_size_sha256": true
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "actual01_failure": {
+    "authority": "Parent Root report; immutable original not yet supplied to this agent",
+    "independently_read": false,
+    "job_id": "1a1b163427a-fc05-7836",
+    "raw_blob": null,
+    "raw_sha256": null,
+    "reported_children": 0,
+    "reported_complete_input_bytes": 0,
+    "reported_elapsed_seconds": 0.000182535,
+    "reported_first_error": "RuntimeError('self metadata bound')",
+    "reported_input_count": 0,
+    "reported_self_metadata_FDs_closed": 2,
+    "reported_writes": 0,
+    "stdout_bytes": 913
+  },
+  "baseline": {
+    "prefix": "marriott-arm64-apk-input-read01",
+    "request": {
+      "bytes": 21456,
+      "git_blob_sha": "a7e4737fb0677c0246f14b5dec0372588852e384",
+      "sha256": "6a3744d5347129eabb3fc2cd7b34f4cfa777782aa9b56e937d328d3fd07e9fbe"
+    },
+    "retained_unchanged": true,
+    "source": {
+      "bytes": 20496,
+      "git_blob_sha": "0198e8c09711f82ae55f4b77030838ffdd20d86e",
+      "sha256": "7f85b55a5f13865f0324f72845d4d0d3709760875773e3546f62f943b14826ca"
+    },
+    "tree": "6a0300229fa11a8ca45d0dea8b8bf12771928c63"
+  },
+  "correction": {
+    "additional_identity_literal": "KIND read01 to read02",
+    "behavior": "Read in at most 8192-byte chunks to EOF; on every iteration check the existing phase deadline. Read at most one byte beyond the unchanged limit and fail before retaining excess data.",
+    "decoding_unchanged": true,
+    "finally_close_unchanged": true,
+    "functions": [
+      "small_self",
+      "at_text"
+    ],
+    "key": "p4-marriott-arm64-apk-input-read02-2eef8c4ba06d762a",
+    "reason": "A procfs read may return fewer bytes than remain. One read followed by a one-byte EOF probe rejected a valid short read.",
+    "unchanged_at_text_maximum": 32768,
+    "unchanged_error_messages": [
+      "self metadata bound",
+      "resource leaf bound"
+    ],
+    "unchanged_small_self_maximum": 262144
+  },
+  "kind": "p4-marriott-arm64-apk-input-read02-source-review",
+  "provenance_note": "The original read01 package and failure remain historical. This successor does not claim the thirteen inputs were observed by read01 or are qualified by a source-only correction.",
+  "status": "SOURCE_ONLY_NOT_EXECUTED",
+  "unchanged": {
+    "CPU_percent": 100,
+    "Main_Android_source_execution_children_writes_network_directory_scans": false,
+    "all_NOFOLLOW_paths": true,
+    "all_original_byte_bounds": true,
+    "args": [
+      "-I",
+      "-B",
+      "-"
+    ],
+    "control_seconds": 45,
+    "first_three_anchors": true,
+    "fixed_input_count": 13,
+    "held_named_metadata_and_hash_checks": true,
+    "input_literal_exact": true,
+    "memory_bytes": 268435456,
+    "nice": 15,
+    "other_function_count": 15,
+    "outer_seconds": 60,
+    "own_cgroup_resources_and_FD_finalization": true,
+    "two_full_input_reads": true,
+    "work_seconds": 40
+  },
+  "validation": {
+    "Hepta_called": false,
+    "additional_test_framework_created": false,
+    "changed_functions": [
+      "small_self",
+      "at_text"
+    ],
+    "functions_total": 17,
+    "generator": {
+      "bytes": 596,
+      "git_blob_sha": "a567c2bee5e9f76ad4ff5553069f99c532f3d4dd",
+      "sha256": "4ca8b04985ba58f3d11c3fe2c8a1ec3c463d4619fbb617a32d70fea5cb01076e"
+    },
+    "inputs_line_byte_identical": true,
+    "local_python_syntax_or_controls_executed": false,
+    "new_input_qualification": false,
+    "new_runtime_qualification": false,
+    "old_request_serializer_exact": true,
+    "python_execution_performed": false,
+    "request": {
+      "bytes": 21821,
+      "git_blob_sha": "7310c14a1146785aae84f4468222af81a103c170",
+      "sha256": "afff78566eb719c0111d23777d1c350d107f5ce0059577364c76c517b39bc2e9"
+    },
+    "request_changed_fields": [
+      "stdin",
+      "idempotency_key"
+    ],
+    "reverse_diff_reconstructs_baseline": true,
+    "source": {
+      "bytes": 20847,
+      "git_blob_sha": "b480154ec235f538d2e0b34f41d2421b1f257260",
+      "sha256": "2eef8c4ba06d762a3f3a09796d54e81da43deae4691ab4afa7713ad5b987f390"
+    },
+    "source_diff": {
+      "bytes": 5688,
+      "git_blob_sha": "9c068d5bbf7985060470e082ed2bc444fabf49ed",
+      "sha256": "c8c3a336c866a32002777067c270dcd25e2d81ca49f55bba2eaf642a350ddba6"
+    },
+    "source_diff_reconstructed_exact": true,
+    "source_kind_01_to_02_only_additional_literal": true
+  }
+}

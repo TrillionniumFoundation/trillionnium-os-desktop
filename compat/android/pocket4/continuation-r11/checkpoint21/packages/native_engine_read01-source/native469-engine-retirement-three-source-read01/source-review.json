@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_UNRUN",
+  "scope": "exact public engine entrypoint / client handshake / crate manifest from completed builder469; source-only",
+  "input_authority": {
+    "source_root": "/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106/builder-source",
+    "manifest": {
+      "role": "manifest",
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106/attempt01/copied-builder-source-manifest.json",
+      "bytes": 99327,
+      "sha256": "88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701",
+      "mode": 384,
+      "git_blob": "d2a3b1303336aeb7e8849ebb1bbf459a321ced8a"
+    },
+    "producer": {
+      "role": "producer",
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106/attempt01/result.json",
+      "bytes": 170316,
+      "sha256": "3636057b9a20fc895657064da3fb66d8ded7e69ebfa5a5b92072a51b33f29fd5",
+      "mode": 384,
+      "git_blob": "c3967c039a9e450b36cf597cd3a1fc5823b0508c"
+    }
+  },
+  "fixed_files": [
+    {
+      "path": "graphics/droidloom-wayland/src/main.rs",
+      "bytes": 106816,
+      "kind": "file",
+      "mode": 436,
+      "sha256": "908ec80b8ec2d059b86664cb76d6fe39908c17ba1fa33416e37644416e73357a"
+    },
+    {
+      "path": "graphics/droidloom-composer-service/src/main.rs",
+      "bytes": 17437,
+      "kind": "file",
+      "mode": 436,
+      "sha256": "d60ba608023be4325e14e9126c326203188e78d2a7b715b65ba2588dd4cdb6cf"
+    },
+    {
+      "path": "graphics/droidloom-wayland/Cargo.toml",
+      "bytes": 1766,
+      "kind": "file",
+      "mode": 436,
+      "sha256": "f369e41d8c86c0b948992d2d07ab8fbdaf3779bd21493e3389730c51a33ea098"
+    }
+  ],
+  "operation_boundary": {
+    "filesystem_reads": "exact five selected regular leaves plus direct ancestors held with dirfd/O_NOFOLLOW; no enumeration",
+    "output": "plain JSON; full UTF-8 text only for two fixed public Rust entrypoints and one Cargo.toml; authorities emit identity and hash only",
+    "source_bytes": 126019,
+    "authority_bytes": 269643,
+    "explicit_FD_limit": 40,
+    "selected_leaf_uid": 1000,
+    "selected_leaf_gid": 1000,
+    "selected_leaf_nlink": 1,
+    "selected_source_mode": "0664",
+    "selected_authority_mode": "0600",
+    "directory_binding": "device/inode/type+mode/uid/gid equal; full metadata recorded but unrelated sibling directory timestamp/link-count changes are not source replacement",
+    "selected_leaf_binding": "full metadata, EOF, bytes, SHA256, held/named final equality",
+    "self_deadline_seconds_after_stdlib_imports": 8,
+    "tool_timeout_seconds": 15,
+    "cpu_percent": 25,
+    "memory_bytes": 134217728,
+    "output_bytes": 2097152,
+    "filesystem_mutations": false,
+    "children": false,
+    "signals": false,
+    "network": false,
+    "Main": false,
+    "source_execution": false,
+    "raw_UI": false
+  },
+  "checks": {
+    "manifest_matches": true,
+    "manifest_499": true,
+    "producer_matches": true,
+    "producer_PASS": true,
+    "all_three_row_equal": true,
+    "no_source_NUL": true,
+    "request_source_exact": true,
+    "request_under_1MiB": true,
+    "python_executed": false,
+    "device_read": false,
+    "source_inverse_to_actual_reader": true,
+    "source_edits": 4,
+    "authorities_unchanged": true,
+    "all_reader_functions_unchanged": true,
+    "resource_profile_unchanged": true
+  },
+  "completion": "PASS only after both pinned authorities, all three original bodies, final held/named bindings, and every explicit acquired FD closed. Any source/hash/deadline/close failure remains FAIL and no retry.",
+  "protocol_gap": "Actual protocol/IPC/endpoint sources have no remote Destroy completion ACK. These fixed engine and client entrypoints locate real window/in-flight completion and handshake negotiation before implementing object+retirement nonce acknowledgement. Neither sendmsg success nor EndpointAction::DestroyTask qualifies remote retirement.",
+  "limits": [
+    "No Python syntax/control execution performed in unavailable local environment.",
+    "The stdlib interpreter/runtime owns additional descriptors outside the explicit read journal; no process-wide FD closure claim.",
+    "This reader is source collection only and makes no native library, protocol runtime, Main, Soong, or app readiness claim."
+  ],
+  "baseline": {
+    "source": {
+      "bytes": 10860,
+      "sha256": "ac1953a8c1f6f466ba2ae5b29c08779cd906ed236e525f3108db8481e3705d5a",
+      "git_blob_sha1": "47d3cbb3959be24ff15424c48b6c4e9a6cd16803"
+    },
+    "request": {
+      "bytes": 11521,
+      "sha256": "1579bb5283fdf57e9f93c95039ee08a879988b581d0e19becd11b6d6497d31f5",
+      "git_blob_sha1": "ecc43e5458f315e1294b47c3f3a039d4ba259265"
+    },
+    "source_tree": "5c98d07be059bf38fb42ec98244cbcbf1ff363dd",
+    "actual_tree": "242b214860a7e6689e3e4e3e3404e5c09872125f",
+    "actual_reader_job": "1a1b0c508a9-fc05-72bb",
+    "actual_collection_complete": true
+  },
+  "diff": {
+    "bytes": 2891,
+    "sha256": "425204e657c83249466b07e3143ecc7c99107ed3eff0acc02dac3ed03f5b443e",
+    "git_blob_sha1": "d3a305fa986f641ccf06a09d4b596c10f8aa47ed"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "IPC": 7,
+  "actual_new_diagnostic_tests_each_observed_ok": [
+    "retirement_cause_diagnostic_preserves_specific_and_lifecycle_reasons",
+    "retirement_cause_diagnostic_healthy_is_silent",
+    "retirement_cause_diagnostic_encodes_raw_utf8_once",
+    "retirement_cause_diagnostic_broken_owned_socket_preserves_outcome"
+  ],
+  "all_32_sources_match_and_stable": true,
+  "all_7_commands_rc0_no_timeout": true,
+  "compile_sha256": "a120890b2edeb1bf1adbe150f064987c55661420ac4021dc4d7ac9b023ad6ca6",
+  "each_actual_held_ELF_matches_compiled_artifact": true,
+  "entry_ABI3": true,
+  "full_owner_runtime_qualified": false,
+  "ordinary_sha256": "367d08420a9a3d9e50f6c5dd342946c9c43ed122330ac85a7d3e2528192fa427",
+  "resource": {
+    "memory_events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "observed_swap_current_peak": [
+      0,
+      0
+    ],
+    "own_gate_passed": true,
+    "peak_bytes": 54370304,
+    "swap_limit": "max",
+    "whole_invocation_resource_qualified": false
+  },
+  "result": "MATCHING_COMPILE_AND_ORDINARY_PASS_VERIFIED",
+  "review_executed_device_actions": false,
+  "schema": 1,
+  "targeted": [
+    {
+      "failed": 0,
+      "filtered_out": 29,
+      "ignored": 0,
+      "measured": 0,
+      "name": "lifecycle_bootstrap::tests::producer05_three_second_retirement_is_rejected_before_transport",
+      "passed": 1
+    },
+    {
+      "failed": 0,
+      "filtered_out": 29,
+      "ignored": 0,
+      "measured": 0,
+      "name": "lifecycle_bootstrap::tests::shared_retirement_bound_sends_exact_request_and_receives_terminal_ack",
+      "passed": 1
+    }
+  ],
+  "tests": {
+    "droidloom-pressure-relay": 30,
+    "droidloom-supervisor": 122
+  },
+  "worker_context": true
+}

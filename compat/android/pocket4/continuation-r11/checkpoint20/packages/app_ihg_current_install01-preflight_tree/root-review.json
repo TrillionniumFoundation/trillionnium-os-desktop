@@ -1,0 +1,73 @@
+{
+  "schema": "pocket4-root-current-app-install-preflight-v1",
+  "app": "ihg",
+  "source_tree": "9ef0b51ede881f2cbe745d8c87c5b0237c87a25f",
+  "request": {
+    "bytes": 140447,
+    "sha256": "c66e811742c9c6604721c9fc7258f53cb90556d4075381cbee86dcff9e98fef9",
+    "git_blob_sha1": "f6d6434ee0897ab198a1a83b09548470e67c7f0f"
+  },
+  "source_manifest": {
+    "bytes": 2236,
+    "sha256": "9a4033b743648edb44859ba1d64d7626fb1c237cd4aedcf18126a6bba4862a40",
+    "git_blob_sha1": "ecf50417638b47740283b4be463320f26b8919bf"
+  },
+  "generation_proof": {
+    "source_tree": "9ef0b51ede881f2cbe745d8c87c5b0237c87a25f",
+    "all21GitLeavesVerified": true,
+    "five_original_files_strict_inverse_CP19": true,
+    "all13_runtime_payloads_regenerated_byte_exact": true,
+    "request_structurally_exact": true,
+    "stdin_byte_exact": true,
+    "Root_actual_materials_exact": true,
+    "pure_Python_controls_not_executed": true,
+    "compiler_only_fixes": [
+      {
+        "before": "JSON.stringify(build.tools_before)===JSON.stringify(build.tools_after)",
+        "after": "canonical(build.tools_before)===canonical(build.tools_after)"
+      },
+      {
+        "before": "previous_helper_uid_exclusion:materials.previous_helper,",
+        "after": "previous_helper_uid_exclusion:{uid:materials.previous_helper.uid,actual_worker_result:materials.previous_helper.actual_worker_result,source:materials.previous_helper.source},"
+      }
+    ],
+    "first_reproduction_discrepancy": "Only previous-helper object member serialization order changed INPUTS and SOURCE_PINS; canonical INPUTS values identical. Fixed by explicit original field order without data changes.",
+    "Root_compiler": {
+      "bytes": 22566,
+      "sha256": "53ac224d8513545deb94aae338703cfd859d6e34556d9f22f66a2e25f150daff"
+    },
+    "helper_uid": null,
+    "whole_app_production_ready": false,
+    "full_new_functional_bodies_context_stage_controls_and_compiler_read": true,
+    "unchanged_historical_source_proved_by_inverse_and_CP19_ledger": true
+  },
+  "actual_build_tree": "186232efcb00de14b0595f3a1d28e1109008178d",
+  "actual_host_stage_tree": "5741709dcd26d5ae70834973ad454dfb3f9387e6",
+  "actual_nonce_tree": "e7eb674f3f068cc82ce75c243f22af0096708991",
+  "runtime_scope": {
+    "helper_package": "org.droidloom.qa.ihg.r2",
+    "helper_UID_until_actual": null,
+    "target_package": "com.ihg.apps.android",
+    "target_UID": 10137,
+    "ordered_Android_commands": 13,
+    "source_pure_controls": 33,
+    "source_pure_controls_executed_before_dispatch": false,
+    "typed_target_scope_constructor": true,
+    "held_target_UID_and_user_user_de_directory_guards": true,
+    "original_APK_count": 1,
+    "original_held_APK_streaming_before_after_and_failure_revalidation_retained": true,
+    "all_users_absence_required": true,
+    "single_install_without_replace": true,
+    "automatic_retry": false,
+    "old_Bili_scope_rejected": true,
+    "Bili_Flow_or_MainBinding_instantiated": false,
+    "UiAutomation": false,
+    "UI_actions": 0,
+    "App_launches": 0,
+    "audio_actions": 0,
+    "commercial_data_writes": 0,
+    "coordinator_guarantee": "direct owned child join only"
+  },
+  "whole_process_tree_cleanup_qualified": false,
+  "whole_app_production_ready": false
+}

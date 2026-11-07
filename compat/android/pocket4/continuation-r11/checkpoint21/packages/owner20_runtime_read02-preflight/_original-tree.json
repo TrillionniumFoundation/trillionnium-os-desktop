@@ -1,0 +1,64 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "22774c1be7ae6e43d7d0c113b109f840376585df",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 1739,
+    "sha256": "dcdaa905a451265f2d1642f4d16391fb7f440a00b2f6a7b9e4f3adebb4c8fd92",
+    "git_blob_sha1": "584d40288fe1d1ed09f2a102e06f1392e11b6c9b",
+    "retrieval": "shallow_complete_root_with_catalogued_dependencies",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "exact-request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2b8d08bf663dae2c22c3a0e75b18dd2420c0e8bc",
+      "bytes": 5558
+    },
+    {
+      "path": "read.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dc8da2de23db4d72ff5f4bd362eeb49ed772d113",
+      "bytes": 5089
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4aef993191832abdab04452b20c8126d710455da",
+      "bytes": 910
+    },
+    {
+      "path": "runtime-status.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d18728ddf27445a131d4e1ed372b691e3908c3f3",
+      "bytes": 726
+    },
+    {
+      "path": "runtime-stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "87262c489f2f79ed0f1adf36db6cd183770d171e",
+      "bytes": 516
+    },
+    {
+      "path": "runtime_admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "649d42321bf01f9b068e2d46818385206b07b6f0"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "runtime_admission",
+      "original_tree": "649d42321bf01f9b068e2d46818385206b07b6f0",
+      "checkpoint": 21,
+      "canonical_package": "owner20_normal_runtime02-admission"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

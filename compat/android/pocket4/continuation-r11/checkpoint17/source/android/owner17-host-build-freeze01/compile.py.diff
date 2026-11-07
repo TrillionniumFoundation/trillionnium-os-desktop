@@ -1,0 +1,82 @@
+--- actual-host16/compile.py
++++ candidate-host17/compile.py
+@@ -10,10 +10,10 @@
+ import time
+ import traceback
+ 
+-CONTROL_REVISION = 'producer16-bounded-init-log01'
+-BASE = Path('/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01')
++CONTROL_REVISION = 'producer17-owned-bootstrap-modes01'
++BASE = Path('/home/alex/work/pocket4-supervisor-lmkd-init-log-r11-build-16-02')
+ SOURCE = BASE / "candidate"
+-OUT = Path('/home/alex/work/pocket4-supervisor-lmkd-init-log-r11-build-16-02')
++OUT = Path('/home/alex/work/pocket4-supervisor-lmkd-bootstrap-mode-r11-build-17-01')
+ CANDIDATE = OUT / "candidate"
+ TARGET = OUT / "target"
+ CARGO = '/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo'
+@@ -26,17 +26,11 @@
+ DIRECT_TOOL_ACTUAL_BUILD_SHA = '2d6c80a29e957b1e97764d8785257eb47c3d0b899f301e64c9a9c418e96ea0ab'
+ 
+ PRIOR_RECEIPT = BASE / "compile-result.json"
+-PRIOR_RECEIPT_SHA = '3327495b8cc3302dcc18ac72a7495f88d3354788404d2b05d1194d1e6e89ee30'
+-PRIOR_INVENTORY_SHA = 'acd7a623dc28f83363d67aec1d4befe64c85cf852fa564312783005abc7a05b8'
+-ORIGINAL_DIFF_SHA = 'cf5ba26e0f3efe86b6eec6ed140c8688df4ebc24f043dbdee4a07b94239744ef'
+-EXACT_OVERLAY = {
+-    'runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs': (34440, '7322b9a314d2431af687350dc133b40f25dc244931b2a28d25cf50a4bbcc32a4'),
+-    'runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs': (31106, 'c821e6c62906c9f4d4f27c22781f7521518f715588ca3be791055d32fbed174f'),
+-    'runtime/droidloom-supervisor/src/relay_lifecycle/init_log.rs': (15994, 'bd376b6b334776c25ec1276acb4c0232d00baaf80c6051e10ec2da75f7100ac2'),
+-    'runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs': (357, '2807edf9538722a11909c2702770f24624343429e18fe53db70db82f6dfad1be'),
+-    'runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs': (41593, '5e00ba0a96de8c972663f6293e214f670b44699cdb6102c167e2508b2967fb32'),
+-}
+-NEW_SOURCE_FILES = {'runtime/droidloom-supervisor/src/relay_lifecycle/init_log.rs'}
++PRIOR_RECEIPT_SHA = 'dad36fe9fd79aa782bcc255e74b8cc1b1ee241a341318e179ccaa9e7f1c785ea'
++PRIOR_INVENTORY_SHA = 'a4b00fa3bf905ed6410cc2a3ca439ff81536de5c36ccedffefd87baa11dedbd9'
++ORIGINAL_DIFF_SHA = 'd49f18ca661b98af69b5f7abbb8b06f959bd0d02fc42a84fa3d3a46668d09068'
++EXACT_OVERLAY = {'runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs': (37570, 'fa8a4d2c6ddc6508f3527a4711566402b7d0ad51339e42aca3c3d9395615d080')}
++NEW_SOURCE_FILES = set()
+ BINARIES = ["droidloomd", "droidloom-supervisor", "droidloom-psi-owner", "owned-ipc-controls"]
+ EXPECTED_TEST_TARGETS = {
+     ("droidloom_pressure_relay", "lib"),
+@@ -273,9 +267,9 @@
+          "wrong recovery payload revision")
+     need(cfg["original_diff_sha256"] == ORIGINAL_DIFF_SHA and
+          cfg["source_manifest_sha256"] ==
+-         "c5afbb0a61653f5fa554ef42cd68f77e71a38893b229151d2b685b5e2d032050",
++         'dca55eadb80fe20905f4aadc2420ac89406fb9c019bea97a73e67526b408a845',
+          "wrong recovered source lineage")
+-    need(len(cfg["preimage"]) == 32 and
++    need(len(cfg["preimage"]) == 33 and
+          set(cfg["overlays"]) == set(EXACT_OVERLAY) and
+          set(cfg["overlays"]) - set(cfg["preimage"]) == NEW_SOURCE_FILES and
+          len(set(cfg["preimage"]) | set(cfg["overlays"])) == 33, "wrong input/overlay set")
+@@ -637,17 +631,17 @@
+         put(OUT / "payload.json", json_bytes(cfg))
+         report["payload_sha256"] = sha(json_bytes(cfg))
+         prior_raw = read_regular(PRIOR_RECEIPT, 128 * 1024)
+-        need(sha(prior_raw) == PRIOR_RECEIPT_SHA, "actual producer15 namespace child exit01 receipt hash differs")
++        need(sha(prior_raw) == PRIOR_RECEIPT_SHA, "actual producer16 bounded init log01 receipt hash differs")
+         prior = json.loads(prior_raw)
+         need(prior["success"] is True and prior["compile_only"] is True and
+-             prior["revision"] == "producer15-namespace-child-exit01" and
++             prior["revision"] == "producer16-bounded-init-log01" and
+              prior["candidate"] == str(SOURCE) and
+              prior["inputs_before"] == cfg["preimage"] and
+              prior["inputs_after"] == cfg["preimage"] and
+              prior["all_source_inventory_before_sha256"] == PRIOR_INVENTORY_SHA and
+              prior["all_source_inventory_after_sha256"] == PRIOR_INVENTORY_SHA,
+-             "actual producer15 namespace child exit01 receipt/source binding differs")
+-        put(OUT / "producer15-namespace-child-exit01-actual-compile-result.json", prior_raw)
++             "actual producer16 bounded init log01 receipt/source binding differs")
++        put(OUT / "producer16-bounded-init-log01-actual-compile-result.json", prior_raw)
+         report["prior_build_receipt_sha256"] = PRIOR_RECEIPT_SHA
+         report["preimage_inputs"] = inputs(SOURCE, cfg["preimage"])
+         baseline = all_source(SOURCE)
+@@ -766,7 +760,7 @@
+         original_after = all_source(SOURCE)
+         report["original_source_inventory_after_sha256"] = sha(original_after)
+         need(original_after == baseline, "original source changed during compile")
+-        need(report["inputs_before"] == report["inputs_after"], "32 inputs changed during compile")
++        need(report["inputs_before"] == report["inputs_after"], "33 inputs changed during compile")
+         report["success"] = True
+     except Exception as failure:
+         report["error"] = type(failure).__name__ + ": " + str(failure)

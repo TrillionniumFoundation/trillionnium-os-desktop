@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "scope": "Independent root review of r20 Bionic statfs compatibility fix in the exact Android ELF",
+  "source_pins_sha256": "6e6c806a9560b34435a937ae8d9dab241f3139f63106f93da108b06dc0584cbb",
+  "build_result_sha256": "09a8a5ab25c897405b70bebdeb6c75c98d94ec9124365fdb51956b35df96db43",
+  "apk_sha256": "c056d2c116abc0bca4ec6606defb6810ba53d960fd6164a0595cac9cc8ed06f0",
+  "elf_sha256": "c9ca14dff8e337e05dcf45fc3068cc8d8fe07a4acdc7080f30da206612604acc",
+  "audit_receipt_sha256": "4db3d1736597844dfeccf09646591db92201dece70b2231d769ac8f2b08cee33",
+  "worker_audit_sha256": "74256faa7106d0ad05d750aa16ceb7012e6d78ea5a6c0afcb36e1d6fa7d9eecc",
+  "core_patch_sha256": "c177db8704754ecc47bfba83293f255862e6e36df5bb6d36053964bd5c6f0344",
+  "bionic_reference_sha256": "6c5bcca8eaa973bb826a0f2892f1de1ae019f10e743cc626929d51a790e0b2c7",
+  "source_and_elf_read_receipt": {
+    "path": "/home/alex/work/pocket4-owned-fd-capability-r20-root-review-01/actual-source-and-elf-read.json",
+    "bytes": 17558,
+    "sha256": "ec56180d572df6db5247e6dc794f56a3108b23d4f5639bb407bbc07e315d966a"
+  },
+  "entry_disassembly_sha256": "f8bc000748d1f25fd43e31275fb4f4f934d699acfe485424dbcb312f105acec3",
+  "read_publication_disassembly_sha256": "74289dbfb77c1f8439b7c2baeaa194c8a768b775bd9f8a975441f8315d01e2cd",
+  "entry_qualification_sha256": "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3",
+  "actual_build_and_elf_audit_terminal": {
+    "at_unix_ms": 1793816370582,
+    "audit_recorded": true,
+    "automatic_retry": false,
+    "cancelled": false,
+    "exit_code": 0,
+    "job_id": "1a1a7c98296-fc05-2c8b",
+    "launch_nonce": "2bbeeec21dd5c7353d6ef225d9fe4fc0",
+    "log_bytes": {
+      "stderr": {
+        "seen": 0,
+        "stored": 0
+      },
+      "stdout": {
+        "seen": 3200,
+        "stored": 3200
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_synced": {
+      "stderr": true,
+      "stdout": true
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
+  },
+  "findings": [
+    "Core delta preserves all original guards. It clears only kernel-private ST_VALID (0x0020), only under __BIONIC__, after successful Read and before publishing the Snapshot; errno restoration and error returns remain unchanged.",
+    "The exact Android Read contains the negative-result branch at 0x4c5d, byte AND with -0x21 at 0x4c63, then copies the complete 0x1ad8-byte Snapshot at 0x4c7a. Other flag bits are preserved.",
+    "Start at 0x36e0 has one clone call at 0x3a6a to trampoline 0x3450, Worker 0x3fa0, null context, flags 0x350900, parent/clear-tid address 0x260d4.",
+    "The entire trampoline uses the aligned private stack and clone/exit syscall sites. Actual audited worker closure remains only Worker, ReadContext and SameContext.",
+    "R19's ten actual failures all differed only in f_flags (native 0 versus raw 32). R20 keeps the same metadata test source and comparisons."
+  ],
+  "owned_android_probe_admissible": true,
+  "actual_android_probe_executed": false,
+  "candidate_production_ready": false,
+  "limitations": [
+    "Known NOFILE0 EMFILE remains an expected production red.",
+    "Trusted root-factory/O_PATH-positive coverage and installed ART/engine lifecycle qualification remain open.",
+    "The held entry helper is qualified only for namespace entry; exact package and process cleanup remain required.",
+    "No whole commercial application acceptance is implied."
+  ]
+}

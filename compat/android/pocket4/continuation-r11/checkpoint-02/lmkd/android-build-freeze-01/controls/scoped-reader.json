@@ -1,0 +1,30 @@
+{
+  "scope": "actual Reader methods with explicit descriptor/syscall substitutes; no live cgroup or pressure",
+  "command": [
+    "g++",
+    "-std=c++17",
+    "-O2",
+    "-g0",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-I",
+    "/workspace/scratch/94990735b266/lmkd-work/enrollment-r1/android-r6",
+    "/workspace/scratch/94990735b266/lmkd-work/enrollment-r1/android-r6/memory_cgroup.cpp",
+    "/workspace/scratch/94990735b266/lmkd-work/enrollment-r1/local-controls/scoped-reader-01/scoped_reader.cpp",
+    "-Wl,--wrap=open,--wrap=openat,--wrap=fstatfs,--wrap=pread,--wrap=close,--wrap=fstat,--wrap=syscall",
+    "-o",
+    "/workspace/scratch/94990735b266/lmkd-work/enrollment-r1/local-controls/scoped-reader-01/scoped_reader"
+  ],
+  "compile_rc": 0,
+  "compile_stderr": "",
+  "run_rc": 0,
+  "stdout": "PASS unopened Reader cannot publish scope\nPASS scope identity and coherent accounting come from same retained Reader root\nPASS identity race publishes neither snapshot nor scope\nPASS identity failure retires pending high evidence\nPASS failed root stat preserves outputs and refuses authority\nPASS only openat2 is used for bound target traversal\nPASS target path uses exact uid and pid under pinned root fd\nPASS openat2 forbids symlink traversal and mount escape without path fallback\nPASS matching exact per-process cgroup.kill inode is accepted\nPASS only openat2 is used for bound target traversal\nPASS target path uses exact uid and pid under pinned root fd\nPASS openat2 forbids symlink traversal and mount escape without path fallback\nPASS root or sibling cgroup.kill inode cannot match process subtree\nPASS only openat2 is used for bound target traversal\nPASS target path uses exact uid and pid under pinned root fd\nPASS openat2 forbids symlink traversal and mount escape without path fallback\nPASS non-cgroup2 target file cannot authorize group effect\nPASS only openat2 is used for bound target traversal\nPASS target path uses exact uid and pid under pinned root fd\nPASS openat2 forbids symlink traversal and mount escape without path fallback\nPASS mount symlink absent path or missing openat2 support fails without fallback\nPASS only openat2 is used for bound target traversal\nPASS target path uses exact uid and pid under pinned root fd\nPASS openat2 forbids symlink traversal and mount escape without path fallback\nPASS mount symlink absent path or missing openat2 support fails without fallback\nPASS only openat2 is used for bound target traversal\nPASS target path uses exact uid and pid under pinned root fd\nPASS openat2 forbids symlink traversal and mount escape without path fallback\nPASS mount symlink absent path or missing openat2 support fails without fallback\nPASS only openat2 is used for bound target traversal\nPASS target path uses exact uid and pid under pinned root fd\nPASS openat2 forbids symlink traversal and mount escape without path fallback\nPASS mount symlink absent path or missing openat2 support fails without fallback\nPASS invalid target cannot construct a broad group lookup\nRESULT 34 actual Reader scoped assertions passed; descriptor/syscall I/O replaced\n",
+  "stderr": "",
+  "source_sha256": {
+    "memory_cgroup.cpp": "ab36a8f578b705b837d0622a076267a5cd1b8e156ea5552f11f349eaae9052d4",
+    "memory_cgroup.h": "8b479184a7b66f54e0acf4b610efde6533417005210a8b652c40675e3f711cb2"
+  },
+  "fixture_sha256": "cd49c84f244c5eb2225d6c1ed0abcf5948f1dfec258c317a1534af250640277e",
+  "script_sha256": "54823947611799a0ca1cca3111a8180159c11a05fe3db9701c90eef724eb73be"
+}

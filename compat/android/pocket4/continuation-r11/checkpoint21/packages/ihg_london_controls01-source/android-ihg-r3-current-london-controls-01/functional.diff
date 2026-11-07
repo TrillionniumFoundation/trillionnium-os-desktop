@@ -1,0 +1,643 @@
+--- actual-R2/owned_inspect.py
++++ actual-bound-R3/owned_inspect.py
+@@ -1,9 +1,9 @@
+ #!/usr/bin/env python3
+-"""One actual-bound IHG launch, explicit Search then Destination and owned cleanup.
++"""One fresh IHG Search, Destination and public London input with owned cleanup.
+ 
+-At most one current Search click, then one fresh complete-form Destination
+-ancestor click after the first sequence qualifies, and an independent read.
+-No text entry, login, booking or purchase; raw helper trees remain private.
++At most two role-qualified clicks and one current-editor London set_text after
++both prior sequences qualify. The independent post read and cleanup remain.
++No submit, login, booking or purchase; raw helper trees remain private.
+ """
+ import argparse
+ import hashlib
+@@ -16,14 +16,14 @@
+ import types
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-ihg-r2-public-search-destination-entry-01')
++ROOT=Path('/home/alex/work/pocket4-ihg-r3-public-london-input-01')
+ SOURCE=ROOT/'source'
+-NONCE='IHG_READINESS_000000000000000000'
+-FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r2-flow-'+NONCE)
++NONCE='af8bcdbe1fdb1fa9d8af91a7ca26b53f'
++FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r3-flow-'+NONCE)
+ PACKAGE='com.ihg.apps.android'
+ UID=10137
+-SELF='org.droidloom.qa.ihg.r2'
+-HELPER_UID=10153
++SELF='org.droidloom.qa.ihg.r3'
++HELPER_UID=10156
+ 
+ CURRENT_HOST_MANIFEST='6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
+ CURRENT_BASELINE_SCHEMA='pocket4-main-current-baseline-v1'
+@@ -32,21 +32,22 @@
+ CURRENT_QUALIFICATION_SHA='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'
+ COMPONENT=PACKAGE+'/.activity.MainActivity'
+ # The source label is inert; the exact selector is derived from the current complete inspection.
+-SEARCH_PLAN={"schema":1,"operation":"click","selector":{"text":"Search"},"nonces":{"before":"IHG_READINESS_000000000000000001","inspect":"IHG_READINESS_000000000000000002","action":"IHG_READINESS_000000000000000003","after":"IHG_READINESS_000000000000000004"}}
+-PLAN={"schema":1,"operation":"click","selector":{"text":"Destination"},"nonces":{"before":"IHG_READINESS_000000000000000005","inspect":"IHG_READINESS_000000000000000006","action":"IHG_READINESS_000000000000000007","after":"IHG_READINESS_000000000000000008"}}
+-POST_PLAN={"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000009","inspect":"IHG_READINESS_000000000000000010","after":"IHG_READINESS_000000000000000011"}}
+-SEARCH_READINESS_PLANS=[{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000012","inspect":"IHG_READINESS_000000000000000013","after":"IHG_READINESS_000000000000000014"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000015","inspect":"IHG_READINESS_000000000000000016","after":"IHG_READINESS_000000000000000017"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000018","inspect":"IHG_READINESS_000000000000000019","after":"IHG_READINESS_000000000000000020"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000021","inspect":"IHG_READINESS_000000000000000022","after":"IHG_READINESS_000000000000000023"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000024","inspect":"IHG_READINESS_000000000000000025","after":"IHG_READINESS_000000000000000026"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000027","inspect":"IHG_READINESS_000000000000000028","after":"IHG_READINESS_000000000000000029"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000030","inspect":"IHG_READINESS_000000000000000031","after":"IHG_READINESS_000000000000000032"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000033","inspect":"IHG_READINESS_000000000000000034","after":"IHG_READINESS_000000000000000035"}}]
+-INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-02")
++SEARCH_PLAN={"schema":1,"operation":"click","selector":{"text":"Search"},"nonces":{"before":"6b30a833bb64e8865302d0b02e7779c2","inspect":"671f295fef659b20985569444175032d","action":"b53d1e9582d0e5e445b2ed5c4253968f","after":"a1013460dc47bbda0d80ccf6d0e95845"}}
++PLAN={"schema":1,"operation":"click","selector":{"text":"Destination"},"nonces":{"before":"a4493c3b20c5bfecdb4f139bb18d13f5","inspect":"fbb50c3489b91291d5f19af3b759cfc0","action":"03957013c5dbf044fade6c4be5067d17","after":"fcaea51fdfed2422947b5cb0b36f5b50"}}
++INPUT_PLAN={"schema":1,"operation":"set_text","value":"London","nonces":{"before":"a98b8fda9a1d906ce589157ef0db04fb","inspect":"6118925cb2c6ed87d24fec5efe9b6168","action":"85a1e25daba20e3a7fb8ace5596359c5","after":"75bd19353a7921d6a6b65de4cc55d9bd"}}
++POST_PLAN={"schema":1,"operation":"inspect","nonces":{"before":"81c932f6f1ad24002778089211970c8c","inspect":"a1d8163ab54df641cf7c39a5bf22e76c","after":"19700a8741707301195befc89b333aad"}}
++SEARCH_READINESS_PLANS=[{"schema":1,"operation":"inspect","nonces":{"before":"5b90402b4f7c23ce33778272bce48b1e","inspect":"2677b6c1d847232431dbab9b34e72fde","after":"7644d507d277d48c1993abd9602e7d1c"}},{"schema":1,"operation":"inspect","nonces":{"before":"e01d6a2d647bbed23948d39c2784ff88","inspect":"e29e57c2a3bc0a46cc6a950c8035ee8f","after":"708a62b0235fe3875febbe13e8fe478d"}},{"schema":1,"operation":"inspect","nonces":{"before":"ecb4ae6ce9df58aa2c52f746d545a7bb","inspect":"dcc941cba0ec9efa13bd0e2612afe96d","after":"e6a45ad266f72718741ad3a8b0543d12"}},{"schema":1,"operation":"inspect","nonces":{"before":"401177735e1e961afb92ec7e58de9cbf","inspect":"5e617e15de874ee0338604b67d4c4458","after":"792ffe31d8b73e1ef870a0a2e6562a7e"}},{"schema":1,"operation":"inspect","nonces":{"before":"023ae8ad6451af6ba359004cf0ff28f6","inspect":"1cd4f5fec8b9e9afbd3bedd9411b12fe","after":"f96725199592694b505b35a9b7a19491"}},{"schema":1,"operation":"inspect","nonces":{"before":"875282c61fa93ced8c0e9efe0aaa152b","inspect":"a4895e09d9639bf85c6cbe541aceadfc","after":"bfd6a9ee5173d5b167ebc33585a1eefd"}},{"schema":1,"operation":"inspect","nonces":{"before":"b3c9405c0d9a50598fa63df7c54b134c","inspect":"b03784c97ab271e2e9b48d266d94484f","after":"600608c01bf4e0d34333547fa0167183"}},{"schema":1,"operation":"inspect","nonces":{"before":"aa911ba1f1d79bdb9ea8ecdd95b4317b","inspect":"4ecb2e675c4e330dc02ff6500c461cd8","after":"f759f00b7ae8885f2031fd2763cb0b26"}}]
++INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-ihg-qa-r3-install-state-01")
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+-INSTALL_SOURCE_SHA="e8cf9d4c04025bb092663519a01624fa40e552600dc5643a50ebf9bace915103"
+-UTIL_SHA="b76a9a81e7c7c2ac11a880c9f8a82cb2209a2abc44468edf5c76bd13af798db3"
+-UTIL_BYTES=38130
+-CONTEXT_SHA="a62cebdc4fa1249dbbdfa28f87f0547e529ef9886f8b6bb247c811f96f673768"
++INSTALL_SOURCE_SHA="7d7c97b453ed5e5f75a4bd3fcab92cc3e76603bb1e09745ce509d3cd73c7494d"
++UTIL_SHA="2d45dc7b1527dbff0353c6d6b7687acdfaf415e430beebbb0fa5b290f1bda234"
++UTIL_BYTES=38136
++CONTEXT_SHA="160cd78357d22897505b0d2b5351bea4106088303dd54cab6b87e5e7f5ab0364"
+ TRANSPORT_SHA="27e07fbaaccca4e5113e1750a3b7baa9d05048a1e8588f09cdc8f9ed5cf44089"
+-STATE_NONCE="6c71a5c324a1c669572981cc38e4f82b"
+-STATE_WIRE="10d422744e4484db083293e6b7752ef7c1a1ebec0c059b009bfdb632daf9a723"
+-INSTALLED={"apk_sha256":"db7012b9a66f4177f8b4ac57ac3d39e77b8c9871a8b2c364343c420fb9d42f41","base_apk":"/data/app/~~2Ra07v9TklCSDPAiZXK0qQ==/org.droidloom.qa.ihg.r2-QQ0wWKyusbCYEh7ZGrTsNg==/base.apk","bytes":24720,"held_file":{"bytes":24720,"device":1811,"gid":1000,"inode":789387,"mode":33188,"mtime_ns":1793952064858420740,"nlink":1,"uid":1000},"package":"org.droidloom.qa.ihg.r2","signer_bound_by_exact_signed_apk_bytes":"a2ae584189d8faa5f3705b9278b29b38f2f32e6ca97b1224e80f9b1dfc0d1e5a","uid":10153}
+-PRIOR={"coordinator":("result.json",3961,"4f7f628b7aa600e686bffcd2eec33f908116db94c7192090b68096b6710b2c78"),"stage":("stage-result.json",6856,"fbee6aa99439b55aa04952665c98122799e3a4135a76ffe9717a0399cf020cc2"),"worker":("worker/result.json",12552,"81f25ba7fcced82ecc0534ce41f70b7b98ce1f152aa1e5e6c132db825d65fb58")}
++STATE_NONCE="a8c37991b3fdd2f6b40d8f6fd6354bf0"
++STATE_WIRE="135985d2abcf6ade7f343a658b975c657dd97ed144889397543eb4a6cf5d4164"
++INSTALLED={"apk_sha256":"58a24079a59c998d35a7233ccadd2a1d3b90480aa9a66d2c4fc7905ca1d51342","base_apk":"/data/app/~~Y8Qt47OKgz2fFAZz3Im2PA==/org.droidloom.qa.ihg.r3-TYuGv20iRp2NVMzxN8Ld-Q==/base.apk","bytes":24720,"held_file":{"bytes":24720,"device":1811,"gid":1000,"inode":786521,"mode":33188,"mtime_ns":1793963793187449749,"nlink":1,"uid":1000},"package":"org.droidloom.qa.ihg.r3","signer_bound_by_exact_signed_apk_bytes":"df8c2febe4feff3e65d7dc096cad9753bfb2e97b57a65044b314c2a51c7c3f01","uid":10156}
++PRIOR={"coordinator":("result.json",3961,"6b5e539c535f2cb39e04dcdaebbdfa02545db33e11c640022d4af6196ca804d3"),"stage":("stage-result.json",7082,"771d062222c3a9af23ddcfa095fdcf755036d557438f36e05c8d42fb6dc9a132"),"worker":("worker/result.json",12552,"ee3f30004e68748fc0ad9af8258866bf272b4642f5868fb28a3dc5a03af3ebcc")}
+ RESOLVER_ROOT=Path('/home/alex/work/pocket4-ihg-artifact-launcher-readonly-01')
+ # The five-command metadata source is already an exact pinned install input.
+ RESOLVER_SOURCE=INSTALL_SOURCE/'references/read_ihg.py'
+@@ -160,7 +161,7 @@
+          state['actual_instrumentation_finish_code']==-1 and
+          state['held_transport_returned_after_post_guard'] is True and
+          helper['nonce']==STATE_NONCE and helper['self_uid']==HELPER_UID and
+-         helper['protocol']=='pocket4-owned-ihg-qa-v2' and helper['op']=='state' and
++         helper['protocol']=='pocket4-owned-ihg-qa-v3' and helper['op']=='state' and
+          helper['ok'] is True and helper['ui_automation_connected'] is False,
+          'ACTUAL_NO_AUTOMATION_STATE_REQUIRED')
+     need(w['target_before']==w['target_after'] and
+@@ -186,7 +187,7 @@
+         'no_prior_install_or_state_replayed':True}
+ 
+ def qualified(expected):
+-    need(type(HELPER_UID) is int and 10000<=HELPER_UID<100000 and HELPER_UID not in (10137,10196) and isinstance(INSTALLED,dict) and
++    need(type(HELPER_UID) is int and 10000<=HELPER_UID<100000 and HELPER_UID not in (10137,10196,10153) and isinstance(INSTALLED,dict) and
+          isinstance(STATE_WIRE,str) and re.fullmatch('[0-9a-f]{64}',STATE_WIRE) and
+          isinstance(PRIOR,dict) and set(PRIOR)=={'coordinator','stage','worker'} and
+          isinstance(PRIOR['worker'],tuple),'ACTUAL_IHG_INSTALL_BINDING_NOT_READY')
+@@ -206,18 +207,20 @@
+         need(plan['operation']=='inspect','READINESS_MUST_BE_NO_ACTION')
+     need(qa.PACKAGE==PACKAGE and qa.UID==UID and qa.SELF==SELF and adapter.SELF==SELF,
+          'DEDICATED_IHG_HELPER_SOURCE_REQUIRED')
+-    values=[NONCE,*SEARCH_PLAN['nonces'].values(),*PLAN['nonces'].values(),*POST_PLAN['nonces'].values(),
++    values=[NONCE,*SEARCH_PLAN['nonces'].values(),*PLAN['nonces'].values(),*INPUT_PLAN['nonces'].values(),*POST_PLAN['nonces'].values(),
+             *(nonce for plan in SEARCH_READINESS_PLANS for nonce in plan['nonces'].values())]
+-    need(len(values)==len(set(values))==36 and STATE_NONCE not in values and
+-         all(re.fullmatch('[0-9a-f]{32}',v) for v in values),'EXACT_NEW_FLOW_AND_THIRTY_FIVE_HELPER_NONCES')
++    need(len(values)==len(set(values))==40 and STATE_NONCE not in values and
++         all(re.fullmatch('[0-9a-f]{32}',v) for v in values),'EXACT_NEW_FLOW_AND_THIRTY_NINE_HELPER_NONCES')
+     inputs=json.loads(read(HERE/'INPUTS.json',65536))
+     need(inputs['nonce']==NONCE and inputs['component']==COMPONENT and inputs['installed_helper']==INSTALLED
+          and inputs['resolver_records']=={k:{'relative_path':v[0],'bytes':v[1],'sha256':v[2]} for k,v in RESOLVER_RECORDS.items()},
+          'EXACT_RUNTIME_INPUT_RECORD_REQUIRED')
+     need(inputs['explicit_search_click_plan']==SEARCH_PLAN and inputs['public_destination_click_plan']==PLAN and
++         inputs['public_destination_input_specification']==INPUT_PLAN and
+          inputs['independent_post_plan']==POST_PLAN and inputs['search_readiness_plans']==SEARCH_READINESS_PLANS,
+          'EXACT_SEARCH_READINESS_AND_SEARCH_DESTINATION_PLANS_REQUIRED')
+     public_destination=load(HERE/'public_destination.py',manifest['files']['public_destination.py']['sha256'],'fresh_public_destination_observation')
++    public_destination.validate_pending_input_plan(qa,INPUT_PLAN)
+     # Interface-only binding for the unchanged phase body; no resolver action
+     # is run here and the prior five-command receipt has no helper assertion.
+     resolver=types.SimpleNamespace(INSTALL_SOURCE=INSTALL_SOURCE,INSTALL_SOURCE_SHA=INSTALL_SOURCE_SHA,
+@@ -265,7 +268,7 @@
+     for phase,nonce in plan['nonces'].items():
+         path=step/(nonce+'.assessment.json');raw=read(path);value=json.loads(raw);helper=value['helper']
+         need(helper['nonce']==nonce and helper['self_uid']==HELPER_UID and
+-             helper['op']==('click' if phase=='action' else 'inspect' if phase=='inspect' else 'state') and
++             helper['op']==(plan['operation'] if phase=='action' else 'inspect' if phase=='inspect' else 'state') and
+              value['actual_command_returncode']==0 and value['actual_instrumentation_finish_code']==-1 and
+              value['held_transport_returned_after_post_guard'] is True and helper['ok'] is True and
+              helper['error'] is None and helper['secondary_errors']==[] and
+@@ -283,16 +286,24 @@
+                 tree_observations=q.qa.tree_observations(helper['tree_observations'],'inspect',True),
+                 complete=True,raw_tree_private_only=True)
+         elif phase=='action':
+-            need(helper['node_action']=='ACTION_CLICK' and helper['node_action_returned'] is True and
++            need(helper['node_action']==('ACTION_SET_TEXT' if plan['operation']=='set_text' else 'ACTION_CLICK') and
++                 helper['node_action_returned'] is True and
+                  helper['action_attempted'] is True and helper['outcome_unknown'] is True and
+                  helper['inspection_nonce']==plan['nonces']['inspect'] and
+                  helper['inspection_sha256']==sequence['inspection_wire_sha256'],'ACTUAL_CURRENT_SEARCH_CLICK_ACK_REQUIRED')
+-            row.update(node_action='ACTION_CLICK',node_action_returned=True,action_attempted=True,outcome_unknown=True,
++            row.update(node_action=helper['node_action'],node_action_returned=True,action_attempted=True,outcome_unknown=True,
+                 target_node_sha256=helper['target_node_sha256'],inspection_nonce=helper['inspection_nonce'],
+                 inspection_sha256=helper['inspection_sha256'],
+                 action_window={k:helper['action_window'][k] for k in ('package','display','type','focused')},
+                 window_observation=q.qa.window_observation(helper['window_observation']),
+-                tree_observations=q.qa.tree_observations(helper['tree_observations'],'click',True))
++                tree_observations=q.qa.tree_observations(helper['tree_observations'],plan['operation'],True))
++            if plan['operation']=='set_text':
++                need(helper.get('target_resource_id')==plan['selector']['resource_id'] and
++                     helper.get('requested_value_sha256')==helper.get('observed_value_sha256')==sha(b'London') and
++                     helper.get('value_readback_verified') is True,'ACTUAL_PUBLIC_LONDON_INPUT_READBACK')
++                row.update(fixed_public_value='London',requested_value_sha256=sha(b'London'),
++                    observed_value_sha256=helper['observed_value_sha256'],value_readback_verified=True,
++                    target_resource_sha256=sha(helper['target_resource_id'].encode()))
+         result[phase]=row
+     return result
+ 
+@@ -301,14 +312,15 @@
+     need(os.getuid()==os.geteuid()==0 and HERE==SOURCE and phase in PHASE_SECONDS,'EXACT_ROOT_PHASE_REQUIRED')
+     q=qualified(expected);u,ref=q.util,q.ref
+     search_plan=json.loads(json.dumps(SEARCH_PLAN));click_plan=json.loads(json.dumps(PLAN))
++    input_plan=json.loads(json.dumps(INPUT_PLAN))
+     post_plan=json.loads(json.dumps(POST_PLAN));readiness_plans=json.loads(json.dumps(SEARCH_READINESS_PLANS))
+-    plans={'search':search_plan,'destination':click_plan,'post':post_plan,'readiness':readiness_plans}
++    plans={'search':search_plan,'destination':click_plan,'input':input_plan,'post':post_plan,'readiness':readiness_plans}
+     step=FLOW/'steps'/(phase+'-01')
+     result={'schema':1,'ok':False,'error':None,'secondary_errors':[],'phase':phase,'nonce':NONCE,
+         'source_manifest_sha256':expected,'package':PACKAGE,'uid':UID,'helper_package':SELF,'helper_uid':HELPER_UID,
+         'actual_install':q.install,'actual_resolution':q.resolution,'build':q.proof,
+         'automatic_retry':False,'Bili_Flow_instantiated':False,'old_v2_helper_called':False,
+-        'maximum_click_actions':2,'maximum_no_action_search_readiness_sequences':8,'text_actions':0,'screenshots':0,'audio_actions':0,'permission_grants':0,'settings_writes':0,
++        'maximum_click_actions':2,'maximum_no_action_search_readiness_sequences':8,'maximum_text_actions':1,'screenshots':0,'audio_actions':0,'permission_grants':0,'settings_writes':0,
+         'raw_UI_tree_private_only':True,'whole_app_production_ready':False,'business_success_verified':False,
+         'host_foreground_display_independently_verified':False,'required_helper_display':0}
+     flow=artifacts=session=guard=flow_lock=action_lock=None
+@@ -349,7 +361,7 @@
+         reader=u.module(q.resolver.INSTALL_SOURCE/'references/read_ihg.py',u.READER_SHA,'amazon_artifact_parser')
+         artifacts=context.ArtifactSet(flow,reference,reader)
+         current='target_before';result['target_before']=artifacts.before()
+-        session=(q.public_destination.make_session(q.adapter,flow,recorder,q.qa,q.proof,HELPER_UID,search_plan,click_plan,post_plan,readiness_plans)
++        session=(q.public_destination.make_session(q.adapter,flow,recorder,q.qa,q.proof,HELPER_UID,search_plan,click_plan,input_plan,post_plan,readiness_plans)
+                  if phase=='inspect' else q.adapter.Session(flow,recorder,q.qa,q.proof,HELPER_UID))
+         current='helper_before';result['helper_before']=session.installed()
+         need(result['helper_before']==q.installed,'ACTUAL_INSTALLED_HELPER_CHANGED')
+@@ -364,7 +376,7 @@
+             result['owned_task']=flow.selected_task()
+         elif phase=='inspect':
+             current='explicit_search_destination_sequences'
+-            q.public_destination.run_sequences(q.qa,session,q.installed,search_plan,click_plan,post_plan,readiness_plans,result,
++            q.public_destination.run_sequences(q.qa,session,q.installed,search_plan,click_plan,input_plan,post_plan,readiness_plans,result,
+                 lambda seq,plan:assessment_summary(q,step,seq,plan),lambda phase,error:u.remember(result,phase,error))
+         else:
+             current='exact_owned_cleanup';selected=flow.selected_task();result['owned_task']=selected
+@@ -390,12 +402,13 @@
+                  len(result['search_readiness_observations'])==count,
+                  'EXACT_QUALIFIED_NO_ACTION_READINESS_COUNT_REQUIRED')
+             used_readiness={nonce for plan in SEARCH_READINESS_PLANS[:count] for nonce in plan['nonces'].values()}
+-            need(flow.policy.counts=={'target_uid':2,'target_path':2,'helper_uid':8+2*count,'helper_path':8+2*count,
+-                'stacks':6+2*count,'instrument':11+3*count,'foreground':9+3*count,'click':2} and
+-                flow.command_index==37+9*count and
+-                flow.policy.used_nonces==set(SEARCH_PLAN['nonces'].values())|set(PLAN['nonces'].values())|set(POST_PLAN['nonces'].values())|used_readiness and
++            need(flow.policy.counts=={'target_uid':2,'target_path':2,'helper_uid':10+2*count,'helper_path':10+2*count,
++                'stacks':8+2*count,'instrument':15+3*count,'foreground':12+3*count,'click':2,'set_text':1} and
++                flow.command_index==47+9*count and
++                flow.policy.used_nonces==set(SEARCH_PLAN['nonces'].values())|set(PLAN['nonces'].values())|set(INPUT_PLAN['nonces'].values())|set(POST_PLAN['nonces'].values())|used_readiness and
+                 flow.action_attempted is True and result.get('destination_click_and_observation_completed') is True and
+-                result.get('explicit_search_then_destination_completed') is True,
++                result.get('explicit_search_then_destination_completed') is True and
++                result.get('public_london_input_and_readback_completed') is True,
+                 'EXACT_BOUNDED_READINESS_TWO_PUBLIC_CLICKS_AND_POST_COUNTS_REQUIRED')
+         result['ok']=result['error'] is None and result['secondary_errors']==[]
+     except BaseException as error:
+@@ -430,7 +443,9 @@
+         except BaseException as error:u.remember(result,'final_source_and_artifact',error)
+     result['action_attempted']=bool(flow is not None and flow.action_attempted)
+     result['outcome_unknown']=bool(result['action_attempted'] and (phase=='inspect' or not result['ok']))
+-    result['click_requests_admitted']=0 if session is None else len(getattr(session,'action_requests_admitted',set()))
++    admitted=set() if session is None else getattr(session,'action_requests_admitted',set())
++    result['click_requests_admitted']=len(admitted&{'search','destination'})
++    result['text_requests_admitted']=int('input' in admitted)
+     result['seconds']=time.monotonic()-began
+     try:ref.write_new(step/'result.json',result)
+     except BaseException as error:u.remember(result,'durable_phase_result_write',error)
+@@ -463,6 +478,13 @@
+              value['post_sequence']['after_state_completed'] is True and value['post_sequence']['restoration_qualified'] is True and
+              value['destination_click_and_observation_completed'] is True and value['public_destination_observation']['current_public_destination_click_and_independent_read_verified'] is True,
+              'ACTUAL_EXPLICIT_SEARCH_DESTINATION_POST_AND_THREE_RESTORATIONS_REQUIRED')
++        need(value['input_sequence']['restoration_qualified'] is True and
++             value['input_sequence']['after_state_completed'] is True and
++             value['input_sequence']['set_text_acknowledged'] is True and
++             value['input_sequence']['owned_task']==value['search_sequence']['owned_task'] and
++             value['public_london_input_and_readback_completed'] is True and
++             value['public_destination_input_observation']['current_public_destination_input_and_independent_read_verified'] is True,
++             'ACTUAL_LONDON_INPUT_RESTORATION_AND_INDEPENDENT_READ_REQUIRED')
+     if phase=='cleanup':need(value['owned_task_absent'] is True,'ACTUAL_OWNED_TASK_ABSENT_REQUIRED')
+     return value,{'path':str(path),'bytes':len(raw),'sha256':sha(raw)}
+ 
+@@ -478,7 +500,7 @@
+         'source_manifest_sha256':expected,'package':PACKAGE,'uid':UID,'helper_package':SELF,'helper_uid':HELPER_UID,
+         'flow':str(FLOW),'component':COMPONENT,'actual_install':q.install,'actual_resolution':q.resolution,
+         'automatic_retry':False,'maximum_native_launches':1,'launch_worker_requested':False,
+-        'inspect_worker_requested':False,'cleanup_requested':False,'maximum_click_actions':2,'text_actions':0,
++        'inspect_worker_requested':False,'cleanup_requested':False,'maximum_click_actions':2,'maximum_text_actions':1,
+         'screenshots':0,'audio_actions':0,'package_mutations':0,'permission_grants':0,'settings_writes':0,
+         'Bili_Flow_instantiated':False,'old_v2_helper_called':False,'raw_UI_tree_private_only':True,
+         'business_success_verified':False,'whole_app_production_ready':False}
+@@ -514,6 +536,10 @@
+         result['post_restoration']=inspection['post_sequence']['accessibility_restoration']
+         result['public_destination_observation']=inspection['public_destination_observation']
+         result['destination_click_and_observation_completed']=True
++        result['input_assessments']=inspection['input_assessments']
++        result['input_restoration']=inspection['input_sequence']['accessibility_restoration']
++        result['public_destination_input_observation']=inspection['public_destination_input_observation']
++        result['public_london_input_and_readback_completed']=True
+         result['business_outcome_unknown']=True
+         result['ok']=True
+     except BaseException as error:u.remember(result,'coordinator',error)
+@@ -573,8 +599,8 @@
+     if a.worker_once:return worker(a.source_manifest_sha256,a.worker_once)
+     if a.execute_once:return execute(a.source_manifest_sha256)
+     print(json.dumps({'state':'PLAN_ONLY','nonce':NONCE,'root':str(ROOT),'flow':str(FLOW),'component':COMPONENT,
+-        'helper_uid':HELPER_UID,'maximum_native_launches':1,'new_helper_operations':['state','inspect','click','state','state','inspect','click','state','state','inspect','state'],
+-        'maximum_clicks':2,'text_actions':0,'screenshots':0,'audio':0,'device_calls':0,'submitted':False}))
++        'helper_uid':HELPER_UID,'maximum_native_launches':1,'new_helper_operations':['bounded restored Search readiness','fresh Search click','fresh Destination click','fresh current-editor London set_text','independent post inspect'],
++        'maximum_clicks':2,'maximum_text_actions':1,'screenshots':0,'audio':0,'device_calls':0,'submitted':False}))
+     return 0
+ 
+ 
+
+--- actual-R2/ihg_task_context.py
++++ actual-bound-R3/ihg_task_context.py
+@@ -2,8 +2,8 @@
+ 
+ This module has no CLI or standalone execution. A separate frozen coordinator
+ must bind actual resolve/install/source receipts, a new private flow and Main.
+-Only launch, explicit Search then fresh Destination clicks, independent inspection,
+-and exact task retirement are described here. No text/media/screenshot opcode.
++Only launch, explicit Search and Destination clicks, one qualified public London
++input, independent inspection and exact retirement are described here. No media/screenshot opcode.
+ """
+ import json
+ import math
+@@ -17,8 +17,8 @@
+ 
+ PACKAGE='com.ihg.apps.android'
+ UID=10137
+-SELF='org.droidloom.qa.ihg.r2'
+-HELPER_UID=10153
++SELF='org.droidloom.qa.ihg.r3'
++HELPER_UID=10156
+ 
+ CURRENT_HOST_MANIFEST='6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
+ CURRENT_BASELINE_SCHEMA='pocket4-main-current-baseline-v1'
+@@ -43,19 +43,23 @@
+     def __init__(self,phase,qa,resolve,inspect_plan,step,read,selected_task):
+         need(phase in ('launch','inspect','cleanup'),'EXACT_AMAZON_PHASE_REQUIRED')
+         need(qa.PACKAGE==PACKAGE and qa.UID==UID and qa.SELF==SELF,'EXACT_AMAZON_CONTRACT_REQUIRED')
+-        need(set(inspect_plan)=={'search','destination','post','readiness'} and
++        need(set(inspect_plan)=={'search','destination','input','post','readiness'} and
+              all(inspect_plan[role]['operation']=='click' and
+                  set(inspect_plan[role]['nonces'])=={'before','inspect','action','after'}
+                  for role in ('search','destination')) and
++             set(inspect_plan['input'])=={'schema','operation','value','nonces'} and
++             inspect_plan['input']['schema']==1 and inspect_plan['input']['operation']=='set_text' and
++             inspect_plan['input']['value']=='London' and
++             set(inspect_plan['input']['nonces'])=={'before','inspect','action','after'} and
+              inspect_plan['post']['operation']=='inspect' and set(inspect_plan['post']['nonces'])=={'before','inspect','after'} and
+              isinstance(inspect_plan['readiness'],list) and len(inspect_plan['readiness'])==8 and
+              all(plan['operation']=='inspect' and set(plan['nonces'])=={'before','inspect','after'}
+                  for plan in inspect_plan['readiness']),
+-             'EXPLICIT_SEARCH_DESTINATION_POST_AND_EIGHT_NO_ACTION_READINESS_PLANS')
+-        flat={role:inspect_plan[role] for role in ('search','destination','post')}
++             'EXPLICIT_SEARCH_DESTINATION_LONDON_POST_AND_EIGHT_NO_ACTION_READINESS_PLANS')
++        flat={role:inspect_plan[role] for role in ('search','destination','input','post')}
+         flat.update({'readiness_'+str(index+1):plan for index,plan in enumerate(inspect_plan['readiness'])})
+         values=[n for plan in flat.values() for n in plan['nonces'].values()]
+-        need(len(values)==len(set(values))==35,'THIRTY_FIVE_DISTINCT_CURRENT_HELPER_NONCES')
++        need(len(values)==len(set(values))==39,'THIRTY_NINE_DISTINCT_CURRENT_HELPER_NONCES')
+         self.phase,self.qa,self.resolve,self.plan=phase,qa,list(resolve),flat
+         self.step,self.read,self.selected_task=step,read,selected_task
+         self.counts={};self.used_nonces=set();self.remove_attempted=False
+@@ -75,8 +79,8 @@
+             return
+         if argv in (OWN_UID,OWN_PATH):
+             need(timeout==8 and not mutation and not private,'HELPER_METADATA_READ_ONLY')
+-            # Up to eight read-only sequences plus three original sequences and outer pair.
+-            self.claim('helper_uid' if argv==OWN_UID else 'helper_path',24 if self.phase=='inspect' else 2)
++            # Up to eight read-only sequences plus four explicit sequences and outer pair.
++            self.claim('helper_uid' if argv==OWN_UID else 'helper_path',26 if self.phase=='inspect' else 2)
+             return
+         if argv==self.resolve:
+             need(self.phase=='launch' and timeout==15 and not mutation and not private,
+@@ -84,11 +88,11 @@
+             self.claim('resolve',1);return
+         if argv==STACKS:
+             need(not mutation and not private and timeout<=20,'TASK_SNAPSHOT_READ_ONLY')
+-            self.claim('stacks',33 if self.phase=='cleanup' else 22 if self.phase=='inspect' else 2);return
++            self.claim('stacks',33 if self.phase=='cleanup' else 24 if self.phase=='inspect' else 2);return
+         if argv==FOREGROUND:
+             need(self.phase=='inspect' and timeout==15 and not mutation and private,
+                  'ONLY_PRIVATE_CURRENT_FOREGROUND_READ')
+-            self.claim('foreground',33);return
++            self.claim('foreground',36);return
+         if self.phase=='cleanup' and argv[:4]==['/system/bin/cmd','activity','stack','remove']:
+             # Full equality below, not a prefix-based permission grant.
+             selected=self.selected_task()
+@@ -108,17 +112,20 @@
+                 try:raw=self.read(path,65536)
+                 except FileNotFoundError:continue
+                 request=json.loads(raw)
+-                operation='click' if phase=='action' else 'inspect' if phase=='inspect' else 'state'
++                operation=plan['operation'] if phase=='action' else 'inspect' if phase=='inspect' else 'state'
+                 need(request.get('nonce')==nonce and request.get('op')==operation,
+                      'FIXED_CURRENT_PHASE_REQUEST_REQUIRED')
+                 self.qa.validate_request(request)
+                 if self.qa.instrumentation_argv(request)==argv:
+-                    need(mutation is (operation=='click'),'EXACT_CURRENT_OPERATION_MUTATION_FLAG')
++                    need(mutation is (operation in ('click','set_text')),'EXACT_CURRENT_OPERATION_MUTATION_FLAG')
+                     matches.append((nonce,operation))
+         need(len(matches)==1,'ONLY_ONE_CURRENT_SOURCE_BOUND_HELPER_REQUEST')
+         nonce,operation=matches[0]
+-        self.used_nonces.add(nonce);self.claim('instrument',35)
++        self.used_nonces.add(nonce);self.claim('instrument',39)
+         if operation=='click':self.claim('click',2)
++        elif operation=='set_text':
++            need(self.counts.get('click')==2,'TWO_PRIOR_CLICK_ADMISSIONS_REQUIRED_FOR_LONDON')
++            self.claim('set_text',1)
+ 
+ 
+ 
+
+--- actual-R2/public_destination.py
++++ actual-bound-R3/public_destination.py
+@@ -1,4 +1,4 @@
+-"""Explicit fresh Search then Destination; independent final read, no text input."""
++"""Fresh Search, Destination and one public London input; independent final read."""
+ import copy
+ import re
+ import math
+@@ -224,8 +224,110 @@
+             return
+     raise RuntimeError('SEARCH_READINESS_NOT_STABLE_WITHIN_EIGHT_COMPLETE_READS')
+ 
+-def make_session(adapter,flow,recorder,qa,proof,helper_uid,search_plan,click_plan,post_plan,readiness_plans):
+-    """Two explicit fresh roles; original Session.sequence and helper guards remain."""
++def destination_editor_selector(qa,inspection):
++    """One fresh public destination editor; no historical path/resource authority."""
++    qa.inspect_record(inspection)
++    nodes=inspection['nodes'];by_path={n['path']:n for n in nodes}
++    def editable(n):
++        return (n.get('package')==qa.PACKAGE and n.get('class')=='android.widget.EditText' and
++            n.get('visible') is True and n.get('enabled') is True and n.get('password') is False and
++            n.get('class_truncated') is False and n.get('resource_id_truncated') is False and
++            n.get('editable') is True and n.get('supports_set_text') is True)
++    editors=[n for n in nodes if editable(n)]
++    need(len(editors)==1,'ONE_COMPLETE_CURRENT_DESTINATION_EDITOR_REQUIRED')
++    editor=editors[0];window_bounds=bounds(inspection['window'])
++    need(contains(window_bounds,bounds(editor)),'CURRENT_EDITOR_INSIDE_WINDOW_REQUIRED')
++    resource=editor.get('resource_id')
++    need(isinstance(resource,str) and re.fullmatch(re.escape(qa.PACKAGE)+r':id/[A-Za-z0-9_]+',resource) and
++         0<len(resource.encode())<=256 and editor.get('resource_id_sha256')==qa.sha(resource.encode()) and
++         editor.get('class_sha256')==qa.sha(editor['class'].encode()),
++         'ORIGINAL_COMPLETE_CURRENT_EDITOR_RESOURCE_REQUIRED')
++    roles=('destination','destination_zh','dates','rooms_guests','search_tab','find_hotel','sign_in','join')
++    labels={role:[] for role in roles}
++    for node in nodes:
++        if node.get('package')!=qa.PACKAGE or node.get('visible') is not True or node.get('password') is not False:
++            continue
++        for role in roles:
++            for field in ('text','content_desc'):
++                value=node.get(field)
++                if (isinstance(value,str) and node.get(field+'_truncated') is False and
++                    ' '.join(value.split()).casefold() in PUBLIC_ROLES[role]):
++                    need(node.get(field+'_sha256')==qa.sha(value.encode()),'CURRENT_EDITOR_PUBLIC_LABEL_DIGEST')
++                    labels[role].append(node);break
++    destination=labels['destination']+labels['destination_zh']
++    need(len(destination)==1 and eligible(destination[0]) and
++         destination[0].get('class')=='android.widget.TextView','ONE_CURRENT_PUBLIC_DESTINATION_TEXT_LABEL_REQUIRED')
++    label=destination[0];label_bounds=bounds(label)
++    path=editor['path'];chosen=None;examined=0
++    for distance in range(1,MAX_ANCESTORS+1):
++        if '/' not in path:break
++        path=path.rsplit('/',1)[0]
++        need(path in by_path,'COMPLETE_CURRENT_EDITOR_ANCESTOR_CHAIN')
++        parent=by_path[path];examined+=1
++        children=[n for n in nodes if '/' in n['path'] and n['path'].rsplit('/',1)[0]==path]
++        need(type(parent.get('child_count')) is int and parent['child_count']==len(children)<=64,
++             'COMPLETE_CURRENT_EDITOR_ANCESTOR_CHILDREN')
++        need(contains(bounds(parent),bounds(editor)),'CURRENT_EDITOR_ANCESTOR_GEOMETRY')
++        under=lambda n:n['path']==path or n['path'].startswith(path+'/')
++        counts={role:sum(under(n) for n in values) for role,values in labels.items()}
++        editor_count=sum(editable(n) and under(n) for n in nodes)
++        context=(counts['destination']+counts['destination_zh']==1 and
++                 all(counts[role]==0 for role in roles if role not in ('destination','destination_zh')) and
++                 editor_count==1 and under(label))
++        if eligible(parent) and context:
++            need(parent.get('class') in ('android.view.ViewGroup','android.widget.LinearLayout','android.widget.FrameLayout') and
++                 contains(window_bounds,bounds(parent)) and contains(bounds(parent),label_bounds),
++                 'CURRENT_PUBLIC_EDITOR_CONTAINER_GEOMETRY')
++            chosen=(distance,parent,counts,editor_count);break
++    need(chosen is not None,'FINITE_EXCLUSIVE_PUBLIC_DESTINATION_EDITOR_CONTAINER_REQUIRED')
++    distance,parent,counts,editor_count=chosen
++    selector={'class':'android.widget.EditText','resource_id':resource}
++    selected=qa.select_unique_editable(inspection,selector)
++    need(selected=={'node_path':editor['path'],'node_sha256':editor['node_sha256'],
++                    'node_resource_id':resource},
++         'ORIGINAL_UNIQUE_EDITABLE_SELECTION_REQUIRED')
++    safe={'role':'public_destination_editor','current_editor_count':1,
++        'resource_sha256':editor['resource_id_sha256'],'resource_utf8_bytes':len(resource.encode()),
++        'class_sha256':editor['class_sha256'],'current_complete_target_id_namespace':True,
++        'finite_ancestor_limit':MAX_ANCESTORS,'nearest_qualified_ancestor_distance':distance,
++        'ancestors_examined':examined,'complete_children_verified':True,
++        'container_public_role_counts':counts,'container_eligible_editor_count':editor_count,
++        'inside_current_window':True,'tree_sha256':inspection['tree_sha256'],
++        'window_sha256':inspection['window_sha256'],'node_count':len(nodes),
++        'complete_tree_verified':True,'unknown_resource_label_path_coordinates_exported':False,
++        'historical_node_task_or_resource_used_as_authority':False}
++    return selector,selected,safe
++
++def destination_input_readback(qa,inspection,before_proof):
++    selector,selected,safe=destination_editor_selector(qa,inspection)
++    need(isinstance(before_proof,dict) and before_proof.get('role')=='public_destination_editor' and
++         before_proof.get('complete_tree_verified') is True and
++         safe['resource_sha256']==before_proof['resource_sha256'] and
++         safe['class_sha256']==before_proof['class_sha256'],
++         'SAME_CURRENT_PUBLIC_EDITOR_RESOURCE_AFTER_INPUT_REQUIRED')
++    node=next(n for n in inspection['nodes'] if n['path']==selected['node_path'])
++    need(node.get('text')=='London' and node.get('text_truncated') is False and
++         node.get('text_sha256')==qa.sha(b'London'),'INDEPENDENT_PUBLIC_LONDON_VALUE_READBACK_REQUIRED')
++    return {'current_public_destination_input_and_independent_read_verified':True,
++        'fixed_public_value':'London','independent_after_input_inspection':True,
++        'current_editor_context':safe,'hotel_search_results_verified':False,
++        'login_or_booking_verified':False,'business_success_verified':False,'whole_app_production_ready':False}
++
++
++def validate_pending_input_plan(qa,plan):
++    """This source specification grants no node authority before fresh inspection."""
++    need(isinstance(plan,dict) and set(plan)=={'schema','operation','value','nonces'} and
++         plan['schema']==1 and plan['operation']=='set_text' and plan['value']=='London' and
++         qa.PROTOCOL=='pocket4-owned-ihg-qa-v3' and qa.PUBLIC_SEARCH_QUERY=='London' and
++         isinstance(plan['nonces'],dict) and set(plan['nonces'])=={'before','inspect','action','after'},
++         'EXACT_NODE_UNBOUND_PUBLIC_LONDON_INPUT_SPECIFICATION')
++    values=[qa.nonce(v) for v in plan['nonces'].values()]
++    need(len(set(values))==4,'DISTINCT_FRESH_LONDON_INPUT_NONCES')
++    return plan
++
++def make_session(adapter,flow,recorder,qa,proof,helper_uid,search_plan,click_plan,input_plan,post_plan,readiness_plans):
++    """Two clicks and one input; original Session.sequence/helper guards remain."""
++    validate_pending_input_plan(qa,input_plan)
+     class PublicSearchDestinationSession(adapter.Session):
+         def __init__(self):
+             super().__init__(flow,recorder,qa,proof,helper_uid)
+@@ -239,6 +341,8 @@
+             self.public_search_proof=None
+             self.public_search_entry=None
+             self.public_destination_proof=None
++            self.destination_sequence_qualified=False
++            self.public_input_proof=None
+             self.search_sequence_qualified=False
+             self.search_owned_task=None
+             self._action_bindings={}
+@@ -246,9 +350,10 @@
+             self.action_requests_admitted=set()
+ 
+         def instrument(self,request):
+-            if request['op']=='click':
++            if request['op'] in ('click','set_text'):
+                 role=('search' if request['nonce']==search_plan['nonces']['action'] else
+-                      'destination' if request['nonce']==click_plan['nonces']['action'] else None)
++                      'destination' if request['nonce']==click_plan['nonces']['action'] else
++                      'input' if request['nonce']==input_plan['nonces']['action'] else None)
+                 need(role is not None and role in self._action_bindings and
+                      role not in self.action_requests_admitted,
+                      'ONE_EXPLICIT_FRESH_REQUEST_PER_PUBLIC_ROLE_REQUIRED')
+@@ -259,6 +364,14 @@
+                          self.public_search_entry.get('public_search_entry_selection_verified') is True and
+                          getattr(self,'sequence_observation',{}).get('owned_task')==self.search_owned_task,
+                          'QUALIFIED_SEARCH_AND_SAME_OWNED_TASK_BEFORE_DESTINATION_REQUIRED')
++                need(request['op']==('set_text' if role=='input' else 'click'),
++                     'EXACT_PUBLIC_ROLE_OPERATION_REQUIRED')
++                if role=='input':
++                    need(self.destination_sequence_qualified is True and
++                         self.action_requests_admitted=={'search','destination'} and
++                         getattr(self,'sequence_observation',{}).get('owned_task')==self.search_owned_task and
++                         request.get('value')=='London',
++                         'QUALIFIED_DESTINATION_BEFORE_SINGLE_LONDON_INPUT')
+                 self.action_requests_admitted.add(role)
+             assessed=super().instrument(request)
+             if request['nonce'] in self.readiness_inspection_nonces:
+@@ -305,6 +418,22 @@
+                     'inspection_wire_sha256':assessed['wire_sha256'],
+                     'preceding_explicit_search_sequence_qualified':True,
+                     'fresh_search_selection_verified':True}
++            elif request['nonce']==input_plan['nonces']['inspect']:
++                need(request['op']=='inspect' and self.public_input_proof is None and
++                     self.destination_sequence_qualified is True and
++                     self.action_requests_admitted=={'search','destination'} and
++                     getattr(self,'sequence_observation',{}).get('owned_task')==self.search_owned_task,
++                     'QUALIFIED_DESTINATION_AND_FRESH_SAME_TASK_EDITOR_INSPECTION_REQUIRED')
++                selector,node,safe=destination_editor_selector(qa,assessed['helper']['inspection'])
++                input_plan['selector']=selector
++                adapter.validate_plan(input_plan,qa)
++                self._action_bindings['input']={'protocol':qa.PROTOCOL,
++                    'nonce':input_plan['nonces']['action'],'op':'set_text','scope':copy.deepcopy(request['scope']),
++                    'inspection_nonce':request['nonce'],'inspection_sha256':assessed['wire_sha256'],
++                    **node,'value':'London'}
++                self.public_input_proof={**safe,'inspection_nonce':request['nonce'],
++                    'inspection_wire_sha256':assessed['wire_sha256'],
++                    'preceding_search_and_destination_sequences_qualified':True}
+             elif request['nonce']==post_plan['nonces']['inspect']:
+                 need(request['op']=='inspect' and self.post_inspection is None,
+                      'ONE_INDEPENDENT_POST_INSPECTION_REQUIRED')
+@@ -312,8 +441,8 @@
+             return assessed
+     return PublicSearchDestinationSession()
+ 
+-def run_sequences(qa,session,installed,search_plan,click_plan,post_plan,readiness_plans,result,summary,remember):
+-    """First Search must finish before fresh Destination; post-read always runs."""
++def run_sequences(qa,session,installed,search_plan,click_plan,input_plan,post_plan,readiness_plans,result,summary,remember):
++    """Each prior action must qualify before the next; post-read always runs."""
+     result['search_readiness_started']=True
+     current_phase='search_readiness'
+     try:
+@@ -333,6 +462,7 @@
+         session.search_sequence_qualified=True
+         result['search_sequence_qualified']=True
+         result['click_sequence_started']=True
++        current_phase='public_destination_click'
+         try:
+             if hasattr(session,'sequence_observation'):del session.sequence_observation
+             seq=session.sequence(click_plan)
+@@ -344,9 +474,25 @@
+             result['assessments']=summary(seq,click_plan)
+             result['public_destination_action_binding']=session.public_destination_proof
+             result['click_acknowledged']=True
++            session.destination_sequence_qualified=True
++            result['destination_sequence_qualified']=True
++            current_phase='public_destination_set_text'
++            result['input_sequence_started']=True
++            if hasattr(session,'sequence_observation'):del session.sequence_observation
++            typed=session.sequence(input_plan)
++            result['input_sequence']=typed
++            need(typed['installed_before']==typed['installed_after']==installed and
++                 typed.get('set_text_acknowledged') is True and typed['after_state_completed'] is True and
++                 typed['restoration_qualified'] is True and typed['owned_task']==session.search_owned_task,
++                 'ORIGINAL_LONDON_SET_TEXT_AND_RESTORATION_REQUIRED')
++            result['input_assessments']=summary(typed,input_plan)
++            result['public_input_action_binding']=session.public_input_proof
++            result['set_text_acknowledged']=True
+         except BaseException as error:
+-            if hasattr(session,'sequence_observation'):result['failed_click_sequence']=session.sequence_observation
+-            remember('public_destination_click',error)
++            if hasattr(session,'sequence_observation'):
++                result['failed_input_sequence' if current_phase=='public_destination_set_text' else
++                       'failed_click_sequence']=session.sequence_observation
++            remember(current_phase,error)
+     except BaseException as error:
+         if hasattr(session,'sequence_observation'):
+             result['failed_search_readiness_sequence' if current_phase=='search_readiness' else
+@@ -377,10 +523,14 @@
+         need(result.get('search_sequence_qualified') is True and result.get('search_click_acknowledged') is True and
+              result.get('click_acknowledged') is True and result.get('post_inspection_completed') is True and
+              result['search_sequence']['owned_task']==result['sequence']['owned_task']==result['post_sequence']['owned_task'] and
+-             session.action_requests_admitted=={'search','destination'} and
++             session.action_requests_admitted=={'search','destination','input'} and
++             result.get('set_text_acknowledged') is True and result.get('destination_sequence_qualified') is True and
++             result['input_sequence']['owned_task']==result['search_sequence']['owned_task'] and
+              result.get('public_search_entry',{}).get('public_search_entry_selection_verified') is True,
+-             'TWO_EXPLICIT_ACKS_AND_INDEPENDENT_SAME_OWNED_TASK_READ_REQUIRED')
++             'THREE_EXPLICIT_ACKS_AND_INDEPENDENT_SAME_OWNED_TASK_READ_REQUIRED')
+         result['public_destination_observation']=destination_readback(qa,session.post_inspection,session.public_destination_proof)
++        result['public_destination_input_observation']=destination_input_readback(qa,session.post_inspection,session.public_input_proof)
++        result['public_london_input_and_readback_completed']=True
+         result['inspection_completed']=True
+         result['destination_click_and_observation_completed']=True
+         result['explicit_search_then_destination_completed']=True
+
+--- actual-R2/stage_execute.py
++++ actual-bound-R3/stage_execute.py
+@@ -6,9 +6,9 @@
+ from pathlib import Path
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-ihg-r2-public-search-destination-entry-01')
++ROOT=Path('/home/alex/work/pocket4-ihg-r3-public-london-input-01')
+ SOURCE=ROOT/'source'
+-NONCE='IHG_READINESS_000000000000000000'
++NONCE='af8bcdbe1fdb1fa9d8af91a7ca26b53f'
+ FILES={'owned_inspect.py','ihg_task_context.py','public_destination.py','INPUTS.json'}
+ REFERENCE=Path('/home/alex/work/pocket4-current-host-r5-source-01/current_coordinator.py')
+ REFERENCE_SHA="fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2"
+@@ -38,7 +38,7 @@
+     os.umask(0o077);ROOT.mkdir(mode=0o700)
+     result={'schema':1,'ok':False,'nonce':NONCE,'package':entry.PACKAGE,'source_manifest_sha256':manifest_sha256,
+         'Main_before':before,'error':None,'secondary_errors':[],'automatic_retry':False,
+-        'maximum_native_launches':1,'maximum_click_actions':2,'text_actions':0,'screenshots':0,'audio_actions':0,
++        'maximum_native_launches':1,'maximum_click_actions':2,'maximum_text_actions':1,'screenshots':0,'audio_actions':0,
+         'raw_UI_tree_private_only':True,'business_success_verified':False,'whole_app_production_ready':False}
+     def remember(phase,error):
+         row={'phase':phase,'type':type(error).__name__,'message':str(error)}
+@@ -56,6 +56,8 @@
+         assert observed['package']==entry.PACKAGE and observed['helper_uid']==entry.HELPER_UID
+         assert rc==0 and observed['ok'] is True and observed['error'] is None and observed['secondary_errors']==[]
+         assert observed['destination_click_and_observation_completed'] is True and observed['explicit_search_then_destination_completed'] is True
++        assert observed['public_london_input_and_readback_completed'] is True
++        assert observed['public_destination_input_observation']['current_public_destination_input_and_independent_read_verified'] is True
+         assert observed['owned_task_absent_after_cleanup'] is True
+         assert observed['business_success_verified'] is False and observed['whole_app_production_ready'] is False
+         result['ok']=True

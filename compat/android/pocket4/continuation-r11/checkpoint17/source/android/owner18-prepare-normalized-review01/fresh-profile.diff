@@ -1,0 +1,35 @@
+--- owner17/source/coordinator.py
++++ owner18/source/coordinator.py
+@@ -49,9 +49,9 @@
+     state = group_fd = -1; actor = None; fence = None; invocation = None; launched = False; tools = {}
+     try:
+         owned.need(os.getuid() == os.geteuid() == os.getgid() == 0, 'external controller requires original host root')
+-        owned.need(plan['unit'] == 'p4-owner17-normal-20261105-01.service' and
+-                   plan['package'] == '/opt/p4-owner17-normal-20261105-01' and
+-                   plan['state'] == '/opt/p4-owner17-normal-20261105-01-state', 'this controller accepts only its fixed fresh unit/package/state')
++        owned.need(plan['unit'] == 'p4-owner18-normal-20261105-01.service' and
++                   plan['package'] == '/opt/p4-owner18-normal-20261105-01' and
++                   plan['state'] == '/opt/p4-owner18-normal-20261105-01-state', 'this controller accepts only its fixed fresh unit/package/state')
+         state = owned.root_directory(plan['state'])
+         owned.need(owned.file_id(state) == prepared['state_identity'], 'prepared state replaced')
+         for name in ('coordinator-claim.json', 'gate.json', 'runtime-claim.json', 'actor-result.json', 'runtime-result.json'):
+--- owner17/source/prepare.py
++++ owner18/source/prepare.py
+@@ -117,7 +117,7 @@
+ 
+ 
+ def main(plan, sources):
+-    result = {'schema': 1, 'kind': 'owner17-normal-preparation01', 'success': False,
++    result = {'schema': 1, 'kind': 'owner18-normal-preparation01', 'success': False,
+               'attempt_nonce': plan['attempt_nonce'], 'runtime_executed': False,
+               'namespace_or_network_changed': False, 'production_ready': False, 'errors': []}
+     package_fd = state_fd = data_fd = -1; tools = {}; fence = None
+@@ -125,7 +125,7 @@
+         owned.need(os.geteuid() == os.getuid() == os.getegid() == 0, 'preparation requires original host root')
+         owned.need(len(plan['attempt_nonce']) == 64 and
+                    plan['scope'] == 'REAL_OWNER_ABI3_PINNED_CAUSE_TERMINAL_DRAIN_FIRST_ACTIVE_ORIGINAL_RETIREMENT' and
+-                   plan['kind'] == 'owned-real-producer17-normal01-owned-bootstrap-modes01', 'wrong fixed profile')
++                   plan['kind'] == 'owned-real-producer18-normal01-private-crash-buffer01', 'wrong fixed profile')
+         owned.need(not Path(plan['package']).exists() and not Path(plan['state']).exists(), 'preparation root already exists')
+         owned.need(support.props(plan['unit']).get('LoadState') == 'not-found', 'owned unit already exists')
+         fence = support.MainFence(plan, vars(support)); result['main_before'] = fence.check()

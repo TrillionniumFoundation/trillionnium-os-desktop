@@ -1,0 +1,31 @@
+--- ordinary/make_requests.py
++++ nofollow/make_requests.py
+@@ -8,8 +8,8 @@
+ import re
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = '/run/pocket4-role-authorized-snapshot-host-run-01-20261105/run01'
+-RESULT_TEMPLATE_SHA = '12e4767d6bd536e78fd156ad4cf477112852f865f94e632faa9732df9f6d7929'
++ROOT = '/run/pocket4-snapshot-nofollow-host-run-01-20261105/run01'
++RESULT_TEMPLATE_SHA = '8d7ee4c75542e172f26f90e7255856186ae1a8fa613d41a952777209437b402c'
+ LOG_BODY_SHA = '9ca2625627b71927bf6d11ce679d27c6f9fd69d97a6832bf0499a82d2539182e'
+ 
+ 
+@@ -91,7 +91,7 @@
+     files = {}
+     if args.mode == 'result':
+         source = result_source(args.actual_result_bytes, args.actual_result_sha256)
+-        key = 'pocket4-role-authorized-snapshot-runtime-result-readonly-01-20261105'
++        key = 'pocket4-snapshot-nofollow-runtime-result-readonly-01-20261105'
+         files['read_result.py'] = source.encode()
+         bindings = {'path': ROOT + '/result.json', 'maximum': 131072,
+                     'bytes': args.actual_result_bytes, 'sha256': args.actual_result_sha256,
+@@ -99,7 +99,7 @@
+                     'runtime_pass_asserted': False}
+     else:
+         source, bindings, raw = logs_source(args.actual_runtime_result)
+-        key = 'pocket4-role-authorized-snapshot-runtime-original-logs-readonly-01-20261105'
++        key = 'pocket4-snapshot-nofollow-runtime-original-logs-readonly-01-20261105'
+         files['read_logs.py'] = source.encode()
+         files['actual-runtime-result.json'] = raw
+     files['BINDINGS.json'] = (json.dumps(bindings, indent=2, sort_keys=True) + '\n').encode()

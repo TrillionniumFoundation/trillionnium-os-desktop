@@ -1,0 +1,829 @@
+{
+  "actor_cgroup": "/system.slice/p4-signal-mask-r1-20261104-a04-controller-01.service",
+  "adbd_before_cleanup": "stopped",
+  "all_owned_contracts_complete": true,
+  "arm": "signal-mask-r1",
+  "boot": {
+    "adbd": "stopped",
+    "android": "17",
+    "completed": "1",
+    "engine_sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
+    "sdk": "37",
+    "system_server_start_count": "1"
+  },
+  "cases": [
+    {
+      "actual_mapped_engine": {
+        "binding": {
+          "actual_host_maps": [
+            "765294762000-7652947d1000 r--p 00000000 103:02 44086581                  /system/lib64/libberberis_arm64.so",
+            "7652947d2000-7652949a0000 r-xp 00070000 103:02 44086581                  /system/lib64/libberberis_arm64.so",
+            "7652949a2000-7652949e5000 r--p 00240000 103:02 44086581                  /system/lib64/libberberis_arm64.so",
+            "7652949e6000-7652949e7000 rw-p 00284000 103:02 44086581                  /system/lib64/libberberis_arm64.so"
+          ],
+          "engine_sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
+          "hash_bound_by_held_file_before_and_after_case": true,
+          "mapped_device": 66306,
+          "mapped_inode": 44086581
+        },
+        "observed_utc": "2026-11-04T19:44:47.619888+00:00",
+        "process": {
+          "cgroup": [
+            "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10114/pid_5591"
+          ],
+          "cmdline": [
+            "org.droidloom.signalprobe"
+          ],
+          "executable": "/system/bin/app_process64",
+          "host_pid": 406352,
+          "namespace_pids": [
+            406352,
+            5591
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026534239]",
+            "pid": "pid:[4026533868]"
+          },
+          "parent_host_pid": 399089,
+          "start_ticks": 84719678,
+          "uids": [
+            10114,
+            10114,
+            10114,
+            10114
+          ]
+        }
+      },
+      "case": "svc",
+      "checks": "0x000000000007e001",
+      "commercial_app_claim": false,
+      "guest_pid": 5591,
+      "nonce": "424e6c028c3a4f99b69029a0c46e465e",
+      "package": "org.droidloom.signalprobe",
+      "precise_siginfo_observed": false,
+      "required_checks": "0x000000000007e001",
+      "status": "PASS"
+    },
+    {
+      "actual_mapped_engine": {
+        "binding": {
+          "actual_host_maps": [
+            "765294762000-7652947d1000 r--p 00000000 103:02 44086581                  /system/lib64/libberberis_arm64.so",
+            "7652947d2000-7652949a0000 r-xp 00070000 103:02 44086581                  /system/lib64/libberberis_arm64.so",
+            "7652949a2000-7652949e5000 r--p 00240000 103:02 44086581                  /system/lib64/libberberis_arm64.so",
+            "7652949e6000-7652949e7000 rw-p 00284000 103:02 44086581                  /system/lib64/libberberis_arm64.so"
+          ],
+          "engine_sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
+          "hash_bound_by_held_file_before_and_after_case": true,
+          "mapped_device": 66306,
+          "mapped_inode": 44086581
+        },
+        "observed_utc": "2026-11-04T19:44:52.220366+00:00",
+        "process": {
+          "cgroup": [
+            "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10114/pid_5652"
+          ],
+          "cmdline": [
+            "org.droidloom.signalprobe"
+          ],
+          "executable": "/system/bin/app_process64",
+          "host_pid": 406516,
+          "namespace_pids": [
+            406516,
+            5652
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026534239]",
+            "pid": "pid:[4026533868]"
+          },
+          "parent_host_pid": 399089,
+          "start_ticks": 84720138,
+          "uids": [
+            10114,
+            10114,
+            10114,
+            10114
+          ]
+        }
+      },
+      "case": "smc-handler",
+      "checks": "0x000000000007fffe",
+      "commercial_app_claim": false,
+      "guest_pid": 5652,
+      "nonce": "05646f61d05a4f8d9a74f857bc021e4d",
+      "package": "org.droidloom.signalprobe",
+      "precise_siginfo_observed": true,
+      "required_checks": "0x000000000007fffe",
+      "status": "PASS"
+    },
+    {
+      "actual_mapped_engine": {
+        "binding": {
+          "actual_host_maps": [
+            "765294762000-7652947d1000 r--p 00000000 103:02 44086581                  /system/lib64/libberberis_arm64.so",
+            "7652947d2000-7652949a0000 r-xp 00070000 103:02 44086581                  /system/lib64/libberberis_arm64.so",
+            "7652949a2000-7652949e5000 r--p 00240000 103:02 44086581                  /system/lib64/libberberis_arm64.so",
+            "7652949e6000-7652949e7000 rw-p 00284000 103:02 44086581                  /system/lib64/libberberis_arm64.so"
+          ],
+          "engine_sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
+          "hash_bound_by_held_file_before_and_after_case": true,
+          "mapped_device": 66306,
+          "mapped_inode": 44086581
+        },
+        "observed_utc": "2026-11-04T19:44:56.710132+00:00",
+        "process": {
+          "cgroup": [
+            "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10114/pid_5709"
+          ],
+          "cmdline": [
+            "org.droidloom.signalprobe"
+          ],
+          "executable": "/system/bin/app_process64",
+          "host_pid": 406705,
+          "namespace_pids": [
+            406705,
+            5709
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026534239]",
+            "pid": "pid:[4026533868]"
+          },
+          "parent_host_pid": 399089,
+          "start_ticks": 84720588,
+          "uids": [
+            10114,
+            10114,
+            10114,
+            10114
+          ]
+        }
+      },
+      "case": "smc-default",
+      "checks": "0x0000000000fc0000",
+      "commercial_app_claim": false,
+      "guest_pid": 5709,
+      "nonce": "2af1bba2075e4a5a9610cc754fffeda6",
+      "package": "org.droidloom.signalprobe",
+      "precise_siginfo_observed": false,
+      "required_checks": "0x0000000000fc0000",
+      "status": "PASS"
+    },
+    {
+      "actual_mapped_engine": {
+        "binding": {
+          "actual_host_maps": [
+            "765294762000-7652947d1000 r--p 00000000 103:02 44086581                  /system/lib64/libberberis_arm64.so",
+            "7652947d2000-7652949a0000 r-xp 00070000 103:02 44086581                  /system/lib64/libberberis_arm64.so",
+            "7652949a2000-7652949e5000 r--p 00240000 103:02 44086581                  /system/lib64/libberberis_arm64.so",
+            "7652949e6000-7652949e7000 rw-p 00284000 103:02 44086581                  /system/lib64/libberberis_arm64.so"
+          ],
+          "engine_sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
+          "hash_bound_by_held_file_before_and_after_case": true,
+          "mapped_device": 66306,
+          "mapped_inode": 44086581
+        },
+        "observed_utc": "2026-11-04T19:45:03.510233+00:00",
+        "process": {
+          "cgroup": [
+            "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10115/pid_5830"
+          ],
+          "cmdline": [
+            "org.droidloom.signalprobe.r3"
+          ],
+          "executable": "/system/bin/app_process64",
+          "host_pid": 407079,
+          "namespace_pids": [
+            407079,
+            5830
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026534239]",
+            "pid": "pid:[4026533868]"
+          },
+          "parent_host_pid": 399089,
+          "start_ticks": 84721268,
+          "uids": [
+            10115,
+            10115,
+            10115,
+            10115
+          ]
+        }
+      },
+      "case": "smc-mask-edit",
+      "checks": "0x000000000707fffe",
+      "commercial_app_claim": false,
+      "guest_pid": 5830,
+      "nonce": "bd38db6e2bc1418ca3c177dd8bc3446d",
+      "package": "org.droidloom.signalprobe.r3",
+      "precise_siginfo_observed": true,
+      "required_checks": "0x000000000707fffe",
+      "status": "PASS"
+    }
+  ],
+  "cleanup": {
+    "errors": [],
+    "reconciliations": [],
+    "retirements": [
+      {
+        "after": {
+          "absent": true,
+          "filesystem_type": 1667723888,
+          "held_identity": {
+            "device": 30,
+            "inode": 28178276
+          },
+          "held_nlink": 2,
+          "hierarchical_population_checked": true,
+          "path": "/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service",
+          "proof": "original cgroup2 directory held; path absent; both mandatory controls removed"
+        },
+        "automatic_retry": false,
+        "before": {
+          "absent": false,
+          "events": {
+            "frozen": 0,
+            "populated": 1
+          },
+          "filesystem_type": 1667723888,
+          "held_identity": {
+            "device": 30,
+            "inode": 28178276
+          },
+          "hierarchical_population_checked": true,
+          "path": "/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service",
+          "path_present": true,
+          "pids_current": 1099,
+          "root_processes": [
+            398152,
+            398264,
+            398265,
+            398721
+          ]
+        },
+        "final": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "Description": "p4-signal-mask-r1-20261104-a04-daemon.service",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0"
+        },
+        "retired": true,
+        "role": "daemon",
+        "stop_attempted": true,
+        "stop_returncode": 0,
+        "unit": "p4-signal-mask-r1-20261104-a04-daemon.service"
+      },
+      {
+        "after": {
+          "absent": true,
+          "filesystem_type": 1667723888,
+          "held_identity": {
+            "device": 30,
+            "inode": 28178214
+          },
+          "held_nlink": 2,
+          "hierarchical_population_checked": true,
+          "path": "/system.slice/p4-signal-mask-r1-20261104-a04-presenter.service",
+          "proof": "original cgroup2 directory held; path absent; both mandatory controls removed"
+        },
+        "automatic_retry": false,
+        "before": {
+          "absent": false,
+          "events": {
+            "frozen": 0,
+            "populated": 1
+          },
+          "filesystem_type": 1667723888,
+          "held_identity": {
+            "device": 30,
+            "inode": 28178214
+          },
+          "hierarchical_population_checked": true,
+          "path": "/system.slice/p4-signal-mask-r1-20261104-a04-presenter.service",
+          "path_present": true,
+          "pids_current": 11,
+          "root_processes": [
+            398130
+          ]
+        },
+        "final": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "Description": "p4-signal-mask-r1-20261104-a04-presenter.service",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0"
+        },
+        "retired": true,
+        "role": "presenter",
+        "stop_attempted": true,
+        "stop_returncode": 0,
+        "unit": "p4-signal-mask-r1-20261104-a04-presenter.service"
+      },
+      {
+        "after": {
+          "absent": true,
+          "filesystem_type": 1667723888,
+          "held_identity": {
+            "device": 30,
+            "inode": 28178101
+          },
+          "held_nlink": 2,
+          "hierarchical_population_checked": true,
+          "path": "/system.slice/p4-signal-mask-r1-20261104-a04-sway.service",
+          "proof": "original cgroup2 directory held; path absent; both mandatory controls removed"
+        },
+        "automatic_retry": false,
+        "before": {
+          "absent": false,
+          "events": {
+            "frozen": 0,
+            "populated": 1
+          },
+          "filesystem_type": 1667723888,
+          "held_identity": {
+            "device": 30,
+            "inode": 28178101
+          },
+          "hierarchical_population_checked": true,
+          "path": "/system.slice/p4-signal-mask-r1-20261104-a04-sway.service",
+          "path_present": true,
+          "pids_current": 24,
+          "root_processes": [
+            398065,
+            398133
+          ]
+        },
+        "final": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "Description": "p4-signal-mask-r1-20261104-a04-sway.service",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0"
+        },
+        "retired": true,
+        "role": "sway",
+        "stop_attempted": true,
+        "stop_returncode": 0,
+        "unit": "p4-signal-mask-r1-20261104-a04-sway.service"
+      },
+      {
+        "after": {
+          "absent": true,
+          "filesystem_type": 1667723888,
+          "held_identity": {
+            "device": 30,
+            "inode": 28177988
+          },
+          "held_nlink": 2,
+          "hierarchical_population_checked": true,
+          "path": "/system.slice/p4-signal-mask-r1-20261104-a04-bus.service",
+          "proof": "original cgroup2 directory held; path absent; both mandatory controls removed"
+        },
+        "automatic_retry": false,
+        "before": {
+          "absent": false,
+          "events": {
+            "frozen": 0,
+            "populated": 1
+          },
+          "filesystem_type": 1667723888,
+          "held_identity": {
+            "device": 30,
+            "inode": 28177988
+          },
+          "hierarchical_population_checked": true,
+          "path": "/system.slice/p4-signal-mask-r1-20261104-a04-bus.service",
+          "path_present": true,
+          "pids_current": 1,
+          "root_processes": [
+            398040
+          ]
+        },
+        "final": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "Description": "p4-signal-mask-r1-20261104-a04-bus.service",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0"
+        },
+        "retired": true,
+        "role": "bus",
+        "stop_attempted": true,
+        "stop_returncode": 0,
+        "unit": "p4-signal-mask-r1-20261104-a04-bus.service"
+      }
+    ],
+    "runtime_directories_retained_for_inspection": true,
+    "units": [
+      {
+        "description": "p4-signal-mask-r1-20261104-a04 aefbacbc3c7544a6aae0ee8b1bcfe80e bus",
+        "group": "/system.slice/p4-signal-mask-r1-20261104-a04-bus.service",
+        "invocation": "28e84b2781a14cd7950a4a1a99e60a39",
+        "role": "bus",
+        "unit": "p4-signal-mask-r1-20261104-a04-bus.service"
+      },
+      {
+        "description": "p4-signal-mask-r1-20261104-a04 aefbacbc3c7544a6aae0ee8b1bcfe80e sway",
+        "group": "/system.slice/p4-signal-mask-r1-20261104-a04-sway.service",
+        "invocation": "e78c46c0b3bb4eb2924e51acfd1f2329",
+        "role": "sway",
+        "unit": "p4-signal-mask-r1-20261104-a04-sway.service"
+      },
+      {
+        "description": "p4-signal-mask-r1-20261104-a04 aefbacbc3c7544a6aae0ee8b1bcfe80e presenter",
+        "group": "/system.slice/p4-signal-mask-r1-20261104-a04-presenter.service",
+        "invocation": "102aadbf80f844178367519eebe031e4",
+        "role": "presenter",
+        "unit": "p4-signal-mask-r1-20261104-a04-presenter.service"
+      },
+      {
+        "description": "p4-signal-mask-r1-20261104-a04 aefbacbc3c7544a6aae0ee8b1bcfe80e daemon",
+        "group": "/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service",
+        "invocation": "4e2e9c4c1a1f412a8f24a8fb23f67b5c",
+        "role": "daemon",
+        "unit": "p4-signal-mask-r1-20261104-a04-daemon.service"
+      }
+    ]
+  },
+  "cleanup_resource_observations": [
+    {
+      "cpu.pressure": "some avg10=0.00 avg60=0.10 avg300=0.08 total=364284\nfull avg10=0.00 avg60=0.10 avg300=0.08 total=364284\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+      "memory.pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=0\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n",
+      "properties": "MemoryCurrent=557056\nMemoryPeak=2093056\nCPUUsageNSec=12372000\nCPUQuotaPerSecUSec=20ms\nMemoryMax=33554432\nMemorySwapMax=0\n",
+      "unit": "p4-signal-mask-r1-20261104-a04-bus.service"
+    },
+    {
+      "cpu.pressure": "some avg10=0.00 avg60=0.11 avg300=0.09 total=399399\nfull avg10=0.00 avg60=0.11 avg300=0.09 total=399202\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+      "memory.pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=69\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=69\n",
+      "properties": "MemoryCurrent=100851712\nMemoryPeak=102301696\nCPUUsageNSec=145137000\nCPUQuotaPerSecUSec=80ms\nMemoryMax=268435456\nMemorySwapMax=0\n",
+      "unit": "p4-signal-mask-r1-20261104-a04-sway.service"
+    },
+    {
+      "cpu.pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=91053\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=91053\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+      "memory.pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=1810\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=1810\n",
+      "properties": "MemoryCurrent=8052736\nMemoryPeak=10129408\nCPUUsageNSec=161648000\nCPUQuotaPerSecUSec=500ms\nMemoryMax=536870912\nMemorySwapMax=0\n",
+      "unit": "p4-signal-mask-r1-20261104-a04-presenter.service"
+    },
+    {
+      "cpu.pressure": "some avg10=0.88 avg60=8.54 avg300=4.58 total=17645396\nfull avg10=0.88 avg60=8.35 avg300=4.47 total=17212265\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+      "memory.pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=5189\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=5189\n",
+      "properties": "MemoryCurrent=2627969024\nMemoryPeak=2841522176\nCPUUsageNSec=58725325000\nCPUQuotaPerSecUSec=1.300000s\nMemoryMax=4831838208\nMemorySwapMax=0\n",
+      "unit": "p4-signal-mask-r1-20261104-a04-daemon.service"
+    },
+    {
+      "cgroup": "/sys/fs/cgroup/system.slice/p4-signal-mask-r1-20261104-a04-controller-01.service",
+      "cpu.max": "10000 100000",
+      "cpu.pressure": "some avg10=17.78 avg60=14.12 avg300=9.73 total=44882394\nfull avg10=17.75 avg60=14.09 avg300=9.73 total=44879507",
+      "memory.events": "low 0\nhigh 0\nmax 58250\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "268435456",
+      "memory.peak": "268435456",
+      "memory.pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=117792\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=117792",
+      "memory.swap.max": "0",
+      "unit": "current-owned-controller-actor"
+    }
+  ],
+  "cleanup_started": true,
+  "commercial_app_claim": false,
+  "finished_utc": "2026-11-04T19:45:20.990033+00:00",
+  "host_suite": {
+    "arm": "candidate",
+    "assessment": {
+      "all_expected_registered_executed": true,
+      "completed_count": 3788,
+      "disabled": [
+        "Arm64LiteTranslateRegionDispatchTest.DISABLED_MemsetAarch64_FullBodyFrom0x49cc0_1024ByteZeroFill",
+        "Arm64TierCoverage.DISABLED_RegenerateTable"
+      ],
+      "executed_count": 3791,
+      "failed_cases": [],
+      "registered_count": 3793,
+      "skipped": {
+        "Arm64HeavyOptimizerFrontendTest.FcmpHBailsWithoutF16C": "F16C present; FCMP H lowers in-tier",
+        "Arm64HeavyOptimizerFrontendTest.FmaxvVecHBailsWithoutF16C": "F16C present; FMAXV H lowers in-tier",
+        "Arm64MmapNoreserveTest.UnrealSizedArenaReservesAddressSpaceWithoutCommittingRam": "opt-in policy is disabled"
+      }
+    },
+    "cpu": 6,
+    "engine_sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
+    "main_config": {
+      "framework_guard": {
+        "path": "/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py",
+        "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288"
+      },
+      "main_activation": {
+        "path": "/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json",
+        "sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615"
+      },
+      "main_resource_baseline": {
+        "cpu.max": "200000 100000",
+        "memory.high": "5368709120",
+        "memory.max": "6442450944",
+        "memory.swap.max": "max",
+        "pids.max": "12288"
+      }
+    },
+    "receipt": "/home/alex/work/pocket4-signal-host-candidate-r11-01-9d630262/result.json",
+    "sha256": "b8c9b01588d1c2a13c80ba1afc5765fcf6656147d26e630a7c2cf74f4f482283",
+    "tools": {
+      "/usr/bin/python3": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41",
+      "/usr/bin/systemctl": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082"
+    }
+  },
+  "main_after": {
+    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "daemon": {
+      "ActiveState": "active",
+      "ControlGroup": "/system.slice/droidloomd.service",
+      "Description": "Droidloom Android cell lifecycle daemon",
+      "ExecStart": "{ path=/usr/bin/droidloomd ; argv[]=/usr/bin/droidloomd ; ignore_errors=no ; start_time=[Wed 2026-11-04 00:51:00 PST] ; stop_time=[n/a] ; pid=3588022 ; code=(null) ; status=0/0 }",
+      "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+      "LoadState": "loaded",
+      "MainPID": "3588022"
+    },
+    "data_directory": {
+      "device": 66306,
+      "gid": 0,
+      "inode": 111810947,
+      "uid": 0
+    },
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "framework_binding": {
+      "boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1",
+      "processes": {
+        "init": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service"
+          ],
+          "cmdline": [
+            "/init",
+            "second_stage"
+          ],
+          "executable": "/system/bin/init",
+          "host_pid": 3588093,
+          "namespace_pids": [
+            3588093,
+            1
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533284]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588092,
+          "start_ticks": 80797014,
+          "uids": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "surfaceflinger": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service/system/uid_1000/pid_672"
+          ],
+          "cmdline": [
+            "/system/bin/surfaceflinger"
+          ],
+          "executable": "/system/bin/surfaceflinger",
+          "host_pid": 3588912,
+          "namespace_pids": [
+            3588912,
+            672
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533284]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588093,
+          "start_ticks": 80797155,
+          "uids": [
+            1000,
+            1000,
+            1000,
+            1000
+          ]
+        },
+        "system_server": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service/system/uid_1000/pid_830"
+          ],
+          "cmdline": [
+            "system_server"
+          ],
+          "executable": "/system/bin/app_process64",
+          "host_pid": 3589120,
+          "namespace_pids": [
+            3589120,
+            830
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533727]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588887,
+          "start_ticks": 80797249,
+          "uids": [
+            1000,
+            1000,
+            1000,
+            1000
+          ]
+        },
+        "zygote64": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service/system/uid_0/pid_649"
+          ],
+          "cmdline": [
+            "zygote64"
+          ],
+          "executable": "/system/bin/app_process64",
+          "host_pid": 3588887,
+          "namespace_pids": [
+            3588887,
+            649
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533726]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588093,
+          "start_ticks": 80797153,
+          "uids": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "framework_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "resources": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    },
+    "retained_processes": {
+      "daemon_process": {
+        "cgroup": [
+          "0::/system.slice/droidloomd.service"
+        ],
+        "cmdline": [
+          "/usr/bin/droidloomd"
+        ],
+        "executable": "/usr/bin/droidloomd",
+        "host_pid": 3588022,
+        "namespace_pids": [
+          3588022
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026531832]",
+          "pid": "pid:[4026531836]"
+        },
+        "parent_host_pid": 1,
+        "start_ticks": 80796995,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "launcher_process": {
+        "cgroup": [
+          "0::/system.slice/droidloomd.service"
+        ],
+        "cmdline": [
+          "/usr/bin/python3",
+          "-I",
+          "/usr/local/libexec/droidloom-compat/unshare",
+          "--mount",
+          "--pid",
+          "--mount-proc",
+          "--ipc",
+          "--uts",
+          "--fork",
+          "--kill-child=TERM",
+          "--forward-signals",
+          "--propagation=private",
+          "/usr/bin/droidloom-supervisor",
+          "development-enter",
+          "--spec",
+          "/etc/droidloom/cell.json"
+        ],
+        "executable": "/usr/bin/python3.14",
+        "host_pid": 3588089,
+        "namespace_pids": [
+          3588089
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533281]",
+          "pid": "pid:[4026531836]"
+        },
+        "parent_host_pid": 3588022,
+        "start_ticks": 80797013,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "presenter_process": {
+        "cgroup": [
+          "0::/user.slice/user-1000.slice/user@1000.service/app.slice/droidloom.service"
+        ],
+        "cmdline": [
+          "/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland"
+        ],
+        "executable": "/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland",
+        "host_pid": 3588024,
+        "namespace_pids": [
+          3588024
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026531832]",
+          "pid": "pid:[4026531836]"
+        },
+        "parent_host_pid": 2472,
+        "start_ticks": 80796995,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      }
+    }
+  },
+  "main_preserved": true,
+  "main_resources_after": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "12288"
+  },
+  "main_resources_before": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "12288"
+  },
+  "namespace_entry_qualification": {
+    "helper_binary_sha256": "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689",
+    "helper_source_sha256": "adf5b08f7854bec061ab8d2a208f3414339701c816218881e6550afde2e6c31c",
+    "path": "/home/alex/work/pocket4-owned-held-ns-runner-r4-export-01/qualification.json",
+    "qualification_binding_module_sha256": "7b4fc0de8aa35ea128147139a99fee495ec368c9065b66825038c668dd4f08fd",
+    "scope": "shared entry helper mechanism; this private runtime FD/classpath adapter is separately qualified",
+    "sha256": "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3",
+    "whole_process_tree_cleanup_qualified": false
+  },
+  "own_packages_removed": true,
+  "owned_memory_events_zero": true,
+  "package_cleanup_errors": [],
+  "private_package_baseline_restored": true,
+  "production_ready": false,
+  "run_returned": true,
+  "schema": "isolated-owned-signal-runtime-r5",
+  "source_contract_after": {
+    "host_launch_inputs_sha256": "c313ea1f0d03474b05ee2ee8ae3bb74d0131d57469fb9dbf454d03745e3002fb",
+    "host_qualification_wrapper_manifest_sha256": "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5",
+    "host_suite_sha256": "b8c9b01588d1c2a13c80ba1afc5765fcf6656147d26e630a7c2cf74f4f482283",
+    "input_sha256": "152cc16040fc50d6920800d0152e3efb324682f701ac4ef64fbc35951ab279a3",
+    "namespace_helper_qualification_sha256": "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3",
+    "namespace_helper_sha256": "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689",
+    "namespace_helper_source_sha256": "adf5b08f7854bec061ab8d2a208f3414339701c816218881e6550afde2e6c31c",
+    "preparation_manifest_sha256": "3f12e8bcde951712a20208aaeed04f1125bac58993ce1a3f5a93e4f950a9b103",
+    "prepared_sha256": "d334430df461e2011781307992a7ae60e84a8a6cc34e2a0f118f2ccf070f2aa8",
+    "runtime_manifest_sha256": "1825e327e039ac58779085444aa69896990eaa06f8fde24cfb4e98642508486a"
+  },
+  "source_contract_before": {
+    "host_launch_inputs_sha256": "c313ea1f0d03474b05ee2ee8ae3bb74d0131d57469fb9dbf454d03745e3002fb",
+    "host_qualification_wrapper_manifest_sha256": "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5",
+    "host_suite_sha256": "b8c9b01588d1c2a13c80ba1afc5765fcf6656147d26e630a7c2cf74f4f482283",
+    "input_sha256": "152cc16040fc50d6920800d0152e3efb324682f701ac4ef64fbc35951ab279a3",
+    "namespace_helper_qualification_sha256": "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3",
+    "namespace_helper_sha256": "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689",
+    "namespace_helper_source_sha256": "adf5b08f7854bec061ab8d2a208f3414339701c816218881e6550afde2e6c31c",
+    "preparation_manifest_sha256": "3f12e8bcde951712a20208aaeed04f1125bac58993ce1a3f5a93e4f950a9b103",
+    "prepared_sha256": "d334430df461e2011781307992a7ae60e84a8a6cc34e2a0f118f2ccf070f2aa8",
+    "runtime_manifest_sha256": "1825e327e039ac58779085444aa69896990eaa06f8fde24cfb4e98642508486a"
+  },
+  "source_contract_preserved": true,
+  "started_utc": "2026-11-04T19:43:08.494789+00:00",
+  "state": "OWNED_SYNC_SIGNAL_CANARY_PASS"
+}

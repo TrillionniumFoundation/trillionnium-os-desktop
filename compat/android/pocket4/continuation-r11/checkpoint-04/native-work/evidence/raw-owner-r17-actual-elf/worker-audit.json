@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "elf": "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/lib/x86_64/libfdownerprobe.so",
+  "elf_sha256": "3439433e7e85fae3e95ae67189c9bd3aa29b263266a6da18fe778436023fe4e4",
+  "objdump": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/llvm-objdump",
+  "qualified_worker_closure": true,
+  "worker_symbols": [
+    "pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)"
+  ],
+  "reachable_functions": [
+    "pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)"
+  ],
+  "edges": [],
+  "clone_trampoline": {
+    "name": "pocket4_raw_clone_x86_64",
+    "syscall_sites": 2,
+    "indirect_fixed_entry_calls": [
+      "*(%rsp)"
+    ],
+    "source_binding_required": "Start's sole call passes Worker and null context."
+  },
+  "errors": [],
+  "limits": [
+    "This verifies the named final binary closure, not runtime credential or signal policy.",
+    "The inherited TLS pointer exists but the audited child closure must not dereference it.",
+    "No Bionic pthread registration is created. Credential transitions and host cancellation remain unqualified.",
+    "A host ELF result cannot substitute for auditing the actual Android ELF."
+  ]
+}

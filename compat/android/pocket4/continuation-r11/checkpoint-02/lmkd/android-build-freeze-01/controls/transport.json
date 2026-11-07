@@ -1,0 +1,34 @@
+{
+  "scope": "owned local socketpair transport controls, not Android enrollment, real PSI, pressure or deployment",
+  "source_sha256": {
+    "pressure_relay.cpp": "16de80c3d3ec154d66279b784eaa847fdc675c2973559b97d3ef1a1a167fd70e",
+    "pressure_relay.h": "e8c1c5a8173f511ac2a56f9c80cda5495523608e03863a3e5804aac0125d46ce",
+    "enrollment.cpp": "239f7f0bc12d4eba9a17215bf142053b92654709a8c46eccf6956418a78916fc",
+    "enrollment.h": "46c02d6a157d9bb8dbca60ce01deadde60433ffb7f0d0fa6f138076e32314794",
+    "test_enrollment.cpp": "e2b0b9c5a0fc2701f2af017f6ce278837ffa3f4765a49f821aade680a74aec89"
+  },
+  "command": [
+    "g++",
+    "-std=c++17",
+    "-O2",
+    "-g0",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-Wconversion",
+    "-Wsign-conversion",
+    "-fno-exceptions",
+    "-fno-rtti",
+    "-pthread",
+    "/workspace/scratch/94990735b266/lmkd-work/enrollment-r1/native/pressure_relay.cpp",
+    "/workspace/scratch/94990735b266/lmkd-work/enrollment-r1/native/enrollment.cpp",
+    "/workspace/scratch/94990735b266/lmkd-work/enrollment-r1/native/test_enrollment.cpp",
+    "-o",
+    "/workspace/scratch/94990735b266/lmkd-work/enrollment-r1/local-controls/native_enrollment_02"
+  ],
+  "build_rc": 0,
+  "build_stderr": "",
+  "test_rc": 0,
+  "stdout": "PASS request agrees with independent cross-language byte vector\nPASS grant agrees with independent cross-language byte vector\nPASS request fields preserve exact scope and thresholds\nPASS grant binds nonce generation scope and exact monitor configurations\nPASS invalid magic/version/reserved request rejected\nPASS invalid magic/version/reserved request rejected\nPASS invalid magic/version/reserved request rejected\nPASS invalid magic/version/reserved request rejected\nPASS unused monitor slot must be canonical zero\nPASS duplicate monitor level rejected\nPASS zero request nonce rejected\nPASS zero lease generation rejected\nPASS fresh nonce comes from kernel randomness without deterministic fallback\nPASS real SCM_RIGHTS grant carries two exact one-way packet recipients\nPASS granted quiet sockets cannot synthesize pressure\nPASS server retirement invalidates control and all granted channels\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS stale nonce grant rejected\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS different cgroup inode rejected\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS changed exact stall threshold rejected\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS changed monitor count rejected\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS grant without SCM_RIGHTS rejected\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS pipe cannot replace packet recipient\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS truncated excess rights are rejected without leaks\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS oversized grant rejected\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS short grant rejected\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS zero lease generation rejected\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS bad first grant is not retried using a queued newer grant\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS unsolicited post-grant control data invalidates the client\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS late grant cannot extend the bounded handshake\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS closed grant channel is rejected\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS expected lifecycle server UID is not learned from response\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS initial grant succeeds before replay refusal\nPASS granted quiet sockets cannot synthesize pressure\nPASS grant attempt cannot be replayed on existing client\nPASS server retirement invalidates control and all granted channels\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nPASS unclaimed grant exists before explicit replay rejection\nPASS rejected replay clears previously successful unclaimed recipient output\nPASS replayed client cannot keep a live enrollment authority\nPASS success/rejection releases every SCM_RIGHTS duplicate and control pidfd\nRESULT 56 assertions passed; host transport only; no Android or PSI\n",
+  "stderr": ""
+}

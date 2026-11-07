@@ -1,0 +1,222 @@
+--- preimage/init_relay_barrier.c
++++ source/init_relay_barrier.c
+@@ -48,6 +48,29 @@
+   for (size_t i = 0; i < bytes; ++i) p[offset+i] = (unsigned char)(value >> (8*i));
+ }
+ static int dir_error(int error) { errno = error; return -1; }
++/* Failure-only, bounded diagnostics. No new authority or protocol field. */
++struct dir_failure {
++  const char *stage;
++  int error;
++  unsigned metadata;
++  uint64_t device, inode;
++  uint32_t uid, gid, mode;
++};
++static void dir_stage(struct dir_failure *failure, const char *stage) {
++  failure->stage=stage;failure->metadata=0;
++  failure->device=0;failure->inode=0;failure->uid=0;failure->gid=0;failure->mode=0;
++}
++static void dir_metadata(struct dir_failure *failure, const struct stat *value) {
++  failure->metadata=1;failure->device=(uint64_t)value->st_dev;failure->inode=(uint64_t)value->st_ino;
++  failure->uid=(uint32_t)value->st_uid;failure->gid=(uint32_t)value->st_gid;
++  failure->mode=(uint32_t)value->st_mode;
++}
++static int dir_failure_line(char *out, size_t size, const struct dir_failure *failure) {
++  int written=snprintf(out,size,"Droidloom init relay bootstrap failed closed stage=%s errno=%d metadata=%u dev=%llu ino=%llu uid=%u gid=%u mode=%o\n",
++    failure->stage,failure->error,failure->metadata,(unsigned long long)failure->device,
++    (unsigned long long)failure->inode,failure->uid,failure->gid,failure->mode);
++  return written>0&&(size_t)written<size?written:-1;
++}
+ static void dir_close(int *fd) { if (*fd >= 0) close(*fd); *fd = -1; }
+ static void dir_close_rights(int *fds, size_t count) {
+   for (size_t i = 0; i < count; ++i) dir_close(&fds[i]);
+@@ -171,45 +194,74 @@
+     return 0;
+   }
+ }
+-static int dir_ready(const unsigned char wire[DIR_WIRE_SIZE], struct dir_context *c, int fd) {
++static int dir_ready(const unsigned char wire[DIR_WIRE_SIZE], struct dir_context *c, int fd,
++                     struct dir_failure *failure) {
++  dir_stage(failure,"project-wire");
+   if (!dir_common(wire,DIR_PROJECT,c->nonce) || !dir_get(wire,48,8) ||
+       !dir_get(wire,56,8) || dir_get(wire,72,4)!=0600) return dir_error(EPROTO);
+   for (size_t i=76;i<DIR_WIRE_SIZE;++i) if (wire[i]) return dir_error(EPROTO);
+   struct stat value;
++  dir_stage(failure,"project-fd-stat");
++  if (fstat(fd,&value)) return -1;
++  dir_stage(failure,"project-fd-policy");dir_metadata(failure,&value);
+   int status=fcntl(fd,F_GETFL),flags=fcntl(fd,F_GETFD);
+-  if (fstat(fd,&value) || !S_ISSOCK(value.st_mode) || status<0 || !(status&O_PATH) ||
++  if (!S_ISSOCK(value.st_mode) || status<0 || !(status&O_PATH) ||
+       flags<0 || !(flags&FD_CLOEXEC) || (uint64_t)value.st_dev!=dir_get(wire,48,8) ||
+       (uint64_t)value.st_ino!=dir_get(wire,56,8) || value.st_uid!=dir_get(wire,64,4) ||
+       value.st_gid!=dir_get(wire,68,4) || (value.st_mode&07777)!=0600) return dir_error(EPROTO);
+   return 0;
+ }
+ static int dir_run(int control, const unsigned char nonce[32], unsigned timeout_ms,
+-                   uid_t expected_uid, const struct dir_operations *operations) {
++                    uid_t expected_uid, const struct dir_operations *operations,
++                    struct dir_failure *failure) {
+   struct dir_context context;
+   int rights[DIR_HELLO_RIGHTS],received[DIR_MAX_RIGHTS];
+   for (size_t i=0;i<DIR_HELLO_RIGHTS;++i)rights[i]=-1;
+   for (size_t i=0;i<DIR_MAX_RIGHTS;++i)received[i]=-1;
+   size_t count=0;int result=-1;
++  memset(failure,0,sizeof(*failure));dir_stage(failure,"context");
+   unsigned char wire[DIR_WIRE_SIZE],ready[DIR_WIRE_SIZE],expected[DIR_WIRE_SIZE];
+   if (dir_context_open(&context,control,nonce,timeout_ms,expected_uid)) goto done;
+   dir_base(wire,DIR_HELLO,nonce);
+-  if (operations->collect(rights,wire,operations->opaque) || dir_send(&context,wire,rights,DIR_HELLO_RIGHTS)) goto done;
++  dir_stage(failure,"hello-collect");
++  if (operations->collect(rights,wire,operations->opaque)) goto done;
++  dir_stage(failure,"hello-send");
++  if (dir_send(&context,wire,rights,DIR_HELLO_RIGHTS)) goto done;
+   dir_close_rights(rights,DIR_HELLO_RIGHTS);
+-  if (dir_receive(&context,ready,received,&count) || count!=1 ||
+-      dir_ready(ready,&context,received[0]) || operations->project(received[0],ready,operations->opaque)) goto done;
++  dir_stage(failure,"project-receive");
++  if (dir_receive(&context,ready,received,&count)) goto done;
++  dir_stage(failure,"project-rights");
++  if (count!=1) { errno=EPROTO;goto done; }
++  if (dir_ready(ready,&context,received[0],failure)) goto done;
++  dir_stage(failure,"project-effect");
++  if (operations->project(received[0],ready,operations->opaque)) goto done;
+   dir_close_rights(received,count);count=0;
+   memcpy(wire,ready,DIR_WIRE_SIZE);dir_put(wire,12,DIR_PROJECTED,4);
+-  if (dir_send(&context,wire,NULL,0) || dir_receive(&context,wire,received,&count) || count) goto done;
++  dir_stage(failure,"projected-send");
++  if (dir_send(&context,wire,NULL,0)) goto done;
++  dir_stage(failure,"commit-receive");
++  if (dir_receive(&context,wire,received,&count)) goto done;
++  dir_stage(failure,"commit-rights");
++  if (count) { errno=EPROTO;goto done; }
+   memcpy(expected,ready,DIR_WIRE_SIZE);dir_put(expected,12,DIR_COMMIT,4);
+-  if (memcmp(wire,expected,DIR_WIRE_SIZE) || operations->finish(operations->opaque)) goto done;
++  dir_stage(failure,"commit-wire");
++  if (memcmp(wire,expected,DIR_WIRE_SIZE)) { errno=EPROTO;goto done; }
++  dir_stage(failure,"finish");
++  if (operations->finish(operations->opaque)) goto done;
+   /* All capability FDs except this one private control channel are gone.
+    * Environment cleanup has succeeded. No fallible work follows final send. */
+   memcpy(wire,ready,DIR_WIRE_SIZE);dir_put(wire,12,DIR_DONE,4);
++  dir_stage(failure,"done-send");
+   if (dir_send(&context,wire,NULL,0)) goto done;
++  dir_stage(failure,"complete");
+   result=0;
+ done:
++  /* A close failure cannot replace the first protocol/projection failure. */
++  failure->error=result?errno:0;
++  if(result&&!failure->error)failure->error=EPROTO;
+   dir_close_rights(rights,DIR_HELLO_RIGHTS);dir_close_rights(received,DIR_MAX_RIGHTS);
+   dir_close(&context.peer_pidfd);dir_close(&context.control);
++  if(result)errno=failure->error;
+   return result;
+ }
+ static int dir_u64_file(int directory,const char *name,uint64_t *out) {
+@@ -252,32 +304,51 @@
+   dir_put(wire,88,DIR_HELLO_RIGHTS,4);
+   return 0;
+ }
+-static int dir_root_directory(int fd) {
++static int dir_root_directory(int fd,struct dir_failure *failure,
++                              const char *stat_stage,const char *policy_stage) {
+   struct stat value;
+-  return fd>=0&&!fstat(fd,&value)&&S_ISDIR(value.st_mode)&&value.st_uid==0&&value.st_gid==0&&!(value.st_mode&0022);
+-}
+-static int dir_project_real(int socket_fd,const unsigned char ready[DIR_WIRE_SIZE],void *unused) {
+-  (void)unused;
++  if(fd<0)return 0;
++  dir_stage(failure,stat_stage);
++  if(fstat(fd,&value))return 0;
++  dir_stage(failure,policy_stage);dir_metadata(failure,&value);
++  if(S_ISDIR(value.st_mode)&&value.st_uid==0&&value.st_gid==0&&!(value.st_mode&0022))return 1;
++  errno=EPERM;return 0;
++}
++static int dir_project_real(int socket_fd,const unsigned char ready[DIR_WIRE_SIZE],void *opaque) {
++  struct dir_failure *failure=opaque;
++  dir_stage(failure,"project-root-open");
+   int root=open("/",O_PATH|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW),dev=-1,sockets=-1,target=-1;
+-  int result=-1;
+-  if(!dir_root_directory(root))goto done;
+-  dev=openat(root,"dev",O_PATH|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);if(!dir_root_directory(dev))goto done;
+-  sockets=openat(dev,"socket",O_PATH|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);if(!dir_root_directory(sockets))goto done;
++  int result=-1,saved=0;
++  if(!dir_root_directory(root,failure,"project-root-stat","project-root-policy"))goto done;
++  dir_stage(failure,"project-dev-open");
++  dev=openat(root,"dev",O_PATH|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(dev,failure,"project-dev-stat","project-dev-policy"))goto done;
++  dir_stage(failure,"project-sockets-open");
++  sockets=openat(dev,"socket",O_PATH|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(sockets,failure,"project-sockets-stat","project-sockets-policy"))goto done;
++  dir_stage(failure,"project-target-create");
+   target=openat(sockets,DIR_SOCKET_NAME,O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC|O_NOFOLLOW,0600);
+   if(target<0)goto done;
+   dir_close(&target);
++  dir_stage(failure,"project-path-format");
+   char source[64],destination[96];
+   int a=snprintf(source,sizeof(source),"/proc/self/fd/%d",socket_fd);
+   int b=snprintf(destination,sizeof(destination),"/proc/self/fd/%d/%s",sockets,DIR_SOCKET_NAME);
+-  if(a<=0||(size_t)a>=sizeof(source)||b<=0||(size_t)b>=sizeof(destination))goto done;
++  if(a<=0||(size_t)a>=sizeof(source)||b<=0||(size_t)b>=sizeof(destination)){errno=EOVERFLOW;goto done;}
++  dir_stage(failure,"project-bind-mount");
+   if(mount(source,destination,NULL,MS_BIND,NULL))goto done;
+   struct stat st;
+-  if(fstatat(sockets,DIR_SOCKET_NAME,&st,AT_SYMLINK_NOFOLLOW)||!S_ISSOCK(st.st_mode)||
++  dir_stage(failure,"project-mounted-stat");
++  if(fstatat(sockets,DIR_SOCKET_NAME,&st,AT_SYMLINK_NOFOLLOW))goto done;
++  dir_stage(failure,"project-mounted-policy");dir_metadata(failure,&st);
++  if(!S_ISSOCK(st.st_mode)||
+      (uint64_t)st.st_dev!=dir_get(ready,48,8)||(uint64_t)st.st_ino!=dir_get(ready,56,8)||
+-     st.st_uid!=dir_get(ready,64,4)||st.st_gid!=dir_get(ready,68,4)||(st.st_mode&07777)!=0600)goto done;
++      st.st_uid!=dir_get(ready,64,4)||st.st_gid!=dir_get(ready,68,4)||(st.st_mode&07777)!=0600){errno=EPROTO;goto done;}
+   result=0;
+ done:
+-  dir_close(&target);dir_close(&sockets);dir_close(&dev);dir_close(&root);return result;
++  saved=errno;
++  dir_close(&target);dir_close(&sockets);dir_close(&dev);dir_close(&root);
++  errno=saved;return result;
+ }
+ static int dir_finish_real(void *unused) {
+   (void)unused;
+@@ -347,10 +418,13 @@
+     (void)logged;
+     _exit(127);
+   }
+-  const struct dir_operations operations={dir_collect_real,dir_project_real,dir_finish_real,NULL};
+-  if(dir_run((int)fd,nonce,ms,0,&operations)) {
+-    static const char message[]="Droidloom init relay bootstrap failed closed\n";
+-    ssize_t logged = write(STDERR_FILENO, message, sizeof(message) - 1);
++  struct dir_failure failure;
++  const struct dir_operations operations={dir_collect_real,dir_project_real,dir_finish_real,&failure};
++  if(dir_run((int)fd,nonce,ms,0,&operations,&failure)) {
++    char message[320];int length=dir_failure_line(message,sizeof(message),&failure);
++    static const char fallback[]="Droidloom init relay bootstrap failed closed diagnostic-unavailable\n";
++    ssize_t logged = length>0?write(STDERR_FILENO,message,(size_t)length):
++      write(STDERR_FILENO,fallback,sizeof(fallback)-1);
+     (void)logged;
+     _exit(127);
+   }
+--- preimage/protocol_controls.c
++++ source/protocol_controls.c
+@@ -102,9 +102,20 @@
+     int before=open_count();struct fixture fixture={.fail_project=which==13,.fail_finish=which==14};
+     struct dir_operations operations={collect_fake,project_fake,finish_fake,&fixture};
+     if(which==18)memset(nonce,0,sizeof(nonce));
+-    int result=dir_run(channels[1],nonce,which==12?80:1200,geteuid(),&operations);
++    struct dir_failure failure;
++    int result=dir_run(channels[1],nonce,which==12?80:1200,geteuid(),&operations,&failure);
++    int original_error=errno;
+     int after=open_count();
+     bool expected=(which==0);
++    static const char *const stages[]={"complete","project-wire","project-wire","project-wire",
++      "project-rights","project-fd-policy","project-fd-policy","project-wire","project-receive",
++      "project-receive","project-receive","commit-receive","project-receive","project-effect",
++      "finish","commit-wire","commit-rights","project-wire","context"};
++    static const int errors[]={0,EPROTO,EPROTO,EPROTO,EPROTO,EPROTO,EPROTO,EPROTO,EPROTO,
++      EPROTO,EPIPE,EPIPE,ETIMEDOUT,EPERM,ENOMEM,EPROTO,EPROTO,EPROTO,EPROTO};
++    char diagnostic[320];int length=dir_failure_line(diagnostic,sizeof(diagnostic),&failure);
++    if(strcmp(failure.stage,stages[which])||failure.error!=errors[which]||
++       (!expected&&original_error!=failure.error)||length<1||diagnostic[length-1]!='\n')_exit(95);
+     if((result==0)!=expected||before<0||after!=before-1||
+        fcntl(channels[1],F_GETFD)!=-1||errno!=EBADF)_exit(91);
+     if(expected){

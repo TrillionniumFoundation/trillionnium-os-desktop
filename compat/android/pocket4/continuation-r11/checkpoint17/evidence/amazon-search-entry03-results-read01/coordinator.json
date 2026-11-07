@@ -1,0 +1,144 @@
+{
+  "Bili_Flow_instantiated": false,
+  "Main_after": {
+    "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "resource_limits_match": true,
+    "three_host_processes_match": true,
+    "verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+  },
+  "Main_before": {
+    "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "resource_limits_match": true,
+    "three_host_processes_match": true,
+    "verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+  },
+  "actual_install": {
+    "actual_state_wire_sha256": "b271e86f7a9307be448e3145de16a16606894b864124f13020d375b47a89be21",
+    "installed": {
+      "apk_sha256": "f3a7bb2133049022a7d622d35ea2db3390d2804e51ebe344b1d5adcde4437118",
+      "base_apk": "/data/app/~~GFIKD7lsOsvDFpGij6NI2w==/org.droidloom.qa.amazon.r1-yITq1-IsucEPX6hgN-6TqA==/base.apk",
+      "bytes": 24720,
+      "held_file": {
+        "bytes": 24720,
+        "device": 1811,
+        "gid": 1000,
+        "inode": 787880,
+        "mode": 33188,
+        "mtime_ns": 1793875272105926629,
+        "nlink": 1,
+        "uid": 1000
+      },
+      "package": "org.droidloom.qa.amazon.r1",
+      "signer_bound_by_exact_signed_apk_bytes": "1f63759487a0b04e8da9b4088c11dbac8140bf63cb2d64d91460e2525924f424",
+      "uid": 10175
+    },
+    "no_prior_install_or_state_replayed": true,
+    "prior_install_source_sha256": "9179d58761fbf41c04c1a32c4398c9d7a7a7b36add5bf75f8ec89e189a4ed7cf",
+    "prior_receipts": {
+      "coordinator": {
+        "bytes": 3091,
+        "sha256": "2dadd1044b847c7966d5c01c04a8962c401dd3ff60388f3b4ea4e6d2367f8e30"
+      },
+      "stage": {
+        "bytes": 1617,
+        "sha256": "633c0cc3dfaae3f434216956cf4046471222377d5a312f79e02eebd6d6e22def"
+      },
+      "worker": {
+        "bytes": 13459,
+        "sha256": "cd9cb834229c299c065d3934b0e5ed60d8af7e82369e6fb7087e533f4d4a6d2d"
+      }
+    }
+  },
+  "actual_resolution": {
+    "actual_resolve_stdout_sha256": "59af12533664c47eb798f9141cb66151cb8478d878c86f843a559e4c553852e5",
+    "component": "com.amazon.mShop.android.shopping/com.amazon.mShop.home.HomeActivity",
+    "historical_resolution_not_launch_authority": true,
+    "new_prelaunch_resolution_required": true,
+    "prior_receipts": {
+      "stage": {
+        "bytes": 1599,
+        "path": "/home/alex/work/pocket4-amazon-launcher-resolve-readonly-01/stage-result.json",
+        "sha256": "9dfa012752b241b1c881514089684d13b56bcaa0250fb7fcb3d2c72633fdb29d"
+      },
+      "worker": {
+        "bytes": 12204,
+        "path": "/home/alex/work/pocket4-amazon-launcher-resolve-readonly-01/result.json",
+        "sha256": "ebeaecf791eba4906502cd3167c08e735d826ffd565f7fdd45d66775c016c534"
+      }
+    }
+  },
+  "audio_actions": 0,
+  "automatic_retry": false,
+  "business_success_verified": false,
+  "cleanup_not_authorized_without_exact_owned_scope": true,
+  "cleanup_requested": false,
+  "click_actions": 0,
+  "component": "com.amazon.mShop.android.shopping/com.amazon.mShop.home.HomeActivity",
+  "error": {
+    "message": "01-launch did not complete exactly once with a preserved Main fence",
+    "phase": "coordinator",
+    "type": "RuntimeError"
+  },
+  "flow": "/home/alex/work/pocket4-amazon-owned-qa-r1-flow-ec46de5bfc594294a385a785deea3e9a",
+  "helper_package": "org.droidloom.qa.amazon.r1",
+  "helper_uid": 10175,
+  "inspect_worker_requested": false,
+  "launch_worker_requested": true,
+  "maximum_native_launches": 1,
+  "nonce": "ec46de5bfc594294a385a785deea3e9a",
+  "ok": false,
+  "old_v2_helper_called": false,
+  "owned_after": {
+    "cpu.max": "100000 100000",
+    "device": 30,
+    "inode": 31322704,
+    "memory.current": "28377088",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "536870912",
+    "memory.peak": "45584384",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "memory.swap.peak": "0",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ad00af25-fc05-57fb.service",
+    "pids.max": "128"
+  },
+  "owned_before": {
+    "cpu.max": "100000 100000",
+    "device": 30,
+    "inode": 31322704,
+    "memory.current": "27279360",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "536870912",
+    "memory.peak": "27279360",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "memory.swap.peak": "0",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ad00af25-fc05-57fb.service",
+    "pids.max": "128"
+  },
+  "package": "com.amazon.mShop.android.shopping",
+  "package_mutations": 0,
+  "permission_grants": 0,
+  "possible_native_launch_outcome_requires_reconciliation": false,
+  "raw_UI_tree_private_only": true,
+  "retained_phase_results": {
+    "launch": {
+      "bytes": 6043,
+      "path": "/home/alex/work/pocket4-amazon-owned-qa-r1-flow-ec46de5bfc594294a385a785deea3e9a/steps/launch-01/result.json",
+      "sha256": "5b0c66f234675d9170652729a2cacc66a74d4bb76e2f151ade5280332e935029"
+    }
+  },
+  "schema": 1,
+  "screenshots": 0,
+  "secondary_errors": [],
+  "settings_writes": 0,
+  "source_and_artifact_unchanged": true,
+  "source_manifest_sha256": "2242c0a160894629fedb9f97c0347fa2765af44ac9a57b69fe2fe6bd5c3f60fb",
+  "text_actions": 0,
+  "uid": 10129,
+  "whole_app_production_ready": false
+}

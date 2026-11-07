@@ -1,0 +1,45 @@
+{
+  "actual_control_passed": 10,
+  "ast_parsed": true,
+  "control_scope": "retained actual JSON bindings and local owned temporary filesystem only",
+  "debugfs_executed": false,
+  "main_modified": false,
+  "metadata_executed": false,
+  "original_failed_runtime": {
+    "bytes": 57774,
+    "sha256": "954fa535427e79780cb3764d0eb28e2ab12b4a4af642c4bccf3244a4e1c97fea"
+  },
+  "original_prepared": {
+    "bytes": 55139,
+    "sha256": "5771673f20af6833e070da267b0ad9bcbbf58c87e03542104ac57fb9a4466770"
+  },
+  "owner_runtime_qualified": false,
+  "remaining_actual_gates": [
+    "current named/held image identity and superblock",
+    "current held debugfs full file identity and SHA",
+    "later separately bound read-only directory listing"
+  ],
+  "request_bytes": 15543,
+  "request_sha256": "179a4af1a740dbcf0f4146597e0d506e02f0f71d345a4be90fc946ba76e51fad",
+  "schema": 1,
+  "scope": "source and exact retained evidence bindings only; metadata request not dispatched",
+  "source_sha256": "17994b929e569ad6a54b2918d373902242b8f300aaa4dc61093bdf53364f388d",
+  "stdin_bytes": 14907,
+  "stdin_exact": true,
+  "unchanged_request_fields": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-"
+    ],
+    "cpu_quota_percent": 100,
+    "cwd": "/",
+    "executable": "/usr/bin/sudo",
+    "host": "pocket4",
+    "memory_max_bytes": 134217728,
+    "nice": 10,
+    "timeout_seconds": 30
+  }
+}

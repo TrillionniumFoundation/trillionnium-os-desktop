@@ -1,0 +1,100 @@
+{
+  "schema": "pocket4-fixed-installed-path-authorities-v1",
+  "packaging_actual": {
+    "tree": "3058983a8d7367d7eea93a2ab4b99fde5fa15e6a",
+    "git_blob": "d07d41e61b6a105093d171a6c619e33c28bc5760",
+    "bytes": 33473,
+    "sha256": "b975549abd1beca25358d484f334e35f7d146f53cfcc41f2dca45bd859c3a9bf"
+  },
+  "source_files": {
+    "packaging/install-supervisor": {
+      "bytes": 3106,
+      "sha256": "81a3107cd599a57d8984ed7afe6fb428c0f8f73ab1f96628dc0eaad50c862eb3",
+      "git_blob": "32fbde2261fd8a98c468c2c530a18c7a430daea3"
+    },
+    "packaging/systemd/system/droidloomd.service": {
+      "bytes": 291,
+      "sha256": "3dc60679d7d65c2fb051a75733ea0cab888e501f280ff37afcf20d5167305d2d",
+      "git_blob": "e762a872d089b95a23aab70df7ea69545d6475ee"
+    },
+    "packaging/systemd/user/droidloom-applications.service": {
+      "bytes": 248,
+      "sha256": "4ef2be1261bdcd1da489cc117cfb9ca66b078bf980354c8d6764c88c1f56d138",
+      "git_blob": "c140379d7295f5cfcbdebc2e3899844891472ac3"
+    },
+    "packaging/install-runtime": {
+      "bytes": 8739,
+      "sha256": "fb4c0e18fb3f6e9f04575cd2986488c7e4db0390f9612801a601ea3567190ca8",
+      "git_blob": "bd7dec1bde9df326e1262f9cf299d8bc19ef2b77"
+    }
+  },
+  "candidate_paths": [
+    {
+      "key": "supervisor_binary",
+      "path": "/usr/bin/droidloom-supervisor",
+      "source": "packaging/install-runtime fixed destination",
+      "current_path_adopted_without_observation": false
+    },
+    {
+      "key": "daemon_binary",
+      "path": "/usr/bin/droidloomd",
+      "source": "packaging/install-runtime fixed destination",
+      "current_path_adopted_without_observation": false
+    },
+    {
+      "key": "cli_binary",
+      "path": "/usr/bin/droidloomctl",
+      "source": "packaging/install-runtime fixed destination",
+      "current_path_adopted_without_observation": false
+    },
+    {
+      "key": "applications_binary",
+      "path": "/usr/bin/droidloom-applications",
+      "source": "packaging/install-runtime fixed destination",
+      "current_path_adopted_without_observation": false
+    },
+    {
+      "key": "daemon_unit",
+      "path": "/usr/lib/systemd/system/droidloomd.service",
+      "source": "packaging/install-runtime fixed destination",
+      "current_path_adopted_without_observation": false
+    },
+    {
+      "key": "session_unit",
+      "path": "/usr/lib/systemd/user/droidloom.service",
+      "source": "packaging/install-runtime fixed destination",
+      "current_path_adopted_without_observation": false
+    },
+    {
+      "key": "applications_unit",
+      "path": "/usr/lib/systemd/user/droidloom-applications.service",
+      "source": "packaging/install-runtime fixed destination",
+      "current_path_adopted_without_observation": false
+    },
+    {
+      "key": "cell_config",
+      "path": "/etc/droidloom/cell.json",
+      "source": "packaging/install-runtime fixed destination",
+      "current_path_adopted_without_observation": false
+    },
+    {
+      "key": "package_marker",
+      "path": "/usr/share/droidloom/package.json",
+      "source": "runtime/droidloom-supervisor/src/bin/droidloomctl.rs Update branch fixed package marker",
+      "current_path_adopted_without_observation": false
+    }
+  ],
+  "package_marker_source": {
+    "path": "runtime/droidloom-supervisor/src/bin/droidloomctl.rs",
+    "bytes": 20413,
+    "sha256": "19a9e75d0deb0836fb9d125850600004a4a15be1b1ce8519fb8ca40e2165708d",
+    "git_blob": "6f523958b64d22b481f77595fae7ab9842a6085a",
+    "interpretation": "Existence is the CLI package-management marker only; not independent ownership/version/archive qualification."
+  },
+  "process_image": {
+    "source": "Exact current B02 authenticated daemon identity, PID 3588022. Only its held /proc/<pid>/exe is read after original complete Main guard; unknown executable path/cmdline not exported."
+  },
+  "package_manager_or_unit_search": false,
+  "effective_systemd_configuration_observed": false,
+  "supplied_reference_source_matches_installed_Main": false
+}

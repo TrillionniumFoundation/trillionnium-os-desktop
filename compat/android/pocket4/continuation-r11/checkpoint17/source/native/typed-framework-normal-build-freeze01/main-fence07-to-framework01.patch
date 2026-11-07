@@ -1,0 +1,44 @@
+--- a/fenced_build.py
++++ b/fenced_build.py
+@@ -9,10 +9,10 @@
+ import subprocess
+ import time
+ 
+-CONTROLLER_SHA = '702697443b0e1ffa351733a29141be866a81b8be2d2b210b3d36963aa49f5058'
++CONTROLLER_SHA = '12a86ce8fc03b281193a5942a5b7be0c1d7531f7f4e489f1eeca8db9688d1307'
+ SNAPSHOT_SHA = 'f909bdfcaedfef29fcc1ba6a994c49bc21e99850204bac7e0565548bcd7139cb'
+-PREPARATION_SHA = 'ACTUAL_GO5_STREAMING_PREPARATION_SHA_REQUIRED'
+-ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01')
++PREPARATION_SHA = 'ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c'
++ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-build-01-20261105')
+ FENCE_ROOT = ROOT / 'build-fences-01'
+ 
+ 
+@@ -86,7 +86,8 @@
+              'VERIFIED_CONTROLLER_SHA256': CONTROLLER_SHA}
+     exec(compile(source, 'frozen_combined_build.py', 'exec'), scope, scope)
+     scope['no_alias'](ROOT)
+-    require(sha((ROOT / 'preparation.json').read_bytes()) == PREPARATION_SHA, 'actual preparation changed')
++    require(sha((ROOT / 'control-source/actual-work-preparation.json').read_bytes()) == PREPARATION_SHA,
++            'staged actual work preparation changed')
+     require(not FENCE_ROOT.exists() and not FENCE_ROOT.is_symlink(), 'fence root already exists; reconcile exact job')
+     FENCE_ROOT.mkdir(mode=0o700)
+     save('claim.json', {'schema': 1, 'state': 'READONLY_MAIN_FENCE_BEFORE_FULL_BUILD',
+@@ -104,6 +105,8 @@
+     old_int = signal.signal(signal.SIGINT, interrupted)
+     try:
+         before = capture('before', snapshot, packet['snapshot_sha256'])
++        require(before['limits'] == {'memory.high': '5368709120', 'memory.max': '6442450944', 'memory.swap.max': 'max', 'cpu.max': '200000 100000', 'pids.max': '12288'},
++                'original activation five-limit contract differs; TasksMax must remain 12288')
+         save('before.json', before)
+         attempted = True
+         inner_code = scope['main'](['--build', '--preparation-sha256', PREPARATION_SHA])
+@@ -118,6 +121,8 @@
+         signal.signal(signal.SIGINT, signal.SIG_IGN)
+         try:
+             after = capture('after', snapshot, packet['snapshot_sha256'])
++            require(after['limits'] == {'memory.high': '5368709120', 'memory.max': '6442450944', 'memory.swap.max': 'max', 'cpu.max': '200000 100000', 'pids.max': '12288'},
++                    'original activation five-limit contract differs after build')
+             save('after.json', after)
+             if before is not None:
+                 assessment = compare(before, after)

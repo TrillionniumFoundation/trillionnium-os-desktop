@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "passed": 15,
+  "controls": [
+    {
+      "name": "observed_safe_geometry_original_red_candidate_unique_crop",
+      "passed": true
+    },
+    {
+      "name": "incomplete_single_surface",
+      "passed": true,
+      "expected_error": "EXACT_TWO_CURRENT_PLAYER_SURFACES_REQUIRED"
+    },
+    {
+      "name": "missing_area_surface",
+      "passed": true,
+      "expected_error": "EXACT_TWO_CURRENT_PLAYER_SURFACES_REQUIRED"
+    },
+    {
+      "name": "third_surface",
+      "passed": true,
+      "expected_error": "EXACT_TWO_CURRENT_PLAYER_SURFACES_REQUIRED"
+    },
+    {
+      "name": "two_crop_sized_candidates",
+      "passed": true,
+      "expected_error": "UNIQUE_AREA_AND_CROP_SURFACE_GEOMETRY_REQUIRED"
+    },
+    {
+      "name": "shifted_crop_candidate",
+      "passed": true,
+      "expected_error": "UNIQUE_AREA_AND_CROP_SURFACE_GEOMETRY_REQUIRED"
+    },
+    {
+      "name": "missing_immediate_parent",
+      "passed": true,
+      "expected_error": "EXACT_SURFACE_PARENT_STRUCTURE_REQUIRED"
+    },
+    {
+      "name": "wrong_parent_class",
+      "passed": true,
+      "expected_error": "EXACT_SURFACE_PARENT_STRUCTURE_REQUIRED"
+    },
+    {
+      "name": "incomplete_parent_resource",
+      "passed": true,
+      "expected_error": "EXACT_SURFACE_PARENT_STRUCTURE_REQUIRED"
+    },
+    {
+      "name": "TextureView_additional_candidate",
+      "passed": true,
+      "expected_error": "EXACT_TWO_CURRENT_PLAYER_SURFACES_REQUIRED"
+    },
+    {
+      "name": "crop_surface_outside_container",
+      "passed": true,
+      "expected_error": "EXACT_TWO_CURRENT_PLAYER_SURFACES_REQUIRED"
+    },
+    {
+      "name": "incomplete_surface_class",
+      "passed": true,
+      "expected_error": "EXACT_TWO_CURRENT_PLAYER_SURFACES_REQUIRED"
+    },
+    {
+      "name": "traversal_order_not_a_selection_rule",
+      "passed": true
+    },
+    {
+      "name": "same_crop_changed_parent_path_rejected_before_publication",
+      "passed": true
+    },
+    {
+      "name": "same_crop_changed_parent_record_rejected_before_publication",
+      "passed": true
+    }
+  ],
+  "actual_production_viewport_and_same_scope_called": true,
+  "original_viewport_counterexample_executed": true,
+  "scope_and_inspection_validation_seam": true,
+  "geometry_from_safe_actual_report_SHA256": "4add570dcc3d680b469ca9b1133ffc6d76d9aa98cd4b21209943dea24dbc3143",
+  "production_source_sha256": "59ec2140f6fd5a51508ddd143708c0f8fe9d43f0b64363eaf9c0d6ddf849ac3c",
+  "synthetic_UI_nodes": true,
+  "commercial_UI_or_images_read": false,
+  "namespace_or_Android_calls": 0,
+  "playback_or_audio_qualification": false
+}

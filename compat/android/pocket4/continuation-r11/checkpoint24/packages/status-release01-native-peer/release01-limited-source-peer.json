@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "kind": "independent_limited_release01_source_review",
+  "scope": "Git/V8 source review only; no Python, Cargo, runtime or deployment",
+  "source_tree": "ca7a553c8369f3415175058520d5ebd4b6660d5f",
+  "controller": {
+    "bytes": 90731,
+    "sha256": "f836097a5fea8ca1629c9d862d0bd73102e7ecd4b853f6b692cb79ce76384b5e",
+    "blob": "287d4088c58d98247032c6ac07ce19a515ca6516"
+  },
+  "debug_controller": {
+    "bytes": 84425,
+    "sha256": "4fc3b07c57df08e8b9f36b159d2dc0dc29c99efc1e9d3514d1f611b511fac579",
+    "blob": "27baea7ff6fa570e733b41c343e63707be0ecf2f"
+  },
+  "debug_actual": {
+    "bytes": 144339,
+    "sha256": "9fa8108aab968a2a7428906fea074c44010e7a12bac545d78361c04c27e9cae6",
+    "blob": "1ef0797cf5fac90dbdd7a06dd3dd2428fdaea7ca"
+  },
+  "checks": {
+    "inverse_exact": true,
+    "identical": [
+      "require",
+      "utc",
+      "sha",
+      "identity",
+      "held",
+      "write_new",
+      "real_directory",
+      "resource_text",
+      "resource_events",
+      "resource_snapshot",
+      "begin_resources",
+      "finish_resources",
+      "hash_held",
+      "regular_tree",
+      "portable",
+      "pinned_packet",
+      "exact_source_copy",
+      "read_existing_config",
+      "pin_resolved",
+      "verify_resolved",
+      "toolchain",
+      "parse_selected_tree",
+      "qualify_cached_archive",
+      "qualify_compiler_inputs",
+      "limit_child_outputs",
+      "OwnChildReaper",
+      "owned_command",
+      "command",
+      "run_child_lifecycle_controls",
+      "selected_status_dependencies",
+      "test_registration",
+      "validate_focused_result",
+      "focused_test",
+      "staged_inputs",
+      "qualify_parent_and_patch"
+    ],
+    "different": [
+      "actual_executable",
+      "execute"
+    ],
+    "parent_gate_values_match": true
+  },
+  "findings": [
+    "No concrete new blocker found in the reviewed release/profile/parent/finalization changes.",
+    "All 17 controller edits inversed exactly to the actual debug02 source. Original 35 function/class blocks unchanged.",
+    "Exact debug02 receipt was read in full; all new parent predicates match actual 38 commands, 15 selected tests, 112+7 registrations, six debug ELF pins and final closure fields.",
+    "Three Cargo build phases add --release. Each of six selected executables requires exact target/source/test flag, release directory, observed profile and executable ELF64 little-endian x86_64 ET_EXEC/ET_DYN. Dependency profiles are not assumed opt3.",
+    "Source/tool/dependency/config/artifact/resource and owned-child/FD final failures change state to FAIL before release qualification."
+  ],
+  "limits": [
+    "Static review does not prove actual release build/test success or resource sufficiency.",
+    "Original debug02 memory.peak=1073741824; memory.events.max delta=143; OOM0; observed swap peak0; swap.max=max. No pressure-free or zero-swap-limit claim.",
+    "No current Main/Android/ABI/deployment qualification is implied.",
+    "No new tests or execution request created by this review."
+  ]
+}

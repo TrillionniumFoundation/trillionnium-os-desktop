@@ -1,0 +1,86 @@
+--- r2/read_install.py
++++ r3/read_install.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed read-only export of this owned r2 install and no-automation state."""
++"""Fixed read-only export of this owned r3 install and no-automation state."""
+ import argparse
+ import base64
+ import hashlib
+@@ -9,16 +9,15 @@
+ import re
+ import stat
+ import time
++import zlib
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r2-install-state-01')
+-STEP = Path('/home/alex/work/pocket4-bilibili-owned-qa-r2-flow-1c5dfa5297c2f249a3f19ecabbf86b55/steps/install-state-r2-01')
+-NONCE = '58986b6022b724c5854f57d4b10fffe7'
+-PACKAGE = 'org.droidloom.qa.bili.r2'
+-PROTOCOL = 'pocket4-owned-bili-qa-v2'
+-PINS = {
+-    'coordinator.json':(3025,'9cef3fda15853de2edf2bc46e7965a6e2e017b466b34b567507fcb1ecdfa43ab'),
+-    'stage.json':(2032,'01a1e40957b53b4e63c96839808d3c390a507b4417e57bc73cef1f1728bb4ab5'),
+-}
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r3-install-state-01')
++STEP = Path('/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-c387ae7ab75180244cca4d8f4e669284/steps/install-state-r3-01')
++NONCE = '0b64d93d23111bb5f4a5d0500d2b60a7'
++PACKAGE = 'org.droidloom.qa.bili.r3'
++PROTOCOL = 'pocket4-owned-bili-qa-v3'
++PINS = {'coordinator.json':(3025,'99d70682c8ef114250968c51f47a7666fc5abf9adbf5ce845f434e486a996aba'),
++        'stage.json':(2032,'53123402517c94227021340ed599342293dc426f8838ee2e83eb9ed938bff013')}
+ BASE = {
+     'coordinator.json':ROOT/'result.json',
+     'stage.json':ROOT/'stage-result.json',
+@@ -36,6 +35,20 @@
+ 
+ def sha(raw):
+     return hashlib.sha256(raw).hexdigest()
++
++
++def decode_state_wire(encoded):
++    # This reader only exports the small no-UiAutomation state envelope. Its
++    # 64 KiB receipt limit remains stricter than the helper's general UI limit.
++    require(isinstance(encoded,bytes) and 0<len(encoded)<=65536,'STATE_BASE64_BOUND')
++    compressed=base64.b64decode(encoded,validate=True)
++    require(0<len(compressed)<=65536 and base64.b64encode(compressed)==encoded,
++            'CANONICAL_STATE_BASE64_REQUIRED')
++    decoder=zlib.decompressobj(31)
++    wire=decoder.decompress(compressed,65537)
++    require(0<len(wire)<=65536 and decoder.eof and not decoder.unconsumed_tail and
++            not decoder.unused_data,'ONE_COMPLETE_BOUNDED_STATE_GZIP_REQUIRED')
++    return wire
+ 
+ 
+ class Reader:
+@@ -106,11 +119,12 @@
+     require(isinstance(helper,dict) and helper.get('protocol')==PROTOCOL and helper.get('op')=='state' and
+             helper.get('nonce')==NONCE and helper.get('ui_automation_connected') is False and
+             helper.get('requires_post_termination_state_check') is False and
+-            helper.get('window_observation')=={} and 'inspection' not in helper,
++            helper.get('window_observation')=={} and helper.get('tree_observations')==[] and
++            helper.get('wire_codec')=='gzip-canonical-json-v1' and 'inspection' not in helper,
+             'ONLY_NO_AUTOMATION_STATE_CAN_BE_EXPORTED')
+     uid=worker.get('owned_package_uid')
+-    require(type(uid) is int and 10000<=uid<100000 and uid not in (10117,10125,10164) and
+-            helper.get('self_uid')==uid,'ACTUAL_R2_UID_REQUIRED')
++    require(type(uid) is int and 10000<=uid<100000 and uid not in (10117,10125,10164,10165) and
++            helper.get('self_uid')==uid,'ACTUAL_R3_UID_REQUIRED')
+     request=json.loads(r.add('state.request.json',STEP/(NONCE+'.request.json')))
+     require(request=={'protocol':PROTOCOL,'nonce':NONCE,'op':'state'},'FIXED_STATE_REQUEST_REQUIRED')
+     assessment=json.loads(r.add('state.assessment.json',STEP/(NONCE+'.assessment.json')))
+@@ -133,11 +147,11 @@
+     err=r.add('state-command.stderr',Path(str(stem)+'.stderr'))
+     require(sha(out)==state['stdout_sha256']==command['stdout_sha256'] and
+             sha(err)==state['stderr_sha256']==command['stderr_sha256'],'ACTUAL_STATE_OUTPUT_PINS_DIFFER')
+-    encoded=re.findall(rb'^INSTRUMENTATION_RESULT: owned_qa_result_base64=([^\r\n]+)\r?$',out,re.M)
++    encoded=re.findall(rb'^INSTRUMENTATION_RESULT: owned_qa_result_gzip_base64=([^\r\n]+)\r?$',out,re.M)
+     require(len(encoded)==1,'ONE_STATE_WIRE_REQUIRED')
+-    wire=base64.b64decode(encoded[0],validate=True)
++    wire=decode_state_wire(encoded[0])
+     require(sha(wire)==state['wire_sha256'] and json.loads(wire)==helper,'RAW_STATE_NOT_MATCHING_PARSED_NO_UI_RECEIPT')
+-    result={'schema':1,'scope':'exact-owned-r2-install-and-no-automation-state-readback',
++    result={'schema':1,'scope':'exact-owned-r3-install-and-no-automation-state-readback',
+         'files':r.records,'state_command_index':index,'state_nonce':NONCE,'actual_helper_uid':uid,
+         'total_read_bytes':r.total,'elapsed_seconds':time.monotonic()-r.started,
+         'Android_commands':0,'service_or_process_actions':0,'permission_or_original_file_changes':0,

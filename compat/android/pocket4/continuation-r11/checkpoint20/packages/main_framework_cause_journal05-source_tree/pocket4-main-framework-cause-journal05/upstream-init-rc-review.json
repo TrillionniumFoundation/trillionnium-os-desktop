@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "state": "PINNED_UPSTREAM_INIT_RC_SOURCE_READ_NOT_MAIN_FILE_QUALIFICATION",
+  "project": "system/core",
+  "locked_commit": "545d2487e38192a2ce25040897ced877cf6b4f53",
+  "files": [
+    {
+      "path": "rootdir/init.zygote64.rc",
+      "url": "https://github.com/aosp-mirror/platform_system_core/blob/545d2487e38192a2ce25040897ced877cf6b4f53/rootdir/init.zygote64.rc",
+      "bytes": 901,
+      "sha256": "7be8fde03ec2cc4417aecf1a79163e0e4088fdff02ee6cd2426d02f91127e479",
+      "git_blob_sha1": "342212123de59bebaf3eb4d4c3dca7147affe5c4"
+    },
+    {
+      "path": "rootdir/init.rc",
+      "url": "https://github.com/aosp-mirror/platform_system_core/blob/545d2487e38192a2ce25040897ced877cf6b4f53/rootdir/init.rc",
+      "bytes": 56559,
+      "sha256": "8b8d9d9c2c17fcb1f907b0a369aae03632976dff8f4cf603b1d5ef83cad78225",
+      "git_blob_sha1": "5e26d127ac4aec5fd7b4a7c7c4e17460c4828638"
+    }
+  ],
+  "zygote_public_onrestart_lines": [
+    "    onrestart exec_background - system system -- /system/bin/vdc volume abort_fuse",
+    "    onrestart write /sys/power/state on",
+    "    onrestart write /sys/power/wake_lock zygote_kwl",
+    "    onrestart restart audioserver",
+    "    onrestart restart cameraserver",
+    "    onrestart restart media",
+    "    onrestart restart --only-if-running media.tuner",
+    "    onrestart restart netd",
+    "    onrestart restart wificond"
+  ],
+  "import_line": "import /system/etc/init/hw/init.${ro.zygote}.rc",
+  "proposed_fixed_actual_files": [
+    "/proc/3588093/root/system/etc/init/hw/init.rc",
+    "/proc/3588093/root/system/etc/init/hw/init.zygote64.rc"
+  ],
+  "qualification_needed": "A separate fixed nofollow held-file read relative to the already bound Main init root, birth and namespaces; full file hash/size plus only explicit public import/onrestart descriptors. ENOENT remains a failure, no path fallback or recursive scan.",
+  "current_Main_uses_these_exact_upstream_bytes": false,
+  "ro_zygote_property_observed_by_this_task": false,
+  "onrestart_source_order_is_not_original_SIGKILL_sender_proof": true,
+  "SIGKILL_sender_proved": false,
+  "OOM_proved": false,
+  "Main_mutations": 0,
+  "Hepta_called": false
+}

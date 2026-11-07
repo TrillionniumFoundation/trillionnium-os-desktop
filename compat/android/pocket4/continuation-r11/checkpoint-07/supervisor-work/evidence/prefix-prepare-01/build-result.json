@@ -1,0 +1,197 @@
+{
+  "Android_operations": 0,
+  "Main_actions": 0,
+  "actual_Rust_Owner_executed": false,
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/source/prefix_probe.c",
+        "-o",
+        "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/bin/prefix-probe"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/source/test_prefix_control.py"
+      ],
+      "returncode": 0,
+      "stderr": "test_actual_rights_are_new_cloexec_owned_descriptors (__main__.PrefixControls.test_actual_rights_are_new_cloexec_owned_descriptors) ... ok\ntest_actual_root_credentials_and_empty_rights (__main__.PrefixControls.test_actual_root_credentials_and_empty_rights) ... ok\ntest_actual_unexpected_scm_pidfd_is_closed (__main__.PrefixControls.test_actual_unexpected_scm_pidfd_is_closed) ... ok\ntest_ancillary_truncation_closes_all_delivered_rights (__main__.PrefixControls.test_ancillary_truncation_closes_all_delivered_rights) ... ok\ntest_current_interpreter_is_bound_by_kernel_exe (__main__.PrefixControls.test_current_interpreter_is_bound_by_kernel_exe) ... ok\ntest_finite_empty_packet_timeout (__main__.PrefixControls.test_finite_empty_packet_timeout) ... ok\ntest_hardlinked_artifact_rejected (__main__.PrefixControls.test_hardlinked_artifact_rejected) ... ok\ntest_malformed_credentials_before_rights_still_closes_rights (__main__.PrefixControls.test_malformed_credentials_before_rights_still_closes_rights) ... ok\ntest_mutated_artifact_digest_is_rejected (__main__.PrefixControls.test_mutated_artifact_digest_is_rejected) ... ok\ntest_payload_truncation_closes_received_rights (__main__.PrefixControls.test_payload_truncation_closes_received_rights) ... ok\ntest_real_owned_child_identity_and_exact_retirement (__main__.PrefixControls.test_real_owned_child_identity_and_exact_retirement) ... ok\ntest_setid_artifact_rejected (__main__.PrefixControls.test_setid_artifact_rejected) ... ok\ntest_symlink_artifact_rejected_without_following (__main__.PrefixControls.test_symlink_artifact_rejected_without_following) ... ok\ntest_unexpected_cmsg_before_rights_still_closes_rights (__main__.PrefixControls.test_unexpected_cmsg_before_rights_still_closes_rights) ... ok\ntest_unexpected_rights_are_closed (__main__.PrefixControls.test_unexpected_rights_are_closed) ... ok\ntest_wrong_exact_peer_closes_received_rights (__main__.PrefixControls.test_wrong_exact_peer_closes_received_rights) ... ok\n\n----------------------------------------------------------------------\nRan 16 tests in 0.029s\n\nOK\n",
+      "stderr_sha256": "ff0a4a8f5e5b2065bec035367f35447080b65d29d23691182d51da8e5d1a66be",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/source/test_prefix_coordinator.py"
+      ],
+      "returncode": 0,
+      "stderr": "test_create_only_atomic_publish_preserves_first_receipt (__main__.OwnedRecordControls.test_create_only_atomic_publish_preserves_first_receipt) ... ok\ntest_hierarchical_counter_prevents_empty_root_false_retirement (__main__.OwnedRecordControls.test_hierarchical_counter_prevents_empty_root_false_retirement) ... ok\ntest_record_symlink_is_rejected (__main__.OwnedRecordControls.test_record_symlink_is_rejected) ... ok\ntest_renamed_regular_fixture_is_not_removed_cgroup_proof (__main__.OwnedRecordControls.test_renamed_regular_fixture_is_not_removed_cgroup_proof) ... ok\ntest_replaced_group_path_is_rejected (__main__.OwnedRecordControls.test_replaced_group_path_is_rejected) ... ok\ntest_actor_cleanup_error_cannot_be_overridden_by_success (__main__.QualificationControls.test_actor_cleanup_error_cannot_be_overridden_by_success) ... ok\ntest_arbitrary_outside_owner_pidfd_is_not_sufficient (__main__.QualificationControls.test_arbitrary_outside_owner_pidfd_is_not_sufficient) ... ok\ntest_changed_unit_never_licenses_a_stop (__main__.QualificationControls.test_changed_unit_never_licenses_a_stop) ... ok\ntest_claimed_success_with_nonzero_actual_exit_rejected (__main__.QualificationControls.test_claimed_success_with_nonzero_actual_exit_rejected) ... ok\ntest_compiled_owner_or_android_claim_is_rejected_for_standin (__main__.QualificationControls.test_compiled_owner_or_android_claim_is_rejected_for_standin) ... ok\ntest_duplicate_counter_cannot_hide_an_oom (__main__.QualificationControls.test_duplicate_counter_cannot_hide_an_oom) ... ok\ntest_empty_root_with_unknown_descendant_rejected (__main__.QualificationControls.test_empty_root_with_unknown_descendant_rejected) ... ok\ntest_exact_native_death_observation_boundary_rejected (__main__.QualificationControls.test_exact_native_death_observation_boundary_rejected) ... ok\ntest_exact_unit_lifetime_boundary_rejected (__main__.QualificationControls.test_exact_unit_lifetime_boundary_rejected) ... ok\ntest_lost_control_endpoint_cannot_prove_parent_death (__main__.QualificationControls.test_lost_control_endpoint_cannot_prove_parent_death) ... ok\ntest_missing_group_name_requires_independent_retirement_proof (__main__.QualificationControls.test_missing_group_name_requires_independent_retirement_proof) ... ok\ntest_original_legacy_wrapper_argv_rejected (__main__.QualificationControls.test_original_legacy_wrapper_argv_rejected) ... ok\ntest_outer_oom_or_swap_rejected (__main__.QualificationControls.test_outer_oom_or_swap_rejected) ... ok\ntest_replaced_first_cgroup_identity_rejected (__main__.QualificationControls.test_replaced_first_cgroup_identity_rejected) ... ok\ntest_terminal_memory_peak_boundary_rejected (__main__.QualificationControls.test_terminal_memory_peak_boundary_rejected) ... ok\ntest_three_correct_logical_records (__main__.QualificationControls.test_three_correct_logical_records) ... ok\ntest_wrong_exec_main_pid_rejected (__main__.QualificationControls.test_wrong_exec_main_pid_rejected) ... ok\ntest_wrong_invocation_rejected (__main__.QualificationControls.test_wrong_invocation_rejected) ... ok\ntest_wrong_root_process_rejected (__main__.QualificationControls.test_wrong_root_process_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 24 tests in 0.006s\n\nOK\n",
+      "stderr_sha256": "a9695193bf72897e520485e7a10d99b6f9b3f7e54dfca84b1aeafdfa28a1e055",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/bin/prefix-probe",
+        "--fd-check"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/bin/prefix-probe",
+        "--fd-check"
+      ],
+      "returncode": 93,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/bin/prefix-probe",
+        "--fd-check"
+      ],
+      "returncode": 93,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/bin/prefix-probe",
+        "--fd-check"
+      ],
+      "returncode": 93,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/bin/prefix-probe",
+        "--fd-check"
+      ],
+      "returncode": 93,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/bin/prefix-probe",
+        "development-enter",
+        "--spec",
+        "/not-opened"
+      ],
+      "returncode": 97,
+      "stderr": "prefix-probe: not owned private root PID 1\n",
+      "stderr_sha256": "dd7a3fd3be218d15b3bfd270c00d72473e9950b74db7e1faff99a3648464d7da",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "finished_at": "2026-11-04T21:26:11.352413+00:00",
+  "inputs_after": {
+    "full_prefix_control.py": {
+      "bytes": 30605,
+      "sha256": "1432b761fbc289877465c0a167b7ff213cd9c87f0086495ddfeecf7b55e65745"
+    },
+    "prefix_coordinator.py": {
+      "bytes": 40200,
+      "sha256": "05bf5f46240b303b1af7f3850b5d683dcaa295fd4ee94a973c2b104eb08641ba"
+    },
+    "prefix_probe.c": {
+      "bytes": 9662,
+      "sha256": "d088edf44d523a67e2881ce6c0715a4885664f11c5315938e04f52738c43a34a"
+    },
+    "test_prefix_control.py": {
+      "bytes": 8284,
+      "sha256": "ae1cbf8f7c74afb4b32ffaefc1674e5635777f66833ba7adaf5c4b1f86a4d887"
+    },
+    "test_prefix_coordinator.py": {
+      "bytes": 10441,
+      "sha256": "bab7d9d5ffab2898d41e3b8951f61097c1935547f7fa35e0dc7dfc5cae26f2dc"
+    }
+  },
+  "inputs_before": {
+    "full_prefix_control.py": {
+      "bytes": 30605,
+      "sha256": "1432b761fbc289877465c0a167b7ff213cd9c87f0086495ddfeecf7b55e65745"
+    },
+    "prefix_coordinator.py": {
+      "bytes": 40200,
+      "sha256": "05bf5f46240b303b1af7f3850b5d683dcaa295fd4ee94a973c2b104eb08641ba"
+    },
+    "prefix_probe.c": {
+      "bytes": 9662,
+      "sha256": "d088edf44d523a67e2881ce6c0715a4885664f11c5315938e04f52738c43a34a"
+    },
+    "test_prefix_control.py": {
+      "bytes": 8284,
+      "sha256": "ae1cbf8f7c74afb4b32ffaefc1674e5635777f66833ba7adaf5c4b1f86a4d887"
+    },
+    "test_prefix_coordinator.py": {
+      "bytes": 10441,
+      "sha256": "bab7d9d5ffab2898d41e3b8951f61097c1935547f7fa35e0dc7dfc5cae26f2dc"
+    }
+  },
+  "namespace_actions": 0,
+  "native_ordinary_controls_passed": 6,
+  "network_actions": 0,
+  "owned_attempt_base": {
+    "device": 66306,
+    "gid": 0,
+    "inode": 34481462,
+    "mode": 448,
+    "path": "/home/alex/work/pocket4-relay-prefix-r11-owned",
+    "uid": 0
+  },
+  "probe": {
+    "bytes": 21752,
+    "device": 66306,
+    "gid": 0,
+    "inode": 34481448,
+    "mode": 448,
+    "path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/bin/prefix-probe",
+    "sha256": "79b30f9fa4a1e7635ae4786a50372b3fcaa84ad619269476e40a1badd65c0e82",
+    "uid": 0
+  },
+  "production_ready": false,
+  "python_tests_passed": {
+    "test_prefix_control.py": 16,
+    "test_prefix_coordinator.py": 24
+  },
+  "runtime_prefix_qualified": false,
+  "schema": 1,
+  "scope": "matching host compilation and ordinary/pure controls only",
+  "source_freeze_manifest_sha256": "d84fa55f59642618d3c2a876ff77ae23db021ffddb34b8e9b0d358c65b7b6bd8",
+  "started_at": "2026-11-04T21:26:10.977445+00:00",
+  "success": true,
+  "systemd_unit_actions": 0
+}

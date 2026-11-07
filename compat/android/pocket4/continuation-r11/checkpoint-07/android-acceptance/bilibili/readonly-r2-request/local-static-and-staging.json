@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "coordinator_sha256": "88140f6b1effdf0a6f15008cca2169c805a70d97541c20a5942d256de731174a",
+  "coordinator_bytes": 16900,
+  "default_plan_rc": 0,
+  "default_plan": {
+    "state": "PLAN_ONLY",
+    "root": "/home/alex/work/pocket4-bilibili-readonly-r2-01",
+    "flow": "/home/alex/work/pocket4-bilibili-readonly-r2-01/flow",
+    "archive": "/home/alex/work/pocket4-bilibili-held-r2-source-01.tar.gz",
+    "archive_sha256": "ff856ef8c23fde572060917f32e039cdf02923a6d77ee38e87b9c5287501dbfa",
+    "source_manifest_sha256": "2c2c2a51ec91402a04237738ca5eba840a0d5dad62803e09c8752d691394ab72",
+    "operations": [
+      "init",
+      "admission"
+    ],
+    "command": [
+      "/system/bin/cmd",
+      "package",
+      "list",
+      "packages",
+      "-U",
+      "--user",
+      "0",
+      "tv.danmaku.bili"
+    ],
+    "UI_audio_launch_close": false
+  },
+  "staging": {
+    "actual_stage_source": "PASS",
+    "actual_SourceContract_at_relocated_path": "PASS",
+    "files": 32,
+    "Main_guard_or_run_cli_called": false
+  },
+  "device_execution": "NOT_RUN",
+  "Main_UI_audio": false
+}

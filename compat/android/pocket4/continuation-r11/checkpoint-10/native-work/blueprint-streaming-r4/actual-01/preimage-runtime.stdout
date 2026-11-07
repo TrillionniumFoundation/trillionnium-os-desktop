@@ -1,0 +1,63 @@
+=== RUN   TestPocket4StreamingWholeShardOutput
+=== RUN   TestPocket4StreamingWholeShardOutput/zero
+=== RUN   TestPocket4StreamingWholeShardOutput/one
+=== RUN   TestPocket4StreamingWholeShardOutput/nine
+=== RUN   TestPocket4StreamingWholeShardOutput/ten
+=== RUN   TestPocket4StreamingWholeShardOutput/eleven
+=== RUN   TestPocket4StreamingWholeShardOutput/mixed37
+=== RUN   TestPocket4StreamingWholeShardOutput/large
+=== RUN   TestPocket4StreamingWholeShardOutput/enabled13
+    owned_streaming_test.go:145: nonincremental fixture unexpectedly has a cache key or restored module
+--- FAIL: TestPocket4StreamingWholeShardOutput (0.11s)
+    --- PASS: TestPocket4StreamingWholeShardOutput/zero (0.00s)
+    --- PASS: TestPocket4StreamingWholeShardOutput/one (0.00s)
+    --- PASS: TestPocket4StreamingWholeShardOutput/nine (0.01s)
+    --- PASS: TestPocket4StreamingWholeShardOutput/ten (0.05s)
+    --- PASS: TestPocket4StreamingWholeShardOutput/eleven (0.01s)
+    --- PASS: TestPocket4StreamingWholeShardOutput/mixed37 (0.02s)
+    --- PASS: TestPocket4StreamingWholeShardOutput/large (0.02s)
+    --- FAIL: TestPocket4StreamingWholeShardOutput/enabled13 (0.00s)
+=== RUN   TestPocket4StreamingRealSerializerEquivalence
+=== RUN   TestPocket4StreamingRealSerializerEquivalence/empty
+    owned_streaming_test.go:246: same_bytes=0 sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+=== RUN   TestPocket4StreamingRealSerializerEquivalence/mixed
+    owned_streaming_test.go:246: same_bytes=37446 sha256=4746fa92f097ca1d4289f1de3180dd8ad22bbe57a262e4f3047eb1184a5ed04f
+=== RUN   TestPocket4StreamingRealSerializerEquivalence/large
+    owned_streaming_test.go:246: same_bytes=2765833 sha256=4a16fa2cf1e7df28b125812cb8b36e6a9b3f8684287b80e0bc31efd7e710f14d
+--- PASS: TestPocket4StreamingRealSerializerEquivalence (0.03s)
+    --- PASS: TestPocket4StreamingRealSerializerEquivalence/empty (0.00s)
+    --- PASS: TestPocket4StreamingRealSerializerEquivalence/mixed (0.00s)
+    --- PASS: TestPocket4StreamingRealSerializerEquivalence/large (0.02s)
+=== RUN   TestPocket4StreamingWriterErrors
+=== RUN   TestPocket4StreamingWriterErrors/0
+    owned_streaming_test.go:289: actual stream returns ENOSPC; existing buffered method discards it; accepted_bytes=0
+=== RUN   TestPocket4StreamingWriterErrors/11
+    owned_streaming_test.go:289: actual stream returns ENOSPC; existing buffered method discards it; accepted_bytes=11
+=== RUN   TestPocket4StreamingWriterErrors/66197
+    owned_streaming_test.go:289: actual stream returns ENOSPC; existing buffered method discards it; accepted_bytes=66197
+=== RUN   TestPocket4StreamingWriterErrors/132394
+    owned_streaming_test.go:289: actual stream returns ENOSPC; existing buffered method discards it; accepted_bytes=132394
+--- PASS: TestPocket4StreamingWriterErrors (0.00s)
+    --- PASS: TestPocket4StreamingWriterErrors/0 (0.00s)
+    --- PASS: TestPocket4StreamingWriterErrors/11 (0.00s)
+    --- PASS: TestPocket4StreamingWriterErrors/66197 (0.00s)
+    --- PASS: TestPocket4StreamingWriterErrors/132394 (0.00s)
+=== RUN   TestPocket4StreamingShardOpenError
+    owned_streaming_test.go:305: actual filesystem rejection joined and returned: error opening Ninja file shard: open /home/alex/work/pocket4-blueprint-streaming-controls-04-20261105/attempt01/go-tmp/TestPocket4StreamingShardOpenError360181929/001/build.0.ninja: is a directory
+        error opening Ninja file shard: open /home/alex/work/pocket4-blueprint-streaming-controls-04-20261105/attempt01/go-tmp/TestPocket4StreamingShardOpenError360181929/001/build.1.ninja: is a directory
+        error opening Ninja file shard: open /home/alex/work/pocket4-blueprint-streaming-controls-04-20261105/attempt01/go-tmp/TestPocket4StreamingShardOpenError360181929/001/build.2.ninja: is a directory
+        error opening Ninja file shard: open /home/alex/work/pocket4-blueprint-streaming-controls-04-20261105/attempt01/go-tmp/TestPocket4StreamingShardOpenError360181929/001/build.3.ninja: is a directory
+        error opening Ninja file shard: open /home/alex/work/pocket4-blueprint-streaming-controls-04-20261105/attempt01/go-tmp/TestPocket4StreamingShardOpenError360181929/001/build.4.ninja: is a directory
+        error opening Ninja file shard: open /home/alex/work/pocket4-blueprint-streaming-controls-04-20261105/attempt01/go-tmp/TestPocket4StreamingShardOpenError360181929/001/build.5.ninja: is a directory
+        error opening Ninja file shard: open /home/alex/work/pocket4-blueprint-streaming-controls-04-20261105/attempt01/go-tmp/TestPocket4StreamingShardOpenError360181929/001/build.6.ninja: is a directory
+        error opening Ninja file shard: open /home/alex/work/pocket4-blueprint-streaming-controls-04-20261105/attempt01/go-tmp/TestPocket4StreamingShardOpenError360181929/001/build.7.ninja: is a directory
+        error opening Ninja file shard: open /home/alex/work/pocket4-blueprint-streaming-controls-04-20261105/attempt01/go-tmp/TestPocket4StreamingShardOpenError360181929/001/build.8.ninja: is a directory
+        error opening Ninja file shard: open /home/alex/work/pocket4-blueprint-streaming-controls-04-20261105/attempt01/go-tmp/TestPocket4StreamingShardOpenError360181929/001/build.9.ninja: is a directory
+--- PASS: TestPocket4StreamingShardOpenError (0.00s)
+=== RUN   TestPocket4StreamingAllocationControl
+    owned_streaming_test.go:377: {"buffered":{"output_bytes":8420855,"sha256":"c2682211161455978b00826f5cec0c4bab85500647966a53ee1d71096f37ace7","total_alloc_delta":9140112},"go_version":"go1.25.4","parallelVisitLimit":2,"runtime_NumCPU":1,"scope":"actual serializer TotalAlloc comparison; not full-build peak or OOM-victim proof","streamed":{"output_bytes":8420855,"sha256":"c2682211161455978b00826f5cec0c4bab85500647966a53ee1d71096f37ace7","total_alloc_delta":81696}}
+--- PASS: TestPocket4StreamingAllocationControl (0.10s)
+=== RUN   TestPocket4StreamingWholePathAllocation
+    owned_streaming_test.go:421: {"go_version":"go1.25.4","incremental_enabled":false,"output_bytes":5263467,"parallelVisitLimit":2,"runtime_NumCPU":1,"scope":"actual WriteBuildFile TotalAlloc; compare separate matched baseline/candidate executions","total_alloc_delta":177284728}
+--- PASS: TestPocket4StreamingWholePathAllocation (0.14s)
+FAIL

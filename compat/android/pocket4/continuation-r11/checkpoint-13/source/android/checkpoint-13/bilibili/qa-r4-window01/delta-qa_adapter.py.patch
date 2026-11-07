@@ -1,0 +1,29 @@
+--- r3/qa_adapter.py
++++ r4/qa_adapter.py
+@@ -18,7 +18,7 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ RECORDER_MANIFEST_SHA = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+-SELF = 'org.droidloom.qa.bili.r3'
++SELF = 'org.droidloom.qa.bili.r4'
+ BUILD_COMMANDS = ['javac','d8','aapt-package','align','create-owned-signing-key','sign',
+                   'signature','alignment','badging','permissions','manifest']
+ 
+@@ -78,7 +78,7 @@
+                 'SOURCE_RELATIVE_PATH_REQUIRED')
+         require(len(pinned(HERE/name, row['sha256'])) == row['bytes'], 'SOURCE_SIZE_CHANGED')
+     require({'qa_adapter.py','qa_contract.py','build_candidate.py','AndroidManifest.xml',
+-             'src/org/droidloom/qa/bili/r3/ActionRunner.java'} <= set(manifest['files']),
++             'src/org/droidloom/qa/bili/r4/ActionRunner.java'} <= set(manifest['files']),
+             'OWNED_SOURCE_CLOSURE_INCOMPLETE')
+     return manifest
+ 
+@@ -343,7 +343,7 @@
+     builder = load(HERE/'build_candidate.py', manifest['files']['build_candidate.py']['sha256'], 'owned_qa_build_gate')
+     proof = qualified_build(args, manifest, builder)
+     plan_raw = pinned(args.plan, args.plan_sha256, 16384); plan = validate_plan(json.loads(plan_raw), qa)
+-    require(re.fullmatch(r'/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-[0-9a-f]{32}', str(args.flow_dir)) and
++    require(re.fullmatch(r'/home/alex/work/pocket4-bilibili-owned-qa-r4-flow-[0-9a-f]{32}', str(args.flow_dir)) and
+             args.flow_dir.resolve() == args.flow_dir and args.recorder_root.resolve() == args.recorder_root,
+             'NEW_CANONICAL_OWNED_FLOW_AND_RECORDER_REQUIRED')
+     base = json.loads(pinned(args.recorder_root/'source-manifest.json', RECORDER_MANIFEST_SHA, 131072))

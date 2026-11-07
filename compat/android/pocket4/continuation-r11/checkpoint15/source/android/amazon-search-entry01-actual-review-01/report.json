@@ -1,0 +1,118 @@
+{
+  "Main_exactly_preserved": true,
+  "action_attempted": false,
+  "actual_click_commands": 0,
+  "business_success_verified": false,
+  "complete_read_count": 5,
+  "conclusion": "Four successful complete observations changed from 72 to 220 to 281 to 464 nodes; the independently named final observation matched the fourth full tree/window/scope. This establishes loading variation in these records, not a compare bug or a Main change. It does not retrospectively qualify the failed flow or authorize a click.",
+  "exact_task_removed": 950,
+  "first_error": {
+    "message": "TWO_CONSECUTIVE_COMPLETE_SEARCH_ENTRY_OBSERVATIONS_REQUIRED",
+    "phase": "public_search_entry_and_post_inspection",
+    "type": "RuntimeError"
+  },
+  "helper_and_target_artifact_binding_retained": true,
+  "identity_trace": {
+    "bytes": 5965,
+    "sha256": "4c5939d99e9efacde15178c26bc27b7fcc111708dbae2a3122761b0737ca81ee"
+  },
+  "inputs": {
+    "cleanup-command-result.json": {
+      "bytes": 1156,
+      "path": "/home/alex/work/pocket4-amazon-owned-search-entry-01/evidence/03-cleanup.result.json",
+      "sha256": "f74d62a3bffefc0e628bed65c68216b04727b8c1e5251b3bdac03545a6492d4a"
+    },
+    "cleanup.json": {
+      "bytes": 12288,
+      "path": "/home/alex/work/pocket4-amazon-owned-qa-r1-flow-853b099b08f0e7a60c3d7b05fcd07461/steps/cleanup-01/result.json",
+      "sha256": "b232c789ba6376604c19dfd6f50472ec7657fae93bba9e09c051d14e539c1d70"
+    },
+    "coordinator.json": {
+      "bytes": 7455,
+      "path": "/home/alex/work/pocket4-amazon-owned-search-entry-01/result.json",
+      "sha256": "196e7052241db76fda7a479fc28e3422396886db38069c519984997f49d4709d"
+    },
+    "inspection-command-result.json": {
+      "bytes": 1157,
+      "path": "/home/alex/work/pocket4-amazon-owned-search-entry-01/evidence/02-inspect.result.json",
+      "sha256": "0a8dfd36458230b7ac8e21ce923f986309ad5dd86dde64fcce6876846c4a2bd0"
+    },
+    "inspection.json": {
+      "bytes": 75633,
+      "path": "/home/alex/work/pocket4-amazon-owned-qa-r1-flow-853b099b08f0e7a60c3d7b05fcd07461/steps/inspect-01/result.json",
+      "sha256": "fff2b2fe97ec3c300ca83c3de5b801c376f06823abb46b90778ab71e992d169c"
+    },
+    "launch-command-result.json": {
+      "bytes": 1155,
+      "path": "/home/alex/work/pocket4-amazon-owned-search-entry-01/evidence/01-launch.result.json",
+      "sha256": "de276db0884d962029888c0ccaa3cc2a8a24882e8b5950ede321743ff00dce1d"
+    },
+    "launch.json": {
+      "bytes": 13454,
+      "path": "/home/alex/work/pocket4-amazon-owned-qa-r1-flow-853b099b08f0e7a60c3d7b05fcd07461/steps/launch-01/result.json",
+      "sha256": "8918f7294603eb14438dfcca0a27fb7b06b7e726e35fb2961239948679ba0a1c"
+    },
+    "stage.json": {
+      "bytes": 1827,
+      "path": "/home/alex/work/pocket4-amazon-owned-search-entry-01/stage-result.json",
+      "sha256": "36bb8d4ba46f26a2f51fa36bb3052649675fd0831ae9996ac1ace463bc2079fa"
+    }
+  },
+  "locks_and_held_bindings_released": true,
+  "minimal_candidate": {
+    "candidate_not_run": true,
+    "existing_total_seconds": 30,
+    "fresh_flow_and_all_nonces_required": true,
+    "no_failed_read_replay": true,
+    "same_action_fresh_whole_tree_and_window_gate": true,
+    "same_consecutive_identity_gate": true,
+    "successful_read_limit": 5
+  },
+  "new_device_actions": 0,
+  "original_coordinator_error": {
+    "message": "02-inspect did not complete exactly once with a preserved Main fence",
+    "phase": "coordinator",
+    "type": "RuntimeError"
+  },
+  "original_failure_preserved": true,
+  "original_readiness_limit": 4,
+  "original_runtime_job": "1a1abbf3807-fc05-5045",
+  "original_stage_error": {
+    "message": "",
+    "phase": "stage_or_owned_launch_inspect",
+    "type": "AssertionError"
+  },
+  "outcome_unknown": false,
+  "owned_resource": {
+    "events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak_bytes": 300212224,
+    "swap_peak_bytes": 0
+  },
+  "preexisting_tasks_preserved": [
+    851
+  ],
+  "raw_UI_tree_or_pixels_read": false,
+  "reviewed_reader": {
+    "bytes": 125407,
+    "sha256": "38a39f0f7658ec223314d93386a9a4b93a5ef7f3d88684fa91651fc671c0acec"
+  },
+  "reviewed_source": {
+    "bytes": 7587,
+    "path": "/workspace/scratch/94990735b266/android-amazon-search-entry-01/search_navigation.py",
+    "sha256": "3b3ed0a54d1bdd1c520dbcd35b0d7729425139ca0f936b059e5b628e49fc0b00",
+    "stable_entry_AST_sha256": "e7e9bd30728e072558b99d2bef94ce33f18c6188a791273875e70562ce347f65"
+  },
+  "schema": 1,
+  "state": "ACTUAL_FAILED_READINESS_GATE_WITH_EXACT_CLEANUP",
+  "terminal_source": "Root authoritative terminal: failed/1 complete/durable; local phase children independently rc0/2/0 joined/no timeout",
+  "three_held_target_FDs_closed_each_phase": true,
+  "whole_app_production_ready": false
+}

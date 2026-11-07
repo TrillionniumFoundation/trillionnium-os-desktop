@@ -1,0 +1,43 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "25c4e858abccdaaef4f6378d8ee23a0d32f0744e",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 964,
+    "sha256": "ca1b2ed2d1e6707d788a958631ea7c25c5145f1ad881ca84242ffdc7b0290eb7",
+    "git_blob_sha1": "990f4dfbb9912b8e2edbcaea6f9aea2215afa2c2",
+    "retrieval": "shallow_complete_root_with_catalogued_dependencies",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "abe83e5b64b416a1cb322add7e0c7afb96f0c08c"
+    },
+    {
+      "path": "stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f5d68d6ef80b339b9d1b31a6112698064a6c99b8",
+      "bytes": 3635
+    },
+    {
+      "path": "terminal.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "54082e02dfad324082edbef99140279f0dfce79c",
+      "bytes": 731
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "admission",
+      "original_tree": "abe83e5b64b416a1cb322add7e0c7afb96f0c08c",
+      "checkpoint": 21,
+      "canonical_package": "native_resource05_observation02-admission"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

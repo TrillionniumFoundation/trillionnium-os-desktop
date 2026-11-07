@@ -1,0 +1,121 @@
+--- r4/src/org/droidloom/qa/bili/r4/ActionRunner.java
++++ r5/src/org/droidloom/qa/bili/r5/ActionRunner.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.bili.r4;
++package org.droidloom.qa.bili.r5;
+ 
+ import android.accessibilityservice.AccessibilityServiceInfo;
+ import android.app.Instrumentation;
+@@ -7,6 +7,7 @@
+ import android.content.pm.ResolveInfo;
+ import android.graphics.Rect;
+ import android.os.Bundle;
++import android.os.Build;
+ import android.os.Process;
+ import android.os.SystemClock;
+ import android.util.Base64;
+@@ -20,6 +21,9 @@
+ import java.io.File;
+ import java.io.FileInputStream;
+ import java.io.FileOutputStream;
++import java.lang.reflect.InvocationTargetException;
++import java.lang.reflect.Method;
++import java.lang.reflect.Modifier;
+ import java.nio.charset.StandardCharsets;
+ import java.security.MessageDigest;
+ import java.util.ArrayList;
+@@ -35,9 +39,9 @@
+ 
+ /** An owned self-instrumentation; it never instruments the commercial app. */
+ public final class ActionRunner extends Instrumentation {
+-    static final String PROTOCOL = "pocket4-owned-bili-qa-v4";
++    static final String PROTOCOL = "pocket4-owned-bili-qa-v5";
+     static final String PACKAGE = "tv.danmaku.bili";
+-    static final String SELF = "org.droidloom.qa.bili.r4";
++    static final String SELF = "org.droidloom.qa.bili.r5";
+     static final String MAIN_EPOCH = "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f";
+     static final int TARGET_UID = 10117;
+     static final int MAX_REQUEST = 16384, MAX_RESULT = 524288, MAX_COMPRESSED_WIRE = 262144;
+@@ -52,6 +56,7 @@
+     private long started;
+     private boolean actionAttempted;
+     private UiAutomation automation;
++    private Method publicCacheClearMethod;
+     private int originalFlags, originalCapabilities;
+     private boolean originalServiceInfoCaptured;
+     private final JSONObject restoration = new JSONObject();
+@@ -403,18 +408,64 @@
+         }
+         void close() { recycleWindows(all); }
+     }
++    boolean clearOwnPublicWindowCache() throws Exception {
++        // clearCache() is public since API 34. Reflection keeps the pinned
++        // compile-SDK-31 input; it does not request a hidden API exemption.
++        need(Build.VERSION.SDK_INT >= 34, "PUBLIC_CACHE_API_LEVEL_REQUIRED");
++        need(automation != null, "OWN_UI_AUTOMATION_REQUIRED_FOR_CACHE_CLEAR");
++        if (publicCacheClearMethod == null) {
++            Method method = UiAutomation.class.getMethod("clearCache");
++            need(method.getDeclaringClass() == UiAutomation.class
++                && method.getReturnType() == boolean.class && method.getParameterTypes().length == 0
++                && Modifier.isPublic(method.getModifiers()) && !Modifier.isStatic(method.getModifiers()),
++                "EXACT_PUBLIC_CACHE_API_REQUIRED");
++            publicCacheClearMethod = method;
++        }
++        final Object result;
++        try { result = publicCacheClearMethod.invoke(automation); }
++        catch (InvocationTargetException invocation) {
++            Throwable cause = invocation.getCause();
++            if (cause instanceof Exception) throw (Exception) cause;
++            if (cause instanceof Error) throw (Error) cause;
++            throw invocation;
++        }
++        need(result instanceof Boolean, "PUBLIC_CACHE_BOOLEAN_RESULT_REQUIRED");
++        return (Boolean) result;
++    }
+     SelectedWindows awaitFocusedWindow() throws Exception {
+         final long began = SystemClock.elapsedRealtime();
+         final long deadline = Math.min(started + DEADLINE_MS, began + WINDOW_WAIT_MS);
+         windowObservation = new JSONObject().put("requested_display", 0)
+             .put("selection", "exact-display-0-focused-application")
+             .put("wait_budget_ms", WINDOW_WAIT_MS).put("recheck_max_ms", WINDOW_RECHECK_MS)
+-            .put("sample_timings", new JSONArray()).put("ready", false);
++            .put("sample_timings", new JSONArray()).put("ready", false)
++            .put("cache_api", "android.app.UiAutomation.clearCache()")
++            .put("cache_policy", "require_public_own_connection_clear_before_each_query")
++            .put("cache_runtime_sdk", Build.VERSION.SDK_INT)
++            .put("cache_attempts", 0).put("cache_clears", 0)
++            .put("cache_last_result", JSONObject.NULL).put("cache_last_exception", JSONObject.NULL);
+         int samples = 0;
+         for (;;) {
+             timeBound(); need(samples < MAX_WINDOW_QUERIES, "WINDOW_QUERY_BOUND");
+             final long serial;
+             synchronized (windowEvents) { serial = windowEventSerial; }
++            windowObservation.put("cache_attempts", samples + 1)
++                .put("cache_last_result", JSONObject.NULL).put("cache_last_exception", JSONObject.NULL);
++            final boolean cacheCleared;
++            try { cacheCleared = clearOwnPublicWindowCache(); }
++            catch (Exception cacheError) {
++                windowObservation.put("cache_last_exception", cacheError.getClass().getName());
++                throw cacheError;
++            }
++            catch (Error cacheError) {
++                windowObservation.put("cache_last_exception", cacheError.getClass().getName());
++                throw cacheError;
++            }
++            windowObservation.put("cache_last_result", cacheCleared);
++            need(cacheCleared, "PUBLIC_CACHE_CLEAR_NOT_CONFIRMED");
++            windowObservation.put("cache_clears", samples + 1);
++            timeBound();
++            need(SystemClock.elapsedRealtime() <= deadline, "WINDOW_READINESS_DEADLINE");
+             SparseArray<List<AccessibilityWindowInfo>> windows = automation.getWindowsOnAllDisplays();
+             boolean retained = false;
+             try {
+@@ -447,7 +498,7 @@
+                     .put("waited_ms", SystemClock.elapsedRealtime() - began);
+                 nextObservation.getJSONArray("sample_timings").put(new JSONObject()
+                     .put("sample", samples).put("event_serial", serial)
+-                    .put("elapsed_ms", census.getLong("elapsed_ms")));
++                    .put("elapsed_ms", census.getLong("elapsed_ms")).put("cache_cleared", cacheCleared));
+                 need(canonical(nextObservation).getBytes(StandardCharsets.UTF_8).length <= 32000, "WINDOW_CENSUS_RESULT_BOUND");
+                 windowObservation = nextObservation;
+                 need(SystemClock.elapsedRealtime() <= deadline, "WINDOW_READINESS_DEADLINE");

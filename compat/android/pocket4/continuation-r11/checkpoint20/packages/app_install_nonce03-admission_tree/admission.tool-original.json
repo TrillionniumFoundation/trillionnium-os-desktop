@@ -1,0 +1,36 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-c",
+      "import hashlib,json,os,secrets,sys\nraw=sys.stdin.buffer.read(65537)\nassert len(raw)==10721 and hashlib.sha256(raw).hexdigest()=='68d6177cbb57042cb2fc124d0800072a71eff88956918fdecb9bae2b1dc01198'\np=json.loads(raw);labels=p['labels'];seen=set(p['exclude_values'])\nassert os.getuid()==os.geteuid()==1000\nassert p['count']==6 and labels==['ihg_flow','ihg_state','amazon_flow','amazon_state','bestbuy_flow','bestbuy_state']\nassert len(seen)==301 and all(type(x) is str and len(x)==32 and set(x)<=set('0123456789abcdef') for x in seen)\nvalues={}\nfor label in labels:\n    value=secrets.token_hex(16)\n    assert value not in seen\n    seen.add(value);values[label]=value\nprint(json.dumps({'schema':'pocket4-current-three-install-fresh-nonces-v1','generator':'secrets.token_hex(16)','uid':os.getuid(),'spec':{'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()},'count':6,'labels':labels,'nonces':values,'excluded_count':301,'all_distinct_and_excluded_old_values':True,'source_only_nonce_generation':True,'Android_commands':0,'UI_actions':0,'App_launches':0},sort_keys=True,separators=(',',':')),flush=True)\n"
+    ],
+    "created_unix_ms": 1793950472092,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1afc7d79c-fc05-6b97",
+    "idempotency_key": "pocket4-current-three-install-fresh-six-nonces-03-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1afc7d79c-fc05-6b97",
+    "request_digest": "399b23f9ecf8a09e299d3976867ff6735887277f7ba94464db2ef7c2c9b0b3dd",
+    "request_fingerprint": 4150951037881589918,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1afc7d79c-fc05-6b97"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1afc7d79c-fc05-6b97"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

@@ -1,0 +1,281 @@
+--- owner19/freeze_runtime19.py
++++ owner20/freeze_runtime20.py
+@@ -1,4 +1,4 @@
+-"""Bind the one actual preparation receipt to the frozen Owner19 runtime template.
++"""Bind the one actual preparation receipt to the frozen Owner20 runtime template.
+ 
+ This local generator does not dispatch a request or execute a runtime.
+ """
+@@ -10,9 +10,9 @@
+ import re
+ 
+ BASE = Path('/workspace/scratch/94990735b266')
+-SOURCE = BASE / 'android-owner19-normal01-freeze-01'
+-OUT = Path('/workspace/scratch/94990735b266/android-owner19-normal01-runtime-freeze-01')
+-SOURCE_MANIFEST_SHA256 = '687e6e10679a4068ff253c2be2541ffd4dfb74f3b016262c36636466f29583c0'
++SOURCE = BASE / 'android-owner20-normal01-freeze-01'
++OUT = Path('/workspace/scratch/94990735b266/android-owner20-normal01-runtime-freeze-01')
++SOURCE_MANIFEST_SHA256 = 'b1a63e5ffcde80e4b191567786136a21e674ba4b82ce1084aacd178f5c403433'
+ 
+ 
+ def sha(value):
+@@ -25,6 +25,190 @@
+     return (json.dumps(value, sort_keys=True, indent=2) + '\n').encode()
+ 
+ 
++def validate_prepared_current_main(actual, plan):
++    authority = plan['current_main']
++    names = ('main_before', 'main_after', 'main_final')
++    assert actual[names[0]] == actual[names[1]] == actual[names[2]]
++    assert actual['main_fence_fds_closed'] is True
++    for name in names:
++        row = actual[name]
++        assert set(row) == {'schema','framework_sha256','current_baseline_sha256','current_qualification_sha256','current_guard_sha256','historical_framework_sha256','historical_main_canonical_sha256','daemon','held_cgroup_identity','resources','current_seven_processes_alive_and_unchanged','installed_contract_unchanged','old_epoch_reauthorized','new_deployment_performed','framework_exit_cause_resolved','production_ready','private_baseline_body_exported','current_guard'}
++        assert row['schema'] == 'pocket4-owner20-current-main-fence-v1'
++        assert row['framework_sha256'] == authority['current_epoch_sha256']
++        assert row['framework_sha256'] != plan['main']['framework_sha256']
++        assert row['current_baseline_sha256'] == authority['baseline']['sha256']
++        assert row['current_qualification_sha256'] == authority['qualification']['sha256']
++        assert row['current_guard_sha256'] == authority['guard']['sha256']
++        assert row['historical_framework_sha256'] == authority['historical_epoch_sha256'] == plan['main']['framework_sha256']
++        assert row['historical_main_canonical_sha256'] == authority['historical_main_canonical_sha256']
++        assert row['daemon'] == plan['main']['daemon'] and row['resources'] == plan['main']['resources']
++        assert type(row['held_cgroup_identity']) is list and len(row['held_cgroup_identity']) == 2
++        assert all(type(value) is int and value > 0 for value in row['held_cgroup_identity'])
++        assert row['current_seven_processes_alive_and_unchanged'] is True
++        assert row['installed_contract_unchanged'] is True
++        for flag in ('old_epoch_reauthorized', 'new_deployment_performed', 'framework_exit_cause_resolved',
++                     'production_ready', 'private_baseline_body_exported'):
++            assert row[flag] is False
++        proof = row['current_guard']
++        assert proof['schema'] == 'pocket4-current-main-guard-v1'
++        assert proof['Main_epoch_sha256'] == authority['current_epoch_sha256']
++        assert proof['current_baseline_sha256'] == authority['baseline']['sha256']
++        assert proof['current_baseline_qualification_sha256'] == authority['qualification']['sha256']
++        assert all(proof[flag] is True for flag in ('seven_processes_match', 'three_host_processes_match',
++                   'resource_limits_match', 'current_executable_and_root_backing_match'))
++        assert proof['framework_exit_cause_resolved'] is False and proof['production_ready'] is False
++    return True
++
++
++def validate_control_terminal(status, receipt, stdout):
++    # The running control's pending-exit marker is closed only by this
++    # independently received authoritative terminal, not by its own JSON.
++    assert status['job_id'] == receipt['job_id']
++    assert status['state'] == 'succeeded' and status['exit_code'] == 0
++    assert status['output_complete'] is True and status['output_durable'] is True
++    assert status['terminal_publication_confirmed'] is True
++    assert status['audit_recorded'] is True
++    assert status['timed_out'] is False and status['cancelled'] is False and status['automatic_retry'] is False
++    assert status['log_bytes']['stdout'] == {'seen': len(stdout), 'stored': len(stdout)}
++    assert status['log_bytes']['stderr'] == {'seen': 0, 'stored': 0}
++    assert all(status[field][stream] is value for field, value in
++               (('log_synced', True), ('log_truncated', False), ('log_errors', None))
++               for stream in ('stdout', 'stderr'))
++    return True
++
++
++def read_frozen_evidence(name, pin):
++    raw = (SOURCE / 'references' / name).read_bytes()
++    assert len(raw) == pin['bytes'] and sha(raw) == pin['sha256']
++    return raw, json.loads(raw)
++
++
++def packet_member_pins(name, expected_sha):
++    raw = (SOURCE / 'references' / name).read_bytes()
++    assert sha(raw) == expected_sha
++    packet = json.loads(raw)
++    pins = {}
++    for label, row in packet['members'].items():
++        body = row['text'].encode('utf-8')
++        assert len(body) == row['bytes'] and sha(body) == row['sha256']
++        pins[label] = {'bytes': row['bytes'], 'sha256': row['sha256']}
++    return pins
++
++
++def validate_current_source_controls(plan):
++    contract = plan['property_visibility_source_contract']
++    host_pin = contract['actual_host_controls']
++    host_raw, host = read_frozen_evidence('owner20-host-controls.stdout.json', host_pin['stdout'])
++    _, terminal = read_frozen_evidence('owner20-host-controls.terminal.json', host_pin['terminal'])
++    validate_control_terminal(terminal, host_pin, host_raw)
++    assert host['kind'] == 'owner20-property-host-controls05-run'
++    assert host['schema'] == 1 and host['success'] is True
++    assert host['errors'] == [] and host['first_error'] is None
++    assert host['state'] == 'HOST_CONTROLS_COMPLETE_PROCESS_EXIT_PENDING'
++    assert host['process_exit_already_observed'] is False
++    assert host['complete_process_retirement_requires_Root_observed_terminal_exit'] is True
++    assert host['all_owned_files_and_fds_closed'] is False
++    assert host['original_global_FD_equality'] is False
++    assert all(host[k] is True for k in ('all_fixture_children_reaped',
++        'all_fixture_files_and_fds_closed', 'all_process_lifetime_dependencies_accounted',
++        'owned_fixture_directory_removed', 'host_namespace_and_credentials_unchanged'))
++    assert all(host[k] is False for k in ('Android_executed', 'Android_property_reads_or_writes',
++        'namespace_entry_or_UID_changes', 'Main_access', 'normal_runtime_admission_created'))
++    expected = packet_member_pins('owner20-host-controls.packet.json',
++        '5c27e38e036bb56f0b5f947992087bc7f9cbf19fb8c2207455be891210a893d9')
++    assert set(expected) == {'property_visibility.py', 'actor.py', 'baseline_actor.py',
++                             'host_controls.py', 'bind_inputs.py'}
++    assert host['source_pins'] == expected
++    assert expected['property_visibility.py'] == {
++        'bytes': contract['collector_bytes'], 'sha256': contract['collector_sha256']}
++    assert expected['actor.py'] == {
++        'bytes': contract['actor_bytes'], 'sha256': contract['actor_sha256']}
++    cases = host['controls']
++    assert cases['success'] is True and cases['count'] == len(cases['controls']) == 38
++    assert all(row['passed'] is True for row in cases['controls'])
++    assert cases['same_process_root_warmed_cache_remains'] is True
++    assert cases['runtime_source_or_bionic_qualified'] is False
++    pure = host['dependency_accounting_controls']
++    assert pure['all_passed'] is True and pure['count'] == len(pure['cases']) == 8
++    assert all(row['passed'] is True for row in pure['cases'])
++    assert pure['file_bodies_read'] == pure['process_children'] == 0
++    assert pure['Main_or_Android_access'] is False
++    ledger = host['dependency_accounting']
++    authority_raw = (SOURCE / 'references' / 'libffi-dependency-authority.json').read_bytes()
++    assert len(authority_raw) == 1670 and sha(authority_raw) == 'bf68037cb07805df5afb4f2b4b97bc6e95be622da4366d0dab52183f81fbce0d'
++    authority = json.loads(authority_raw)
++    assert ledger['actual_authority'] == authority
++    assert all(ledger[k] is False for k in (
++        'initial_baseline_moved', 'unknown_descriptor_closed', 'runtime_authorization_changed'))
++    assert len(ledger['declared_resources']) == 1 and ledger['target_close_attempts'] == 0
++    dependency = ledger['declared_resources'][0]
++    fd = dependency['fd']
++    assert type(fd) is int and fd >= 0
++    assert dependency['registered_after_exact_production_import'] is True
++    assert dependency['held_by_dependency_not_Capture'] is True
++    assert dependency['closed_by_this_test'] is False
++    assert dependency['actual_provenance_stdout_sha256'] == authority['actual_stdout']['sha256']
++    assert ledger['still_live_at_emission'] == [fd] and ledger['requires_actual_process_exit'] is True
++    assert [row['stage'] for row in ledger['metadata_observations']] == [
++        'after_exact_production_import', 'after_all_fixture_cleanup']
++    for row in ledger['metadata_observations']:
++        assert row['fd'] == fd and row['collection_complete'] is True
++        assert row['target_before'] == row['target_after'] == authority['target']
++        assert row['target_link_before'] == row['target_link_after'] == authority['target_link']
++        assert row['python'] == authority['python'] and row['modules'] == authority['modules']
++        assert row['fdinfo_fields'] == authority['fdinfo_fields']
++        assert row['first_error'] is None and row['secondary_errors'] == []
++        assert row['inheritable_before'] is False and row['inheritable_after'] is False
++        assert row['target_file_body_read'] is False and row['dependency_close_attempted'] is False
++        assert row['owned_fdinfo_close_attempted'] is True and row['owned_fdinfo_closed'] is True
++    diag = host['fd_diagnostic']
++    assert diag['first_discrepancy'] is None and not diag.get('capture_cleanup_errors')
++    assert diag['only_self_proc_fd_enumerated'] is True
++    assert diag['unrelated_ambient_contents_or_targets_read'] is False
++    snaps = diag['snapshots']
++    assert snaps[0]['stage'] == 'host_before' and snaps[-1]['stage'] == 'host_after_cleanup'
++    expected_final = dict(snaps[0]['live'])
++    assert str(fd) not in expected_final
++    expected_final[str(fd)] = dependency['identity_index']
++    assert snaps[-1]['live'] == expected_final
++    assert len(diag['owned_capture_fds']) == 12
++    assert all(row['close_attempted'] is True and row['observed_closed'] is True
++               for row in diag['owned_capture_fds'])
++    for case in cases['controls']:
++        before = snaps[case['before_fd_snapshot']]
++        after = snaps[case['after_fd_snapshot']]
++        assert before['stage'] == 'case_before' and after['stage'] == 'case_after'
++        assert before['case'] == after['case'] == case['name']
++        assert before['live'] == after['live']
++    deltas = ledger['raw_observed_differences']
++    assert [row['stage'] for row in deltas] == ['exact_production_module_import', 'host_final']
++    assert all(row['added'] == [str(fd)] and row['removed'] == row['changed'] == [] for row in deltas)
++
++    bridge_pin = contract['actual_main_bridge_controls']
++    bridge_raw, bridge = read_frozen_evidence('owner20-main-bridge-controls.stdout.json', bridge_pin['stdout'])
++    _, bridge_terminal = read_frozen_evidence('owner20-main-bridge-controls.terminal.json', bridge_pin['terminal'])
++    validate_control_terminal(bridge_terminal, bridge_pin, bridge_raw)
++    assert bridge['schema'] == 'owner20-current-main-bridge-control-result-v1'
++    assert bridge['success'] is True and bridge['errors'] == []
++    assert bridge.get('first_error') is None
++    assert bridge['source_pins'] == packet_member_pins('owner20-main-bridge-controls.packet.json',
++        '75004c37610508289ee2173735b1d4bd37d80543baa9699e2406dcf5c4d32677')
++    assert bridge['source_pins']['candidate.py']['sha256'] == contract['current_main_bridge_source_sha256']
++    for name in ('Main_accessed', 'private_baseline_body_used', 'current_Main_runtime_qualified'):
++        assert bridge[name] is False
++    assert bridge['Android_commands'] == bridge['process_children'] == 0
++    inner = bridge['controls']
++    assert inner['schema'] == 'owner20-current-main-bridge-pure-controls-v1'
++    assert inner['passed'] is True and inner['count'] == len(inner['controls']) == 12
++    assert all(row['passed'] is True for row in inner['controls'])
++    assert inner['all_process_and_guard_IO_are_explicit_seams'] is True
++    assert inner['process_children'] == inner['pidfds_opened'] == inner['Android_commands'] == 0
++    for name in ('Main_accessed', 'private_baseline_body_used', 'current_Main_runtime_qualified'):
++        assert inner[name] is False
++    return True
++
++
++
+ def main():
+     parser = argparse.ArgumentParser()
+     parser.add_argument('--prepared', type=Path, required=True)
+@@ -41,7 +225,7 @@
+         assert len(data) == row['bytes'] and sha(data) == row['sha256']
+     plan_raw = (SOURCE / 'plan.json').read_bytes()
+     plan = json.loads(plan_raw)
+-    assert plan['kind'] == 'owned-real-producer19-normal01-observed-logd-image01'
++    assert plan['kind'] == 'owned-real-producer20-normal01-four-public-sdk-observation01'
+     assert plan['scope'] == 'REAL_OWNER_ABI3_PINNED_CAUSE_TERMINAL_DRAIN_FIRST_ACTIVE_ORIGINAL_RETIREMENT'
+     assert plan['init_protocol_abi'] == 3 and plan['entry_abi'] == 'droidloom-relay-entry-v3'
+     # Exact source-control evidence is bound independently of the fresh prepare receipt.
+@@ -56,13 +240,14 @@
+     assert all(row['connection_gate_calls'] == 0 and row.get('first_failure') for row in controls['controls'][2:])
+     assert controls['actual_logd_peer_qualified'] is False and controls['actual_owner_runtime_qualified'] is False and controls['actual_special_bits_proved'] is False
+     assert controls['Main_accessed'] is False and controls['device_actions'] == controls['new_files'] == controls['process_children'] == 0
++    validate_current_source_controls(plan)
+     assert actual['success'] is True and actual['errors'] == []
+     assert actual['attempt_nonce'] == plan['attempt_nonce'] and actual['plan_sha256'] == sha(pretty(plan))
+     assert actual['canonical_spec_sha256'] == plan['canonical_spec_sha256']
+     assert actual['runtime_executed'] is False and actual['namespace_or_network_changed'] is False
+     expected_source = {f.name: {'bytes': len(f.read_bytes()), 'sha256': sha(f.read_bytes())}
+                        for f in (SOURCE / 'source').glob('*.py')}
+-    assert actual['source_files'] == expected_source and len(expected_source) == 7
++    assert actual['source_files'] == expected_source and len(expected_source) == 8
+     assert set(actual['copied_artifacts']) == set(plan['artifacts'])
+     for name, row in actual['copied_artifacts'].items():
+         expected = plan['artifacts'][name]
+@@ -70,11 +255,7 @@
+         assert row['bytes'] == expected['bytes'] and row['sha256'] == expected['sha256']
+         assert row['identity']['device'] > 0 and row['identity']['inode'] > 0
+     assert actual['base_before'] == actual['base_after'] and len(actual['base_before']) == 86
+-    assert actual['main_before'] == actual['main_after'] == actual['main_final']
+-    for name in ('main_before', 'main_after', 'main_final'):
+-        row = actual[name]
+-        assert row['framework_sha256'] == plan['main']['framework_sha256']
+-        assert row['installed_contract_unchanged'] is True and row['original_processes_alive_and_unchanged'] is True
++    validate_prepared_current_main(actual, plan)
+     ids = actual['id_availability']
+     assert ids['available_at_observation'] is True and ids['host_uid'] == plan['spec']['host_uid']
+     assert ids['subordinate_range'] == plan['spec']['subordinate_uids'] == plan['spec']['subordinate_gids']
+@@ -92,20 +273,24 @@
+     request['idempotency_key'] = request['idempotency_key'].replace('__ACTUAL_PREPARED_SHA256_PREFIX16__', args.sha256[:16])
+     assert stdin.replace(args.sha256, '__ACTUAL_PREPARED_SHA256__') == template
+     ast.parse(stdin)
+-    compile(stdin, '<Owner19 exact runtime>', 'exec')
++    compile(stdin, '<Owner20 exact runtime>', 'exec')
+     raw = pretty(request)
+     result = {'schema': 1, 'actual_prepared_sha256': args.sha256,
+-        'source_manifest_sha256': sha(manifest_raw), 'actual_prepared_plan_and_seven_sources_and_five_artifacts_match': True,
+-        'actual_Main_before_after_final_unchanged': True, 'actual_base86_unchanged': True,
++        'source_manifest_sha256': sha(manifest_raw), 'actual_prepared_plan_and_eight_sources_and_six_artifacts_match': True,
++        'actual_current_Main_before_after_final_unchanged': True, 'actual_base86_unchanged': True,
+         'actual_fresh_two_images_and_proposed_ID_admission_passed': True,
+-        'actual_source_controls_15_bound': True, 'actual_logd_peer_qualified': False,
++        'actual_source_controls_15_bound': True,
++        'actual_host_controls_38_and_dependency_controls_8_bound': True,
++        'actual_host_control_process_exit_independently_confirmed': True,
++        'actual_current_Main_bridge_pure_controls_12_bound': True,
++        'actual_framework_exit_cause_resolved': False, 'actual_logd_peer_qualified': False,
+         'only_prepared_SHA_literal_and_stable_key_filled': True, 'request_sha256': sha(raw),
+         'stdin_sha256': sha(stdin.encode()), 'key': request['idempotency_key'],
+         'runtime_executed': False, 'production_or_App_qualification': False}
+     OUT.mkdir(exist_ok=False)
+     members = {'request.json': raw, 'stdin.py': stdin.encode(), 'actual-prepared.json': body,
+-        'binding-result.json': pretty(result), 'freeze_runtime19.py': Path(__file__).read_bytes(),
+-        'README.md': b"# Exact fresh Owner19 NORMAL01 runtime request\n\nOnly the actual prepared SHA and stable key are filled into the reviewed runtime template. No dispatch occurs here. Actual Host17 artifacts and ordinary 39/139/7 controls, unchanged LMKD and C16 DSO remain bound. Seven sources include the exact frozen actor and generation-private crash-buffer observer.\n\nOriginal authority, ABI3, first-ACTIVE Stop, failure retirement, Main and exact cleanup gates remain. The observer must qualify fresh init/peer pidfd/root/ELF/domain before its single read request. The actual fixed image logd UID/GID 1036, access 0550, size 801680 and full hash are pinned; zero special bits must be observed on the live file. All 15 actual source controls are bound but do not qualify a real peer. Its private bounded packet file grants no HWS health or native enrollment; empty or failed capture is not success evidence. The raw packet file is not included in general runtime JSON or this package. The actor's legacy owner17 implementation label is retained; this actual prepared digest and unique plan/nonce/unit identify Owner19.\n\nOwner18's failed runtime stays failed. Root must independently review preparation and serialize the new runtime within its resource window. This package grants neither production nor App qualification.\n"}
++        'binding-result.json': pretty(result), 'freeze_runtime20.py': Path(__file__).read_bytes(),
++        'README.md': b"# Exact fresh Owner20 NORMAL01 runtime request\n\nThe actual prepared digest and stable key are filled only after full preparation verification. This generator does not dispatch. It binds Host17 artifacts and actual ordinary controls, unchanged LMKD and C16 DSO, plus the separately built Owner20 fixed SDK accessor. Eight frozen source modules retain the original ABI3, 65-second loop, immediate Stop, and four-child retirement. The property observer has one child and a two-second absolute observation window, followed by at most one additional second for retirement only.\n\nThe typed current Main baseline is independently qualified; historical deployment bytes remain lineage and do not reauthorize the lost epoch. The private baseline body is neither exported nor copied here. Exact actual 38 host controls, 8 dependency-accounting controls, and 12 pure Main bridge controls are bound to their independently observed terminal exits. The retained libffi FD is visible in the control report and is released by process exit; the in-process report does not claim that FD was already closed. The earlier failed control runs remain failed.\n\nRoot-first and UID1069 property reads occur in one process and retain root-warmed bionic state. This is neither fresh LMKD credential/capability/SELinux equivalence nor a cold-cache result. Real init, bionic, getter mapping, helper and namespace identity must be qualified in the new attempt. No property value is changed and no old runtime is retried. Root alone reviews and dispatches the fresh runtime. No production, App, HWS, or LMKD health qualification is granted.\n"}
+ 
+     rows = []
+     for name, data in members.items():

@@ -1,0 +1,274 @@
+--- registry-destruction/run_destruction.template.py
++++ listener/run_listener.template.py
+@@ -245,45 +245,53 @@
+         return fd,pin
+     except BaseException:os.close(fd);raise
+ 
+-ROOT=Path('/run/pocket4-registry-owner-destruction-host-run-01-20261105')
++ROOT=Path('/run/pocket4-role-listener-lifetime-host-run-01-20261105')
+ HERE=ROOT/'control-source'
+ OUT=ROOT/'run01'
+-BUILD_ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/registry-owner-destruction-host-build-01-20261105')
++BUILD_ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-listener-lifetime-host-build-01-20261105')
+ SOURCE=BUILD_ROOT/'source'
+ BUILD_RESULT=BUILD_ROOT/'build01/result.json'
+ BUILD_RESULT_SHA='PENDING_ACTUAL_BUILD_RESULT_SHA256'
+-CASE_PLAN_SHA='21f678d2cbdb91b27efdf9cef648d41c7d3524d9ab5135c1cf71d187d6e47a30'
+-SOURCE_MANIFEST_SHA='3cca0b23c8b84de8a072d13206ddf7fa2dc018be37f86f6c3dc8a1cf654432f0'
++CASE_PLAN_SHA='ad48e72af621816d6b5f9672cba8673aa8f2e11abe53013111bc4fd379928a30'
++SOURCE_MANIFEST_SHA='7adaade107d05204015482abcee84431d8cd1bcc7776fea2a97dcd6488d210fb'
++SOURCE_AUTHORITIES={'listener-source-pins.json':{'bytes':9518,'sha256':SOURCE_MANIFEST_SHA},
++                    'owner-lifetime-source-pins.json':{'bytes':7698,'sha256':'072315957a20bd8fdd83efccbea0ca633a3815f867bb07d6091bc42b07762db5'}}
++ARMS=('lease-preimage','lease-candidate','listener')
+ DEADLINE=None
+ 
+ 
+ def qualified_build(build):
+     require(build['state']=='PASS_BUILD_ONLY' and build['source_manifest_sha256']==SOURCE_MANIFEST_SHA and
+-            build['registry_positive_executed'] is False and build['destruction_controls_executed'] is False and
+-            build['platform_policy_qualified'] is False and build['factory_service_started'] is False and
+-            build['snapshot_created'] is False and build['Main_actions']==0 and
++            build['registry_positive_executed'] is False and build['lease_destruction_controls_executed'] is False and
++            build['listener_controls_executed'] is False and build['platform_policy_qualified'] is False and
++            build['factory_service_started'] is False and build['snapshot_created'] is False and build['Main_actions']==0 and
+             build['source_unchanged_after'] is True and build['artifacts_unchanged_after'] is True and
+             build['compiler_tools_match_prior_build'] is True and not build['prior_tool_changes'] and
+             not build['tool_changes'] and not build['dependency_changes'] and
+             build['owned_resource_gate']['pass'] is True and not build['cleanup']['forced_cleanup'] and
+             not build['cleanup']['remaining'] and not build['cleanup']['errors'] and
+-            set(build['artifacts'])=={'preimage','candidate'},
+-            'complete matching two-arm build-only authority required')
++            set(build['artifacts'])==set(ARMS) and set(build['source_authorities'])==set(SOURCE_AUTHORITIES),
++            'complete matching three-ELF build-only authority required')
++    for name,expected in SOURCE_AUTHORITIES.items():
++        require(all(build['source_authorities'][name][key]==expected[key] for key in ['bytes','sha256']),
++                'matching source authority differs: '+name)
+     labels=[row['label'] for row in build['commands']]
+     require(len(labels)==len(set(labels)) and all(row['returncode']==0 and not row['timed_out']
+             for row in build['commands']), 'matching build command failure or duplicate')
+-    units={'context','preimage-authorization','preimage-control','candidate-authorization','candidate-control'}
++    units={'context','authorization','snapshot','wire','preimage-session','candidate-session','admission',
++           'preimage-lease-control','candidate-lease-control','listener-control'}
+     for unit in units:
+         for prefix in ['dependencies-','compile-']:
+             require(labels.count(prefix+unit)==1,'matching build omitted required command: '+prefix+unit)
+     require(set(build['objects'])==units and all(row['dependency_count']>0 for row in build['objects'].values()),
+             'complete actual compiler dependency observations required')
+-    for arm in ['preimage','candidate']:
++    for arm in ARMS:
+         for label in ['link-'+arm,arm+'-libraries',arm+'-default-plan']:
+             require(labels.count(label)==1,'matching build omitted required command: '+label)
+-        require(build['artifacts'][arm]['default_plan']=={
+-            'state':'PLAN_ONLY','candidate_cases':4,'preimage_cases':2,'Main_actions':0},
+-            'matching two-arm default PLAN differs')
++        expected=({'state':'PLAN_ONLY','owned_cases':9,'root_children':9,'role_children':9,
++                   'factory_service_started':False,'Main_actions':0} if arm=='listener' else
++                  {'state':'PLAN_ONLY','candidate_cases':4,'preimage_cases':2,'Main_actions':0})
++        require(build['artifacts'][arm]['default_plan']==expected,'matching default PLAN differs: '+arm)
+         require(build['artifacts'][arm]['runtime_libraries'],'matching arm library closure is empty')
+ 
+ 
+@@ -298,10 +306,17 @@
+         value=path.lstat()
+         require(stat.S_ISDIR(value.st_mode) and value.st_uid==0 and value.st_gid==0 and
+                 stat.S_IMODE(value.st_mode)==0o700, 'root-private runtime directory differs: '+str(path))
++    # Only this fixture UID/GID is used by owned children. No system account or
++    # process is modified, and no search is made for alternative identities.
++    import pwd,grp
++    for lookup in [pwd.getpwuid,grp.getgrgid]:
++        try:lookup(61179)
++        except KeyError:continue
++        raise RuntimeError('fixed fixture UID/GID is a configured system account')
+ 
+ 
+ def run_held(fd,path,env,libc,arm):
+-    require(not children(), 'unreaped child before the owned snapshot harness')
++    require(not children(), 'unreaped child before the owned lease/listener harness')
+     require(os.execve in os.supports_fd, 'Python fd-based exec unavailable')
+     stdout=OUT/(arm+'.stdout');stderr=OUT/(arm+'.stderr')
+     started=utc();parent=os.getpid();pid=-1;pidfd=-1;status=None;timed_out=False
+@@ -317,7 +332,9 @@
+                 if null>2:os.close(null)
+                 require(fcntl.fcntl(fd,fcntl.F_GETFD)&fcntl.FD_CLOEXEC,
+                         'held ELF must close across exec')
+-                os.execve(fd,[str(path),'--execute-once','--expect-'+arm],env)
++                arguments=[str(path),'--execute-once']
++                if arm!='listener':arguments.append('--expect-'+arm.removeprefix('lease-'))
++                os.execve(fd,arguments,env)
+             except BaseException:
+                 os.write(2,b'owned held-ELF exec failed\n');os._exit(126)
+         try:
+@@ -345,42 +362,56 @@
+ 
+ 
+ def validate_result(raw,plan,arm):
+-    require(arm in ['preimage','candidate'],'unknown comparison arm')
+-    expected=plan['arms'][arm]; names=expected['cases']
+-    require(names==(['foreign_CLONE_VM_CLONE_FILES','partial_initialization_EMFILE_cleanup'] if arm=='preimage'
+-                   else ['foreign_CLONE_VM_CLONE_FILES','foreign_CLONE_VM_private_fdtable',
+-                         'foreign_fork_COW','partial_initialization_EMFILE_cleanup']),
+-            'exact original two / candidate four case plan required')
++    require(arm in ARMS,'unknown comparison arm')
++    expected=plan['arms'][arm];names=expected['cases']
++    listener_names=['authorized_snapshot_dispatched_and_released','maker_error_reply_then_same_grant_recovers',
++                    'wrong_token_revokes_without_response','unsupported_active_operation_revokes',
++                    'peer_hup_revokes_queued_input_rights','service_owner_hup_revokes',
++                    'single_request_deadline_revokes','suspend_ack_detach_same_lease_reattach',
++                    'unexpected_owner_control_data_revokes']
++    lease_names=(['foreign_CLONE_VM_CLONE_FILES','partial_lease_initialization_EMFILE_cleanup'] if arm=='lease-preimage'
++                 else ['foreign_CLONE_VM_CLONE_FILES','foreign_CLONE_VM_private_fdtable',
++                       'foreign_fork_COW','partial_lease_initialization_EMFILE_cleanup'])
++    require(names==(listener_names if arm=='listener' else lease_names),'exact reviewed case plan required')
+     lines=raw.decode('ascii').splitlines()
+     require(len(lines)==len(names)+1 and all(lines),'exact case records and one terminal required')
+     records=[json.loads(line) for line in lines]
+     for name,seen in zip(names,records[:-1]):
+-        if name=='partial_initialization_EMFILE_cleanup':
++        if arm=='listener':
++            require(seen=={'case':name,'state':'PASS','actual_dispatch':True,
++                           'actual_listener_admission':True,'platform_policy_qualified':False},
++                    'actual fixed listener/dispatch case failed: '+name)
++        elif name=='partial_lease_initialization_EMFILE_cleanup':
+             require(seen=={'case':name,'state':'PASS','limit_increased':False},
+-                    'partial initialization did not recover its exact descriptors/limit')
++                    'partial lease initialization did not recover its exact descriptors/limit')
+         else:
+             require(set(seen)=={'case','state','owned_descriptors','foreign_closed_owner_descriptors','allocator_hook'} and
+                     seen['case']==name and seen['allocator_hook'] is False and
+                     type(seen['owned_descriptors']) is int and seen['owned_descriptors']>0 and
+                     type(seen['foreign_closed_owner_descriptors']) is int and
+-                    seen['state']==('OBSERVED_PREIMAGE_DESTRUCTION_BUG' if arm=='preimage' else 'PASS') and
+-                    seen['foreign_closed_owner_descriptors']==(seen['owned_descriptors'] if arm=='preimage' else 0),
+-                    'actual foreign destruction observation differs: '+name)
++                    seen['state']==('OBSERVED_PREIMAGE_LEASE_DESTRUCTION_BUG' if arm=='lease-preimage' else 'PASS') and
++                    seen['foreign_closed_owner_descriptors']==(seen['owned_descriptors'] if arm=='lease-preimage' else 0),
++                    'actual foreign lease destruction observation differs: '+name)
+     result=records[-1]
+-    require(set(result)=={'state','cases','assertions','direct_children_reaped','forced_cleanup',
+-                         'cleanup_unreaped','platform_qualified','Main_actions'} and
+-            result['state']==expected['state'] and result['cases']==len(names) and
++    fields={'state','cases','assertions','direct_children_reaped','forced_cleanup','cleanup_unreaped','Main_actions'}
++    if arm=='listener':
++        fields.update({'platform_policy_qualified','engine_connected'})
++        require(result.get('platform_policy_qualified') is False and result.get('engine_connected') is False,
++                'owned listener result must not claim platform or engine integration')
++    else:
++        fields.add('platform_qualified')
++        require(result.get('platform_qualified') is False,'lease mechanism must not claim platform qualification')
++    require(set(result)==fields and result['state']==expected['state'] and result['cases']==len(names) and
+             type(result['assertions']) is int and result['assertions']>0 and
+             result['direct_children_reaped']==expected['direct_children_reaped'] and
+-            result['forced_cleanup']==0 and result['cleanup_unreaped']==0 and
+-            result['platform_qualified'] is False and result['Main_actions']==0,
+-            'owned destruction aggregate failed')
++            result['forced_cleanup']==0 and result['cleanup_unreaped']==0 and result['Main_actions']==0,
++            'owned lease/listener aggregate failed')
+     return {'cases':records[:-1],'summary':result}
+ 
+ 
+ def execute():
+     global DEADLINE
+-    require(Path(__file__).absolute()==HERE/'run_destruction.py','fixed staged root runner required')
++    require(Path(__file__).absolute()==HERE/'run_listener.py','fixed staged root runner required')
+     require(re.fullmatch(r'[0-9a-f]{64}',BUILD_RESULT_SHA) is not None,
+             'actual matching build receipt has not been bound')
+     real_directory(HERE);os.umask(0o077);OUT.mkdir(mode=0o700);DEADLINE=time.monotonic()+90
+@@ -389,9 +420,10 @@
+     allowed=sorted(os.sched_getaffinity(0));require(len(allowed)>=3,'cannot leave two logical CPUs free')
+     os.sched_setaffinity(0,[allowed[-1]])
+     report={'schema':1,'state':'RUNNING','started_utc':utc(),
+-            'scope':'exact Registry preimage two controls / repaired owner four controls; no role policy changes',
++            'scope':'exact OwnerLease preimage two / repaired four, then nine actual listener/session controls; no platform policy attestation',
+             'Main_actions':0,'Main_identity_observed':False,'Android_execution':False,
+             'factory_service_started':False,'snapshot_created':False,'platform_policy_qualified':False,
++            'owned_listener_execution_attempted':False,'owned_listener_verified':False,'engine_connected':False,
+             'production_source_changed':False,'selected_cpus':[allowed[-1]],'commands':[], 'arms':{}}
+     def interrupted(number,frame):raise RuntimeError('owned runtime interrupted by signal '+str(number))
+     signal.signal(signal.SIGTERM,interrupted);signal.signal(signal.SIGINT,interrupted)
+@@ -406,15 +438,15 @@
+         require(staged==raw,'staged build receipt differs from actual matching receipt')
+         build=json.loads(raw);qualified_build(build)
+         plan_raw,plan_pin=held(HERE/'CASE_PLAN.json',32768)
+-        require(sha(plan_raw)==CASE_PLAN_SHA,'frozen two/four case comparison plan changed')
++        require(sha(plan_raw)==CASE_PLAN_SHA,'frozen two/four/nine case plan changed')
+         plan=json.loads(plan_raw)
+-        require(plan['production_source_manifest_sha256']==SOURCE_MANIFEST_SHA,
++        require(plan['source_authorities']==SOURCE_AUTHORITIES and plan['arm_order']==list(ARMS),
+                 'case plan is not bound to reviewed source')
+-        source_before=regular_tree(SOURCE,11,512*1024)
++        source_before=regular_tree(SOURCE,25,1024*1024)
+         require(source_before==build['source_inputs'],'actual built source changed before runtime')
+         authority={str(BUILD_RESULT):build_pin,str(HERE/'actual-build-result.json'):staged_pin,
+                    str(HERE/'CASE_PLAN.json'):plan_pin}
+-        report['actual_build_receipt']=build_pin;report['source_authority']=build['source_authority']
++        report['actual_build_receipt']=build_pin;report['source_authorities']=build['source_authorities']
+         tools_path=BUILD_ROOT/'build01/tool-inputs-before.json'
+         require(build['tool_inputs']['path']==str(tools_path),'build tool inventory path escaped')
+         tools_raw,tools_pin=held(tools_path,262144)
+@@ -424,8 +456,8 @@
+         tools=json.loads(tools_raw);tool_rows=[tools['/usr/bin/python3'],tools['/usr/bin/ldd']]
+         require(not verify_rows(tool_rows),'runtime tools changed after matching build')
+         env={'PATH':'/usr/bin:/bin','HOME':'/root','LC_ALL':'C','LANG':'C'}
+-        # Hold and qualify both exact ELF objects before either root arm runs.
+-        for arm in ['preimage','candidate']:
++        # Hold and qualify all three exact ELF objects before any root arm runs.
++        for arm in ARMS:
+             path=BUILD_ROOT/('build01/'+arm+'_controls');artifact=build['artifacts'][arm]['elf']
+             require(artifact['path']==str(path),'actual control ELF path escaped matching build')
+             fd,pin=held_executable(path,artifact);elf_fds[arm]=fd;elf_pins[arm]=pin
+@@ -445,16 +477,21 @@
+             require(arm_libraries and arm_libraries==build['artifacts'][arm]['runtime_libraries'],
+                     'arm runtime library closure differs from actual matching build')
+             libraries.update(arm_libraries)
+-        require(libraries==build['runtime_libraries'],'complete two-arm runtime closure differs')
++        require(libraries==build['runtime_libraries'],'complete three-ELF runtime closure differs')
+         report['runtime_libraries']=write_new(OUT/'runtime-libraries-before.json',libraries)
+-        for arm in ['preimage','candidate']:
++        for arm in ARMS:
++            if arm=='listener':
++                root_scope()
++                report['owned_listener_execution_attempted']=True;report['snapshot_created']=None
+             row,raw=run_held(elf_fds[arm],Path(elf_pins[arm]['path']),env,libc,arm)
+             report['arms'][arm]={'execution':row,'actual_elf':elf_pins[arm]}
+             require(row['returncode']==0 and row['child_reaped'] and not row['timed_out'] and
+-                    row['stderr']['bytes']==0,'owned destruction process failed: '+arm)
++                    row['stderr']['bytes']==0,'owned lease/listener process failed: '+arm)
+             report['arms'][arm]['assessment']=validate_result(raw,plan,arm)
+-            require(not children(),'owned destruction harness left adopted children: '+arm)
+-        report['state']='PASS_OWNED_DESTRUCTION_COMPARISON'
++            if arm=='listener':
++                report['owned_listener_verified']=True;report['snapshot_created']=True
++            require(not children(),'owned lease/listener harness left adopted children: '+arm)
++        report['state']='PASS_OWNED_LEASE_AND_LISTENER_CONTROLS'
+     except Exception as error:
+         report['state']='FAIL';report['error']={'type':type(error).__name__,'message':str(error),
+                                                'filename':getattr(error,'filename',None)}
+@@ -462,12 +499,12 @@
+         signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGTERM,signal.SIGINT})
+         report['cleanup']=cleanup_children()
+         try:
+-            report['source_unchanged_after']=bool(source_before)and regular_tree(SOURCE,11,512*1024)==source_before
++            report['source_unchanged_after']=bool(source_before)and regular_tree(SOURCE,25,1024*1024)==source_before
+             report['authority_unchanged_after']=bool(authority)and all(hash_held(Path(path))==pin
+                                                                        for path,pin in authority.items())
+             report['library_changes']=verify_rows(list(libraries.values()))
+             report['tool_changes']=verify_rows(tool_rows)
+-            report['held_ELFs_unchanged_after']=(set(elf_pins)==set(elf_fds)=={'preimage','candidate'} and all(
++            report['held_ELFs_unchanged_after']=(set(elf_pins)==set(elf_fds)==set(ARMS) and all(
+                 hash_held(Path(pin['path']),8*1024*1024)==pin and identity(os.fstat(elf_fds[arm]))==pin['identity']
+                 for arm,pin in elf_pins.items()))
+             require(report['source_unchanged_after']and report['authority_unchanged_after']and
+@@ -485,11 +522,11 @@
+             report['state']='FAIL'
+     report['finished_utc']=utc();pin=write_new(OUT/'result.json',report)
+     print(json.dumps({'state':report['state'],'result':pin}),flush=True)
+-    return 0 if report['state']=='PASS_OWNED_DESTRUCTION_COMPARISON'else 1
++    return 0 if report['state']=='PASS_OWNED_LEASE_AND_LISTENER_CONTROLS'else 1
+ 
+ 
+ if __name__=='__main__':
+     if sys.argv[1:]!=['--execute-once']:
+-        print(json.dumps({'state':'PLAN_ONLY','requires_actual_matching_build':True,'preimage_cases':2,'candidate_cases':4,
++        print(json.dumps({'state':'PLAN_ONLY','requires_actual_matching_build':True,'preimage_cases':2,'candidate_cases':4,'listener_cases':9,
+                           'root_execution':False,'factory_service_started':False,'Main_actions':0}))
+     else:raise SystemExit(execute())

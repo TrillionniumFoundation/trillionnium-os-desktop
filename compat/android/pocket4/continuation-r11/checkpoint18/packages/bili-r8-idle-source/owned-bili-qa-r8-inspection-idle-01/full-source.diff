@@ -1,0 +1,1073 @@
+--- R7/source/AndroidManifest.xml
++++ R8/source/AndroidManifest.xml
+@@ -1,11 +1,11 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="org.droidloom.qa.bili.r8" android:versionCode="1" android:versionName="1">
+-    package="org.droidloom.qa.bili.r7" android:versionCode="1" android:versionName="1">
+     <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="33" />
+     <queries><package android:name="tv.danmaku.bili" /></queries>
+     <application android:label="Owned Bili QA" android:debuggable="false"
+         android:testOnly="true" android:allowBackup="false" android:hasCode="true" />
++    <instrumentation android:name="org.droidloom.qa.bili.r8.ActionRunner"
++        android:targetPackage="org.droidloom.qa.bili.r8"
+-    <instrumentation android:name="org.droidloom.qa.bili.r7.ActionRunner"
+-        android:targetPackage="org.droidloom.qa.bili.r7"
+         android:functionalTest="true" android:handleProfiling="false" />
+ </manifest>
+--- R7/source/README.md
++++ R8/source/README.md
+@@ -1,11 +1,60 @@
++# Owned Bili QA R8: one inspect-only event quiet gate
++
++This new self instrumentation package is `org.droidloom.qa.bili.r8`.
++It never instruments, resigns, replaces, or grants permissions to the commercial Bili application.
++The protocol is `pocket4-owned-bili-qa-v8`; an R7 wire or installed R7 UID cannot qualify R8.
++
++## Exact change
++
++Only the standalone `inspect` operation performs one `UiAutomation.waitForIdle` call,
++after the original non-suppressing connection and immediately before its first original snapshot.
++The quiet interval is 500 ms, the global cap is 2000 ms, and the effective global budget is
++`min(2000, max(0, operation_started + 8000 - now))`.
++Less than 500 ms remaining fails without an API call. Returned waits that exceed the effective
++or original operation deadline fail. An already quiet stream may return immediately.
++
++The original 8000 ms operation deadline, 12000 ms watchdog, 2000 ms window deadline,
++512-node / depth-32 / 64-child bounds and result byte limits remain unchanged.
++There is no new capture retry, input retry, sleep, selector, coordinate, or tree-field exemption.
++The exact R7 tree capture, refresh, final full-tree/window action gates, fixed public set_text,
++controls reveal and player_button transaction bodies remain unchanged after package renaming.
++
++The gate records one bounded metadata object: requested and effective budgets, actual times,
++call count, return/qualification state, error code and original exception class.
++A timeout retains its original cause, and a secondary clock error cannot replace it.
++A successful event-quiet observation does not prove content readiness or future tree stability.
++A later TREE_CHANGED_NULL_CHILD remains that original failure; the event-quiet result cannot
++make a partial tree qualify. The other operations have an empty idle observation.
++
++Official API semantics:
++https://developer.android.com/reference/android/app/UiAutomation#waitForIdle(long,long)
++The API has been available since level 18 and observes accessibility event-stream quiet.
++Its event quiet condition is not an atomic Android tree snapshot or action transaction.
++
++## Actual basis and limits
+-# Owned Bili R7: fixed current player button
+ 
++The previous fresh R7 sampled-readiness run failed at its first inspect, before any action:
++TREE_CHANGED_NULL_CHILD, 125 emitted nodes, depth 17, child maximum 6, 971 ms incomplete capture.
++The newly added 8-read sampling gate never received a complete sample in that run.
++This motivates a bounded pre-capture quiet observation; it does not prove the cause or that R8
++will avoid future concurrent tree changes. The old failed result is not reclassified or replayed.
+-R7 preserves the R6 state, inspect, click, set_text and reveal_controls operations. The only new operation is player_button with the fixed pause or resume intent. It uses no caller coordinates or arbitrary selector. The earlier successful complete inspection proves the exact public course and player frame; its tree and node are explicitly context only for this new operation.
+ 
++## Build-only request and controls
+-The helper takes a new complete tree inside the action invocation, verifies the original full title/author/rendering/geometry predicate and the unique fixed current player button, and takes two further complete captures. Every field in the captured tree and window must remain equal, all three captures belong to the same UiAutomation connection/window, and the original target refresh, full node hash, eligibility and final window checks remain. A fresh selection age limit of 1000 ms applies before one ACTION_CLICK. Any mismatch fails without another attempt. This is not an Android atomic transaction.
+ 
++Default entry points print plans. The exact request only stages create-only owned source and
++builds a separate test-only APK with a new owned signer; it does not install or touch Android.
++The original pinned seven build tools, 230-second build budget, 300-second managed request,
++512 MiB memory, one CPU, zero swap and 128-task owned cgroup limits remain unchanged.
+-The helper result binds current private inspection bytes, all three complete capture hashes, exact selected node, intended transition, frame context, action acknowledgement and original own-service restoration. Host parsing independently verifies the public role and complete current inspection. It requires an independent no-automation after-state after helper termination. Acknowledgement alone does not establish a pause, resume, audio result or whole-App production readiness; an independent later label observation remains required, and failed/unknown actions never authorize automatic resume or retry.
+ 
++The real build first compiles every Python source and executes 32 pure controls against the
++actual new protocol parser in its process. It then compiles the exact production idle class
++and 22 Java controls into a separate test-class directory and runs them with the pinned JDK.
++Only afterward does it compile the APK, with the idle class and without the test classes.
++The complete build has 13 joined child commands. Its receipt must bind both control reports
++and the Java stdout hash before qa_adapter.qualified_build accepts it.
+-All R6 request/result, compression, tree/depth/child/window, helper/watchdog, per-command, build resource and timeout limits remain. The previous helper UID 10184 is explicitly excluded for the separately installed R7 package; R7 UID/APK/signer remain unknown until actual build/install. R6 files, installed helper and failed attempts are not modified or replayed.
+ 
++At source-freeze time, Python/Java compilation and these controls have not run.
++This executor is unavailable; an actual Root-dispatched build is still required.
++The new APK, signer and installed UID remain unknown. Build success is not Android runtime,
++business-flow, restoration, install, or whole-app production qualification.
++Whole-app production readiness remains unqualified.
+-This is a source and build-only candidate. Root alone may dispatch the exact static build, then bind actual build and installation originals before any separately reviewed fresh UI flow. No commercial package/signature/settings/permission change is included. No whole-App or business success is claimed.
+--- R7/source/build-input-reference.json
++++ R8/source/build-input-reference.json
+@@ -4,7 +4,7 @@
+     "sha256": "2a8cb152f9dea378ffc180c95ee4cbab1eb2b527c0dc9e176fd89bcee46119c6",
+     "was_read_and_all_seven_values_checked_before_disconnection": true
+   },
++  "artifact": "owned-bili-qa-r8-pinned-tool-reference",
+-  "artifact": "owned-bili-qa-r7-pinned-tool-reference",
+   "compile_sdk_api": 31,
+   "min_sdk": 31,
+   "new_helper_compilation_performed": false,
+@@ -22,7 +22,15 @@
+     "frozen_r6_source_manifest_sha256": "6c75b4a976990d4815de58f504912d3f9a7181c0d5a9094c6319180a1279c419",
+     "r2_receipt_is_prior_tool_evidence_not_r3_build_qualification": true,
+     "r5_is_prior_tool_evidence_not_r6_qualification": true,
++    "tool_table_reused_without_changes": true,
++    "R8_not_qualified_by_prior_builds": true,
++    "frozen_r7_source_manifest_sha256": "f6722f5163403c753a81912944e3390e424858795e2db059ea9a75cf8f56c310",
++    "r7_reference_is_an_unchanged_historical_prebuild_tool_record": true,
++    "parent_reported_actual_r7_build_result": {
++      "bytes": 18933,
++      "sha256": "eb5b84b424b951342c984ab42923da3d35252de816837405c60b4cca93f27090",
++      "use": "prior source/tool evidence only; never R8 build, install, or UI qualification"
++    }
+-    "tool_table_reused_without_changes": true
+   },
+   "target_sdk": 33,
+   "tools": {
+@@ -55,5 +63,6 @@
+       "sha256": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758"
+     }
+   },
++  "transitive_JDK_modules_or_shared_libraries_fully_frozen": false,
++  "r8_actual_compilation_performed": false
+-  "transitive_JDK_modules_or_shared_libraries_fully_frozen": false
+ }
+--- R7/source/build_candidate.py
++++ R8/source/build_candidate.py
+@@ -16,8 +16,8 @@
+ import zipfile
+ 
+ HERE = Path(__file__).resolve().parent
++PACKAGE = 'org.droidloom.qa.bili.r8'
++OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r8-build-01')
+-PACKAGE = 'org.droidloom.qa.bili.r7'
+-OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r7-build-01')
+ JDK = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86'
+ SDK_BASE = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts'
+ TOOLS = {
+@@ -32,7 +32,81 @@
+ R21_INPUT_RECEIPT_SHA = '2a8cb152f9dea378ffc180c95ee4cbab1eb2b527c0dc9e176fd89bcee46119c6'
+ ATTR = '{http://schemas.android.com/apk/res/android}'
+ 
++IDLE_GATE_CASES = [
++    "fixed_original_budgets",
++    "one_successful_event_quiet_call",
++    "already_quiet_immediate_return_allowed",
++    "global_cap_exact_edge_allowed",
++    "remaining_original_budget_clamps_global",
++    "exact_quiet_budget_one_call",
++    "insufficient_quiet_budget_no_call",
++    "expired_original_deadline_no_call",
++    "clock_before_operation_start_no_call",
++    "negative_operation_start_no_call",
++    "operation_deadline_overflow_no_call",
++    "first_clock_failure_no_call",
++    "timeout_preserves_original_cause_no_retry",
++    "disconnected_api_preserves_original_cause",
++    "timeout_and_clock_failure_keep_first_error",
++    "successful_api_then_clock_failure_unqualified",
++    "final_clock_regression_unqualified",
++    "global_cap_overrun_unqualified",
++    "owner_deadline_overrun_unqualified",
++    "duplicate_after_success_cannot_call_again",
++    "duplicate_after_timeout_cannot_call_again",
++    "duplicate_after_budget_failure_cannot_call"
++]
++IDLE_PROTOCOL_CASES = [
++    "actual_parser_accepts_complete_inspection_after_idle",
++    "actual_parser_accepts_already_quiet_immediate_return",
++    "state_success_keeps_no_automation_idle_or_capture",
++    "missing_idle_record_rejected",
++    "empty_idle_cannot_qualify_inspect",
++    "extra_idle_key_rejected",
++    "non_boolean_qualified_rejected",
++    "call_count_cannot_exceed_one",
++    "quiet_budget_constant_cannot_change",
++    "global_cap_cannot_change",
++    "original_operation_budget_cannot_change",
++    "effective_global_must_equal_remaining_budget",
++    "operation_start_must_bind_same_helper",
++    "boolean_time_rejected",
++    "content_readiness_claim_rejected",
++    "future_stability_claim_rejected",
++    "event_quiet_scope_must_be_explicit",
++    "api_ack_without_qualification_rejected",
++    "no_api_return_cannot_qualify",
++    "gate_error_cannot_qualify",
++    "cause_cannot_qualify",
++    "secondary_clock_error_cannot_qualify",
++    "actual_wait_duration_must_match_clocks",
++    "returned_api_after_global_budget_rejected",
++    "idle_observation_cannot_outlive_helper_result",
++    "tree_capture_cannot_precede_idle_end",
++    "event_idle_cannot_qualify_partial_tree",
++    "later_null_child_retains_original_failure_and_idle_only_metadata",
++    "timeout_remains_failed_without_capture_or_successful_finish",
++    "failure_before_gate_can_only_have_empty_idle_metadata",
++    "all_noninspect_operations_require_empty_idle_metadata",
++    "old_r7_uid_rejected_even_when_wire_uid_matches_argument"
++]
+ 
++
++def validate_idle_controls(report, names, contract_sha256=None):
++    keys={'schema','all_passed','count','cases','android_calls','tree_captures','input_actions'}
++    if contract_sha256 is not None:keys.add('production_contract_sha256')
++    require(isinstance(report,dict) and set(report)==keys and type(report.get('schema')) is int and report['schema']==1 and
++            report.get('all_passed') is True and type(report.get('count')) is int and
++            report['count']==len(names) and report.get('cases')==[{'name':name,'passed':True} for name in names] and
++            all(row['passed'] is True for row in report['cases']) and
++            all(type(report.get(key)) is int and report[key]==0 for key in ('android_calls','tree_captures','input_actions')),
++            'ACTUAL_IDLE_CONTROLS_DID_NOT_PASS_EXACTLY')
++    if contract_sha256 is not None:
++        require(report['production_contract_sha256']==contract_sha256,'IDLE_PROTOCOL_CONTROLS_SOURCE_CHANGED')
++    return report
++
++
++
+ def require(value, reason):
+     if not value:
+         raise RuntimeError(reason)
+@@ -74,7 +148,9 @@
+         require(not path.is_absolute() and '..' not in path.parts and path.as_posix() == name, 'source relative path')
+         actual = file_pin(HERE / name, 1024 * 1024)
+         require(actual['sha256'] == row['sha256'] and actual['bytes'] == row['bytes'], 'source differs: ' + name)
++    require({'AndroidManifest.xml', 'src/org/droidloom/qa/bili/r8/ActionRunner.java', 'src/org/droidloom/qa/bili/r8/TouchTransaction.java', 'src/org/droidloom/qa/bili/r8/PlayerButtonTransaction.java',
++             'src/org/droidloom/qa/bili/r8/InspectionIdleGate.java',
++             'tests/InspectionIdleGateChecks.java', 'check_idle_contract.py', 'qa_contract.py', 'build_candidate.py'} <= set(files), 'required sources missing')
+-    require({'AndroidManifest.xml', 'src/org/droidloom/qa/bili/r7/ActionRunner.java', 'src/org/droidloom/qa/bili/r7/TouchTransaction.java', 'src/org/droidloom/qa/bili/r7/PlayerButtonTransaction.java', 'qa_contract.py', 'build_candidate.py'} <= set(files), 'required sources missing')
+     return files
+ 
+ 
+@@ -194,12 +270,41 @@
+         return run_command(OUTPUT, env, result['commands'], name, argv, min(timeout, remaining))
+ 
+     try:
++        for name in ('classes','dex','res','private-signing','idle-control-classes'):
+-        for name in ('classes','dex','res','private-signing'):
+             (OUTPUT/name).mkdir(mode=0o700)
++        source_java = HERE/'src/org/droidloom/qa/bili/r8/ActionRunner.java'
++        # Compile all pinned Python source without executing adapter/device entry points.
++        for name in source:
++            if name.endswith('.py'):
++                compile((HERE/name).read_bytes(),str(HERE/name),'exec')
++        result['compiled_python_sources']={name:source[name]['sha256'] for name in source if name.endswith('.py')}
++        check_scope={'__name__':'owned_idle_protocol_controls'}
++        exec(compile((HERE/'check_idle_contract.py').read_bytes(),str(HERE/'check_idle_contract.py'),'exec'),
++             check_scope,check_scope)
++        protocol_controls=check_scope['run']((HERE/'qa_contract.py').read_text(encoding='utf-8'))
++        validate_idle_controls(protocol_controls,IDLE_PROTOCOL_CASES,source['qa_contract.py']['sha256'])
++        result['inspection_idle_protocol_controls']={
++            'report':protocol_controls,'control_source_sha256':source['check_idle_contract.py']['sha256']}
++
++        idle_gate=source_java.with_name('InspectionIdleGate.java')
++        idle_checks=HERE/'tests/InspectionIdleGateChecks.java'
++        command('idle-gate-javac',[tool['javac'],'-J-XX:ActiveProcessorCount=1','-J-XX:+UseSerialGC','-J-Xmx256m',
++            '-proc:none','-Xmaxerrs','20','-Xmaxwarns','20','--release','8',
++            '-d',str(OUTPUT/'idle-control-classes'),str(idle_gate),str(idle_checks)])
++        idle_classes=sorted((OUTPUT/'idle-control-classes').rglob('*.class'))
++        require(1<=len(idle_classes)<=64 and all(x.is_file() and x.stat().st_size<=262144 for x in idle_classes),
++                'IDLE_CONTROL_CLASS_OUTPUT_BOUND')
++        idle_output=command('idle-gate-java',java+['-cp',str(OUTPUT/'idle-control-classes'),
++            PACKAGE+'.InspectionIdleGateChecks'],timeout=15)
++        require(0<len(idle_output)<=16384,'IDLE_CONTROL_STDOUT_BOUND')
++        idle_controls=validate_idle_controls(json.loads(idle_output),IDLE_GATE_CASES)
++        result['inspection_idle_gate_controls']={
++            'report':idle_controls,'stdout_sha256':digest(idle_output),
++            'gate_source_sha256':source['src/org/droidloom/qa/bili/r8/InspectionIdleGate.java']['sha256'],
++            'control_source_sha256':source['tests/InspectionIdleGateChecks.java']['sha256']}
+-        source_java = HERE/'src/org/droidloom/qa/bili/r7/ActionRunner.java'
+         command('javac', [tool['javac'], '-J-XX:ActiveProcessorCount=1', '-J-XX:+UseSerialGC', '-J-Xmx256m',
+             '-proc:none','-Xmaxerrs','20','-Xmaxwarns','20','-source','8','-target','8','-bootclasspath',resolved['android_jar'],
++            '-d',str(OUTPUT/'classes'),str(source_java),str(source_java.with_name('TouchTransaction.java')),str(source_java.with_name('PlayerButtonTransaction.java')),str(idle_gate)])
+-            '-d',str(OUTPUT/'classes'),str(source_java),str(source_java.with_name('TouchTransaction.java')),str(source_java.with_name('PlayerButtonTransaction.java'))])
+         classes = sorted((OUTPUT/'classes').rglob('*.class'))
+         require(1 <= len(classes) <= 32 and all(x.is_file() and x.stat().st_size <= 262144 for x in classes), 'class output bound')
+         command('d8', java+['-cp',resolved['r8'],'com.android.tools.r8.D8','--lib',resolved['android_jar'],
+@@ -218,10 +323,10 @@
+         # pinned Java runtime. No platform/commercial signing key is consumed.
+         command('create-owned-signing-key', java+['-m','java.base/sun.security.tools.keytool.Main',
+             '-genkeypair','-noprompt','-storetype','PKCS12','-keystore',str(store),'-storepass:file',str(password),
++            '-alias','owned-bili-qa-r8','-keyalg','RSA','-keysize','3072','-validity','3650',
++            '-dname','CN=Pocket4 Owned Bili QA R8,O=Owned Test,C=US'])
+-            '-alias','owned-bili-qa-r7','-keyalg','RSA','-keysize','3072','-validity','3650',
+-            '-dname','CN=Pocket4 Owned Bili QA R7,O=Owned Test,C=US'])
+         command('sign', [tool['apksigner'],'sign','--ks',str(store),'--ks-pass','file:'+str(password),
++            '--ks-key-alias','owned-bili-qa-r8','--min-sdk-version','31','--v1-signing-enabled','false',
+-            '--ks-key-alias','owned-bili-qa-r7','--min-sdk-version','31','--v1-signing-enabled','false',
+             '--v2-signing-enabled','true','--v3-signing-enabled','true','--out',str(OUTPUT/'owned-bili-qa.apk'),
+             str(OUTPUT/'aligned.apk')])
+         signature = command('signature', [tool['apksigner'],'verify','--verbose','--print-certs','--min-sdk-version','31',str(OUTPUT/'owned-bili-qa.apk')])
+@@ -231,7 +336,7 @@
+         badging = command('badging', [tool['aapt'],'dump','badging',str(OUTPUT/'owned-bili-qa.apk')])
+         permissions = command('permissions', [tool['aapt'],'dump','permissions',str(OUTPUT/'owned-bili-qa.apk')])
+         xml = command('manifest', [tool['aapt'],'dump','xmltree',str(OUTPUT/'owned-bili-qa.apk'),'AndroidManifest.xml'])
++        require(b"package: name='org.droidloom.qa.bili.r8' versionCode='1'" in badging and
+-        require(b"package: name='org.droidloom.qa.bili.r7' versionCode='1'" in badging and
+                 b"sdkVersion:'31'" in badging and b"targetSdkVersion:'33'" in badging, 'actual APK package/SDK differs')
+         require(b'uses-permission' not in permissions and b'uses-permission' not in xml and
+                 b'application-debuggable' not in badging and b'launchable-activity' not in badging, 'actual APK privilege/component differs')
+--- R7/source/make_build_request.py
++++ R8/source/make_build_request.py
+@@ -5,7 +5,7 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
++KEY='pocket4-owned-bili-qa-r8-static-build-01-20261106'
+-KEY='pocket4-owned-bili-qa-r7-static-build-01-20261106'
+ 
+ 
+ def encode(value):
+--- R7/source/qa_adapter.py
++++ R8/source/qa_adapter.py
+@@ -18,8 +18,8 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ RECORDER_MANIFEST_SHA = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
++SELF = 'org.droidloom.qa.bili.r8'
++BUILD_COMMANDS = ['idle-gate-javac','idle-gate-java','javac','d8','aapt-package','align','create-owned-signing-key','sign',
+-SELF = 'org.droidloom.qa.bili.r7'
+-BUILD_COMMANDS = ['javac','d8','aapt-package','align','create-owned-signing-key','sign',
+                   'signature','alignment','badging','permissions','manifest']
+ 
+ 
+@@ -78,9 +78,11 @@
+                 'SOURCE_RELATIVE_PATH_REQUIRED')
+         require(len(pinned(HERE/name, row['sha256'])) == row['bytes'], 'SOURCE_SIZE_CHANGED')
+     require({'qa_adapter.py','qa_contract.py','build_candidate.py','AndroidManifest.xml',
++             'src/org/droidloom/qa/bili/r8/ActionRunner.java',
++             'src/org/droidloom/qa/bili/r8/TouchTransaction.java',
++             'src/org/droidloom/qa/bili/r8/PlayerButtonTransaction.java',
++             'src/org/droidloom/qa/bili/r8/InspectionIdleGate.java',
++             'tests/InspectionIdleGateChecks.java','check_idle_contract.py'} <= set(manifest['files']),
+-             'src/org/droidloom/qa/bili/r7/ActionRunner.java',
+-             'src/org/droidloom/qa/bili/r7/TouchTransaction.java',
+-             'src/org/droidloom/qa/bili/r7/PlayerButtonTransaction.java'} <= set(manifest['files']),
+             'OWNED_SOURCE_CLOSURE_INCOMPLETE')
+     return manifest
+ 
+@@ -135,6 +137,22 @@
+             all(row.get('returncode') == 0 and row.get('owned_child_joined') is True and
+                 row.get('error') is None and row.get('secondary_errors') == [] for row in commands),
+             'ACTUAL_BUILD_COMMAND_COMPLETION_REQUIRED')
++    require(receipt.get('compiled_python_sources')=={name:row['sha256'] for name,row in manifest['files'].items()
++            if name.endswith('.py')},'ALL_PINNED_PYTHON_SOURCES_MUST_COMPILE')
++    idle_gate=receipt.get('inspection_idle_gate_controls')
++    idle_protocol=receipt.get('inspection_idle_protocol_controls')
++    require(isinstance(idle_gate,dict) and set(idle_gate)=={
++                'report','stdout_sha256','gate_source_sha256','control_source_sha256'} and
++            isinstance(idle_protocol,dict) and set(idle_protocol)=={'report','control_source_sha256'},
++            'ACTUAL_IDLE_CONTROL_REPORTS_REQUIRED')
++    builder.validate_idle_controls(idle_gate['report'],builder.IDLE_GATE_CASES)
++    builder.validate_idle_controls(idle_protocol['report'],builder.IDLE_PROTOCOL_CASES,
++                                   manifest['files']['qa_contract.py']['sha256'])
++    require(idle_gate['stdout_sha256']==commands[1]['stdout_sha256'] and
++            idle_gate['gate_source_sha256']==manifest['files']['src/org/droidloom/qa/bili/r8/InspectionIdleGate.java']['sha256'] and
++            idle_gate['control_source_sha256']==manifest['files']['tests/InspectionIdleGateChecks.java']['sha256'] and
++            idle_protocol['control_source_sha256']==manifest['files']['check_idle_contract.py']['sha256'],
++            'ACTUAL_IDLE_CONTROLS_SOURCE_OR_COMMAND_BINDING_CHANGED')
+     artifact = receipt.get('APK')
+     require(isinstance(artifact, dict) and artifact.get('sha256') == args.apk_sha256 and
+             type(artifact.get('bytes')) is int and 0 < artifact['bytes'] <= 2097152 and
+@@ -151,7 +169,7 @@
+     def __init__(self, flow, recorder, qa, proof, helper_uid):
+         require(flow.contract.sha256 == RECORDER_MANIFEST_SHA and not flow._private_backend_transport,
+                 'FROZEN_PUBLIC_RECORDER_TRANSPORT_REQUIRED')
++        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10117,10125,10164,10165,10166,10169,10170,10175,10184,10202),
+-        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10117,10125,10164,10165,10166,10169,10170,10175,10184),
+                 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
+         self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
+         self.nonces = set()
+--- R7/source/qa_contract.py
++++ R8/source/qa_contract.py
+@@ -5,8 +5,8 @@
+ import re
+ import zlib
+ 
++PROTOCOL = 'pocket4-owned-bili-qa-v8'
++SELF = 'org.droidloom.qa.bili.r8'
+-PROTOCOL = 'pocket4-owned-bili-qa-v7'
+-SELF = 'org.droidloom.qa.bili.r7'
+ COMPONENT = SELF + '/' + SELF + '.ActionRunner'
+ PACKAGE = 'tv.danmaku.bili'
+ UID = 10117
+@@ -175,7 +175,7 @@
+             value.get('op') == request['op'] and value.get('request_sha256') == sha(raw_request) and
+             value.get('wire_codec') == 'gzip-canonical-json-v1',
+             'RESULT_REQUEST_BINDING_FAILED')
++    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10125, 10164, 10165, 10166, 10169, 10170, 10175, 10184, 10202) and value.get('self_uid') == helper_uid and
+-    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10125, 10164, 10165, 10166, 10169, 10170, 10175, 10184) and value.get('self_uid') == helper_uid and
+             type(value.get('self_pid')) is int and value['self_pid'] > 1, 'INSTALLED_HELPER_IDENTITY_REQUIRED')
+     require(value.get('ok') is True and value.get('error') is None and value.get('secondary_errors') == [] and
+             value.get('claim_persistence_completed') is True and value.get('helper_work_completed') is True,
+@@ -187,6 +187,11 @@
+             0 <= value['finished_elapsed_ms'] - value['started_elapsed_ms'] <= 12000, 'HELPER_ELAPSED_BOUND')
+     restore = value.get('restoration')
+     require(isinstance(restore, dict) and restore.get('service_info_verified') is True, 'OWN_SERVICE_RESTORE_FAILED')
++    observed_idle=inspection_idle_observation(value.get('inspection_idle_observation'),request['op'],
++                                               value['started_elapsed_ms'],success_required=True)
++    if observed_idle:
++        require(observed_idle['last_elapsed_ms']<=value['finished_elapsed_ms'],
++                'INSPECTION_IDLE_OUTLIVES_HELPER_RESULT')
+     if request['op'] == 'state':
+         require(value.get('action_attempted') is False and value.get('outcome_unknown') is False and
+                 value.get('ui_automation_connected') is False and value.get('requires_post_termination_state_check') is False and
+@@ -212,6 +217,8 @@
+         if request['op'] == 'inspect':
+             require(value.get('action_attempted') is False and value.get('outcome_unknown') is False, 'INSPECTION_CANNOT_ACT')
+             inspect_record(value.get('inspection'))
++            require(observed_trees[0]['began_elapsed_ms']>=observed_idle['last_elapsed_ms'],
++                    'INSPECTION_CAPTURE_MUST_FOLLOW_ITS_IDLE_OBSERVATION')
+             require(observed_window['selected_window_id'] == value['inspection']['connection_scoped_window_id'],
+                     'INSPECTION_WINDOW_NOT_SELECTED_CENSUS_WINDOW')
+             require(observed_trees[0]['emitted_nodes'] == len(value['inspection']['nodes']) and
+@@ -240,6 +247,64 @@
+             'command_join_and_epoch_guards_must_be_bound_separately': True}
+ 
+ 
++def inspection_idle_observation(value, operation, started, success_required):
++    """Safe event-quiet metadata only; neither complete-tree nor future-action qualification."""
++    require(isinstance(value,dict) and len(canonical(value))<=4096,'SAFE_INSPECTION_IDLE_BOUND')
++    if operation!='inspect':
++        require(value=={},'ONLY_INSPECT_MAY_WAIT_FOR_EVENT_IDLE')
++        return value
++    if value=={}:
++        require(not success_required,'INSPECTION_IDLE_OBSERVATION_REQUIRED')
++        return value
++    keys={'schema','operation','invoked','call_count','operation_started_elapsed_ms',
++          'began_elapsed_ms','last_elapsed_ms','waited_ms','quiet_timeout_ms',
++          'global_timeout_cap_ms','global_timeout_ms','operation_deadline_ms','api_returned',
++          'qualified','exception_class','secondary_clock_exception_class','gate_error',
++          'event_quiet_only','content_ready_proven','future_stability_proven'}
++    integer_keys={'schema','call_count','operation_started_elapsed_ms','began_elapsed_ms',
++                  'last_elapsed_ms','waited_ms','quiet_timeout_ms','global_timeout_cap_ms',
++                  'global_timeout_ms','operation_deadline_ms'}
++    require(set(value)==keys and all(type(value[k]) is int for k in integer_keys) and
++            value['schema']==1 and value['operation']=='inspect' and value['invoked'] is True and
++            type(value['api_returned']) is bool and type(value['qualified']) is bool,
++            'EXACT_INSPECTION_IDLE_FIELDS_REQUIRED')
++    require(value['event_quiet_only'] is True and value['content_ready_proven'] is False and
++            value['future_stability_proven'] is False,'IDLE_CANNOT_PROVE_CONTENT_OR_FUTURE_STABILITY')
++    require(type(started) is int and 0<=started<(1<<63) and value['operation_started_elapsed_ms']==started and
++            (value['quiet_timeout_ms'],value['global_timeout_cap_ms'],value['operation_deadline_ms'])==(500,2000,8000),
++            'INSPECTION_IDLE_ORIGINAL_BUDGET_REQUIRED')
++    began,last=value['began_elapsed_ms'],value['last_elapsed_ms']
++    require(0<=began<(1<<63) and 0<=last<(1<<63) and value['waited_ms']==last-began and
++            value['call_count'] in (0,1),'INSPECTION_IDLE_TIME_OR_CALL_BOUND')
++    expected=min(2000,max(0,started+8000-began)) if began>=started and started<=(1<<63)-1-8000 else 0
++    require(value['global_timeout_ms']==expected,'INSPECTION_IDLE_REMAINING_BUDGET_MISMATCH')
++    for name in ('exception_class','secondary_clock_exception_class'):
++        item=value[name]
++        require(isinstance(item,str) and len(item)<=192 and (item=='' or
++                re.fullmatch(r'[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*',item)),
++                'INSPECTION_IDLE_EXCEPTION_CLASS_BOUND')
++    allowed={'','INSPECTION_IDLE_CLOCK_FAILED','INSPECTION_IDLE_CLOCK_INVALID',
++             'INSPECTION_IDLE_BUDGET_EXHAUSTED','INSPECTION_IDLE_TIMEOUT',
++             'INSPECTION_IDLE_WAIT_FAILED','INSPECTION_IDLE_BUDGET_EXCEEDED'}
++    require(isinstance(value['gate_error'],str) and value['gate_error'] in allowed,
++            'INSPECTION_IDLE_ERROR_REQUIRED')
++    if value['call_count']==0:
++        require(value['api_returned'] is False and last==began and value['waited_ms']==0 and
++                value['gate_error'] in ('INSPECTION_IDLE_CLOCK_FAILED','INSPECTION_IDLE_CLOCK_INVALID',
++                                       'INSPECTION_IDLE_BUDGET_EXHAUSTED'),
++                'INSPECTION_IDLE_UNCALLED_FAILURE_REQUIRED')
++    else:
++        require(value['global_timeout_ms']>=500,'INSPECTION_IDLE_TOO_LITTLE_BUDGET_TO_CALL')
++    if success_required or value['qualified']:
++        require(value['qualified'] is True and value['call_count']==1 and value['api_returned'] is True and
++                value['gate_error']==value['exception_class']==value['secondary_clock_exception_class']=='' and
++                began>=started and 0<=value['waited_ms']<=value['global_timeout_ms'] and last<=started+8000,
++                'SUCCESSFUL_BOUNDED_EVENT_IDLE_REQUIRED')
++    else:
++        require(value['gate_error']!='','INSPECTION_IDLE_FAILURE_CANNOT_BE_EMPTY')
++    return value
++
++
+ def inspect_record(value):
+     require(isinstance(value, dict) and value.get('complete') is True and
+             value.get('traversal') == 'visible-non-password-subtrees', 'COMPLETE_INSPECTION_REQUIRED')
+@@ -294,6 +359,9 @@
+         result['tree_observations'] = tree_observations(value['tree_observations'],request['op'],complete_required=False)
+     if 'window_observation' in value:
+         result['window_observation'] = window_observation(value['window_observation'],ready_required=False)
++    if 'inspection_idle_observation' in value:
++        result['inspection_idle_observation']=inspection_idle_observation(
++            value['inspection_idle_observation'],request['op'],value.get('started_elapsed_ms'),success_required=False)
+     if request['op']=='reveal_controls' and 'touch' in value:
+         result['touch_observation']=touch_observation(value['touch'],False)
+     return result
+--- R7/source/src/org/droidloom/qa/bili/r7/ActionRunner.java
++++ R8/source/src/org/droidloom/qa/bili/r8/ActionRunner.java
+@@ -1,4 +1,4 @@
++package org.droidloom.qa.bili.r8;
+-package org.droidloom.qa.bili.r7;
+ 
+ import android.accessibilityservice.AccessibilityServiceInfo;
+ import android.app.Instrumentation;
+@@ -41,9 +41,9 @@
+ 
+ /** An owned self-instrumentation; it never instruments the commercial app. */
+ public final class ActionRunner extends Instrumentation {
++    static final String PROTOCOL = "pocket4-owned-bili-qa-v8";
+-    static final String PROTOCOL = "pocket4-owned-bili-qa-v7";
+     static final String PACKAGE = "tv.danmaku.bili";
++    static final String SELF = "org.droidloom.qa.bili.r8";
+-    static final String SELF = "org.droidloom.qa.bili.r7";
+     static final String MAIN_EPOCH = "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f";
+     static final int TARGET_UID = 10117;
+     static final int MAX_REQUEST = 16384, MAX_RESULT = 524288, MAX_COMPRESSED_WIRE = 262144;
+@@ -67,6 +67,7 @@
+     private JSONObject windowObservation = new JSONObject();
+     private final JSONArray treeObservations = new JSONArray();
+     private JSONObject currentTreeObservation;
++    private InspectionIdleGate.Observation inspectionIdle;
+ 
+     static final class Rejected extends Exception {
+         Rejected(String code) { super(code); }
+@@ -201,6 +202,7 @@
+                 result.put("accessibility_state_before_connection", accessibilityState());
+                 connect();
+                 if (op.equals("inspect")) {
++                    waitForInspectionIdle();
+                     Capture captured = inspect(null, "inspection");
+                     try { result.put("inspection", captured.json); }
+                     finally { captured.close(); }
+@@ -226,6 +228,7 @@
+             need(canonical(windowObservation).getBytes(StandardCharsets.UTF_8).length <= 32768, "WINDOW_CENSUS_RESULT_BOUND");
+             result.put("window_observation", windowObservation);
+             result.put("tree_observations", treeObservations);
++            result.put("inspection_idle_observation", inspectionIdleObservation());
+             // The adapter must observe the state AFTER am instrument terminates. The helper
+             // cannot honestly assert that framework connection teardown has already completed.
+             result.put("accessibility_mode_restoration_verified", JSONObject.NULL);
+@@ -250,8 +253,39 @@
+         }
+     }
+ 
++    void waitForInspectionIdle() throws Exception {
++        need(DEADLINE_MS == InspectionIdleGate.OPERATION_DEADLINE_MS, "INSPECTION_IDLE_DEADLINE_CHANGED");
++        if (inspectionIdle == null) inspectionIdle = new InspectionIdleGate.Observation(started);
++        InspectionIdleGate.once(inspectionIdle, new InspectionIdleGate.Clock() {
++            @Override public long now() { return SystemClock.elapsedRealtime(); }
++        }, new InspectionIdleGate.Waiter() {
++            @Override public void waitForIdle(long quietMillis, long globalMillis) throws Exception {
++                automation.waitForIdle(quietMillis, globalMillis);
++            }
++        });
++    }
++
++    JSONObject inspectionIdleObservation() throws Exception {
++        if (inspectionIdle == null) return new JSONObject();
++        InspectionIdleGate.Observation value = inspectionIdle;
++        return new JSONObject().put("schema", 1).put("operation", "inspect")
++            .put("invoked", value.invoked).put("call_count", value.callCount)
++            .put("operation_started_elapsed_ms", value.operationStarted)
++            .put("began_elapsed_ms", value.began).put("last_elapsed_ms", value.last)
++            .put("waited_ms", value.waited).put("quiet_timeout_ms", InspectionIdleGate.QUIET_MS)
++            .put("global_timeout_cap_ms", InspectionIdleGate.GLOBAL_CAP_MS)
++            .put("global_timeout_ms", value.globalMillis)
++            .put("operation_deadline_ms", InspectionIdleGate.OPERATION_DEADLINE_MS)
++            .put("api_returned", value.apiReturned).put("qualified", value.qualified)
++            .put("exception_class", value.exceptionClass)
++            .put("secondary_clock_exception_class", value.secondaryClockExceptionClass)
++            .put("gate_error", value.error).put("event_quiet_only", true)
++            .put("content_ready_proven", false).put("future_stability_proven", false);
++    }
++
+     static String errorCode(Exception error) {
+         return error instanceof Rejected || error instanceof TouchTransaction.Fault || error instanceof PlayerButtonTransaction.Fault
++            || error instanceof InspectionIdleGate.Fault
+             ? error.getMessage() : "EXCEPTION_" + error.getClass().getSimpleName();
+     }
+     void writeNew(String name, byte[] value) throws Exception {
+--- R7/source/src/org/droidloom/qa/bili/r7/PlayerButtonTransaction.java
++++ R8/source/src/org/droidloom/qa/bili/r8/PlayerButtonTransaction.java
+@@ -1,4 +1,4 @@
++package org.droidloom.qa.bili.r8;
+-package org.droidloom.qa.bili.r7;
+ 
+ /** Exactly one current-selection transaction; no retry and no Android atomicity claim. */
+ public final class PlayerButtonTransaction {
+--- R7/source/src/org/droidloom/qa/bili/r7/TouchTransaction.java
++++ R8/source/src/org/droidloom/qa/bili/r8/TouchTransaction.java
+@@ -1,4 +1,4 @@
++package org.droidloom.qa.bili.r8;
+-package org.droidloom.qa.bili.r7;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
+--- R7/source/stage_build.py
++++ R8/source/stage_build.py
+@@ -8,8 +8,8 @@
+ import sys
+ import types
+ 
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r8-source-01')
++OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r8-build-01')
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r7-source-01')
+-OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r7-build-01')
+ MEMORY = 536870912
+ 
+ 
+--- R7/source/src/org/droidloom/qa/bili/r7/InspectionIdleGate.java
++++ R8/source/src/org/droidloom/qa/bili/r8/InspectionIdleGate.java
+@@ -1,1 +1,88 @@
++package org.droidloom.qa.bili.r8;
+ 
++import java.util.concurrent.TimeoutException;
++
++/** One event-stream quiet observation. It does not capture a tree or prove content readiness. */
++public final class InspectionIdleGate {
++    public static final long QUIET_MS = 500;
++    public static final long GLOBAL_CAP_MS = 2000;
++    public static final long OPERATION_DEADLINE_MS = 8000;
++
++    public interface Clock { long now(); }
++    public interface Waiter { void waitForIdle(long quietMillis, long globalMillis) throws Exception; }
++
++    public static final class Fault extends Exception {
++        Fault(String code, Exception cause) { super(code, cause); }
++    }
++
++    public static final class Observation {
++        public final long operationStarted;
++        public boolean invoked, apiReturned, qualified;
++        public int callCount;
++        public long began, last, waited, globalMillis;
++        public String exceptionClass = "", secondaryClockExceptionClass = "", error = "";
++        public Observation(long operationStarted) { this.operationStarted = operationStarted; }
++    }
++
++    private static void reject(Observation observation, String code, Exception cause) throws Fault {
++        observation.error = code;
++        throw new Fault(code, cause);
++    }
++
++    public static void once(Observation observation, Clock clock, Waiter waiter) throws Fault {
++        if (observation.invoked) throw new Fault("INSPECTION_IDLE_ALREADY_INVOKED", null);
++        observation.invoked = true;
++        try {
++            observation.began = clock.now();
++            observation.last = observation.began;
++        } catch (RuntimeException error) {
++            observation.exceptionClass = error.getClass().getName();
++            reject(observation, "INSPECTION_IDLE_CLOCK_FAILED", error);
++        }
++        if (observation.operationStarted < 0 || observation.operationStarted > Long.MAX_VALUE - OPERATION_DEADLINE_MS
++                || observation.began < observation.operationStarted) {
++            reject(observation, "INSPECTION_IDLE_CLOCK_INVALID", null);
++        }
++        long deadline = observation.operationStarted + OPERATION_DEADLINE_MS;
++        observation.globalMillis = Math.min(GLOBAL_CAP_MS, Math.max(0, deadline - observation.began));
++        if (observation.globalMillis < QUIET_MS) {
++            reject(observation, "INSPECTION_IDLE_BUDGET_EXHAUSTED", null);
++        }
++
++        Exception primary = null;
++        observation.callCount = 1;
++        try {
++            waiter.waitForIdle(QUIET_MS, observation.globalMillis);
++            observation.apiReturned = true;
++        } catch (Exception error) {
++            primary = error;
++            observation.exceptionClass = error.getClass().getName();
++        } finally {
++            try {
++                observation.last = clock.now();
++                observation.waited = observation.last - observation.began;
++            } catch (RuntimeException error) {
++                if (primary == null) {
++                    primary = error;
++                    observation.exceptionClass = error.getClass().getName();
++                } else {
++                    observation.secondaryClockExceptionClass = error.getClass().getName();
++                }
++            }
++        }
++        // Keep the API's first failure even if the final clock read also failed.
++        if (primary != null) {
++            reject(observation, primary instanceof TimeoutException ? "INSPECTION_IDLE_TIMEOUT"
++                    : "INSPECTION_IDLE_WAIT_FAILED", primary);
++        }
++        if (observation.last < observation.began || observation.waited < 0) {
++            reject(observation, "INSPECTION_IDLE_CLOCK_INVALID", null);
++        }
++        if (observation.waited > observation.globalMillis || observation.last > deadline) {
++            reject(observation, "INSPECTION_IDLE_BUDGET_EXCEEDED", null);
++        }
++        observation.qualified = true;
++    }
++
++    private InspectionIdleGate() {}
++}
+--- R7/source/tests/InspectionIdleGateChecks.java
++++ R8/source/tests/InspectionIdleGateChecks.java
+@@ -1,1 +1,193 @@
++package org.droidloom.qa.bili.r8;
+ 
++import java.util.ArrayList;
++import java.util.List;
++import java.util.concurrent.TimeoutException;
++
++/** Executes the exact production gate with bounded clocks/waiters; no Android classes. */
++public final class InspectionIdleGateChecks {
++    interface Check { void run() throws Exception; }
++    static final List<String> passed = new ArrayList<String>();
++
++    static void need(boolean value, String name) {
++        if (!value) throw new AssertionError(name);
++    }
++    static void check(String name, Check body) throws Exception {
++        body.run();
++        passed.add(name);
++    }
++    static final class Fixture implements InspectionIdleGate.Clock, InspectionIdleGate.Waiter {
++        final InspectionIdleGate.Observation observation;
++        final long began, last;
++        int clockReads, calls, clockFailureAt;
++        long quietArgument = -1, globalArgument = -1;
++        Exception apiFailure;
++        final IllegalStateException clockFailure = new IllegalStateException("fixed-clock-failure");
++
++        Fixture(long start, long began, long last) {
++            this.observation = new InspectionIdleGate.Observation(start);
++            this.began = began; this.last = last;
++        }
++        public long now() {
++            clockReads++;
++            if (clockReads == clockFailureAt) throw clockFailure;
++            if (clockReads > 2) throw new AssertionError("clock read retried");
++            return clockReads == 1 ? began : last;
++        }
++        public void waitForIdle(long quiet, long global) throws Exception {
++            calls++; quietArgument = quiet; globalArgument = global;
++            if (calls != 1) throw new AssertionError("API retried");
++            if (apiFailure != null) throw apiFailure;
++        }
++        void run() throws InspectionIdleGate.Fault {
++            InspectionIdleGate.once(observation, this, this);
++        }
++        void fault(String code, Exception cause) throws Exception {
++            try { run(); throw new AssertionError("expected rejection " + code); }
++            catch (InspectionIdleGate.Fault failure) {
++                need(code.equals(failure.getMessage()), "wrong rejection " + failure.getMessage());
++                need(failure.getCause() == cause, "original cause not retained");
++                need(!observation.qualified, "failed observation qualified");
++            }
++        }
++        void good(long expectedGlobal, long expectedWaited) throws Exception {
++            run();
++            need(observation.invoked && observation.qualified && observation.apiReturned, "success flags");
++            need(calls == 1 && observation.callCount == 1 && clockReads == 2, "exact call/read counts");
++            need(quietArgument == 500 && globalArgument == expectedGlobal
++                    && observation.globalMillis == expectedGlobal, "budget arguments");
++            need(observation.waited == expectedWaited && observation.began == began
++                    && observation.last == last, "actual time record");
++            need(observation.error.isEmpty() && observation.exceptionClass.isEmpty()
++                    && observation.secondaryClockExceptionClass.isEmpty(), "success errors");
++        }
++    }
++
++    public static void main(String[] args) throws Exception {
++        need(args.length == 0, "no arbitrary arguments");
++        check("fixed_original_budgets", new Check() { public void run() {
++            need(InspectionIdleGate.QUIET_MS == 500 && InspectionIdleGate.GLOBAL_CAP_MS == 2000
++                    && InspectionIdleGate.OPERATION_DEADLINE_MS == 8000, "fixed budgets");
++        }});
++        check("one_successful_event_quiet_call", new Check() { public void run() throws Exception {
++            new Fixture(1000, 1100, 1600).good(2000, 500);
++        }});
++        check("already_quiet_immediate_return_allowed", new Check() { public void run() throws Exception {
++            new Fixture(1000, 1100, 1100).good(2000, 0);
++        }});
++        check("global_cap_exact_edge_allowed", new Check() { public void run() throws Exception {
++            new Fixture(1000, 1100, 3100).good(2000, 2000);
++        }});
++        check("remaining_original_budget_clamps_global", new Check() { public void run() throws Exception {
++            new Fixture(1000, 8000, 8500).good(1000, 500);
++        }});
++        check("exact_quiet_budget_one_call", new Check() { public void run() throws Exception {
++            new Fixture(1000, 8500, 9000).good(500, 500);
++        }});
++        check("insufficient_quiet_budget_no_call", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(1000, 8501, 8501);
++            f.fault("INSPECTION_IDLE_BUDGET_EXHAUSTED", null);
++            need(f.calls == 0 && f.clockReads == 1 && f.observation.globalMillis == 499, "no insufficient call");
++        }});
++        check("expired_original_deadline_no_call", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(1000, 9001, 9001);
++            f.fault("INSPECTION_IDLE_BUDGET_EXHAUSTED", null);
++            need(f.calls == 0 && f.observation.globalMillis == 0, "expired no call");
++        }});
++        check("clock_before_operation_start_no_call", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(1000, 999, 999);
++            f.fault("INSPECTION_IDLE_CLOCK_INVALID", null);
++            need(f.calls == 0, "invalid clock no call");
++        }});
++        check("negative_operation_start_no_call", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(-1, 0, 0);
++            f.fault("INSPECTION_IDLE_CLOCK_INVALID", null);
++            need(f.calls == 0, "negative start no call");
++        }});
++        check("operation_deadline_overflow_no_call", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(Long.MAX_VALUE - 7999, Long.MAX_VALUE - 7999, Long.MAX_VALUE - 7999);
++            f.fault("INSPECTION_IDLE_CLOCK_INVALID", null);
++            need(f.calls == 0, "overflow no call");
++        }});
++        check("first_clock_failure_no_call", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(1000, 1100, 1600); f.clockFailureAt = 1;
++            f.fault("INSPECTION_IDLE_CLOCK_FAILED", f.clockFailure);
++            need(f.calls == 0 && f.clockReads == 1
++                    && f.observation.exceptionClass.equals("java.lang.IllegalStateException"), "first clock evidence");
++        }});
++        check("timeout_preserves_original_cause_no_retry", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(1000, 1100, 3101);
++            f.apiFailure = new TimeoutException("fixed-timeout");
++            f.fault("INSPECTION_IDLE_TIMEOUT", f.apiFailure);
++            need(f.calls == 1 && f.clockReads == 2 && !f.observation.apiReturned
++                    && f.observation.waited == 2001
++                    && f.observation.exceptionClass.equals("java.util.concurrent.TimeoutException"), "timeout evidence");
++        }});
++        check("disconnected_api_preserves_original_cause", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(1000, 1100, 1101);
++            f.apiFailure = new IllegalStateException("fixed-disconnected");
++            f.fault("INSPECTION_IDLE_WAIT_FAILED", f.apiFailure);
++            need(f.calls == 1 && !f.observation.apiReturned, "disconnected no retry");
++        }});
++        check("timeout_and_clock_failure_keep_first_error", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(1000, 1100, 3100);
++            f.apiFailure = new TimeoutException("first-timeout"); f.clockFailureAt = 2;
++            f.fault("INSPECTION_IDLE_TIMEOUT", f.apiFailure);
++            need(f.calls == 1 && f.observation.secondaryClockExceptionClass.equals("java.lang.IllegalStateException"),
++                    "secondary clock error retained");
++        }});
++        check("successful_api_then_clock_failure_unqualified", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(1000, 1100, 1600); f.clockFailureAt = 2;
++            f.fault("INSPECTION_IDLE_WAIT_FAILED", f.clockFailure);
++            need(f.calls == 1 && f.observation.apiReturned, "returned API is not qualification");
++        }});
++        check("final_clock_regression_unqualified", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(1000, 1100, 1099);
++            f.fault("INSPECTION_IDLE_CLOCK_INVALID", null);
++            need(f.calls == 1 && f.observation.waited == -1, "regression evidence");
++        }});
++        check("global_cap_overrun_unqualified", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(1000, 1100, 3101);
++            f.fault("INSPECTION_IDLE_BUDGET_EXCEEDED", null);
++            need(f.calls == 1 && f.observation.apiReturned, "late returned API must fail");
++        }});
++        check("owner_deadline_overrun_unqualified", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(1000, 8500, 9001);
++            f.fault("INSPECTION_IDLE_BUDGET_EXCEEDED", null);
++            need(f.globalArgument == 500 && f.calls == 1, "original deadline not extended");
++        }});
++        check("duplicate_after_success_cannot_call_again", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(1000, 1100, 1600); f.good(2000, 500);
++            try { f.run(); throw new AssertionError("second invocation accepted"); }
++            catch (InspectionIdleGate.Fault failure) {
++                need(failure.getMessage().equals("INSPECTION_IDLE_ALREADY_INVOKED")
++                        && f.calls == 1 && f.clockReads == 2 && f.observation.qualified
++                        && f.observation.error.isEmpty(), "original success record preserved");
++            }
++        }});
++        check("duplicate_after_timeout_cannot_call_again", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(1000, 1100, 3100); f.apiFailure = new TimeoutException("first");
++            f.fault("INSPECTION_IDLE_TIMEOUT", f.apiFailure);
++            f.fault("INSPECTION_IDLE_ALREADY_INVOKED", null);
++            need(f.calls == 1 && f.clockReads == 2 && f.observation.error.equals("INSPECTION_IDLE_TIMEOUT"),
++                    "original timeout record preserved");
++        }});
++        check("duplicate_after_budget_failure_cannot_call", new Check() { public void run() throws Exception {
++            Fixture f = new Fixture(1000, 8501, 8501);
++            f.fault("INSPECTION_IDLE_BUDGET_EXHAUSTED", null);
++            f.fault("INSPECTION_IDLE_ALREADY_INVOKED", null);
++            need(f.calls == 0 && f.clockReads == 1 && f.observation.error.equals("INSPECTION_IDLE_BUDGET_EXHAUSTED"),
++                    "original pre-call failure preserved");
++        }});
++        need(passed.size() == 22, "exact case count");
++        StringBuilder out = new StringBuilder("{\"schema\":1,\"all_passed\":true,\"count\":22,\"cases\":[");
++        for (int index = 0; index < passed.size(); index++) {
++            if (index > 0) out.append(',');
++            out.append("{\"name\":\"").append(passed.get(index)).append("\",\"passed\":true}");
++        }
++        out.append("],\"android_calls\":0,\"tree_captures\":0,\"input_actions\":0}");
++        System.out.println(out.toString());
++    }
++
++    private InspectionIdleGateChecks() {}
++}
+--- R7/source/check_idle_contract.py
++++ R8/source/check_idle_contract.py
+@@ -1,1 +1,185 @@
++"""Pure checks of the production R8 wire parser. Called by the pinned build process."""
++import base64
++import copy
++import gzip
++import hashlib
++import types
+ 
++
++def run(contract_source):
++    qa=types.ModuleType('owned_r8_idle_contract_controls')
++    exec(compile(contract_source,'qa_contract.py','exec'),qa.__dict__)
++    rows=[]
++
++    def need(value,reason):
++        if not value:raise AssertionError(reason)
++
++    def check(name,body):
++        body();rows.append({'name':name,'passed':True})
++
++    def idle():
++        return {'schema':1,'operation':'inspect','invoked':True,'call_count':1,
++                'operation_started_elapsed_ms':1000,'began_elapsed_ms':1100,'last_elapsed_ms':1600,
++                'waited_ms':500,'quiet_timeout_ms':500,'global_timeout_cap_ms':2000,
++                'global_timeout_ms':2000,'operation_deadline_ms':8000,'api_returned':True,'qualified':True,
++                'exception_class':'','secondary_clock_exception_class':'','gate_error':'',
++                'event_quiet_only':True,'content_ready_proven':False,'future_stability_proven':False}
++
++    request={'protocol':qa.PROTOCOL,'nonce':'1'*32,'op':'inspect',
++             'scope':{'package':qa.PACKAGE,'uid':qa.UID,'user':0,'display':0,
++                      'activity':qa.PACKAGE+'/com.bilibili.MainActivityV2',
++                      'window_token':'abc','main_epoch_sha256':qa.MAIN_EPOCH}}
++    state={'accessibility_enabled':False,'touch_exploration_enabled':False,
++           'enabled_service_count':0,'enabled_services_sha256':'0'*64}
++    window={'package':qa.PACKAGE,'display':0,'type':1,'focused':True}
++    node={'package':qa.PACKAGE,'path':'0','password':False,'visible':True,'editable':False,'supports_set_text':False}
++    node['node_sha256']=qa.sha(qa.canonical(node))
++    inspection={'complete':True,'traversal':'visible-non-password-subtrees','window':window,
++                'window_sha256':qa.sha(qa.canonical(window)),'observed_elapsed_ms':1700,
++                'connection_scoped_window_id':1,'nodes':[node],'tree_sha256':qa.sha(qa.canonical([node]))}
++    timing={'sample':1,'event_serial':0,'elapsed_ms':0,'cache_cleared':True}
++    census={'sample':1,'event_serial':0,'elapsed_ms':0,'displays':[0],
++            'windows':[{'display':0,'id':1,'type':1,'focused':True,'active':True,
++                        'accessibility_focused':False,'layer':0}]}
++    observed_window={'requested_display':0,'selection':'exact-display-0-focused-application',
++                     'wait_budget_ms':2000,'recheck_max_ms':100,'ready':True,'first':census,'last':census,
++                     'samples':1,'waited_ms':0,'selected_display':0,'selected_window_id':1,
++                     'sample_timings':[timing],'cache_api':'android.app.UiAutomation.clearCache()',
++                     'cache_policy':'require_public_own_connection_clear_before_each_query','cache_runtime_sdk':34,
++                     'cache_attempts':1,'cache_clears':1,'cache_last_result':True,'cache_last_exception':None}
++    counter={'capture':1,'purpose':'inspection','node_limit':512,'depth_limit':32,'child_limit':64,
++             'json_byte_limit':qa.MAX_RESULT-65536,'attempted_nodes':1,'emitted_nodes':1,
++             'max_attempted_depth':0,'max_observed_children':0,'serialized_bytes':len(qa.canonical(inspection)),
++             'complete':True,'began_elapsed_ms':1600,'last_elapsed_ms':1700}
++    baseline={'protocol':qa.PROTOCOL,'nonce':request['nonce'],'op':'inspect',
++              'request_sha256':qa.sha(qa.canonical(request)),'wire_codec':'gzip-canonical-json-v1',
++              'self_uid':30000,'self_pid':99999,'ok':True,'error':None,'secondary_errors':[],
++              'claim_persistence_completed':True,'helper_work_completed':True,'automatic_retry':False,
++              'business_success_verified':False,'accessibility_mode_restoration_verified':None,
++              'started_elapsed_ms':1000,'finished_elapsed_ms':1800,'action_attempted':False,'outcome_unknown':False,
++              'restoration':{'service_info_verified':True,'service_info_captured':True,'connection_flags':1,
++                             'service_flags_before':0,'service_flags_during':80,'service_flags_after':0,
++                             'service_capabilities_before':0,'service_capabilities_after':0},
++              'host_scope_attestation':request['scope'],'activity_verified_inside_helper':False,'target_uid_verified':qa.UID,
++              'requires_post_termination_state_check':True,'accessibility_state_before_connection':state,
++              'window_observation':observed_window,'tree_observations':[counter],'inspection':inspection,
++              'inspection_idle_observation':idle()}
++
++    def wire(value,finish=-1):
++        data=base64.b64encode(gzip.compress(qa.canonical(value),mtime=0))
++        return b'INSTRUMENTATION_RESULT: owned_qa_result_gzip_base64='+data+b'\nINSTRUMENTATION_CODE: '+str(finish).encode()+b'\n'
++
++    def parse(value,req=request,uid=30000):
++        return qa.parse_completed(wire(value),b'',0,req,uid)
++
++    def reject(name,mutator,code):
++        def body():
++            value=copy.deepcopy(baseline);mutator(value)
++            try:parse(value)
++            except qa.ProtocolError as error:need(str(error)==code,'wrong rejection '+str(error))
++            else:raise AssertionError('negative control passed')
++        check(name,body)
++
++    def alter_idle(**fields):
++        return lambda value:value['inspection_idle_observation'].update(fields)
++
++    check('actual_parser_accepts_complete_inspection_after_idle',lambda:parse(copy.deepcopy(baseline)))
++    def immediate():
++        value=copy.deepcopy(baseline);value['inspection_idle_observation'].update(last_elapsed_ms=1100,waited_ms=0)
++        parse(value)
++    check('actual_parser_accepts_already_quiet_immediate_return',immediate)
++
++    def state_without_idle():
++        req={'protocol':qa.PROTOCOL,'nonce':'2'*32,'op':'state'}
++        value=copy.deepcopy(baseline)
++        value.update(op='state',nonce=req['nonce'],request_sha256=qa.sha(qa.canonical(req)),
++                     ui_automation_connected=False,requires_post_termination_state_check=False,state=state,
++                     window_observation={},tree_observations=[],inspection_idle_observation={})
++        value['restoration']['service_info_captured']=False
++        parse(value,req)
++    check('state_success_keeps_no_automation_idle_or_capture',state_without_idle)
++    reject('missing_idle_record_rejected',lambda v:v.pop('inspection_idle_observation'),'SAFE_INSPECTION_IDLE_BOUND')
++    reject('empty_idle_cannot_qualify_inspect',lambda v:v.update(inspection_idle_observation={}),
++           'INSPECTION_IDLE_OBSERVATION_REQUIRED')
++    reject('extra_idle_key_rejected',alter_idle(extra=True),'EXACT_INSPECTION_IDLE_FIELDS_REQUIRED')
++    reject('non_boolean_qualified_rejected',alter_idle(qualified=1),'EXACT_INSPECTION_IDLE_FIELDS_REQUIRED')
++    reject('call_count_cannot_exceed_one',alter_idle(call_count=2),'INSPECTION_IDLE_TIME_OR_CALL_BOUND')
++    reject('quiet_budget_constant_cannot_change',alter_idle(quiet_timeout_ms=499),'INSPECTION_IDLE_ORIGINAL_BUDGET_REQUIRED')
++    reject('global_cap_cannot_change',alter_idle(global_timeout_cap_ms=2001),'INSPECTION_IDLE_ORIGINAL_BUDGET_REQUIRED')
++    reject('original_operation_budget_cannot_change',alter_idle(operation_deadline_ms=8001),'INSPECTION_IDLE_ORIGINAL_BUDGET_REQUIRED')
++    reject('effective_global_must_equal_remaining_budget',alter_idle(global_timeout_ms=1999),
++           'INSPECTION_IDLE_REMAINING_BUDGET_MISMATCH')
++    reject('operation_start_must_bind_same_helper',alter_idle(operation_started_elapsed_ms=999),
++           'INSPECTION_IDLE_ORIGINAL_BUDGET_REQUIRED')
++    reject('boolean_time_rejected',alter_idle(waited_ms=True),'EXACT_INSPECTION_IDLE_FIELDS_REQUIRED')
++    reject('content_readiness_claim_rejected',alter_idle(content_ready_proven=True),'IDLE_CANNOT_PROVE_CONTENT_OR_FUTURE_STABILITY')
++    reject('future_stability_claim_rejected',alter_idle(future_stability_proven=True),'IDLE_CANNOT_PROVE_CONTENT_OR_FUTURE_STABILITY')
++    reject('event_quiet_scope_must_be_explicit',alter_idle(event_quiet_only=False),'IDLE_CANNOT_PROVE_CONTENT_OR_FUTURE_STABILITY')
++    reject('api_ack_without_qualification_rejected',alter_idle(qualified=False),'SUCCESSFUL_BOUNDED_EVENT_IDLE_REQUIRED')
++    reject('no_api_return_cannot_qualify',alter_idle(api_returned=False),'SUCCESSFUL_BOUNDED_EVENT_IDLE_REQUIRED')
++    reject('gate_error_cannot_qualify',alter_idle(gate_error='INSPECTION_IDLE_TIMEOUT'),'SUCCESSFUL_BOUNDED_EVENT_IDLE_REQUIRED')
++    reject('cause_cannot_qualify',alter_idle(exception_class='java.util.concurrent.TimeoutException'),
++           'SUCCESSFUL_BOUNDED_EVENT_IDLE_REQUIRED')
++    reject('secondary_clock_error_cannot_qualify',alter_idle(secondary_clock_exception_class='java.lang.IllegalStateException'),
++           'SUCCESSFUL_BOUNDED_EVENT_IDLE_REQUIRED')
++    reject('actual_wait_duration_must_match_clocks',alter_idle(waited_ms=499),'INSPECTION_IDLE_TIME_OR_CALL_BOUND')
++    reject('returned_api_after_global_budget_rejected',alter_idle(last_elapsed_ms=3101,waited_ms=2001),
++           'SUCCESSFUL_BOUNDED_EVENT_IDLE_REQUIRED')
++    reject('idle_observation_cannot_outlive_helper_result',alter_idle(last_elapsed_ms=1801,waited_ms=701),
++           'INSPECTION_IDLE_OUTLIVES_HELPER_RESULT')
++    reject('tree_capture_cannot_precede_idle_end',
++           lambda v:v['tree_observations'][0].update(began_elapsed_ms=1599),
++           'INSPECTION_CAPTURE_MUST_FOLLOW_ITS_IDLE_OBSERVATION')
++    reject('event_idle_cannot_qualify_partial_tree',lambda v:v['tree_observations'][0].update(complete=False),
++           'PARTIAL_TREE_CANNOT_QUALIFY')
++
++    def original_null_child_failure():
++        value=copy.deepcopy(baseline);value.update(ok=False,error='TREE_CHANGED_NULL_CHILD')
++        value['tree_observations'][0].update(complete=False,attempted_nodes=2,emitted_nodes=1,serialized_bytes=0)
++        got=qa.failure_diagnostic(wire(value,0),request,30000)
++        need(got['error']=='TREE_CHANGED_NULL_CHILD' and got['qualified_success'] is False and
++             got['action_attempted'] is False and got['outcome_unknown'] is False and
++             got['inspection_idle_observation']['qualified'] is True and
++             got['tree_observations'][0]['complete'] is False and 'inspection' not in got,'first capture failure preserved')
++    check('later_null_child_retains_original_failure_and_idle_only_metadata',original_null_child_failure)
++
++    def timeout_failure():
++        value=copy.deepcopy(baseline);value.update(ok=False,error='INSPECTION_IDLE_TIMEOUT',finished_elapsed_ms=3200,
++                                                  window_observation={},tree_observations=[])
++        value['inspection_idle_observation'].update(qualified=False,api_returned=False,last_elapsed_ms=3101,
++            waited_ms=2001,gate_error='INSPECTION_IDLE_TIMEOUT',exception_class='java.util.concurrent.TimeoutException')
++        got=qa.failure_diagnostic(wire(value,0),request,30000)
++        need(got['error']=='INSPECTION_IDLE_TIMEOUT' and not got['qualified_success'] and
++             got['inspection_idle_observation']['exception_class']=='java.util.concurrent.TimeoutException' and
++             got['tree_observations']==[] and got['window_observation']=={},'timeout diagnostic retained')
++        try:qa.parse_completed(wire(value,0),b'',0,request,30000)
++        except qa.ProtocolError as error:need(str(error)=='EXACT_SUCCESSFUL_FINISH_REQUIRED','failed finish changed')
++        else:raise AssertionError('failure finish accepted')
++    check('timeout_remains_failed_without_capture_or_successful_finish',timeout_failure)
++
++    def before_gate_failure():
++        value=copy.deepcopy(baseline);value.update(ok=False,error='TARGET_UID_MISMATCH',
++            window_observation={},tree_observations=[],inspection_idle_observation={})
++        got=qa.failure_diagnostic(wire(value,0),request,30000)
++        need(got['inspection_idle_observation']=={} and not got['qualified_success'],'uncalled idle not invented')
++    check('failure_before_gate_can_only_have_empty_idle_metadata',before_gate_failure)
++
++    def other_operations():
++        for op in ('state','click','set_text','reveal_controls','player_button'):
++            need(qa.inspection_idle_observation({},op,1000,True)=={},'empty noninspect metadata')
++            try:qa.inspection_idle_observation(idle(),op,1000,True)
++            except qa.ProtocolError as error:need(str(error)=='ONLY_INSPECT_MAY_WAIT_FOR_EVENT_IDLE','wrong operation gate')
++            else:raise AssertionError('idle permitted in action or state')
++    check('all_noninspect_operations_require_empty_idle_metadata',other_operations)
++
++    def old_uid():
++        value=copy.deepcopy(baseline);value['self_uid']=10202
++        try:parse(value,uid=10202)
++        except qa.ProtocolError as error:need(str(error)=='INSTALLED_HELPER_IDENTITY_REQUIRED','wrong UID rejection')
++        else:raise AssertionError('old R7 UID accepted')
++    check('old_r7_uid_rejected_even_when_wire_uid_matches_argument',old_uid)
++
++    need(len(rows)==32,'exact idle protocol case count')
++    return {'schema':1,'all_passed':True,'count':len(rows),'cases':rows,
++            'android_calls':0,'tree_captures':0,'input_actions':0,
++            'production_contract_sha256':hashlib.sha256(contract_source.encode()).hexdigest()}

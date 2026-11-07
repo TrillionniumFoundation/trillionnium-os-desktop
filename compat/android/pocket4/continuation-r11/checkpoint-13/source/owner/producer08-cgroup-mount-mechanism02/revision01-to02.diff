@@ -1,0 +1,87 @@
+--- 01/source/probe.c
++++ 02/source/probe.c
+@@ -54,6 +54,9 @@
+ static int same_inode(const struct identity *a, const struct identity *b) {
+     return a->dev == b->dev && a->ino == b->ino;
+ }
++static int same_domain(const struct identity *a, const struct identity *b) {
++    return same_inode(a,b) && a->mode == b->mode && a->uid == b->uid && a->gid == b->gid;
++}
+ static int ns_identity(const char *name, struct identity *out) {
+     char path[64];
+     int count = snprintf(path, sizeof(path), "/proc/self/ns/%s", name);
+@@ -78,8 +81,10 @@
+ static int domain_identity(int fd, struct identity *out) {
+     struct statfs fs;
+     if (fd_identity(fd, out) || fstatfs(fd, &fs)) return -1;
+-    if (fs.f_type != CGROUP2_MAGIC || !S_ISDIR(out->mode) || out->uid || out->gid ||
+-        (out->mode & 0022)) { errno = EPERM; return -1; }
++    /* The current user-manager job can be user-owned. The only authority is
++     * the caller's held resource-gated descriptor, not an assumed UID. Every
++     * projected view must retain this exact inode/owner/group/mode. */
++    if (fs.f_type != CGROUP2_MAGIC || !S_ISDIR(out->mode)) { errno = EPERM; return -1; }
+     return 0;
+ }
+ static int target_identity(const char *path, struct identity *out) {
+@@ -134,7 +139,9 @@
+     if (prctl(PR_SET_PDEATHSIG, SIGKILL) || getppid() != parent ||
+         getuid() || geteuid() || getgid() || getegid() || clocks(&e.begin) ||
+         self_birth(&e.child_birth_ticks)) goto fail;
+-    if (fcntl(domain_fd, F_SETFD, FD_CLOEXEC) || domain_identity(domain_fd, &e.domain)) goto fail;
++    struct identity inherited;
++    if (fcntl(domain_fd, F_SETFD, FD_CLOEXEC) || domain_identity(domain_fd, &inherited)) goto fail;
++    if (!same_domain(&inherited,&e.domain)) { errno=EPROTO; goto fail; }
+     e.stage = 2;
+     if (unshare(CLONE_NEWNS | CLONE_NEWCGROUP) ||
+         mount(NULL, "/", NULL, MS_REC | MS_PRIVATE, NULL)) goto fail;
+@@ -163,7 +170,7 @@
+     if (e.first_a.rc) { errno = e.first_a.error; goto fail; }
+     ++a_mounts;
+     if (target_identity(FIXTURE_ROOT "/a", &e.first_target) ||
+-        !same_inode(&e.domain, &e.first_target)) { errno = EPROTO; goto fail; }
++        !same_domain(&e.domain, &e.first_target)) { errno = EPROTO; goto fail; }
+     e.stage = 5;
+     e.repeat_a_recursiveprot = mount_cgroup(FIXTURE_ROOT "/a", "memory_recursiveprot");
+     if (!e.repeat_a_recursiveprot.rc) ++a_mounts;
+@@ -174,7 +181,7 @@
+     if (!e.fresh_b.rc) ++b_mounts;
+     if (e.fresh_b.rc) { errno = e.fresh_b.error; goto fail; }
+     if (target_identity(FIXTURE_ROOT "/b", &e.fresh_target) ||
+-        !same_inode(&e.domain, &e.fresh_target)) { errno = EPROTO; goto fail; }
++        !same_domain(&e.domain, &e.fresh_target)) { errno = EPROTO; goto fail; }
+     if (e.repeat_a_recursiveprot.rc != -1 || e.repeat_a_recursiveprot.error != EBUSY ||
+         e.repeat_a_plain.rc != -1 || e.repeat_a_plain.error != EBUSY) { errno = EPROTO; goto fail; }
+     e.success = 1;
+--- 01/controller-template.py
++++ 02/controller-template.py
+@@ -220,6 +220,11 @@
+         handles['probe'] = os.open(root / 'probe', os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+         report['probe_before'] = observe(handles['probe'])
+         need(report['probe_before']['nlink'] == 1, 'new owned probe must have one link')
++        current = os.fstat(guard.fd)
++        report['held_invocation_domain_before'] = {'device': current.st_dev, 'inode': current.st_ino,
++            'uid': current.st_uid, 'gid': current.st_gid, 'mode': current.st_mode}
++        need([current.st_dev, current.st_ino] == guard.identity and stat.S_ISDIR(current.st_mode),
++             'exact current invocation domain changed before transfer')
+         result = command(report, root, [str(root / 'probe'), str(os.getpid()), str(guard.fd)],
+             handles['probe'], (guard.fd,), timeout=22)
+         control = json.loads(result['stdout']); report['kernel_control'] = control
+@@ -237,12 +242,16 @@
+              'mechanism identity, time or no-cgroup-write contract differs')
+         for label in ('domain', 'first_target', 'fresh_target'):
+             actual = control[label]
+-            need([actual['device'], actual['inode']] == guard.identity and
+-                 actual['uid'] == actual['gid'] == 0 and not actual['mode'] & 0o022,
++            need(actual == report['held_invocation_domain_before'],
+                  'mounted view does not match held finite invocation cgroup')
+         need(control['child_reaped'] and not control['forced_kill'] and control['child_wait_status'] == 0 and
+              control['all_private_mounts_unmounted'] and control['inherited_domain_closed'],
+              'owned mechanism cleanup incomplete')
++        current = os.fstat(guard.fd)
++        report['held_invocation_domain_after'] = {'device': current.st_dev, 'inode': current.st_ino,
++            'uid': current.st_uid, 'gid': current.st_gid, 'mode': current.st_mode}
++        need(report['held_invocation_domain_after'] == report['held_invocation_domain_before'],
++             'held invocation domain metadata changed during mechanism')
+         report['probe_after'] = observe(handles['probe']); need(report['probe_after'] == report['probe_before'], 'probe bytes changed')
+         report['success'] = True
+     except BaseException as error:

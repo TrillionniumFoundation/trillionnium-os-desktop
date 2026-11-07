@@ -1,0 +1,70 @@
+--- amazon-install01/INPUTS.json
++++ ticket-install01/INPUTS.json
+@@ -1,17 +1,22 @@
+ {
+   "APK": {
+     "bytes": 24720,
+-    "sha256": "f3a7bb2133049022a7d622d35ea2db3390d2804e51ebe344b1d5adcde4437118"
++    "sha256": "b138eee4a638e90e02b4ea55a4cad3a6c5d24f7fb09b9e2536d4378f19a1dbdb"
+   },
+   "Bili_Flow_used": false,
+   "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+   "UiAutomation_requested": false,
++  "actual_build_job": "1a1ac316cf0-fc05-52c2",
++  "actual_build_review": {
++    "bytes": 2907,
++    "sha256": "9779ffe7d851bc707ea2e596264f74ea9a3e99a4f55f83cea07a50d01a88e3b7"
++  },
+   "build_receipt": {
+-    "bytes": 17390,
+-    "sha256": "1289d422062dabcd68706d0e7fa39475687ca956b34a5e35e2a2c8fe90387cb2"
++    "bytes": 17389,
++    "sha256": "d97e05bb923be43ca427a0526fa581b59534d5c5cb0957f1a402ed0f194ca976"
+   },
+   "commands": 13,
+-  "helper_UID": "MUST_BE_ACTUAL_AFTER_NEW_INSTALL",
++  "helper_UID": "MUST_BE_OBSERVED_AFTER_NEW_INSTALL",
+   "install_commands": 1,
+   "instrumentation_commands": 1,
+   "instrumentation_operation": "state",
+@@ -27,27 +32,28 @@
+     "worker_child_seconds": 190
+   },
+   "nonces": {
+-    "install_nonce": "f58bd1b568714618ad9767ce586ae12f",
+-    "state_nonce": "918bf87b0f3f08c62ab630a96b2bfcdc"
++    "install_nonce": "d02f83f91e88717ef2df006369881189",
++    "state_nonce": "3e666f36e9eb4a9a4260408c325b420d"
+   },
+   "old_v2_helper_called": false,
+-  "owned_package": "org.droidloom.qa.amazon.r1",
+-  "purpose": "only exact new Amazon QA helper install and no-UiAutomation state",
++  "owned_package": "org.droidloom.qa.ticket.r1",
++  "purpose": "only new dedicated 12306 QA helper install and no-UiAutomation state; not executed",
+   "schema": 1,
+-  "signer_certificate_sha256": "1f63759487a0b04e8da9b4088c11dbac8140bf63cb2d64d91460e2525924f424",
+-  "source_manifest_sha256": "08e2a223acae096d6ce4beb5d611395892fe1b2b26d593832510c11af36a4cf3",
++  "signer_certificate_sha256": "91fbef4532e24cce6667f7f049e50ab227c14c622f3f6c7d7b05a3959595138b",
++  "source_manifest_sha256": "6347d21db7018471ddfa96297f54a4bd77aa98b98a59588e3869bacdabd30632",
+   "stage_receipt": {
+     "bytes": 1947,
+-    "sha256": "6743f4f5780a6b916f9e5855ab956b01c073a5e06ff757941c6c5a4c32f2b253"
++    "sha256": "d4f9e0fcc261769b63b7b883270241597939d45c3a2060c9fbea841e0a4ef821"
+   },
++  "state": "SOURCE_FROZEN_ACTUAL_TICKET_BUILD_BOUND_INSTALL_NOT_RUN",
+   "target": {
+-    "package": "com.amazon.mShop.android.shopping",
+-    "uid": 10129,
++    "package": "com.MobileTicket",
++    "uid": 10121,
+     "user": 0,
+-    "version_code": 1243240206
++    "version_code": 275
+   },
+-  "target_APK_bytes": 177026053,
++  "target_APK_bytes": 150377492,
+   "target_APK_hash_reads": "before and after; fixed current identities held to cleanup",
+-  "target_APKs": 3,
++  "target_APKs": 1,
+   "whole_app_production_ready": false
+ }

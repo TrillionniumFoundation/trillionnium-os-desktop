@@ -1,0 +1,111 @@
+{
+  "schema": 1,
+  "kind": "actual60-bound-fixed-original-NdkTests-run",
+  "exact_request": {
+    "bytes": 330181,
+    "sha256": "2c23de3e5f0b4c7055d457926c5746741b7f42648031dd13610f0ba8ddf6a9fd"
+  },
+  "stdin": {
+    "bytes": 329707,
+    "sha256": "4ea7dac8dc6ddfd82718e9107684171b65aa778b31fb7f25816b736a53aa407c"
+  },
+  "envelope": {
+    "bytes": 243509,
+    "sha256": "5bd32e90fbe2a59833bf522aaceb52424aa64c58cd0ba53c2265f792a56e08a8"
+  },
+  "original_final_binder": {
+    "bytes": 22965,
+    "sha256": "7b8aebf6797b2148237f5b725135c4df3ce89a1026825896474dac2295e4bdc9",
+    "blob": "86dc06c96b843b6248122ebb7048190896e771e6"
+  },
+  "production_sources_changed": false,
+  "complete_independent_replay": true,
+  "source_manifest": {
+    "bytes": 1050,
+    "sha256": "7ea8d117de4a6c4cbeceebc4d5d4cf56fd7f075f3cb068b8f3610be4283df582"
+  },
+  "actual60": {
+    "job": "1a1b3127850-fc05-8092",
+    "stdout": {
+      "bytes": 12881,
+      "sha256": "7287ba952efe520d2e4a0d545cf8dbfd6a6e87944ce1a8c1c730946169e6d9b1"
+    },
+    "terminal": {
+      "bytes": 733,
+      "sha256": "f7ccd18da8171ac768cecb382efa11294256559ac5d1fe3a09b56a601490c54b"
+    },
+    "fixture": 38,
+    "manifest": 4,
+    "lease": 12,
+    "wiring": 6,
+    "total": 60,
+    "real_owned_fixture_FDs_closed": 29
+  },
+  "installation": {
+    "original": {
+      "bytes": 11271,
+      "sha256": "e17df04e2eda0e0f489ec6fee992bcca2c5ae1fd584e9fc4e57a20334fb16143"
+    },
+    "actual_UID": 10162,
+    "original_scope_preserved": true
+  },
+  "phase_nonce": {
+    "original": {
+      "bytes": 989,
+      "sha256": "1c625b299ba3067436b13e12a3bdc89ef29296f571ec43452ee214d77a7cd7bf"
+    },
+    "job": "1a1b2ff0950-fc05-8068",
+    "phase_assigned": "run",
+    "retire_material_not_consumed": true
+  },
+  "phase": {
+    "root": "/home/alex/work/pocket4-original-ndk-fixture-APK05-run-01",
+    "step": "run-01",
+    "fixed_commands": 5,
+    "instrumentation_commands": 1,
+    "verification": "Original nonempty VerifyTestList of 23 names and exact ProcSelfMaps.* filter of 12; original NdkTests#testMain.",
+    "future_run_result": null,
+    "original_NdkTests_runtime_qualified": false,
+    "retirement_required": true,
+    "independent_retirement_executable_request": null
+  },
+  "guards": [
+    "Original current baseline02 / R6 source closure and full Main guards remain on each boundary.",
+    "Actual original install report plus summary and terminal are required, and fresh full APK / package / UID checks remain.",
+    "The same phase lease owns original global action lock, own flow lock and own step lock; ancestor names are revalidated.",
+    "Worker finally accounts entry/plan/context failures, rechecks original source/Main/installation and closes all owned lease FDs.",
+    "No install replay, no uninstall, no target SDK bypass, no inherited commercial scope, no default feature changes."
+  ],
+  "resources": {
+    "outer_seconds": 240,
+    "work_seconds": 175,
+    "memory_max_bytes": 536870912,
+    "cpu_quota_percent": 100,
+    "nice": 15
+  },
+  "unchanged_qualification_limits": [
+    "Host-controls60 have not executed Android or observed the fresh runtime UID.",
+    "Shared helper does not qualify all Android descendants or whole-invocation resource accounting.",
+    "Run output alone cannot qualify twelve native tests; independent retirement and exact original XML are still required.",
+    "Historical install01 UNKNOWN and prior failed builds remain unchanged."
+  ],
+  "reader_schema_precheck": {
+    "source_only": true,
+    "read_template_blob": "b82efabef22adee0c9e7d752836c513e2a34676d",
+    "producer": "phase_worker.py 33969 /6bc5f7d0bdca28a7275d6eeb97f4889e40b66788437af806ac5e5d6daa43d83e",
+    "fields_match": [
+      "kind pocket4-original-ndk-runtime-worker-summary01",
+      "phase",
+      "installed_UID from actual installed tuple",
+      "ok/outcome_unknown/error",
+      "result path/bytes/sha256/result_file_and_parent_FDs_closed",
+      "result kind derived from run or retire phase",
+      "source_manifest and scope attempt_nonce/UID"
+    ],
+    "wrapper_failure_without_result_rejected": true,
+    "future_summary_or_terminal_invented": false,
+    "Python_executed": false
+  },
+  "runtime_dispatched_by_agent": false,
+  "Root_is_sole_dispatcher": true
+}

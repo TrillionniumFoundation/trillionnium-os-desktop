@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "kind": "root-owner16-host-ordinary02-source-review",
+  "request": {
+    "bytes": 41604,
+    "sha256": "78eb50dc3d07ecbbed9f1a1ae94d4c9c591f692e38bac7a228f7186703f441f9"
+  },
+  "stdin": {
+    "bytes": 39308,
+    "sha256": "4dec95504d74ef390d9dd99781b6782e334ab7f281dee1398c8cf7d4a743fc70"
+  },
+  "actual_compile": {
+    "bytes": 49729,
+    "sha256": "dad36fe9fd79aa782bcc255e74b8cc1b1ee241a341318e179ccaa9e7f1c785ea",
+    "job_id": "1a1adaaadd5-fc05-5a93",
+    "terminal": "PASS_0_FULL_DURABLE"
+  },
+  "reviewed": {
+    "full_run_diff_6141_bytes": true,
+    "fd_digest_and_test_summary_and_ordinary_recovery_and_entry_read_full": true,
+    "common_controller_and_resource_guard_previously_reviewed": true,
+    "request_only_actual_SHA_and_key_differ_from_template": true,
+    "stdin_byte_equal_reviewed_run": true,
+    "all_three_payload_pins_verified": true,
+    "compile_33_sources_and_tools_and_artifacts_actual_review_pass": true
+  },
+  "expected": {
+    "relay_tests": 39,
+    "supervisor_tests": 136,
+    "targeted_retirement_controls": 2,
+    "ordinary_IPC_controls": 7,
+    "worker_context": 1,
+    "entry_ABI": "droidloom-relay-entry-v3"
+  },
+  "resources": {
+    "cpu_percent": 100,
+    "memory_max_bytes": 536870912,
+    "timeout_seconds": 180,
+    "nice": 10
+  },
+  "scope": "Non-root ordinary host controls using held actual compiled ELF identities. No Cargo invocation, Android constructor, Owner namespace, pressure, Main change, UI or deployment.",
+  "runtime_qualification": false,
+  "automatic_retry": false
+}

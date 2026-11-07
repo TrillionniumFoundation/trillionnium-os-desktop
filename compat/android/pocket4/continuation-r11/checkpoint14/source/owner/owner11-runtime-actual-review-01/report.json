@@ -1,0 +1,178 @@
+{
+  "ACTIVE_observed": false,
+  "DONE_to_first_failure_ns": 34600489567,
+  "Hepta_calls": 0,
+  "Main_before_gate_after_equal": true,
+  "actor_errors_preserved_in_order": [
+    {
+      "error": "RuntimeError('actual producer stopped or failed before ACTIVE')",
+      "stage": "normal"
+    },
+    {
+      "error": "RuntimeError('failure cleanup original Stop failed')",
+      "stage": "failure_cleanup_stop"
+    },
+    {
+      "error": "RuntimeError('owned helper required abnormal cleanup')",
+      "stage": "retire_daemon"
+    },
+    {
+      "error": "RuntimeError('generation cgroup residue remains')",
+      "stage": "outer_final"
+    }
+  ],
+  "actor_pid": 1824668,
+  "actual_event_prefix": [
+    "prepared",
+    "owner_attached",
+    "init_hello",
+    "broker_ready",
+    "init_project_sent",
+    "init_projected_accepted",
+    "init_commit_sent",
+    "init_done_accepted",
+    "retiring"
+  ],
+  "actual_first_error": {
+    "error": "RuntimeError('actual producer stopped or failed before ACTIVE')",
+    "stage": "normal"
+  },
+  "attempt_nonce": "7fab165bd5502ca32260616d1d4faaf3cd898703f6eceb839ba81f2e598a2389",
+  "authority_generation": "0ceafc834ad79420057f53a5903ffe80d78b9ac43566797aeb1f580bbe99fd46",
+  "cleanup_failure": {
+    "message": "retire exact init/broker/domain generation: owned process generation is dead or changed; retirement remains incomplete: rejected: lifecycle bootstrap disconnected",
+    "observed_monotonic_ns": 899818792535611,
+    "origin": "cleanup"
+  },
+  "continuous_Main_noninterference_claimed": false,
+  "direct_children_retirement": [
+    {
+      "forced_kill": false,
+      "pid": 1824727,
+      "reaped": true,
+      "returncode": 1,
+      "role": "daemon"
+    },
+    {
+      "forced_kill": false,
+      "pid": 1824713,
+      "reaped": true,
+      "returncode": -15,
+      "role": "presenter"
+    },
+    {
+      "forced_kill": false,
+      "pid": 1824675,
+      "reaped": true,
+      "returncode": 0,
+      "role": "sway"
+    },
+    {
+      "forced_kill": false,
+      "pid": 1824674,
+      "reaped": true,
+      "returncode": 0,
+      "role": "bus"
+    }
+  ],
+  "domain_identity": {
+    "device": 30,
+    "inode": 30171347
+  },
+  "event_recording_prefix_complete": true,
+  "exact_observed_init": {
+    "birth": 89978225,
+    "pid": 1824774,
+    "pidfd": {
+      "device": 6,
+      "inode": 22740160
+    },
+    "proc_dir": {
+      "device": 26,
+      "inode": 501023736
+    }
+  },
+  "external_exact_unit_cleanup": {
+    "cgroup_absent": true,
+    "invocation": "d76ccd129bab406f87ab8b7904428d20",
+    "original_actor_dead": true,
+    "unit": "p4-owner11-normal-20261105-01.service",
+    "unit_not_found": true
+  },
+  "final_owned_resource_gate_completed": false,
+  "first_failure": {
+    "message": "owned process generation is dead or changed",
+    "observed_monotonic_ns": 899818789512753,
+    "origin": "runtime"
+  },
+  "generation_nonce": "a7da2272ba556c7b9e66360d21b818071e9df8d7e082c2c787ccf44ca3cc32ef",
+  "global_kernel_logs_attributed": false,
+  "held_init_snapshot_matches_hello_process_namespaces_executable": true,
+  "invocation": "d76ccd129bab406f87ab8b7904428d20",
+  "normal_Stop_successful": false,
+  "original_Owner_joined_retirement_proved": false,
+  "original_Stop_repeated_same_retained_failure": true,
+  "original_generation_residue_observed_by_actor": true,
+  "outer_resource_initial_observation": {
+    "identity": {
+      "device": 30,
+      "inode": 30171132
+    },
+    "values": {
+      "cgroup.events": "populated 1\nfrozen 0",
+      "cgroup.procs": "1824668",
+      "cpu.max": "100000 100000",
+      "memory.current": "14311424",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.high": "4831838208",
+      "memory.max": "5368709120",
+      "memory.peak": "14311424",
+      "memory.swap.current": "0",
+      "memory.swap.max": "0",
+      "memory.swap.peak": "0",
+      "pids.current": "1",
+      "pids.max": "4096"
+    }
+  },
+  "prepared_sha256": "d48a503751555736dd85b54211a89c4a2b51371adf41c860f44cd3887b8c5bf5",
+  "protected_reader_original": {
+    "bytes": 58766,
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner11-normal01-runtime-read01/reader-report.json",
+    "sha256": "e82237e7102f20dcfddde02e710923f21a9de2af5d89830ccb945958ad5c82cb"
+  },
+  "retirement_cause_v1_originals_read": false,
+  "retirement_failure": {
+    "message": "rejected: lifecycle bootstrap disconnected",
+    "observed_monotonic_ns": 899818789553689,
+    "origin": "retirement"
+  },
+  "review_process_effects": 0,
+  "root_cause_remains_unresolved_until_fixed_owned_logs": true,
+  "runtime_original": {
+    "bytes": 53545,
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner11-normal01-runtime-read01/runtime-result.json",
+    "sha256": "a04dbc0f1073c5ffb5f7fdbd549618af4b316a98688d3ecfe0622d05ef98303d"
+  },
+  "schema": 1,
+  "terminal": {
+    "ActiveState": "failed",
+    "ControlGroup": "",
+    "Description": "Pocket4 Owner11 ABI3 NORMAL01 7fab165bd5502ca32260616d1d4faaf3cd898703f6eceb839ba81f2e598a2389",
+    "ExecMainCode": "1",
+    "ExecMainExitTimestampMonotonic": "899818931780",
+    "ExecMainPID": "1824668",
+    "ExecMainStartTimestampMonotonic": "899781138887",
+    "ExecMainStatus": "1",
+    "InvocationID": "d76ccd129bab406f87ab8b7904428d20",
+    "LoadState": "loaded",
+    "MainPID": "0",
+    "MemoryPeak": "588484608",
+    "MemorySwapPeak": "0",
+    "Result": "exit-code",
+    "SubState": "failed",
+    "Transient": "yes"
+  },
+  "terminal_peak_is_not_complete_final_counter_proof": true,
+  "verdict": "ACTUAL_OWNER11_NORMAL_FAILED_ORIGINAL_RETIREMENT_INCOMPLETE_EXTERNAL_CLEANUP_COMPLETE",
+  "whole_App_or_installed_or_pressure_or_property_reload_qualified": false
+}

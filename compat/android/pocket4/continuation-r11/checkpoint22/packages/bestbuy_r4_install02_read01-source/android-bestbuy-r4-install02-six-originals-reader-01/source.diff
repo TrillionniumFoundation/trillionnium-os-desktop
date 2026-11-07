@@ -1,0 +1,79 @@
+--- ihg02/read_originals.py
++++ bestbuy02/read_originals.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed read-only collection of IHG R4 install02 originals; no action or retry."""
++"""Fixed read-only collection of BestBuy R4 install02 originals; no action or retry."""
+ import argparse
+ import base64
+ import hashlib
+@@ -11,14 +11,14 @@
+ import time
+ import zlib
+ 
+-ROOT = Path("/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-02")
++ROOT = Path("/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-02")
+ STEP = ROOT/'worker'
+-NONCE = "3d004706f9adf4411761495fdc6ed859"
+-PACKAGE = "org.droidloom.qa.ihg.r4"
+-PROTOCOL = "pocket4-owned-ihg-qa-v4"
+-PINS = {"coordinator.json": (4455, "c1129d2c99210e47d12ca985b604ad0056d26c11d9c2d2f071fc3dc7e678ede4"), "stage.json": (10553, "ac3451c8a45ff6d0543cbb97e14d5619c116e83d2f71ccba0a1484e2e69c3a5b")}
+-INSTALL_NONCE = "bc503e63d113d5ddd32aba526e7d0075"
+-SOURCE_SHA = "bb9957023531b018d95f4a6e747fa71691bf566e53e158c5935db410ea7a8aa6"
++NONCE = "a499f5a6a566ed0cebed5c98e234eede"
++PACKAGE = "org.droidloom.qa.bestbuy.r4"
++PROTOCOL = "pocket4-owned-bestbuy-qa-v4"
++PINS = {"coordinator.json": (4466, "5f7403e89de4a10f2f348b2ec24905a7f9998c53c77119459d3a69efaf4dd8f1"), "stage.json": (10445, "edf83bb4d07bdd6eb63e5349d7c3389cfbe040c53f7285f94ee65562b9173370")}
++INSTALL_NONCE = "b6275faedda72f2dec85914ab42b2b7b"
++SOURCE_SHA = "330c599ce962f5d86a8ef10e7a4daf8c6d9b41c89b2d242d3c3ee67f57cdb1b6"
+ BASE = {
+     'coordinator.json':ROOT/'result.json',
+     'stage.json':ROOT/'stage-result.json',
+@@ -123,9 +123,9 @@
+     for value in (coordinator,stage):
+         require(value.get('source_manifest_sha256')==SOURCE_SHA and value.get('nonce')==INSTALL_NONCE and
+                 type(value.get('ok')) is bool and isinstance(value.get('secondary_errors'),list),
+-                'EXACT_ACTUAL_IHG_R4_PARENT_RECEIPTS_REQUIRED')
++                'EXACT_ACTUAL_BESTBUY_R4_PARENT_RECEIPTS_REQUIRED')
+     require(coordinator.get('package')==PACKAGE and stage.get('coordinator_result')==coordinator_pin,
+-            'EXACT_ACTUAL_IHG_R4_PARENT_CHAIN_REQUIRED')
++            'EXACT_ACTUAL_BESTBUY_R4_PARENT_CHAIN_REQUIRED')
+     for value in (coordinator,stage):
+         require((value['ok'] is True and value.get('error') is None) or
+                 (value['ok'] is False and isinstance(value.get('error'),dict)),
+@@ -142,7 +142,7 @@
+ 
+ 
+ def owned_failure(worker):
+-    require(worker.get('package')==PACKAGE and worker.get('target_package')=='com.ihg.apps.android' and
++    require(worker.get('package')==PACKAGE and worker.get('target_package')=='com.bestbuy.android' and
+             worker.get('nonce')==INSTALL_NONCE and worker.get('state_nonce')==NONCE and
+             worker.get('source_manifest_sha256')==SOURCE_SHA and worker.get('UI_actions')==0 and
+             worker.get('App_launches')==0 and worker.get('audio_actions')==0 and
+@@ -152,13 +152,13 @@
+             'EXACT_NO_UI_OWNED_WORKER_REQUIRED')
+     for key,wanted in {
+         'runtime_shared_recorder_manifest_sha256':'002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff',
+-        'runtime_ticket_context_sha256':"88c3d181a1176a447db4426df04125ce51f77ed03736eb79c1a00bb1544f4364",
+-        'runtime_ticket_transport_sha256':'aa4836f35ea0251fbf3942033db2a45e37a882ebf6f7b6076b45c63970d5c516',
++        'runtime_ticket_context_sha256':"fed91b109d375984eac188546759b6fe203ea2321e45c43e2989dacd929b2343",
++        'runtime_ticket_transport_sha256':'5666d94ba5d9c90a8ea8edd7b063ff4764b83b1bfafe4dd238018d720ab7d4a9',
+     }.items():
+         if key in worker:require(worker[key]==wanted,'OBSERVED_RUNTIME_SOURCE_CHANGED:'+key)
+     if 'build' in worker:
+-        require(worker['build']['source_manifest_sha256']=='fb4f9847fa94967ae59e3e7c2a50a1664a0f14f320e6e7e45e755b138589add6' and
+-                worker['build']['APK']['sha256']=='89d725554bab2a0939c631fbb70c21c97b4f30612f35598cd51d0c0e8e125204',
++        require(worker['build']['source_manifest_sha256']=='cda79d5b01ebfd91d6b9148be6853c78495da92130fb4f153422daac7d14ad0b' and
++                worker['build']['APK']['sha256']=='708887e252bad787781768e4c96db9040444b4b32308381ec1d38af3deb0cc2c',
+                 'OBSERVED_BUILD_CHANGED')
+     state=worker.get('state')
+     if state is not None:
+@@ -241,7 +241,7 @@
+         observations['state_command']={'present':True,'parent_bound':True,'index':8}
+     else:
+         observations['state_command']={'not_read':True,'parent_pin_available':False}
+-    result={'schema':1,'scope':'exact-owned-ihg-r4-install02-originals',
++    result={'schema':1,'scope':'exact-owned-bestbuy-r4-install02-originals',
+         'files':r.records,'observations':observations,
+         'total_read_bytes':r.total,'elapsed_seconds':time.monotonic()-r.started,
+         'actual_install_success_qualified':False,'original_failure_and_unknown_preserved':True,

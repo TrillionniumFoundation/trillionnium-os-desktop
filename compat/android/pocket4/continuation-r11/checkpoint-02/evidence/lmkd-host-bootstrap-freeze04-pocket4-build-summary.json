@@ -1,0 +1,55 @@
+{
+  "success": true,
+  "error": null,
+  "receipt": "/home/alex/work/pocket4-lmkd-host-bootstrap-r11-source-04/build-result.json",
+  "receipt_sha256": "1b406a19de8609ee45c7187a678fc148776db61e5e0c47ffc62940835b026f2a",
+  "commands": [
+    {
+      "name": "build",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "   Compiling version_check v0.9.5\n   Compiling generic-array v0.14.7\n   Compiling typenum v1.20.1\n   Compiling block-buffer v0.10.4\n   Compiling crypto-common v0.1.7\n   Compiling libc v0.2.188\n   Compiling digest v0.10.7\n   Compiling cpufeatures v0.2.17\n   Compiling cfg-if v1.0.4\n   Compiling sha2 v0.10.9\n   Compiling droidloom-pressure-relay-owner-candidate v0.0.0 (/home/alex/work/pocket4-lmkd-host-bootstrap-r11-source-04/host-bootstrap-freeze-04)\n    Finished `dev` profile [unoptimized] target(s) in 3.57s\n"
+    },
+    {
+      "name": "tests",
+      "returncode": 0,
+      "stdout": "\nrunning 13 tests\ntest enrollment::tests::cross_language_wire_vectors_and_exact_contract ... ok\ntest enrollment::tests::request_rights_are_closed_before_admission ... ok\ntest lifecycle_bootstrap::tests::bootstrap_codec_is_fixed_and_rejects_reserved_policy ... ok\ntest lifecycle_bootstrap::tests::bootstrap_parent_channel_rejects_extra_rights_and_old_nonce_commands ... ok\ntest lifecycle_bootstrap::tests::inherited_rights_are_cloexec_and_owned_on_reject ... ok\ntest lifecycle_bootstrap::tests::malformed_packet_closes_all_transferred_rights ... ok\ntest lifecycle_bootstrap::tests::terminal_status_survives_peer_close_but_never_certifies_pressure ... ok\ntest lifecycle_relay::tests::cancellation_fd_is_real_bounded_and_idempotent ... ok\ntest lifecycle_relay::tests::live_lifecycle_pidfd_is_not_a_replacement_certificate ... ok\ntest lifecycle_relay::tests::one_lifecycle_claim_survives_failure_and_concurrent_clones ... ok\ntest psi::tests::exact_thresholds_and_bounded_progress_are_not_relaxed ... ok\ntest tests::poisoned_sender_lock_revokes_existing_real_capability_without_deadlock ... ok\ntest tests::retirement_panic_cannot_be_retried_into_success ... ok\n\ntest result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 2 tests\ntest event_fixture::tests::event_gate_rejects_wrong_generation_scope_threshold_sequence_future_and_exact_expiry ... ok\ntest event_fixture::tests::notification_alone_or_historical_high_cannot_certify_real_target_pressure ... ok\n\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "stderr": "   Compiling droidloom-pressure-relay-owner-candidate v0.0.0 (/home/alex/work/pocket4-lmkd-host-bootstrap-r11-source-04/host-bootstrap-freeze-04)\n    Finished `test` profile [unoptimized] target(s) in 0.97s\n     Running unittests src/lib.rs (/home/alex/work/pocket4-lmkd-host-bootstrap-r11-source-04/target/debug/deps/droidloom_pressure_relay_owner_candidate-d20f04e214b20b30)\n     Running unittests src/bin/droidloom_psi_owner.rs (/home/alex/work/pocket4-lmkd-host-bootstrap-r11-source-04/target/debug/deps/droidloom_psi_owner-1413691f43481acb)\n     Running unittests src/bin/owned_ipc_controls.rs (/home/alex/work/pocket4-lmkd-host-bootstrap-r11-source-04/target/debug/deps/owned_ipc_controls-60c4b61e9c75e9c4)\n     Running unittests src/bin/owned_relay_canary.rs (/home/alex/work/pocket4-lmkd-host-bootstrap-r11-source-04/target/debug/deps/owned_relay_canary-7b49acd8251d9575)\n   Doc-tests droidloom_pressure_relay_owner_candidate\n"
+    },
+    {
+      "name": "ordinary-ipc",
+      "returncode": 0,
+      "stdout": "PASS host proc PID namespace matches getpid; proc and cgroup2 filesystems verified\nPASS kernel accepted credentials reject wrong UID\nPASS kernel accepted credentials reject wrong GID\nPASS pinned executable rejects a different trusted file\nPASS SO_PEERPIDFD retains dead connection generation after normal exit and reap\nPASS ordinary host child fails the required exact cgroup projection gate\nPASS owned children reaped, descriptors/socket cleaned, parent namespace/projection/membership unchanged\nRESULT PASS mode=host-negative-controls\n",
+      "stderr": ""
+    },
+    {
+      "name": "actor-build",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "binaries": [
+    {
+      "path": "/home/alex/work/pocket4-lmkd-host-bootstrap-r11-source-04/target/debug/droidloom-psi-owner",
+      "sha256": "754ffbc5971f1b89c814d6d05e06dfe7ec8448f85cb82ee285727130f1615595",
+      "bytes": 1173080
+    },
+    {
+      "path": "/home/alex/work/pocket4-lmkd-host-bootstrap-r11-source-04/target/debug/owned-relay-canary",
+      "sha256": "4c2bbfc3aa46261f10d9b807f20986cd8ccef7ebcf892b6b404e42e70130e9aa",
+      "bytes": 1201032
+    },
+    {
+      "path": "/home/alex/work/pocket4-lmkd-host-bootstrap-r11-source-04/target/debug/owned-ipc-controls",
+      "sha256": "9f86183488975d4b12f5fb358c387fd977cf7bde3958b848942af1de720d5241",
+      "bytes": 1513600
+    },
+    {
+      "path": "/home/alex/work/pocket4-lmkd-host-bootstrap-r11-source-04/host-bootstrap-freeze-04/owned-relay/fixture-init",
+      "sha256": "b26feb098e0edea19fd89608490c4a23a7603469130160574383e409286d2c4f",
+      "bytes": 130960
+    }
+  ]
+}
+

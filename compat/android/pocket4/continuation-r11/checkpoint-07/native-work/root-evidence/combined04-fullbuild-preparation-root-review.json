@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "controller_sha256": "ba4dffc59b224b32e6f42f7f66222d35cdd62eecb82dabea67d05dc888635d6d",
+  "request_sha256": "3f9e163d78fa7f4559a012341d4e5dde84f1dda5f6eb0c77916c93afd95f11d9",
+  "root_full_source_review": true,
+  "admitted_scope": "prepare only: independent git clone with no hardlinks, exact 925 engine files and 449 builder inputs",
+  "full_build_admitted": false,
+  "notes": [
+    "Candidate04 frozen 948-file manifest and six signal changes rechecked before/after preparation.",
+    "No original R16 repository writes; origin reset occurs only in the new clone.",
+    "Source modes restored only from exact original files; source projection expectation binds all 22 unchanged projector inputs.",
+    "Full builder uses original locks/recovery, jobs=1 and explicit fresh output; factory and ART are separate targets.",
+    "Build runtime headroom, actual prepared SHA and resource fence still required."
+  ]
+}

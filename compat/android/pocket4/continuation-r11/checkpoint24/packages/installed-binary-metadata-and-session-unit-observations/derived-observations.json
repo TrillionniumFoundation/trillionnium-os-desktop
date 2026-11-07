@@ -1,0 +1,365 @@
+{
+  "schema": 1,
+  "kind": "derived-current-installed-metadata-and-session-unit",
+  "derived": true,
+  "bin_metadata": [
+    {
+      "path": "/usr/bin/droidloom-supervisor",
+      "size": 1976056,
+      "sha256": "1f11ba9107ffe1fc4107d41368fbc609d067af2d7f47c2dace8fa70626ceda0d",
+      "metadata": {
+        "acl_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "gid": 0,
+        "link_count": 1,
+        "metadata_platform": "linux",
+        "mode": 493,
+        "uid": 0,
+        "xattr_names": [],
+        "xattr_sha256": {}
+      },
+      "version": "66306:108004266:1976056:1793546009230708502:1793546009232332106"
+    },
+    {
+      "path": "/usr/bin/droidloomd",
+      "size": 1920440,
+      "sha256": "4c57f3e9e92a39f2aef700d77b56c108a88d9ba3ba3cfe82b2613b363514ef30",
+      "metadata": {
+        "acl_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "gid": 0,
+        "link_count": 1,
+        "metadata_platform": "linux",
+        "mode": 493,
+        "uid": 0,
+        "xattr_names": [],
+        "xattr_sha256": {}
+      },
+      "version": "66306:108005832:1920440:1793546009220184891:1793546009221331408"
+    },
+    {
+      "path": "/usr/bin/droidloomctl",
+      "size": 1705648,
+      "sha256": "f81e0223f6b256584d07a5e8fbc72f3f4c764ab53a88469b45b587c101e12c79",
+      "metadata": {
+        "acl_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "gid": 1000,
+        "link_count": 1,
+        "metadata_platform": "linux",
+        "mode": 493,
+        "uid": 1000,
+        "xattr_names": [],
+        "xattr_sha256": {}
+      },
+      "version": "66306:108004277:1705648:1789132464000000000:1793735282143426356"
+    },
+    {
+      "path": "/usr/bin/droidloom-applications",
+      "size": 1554048,
+      "sha256": "a8c5c67abe5ac1090d10440f0cd4c5988e968d813978f51b263ca004f67548dc",
+      "metadata": {
+        "acl_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "gid": 1000,
+        "link_count": 1,
+        "metadata_platform": "linux",
+        "mode": 493,
+        "uid": 1000,
+        "xattr_names": [],
+        "xattr_sha256": {}
+      },
+      "version": "66306:108004253:1554048:1789132464000000000:1791343620777261324"
+    }
+  ],
+  "all_bin_full_prior_metadata_equal": true,
+  "all_bin_observed_posix_acl_empty": true,
+  "all_bin_observed_xattrs_empty": true,
+  "marker": {
+    "path": "/usr/share/droidloom/package.json",
+    "original": {
+      "bytes": 70,
+      "sha256": "429d24757e8948a6c631488810abd30c02c07d5916e18f29f2ee3976c18b9d74",
+      "git_blob_sha1": "9ba03f841f0db779e85f8b7147442c7b3d62f433"
+    },
+    "fields": {
+      "version": "0.1.0",
+      "release": 20,
+      "architecture": "x86_64"
+    },
+    "proves_package_manager": false,
+    "proves_installed_source_revision": false
+  },
+  "literal_session_unit": {
+    "path": "/usr/lib/systemd/user/droidloom.service",
+    "original": {
+      "bytes": 730,
+      "sha256": "6562fa1b288e7885b64f547440df83912e71b31854550b2ba549a2efc8626d23",
+      "git_blob_sha1": "6eae0164e15fd54bfe834bda8715347fa5884a58"
+    },
+    "commands": [
+      {
+        "key": "ExecStartPre",
+        "value": "/usr/bin/systemctl start droidloomd.service",
+        "pin": {
+          "bytes": 43,
+          "sha256": "188edba4a1e4cacf08dc7bbb74336bc0c81a7a747cefc599ef9ed6743d65ddc5",
+          "git_blob_sha1": "623cbd50cfdbb9d52007a7ee695897ce726ca448"
+        }
+      },
+      {
+        "key": "ExecStart",
+        "value": "/usr/bin/droidloom-wayland",
+        "pin": {
+          "bytes": 26,
+          "sha256": "178826470fefcc1dbb1292bf67846e7f0d91d51b00264a406395e53098da8808",
+          "git_blob_sha1": "0fb8677fef79c8aadf1973b3d71b00fc2ca4366f"
+        }
+      },
+      {
+        "key": "ExecStartPost",
+        "value": "/usr/bin/droidloomctl start --cell",
+        "pin": {
+          "bytes": 34,
+          "sha256": "f2331047ed47f093a843438d13d20f874aef4c4d1c3c935568e55eef666454d3",
+          "git_blob_sha1": "03d500ed9082df94541696c46b9244be11b80541"
+        }
+      },
+      {
+        "key": "ExecStopPost",
+        "value": "-/usr/bin/droidloomctl stop --cell",
+        "pin": {
+          "bytes": 34,
+          "sha256": "8caad489845188619840056ff18a2240b8221a6dda3d1d889a2cf74941b64009",
+          "git_blob_sha1": "273d3a0137b799f8dceedd45740d0736f8a8e766"
+        }
+      },
+      {
+        "key": "ExecStopPost",
+        "value": "/usr/bin/systemctl stop droidloomd.service",
+        "pin": {
+          "bytes": 42,
+          "sha256": "722c0ccd69a8088cbdef804129ce89d1044faefdeb41cb5d56ad676e3f21828c",
+          "git_blob_sha1": "2313ad74b98d4fb0242c854560290068ebad4511"
+        }
+      }
+    ],
+    "file_pin": {
+      "bytes": 730,
+      "sha256": "6562fa1b288e7885b64f547440df83912e71b31854550b2ba549a2efc8626d23",
+      "git_blob_sha1": "6eae0164e15fd54bfe834bda8715347fa5884a58"
+    },
+    "properties": [
+      {
+        "key": "Description",
+        "value_pin": {
+          "bytes": 37,
+          "sha256": "7a204a1d456253f20d7ecf180275adbff5d12e9af6a25487b20a6c51e4c63dbe",
+          "git_blob_sha1": "f3ae8701def18c630de0d69af56502c74e6ba55c"
+        },
+        "value": "Droidloom Android application runtime",
+        "empty": false
+      },
+      {
+        "key": "PartOf",
+        "value_pin": {
+          "bytes": 24,
+          "sha256": "37b918189fc9beac8d04631cc19648a86801c2c26203573a4679c62d0933583b",
+          "git_blob_sha1": "e99e934516aa9970e145036285df44d3fb3cf401"
+        },
+        "value": "graphical-session.target",
+        "empty": false
+      },
+      {
+        "key": "After",
+        "value_pin": {
+          "bytes": 28,
+          "sha256": "1c724b1832d27ebc6bac908dbe8714bcbd089e9f4f9940f2c7032ea7da0534b4",
+          "git_blob_sha1": "7e35bb77de63e4a56c20c7325280b104bb15a36b"
+        },
+        "value": "graphical-session-pre.target",
+        "empty": false
+      },
+      {
+        "key": "Wants",
+        "value_pin": {
+          "bytes": 30,
+          "sha256": "d88521249658d01581af0774009d6d526071d5f1e17ec92433b756882fcd5ca0",
+          "git_blob_sha1": "aeadcfe93594e2abd2b58626a8cbcfce1dae4d43"
+        },
+        "value": "droidloom-applications.service",
+        "empty": false
+      },
+      {
+        "key": "ConditionPathExists",
+        "value_pin": {
+          "bytes": 24,
+          "sha256": "9eb4a7ba4759481e9a8e254b1a3b5ad3770cffd412971999fb98ce4b08a10f6e",
+          "git_blob_sha1": "18db1c0987671ed2159082d9ed1d908217a58405"
+        },
+        "empty": false
+      },
+      {
+        "key": "Type",
+        "value_pin": {
+          "bytes": 6,
+          "sha256": "6cd6f41455d78245f1295895838dd1ec14449565a9a8c1c8ea43cb35b592e3ab",
+          "git_blob_sha1": "134b7f2c7aad3f3302d389645168f8f0ef8fa5a6"
+        },
+        "value": "notify",
+        "empty": false
+      },
+      {
+        "key": "NotifyAccess",
+        "value_pin": {
+          "bytes": 4,
+          "sha256": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+          "git_blob_sha1": "88d050b1908057b53d38b42702ebc659e3d7f696"
+        },
+        "empty": false
+      },
+      {
+        "key": "EnvironmentFile",
+        "value_pin": {
+          "bytes": 26,
+          "sha256": "6229f0e27db15c46c8bbea19d67d5080c5268f802dd7cad0d01ca906e9befe3a",
+          "git_blob_sha1": "6bc364393cd416c5ac7bcc03daf84a9bb850a467"
+        },
+        "empty": false
+      },
+      {
+        "key": "Environment",
+        "value_pin": {
+          "bytes": 22,
+          "sha256": "63de7c0206d4673127a8772f6c8e05e3c2572112dbef2771bd89b601ce72e946",
+          "git_blob_sha1": "0ff5d4cebe231d447ccf7620e02e562363a0be6e"
+        },
+        "empty": false
+      },
+      {
+        "key": "EnvironmentFile",
+        "value_pin": {
+          "bytes": 25,
+          "sha256": "ee3293bac93e5b93ff9ffa1ffd66f79817e8334234fab9ebeb854c158aae6d93",
+          "git_blob_sha1": "e8b0744b21a4348bc973b52093cb58c82e1a2862"
+        },
+        "empty": false
+      },
+      {
+        "key": "ExecStartPre",
+        "value_pin": {
+          "bytes": 43,
+          "sha256": "188edba4a1e4cacf08dc7bbb74336bc0c81a7a747cefc599ef9ed6743d65ddc5",
+          "git_blob_sha1": "623cbd50cfdbb9d52007a7ee695897ce726ca448"
+        },
+        "empty": false,
+        "argv_executable_basename": "systemctl"
+      },
+      {
+        "key": "ExecStart",
+        "value_pin": {
+          "bytes": 26,
+          "sha256": "178826470fefcc1dbb1292bf67846e7f0d91d51b00264a406395e53098da8808",
+          "git_blob_sha1": "0fb8677fef79c8aadf1973b3d71b00fc2ca4366f"
+        },
+        "empty": false,
+        "argv_executable_basename": "droidloom-wayland"
+      },
+      {
+        "key": "ExecStartPost",
+        "value_pin": {
+          "bytes": 34,
+          "sha256": "f2331047ed47f093a843438d13d20f874aef4c4d1c3c935568e55eef666454d3",
+          "git_blob_sha1": "03d500ed9082df94541696c46b9244be11b80541"
+        },
+        "empty": false,
+        "argv_executable_basename": "droidloomctl"
+      },
+      {
+        "key": "ExecStopPost",
+        "value_pin": {
+          "bytes": 34,
+          "sha256": "8caad489845188619840056ff18a2240b8221a6dda3d1d889a2cf74941b64009",
+          "git_blob_sha1": "273d3a0137b799f8dceedd45740d0736f8a8e766"
+        },
+        "empty": false,
+        "argv_executable_basename": "droidloomctl"
+      },
+      {
+        "key": "ExecStopPost",
+        "value_pin": {
+          "bytes": 42,
+          "sha256": "722c0ccd69a8088cbdef804129ce89d1044faefdeb41cb5d56ad676e3f21828c",
+          "git_blob_sha1": "2313ad74b98d4fb0242c854560290068ebad4511"
+        },
+        "empty": false,
+        "argv_executable_basename": "systemctl"
+      },
+      {
+        "key": "Restart",
+        "value_pin": {
+          "bytes": 10,
+          "sha256": "ef1b7658a22adc7d98afc1d3d1e93081bbd17d9259fe2fa25badf192461e6f87",
+          "git_blob_sha1": "3e3c8b5c337cbeb7388e93d58735a53783af8fc6"
+        },
+        "value": "on-failure",
+        "empty": false
+      },
+      {
+        "key": "RestartSec",
+        "value_pin": {
+          "bytes": 1,
+          "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+          "git_blob_sha1": "56a6051ca2b02b04ef92d5150c9ef600403cb1de"
+        },
+        "value": "1",
+        "empty": false
+      },
+      {
+        "key": "TimeoutStartSec",
+        "value_pin": {
+          "bytes": 3,
+          "sha256": "9ae2bdd7beedc2e766c6b76585530e16925115707dc7a06ab5ee4aa2776b2c7b",
+          "git_blob_sha1": "4701cc793111aafe3a1e6f48d82e5b8c8a38943e"
+        },
+        "value": "150",
+        "empty": false
+      },
+      {
+        "key": "TimeoutStopSec",
+        "value_pin": {
+          "bytes": 3,
+          "sha256": "9ae2bdd7beedc2e766c6b76585530e16925115707dc7a06ab5ee4aa2776b2c7b",
+          "git_blob_sha1": "4701cc793111aafe3a1e6f48d82e5b8c8a38943e"
+        },
+        "value": "150",
+        "empty": false
+      },
+      {
+        "key": "WantedBy",
+        "value_pin": {
+          "bytes": 24,
+          "sha256": "37b918189fc9beac8d04631cc19648a86801c2c26203573a4679c62d0933583b",
+          "git_blob_sha1": "e99e934516aa9970e145036285df44d3fb3cf401"
+        },
+        "value": "graphical-session.target",
+        "empty": false
+      }
+    ],
+    "absent_literal_directives": [
+      "ExecStop",
+      "Requires",
+      "KillMode",
+      "KillSignal",
+      "FinalKillSignal"
+    ],
+    "effective_default_values_not_read": true,
+    "ExecStart_is_overridden_by_existing_dropin": true,
+    "original_presenter_replacement_authorized": false
+  },
+  "observations_separate_in_time": true,
+  "private_response_original": {
+    "bytes": 1402,
+    "sha256": "b5452ac2af590601df256fdcf86e256f80dc3c369afd8b67b9877e121bd384f0",
+    "git_blob_sha1": "f7d1805aaae831f6dfcd45faf07c071a97a38ad9"
+  },
+  "private_bodies_exported": false,
+  "Main_mutation_authorized": false,
+  "whole_app_production_ready_count": 0
+}

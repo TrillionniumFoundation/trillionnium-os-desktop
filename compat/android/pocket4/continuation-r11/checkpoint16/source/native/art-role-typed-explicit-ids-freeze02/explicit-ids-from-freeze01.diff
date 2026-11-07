@@ -1,0 +1,41 @@
+--- freeze01/ZygoteArguments.java
++++ freeze02/ZygoteArguments.java
+@@ -176,6 +176,12 @@
+     // the ordinary child-zygote parser and fork path remain unchanged.
+     boolean mRequireDroidloomAppZygoteRoleV1;
+ 
++    // Only parseArgs may set these after an actual --setuid/--setgid value.
++    // applyUidSecurityPolicy also sets mUidSpecified/mGidSpecified for peer
++    // defaults, so those mutable policy flags cannot prove explicit input.
++    private boolean mDroidloomUidParsed;
++    private boolean mDroidloomGidParsed;
++
+     /**
+      * Whether the current arguments constitute a request for the zygote's PID.
+      */
+@@ -317,6 +323,7 @@
+                 }
+                 mUidSpecified = true;
+                 mUid = Integer.parseInt(getAssignmentValue(arg));
++                mDroidloomUidParsed = true;
+             } else if (arg.startsWith("--setgid=")) {
+                 if (mGidSpecified) {
+                     throw new IllegalArgumentException(
+@@ -324,6 +331,7 @@
+                 }
+                 mGidSpecified = true;
+                 mGid = Integer.parseInt(getAssignmentValue(arg));
++                mDroidloomGidParsed = true;
+             } else if (arg.startsWith("--target-sdk-version=")) {
+                 if (mTargetSdkVersionSpecified) {
+                     throw new IllegalArgumentException(
+@@ -616,7 +624,8 @@
+         if (peer == null || peer.getUid() != Process.SYSTEM_UID) {
+             throw new ZygoteSecurityException("AppZygote specification requires the system peer");
+         }
+-        if (!mUidSpecified || !mGidSpecified || mUid <= 0 || mGid <= 0 || mInvokeWith != null
++        if (!mDroidloomUidParsed || !mDroidloomGidParsed
++                || !mUidSpecified || !mGidSpecified || mUid <= 0 || mGid <= 0 || mInvokeWith != null
+                 || mPermittedCapabilities != 0 || mEffectiveCapabilities != 0) {
+             throw new ZygoteSecurityException("Unsupported AppZygote launch authority");
+         }

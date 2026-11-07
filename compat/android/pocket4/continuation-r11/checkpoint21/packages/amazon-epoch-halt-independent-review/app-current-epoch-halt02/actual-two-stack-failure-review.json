@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "state": "CURRENT_TYPED_EPOCH_HALTED_SECOND_IDENTITY_FAILURE",
+  "actual": {
+    "bytes": 2317,
+    "sha256": "ab72a4e88d71c5f0f594681b1215bf5f9e34c2237c166e353d79fbbb12f214b3",
+    "job_id": "1a1b0d1d2b3-fc05-7330",
+    "git_blob": "1cf01219ad3051b56e2a34428ad2224e4ab1fd51",
+    "git_tree": "c9b6c678f4f26efc6681cc680b2d375fbcd6521c"
+  },
+  "epoch": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+  "source": {
+    "bytes": 22612,
+    "sha256": "57b4ce695df3e1e6b58e80ec11a7895759cdb5ffa9d6fac6846a6e34297acea6"
+  },
+  "first_error": {
+    "fixed_code": "FRAMEWORK_EPOCH_CHANGED_OR_UNAVAILABLE",
+    "message_sha256": "3b15ac2c1abef86fd03216b143ee64ef5b9f50337a92fdb1ff685679c7c9da55",
+    "phase": "admission",
+    "raw_message_exported": false,
+    "type": "EpochError"
+  },
+  "independent_final_error": {
+    "fixed_code": "FRAMEWORK_EPOCH_CHANGED_OR_UNAVAILABLE",
+    "message_sha256": "3b15ac2c1abef86fd03216b143ee64ef5b9f50337a92fdb1ff685679c7c9da55",
+    "phase": "independent_final_Main",
+    "raw_message_exported": false,
+    "type": "EpochError"
+  },
+  "exact_source_order": [
+    {
+      "marker": "result['Main_before_lock']=guard()",
+      "offset": 15279
+    },
+    {
+      "marker": "result['controls']=gate_controls",
+      "offset": 15426
+    },
+    {
+      "marker": "flow_lock=u.acquire_action_lock",
+      "offset": 15516
+    },
+    {
+      "marker": "action_lock=u.acquire_action_lock",
+      "offset": 15633
+    },
+    {
+      "marker": "STEP.mkdir",
+      "offset": 15816
+    },
+    {
+      "marker": "task.open_task_context",
+      "offset": 16622
+    }
+  ],
+  "Main_before_guard_did_not_return": true,
+  "read_gate_controls_not_reached": true,
+  "flow_or_global_lock_admission_not_reached": true,
+  "read_step_creation_not_reached": true,
+  "held_Context_construction_not_reached": true,
+  "Android_commands": 0,
+  "current_stack_observations": 0,
+  "helper_instrumentations": 0,
+  "remove_commands": 0,
+  "historical_native_launch_UNKNOWN_retained": true,
+  "historical_error_task_874_is_not_current_task_authority": true,
+  "current_task_state_unknown": true,
+  "source_and_artifact_inputs_unchanged": true,
+  "owned_oom_events_zero": true,
+  "owned_swap_zero": true,
+  "Main_restart_or_new_identity_inferred": false,
+  "old_epoch_retry_authorized": false,
+  "retirement_template_stays_SOURCE_ONLY": true,
+  "retirement_request_not_created": true,
+  "London_UI_request_not_created": true,
+  "whole_app_production_ready": false
+}

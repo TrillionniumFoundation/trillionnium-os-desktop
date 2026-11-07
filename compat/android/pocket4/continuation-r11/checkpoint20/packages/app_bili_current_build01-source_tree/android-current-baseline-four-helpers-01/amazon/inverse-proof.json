@@ -1,0 +1,268 @@
+{
+  "AndroidManifest.xml": {
+    "parent_path": "AndroidManifest.xml",
+    "parent": {
+      "bytes": 738,
+      "sha256": "97e8353fdcecc0d5a00c7530c6f8d375ed967931115822c655c5e3826587e68d"
+    },
+    "generated": {
+      "bytes": 738,
+      "sha256": "324de7dd4e090456933d5b60c92adeba4b1441d30c446d813cfe36699b9c5f66"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.amazon.r2",
+        "next": "org.droidloom.qa.amazon.r3",
+        "count": 3
+      }
+    ]
+  },
+  "build-input-reference.json": {
+    "historical_reference_unchanged": true
+  },
+  "build_candidate.py": {
+    "parent_path": "build_candidate.py",
+    "parent": {
+      "bytes": 23890,
+      "sha256": "b80dcea14a4fb7e567666d84b61afe0e5b955c74cacfdd31035dcc2b9f6069e0"
+    },
+    "generated": {
+      "bytes": 25229,
+      "sha256": "0398b949607715e6adb57333f3b54719616cb3df3f5c06c146883225adb3b865"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.amazon.r2",
+        "next": "org.droidloom.qa.amazon.r3",
+        "count": 2
+      },
+      {
+        "old": "org/droidloom/qa/amazon/r2",
+        "next": "org/droidloom/qa/amazon/r3",
+        "count": 4
+      },
+      {
+        "old": "owned-amazon-qa-r2",
+        "next": "owned-amazon-qa-r3",
+        "count": 3
+      },
+      {
+        "old": "        source_java = HERE/'src/org/droidloom/qa/amazon/r3/ActionRunner.java'",
+        "next": "        baseline_scope={'__file__':str(HERE/'check_current_baseline.py'),'__name__':'owned_current_baseline_scope_controls'}\n        exec(compile((HERE/'check_current_baseline.py').read_bytes(),str(HERE/'check_current_baseline.py'),'exec'),baseline_scope)\n        baseline_controls=baseline_scope['run_controls']()\n        require(baseline_controls['all_passed'] is True and baseline_controls['count']==12 and\n                len(baseline_controls['cases'])==12 and all(x['passed'] is True for x in baseline_controls['cases']) and\n                baseline_controls['production_contract_sha256']==source['qa_contract.py']['sha256'] and\n                baseline_controls['main_epoch_sha256']=='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2' and\n                baseline_controls['main_baseline_schema']=='pocket4-main-current-baseline-v1' and\n                baseline_controls['main_baseline_sha256']=='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266' and\n                baseline_controls['main_baseline_qualification_sha256']=='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6',\n                'ACTUAL_CURRENT_BASELINE_SCOPE_CONTROLS_REQUIRED')\n        result['current_baseline_scope_controls']={'source_sha256':source['check_current_baseline.py']['sha256'],'report':baseline_controls}\n        source_java = HERE/'src/org/droidloom/qa/amazon/r3/ActionRunner.java'",
+        "count": 1
+      }
+    ]
+  },
+  "check_idle_contract.py": {
+    "parent_path": "check_idle_contract.py",
+    "parent": {
+      "bytes": 13272,
+      "sha256": "f6d72f4ef1d46c27c9702cc910c2f4ca70ddc4db888ce1e58f7b43a2b761d685"
+    },
+    "generated": {
+      "bytes": 13482,
+      "sha256": "986fc6d8b5659289a22881a894beec2a55038f1ef0710228cc7f45ee1bb0a340"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "'main_epoch_sha256':qa.MAIN_EPOCH",
+        "next": "'main_epoch_sha256':qa.MAIN_EPOCH, 'main_baseline_schema':qa.MAIN_BASELINE_SCHEMA,\n                      'main_baseline_sha256':qa.MAIN_BASELINE_SHA,\n                      'main_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA",
+        "count": 1
+      }
+    ]
+  },
+  "make_build_request.py": {
+    "parent_path": "make_build_request.py",
+    "parent": {
+      "bytes": 2940,
+      "sha256": "21665ce0eebbc3303179ba579b79331802cb010c2ac33b6faadedc0bb6560ccc"
+    },
+    "generated": {
+      "bytes": 2948,
+      "sha256": "5c6d570438a9cd3c85798086f29a68d9dd833341e6f522a0cb8f2bcd867ee871"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "owned-amazon-qa-r2",
+        "next": "owned-amazon-qa-r3",
+        "count": 1
+      },
+      {
+        "old": "KEY='pocket4-owned-amazon-qa-r3-static-build-01-20261106'",
+        "next": "KEY='pocket4-owned-amazon-qa-r3-current-163e3e3914f4ccbb-build01'",
+        "count": 1
+      }
+    ]
+  },
+  "qa_adapter.py": {
+    "parent_path": "qa_adapter.py",
+    "parent": {
+      "bytes": 22378,
+      "sha256": "934da2e9ebdd92a0d5dd6f17689c6e273e884ff2f88dbf23a7699e6d01d113b7"
+    },
+    "generated": {
+      "bytes": 22583,
+      "sha256": "01c4bd1b2edac2a20df7ea4d2c0e55528901a39c76ed44f1556427d196ad2f66"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.amazon.r2",
+        "next": "org.droidloom.qa.amazon.r3",
+        "count": 1
+      },
+      {
+        "old": "org/droidloom/qa/amazon/r2",
+        "next": "org/droidloom/qa/amazon/r3",
+        "count": 3
+      },
+      {
+        "old": "'main_epoch_sha256':self.qa.MAIN_EPOCH})",
+        "next": "'main_epoch_sha256':self.qa.MAIN_EPOCH, 'main_baseline_schema':self.qa.MAIN_BASELINE_SCHEMA,\n            'main_baseline_sha256':self.qa.MAIN_BASELINE_SHA,\n            'main_baseline_qualification_sha256':self.qa.MAIN_BASELINE_QUALIFICATION_SHA})",
+        "count": 1
+      }
+    ]
+  },
+  "qa_contract.py": {
+    "parent_path": "qa_contract.py",
+    "parent": {
+      "bytes": 32890,
+      "sha256": "bbeaf0188be46b76788d00e11a6922b4f1df7241c4960d2c8b595b5be01d19dd"
+    },
+    "generated": {
+      "bytes": 33454,
+      "sha256": "d0943b50d0b01d7d1ba263177c4d0d6823a3c4bdb5a4f3d5a5b31c7588e90325"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.amazon.r2",
+        "next": "org.droidloom.qa.amazon.r3",
+        "count": 1
+      },
+      {
+        "old": "pocket4-owned-amazon-qa-v2",
+        "next": "pocket4-owned-amazon-qa-v3",
+        "count": 1
+      },
+      {
+        "old": "MAIN_EPOCH = '48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'",
+        "next": "MAIN_EPOCH = '734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'\nMAIN_BASELINE_SCHEMA = 'pocket4-main-current-baseline-v1'\nMAIN_BASELINE_SHA = '163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'\nMAIN_BASELINE_QUALIFICATION_SHA = 'f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'",
+        "count": 1
+      },
+      {
+        "old": "'window_token', 'main_epoch_sha256'}",
+        "next": "'window_token', 'main_epoch_sha256', 'main_baseline_schema', 'main_baseline_sha256', 'main_baseline_qualification_sha256'}",
+        "count": 1
+      },
+      {
+        "old": "value['display'] == 0 and value['main_epoch_sha256'] == MAIN_EPOCH,",
+        "next": "value['display'] == 0 and value['main_epoch_sha256'] == MAIN_EPOCH and\n            value['main_baseline_schema'] == MAIN_BASELINE_SCHEMA and\n            value['main_baseline_sha256'] == MAIN_BASELINE_SHA and\n            value['main_baseline_qualification_sha256'] == MAIN_BASELINE_QUALIFICATION_SHA,",
+        "count": 1
+      }
+    ]
+  },
+  "src/org/droidloom/qa/amazon/r3/ActionRunner.java": {
+    "parent_path": "src/org/droidloom/qa/amazon/r2/ActionRunner.java",
+    "parent": {
+      "bytes": 43410,
+      "sha256": "28ea61dfbf0b487e0dd8da9ff012c45abb441d776c5c6b78316c7c1edb8f3677"
+    },
+    "generated": {
+      "bytes": 44155,
+      "sha256": "d6afa218e4a704e7a507eb78726867c43c6dc32b549bbd4ff0a5949964c024da"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.amazon.r2",
+        "next": "org.droidloom.qa.amazon.r3",
+        "count": 2
+      },
+      {
+        "old": "pocket4-owned-amazon-qa-v2",
+        "next": "pocket4-owned-amazon-qa-v3",
+        "count": 1
+      },
+      {
+        "old": "    static final String MAIN_EPOCH = \"48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f\";",
+        "next": "    static final String MAIN_EPOCH = \"734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2\";\n    static final String MAIN_BASELINE_SCHEMA = \"pocket4-main-current-baseline-v1\";\n    static final String MAIN_BASELINE_SHA = \"163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266\";\n    static final String MAIN_BASELINE_QUALIFICATION_SHA = \"f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6\";",
+        "count": 1
+      },
+      {
+        "old": "keys(scope, \"package\", \"uid\", \"user\", \"display\", \"activity\", \"window_token\", \"main_epoch_sha256\");",
+        "next": "keys(scope, \"package\", \"uid\", \"user\", \"display\", \"activity\", \"window_token\", \"main_epoch_sha256\", \"main_baseline_schema\", \"main_baseline_sha256\", \"main_baseline_qualification_sha256\");",
+        "count": 1
+      },
+      {
+        "old": "        need(MAIN_EPOCH.equals(string(scope, \"main_epoch_sha256\", 64)), \"HOST_EPOCH_ATTESTATION_REQUIRED\");",
+        "next": "        need(MAIN_EPOCH.equals(string(scope, \"main_epoch_sha256\", 64)), \"HOST_EPOCH_ATTESTATION_REQUIRED\");\n        need(MAIN_BASELINE_SCHEMA.equals(string(scope, \"main_baseline_schema\", 64))\n            && MAIN_BASELINE_SHA.equals(string(scope, \"main_baseline_sha256\", 64))\n            && MAIN_BASELINE_QUALIFICATION_SHA.equals(string(scope, \"main_baseline_qualification_sha256\", 64)),\n            \"HOST_CURRENT_BASELINE_ATTESTATION_REQUIRED\");",
+        "count": 1
+      }
+    ]
+  },
+  "src/org/droidloom/qa/amazon/r3/InspectionIdleGate.java": {
+    "parent_path": "src/org/droidloom/qa/amazon/r2/InspectionIdleGate.java",
+    "parent": {
+      "bytes": 3923,
+      "sha256": "a8c4b4e376d8c84a7ac17b51e424c60dce489ef6d7a02b9fa855afece850ca24"
+    },
+    "generated": {
+      "bytes": 3923,
+      "sha256": "1fe538351c95a08495179fe03dcf301cd54a3b77b06766773e5b4232a2e9eda2"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.amazon.r2",
+        "next": "org.droidloom.qa.amazon.r3",
+        "count": 1
+      }
+    ]
+  },
+  "stage_build.py": {
+    "parent_path": "stage_build.py",
+    "parent": {
+      "bytes": 7560,
+      "sha256": "b2fcb01b119e138552244dfde3d7a59009584f79f415520b107c666ce2a12be0"
+    },
+    "generated": {
+      "bytes": 7560,
+      "sha256": "54ccc7f2d462134b7e1cbfe1c8cda1e6977b31a6da82a1ca2d8b37b3201d550d"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "owned-amazon-qa-r2",
+        "next": "owned-amazon-qa-r3",
+        "count": 2
+      }
+    ]
+  },
+  "target-artifact-reference.json": {
+    "historical_reference_unchanged": true
+  },
+  "tests/InspectionIdleGateChecks.java": {
+    "parent_path": "tests/InspectionIdleGateChecks.java",
+    "parent": {
+      "bytes": 11434,
+      "sha256": "0b097554e349d9a50627a7dd7762978da8378795f71079ce27b00c2849b22a0b"
+    },
+    "generated": {
+      "bytes": 11434,
+      "sha256": "30a92180b70971ee7ae179300c01bbd6bface44a97393078dd4d970d79b7fb63"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.amazon.r2",
+        "next": "org.droidloom.qa.amazon.r3",
+        "count": 1
+      }
+    ]
+  }
+}

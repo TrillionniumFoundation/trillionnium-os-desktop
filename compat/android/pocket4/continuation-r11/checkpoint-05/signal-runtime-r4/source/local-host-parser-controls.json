@@ -1,0 +1,142 @@
+{
+  "schema": 1,
+  "state": "LOCAL_HOST_WRAPPER_PARSER_CONTROLS_PASS",
+  "controls": [
+    {
+      "name": "historical-complete-registration",
+      "passed": true,
+      "expected_rejection": false,
+      "error": null
+    },
+    {
+      "name": "historical-full-XML-contract",
+      "passed": true,
+      "expected_rejection": false,
+      "error": null
+    },
+    {
+      "name": "duplicate-registration-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "RuntimeError('duplicate registered test')"
+    },
+    {
+      "name": "partial-registration-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "RuntimeError('registration incomplete')"
+    },
+    {
+      "name": "unexpected-list-output-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "RuntimeError('unexpected registration suite line')"
+    },
+    {
+      "name": "duplicate-JSON-key-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "RuntimeError('duplicate JSON key: state')"
+    },
+    {
+      "name": "missing-test-with-unchanged-root-count-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "RuntimeError('suite XML summary differs')"
+    },
+    {
+      "name": "duplicated-case-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "RuntimeError('suite XML summary differs')"
+    },
+    {
+      "name": "failure-leaf-with-false-zero-summary-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "RuntimeError('test failure in XML')"
+    },
+    {
+      "name": "missing-whole-suite-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "RuntimeError('XML test set differs from full registration')"
+    },
+    {
+      "name": "root-count-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "RuntimeError('full suite XML totals differ')"
+    },
+    {
+      "name": "suite-summary-count-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "RuntimeError('suite XML summary differs')"
+    },
+    {
+      "name": "new-skipped-case-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "RuntimeError('skip outcome is incomplete')"
+    },
+    {
+      "name": "uncompleted-case-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "RuntimeError('test did not complete')"
+    },
+    {
+      "name": "disabled-test-silently-dropped-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "RuntimeError('XML test set differs from full registration')"
+    },
+    {
+      "name": "skip-reason-changed-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "RuntimeError('disabled or skipped contract differs')"
+    },
+    {
+      "name": "truncated-XML-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "ParseError('unclosed token: line 3902, column 2')"
+    },
+    {
+      "name": "XML-entity-declaration-rejected",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "RuntimeError('XML entities are prohibited')"
+    },
+    {
+      "name": "baseline-exact-layout-pin",
+      "passed": true,
+      "expected_rejection": false,
+      "error": null
+    }
+  ],
+  "historical_reference": {
+    "1-list.stdout": {
+      "bytes": 92019,
+      "device_path": "/home/alex/work/pocket4-proc-maps-offset-r16-20261104/full-host-suite-01/list.stdout",
+      "sha256": "0e92e67cc139524594ff586bb83f4a31a364bcd371e6158b1da37c4129cc0df6"
+    },
+    "3-results.xml": {
+      "bytes": 1065794,
+      "device_path": "/home/alex/work/pocket4-proc-maps-offset-r16-20261104/full-host-suite-01/results.xml",
+      "sha256": "408900eee6313738caf4d6bbe0aa65e6893bf10a539f464c55ea0c8f76a7b220"
+    },
+    "6-result.json": {
+      "bytes": 1652,
+      "device_path": "/home/alex/work/pocket4-proc-maps-offset-r16-20261104/full-host-suite-01/result.json",
+      "sha256": "1b03cabfaf8cd0ef4ba953fa28d5dc74d4d203a30e6f09b838aca1010eba5886"
+    }
+  },
+  "device_operations": 0,
+  "native_execution": false,
+  "new_baseline_execution": "NOT_RUN",
+  "candidate_execution": "NOT_RUN",
+  "mutation_scope": "in-memory negative parser fixtures only"
+}

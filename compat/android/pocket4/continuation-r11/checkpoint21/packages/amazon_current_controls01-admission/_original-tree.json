@@ -1,0 +1,43 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "6c6b17517ed344e83d877d6d5fc1583cad817c1f",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 33656,
+    "sha256": "23b7b48dfbfacdaef3c29a2b78c08701b83577304fecca9e94dca5d34afe938e",
+    "git_blob_sha1": "b70ec4c29b21241b59710398cf1f61b811084653",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission.tool-original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "85428f4ac03117ef3148327d710e4ab928542ec0",
+      "bytes": 2467
+    },
+    {
+      "path": "dispatch-intent.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "55409b6b8dce2e7abc64853e5f92339774561d15",
+      "bytes": 367
+    },
+    {
+      "path": "preflight",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d9bc50e4212f99486e169cfd848f2f38bc0a5330"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "preflight",
+      "original_tree": "d9bc50e4212f99486e169cfd848f2f38bc0a5330",
+      "checkpoint": 21,
+      "canonical_package": "amazon_current_controls01-preflight"
+    }
+  ],
+  "original_recursive_leaf_count": 86
+}

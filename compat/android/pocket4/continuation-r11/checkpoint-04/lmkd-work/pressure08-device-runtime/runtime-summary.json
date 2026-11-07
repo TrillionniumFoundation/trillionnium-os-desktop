@@ -1,0 +1,62 @@
+{
+  "all_apps_production_ready": false,
+  "installed_files_changed": false,
+  "new_runtime_attempt_started": false,
+  "parent06_07_results_relabelled": false,
+  "phases": [
+    {
+      "error": null,
+      "exact_cleanup_verified": true,
+      "export_archive_sha256": "6031e9641956eadd09f535065684721471197d37f32d46bde4687128c553bcfa",
+      "export_manifest_sha256": "d2132d2bac8114858fb1ed9ba243acbef6b6ae2b9b51056cf5ad51231e3fc46c",
+      "export_payloads_verified": 46,
+      "external_unit_binding_verified": true,
+      "finished_utc": "2026-11-04T16:18:00.050069+00:00",
+      "invocation_id": "cb6f0264d2d5400986382915feb407f8",
+      "main_epoch_unchanged": true,
+      "phase": "pressure",
+      "pressure_qualified": true,
+      "qualified": true,
+      "result_sha256": "c2cfe52ea009cf1a181ce9ca84f23954022ef8e7480417a4b6edfd0ab09e246f",
+      "source_build_binding_verified": true,
+      "stale_qualified": false,
+      "started_utc": "2026-11-04T16:17:53.757763+00:00",
+      "unit": "p4-lmkd-relay-pressure-r11-02.service"
+    },
+    {
+      "error": "RuntimeError: owned unit did not exit normally with its retained successful invocation",
+      "exact_cleanup_verified": true,
+      "export_archive_sha256": "f5f0b0e2ce5e373ae2f2a7d652038c006546ea2ab6ecaadd64824095cc178830",
+      "export_manifest_sha256": "a4ce4d096c069cce625a99bc14b5a3cfbdc00aaa714e9f06c66add81222c7901",
+      "export_payloads_verified": 32,
+      "external_unit_binding_verified": false,
+      "finished_utc": "2026-11-04T16:24:18.583008+00:00",
+      "invocation_id": "a93c3a72c2894ae3978037772e52ed98",
+      "main_epoch_unchanged": true,
+      "phase": "stale",
+      "pressure_qualified": false,
+      "qualified": false,
+      "result_sha256": "d6946b8ad2f08bd4e1e33f169cc98c444a20be58ab28f6786d5127d6e1112dc8",
+      "source_build_binding_verified": true,
+      "stale_qualified": false,
+      "started_utc": "2026-11-04T16:24:06.541846+00:00",
+      "unit": "p4-lmkd-relay-stale-r11-01.service"
+    }
+  ],
+  "recorded_at": "2026-11-04T16:41:02.196846+00:00",
+  "schema": 1,
+  "scope": "two immutable revision08 owned invocations; bounded export and source/build binding recap",
+  "stale_failure": {
+    "actual_message": "bounded pressure allocation deadline: Resource temporarily unavailable",
+    "errno_suffix_is_not_mmap_failure_proof": true,
+    "failure_sample_max_oom_counters_zero": true,
+    "final_outer_counter_receipt_present": false,
+    "joined_event_audit_present": false,
+    "location": "fixture_init.cpp allocate_pressure_step; whole-ramp 8000 ms deadline",
+    "sample_current_bytes": 425295872,
+    "sample_full_psi_total_us": 5099540,
+    "sample_high_events": 1669,
+    "stage": "after exact LMKD SIGSTOP; before no-stall aging and SIGCONT",
+    "stale_qualification": "not passed; no late-kill or stale-gate verdict can be inferred"
+  }
+}

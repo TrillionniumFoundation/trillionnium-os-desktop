@@ -1,0 +1,77 @@
+{
+  "Main_live_checked": false,
+  "child_seconds_each": 10,
+  "collection_complete_not_directory_success": true,
+  "collector_seconds": 35,
+  "default_debugfs_read_only_no_w_flag": true,
+  "device_or_debugfs_executed_locally": false,
+  "directory_commands": [
+    "ls -p /tombstones",
+    "ls -p /system/shutdown-checkpoints"
+  ],
+  "directory_presence_not_inferred_from_exit0": true,
+  "encoding": "gzip_base64 envelope; each original command stream base64+bytes+sha256+eof",
+  "exact_child_forced_reap_seconds": 3,
+  "exact_directories": [
+    "/tombstones",
+    "/system/shutdown-checkpoints"
+  ],
+  "full_image_hash_or_external_opener_exclusivity_claimed": false,
+  "held_tool_and_image_FDs_direct_exec": true,
+  "local_controls": {
+    "count": 10,
+    "real_owned_children": 7,
+    "stdout_sha256": "99447dad1eb7655901ef795a43e4497545e561711a9dd249ab8e58f908361ff1",
+    "syscall_failure_seams": [
+      "pidfd_open",
+      "DefaultSelector"
+    ]
+  },
+  "metadata_original": {
+    "bytes": 2546,
+    "job": "1a1ac4d3d61-fc05-537b",
+    "sha256": "799040e1416d5acaef3ab14840a091775480e43bfb9b69edb67ce8f90c9677ff"
+  },
+  "no_file_body_read_or_name_based_followup": true,
+  "no_mount_write_or_journal_replay": true,
+  "non_TTY_pipe_and_pager_disabled": true,
+  "nonzero_tool_rc_and_missing_directory_text_retained": true,
+  "original_Owner_FAIL_unchanged": true,
+  "outer_seconds": 50,
+  "output_bytes_bound": 262144,
+  "per_stream_bytes": {
+    "stderr": 8192,
+    "stdout": 32768
+  },
+  "qualification": false,
+  "raw_image_mounted_at_guest_data": true,
+  "request": {
+    "bytes": 28340,
+    "sha256": "83a2472ffceae66deea9b356429001088895dcf5d88f7529a1431c7db3fafa3f",
+    "stable_key": "p4-owner14-data-directories01-630476be09e9c7c4",
+    "stdin_bytes": 27192,
+    "stdin_sha256": "630476be09e9c7c4d4097bb974da15b8034892c6ad98a81d2d53aad87708747b"
+  },
+  "schema": 1,
+  "source": {
+    "bytes": 27192,
+    "sha256": "630476be09e9c7c4d4097bb974da15b8034892c6ad98a81d2d53aad87708747b"
+  },
+  "state": "FROZEN_READ_ONLY_REQUEST_NOT_SUBMITTED",
+  "unchanged_metadata_guard_functions": [
+    "need",
+    "check_time",
+    "identity",
+    "stamp",
+    "directory_stamp",
+    "directory",
+    "regular",
+    "read_exact",
+    "read_record",
+    "validate_records",
+    "image_metadata",
+    "tool_metadata",
+    "recheck"
+  ],
+  "wire_bytes_bound": 262144
+}

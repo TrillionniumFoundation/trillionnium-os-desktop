@@ -1,0 +1,157 @@
+{
+  "schema": 1,
+  "scope": "Owner19 actual failed isolated runtime, collector evidence and retirement",
+  "job": "1a1aed2c639-fc05-62d8",
+  "original_runtime": {
+    "bytes": 708698,
+    "sha256": "6e489440223b2515301d56125a19c9357a4ae211ea960b4a41bf96d0ffe9fce5",
+    "retained_private": true
+  },
+  "safe_derived_tree": "8fd4b47f452b885cea88f9cf53ebb03154df3116",
+  "safe_derived_is_not_original": true,
+  "first_actor_error": {
+    "error": "RuntimeError('actual producer stopped or failed before ACTIVE')",
+    "stage": "normal"
+  },
+  "success": false,
+  "collector": {
+    "state": "BOUNDED_PREFIX_CLOSED",
+    "first_error": null,
+    "source_qualified_before_request": true,
+    "protocol_observed": true,
+    "connection_attempts": 1,
+    "read_request_attempts": 1,
+    "complete_packets": 257,
+    "packet_bytes": 27190,
+    "public_tag_counts": {
+      "DEBUG": 244,
+      "hwservicemanager": 0,
+      "libc": 13,
+      "other": 0
+    },
+    "packet_file": {
+      "bytes": 28314,
+      "complete_packets_only": true,
+      "device": 66306,
+      "gid": 0,
+      "inode": 45663422,
+      "mode": 256,
+      "nlink": 1,
+      "relative": "evidence/generation-crash-buffer4.bin",
+      "sha256": "34fe9d3ec735cf18e8852b453cdf2616f32498bedf966346ac66a34ef4ba9deb",
+      "type": 32768,
+      "uid": 0
+    },
+    "logd_sha256": "00b71cfeea17a2fa6b2fa4047fb320bdd9d7b64ce16366bbbd2abdbda09d0905",
+    "logd_uid": 1036,
+    "logd_gid": 1036,
+    "held_fds_closed": true,
+    "hws_attribution_qualified": false,
+    "complete_stream_claimed": false
+  },
+  "lifecycle": {
+    "first_failure": {
+      "message": "real broker retired; complete old cell recovery is required",
+      "observed_monotonic_ns": 960152407859656,
+      "origin": "runtime"
+    },
+    "namespace_owner_exit": {
+      "core_dumped": false,
+      "exit_code": null,
+      "explicit_stop_requested_before_observation": false,
+      "host_pid": 3956305,
+      "observed_monotonic_ns": 960152456895869,
+      "process": {
+        "birth": 96012276,
+        "pid": 3956305,
+        "pidfd": {
+          "device": 6,
+          "inode": 24771583
+        },
+        "proc_dir": {
+          "device": 26,
+          "inode": 544277689
+        }
+      },
+      "raw_status": 1,
+      "signal": 1,
+      "worker_retirement_started_before_observation": true
+    },
+    "recording_incomplete": false,
+    "recording_error": null,
+    "cleanup_failure": null,
+    "retirement_failure": null,
+    "sequence": [
+      "prepared",
+      "owner_attached",
+      "init_hello",
+      "broker_ready",
+      "init_project_sent",
+      "init_projected_accepted",
+      "init_commit_sent",
+      "init_done_accepted",
+      "retiring",
+      "broker_retired",
+      "processes_dead",
+      "domain_empty",
+      "retired",
+      "resources_removed",
+      "claim_released"
+    ]
+  },
+  "retirement": {
+    "exact_unit_cleanup": {
+      "cgroup_absent": true,
+      "invocation": "0c03d2ff679f4cfc9e70717280f93075",
+      "original_actor_dead": true,
+      "unit": "p4-owner19-normal-20261105-01.service",
+      "unit_not_found": true
+    },
+    "cleanup_stop_returncode": 0,
+    "child_retirement": [
+      {
+        "forced_kill": false,
+        "pid": 3956199,
+        "reaped": true,
+        "returncode": 0,
+        "role": "daemon"
+      },
+      {
+        "forced_kill": false,
+        "pid": 3956184,
+        "reaped": true,
+        "returncode": -15,
+        "role": "presenter"
+      },
+      {
+        "forced_kill": false,
+        "pid": 3956144,
+        "reaped": true,
+        "returncode": 0,
+        "role": "sway"
+      },
+      {
+        "forced_kill": false,
+        "pid": 3956140,
+        "reaped": true,
+        "returncode": 0,
+        "role": "bus"
+      }
+    ],
+    "final_sample_pids_current": "1",
+    "release_basis": "Later exact unit/cgroup absence and original actor death, not the earlier final cgroup sample"
+  },
+  "main": {
+    "three_maps_equal": true,
+    "pids_max": 12288,
+    "original_processes_alive_and_unchanged": true,
+    "installed_contract_unchanged": true,
+    "full_interval_noninterference_proved": false
+  },
+  "owned_memory_peak_bytes": 502018048,
+  "owned_swap_peak_bytes": 0,
+  "runtime_active_qualified": false,
+  "app_qualified": false,
+  "production_ready": false,
+  "automatic_retry": false
+}

@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "scope": "Independent readonly source review of fixed normal prefix evidence reader; no actual reader/device execution",
+  "reviewed_source": {
+    "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/prefix-normal-readback-01/read-normal-evidence.py",
+    "bytes": 6632,
+    "sha256": "c3d8476dddcc8edd86987469727685ffeb74cfde0c4756a04ca39e2b532e11c4"
+  },
+  "source_complete_read": true,
+  "compile_only_passed": true,
+  "fixed_constants": {
+    "SOURCE_ROOT": "/home/alex/work/pocket4-relay-prefix-r11-source-05-01",
+    "BASE": "/home/alex/work/pocket4-relay-prefix-r11-owned",
+    "LEAF": "p4-relay-prefix-5dcff218dbef5869c213de3c-normal",
+    "NAMESPACE": "p4-relay-prefix-5dcff218dbef5869c213de3c",
+    "NONCE": "5dcff218dbef5869c213de3c4bcf475ff76111794ac3bb302fac2d73d396f2be",
+    "PLAN_SHA": "dd9c420ae36678e3dc6fc4cbac4b08730a133a6b4b37ae11496c6f4b46babaef",
+    "MEMBERS": [
+      "coordinator-result.json",
+      "prefix-result.json",
+      "coordinator-claim.json",
+      "once.claim.json",
+      "actor-input.json",
+      "actor-admission.json",
+      "namespace-created.json",
+      "unit-first-observation.json"
+    ]
+  },
+  "nonce_exact_64_hex": true,
+  "evidence_members_exact_unique_eight_basenames": true,
+  "findings": [],
+  "new_confirmed_blocker_found": false,
+  "checks": [
+    "Source plan is read from the fixed root-private source directory and must match the external plan SHA, exact nonce/mode/scope and null predecessor before target evidence is accepted.",
+    "Held root-private directories and root-owned single-link mode0600 regular files with O_NOFOLLOW bound access. Every opened member descriptor closes in finally; registered directory descriptors close in reverse order.",
+    "Each member is limited to65536 bytes and checked across device/inode/mode/uid/gid/nlink/size/mtime/ctime before/after read. The eight evidence members have a262144-byte aggregate cap; the final text envelope is limited to524288 bytes. The plan has its own65536-byte member cap.",
+    "Expected-result mode requires exactly the externally supplied terminal-result SHA. Missing mode rejects a terminal result that was read. Nonempty evidence requires the matching original coordinator claim; every observed record requires the exact nonce, and any plan field must match.",
+    "All output has qualification_performed_by_reader=false; partial/missing evidence is explicitly listed. Reader success establishes bounded collection, not runtime success, process cleanup or namespace retirement.",
+    "The only file observation paths are the fixed plan and eight fixed owned evidence members. There is no unit, namespace, process-control, Android or Main mutation path."
+  ],
+  "scope_limitations": [
+    "Expected-result mode can collect a failed runtime result or an incomplete evidence set. Consumers must qualify the producer result and required set separately; exit0 alone is not runtime PASS.",
+    "Missing-result mode observes absence at the initial member open (or directory lookup); it does not claim the result cannot be published later or that the multi-file read is an atomic terminal snapshot.",
+    "No real root-private device paths, actual directory metadata or producer outcome were read by this review. No synthetic I/O substitution test or repeated producer test was run."
+  ],
+  "Hepta_calls": 0,
+  "reader_executed": false,
+  "namespace_or_unit_actions": 0,
+  "Android_Main_actions": 0,
+  "production_ready": false
+}

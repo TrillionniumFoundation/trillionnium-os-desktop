@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "scope": "actual local synthetic qualifier controls only; no device PSI or runtime",
+  "executed_at_utc": "2026-11-04T15:58:16.568582+00:00",
+  "command": [
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "lmkd-work/host-pressure-next-07/owned-relay",
+    "-p",
+    "test_qualify_pressure.py",
+    "-v"
+  ],
+  "returncode": 0,
+  "tests_passed": 19,
+  "stdout": "",
+  "stderr": "test_empty_or_duplicate_set_rejected_even_when_manifest_pinned (test_qualify_pressure.ExternalPinControls.test_empty_or_duplicate_set_rejected_even_when_manifest_pinned) ... ok\ntest_external_manifest_and_complete_bytes (test_qualify_pressure.ExternalPinControls.test_external_manifest_and_complete_bytes) ... ok\ntest_symlink_cannot_replace_evidence (test_qualify_pressure.ExternalPinControls.test_symlink_cannot_replace_evidence) ... ok\ntest_changed_native_default_or_actual_write_rejected (test_qualify_pressure.QualificationControls.test_changed_native_default_or_actual_write_rejected) ... ok\ntest_critical_sent_after_exit_cannot_be_correlated (test_qualify_pressure.QualificationControls.test_critical_sent_after_exit_cannot_be_correlated) ... ok\ntest_duplicate_json_keys_rejected (test_qualify_pressure.QualificationControls.test_duplicate_json_keys_rejected) ... ok\ntest_fresh_stale_or_expiry_boundary_is_inconclusive (test_qualify_pressure.QualificationControls.test_fresh_stale_or_expiry_boundary_is_inconclusive) ... ok\ntest_kernel_oom_budget_and_second_kill_rejected (test_qualify_pressure.QualificationControls.test_kernel_oom_budget_and_second_kill_rejected) ... ok\ntest_late_nonvictim_exit_cannot_be_skipped_at_cleanup (test_qualify_pressure.QualificationControls.test_late_nonvictim_exit_cannot_be_skipped_at_cleanup) ... ok\ntest_medium_only_is_partial_and_not_critical_pass (test_qualify_pressure.QualificationControls.test_medium_only_is_partial_and_not_critical_pass) ... ok\ntest_no_real_event_or_incomplete_audit_rejected (test_qualify_pressure.QualificationControls.test_no_real_event_or_incomplete_audit_rejected) ... ok\ntest_nonce_scope_terminal_and_owner_identity_rejected (test_qualify_pressure.QualificationControls.test_nonce_scope_terminal_and_owner_identity_rejected) ... ok\ntest_outer_identity_is_returned_for_external_binding (test_qualify_pressure.QualificationControls.test_outer_identity_is_returned_for_external_binding) ... ok\ntest_outer_old_generation_or_unretired_member_rejected (test_qualify_pressure.QualificationControls.test_outer_old_generation_or_unretired_member_rejected) ... ok\ntest_outer_oom_limit_and_swap_negative_controls (test_qualify_pressure.QualificationControls.test_outer_oom_limit_and_swap_negative_controls) ... ok\ntest_replay_future_and_quiet_events_rejected (test_qualify_pressure.QualificationControls.test_replay_future_and_quiet_events_rejected) ... ok\ntest_stale_requires_real_events_and_keeps_targets (test_qualify_pressure.QualificationControls.test_stale_requires_real_events_and_keeps_targets) ... ok\ntest_synthetic_critical_positive_scope_is_narrow (test_qualify_pressure.QualificationControls.test_synthetic_critical_positive_scope_is_narrow) ... ok\ntest_wrong_victim_or_priority_and_route_rejected (test_qualify_pressure.QualificationControls.test_wrong_victim_or_priority_and_route_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 19 tests in 0.013s\n\nOK\n",
+  "qualifier_sha256": "3c55ebe597ba0608f3a6939e9df39633bd90fd7a8ffcde23b321535154be8adf",
+  "test_source_sha256": "1efae3122cdc33f63aa103f30ee93be17179109c4bd9e1689de9458151862f5f",
+  "all_apps_production_ready": false
+}

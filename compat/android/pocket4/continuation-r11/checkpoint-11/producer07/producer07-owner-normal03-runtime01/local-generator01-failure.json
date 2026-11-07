@@ -1,0 +1,17 @@
+{
+  "Hepta_called": false,
+  "actual_attempt_nonce_equal_to_frozen_plan": true,
+  "actual_prepared_sha256": "a94417ecfb9cfb546f587fae7468091f8a503b4954ce7a2af1506bf0f3181329",
+  "actual_remote_plan_sha256": "b3431d6608adc984edb314928226486b7a9321542a4ae1029a06a40debaeb0e7",
+  "cause": "Generator incorrectly compared published UTF-8 plan file bytes to the exact producer plan serialization; prepare.py uses json.dumps(plan, sort_keys=True, indent=2) + newline with default ensure_ascii=True. Rebuilding that serializer exactly equals actual plan_sha256. JSON values and nonce are unchanged.",
+  "executed_locally": true,
+  "exit_code": 1,
+  "failed_assertion": "actual['attempt_nonce'] == plan['attempt_nonce'] and actual['plan_sha256'] == sha(plan_raw)",
+  "fresh_runtime_freeze_created": false,
+  "frozen_published_plan_sha256": "650ab0428bd88d9b5ba2217cbafd9c718e780eaf696c90fb567296c850ba2baa",
+  "generator_sha256": "0ce5a0ffabe2b434fcad30a53e6c0d1b7cc2b35d71638f1d3e6d94bddddbbce9",
+  "kind": "local-runtime-request-generator-first-attempt-failure",
+  "prepared_original_unchanged": true,
+  "runtime_submitted": false,
+  "schema": 1
+}

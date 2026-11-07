@@ -1,0 +1,106 @@
+--- ticket01/owned_inspect.py
++++ ticket02/owned_inspect.py
+@@ -15,9 +15,9 @@
+ import types
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-ticket-owned-launch-inspect-01')
++ROOT=Path('/home/alex/work/pocket4-ticket-owned-launch-inspect-02')
+ SOURCE=ROOT/'source'
+-NONCE='c398efeb8c07781670825f5ad68e13af'
++NONCE='fbda47500730b71354278064649b0bf9'
+ FLOW=Path('/home/alex/work/pocket4-ticket-owned-qa-r1-flow-'+NONCE)
+ PACKAGE='com.MobileTicket'
+ UID=10121
+@@ -25,9 +25,9 @@
+ HELPER_UID=10190
+ COMPONENT=PACKAGE+'/.ui.activity.WelcomeGuideActivity'
+ PLAN={'schema':1,'operation':'inspect','nonces':{
+-    'before':'e3900171d0a9e758b69a3e422f07fadb',
+-    'inspect':'5f90529456394889c097122a7fc15c4e',
+-    'after':'c17c36f9bb77a56733139530cd77c242'}}
++    'before':'d898654a35af1469db5a88479f0e9a03',
++    'inspect':'56053b613f1fd3d10b1728869dcf7e94',
++    'after':'5d152f4ad6a8283c7824b30097660022'}}
+ INSTALL_ROOT=Path('/home/alex/work/pocket4-owned-ticket-qa-r1-install-state-01')
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+ INSTALL_SOURCE_SHA='241b8d26caa2279001f32db3895efab87b07723c2b8fce61a971381c26f7cd69'
+--- ticket01/INPUTS.json
++++ ticket02/INPUTS.json
+@@ -84,12 +84,12 @@
+     "signer_bound_by_exact_signed_apk_bytes": "91fbef4532e24cce6667f7f049e50ab227c14c622f3f6c7d7b05a3959595138b",
+     "uid": 10190
+   },
+-  "nonce": "c398efeb8c07781670825f5ad68e13af",
++  "nonce": "fbda47500730b71354278064649b0bf9",
+   "read_only_inspection_plan": {
+     "nonces": {
+-      "after": "c17c36f9bb77a56733139530cd77c242",
+-      "before": "e3900171d0a9e758b69a3e422f07fadb",
+-      "inspect": "5f90529456394889c097122a7fc15c4e"
++      "after": "5d152f4ad6a8283c7824b30097660022",
++      "before": "d898654a35af1469db5a88479f0e9a03",
++      "inspect": "56053b613f1fd3d10b1728869dcf7e94"
+     },
+     "operation": "inspect",
+     "schema": 1
+--- ticket01/stage_execute.py
++++ ticket02/stage_execute.py
+@@ -6,9 +6,9 @@
+ from pathlib import Path
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-ticket-owned-launch-inspect-01')
++ROOT=Path('/home/alex/work/pocket4-ticket-owned-launch-inspect-02')
+ SOURCE=ROOT/'source'
+-NONCE='c398efeb8c07781670825f5ad68e13af'
++NONCE='fbda47500730b71354278064649b0bf9'
+ FILES={'owned_inspect.py','ticket_task_context.py','INPUTS.json'}
+ REFERENCE=Path('/home/alex/work/pocket4-owned-ticket-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py')
+ REFERENCE_SHA='e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+--- ticket01/SOURCE_PINS.json
++++ ticket02/SOURCE_PINS.json
+@@ -2,11 +2,11 @@
+   "files": {
+     "INPUTS.json": {
+       "bytes": 4287,
+-      "sha256": "bc2d964793cf267b44d947bd5926b19ae11c3d76cf2283e9d21b36ee3e2e96f8"
++      "sha256": "1cc9a2fe274e07e960a622c128890c534364b5b1305e0c939186e67ef8272163"
+     },
+     "owned_inspect.py": {
+       "bytes": 34450,
+-      "sha256": "5f900ef7028cf104d0495666a1d9f8d5918dfb37c2d5087b513d6a2e70872ee7"
++      "sha256": "efcb409a68205c48899936541a5c06182216ed5e7027cc43b034255ba7e89cde"
+     },
+     "ticket_task_context.py": {
+       "bytes": 15600,
+--- ticket01/make_request.py
++++ ticket02/make_request.py
+@@ -3,11 +3,11 @@
+ import argparse,hashlib,json,os
+ from pathlib import Path
+ HERE=Path(__file__).resolve().parent
+-MANIFEST_SHA='16f371bda457b830b11536f977a11f8dcce3347eded286605400a9162ba079a8'
+-STAGE_SHA='5d565dea6effa7f3e316e586e62b4f7db3c15855bf0e272fa9ddbd615afc04a3'
++MANIFEST_SHA='abb667a93f1e55b916da3b04bcebe05b28904655ff18cff1a1f1ef8b66a7b845'
++STAGE_SHA='e857c5a50a821f72fb2de0637df894673bd8560851f31c8e192e4b4ec3470200'
+ STAGE_BYTES=4915
+-NONCE='c398efeb8c07781670825f5ad68e13af'
+-KEY='pocket4-ticket-owned-launch-inspect-01-20261105'
++NONCE='fbda47500730b71354278064649b0bf9'
++KEY='pocket4-ticket-owned-launch-inspect-02-20261105'
+ def main():
+     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--write-once',action='store_true');p.add_argument('--output',type=Path);a=p.parse_args()
+     if not a.write_once:
+--- ticket01/README.md
++++ ticket02/README.md
+@@ -1,3 +1,7 @@
+-# Ticket first owned launch and read-only inspection
++# Ticket fresh launch and read-only inspection 02
+ 
+-This fresh flow binds the actual Ticket helper UID 10190, signed APK, install receipts, one commercial target APK and the original Main fence. It consumes the real five-command Ticket metadata/launcher result, then resolves the component again under the original action lock before one native launch. It runs state/inspect/state and preserves original exact owned-task retirement. No clicks, text entry, screenshots, audio, grants, settings, login or purchases are admitted. Retained UI trees remain root-private and are excluded from publication. No remote request has been submitted.
++This new attempt preserves Ticket01's actual pre-action global-lock EAGAIN failure. The previous attempt did not create a task or unknown launch outcome. The later one-shot lock differential succeeded for the same original inode; it does not establish historical cause or guarantee future admission. This new flow must acquire its original global lock normally before context or launch. Root schedules it only after the active Bili attempt's exact cleanup/Main evidence is verified.
++
++All phase, authority, current component resolve, target/helper artifact, Main guard, timeout, resource, first-error and exact-owned retirement functions are unchanged. The only runtime substitutions are the fresh root and four new nonces. Existing Ticket helper UID10190/APKb138eee4 and one target APK remain precisely pinned; no helper install is repeated. One current resolve precedes at most one native launch, followed by state/inspect/state and original exact task cleanup. Raw UI remains in the private flow. Whole-App/business qualification remains false.
++
++The old package and original failure are unchanged. This package has not been submitted or executed. Local verification executes only default PLAN and unchanged pure validators on retained actual JSON. No UI test, device collector, lock acquisition, or Hepta call was run while freezing it.

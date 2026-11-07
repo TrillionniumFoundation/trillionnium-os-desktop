@@ -1,0 +1,92 @@
+{
+  "actual_control_result": {
+    "Main_actions": 0,
+    "SCM_PIDFD_source": "kernel",
+    "assertions": 364,
+    "factory_service_started": false,
+    "platform_filter_executed": false,
+    "real_receive_cases": 12,
+    "registry_authorization_positive_executed": false,
+    "state": "PASS_PROTOCOL_SCOPE"
+  },
+  "binary": {
+    "bytes": 71152,
+    "sha256": "60bc105f79f87821d1d1ebba410bc9520c672d27e746aa7845f361b61d128377"
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++17",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-O2",
+        "-I/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/role_authorization.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/source/factory_context.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/controls/protocol_controls.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/local02/protocol_controls"
+      ],
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/local02/protocol_controls"
+      ],
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 232,
+        "sha256": "94d56f56b9be40de27ad9c376d7995d345c2790373a945245fdbb834cb4b5b76"
+      }
+    }
+  ],
+  "compiler": {
+    "bytes": 1027128,
+    "path": "/usr/bin/x86_64-linux-gnu-g++-13",
+    "sha256": "52f1ddb33fe78b9441e0f42e9cd22c571f1101938e046c8a26582494e041cc73"
+  },
+  "factory_service_started": false,
+  "main_actions": 0,
+  "platform_filter_executed": false,
+  "registry_positive_authorization_executed": false,
+  "schema": 1,
+  "scope": "Local exact-source protocol/real socketpair transport; no service or role positive",
+  "source_pins": {
+    "controls/protocol_controls.cc": {
+      "bytes": 11199,
+      "sha256": "1dc09a3675d96972cbd9ff9cd168569a92f9ea426d6ff73e769155047a8489cd"
+    },
+    "source/factory_context.cc": {
+      "bytes": 5377,
+      "sha256": "afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a"
+    },
+    "source/factory_context.h": {
+      "bytes": 954,
+      "sha256": "b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1"
+    },
+    "source/role_authorization.cc": {
+      "bytes": 32535,
+      "sha256": "98c740669d0c478c48d22e51ba9d2a7412ea35fa6db19542c4955eb73847a808"
+    },
+    "source/role_authorization.h": {
+      "bytes": 4594,
+      "sha256": "00c2bb06c73e2b9dbe2bab939615393b7c5eb184d7ece7f1271679e9b9014fcf"
+    }
+  },
+  "source_unchanged_after": true,
+  "state": "PASS_PROTOCOL_SCOPE"
+}

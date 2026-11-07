@@ -1,0 +1,17 @@
+--- original-R6-Session.sequence
++++ owned05-owned_sequence
+@@ -1,4 +1,4 @@
+-def sequence(self, plan):
++def owned_sequence(self, plan):
+     qa = self.qa; names = plan['nonces']
+     result = {'installed_before':self.installed(), 'old_v2_helper_called':False,
+               'business_success_verified':False, 'audio_verified':False}
+@@ -81,7 +81,7 @@
+                 remember('independent_after_state',error)
+         if scope is not None:
+             try:
+-                result['foreground_after'] = self.foreground()
++                result['foreground_after'] = observe_post_ack(self,plan,result)
+                 if plan['operation'] in ('inspect','reveal_controls'):
+                     require(result['foreground_after'] == scope,'READ_ONLY_INSPECT_FOREGROUND_CHANGED')
+             except BaseException as error:

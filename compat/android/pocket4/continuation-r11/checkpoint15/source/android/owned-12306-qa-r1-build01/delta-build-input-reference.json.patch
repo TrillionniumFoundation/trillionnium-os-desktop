@@ -1,0 +1,31 @@
+--- amazon-r1/build-input-reference.json
++++ ticket-r1/build-input-reference.json
+@@ -1,5 +1,11 @@
+ {
+   "Amazon_build_qualification_inherited": false,
++  "actual_Amazon_r1_build_reference": {
++    "bytes": 17390,
++    "not_12306_build_qualification": true,
++    "sha256": "1289d422062dabcd68706d0e7fa39475687ca956b34a5e35e2a2c8fe90387cb2",
++    "tool_table_reused_without_changes": true
++  },
+   "actual_Bili_r5_build02_reference": {
+     "bytes": 17188,
+     "sha256": "9482c57026a8e29956bc339dad8a0ce5f6c74ebe835ea0620a09c988d04e5077"
+@@ -9,7 +15,7 @@
+     "sha256": "2a8cb152f9dea378ffc180c95ee4cbab1eb2b527c0dc9e176fd89bcee46119c6",
+     "was_read_and_all_seven_values_checked_before_disconnection": true
+   },
+-  "artifact": "owned-amazon-qa-r1-pinned-tool-reference",
++  "artifact": "owned-ticket-qa-r1-pinned-tool-reference",
+   "compile_sdk_api": 31,
+   "min_sdk": 31,
+   "new_helper_compilation_performed": false,
+@@ -22,6 +28,7 @@
+     "r2_receipt_is_prior_tool_evidence_not_r3_build_qualification": true,
+     "tool_table_reused_without_changes": true
+   },
++  "target_independent_new_build_required": true,
+   "target_sdk": 33,
+   "tools": {
+     "aapt": {

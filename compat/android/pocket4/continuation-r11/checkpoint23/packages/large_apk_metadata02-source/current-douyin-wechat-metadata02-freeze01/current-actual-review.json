@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_PENDING_FRESH_NONCES",
+  "packages": [
+    {
+      "id": "douyin",
+      "package": "com.ss.android.ugc.aweme",
+      "current_apk_bytes": 364363658,
+      "current_only_failed_predicate": "bytes_le_256_MiB",
+      "same_three_observations": true,
+      "Main_before_after_equal": true,
+      "journal_FDs": 74,
+      "lock_attempts": 1,
+      "original_failure_not_rewritten": true,
+      "hash_performed": false,
+      "required_average_bytes_per_second_for_original_45_seconds": 8096970.177777777,
+      "aggregate_remaining_bytes": 172507254
+    },
+    {
+      "id": "wechat",
+      "package": "com.tencent.mm",
+      "current_apk_bytes": 286319384,
+      "current_only_failed_predicate": "bytes_le_256_MiB",
+      "same_three_observations": true,
+      "Main_before_after_equal": true,
+      "journal_FDs": 74,
+      "lock_attempts": 1,
+      "original_failure_not_rewritten": true,
+      "hash_performed": false,
+      "required_average_bytes_per_second_for_original_45_seconds": 6362652.977777778,
+      "aggregate_remaining_bytes": 250551528
+    }
+  ],
+  "raw_report_handling": "Original exact strings are preserved; JSON.parse used only for safe scalar and boolean qualification. Unsafe ns values are not serialized as replacement originals.",
+  "old_metadata_failures_preserved": true,
+  "whole_hash_performance_not_measured": true,
+  "aggregate_limit_unchanged": 536870912,
+  "hash_seconds_unchanged": 45,
+  "work_seconds_unchanged": 140,
+  "outer_seconds_unchanged": 240,
+  "source_semantic_change": "FILE_LIMIT 256 MiB -> 512 MiB, only the two exact package sources",
+  "nonce_bound": false,
+  "Python_executed": false
+}

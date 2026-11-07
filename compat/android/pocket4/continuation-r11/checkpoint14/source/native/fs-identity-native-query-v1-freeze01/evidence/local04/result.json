@@ -1,0 +1,1897 @@
+{
+  "AOSP_generated_policy_qualified": false,
+  "Android_qualified": false,
+  "actual_abi_binding": {
+    "compat_lp32_public": {
+      "setfsgid": 216,
+      "setfsuid": 215
+    },
+    "compat_old16_rejected": {
+      "setfsgid": 139,
+      "setfsuid": 138
+    },
+    "derived_header": {
+      "bytes": 539,
+      "sha256": "c7e08680439fdcb4ed87e856624d0a0791a2e5921c6251e39273f289c5e20920"
+    },
+    "input_files": {
+      "SYSCALLS.TXT": {
+        "bytes": 17066,
+        "sha256": "c00e3c8d61e83e4c1a1f206474edca23483ba845967fb936dea1d49e62311adf"
+      },
+      "seccomp_policy.h": {
+        "bytes": 1029,
+        "sha256": "1caa2e654b93aab4f4d4753955f287fc4a6c3d50b65a96c53e9a4eec37b10f5e"
+      },
+      "unistd_32.h": {
+        "bytes": 12691,
+        "sha256": "2351f1d97edae1d8b664a4859295a93b31dbc8317e989782e8ff6f1fc541e187"
+      },
+      "unistd_64.h": {
+        "bytes": 10553,
+        "sha256": "f5932f5da1d4bbec377207d7694a1918d6362174a840a271efa346977128b8d6"
+      }
+    },
+    "native_lp64": {
+      "setfsgid": 123,
+      "setfsuid": 122
+    },
+    "scope": "actual source alias/number binding; not installed Bionic or kernel binding"
+  },
+  "all_architectures_compiled": false,
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "--version"
+      ],
+      "name": "compiler-version",
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "path": "compiler-version.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 264,
+        "path": "compiler-version.stdout",
+        "sha256": "157c487727541da0ef84bfa12dd6715a793e3af550a457cce01452003a94d34e"
+      },
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++17",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-O0",
+        "-I/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work04/fixtures",
+        "-DSOURCE_FILE=\"/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work04/preimage/bionic/libc/seccomp/seccomp_policy.cpp\"",
+        "-DCANDIDATE=0",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work04/controls/constructor.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work04/local04/preimage-constructor"
+      ],
+      "name": "preimage-compile",
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "path": "preimage-compile.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "preimage-compile.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work04/local04/preimage-constructor"
+      ],
+      "name": "preimage-construct",
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "path": "preimage-construct.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 1605,
+        "path": "preimage-construct.stdout",
+        "sha256": "74a8014a13e441d6289ef95827e9b9e2517cada973a3ea330cb9bbc7dcb3091e"
+      },
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++17",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-O0",
+        "-I/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work04/fixtures",
+        "-DSOURCE_FILE=\"/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work04/candidate/bionic/libc/seccomp/seccomp_policy.cpp\"",
+        "-DCANDIDATE=1",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work04/controls/constructor.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work04/local04/candidate-constructor"
+      ],
+      "name": "candidate-compile",
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "path": "candidate-compile.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "candidate-compile.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work04/local04/candidate-constructor"
+      ],
+      "name": "candidate-construct",
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "path": "candidate-construct.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 2333,
+        "path": "candidate-construct.stdout",
+        "sha256": "20cde191441573d81cc5ab4d7712a048a175f71a34de009ee0ecb3352e162513"
+      },
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++17",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-O0",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work04/controls/kernel_control.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work04/local04/kernel-control"
+      ],
+      "name": "kernel-control-compile",
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "path": "kernel-control-compile.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "kernel-control-compile.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timeout": false
+    },
+    {
+      "argv": [
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work04/local04/kernel-control",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work04/local04/preimage-app-zygote.bpf",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/fs-identity-query-policy-work04/local04/candidate-app-zygote.bpf"
+      ],
+      "name": "kernel-control",
+      "returncode": 1,
+      "stderr": {
+        "bytes": 0,
+        "path": "kernel-control.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 7442,
+        "path": "kernel-control.stdout",
+        "sha256": "ddf46211ff3cb3f4558e940161d9bbf76c3ab682de6b37db14fc07ff7ced241d"
+      },
+      "timeout": false
+    }
+  ],
+  "compiler": {
+    "bytes": 1027128,
+    "path": "/usr/bin/x86_64-linux-gnu-g++-13",
+    "sha256": "52f1ddb33fe78b9441e0f42e9cd22c571f1101938e046c8a26582494e041cc73"
+  },
+  "compiler_after": {
+    "bytes": 1027128,
+    "sha256": "52f1ddb33fe78b9441e0f42e9cd22c571f1101938e046c8a26582494e041cc73"
+  },
+  "constructed_programs": {
+    "candidate": {
+      "app": [
+        [
+          32,
+          0,
+          0,
+          4
+        ],
+        [
+          21,
+          2,
+          0,
+          3221225534
+        ],
+        [
+          21,
+          16,
+          0,
+          1073741827
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          53,
+          0,
+          1,
+          1073741824
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          122
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          123
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4000
+        ],
+        [
+          6,
+          0,
+          0,
+          327693
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          53,
+          0,
+          1,
+          1073741824
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          215
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          216
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          138
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          139
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4000
+        ],
+        [
+          6,
+          0,
+          0,
+          327693
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ]
+      ],
+      "app_zygote": [
+        [
+          32,
+          0,
+          0,
+          4
+        ],
+        [
+          21,
+          2,
+          0,
+          3221225534
+        ],
+        [
+          21,
+          16,
+          0,
+          1073741827
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          53,
+          0,
+          1,
+          1073741824
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          122
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          123
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4001
+        ],
+        [
+          6,
+          0,
+          0,
+          327693
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          53,
+          0,
+          1,
+          1073741824
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          215
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          216
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          138
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          139
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4001
+        ],
+        [
+          6,
+          0,
+          0,
+          327693
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ]
+      ],
+      "app_zygote_fs_queries_v1": [
+        [
+          32,
+          0,
+          0,
+          4
+        ],
+        [
+          21,
+          2,
+          0,
+          3221225534
+        ],
+        [
+          21,
+          22,
+          0,
+          1073741827
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          21,
+          1,
+          0,
+          122
+        ],
+        [
+          21,
+          0,
+          3,
+          123
+        ],
+        [
+          32,
+          0,
+          0,
+          16
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          53,
+          0,
+          1,
+          1073741824
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          122
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          123
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4001
+        ],
+        [
+          6,
+          0,
+          0,
+          327693
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          21,
+          1,
+          0,
+          215
+        ],
+        [
+          21,
+          0,
+          3,
+          216
+        ],
+        [
+          32,
+          0,
+          0,
+          16
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          53,
+          0,
+          1,
+          1073741824
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          215
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          216
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          138
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          139
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4001
+        ],
+        [
+          6,
+          0,
+          0,
+          327693
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ]
+      ],
+      "system": [
+        [
+          32,
+          0,
+          0,
+          4
+        ],
+        [
+          21,
+          2,
+          0,
+          3221225534
+        ],
+        [
+          21,
+          16,
+          0,
+          1073741827
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          53,
+          0,
+          1,
+          1073741824
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          122
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          123
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4002
+        ],
+        [
+          6,
+          0,
+          0,
+          327693
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          53,
+          0,
+          1,
+          1073741824
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          215
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          216
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          138
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          139
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4002
+        ],
+        [
+          6,
+          0,
+          0,
+          327693
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ]
+      ]
+    },
+    "preimage": {
+      "app": [
+        [
+          32,
+          0,
+          0,
+          4
+        ],
+        [
+          21,
+          2,
+          0,
+          3221225534
+        ],
+        [
+          21,
+          16,
+          0,
+          1073741827
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          53,
+          0,
+          1,
+          1073741824
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          122
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          123
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4000
+        ],
+        [
+          6,
+          0,
+          0,
+          327693
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          53,
+          0,
+          1,
+          1073741824
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          215
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          216
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          138
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          139
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4000
+        ],
+        [
+          6,
+          0,
+          0,
+          327693
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ]
+      ],
+      "app_zygote": [
+        [
+          32,
+          0,
+          0,
+          4
+        ],
+        [
+          21,
+          2,
+          0,
+          3221225534
+        ],
+        [
+          21,
+          16,
+          0,
+          1073741827
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          53,
+          0,
+          1,
+          1073741824
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          122
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          123
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4001
+        ],
+        [
+          6,
+          0,
+          0,
+          327693
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          53,
+          0,
+          1,
+          1073741824
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          215
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          216
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          138
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          139
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4001
+        ],
+        [
+          6,
+          0,
+          0,
+          327693
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ]
+      ],
+      "system": [
+        [
+          32,
+          0,
+          0,
+          4
+        ],
+        [
+          21,
+          2,
+          0,
+          3221225534
+        ],
+        [
+          21,
+          16,
+          0,
+          1073741827
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          53,
+          0,
+          1,
+          1073741824
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          122
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          123
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4294967295
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4002
+        ],
+        [
+          6,
+          0,
+          0,
+          327693
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          32,
+          0,
+          0,
+          0
+        ],
+        [
+          53,
+          0,
+          1,
+          1073741824
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          215
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          216
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          138
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          139
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ],
+        [
+          21,
+          0,
+          1,
+          4002
+        ],
+        [
+          6,
+          0,
+          0,
+          327693
+        ],
+        [
+          6,
+          0,
+          0,
+          2147418112
+        ],
+        [
+          6,
+          0,
+          0,
+          196608
+        ]
+      ]
+    }
+  },
+  "error": "RuntimeError('kernel-control failed: 1')",
+  "finished_utc": "2026-11-05T09:18:35.388211+00:00",
+  "interpreter": {
+    "changed_query_decisions": 16,
+    "comparisons": 213512,
+    "existing_entrypoints_byte_identical": {
+      "app": true,
+      "app_zygote": true,
+      "system": true
+    },
+    "generated_table_fixture": true,
+    "pass": true,
+    "unknown_architectures_rejected": true,
+    "upper_register_bits_covered": true,
+    "x32_number_decisions_preserved": true,
+    "x86_64_and_i386": true
+  },
+  "local_constructor_optimization": "O0; local GCC is not the AOSP Clang toolchain",
+  "pass": false,
+  "process_actions": "only dedicated local test executables and 29 exact owned children",
+  "role_or_factory_qualified": false,
+  "schema": "fs-identity-query-local-controls-v1",
+  "scope": "complete current-source TU and actual Bionic header/ABI aliases, with explicit generated-table/logging/Clang-offset fixtures",
+  "source_changes": [],
+  "sources_after": {
+    "candidate/bionic/libc/seccomp/droidloom_fs_identity_query_policy.h": {
+      "bytes": 2338,
+      "sha256": "cc513e3d6cb5b0d59f141d1a3ce66907ab86bc1f45ad68fb251b5ebe9b53dc62"
+    },
+    "candidate/bionic/libc/seccomp/include/droidloom_seccomp_query_policy.h": {
+      "bytes": 1221,
+      "sha256": "f1885ccf4d509ab430504981debb4b2d123dc66c390d9b14b0783cecd27f4bb0"
+    },
+    "candidate/bionic/libc/seccomp/seccomp_policy.cpp": {
+      "bytes": 12853,
+      "sha256": "9744ddcd43848a6a82aa8db524167a40c8e3e93662ca686a709db18ebfa1203d"
+    },
+    "controls/constructor.cc": {
+      "bytes": 2328,
+      "sha256": "42d730be044d1ed02864c6a9730fdc81d4ed8eab0989ad5051736de358e01eac"
+    },
+    "controls/kernel_control.cc": {
+      "bytes": 10774,
+      "sha256": "f7ef8c68c54e10fa3d92a76b81d53b90098d8601f1d07808758cb71c53f5bb40"
+    },
+    "controls/run_controls.py": {
+      "bytes": 12146,
+      "sha256": "02b2f868ab619ccb861aa66e78afd7ce73edfa73f88d9fc656bc33abb6846a1b"
+    },
+    "fixtures/android-base/logging.h": {
+      "bytes": 239,
+      "sha256": "5572bc44a3ef4b3c37003c0be2a7adb770829bfef6bb62228164670ef6c3ca1f"
+    },
+    "fixtures/android-base/macros.h": {
+      "bytes": 51,
+      "sha256": "d10b4c11c11fb3b6e80f3a24646609ae90b0bbf539168128e6f46bb33d48a146"
+    },
+    "fixtures/func_to_syscall_nrs.h": {
+      "bytes": 539,
+      "sha256": "c7e08680439fdcb4ed87e856624d0a0791a2e5921c6251e39273f289c5e20920"
+    },
+    "fixtures/seccomp_bpfs.h": {
+      "bytes": 1802,
+      "sha256": "d0ca613da6e5f221c1fe83f472929b6e1e45e7e161c0c2613a0071cef5d940d6"
+    },
+    "fixtures/seccomp_policy.h": {
+      "bytes": 1029,
+      "sha256": "1caa2e654b93aab4f4d4753955f287fc4a6c3d50b65a96c53e9a4eec37b10f5e"
+    },
+    "preimage/bionic/libc/seccomp/seccomp_policy.cpp": {
+      "bytes": 11148,
+      "sha256": "ca8b2270bc0f1ab4f108ee13185ae81b22245bbf9036c33628d97e857363a35b"
+    },
+    "references/abi-mapping.json": {
+      "bytes": 990,
+      "sha256": "898c69d9c3f5e95b11099e560b181016d482b945fe97bd49b58e513f66f74343"
+    },
+    "references/actual-bionic-abi/SYSCALLS.TXT": {
+      "bytes": 17066,
+      "sha256": "c00e3c8d61e83e4c1a1f206474edca23483ba845967fb936dea1d49e62311adf"
+    },
+    "references/actual-bionic-abi/seccomp_policy.h": {
+      "bytes": 1029,
+      "sha256": "1caa2e654b93aab4f4d4753955f287fc4a6c3d50b65a96c53e9a4eec37b10f5e"
+    },
+    "references/actual-bionic-abi/unistd_32.h": {
+      "bytes": 12691,
+      "sha256": "2351f1d97edae1d8b664a4859295a93b31dbc8317e989782e8ff6f1fc541e187"
+    },
+    "references/actual-bionic-abi/unistd_64.h": {
+      "bytes": 10553,
+      "sha256": "f5932f5da1d4bbec377207d7694a1918d6362174a840a271efa346977128b8d6"
+    }
+  },
+  "sources_before": {
+    "candidate/bionic/libc/seccomp/droidloom_fs_identity_query_policy.h": {
+      "bytes": 2338,
+      "sha256": "cc513e3d6cb5b0d59f141d1a3ce66907ab86bc1f45ad68fb251b5ebe9b53dc62"
+    },
+    "candidate/bionic/libc/seccomp/include/droidloom_seccomp_query_policy.h": {
+      "bytes": 1221,
+      "sha256": "f1885ccf4d509ab430504981debb4b2d123dc66c390d9b14b0783cecd27f4bb0"
+    },
+    "candidate/bionic/libc/seccomp/seccomp_policy.cpp": {
+      "bytes": 12853,
+      "sha256": "9744ddcd43848a6a82aa8db524167a40c8e3e93662ca686a709db18ebfa1203d"
+    },
+    "controls/constructor.cc": {
+      "bytes": 2328,
+      "sha256": "42d730be044d1ed02864c6a9730fdc81d4ed8eab0989ad5051736de358e01eac"
+    },
+    "controls/kernel_control.cc": {
+      "bytes": 10774,
+      "sha256": "f7ef8c68c54e10fa3d92a76b81d53b90098d8601f1d07808758cb71c53f5bb40"
+    },
+    "controls/run_controls.py": {
+      "bytes": 12146,
+      "sha256": "02b2f868ab619ccb861aa66e78afd7ce73edfa73f88d9fc656bc33abb6846a1b"
+    },
+    "fixtures/android-base/logging.h": {
+      "bytes": 239,
+      "sha256": "5572bc44a3ef4b3c37003c0be2a7adb770829bfef6bb62228164670ef6c3ca1f"
+    },
+    "fixtures/android-base/macros.h": {
+      "bytes": 51,
+      "sha256": "d10b4c11c11fb3b6e80f3a24646609ae90b0bbf539168128e6f46bb33d48a146"
+    },
+    "fixtures/func_to_syscall_nrs.h": {
+      "bytes": 539,
+      "sha256": "c7e08680439fdcb4ed87e856624d0a0791a2e5921c6251e39273f289c5e20920"
+    },
+    "fixtures/seccomp_bpfs.h": {
+      "bytes": 1802,
+      "sha256": "d0ca613da6e5f221c1fe83f472929b6e1e45e7e161c0c2613a0071cef5d940d6"
+    },
+    "fixtures/seccomp_policy.h": {
+      "bytes": 1029,
+      "sha256": "1caa2e654b93aab4f4d4753955f287fc4a6c3d50b65a96c53e9a4eec37b10f5e"
+    },
+    "preimage/bionic/libc/seccomp/seccomp_policy.cpp": {
+      "bytes": 11148,
+      "sha256": "ca8b2270bc0f1ab4f108ee13185ae81b22245bbf9036c33628d97e857363a35b"
+    },
+    "references/abi-mapping.json": {
+      "bytes": 990,
+      "sha256": "898c69d9c3f5e95b11099e560b181016d482b945fe97bd49b58e513f66f74343"
+    },
+    "references/actual-bionic-abi/SYSCALLS.TXT": {
+      "bytes": 17066,
+      "sha256": "c00e3c8d61e83e4c1a1f206474edca23483ba845967fb936dea1d49e62311adf"
+    },
+    "references/actual-bionic-abi/seccomp_policy.h": {
+      "bytes": 1029,
+      "sha256": "1caa2e654b93aab4f4d4753955f287fc4a6c3d50b65a96c53e9a4eec37b10f5e"
+    },
+    "references/actual-bionic-abi/unistd_32.h": {
+      "bytes": 12691,
+      "sha256": "2351f1d97edae1d8b664a4859295a93b31dbc8317e989782e8ff6f1fc541e187"
+    },
+    "references/actual-bionic-abi/unistd_64.h": {
+      "bytes": 10553,
+      "sha256": "f5932f5da1d4bbec377207d7694a1918d6362174a840a271efa346977128b8d6"
+    }
+  },
+  "started_utc": "2026-11-05T09:18:33.746554+00:00"
+}

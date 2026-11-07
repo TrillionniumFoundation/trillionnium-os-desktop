@@ -1,0 +1,98 @@
+--- build-request-01/fenced_build_streaming.py
++++ readmission02/fenced_build_streaming.py
+@@ -13,7 +13,7 @@
+ SNAPSHOT_SHA = 'f909bdfcaedfef29fcc1ba6a994c49bc21e99850204bac7e0565548bcd7139cb'
+ PREPARATION_SHA = 'ea14a9f968f84c5ab02c6f0c03d61ab4cad30f4374cb6662c825621644d71c2a'
+ ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined06-go5-streaming-01')
+-FENCE_ROOT = ROOT / 'build-fences-01'
++FENCE_ROOT = ROOT / 'build-fences-02'
+ 
+ 
+ def require(value, reason):
+@@ -74,6 +74,65 @@
+             'scope': 'Only the pinned pre/post invariants and OOM deltas are gated; full interval absence of interference is not claimed.'}
+ 
+ 
++PRIOR_FAILURE_SHA = '8b74d6b0351db5823c4e183c222783b94ada34369f1eede78289ac3b6d20146a'
++POSTFAILURE_MEMORY_SHA = '650a723bc5ea3a71446f3f33430e4c71bf961a1d1454ca4798e80690360ce526'
++
++
++def require_original_attempt_absent(scope):
++    attempt = scope['ATTEMPT']
++    require(attempt == ROOT / 'attempt-01', 'original inner attempt path changed')
++    scope['no_alias'](attempt)
++    require(not attempt.exists() and not attempt.is_symlink(),
++            'original attempt-01 exists; this readmission is not authorized')
++
++
++def readmission_contract(packet, scope):
++    # Bind the actual original rejection through a held descriptor. Nothing in
++    # build-fences-01 is modified, and this is not evidence of a compiler run.
++    path = ROOT / 'build-fences-01' / 'terminal.json'
++    scope['no_alias'](path.parent)
++    def identity(info):
++        return (info.st_dev, info.st_ino, info.st_mode, info.st_size,
++                info.st_mtime_ns, info.st_ctime_ns)
++    fd = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK)
++    with os.fdopen(fd, 'rb') as stream:
++        before = os.fstat(stream.fileno())
++        require(stat.S_ISREG(before.st_mode) and before.st_size == 1172,
++                'original failed fence is not the exact regular receipt')
++        raw = stream.read(1173)
++        after = os.fstat(stream.fileno())
++        named = path.lstat()
++        require(identity(before) == identity(after) == identity(named),
++                'original failed fence changed while held')
++    require(sha(raw) == PRIOR_FAILURE_SHA and
++            raw == packet['prior_failed_fence_terminal'].encode(),
++            'original failed fence bytes changed')
++    failed = json.loads(raw)
++    require(failed['state'] == 'FAILED' and failed['inner_returncode'] is None and
++            failed['error'] == "RuntimeError('less than 13 GiB MemAvailable for fresh Go5 streaming profile; no automatic retry')" and
++            failed['main_fence_assessment']['main_fence_pass'] is True,
++            'prior result is not the authorized resource-admission failure')
++    # This historical sample explains the new one-shot request. Only the
++    # unchanged inner controller's fresh kernel read can admit this build.
++    sample_raw = packet['postfailure_memory_sample'].encode()
++    require(sha(sample_raw) == POSTFAILURE_MEMORY_SHA,
++            'postfailure memory evidence changed')
++    sample = json.loads(sample_raw)
++    require(sample['fixed_collection_completed'] is True and
++            sample['Main_actions'] == sample['files_written'] ==
++            sample['resource_or_policy_changes'] == sample['stop_or_kill_actions'] == 0,
++            'postfailure evidence is not the fixed read-only collection')
++    require_original_attempt_absent(scope)
++    return {'schema': 1, 'prior_failed_fence_terminal_sha256': PRIOR_FAILURE_SHA,
++            'postfailure_memory_sample_sha256': POSTFAILURE_MEMORY_SHA,
++            'sample_observed_utc': sample['finished_utc'],
++            'historical_sample_is_not_build_admission': True,
++            'original_attempt_must_remain_absent_before_inner_call': True,
++            'original_controller_and_resource_gates_unchanged': True,
++            'separately_reviewed_one_shot_readmission': True,
++            'automatic_retry': False}
++
++
+ def run(packet):
+     require(len(PREPARATION_SHA) == 64 and all(c in "0123456789abcdef" for c in PREPARATION_SHA),
+             "a new actual streaming preparation receipt is required")
+@@ -87,8 +146,12 @@
+     exec(compile(source, 'frozen_combined_build.py', 'exec'), scope, scope)
+     scope['no_alias'](ROOT)
+     require(sha((ROOT / 'preparation.json').read_bytes()) == PREPARATION_SHA, 'actual preparation changed')
++    readmission = readmission_contract(packet, scope)
+     require(not FENCE_ROOT.exists() and not FENCE_ROOT.is_symlink(), 'fence root already exists; reconcile exact job')
+     FENCE_ROOT.mkdir(mode=0o700)
++    save('prior-failed-fence-terminal.json', packet['prior_failed_fence_terminal'].encode())
++    save('postfailure-memory-sample.json', packet['postfailure_memory_sample'].encode())
++    save('readmission.json', readmission)
+     save('claim.json', {'schema': 1, 'state': 'READONLY_MAIN_FENCE_BEFORE_FULL_BUILD',
+                        'controller_sha256': CONTROLLER_SHA, 'preparation_sha256': PREPARATION_SHA,
+                        'snapshot_sha256': packet['snapshot_sha256'], 'uid': os.getuid(),
+@@ -105,6 +168,7 @@
+     try:
+         before = capture('before', snapshot, packet['snapshot_sha256'])
+         save('before.json', before)
++        require_original_attempt_absent(scope)
+         attempted = True
+         inner_code = scope['main'](['--build', '--preparation-sha256', PREPARATION_SHA])
+         require(inner_code == 0, 'inner full build failed')

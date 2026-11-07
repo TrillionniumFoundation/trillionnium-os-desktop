@@ -1,0 +1,141 @@
+{
+  "definite_findings": [
+    {
+      "evidence": [
+        "zygote_java:forkAndSpecialize",
+        "zygote_java:specializeAppProcess",
+        "zygote_java:forkSystemServer"
+      ],
+      "finding": "A real parent-and-child post-fork callback exists. Zygote.forkAndSpecialize invokes ZygoteHooks.postForkCommon after nativeForkAndSpecialize returns; the parent path is not conditional on pid==0. specializeAppProcess and forkSystemServer also invoke it.",
+      "id": "J1"
+    },
+    {
+      "evidence": [
+        "zygote_hooks_java:postForkCommon",
+        "art_zygote_jni:ZygoteHooks_nativePostZygoteFork",
+        "art_runtime:PostZygoteFork"
+      ],
+      "finding": "ZygoteHooks.postForkCommon invokes nativePostZygoteFork before Daemons.startPostZygoteFork. The native method calls Runtime::PostZygoteFork, whose current first action can invoke JIT PostZygoteFork and create threads. Any resume operation that requires the pre-thread boundary belongs before that JIT action, not at the end of the function.",
+      "id": "J2"
+    },
+    {
+      "evidence": [
+        "zygote_jni:SpecializeCommon",
+        "zygote_java:callPostForkChildHooks",
+        "zygote_hooks_java:postForkChild",
+        "art_zygote_jni:ZygoteHooks_nativePostForkChild",
+        "art_runtime:InitNonZygoteOrPostFork"
+      ],
+      "finding": "The child-specific native bridge initialization runs earlier: SpecializeCommon calls Java callPostForkChildHooks, which reaches nativePostForkChild and Runtime::InitNonZygoteOrPostFork. For a translated child zygote that function calls InitializeNativeBridge and only then returns through its is_child_zygote early branch. This occurs before the native fork call returns to Java postForkCommon and before AppZygoteInit.main.",
+      "id": "J3"
+    },
+    {
+      "evidence": [
+        "app_zygote_java:main",
+        "app_zygote_java:handlePreloadApp"
+      ],
+      "finding": "AppZygoteInit.main delegates to ChildZygoteInit.runZygoteServer. Its preload callback obtains the app ClassLoader, initializes the configured preload class, constructs it and invokes doPreload. The supplied three files do not include ChildZygoteInit, so they do not establish its NNP/range-filter order or absence.",
+      "id": "J4"
+    },
+    {
+      "evidence": [
+        "zygote_jni:SetUpSeccompFilter",
+        "zygote_jni:nativeInstallSeccompUidGidFilter",
+        "zygote_jni:CalculateCapabilities",
+        "zygote_jni:SpecializeCommon"
+      ],
+      "finding": "The observed native SetUpSeccompFilter and nativeInstallSeccompUidGidFilter both return without installation when gIsSecurityEnforced is false. SpecializeCommon grants child-zygote SETUID/SETGID/SETPCAP through the calculated capability set, installs the base filter before changing uid, then sets final capability sets and SELinux context before post-fork hooks. This is not ordinary zero-cap authority.",
+      "id": "J5"
+    }
+  ],
+  "next_actual_source_request": {
+    "directory": "art-role-seccomp-source-read01",
+    "dispatched_by_this_agent": false,
+    "git_tree": "99b7856bed48e09079224212387ca6c820b2ac81",
+    "request_sha256": "0dca47af2d86202123044087c2cb772b06378bfbce297ce7cd5da8c190b5045c"
+  },
+  "observations": {
+    "Hepta_calls": 0,
+    "Main_actions": 0,
+    "compiled451_source_binding": false,
+    "installed_ART_or_libc_binary_binding": false,
+    "java_originals_equal_held_reader_text_and_sha256": true,
+    "java_reader_all_three_complete": true,
+    "metadata_generation_enabled": false,
+    "new_tests_executed": 0,
+    "production_source_modified": false
+  },
+  "pending_not_qualified": [
+    "complete constrained app-zygote identity and inode-provenance model",
+    "all-thread NNP/seccomp install and failure behavior",
+    "current generated allowlist and ABI policy closure",
+    "child and parent fork/exec/capability lifecycle",
+    "paired platform/engine production source implementation and complete build",
+    "actual owned Android lifecycle tests",
+    "whole-app production readiness"
+  ],
+  "read_extent": {
+    "AppZygoteInit.java": "complete file",
+    "Zygote.java": "complete byte/hash binding; forkAndSpecialize, specializeAppProcess, forkSystemServer, range-filter declaration, and post-fork JNI delegates read",
+    "ZygoteHooks.java": "complete file",
+    "native_sources": "named complete functions and related call sites, not a new review of all platform source"
+  },
+  "review_decisions": [
+    "Reject an enabled child-zygote exception based only on deleting either security-enforced skip, sampling seccomp mode, sampling current nonzero UIDs, or dropping capabilities in one helper. Preserve ordinary zero-cap and V2 provenance requirements.",
+    "Any policy installed only inside ChildZygoteInit would be too late for the existing earlier InitializeNativeBridge hook. A protected child role must move the complete irreversible constraints earlier or explicitly defer child-zygote bridge/owner initialization until they are established.",
+    "An app-zygote parent can resume only its own previously prepared generation after the corresponding closed fork barrier. The existing root/system zygote must remain prepared without creating an unprivileged metadata owner. Child/ordinary post-fork calls must not start an already-ready owner twice.",
+    "A later process-wide filter installation must account for actual earlier JIT/Java daemon creation. Merely filtering the calling thread is not proof for other threads. Kernel synchronization or an independently established no-other-thread boundary is necessary.",
+    "Capabilities bounding zero is not a substitute for a no-new-privileges exec boundary. Whether ChildZygoteInit already sets NNP is explicitly unresolved pending the next actual source read; no absence claim is made."
+  ],
+  "schema": 1,
+  "scope": "Actual current AOSP Java3 caller bytes plus previously observed current AOSP native zygote/ART functions; source order and design boundary only.",
+  "sources": {
+    "app_zygote_java": {
+      "bytes": 4395,
+      "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/art-role-java-callers-read01/originals/AppZygoteInit.java",
+      "sha256": "d32956d63200cb90469c2e1c60514f4d263b8e75369912ea8f3cad42c22a9447"
+    },
+    "art_runtime": {
+      "bytes": 147701,
+      "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/art-callers-read01/sources/art/runtime/runtime.cc",
+      "sha256": "5b10319787af6fbcee27e6bac3e1a7637f18392e669bb52cd04db831ebe3a083"
+    },
+    "art_zygote_jni": {
+      "bytes": 19263,
+      "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/art-callers-read01/sources/art/runtime/native/dalvik_system_ZygoteHooks.cc",
+      "sha256": "6dfa390a355e55bdb2814a8af5f39e406b9949dca3dd14b9fbf313d78d0fee4b"
+    },
+    "java_reader": {
+      "bytes": 89125,
+      "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/art-role-java-callers-read01/reader-report.json",
+      "sha256": "eb9d09492267b2e8cd8a20c0ff87114b8ef4fbf6f4e7a320388aa1df31e01352"
+    },
+    "zygote_hooks_java": {
+      "bytes": 12097,
+      "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/art-role-java-callers-read01/originals/ZygoteHooks.java",
+      "sha256": "3aa1d4a3ebe1b801bf7ff0a9ae4ed60ef712e2fcc2757faeada319a438391263"
+    },
+    "zygote_java": {
+      "bytes": 66325,
+      "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/art-role-java-callers-read01/originals/Zygote.java",
+      "sha256": "1c9d8c4bc1235b514b01c7db81406a770ac7925659d1d7c00a0a7f5dbeac6423"
+    },
+    "zygote_jni": {
+      "bytes": 130326,
+      "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/art-callers-read01/sources/frameworks/base/core/jni/com_android_internal_os_Zygote.cpp",
+      "sha256": "006e4c3a51fd32eef1d41b3c2553a907e9b7b33b2bf605706921852ba8854a9a"
+    }
+  },
+  "state": "SOURCE_CHAIN_REVIEW_COMPLETE_ENABLED_ROLE_NOT_QUALIFIED",
+  "upstream_locator_only": [
+    {
+      "finding": "The upstream range filter checks setresuid/setresgid arguments and otherwise allows; it requires a stacked regular allowlist. Its installer uses per-thread prctl, not TSYNC. This is not current Pocket4 source proof.",
+      "git_blob": "1ca4eec2ed73f8fea1c37c0cdb4f714e1594373a",
+      "url": "https://android.googlesource.com/platform/bionic/+/master/libc/seccomp/seccomp_policy.cpp"
+    },
+    {
+      "finding": "NNP is irreversible and inherited; it prevents new privilege from exec but does not stop a currently privileged setuid call. This is mechanism documentation, not observation of the app-zygote.",
+      "url": "https://docs.kernel.org/userspace-api/no_new_privs.html"
+    }
+  ]
+}

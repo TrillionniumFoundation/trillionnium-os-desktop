@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "import signal,sys\nclass BudgetExpired(BaseException):\n def __str__(self):return \"READ_BUDGET_EXHAUSTED\"\ndef alarm_handler(signum,frame):raise BudgetExpired()\ndef stop_watchdog():\n signal.setitimer(signal.ITIMER_REAL,0)\n return True\nold_handler=signal.signal(signal.SIGALRM,alarm_handler)\nsignal.setitimer(signal.ITIMER_REAL,25.0)\ntry:\n import hashlib\n raw=sys.stdin.buffer.read(65537)\n assert len(raw)==48747 and hashlib.sha256(raw).hexdigest()==\"2d4808c6ae499443302dc4ecc195116a4e4a4ccb2a52d589ca995cda42173f3b\"\n scope={\"__name__\":\"live_status_owner_init_halt02_diagnostic\",\"__file__\":\"<live-status-owner-init-readonly>\",\"SOURCE_SHA256\":\"2d4808c6ae499443302dc4ecc195116a4e4a4ccb2a52d589ca995cda42173f3b\",\"BudgetExpired\":BudgetExpired,\"STOP_WATCHDOG\":stop_watchdog}\n exec(compile(raw,scope[\"__file__\"],\"exec\"),scope)\n code=scope[\"main\"]()\nfinally:\n stop_watchdog()\n signal.signal(signal.SIGALRM,old_handler)\nraise SystemExit(code)\n"
+    ],
+    "created_unix_ms": 1793972750312,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b11bc7e8-fc05-75d8",
+    "idempotency_key": "pocket4-live-daemon-status-owner-init-halt02-02-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b11bc7e8-fc05-75d8",
+    "request_digest": "12c518af57212d3cf59b0fd71ff941a510b75963943fba554bd0c19968df62c2",
+    "request_fingerprint": 1352514404454837564,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b11bc7e8-fc05-75d8"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b11bc7e8-fc05-75d8"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

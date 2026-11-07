@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_VENDOR_BOUND_SOURCE_FROZEN_UNRUN",
+  "template": {
+    "tree": "c23415fdefade73cc3302fac52a26e6205b9b075",
+    "prefix": "bili-denial-retirement-wayland-check02-template01",
+    "source": {
+      "bytes": 103989,
+      "sha256": "874f9fdb64ca6a7bc93109d8d850bf9aff9e35c313a8238b24d1d4a5034892f4",
+      "git_blob_sha1": "4d9fd23a784abe7569db7c4cde5b2cf1697af332"
+    },
+    "whole_template24_leaves_matched_saved_readback": true
+  },
+  "only_controller_change": "Six actual bytes/SHA256 literals in the single VENDOR_BINDING assignment; exact inverse equals immutable template.",
+  "source": {
+    "bytes": 104008,
+    "sha256": "bbf8bd5656e5b1f0df7265e27ab04c358c372cb52cccea2743450026aa397838",
+    "git_blob_sha1": "757ddf5422aee624fb375e6c0780b7ce772ef07b"
+  },
+  "binding_diff": {
+    "bytes": 1026,
+    "sha256": "a3111aff5c42a251741a2524ec96ecaa8a09cd7df289b79652cd32e3b62271bf",
+    "git_blob_sha1": "1050b1eb5a05583b8a034474b611e5928e5a349b"
+  },
+  "original_lock": {
+    "bytes": 51836,
+    "sha256": "c1dfa6f13f789cf40435d0d72973d029d0e264b27bd833eabb5a727492127f62"
+  },
+  "production_manifest_sha256": "3f2320687f074d48b19bc5284e6ba665a6cfaeb7adab9d59f519de5f3c96d2f4",
+  "nine_production_sources_changed": 0,
+  "source_map_entries": 500,
+  "workspace_and_Cargo_lock_changed": false,
+  "three_actual_originals": [
+    {
+      "logical_name": "vendor-prep-result.json",
+      "archive_tree": "4c4cb128c17d3b6a55871e78da9185adcba3f423",
+      "archive_path": "result.original.json",
+      "bytes": 179590,
+      "sha256": "8b9f70cf5f4819b81821cc61ec6ef3d984c22af7b5611e26cfaa410293d4fade",
+      "git_blob_sha1": "f2191c3047eb152614f67d8de667e8ba98d34438"
+    },
+    {
+      "logical_name": "prepared-vendor-manifest.json",
+      "archive_tree": "4c4cb128c17d3b6a55871e78da9185adcba3f423",
+      "archive_path": "vendor-manifest.original.json",
+      "bytes": 4087264,
+      "sha256": "6dc3f052db6f9498bfdb73cd3f4b4d3b1f7556c6192ac5dbac3c611e24f4fac7",
+      "blob": "00215c8782f20fe7f849462596fd57c6c62ee725"
+    },
+    {
+      "logical_name": "prepared-vendor-config.toml",
+      "archive_tree": "4c4cb128c17d3b6a55871e78da9185adcba3f423",
+      "archive_path": "vendor-config.original.toml",
+      "bytes": 204,
+      "sha256": "81459dfa6a26d6665e157a219053c0782db24f54eb45bd71043e9e0d29c5e20c",
+      "blob": "c27d3adec4f8c1c15e2c65f975b488daabd405f4"
+    }
+  ],
+  "full_vendor_validation": {
+    "complete193PackageMapQualified": true,
+    "losslessArchiveAndConfigIdentitiesEqual": true,
+    "checksumMetadataReconstructedAndHashed": 193,
+    "allFiles": 8004,
+    "allSourceBytes": 192608580,
+    "archiveBytes": 28028605,
+    "rawArtifactsNotReserialized": true,
+    "metadataOrBuildQualified": false,
+    "MainIdentityObserved": false,
+    "actualArchiveTree": "4c4cb128c17d3b6a55871e78da9185adcba3f423",
+    "rawConfigIndependentlyRead": true,
+    "boundRequestGenerated": false
+  },
+  "next_execution": {
+    "target": "cargo check --offline --locked -j1 -p droidloom-wayland --bin droidloom-wayland --message-format=json-render-diagnostics",
+    "fixed_vendor_source_replacement": true,
+    "compile_stage_network": false,
+    "ordinary_commands": 15,
+    "child_lifecycle_controls": 3,
+    "host112_controls_repeated": false,
+    "qualification": "Full real crate typecheck only. No binary link, process run, Android Binder ABI, GPU retirement, deployment, or production acceptance."
+  },
+  "preserved": {
+    "Wayland01_failure": "original offline metadata failure for flate2 v1.1.9 remains FAILED",
+    "Main_identity_not_observed": true,
+    "shared_cache_writes": 0,
+    "Hepta_called": false,
+    "refs_modified": false
+  }
+}

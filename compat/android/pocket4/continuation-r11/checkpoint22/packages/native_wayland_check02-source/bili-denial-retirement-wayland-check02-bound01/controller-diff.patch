@@ -1,0 +1,340 @@
+--- a/check_wayland.py
++++ b/check_wayland.py
+@@ -19,7 +19,7 @@
+ import time
+ import tomllib
+ 
+-ROOT = Path("/home/alex/work/p4-retirement-wayland-check01-20261106")
++ROOT = Path("/home/alex/work/p4-retirement-wayland-check02-20261106")
+ HERE = ROOT/'control-source'
+ OUT = ROOT/'attempt01'
+ COPIED = ROOT/'builder-source'
+@@ -40,6 +40,10 @@
+ MINIMUM_MEM_AVAILABLE = 4294967296
+ WORK_SECONDS = 900
+ 
++
++OWN_CARGO_HOME = ROOT/'cargo-home'
++PREP_OUT = Path("/home/alex/work/p4-retirement-wayland-vendor-prep01-20261106")/'attempt01'
++VENDOR_BINDING = {"vendor-prep-result.json":{"bytes":"__ACTUAL_PREP_RESULT_BYTES__","sha256":"__ACTUAL_PREP_RESULT_SHA256__"},"prepared-vendor-manifest.json":{"bytes":"__ACTUAL_VENDOR_MANIFEST_BYTES__","sha256":"__ACTUAL_VENDOR_MANIFEST_SHA256__"},"prepared-vendor-config.toml":{"bytes":"__ACTUAL_VENDOR_CONFIG_BYTES__","sha256":"__ACTUAL_VENDOR_CONFIG_SHA256__"}}
+ def require(ok, message):
+     if not ok:
+         raise RuntimeError(message)
+@@ -1114,7 +1118,152 @@
+                         'PKG_CONFIG_LIBDIR':':'.join(paths),'PKG_CONFIG_PATH':''})
+     return paths,snapshot
+ 
+-def selected_dependencies(metadata, registry, original_lock, selected_lock, cache):
++def qualified_vendor_inputs(registry, original_lock, cache, report):
++    require(all(type(row.get('bytes')) is int and row['bytes'] > 0 and
++                re.fullmatch(r'[0-9a-f]{64}',row.get('sha256','')) is not None
++                for row in VENDOR_BINDING.values()),
++            'future vendor preparation pins are not actually bound')
++    raw_inputs, staged_inputs = {}, {}
++    for name, limit in [('vendor-prep-result.json',4*1024*1024),
++                        ('prepared-vendor-manifest.json',32*1024*1024),
++                        ('prepared-vendor-config.toml',4096)]:
++        raw,row = held(HERE/name,limit)
++        expected = VENDOR_BINDING[name]
++        require(row['bytes'] == expected['bytes'] and row['sha256'] == expected['sha256'],
++                'staged actual vendor input differs: '+name)
++        raw_inputs[name],staged_inputs[name] = raw,row
++    prior = json.loads(raw_inputs['vendor-prep-result.json'])
++    manifest = json.loads(raw_inputs['prepared-vendor-manifest.json'])
++    require(prior['state'] == 'PASS' and prior['collection_complete'] is True and
++            prior['offline_vendor_prepared_qualified'] is True and
++            prior['fixed_registry_packages'] == 193 and len(prior['packages']) == 193 and
++            prior['shared_cache_writes'] == 0 and prior['workspace_or_lock_modified'] is False and
++            prior['production_sources_modified'] is False and prior['Main_actions'] == 0 and
++            prior['Cargo_executed'] is False and prior['crate_code_executed'] is False and
++            prior['commands_executed'] == 0 and prior['metadata_or_compile_qualified'] is False and
++            prior['production_ready'] is False and not prior['secondary_errors'] and
++            not prior['observed_signals'] and prior['shared_cache_presence_unchanged'] is True and
++            prior['own_children_before']['observed_empty'] is True and
++            prior['own_children_after']['observed_empty'] is True and
++            prior['owned_resource_gate']['pass'] is True and prior['owned_resource_fd_closed'] is True and
++            not prior['explicit_owned_descriptor_journal']['remaining'] and
++            not prior['explicit_owned_descriptor_journal']['close_errors'] and
++            all(prior[name] == [] for name in ['authorities_changes','original_cached_archives_changes',
++                  'original_45_sources_changes','private_archives_changes','vendor_sources_changes']),
++            'actual preparation lacks a complete success and unchanged-input/cleanup/resource gate')
++    require(all(item['complete'] is True and item['http_requests'] == 1 and
++                item['automatic_retries'] == 0 and item['redirects_followed'] == 0 and
++                item['response_closed'] is True and item['connection_closed'] is True
++                for item in prior['downloads']), 'preparation retained an incomplete download')
++    current_registry = {(row['name'],row['version']):row for row in registry['packages']}
++    prior_rechecked = {(row['name'],row['version']):row for row in prior['original_45_requalification']}
++    require(len(current_registry) == len(registry['packages']) == 45 and
++            len(prior_rechecked) == len(prior['original_45_requalification']) == 45 and
++            set(prior_rechecked) == set(current_registry) and
++            all(prior_rechecked[key]['every_archive_file_matches_held_extracted_source'] is True and
++                prior_rechecked[key]['archive']['sha256'] ==
++                    current_registry[key]['expected_lock_checksum'] ==
++                    current_registry[key]['comparison']['archive']['sha256']
++                for key in current_registry),
++            'prepared vendor lost the original45 archive/source authority')
++    fixed_vendor, fixed_archives = PREP_OUT/'vendor', PREP_OUT/'archives'
++    require(manifest['schema'] == 1 and
++            manifest['source'] == 'exact-crates-io-original-workspace-lock' and
++            manifest['original_lock'] == {'bytes':51836,'sha256':
++                'c1dfa6f13f789cf40435d0d72973d029d0e264b27bd833eabb5a727492127f62'} and
++            manifest['vendor_root'] == str(fixed_vendor) and manifest['archive_root'] == str(fixed_archives) and
++            manifest['registry_packages'] == 193 and manifest['metadata_or_compilation_executed'] is False,
++            'actual prepared vendor uses a different root, phase or original lock')
++    config = ('[source.crates-io]\nreplace-with = "pocket4-locked-vendor"\n\n'
++              '[source.pocket4-locked-vendor]\ndirectory = '+json.dumps(str(fixed_vendor))+
++              '\n\n[net]\noffline = true\n').encode()
++    require(raw_inputs['prepared-vendor-config.toml'] == config and
++            prior['source_config'] == manifest['source_config'],
++            'explicit vendor source replacement differs')
++    original_outputs = {}
++    for input_name, field, path in [
++        ('prepared-vendor-manifest.json','vendor_manifest',PREP_OUT/'vendor-manifest.json'),
++        ('prepared-vendor-config.toml','source_config',PREP_OUT/'vendor-config.toml')]:
++        before = prior[field]
++        real_directory(path.parent)
++        require(before['path'] == str(path) and before['bytes'] == VENDOR_BINDING[input_name]['bytes'] and
++                before['sha256'] == VENDOR_BINDING[input_name]['sha256'] and
++                hash_held(path,32*1024*1024) == before,
++                'original prepared vendor metadata changed')
++        original_outputs[str(path)] = before
++    locked = {(row['name'],row['version']):row for row in original_lock['package'] if 'source' in row}
++    records = manifest['packages']
++    prepared = {(row['name'],row['version']):row for row in records}
++    require(len(locked) == len(records) == len(prepared) == 193 and set(prepared) == set(locked),
++            'prepared vendor does not contain exactly all locked registry packages')
++    total_files,total_bytes,total_archives = 0,0,0
++    for key in sorted(prepared):
++        require(time.monotonic() < DEADLINE, 'complete vendor input qualification deadline exhausted')
++        row,lock = prepared[key],locked[key]
++        name,version = key
++        require(re.fullmatch(r'[A-Za-z0-9_-]+',name) is not None and
++                re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9_.+-]+)?',version) is not None and
++                lock['source'] == 'registry+https://github.com/rust-lang/crates.io-index' and
++                re.fullmatch(r'[0-9a-f]{64}',lock.get('checksum','')) is not None and
++                row['package_checksum'] == lock['checksum'],
++                'prepared package differs from original exact source/checksum')
++        directory,archive = fixed_vendor/(name+'-'+version),fixed_archives/(name+'-'+version+'.crate')
++        real_directory(directory)
++        directory_st = directory.lstat()
++        require(stat.S_ISDIR(directory_st.st_mode) and directory_st.st_uid == 1000 and
++                directory_st.st_gid == 1000 and stat.S_IMODE(directory_st.st_mode) == 0o700 and
++                row['directory'] == str(directory) and row['archive']['path'] == str(archive),
++                'prepared package left its exact private root')
++        archive_pin = hash_held(archive,32*1024*1024)
++        require(archive_pin == row['archive'] and archive_pin['sha256'] == lock['checksum'],
++                'prepared complete archive changed')
++        inventory = regular_tree(directory,4096,64*1024*1024)
++        require(inventory == row['files'] and '.cargo-checksum.json' in inventory and 'Cargo.toml' in inventory and
++                len(inventory) == row['source_files']+1 and
++                inventory['.cargo-checksum.json'] == row['checksum_metadata'] and
++                all(value['path'] == str(directory/path) and
++                    stat.S_IMODE(value['identity'][2]) in (0o444,0o555)
++                    for path,value in inventory.items()),
++                'complete archive-derived vendor file map changed')
++        checksum_raw,checksum_pin = held(directory/'.cargo-checksum.json',1024*1024)
++        expected_checksum = {'package':lock['checksum'],
++            'files':{path:value['sha256'] for path,value in sorted(inventory.items())
++                     if path != '.cargo-checksum.json'}}
++        require(json.loads(checksum_raw) == expected_checksum and
++                checksum_pin == row['checksum_metadata'],
++                'Cargo source checksum metadata differs from every prepared original archive file')
++        package_raw,package_pin = held(directory/'Cargo.toml',1024*1024)
++        package = tomllib.loads(package_raw.decode('utf-8'))['package']
++        require(package['name'] == name and package['version'] == version and
++                package_pin == inventory['Cargo.toml'], 'prepared package manifest name/version differs')
++        total_files += len(inventory)
++        total_bytes += sum(value['bytes'] for value in inventory.values())
++        total_archives += archive_pin['bytes']
++        require(total_files <= 193*4096 and total_bytes <= 1024*1024*1024 and
++                total_archives <= 512*1024*1024,
++                'complete prepared registry exceeds original finite bounds')
++        files = {str(archive):archive_pin,**{value['path']:value for value in inventory.values()}}
++        cache[key] = {'checksum':lock['checksum'],'rows':inventory,'archive':archive_pin,'files':files,
++                      'directory':str(directory),'source_inventory':prior['vendor_manifest']}
++    require(total_files == prior['vendor_file_count'] and total_bytes == prior['vendor_source_bytes'] and
++            total_archives == prior['archive_bytes'],
++            'prepared full mapping totals differ')
++    report['actual_vendor_preparation'] = {
++        'result':staged_inputs['vendor-prep-result.json'],'original_manifest':prior['vendor_manifest'],
++        'original_config':prior['source_config'],'registry_packages':193,
++        'source_files':total_files,'source_bytes':total_bytes,'archive_bytes':total_archives,
++        'all_current_archive_and_file_maps_equal_actual_preparation':True,
++        'original45_authority_preserved':True,
++        'source_copy_qualifies_no_Cargo_or_runtime_result':True}
++    report['offline_vendor_input_gate_qualified'] = True
++    collected = {value['path']:value for value in staged_inputs.values()}
++    collected.update(original_outputs)
++    for entry in cache.values():
++        collected.update(entry['files'])
++    return prepared,collected
++
++
++def selected_dependencies(metadata, registry, original_lock, selected_lock, cache, prepared):
+     require(metadata.get('target_directory') == str(OUT/'cargo-target') and
+             type(metadata.get('packages')) is list and 0 < len(metadata['packages']) <= 256,
+             'metadata target/package bound differs')
+@@ -1196,31 +1345,28 @@
+                 re.fullmatch(r'[0-9a-f]{64}',locked.get('checksum','')) is not None,
+                 'resolver selected a registry package outside immutable original lock')
+         observed = authority.get(key)
+-        directory = source_root/(key[0]+'-'+key[1])
+-        archive = archive_root/(key[0]+'-'+key[1]+'.crate')
+-        require(p['manifest_path'] == str(directory/'Cargo.toml'), 'registry manifest escaped exact locked path')
++        require(key in prepared and key in cache, 'selected package was not completely prepared before metadata')
++        saved = cache[key]
++        directory = Path(saved['directory'])
++        archive = Path(saved['archive']['path'])
++        require(p['manifest_path'] == str(directory/'Cargo.toml') and
++                directory == PREP_OUT/'vendor'/(key[0]+'-'+key[1]) and
++                archive == PREP_OUT/'archives'/(key[0]+'-'+key[1]+'.crate'),
++                'registry metadata escaped the exact prepared original-lock vendor')
+         if observed is not None:
+-            require(observed['source_directory'] == str(directory) and
+-                    observed['expected_archive_path'] == str(archive) and
++            require(observed['source_directory'] == str(source_root/(key[0]+'-'+key[1])) and
++                    observed['expected_archive_path'] == str(archive_root/(key[0]+'-'+key[1]+'.crate')) and
+                     observed['expected_lock_checksum'] == locked['checksum'] and
+                     observed['comparison']['archive_matches_lock'] is True and
+                     observed['comparison']['every_archive_file_matches_held_extracted_source'] is True,
+-                    'selected original-45 package lost its prior actual archive/source authority')
++                    'selected original45 package lost its prior actual archive/source authority')
+         real_directory(directory)
+         real_directory(archive.parent)
+-        if key in cache:
+-            saved = cache[key]
+-            require(saved['checksum'] == locked['checksum'] and hash_held(archive) == saved['archive'],
+-                    'shared dependency archive changed between phases')
+-            require(all(hash_held(Path(path)) == row for path,row in saved['files'].items()),
+-                    'shared dependency sources changed between phases')
+-            comparison, rows, archive_pin = saved['comparison'], saved['rows'], saved['archive']
+-        else:
+-            comparison, rows, archive_pin = qualify_cached_archive(
+-                archive,directory,key[0],key[1],locked['checksum'])
+-            files = {str(archive):archive_pin,**{row['path']:row for row in rows.values()}}
+-            cache[key] = {'checksum':locked['checksum'],'comparison':comparison,'rows':rows,
+-                          'archive':archive_pin,'files':files}
++        require(saved['checksum'] == locked['checksum'] and hash_held(archive) == saved['archive'] and
++                regular_tree(directory,4096,64*1024*1024) == saved['rows'],
++                'prepared complete archive/source mapping changed between metadata phases')
++        rows, archive_pin = saved['rows'],saved['archive']
++        comparison = {'source_inventory':saved['source_inventory']}
+         if observed is not None:
+             require(archive_pin['sha256'] == observed['comparison']['archive']['sha256'],
+                     'existing actual archive bytes changed')
+@@ -1235,7 +1381,7 @@
+         descriptions.append({'id':p['id'],'name':p['name'],'version':p['version'],
+             'kind':'offline-registry','manifest':p['manifest_path'],'archive':archive_pin,
+             'package_checksum':locked['checksum'],'archive_to_source':comparison['source_inventory'],
+-            'authority_kind':'prior-45-actual-rechecked' if observed is not None else 'additional-original-lock-archive-first-observed',
++            'authority_kind':'prior-45-actual-and-complete-vendor-rechecked' if observed is not None else 'additional-original-lock-complete-vendor-rechecked',
+             'prior_actual_archive_authority_present':observed is not None})
+     return roots[0]['id'],descriptions,collected
+ 
+@@ -1307,6 +1453,7 @@
+     os.umask(0o077)
+     OUT.mkdir(mode=0o700)
+     (OUT/'tmp').mkdir(mode=0o700)
++    OWN_CARGO_HOME.mkdir(mode=0o700)
+     DEADLINE = time.monotonic()+WORK_SECONDS
+     report = {'schema':1,'state':'RUNNING','started_utc':utc(),'phase':'RESOURCE_ADMISSION',
+               'scope':'complete exact Wayland binary crate cargo check with original workspace/lock',
+@@ -1340,7 +1487,7 @@
+         report['selected_cpus'] = [allowed[-1]]
+         CHILD_REAPER = OwnChildReaper()
+         CHILD_REAPER.begin()
+-        env = {'PATH':'/usr/bin:/bin','CARGO_HOME':str(CARGO_HOME),
++        env = {'PATH':'/usr/bin:/bin','CARGO_HOME':str(OWN_CARGO_HOME),
+                'RUSTC':str(RUST_SYSROOT/'bin/rustc'),'RUSTDOC':str(RUST_SYSROOT/'bin/rustdoc'),
+                'CARGO_NET_OFFLINE':'true','LC_ALL':'C','LANG':'C',
+                'TMPDIR':str(OUT/'tmp'),'GIT_CONFIG_NOSYSTEM':'1','GIT_CONFIG_GLOBAL':'/dev/null',
+@@ -1401,7 +1548,8 @@
+                 not any(name.startswith('RUSTUP') for name in env) and
+                 all(name not in env for name in ('LD_PRELOAD','LD_LIBRARY_PATH','RUSTC_BOOTSTRAP')),
+                 'fixed direct compiler tools were shadowed')
+-        config_paths = [CARGO_HOME/'config',CARGO_HOME/'config.toml']
++        config_paths = [CARGO_HOME/'config',CARGO_HOME/'config.toml',
++                        OWN_CARGO_HOME/'config',OWN_CARGO_HOME/'config.toml']
+         for directory in [COPIED]:
+             for parent_directory in [directory,*directory.parents]:
+                 config_paths += [parent_directory/'.cargo/config',parent_directory/'.cargo/config.toml']
+@@ -1413,13 +1561,6 @@
+         original_lock_raw, original_lock_pin = held(COPIED/'Cargo.lock',1024*1024)
+         require(original_lock_pin == candidate_rows['Cargo.lock'], 'immutable original Cargo.lock changed')
+         report['original_lock'] = original_lock_pin
+-        report['phase'] = 'LOCKED_METADATA_AND_DEPENDENCIES'
+-        metadata_raw = command([str(selected_tools['cargo']),'metadata','--offline','--locked',
+-                                '--format-version','1','--filter-platform','x86_64-unknown-linux-gnu'],
+-                               COPIED,env,'wayland-locked-metadata',report['commands'],60)
+-        held_lock_raw, held_lock_pin = held(COPIED/'Cargo.lock',1024*1024)
+-        require(held_lock_raw == original_lock_raw and held_lock_pin == original_lock_pin,
+-                'locked metadata changed the original workspace lock')
+         registry_raw, registry_pin = pinned_packet('registry-result.json',
+             'b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993')
+         registry = json.loads(registry_raw)
+@@ -1428,16 +1569,31 @@
+                 registry['authorities_unchanged_after'] is True and registry['owned_resource_gate']['pass'] is True,
+                 'actual existing registry qualification is incomplete')
+         report['actual_registry_archive_authority'] = registry_pin
++        report['phase'] = 'ACTUAL_COMPLETE_VENDOR_QUALIFICATION'
++        prepared_vendor, vendor_rows = qualified_vendor_inputs(
++            registry,tomllib.loads(original_lock_raw.decode()),dependency_cache,report)
++        dependency_rows.update(vendor_rows)
++        report['isolated_cargo_home'] = str(OWN_CARGO_HOME)
++        report['shared_cargo_cache_writes'] = 0
++        report['explicit_vendor_config'] = str(HERE/'prepared-vendor-config.toml')
++        report['phase'] = 'LOCKED_METADATA_AND_DEPENDENCIES'
++        metadata_raw = command([str(selected_tools['cargo']),'--config',str(HERE/'prepared-vendor-config.toml'),
++                                'metadata','--offline','--locked',
++                                '--format-version','1','--filter-platform','x86_64-unknown-linux-gnu'],
++                               COPIED,env,'wayland-locked-metadata',report['commands'],60)
++        held_lock_raw, held_lock_pin = held(COPIED/'Cargo.lock',1024*1024)
++        require(held_lock_raw == original_lock_raw and held_lock_pin == original_lock_pin,
++                'locked metadata changed the original workspace lock')
+         root_id, packages, current_dependencies = selected_dependencies(
+             json.loads(metadata_raw),registry,tomllib.loads(original_lock_raw.decode()),
+-            tomllib.loads(held_lock_raw.decode()),dependency_cache)
++            tomllib.loads(held_lock_raw.decode()),dependency_cache,prepared_vendor)
+         dependency_rows.update(current_dependencies)
+         report['dependency_inputs'] = write_new(OUT/'wayland-dependency-inputs-before.json',
+                                                 {'packages':packages,'files':dependency_rows})
+         report['selected_dependency_package_count'] = len(packages)
+         report['selected_registry_package_count'] = sum(p['kind'] == 'offline-registry' for p in packages)
+         report['additional_locked_registry_first_observed_count'] = sum(
+-            p.get('authority_kind') == 'additional-original-lock-archive-first-observed' for p in packages)
++            p.get('authority_kind') == 'additional-original-lock-complete-vendor-rechecked' for p in packages)
+         report['phase'] = 'NATIVE_PC_INPUTS'
+         report['pkg_config_input_gate_qualified'] = False
+         pc_paths, pc_before = qualify_pkg_config(report,env,tool_rows)
+@@ -1446,7 +1602,8 @@
+         require(hash_held(COPIED/'Cargo.lock') == original_lock_pin,
+                 'original workspace lock changed before full crate check')
+         report['phase'] = 'COMPLETE_WAYLAND_BINARY_CARGO_CHECK'
+-        argv = [str(selected_tools['cargo']),'check','--offline','--locked','-j1',
++        argv = [str(selected_tools['cargo']),'--config',str(HERE/'prepared-vendor-config.toml'),
++                'check','--offline','--locked','-j1',
+                 '-p','droidloom-wayland','--bin','droidloom-wayland',
+                 '--message-format=json-render-diagnostics']
+         report['complete_wayland_check_argv'] = argv
+@@ -1508,6 +1665,12 @@
+                     changes.append(path)
+             except Exception as error:
+                 changes.append({'path':path,'error':repr(error)})
++        try:
++            for saved in dependency_cache.values():
++                require(regular_tree(Path(saved['directory']),4096,64*1024*1024) == saved['rows'],
++                        'prepared vendor namespace gained or lost a file')
++        except Exception as error:
++            changes.append({'stage':'complete_vendor_namespace_after','error':repr(error)})
+         report['dependency_changes'] = changes
+         if changes:
+             secondary('dependency_after',RuntimeError('qualified dependency changed'))
+@@ -1595,6 +1758,8 @@
+             'source_files':500,'Main_actions':0,'Android_execution':False,
+             'expected_focused_tests':0,'expected_ordinary_commands':15,'lifecycle_controls':3,
+             'original_workspace_and_lock_unchanged':True,
++            'actual_vendor_pins_bound':all(type(row['bytes']) is int for row in VENDOR_BINDING.values()),
++            'isolated_cargo_home':str(OWN_CARGO_HOME),'network_downloads_permitted':False,
+             'Wayland_full_binary_target_typecheck_required':True,
+             'native_PC_layout':'only bounded actual fixed-tool default output; missing layout fails',
+             'GPU_runtime_or_Android_Binder_ABI_qualification':False}))

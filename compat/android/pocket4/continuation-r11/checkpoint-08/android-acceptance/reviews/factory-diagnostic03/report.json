@@ -1,0 +1,150 @@
+{
+  "schema": 1,
+  "reviewer": "android_acceptance",
+  "scope": "Independent read-only review of factory host diagnostic03 client failure-only observations and exact build-only stage/request binding; one actual local diagnostic-function control. No device, namespace entry, service, or complete client execution.",
+  "verdict": "NO_NEW_BLOCKER_FOUND_IN_REVIEWED_DIAGNOSTIC_BUILD_SCOPE",
+  "reviewed_inputs": [
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-diagnostic03-build01/client_control.cc",
+      "bytes": 19946,
+      "sha256": "bcfbc01d02c089d01f8bcd34fb939655055b51611dfde7621e31747948c962fb"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-diagnostic03-build01/client_control.cc.patch",
+      "bytes": 6774,
+      "sha256": "f290ccddb5a86d04ad55966e18348f2035af6246ee0b8b64d18423ea19e9c266"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-diagnostic03-build01/build_fixture.py",
+      "bytes": 13411,
+      "sha256": "856cc25f68bc6c782f15517e12aba7f88ae3a6db7de7d91999dfa2e57a14c4f7"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-diagnostic03-build01/build_fixture.py.patch",
+      "bytes": 2027,
+      "sha256": "1fefe3dbdf77d5bed9262a7919389be26d1ac98441955bb7a81674b7a0f9de91"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-diagnostic03-build01/stage_and_build03.py",
+      "bytes": 3528,
+      "sha256": "c5952adae8a0f3a51737f39667be0ce4473dda89effa1c935cffa42cb339058d"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-diagnostic03-build01/bionic_branch_view.cc",
+      "bytes": 784,
+      "sha256": "0eaf591282192e3675c44be6ad8ecb37441237082013cd8743b4f5d8ad664857"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-diagnostic03-build01/audit_worker_binary.py",
+      "bytes": 5841,
+      "sha256": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-diagnostic03-build01/verified-source-packet.json",
+      "bytes": 46109,
+      "sha256": "a19b46f8f6cfb760c1e48b52f54fec87cb1ccd94cccc9171e23bf532e9dfa535"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-diagnostic03-build01/exact-process-start-request.json",
+      "bytes": 49422,
+      "sha256": "1de4668f7c835256fa8710be143bde8973d1b41e144c80ccb5e70a2cbe3b58fa"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-diagnostic03-build01/local-syntax.json",
+      "bytes": 932,
+      "sha256": "b5a47f2bc65654bce904f879d083cca2cf96d4d7178a5e93c939991b1a073986"
+    }
+  ],
+  "comparison_inputs": [
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/host-fixture-build02/actual-handoff-01/client_control.cc",
+      "bytes": 15956,
+      "sha256": "cdcbbab212b5d4be64094d8050b46c96111cc4bfbc88b2a7348978962d94bd50"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/host-fixture-build02/actual-handoff-01/build_fixture.py",
+      "bytes": 13349,
+      "sha256": "2b4764804b9faaf735cb84c96000f3c3544de023371ba5727c5969fa38e7d57d"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/host-fixture-build02/actual-handoff-01/stage_and_build02.py",
+      "bytes": 3528,
+      "sha256": "2e48a450fe4e54fb6a20896b5463546c70207ffe8334788132747947d6daa2ce"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/host-fixture-build02/actual-handoff-01/bionic_branch_view.cc",
+      "bytes": 784,
+      "sha256": "0eaf591282192e3675c44be6ad8ecb37441237082013cd8743b4f5d8ad664857"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/host-fixture-build02/actual-handoff-01/audit_worker_binary.py",
+      "bytes": 5841,
+      "sha256": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9"
+    }
+  ],
+  "findings": [
+    {
+      "id": "failure_preservation",
+      "assessment": "Original UID/GID/RequireUnprivilegedInitialNamespace guard expression is unchanged. On failure original_error is captured before diagnostics; the function restores incoming errno and existing Fd reset/destructors preserve it. r.Fail(1, original_error) remains the result. No success branch is changed; default main returns PLAN_ONLY before Run."
+    },
+    {
+      "id": "diagnostic_ownership",
+      "assessment": "New self PIDFD_THREAD and returned userns fd are held in local noncopyable Fd objects and closed in reverse order on every normal return. Only getresuid/getresgid, invalid-UID/GID fsid queries, capget for current thread, PR_GET_DUMPABLE/SECCOMP/NO_NEW_PRIVS/SECUREBITS, same-thread pidfd open, namespace query and metadata reads occur. There is no setns/unshare/credential change/service connection in the new function."
+    },
+    {
+      "id": "bounded_output",
+      "assessment": "Diagnostic data are numeric values in a 4096-byte preallocated buffer. snprintf result is checked; overflow/error becomes a fixed valid JSON object. Default field is null. Failed substeps retain explicit rc/errno or unattempted -99 values, so zeroed metadata are not unconditionally labeled valid. Actual local Print output parsed as JSON."
+    },
+    {
+      "id": "four_file_binding",
+      "assessment": "All four packet texts, lengths and SHA256 values match on-disk files and stage EXPECTED. Request stdin exactly equals packet bytes; launcher pins complete packet and entry before compile/exec. Entry is python -I, create-only fixed source03/out03, original operator only; actual candidate05 receipt/manifest/compiler validation precedes source directory creation. Stage AST equals reviewed02 after only fixed paths/labels and EXPECTED normalization."
+    },
+    {
+      "id": "build_gate_preserved",
+      "assessment": "Actual diff leaves candidate05 948/925 source inventory, actual source and matched-gate pins, exact 291 dependency cardinality, MD equality, source before/after checks, 21 compile/link/audit commands and worker closure admission unchanged. Only fresh source03/out03 paths, previous-build02 reference and failure-diagnostic descriptive field change. This review does not prove new 291 closure or complete build will succeed; those gates must actually run."
+    }
+  ],
+  "qualified_limits": [
+    "Diagnostic also runs after the original UID/GID short-circuit rejection. Its JSON accurately says original_guard_failure; consumers must not infer RequireUnprivilegedInitialNamespace was reached for every failure.",
+    "Observed credential/namespace values are sampled after the original guard failure; they do not prove every original substep saw identical state or by themselves establish a production root cause.",
+    "The actual local function control includes exact client source and calls DiagnoseInitialNamespace/Print directly with preexisting stage1/EIO; it does not run full Run(), production namespace guard, full factory/client protocol, Bionic, Android, or any Main action.",
+    "No packet mutation, source/out staging, execute-once, remote request, full build, service start, namespace entry, or complete fixture runtime was performed by reviewer. Parent owns any later build/runtime admission."
+  ],
+  "actual_local_controls": {
+    "binding_and_default_plan": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-diagnostic03-review-01/binding-controls.json",
+      "bytes": 1462,
+      "sha256": "3a33bfd768613c8f23bb062cf537327489cf1b842649b57bb89b6ce88b73ac1d"
+    },
+    "function_source": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-diagnostic03-review-01/diagnostic_function_control.cc",
+      "bytes": 2288,
+      "sha256": "6bfb36853264dc78d46d21570170831f735e94fe37ad12637c17192094ed167a"
+    },
+    "function_result": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-diagnostic03-review-01/function-control-result.json",
+      "bytes": 3745,
+      "sha256": "faec4a8dc1187be1f58646fec106f2a94556d784b99714974cafd6e4b7abf474"
+    },
+    "function_stdout": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-diagnostic03-review-01/control-run.stdout.jsonl",
+      "bytes": 1647,
+      "sha256": "203d43fe1d0b633e037a4484dd2b0ccbee29acef708bec936c887d46f2661bf6"
+    },
+    "function_result_summary": {
+      "compile_returncode": 0,
+      "run_returncode": 0,
+      "pidfd_and_userns_both_created": true,
+      "fd_count_before": 3,
+      "fd_count_after": 3,
+      "errno_before": 5,
+      "errno_after": 5,
+      "stage1_EIO_result_retained": true,
+      "uid_gid_fsids_unchanged": true,
+      "json_parsed": true
+    }
+  },
+  "production_or_frozen_inputs_modified": false,
+  "remote_calls": 0,
+  "whole_app_or_platform_production_ready": false
+}

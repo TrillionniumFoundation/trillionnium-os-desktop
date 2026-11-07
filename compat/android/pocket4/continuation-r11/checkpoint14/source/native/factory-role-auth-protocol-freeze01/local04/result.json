@@ -1,0 +1,110 @@
+{
+  "actual_control_records": [
+    {
+      "control": "held_caller_exit",
+      "directory_source": "owned_thread_thread-self",
+      "numeric_tid_reuse_forced": false,
+      "openat_errno": 2,
+      "owned_thread_joined": true,
+      "same_held_inode": true
+    },
+    {
+      "Main_actions": 0,
+      "SCM_PIDFD_source": "kernel",
+      "assertions": 471,
+      "factory_service_started": false,
+      "platform_filter_executed": false,
+      "real_receive_cases": 14,
+      "registry_authorization_positive_executed": false,
+      "state": "PASS_PROTOCOL_SCOPE"
+    }
+  ],
+  "binary": {
+    "bytes": 89208,
+    "sha256": "d983e77ca24d52b3b0a753258393b6d4bf2701ee5dad8d624a79585c65f5d7b9"
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++17",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-O2",
+        "-pthread",
+        "-I/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/local04/inputs/source",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/local04/inputs/source/role_authorization.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/local04/inputs/source/factory_context.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/local04/inputs/controls/protocol_controls.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/local04/protocol_controls"
+      ],
+      "elapsed_ns": 1991407669,
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/local04/protocol_controls"
+      ],
+      "elapsed_ns": 4482781,
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 409,
+        "sha256": "dbbd51e0b5c30bbcbd49ae79000207f4bf9192fbc796f537ac8f61970ec1f062"
+      },
+      "timed_out": false
+    }
+  ],
+  "compiler": {
+    "bytes": 1027128,
+    "path": "/usr/bin/x86_64-linux-gnu-g++-13",
+    "sha256": "52f1ddb33fe78b9441e0f42e9cd22c571f1101938e046c8a26582494e041cc73"
+  },
+  "error": null,
+  "factory_service_started": false,
+  "forced_numeric_tid_reuse": false,
+  "main_actions": 0,
+  "platform_filter_executed": false,
+  "registry_positive_authorization_executed": false,
+  "schema": 1,
+  "scope": "Local exact-source protocol and held caller task controls",
+  "source_pins": {
+    "controls/protocol_controls.cc": {
+      "bytes": 16511,
+      "sha256": "792239922b8d7767ea6a549f1c79b866d74f31e095f89f412ef44e5cb0eed7d6"
+    },
+    "source/factory_context.cc": {
+      "bytes": 5377,
+      "sha256": "afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a"
+    },
+    "source/factory_context.h": {
+      "bytes": 954,
+      "sha256": "b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1"
+    },
+    "source/role_authorization.cc": {
+      "bytes": 38156,
+      "sha256": "ac6a79811bb1ddd7794f740ab4c2f69d6257c58a309a9cffe54abd6790e5e8b5"
+    },
+    "source/role_authorization.h": {
+      "bytes": 5394,
+      "sha256": "dacb5ec7262ef071378e1c81395e2d77941e1b8458ba2d38f8ebe12dde007f87"
+    }
+  },
+  "source_unchanged_after": true,
+  "state": "PASS_PROTOCOL_SCOPE",
+  "tool_unchanged_after": true
+}

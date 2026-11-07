@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "reviewer": "android_acceptance",
+  "reviewed_utc": "2026-11-04T12:54:36.578307+00:00",
+  "candidate": "lmkd-work/android-build-freeze-01/android-r6",
+  "source_manifest_sha256": "c93438544e084f3f73c262cf91c7cb9f22f3b529368af5521c797a245c18cba3",
+  "frozen_files_verified": 23,
+  "effect_gate_verdict": "NO_NEW_PROVEN_BYPASS_FOUND_IN_REVIEWED_SOURCE_AND_LOCAL_CONTROLS",
+  "production_verdict": "NOT_READY_LIFECYCLE_RECOVERY_AND_REAL_ANDROID_QUALIFICATION_OPEN",
+  "independent_runs": {
+    "session": {
+      "build_exit": 0,
+      "run_exit": 0,
+      "assertions_passed": 34,
+      "stdout_sha256": "0c800bf973a14c7a83a4f943a6e0b8d1a3ac26ba6a62e7ad83169f4c1ee1c01d",
+      "scope": "real local Session, SCM_RIGHTS sockets and declared probe; selected deterministic clock controls; no real cgroup/PSI/signal"
+    },
+    "source_router": {
+      "command": [
+        "g++",
+        "-std=c++17",
+        "-O2",
+        "-g0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-I",
+        "/workspace/scratch/94990735b266/lmkd-work/android-build-freeze-01/android-r6",
+        "/workspace/scratch/94990735b266/acceptance-lmkd-r6/wiring/router.cpp",
+        "-o",
+        "/workspace/scratch/94990735b266/acceptance-lmkd-r6/wiring/router"
+      ],
+      "compile_rc": 0,
+      "compile_stderr": "",
+      "test_rc": 0,
+      "stdout": "PASS relay failure preempts earlier queued event without ctrl_data_close\nPASS relay failure preempts earlier queued event without ctrl_data_close\nPASS relay failure preempts earlier queued event without ctrl_data_close\nPASS unexpected control IN retires old batch before pressure dispatch\nPASS ordinary framework connection keeps original close index\nPASS process-death HUP keeps original completion handler\nPASS healthy pressure dispatch remains reachable\nRESULT 7 source router assertions passed; no Android event loop\n",
+      "stderr": ""
+    },
+    "guarded_reaper": {
+      "command": [
+        "g++",
+        "-std=c++17",
+        "-O2",
+        "-g0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-I",
+        "/workspace/scratch/94990735b266/lmkd-work/android-build-freeze-01/android-r6",
+        "/workspace/scratch/94990735b266/acceptance-lmkd-r6/wiring/guarded_reaper.cpp",
+        "/workspace/scratch/94990735b266/lmkd-work/android-build-freeze-01/android-r6/pressure_relay.cpp",
+        "/workspace/scratch/94990735b266/lmkd-work/android-build-freeze-01/android-r6/enrollment.cpp",
+        "/workspace/scratch/94990735b266/lmkd-work/android-build-freeze-01/android-r6/relay_session.cpp",
+        "-Wl,--wrap=clock_gettime,--wrap=write,--wrap=pidfd_send_signal",
+        "-o",
+        "/workspace/scratch/94990735b266/acceptance-lmkd-r6/wiring/guarded_reaper"
+      ],
+      "compile_rc": 0,
+      "compile_stderr": "",
+      "test_rc": 0,
+      "stdout": "PASS real Reaper entry cannot signal from lease-only authority\nPASS pidfd-only effect is synchronous and finally gated\nPASS verified exact group uses one actual write without queued work\nPASS unbound broad group is refused without fallback\nPASS legacy numeric-PID cgroup loop is explicitly unsupported\nPASS failed group write requires a separately gated held-pidfd fallback\nPASS window expiry during failed group write prevents fallback syscall\nPASS revoked generation leaves no deferred worker effect\nRESULT 8 actual Reaper source assertions passed; syscall I/O replaced\n",
+      "stderr": ""
+    }
+  },
+  "reviewed_effect_properties": [
+    "Every relay cgroup.kill write and pidfd_send_signal runs through Session::Perform, with a fresh window check both before and after scope/transport I/O.",
+    "Guarded reaper path is synchronous and never queues a delayed kill; failed group write requires a fresh independent gate before held-pidfd fallback.",
+    "cgroup.procs numeric PID enumeration is refused in relay mode.",
+    "Group traversal is beneath the pinned accounting root with openat2 NO_SYMLINKS and NO_XDEV; held cgroup.kill inode must match exact uid/pid subtree.",
+    "Watchdog duplicates held pidfd and group fd while record lock is held; the shared session check uses try-lock.",
+    "Relay HUP/ERR/control data preempts pressure records from the same event batch; it is not sent to ctrl_data_close as a framework socket index.",
+    "Required relay initialization does not fall back to direct PSI."
+  ],
+  "confirmed_open_integration": {
+    "state": "INVENTORY_CONFIRMED_OPEN",
+    "native_behavior": "cell_relay_stop stops monitoring, revokes the one-generation session, and does not itself exit or restart. Re-enrollment in the same process is rejected.",
+    "recovery_dependency": "Production lifecycle caller must wait for actual admission and PSI-worker retirement receipt, then stop and recreate the exact owned cell/LMKD. inventory reports host-next adapter is being implemented and this production caller is not yet wired.",
+    "implication": "Loss of lease can leave this LMKD process without pressure effects until an external lifecycle restart. This is safe revocation but not demonstrated production recovery.",
+    "separate_existing_path": "LMK_UPDATE_PROPS reinitialization failure already exits(1) for supervisor restart; do not confuse that branch with relay HUP handling."
+  },
+  "limits": [
+    "No remote or device operations by this reviewer.",
+    "No actual production signal or cgroup.kill write executed by these local controls.",
+    "No Android integrated compile, real PSI registration/notification, host-cell cross-PID-namespace enrollment, or retirement/recovery run is certified by this review.",
+    "A primary-source source review cannot prove future kernel effects stay atomic with an external retirement; deployed lifecycle protocol remains part of qualification."
+  ]
+}

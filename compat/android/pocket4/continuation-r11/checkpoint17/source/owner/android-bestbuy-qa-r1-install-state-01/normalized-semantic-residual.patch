@@ -1,0 +1,47 @@
+--- literal-derived/install_state.py
++++ BestBuy/install_state.py
+@@ -193,7 +193,7 @@
+     match = re.fullmatch(re.escape('package:'+SELF+' uid:') + r'([0-9]+)\n', text)
+     require(match is not None, 'ONE_EXACT_NEW_PACKAGE_UID_REQUIRED')
+     uid = int(match[1])
+-    require(10000 <= uid < 100000 and uid not in (10130,10129,10117,10125,10164,10165,10166,10169,10170,10175), 'NEW_APP_UID_REQUIRED')
++    require(10000 <= uid < 100000 and uid not in (10130,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190,10137,10196), 'NEW_APP_UID_REQUIRED')
+     return uid
+ 
+ class OwnedApk:
+@@ -453,7 +453,7 @@
+             except BaseException as error:remember(result,'staging_cleanup',error)
+         if artifacts is not None:
+             try:
+-                if len(artifacts.records)==1 and 'target_after' not in result:
++                if len(artifacts.records)==3 and 'target_after' not in result:
+                     result['failure_target_files_revalidated']=artifacts.revalidate_files()
+             except BaseException as error:remember(result,'failed_scope_target_revalidation',error)
+             try:result['target_FD_cleanup']=artifacts.close()
+--- literal-derived/bestbuy_context.py
++++ BestBuy/bestbuy_context.py
+@@ -199,7 +199,7 @@
+ 
+     def _paths(self, raw):
+         values = self.reader.apk_paths(raw)
+-        require(values == sorted(row['path'] for row in self.expected['artifacts']) and len(values) == 1,
++        require(values == sorted(row['path'] for row in self.expected['artifacts']) and len(values) == 3,
+                 'ACTUAL_THREE_BESTBUY_APK_PATH_CHANGED')
+         return values
+ 
+@@ -232,13 +232,13 @@
+             fd = self.context.target.open_root(row['path'],os.O_RDONLY|os.O_NOFOLLOW)
+             self.opened.append(fd)
+             self.records.append(self._hash(fd,row,deadline))
+-        require(len(self.opened) == len(self.records) == 1,'EXACT_THREE_HELD_APKS_REQUIRED')
++        require(len(self.opened) == len(self.records) == 3,'EXACT_THREE_HELD_APKS_REQUIRED')
+         self.context.artifacts = self
+         return {'metadata':self.expected['target'],'artifacts':self.records,
+                 'fresh_streaming_hashes':True,'signer_independently_verified':False}
+ 
+     def verify_held(self):
+-        require(not self.closed and len(self.opened) == len(self.records) == 1,'OPEN_THREE_APK_SET_REQUIRED')
++        require(not self.closed and len(self.opened) == len(self.records) == 3,'OPEN_THREE_APK_SET_REQUIRED')
+         for fd,row in zip(self.opened,self.records):
+             require(identity(fd) == row['held_file'],'HELD_BESTBUY_APK_CHANGED')
+ 

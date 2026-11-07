@@ -1,0 +1,611 @@
+--- previous/AndroidManifest.xml
++++ new/AndroidManifest.xml
+@@ -1,11 +1,11 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+-    package="org.droidloom.qa.bili.r9" android:versionCode="1" android:versionName="1">
++    package="org.droidloom.qa.bili.r10" android:versionCode="1" android:versionName="1">
+     <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="33" />
+     <queries><package android:name="tv.danmaku.bili" /></queries>
+     <application android:label="Owned Bili QA" android:debuggable="false"
+         android:testOnly="true" android:allowBackup="false" android:hasCode="true" />
+-    <instrumentation android:name="org.droidloom.qa.bili.r9.ActionRunner"
+-        android:targetPackage="org.droidloom.qa.bili.r9"
++    <instrumentation android:name="org.droidloom.qa.bili.r10.ActionRunner"
++        android:targetPackage="org.droidloom.qa.bili.r10"
+         android:functionalTest="true" android:handleProfiling="false" />
+ </manifest>
+--- previous/build_candidate.py
++++ new/build_candidate.py
+@@ -16,8 +16,8 @@
+ import zipfile
+ 
+ HERE = Path(__file__).resolve().parent
+-PACKAGE = 'org.droidloom.qa.bili.r9'
+-OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r9-build-02')
++PACKAGE = 'org.droidloom.qa.bili.r10'
++OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r10-build-01')
+ JDK = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86'
+ SDK_BASE = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts'
+ TOOLS = {
+@@ -148,8 +148,8 @@
+         require(not path.is_absolute() and '..' not in path.parts and path.as_posix() == name, 'source relative path')
+         actual = file_pin(HERE / name, 1024 * 1024)
+         require(actual['sha256'] == row['sha256'] and actual['bytes'] == row['bytes'], 'source differs: ' + name)
+-    require({'AndroidManifest.xml', 'src/org/droidloom/qa/bili/r9/ActionRunner.java', 'src/org/droidloom/qa/bili/r9/TouchTransaction.java', 'src/org/droidloom/qa/bili/r9/PlayerButtonTransaction.java',
+-             'src/org/droidloom/qa/bili/r9/InspectionIdleGate.java',
++    require({'AndroidManifest.xml', 'src/org/droidloom/qa/bili/r10/ActionRunner.java', 'src/org/droidloom/qa/bili/r10/TouchTransaction.java', 'src/org/droidloom/qa/bili/r10/PlayerButtonTransaction.java',
++             'src/org/droidloom/qa/bili/r10/InspectionIdleGate.java',
+              'tests/InspectionIdleGateChecks.java', 'check_idle_contract.py', 'qa_contract.py', 'build_candidate.py'} <= set(files), 'required sources missing')
+     return files
+ 
+@@ -275,18 +275,18 @@
+         baseline_scope={'__file__':str(HERE/'check_current_baseline.py'),'__name__':'owned_current_baseline_scope_controls'}
+         exec(compile((HERE/'check_current_baseline.py').read_bytes(),str(HERE/'check_current_baseline.py'),'exec'),baseline_scope)
+         baseline_controls=baseline_scope['run_controls']()
+-        require(baseline_controls['all_passed'] is True and baseline_controls['count']==21 and
+-                len(baseline_controls['cases'])==21 and all(x['passed'] is True for x in baseline_controls['cases']) and
++        require(baseline_controls['all_passed'] is True and baseline_controls['count']==32 and
++                len(baseline_controls['cases'])==32 and all(x['passed'] is True for x in baseline_controls['cases']) and
+                 baseline_controls['production_contract_sha256']==source['qa_contract.py']['sha256'] and
+                 baseline_controls['production_adapter_sha256']==source['qa_adapter.py']['sha256'] and
+-                baseline_controls['host_recorder_manifest_sha256']=='6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e' and
+-                baseline_controls['main_epoch_sha256']=='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2' and
+-                baseline_controls['main_baseline_schema']=='pocket4-main-current-baseline-v1' and
+-                baseline_controls['main_baseline_sha256']=='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266' and
+-                baseline_controls['main_baseline_qualification_sha256']=='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6',
++                baseline_controls['host_recorder_manifest_sha256']=='002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff' and
++                baseline_controls['main_epoch_sha256']=='7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c' and
++                baseline_controls['main_baseline_schema']=='pocket4-main-current-baseline-v2' and
++                baseline_controls['main_baseline_sha256']=='633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364' and
++                baseline_controls['main_baseline_qualification_sha256']=='ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e',
+                 'ACTUAL_CURRENT_BASELINE_SCOPE_CONTROLS_REQUIRED')
+         result['current_baseline_scope_controls']={'source_sha256':source['check_current_baseline.py']['sha256'],'report':baseline_controls}
+-        source_java = HERE/'src/org/droidloom/qa/bili/r9/ActionRunner.java'
++        source_java = HERE/'src/org/droidloom/qa/bili/r10/ActionRunner.java'
+         # Compile all pinned Python source without executing adapter/device entry points.
+         for name in source:
+             if name.endswith('.py'):
+@@ -314,7 +314,7 @@
+         idle_controls=validate_idle_controls(json.loads(idle_output),IDLE_GATE_CASES)
+         result['inspection_idle_gate_controls']={
+             'report':idle_controls,'stdout_sha256':digest(idle_output),
+-            'gate_source_sha256':source['src/org/droidloom/qa/bili/r9/InspectionIdleGate.java']['sha256'],
++            'gate_source_sha256':source['src/org/droidloom/qa/bili/r10/InspectionIdleGate.java']['sha256'],
+             'control_source_sha256':source['tests/InspectionIdleGateChecks.java']['sha256']}
+         command('javac', [tool['javac'], '-J-XX:ActiveProcessorCount=1', '-J-XX:+UseSerialGC', '-J-Xmx256m',
+             '-proc:none','-Xmaxerrs','20','-Xmaxwarns','20','-source','8','-target','8','-bootclasspath',resolved['android_jar'],
+@@ -337,10 +337,10 @@
+         # pinned Java runtime. No platform/commercial signing key is consumed.
+         command('create-owned-signing-key', java+['-m','java.base/sun.security.tools.keytool.Main',
+             '-genkeypair','-noprompt','-storetype','PKCS12','-keystore',str(store),'-storepass:file',str(password),
+-            '-alias','owned-bili-qa-r9','-keyalg','RSA','-keysize','3072','-validity','3650',
++            '-alias','owned-bili-qa-r10','-keyalg','RSA','-keysize','3072','-validity','3650',
+             '-dname','CN=Pocket4 Owned Bili QA R8,O=Owned Test,C=US'])
+         command('sign', [tool['apksigner'],'sign','--ks',str(store),'--ks-pass','file:'+str(password),
+-            '--ks-key-alias','owned-bili-qa-r9','--min-sdk-version','31','--v1-signing-enabled','false',
++            '--ks-key-alias','owned-bili-qa-r10','--min-sdk-version','31','--v1-signing-enabled','false',
+             '--v2-signing-enabled','true','--v3-signing-enabled','true','--out',str(OUTPUT/'owned-bili-qa.apk'),
+             str(OUTPUT/'aligned.apk')])
+         signature = command('signature', [tool['apksigner'],'verify','--verbose','--print-certs','--min-sdk-version','31',str(OUTPUT/'owned-bili-qa.apk')])
+@@ -350,7 +350,7 @@
+         badging = command('badging', [tool['aapt'],'dump','badging',str(OUTPUT/'owned-bili-qa.apk')])
+         permissions = command('permissions', [tool['aapt'],'dump','permissions',str(OUTPUT/'owned-bili-qa.apk')])
+         xml = command('manifest', [tool['aapt'],'dump','xmltree',str(OUTPUT/'owned-bili-qa.apk'),'AndroidManifest.xml'])
+-        require(b"package: name='org.droidloom.qa.bili.r9' versionCode='1'" in badging and
++        require(b"package: name='org.droidloom.qa.bili.r10' versionCode='1'" in badging and
+                 b"sdkVersion:'31'" in badging and b"targetSdkVersion:'33'" in badging, 'actual APK package/SDK differs')
+         require(b'uses-permission' not in permissions and b'uses-permission' not in xml and
+                 b'application-debuggable' not in badging and b'launchable-activity' not in badging, 'actual APK privilege/component differs')
+--- previous/make_build_request.py
++++ new/make_build_request.py
+@@ -5,7 +5,7 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-bili-qa-r9-current-163e3e3914f4ccbb-host-6d99374e1580-build02'
++KEY='pocket4-owned-bili-qa-r10-cell02-633912ff4595ce89-host-002ee581a4bb-build01'
+ 
+ 
+ def encode(value):
+@@ -33,7 +33,7 @@
+         "assert hashlib.sha256(source.encode()).hexdigest()=="+repr(stage_sha)+";"
+         "scope={'__name__':'__main__','__file__':'<verified-owned-bili-qa-build-stage>','PACKET':packet};"
+         "exec(compile(source,'stage_build.py','exec'),scope,scope)")
+-    return {'host':'pocket4','executable':'/usr/bin/python3','args':['-I','-c',wrapper],
++    return {'host':'pocket4','executable':'/usr/bin/python3','args':['-I','-B','-c',wrapper],
+         'cwd':'/home/alex/work','env':{'PYTHONDONTWRITEBYTECODE':'1'},'stdin':wire.decode(),
+         'idempotency_key':KEY,'timeout_seconds':300,'cpu_quota_percent':100,
+         'memory_max_bytes':536870912,'nice':10}
+--- previous/qa_adapter.py
++++ new/qa_adapter.py
+@@ -17,8 +17,8 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-RECORDER_MANIFEST_SHA = '6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
+-SELF = 'org.droidloom.qa.bili.r9'
++RECORDER_MANIFEST_SHA = '002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff'
++SELF = 'org.droidloom.qa.bili.r10'
+ BUILD_COMMANDS = ['idle-gate-javac','idle-gate-java','javac','d8','aapt-package','align','create-owned-signing-key','sign',
+                   'signature','alignment','badging','permissions','manifest']
+ 
+@@ -78,10 +78,10 @@
+                 'SOURCE_RELATIVE_PATH_REQUIRED')
+         require(len(pinned(HERE/name, row['sha256'])) == row['bytes'], 'SOURCE_SIZE_CHANGED')
+     require({'qa_adapter.py','qa_contract.py','build_candidate.py','AndroidManifest.xml',
+-             'src/org/droidloom/qa/bili/r9/ActionRunner.java',
+-             'src/org/droidloom/qa/bili/r9/TouchTransaction.java',
+-             'src/org/droidloom/qa/bili/r9/PlayerButtonTransaction.java',
+-             'src/org/droidloom/qa/bili/r9/InspectionIdleGate.java',
++             'src/org/droidloom/qa/bili/r10/ActionRunner.java',
++             'src/org/droidloom/qa/bili/r10/TouchTransaction.java',
++             'src/org/droidloom/qa/bili/r10/PlayerButtonTransaction.java',
++             'src/org/droidloom/qa/bili/r10/InspectionIdleGate.java',
+              'tests/InspectionIdleGateChecks.java','check_idle_contract.py'} <= set(manifest['files']),
+             'OWNED_SOURCE_CLOSURE_INCOMPLETE')
+     return manifest
+@@ -149,7 +149,7 @@
+     builder.validate_idle_controls(idle_protocol['report'],builder.IDLE_PROTOCOL_CASES,
+                                    manifest['files']['qa_contract.py']['sha256'])
+     require(idle_gate['stdout_sha256']==commands[1]['stdout_sha256'] and
+-            idle_gate['gate_source_sha256']==manifest['files']['src/org/droidloom/qa/bili/r9/InspectionIdleGate.java']['sha256'] and
++            idle_gate['gate_source_sha256']==manifest['files']['src/org/droidloom/qa/bili/r10/InspectionIdleGate.java']['sha256'] and
+             idle_gate['control_source_sha256']==manifest['files']['tests/InspectionIdleGateChecks.java']['sha256'] and
+             idle_protocol['control_source_sha256']==manifest['files']['check_idle_contract.py']['sha256'],
+             'ACTUAL_IDLE_CONTROLS_SOURCE_OR_COMMAND_BINDING_CHANGED')
+@@ -169,7 +169,7 @@
+     def __init__(self, flow, recorder, qa, proof, helper_uid):
+         require(flow.contract.sha256 == RECORDER_MANIFEST_SHA and not flow._private_backend_transport,
+                 'FROZEN_PUBLIC_RECORDER_TRANSPORT_REQUIRED')
+-        require(flow.scope.get('schema') == 'pocket4-current-recorder-scope-v1' and
++        require(flow.scope.get('schema') == 'pocket4-current-recorder-scope-v2' and
+                 flow.scope.get('current_baseline_schema') == qa.MAIN_BASELINE_SCHEMA and
+                 flow.scope.get('epoch_sha256') == qa.MAIN_EPOCH and
+                 flow.scope.get('current_baseline_sha256') == qa.MAIN_BASELINE_SHA and
+@@ -177,7 +177,7 @@
+                 flow.scope.get('package') == qa.PACKAGE and type(flow.scope.get('uid')) is int and
+                 flow.scope['uid'] == qa.UID,
+                 'TYPED_CURRENT_HOST_SCOPE_AND_HELPER_BINDING_REQUIRED')
+-        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10117,10125,10164,10165,10166,10169,10170,10175,10184,10202),
++        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10117,10125,10164,10165,10166,10169,10170,10175,10184,10202,10152),
+                 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
+         self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
+         self.nonces = set()
+--- previous/qa_contract.py
++++ new/qa_contract.py
+@@ -5,15 +5,15 @@
+ import re
+ import zlib
+ 
+-PROTOCOL = 'pocket4-owned-bili-qa-v9'
+-SELF = 'org.droidloom.qa.bili.r9'
++PROTOCOL = 'pocket4-owned-bili-qa-v10'
++SELF = 'org.droidloom.qa.bili.r10'
+ COMPONENT = SELF + '/' + SELF + '.ActionRunner'
+ PACKAGE = 'tv.danmaku.bili'
+ UID = 10117
+-MAIN_EPOCH = '734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'
+-MAIN_BASELINE_SCHEMA = 'pocket4-main-current-baseline-v1'
+-MAIN_BASELINE_SHA = '163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'
+-MAIN_BASELINE_QUALIFICATION_SHA = 'f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'
++MAIN_EPOCH = '7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c'
++MAIN_BASELINE_SCHEMA = 'pocket4-main-current-baseline-v2'
++MAIN_BASELINE_SHA = '633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364'
++MAIN_BASELINE_QUALIFICATION_SHA = 'ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e'
+ MAX_REQUEST = 16384
+ MAX_RESULT = 524288
+ MAX_COMPRESSED_WIRE = 262144
+@@ -181,7 +181,7 @@
+             value.get('op') == request['op'] and value.get('request_sha256') == sha(raw_request) and
+             value.get('wire_codec') == 'gzip-canonical-json-v1',
+             'RESULT_REQUEST_BINDING_FAILED')
+-    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10125, 10164, 10165, 10166, 10169, 10170, 10175, 10184, 10202) and value.get('self_uid') == helper_uid and
++    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10125, 10164, 10165, 10166, 10169, 10170, 10175, 10184, 10202, 10152) and value.get('self_uid') == helper_uid and
+             type(value.get('self_pid')) is int and value['self_pid'] > 1, 'INSTALLED_HELPER_IDENTITY_REQUIRED')
+     require(value.get('ok') is True and value.get('error') is None and value.get('secondary_errors') == [] and
+             value.get('claim_persistence_completed') is True and value.get('helper_work_completed') is True,
+--- previous/src/org/droidloom/qa/bili/r9/ActionRunner.java
++++ new/src/org/droidloom/qa/bili/r10/ActionRunner.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.bili.r9;
++package org.droidloom.qa.bili.r10;
+ 
+ import android.accessibilityservice.AccessibilityServiceInfo;
+ import android.app.Instrumentation;
+@@ -41,13 +41,13 @@
+ 
+ /** An owned self-instrumentation; it never instruments the commercial app. */
+ public final class ActionRunner extends Instrumentation {
+-    static final String PROTOCOL = "pocket4-owned-bili-qa-v9";
++    static final String PROTOCOL = "pocket4-owned-bili-qa-v10";
+     static final String PACKAGE = "tv.danmaku.bili";
+-    static final String SELF = "org.droidloom.qa.bili.r9";
+-    static final String MAIN_EPOCH = "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2";
+-    static final String MAIN_BASELINE_SCHEMA = "pocket4-main-current-baseline-v1";
+-    static final String MAIN_BASELINE_SHA = "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266";
+-    static final String MAIN_BASELINE_QUALIFICATION_SHA = "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6";
++    static final String SELF = "org.droidloom.qa.bili.r10";
++    static final String MAIN_EPOCH = "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c";
++    static final String MAIN_BASELINE_SCHEMA = "pocket4-main-current-baseline-v2";
++    static final String MAIN_BASELINE_SHA = "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364";
++    static final String MAIN_BASELINE_QUALIFICATION_SHA = "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e";
+     static final int TARGET_UID = 10117;
+     static final int MAX_REQUEST = 16384, MAX_RESULT = 524288, MAX_COMPRESSED_WIRE = 262144;
+     static final int MAX_NODES = 512, MAX_DEPTH = 32, MAX_CHILDREN = 64;
+--- previous/src/org/droidloom/qa/bili/r9/InspectionIdleGate.java
++++ new/src/org/droidloom/qa/bili/r10/InspectionIdleGate.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.bili.r9;
++package org.droidloom.qa.bili.r10;
+ 
+ import java.util.concurrent.TimeoutException;
+ 
+--- previous/src/org/droidloom/qa/bili/r9/PlayerButtonTransaction.java
++++ new/src/org/droidloom/qa/bili/r10/PlayerButtonTransaction.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.bili.r9;
++package org.droidloom.qa.bili.r10;
+ 
+ /** Exactly one current-selection transaction; no retry and no Android atomicity claim. */
+ public final class PlayerButtonTransaction {
+--- previous/src/org/droidloom/qa/bili/r9/TouchTransaction.java
++++ new/src/org/droidloom/qa/bili/r10/TouchTransaction.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.bili.r9;
++package org.droidloom.qa.bili.r10;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
+--- previous/stage_build.py
++++ new/stage_build.py
+@@ -8,8 +8,8 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r9-source-02')
+-OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r9-build-02')
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r10-source-01')
++OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r10-build-01')
+ MEMORY = 536870912
+ 
+ 
+--- previous/tests/InspectionIdleGateChecks.java
++++ new/tests/InspectionIdleGateChecks.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.bili.r9;
++package org.droidloom.qa.bili.r10;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
+--- previous/check_current_baseline.py
++++ new/check_current_baseline.py
+@@ -49,12 +49,12 @@
+     host_sha=session_scope['RECORDER_MANIFEST_SHA']
+     def fixture():
+         return types.SimpleNamespace(contract=types.SimpleNamespace(sha256=host_sha),_private_backend_transport=False,
+-            scope={'schema':'pocket4-current-recorder-scope-v1','current_baseline_schema':qa.MAIN_BASELINE_SCHEMA,
++            scope={'schema':'pocket4-current-recorder-scope-v2','current_baseline_schema':qa.MAIN_BASELINE_SCHEMA,
+                    'epoch_sha256':qa.MAIN_EPOCH,'current_baseline_sha256':qa.MAIN_BASELINE_SHA,
+                    'current_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA,
+                    'package':qa.PACKAGE,'uid':qa.UID})
+     session_scope['Session'](fixture(),None,qa,{},99999)
+-    rows.append({'name':'actual_R5_session_scope_positive','passed':True})
++    rows.append({'name':'actual_R6_session_scope_positive','passed':True})
+     def host_no(name,change):
+         flow=fixture();change(flow)
+         try:session_scope['Session'](flow,None,qa,{},99999)
+@@ -69,8 +69,53 @@
+     host_no('wrong_host_qualification',lambda f:f.scope.update(current_baseline_qualification_sha256='0'*64))
+     host_no('foreign_host_package',lambda f:f.scope.update(package='example.unrelated'))
+     host_no('bool_host_uid',lambda f:f.scope.update(uid=True))
+-    qa.require(len(rows)==21,'EXACT_CURRENT_BASELINE_SCOPE_CASES')
+-    return {'schema':'pocket4-current-baseline-scope-controls-v1','all_passed':True,'count':21,
++    no('previous_current_epoch',lambda v:v.update(main_epoch_sha256='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'))
++    no('previous_baseline_v1_schema',lambda v:v.update(main_baseline_schema='pocket4-main-current-baseline-v1'))
++    no('previous_baseline_digest',lambda v:v.update(main_baseline_sha256='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'))
++    no('previous_qualification_digest',lambda v:v.update(main_baseline_qualification_sha256='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'))
++    host_no('previous_R5_host_manifest',lambda f:setattr(f.contract,'sha256','6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'))
++    host_no('previous_typed_scope_v1',lambda f:f.scope.update(schema='pocket4-current-recorder-scope-v1'))
++    try:session_scope['Session'](fixture(),None,qa,{},10152)
++    except RuntimeError:pass
++    else:raise RuntimeError('PREVIOUS_HELPER_UID_SESSION_ACCEPTED')
++    rows.append({'name':'previous_actual_helper_UID_session_rejected','passed':True})
++    qa.require(qa.PROTOCOL=='pocket4-owned-bili-qa-v10' and qa.SELF=='org.droidloom.qa.bili.r10',
++               'EXACT_NEW_HELPER_PROTOCOL_REQUIRED')
++    rows.append({'name':'exact_new_helper_protocol_and_package','passed':True})
++    req={'protocol':qa.PROTOCOL,'nonce':'1'*32,'op':'state'}
++    try:qa.validate_request({**req,'protocol':'pocket4-owned-bili-qa-v9'})
++    except qa.ProtocolError:pass
++    else:raise RuntimeError('PREVIOUS_HELPER_PROTOCOL_ACCEPTED')
++    rows.append({'name':'previous_helper_protocol_rejected','passed':True})
++    import base64,gzip
++    def state_value(uid):
++        value={'protocol':qa.PROTOCOL,'nonce':req['nonce'],'op':'state',
++            'request_sha256':qa.sha(qa.validate_request(req)),'wire_codec':'gzip-canonical-json-v1',
++            'self_uid':uid,'self_pid':1234,'ok':True,'error':None,'secondary_errors':[],
++            'claim_persistence_completed':True,'helper_work_completed':True,'automatic_retry':False,
++            'business_success_verified':False,'accessibility_mode_restoration_verified':None,
++            'started_elapsed_ms':100,'finished_elapsed_ms':110,
++            'action_attempted':False,'outcome_unknown':False,'ui_automation_connected':False,
++            'requires_post_termination_state_check':False,
++            'restoration':{'service_info_captured':False,'service_info_verified':True},
++            'state':{'accessibility_enabled':False,'touch_exploration_enabled':False,
++                     'enabled_service_count':0,'enabled_services_sha256':qa.sha(b'')},
++            'window_observation':{},'tree_observations':[]}
++        value['inspection_idle_observation']={}
++        return value
++    def wire(value):
++        text=base64.b64encode(gzip.compress(qa.canonical(value),mtime=0)).decode()
++        return ('INSTRUMENTATION_RESULT: owned_qa_result_gzip_base64='+text+
++                '\nINSTRUMENTATION_CODE: -1\n').encode()
++    qa.parse_completed(wire(state_value(99999)),b'',0,req,99999)
++    rows.append({'name':'actual_state_wire_new_identity_positive','passed':True})
++    try:qa.parse_completed(wire(state_value(10152)),b'',0,req,10152)
++    except qa.ProtocolError as error:
++        qa.require(str(error)=='INSTALLED_HELPER_IDENTITY_REQUIRED','PREVIOUS_UID_WRONG_FIRST_CAUSE')
++    else:raise RuntimeError('PREVIOUS_HELPER_UID_WIRE_ACCEPTED')
++    rows.append({'name':'previous_actual_helper_UID_wire_rejected','passed':True})
++    qa.require(len(rows)==32,'EXACT_CURRENT_BASELINE_SCOPE_CASES')
++    return {'schema':'pocket4-current-baseline-scope-controls-v2','all_passed':True,'count':32,
+             'cases':rows,'production_contract_sha256':hashlib.sha256(raw).hexdigest(),
+             'production_adapter_sha256':hashlib.sha256(adapter_raw).hexdigest(),'host_recorder_manifest_sha256':host_sha,
+             'main_epoch_sha256':qa.MAIN_EPOCH,'main_baseline_schema':qa.MAIN_BASELINE_SCHEMA,
+--- previous/current-baseline-binding.json
++++ new/current-baseline-binding.json
+@@ -1,38 +1,52 @@
+ {
+-  "schema": "pocket4-current-baseline-helper-source-binding-v1",
++  "schema": "pocket4-current-baseline-helper-source-binding-v2",
+   "state": "STATIC_SOURCE_ONLY_ANDROID_UNRUN",
+   "app": "bili",
+   "target_package": "tv.danmaku.bili",
+   "target_uid": 10117,
+-  "helper_package": "org.droidloom.qa.bili.r9",
+-  "protocol": "pocket4-owned-bili-qa-v9",
+-  "current_baseline_schema": "pocket4-main-current-baseline-v1",
+-  "current_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
++  "helper_package": "org.droidloom.qa.bili.r10",
++  "protocol": "pocket4-owned-bili-qa-v10",
++  "current_baseline_schema": "pocket4-main-current-baseline-v2",
++  "current_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+   "current_baseline": {
+-    "bytes": 41844,
+-    "path": "/home/alex/work/pocket4-main-current-baseline-01/baseline.private.json",
+-    "sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266"
++    "bytes": 44959,
++    "path": "/home/alex/work/pocket4-main-current-baseline-02/baseline.private.json",
++    "sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364"
+   },
+   "current_qualification": {
+-    "bytes": 1365,
+-    "path": "/home/alex/work/pocket4-main-current-baseline-01/qualification.json",
+-    "sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6"
++    "bytes": 5565,
++    "path": "/home/alex/work/pocket4-main-current-baseline-02/qualification.json",
++    "sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e"
+   },
+   "actual_baseline_result": {
+-    "bytes": 7986,
+-    "sha256": "4abe5092fe075e78602928d231987ac4a8394a72024dd2a535d8cff80d1ca066"
++    "job_id": "1a1b1378566-fc05-76f7",
++    "git_tree": "df158984ab6f8565c64db454acc7b9872f56a8a2",
++    "git_blob": "3cb41fac4621cf346d94be170f187251785c38ff",
++    "bytes": 13221,
++    "sha256": "107bf1487ace30a38c113057812a0a18415e3430640f11db0b5131e462d05269"
+   },
+   "host_recorder_source_manifest": {
+-    "bytes": 3605,
+-    "sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e"
++    "path": "/home/alex/work/pocket4-current-host-r6-source-01/source-manifest.json",
++    "bytes": 3757,
++    "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+   },
+-  "parent_source_manifest_sha256": "8e3454bcc9ebe1ff55dcaf62706ce1176cfa1d0f0ede7099cbbfa46f4ad53f1e",
++  "parent_source_manifest_sha256": "4eb11cf497615272c1bef280bbd849de4f983ba4147ea9356356dff076ce9c56",
++  "previous_helper_uid_exclusion": {
++    "uid": 10152,
++    "actual_worker_result": {
++      "bytes": 7589,
++      "sha256": "e9310a73a567d7207e55b8fede9a68f7a305d72e5cdb9042a6b7455ef4e02ad3",
++      "git_blob": "09090ecdc28c2988ab41d2ad529d292d1db0e32f"
++    },
++    "source": "exact historical installed helper receipt; exclusion only, no new cell authority"
++  },
+   "owned_helper_uid": null,
+   "APK_sha256": null,
+   "signer_sha256": null,
+   "helper_built": false,
+   "helper_installed": false,
+   "UI_actions": 0,
++  "old_helpers_and_tasks_reauthorized": false,
+   "unresolved_framework_exit_cause": true,
+   "whole_app_production_ready": false
+ }
+--- previous/README.md
++++ new/README.md
+@@ -1,5 +1,7 @@
+-# bili current-baseline helper source
++# bili owned helper R10 for current cell baseline02
+ 
+-Generated only from a complete pinned current-baseline result. The parent source manifest is 8e3454bcc9ebe1ff55dcaf62706ce1176cfa1d0f0ede7099cbbfa46f4ad53f1e. All original action, full-tree, window, refresh, once-only, idle and restore logic is retained outside the explicit scope binding additions. Parent historical JSON references retain their original bytes.
++This create-only source/build candidate binds the actual baseline02 receipt, typed v2 host scope, and exact R6 host manifest. It derives from the fixed prior helper source manifest `4eb11cf497615272c1bef280bbd849de4f983ba4147ea9356356dff076ce9c56`.
+ 
+-New package org.droidloom.qa.bili.r9; protocol pocket4-owned-bili-qa-v9. Target UID 10117 was read in the new baseline. The new helper UID, signed APK bytes and signer remain unknown until actual build/install. This source does not authorize UI or installation and does not resolve the framework exit cause.
++The commercial target package, UID, resource selectors, complete-tree/window/freshness checks, public input restrictions, action count limits, independent restoration, and time/resource bounds remain unchanged. Protocol and helper package are a new generation. The prior actual helper UID 10152 is rejected at the Session and wire result identity gates. Its historical receipt gives no runtime authority in this cell.
++
++The build runs the original App-specific controls and 32 current-baseline/protocol/identity controls, then the pinned Java/APK toolchain. This source freeze has not executed Python or Java. APK, signer, and new installed UID remain unknown until separate actual build and install receipts. No business flow, old task, or issued nonce is reauthorized. Whole-App production readiness remains false.
+--- previous/SOURCE_PINS.json
++++ new/SOURCE_PINS.json
+@@ -1,108 +1,122 @@
+ {
+   "schema": 1,
+-  "artifact": "pocket4-current-baseline-helper-source-v1",
++  "artifact": "pocket4-current-baseline-helper-source-v2",
+   "current_baseline_binding": {
+-    "schema": "pocket4-current-baseline-helper-source-binding-v1",
++    "schema": "pocket4-current-baseline-helper-source-binding-v2",
+     "state": "STATIC_SOURCE_ONLY_ANDROID_UNRUN",
+     "app": "bili",
+     "target_package": "tv.danmaku.bili",
+     "target_uid": 10117,
+-    "helper_package": "org.droidloom.qa.bili.r9",
+-    "protocol": "pocket4-owned-bili-qa-v9",
+-    "current_baseline_schema": "pocket4-main-current-baseline-v1",
+-    "current_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
++    "helper_package": "org.droidloom.qa.bili.r10",
++    "protocol": "pocket4-owned-bili-qa-v10",
++    "current_baseline_schema": "pocket4-main-current-baseline-v2",
++    "current_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+     "current_baseline": {
+-      "bytes": 41844,
+-      "path": "/home/alex/work/pocket4-main-current-baseline-01/baseline.private.json",
+-      "sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266"
++      "bytes": 44959,
++      "path": "/home/alex/work/pocket4-main-current-baseline-02/baseline.private.json",
++      "sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364"
+     },
+     "current_qualification": {
+-      "bytes": 1365,
+-      "path": "/home/alex/work/pocket4-main-current-baseline-01/qualification.json",
+-      "sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6"
++      "bytes": 5565,
++      "path": "/home/alex/work/pocket4-main-current-baseline-02/qualification.json",
++      "sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e"
+     },
+     "actual_baseline_result": {
+-      "bytes": 7986,
+-      "sha256": "4abe5092fe075e78602928d231987ac4a8394a72024dd2a535d8cff80d1ca066"
++      "job_id": "1a1b1378566-fc05-76f7",
++      "git_tree": "df158984ab6f8565c64db454acc7b9872f56a8a2",
++      "git_blob": "3cb41fac4621cf346d94be170f187251785c38ff",
++      "bytes": 13221,
++      "sha256": "107bf1487ace30a38c113057812a0a18415e3430640f11db0b5131e462d05269"
+     },
+     "host_recorder_source_manifest": {
+-      "bytes": 3605,
+-      "sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e"
++      "path": "/home/alex/work/pocket4-current-host-r6-source-01/source-manifest.json",
++      "bytes": 3757,
++      "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+     },
+-    "parent_source_manifest_sha256": "8e3454bcc9ebe1ff55dcaf62706ce1176cfa1d0f0ede7099cbbfa46f4ad53f1e",
++    "parent_source_manifest_sha256": "4eb11cf497615272c1bef280bbd849de4f983ba4147ea9356356dff076ce9c56",
++    "previous_helper_uid_exclusion": {
++      "uid": 10152,
++      "actual_worker_result": {
++        "bytes": 7589,
++        "sha256": "e9310a73a567d7207e55b8fede9a68f7a305d72e5cdb9042a6b7455ef4e02ad3",
++        "git_blob": "09090ecdc28c2988ab41d2ad529d292d1db0e32f"
++      },
++      "source": "exact historical installed helper receipt; exclusion only, no new cell authority"
++    },
+     "owned_helper_uid": null,
+     "APK_sha256": null,
+     "signer_sha256": null,
+     "helper_built": false,
+     "helper_installed": false,
+     "UI_actions": 0,
++    "old_helpers_and_tasks_reauthorized": false,
+     "unresolved_framework_exit_cause": true,
+     "whole_app_production_ready": false
+   },
+   "files": {
+     "AndroidManifest.xml": {
+-      "bytes": 712,
+-      "sha256": "74e57467fc57c779ca200d26bc55f3d478e04c6014cdd4f9cf847b9e1ceb0b72"
++      "bytes": 715,
++      "sha256": "6c86daf3944427deca7932e563a57cd0a384507d97e32e9e69f943b6e1d7c086"
+     },
+     "README.md": {
+-      "bytes": 711,
+-      "sha256": "fd73aac5cb535b093fa4148667cf69e90dcb95482409e6b671276d5f61346913"
++      "bytes": 1119,
++      "sha256": "ce25af7f6dbd84db89978626f52a01f9848d2d61289591b7d436859e5ed8c051"
+     },
+     "build-input-reference.json": {
+       "bytes": 3435,
+       "sha256": "06401b8920d1c88ea8a15fbe2b6954df71dfda3e782d88d29e4eea48774ff519"
+     },
+     "build_candidate.py": {
+-      "bytes": 25634,
+-      "sha256": "ca849bdd71ac0447cccfd5b0c692b87d72ffa51e5385a91e26e92a16c35d941c"
++      "bytes": 25645,
++      "sha256": "be265fe638666823e109032b01019c96059bda77fbb41b64a83010b283b913a7"
+     },
+     "check_current_baseline.py": {
+-      "bytes": 5525,
+-      "sha256": "f121f98a72f259fea625bb36a646d042428f75e786c3f3d50dd2895238d16fc5"
++      "bytes": 8972,
++      "sha256": "0d7f64d49e89ee12a627c572f7468e6e86416c8de06609c02b49dafe01568da7"
+     },
+     "check_idle_contract.py": {
+       "bytes": 13481,
+       "sha256": "96e696553bb8bd7b9dc8aeac1562112cb6dd85ff422c33858a172f479c5028a5"
+     },
+     "current-baseline-binding.json": {
+-      "bytes": 1486,
+-      "sha256": "bec6efad6b833ef7712ba281361689b68e9371831625ef317c0931eaf27a2d77"
++      "bytes": 2141,
++      "sha256": "9a5807ac3debd59c5064396e3aa90048363a35b733508f0d90023285f4f4a97a"
+     },
+     "make_build_request.py": {
+-      "bytes": 2962,
+-      "sha256": "3e1cc1987875d18cdf83cd937b348a60e18127e0c7a4c3317fc9959c70a26661"
++      "bytes": 2967,
++      "sha256": "e875bc2c65591a7c0d931afcc21417b30f1f27cde449458f6258b96ade0dfc7b"
+     },
+     "qa_adapter.py": {
+-      "bytes": 28878,
+-      "sha256": "393a5464fe0d54626c3805b032d821a6ff3310fa89c1b012b8d416724ace0bb1"
++      "bytes": 28890,
++      "sha256": "bed610b8a82ff1c046a76e81b15e218c40bc18199e0ce1807bd1334587fb41a4"
+     },
+     "qa_contract.py": {
+-      "bytes": 51820,
+-      "sha256": "0cdf34a459387c74af5fde17c47810148682e28d3df5e6ec7c9507e63c818a68"
++      "bytes": 51829,
++      "sha256": "d328cc8e96e1ae5ad80683ec5da584606b97c473fa03889f2b76cd48f07f50f9"
+     },
+-    "src/org/droidloom/qa/bili/r9/ActionRunner.java": {
+-      "bytes": 74638,
+-      "sha256": "2f123f873553ba79c4f7c23258017305c6522cc08aa8236316d6fcbc228ed63f"
++    "src/org/droidloom/qa/bili/r10/ActionRunner.java": {
++      "bytes": 74641,
++      "sha256": "6f405370f12aa87dde13dfa11969e6078e15bc10e9574d48e339e53837daf1e0"
+     },
+-    "src/org/droidloom/qa/bili/r9/InspectionIdleGate.java": {
+-      "bytes": 3921,
+-      "sha256": "8fe3db24ea70cec07c9013eb7d99fc935517bce4bbf3efcdc7029ee39fa59c48"
++    "src/org/droidloom/qa/bili/r10/InspectionIdleGate.java": {
++      "bytes": 3922,
++      "sha256": "9c7956baff9eab7b513a71365e53095a61ccfc005c6d105c98e9b3a509a4fbdc"
+     },
+-    "src/org/droidloom/qa/bili/r9/PlayerButtonTransaction.java": {
+-      "bytes": 2897,
+-      "sha256": "745ff923eaef435414d70b0a3d6a7acffc9e3dca58a972d66a65f30d814b979b"
++    "src/org/droidloom/qa/bili/r10/PlayerButtonTransaction.java": {
++      "bytes": 2898,
++      "sha256": "8d324b1c2e906ae1c8b443e5247f91e07c09928debe005116283cd0bbf389dc7"
+     },
+-    "src/org/droidloom/qa/bili/r9/TouchTransaction.java": {
+-      "bytes": 4979,
+-      "sha256": "5c8312a8671598225ba0bf14e839695b96af1f9ad59280697f54b8d793293923"
++    "src/org/droidloom/qa/bili/r10/TouchTransaction.java": {
++      "bytes": 4980,
++      "sha256": "1d2205208b4c37f2499010e36257098af527a643d0da7a78704a3c3fe3986a90"
+     },
+     "stage_build.py": {
+-      "bytes": 7554,
+-      "sha256": "cd47c10baabcc89f0f5911efd41db7842689569aacd9a31319070c36fda44240"
++      "bytes": 7556,
++      "sha256": "fe4a5d57e90a52fc210fd3686ae7897d3a6441a57396bf2ab9cb5d6c3271c2b9"
+     },
+     "tests/InspectionIdleGateChecks.java": {
+-      "bytes": 11432,
+-      "sha256": "e39b0018c56b7fa19a927279300364773a257334bbe164f0a9352e7f086360bf"
++      "bytes": 11433,
++      "sha256": "476b1956296d42a0a0be831c02bd55db1fc9fe57222ff97aae0f780f91c86513"
+     }
+   }
+ }

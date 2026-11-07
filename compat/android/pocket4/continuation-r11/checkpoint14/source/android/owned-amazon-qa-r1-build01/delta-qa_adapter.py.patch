@@ -1,0 +1,133 @@
+--- Bili_R5/qa_adapter.py
++++ Amazon_R1/qa_adapter.py
+@@ -18,7 +18,7 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ RECORDER_MANIFEST_SHA = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+-SELF = 'org.droidloom.qa.bili.r5'
++SELF = 'org.droidloom.qa.amazon.r1'
+ BUILD_COMMANDS = ['javac','d8','aapt-package','align','create-owned-signing-key','sign',
+                   'signature','alignment','badging','permissions','manifest']
+ 
+@@ -78,7 +78,7 @@
+                 'SOURCE_RELATIVE_PATH_REQUIRED')
+         require(len(pinned(HERE/name, row['sha256'])) == row['bytes'], 'SOURCE_SIZE_CHANGED')
+     require({'qa_adapter.py','qa_contract.py','build_candidate.py','AndroidManifest.xml',
+-             'src/org/droidloom/qa/bili/r5/ActionRunner.java'} <= set(manifest['files']),
++             'src/org/droidloom/qa/amazon/r1/ActionRunner.java'} <= set(manifest['files']),
+             'OWNED_SOURCE_CLOSURE_INCOMPLETE')
+     return manifest
+ 
+@@ -98,7 +98,7 @@
+         keys.add('value')
+         require(plan.get('value') == qa.PUBLIC_SEARCH_QUERY and
+                 {'resource_id','class'}<=set(plan['selector']) and plan['selector']['class']=='android.widget.EditText' and
+-                re.fullmatch(r'tv\.danmaku\.bili:id/[A-Za-z0-9_]+',plan['selector']['resource_id']),
++                re.fullmatch(r'com\.amazon\.mShop\.android\.shopping:id/[A-Za-z0-9_]+',plan['selector']['resource_id']),
+                 'ONLY_OBSERVED_EXACT_EDIT_RESOURCE_AND_PUBLIC_QUERY')
+     require(set(plan) == keys and isinstance(plan['nonces'], dict), 'EXACT_PLAN_KEYS_REQUIRED')
+     names = {'state'} if op == 'state' else {'before','inspect','after'} | ({'action'} if op in ('click','set_text') else set())
+@@ -146,7 +146,7 @@
+     def __init__(self, flow, recorder, qa, proof, helper_uid):
+         require(flow.contract.sha256 == RECORDER_MANIFEST_SHA and not flow._private_backend_transport,
+                 'FROZEN_PUBLIC_RECORDER_TRANSPORT_REQUIRED')
+-        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10117,10125,10164,10165),
++        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10129,10117,10125,10164,10165,10166,10169,10170),
+                 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
+         self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
+         self.nonces = set()
+@@ -227,7 +227,7 @@
+             value = original.foreground()
+         finally:
+             f._private_backend_transport = False
+-        require(value['package'] == self.qa.PACKAGE, 'FOREGROUND_MUST_STILL_BE_BILI')
++        require(value['package'] == self.qa.PACKAGE, 'FOREGROUND_MUST_STILL_BE_AMAZON')
+         return self.qa.scope({'package':value['package'], 'uid':self.qa.UID, 'user':0, 'display':0,
+             'activity':value['package']+'/'+value['activity'], 'window_token':value['window_token'],
+             'main_epoch_sha256':self.qa.MAIN_EPOCH})
+@@ -337,72 +337,9 @@
+ 
+ 
+ def execute(args):
+-    require(args.interactive_production is True and os.geteuid() == 0, 'EXPLICIT_ROOT_INTERACTIVE_ADMISSION_REQUIRED')
+-    manifest = own_source(args.source_manifest_sha256)
+-    qa = load(HERE/'qa_contract.py', manifest['files']['qa_contract.py']['sha256'], 'owned_qa_contract')
+-    builder = load(HERE/'build_candidate.py', manifest['files']['build_candidate.py']['sha256'], 'owned_qa_build_gate')
+-    proof = qualified_build(args, manifest, builder)
+-    plan_raw = pinned(args.plan, args.plan_sha256, 16384); plan = validate_plan(json.loads(plan_raw), qa)
+-    require(re.fullmatch(r'/home/alex/work/pocket4-bilibili-owned-qa-r4-flow-[0-9a-f]{32}', str(args.flow_dir)) and
+-            args.flow_dir.resolve() == args.flow_dir and args.recorder_root.resolve() == args.recorder_root,
+-            'NEW_CANONICAL_OWNED_FLOW_AND_RECORDER_REQUIRED')
+-    base = json.loads(pinned(args.recorder_root/'source-manifest.json', RECORDER_MANIFEST_SHA, 131072))
+-    recorder = load(args.recorder_root/'recorder.py', base['files']['recorder.py']['sha256'], 'owned_qa_frozen_recorder')
+-    flow_args = types.SimpleNamespace(operation='owned-qa', adapter_manifest_sha256=RECORDER_MANIFEST_SHA,
+-        flow_dir=args.flow_dir, epoch_module=args.recorder_root/'references/framework_epoch.py',
+-        task_source=args.recorder_root/'references/task_scope_baseline.py', step=args.step,
+-        request={'plan':plan, 'plan_sha256':sha(plan_raw), 'owned_build':proof},
+-        unknown_step=None, observation_step=None, postcondition=None)
+-    os.umask(0o077)
+-    flow = None; action_lock = None
+-    result = {'ok':False, 'automatic_retry':False, 'business_success_verified':False,
+-              'whole_app_production_ready':False, 'old_v2_helper_called':False,
+-              'error':None, 'secondary_errors':[], 'source_manifest_sha256':args.source_manifest_sha256,
+-              'plan_sha256':sha(plan_raw), 'build':proof}
+-
+-    def remember(phase, error):
+-        value = {'phase':phase, 'type':type(error).__name__, 'message':str(error)}
+-        if hasattr(error,'details'):
+-            value['details'] = error.details
+-        if hasattr(error,'__notes__'):
+-            value['notes'] = error.__notes__
+-        if result['error'] is None:
+-            result['error'] = value
+-        else:
+-            result['secondary_errors'].append(value)
+-        result['ok'] = False
+-
+-    try:
+-        flow = recorder.Flow(flow_args)
+-        flow.begin(flow_args, mutation=plan['operation'] in ('click','set_text'))
+-        action_lock = recorder.lock_file(recorder.ACTION_LOCK)
+-        result.update(Session(flow, recorder, qa, proof, args.helper_uid).sequence(plan))
+-        result['ok'] = True
+-    except BaseException as error:
+-        remember('admission_or_once_sequence', error)
+-    finally:
+-        if flow is not None:
+-            try:
+-                flow.guard(attempted=flow.action_attempted)
+-            except BaseException as error:
+-                remember('final_Main_guard', error)
+-            try:
+-                flow.close()
+-            except BaseException as error:
+-                remember('held_binding_release', error)
+-        if action_lock is not None:
+-            try:
+-                os.close(action_lock)
+-            except BaseException as error:
+-                remember('original_action_lock_release', error)
+-    result['action_attempted'] = bool(flow is not None and flow.action_attempted)
+-    result['outcome_unknown'] = result['action_attempted']
+-    result['ended_utc'] = recorder.now()
+-    result['next_business_mutation_requires_explicit_postcondition_reconciliation'] = result['action_attempted']
+-    if flow is not None and flow.step is not None:
+-        recorder.write_new(flow.step/'result.json', result)
+-    print(json.dumps(result, ensure_ascii=False))
+-    return 0 if result['ok'] else 2
++    # This source-bound library cannot activate the old Bili business Flow.
++    # A separate exact Amazon artifact/held-transport/task adapter is required.
++    raise RuntimeError('DEDICATED_AMAZON_HELD_FLOW_ADMISSION_REQUIRED')
+ 
+ 
+ def main():
+@@ -419,7 +356,8 @@
+     if not args.execute_once:
+         print(json.dumps({'state':'PLAN_ONLY', 'package':SELF, 'recorder_manifest_sha256':RECORDER_MANIFEST_SHA,
+             'operations':['state','inspect','click','set_text'], 'install_launch_task_cleanup_or_UI_actions':0,
+-            'actual_build_install_and_runtime_qualification_required':True}))
++            'actual_build_install_and_runtime_qualification_required':True,
++            'standalone_execute_admitted':False,'dedicated_Amazon_flow_required':True}))
+         return 0
+     require(all(getattr(args, name) is not None for name in ('source_manifest_sha256','build_receipt_sha256',
+         'apk_sha256','signer_certificate_sha256','plan_sha256','step','build_receipt','recorder_root',

@@ -1,0 +1,16 @@
+--- reader02/read_staging.py
++++ reader03_metadata_before_validation/read_staging.py
+@@ -159,11 +159,12 @@
+             row['observed'] = True
+             return row
+         checkout_before = identity(os.fstat(checkout))
++        row['checkout'] = checkout_before
+         need(checkout_before['uid'] == checkout_before['gid'] == 1000
+              and not checkout_before['mode'] & 0o022, 'OWNED_PROJECT_DIRECTORY_REQUIRED')
+-        row['checkout'] = checkout_before
+         git = directory(checkout, '.git')
+         git_before = identity(os.fstat(git))
++        row['git_directory'] = git_before
+         need(git_before['uid'] == git_before['gid'] == 1000 and not git_before['mode'] & 0o022,
+              'OWNED_GIT_DIRECTORY_REQUIRED')
+         head, row['HEAD'] = optional_regular(git, 'HEAD', 256)

@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "decision": "PASS_SOURCE_DELTA_AND_PURE_CONTROLS;ACTUAL09_BUILD_AND_RUNTIME_STILL_REQUIRED",
+  "source_manifest_sha256": "c71f8aa93bb96f329177b7797a77d1b6f46238953450a9579b78547770f991b5",
+  "verified_frozen_payload_files": 36,
+  "reviewed_patch_sha256": "9f854c185e7f2da3eafcaf7d00ce6053bd19de39500cef344e9899f2f61b88cf",
+  "independent_delta_controls_sha256": "30da3c39b2127ba375e6df382df5e300582970160eb91dcb7ea384e179fb9487",
+  "independent_controls": 5,
+  "findings": [
+    "Actor stops stale allocation only after an exact complete 4MiB ACK, while above original high and scoped full total delta reaches700000us. Totals only choose a stopping point.",
+    "Original some70/full700/window1000ms registrations, total8s ramp deadline,512MiB hard/384MiB high/swap0,216MiB allocator cap and 432MiB current cap remain unchanged.",
+    "All actual events must be sent before resume and strictly older than1s. A real level2 event while stopped is now mandatory. Asynchronous observation after ACK is allowed only if these age checks hold.",
+    "Retained08 actual positive remains source08 and qualifies under the09 positive decision logic; this read-only compatibility check is not09 device execution.",
+    "Original08 stale failure remains failed before age/resume. New source does not retroactively qualify it."
+  ],
+  "actual09_runtime_executed_by_review": false,
+  "installed_hooks_qualified": false,
+  "production_cgroup_kill_qualified": false,
+  "all_apps_production_ready": false
+}

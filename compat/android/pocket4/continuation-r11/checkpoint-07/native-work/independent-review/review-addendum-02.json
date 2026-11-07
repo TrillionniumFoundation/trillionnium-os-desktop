@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "previous_review": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/report.json",
+    "bytes": 9947,
+    "sha256": "97df93040351c81e7c9a2370f45316cd61e1f735c4883608fa469c2ff5fd6eae"
+  },
+  "reviewed_controller": {
+    "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-fixture-01/controller.py",
+    "bytes": 43424,
+    "sha256": "badfc916b151999ff074847057f3a0e06421636c2d759ce10c3d8576e0203358"
+  },
+  "controller_delta_only": true,
+  "independent_execution_of_fixed_child_control": false,
+  "root_actual_fixed_control_read_and_pinned": {
+    "path": "/workspace/scratch/94990735b266/root-cp07/factory-child-output-bound-fixed-01.json",
+    "bytes": 661,
+    "sha256": "317742a71b9030196aec9e8afa5f5c19f5e826e2027ddfb2fedc9b1324e71fdf"
+  },
+  "F2_status": "CLOSED_FOR_THE_OBSERVED_BOUNDED_CHILD_OUTPUT_FAILURE",
+  "reasons": [
+    "Outputs, byte counts, hashes, open/EOF descriptors, first join errors and forced-kill status persist across join/retire.",
+    "Only still-owned stream descriptors are closed; observed EOF closes remove their number immediately.",
+    "Retirement records child.observation even after errors; root actual same overflow child retained 64KiB, observed/hash all65537 bytes and reaped without descriptor leak.",
+    "Primary fixture failure still prevents aggregate success; source-level cleanup review does not qualify an unrun namespace service."
+  ],
+  "SCM_PIDFD_controller_delta": "Known SOL_SOCKET SCM_PIDFD payload is adopted for closing and rejected. SCM_CREDENTIALS/unknown non-FD payloads are not treated as descriptors.",
+  "F1_device_addendum": {
+    "source": {
+      "path": "/workspace/scratch/94990735b266/root-cp07/factory-pidfd-original-pocket4-control-result.json",
+      "bytes": 5467,
+      "sha256": "d5208ca0fbe7a64e88aeceeb0f4e887f877a499b89d9ca6e0f89aeea6e293a07"
+    },
+    "performed_by": "root",
+    "job_id_reported_by_root": "1a1a8620265-fc05-2e86",
+    "authoritative_terminal_reported_by_root": "exit0/durable; not independently queried by this subagent",
+    "actual_kernel": "7.0.0-38-generic",
+    "listener_inheritance_now_evidenced": true,
+    "observation": "Exact candidate04 same bytes, unique owned listener, PASSPIDFD inherited by accepted socket, ValidateSocket accepts, actual Receive EPROTO retains one pidfd. Control closes leak and restores all owned descriptors.",
+    "not_a_factory_service_run": true,
+    "not_an_Android_or_Main_action": true
+  },
+  "candidate_factory_fix_reviewed": false,
+  "controller_full_runtime": "NOT_RUN",
+  "production_ready": false,
+  "previous_receipt_unchanged": true
+}

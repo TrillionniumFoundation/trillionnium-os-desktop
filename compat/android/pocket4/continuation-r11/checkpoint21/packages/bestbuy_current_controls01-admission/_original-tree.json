@@ -1,0 +1,43 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "358cf19484345a93a18ffa059ee8a84961f85537",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 30094,
+    "sha256": "c7f5d219066e651efa7fab73c3848145b6b8543cdc2de1e8b947b6e547c1d255",
+    "git_blob_sha1": "70c3c58e73a55d0b8d65812ab5de72c68aec0bf0",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission.tool-original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6ce93d9220269b9ab12e482200066d683013cf52",
+      "bytes": 2461
+    },
+    {
+      "path": "dispatch-intent.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f0bfe8f17cd4c311860c61aab4abd3dfe082f771",
+      "bytes": 365
+    },
+    {
+      "path": "preflight",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "264dc8afcc6a667fdd93af3c2853b8cfb5f6ebf2"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "preflight",
+      "original_tree": "264dc8afcc6a667fdd93af3c2853b8cfb5f6ebf2",
+      "checkpoint": 21,
+      "canonical_package": "bestbuy_current_controls01-preflight"
+    }
+  ],
+  "original_recursive_leaf_count": 78
+}

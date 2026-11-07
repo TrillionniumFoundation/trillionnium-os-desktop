@@ -1,0 +1,43 @@
+--- a/graphics/droidloom-denial-endpoint/src/lib.rs
++++ b/graphics/droidloom-denial-endpoint/src/lib.rs
+@@ -842,7 +842,11 @@
+         display: AndroidDisplayId,
+         package: String,
+     ) -> Result<EndpointAction, EndpointError> {
+-        if self.tasks.len() >= usize::try_from(MAX_TASK_OBJECTS).unwrap_or(usize::MAX) {
++        let pending_absent = self.retirements.keys()
++            .filter(|owned| !self.tasks.contains_key(*owned)).count();
++        if self.tasks.len() + pending_absent
++            >= usize::try_from(MAX_TASK_OBJECTS).unwrap_or(usize::MAX)
++        {
+             return Err(EndpointError::TaskLimit);
+         }
+         if self.tasks.contains_key(&object)
+@@ -1638,4 +1642,27 @@
+         assert!(!server.tasks[&OBJECT].retiring);
+         no_receipt(&client);
+     }
++
++    #[test]
++    fn retirement_pending_absence_and_live_creation_share_one_capacity_bound() {
++        let (client, mut server) = pair(true, true);
++        for value in 1..=u64::from(MAX_TASK_OBJECTS) {
++            retire(&client, &mut server, TaskObjectId(100_000+value), RetirementNonce(value));
++        }
++        let extra = TaskObjectId(999_999);
++        client.send_android(&AndroidMessage::CreateTask {
++            object: extra, display: AndroidDisplayId(extra.0),
++            package: "org.example.retirement".into(),
++        }, &[]).unwrap();
++        assert!(matches!(server.receive_action(), Err(EndpointError::TaskLimit)));
++        assert!(server.tasks.is_empty());
++        assert_eq!(server.retirements.len(), MAX_TASK_OBJECTS as usize);
++        no_receipt(&client);
++        // This explicit engine hook is an endpoint-API seam, not a GPU proof.
++        server.complete_retirement(TaskObjectId(100_001), RetirementNonce(1)).unwrap();
++        receipt(&client, TaskObjectId(100_001), RetirementNonce(1));
++        create(&client, &mut server, extra);
++        assert_eq!(server.tasks.len()+server.retirements.len(), MAX_TASK_OBJECTS as usize);
++    }
++
+ }

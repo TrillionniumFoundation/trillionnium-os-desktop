@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "reviewer": "/root/native_bridge_repair",
+  "review": "R5 exact owned systemd fixture source-only independent review",
+  "files": {
+    "owned_cleanup_fixture.py": "331a069e658413f8986601b9dd91be5e470f1c8adae8a49533ce5f955eea560b",
+    "owned_cleanup_fixture_child.py": "9f3a087fd26608440a36791bfef0b1b99a60bf856e0d6ddfbb04f7f252d308e8"
+  },
+  "source_root": "/workspace/scratch/94990735b266/android-cp06/r5-staging",
+  "verdict": "NO_CONCRETE_BLOCKER_FOUND_IN_DECLARED_NARROW_SOURCE_SCOPE",
+  "executed": false,
+  "execute_once_invoked": false,
+  "production_ready": false,
+  "scope": [
+    "Read both entire fixture source files without modifying them.",
+    "Also inspected the already-present cleanup reconcile semantics as context; did not re-review the five production modules.",
+    "Scope is this exact nonce-bound once-only unit and its one known bounded child."
+  ],
+  "findings": [
+    "The start call is inside the try/finally region. Unacknowledged or failed start reaches actual OwnedCleanup.reconcile; an unknown generation remains a failed observation and cannot authorize a blind stop.",
+    "The command allowlist permits only the exact owned unit's stop and its matching observation commands. Stop is attempted at most once.",
+    "One resources-before-cleanup ENOSPC injection is expected to remain an error while retirement proceeds; it cannot qualify the full canary as successful.",
+    "Successful evidence requires the original held hierarchical cgroup to become empty and deactivated, the original pidfd to report child exit, and the recorded child generation to disappear.",
+    "The child moves only itself under the exact owned unit; it sleeps at most 45 seconds after readiness. Setup failure with an acquired pidfd triggers targeted kill and bounded wait."
+  ],
+  "limitations": [
+    "No systemd start/stop, service, mount, pressure, Android or Main action was run by this reviewer.",
+    "No claim of arbitrary descendants, processes escaped from the owned cgroup, arbitrary failure cleanup, or full wrapper/production qualification.",
+    "Admission still requires final manifest/tool pins and root review; peer message is not an execution result."
+  ]
+}

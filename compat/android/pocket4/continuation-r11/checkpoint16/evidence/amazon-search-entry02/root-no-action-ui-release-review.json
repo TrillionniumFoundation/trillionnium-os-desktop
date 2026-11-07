@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "release_kind": "Logical owned UI reservation after original pre-action guard rejection",
+  "original_job_id": "1a1ac48ece3-fc05-5349",
+  "original_state": "failed",
+  "exit_code": 1,
+  "terminal_complete_durable": true,
+  "original_stderr": {
+    "bytes": 12397,
+    "sha256": "bfc5424620edf170e4b25ab1d810baeb6ece5b9ea2c06a7e4909114082078470"
+  },
+  "stage_source": {
+    "bytes": 5043,
+    "sha256": "8a6e30b960483f51a36aead25923674d153c4452b6327fadf0242199406d4eee",
+    "root_full_read": true
+  },
+  "failure": "Main resource limits differ",
+  "source_order": "original main_guard failed before ROOT.mkdir, once.claim, source writes, entry.execute and Android actions",
+  "Android_actions_executed": false,
+  "task_created_by_this_run": false,
+  "exact_UI_cleanup_required_for_this_run": false,
+  "Main_full_guard_passed": false,
+  "Main_unchanged_qualification": false,
+  "Main_resource_drift_unresolved": true,
+  "next_UI_runtime_authorized": false,
+  "original_failure_preserved": true
+}

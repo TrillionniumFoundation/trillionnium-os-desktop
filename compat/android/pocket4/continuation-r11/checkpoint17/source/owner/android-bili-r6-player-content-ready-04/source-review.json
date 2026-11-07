@@ -1,0 +1,111 @@
+{
+  "actual_runtime_history_unchanged": "Fresh02 failed at controls_reveal_input with missing title/author resources; no loading, ad or network cause inferred.",
+  "baseline": {
+    "bytes": 905,
+    "path": "/workspace/scratch/94990735b266/android-bili-r6-player-content-ready-03/SOURCE_PINS.json",
+    "sha256": "46196a2fbafcea46c588b61a3d21e348c1e82e8544d3a645f25adfe00c28e1fb"
+  },
+  "baseline_source_review_disposition": "Root held source-only candidate03; no device dispatch. The missing-metadata wait classifier did not yet check all original player geometry and ancestry. Frozen03 is preserved unchanged.",
+  "business_success_verified": false,
+  "changes": [
+    "Add waiting_structure copied from original R6 player_reveal_scope: all 27 nonmetadata validation statements retain equal AST.",
+    "Only the two metadata lookups and the final proof construction are omitted from the copied gate; it returns structural eligibility only and never emits a player proof. No metadata or tree is synthesized.",
+    "Before another no-action read, require original area/container/crop/window geometry, exact two SurfaceViews and bounds/ancestry, distinct eligible parents, password/text/Buffering rules, empty hidden controls and no interactive player nodes.",
+    "Keep the existing exact missing-metadata classification, present-label digest validation, complete role fields and fixed-role uniqueness, then apply this complete original structural gate.",
+    "Success still needs the unchanged full player predicate with actual title/author, followed by the unchanged independently fresh reveal and pause input gates."
+  ],
+  "controls": {
+    "added_controls": [
+      "missing_bad_geometry_never_authorizes_extra_read",
+      "missing_wrong_surface_parent_never_authorizes_extra_read"
+    ],
+    "count": 20,
+    "new_cases_additional_read_count": 0,
+    "new_cases_expected_errors": [
+      "REVEAL_ABSOLUTE_PLAYER_GEOMETRY",
+      "REVEAL_EXACT_DISTINCT_SURFACE_PARENTS"
+    ],
+    "new_cases_input_count": 0,
+    "original_Session_after_state_completed_and_restored": true,
+    "previous_controls_retained": 18,
+    "report": {
+      "bytes": 2395,
+      "path": "/workspace/scratch/94990735b266/android-bili-r6-player-content-ready-04/check_content_ready.stdout.json",
+      "sha256": "27ef1d84b6da66a91556fe1d5baa608cb7a100b839497c59854abff93fbb9392"
+    },
+    "structural_guard_original_AST_projection": {
+      "copied_guard_AST_sha256": "8401812a7a924b3b677b63401bc87208fbf4847958c08db05a6364cba0178cbe",
+      "copied_guard_statement_count": 27,
+      "local_alias_statements": 10,
+      "metadata_or_tree_synthesized": false,
+      "new_guard_emits_player_proof": false,
+      "original_contract_sha256": "871c784812063739a6ab976784fb38243af52266b0d9a95aa1244779ccd2c005",
+      "original_function": "player_reveal_scope",
+      "removed_statements": [
+        "title = one(PACKAGE + ':id/title', 'android.widget.TextView', REVEAL_TITLE)",
+        "author = one(PACKAGE + ':id/author_name', 'android.widget.TextView', REVEAL_AUTHOR)",
+        "fixed = [{'role': role, 'path_sha256': sha(node['path'].encode()), 'bounds': node['bounds'], 'class': node['class'], 'resource_id': node['resource_id']} for role, node in (('area', area), ('container', container), ('overlay', overlay), ('toolbar', toolbar))]",
+        "return {'scope': host_scope, 'window': window, 'window_sha256': inspection['window_sha256'], 'tree_sha256': inspection['tree_sha256'], 'viewport_bounds': crop, 'full_area_bounds': full, 'render_structure_sha256': sha(canonical({'fixed_roles': fixed, 'surfaces': render})), 'title_text_sha256': title['text_sha256'], 'author_text_sha256': author['text_sha256']}"
+      ],
+      "require_hidden_fixed_true": true,
+      "schema": 1
+    }
+  },
+  "device_execution_performed": false,
+  "flow_nonce": "a14743fa3566f851b6724a54b0509744",
+  "helper_nonce_count": 133,
+  "layout": {
+    "bytes_saved": 14299,
+    "method": "Leading indentation and operator-adjacent optional spaces compressed outside literal tokens; all six runtime ASTs equal before/after. Full readable files retained in review-source/.",
+    "normalized_logic_diff": {
+      "bytes": 6356,
+      "path": "/workspace/scratch/94990735b266/android-bili-r6-player-content-ready-04/normalized-runtime.patch",
+      "sha256": "dd3c96655306a36363deab2175f2321803455cf861e5a1f0b512a6e6705a708e"
+    },
+    "proof": {
+      "bytes": 3352,
+      "path": "/workspace/scratch/94990735b266/android-bili-r6-player-content-ready-04/layout-equivalence.json",
+      "sha256": "dc0d49b84b4c1776b4312ba591a914f4176f3aa1ae4767871301a710c091f6fa"
+    }
+  },
+  "limits": {
+    "actual_packet_bytes": 129959,
+    "cpu_percent": 100,
+    "memory_max_bytes": 536870912,
+    "navigation_worker_seconds": 240,
+    "request_seconds": 600,
+    "source_file_bytes": 65536,
+    "source_packet_bytes": 131072,
+    "swap_bytes": 0,
+    "tasks_max": 128
+  },
+  "preserved": [
+    "three extra inspect sequences maximum; each original Session state/inspect/state and independent finally",
+    "12-second admission/qualification deadline; original finally completion under unchanged 240-second worker deadline",
+    "same current owned task/scope/window/helper/accessibility state and exact nonce/wire/assessment pins",
+    "all first/secondary errors, unknown-action boundaries and fixed result retention",
+    "owned_navigation.py, stage_execute.py, make_request.py, controls_reveal.py, playback_controls.py AST unchanged after fresh binding normalization",
+    "original R6 qa_contract.py, qa_adapter.py and Java helper bytes unchanged"
+  ],
+  "request_pins": {
+    "request": {
+      "bytes": 135343,
+      "sha256": "9681e28ef301e4cc7bafe366c9d523ad7c72df6661b1c23551a41b6890c8401e"
+    },
+    "request_not_submitted": true,
+    "schema": 1,
+    "source_manifest": {
+      "bytes": 905,
+      "sha256": "a49770d55b487e4e172aa38ebc1a454220ec7e668c499f8c8d5b838962e9da42"
+    },
+    "stable_key": "pocket4-bilibili-r6-player-content-ready04-20261105",
+    "stage_checked_packet_only": true,
+    "stdin": {
+      "bytes": 129959,
+      "sha256": "62a75f97becc9cb563246883696bf1400cbe123989ea3ae0f39035aeba4538df"
+    }
+  },
+  "schema": 1,
+  "state": "FROZEN_SOURCE_CANDIDATE_ONLY_NO_DEVICE_RUN",
+  "whole_app_production_ready": false
+}

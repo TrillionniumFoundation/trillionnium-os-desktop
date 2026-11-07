@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "kind": "root-owner16-android-log-build01-source-review",
+  "request": {
+    "bytes": 163301,
+    "sha256": "35eba038fdd46df6930aa8ef038077925363af9350a5f84668ae654ec55bfcb6"
+  },
+  "stdin": {
+    "bytes": 162684,
+    "sha256": "2cf5a2cde604c683ea4825db1276cdbdfe3e9f594f0b39e0dfb751e681195ea0"
+  },
+  "reviewed": {
+    "full_258_line_driver": true,
+    "full_new_6718_byte_fixture": true,
+    "core_production_wip_and_delta_previously_read": true,
+    "core_31_payload_pins_reverified": true,
+    "build_13_payload_pins_reverified": true,
+    "android_sources_equal_reviewed_core": true,
+    "fixture_only_include_path_diff": true,
+    "request_stdin_and_cfg_ast_exact": true,
+    "prior_147_actual_inputs_unchanged": true,
+    "two_new_dependencies_equal_actual_receipt": true,
+    "guard_unchanged": true,
+    "no_undefined_retained": true
+  },
+  "expected": {
+    "input_count": 149,
+    "MD_count": 141,
+    "commands": 19,
+    "controls": [
+      20,
+      20,
+      7,
+      8,
+      9
+    ],
+    "init_log_assertions": 187,
+    "needed": [
+      "libc.so",
+      "libdl.so"
+    ]
+  },
+  "resources": {
+    "cpu_percent": 100,
+    "memory_max_bytes": 536870912,
+    "timeout_seconds": 180,
+    "nice": 10
+  },
+  "scope": "Fresh create-only isolated Android DSO and host seam controls. No constructor, Android namespace, Owner runtime, Main deployment, restart or daemon-reload.",
+  "qualification": {
+    "actual_KernelLogger_definition": false,
+    "Android_runtime": false,
+    "whole_app_production_ready": false
+  },
+  "automatic_retry": false
+}

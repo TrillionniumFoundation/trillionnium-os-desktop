@@ -1,0 +1,164 @@
+{
+  "Android_UI_actions": 0,
+  "actual_prior_identity_pin": {
+    "authoritative_terminal_reported_by_root": {
+      "durable": true,
+      "exit_code": 0,
+      "output_complete": true
+    },
+    "bytes": 23490,
+    "job_id": "1a1acab495b-fc05-5646",
+    "sha256": "5b05db0897b2eb85dbd4e71df77bbbb24ff481d78a8965492c0729bcd9e4de99"
+  },
+  "after": {
+    "NRestarts": "0",
+    "all_five_limits_match_original_activation": true,
+    "original_guard": "PASS unmodified",
+    "pids.max": "12288",
+    "same_daemon_InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+    "same_daemon_MainPID": 3588022,
+    "seven_process_maps_and_boot_match_prior": true,
+    "three_input_and_two_source_full_pins_match": true
+  },
+  "before": {
+    "original_guard": "FAIL preserved: Main resource limits differ",
+    "pids.max": "6144",
+    "seven_process_maps_and_boot_match_prior": true,
+    "three_input_and_two_source_full_pins_match": true
+  },
+  "commands": {
+    "set_property": {
+      "argv": [
+        "/usr/bin/systemctl",
+        "--system",
+        "--no-pager",
+        "--no-ask-password",
+        "set-property",
+        "droidloomd.service",
+        "TasksMax=12288"
+      ],
+      "child_pid": 2618210,
+      "pidfd_exit_observed": true,
+      "reaped": true,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 0,
+      "tool_unchanged": true
+    },
+    "show_after": {
+      "argv": [
+        "/usr/bin/systemctl",
+        "--system",
+        "show",
+        "--no-pager",
+        "--property=Id",
+        "--property=ActiveState",
+        "--property=SubState",
+        "--property=MainPID",
+        "--property=InvocationID",
+        "--property=ControlGroup",
+        "--property=TasksMax",
+        "--property=TasksCurrent",
+        "--property=FragmentPath",
+        "--property=DropInPaths",
+        "--property=UnitFileState",
+        "--property=NRestarts",
+        "droidloomd.service"
+      ],
+      "child_pid": 2618211,
+      "pidfd_exit_observed": true,
+      "reaped": true,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 587,
+      "tool_unchanged": true
+    },
+    "show_before": {
+      "argv": [
+        "/usr/bin/systemctl",
+        "--system",
+        "show",
+        "--no-pager",
+        "--property=Id",
+        "--property=ActiveState",
+        "--property=SubState",
+        "--property=MainPID",
+        "--property=InvocationID",
+        "--property=ControlGroup",
+        "--property=TasksMax",
+        "--property=TasksCurrent",
+        "--property=FragmentPath",
+        "--property=DropInPaths",
+        "--property=UnitFileState",
+        "--property=NRestarts",
+        "droidloomd.service"
+      ],
+      "child_pid": 2618208,
+      "pidfd_exit_observed": true,
+      "reaped": true,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 586,
+      "tool_unchanged": true
+    }
+  },
+  "config50": {
+    "bytes_before_and_after": 146,
+    "metadata_change_expected_from_single_property_reassertion": true,
+    "mode_owner_unchanged": true,
+    "new_inode": 76546572,
+    "old_held_nlink_after": 0,
+    "prior_inode": 76546888,
+    "sha256_before_and_after": "efc86c948c22294919c23c43fa11382b6e0c13d96883239e7d79a24c027d0f63"
+  },
+  "config90": {
+    "bytes_after": 133,
+    "bytes_before": 132,
+    "device": 66306,
+    "file_and_parent_fsync_reported": true,
+    "held_and_named_exact_body_proved_by_pinned_source": true,
+    "one_full_write_returned": 133,
+    "same_inode": 76546864,
+    "sha256_after": "9ce11617715c28e3dc3a0a8a7446d29d93e0684490ce9ef69777bb47853bac22",
+    "sha256_before": "1ddafeb233beabb556bdc9f1cbd3a1af78d00a0489675facad2d02493ba431a7"
+  },
+  "evidence": {
+    "action_lock_released": true,
+    "authoritative_final_result": "full original stdout after evidence close",
+    "disk_result": {
+      "bytes": 102307,
+      "path": "/home/alex/work/pocket4-main-tasksmax-restore-01/result.json",
+      "sha256": "b6b69090ab89de8bcf435b6c35fb9411446745b14a12ab96bfb7973ceef4a425"
+    },
+    "disk_result_exact_writer_reconstruction_matches_reported_pin": true,
+    "disk_result_independent_remote_file_read": false,
+    "disk_result_state": "FINAL_EVIDENCE_CLOSE_PENDING",
+    "elapsed_ms": 66,
+    "evidence_fds_closed": true,
+    "no_forced_child_kill": true,
+    "operator_writable_parent_not_misrepresented_as_root_owned": true,
+    "transaction_held_fds_closed": true
+  },
+  "no_guard_or_activation_modification": true,
+  "no_reload_restart_engine_or_supervisor_replacement": true,
+  "no_rollback_or_repeat": true,
+  "original": {
+    "authoritative_terminal_from_root": {
+      "durable": true,
+      "exit_code": 0,
+      "output_complete": true,
+      "terminal_confirmed": true
+    },
+    "bytes": 60905,
+    "job_id": "1a1accb66a0-fc05-56ed",
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/main-tasksmax-restore01/stdout.log",
+    "sha256": "07dac235abe10226316ffc29ba1c716a7cf19a18db39d7eefe19dcf02cc61af1"
+  },
+  "post_exit_independent_identity": "PENDING Root readonly02 original result; not claimed here",
+  "result": "ORIGINAL_MAIN_TASKSMAX_RESTORED_WITHIN_EXECUTING_TRANSACTION",
+  "runtime_authorized_by_review": false,
+  "schema": 1,
+  "scope": "independent full retained stdout/source/binding review; no new device operations",
+  "source_manifest_sha256": "8513d03daf642ea959c8d00a821e0a9a6e56ec14067f82070d090cd93f59a31e",
+  "whole_app_or_new_engine_qualification": false
+}

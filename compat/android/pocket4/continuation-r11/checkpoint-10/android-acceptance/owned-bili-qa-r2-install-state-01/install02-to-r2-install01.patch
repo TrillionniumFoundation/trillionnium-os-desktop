@@ -1,0 +1,128 @@
+--- a/install_state.py
++++ b/install_state.py
+@@ -2,7 +2,7 @@
+ """One frozen owned APK install and one no-UiAutomation state observation.
+ 
+ Default PLAN is inert. Production requires the exact external source manifest,
+-the fixed actual build02/stage receipts and signed APK, the frozen R3 recorder,
++the fixed actual r2 build01/stage receipts and signed APK, the frozen R4 recorder,
+ a fresh flow/step, and its original Main fences and action lock. No UI, v2
+ fallback, permission grant, install replacement, task or commercial data action.
+ """
+@@ -17,25 +17,25 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-install-state-02')
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r2-install-state-01')
+ SOURCE = ROOT / 'source'
+-NONCE = '9eb2de4b3fa0576fd89afc046f8dfb23'
+-STATE_NONCE = '298ed69e503c77c4b1f5e321ea6cf17a'
+-FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r1-flow-' + NONCE)
+-STEP = 'install-state-02'
+-SELF = 'org.droidloom.qa.bili.r1'
+-QA_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r1-source-02/source')
+-QA_MANIFEST = 'd0f9f0f45d0e94a3d6b4a46e0ae0d9048ea2e6ff6c60550b39f54a75029d5aba'
+-BUILD = Path('/home/alex/work/pocket4-owned-bili-qa-r1-build-02/build-result.json')
+-BUILD_SHA = '914500629ff59c1a27b3f67b962d883bae6f5b6f68dbca335a73de10dfbea03a'
+-BUILD_BYTES = 17047
+-STAGE = Path('/home/alex/work/pocket4-owned-bili-qa-r1-source-02/stage-result.json')
+-STAGE_SHA = '15bf5790804808b95f05151aa866bed86ef5173b621c07e5ab30617c282111db'
++NONCE = '1c5dfa5297c2f249a3f19ecabbf86b55'
++STATE_NONCE = '58986b6022b724c5854f57d4b10fffe7'
++FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r2-flow-' + NONCE)
++STEP = 'install-state-r2-01'
++SELF = 'org.droidloom.qa.bili.r2'
++QA_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r2-source-01/source')
++QA_MANIFEST = 'd0214aa3c8be57d26722ae0f5ee5ac6d24bc78fb27fc97df85bb8af0d140f7df'
++BUILD = Path('/home/alex/work/pocket4-owned-bili-qa-r2-build-01/build-result.json')
++BUILD_SHA = '714be386573242c2763d6fb69f91e557a5f7537e33b30f75ccdaaebfb694deae'
++BUILD_BYTES = 17188
++STAGE = Path('/home/alex/work/pocket4-owned-bili-qa-r2-source-01/stage-result.json')
++STAGE_SHA = 'cb7282e1562485a9506415118a52933c0e98fdddb5efe6c949845dcd74ee38db'
+ STAGE_BYTES = 1935
+-APK = Path('/home/alex/work/pocket4-owned-bili-qa-r1-build-02/owned-bili-qa.apk')
+-APK_SHA = 'd40804b28f13adac16cd66ec8f32560d6083424c673eb94f543a23ee2ac81e27'
++APK = Path('/home/alex/work/pocket4-owned-bili-qa-r2-build-01/owned-bili-qa.apk')
++APK_SHA = 'af478cebd9c4157471c8c7ee46b74463e55b8f47eb0a859af870b5950acee66b'
+ APK_BYTES = 20624
+-SIGNER_SHA = '65d64cd59b94c92b8a18bc3ba0d352aa160a2d9c74dc55448683d5df84cca134'
++SIGNER_SHA = 'bbd4116f64c4d1c25387c0a70fb1f9eee71752065f242e8caa7d7522ce2c3d0a'
+ RECORDER_ROOT = SOURCE / 'recorder-r4'
+ RECORDER_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+@@ -173,7 +173,7 @@
+     match = re.fullmatch(re.escape('package:'+SELF+' uid:') + r'([0-9]+)\n', text)
+     require(match is not None, 'ONE_EXACT_NEW_PACKAGE_UID_REQUIRED')
+     uid = int(match[1])
+-    require(10000 <= uid < 100000 and uid not in (10117,10125), 'NEW_APP_UID_REQUIRED')
++    require(10000 <= uid < 100000 and uid not in (10117,10125,10164), 'NEW_APP_UID_REQUIRED')
+     return uid
+ 
+ 
+--- a/session_binding.py
++++ b/session_binding.py
+@@ -1,24 +1,16 @@
+-"""Explicit host-only R4 recorder binding; actual compiled QA source stays fixed.
++"""Use the actual r2 adapter's R4 Session without overriding any method.
+ 
+-The five operational Session methods are inherited unchanged from the pinned
+-actual-build QA adapter. This constructor declares the new recorder dependency;
+-it neither edits that adapter's global R3 pin nor forges a R3 SourceContract.
++The r2 build itself declares R4. Its source and recorder bindings must match;
++no old R3 global is changed and no legacy constructor shim is reused.
+ """
+-R3_MANIFEST = '4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906'
+ R4_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+-QA_MANIFEST = 'd0f9f0f45d0e94a3d6b4a46e0ae0d9048ea2e6ff6c60550b39f54a75029d5aba'
++QA_MANIFEST = 'd0214aa3c8be57d26722ae0f5ee5ac6d24bc78fb27fc97df85bb8af0d140f7df'
++SELF = 'org.droidloom.qa.bili.r2'
+ 
+ 
+ def new_session(adapter, flow, recorder, qa, proof, helper_uid):
+-    adapter.require(adapter.RECORDER_MANIFEST_SHA == R3_MANIFEST and
+-                    proof['source_manifest_sha256'] == QA_MANIFEST,
+-                    'ACTUAL_BUILT_QA_BASE_ADAPTER_REQUIRED')
+-    class RecorderR4Session(adapter.Session):
+-        def __init__(self):
+-            adapter.require(flow.contract.sha256 == R4_MANIFEST and not flow._private_backend_transport,
+-                            'EXACT_NEW_R4_PUBLIC_TRANSPORT_REQUIRED')
+-            adapter.require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and
+-                            helper_uid not in (10117,10125), 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
+-            self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
+-            self.nonces = set()
+-    return RecorderR4Session()
++    adapter.require(adapter.RECORDER_MANIFEST_SHA == R4_MANIFEST and
++                    proof['source_manifest_sha256'] == QA_MANIFEST and
++                    adapter.SELF == qa.SELF == SELF,
++                    'ACTUAL_BUILT_R2_R4_ADAPTER_REQUIRED')
++    return adapter.Session(flow, recorder, qa, proof, helper_uid)
+--- a/stage_execute.py
++++ b/stage_execute.py
+@@ -7,9 +7,9 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-install-state-02')
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r2-install-state-01')
+ SOURCE = ROOT/'source'
+-NONCE = '9eb2de4b3fa0576fd89afc046f8dfb23'
++NONCE = '1c5dfa5297c2f249a3f19ecabbf86b55'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ FILES = {'install_state.py','stage_execute.py','make_request.py',
+          'references/readonly_r3_coordinator.py','INPUTS.json','README.md',
+--- a/make_request.py
++++ b/make_request.py
+@@ -7,9 +7,9 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-bili-qa-install-state-02-20261105'
+-ROOT='/home/alex/work/pocket4-owned-bili-qa-install-state-02'
+-NONCE='9eb2de4b3fa0576fd89afc046f8dfb23'
++KEY='pocket4-owned-bili-qa-r2-install-state-01-20261105'
++ROOT='/home/alex/work/pocket4-owned-bili-qa-r2-install-state-01'
++NONCE='1c5dfa5297c2f249a3f19ecabbf86b55'
+ 
+ 
+ def sha(raw):

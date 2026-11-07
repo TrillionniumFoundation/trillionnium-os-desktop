@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "reviewer": "local_pocket4_inventory",
+  "kind": "actual_report_byte_and_scope_binding",
+  "actual_report": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner-cgroup-mount-mechanism03/result.json",
+    "bytes": 176640,
+    "sha256": "b634140f6554cf017763891f55b737e6013461d641b33de75e346c9e9409f9c9"
+  },
+  "freeze_manifest_sha256": "ef9b8e0255c01fc7ae235acb6cbd2295653bba93af66999f82028a6a65ddc851",
+  "source_dependency": {
+    "bytes": 16712,
+    "ctime_ns": 1793857996077349213,
+    "device": 66306,
+    "gid": 0,
+    "inode": 44181335,
+    "mode": 33024,
+    "mtime_ns": 1793857996077349213,
+    "nlink": 1,
+    "resolved_path": "/opt/p4-cgroup-mount-mechanism-20261105-02/source/probe.c",
+    "sha256": "e502766aea13e43ac29e647f33ba37f4cbfa6199d5d4a92bc7be9cd666ca7fac",
+    "uid": 0
+  },
+  "dependency_count": 187,
+  "all_four_commands_zero_joined_no_timeout": true,
+  "kernel_control": {
+    "Android_executed": false,
+    "all_private_mounts_unmounted": true,
+    "cgroup_controls_written": false,
+    "child_begin": {
+      "boottime_ns": 883705663601608,
+      "monotonic_ns": 883705663601398,
+      "realtime_ns": 1793857996375030826
+    },
+    "child_birth_ticks": 88370566,
+    "child_cgroup_namespace": [
+      5,
+      4026533805
+    ],
+    "child_end": {
+      "boottime_ns": 883705675598513,
+      "monotonic_ns": 883705675598413,
+      "realtime_ns": 1793857996387027622
+    },
+    "child_errno": 0,
+    "child_mount_namespace": [
+      5,
+      4026533753
+    ],
+    "child_pid": 1357440,
+    "child_reaped": true,
+    "child_stage": 6,
+    "child_user_namespace": [
+      5,
+      4026531837
+    ],
+    "child_wait_status": 0,
+    "domain": {
+      "device": 30,
+      "gid": 1000,
+      "inode": 29535830,
+      "mode": 16877,
+      "uid": 1000
+    },
+    "first_a": {
+      "errno": 0,
+      "rc": 0
+    },
+    "first_target": {
+      "device": 30,
+      "gid": 1000,
+      "inode": 29535830,
+      "mode": 16877,
+      "uid": 1000
+    },
+    "forced_kill": false,
+    "fresh_b": {
+      "errno": 0,
+      "rc": 0
+    },
+    "fresh_target": {
+      "device": 30,
+      "gid": 1000,
+      "inode": 29535830,
+      "mode": 16877,
+      "uid": 1000
+    },
+    "inherited_domain_closed": true,
+    "nonce": "782a06e513cc0b63cd93d6022c6495b5",
+    "parent_cgroup_namespace": [
+      5,
+      4026531835
+    ],
+    "parent_errno": 0,
+    "parent_mount_namespace": [
+      5,
+      4026531832
+    ],
+    "parent_user_namespace": [
+      5,
+      4026531837
+    ],
+    "peer_eof": true,
+    "repeat_a_plain": {
+      "errno": 16,
+      "rc": -1
+    },
+    "repeat_a_recursiveprot": {
+      "errno": 16,
+      "rc": -1
+    },
+    "schema": 1,
+    "success": true
+  },
+  "held_domain_identity_before_after_equal": true,
+  "actual_Main_before_after_equal": true,
+  "held_own_resource_gate_passed": true,
+  "original02_overall_failure_unchanged": true,
+  "qualifies": "This fresh owned mount-only mechanism, including exact parent protocol/EOF/reap and private unmount/FD cleanup",
+  "does_not_qualify": [
+    "old Owner08 journal sender or causal attribution",
+    "Android constructor or LMKD enrollment",
+    "controller activation/bootstrap leaf",
+    "installed lifecycle/App readiness"
+  ],
+  "new_execution_performed_by_review": false,
+  "Hepta_calls": 0
+}

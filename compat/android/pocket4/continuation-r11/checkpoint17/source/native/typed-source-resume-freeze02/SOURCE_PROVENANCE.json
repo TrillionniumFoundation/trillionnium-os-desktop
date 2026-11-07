@@ -1,0 +1,111 @@
+{
+  "schema": 1,
+  "state": "SOURCE_FROZEN_NOT_COMPILED_OR_DEVICE_REUSE_QUALIFIED",
+  "frozen_utc": "2026-11-06T00:06:40.581581+00:00",
+  "actual_parent_source_manifest": {
+    "bytes": 91758,
+    "sha256": "f09b908745cf294735f897a64d0d956a207d27f78277781f536d5059bb856d0f"
+  },
+  "actual_parent_compile": {
+    "bytes": 98764,
+    "sha256": "2d6c80a29e957b1e97764d8785257eb47c3d0b899f301e64c9a9c418e96ea0ab"
+  },
+  "actual_parent_revision": "466-go5",
+  "actual_parent_source_file_count": 465,
+  "candidate_revision": "467-source-resume",
+  "candidate_source_file_count": 466,
+  "replaced_existing": {
+    "tools/droidloom-source/src/lib.rs": {
+      "before": {
+        "bytes": 44221,
+        "sha256": "731d24f84669469e5775230ada9cfb5321422ab63d8de0497672ae32e64120e3"
+      },
+      "after": {
+        "bytes": 44272,
+        "sha256": "40153ed05004620876fc6ef240b9d89373781baee3111bbbd3c65d446c31e5b3"
+      }
+    },
+    "tools/droidloom-update/src/android.rs": {
+      "before": {
+        "bytes": 268218,
+        "sha256": "32d465c001be935f2d460995257da40fed15026b7c805367c18bbc6cd81dac6b"
+      },
+      "after": {
+        "bytes": 269024,
+        "sha256": "a48aa5db24d22df56939562a125567aaea9f26fd28a75230270c89f63d4cf8d3"
+      }
+    },
+    "tools/droidloom-update/src/main.rs": {
+      "before": {
+        "bytes": 21002,
+        "sha256": "0a457dc7952eb531bdf7153ccce73f59ad1f2c39132045a6ea755b4ac10eeaa0"
+      },
+      "after": {
+        "bytes": 21215,
+        "sha256": "c75a0b03c2f3827a946e360ea8747665e183cf9f495460c24e29d176ae678172"
+      }
+    }
+  },
+  "added": {
+    "tools/droidloom-source/src/resume.rs": {
+      "bytes": 38287,
+      "sha256": "4a10f2ae5739bdc16a82054e39ad0ee2179251e1fb14f1a5793b13652f2b9224"
+    }
+  },
+  "unchanged_existing_files": 462,
+  "Cargo_lock_and_dependency_manifests_changed": false,
+  "typed_source_lock_changed": false,
+  "Go5_and_framework_patches_changed": false,
+  "actual_staging_observation": {
+    "bytes": 211213,
+    "sha256": "c62f32b7002d043e4813eadd598f33d088a0f20cc9f562ddc19d35c2ccddf664"
+  },
+  "observation_assessment": {
+    "bytes": 7226,
+    "sha256": "b3992232b84de65addb54a87ca6a5f36ea90e5548e321a4774b1a17a60b15354"
+  },
+  "original_failed_inner_terminal": {
+    "bytes": 28758,
+    "sha256": "139163acad47d9db707faa950e4b4dcecaf3e72b655bce8b6b3db089ce542bdf"
+  },
+  "original_failed_outer_terminal": {
+    "bytes": 1177,
+    "sha256": "3626270e88e72c4e46d8beee09b5351e1f7d53bab18043241204ca314855e04d"
+  },
+  "original_timeout_seconds": 6100,
+  "original_reaped_children": 296,
+  "original_failures_preserved": true,
+  "staging_observed_candidate_prefix": 145,
+  "candidate_prefix_reuse_qualified": false,
+  "project146": {
+    "path": "prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8",
+    "locked_commit": "ae37c9849d97a20b97ff5ce93a5b171c6d5d02ab",
+    "historical_shape": "initial symbolic HEAD, exact origin, index ENOENT, index.lock 0 bytes",
+    "unobserved_nlink_loose_ref_packed_refs_clean_objects": "fresh execution gates, never prequalified"
+  },
+  "normal_manifest_links_and_verifier_required_before_publication": true,
+  "root_lock_owner_retirement_gate_required_for_real_reuse": true,
+  "rust_controls": {
+    "declared": [
+      "resume::tests::completed_project_reuse_has_no_fetch_or_checkout_and_publishes_only_after_verify",
+      "resume::tests::initial_checkout_reuses_cached_commit_and_preserves_interrupted_index_lock",
+      "resume::tests::nonempty_interrupted_index_lock_is_preserved_in_place_and_rejected",
+      "resume::tests::dirty_completed_project_keeps_original_bytes_and_never_gets_manifest",
+      "resume::tests::conflicting_untracked_partial_file_is_not_forced_or_removed",
+      "resume::tests::wrong_origin_is_rejected_before_any_fetch_or_checkout",
+      "resume::tests::recovered_parent_symlink_cannot_create_a_project_outside_staging",
+      "resume::tests::mismatched_staging_manifest_is_preserved_and_not_published",
+      "resume::tests::sparse_parent_normalization_keeps_exact_locked_selection"
+    ],
+    "compiled": false,
+    "executed": false
+  },
+  "local_git_mechanism_controls_only": {
+    "bytes": 6922,
+    "sha256": "b9a1a2ab1d79d3986db21ccafa8e8e59b109088a6e8cabba86bff8a47b22a1a8"
+  },
+  "local_Rust_toolchain_available": false,
+  "remote_submitted": false,
+  "Main_actions": 0,
+  "App_or_runtime_readiness_claimed": false
+}

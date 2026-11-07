@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "state": "FROZEN_NOT_DISPATCHED",
+  "source_scope": "complete real Blueprint production package; upstream tests preserved separately, never substituted into production serializers",
+  "resources": {
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 1073741824,
+    "nice": 15,
+    "timeout_seconds": 600,
+    "compiler_affinity_cpus": 1,
+    "at_least_other_allowed_cpus": 2
+  },
+  "whole_output_cases": [
+    "zero",
+    "one",
+    "nine",
+    "ten",
+    "eleven",
+    "mixed37",
+    "large",
+    "enabled13"
+  ],
+  "direct_serializer_cases": [
+    "empty",
+    "mixed",
+    "large"
+  ],
+  "write_error_offsets": [
+    "0",
+    "11",
+    "half",
+    "last_byte"
+  ],
+  "additional_controls": [
+    "real shard filesystem error and join",
+    "8MiB actual serializer allocation comparison",
+    "actual whole WriteBuildFile allocation comparison"
+  ],
+  "required_top_level_tests": 6,
+  "required_leaf_cases": 18,
+  "comparisons": [
+    "preimage/candidate complete output filename set and SHA256/length",
+    "real buffered/streaming bytes in each executable",
+    "exact ENOSPC propagation from real streaming serializer",
+    "incremental-enabled fresh-generation arm",
+    "Go source and tool pins before/after",
+    "no leaked owned children"
+  ],
+  "not_covered": [
+    "restored incremental-cache positive",
+    "complete upstream test suite",
+    "whole engine full build",
+    "OOM victim attribution",
+    "Android or Main deployment",
+    "NOFILE recovery controls"
+  ],
+  "normal_builder_integration_required": true,
+  "whole_app_production_ready": false
+}

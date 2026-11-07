@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "scope": "exact owned build units; follow-up to preserved worker cancellation records",
+  "source_report_sha256": "9e58a57f0f1e6c062bf95dc6c0fbb9d7a48a5a22024990e909ed132d40134e81",
+  "observed_cause": "Both systemd unit journals explicitly report kernel OOM kill and result oom-kill. Worker cancellation alone did not establish the cause.",
+  "jobs": [
+    {
+      "job_id": "1a1a6b652a9-fc05-285f",
+      "requested_memory_max_bytes": 3221225472,
+      "requested_timeout_seconds": 6700,
+      "original_terminal": {
+        "cancelled": true,
+        "exit_code": -15,
+        "timed_out": false
+      },
+      "journal_returncode": 0,
+      "journal": "2026-11-04T05:18:50-08:00 alex-G1628-04 systemd[2472]: Started hepta-runtime-job-1a1a6b652a9-fc05-285f.service - Hepta Runtime job 1a1a6b652a9-fc05-285f 17a7286077e4151e760b8f1fd862e3c4.\n2026-11-04T05:45:20-08:00 alex-G1628-04 systemd[2472]: hepta-runtime-job-1a1a6b652a9-fc05-285f.service: The kernel OOM killer killed some processes in this unit.\n2026-11-04T05:45:20-08:00 alex-G1628-04 systemd[2472]: hepta-runtime-job-1a1a6b652a9-fc05-285f.service: Main process exited, code=exited, status=1/FAILURE\n2026-11-04T05:45:20-08:00 alex-G1628-04 systemd[2472]: hepta-runtime-job-1a1a6b652a9-fc05-285f.service: Failed with result 'oom-kill'.\n2026-11-04T05:45:20-08:00 alex-G1628-04 systemd[2472]: hepta-runtime-job-1a1a6b652a9-fc05-285f.service: Consumed 48min 18.316s CPU time over 26min 29.865s wall clock time, 3G memory peak, 3.7G memory swap peak.\n",
+      "journal_sha256": "a9c1d751fa396f4c243ab42db95a8e2b1ddf9d7bf79d4ca29e1a23db591098f5",
+      "worker_sigterm_marks_cancel_requested": true
+    },
+    {
+      "job_id": "1a1a6e24982-fc05-294b",
+      "requested_memory_max_bytes": 8589934592,
+      "requested_timeout_seconds": 6400,
+      "original_terminal": {
+        "cancelled": true,
+        "exit_code": -15,
+        "timed_out": false
+      },
+      "journal_returncode": 0,
+      "journal": "2026-11-04T06:06:52-08:00 alex-G1628-04 systemd[2472]: Started hepta-runtime-job-1a1a6e24982-fc05-294b.service - Hepta Runtime job 1a1a6e24982-fc05-294b 44fdf98a674468ea20d0fbe471b5ac6d.\n2026-11-04T06:12:22-08:00 alex-G1628-04 systemd[2472]: hepta-runtime-job-1a1a6e24982-fc05-294b.service: The kernel OOM killer killed some processes in this unit.\n2026-11-04T06:12:22-08:00 alex-G1628-04 systemd[2472]: hepta-runtime-job-1a1a6e24982-fc05-294b.service: Main process exited, code=exited, status=1/FAILURE\n2026-11-04T06:12:22-08:00 alex-G1628-04 systemd[2472]: hepta-runtime-job-1a1a6e24982-fc05-294b.service: Failed with result 'oom-kill'.\n2026-11-04T06:12:22-08:00 alex-G1628-04 systemd[2472]: hepta-runtime-job-1a1a6e24982-fc05-294b.service: Consumed 9min 15.065s CPU time over 5min 29.973s wall clock time, 8G memory peak, 1.8G memory swap peak.\n",
+      "journal_sha256": "f515c6b695dce7062a98d6561a3fb928160a3d75a5033a264f22a012a8da8cb6",
+      "worker_sigterm_marks_cancel_requested": true
+    }
+  ],
+  "main_runtime_oom_not_inferred": true
+}

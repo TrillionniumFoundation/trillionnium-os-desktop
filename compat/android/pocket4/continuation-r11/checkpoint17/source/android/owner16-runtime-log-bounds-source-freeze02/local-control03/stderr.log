@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/94990735b266/android-owner16-runtime-log-bounds-work01/controls.py", line 267, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/scratch/94990735b266/android-owner16-runtime-log-bounds-work01/controls.py", line 243, in main
+    socket_control(owned, folder, wire)
+  File "/workspace/scratch/94990735b266/android-owner16-runtime-log-bounds-work01/controls.py", line 127, in socket_control
+    check(child.poll() is None and time.monotonic() < end, 'fixture server failed to bind')
+  File "/workspace/scratch/94990735b266/android-owner16-runtime-log-bounds-work01/controls.py", line 28, in check
+    raise AssertionError(message)
+AssertionError: fixture server failed to bind

@@ -1,0 +1,110 @@
+--- baseline/check_fixture.py
++++ candidate/check_fixture.py
+@@ -1,6 +1,7 @@
+ """Pure regression checks for the frozen, still-unbound original NDK fixture.
+-No file, process, Android, namespace, or Main operation. Explicit synthetic
+-observations exercise production parsers and plans; they are not runtime proof.
++No explicit fixture file, process, Android, namespace, or Main operation.
++Standard-library imports are outside these counters. Explicit synthetic observations
++exercise production parsers, plans and receipt constructors; they are not runtime proof.
+ """
+ import copy
+ import hashlib
+@@ -200,9 +201,95 @@
+         'SOURCE_ONLY_ACTUAL_APK_INSTALL_UID_NONCES_UNBOUND'))
+     case('source_only_source_loader_stops_before_any_IO',lambda:reject(
+         p.FixedSources,'SOURCE_ONLY_OWN_ROOT_AND_MANIFEST_UNBOUND'))
+-    need(len(cases)==30 and len({x['name'] for x in cases})==30,'fixed control count')
++
++    # Explicit synthetic worker record shaped from install_once, exercising the
++    # real receipt constructor. It is never saved as an actual install receipt.
++    source_pin={'bytes':321,'sha256':'d'*64}
++    synthetic_build={'build_result':pin,'APK':{'bytes':1234,'sha256':'a'*64},
++                     'signer_sha256':'c'*64}
++    installed_tuple={'package':f.PACKAGE,'uid':14000,'user':0,'version_code':1,
++        'artifact':{'path':'/data/app/~~synthetic/'+f.PACKAGE+'-synthetic/base.apk',
++                    'file':{'bytes':1234,'device':1,'inode':22,'mode':33188,
++                            'uid':1000,'gid':1000,'nlink':1,'mtime_ns':1,'ctime_ns':1},
++                    'sha256':'a'*64},
++        'directories':{k:{'path':'/data/'+k+'/0/'+f.PACKAGE,'uid':14000,'gid':14000,
++                           'mode':16832,'device':1,'inode':31+i}
++                       for i,k in enumerate(('user','user_de'))},
++        'signer_sha256_from_identical_build_APK':'c'*64,'signer_independently_read_on_device':False}
++    main={'schema':'pocket4-current-main-guard-v2','Main_epoch_sha256':f.MAIN_EPOCH,
++          'current_baseline_sha256':f.BASELINE_SHA,
++          'current_baseline_qualification_sha256':f.QUALIFICATION_SHA}
++    main.update({k:True for k in ('seven_processes_match','three_host_processes_match',
++        'authenticated_owner_chain_matches','current_user_namespaces_match',
++        'resource_limits_match','current_executable_and_root_backing_match')})
++    main.update({k:False for k in ('old_helpers_and_tasks_reauthorized',
++                                   'framework_exit_cause_resolved','production_ready')})
++    installation={'schema':1,'kind':'pocket4-original-ndk-fixture-install-v1',
++        'ok':True,'error':None,'secondary_errors':[],'automatic_retry':False,
++        'source_manifest':source_pin,'build_result':pin,'scope':install,
++        'Main_before':copy.deepcopy(main),'Main_after':copy.deepcopy(main),
++        'owned_install_qualified':True,'install_success_observed':True,
++        'install_attempted':True,'action_attempted':True,'outcome_unknown':False,
++        'exact_command_count':8,'held_binding_released':True,
++        'current_Main_after_qualified':True,'all_tracked_artifact_FDs_closed':True,
++        'package_retained_for_separate_run_admission':True,
++        'possible_owned_package_retained':False,'commercial_App_readiness_qualified':False,
++        'Main_deployment_or_restart':False,
++        'staging_cleanup':{'staged_file_created':True,'staged_directory_created':True,
++                          'staged_file_removed':True,'staged_directory_removed':True,
++                          'all_staging_FDs_closed':True,'recursive_cleanup':False},
++        'artifact_FD_cleanup':{'held_APK_and_data_FDs_closed':3,
++                              'all_tracked_artifact_FDs_closed':True},
++        'installed_before':copy.deepcopy(installed_tuple),
++        'artifact_after':copy.deepcopy(installed_tuple),'owned_package_uid':14000,
++        'post_install_processes':{'own_count':0,'own_processes':[]},
++        'own_data_absent_before_install':True,
++        'package_absence':{'all_users_package_absent':True,'uninstalled_records_absent':True}}
++    def qualify_install(value):
++        raw=json.dumps(value,sort_keys=True,separators=(',',':')).encode()
++        return f.qualified_installation(raw,{'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()},
++                                        synthetic_build,source_pin)
++    def distinct_install_records():
++        value=qualify_install(installation)
++        need(value['installed_tuple']==installed_tuple and
++             set(value['installed_tuple'])==set(installed_tuple) and
++             'owned_install_qualified' not in value['installed_tuple'] and
++             f.scope('run','5'*32,pin,value['scope_installation'])['uid']==14000 and
++             value['runtime_qualified'] is False,'separate exact tuple and scope authority')
++    case('real_install_constructor_separates_tuple_from_scope_authority',distinct_install_records)
++    def bad_install(change,code):
++        value=copy.deepcopy(installation);change(value)
++        reject(lambda:qualify_install(value),code)
++    def old_main(value):
++        value['Main_before']['Main_epoch_sha256']='0'*64
++        value['Main_after']['Main_epoch_sha256']='0'*64
++    case('install_constructor_rejects_equal_but_old_Main_pair',lambda:bad_install(
++        old_main,'EXACT_INSTALL_MAIN_PAIR_REQUIRED'))
++    case('install_constructor_rejects_wrong_source_manifest',lambda:bad_install(
++        lambda v:v['source_manifest'].update(sha256='0'*64),
++        'COMPLETE_OWN_FIXTURE_INSTALL_RESULT_REQUIRED'))
++    case('install_constructor_rejects_unreleased_held_binding',lambda:bad_install(
++        lambda v:v.update(held_binding_released=False),'INSTALL_MUTATION_AND_RETIREMENT_RECORD_REQUIRED'))
++    case('install_constructor_rejects_incomplete_staging_cleanup',lambda:bad_install(
++        lambda v:v['staging_cleanup'].update(all_staging_FDs_closed=False),
++        'EXACT_INSTALL_OWNED_FD_AND_STAGE_CLEANUP_REQUIRED'))
++    def wrong_apk(value):
++        for key in ('installed_before','artifact_after'):
++            value[key]['artifact']['sha256']='0'*64
++    case('install_constructor_rejects_wrong_built_APK',lambda:bad_install(
++        wrong_apk,'INSTALLED_TUPLE_MUST_BE_THE_EXACT_BUILT_APK'))
++    def mixed_authority(value):
++        for key in ('installed_before','artifact_after'):
++            value[key]['owned_install_qualified']=True
++    case('install_constructor_rejects_scope_fields_in_exact_tuple',lambda:bad_install(
++        mixed_authority,'EXACT_ORIGINAL_INSTALLED_TUPLE_REQUIRED'))
++    case('install_constructor_rejects_wrong_observed_UID',lambda:bad_install(
++        lambda v:v.update(owned_package_uid=14001),'EXACT_ORIGINAL_INSTALLED_TUPLE_REQUIRED'))
++
++    need(len(cases)==38 and len({x['name'] for x in cases})==38,'fixed control count')
+     return {'schema':1,'ok':True,'count':len(cases),'cases':cases,
+         'pure_production_parsers_and_plans_called':True,'synthetic_IO_only':True,
+-        'filesystem_reads':0,'filesystem_writes':0,'child_processes':0,'Android_commands':0,
++        'explicit_fixture_filesystem_reads':0,'explicit_fixture_filesystem_writes':0,
++        'standard_library_import_IO_included_in_counters':False,'child_processes':0,'Android_commands':0,
+         'Main_namespace_reads':0,'actual_APK_or_UID_bound':False,'runtime_qualified':False,
+         'XML_fixture_not_an_actual_test_result':True,'original_source_only_barrier_retained':True}

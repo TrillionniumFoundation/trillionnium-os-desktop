@@ -1,0 +1,348 @@
+--- a/references/original_recorder.py
++++ b/recorder.py
+@@ -17,6 +17,7 @@
+ import signal
+ import stat
+ import subprocess
++import sys
+ import time
+ import types
+ 
+@@ -100,8 +101,23 @@
+     return types.SimpleNamespace(**{name: scope[name] for name in names})
+ 
+ 
++def source_contract(expected):
++    path = Path(__file__).resolve().with_name('source-manifest.json')
++    raw = read_regular(path)
++    require(len(raw) <= 131072 and digest(raw) == expected, 'EXTERNAL_ADAPTER_MANIFEST_PIN_REQUIRED')
++    manifest = json.loads(raw)
++    row = manifest['files']['source_contract.py']
++    source = load_module(path.with_name('source_contract.py'), row['sha256'], 'bili_source_contract')
++    return source, source.SourceContract(path, expected)
++
++
+ class Flow:
+     def __init__(self, args):
++        self.source, self.contract = source_contract(args.adapter_manifest_sha256)
++        self.binding = None
++        self.transport = None
++        self._android_mutation = False
++        self._private_backend_transport = False
+         self.root = args.flow_dir
+         if args.operation == 'init':
+             self.root.mkdir(mode=0o700)
+@@ -135,6 +151,7 @@
+                           'uid': self.activation['packages'][args.package], 'user': 0,
+                           'activation_sha256': digest(raw), 'verified_sha256': digest(verified_raw),
+                           'epoch_sha256': bound['sha256'], 'created_utc': now(),
++                          'adapter_manifest_sha256': self.contract.sha256,
+                           'recorder_sha256': digest(read_regular(__file__)), 'automatic_retry': False}
+             self.guard()
+             write_new(self.root / 'activation.json', raw)
+@@ -150,8 +167,11 @@
+                     'SAVED_ACTIVATION_CHANGED')
+             require(digest(read_regular(__file__)) == self.scope['recorder_sha256'], 'RECORDER_CHANGED_MID_FLOW')
+             self.activation = json.loads(raw)
++        self.source.verify_scope(self.scope, self.activation, self.contract)
+ 
+     def guard(self, attempted=False):
++        self.contract.verify()
++        self.source.verify_scope(self.scope, self.activation, self.contract)
+         self.epoch.require_unchanged(self.activation['framework_epoch'], action_attempted=attempted)
+         for path, pin in ((APP, APP_SHA), (BACKEND, BACKEND_SHA)):
+             require(digest(read_regular(path)) == pin, 'HELPER_CHANGED')
+@@ -162,6 +182,49 @@
+         require({key: (CG / key).read_text().strip() for key in self.activation['limits']} ==
+                 self.activation['limits'], 'MAIN_LIMITS_CHANGED')
+         self.epoch.require_unchanged(self.activation['framework_epoch'], action_attempted=attempted)
++        if self.binding is not None:
++            self.binding.verify()
++
++    def close(self):
++        # The synchronous command path joins every subprocess before return.
++        # HeldTarget refuses FD release if a command could not be joined.
++        if self.binding is not None:
++            self.binding.close()
++        # As in the original one-step CLI, flow.lock is held until process exit,
++        # including the final durable step result. It is never passed to a child.
++
++    def bind(self):
++        if self.binding is not None:
++            return self.binding
++        module = self.contract.load('main_binding.py', 'bili_main_binding')
++        binding = module.MainBinding(contract=self.contract, source=self.source, scope=self.scope,
++            activation=self.activation, epoch=self.epoch, app=self.app, guard=lambda: self.guard())
++        try:
++            write_new(self.step / 'held-main-binding.json', binding.record)
++        except BaseException as original:
++            try:
++                binding.close()
++            except BaseException as secondary:
++                original.add_note('held binding close: ' + type(secondary).__name__)
++            raise
++        self.binding = binding
++        def record(kind, value):
++            write_new(self.step / ('transport-%03d.%s.json' % (value['sequence'], kind)), value)
++        def runner(argv, **options):
++            require(options['close_fds'] is True and options['stdout'] == subprocess.PIPE and
++                    options['stderr'] == subprocess.PIPE, 'HELD_RUNNER_IO_PROTOCOL_CHANGED')
++            if self._private_backend_transport:
++                # The existing backend crops a screencap in memory before it
++                # emits the scoped observation. Do not persist its unscoped
++                # frame or intermediate native tree as a new raw log.
++                self.action_attempted |= self._android_mutation
++                return subprocess.run(argv, **options)
++            return self.command(argv, options['timeout'], mutation=self._android_mutation,
++                label='Android command', pass_fds=options['pass_fds'], check=False,
++                host_env=options['env'])
++        self.transport = binding.transport(record=record, runner=runner,
++            guard=lambda action_attempted: self.guard(attempted=self.action_attempted))
++        return binding
+ 
+     def begin(self, args, mutation):
+         require(re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,63}', args.step), 'INVALID_STEP_NAME')
+@@ -285,71 +348,159 @@
+         return {'explicit_reconciliation_recorded': True, 'original_action_outcome': 'unknown_retained',
+                 'continue_from_observation_step': args.observation_step, 'old_action_replayed': False}
+ 
+-    def command(self, argv, timeout, *, mutation=False, label=None):
++    def command(self, argv, timeout, *, mutation=False, label=None, pass_fds=(),
++                check=True, host_env=None):
+         self.guard()
++        require(check or (label == 'Android command' and len(pass_fds) == 7),
++                'UNCHECKED_COMMAND_ONLY_FOR_HELD_TRANSPORT')
+         self.command_index += 1
+         stem = self.step / ('command-%03d' % self.command_index)
++        execution = list(argv)
++        if label == 'Existing android-app CLI':
++            require(not pass_fds and check and argv[:2] == [APP, '--interactive-production'],
++                    'EXISTING_CLIENT_ENTRY_CHANGED')
++            execution = ['/usr/bin/python3', '-I', str(self.contract.root / 'existing_ui_entry.py'),
++                         'client', '--adapter-manifest-sha256', self.contract.sha256,
++                         '--flow-dir', str(self.root), '--step', self.step.name,
++                         '--command', stem.name, '--', *argv[1:]]
+         write_new(str(stem) + '.intent.json', {'argv': argv, 'timeout_seconds': timeout,
++                  'execution_argv': execution, 'authority_fds_passed': list(pass_fds),
+                   'mutation': mutation, 'label': label, 'started_utc': now(), 'automatic_retry': False})
+         started = time.monotonic()
+         timed_out = False
+         spawned = False
+-        error = None
+         rc = None
+-        with open(str(stem) + '.stdout', 'xb') as stdout, open(str(stem) + '.stderr', 'xb') as stderr:
++        errors = []
++        streams = []
++        process = None
++        joined = True
++        def remember(phase, exc):
++            errors.append({'phase': phase, 'exception_type': type(exc).__name__,
++                           'errno': getattr(exc, 'errno', None)})
++        try:
++            stdout = open(str(stem) + '.stdout', 'xb'); streams.append(stdout)
++            stderr = open(str(stem) + '.stderr', 'xb'); streams.append(stderr)
+             try:
+-                process = subprocess.Popen(argv, stdout=stdout, stderr=stderr, env=ENV, start_new_session=True)
++                process = subprocess.Popen(execution, stdout=stdout, stderr=stderr,
++                    env=ENV if host_env is None else host_env, start_new_session=True,
++                    pass_fds=tuple(pass_fds), close_fds=True)
+                 spawned = True
++                joined = False
+                 self.action_attempted |= mutation
+                 try:
+                     rc = process.wait(timeout=timeout)
++                    joined = True
+                 except BaseException as exc:
+                     timed_out = isinstance(exc, subprocess.TimeoutExpired)
++                    remember('command_wait', exc)
+                     # Only this newly spawned command session; Binder-launched app outcome remains unknown.
+-                    os.killpg(process.pid, signal.SIGKILL)
+-                    rc = process.wait(timeout=5)
+-                    if not timed_out:
+-                        raise
++                    try:
++                        if process.poll() is None:
++                            os.killpg(process.pid, signal.SIGKILL)
++                    except BaseException as kill_error:
++                        remember('owned_command_group_stop', kill_error)
++                    try:
++                        rc = process.wait(timeout=5)
++                        joined = True
++                    except BaseException as join_error:
++                        remember('owned_command_join', join_error)
+             except BaseException as exc:
+-                error = type(exc).__name__ + ': ' + str(exc)
+-            finally:
+-                stdout.flush(); os.fsync(stdout.fileno())
+-                stderr.flush(); os.fsync(stderr.fileno())
+-        out = read_regular(str(stem) + '.stdout')
+-        err = read_regular(str(stem) + '.stderr')
++                remember('command_spawn_or_wait', exc)
++        except BaseException as exc:
++            remember('command_output_open', exc)
++        finally:
++            for stream in streams:
++                try:
++                    stream.flush(); os.fsync(stream.fileno())
++                except BaseException as exc:
++                    remember('command_output_sync', exc)
++                try:
++                    stream.close()
++                except BaseException as exc:
++                    remember('command_output_close', exc)
++        if not joined and self.binding is not None:
++            self.binding.target.poison_unjoined_command()
++        def observed_output(suffix):
++            try:
++                return read_regular(str(stem) + suffix)
++            except BaseException as exc:
++                remember('command_output_read', exc)
++                return b''
++        out, err = observed_output('.stdout'), observed_output('.stderr')
+         receipt = {'ended_utc': now(), 'seconds': time.monotonic() - started, 'returncode': rc,
+-                   'timed_out': timed_out, 'spawned': spawned, 'error': error,
++                   'timed_out': timed_out, 'spawned': spawned, 'error': errors[0] if errors else None,
++                   'errors': list(errors), 'owned_command_joined': joined,
+                    'stdout_sha256': digest(out), 'stderr_sha256': digest(err),
+                    'action_attempted': spawned and mutation, 'automatic_retry': False}
+-        write_new(str(stem) + '.result.json', receipt)  # Persist raw bytes/metadata before any assertion.
+-        self.guard(attempted=self.action_attempted)
+-        require(error is None and not timed_out and rc == 0, 'COMMAND_FAILED_OR_TIMED_OUT')
++        try:
++            write_new(str(stem) + '.result.json', receipt)  # Observe before lease release or post guard.
++        except BaseException as exc:
++            remember('command_result_record', exc)
++        captured = subprocess.CompletedProcess(execution, rc, out, err)
++        captured.host_timed_out = timed_out
++        captured.recorder_errors = errors
++        captured.recorder_spawned = spawned
++        captured.recorder_joined = joined
++        if not check:
++            # BoundArun retains the actual command result first, then separately
++            # performs lease release, the mandatory post guard, and secondary errors.
++            return captured
++        try:
++            self.guard(attempted=self.action_attempted)
++        except BaseException as exc:
++            remember('post_command_guard', exc)
++        if timed_out or rc != 0 or errors:
++            code = ('COMMAND_TIMED_OUT' if timed_out else 'COMMAND_FAILED' if rc != 0
++                    else 'COMMAND_EVIDENCE_OR_POST_GUARD_FAILED')
++            failure = RuntimeError(code)
++            failure.command_observation = {**receipt, 'errors': errors}
++            raise failure
+         return out
+ 
+     def android(self, argv, timeout=20, *, mutation=False):
+-        self.guard()
+-        init, env, status = self.app.discover()
+-        expected = self.activation['framework_epoch']['binding']['processes']['init']['host_pid']
+-        require(init == expected and status['host_pid'] == self.activation['status']['host_pid'], 'DISCOVERY_DRIFT')
+-        command = ['/usr/bin/nsenter', '-t', str(init), '-m', '-p', '-u', '-i', '/system/bin/env']
+-        command += [key + '=' + env[key] for key in sorted(env)]
+-        command += ['/system/xbin/su', '2000', '/system/bin/timeout', '-k', '2', str(max(1, timeout - 5))] + argv
+-        return self.command(command, timeout, mutation=mutation, label='Android command')
++        self.bind()
++        self._android_mutation = mutation
++        try:
++            return self.transport(argv, timeout)
++        finally:
++            self._android_mutation = False
+ 
+     def stacks(self, timeout=20):
+         raw = self.android(['/system/bin/cmd', 'activity', 'stack', 'list'], timeout).decode('utf-8', 'strict')
+         roots, tasks = self.tasks.parse_stacks(raw)
+         return raw, roots, tasks
+ 
++    def admission(self):
++        self.bind()
++        raw = self.android(['/system/bin/cmd', 'package', 'list', 'packages', '-U', '--user', '0',
++                            self.scope['package']], 8).decode('utf-8', 'strict')
++        require(raw.splitlines() == ['package:%s uid:%d' % (self.scope['package'], self.scope['uid'])],
++                'HELD_ENTRY_PACKAGE_UID_READBACK_DIFFERS')
++        return {'fixed_main_namespace_classpath_uid_data_binding_verified': True,
++                'one_read_only_held_package_uid_command_verified': True,
++                'ui_or_audio_action_performed': False,
++                'action_runner_apk_source_qualified': False,
++                'whole_app_production_ready': False}
++
+     def selected_task(self):
+         launched = json.loads(read_regular(self.root / 'launch-scope.json'))
+         require(launched['epoch_sha256'] == self.scope['epoch_sha256'], 'LAUNCH_EPOCH_CHANGED')
+         return launched
+ 
+     def launch(self):
++        lock = lock_file(ACTION_LOCK)
++        try:
++            return self.launch_locked()
++        finally:
++            os.close(lock)
++
++    def launch_locked(self):
+         require(not (self.root / 'launch-attempted.json').exists(), 'NATIVE_LAUNCH_ALREADY_ATTEMPTED')
+         raw, pre_roots, pre_tasks = self.stacks()
+         write_new(self.step / 'prelaunch-stacks.txt', raw.encode())
++        require(not any(child['component'].split('/')[0] == self.scope['package']
++                        for root in pre_roots.values() for child in root['children']),
++                'PREEXISTING_BILIBILI_TASK_PRESERVED_NO_LAUNCH')
+         write_new(self.root / 'launch-attempted.json', {'step': self.step.name, 'time_utc': now(), 'scope': self.scope})
+         argv = ['/usr/bin/sudo', '-n', '-u', '#1000', '--', '/usr/bin/env',
+                 'XDG_RUNTIME_DIR=/run/user/1000', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus',
+@@ -483,7 +634,8 @@
+ 
+ def main():
+     parser = argparse.ArgumentParser(description=__doc__)
+-    parser.add_argument('operation', choices=('init', 'launch', 'ui', 'exit-info', 'engine-maps', 'cleanup', 'reconcile'))
++    parser.add_argument('operation', choices=('init', 'admission', 'launch', 'ui', 'exit-info', 'engine-maps', 'cleanup', 'reconcile'))
++    parser.add_argument('--adapter-manifest-sha256', required=True)
+     parser.add_argument('--flow-dir', type=Path, required=True)
+     parser.add_argument('--step')
+     parser.add_argument('--activation-after', type=Path)
+@@ -491,7 +643,7 @@
+     parser.add_argument('--package')
+     parser.add_argument('--component')
+     parser.add_argument('--epoch-module', type=Path, default=Path('/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py'))
+-    parser.add_argument('--task-source', type=Path, default=Path(__file__).with_name('task_scope_baseline.py'))
++    parser.add_argument('--task-source', type=Path, default=Path(__file__).resolve().parent / 'references/task_scope_baseline.py')
+     parser.add_argument('--request', type=json.loads)
+     parser.add_argument('--unknown-step')
+     parser.add_argument('--observation-step')
+@@ -501,6 +653,7 @@
+     os.umask(0o077)
+     flow = Flow(args)
+     if args.operation == 'init':
++        flow.close()
+         print(json.dumps({'ok': True, 'scope_initialized': True, 'epoch_sha256': flow.scope['epoch_sha256']}))
+         return
+     require(args.step is not None, 'EXPLICIT_UNIQUE_STEP_REQUIRED')
+@@ -510,7 +663,9 @@
+               'business_success_verified': False}
+     try:
+         flow.begin(args, mutation)
+-        if args.operation == 'launch':
++        if args.operation == 'admission':
++            result.update(flow.admission())
++        elif args.operation == 'launch':
+             result.update(flow.launch())
+         elif args.operation == 'ui':
+             result.update(flow.ui(args.request))
+@@ -527,6 +682,19 @@
+         result['ok'] = True
+     except BaseException as exc:
+         result.update(error_type=type(exc).__name__, error=str(exc), outcome_unknown=flow.action_attempted)
++        if hasattr(exc, 'command_observation'):
++            result['command_observation'] = exc.command_observation
++        if hasattr(exc, 'details'):
++            result['transport_failure'] = exc.details
++    finally:
++        try:
++            flow.close()
++        except BaseException as exc:
++            result['ok'] = False
++            result['outcome_unknown'] = flow.action_attempted
++            if 'error' not in result:
++                result.update(error_type=type(exc).__name__, error='HELD_BINDING_RELEASE_FAILED')
++            result['release_error_type'] = type(exc).__name__
+     result.update(action_attempted=flow.action_attempted, ended_utc=now(), epoch_sha256=flow.scope['epoch_sha256'])
+     if flow.step is not None:
+         write_new(flow.step / 'result.json', result)

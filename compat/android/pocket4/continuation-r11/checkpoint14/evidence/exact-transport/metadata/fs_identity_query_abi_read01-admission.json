@@ -1,0 +1,36 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-c",
+      "import sys,hashlib;raw=sys.stdin.buffer.read();assert len(raw)==4702 and hashlib.sha256(raw).hexdigest()=='979f5d27fa42ef2575e64c696e01736339642ebf6d4e3ebae605a9e73245491d';scope={'__name__':'__main__','__file__':'<pinned-fixed-fs-identity-query-abi-source-read>','SOURCE_SHA256':'979f5d27fa42ef2575e64c696e01736339642ebf6d4e3ebae605a9e73245491d'};exec(compile(raw,'read_sources.py','exec'),scope,scope)"
+    ],
+    "created_unix_ms": 1793869406585,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1aaf2e179-fc05-48ef",
+    "idempotency_key": "pocket4-native-fs-identity-query-abi-source-readonly-01-20261105",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1aaf2e179-fc05-48ef",
+    "request_digest": "c2e45dd5377db0475333820a4bd377d99195e71e58641cfe7aca0bfe6c9910f7",
+    "request_fingerprint": 14043452708388450375,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1aaf2e179-fc05-48ef"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1aaf2e179-fc05-48ef"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

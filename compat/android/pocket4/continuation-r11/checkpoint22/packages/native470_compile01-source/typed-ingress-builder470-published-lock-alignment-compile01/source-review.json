@@ -1,0 +1,144 @@
+{
+  "state": "SOURCE_ONLY_LOCAL_V8_CHECKS_PASSED_NOT_PYTHON_OR_RUST_EXECUTION",
+  "compiler_inverse_exact": true,
+  "compiler_base": {
+    "bytes": 83194,
+    "sha256": "6e4b18a1116bdc709e5bda2084e79967699be918770731795806d1bc8634bec2",
+    "git_blob_sha1": "3345ba9845175b7b47761b3829e51727dad52304"
+  },
+  "compiler_candidate": {
+    "bytes": 86321,
+    "sha256": "63bad2f9323b6f3881d883a792afd49b2472e43f35740253c01534dca91913cc",
+    "git_blob_sha1": "63843b2addeb4f37970b8390d4e111bdabddb835"
+  },
+  "unchanged_top_level_functions": [
+    "require",
+    "utc",
+    "sha",
+    "identity",
+    "held",
+    "write_new",
+    "real_directory",
+    "children",
+    "cleanup_children",
+    "command",
+    "resource_text",
+    "resource_events",
+    "resource_snapshot",
+    "begin_resources",
+    "finish_resources",
+    "hash_held",
+    "regular_tree",
+    "portable",
+    "pinned_packet",
+    "exact_source_copy",
+    "read_existing_config",
+    "pin_resolved",
+    "verify_resolved",
+    "toolchain",
+    "parse_selected_tree",
+    "qualify_cached_archive",
+    "dependency_sources",
+    "qualify_compiler_inputs",
+    "build_artifact",
+    "image_pin",
+    "image_toolchain",
+    "reap_normal_fakeroot_daemon",
+    "validate_focused_result",
+    "focused_test"
+  ],
+  "changed_top_level_functions": [
+    "execute"
+  ],
+  "stage_unchanged_functions": [
+    "require",
+    "real_directory",
+    "identity",
+    "pinned_authority"
+  ],
+  "stage_changed_functions": [
+    "main"
+  ],
+  "stage_change_only_fixed_partition_count_and_constants": true,
+  "registered_and_focused_test_declarations_exact": [
+    {
+      "name": "TESTS",
+      "sha256": "b287d28fd6cdb481b3e964f3d60857ec5d85e9478ccf625b8e1d0e1308c0ca5d"
+    },
+    {
+      "name": "ORIGINAL_TESTS",
+      "sha256": "361f3d267d06d079f042764802d778a66238dfbb8d5f4c72eb92f3f5f8cbbbce"
+    },
+    {
+      "name": "PAIR_TESTS",
+      "sha256": "d23be1bb6476613bda2f414a5ecd1b86b186addaa93f8d1fcf87463218700505"
+    },
+    {
+      "name": "ART_PROJECTION_TESTS",
+      "sha256": "2461895ae78d5f79fbcb5b0d108c4b0a7fbd37d04a9530dbda0c32da24f5f2c3"
+    },
+    {
+      "name": "TYPED_INGRESS_TESTS",
+      "sha256": "2260d705e0098c89c69e3528316a7cbd6444d0ab3806405c2e17d7b97a26fae0"
+    },
+    {
+      "name": "PARENT_TESTS",
+      "sha256": "1f2b7f5d962ccd07eaaaa37516e8ea2d120e4ddf74bea73571f448d148362002"
+    },
+    {
+      "name": "PROVIDER_CLOSURE_TESTS",
+      "sha256": "e4a03241b67a713bff59066bb45b2e570bec6e44e5c93e38d5ef6fd65f2779e5"
+    },
+    {
+      "name": "HAL_PROVIDER_TESTS",
+      "sha256": "77e7f7c4ac1501bec9deb09fee2d451cf2596844a8d31f67f0a889fb30342449"
+    },
+    {
+      "name": "SOURCE_RESUME_TESTS",
+      "sha256": "c80057523412e86e368c9c360fc81cfeff884ebb8e955495d585e7b75962108b"
+    },
+    {
+      "name": "SOURCE_REGISTERED_TESTS",
+      "sha256": "1612cbc1bd16cea687ed58eb2eecc8459e5920baf4cfaf4d1608cdf84f3cc615"
+    }
+  ],
+  "source_map": {
+    "parent": {
+      "bytes": 99327,
+      "sha256": "88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701",
+      "git_blob_sha1": "d2a3b1303336aeb7e8849ebb1bbf459a321ced8a"
+    },
+    "candidate": {
+      "bytes": 99327,
+      "sha256": "d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057",
+      "git_blob_sha1": "f738ecebf679d7c91a7fde5adc8608552db3d468"
+    },
+    "total": 499,
+    "unchanged": 497,
+    "changed": [
+      "android/manifest/m2-role-ingress-hal-provider-source-lock.json",
+      "tools/droidloom-update/src/native_role_ingress.rs"
+    ],
+    "added": []
+  },
+  "production_delta_inverse": true,
+  "request_reproduced": true,
+  "stdin_under_actual_1MiB": true,
+  "resources": {
+    "memory_max_bytes": 1073741824,
+    "cpu_quota_percent": 100,
+    "nice": 15,
+    "outer_timeout_seconds": 600,
+    "work_deadline_seconds": 550,
+    "owned_swap_limit_observed_not_changed": true
+  },
+  "claims": {
+    "Python_compiled": false,
+    "Rust_compiled": false,
+    "tests_executed": false,
+    "Soong_run": false,
+    "Main_accessed": false,
+    "framework_implementation_outputs_qualified": false,
+    "source_lock_writer": "UNKNOWN"
+  }
+}

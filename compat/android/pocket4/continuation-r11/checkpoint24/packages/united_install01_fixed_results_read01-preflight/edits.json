@@ -1,0 +1,42 @@
+[
+  {
+    "before": "\"\"\"Collect exactly two pinned owned Hilton failure reports; no runtime actions.\"\"\"",
+    "after": "\"\"\"Collect exactly two pinned owned united successful reports; no runtime actions.\"\"\""
+  },
+  {
+    "before": "FILES={\"result\":{\"path\":\"/home/alex/work/pocket4-owned-hilton-qa-r1-install-state-01/result.json\",\"bytes\":4507,\"sha256\":\"bd397bbde590e5437abf90049608f2debdd63703e8ae18b5d295095b48e5feb6\"},\"stage_result\":{\"path\":\"/home/alex/work/pocket4-owned-hilton-qa-r1-install-state-01/stage-result.json\",\"bytes\":11616,\"sha256\":\"bab19a08f9e024be687cc17e6a428dae7d265b07d5dc23cb966971c2d1cc1141\"}}",
+    "after": "FILES={\"result\":{\"path\":\"/home/alex/work/pocket4-owned-united-qa-r1-install-state-01/result.json\",\"bytes\":4469,\"sha256\":\"341ee027b4c9767fa3b0dab127444d526be6291f4f2fd38da89d98ab3a1fca0f\"},\"stage_result\":{\"path\":\"/home/alex/work/pocket4-owned-united-qa-r1-install-state-01/stage-result.json\",\"bytes\":12854,\"sha256\":\"1755a4de33d15abb1bc8d3a9fa67b60c0a0e8830b144c21eefc85f3390d1b73d\"}}"
+  },
+  {
+    "before": "AUTHORITY_RAW={\"stdout\":\"{\\\"ok\\\": false, \\\"result\\\": {\\\"path\\\": \\\"/home/alex/work/pocket4-owned-hilton-qa-r1-install-state-01/result.json\\\", \\\"bytes\\\": 4507, \\\"sha256\\\": \\\"bd397bbde590e5437abf90049608f2debdd63703e8ae18b5d295095b48e5feb6\\\"}, \\\"error\\\": {\\\"phase\\\": \\\"coordinator\\\", \\\"type\\\": \\\"RuntimeError\\\", \\\"message\\\": \\\"01-install-state did not complete exactly once with a preserved Main fence\\\"}, \\\"secondary_errors\\\": [], \\\"package\\\": \\\"org.droidloom.qa.hilton.r1\\\", \\\"UI_actions\\\": 0, \\\"audio_actions\\\": 0, \\\"whole_app_production_ready\\\": false}\\n{\\\"ok\\\": false, \\\"stage_result\\\": {\\\"path\\\": \\\"/home/alex/work/pocket4-owned-hilton-qa-r1-install-state-01/stage-result.json\\\", \\\"bytes\\\": 11616, \\\"sha256\\\": \\\"bab19a08f9e024be687cc17e6a428dae7d265b07d5dc23cb966971c2d1cc1141\\\"}, \\\"error\\\": {\\\"phase\\\": \\\"stage_or_coordinator\\\", \\\"type\\\": \\\"RuntimeError\\\", \\\"message\\\": \\\"ACTUAL_INSTALL_STATE_NOT_QUALIFIED\\\"}, \\\"secondary_errors\\\": [], \\\"UI_actions\\\": 0, \\\"audio_actions\\\": 0, \\\"whole_app_production_ready\\\": false}\\n\",\"terminal\":\"{\\n  \\\"at_unix_ms\\\": 1794003734050,\\n  \\\"audit_recorded\\\": true,\\n  \\\"automatic_retry\\\": false,\\n  \\\"cancelled\\\": false,\\n  \\\"exit_code\\\": 1,\\n  \\\"job_id\\\": \\\"1a1b2f47aad-fc05-8041\\\",\\n  \\\"launch_nonce\\\": \\\"d737234c1686095a346d45f5611d38a5\\\",\\n  \\\"log_bytes\\\": {\\n    \\\"stderr\\\": {\\n      \\\"seen\\\": 0,\\n      \\\"stored\\\": 0\\n    },\\n    \\\"stdout\\\": {\\n      \\\"seen\\\": 919,\\n      \\\"stored\\\": 919\\n    }\\n  },\\n  \\\"log_errors\\\": {\\n    \\\"stderr\\\": null,\\n    \\\"stdout\\\": null\\n  },\\n  \\\"log_synced\\\": {\\n    \\\"stderr\\\": true,\\n    \\\"stdout\\\": true\\n  },\\n  \\\"log_truncated\\\": {\\n    \\\"stderr\\\": false,\\n    \\\"stdout\\\": false\\n  },\\n  \\\"output_complete\\\": true,\\n  \\\"output_durable\\\": true,\\n  \\\"state\\\": \\\"failed\\\",\\n  \\\"terminal_publication_confirmed\\\": true,\\n  \\\"terminal_publication_protocol\\\": 1,\\n  \\\"timed_out\\\": false\\n}\"}",
+    "after": "AUTHORITY_RAW={\"stdout\":\"{\\\"ok\\\": true, \\\"result\\\": {\\\"path\\\": \\\"/home/alex/work/pocket4-owned-united-qa-r1-install-state-01/result.json\\\", \\\"bytes\\\": 4469, \\\"sha256\\\": \\\"341ee027b4c9767fa3b0dab127444d526be6291f4f2fd38da89d98ab3a1fca0f\\\"}, \\\"error\\\": null, \\\"secondary_errors\\\": [], \\\"package\\\": \\\"org.droidloom.qa.united.r1\\\", \\\"UI_actions\\\": 0, \\\"audio_actions\\\": 0, \\\"whole_app_production_ready\\\": false}\\n{\\\"ok\\\": true, \\\"stage_result\\\": {\\\"path\\\": \\\"/home/alex/work/pocket4-owned-united-qa-r1-install-state-01/stage-result.json\\\", \\\"bytes\\\": 12854, \\\"sha256\\\": \\\"1755a4de33d15abb1bc8d3a9fa67b60c0a0e8830b144c21eefc85f3390d1b73d\\\"}, \\\"error\\\": null, \\\"secondary_errors\\\": [], \\\"UI_actions\\\": 0, \\\"audio_actions\\\": 0, \\\"whole_app_production_ready\\\": false}\\n\",\"terminal\":\"{\\n  \\\"at_unix_ms\\\": 1794006247490,\\n  \\\"audit_recorded\\\": true,\\n  \\\"automatic_retry\\\": false,\\n  \\\"cancelled\\\": false,\\n  \\\"exit_code\\\": 0,\\n  \\\"job_id\\\": \\\"1a1b31ad6e2-fc05-80a1\\\",\\n  \\\"launch_nonce\\\": \\\"ba3b9caf983eec069113b7f47d57c69a\\\",\\n  \\\"log_bytes\\\": {\\n    \\\"stderr\\\": {\\n      \\\"seen\\\": 0,\\n      \\\"stored\\\": 0\\n    },\\n    \\\"stdout\\\": {\\n      \\\"seen\\\": 682,\\n      \\\"stored\\\": 682\\n    }\\n  },\\n  \\\"log_errors\\\": {\\n    \\\"stderr\\\": null,\\n    \\\"stdout\\\": null\\n  },\\n  \\\"log_synced\\\": {\\n    \\\"stderr\\\": true,\\n    \\\"stdout\\\": true\\n  },\\n  \\\"log_truncated\\\": {\\n    \\\"stderr\\\": false,\\n    \\\"stdout\\\": false\\n  },\\n  \\\"output_complete\\\": true,\\n  \\\"output_durable\\\": true,\\n  \\\"state\\\": \\\"succeeded\\\",\\n  \\\"terminal_publication_confirmed\\\": true,\\n  \\\"terminal_publication_protocol\\\": 1,\\n  \\\"timed_out\\\": false\\n}\"}"
+  },
+  {
+    "before": "AUTHORITY_PINS={\"stdout\":{\"bytes\":919,\"sha256\":\"336c8ddce2d1cacede9228f67dec1c3fc9d4fd3d848329ec028bc29907f61444\"},\"terminal\":{\"bytes\":726,\"sha256\":\"e0c31be63a923076756d516da0c1b04a516e1ac5a214517b0e4f71beffa1b880\"}}",
+    "after": "AUTHORITY_PINS={\"stdout\":{\"bytes\":682,\"sha256\":\"b2c1e54ccebb87d7072880394e2a71734da2d0a891b7258dbff3b190f6f85388\"},\"terminal\":{\"bytes\":729,\"sha256\":\"0b02dcce3efd992d951b3733035978660cf03cbce0575df2639fb60dbfec67d2\"}}"
+  },
+  {
+    "before": "JOB='1a1b2f47aad-fc05-8041'",
+    "after": "JOB=\"1a1b31ad6e2-fc05-80a1\""
+  },
+  {
+    "before": "'kind':'pocket4-owned-hilton-install01-fixed-two-results-read01'",
+    "after": "'kind':'pocket4-owned-united-install01-fixed-two-results-read01'"
+  },
+  {
+    "before": "t['state']=='failed' and t['exit_code']==1",
+    "after": "t['state']=='succeeded' and t['exit_code']==0"
+  },
+  {
+    "before": "'stdout':{'seen':919,'stored':919}",
+    "after": "'stdout':{'seen':682,'stored':682}"
+  },
+  {
+    "before": "'EXACT_COMPLETE_FAILED_TERMINAL'",
+    "after": "'EXACT_COMPLETE_SUCCESSFUL_TERMINAL'"
+  },
+  {
+    "before": "all(x['ok'] is False for x in summaries)",
+    "after": "all(x['ok'] is True for x in summaries)"
+  }
+]

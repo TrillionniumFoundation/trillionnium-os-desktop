@@ -1,0 +1,43 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "af1f8fd5e33585ce759cb49f1ab14b42a6416c24",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 572819,
+    "sha256": "e1502f0b5f4d85fe7d0f7e6dfe8c8516d67f4d00db0d778c03461466b67511b5",
+    "git_blob_sha1": "c0bc1ed2fb20ea54c920903954fa36f338444dca",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission.tool-original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3d610f3c20a614faba3eeee28fc7a727a7525be0",
+      "bytes": 1550
+    },
+    {
+      "path": "dispatch-intent.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "714cbc4ec75d878bbd8bc5e2ed6ac1cb7630376f",
+      "bytes": 374
+    },
+    {
+      "path": "preflight",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "677977e549c982e4a4793c9ab4254729524a05c4"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "preflight",
+      "original_tree": "677977e549c982e4a4793c9ab4254729524a05c4",
+      "checkpoint": 21,
+      "canonical_package": "bili_error03-preflight"
+    }
+  ],
+  "original_recursive_leaf_count": 1067
+}

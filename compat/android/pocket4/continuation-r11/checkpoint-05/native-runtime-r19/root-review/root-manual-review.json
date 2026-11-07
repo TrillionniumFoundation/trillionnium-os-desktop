@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "scope": "Independent root review of exact r19 Android metadata diagnostic ELF; preserved r18 comparisons",
+  "source_pins_sha256": "db7fdee71088cce1c2a8efe6ac5ba28c6d49810fcb5d5e0edd17fb8aa2297236",
+  "build_result_sha256": "2215a7baaaa9c0e701bf935d7b72d54d8908f0c26cfe6abfb1cad08b4753b046",
+  "apk_sha256": "e8c65c2735be49f3dda1e3b737cb00def7d92a4040d19ace88bf88007cac4335",
+  "elf_sha256": "86fb3fc0eeda63ce0c4827fec65c5a4ff4420f63be24f8704893c877c575dc63",
+  "audit_receipt_sha256": "e84b21ecb155e89651906eb7f2b4399bda82bb332f959b65226b7ced9aa41c5b",
+  "worker_audit_sha256": "a08de9109c7411a5d889a81460da272523e432684665f13e7bae609b74b8edec",
+  "complete_relevant_disassembly_sha256": "df592a9a99f952212aee19e940947c50097ad80519e4c67111f25424c90871cd",
+  "entry_disassembly_sha256": "508b9e07d512e4469f1da1cf1139c4c2ea8a2384fc7f85683c30ff4c6375edaf",
+  "entry_qualification_sha256": "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3",
+  "actual_build_and_elf_audit_terminal": {
+    "at_unix_ms": 1793814677636,
+    "audit_recorded": true,
+    "automatic_retry": false,
+    "cancelled": false,
+    "exit_code": 0,
+    "job_id": "1a1a7afa6a1-fc05-2c3a",
+    "launch_nonce": "d745465c439c5c91e879c5f00bdb10da",
+    "log_bytes": {
+      "stderr": {
+        "seen": 0,
+        "stored": 0
+      },
+      "stdout": {
+        "seen": 3096,
+        "stored": 3096
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_synced": {
+      "stderr": true,
+      "stdout": true
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
+  },
+  "findings": [
+    "Start at 0x36d0 has exactly one call to the owned clone trampoline at 0x3a5a: Worker 0x3f90, null context, flags 0x350900, parent/clear-tid address 0x260c4.",
+    "The complete raw trampoline at 0x3440 aligns its private stack, places the fixed entry and argument there, has only clone/exit syscall sites and returns only in the original parent.",
+    "The actual worker closure recursively contains only Worker, ReadContext and SameContext, with no rejected runtime/TLS/PLT/unresolved edge.",
+    "Independent diagnostic diff review found the original tagged/stat/statfs comparisons unchanged; added per-field diagnostics run on the normal caller side.",
+    "The private-fdtable diagnostic adds an errno-preserving native fstatfs read before the original SameStat gate; it does not change that gate.",
+    "The original eight core source files will be compared byte-for-byte with r18 before the unique runtime admission."
+  ],
+  "owned_android_probe_admissible": true,
+  "actual_android_probe_executed": false,
+  "candidate_production_ready": false,
+  "prior_failed_readonly_extraction": {
+    "job_id": "1a1a7b93519-fc05-2c63",
+    "reason": "Root initially selected the wrong clone symbol name; no files or runtime actions were created."
+  },
+  "limits": [
+    "Diagnostic output is evidence, not a pass or a production qualification.",
+    "R18 actual metadata consistency failure remains immutable.",
+    "Known NOFILE0 EMFILE and trusted-factory-positive coverage remain open.",
+    "ART/engine lifecycle and arbitrary host-native transitions remain unqualified.",
+    "Held entry does not replace exact package cleanup or whole process-tree supervision."
+  ]
+}

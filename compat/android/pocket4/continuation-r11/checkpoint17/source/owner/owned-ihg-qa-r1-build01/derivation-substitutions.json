@@ -1,0 +1,103 @@
+{
+  "baseline_manifest_sha256": "6347d21db7018471ddfa96297f54a4bd77aa98b98a59588e3869bacdabd30632",
+  "extra_helper_UID_exclusions": [
+    10121,
+    10184,
+    10190
+  ],
+  "known_helper_identity_sources": {
+    "Bili_R6": "f7df7d6ce8dd0ed2ab7a8cda929d5b06e2b097c358490b32450c4a238bc1562a",
+    "Ticket_R1": "b138eee4a638e90e02b4ea55a4cad3a6c5d24f7fb09b9e2536d4378f19a1dbdb"
+  },
+  "literal_substitutions": [
+    [
+      "com\\\\.MobileTicket",
+      "com\\\\.ihg\\\\.apps\\\\.android"
+    ],
+    [
+      "com\\.MobileTicket",
+      "com\\.ihg\\.apps\\.android"
+    ],
+    [
+      "com.MobileTicket",
+      "com.ihg.apps.android"
+    ],
+    [
+      "org/droidloom/qa/ticket/r1",
+      "org/droidloom/qa/ihg/r1"
+    ],
+    [
+      "org.droidloom.qa.ticket.r1",
+      "org.droidloom.qa.ihg.r1"
+    ],
+    [
+      "pocket4-owned-ticket-qa-v1",
+      "pocket4-owned-ihg-qa-v1"
+    ],
+    [
+      "owned-ticket-qa",
+      "owned-ihg-qa"
+    ],
+    [
+      "Owned 12306 QA",
+      "Owned IHG QA"
+    ],
+    [
+      "TICKET",
+      "IHG"
+    ],
+    [
+      "10121",
+      "10137"
+    ]
+  ],
+  "per_source_counts": {
+    "AndroidManifest.xml": {
+      "Owned 12306 QA": 1,
+      "com.MobileTicket": 1,
+      "org.droidloom.qa.ticket.r1": 3
+    },
+    "build_candidate.py": {
+      "Owned 12306 QA": 2,
+      "com.MobileTicket": 1,
+      "org.droidloom.qa.ticket.r1": 2,
+      "org/droidloom/qa/ticket/r1": 2,
+      "owned-ticket-qa": 11
+    },
+    "make_build_request.py": {
+      "amazon": 1,
+      "owned-ticket-qa": 1
+    },
+    "qa_adapter.py": {
+      "10121": 1,
+      "AMAZON": 1,
+      "Amazon": 2,
+      "TICKET": 1,
+      "com\\.MobileTicket": 1,
+      "org.droidloom.qa.ticket.r1": 1,
+      "org/droidloom/qa/ticket/r1": 1
+    },
+    "qa_contract.py": {
+      "10121": 1,
+      "TICKET": 2,
+      "com.MobileTicket": 1,
+      "com\\.MobileTicket": 3,
+      "org.droidloom.qa.ticket.r1": 1,
+      "pocket4-owned-ticket-qa-v1": 1
+    },
+    "src/org/droidloom/qa/ihg/r1/ActionRunner.java": {
+      "10121": 1,
+      "TICKET": 1,
+      "com.MobileTicket": 1,
+      "com\\\\.MobileTicket": 2,
+      "org.droidloom.qa.ticket.r1": 2,
+      "pocket4-owned-ticket-qa-v1": 1
+    },
+    "stage_build.py": {
+      "amazon": 1,
+      "owned-ticket-qa": 2
+    }
+  },
+  "schema": 1,
+  "source_only_not_dispatched": true
+}

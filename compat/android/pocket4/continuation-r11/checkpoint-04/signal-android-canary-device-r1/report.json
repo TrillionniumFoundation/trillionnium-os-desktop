@@ -1,0 +1,188 @@
+{
+  "authorization_scope": "new private diagnostic runner and fresh cell may be reviewed separately; original a01 receipt/cell/nonce are never rerun or relabeled",
+  "boot": {
+    "adbd": "stopped",
+    "android": "17",
+    "completed": "1",
+    "engine_sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
+    "sdk": "37",
+    "system_server_start_count": "1"
+  },
+  "commercial_app_claim": false,
+  "error": "EpochError('FRAMEWORK_PROCESS_SET_AMBIGUOUS_OR_MISSING')",
+  "evidence": {
+    "evidence/post-failure-readback-r2.json": {
+      "bytes": 3913,
+      "path": "/workspace/scratch/94990735b266/signal-android-canary-device-r1/retained-failure/evidence/post-failure-readback-r2.json",
+      "sha256": "3ab514a9c121d1059b8353da3d5f05ae3204dfe787da7e42a3700ec23318d587"
+    },
+    "evidence/runtime-result.json": {
+      "bytes": 13205,
+      "path": "/workspace/scratch/94990735b266/signal-android-canary-device-r1/retained-failure/evidence/runtime-result.json",
+      "sha256": "a36de9cd7d293e8c06fe81a0468c836b4f5926b4c29228a20e58bac9c4f8d65b"
+    },
+    "failure-export-manifest-r2.json": {
+      "bytes": 12712,
+      "path": "/workspace/scratch/94990735b266/signal-android-canary-device-r1/retained-failure/failure-export-manifest-r2.json",
+      "sha256": "e7fb3a52efc11a0dbbc8f84820ae8bf3e2578a839887fb7479bebe52871b5288"
+    },
+    "source/android-inputs.json": {
+      "bytes": 5998,
+      "path": "/workspace/scratch/94990735b266/signal-android-canary-device-r1/retained-failure/source/android-inputs.json",
+      "sha256": "7c26c169216b014549e7842b0e69520c5e628788529605412103e7049a5376b6"
+    },
+    "source/preparation-manifest.json": {
+      "bytes": 1940,
+      "path": "/workspace/scratch/94990735b266/signal-android-canary-device-r1/retained-failure/source/preparation-manifest.json",
+      "sha256": "3f12e8bcde951712a20208aaeed04f1125bac58993ce1a3f5a93e4f950a9b103"
+    },
+    "source/runtime-manifest.json": {
+      "bytes": 2703,
+      "path": "/workspace/scratch/94990735b266/signal-android-canary-device-r1/retained-failure/source/runtime-manifest.json",
+      "sha256": "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5"
+    }
+  },
+  "exact_cleanup": {
+    "controller": {
+      "ActiveState": "failed",
+      "ControlGroup": "",
+      "Description": "Owned isolated signal canary 9b5f84fe06e445c6bd1bd867e0c0f1e9",
+      "ExecMainStatus": "1",
+      "InvocationID": "95df9ad2935846069961a180088e53d3",
+      "LoadState": "loaded",
+      "MainPID": "0",
+      "Result": "exit-code",
+      "SubState": "failed"
+    },
+    "controller_cgroup_exists": false,
+    "failed_state_retained_without_reset_failed": true,
+    "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "main_preserved": true,
+    "original_private_init_alive": false,
+    "original_private_init_pid": 96059,
+    "owned_data_and_evidence_retained": true,
+    "private_units": [
+      {
+        "cgroup_exists": false,
+        "current": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "Description": "p4-signal-mask-r1-20261104-a01-bus.service",
+          "ExecMainStatus": "0",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead"
+        },
+        "recorded_invocation": "cadf31b992ca4cc2bddd54ebae9a2337",
+        "remaining_pids": [],
+        "unit": "p4-signal-mask-r1-20261104-a01-bus.service"
+      },
+      {
+        "cgroup_exists": false,
+        "current": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "Description": "p4-signal-mask-r1-20261104-a01-sway.service",
+          "ExecMainStatus": "0",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead"
+        },
+        "recorded_invocation": "cd169f9d6f6f418aadd43800b2828de4",
+        "remaining_pids": [],
+        "unit": "p4-signal-mask-r1-20261104-a01-sway.service"
+      },
+      {
+        "cgroup_exists": false,
+        "current": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "Description": "p4-signal-mask-r1-20261104-a01-presenter.service",
+          "ExecMainStatus": "0",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead"
+        },
+        "recorded_invocation": "ffdbea0ed5a54a88a61aae0244222617",
+        "remaining_pids": [],
+        "unit": "p4-signal-mask-r1-20261104-a01-presenter.service"
+      },
+      {
+        "cgroup_exists": false,
+        "current": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "Description": "p4-signal-mask-r1-20261104-a01-daemon.service",
+          "ExecMainStatus": "0",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead"
+        },
+        "recorded_invocation": "a86d3e5b2e94486a83121f71142ea742",
+        "remaining_pids": [],
+        "unit": "p4-signal-mask-r1-20261104-a01-daemon.service"
+      }
+    ],
+    "remaining_owned_pids": []
+  },
+  "export_history": {
+    "first_export_error": "controller not inactive; completed failed state retained by systemd after stop",
+    "first_export_exit_code": 1,
+    "first_export_job": "1a1a75d1001-fc05-2b21",
+    "resolution": "new read-only export accepts the exact completed failed generation only with MainPID 0 and absent cgroup; no reset or restart",
+    "second_export_exit_code": 0,
+    "second_export_job": "1a1a760a1b9-fc05-2b36"
+  },
+  "external_raw_evidence": {
+    "APK_SO_userdata_or_commercial_logs_included": false,
+    "all_manifest_sizes_and_sha256_verified": true,
+    "archive": "/home/alex/work/pocket4-signal-canary-mask-r1-a01-failure-evidence.tar.gz",
+    "bytes": 200717,
+    "includes_owned_boot_logs": true,
+    "raw_boot_logs_intended_for_git": false,
+    "sha256": "6cf80343d797e91f461899c7dcf75c09cfdbad83d14a16541449cd328fa7991a",
+    "verified_regular_files": 50
+  },
+  "full_trace_in": "evidence/runtime-result.json",
+  "immutable_original_state": "INCOMPLETE_OR_FAILED_NO_RETRY",
+  "kind": "isolated-signal-canary-a01-actual-pre-probe-failure",
+  "prior_native_evidence": {
+    "candidate_complete_host_suite": "PASS 3793 registered / 3791 executed / 3788 completed / 2 disabled / 3 skipped / 0 failed",
+    "full_build_attempt04": "PASS; independent report, no Main deployment"
+  },
+  "probe_installations_attempted": false,
+  "production_ready": false,
+  "resource_observation": {
+    "controller_max_events_causality": "Not established as cause of EpochError; original counters retained",
+    "controller_memory_max_events": 59202,
+    "controller_memory_peak_bytes": 268435456,
+    "controller_oom_oom_kill_oom_group_kill": 0,
+    "owned_daemon_max_oom_oomkill_zero": true,
+    "owned_daemon_memory_peak_bytes": 3167309824
+  },
+  "role_failure_cause": "UNKNOWN; original guard retained no role census; boot tails do not establish which role was absent or ambiguous",
+  "runtime_job": {
+    "authoritative_state": "failed",
+    "cancelled": false,
+    "exit_code": 1,
+    "finished_utc": "2026-11-04T16:14:25.482002+00:00",
+    "id": "1a1a7544079-fc05-2b06",
+    "timed_out": false
+  },
+  "schema": 1,
+  "signal_behavior_outcome": "NOT_OBSERVED",
+  "signal_cases_executed": 0,
+  "trace_location": [
+    "runtime-r1/run.py:454 ProbeFlow.run",
+    "preparation-r1/v5_original.py:140 current_guest_epoch",
+    "pinned framework_epoch.py:124 capture_android"
+  ]
+}

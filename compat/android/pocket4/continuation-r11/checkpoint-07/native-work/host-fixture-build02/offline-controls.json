@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "scope": "local request generation and default/no-action entry validation only",
+  "stage_pins_sha256": "fa2902e3c379d11a88c96ffbcc4ed9a565089fff9f78063efd1509884a98ec4a",
+  "checks": [
+    {
+      "name": "all_generated_file_pins",
+      "pass": true
+    },
+    {
+      "name": "actual_build01_client_and_audit_bytes_retained",
+      "pass": true
+    },
+    {
+      "name": "default_plan_build_fixture.py",
+      "pass": true,
+      "stdout": "{\"state\": \"PLAN_ONLY\", \"candidate_manifest\": \"4e2f7f9ea09c6977afbe8d97c040fd2f1344772429f78fe0f16edc913dadc7ba\", \"service_started\": false, \"Android_execution\": false}\n",
+      "stderr_bytes": 0
+    },
+    {
+      "name": "default_plan_stage_and_build02.py",
+      "pass": true,
+      "stdout": "{\"state\": \"PLAN_ONLY\", \"source\": \"/home/alex/work/pocket4-owned-factory-v2-host-source-02\", \"output\": \"/home/alex/work/pocket4-owned-factory-v2-host-build-02\", \"service_started\": false, \"Android_execution\": false}\n",
+      "stderr_bytes": 0
+    },
+    {
+      "name": "actual_request_packet_default_plan",
+      "pass": true,
+      "stdout": "{\"state\": \"PLAN_ONLY\", \"source\": \"/home/alex/work/pocket4-owned-factory-v2-host-source-02\", \"output\": \"/home/alex/work/pocket4-owned-factory-v2-host-build-02\", \"service_started\": false, \"Android_execution\": false}\n"
+    },
+    {
+      "name": "whole_packet_mutation_rejected_before_entry",
+      "pass": true,
+      "returncode": 1
+    },
+    {
+      "name": "original_command_runner_retained",
+      "pass": true
+    },
+    {
+      "name": "fixed_build_resources_and_paths",
+      "pass": true
+    },
+    {
+      "name": "self_consistent_but_incomplete_gate_rejected_before_output",
+      "pass": true,
+      "returncode": 1,
+      "fixture_only": true
+    },
+    {
+      "name": "generated_stage_remains_unchanged",
+      "pass": true
+    }
+  ],
+  "pass": true,
+  "actual_build02_executed": false,
+  "actual_dependency_count_measured_in_build02": false,
+  "service_executed": false,
+  "Android_executed": false,
+  "Hepta_calls": 0,
+  "negative_receipt_fixture_deleted": true,
+  "production_ready": false
+}

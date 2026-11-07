@@ -1,0 +1,107 @@
+{
+  "Hepta_or_UI_calls": 0,
+  "Main_held_and_action_lock_finally_closed": true,
+  "actual_inputs": {
+    "cleanup.json": {
+      "bytes": 448,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/bili-r6-pause-resume-fresh02-failure-read01/cleanup.json",
+      "sha256": "1f5bc45e0d60e3b94d9c2c2946bca5d3e969bede051fa5714f8987b1a6077a40"
+    },
+    "coordinator.json": {
+      "bytes": 7406,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/bili-r6-pause-resume-fresh02-parent-read01/coordinator.json",
+      "sha256": "d04701a323982b972cdfde1dad4ae0e476f4f2a3b47efcdb973c762b0c9d1f00"
+    },
+    "navigation-command.json": {
+      "bytes": 1162,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/bili-r6-pause-resume-fresh02-failure-read01/navigation-command.json",
+      "sha256": "069896febd7904e2570f2b61df30c19b81b6f648096b027bfd18c77cf8707163"
+    },
+    "navigation.json": {
+      "bytes": 214331,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/bili-r6-pause-resume-fresh02-failure-read01/navigation.json",
+      "sha256": "e7403db0e2a65637281ed00489d2fa70e796881b06cf8d23720cce28fac834d6"
+    },
+    "stage.json": {
+      "bytes": 1773,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/bili-r6-pause-resume-fresh02-parent-read01/stage.json",
+      "sha256": "9ad3fdbd324dedd87bb4570bf0e09c7c5265f92b44f6133f63e1e29b409ad15b"
+    }
+  },
+  "cleanup": {
+    "action_attempted": true,
+    "automatic_retry": false,
+    "business_success_verified": false,
+    "elapsed_seconds": 0.29677861102391034,
+    "ended_utc": "2026-11-05T21:53:46.772534+00:00",
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "new_leaf_removed_and_verified": true,
+    "observations": 1,
+    "ok": true,
+    "other_tasks_preserved": true,
+    "outcome_unknown": false,
+    "task_ids_after": [
+      851
+    ]
+  },
+  "complete_role_metadata_not_in_navigation_summary": true,
+  "failed_reveal_sequence": {
+    "after_state_completed": true,
+    "error": {
+      "message": "REVEAL_UNIQUE_PLAYER_ROLE_REQUIRED",
+      "phase": "state_inspection_or_action",
+      "type": "ProtocolError"
+    },
+    "inspection_wire_sha256": "748999e4565f8772b518ea809501fd4907a4cb65cc2614ba19e3f423f602dd8e",
+    "post_state_matches_before": true,
+    "restoration_qualified": true
+  },
+  "failure_role_and_cause_not_yet_known": true,
+  "finally_inspection_sequence": {
+    "after_state_completed": true,
+    "error": null,
+    "inspection_wire_sha256": "08690ce9cde9a5a1e54c095c47f22e9239ef249b2f9f4ef9d7cb097073516b92",
+    "post_state_matches_before": true,
+    "restoration_qualified": true
+  },
+  "first_error": {
+    "message": "REVEAL_UNIQUE_PLAYER_ROLE_REQUIRED",
+    "phase": "controls_reveal_input",
+    "type": "ProtocolError"
+  },
+  "fixed_retained_role_reader_prepared": true,
+  "global_navigation_action_attempted": true,
+  "global_navigation_outcome_unknown": true,
+  "host_scope_equal_across_failed_reveal_and_finally": true,
+  "last_video_post_node_counts": [
+    72,
+    75,
+    76
+  ],
+  "owned_task": 998,
+  "owned_task_absent_after_cleanup": true,
+  "parent_Main_before_after_equal": true,
+  "pause_or_resume_success_claimed": false,
+  "playback_button_observation_present": false,
+  "reveal_input_acknowledged": false,
+  "role_failure_source_location": "unchanged R6 Session.sequence -> qa.reveal_request_fields -> qa.player_reveal_scope -> one(), before constructing and instrumenting reveal_controls action",
+  "schema": 1,
+  "secondary_errors": [
+    {
+      "message": "REVEAL_UNIQUE_PLAYER_ROLE_REQUIRED",
+      "phase": "independent_controls_readback",
+      "type": "ProtocolError"
+    }
+  ],
+  "source_control_flow_inference_reveal_action_not_dispatched": true,
+  "state": "ACTUAL_REVEAL_ROLE_ADMISSION_FAILED_BEFORE_PLAYBACK_BUTTON_STAGE",
+  "successful_prior_steps": [
+    "search entry click and post inspection",
+    "fixed public query set_text and submit",
+    "results content observation",
+    "fixed video selection and click",
+    "three complete video post observations"
+  ],
+  "terminal_job": "1a1adb38e00-fc05-5aa8",
+  "whole_app_production_ready": false
+}

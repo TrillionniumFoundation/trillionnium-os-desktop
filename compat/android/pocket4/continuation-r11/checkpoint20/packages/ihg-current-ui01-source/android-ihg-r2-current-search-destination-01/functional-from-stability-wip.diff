@@ -1,0 +1,314 @@
+--- historical-stability-wip/owned_inspect.py
++++ current-r2/owned_inspect.py
+@@ -16,31 +16,37 @@
+ import types
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-ihg-public-search-destination-entry-02')
++ROOT=Path('/home/alex/work/pocket4-ihg-r2-public-search-destination-entry-01')
+ SOURCE=ROOT/'source'
+-NONCE='IHG_READINESS_000000000000000000'
+-FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r1-flow-'+NONCE)
++NONCE='b2cd08fcaad1f2faaed5de2ff5df01af'
++FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r2-flow-'+NONCE)
+ PACKAGE='com.ihg.apps.android'
+ UID=10137
+-SELF='org.droidloom.qa.ihg.r1'
+-HELPER_UID=10196
++SELF='org.droidloom.qa.ihg.r2'
++HELPER_UID=10153
++
++CURRENT_HOST_MANIFEST='6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
++CURRENT_BASELINE_SCHEMA='pocket4-main-current-baseline-v1'
++CURRENT_EPOCH='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'
++CURRENT_BASELINE_SHA='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'
++CURRENT_QUALIFICATION_SHA='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'
+ COMPONENT=PACKAGE+'/.activity.MainActivity'
+ # The source label is inert; the exact selector is derived from the current complete inspection.
+-SEARCH_PLAN={"schema":1,"operation":"click","selector":{"text":"Search"},"nonces":{"before":"IHG_READINESS_000000000000000001","inspect":"IHG_READINESS_000000000000000002","action":"IHG_READINESS_000000000000000003","after":"IHG_READINESS_000000000000000004"}}
+-PLAN={"schema":1,"operation":"click","selector":{"text":"Destination"},"nonces":{"before":"IHG_READINESS_000000000000000005","inspect":"IHG_READINESS_000000000000000006","action":"IHG_READINESS_000000000000000007","after":"IHG_READINESS_000000000000000008"}}
+-POST_PLAN={"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000009","inspect":"IHG_READINESS_000000000000000010","after":"IHG_READINESS_000000000000000011"}}
+-SEARCH_READINESS_PLANS=[{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000012","inspect":"IHG_READINESS_000000000000000013","after":"IHG_READINESS_000000000000000014"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000015","inspect":"IHG_READINESS_000000000000000016","after":"IHG_READINESS_000000000000000017"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000018","inspect":"IHG_READINESS_000000000000000019","after":"IHG_READINESS_000000000000000020"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000021","inspect":"IHG_READINESS_000000000000000022","after":"IHG_READINESS_000000000000000023"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000024","inspect":"IHG_READINESS_000000000000000025","after":"IHG_READINESS_000000000000000026"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000027","inspect":"IHG_READINESS_000000000000000028","after":"IHG_READINESS_000000000000000029"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000030","inspect":"IHG_READINESS_000000000000000031","after":"IHG_READINESS_000000000000000032"}},{"schema":1,"operation":"inspect","nonces":{"before":"IHG_READINESS_000000000000000033","inspect":"IHG_READINESS_000000000000000034","after":"IHG_READINESS_000000000000000035"}}]
+-INSTALL_ROOT=Path('/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01')
++SEARCH_PLAN={"schema":1,"operation":"click","selector":{"text":"Search"},"nonces":{"before":"6cb8830127be3127184ff3de1a3360cb","inspect":"aeaca1e38561e485e1864e0487b00d72","action":"77c81ed7a1e1a4c3f771e7ed78790c24","after":"62a9a3349b45e527fb0048ea45ed621e"}}
++PLAN={"schema":1,"operation":"click","selector":{"text":"Destination"},"nonces":{"before":"f785cca2a3c3aded7b9f4693f47e8417","inspect":"7467c0e921207f3a4f2db14fd29d139b","action":"a3bd5d4b4c8b40bd077c68723c7ddfb4","after":"27e8d51fa580384289e71e415ed55642"}}
++POST_PLAN={"schema":1,"operation":"inspect","nonces":{"before":"92291c1fd5531298e110d66d86f99de1","inspect":"cbc5587e16902bdaffb4463c7ec48be4","after":"bf222c38e07c2ff5fbd7a8584cd3bd0e"}}
++SEARCH_READINESS_PLANS=[{"schema":1,"operation":"inspect","nonces":{"before":"7b1b9c010734df6b8cc91387f2019ca3","inspect":"7c5d635d5abeed5f73a117d5c807b934","after":"5247258a0984f0ab6866681e858befb8"}},{"schema":1,"operation":"inspect","nonces":{"before":"5f446927b595b9413991eba23897dd12","inspect":"e9091cc59d97fc30b59907290b71d48d","after":"461287d7da6340ddda112631768b48dc"}},{"schema":1,"operation":"inspect","nonces":{"before":"30d18b0774d032cd080bb4bdf85f2f25","inspect":"2e9a1c9b501f49c21cd815f76a564cea","after":"ddd0ecb9ca57d12251d52300d469b58c"}},{"schema":1,"operation":"inspect","nonces":{"before":"d09dfad0f6b214cd367a5a8aecb8df65","inspect":"04e509d6b25d7fd1ea4f5ce5cad89c5f","after":"8ed54873b7a0f2306feea3daf9539541"}},{"schema":1,"operation":"inspect","nonces":{"before":"477707c9df3713e9368e5dfd79483631","inspect":"422dd5c92c819a67ec4db025e48a8743","after":"7a1244cb4ff0e18ed7e269f16a85dcbe"}},{"schema":1,"operation":"inspect","nonces":{"before":"15437fbfb9087ca77073cfc5c76e13a7","inspect":"1052ea26086958cbf311e4bc42f8d2b8","after":"f7ed30aa27c66e2f500459dbd2c99887"}},{"schema":1,"operation":"inspect","nonces":{"before":"f4eed9da8eed9f03f7b881d7541c376b","inspect":"e7bbb25d80dcf278949387fab3d5b09c","after":"6a2b6f4bb0ff87a6602241f5349a27a6"}},{"schema":1,"operation":"inspect","nonces":{"before":"0484524ba8d4891d335b85c0ef7b709e","inspect":"f37f434a9000109f1985ef4664f701b7","after":"2e02cc7cb78355d00d2d90b0feda02a8"}}]
++INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-02")
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+-INSTALL_SOURCE_SHA='eec0bb01cbc2440918800026c2d1260bdc62fbab1f377776b9fccf7467596902'
+-UTIL_SHA='e29105e5c90201a6f0bab68173596bb31da34eff2f788dc4688be4c0a2348f7a'
+-UTIL_BYTES=32528
+-CONTEXT_SHA='41f9743b31d49148edd688dbe5a257704a5b84fdcb5de55ccc1ed60b1fa42fa8'
+-TRANSPORT_SHA='8a13ebd9508117e1c94c5113d9cc30972c7fb333bd6e0a84830c41eaf0dfeabf'
+-STATE_NONCE='c815375703e1143b2a8ce8d7d3c44d6e'
+-STATE_WIRE='0b3460605e4e41b93e02cff418feea9526f03790e4d5c80be113939e3a59d4b2'
+-INSTALLED={'apk_sha256': '3f3164062d8b4f0ebd49d631953ef1a667ec315d2ab7ac0fab8b3b933a6b7324', 'base_apk': '/data/app/~~rDj5pHDXT51jJcyn-CKlLA==/org.droidloom.qa.ihg.r1-kF1tPUKrMV3ycR7nK1zFPA==/base.apk', 'bytes': 24720, 'held_file': {'bytes': 24720, 'device': 1811, 'gid': 1000, 'inode': 789287, 'mode': 33188, 'mtime_ns': 1793917233369752116, 'nlink': 1, 'uid': 1000}, 'package': 'org.droidloom.qa.ihg.r1', 'signer_bound_by_exact_signed_apk_bytes': 'c1502f9d917628e7c64a03b197e1edb2a641a3171afba15b15311aeb23954553', 'uid': 10196}
+-PRIOR={'coordinator': ('result.json', 3068, '7487081977233962e2b3c029474313e6f2c306e908ee7d3178e07bd3830bddf0'), 'stage': ('stage-result.json', 1614, '396fc6e9642767017331abee562c222a1fd15af2cc68421aabbf3b0d02a9fed1'), 'worker': ('worker/result.json', 11213, '2e62018b086bb5484648d07867e73a3b11efbbd3490aeb3f190d1bb24afe4179')}
++INSTALL_SOURCE_SHA="e8cf9d4c04025bb092663519a01624fa40e552600dc5643a50ebf9bace915103"
++UTIL_SHA="b76a9a81e7c7c2ac11a880c9f8a82cb2209a2abc44468edf5c76bd13af798db3"
++UTIL_BYTES=38130
++CONTEXT_SHA="a62cebdc4fa1249dbbdfa28f87f0547e529ef9886f8b6bb247c811f96f673768"
++TRANSPORT_SHA="27e07fbaaccca4e5113e1750a3b7baa9d05048a1e8588f09cdc8f9ed5cf44089"
++STATE_NONCE="6c71a5c324a1c669572981cc38e4f82b"
++STATE_WIRE="10d422744e4484db083293e6b7752ef7c1a1ebec0c059b009bfdb632daf9a723"
++INSTALLED={"apk_sha256":"db7012b9a66f4177f8b4ac57ac3d39e77b8c9871a8b2c364343c420fb9d42f41","base_apk":"/data/app/~~2Ra07v9TklCSDPAiZXK0qQ==/org.droidloom.qa.ihg.r2-QQ0wWKyusbCYEh7ZGrTsNg==/base.apk","bytes":24720,"held_file":{"bytes":24720,"device":1811,"gid":1000,"inode":789387,"mode":33188,"mtime_ns":1793952064858420740,"nlink":1,"uid":1000},"package":"org.droidloom.qa.ihg.r2","signer_bound_by_exact_signed_apk_bytes":"a2ae584189d8faa5f3705b9278b29b38f2f32e6ca97b1224e80f9b1dfc0d1e5a","uid":10153}
++PRIOR={"coordinator":("result.json",3961,"4f7f628b7aa600e686bffcd2eec33f908116db94c7192090b68096b6710b2c78"),"stage":("stage-result.json",6856,"fbee6aa99439b55aa04952665c98122799e3a4135a76ffe9717a0399cf020cc2"),"worker":("worker/result.json",12552,"81f25ba7fcced82ecc0534ce41f70b7b98ce1f152aa1e5e6c132db825d65fb58")}
+ RESOLVER_ROOT=Path('/home/alex/work/pocket4-ihg-artifact-launcher-readonly-01')
+ # The five-command metadata source is already an exact pinned install input.
+ RESOLVER_SOURCE=INSTALL_SOURCE/'references/read_ihg.py'
+@@ -154,12 +160,20 @@
+          state['actual_instrumentation_finish_code']==-1 and
+          state['held_transport_returned_after_post_guard'] is True and
+          helper['nonce']==STATE_NONCE and helper['self_uid']==HELPER_UID and
+-         helper['protocol']=='pocket4-owned-ihg-qa-v1' and helper['op']=='state' and
++         helper['protocol']=='pocket4-owned-ihg-qa-v2' and helper['op']=='state' and
+          helper['ok'] is True and helper['ui_automation_connected'] is False,
+          'ACTUAL_NO_AUTOMATION_STATE_REQUIRED')
+     need(w['target_before']==w['target_after'] and
+          w['Main_before_lock']==w['Main_before']==w['Main_after']==c['Main_before']==c['Main_after']==s['Main_before']==s['Main_after'],
+          'ACTUAL_INSTALL_MAIN_OR_TARGET_CHAIN')
++    need(w['Main_before'].get('schema')=='pocket4-current-main-guard-v1' and
++         w['Main_before'].get('Main_epoch_sha256')==CURRENT_EPOCH and
++         w['Main_before'].get('current_baseline_sha256')==CURRENT_BASELINE_SHA and
++         w['Main_before'].get('current_baseline_qualification_sha256')==CURRENT_QUALIFICATION_SHA and
++         w['Main_before'].get('seven_processes_match') is True and
++         w['Main_before'].get('three_host_processes_match') is True and
++         w['Main_before'].get('resource_limits_match') is True,
++         'ACTUAL_INSTALL_TYPED_CURRENT_BASELINE_REQUIRED')
+     need(w['staging_cleanup']['staged_apk_removed'] is True and
+          w['staging_cleanup']['staged_directory_removed'] is True and
+          w['target_FD_cleanup']['held_APK_FDs_closed']==1 and
+@@ -172,8 +186,9 @@
+         'no_prior_install_or_state_replayed':True}
+ 
+ def qualified(expected):
+-    need(type(HELPER_UID) is int and 10000<=HELPER_UID<100000 and isinstance(INSTALLED,dict) and
++    need(type(HELPER_UID) is int and 10000<=HELPER_UID<100000 and HELPER_UID not in (10137,10196) and isinstance(INSTALLED,dict) and
+          isinstance(STATE_WIRE,str) and re.fullmatch('[0-9a-f]{64}',STATE_WIRE) and
++         isinstance(PRIOR,dict) and set(PRIOR)=={'coordinator','stage','worker'} and
+          isinstance(PRIOR['worker'],tuple),'ACTUAL_IHG_INSTALL_BINDING_NOT_READY')
+     manifest=verify_source(expected)
+     util=load(INSTALL_SOURCE/'install_state.py',UTIL_SHA,'ticket_qualified_install_primitives',UTIL_BYTES)
+@@ -214,8 +229,18 @@
+ 
+ 
+ def scope_record(q,expected):
+-    return {'package':PACKAGE,'component':COMPONENT,'uid':UID,'user':0,'nonce':NONCE,
+-        'epoch_sha256':q.ref.EPOCH,'activation_sha256':q.ref.ACTIVATION_SHA,'verified_sha256':q.ref.VERIFIED_SHA,
++    baseline=q.ref.current_baseline()
++    need(baseline.get('schema')==CURRENT_BASELINE_SCHEMA and
++         baseline['framework_epoch']['sha256']==CURRENT_EPOCH==q.ref.EPOCH and
++         q.ref.BASELINE_SHA==CURRENT_BASELINE_SHA and
++         q.ref.QUALIFICATION_SHA==CURRENT_QUALIFICATION_SHA and
++         type(baseline['packages'].get(PACKAGE)) is int and baseline['packages'][PACKAGE]==UID,
++         'CURRENT_TYPED_OWN_TARGET_SCOPE_REQUIRED')
++    return {'schema':'pocket4-current-recorder-scope-v1','current_baseline_schema':baseline['schema'],
++        'package':PACKAGE,'component':COMPONENT,'uid':baseline['packages'][PACKAGE],'user':0,'nonce':NONCE,
++        'epoch_sha256':baseline['framework_epoch']['sha256'],
++        'current_baseline_sha256':q.ref.BASELINE_SHA,
++        'current_baseline_qualification_sha256':q.ref.QUALIFICATION_SHA,
+         'amazon_task_source_manifest_sha256':expected,'automatic_retry':False,
+         'original_recorder_manifest_sha256':q.adapter.RECORDER_MANIFEST_SHA,
+         'actual_resolution_result_sha256':RESOLVER_RECORDS['worker'][2]}
+@@ -301,7 +326,7 @@
+         shared=u.module(context.INSTALLED_SHARED/'source_contract.py',context.CONTRACT_SHA,'amazon_task_admission_contract')
+         contract=shared.SourceContract(context.INSTALLED_SHARED/'source-manifest.json',context.SHARED_MANIFEST)
+         recorder=contract.load('recorder.py','amazon_task_admission_recorder')
+-        activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++        activation=ref.current_baseline()
+         epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'amazon_phase_epoch')
+         guard=lambda:ref.main_guard(activation,epoch)
+         result['Main_before_lock']=guard()
+@@ -460,14 +485,14 @@
+     activation=epoch=resources=None
+     try:
+         resources=u.prepare_owned_limits();result['owned_before']=resources
+-        activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++        activation=ref.current_baseline()
+         epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'amazon_coordinator_epoch')
+         guard=lambda:ref.main_guard(activation,epoch)
+         result['Main_before']=guard()
+         FLOW.mkdir(mode=0o700)
+         ref.write_new(FLOW/'scope.json',scope_record(q,expected))
+-        ref.write_new(FLOW/'activation.json',ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
+-        ref.write_new(FLOW/'activation-verified.json',ref.read(ref.VERIFIED,expected=ref.VERIFIED_SHA))
++        ref.write_new(FLOW/'baseline.json',ref.read(ref.BASELINE,expected=ref.BASELINE_SHA))
++        ref.write_new(FLOW/'baseline-qualification.json',ref.read(ref.QUALIFICATION,expected=ref.QUALIFICATION_SHA))
+         (FLOW/'steps').mkdir(mode=0o700)
+         result['launch_worker_requested']=True
+         launched=ref.run_cli('01-launch',['/usr/bin/python3','-I',str(HERE/'owned_inspect.py'),
+
+--- historical-stability-wip/ihg_task_context.py
++++ current-r2/ihg_task_context.py
+@@ -8,6 +8,7 @@
+ import json
+ import math
+ import os
++import re
+ from pathlib import Path
+ import subprocess
+ import stat
+@@ -16,8 +17,14 @@
+ 
+ PACKAGE='com.ihg.apps.android'
+ UID=10137
+-SELF='org.droidloom.qa.ihg.r1'
+-HELPER_UID=10196
++SELF='org.droidloom.qa.ihg.r2'
++HELPER_UID=10153
++
++CURRENT_HOST_MANIFEST='6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
++CURRENT_BASELINE_SCHEMA='pocket4-main-current-baseline-v1'
++CURRENT_EPOCH='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'
++CURRENT_BASELINE_SHA='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'
++CURRENT_QUALIFICATION_SHA='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'
+ LIST=['/system/bin/cmd','package','list','packages','-U','--show-versioncode','--user','0',PACKAGE]
+ PATHS=['/system/bin/cmd','package','path','--user','0',PACKAGE]
+ OWN_UID=['/system/bin/cmd','package','list','packages','-U','--user','0',SELF]
+@@ -115,16 +122,41 @@
+ 
+ 
+ 
++def current_task_scope(scope,qa,contract):
++    fields={'schema','current_baseline_schema','package','component','uid','user','nonce',
++        'epoch_sha256','current_baseline_sha256','current_baseline_qualification_sha256',
++        'amazon_task_source_manifest_sha256','automatic_retry',
++        'original_recorder_manifest_sha256','actual_resolution_result_sha256'}
++    need(type(scope) is dict and set(scope)==fields and
++         scope['schema']=='pocket4-current-recorder-scope-v1' and
++         scope['current_baseline_schema']==CURRENT_BASELINE_SCHEMA==qa.MAIN_BASELINE_SCHEMA and
++         scope['epoch_sha256']==CURRENT_EPOCH==qa.MAIN_EPOCH and
++         scope['current_baseline_sha256']==CURRENT_BASELINE_SHA==qa.MAIN_BASELINE_SHA and
++         scope['current_baseline_qualification_sha256']==CURRENT_QUALIFICATION_SHA==qa.MAIN_BASELINE_QUALIFICATION_SHA and
++         scope['package']==PACKAGE==qa.PACKAGE and type(scope['uid']) is int and scope['uid']==UID==qa.UID and
++         type(scope['user']) is int and scope['user']==0 and
++         scope['original_recorder_manifest_sha256']==CURRENT_HOST_MANIFEST==contract.sha256 and
++         scope['automatic_retry'] is False,'EXACT_TYPED_CURRENT_IHG_TASK_SCOPE')
++    need(isinstance(scope['component'],str) and
++         re.fullmatch(re.escape(PACKAGE)+r'/[A-Za-z0-9_.$]+',scope['component']) and
++         isinstance(scope['nonce'],str) and re.fullmatch('[0-9a-f]{32}',scope['nonce']) and
++         all(isinstance(scope[key],str) and re.fullmatch('[0-9a-f]{64}',scope[key])
++             for key in ('amazon_task_source_manifest_sha256','actual_resolution_result_sha256')),
++         'EXACT_CURRENT_TASK_SOURCE_NONCE_AND_COMPONENT')
++    return scope
++
++
+ class Flow:
+     """Amazon-only object satisfying the actual original Session interface."""
+     def __init__(self,*,recorder,contract,target,environment,transport,main_guard,root,step,
+                  phase,scope,activation,tasks,qa,inspect_plan,resolve,read,deadline):
+-        need(scope['package']==PACKAGE and scope['uid']==UID and scope['user']==0 and
+-             scope['epoch_sha256']==transport.FRAMEWORK_EPOCH_SHA256,'EXACT_AMAZON_TASK_SCOPE_REQUIRED')
++        current_task_scope(scope,qa,contract)
++        need(scope['epoch_sha256']==transport.FRAMEWORK_EPOCH_SHA256,'EXACT_CURRENT_TRANSPORT_EPOCH_REQUIRED')
+         need(root.is_dir() and step.is_relative_to(root),'NEW_PRIVATE_FLOW_REQUIRED')
+         self.recorder,self.contract,self.target=recorder,contract,target
+         self.main_guard,self.root,self.step=main_guard,root,step
+         self.phase,self.scope,self.activation,self.tasks=phase,scope,activation,tasks
++        self.current_qualified_scope=dict(scope);self.qa=qa
+         self.deadline=deadline;self.command_index=0;self.action_attempted=False
+         self._private_backend_transport=False;self._android_mutation=False
+         self.binding=types.SimpleNamespace(target=target)
+@@ -148,6 +180,8 @@
+             package=PACKAGE,uid=UID,interactive_production=True,runner=runner)
+ 
+     def guard(self,attempted=False):
++        current_task_scope(self.scope,self.qa,self.contract)
++        need(self.scope==self.current_qualified_scope,'CURRENT_IHG_TASK_SCOPE_CHANGED')
+         need(not self.closed and time.monotonic()<self.deadline,'OPEN_BOUNDED_AMAZON_FLOW_REQUIRED')
+         self.main_guard();self.target.verify()
+         if self.artifacts is not None:self.artifacts.verify_held()
+@@ -227,39 +261,37 @@
+     recorder=contract.load('recorder.py','amazon_task_actual_command')
+     held=contract.load('references/held_runtime_r5.py','amazon_task_actual_held_main')
+     binding=contract.load('main_binding.py','amazon_task_shared_classpath_only')
+-    activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
+-    verified=json.loads(ref.read(ref.VERIFIED,expected=ref.VERIFIED_SHA))
+-    need(activation['main_deployed'] is True and verified['main_deployed'] is True and
+-         verified['framework_epoch_sha256']==ref.EPOCH and activation['packages'][PACKAGE]==UID,
+-         'FIXED_MAIN_AND_AMAZON_ACTIVATION_REQUIRED')
++    activation=ref.current_baseline()
++    own_scope=context.baseline_scope(ref,activation)
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,
+                      'amazon_task_fixed_epoch')
+     scope_raw=util.read(flow_root/'scope.json',65536)
+     scope=json.loads(scope_raw)
+-    need(scope==expected_scope and scope['activation_sha256']==ref.ACTIVATION_SHA and
+-         scope['verified_sha256']==ref.VERIFIED_SHA and scope['epoch_sha256']==ref.EPOCH and
+-         scope['package']==PACKAGE and scope['uid']==UID and scope['user']==0,
+-         'EXACT_NEW_AMAZON_FLOW_SCOPE_REQUIRED')
+-    need(util.read(flow_root/'activation.json',expected=ref.ACTIVATION_SHA)==ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA)
+-         and util.read(flow_root/'activation-verified.json',expected=ref.VERIFIED_SHA)==ref.read(ref.VERIFIED,expected=ref.VERIFIED_SHA),
+-         'SAVED_MAIN_ACTIVATION_CHANGED')
++    current_task_scope(scope,qa,contract)
++    need(scope==expected_scope and all(scope[key]==value for key,value in own_scope.items()),
++         'EXACT_NEW_CURRENT_IHG_FLOW_SCOPE_REQUIRED')
++    need(util.read(flow_root/'baseline.json',expected=ref.BASELINE_SHA)==ref.read(ref.BASELINE,expected=ref.BASELINE_SHA)
++         and util.read(flow_root/'baseline-qualification.json',expected=ref.QUALIFICATION_SHA)==ref.read(ref.QUALIFICATION,expected=ref.QUALIFICATION_SHA),
++         'SAVED_TYPED_CURRENT_BASELINE_CHANGED')
+     info=flow_root.lstat()
+     need(stat.S_ISDIR(info.st_mode) and info.st_uid==0 and not info.st_mode&0o077,
+          'PRIVATE_ROOT_OWNED_NEW_FLOW_REQUIRED')
++    target=None
+     def guard():
+         need(time.monotonic()<deadline,'AMAZON_PHASE_DEADLINE')
+         source_verify(source_manifest);contract.verify()
+         need(util.read(flow_root/'scope.json',65536)==scope_raw,'AMAZON_SCOPE_CHANGED')
+         ref.read(recorder.APP,expected=recorder.APP_SHA)
+         util.read(source.HELPER_PATH,source.HELPER_BYTES,source.HELPER_SHA,source.HELPER_BYTES)
+-        return ref.main_guard(activation,epoch)
++        observation=ref.main_guard(activation,epoch)
++        if target is not None:context.verify_target_data(target,activation,binding)
++        return observation
+     result['Main_before']=guard();result['shared_helper']=source.verify_shared_helper()
+     expected=activation['framework_epoch']['binding']['processes']['init']
+     proc=os.open('/proc/'+str(expected['host_pid']),os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC)
+     try:actual=held.proc_identity_at(proc,expected['host_pid'],time.monotonic()+3)
+     finally:os.close(proc)
+     need(binding.same_epoch_identity(actual,expected),'FIXED_MAIN_INIT_IDENTITY_CHANGED')
+-    target=None
+     try:
+         target=held.HeldTarget(actual,source.HELPER_PATH,source.HELPER_SHA);guard()
+         app=util.module(Path(recorder.APP),recorder.APP_SHA,'amazon_task_discovery_only')
+
+--- historical-stability-wip/public_destination.py
++++ current-r2/public_destination.py
+
+--- historical-stability-wip/stage_execute.py
++++ current-r2/stage_execute.py
+@@ -6,12 +6,12 @@
+ from pathlib import Path
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-ihg-public-search-destination-entry-02')
++ROOT=Path('/home/alex/work/pocket4-ihg-r2-public-search-destination-entry-01')
+ SOURCE=ROOT/'source'
+-NONCE='IHG_READINESS_000000000000000000'
++NONCE='b2cd08fcaad1f2faaed5de2ff5df01af'
+ FILES={'owned_inspect.py','ihg_task_context.py','public_destination.py','INPUTS.json'}
+-REFERENCE=Path('/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py')
+-REFERENCE_SHA='e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
++REFERENCE=Path('/home/alex/work/pocket4-current-host-r5-source-01/current_coordinator.py')
++REFERENCE_SHA="fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2"
+ 
+ 
+ def main(packet,manifest_sha256):
+@@ -32,7 +32,7 @@
+     exec(compile(data['owned_inspect.py'],entry.__file__,'exec'),entry.__dict__)
+     assert entry.ROOT==ROOT and entry.SOURCE==SOURCE and entry.HERE==SOURCE and entry.NONCE==NONCE
+     ref=entry.load(REFERENCE,REFERENCE_SHA,'amazon_task_stage_reference')
+-    activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++    activation=ref.current_baseline()
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'amazon_task_stage_epoch')
+     before=ref.main_guard(activation,epoch)
+     os.umask(0o077);ROOT.mkdir(mode=0o700)
+@@ -53,7 +53,7 @@
+         durable=entry.read(ROOT/'result.json');observed=json.loads(durable)
+         result['coordinator_result']={'path':str(ROOT/'result.json'),'bytes':len(durable),'sha256':hashlib.sha256(durable).hexdigest()}
+         assert observed['nonce']==NONCE and observed['source_manifest_sha256']==manifest_sha256
+-        assert observed['package']==entry.PACKAGE and observed['helper_uid']==10196
++        assert observed['package']==entry.PACKAGE and observed['helper_uid']==entry.HELPER_UID
+         assert rc==0 and observed['ok'] is True and observed['error'] is None and observed['secondary_errors']==[]
+         assert observed['destination_click_and_observation_completed'] is True and observed['explicit_search_then_destination_completed'] is True
+         assert observed['owned_task_absent_after_cleanup'] is True

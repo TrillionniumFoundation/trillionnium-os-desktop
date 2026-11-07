@@ -1,0 +1,84 @@
+{
+  "request_sha256": "2582516493bf26d1e1c8278b5fa84743a9f97f1ba550e52b74b8141a9763b010",
+  "job_id": "1a1a99443c8-fc05-361c",
+  "admission": {
+    "audit_recorded": true,
+    "job": {
+      "args": [
+        "-n",
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-"
+      ],
+      "created_unix_ms": 1793846428616,
+      "cwd": "/",
+      "env_keys": [],
+      "executable": "/usr/bin/sudo",
+      "execution_mode": "operator",
+      "host": "pocket4",
+      "id": "1a1a99443c8-fc05-361c",
+      "idempotency_key": "p4-owner07-normal01-prepare02-883b3edaebad18c5",
+      "launch_error": null,
+      "launch_state": "launched",
+      "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1a99443c8-fc05-361c",
+      "request_digest": "3310dbe7b7f7305985ae52b35be38b89d5e666575e08d96ca75f9cb92763ee88",
+      "request_fingerprint": 3679682683832054000,
+      "ssh_target": "hepta-pocket4",
+      "system_jobctl": false,
+      "unit": "hepta-runtime-job-1a1a99443c8-fc05-361c"
+    },
+    "launch": {
+      "backend": "systemd",
+      "launcher_pid": null,
+      "ok": true,
+      "unit": "hepta-runtime-job-1a1a99443c8-fc05-361c"
+    },
+    "local_record_pending": false,
+    "reused": false
+  },
+  "terminal": {
+    "at_unix_ms": 1793846437441,
+    "audit_recorded": true,
+    "automatic_retry": false,
+    "cancelled": false,
+    "exit_code": 0,
+    "job_id": "1a1a99443c8-fc05-361c",
+    "launch_nonce": "b198cebb1137d9d0a3c23024fa7b9b28",
+    "log_bytes": {
+      "stderr": {
+        "seen": 0,
+        "stored": 0
+      },
+      "stdout": {
+        "seen": 233,
+        "stored": 233
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_synced": {
+      "stderr": true,
+      "stdout": true
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
+  },
+  "stdout": "{\"success\": true, \"result_path\": \"/opt/p4-owner07-normal-20261105-01-state/prepared.json\", \"bytes\": 55138, \"sha256\": \"be45f40c6453182e8a4f71ecb5cb7398803f8945f4c3be156410c168722c26ae\", \"first_error\": null, \"runtime_executed\": false}\n",
+  "result": {
+    "bytes": 55138,
+    "sha256": "be45f40c6453182e8a4f71ecb5cb7398803f8945f4c3be156410c168722c26ae",
+    "remote_path": "/opt/p4-owner07-normal-20261105-01-state/prepared.json",
+    "version": "66306:44178177:55138:1793846437403097018:1793846437404097047"
+  }
+}

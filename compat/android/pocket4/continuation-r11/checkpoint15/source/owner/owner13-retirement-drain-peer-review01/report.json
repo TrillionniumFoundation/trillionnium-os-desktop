@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "scope": "independent read-only retirement-only delta, unchanged receiver and owned-child Rust fixture source",
+  "reviewer": "native_bridge_repair",
+  "conclusion": "NO_NEW_CONCRETE_BLOCKER_IN_READ_SCOPE",
+  "inputs": [
+    {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/retirement-terminal-drain-source-freeze-13/manifest.json",
+      "bytes": 4398,
+      "sha256": "fab7226afa93d372a7ba7d025cd704ae4aba878f9fa5336490af72eca98e6593"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/retirement-terminal-drain-source-freeze-13/retirement-only.diff",
+      "bytes": 20631,
+      "sha256": "0d37b480b3b6f98308d14931d530b6329174cc355cb7ba05ccb15e321ce165cf"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/retirement-terminal-drain-source-freeze-13/candidate/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs",
+      "bytes": 86037,
+      "sha256": "cf9b59ced14cd1594e59dd91f299a734c47cbba71fff5634c62c9d4c9d62c8b2"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/retirement-terminal-drain-source-freeze-13/preimage/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs",
+      "bytes": 70517,
+      "sha256": "d88f14b02d17a94feb135fa1089e25a1fffcb52da441fb5edecee01fc6405c2e"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/retirement-terminal-drain-source-freeze-13/README.md",
+      "bytes": 3367,
+      "sha256": "12f695532548d72bbf9ec2e5f075810b26340f88513e7d816b26ce58c3f3d28b"
+    }
+  ],
+  "all_manifest_payloads_bytes_sha256_verified": 24,
+  "unchanged_function_text_verified": [
+    "receive_packet",
+    "receive_progress_frame",
+    "request_retirement",
+    "accept_status",
+    "receive_progress",
+    "progress_available",
+    "abort_before_initialize",
+    "retirement_complete",
+    "pressure_audit"
+  ],
+  "findings": [
+    "Pre-drain poll only selects whether to invoke the unchanged receiver. POLLIN/HUP/ERR supplies no retirement certificate. AUDIT nonce/generation/cgroup/budget and status endpoint/scope/flags remain required.",
+    "After a failed one-time RETIRE send, only completed terminal receipt and exact child matching exit can return Ok(true). Otherwise the first send error wins. No command replay occurs.",
+    "The method sets its sticky poison bit on an Err produced by its retirement attempt, checks poison before the joined fast path, and COMMIT rejects poison. Timeout Ok(false) after valid terminal while child remains live retains ownership and may continue.",
+    "joined and shared retired are set only after exact Child::try_wait and exit0/exit1 matching the terminal fault flag. Bare death/EOF, ACTIVE without terminal, malformed/replayed/foreign scope packets cannot supply that certificate.",
+    "Fixture constructors explicitly seed post-READY state only inside cfg(test). Their temporary Python child uses real socketpair, held Python executable, sealed input memfd, exact parent death check and exact Child waits. This is not a production bootstrap/leader-origin test.",
+    "Four new Rust tests include already-closed valid terminal, one live RETIRE, ten incomplete/wrong cases with a second refusal, and a live child after terminal followed by exact exit. Source only: no Rust compile or execution by this reviewer."
+  ],
+  "qualification_limits": [
+    "No Hepta/device/service/Main actions or Rust/Python fixture execution performed by this reviewer.",
+    "The failed-send-after-pre-drain race branch is source-reviewed but not deterministically exercised by the four new tests: the first positive separately reproduces old failed send then enters retire with a ready terminal. Do not label that as actual branch execution.",
+    "The sticky latch applies to errors inside retire; this review does not establish a global poison contract for arbitrary earlier public receive_progress callers.",
+    "Test Drop cleanup uses existing exact Child kill/wait on failure; its bounded outer job/resource and actual leftover-child qualification remain execution gates.",
+    "The three diagnostic12 source deltas are outside this retirement-only review. Generic open relative pinned directory ENOENT still does not identify public cgroup projection; its helper uses a different label.",
+    "This does not qualify full Owner startup, LMKD enrollment, PSI delivery or whole-app production readiness."
+  ],
+  "source_modified": false,
+  "tests_run": false,
+  "remote_actions": 0
+}

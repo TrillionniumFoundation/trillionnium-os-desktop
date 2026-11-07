@@ -1,0 +1,2265 @@
+{
+  "automatic_retry": false,
+  "bounds": {
+    "cgroups": 8192,
+    "file_bytes": {
+      "cgroup": 16384,
+      "cgroup.procs": 65536,
+      "cmdline": 4096,
+      "stat": 8192,
+      "status": 65536
+    },
+    "link_bytes": 4096,
+    "pids": 4096,
+    "report_bytes": 2097152,
+    "seconds": 8
+  },
+  "cgroup_after": {
+    "device": 30,
+    "inode": 28178276
+  },
+  "cgroup_before": {
+    "device": 30,
+    "inode": 28178276
+  },
+  "complete": true,
+  "does_not_admit_an_epoch": true,
+  "enumerated_cgroups": 114,
+  "enumerated_pids": [
+    398152,
+    398259,
+    398264,
+    398265,
+    398721,
+    398722,
+    398896,
+    398904,
+    398905,
+    398906,
+    398908,
+    398914,
+    398930,
+    398931,
+    398932,
+    398937,
+    398954,
+    399083,
+    399087,
+    399088,
+    399089,
+    399091,
+    399098,
+    399102,
+    399104,
+    399105,
+    399106,
+    399107,
+    399108,
+    399110,
+    399111,
+    399113,
+    399119,
+    399134,
+    399135,
+    399136,
+    399137,
+    399138,
+    399139,
+    399140,
+    399157,
+    399158,
+    399160,
+    399206,
+    399294,
+    399501,
+    403654,
+    403722,
+    403735,
+    403774,
+    403776,
+    403799,
+    403812,
+    403852,
+    404916,
+    404929,
+    404968,
+    404978,
+    404994,
+    404998,
+    405027,
+    405062,
+    405071,
+    405077,
+    405078,
+    405151,
+    405206,
+    405229,
+    405291,
+    405377,
+    405387,
+    405430
+  ],
+  "enumeration_errors": [],
+  "finished_monotonic_ns": 847185380352833,
+  "group": "/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service",
+  "init_after": {
+    "cgroup": [
+      "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service"
+    ],
+    "cmdline": [
+      "/init",
+      "second_stage"
+    ],
+    "executable": "/system/bin/init",
+    "host_pid": 398265,
+    "namespace_pids": [
+      398265,
+      1
+    ],
+    "namespaces": {
+      "mnt": "mnt:[4026533865]",
+      "pid": "pid:[4026533868]"
+    },
+    "parent_host_pid": 398264,
+    "start_ticks": 84711689,
+    "uids": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "init_before": {
+    "cgroup": [
+      "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service"
+    ],
+    "cmdline": [
+      "/init",
+      "second_stage"
+    ],
+    "executable": "/system/bin/init",
+    "host_pid": 398265,
+    "namespace_pids": [
+      398265,
+      1
+    ],
+    "namespaces": {
+      "mnt": "mnt:[4026533865]",
+      "pid": "pid:[4026533868]"
+    },
+    "parent_host_pid": 398264,
+    "start_ticks": 84711689,
+    "uids": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "kind": "owned-private-framework-census-r2",
+  "records": [
+    {
+      "cgroup": "/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service",
+      "host_pid": 398152,
+      "pid_namespace": "pid:[4026531836]",
+      "state": "different-pid-namespace"
+    },
+    {
+      "cgroup": "/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service",
+      "host_pid": 398259,
+      "pid_namespace": "pid:[4026531836]",
+      "state": "different-pid-namespace"
+    },
+    {
+      "cgroup": "/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service",
+      "host_pid": 398264,
+      "pid_namespace": "pid:[4026531836]",
+      "state": "different-pid-namespace"
+    },
+    {
+      "host_pid": 398265,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service"
+        ],
+        "cmdline": [
+          "/init",
+          "second_stage"
+        ],
+        "executable": "/system/bin/init",
+        "host_pid": 398265,
+        "namespace_pids": [
+          398265,
+          1
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398264,
+        "start_ticks": 84711689,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 398721,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service"
+        ],
+        "cmdline": [
+          "/system/bin/init",
+          "subcontext",
+          "u:r:vendor_init:s0",
+          "16"
+        ],
+        "executable": "/system/bin/init",
+        "host_pid": 398721,
+        "namespace_pids": [
+          398721,
+          431
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711761,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 398722,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_0/pid_432"
+        ],
+        "cmdline": [
+          "/system/bin/ueventd"
+        ],
+        "executable": "/system/bin/init",
+        "host_pid": 398722,
+        "namespace_pids": [
+          398722,
+          432
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711762,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 398896,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1092/pid_524"
+        ],
+        "cmdline": [
+          "/system/bin/prng_seeder"
+        ],
+        "executable": "/system/bin/prng_seeder",
+        "host_pid": 398896,
+        "namespace_pids": [
+          398896,
+          524
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711793,
+        "uids": [
+          1092,
+          1092,
+          1092,
+          1092
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 398904,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1036/pid_527"
+        ],
+        "cmdline": [
+          "/system/bin/logd"
+        ],
+        "executable": "/system/bin/logd",
+        "host_pid": 398904,
+        "namespace_pids": [
+          398904,
+          527
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711794,
+        "uids": [
+          1036,
+          1036,
+          1036,
+          1036
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 398905,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1069/pid_528"
+        ],
+        "cmdline": [
+          "/vendor/bin/droidloom-lmkd-compat"
+        ],
+        "executable": "/vendor/bin/droidloom-lmkd-compat",
+        "host_pid": 398905,
+        "namespace_pids": [
+          398905,
+          528
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711794,
+        "uids": [
+          1069,
+          1069,
+          1069,
+          1069
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 398906,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1000/pid_529"
+        ],
+        "cmdline": [
+          "/system/bin/servicemanager"
+        ],
+        "executable": "/system/bin/servicemanager",
+        "host_pid": 398906,
+        "namespace_pids": [
+          398906,
+          529
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711795,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 398908,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_2000/pid_531"
+        ],
+        "cmdline": [
+          "/system/bin/sh"
+        ],
+        "executable": "/system/bin/sh",
+        "host_pid": 398908,
+        "namespace_pids": [
+          398908,
+          531
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711795,
+        "uids": [
+          2000,
+          2000,
+          2000,
+          2000
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 398914,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_0/pid_537"
+        ],
+        "cmdline": [
+          "/system/bin/vold",
+          "--blkid_context=u:r:blkid:s0",
+          "--blkid_untrusted_context=u:r:blkid_untrusted:s0",
+          "--fsck_context=u:r:fsck:s0",
+          "--fsck_untrusted_context=u:r:fsck_untrusted:s0"
+        ],
+        "executable": "/system/bin/vold",
+        "host_pid": 398914,
+        "namespace_pids": [
+          398914,
+          537
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711796,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 398930,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1000/pid_546"
+        ],
+        "cmdline": [
+          "/system/bin/hw/android.system.suspend-service"
+        ],
+        "executable": "/system/bin/hw/android.system.suspend-service",
+        "host_pid": 398930,
+        "namespace_pids": [
+          398930,
+          546
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711804,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 398931,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1017/pid_547"
+        ],
+        "cmdline": [
+          "/system/bin/keystore2",
+          "/data/misc/keystore"
+        ],
+        "executable": "/system/bin/keystore2",
+        "host_pid": 398931,
+        "namespace_pids": [
+          398931,
+          547
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711805,
+        "uids": [
+          1017,
+          1017,
+          1017,
+          1017
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 398932,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_9999/pid_548"
+        ],
+        "cmdline": [
+          "/vendor/bin/hw/android.hardware.security.keymint-service.nonsecure"
+        ],
+        "executable": "/vendor/bin/hw/android.hardware.security.keymint-service.nonsecure",
+        "host_pid": 398932,
+        "namespace_pids": [
+          398932,
+          548
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711805,
+        "uids": [
+          9999,
+          9999,
+          9999,
+          9999
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 398937,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1058/pid_553"
+        ],
+        "cmdline": [
+          "/system/bin/tombstoned"
+        ],
+        "executable": "/system/bin/tombstoned",
+        "host_pid": 398937,
+        "namespace_pids": [
+          398937,
+          553
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711806,
+        "uids": [
+          1058,
+          1058,
+          1058,
+          1058
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 398954,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_0/pid_570"
+        ],
+        "cmdline": [
+          "/system/bin/apexd"
+        ],
+        "executable": "/system/bin/apexd",
+        "host_pid": 398954,
+        "namespace_pids": [
+          398954,
+          570
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711810,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399083,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1000/pid_642"
+        ],
+        "cmdline": [
+          "/system_ext/bin/rpmb_dev.test.system",
+          "--dev",
+          "/mnt/secure_storage_rpmb_test_system/persist/RPMB_DATA",
+          "--sock",
+          "rpmb_mock_test_system"
+        ],
+        "executable": "/system_ext/bin/rpmb_dev.test.system",
+        "host_pid": 399083,
+        "namespace_pids": [
+          399083,
+          642
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711877,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399087,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_0/pid_645"
+        ],
+        "cmdline": [
+          "/system/bin/netd"
+        ],
+        "executable": "/system/bin/netd",
+        "host_pid": 399087,
+        "namespace_pids": [
+          399087,
+          645
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711889,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399088,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1066/pid_646"
+        ],
+        "cmdline": [
+          "/apex/com.android.os.statsd/bin/statsd"
+        ],
+        "executable": "/apex/com.android.os.statsd/bin/statsd",
+        "host_pid": 399088,
+        "namespace_pids": [
+          399088,
+          646
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711891,
+        "uids": [
+          1066,
+          1066,
+          1066,
+          1066
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399089,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_0/pid_647"
+        ],
+        "cmdline": [
+          "zygote64"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 399089,
+        "namespace_pids": [
+          399089,
+          647
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534197]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711891,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399091,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1041/pid_649"
+        ],
+        "cmdline": [
+          "/system_ext/bin/hw/android.hardware.audio.parameter_parser.example_service"
+        ],
+        "executable": "/system_ext/bin/hw/android.hardware.audio.parameter_parser.example_service",
+        "host_pid": 399091,
+        "namespace_pids": [
+          399091,
+          649
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711892,
+        "uids": [
+          1041,
+          1041,
+          1041,
+          1041
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399098,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1000/pid_656"
+        ],
+        "cmdline": [
+          "/vendor/bin/hw/android.hardware.graphics.allocator-service.minigbm"
+        ],
+        "executable": "/vendor/bin/hw/android.hardware.graphics.allocator-service.minigbm",
+        "host_pid": 399098,
+        "namespace_pids": [
+          399098,
+          656
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711892,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399102,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1000/pid_660"
+        ],
+        "cmdline": [
+          "/vendor/bin/hw/android.hardware.health-service.example"
+        ],
+        "executable": "/vendor/bin/hw/android.hardware.health-service.example",
+        "host_pid": 399102,
+        "namespace_pids": [
+          399102,
+          660
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711893,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399104,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1000/pid_662"
+        ],
+        "cmdline": [
+          "/vendor/bin/hw/android.hardware.graphics.composer3-service.droidloom"
+        ],
+        "executable": "/vendor/bin/hw/android.hardware.graphics.composer3-service.droidloom",
+        "host_pid": 399104,
+        "namespace_pids": [
+          399104,
+          662
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711893,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399105,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_9999/pid_663"
+        ],
+        "cmdline": [
+          "/vendor/bin/hw/android.hardware.power-service.example"
+        ],
+        "executable": "/vendor/bin/hw/android.hardware.power-service.example",
+        "host_pid": 399105,
+        "namespace_pids": [
+          399105,
+          663
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711893,
+        "uids": [
+          9999,
+          9999,
+          9999,
+          9999
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399106,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1041/pid_664"
+        ],
+        "cmdline": [
+          "/apex/com.android.hardware.audio.droidloom/bin/hw/android.hardware.audio.service-aidl.droidloom"
+        ],
+        "executable": "/apex/com.android.hardware.audio.droidloom/bin/hw/android.hardware.audio.service-aidl.droidloom",
+        "host_pid": 399106,
+        "namespace_pids": [
+          399106,
+          664
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711893,
+        "uids": [
+          1041,
+          1041,
+          1041,
+          1041
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399107,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1041/pid_665"
+        ],
+        "cmdline": [
+          "/apex/com.android.hardware.audio.droidloom/bin/hw/android.hardware.audio.effect.service-aidl.example"
+        ],
+        "executable": "/apex/com.android.hardware.audio.droidloom/bin/hw/android.hardware.audio.effect.service-aidl.example",
+        "host_pid": 399107,
+        "namespace_pids": [
+          399107,
+          665
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711893,
+        "uids": [
+          1041,
+          1041,
+          1041,
+          1041
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399108,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1041/pid_666"
+        ],
+        "cmdline": [
+          "/system/bin/audioserver"
+        ],
+        "executable": "/system/bin/audioserver",
+        "host_pid": 399108,
+        "namespace_pids": [
+          399108,
+          666
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711894,
+        "uids": [
+          1041,
+          1041,
+          1041,
+          1041
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399110,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1076/pid_667"
+        ],
+        "cmdline": [
+          "/system/bin/credstore",
+          "/data/misc/credstore"
+        ],
+        "executable": "/system/bin/credstore",
+        "host_pid": 399110,
+        "namespace_pids": [
+          399110,
+          667
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711894,
+        "uids": [
+          1076,
+          1076,
+          1076,
+          1076
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399111,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1072/pid_668"
+        ],
+        "cmdline": [
+          "/system/bin/gpuservice"
+        ],
+        "executable": "/system/bin/gpuservice",
+        "host_pid": 399111,
+        "namespace_pids": [
+          399111,
+          668
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711894,
+        "uids": [
+          1072,
+          1072,
+          1072,
+          1072
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399113,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1000/pid_670"
+        ],
+        "cmdline": [
+          "/system/bin/surfaceflinger"
+        ],
+        "executable": "/system/bin/surfaceflinger",
+        "host_pid": 399113,
+        "namespace_pids": [
+          399113,
+          670
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711895,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399119,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1047/pid_673"
+        ],
+        "cmdline": [
+          "/system/bin/cameraserver"
+        ],
+        "executable": "/system/bin/cameraserver",
+        "host_pid": 399119,
+        "namespace_pids": [
+          399119,
+          673
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711903,
+        "uids": [
+          1047,
+          1047,
+          1047,
+          1047
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399134,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1067/pid_688"
+        ],
+        "cmdline": [
+          "/system/bin/incidentd"
+        ],
+        "executable": "/system/bin/incidentd",
+        "host_pid": 399134,
+        "namespace_pids": [
+          399134,
+          688
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711904,
+        "uids": [
+          1067,
+          1067,
+          1067,
+          1067
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399135,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_0/pid_689"
+        ],
+        "cmdline": [
+          "/system/bin/installd"
+        ],
+        "executable": "/system/bin/installd",
+        "host_pid": 399135,
+        "namespace_pids": [
+          399135,
+          689
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711904,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399136,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1040/pid_690"
+        ],
+        "cmdline": [
+          "media.extractor",
+          "aextractor"
+        ],
+        "executable": "/system/bin/mediaextractor",
+        "host_pid": 399136,
+        "namespace_pids": [
+          399136,
+          690
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711905,
+        "uids": [
+          1040,
+          1040,
+          1040,
+          1040
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399137,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1013/pid_691"
+        ],
+        "cmdline": [
+          "media.metrics",
+          "diametrics"
+        ],
+        "executable": "/system/bin/mediametrics",
+        "host_pid": 399137,
+        "namespace_pids": [
+          399137,
+          691
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711905,
+        "uids": [
+          1013,
+          1013,
+          1013,
+          1013
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399138,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1013/pid_692"
+        ],
+        "cmdline": [
+          "/system/bin/mediaserver"
+        ],
+        "executable": "/system/bin/mediaserver",
+        "host_pid": 399138,
+        "namespace_pids": [
+          399138,
+          692
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711905,
+        "uids": [
+          1013,
+          1013,
+          1013,
+          1013
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399139,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_0/pid_693"
+        ],
+        "cmdline": [
+          "/system/bin/storaged"
+        ],
+        "executable": "/system/bin/storaged",
+        "host_pid": 399139,
+        "namespace_pids": [
+          399139,
+          693
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711905,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399140,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_0/pid_694"
+        ],
+        "cmdline": [
+          "app_process",
+          "/system/bin",
+          "com.android.droidloom.input.InputBridge"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 399140,
+        "namespace_pids": [
+          399140,
+          694
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711905,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399157,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1046/pid_710"
+        ],
+        "cmdline": [
+          "media.swcodec",
+          "oid.media.swcodec/bin/mediaswcodec"
+        ],
+        "executable": "/apex/com.android.media.swcodec/bin/mediaswcodec",
+        "host_pid": 399157,
+        "namespace_pids": [
+          399157,
+          710
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711914,
+        "uids": [
+          1046,
+          1046,
+          1046,
+          1046
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399158,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1000/pid_711"
+        ],
+        "cmdline": [
+          "/system/bin/gatekeeperd",
+          "/data/misc/gatekeeper"
+        ],
+        "executable": "/system/bin/gatekeeperd",
+        "host_pid": 399158,
+        "namespace_pids": [
+          399158,
+          711
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711914,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399160,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_0/pid_713"
+        ],
+        "cmdline": [
+          "/product/bin/tombstone_transmit"
+        ],
+        "executable": "/product/bin/tombstone_transmit",
+        "host_pid": 399160,
+        "namespace_pids": [
+          399160,
+          713
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711915,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399206,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_9999/pid_753"
+        ],
+        "cmdline": [
+          "/system/bin/traced_probes"
+        ],
+        "executable": "/system/bin/traced_probes",
+        "host_pid": 399206,
+        "namespace_pids": [
+          399206,
+          753
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711943,
+        "uids": [
+          9999,
+          9999,
+          9999,
+          9999
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399294,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1000/pid_823"
+        ],
+        "cmdline": [
+          "system_server"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 399294,
+        "namespace_pids": [
+          399294,
+          823
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534198]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84712025,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 399501,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1082/pid_981"
+        ],
+        "cmdline": [
+          "/apex/com.android.art/bin/artd"
+        ],
+        "executable": "/apex/com.android.art/bin/artd",
+        "host_pid": 399501,
+        "namespace_pids": [
+          399501,
+          981
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84712183,
+        "uids": [
+          1082,
+          1082,
+          1082,
+          1082
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 403654,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10111/pid_4147"
+        ],
+        "cmdline": [
+          "com.android.permissioncontroller"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 403654,
+        "namespace_pids": [
+          403654,
+          4147
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534199]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84715182,
+        "uids": [
+          10111,
+          10111,
+          10111,
+          10111
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 403722,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1053/pid_4208"
+        ],
+        "cmdline": [
+          "webview_zygote"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 403722,
+        "namespace_pids": [
+          403722,
+          4208
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534201]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84715203,
+        "uids": [
+          1053,
+          1053,
+          1053,
+          1053
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 403735,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1073/pid_4221"
+        ],
+        "cmdline": [
+          "com.android.networkstack.process"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 403735,
+        "namespace_pids": [
+          403735,
+          4221
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534200]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84715213,
+        "uids": [
+          1073,
+          1073,
+          1073,
+          1073
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 403774,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1068/pid_4258"
+        ],
+        "cmdline": [
+          "com.android.se"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 403774,
+        "namespace_pids": [
+          403774,
+          4258
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534202]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84715236,
+        "uids": [
+          1068,
+          1068,
+          1068,
+          1068
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 403776,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1001/pid_4260"
+        ],
+        "cmdline": [
+          "com.android.phone"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 403776,
+        "namespace_pids": [
+          403776,
+          4260
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534203]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84715237,
+        "uids": [
+          1001,
+          1001,
+          1001,
+          1001
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 403799,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10081/pid_4281"
+        ],
+        "cmdline": [
+          "com.android.systemui"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 403799,
+        "namespace_pids": [
+          403799,
+          4281
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534204]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84715243,
+        "uids": [
+          10081,
+          10081,
+          10081,
+          10081
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 403812,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10078/pid_4294"
+        ],
+        "cmdline": [
+          "com.android.provision"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 403812,
+        "namespace_pids": [
+          403812,
+          4294
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534205]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84715244,
+        "uids": [
+          10078,
+          10078,
+          10078,
+          10078
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 403852,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1000/pid_4328"
+        ],
+        "cmdline": [
+          "com.android.settings"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 403852,
+        "namespace_pids": [
+          403852,
+          4328
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534206]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84715255,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 404916,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10091/pid_4575"
+        ],
+        "cmdline": [
+          "android.ext.services"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 404916,
+        "namespace_pids": [
+          404916,
+          4575
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534208]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84718306,
+        "uids": [
+          10091,
+          10091,
+          10091,
+          10091
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 404929,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10104/pid_4588"
+        ],
+        "cmdline": [
+          "com.android.devicelockcontroller"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 404929,
+        "namespace_pids": [
+          404929,
+          4588
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534209]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84718313,
+        "uids": [
+          10104,
+          10104,
+          10104,
+          10104
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 404968,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10089/pid_4624"
+        ],
+        "cmdline": [
+          "com.android.providers.media.module"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 404968,
+        "namespace_pids": [
+          404968,
+          4624
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534207]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84718324,
+        "uids": [
+          10089,
+          10089,
+          10089,
+          10089
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 404978,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10022/pid_4633"
+        ],
+        "cmdline": [
+          "com.android.documentsui"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 404978,
+        "namespace_pids": [
+          404978,
+          4633
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534210]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84718334,
+        "uids": [
+          10022,
+          10022,
+          10022,
+          10022
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 404994,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1000/pid_4645"
+        ],
+        "cmdline": [
+          "com.android.keychain"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 404994,
+        "namespace_pids": [
+          404994,
+          4645
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534211]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84718343,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 404998,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10077/pid_4649"
+        ],
+        "cmdline": [
+          "com.android.launcher3"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 404998,
+        "namespace_pids": [
+          404998,
+          4649
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534212]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84718344,
+        "uids": [
+          10077,
+          10077,
+          10077,
+          10077
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 405027,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_9999/pid_4678"
+        ],
+        "cmdline": [
+          "/system/bin/pmgd"
+        ],
+        "executable": "/system/bin/pmgd",
+        "host_pid": 405027,
+        "namespace_pids": [
+          405027,
+          4678
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84718345,
+        "uids": [
+          9999,
+          9999,
+          9999,
+          9999
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 405062,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_2000/pid_4709"
+        ],
+        "cmdline": [
+          "/system/bin/sh",
+          "/droidloom/ime/home-setup"
+        ],
+        "executable": "/system/bin/sh",
+        "host_pid": 405062,
+        "namespace_pids": [
+          405062,
+          4709
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84718363,
+        "uids": [
+          2000,
+          2000,
+          2000,
+          2000
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 405071,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10024/pid_4718"
+        ],
+        "cmdline": [
+          "com.android.externalstorage"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 405071,
+        "namespace_pids": [
+          405071,
+          4718
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534213]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84718363,
+        "uids": [
+          10024,
+          10024,
+          10024,
+          10024
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 405077,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1013/pid_4723"
+        ],
+        "cmdline": [
+          "/system/bin/mediacodeclist_generator"
+        ],
+        "executable": "/system/bin/mediacodeclist_generator",
+        "host_pid": 405077,
+        "namespace_pids": [
+          405077,
+          4723
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84718364,
+        "uids": [
+          1013,
+          1013,
+          1013,
+          1013
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 405078,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10028/pid_4724"
+        ],
+        "cmdline": [
+          "com.android.managedprovisioning"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 405078,
+        "namespace_pids": [
+          405078,
+          4724
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534214]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84718364,
+        "uids": [
+          10028,
+          10028,
+          10028,
+          10028
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "error": {
+        "errno": 2,
+        "message": "[Errno 2] No such file or directory: '/proc/405151/cgroup'",
+        "operation": "scope-before",
+        "type": "FileNotFoundError"
+      },
+      "host_pid": 405151,
+      "state": "read-error"
+    },
+    {
+      "host_pid": 405206,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10090/pid_4798"
+        ],
+        "cmdline": [
+          "com.android.photopicker"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 405206,
+        "namespace_pids": [
+          405206,
+          4798
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534215]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84718403,
+        "uids": [
+          10090,
+          10090,
+          10090,
+          10090
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 405229,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10023/pid_4812"
+        ],
+        "cmdline": [
+          "android.process.media"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 405229,
+        "namespace_pids": [
+          405229,
+          4812
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534216]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84718413,
+        "uids": [
+          10023,
+          10023,
+          10023,
+          10023
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 405291,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10017/pid_4840"
+        ],
+        "cmdline": [
+          "com.android.providers.calendar"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 405291,
+        "namespace_pids": [
+          405291,
+          4840
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534217]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84718443,
+        "uids": [
+          10017,
+          10017,
+          10017,
+          10017
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 405377,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10015/pid_4912"
+        ],
+        "cmdline": [
+          "android.process.acore"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 405377,
+        "namespace_pids": [
+          405377,
+          4912
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534218]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84718473,
+        "uids": [
+          10015,
+          10015,
+          10015,
+          10015
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 405387,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10069/pid_4920"
+        ],
+        "cmdline": [
+          "com.android.quicksearchbox"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 405387,
+        "namespace_pids": [
+          405387,
+          4920
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534219]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84718483,
+        "uids": [
+          10069,
+          10069,
+          10069,
+          10069
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    },
+    {
+      "host_pid": 405430,
+      "identity": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10030/pid_4950"
+        ],
+        "cmdline": [
+          "com.android.packageinstaller"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 405430,
+        "namespace_pids": [
+          405430,
+          4950
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534220]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84718504,
+        "uids": [
+          10030,
+          10030,
+          10030,
+          10030
+        ]
+      },
+      "state": "observed-in-owned-cgroup-and-pid-namespace"
+    }
+  ],
+  "role_matches": {
+    "surfaceflinger": [
+      399113
+    ],
+    "system_server": [
+      399294
+    ],
+    "zygote64": [
+      399089
+    ]
+  },
+  "schema": 1,
+  "scope_stable": true,
+  "started_monotonic_ns": 847185280164586
+}

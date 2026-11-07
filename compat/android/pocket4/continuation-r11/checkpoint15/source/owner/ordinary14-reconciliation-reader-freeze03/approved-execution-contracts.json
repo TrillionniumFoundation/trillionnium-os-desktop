@@ -1,0 +1,58 @@
+{
+  "original_key_absent_from_stored_request_json": true,
+  "schema": 1,
+  "shared_execution_tuple_alone_never_identifies_a_target": true,
+  "targets": [
+    {
+      "execution_fields": {
+        "args": [
+          "-I",
+          "-B",
+          "-",
+          "--compile-sha256",
+          "a916592cc708dc76411b482a371214410bca4662f6ff72dccd5083d88872b6a6"
+        ],
+        "cpu_quota_percent": 100,
+        "cwd": "/home/alex/work",
+        "env": {},
+        "executable": "/usr/bin/python3",
+        "memory_max_bytes": 536870912,
+        "nice": 10,
+        "timeout_seconds": 180
+      },
+      "label": "ordinary14",
+      "original_idempotency_key": "p4-producer14-fixture01-ordinary01-a916592cc708dc76",
+      "request_bytes": 37394,
+      "request_path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer14-fixture-ordinary-freeze-01/request.json",
+      "request_sha256": "d383190cf90e1d752e1fcc3de757c9c9cb9092e1646235ad33e40cd71d535fc6",
+      "stdin_bytes": 35263,
+      "stdin_sha256": "9eef9bf99c688d128467c9962f7aec8d077a2e65b39042e3a1236f663cbe4ec4"
+    },
+    {
+      "execution_fields": {
+        "args": [
+          "-n",
+          "/usr/bin/python3",
+          "-I",
+          "-",
+          "--collect"
+        ],
+        "cpu_quota_percent": 25,
+        "cwd": "/",
+        "env": {},
+        "executable": "/usr/bin/sudo",
+        "memory_max_bytes": 134217728,
+        "nice": 15,
+        "timeout_seconds": 30
+      },
+      "label": "native_snapshot_result_reader01",
+      "original_idempotency_key": "pocket4-role-authorized-snapshot-runtime-result-readonly-01-20261105",
+      "request_bytes": 4581,
+      "request_path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-snapshot-runtime-result-read01/exact-request.json",
+      "request_sha256": "1abe8d99f05c416230160e0c91954044f41e0baee7a44a7d11efb5c349ecdec8",
+      "stdin_bytes": 3998,
+      "stdin_sha256": "6131191253a9a22666cfd74f2e1fd1e7fa22d9fa4457084512e5cccc144005b3"
+    }
+  ],
+  "two_fixed_targets_only": true
+}

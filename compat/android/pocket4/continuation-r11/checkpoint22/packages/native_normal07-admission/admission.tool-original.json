@@ -1,0 +1,38 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys\nWIRE_BYTES = 917839\nWIRE_SHA256 = \"5009a8d75c2ad961a7c5bd9021401bd1819f91b8e9ba6d2f498b911f5e71392a\"\nSTAGE_BYTES = 5582\nSTAGE_SHA256 = \"d42a29cc07df1b32523110c4c8a1f3f0d936a55bed3cfe4c559da4f2c03aef72\"\nif sys.argv[1:] != ['--execute-once']:\n    print(json.dumps({'state':'PLAN_ONLY','source_only':True,'submitted':False,'Main_actions':0,'Android_actions':0,'old_QA_epoch_invalid':True,'new_QA_epoch_qualified':False}))\n    raise SystemExit(0)\nraw=sys.stdin.buffer.read(WIRE_BYTES+1)\nif len(raw)!=WIRE_BYTES or hashlib.sha256(raw).hexdigest()!=WIRE_SHA256:\n    raise RuntimeError('normal framework exact source packet changed')\npacket=json.loads(raw.decode('utf-8','strict'))\nif set(packet)!={'schema','stage','files'} or type(packet['schema']) is not int or packet['schema']!=1:\n    raise RuntimeError('normal framework source packet shape changed')\nstage=packet['stage'].encode('utf-8')\nif len(stage)!=STAGE_BYTES or hashlib.sha256(stage).hexdigest()!=STAGE_SHA256:\n    raise RuntimeError('normal framework stage source changed')\nscope={'__name__':'frozen_normal_framework_stage','__file__':'<frozen-normal-framework-stage>'}\nexec(compile(stage,'stage.py','exec'),scope,scope)\nscope['main'](packet['files'])\n",
+      "--execute-once"
+    ],
+    "created_unix_ms": 1793983310639,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b1bceb2f-fc05-7a8e",
+    "idempotency_key": "pocket4-native-typed-ingress-framework-strict-provider-two-target-build-07-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b1bceb2f-fc05-7a8e",
+    "request_digest": "9e9cbf43555089a01abe03c2875ccbc210068b4226d2bdb9104984c156c8e2a3",
+    "request_fingerprint": 11429220250274531744,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b1bceb2f-fc05-7a8e"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b1bceb2f-fc05-7a8e"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "purpose": "Lossless transport of the two exact vendor01 originals, without parsing or qualification claims",
+  "source": {
+    "bytes": 21209,
+    "sha256": "f332af9c0439746b1aecc7ce420b303b6d96c86b9e1a76cce6287422e93fa893",
+    "git_blob_sha1": "6b433b4b9d659dd5c530ac91eb08eff2820f8a1b"
+  },
+  "request": {
+    "bytes": 21978,
+    "sha256": "147049f3b37bd94096547eb9f6ee9bad678fe107eaa5cf57a9fd48f136daaae2",
+    "git_blob_sha1": "e4bf87f17a0c3ac168d037898070a53f11530c72"
+  },
+  "original_source": {
+    "bytes": 21194,
+    "sha256": "1ac361911bf3b9a0080c80f5db006aeb0f9fe52cb9b48b88d265185eff79d23d",
+    "git_blob_sha1": "af0513e6516ee662e3914e442a1679c00eb504a1"
+  },
+  "old_actual_transport_tree": "074604d9f86d3f223a0f54e479f8f2a95f4aaac4",
+  "exact_inverse_edits": [
+    {
+      "old": "/home/alex/work/p4-report-transport01-20261106",
+      "next": "/home/alex/work/p4-report-transport02-20261106",
+      "count": 1
+    },
+    {
+      "old": "INPUTS = (\n    ('marriott04', '/home/alex/work/pocket4-marriott-proc-readlink-outer-tu-04-20261106/build-result.json',\n     4899108, '8a9e478a65606cb296bfc2e208ff11c0203f43902ae3245a8f931f28fc10165a',\n     0o400, 'marriott04-build-result.json.zlib'),\n    ('native_host01', '/home/alex/work/p4-retirement-ack-host01-20261106/attempt01/result.json',\n     540943, '0d511ba553d1a34df9116c0e62cfcfbcabb00b96aafcde0d747f3419ffa4cf37',\n     0o600, 'native-host01-result.json.zlib'),\n)",
+      "next": "INPUTS = (\n    ('vendor01_manifest', '/home/alex/work/p4-retirement-wayland-vendor-prep01-20261106/attempt01/vendor-manifest.json',\n     4087264, '6dc3f052db6f9498bfdb73cd3f4b4d3b1f7556c6192ac5dbac3c611e24f4fac7',\n     0o444, 'vendor01-manifest.json.zlib'),\n    ('vendor01_result', '/home/alex/work/p4-retirement-wayland-vendor-prep01-20261106/attempt01/result.json',\n     179590, '8b9f70cf5f4819b81821cc61ec6ef3d984c22af7b5611e26cfaa410293d4fade',\n     0o600, 'vendor01-result.json.zlib'),\n)",
+      "count": 1
+    },
+    {
+      "old": "'kind': 'p4-fixed-report-zlib-transport01'",
+      "next": "'kind': 'p4-fixed-report-zlib-transport02'",
+      "count": 1
+    }
+  ],
+  "all_other_source_and_resource_bounds_unchanged": true,
+  "producer_job": "1a1b17f372d-fc05-792b",
+  "producer_terminal": {
+    "bytes": 731,
+    "sha256": "d87725f8c1baeb354a33efc8149b2ac373e462911073fc58d854e9f4ec3184c7",
+    "git_blob_sha1": "5fab77951e944faf92bb787b59c8425bb4f43afc"
+  },
+  "producer_stdout": {
+    "bytes": 3802,
+    "sha256": "c99b86b96ffe06a7afb6aa75e52f76059a70e57488ea2cb6e22d0a9f627137a6",
+    "git_blob_sha1": "f7d0b6e7b9dbd9c83ff930d30801a28f175c7947"
+  },
+  "fixed_originals": [
+    {
+      "path": "/home/alex/work/p4-retirement-wayland-vendor-prep01-20261106/attempt01/vendor-manifest.json",
+      "bytes": 4087264,
+      "sha256": "6dc3f052db6f9498bfdb73cd3f4b4d3b1f7556c6192ac5dbac3c611e24f4fac7",
+      "identity": [
+        66306,
+        36466492,
+        33060,
+        4087264,
+        {
+          "exact_number": "1793979315871094139"
+        },
+        {
+          "exact_number": "1793979315889027353"
+        }
+      ]
+    },
+    {
+      "path": "/home/alex/work/p4-retirement-wayland-vendor-prep01-20261106/attempt01/result.json",
+      "bytes": 179590,
+      "sha256": "8b9f70cf5f4819b81821cc61ec6ef3d984c22af7b5611e26cfaa410293d4fade"
+    }
+  ],
+  "expected_original_modes": [
+    "0444",
+    "0600"
+  ],
+  "no_retries": true,
+  "no_report_success_inferred": true
+}

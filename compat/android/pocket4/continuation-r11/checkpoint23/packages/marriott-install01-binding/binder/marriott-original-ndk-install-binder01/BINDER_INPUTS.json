@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_WAITING_ACTUAL_50",
+  "function": "bindOriginalNdkInstall(utilitySource, basePacketRaw, wrapperTemplateRaw, actual)",
+  "utility": {
+    "git_blob_sha1": "443e39b58cd6fe72faa1cb1d1c7b0a813fa0032d"
+  },
+  "base_packet": {
+    "bytes": 232975,
+    "sha256": "05d80d6473fd35bc172aab79a0eaa4c96afe038bc8187c7baf2399637529dcb7",
+    "git_blob_sha1": "ceea1acc0a45f2fce1493b6a839afaddfbf6461e"
+  },
+  "wrapper_template": {
+    "bytes": 4710,
+    "sha256": "2edb2be25dbe6db762634c2b926022348a6940210f264d8fda8ed67dd06a65c7",
+    "git_blob_sha1": "03a74cff654f959e7f9169fea462290f186418f3"
+  },
+  "actual": {
+    "stdout_raw": null,
+    "stdout_pin": null,
+    "terminal_raw": null,
+    "terminal_pin": null,
+    "job_id": null
+  },
+  "actual_requirement": {
+    "counts": {
+      "fixture": 38,
+      "manifest": 4,
+      "lease": 8
+    },
+    "terminal": "full durable succeeded exit0 stderr0 no timeout",
+    "unbound_refused_before_render": true
+  },
+  "single_install_nonce": {
+    "value": "e4b5a1bdac8be04ff2ea3188a6d946d6",
+    "actual_tree": "eb140f36131dcdc0041b8e8f2d2d4b64d20dd1f4",
+    "consumed_by_this_source": false
+  },
+  "source_manifest": {
+    "bytes": 1054,
+    "sha256": "50dce3c5572a40562c1928264219173a61d92fb9f39a96be9feb956695ba8c2e"
+  },
+  "root": "/home/alex/work/pocket4-original-ndk-fixture-APK03-install-01",
+  "request_resources_after_actual_binding": {
+    "executable": "/usr/bin/sudo",
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-"
+    ],
+    "cwd": "/home/alex/work",
+    "host": "pocket4",
+    "memory_max_bytes": 536870912,
+    "cpu_quota_percent": 100,
+    "nice": 15,
+    "timeout_seconds": 240
+  },
+  "outputs_after_actual_only": [
+    "bindingRaw",
+    "packetRaw",
+    "transportRaw",
+    "stdin",
+    "requestRaw",
+    "proofRaw",
+    "entryRaw",
+    "terminalRaw"
+  ],
+  "generated_executable_request": false,
+  "Root_only_dispatch": true
+}

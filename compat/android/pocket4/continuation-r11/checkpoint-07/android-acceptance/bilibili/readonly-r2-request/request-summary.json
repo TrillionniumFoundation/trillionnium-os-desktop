@@ -1,0 +1,55 @@
+{
+  "UI_audio_launch_close": false,
+  "actual_Main_admission": "NOT_RUN",
+  "archive": {
+    "bytes": 108190,
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/recorder-held-r2-freeze-01.tar.gz",
+    "sha256": "ff856ef8c23fde572060917f32e039cdf02923a6d77ee38e87b9c5287501dbfa"
+  },
+  "coordinator": {
+    "bytes": 16900,
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-request-r2-01/coordinator.py",
+    "sha256": "88140f6b1effdf0a6f15008cca2169c805a70d97541c20a5942d256de731174a"
+  },
+  "expected_external_terminal": {
+    "cancelled": false,
+    "exit_code": 0,
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true,
+    "timed_out": false
+  },
+  "expected_result": "source_unchanged=true; both distinct recorder CLIs exit0 and joined; exact one cmd package UID response; original durable admission == stdout; Main fence before and after; no UI/audio/app launch/app close",
+  "fresh_flow": "/home/alex/work/pocket4-bilibili-readonly-r2-01/flow",
+  "limits": {
+    "CPUQuota": "100% (one CPU aggregate)",
+    "MemoryMax": 268435456,
+    "MemorySwapMax_or_TasksMax": "not asserted/set by this tool schema; no change to Main resource policy",
+    "Nice": 5,
+    "job_timeout_seconds": 150
+  },
+  "local_static_and_staging": {
+    "bytes": 1093,
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-request-r2-01/local-static-and-staging.json",
+    "sha256": "a6f65ef18d1e0dfd85d29ba323e22470ad3644e098937c7f25e44d3394117cac"
+  },
+  "on_unknown_tool_outcome": "Reconcile original file path/job with original stable key only; never replay either CLI or reuse the fresh root/step after partial failure.",
+  "process_start_request": {
+    "bytes": 17574,
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-request-r2-01/process-start-request.json",
+    "sha256": "295d59c5cd249dec1099c1fc34db6597242b50fe8d7799f083498ec1437a82f1"
+  },
+  "result": "/home/alex/work/pocket4-bilibili-readonly-r2-01/result.json",
+  "retirement_scope": "Each Popen child joined; timeout kills only exact owned direct child and returns FAIL. No claim that this wrapper alone qualifies arbitrary descendant cleanup; root must reconcile owned job/unit and retained processes on failure.",
+  "schema": 1,
+  "source_manifest_sha256": "2c2c2a51ec91402a04237738ca5eba840a0d5dad62803e09c8752d691394ab72",
+  "source_root": "/home/alex/work/pocket4-bilibili-readonly-r2-01/source/recorder-held-r2-freeze-01",
+  "status": "PREPARED_NOT_SUBMITTED",
+  "upload_request": {
+    "bytes": 144404,
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-request-r2-01/upload-request.json",
+    "sha256": "e31c07d8afa811d1069cca08fea049a058eeb15586653462f65c8b9e535008c5"
+  },
+  "whole_app_production_ready": false
+}

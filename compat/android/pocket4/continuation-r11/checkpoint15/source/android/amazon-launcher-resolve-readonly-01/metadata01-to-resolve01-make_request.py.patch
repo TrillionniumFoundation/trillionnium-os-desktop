@@ -1,0 +1,37 @@
+--- metadata01/make_request.py
++++ resolve01/make_request.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Generate one exact metadata-only request; never submit it."""
++"""Generate one exact current-launcher read request; never submit it."""
+ import argparse
+ import hashlib
+ import json
+@@ -7,12 +7,12 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-READER_SHA='22a6552111154156004aff344d6929db436d5c3fe084893abea931f1399b0588'
+-READER_BYTES=19266
+-STAGE_SHA='d1b4aef3a1a06db71424bde5467eea6b52d7954aa19ceab57b66df292c1bbb1d'
+-STAGE_BYTES=3849
+-NONCE='42110205266d417c33e33607204a5d8d'
+-KEY='pocket4-amazon-installed-artifact-readonly-01-20261105'
++READER_SHA='b963fde5ba1638702623ee707ec21b43f0a86f87f54550f1e0d2df474cb7b058'
++READER_BYTES=15453
++STAGE_SHA='4666f332970865cd7779ae6bc3291f6b622240b3abadbdb919e2b2f3ca7a3798'
++STAGE_BYTES=3870
++NONCE='def3447572e718bc263b37bd39393b90'
++KEY='pocket4-amazon-current-launcher-readonly-01-20261105'
+ 
+ 
+ def main():
+@@ -23,7 +23,7 @@
+         print(json.dumps({'state':'PLAN_ONLY','package':'com.amazon.mShop.android.shopping',
+                           'nonce':NONCE,'stable_key':KEY,'Android_UI_actions':0,'submission':False}))
+         return 0
+-    reader=(HERE/'read_amazon.py').read_bytes();stage=(HERE/'stage_execute.py').read_bytes()
++    reader=(HERE/'resolve_amazon.py').read_bytes();stage=(HERE/'stage_execute.py').read_bytes()
+     assert len(NONCE)==32 and int(NONCE,16)>=0
+     assert len(reader)==READER_BYTES and hashlib.sha256(reader).hexdigest()==READER_SHA
+     assert len(stage)==STAGE_BYTES and hashlib.sha256(stage).hexdigest()==STAGE_SHA

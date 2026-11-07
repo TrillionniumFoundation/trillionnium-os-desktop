@@ -1,0 +1,71 @@
+--- actual-ABI3/build-template.py
++++ owner16/build-template.py
+@@ -131,7 +131,7 @@
+ 
+ 
+ def main():
+-    require(CFG['kind'] == 'p4-init-cgroup-handoff-build01', 'wrong controller kind')
++    require(CFG['kind'] == 'p4-owner16-init-log-android-build01', 'wrong controller kind')
+     guard = base64.b64decode(CFG['resource_guard']['base64'], validate=True)
+     require(digest(guard) == CFG['resource_guard']['sha256'], 'resource source pin differs')
+     namespace = {'__name__': 'frozen_resource_guard'}
+@@ -141,6 +141,8 @@
+     report = {'schema': 1, 'kind': CFG['kind'], 'success': False, 'commands': [], 'errors': [],
+               'root': str(root), 'source_manifest_sha256': CFG['source_manifest_sha256'],
+               'original_input_closure_sha256': CFG['original_input_closure_sha256'],
++              'prior_147_input_closure_sha256': CFG['prior_147_input_closure_sha256'],
++              'new_dependency_receipt_sha256': CFG['new_dependency_receipt_sha256'],
+               'resource_health': resources.record, 'Android_constructor_executed': False,
+               'Android_runtime_qualified': False, 'namespace_mount_or_pressure_executed': False,
+               'installed_files_changed': False, 'source_snapshot_reused': False}
+@@ -148,7 +150,7 @@
+     try:
+         require(os.geteuid() == 0 and os.getegid() == 0, 'root-owned sealed build required')
+         resources.begin()
+-        require(root.parent == Path('/opt') and root.name == 'p4-init-cgroup-handoff-20261105-build-01',
++        require(root.parent == Path('/opt') and root.name == 'p4-owner16-init-log-android-20261105-build-01',
+                 'unexpected create-only root')
+         for parent in (Path('/'), root.parent):
+             meta = parent.lstat()
+@@ -181,7 +183,7 @@
+         command(report, root, android[2])
+         elf = command(report, root, android[3])['stdout']
+         needed = re.findall(r'\(NEEDED\).*\[([^\]]+)\]', elf)
+-        require(needed == ['libc.so'] and '(INIT_ARRAY)' in elf and
++        require(needed == ['libc.so', 'libdl.so'] and '(INIT_ARRAY)' in elf and
+                 'droidloom_init_relay_barrier_abi@@DROIDLOOM_INIT_RELAY_1' in elf and
+                 'Advanced Micro Devices X86-64' in elf, 'Android DSO contract differs')
+         report['Android_artifact'] = snapshot(root / 'libdroidloom_init_relay.so')
+@@ -193,7 +195,8 @@
+             ('protocol', 'protocol_controls.c', False, 20, 'owned_controls_passed'),
+             ('protocol-close-errno', 'protocol_controls.c', True, 20, 'owned_controls_passed'),
+             ('diagnostic', 'diagnostic_controls.c', False, 7, 'owned_diagnostic_controls_passed'),
+-            ('cgroup-view', 'cgroup_view_controls.c', False, 8, 'cases')]:
++            ('cgroup-view', 'cgroup_view_controls.c', False, 8, 'cases'),
++            ('init-log', 'init_log_controls.c', False, 9, 'controls')]:
+             flags = ['/usr/bin/cc', '-std=c17', '-O2', '-Wall', '-Wextra', '-Werror', '-Wno-unused-function']
+             if seam:
+                 flags += ['-include', str(root / 'source' / 'close_errno_seam.h')]
+@@ -203,13 +206,19 @@
+             headers = dependencies(dep_path, 'barrier.o')
+             headers_before = {path: snapshot(path) for path in sorted(headers)}
+             actual_md = root / (name + '.actual.d')
+-            command(report, root, flags + ['-MD', '-MF', str(actual_md), '-MT', 'barrier.o', source_path, '-o', str(root / name)])
++            command(report, root, flags + ['-MD', '-MF', str(actual_md), '-MT', 'barrier.o', source_path, '-ldl', '-o', str(root / name)])
+             require(dependencies(actual_md, 'barrier.o') == headers, 'host MD closure differs')
+             artifact = snapshot(root / name)
+             result = command(report, root, [str(root / name)])
+             records = [json.loads(line) for line in result['stdout'].splitlines()]
+-            require(len(records) == expected_count + 1 and all(item.get('ok') is True for item in records) and
+-                    records[-1].get(marker) == expected_count, 'owned controls result set differs')
++            if name == 'init-log':
++                require(records == [{'controls': 9, 'assertions': 187, 'real_memfd': True,
++                    'real_child_exec': True, 'kernel_logger_call': 'explicit fixture seam',
++                    'android_or_namespace_executed': False, 'all_owned_fds_closed': True,
++                    'success': True}] and result['stderr'] == '', 'owned init log controls differ')
++            else:
++                require(len(records) == expected_count + 1 and all(item.get('ok') is True for item in records) and
++                        records[-1].get(marker) == expected_count, 'owned controls result set differs')
+             require(snapshot(root / name) == artifact, 'test artifact changed')
+             require({path: snapshot(path) for path in headers_before} == headers_before, 'host header/source changed')
+             results.append({'name': name, 'passed': expected_count, 'artifact': artifact, 'headers': headers_before})

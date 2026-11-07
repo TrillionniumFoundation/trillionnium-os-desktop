@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "scope": "one actual IHG dedicated helper install and one state instrumentation",
+  "reviewed": {
+    "entry_full_lines": 566,
+    "entry_sha256": "e29105e5c90201a6f0bab68173596bb31da34eff2f788dc4688be4c0a2348f7a",
+    "stage_full_lines": 125,
+    "make_request_full_lines": 66,
+    "derived_patch_full_bytes": 14930,
+    "derived_patch_sha256": "7fc7dab8f79bee7a575a37a5c39afe71bb304d26046ebabe176b5348fb90eea3",
+    "actual_binding_patch_full_bytes": 5219,
+    "actual_binding_patch_sha256": "746d3cf3067c893dcc1579543d244c9ae605cb773c14d5952d65feb48f6cdba7",
+    "frozen_payloads": 17,
+    "source_payloads": 10,
+    "packet_payloads": 11,
+    "all_pins_reverified": true,
+    "exact_wrapper_reconstructed": true,
+    "context_transport_exact_literal_derivation_from_actual_Ticket": true,
+    "original_coordinator_byte_identical": true
+  },
+  "actual_build": {
+    "job": "1a1adb57912-fc05-5ab0",
+    "report_sha256": "26a45b337c5dad2bd98b18ce093b321b8c0805de7cb9d759d5dd4088be05a053",
+    "stage_sha256": "94bfea341c50b648a2da13752044434cff04e74b7e7549c0d0e0b10c2ce77c41",
+    "APK_bytes": 24720,
+    "APK_sha256": "3f3164062d8b4f0ebd49d631953ef1a667ec315d2ab7ac0fab8b3b933a6b7324",
+    "signer_sha256": "c1502f9d917628e7c64a03b197e1edb2a641a3171afba15b15311aeb23954553"
+  },
+  "guards": {
+    "new_helper_absent_all_users_including_retained": true,
+    "helper_uid_observed_after_install_only": true,
+    "original_global_action_lock": true,
+    "exact_13_joined_commands": true,
+    "held_Main_original_and_pids12288": true,
+    "commercial_target_APK_before_after": true,
+    "independent_final_guard_and_exact_staging_cleanup": true
+  },
+  "commands": {
+    "install_count": 1,
+    "UiAutomation": false,
+    "App_launches": 0,
+    "permission_grants": 0,
+    "settings_writes": 0
+  },
+  "limits": {
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 536870912,
+    "timeout_seconds": 300,
+    "nice": 10
+  },
+  "failure_policy": "preserve first and secondary errors, no automatic install/uninstall or new nonce retry",
+  "whole_app_production_ready": false
+}

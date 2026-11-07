@@ -1,0 +1,100 @@
+{
+  "schema": 1,
+  "created_utc": "2026-11-05T00:38:54.770898+00:00",
+  "state": "INSTALL02_R4_SOURCE_AND_PACKET_READY_FOR_ROOT_REVIEW_ANDROID_UNRUN",
+  "source_manifest": {
+    "bytes": 1583,
+    "sha256": "84dfb0f0b11bf1740fc00516c1851f4142d8a2c67bf23296d25788d2e24d7e60"
+  },
+  "production": {
+    "install_state.py": {
+      "bytes": 27997,
+      "sha256": "68ab5003e1eaed47518c4a17238e6cc95b784588a1114439a51a166a3e02b896"
+    },
+    "stage_execute.py": {
+      "bytes": 8754,
+      "sha256": "a896ae66a87003d4d28c16335de3270b112057a124f1e71eb61e1cf9caf5e506"
+    },
+    "make_request.py": {
+      "bytes": 3033,
+      "sha256": "269a4fe5d8496f79121b7beebb78e3a0e5617ac85f6ff117fdc3d18f97c0e537"
+    },
+    "references/readonly_r3_coordinator.py": {
+      "bytes": 16900,
+      "sha256": "e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd"
+    },
+    "INPUTS.json": {
+      "bytes": 3058,
+      "sha256": "9f79d94112e17c98e2d4795dbabf59d76df10139c2b5af00a602430387b4dc87"
+    },
+    "README.md": {
+      "bytes": 6698,
+      "sha256": "344f5154847cc7aa173a1db0f93a6d5b8ecc5183e368d3c989c4d17df1e5f388"
+    },
+    "references/R3-SOURCE-MANIFEST.json": {
+      "bytes": 7492,
+      "sha256": "4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906"
+    },
+    "r4/source-manifest.json": {
+      "bytes": 7565,
+      "sha256": "52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1"
+    },
+    "r4/bound_android_transport.py": {
+      "bytes": 15601,
+      "sha256": "7edecc741b8a61bea30d885ab9107666aab9407d6a6928bf799bd8efd4b4a23b"
+    },
+    "session_binding.py": {
+      "bytes": 1439,
+      "sha256": "ab266129313dcfcbe3a2095078833482c5980af1c51195d0830630bbd4f18eba"
+    }
+  },
+  "request": {
+    "bytes": 109865,
+    "sha256": "ebfef3d9e43caeca5af0c87fe4c4c5d5bce08688ca467d5a53f7a99b22d00cad"
+  },
+  "stdin": {
+    "bytes": 103997,
+    "sha256": "b2aee70846c7e8792383f0b13b11f5a0be8bcca5fa435f403b741b99180585bd"
+  },
+  "stable_key": "pocket4-owned-bili-qa-install-state-02-20261105",
+  "actual_packet_checked_by_production_function": true,
+  "frozen_R4_prefix_controls": "17 previously executed controls; not rerun and not Android qualification",
+  "R4_prefix_review_manifest_sha256": "8f5b5e1422bc0ff4c052a6ba75d2cb6d095d78733c33aee81b32fe7ced55f050",
+  "R4_recorder_manifest_sha256": "52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1",
+  "inherited_R3_payloads": 44,
+  "only_modified_inherited_file": "bound_android_transport.py",
+  "unchanged_install01_AST_functions": [
+    "require",
+    "digest",
+    "read",
+    "module",
+    "verify_source",
+    "references",
+    "qualified_inputs",
+    "recorder_module",
+    "error_record",
+    "remember",
+    "command",
+    "uid_from",
+    "OwnedApk",
+    "owned_resources",
+    "prepare_owned_limits",
+    "resources_qualified",
+    "main"
+  ],
+  "actual_install01_failure_read": {
+    "bytes": 3055,
+    "sha256": "5e9277c9e97539b7b0d2bbcb518c4107160e78de2bbbf107a0d0619789b9d61b"
+  },
+  "old_failure_modified": false,
+  "APK_or_QA_build_source_modified": false,
+  "old_QA_adapter_manifest_forged_or_global_modified": false,
+  "runtime_session_binding": "explicit new constructor; five inherited operational methods stay unchanged",
+  "patch": {
+    "bytes": 14335,
+    "sha256": "da6e719a7120edbb6c6e5c9d2786be6145e22690440a9bb3b69dab536997831f"
+  },
+  "Hepta_calls": 0,
+  "Android_install_or_UI_actions": 0,
+  "whole_app_production_ready": false
+}

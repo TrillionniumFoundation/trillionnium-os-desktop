@@ -1,0 +1,190 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_UNRUN",
+  "revision": "typed-ingress-builder469-hal-provider-closure-compile01",
+  "frozen_utc": "2026-11-06 09:53:13 UTC",
+  "production_tree": "b294fb4578f3fe85a659639d1f3fb5d19b120baf",
+  "baseline_source_tree": "e82614d6fd3dd47528397aaab2bfa70f7bf84c5f",
+  "baseline_compiler": {
+    "bytes": 83254,
+    "sha256": "f4ce813255765107e82a8e1f2f6806f09e9decbf26fb8da5b1cefc44515e0adb",
+    "git_blob_sha1": "f600c698867feb5ce8f3e25ee1b87c22e74a9ab5"
+  },
+  "candidate_compiler": {
+    "bytes": 83194,
+    "sha256": "6e4b18a1116bdc709e5bda2084e79967699be918770731795806d1bc8634bec2",
+    "git_blob_sha1": "3345ba9845175b7b47761b3829e51727dad52304"
+  },
+  "actual_parent": {
+    "job": "1a1af6ada1d-fc05-6854",
+    "result": {
+      "bytes": 161423,
+      "sha256": "871e78f7ad8f3f3a12c165297e4fe566d96cfe3a2ce64a0d0010cffdb647b6b8",
+      "git_blob_sha1": "b53d5e16b72fe7e17b8e7c4a3db4c0e6699cfdd5"
+    },
+    "manifest": {
+      "bytes": 97525,
+      "sha256": "e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee",
+      "git_blob_sha1": "1a881dce47da3ac9dd27c5073bc0e224d88e35a5"
+    },
+    "state": "PASS",
+    "commands": 62,
+    "focused_controls": 24,
+    "cleanup_remaining": 0,
+    "cleanup_errors": 0,
+    "forced_cleanup": false
+  },
+  "actual_normal03": {
+    "state": "FAILED",
+    "builder_returncode": 1,
+    "errors": [
+      "remote-access-hal-defaults -> undefined vhalclient_defaults",
+      "neuralnetworks_utils_hal_common -> undefined neuralnetworks_utils_defaults"
+    ],
+    "children_reaped": 27,
+    "cleanup_errors": 0,
+    "memory_peak": 8141615104,
+    "memory_event_deltas_all_zero": true,
+    "swap_peak_current_max": 0,
+    "finished_utc": "2026-11-06T09:00:38.640489Z",
+    "observation_after_CP20_cut": true,
+    "occurred_before_CP20_cut": true,
+    "CP20_cut_immutable": true
+  },
+  "actual_published224_manifest": {
+    "bytes": 108555,
+    "sha256": "afb23d210fda970a09482a14b9b38af1c92b5be505edd0eda2b76ce5ffc6067f",
+    "git_blob_sha1": "dbcdc248a1f4ecf44cff685aaf488e19a1786a5e",
+    "fresh_whole_worktree_reuse_qualified": false
+  },
+  "changed_source": {
+    "old_files": 491,
+    "new_files": 499,
+    "unchanged": 489,
+    "changed_existing": [
+      "tools/droidloom-update/src/android.rs",
+      "tools/droidloom-update/src/native_role_ingress.rs"
+    ],
+    "added": [
+      "android/manifest/m2-role-ingress-hal-provider-source-lock.json",
+      "android/native-role-ingress/provider-fixtures/car-large-parcelable.Android.bp",
+      "android/native-role-ingress/provider-fixtures/car-vhal-client.Android.bp",
+      "android/native-role-ingress/provider-fixtures/hardware-neural-common.Android.bp",
+      "android/native-role-ingress/provider-fixtures/hardware-remote-access.Android.bp",
+      "android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp",
+      "android/native-role-ingress/provider-fixtures/neuralnetworks-root.Android.bp",
+      "android/native-role-ingress/provider-fixtures/neuralnetworks-types.Android.bp"
+    ],
+    "old24_BP_59_providers_unchanged": true,
+    "new5_BP_12_whole_upstream_stanzas": true,
+    "original_two_hardware_consumers_unchanged": true,
+    "source_projects_old": 224,
+    "source_projects_new": 225
+  },
+  "verification": {
+    "compiler_inverse_exact": true,
+    "stage_inverse_exact": true,
+    "transport_inverse_exact": true,
+    "unchanged_helper_count": 34,
+    "unchanged_helper_names": [
+      "require",
+      "utc",
+      "sha",
+      "identity",
+      "held",
+      "write_new",
+      "real_directory",
+      "children",
+      "cleanup_children",
+      "command",
+      "resource_text",
+      "resource_events",
+      "resource_snapshot",
+      "begin_resources",
+      "finish_resources",
+      "hash_held",
+      "regular_tree",
+      "portable",
+      "pinned_packet",
+      "exact_source_copy",
+      "read_existing_config",
+      "pin_resolved",
+      "verify_resolved",
+      "toolchain",
+      "parse_selected_tree",
+      "qualify_cached_archive",
+      "dependency_sources",
+      "qualify_compiler_inputs",
+      "build_artifact",
+      "image_pin",
+      "image_toolchain",
+      "reap_normal_fakeroot_daemon",
+      "validate_focused_result",
+      "focused_test"
+    ],
+    "actual_parent_fields_checked_in_V8": true,
+    "source_packet_all13_bytes_and_SHA256_checked": true,
+    "reused_authority_11_explicit_fixed_paths": true,
+    "prior9_reused_inputs_unchanged": true,
+    "request_generator_reproduces_exact_bytes": true,
+    "stdin_bytes": 739868,
+    "tool_max_stdin_bytes": 1048576
+  },
+  "planned_execution": {
+    "commands": 65,
+    "updater_registered": 208,
+    "source_registered": 20,
+    "updater_focused": 18,
+    "source_focused": 9,
+    "total_focused": 27,
+    "new_tests": [
+      "android::tests::typed_hal_provider_projection_restores_real_sources_and_keeps_consumers",
+      "android::tests::typed_hal_provider_late_source_drift_restores_earlier_projections",
+      "native_role_ingress::tests::hal_provider_extension_preserves_all_prior_projects_and_rejects_unlisted_changes"
+    ],
+    "original26_updater_registration_subset_preserved": true,
+    "original9_source_controls_unchanged": true,
+    "report_registration_is_not_execution_claim": true
+  },
+  "resource_boundary": {
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 1073741824,
+    "nice": 15,
+    "tool_timeout_seconds": 600,
+    "controller_deadline_seconds": 550,
+    "cargo_build_jobs": 1,
+    "prior_profile_unchanged": true,
+    "actual_parent_memory_max_pressure_observed": true,
+    "whole_interval_Main_noninterference_claimed": false,
+    "Main_identity_observed": false,
+    "Main_actions": 0,
+    "Android_actions": 0,
+    "Soong_actions": 0,
+    "real_published_source_mutations": 0,
+    "network_downloads_permitted": false
+  },
+  "execution_state": {
+    "Python_compile": "NOT_PERFORMED",
+    "Rust_compile": "NOT_PERFORMED",
+    "focused_controls": "NOT_PERFORMED",
+    "normal_Soong": "NOT_PERFORMED",
+    "Java_Android_JNI_artifacts_qualified": false,
+    "runtime_authorization_enabled": false,
+    "peer_review": "App agent explicitly NOT_PERFORMED due actual App task; no implied peer approval"
+  },
+  "future_normal04": {
+    "fresh_root_and_key_required": true,
+    "actual_469_compile_PASS_and_actual_ELF_pins_required": true,
+    "source_revision_225_and499_required": true,
+    "fresh_full_previous224_worktree_verification_required": true,
+    "profile": "10GiB RAM; fresh MemAvailable>=15GiB; own swap.max/current=0; 2 CPU; j1; nice10; 6100/6400 seconds",
+    "strict_targets": [
+      "framework-minus-apex",
+      "libandroid_runtime"
+    ],
+    "ALLOW_MISSING_DEPENDENCIES": "false",
+    "normal04_request_bound": false
+  },
+  "no_Hepta": true,
+  "no_ref_changes": true
+}

@@ -1,0 +1,356 @@
+--- prior/owned_inspect.py
++++ current/owned_inspect.py
+@@ -15,16 +15,33 @@
+ import types
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-amazon-owned-search-entry-05')
++ROOT=Path("/home/alex/work/pocket4-amazon-r3-current-search-entry-01")
+ SOURCE=ROOT/'source'
+-NONCE='115093066f53500d1c8f52105e3f2948'
+-FLOW=Path('/home/alex/work/pocket4-amazon-owned-qa-r1-flow-'+NONCE)
++NONCE='42ee4dd8ab30f563567ba353deff430c'
++FLOW=Path('/home/alex/work/pocket4-amazon-owned-qa-r3-flow-'+NONCE)
+ PACKAGE='com.amazon.mShop.android.shopping'
+ UID=10129
+-SELF='org.droidloom.qa.amazon.r1'
+-HELPER_UID=10175
++SELF="org.droidloom.qa.amazon.r3"
++HELPER_UID=10154
++
++CURRENT_HOST_MANIFEST='6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
++CURRENT_BASELINE_SCHEMA='pocket4-main-current-baseline-v1'
++CURRENT_EPOCH='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'
++CURRENT_BASELINE_SHA='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'
++CURRENT_QUALIFICATION_SHA='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'
+ COMPONENT=PACKAGE+'/com.amazon.mShop.home.HomeActivity'
+-PLAN={"entry":{"nonces":{"action":"16a1ed05bd34a871afaa3f6cfd0c355f","after":"b8a56a7e6f6b760f31c6991cbe39cac1","before":"cfa96694cdabc75ae18faee9a5af971e","inspect":"23745cbd6961a667d669967af3f5b697"},"operation":"click","schema":1,"selector":{"class":"android.widget.ImageButton","content_desc":"Search","resource_id":"com.amazon.mShop.android.shopping:id/chrome_search_box"}},"operation":"search_entry","post":{"nonces":{"after":"1702c5d7c88a415dc7e241c819d57f48","before":"2244058de84299f62f3cbfaa3b5865c7","inspect":"24712917de7fcc45be1c0c3199423233"},"operation":"inspect","schema":1},"schema":1,"stability":[{"nonces":{"after":"5109dfacfa3c60015bca58050e809a16","before":"88ae1253d3f4c3cd2b61ae7265b44a72","inspect":"7f98810d6a607d2d06eb970c6fbda1da"},"operation":"inspect","schema":1},{"nonces":{"after":"4e3b9661738a0ab2d34cd286ab3a5c86","before":"a7405c4e52e5f2be1a739ef1bcd61cf3","inspect":"b97868028aca1597a7ba631e3a1567cb"},"operation":"inspect","schema":1},{"nonces":{"after":"37adebcb62453f908af6f0bdbc74524e","before":"6000dd80a6f665a6cec7fc9fcc681d1b","inspect":"8303ac1a1f6967ff79e222812d169096"},"operation":"inspect","schema":1},{"nonces":{"after":"22b2d27c8a98287c0da93b290dcbff5c","before":"e1f8be7e47311847352fcaa0a4c78b0c","inspect":"8cdd5183d82a46a7eed25dbe4c0f6509"},"operation":"inspect","schema":1},{"nonces":{"after":"e62ca847506d78dc51a9d5b0856d0fdb","before":"00b0db7edb523fc1d810d2062db19e00","inspect":"930f8cc56c44f42ae92ba0c397ac8804"},"operation":"inspect","schema":1},{"nonces":{"after":"bb97702f966557cf81eb29ded2c8e290","before":"46f36d7c17652c02d8fbe062f518cba7","inspect":"d810dfa774399deaaebd8edd1d549eac"},"operation":"inspect","schema":1},{"nonces":{"after":"8ea7b1aa49f5940cb43746c5d7329463","before":"f22b2cfda7666339df260229f0c5c768","inspect":"b49246f06de30057ef0037b707fbe852"},"operation":"inspect","schema":1},{"nonces":{"after":"0873c085aa660df5d9466c0e97472265","before":"6fa89fd689acb6877bafda3b86c90f49","inspect":"bbe8fa5d6f909f02b167fc0ec36ad1c0"},"operation":"inspect","schema":1}]}
++PLAN={"entry":{"nonces":{"action":"1633189a896277fd7127474fc8213976","after":"2bbc2fcc93f3e7604810ca2897c5c2b5","before":"dea4ea388ec0e98e9a17e542e24b402f","inspect":"b281f7c8209677dc110cd4bec709ea51"},"operation":"click","schema":1,"selector":{"class":"android.widget.ImageButton","content_desc":"Search","resource_id":"com.amazon.mShop.android.shopping:id/chrome_search_box"}},"operation":"search_entry","post":{"nonces":{"after":"89dbe1c6f1bcdc8dfcb2f3630b36bbfa","before":"b851ce319e2d36fbad256ce2846d62d6","inspect":"4f959ac2724459cbde6d570217b7b744"},"operation":"inspect","schema":1},"schema":1,"stability":[{"nonces":{"after":"a0497a53f102e09d7409f8eac9a8b692","before":"d943ba67aef23f42d2a01122a9fe93ba","inspect":"0dcac7336a58413e34b0e9da44438ecf"},"operation":"inspect","schema":1},{"nonces":{"after":"90941ba23da7867c6320ff45419951b2","before":"784f2c763acdb4da072a1fec22ff083e","inspect":"07170201e1a328f49bd406f40f1fe110"},"operation":"inspect","schema":1},{"nonces":{"after":"b23573b03569daada8ff80bacbe35cde","before":"3c3d669648cde85530344ca92b5aa01a","inspect":"88620130a616c0d891024cd06c982c82"},"operation":"inspect","schema":1},{"nonces":{"after":"aab2b69d92648bd95b0eedf53588b305","before":"6f52d50b6537c3cdaa2ce53ef4fc7e52","inspect":"592fc249f14e052f8b1e064bc41a237d"},"operation":"inspect","schema":1},{"nonces":{"after":"0e478613e6efd97d57e65c857449cf92","before":"a6587cff44ddd049df3f666205f73db4","inspect":"0c352df2576fef2030e7d6bdc04721dd"},"operation":"inspect","schema":1},{"nonces":{"after":"abb0ae114554e37941aae7fa239a6cb6","before":"4930e4b5c4b073eac03652033e66f9e1","inspect":"b0b153e1f5bc2cdd46da66f34da9f9dc"},"operation":"inspect","schema":1},{"nonces":{"after":"d8fec63a34211c10710235d31056f2e8","before":"788cb92d16a054c6403743da65d634ee","inspect":"b7a559ff91ccf2fc8eb50bef95846e33"},"operation":"inspect","schema":1},{"nonces":{"after":"8aa89265b767ec4896a4afccb5f7da21","before":"d9e8a6c6e73b7ccdeb5bcf092390431c","inspect":"184d6e377840491a6a6715bd31d12d04"},"operation":"inspect","schema":1}]}
++INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-amazon-qa-r3-install-state-02")
++INSTALL_SOURCE=INSTALL_ROOT/'source'
++INSTALL_SOURCE_SHA="0240a8bae8d0881cb802f7fa7c9e1670b6fbf19b3444d6bc7a504d31e962f9f6"
++UTIL_SHA="4cc36b1851a402ae52a19c5185f8bd7d379714e5c9736732fdc69ba29ee4ad04"
++UTIL_BYTES=38248
++CONTEXT_SHA="d5fea7d8776e8e2a03526c1bddc730d666d79558843453b9bbafbe1aa34b808d"
++TRANSPORT_SHA="e6065de6967ae7fad068b6f1d3914a219679ad689b3130064e3fa7b2634378a5"
++STATE_NONCE="c33db6710ffb6b9ab38f1db50d2f107d"
++STATE_WIRE="bfc01867b96be6fc2d352b032fc473cd19857082de9a679f91d906b4ff93e979"
++INSTALLED={"apk_sha256":"4c27df6ed982408763f94527592623b9d6312190a786a1bbd3d25e1f004bbd20","base_apk":"/data/app/~~PQZkPeLxY9e5rFxMqyKPyg==/org.droidloom.qa.amazon.r3-aOY4t7GlqgZ6SsbNmADbdQ==/base.apk","bytes":24720,"held_file":{"bytes":24720,"device":1811,"gid":1000,"inode":789394,"mode":33188,"mtime_ns":1793952227914463155,"nlink":1,"uid":1000},"package":"org.droidloom.qa.amazon.r3","signer_bound_by_exact_signed_apk_bytes":"801ad669c2075067b58ee7d277531e9eed7cd612a74f404a722c061cac66bf6d","uid":10154}
++PRIOR={"coordinator":("result.json",3983,"56ac1b83c39627e9e74617cafbcd51659dc1b7e07f69cb8f7e50a1be4d03ac9e"),"stage":("stage-result.json",6872,"bf2d6359241fab1d79e18c01fe30b9d82619a25ebd265f6460010ea134aaa6bb"),"worker":("worker/result.json",14840,"ee4b59514a2c0a94fb2d8bb1b8eadddf4da6bb58a25c775ee1fb640dbf35eced")}
+ RESOLVER_ROOT=Path('/home/alex/work/pocket4-amazon-launcher-resolve-readonly-01')
+ RESOLVER_SOURCE=RESOLVER_ROOT/'source/resolve_amazon.py'
+ RESOLVER_SHA='b963fde5ba1638702623ee707ec21b43f0a86f87f54550f1e0d2df474cb7b058'
+@@ -108,16 +125,66 @@
+         'historical_resolution_not_launch_authority':True,'new_prelaunch_resolution_required':True}
+ 
+ 
++def actual_install(rows):
++    c,s,w=(rows[k] for k in ('coordinator','stage','worker'))
++    for value in (c,s,w):
++        need(value.get('ok') is True and value.get('error') is None and
++             value.get('secondary_errors')==[],'ACTUAL_PRIOR_INSTALL_FAILED')
++        need(value.get('source_manifest_sha256')==INSTALL_SOURCE_SHA,'ACTUAL_INSTALL_SOURCE_CHANGED')
++    need(c['worker_result']=={'path':str(INSTALL_ROOT/PRIOR['worker'][0]),
++         'bytes':PRIOR['worker'][1],'sha256':PRIOR['worker'][2]},'ACTUAL_INSTALL_WORKER_CHAIN')
++    need(s['coordinator_result']=={'path':str(INSTALL_ROOT/PRIOR['coordinator'][0]),
++         'bytes':PRIOR['coordinator'][1],'sha256':PRIOR['coordinator'][2]},'ACTUAL_INSTALL_STAGE_CHAIN')
++    need(w['installed_before_state']==w['installed_after_state']==INSTALLED and
++         w['owned_package_uid']==c['owned_package_uid']==HELPER_UID,
++         'ACTUAL_INSTALLED_HELPER_IDENTITY_CHANGED')
++    need(w['runtime_amazon_context_sha256']==CONTEXT_SHA and
++         w['runtime_amazon_transport_sha256']==TRANSPORT_SHA and
++         w['exact_command_count']==13,'ACTUAL_INSTALL_RUNTIME_CHAIN')
++    state=w['state'];helper=state['helper']
++    need(state['wire_sha256']==STATE_WIRE and state['actual_command_returncode']==0 and
++         state['actual_instrumentation_finish_code']==-1 and
++         state['held_transport_returned_after_post_guard'] is True and
++         helper['nonce']==STATE_NONCE and helper['self_uid']==HELPER_UID and
++         helper['protocol']=='pocket4-owned-amazon-qa-v3' and helper['op']=='state' and
++         helper['ok'] is True and helper['ui_automation_connected'] is False,
++         'ACTUAL_NO_AUTOMATION_STATE_REQUIRED')
++    need(w['target_before']==w['target_after'] and
++         w['Main_before_lock']==w['Main_before']==w['Main_after']==c['Main_before']==c['Main_after']==s['Main_before']==s['Main_after'],
++         'ACTUAL_INSTALL_MAIN_OR_TARGET_CHAIN')
++    need(w['Main_before'].get('schema')=='pocket4-current-main-guard-v1' and
++         w['Main_before'].get('Main_epoch_sha256')==CURRENT_EPOCH and
++         w['Main_before'].get('current_baseline_sha256')==CURRENT_BASELINE_SHA and
++         w['Main_before'].get('current_baseline_qualification_sha256')==CURRENT_QUALIFICATION_SHA and
++         w['Main_before'].get('seven_processes_match') is True and
++         w['Main_before'].get('three_host_processes_match') is True and
++         w['Main_before'].get('resource_limits_match') is True,
++         'ACTUAL_INSTALL_TYPED_CURRENT_BASELINE_REQUIRED')
++    need(w['staging_cleanup']['staged_apk_removed'] is True and
++         w['staging_cleanup']['staged_directory_removed'] is True and
++         w['target_FD_cleanup']['held_APK_FDs_closed']==3 and
++         w['held_binding_released'] is True and w['action_lock_released'] is True and
++         w['final_Main_guard_passed'] is True and w['outcome_unknown'] is False,
++         'ACTUAL_INSTALL_RETIREMENT_REQUIRED')
++    return {'prior_install_source_sha256':INSTALL_SOURCE_SHA,
++        'prior_receipts':{k:{'bytes':v[1],'sha256':v[2]} for k,v in PRIOR.items()},
++        'installed':INSTALLED,'actual_state_wire_sha256':STATE_WIRE,
++        'no_prior_install_or_state_replayed':True}
++
++
+ def qualified(expected):
++    need(type(HELPER_UID) is int and 10000<=HELPER_UID<100000 and HELPER_UID not in (10129,10175) and isinstance(INSTALLED,dict) and
++         isinstance(STATE_WIRE,str) and re.fullmatch('[0-9a-f]{64}',STATE_WIRE) and
++         isinstance(PRIOR,dict) and set(PRIOR)=={'coordinator','stage','worker'} and
++         isinstance(PRIOR['worker'],tuple),'ACTUAL_AMAZON_INSTALL_BINDING_NOT_READY')
+     manifest=verify_source(expected)
+-    resolver=load(RESOLVER_SOURCE,RESOLVER_SHA,'amazon_qualified_launcher_reference',RESOLVER_BYTES)
+-    util=resolver.load(resolver.INSTALL_SOURCE/'install_state.py',resolver.UTIL_SHA,
+-                       'amazon_qualified_install_primitives',resolver.UTIL_BYTES)
+-    install_manifest=util.verify_source(resolver.INSTALL_SOURCE_SHA)
+-    prior={k:json.loads(read(resolver.INSTALL_ROOT/v[0],expected=v[2],size=v[1])) for k,v in resolver.PRIOR.items()}
+-    actual_install=resolver.actual_install(prior)
++    historical_resolver=load(RESOLVER_SOURCE,RESOLVER_SHA,'amazon_historical_launcher_reference',RESOLVER_BYTES)
++    util=load(INSTALL_SOURCE/'install_state.py',UTIL_SHA,'amazon_current_install_primitives',UTIL_BYTES)
++    install_manifest=util.verify_source(INSTALL_SOURCE_SHA)
++    prior={k:json.loads(read(INSTALL_ROOT/v[0],expected=v[2],size=v[1])) for k,v in PRIOR.items()}
++    install_observation=actual_install(prior)
+     records={k:json.loads(read(RESOLVER_ROOT/v[0],expected=v[2],size=v[1])) for k,v in RESOLVER_RECORDS.items()}
+-    actual_component=actual_resolver(records,resolver.INSTALLED)
++    actual_component=actual_resolver(records,historical_resolver.INSTALLED)
+     adapter,qa,proof,apk=util.qualified_inputs();del apk
+     navigation=load(HERE/'search_navigation.py',manifest['files']['search_navigation.py']['sha256'],'amazon_search_navigation')
+     all_plans=navigation.plans(PLAN)
+@@ -128,19 +195,33 @@
+     need(len(values)==len(set(values))==32 and all(re.fullmatch('[0-9a-f]{32}',v) for v in values),
+          'EXACT_NEW_FLOW_AND_THIRTY_ONE_HELPER_NONCES')
+     inputs=json.loads(read(HERE/'INPUTS.json',65536))
+-    need(inputs['nonce']==NONCE and inputs['component']==COMPONENT and inputs['installed_helper']==resolver.INSTALLED
++    need(inputs['nonce']==NONCE and inputs['component']==COMPONENT and inputs['installed_helper']==INSTALLED
+          and inputs['resolver_records']=={k:{'relative_path':v[0],'bytes':v[1],'sha256':v[2]} for k,v in RESOLVER_RECORDS.items()},
+          'EXACT_RUNTIME_INPUT_RECORD_REQUIRED')
+     need(inputs['search_entry_plan']==PLAN and inputs['observed_selector_reference']['raw_retired_nodes_authorize_actions'] is False,
+          'EXACT_PUBLIC_ENTRY_PLAN_AND_RETIRED_SCOPE_BOUNDARY')
++    # Historical resolver proves only its own old receipt; current execution uses the new install closure.
++    resolver=types.SimpleNamespace(INSTALL_SOURCE=INSTALL_SOURCE,INSTALL_SOURCE_SHA=INSTALL_SOURCE_SHA,
++        CONTEXT_SHA=CONTEXT_SHA,TRANSPORT_SHA=TRANSPORT_SHA,RESOLVE=historical_resolver.RESOLVE,
++        component=historical_resolver.component,INSTALLED=INSTALLED)
+     return types.SimpleNamespace(manifest=manifest,navigation=navigation,resolver=resolver,util=util,ref=util.references(),
+-        install_manifest=install_manifest,install=actual_install,resolution=actual_component,
+-        adapter=adapter,qa=qa,proof=proof,installed=resolver.INSTALLED)
++        install_manifest=install_manifest,install=install_observation,resolution=actual_component,
++        adapter=adapter,qa=qa,proof=proof,installed=INSTALLED)
+ 
+ 
+ def scope_record(q,expected):
+-    return {'package':PACKAGE,'component':COMPONENT,'uid':UID,'user':0,'nonce':NONCE,
+-        'epoch_sha256':q.ref.EPOCH,'activation_sha256':q.ref.ACTIVATION_SHA,'verified_sha256':q.ref.VERIFIED_SHA,
++    baseline=q.ref.current_baseline()
++    need(baseline.get('schema')==CURRENT_BASELINE_SCHEMA and
++         baseline['framework_epoch']['sha256']==CURRENT_EPOCH==q.ref.EPOCH and
++         q.ref.BASELINE_SHA==CURRENT_BASELINE_SHA and
++         q.ref.QUALIFICATION_SHA==CURRENT_QUALIFICATION_SHA and
++         type(baseline['packages'].get(PACKAGE)) is int and baseline['packages'][PACKAGE]==UID,
++         'CURRENT_TYPED_OWN_TARGET_SCOPE_REQUIRED')
++    return {'schema':'pocket4-current-recorder-scope-v1','current_baseline_schema':baseline['schema'],
++        'package':PACKAGE,'component':COMPONENT,'uid':baseline['packages'][PACKAGE],'user':0,'nonce':NONCE,
++        'epoch_sha256':baseline['framework_epoch']['sha256'],
++        'current_baseline_sha256':q.ref.BASELINE_SHA,
++        'current_baseline_qualification_sha256':q.ref.QUALIFICATION_SHA,
+         'amazon_task_source_manifest_sha256':expected,'automatic_retry':False,
+         'original_recorder_manifest_sha256':q.adapter.RECORDER_MANIFEST_SHA,
+         'actual_resolution_result_sha256':RESOLVER_RECORDS['worker'][2]}
+@@ -236,7 +317,7 @@
+         shared=u.module(context.INSTALLED_SHARED/'source_contract.py',context.CONTRACT_SHA,'amazon_task_admission_contract')
+         contract=shared.SourceContract(context.INSTALLED_SHARED/'source-manifest.json',context.SHARED_MANIFEST)
+         recorder=contract.load('recorder.py','amazon_task_admission_recorder')
+-        activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++        activation=ref.current_baseline()
+         epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'amazon_phase_epoch')
+         guard=lambda:ref.main_guard(activation,epoch)
+         result['Main_before_lock']=guard()
+@@ -393,14 +474,14 @@
+     activation=epoch=resources=None
+     try:
+         resources=u.prepare_owned_limits();result['owned_before']=resources
+-        activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++        activation=ref.current_baseline()
+         epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'amazon_coordinator_epoch')
+         guard=lambda:ref.main_guard(activation,epoch)
+         result['Main_before']=guard()
+         FLOW.mkdir(mode=0o700)
+         ref.write_new(FLOW/'scope.json',scope_record(q,expected))
+-        ref.write_new(FLOW/'activation.json',ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
+-        ref.write_new(FLOW/'activation-verified.json',ref.read(ref.VERIFIED,expected=ref.VERIFIED_SHA))
++        ref.write_new(FLOW/'baseline.json',ref.read(ref.BASELINE,expected=ref.BASELINE_SHA))
++        ref.write_new(FLOW/'baseline-qualification.json',ref.read(ref.QUALIFICATION,expected=ref.QUALIFICATION_SHA))
+         (FLOW/'steps').mkdir(mode=0o700)
+         result['launch_worker_requested']=True
+         launched=ref.run_cli('01-launch',['/usr/bin/python3','-I',str(HERE/'owned_inspect.py'),
+
+--- prior/amazon_task_context.py
++++ current/amazon_task_context.py
+@@ -8,6 +8,7 @@
+ import json
+ import math
+ import os
++import re
+ from pathlib import Path
+ import subprocess
+ import stat
+@@ -16,8 +17,14 @@
+ 
+ PACKAGE='com.amazon.mShop.android.shopping'
+ UID=10129
+-SELF='org.droidloom.qa.amazon.r1'
+-HELPER_UID=10175
++SELF="org.droidloom.qa.amazon.r3"
++HELPER_UID=10154
++
++CURRENT_HOST_MANIFEST='6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
++CURRENT_BASELINE_SCHEMA='pocket4-main-current-baseline-v1'
++CURRENT_EPOCH='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'
++CURRENT_BASELINE_SHA='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'
++CURRENT_QUALIFICATION_SHA='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'
+ LIST=['/system/bin/cmd','package','list','packages','-U','--show-versioncode','--user','0',PACKAGE]
+ PATHS=['/system/bin/cmd','package','path','--user','0',PACKAGE]
+ OWN_UID=['/system/bin/cmd','package','list','packages','-U','--user','0',SELF]
+@@ -120,16 +127,41 @@
+         if self.request_ops[matches[0]]=='click':self.action_nonces.add(matches[0])
+ 
+ 
++def current_task_scope(scope,qa,contract):
++    fields={'schema','current_baseline_schema','package','component','uid','user','nonce',
++        'epoch_sha256','current_baseline_sha256','current_baseline_qualification_sha256',
++        'amazon_task_source_manifest_sha256','automatic_retry',
++        'original_recorder_manifest_sha256','actual_resolution_result_sha256'}
++    need(type(scope) is dict and set(scope)==fields and
++         scope['schema']=='pocket4-current-recorder-scope-v1' and
++         scope['current_baseline_schema']==CURRENT_BASELINE_SCHEMA==qa.MAIN_BASELINE_SCHEMA and
++         scope['epoch_sha256']==CURRENT_EPOCH==qa.MAIN_EPOCH and
++         scope['current_baseline_sha256']==CURRENT_BASELINE_SHA==qa.MAIN_BASELINE_SHA and
++         scope['current_baseline_qualification_sha256']==CURRENT_QUALIFICATION_SHA==qa.MAIN_BASELINE_QUALIFICATION_SHA and
++         scope['package']==PACKAGE==qa.PACKAGE and type(scope['uid']) is int and scope['uid']==UID==qa.UID and
++         type(scope['user']) is int and scope['user']==0 and
++         scope['original_recorder_manifest_sha256']==CURRENT_HOST_MANIFEST==contract.sha256 and
++         scope['automatic_retry'] is False,'EXACT_TYPED_CURRENT_AMAZON_TASK_SCOPE')
++    need(isinstance(scope['component'],str) and
++         re.fullmatch(re.escape(PACKAGE)+r'/[A-Za-z0-9_.$]+',scope['component']) and
++         isinstance(scope['nonce'],str) and re.fullmatch('[0-9a-f]{32}',scope['nonce']) and
++         all(isinstance(scope[key],str) and re.fullmatch('[0-9a-f]{64}',scope[key])
++             for key in ('amazon_task_source_manifest_sha256','actual_resolution_result_sha256')),
++         'EXACT_CURRENT_TASK_SOURCE_NONCE_AND_COMPONENT')
++    return scope
++
++
+ class Flow:
+     """Amazon-only object satisfying the actual original Session interface."""
+     def __init__(self,*,recorder,contract,target,environment,transport,main_guard,root,step,
+                  phase,scope,activation,tasks,qa,inspect_plan,resolve,read,deadline):
+-        need(scope['package']==PACKAGE and scope['uid']==UID and scope['user']==0 and
+-             scope['epoch_sha256']==transport.FRAMEWORK_EPOCH_SHA256,'EXACT_AMAZON_TASK_SCOPE_REQUIRED')
++        current_task_scope(scope,qa,contract)
++        need(scope['epoch_sha256']==transport.FRAMEWORK_EPOCH_SHA256,'EXACT_CURRENT_TRANSPORT_EPOCH_REQUIRED')
+         need(root.is_dir() and step.is_relative_to(root),'NEW_PRIVATE_FLOW_REQUIRED')
+         self.recorder,self.contract,self.target=recorder,contract,target
+         self.main_guard,self.root,self.step=main_guard,root,step
+         self.phase,self.scope,self.activation,self.tasks=phase,scope,activation,tasks
++        self.current_qualified_scope=dict(scope);self.qa=qa
+         self.deadline=deadline;self.command_index=0;self.action_attempted=False
+         self._private_backend_transport=False;self._android_mutation=False
+         self.binding=types.SimpleNamespace(target=target)
+@@ -153,6 +185,8 @@
+             package=PACKAGE,uid=UID,interactive_production=True,runner=runner)
+ 
+     def guard(self,attempted=False):
++        current_task_scope(self.scope,self.qa,self.contract)
++        need(self.scope==self.current_qualified_scope,'CURRENT_AMAZON_TASK_SCOPE_CHANGED')
+         need(not self.closed and time.monotonic()<self.deadline,'OPEN_BOUNDED_AMAZON_FLOW_REQUIRED')
+         self.main_guard();self.target.verify()
+         if self.artifacts is not None:self.artifacts.verify_held()
+@@ -232,39 +266,37 @@
+     recorder=contract.load('recorder.py','amazon_task_actual_command')
+     held=contract.load('references/held_runtime_r5.py','amazon_task_actual_held_main')
+     binding=contract.load('main_binding.py','amazon_task_shared_classpath_only')
+-    activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
+-    verified=json.loads(ref.read(ref.VERIFIED,expected=ref.VERIFIED_SHA))
+-    need(activation['main_deployed'] is True and verified['main_deployed'] is True and
+-         verified['framework_epoch_sha256']==ref.EPOCH and activation['packages'][PACKAGE]==UID,
+-         'FIXED_MAIN_AND_AMAZON_ACTIVATION_REQUIRED')
++    activation=ref.current_baseline()
++    own_scope=context.baseline_scope(ref,activation)
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,
+                      'amazon_task_fixed_epoch')
+     scope_raw=util.read(flow_root/'scope.json',65536)
+     scope=json.loads(scope_raw)
+-    need(scope==expected_scope and scope['activation_sha256']==ref.ACTIVATION_SHA and
+-         scope['verified_sha256']==ref.VERIFIED_SHA and scope['epoch_sha256']==ref.EPOCH and
+-         scope['package']==PACKAGE and scope['uid']==UID and scope['user']==0,
+-         'EXACT_NEW_AMAZON_FLOW_SCOPE_REQUIRED')
+-    need(util.read(flow_root/'activation.json',expected=ref.ACTIVATION_SHA)==ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA)
+-         and util.read(flow_root/'activation-verified.json',expected=ref.VERIFIED_SHA)==ref.read(ref.VERIFIED,expected=ref.VERIFIED_SHA),
+-         'SAVED_MAIN_ACTIVATION_CHANGED')
++    current_task_scope(scope,qa,contract)
++    need(scope==expected_scope and all(scope[key]==value for key,value in own_scope.items()),
++         'EXACT_NEW_CURRENT_AMAZON_FLOW_SCOPE_REQUIRED')
++    need(util.read(flow_root/'baseline.json',expected=ref.BASELINE_SHA)==ref.read(ref.BASELINE,expected=ref.BASELINE_SHA)
++         and util.read(flow_root/'baseline-qualification.json',expected=ref.QUALIFICATION_SHA)==ref.read(ref.QUALIFICATION,expected=ref.QUALIFICATION_SHA),
++         'SAVED_TYPED_CURRENT_BASELINE_CHANGED')
+     info=flow_root.lstat()
+     need(stat.S_ISDIR(info.st_mode) and info.st_uid==0 and not info.st_mode&0o077,
+          'PRIVATE_ROOT_OWNED_NEW_FLOW_REQUIRED')
++    target=None
+     def guard():
+         need(time.monotonic()<deadline,'AMAZON_PHASE_DEADLINE')
+         source_verify(source_manifest);contract.verify()
+         need(util.read(flow_root/'scope.json',65536)==scope_raw,'AMAZON_SCOPE_CHANGED')
+         ref.read(recorder.APP,expected=recorder.APP_SHA)
+         util.read(source.HELPER_PATH,source.HELPER_BYTES,source.HELPER_SHA,source.HELPER_BYTES)
+-        return ref.main_guard(activation,epoch)
++        observation=ref.main_guard(activation,epoch)
++        if target is not None:context.verify_target_data(target,activation,binding)
++        return observation
+     result['Main_before']=guard();result['shared_helper']=source.verify_shared_helper()
+     expected=activation['framework_epoch']['binding']['processes']['init']
+     proc=os.open('/proc/'+str(expected['host_pid']),os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC)
+     try:actual=held.proc_identity_at(proc,expected['host_pid'],time.monotonic()+3)
+     finally:os.close(proc)
+     need(binding.same_epoch_identity(actual,expected),'FIXED_MAIN_INIT_IDENTITY_CHANGED')
+-    target=None
+     try:
+         target=held.HeldTarget(actual,source.HELPER_PATH,source.HELPER_SHA);guard()
+         app=util.module(Path(recorder.APP),recorder.APP_SHA,'amazon_task_discovery_only')
+
+--- prior/search_navigation.py
++++ current/search_navigation.py
+
+--- prior/stage_execute.py
++++ current/stage_execute.py
+@@ -6,12 +6,12 @@
+ from pathlib import Path
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-amazon-owned-search-entry-05')
++ROOT=Path("/home/alex/work/pocket4-amazon-r3-current-search-entry-01")
+ SOURCE=ROOT/'source'
+-NONCE='115093066f53500d1c8f52105e3f2948'
++NONCE='42ee4dd8ab30f563567ba353deff430c'
+ FILES={'owned_inspect.py','amazon_task_context.py','search_navigation.py','INPUTS.json'}
+-REFERENCE=Path('/home/alex/work/pocket4-owned-amazon-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py')
+-REFERENCE_SHA='e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
++REFERENCE=Path('/home/alex/work/pocket4-current-host-r5-source-01/current_coordinator.py')
++REFERENCE_SHA="fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2"
+ 
+ 
+ def main(packet,manifest_sha256):
+@@ -32,7 +32,7 @@
+     exec(compile(data['owned_inspect.py'],entry.__file__,'exec'),entry.__dict__)
+     assert entry.ROOT==ROOT and entry.SOURCE==SOURCE and entry.HERE==SOURCE and entry.NONCE==NONCE
+     ref=entry.load(REFERENCE,REFERENCE_SHA,'amazon_task_stage_reference')
+-    activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++    activation=ref.current_baseline()
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'amazon_task_stage_epoch')
+     before=ref.main_guard(activation,epoch)
+     os.umask(0o077);ROOT.mkdir(mode=0o700)
+@@ -53,7 +53,7 @@
+         durable=entry.read(ROOT/'result.json');observed=json.loads(durable)
+         result['coordinator_result']={'path':str(ROOT/'result.json'),'bytes':len(durable),'sha256':hashlib.sha256(durable).hexdigest()}
+         assert observed['nonce']==NONCE and observed['source_manifest_sha256']==manifest_sha256
+-        assert observed['package']==entry.PACKAGE and observed['helper_uid']==10175
++        assert observed['package']==entry.PACKAGE and observed['helper_uid']==entry.HELPER_UID
+         assert rc==0 and observed['ok'] is True and observed['error'] is None and observed['secondary_errors']==[]
+         assert observed['post_entry_inspection_completed'] is True and observed['search_entry_click_completed'] is True
+         assert observed['owned_task_absent_after_cleanup'] is True and observed['click_actions']==1

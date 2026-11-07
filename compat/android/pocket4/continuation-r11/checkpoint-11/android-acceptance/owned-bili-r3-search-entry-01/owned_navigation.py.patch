@@ -1,0 +1,112 @@
+--- r2/owned_navigation.py
++++ r3/owned_navigation.py
+@@ -15,37 +15,38 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-bilibili-r2-search-entry-01')
++ROOT = Path('/home/alex/work/pocket4-bilibili-r3-search-entry-01')
+ SOURCE = ROOT / 'source'
+-NONCE = '69b2d59b9d416e3d6c082a3610b45b63'
+-FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r2-flow-' + NONCE)
+-PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/expand_search', 'class': 'android.widget.LinearLayout', 'content_desc': 'Search bar, button'}, 'nonces': {'before': '7f379363fab11375e075a03c842960ec', 'inspect': 'd09eae3f89850fa2ae08d7ff7397ba43', 'action': '32275761f7cd00ae05a885f2732cc184', 'after': 'c9f88106b407b46ccb93ea594eb148b7'}}
+-POST_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'a84bcca86eceb025d3f1ac6a7b966997', 'inspect': '24dae2a7972bcaacd44990d9b3a9112d', 'after': 'ce95537f902655940e154edf325623c6'}}
+-SELF, UID = 'org.droidloom.qa.bili.r2', 10165
++NONCE = 'a53815018fc65e6cbcac07538bdd7c7d'
++FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-' + NONCE)
++PLAN = {'schema':1,'operation':'click','selector':{'resource_id':'tv.danmaku.bili:id/expand_search','class':'android.widget.LinearLayout','content_desc':'Search bar, button'},'nonces':{'before': 'dc23f1f57cd8a8ee80c2716bca79f3ab', 'inspect': '12f173af30cad43d067140ee40f0a4b4', 'action': '246e02a25a3b85775a3c4f0cd691e719', 'after': '6f7c8b80f94b51a01792bc22b4ca9ca8'}}
++POST_PLAN = {'schema':1,'operation':'inspect','nonces':{'before': '89b5b4ed5dbdcc409554079f4b0ce86b', 'inspect': '313bcbf4c643b9a1a1f844c181caa78e', 'after': '57e6e78c397b74f943a487821002d8cd'}}
++SELF, UID = 'org.droidloom.qa.bili.r3', 10166
+ BILI, BILI_UID = 'tv.danmaku.bili', 10117
+-INSTALL_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r2-install-state-01')
++INSTALL_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r3-install-state-01')
+ INSTALL_SOURCE = INSTALL_ROOT / 'source'
+-INSTALL_ENTRY_SHA = '03643e2c2ec4ff9fa42f2594c36e4fc3fe9ec871405f1d4b04ebb5a607d7008e'
+-INSTALL_MANIFEST_SHA = '6b58391ffaa0c1bbc65ad6a374026c7344ae9a37fcbd4ca377a18a9fc1e2353d'
++INSTALL_ENTRY_SHA = '798d69f446170c7eb5fd84ba838ee30b448c9c2ac25b48574f224900c7879a6e'
++INSTALL_ENTRY_BYTES = 28018
++INSTALL_MANIFEST_SHA = '4302cc8d64d8d1ba77f2dad0043c4ff04d3d88a431632b49a0ade917d296dfed'
+ R4_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+-SESSION_SHA = 'e743be1ed97d730a49543a316576c8093bd2dda38d3185d270efb6e3ac14c652'
+-OLD_FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r2-flow-1c5dfa5297c2f249a3f19ecabbf86b55')
+-OLD_STEP = OLD_FLOW / 'steps/install-state-r2-01'
+-OLD_STATE_NONCE = '58986b6022b724c5854f57d4b10fffe7'
+-OLD_STATE_WIRE = 'dd158bdc78d6a84c34744d23b2c8ae393243a88d118e40b353304bf0ec5b8c7b'
+-OLD_PACKET = 'e0a24cad4cddf6922dc28b42e0498071ee8f130ed3d25d5defe04e4410bc8ff4'
++SESSION_SHA = 'c855443cebd00dc6041ba6909fa262e9683733d2b4f5a4da561af9d3d57b7340'
++OLD_FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-c387ae7ab75180244cca4d8f4e669284')
++OLD_STEP = OLD_FLOW / 'steps/install-state-r3-01'
++OLD_STATE_NONCE = '0b64d93d23111bb5f4a5d0500d2b60a7'
++OLD_STATE_WIRE = '4457b7fe6584cc672864b809d20dae1de44c854138809a7fd49a41d964d071c2'
++OLD_PACKET = 'dab5a1e73b422fa009b07a0fc6fe048981ac143273d3628f442945fd753a8286'
+ MAIN_EPOCH = '48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'
+ FILES = {'owned_navigation.py','stage_execute.py','make_request.py','INPUTS.json','README.md'}
+-# Actual values below came from the fixed r2 install reader; none are inherited from r1.
+-INSTALL_JOB_ID = '1a1a95ffd50-fc05-34b4'
++# Exact actual r3 install/readback values. No r1/r2 UID or artifact is inherited.
++INSTALL_JOB_ID = '1a1a99c4795-fc05-3651'
+ STATE_COMMAND_INDEX = 6
+-STATE_COMMAND_SHA = '58374b097ab9521ad18b205470e34281304ba31624ab6f854232208575e898c0'
+-EXPECTED_INSTALLED_IDENTITY = {'package': 'org.droidloom.qa.bili.r2', 'uid': 10165, 'base_apk': '/data/app/~~VMciBKn8QBVwkM_5mNHf4w==/org.droidloom.qa.bili.r2-BIxeY8VSnLgI5U9qHIc7PQ==/base.apk', 'apk_sha256': 'af478cebd9c4157471c8c7ee46b74463e55b8f47eb0a859af870b5950acee66b', 'bytes': 20624, 'held_file': {'device': 1811, 'inode': 788313, 'mode': 33188, 'uid': 1000, 'gid': 1000, 'bytes': 20624, 'mtime_ns': 1793843004601129506, 'nlink': 1}, 'signer_bound_by_exact_signed_apk_bytes': 'bbd4116f64c4d1c25387c0a70fb1f9eee71752065f242e8caa7d7522ce2c3d0a'}
++STATE_COMMAND_SHA = '01500848d406a6ea27e9862ae0a8e3dad3d4549507cb273f5cd34098b3d83910'
++EXPECTED_INSTALLED_IDENTITY = {'package': 'org.droidloom.qa.bili.r3', 'uid': 10166, 'base_apk': '/data/app/~~58ZzlhILZrK3YXJIAOd2Sw==/org.droidloom.qa.bili.r3-7PCm85vaNz_QxUEGrETHvg==/base.apk', 'apk_sha256': 'a32348c8d4615872aa2ec04b9253cd89826aca31d92d6c208365745ff522d3c8', 'bytes': 24720, 'held_file': {'device': 1811, 'inode': 789192, 'mode': 33188, 'uid': 1000, 'gid': 1000, 'bytes': 24720, 'mtime_ns': 1793846955546399347, 'nlink': 1}, 'signer_bound_by_exact_signed_apk_bytes': '2850f7ce24d73314634e48e187643c97436cecb9d96e54e771b62686e12fdf6f'}
+ INSTALL_RECORDS = {
+-    'coordinator':(INSTALL_ROOT/'result.json',3025,'9cef3fda15853de2edf2bc46e7965a6e2e017b466b34b567507fcb1ecdfa43ab'),
+-    'stage':(INSTALL_ROOT/'stage-result.json',2032,'01a1e40957b53b4e63c96839808d3c390a507b4417e57bc73cef1f1728bb4ab5'),
+-    'worker':(OLD_STEP/'result.json',6918,'2d2c1845a9877fc4fa025e6fc0af600349d9a77b7687dda9938944cb52da29cc'),
+-    'worker_command':(INSTALL_ROOT/'evidence/02-install-state.result.json',1151,'a609de8a82bd4b5c2a13ee42b9b6fafe85345eb76bc497209fb478f6f78b2158')}
++    'coordinator':(INSTALL_ROOT/'result.json',3025,'99d70682c8ef114250968c51f47a7666fc5abf9adbf5ce845f434e486a996aba'),
++    'stage':(INSTALL_ROOT/'stage-result.json',2032,'53123402517c94227021340ed599342293dc426f8838ee2e83eb9ed938bff013'),
++    'worker':(OLD_STEP/'result.json',6995,'228bc9237058479eebbdf8df1c3bf1a5992381b6a3031714c73d85ccc5fb9c32'),
++    'worker_command':(INSTALL_ROOT/'evidence/02-install-state.result.json',1152,'549e936470977c15cc45a9d8542288047091e061428bc1cd03bbb94362c66358')}
+ 
+ 
+ def require(value, reason):
+@@ -83,25 +84,25 @@
+ 
+ 
+ def require_actual_install_binding():
+-    require(type(UID) is int and 10000 <= UID < 100000 and UID not in (10117,10125,10164),
+-            'ACTUAL_R2_INSTALL_UID_PENDING')
++    require(type(UID) is int and 10000 <= UID < 100000 and UID not in (10117,10125,10164,10165),
++            'ACTUAL_R3_INSTALL_UID_PENDING')
+     require(type(STATE_COMMAND_INDEX) is int and 1 <= STATE_COMMAND_INDEX <= 16 and
+             isinstance(STATE_COMMAND_SHA,str) and re.fullmatch('[0-9a-f]{64}',STATE_COMMAND_SHA) and
+             isinstance(OLD_STATE_WIRE,str) and re.fullmatch('[0-9a-f]{64}',OLD_STATE_WIRE),
+-            'ACTUAL_R2_STATE_COMMAND_BINDING_PENDING')
++            'ACTUAL_R3_STATE_COMMAND_BINDING_PENDING')
+     require(isinstance(EXPECTED_INSTALLED_IDENTITY,dict) and
+             EXPECTED_INSTALLED_IDENTITY.get('package') == SELF and
+             EXPECTED_INSTALLED_IDENTITY.get('uid') == UID,
+-            'ACTUAL_R2_INSTALLED_FILE_IDENTITY_PENDING')
++            'ACTUAL_R3_INSTALLED_FILE_IDENTITY_PENDING')
+     for name,(path,size,pin) in INSTALL_RECORDS.items():
+         require(type(size) is int and 0 < size <= 65536 and isinstance(pin,str) and
+-                re.fullmatch('[0-9a-f]{64}',pin),'ACTUAL_R2_INSTALL_RECEIPT_PENDING:'+name)
++                re.fullmatch('[0-9a-f]{64}',pin),'ACTUAL_R3_INSTALL_RECEIPT_PENDING:'+name)
+ 
+ 
+ def load_prior():
+     require_actual_install_binding()
+     path = INSTALL_SOURCE/'install_state.py'
+-    raw = read(path,65536,INSTALL_ENTRY_SHA,28012)
++    raw = read(path,65536,INSTALL_ENTRY_SHA,INSTALL_ENTRY_BYTES)
+     prior = types.ModuleType('bili_actual_install02'); prior.__file__ = str(path)
+     exec(compile(raw,str(path),'exec'),prior.__dict__)
+     manifest = prior.verify_source(INSTALL_MANIFEST_SHA)
+@@ -225,6 +226,7 @@
+                 window={key:window[key] for key in ('package','display','type','focused')},
+                 window_observation=qa.window_observation(value['helper']['window_observation']),
+                 connection_scoped_window_id=inspection['connection_scoped_window_id'],
++                tree_observations=qa.tree_observations(value['helper']['tree_observations'],'inspect',True),
+                 complete=True,raw_tree_private_only=True)
+         elif phase == 'action':
+             helper = value['helper']
+@@ -236,6 +238,7 @@
+                 target_node_path=helper['target_node_path'],target_node_sha256=helper['target_node_sha256'],
+                 inspection_nonce=helper['inspection_nonce'],inspection_sha256=helper['inspection_sha256'],
+                 action_window={key:helper['action_window'][key] for key in ('package','display','type','focused')},
++                tree_observations=qa.tree_observations(helper['tree_observations'],'click',True),
+                 window_observation=qa.window_observation(helper['window_observation']))
+     names = ('before','inspect','action','after') if plan['operation'] == 'click' else ('before','inspect','after')
+     expected = ['state','inspect','click','state'] if plan['operation'] == 'click' else ['state','inspect','state']

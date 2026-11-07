@@ -1,0 +1,781 @@
+--- /dev/null
++++ b/android/cgroup_view_controls.c
+@@ -0,0 +1,138 @@
++/* Ordinary owned-directory controls. fstatfs is an explicit seam; no mount,
++ * namespace, Android or PSI execution is claimed by these controls. */
++#define _GNU_SOURCE
++#include <dirent.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <stdarg.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/stat.h>
++#include <sys/statfs.h>
++#include <unistd.h>
++
++static char fixture_root[256];
++static ino_t view_ino, target_ino;
++static int variant;
++static int test_open(const char *path,int flags,...) {
++  mode_t mode=0;
++  if(flags&O_CREAT){va_list args;va_start(args,flags);mode=(mode_t)va_arg(args,int);va_end(args);}
++  return open(!strcmp(path,"/")?fixture_root:path,flags,mode);
++}
++static int test_fstatfs(int fd,struct statfs *out) {
++  int result=fstatfs(fd,out);struct stat st;
++  if(result||fstat(fd,&st))return -1;
++  out->f_type=st.st_ino==view_ino?0x63677270:0x01021994;
++  if(variant==1&&st.st_ino==target_ino)out->f_type=0x63677270;
++  if(variant==6&&st.st_ino==view_ino)out->f_type=0x01021994;
++  return 0;
++}
++static int test_fstat(int fd,struct stat *out) {
++  int result=fstat(fd,out);
++  if(!result&&variant==2&&out->st_ino==target_ino)++out->st_dev;
++  return result;
++}
++static int test_close(int fd) { int result=close(fd);errno=EBADF;return result; }
++#define open test_open
++#define fstatfs test_fstatfs
++#define fstat test_fstat
++#define close test_close
++#define DROIDLOOM_BARRIER_TESTING 1
++#include "init_relay_barrier.c"
++#undef open
++#undef fstatfs
++#undef fstat
++#undef close
++
++static int fd_count(void) {
++  DIR *directory=opendir("/proc/self/fd");if(!directory)return -1;
++  int count=0;struct dirent *entry;
++  while((entry=readdir(directory)))if(strcmp(entry->d_name,".")&&strcmp(entry->d_name,".."))++count;
++  closedir(directory);return count;
++}
++static int path(char *out,size_t size,const char *relative) {
++  int n=snprintf(out,size,"%s/%s",fixture_root,relative);
++  return n>0&&(size_t)n<size?0:-1;
++}
++static int new_directory(const char *relative) {
++  char p[512];return path(p,sizeof(p),relative)?-1:mkdir(p,0700);
++}
++static int new_file(const char *relative,const char *data) {
++  char p[512];if(path(p,sizeof(p),relative))return -1;
++  int fd=open(p,O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC|O_NOFOLLOW,0600);if(fd<0)return -1;
++  size_t len=strlen(data);ssize_t n=write(fd,data,len);int saved=errno;close(fd);errno=saved;
++  return n==(ssize_t)len?0:-1;
++}
++static const char *const names[]={"holding_domain_and_stock_tmpfs_target_accepted",
++  "premounted_native_cgroup_target_rejected","foreign_tmpfs_target_rejected",
++  "writable_holding_rejected","symlink_domain_rejected","symlink_native_target_rejected",
++  "non_cgroup_holding_view_rejected","missing_holding_preserves_errno"};
++static const char *const stages[]={"collect-domain-filesystem","collect-native-target-filesystem",
++  "collect-native-target-filesystem","collect-holding-policy","collect-domain-open",
++  "collect-native-target-open","collect-domain-filesystem","collect-holding-open"};
++static const int errors[]={0,EPROTO,EPROTO,EPERM,ENOTDIR,ENOTDIR,EPROTO,ENOENT};
++
++static int run_case(int which) {
++  char p[512],backup[512];int good=0,before=-1,after=-1;
++  strcpy(fixture_root,"/tmp/p4-cgroup-view-controls-XXXXXX");
++  if(!mkdtemp(fixture_root))return -1;
++  variant=0;
++  if(new_directory("dev")||new_directory("dev/.droidloom-cgroups")||
++     new_directory("dev/.droidloom-cgroups/relay-v2")||new_directory("sys")||
++     new_directory("sys/fs")||new_directory("sys/fs/cgroup")||
++     new_file("dev/.droidloom-cgroups/relay-v2/memory.max","536870912\n")||
++     new_file("dev/.droidloom-cgroups/relay-v2/memory.high","402653184\n")||
++     new_file("dev/.droidloom-cgroups/relay-v2/memory.swap.max","0\n"))goto done;
++  struct stat st;
++  if(path(p,sizeof(p),"dev/.droidloom-cgroups/relay-v2")||stat(p,&st))goto done;
++  view_ino=st.st_ino;
++  if(path(p,sizeof(p),"sys/fs/cgroup")||stat(p,&st))goto done;
++  target_ino=st.st_ino;
++  if(which==3){if(path(p,sizeof(p),"dev/.droidloom-cgroups")||chmod(p,0770))goto done;}
++  if(which==4||which==5||which==7){
++    const char *relative=which==4?"dev/.droidloom-cgroups/relay-v2":which==5?"sys/fs/cgroup":"dev/.droidloom-cgroups";
++    if(path(p,sizeof(p),relative)||snprintf(backup,sizeof(backup),"%s-held",p)<0||rename(p,backup))goto done;
++    if(which!=7&&symlink(backup,p))goto done;
++  }
++  variant=which;
++  int rights[DIR_HELLO_RIGHTS];for(size_t i=0;i<DIR_HELLO_RIGHTS;++i)rights[i]=-1;
++  unsigned char wire[DIR_WIRE_SIZE];memset(wire,0,sizeof(wire));
++  struct dir_failure failure={.stage="initial"};
++  before=fd_count();int result=dir_collect_domain(&rights[0],wire,&failure),saved=errno;
++  if(!result){
++    int flags=fcntl(rights[0],F_GETFD);
++    if(fstat(rights[0],&st)||st.st_ino!=view_ino||flags<0||!(flags&FD_CLOEXEC)||
++       dir_get(wire,64,8)!=536870912||dir_get(wire,72,8)!=402653184||dir_get(wire,80,8)!=0)result=-2;
++  }
++  dir_close_rights(rights,DIR_HELLO_RIGHTS);after=fd_count();
++  good=(which==0?result==0:result==-1&&saved==errors[which])&&
++       !strcmp(failure.stage,stages[which])&&before>=0&&before==after;
++  if(!good)fprintf(stderr,"case=%d rc=%d errno=%d stage=%s before=%d after=%d\n",
++                  which,result,saved,failure.stage,before,after);
++done:
++  variant=0;
++  if(which==4||which==5||which==7){
++    const char *relative=which==4?"dev/.droidloom-cgroups/relay-v2":which==5?"sys/fs/cgroup":"dev/.droidloom-cgroups";
++    if(!path(p,sizeof(p),relative)&&snprintf(backup,sizeof(backup),"%s-held",p)>0){
++      if(which!=7)unlink(p);
++      if(rename(backup,p)&&errno!=ENOENT)good=0;
++    }
++  }
++  for(size_t i=0;i<3;++i){
++    const char *files[]={"memory.max","memory.high","memory.swap.max"};
++    char relative[128];snprintf(relative,sizeof(relative),"dev/.droidloom-cgroups/relay-v2/%s",files[i]);
++    if(!path(p,sizeof(p),relative)&&unlink(p)&&errno!=ENOENT)good=0;
++  }
++  const char *dirs[]={"dev/.droidloom-cgroups/relay-v2","dev/.droidloom-cgroups","dev","sys/fs/cgroup","sys/fs","sys"};
++  for(size_t i=0;i<sizeof(dirs)/sizeof(dirs[0]);++i)if(!path(p,sizeof(p),dirs[i])&&rmdir(p)&&errno!=ENOENT)good=0;
++  if(rmdir(fixture_root))good=0;
++  printf("{\"case\":\"%s\",\"ok\":%s,\"scope\":\"owned_files_with_filesystem_seam\"}\n",names[which],good?"true":"false");
++  return good?0:-1;
++}
++int main(void) {
++  if(getuid()||geteuid()||getgid()||getegid())return 2;
++  for(int which=0;which<8;++which)if(run_case(which))return 1;
++  printf("{\"ok\":true,\"cases\":8,\"namespace_or_mount_executed\":false}\n");return 0;
++}
+--- a/android/init_relay_barrier.c
++++ b/android/init_relay_barrier.c
+@@ -32,6 +32,9 @@
+ #ifndef CGROUP2_SUPER_MAGIC
+ #define CGROUP2_SUPER_MAGIC 0x63677270
+ #endif
++#ifndef TMPFS_MAGIC
++#define TMPFS_MAGIC 0x01021994
++#endif
+ #ifndef MOVE_MOUNT_F_EMPTY_PATH
+ #define MOVE_MOUNT_F_EMPTY_PATH 0x00000004
+ #endif
+@@ -40,7 +43,7 @@
+ #endif
+ #define DIR_BAD (POLLERR | POLLHUP | POLLRDHUP | POLLNVAL)
+ 
+-static const unsigned char dir_magic[8] = {'P','4','I','B','V','2','!','!'};
++static const unsigned char dir_magic[8] = {'P','4','I','B','V','3','!','!'};
+ static const char *const dir_ns_names[10] = {
+   "pid", "pid_for_children", "mnt", "cgroup", "user",
+   "net", "ipc", "uts", "time", "time_for_children"
+@@ -291,22 +294,70 @@
+   }
+   *out=value;return 0;
+ }
+-static int dir_collect_real(int rights[DIR_HELLO_RIGHTS],unsigned char wire[DIR_WIRE_SIZE],void *unused) {
+-  (void)unused;
+-  rights[0]=open("/sys/fs/cgroup",O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++static int dir_root_directory(int fd,struct dir_failure *failure,
++                              const char *stat_stage,const char *policy_stage);
++/* ABI3 uses an owned holding view. Do not mount over, skip, or fabricate
++ * success for the stock Android target. Both sides check that target is
++ * still on the original synthetic sys tmpfs before returning to real init. */
++static int dir_open_cgroup_view(struct dir_failure *failure) {
++  int root=-1,dev=-1,holding=-1,view=-1,sys=-1,fsdir=-1,target=-1,result=-1,saved=0;
++  struct statfs sysfs,targetfs,holdingfs;struct stat sys_st,target_st;
++  dir_stage(failure,"collect-root-open");
++  root=open("/",O_PATH|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(root,failure,"collect-root-stat","collect-root-policy"))goto done;
++  dir_stage(failure,"collect-dev-open");
++  dev=openat(root,"dev",O_PATH|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(dev,failure,"collect-dev-stat","collect-dev-policy"))goto done;
++  dir_stage(failure,"collect-holding-open");
++  holding=openat(dev,".droidloom-cgroups",O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(holding,failure,"collect-holding-stat","collect-holding-policy"))goto done;
++  dir_stage(failure,"collect-holding-filesystem");
++  if(fstatfs(holding,&holdingfs))goto done;
++  if(holdingfs.f_type!=TMPFS_MAGIC){errno=EPROTO;goto done;}
++  dir_stage(failure,"collect-domain-open");
++  view=openat(holding,"relay-v2",O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(view,failure,"collect-domain-stat","collect-domain-policy"))goto done;
++  dir_stage(failure,"collect-sys-open");
++  sys=openat(root,"sys",O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(sys,failure,"collect-sys-stat","collect-sys-policy"))goto done;
++  dir_stage(failure,"collect-fs-open");
++  fsdir=openat(sys,"fs",O_PATH|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(fsdir,failure,"collect-fs-stat","collect-fs-policy"))goto done;
++  dir_stage(failure,"collect-native-target-open");
++  target=openat(fsdir,"cgroup",O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(target,failure,"collect-native-target-stat","collect-native-target-policy"))goto done;
++  dir_stage(failure,"collect-native-target-filesystem");
++  if(fstatfs(sys,&sysfs)||fstatfs(target,&targetfs)||fstat(sys,&sys_st)||fstat(target,&target_st))goto done;
++  if(sysfs.f_type!=TMPFS_MAGIC||targetfs.f_type!=TMPFS_MAGIC||sys_st.st_dev!=target_st.st_dev){errno=EPROTO;goto done;}
++  result=view;view=-1;
++done:
++  saved=errno;
++  dir_close(&target);dir_close(&fsdir);dir_close(&sys);dir_close(&view);
++  dir_close(&holding);dir_close(&dev);dir_close(&root);
++  errno=saved;return result;
++}
++static int dir_collect_domain(int *domain,unsigned char wire[DIR_WIRE_SIZE],struct dir_failure *failure) {
++  *domain=dir_open_cgroup_view(failure);
+   struct statfs fs;struct stat st;
+-  if(rights[0]<0||fstatfs(rights[0],&fs)||fs.f_type!=CGROUP2_SUPER_MAGIC||fstat(rights[0],&st))return -1;
++  if(*domain<0)return -1;
++  dir_stage(failure,"collect-domain-filesystem");
++  if(fstatfs(*domain,&fs)||fstat(*domain,&st))return -1;
++  if(fs.f_type!=CGROUP2_SUPER_MAGIC)return dir_error(EPROTO);
+   uint64_t maximum,high,swap;
+-  if(dir_u64_file(rights[0],"memory.max",&maximum)||dir_u64_file(rights[0],"memory.high",&high)||
+-     dir_u64_file(rights[0],"memory.swap.max",&swap)||!maximum||!high||high>=maximum||swap!=0)return dir_error(EPROTO);
++  if(dir_u64_file(*domain,"memory.max",&maximum)||dir_u64_file(*domain,"memory.high",&high)||
++     dir_u64_file(*domain,"memory.swap.max",&swap)||!maximum||!high||high>=maximum||swap!=0)return dir_error(EPROTO);
++  dir_put(wire,48,(uint64_t)st.st_dev,8);dir_put(wire,56,(uint64_t)st.st_ino,8);
++  dir_put(wire,64,maximum,8);dir_put(wire,72,high,8);dir_put(wire,80,swap,8);
++  return 0;
++}
++static int dir_collect_real(int rights[DIR_HELLO_RIGHTS],unsigned char wire[DIR_WIRE_SIZE],void *opaque) {
++  if(dir_collect_domain(&rights[0],wire,(struct dir_failure *)opaque))return -1;
+   rights[1]=(int)syscall(__NR_pidfd_open,getpid(),0);if(rights[1]<0)return -1;
+   for(size_t i=0;i<10;++i){
+     char path[64];int n=snprintf(path,sizeof(path),"/proc/self/ns/%s",dir_ns_names[i]);
+     if(n<=0||(size_t)n>=sizeof(path))return dir_error(EOVERFLOW);
+     rights[2+i]=open(path,O_RDONLY|O_CLOEXEC);if(rights[2+i]<0)return -1;
+   }
+-  dir_put(wire,48,(uint64_t)st.st_dev,8);dir_put(wire,56,(uint64_t)st.st_ino,8);
+-  dir_put(wire,64,maximum,8);dir_put(wire,72,high,8);dir_put(wire,80,swap,8);
+   dir_put(wire,88,DIR_HELLO_RIGHTS,4);
+   return 0;
+ }
+--- a/android/init_relay_protocol.h
++++ b/android/init_relay_protocol.h
+@@ -11,10 +11,12 @@
+ #define DIR_PROJECTED 3u
+ #define DIR_COMMIT 4u
+ #define DIR_DONE 5u
+-/* ABI 2 PROJECT carries a detached mount from the verified source namespace.
+- * It is attached exactly once by move_mount onto the init-owned held target. */
+-#define DIR_ABI 2u
+-#define DIR_ABI_TEXT "2"
++/* ABI 3 HELLO proves the finite domain through a private holding mount.
++ * The real Android cgroup mount point stays untouched. PROJECT retains the
++ * detached mount contract and the one-shot init-owned held target. */
++#define DIR_ABI 3u
++#define DIR_ABI_TEXT "3"
++#define DIR_CGROUP_VIEW "/dev/.droidloom-cgroups/relay-v2"
+ #define DIR_SOCKET_NAME "droidloom-lmkd-psi"
+ #define DIR_ABI_ENV "DROIDLOOM_INIT_RELAY_ABI"
+ #define DIR_REQUIRED_ENV "DROIDLOOM_INIT_RELAY_REQUIRED"
+--- a/android/protocol_controls.c
++++ b/android/protocol_controls.c
+@@ -154,7 +154,7 @@
+   int rights[2]={socket_path_fd,socket_path_fd};size_t rights_count=1;
+   if(which==1)ready[16]^=1;
+   /* The actual legacy sender's ABI must be refused before projection. */
+-  if(which==2)dir_put(ready,8,1,4);
++  if(which==2)dir_put(ready,8,2,4);
+   if(which==3)dir_put(ready,12,DIR_COMMIT,4);
+   if(which==4)rights_count=2;
+   if(which==5){regular=open("/dev/null",O_RDONLY|O_CLOEXEC);if(regular<0)goto cleanup;rights[0]=regular;}
+--- a/host/runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs
++++ b/host/runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs
+@@ -14,6 +14,9 @@
+ use std::path::{Component, Path};
+ 
+ const CGROUP2_MAGIC: libc::c_long = 0x6367_7270;
++const TMPFS_MAGIC: libc::c_long = 0x0102_1994;
++const BOOTSTRAP_LEAF: &CStr = c"init-bootstrap";
++pub(crate) const BOOTSTRAP_VIEW: &str = "dev/.droidloom-cgroups/relay-v2";
+ #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
+ pub(crate) struct Identity {
+     pub device: u64,
+@@ -227,9 +230,11 @@
+     parent: File,
+     outer: File,
+     android: File,
++    bootstrap: File,
+     name: CString,
+     outer_id: Identity,
+     android_id: Identity,
++    bootstrap_id: Identity,
+     policy: PressureRelaySpec,
+     removed: bool,
+     failed_retirement: bool,
+@@ -263,15 +268,23 @@
+         write_name(&outer, "cgroup.subtree_control", "+memory +cpu +pids\n")?;
+         let android = child(&outer, c"android")?;
+         set_limits(&android, policy)?;
++        // The entry first joins android and seals that namespace root. It
++        // moves into this leaf only after sealing, before releasing init.
++        // Never enable a controller below a leaf that will contain init.
++        let bootstrap = child(&android, BOOTSTRAP_LEAF)?;
++        empty_descendant(&bootstrap)?;
+         let outer_id = Identity::of(&outer)?;
+         let android_id = Identity::of(&android)?;
++        let bootstrap_id = Identity::of(&bootstrap)?;
+         Ok(Self {
+             parent,
+             outer,
+             android,
++            bootstrap,
+             name,
+             outer_id,
+             android_id,
++            bootstrap_id,
+             policy: policy.clone(),
+             removed: false,
+             failed_retirement: false,
+@@ -294,15 +307,32 @@
+             0,
+         )?;
+         let android = named(&outer, "android", libc::O_RDONLY | libc::O_DIRECTORY)?;
++        let bootstrap = at(android.as_raw_fd(), BOOTSTRAP_LEAF,
++                           libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
++        filesystem(&bootstrap, CGROUP2_MAGIC)?;
+         if Identity::of(&outer)? != self.outer_id
+             || Identity::of(&android)? != self.android_id
+             || Identity::of(&self.outer)? != self.outer_id
+             || Identity::of(&self.android)? != self.android_id
++            || Identity::of(&bootstrap)? != self.bootstrap_id
++            || Identity::of(&self.bootstrap)? != self.bootstrap_id
++            || self.bootstrap_id.device != self.android_id.device
+         {
+             return Err(error("generation cgroup identity was replaced"));
+         }
+         limits(&self.outer, &self.policy)?;
+         limits(&self.android, &self.policy)
++    }
++    /// Called only after the received init pidfd/credential/parent/birth have
++    /// been checked. These fresh cgroup.procs reads use the host PID view.
++    /// Recursive populated/pids.current must stay nonzero while init lives.
++    pub(crate) fn validate_bootstrap_init(&self, init_pid: libc::pid_t) -> io::Result<()> {
++        self.validate()?;
++        require_bootstrap_membership(
++            &read_name(&self.android, "cgroup.procs")?,
++            &read_name(&self.bootstrap, "cgroup.procs")?,
++            init_pid,
++        )
+     }
+     pub(crate) fn prove_empty(&self) -> io::Result<()> {
+         self.validate()?;
+@@ -447,11 +477,200 @@
+     write_name(domain, "cgroup.procs", "0\n")?;
+     limits(domain, policy)
+ }
+-/// After CLONE_NEWCGROUP, expose only the current private domain. The outer
+-/// finite envelope is absent from this mount's namespace root.
++fn require_bootstrap_membership(root_procs: &str, leaf_procs: &str, pid: libc::pid_t) -> io::Result<()> {
++    if pid <= 0 || !root_procs.is_empty() || leaf_procs != format!("{pid}\n") {
++        return Err(error("bootstrap requires empty Android root and the exact init in its leaf"));
++    }
++    Ok(())
++}
++/// Capture only the host-precreated leaf beneath the inherited domain. This
++/// capability is CLOEXEC and is never transferred to Android or its apps.
++pub(crate) fn open_bootstrap(domain: &File) -> io::Result<File> {
++    root_directory(domain)?;
++    let leaf = at(domain.as_raw_fd(), BOOTSTRAP_LEAF,
++                  libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
++    root_directory(&leaf)?;
++    if Identity::of(&leaf)?.device != Identity::of(domain)?.device
++        || read_name(&leaf, "cgroup.type")? != "domain\n"
++        || !read_name(&leaf, "cgroup.subtree_control")?.trim().is_empty()
++    {
++        return Err(error("bootstrap leaf type/filesystem/controllers differ"));
++    }
++    empty_descendant(&leaf)?;
++    Ok(leaf)
++}
++fn validate_bootstrap_descriptor(domain: &File, leaf: &File, expected: Identity,
++                                 policy: &PressureRelaySpec) -> io::Result<()> {
++    root_directory(domain)?;
++    root_directory(leaf)?;
++    limits(domain, policy)?;
++    let named_leaf = at(domain.as_raw_fd(), BOOTSTRAP_LEAF,
++                        libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
++    filesystem(&named_leaf, CGROUP2_MAGIC)?;
++    if Identity::of(leaf)? != expected || Identity::of(&named_leaf)? != expected
++        || expected.device != Identity::of(domain)?.device
++        || read_name(leaf, "cgroup.type")? != "domain\n"
++        || !read_name(leaf, "cgroup.subtree_control")?.trim().is_empty()
++    {
++        return Err(error("held bootstrap leaf identity or controller policy changed"));
++    }
++    Ok(())
++}
++/// This is intentionally after the private cgroup namespace has been sealed
++/// at android and its mounted root identity checked. Only "0" is migrated.
++pub(crate) fn enter_bootstrap(domain: &File, leaf: &File, expected: Identity,
++                             policy: &PressureRelaySpec) -> io::Result<()> {
++    validate_bootstrap_descriptor(domain, leaf, expected, policy)?;
++    let pid = unsafe { libc::getpid() };
++    if read_name(domain, "cgroup.procs")? != format!("{pid}\n") {
++        return Err(error("entry is not the sole current Android-root process"));
++    }
++    empty_descendant(leaf)?;
++    write_name(leaf, "cgroup.procs", "0\n")?;
++    validate_entry_bootstrap(domain, leaf, expected, policy)
++}
++pub(crate) fn validate_entry_bootstrap(domain: &File, leaf: &File, expected: Identity,
++                                     policy: &PressureRelaySpec) -> io::Result<()> {
++    validate_bootstrap_descriptor(domain, leaf, expected, policy)?;
++    require_bootstrap_membership(
++        &read_name(domain, "cgroup.procs")?, &read_name(leaf, "cgroup.procs")?,
++        unsafe { libc::getpid() },
++    )
++}
++fn exact_pid_bytes(bytes: &[u8], expected: libc::pid_t) -> bool {
++    if expected <= 0 || bytes.len() < 2 || bytes.last() != Some(&b'\n') || bytes[0] == b'0' {
++        return false;
++    }
++    let mut value = 0u32;
++    for byte in &bytes[..bytes.len() - 1] {
++        if !byte.is_ascii_digit() {
++            return false;
++        }
++        let Some(next) = value.checked_mul(10).and_then(|x| x.checked_add(u32::from(*byte - b'0'))) else {
++            return false;
++        };
++        value = next;
++    }
++    value == expected as u32
++}
++fn raw_directory_identity(fd: RawFd, expected: Identity) -> io::Result<()> {
++    let mut metadata = std::mem::MaybeUninit::<libc::stat>::uninit();
++    if unsafe { libc::fstat(fd, metadata.as_mut_ptr()) } != 0 {
++        return Err(io::Error::last_os_error());
++    }
++    let metadata = unsafe { metadata.assume_init() };
++    let flags = unsafe { libc::fcntl(fd, libc::F_GETFD) };
++    if metadata.st_dev as u64 != expected.device || metadata.st_ino as u64 != expected.inode
++        || metadata.st_mode & libc::S_IFMT != libc::S_IFDIR
++        || metadata.st_uid != 0 || metadata.st_gid != 0 || metadata.st_mode & 0o022 != 0
++        || flags < 0 || flags & libc::FD_CLOEXEC == 0
++    {
++        return Err(error("bootstrap held directory identity or CLOEXEC changed before init"));
++    }
++    Ok(())
++}
++fn raw_procs(fd: RawFd, bytes: &mut [u8; 33]) -> io::Result<usize> {
++    let input = unsafe { libc::openat(fd, c"cgroup.procs".as_ptr(),
++        libc::O_RDONLY | libc::O_NOFOLLOW | libc::O_CLOEXEC) };
++    if input < 0 {
++        return Err(io::Error::last_os_error());
++    }
++    let result = (|| {
++        let mut used = 0;
++        let mut interruptions = 0;
++        loop {
++            if used == bytes.len() {
++                return Err(error("bootstrap membership exceeds final-exec bound"));
++            }
++            let count = unsafe { libc::read(input, bytes[used..].as_mut_ptr().cast(), bytes.len() - used) };
++            if count < 0 {
++                let error = io::Error::last_os_error();
++                if error.kind() == io::ErrorKind::Interrupted && interruptions < 8 {
++                    interruptions += 1;
++                    continue;
++                }
++                return Err(error);
++            }
++            if count == 0 {
++                return Ok(used);
++            }
++            used += count as usize;
++        }
++    })();
++    let closed = unsafe { libc::close(input) };
++    match result {
++        Err(error) => Err(error),
++        Ok(_) if closed != 0 => Err(io::Error::last_os_error()),
++        Ok(value) => Ok(value),
++    }
++}
++/// Final callback after CPU-placement callbacks. Fixed-size stack buffers and
++/// libc descriptor syscalls only on success; no new capability is inherited.
++pub(crate) fn validate_bootstrap_before_exec(domain: RawFd, domain_id: Identity,
++                                             leaf: RawFd, leaf_id: Identity) -> io::Result<()> {
++    raw_directory_identity(domain, domain_id)?;
++    raw_directory_identity(leaf, leaf_id)?;
++    let mut root_procs = [0u8; 33];
++    let mut leaf_procs = [0u8; 33];
++    if raw_procs(domain, &mut root_procs)? != 0 {
++        return Err(error("Android root regained an internal process before init exec"));
++    }
++    let length = raw_procs(leaf, &mut leaf_procs)?;
++    if !exact_pid_bytes(&leaf_procs[..length], unsafe { libc::getpid() }) {
++        return Err(error("entry left its exact bootstrap leaf before init exec"));
++    }
++    Ok(())
++}
++fn owned_directory(file: &File) -> io::Result<()> {
++    let m = file.metadata()?;
++    if !m.is_dir() || m.uid() != 0 || m.gid() != 0 || m.mode() & 0o022 != 0 {
++        return Err(error("private bootstrap directory owner/type/mode differs"));
++    }
++    Ok(())
++}
++/// Keep the stock Android target on the original synthetic sys tmpfs. A
++/// pre-mounted cgroup2 at this path would make Android's real mount fail.
++fn native_mount_target(root: &File) -> io::Result<File> {
++    let sys = beneath(root, "sys", libc::O_RDONLY | libc::O_DIRECTORY)?;
++    let target = beneath(root, "sys/fs/cgroup", libc::O_RDONLY | libc::O_DIRECTORY)?;
++    owned_directory(&sys)?;
++    owned_directory(&target)?;
++    filesystem(&sys, TMPFS_MAGIC)?;
++    filesystem(&target, TMPFS_MAGIC)?;
++    if Identity::of(&sys)?.device != Identity::of(&target)?.device {
++        return Err(error("native cgroup target is not the original private sys tmpfs"));
++    }
++    Ok(target)
++}
++/// Read only the ABI3 holding view. The root remains the same finite Android
++/// cgroup; its final /sys mount is owned by real Android CgroupSetup.
++pub(crate) fn bootstrap_view(root: &File) -> io::Result<File> {
++    let holding = beneath(root, "dev/.droidloom-cgroups", libc::O_RDONLY | libc::O_DIRECTORY)?;
++    owned_directory(&holding)?;
++    filesystem(&holding, TMPFS_MAGIC)?;
++    native_mount_target(root)?;
++    let view = beneath(root, BOOTSTRAP_VIEW, libc::O_RDONLY | libc::O_DIRECTORY)?;
++    root_directory(&view)?;
++    Ok(view)
++}
++/// After CLONE_NEWCGROUP, expose only the current private domain at an owned
++/// holding mount. Leave Android's original /sys/fs/cgroup target untouched so
++/// its real mount, permissions, controller setup and subtrees still execute.
+ pub(crate) fn mount_private_view(root: &Path, expected: Identity) -> io::Result<()> {
+     let root = directory(root)?;
+-    let target = beneath(&root, "sys/fs/cgroup", libc::O_PATH | libc::O_DIRECTORY)?;
++    let native = native_mount_target(&root)?;
++    if std::fs::read_dir(format!("/proc/self/fd/{}", native.as_raw_fd()))?.next().is_some() {
++        return Err(error("native Android cgroup mount target is not empty"));
++    }
++    let native_id = Identity::of(&native)?;
++    let holding = beneath(&root, "dev/.droidloom-cgroups", libc::O_RDONLY | libc::O_DIRECTORY)?;
++    owned_directory(&holding)?;
++    filesystem(&holding, TMPFS_MAGIC)?;
++    if unsafe { libc::mkdirat(holding.as_raw_fd(), c"relay-v2".as_ptr(), 0o700) } != 0 {
++        return Err(io::Error::last_os_error());
++    }
++    let target = named(&holding, "relay-v2", libc::O_PATH | libc::O_DIRECTORY)?;
++    owned_directory(&target)?;
+     let target_path =
+         CString::new(format!("/proc/self/fd/{}", target.as_raw_fd())).expect("descriptor path");
+     // SAFETY: owned target descriptor and static filesystem/options.
+@@ -467,9 +686,8 @@
+     {
+         return Err(io::Error::last_os_error());
+     }
+-    let projected = beneath(&root, "sys/fs/cgroup", libc::O_RDONLY | libc::O_DIRECTORY)?;
+-    filesystem(&projected, CGROUP2_MAGIC)?;
+-    if Identity::of(&projected)? != expected {
++    let projected = bootstrap_view(&root)?;
++    if Identity::of(&projected)? != expected || Identity::of(&native_mount_target(&root)?)? != native_id {
+         return Err(error("private cgroup mount is not the held Android domain"));
+     }
+     Ok(())
+@@ -478,6 +696,26 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    #[test]
++    fn bootstrap_membership_rejects_root_processes_and_extra_leaf_members() {
++        require_bootstrap_membership("", "17\n", 17).unwrap();
++        for (root, leaf, pid) in [
++            ("17\n", "", 17), ("18\n", "17\n", 17),
++            ("", "17\n18\n", 17), ("", "18\n", 17),
++            ("\n", "17\n", 17), ("", "0\n", 0),
++        ] {
++            assert!(require_bootstrap_membership(root, leaf, pid).is_err());
++        }
++    }
++    #[test]
++    fn final_exec_pid_parser_rejects_extra_ambiguous_and_overflowed_members() {
++        assert!(exact_pid_bytes(b"1\n", 1));
++        assert!(exact_pid_bytes(b"2147483647\n", 2147483647));
++        for bytes in [b"".as_slice(), b"1", b"01\n", b"1\n2\n", b"0\n", b"-1\n",
++                      b"4294967297\n", b" 1\n", b"1\n\n"] {
++            assert!(!exact_pid_bytes(bytes, 1));
++        }
++    }
+     #[test]
+     fn foreign_filesystem_is_rejected_without_creating_a_cgroup() {
+         let temp = tempfile::tempdir().unwrap();
+--- a/host/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
++++ b/host/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
+@@ -9,6 +9,7 @@
+ use super::policy::{self, PressureRelaySpec};
+ use crate::CellSpec;
+ use sha2::{Digest, Sha256};
++use std::cell::Cell;
+ use std::ffi::{CString, OsString};
+ use std::fs::File;
+ use std::io::{self, Write};
+@@ -19,7 +20,7 @@
+ use std::process::Command;
+ 
+ /// Exact pure-CLI pairing value required before private relay entry may spawn.
+-pub const ABI: &str = "droidloom-relay-entry-v2";
++pub const ABI: &str = "droidloom-relay-entry-v3";
+ pub(crate) const ENTRY_ENV: [&str; 3] = [
+     "DROIDLOOM_RELAY_ENTRY_ABI",
+     "DROIDLOOM_RELAY_ENTRY_NONCE",
+@@ -40,6 +41,8 @@
+ ];
+ const BOOTSTRAP: &str = "droidloom/lmkd-bootstrap";
+ const INIT_LINKER: &str = "/system/bin/bootstrap/linker64";
++#[derive(Clone, Copy, Eq, PartialEq)]
++enum ProjectionPhase { Fresh, Poisoned, Ready }
+ fn error(message: &'static str) -> io::Error {
+     domain::error(message)
+ }
+@@ -148,6 +151,9 @@
+ pub(crate) struct Entry {
+     channel: File,
+     domain: File,
++    bootstrap_leaf: File,
++    bootstrap_identity: Identity,
++    projection: Cell<ProjectionPhase>,
+     owner: File,
+     executable: Artifact,
+     policy: PressureRelaySpec,
+@@ -233,11 +239,16 @@
+         let barrier = Artifact::open(&policy.init_barrier, false)?;
+         let lmkd = Artifact::open(&policy.lmkd, true)?;
+         let domain_identity = Identity::of(&domain_fd)?;
++        let bootstrap_leaf = domain::open_bootstrap(&domain_fd)?;
++        let bootstrap_identity = Identity::of(&bootstrap_leaf)?;
+         domain::enter_self(&domain_fd, policy)?;
+         pidfd_alive(&owner)?;
+         Ok(Some(Self {
+             channel,
+             domain: domain_fd,
++            bootstrap_leaf,
++            bootstrap_identity,
++            projection: Cell::new(ProjectionPhase::Fresh),
+             owner,
+             executable,
+             policy: policy.clone(),
+@@ -339,20 +350,29 @@
+         if !self.prepared || self.sealed {
+             return Err(error("relay image is not prepared"));
+         }
++        if self.projection.replace(ProjectionPhase::Poisoned) != ProjectionPhase::Fresh {
++            return Err(error("relay cgroup projection is a single attempt"));
++        }
+         pidfd_alive(&self.owner)?;
+         if Identity::of(&self.domain)? != self.domain_identity {
+             return Err(error("held domain identity changed"));
+         }
+-        domain::mount_private_view(root, self.domain_identity)
++        domain::mount_private_view(root, self.domain_identity)?;
++        domain::enter_bootstrap(&self.domain, &self.bootstrap_leaf,
++                                self.bootstrap_identity, &self.policy)?;
++        self.projection.set(ProjectionPhase::Ready);
++        Ok(())
+     }
+ 
+     /// Attach only to the final /init second_stage command. No ordinary
+     /// helper may inherit these capabilities or the private opt-in variables.
+     pub(crate) fn configure_init(&mut self, command: &mut Command) -> io::Result<()> {
+-        if !self.prepared || self.sealed {
++        if !self.prepared || self.sealed || self.projection.get() != ProjectionPhase::Ready {
+             return Err(error("init release preparation reused or incomplete"));
+         }
+         self.sealed = true;
++        domain::validate_entry_bootstrap(&self.domain, &self.bootstrap_leaf,
++                                         self.bootstrap_identity, &self.policy)?;
+         require_init_command(command)?;
+         pidfd_alive(&self.owner)?;
+         self.barrier.validate(false)?;
+@@ -367,6 +387,10 @@
+             .env(INIT_ENV[4], self.policy.bootstrap_timeout_ms.to_string());
+         let control = self.channel.as_raw_fd();
+         let owner = self.owner.as_raw_fd();
++        let domain = self.domain.as_raw_fd();
++        let domain_identity = self.domain_identity;
++        let bootstrap = self.bootstrap_leaf.as_raw_fd();
++        let bootstrap_identity = self.bootstrap_identity;
+         // SAFETY: the entry is single-threaded. This pre-exec closure performs
+         // only async-signal-safe syscalls and changes no shared parent state.
+         unsafe {
+@@ -394,6 +418,8 @@
+                         "entry owner died immediately before init exec",
+                     ));
+                 }
++                domain::validate_bootstrap_before_exec(domain, domain_identity,
++                                                       bootstrap, bootstrap_identity)?;
+                 close_on_exec(control, false)
+             });
+         }
+--- a/host/runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs
++++ b/host/runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs
+@@ -18,10 +18,10 @@
+ pub(crate) const LIBRARY: &str = "/droidloom/lmkd-bootstrap/libdroidloom_init_relay.so";
+ pub(crate) const LMKD: &str = "/droidloom/lmkd-bootstrap/lmkd";
+ pub(crate) const ENDPOINT: &str = "droidloom-lmkd-psi";
+-// ABI 2 PROJECT owns one detached mount cloned by the current source-namespace
+-// owner. A raw foreign O_PATH descriptor is no longer a projection capability.
+-pub(crate) const INIT_ABI_TEXT: &str = "2";
+-const INIT_ABI: u32 = 2;
++// ABI 3 HELLO proves the finite cgroup through a private holding view, leaving
++// the stock Android mount target empty. PROJECT retains the ABI2 detached-mount contract.
++pub(crate) const INIT_ABI_TEXT: &str = "3";
++const INIT_ABI: u32 = 3;
+ #[cfg(target_arch = "x86_64")]
+ pub(crate) const COMPAT: &str = "/system/lib64/libclang_rt.asan-x86_64-android.so";
+ #[cfg(target_arch = "aarch64")]
+@@ -48,7 +48,7 @@
+ }
+ fn frame(kind: u32, nonce: &[u8; 32]) -> [u8; WIRE] {
+     let mut wire = [0; WIRE];
+-    wire[..8].copy_from_slice(b"P4IBV2!!");
++    wire[..8].copy_from_slice(b"P4IBV3!!");
+     put(&mut wire, 8, INIT_ABI as u64, 4);
+     put(&mut wire, 12, kind as u64, 4);
+     wire[16..48].copy_from_slice(nonce);
+@@ -400,12 +400,13 @@
+         self.process.validate_init_child(owner)?;
+         self.process.validate_namespaces(&self.namespaces)?;
+         domain.validate()?;
++        domain.validate_bootstrap_init(self.process.pid())?;
+         let root = self.process.root()?;
+         if Identity::of(&root)? != Identity::of(&self.root)? {
+             return Err(error("init root changed"));
+         }
+         let projection =
+-            domain::beneath(&root, "sys/fs/cgroup", libc::O_RDONLY | libc::O_DIRECTORY)?;
++            domain::bootstrap_view(&root)?;
+         domain::filesystem(&projection, 0x6367_7270)?;
+         if Identity::of(&projection)? != domain.identity()
+             || Identity::of(&self.guest_domain)? != domain.identity()
+@@ -417,6 +418,7 @@
+         self.linker.validate(false)?;
+         barrier.validate(false)?;
+         self.process.require_preload(&preload())?;
++        domain.validate_bootstrap_init(self.process.pid())?;
+         self.process.live()
+     }
+ }
+@@ -504,7 +506,7 @@
+         // copy is evidence of the projection, never the source of authority.
+         let root = process.root()?;
+         let projection =
+-            domain::beneath(&root, "sys/fs/cgroup", libc::O_RDONLY | libc::O_DIRECTORY)?;
++            domain::bootstrap_view(&root)?;
+         if Identity::of(&projection)? != domain.identity() {
+             return Err(error("actual init root exposes a different cgroup"));
+         }
+@@ -719,14 +721,16 @@
+         require_frame(&wire, HELLO, &nonce).unwrap();
+         assert!(require_frame(&wire, DONE, &nonce).is_err());
+         assert!(require_frame(&wire, HELLO, &[4; 32]).is_err());
+-        for abi in [0, 1] {
++        for abi in [0, 1, 2] {
+             let mut old = wire;
+             put(&mut old, 8, abi, 4);
+             assert!(require_frame(&old, HELLO, &nonce).is_err());
+         }
+-        let mut old = wire;
+-        old[..8].copy_from_slice(b"P4IBV1!!");
+-        assert!(require_frame(&old, HELLO, &nonce).is_err());
++        for magic in [b"P4IBV1!!", b"P4IBV2!!"] {
++            let mut old = wire;
++            old[..8].copy_from_slice(magic);
++            assert!(require_frame(&old, HELLO, &nonce).is_err());
++        }
+         assert_eq!(INIT_ABI_TEXT.parse::<u32>().unwrap(), INIT_ABI);
+         assert!(require_frame(&frame(HELLO, &[0; 32]), HELLO, &[0; 32]).is_err());
+     }

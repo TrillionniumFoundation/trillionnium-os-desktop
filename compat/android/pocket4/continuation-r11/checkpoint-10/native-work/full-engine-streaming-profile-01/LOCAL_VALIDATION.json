@@ -1,0 +1,131 @@
+{
+  "state": "SOURCE_AND_DEFAULT_PLAN_CHECKED_NOT_DISPATCHED",
+  "unchanged_controller_functions": [
+    "digest",
+    "utc",
+    "require",
+    "regular",
+    "relative",
+    "inventory",
+    "hashes",
+    "save",
+    "output",
+    "git",
+    "no_alias",
+    "reference_inputs",
+    "matched_gate_contract",
+    "owned_resource_gate",
+    "subreaper",
+    "child_ids",
+    "cleanup_children",
+    "artifact_gate",
+    "main"
+  ],
+  "changed_controller_functions": [
+    "memory_admission",
+    "go_projection_contract",
+    "source_contract",
+    "plan",
+    "prepare",
+    "verify_prepared",
+    "build"
+  ],
+  "added_function": [
+    "builder_compilation_contract"
+  ],
+  "default_plans": [
+    {
+      "name": "combined_build_streaming.py",
+      "returncode": 0,
+      "output": {
+        "schema": 1,
+        "state": "PLAN_ONLY",
+        "candidate": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/overlay-reconstruction-09/candidate-05",
+        "candidate_manifest_sha256": "4e2f7f9ea09c6977afbe8d97c040fd2f1344772429f78fe0f16edc913dadc7ba",
+        "candidate_files": 948,
+        "engine_files": 925,
+        "new_root": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go6-streaming-01",
+        "new_output": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go6-streaming-01/android-out",
+        "new_attempt": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go6-streaming-01/attempt-01",
+        "targets": [
+          "libberberis_arm64",
+          "berberis_arm64_host_tests"
+        ],
+        "argv": [
+          "/home/alex/work/pocket4-blueprint-streaming-builder-450-compile-03-20261105/attempt01/cargo-target/debug/droidloom-update",
+          "--source",
+          "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go6-streaming-01/builder-source",
+          "--jobs",
+          "1",
+          "native-engine-build",
+          "--work",
+          "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1",
+          "--tests",
+          "--out",
+          "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go6-streaming-01/android-out"
+        ],
+        "source_env": {
+          "DROIDLOOM_NATIVE_BRIDGE_SOURCE": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go6-streaming-01/engine-working"
+        },
+        "CPUQuota": 200,
+        "MemoryMax": 11811160064,
+        "MemorySwapMax": 1073741824,
+        "MemAvailable_minimum": 15032385536,
+        "SwapFree_minimum": 2147483648,
+        "admission_difference_bytes": 3221225472,
+        "swap_admission_difference_bytes": 1073741824,
+        "physical_reservation_claimed": false,
+        "builder_source_delta": {
+          "changed_existing": [
+            "tools/droidloom-update/src/android.rs"
+          ],
+          "added": [
+            "android/apex-compat/0009-blueprint-stream-uncached-module-actions.patch"
+          ],
+          "unchanged_existing": 448
+        },
+        "builder_source_files": 450,
+        "actual_builder_compile_sha256": "a1d8fe1e891c876baeff555b18fce9bafe6a895d379d9e55261c6df1981785de",
+        "Blueprint_streaming_patch_sha256": "9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307",
+        "Go_soft_heap": "6GiB",
+        "feature_default_enabled": false,
+        "ART_target_built": false,
+        "factory_target_built": false,
+        "tests_executed_by_build": false,
+        "service_started": false,
+        "Android_actions": 0,
+        "Main_actions": 0,
+        "production_ready": false
+      }
+    },
+    {
+      "name": "fenced_build_streaming.template.py",
+      "returncode": 0,
+      "output": {
+        "state": "PLAN_ONLY",
+        "new_fence_root": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go6-streaming-01/build-fences-01",
+        "prepared_sha256": "ACTUAL_STREAMING_PREPARATION_SHA_REQUIRED",
+        "Main_actions": 0,
+        "build_started": false,
+        "feature_enabled": false
+      }
+    },
+    {
+      "name": "make_requests.py",
+      "returncode": 0,
+      "output": {
+        "state": "PLAN_ONLY",
+        "new_root": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go6-streaming-01",
+        "preparation_key": "pocket4-native-combined05-go6-streaming-full-source-preparation-01-20261105",
+        "build_key": "pocket4-native-combined05-go6-streaming-fenced-cold-engine-flag0-build-01-20261105",
+        "actual_preparation_required_for_build": true,
+        "remote_actions": 0
+      }
+    }
+  ],
+  "Main_snapshot_exact": true,
+  "prepare_request_exact_source": true,
+  "actual_builder_receipt_sha256": "a1d8fe1e891c876baeff555b18fce9bafe6a895d379d9e55261c6df1981785de",
+  "remote_actions": 0,
+  "full_engine_build_performed": false
+}

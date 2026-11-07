@@ -1,0 +1,51 @@
+{
+  "actual_App_pass_claimed": false,
+  "findings": [
+    "All SurfaceView/TextureView candidates are counted before role selection. Exactly two SurfaceView nodes with empty untruncated resource IDs are required, both under the current exact container and outside overlay/toolbar subtrees. Extra or ambiguous renderers fail instead of selecting first.",
+    "The full-area and crop bounds must differ. Each must map to exactly one actual surface; containment, current focused application window and four named fixed roles remain strict. Traversal order does not assign the roles.",
+    "Each selected surface requires its exact immediate FrameLayout parent with empty untruncated resource ID and equal bounds. Two distinct parents are required. The output structure binds each surface and parent hash/path plus named-role geometry.",
+    "same_scope now also compares the full-area bounds and complete canonical render-structure hash, in addition to the original scope/window/title/author/crop contract. The unchanged capture path checks same_scope before saving a private crop and retains independent after-inspection on screenshot failure.",
+    "Both content attribution and video-only pixel claims remain false. Geometry stability and a crop cannot prove video playback or audio."
+  ],
+  "not_performed": [
+    "No raw commercial inspection/image read",
+    "No geometry_controls execution or independent rerun of the retained 15 controls",
+    "No device/namespace/UI operation",
+    "No analysis or reinterpretation of the reported current geometry runtime failure"
+  ],
+  "production_ready": false,
+  "result": "NO_NEW_CONFIRMED_BLOCKER_IN_TWO_FUNCTION_SOURCE_DELTA",
+  "reviewer": "local_pocket4_inventory",
+  "schema": 1,
+  "scope": "Only viewport() and same_scope() source delta and immutable module/nonce binding; no fresh full flow review.",
+  "source_contract_boundary": "The two functions call the existing qa.inspect_record/scope first. This is not a new full audit or independent rebinding of the deployed R5 helper contract. A prior contract reference was read only for path uniqueness/hash semantics.",
+  "validation": {
+    "Hepta_called": false,
+    "all_distinct_and_disjoint_from_preimage": true,
+    "all_other_module_AST_identical_after_two_functions_and_NONCES_reversion": true,
+    "candidate": {
+      "bytes": 16216,
+      "path": "/workspace/scratch/94990735b266/android-bili-r5-player-geometry-01/viewport_observation.py",
+      "sha256": "59ec2140f6fd5a51508ddd143708c0f8fe9d43f0b64363eaf9c0d6ddf849ac3c"
+    },
+    "fresh_nonces_in_this_module": 45,
+    "functions_executed": false,
+    "only_changed_functions": [
+      "viewport",
+      "same_scope"
+    ],
+    "patch": {
+      "bytes": 9275,
+      "path": "/workspace/scratch/94990735b266/android-bili-r5-player-geometry-01/delta-viewport_observation.py.patch",
+      "sha256": "f40fc09c6f620147c2f7ca57a2b8187fcfc996cf8b69398b4fb8f941cfc0a2ca"
+    },
+    "preimage": {
+      "bytes": 13830,
+      "path": "/workspace/scratch/94990735b266/android-bili-r5-buffer-viewport-01/viewport_observation.py",
+      "sha256": "80b3883422c72ba0e7702e5d02bf5b20e0f084bee01fd1e17bd2af16e439b6a7"
+    },
+    "raw_UI_read": false,
+    "result": "PASS_LOCAL_SOURCE_DELTA_BINDING_ONLY",
+    "schema": 1
+  }
+}

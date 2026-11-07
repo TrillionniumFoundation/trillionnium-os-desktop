@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "passed": 21,
+  "controls": [
+    {
+      "case": "complete_current_player_produces_bound_request_no_node_fallback",
+      "passed": true
+    },
+    {
+      "case": "partial_tree",
+      "passed": true,
+      "expected_error": "COMPLETE_INSPECTION_REQUIRED"
+    },
+    {
+      "case": "unfocused_window",
+      "passed": true,
+      "expected_error": "FOCUSED_BILI_WINDOW_REQUIRED"
+    },
+    {
+      "case": "other_display",
+      "passed": true,
+      "expected_error": "FOCUSED_BILI_WINDOW_REQUIRED"
+    },
+    {
+      "case": "extra_surface",
+      "passed": true,
+      "expected_error": "REVEAL_EXACT_TWO_SURFACE_ROLES"
+    },
+    {
+      "case": "wrong_course",
+      "passed": true,
+      "expected_error": "REVEAL_UNIQUE_PLAYER_ROLE_REQUIRED"
+    },
+    {
+      "case": "interactive_player",
+      "passed": true,
+      "expected_error": "REVEAL_ALREADY_INTERACTIVE_PLAYER_REJECTED"
+    },
+    {
+      "case": "nonempty_control_container",
+      "passed": true,
+      "expected_error": "REVEAL_CURRENT_HIDDEN_CONTROL_CONTAINER"
+    },
+    {
+      "case": "buffering_player",
+      "passed": true,
+      "expected_error": "REVEAL_BUFFERING_PLAYER_REJECTED"
+    },
+    {
+      "case": "surface_parent_moved",
+      "passed": true,
+      "expected_error": "REVEAL_EXACT_DISTINCT_SURFACE_PARENTS"
+    },
+    {
+      "case": "caller_coordinates_not_authorized",
+      "passed": true,
+      "expected_error": "EXACT_OPERATION_KEYS_REQUIRED"
+    },
+    {
+      "case": "inspection_nonce_cannot_be_action_nonce",
+      "passed": true,
+      "expected_error": "DISTINCT_REVEAL_NONCE_REQUIRED"
+    },
+    {
+      "case": "absolute_translation_is_not_same_frame",
+      "passed": true
+    },
+    {
+      "case": "new_control_nodes_need_readback_but_absolute_player_stays_same",
+      "passed": true
+    },
+    {
+      "case": "acknowledged_down_up_without_business_claim",
+      "passed": true
+    },
+    {
+      "case": "unacknowledged_up",
+      "passed": true,
+      "expected_error": "ACTUAL_COMPLETE_DOWN_UP_AND_EVENT_CLEANUP_REQUIRED"
+    },
+    {
+      "case": "cancel_is_cleanup_not_success",
+      "passed": true,
+      "expected_error": "ACTUAL_COMPLETE_DOWN_UP_AND_EVENT_CLEANUP_REQUIRED"
+    },
+    {
+      "case": "recycle_failure",
+      "passed": true,
+      "expected_error": "ACTUAL_COMPLETE_DOWN_UP_AND_EVENT_CLEANUP_REQUIRED"
+    },
+    {
+      "case": "secondary_input_failure",
+      "passed": true,
+      "expected_error": "ACTUAL_COMPLETE_DOWN_UP_AND_EVENT_CLEANUP_REQUIRED"
+    },
+    {
+      "case": "input_ack_not_controls_or_business_qualification",
+      "passed": true,
+      "expected_error": "EXACT_PUBLIC_SINGLE_POINTER_INPUT_CONTRACT"
+    },
+    {
+      "case": "actual_sequence_failed_reveal_still_independent_after_state_no_replay",
+      "passed": true
+    }
+  ],
+  "synthetic_public_course_tree": true,
+  "actual_inspect_record_and_new_predicates": true,
+  "Session_input_IO_explicit_seam": true,
+  "Android_UI_or_namespace_calls": 0,
+  "production_source_sha256": {
+    "qa_contract.py": "1f51c2cc9be74ff717d85660ecc567ef72dddf73fab6166efe2357bcec1502a5",
+    "qa_adapter.py": "a52fbb92f203681390261c3b90327c46490d7cb4038d033d143667298a8dde85"
+  }
+}

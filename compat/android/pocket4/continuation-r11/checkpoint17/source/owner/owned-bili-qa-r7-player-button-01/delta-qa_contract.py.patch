@@ -1,0 +1,169 @@
+--- R6/qa_contract.py
++++ R7/qa_contract.py
+@@ -5,8 +5,8 @@
+ import re
+ import zlib
+ 
+-PROTOCOL = 'pocket4-owned-bili-qa-v6'
+-SELF = 'org.droidloom.qa.bili.r6'
++PROTOCOL = 'pocket4-owned-bili-qa-v7'
++SELF = 'org.droidloom.qa.bili.r7'
+ COMPONENT = SELF + '/' + SELF + '.ActionRunner'
+ PACKAGE = 'tv.danmaku.bili'
+ UID = 10117
+@@ -81,7 +81,7 @@
+     nonce(value.get('nonce'))
+     op = value.get('op')
+     expected = {'protocol', 'nonce', 'op'}
+-    if op in ('inspect', 'click', 'set_text','reveal_controls'):
++    if op in ('inspect', 'click', 'set_text','reveal_controls','player_button'):
+         expected.add('scope')
+         scope(value.get('scope'))
+     if op in ('click','set_text'):
+@@ -101,7 +101,13 @@
+         require(nonce(value.get('inspection_nonce'))!=value['nonce'],'DISTINCT_REVEAL_NONCE_REQUIRED')
+         digest(value.get('inspection_sha256'));digest(value.get('player_scope_sha256'));reveal_rect(value.get('viewport_bounds'))
+         require(value['scope']['activity']==REVEAL_ACTIVITY,'REVEAL_EXACT_COURSE_ACTIVITY')
+-    require(op in ('state', 'inspect', 'click', 'set_text','reveal_controls') and set(value) == expected, 'EXACT_OPERATION_KEYS_REQUIRED')
++    if op == 'player_button':
++        expected.update(('inspection_nonce','inspection_sha256','transition','player_frame_sha256'))
++        require(nonce(value.get('inspection_nonce'))!=value['nonce'],'DISTINCT_PLAYER_BUTTON_NONCE_REQUIRED')
++        digest(value.get('inspection_sha256'));digest(value.get('player_frame_sha256'))
++        require(value.get('transition') in ('pause','resume') and value['scope']['activity']==REVEAL_ACTIVITY,
++                'FIXED_PLAYER_TRANSITION_AND_CONTEXT_REQUIRED')
++    require(op in ('state', 'inspect', 'click', 'set_text','reveal_controls','player_button') and set(value) == expected, 'EXACT_OPERATION_KEYS_REQUIRED')
+     raw = canonical(value)
+     require(0 < len(raw) <= MAX_REQUEST, 'REQUEST_BOUND')
+     return raw
+@@ -169,7 +175,7 @@
+             value.get('op') == request['op'] and value.get('request_sha256') == sha(raw_request) and
+             value.get('wire_codec') == 'gzip-canonical-json-v1',
+             'RESULT_REQUEST_BINDING_FAILED')
+-    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10125, 10164, 10165, 10166, 10169, 10170, 10175) and value.get('self_uid') == helper_uid and
++    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10125, 10164, 10165, 10166, 10169, 10170, 10175, 10184) and value.get('self_uid') == helper_uid and
+             type(value.get('self_pid')) is int and value['self_pid'] > 1, 'INSTALLED_HELPER_IDENTITY_REQUIRED')
+     require(value.get('ok') is True and value.get('error') is None and value.get('secondary_errors') == [] and
+             value.get('claim_persistence_completed') is True and value.get('helper_work_completed') is True,
+@@ -213,6 +219,8 @@
+                     'COMPLETE_TREE_COUNTERS_MUST_MATCH_ACTUAL_INSPECTION')
+         elif request['op']=='reveal_controls':
+             assess_reveal(value,request,observed_window,observed_trees)
++        elif request['op']=='player_button':
++            assess_player_button(value,request,observed_window,observed_trees)
+         else:
+             require(value.get('action_attempted') is True and value.get('outcome_unknown') is True and
+                     value.get('node_action') == ('ACTION_SET_TEXT' if request['op']=='set_text' else 'ACTION_CLICK') and
+@@ -299,7 +307,8 @@
+         require(value==[],'STATE_CANNOT_ENUMERATE_TREES')
+         return value
+     expected=(['inspection'] if operation=='inspect' else ['reveal_target','reveal_final_window','reveal_after']
+-              if operation=='reveal_controls' else ['action_target','action_final_window'])
++              if operation=='reveal_controls' else ['player_selection','action_target','action_final_window']
++              if operation=='player_button' else ['action_target','action_final_window'])
+     require(len(value)<=len(expected),'TREE_CAPTURE_COUNT_BOUND')
+     if complete_required:require(len(value)==len(expected),'COMPLETE_TREE_CAPTURE_SEQUENCE_REQUIRED')
+     keys={'capture','purpose','node_limit','depth_limit','child_limit','json_byte_limit','attempted_nodes',
+@@ -580,7 +589,7 @@
+ def assess_restoration(before, operation, after):
+     """These inputs must be parse_completed returns from three joined commands."""
+     first, middle, last = before['helper'], operation['helper'], after['helper']
+-    require(first['op'] == last['op'] == 'state' and middle['op'] in ('inspect','click','set_text','reveal_controls'), 'STATE_OPERATION_STATE_SEQUENCE_REQUIRED')
++    require(first['op'] == last['op'] == 'state' and middle['op'] in ('inspect','click','set_text','reveal_controls','player_button'), 'STATE_OPERATION_STATE_SEQUENCE_REQUIRED')
+     require(len({first['nonce'], middle['nonce'], last['nonce']}) == 3, 'DISTINCT_PHASE_NONCES_REQUIRED')
+     require(first['self_uid'] == middle['self_uid'] == last['self_uid'], 'HELPER_UID_CHANGED')
+     require(first['state'] == middle['accessibility_state_before_connection'] == last['state'] and
+@@ -591,3 +600,94 @@
+             'state_before': first['state'], 'state_after': last['state'],
+             'wire_sha256': [before['wire_sha256'], operation['wire_sha256'], after['wire_sha256']],
+             'business_success_verified': False, 'whole_app_production_ready': False}
++
++PLAYER_BUTTON_RESOURCE = PACKAGE+':id/gemini_halfscreen_play'
++PLAYER_BUTTON_LABELS = {'pause':'暂停','resume':'播放'}
++MAX_PLAYER_SELECTION_AGE_MS = 1000
++
++
++def player_frame(proof):
++    keys=('scope','window','window_sha256','viewport_bounds','full_area_bounds',
++          'render_structure_sha256','title_text_sha256','author_text_sha256')
++    return {key:proof[key] for key in keys}
++
++
++def player_button_current(inspection,host_scope,transition):
++    """Fixed current role, never caller coordinates or an arbitrary selector."""
++    require(transition in PLAYER_BUTTON_LABELS,'FIXED_PLAYER_TRANSITION_REQUIRED')
++    proof=player_reveal_scope(inspection,host_scope,False)
++    nodes=inspection['nodes'];by_path={n['path']:n for n in nodes}
++    rows=[n for n in nodes if n.get('resource_id')==PLAYER_BUTTON_RESOURCE]
++    require(len(rows)==1,'UNIQUE_CURRENT_PLAYBACK_RESOURCE_REQUIRED')
++    label=PLAYER_BUTTON_LABELS[transition]
++    target=select_unique_clickable(inspection,{'resource_id':PLAYER_BUTTON_RESOURCE,
++        'class':'android.widget.ImageView','content_desc':label})
++    node=rows[0];controls=[n for n in nodes if n.get('resource_id')==PACKAGE+':id/control_container']
++    require(len(controls)==1,'UNIQUE_CURRENT_CONTROL_CONTAINER_REQUIRED')
++    controls=controls[0]
++    containers=[n for n in nodes if n.get('resource_id')==PACKAGE+':id/video_container']
++    require(len(containers)==1,'UNIQUE_CURRENT_VIDEO_CONTAINER_REQUIRED')
++    parent=by_path.get(node['path'].rsplit('/',1)[0]);crop=proof['viewport_bounds'];bounds=reveal_rect(node['bounds'])
++    def eligible(n):
++        return isinstance(n,dict) and n.get('visible') is True and n.get('enabled') is True and n.get('password') is False and n.get('class_truncated') is False and n.get('resource_id_truncated') is False
++    require(eligible(controls) and controls['class']=='android.widget.FrameLayout' and
++        controls['path'].startswith(containers[0]['path']+'/') and controls['bounds']==crop and
++        type(controls['child_count']) is int and controls['child_count']==1 and
++        eligible(parent) and parent['class']=='android.view.ViewGroup' and parent['resource_id']=='' and
++        parent['path'].rsplit('/',1)[0]==controls['path'] and parent['bounds']==crop and
++        node['editable'] is False and node['text']=='' and node['text_truncated'] is False and
++        node['content_desc_sha256']==sha(label.encode()) and
++        crop[0]<=bounds[0]<bounds[2]<=crop[2] and crop[1]<=bounds[1]<bounds[3]<=crop[3] and
++        target=={'node_path':node['path'],'node_sha256':node['node_sha256']},
++        'EXACT_CURRENT_PLAYER_DIRECT_CONTROL_REQUIRED')
++    return target,proof
++
++
++def player_button_request_fields(inspection,host_scope,transition):
++    _,proof=player_button_current(inspection,host_scope,transition)
++    return {'transition':transition,'player_frame_sha256':sha(canonical(player_frame(proof)))}
++
++
++def assess_player_button(value,request,observed_window,observed_trees):
++    require(value.get('action_attempted') is True and value.get('outcome_unknown') is True and
++        value.get('node_action')=='ACTION_CLICK' and value.get('node_action_returned') is True and
++        value.get('inspection_nonce')==request['inspection_nonce'] and
++        value.get('inspection_sha256')==request['inspection_sha256'] and
++        value.get('transition')==request['transition'] and
++        value.get('player_frame_sha256')==request['player_frame_sha256'] and
++        value.get('prior_inspection_is_context_only') is True and
++        value.get('atomic_android_transaction') is False and
++        value.get('same_connection_full_tree_rechecks')==2,
++        'CURRENT_PLAYER_BUTTON_REQUEST_AND_ACK_REQUIRED')
++    current=inspect_record(value.get('player_inspection'))
++    target,proof=player_button_current(current,request['scope'],request['transition'])
++    require(value.get('player_scope')==proof and
++        sha(canonical(player_frame(proof)))==request['player_frame_sha256'] and
++        value.get('player_inspection_sha256')==sha(canonical(current)) and
++        value.get('target_node_path')==target['node_path'] and
++        value.get('target_node_sha256')==target['node_sha256'] and
++        value.get('action_window')==current['window'] and
++        value.get('connection_scoped_window_id')==current['connection_scoped_window_id']==observed_window['selected_window_id'],
++        'CURRENT_PLAYER_CAPTURE_ROLE_AND_CONTEXT_REQUIRED')
++    captures=value.get('player_capture_bindings')
++    require(type(captures) is list and len(captures)==3,'THREE_CURRENT_PLAYER_CAPTURE_BINDINGS_REQUIRED')
++    previous=current['observed_elapsed_ms']
++    for index,row in enumerate(captures):
++        require(type(row) is dict and set(row)=={'tree_sha256','window_sha256','connection_scoped_window_id','observed_elapsed_ms'} and
++            row['tree_sha256']==current['tree_sha256'] and row['window_sha256']==current['window_sha256'] and
++            type(row['connection_scoped_window_id']) is int and row['connection_scoped_window_id']==current['connection_scoped_window_id'] and
++            type(row['observed_elapsed_ms']) is int and previous<=row['observed_elapsed_ms'],
++            'CURRENT_PLAYER_WHOLE_TREE_WINDOW_OR_CAPTURE_ORDER_CHANGED')
++        require(observed_trees[index]['emitted_nodes']==len(current['nodes']) and
++            observed_trees[index]['began_elapsed_ms']<=row['observed_elapsed_ms']<=observed_trees[index]['last_elapsed_ms'],
++            'CURRENT_PLAYER_COMPLETE_CAPTURE_TIMING_REQUIRED')
++        previous=row['observed_elapsed_ms']
++    require(captures[0]['observed_elapsed_ms']==current['observed_elapsed_ms'] and
++        observed_trees[0]['serialized_bytes']==len(canonical(current)) and
++        type(value.get('player_action_admitted_elapsed_ms')) is int and
++        value['started_elapsed_ms']<=current['observed_elapsed_ms']<=previous<=value['player_action_admitted_elapsed_ms']<=value['finished_elapsed_ms'] and
++        type(value.get('player_selection_age_ms')) is int and
++        value['player_selection_age_ms']==value['player_action_admitted_elapsed_ms']-current['observed_elapsed_ms'] and
++        0<=value['player_selection_age_ms']<=MAX_PLAYER_SELECTION_AGE_MS and
++        value.get('player_selection_age_limit_ms')==MAX_PLAYER_SELECTION_AGE_MS,
++        'CURRENT_PLAYER_SELECTION_FRESHNESS_REQUIRED')

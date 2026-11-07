@@ -1,0 +1,32 @@
+--- host02/build_fixture.py
++++ host03/build_fixture.py
+@@ -24,8 +24,8 @@
+ SOURCE_RECEIPT_SHA = '33697d93292428c660f69c629ab9851248f5e5e1c3653f9531e5382f49479d36'
+ MATCHED_GATE = CANDIDATE.parent / 'combined-ancillary-controls-07/report.json'
+ MATCHED_GATE_SHA = 'e53c3e9e5846d36f971bae6140c394b837fa54525c0e2df4ac153c9ef5540803'
+-EXACT_SOURCE = Path('/home/alex/work/pocket4-owned-factory-v2-host-source-02')
+-EXACT_OUT = Path('/home/alex/work/pocket4-owned-factory-v2-host-build-02')
++EXACT_SOURCE = Path('/home/alex/work/pocket4-owned-factory-v2-host-source-03')
++EXACT_OUT = Path('/home/alex/work/pocket4-owned-factory-v2-host-build-03')
+ 
+ 
+ def digest(data: bytes) -> str:
+@@ -121,7 +121,7 @@
+         raise RuntimeError('build output already claimed; no automatic retry')
+     source = Path(__file__).resolve().parent
+     if source != EXACT_SOURCE:
+-        raise RuntimeError('exact fresh fixture source02 required')
++        raise RuntimeError('exact fresh fixture source03 required')
+     source_before = inventory()
+     if pin(COMPILER)['sha256'] != COMPILER_SHA:
+         raise RuntimeError('observed host compiler changed')
+@@ -131,7 +131,8 @@
+     report = {'schema': 1, 'scope': 'actual combined candidate host factory and client ELF build only',
+               'candidate_manifest_sha256': MANIFEST_SHA, 'candidate_files': 948, 'engine_files': 925,
+               'actual_source_receipt_sha256': SOURCE_RECEIPT_SHA, 'matched_gate_sha256': MATCHED_GATE_SHA,
+-              'prior_build01_receipt_sha256': 'adb1b0cb4bfa12d3d154c0538e931a7752046f8ab295e2bab77687615af6c81e',
++              'prior_build02_receipt_sha256': 'fd4a8d8a3b4b037bdf9ee72992cda69544ce8c94ea44e46696d028c0ad041142',
++              'failure_only_self_namespace_diagnostic': True,
+               'service_started': False, 'Android_execution': False, 'production_ready': False,
+               'success': False, 'commands': [], 'started_monotonic': time.monotonic(),
+               'input_source_pins': own_before, 'compiler': pin(COMPILER)}

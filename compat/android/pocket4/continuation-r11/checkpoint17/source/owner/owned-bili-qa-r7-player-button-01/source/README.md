@@ -1,0 +1,11 @@
+# Owned Bili R7: fixed current player button
+
+R7 preserves the R6 state, inspect, click, set_text and reveal_controls operations. The only new operation is player_button with the fixed pause or resume intent. It uses no caller coordinates or arbitrary selector. The earlier successful complete inspection proves the exact public course and player frame; its tree and node are explicitly context only for this new operation.
+
+The helper takes a new complete tree inside the action invocation, verifies the original full title/author/rendering/geometry predicate and the unique fixed current player button, and takes two further complete captures. Every field in the captured tree and window must remain equal, all three captures belong to the same UiAutomation connection/window, and the original target refresh, full node hash, eligibility and final window checks remain. A fresh selection age limit of 1000 ms applies before one ACTION_CLICK. Any mismatch fails without another attempt. This is not an Android atomic transaction.
+
+The helper result binds current private inspection bytes, all three complete capture hashes, exact selected node, intended transition, frame context, action acknowledgement and original own-service restoration. Host parsing independently verifies the public role and complete current inspection. It requires an independent no-automation after-state after helper termination. Acknowledgement alone does not establish a pause, resume, audio result or whole-App production readiness; an independent later label observation remains required, and failed/unknown actions never authorize automatic resume or retry.
+
+All R6 request/result, compression, tree/depth/child/window, helper/watchdog, per-command, build resource and timeout limits remain. The previous helper UID 10184 is explicitly excluded for the separately installed R7 package; R7 UID/APK/signer remain unknown until actual build/install. R6 files, installed helper and failed attempts are not modified or replayed.
+
+This is a source and build-only candidate. Root alone may dispatch the exact static build, then bind actual build and installation originals before any separately reviewed fresh UI flow. No commercial package/signature/settings/permission change is included. No whole-App or business success is claimed.

@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_REVIEW_CANDIDATE_NOT_EXECUTED",
+  "purpose": "Create an independently observed current framework baseline after the old zygote/system_server identities ended. Historical deployment remains a separate exact pinned input.",
+  "source_manifest_sha256": "9bc710444bff9d90cb3375fd5acb155e0438e2a71a65348b23d4483cf81d00f9",
+  "request": {
+    "bytes": 140175,
+    "sha256": "1164209c7b86074834d6480940572374a280d8abc7d425313e865f0dbd88f3d1"
+  },
+  "packet": {
+    "bytes": 127303,
+    "sha256": "755adbe166434d025e431b517f130bfca8ed713dadae8ca11227a3f2378c2bd6"
+  },
+  "output_root": "/home/alex/work/pocket4-main-current-baseline-01",
+  "observation": {
+    "fixed_roles": 7,
+    "persistent_pidfds": 7,
+    "double_samples": 3,
+    "additional_final_double_sample": true,
+    "minimum_span_seconds": 10,
+    "maximum_span_seconds": 90,
+    "internal_deadline_seconds": 110,
+    "outer_timeout_seconds": 130,
+    "root_cgroup_limits_mutated": false,
+    "three_historical_host_identities_and_init_surfaceflinger_compared_in_full": true,
+    "no_global_proc_discovery": true
+  },
+  "revalidation": {
+    "historical_activation_bytes": 63675,
+    "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "old_framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "current_7_proc_executables_stream_hashed": true,
+    "current_presenter_sha_rechecked": true,
+    "current_held_init_engine_sha_rechecked": true,
+    "classpath_init_and_zygote_root_same_backing_required": true,
+    "classpath_limit_bytes": 805306368,
+    "fixed_target_uids": {
+      "tv.danmaku.bili": 10117,
+      "com.ihg.apps.android": 10137,
+      "com.amazon.mShop.android.shopping": 10129,
+      "com.bestbuy.android": 10130,
+      "local.pocket4.actions.v2": 10125
+    },
+    "target_data_directories_rechecked": 8,
+    "shared_native_helper_historical_static_evidence_rechecked": true,
+    "shared_native_whole_process_tree_cleanup_qualified": false
+  },
+  "outputs": {
+    "private_baseline": "baseline.private.json: full system identities and selected classpath/artifact records; private, not suitable for public Git export",
+    "qualification": "qualification.json: current identity qualification only, explicitly no new deployment or UI/install admission",
+    "current_guard": "current_baseline_guard.py: template bound to actual emitted baseline and qualification hashes; caller must pin and separately admit a new flow",
+    "stdout": "Safe result pins, counts, fixed role PIDs, service/cgroup facts, controls and FD retirement; no raw argv, arbitrary log, UI, or package maps"
+  },
+  "boundary": {
+    "new_deployment_performed": false,
+    "namespace_entry": false,
+    "Android_commands": 0,
+    "App_launches": 0,
+    "UI_actions": 0,
+    "helper_installs": 0,
+    "old_actions_replayed": false,
+    "old_epoch_reauthorized": false,
+    "framework_exit_cause_resolved": false,
+    "whole_app_production_ready": false,
+    "published_ref": false,
+    "post_baseline_new_helper_builds_still_required": true,
+    "host_and_four_helper_source_fork_generator": "IN_PROGRESS_SEPARATE_DELIVERABLE"
+  },
+  "controls": {
+    "expected_pure_python_cases": 32,
+    "source_compilations": 7,
+    "template_marker_values_in_controls": "syntax-only, never runtime bindings",
+    "python_executed": false,
+    "Python_actual_pass_claimed": false,
+    "device_dispatched": false
+  },
+  "cleanup": {
+    "all_collector_managed_descriptors_attempted_once_on_every_exit": true,
+    "reference_helpers_retain_their_original_finally_closures": true,
+    "fd_close_error_is_fail_not_success": true,
+    "first_observation_error_preserved_and_final_errors_separate": true,
+    "owned_systemctl_children": 2,
+    "bounded_command_from_actual_journal03_exact": true,
+    "partial_publication_is_not_retry_authority": true,
+    "own_root_reuse_forbidden": true
+  },
+  "notes": [
+    "The new identity document is separate from activation-after/activation-verified, and contains no main_deployed field.",
+    "New epoch digest is computed only by the original canonical epoch algorithm over actual four-Android-role identities selected from the actual seven-role capture.",
+    "The finite 10-to-90-second identity observation span is an admission observation only; it does not prove future stability, crash freedom, media/business acceptance, or a restart cause.",
+    "Full .py sources and exact request are preserved; no old source, flow, App artifact, PR, branch or ref is modified."
+  ]
+}

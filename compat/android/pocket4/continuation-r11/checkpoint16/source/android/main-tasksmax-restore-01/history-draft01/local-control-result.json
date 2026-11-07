@@ -1,0 +1,64 @@
+{
+  "all_passed": true,
+  "controls": [
+    {
+      "name": "actual held original inode write and exact pre-property rollback",
+      "passed": true
+    },
+    {
+      "name": "changed named inode before write rejected without touching either body",
+      "passed": true
+    },
+    {
+      "name": "changed named inode after write prevents rollback",
+      "passed": true
+    },
+    {
+      "name": "changed same inode content and metadata prevents rollback",
+      "passed": true
+    },
+    {
+      "name": "one real partial pwrite remains failure with no retry or claimed rollback",
+      "passed": true,
+      "seam": "os.pwrite length injection, real owned FD"
+    },
+    {
+      "name": "evidence intent failure precedes and prevents any config write",
+      "passed": true,
+      "seam": "owned journal save ENOSPC"
+    },
+    {
+      "name": "after property admission no automatic reverse configuration or property action",
+      "passed": true
+    },
+    {
+      "name": "actual complete prior binding passes; NOT_READY and changed original bytes rejected",
+      "passed": true
+    },
+    {
+      "name": "primary remains and both real owned FDs close after one injected close exception",
+      "passed": true,
+      "seam": "os.close raises only after closing the first actual owned FD"
+    },
+    {
+      "name": "actual production evidence basenames all satisfy create-only writer contract",
+      "passed": true,
+      "static_names": 15
+    }
+  ],
+  "device_Main_IO_performed": false,
+  "execute_once_called": false,
+  "limitations": [
+    "no kernel TasksMax mutation",
+    "no systemd property command",
+    "no concurrent privileged writer between checked read and write",
+    "command lifecycle inherited pattern reviewed separately, not exercised here"
+  ],
+  "local_only": true,
+  "original_collector_collect_called": false,
+  "owned_fds_restored": true,
+  "passed": 10,
+  "production_source_sha256": "3044d12e458831e428dd64354a205429161f4ce933683e9159c007d174830e8e",
+  "schema": 1,
+  "subprocess_or_systemctl_called": false
+}

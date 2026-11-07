@@ -1,0 +1,33 @@
+{
+  "schema": "pocket4-london-read02-production-interface-correspondence-v1",
+  "production_sources": {
+    "entry": {
+      "bytes": 46630,
+      "sha256": "562629c6c00d40a41cdf6fe2edf3df01292fb6f78409f8fd08b7776f02bf7bb0",
+      "blob": "d995692573c23d304dcbb305230bdd4f6f09fcae"
+    },
+    "task_context": {
+      "bytes": 19574,
+      "sha256": "9224e8c896dedbe2294618604d5e67972b535cef5bef58c5ef2e07752974ce91",
+      "blob": "6431efb4a9680ccad8f9424177bb861574e353a3"
+    }
+  },
+  "worker_plan_construction": {
+    "text": "    search_plan=json.loads(json.dumps(SEARCH_PLAN));click_plan=json.loads(json.dumps(PLAN))\n    input_plan=json.loads(json.dumps(INPUT_PLAN))\n    post_plan=json.loads(json.dumps(POST_PLAN));readiness_plans=json.loads(json.dumps(SEARCH_READINESS_PLANS))\n    plans={'search':search_plan,'destination':click_plan,'input':input_plan,'post':post_plan,'readiness':readiness_plans}",
+    "bytes": 374,
+    "sha256": "e898a3750fa778aea626ff810881c6c52f7e6b9bdd98fb3461552f672bcaaff7",
+    "blob": "6b6fbe37ad853e6dc5651979f654eb1212b148f6"
+  },
+  "actual_required_signature": "def open_task_context(ref,util,context,source_manifest,source_verify,flow_root,step,\n                      transport,result,deadline,phase,qa,inspect_plan,resolve,expected_scope, *,\n                      install_source_manifest):",
+  "actual_policy_constructor_and_admission": {
+    "bytes": 5909,
+    "sha256": "3c4580c02650e049f09f3b416ebcd4683267a8485f5081e19b281b620f1087a6",
+    "blob": "a62d0ef530d15dad621655f91189d45b908a51d7",
+    "unchanged": true,
+    "original_runtime_source_not_modified": true
+  },
+  "current_discovery_requires_actual_install_source": true,
+  "source_only_held_IO_control_seam": "SignatureOnlyTask calls inspect.signature(real task.open_task_context).bind; it does not call held target, Status, Android or namespace I/O.",
+  "runtime_uses_same_new_wrapper": true,
+  "runtime_requires_empty_session_and_policy_nonces": true
+}

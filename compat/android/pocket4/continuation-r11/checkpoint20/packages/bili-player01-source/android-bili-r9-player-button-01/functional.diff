@@ -1,0 +1,319 @@
+--- R8/controls_reveal.py
++++ R9/controls_reveal.py
+@@ -1,12 +1,12 @@
+ """One reveal input; independent observation uses pause's own fresh inspect.
+ 
+ This module has no command transport or selector fallback. It uses the exact
+-R8 Session and its fresh complete-tree/player proof. Full assessments remain
++R9 Session and its fresh complete-tree/player proof. Full assessments remain
+ private; its result contains only scoped hashes, counts and input lifecycle.
+ """
+ import json
+-REVEAL_PLAN={'schema':1,'operation':'reveal_controls','nonces':{'before':'7c97fd9f1f3f073dc499201a64028e5c','inspect':'c6c97e5b6eca057423d1907bc8fecf61','action':'212228893b58870e91d3047d4cd8518c','after':'e36db8929460fc131cea6c0bdea75209'}}
+-POST_PLAN={'schema':1,'operation':'inspect','nonces':{'before':'021b419d41d28e0be834e1c0b02c2af3','inspect':'5320e36978d3486580cc1c6c59c587ea','after':'fc632e6e3dfc3c41a8ffa68898127f80'}}
++REVEAL_PLAN={'schema':1,'operation':'reveal_controls','nonces':{'before':'7e65b456089bb0698392f783357a2cae','inspect':'ce14ee5d1a039688216289101d440f98','action':'d47d8fec8e2dab51ffb564fdcaa1ca9d','after':'5ff2eb780bb86e8b4b257e853129bb9b'}}
++POST_PLAN={'schema':1,'operation':'inspect','nonces':{'before':'d200cac267a9d79c05fc842bf87ae15b','inspect':'ba1e14ad6accb2701a67d0bba7f3126a','after':'cf0d6aef014f8c8b7f6c584ba56d7a3b'}}
+ def validate(adapter,qa,used):
+  qa.require(qa.PROTOCOL=='pocket4-owned-bili-qa-v8','EXACT_R8_REVEAL_PROTOCOL_REQUIRED')
+  for plan in(REVEAL_PLAN,POST_PLAN):
+
+--- R8/owned_navigation.py
++++ R9/owned_navigation.py
+@@ -1,4 +1,4 @@
+-"""One owned Bili navigation, R8 fixed player inputs, and exact task retirement."""
++"""One owned Bili navigation, R9 fixed player inputs, and exact task retirement."""
+ import argparse
+ import hashlib
+ import json
+@@ -9,49 +9,49 @@
+ import types
+ import time
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-bilibili-r8-pause-resume-01')
++ROOT=Path('/home/alex/work/pocket4-bilibili-r9-pause-resume-01')
+ SOURCE=ROOT/'source'
+-NONCE='d53dc79edc9083c8ebcbadf65b289823'
+-FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r8-flow-'+NONCE)
+-PLAN={'schema':1,'operation':'click','selector':{'resource_id':'tv.danmaku.bili:id/expand_search','class':'android.widget.LinearLayout','content_desc':'Search bar, button'},'nonces':{'before':'5ecd1e7f6d2733afea06c21596447c60','inspect':'2985bdab753186876e3382f66ad891b1','action':'79ec2189f47af8304a1feeef178ba08a','after':'864e88bdaf76236e02143bf63c025ac3'}}
+-POST_PLAN={'schema':1,'operation':'inspect','nonces':{'before':'ad9cb49dd4f990f127ea83282c8de854','inspect':'0d634771eac6e5bd39e3c3303c5cd1fe','after':'baa037aa21f7b4dd13cd0850351be7c6'}}
+-STABILITY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'f59ca94b4792276bae603bd38a2683d9','inspect':'9b6e2091a5bd1665a594bcec985489da','after':'2187039d065568442b6eee6ac84733ea'}},{'schema':1,'operation':'inspect','nonces':{'before':'80087234bd4241c60452b0eab5c8740e','inspect':'9aee4c77028037c3d559c2d5f3a5932a','after':'cbd1a91d185b8e22a2546446a0cc6c96'}},{'schema':1,'operation':'inspect','nonces':{'before':'eccb0547e69e0b7fa5849fd990e59239','inspect':'2a6d7040304416200584b320b6528f83','after':'dfee4749b15bfad1db5751d0a582d1d7'}},{'schema':1,'operation':'inspect','nonces':{'before':'f1ff097943c1ab3b4a455359aafb1306','inspect':'a830867adcbee3845a883aa58aace423','after':'dc4dfeae5c99d289d673d537072be854'}},{'schema':1,'operation':'inspect','nonces':{'before':'fd97df5168269152688152b82d81e693','inspect':'303e80806bfad747d4b02ee9ddf0efd5','after':'05d46392c5437b10bf239495b44e2a54'}},{'schema':1,'operation':'inspect','nonces':{'before':'15a2c3fcf3552670b18f3fb02a855637','inspect':'d6b90cc3e9f61e8197db851c795e9e1b','after':'927fa421be356e5bc6971c8a67623fa0'}},{'schema':1,'operation':'inspect','nonces':{'before':'1caa03e79a36efc9035cb3fcbb0511b7','inspect':'45a931e90b7e4dcce5455737afe64b64','after':'93ce97d1f6f8bfa7fa979e91a5f25d92'}},{'schema':1,'operation':'inspect','nonces':{'before':'2ca95aba560cee33e50d001468a8ac52','inspect':'e3bf33999a4a82f7270861b0ff10d276','after':'6429ec84b2667c1f86e066fdd7c986df'}}]
++NONCE='fc02c98cd9a6fbf64ad55cc2c180d0df'
++FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r9-flow-'+NONCE)
++PLAN={'schema':1,'operation':'click','selector':{'resource_id':'tv.danmaku.bili:id/expand_search','class':'android.widget.LinearLayout','content_desc':'Search bar, button'},'nonces':{'before':'426001af65794b853e18d3b10f7bf5ab','inspect':'ec2dc3ef53a178047d6559c2235f206a','action':'ef677eb6ec60d026cc80ca0197e1f9b1','after':'c2fe148824a5c62a5cd0cdad45907a6f'}}
++POST_PLAN={'schema':1,'operation':'inspect','nonces':{'before':'10bb5bde6e3fe791a382e5d190a4ce16','inspect':'063b09e165eb8822c8601261b85ddcc7','after':'373719218060f5fb9a87a82b55d10ae8'}}
++STABILITY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'8c4579ae636657f5dd3f524aff484647','inspect':'2a8b544dc3878bb00b2788104a319ab9','after':'f522f37ebf695e7b8872cde10ae264eb'}},{'schema':1,'operation':'inspect','nonces':{'before':'8ed271d98443328e2cbdfa588a3c00b1','inspect':'a0610029275c6a4f2b77e2c0a500e672','after':'3e970bef59d77a77334e046117211e10'}},{'schema':1,'operation':'inspect','nonces':{'before':'8b7c106f7ec40f0dc3612990fce1ab1d','inspect':'baa2552803ea5fe2827f846d26748505','after':'0695349bd6677fe56c95f70f4f84352c'}},{'schema':1,'operation':'inspect','nonces':{'before':'0751b4f5b63fe14cce8c22b8d1398858','inspect':'0fa4660e3bf220f2cf7185db78b53156','after':'bfd9e58df6be911327ca2befe3eed85f'}},{'schema':1,'operation':'inspect','nonces':{'before':'da9135d081d3cbac211c5549335a0cae','inspect':'9a6825edbf0cdd842669a9f952e1ba00','after':'e689e2aa16072ede1bc4edd62c67d7af'}},{'schema':1,'operation':'inspect','nonces':{'before':'90be196e59f452b0800efbcf7b4db2b7','inspect':'cadcb706992de414c9df51975c947890','after':'e7702bb32261b00ff0093142fd90b3cd'}},{'schema':1,'operation':'inspect','nonces':{'before':'1a3991e1fe7f8d6bfad7f3f005844ddf','inspect':'0625a7ef1cf76772b961f9111cf7afa5','after':'609272b4d3a75fa913db2cd4f705d3cd'}},{'schema':1,'operation':'inspect','nonces':{'before':'0d0f28176628aad83c2bf6ecfc28b6d3','inspect':'2949023bb680f3349fbdbcd5fb497e09','after':'582136f7615e028092e6452caaa6e22e'}}]
+ STABILITY_SECONDS=12
+ FIRST_STABILITY_SECONDS=20
+ FIRST_STABILITY_MATCHES=3
+ FIRST_STABILITY_SPAN_MS=4000
+ RESULT_OBSERVATION_SECONDS=20
+-RESULT_OBSERVATION_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'0a5a6076a7de17fc028cdb50fc397622','inspect':'278c7f0800013d50402cdb13892b2599','after':'4aa8d1b89af3c513d54f1e8d5889a9dc'}},{'schema':1,'operation':'inspect','nonces':{'before':'c766f7c1187086f07180042473938ec7','inspect':'c6c12c2ac8ae440fd0a40f9faa207d2f','after':'6eddad86dfdd0c8ea67f9bd75ed73c88'}},{'schema':1,'operation':'inspect','nonces':{'before':'1a132eb259e4bcec0dce980e9b383462','inspect':'777a677c8930adb5c6ab00105b203215','after':'f50465a8c351bff4bcec69f83d8310dc'}},{'schema':1,'operation':'inspect','nonces':{'before':'7dd4b0d2638f81a797d92343cb429713','inspect':'d663311fc2c37699748fd6db46119f3d','after':'536b99fc7a6324c3f590195218afe2e5'}},{'schema':1,'operation':'inspect','nonces':{'before':'01cd903e1763b88b0759d188917f47ed','inspect':'37fa23dae675961976548014eb021a2b','after':'201b51636d4f8298972b44cab28d5ba3'}},{'schema':1,'operation':'inspect','nonces':{'before':'52ec40f50d952770391ad77fff97eeab','inspect':'14b2dc05cb9d78c6ba7dbc9e94c695c0','after':'1578bdf88ca2f8c1a1118daa5e993734'}},{'schema':1,'operation':'inspect','nonces':{'before':'6cc2a7afc33106623cdc99d5f4fd9695','inspect':'8c39d8f7a59744f2061a03e9c55e11f7','after':'9d03999f34848fa15fa47bf818781df7'}},{'schema':1,'operation':'inspect','nonces':{'before':'a77c2e5fb06336d2a21a7ef6870c18b0','inspect':'c916c40652c94cbc3f4e24500e971e4c','after':'267a6041d7c5e4bd66aa01c5e28c6a4b'}}]
++RESULT_OBSERVATION_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'71cefa734e75b0f0b38164d6476ff3fc','inspect':'368b0577e095e9e533ee7b356916cf4b','after':'568b02c4444bd83854349f5a4884cd53'}},{'schema':1,'operation':'inspect','nonces':{'before':'a081c2502f1823b5c2138f80e2a297b1','inspect':'f094b135734d1c374ee6c66adb04bc7e','after':'15a9728e3653d1719e8e250a9f518349'}},{'schema':1,'operation':'inspect','nonces':{'before':'c450284208520396b12e55bbd8b1397f','inspect':'515a8272f6cdfd49165894a7caa82863','after':'156739ac62263df6df8123867799e64f'}},{'schema':1,'operation':'inspect','nonces':{'before':'a513a09bd97cdd078eaf13d5473756af','inspect':'cc8da4514a947dc51edcff8e16300ab0','after':'c302ac786decfd2efd6399463da9b5c7'}},{'schema':1,'operation':'inspect','nonces':{'before':'a15d2fef6bd571fec7ac3e32614789ab','inspect':'81e18dc0d5b6975c63424556d79c6105','after':'92b8abb1ba001beafefbc7980e773e33'}},{'schema':1,'operation':'inspect','nonces':{'before':'c1c5379d26d49a7cf1fe78adaf8993d1','inspect':'e05c553f953c56140aa7a037ba0a4dd2','after':'e6dbf02888b196b0f72261d46ebfa0ff'}},{'schema':1,'operation':'inspect','nonces':{'before':'415dffe8c5b7377c5146f81d399704ca','inspect':'38a76cb94994624af6ccc45b11aef9a4','after':'f47522c86f1ad11dd6b02d4702050759'}},{'schema':1,'operation':'inspect','nonces':{'before':'6afb846c9b753e4ea75616e16a0b8f71','inspect':'3d6a5048b0cfbb742198a85517878882','after':'a2c071cd9305b31653fd529799466095'}}]
+ SEARCH_ACTIVITY='tv.danmaku.bili/com.bilibili.search2.main.BiliMainSearchActivity'
+ EDIT_SELECTOR={'resource_id':'tv.danmaku.bili:id/search_src_text','class':'android.widget.EditText'}
+ SUBMIT_SELECTOR={'resource_id':'tv.danmaku.bili:id/action_search','class':'android.widget.TextView'}
+ PUBLIC_QUERY='微积分'
+-SET_TEXT_PLAN={'schema':1,'operation':'set_text','selector':{'resource_id':'tv.danmaku.bili:id/search_src_text','class':'android.widget.EditText'},'value':'微积分','nonces':{'before':'b39843d986d2f3a19883a4851a22c86e','inspect':'0f71fa4efc14c0fef0cf2c72258fd760','action':'fbe75592b107bb1cff1960b543933b2c','after':'e24b77b76bce5d9986ed99f43531e414'}}
+-SUBMIT_PLAN={'schema':1,'operation':'click','selector':{'resource_id':'tv.danmaku.bili:id/action_search','class':'android.widget.TextView'},'nonces':{'before':'f4d03dac63a67361ede2149a1b2f6bd5','inspect':'d349a50006d3326ee7e99182b7a4be8a','action':'0ab35201fe606dc4337bc5d65adc8d12','after':'459fe30eeb3d73b4eb1c02232c0f9b62'}}
+-RESULTS_PLAN={'schema':1,'operation':'inspect','nonces':{'before':'5003676e8ae3393097c41fd9e2e416ce','inspect':'d2f1bf41fc4f582cf0deec8543959fa3','after':'d794e95207a6757e91ba6cb51e4020dc'}}
+-QUERY_STABILITY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'3aeab4bbd1a6a039da5aea905749cf59','inspect':'93ed65747e5d5ae57ce5dab4dbe8d0fa','after':'aeb1c812ad375d3ec6f85682112ea049'}},{'schema':1,'operation':'inspect','nonces':{'before':'a4d63428d13446d7377e23bfb8f8434e','inspect':'1fc299e7a69bf0612c2156975d83e546','after':'d37fceafd88aecca98ae5275deffc92d'}},{'schema':1,'operation':'inspect','nonces':{'before':'47a40f1987ce5d8c0101687fa3e57bd1','inspect':'914de88838ae6e60b296c16399ae29e5','after':'c4fe0319e5d99980d181c39a1405be64'}},{'schema':1,'operation':'inspect','nonces':{'before':'bda759d3f8022e492e6b1ec811fa49e3','inspect':'ea6af32bfc10709c64c7ce7147f050aa','after':'53e2ac5269c62726145a1e2671f725df'}}]
+-SUBMIT_STABILITY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'f386e4fbfb1ad56c0e895f907edcc342','inspect':'4e2db78548b9cc97530fa4d4922ac705','after':'ace1e2a261e586d2eebf082f85487995'}},{'schema':1,'operation':'inspect','nonces':{'before':'b622f7ece15d1622174ad9c40fc2fbd7','inspect':'2511a0797db92cd43785fb4445c52486','after':'c10acdbc052e01fb898f925cdfd17156'}},{'schema':1,'operation':'inspect','nonces':{'before':'e8adb6379f2d23cb55b1e8f7b187a0fd','inspect':'6b856ec8ff26a96cde15dbff5664062b','after':'508a65e9805534fddd478c8e5e1ba312'}},{'schema':1,'operation':'inspect','nonces':{'before':'aa5f367f97f347fdb48eff582a793c2c','inspect':'db827d7303ffd127058ea1fc47275af6','after':'7be2c3bb1b0a429dfbc5ad5dda756f20'}}]
+-SELF,UID=('org.droidloom.qa.bili.r8',10204)
++SET_TEXT_PLAN={'schema':1,'operation':'set_text','selector':{'resource_id':'tv.danmaku.bili:id/search_src_text','class':'android.widget.EditText'},'value':'微积分','nonces':{'before':'eee33c1f4931a538c6ce6ca0dd174c89','inspect':'0dc9b8def8bd7de5969f2ae335c42fdd','action':'4d48e17a2a80dc1cfd1ecf15077af502','after':'470955b54b2c4bce24bc10caed044a83'}}
++SUBMIT_PLAN={'schema':1,'operation':'click','selector':{'resource_id':'tv.danmaku.bili:id/action_search','class':'android.widget.TextView'},'nonces':{'before':'6e59184f7cd4119bfee1291e0e8ccf8c','inspect':'03c16697daa8f0fa6d9823d434ed4b00','action':'f04585f3767b97907adcb98634895cb3','after':'aca7b794836f100d05157942774b669e'}}
++RESULTS_PLAN={'schema':1,'operation':'inspect','nonces':{'before':'271adf4f6feb51a0fbfcfe0465af7d3e','inspect':'edd7a9a1f3ac2721d60f87d7a2ce7bc0','after':'9722101b43c6278f0291099de7203944'}}
++QUERY_STABILITY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'15e7d3ae99265939bb0e51ce61d05e1b','inspect':'9c939ac03680db07ca1e930e39bf0d33','after':'d256481efccd9580183ce2f31738f4d8'}},{'schema':1,'operation':'inspect','nonces':{'before':'604960f14d1958591800ed8f5a49495c','inspect':'f53af1b49505939c66f578b771e65a6e','after':'2e4c0829135071b1585aeb8726d8162b'}},{'schema':1,'operation':'inspect','nonces':{'before':'f08bd16b10d35463f933684461bf2677','inspect':'c4d30268ae09db936f5d853cd528a12e','after':'8f6f6ad60800c506ce051750a146c98d'}},{'schema':1,'operation':'inspect','nonces':{'before':'ec110e0feeb80822e6b01be0bc6b8508','inspect':'31d461c65f580e9414725ec0e61bfbcb','after':'11d565d83022c5630a57ffd4401b744e'}}]
++SUBMIT_STABILITY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'db5194fc46aab414b0c6b400e80b8660','inspect':'c322485f660786b9ffcacfb309a1662a','after':'f105ab9878e0ff264bf6d0841595f4d9'}},{'schema':1,'operation':'inspect','nonces':{'before':'aec0dd0d635654cc52cfa77ae2e0b5df','inspect':'8062d080e0e8d7daa8a9d74f1ef12fc6','after':'0193bdde901aac70c80c04de6f3570b8'}},{'schema':1,'operation':'inspect','nonces':{'before':'04b918d86d936677d4fe348721281ab1','inspect':'1e5b18331e0f1b4e8016ab6892580750','after':'653e79602b2db60774ecd2f3cdd14272'}},{'schema':1,'operation':'inspect','nonces':{'before':'fc5d2b494b908991bda4e8fc6e463a8f','inspect':'fed7ab7ed74b76d590622a178e95d729','after':'89ef7cac0fe7bbb1d9d1ea271cafcc3b'}}]
++SELF,UID=("org.droidloom.qa.bili.r9",10152)
+ BILI,BILI_UID=('tv.danmaku.bili',10117)
+-INSTALL_ROOT=Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01')
++INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-bili-qa-r9-install-state-01")
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+-INSTALL_ENTRY_SHA='02e046ac198309aea5fc227e73015f2e857a48c3a3c0f2bcdb508f493ae98a1d'
+-INSTALL_ENTRY_BYTES=32030
+-INSTALL_MANIFEST_SHA='24262630242b244327a285e171c6936b00315705c541cb3d7506dfdeef49afbe'
+-R4_MANIFEST='52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+-SESSION_SHA='2c09ebd36105fdc79386ce929946c28fc5a60cc21ed902e083c3ee13f9d7655e'
+-OLD_FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r8-flow-fd9784f9e464119899726c3b583243a8')
+-OLD_STEP=OLD_FLOW/'steps/install-state-r8-01'
+-OLD_STATE_NONCE='c296619272cb68fddb8923891ff0dff9'
+-OLD_STATE_WIRE='09a1ce3a7485afaca31e4d5ce91e6f739f812a30da6d8ab9a2f9d641f84b69b7'
+-OLD_PACKET='693f7d62ac1c7518bd772be74c9ed1a608c9b5e847a49647c743d0807c2f4d9e'
+-MAIN_EPOCH='48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'
++INSTALL_ENTRY_SHA="842ef966f0942669ccd1abb2a50d9dd7d1eea294369a469791fdf346f5d3cd98"
++INSTALL_ENTRY_BYTES=36958
++INSTALL_MANIFEST_SHA="399cebc279ac8653b943b5c433b248c94dec32062b85b45e9cb6c22fce379a66"
++R5_MANIFEST="6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e"
++SESSION_SHA="aa6f468fa8e058882e681362aeb7fb4ba5b726d3d34c8dcfdc2b947aa6fb8b7e"
++OLD_FLOW=Path("/home/alex/work/pocket4-bilibili-owned-qa-r9-flow-d327cfd21d7b59df0c45a68efdd74c98")
++OLD_STEP=OLD_FLOW/'steps/install-state-r9-01'
++OLD_STATE_NONCE="dc55b7c139daf6db8fe94faa170916a9"
++OLD_STATE_WIRE="9f8750297f88bf2be9194b1d0491d2487329b032faf49fa69269827e92f9d9df"
++OLD_PACKET="a94840408d25f121173a528a5971cfd65bf04db9b47a8be562731bf679f8d840"
++MAIN_EPOCH="734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2"
+ FILES={'owned_navigation.py','stage_execute.py','video_navigation.py','controls_reveal.py','playback_controls.py','post_foreground.py'}
+-INSTALL_JOB_ID='1a1af10c143-fc05-6578'
++INSTALL_JOB_ID="1a1afb404cc-fc05-6af3"
+ STATE_COMMAND_INDEX=6
+-STATE_COMMAND_SHA='1abfc299ea09d1cd1f153f6c183835144abd83e59fd0445ced785658071e2b06'
+-EXPECTED_INSTALLED_IDENTITY={'package':'org.droidloom.qa.bili.r8','uid':10204,'base_apk':'/data/app/~~MOz6kZUeUfYfK9xYAqmqdw==/org.droidloom.qa.bili.r8-nDz2ip1H2qXA5l1_V6b8hg==/base.apk','apk_sha256':'b576afe56b97160dc341fe15973f5afe23db03dc2961aedaa500f1527ec13122','bytes':37008,'held_file':{'device':1811,'inode':789374,'mode':33188,'uid':1000,'gid':1000,'bytes':37008,'mtime_ns':1793938474777519836,'nlink':1},'signer_bound_by_exact_signed_apk_bytes':'b1ec4d840f5dd85513d3b3c08fbf97d829b580d4c718d6bf30cce5a8270a457d'}
+-INSTALL_RECORDS={'coordinator':(Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/result.json'),3025,'e734a7f5dea6de9f1b3e96727cc925fe422c74980d0e6692dc5f9412abf79676'),'stage':(Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/stage-result.json'),2032,'91ffb967b00952273ac8168c3cd29def9c2488d55d8c642537dce54d7fb9cdf0'),'worker':(Path('/home/alex/work/pocket4-bilibili-owned-qa-r8-flow-fd9784f9e464119899726c3b583243a8/steps/install-state-r8-01/result.json'),7589,'635f3ac450961ad5f05ee0e2204a79fdc0b95ada87307eee1a3bba277e1c29bd'),'worker_command':(Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/evidence/02-install-state.result.json'),1149,'60b8ca34712ac8d8257bec632f96d72cdcb7b149defcc0b9dec480b285300fec')}
++STATE_COMMAND_SHA="1f5569b2f71cecb4d9991f0b6946033fde60be392f19d0f2bf9061ed4121eb15"
++EXPECTED_INSTALLED_IDENTITY={"package":"org.droidloom.qa.bili.r9","uid":10152,"base_apk":"/data/app/~~HPCrukpqLnsnYK15qL3NAg==/org.droidloom.qa.bili.r9-9LxH1dPliEy95RaMCV7S3w==/base.apk","apk_sha256":"e1cad62bba0266e646e7be4ce5250917fbf5df910ac604dddfe0a8aa25ac320b","bytes":37008,"held_file":{"device":1811,"inode":789041,"mode":33188,"uid":1000,"gid":1000,"bytes":37008,"mtime_ns":1793949174953297011,"nlink":1},"signer_bound_by_exact_signed_apk_bytes":"ab6db98395ad5321ee1012be1eb264e48782857b4def3b02bde8858e1977eda1"}
++INSTALL_RECORDS={"coordinator":(Path("/home/alex/work/pocket4-owned-bili-qa-r9-install-state-01/result.json"),3917,"4e6d090d00eada5dc1604977491ed88054595f856dd620d12ace55222825fd71"),"stage":(Path("/home/alex/work/pocket4-owned-bili-qa-r9-install-state-01/stage-result.json"),4141,"b52f8f856e377c38b7a8a64f172e0970f0cd37f4ef7b87fb63a6005a67c8b6cd"),"worker":(Path("/home/alex/work/pocket4-bilibili-owned-qa-r9-flow-d327cfd21d7b59df0c45a68efdd74c98/steps/install-state-r9-01/result.json"),7589,"e9310a73a567d7207e55b8fede9a68f7a305d72e5cdb9042a6b7455ef4e02ad3"),"worker_command":(Path("/home/alex/work/pocket4-owned-bili-qa-r9-install-state-01/evidence/02-install-state.result.json"),1597,"799a4e514ea764a7a0d6b8b6b6b22b7b47312bd6b89426808b4e21a4487e7cf6")}
+ def require(value,reason):
+  if not value:
+   raise RuntimeError(reason)
+@@ -81,11 +81,11 @@
+  finally:
+   os.close(fd)
+ def require_actual_install_binding():
+- require(type(UID)is int and 10000<=UID<100000 and(UID not in(10117,10125,10164,10165,10166,10169,10170,10175,10184,10202)),'ACTUAL_R8_INSTALL_UID_PENDING')
+- require(type(STATE_COMMAND_INDEX)is int and 1<=STATE_COMMAND_INDEX<=16 and isinstance(STATE_COMMAND_SHA,str)and re.fullmatch('[0-9a-f]{64}',STATE_COMMAND_SHA)and isinstance(OLD_STATE_WIRE,str)and re.fullmatch('[0-9a-f]{64}',OLD_STATE_WIRE),'ACTUAL_R8_STATE_COMMAND_BINDING_PENDING')
+- require(isinstance(EXPECTED_INSTALLED_IDENTITY,dict)and EXPECTED_INSTALLED_IDENTITY.get('package')==SELF and(EXPECTED_INSTALLED_IDENTITY.get('uid')==UID),'ACTUAL_R8_INSTALLED_FILE_IDENTITY_PENDING')
++ require(type(UID)is int and 10000<=UID<100000 and(UID not in(10117,10125,10164,10165,10166,10169,10170,10175,10184,10202,10204)),'ACTUAL_R9_INSTALL_UID_PENDING')
++ require(type(STATE_COMMAND_INDEX)is int and 1<=STATE_COMMAND_INDEX<=16 and isinstance(STATE_COMMAND_SHA,str)and re.fullmatch('[0-9a-f]{64}',STATE_COMMAND_SHA)and isinstance(OLD_STATE_WIRE,str)and re.fullmatch('[0-9a-f]{64}',OLD_STATE_WIRE),'ACTUAL_R9_STATE_COMMAND_BINDING_PENDING')
++ require(isinstance(EXPECTED_INSTALLED_IDENTITY,dict)and EXPECTED_INSTALLED_IDENTITY.get('package')==SELF and(EXPECTED_INSTALLED_IDENTITY.get('uid')==UID),'ACTUAL_R9_INSTALLED_FILE_IDENTITY_PENDING')
+  for name,(path,size,pin)in INSTALL_RECORDS.items():
+-  require(type(size)is int and 0<size<=65536 and isinstance(pin,str)and re.fullmatch('[0-9a-f]{64}',pin),'ACTUAL_R8_INSTALL_RECEIPT_PENDING:'+name)
++  require(type(size)is int and 0<size<=65536 and isinstance(pin,str)and re.fullmatch('[0-9a-f]{64}',pin),'ACTUAL_R9_INSTALL_RECEIPT_PENDING:'+name)
+ def load_prior():
+  require_actual_install_binding()
+  path=INSTALL_SOURCE/'install_state.py'
+@@ -94,7 +94,7 @@
+  prior.__file__=str(path)
+  exec(compile(raw,str(path),'exec'),prior.__dict__)
+  manifest=prior.verify_source(INSTALL_MANIFEST_SHA)
+- require(prior.RECORDER_MANIFEST==R4_MANIFEST and manifest['files']['session_binding.py']['sha256']==SESSION_SHA,'ACTUAL_INSTALL02_R4_SOURCE_BINDING_CHANGED')
++ require(prior.RECORDER_MANIFEST==R5_MANIFEST and manifest['files']['session_binding.py']['sha256']==SESSION_SHA,'ACTUAL_INSTALL02_R5_SOURCE_BINDING_CHANGED')
+  return prior
+ def verify_source(expected):
+  require(isinstance(expected,str)and re.fullmatch('[0-9a-f]{64}',expected),'EXTERNAL_SOURCE_PIN_REQUIRED')
+@@ -121,10 +121,10 @@
+  require(c.get('source_manifest_sha256')==s.get('source_manifest_sha256')==INSTALL_MANIFEST_SHA and s.get('packet_sha256')==OLD_PACKET and(s.get('coordinator_returncode')==0)and(s.get('source_unchanged')is True)and(c.get('source_and_artifact_unchanged')is True),'ACTUAL_INSTALL02_SOURCE_AND_TERMINAL_REQUIRED')
+  require(s.get('coordinator_result')=={'path':str(INSTALL_RECORDS['coordinator'][0]),'bytes':INSTALL_RECORDS['coordinator'][1],'sha256':INSTALL_RECORDS['coordinator'][2]}and c.get('worker_result')=={'path':str(INSTALL_RECORDS['worker'][0]),'bytes':INSTALL_RECORDS['worker'][1],'sha256':INSTALL_RECORDS['worker'][2]},'ACTUAL_INSTALL02_RECEIPT_CHAIN_REQUIRED')
+  require(cmd.get('spawned')is True and cmd.get('joined')is True and(cmd.get('returncode')==0)and(cmd.get('timed_out')is False)and(cmd.get('secondary_errors')==[]),'JOINED_INSTALL02_WORKER_REQUIRED')
+- require(c.get('owned_package_uid')==w.get('owned_package_uid')==UID and c.get('owned_package_retained_for_separate_UI_admission')is True and(w.get('package')==SELF)and(w.get('package_retained')is True)and(w.get('install_attempted')is True)and(w.get('install_success_observed')is True)and(w.get('state_attempted')is True)and(w.get('outcome_unknown')is False)and(w.get('runtime_recorder_manifest_sha256')==R4_MANIFEST)and(w.get('runtime_session_binding_sha256')==SESSION_SHA)and(w.get('build')==proof),'EXACT_INSTALLED_HELPER_AND_BUILD_REQUIRED')
++ require(c.get('owned_package_uid')==w.get('owned_package_uid')==UID and c.get('owned_package_retained_for_separate_UI_admission')is True and(w.get('package')==SELF)and(w.get('package_retained')is True)and(w.get('install_attempted')is True)and(w.get('install_success_observed')is True)and(w.get('state_attempted')is True)and(w.get('outcome_unknown')is False)and(w.get('runtime_recorder_manifest_sha256')==R5_MANIFEST)and(w.get('runtime_session_binding_sha256')==SESSION_SHA)and(w.get('build')==proof),'EXACT_INSTALLED_HELPER_AND_BUILD_REQUIRED')
+  require(w.get('final_Main_guard_passed')is True and w.get('held_binding_released')is True and(w.get('action_lock_released')is True)and(w.get('UI_actions')==w.get('audio_actions')==0)and(w.get('UiAutomation_connection_requested')is False)and(w.get('old_v2_helper_called')is False),'ACTUAL_INSTALL02_SCOPE_REQUIRED')
+  for row in(c,s):
+-  require(row.get('Main_before')==row.get('Main_after')and row['Main_before'].get('Main_epoch_sha256')==MAIN_EPOCH and(row['Main_before'].get('three_host_processes_match')is True)and(row['Main_before'].get('resource_limits_match')is True),'ACTUAL_INSTALL02_MAIN_CHAIN_REQUIRED')
++  require(row.get('Main_before')==row.get('Main_after')and row['Main_before'].get('Main_epoch_sha256')==MAIN_EPOCH and(row['Main_before'].get('three_host_processes_match')is True)and(row['Main_before'].get('resource_limits_match')is True)and(row['Main_before'].get('schema')=='pocket4-current-main-guard-v1')and(row['Main_before'].get('seven_processes_match')is True)and(row['Main_before'].get('current_baseline_sha256')==prior.BASELINE_SHA)and(row['Main_before'].get('current_baseline_qualification_sha256')==prior.QUALIFICATION_SHA),'ACTUAL_INSTALL02_MAIN_CHAIN_REQUIRED')
+  installed=w['installed_before_state']
+  require(installed==w.get('installed_after_state')and installed.get('package')==SELF and(installed.get('uid')==UID)and(installed.get('apk_sha256')==prior.APK_SHA)and(installed.get('bytes')==prior.APK_BYTES)and(installed.get('signer_bound_by_exact_signed_apk_bytes')==prior.SIGNER_SHA)and(installed==EXPECTED_INSTALLED_IDENTITY)and(installed['held_file']['nlink']==1),'ACTUAL_INSTALLED_APK_IDENTITY_REQUIRED')
+  previous=w['state']
+@@ -140,7 +140,7 @@
+  require(assessed==previous and previous['wire_sha256']==c['state_wire_sha256']==OLD_STATE_WIRE and(previous['helper']['ui_automation_connected']is False),'ACTUAL_NO_AUTOMATION_STATE_REQUIRED')
+  return(installed,{'install_job':INSTALL_JOB_ID,'receipts':{name:{'path':str(path),'bytes':size,'sha256':pin}for name,(path,size,pin)in INSTALL_RECORDS.items()},'state_wire_sha256':OLD_STATE_WIRE,'uid':UID,'APK_sha256':prior.APK_SHA,'signer_certificate_sha256':prior.SIGNER_SHA,'installed_identity':installed,'historical_state_reparsed':True,'historical_state_used_as_current_baseline':False})
+ def new_session(prior,adapter,flow,recorder,qa,proof):
+- binding=prior.module(INSTALL_SOURCE/'session_binding.py',SESSION_SHA,'owned_bili_r4_session')
++ binding=prior.module(INSTALL_SOURCE/'session_binding.py',SESSION_SHA,'owned_bili_r5_session')
+  return binding.new_session(adapter,flow,recorder,qa,proof,UID)
+ def assessment_summary(prior,qa,step,sequence,plan):
+  """No node text, descriptions, screenshots or recommendations are returned."""
+@@ -444,8 +444,8 @@
+  for stable_plan in[*STABILITY_PLANS,*QUERY_STABILITY_PLANS,*SUBMIT_STABILITY_PLANS,*RESULT_OBSERVATION_PLANS,SET_TEXT_PLAN,SUBMIT_PLAN,RESULTS_PLAN]:
+   adapter.validate_plan(stable_plan,qa)
+  step='launch-01' if phase=='launch' else 'pause-resume-01'
+- args=types.SimpleNamespace(operation='launch' if phase=='launch' else 'owned-qa',adapter_manifest_sha256=R4_MANIFEST,flow_dir=FLOW,epoch_module=prior.RECORDER_ROOT/'references/framework_epoch.py',task_source=prior.RECORDER_ROOT/'references/task_scope_baseline.py',step=step,request={'phase':phase,'nonce':NONCE,'plan':plan,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'result_observation_plans':RESULT_OBSERVATION_PLANS,'video_plan':video.VIDEO_PLAN,'video_post_plans':video.VIDEO_POST_PLANS,'content_ready_plans':video.CONTENT_READY_PLANS,'reveal_plan':video.reveal.REVEAL_PLAN,'reveal_post_plan':video.reveal.POST_PLAN,'playback_plans':video.playback.PAIRS,'actual_install':admission},unknown_step=None,observation_step=None,postcondition=None)
+- result={'schema':1,'ok':False,'error':None,'secondary_errors':[],'phase':phase,'nonce':NONCE,'package':BILI,'uid':BILI_UID,'helper_package':SELF,'helper_uid':UID,'source_manifest_sha256':expected,'runtime_recorder_manifest_sha256':R4_MANIFEST,'actual_install':admission,'build':proof,'automatic_retry':False,'click_limit':5,'text_action_limit':1,'reveal_input_limit':1,'audio_actions':0,'permission_grants':0,'settings_writes':0,'old_v2_helper_called':False,'raw_ui_tree_private_only':True,'host_foreground_display_independently_verified':False,'required_helper_display':0,'business_success_verified':False,'whole_app_production_ready':False,'business_outcome_unknown':True}
++ args=types.SimpleNamespace(operation='launch' if phase=='launch' else 'owned-qa',adapter_manifest_sha256=R5_MANIFEST,flow_dir=FLOW,epoch_module=prior.RECORDER_ROOT/'references/framework_epoch.py',task_source=prior.RECORDER_ROOT/'references/task_scope_baseline.py',step=step,request={'phase':phase,'nonce':NONCE,'plan':plan,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'result_observation_plans':RESULT_OBSERVATION_PLANS,'video_plan':video.VIDEO_PLAN,'video_post_plans':video.VIDEO_POST_PLANS,'content_ready_plans':video.CONTENT_READY_PLANS,'reveal_plan':video.reveal.REVEAL_PLAN,'reveal_post_plan':video.reveal.POST_PLAN,'playback_plans':video.playback.PAIRS,'actual_install':admission},unknown_step=None,observation_step=None,postcondition=None)
++ result={'schema':1,'ok':False,'error':None,'secondary_errors':[],'phase':phase,'nonce':NONCE,'package':BILI,'uid':BILI_UID,'helper_package':SELF,'helper_uid':UID,'source_manifest_sha256':expected,'runtime_recorder_manifest_sha256':R5_MANIFEST,'actual_install':admission,'build':proof,'automatic_retry':False,'click_limit':5,'text_action_limit':1,'reveal_input_limit':1,'audio_actions':0,'permission_grants':0,'settings_writes':0,'old_v2_helper_called':False,'raw_ui_tree_private_only':True,'host_foreground_display_independently_verified':False,'required_helper_display':0,'business_success_verified':False,'whole_app_production_ready':False,'business_outcome_unknown':True}
+  flow=None
+  action_lock=None
+  session=None
+@@ -507,7 +507,7 @@
+  path=FLOW/'steps'/step/'result.json'
+  raw=read(path)
+  value=json.loads(raw)
+- require(observed==value and value.get('ok')is True and(value.get('phase')==phase)and(value.get('nonce')==NONCE)and(value.get('helper_uid')==UID)and(value.get('runtime_recorder_manifest_sha256')==R4_MANIFEST)and(value.get('outcome_unknown')is(phase=='navigate'))and(value.get('final_Main_guard_passed')is True)and(value.get('held_binding_released')is True)and(value.get('action_lock_released')is True),'ACTUAL_DURABLE_PHASE_REQUIRED:'+phase)
++ require(observed==value and value.get('ok')is True and(value.get('phase')==phase)and(value.get('nonce')==NONCE)and(value.get('helper_uid')==UID)and(value.get('runtime_recorder_manifest_sha256')==R5_MANIFEST)and(value.get('outcome_unknown')is(phase=='navigate'))and(value.get('final_Main_guard_passed')is True)and(value.get('held_binding_released')is True)and(value.get('action_lock_released')is True),'ACTUAL_DURABLE_PHASE_REQUIRED:'+phase)
+  if phase=='navigate':
+   stable=value.get('pre_action_stability',{})
+   require(stable.get('qualified')is True and stable.get('maximum_sequences')==8 and(stable.get('deadline_seconds')==FIRST_STABILITY_SECONDS)and(stable.get('minimum_matching_sequences')==FIRST_STABILITY_MATCHES)and(stable.get('minimum_capture_span_ms')==FIRST_STABILITY_SPAN_MS)and(len(stable.get('matching_sequences',[]))>=FIRST_STABILITY_MATCHES)and(stable.get('sampled_capture_span_ms',-1)>=FIRST_STABILITY_SPAN_MS)and(stable.get('future_action_still_requires_original_strict_freshness')is True),'ACTUAL_PRE_ACTION_COMPLETE_TREE_STABILITY_REQUIRED')
+@@ -543,14 +543,14 @@
+   adapter.validate_plan(POST_PLAN,qa)
+   for stable_plan in[*STABILITY_PLANS,*QUERY_STABILITY_PLANS,*SUBMIT_STABILITY_PLANS,*RESULT_OBSERVATION_PLANS,SET_TEXT_PLAN,SUBMIT_PLAN,RESULTS_PLAN]:
+    adapter.validate_plan(stable_plan,qa)
+-  activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++  activation=ref.current_baseline()
+   epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'bili_inspect_epoch')
+   guard=lambda:ref.main_guard(activation,epoch)
+   result['Main_before']=guard()
+   recorder=prior.recorder_module()
+-  recorder.source_contract(R4_MANIFEST)[1].verify()
++  source,contract=recorder.source_contract(R5_MANIFEST);contract.verify()
+   common=['/usr/bin/python3','-I',str(prior.RECORDER_ROOT/'recorder.py')]
+-  initial=ref.run_cli('01-init',common+['init','--adapter-manifest-sha256',R4_MANIFEST,'--flow-dir',str(FLOW),'--activation-after',str(ref.ACTIVATION),'--activation-sha256',ref.ACTIVATION_SHA,'--package',ref.PACKAGE,'--component',ref.COMPONENT],25,evidence,guard)
++  initial=ref.run_cli('01-init',common+['init','--adapter-manifest-sha256',R5_MANIFEST,'--flow-dir',str(FLOW),'--current-baseline',str(ref.BASELINE),'--baseline-sha256',ref.BASELINE_SHA,'--package',source.PACKAGE,'--component',source.COMPONENT],25,evidence,guard)
+   require(initial.get('ok')is True and initial.get('scope_initialized')is True and(initial.get('epoch_sha256')==MAIN_EPOCH),'FRESH_ORIGINAL_FLOW_INIT_REQUIRED')
+   result['launch_worker_requested']=True
+   launched=ref.run_cli('02-launch',['/usr/bin/python3','-I',str(HERE/'owned_navigation.py'),'--worker-once','launch','--source-manifest-sha256',expected],180,evidence,guard)
+@@ -579,7 +579,7 @@
+      result['owned_scope']=scope_pin
+      require(activation is not None and epoch is not None,'CLEANUP_MAIN_BINDING_REQUIRED')
+      result['cleanup_requested']=True
+-     cleanup=ref.run_cli('04-cleanup',['/usr/bin/python3','-I',str(prior.RECORDER_ROOT/'recorder.py'),'cleanup','--adapter-manifest-sha256',R4_MANIFEST,'--flow-dir',str(FLOW),'--step','cleanup-01'],100,evidence,lambda:ref.main_guard(activation,epoch))
++     cleanup=ref.run_cli('04-cleanup',['/usr/bin/python3','-I',str(prior.RECORDER_ROOT/'recorder.py'),'cleanup','--adapter-manifest-sha256',R5_MANIFEST,'--flow-dir',str(FLOW),'--step','cleanup-01'],100,evidence,lambda:ref.main_guard(activation,epoch))
+      path=FLOW/'steps/cleanup-01/result.json'
+      raw=read(path)
+      durable=json.loads(raw)
+@@ -605,7 +605,7 @@
+    load_prior()
+    _,_,_,apk=prior.qualified_inputs()
+    del apk
+-   prior.recorder_module().source_contract(R4_MANIFEST)[1].verify()
++   prior.recorder_module().source_contract(R5_MANIFEST)[1].verify()
+    result['source_and_artifact_unchanged']=True
+   except BaseException as error:
+    prior.remember(result,'final_source_and_artifact',error)
+@@ -631,7 +631,7 @@
+  args=parser.parse_args()
+  fixed_plan()
+  if not args.execute_once and args.worker_once is None:
+-  print(json.dumps({'state':'PLAN_ONLY','root':str(ROOT),'flow':str(FLOW),'helper_uid':UID,'operation':'original launch/query/course open + one R8 reveal + two button label transitions + exact-task cleanup','plan':PLAN,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'result_observation_plans':RESULT_OBSERVATION_PLANS,'click_limit':5,'text_action_limit':1,'reveal_input_limit':1,'audio_actions':0,'old_v2_helper_called':False,'private_raw_tree_not_for_Git':True,'remote_actions':0}))
++  print(json.dumps({'state':'PLAN_ONLY','root':str(ROOT),'flow':str(FLOW),'helper_uid':UID,'operation':'original launch/query/course open + one R9 reveal + two button label transitions + exact-task cleanup','plan':PLAN,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'result_observation_plans':RESULT_OBSERVATION_PLANS,'click_limit':5,'text_action_limit':1,'reveal_input_limit':1,'audio_actions':0,'old_v2_helper_called':False,'private_raw_tree_not_for_Git':True,'remote_actions':0}))
+   return 0
+  os.umask(63)
+  return worker(args.source_manifest_sha256,args.worker_once)if args.worker_once else execute(args.source_manifest_sha256)
+
+--- R8/playback_controls.py
++++ R9/playback_controls.py
+@@ -1,7 +1,7 @@
+-"""Fixed R8 pause/resume; prior inspect is context, current helper selects once."""
++"""Fixed R9 pause/resume; prior inspect is context, current helper selects once."""
+ import json
+ RESOURCE='tv.danmaku.bili:id/gemini_halfscreen_play'
+-PAIRS=[{'phase':'pause','before_label':'暂停','after_label':'播放','action':{'schema':1,'operation':'player_button','nonces':{'before':'a009d427abb32495294bd096a92ed61e','inspect':'961683fe076e8808e04ec70743c33ba3','action':'acb4d34972a83a4befe9c52b03dc573c','after':'28fc79be8650b96db891cb91104d4102'},'transition':'pause'},'post':{'schema':1,'operation':'inspect','nonces':{'before':'84516069e559dc148255cec053b69554','inspect':'e487bccc434e561b1ff802c8f56f5929','after':'d31ca1a20deed57c6bfe4fa9ed54d893'}}},{'phase':'resume','before_label':'播放','after_label':'暂停','action':{'schema':1,'operation':'player_button','nonces':{'before':'123e411ae968cf75ff9eafbb4541a912','inspect':'b7d8358dd0e41802def7977421be2316','action':'c3d1b53519adc0b1b1efb9040e4a2db5','after':'5f862b55d8da0a3d9cd522e7c16fb992'},'transition':'resume'},'post':{'schema':1,'operation':'inspect','nonces':{'before':'b2c5c95dd23ea849720ae700c1d41497','inspect':'ebf495f003e13b60ee7ba02beae8d3fa','after':'2b74312e59ad09890ffc434e00ad4203'}}}]
++PAIRS=[{'phase':'pause','before_label':'暂停','after_label':'播放','action':{'schema':1,'operation':'player_button','nonces':{'before':'9b6bb5d16493e95d1559dc1850c1065e','inspect':'b0b276320b6c68881d33a395da6e62b8','action':'04707d934041a6fc112be4883cab2446','after':'c94fa9ff6fd5fae0c1a10352d3532d44'},'transition':'pause'},'post':{'schema':1,'operation':'inspect','nonces':{'before':'bd922ac911ac9b497070762c11d1ccbc','inspect':'4e58dcf6351ec31fa4ee17fbac763c87','after':'e6ae95eb3b0be93df32c54f1e8dfcec2'}}},{'phase':'resume','before_label':'播放','after_label':'暂停','action':{'schema':1,'operation':'player_button','nonces':{'before':'ed32fe2f0ba775f9abd8699f981b485b','inspect':'e79efa903eb6530c82609d0abf25469f','action':'8f12ec4ba963a9f0bf39add82b54dd48','after':'0bffb8205e17e2f108a6481f4e44a26b'},'transition':'resume'},'post':{'schema':1,'operation':'inspect','nonces':{'before':'aad9856358404117558e3999c9d14a84','inspect':'27f3f13d0488d9fb416e2364a6bd2380','after':'ce046681092b781f36a6bbb765747e99'}}}]
+ def selector(label):
+  return{'resource_id':RESOURCE,'class':'android.widget.ImageView','content_desc':label}
+ def validate(adapter,qa,used):
+@@ -135,7 +135,7 @@
+     raw=base.read(path)
+     value=json.loads(raw)
+     if kind=='results':
+-     binding={'phase':phase,'nonce':base.NONCE,'package':base.BILI,'uid':base.BILI_UID,'helper_package':base.SELF,'helper_uid':base.UID,'source_manifest_sha256':expected,'runtime_recorder_manifest_sha256':base.R4_MANIFEST}
++     binding={'phase':phase,'nonce':base.NONCE,'package':base.BILI,'uid':base.BILI_UID,'helper_package':base.SELF,'helper_uid':base.UID,'source_manifest_sha256':expected,'runtime_recorder_manifest_sha256':base.R5_MANIFEST}
+      base.require(all((value.get(k)==v for k,v in binding.items())),'RETAINED_WORKER_SCOPE_CHANGED')
+     else:
+      base.require(value.get('name')==command and value.get('argv')==['/usr/bin/python3','-I',str(base.HERE/'owned_navigation.py'),'--worker-once',phase,'--source-manifest-sha256',expected],'RETAINED_COMMAND_SCOPE_CHANGED')
+
+--- R8/post_foreground.py
++++ R9/post_foreground.py
+@@ -2,12 +2,12 @@
+ 
+ The first post-click sample is classified here. An old unclassified exception
+ never authorizes another read. Only explicit null focus permits bounded reads.
+-The copied R8 sequence below differs only at its post-foreground call.
++The copied R9 sequence below differs only at its post-foreground call.
+ """
+ import hashlib
+ import re
+ import time
+-FIRST_PLAN={'schema':1,'operation':'click','selector':{'resource_id':'tv.danmaku.bili:id/expand_search','class':'android.widget.LinearLayout','content_desc':'Search bar, button'},'nonces':{'before':'5ecd1e7f6d2733afea06c21596447c60','inspect':'2985bdab753186876e3382f66ad891b1','action':'79ec2189f47af8304a1feeef178ba08a','after':'864e88bdaf76236e02143bf63c025ac3'}}
++FIRST_PLAN={'schema':1,'operation':'click','selector':{'resource_id':'tv.danmaku.bili:id/expand_search','class':'android.widget.LinearLayout','content_desc':'Search bar, button'},'nonces':{'before':'426001af65794b853e18d3b10f7bf5ab','inspect':'ec2dc3ef53a178047d6559c2235f206a','action':'ef677eb6ec60d026cc80ca0197e1f9b1','after':'c2fe148824a5c62a5cd0cdad45907a6f'}}
+ EXPECTED_ACTIVITY='tv.danmaku.bili/com.bilibili.search2.main.BiliMainSearchActivity'
+ FOCUS_PATTERN='\\bWindow\\{([0-9a-fA-F]+)\\s+u\\d+\\s+([A-Za-z_][A-Za-z0-9_.]*)/([A-Za-z0-9_.$]+)'
+ MAX_SAMPLES=3
+@@ -19,7 +19,7 @@
+ def validate(adapter,qa,plan):
+  require(plan==FIRST_PLAN and plan['operation']=='click' and(plan['selector']=={'resource_id':'tv.danmaku.bili:id/expand_search','class':'android.widget.LinearLayout','content_desc':'Search bar, button'}),'ONLY_FRESH_FIRST_SEARCH_CLICK_PLAN')
+  adapter.validate_plan(plan,qa)
+- require(qa.PACKAGE=='tv.danmaku.bili' and qa.UID==10117 and(qa.MAIN_EPOCH=='48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'),'ORIGINAL_MAIN_BILI_SCOPE_REQUIRED')
++ require(qa.PACKAGE=='tv.danmaku.bili' and qa.UID==10117 and(qa.MAIN_EPOCH=='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'),'ORIGINAL_MAIN_BILI_SCOPE_REQUIRED')
+ def classify(raw):
+  """Retain counts/hash and a recognized scope, never raw dumpsys text."""
+  require(isinstance(raw,bytes)and 0<len(raw)<=262144,'FOCUS_OBSERVATION_BYTE_BOUND')
+@@ -100,7 +100,7 @@
+    row['elapsed_ms']=int((time.monotonic()-started)*1000)
+    require(time.monotonic()-started<=DEADLINE_SECONDS,'POST_ACK_FOCUS_DEADLINE')
+    if value is not None:
+-    accepted=qa.scope({'package':value['package'],'uid':qa.UID,'user':0,'display':0,'activity':value['package']+'/'+value['activity'],'window_token':value['window_token'],'main_epoch_sha256':qa.MAIN_EPOCH})
++    accepted=qa.scope({'package':value['package'],'uid':qa.UID,'user':0,'display':0,'activity':value['package']+'/'+value['activity'],'window_token':value['window_token'],'main_epoch_sha256':qa.MAIN_EPOCH,'main_baseline_schema':qa.MAIN_BASELINE_SCHEMA,'main_baseline_sha256':qa.MAIN_BASELINE_SHA,'main_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA})
+     record['qualified']=True
+     record['accepted_scope']=accepted
+     return accepted
+
+--- R8/stage_execute.py
++++ R9/stage_execute.py
+@@ -5,9 +5,9 @@
+ from pathlib import Path,PurePosixPath
+ import sys
+ import types
+-ROOT=Path('/home/alex/work/pocket4-bilibili-r8-pause-resume-01')
++ROOT=Path('/home/alex/work/pocket4-bilibili-r9-pause-resume-01')
+ SOURCE=ROOT/'source'
+-NONCE='d53dc79edc9083c8ebcbadf65b289823'
++NONCE='fc02c98cd9a6fbf64ad55cc2c180d0df'
+ FILES={'owned_navigation.py','stage_execute.py','video_navigation.py','controls_reveal.py','playback_controls.py','post_foreground.py'}
+ def require(value,reason):
+  if not value:
+@@ -46,7 +46,7 @@
+  require(not os.path.lexists(entry.FLOW),'FRESH_FLOW_REQUIRED')
+  prior=entry.load_prior()
+  ref=prior.references()
+- activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++ activation=ref.current_baseline()
+  epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'bili_inspect_stage_epoch')
+  before=ref.main_guard(activation,epoch)
+  os.umask(63)
+
+--- R8/video_navigation.py
++++ R9/video_navigation.py
+@@ -5,11 +5,11 @@
+ UPLOADER_SHA='3355707b07511199c7d280b9a77510b5e9b8698c7c7e4aedcf938805a3822d64'
+ DURATION_SHA='137ed61cdad38eb26c79124e18cb04925f8ac831f042169328a35d25520db3fa'
+ CARD_SELECTOR={'class':'android.view.ViewGroup'}
+-VIDEO_PLAN={'schema':1,'operation':'click','selector':{'class':'android.view.ViewGroup'},'nonces':{'before':'4db42d43aeb895c6306a1239cbe5e6f6','inspect':'32ccb15f1c26ccbb03997aff4478cd94','action':'c77b3c706409e278df88e762d400e926','after':'23b716f144c9d941e2cf9973bf5dcd71'}}
+-VIDEO_STABILITY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'4b1ee1b5d1aa055dea35c0414a18711d','inspect':'754453c637de24610aaf181ff9aec007','after':'0fd0c9fcd504f04f4ff4743dda290a29'}},{'schema':1,'operation':'inspect','nonces':{'before':'297f7f5412517e1baa7ac6d80256efad','inspect':'3da7c23612dc6a1a09e0fa9196fa5308','after':'207a27f4d0adde0789e43a471f9ed738'}},{'schema':1,'operation':'inspect','nonces':{'before':'ccb78db9bdd234eaf0af45028cd8d8a2','inspect':'9e418a9c4635ef27984fa25238eb5074','after':'115eeb61b418f330118a05742b36e79b'}},{'schema':1,'operation':'inspect','nonces':{'before':'7cfd89811a01a9f186795bd5a61444b0','inspect':'19cd4483373e81f81f5668a3f2139299','after':'c176c3f3581c920d9b27c9fe631f23a1'}}]
+-VIDEO_POST_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'cdba6f92685230750f25a7ffbc1a511f','inspect':'6cdc0f293ac69bd1a5fab2b52a92a617','after':'ea89c40e114e0deb51b17d56bbddb01b'}},{'schema':1,'operation':'inspect','nonces':{'before':'31cac6de36ed76308f1336e490161767','inspect':'e8397cbccf0fc3bb0163c3fcc0fa391c','after':'19d6a9c7ab80523b111dedf3bdef790d'}},{'schema':1,'operation':'inspect','nonces':{'before':'7febb8b62367f3ba04c092f46a60a26c','inspect':'bbdddc481e3769dad034e69e044f418c','after':'0408f82592a091a7562ad5cb6aa6544d'}}]
++VIDEO_PLAN={'schema':1,'operation':'click','selector':{'class':'android.view.ViewGroup'},'nonces':{'before':'410a73365241180f2c8f4368cf66e2ff','inspect':'535371e3d520a257052f1d8e29b20d70','action':'00d1dc3dde06ebff70c79f8582bd58cc','after':'57918b11421d770e87e727f3f065f10e'}}
++VIDEO_STABILITY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'db9c955e5ebd3d8f2cd28e7d943a0b97','inspect':'ce2095faf75fb41f74009353a0e341d0','after':'76b3d6b790c30a95b5bb8ae0d20cd37c'}},{'schema':1,'operation':'inspect','nonces':{'before':'da83024c355d764e192764c3963a20c5','inspect':'eb36cfae444728ea1d23d81054c522ec','after':'0b582f9f9fb6ceefeab6bffc440fe007'}},{'schema':1,'operation':'inspect','nonces':{'before':'9f62c7d8d474ce71e1e126621b0c909e','inspect':'f731c8ad8eb8e4c9b08e79982bd3b6f6','after':'9fe60bfd211f58c8b379f643d3833668'}},{'schema':1,'operation':'inspect','nonces':{'before':'df8cbecc2320b4701cb293304a870bbc','inspect':'e295877e7827ab0b3b37c0bc475ec10c','after':'162420e80d253a2e62554633b214c294'}}]
++VIDEO_POST_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'a930c37b5dd7420916bde7dcc9e8696b','inspect':'2318e75e3c93e7d3c58b91b603acee4f','after':'c12ada3b73a62cdff92f3230aaf84df7'}},{'schema':1,'operation':'inspect','nonces':{'before':'a310d69ae8462853561e70b68f974b40','inspect':'a0c1aabb463c9f5fc49b20fbabe42b51','after':'6ca3538a5011b8140f250df8b157742e'}},{'schema':1,'operation':'inspect','nonces':{'before':'176d9e62d3818c989826c13934e94d9d','inspect':'b6a3595b6cc29acb590ffc1d29bc94a9','after':'1c07f50abee2dbc9c9af740fc514c984'}}]
+ CONTENT_READY_SECONDS=12
+-CONTENT_READY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'daa6fc6b57692ed8159446f387be87c2','inspect':'94fcd28ed374ce16f18d4336f91d35b2','after':'d3c915638b6d6c3d4abb17704eadb77a'}},{'schema':1,'operation':'inspect','nonces':{'before':'ab2a38c3b8bb30f64e07b0abf93a8d2a','inspect':'06f9dd1bef3d95bfa1c2c40083ba85c2','after':'c75c987a14219d066e29e9c50b19aeba'}},{'schema':1,'operation':'inspect','nonces':{'before':'ade6723a05deb7b0eb7364db9598a356','inspect':'72edf014cce3fdb0c20e886c344fb81c','after':'de4a50c7315a8598ebd79aa91e6256c9'}}]
++CONTENT_READY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'31df19a208b1f4cfcb0fd0d34277116e','inspect':'1ea50d217ebc44fe2e2fcbf2bf22bbc9','after':'346c1ba3ccdabce9a2dd39f0cdf64a1e'}},{'schema':1,'operation':'inspect','nonces':{'before':'522dd27cf8266d67fdbe9a2cc4abec73','inspect':'247b73fc5d2541eb9b147e4dd4a15514','after':'0e1604761c78820e3e51503d2916ded6'}},{'schema':1,'operation':'inspect','nonces':{'before':'8b87e5d5efef7f52fa7093b3ac98117b','inspect':'c5d34ddcb3578d308d939e31be89770a','after':'ca4281327c0c60e31e926da5a028132e'}}]
+ def validate(adapter,qa,base_nonces):
+  plans=[VIDEO_PLAN,*VIDEO_STABILITY_PLANS,*VIDEO_POST_PLANS,*CONTENT_READY_PLANS]
+  for plan in plans:

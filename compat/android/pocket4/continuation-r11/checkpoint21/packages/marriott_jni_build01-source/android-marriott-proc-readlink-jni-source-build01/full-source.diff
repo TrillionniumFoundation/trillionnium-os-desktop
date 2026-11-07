@@ -1,0 +1,244 @@
+--- a/engine/tests/ndk_program_tests/proc_self_maps_test.cc
++++ b/engine/tests/ndk_program_tests/proc_self_maps_test.cc
+@@ -17,14 +17,20 @@
+ #include "gtest/gtest.h"
+ 
+ #include <fcntl.h>  // open
++#include <linux/memfd.h>
++#include <sys/syscall.h>
+ #include <sys/mman.h>
+ #include <unistd.h>  // close, sysconf(_SC_PAGESIZE)
+ 
++#include <array>
++#include <cerrno>
+ #include <cinttypes>
+ #include <cstdint>
+ #include <cstdio>
+ #include <functional>
++#include <initializer_list>
+ #include <memory>
++#include <string>
+ 
+ namespace {
+ 
+@@ -134,4 +140,182 @@
+   ASSERT_FALSE(IsExecutable<kExactMapping>(mapping + 2 * kPageSize, kPageSize));
+ }
+ 
++
++class OwnedProcTestFd {
++ public:
++  explicit OwnedProcTestFd(int fd) : fd_(fd) {}
++  ~OwnedProcTestFd() {
++    if (fd_ >= 0) EXPECT_EQ(close(fd_), 0);
++  }
++  OwnedProcTestFd(const OwnedProcTestFd&) = delete;
++  OwnedProcTestFd& operator=(const OwnedProcTestFd&) = delete;
++  int get() const { return fd_; }
++  int Release() {
++    int fd = fd_;
++    fd_ = -1;
++    return fd;
++  }
++ private:
++  int fd_;
++};
++
++std::string ProcFdPath(int fd) {
++  return "/proc/self/fd/" + std::to_string(fd);
++}
++
++std::string CanonicalOwnMapsPath() {
++  return "/proc/" + std::to_string(getpid()) + "/maps";
++}
++
++std::string ProcFdTarget(int fd) {
++  const std::string path = ProcFdPath(fd);
++  std::array<char, 4096> out{};
++  ssize_t count = readlink(path.c_str(), out.data(), out.size());
++  if (count < 0 || static_cast<size_t>(count) >= out.size()) {
++    ADD_FAILURE() << "bounded own-FD readlink failed: " << count << ", errno=" << errno;
++    return {};
++  }
++  return std::string(out.data(), static_cast<size_t>(count));
++}
++
++// These are ABI conformance tests, not provenance implementation seams.
++// The same source must run natively and through the candidate translator.
++// The old R16 path leaks its backing memfd name and is expected to fail the
++// maps-target assertions. A fixture result does not qualify a commercial App.
++TEST(ProcSelfMaps, ReadlinkHasCanonicalOwnerPath) {
++  OwnedProcTestFd maps(open("/proc/self/maps", O_RDONLY | O_CLOEXEC));
++  ASSERT_GE(maps.get(), 0);
++  EXPECT_EQ(ProcFdTarget(maps.get()), CanonicalOwnMapsPath());
++
++  OwnedProcTestFd directory(open("/proc/self/fd", O_RDONLY | O_DIRECTORY | O_CLOEXEC));
++  ASSERT_GE(directory.get(), 0);
++  const std::string leaf = std::to_string(maps.get());
++  std::array<char, 4096> out{};
++  ssize_t count = readlinkat(directory.get(), leaf.c_str(), out.data(), out.size());
++  ASSERT_GE(count, 0);
++  ASSERT_LT(static_cast<size_t>(count), out.size());
++  EXPECT_EQ(std::string(out.data(), static_cast<size_t>(count)), CanonicalOwnMapsPath());
++}
++
++TEST(ProcSelfMaps, DuplicatedAliasesKeepOriginAfterOriginalClose) {
++  OwnedProcTestFd maps(open("/proc/self/maps", O_RDONLY | O_CLOEXEC));
++  ASSERT_GE(maps.get(), 0);
++  OwnedProcTestFd duplicate(dup(maps.get()));
++  ASSERT_GE(duplicate.get(), 0);
++  OwnedProcTestFd cloexec(fcntl(maps.get(), F_DUPFD_CLOEXEC, 0));
++  ASSERT_GE(cloexec.get(), 0);
++  ASSERT_EQ(close(maps.Release()), 0);
++  EXPECT_EQ(ProcFdTarget(duplicate.get()), CanonicalOwnMapsPath());
++  EXPECT_EQ(ProcFdTarget(cloexec.get()), CanonicalOwnMapsPath());
++  const int fd_flags = fcntl(cloexec.get(), F_GETFD);
++  ASSERT_GE(fd_flags, 0);
++  EXPECT_EQ(fd_flags & FD_CLOEXEC, FD_CLOEXEC);
++}
++
++TEST(ProcSelfMaps, Dup2ReplacementDoesNotKeepMapsAttribution) {
++  OwnedProcTestFd maps(open("/proc/self/maps", O_RDONLY | O_CLOEXEC));
++  ASSERT_GE(maps.get(), 0);
++  OwnedProcTestFd ordinary(open("/dev/null", O_RDONLY | O_CLOEXEC));
++  ASSERT_GE(ordinary.get(), 0);
++  const std::string expected = ProcFdTarget(ordinary.get());
++  ASSERT_FALSE(expected.empty());
++  ASSERT_NE(expected, CanonicalOwnMapsPath());
++  ASSERT_EQ(dup2(ordinary.get(), maps.get()), maps.get());
++  EXPECT_EQ(ProcFdTarget(maps.get()), expected);
++}
++
++TEST(ProcSelfMaps, ReusedClosedNumberDoesNotKeepMapsAttribution) {
++  OwnedProcTestFd maps(open("/proc/self/maps", O_RDONLY | O_CLOEXEC));
++  ASSERT_GE(maps.get(), 0);
++  OwnedProcTestFd ordinary(open("/dev/null", O_RDONLY | O_CLOEXEC));
++  ASSERT_GE(ordinary.get(), 0);
++  const std::string expected = ProcFdTarget(ordinary.get());
++  ASSERT_FALSE(expected.empty());
++  int old_number = maps.Release();
++  ASSERT_EQ(close(old_number), 0);
++  // Allocate the freed slot without replacing a descriptor acquired by another thread.
++  OwnedProcTestFd reused(fcntl(ordinary.get(), F_DUPFD_CLOEXEC, old_number));
++  ASSERT_EQ(reused.get(), old_number);
++  EXPECT_EQ(ProcFdTarget(reused.get()), expected);
++}
++
++TEST(ProcSelfMaps, CloseRangeOfOnlyOwnedFdDoesNotKeepMapsAttribution) {
++  OwnedProcTestFd maps(open("/proc/self/maps", O_RDONLY | O_CLOEXEC));
++  ASSERT_GE(maps.get(), 0);
++  OwnedProcTestFd ordinary(open("/dev/null", O_RDONLY | O_CLOEXEC));
++  ASSERT_GE(ordinary.get(), 0);
++  const std::string expected = ProcFdTarget(ordinary.get());
++  ASSERT_FALSE(expected.empty());
++  const int old_number = maps.get();
++  // A one-FD interval cannot close an ambient harness descriptor.
++  ASSERT_EQ(syscall(__NR_close_range, static_cast<unsigned int>(old_number),
++                    static_cast<unsigned int>(old_number), 0U), 0);
++  ASSERT_EQ(maps.Release(), old_number);
++  // Allocate the freed slot without replacing a descriptor acquired by another thread.
++  OwnedProcTestFd reused(fcntl(ordinary.get(), F_DUPFD_CLOEXEC, old_number));
++  ASSERT_EQ(reused.get(), old_number);
++  EXPECT_EQ(ProcFdTarget(reused.get()), expected);
++}
++
++TEST(ProcSelfMaps, SealedLookalikeMemfdIsNotTrustedMaps) {
++  for (const char* name : {"[guest /proc/self/maps]", "droidloom-proc-maps-v2"}) {
++    OwnedProcTestFd lookalike(static_cast<int>(
++        syscall(__NR_memfd_create, name, MFD_CLOEXEC | MFD_ALLOW_SEALING)));
++    ASSERT_GE(lookalike.get(), 0);
++    ASSERT_EQ(fcntl(lookalike.get(), F_ADD_SEALS,
++                    F_SEAL_WRITE | F_SEAL_GROW | F_SEAL_SHRINK | F_SEAL_SEAL), 0);
++    const std::string target = ProcFdTarget(lookalike.get());
++    ASSERT_FALSE(target.empty());
++    EXPECT_NE(target, CanonicalOwnMapsPath());
++  }
++}
++
++TEST(ProcSelfMaps, ReadlinkLengthAndNoTerminatorSemantics) {
++  OwnedProcTestFd maps(open("/proc/self/maps", O_RDONLY | O_CLOEXEC));
++  ASSERT_GE(maps.get(), 0);
++  const std::string path = ProcFdPath(maps.get());
++  const std::string expected = CanonicalOwnMapsPath();
++  std::array<char, 4096> out{};
++  out.fill('Q');
++  ASSERT_LT(expected.size() + 1, out.size());
++  ASSERT_EQ(readlink(path.c_str(), out.data(), expected.size()), 
++            static_cast<ssize_t>(expected.size()));
++  EXPECT_EQ(std::string(out.data(), expected.size()), expected);
++  EXPECT_EQ(out[expected.size()], 'Q');
++  out.fill('Q');
++  ASSERT_EQ(readlink(path.c_str(), out.data(), 1), 1);
++  EXPECT_EQ(out[0], expected[0]);
++  EXPECT_EQ(out[1], 'Q');
++  errno = 0;
++  EXPECT_EQ(readlink(path.c_str(), out.data(), 0), -1);
++  EXPECT_EQ(errno, EINVAL);
++}
++
++TEST(ProcSelfMaps, ClosedFdAndBadDirfdKeepKernelErrors) {
++  OwnedProcTestFd maps(open("/proc/self/maps", O_RDONLY | O_CLOEXEC));
++  ASSERT_GE(maps.get(), 0);
++  const std::string path = ProcFdPath(maps.get());
++  const std::string leaf = std::to_string(maps.get());
++  ASSERT_EQ(close(maps.Release()), 0);
++  std::array<char, 64> out{};
++  errno = 0;
++  EXPECT_EQ(readlink(path.c_str(), out.data(), out.size()), -1);
++  EXPECT_EQ(errno, ENOENT);
++  errno = 0;
++  EXPECT_EQ(readlinkat(-1, leaf.c_str(), out.data(), out.size()), -1);
++  EXPECT_EQ(errno, EBADF);
++}
++
++TEST(ProcSelfMaps, UnwritableBufferReturnsEfaultWithoutAProcessFault) {
++  OwnedProcTestFd maps(open("/proc/self/maps", O_RDONLY | O_CLOEXEC));
++  ASSERT_GE(maps.get(), 0);
++  const std::string path = ProcFdPath(maps.get());
++  void* guard = mmap(nullptr, kPageSize, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
++  ASSERT_NE(guard, MAP_FAILED);
++  auto cleanup = ScopeExit([guard]() { EXPECT_EQ(munmap(guard, kPageSize), 0); });
++  errno = 0;
++  EXPECT_EQ(readlink(path.c_str(), static_cast<char*>(guard), 1), -1);
++  EXPECT_EQ(errno, EFAULT);
++}
++
+ }  // namespace
+--- a/engine/tests/ndk_program_tests/Android.bp
++++ b/engine/tests/ndk_program_tests/Android.bp
+@@ -62,6 +62,13 @@
+     ],
+ }
+ 
++// One public syscall/FD contract TU, shared with the APK JNI entry below.
++// This does not enable the opt-in translator ownership/generation feature.
++filegroup {
++    name: "berberis_proc_self_maps_contract_test_srcs",
++    srcs: ["proc_self_maps_test.cc"],
++}
++
+ cc_defaults {
+     name: "berberis_ndk_program_tests_defaults",
+     native_bridge_supported: true,
+--- a/engine/tests/tests_apk/Android.bp
++++ b/engine/tests/tests_apk/Android.bp
+@@ -42,6 +42,7 @@
+     name: "libberberis_ndk_tests",
+     defaults: ["libberberis_ndk_tests_defaults"],
+     srcs: [
++        ":berberis_proc_self_maps_contract_test_srcs",
+         "jni/shared_library_test.cc",
+         "jni/user_apk_test.cc",
+         "jni/jni_test.cc",
+--- a/platform/art/runtime/native_bridge_art_interface.cc
++++ b/platform/art/runtime/native_bridge_art_interface.cc
+@@ -161,7 +161,7 @@
+ extern "C" __attribute__((visibility("default"),used,retain))
+ const char DroidloomArtRuntimeGenerationMarker[] =
+ #if defined(DROIDLOOM_NATIVE_GENERATION_RUNTIME) && DROIDLOOM_NATIVE_GENERATION_RUNTIME
+-    "DROIDLOOM_NATIVE_GENERATION=1;ROLE=ART_RUNTIME;ABI=1;PROTOCOL=DLOOMGE1-PROCMET1;";
++    "DROIDLOOM_NATIVE_GENERATION=1;ROLE=ART_RUNTIME;ABI=1;PROTOCOL=DLOOMGE1-PROCMET2;";
+ #else
+-    "DROIDLOOM_NATIVE_GENERATION=0;ROLE=ART_RUNTIME;ABI=1;PROTOCOL=DLOOMGE1-PROCMET1;";
++    "DROIDLOOM_NATIVE_GENERATION=0;ROLE=ART_RUNTIME;ABI=1;PROTOCOL=DLOOMGE1-PROCMET2;";
+ #endif

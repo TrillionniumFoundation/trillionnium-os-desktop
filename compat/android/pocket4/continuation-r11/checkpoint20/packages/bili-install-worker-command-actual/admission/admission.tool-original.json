@@ -1,0 +1,38 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-c",
+      "import hashlib,json,os,re,stat,sys,time\nfrom pathlib import Path\nROOT=Path('/home/alex/work/pocket4-owned-bili-qa-r9-install-state-01')\nBASE={'worker-command.json':ROOT/'evidence/02-install-state.result.json'}\nPINS={}\ndef require(value,reason):\n    if not value:raise RuntimeError(reason)\ndef sha(raw):return hashlib.sha256(raw).hexdigest()\nclass Reader:\n    def __init__(self):\n        self.started = time.monotonic()\n        self.total = 0\n        self.records = {}\n\n    def read(self, path, optional=False):\n        require(time.monotonic()-self.started < 8, 'READ_DEADLINE')\n        require(path in BASE.values(), 'EXACT_THREE_FILE_ALLOWLIST_REQUIRED')\n        directory = os.open('/', os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC)\n        fd = None\n        try:\n            for name in path.parts[1:-1]:\n                next_fd = os.open(name,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC|os.O_NOFOLLOW,dir_fd=directory)\n                os.close(directory); directory=next_fd\n            try:\n                fd=os.open(path.name,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW,dir_fd=directory)\n            except FileNotFoundError:\n                if optional:\n                    return None\n                raise\n            first=os.fstat(fd)\n            require(stat.S_ISREG(first.st_mode) and first.st_nlink==1 and first.st_uid==0 and\n                    0<=first.st_size<=65536,'ROOT_SINGLE_REGULAR_BOUNDED_RECEIPT_REQUIRED')\n            chunks=[];count=0\n            while True:\n                require(time.monotonic()-self.started<8,'READ_DEADLINE')\n                part=os.read(fd,min(16384,65537-count))\n                if not part:\n                    break\n                chunks.append(part);count+=len(part);self.total+=len(part)\n                require(count<=65536 and self.total<=524288,'TOTAL_OR_FILE_BOUND')\n            last=os.fstat(fd)\n            fields=('st_dev','st_ino','st_mode','st_nlink','st_uid','st_gid','st_size','st_mtime_ns','st_ctime_ns')\n            require(count==first.st_size and all(getattr(first,k)==getattr(last,k) for k in fields),'RECEIPT_CHANGED')\n            return b''.join(chunks)\n        finally:\n            if fd is not None:\n                os.close(fd)\n            os.close(directory)\n\n    def add(self, name, path, raw=None):\n        require(name not in self.records,'DUPLICATE_EXPORT_NAME')\n        if raw is None:\n            raw=self.read(path)\n        text=raw.decode('utf-8','strict')\n        if name in PINS:\n            require((len(raw),sha(raw))==PINS[name],'EXTERNAL_TERMINAL_RECEIPT_PIN_CHANGED:'+name)\n        self.records[name]={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':text}\n        return raw\n\n\ndef no_raw_ui(value):\n    if isinstance(value,dict):\n        require(not ({'nodes','text','content_desc','inspection','raw_tree','raw_ui_tree','screenshot','pixels'} & set(value)),\n                'RAW_UI_FIELD_FORBIDDEN_IN_STATE_EXPORT')\n        for item in value.values():no_raw_ui(item)\n    elif isinstance(value,list):\n        for item in value:no_raw_ui(item)\n\n\nrequire(os.getuid()==os.geteuid()==0,'ROOT_FIXED_READ_ONLY')\nwire=sys.stdin.buffer.read(16385)\nrequire(0<len(wire)<=16384,'EXACT_INPUT_BOUND')\np=json.loads(wire);worker_raw=p['worker_raw'].encode('utf-8')\nrequire(len(worker_raw)==7589 and sha(worker_raw)=='e9310a73a567d7207e55b8fede9a68f7a305d72e5cdb9042a6b7455ef4e02ad3','ROOT_ACTUAL_WORKER_PIN')\nworker=json.loads(worker_raw)\nrequire(worker['owned_package_uid']==10152 and worker['state']['helper']['ui_automation_connected'] is False,'ROOT_ACTUAL_WORKER_SCOPE')\nr=Reader();raw=r.add('worker-command.json',BASE['worker-command.json'])\nvalue=json.loads(raw);no_raw_ui(value)\nrequire(value['name']=='02-install-state' and value['argv']==['/usr/bin/python3','-I',str(ROOT/'source/install_state.py'),'--worker-once','--source-manifest-sha256','399cebc279ac8653b943b5c433b248c94dec32062b85b45e9cb6c22fce379a66'],'EXACT_OWNED_WORKER_COMMAND')\nrequire(value['spawned'] is True and value['joined'] is True and value['returncode']==0 and value['timed_out'] is False and value['secondary_errors']==[] and 'primary_error' not in value,'WORKER_JOIN_NOT_QUALIFIED')\nrequire(value['Main_before'] is True and value['Main_after']==p['Main_after'],'WORKER_MAIN_FENCES')\nprinted=(json.dumps(worker,ensure_ascii=False)+'\\n').encode('utf-8')\nrequire(value['stdout']=={'bytes':len(printed),'sha256':sha(printed)} and value['stderr']=={'bytes':0,'sha256':sha(b'')},'EXACT_WORKER_STDOUT_AND_EMPTY_STDERR')\nprint(json.dumps({'schema':'pocket4-bili-r9-fixed-worker-command-read-v1','files':r.records,'direct_child_join_verified':True,'worker_stdout_reconstructed_from_exact_original_and_frozen_serializer':True,'worker_raw_sha256':sha(worker_raw),'state_command_sha256':worker['state']['recorder_command_result_sha256'],'total_read_bytes':r.total,'elapsed_seconds':time.monotonic()-r.started,'Android_commands':0,'UI_actions':0,'independent_runtime_qualification':False},sort_keys=True,separators=(',',':')),flush=True)\n"
+    ],
+    "created_unix_ms": 1793949739270,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1afbca906-fc05-6b36",
+    "idempotency_key": "pocket4-bili-r9-install-worker-command-read-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1afbca906-fc05-6b36",
+    "request_digest": "2c8fa5d2828dbb0a238df4102ec4407f5aec17325b9ae82b217cb3d93b1a5085",
+    "request_fingerprint": 3210967382890494730,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1afbca906-fc05-6b36"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1afbca906-fc05-6b36"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

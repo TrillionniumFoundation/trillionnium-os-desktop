@@ -1,0 +1,436 @@
+{
+  "schema": 1,
+  "source_root": "/home/alex/work/pocket4-owned-fd-capability-r19-android-01",
+  "native_pass": false,
+  "expected_behavior_mask": "0x0000000000000840",
+  "expected_cases": 12,
+  "observed_cases": 12,
+  "all_direct_children_reaped": true,
+  "direct_children_started": 12,
+  "direct_children_reaped": 12,
+  "nested_children_started": 2,
+  "nested_children_reaped": 2,
+  "timeout": false,
+  "owned_cycle_complete": true,
+  "exact_owned_package_removed": true,
+  "installed_uid": 10161,
+  "package_counts": {
+    "01-install/before": 182,
+    "01-install/after": 183,
+    "02-run/before": 183,
+    "02-run/after": 183,
+    "03-remove/before": 183,
+    "03-remove/after": 182
+  },
+  "main_framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "cases": [
+    {
+      "case": "real_metadata_three_entrypoints_same_app_context",
+      "expected_behavior_observed": false,
+      "known_production_red": false,
+      "direct_child_reaped": true,
+      "timeout": false,
+      "start": 0,
+      "start_errno": 0,
+      "read": 0,
+      "read_errno": 113,
+      "stop": -99,
+      "projected_stat": -99,
+      "projected_fs": -99,
+      "lookup": -99
+    },
+    {
+      "case": "forged_app_owned_tag_and_matching_name_stay_ordinary",
+      "expected_behavior_observed": false,
+      "known_production_red": false,
+      "direct_child_reaped": true,
+      "timeout": false,
+      "start": 0,
+      "start_errno": 0,
+      "read": 0,
+      "read_errno": 113,
+      "stop": -99,
+      "projected_stat": -99,
+      "projected_fs": -99,
+      "lookup": -99
+    },
+    {
+      "case": "ordinary_O_PATH_metadata",
+      "expected_behavior_observed": false,
+      "known_production_red": false,
+      "direct_child_reaped": true,
+      "timeout": false,
+      "start": 0,
+      "start_errno": 0,
+      "read": 0,
+      "read_errno": 113,
+      "stop": -99,
+      "projected_stat": -99,
+      "projected_fs": -99,
+      "lookup": -99
+    },
+    {
+      "case": "warm_metadata_AS_1_and_explicit_restart",
+      "expected_behavior_observed": false,
+      "known_production_red": false,
+      "direct_child_reaped": true,
+      "timeout": false,
+      "start": 0,
+      "start_errno": 0,
+      "read": 0,
+      "read_errno": 113,
+      "stop": -99,
+      "projected_stat": -99,
+      "projected_fs": -99,
+      "lookup": -99
+    },
+    {
+      "case": "raw_private_fork_AS_1_real_metadata",
+      "expected_behavior_observed": false,
+      "known_production_red": false,
+      "direct_child_reaped": true,
+      "timeout": false,
+      "start": 0,
+      "start_errno": 0,
+      "read": 0,
+      "read_errno": 113,
+      "stop": -99,
+      "projected_stat": -99,
+      "projected_fs": -99,
+      "lookup": -99
+    },
+    {
+      "case": "full_caller_fdtable_real_metadata",
+      "expected_behavior_observed": false,
+      "known_production_red": false,
+      "direct_child_reaped": true,
+      "timeout": false,
+      "start": 0,
+      "start_errno": 0,
+      "read": 0,
+      "read_errno": 113,
+      "stop": -99,
+      "projected_stat": -99,
+      "projected_fs": -99,
+      "lookup": -99
+    },
+    {
+      "case": "bad_fd_snapshot_atomicity_and_caller_mask",
+      "expected_behavior_observed": true,
+      "known_production_red": false,
+      "direct_child_reaped": true,
+      "timeout": false,
+      "start": 0,
+      "start_errno": 0,
+      "read": -1,
+      "read_errno": 9,
+      "stop": 0,
+      "projected_stat": -99,
+      "projected_fs": -99,
+      "lookup": -99
+    },
+    {
+      "case": "quiesce_closes_generation_and_rejects_restart",
+      "expected_behavior_observed": false,
+      "known_production_red": false,
+      "direct_child_reaped": true,
+      "timeout": false,
+      "start": 0,
+      "start_errno": 0,
+      "read": 0,
+      "read_errno": 113,
+      "stop": -99,
+      "projected_stat": -99,
+      "projected_fs": -99,
+      "lookup": -99
+    },
+    {
+      "case": "12_restart_kernel_clear_tid_rounds",
+      "expected_behavior_observed": false,
+      "known_production_red": false,
+      "direct_child_reaped": true,
+      "timeout": false,
+      "start": 0,
+      "start_errno": 0,
+      "read": 0,
+      "read_errno": 113,
+      "stop": -99,
+      "projected_stat": -99,
+      "projected_fs": -99,
+      "lookup": -99
+    },
+    {
+      "case": "actual_caller_TID_private_fdtable",
+      "expected_behavior_observed": false,
+      "known_production_red": false,
+      "direct_child_reaped": true,
+      "timeout": false,
+      "start": 0,
+      "start_errno": 0,
+      "read": 0,
+      "read_errno": 113,
+      "stop": -99,
+      "projected_stat": -99,
+      "projected_fs": -99,
+      "lookup": -99
+    },
+    {
+      "case": "shared_VM_new_TGID_refuses_without_reset",
+      "expected_behavior_observed": false,
+      "known_production_red": false,
+      "direct_child_reaped": true,
+      "timeout": false,
+      "start": 0,
+      "start_errno": 0,
+      "read": 0,
+      "read_errno": 113,
+      "stop": -99,
+      "projected_stat": -99,
+      "projected_fs": -99,
+      "lookup": -99
+    },
+    {
+      "case": "NOFILE_0_metadata_EMFILE_known_red",
+      "expected_behavior_observed": true,
+      "known_production_red": true,
+      "direct_child_reaped": true,
+      "timeout": false,
+      "start": 0,
+      "start_errno": 0,
+      "read": -99,
+      "read_errno": 24,
+      "stop": 0,
+      "projected_stat": -99,
+      "projected_fs": -1,
+      "lookup": -99
+    }
+  ],
+  "findings": [
+    "All ten original failed cases identify stage 6: tagged=0, SameStat=true, SameFs=false.",
+    "The only differing compared statfs field is f_flags: native Bionic 0, raw syscall 32 (0x20). All compared stat fields and other statfs fields match in these ten cases.",
+    "The unchanged metadata consistency guard returns before wrapper entry checks and before explicit owner Stop in the ten failed cases.",
+    "Bad-fd atomicity and the expected known NOFILE0 EMFILE red remain observed; neither converts this failure into production qualification.",
+    "All direct and nested probe children were reaped; exact owned UID 10161 was removed and Main epoch remained unchanged.",
+    "Controller exit zero records complete dispatch and exact cleanup, not native correctness."
+  ],
+  "candidate_production_ready": false,
+  "whole_app_production_ready_count": 0,
+  "metadata_layout": {
+    "stat_size": 144,
+    "stat_align": 8,
+    "statfs_size": 120,
+    "statfs_align": 8,
+    "snapshot_size": 6872,
+    "stat_offsets": {
+      "st_dev": 0,
+      "st_ino": 8,
+      "st_nlink": 16,
+      "st_mode": 24,
+      "st_uid": 28,
+      "st_gid": 32,
+      "st_rdev": 40,
+      "st_size": 48,
+      "st_blksize": 56,
+      "st_blocks": 64,
+      "st_atim": 72,
+      "st_mtim": 88,
+      "st_ctim": 104
+    },
+    "statfs_offsets": {
+      "f_type": 0,
+      "f_bsize": 8,
+      "f_blocks": 16,
+      "f_bfree": 24,
+      "f_bavail": 32,
+      "f_files": 40,
+      "f_ffree": 48,
+      "f_fsid": 56,
+      "f_namelen": 64,
+      "f_frsize": 72,
+      "f_flags": 80,
+      "f_spare": 88
+    },
+    "field_sizes": {
+      "f_type": 8,
+      "f_bsize": 8,
+      "f_blocks": 8,
+      "f_fsid": 8,
+      "f_namelen": 8,
+      "f_frsize": 8,
+      "f_flags": 8,
+      "f_spare": 32
+    }
+  },
+  "diagnostics": [
+    {
+      "case": "real_metadata_three_entrypoints_same_app_context",
+      "captured": 1,
+      "stage": 6,
+      "tagged": 0,
+      "same_stat": 1,
+      "same_fs": 0,
+      "stat_differences": {},
+      "statfs_differences": {
+        "f_flags": [
+          0,
+          32
+        ]
+      }
+    },
+    {
+      "case": "forged_app_owned_tag_and_matching_name_stay_ordinary",
+      "captured": 1,
+      "stage": 6,
+      "tagged": 0,
+      "same_stat": 1,
+      "same_fs": 0,
+      "stat_differences": {},
+      "statfs_differences": {
+        "f_flags": [
+          0,
+          32
+        ]
+      }
+    },
+    {
+      "case": "ordinary_O_PATH_metadata",
+      "captured": 1,
+      "stage": 6,
+      "tagged": 0,
+      "same_stat": 1,
+      "same_fs": 0,
+      "stat_differences": {},
+      "statfs_differences": {
+        "f_flags": [
+          0,
+          32
+        ]
+      }
+    },
+    {
+      "case": "warm_metadata_AS_1_and_explicit_restart",
+      "captured": 1,
+      "stage": 6,
+      "tagged": 0,
+      "same_stat": 1,
+      "same_fs": 0,
+      "stat_differences": {},
+      "statfs_differences": {
+        "f_flags": [
+          0,
+          32
+        ]
+      }
+    },
+    {
+      "case": "raw_private_fork_AS_1_real_metadata",
+      "captured": 1,
+      "stage": 6,
+      "tagged": 0,
+      "same_stat": 1,
+      "same_fs": 0,
+      "stat_differences": {},
+      "statfs_differences": {
+        "f_flags": [
+          0,
+          32
+        ]
+      }
+    },
+    {
+      "case": "full_caller_fdtable_real_metadata",
+      "captured": 1,
+      "stage": 6,
+      "tagged": 0,
+      "same_stat": 1,
+      "same_fs": 0,
+      "stat_differences": {},
+      "statfs_differences": {
+        "f_flags": [
+          0,
+          32
+        ]
+      }
+    },
+    {
+      "case": "bad_fd_snapshot_atomicity_and_caller_mask",
+      "captured": 0,
+      "stage": 0,
+      "tagged": -99,
+      "same_stat": -1,
+      "same_fs": -1,
+      "stat_differences": {},
+      "statfs_differences": {}
+    },
+    {
+      "case": "quiesce_closes_generation_and_rejects_restart",
+      "captured": 1,
+      "stage": 6,
+      "tagged": 0,
+      "same_stat": 1,
+      "same_fs": 0,
+      "stat_differences": {},
+      "statfs_differences": {
+        "f_flags": [
+          0,
+          32
+        ]
+      }
+    },
+    {
+      "case": "12_restart_kernel_clear_tid_rounds",
+      "captured": 1,
+      "stage": 6,
+      "tagged": 0,
+      "same_stat": 1,
+      "same_fs": 0,
+      "stat_differences": {},
+      "statfs_differences": {
+        "f_flags": [
+          0,
+          32
+        ]
+      }
+    },
+    {
+      "case": "actual_caller_TID_private_fdtable",
+      "captured": 1,
+      "stage": 6,
+      "tagged": 0,
+      "same_stat": 1,
+      "same_fs": 0,
+      "stat_differences": {},
+      "statfs_differences": {
+        "f_flags": [
+          0,
+          32
+        ]
+      }
+    },
+    {
+      "case": "shared_VM_new_TGID_refuses_without_reset",
+      "captured": 1,
+      "stage": 6,
+      "tagged": 0,
+      "same_stat": 1,
+      "same_fs": 0,
+      "stat_differences": {},
+      "statfs_differences": {
+        "f_flags": [
+          0,
+          32
+        ]
+      }
+    },
+    {
+      "case": "NOFILE_0_metadata_EMFILE_known_red",
+      "captured": 0,
+      "stage": 0,
+      "tagged": -99,
+      "same_stat": -1,
+      "same_fs": -1,
+      "stat_differences": {},
+      "statfs_differences": {}
+    }
+  ]
+}

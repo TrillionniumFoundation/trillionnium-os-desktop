@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "kind": "root-owner16-host-log-compile02-source-review",
+  "request": {
+    "bytes": 179906,
+    "sha256": "41dab4ef6565a13d83f1005dc0d04b6b63778fb10d5cd156434f293801ff4d61"
+  },
+  "stdin": {
+    "bytes": 172966,
+    "sha256": "9a0b514c931ab7ae7ec1c6f660c7e19b6bbd3e85e36a89dbc1107176657ecf3c"
+  },
+  "reviewed": {
+    "prior_freeze01_material_controller_and_core_diff_reviewed": true,
+    "freeze02_full_7647_byte_diff_read_and_machine_exact": true,
+    "full_compile_recovery_body_read": true,
+    "all_14_manifest_leaves_verified": true,
+    "request_stdin_exact_driver_plus_single_expected_call": true,
+    "source_payload_identical_to_freeze01": true,
+    "five_Rust_overlays_exact_reviewed_core": true,
+    "prior_32_actual_source_bindings_preserved": true,
+    "new_candidate_input_count": 33,
+    "resource_guard_unchanged": true,
+    "direct_three_ELF_size_hash_before_after": true,
+    "actual_cargo_rustc_version_before_after": true,
+    "fresh_fixed_environment": true,
+    "compiler_runtime_library_closure_not_rehashed": true
+  },
+  "expected": {
+    "compile_commands": 6,
+    "artifacts": 4,
+    "library_no_run_artifacts": 2,
+    "tests_executed": false
+  },
+  "resources": {
+    "cpu_percent": 100,
+    "memory_max_bytes": 1073741824,
+    "timeout_seconds": 600,
+    "nice": 10
+  },
+  "scope": "Fresh isolated non-root host compile only. No Rustup invocation, tool install/update, network dependency downloads, Owner runtime, Main mutation or deployment.",
+  "qualification": {
+    "runtime": false,
+    "whole_app_production_ready": false
+  },
+  "automatic_retry": false
+}

@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper_git_control01.py", line 135, in <module>
+    main()
+  File "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper_git_control01.py", line 112, in main
+    assert not own_children()
+               ^^^^^^^^^^^^^^
+  File "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-source-resume-work01/subreaper_git_control01.py", line 16, in own_children
+    return [int(value) for value in Path('/proc/self/task/%d/children' % os.getpid()).read_text().split()]
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/proc/self/task/6/children'

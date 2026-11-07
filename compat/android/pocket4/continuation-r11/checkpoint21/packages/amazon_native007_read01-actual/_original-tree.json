@@ -1,0 +1,62 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "27b98b43a9b0e961ac9d381bb350f1750b77cc4e",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 1470,
+    "sha256": "d59902fb813a2cd14fa30b18388f96969456c2a050e8327906e0303f5b96ab68",
+    "git_blob_sha1": "21de4782c57ccc31c170a729c531ca6f831279ff",
+    "retrieval": "shallow roots and complete uncropped descendant trees until canonical dependency cuts",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "46f92de051acc2fd686d7f00c2f6df8d5440a833"
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "747c2b6e05c1885493d084451180b74a5eaca98d"
+    },
+    {
+      "path": "stdout-read-0.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aed6892122e903122129aff777fe9c1930c60dd0",
+      "bytes": 14596
+    },
+    {
+      "path": "stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b88994238ae409346703e6d5613b6282c50eb223",
+      "bytes": 10704
+    },
+    {
+      "path": "terminal-status.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1afcb104767c288585e67424b996ca378630dc3c",
+      "bytes": 733
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "admission",
+      "original_tree": "46f92de051acc2fd686d7f00c2f6df8d5440a833",
+      "checkpoint": 21,
+      "canonical_package": "amazon_native007_read01-admission"
+    },
+    {
+      "path": "source",
+      "original_tree": "747c2b6e05c1885493d084451180b74a5eaca98d",
+      "checkpoint": 21,
+      "canonical_package": "amazon_native007_read01-source"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

@@ -1,0 +1,65 @@
+--- r3/src/org/droidloom/qa/bili/r3/ActionRunner.java
++++ r4/src/org/droidloom/qa/bili/r4/ActionRunner.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.bili.r3;
++package org.droidloom.qa.bili.r4;
+ 
+ import android.accessibilityservice.AccessibilityServiceInfo;
+ import android.app.Instrumentation;
+@@ -35,9 +35,9 @@
+ 
+ /** An owned self-instrumentation; it never instruments the commercial app. */
+ public final class ActionRunner extends Instrumentation {
+-    static final String PROTOCOL = "pocket4-owned-bili-qa-v3";
++    static final String PROTOCOL = "pocket4-owned-bili-qa-v4";
+     static final String PACKAGE = "tv.danmaku.bili";
+-    static final String SELF = "org.droidloom.qa.bili.r3";
++    static final String SELF = "org.droidloom.qa.bili.r4";
+     static final String MAIN_EPOCH = "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f";
+     static final int TARGET_UID = 10117;
+     static final int MAX_REQUEST = 16384, MAX_RESULT = 524288, MAX_COMPRESSED_WIRE = 262144;
+@@ -45,6 +45,7 @@
+     static final String PUBLIC_SEARCH_QUERY = "微积分";
+     static final long DEADLINE_MS = 8000, WATCHDOG_MS = 12000, MAX_INSPECTION_AGE_MS = 10000;
+     static final long WINDOW_WAIT_MS = 2000;
++    static final long WINDOW_RECHECK_MS = 100;
+     static final int MAX_WINDOW_QUERIES = 64;
+     private Bundle arguments;
+     private volatile boolean finished;
+@@ -407,7 +408,8 @@
+         final long deadline = Math.min(started + DEADLINE_MS, began + WINDOW_WAIT_MS);
+         windowObservation = new JSONObject().put("requested_display", 0)
+             .put("selection", "exact-display-0-focused-application")
+-            .put("wait_budget_ms", WINDOW_WAIT_MS).put("ready", false);
++            .put("wait_budget_ms", WINDOW_WAIT_MS).put("recheck_max_ms", WINDOW_RECHECK_MS)
++            .put("sample_timings", new JSONArray()).put("ready", false);
+         int samples = 0;
+         for (;;) {
+             timeBound(); need(samples < MAX_WINDOW_QUERIES, "WINDOW_QUERY_BOUND");
+@@ -443,6 +445,9 @@
+                 if (samples == 1) nextObservation.put("first", census);
+                 nextObservation.put("last", census).put("samples", samples)
+                     .put("waited_ms", SystemClock.elapsedRealtime() - began);
++                nextObservation.getJSONArray("sample_timings").put(new JSONObject()
++                    .put("sample", samples).put("event_serial", serial)
++                    .put("elapsed_ms", census.getLong("elapsed_ms")));
+                 need(canonical(nextObservation).getBytes(StandardCharsets.UTF_8).length <= 32000, "WINDOW_CENSUS_RESULT_BOUND");
+                 windowObservation = nextObservation;
+                 need(SystemClock.elapsedRealtime() <= deadline, "WINDOW_READINESS_DEADLINE");
+@@ -453,11 +458,12 @@
+             } finally { if (!retained) recycleWindows(windows); }
+             long remaining = deadline - SystemClock.elapsedRealtime();
+             need(remaining > 0, "NO_FOCUSED_APPLICATION_WINDOW");
+-            // No fixed sleep and no action retry: re-query only after a window
+-            // event or the bounded condition deadline. Serial closes the gap
+-            // between querying and waiting without holding a lock across IPC.
++            // A window event may arrive before the observable window changes.
++            // Re-read this condition within the same deadline even if no later
++            // event arrives. Events still wake immediately; no action is retried.
++            // Serial closes the query/wait gap without holding a lock across IPC.
+             synchronized (windowEvents) {
+-                if (windowEventSerial == serial) windowEvents.wait(remaining);
++                if (windowEventSerial == serial) windowEvents.wait(Math.min(remaining, WINDOW_RECHECK_MS));
+             }
+             windowObservation.put("waited_ms", SystemClock.elapsedRealtime() - began);
+             need(SystemClock.elapsedRealtime() < deadline, "NO_FOCUSED_APPLICATION_WINDOW");

@@ -1,0 +1,47 @@
+{
+  "actual_runtime_result": {
+    "bytes": 30990,
+    "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/candidate07-android-result-read01/runtime-result.json",
+    "path": "/home/alex/work/pocket4-signal-canary-combined07-9b4f271386ac6d2d/runtime-result.json",
+    "sha256": "4e1899db8d0f82a3d80df231f10b09fed644028440a1d77e820e50413c3378d1"
+  },
+  "case_set_from_exact_actual_result": [
+    {
+      "case": "svc",
+      "guest_pid": 5588,
+      "label": "r2-svc",
+      "nonce": "5a7517935f9d49e183b8b4647d5bbd94",
+      "package": "org.droidloom.signalprobe",
+      "required_checks": "0x000000000007e001"
+    },
+    {
+      "case": "smc-handler",
+      "guest_pid": 5647,
+      "label": "r2-smc-handler",
+      "nonce": "c2ca535cfa9545c29f3f7e935ffba5fb",
+      "package": "org.droidloom.signalprobe",
+      "required_checks": "0x000000000007fffe"
+    },
+    {
+      "case": "smc-default",
+      "guest_pid": 5709,
+      "label": "r2-smc-default",
+      "nonce": "a350a2487c2c471b805bfe7287cb9688",
+      "package": "org.droidloom.signalprobe",
+      "required_checks": "0x0000000000fc0000"
+    },
+    {
+      "case": "smc-mask-edit",
+      "guest_pid": 5827,
+      "label": "r3-smc-mask-edit",
+      "nonce": "ebdddcaf8b4e4d46abff14c3575e3f68",
+      "package": "org.droidloom.signalprobe.r3",
+      "required_checks": "0x000000000707fffe"
+    }
+  ],
+  "collection_dispatched": false,
+  "native_raw_assertions_recomputed": false,
+  "new_test_execution": false,
+  "prepared_sha256": "539041e99f862e728a88c75140f525e7771a584aabcdfe4eac30f75a59c41850",
+  "schema": 1
+}

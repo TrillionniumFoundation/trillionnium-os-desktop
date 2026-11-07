@@ -1,0 +1,234 @@
+--- reader02/read_requests.py
++++ reader03/read_requests.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Read-only reconciliation of one approved, ACK-unknown ordinary14 request."""
++"""One read-only scan for two fixed, independently pinned ACK-unknown requests."""
+ import hashlib
+ import json
+ import os
+@@ -10,20 +10,34 @@
+ 
+ JOBS = '/home/alex/.local/state/hepta-runtime-mac-worker/jobs'
+ EXPECTED_UID = 1000
+-APPROVED_REQUEST_SHA256 = 'd383190cf90e1d752e1fcc3de757c9c9cb9092e1646235ad33e40cd71d535fc6'
+-APPROVED_STDIN_BYTES = 35263
+-APPROVED_STDIN_SHA256 = '9eef9bf99c688d128467c9962f7aec8d077a2e65b39042e3a1236f663cbe4ec4'
+-APPROVED = {
+-    'executable': '/usr/bin/python3',
+-    'args': ['-I', '-B', '-', '--compile-sha256',
+-             'a916592cc708dc76411b482a371214410bca4662f6ff72dccd5083d88872b6a6'],
+-    'cwd': '/home/alex/work',
+-    'env': {},
+-    'cpu_quota_percent': 100,
+-    'memory_max_bytes': 536870912,
+-    'nice': 10,
+-    'timeout_seconds': 180,
+-}
++TARGETS = [{'label': 'ordinary14',
++  'approved_request_sha256': 'd383190cf90e1d752e1fcc3de757c9c9cb9092e1646235ad33e40cd71d535fc6',
++  'stdin_bytes': 35263,
++  'stdin_sha256': '9eef9bf99c688d128467c9962f7aec8d077a2e65b39042e3a1236f663cbe4ec4',
++  'execution': {'executable': '/usr/bin/python3',
++                'args': ['-I',
++                         '-B',
++                         '-',
++                         '--compile-sha256',
++                         'a916592cc708dc76411b482a371214410bca4662f6ff72dccd5083d88872b6a6'],
++                'cwd': '/home/alex/work',
++                'env': {},
++                'cpu_quota_percent': 100,
++                'memory_max_bytes': 536870912,
++                'nice': 10,
++                'timeout_seconds': 180}},
++ {'label': 'native_snapshot_result_reader01',
++  'approved_request_sha256': '1abe8d99f05c416230160e0c91954044f41e0baee7a44a7d11efb5c349ecdec8',
++  'stdin_bytes': 3998,
++  'stdin_sha256': '6131191253a9a22666cfd74f2e1fd1e7fa22d9fa4457084512e5cccc144005b3',
++  'execution': {'executable': '/usr/bin/sudo',
++                'args': ['-n', '/usr/bin/python3', '-I', '-', '--collect'],
++                'cwd': '/',
++                'env': {},
++                'cpu_quota_percent': 25,
++                'memory_max_bytes': 134217728,
++                'nice': 15,
++                'timeout_seconds': 30}}]
+ ENTRY_LIMIT = 4096
+ REQUEST_LIMIT = 131072
+ TOTAL_READ_LIMIT = 32 * 1024 * 1024
+@@ -42,6 +56,10 @@
+ 
+ 
+ class MetadataError(Exception):
++    pass
++
++
++class NotTargetStdin(Exception):
+     pass
+ 
+ 
+@@ -80,7 +98,7 @@
+         close_fd(fd, state)
+ 
+ 
+-def read_regular(parent, name, maximum, state):
++def read_regular(parent, name, maximum, state, allowed_sizes=None):
+     tick(state)
+     fd = None
+     try:
+@@ -89,6 +107,10 @@
+         first = os.fstat(fd)
+         if not stat.S_ISREG(first.st_mode) or first.st_uid != EXPECTED_UID or first.st_nlink != 1:
+             raise MetadataError('file_shape_or_owner')
++        # A shared execution tuple does not authorize claiming the same request.
++        # Different-size stdin cannot match either pinned target: read no bytes.
++        if allowed_sizes is not None and first.st_size not in allowed_sizes:
++            raise NotTargetStdin()
+         if not 0 <= first.st_size <= maximum:
+             raise BoundError('single_file_bound')
+         if state['read_bytes'] + first.st_size > TOTAL_READ_LIMIT:
+@@ -134,8 +156,8 @@
+     return value
+ 
+ 
+-def tuple_matches(value):
+-    for key, expected in APPROVED.items():
++def tuple_matches(value, execution):
++    for key, expected in execution.items():
+         actual = value.get(key)
+         # JSON may encode an identical integral limit as 180 or 180.0.
+         # Booleans are never resource numbers; no rounding/coercion is used.
+@@ -145,6 +167,10 @@
+         elif type(actual) is not type(expected) or actual != expected:
+             return False
+     return True
++
++
++def stdin_matches(target, pin):
++    return pin['bytes'] == target['stdin_bytes'] and pin['sha256'] == target['stdin_sha256']
+ 
+ 
+ def matching_metadata(value, job_id):
+@@ -184,35 +210,41 @@
+                 raw, request_pin = read_regular(job, 'request.json', REQUEST_LIMIT, state)
+                 state['requests_read'] += 1
+                 value = request_object(raw)
+-                if not tuple_matches(value):
++                targets = [target for target in TARGETS if tuple_matches(value, target['execution'])]
++                if not targets:
+                     state['nonmatching_requests'] += 1
+                     continue
+                 digest = matching_metadata(value, name)
+-                if len(state['matches']) >= MATCH_LIMIT:
+-                    raise BoundError('matching_entry_bound')
+-                row = {'job_id': name, 'request_digest': digest,
+-                       'request_fingerprint': digest, 'request_file': request_pin,
+-                       'stored_execution_fields_match': True,
+-                       'stdin_matches': False, 'stdin_file': None, 'errors': []}
+-                state['matches'].append(row)
+-                # No nonmatching request can reach this fixed-name read.
++                state['execution_tuple_candidates'] += 1
++                sizes = {target['stdin_bytes'] for target in targets}
++                # No nonmatching execution tuple can reach this fixed-name open.
++                # If size alone excludes all targets, read no stdin contents.
+                 try:
+-                    stdin, stdin_pin = read_regular(job, 'stdin.bin', APPROVED_STDIN_BYTES, state)
+-                    row['stdin_file'] = stdin_pin
+-                    row['stdin_matches'] = (len(stdin) == APPROVED_STDIN_BYTES and
+-                        stdin_pin['sha256'] == APPROVED_STDIN_SHA256)
+-                    if not row['stdin_matches']:
+-                        row['errors'].append({'code': 'matched_stdin_pin_differs'})
+-                except BoundError:
+-                    raise
+-                except (MetadataError, OSError) as error:
+-                    row['errors'].append(error_summary(error))
++                    _, stdin_pin = read_regular(job, 'stdin.bin', max(sizes), state,
++                                                allowed_sizes=sizes)
++                except NotTargetStdin:
++                    state['different_stdin_size_candidates'] += 1
++                    continue
++                state['candidate_stdin_reads'] += 1
++                exact_targets = [target for target in targets if stdin_matches(target, stdin_pin)]
++                if not exact_targets:
++                    state['different_stdin_hash_candidates'] += 1
++                    continue
+                 after = os.fstat(job)
+                 named = os.stat(name, dir_fd=jobs, follow_symlinks=False)
+                 if identity(before, DIR_KEYS) != identity(after, DIR_KEYS) or identity(before, DIR_KEYS) != identity(named, DIR_KEYS):
+                     raise MetadataError('matched_job_directory_changed')
+-                row['job_directory_identity'] = identity(before, DIR_KEYS)
+-                row['held_job_directory_stable'] = True
++                if len(state['matches']) + len(exact_targets) > MATCH_LIMIT:
++                    raise BoundError('matching_entry_bound')
++                for target in exact_targets:
++                    state['matches'].append({
++                        'target_label': target['label'], 'job_id': name,
++                        'approved_request_sha256': target['approved_request_sha256'],
++                        'request_digest': digest, 'request_fingerprint': digest,
++                        'request_file': request_pin, 'stdin_file': stdin_pin,
++                        'stored_execution_fields_match': True, 'stdin_matches': True,
++                        'job_directory_identity': identity(before, DIR_KEYS),
++                        'held_job_directory_stable': True})
+             except BoundError:
+                 raise
+             except (MetadataError, OSError) as error:
+@@ -249,6 +281,8 @@
+     began = time.monotonic()
+     state = {'deadline': began + SECONDS, 'read_bytes': 0, 'entries_seen': 0,
+              'requests_read': 0, 'nonmatching_requests': 0, 'unrecognized_names': 0,
++             'execution_tuple_candidates': 0, 'different_stdin_size_candidates': 0,
++             'candidate_stdin_reads': 0, 'different_stdin_hash_candidates': 0,
+              'unreadable_or_rejected_counts': {}, 'matches': [], 'close_errors': [],
+              'enumeration_exhausted': False}
+     error = None
+@@ -262,22 +296,26 @@
+         error = error_summary(caught)
+     finally:
+         close_fd(jobs, state)
+-    exact = [row['job_id'] for row in state['matches'] if row['stdin_matches'] and
+-             row.get('held_job_directory_stable') is True and not row['errors']]
++    targets = []
++    for target in TARGETS:
++        exact = [row['job_id'] for row in state['matches'] if row['target_label'] == target['label']]
++        targets.append({
++            'label': target['label'], 'approved_request_sha256': target['approved_request_sha256'],
++            'approved_stdin_bytes': target['stdin_bytes'],
++            'approved_stdin_sha256': target['stdin_sha256'],
++            'compared_stored_execution_fields': list(target['execution']),
++            'outcome': ('EXACT_MATCH_OBSERVED' if len(exact) == 1 else
++                        'MULTIPLE_EXACT_MATCHES_OBSERVED' if len(exact) > 1 else
++                        'NOT_FOUND_AT_OBSERVATION'),
++            'execution_state': 'UNKNOWN', 'exact_matching_job_ids': exact})
+     complete = (error is None and state['enumeration_exhausted'] and
+                 not state['unreadable_or_rejected_counts'] and not state['unrecognized_names'] and
+-                not state['close_errors'] and all(not row['errors'] for row in state['matches']))
++                not state['close_errors'])
+     result = {
+-        'schema': 1, 'scope': 'READ_ONLY_APPROVED_ORDINARY14_EXECUTION_METADATA_RECONCILIATION',
+-        'approved_request_sha256': APPROVED_REQUEST_SHA256,
+-        'approved_stdin_bytes': APPROVED_STDIN_BYTES,
+-        'approved_stdin_sha256': APPROVED_STDIN_SHA256,
+-        'compared_stored_execution_fields': list(APPROVED),
++        'schema': 1, 'scope': 'READ_ONLY_TWO_FIXED_EXECUTION_METADATA_RECONCILIATION',
++        'targets': targets,
+         'idempotency_key_present_or_verified': False,
+         'request_digest_recomputed': False,
+-        'outcome': ('EXACT_MATCH_OBSERVED' if len(exact) == 1 else
+-                    'MULTIPLE_EXACT_MATCHES_OBSERVED' if len(exact) > 1 else
+-                    'NOT_FOUND_AT_OBSERVATION'),
+         'zero_match_proves_original_call_invalid': False,
+         'automatic_retry_or_task_dispatch': False,
+         'test_or_runtime_executed': False, 'files_written': False,
+@@ -288,9 +326,11 @@
+                    'monotonic_scan_deadline_seconds': SECONDS},
+         'summary': {key: state[key] for key in ('read_bytes', 'entries_seen', 'requests_read',
+                     'nonmatching_requests', 'unrecognized_names', 'unreadable_or_rejected_counts',
++                    'execution_tuple_candidates', 'different_stdin_size_candidates',
++                    'candidate_stdin_reads', 'different_stdin_hash_candidates',
+                     'close_errors', 'enumeration_exhausted')},
+         'jobs_directory_identity': state.get('jobs_identity'),
+-        'matched_execution_tuples': state['matches'], 'exact_matching_job_ids': exact,
++        'matched_jobs': state['matches'],
+         'elapsed_seconds': time.monotonic() - began,
+     }
+     raw = json.dumps(result, ensure_ascii=True, sort_keys=True, separators=(',', ':'))

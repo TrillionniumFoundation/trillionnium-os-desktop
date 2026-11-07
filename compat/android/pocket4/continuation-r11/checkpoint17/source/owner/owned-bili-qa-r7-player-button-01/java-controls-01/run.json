@@ -1,0 +1,48 @@
+{
+  "Android_API_APK_compile_not_run": true,
+  "commands": [
+    {
+      "argv": [
+        "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-Xmx256m",
+        "-m",
+        "jdk.compiler/com.sun.tools.javac.Main",
+        "-proc:none",
+        "-Xlint:-options",
+        "-source",
+        "8",
+        "-target",
+        "8",
+        "-d",
+        "owned-bili-qa-r7-player-button-01/java-controls-01/classes",
+        "owned-bili-qa-r7-player-button-01/source/src/org/droidloom/qa/bili/r7/PlayerButtonTransaction.java",
+        "owned-bili-qa-r7-player-button-01/controls/PlayerButtonTransactionControl.java"
+      ],
+      "name": "compile",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-Xmx128m",
+        "-cp",
+        "owned-bili-qa-r7-player-button-01/java-controls-01/classes",
+        "org.droidloom.qa.bili.r7.PlayerButtonTransactionControl"
+      ],
+      "name": "run",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 2071,
+      "stdout_sha256": "10f0110057a1f4b6987b2a728d1b294961e1bc528cffe9581cc738febbfc8f6d"
+    }
+  ],
+  "local_compiler_module": "jdk.compiler Java17",
+  "schema": 1
+}

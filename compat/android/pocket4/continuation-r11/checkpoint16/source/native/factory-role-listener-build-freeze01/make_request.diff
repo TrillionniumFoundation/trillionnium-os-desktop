@@ -1,0 +1,62 @@
+--- a/make_request.py
++++ b/make_request.py
+@@ -7,11 +7,12 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-CORE=HERE.parent/'factory-role-registry-owner-destruction-source-freeze01'
+-ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/registry-owner-destruction-host-build-01-20261105'
+-KEY='pocket4-registry-owner-destruction-host-build-01-20261105'
+-MANIFEST_SHA='3cca0b23c8b84de8a072d13206ddf7fa2dc018be37f86f6c3dc8a1cf654432f0'
+-CONTROLLER_SHA='8aca23879e7e5220dedc9c3a6f5ad59d90d7d028411d0be52840ad76635ab028'
++CORES={'listener-source-pins.json':HERE.parent/'factory-role-listener-source-freeze02',
++       'owner-lifetime-source-pins.json':HERE.parent/'factory-role-session-owner-lifetime-source-freeze02'}
++ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-listener-lifetime-host-build-01-20261105'
++KEY='pocket4-role-listener-lifetime-host-build-01-20261105'
++AUTHORITIES={'listener-source-pins.json': {'bytes': 9518, 'sha256': '7adaade107d05204015482abcee84431d8cd1bcc7776fea2a97dcd6488d210fb'}, 'owner-lifetime-source-pins.json': {'bytes': 7698, 'sha256': '072315957a20bd8fdd83efccbea0ca633a3815f867bb07d6091bc42b07762db5'}}
++CONTROLLER_SHA='b8bc223e8438a56308acf52a965c062814be0ace6d5eef476a056aacc702d17c'
+ 
+ def pin(raw):return {'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+ def write(path,data):
+@@ -21,20 +22,23 @@
+     return pin(data)
+ 
+ def freeze(output):
+-    raw=(CORE/'SOURCE_PINS.json').read_bytes()
+-    if pin(raw)['sha256']!=MANIFEST_SHA:raise RuntimeError('immutable source authority differs')
+-    authority={row['path']:row for row in json.loads(raw)['files']}
++    files={};authorities={}
++    for name,root in CORES.items():
++        raw=(root/'SOURCE_PINS.json').read_bytes()
++        if pin(raw)!=AUTHORITIES[name]:raise RuntimeError('immutable source authority differs: '+name)
++        authorities[name]={row['path']:row for row in json.loads(raw)['files']}
++        files[name]=raw.decode()
+     expected=json.loads((HERE/'source-inputs.json').read_text())
+-    if len(expected)!=8:raise RuntimeError('exact eight source/reference inputs required')
+-    files={'registry-source-pins.json':raw.decode()}
++    if len(expected)!=21:raise RuntimeError('exact twenty-one source/reference inputs required')
+     for name,row in expected.items():
+-        data=(CORE/name).read_bytes()
+-        if pin(data)!=row or any(authority[name][key]!=row[key]for key in ['bytes','sha256']):
++        authority=authorities[row['authority']][row['authority_path']]
++        data=(CORES[row['authority']]/row['authority_path']).read_bytes()
++        if any(pin(data)[key]!=row[key] or authority[key]!=row[key] for key in ['bytes','sha256']):
+             raise RuntimeError('frozen input differs: '+name)
+         files[name]=data.decode()
+-    controller=(HERE/'build_destruction.py').read_bytes()
++    controller=(HERE/'build_listener.py').read_bytes()
+     if pin(controller)['sha256']!=CONTROLLER_SHA:raise RuntimeError('matching controller differs')
+-    files['build_destruction.py']=controller.decode()
++    files['build_listener.py']=controller.decode()
+     pins={name:pin(text.encode())for name,text in files.items()}
+     stage='''import hashlib,json,os,stat
+ from pathlib import Path
+@@ -72,7 +76,7 @@
+         if (after.st_dev,after.st_ino,after.st_uid,after.st_gid,stat.S_IMODE(after.st_mode))!=(66306,34351895,1000,1000,0o700)or (after.st_dev,after.st_ino)!=(named.st_dev,named.st_ino):
+             raise RuntimeError('private parent changed during create-only staging')
+     finally:os.close(parent)
+-    os.execve('/usr/bin/python3',['/usr/bin/python3','-I','-B',str(source/'build_destruction.py'),'--execute-once'],
++    os.execve('/usr/bin/python3',['/usr/bin/python3','-I','-B',str(source/'build_listener.py'),'--execute-once'],
+               {'PATH':'/usr/bin:/bin','LANG':'C','LC_ALL':'C'})
+ '''%(ROOT,pins)
+     entry=stage+'\nPACKET=json.loads('+repr(json.dumps(files,sort_keys=True))+')\nmain(PACKET)\n'

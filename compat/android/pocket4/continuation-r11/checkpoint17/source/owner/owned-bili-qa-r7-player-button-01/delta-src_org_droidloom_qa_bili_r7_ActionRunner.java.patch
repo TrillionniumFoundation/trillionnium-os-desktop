@@ -1,0 +1,175 @@
+--- R6/src/org/droidloom/qa/bili/r7/ActionRunner.java
++++ R7/src/org/droidloom/qa/bili/r7/ActionRunner.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.bili.r6;
++package org.droidloom.qa.bili.r7;
+ 
+ import android.accessibilityservice.AccessibilityServiceInfo;
+ import android.app.Instrumentation;
+@@ -41,9 +41,9 @@
+ 
+ /** An owned self-instrumentation; it never instruments the commercial app. */
+ public final class ActionRunner extends Instrumentation {
+-    static final String PROTOCOL = "pocket4-owned-bili-qa-v6";
++    static final String PROTOCOL = "pocket4-owned-bili-qa-v7";
+     static final String PACKAGE = "tv.danmaku.bili";
+-    static final String SELF = "org.droidloom.qa.bili.r6";
++    static final String SELF = "org.droidloom.qa.bili.r7";
+     static final String MAIN_EPOCH = "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f";
+     static final int TARGET_UID = 10117;
+     static final int MAX_REQUEST = 16384, MAX_RESULT = 524288, MAX_COMPRESSED_WIRE = 262144;
+@@ -174,6 +174,7 @@
+             else if (op.equals("inspect")) keys(request, "protocol", "nonce", "op", "scope");
+             else if (op.equals("click")) keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "node_path", "node_sha256");
+             else if (op.equals("reveal_controls")) keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "player_scope_sha256", "viewport_bounds");
++            else if (op.equals("player_button")) keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "transition", "player_frame_sha256");
+             else if (op.equals("set_text")) {
+                 keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "node_path", "node_sha256", "node_resource_id", "value");
+                 need(PUBLIC_SEARCH_QUERY.equals(string(request, "value", 64)), "ONLY_FIXED_PUBLIC_SEARCH_QUERY_ALLOWED");
+@@ -204,6 +205,7 @@
+                     try { result.put("inspection", captured.json); }
+                     finally { captured.close(); }
+                 } else if (op.equals("reveal_controls")) revealControls(request, result);
++                else if (op.equals("player_button")) playerButton(request, result);
+                 else act(request, result);
+             }
+         } catch (Exception error) { primary = error; }
+@@ -249,7 +251,7 @@
+     }
+ 
+     static String errorCode(Exception error) {
+-        return error instanceof Rejected || error instanceof TouchTransaction.Fault
++        return error instanceof Rejected || error instanceof TouchTransaction.Fault || error instanceof PlayerButtonTransaction.Fault
+             ? error.getMessage() : "EXCEPTION_" + error.getClass().getSimpleName();
+     }
+     void writeNew(String name, byte[] value) throws Exception {
+@@ -814,6 +816,129 @@
+                     .put("scope_unchanged_after_input",true).put("requires_independent_controls_readback",true);
+             } finally { after.close(); }
+         } finally { current.close(); }
++    }
++
++    static final String PLAYER_BUTTON_RESOURCE = PACKAGE+":id/gemini_halfscreen_play";
++    static JSONObject playerFrame(JSONObject proof) throws Exception {
++        JSONObject value=new JSONObject();
++        for (String key:new String[]{"scope","window","window_sha256","viewport_bounds","full_area_bounds",
++                "render_structure_sha256","title_text_sha256","author_text_sha256"}) value.put(key,proof.get(key));
++        return value;
++    }
++    static final class PlayerSelection {
++        final String path,nodeHash,inspectionHash;final JSONObject proof;
++        PlayerSelection(String p,String h,String whole,JSONObject value) { path=p;nodeHash=h;inspectionHash=whole;proof=value; }
++    }
++    static PlayerSelection playerButtonCurrent(JSONObject inspection,JSONObject scope,String transition) throws Exception {
++        need("pause".equals(transition)||"resume".equals(transition),"FIXED_PLAYER_TRANSITION_REQUIRED");
++        String label="pause".equals(transition)?"暂停":"播放";
++        JSONObject proof=revealPlayer(inspection,scope,false);JSONArray nodes=inspection.getJSONArray("nodes");
++        JSONObject button=null,controls=null,container=null,parent=null;int buttonCount=0,controlsCount=0,containerCount=0;
++        for (int i=0;i<nodes.length();i++) {
++            JSONObject node=nodes.getJSONObject(i);String resource=node.getString("resource_id");
++            if (PLAYER_BUTTON_RESOURCE.equals(resource)) { button=node;buttonCount++; }
++            if ((PACKAGE+":id/control_container").equals(resource)) { controls=node;controlsCount++; }
++            if ((PACKAGE+":id/video_container").equals(resource)) { container=node;containerCount++; }
++        }
++        need(buttonCount==1,"UNIQUE_CURRENT_PLAYBACK_RESOURCE_REQUIRED");
++        need(controlsCount==1,"UNIQUE_CURRENT_CONTROL_CONTAINER_REQUIRED");
++        need(containerCount==1,"UNIQUE_CURRENT_VIDEO_CONTAINER_REQUIRED");
++        need(revealEligible(button) && "android.widget.ImageView".equals(button.getString("class")) && button.getBoolean("clickable")
++            && !button.getBoolean("content_desc_truncated") && label.equals(button.getString("content_desc"))
++            && hash(label.getBytes(StandardCharsets.UTF_8)).equals(button.getString("content_desc_sha256")),
++            "EXACT_CURRENT_PLAYER_BUTTON_LABEL_REQUIRED");
++        String path=button.getString("path");int slash=path.lastIndexOf('/');need(slash>0,"CURRENT_PLAYER_BUTTON_PARENT_PATH");
++        String parentPath=path.substring(0,slash);int parentCount=0;
++        for (int i=0;i<nodes.length();i++) {
++            JSONObject candidate=nodes.getJSONObject(i);
++            if (parentPath.equals(candidate.getString("path"))) { parent=candidate;parentCount++; }
++        }
++        int[] crop=revealRect(proof.getJSONArray("viewport_bounds")),box=revealRect(button.getJSONArray("bounds"));
++        need(revealEligible(controls) && "android.widget.FrameLayout".equals(controls.getString("class"))
++            && revealUnder(controls,container) && Arrays.equals(crop,revealRect(controls.getJSONArray("bounds")))
++            && integer(controls,"child_count")==1 && parentCount==1 && revealEligible(parent)
++            && "android.view.ViewGroup".equals(parent.getString("class")) && parent.getString("resource_id").isEmpty()
++            && parentPath.lastIndexOf('/')>0 && parentPath.substring(0,parentPath.lastIndexOf('/')).equals(controls.getString("path"))
++            && Arrays.equals(crop,revealRect(parent.getJSONArray("bounds"))) && !button.getBoolean("editable")
++            && button.getString("text").isEmpty() && !button.getBoolean("text_truncated") && revealInside(box,crop),
++            "EXACT_CURRENT_PLAYER_DIRECT_CONTROL_REQUIRED");
++        return new PlayerSelection(path,button.getString("node_sha256"),hashJson(inspection),proof);
++    }
++    static JSONObject playerCaptureBinding(Capture capture) throws Exception {
++        return new JSONObject().put("tree_sha256",capture.json.getString("tree_sha256"))
++            .put("window_sha256",capture.json.getString("window_sha256"))
++            .put("connection_scoped_window_id",capture.windowId)
++            .put("observed_elapsed_ms",integer(capture.json,"observed_elapsed_ms"));
++    }
++    void playerButton(final JSONObject request,final JSONObject result) throws Exception {
++        final String transition=string(request,"transition",6);
++        need("pause".equals(transition)||"resume".equals(transition),"FIXED_PLAYER_TRANSITION_REQUIRED");
++        String priorNonce=string(request,"inspection_nonce",32),priorHash=string(request,"inspection_sha256",64);
++        need(!priorNonce.equals(string(request,"nonce",32)) && priorHash.matches("[0-9a-f]{64}"),"PLAYER_CONTEXT_NONCE_AND_HASH");
++        byte[] previousRaw=readInspection(priorNonce);need(hash(previousRaw).equals(priorHash),"PLAYER_CONTEXT_BYTES_CHANGED");
++        JSONObject previous=new JSONObject(new String(previousRaw,StandardCharsets.UTF_8));
++        need(PROTOCOL.equals(previous.getString("protocol")) && previous.getBoolean("ok")
++            && previous.getBoolean("claim_persistence_completed") && previous.getBoolean("helper_work_completed")
++            && "inspect".equals(previous.getString("op")) && priorNonce.equals(previous.getString("nonce"))
++            && !previous.getBoolean("action_attempted") && previous.getJSONObject("restoration").getBoolean("service_info_verified"),
++            "PLAYER_SUCCESSFUL_RESTORED_CONTEXT_REQUIRED");
++        final JSONObject scope=request.getJSONObject("scope");
++        need(canonical(previous.getJSONObject("host_scope_attestation")).equals(canonical(scope)),"PLAYER_CONTEXT_SCOPE_CHANGED");
++        JSONObject inspected=previous.getJSONObject("inspection");
++        long age=SystemClock.elapsedRealtime()-integer(inspected,"observed_elapsed_ms");
++        need(age>=0 && age<=MAX_INSPECTION_AGE_MS,"PLAYER_CONTEXT_INSPECTION_TOO_OLD");
++        PlayerSelection prior=playerButtonCurrent(inspected,scope,transition);
++        final String frameHash=string(request,"player_frame_sha256",64);
++        need(frameHash.matches("[0-9a-f]{64}") && hashJson(playerFrame(prior.proof)).equals(frameHash),"PLAYER_CONTEXT_FRAME_CHANGED");
++        result.put("inspection_nonce",priorNonce).put("inspection_sha256",priorHash)
++            .put("transition",transition).put("player_frame_sha256",frameHash)
++            .put("prior_inspection_is_context_only",true).put("atomic_android_transaction",false);
++        PlayerButtonTransaction.run(new PlayerButtonTransaction.Backend<Capture,PlayerSelection>() {
++            @Override public Capture inspectSelection() throws Exception { return inspect(null,"player_selection"); }
++            @Override public PlayerSelection selectCurrent(Capture first) throws Exception {
++                PlayerSelection selected=playerButtonCurrent(first.json,scope,transition);
++                need(hashJson(playerFrame(selected.proof)).equals(frameHash),"CURRENT_PLAYER_CONTEXT_FRAME_CHANGED");
++                return selected;
++            }
++            @Override public Capture inspectTarget(PlayerSelection selected) throws Exception { return inspect(selected.path,"action_target"); }
++            @Override public void requireSameWholeTreeAndWindow(Capture first,Capture target) throws Exception {
++                need(first.windowId==target.windowId && first.json.getString("tree_sha256").equals(target.json.getString("tree_sha256"))
++                    && first.json.getString("window_sha256").equals(target.json.getString("window_sha256")),
++                    "CURRENT_PLAYER_TREE_OR_WINDOW_CHANGED");
++            }
++            @Override public void requireRefreshedTarget(Capture current,PlayerSelection selected) throws Exception {
++                need(current.target!=null && current.target.refresh(),"TARGET_REFRESH_FAILED");
++                need(hashJson(node(current.target,selected.path)).equals(selected.nodeHash),"TARGET_CHANGED_BEFORE_ACTION");
++                need(current.target.getWindowId()==current.windowId && current.target.isEnabled()
++                    && current.target.isVisibleToUser() && !current.target.isPassword(),"ACTION_TARGET_NOT_ELIGIBLE");
++                need(current.target.isClickable(),"ACTION_TARGET_NOT_CLICKABLE");
++            }
++            @Override public Capture inspectFinal() throws Exception { return inspect(null,"action_final_window"); }
++            @Override public void requireFinalWholeTreeAndWindow(Capture target,Capture last) throws Exception {
++                need(last.windowId==target.windowId && last.json.getString("tree_sha256").equals(target.json.getString("tree_sha256"))
++                    && last.json.getString("window_sha256").equals(target.json.getString("window_sha256")),"FOCUS_CHANGED_BEFORE_ACTION");
++            }
++            @Override public void bindEvidence(Capture first,Capture current,Capture last,PlayerSelection selected) throws Exception {
++                result.put("player_inspection",first.json).put("player_inspection_sha256",selected.inspectionHash)
++                    .put("player_scope",selected.proof).put("target_node_path",selected.path).put("target_node_sha256",selected.nodeHash)
++                    .put("action_window",current.json.getJSONObject("window")).put("connection_scoped_window_id",current.windowId)
++                    .put("player_capture_bindings",new JSONArray().put(playerCaptureBinding(first)).put(playerCaptureBinding(current)).put(playerCaptureBinding(last)))
++                    .put("same_connection_full_tree_rechecks",2);
++            }
++            @Override public long selectedAt(Capture first) throws Exception { return integer(first.json,"observed_elapsed_ms"); }
++            @Override public long now() { return SystemClock.elapsedRealtime(); }
++            @Override public void beforeAction(long admitted,long selectionAge) throws Exception {
++                timeBound();result.put("player_action_admitted_elapsed_ms",admitted).put("player_selection_age_ms",selectionAge)
++                    .put("player_selection_age_limit_ms",PlayerButtonTransaction.MAX_SELECTION_AGE_MS);
++            }
++            @Override public boolean clickOnce(Capture current) throws Exception {
++                actionAttempted=true;
++                boolean acknowledged=current.target.performAction(AccessibilityNodeInfo.ACTION_CLICK);
++                result.put("node_action","ACTION_CLICK").put("node_action_returned",acknowledged);
++                return acknowledged;
++            }
++            @Override public void close(Capture capture) { capture.close(); }
++        });
+     }
+ 
+     void act(JSONObject request, JSONObject result) throws Exception {

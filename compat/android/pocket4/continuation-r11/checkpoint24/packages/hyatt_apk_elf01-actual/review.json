@@ -1,0 +1,97 @@
+{
+  "schema": "root-Hyatt-exact-APK-ELF-actual-v1",
+  "job_id": "1a1b2db75b3-fc05-8006",
+  "complete": true,
+  "stdout": {
+    "bytes": 20671,
+    "sha256": "84f1a1b5b6b040069884414dc528f7b5175a69ce36d982f6cf5fb41056036803",
+    "git_blob_sha1": "ad7f974b86b210bafafbb231bb643054195c8d13"
+  },
+  "terminal": {
+    "bytes": 733,
+    "sha256": "50aab61d4d93ec86185f1833d8e42f0f649a427e28818a5a685914791c18aa66",
+    "git_blob_sha1": "d909d8b716f9ceda52d80b04e7aae99189bac46d"
+  },
+  "parser_controls_passed": 15,
+  "APK_count": 3,
+  "full_hash_passes": 2,
+  "APK_bytes_read": 282505404,
+  "member": {
+    "APK_filename": "split_config.arm64_v8a.apk",
+    "CRC32_matched": true,
+    "bytes": 446420,
+    "compressed_bytes": 442124,
+    "compressed_sha256": "90dd858c8730c031f7240930c11ade33ff5098e2bc9adc9b9fdbbe6a00b52af6",
+    "extracted_to_disk": false,
+    "member": "lib/arm64-v8a/libdexprotector.so",
+    "method": 8,
+    "sha256": "8ef88aa9d2f3ed803f6d034fb8d8dcd8bf7bb431c882caa223c2bf15d25b015d"
+  },
+  "ELF": {
+    "bytes": 446420,
+    "sha256": "8ef88aa9d2f3ed803f6d034fb8d8dcd8bf7bb431c882caa223c2bf15d25b015d",
+    "BuildId": null,
+    "BuildId_status": "NOT_PRESENT_IN_PT_NOTE",
+    "JNI_OnLoad": {
+      "binding": 1,
+      "index": 1,
+      "section_index": 7,
+      "size": 72,
+      "type": 2,
+      "value": 1096,
+      "visibility": 0
+    },
+    "window": {
+      "actual_return_value_observed": false,
+      "bytes": 72,
+      "file_offset": 1096,
+      "function_executed": false,
+      "minus_500_cause_established": false,
+      "observation_limit": 128,
+      "observation_list_may_be_truncated": false,
+      "observations": [
+        {
+          "kind": "RET",
+          "offset": 24,
+          "register": 30
+        },
+        {
+          "kind": "BLR",
+          "offset": 40,
+          "register": 8
+        },
+        {
+          "kind": "RET",
+          "offset": 68,
+          "register": 30
+        }
+      ],
+      "opcode_counts": {
+        "B": 0,
+        "BL": 0,
+        "BLR": 1,
+        "BR": 0,
+        "MOVZ_OR_MOVN_REGISTER0": 0,
+        "RET": 2
+      },
+      "scope": "LINEAR_INSTRUCTION_WINDOW_NOT_CONTROL_FLOW_OR_RETURN_PROOF",
+      "sha256": "64c216eb2b802761288adb79fd08dc9f258fdb687943dd343c752eee0875e2fa",
+      "symbol_size_unknown": false,
+      "vaddr": 1096,
+      "whole_symbol_bytes_inspected": true
+    }
+  },
+  "all105FDsclosed": true,
+  "Main_before_after_equal": true,
+  "original_metadata_and_R6_source_unchanged": true,
+  "action_lock_released": true,
+  "Main_actions": 0,
+  "Android_commands": 0,
+  "children": 0,
+  "writes": 0,
+  "old_minus500_failure_preserved": true,
+  "return_reason": "UNKNOWN",
+  "current_PM_UID_version_not_requeried": true,
+  "whole_app_production_ready": false,
+  "CP23_cut_policy": "Result was collected and Root-qualified after fixed cut; exclude from CP23 even though producer timestamp precedes cut."
+}

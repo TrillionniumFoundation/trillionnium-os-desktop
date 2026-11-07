@@ -1,0 +1,122 @@
+{
+  "SOURCE_PINS_sha256": "536774fc18e623a83937e0eb7bfd4f0f4ebf1d324e14f4f5e154c5300ee58f2f",
+  "checked_files": [
+    {
+      "bytes": 5070,
+      "path": "README.md",
+      "sha256": "3043ec8241485761da50ba2a654ffe18367d90fcc90e732f184e81590cba6b50"
+    },
+    {
+      "bytes": 13656,
+      "path": "amazon-artifact-to-12306.patch",
+      "sha256": "ccce6ec53e6b890011822e3489a84d181224a8d18891c85f288f57fd77e7e389"
+    },
+    {
+      "bytes": 794,
+      "path": "default-plan.stdout.json",
+      "sha256": "84e17bc31e6936a3844b8337321429204cd47e2260dfb5fcb1f86ea358cabce0"
+    },
+    {
+      "bytes": 27232,
+      "path": "exact-request.json",
+      "sha256": "4af819e91a34c992b58eb3aabbf4fdbc253372c004488c5fc6e7f75c0c15d21f"
+    },
+    {
+      "bytes": 2297,
+      "path": "generator-to-12306.patch",
+      "sha256": "7cb742612116f53f1f6813535f7b1eebba1ef47d59e09c94490f15839ca4c7f9"
+    },
+    {
+      "bytes": 830,
+      "path": "historical-target-reference.json",
+      "sha256": "c097b3226e5fb30bfc8331d57f946a404b9248ee584db93b26bbd466d738c760"
+    },
+    {
+      "bytes": 1697,
+      "path": "local-controls.stdout.json",
+      "sha256": "dc4e44a6e1be7733b3f2bea582f2520efd35ad5109888f792b8fe0cacbbc8c94"
+    },
+    {
+      "bytes": 8759,
+      "path": "local_controls.py",
+      "sha256": "fb3fda546324fdc7a0cf935512b72269ea8d86f6f9fffff7771e58afb7596ec3"
+    },
+    {
+      "bytes": 3043,
+      "path": "make_request.py",
+      "sha256": "adf2bb84b67fa5ef210dfa1eac3d811d036d7ab3b2a9baa24e837606818d8f48"
+    },
+    {
+      "bytes": 145,
+      "path": "nonce.json",
+      "sha256": "f3efb96031277dd23ff0193fa39fc28a747634231541127f4281ddc424cfafea"
+    },
+    {
+      "bytes": 21051,
+      "path": "read_12306.py",
+      "sha256": "77e6a5056f0de303ab8d81b0864999cdbf5d244442eb31d48c65ce49f4981d9d"
+    },
+    {
+      "bytes": 421,
+      "path": "request-generation.json",
+      "sha256": "6a3aa1ba34af9890a8e1fa6b25b7c0261652deaa7daa362475fc49ed2783dddf"
+    },
+    {
+      "bytes": 1605,
+      "path": "source-review.json",
+      "sha256": "024071e09bab7565fbcec35de18da2b4eba1aa4aab42e98e88b5f13a8ad26358"
+    },
+    {
+      "bytes": 2280,
+      "path": "stage-to-12306.patch",
+      "sha256": "6ffdc954e149e09547bef1b96157f73a1334026e169c129107d205c3919b71f2"
+    },
+    {
+      "bytes": 3876,
+      "path": "stage_execute.py",
+      "sha256": "c44e3c24acb5ebc688d776362cfd9b26bdf2df889cd2d2cc858f76343989b5df"
+    }
+  ],
+  "deltas_reconstructed": [
+    {
+      "candidate_sha256": "77e6a5056f0de303ab8d81b0864999cdbf5d244442eb31d48c65ce49f4981d9d",
+      "patch": "amazon-artifact-to-12306.patch",
+      "patch_sha256": "ccce6ec53e6b890011822e3489a84d181224a8d18891c85f288f57fd77e7e389",
+      "preimage_sha256": "22a6552111154156004aff344d6929db436d5c3fe084893abea931f1399b0588"
+    },
+    {
+      "candidate_sha256": "c44e3c24acb5ebc688d776362cfd9b26bdf2df889cd2d2cc858f76343989b5df",
+      "patch": "stage-to-12306.patch",
+      "patch_sha256": "6ffdc954e149e09547bef1b96157f73a1334026e169c129107d205c3919b71f2",
+      "preimage_sha256": "d1b4aef3a1a06db71424bde5467eea6b52d7954aa19ceab57b66df292c1bbb1d"
+    },
+    {
+      "candidate_sha256": "adf2bb84b67fa5ef210dfa1eac3d811d036d7ab3b2a9baa24e837606818d8f48",
+      "patch": "generator-to-12306.patch",
+      "patch_sha256": "7cb742612116f53f1f6813535f7b1eebba1ef47d59e09c94490f15839ca4c7f9",
+      "preimage_sha256": "62199ec331cf8879a00ff6cf334cc3526efd2a787555d06cef8b640da2d39564"
+    }
+  ],
+  "manifest_member_count": 15,
+  "qualification": false,
+  "request_bytes": 27232,
+  "request_sha256": "4af819e91a34c992b58eb3aabbf4fdbc253372c004488c5fc6e7f75c0c15d21f",
+  "runtime_executed": false,
+  "schema": 1,
+  "scope": "Local hashes, exact diffs and request AST only; no reader/control/device execution",
+  "stdin_bytes": 21514,
+  "stdin_sha256": "1434c14b21c34f2a99e365589bcf0bc49ba5c0fdbdea5c6cfc8f77432ef637de",
+  "synthetic_or_device_controls_executed": false,
+  "unchanged_function_AST": [
+    "need",
+    "sha",
+    "read",
+    "load",
+    "error_row",
+    "remember",
+    "identity",
+    "Context.__init__",
+    "Context.guard"
+  ],
+  "wrapper_reconstructed_exactly": true
+}

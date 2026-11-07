@@ -1,0 +1,67 @@
+--- preimage/make_run_request.py
++++ candidate/make_run_request.py
+@@ -7,12 +7,12 @@
+ import json
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT='/run/pocket4-snapshot-nofollow-host-run-01-20261105'
+-KEY='pocket4-snapshot-nofollow-host-runtime-01-20261105'
+-SOURCE_MANIFEST='310e7370a78cc63f0ad72527fbeb37f58f884fdf3ca45ee0acc37e1aee46ad36'
+-TEMPLATE_SHA='7b17f0fa6d853c9a9e5b62ae1fe4d4a4c786c149b929fcb5e5887557cf43f374'
+-PLAN_SHA='5e50f0ae3bc7a2458e71d30fef0f859c5466f343ebe9c18ffcc0c8f2989b63c8'
+-BUILD_ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105'
++ROOT='/run/pocket4-registry-owner-destruction-host-run-01-20261105'
++KEY='pocket4-registry-owner-destruction-host-runtime-01-20261105'
++SOURCE_MANIFEST='3cca0b23c8b84de8a072d13206ddf7fa2dc018be37f86f6c3dc8a1cf654432f0'
++TEMPLATE_SHA='0c8323ed5e097c4970e8ee4e003286a24da3410897b8f454a146195372c29da4'
++PLAN_SHA='21f678d2cbdb91b27efdf9cef648d41c7d3524d9ab5135c1cf71d187d6e47a30'
++BUILD_ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/registry-owner-destruction-host-build-01-20261105'
+ 
+ 
+ def pin(raw):return {'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+@@ -26,7 +26,7 @@
+     raw=build_path.read_bytes()
+     if len(raw)>262144:raise RuntimeError('actual build receipt exceeds the fixed bound')
+     build=json.loads(raw)
+-    source=(HERE/'run_snapshot.template.py').read_text()
++    source=(HERE/'run_destruction.template.py').read_text()
+     plan=(HERE/'CASE_PLAN.json').read_bytes()
+     if pin(source.encode())['sha256']!=TEMPLATE_SHA or pin(plan)['sha256']!=PLAN_SHA:
+         raise RuntimeError('reviewed run template or case plan changed')
+@@ -39,13 +39,14 @@
+     scope={'SOURCE_MANIFEST_SHA':SOURCE_MANIFEST}
+     exec(compile(ast.Module(body=selected,type_ignores=[]),'frozen_build_predicate','exec'),scope)
+     scope['qualified_build'](build)
+-    elf=build['artifacts']['control']['elf']
+-    if elf['path']!=BUILD_ROOT+'/build01/snapshot_controls' or not 0<elf['bytes']<=8*1024*1024:
+-        raise RuntimeError('actual matching control ELF path or size differs')
++    elves={arm:build['artifacts'][arm]['elf']for arm in ['preimage','candidate']}
++    for arm,elf in elves.items():
++        if elf['path']!=BUILD_ROOT+'/build01/'+arm+'_controls' or not 0<elf['bytes']<=8*1024*1024:
++            raise RuntimeError('actual matching control ELF path or size differs: '+arm)
+     if source.count('PENDING_ACTUAL_BUILD_RESULT_SHA256')!=1:
+         raise RuntimeError('single actual build binding placeholder required')
+     source=source.replace('PENDING_ACTUAL_BUILD_RESULT_SHA256',pin(raw)['sha256']);ast.parse(source)
+-    files={'run_snapshot.py':source,'actual-build-result.json':raw.decode(),'CASE_PLAN.json':plan.decode()}
++    files={'run_destruction.py':source,'actual-build-result.json':raw.decode(),'CASE_PLAN.json':plan.decode()}
+     pins={name:pin(text.encode())for name,text in files.items()}
+     stage='''import hashlib,json,os,stat
+ from pathlib import Path
+@@ -81,7 +82,7 @@
+            (after.st_dev,after.st_ino)!=(named.st_dev,named.st_ino):
+             raise RuntimeError('root parent changed during create-only staging')
+     finally:os.close(parent)
+-    os.execve('/usr/bin/python3',['/usr/bin/python3','-I','-B',str(source/'run_snapshot.py'),'--execute-once'],
++    os.execve('/usr/bin/python3',['/usr/bin/python3','-I','-B',str(source/'run_destruction.py'),'--execute-once'],
+               {'PATH':'/usr/bin:/bin','HOME':'/root','LANG':'C','LC_ALL':'C'})
+ '''%(ROOT,pins)
+     entry=stage+'\nPACKET=json.loads('+repr(json.dumps(files,sort_keys=True))+')\nmain(PACKET)\n'
+@@ -96,7 +97,7 @@
+     rows['exact-request.json']=write(output/'exact-request.json',json.dumps(request,indent=2)+'\n')
+     write(output/'SOURCE_PINS.json',json.dumps({'schema':1,'files':rows,'packet_files':pins,
+           'state':'FROZEN_REQUIRES_ROOT_ACTUAL_ELF_ADMISSION','actual_build_sha256':pin(raw)['sha256'],
+-          'actual_elf':elf,'factory_service_started':False,'platform_policy_qualified':False,
++          'actual_elves':elves,'factory_service_started':False,'platform_policy_qualified':False,
+           'Main_actions':0},indent=2)+'\n')
+     print(json.dumps({'request':rows['exact-request.json'],'stable_key':KEY,
+                       'actual_build_sha256':pin(raw)['sha256'],'stdin_bytes':len(entry.encode())},indent=2))

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "scope": "Root independent offline validation through actual production planned; no service or namespace operation",
+  "source_sha256": "f03655a8c00a0728fe6e8343d1844b1c87324698d67a4da37ab2f532c34ff634",
+  "cleanup_sha256": "45661ea4b0c3d9de0708571cdab3521d6827bed1f2108abf6814493d812fdbd3",
+  "new_nonce_length": 32,
+  "valid_default_plan_pass": true,
+  "invalid_33_hex_cases": [
+    {
+      "mode": "default",
+      "actual_guard_rejected": true,
+      "follow_on_calls": 0,
+      "error": "private unit name or nonce is invalid"
+    },
+    {
+      "mode": "execute",
+      "actual_guard_rejected": true,
+      "follow_on_calls": 0,
+      "error": "private unit name or nonce is invalid"
+    }
+  ],
+  "services_started": 0,
+  "claim_written": false,
+  "production_ready": false
+}

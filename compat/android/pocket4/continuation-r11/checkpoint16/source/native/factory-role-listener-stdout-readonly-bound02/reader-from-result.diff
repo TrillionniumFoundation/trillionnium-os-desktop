@@ -1,0 +1,16 @@
+--- result-reader02/read_result.py
++++ listener-stdout-reader02/read_result.py
+@@ -8,10 +8,10 @@
+ import stat
+ import sys
+ 
+-PATH = "/run/pocket4-role-listener-lifetime-host-run-02-20261105/run01/result.json"
++PATH = "/run/pocket4-role-listener-lifetime-host-run-02-20261105/run01/listener.stdout"
+ MAXIMUM = 131072
+-EXPECTED_BYTES = 18856
+-EXPECTED_SHA256 = "aa9ab8288afe323943c71d99a0ccc07d6f79ee100a242a5dadbbf9f43a2cd9d7"
++EXPECTED_BYTES = 967
++EXPECTED_SHA256 = "d6c34e2d341881632ce1336f66550def85e1a30f1030923b1b52746f5ed98245"
+ 
+ 
+ def need(value, message):

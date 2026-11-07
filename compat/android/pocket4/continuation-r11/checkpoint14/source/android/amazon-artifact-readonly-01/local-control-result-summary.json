@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "actual_execution_tool_chunk": "bf6abd",
+  "command": "python3 -I local_controls.py",
+  "exit_code": 0,
+  "production_source_sha256": "22a6552111154156004aff344d6929db436d5c3fe084893abea931f1399b0588",
+  "passed": 8,
+  "controls": [
+    "one_exact_synthetic_package_UID_version",
+    "another_package_or_multiple_rows_rejected",
+    "one_synthetic_Amazon_base_path",
+    "path_outside_Amazon_install_directory_rejected",
+    "duplicate_APK_path_rejected",
+    "bad_prefix_actual_Context_first_error_and_postguard",
+    "timeout_release_actual_Context_first_error_and_postguard",
+    "success_release_actual_Context_first_error_and_postguard"
+  ],
+  "scope": "actual parser and Context methods; explicit command/lease seam",
+  "record_kind": "summary of observed tool output, not a recreated raw stdout artifact",
+  "Android_calls": 0,
+  "real_namespace_entry": false,
+  "real_metadata_or_APK_read": false,
+  "remote_execution": false,
+  "whole_App_qualified": false
+}

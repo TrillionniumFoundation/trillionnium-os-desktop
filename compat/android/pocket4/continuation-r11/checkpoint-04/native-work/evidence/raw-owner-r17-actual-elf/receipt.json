@@ -1,0 +1,92 @@
+{
+  "schema": 1,
+  "scope": "Exact Android ELF static worker closure only",
+  "qualified_for_owned_runtime_probe": true,
+  "candidate_production_ready": false,
+  "actual_android_executed_by_this_audit": false,
+  "source_modified": false,
+  "writes_confined_to_new_audit_root": "/home/alex/work/pocket4-owned-fd-capability-r17-audit-01",
+  "build_result_sha256": "401fd328f6997b5b54ee1089b2cf62436824f5cef15f046b53dea6113efdc7e0",
+  "build_state": "BUILT_STATIC_VERIFIED_ANDROID_UNRUN",
+  "source_pins_sha256": "a24ffd999179df79145a03490c2394d242a96f6d57ab635c41a7da76ac7174eb",
+  "source_files_verified": 9,
+  "source_sha256_before": {
+    "AndroidManifest.xml": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+    "CASE_PLAN.json": "792830ba52de84080fa4f696b9214e68abc3c95937aefb4c6bda92d5eb026ba3",
+    "audit_worker_binary.py": "f403f1d19c139f0f398c7db05c1adc0231802fafdc69d67abc0e48034820d54e",
+    "owner_probe.cpp": "35613eea885bfb177fe6abbeda78e7cd497e3832516e424eb7af7c83116d7f0a",
+    "raw_metadata_owner.cc": "9a4d83c31457f11f942ccb36da07bba881b17c2204262cba85758302b5a3f533",
+    "raw_metadata_owner.h": "9a5fb5da4373c553fac4a0d54c24ff667c77bf4f5db739917af8db5149cccd1d",
+    "raw_owner_cases.cc": "cee1ded736206db57e40cdc3176a06e9b9e2973ee7990abdafcf8b5efbef6564",
+    "src/local/pocket4/fdownerprobe/ProbeInstrumentation.java": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f",
+    "SOURCE_PINS.json": "a24ffd999179df79145a03490c2394d242a96f6d57ab635c41a7da76ac7174eb"
+  },
+  "source_sha256_after": {
+    "AndroidManifest.xml": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+    "CASE_PLAN.json": "792830ba52de84080fa4f696b9214e68abc3c95937aefb4c6bda92d5eb026ba3",
+    "audit_worker_binary.py": "f403f1d19c139f0f398c7db05c1adc0231802fafdc69d67abc0e48034820d54e",
+    "owner_probe.cpp": "35613eea885bfb177fe6abbeda78e7cd497e3832516e424eb7af7c83116d7f0a",
+    "raw_metadata_owner.cc": "9a4d83c31457f11f942ccb36da07bba881b17c2204262cba85758302b5a3f533",
+    "raw_metadata_owner.h": "9a5fb5da4373c553fac4a0d54c24ff667c77bf4f5db739917af8db5149cccd1d",
+    "raw_owner_cases.cc": "cee1ded736206db57e40cdc3176a06e9b9e2973ee7990abdafcf8b5efbef6564",
+    "src/local/pocket4/fdownerprobe/ProbeInstrumentation.java": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f",
+    "SOURCE_PINS.json": "a24ffd999179df79145a03490c2394d242a96f6d57ab635c41a7da76ac7174eb"
+  },
+  "auditor_sha256": "f403f1d19c139f0f398c7db05c1adc0231802fafdc69d67abc0e48034820d54e",
+  "audit_argv": [
+    "/usr/bin/python3",
+    "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/audit_worker_binary.py",
+    "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/lib/x86_64/libfdownerprobe.so",
+    "--objdump",
+    "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/llvm-objdump",
+    "--output",
+    "/home/alex/work/pocket4-owned-fd-capability-r17-audit-01/worker-audit.json"
+  ],
+  "audit_returncode": 0,
+  "objdump": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/llvm-objdump",
+  "objdump_sha256_before": "25a342ca878e88866e730541db585112de3b87a0b564215902221fbd28b02075",
+  "objdump_sha256_after": "25a342ca878e88866e730541db585112de3b87a0b564215902221fbd28b02075",
+  "objdump_matches_build_tool_pin": true,
+  "elf_sha256": "3439433e7e85fae3e95ae67189c9bd3aa29b263266a6da18fe778436023fe4e4",
+  "apk_sha256": "74f54c5b3bb48f4c14a6ea788b7e6df5ba80c4b2944a79be37e99a919f8dab83",
+  "apk_embedded_elf_sha256": "3439433e7e85fae3e95ae67189c9bd3aa29b263266a6da18fe778436023fe4e4",
+  "artifact_hashes_unchanged": true,
+  "worker_audit_sha256": "7091461d0fca33004cab2dc08c66b65626692bb1f92fcf121c3355b2d4d05b21",
+  "relevant_disassembly_sha256": "b8c444053e3b298bd4593d369adff9decc405963d135e136ce98449f43dbe153",
+  "relevant_disassembly_bytes": 19610,
+  "worker_closure": {
+    "schema": 1,
+    "elf": "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/lib/x86_64/libfdownerprobe.so",
+    "elf_sha256": "3439433e7e85fae3e95ae67189c9bd3aa29b263266a6da18fe778436023fe4e4",
+    "objdump": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/llvm-objdump",
+    "qualified_worker_closure": true,
+    "worker_symbols": [
+      "pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)"
+    ],
+    "reachable_functions": [
+      "pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)"
+    ],
+    "edges": [],
+    "clone_trampoline": {
+      "name": "pocket4_raw_clone_x86_64",
+      "syscall_sites": 2,
+      "indirect_fixed_entry_calls": [
+        "*(%rsp)"
+      ],
+      "source_binding_required": "Start's sole call passes Worker and null context."
+    },
+    "errors": [],
+    "limits": [
+      "This verifies the named final binary closure, not runtime credential or signal policy.",
+      "The inherited TLS pointer exists but the audited child closure must not dereference it.",
+      "No Bionic pthread registration is created. Credential transitions and host cancellation remain unqualified.",
+      "A host ELF result cannot substitute for auditing the actual Android ELF."
+    ]
+  },
+  "lifecycle_constraints": [
+    "No Bionic pthread registration; no root worker may cross into an app credential generation.",
+    "Independent FD table does not isolate credentials, capabilities, root or mount state.",
+    "Worker must be stopped before any unqualified credential/root/mount/zygote/retirement transition.",
+    "Fixed snapshot primitive only. Factory authentication, provenance projection, runtime hooks and arbitrary callbacks are outside this audit."
+  ]
+}

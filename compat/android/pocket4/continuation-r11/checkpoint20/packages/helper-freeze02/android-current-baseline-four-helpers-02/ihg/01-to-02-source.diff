@@ -1,0 +1,133 @@
+--- freeze01/build_candidate.py
++++ freeze02/build_candidate.py
+@@ -17,7 +17,7 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ PACKAGE = 'org.droidloom.qa.ihg.r2'
+-OUTPUT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-build-01')
++OUTPUT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-build-02')
+ JDK = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86'
+ SDK_BASE = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts'
+ TOOLS = {
+@@ -199,9 +199,11 @@
+         baseline_scope={'__file__':str(HERE/'check_current_baseline.py'),'__name__':'owned_current_baseline_scope_controls'}
+         exec(compile((HERE/'check_current_baseline.py').read_bytes(),str(HERE/'check_current_baseline.py'),'exec'),baseline_scope)
+         baseline_controls=baseline_scope['run_controls']()
+-        require(baseline_controls['all_passed'] is True and baseline_controls['count']==12 and
+-                len(baseline_controls['cases'])==12 and all(x['passed'] is True for x in baseline_controls['cases']) and
++        require(baseline_controls['all_passed'] is True and baseline_controls['count']==21 and
++                len(baseline_controls['cases'])==21 and all(x['passed'] is True for x in baseline_controls['cases']) and
+                 baseline_controls['production_contract_sha256']==source['qa_contract.py']['sha256'] and
++                baseline_controls['production_adapter_sha256']==source['qa_adapter.py']['sha256'] and
++                baseline_controls['host_recorder_manifest_sha256']=='6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e' and
+                 baseline_controls['main_epoch_sha256']=='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2' and
+                 baseline_controls['main_baseline_schema']=='pocket4-main-current-baseline-v1' and
+                 baseline_controls['main_baseline_sha256']=='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266' and
+--- freeze01/make_build_request.py
++++ freeze02/make_build_request.py
+@@ -5,7 +5,7 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-ihg-qa-r2-current-163e3e3914f4ccbb-build01'
++KEY='pocket4-owned-ihg-qa-r2-current-163e3e3914f4ccbb-host-6d99374e1580-build02'
+ 
+ 
+ def encode(value):
+--- freeze01/qa_adapter.py
++++ freeze02/qa_adapter.py
+@@ -17,7 +17,7 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-RECORDER_MANIFEST_SHA = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
++RECORDER_MANIFEST_SHA = '6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
+ SELF = 'org.droidloom.qa.ihg.r2'
+ BUILD_COMMANDS = ['javac','d8','aapt-package','align','create-owned-signing-key','sign',
+                   'signature','alignment','badging','permissions','manifest']
+@@ -146,6 +146,14 @@
+     def __init__(self, flow, recorder, qa, proof, helper_uid):
+         require(flow.contract.sha256 == RECORDER_MANIFEST_SHA and not flow._private_backend_transport,
+                 'FROZEN_PUBLIC_RECORDER_TRANSPORT_REQUIRED')
++        require(flow.scope.get('schema') == 'pocket4-current-recorder-scope-v1' and
++                flow.scope.get('current_baseline_schema') == qa.MAIN_BASELINE_SCHEMA and
++                flow.scope.get('epoch_sha256') == qa.MAIN_EPOCH and
++                flow.scope.get('current_baseline_sha256') == qa.MAIN_BASELINE_SHA and
++                flow.scope.get('current_baseline_qualification_sha256') == qa.MAIN_BASELINE_QUALIFICATION_SHA and
++                flow.scope.get('package') == qa.PACKAGE and type(flow.scope.get('uid')) is int and
++                flow.scope['uid'] == qa.UID,
++                'TYPED_CURRENT_HOST_SCOPE_AND_HELPER_BINDING_REQUIRED')
+         require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10137,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190),
+                 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
+         self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
+--- freeze01/stage_build.py
++++ freeze02/stage_build.py
+@@ -8,8 +8,8 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-source-01')
+-OUTPUT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-build-01')
++ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-source-02')
++OUTPUT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-build-02')
+ MEMORY = 536870912
+ 
+ 
+--- freeze01/check_current_baseline.py
++++ freeze02/check_current_baseline.py
+@@ -1,5 +1,5 @@
+ """Current-baseline scope controls using this generated production parser."""
+-import copy,hashlib,json,types
++import ast,copy,hashlib,json,types
+ from pathlib import Path
+ HERE=Path(__file__).resolve().parent
+ def run_controls():
+@@ -33,9 +33,46 @@
+     no('wrong_target_uid',lambda v:v.update(uid=qa.UID+1))
+     no('foreign_package',lambda v:v.update(package='example.unrelated'))
+     no('wrong_display',lambda v:v.update(display=1))
+-    qa.require(len(rows)==12,'EXACT_CURRENT_BASELINE_SCOPE_CASES')
+-    return {'schema':'pocket4-current-baseline-scope-controls-v1','all_passed':True,'count':12,
++    adapter_raw=(HERE/'qa_adapter.py').read_bytes()
++    tree=ast.parse(adapter_raw)
++    original_session=next(x for x in tree.body if isinstance(x,ast.ClassDef) and x.name=='Session')
++    selected_init=[x for x in original_session.body if isinstance(x,ast.FunctionDef) and x.name=='__init__']
++    qa.require(len(selected_init)==1,'EXACT_PRODUCTION_SESSION_CONSTRUCTOR_REQUIRED')
++    session_class=copy.deepcopy(original_session);session_class.body=copy.deepcopy(selected_init)
++    selected=[x for x in tree.body if
++              (isinstance(x,ast.FunctionDef) and x.name=='require') or
++              (isinstance(x,ast.Assign) and len(x.targets)==1 and isinstance(x.targets[0],ast.Name) and
++               x.targets[0].id=='RECORDER_MANIFEST_SHA')]+[session_class]
++    qa.require(len(selected)==3,'EXACT_PRODUCTION_SESSION_GUARD_SELECTION_REQUIRED')
++    session_scope={}
++    exec(compile(ast.Module(body=selected,type_ignores=[]),'actual_session_constructor','exec'),session_scope)
++    host_sha=session_scope['RECORDER_MANIFEST_SHA']
++    def fixture():
++        return types.SimpleNamespace(contract=types.SimpleNamespace(sha256=host_sha),_private_backend_transport=False,
++            scope={'schema':'pocket4-current-recorder-scope-v1','current_baseline_schema':qa.MAIN_BASELINE_SCHEMA,
++                   'epoch_sha256':qa.MAIN_EPOCH,'current_baseline_sha256':qa.MAIN_BASELINE_SHA,
++                   'current_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA,
++                   'package':qa.PACKAGE,'uid':qa.UID})
++    session_scope['Session'](fixture(),None,qa,{},99999)
++    rows.append({'name':'actual_R5_session_scope_positive','passed':True})
++    def host_no(name,change):
++        flow=fixture();change(flow)
++        try:session_scope['Session'](flow,None,qa,{},99999)
++        except RuntimeError:pass
++        else:raise RuntimeError('CURRENT_HOST_SESSION_NEGATIVE_ACCEPTED')
++        rows.append({'name':name,'passed':True})
++    host_no('old_R4_recorder_rejected',lambda f:setattr(f.contract,'sha256','52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'))
++    host_no('missing_typed_flow_schema',lambda f:f.scope.pop('schema'))
++    host_no('wrong_current_baseline_schema',lambda f:f.scope.update(current_baseline_schema='old-activation'))
++    host_no('old_host_epoch',lambda f:f.scope.update(epoch_sha256='48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'))
++    host_no('wrong_host_baseline',lambda f:f.scope.update(current_baseline_sha256='0'*64))
++    host_no('wrong_host_qualification',lambda f:f.scope.update(current_baseline_qualification_sha256='0'*64))
++    host_no('foreign_host_package',lambda f:f.scope.update(package='example.unrelated'))
++    host_no('bool_host_uid',lambda f:f.scope.update(uid=True))
++    qa.require(len(rows)==21,'EXACT_CURRENT_BASELINE_SCOPE_CASES')
++    return {'schema':'pocket4-current-baseline-scope-controls-v1','all_passed':True,'count':21,
+             'cases':rows,'production_contract_sha256':hashlib.sha256(raw).hexdigest(),
++            'production_adapter_sha256':hashlib.sha256(adapter_raw).hexdigest(),'host_recorder_manifest_sha256':host_sha,
+             'main_epoch_sha256':qa.MAIN_EPOCH,'main_baseline_schema':qa.MAIN_BASELINE_SCHEMA,
+             'main_baseline_sha256':qa.MAIN_BASELINE_SHA,
+             'main_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA,

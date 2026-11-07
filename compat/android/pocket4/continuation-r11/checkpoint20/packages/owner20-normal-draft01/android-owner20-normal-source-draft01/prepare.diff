@@ -1,0 +1,65 @@
+--- owner19/source/prepare.py
++++ owner20/source/prepare.py
+@@ -61,6 +61,20 @@
+         if root_owned: owned.need(st.st_uid == st.st_gid == 0 and st.st_nlink == 1, 'sealed base input owner/link count differs')
+         if 'device' in row: owned.need((st.st_dev, st.st_ino) == (row['device'], row['inode']), 'actual build artifact was replaced')
+         if 'mode' in row: owned.need(stat.S_IMODE(st.st_mode) == row['mode'], 'input mode differs')
++        if row.get('role') == 'sdk-visibility':
++            actual = row['actual_build_metadata']
++            expected = (actual['device'], actual['inode'], actual['mode'], actual['uid'],
++                        actual['gid'], actual['bytes'], actual['mtime_ns'], actual['ctime_ns'])
++            observed = (st.st_dev, st.st_ino, st.st_mode, st.st_uid, st.st_gid,
++                        st.st_size, st.st_mtime_ns, st.st_ctime_ns)
++            named = os.stat(path, follow_symlinks=False)
++            named_tuple = (named.st_dev, named.st_ino, named.st_mode, named.st_uid,
++                           named.st_gid, named.st_size, named.st_mtime_ns, named.st_ctime_ns)
++            owned.need(actual['path'] == str(path) and actual['sha256'] == row['sha256'] and
++                       st.st_nlink == named.st_nlink == 1 and
++                       observed == expected == named_tuple and
++                       st.st_mode == stat.S_IFREG | 0o555 and st.st_uid == st.st_gid == 0,
++                       'actual Owner20 executable metadata or named binding differs')
+         return fd, st
+     except BaseException:
+         os.close(fd); raise
+@@ -117,7 +131,7 @@
+ 
+ 
+ def main(plan, sources):
+-    result = {'schema': 1, 'kind': 'owner19-normal-preparation01', 'success': False,
++    result = {'schema': 1, 'kind': 'owner20-normal-preparation01', 'success': False,
+               'attempt_nonce': plan['attempt_nonce'], 'runtime_executed': False,
+               'namespace_or_network_changed': False, 'production_ready': False, 'errors': []}
+     package_fd = state_fd = data_fd = -1; tools = {}; fence = None
+@@ -125,7 +139,7 @@
+         owned.need(os.geteuid() == os.getuid() == os.getegid() == 0, 'preparation requires original host root')
+         owned.need(len(plan['attempt_nonce']) == 64 and
+                    plan['scope'] == 'REAL_OWNER_ABI3_PINNED_CAUSE_TERMINAL_DRAIN_FIRST_ACTIVE_ORIGINAL_RETIREMENT' and
+-                   plan['kind'] == 'owned-real-producer19-normal01-observed-logd-image01', 'wrong fixed profile')
++                   plan['kind'] == 'owned-real-producer20-normal01-four-public-sdk-observation01', 'wrong fixed profile')
+         owned.need(not Path(plan['package']).exists() and not Path(plan['state']).exists(), 'preparation root already exists')
+         owned.need(support.props(plan['unit']).get('LoadState') == 'not-found', 'owned unit already exists')
+         fence = support.MainFence(plan, vars(support)); result['main_before'] = fence.check()
+@@ -160,6 +174,10 @@
+                 owned.need(len(raw) == before.st_size and hashlib.sha256(raw).hexdigest() == row['sha256'], 'copy input changed')
+                 owned.write_bytes(parent, target.name, raw, 0o444 if role == 'init-barrier' else 0o555)
+                 owned.need(support.stamp(os.fstat(source_fd)) == support.stamp(before), 'source changed during copy')
++                if role == 'sdk-visibility':
++                    named = os.stat(row['path'], follow_symlinks=False)
++                    owned.need(support.stamp(named) == support.stamp(before),
++                               'actual Owner20 executable named binding changed during copy')
+                 verify = support.pinned(target, row['sha256'], role != 'init-barrier')
+                 try: result['copied_artifacts'][role] = {'path': str(target), 'bytes': len(raw), 'sha256': row['sha256'], 'identity': owned.file_id(verify)}
+                 finally: os.close(verify)
+@@ -214,7 +232,11 @@
+         if fence is not None:
+             try: result['main_final'] = fence.check()
+             except BaseException as error: owned.record_error(result, 'main_final', error); result['success'] = False
+-            fence.close()
++            try:
++                fence.close(); result['main_fence_fds_closed'] = True
++            except BaseException as error:
++                owned.record_error(result, 'main_fence_close', error)
++                result['main_fence_fds_closed'] = False; result['success'] = False
+         for fd in tools.values(): os.close(fd)
+         if state_fd >= 0:
+             owned.save(state_fd, 'prepared.json', result)

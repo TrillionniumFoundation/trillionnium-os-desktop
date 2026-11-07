@@ -1,0 +1,112 @@
+[
+  {
+    "before": "\"\"\"Exact install-only wrapper. All authority is frozen into one packet.\nThis template is not executable admission before actual entry-control binding.\nRoot is the sole dispatcher. No existing package/UID or runtime is adopted.\n\"\"\"",
+    "after": "\"\"\"One fixed original NDK runtime phase wrapper. All authority is frozen.\nThis template is not executable admission before actual controls and nonce binding.\nRoot is the sole dispatcher. Run and retirement are separate invocations; retirement\nalso requires the original run report, summary and independent terminal.\n\"\"\"",
+    "count": 1
+  },
+  {
+    "before": "SOURCE_MANIFEST = {'bytes':1054,'sha256':'684209fb84cf81921a1c65e8c52c7bf95db87ca0167d46badf8a8d974a2ba237'}",
+    "after": "SOURCE_MANIFEST = {\"bytes\":1050,\"sha256\":\"7ea8d117de4a6c4cbeceebc4d5d4cf56fd7f075f3cb068b8f3610be4283df582\"}",
+    "count": 1
+  },
+  {
+    "before": "WORKER = {'bytes':22059,'sha256':'d7ba4227604949ed80d491c6cef45e4f52267267e002b1e6ff796cdd68d1b046'}",
+    "after": "WORKER = {\"bytes\":33969,\"sha256\":\"6bc5f7d0bdca28a7275d6eeb97f4889e40b66788437af806ac5e5d6daa43d83e\"}",
+    "count": 1
+  },
+  {
+    "before": "'fixture_phases.py','current_discovery.py','install_lease.py','install_worker.py',",
+    "after": "'fixture_phases.py','current_discovery.py','phase_lease.py','phase_worker.py',",
+    "count": 1
+  },
+  {
+    "before": "SOURCE_ROOT = '/home/alex/work/pocket4-original-ndk-fixture-APK05-install-02/source'",
+    "after": "PHASE = '__PHASE__'\nSOURCE_ROOT = '__SOURCE_ROOT__'",
+    "count": 1
+  },
+  {
+    "before": "ISOLATED_NO_BYTECODE_INSTALL_WRAPPER_REQUIRED",
+    "after": "ISOLATED_NO_BYTECODE_PHASE_WRAPPER_REQUIRED",
+    "count": 1
+  },
+  {
+    "before": "FIXED_INSTALL_PACKET_BOUND",
+    "after": "FIXED_PHASE_PACKET_BOUND",
+    "count": 1
+  },
+  {
+    "before": "FIXED_INSTALL_PACKET_WHOLE_HASH",
+    "after": "FIXED_PHASE_PACKET_WHOLE_HASH",
+    "count": 1
+  },
+  {
+    "before": "EXACT_INSTALL_WRAPPER_ENVELOPE",
+    "after": "EXACT_PHASE_WRAPPER_ENVELOPE",
+    "count": 1
+  },
+  {
+    "before": "        packet=envelope['packet']",
+    "after": "        need(PHASE in ('run','retire') and envelope['binding'].get('phase')==PHASE and\n             envelope['binding'].get('root')+'/source'==SOURCE_ROOT,\n             'EXACT_ONE_PHASE_WRAPPER_SCOPE_REQUIRED')\n        packet=envelope['packet']",
+    "count": 1
+  },
+  {
+    "before": "EXACT_INSTALL_WRAPPER_SEVEN_SOURCES",
+    "after": "EXACT_PHASE_WRAPPER_SEVEN_SOURCES",
+    "count": 1
+  },
+  {
+    "before": "FROZEN_INSTALL_SOURCE_MANIFEST_CHANGED",
+    "after": "FROZEN_PHASE_SOURCE_MANIFEST_CHANGED",
+    "count": 1
+  },
+  {
+    "before": "EXACT_INSTALL_WRAPPER_MANIFEST",
+    "after": "EXACT_PHASE_WRAPPER_MANIFEST",
+    "count": 1
+  },
+  {
+    "before": "SEVEN_INSTALL_SOURCE_PINS_CHANGED",
+    "after": "SEVEN_PHASE_SOURCE_PINS_CHANGED",
+    "count": 1
+  },
+  {
+    "before": "worker_raw=sources['install_worker.py']",
+    "after": "worker_raw=sources['phase_worker.py']",
+    "count": 1
+  },
+  {
+    "before": "EXACT_UNBOUND_INSTALL_WORKER_REQUIRED",
+    "after": "EXACT_UNBOUND_PHASE_WORKER_REQUIRED",
+    "count": 1
+  },
+  {
+    "before": "types.ModuleType('fixed_original_ndk_install_worker')",
+    "after": "types.ModuleType('fixed_original_ndk_phase_worker')",
+    "count": 1
+  },
+  {
+    "before": "worker.__file__=SOURCE_ROOT+'/install_worker.py'",
+    "after": "worker.__file__=SOURCE_ROOT+'/phase_worker.py'",
+    "count": 1
+  },
+  {
+    "before": "return worker.run_install(envelope['binding'],packet)",
+    "after": "return worker.run_phase(envelope['binding'],packet)",
+    "count": 1
+  },
+  {
+    "before": "# A wrapper exception after entry cannot claim that no install occurred.\n        # It never manufactures an installed UID or a completed worker result.",
+    "after": "# A wrapper exception after entry cannot claim no phase mutation occurred.\n        # It never manufactures an installed UID or a completed worker result.",
+    "count": 1
+  },
+  {
+    "before": "'kind':'pocket4-original-ndk-install-wrapper-failure02',",
+    "after": "'kind':'pocket4-original-ndk-runtime-wrapper-failure01','phase':PHASE,",
+    "count": 1
+  },
+  {
+    "before": "INSTALL_WRAPPER_FAILURE_BOUND",
+    "after": "PHASE_WRAPPER_FAILURE_BOUND",
+    "count": 1
+  }
+]

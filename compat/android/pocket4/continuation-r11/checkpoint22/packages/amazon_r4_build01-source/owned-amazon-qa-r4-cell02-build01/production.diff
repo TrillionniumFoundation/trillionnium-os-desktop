@@ -1,0 +1,575 @@
+--- previous/AndroidManifest.xml
++++ new/AndroidManifest.xml
+@@ -1,11 +1,11 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+-    package="org.droidloom.qa.amazon.r3" android:versionCode="1" android:versionName="1">
++    package="org.droidloom.qa.amazon.r4" android:versionCode="1" android:versionName="1">
+     <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="33" />
+     <queries><package android:name="com.amazon.mShop.android.shopping" /></queries>
+     <application android:label="Owned Amazon QA" android:debuggable="false"
+         android:testOnly="true" android:allowBackup="false" android:hasCode="true" />
+-    <instrumentation android:name="org.droidloom.qa.amazon.r3.ActionRunner"
+-        android:targetPackage="org.droidloom.qa.amazon.r3"
++    <instrumentation android:name="org.droidloom.qa.amazon.r4.ActionRunner"
++        android:targetPackage="org.droidloom.qa.amazon.r4"
+         android:functionalTest="true" android:handleProfiling="false" />
+ </manifest>
+--- previous/build_candidate.py
++++ new/build_candidate.py
+@@ -16,8 +16,8 @@
+ import zipfile
+ 
+ HERE = Path(__file__).resolve().parent
+-PACKAGE = 'org.droidloom.qa.amazon.r3'
+-OUTPUT = Path('/home/alex/work/pocket4-owned-amazon-qa-r3-build-02')
++PACKAGE = 'org.droidloom.qa.amazon.r4'
++OUTPUT = Path('/home/alex/work/pocket4-owned-amazon-qa-r4-build-01')
+ JDK = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86'
+ SDK_BASE = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts'
+ TOOLS = {
+@@ -147,8 +147,8 @@
+         require(not path.is_absolute() and '..' not in path.parts and path.as_posix() == name, 'source relative path')
+         actual = file_pin(HERE / name, 1024 * 1024)
+         require(actual['sha256'] == row['sha256'] and actual['bytes'] == row['bytes'], 'source differs: ' + name)
+-    require({'AndroidManifest.xml', 'src/org/droidloom/qa/amazon/r3/ActionRunner.java',
+-             'src/org/droidloom/qa/amazon/r3/InspectionIdleGate.java',
++    require({'AndroidManifest.xml', 'src/org/droidloom/qa/amazon/r4/ActionRunner.java',
++             'src/org/droidloom/qa/amazon/r4/InspectionIdleGate.java',
+              'tests/InspectionIdleGateChecks.java', 'check_idle_contract.py', 'qa_contract.py', 'build_candidate.py'} <= set(files), 'required sources missing')
+     return files
+ 
+@@ -274,18 +274,18 @@
+         baseline_scope={'__file__':str(HERE/'check_current_baseline.py'),'__name__':'owned_current_baseline_scope_controls'}
+         exec(compile((HERE/'check_current_baseline.py').read_bytes(),str(HERE/'check_current_baseline.py'),'exec'),baseline_scope)
+         baseline_controls=baseline_scope['run_controls']()
+-        require(baseline_controls['all_passed'] is True and baseline_controls['count']==21 and
+-                len(baseline_controls['cases'])==21 and all(x['passed'] is True for x in baseline_controls['cases']) and
++        require(baseline_controls['all_passed'] is True and baseline_controls['count']==32 and
++                len(baseline_controls['cases'])==32 and all(x['passed'] is True for x in baseline_controls['cases']) and
+                 baseline_controls['production_contract_sha256']==source['qa_contract.py']['sha256'] and
+                 baseline_controls['production_adapter_sha256']==source['qa_adapter.py']['sha256'] and
+-                baseline_controls['host_recorder_manifest_sha256']=='6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e' and
+-                baseline_controls['main_epoch_sha256']=='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2' and
+-                baseline_controls['main_baseline_schema']=='pocket4-main-current-baseline-v1' and
+-                baseline_controls['main_baseline_sha256']=='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266' and
+-                baseline_controls['main_baseline_qualification_sha256']=='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6',
++                baseline_controls['host_recorder_manifest_sha256']=='002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff' and
++                baseline_controls['main_epoch_sha256']=='7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c' and
++                baseline_controls['main_baseline_schema']=='pocket4-main-current-baseline-v2' and
++                baseline_controls['main_baseline_sha256']=='633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364' and
++                baseline_controls['main_baseline_qualification_sha256']=='ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e',
+                 'ACTUAL_CURRENT_BASELINE_SCOPE_CONTROLS_REQUIRED')
+         result['current_baseline_scope_controls']={'source_sha256':source['check_current_baseline.py']['sha256'],'report':baseline_controls}
+-        source_java = HERE/'src/org/droidloom/qa/amazon/r3/ActionRunner.java'
++        source_java = HERE/'src/org/droidloom/qa/amazon/r4/ActionRunner.java'
+         # Compile all pinned Python source without executing adapter/device entry points.
+         for name in source:
+             if name.endswith('.py'):
+@@ -313,7 +313,7 @@
+         idle_controls=validate_idle_controls(json.loads(idle_output),IDLE_GATE_CASES)
+         result['inspection_idle_gate_controls']={
+             'report':idle_controls,'stdout_sha256':digest(idle_output),
+-            'gate_source_sha256':source['src/org/droidloom/qa/amazon/r3/InspectionIdleGate.java']['sha256'],
++            'gate_source_sha256':source['src/org/droidloom/qa/amazon/r4/InspectionIdleGate.java']['sha256'],
+             'control_source_sha256':source['tests/InspectionIdleGateChecks.java']['sha256']}
+         command('javac', [tool['javac'], '-J-XX:ActiveProcessorCount=1', '-J-XX:+UseSerialGC', '-J-Xmx256m',
+             '-proc:none','-Xmaxerrs','20','-Xmaxwarns','20','-source','8','-target','8','-bootclasspath',resolved['android_jar'],
+@@ -336,10 +336,10 @@
+         # pinned Java runtime. No platform/commercial signing key is consumed.
+         command('create-owned-signing-key', java+['-m','java.base/sun.security.tools.keytool.Main',
+             '-genkeypair','-noprompt','-storetype','PKCS12','-keystore',str(store),'-storepass:file',str(password),
+-            '-alias','owned-amazon-qa-r3','-keyalg','RSA','-keysize','3072','-validity','3650',
++            '-alias','owned-amazon-qa-r4','-keyalg','RSA','-keysize','3072','-validity','3650',
+             '-dname','CN=Pocket4 Owned Amazon QA R2,O=Owned Test,C=US'])
+         command('sign', [tool['apksigner'],'sign','--ks',str(store),'--ks-pass','file:'+str(password),
+-            '--ks-key-alias','owned-amazon-qa-r3','--min-sdk-version','31','--v1-signing-enabled','false',
++            '--ks-key-alias','owned-amazon-qa-r4','--min-sdk-version','31','--v1-signing-enabled','false',
+             '--v2-signing-enabled','true','--v3-signing-enabled','true','--out',str(OUTPUT/'owned-amazon-qa.apk'),
+             str(OUTPUT/'aligned.apk')])
+         signature = command('signature', [tool['apksigner'],'verify','--verbose','--print-certs','--min-sdk-version','31',str(OUTPUT/'owned-amazon-qa.apk')])
+@@ -349,7 +349,7 @@
+         badging = command('badging', [tool['aapt'],'dump','badging',str(OUTPUT/'owned-amazon-qa.apk')])
+         permissions = command('permissions', [tool['aapt'],'dump','permissions',str(OUTPUT/'owned-amazon-qa.apk')])
+         xml = command('manifest', [tool['aapt'],'dump','xmltree',str(OUTPUT/'owned-amazon-qa.apk'),'AndroidManifest.xml'])
+-        require(b"package: name='org.droidloom.qa.amazon.r3' versionCode='1'" in badging and
++        require(b"package: name='org.droidloom.qa.amazon.r4' versionCode='1'" in badging and
+                 b"sdkVersion:'31'" in badging and b"targetSdkVersion:'33'" in badging, 'actual APK package/SDK differs')
+         require(b'uses-permission' not in permissions and b'uses-permission' not in xml and
+                 b'application-debuggable' not in badging and b'launchable-activity' not in badging, 'actual APK privilege/component differs')
+--- previous/make_build_request.py
++++ new/make_build_request.py
+@@ -5,7 +5,7 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-amazon-qa-r3-current-163e3e3914f4ccbb-host-6d99374e1580-build02'
++KEY='pocket4-owned-amazon-qa-r4-cell02-633912ff4595ce89-host-002ee581a4bb-build01'
+ 
+ 
+ def encode(value):
+@@ -33,7 +33,7 @@
+         "assert hashlib.sha256(source.encode()).hexdigest()=="+repr(stage_sha)+";"
+         "scope={'__name__':'__main__','__file__':'<verified-owned-amazon-qa-build-stage>','PACKET':packet};"
+         "exec(compile(source,'stage_build.py','exec'),scope,scope)")
+-    return {'host':'pocket4','executable':'/usr/bin/python3','args':['-I','-c',wrapper],
++    return {'host':'pocket4','executable':'/usr/bin/python3','args':['-I','-B','-c',wrapper],
+         'cwd':'/home/alex/work','env':{'PYTHONDONTWRITEBYTECODE':'1'},'stdin':wire.decode(),
+         'idempotency_key':KEY,'timeout_seconds':300,'cpu_quota_percent':100,
+         'memory_max_bytes':536870912,'nice':10}
+--- previous/qa_adapter.py
++++ new/qa_adapter.py
+@@ -17,8 +17,8 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-RECORDER_MANIFEST_SHA = '6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
+-SELF = 'org.droidloom.qa.amazon.r3'
++RECORDER_MANIFEST_SHA = '002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff'
++SELF = 'org.droidloom.qa.amazon.r4'
+ BUILD_COMMANDS = ['idle-gate-javac','idle-gate-java','javac','d8','aapt-package','align','create-owned-signing-key','sign',
+                   'signature','alignment','badging','permissions','manifest']
+ 
+@@ -78,8 +78,8 @@
+                 'SOURCE_RELATIVE_PATH_REQUIRED')
+         require(len(pinned(HERE/name, row['sha256'])) == row['bytes'], 'SOURCE_SIZE_CHANGED')
+     require({'qa_adapter.py','qa_contract.py','build_candidate.py','AndroidManifest.xml',
+-             'src/org/droidloom/qa/amazon/r3/ActionRunner.java',
+-             'src/org/droidloom/qa/amazon/r3/InspectionIdleGate.java',
++             'src/org/droidloom/qa/amazon/r4/ActionRunner.java',
++             'src/org/droidloom/qa/amazon/r4/InspectionIdleGate.java',
+              'tests/InspectionIdleGateChecks.java','check_idle_contract.py'} <= set(manifest['files']),
+             'OWNED_SOURCE_CLOSURE_INCOMPLETE')
+     return manifest
+@@ -144,7 +144,7 @@
+     builder.validate_idle_controls(idle_protocol['report'],builder.IDLE_PROTOCOL_CASES,
+                                    manifest['files']['qa_contract.py']['sha256'])
+     require(idle_gate['stdout_sha256']==commands[1]['stdout_sha256'] and
+-            idle_gate['gate_source_sha256']==manifest['files']['src/org/droidloom/qa/amazon/r3/InspectionIdleGate.java']['sha256'] and
++            idle_gate['gate_source_sha256']==manifest['files']['src/org/droidloom/qa/amazon/r4/InspectionIdleGate.java']['sha256'] and
+             idle_gate['control_source_sha256']==manifest['files']['tests/InspectionIdleGateChecks.java']['sha256'] and
+             idle_protocol['control_source_sha256']==manifest['files']['check_idle_contract.py']['sha256'],
+             'ACTUAL_IDLE_CONTROLS_SOURCE_OR_COMMAND_BINDING_CHANGED')
+@@ -164,7 +164,7 @@
+     def __init__(self, flow, recorder, qa, proof, helper_uid):
+         require(flow.contract.sha256 == RECORDER_MANIFEST_SHA and not flow._private_backend_transport,
+                 'FROZEN_PUBLIC_RECORDER_TRANSPORT_REQUIRED')
+-        require(flow.scope.get('schema') == 'pocket4-current-recorder-scope-v1' and
++        require(flow.scope.get('schema') == 'pocket4-current-recorder-scope-v2' and
+                 flow.scope.get('current_baseline_schema') == qa.MAIN_BASELINE_SCHEMA and
+                 flow.scope.get('epoch_sha256') == qa.MAIN_EPOCH and
+                 flow.scope.get('current_baseline_sha256') == qa.MAIN_BASELINE_SHA and
+@@ -172,7 +172,7 @@
+                 flow.scope.get('package') == qa.PACKAGE and type(flow.scope.get('uid')) is int and
+                 flow.scope['uid'] == qa.UID,
+                 'TYPED_CURRENT_HOST_SCOPE_AND_HELPER_BINDING_REQUIRED')
+-        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10129,10117,10125,10164,10165,10166,10169,10170,10175),
++        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10129,10117,10125,10164,10165,10166,10169,10170,10175,10154),
+                 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
+         self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
+         self.nonces = set()
+--- previous/qa_contract.py
++++ new/qa_contract.py
+@@ -5,15 +5,15 @@
+ import re
+ import zlib
+ 
+-PROTOCOL = 'pocket4-owned-amazon-qa-v3'
+-SELF = 'org.droidloom.qa.amazon.r3'
++PROTOCOL = 'pocket4-owned-amazon-qa-v4'
++SELF = 'org.droidloom.qa.amazon.r4'
+ COMPONENT = SELF + '/' + SELF + '.ActionRunner'
+ PACKAGE = 'com.amazon.mShop.android.shopping'
+ UID = 10129
+-MAIN_EPOCH = '734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'
+-MAIN_BASELINE_SCHEMA = 'pocket4-main-current-baseline-v1'
+-MAIN_BASELINE_SHA = '163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'
+-MAIN_BASELINE_QUALIFICATION_SHA = 'f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'
++MAIN_EPOCH = '7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c'
++MAIN_BASELINE_SCHEMA = 'pocket4-main-current-baseline-v2'
++MAIN_BASELINE_SHA = '633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364'
++MAIN_BASELINE_QUALIFICATION_SHA = 'ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e'
+ MAX_REQUEST = 16384
+ MAX_RESULT = 524288
+ MAX_COMPRESSED_WIRE = 262144
+@@ -170,7 +170,7 @@
+             value.get('op') == request['op'] and value.get('request_sha256') == sha(raw_request) and
+             value.get('wire_codec') == 'gzip-canonical-json-v1',
+             'RESULT_REQUEST_BINDING_FAILED')
+-    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10117, 10125, 10164, 10165, 10166, 10169, 10170, 10175) and value.get('self_uid') == helper_uid and
++    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10117, 10125, 10164, 10165, 10166, 10169, 10170, 10175, 10154) and value.get('self_uid') == helper_uid and
+             type(value.get('self_pid')) is int and value['self_pid'] > 1, 'INSTALLED_HELPER_IDENTITY_REQUIRED')
+     require(value.get('ok') is True and value.get('error') is None and value.get('secondary_errors') == [] and
+             value.get('claim_persistence_completed') is True and value.get('helper_work_completed') is True,
+--- previous/src/org/droidloom/qa/amazon/r3/ActionRunner.java
++++ new/src/org/droidloom/qa/amazon/r4/ActionRunner.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.amazon.r3;
++package org.droidloom.qa.amazon.r4;
+ 
+ import android.accessibilityservice.AccessibilityServiceInfo;
+ import android.app.Instrumentation;
+@@ -39,13 +39,13 @@
+ 
+ /** An owned self-instrumentation; it never instruments the commercial app. */
+ public final class ActionRunner extends Instrumentation {
+-    static final String PROTOCOL = "pocket4-owned-amazon-qa-v3";
++    static final String PROTOCOL = "pocket4-owned-amazon-qa-v4";
+     static final String PACKAGE = "com.amazon.mShop.android.shopping";
+-    static final String SELF = "org.droidloom.qa.amazon.r3";
+-    static final String MAIN_EPOCH = "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2";
+-    static final String MAIN_BASELINE_SCHEMA = "pocket4-main-current-baseline-v1";
+-    static final String MAIN_BASELINE_SHA = "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266";
+-    static final String MAIN_BASELINE_QUALIFICATION_SHA = "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6";
++    static final String SELF = "org.droidloom.qa.amazon.r4";
++    static final String MAIN_EPOCH = "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c";
++    static final String MAIN_BASELINE_SCHEMA = "pocket4-main-current-baseline-v2";
++    static final String MAIN_BASELINE_SHA = "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364";
++    static final String MAIN_BASELINE_QUALIFICATION_SHA = "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e";
+     static final int TARGET_UID = 10129;
+     static final int MAX_REQUEST = 16384, MAX_RESULT = 524288, MAX_COMPRESSED_WIRE = 262144;
+     static final int MAX_NODES = 512, MAX_DEPTH = 32, MAX_CHILDREN = 64;
+--- previous/src/org/droidloom/qa/amazon/r3/InspectionIdleGate.java
++++ new/src/org/droidloom/qa/amazon/r4/InspectionIdleGate.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.amazon.r3;
++package org.droidloom.qa.amazon.r4;
+ 
+ import java.util.concurrent.TimeoutException;
+ 
+--- previous/stage_build.py
++++ new/stage_build.py
+@@ -8,8 +8,8 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-amazon-qa-r3-source-02')
+-OUTPUT = Path('/home/alex/work/pocket4-owned-amazon-qa-r3-build-02')
++ROOT = Path('/home/alex/work/pocket4-owned-amazon-qa-r4-source-01')
++OUTPUT = Path('/home/alex/work/pocket4-owned-amazon-qa-r4-build-01')
+ MEMORY = 536870912
+ 
+ 
+--- previous/tests/InspectionIdleGateChecks.java
++++ new/tests/InspectionIdleGateChecks.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.amazon.r3;
++package org.droidloom.qa.amazon.r4;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
+--- previous/check_current_baseline.py
++++ new/check_current_baseline.py
+@@ -49,12 +49,12 @@
+     host_sha=session_scope['RECORDER_MANIFEST_SHA']
+     def fixture():
+         return types.SimpleNamespace(contract=types.SimpleNamespace(sha256=host_sha),_private_backend_transport=False,
+-            scope={'schema':'pocket4-current-recorder-scope-v1','current_baseline_schema':qa.MAIN_BASELINE_SCHEMA,
++            scope={'schema':'pocket4-current-recorder-scope-v2','current_baseline_schema':qa.MAIN_BASELINE_SCHEMA,
+                    'epoch_sha256':qa.MAIN_EPOCH,'current_baseline_sha256':qa.MAIN_BASELINE_SHA,
+                    'current_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA,
+                    'package':qa.PACKAGE,'uid':qa.UID})
+     session_scope['Session'](fixture(),None,qa,{},99999)
+-    rows.append({'name':'actual_R5_session_scope_positive','passed':True})
++    rows.append({'name':'actual_R6_session_scope_positive','passed':True})
+     def host_no(name,change):
+         flow=fixture();change(flow)
+         try:session_scope['Session'](flow,None,qa,{},99999)
+@@ -69,8 +69,53 @@
+     host_no('wrong_host_qualification',lambda f:f.scope.update(current_baseline_qualification_sha256='0'*64))
+     host_no('foreign_host_package',lambda f:f.scope.update(package='example.unrelated'))
+     host_no('bool_host_uid',lambda f:f.scope.update(uid=True))
+-    qa.require(len(rows)==21,'EXACT_CURRENT_BASELINE_SCOPE_CASES')
+-    return {'schema':'pocket4-current-baseline-scope-controls-v1','all_passed':True,'count':21,
++    no('previous_current_epoch',lambda v:v.update(main_epoch_sha256='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'))
++    no('previous_baseline_v1_schema',lambda v:v.update(main_baseline_schema='pocket4-main-current-baseline-v1'))
++    no('previous_baseline_digest',lambda v:v.update(main_baseline_sha256='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'))
++    no('previous_qualification_digest',lambda v:v.update(main_baseline_qualification_sha256='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'))
++    host_no('previous_R5_host_manifest',lambda f:setattr(f.contract,'sha256','6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'))
++    host_no('previous_typed_scope_v1',lambda f:f.scope.update(schema='pocket4-current-recorder-scope-v1'))
++    try:session_scope['Session'](fixture(),None,qa,{},10154)
++    except RuntimeError:pass
++    else:raise RuntimeError('PREVIOUS_HELPER_UID_SESSION_ACCEPTED')
++    rows.append({'name':'previous_actual_helper_UID_session_rejected','passed':True})
++    qa.require(qa.PROTOCOL=='pocket4-owned-amazon-qa-v4' and qa.SELF=='org.droidloom.qa.amazon.r4',
++               'EXACT_NEW_HELPER_PROTOCOL_REQUIRED')
++    rows.append({'name':'exact_new_helper_protocol_and_package','passed':True})
++    req={'protocol':qa.PROTOCOL,'nonce':'1'*32,'op':'state'}
++    try:qa.validate_request({**req,'protocol':'pocket4-owned-amazon-qa-v3'})
++    except qa.ProtocolError:pass
++    else:raise RuntimeError('PREVIOUS_HELPER_PROTOCOL_ACCEPTED')
++    rows.append({'name':'previous_helper_protocol_rejected','passed':True})
++    import base64,gzip
++    def state_value(uid):
++        value={'protocol':qa.PROTOCOL,'nonce':req['nonce'],'op':'state',
++            'request_sha256':qa.sha(qa.validate_request(req)),'wire_codec':'gzip-canonical-json-v1',
++            'self_uid':uid,'self_pid':1234,'ok':True,'error':None,'secondary_errors':[],
++            'claim_persistence_completed':True,'helper_work_completed':True,'automatic_retry':False,
++            'business_success_verified':False,'accessibility_mode_restoration_verified':None,
++            'started_elapsed_ms':100,'finished_elapsed_ms':110,
++            'action_attempted':False,'outcome_unknown':False,'ui_automation_connected':False,
++            'requires_post_termination_state_check':False,
++            'restoration':{'service_info_captured':False,'service_info_verified':True},
++            'state':{'accessibility_enabled':False,'touch_exploration_enabled':False,
++                     'enabled_service_count':0,'enabled_services_sha256':qa.sha(b'')},
++            'window_observation':{},'tree_observations':[]}
++        value['inspection_idle_observation']={}
++        return value
++    def wire(value):
++        text=base64.b64encode(gzip.compress(qa.canonical(value),mtime=0)).decode()
++        return ('INSTRUMENTATION_RESULT: owned_qa_result_gzip_base64='+text+
++                '\nINSTRUMENTATION_CODE: -1\n').encode()
++    qa.parse_completed(wire(state_value(99999)),b'',0,req,99999)
++    rows.append({'name':'actual_state_wire_new_identity_positive','passed':True})
++    try:qa.parse_completed(wire(state_value(10154)),b'',0,req,10154)
++    except qa.ProtocolError as error:
++        qa.require(str(error)=='INSTALLED_HELPER_IDENTITY_REQUIRED','PREVIOUS_UID_WRONG_FIRST_CAUSE')
++    else:raise RuntimeError('PREVIOUS_HELPER_UID_WIRE_ACCEPTED')
++    rows.append({'name':'previous_actual_helper_UID_wire_rejected','passed':True})
++    qa.require(len(rows)==32,'EXACT_CURRENT_BASELINE_SCOPE_CASES')
++    return {'schema':'pocket4-current-baseline-scope-controls-v2','all_passed':True,'count':32,
+             'cases':rows,'production_contract_sha256':hashlib.sha256(raw).hexdigest(),
+             'production_adapter_sha256':hashlib.sha256(adapter_raw).hexdigest(),'host_recorder_manifest_sha256':host_sha,
+             'main_epoch_sha256':qa.MAIN_EPOCH,'main_baseline_schema':qa.MAIN_BASELINE_SCHEMA,
+--- previous/current-baseline-binding.json
++++ new/current-baseline-binding.json
+@@ -1,38 +1,52 @@
+ {
+-  "schema": "pocket4-current-baseline-helper-source-binding-v1",
++  "schema": "pocket4-current-baseline-helper-source-binding-v2",
+   "state": "STATIC_SOURCE_ONLY_ANDROID_UNRUN",
+   "app": "amazon",
+   "target_package": "com.amazon.mShop.android.shopping",
+   "target_uid": 10129,
+-  "helper_package": "org.droidloom.qa.amazon.r3",
+-  "protocol": "pocket4-owned-amazon-qa-v3",
+-  "current_baseline_schema": "pocket4-main-current-baseline-v1",
+-  "current_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
++  "helper_package": "org.droidloom.qa.amazon.r4",
++  "protocol": "pocket4-owned-amazon-qa-v4",
++  "current_baseline_schema": "pocket4-main-current-baseline-v2",
++  "current_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+   "current_baseline": {
+-    "bytes": 41844,
+-    "path": "/home/alex/work/pocket4-main-current-baseline-01/baseline.private.json",
+-    "sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266"
++    "bytes": 44959,
++    "path": "/home/alex/work/pocket4-main-current-baseline-02/baseline.private.json",
++    "sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364"
+   },
+   "current_qualification": {
+-    "bytes": 1365,
+-    "path": "/home/alex/work/pocket4-main-current-baseline-01/qualification.json",
+-    "sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6"
++    "bytes": 5565,
++    "path": "/home/alex/work/pocket4-main-current-baseline-02/qualification.json",
++    "sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e"
+   },
+   "actual_baseline_result": {
+-    "bytes": 7986,
+-    "sha256": "4abe5092fe075e78602928d231987ac4a8394a72024dd2a535d8cff80d1ca066"
++    "job_id": "1a1b1378566-fc05-76f7",
++    "git_tree": "df158984ab6f8565c64db454acc7b9872f56a8a2",
++    "git_blob": "3cb41fac4621cf346d94be170f187251785c38ff",
++    "bytes": 13221,
++    "sha256": "107bf1487ace30a38c113057812a0a18415e3430640f11db0b5131e462d05269"
+   },
+   "host_recorder_source_manifest": {
+-    "bytes": 3605,
+-    "sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e"
++    "path": "/home/alex/work/pocket4-current-host-r6-source-01/source-manifest.json",
++    "bytes": 3757,
++    "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+   },
+-  "parent_source_manifest_sha256": "32be752c72fc4cfe7f50a73bba54cd6444e9ed3990b4f0cd809cb7023b540b98",
++  "parent_source_manifest_sha256": "b6827ffda85db49b90492455bc7bea24105b6490268475521ffa01a44224fe15",
++  "previous_helper_uid_exclusion": {
++    "uid": 10154,
++    "actual_worker_result": {
++      "bytes": 14840,
++      "sha256": "ee4b59514a2c0a94fb2d8bb1b8eadddf4da6bb58a25c775ee1fb640dbf35eced",
++      "git_blob": "0562625f61c6776a55299488838ee56cb1329c3f"
++    },
++    "source": "exact historical installed helper receipt; exclusion only, no new cell authority"
++  },
+   "owned_helper_uid": null,
+   "APK_sha256": null,
+   "signer_sha256": null,
+   "helper_built": false,
+   "helper_installed": false,
+   "UI_actions": 0,
++  "old_helpers_and_tasks_reauthorized": false,
+   "unresolved_framework_exit_cause": true,
+   "whole_app_production_ready": false
+ }
+--- previous/README.md
++++ new/README.md
+@@ -1,5 +1,7 @@
+-# amazon current-baseline helper source
++# amazon owned helper R4 for current cell baseline02
+ 
+-Generated only from a complete pinned current-baseline result. The parent source manifest is 32be752c72fc4cfe7f50a73bba54cd6444e9ed3990b4f0cd809cb7023b540b98. All original action, full-tree, window, refresh, once-only, idle and restore logic is retained outside the explicit scope binding additions. Parent historical JSON references retain their original bytes.
++This create-only source/build candidate binds the actual baseline02 receipt, typed v2 host scope, and exact R6 host manifest. It derives from the fixed prior helper source manifest `b6827ffda85db49b90492455bc7bea24105b6490268475521ffa01a44224fe15`.
+ 
+-New package org.droidloom.qa.amazon.r3; protocol pocket4-owned-amazon-qa-v3. Target UID 10129 was read in the new baseline. The new helper UID, signed APK bytes and signer remain unknown until actual build/install. This source does not authorize UI or installation and does not resolve the framework exit cause.
++The commercial target package, UID, resource selectors, complete-tree/window/freshness checks, public input restrictions, action count limits, independent restoration, and time/resource bounds remain unchanged. Protocol and helper package are a new generation. The prior actual helper UID 10154 is rejected at the Session and wire result identity gates. Its historical receipt gives no runtime authority in this cell.
++
++The build runs the original App-specific controls and 32 current-baseline/protocol/identity controls, then the pinned Java/APK toolchain. This source freeze has not executed Python or Java. APK, signer, and new installed UID remain unknown until separate actual build and install receipts. No business flow, old task, or issued nonce is reauthorized. Whole-App production readiness remains false.
+--- previous/SOURCE_PINS.json
++++ new/SOURCE_PINS.json
+@@ -1,52 +1,66 @@
+ {
+   "schema": 1,
+-  "artifact": "pocket4-current-baseline-helper-source-v1",
++  "artifact": "pocket4-current-baseline-helper-source-v2",
+   "current_baseline_binding": {
+-    "schema": "pocket4-current-baseline-helper-source-binding-v1",
++    "schema": "pocket4-current-baseline-helper-source-binding-v2",
+     "state": "STATIC_SOURCE_ONLY_ANDROID_UNRUN",
+     "app": "amazon",
+     "target_package": "com.amazon.mShop.android.shopping",
+     "target_uid": 10129,
+-    "helper_package": "org.droidloom.qa.amazon.r3",
+-    "protocol": "pocket4-owned-amazon-qa-v3",
+-    "current_baseline_schema": "pocket4-main-current-baseline-v1",
+-    "current_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
++    "helper_package": "org.droidloom.qa.amazon.r4",
++    "protocol": "pocket4-owned-amazon-qa-v4",
++    "current_baseline_schema": "pocket4-main-current-baseline-v2",
++    "current_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+     "current_baseline": {
+-      "bytes": 41844,
+-      "path": "/home/alex/work/pocket4-main-current-baseline-01/baseline.private.json",
+-      "sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266"
++      "bytes": 44959,
++      "path": "/home/alex/work/pocket4-main-current-baseline-02/baseline.private.json",
++      "sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364"
+     },
+     "current_qualification": {
+-      "bytes": 1365,
+-      "path": "/home/alex/work/pocket4-main-current-baseline-01/qualification.json",
+-      "sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6"
++      "bytes": 5565,
++      "path": "/home/alex/work/pocket4-main-current-baseline-02/qualification.json",
++      "sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e"
+     },
+     "actual_baseline_result": {
+-      "bytes": 7986,
+-      "sha256": "4abe5092fe075e78602928d231987ac4a8394a72024dd2a535d8cff80d1ca066"
++      "job_id": "1a1b1378566-fc05-76f7",
++      "git_tree": "df158984ab6f8565c64db454acc7b9872f56a8a2",
++      "git_blob": "3cb41fac4621cf346d94be170f187251785c38ff",
++      "bytes": 13221,
++      "sha256": "107bf1487ace30a38c113057812a0a18415e3430640f11db0b5131e462d05269"
+     },
+     "host_recorder_source_manifest": {
+-      "bytes": 3605,
+-      "sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e"
++      "path": "/home/alex/work/pocket4-current-host-r6-source-01/source-manifest.json",
++      "bytes": 3757,
++      "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+     },
+-    "parent_source_manifest_sha256": "32be752c72fc4cfe7f50a73bba54cd6444e9ed3990b4f0cd809cb7023b540b98",
++    "parent_source_manifest_sha256": "b6827ffda85db49b90492455bc7bea24105b6490268475521ffa01a44224fe15",
++    "previous_helper_uid_exclusion": {
++      "uid": 10154,
++      "actual_worker_result": {
++        "bytes": 14840,
++        "sha256": "ee4b59514a2c0a94fb2d8bb1b8eadddf4da6bb58a25c775ee1fb640dbf35eced",
++        "git_blob": "0562625f61c6776a55299488838ee56cb1329c3f"
++      },
++      "source": "exact historical installed helper receipt; exclusion only, no new cell authority"
++    },
+     "owned_helper_uid": null,
+     "APK_sha256": null,
+     "signer_sha256": null,
+     "helper_built": false,
+     "helper_installed": false,
+     "UI_actions": 0,
++    "old_helpers_and_tasks_reauthorized": false,
+     "unresolved_framework_exit_cause": true,
+     "whole_app_production_ready": false
+   },
+   "files": {
+     "AndroidManifest.xml": {
+       "bytes": 738,
+-      "sha256": "324de7dd4e090456933d5b60c92adeba4b1441d30c446d813cfe36699b9c5f66"
++      "sha256": "aee79e1505923dd52185851952f90a61c3fe9c3626f4168a10f3001d823387b5"
+     },
+     "README.md": {
+-      "bytes": 717,
+-      "sha256": "0394d6a5eb35ca357caf0caab2c8481e594824cfa9bb695856ec4d767fd999ef"
++      "bytes": 1120,
++      "sha256": "f3ebf1729baf61c5a5d0204f2a3bd40af1d8bf9554f6d172a6e2a8c56c4f86d2"
+     },
+     "build-input-reference.json": {
+       "bytes": 2652,
+@@ -54,43 +68,43 @@
+     },
+     "build_candidate.py": {
+       "bytes": 25470,
+-      "sha256": "4a635854750581602fbce352e936f40d5dd9ff25a0715235f792eec57c5f7150"
++      "sha256": "6e6005a5ba56060285b1f25def52ffb5507b0ae72b1d3526b02691e121153d77"
+     },
+     "check_current_baseline.py": {
+-      "bytes": 5525,
+-      "sha256": "f121f98a72f259fea625bb36a646d042428f75e786c3f3d50dd2895238d16fc5"
++      "bytes": 8976,
++      "sha256": "10f28b3279aac73b26f489d92eac40d21c5f4e5602094c70ace3efc220a2ba51"
+     },
+     "check_idle_contract.py": {
+       "bytes": 13482,
+       "sha256": "986fc6d8b5659289a22881a894beec2a55038f1ef0710228cc7f45ee1bb0a340"
+     },
+     "current-baseline-binding.json": {
+-      "bytes": 1510,
+-      "sha256": "fbd6b35d1b7f60d67cbfea2458d3c4fd65c10aeb29c6219a52f31f3ed7fb6aa1"
++      "bytes": 2164,
++      "sha256": "22ede6f6d583d26eeb973b679baad2d99d7765d84b0b35b1596ab1d2f6081e97"
+     },
+     "make_build_request.py": {
+-      "bytes": 2966,
+-      "sha256": "c7375a51cf1d486856c283e80f1d7be3c71a89695c9189667f9540a146cb5a14"
++      "bytes": 2970,
++      "sha256": "eba654b65f1e07c1a21186a945409e97987417f2741a1161a80debd7f9fba586"
+     },
+     "qa_adapter.py": {
+-      "bytes": 23240,
+-      "sha256": "368fc40f2e02c94673a3b993c64d129d63cee0673660a309656cb55250fb239c"
++      "bytes": 23246,
++      "sha256": "49e0f313a74c2478ce60b794597020000181a306a2b78d2dbb5d2b1b489dde16"
+     },
+     "qa_contract.py": {
+-      "bytes": 33454,
+-      "sha256": "d0943b50d0b01d7d1ba263177c4d0d6823a3c4bdb5a4f3d5a5b31c7588e90325"
++      "bytes": 33461,
++      "sha256": "fdac6b691424459a4d4ce9cc3905016a45c5c2971d86d0b79d285e55a24465a6"
+     },
+-    "src/org/droidloom/qa/amazon/r3/ActionRunner.java": {
++    "src/org/droidloom/qa/amazon/r4/ActionRunner.java": {
+       "bytes": 44155,
+-      "sha256": "d6afa218e4a704e7a507eb78726867c43c6dc32b549bbd4ff0a5949964c024da"
++      "sha256": "fc7a5b7348e3c0852f9a616ad1cb22e63675f26b253f3e9b4b31c1d624ec4af5"
+     },
+-    "src/org/droidloom/qa/amazon/r3/InspectionIdleGate.java": {
++    "src/org/droidloom/qa/amazon/r4/InspectionIdleGate.java": {
+       "bytes": 3923,
+-      "sha256": "1fe538351c95a08495179fe03dcf301cd54a3b77b06766773e5b4232a2e9eda2"
++      "sha256": "05f9a1475a504e228694b7b17b0f1ad10328bd74469fdbb5e9beecefba27c6db"
+     },
+     "stage_build.py": {
+       "bytes": 7560,
+-      "sha256": "758f0281a238638e0b489f5be652e49a23d6458e4c452630634ae809b3fdf3d2"
++      "sha256": "e55b038067fb1a1ef0ea534bd77d81c3f0fa489bbbafda69cfe4a96d072ce930"
+     },
+     "target-artifact-reference.json": {
+       "bytes": 3086,
+@@ -98,7 +112,7 @@
+     },
+     "tests/InspectionIdleGateChecks.java": {
+       "bytes": 11434,
+-      "sha256": "30a92180b70971ee7ae179300c01bbd6bface44a97393078dd4d970d79b7fb63"
++      "sha256": "10f38285f88730ba82d877dede41ac5a81e6a5fd71fb693b71da0b2117edb54b"
+     }
+   }
+ }

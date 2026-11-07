@@ -1,0 +1,95 @@
+{
+  "errors": [
+    "cleanup-evidence-write:resources-before-cleanup.json: OSError(28, 'owned fixture injected resource receipt write failure')"
+  ],
+  "reconciliations": [
+    {
+      "action_taken": false,
+      "exact_generation_established": true,
+      "observed": {
+        "ActiveState": "active",
+        "CPUQuotaPerSecUSec": "50ms",
+        "ControlGroup": "/system.slice/p4-signal-r5-unit-control-20261104-02-bus.service",
+        "Description": "p4-signal-r5-unit-control-20261104-02 5c53c248004139cd14513e8d88023c18 bus",
+        "ExecStart": "{ path=/usr/bin/python3 ; argv[]=/usr/bin/python3 -I /home/alex/work/pocket4-signal-runtime-r5-work-01/source-frozen-r5-03/owned_cleanup_fixture_child.py ; ignore_errors=no ; start_time=[Wed 2026-11-04 11:32:31 PST] ; stop_time=[Wed 2026-11-04 11:32:32 PST] ; pid=383328 ; code=exited ; status=0 }",
+        "InvocationID": "6c7a0fa95e55464a8ef3e03ed43d8f54",
+        "KillMode": "control-group",
+        "LoadState": "loaded",
+        "MainPID": "0",
+        "MemoryMax": "67108864",
+        "MemorySwapMax": "0",
+        "RemainAfterExit": "yes",
+        "SubState": "exited",
+        "TasksMax": "16",
+        "Type": "oneshot"
+      },
+      "unit": "p4-signal-r5-unit-control-20261104-02-bus.service"
+    }
+  ],
+  "retirements": [
+    {
+      "after": {
+        "absent": true,
+        "filesystem_type": 1667723888,
+        "held_identity": {
+          "device": 30,
+          "inode": 28153394
+        },
+        "held_nlink": 2,
+        "hierarchical_population_checked": true,
+        "path": "/system.slice/p4-signal-r5-unit-control-20261104-02-bus.service",
+        "proof": "original cgroup2 directory held; path absent; both mandatory controls removed"
+      },
+      "automatic_retry": false,
+      "before": {
+        "absent": false,
+        "events": {
+          "frozen": 0,
+          "populated": 1
+        },
+        "filesystem_type": 1667723888,
+        "held_identity": {
+          "device": 30,
+          "inode": 28153394
+        },
+        "hierarchical_population_checked": true,
+        "path": "/system.slice/p4-signal-r5-unit-control-20261104-02-bus.service",
+        "path_present": true,
+        "pids_current": 1,
+        "root_processes": []
+      },
+      "final": {
+        "ActiveState": "inactive",
+        "CPUQuotaPerSecUSec": "infinity",
+        "ControlGroup": "",
+        "Description": "p4-signal-r5-unit-control-20261104-02-bus.service",
+        "InvocationID": "",
+        "KillMode": "control-group",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "MemoryMax": "infinity",
+        "MemorySwapMax": "infinity",
+        "RemainAfterExit": "no",
+        "SubState": "dead",
+        "TasksMax": "30053",
+        "Type": ""
+      },
+      "retired": true,
+      "role": "bus",
+      "stop_attempted": true,
+      "stop_returncode": 0,
+      "unit": "p4-signal-r5-unit-control-20261104-02-bus.service"
+    }
+  ],
+  "runtime_directories_retained_for_inspection": true,
+  "units": [
+    {
+      "description": "p4-signal-r5-unit-control-20261104-02 5c53c248004139cd14513e8d88023c18 bus",
+      "group": "/system.slice/p4-signal-r5-unit-control-20261104-02-bus.service",
+      "invocation": "6c7a0fa95e55464a8ef3e03ed43d8f54",
+      "reconciled_after_launch_error": true,
+      "role": "bus",
+      "unit": "p4-signal-r5-unit-control-20261104-02-bus.service"
+    }
+  ]
+}

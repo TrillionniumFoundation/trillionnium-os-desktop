@@ -1,0 +1,43 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "99111ec4440d516531b507f2f26d939bbecad24d",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 970,
+    "sha256": "8ed617328a4354319bc6e8817ebe9de61348ae6c324eaf9089f60015167d5ad6",
+    "git_blob_sha1": "92a5f618f2d4a91098dda7cbcedc36c49e48a2e1",
+    "retrieval": "shallow roots and complete uncropped descendant trees until canonical dependency cuts",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission.tool-original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "130922f2c76d6b6d766d96bec0aa9c05755eb959",
+      "bytes": 1010
+    },
+    {
+      "path": "dispatch-intent.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e7c807e7f41e167efdbe8c9d272728bddefa13a2",
+      "bytes": 366
+    },
+    {
+      "path": "preflight",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c1615b250ff0cce81dfcb5d6a3af201a2d32f697"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "preflight",
+      "original_tree": "c1615b250ff0cce81dfcb5d6a3af201a2d32f697",
+      "checkpoint": 21,
+      "canonical_package": "marriott_jni_build01-preflight"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

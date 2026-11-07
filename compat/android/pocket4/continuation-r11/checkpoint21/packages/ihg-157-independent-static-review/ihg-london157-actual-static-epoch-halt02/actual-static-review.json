@@ -1,0 +1,84 @@
+{
+  "schema": "pocket4-IHG-London157-actual-static-review-v1",
+  "status": "ACTUAL_PURE_CONTROLS_PASS_DEVICE_HALT",
+  "actual": {
+    "job_id": "1a1b0d267e4-fc05-7334",
+    "git_tree": "2ef011af87e0a8646c9d724047cbf94267508007",
+    "stdout": {
+      "bytes": 17922,
+      "sha256": "8bc26b78078412fed149955aa6ddd6454eb3fffd15938fb5241e46c387a462c5",
+      "git_blob_sha": "5bdb0bab0d3b6cdeae265d425e199b5209c8ec09"
+    },
+    "complete": true,
+    "exit_code": 0,
+    "stderr_bytes": 0
+  },
+  "exact_request": {
+    "bytes": 309019,
+    "sha256": "17a441d62d3b480ba52bd0ee0c3b604f3963d4ad18a32f302900c848398f4365",
+    "git_blob_sha": "449aaa13c41068057b84822e0db4aba83e9a9571"
+  },
+  "control_stdin_sha256": "94f62f87ab34a6e142e1cb4f1d55857b0b46bcac8dd84fc06781ba991111fe92",
+  "all_157_cases_passed": true,
+  "case_names_unique": true,
+  "seven_bound_source_pins_exact": {
+    "coordinator": {
+      "bytes": 45725,
+      "sha256": "eb78713ce3acb768cf4fd7ca4059cb2fbfe3d81c3c67670c496e394785dc327e"
+    },
+    "context": {
+      "bytes": 19401,
+      "sha256": "93fbda4e30044bd2b3ff9e5d836ccdfd2147a89c97436a66c5606387c7e99248"
+    },
+    "public_destination": {
+      "bytes": 42662,
+      "sha256": "30738abe4b4ba740fd3e0c47de8437792f8d52a539e74afd5e140878e29a4076"
+    },
+    "stage": {
+      "bytes": 5193,
+      "sha256": "98fb728648e1e97dee1adf64f8712c03a6fea681b13b7c0fc159b7ca7bfac2c4"
+    },
+    "contract": {
+      "bytes": 28750,
+      "sha256": "bec85084822d68090f39215807c60d6ea583526f17d5e2028c3a8fcacbc27c43"
+    },
+    "adapter": {
+      "bytes": 21670,
+      "sha256": "0b192041fde9f238188051854410c372c5d73eb4f1b24ab6e122c34a15ba082c"
+    },
+    "transport": {
+      "bytes": 15606,
+      "sha256": "27e07fbaaccca4e5113e1750a3b7baa9d05048a1e8588f09cdc8f9ed5cf44089"
+    }
+  },
+  "actual_nonce_receipt": {
+    "bytes": 2587,
+    "sha256": "094a4127a19e352552dde1ea182f6009c3eddbf75571ad1da4a44bd2bab934f4",
+    "git_blob_sha": "0a444d90d780b9222e3d8260cf834815923246b3",
+    "git_tree": "a42186a8a9a00f4b6513fdff61f01f2493e3a041",
+    "job_id": "1a1b09cf731-fc05-71b4"
+  },
+  "forty_nonces_exact_order": true,
+  "nonce_exclusions": 609,
+  "scope": {
+    "actual_python_compilation": true,
+    "actual_production_validators_constructors_and_policies": true,
+    "synthetic_in_memory_IO": true,
+    "real_Java_helper": false,
+    "Android_commands": 0,
+    "device_readiness": false,
+    "destination_input": false,
+    "current_Main_identity": false
+  },
+  "hold": {
+    "reason": "New epoch guard failure in separate Amazon fixed-read job; identities not yet diagnosed.",
+    "fixed_diagnostic_tree": "8efdf78907ea68a2ad510b075ed67569b5bafb38",
+    "new_UI_request_created": false,
+    "UI_or_install_authorized": false,
+    "old_epoch_rebound": false,
+    "old_unknown_actions_replayed": false,
+    "forty_nonce_values_remain_committed_to_this_purpose": true,
+    "production_ready": false
+  },
+  "response_to_root": "Static evidence retained. No London UI request is generated under the halted epoch."
+}

@@ -1,0 +1,202 @@
+{
+  "schema": 1,
+  "normalization": {
+    "old_root": "/home/alex/work/pocket4-bilibili-r7-pause-resume-02",
+    "new_root": "/home/alex/work/pocket4-bilibili-r8-pause-resume-01",
+    "labels": [
+      "r7 to r8",
+      "R7 to R8",
+      "pocket4-owned-bili-qa-v7 to v8"
+    ],
+    "fresh_nonce_map_count": 146,
+    "assignment_literal_count": 14
+  },
+  "functions": [
+    {
+      "source": "controls_reveal.py",
+      "top_level_function_count": 5,
+      "exact_after_identifier_nonce_normalization": [
+        "validate",
+        "assessment",
+        "controls_evidence",
+        "run",
+        "bind_pause_inspection"
+      ],
+      "changed_functions": []
+    },
+    {
+      "source": "owned_navigation.py",
+      "top_level_function_count": 24,
+      "exact_after_identifier_nonce_normalization": [
+        "require",
+        "sha",
+        "read",
+        "load_prior",
+        "verify_source",
+        "fixed_plan",
+        "actual_install",
+        "new_session",
+        "stable_before_click",
+        "navigation_sequences",
+        "search_page_evidence",
+        "stable_search_page",
+        "submit_current_public_query",
+        "public_query_sequences",
+        "results_content_evidence",
+        "observe_result_content",
+        "video_extension",
+        "worker",
+        "durable_phase",
+        "owned_scope",
+        "execute",
+        "main"
+      ],
+      "changed_functions": [
+        "require_actual_install_binding",
+        "assessment_summary"
+      ]
+    },
+    {
+      "source": "playback_controls.py",
+      "top_level_function_count": 8,
+      "exact_after_identifier_nonce_normalization": [
+        "selector",
+        "validate",
+        "select_control",
+        "player_sequence",
+        "current_action",
+        "checked_sequence",
+        "run",
+        "retain_phase_results"
+      ],
+      "changed_functions": []
+    },
+    {
+      "source": "post_foreground.py",
+      "top_level_function_count": 6,
+      "exact_after_identifier_nonce_normalization": [
+        "require",
+        "validate",
+        "classify",
+        "observe_post_ack",
+        "run",
+        "owned_sequence"
+      ],
+      "changed_functions": []
+    },
+    {
+      "source": "stage_execute.py",
+      "top_level_function_count": 4,
+      "exact_after_identifier_nonce_normalization": [
+        "require",
+        "sha",
+        "checked_packet",
+        "main"
+      ],
+      "changed_functions": []
+    },
+    {
+      "source": "video_navigation.py",
+      "top_level_function_count": 11,
+      "exact_after_identifier_nonce_normalization": [
+        "validate",
+        "select_course",
+        "inspected_course",
+        "stable_course",
+        "course_sequence",
+        "await_post_foreground",
+        "waiting_structure",
+        "content_status",
+        "content_observation",
+        "await_player_content",
+        "run"
+      ],
+      "changed_functions": []
+    }
+  ],
+  "whole_source_inverse": [
+    {
+      "name": "controls_reveal.py",
+      "original_bytes": 10056,
+      "original_sha256": "c47691958d04fc2179583617414b7e5f1f5819a6358cee376780270c9d29e9e0",
+      "bytes": 10056,
+      "sha256": "c5cb583d255197e53e3d2bfe01a6d501eca747c72c62aadb1701bcc2d42afea8",
+      "inverse_exact_after_declared_bindings": true,
+      "only_added_runtime_logic": []
+    },
+    {
+      "name": "owned_navigation.py",
+      "original_bytes": 59902,
+      "original_sha256": "f030b4a4c84ed8240f8deabb892e3528ca9d3fb26f38faa0047dd40f165ad197",
+      "bytes": 60088,
+      "sha256": "77975cc8ff7dd1dc28a894383c4157aa9457a9bdc17613c94aa7b1a2de4f5f24",
+      "inverse_exact_after_declared_bindings": true,
+      "only_added_runtime_logic": [
+        "reject_previous_helper_uid_10202",
+        "export_revalidated_safe_idle_metadata"
+      ]
+    },
+    {
+      "name": "playback_controls.py",
+      "original_bytes": 13317,
+      "original_sha256": "955cb60484bdc2f8dc27efb1953288ab40f88bd6536d4d5500036be9412f3342",
+      "bytes": 13317,
+      "sha256": "9e306fb35d658bd6c1217d884de25de252127a548e59c3e7f0299d5f56c60420",
+      "inverse_exact_after_declared_bindings": true,
+      "only_added_runtime_logic": []
+    },
+    {
+      "name": "post_foreground.py",
+      "original_bytes": 12607,
+      "original_sha256": "00127ad7bd5aaf03e9ca65596759051f62cd247bb747f33d9537875e91fed976",
+      "bytes": 12607,
+      "sha256": "f8009e20080105df5803a2245a71a3d80e249818ca93b9ac1e71fe8c90bdc123",
+      "inverse_exact_after_declared_bindings": true,
+      "only_added_runtime_logic": []
+    },
+    {
+      "name": "stage_execute.py",
+      "original_bytes": 5188,
+      "original_sha256": "7fffa0702cf1b7b613b8654674fc27dccdd9064c671c8d374972e9578a0c56f2",
+      "bytes": 5188,
+      "sha256": "ceabf424cd88a5812c6c36e7032a426ff5b87d3229c738694d39383e72fc8451",
+      "inverse_exact_after_declared_bindings": true,
+      "only_added_runtime_logic": []
+    },
+    {
+      "name": "video_navigation.py",
+      "original_bytes": 26257,
+      "original_sha256": "f66352948bc9cae0c351634a5e79978fca67ab1ec8652a6c0cfe59cda661aa27",
+      "bytes": 26257,
+      "sha256": "9f851e3d4c5b6fcce4cf2a44dfe78b89ff262cb5d2f7baf405e3b06d473c39b7",
+      "inverse_exact_after_declared_bindings": true,
+      "only_added_runtime_logic": []
+    }
+  ],
+  "changes": {
+    "require_actual_install_binding": "The prior helper UID 10202 is additionally denied. The actual R8 UID 10204 is bound only after four exact receipts and actual state-command index 6.",
+    "assessment_summary": "One line revalidates and exports the actual R8 inspection_idle_observation dictionary using the installed contract. It adds no input, retry, observation, deadline or policy allowance."
+  },
+  "original_runtime_guards_preserved": [
+    "same owned task and target UID/display/component/unique foreground",
+    "original full state/inspect/state and independent failure/finally read",
+    "fresh fixed public identity and semantic selector",
+    "current whole-tree/window comparison, target refresh/node hash/eligibility, final whole-tree/window",
+    "R7 fixed player-button transaction with full same-invocation double sample",
+    "one attempted input; no replay after failed or unknown action",
+    "content-ready complete title/author/ancestry/geometry gates",
+    "three matching first-search observations with four-second capture span within eight reads / twenty seconds",
+    "exact task retirement and baseline task preservation",
+    "original Main fence, source, APK, descriptor, lock, cgroup and bounded worker gates"
+  ],
+  "guards_not_weakened": true,
+  "Python_compile_here": false,
+  "Python_controls_here": false,
+  "actual_helper_build_controls": {
+    "java": 22,
+    "python": 32,
+    "passed": true,
+    "job": "1a1aef89c59-fc05-64a7"
+  },
+  "device_idle_success_not_established": true
+}

@@ -1,0 +1,265 @@
+{
+  "schema": 1,
+  "state": "LOCAL_CONTROLS_PASS",
+  "count": 29,
+  "all_pass": true,
+  "checks": [
+    {
+      "case": "MemAvailable_below_14GiB_rejected",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "less than 14 GiB MemAvailable for independent Go6 second profile; no automatic retry"
+      }
+    },
+    {
+      "case": "SwapFree_below_2GiB_rejected",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "less than the required 2 GiB free swap; no automatic retry"
+      }
+    },
+    {
+      "case": "old_1GiB_swap_admission_rejected",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "less than the required 2 GiB free swap; no automatic retry"
+      }
+    },
+    {
+      "case": "new_exact_resource_boundary_3GiB_and_1GiB_differences",
+      "pass": true,
+      "detail": {
+        "fixture_only": true,
+        "memory_difference_bytes": 3221225472,
+        "swap_difference_bytes": 1073741824,
+        "remote_admission_proven": false
+      }
+    },
+    {
+      "case": "owned_zero_OOM_kills_accepts_recorded_pressure",
+      "pass": true,
+      "detail": {
+        "pass": true,
+        "events": {
+          "low": 0,
+          "high": 0,
+          "max": 27,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0
+        },
+        "owned_oom_kills_zero": true
+      }
+    },
+    {
+      "case": "owned_resource_rejects_OOM_kill",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "owned OOM kill observed; build is not qualified"
+      }
+    },
+    {
+      "case": "owned_resource_rejects_OOM_group_kill",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "owned OOM kill observed; build is not qualified"
+      }
+    },
+    {
+      "case": "owned_resource_rejects_missing_observation",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "owned memory.events was not observed"
+      }
+    },
+    {
+      "case": "owned_resource_rejects_missing_key",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "incomplete or duplicate owned memory.events"
+      }
+    },
+    {
+      "case": "owned_resource_rejects_duplicate_key",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "incomplete or duplicate owned memory.events"
+      }
+    },
+    {
+      "case": "actual_Go4_own_OOM_terminal_rejected",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "owned OOM kill observed; build is not qualified",
+        "actual_prior_terminal_sha256": "6abfe6c9e8eb448043b3040a735b1483a93b3bf365ef99441bb0d5c48a61186d"
+      }
+    },
+    {
+      "case": "actual_prior_449_manifest_and_Go6_patch_unchanged",
+      "pass": true,
+      "detail": {
+        "actual_prior_449_manifest_bytes_checked": true,
+        "changed_source_rows": 0,
+        "fresh_remote_copy_not_yet_observed": true
+      }
+    },
+    {
+      "case": "projection_requires_successful_Go6_actual_hash",
+      "pass": true,
+      "detail": {
+        "patch_path": "android/apex-compat/0008-soong-leaf-go-memory-budget.patch",
+        "patch_sha256": "6aaaf5ec96a75bb6480c202d6483a5b22bdd4963d6d3b66bbfad4d80ee5ed20e",
+        "projected_soong_path": "build/soong/ui/build/soong.go",
+        "projected_soong_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "actual_prior_success_projected_hash_equal": true,
+        "all_applied_patch_hashes_equal_reference": true,
+        "normal_builder_lock_and_journal_recovery_required": true,
+        "synthetic_receipt_only": true
+      }
+    },
+    {
+      "case": "projection_rejects_old_Go4_patch",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "actual projection patch set differs from the successful Go6 builder"
+      }
+    },
+    {
+      "case": "projection_rejects_old_Go5_patch",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "actual projection patch set differs from the successful Go6 builder"
+      }
+    },
+    {
+      "case": "projection_rejects_other_patch_drift",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "actual projection patch set differs from the successful Go6 builder"
+      }
+    },
+    {
+      "case": "projection_rejects_Soong_source_drift",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "actual projected Soong source differs from the successful Go6 builder"
+      }
+    },
+    {
+      "case": "request_accepts_only_explicit_preparation_fixture_with_exact_449_bytes",
+      "pass": true,
+      "detail": {
+        "fixture_accepted": true,
+        "remote_preparation_claimed": false
+      }
+    },
+    {
+      "case": "request_rejects_wrong_scope",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "preparation scope unexpectedly widened"
+      }
+    },
+    {
+      "case": "request_rejects_wrong_engine_count",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "actual source inventory is incomplete or does not use the unchanged Go6 patch"
+      }
+    },
+    {
+      "case": "request_rejects_wrong_builder_pin",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "actual Go6R2 preparation binding differs"
+      }
+    },
+    {
+      "case": "request_rejects_wrong_preparation_state",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "actual Go6R2 preparation binding differs"
+      }
+    },
+    {
+      "case": "request_rejects_Main_actions",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "preparation scope unexpectedly widened"
+      }
+    },
+    {
+      "case": "request_rejects_old_Go4_plan",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "actual prepared plan differs from frozen profile"
+      }
+    },
+    {
+      "case": "prepare_request_pins_exact_controller",
+      "pass": true,
+      "detail": {
+        "preparation_only": true,
+        "submitted": false,
+        "source_exact": true
+      }
+    },
+    {
+      "case": "placeholder_actual_preparation_rejected_before_actions",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "a new actual Go6R2 preparation receipt is required"
+      }
+    },
+    {
+      "case": "default_PLAN_combined_build_go6r2.py",
+      "pass": true,
+      "detail": {
+        "actual_local_cli": true,
+        "stdout_sha256": "05484a2a134c0500a8d4d7a13f2d29f15aa5605ed710a40272fde87ed6cbd722"
+      }
+    },
+    {
+      "case": "default_PLAN_fenced_build_go6r2.template.py",
+      "pass": true,
+      "detail": {
+        "actual_local_cli": true,
+        "stdout_sha256": "7d484cf1013f6dbcd840aa99522a9a9c5bf332bb89b972d063d6c9a1047623ea"
+      }
+    },
+    {
+      "case": "default_PLAN_make_requests.py",
+      "pass": true,
+      "detail": {
+        "actual_local_cli": true,
+        "stdout_sha256": "36cd18aed9dd567c3d28849d966751895f7dd875228891602e8f350dc30df7eb"
+      }
+    }
+  ],
+  "remote_preparation_performed": false,
+  "remote_admission_proven": false,
+  "builder_executed": false,
+  "Main_actions": 0,
+  "production_ready": false,
+  "scope": "Actual Python functions and local default CLIs. Memory values, projection receipts and preparation objects are explicit fixtures; prior 449-file manifest and Go6 patch bytes are actual pinned inputs."
+}

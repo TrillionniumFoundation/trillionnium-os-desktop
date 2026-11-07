@@ -1,0 +1,26 @@
+--- actual-IHG/open_task_context
++++ IHG877/open_independent_context
+@@ -1,4 +1,4 @@
++def open_independent_context(task,flow_type,ref,util,context,source_manifest,source_verify,flow_root,step,
+-def open_task_context(ref,util,context,source_manifest,source_verify,flow_root,step,
+                       transport,result,deadline,phase,qa,inspect_plan,resolve,expected_scope, *,
+                       install_source_manifest):
+     """Same held Main/classpath primitives as the qualified Amazon install.
+@@ -18,7 +18,7 @@
+                      'amazon_task_fixed_epoch')
+     scope_raw=util.read(flow_root/'scope.json',65536)
+     scope=json.loads(scope_raw)
++    task.current_task_scope(scope,qa,contract)
+-    current_task_scope(scope,qa,contract)
+     need(scope==expected_scope and all(scope[key]==value for key,value in own_scope.items()),
+          'EXACT_NEW_CURRENT_IHG_FLOW_SCOPE_REQUIRED')
+     need(util.read(flow_root/'baseline.json',expected=ref.BASELINE_SHA)==ref.read(ref.BASELINE,expected=ref.BASELINE_SHA)
+@@ -55,7 +55,7 @@
+         need(all(discovered.get(k)==v for k,v in values.items()),'CLASSPATH_DISCOVERY_CHANGED')
+         environment=transport.environment_values(discovered)
+         tasks=recorder.task_functions(context.INSTALLED_SHARED/'references/task_scope_baseline.py')
++        flow=flow_type(recorder=recorder,contract=contract,target=target,environment=environment,
+-        flow=Flow(recorder=recorder,contract=contract,target=target,environment=environment,
+             transport=transport,main_guard=guard,root=flow_root,step=step,phase=phase,
+             scope=scope,activation=activation,tasks=tasks,qa=qa,inspect_plan=inspect_plan,
+             resolve=resolve,read=util.read,deadline=deadline)

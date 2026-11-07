@@ -1,0 +1,53 @@
+[
+  {
+    "before": "ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-install-state-01')",
+    "after": "ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r9-install-state-01')"
+  },
+  {
+    "before": "STEP = ROOT/'worker/steps/install-state-01'",
+    "after": "STEP = Path('/home/alex/work/pocket4-bilibili-owned-qa-r9-flow-d327cfd21d7b59df0c45a68efdd74c98/steps/install-state-r9-01')"
+  },
+  {
+    "before": "NONCE = '233184c3820388b9fb3567c7ec726cbb'",
+    "after": "NONCE = 'dc55b7c139daf6db8fe94faa170916a9'"
+  },
+  {
+    "before": "PACKAGE = 'org.droidloom.qa.bestbuy.r2'",
+    "after": "PACKAGE = 'org.droidloom.qa.bili.r9'"
+  },
+  {
+    "before": "PROTOCOL = 'pocket4-owned-bestbuy-qa-v2'",
+    "after": "PROTOCOL = 'pocket4-owned-bili-qa-v9'"
+  },
+  {
+    "before": "PINS = {'coordinator.json': (3080, '7d132b19270f19665bc4bc5b1a1ce1d270c88367c6c10673b61877ca5f266069'), 'stage.json': (1618, 'ef54244b4f4908ee4c2677c0904807413a420d37f07943c4aa5f521dc71de942')}",
+    "after": "PINS = {'coordinator.json': (3917, '4e6d090d00eada5dc1604977491ed88054595f856dd620d12ace55222825fd71'), 'stage.json': (4141, 'b52f8f856e377c38b7a8a64f172e0970f0cd37f4ef7b87fb63a6005a67c8b6cd')}"
+  },
+  {
+    "before": "INSTALL_NONCE = '2501969dfcbe4bb492e5401c0bfcf420'",
+    "after": "INSTALL_NONCE = 'd327cfd21d7b59df0c45a68efdd74c98'"
+  },
+  {
+    "before": "SOURCE_SHA = '39ec2549b1db692666e4f047ec35b3e118b37c50159fe7fc70388e2c7a579ea1'",
+    "after": "SOURCE_SHA = '399cebc279ac8653b943b5c433b248c94dec32062b85b45e9cb6c22fce379a66'"
+  },
+  {
+    "before": "'worker.json':ROOT/'worker/result.json'",
+    "after": "'worker.json':STEP/'result.json'"
+  },
+  {
+    "before": "uid not in (10130,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190,10137,10196,10198)",
+    "after": "uid not in (10130,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190,10137,10196,10198,10203,10204)"
+  },
+  {
+    "before": "    require(worker.get('ok') is True and worker.get('exact_command_count')==13 and\n            worker.get('target_before')==worker.get('target_after') and\n            worker.get('target_package')=='com.bestbuy.android',\n            'ACTUAL_BESTBUY_INSTALL_AND_TARGET_CHAIN_REQUIRED')",
+    "after": "    require(worker.get('ok') is True and worker.get('error') is None and\n            worker.get('secondary_errors')==[] and worker.get('install_success_observed') is True and\n            worker.get('outcome_unknown') is False and worker.get('package_retained') is True and\n            worker.get('installed_before_state')==worker.get('installed_after_state') and\n            worker.get('installed_before_state',{}).get('uid')==uid and\n            worker.get('installed_before_state',{}).get('apk_sha256')=='e1cad62bba0266e646e7be4ce5250917fbf5df910ac604dddfe0a8aa25ac320b',\n            'ACTUAL_BILI_R9_INSTALL_AND_APK_CHAIN_REQUIRED')"
+  },
+  {
+    "cosmetic_only": [
+      "BESTBUY R2 -> BILI R9",
+      "ACTUAL_BESTBUY -> ACTUAL_BILI_R9",
+      "exact-owned-bestbuy-r2 -> exact-owned-bili-r9"
+    ]
+  }
+]

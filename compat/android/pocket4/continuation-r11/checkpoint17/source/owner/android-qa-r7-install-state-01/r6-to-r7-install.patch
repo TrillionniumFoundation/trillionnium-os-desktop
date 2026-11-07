@@ -1,0 +1,258 @@
+--- R6/install_state.py
++++ R7/install_state.py
+@@ -2,7 +2,7 @@
+ """One frozen owned APK install and one no-UiAutomation state observation.
+ 
+ Default PLAN is inert. Production requires the exact external source manifest,
+-the fixed actual r6 build01/stage receipts and signed APK, the frozen R4 recorder,
++the fixed actual r7 build01/stage receipts and signed APK, the frozen R4 recorder,
+ a fresh flow/step, and its original Main fences and action lock. No UI, v2
+ fallback, permission grant, install replacement, task or commercial data action.
+ """
+@@ -20,25 +20,25 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r7-install-state-01')
+ SOURCE = ROOT / 'source'
+-NONCE = '2a1065bc6af8a39e6518bd61d8581978'
+-STATE_NONCE = '38224815112bbffd278ea0f29ab48c82'
+-FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-' + NONCE)
+-STEP = 'install-state-r6-01'
+-SELF = 'org.droidloom.qa.bili.r6'
+-QA_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r6-source-01/source')
+-QA_MANIFEST = '6c75b4a976990d4815de58f504912d3f9a7181c0d5a9094c6319180a1279c419'
+-BUILD = Path('/home/alex/work/pocket4-owned-bili-qa-r6-build-01/build-result.json')
+-BUILD_SHA = '158e0ca24d0807f12dd4f5c03dac24a04052ce8ac876d0da6df4212bbfa28f1d'
+-BUILD_BYTES = 18043
+-STAGE = Path('/home/alex/work/pocket4-owned-bili-qa-r6-source-01/stage-result.json')
+-STAGE_SHA = '76a315152f472f6d213ec663b1d9404b67d19621b1c2376ea9a0c757c2994c40'
++NONCE = '587084d5b51af906d6b05a12a3c30087'
++STATE_NONCE = '8e2223862f778b1cef69639be3a90ec8'
++FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r7-flow-' + NONCE)
++STEP = 'install-state-r7-01'
++SELF = 'org.droidloom.qa.bili.r7'
++QA_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r7-source-01/source')
++QA_MANIFEST = 'f6722f5163403c753a81912944e3390e424858795e2db059ea9a75cf8f56c310'
++BUILD = Path('/home/alex/work/pocket4-owned-bili-qa-r7-build-01/build-result.json')
++BUILD_SHA = 'eb5b84b424b951342c984ab42923da3d35252de816837405c60b4cca93f27090'
++BUILD_BYTES = 18933
++STAGE = Path('/home/alex/work/pocket4-owned-bili-qa-r7-source-01/stage-result.json')
++STAGE_SHA = '37bc868243c1fc005ce7eb68727d748b9bbdbf1ef27a1d43f3041ab14161da03'
+ STAGE_BYTES = 1939
+-APK = Path('/home/alex/work/pocket4-owned-bili-qa-r6-build-01/owned-bili-qa.apk')
+-APK_SHA = 'f7df7d6ce8dd0ed2ab7a8cda929d5b06e2b097c358490b32450c4a238bc1562a'
+-APK_BYTES = 32912
+-SIGNER_SHA = '45e4127727aca864ee976c95c667cc8707566ece6a0f940ba8c53b158192f611'
++APK = Path('/home/alex/work/pocket4-owned-bili-qa-r7-build-01/owned-bili-qa.apk')
++APK_SHA = 'f55b972a5ec968070ea0ea407f4a459913927c4693d0d9e949e6c472bcbcc641'
++APK_BYTES = 37008
++SIGNER_SHA = '096152ac7ae183be9c713b61d8dac64eb789593b332fa8636536c2af80021391'
+ RECORDER_ROOT = SOURCE / 'recorder-r4'
+ RECORDER_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+@@ -245,7 +245,7 @@
+     match = re.fullmatch(re.escape('package:'+SELF+' uid:') + r'([0-9]+)\n', text)
+     require(match is not None, 'ONE_EXACT_NEW_PACKAGE_UID_REQUIRED')
+     uid = int(match[1])
+-    require(10000 <= uid < 100000 and uid not in (10117,10125,10164,10165,10166,10169,10170,10175), 'NEW_APP_UID_REQUIRED')
++    require(10000 <= uid < 100000 and uid not in (10117,10125,10164,10165,10166,10169,10170,10175,10184), 'NEW_APP_UID_REQUIRED')
+     return uid
+ 
+ 
+--- R6/stage_execute.py
++++ R7/stage_execute.py
+@@ -7,9 +7,9 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r7-install-state-01')
+ SOURCE = ROOT/'source'
+-NONCE = '2a1065bc6af8a39e6518bd61d8581978'
++NONCE = '587084d5b51af906d6b05a12a3c30087'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ FILES = {'install_state.py','stage_execute.py','make_request.py',
+          'references/readonly_r3_coordinator.py','INPUTS.json','README.md',
+--- R6/make_request.py
++++ R7/make_request.py
+@@ -7,9 +7,9 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-bili-qa-r6-install-state-01-20261105'
+-ROOT='/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01'
+-NONCE='2a1065bc6af8a39e6518bd61d8581978'
++KEY='pocket4-owned-bili-qa-r7-install-state-01-20261106'
++ROOT='/home/alex/work/pocket4-owned-bili-qa-r7-install-state-01'
++NONCE='587084d5b51af906d6b05a12a3c30087'
+ 
+ 
+ def sha(raw):
+--- R6/session_binding.py
++++ R7/session_binding.py
+@@ -1,16 +1,16 @@
+-"""Use the actual r6 adapter's R4 Session without overriding any method.
++"""Use the actual r7 adapter's R4 Session without overriding any method.
+ 
+-The r6 build itself declares R4. Its source and recorder bindings must match;
++The r7 build itself declares R4. Its source and recorder bindings must match;
+ no old R3 global is changed and no legacy constructor shim is reused.
+ """
+ R4_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+-QA_MANIFEST = '6c75b4a976990d4815de58f504912d3f9a7181c0d5a9094c6319180a1279c419'
+-SELF = 'org.droidloom.qa.bili.r6'
++QA_MANIFEST = 'f6722f5163403c753a81912944e3390e424858795e2db059ea9a75cf8f56c310'
++SELF = 'org.droidloom.qa.bili.r7'
+ 
+ 
+ def new_session(adapter, flow, recorder, qa, proof, helper_uid):
+     adapter.require(adapter.RECORDER_MANIFEST_SHA == R4_MANIFEST and
+                     proof['source_manifest_sha256'] == QA_MANIFEST and
+                     adapter.SELF == qa.SELF == SELF,
+-                    'ACTUAL_BUILT_R6_ADAPTER_REQUIRED')
++                    'ACTUAL_BUILT_R7_ADAPTER_REQUIRED')
+     return adapter.Session(flow, recorder, qa, proof, helper_uid)
+--- R6/INPUTS.json
++++ R7/INPUTS.json
+@@ -1,9 +1,4 @@
+ {
+-  "R5_prior_no_action_failure_dependency_removed": {
+-    "not_a_weakened_R6_build_or_package_absence_gate": true,
+-    "old_failure_records_and_source_unchanged": true,
+-    "reason": "R6 is a distinct helper package first attempt, not a replay or retry of R5 install02"
+-  },
+   "action_lock_admission": {
+     "Main_rechecked_after_lock": true,
+     "failure_close_error_secondary": true,
+@@ -20,31 +15,27 @@
+     "wait_limit_seconds": 5.0,
+     "worker_timeout_seconds_unchanged": 190
+   },
+-  "actual_build_job_reported_by_root": "1a1abe6cd24-fc05-5132",
+-  "actual_build_review": {
+-    "actual_original_adapter_qualified_build_passed": true,
+-    "bytes": 3197,
+-    "does_not_substitute_authoritative_job_terminal_review": true,
+-    "path": "/workspace/scratch/94990735b266/android-qa-r6-build01-actual-review-01/report.json",
+-    "sha256": "a0f9b41183e634e86960114a207531fc879155c1c72299454bb4c9bf0837a5ef"
++  "actual_build_job_reported_by_root": "1a1ae673293-fc05-5f75",
++  "actual_install_state_not_run": true,
++  "actual_original_R7_qualified_build_passed": true,
++  "apk": {
++    "bytes": 37008,
++    "path": "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/owned-bili-qa.apk",
++    "sha256": "f55b972a5ec968070ea0ea407f4a459913927c4693d0d9e949e6c472bcbcc641",
++    "signer_certificate_sha256": "096152ac7ae183be9c713b61d8dac64eb789593b332fa8636536c2af80021391"
+   },
+-  "actual_install_state_not_run": true,
+-  "apk": {
+-    "bytes": 32912,
+-    "path": "/home/alex/work/pocket4-owned-bili-qa-r6-build-01/owned-bili-qa.apk",
+-    "sha256": "f7df7d6ce8dd0ed2ab7a8cda929d5b06e2b097c358490b32450c4a238bc1562a",
+-    "signer_certificate_sha256": "45e4127727aca864ee976c95c667cc8707566ece6a0f940ba8c53b158192f611"
+-  },
++  "base_install_source_manifest_sha256": "8c02c3bf010998e23ed30ae13b88c5e4f5d824775702e055e772788966b93e59",
+   "build": {
+-    "bytes": 18043,
+-    "path": "/home/alex/work/pocket4-owned-bili-qa-r6-build-01/build-result.json",
+-    "sha256": "158e0ca24d0807f12dd4f5c03dac24a04052ce8ac876d0da6df4212bbfa28f1d"
++    "bytes": 18933,
++    "path": "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/build-result.json",
++    "sha256": "eb5b84b424b951342c984ab42923da3d35252de816837405c60b4cca93f27090"
+   },
+   "helper_uid": null,
++  "job_terminal_authority_stays_with_root": true,
+   "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+   "nonces": {
+-    "flow": "2a1065bc6af8a39e6518bd61d8581978",
+-    "state": "38224815112bbffd278ea0f29ab48c82"
++    "flow": "587084d5b51af906d6b05a12a3c30087",
++    "state": "8e2223862f778b1cef69639be3a90ec8"
+   },
+   "official_cli_reference": {
+     "bytes": 220141,
+@@ -65,11 +56,11 @@
+     10166,
+     10169,
+     10170,
+-    10175
++    10175,
++    10184
+   ],
+-  "package": "org.droidloom.qa.bili.r6",
+-  "previous_actual_r5_install03_is_source_reference_only": true,
+-  "qa_source_manifest_sha256": "6c75b4a976990d4815de58f504912d3f9a7181c0d5a9094c6319180a1279c419",
++  "package": "org.droidloom.qa.bili.r7",
++  "qa_source_manifest_sha256": "f6722f5163403c753a81912944e3390e424858795e2db059ea9a75cf8f56c310",
+   "qualification_inherited_from_old_helpers": false,
+   "recorder": {
+     "base_manifest_sha256": "4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906",
+@@ -78,20 +69,20 @@
+     "manifest_sha256": "52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1",
+     "only_changed_inherited_production_file": "bound_android_transport.py",
+     "production_transport_sha256": "7edecc741b8a61bea30d885ab9107666aab9407d6a6928bf799bd8efd4b4a23b",
+-    "root": "/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01/source/recorder-r4",
++    "root": "/home/alex/work/pocket4-owned-bili-qa-r7-install-state-01/source/recorder-r4",
+     "source_sha256": "5f25f22db55ba94e6ac895c2ce274b6959a274b64c9aa82bbc30d8c3c860f511",
+     "staged_private_copy_only": true
+   },
+   "schema": 1,
+-  "scope": "First installation of the new exact R6 package and one no-UiAutomation state request; no reveal input or UI",
++  "scope": "First new R7 helper install and one no-UiAutomation state; no player action or launch",
+   "source_review_only": true,
+   "stage": {
+     "bytes": 1939,
+-    "path": "/home/alex/work/pocket4-owned-bili-qa-r6-source-01/stage-result.json",
+-    "sha256": "76a315152f472f6d213ec663b1d9404b67d19621b1c2376ea9a0c757c2994c40"
++    "path": "/home/alex/work/pocket4-owned-bili-qa-r7-source-01/stage-result.json",
++    "sha256": "37bc868243c1fc005ce7eb68727d748b9bbdbf1ef27a1d43f3041ab14161da03"
+   },
+-  "state": "ACTUAL_R6_BUILD_RECEIPTS_BOUND_INSTALL_ANDROID_UNRUN",
+-  "state_request_uses_reveal_operation": false,
+-  "state_wire": "gzip-canonical-json-v1, exact R6 parser, successful finish -1, no UiAutomation",
++  "state": "ACTUAL_R7_BUILD_RECEIPTS_BOUND_INSTALL_ANDROID_UNRUN",
++  "state_request_uses_player_button_operation": false,
++  "state_wire": "gzip-canonical-json-v1, exact R7 parser, successful finish -1, no UiAutomation",
+   "whole_app_production_ready": false
+ }
+--- R6/README.md
++++ R7/README.md
+@@ -1,32 +1,7 @@
+-# Exact R6 installation and state — first attempt
++# R7 helper installation and no-automation state
+ 
+-This frozen source derives the original R5 install03 worker and coordinator. The
+-new R6 package uses a fresh source root, flow and two nonces. It requires both
+-installed and retained uninstalled package records to be absent across users.
+-Installation uses the original explicit `-R -t --user 0 --pkg` command, with no
+-grants, replacement fallback or retry. Other owned helpers remain unchanged.
++This candidate binds complete actual R7 build and stage receipts. The original R6 install implementation is retained with the new package, paths, nonces, actual build/APK/signer pins, and rejection of the old R6 UID 10184. The R4 recorder and transport copies are exact.
+ 
+-The complete actual R6 build and stage receipts, 32,912-byte APK and signer are
+-externally pinned in INPUTS.json and in the worker. The original frozen R6
+-adapter validates all ten source files, seven tool pins, eleven joined build
+-commands, exact self-instrumentation manifest, APK and signer before any Android
+-command. Root separately reconciles the authoritative original build job. The
+-installation and state request have not run; the installed UID is unknown.
++One package-absence check includes uninstalled records and all users. Installation retains the original -R no-replacement flag and fresh owned staging directory. The helper UID comes only from the actual package-list result, followed by two exact installed-byte observations around one state invocation. No UiAutomation, app launch, playback input, permission or setting write is admitted. Main guards, held leases, one global action lock and precise owned staging cleanup remain intact. Failed or unknown installation is reconciled from fixed receipts, never retried automatically.
+ 
+-After installation, the original R6 Session verifies the actual installed base
+-APK and new UID, runs only state with UiAutomation disconnected, rechecks the
+-installed identity and verifies the single all-users package record. No R6
+-reveal or other UI input is requested by this package installation transaction.
+-
+-The R5-specific no-action install02 prerequisite is removed because R6 is a
+-new package's first attempt. Its original failure and review stay unchanged;
+-no old helper qualification is inherited. The same-inode five-second EX|NB lock
+-admission, post-lock Main recheck, R4 held namespace/root transport and original
+-worker/coordinator finally blocks remain unchanged. Failed or unknown installs
+-are retained for exact reconciliation. Cleanup removes only the held-inode
+-owned temporary APK and directory, with no recursive deletion.
+-
+-The helper is retained after actual identity/state qualification for a separate
+-reviewed UI request. Pause, seek, audio, commercial data, account state and
+-engine deployment are outside this request. Whole-app readiness stays false.
+-Root owns eventual one-time execution and exact retained receipt collection.
++A separate future UI source requires the complete actual install receipts, installed identity and a fresh owned task. This source does not provide them.

@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "base_r2_pins_sha256": "c55a5e902fbfe3275fa0f1ed4d58304b8cd1736a5f050b8482d99fb531e1d043",
+  "changes": {
+    "kernel_api/proc_maps_provenance.cc": {
+      "r2": "bed063f362ef33e157174ba7c2fdb4efcdeabcd32481c61ca6b3613c1e721d02",
+      "r3": "0e46394a3862b24fbeb75f35f0e49a51295479aec8d678d05ebd693f2a3c6d7b"
+    },
+    "kernel_api/proc_maps_path.cc": {
+      "r2": "ebb239776cdfadc8e4ca8db19b17a84d4e8e4b8f71eaa9d8d6bf07e9dc5d4950",
+      "r3": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765"
+    }
+  },
+  "android_actual_candidate_tested": false,
+  "motivation": "Actual r12 caller EINVAL vs private owner PASS; word-width cause requires compiled disassembly and typed controls; all production gates from r2 remain"
+}

@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "kind": "complete-wayland-typecheck-root-preflight",
+  "source_tree": "a3d52c1cf7dfb060d855e4e6ec5b46eb2906bd5a",
+  "source_proof": {
+    "tree": "a3d52c1cf7dfb060d855e4e6ec5b46eb2906bd5a",
+    "leaf_count": 30,
+    "logical_bytes": 2212263,
+    "directory_count_including_root": 3,
+    "recursive_entries": 32,
+    "truncated": false,
+    "all_paths_modes_sizes_blob_sha1_match": true,
+    "all_directory_tree_sha1_recomputed": true
+  },
+  "controller": {
+    "bytes": 91916,
+    "sha256": "a3955caf4d4bde2b3d6542451f74af833bf797a2683b3cc491ea6f403b87a85b",
+    "git_blob_sha1": "c12b8bd29cb792a446e801f9637a8bb5a0ab5852"
+  },
+  "request": {
+    "bytes": 726444,
+    "sha256": "0cefc2483c05400d5df8ba8ffd6aa6cde656f88f886aef49ad8e267503c115a4",
+    "git_blob_sha1": "295ee6a457db9012cf40b89c8140d608339da385"
+  },
+  "stdin": {
+    "bytes": 691045,
+    "sha256": "aff5245a9060ca5e2556da77460820d227699ad4baa35791df60c0e5d0d13cd8",
+    "git_blob_sha1": "87350b66e8fe23d3a383ece88ae87351c9d17416"
+  },
+  "inverse": {
+    "hunks": 18,
+    "exact_previous_blob": "9423b57f4925f02249b06bf0f610a0d07e09624d",
+    "resource_snapshot_only_memory_max": true,
+    "unchanged_functions": [
+      "require",
+      "utc",
+      "sha",
+      "identity",
+      "held",
+      "write_new",
+      "real_directory",
+      "resource_text",
+      "resource_events",
+      "begin_resources",
+      "finish_resources",
+      "hash_held",
+      "regular_tree",
+      "portable",
+      "pinned_packet",
+      "exact_source_copy",
+      "read_existing_config",
+      "pin_resolved",
+      "verify_resolved",
+      "toolchain",
+      "qualify_cached_archive",
+      "limit_child_outputs",
+      "OwnChildReaper",
+      "owned_command",
+      "command",
+      "run_child_lifecycle_controls"
+    ]
+  },
+  "reproduction": {
+    "exact_request": true,
+    "exact_stdin": true,
+    "exact_stage": true,
+    "exact_transport": true,
+    "unchanged_nine_production_sources_and_manifest": true,
+    "stage_body_exact_except_partition_and_entrypoint": true
+  },
+  "full_changed_functions_reviewed": [
+    "fresh_host_memory_admission",
+    "pkg_config_path_list",
+    "native_pc_snapshot",
+    "qualify_pkg_config",
+    "selected_dependencies",
+    "qualify_wayland_compile",
+    "compact_preserved_command_logs",
+    "execute"
+  ],
+  "independent_peer_review": {
+    "agent": "app_recovery_resume",
+    "scope": "normal/build dependency closure, actual pkg-config defaults and metadata, Cargo binary artifact, all phases/finally",
+    "finding": "no concrete blocker found; no execution or native ABI qualification"
+  },
+  "command": [
+    "cargo",
+    "check",
+    "--offline",
+    "--locked",
+    "-j1",
+    "-p",
+    "droidloom-wayland",
+    "--bin",
+    "droidloom-wayland",
+    "--message-format=json-render-diagnostics"
+  ],
+  "expected_ordinary_commands": 15,
+  "lifecycle_controls": 3,
+  "host112_repeated": false,
+  "original_workspace_and_lock_unchanged": true,
+  "registry_authority": "original45 prior actual gate retained; extra original-lock archives and full source comparison before compiler",
+  "PC_authority": "one actual fixed-tool default-path query; bounded real protected directories and full .pc inputs before/after; missing layout fails",
+  "runtime": {
+    "cpu": 100,
+    "memory_max_bytes": 2147483648,
+    "nice": 15,
+    "work_seconds": 900,
+    "outer_seconds": 1020,
+    "minimum_fresh_MemAvailable_bytes": 4294967296
+  },
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "network_downloads": 0,
+  "GPU_runtime_qualified": false,
+  "Android_Binder_ABI_qualified": false,
+  "production_ready": false,
+  "status": "REVIEWED_FOR_ONE_FULL_CRATE_CHECK"
+}

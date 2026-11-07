@@ -1,0 +1,17 @@
+--- reader01/check_reader.py
++++ reader02/check_reader.py
+@@ -28,6 +28,14 @@
+     def check(name, predicate):
+         assert predicate, name
+         results.append(name)
++    for suffix in ['1','12','123','1234']:
++        check('observed_job_suffix_length_' + str(len(suffix)),
++              m.JOB_ID.fullmatch('1a1ab000001-fc05-' + suffix) is not None)
++    for index,bad in enumerate(['1a1ab000001-fc05-', '1a1ab000001-fc05-12345',
++        '../1a1ab000001-fc05-1', '1a1ab000001-fc05-1/request.json',
++        '1a1ab000001-fc05-g', '1a1ab000001-fc05-A',
++        '1a1ab000001-fc05-1\n', '1a1ab000001-fc05-1\x00']):
++        check('invalid_job_name_rejected_' + str(index),m.JOB_ID.fullmatch(bad) is None)
+     check('exact_execution_tuple_accepted', m.tuple_matches(copy.deepcopy(m.APPROVED)))
+     for key in m.APPROVED:
+         value = copy.deepcopy(m.APPROVED)

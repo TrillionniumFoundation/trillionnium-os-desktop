@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "state": "ROOT_REVIEWED_FRESH_HOST_FD_DIAGNOSTIC",
+  "tree": {
+    "tree": "71169ae32843317986f44337afc7ac283f58e3a6",
+    "leaves": 14,
+    "all_utf8_bytes_sha_git_full": true
+  },
+  "reproduction": {
+    "packet": {
+      "bytes": 164871,
+      "sha256": "5c27e38e036bb56f0b5f947992087bc7f9cbf19fb8c2207455be891210a893d9",
+      "git_blob_sha1": "c60d182048a24b0058adda7582582cb1feb63466"
+    },
+    "runner": {
+      "bytes": 236853,
+      "sha256": "450a8f29a45a3d9746043bb20ff944f9d304070ec3c36d2956ebbf03c31e776b",
+      "git_blob_sha1": "71c71fa29c820431f4efdcfd9d81f9008d8d2865"
+    },
+    "production_files_unchanged": 4,
+    "runner_inverse_hunks": 8,
+    "case_inverse_hunks": 3,
+    "original_case_bodies_unchanged": 38,
+    "original_failure_retained": true
+  },
+  "review_scope": "Full 16999-byte runner template, both exact inverse patches and unchanged 38 original case bodies; actual per-case live fstat identity and tracked Capture cleanup only.",
+  "prior_failure": "Host controls01 overall FAILED despite 38 individual cases passed; cause unproven until diagnostic.",
+  "first_live_discrepancy_must_remain_failure": true,
+  "unknown_ambient_fds_not_closed": true,
+  "contents_or_readlink_read": false,
+  "production_sources_changed": false,
+  "Android_actions": 0,
+  "Main_access": false,
+  "all_expected_controls": 38,
+  "actual_executed": false,
+  "whole_app_ready": 0
+}

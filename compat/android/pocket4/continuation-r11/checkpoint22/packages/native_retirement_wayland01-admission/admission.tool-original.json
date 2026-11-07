@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys\nEXPECTED={\"bytes\":691045,\"sha256\":\"aff5245a9060ca5e2556da77460820d227699ad4baa35791df60c0e5d0d13cd8\"}\nSTAGE={\"bytes\":9566,\"sha256\":\"51655acc8aca54f0059f0d6de39687dae978675467b3c3d6e91058e942d01713\"}\nwire=sys.stdin.buffer.read(EXPECTED['bytes']+1)\nif len(wire)!=EXPECTED['bytes'] or hashlib.sha256(wire).hexdigest()!=EXPECTED['sha256']:\n    raise RuntimeError('fixed complete Wayland checker transport length/hash mismatch')\nvalue=json.loads(wire)\nif type(value) is not dict or set(value)!={'schema','stage','packet'} or value['schema']!=1 or type(value['stage']) is not str:\n    raise RuntimeError('fixed complete Wayland checker envelope differs')\nstage=value['stage'].encode('utf-8')\nif len(stage)!=STAGE['bytes'] or hashlib.sha256(stage).hexdigest()!=STAGE['sha256']:\n    raise RuntimeError('fixed complete Wayland checker stage pin differs')\nscope={'__name__':'__stage__','__file__':'<fixed-wayland-check-stage>'}\nexec(compile(stage,'<fixed-wayland-check-stage>','exec'),scope,scope)\nscope['main'](value['packet'])\n"
+    ],
+    "created_unix_ms": 1793975019462,
+    "cwd": "/",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b13e67c6-fc05-7738",
+    "idempotency_key": "pocket4-denial-retirement-wayland-check-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b13e67c6-fc05-7738",
+    "request_digest": "772be71d8f38f70b157e406c529a9950896e46269848f07465ff7329becd4330",
+    "request_fingerprint": 8587211228654925579,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b13e67c6-fc05-7738"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b13e67c6-fc05-7738"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

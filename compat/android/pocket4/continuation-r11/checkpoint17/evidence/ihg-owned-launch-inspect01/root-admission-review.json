@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "scope": "one independently prepared IHG App launch and no-input inspect with exact owned-task retirement",
+  "source_manifest": {
+    "bytes": 446,
+    "sha256": "704bf0640c6a207ad8177dfc0240896cc785b6fa6db34521fbea5cd02e42a6fd"
+  },
+  "review": {
+    "stage_full_bytes_read": 4904,
+    "generator_full_bytes_read": 3110,
+    "all_three_derivation_patches_fully_read": true,
+    "patches": [
+      {
+        "bytes": 16318,
+        "sha256": "3f33a08b46387acc6852779c155b119fb312bba033ce6eb61f4f388aa015363e"
+      },
+      {
+        "bytes": 5446,
+        "sha256": "c553de6028b76754b91efbc16e7f661a08864a4d883f40d38df78dffeb51025f"
+      },
+      {
+        "bytes": 7533,
+        "sha256": "4bb931f1bb194c6318d47c75e2a4e1291570207905d55211ff7f0c1caeb3cb72"
+      }
+    ],
+    "four_code_files_exactly_reconstructed_from_reviewed_Ticket02": true,
+    "original_Ticket02_manifest_sha256": "abb667a93f1e55b916da3b04bcebe05b28904655ff18cff1a1f1ef8b66a7b845",
+    "frozen_payloads": 13,
+    "source_payloads": 3,
+    "packet_payloads": 4,
+    "exact_stdin_and_full_wrapper_verified": true,
+    "actual_install_full_original_identity_and_all_three_pins_equal": true
+  },
+  "actual_install": {
+    "job": "1a1adcca195-fc05-5adf",
+    "helper_UID": 10196,
+    "worker_bytes": 11213,
+    "worker_sha256": "2e62018b086bb5484648d07867e73a3b11efbbd3490aeb3f190d1bb24afe4179",
+    "state_wire_sha256": "0b3460605e4e41b93e02cff418feea9526f03790e4d5c80be113939e3a59d4b2"
+  },
+  "target": {
+    "package": "com.ihg.apps.android",
+    "uid": 10137,
+    "component": "com.ihg.apps.android/.activity.MainActivity",
+    "fresh_resolve_and_target_artifact_check_required_before_launch": true
+  },
+  "preserved_guards": {
+    "original_Main_epoch_and_resource_limits": true,
+    "original_global_action_lock": true,
+    "held_command_and_installed_helper_identity": true,
+    "owned_new_leaf_task_only": true,
+    "original_before_after_state_and_final_restore": true,
+    "exact_owned_cleanup_and_other_task_preservation": true,
+    "first_and_secondary_errors": true
+  },
+  "constraints": {
+    "maximum_launches": 1,
+    "clicks": 0,
+    "text_actions": 0,
+    "screenshots": 0,
+    "audio_actions": 0,
+    "settings_writes": 0,
+    "permission_grants": 0,
+    "raw_UI_private_only": true,
+    "automatic_retries": false
+  },
+  "limits": {
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 536870912,
+    "timeout_seconds": 600,
+    "nice": 10
+  },
+  "local_preflight_recovery": "Earlier local check found missing transient store and stopped before any intent or remote call. Durable release was reverified and absence of launch evidence directory established before this single admission.",
+  "prior_Ticket_and_Amazon_lock_failures_reclassified": false,
+  "whole_process_tree_cleanup_independent_qualification": false,
+  "commercial_target_signer_independent_qualification": false,
+  "whole_app_production_ready": false
+}

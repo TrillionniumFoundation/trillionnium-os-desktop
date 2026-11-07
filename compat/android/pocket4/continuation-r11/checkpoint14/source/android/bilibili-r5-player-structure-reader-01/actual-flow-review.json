@@ -1,0 +1,148 @@
+{
+  "schema": 1,
+  "review_scope": "exact retained safe8 and frozen viewport source; no raw tree read yet",
+  "runtime_job": "1a1aadcfbb5-fc05-4837",
+  "collector_job_reported_by_root": "1a1aae56357-fc05-487e",
+  "safe8_files_independently_rehashed": 8,
+  "reader_sha256": "fc8c3793d272111554db6e188067ec5eb2b2e72c11a50d92530903dac682a5e1",
+  "original_runtime_failed": true,
+  "first_error": {
+    "phase": "buffer_viewport_observation",
+    "type": "RuntimeError",
+    "message": "UNIQUE_CURRENT_PLAYER_STRUCTURE_REQUIRED"
+  },
+  "main_before_after_equal": true,
+  "source_artifact_unchanged": true,
+  "helper_restoration_of_first_viewport_read": true,
+  "complete_prior_scopes": {
+    "click_acknowledged": true,
+    "public_query_value_acknowledged": true,
+    "public_query_submit_acknowledged": true,
+    "results_container_content_observed": true,
+    "video_click_acknowledged": true,
+    "video_click_and_observations_completed": true
+  },
+  "exact_owned_task": 910,
+  "cleanup": {
+    "ok": true,
+    "automatic_retry": false,
+    "action_attempted": true,
+    "outcome_unknown": false,
+    "business_success_verified": false,
+    "new_leaf_removed_and_verified": true,
+    "other_tasks_preserved": true,
+    "observations": 2,
+    "elapsed_seconds": 0.598564074956812,
+    "task_ids_after": [
+      851
+    ],
+    "ended_utc": "2026-11-05T08:40:14.788343+00:00",
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f"
+  },
+  "current_viewport_reads_qualified": 0,
+  "saved_viewport_samples": 0,
+  "owned_resource_after": {
+    "cpu.max": "100000 100000",
+    "device": 30,
+    "inode": 29925690,
+    "memory.current": "82366464",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "536870912",
+    "memory.peak": "194568192",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "memory.swap.peak": "0",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1aadcfbb5-fc05-4837.service",
+    "pids.max": "128"
+  },
+  "public_cache_API_observations_limited_to_three_recorded_posts": [
+    {
+      "cache_clears": 7,
+      "cache_last_result": true,
+      "sdk": 37,
+      "node_count": 149
+    },
+    {
+      "cache_clears": 1,
+      "cache_last_result": true,
+      "sdk": 37,
+      "node_count": 153
+    },
+    {
+      "cache_clears": 2,
+      "cache_last_result": true,
+      "sdk": 37,
+      "node_count": 153
+    }
+  ],
+  "post_ack_exact_null_wait_actual": {
+    "maximum_samples": 6,
+    "deadline_seconds": 3,
+    "samples": [
+      {
+        "sample": 1,
+        "elapsed_ms": 40,
+        "command_count": 1,
+        "census": {
+          "raw_bytes": 11082,
+          "raw_sha256": "b6f98533c43addddf7f121a2a77e904cc09b7897e440d799038fe2cfccde4c87",
+          "focus_line_count": 1,
+          "exact_single_null": true,
+          "successful_held_return": true
+        },
+        "error": {
+          "type": "ControlError",
+          "message": "FOREGROUND_UNVERIFIED"
+        }
+      },
+      {
+        "sample": 2,
+        "elapsed_ms": 135,
+        "command_count": 1,
+        "census": {
+          "raw_bytes": 11082,
+          "raw_sha256": "b6f98533c43addddf7f121a2a77e904cc09b7897e440d799038fe2cfccde4c87",
+          "focus_line_count": 1,
+          "exact_single_null": true,
+          "successful_held_return": true
+        },
+        "error": {
+          "type": "ControlError",
+          "message": "FOREGROUND_UNVERIFIED"
+        }
+      },
+      {
+        "sample": 3,
+        "elapsed_ms": 179,
+        "command_count": 1,
+        "census": {
+          "raw_bytes": 11290,
+          "raw_sha256": "31f712c6619e04bb7471cdf8d643a10a34d3888bdfc61ae9aec94300e0d18f88",
+          "focus_line_count": 1,
+          "exact_single_null": false,
+          "successful_held_return": true
+        },
+        "error": null
+      }
+    ],
+    "qualified": true,
+    "read_only": true,
+    "action_replayed": false,
+    "only_exact_single_null_may_wait": true,
+    "raw_window_text_exported": false,
+    "scope": {
+      "package": "tv.danmaku.bili",
+      "uid": 10117,
+      "user": 0,
+      "display": 0,
+      "activity": "tv.danmaku.bili/com.bilibili.ship.theseus.detail.UnitedBizDetailsActivity",
+      "window_token": "6a14c49",
+      "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f"
+    }
+  },
+  "which_of_three_structure_terms_failed": "NOT_KNOWN_BEFORE_FIXED_STRUCTURE_READER",
+  "cache_root_cause_established": false,
+  "playback_or_audio_qualified": false,
+  "whole_app_production_ready": false,
+  "Android_or_Hepta_actions_by_this_review": 0
+}

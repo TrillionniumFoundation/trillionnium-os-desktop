@@ -1,0 +1,17 @@
+{
+  "change": "Extract exact original domain collection into dir_collect_domain; new target/descriptor controls call that actual production helper without requesting namespace FDs. dir_collect_real still requires all original ten namespace FDs and unchanged pidfd. No target policy relaxed.",
+  "diagnostic_chunk": "43d7f2",
+  "first_chunk": "5f34b2",
+  "first_control_attempt_exit": 1,
+  "later_local_controls_sha256": "a19896e7955dd60766a191f05e657c299509fb46383e44a362a8a9d8ca69fe16",
+  "local_missing_namespaces": [
+    "time",
+    "time_for_children"
+  ],
+  "local_proc_namespace_check_chunk": "c6294f",
+  "observed_errno": 2,
+  "other_eight_namespace_FDs_opened": true,
+  "production_namespace_contract_relaxed": false,
+  "schema": 1,
+  "self_pidfd_opened": true
+}

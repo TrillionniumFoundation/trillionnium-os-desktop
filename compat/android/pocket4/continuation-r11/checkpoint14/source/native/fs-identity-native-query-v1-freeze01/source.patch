@@ -1,0 +1,150 @@
+--- /dev/null
++++ b/bionic/libc/seccomp/droidloom_fs_identity_query_policy.h
+@@ -0,0 +1,50 @@
++/*
++ * Copyright (C) 2026 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++#pragma once
++
++#include <linux/filter.h>
++#include <linux/seccomp.h>
++#include <stddef.h>
++#include <stdint.h>
++
++#include <vector>
++
++namespace droidloom_seccomp {
++
++// The architecture has already been checked by the enclosing base policy.
++// The LP64 x86_64 syscall family uses 32-bit uid_t/gid_t. This prefix is
++// appended only to the native architecture path, never to the i386 path.
++// Compat *32, old16 and x32 numbers receive no new permission. UINT32_MAX is
++// the invalid identity query: it returns the current fsuid/fsgid without
++// changing credentials. Upper register bits are not part of that argument.
++// Nonqueries and every other syscall fall through to the unchanged base
++// table, whose accumulator is reloaded by ExamineSyscall immediately after
++// this prefix. A later ALLOW cannot override a previously installed TRAP.
++inline void AppendFsIdentityQueries(std::vector<sock_filter>& program,
++                                    uint32_t setfsuid_nr, uint32_t setfsgid_nr) {
++    static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
++                  "The Android syscall argument layout must be little endian");
++    program.push_back(BPF_STMT(BPF_LD | BPF_W | BPF_ABS,
++                              offsetof(struct seccomp_data, nr)));
++    program.push_back(BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, setfsuid_nr, 1, 0));
++    program.push_back(BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, setfsgid_nr, 0, 3));
++    program.push_back(BPF_STMT(BPF_LD | BPF_W | BPF_ABS,
++                              offsetof(struct seccomp_data, args[0])));
++    program.push_back(BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, UINT32_MAX, 0, 1));
++    program.push_back(BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW));
++}
++
++}  // namespace droidloom_seccomp
+--- /dev/null
++++ b/bionic/libc/seccomp/include/droidloom_seccomp_query_policy.h
+@@ -0,0 +1,25 @@
++/*
++ * Copyright (C) 2026 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++#pragma once
++
++// Private, explicitly selected base policy. Existing stock policy entry points
++// keep their original behavior. This is not an app-zygote role authorization:
++// the caller must separately establish the pre-guest lifecycle, UID/GID range,
++// all-thread coverage, no-new-privileges and authenticated factory generation.
++// Only an LP64 x86_64 host is supported. Only its native 122/123 query forms
++// gain permission. Its i386 compat path is unchanged. Other builds return false without
++// installing anything. No runtime caller is added by this revision.
++bool set_droidloom_app_zygote_seccomp_filter_v1();
+--- a/bionic/libc/seccomp/seccomp_policy.cpp
++++ b/bionic/libc/seccomp/seccomp_policy.cpp
+@@ -15,6 +15,10 @@
+  */
+ 
+ #include "seccomp_policy.h"
++#if defined(__x86_64__) && !defined(__ILP32__)
++#include "droidloom_fs_identity_query_policy.h"
++#endif
++#include "include/droidloom_seccomp_query_policy.h"
+ 
+ #include <assert.h>
+ #include <linux/audit.h>
+@@ -65,6 +69,10 @@
+ 
+ static const long primary_setresgid = __x86_64_setresgid;
+ static const long primary_setresuid = __x86_64_setresuid;
++#if defined(__x86_64__) && !defined(__ILP32__)
++static const long primary_setfsuid = __x86_64_setfsuid;
++static const long primary_setfsgid = __x86_64_setfsgid;
++#endif
+ #define SECONDARY_ARCH AUDIT_ARCH_I386
+ static const struct sock_filter* secondary_app_filter = x86_app_filter;
+ static const size_t secondary_app_filter_size = x86_app_filter_size;
+@@ -233,7 +241,12 @@
+   SYSTEM,
+ };
+ 
+-bool _set_seccomp_filter(FilterType type) {
++static bool InstallFilterWithFsQueryOption(FilterType type, bool allow_fs_identity_queries) {
++#if !defined(__x86_64__) || defined(__ILP32__)
++    // This private policy revision supports only Pocket4's LP64 x86_64 host.
++    // Existing stock entry points remain available on every original target.
++    if (allow_fs_identity_queries) return false;
++#endif
+     filter f;
+ 
+     const sock_filter* p;
+@@ -279,6 +292,11 @@
+     ValidateArchitecture(f);
+ #endif
+ 
++#if defined(__x86_64__) && !defined(__ILP32__)
++    if (allow_fs_identity_queries) {
++        droidloom_seccomp::AppendFsIdentityQueries(f, primary_setfsuid, primary_setfsgid);
++    }
++#endif
+     ExamineSyscall(f);
+ 
+     for (size_t i = 0; i < p_size; ++i) {
+@@ -302,6 +320,18 @@
+     return install_filter(f);
+ }
+ 
++// Preserve the existing entry point and all ordinary policy bytes.
++bool _set_seccomp_filter(FilterType type) {
++    return InstallFilterWithFsQueryOption(type, false);
++}
++
++// This installs a complete app-zygote base filter with only the two native
++// identity-query forms admitted. It neither installs a UID/GID range nor
++// authenticates an app generation, and cannot override an existing deny filter.
++bool set_droidloom_app_zygote_seccomp_filter_v1() {
++    return InstallFilterWithFsQueryOption(FilterType::APP_ZYGOTE, true);
++}
++
+ bool set_app_seccomp_filter() {
+     return _set_seccomp_filter(FilterType::APP);
+ }

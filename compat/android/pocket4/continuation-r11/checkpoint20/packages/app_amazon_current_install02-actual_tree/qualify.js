@@ -1,0 +1,35 @@
+return function qualify(app,readerPrefix){
+ const n=(x,m)=>{if(!x)throw Error(app+":"+m)},canonical=Function(load("canonical_json_source"))(),same=(a,b)=>canonical(a)===canonical(b),pin=s=>({bytes:v.utf8(s).length,sha256:v.sha256(v.utf8(s)),git_blob_sha1:v.gitBlob(v.utf8(s))});
+ const result=load(readerPrefix+"_stdout_parsed"),prefix="app_"+app+"_current_install02";
+ n(result.Android_commands===0&&result.raw_commercial_UI_or_journal_exported===false,"reader scope");
+ const originals={};
+ for(const [name,e] of Object.entries(result.files)){let p=pin(e.text);n(p.bytes===e.bytes&&p.sha256===e.sha256,"original "+name);let part=name.replace(".json","").replaceAll("-","_");store(prefix+"_"+part+"_text",e.text);store(prefix+"_"+part+"_pin",p);store(prefix+"_"+part+"_parsed",ll(e.text));originals[name]=e.text;}
+ const get=x=>load(prefix+"_"+x+"_parsed"), c=get("coordinator"),s=get("stage"),w=get("worker"),wc=get("worker_command"),sc=get("state_command"),printed=get("worker_stdout");
+ for(const [name,x] of [["coordinator",c],["stage",s],["worker",w]])n(x.ok===true&&x.error===null&&x.secondary_errors.length===0&&x.whole_app_production_ready===false,name+" terminal");
+ n(s.controls.count===38&&s.controls.all_passed===true&&s.controls.cases.length===38&&s.controls.cases.every(x=>x.passed===true),"38 controls");
+ n(w.exact_command_count===13&&wc.joined===true&&wc.returncode===0&&!wc.timed_out&&wc.stderr.bytes===0&&wc.secondary_errors.length===0,"joined command");
+ n(sc.returncode===0&&sc.spawned===true&&!sc.timed_out&&sc.owned_command_joined===true&&sc.error===null&&sc.errors.length===0&&sc.action_attempted===false,"state joined");
+ n(same(w,printed),"printed semantic original");
+ n(wc.stdout.bytes===pin(originals["worker-stdout.json"]).bytes&&wc.stdout.sha256===pin(originals["worker-stdout.json"]).sha256,"printed pin");
+ n(c.worker_result.sha256===pin(originals["worker.json"]).sha256&&c.worker_result.bytes===pin(originals["worker.json"]).bytes,"worker parent");
+ n(s.coordinator_result.sha256===pin(originals["coordinator.json"]).sha256&&s.coordinator_result.bytes===pin(originals["coordinator.json"]).bytes,"coordinator parent");
+ const expectedMain=load("app_ihg_current_install02_coordinator_parsed").Main_before;
+ const maps=[c.Main_before,c.Main_after,s.Main_before,s.Main_after,w.Main_before_lock,w.Main_before,w.Main_after,wc.Main_after];n(maps.every(x=>same(x,expectedMain)),"8 actual Main maps");
+ const files=load("app_"+app+"_install02_packet").files;
+ n(c.source_manifest_sha256===pin(files["SOURCE_PINS.json"]).sha256&&w.source_manifest_sha256===c.source_manifest_sha256&&s.source_manifest_sha256===c.source_manifest_sha256,"source manifest");
+ n(s.source_unchanged===true&&c.source_and_artifact_unchanged===true,"source/artifact unchanged");
+ n(w.runtime_shared_recorder_manifest_sha256==="6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e","R5");
+ const rk=app==="amazon"?"runtime_amazon_":"runtime_ticket_";
+ n(w[rk+"context_sha256"]===pin(files[app+"_context.py"]).sha256&&w[rk+"transport_sha256"]===pin(files[app+"_transport.py"]).sha256,"context transport");
+ const uid=result.actual_helper_uid;n(uid===c.owned_package_uid&&uid===w.owned_package_uid&&uid===w.state.helper.self_uid,"actual UID");
+ n(same(w.installed_before_state,w.installed_after_state)&&w.installed_before_state.uid===uid&&w.installed_before_state.apk_sha256===w.build.APK.sha256&&w.installed_before_state.signer_bound_by_exact_signed_apk_bytes===w.build.signer_certificate_sha256,"installed identity before after");
+ n(same(w.target_before,w.target_after),"target before after");
+ const count=w.target_before.artifacts.length;n(count===(app==="ihg"?1:3)&&w.target_FD_cleanup.held_APK_FDs_closed===count&&w.target_FD_cleanup.commercial_files_changed===false,"target APK scope");
+ n(w.staging_cleanup.staged_apk_removed===true&&w.staging_cleanup.staged_directory_removed===true&&w.staging_cleanup.authority_fds_closed===true&&w.held_binding_released===true&&w.action_lock_released===true,"cleanup");
+ const hs=w.state.helper;
+ n(hs.ok===true&&hs.error===null&&hs.op==="state"&&hs.ui_automation_connected===false&&hs.action_attempted===false&&hs.outcome_unknown===false&&hs.secondary_errors.length===0&&hs.nonce===w.state_nonce,"no UI state");
+ n(w.state.recorder_command_result_sha256===pin(originals["state-command.json"]).sha256&&sc.stdout_sha256===w.state.stdout_sha256&&sc.stderr_sha256===w.state.stderr_sha256&&w.state.wire_sha256===c.state_wire_sha256,"state wire command");
+ n(w.UI_actions===0&&w.audio_actions===0&&w.App_launches===0&&w.permission_grants===0&&w.settings_writes===0&&w.UiAutomation_connection_requested===false&&w.outcome_unknown===false,"no business actions");
+ const summary={schema:1,state:"ACTUAL_INSTALL_STATE_PASS_BUSINESS_UNRUN",helper_uid:uid,helper_mtime_ns:w.installed_before_state.held_file.mtime_ns,source_controls:38,joined_plan_commands:13,Main_maps_canonical_equal:8,target_APK_count:count,owned_helper_installed_without_replace:true,state_without_UIAutomation:true,source_and_artifact_unchanged:true,source_unchanged:true,typed_current_baseline:true,held_binding_and_lock_released:true,original_failures_retained:true,whole_process_tree_cleanup_qualified:false,whole_app_ready:0,total:45};
+ store(prefix+"_root_review",summary);return {summary,originals};
+};

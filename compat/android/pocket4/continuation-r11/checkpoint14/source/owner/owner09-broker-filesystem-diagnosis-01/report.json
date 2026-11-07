@@ -1,0 +1,115 @@
+{
+  "actual_collector": {
+    "bytes": 154760,
+    "complete": true,
+    "errors": [],
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner09-normal01-logs01/reader-report.json",
+    "sha256": "e68542742f598a1b71f64702f7f542301da300d6853990a293695c244fbc44a8"
+  },
+  "actual_daemon_stderr": {
+    "bytes": 1496,
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner09-normal01-logs01/originals/evidence/daemon.stderr",
+    "sha256": "af2523f0a37871cd4222dbddbf7a0aa2d1b00496f6b0a568177efe6097b5e74d"
+  },
+  "actual_runtime_sha256": "20a20009beca9d9eb64b0973acfdd749f3b2a8cc8c6ef1c417d517378a518a05",
+  "conclusions": {
+    "C_project_receive_EPIPE_is_observed_after_broker_rejection": true,
+    "broker_filesystem_rejection_observed": true,
+    "broker_ready_or_active_observed": false,
+    "continuous_main_noninterference_claimed": false,
+    "exact_first_failing_require_fs_call_individually_observed": false,
+    "legacy_projection_call_is_consistent_specific_candidate": true,
+    "main_before_after_identity_unchanged": true,
+    "original_owner_retirement_succeeded": false,
+    "outer_exact_cleanup_succeeded": true,
+    "owner09_source_contract_conflict_confirmed": true,
+    "scm_rights_malformation_proved": false
+  },
+  "extraction_manifest": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner09-normal01-logs01/originals/extraction.json",
+    "sha256": "01d84df139e20d9e67f0618ad18151741732d7cdc392514336dc4e02390f15d2"
+  },
+  "limitations": [
+    "Old broker diagnostics do not carry the rejected FD identity or observed filesystem magic. Do not claim a uniquely instrumented call-site proof.",
+    "Stderr write order is observed in this owned shared output file, not a multi-process atomic timestamp trace.",
+    "No global kernel-journal identity attribution or installed/Main change is introduced.",
+    "No new runtime or Hepta call by this reviewer.",
+    "The next fresh matching Owner10 generation still must reach real READY, ACTIVE, original Stop and exact retirement; prior failures remain failures."
+  ],
+  "matching_abi3_c_source_reference": {
+    "actual_build_receipt_sha256": "718b131c94126d6d7f9df30a2f164e8f85335fc027a2db3101b0e5904c291b64",
+    "bytes": 23803,
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-freeze-01/candidate/android/init_relay_barrier.c",
+    "sha256": "dded59777f3dbbd86c6794a37315b878eb63417bbcdad08278ea7d8e2b0e245a"
+  },
+  "matching_rust_inputs": [
+    {
+      "bytes": 54968,
+      "matches_actual09_before_after": true,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer07-audit-freeze-02/source/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs",
+      "relative_path": "runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs",
+      "sha256": "3f3f7cc1accb8921b0248adb3257e3737879e90b10bf377231389d5eb18453c1"
+    },
+    {
+      "bytes": 44547,
+      "matches_actual09_before_after": true,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer07-audit-freeze-02/source/runtime/droidloom-pressure-relay/src/lib.rs",
+      "relative_path": "runtime/droidloom-pressure-relay/src/lib.rs",
+      "sha256": "f2fd8a952171809256dd56ef75ff2ffe358b7e3c21279583d83ea20aea812c96"
+    },
+    {
+      "bytes": 30475,
+      "matches_actual09_before_after": true,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-freeze-01/candidate/host/runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs",
+      "relative_path": "runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs",
+      "sha256": "7bfeffd8f71e8e6bb92c5445fb585e828a6eedb77ba57bd0c76b259a99cad5a1"
+    },
+    {
+      "bytes": 28235,
+      "matches_actual09_before_after": true,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-freeze-01/candidate/host/runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs",
+      "relative_path": "runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs",
+      "sha256": "f3fdb0736697e2a6e06328a38178c7db07127ecc23b50e92d40d241f9a311892"
+    }
+  ],
+  "minimal_correction": "Already-frozen producer10 selects explicit P4BOOT2/layout3, validates the held holding view/root and strict leaf ancestry, keeps native mount target TMPFS until real Android setup; original P4BOOT1 remains explicit legacy fixture only, no fallback. Steady LMKD final public sys/fs/cgroup projection gate and lifetime snapshots remain unchanged. Its actual compilation does not qualify a real generation.",
+  "observed_stderr_order": [
+    {
+      "index": 3,
+      "line": "droidloom-psi-owner: rejected: wrong filesystem type"
+    },
+    {
+      "index": 4,
+      "line": "Droidloom init relay bootstrap failed closed stage=project-receive errno=32 metadata=0 dev=0 ino=0 uid=0 gid=0 mode=0"
+    },
+    {
+      "index": 5,
+      "line": "droidloomd: Android cell cleanup is incomplete; retained owner blocks start/restart: retire exact init/broker/domain generation: rejected: lifecycle packet framing/ancillary data; retirement remains incomplete: rejected: bootstrap incomplete; retain failed owner"
+    }
+  ],
+  "original_files_extracted": 15,
+  "production_ready": false,
+  "schema": 1,
+  "scope": "additive exact owned Owner09 stderr diagnosis; original runtime and review unchanged",
+  "source_findings": [
+    {
+      "function": "run_inherited_lifecycle",
+      "path": "runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs",
+      "statement": "HostContext::open then trusted_parent then bootstrap all precede PreparedRelay::bind_at/activate and initial READY."
+    },
+    {
+      "function": "bootstrap",
+      "path": "runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs",
+      "statement": "After exact16 descriptors, decoded P4BOOT1, pidfd/birth/private root-child/exe checks, opens init.proc_dir/root and beneath sys/fs/cgroup; require_fs(CGROUP2_MAGIC) occurs before root-equal membership, role namespace checks, CellAuthority or persistent endpoint claim."
+    },
+    {
+      "function": "require_fs",
+      "path": "runtime/droidloom-pressure-relay/src/lib.rs",
+      "statement": "The literal wrong filesystem type is emitted only after fstatfs succeeds and f_type differs from the expected magic. The same generic literal is used for proc, host cgroup, member cgroup, nsfs, bootstrap projection and authority root checks."
+    },
+    {
+      "function": "bootstrap_view/native_mount_target and dir_open_cgroup_view",
+      "statement": "The actual09 ABI3 host/C handoff requires sys and sys/fs/cgroup to remain on the original same-device private TMPFS at HELLO, while the held finite cgroup2 view is dev/.droidloom-cgroups/relay-v2 and init belongs to init-bootstrap leaf."
+    }
+  ]
+}

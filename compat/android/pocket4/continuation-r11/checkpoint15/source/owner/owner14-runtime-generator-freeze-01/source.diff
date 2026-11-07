@@ -1,0 +1,52 @@
+--- owner11-runtime-generator/freeze_runtime11.py
++++ owner14-runtime-generator/freeze_runtime14.py
+@@ -1,4 +1,4 @@
+-"""Bind the one actual preparation receipt to the frozen Owner11 runtime template.
++"""Bind the one actual preparation receipt to the frozen Owner14 runtime template.
+ 
+ This local generator does not dispatch a request or execute a runtime.
+ """
+@@ -10,9 +10,9 @@
+ import re
+ 
+ BASE = Path('/workspace/scratch/94990735b266/lmkd-recovery-20261105-01')
+-SOURCE = BASE / 'owner11-normal01-freeze-01'
+-OUT = BASE / 'owner11-normal01-runtime-freeze-01'
+-SOURCE_MANIFEST_SHA256 = '1cc0ff739afbe642255103e035d1379ac686b77c8b8ac3d1849f56ff984ecb3e'
++SOURCE = BASE / 'owner14-normal01-freeze-01'
++OUT = BASE / 'owner14-normal01-runtime-freeze-01'
++SOURCE_MANIFEST_SHA256 = '80ba3a2d6caaae90cc11e4997a8fc58c527f25e318b0571bc29d827259981e32'
+ 
+ 
+ def sha(value):
+@@ -41,8 +41,8 @@
+         assert len(data) == row['bytes'] and sha(data) == row['sha256']
+     plan_raw = (SOURCE / 'plan.json').read_bytes()
+     plan = json.loads(plan_raw)
+-    assert plan['kind'] == 'owned-real-producer11-normal01-retirement-cause01'
+-    assert plan['scope'] == 'REAL_OWNER_ABI3_RETAINED_CAUSE_FIRST_ACTIVE_ORIGINAL_RETIREMENT'
++    assert plan['kind'] == 'owned-real-producer14-normal01-fixture-repair01'
++    assert plan['scope'] == 'REAL_OWNER_ABI3_PINNED_CAUSE_TERMINAL_DRAIN_FIRST_ACTIVE_ORIGINAL_RETIREMENT'
+     assert plan['init_protocol_abi'] == 3 and plan['entry_abi'] == 'droidloom-relay-entry-v3'
+     assert actual['success'] is True and actual['errors'] == []
+     assert actual['attempt_nonce'] == plan['attempt_nonce'] and actual['plan_sha256'] == sha(pretty(plan))
+@@ -79,7 +79,7 @@
+     request['idempotency_key'] = request['idempotency_key'].replace('__ACTUAL_PREPARED_SHA256_PREFIX16__', args.sha256[:16])
+     assert stdin.replace(args.sha256, '__ACTUAL_PREPARED_SHA256__') == template
+     ast.parse(stdin)
+-    compile(stdin, '<Owner11 exact runtime>', 'exec')
++    compile(stdin, '<Owner14 exact runtime>', 'exec')
+     raw = pretty(request)
+     result = {'schema': 1, 'actual_prepared_sha256': args.sha256,
+         'source_manifest_sha256': sha(manifest_raw), 'actual_prepared_plan_and_six_sources_and_five_artifacts_match': True,
+@@ -90,8 +90,8 @@
+         'runtime_executed': False, 'production_or_App_qualification': False}
+     OUT.mkdir(exist_ok=False)
+     members = {'request.json': raw, 'stdin.py': stdin.encode(), 'actual-prepared.json': body,
+-        'binding-result.json': pretty(result), 'freeze_runtime10.py': Path(__file__).read_bytes(),
+-        'README.md': b'# Exact fresh Owner11 NORMAL01 runtime request\n\nOnly the externally observed actual prepared SHA and its stable key were filled into the previously frozen runtime template. The local generator has not submitted this request. The explicit P4BOOT2/layout3 broker with retained retirement-cause diagnostics, ABI3 holding-view and bootstrap-leaf producer, and init library are bound to actual matching build and ordinary receipts. Original Owner07, Owner08, Owner09 and Owner10 failures remain unchanged; this is a separate fresh cell. Runtime authorization, durable terminal, actual success/failure evidence, original retirement and exact cleanup remain the root coordinator\'s responsibility. This package does not qualify property reload, installed operation, pressure effects or commercial Apps.\n'}
++        'binding-result.json': pretty(result), 'freeze_runtime14.py': Path(__file__).read_bytes(),
++        'README.md': b'# Exact fresh Owner14 NORMAL01 runtime request\n\nOnly the externally observed actual prepared SHA and its stable key were filled into the previously frozen runtime template. The local generator has not submitted this request. The explicit P4BOOT2/layout3 broker, ABI3 holding-view and bootstrap-leaf producer, init library, pinned I/O diagnostics and strict terminal-drain repair are bound to actual matching build and ordinary receipts. Producer14 changes only the two failed test fixtures; production13 remains exact. Original Owner11 runtime/retirement failure and Producer13 ordinary failure remain unchanged; this is a separate fresh cell. Runtime authorization, durable terminal, actual success/failure evidence, original retirement and exact cleanup remain the root coordinator\'s responsibility. This package does not qualify property reload, installed operation, pressure effects or commercial Apps.\n'}
+     rows = []
+     for name, data in members.items():
+         (OUT / name).write_bytes(data)

@@ -1,0 +1,9 @@
+# Owner08 exact retired-attempt kernel-window diagnostic
+
+This request only reads the retained kernel ring and the already existing, externally pinned runtime result. It does not create a child process, start a runtime, clear/seek/write the ring, change permissions, or retry the retired generation. The original Owner08 overall failure remains unchanged.
+
+The original runtime SHA, prepared SHA, Invocation ID, actor PID, protected state directory identity, boot ID and exact 3.511-second monotonic interval are fixed in the request. The collector exports only records whose kernel timestamp lies in this interval and whose text names init/ueventd/apexd/reboot or whose optional caller field matches a recorded owned PID. These are diagnostic candidates. A PID number without a retained birth association, a textual match, or timestamp proximity does not establish causation. Kernel timestamp bounds are reported separately; no independent kernel/userspace clock calibration or exact-kernel source binding is claimed.
+
+Reading is limited to 16 MiB, 65536 records and 10 seconds; exported records to 256 KiB/256 records. Every selected raw record is preserved with its SHA and base64. If the ring was overwritten, has a sequence gap, lacks the original interval, or a bound/error interrupts the scan, the corresponding completeness field remains false and already collected evidence is retained. Successful collection alone is never an Owner, LMKD, Android, or application qualification. All qualification fields remain false.
+
+Eight actual local controls exercised in-memory records only. They did not open `/dev/kmsg`, run the collector main function, or access Pocket4. The request has not been dispatched by this agent. Root owns the one remote dispatch and any reconciliation under the same stable key.

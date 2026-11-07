@@ -1,0 +1,220 @@
+{
+  "schema": 1,
+  "pass": true,
+  "controls": [
+    {
+      "name": "old_R3_actual_install_t_rejected",
+      "pass": true,
+      "observed_error": "NUMERIC_PID_ENTRY_FORBIDDEN",
+      "runner_calls": 0,
+      "entry_exits": 1,
+      "guard_calls": 1,
+      "record_kinds": [
+        "intent",
+        "failure"
+      ]
+    },
+    {
+      "name": "new_R4_Android_install_t_unchanged",
+      "pass": true,
+      "observed_error": null,
+      "runner_calls": 1,
+      "entry_exits": 1,
+      "guard_calls": 2,
+      "record_kinds": [
+        "intent",
+        "command-result",
+        "verified-result"
+      ]
+    },
+    {
+      "name": "old_R3_readonly_unchanged",
+      "pass": true,
+      "observed_error": null,
+      "runner_calls": 1,
+      "entry_exits": 1,
+      "guard_calls": 2,
+      "record_kinds": [
+        "intent",
+        "command-result",
+        "verified-result"
+      ]
+    },
+    {
+      "name": "new_R4_readonly_unchanged",
+      "pass": true,
+      "observed_error": null,
+      "runner_calls": 1,
+      "entry_exits": 1,
+      "guard_calls": 2,
+      "record_kinds": [
+        "intent",
+        "command-result",
+        "verified-result"
+      ]
+    },
+    {
+      "name": "new_R4_Android_literal_target_not_namespace",
+      "pass": true,
+      "observed_error": null,
+      "runner_calls": 1,
+      "entry_exits": 1,
+      "guard_calls": 2,
+      "record_kinds": [
+        "intent",
+        "command-result",
+        "verified-result"
+      ]
+    },
+    {
+      "name": "prefix_short_t",
+      "pass": true,
+      "observed_error": "NUMERIC_PID_ENTRY_FORBIDDEN",
+      "runner_calls": 0,
+      "entry_exits": 1,
+      "guard_calls": 1,
+      "record_kinds": [
+        "intent",
+        "failure"
+      ]
+    },
+    {
+      "name": "prefix_long_target",
+      "pass": true,
+      "observed_error": "NUMERIC_PID_ENTRY_FORBIDDEN",
+      "runner_calls": 0,
+      "entry_exits": 1,
+      "guard_calls": 1,
+      "record_kinds": [
+        "intent",
+        "failure"
+      ]
+    },
+    {
+      "name": "prefix_target_equals",
+      "pass": true,
+      "observed_error": "NUMERIC_PID_ENTRY_FORBIDDEN",
+      "runner_calls": 0,
+      "entry_exits": 1,
+      "guard_calls": 1,
+      "record_kinds": [
+        "intent",
+        "failure"
+      ]
+    },
+    {
+      "name": "prefix_single_dash_target",
+      "pass": true,
+      "observed_error": "HELD_ENTRY_PREFIX_DIFFERS",
+      "runner_calls": 0,
+      "entry_exits": 1,
+      "guard_calls": 1,
+      "record_kinds": [
+        "intent",
+        "failure"
+      ]
+    },
+    {
+      "name": "prefix_attached_t",
+      "pass": true,
+      "observed_error": "HELD_ENTRY_PREFIX_DIFFERS",
+      "runner_calls": 0,
+      "entry_exits": 1,
+      "guard_calls": 1,
+      "record_kinds": [
+        "intent",
+        "failure"
+      ]
+    },
+    {
+      "name": "prefix_wrong_parent",
+      "pass": true,
+      "observed_error": "HELD_ENTRY_PREFIX_DIFFERS",
+      "runner_calls": 0,
+      "entry_exits": 1,
+      "guard_calls": 1,
+      "record_kinds": [
+        "intent",
+        "failure"
+      ]
+    },
+    {
+      "name": "prefix_wrong_root_fd",
+      "pass": true,
+      "observed_error": "HELD_ENTRY_PREFIX_DIFFERS",
+      "runner_calls": 0,
+      "entry_exits": 1,
+      "guard_calls": 1,
+      "record_kinds": [
+        "intent",
+        "failure"
+      ]
+    },
+    {
+      "name": "separator_missing",
+      "pass": true,
+      "observed_error": "HELD_ENTRY_SEPARATOR_MISSING",
+      "runner_calls": 0,
+      "entry_exits": 1,
+      "guard_calls": 1,
+      "record_kinds": [
+        "intent",
+        "failure"
+      ]
+    },
+    {
+      "name": "separator_moved_before_authorities",
+      "pass": true,
+      "observed_error": "HELD_ENTRY_COMMAND_SUFFIX_DIFFERS",
+      "runner_calls": 0,
+      "entry_exits": 1,
+      "guard_calls": 1,
+      "record_kinds": [
+        "intent",
+        "failure"
+      ]
+    },
+    {
+      "name": "Android_suffix_changed",
+      "pass": true,
+      "observed_error": "HELD_ENTRY_COMMAND_SUFFIX_DIFFERS",
+      "runner_calls": 0,
+      "entry_exits": 1,
+      "guard_calls": 1,
+      "record_kinds": [
+        "intent",
+        "failure"
+      ]
+    },
+    {
+      "name": "helper_path_changed",
+      "pass": true,
+      "observed_error": "HELD_ENTRY_PREFIX_DIFFERS",
+      "runner_calls": 0,
+      "entry_exits": 1,
+      "guard_calls": 1,
+      "record_kinds": [
+        "intent",
+        "failure"
+      ]
+    },
+    {
+      "name": "duplicate_parent_option",
+      "pass": true,
+      "observed_error": "HELD_ENTRY_PREFIX_DIFFERS",
+      "runner_calls": 0,
+      "entry_exits": 1,
+      "guard_calls": 1,
+      "record_kinds": [
+        "intent",
+        "failure"
+      ]
+    }
+  ],
+  "original_source_sha256": "ca3e30796961acc38737b6a9f22c3519abc9da1a7a6a384b732dd5a374a325d9",
+  "candidate_source_sha256": "7edecc741b8a61bea30d885ab9107666aab9407d6a6928bf799bd8efd4b4a23b",
+  "scope": "Actual original/candidate BoundArun with synthetic target/runner callbacks and real seven owned FDs per control; no namespace/helper/device/UI executed",
+  "actual_old_R3_regression_preserved": true,
+  "all_created_FDs_closed": true,
+  "production_or_Android_qualification": false
+}

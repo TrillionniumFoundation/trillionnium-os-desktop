@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.droidloom.qa.ticket.r1" android:versionCode="1" android:versionName="1">
+    <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="33" />
+    <queries><package android:name="com.MobileTicket" /></queries>
+    <application android:label="Owned 12306 QA" android:debuggable="false"
+        android:testOnly="true" android:allowBackup="false" android:hasCode="true" />
+    <instrumentation android:name="org.droidloom.qa.ticket.r1.ActionRunner"
+        android:targetPackage="org.droidloom.qa.ticket.r1"
+        android:functionalTest="true" android:handleProfiling="false" />
+</manifest>

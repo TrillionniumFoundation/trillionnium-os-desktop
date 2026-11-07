@@ -1,0 +1,170 @@
+--- geometry01/read_private_crops.py
++++ fresh-before01/read_private_crops.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Copy only two already qualified private PNGs to a new operator-private directory."""
++"""Copy only three already qualified private PNGs to a new operator-private directory."""
+ import argparse
+ import hashlib
+ import json
+@@ -9,21 +9,23 @@
+ import struct
+ import time
+ 
+-ROOT = Path('/home/alex/work/pocket4-bilibili-r5-player-geometry-01')
+-FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-9e7c2a173b34236b7f96abc662295fd4')
++ROOT = Path('/home/alex/work/pocket4-bilibili-r5-player-fresh-before-01')
++FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-c1eaefa79cbafc86cb32f638900443bf')
+ STEP = FLOW / 'steps/buffer-viewport-01'
+-OUTPUT = Path('/home/alex/work/pocket4-bilibili-r5-player-geometry-private-crops-01')
+-NONCE = '9e7c2a173b34236b7f96abc662295fd4'
+-SOURCE = '6620853a66d298cf1d85b16733f56e564654823bbe8c5e9e566bed4faa5b4ab6'
++OUTPUT = Path('/home/alex/work/pocket4-bilibili-r5-player-fresh-before-private-crops-01')
++NONCE = 'c1eaefa79cbafc86cb32f638900443bf'
++SOURCE = 'f151b6737f72c53e9f776076ed81fecce4a68b327b59d2bf2f971fe838372283'
+ EPOCH = '48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'
+ FILES = {
+-    'coordinator': (ROOT / 'result.json', 6332, '61f0d5c97d12e9683be3237a813f60e03c2ab882a08b34f7d303e49168d3648b'),
+-    'stage': (ROOT / 'stage-result.json', 1773, '6c3114b2349c51fa65fad36b976ceb315bb40123db34e5eee09661e6eb667ed8'),
+-    'navigation': (STEP / 'result.json', 244237, '4ceb318717f554cf2779232846df77b5fe5871cc83e3ef1fff32e50920bbe80d'),
+-    'cleanup': (FLOW / 'steps/cleanup-01/result.json', 447, '372ebe75220d7a7415e1a2694b5bd4c71c003e4e206cb676ff43ca5302bcb01c'),
+-    'player-viewport-01.png': (STEP / 'player-viewport-01.png', 493547, '5146498065e5bad3e4bb5350108b40593ece312cb3cad7ec3610db745bac2c95'),
+-    'player-viewport-02.png': (STEP / 'player-viewport-02.png', 494153, 'dca103f1c5d4bd23355d69a43bdfa1dedc9ee49bff72b4ec78fd56a15dc5f608'),
++    'coordinator': (ROOT / 'result.json', 249889, 'ff2c8e0f8a09f194c7dea3ae1358e425a1c1376d5b68fe273e779cd7b5f75ec3'),
++    'stage': (ROOT / 'stage-result.json', 1651, '780d97c06491bcfd51ff9da0d97552b08cda25406f839ff160dc8e989e1b567a'),
++    'navigation': (STEP / 'result.json', 268643, 'b1cc104486632c7ec6c42d609c8c0d23c97a72ca3e2823c5ff48abc93bba7483'),
++    'cleanup': (FLOW / 'steps/cleanup-01/result.json', 446, '14ad1897af7ee9c0b8d220de63213f07a121aea640f363dd87d43d38b64e0eda'),
++    'player-viewport-01.png': (STEP / 'player-viewport-01.png', 494282, '871f2a9a5861e2fc70f700793c367f50cbbb7705199428e95f36d51c6a22d668'),
++    'player-viewport-02.png': (STEP / 'player-viewport-02.png', 494730, '158bdf518061b900c2e92bbd2e410d14289161f95cc6fa0f552d66da56c1cb8d'),
++    'player-viewport-03.png': (STEP / 'player-viewport-03.png', 494901, '5df196641f46d133ff67d231f77157ca293b3b3e94b6ac488fef5c0f50377d45'),
+ }
++
+ SCOPE_KEYS = ('scope', 'window', 'window_sha256', 'crop', 'surface_bounds',
+               'title_text_sha256', 'author_text_sha256', 'full_area_surface_bounds',
+               'render_structure_sha256')
+@@ -57,7 +59,7 @@
+         self.started = time.monotonic(); self.total = 0
+ 
+     def read(self, name):
+-        need(name in FILES, 'FIXED_SIX_INPUTS_ONLY')
++        need(name in FILES, 'FIXED_SEVEN_INPUTS_ONLY')
+         path, size, expected = FILES[name]
+         parent = open_directory(path.parent); fd = None
+         try:
+@@ -91,44 +93,61 @@
+     for value in (c, s, n):
+         need(value['nonce'] == NONCE and value['source_manifest_sha256'] == SOURCE,
+              'ORIGINAL_ATTEMPT_SOURCE_NONCE_CHANGED')
+-        need(value['ok'] is False and value['secondary_errors'] == [], 'ORIGINAL_FAIL_MUST_STAY_FAIL')
++        need(value['ok'] is True and value['error'] is None and value['secondary_errors'] == []
++             and value['business_success_verified'] is False and value['whole_app_production_ready'] is False,
++             'ORIGINAL_SCOPED_SUCCESS_WITHOUT_BUSINESS_PROMOTION_REQUIRED')
++    need(n['outcome_unknown'] is True and n['business_outcome_unknown'] is True
++         and c['business_outcome_unknown'] is True, 'ORIGINAL_UNKNOWN_BUSINESS_OUTCOME_RETAINED')
+     need(c['Main_before'] == c['Main_after'] == s['Main_before'] == s['Main_after']
+          and c['Main_before']['Main_epoch_sha256'] == EPOCH, 'ORIGINAL_MAIN_CHAIN_CHANGED')
+-    need(s['coordinator_result']['sha256'] == FILES['coordinator'][2]
+-         and c['cleanup_result']['sha256'] == FILES['cleanup'][2], 'ORIGINAL_PARENT_CHAIN_CHANGED')
+-    need(n['error'] == {'phase': 'buffer_viewport_observation', 'type': 'RuntimeError',
+-                       'message': 'VIEWPORT_SCOPE_CHANGED_DURING_CAPTURE'}, 'ORIGINAL_FIRST_ERROR_CHANGED')
++    for parent, key, name in ((s, 'coordinator_result', 'coordinator'),
++                              (c, 'navigation_result', 'navigation'), (c, 'cleanup_result', 'cleanup')):
++        need(parent[key]['sha256'] == FILES[name][2] and parent[key]['bytes'] == FILES[name][1]
++             and parent[key]['path'] == str(FILES[name][0]), 'ORIGINAL_PARENT_CHAIN_CHANGED')
+     need(n['final_Main_guard_passed'] and n['held_binding_released'] and n['action_lock_released']
+          and c['source_and_artifact_unchanged'] and s['source_unchanged'], 'ORIGINAL_FINAL_GATES_REQUIRED')
+-    need(c['owned_task']['task'] == 920 and cleanup['ok'] and cleanup['new_leaf_removed_and_verified']
++    need(c['owned_task']['task'] == 936 and c['owned_task']['prelaunch_task_ids'] == [851]
++         and cleanup['ok'] and cleanup['new_leaf_removed_and_verified']
+          and cleanup['other_tasks_preserved'] and cleanup['task_ids_after'] == [851],
+          'ORIGINAL_EXACT_TASK_CLEANUP_REQUIRED')
+     record = n['buffer_viewport_observation']
+-    need(len(record['reads']) == 1 and len(record['viewport_samples']) == 2,
+-         'EXACT_TWO_PUBLISHED_SAMPLES_REQUIRED')
+-    before = record['reads'][0]['proof']
++    need(n['buffer_viewport_observation_completed'] is True and len(record['reads']) == 1
++         and len(record['viewport_samples']) == 3 and record['fresh_before_read_per_capture'] is True
++         and record['maximum_capture_transactions'] == 3 and 'failed_capture' not in record,
++         'EXACT_THREE_PUBLISHED_FRESH_TRANSACTIONS_REQUIRED')
++    need(record['action_replayed'] is False and record['failed_read_retried'] is False
++         and record['playback_verified'] is False and record['audio_captured'] is False,
++         'ORIGINAL_OBSERVATION_ONLY_SCOPE_REQUIRED')
++    nonces = []
+     for index, sample in enumerate(record['viewport_samples'], 1):
+-        after = sample['after_observation']; proof = after['proof']; crop = sample['private_crop']
++        before = sample['before_observation']; after = sample['after_observation']
++        before_proof = before['proof']; proof = after['proof']; crop = sample['private_crop']
+         name = 'player-viewport-%02d.png' % index; path, size, expected = FILES[name]
+-        need(sample['index'] == index and sample['private_crop_published'] is True
++        need(sample['index'] == index and sample['capture_attempted'] is True
++             and sample['private_crop_published'] is True and sample['fresh_before_read_completed'] is True
+              and sample['scope_checked_before_and_after'] is True
+              and sample['atomic_frame_attribution'] is False and sample['playback_verified'] is False
+-             and sample['audio_captured'] is False and after['after_state_completed'] is True
+-             and after['restoration_qualified'] is True, 'PRIOR_CROP_QUALIFICATION_CHAIN_REQUIRED')
+-        need(all(before[k] == proof[k] for k in SCOPE_KEYS), 'PRIOR_CROP_SCOPE_CHANGED')
++             and sample['audio_captured'] is False, 'PRIOR_CROP_QUALIFICATION_CHAIN_REQUIRED')
++        for observation in (before, after):
++            need(observation['after_state_completed'] is True and observation['restoration_qualified'] is True
++                 and observation['proof']['buffering_label_present'] is False,
++                 'EACH_INDEPENDENT_READY_RESTORED_OBSERVATION_REQUIRED')
++            for phase in ('before', 'inspect', 'after'):
++                assessment = observation['assessments'][phase]; nonces.append(assessment['nonce'])
++                need(assessment['actual_command_returncode'] == 0
++                     and assessment['actual_instrumentation_finish_code'] == -1,
++                     'ACTUAL_SUCCESSFUL_INSPECTION_PHASES_REQUIRED')
++            inspection = observation['assessments']['inspect']
++            need(inspection['complete'] is True and inspection['window_sha256'] == observation['proof']['window_sha256'],
++                 'COMPLETE_WINDOW_BOUND_OBSERVATION_REQUIRED')
++        need(all(before_proof[k] == proof[k] for k in SCOPE_KEYS), 'PRIOR_CROP_SCOPE_CHANGED')
+         need(crop['path'] == str(path) and crop['bytes'] == size and crop['sha256'] == expected
+-             and crop['bounds'] == before['crop'] == [320, 45, 1520, 720]
++             and crop['bounds'] == before_proof['crop'] == [320, 45, 1520, 720]
+              and crop['width'] == 1200 and crop['height'] == 675 and crop['must_not_enter_Git'] is True,
+              'EXACT_PRIVATE_CROP_IDENTITY_REQUIRED')
+         need(proof['scope']['package'] == 'tv.danmaku.bili' and proof['scope']['uid'] == 10117
+              and proof['scope']['main_epoch_sha256'] == EPOCH, 'ORIGINAL_BILI_SCOPE_REQUIRED')
+-        before = proof
+-    failed = record['failed_capture']
+-    need(failed['index'] == 3 and failed['capture_attempted'] is True
+-         and failed['private_crop_published'] is False and 'private_crop' not in failed,
+-         'THIRD_FAILED_CAPTURE_IS_NOT_AN_EXPORT_INPUT')
+-    need(not all(before[k] == failed['after_observation']['proof'][k] for k in SCOPE_KEYS),
+-         'ORIGINAL_THIRD_CAPTURE_REJECTION_MUST_REMAIN')
++    need(len(nonces) == len(set(nonces)) == 18, 'EIGHTEEN_UNIQUE_ACTUAL_OBSERVATION_NONCES_REQUIRED')
+ 
+ 
+ def write_new(directory, name, raw):
+@@ -152,7 +171,7 @@
+     reader = Reader()
+     records = {name: json.loads(reader.read(name)) for name in ('coordinator', 'stage', 'navigation', 'cleanup')}
+     validate_observations(records['coordinator'], records['stage'], records['navigation'], records['cleanup'])
+-    images = {name: reader.read(name) for name in ('player-viewport-01.png', 'player-viewport-02.png')}
++    images = {name: reader.read(name) for name in ('player-viewport-01.png', 'player-viewport-02.png', 'player-viewport-03.png')}
+     for raw in images.values():
+         need(raw[:16] == b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR'
+              and struct.unpack('>II', raw[16:24]) == (1200, 675), 'EXACT_CROP_PNG_DIMENSIONS_REQUIRED')
+@@ -164,11 +183,11 @@
+                             dir_fd=parent)
+         first = os.fstat(directory)
+         need(first.st_uid == 0 and stat.S_IMODE(first.st_mode) == 0o700, 'NEW_ROOT_PRIVATE_EXPORT_REQUIRED')
+-        manifest = {'schema': 1, 'state': 'EXACT_TWO_RETAINED_PRIVATE_CROPS_COPIED',
+-                    'original_attempt_still_failed': True, 'flow_nonce': NONCE,
++        manifest = {'schema': 1, 'state': 'EXACT_THREE_RETAINED_PRIVATE_CROPS_COPIED',
++                    'original_attempt_scoped_success': True, 'flow_nonce': NONCE,
+                     'source_manifest_sha256': SOURCE, 'original_files_unchanged': True,
+                     'private_commercial_UI': True, 'must_not_enter_Git_or_public_summary': True,
+-                    'third_failed_capture_or_full_screen_read': False,
++                    'full_screen_or_UI_tree_read': False,
+                     'playback_or_audio_qualification_asserted': False,
+                     'Android_or_process_actions': 0, 'bytes_read': reader.total,
+                     'files': {name: {'path': str(OUTPUT / name), 'bytes': len(raw), 'sha256': sha(raw),
+@@ -194,7 +213,7 @@
+             os.close(directory)
+         os.close(parent)
+     print(json.dumps({'schema': 1, 'state': manifest['state'], 'private_commercial_UI': True,
+-          'must_not_enter_Git_or_public_summary': True, 'original_attempt_still_failed': True,
++          'must_not_enter_Git_or_public_summary': True, 'original_attempt_scoped_success': True,
+           'metadata_path': str(OUTPUT / 'copy-index.json'), 'metadata_bytes': len(data), 'metadata_sha256': sha(data),
+           'files': manifest['files'], 'pixels_or_base64_in_stdout': False,
+           'Android_or_process_actions': 0, 'runtime_qualification_asserted': False}, sort_keys=True))

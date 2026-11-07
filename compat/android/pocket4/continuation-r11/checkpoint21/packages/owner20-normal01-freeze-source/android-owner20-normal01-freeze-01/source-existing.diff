@@ -1,0 +1,319 @@
+--- owner19/source/actor.py
++++ owner20/source/actor.py
+@@ -12,7 +12,7 @@
+     if not prepared.get('success'): raise RuntimeError('preparation did not succeed')
+     here = Path(__file__).parent
+     modules = {}
+-    for name in ('pinned_support', 'owned', 'prepare', 'qualify', 'crash_log'):
++    for name in ('pinned_support', 'owned', 'prepare', 'qualify', 'crash_log', 'property_visibility'):
+         path = here / (name + '.py'); fd = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+         try:
+             st = os.fstat(fd); body = os.read(fd, 256 * 1024)
+@@ -159,6 +159,7 @@
+     evidence = state = outer = host = domains = -1; tools = {}; children = []; held = {}; domain = endpoint_fd = -1
+     daemon = None; socket_id = None; stop_requested = False; before = None; start_attempted = False
+     crash_capture = None; crash_capture_attempted = False
++    property_capture = None; property_capture_attempted = False
+     try:
+         owned.need(os.getuid() == os.geteuid() == os.getgid() == 0 and os.uname().machine == 'x86_64', 'real owned actor requires host root/x86_64')
+         state = owned.root_directory(plan['state']); evidence = owned.root_directory(plan['state'] + '/evidence')
+@@ -274,6 +275,15 @@
+                     result['crash_buffer_construction_error'] = repr(error)[:512]
+             if crash_capture is not None:
+                 crash_capture.poll()
++            if 'init' in held and not property_capture_attempted:
++                property_capture_attempted = True
++                try:
++                    property_capture = modules['property_visibility'].Capture(
++                        held['init'], audit, plan, prepared, tools['sdk-visibility'], evidence, owned, end)
++                except BaseException as error:
++                    result['property_visibility_construction_error'] = repr(error)[:512]
++            if property_capture is not None:
++                property_capture.poll()
+             time.sleep(0.05)
+         owned.need('active_response' in result, 'actual native enrollment ACTIVE deadline exceeded')
+         audit = result['active_response']['relay_lifecycle']
+@@ -351,6 +361,21 @@
+                 result['crash_buffer_finish_error'] = repr(error)[:512]
+         result['crash_buffer_capture_attempted'] = crash_capture_attempted
+         result['crash_buffer_HWS_health_qualified'] = False
++        # The one property child is retired only here, after the unchanged Stop
++        # and original four children. No new property token/read is sent here.
++        if property_capture is not None:
++            try:
++                observation = property_capture.finish('after original Stop and owned child retirement')
++                result['property_visibility_observation'] = observation
++                owned.need(observation['held_fds_closed'] and
++                           (not observation['child_started'] or observation['child_reaped']),
++                           'owned property observer retirement incomplete')
++            except BaseException as error:
++                owned.record_error(result, 'property_observer_retirement', error)
++        result['property_visibility_capture_attempted'] = property_capture_attempted
++        result['property_visibility_diagnostic_qualified'] = (
++            result.get('property_visibility_observation', {}).get('property_visibility_qualified') is True)
++        result['property_visibility_is_actual_LMKD_or_cold_cache'] = False
+         for role, proc in held.items():
+             try: owned.need(owned.dead(proc.pidfd), 'generation process survived actual producer shutdown: ' + role)
+             except BaseException as error: owned.record_error(result, 'generation_final_' + role, error)
+--- owner19/source/coordinator.py
++++ owner20/source/coordinator.py
+@@ -49,9 +49,9 @@
+     state = group_fd = -1; actor = None; fence = None; invocation = None; launched = False; tools = {}
+     try:
+         owned.need(os.getuid() == os.geteuid() == os.getgid() == 0, 'external controller requires original host root')
+-        owned.need(plan['unit'] == 'p4-owner19-normal-20261105-01.service' and
+-                   plan['package'] == '/opt/p4-owner19-normal-20261105-01' and
+-                   plan['state'] == '/opt/p4-owner19-normal-20261105-01-state', 'this controller accepts only its fixed fresh unit/package/state')
++        owned.need(plan['unit'] == 'p4-owner20-normal-20261106-01.service' and
++                   plan['package'] == '/opt/p4-owner20-normal-20261106-01' and
++                   plan['state'] == '/opt/p4-owner20-normal-20261106-01-state', 'this controller accepts only its fixed fresh unit/package/state')
+         state = owned.root_directory(plan['state'])
+         owned.need(owned.file_id(state) == prepared['state_identity'], 'prepared state replaced')
+         for name in ('coordinator-claim.json', 'gate.json', 'runtime-claim.json', 'actor-result.json', 'runtime-result.json'):
+@@ -165,7 +165,12 @@
+         if fence is not None:
+             try: result['main_after'] = fence.check()
+             except BaseException as error: owned.record_error(result, 'main_after', error)
+-            finally: fence.close()
++            finally:
++                try:
++                    fence.close(); result['main_fence_fds_closed'] = True
++                except BaseException as error:
++                    owned.record_error(result, 'main_fence_close', error)
++                    result['main_fence_fds_closed'] = False
+         result['success'] = (not result['errors'] and result.get('actual_first_owner_normal_qualified') is True and
+                              result.get('exact_unit_cleanup', {}).get('original_actor_dead') is True and 'main_after' in result)
+         result['finished_monotonic_ns'] = time.monotonic_ns()
+--- owner19/source/prepare.py
++++ owner20/source/prepare.py
+@@ -61,6 +61,20 @@
+         if root_owned: owned.need(st.st_uid == st.st_gid == 0 and st.st_nlink == 1, 'sealed base input owner/link count differs')
+         if 'device' in row: owned.need((st.st_dev, st.st_ino) == (row['device'], row['inode']), 'actual build artifact was replaced')
+         if 'mode' in row: owned.need(stat.S_IMODE(st.st_mode) == row['mode'], 'input mode differs')
++        if row.get('role') == 'sdk-visibility':
++            actual = row['actual_build_metadata']
++            expected = (actual['device'], actual['inode'], actual['mode'], actual['uid'],
++                        actual['gid'], actual['bytes'], actual['mtime_ns'], actual['ctime_ns'])
++            observed = (st.st_dev, st.st_ino, st.st_mode, st.st_uid, st.st_gid,
++                        st.st_size, st.st_mtime_ns, st.st_ctime_ns)
++            named = os.stat(path, follow_symlinks=False)
++            named_tuple = (named.st_dev, named.st_ino, named.st_mode, named.st_uid,
++                           named.st_gid, named.st_size, named.st_mtime_ns, named.st_ctime_ns)
++            owned.need(actual['path'] == str(path) and actual['sha256'] == row['sha256'] and
++                       st.st_nlink == named.st_nlink == 1 and
++                       observed == expected == named_tuple and
++                       st.st_mode == stat.S_IFREG | 0o555 and st.st_uid == st.st_gid == 0,
++                       'actual Owner20 executable metadata or named binding differs')
+         return fd, st
+     except BaseException:
+         os.close(fd); raise
+@@ -117,7 +131,7 @@
+ 
+ 
+ def main(plan, sources):
+-    result = {'schema': 1, 'kind': 'owner19-normal-preparation01', 'success': False,
++    result = {'schema': 1, 'kind': 'owner20-normal-preparation01', 'success': False,
+               'attempt_nonce': plan['attempt_nonce'], 'runtime_executed': False,
+               'namespace_or_network_changed': False, 'production_ready': False, 'errors': []}
+     package_fd = state_fd = data_fd = -1; tools = {}; fence = None
+@@ -125,7 +139,7 @@
+         owned.need(os.geteuid() == os.getuid() == os.getegid() == 0, 'preparation requires original host root')
+         owned.need(len(plan['attempt_nonce']) == 64 and
+                    plan['scope'] == 'REAL_OWNER_ABI3_PINNED_CAUSE_TERMINAL_DRAIN_FIRST_ACTIVE_ORIGINAL_RETIREMENT' and
+-                   plan['kind'] == 'owned-real-producer19-normal01-observed-logd-image01', 'wrong fixed profile')
++                   plan['kind'] == 'owned-real-producer20-normal01-four-public-sdk-observation01', 'wrong fixed profile')
+         owned.need(not Path(plan['package']).exists() and not Path(plan['state']).exists(), 'preparation root already exists')
+         owned.need(support.props(plan['unit']).get('LoadState') == 'not-found', 'owned unit already exists')
+         fence = support.MainFence(plan, vars(support)); result['main_before'] = fence.check()
+@@ -160,6 +174,10 @@
+                 owned.need(len(raw) == before.st_size and hashlib.sha256(raw).hexdigest() == row['sha256'], 'copy input changed')
+                 owned.write_bytes(parent, target.name, raw, 0o444 if role == 'init-barrier' else 0o555)
+                 owned.need(support.stamp(os.fstat(source_fd)) == support.stamp(before), 'source changed during copy')
++                if role == 'sdk-visibility':
++                    named = os.stat(row['path'], follow_symlinks=False)
++                    owned.need(support.stamp(named) == support.stamp(before),
++                               'actual Owner20 executable named binding changed during copy')
+                 verify = support.pinned(target, row['sha256'], role != 'init-barrier')
+                 try: result['copied_artifacts'][role] = {'path': str(target), 'bytes': len(raw), 'sha256': row['sha256'], 'identity': owned.file_id(verify)}
+                 finally: os.close(verify)
+@@ -214,7 +232,11 @@
+         if fence is not None:
+             try: result['main_final'] = fence.check()
+             except BaseException as error: owned.record_error(result, 'main_final', error); result['success'] = False
+-            fence.close()
++            try:
++                fence.close(); result['main_fence_fds_closed'] = True
++            except BaseException as error:
++                owned.record_error(result, 'main_fence_close', error)
++                result['main_fence_fds_closed'] = False; result['success'] = False
+         for fd in tools.values(): os.close(fd)
+         if state_fd >= 0:
+             owned.save(state_fd, 'prepared.json', result)
+--- owner19/source/pinned_support.py
++++ owner20/source/pinned_support.py
+@@ -1,6 +1,6 @@
+ #!/usr/bin/env python3
+ """Pinned read-only Main and held-process helpers from actual prefix02, plus owned helpers."""
+-import ctypes, errno, hashlib, json, os, select, signal, socket, stat, struct, subprocess, sys, time
++import ctypes, errno, hashlib, json, os, select, signal, socket, stat, struct, subprocess, sys, time, types
+ from pathlib import Path
+ sys.dont_write_bytecode = True
+ ENV = {"PATH": "/usr/bin:/bin", "LANG": "C", "LC_ALL": "C", "PYTHONDONTWRITEBYTECODE": "1"}
+@@ -228,14 +228,46 @@
+     return value
+ 
+ 
++CURRENT_MAIN_AUTHORITY = json.loads("{\"schema\":\"pocket4-owner20-current-main-authority-v1\",\"guard\":{\"path\":\"/home/alex/work/pocket4-main-current-baseline-01/current_baseline_guard.py\",\"bytes\":9408,\"sha256\":\"0ee54ef97c073857609aedb4670395db084ceacc7d28558315647ab2ffbef679\"},\"baseline\":{\"path\":\"/home/alex/work/pocket4-main-current-baseline-01/baseline.private.json\",\"bytes\":41844,\"sha256\":\"163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266\"},\"qualification\":{\"path\":\"/home/alex/work/pocket4-main-current-baseline-01/qualification.json\",\"bytes\":1365,\"sha256\":\"f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6\"},\"current_epoch_sha256\":\"734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2\",\"source_manifest_sha256\":\"9bc710444bff9d90cb3375fd5acb155e0438e2a71a65348b23d4483cf81d00f9\",\"historical_epoch_sha256\":\"48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f\",\"historical_main_canonical_sha256\":\"90c61236553cee087605abe5bf852e94ac489305a4989881e3cf6a4be34e35ab\",\"baseline_actual_stdout\":{\"bytes\":7986,\"sha256\":\"4abe5092fe075e78602928d231987ac4a8394a72024dd2a535d8cff80d1ca066\"},\"private_baseline_body_exported\":false,\"historical_epoch_reauthorized\":false,\"current_identity_does_not_resolve_framework_exit_cause\":true,\"independent_owned_runtime_admission_required\":true}")
++
++
+ class MainFence:
+-    """Read-only original process/cgroup authorities; never signals or enters Main."""
++    """Current seven-role read-only fence; old deployment remains lineage only."""
+     def __init__(self, plan, actor):
+-        self.expected = plan["main"]; self.actor = actor; self.processes = {}; self.group = None
++        self.expected = plan["main"]; self.actor = actor
++        self.processes = {}; self.group = None; self.current = None
++        self.guard = None; self.guard_source = None; self.rows = None
++        self.close_errors = []
+         try:
+-            rows = dict(self.expected["framework_binding"]["processes"])
+-            rows.update(self.expected["retained_processes"])
+-            for role, value in rows.items():
++            need(plan.get("current_main") == CURRENT_MAIN_AUTHORITY,
++                 "exact current Main authority is required; historical epoch is not current")
++            need(sha(json.dumps(self.expected, sort_keys=True, separators=(",", ":")).encode()) ==
++                 CURRENT_MAIN_AUTHORITY["historical_main_canonical_sha256"],
++                 "historical Main deployment lineage changed")
++            self.guard_source = self.read_guard()
++            self.guard = types.ModuleType("owner20_current_baseline_guard")
++            self.guard.__file__ = CURRENT_MAIN_AUTHORITY["guard"]["path"]
++            exec(compile(self.guard_source, self.guard.__file__, "exec"), self.guard.__dict__)
++            need(self.guard.MAIN_EPOCH == CURRENT_MAIN_AUTHORITY["current_epoch_sha256"] and
++                 self.guard.BASELINE_SHA == CURRENT_MAIN_AUTHORITY["baseline"]["sha256"] and
++                 self.guard.QUALIFICATION_SHA == CURRENT_MAIN_AUTHORITY["qualification"]["sha256"] and
++                 self.guard.SOURCE_MANIFEST_SHA == CURRENT_MAIN_AUTHORITY["source_manifest_sha256"],
++                 "current guard constants differ from explicit authority")
++            self.current = self.guard.current_baseline()
++            need(self.current["schema"] == "pocket4-main-current-baseline-v1" and
++                 self.current["kind"] == "current-framework-generation" and
++                 self.current["deployment_performed"] is False and
++                 "main_deployed" not in self.current and
++                 self.current["old_epoch_sha256"] == self.expected["framework_sha256"] ==
++                 CURRENT_MAIN_AUTHORITY["historical_epoch_sha256"] and
++                 self.current["framework_epoch"]["sha256"] == CURRENT_MAIN_AUTHORITY["current_epoch_sha256"] and
++                 self.current["limits"] == self.expected["resources"],
++                 "current baseline must remain distinct from historical deployment")
++            self.rows = self.current["all_seven_processes"]["binding"]["processes"]
++            need(set(self.rows) == {"android_init", "daemon", "launcher", "presenter",
++                                   "surfaceflinger", "system_server", "zygote64"},
++                 "exact current seven-role set required")
++            for role, value in self.rows.items():
+                 fd = os.pidfd_open(value["host_pid"])
+                 self.processes[role] = fd
+             self.group = os.open("/sys/fs/cgroup/system.slice/droidloomd.service",
+@@ -243,16 +275,25 @@
+             actor["require_cgroup2"](self.group)
+             s = os.fstat(self.group); self.identity = (s.st_dev, s.st_ino)
+             self.check()
+-        except BaseException:
+-            self.close(); raise
++        except BaseException as primary:
++            try: self.close()
++            except BaseException as closing:
++                primary.add_note("current Main fence constructor close failed: " + type(closing).__name__)
++            raise
+ 
++    @staticmethod
++    def read_guard():
++        pin = CURRENT_MAIN_AUTHORITY["guard"]
++        raw = read_pinned(pin["path"], pin["sha256"], 16384)
++        need(len(raw) == pin["bytes"], "current guard length differs")
++        return raw
++
+     def capture(self, fd):
+         value, directory = self.actor["identity"](fd)
+         try:
+             return {"host_pid": value["pid"], "parent_host_pid": value["parent"], "start_ticks": value["birth"],
+                     "uids": value["uids"], "namespace_pids": value["nspid"],
+-                    # Match the pinned framework epoch representation of argv padding
+-                    # only for this read-only Main view; actor/launch argv stays strict.
++                    # Keep the original epoch representation of argv padding.
+                     "cmdline": [argument for argument in value["cmdline"] if argument],
+                     "cgroup": value["cgroup"], "executable": os.readlink("exe", dir_fd=directory),
+                     "namespaces": {name: os.readlink("ns/" + name, dir_fd=directory) for name in ("mnt", "pid")}}
+@@ -260,27 +301,63 @@
+             os.close(directory)
+ 
+     def check(self):
++        need(not self.close_errors and self.group is not None and len(self.processes) == 7,
++             "current Main fence is not fully held")
++        need(self.read_guard() == self.guard_source, "published current guard changed")
++        proof = self.guard.current_guard(self.current, action_attempted=False)
++        need(proof["schema"] == "pocket4-current-main-guard-v1" and
++             proof["Main_epoch_sha256"] == CURRENT_MAIN_AUTHORITY["current_epoch_sha256"] and
++             proof["current_baseline_sha256"] == CURRENT_MAIN_AUTHORITY["baseline"]["sha256"] and
++             proof["current_baseline_qualification_sha256"] == CURRENT_MAIN_AUTHORITY["qualification"]["sha256"] and
++             all(proof[name] is True for name in
++                 ("seven_processes_match", "three_host_processes_match", "resource_limits_match",
++                  "current_executable_and_root_backing_match")) and
++             proof["framework_exit_cause_resolved"] is False and proof["production_ready"] is False,
++             "current Main full guard did not preserve its exact qualification")
+         e = self.expected
+         current = props("droidloomd.service")
+         need(current.get("ActiveState") == "active" and all(current.get(k) == v for k, v in e["daemon"].items()),
+              "original Main unit generation changed")
+-        need(Path("/proc/sys/kernel/random/boot_id").read_text().strip() == e["framework_binding"]["boot_id"], "boot identity changed")
+-        expected = dict(e["framework_binding"]["processes"]); expected.update(e["retained_processes"])
+-        for role, value in expected.items():
+-            need(self.capture(self.processes[role]) == value, "Main original process changed: " + role)
++        need(Path("/proc/sys/kernel/random/boot_id").read_text().strip() ==
++             self.current["all_seven_processes"]["binding"]["boot_id"] ==
++             e["framework_binding"]["boot_id"], "boot identity changed")
++        for role, value in self.rows.items():
++            need(self.capture(self.processes[role]) == value, "current Main held process changed: " + role)
++        held = os.fstat(self.group)
+         path = os.stat("/sys/fs/cgroup/system.slice/droidloomd.service", follow_symlinks=False)
+-        need((path.st_dev, path.st_ino) == self.identity, "Main cgroup generation changed")
++        need((held.st_dev, held.st_ino) == (path.st_dev, path.st_ino) == self.identity,
++             "Main cgroup generation changed")
+         for key, value in e["resources"].items():
+             need(self.actor["bounded"](self.group, key, 128).decode().strip() == value, "Main resource changed: " + key)
+         for path, digest in e["artifacts"].items():
+             os.close(self.actor["pinned"](path, digest, path.startswith("/usr/bin/")))
+-        return {"framework_sha256": e["framework_sha256"], "daemon": e["daemon"],
+-                "held_cgroup_identity": list(self.identity), "resources": e["resources"],
+-                "original_processes_alive_and_unchanged": True, "installed_contract_unchanged": True}
++        # A process death during the original artifact checks cannot qualify.
++        for role, value in self.rows.items():
++            need(self.capture(self.processes[role]) == value, "current Main process changed at fence end: " + role)
++        need(self.guard.current_guard(self.current, action_attempted=False) == proof,
++             "current Main guard changed during held checks")
++        return {"schema": "pocket4-owner20-current-main-fence-v1",
++                "framework_sha256": CURRENT_MAIN_AUTHORITY["current_epoch_sha256"],
++                "current_baseline_sha256": CURRENT_MAIN_AUTHORITY["baseline"]["sha256"],
++                "current_qualification_sha256": CURRENT_MAIN_AUTHORITY["qualification"]["sha256"],
++                "current_guard_sha256": CURRENT_MAIN_AUTHORITY["guard"]["sha256"],
++                "historical_framework_sha256": e["framework_sha256"],
++                "historical_main_canonical_sha256": CURRENT_MAIN_AUTHORITY["historical_main_canonical_sha256"],
++                "daemon": e["daemon"], "held_cgroup_identity": list(self.identity), "resources": e["resources"],
++                "current_seven_processes_alive_and_unchanged": True, "installed_contract_unchanged": True,
++                "old_epoch_reauthorized": False, "new_deployment_performed": False,
++                "framework_exit_cause_resolved": False, "production_ready": False,
++                "private_baseline_body_exported": False, "current_guard": proof}
+ 
+     def close(self):
+-        for fd in self.processes.values(): os.close(fd)
+-        self.processes.clear()
+-        if self.group is not None: os.close(self.group); self.group = None
+-
++        # Remove each descriptor from ownership before one close attempt. A
++        # failed close remains failure; it is never retried against a reused fd.
++        descriptors = list(self.processes.values()); self.processes.clear()
++        if self.group is not None:
++            descriptors.append(self.group); self.group = None
++        for fd in descriptors:
++            try: os.close(fd)
++            except BaseException as error: self.close_errors.append(type(error).__name__)
++        if self.close_errors:
++            raise RuntimeError("current Main fence descriptor close failed: " + ",".join(self.close_errors))
+ 

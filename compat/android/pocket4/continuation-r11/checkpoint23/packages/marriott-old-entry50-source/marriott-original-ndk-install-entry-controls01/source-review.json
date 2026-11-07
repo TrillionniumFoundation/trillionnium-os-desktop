@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_UNRUN_HOST_CONTROLS",
+  "kind": "pocket4-original-ndk-install-entry-controls01",
+  "production_source_tree": "6b603c7628c9f8337dcb7201e99bbdc28ef60305",
+  "production_manifest": {
+    "bytes": 1054,
+    "sha256": "50dce3c5572a40562c1928264219173a61d92fb9f39a96be9feb956695ba8c2e"
+  },
+  "counts": {
+    "fixture": 38,
+    "manifest": 4,
+    "lease": 8
+  },
+  "expected_total": 50,
+  "source_changes": false,
+  "controls": {
+    "original38_byte_identical": {
+      "bytes": 17942,
+      "sha256": "cd367e402119d2f353acfd66e1e5431a149f6e38b5d6a28a630995c8dc795852",
+      "git_blob_sha1": "cbf61ed89191886c532f992bb197fd9f19fd17d3"
+    },
+    "external4": {
+      "bytes": 4681,
+      "sha256": "1bd278bd296084e46dd43b6dfc45420b85568a02c05e3823b11704fa14bd9e06",
+      "git_blob_sha1": "07ba3d98dd020cef51819dd7550399b7bebde87f"
+    },
+    "real_lease8": {
+      "bytes": 15887,
+      "sha256": "76cc5152605ab09abfb69b274cca003c4d36ed9ba5e3a40d222448ebf586a1b0",
+      "git_blob_sha1": "6ed55e2c38a27b5721c29f53b2534845e99578c3"
+    }
+  },
+  "control_scope": {
+    "Main_reads": 0,
+    "Android_commands": 0,
+    "children": 0,
+    "namespace_entry": false,
+    "installed_UID": null,
+    "actual_install_nonce_consumed": false,
+    "runtime_qualified": false,
+    "real_host_operations": [
+      "only fresh own root/source/step and private action-holder directories",
+      "seven source members are written and real FixedSources verifies their bytes",
+      "real flock EX|NB, one synthetic O_EXCL claim, second entry and wrong scope rejected",
+      "rename only below a new root-owned 0700 holder; real named ancestor check rejects it",
+      "real independent lock contention",
+      "injected owned lock acquire error retains registered FD",
+      "injected step-unlock error remains failed while all tracked FDs close",
+      "exact known own files/directories removed without directory scanning"
+    ],
+    "paths": [
+      "/home/alex/work/p4-ndk-fixture-install-lease-controls01-20261106",
+      "/home/alex/work/p4-ndk-fixture-install-lease-controls01-20261106-action"
+    ],
+    "four_path_constants_explicit_IO_seams": true,
+    "synthetic_nonce_only": "11111111111111111111111111111111",
+    "no_actual_action_lock_open": true,
+    "no_raw_UI_or_private_baseline_read": true
+  },
+  "lifecycle": {
+    "inner_seconds": 45,
+    "outer_seconds": 60,
+    "lease_deadline_seconds": 30,
+    "resource_envelope": {
+      "memory_max_bytes": 268435456,
+      "cpu_quota_percent": 100,
+      "nice": 15
+    },
+    "root_required_for_owned_test_files": true,
+    "isolated_python_no_bytecode": true,
+    "fd_close_retries": false,
+    "unknown_FDs_closed": false,
+    "whole_invocation_resource_qualified": false,
+    "ambient_FD_equality_asserted": false,
+    "standard_library_import_IO_included_in_counters": false
+  },
+  "transport": {
+    "packet_bytes": 182628,
+    "packet_sha256": "51dce7655d3cdc63da55ec4686f695f2c88e0f12660efb57f6448b9c9e22991c",
+    "base64_bytes": 243504,
+    "base64_roundtrip_exact": true,
+    "template_slots": 3,
+    "source_only_install_request": false,
+    "controls_only": true
+  },
+  "local_python_executed": false,
+  "Root_only_dispatch": true,
+  "limits": [
+    "No install request is included; source-only production entry remains unbound.",
+    "No actual 50 PASS exists until Root executes this exact request and independently validates its terminal.",
+    "Original 38 PASS remains historical; all 38 methods will run again against current context/phases as part of this new 50.",
+    "The injected EIO is an expected negative control; the underlying lease observation keeps failure/released=false.",
+    "Successful controls prove host entry seams/FD logic, not Main/Android/package-manager policy or runtime."
+  ]
+}

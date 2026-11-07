@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_UNRUN",
+  "kind": "pocket4-wechat-one-apk-fstat-diagnostic-01",
+  "original_report": {
+    "bytes": 7768,
+    "sha256": "8fac7f6c2e8431fd58a1803f415206fa5a56556d96cdcf8c9d7a67a7d47ba2b7",
+    "git_blob_sha1": "1c87117a5c694fe97257d7b8328f98446d4a4060"
+  },
+  "original_metadata_source": {
+    "bytes": 30060,
+    "sha256": "faecbf9ae802c905e58316bf538b992121fa43082f8455739ac340caf08416ad",
+    "git_blob_sha1": "bfc8a5e35f04caf398823236a028281165d20db2"
+  },
+  "original_request": {
+    "bytes": 46267,
+    "sha256": "06a61da51556234d4dd06ed4a7533f2a973f5a9f78469f2adf98b4f33622c048",
+    "git_blob_sha1": "d9d337630def9dd3cf11d50271f3e5d70d4b03c2"
+  },
+  "original_failure_preserved": true,
+  "original_failed_predicate_at_failure_time": "UNKNOWN",
+  "original_uid_version": {
+    "package": "com.tencent.mm",
+    "uid": 10114,
+    "user": 0,
+    "version_code": 3220
+  },
+  "one_fixed_apk_path": "/data/app/~~7Nr5uTXd_mo6DbORr7S2Mg==/com.tencent.mm-RXKT7zh0aRVlBRMB6I8lKA==/base.apk",
+  "original_predicate_source": "            need(stat.S_ISREG(first['mode']) and first['nlink']==1 and\n                 first['uid']==first['gid']==1000 and not first['mode']&0o022 and\n                 0<first['bytes']<=FILE_LIMIT,'TICKET12306_INSTALLED_APK_SHAPE_OR_BOUND')",
+  "original_limit_bytes": 268435456,
+  "fixed_bindings": {
+    "kind": "pocket4-wechat-one-apk-fstat-diagnostic-01",
+    "package": "com.tencent.mm",
+    "result": {
+      "path": "/home/alex/work/pocket4-current-cell02-wechat-metadata-01/result.json",
+      "bytes": 7768,
+      "sha256": "8fac7f6c2e8431fd58a1803f415206fa5a56556d96cdcf8c9d7a67a7d47ba2b7"
+    },
+    "source": {
+      "path": "/home/alex/work/pocket4-current-cell02-wechat-metadata-01/source/read_target.py",
+      "bytes": 30060,
+      "sha256": "faecbf9ae802c905e58316bf538b992121fa43082f8455739ac340caf08416ad"
+    },
+    "observed_metadata": {
+      "package": "com.tencent.mm",
+      "uid": 10114,
+      "user": 0,
+      "version_code": 3220
+    },
+    "apk_path": "/data/app/~~7Nr5uTXd_mo6DbORr7S2Mg==/com.tencent.mm-RXKT7zh0aRVlBRMB6I8lKA==/base.apk"
+  },
+  "new_source": {
+    "bytes": 29298,
+    "sha256": "3f214b5bdd304ba2839369b8053f0cd48ab9dac271aa19c1f4e1bdb5a5ff52da",
+    "git_blob_sha1": "10053e779da201b01d5881210336f053a90ed3d6"
+  },
+  "exact_request": {
+    "bytes": 30864,
+    "sha256": "1f5fa86da227676cecba8de8e6d77bb3730b8ee6afb4ef8f194662815f27ad34",
+    "git_blob_sha1": "cb462a169c29bd8a8e2cb00f4d59d99662fcc86f"
+  },
+  "exact_stdin": {
+    "bytes": 29298,
+    "sha256": "3f214b5bdd304ba2839369b8053f0cd48ab9dac271aa19c1f4e1bdb5a5ff52da",
+    "git_blob_sha1": "10053e779da201b01d5881210336f053a90ed3d6"
+  },
+  "transport": {
+    "bytes": 407,
+    "sha256": "c5325d2b7c265502bc40c21d603f8a2af6009577f530b92891f6e0ad9ab96c4c",
+    "git_blob_sha1": "f8cd6c22a5223215f4685047356925ecfcb07b07"
+  },
+  "original_App_nonce_present_in_new_source": false,
+  "App_nonce_consumption": 0,
+  "filesystem_writes": 0,
+  "Android_commands": 0,
+  "children_spawned": 0,
+  "APK_content_reads": 0,
+  "directory_enumeration": false,
+  "namespace_entry": false,
+  "global_ambient_FD_equality_claimed": false,
+  "unchanged_R6_manifest": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff",
+  "unchanged_R6_guard": "96dbdaf7673d5298e6fe17cb1b7ebae29b37110ee59f31b0c927e2cb0ef4b150",
+  "unchanged_R6_held_runtime": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4",
+  "new_owned_read_scope": [
+    "Whole bound historical result and its exact metadata source, twice",
+    "Unchanged R6 SourceContract, current Main guard and qualified shared-helper source inputs",
+    "Existing action-lock file opened O_RDONLY, one nonblocking flock, no creation",
+    "Fixed current init proc/pidfd, six namespace FDs and held root",
+    "Four fixed APK ancestor components; only O_PATH/fstat/no-follow named stat on the one base.apk"
+  ],
+  "success_means": "Current fstat observation complete, unchanged named/held identity, original source and Main guards passed, all journal FDs closed; not APK metadata admission.",
+  "errors": "First error retained; each journal close attempted once; final Main/source/name/close/deadline failure forbids collection_complete.",
+  "validation": {
+    "V8_reproduction_and_static_contract_checks": "PASS",
+    "Python_compilation": "NOT_PERFORMED",
+    "Python_controls": "NOT_PERFORMED",
+    "device_execution": "UNRUN"
+  },
+  "peer_review": "NOT_PERFORMED; App agent prioritized current Main diagnostic",
+  "raw_originals_reencoded": false
+}

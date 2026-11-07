@@ -1,0 +1,35 @@
+--- IHG-launch01/read_summary.py
++++ IHG-public-search01/read_summary.py
+@@ -11,10 +11,10 @@
+ import stat
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-ihg-owned-launch-inspect-01')
+-FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r1-flow-399444a5b72d53139b880a4afefdb31a')
+-NONCE='399444a5b72d53139b880a4afefdb31a'
+-SOURCE_SHA='704bf0640c6a207ad8177dfc0240896cc785b6fa6db34521fbea5cd02e42a6fd'
++ROOT=Path('/home/alex/work/pocket4-ihg-public-search-entry-01')
++FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r1-flow-c66c450fdd017a27e7c352a7b011cb21')
++NONCE='c66c450fdd017a27e7c352a7b011cb21'
++SOURCE_SHA='866d1e3ac277745e07fbcb75dcc103df27d611427392ac00577b3224a7b8f8ad'
+ HELPER_UID=10196
+ FILES={
+     'coordinator.json':ROOT/'result.json',
+@@ -89,7 +89,7 @@
+     need(all(isinstance(x,str) and re.fullmatch('[0-9a-f]{64}',x) for x in (coordinator_sha,stage_sha)),
+          'EXTERNAL_EXACT_TERMINAL_PINS_REQUIRED')
+     expected={'coordinator.json':coordinator_sha,'stage.json':stage_sha}
+-    sizes={'coordinator.json':13631,'stage.json':1710}
++    sizes={'coordinator.json':39335,'stage.json':1717}
+     reader=Reader();files={};values={}
+     for name in ('coordinator.json','stage.json'):
+         path=FILES[name];raw=reader.read(path)
+@@ -125,7 +125,7 @@
+              value.get('helper_uid')==HELPER_UID and value.get('package')=='com.ihg.apps.android' and
+              value.get('uid')==10137,'EXACT_IHG_PHASE_SCOPE_REQUIRED:'+phase)
+         files[name]={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':raw.decode('utf-8','strict')}
+-    bundle={'schema':1,'scope':'fixed-IHG-launch01-terminal-parents-and-three-parent-bound-phase-results','files':files,
++    bundle={'schema':1,'scope':'fixed-IHG-public-search01-terminal-parents-and-three-parent-bound-phase-results','files':files,
+         'source_manifest_sha256':SOURCE_SHA,'flow_nonce':NONCE,'bytes_read':reader.bytes,
+         'raw_UI_or_commercial_journal_exported':False,'Android_or_process_actions':0,
+         'runtime_qualification_asserted':False,'permission_or_original_file_changes':0}

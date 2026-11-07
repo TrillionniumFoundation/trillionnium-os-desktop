@@ -1,0 +1,54 @@
+{
+  "schema": "pocket4-ihg-r4-install01-independent-failure-review-v1",
+  "actual_tree": "4b92aeacd6dad5f6e8fd04e862535a6e08b2ebed",
+  "originals": [
+    {
+      "name": "coordinator.json",
+      "bytes": 4492,
+      "sha256": "68eb201b47b803e324a2a9dc22759cb3275a2614192bdf3d9fdf7faa96fc4021",
+      "git_blob": "385f78021d19b2424b4d0808f883112f469f243c"
+    },
+    {
+      "name": "stage.json",
+      "bytes": 8730,
+      "sha256": "9cb3a2e79e25513d5cc9c41fa52dbf38f922609b53267a60d05994bd9eaca3b0",
+      "git_blob": "793b5e0b7fe7bb4c6aa544a49928420dd01463da"
+    },
+    {
+      "name": "worker.json",
+      "bytes": 6062,
+      "sha256": "b4938b5c0133cd1fa8a25106936a14be4f15c72f841b6286009e66264b7b6785",
+      "git_blob": "2a923c614acd96295fb3b6db0103c3b28ba67173"
+    },
+    {
+      "name": "worker-command.json",
+      "bytes": 1854,
+      "sha256": "26884bd5aa0afbf4d707fc79739d42f8389cde70bbd79c5de9a252755e0c5aac",
+      "git_blob": "403f70db00820b061cfeabc59aa14aaa061e67a8"
+    },
+    {
+      "name": "worker-stdout.json",
+      "bytes": 5594,
+      "sha256": "1ea1496c41ed5b7906f344d48a9a2c3a1499df59a4550f0d28e07a5af21247b0",
+      "git_blob": "7543e7a2c67d8156763ebae06bcedd35a631c1a8"
+    }
+  ],
+  "worker_error": {
+    "message": "UNEXPECTED_CELL_OWNER",
+    "phase": "held_Main_binding",
+    "type": "RuntimeError"
+  },
+  "all_eight_Main_receipts_exact_actual_R6": true,
+  "worker_command_returncode": 2,
+  "worker_command_joined": true,
+  "worker_stdout_exact_lossless_semantic_worker": true,
+  "all_51_preexisting_controls_passed": true,
+  "install_attempted": false,
+  "state_attempted": false,
+  "action_attempted": false,
+  "outcome_unknown": false,
+  "action_lock_released": true,
+  "shared_helper_whole_process_tree_cleanup_qualified": false,
+  "whole_app_production_ready": false,
+  "no_new_install_authorized_by_review": true
+}

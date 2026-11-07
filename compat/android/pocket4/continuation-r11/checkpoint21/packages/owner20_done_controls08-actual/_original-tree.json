@@ -1,0 +1,81 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "e6050a681c9e73a80f366fd445957c272879e824",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 1952,
+    "sha256": "3e1ec0cb83d6e9bf37908e11eb8ceee7ff07733ab57ccb51badac56f460dae28",
+    "git_blob_sha1": "e84b0bffb190c95bf3171c931322648754f7b20d",
+    "retrieval": "shallow roots and complete uncropped descendant trees until canonical dependency cuts",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ce299dc8c118f5060e81abea9ef4f5902564767a"
+    },
+    {
+      "path": "preflight",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "68b34e5887fb9ac17338456052fd439a0f830823"
+    },
+    {
+      "path": "root-actual-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0d9289284e1151b93cc7e5e6a2de2cc5e722d94a",
+      "bytes": 1869
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8e92d79f468852a3cd0a32f1197f23de22aee4cd"
+    },
+    {
+      "path": "stdout-read-proof.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "57829c21d4ac6ffe0ee0211763a66800d6927e6f",
+      "bytes": 628
+    },
+    {
+      "path": "stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "10c78532451bc70541e7367c24d2933e4ed93849",
+      "bytes": 65722
+    },
+    {
+      "path": "terminal.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "179f14adaad8c23f3ef6817ddadaae85df5467c7",
+      "bytes": 733
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "admission",
+      "original_tree": "ce299dc8c118f5060e81abea9ef4f5902564767a",
+      "checkpoint": 21,
+      "canonical_package": "owner20_done_controls08-admission"
+    },
+    {
+      "path": "preflight",
+      "original_tree": "68b34e5887fb9ac17338456052fd439a0f830823",
+      "checkpoint": 21,
+      "canonical_package": "owner20_done_controls08-preflight"
+    },
+    {
+      "path": "source",
+      "original_tree": "8e92d79f468852a3cd0a32f1197f23de22aee4cd",
+      "checkpoint": 21,
+      "canonical_package": "owner20_done_controls08-source"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

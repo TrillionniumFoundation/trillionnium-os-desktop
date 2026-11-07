@@ -1,0 +1,112 @@
+--- baseline/actor.py
++++ candidate/actor.py
+@@ -150,6 +150,77 @@
+         proc.close(); raise
+ 
+ 
++def property_capture_step(init, observed, audit, plan, prepared, modules,
++                          helper_fd, evidence, outer_deadline, admission):
++    """Admit one observer after the same held generation has accepted ABI3 DONE.
++
++    DONE is a lifecycle ordering prerequisite, not proof that PT_INTERP or
++    bionic is visible. Capture retains its own fresh root/ns/source checks.
++    Diagnostic failures are recorded here without replacing producer failure.
++    """
++    if admission['closed']:
++        return None
++    owned, qualify = modules['owned'], modules['qualify']
++    admission['checks'] += 1
++    admission['state'] = 'WAITING_INIT_DONE'
++    try:
++        now = time.monotonic_ns()
++        outer_ns = int(outer_deadline * 1_000_000_000)
++        owned.need(now + 2_000_000_000 < outer_ns, 'SDK_ADMISSION_WINDOW_EXHAUSTED')
++        owned.need(type(audit) is dict and audit['schema'] == 1 and
++                   audit['recording_incomplete'] is False and audit['recording_error'] is None and
++                   audit['first_failure'] is None and audit['retirement_failure'] is None and
++                   audit['cleanup_failure'] is None and audit['retained_after_exit'] is False,
++                   'SDK_ADMISSION_AUDIT_FAILED')
++        nonce = audit['nonce']
++        owned.need(qualify.hex64(nonce) and nonce == observed['generation_nonce'] and
++                   audit['canonical_spec_sha256'] == plan['canonical_spec_sha256'] and
++                   audit['host_uid'] == plan['spec']['host_uid'], 'SDK_ADMISSION_GENERATION_CHANGED')
++        admission['generation_nonce'] = nonce
++        records = audit['records']
++        expected = qualify.EVENTS[:8]
++        owned.need(type(records) is list and 3 <= len(records) <= 8 and
++                   [r['detail']['event'] for r in records] == expected[:len(records)] and
++                   [r['sequence'] for r in records] == list(range(1, len(records) + 1)),
++                   'SDK_ADMISSION_EVENT_ORDER')
++        times = [r['observed_monotonic_ns'] for r in records]
++        owned.need(all(type(x) is int and 0 < x <= now for x in times) and
++                   times == sorted(times), 'SDK_ADMISSION_AUDIT_TIME')
++        hello = records[2]
++        owned.need(hello['sequence'] == observed['audit_sequence'] and
++                   hello['observed_monotonic_ns'] == observed['audit_observed_monotonic_ns'],
++                   'SDK_ADMISSION_HELLO_CHANGED')
++        for key in ('process', 'namespaces', 'executable', 'executable_sha256'):
++            owned.need(hello['detail']['init'][key] == observed['snapshot'][key],
++                       'SDK_ADMISSION_HELLO_IDENTITY_CHANGED')
++        if len(records) < 8:
++            return None
++        details = {r['detail']['event']: r['detail'] for r in records}
++        qualify.qualify_init_v3(details, nonce)
++        init.live()
++        current = init.snapshot()
++        for key in ('process', 'namespaces', 'executable', 'executable_sha256'):
++            owned.need(current[key] == observed['snapshot'][key],
++                       'SDK_ADMISSION_HELD_INIT_CHANGED')
++        init.live()
++        after = time.monotonic_ns()
++        owned.need(now <= after and after + 2_000_000_000 < outer_ns,
++                   'SDK_ADMISSION_WINDOW_EXHAUSTED')
++        admission.update(state='CONSTRUCTING_ONCE', closed=True,
++                         construction_attempts=1, init_done_sequence=records[7]['sequence'],
++                         init_done_observed_monotonic_ns=times[7],
++                         fresh_held_init_before_ns=now, fresh_held_init_after_ns=after)
++        capture = modules['property_visibility'].Capture(
++            init, audit, plan, prepared, helper_fd, evidence, owned, outer_deadline)
++        admission['state'] = 'CONSTRUCTION_RETURNED'
++        return capture
++    except BaseException as error:
++        admission.update(state='FAILED', closed=True,
++            first_error={'type': type(error).__name__, 'error': repr(error)[:512],
++                         'errno': getattr(error, 'errno', None)})
++        return None
++
++
+ def run(args, prepared, plan, modules):
+     owned, support, prepare, qualify = (modules[x] for x in ('owned', 'pinned_support', 'prepare', 'qualify'))
+     result = {'schema': 1, 'kind': 'owner17-real-normal01', 'attempt_nonce': plan['attempt_nonce'],
+@@ -160,6 +231,12 @@
+     daemon = None; socket_id = None; stop_requested = False; before = None; start_attempted = False
+     crash_capture = None; crash_capture_attempted = False
+     property_capture = None; property_capture_attempted = False
++    property_admission = {'schema': 1, 'state': 'WAITING_HELLO', 'closed': False,
++        'checks': 0, 'generation_nonce': None, 'construction_attempts': 0,
++        'init_done_sequence': None, 'init_done_observed_monotonic_ns': None,
++        'fresh_held_init_before_ns': None, 'fresh_held_init_after_ns': None,
++        'first_error': None, 'DONE_proves_interpreter_visibility': False}
++    result['property_visibility_admission'] = property_admission
+     try:
+         owned.need(os.getuid() == os.geteuid() == os.getgid() == 0 and os.uname().machine == 'x86_64', 'real owned actor requires host root/x86_64')
+         state = owned.root_directory(plan['state']); evidence = owned.root_directory(plan['state'] + '/evidence')
+@@ -276,12 +353,12 @@
+             if crash_capture is not None:
+                 crash_capture.poll()
+             if 'init' in held and not property_capture_attempted:
+-                property_capture_attempted = True
+-                try:
+-                    property_capture = modules['property_visibility'].Capture(
+-                        held['init'], audit, plan, prepared, tools['sdk-visibility'], evidence, owned, end)
+-                except BaseException as error:
+-                    result['property_visibility_construction_error'] = repr(error)[:512]
++                property_capture = property_capture_step(
++                    held['init'], result['init_identity_clock_observation'], audit, plan,
++                    prepared, modules, tools['sdk-visibility'], evidence, end, property_admission)
++                property_capture_attempted = property_admission['closed']
++                if property_admission['first_error'] is not None:
++                    result['property_visibility_construction_error'] = property_admission['first_error']['error']
+             if property_capture is not None:
+                 property_capture.poll()
+             time.sleep(0.05)

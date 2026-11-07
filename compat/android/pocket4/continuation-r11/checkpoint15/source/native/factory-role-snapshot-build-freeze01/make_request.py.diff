@@ -1,0 +1,56 @@
+--- a/make_request.py
++++ b/make_request.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Freeze only a matching compile request; never dispatch or run a role grant."""
++"""Freeze only a matching compile request; never dispatch or execute an authorized snapshot."""
+ import argparse
+ import ast
+ import hashlib
+@@ -7,11 +7,11 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-CORE=HERE.parent/'factory-role-auth-positive-source-freeze02'
+-ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-02-20261105'
+-KEY='pocket4-role-authorization-positive-host-build-02-20261105'
+-MANIFEST_SHA='fda076982c0a26682eb3b6a596a6964e6645cf1eddc7b175e56d9b499c06fda2'
+-CONTROLLER_SHA='0dfeafc0dea6037ec189fb73ab9d6d268f55dc84691390f9dd8121c6ef17ebee'
++CORE=HERE.parent/'factory-role-snapshot-source-freeze01'
++ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorized-snapshot-host-build-01-20261105'
++KEY='pocket4-role-authorized-snapshot-host-build-01-20261105'
++MANIFEST_SHA='53e90ef34ab51ae8b9700f93419c3c050665fb0ea5a50482417b48aa860497e1'
++CONTROLLER_SHA='15e7f8ab241a89e71fae1135dcf5429f198253fb1515347aac1449046a3af77d'
+ 
+ def pin(raw):return {'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+ def write(path,data):
+@@ -25,16 +25,16 @@
+     if pin(raw)['sha256']!=MANIFEST_SHA:raise RuntimeError('immutable source authority differs')
+     authority={row['path']:row for row in json.loads(raw)['files']}
+     expected=json.loads((HERE/'source-inputs.json').read_text())
+-    if len(expected)!=5:raise RuntimeError('exact five source inputs required')
+-    files={'role-source-pins.json':raw.decode()}
++    if len(expected)!=13:raise RuntimeError('exact thirteen source/reference inputs required')
++    files={'snapshot-source-pins.json':raw.decode()}
+     for name,row in expected.items():
+         data=(CORE/name).read_bytes()
+         if pin(data)!=row or any(authority[name][key]!=row[key]for key in ['bytes','sha256']):
+             raise RuntimeError('frozen input differs: '+name)
+         files[name]=data.decode()
+-    controller=(HERE/'build_registry.py').read_bytes()
++    controller=(HERE/'build_snapshot.py').read_bytes()
+     if pin(controller)['sha256']!=CONTROLLER_SHA:raise RuntimeError('matching controller differs')
+-    files['build_registry.py']=controller.decode()
++    files['build_snapshot.py']=controller.decode()
+     pins={name:pin(text.encode())for name,text in files.items()}
+     stage='''import hashlib,json,os,stat
+ from pathlib import Path
+@@ -72,7 +72,7 @@
+         if (after.st_dev,after.st_ino,after.st_uid,after.st_gid,stat.S_IMODE(after.st_mode))!=(66306,34351895,1000,1000,0o700)or (after.st_dev,after.st_ino)!=(named.st_dev,named.st_ino):
+             raise RuntimeError('private parent changed during create-only staging')
+     finally:os.close(parent)
+-    os.execve('/usr/bin/python3',['/usr/bin/python3','-I','-B',str(source/'build_registry.py'),'--execute-once'],
++    os.execve('/usr/bin/python3',['/usr/bin/python3','-I','-B',str(source/'build_snapshot.py'),'--execute-once'],
+               {'PATH':'/usr/bin:/bin','LANG':'C','LC_ALL':'C'})
+ '''%(ROOT,pins)
+     entry=stage+'\nPACKET=json.loads('+repr(json.dumps(files,sort_keys=True))+')\nmain(PACKET)\n'

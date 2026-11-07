@@ -1,0 +1,223 @@
+--- R1/INPUTS.json
++++ R2/INPUTS.json
+@@ -1,22 +1,30 @@
+ {
+   "APK": {
+     "bytes": 24720,
+-    "path": "/home/alex/work/pocket4-owned-bestbuy-qa-r1-build-01/owned-bestbuy-qa.apk",
+-    "sha256": "33bc63541bc4bc4a42503bd1205f96c8e09f203e5ee512fed3a5e0c426720646"
++    "path": "/home/alex/work/pocket4-owned-bestbuy-qa-r2-build-02/owned-bestbuy-qa.apk",
++    "sha256": "2959c657a8c0c970da80f45b5986aa34d63b0faa8df6cd0c0010a0d730a1bc54"
+   },
+   "Bili_Flow_used": false,
+   "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+   "UiAutomation_requested": false,
+-  "actual_build_job": "1a1ae188f2b-fc05-5d5f",
++  "actual_build_job": "1a1aec5bd99-fc05-623a",
+   "actual_build_review": {
+-    "bytes": 2004,
+-    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/bestbuy-r1-build01/root-actual-review.json",
+-    "sha256": "5bfd269b4f29f6375f9cc3abc5bfe19300845b47d7272d8cbccf927fbbb4cc28"
++    "bytes": 3371,
++    "git_blob_sha": "395ae391d2508abb567332753e2d958322e49e21",
++    "package_relative_path": "actual-build-review.json",
++    "sha256": "058d5314d4416169ee8cd998228e192538cd9c6b198f65cf1ebc219db4a44de9"
+   },
++  "actual_protocol_controls": {
++    "Java_scanner_executed": false,
++    "cases": 16,
++    "state": "PASS_PROTOCOL_CONTROLS_ONLY",
++    "synthetic_only": true
++  },
++  "build_commands": 12,
+   "build_receipt": {
+-    "bytes": 17438,
+-    "path": "/home/alex/work/pocket4-owned-bestbuy-qa-r1-build-01/build-result.json",
+-    "sha256": "e0cdcc62bd7e59b696864ce0e244e2c5f441707692c334758dd0e343c6d095cd"
++    "bytes": 19100,
++    "path": "/home/alex/work/pocket4-owned-bestbuy-qa-r2-build-02/build-result.json",
++    "sha256": "b4e419dca29b41925f86766a904412fbaf13a46fa64d9c3a51e3487a19334158"
+   },
+   "commands": 13,
+   "helper_UID": "MUST_BE_OBSERVED_AFTER_NEW_INSTALL",
+@@ -35,19 +43,21 @@
+     "worker_child_seconds": 190
+   },
+   "nonces": {
+-    "install_nonce": "1a52aa80a32d02e2ed1b8e00f7f76875",
+-    "state_nonce": "d729c482ea77502f37ebd7a5ec57d115"
++    "install_nonce": "2501969dfcbe4bb492e5401c0bfcf420",
++    "state_nonce": "233184c3820388b9fb3567c7ec726cbb"
+   },
+   "old_v2_helper_called": false,
+-  "owned_package": "org.droidloom.qa.bestbuy.r1",
++  "owned_package": "org.droidloom.qa.bestbuy.r2",
++  "previous_R1_source_and_receipts_modified": false,
++  "previous_helper_UID_excluded": 10198,
+   "purpose": "Install one exact new BestBuy self-instrumentation helper and observe no-UiAutomation state once",
+   "schema": 1,
+-  "signer_certificate_sha256": "0c8d51e314e4f8bdff2febd869845752562db7cd7c4182781ff748e479176918",
+-  "source_manifest_sha256": "1dc5ae021d8b4d3165ac81dd09aef7035651118a9a81380139bdd1caaef668f8",
++  "signer_certificate_sha256": "a9e3b67e42cab6f94aa3679ea71bdcc74be04f8aa93d3534b0923d4367c6e7ea",
++  "source_manifest_sha256": "f7f13e75bf38518581581a2851714a3bb67a169dddeec1d444de2150398f01f9",
+   "stage_receipt": {
+     "bytes": 1951,
+-    "path": "/home/alex/work/pocket4-owned-bestbuy-qa-r1-source-01/stage-result.json",
+-    "sha256": "c01137e4488d93d9d878fe6007c03b99e7bef328a25303591dd0510369984b83"
++    "path": "/home/alex/work/pocket4-owned-bestbuy-qa-r2-source-02/stage-result.json",
++    "sha256": "45eee95f5bb1438a7696a89c0fb0f19469c63b58bb9ceb3a068a1da5c5e1a0f5"
+   },
+   "state": "ACTUAL_STATIC_BUILD_BOUND_INSTALL_STATE_ANDROID_UNRUN",
+   "target": {
+--- R1/README.md
++++ R2/README.md
+@@ -1,7 +1,9 @@
+-# BestBuy R1 install and state
++# BestBuy R2 install and state
+ 
+ This fixed request installs the actual signed owned helper once, only if absent across all users and retained records. It runs one state observation with no UiAutomation connection, commercial App launch, UI action, settings write, permission grant or audio action.
+ 
+ The original held Main identity, source, command, APK and cleanup gates remain. All three commercial APK files are revalidated before and after. The thirteen-command plan and bounded resources are unchanged. The new helper UID must be read from the actual install; it is not guessed. The owned helper remains installed for a separately reviewed fresh UI flow. Failed or unknown installs are never automatically repeated or uninstalled.
+ 
++R2 binds the actual 12-command build and its 16 synthetic protocol controls. The old R1 helper UID 10198 is excluded from new identity binding; no helper UID is guessed. All three original commercial APK identities and nanosecond literals remain byte-exact. R1 source and failure receipts remain unchanged. The R2 tree depth change has not yet been exercised on a device.
++
+ This request has not been dispatched. Whole-App production readiness is false.
+--- R1/SOURCE_PINS.json
++++ R2/SOURCE_PINS.json
+@@ -1,28 +1,28 @@
+ {
+   "files": {
+     "INPUTS.json": {
+-      "bytes": 2473,
+-      "sha256": "1bf0f564fb668145f3c592dfae6a05125df8411ca9b3ed21574360fbbb1ce041"
++      "bytes": 2748,
++      "sha256": "30a61d124711a9543f1e285a99d923053bd04f29dbba46178a6ae1217a0dd41e"
+     },
+     "README.md": {
+-      "bytes": 815,
+-      "sha256": "d927ff9145f1d16c2261dd49d4e718f5835e80575f67405187cdccd1467d90fe"
++      "bytes": 1188,
++      "sha256": "f01a07ad6a3259fec8d998c6c4b3efe9d36ea5a614400f1ea6a0929960eb46c5"
+     },
+     "bestbuy_context.py": {
+       "bytes": 13630,
+-      "sha256": "98af604df47d1d1920e369a95cdad5026d2343b557a6498a2bf76e1b2bcb8c95"
++      "sha256": "37b873c14c40ef34eaebb279ee22691aea7b72eb3655dd6bfc6574bae77e2c84"
+     },
+     "bestbuy_transport.py": {
+       "bytes": 15605,
+       "sha256": "36cec8512f5ebad3f06c662dc896bebd62fb20ac496042f8e982d2e36f4c7cf8"
+     },
+     "install_state.py": {
+-      "bytes": 32676,
+-      "sha256": "21eeb9f26f467ce4287d1edce0cdedc6be983fc0b2226cdceb19fdd65b92b9ed"
++      "bytes": 32682,
++      "sha256": "563ce3479ea5513b76cf30046095cb1404c5e8889da21c57c84220bc140348da"
+     },
+     "make_request.py": {
+       "bytes": 3045,
+-      "sha256": "d6b1e73aeb9b66d1235cd00ad21d6694596d549e0e7e2f7527912b8df402b7b8"
++      "sha256": "141fe1242d6a5fdc7c57521b3af3996dcbc01d166e181997fc4664e0ec4e9bfd"
+     },
+     "references/read_bestbuy.py": {
+       "bytes": 21069,
+@@ -34,7 +34,7 @@
+     },
+     "stage_execute.py": {
+       "bytes": 5793,
+-      "sha256": "a23ccb27aef06a9ab7ac790534837145e320dd96b8d336a06b522ce8984b29ac"
++      "sha256": "12dd1353906611f1f64af95373c943816e253544cc770285694a79041714ac23"
+     },
+     "target-artifact-reference.json": {
+       "bytes": 2863,
+--- R1/bestbuy_context.py
++++ R2/bestbuy_context.py
+@@ -44,7 +44,7 @@
+ 
+ def ordered_commands(qa, self_package, guest_apk, state_nonce):
+     require(qa.PACKAGE == PACKAGE and qa.UID == UID and
+-            qa.SELF == self_package == 'org.droidloom.qa.bestbuy.r1', 'EXACT_BESTBUY_QA_SOURCE_REQUIRED')
++            qa.SELF == self_package == 'org.droidloom.qa.bestbuy.r2', 'EXACT_BESTBUY_QA_SOURCE_REQUIRED')
+     state = {'protocol':qa.PROTOCOL,'nonce':state_nonce,'op':'state'}
+     qa.validate_request(state)
+     own_uid = ['/system/bin/cmd','package','list','packages','-U','--user','0',self_package]
+--- R1/install_state.py
++++ R2/install_state.py
+@@ -21,25 +21,25 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r1-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-install-state-01')
+ SOURCE = ROOT/'source'
+ WORKER_ROOT = ROOT/'worker'
+ STEP = WORKER_ROOT/'steps/install-state-01'
+-NONCE = '1a52aa80a32d02e2ed1b8e00f7f76875'
+-STATE_NONCE = 'd729c482ea77502f37ebd7a5ec57d115'
+-SELF = 'org.droidloom.qa.bestbuy.r1'
+-QA_ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r1-source-01/source')
+-QA_MANIFEST = '1dc5ae021d8b4d3165ac81dd09aef7035651118a9a81380139bdd1caaef668f8'
+-BUILD = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r1-build-01/build-result.json')
+-BUILD_SHA = 'e0cdcc62bd7e59b696864ce0e244e2c5f441707692c334758dd0e343c6d095cd'
+-BUILD_BYTES = 17438
+-STAGE = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r1-source-01/stage-result.json')
+-STAGE_SHA = 'c01137e4488d93d9d878fe6007c03b99e7bef328a25303591dd0510369984b83'
++NONCE = '2501969dfcbe4bb492e5401c0bfcf420'
++STATE_NONCE = '233184c3820388b9fb3567c7ec726cbb'
++SELF = 'org.droidloom.qa.bestbuy.r2'
++QA_ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-source-02/source')
++QA_MANIFEST = 'f7f13e75bf38518581581a2851714a3bb67a169dddeec1d444de2150398f01f9'
++BUILD = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-build-02/build-result.json')
++BUILD_SHA = 'b4e419dca29b41925f86766a904412fbaf13a46fa64d9c3a51e3487a19334158'
++BUILD_BYTES = 19100
++STAGE = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-source-02/stage-result.json')
++STAGE_SHA = '45eee95f5bb1438a7696a89c0fb0f19469c63b58bb9ceb3a068a1da5c5e1a0f5'
+ STAGE_BYTES = 1951
+-APK = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r1-build-01/owned-bestbuy-qa.apk')
+-APK_SHA = '33bc63541bc4bc4a42503bd1205f96c8e09f203e5ee512fed3a5e0c426720646'
++APK = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-build-02/owned-bestbuy-qa.apk')
++APK_SHA = '2959c657a8c0c970da80f45b5986aa34d63b0faa8df6cd0c0010a0d730a1bc54'
+ APK_BYTES = 24720
+-SIGNER_SHA = '0c8d51e314e4f8bdff2febd869845752562db7cd7c4182781ff748e479176918'
++SIGNER_SHA = 'a9e3b67e42cab6f94aa3679ea71bdcc74be04f8aa93d3534b0923d4367c6e7ea'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ READER_SHA = 'ce4ff1399953fe0d5e89bc0210ae9cdb323d1e08e436327df1521f6cb167ef77'
+ GUEST_DIR_NAME = 'pocket4-owned-bestbuy-qa-'+NONCE
+@@ -193,7 +193,7 @@
+     match = re.fullmatch(re.escape('package:'+SELF+' uid:') + r'([0-9]+)\n', text)
+     require(match is not None, 'ONE_EXACT_NEW_PACKAGE_UID_REQUIRED')
+     uid = int(match[1])
+-    require(10000 <= uid < 100000 and uid not in (10130,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190,10137,10196), 'NEW_APP_UID_REQUIRED')
++    require(10000 <= uid < 100000 and uid not in (10130,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190,10137,10196,10198), 'NEW_APP_UID_REQUIRED')
+     return uid
+ 
+ class OwnedApk:
+--- R1/make_request.py
++++ R2/make_request.py
+@@ -7,9 +7,9 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-bestbuy-qa-r1-install-state-01-20261105'
+-ROOT='/home/alex/work/pocket4-owned-bestbuy-qa-r1-install-state-01'
+-NONCE='1a52aa80a32d02e2ed1b8e00f7f76875'
++KEY='pocket4-owned-bestbuy-qa-r2-install-state-01-20261106'
++ROOT='/home/alex/work/pocket4-owned-bestbuy-qa-r2-install-state-01'
++NONCE='2501969dfcbe4bb492e5401c0bfcf420'
+ 
+ 
+ def sha(raw):
+--- R1/stage_execute.py
++++ R2/stage_execute.py
+@@ -7,9 +7,9 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r1-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-install-state-01')
+ SOURCE = ROOT/'source'
+-NONCE = '1a52aa80a32d02e2ed1b8e00f7f76875'
++NONCE = '2501969dfcbe4bb492e5401c0bfcf420'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ FILES = {'install_state.py','bestbuy_context.py','bestbuy_transport.py','stage_execute.py',
+     'make_request.py','INPUTS.json','README.md','references/readonly_r3_coordinator.py',

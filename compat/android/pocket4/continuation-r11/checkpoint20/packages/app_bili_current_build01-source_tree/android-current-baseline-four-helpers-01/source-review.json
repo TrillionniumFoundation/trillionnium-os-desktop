@@ -1,0 +1,182 @@
+{
+  "schema": "pocket4-four-current-baseline-helper-source-review-v1",
+  "state": "SOURCE_FROZEN_STATIC_BUILDS_NOT_RUN",
+  "actual_result": {
+    "path": "actual/baseline-result.stdout",
+    "bytes": 7986,
+    "sha256": "4abe5092fe075e78602928d231987ac4a8394a72024dd2a535d8cff80d1ca066",
+    "blob": "813c03c26856513f4178bcd1665775bfc2a33848"
+  },
+  "qualification_and_guard_provenance": "Root reconstructed exact bytes from the already reviewed publisher and actual stdout pins; bytes and SHA256 match actual published pins. They were not independently read back from their private on-host paths.",
+  "actual_epoch": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+  "actual_baseline": {
+    "bytes": 41844,
+    "path": "/home/alex/work/pocket4-main-current-baseline-01/baseline.private.json",
+    "sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266"
+  },
+  "actual_qualification": {
+    "bytes": 1365,
+    "path": "/home/alex/work/pocket4-main-current-baseline-01/qualification.json",
+    "sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6"
+  },
+  "actual_guard": {
+    "bytes": 9408,
+    "path": "/home/alex/work/pocket4-main-current-baseline-01/current_baseline_guard.py",
+    "sha256": "0ee54ef97c073857609aedb4670395db084ceacc7d28558315647ab2ffbef679"
+  },
+  "compiler": {
+    "bytes": 21287,
+    "sha256": "28962ddca83175b169db23b840b96b418e651b3ba9150d6b7f66b52eab3669c2",
+    "blob": "cc2fa4e05e3098a51c660b10c22d30c8900bddb6"
+  },
+  "compiler_execution": "Actual exact input passed the frozen pure V8 source compiler; all four parent manifest closures and inverse substitutions passed.",
+  "static_validation": {
+    "V8_source_compiler_executed": true,
+    "generated_packet_all_source_bytes_checked": true,
+    "python_execution": false,
+    "javac_execution": false,
+    "new_scope_controls_pending": 12,
+    "device_actions": 0
+  },
+  "helpers": {
+    "bili": {
+      "helper": "org.droidloom.qa.bili.r9",
+      "protocol": "pocket4-owned-bili-qa-v9",
+      "target": "tv.danmaku.bili",
+      "uid": 10117,
+      "source_files": 16,
+      "source_manifest": {
+        "bytes": 3925,
+        "sha256": "92e4d1a35741119f8ec7352772cc9485ade20a62a5030d4f59034aef5454137c"
+      },
+      "request": {
+        "bytes": 265262,
+        "sha256": "3391bcb13a49b8578444f7efa19cb4ffedea5a7edda924108277fca5aa104202",
+        "blob": "b567e2160b8a907410e901f34ef0a4255b85f61a"
+      },
+      "packet": {
+        "bytes": 255007,
+        "sha256": "fad8cb45cb830e82f36bd82807370c3fe5eb9a3892bbe2279b2118ae16d6db8b"
+      },
+      "diff": {
+        "bytes": 8078,
+        "sha256": "506d9b4d87e6494104250bc44315523826a692adb401504c39c9e78bb2359a8a"
+      },
+      "inverse_verified_files": 12,
+      "old_json_files_byte_exact": 1,
+      "new_helper_uid": null,
+      "APK_sha256": null,
+      "signer": null
+    },
+    "ihg": {
+      "helper": "org.droidloom.qa.ihg.r2",
+      "protocol": "pocket4-owned-ihg-qa-v2",
+      "target": "com.ihg.apps.android",
+      "uid": 10137,
+      "source_files": 12,
+      "source_manifest": {
+        "bytes": 3254,
+        "sha256": "dcad23d6fa1c616978dac7dc2e47a9ef1c944962b15529c87c652e7fb6ed1a91"
+      },
+      "request": {
+        "bytes": 153754,
+        "sha256": "a27920fd55e386d5814defd73f65a86fa8e74d0c44cf3292864af2e9ffab86b4",
+        "blob": "c3c4a614c62bca11e6e4a4e6a5ce50b77aa2dac3"
+      },
+      "packet": {
+        "bytes": 147293,
+        "sha256": "9fcdcabe64313016dceb73259d111a61366516ab01cdddcc34a7406e655a8b37"
+      },
+      "diff": {
+        "bytes": 7368,
+        "sha256": "0d826d6d6c4ec3be0e09a962cd582b4439499fc8f448f7ff7624064ec1647130"
+      },
+      "inverse_verified_files": 7,
+      "old_json_files_byte_exact": 2,
+      "new_helper_uid": null,
+      "APK_sha256": null,
+      "signer": null
+    },
+    "amazon": {
+      "helper": "org.droidloom.qa.amazon.r3",
+      "protocol": "pocket4-owned-amazon-qa-v3",
+      "target": "com.amazon.mShop.android.shopping",
+      "uid": 10129,
+      "source_files": 15,
+      "source_manifest": {
+        "bytes": 3755,
+        "sha256": "7c705a0d8fea33eae26c99e16d0d6ac72d3bb4b150c9b1972a65a8f2c5ef7264"
+      },
+      "request": {
+        "bytes": 201279,
+        "sha256": "99f133315681b5c345febbebe5ca95849765c1155a1272a5c6f989fd197036b1",
+        "blob": "e8f8305d181d0141ded3c553fd7efa8790ae5e70"
+      },
+      "packet": {
+        "bytes": 193138,
+        "sha256": "8ea3af43881df3259aa7cc1b8e5ee61bbdc9d02873b5b2ccddc8e65d0766493d"
+      },
+      "diff": {
+        "bytes": 8181,
+        "sha256": "48c26b637208e4f40e481df466a99601c5c0a54498886dc36f39eae8da12367c"
+      },
+      "inverse_verified_files": 10,
+      "old_json_files_byte_exact": 2,
+      "new_helper_uid": null,
+      "APK_sha256": null,
+      "signer": null
+    },
+    "bestbuy": {
+      "helper": "org.droidloom.qa.bestbuy.r3",
+      "protocol": "pocket4-owned-bestbuy-qa-v3",
+      "target": "com.bestbuy.android",
+      "uid": 10130,
+      "source_files": 13,
+      "source_manifest": {
+        "bytes": 3418,
+        "sha256": "22dc1c5981ea2e1b0310450529f851bc0deecd14de23435eb8311010f0e7d734"
+      },
+      "request": {
+        "bytes": 169518,
+        "sha256": "8582e1b15d76a55aecd0ed8f31c2c8041fc267879c1fbaad037ba1296bdafa8c",
+        "blob": "6318cd29e181dcaaf4a873ce5a9279102e19eaaa"
+      },
+      "packet": {
+        "bytes": 162447,
+        "sha256": "5dce009aa525db1c635f788d2522008788ce2e2ca3ff9cf590a416f6c4862eee"
+      },
+      "diff": {
+        "bytes": 8329,
+        "sha256": "6cb23d63bcdd7a631a187310831c443c0255ee263a93e250b5670877ac3d94d3"
+      },
+      "inverse_verified_files": 8,
+      "old_json_files_byte_exact": 2,
+      "new_helper_uid": null,
+      "APK_sha256": null,
+      "signer": null
+    }
+  },
+  "preserved": [
+    "original action full-tree/window/node refresh guards",
+    "original one-action and unknown-stop semantics",
+    "Bili R8 idle gate and R7 player transaction",
+    "Amazon R2 idle gate",
+    "BestBuy R2 deep-tree complete/incomplete gate",
+    "IHG R1 read/inspect/click-only operations",
+    "all original target artifact JSON bytes",
+    "all existing tool source pins and static resource budgets"
+  ],
+  "new_required_scope_fields": [
+    "main_baseline_schema",
+    "main_baseline_sha256",
+    "main_baseline_qualification_sha256"
+  ],
+  "source_only_boundary": {
+    "helper_builds": 0,
+    "helper_installs": 0,
+    "UI_actions": 0,
+    "whole_app_production_ready_count": 0,
+    "framework_exit_cause_resolved": false,
+    "new_app_flows_admitted": false
+  }
+}

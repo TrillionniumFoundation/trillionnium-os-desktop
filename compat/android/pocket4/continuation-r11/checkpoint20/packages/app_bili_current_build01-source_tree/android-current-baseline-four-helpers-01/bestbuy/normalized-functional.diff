@@ -1,0 +1,121 @@
+--- parent/build_candidate.py
++++ normalized/build_candidate.py
+@@ -196,6 +196,18 @@
+     try:
+         for name in ('classes','dex','res','private-signing'):
+             (OUTPUT/name).mkdir(mode=0o700)
++        baseline_scope={'__file__':str(HERE/'check_current_baseline.py'),'__name__':'owned_current_baseline_scope_controls'}
++        exec(compile((HERE/'check_current_baseline.py').read_bytes(),str(HERE/'check_current_baseline.py'),'exec'),baseline_scope)
++        baseline_controls=baseline_scope['run_controls']()
++        require(baseline_controls['all_passed'] is True and baseline_controls['count']==12 and
++                len(baseline_controls['cases'])==12 and all(x['passed'] is True for x in baseline_controls['cases']) and
++                baseline_controls['production_contract_sha256']==source['qa_contract.py']['sha256'] and
++                baseline_controls['main_epoch_sha256']=='48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f' and
++                baseline_controls['main_baseline_schema']=='pocket4-main-current-baseline-v1' and
++                baseline_controls['main_baseline_sha256']=='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266' and
++                baseline_controls['main_baseline_qualification_sha256']=='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6',
++                'ACTUAL_CURRENT_BASELINE_SCOPE_CONTROLS_REQUIRED')
++        result['current_baseline_scope_controls']={'source_sha256':source['check_current_baseline.py']['sha256'],'report':baseline_controls}
+         source_java = HERE/'src/org/droidloom/qa/bestbuy/r2/ActionRunner.java'
+         command('javac', [tool['javac'], '-J-XX:ActiveProcessorCount=1', '-J-XX:+UseSerialGC', '-J-Xmx256m',
+             '-proc:none','-Xmaxerrs','20','-Xmaxwarns','20','-source','8','-target','8','-bootclasspath',resolved['android_jar'],
+--- parent/make_build_request.py
++++ normalized/make_build_request.py
+@@ -5,7 +5,7 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-bestbuy-qa-r2-static-build-02-20261106'
++KEY='pocket4-owned-bestbuy-qa-r2-current-163e3e3914f4ccbb-build01'
+ 
+ 
+ def encode(value):
+--- parent/qa_adapter.py
++++ normalized/qa_adapter.py
+@@ -230,7 +230,9 @@
+         require(value['package'] == self.qa.PACKAGE, 'FOREGROUND_MUST_STILL_BE_BESTBUY')
+         return self.qa.scope({'package':value['package'], 'uid':self.qa.UID, 'user':0, 'display':0,
+             'activity':value['package']+'/'+value['activity'], 'window_token':value['window_token'],
+-            'main_epoch_sha256':self.qa.MAIN_EPOCH})
++            'main_epoch_sha256':self.qa.MAIN_EPOCH, 'main_baseline_schema':self.qa.MAIN_BASELINE_SCHEMA,
++            'main_baseline_sha256':self.qa.MAIN_BASELINE_SHA,
++            'main_baseline_qualification_sha256':self.qa.MAIN_BASELINE_QUALIFICATION_SHA})
+ 
+     def task(self):
+         selected = self.flow.selected_task()
+--- parent/qa_contract.py
++++ normalized/qa_contract.py
+@@ -11,6 +11,9 @@
+ PACKAGE = 'com.bestbuy.android'
+ UID = 10130
+ MAIN_EPOCH = '48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'
++MAIN_BASELINE_SCHEMA = 'pocket4-main-current-baseline-v1'
++MAIN_BASELINE_SHA = '163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'
++MAIN_BASELINE_QUALIFICATION_SHA = 'f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'
+ MAX_REQUEST = 16384
+ MAX_RESULT = 524288
+ MAX_COMPRESSED_WIRE = 262144
+@@ -20,7 +23,7 @@
+ NODE_PATH_PATTERN = r'0(?:/[0-9]{1,2}){0,%d}' % MAX_DEPTH
+ # Legacy text branch remains unreachable: this revision rejects set_text at all request entries.
+ PUBLIC_SEARCH_QUERY = "usb c cable"
+-SCOPE_KEYS = {'package', 'uid', 'user', 'display', 'activity', 'window_token', 'main_epoch_sha256'}
++SCOPE_KEYS = {'package', 'uid', 'user', 'display', 'activity', 'window_token', 'main_epoch_sha256', 'main_baseline_schema', 'main_baseline_sha256', 'main_baseline_qualification_sha256'}
+ 
+ 
+ class ProtocolError(RuntimeError):
+@@ -69,7 +72,10 @@
+     require(isinstance(value, dict) and set(value) == SCOPE_KEYS, 'EXACT_SCOPE_KEYS_REQUIRED')
+     require(value['package'] == PACKAGE and type(value['uid']) is int and value['uid'] == UID and
+             type(value['user']) is int and value['user'] == 0 and type(value['display']) is int and
+-            value['display'] == 0 and value['main_epoch_sha256'] == MAIN_EPOCH,
++            value['display'] == 0 and value['main_epoch_sha256'] == MAIN_EPOCH and
++            value['main_baseline_schema'] == MAIN_BASELINE_SCHEMA and
++            value['main_baseline_sha256'] == MAIN_BASELINE_SHA and
++            value['main_baseline_qualification_sha256'] == MAIN_BASELINE_QUALIFICATION_SHA,
+             'FIXED_MAIN_BESTBUY_SCOPE_REQUIRED')
+     require(isinstance(value['activity'], str) and len(value['activity']) <= 256 and
+             re.fullmatch(r'com\.bestbuy\.android/[A-Za-z0-9_.$]+', value['activity']), 'HOST_ACTIVITY_REQUIRED')
+--- parent/src/org/droidloom/qa/bestbuy/r2/ActionRunner.java
++++ normalized/src/org/droidloom/qa/bestbuy/r2/ActionRunner.java
+@@ -43,6 +43,9 @@
+     static final String PACKAGE = "com.bestbuy.android";
+     static final String SELF = "org.droidloom.qa.bestbuy.r2";
+     static final String MAIN_EPOCH = "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f";
++    static final String MAIN_BASELINE_SCHEMA = "pocket4-main-current-baseline-v1";
++    static final String MAIN_BASELINE_SHA = "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266";
++    static final String MAIN_BASELINE_QUALIFICATION_SHA = "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6";
+     static final int TARGET_UID = 10130;
+     static final int MAX_REQUEST = 16384, MAX_RESULT = 524288, MAX_COMPRESSED_WIRE = 262144;
+     static final int MAX_NODES = 512, MAX_DEPTH = 128, MAX_CHILDREN = 64;
+@@ -291,12 +294,16 @@
+             .put("enabled_service_count", identities.size()).put("enabled_services_sha256", hashJson(serial));
+     }
+     void validateScope(JSONObject scope) throws Exception {
+-        keys(scope, "package", "uid", "user", "display", "activity", "window_token", "main_epoch_sha256");
++        keys(scope, "package", "uid", "user", "display", "activity", "window_token", "main_epoch_sha256", "main_baseline_schema", "main_baseline_sha256", "main_baseline_qualification_sha256");
+         need(PACKAGE.equals(string(scope, "package", 64)) && integer(scope, "uid") == TARGET_UID
+             && integer(scope, "user") == 0 && integer(scope, "display") == 0, "EXACT_BILI_SCOPE_REQUIRED");
+         need(string(scope, "activity", 256).matches("com\\.bestbuy\\.android/[A-Za-z0-9_.$]+"), "HOST_ACTIVITY_ATTESTATION_REQUIRED");
+         need(string(scope, "window_token", 32).matches("[0-9a-f]{1,32}"), "HOST_WINDOW_TOKEN_REQUIRED");
+         need(MAIN_EPOCH.equals(string(scope, "main_epoch_sha256", 64)), "HOST_EPOCH_ATTESTATION_REQUIRED");
++        need(MAIN_BASELINE_SCHEMA.equals(string(scope, "main_baseline_schema", 64))
++            && MAIN_BASELINE_SHA.equals(string(scope, "main_baseline_sha256", 64))
++            && MAIN_BASELINE_QUALIFICATION_SHA.equals(string(scope, "main_baseline_qualification_sha256", 64)),
++            "HOST_CURRENT_BASELINE_ATTESTATION_REQUIRED");
+         ApplicationInfo info = getContext().getPackageManager().getApplicationInfo(PACKAGE, 0);
+         need(info.uid == TARGET_UID, "ACTUAL_TARGET_UID_CHANGED");
+     }
+--- parent/controls/check_deep_tree.py
++++ normalized/controls/check_deep_tree.py
+@@ -14,7 +14,9 @@
+ REQUEST = {'protocol': qa.PROTOCOL, 'nonce': '1' * 32, 'op': 'inspect',
+            'scope': {'package': qa.PACKAGE, 'uid': qa.UID, 'user': 0, 'display': 0,
+                      'activity': 'com.bestbuy.android/.SyntheticFixture',
+-                     'window_token': '1234', 'main_epoch_sha256': qa.MAIN_EPOCH}}
++                     'window_token': '1234', 'main_epoch_sha256': qa.MAIN_EPOCH, 'main_baseline_schema':qa.MAIN_BASELINE_SCHEMA,
++                      'main_baseline_sha256':qa.MAIN_BASELINE_SHA,
++                      'main_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA}}
+ STATE = {'accessibility_enabled': False, 'touch_exploration_enabled': False,
+          'enabled_service_count': 0, 'enabled_services_sha256': qa.sha(qa.canonical([]))}
+ CASES = []

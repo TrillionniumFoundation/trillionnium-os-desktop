@@ -1,0 +1,389 @@
+{
+  "android_started": false,
+  "archive_sha256": "c72b976f98b785cdde0c1fc4e31280a9147e07ec625d1b1a0c77659bf2c7cb31",
+  "binaries": [
+    {
+      "bytes": 1224968,
+      "path": "/home/alex/work/pocket4-lmkd-host-pressure-r11-source-06/target/debug/droidloom-psi-owner",
+      "sha256": "6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154"
+    },
+    {
+      "bytes": 1282176,
+      "path": "/home/alex/work/pocket4-lmkd-host-pressure-r11-source-06/target/debug/owned-relay-canary",
+      "sha256": "4e063d9c39ba5c5cadd63f9efbc6fd06379c4d5dda23826b42a3f0cdd6a0e1cc"
+    },
+    {
+      "bytes": 1540024,
+      "path": "/home/alex/work/pocket4-lmkd-host-pressure-r11-source-06/target/debug/owned-ipc-controls",
+      "sha256": "1c995c11cb3aa6669146bd4d14f00bf7e1a167d7e0db0d96e9e371f9a6caf3c5"
+    },
+    {
+      "bytes": 164328,
+      "path": "/home/alex/work/pocket4-lmkd-host-pressure-r11-source-06/owned-relay/fixture-init",
+      "sha256": "4bbf0137a0e8ea089dca4b9e6c2ec800d587e6293fba28eb4ea452d44a898cd9"
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j",
+        "1"
+      ],
+      "elapsed_seconds": 3.6210734620690346,
+      "name": "build",
+      "returncode": 0,
+      "stderr": "   Compiling version_check v0.9.5\n   Compiling generic-array v0.14.7\n   Compiling typenum v1.20.1\n   Compiling crypto-common v0.1.7\n   Compiling block-buffer v0.10.4\n   Compiling libc v0.2.188\n   Compiling digest v0.10.7\n   Compiling cfg-if v1.0.4\n   Compiling cpufeatures v0.2.17\n   Compiling sha2 v0.10.9\n   Compiling droidloom-pressure-relay-owner-candidate v0.0.0 (/home/alex/work/pocket4-lmkd-host-pressure-r11-source-06)\n    Finished `dev` profile [unoptimized] target(s) in 3.57s\n",
+      "stderr_sha256": "bc06502c0cad2c19b1191d16fa3996eb34f4b9d6977e9518483799548506f855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1"
+      ],
+      "elapsed_seconds": 1.2626737379468977,
+      "name": "tests",
+      "returncode": 0,
+      "stderr": "   Compiling droidloom-pressure-relay-owner-candidate v0.0.0 (/home/alex/work/pocket4-lmkd-host-pressure-r11-source-06)\n    Finished `test` profile [unoptimized] target(s) in 1.17s\n     Running unittests src/lib.rs (target/debug/deps/droidloom_pressure_relay_owner_candidate-d20f04e214b20b30)\n     Running unittests src/bin/droidloom_psi_owner.rs (target/debug/deps/droidloom_psi_owner-1413691f43481acb)\n     Running unittests src/bin/owned_ipc_controls.rs (target/debug/deps/owned_ipc_controls-60c4b61e9c75e9c4)\n     Running unittests src/bin/owned_relay_canary.rs (target/debug/deps/owned_relay_canary-7b49acd8251d9575)\n   Doc-tests droidloom_pressure_relay_owner_candidate\n",
+      "stderr_sha256": "ff3e4895e4cea4e1ae2f56e3a1b6508af453dd93c246e4e38c4581e8a51f474b",
+      "stdout": "\nrunning 18 tests\ntest enrollment::tests::cross_language_wire_vectors_and_exact_contract ... ok\ntest enrollment::tests::request_rights_are_closed_before_admission ... ok\ntest lifecycle_bootstrap::tests::audit_and_terminal_packet_survive_peer_close_with_exact_framing ... ok\ntest lifecycle_bootstrap::tests::bootstrap_codec_is_fixed_and_rejects_reserved_policy ... ok\ntest lifecycle_bootstrap::tests::bootstrap_parent_channel_rejects_extra_rights_and_old_nonce_commands ... ok\ntest lifecycle_bootstrap::tests::inherited_rights_are_cloexec_and_owned_on_reject ... ok\ntest lifecycle_bootstrap::tests::malformed_packet_closes_all_transferred_rights ... ok\ntest lifecycle_bootstrap::tests::progress_audit_rejects_and_closes_unexpected_rights ... ok\ntest lifecycle_bootstrap::tests::terminal_status_survives_peer_close_but_never_certifies_pressure ... ok\ntest lifecycle_relay::tests::cancellation_fd_is_real_bounded_and_idempotent ... ok\ntest lifecycle_relay::tests::live_lifecycle_pidfd_is_not_a_replacement_certificate ... ok\ntest lifecycle_relay::tests::one_lifecycle_claim_survives_failure_and_concurrent_clones ... ok\ntest pressure_audit::tests::actual_trigger_audit_codec_and_bounds ... ok\ntest pressure_audit::tests::incomplete_or_lowered_threshold_audit_cannot_qualify ... ok\ntest psi::tests::cancellation_keeps_priority_but_accounts_for_consumed_psi_tail ... ok\ntest psi::tests::exact_thresholds_and_bounded_progress_are_not_relaxed ... ok\ntest tests::poisoned_sender_lock_revokes_existing_real_capability_without_deadlock ... ok\ntest tests::retirement_panic_cannot_be_retried_into_success ... ok\n\ntest result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 2 tests\ntest event_fixture::tests::event_gate_rejects_wrong_generation_scope_threshold_sequence_future_and_exact_expiry ... ok\ntest event_fixture::tests::notification_alone_or_historical_high_cannot_certify_real_target_pressure ... ok\n\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "stdout_sha256": "c47d0678fef23ff83f875c721946d57ddd0686fe99f39cc935f9eec19453d818"
+    },
+    {
+      "argv": [
+        "/home/alex/work/pocket4-lmkd-host-pressure-r11-source-06/target/debug/owned-ipc-controls"
+      ],
+      "elapsed_seconds": 0.2665772819891572,
+      "name": "ordinary-ipc",
+      "returncode": 0,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "PASS host proc PID namespace matches getpid; proc and cgroup2 filesystems verified\nPASS kernel accepted credentials reject wrong UID\nPASS kernel accepted credentials reject wrong GID\nPASS pinned executable rejects a different trusted file\nPASS SO_PEERPIDFD retains dead connection generation after normal exit and reap\nPASS ordinary host child fails the required exact cgroup projection gate\nPASS owned children reaped, descriptors/socket cleaned, parent namespace/projection/membership unchanged\nRESULT PASS mode=host-negative-controls\n",
+      "stdout_sha256": "98937a37108468c33b29e28d43b313962a9c9a18f0a4687a3b284ab842b61e7f"
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++20",
+        "-O1",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "owned-relay/fixture_init.cpp",
+        "-o",
+        "owned-relay/fixture-init"
+      ],
+      "elapsed_seconds": 1.374207542045042,
+      "name": "actor-build",
+      "returncode": 0,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "owned-relay",
+        "-p",
+        "test_qualify_pressure.py",
+        "-v"
+      ],
+      "elapsed_seconds": 0.06974534189794213,
+      "name": "qualifier-controls",
+      "returncode": 0,
+      "stderr": "test_empty_or_duplicate_set_rejected_even_when_manifest_pinned (test_qualify_pressure.ExternalPinControls.test_empty_or_duplicate_set_rejected_even_when_manifest_pinned) ... ok\ntest_external_manifest_and_complete_bytes (test_qualify_pressure.ExternalPinControls.test_external_manifest_and_complete_bytes) ... ok\ntest_symlink_cannot_replace_evidence (test_qualify_pressure.ExternalPinControls.test_symlink_cannot_replace_evidence) ... ok\ntest_changed_native_default_or_actual_write_rejected (test_qualify_pressure.QualificationControls.test_changed_native_default_or_actual_write_rejected) ... ok\ntest_critical_sent_after_exit_cannot_be_correlated (test_qualify_pressure.QualificationControls.test_critical_sent_after_exit_cannot_be_correlated) ... ok\ntest_duplicate_json_keys_rejected (test_qualify_pressure.QualificationControls.test_duplicate_json_keys_rejected) ... ok\ntest_fresh_stale_or_expiry_boundary_is_inconclusive (test_qualify_pressure.QualificationControls.test_fresh_stale_or_expiry_boundary_is_inconclusive) ... ok\ntest_kernel_oom_budget_and_second_kill_rejected (test_qualify_pressure.QualificationControls.test_kernel_oom_budget_and_second_kill_rejected) ... ok\ntest_late_nonvictim_exit_cannot_be_skipped_at_cleanup (test_qualify_pressure.QualificationControls.test_late_nonvictim_exit_cannot_be_skipped_at_cleanup) ... ok\ntest_medium_only_is_partial_and_not_critical_pass (test_qualify_pressure.QualificationControls.test_medium_only_is_partial_and_not_critical_pass) ... ok\ntest_no_real_event_or_incomplete_audit_rejected (test_qualify_pressure.QualificationControls.test_no_real_event_or_incomplete_audit_rejected) ... ok\ntest_nonce_scope_terminal_and_owner_identity_rejected (test_qualify_pressure.QualificationControls.test_nonce_scope_terminal_and_owner_identity_rejected) ... ok\ntest_replay_future_and_quiet_events_rejected (test_qualify_pressure.QualificationControls.test_replay_future_and_quiet_events_rejected) ... ok\ntest_stale_requires_real_events_and_keeps_targets (test_qualify_pressure.QualificationControls.test_stale_requires_real_events_and_keeps_targets) ... ok\ntest_synthetic_critical_positive_scope_is_narrow (test_qualify_pressure.QualificationControls.test_synthetic_critical_positive_scope_is_narrow) ... ok\ntest_wrong_victim_or_priority_and_route_rejected (test_qualify_pressure.QualificationControls.test_wrong_victim_or_priority_and_route_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 16 tests in 0.007s\n\nOK\n",
+      "stderr_sha256": "2f89bdd934e9ccd9188af77390c8060bb68a05f8daabd24dabc3ba1377772350",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "error": null,
+  "finished_at": "2026-11-04T15:35:37.448399+00:00",
+  "inputs_after": {
+    "BOOTSTRAP.md": {
+      "bytes": 10588,
+      "sha256": "fb3516922ccb27a8adc196c26fe2012e2585174c317a3c429b3ece0df7e35604"
+    },
+    "Cargo.lock": {
+      "bytes": 2433,
+      "sha256": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03"
+    },
+    "Cargo.toml": {
+      "bytes": 533,
+      "sha256": "6da7eb91c9b965cfc8f2442b018602bf1548e64ab7cb4936d0657f355d433005"
+    },
+    "PLAN.md": {
+      "bytes": 6464,
+      "sha256": "f1a60e56a173e3d331de3b58f153384b33167b992951b85838bb99702e93d5c3"
+    },
+    "REVIEW-CHANGES.md": {
+      "bytes": 3227,
+      "sha256": "200c646227413f087e010730021305ee62f4cb806930bfdeb8893fd9937a56f9"
+    },
+    "ancestor-bootstrap04-manifest.json": {
+      "bytes": 3353,
+      "sha256": "0a2926b79240eaf5fd5556fd5c7d3bfd6058119b379b83996618097d9e06838d"
+    },
+    "owned-relay/CANARY.md": {
+      "bytes": 9824,
+      "sha256": "1384946eb719b74ac5ef5c414c66d1193085b59387d2eabf992c098aee1e0ffd"
+    },
+    "owned-relay/PRESSURE.md": {
+      "bytes": 12831,
+      "sha256": "e34805aed039f2264ce3b97e5a05728cc6938b6ca2c66a295289d8205e5412f0"
+    },
+    "owned-relay/fixture_init.cpp": {
+      "bytes": 53130,
+      "sha256": "343c2421355ba35bc46fb23cd05bf7a327a6ae2e40a5528f017ec876e3e75d8c"
+    },
+    "owned-relay/include/lmkd.h": {
+      "bytes": 13562,
+      "sha256": "458e8c6f6aa145dc89903c0c91f36ea790138443d6b2d46fc38e7f3909282033"
+    },
+    "owned-relay/library-source-receipt.json": {
+      "bytes": 679,
+      "sha256": "fcf360d1ff3a57d6f9e92f99e4470e7aa7e106169fa37f6016b03e11827cdf44"
+    },
+    "owned-relay/local-compile-receipt.json": {
+      "bytes": 864,
+      "sha256": "0d76caf23929e0539aed9a5bd14be23081e30f26b33e4576183a457efa1deb3a"
+    },
+    "owned-relay/minimal-root-libraries.tsv": {
+      "bytes": 2779,
+      "sha256": "784f627d79602deb3b94026cf384b6637cf1c20daefdd2ac7476dbde9588fe61"
+    },
+    "owned-relay/qualifier-controls-local.json": {
+      "bytes": 3247,
+      "sha256": "6005b45ef9f2d1c72a3e2b8bcaf80b18aebbf73b6e5b4ff172d75bff48ba7e2b"
+    },
+    "owned-relay/qualify_pressure.py": {
+      "bytes": 22324,
+      "sha256": "00254b6a7e166c3b9789d5ee417469e6e59375b2ad7bd58604ddafd136336bab"
+    },
+    "owned-relay/test_qualify_pressure.py": {
+      "bytes": 18141,
+      "sha256": "331c21ee341288416b656aaf78ed10c3b61a2a2bfa8a245d4e5a8fcf73674f45"
+    },
+    "parent-source-manifest.json": {
+      "bytes": 4648,
+      "sha256": "cec434f1e868248f70dbc8a4eea7c924193e9ba633bba61dcf6cea90b642ab29"
+    },
+    "src/bin/droidloom_psi_owner.rs": {
+      "bytes": 769,
+      "sha256": "e3ca5039c82bd472c8c7e30471085b24a4a681299d8cd1624e101d9f18edddb8"
+    },
+    "src/bin/owned_ipc_controls.rs": {
+      "bytes": 28935,
+      "sha256": "33ba770340d4db205ff52a46c31aacb0e1ee4f7512f1992af8b7e16b73fcd9a0"
+    },
+    "src/bin/owned_relay_canary.rs": {
+      "bytes": 22454,
+      "sha256": "a4aa88c1e577c2512270ab46ae55133ecb82a6ac4da2d0f9c305344c1a69ec09"
+    },
+    "src/enrollment.rs": {
+      "bytes": 19506,
+      "sha256": "1321146aaaa4c0ff1865eab54568c1da821abc53d5c094473d936486d3da5363"
+    },
+    "src/event_fixture.rs": {
+      "bytes": 23424,
+      "sha256": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54"
+    },
+    "src/lib.rs": {
+      "bytes": 43408,
+      "sha256": "0c682f01c368211dd30b4307b509a0891e360bd21a7cb9dfad67761027400670"
+    },
+    "src/lifecycle_bootstrap.rs": {
+      "bytes": 47843,
+      "sha256": "85abcc95923e8333b2e8fdeef5a8e8086b453cc8e80a59f2473918420ec2403b"
+    },
+    "src/lifecycle_relay.rs": {
+      "bytes": 16229,
+      "sha256": "29516250e21cfa6c8bdeedd676155fe34d53c608021e070a5c03635bba13950a"
+    },
+    "src/pressure_audit.rs": {
+      "bytes": 20193,
+      "sha256": "e68d76f8ce24b1994ddd3620fc04f4f25ac35e9e909e41f399b694443403f08c"
+    },
+    "src/psi.rs": {
+      "bytes": 16179,
+      "sha256": "4e8f566ed27250dd2055a03a5a06b6eda9937341400bb0aac9ccf6f08f101ba2"
+    },
+    "tests/data/grant.hex": {
+      "bytes": 353,
+      "sha256": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29"
+    },
+    "tests/data/request.hex": {
+      "bytes": 289,
+      "sha256": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede"
+    }
+  },
+  "inputs_before": {
+    "BOOTSTRAP.md": {
+      "bytes": 10588,
+      "sha256": "fb3516922ccb27a8adc196c26fe2012e2585174c317a3c429b3ece0df7e35604"
+    },
+    "Cargo.lock": {
+      "bytes": 2433,
+      "sha256": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03"
+    },
+    "Cargo.toml": {
+      "bytes": 533,
+      "sha256": "6da7eb91c9b965cfc8f2442b018602bf1548e64ab7cb4936d0657f355d433005"
+    },
+    "PLAN.md": {
+      "bytes": 6464,
+      "sha256": "f1a60e56a173e3d331de3b58f153384b33167b992951b85838bb99702e93d5c3"
+    },
+    "REVIEW-CHANGES.md": {
+      "bytes": 3227,
+      "sha256": "200c646227413f087e010730021305ee62f4cb806930bfdeb8893fd9937a56f9"
+    },
+    "ancestor-bootstrap04-manifest.json": {
+      "bytes": 3353,
+      "sha256": "0a2926b79240eaf5fd5556fd5c7d3bfd6058119b379b83996618097d9e06838d"
+    },
+    "owned-relay/CANARY.md": {
+      "bytes": 9824,
+      "sha256": "1384946eb719b74ac5ef5c414c66d1193085b59387d2eabf992c098aee1e0ffd"
+    },
+    "owned-relay/PRESSURE.md": {
+      "bytes": 12831,
+      "sha256": "e34805aed039f2264ce3b97e5a05728cc6938b6ca2c66a295289d8205e5412f0"
+    },
+    "owned-relay/fixture_init.cpp": {
+      "bytes": 53130,
+      "sha256": "343c2421355ba35bc46fb23cd05bf7a327a6ae2e40a5528f017ec876e3e75d8c"
+    },
+    "owned-relay/include/lmkd.h": {
+      "bytes": 13562,
+      "sha256": "458e8c6f6aa145dc89903c0c91f36ea790138443d6b2d46fc38e7f3909282033"
+    },
+    "owned-relay/library-source-receipt.json": {
+      "bytes": 679,
+      "sha256": "fcf360d1ff3a57d6f9e92f99e4470e7aa7e106169fa37f6016b03e11827cdf44"
+    },
+    "owned-relay/local-compile-receipt.json": {
+      "bytes": 864,
+      "sha256": "0d76caf23929e0539aed9a5bd14be23081e30f26b33e4576183a457efa1deb3a"
+    },
+    "owned-relay/minimal-root-libraries.tsv": {
+      "bytes": 2779,
+      "sha256": "784f627d79602deb3b94026cf384b6637cf1c20daefdd2ac7476dbde9588fe61"
+    },
+    "owned-relay/qualifier-controls-local.json": {
+      "bytes": 3247,
+      "sha256": "6005b45ef9f2d1c72a3e2b8bcaf80b18aebbf73b6e5b4ff172d75bff48ba7e2b"
+    },
+    "owned-relay/qualify_pressure.py": {
+      "bytes": 22324,
+      "sha256": "00254b6a7e166c3b9789d5ee417469e6e59375b2ad7bd58604ddafd136336bab"
+    },
+    "owned-relay/test_qualify_pressure.py": {
+      "bytes": 18141,
+      "sha256": "331c21ee341288416b656aaf78ed10c3b61a2a2bfa8a245d4e5a8fcf73674f45"
+    },
+    "parent-source-manifest.json": {
+      "bytes": 4648,
+      "sha256": "cec434f1e868248f70dbc8a4eea7c924193e9ba633bba61dcf6cea90b642ab29"
+    },
+    "src/bin/droidloom_psi_owner.rs": {
+      "bytes": 769,
+      "sha256": "e3ca5039c82bd472c8c7e30471085b24a4a681299d8cd1624e101d9f18edddb8"
+    },
+    "src/bin/owned_ipc_controls.rs": {
+      "bytes": 28935,
+      "sha256": "33ba770340d4db205ff52a46c31aacb0e1ee4f7512f1992af8b7e16b73fcd9a0"
+    },
+    "src/bin/owned_relay_canary.rs": {
+      "bytes": 22454,
+      "sha256": "a4aa88c1e577c2512270ab46ae55133ecb82a6ac4da2d0f9c305344c1a69ec09"
+    },
+    "src/enrollment.rs": {
+      "bytes": 19506,
+      "sha256": "1321146aaaa4c0ff1865eab54568c1da821abc53d5c094473d936486d3da5363"
+    },
+    "src/event_fixture.rs": {
+      "bytes": 23424,
+      "sha256": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54"
+    },
+    "src/lib.rs": {
+      "bytes": 43408,
+      "sha256": "0c682f01c368211dd30b4307b509a0891e360bd21a7cb9dfad67761027400670"
+    },
+    "src/lifecycle_bootstrap.rs": {
+      "bytes": 47843,
+      "sha256": "85abcc95923e8333b2e8fdeef5a8e8086b453cc8e80a59f2473918420ec2403b"
+    },
+    "src/lifecycle_relay.rs": {
+      "bytes": 16229,
+      "sha256": "29516250e21cfa6c8bdeedd676155fe34d53c608021e070a5c03635bba13950a"
+    },
+    "src/pressure_audit.rs": {
+      "bytes": 20193,
+      "sha256": "e68d76f8ce24b1994ddd3620fc04f4f25ac35e9e909e41f399b694443403f08c"
+    },
+    "src/psi.rs": {
+      "bytes": 16179,
+      "sha256": "4e8f566ed27250dd2055a03a5a06b6eda9937341400bb0aac9ccf6f08f101ba2"
+    },
+    "tests/data/grant.hex": {
+      "bytes": 353,
+      "sha256": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29"
+    },
+    "tests/data/request.hex": {
+      "bytes": 289,
+      "sha256": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede"
+    }
+  },
+  "installed_files_changed": false,
+  "ordinary_ipc_passed": 7,
+  "pressure_executed": false,
+  "resources": {
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1a73372a5-fc05-2a89.service",
+    "cpu_max": "100000 100000",
+    "memory_events_after": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_events_before": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_max": "536870912",
+    "nice": 5
+  },
+  "root": "/home/alex/work/pocket4-lmkd-host-pressure-r11-source-06",
+  "runtime_canary_executed": false,
+  "rust_tests_passed": 20,
+  "schema": 1,
+  "source_manifest_sha256": "9f0472e7aea77cd2f628d38e8378f9148b9db60d4353315d6067a3c271f8325f",
+  "started_at": "2026-11-04T15:35:30.825679+00:00",
+  "success": true,
+  "synthetic_python_tests_passed": 16
+}

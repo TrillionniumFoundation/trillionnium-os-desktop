@@ -1,0 +1,126 @@
+--- template01/make_qualification.py
++++ template02/make_qualification.py
+@@ -91,6 +91,31 @@
+ 
+ def remote_pin(row):
+     return {"path": row["path"], "sha256": row["sha256"]}
++
++
++def readmission_binding(config, root):
++    rows = config["readmission"]
++    need(set(rows) == {"prior_failure", "authority"}, "exact fence02 readmission chain required")
++    prior, authority = (pinned(rows[name]) for name in ("prior_failure", "authority"))
++    need(rows["prior_failure"]["path"] == str(root / "build-fences-01/terminal.json") and
++         rows["prior_failure"]["sha256"] == "8b74d6b0351db5823c4e183c222783b94ada34369f1eede78289ac3b6d20146a" and
++         prior == read_reference("original-fence01-failure.json"),
++         "original failed fence01 must be preserved exactly")
++    need(prior["state"] == "FAILED" and prior["inner_returncode"] is None and
++         prior["error"] == "RuntimeError('less than 13 GiB MemAvailable for fresh Go5 streaming profile; no automatic retry')",
++         "prior resource rejection must not be reclassified as successful compilation")
++    sample = read_reference("postfailure-memory-sample.json")
++    expected = {"schema": 1,
++                "prior_failed_fence_terminal_sha256": rows["prior_failure"]["sha256"],
++                "postfailure_memory_sample_sha256": "650a723bc5ea3a71446f3f33430e4c71bf961a1d1454ca4798e80690360ce526",
++                "sample_observed_utc": sample["finished_utc"],
++                "historical_sample_is_not_build_admission": True,
++                "original_attempt_must_remain_absent_before_inner_call": True,
++                "original_controller_and_resource_gates_unchanged": True,
++                "separately_reviewed_one_shot_readmission": True,
++                "automatic_retry": False}
++    need(rows["authority"]["path"] == str(root / "build-fences-02/readmission.json") and
++         authority == expected, "actual fence02 authority differs from the separately reviewed request")
+ 
+ 
+ def build_binding(config):
+@@ -122,7 +147,8 @@
+          prep["Rust_recompiled"] is False and prep["plan"] == read_reference("candidate06-build-plan.json"),
+          "actual compiled450 / derived runtime450 / resource profile differs")
+     need(rows["terminal"]["path"] == str(root / "attempt-01/terminal.json") and
+-         rows["fence"]["path"] == str(root / "build-fences-01/terminal.json"), "build terminal path differs")
++         rows["fence"]["path"] == str(root / "build-fences-02/terminal.json"), "build terminal path differs")
++    readmission_binding(config, root)
+     need(terminal["state"] == "ARTIFACTS_BUILT_QUALIFICATION_PENDING" and
+          terminal["builder_returncode"] == 0 and terminal["error"] is None and
+          terminal["cleanup"]["complete"] is True and not terminal.get("observation_errors") and
+--- template01/binding.template.json
++++ template02/binding.template.json
+@@ -1,20 +1,12 @@
+ {
+-  "schema": 1,
+-  "nonce": null,
++  "android_allocation": {
++    "host_uid": null,
++    "subid_start": null
++  },
+   "build": {
+-    "preparation": {
+-      "local_path": null,
+-      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined06-go5-streaming-01/preparation.json",
+-      "sha256": null
+-    },
+-    "terminal": {
+-      "local_path": null,
+-      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined06-go5-streaming-01/attempt-01/terminal.json",
+-      "sha256": null
+-    },
+     "fence": {
+       "local_path": null,
+-      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined06-go5-streaming-01/build-fences-01/terminal.json",
++      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined06-go5-streaming-01/build-fences-02/terminal.json",
+       "sha256": null
+     },
+     "inputs": {
+@@ -22,14 +14,49 @@
+       "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined06-go5-streaming-01/android-out/target/product/droidloom_x86_64/droidloom-native-engine-inputs.json",
+       "sha256": null
+     },
++    "preparation": {
++      "local_path": null,
++      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined06-go5-streaming-01/preparation.json",
++      "sha256": null
++    },
+     "receipt": {
+       "local_path": null,
+       "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined06-go5-streaming-01/android-out/target/product/droidloom_x86_64/droidloom-native-engine-source.json",
+       "sha256": null
++    },
++    "terminal": {
++      "local_path": null,
++      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined06-go5-streaming-01/attempt-01/terminal.json",
++      "sha256": null
+     }
+   },
+-  "host_result": {"local_path": null, "path": null, "sha256": null},
+-  "android_allocation": {"host_uid": null, "subid_start": null},
+-  "prepared": {"local_path": null, "path": null, "sha256": null},
+-  "root_review": {"local_path": null, "path": null, "sha256": null}
++  "host_result": {
++    "local_path": null,
++    "path": null,
++    "sha256": null
++  },
++  "nonce": null,
++  "prepared": {
++    "local_path": null,
++    "path": null,
++    "sha256": null
++  },
++  "readmission": {
++    "authority": {
++      "local_path": null,
++      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined06-go5-streaming-01/build-fences-02/readmission.json",
++      "sha256": null
++    },
++    "prior_failure": {
++      "local_path": null,
++      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined06-go5-streaming-01/build-fences-01/terminal.json",
++      "sha256": "8b74d6b0351db5823c4e183c222783b94ada34369f1eede78289ac3b6d20146a"
++    }
++  },
++  "root_review": {
++    "local_path": null,
++    "path": null,
++    "sha256": null
++  },
++  "schema": 1
+ }

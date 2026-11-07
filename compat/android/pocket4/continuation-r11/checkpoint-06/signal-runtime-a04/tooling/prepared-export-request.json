@@ -1,0 +1,16 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/sudo",
+  "args": [
+    "-n",
+    "/usr/bin/python3",
+    "-I",
+    "-"
+  ],
+  "stdin": "from pathlib import Path\nimport gzip,hashlib,json,os,stat\nroot=Path('/home/alex/work/pocket4-signal-canary-mask-r1-20261104-a04')\nexpected='d334430df461e2011781307992a7ae60e84a8a6cc34e2a0f118f2ccf070f2aa8'\nout=Path('/home/alex/work/pocket4-signal-a04-prepared-readback-01.json.gz')\ndef sha(b):return hashlib.sha256(b).hexdigest()\nprepared=(root/'prepared.json').read_bytes()\nassert sha(prepared)==expected\nfiles={}\nfor name,path in [('prepared.json',root/'prepared.json'),('prepare-result.json',root/'prepare-result.json'),('preparation-entry-contract-r4.json',root/'preparation-entry-contract-r4.json'),('cell.json',Path('/opt/p4-signal-mask-r1-20261104-a04/cell.json'))]:\n st=path.lstat();assert stat.S_ISREG(st.st_mode) and st.st_nlink==1 and st.st_size<500000\n raw=path.read_bytes();files[name]={'path':str(path),'sha256':sha(raw),'bytes':len(raw),'content':raw.decode('utf8')}\nreceipt={'schema':1,'kind':'a04-prepared-original-text-readback','prepared_sha256':expected,'services_started':False,'files':files}\nraw=(json.dumps(receipt,sort_keys=True,indent=2)+'\\n').encode()\ncompressed=gzip.compress(raw,mtime=0)\nfd=os.open(out,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o444)\nwith os.fdopen(fd,'wb') as f:f.write(compressed);f.flush();os.fsync(f.fileno())\nos.chmod(out,0o444)\np=json.loads(prepared)\nprint(json.dumps({'export':str(out),'bytes':len(compressed),'sha256':sha(compressed),'text_bytes':len(raw),'text_sha256':sha(raw),'prepared_sha256':expected,'cell_nonce':p['nonce'],'case_nonces':p['nonces'],'records':len(p['copied_records']),'images':p['data_images'],'files':{k:{x:v[x] for x in ('bytes','sha256')} for k,v in files.items()}},sort_keys=True))\n",
+  "idempotency_key": "pocket4-r11-signal-a04-prepared-readback-01",
+  "timeout_seconds": 120,
+  "cpu_quota_percent": 100,
+  "memory_max_bytes": 134217728,
+  "nice": 10
+}

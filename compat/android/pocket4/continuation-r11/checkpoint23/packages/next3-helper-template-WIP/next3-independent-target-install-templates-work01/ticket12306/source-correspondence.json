@@ -1,0 +1,417 @@
+{
+  "schema": "independent-target-installer-template-proof-v1",
+  "state": "SOURCE_ONLY_CONTROLS_PENDING_NONCES_UNBOUND",
+  "newRoot": "/home/alex/work/pocket4-owned-ticket12306-qa-r1-install-state-01",
+  "helper_package": "org.droidloom.qa.ticket12306.r1",
+  "target": {
+    "slug": "ticket12306",
+    "label": "12306",
+    "package": "com.MobileTicket",
+    "uid": 10121,
+    "version": 275,
+    "apks": 1,
+    "tree": "0e41c4bc51f00ef141261316755f933cfb593f61",
+    "job": "1a1b22752af-fc05-7cab",
+    "blob": "4118c053d3da58dd50f00cf433eb5083b3adaed6",
+    "bytes": 11978,
+    "sha256": "f573eb50b3e0c2a098101035df116ba76bfdbf5f486e3dafb7588399661bb868",
+    "reference_pin": {
+      "bytes": 3513,
+      "sha256": "57220958eacec13fb0b82755d4e22ffb6e02e42ecb05224103c6c5d37036db0c"
+    }
+  },
+  "edits": {
+    "bestbuy_transport.py": {
+      "parent_sha256": "5666d94ba5d9c90a8ea8edd7b063ff4764b83b1bfafe4dd238018d720ab7d4a9",
+      "source_sha256": "954e03c8023f390dae1d9ce094105cae15dfe38f558c13245ab816940094d2c6",
+      "inverse_exact": true,
+      "steps": [
+        {
+          "before": "EXPECTED_PACKAGE = \"com.bestbuy.android\"",
+          "after": "EXPECTED_PACKAGE = \"com.MobileTicket\"",
+          "positions": [
+            829
+          ]
+        },
+        {
+          "before": "EXPECTED_UID = 10130",
+          "after": "EXPECTED_UID = 10121",
+          "positions": [
+            867
+          ]
+        }
+      ]
+    },
+    "install_state.py": {
+      "parent_sha256": "fb8ebc169dcc8b8e65893028c57dcdbd750d2f5d6253368eae1b6f6e3918fc3c",
+      "source_sha256": "599f4c9488763d943696b6e9547db1f4c6b3e03d93559e2ae2df26b50087a3b2",
+      "inverse_exact": true,
+      "steps": [
+        {
+          "before": "com.bestbuy.android",
+          "after": "com.MobileTicket",
+          "positions": [
+            26867,
+            27649,
+            35405,
+            39540
+          ]
+        },
+        {
+          "before": "bestbuy",
+          "after": "ticket12306",
+          "positions": [
+            737,
+            986,
+            1048,
+            1210,
+            1400,
+            1588,
+            1621,
+            2563,
+            2662,
+            3093,
+            3118,
+            3314,
+            11764,
+            13344,
+            13684,
+            18513,
+            23988,
+            24157,
+            24295,
+            28455,
+            28498,
+            28534,
+            28595,
+            28640,
+            28678,
+            28749,
+            28777,
+            28953,
+            29167,
+            29370,
+            31338,
+            31442,
+            36138
+          ]
+        },
+        {
+          "before": "BestBuy",
+          "after": "12306",
+          "positions": [
+            42,
+            323
+          ]
+        },
+        {
+          "before": "BESTBUY",
+          "after": "TICKET12306",
+          "positions": [
+            17911,
+            26263,
+            26762,
+            27018,
+            27226,
+            32464,
+            35000,
+            37058
+          ]
+        },
+        {
+          "before": "pocket4-owned-ticket12306-qa-r4-install-state-02",
+          "after": "pocket4-owned-ticket12306-qa-r1-install-state-01",
+          "positions": [
+            719
+          ]
+        },
+        {
+          "before": "org.droidloom.qa.ticket12306.r4",
+          "after": "org.droidloom.qa.ticket12306.r1",
+          "positions": [
+            965
+          ]
+        },
+        {
+          "before": "pocket4-owned-ticket12306-qa-r4-source-01",
+          "after": "pocket4-owned-ticket12306-qa-r1-source-01",
+          "positions": [
+            1030,
+            1382
+          ]
+        },
+        {
+          "before": "pocket4-owned-ticket12306-qa-r4-build-01",
+          "after": "pocket4-owned-ticket12306-qa-r1-build-01",
+          "positions": [
+            1192,
+            1570
+          ]
+        },
+        {
+          "before": "ticket12306_r4_transport",
+          "after": "ticket12306_r1_transport",
+          "positions": [
+            28694
+          ]
+        },
+        {
+          "before": "NONCE = 'b6275faedda72f2dec85914ab42b2b7b'",
+          "after": "NONCE = '__FRESH_INSTALL_FLOW__'",
+          "positions": [
+            865
+          ]
+        },
+        {
+          "before": "STATE_NONCE = 'a499f5a6a566ed0cebed5c98e234eede'",
+          "after": "STATE_NONCE = '__FRESH_INSTALL_STATE__'",
+          "positions": [
+            898
+          ]
+        },
+        {
+          "before": "QA_MANIFEST = 'cda79d5b01ebfd91d6b9148be6853c78495da92130fb4f153422daac7d14ad0b'",
+          "after": "QA_MANIFEST = \"069639aa9c70c910c3d86b3016180264c12d479e08383b6c51fb374d9a7ee660\"",
+          "positions": [
+            1062
+          ]
+        },
+        {
+          "before": "BUILD_SHA = '8bd0c70e64a543129aca0d8eeb08030bb135f95eb1be6bcda3b7933ac02433fb'",
+          "after": "BUILD_SHA = \"fcef45ec4a6be6a034ceedc12308bc5150846f08f4273c4655c89911a5aa3eb5\"",
+          "positions": [
+            1234
+          ]
+        },
+        {
+          "before": "BUILD_BYTES = 23340",
+          "after": "BUILD_BYTES = 23529",
+          "positions": [
+            1313
+          ]
+        },
+        {
+          "before": "STAGE_SHA = '037ffdf74d57b1cad24d40dd06754032ec4adbd50c9ef3e99b529471730089c7'",
+          "after": "STAGE_SHA = \"0bf30a72095a10a671c27c759085cd0cec858a3317555f02e01a3deb498cc485\"",
+          "positions": [
+            1425
+          ]
+        },
+        {
+          "before": "STAGE_BYTES = 1950",
+          "after": "STAGE_BYTES = 1967",
+          "positions": [
+            1504
+          ]
+        },
+        {
+          "before": "APK_SHA = '708887e252bad787781768e4c96db9040444b4b32308381ec1d38af3deb0cc2c'",
+          "after": "APK_SHA = \"148cd59566389abd4d64c38f181172c20fafffba85f75b917d9174c0af605cb1\"",
+          "positions": [
+            1619
+          ]
+        },
+        {
+          "before": "SIGNER_SHA = '32b07f5c29e267541086154af0e5b0424cd53a65feb1b64f82b9277cccfb7c31'",
+          "after": "SIGNER_SHA = \"9e862a6399fcf73e29baaf1a3659fdc0d65c812c1024af2d3d1a99cb46dbf425\"",
+          "positions": [
+            1714
+          ]
+        },
+        {
+          "before": "READER_SHA = 'ce4ff1399953fe0d5e89bc0210ae9cdb323d1e08e436327df1521f6cb167ef77'",
+          "after": "READER_SHA = \"db0c54ed8b9e2fbf5763e174d01d74dac04edd368139e2af0d548beea093fd51\"",
+          "positions": [
+            2428
+          ]
+        },
+        {
+          "before": "PREVIOUS_HELPER_UID",
+          "after": "PARENT_HELPER_UID",
+          "positions": [
+            2400,
+            10202
+          ]
+        },
+        {
+          "before": "PARENT_HELPER_UID = 10155",
+          "after": "PARENT_HELPER_UID = 10160",
+          "positions": [
+            2400
+          ]
+        },
+        {
+          "before": "uid not in (10130,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190,10137,10196,10198,10203)",
+          "after": "uid != 10121",
+          "positions": [
+            10224
+          ]
+        },
+        {
+          "before": "references/read_ticket12306.py",
+          "after": "references/target_metadata_parsers.py",
+          "positions": [
+            3273,
+            18379,
+            28638
+          ]
+        },
+        {
+          "before": "qa.UID == 10130",
+          "after": "qa.UID == 10121",
+          "positions": [
+            26874
+          ]
+        },
+        {
+          "before": "if len(artifacts.records)==3 and",
+          "after": "if len(artifacts.records)==1 and",
+          "positions": [
+            32987
+          ]
+        },
+        {
+          "before": "'current_discovery.py', 'check_current_discovery.py'}",
+          "after": "'current_discovery.py', 'check_current_discovery.py', 'actual-target-metadata.json'}",
+          "positions": [
+            3346
+          ]
+        },
+        {
+          "before": "its exact three current APKs",
+          "after": "its exact 1 current APKs",
+          "positions": [
+            348
+          ]
+        }
+      ]
+    },
+    "stage_execute.py": {
+      "parent_sha256": "b2c76ff89ffda73a0b5fe3372baaea6b72a9e128cfc539d1f2aa5ee44a43133c",
+      "source_sha256": "163f0da7bda72eb4525ff49de597119bcd3ddb8131dbf2424f308fe3eb1d4057",
+      "inverse_exact": true,
+      "steps": [
+        {
+          "before": "bestbuy",
+          "after": "ticket12306",
+          "positions": [
+            32,
+            235,
+            446,
+            471,
+            673,
+            5893,
+            5926,
+            6016,
+            6051
+          ]
+        },
+        {
+          "before": "pocket4-owned-ticket12306-qa-r4-install-state-02",
+          "after": "pocket4-owned-ticket12306-qa-r1-install-state-01",
+          "positions": [
+            221
+          ]
+        },
+        {
+          "before": "NONCE = 'b6275faedda72f2dec85914ab42b2b7b'",
+          "after": "NONCE = '__FRESH_INSTALL_FLOW__'",
+          "positions": [
+            293
+          ]
+        },
+        {
+          "before": "references/read_ticket12306.py",
+          "after": "references/target_metadata_parsers.py",
+          "positions": [
+            647
+          ]
+        },
+        {
+          "before": "'current_discovery.py', 'check_current_discovery.py'}",
+          "after": "'current_discovery.py', 'check_current_discovery.py', 'actual-target-metadata.json'}",
+          "positions": [
+            720
+          ]
+        }
+      ]
+    },
+    "make_request.py": {
+      "parent_sha256": "e9ae15f782837b86956c1e8085daa213fa59574c2a6243ba36adde297338423d",
+      "source_sha256": "7bac16d9fe70f56731e5731f0840ce6202e37306ba31a028ca828ee7c398f934",
+      "inverse_exact": true,
+      "steps": [
+        {
+          "before": "bestbuy",
+          "after": "ticket12306",
+          "positions": [
+            241,
+            335
+          ]
+        },
+        {
+          "before": "pocket4-owned-ticket12306-qa-r4-current-r6-install-state-02",
+          "after": "pocket4-owned-ticket12306-qa-r1-current-r6-install-state-01",
+          "positions": [
+            227
+          ]
+        },
+        {
+          "before": "pocket4-owned-ticket12306-qa-r4-install-state-02",
+          "after": "pocket4-owned-ticket12306-qa-r1-install-state-01",
+          "positions": [
+            321
+          ]
+        },
+        {
+          "before": "NONCE = 'b6275faedda72f2dec85914ab42b2b7b'",
+          "after": "NONCE = '__FRESH_INSTALL_FLOW__'",
+          "positions": [
+            371
+          ]
+        }
+      ]
+    },
+    "check_current_discovery.py": {
+      "parent_sha256": "8ccff7b0b23f88431f9b275cb332ac8f941e94de7722902471bf25b2e70d9599",
+      "source_sha256": "b567fee71cc27a4ff70c562bd8092c8d85d28fe2df480a23f7ee1f9ed1eb9b9a",
+      "inverse_exact": true,
+      "steps": [
+        {
+          "before": "context_source = files[{\"com.ihg.apps.android\":\"ihg_context.py\",\n        \"com.amazon.mShop.android.shopping\":\"amazon_context.py\",\n        \"com.bestbuy.android\":\"bestbuy_context.py\"}[context_name]]",
+          "after": "need(context_name == \"com.MobileTicket\", \"EXACT_INDEPENDENT_TARGET_CONTEXT_REQUIRED\")\n    context_source = files[\"ticket12306_context.py\"]",
+          "positions": [
+            10318
+          ]
+        }
+      ]
+    }
+  },
+  "parser": {
+    "parent": {
+      "bytes": 21069,
+      "sha256": "ce4ff1399953fe0d5e89bc0210ae9cdb323d1e08e436327df1521f6cb167ef77"
+    },
+    "source": {
+      "bytes": 1972,
+      "sha256": "db0c54ed8b9e2fbf5763e174d01d74dac04edd368139e2af0d548beea093fd51"
+    },
+    "original_functions": [
+      "need",
+      "metadata",
+      "apk_paths"
+    ],
+    "bodies_exact": true,
+    "no_execution_entry": true
+  },
+  "unchanged": [
+    "current_discovery.py",
+    "host/source-manifest.json",
+    "host-stage-actual.json",
+    "helper target-artifact-reference.json",
+    "all helper QA/Java sources"
+  ],
+  "installed_UID": null,
+  "scope_not_added_to_baseline": true,
+  "no_execution_request": true
+}

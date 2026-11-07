@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_UNRUN",
+  "actual_parent_reader": {
+    "tree": "e6ba15ef71d0e9d8bbcff5105986a9c536dfbbfd",
+    "source": {
+      "bytes": 46157,
+      "sha256": "6ea930832f5f42a9550c8f1544d15790d4dc2b32812e8adc3c3701c7e288ac92"
+    }
+  },
+  "borrowed_reader": {
+    "function": "read_guard",
+    "target_function": "read_private_baseline",
+    "only_replacements": [
+      "read_guard→read_private_baseline",
+      "GUARD_PATH/BYTES/SHA→BASELINE_PATH/BYTES/SHA",
+      "CURRENT_GUARD→PRIVATE_BASELINE"
+    ],
+    "original_function": {
+      "bytes": 1946,
+      "sha256": "d84fd9782991ba3fcc8db6f16688272fdebecb4a92fa172f95c3e4f0991a80a8"
+    },
+    "derived_function": {
+      "bytes": 1987,
+      "sha256": "10291ed96754d6f29388c8ebeeb602ac813b5f810819be87ea41d58dc837f1fd"
+    }
+  },
+  "controls": {
+    "old_discovery_owner_cases": 15,
+    "new_readiness_cases": 5,
+    "production_discover_current_executed_with_explicit_IO_seams": true,
+    "original8s_checked_singlecall": true
+  },
+  "private_baseline_fixed_file_only": true,
+  "no_live_process_reads": true,
+  "Main": false,
+  "Android": false,
+  "child": false,
+  "writes": false,
+  "nonce": false,
+  "actionlock": false,
+  "source_pins": {
+    "current_discovery.py": {
+      "bytes": 8436,
+      "sha256": "dfd1208793980d92664f55aab040042cdc4cdd5e0ec7e66f016e0140d87a58f5"
+    },
+    "check_readiness_discovery.py": {
+      "bytes": 13077,
+      "sha256": "5f8ab4febf99a3fd15ecf79c5c6ccdbb17a0569b289bfed6a4910e6f8a64150f"
+    },
+    "references/android_app.py": {
+      "bytes": 37574,
+      "sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66"
+    }
+  },
+  "request": {
+    "bytes": 70606,
+    "sha256": "8f4e4d83fd96dc95f2bfe1eb52acdb7f248defc9f7b08f56d4b57efc5a922a8f"
+  },
+  "stdin": {
+    "bytes": 60832,
+    "sha256": "ed68ae07605bbd66372c0aad7f86b4a34b137290530a29c14849b24b5c06809e"
+  }
+}

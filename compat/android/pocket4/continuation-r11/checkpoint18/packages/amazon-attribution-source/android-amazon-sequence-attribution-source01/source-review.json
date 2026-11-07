@@ -1,0 +1,52 @@
+{
+  "actual_failed_inspection": {
+    "bytes": 49731,
+    "git_blob_sha": "62f1a8acdfc2dd43122e59fd2fe9bfbcd72ff5ac",
+    "sha256": "682e902089a959915d4f3b3f75616cdccd60f9ef76c68ddf78d96fe7c72018a2"
+  },
+  "baseline": {
+    "bytes": 32971,
+    "git_blob_sha": "f6c62b5935c040892a0850247b2f20dc3926f921",
+    "sha256": "c9a430a8260db4d9189bd56fe42b425538f47b76b410ff6a0fc0ed9786e175c6"
+  },
+  "candidate": {
+    "bytes": 34036,
+    "git_blob_sha": "d274803df2e39f289701d4f5646675a920156deb",
+    "sha256": "0e861800ce12cbb63f9ca5cfa80abbf9ecf9bfde00392c2d03cae9827af31ec1"
+  },
+  "change": "Only new pure retained-observation helper and the original worker except's diagnostic assignment. Existing u.remember, first error, all finally blocks, commands, full-tree/action predicates and readiness caps unchanged.",
+  "controls": {
+    "actual_python_executed": false,
+    "planned_cases": 9,
+    "scope": "AST-only compilation of the production pure helper and actual handler; real retained actual JSON plus synthetic first/secondary-error records; no full module import, file/process/Android/Main actions",
+    "source": {
+      "bytes": 6187,
+      "git_blob_sha": "e551581f2b71520763963367bcaa131fc1f237bb",
+      "sha256": "8ad5d7eeed948de12a98e170fcd1de6db1bd9af80a004ab86705731e2209b7e4"
+    }
+  },
+  "controls_request": {
+    "bytes": 138901,
+    "git_blob_sha": "4f6f6a9c15a8b2f6ad2cac129fe80c87417e2b18",
+    "sha256": "8028f01c4fc8f210693d98a3c4da8f48c975913c590db7f75f376b170efdb2ff"
+  },
+  "evidence": "Amazon05 original top failed_sequence_observation equals its successful independent post_sequence, whereas navigation.failed_sequence_observation and error.details preserve the original failed inspection/restoration false. Both original source and runtime receipts remain unchanged.",
+  "local_execution_unavailable": true,
+  "manual_source_and_exact_inverse_checked": true,
+  "old_flow_nonce_and_helper_in_candidate": "Baseline constants intentionally retained for review only; future runnable flow requires separately reviewed fresh attempt and actual new helper binding.",
+  "production_or_App_qualification": false,
+  "rules": [
+    "Use the navigation's retained first failure observation if present.",
+    "Use failed post as first only when navigation's first error phase is independent_post_entry_inspection.",
+    "Keep successful and failed independent post records under distinct top-level fields.",
+    "When no first-failure observation exists, do not synthesize it from Session's last sequence or a secondary post.",
+    "Do not change original non-inspect handler behavior."
+  ],
+  "schema": 1,
+  "source_diff": {
+    "bytes": 1803,
+    "git_blob_sha": "1dbf03ccbd267337693ee6dcf34b2bb64374503f",
+    "sha256": "16ea6e774469ca3386f58ffabe64b24208542a89416e77581caf4e158c52a692"
+  },
+  "state": "SOURCE_ONLY_NOT_UI_DISPATCHABLE"
+}

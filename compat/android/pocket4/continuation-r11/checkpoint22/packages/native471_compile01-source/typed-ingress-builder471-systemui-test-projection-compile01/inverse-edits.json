@@ -1,0 +1,323 @@
+{
+  "schema": 1,
+  "production": {
+    "base_blob": "bbaa6bffd423a7e1c6be1269a9d3bbb68fb9f3ff",
+    "candidate_blob": "ffcc678a07d760acf10b38ad0671543f0539d661",
+    "edits": [
+      {
+        "label": "fixed original SystemUI tests source pin",
+        "before": "        \"platform_testing/libraries/motion/Android.bp\" => (2098,",
+        "after": "        \"frameworks/base/packages/SystemUI/tests/Android.bp\" => (3392,\n            \"f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da\",\n            &[]),\n        \"platform_testing/libraries/motion/Android.bp\" => (2098,"
+      },
+      {
+        "label": "private exact SystemUI tests projection helper",
+        "before": "fn project_blueprints(p: &mut Projection, source: &Path, typed_ingress: bool) -> Result<()> {",
+        "after": "const TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT: &str =\n    \"frameworks/base/packages/SystemUI/tests/Android.bp\";\n\nfn project_typed_ingress_systemui_tests(p: &mut Projection, source: &Path) -> Result<()> {\n    // The typed route retains three providers in SystemUI/Android.bp, not the\n    // SystemUI application/test build. Match that boundary for these five\n    // exact test modules only; other subdirectories are not traversed.\n    // A complete upstream body is required before the original is journaled.\n    let path = source.join(TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT);\n    let original = fs::read_to_string(&path)?;\n    p.put(&path, typed_ingress_shared_blueprint(\n        TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT, &original)?)\n}\n\nfn project_blueprints(p: &mut Projection, source: &Path, typed_ingress: bool) -> Result<()> {"
+      },
+      {
+        "label": "typed route only call",
+        "before": "        project_typed_ingress_hal_blueprints(p, source)?;\n    }",
+        "after": "        project_typed_ingress_hal_blueprints(p, source)?;\n        project_typed_ingress_systemui_tests(p, source)?;\n    }"
+      },
+      {
+        "label": "actual new fixture and projected hash",
+        "before": "         \"f5e81cc5342f8c2d50799c437df0e258e697b560e16052bbfa5cec9385523ce1\"),\n        (\"platform_testing/libraries/motion/Android.bp\",",
+        "after": "         \"f5e81cc5342f8c2d50799c437df0e258e697b560e16052bbfa5cec9385523ce1\"),\n        (TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT,\n         include_str!(\"../../../android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp\"),\n         \"42118873220b0cc4d07e21a961052ddd5d81ab67be8df5d7c9dba9bd966aaeb5\"),\n        (\"platform_testing/libraries/motion/Android.bp\","
+      },
+      {
+        "label": "fixture inventory count",
+        "before": "assert_eq!(SHARED_PROVIDER_FIXTURES.len(), 29);",
+        "after": "assert_eq!(SHARED_PROVIDER_FIXTURES.len(), 30);"
+      },
+      {
+        "label": "three focused real file regression cases",
+        "before": "    #[test]\n    fn native_engine_mode_rejects_widening_before_command_mutation() {",
+        "after": "    #[test]\n    fn typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths() {\n        let original = include_str!(\n            \"../../../android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp\");\n        let parent_original = include_str!(\n            \"../../../android/native-role-ingress/provider-fixtures/SystemUI.Android.bp\");\n        let names = [\n            \"SystemUITests_defaults\", \"SystemUITests\",\n            \"SystemUITests_systemui_accessibility\", \"SystemUITests_presubmit\",\n            \"SystemUI_test_fixtures\",\n        ];\n        assert_eq!(original.matches(\"    name: \\\"\").count(), names.len());\n        for name in names {\n            assert_eq!(original.matches(&format!(\"    name: \\\"{name}\\\",\")).count(), 1);\n        }\n        let expected = concat!(\n            \"package {\\n\",\n            \"    default_team: \\\"trendy_team_system_ui_please_use_a_more_specific_subteam_if_possible_\\\",\\n\",\n            \"    default_applicable_licenses: [\\\"frameworks_base_packages_SystemUI_license\\\"],\\n\",\n            \"}\\n\",\n        );\n        let fixture = tempfile::tempdir().unwrap();\n        let source = fixture.path().join(\"aosp-source\");\n        let path = source.join(TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT);\n        let parent = source.join(\"frameworks/base/packages/SystemUI/Android.bp\");\n        let untouched = source.join(\"frameworks/base/packages/SystemUI/tests/other/Android.bp\");\n        let journal = fixture.path().join(\"projection.json\");\n        write(&path, original).unwrap();\n        write(&parent, parent_original).unwrap();\n        write(&untouched, \"unrelated exact bytes\\n\").unwrap();\n        let parent_projected = typed_ingress_shared_blueprint(\n            \"frameworks/base/packages/SystemUI/Android.bp\", parent_original).unwrap();\n        {\n            let mut projection = Projection::new(journal.clone()).unwrap();\n            projection.put(&parent, &parent_projected).unwrap();\n            project_typed_ingress_systemui_tests(&mut projection, &source).unwrap();\n            assert_eq!(fs::read(&path).unwrap(), expected.as_bytes());\n            assert_eq!(fs::read(&parent).unwrap(), parent_projected.as_bytes());\n            assert_eq!(fs::read(&untouched).unwrap(), b\"unrelated exact bytes\\n\");\n            let originals: Vec<Original> = serde_json::from_slice(&fs::read(&journal).unwrap()).unwrap();\n            assert_eq!(originals.len(), 2);\n            assert_eq!(originals[0].path, parent);\n            assert_eq!(originals[0].bytes.as_deref(), Some(parent_original.as_bytes()));\n            assert_eq!(originals[1].path, path);\n            assert_eq!(originals[1].bytes.as_deref(), Some(original.as_bytes()));\n        }\n        assert!(!journal.exists());\n        assert_eq!(fs::read(&path).unwrap(), original.as_bytes());\n        assert_eq!(fs::read(&parent).unwrap(), parent_original.as_bytes());\n        assert_eq!(fs::read(&untouched).unwrap(), b\"unrelated exact bytes\\n\");\n    }\n\n    #[test]\n    fn typed_systemui_test_projection_rejects_wrong_source_before_journal_or_write() {\n        let original = include_str!(\n            \"../../../android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp\");\n        for changed in [\n            original.replacen(\"SystemUITests_defaults\", \"SystemUITests_defaultX\", 1),\n            format!(\"{original}\\n\"),\n        ] {\n            let fixture = tempfile::tempdir().unwrap();\n            let source = fixture.path().join(\"aosp-source\");\n            let path = source.join(TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT);\n            let journal = fixture.path().join(\"projection.json\");\n            write(&path, &changed).unwrap();\n            {\n                let mut projection = Projection::new(journal.clone()).unwrap();\n                let error = project_typed_ingress_systemui_tests(&mut projection, &source)\n                    .unwrap_err().to_string();\n                assert!(error.contains(\"typed ingress shared provider source changed\"));\n                assert!(error.contains(TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT));\n                assert!(projection.originals.is_empty());\n                assert!(!journal.exists());\n                assert_eq!(fs::read(&path).unwrap(), changed.as_bytes());\n            }\n            assert!(!journal.exists());\n            assert_eq!(fs::read(&path).unwrap(), changed.as_bytes());\n        }\n    }\n\n    #[test]\n    fn typed_systemui_test_projection_recovers_complete_original_from_durable_journal() {\n        let original = include_str!(\n            \"../../../android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp\");\n        let fixture = tempfile::tempdir().unwrap();\n        let source = fixture.path().join(\"aosp-source\");\n        let path = source.join(TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT);\n        let journal = fixture.path().join(\"projection.json\");\n        write(&path, original).unwrap();\n        let mut projection = Projection::new(journal.clone()).unwrap();\n        project_typed_ingress_systemui_tests(&mut projection, &source).unwrap();\n        assert_ne!(fs::read(&path).unwrap(), original.as_bytes());\n        let originals: Vec<Original> = serde_json::from_slice(&fs::read(&journal).unwrap()).unwrap();\n        assert_eq!(originals.len(), 1);\n        assert_eq!(originals[0].path, path);\n        assert_eq!(originals[0].bytes.as_deref(), Some(original.as_bytes()));\n        // Model an interrupted process while exercising the real recover entry.\n        std::mem::forget(projection);\n        assert!(Projection::new(journal.clone()).is_err());\n        recover(&journal, &source).unwrap();\n        assert_eq!(fs::read(&path).unwrap(), original.as_bytes());\n        assert!(!journal.exists());\n    }\n\n    #[test]\n    fn native_engine_mode_rejects_widening_before_command_mutation() {"
+      }
+    ]
+  },
+  "compiler": {
+    "base_blob": "63843b2addeb4f37970b8390d4e111bdabddb835",
+    "candidate_blob": "d57dbae7cbe634481849e95598a5e190cb7b3f79",
+    "edits": [
+      {
+        "label": "scope docstring",
+        "before": "\"\"\"Compile builder470 exact published-lock alignment with 18 updater and 9 source controls; no platform execution.\"\"\"",
+        "after": "\"\"\"Compile builder471 fixed SystemUI test projection with 21 updater and 9 source controls; no platform execution.\"\"\"",
+        "positions": [
+          23
+        ]
+      },
+      {
+        "label": "parent source",
+        "before": "BASE_SOURCE = Path('/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106/builder-source')",
+        "after": "BASE_SOURCE = Path('/home/alex/work/pocket4-native-typed-ingress-builder470-published-lock-alignment-compile-01-20261106/builder-source')",
+        "positions": [
+          9598
+        ]
+      },
+      {
+        "label": "fresh root",
+        "before": "ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder470-published-lock-alignment-compile-01-20261106')",
+        "after": "ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder471-systemui-test-projection-compile-01-20261106')",
+        "positions": [
+          9736
+        ]
+      },
+      {
+        "label": "parent manifest",
+        "before": "MANIFEST_PARENT = '88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701'",
+        "after": "MANIFEST_PARENT = 'd87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057'",
+        "positions": [
+          10080
+        ]
+      },
+      {
+        "label": "candidate manifest",
+        "before": "MANIFEST_470 = 'd87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057'",
+        "after": "MANIFEST_471 = 'c29c7b05fcfdf3def918d2bc963c6fe0c25a0430c87249f3de781d5d8bf68ae0'",
+        "positions": [
+          10165
+        ]
+      },
+      {
+        "label": "candidate constant references",
+        "before": "MANIFEST_470",
+        "after": "MANIFEST_471",
+        "positions": [
+          55939,
+          60931,
+          67415
+        ]
+      },
+      {
+        "label": "three focused controls",
+        "before": "TESTS = ORIGINAL_TESTS + TYPED_INGRESS_TESTS + PROVIDER_CLOSURE_TESTS + HAL_PROVIDER_TESTS",
+        "after": "SYSTEMUI_PROJECTION_TESTS = [\"android::tests::typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths\",\"android::tests::typed_systemui_test_projection_rejects_wrong_source_before_journal_or_write\",\"android::tests::typed_systemui_test_projection_recovers_complete_original_from_durable_journal\"]\nTESTS = ORIGINAL_TESTS + TYPED_INGRESS_TESTS + PROVIDER_CLOSURE_TESTS + HAL_PROVIDER_TESTS + SYSTEMUI_PROJECTION_TESTS",
+        "positions": [
+          13722
+        ]
+      },
+      {
+        "label": "fixed source delta",
+        "before": "FIXED_PROVIDER_DELTA = [\"android/manifest/m2-role-ingress-hal-provider-source-lock.json\",\"tools/droidloom-update/src/native_role_ingress.rs\"]",
+        "after": "FIXED_PROVIDER_DELTA = [\"android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp\",\"tools/droidloom-update/src/android.rs\"]",
+        "positions": [
+          14159
+        ]
+      },
+      {
+        "label": "proof pin",
+        "before": "ALIGNMENT_PROOF_SHA = '4b74519eee1909efa3ee0283fe67fa6432525a80bff5049bae29e159ad1ea222'",
+        "after": "SYSTEMUI_PROJECTION_PROOF_SHA = '17fe54cebd452ef14258461f0817b9cbc753ccb0619f28e7274e61879a89d762'",
+        "positions": [
+          14298
+        ]
+      },
+      {
+        "label": "scope",
+        "before": "'scope':'fresh builder470 exact published-lock alignment compile01, 499 source files, 18 unchanged updater and 9 unchanged source-resume controls; fixed observed manifest bytes only, no real published source/staging/Soong/Java/Android/service execution'",
+        "after": "'scope':'fresh builder471 fixed five-module SystemUI test projection compile01, 500 source files, 18 original plus 3 new updater controls and 9 unchanged source-resume controls; no real published source/staging/Soong/Java/Android/service execution'",
+        "positions": [
+          54353
+        ]
+      },
+      {
+        "label": "parent authority filenames",
+        "before": "compiled-parent469-",
+        "after": "compiled-parent470-",
+        "positions": [
+          56166,
+          57238
+        ]
+      },
+      {
+        "label": "candidate map filename",
+        "before": "expected-builder470-manifest.json",
+        "after": "expected-builder471-manifest.json",
+        "positions": [
+          56252
+        ]
+      },
+      {
+        "label": "map counts",
+        "before": "require(len(expected)==499 and len(copied_expected)==499,'source manifest count changed')",
+        "after": "require(len(expected)==499 and len(copied_expected)==500,'source manifest count changed')",
+        "positions": [
+          56386
+        ]
+      },
+      {
+        "label": "parent result SHA",
+        "before": "'3636057b9a20fc895657064da3fb66d8ded7e69ebfa5a5b92072a51b33f29fd5'",
+        "after": "'f4e78f21dec485f59ff2149cb12298c070142dbad4e29b00a776729a376eea4c'",
+        "positions": [
+          57283
+        ]
+      },
+      {
+        "label": "parent result bytes",
+        "before": "parent_pin['bytes']==170316",
+        "after": "parent_pin['bytes']==172040",
+        "positions": [
+          57405
+        ]
+      },
+      {
+        "label": "parent ELF",
+        "before": "parent['builder_elf']['bytes']==34767856 and\n                parent['builder_elf']['sha256']=='c758a1e12bbc1925cc36f8cde3b369ab8449ad1cf460a9854b42d627575627d8'",
+        "after": "parent['builder_elf']['bytes']==34767864 and\n                parent['builder_elf']['sha256']=='fd6911bb3919757067c2948a0dac09c7f071beb9801273dd721e24c6d88ec23d'",
+        "positions": [
+          58119
+        ]
+      },
+      {
+        "label": "parent alignment already actual",
+        "before": "parent['source_delta']['actual_source_file_count']==499 and\n                parent['framework_Java_and_Android_JNI_compiled'] is False",
+        "after": "parent['source_delta']['actual_source_file_count']==499 and\n                parent['observed_manifest_rebuilt_exactly'] is True and parent['source_lock_writer']=='UNKNOWN' and\n                parent['framework_Java_and_Android_JNI_compiled'] is False",
+        "positions": [
+          58759
+        ]
+      },
+      {
+        "label": "parent actual error label",
+        "before": "'actual compiled parent469 qualification differs'",
+        "after": "'actual compiled parent470 qualification differs'",
+        "positions": [
+          59096
+        ]
+      },
+      {
+        "label": "parent actual field",
+        "before": "report['actual_parent469_compile_authority']",
+        "after": "report['actual_parent470_compile_authority']",
+        "positions": [
+          59155
+        ]
+      },
+      {
+        "label": "replace completed historical alignment proof with exact new scoped projection proof",
+        "before": "        alignment_raw,alignment_pin=pinned_packet('lock-alignment-proof.json',ALIGNMENT_PROOF_SHA)\n        alignment=json.loads(alignment_raw)\n        require(alignment['state']=='SOURCE_ONLY_LOCK_ALIGNMENT_NOT_COMPILED_OR_SOONG_QUALIFIED' and\n                alignment['baseline']['manifest']['sha256']==MANIFEST_PARENT and\n                alignment['baseline']['compile_result']['sha256']==parent_pin['sha256'] and\n                alignment['candidate']['manifest']['sha256']==MANIFEST_471 and\n                alignment['candidate']['source_delta']==FIXED_PROVIDER_DELTA and\n                alignment['candidate']['source_files']==499 and alignment['candidate']['unchanged']==497 and\n                alignment['candidate']['changed_existing']==2 and alignment['candidate']['added']==0 and\n                alignment['source_locks']['project_count']==225 and alignment['source_locks']['root_links']==8 and\n                alignment['strictness']['ALLOW_MISSING_DEPENDENCIES']=='false' and\n                alignment['strictness']['targets']==['framework-minus-apex','libandroid_runtime'] and\n                alignment['history']['source_lock_writer']=='UNKNOWN' and\n                alignment['validation']['host_compile_performed'] is False,\n                'fixed lock-alignment derivation does not bind this candidate')\n        lock_name='android/manifest/m2-role-ingress-hal-provider-source-lock.json'\n        previous_lock_raw,previous_lock_pin=held(COPIED/lock_name)\n        current_lock_raw,current_lock_pin=pinned_packet('delta/'+lock_name,copied_expected[lock_name]['sha256'])\n        require(previous_lock_pin['sha256']==expected[lock_name]['sha256']==alignment['source_locks']['historical']['sha256'] and\n                previous_lock_pin['bytes']==expected[lock_name]['bytes']==96934 and\n                current_lock_pin['sha256']==alignment['source_locks']['candidate']['sha256'] and\n                current_lock_pin['bytes']==copied_expected[lock_name]['bytes']==96957,\n                'exact old/current lock bytes differ from the bound source maps')\n        previous_lock=json.loads(previous_lock_raw);current_lock=json.loads(current_lock_raw)\n        field_changes=alignment['exact_lock_field_changes']\n        require([(row['path'],row['project']) for row in field_changes]==[\n                    ('/projects/221/sparse_paths','packages/services/Car'),\n                    ('/projects/224/purpose','packages/modules/NeuralNetworks'),\n                    ('/projects/224/sparse_paths','packages/modules/NeuralNetworks')],\n                'lock alignment is not exactly the three reviewed fields')\n        for row in field_changes:\n            _,parent_name,index,field=row['path'].split('/')\n            require(parent_name=='projects','non-project lock field changed')\n            project=previous_lock['projects'][int(index)]\n            require(project['path']==row['project'] and project[field]==row['before'],\n                    'historical lock field does not equal the exact reviewed value')\n            if field=='sparse_paths':\n                require(len(set(row['before']))==len(row['before']) and len(set(row['after']))==len(row['after']) and\n                        sorted(row['before'])==sorted(row['after']),\n                        'lock alignment changed the selected source path set')\n            project[field]=row['after']\n        require(previous_lock==current_lock and len(current_lock['projects'])==225 and len(current_lock['links'])==8,\n                'other source-lock field, project, URL, commit or selection changed')\n        observed_raw,observed_pin=pinned_packet('observed-published225-manifest.json',\n            '5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d')\n        require(observed_pin['bytes']==109252 and\n                alignment['observed_materialized_manifest']['sha256']==observed_pin['sha256'],\n                'fixed observed materialized manifest bytes differ')\n        # Exact serialization of the already observed plan, not a fresh checkout qualification.\n        # The unchanged droidloom-source verifier/prepare/reconcile remains the real build gate.\n        projected_projects=[]\n        for project in current_lock['projects']:\n            projected={'path':project['path'],'url':current_lock['remote_base']+project['name'],\n                       'commit':project['commit'],'purpose':project['purpose']}\n            if project.get('sparse_paths'):\n                projected['sparse_paths']=project['sparse_paths']\n            projected_projects.append(projected)\n        projected_plan={'schema_version':1,'superproject_commit':current_lock['superproject']['commit'],\n                        'projects':projected_projects,'links':current_lock['links'],'unrestricted_repo_sync':False}\n        rebuilt={'schema_version':1,'source_lock_sha256':sha(current_lock_raw),'plan':projected_plan}\n        require(json.dumps(rebuilt,indent=2,ensure_ascii=False).encode('utf-8')==observed_raw,\n                'current exact lock does not reconstruct the complete observed manifest')\n        report['lock_alignment_derivation_authority']=alignment_pin\n        report['observed_materialized_manifest_authority']=observed_pin\n        report['historical_lock_authority']=previous_lock_pin\n        report['observed_manifest_rebuilt_exactly']=True\n        report['source_lock_writer']='UNKNOWN'\n",
+        "after": "        projection_raw,projection_pin=pinned_packet('systemui-test-projection-proof.json',SYSTEMUI_PROJECTION_PROOF_SHA)\n        projection=json.loads(projection_raw)\n        require(projection['state']=='SOURCE_ONLY_FIXED_SYSTEMUI_TEST_PROJECTION_NOT_COMPILED' and\n                projection['baseline']['manifest']['sha256']==MANIFEST_PARENT and\n                projection['baseline']['compile_result']['sha256']==parent_pin['sha256'] and\n                projection['candidate']['manifest']['sha256']==MANIFEST_471 and\n                projection['candidate']['source_delta']==FIXED_PROVIDER_DELTA and\n                projection['candidate']['source_files']==500 and projection['candidate']['unchanged']==498 and\n                projection['candidate']['changed_existing']==['tools/droidloom-update/src/android.rs'] and\n                projection['candidate']['added']==['android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp'] and\n                projection['scope']['source_path']=='frameworks/base/packages/SystemUI/tests/Android.bp' and\n                projection['scope']['excluded_modules']==['SystemUITests_defaults','SystemUITests',\n                    'SystemUITests_systemui_accessibility','SystemUITests_presubmit','SystemUI_test_fixtures'] and\n                projection['scope']['targets']==['framework-minus-apex','libandroid_runtime'] and\n                projection['scope']['dependency_mode']=='Strict' and\n                projection['scope']['ALLOW_MISSING_DEPENDENCIES']=='false' and\n                projection['scope']['no_find_ignore_added'] is True and\n                projection['validation']['new_focused_tests']==SYSTEMUI_PROJECTION_TESTS and\n                projection['validation']['host_compile_performed'] is False,\n                'fixed five-module SystemUI projection proof does not bind this candidate')\n        lock_name='android/manifest/m2-role-ingress-hal-provider-source-lock.json'\n        lock_raw,lock_pin=held(COPIED/lock_name)\n        require(expected[lock_name]==copied_expected[lock_name] and\n                lock_pin['bytes']==expected[lock_name]['bytes']==96957 and\n                lock_pin['sha256']==expected[lock_name]['sha256']==\n                    '72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d' and\n                projection['source_lock']['sha256']==lock_pin['sha256'] and\n                projection['source_lock']['unchanged'] is True,\n                'exact 225-project source lock changed')\n        current_lock=json.loads(lock_raw)\n        require(len(current_lock['projects'])==225 and len(current_lock['links'])==8,\n                'fixed source-lock project or link inventory differs')\n        fixture_name='android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp'\n        fixture_raw,fixture_pin=pinned_packet('delta/'+fixture_name,\n            'f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da')\n        require(fixture_pin['bytes']==copied_expected[fixture_name]['bytes']==3392 and\n                fixture_pin['sha256']==copied_expected[fixture_name]['sha256']==\n                    projection['scope']['original']['sha256'],\n                'complete locked upstream SystemUI tests fixture differs')\n        report['systemui_test_projection_authority']=projection_pin\n        report['systemui_test_original_fixture_authority']=fixture_pin\n        report['unchanged_225_project_lock_authority']=lock_pin\n        report['source_lock_writer']='UNKNOWN'\n",
+        "positions": [
+          60916
+        ]
+      },
+      {
+        "label": "one changed and one added leaf",
+        "before": "require(sorted(changes)==wanted and set(expected)==set(copied_expected) and\n                sum(name not in expected for name in changes)==0 and\n                sum(name in expected for name in changes)==2 and\n                all(copied_expected[name]==expected[name] for name in expected if name not in wanted),\n                'lock alignment delta is not exactly two replacements and no additions')",
+        "after": "require(sorted(changes)==wanted and set(expected)<set(copied_expected) and\n                sum(name not in expected for name in changes)==1 and\n                sum(name in expected for name in changes)==1 and\n                all(copied_expected[name]==expected[name] for name in expected if name not in wanted),\n                'SystemUI projection delta is not exactly one Rust replacement and one original fixture addition')",
+        "positions": [
+          64541
+        ]
+      },
+      {
+        "label": "copied map error",
+        "before": "'actual copied 499-file builder470 manifest differs'",
+        "after": "'actual copied 500-file builder471 manifest differs'",
+        "positions": [
+          66053
+        ]
+      },
+      {
+        "label": "delta count claim",
+        "before": "'unchanged_existing':497,'actual_source_file_count':499,\n                                'builder_revision_name':'470-published-lock-alignment','Rust_source_files_changed':1,",
+        "after": "'unchanged_existing':498,'actual_source_file_count':500,\n                                'builder_revision_name':'471-fixed-systemui-test-projection','Rust_source_files_changed':1,",
+        "positions": [
+          66425
+        ]
+      },
+      {
+        "label": "lock not modified",
+        "before": "'current_hal_source_lock_exact_metadata_and_order_aligned':True,",
+        "after": "'current_hal_source_lock_unchanged':True,'fixed_SystemUI_tests_BP_original_fixture_added':True,",
+        "positions": [
+          67069
+        ]
+      },
+      {
+        "label": "new registration controls",
+        "before": "len(PROVIDER_CLOSURE_TESTS)==6 and len(HAL_PROVIDER_TESTS)==3 and len(TESTS)==len(set(TESTS))==18 and\n                all(test_list.splitlines().count(name+': test')==1 for name in PARENT_TESTS+PROVIDER_CLOSURE_TESTS+HAL_PROVIDER_TESTS),\n                'original 26 registrations or nine provider controls absent/duplicated in actual test executable')",
+        "after": "len(PROVIDER_CLOSURE_TESTS)==6 and len(HAL_PROVIDER_TESTS)==3 and\n                len(SYSTEMUI_PROJECTION_TESTS)==3 and len(TESTS)==len(set(TESTS))==21 and\n                all(test_list.splitlines().count(name+': test')==1 for name in\n                    PARENT_TESTS+PROVIDER_CLOSURE_TESTS+HAL_PROVIDER_TESTS+SYSTEMUI_PROJECTION_TESTS),\n                'original 26 registrations, nine provider controls or three SystemUI projection controls absent/duplicated')",
+        "positions": [
+          74060
+        ]
+      },
+      {
+        "label": "total test registration",
+        "before": "require(len(listed_names)==208 and",
+        "after": "require(len(listed_names)==211 and",
+        "positions": [
+          74626
+        ]
+      },
+      {
+        "label": "avoid reserved fakeroot index20",
+        "before": "        for index,name in enumerate(TESTS):\n            report['focused_result_gates'].append(focused_test(\n                test_binary,name,index,len(listed_names),test_env,report['commands']))\n",
+        "after": "        for index,name in enumerate(TESTS[:-len(SYSTEMUI_PROJECTION_TESTS)]):\n            report['focused_result_gates'].append(focused_test(\n                test_binary,name,index,len(listed_names),test_env,report['commands']))\n        # Preserve every original label and the reserved exact fakeroot index20.\n        for index,name in enumerate(SYSTEMUI_PROJECTION_TESTS,start=200):\n            report['focused_result_gates'].append(focused_test(\n                test_binary,name,index,len(listed_names),test_env,report['commands']))\n",
+        "positions": [
+          75716
+        ]
+      },
+      {
+        "label": "new result counts",
+        "before": "        report['hal_provider_tests_passed']=len(HAL_PROVIDER_TESTS)\n",
+        "after": "        report['hal_provider_tests_passed']=len(HAL_PROVIDER_TESTS)\n        report['systemui_test_projection_tests_passed']=len(SYSTEMUI_PROJECTION_TESTS)\n        report['SystemUI_application_and_test_modules_qualified']=False\n",
+        "positions": [
+          81453
+        ]
+      },
+      {
+        "label": "command count",
+        "before": "require(len(report['commands'])==65 and",
+        "after": "require(len(report['commands'])==68 and",
+        "positions": [
+          82178
+        ]
+      },
+      {
+        "label": "PLAN count",
+        "before": "'source_files':499,",
+        "after": "'source_files':500,",
+        "positions": [
+          85146
+        ]
+      }
+    ],
+    "method": "Forward steps replace exact before strings at recorded offsets; inverse steps reverse order and compensate within-step offsets by prior replacements."
+  },
+  "stage": {
+    "base_blob": "15db687b5a1fa0a8b41e1fbe0fddbc72fdced711",
+    "edits": [
+      {
+        "label": "fresh471 root",
+        "before": "/home/alex/work/pocket4-native-typed-ingress-builder470-published-lock-alignment-compile-01-20261106",
+        "after": "/home/alex/work/pocket4-native-typed-ingress-builder471-systemui-test-projection-compile-01-20261106"
+      },
+      {
+        "label": "five transferred sources",
+        "before": "TRANSFERRED={\"compile_builder.py\":{\"bytes\":86321,\"sha256\":\"63bad2f9323b6f3881d883a792afd49b2472e43f35740253c01534dca91913cc\"},\"expected-builder470-manifest.json\":{\"bytes\":99327,\"sha256\":\"d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057\"},\"lock-alignment-proof.json\":{\"bytes\":7697,\"sha256\":\"4b74519eee1909efa3ee0283fe67fa6432525a80bff5049bae29e159ad1ea222\"},\"observed-published225-manifest.json\":{\"bytes\":109252,\"sha256\":\"5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d\"},\"delta/tools/droidloom-update/src/native_role_ingress.rs\":{\"bytes\":39648,\"sha256\":\"43cbfceac6f2a5dbcaea93fa6848e0f8740c096cf5412361f42ab86d22c219f3\"},\"delta/android/manifest/m2-role-ingress-hal-provider-source-lock.json\":{\"bytes\":96957,\"sha256\":\"72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d\"}}",
+        "after": "TRANSFERRED={\"compile_builder.py\":{\"bytes\":85579,\"sha256\":\"5b4e7d699b6ca82c9a60ff28cd49cf7d101fd6b92608fe70a92380182f3aac4f\"},\"expected-builder471-manifest.json\":{\"bytes\":99548,\"sha256\":\"c29c7b05fcfdf3def918d2bc963c6fe0c25a0430c87249f3de781d5d8bf68ae0\"},\"systemui-test-projection-proof.json\":{\"bytes\":6531,\"sha256\":\"17fe54cebd452ef14258461f0817b9cbc753ccb0619f28e7274e61879a89d762\"},\"delta/tools/droidloom-update/src/android.rs\":{\"bytes\":301533,\"sha256\":\"7bbe16d118fe610ae42e9c1b906b65aee5ceeb0804cdbaee93ee61ab5b271629\"},\"delta/android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp\":{\"bytes\":3392,\"sha256\":\"f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da\"}}"
+      },
+      {
+        "label": "actual470 two authorities",
+        "before": "REUSED_AUTHORITY={\"go-control-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/go-control-result.json\",\"bytes\":44083,\"sha256\":\"391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674\",\"mode\":256},\"image-tools-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/image-tools-result.json\",\"bytes\":34633,\"sha256\":\"b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292\",\"mode\":256},\"prior-compile01-failure.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/prior-compile01-failure.json\",\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\",\"mode\":256},\"registry-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/registry-result.json\",\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\",\"mode\":256},\"rust193-tools-recheck-read03-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/rust193-tools-recheck-read03-result.json\",\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\",\"mode\":256},\"selected-build.stdout\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selected-build.stdout\",\"bytes\":2121,\"sha256\":\"82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d\",\"mode\":256},\"selection-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selection-result.json\",\"bytes\":14132,\"sha256\":\"185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf\",\"mode\":256},\"typed-lock-derivation.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-lock-derivation.json\",\"bytes\":6051,\"sha256\":\"c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0\",\"mode\":256},\"typed-root-trees-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-root-trees-result.json\",\"bytes\":51842,\"sha256\":\"0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8\",\"mode\":256},\"compiled-parent469-manifest.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106/attempt01/copied-builder-source-manifest.json\",\"bytes\":99327,\"sha256\":\"88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701\",\"mode\":384},\"compiled-parent469-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106/attempt01/result.json\",\"bytes\":170316,\"sha256\":\"3636057b9a20fc895657064da3fb66d8ded7e69ebfa5a5b92072a51b33f29fd5\",\"mode\":384}}",
+        "after": "REUSED_AUTHORITY={\"go-control-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/go-control-result.json\",\"bytes\":44083,\"sha256\":\"391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674\",\"mode\":256},\"image-tools-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/image-tools-result.json\",\"bytes\":34633,\"sha256\":\"b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292\",\"mode\":256},\"prior-compile01-failure.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/prior-compile01-failure.json\",\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\",\"mode\":256},\"registry-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/registry-result.json\",\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\",\"mode\":256},\"rust193-tools-recheck-read03-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/rust193-tools-recheck-read03-result.json\",\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\",\"mode\":256},\"selected-build.stdout\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selected-build.stdout\",\"bytes\":2121,\"sha256\":\"82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d\",\"mode\":256},\"selection-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selection-result.json\",\"bytes\":14132,\"sha256\":\"185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf\",\"mode\":256},\"typed-lock-derivation.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-lock-derivation.json\",\"bytes\":6051,\"sha256\":\"c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0\",\"mode\":256},\"typed-root-trees-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-root-trees-result.json\",\"bytes\":51842,\"sha256\":\"0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8\",\"mode\":256},\"compiled-parent470-manifest.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder470-published-lock-alignment-compile-01-20261106/attempt01/copied-builder-source-manifest.json\",\"bytes\":99327,\"sha256\":\"d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057\",\"mode\":384},\"compiled-parent470-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder470-published-lock-alignment-compile-01-20261106/attempt01/result.json\",\"bytes\":172040,\"sha256\":\"f4e78f21dec485f59ff2149cb12298c070142dbad4e29b00a776729a376eea4c\",\"mode\":384}}"
+      },
+      {
+        "label": "whole fixed source set",
+        "before": "EXPECTED={\"compile_builder.py\":{\"bytes\":86321,\"sha256\":\"63bad2f9323b6f3881d883a792afd49b2472e43f35740253c01534dca91913cc\"},\"expected-builder470-manifest.json\":{\"bytes\":99327,\"sha256\":\"d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057\"},\"lock-alignment-proof.json\":{\"bytes\":7697,\"sha256\":\"4b74519eee1909efa3ee0283fe67fa6432525a80bff5049bae29e159ad1ea222\"},\"observed-published225-manifest.json\":{\"bytes\":109252,\"sha256\":\"5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d\"},\"delta/tools/droidloom-update/src/native_role_ingress.rs\":{\"bytes\":39648,\"sha256\":\"43cbfceac6f2a5dbcaea93fa6848e0f8740c096cf5412361f42ab86d22c219f3\"},\"delta/android/manifest/m2-role-ingress-hal-provider-source-lock.json\":{\"bytes\":96957,\"sha256\":\"72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d\"},\"go-control-result.json\":{\"bytes\":44083,\"sha256\":\"391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674\"},\"image-tools-result.json\":{\"bytes\":34633,\"sha256\":\"b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292\"},\"prior-compile01-failure.json\":{\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\"},\"registry-result.json\":{\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\"},\"rust193-tools-recheck-read03-result.json\":{\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\"},\"selected-build.stdout\":{\"bytes\":2121,\"sha256\":\"82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d\"},\"selection-result.json\":{\"bytes\":14132,\"sha256\":\"185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf\"},\"typed-lock-derivation.json\":{\"bytes\":6051,\"sha256\":\"c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0\"},\"typed-root-trees-result.json\":{\"bytes\":51842,\"sha256\":\"0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8\"},\"compiled-parent469-manifest.json\":{\"bytes\":99327,\"sha256\":\"88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701\"},\"compiled-parent469-result.json\":{\"bytes\":170316,\"sha256\":\"3636057b9a20fc895657064da3fb66d8ded7e69ebfa5a5b92072a51b33f29fd5\"}}",
+        "after": "EXPECTED={\"compile_builder.py\":{\"bytes\":85579,\"sha256\":\"5b4e7d699b6ca82c9a60ff28cd49cf7d101fd6b92608fe70a92380182f3aac4f\"},\"expected-builder471-manifest.json\":{\"bytes\":99548,\"sha256\":\"c29c7b05fcfdf3def918d2bc963c6fe0c25a0430c87249f3de781d5d8bf68ae0\"},\"systemui-test-projection-proof.json\":{\"bytes\":6531,\"sha256\":\"17fe54cebd452ef14258461f0817b9cbc753ccb0619f28e7274e61879a89d762\"},\"delta/tools/droidloom-update/src/android.rs\":{\"bytes\":301533,\"sha256\":\"7bbe16d118fe610ae42e9c1b906b65aee5ceeb0804cdbaee93ee61ab5b271629\"},\"delta/android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp\":{\"bytes\":3392,\"sha256\":\"f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da\"},\"go-control-result.json\":{\"bytes\":44083,\"sha256\":\"391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674\"},\"image-tools-result.json\":{\"bytes\":34633,\"sha256\":\"b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292\"},\"prior-compile01-failure.json\":{\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\"},\"registry-result.json\":{\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\"},\"rust193-tools-recheck-read03-result.json\":{\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\"},\"selected-build.stdout\":{\"bytes\":2121,\"sha256\":\"82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d\"},\"selection-result.json\":{\"bytes\":14132,\"sha256\":\"185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf\"},\"typed-lock-derivation.json\":{\"bytes\":6051,\"sha256\":\"c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0\"},\"typed-root-trees-result.json\":{\"bytes\":51842,\"sha256\":\"0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8\"},\"compiled-parent470-manifest.json\":{\"bytes\":99327,\"sha256\":\"d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057\"},\"compiled-parent470-result.json\":{\"bytes\":172040,\"sha256\":\"f4e78f21dec485f59ff2149cb12298c070142dbad4e29b00a776729a376eea4c\"}}"
+      },
+      {
+        "label": "source partition",
+        "before": "len(TRANSFERRED)==6 and len(REUSED_AUTHORITY)==11 and len(EXPECTED)==17",
+        "after": "len(TRANSFERRED)==5 and len(REUSED_AUTHORITY)==11 and len(EXPECTED)==16"
+      }
+    ]
+  },
+  "transport": {
+    "base_blob": "27ed5ea2e6dc5f020697d786eeb6f42952b3fa89",
+    "only_two_bound_pin_literals_changed": true
+  }
+}

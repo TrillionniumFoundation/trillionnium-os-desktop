@@ -1,0 +1,37 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import sys,hashlib;raw=sys.stdin.buffer.read(65537);assert len(raw)==33863 and hashlib.sha256(raw).hexdigest()==\"d784a2af4d3c62b714f3f89afc7be80a5bb09a2b09a5511a1853efbde6b95bcb\";scope={'__name__':'fixed_next3_install_nonce_generator','SOURCE_SHA256':\"d784a2af4d3c62b714f3f89afc7be80a5bb09a2b09a5511a1853efbde6b95bcb\"};exec(compile(raw,'<fixed-next3-install-nonce-generator>','exec'),scope);raise SystemExit(scope['main']())"
+    ],
+    "created_unix_ms": 1793999233719,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b2afe2b7-fc05-7f4f",
+    "idempotency_key": "pocket4-current-cell02-next3-owned-helper-install-nonce6-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b2afe2b7-fc05-7f4f",
+    "request_digest": "07e94978718b0312ed9272dc9e200376ccb72e98354934d8a3c100c91d8cf59d",
+    "request_fingerprint": 570067609488917266,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b2afe2b7-fc05-7f4f"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b2afe2b7-fc05-7f4f"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

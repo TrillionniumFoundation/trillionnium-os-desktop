@@ -1,0 +1,84 @@
+--- owner18/runtime/read-template.py
++++ owner19/runtime/read-template.py
+@@ -1,19 +1,18 @@
+ """Fixed single-report root read; no child, write, scan, chmod or runtime action."""
+-import base64
+-import gzip
+ import hashlib
+ import json
+ import os
+ import stat
++import sys
+ import traceback
+ 
+-ROOT_NAME = 'p4-owner18-normal-20261105-01-state'
++ROOT_NAME = 'p4-owner19-normal-20261105-01-state'
+ EXPECTED_REPORT_BYTES = None
+ EXPECTED_REPORT_SHA256 = None
+ NAMES = ('runtime-result.json',)
+ LIMIT = 5 * 1024 * 1024
+ ENVELOPE_LIMIT = 2 * LIMIT + 65536
+-GZIP_LIMIT = ENVELOPE_LIMIT + 65536
++WIRE_LIMIT = ENVELOPE_LIMIT + 65536
+ 
+ 
+ def need(ok, message):
+@@ -72,7 +71,7 @@
+ 
+ 
+ def main():
+-    result = {'schema': 1, 'kind': 'fixed-owner18-normal01-runtime-read', 'collection_complete': False,
++    result = {'schema': 1, 'kind': 'fixed-owner19-normal01-runtime-plain-read', 'collection_complete': False,
+               'files': {}, 'errors': [], 'mutations': False, 'qualification': False}
+     fds = []
+     try:
+@@ -106,12 +105,9 @@
+     result['collection_complete'] = result['collection_complete'] and not result['errors']
+     raw = (json.dumps(result, sort_keys=True, separators=(',', ':')) + '\n').encode()
+     need(len(raw) <= ENVELOPE_LIMIT, 'read envelope exceeds bound')
+-    compressed = gzip.compress(raw, mtime=0)
+-    need(len(compressed) <= GZIP_LIMIT, 'compressed envelope exceeds bound')
+-    print(json.dumps({'schema': 1, 'collection_complete': result['collection_complete'],
+-        'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(),
+-        'gzip_bytes': len(compressed), 'gzip_sha256': hashlib.sha256(compressed).hexdigest(),
+-        'gzip_base64': base64.b64encode(compressed).decode(), 'qualification': False}, sort_keys=True))
++    need(len(raw) <= WIRE_LIMIT, 'plain wire envelope exceeds bound')
++    need(sys.stdout.buffer.write(raw) == len(raw), 'plain envelope write was incomplete')
++    sys.stdout.buffer.flush()
+     return 0 if result['collection_complete'] else 1
+ 
+ 
+--- owner18/runtime/bind_reader.py
++++ owner19/runtime/bind_reader.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fill only actual terminal size/hash in this one fixed Owner18 result reader."""
++"""Fill only actual terminal size/hash in this one fixed Owner19 result reader."""
+ import argparse
+ import ast
+ import hashlib
+@@ -8,7 +8,7 @@
+ import re
+ 
+ HERE = Path(__file__).resolve().parent
+-OUT = HERE.parent / 'android-owner18-normal01-runtime-reader-01'
++OUT = HERE.parent / 'android-owner19-normal01-runtime-reader-01'
+ 
+ 
+ def sha(raw):
+@@ -36,12 +36,12 @@
+     source = source.replace('EXPECTED_REPORT_SHA256 = None', 'EXPECTED_REPORT_SHA256 = ' + repr(args.sha256))
+     assert source.replace('EXPECTED_REPORT_BYTES = ' + str(args.bytes), 'EXPECTED_REPORT_BYTES = None').replace(
+         'EXPECTED_REPORT_SHA256 = ' + repr(args.sha256), 'EXPECTED_REPORT_SHA256 = None') == template
+-    ast.parse(source); compile(source, '<fixed Owner18 runtime result reader>', 'exec')
++    ast.parse(source); compile(source, '<fixed Owner19 runtime result reader>', 'exec')
+     request = json.loads((HERE / 'request-template.json').read_bytes())
+     assert request['stdin'] == template
+-    request.update(stdin=source, idempotency_key='p4-owner18-normal01-runtime-read01-' + sha(source.encode())[:16])
++    request.update(stdin=source, idempotency_key='p4-owner19-normal01-runtime-plain-read01-' + sha(source.encode())[:16])
+     members = {'read.py': source.encode(), 'request.json': pretty(request), 'binding.json': pretty({
+-        'schema': 1, 'expected_report_path': '/opt/p4-owner18-normal-20261105-01-state/runtime-result.json',
++        'schema': 1, 'expected_report_path': '/opt/p4-owner19-normal-20261105-01-state/runtime-result.json',
+         'expected_report_bytes': args.bytes, 'expected_report_sha256': args.sha256,
+         'template_manifest_sha256': sha((HERE / 'SOURCE_PINS.json').read_bytes()),
+         'original_resources_and_protected_metadata_FD_gates_unchanged': True,

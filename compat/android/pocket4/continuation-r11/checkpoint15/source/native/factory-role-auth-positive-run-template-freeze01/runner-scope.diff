@@ -1,0 +1,369 @@
+--- nofile26/run_body.py
++++ role10/run_body.py
+@@ -1,62 +1,83 @@
+-ROOT=Path('/home/alex/work/pocket4-nofile-owner-recovery03-host-run-01-20261105')
++ROOT=Path('/run/pocket4-role-authorization-positive-host-run-01-20261105')
+ HERE=ROOT/'control-source'
+ OUT=ROOT/'run01'
+-BUILD_ROOT=Path('/home/alex/work/pocket4-nofile-owner-recovery03-host-build-01-20261105')
++BUILD_ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-01-20261105')
+ SOURCE=BUILD_ROOT/'source'
+ BUILD_RESULT=BUILD_ROOT/'build01/result.json'
+ BUILD_RESULT_SHA='PENDING_ACTUAL_BUILD_RESULT_SHA256'
+ CASE_PLAN_SHA='PENDING_FROZEN_CASE_PLAN_SHA256'
++SOURCE_MANIFEST_SHA='d400255a4318ec5856692254cff062280021aeea5bf80662eb939a00d7586aa2'
+ DEADLINE=None
+ 
+-def verify_rows(rows):
+-    changed=[]
+-    for row in rows:
+-        try:
+-            requested=Path(row['requested_path']);resolved=requested.resolve(strict=True)
+-            current=hash_held(resolved)
+-            if str(resolved)!=row['resolved_path'] or current!={k:row[k] for k in ['path','bytes','sha256','identity']}:
+-                changed.append(str(requested))
+-        except Exception as error:changed.append({'path':row['requested_path'],'error':str(error)})
+-    return changed
+-
+-def held_executable(path,expected):
+-    fd=os.open(path,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW)
+-    try:
+-        st=os.fstat(fd);require(stat.S_ISREG(st.st_mode) and st.st_mode&0o111 and st.st_size<=8*1024*1024,'bounded regular executable required')
+-        digest=hashlib.sha256();total=0;magic=None
+-        while True:
+-            raw=os.read(fd,65536)
+-            if not raw:break
+-            if magic is None:magic=raw[:4]
+-            total+=len(raw);digest.update(raw)
+-        pin={'path':str(path),'bytes':total,'sha256':digest.hexdigest(),'identity':identity(st)}
+-        require(magic==b'\x7fELF' and pin==expected and identity(st)==identity(os.fstat(fd))==identity(path.lstat()),
+-                'held runtime executable differs from actual matching build')
+-        require(fcntl.fcntl(fd,fcntl.F_GETFD)&fcntl.FD_CLOEXEC,'held ELF must close across exec')
+-        return fd,pin
+-    except BaseException:os.close(fd);raise
+-
+-def run_held(arm,fd,path,env,libc):
+-    require(not children(),'unreaped child before the owned harness')
+-    require(os.execve in os.supports_fd,'Python fd-based exec is unavailable')
+-    stdout=OUT/(arm+'.stdout');stderr=OUT/(arm+'.stderr')
++
++def qualified_build(build):
++    require(build['state']=='PASS_BUILD_ONLY' and build['source_manifest_sha256']==SOURCE_MANIFEST_SHA and
++            build['registry_positive_executed'] is False and build['platform_policy_qualified'] is False and
++            build['factory_service_started'] is False and build['snapshot_created'] is False and
++            build['Main_actions']==0 and build['source_unchanged_after'] is True and
++            build['artifacts_unchanged_after'] is True and not build['tool_changes'] and
++            not build['dependency_changes'] and build['owned_resource_gate']['pass'] is True and
++            not build['cleanup']['forced_cleanup'] and not build['cleanup']['remaining'] and
++            not build['cleanup']['errors'] and set(build['artifacts'])=={'control'},
++            'complete matching build-only authority required')
++    labels=[row['label'] for row in build['commands']]
++    require(len(labels)==len(set(labels)) and all(row['returncode']==0 and not row['timed_out']
++            for row in build['commands']), 'matching build command failure or duplicate')
++    for name in ['dependencies-authorization','dependencies-context','dependencies-control',
++                 'compile-authorization','compile-context','compile-control','link-control',
++                 'control-libraries','default-plan']:
++        require(labels.count(name)==1, 'matching build omitted required command: '+name)
++    require(set(build['objects'])=={'authorization','context','control'} and
++            all(row['dependency_count']>0 for row in build['objects'].values()),
++            'complete actual compiler dependency observations required')
++    require(build['artifacts']['control']['default_plan']=={
++        'state':'PLAN_ONLY','actual_role_registry':False,'owned_cases':10,
++        'factory_service_started':False,'Main_actions':0}, 'matching default PLAN differs')
++
++
++def root_scope():
++    require(os.getuid()==0 and os.geteuid()==0 and os.getgid()==0 and os.getegid()==0,
++            'root controller identity required')
++    require(os.getpid()==int(Path('/proc/thread-self/status').read_text().split('Pid:\t',1)[1].splitlines()[0]),
++            'root controller requires current proc PID view')
++    require(signal.getsignal(signal.SIGCHLD)==signal.SIG_DFL,
++            'owned root controller requires default SIGCHLD')
++    for path in [ROOT,HERE,OUT]:
++        value=path.lstat()
++        require(stat.S_ISDIR(value.st_mode) and value.st_uid==0 and value.st_gid==0 and
++                stat.S_IMODE(value.st_mode)==0o700, 'root-private runtime directory differs: '+str(path))
++    # Only this fixture UID/GID is used by owned children. No system account or
++    # process is modified, and no search is made for alternative identities.
++    import pwd,grp
++    for lookup in [pwd.getpwuid,grp.getgrgid]:
++        try:lookup(61179)
++        except KeyError:continue
++        raise RuntimeError('fixed fixture UID/GID is a configured system account')
++
++
++def run_held(fd,path,env,libc):
++    require(not children(), 'unreaped child before the owned registry harness')
++    require(os.execve in os.supports_fd, 'Python fd-based exec unavailable')
++    stdout=OUT/'registry.stdout';stderr=OUT/'registry.stderr'
+     started=utc();parent=os.getpid();pid=-1;pidfd=-1;status=None;timed_out=False
+     with stdout.open('xb') as out,stderr.open('xb') as err:
+         pid=os.fork()
+         if pid==0:
+             try:
+-                require(os.getppid()==parent and libc.prctl(1,signal.SIGKILL,0,0,0)==0 and os.getppid()==parent,'exec child lost owned parent')
++                require(os.getppid()==parent and libc.prctl(1,signal.SIGKILL,0,0,0)==0 and
++                        os.getppid()==parent, 'exec child lost exact owned parent')
+                 os.setsid()
+                 null=os.open('/dev/null',os.O_RDONLY|os.O_CLOEXEC)
+                 os.dup2(null,0);os.dup2(out.fileno(),1);os.dup2(err.fileno(),2)
+                 if null>2:os.close(null)
+-                require(fcntl.fcntl(fd,fcntl.F_GETFD)&fcntl.FD_CLOEXEC,'held ELF descriptor lost close-on-exec')
++                require(fcntl.fcntl(fd,fcntl.F_GETFD)&fcntl.FD_CLOEXEC,
++                        'held ELF must close across exec')
+                 os.execve(fd,[str(path),'--execute-once'],env)
+             except BaseException:
+-                os.write(2,b'owned held-ELF exec child failed\n');os._exit(126)
++                os.write(2,b'owned held-ELF exec failed\n');os._exit(126)
+         try:
+             pidfd=os.pidfd_open(pid,0)
+-            until=min(time.monotonic()+120,DEADLINE)
++            until=min(time.monotonic()+45,DEADLINE)
+             while time.monotonic()<until:
+                 got,value=os.waitpid(pid,os.WNOHANG)
+                 if got==pid:status=value;break
+@@ -71,129 +92,143 @@
+                 require(status is not None,'owned harness did not reap after exact pidfd kill')
+         finally:
+             if pidfd>=0:os.close(pidfd)
+-    raw,outpin=held(stdout,512*1024);_,errpin=held(stderr,65536)
+-    return {'arm':arm,'held_elf_path':str(path),'fd_exec':True,'started_utc':started,'finished_utc':utc(),
++    raw,outpin=held(stdout,131072);_,errpin=held(stderr,32768)
++    return {'held_elf_path':str(path),'fd_exec':True,'started_utc':started,'finished_utc':utc(),
+             'child_pid':pid,'child_reaped':status is not None,'wait_status':status,
+             'returncode':os.waitstatus_to_exitcode(status) if status is not None else None,
+             'timed_out':timed_out,'stdout':outpin,'stderr':errpin},raw
+ 
+-def validate_result(arm,raw,cases):
+-    result=json.loads(raw)
+-    preimage=arm=='preimage';expected_pass=15 if preimage else 26
+-    require(result['preimage']==preimage and result['uid']==1000 and result['case_count']==26 and result['observed']==26 and
+-            result['function_passed']==expected_pass and result['matched_expected']==26 and
+-            result['direct_children_reaped']==26 and result['direct_children_finished']==26 and
+-            result['nested_started']==result['nested_reaped'] and result['parent_capabilities_unchanged'] is True and
+-            result['unexpected_cleanup']==0 and result['pass'] is True and
+-            result['lost_harness_PASS_inherited'] is False,'actual owned 26-case aggregate differs from expectation')
+-    require(len(result['cases'])==26,'actual case membership differs')
+-    for expected,observed in zip(cases,result['cases']):
+-        wanted=expected['preimage_expected_function_pass'] if preimage else expected['candidate_expected_function_pass']
+-        require(observed['index']==expected['index'] and observed['name']==expected['name'] and
+-                observed['expected_function_pass']==wanted and observed['function_pass']==wanted and
+-                observed['matches_expectation'] is True and observed['known_red_boundary']==expected['known_red_boundary_remains'],
+-                'actual case result differs: '+expected['name'])
+-        outer=observed['outer']
+-        require(all(outer[k]==1 for k in ['entered','finished','reaped','persistent_tid_clear','inherited_tid_clear',
+-                                        'caps_zero','guarded','mask_preserved']) and
+-                all(outer[k]==0 for k in ['timeout','status','cleanup_stop','cap_clear','unexpected_cleanup']),
+-                'actual case lifecycle/authority failed: '+expected['name'])
+-        if not wanted:
+-            extra=observed['added']
+-            require(extra['setup_done']==1 and extra['primary_rc']==-1 and extra['primary_errno']==24 and
+-                    extra['failed_snapshot_untouched']==1,'preimage negative is not the specific EMFILE regression')
+-    return result
++
++def validate_result(raw,plan):
++    lines=raw.decode('ascii').splitlines()
++    require(len(lines)==11 and all(lines),'exact ten case records and one terminal required')
++    records=[json.loads(line) for line in lines]
++    expected=plan['cases']
++    require(len(expected)==10 and len({row['name'] for row in expected})==10,
++            'exact frozen ten-case plan required')
++    for wanted,seen in zip(expected,records[:-1]):
++        require(seen=={'case':wanted['name'],'state':'PASS','actual_kernel_identity':True,
++                       'production_platform_policy':False,'snapshot_created':False},
++                'owned case failed or unexpected record: '+wanted['name'])
++    result=records[-1]
++    require(set(result)=={'state','cases','assertions','direct_children_reaped','nested_children_reaped',
++                         'forced_cleanup','cleanup_unreaped','platform_policy_qualified','snapshot_created',
++                         'Main_actions','factory_service_started'} and
++            result['state']=='PASS_OWNED_REGISTRY_MECHANISM' and result['cases']==10 and
++            isinstance(result['assertions'],int) and not isinstance(result['assertions'],bool) and
++            result['assertions']>0 and result['direct_children_reaped']==10 and
++            result['nested_children_reaped']==1 and result['forced_cleanup']==0 and
++            result['cleanup_unreaped']==0 and result['platform_policy_qualified'] is False and
++            result['snapshot_created'] is False and result['Main_actions']==0 and
++            result['factory_service_started'] is False, 'owned registry aggregate failed')
++    return {'cases':records[:-1],'summary':result}
++
+ 
+ def execute():
+     global DEADLINE
+-    require(os.getuid()==1000 and os.geteuid()==1000,'ordinary operator UID1000 required')
+-    require(Path(__file__).absolute()==HERE/'run_nofile.py','fixed staged runner required')
+-    require(re.fullmatch(r'[0-9a-f]{64}',BUILD_RESULT_SHA) is not None,'actual matching build receipt not bound')
+-    real_directory(HERE);os.umask(0o077);OUT.mkdir(mode=0o700);DEADLINE=time.monotonic()+260
+-    libc=ctypes.CDLL(None,use_errno=True);require(libc.prctl(36,1,0,0,0)==0 and not children(),'owned subreaper required')
+-    allowed=sorted(os.sched_getaffinity(0));require(len(allowed)>=3,'cannot leave two logical CPUs free');os.sched_setaffinity(0,[allowed[-1]])
+-    report={'schema':1,'state':'RUNNING','started_utc':utc(),'scope':'two matching host ELF arms, fresh ordinary owned 26-case controls',
+-            'Main_actions':0,'Main_identity_observed':False,'Android_execution':False,'factory_service_started':False,
+-            'production_source_changed':False,'lost_harness_results_inherited':False,'commands':[],'arms':[],
+-            'known_red_boundaries_preserved':['initial NOFILE0 authoritative admission','new private-fork generation first started after NOFILE0','trusted virtual O_PATH reopening untested'],
+-            'selected_cpus':[allowed[-1]]}
++    require(Path(__file__).absolute()==HERE/'run_registry.py','fixed staged root runner required')
++    require(re.fullmatch(r'[0-9a-f]{64}',BUILD_RESULT_SHA) is not None,
++            'actual matching build receipt has not been bound')
++    real_directory(HERE);os.umask(0o077);OUT.mkdir(mode=0o700);DEADLINE=time.monotonic()+90
++    libc=ctypes.CDLL(None,use_errno=True)
++    require(libc.prctl(36,1,0,0,0)==0 and not children(),'owned root subreaper required')
++    allowed=sorted(os.sched_getaffinity(0));require(len(allowed)>=3,'cannot leave two logical CPUs free')
++    os.sched_setaffinity(0,[allowed[-1]])
++    report={'schema':1,'state':'RUNNING','started_utc':utc(),
++            'scope':'fixed root / owned role child kernel authorization mechanism only',
++            'Main_actions':0,'Main_identity_observed':False,'Android_execution':False,
++            'factory_service_started':False,'snapshot_created':False,'platform_policy_qualified':False,
++            'production_source_changed':False,'selected_cpus':[allowed[-1]],'commands':[]}
+     def interrupted(number,frame):raise RuntimeError('owned runtime interrupted by signal '+str(number))
+     signal.signal(signal.SIGTERM,interrupted);signal.signal(signal.SIGINT,interrupted)
+-    resource_fd=-1;resource_before=None;source_before={};fds={};elf_pins={};library_rows={};tool_rows=[];authority={}
++    resource_fd=-1;resource_before=None;source_before={};elf_fd=-1;elf_pin=None
++    libraries={};tool_rows=[];authority={}
+     try:
+         resource_fd,resource_before=begin_resources();report['owned_resources_before']=resource_before
+-        build_raw,build_pin=held(BUILD_RESULT,131072);require(sha(build_raw)==BUILD_RESULT_SHA,'actual matching build receipt changed')
+-        staged,staged_pin=held(HERE/'actual-build-result.json',131072);require(staged==build_raw,'staged build receipt differs from actual durable source')
+-        build=json.loads(build_raw)
+-        require(build['state']=='PASS' and build['source_manifest_sha256']=='baa504625fc51619824ef3023738b8b589008b9ef024fffdf6707ff726628aa3' and
+-                build['positive_26_execution'] is False and build['source_unchanged_after'] is True and build['ELF_unchanged_after'] is True and
+-                not build['tool_changes'] and not build['dependency_changes'] and build['owned_resource_gate']['pass'] is True and
+-                not build['cleanup']['forced_cleanup'] and not build['cleanup']['remaining'] and not build['cleanup']['errors'],
+-                'matching build is not qualified')
+-        plan_raw,plan_pin=held(HERE/'CASE_PLAN.json',32768);require(sha(plan_raw)==CASE_PLAN_SHA,'frozen 26-case plan changed')
+-        cases=json.loads(plan_raw)['cases'];require(len(cases)==26,'fixed 26 cases required')
+-        authority={str(BUILD_RESULT):build_pin,str(HERE/'actual-build-result.json'):staged_pin,str(HERE/'CASE_PLAN.json'):plan_pin}
+-        source_before=regular_tree(SOURCE,32,1024*1024);require(source_before==build['source_inputs'],'exact built sources changed before runtime')
+-        report['actual_build_receipt']=build_pin
+-        tools_raw,tools_pin=held(Path(build['tool_inputs']['path']),262144)
+-        require({k:tools_pin[k] for k in ['path','bytes','sha256']}==build['tool_inputs'],'matching tool inventory changed')
+-        tools=json.loads(tools_raw)
+-        tool_rows=[tools['/usr/bin/ldd'],tools['/usr/bin/python3']]
+-        require(not verify_rows(tool_rows),'runtime query tools changed from matching build')
+-        env={'PATH':'/usr/bin:/bin','HOME':'/home/alex','LC_ALL':'C','LANG':'C'}
+-        for arm in ['preimage','candidate']:
+-            artifact=build['artifacts'][arm];path=BUILD_ROOT/'build01'/arm
+-            require(artifact['elf']['path']==str(path),'actual ELF path escaped matching build')
+-            raw,audit_pin=held(Path(artifact['audit']['path']),32768);audit=json.loads(raw)
+-            require(audit_pin==artifact['audit'] and audit['qualified_worker_closure'] is True and not audit['errors'] and
+-                    audit['elf_sha256']==artifact['elf']['sha256'],'actual binary worker closure is not qualified')
+-            fd,pin=held_executable(path,artifact['elf']);fds[arm]=fd;elf_pins[arm]=pin
+-            linked=command(['/usr/bin/ldd','/proc/self/fd/'+str(fd)],SOURCE,env,'runtime-libraries-'+arm,report['commands'],10,pass_fds=(fd,)).decode()
+-            require('not found' not in linked,'actual runtime library missing')
+-            for line in linked.splitlines():
+-                match=re.search(r'(?:=>\s*)?(/\S+)\s+\(',line)
+-                if match:
+-                    requested=Path(match[1]);resolved=requested.resolve(strict=True)
+-                    require(resolved.is_relative_to('/usr/lib') or resolved.is_relative_to('/lib'),'runtime library outside system roots')
+-                    row=hash_held(resolved,128*1024*1024);row.update({'requested_path':str(requested),'resolved_path':str(resolved)})
+-                    library_rows[str(requested)]=row
+-        report['runtime_libraries']=write_new(OUT/'runtime-libraries-before.json',library_rows)
+-        for arm in ['preimage','candidate']:
+-            row,raw=run_held(arm,fds[arm],Path(elf_pins[arm]['path']),env,libc);report['arms'].append(row)
+-            try:
+-                require(row['returncode']==0 and row['child_reaped'] and not row['timed_out'] and row['stderr']['bytes']==0,
+-                        'owned 26-case process failed')
+-                result=validate_result(arm,raw,cases);row['matched_expected']=True
+-                row['case_count']=result['case_count'];row['function_passed']=result['function_passed']
+-                row['direct_children_reaped']=result['direct_children_reaped'];row['nested_children_reaped']=result['nested_reaped']
+-            except Exception as error:row['matched_expected']=False;row['error']=str(error)
+-            require(not children(),'owned runtime left an unexpected adopted child')
+-        report['state']='PASS' if len(report['arms'])==2 and all(r['matched_expected'] for r in report['arms']) else 'FAIL'
+-    except Exception as error:report['state']='FAIL';report['error']={'type':type(error).__name__,'message':str(error),'filename':getattr(error,'filename',None)}
++        root_scope()
++        raw,build_pin=held(BUILD_RESULT,262144)
++        require(sha(raw)==BUILD_RESULT_SHA,'actual build receipt changed')
++        staged,staged_pin=held(HERE/'actual-build-result.json',262144)
++        require(staged==raw,'staged build receipt differs from actual matching receipt')
++        build=json.loads(raw);qualified_build(build)
++        plan_raw,plan_pin=held(HERE/'CASE_PLAN.json',32768)
++        require(sha(plan_raw)==CASE_PLAN_SHA,'frozen ten-case plan changed')
++        plan=json.loads(plan_raw)
++        require(plan['production_source_manifest_sha256']==SOURCE_MANIFEST_SHA,
++                'case plan is not bound to reviewed source')
++        source_before=regular_tree(SOURCE,12,512*1024)
++        require(source_before==build['source_inputs'],'actual built source changed before runtime')
++        authority={str(BUILD_RESULT):build_pin,str(HERE/'actual-build-result.json'):staged_pin,
++                   str(HERE/'CASE_PLAN.json'):plan_pin}
++        report['actual_build_receipt']=build_pin;report['source_authority']=build['source_authority']
++        tools_path=BUILD_ROOT/'build01/tool-inputs-before.json'
++        require(build['tool_inputs']['path']==str(tools_path),'build tool inventory path escaped')
++        tools_raw,tools_pin=held(tools_path,262144)
++        require({key:tools_pin[key]for key in ['path','bytes','sha256']}==build['tool_inputs'],
++                'matching tool inventory changed')
++        authority[str(tools_path)]=tools_pin
++        tools=json.loads(tools_raw);tool_rows=[tools['/usr/bin/python3'],tools['/usr/bin/ldd']]
++        require(not verify_rows(tool_rows),'runtime tools changed after matching build')
++        path=BUILD_ROOT/'build01/registry_controls';artifact=build['artifacts']['control']['elf']
++        require(artifact['path']==str(path),'actual control ELF path escaped matching build')
++        elf_fd,elf_pin=held_executable(path,artifact)
++        env={'PATH':'/usr/bin:/bin','HOME':'/root','LC_ALL':'C','LANG':'C'}
++        raw=command(['/usr/bin/ldd','/proc/self/fd/'+str(elf_fd)],SOURCE,env,
++                    'runtime-libraries',report['commands'],10,pass_fds=(elf_fd,)).decode()
++        require('not found'not in raw,'actual runtime library missing')
++        for line in raw.splitlines():
++            match=re.search(r'(?:=>\s*)?(/\S+)\s+\(',line)
++            if match:
++                requested=Path(match[1]);resolved=requested.resolve(strict=True)
++                require(resolved.is_relative_to('/usr/lib')or resolved.is_relative_to('/lib'),
++                        'runtime library outside system roots')
++                row=hash_held(resolved,128*1024*1024)
++                row.update({'requested_path':str(requested),'resolved_path':str(resolved)})
++                libraries[str(requested)]=row
++        require(libraries and libraries==build['runtime_libraries'],
++                'runtime library closure differs from actual matching build')
++        report['runtime_libraries']=write_new(OUT/'runtime-libraries-before.json',libraries)
++        row,raw=run_held(elf_fd,path,env,libc);report['execution']=row
++        require(row['returncode']==0 and row['child_reaped'] and not row['timed_out'] and
++                row['stderr']['bytes']==0,'owned registry process failed')
++        report['assessment']=validate_result(raw,plan)
++        require(not children(),'owned registry harness left adopted children')
++        report['state']='PASS_OWNED_REGISTRY_MECHANISM'
++    except Exception as error:
++        report['state']='FAIL';report['error']={'type':type(error).__name__,'message':str(error),
++                                               'filename':getattr(error,'filename',None)}
+     finally:
+-        signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGTERM,signal.SIGINT});report['cleanup']=cleanup_children()
++        signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGTERM,signal.SIGINT})
++        report['cleanup']=cleanup_children()
+         try:
+-            report['source_unchanged_after']=bool(source_before) and regular_tree(SOURCE,32,1024*1024)==source_before
+-            report['authority_unchanged_after']=bool(authority) and all(hash_held(Path(path))==pin for path,pin in authority.items())
+-            report['library_changes']=verify_rows(list(library_rows.values()));report['tool_changes']=verify_rows(tool_rows)
+-            report['held_ELF_unchanged_after']=len(elf_pins)==2 and all(hash_held(Path(pin['path']),8*1024*1024)==pin and
+-                identity(os.fstat(fds[arm]))==pin['identity'] for arm,pin in elf_pins.items())
+-            require(report['source_unchanged_after'] and report['authority_unchanged_after'] and
+-                    not report['library_changes'] and not report['tool_changes'] and report['held_ELF_unchanged_after'],'runtime input changed')
++            report['source_unchanged_after']=bool(source_before)and regular_tree(SOURCE,12,512*1024)==source_before
++            report['authority_unchanged_after']=bool(authority)and all(hash_held(Path(path))==pin
++                                                                       for path,pin in authority.items())
++            report['library_changes']=verify_rows(list(libraries.values()))
++            report['tool_changes']=verify_rows(tool_rows)
++            report['held_ELF_unchanged_after']=(elf_pin is not None and elf_fd>=0 and
++                hash_held(Path(elf_pin['path']),8*1024*1024)==elf_pin and
++                identity(os.fstat(elf_fd))==elf_pin['identity'])
++            require(report['source_unchanged_after']and report['authority_unchanged_after']and
++                    not report['library_changes']and not report['tool_changes']and
++                    report['held_ELF_unchanged_after'],'runtime source or authority changed')
+         except Exception as error:report['after_error']=str(error);report['state']='FAIL'
+-        for fd in fds.values():os.close(fd)
++        if elf_fd>=0:os.close(elf_fd)
+         try:
+             require(resource_fd>=0 and resource_before is not None,'missing owned cgroup before observation')
+             report['owned_resource_gate']=finish_resources(resource_fd,resource_before,report)
+         except Exception as error:report['resource_error']=str(error);report['state']='FAIL'
+         finally:
+             if resource_fd>=0:os.close(resource_fd)
+-        if report['cleanup']['forced_cleanup'] or report['cleanup']['remaining'] or report['cleanup']['errors']:report['state']='FAIL'
++        if report['cleanup']['forced_cleanup']or report['cleanup']['remaining']or report['cleanup']['errors']:
++            report['state']='FAIL'
+     report['finished_utc']=utc();pin=write_new(OUT/'result.json',report)
+-    print(json.dumps({'state':report['state'],'result':pin}),flush=True);return 0 if report['state']=='PASS' else 1
++    print(json.dumps({'state':report['state'],'result':pin}),flush=True)
++    return 0 if report['state']=='PASS_OWNED_REGISTRY_MECHANISM'else 1
++
+ 
+ if __name__=='__main__':
+     if sys.argv[1:]!=['--execute-once']:
+-        print(json.dumps({'mode':'PLAN','positive_run_requires_actual_matching_build_SHA':True,'cases_per_arm':26,
+-                          'candidate_expected_function_passes':26,'preimage_expected_function_passes':15,'Main_actions':0}))
++        print(json.dumps({'state':'PLAN_ONLY','requires_actual_matching_build':True,'owned_cases':10,
++                          'root_execution':False,'factory_service_started':False,'Main_actions':0}))
+     else:raise SystemExit(execute())

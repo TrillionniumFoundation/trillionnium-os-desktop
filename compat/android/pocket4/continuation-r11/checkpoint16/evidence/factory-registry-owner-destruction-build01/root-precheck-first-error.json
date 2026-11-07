@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "scope": "local checker only",
+  "error": "json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+  "cause": "Root checker incorrectly parsed Python stdin as JSON",
+  "already_passed": {
+    "owner_metadata_manifest_members": 7,
+    "destruction_build_manifest_members": 22
+  },
+  "remote_calls_after_failure": 0,
+  "source_request_modified": false,
+  "correction": "Parse exact Python AST EXPECTED and constant json.loads PACKET without executing stdin"
+}

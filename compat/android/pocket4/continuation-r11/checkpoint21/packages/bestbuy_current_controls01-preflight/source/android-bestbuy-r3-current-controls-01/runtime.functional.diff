@@ -1,0 +1,325 @@
+--- prior/owned_inspect.py
++++ current/owned_inspect.py
+@@ -15,27 +15,33 @@
+ import types
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-bestbuy-owned-content-readiness-01')
++ROOT=Path("/home/alex/work/pocket4-bestbuy-r3-current-content-readiness-01")
+ SOURCE=ROOT/'source'
+-NONCE='01355f5641b7b932a1ee9b9f21350568'
+-FLOW=Path('/home/alex/work/pocket4-bestbuy-owned-qa-r1-flow-'+NONCE)
++NONCE='e762b4b73cfff88ce7bd88d40edbbc9f'
++FLOW=Path('/home/alex/work/pocket4-bestbuy-owned-qa-r3-flow-'+NONCE)
+ PACKAGE='com.bestbuy.android'
+ UID=10130
+-SELF='org.droidloom.qa.bestbuy.r1'
+-HELPER_UID=10198
++SELF="org.droidloom.qa.bestbuy.r3"
++HELPER_UID=10155
++
++CURRENT_HOST_MANIFEST='6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
++CURRENT_BASELINE_SCHEMA='pocket4-main-current-baseline-v1'
++CURRENT_EPOCH='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'
++CURRENT_BASELINE_SHA='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'
++CURRENT_QUALIFICATION_SHA='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'
+ COMPONENT=PACKAGE+'/.activity.SplashActivity'
+-PLANS=[{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '4d57777354576d9ee0601f542329ccbb', 'inspect': '3ede9c0db6cd5244a48b1655eec594ba', 'after': '81bb9fcd23f77c5d9de85f794926e86f'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '921d22b8386ee30a655a3a0418bd03b3', 'inspect': 'ca298bdacefb140993dfb73269da8178', 'after': '80daa9e7c141176a434a5277fd3f4d32'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'dc9dddbab03003243ec68bc899692b2f', 'inspect': '7989fc90293714dff921a1fa8fdaa59a', 'after': '5e1900cb672de8aa918162e0f436b9e2'}}]
+-INSTALL_ROOT=Path('/home/alex/work/pocket4-owned-bestbuy-qa-r1-install-state-01')
++PLANS=[{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '1240be4116444540ed6331b61241c569', 'inspect': 'aaba22d2ffc645fba2b22de4f323f560', 'after': 'ebbc00ca13f6194158465aebf4f11a15'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c86948f57d873e5f21776b02afe98c2a', 'inspect': 'a6af433a6b695d7179c866b4c2396b7a', 'after': '6b2f4ef12635ca9ba4571bb69ebe9c4f'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '7cd352b83ae4bb5a77c6f969f31e2ff8', 'inspect': '325e25f9d4b85637cf303f9b9922eca9', 'after': 'c9a4bede038c556fb40d6b7060e2c3f1'}}]
++INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-bestbuy-qa-r3-install-state-02")
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+-INSTALL_SOURCE_SHA='15d6495c30af3b765c9b4df99d8d170001e66ea54ab23327bfc7d785e192d2a4'
+-UTIL_SHA='21eeb9f26f467ce4287d1edce0cdedc6be983fc0b2226cdceb19fdd65b92b9ed'
+-UTIL_BYTES=32676
+-CONTEXT_SHA='98af604df47d1d1920e369a95cdad5026d2343b557a6498a2bf76e1b2bcb8c95'
+-TRANSPORT_SHA='36cec8512f5ebad3f06c662dc896bebd62fb20ac496042f8e982d2e36f4c7cf8'
+-STATE_NONCE='d729c482ea77502f37ebd7a5ec57d115'
+-STATE_WIRE='6c58c2ffbb08d1abad53a81fb2bc5d797c721c00f0b3d9513cad707a4cd941c3'
+-INSTALLED={'apk_sha256': '33bc63541bc4bc4a42503bd1205f96c8e09f203e5ee512fed3a5e0c426720646', 'base_apk': '/data/app/~~lrE4O-jG56JT0Tr-ecT-Pw==/org.droidloom.qa.bestbuy.r1-R1eplDli-ch4z1zZ6TQmXQ==/base.apk', 'bytes': 24720, 'held_file': {'bytes': 24720, 'device': 1811, 'gid': 1000, 'inode': 789301, 'mode': 33188, 'mtime_ns': 1793922580168836679, 'nlink': 1, 'uid': 1000}, 'package': 'org.droidloom.qa.bestbuy.r1', 'signer_bound_by_exact_signed_apk_bytes': '0c8d51e314e4f8bdff2febd869845752562db7cd7c4182781ff748e479176918', 'uid': 10198}
+-PRIOR={'coordinator': ('result.json', 3080, 'd0c777b87d5921d4e921ba9c2c207bb1acb907f32a128b8be28634e7fd1a8137'), 'stage': ('stage-result.json', 1618, '73ff0bda622585506a96385c7d71ea4381e323839413fe6d53602a991aec84c6'), 'worker': ('worker/result.json', 13345, '7aaff595b0774873aea64b82d0b6742ed80159093c9c790543b052c916a6c04c')}
++INSTALL_SOURCE_SHA="e45801a193c6e5e1cdfb5285074d1d6e554db37fdbad876e3d1f19ff55e7742a"
++UTIL_SHA="aac202a4ea87334a34dd900849cb82dbd3f2fb28b192a88f329bd7801880eba1"
++UTIL_BYTES=38283
++CONTEXT_SHA="4dc3e43e2082b825f226a8b06c39bf8dd763f752468dddc3d1836e7c0dcd50a9"
++TRANSPORT_SHA="96eca208b64f84fd2ed5efa9195be7c732a6a5f08599f99d4efa6078953be5ae"
++STATE_NONCE="d56f2ff711a71596e1679716f3587b87"
++STATE_WIRE="0734121d72d985696b935e7e85348f4727c05ed128bc811b22fa6326a5834a78"
++INSTALLED={"apk_sha256":"0c2598a901a18e714ca4b090f45b9e67da9273600cb7649d73c40e78882f6897","base_apk":"/data/app/~~x4BtzqXATdoZdRJnwWSZ_Q==/org.droidloom.qa.bestbuy.r3-J_WkChSArV9_KNGvYLVBfA==/base.apk","bytes":24720,"held_file":{"bytes":24720,"device":1811,"gid":1000,"inode":789401,"mode":33188,"mtime_ns":1793952507726794262,"nlink":1,"uid":1000},"package":"org.droidloom.qa.bestbuy.r3","signer_bound_by_exact_signed_apk_bytes":"7af0ec407087ce326478a5d163cce0e982ec8b918afc7a114b36d2082e7eb526","uid":10155}
++PRIOR={"coordinator":("result.json",3972,"56a61b4dd63a3a078368c06e583e1b8a7ecef64b81c65d3dbe0abfe7c6f044c3"),"stage":("stage-result.json",6859,"86c6fd318f8f5fc1da3ee888dc6a40a0e65dcbda6e7add26e5415f3220830cd6"),"worker":("worker/result.json",14680,"86c79c5ae8e2b730651a1c73db59d2bc9c28b4409199d4871ce4522a2b9ab0c5")}
+ RESOLVER_ROOT=Path('/home/alex/work/pocket4-bestbuy-artifact-launcher-readonly-01')
+ # The five-command metadata source is already an exact pinned install input.
+ RESOLVER_SOURCE=INSTALL_SOURCE/'references/read_bestbuy.py'
+@@ -150,12 +156,20 @@
+          state['actual_instrumentation_finish_code']==-1 and
+          state['held_transport_returned_after_post_guard'] is True and
+          helper['nonce']==STATE_NONCE and helper['self_uid']==HELPER_UID and
+-         helper['protocol']=='pocket4-owned-bestbuy-qa-v1' and helper['op']=='state' and
++         helper['protocol']=='pocket4-owned-bestbuy-qa-v3' and helper['op']=='state' and
+          helper['ok'] is True and helper['ui_automation_connected'] is False,
+          'ACTUAL_NO_AUTOMATION_STATE_REQUIRED')
+     need(w['target_before']==w['target_after'] and
+          w['Main_before_lock']==w['Main_before']==w['Main_after']==c['Main_before']==c['Main_after']==s['Main_before']==s['Main_after'],
+          'ACTUAL_INSTALL_MAIN_OR_TARGET_CHAIN')
++    need(w['Main_before'].get('schema')=='pocket4-current-main-guard-v1' and
++         w['Main_before'].get('Main_epoch_sha256')==CURRENT_EPOCH and
++         w['Main_before'].get('current_baseline_sha256')==CURRENT_BASELINE_SHA and
++         w['Main_before'].get('current_baseline_qualification_sha256')==CURRENT_QUALIFICATION_SHA and
++         w['Main_before'].get('seven_processes_match') is True and
++         w['Main_before'].get('three_host_processes_match') is True and
++         w['Main_before'].get('resource_limits_match') is True,
++         'ACTUAL_INSTALL_TYPED_CURRENT_BASELINE_REQUIRED')
+     need(w['staging_cleanup']['staged_apk_removed'] is True and
+          w['staging_cleanup']['staged_directory_removed'] is True and
+          w['target_FD_cleanup']['held_APK_FDs_closed']==3 and
+@@ -168,8 +182,9 @@
+         'no_prior_install_or_state_replayed':True}
+ 
+ def qualified(expected):
+-    need(type(HELPER_UID) is int and 10000<=HELPER_UID<100000 and isinstance(INSTALLED,dict) and
++    need(type(HELPER_UID) is int and 10000<=HELPER_UID<100000 and HELPER_UID not in (10130,10198,10203) and isinstance(INSTALLED,dict) and
+          isinstance(STATE_WIRE,str) and re.fullmatch('[0-9a-f]{64}',STATE_WIRE) and
++         isinstance(PRIOR,dict) and set(PRIOR)=={'coordinator','stage','worker'} and
+          isinstance(PRIOR['worker'],tuple),'ACTUAL_BESTBUY_INSTALL_BINDING_NOT_READY')
+     manifest=verify_source(expected)
+     util=load(INSTALL_SOURCE/'install_state.py',UTIL_SHA,'ticket_qualified_install_primitives',UTIL_BYTES)
+@@ -202,8 +217,18 @@
+ 
+ 
+ def scope_record(q,expected):
+-    return {'package':PACKAGE,'component':COMPONENT,'uid':UID,'user':0,'nonce':NONCE,
+-        'epoch_sha256':q.ref.EPOCH,'activation_sha256':q.ref.ACTIVATION_SHA,'verified_sha256':q.ref.VERIFIED_SHA,
++    baseline=q.ref.current_baseline()
++    need(baseline.get('schema')==CURRENT_BASELINE_SCHEMA and
++         baseline['framework_epoch']['sha256']==CURRENT_EPOCH==q.ref.EPOCH and
++         q.ref.BASELINE_SHA==CURRENT_BASELINE_SHA and
++         q.ref.QUALIFICATION_SHA==CURRENT_QUALIFICATION_SHA and
++         type(baseline['packages'].get(PACKAGE)) is int and baseline['packages'][PACKAGE]==UID,
++         'CURRENT_TYPED_OWN_TARGET_SCOPE_REQUIRED')
++    return {'schema':'pocket4-current-recorder-scope-v1','current_baseline_schema':baseline['schema'],
++        'package':PACKAGE,'component':COMPONENT,'uid':baseline['packages'][PACKAGE],'user':0,'nonce':NONCE,
++        'epoch_sha256':baseline['framework_epoch']['sha256'],
++        'current_baseline_sha256':q.ref.BASELINE_SHA,
++        'current_baseline_qualification_sha256':q.ref.QUALIFICATION_SHA,
+         'bestbuy_task_source_manifest_sha256':expected,'automatic_retry':False,
+         'original_recorder_manifest_sha256':q.adapter.RECORDER_MANIFEST_SHA,
+         'actual_resolution_result_sha256':RESOLVER_RECORDS['worker'][2]}
+@@ -275,7 +300,7 @@
+         shared=u.module(context.INSTALLED_SHARED/'source_contract.py',context.CONTRACT_SHA,'bestbuy_task_admission_contract')
+         contract=shared.SourceContract(context.INSTALLED_SHARED/'source-manifest.json',context.SHARED_MANIFEST)
+         recorder=contract.load('recorder.py','bestbuy_task_admission_recorder')
+-        activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++        activation=ref.current_baseline()
+         epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'bestbuy_phase_epoch')
+         guard=lambda:ref.main_guard(activation,epoch)
+         result['Main_before_lock']=guard()
+@@ -446,14 +471,14 @@
+     activation=epoch=resources=None
+     try:
+         resources=u.prepare_owned_limits();result['owned_before']=resources
+-        activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++        activation=ref.current_baseline()
+         epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'bestbuy_coordinator_epoch')
+         guard=lambda:ref.main_guard(activation,epoch)
+         result['Main_before']=guard()
+         FLOW.mkdir(mode=0o700)
+         ref.write_new(FLOW/'scope.json',scope_record(q,expected))
+-        ref.write_new(FLOW/'activation.json',ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
+-        ref.write_new(FLOW/'activation-verified.json',ref.read(ref.VERIFIED,expected=ref.VERIFIED_SHA))
++        ref.write_new(FLOW/'baseline.json',ref.read(ref.BASELINE,expected=ref.BASELINE_SHA))
++        ref.write_new(FLOW/'baseline-qualification.json',ref.read(ref.QUALIFICATION,expected=ref.QUALIFICATION_SHA))
+         (FLOW/'steps').mkdir(mode=0o700)
+         result['launch_worker_requested']=True
+         launched=ref.run_cli('01-launch',['/usr/bin/python3','-I',str(HERE/'owned_inspect.py'),
+
+--- prior/bestbuy_task_context.py
++++ current/bestbuy_task_context.py
+@@ -8,6 +8,7 @@
+ import json
+ import math
+ import os
++import re
+ from pathlib import Path
+ import subprocess
+ import stat
+@@ -16,8 +17,14 @@
+ 
+ PACKAGE='com.bestbuy.android'
+ UID=10130
+-SELF='org.droidloom.qa.bestbuy.r1'
+-HELPER_UID=10198
++SELF="org.droidloom.qa.bestbuy.r3"
++HELPER_UID=10155
++
++CURRENT_HOST_MANIFEST='6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
++CURRENT_BASELINE_SCHEMA='pocket4-main-current-baseline-v1'
++CURRENT_EPOCH='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'
++CURRENT_BASELINE_SHA='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'
++CURRENT_QUALIFICATION_SHA='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'
+ LIST=['/system/bin/cmd','package','list','packages','-U','--show-versioncode','--user','0',PACKAGE]
+ PATHS=['/system/bin/cmd','package','path','--user','0',PACKAGE]
+ OWN_UID=['/system/bin/cmd','package','list','packages','-U','--user','0',SELF]
+@@ -114,16 +121,41 @@
+         self.used_nonces.add(matches[0]);self.claim('instrument',9);self.round_instruments+=1
+ 
+ 
++def current_task_scope(scope,qa,contract):
++    fields={'schema','current_baseline_schema','package','component','uid','user','nonce',
++        'epoch_sha256','current_baseline_sha256','current_baseline_qualification_sha256',
++        'bestbuy_task_source_manifest_sha256','automatic_retry',
++        'original_recorder_manifest_sha256','actual_resolution_result_sha256'}
++    need(type(scope) is dict and set(scope)==fields and
++         scope['schema']=='pocket4-current-recorder-scope-v1' and
++         scope['current_baseline_schema']==CURRENT_BASELINE_SCHEMA==qa.MAIN_BASELINE_SCHEMA and
++         scope['epoch_sha256']==CURRENT_EPOCH==qa.MAIN_EPOCH and
++         scope['current_baseline_sha256']==CURRENT_BASELINE_SHA==qa.MAIN_BASELINE_SHA and
++         scope['current_baseline_qualification_sha256']==CURRENT_QUALIFICATION_SHA==qa.MAIN_BASELINE_QUALIFICATION_SHA and
++         scope['package']==PACKAGE==qa.PACKAGE and type(scope['uid']) is int and scope['uid']==UID==qa.UID and
++         type(scope['user']) is int and scope['user']==0 and
++         scope['original_recorder_manifest_sha256']==CURRENT_HOST_MANIFEST==contract.sha256 and
++         scope['automatic_retry'] is False,'EXACT_TYPED_CURRENT_BESTBUY_TASK_SCOPE')
++    need(isinstance(scope['component'],str) and
++         re.fullmatch(re.escape(PACKAGE)+r'/[A-Za-z0-9_.$]+',scope['component']) and
++         isinstance(scope['nonce'],str) and re.fullmatch('[0-9a-f]{32}',scope['nonce']) and
++         all(isinstance(scope[key],str) and re.fullmatch('[0-9a-f]{64}',scope[key])
++             for key in ('bestbuy_task_source_manifest_sha256','actual_resolution_result_sha256')),
++         'EXACT_CURRENT_TASK_SOURCE_NONCE_AND_COMPONENT')
++    return scope
++
++
+ class Flow:
+     """BestBuy-only object satisfying the actual original Session interface."""
+     def __init__(self,*,recorder,contract,target,environment,transport,main_guard,root,step,
+                  phase,scope,activation,tasks,qa,inspect_plan,resolve,read,deadline):
+-        need(scope['package']==PACKAGE and scope['uid']==UID and scope['user']==0 and
+-             scope['epoch_sha256']==transport.FRAMEWORK_EPOCH_SHA256,'EXACT_BESTBUY_TASK_SCOPE_REQUIRED')
++        current_task_scope(scope,qa,contract)
++        need(scope['epoch_sha256']==transport.FRAMEWORK_EPOCH_SHA256,'EXACT_CURRENT_TRANSPORT_EPOCH_REQUIRED')
+         need(root.is_dir() and step.is_relative_to(root),'NEW_PRIVATE_FLOW_REQUIRED')
+         self.recorder,self.contract,self.target=recorder,contract,target
+         self.main_guard,self.root,self.step=main_guard,root,step
+         self.phase,self.scope,self.activation,self.tasks=phase,scope,activation,tasks
++        self.current_qualified_scope=dict(scope);self.qa=qa
+         self.deadline=deadline;self.command_index=0;self.action_attempted=False
+         self._private_backend_transport=False;self._android_mutation=False
+         self.binding=types.SimpleNamespace(target=target)
+@@ -147,6 +179,8 @@
+             package=PACKAGE,uid=UID,interactive_production=True,runner=runner)
+ 
+     def guard(self,attempted=False):
++        current_task_scope(self.scope,self.qa,self.contract)
++        need(self.scope==self.current_qualified_scope,'CURRENT_BESTBUY_TASK_SCOPE_CHANGED')
+         need(not self.closed and time.monotonic()<self.deadline,'OPEN_BOUNDED_BESTBUY_FLOW_REQUIRED')
+         self.main_guard();self.target.verify()
+         if self.artifacts is not None:self.artifacts.verify_held()
+@@ -226,39 +260,37 @@
+     recorder=contract.load('recorder.py','bestbuy_task_actual_command')
+     held=contract.load('references/held_runtime_r5.py','bestbuy_task_actual_held_main')
+     binding=contract.load('main_binding.py','bestbuy_task_shared_classpath_only')
+-    activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
+-    verified=json.loads(ref.read(ref.VERIFIED,expected=ref.VERIFIED_SHA))
+-    need(activation['main_deployed'] is True and verified['main_deployed'] is True and
+-         verified['framework_epoch_sha256']==ref.EPOCH and activation['packages'][PACKAGE]==UID,
+-         'FIXED_MAIN_AND_BESTBUY_ACTIVATION_REQUIRED')
++    activation=ref.current_baseline()
++    own_scope=context.baseline_scope(ref,activation)
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,
+                      'bestbuy_task_fixed_epoch')
+     scope_raw=util.read(flow_root/'scope.json',65536)
+     scope=json.loads(scope_raw)
+-    need(scope==expected_scope and scope['activation_sha256']==ref.ACTIVATION_SHA and
+-         scope['verified_sha256']==ref.VERIFIED_SHA and scope['epoch_sha256']==ref.EPOCH and
+-         scope['package']==PACKAGE and scope['uid']==UID and scope['user']==0,
+-         'EXACT_NEW_BESTBUY_FLOW_SCOPE_REQUIRED')
+-    need(util.read(flow_root/'activation.json',expected=ref.ACTIVATION_SHA)==ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA)
+-         and util.read(flow_root/'activation-verified.json',expected=ref.VERIFIED_SHA)==ref.read(ref.VERIFIED,expected=ref.VERIFIED_SHA),
+-         'SAVED_MAIN_ACTIVATION_CHANGED')
++    current_task_scope(scope,qa,contract)
++    need(scope==expected_scope and all(scope[key]==value for key,value in own_scope.items()),
++         'EXACT_NEW_CURRENT_BESTBUY_FLOW_SCOPE_REQUIRED')
++    need(util.read(flow_root/'baseline.json',expected=ref.BASELINE_SHA)==ref.read(ref.BASELINE,expected=ref.BASELINE_SHA)
++         and util.read(flow_root/'baseline-qualification.json',expected=ref.QUALIFICATION_SHA)==ref.read(ref.QUALIFICATION,expected=ref.QUALIFICATION_SHA),
++         'SAVED_TYPED_CURRENT_BASELINE_CHANGED')
+     info=flow_root.lstat()
+     need(stat.S_ISDIR(info.st_mode) and info.st_uid==0 and not info.st_mode&0o077,
+          'PRIVATE_ROOT_OWNED_NEW_FLOW_REQUIRED')
++    target=None
+     def guard():
+         need(time.monotonic()<deadline,'BESTBUY_PHASE_DEADLINE')
+         source_verify(source_manifest);contract.verify()
+         need(util.read(flow_root/'scope.json',65536)==scope_raw,'BESTBUY_SCOPE_CHANGED')
+         ref.read(recorder.APP,expected=recorder.APP_SHA)
+         util.read(source.HELPER_PATH,source.HELPER_BYTES,source.HELPER_SHA,source.HELPER_BYTES)
+-        return ref.main_guard(activation,epoch)
++        observation=ref.main_guard(activation,epoch)
++        if target is not None:context.verify_target_data(target,activation,binding)
++        return observation
+     result['Main_before']=guard();result['shared_helper']=source.verify_shared_helper()
+     expected=activation['framework_epoch']['binding']['processes']['init']
+     proc=os.open('/proc/'+str(expected['host_pid']),os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC)
+     try:actual=held.proc_identity_at(proc,expected['host_pid'],time.monotonic()+3)
+     finally:os.close(proc)
+     need(binding.same_epoch_identity(actual,expected),'FIXED_MAIN_INIT_IDENTITY_CHANGED')
+-    target=None
+     try:
+         target=held.HeldTarget(actual,source.HELPER_PATH,source.HELPER_SHA);guard()
+         app=util.module(Path(recorder.APP),recorder.APP_SHA,'bestbuy_task_discovery_only')
+
+--- prior/bestbuy_readiness.py
++++ current/bestbuy_readiness.py
+@@ -40,7 +40,7 @@
+          assessed.get('actual_command_returncode')==0 and assessed.get('actual_instrumentation_finish_code')==-1 and
+          helper.get('ok') is True and helper.get('error') is None and helper.get('secondary_errors')==[] and
+          helper.get('protocol')==qa.PROTOCOL and helper.get('nonce')==nonce and helper.get('op')=='inspect' and
+-         helper.get('self_uid')==10198 and helper.get('action_attempted') is False and helper.get('outcome_unknown') is False and
++         helper.get('self_uid')==10155 and helper.get('action_attempted') is False and helper.get('outcome_unknown') is False and
+          helper.get('claim_persistence_completed') is True and helper.get('helper_work_completed') is True and
+          helper.get('automatic_retry') is False and helper.get('business_success_verified') is False,
+          'ACTUAL_SUCCESSFUL_NO_ACTION_INSPECTION_REQUIRED')
+@@ -144,7 +144,7 @@
+          sequence.get('after_state_completed') is True and sequence.get('restoration_qualified') is True and
+          sequence.get('post_state_matches_before') is True and
+          sequence['post_termination_state']['nonce']==plan['nonces']['after'] and
+-         sequence['post_termination_state']['helper_uid']==10198 and
++         sequence['post_termination_state']['helper_uid']==10155 and
+          sequence['post_termination_state']['ui_automation_connected'] is False,
+          'CURRENT_COMPLETE_ORIGINAL_SESSION_SAME_TASK_REQUIRED')
+     need(set(metadata)=={'before','inspect','after'} and all(
+
+--- prior/stage_execute.py
++++ current/stage_execute.py
+@@ -6,12 +6,12 @@
+ from pathlib import Path
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-bestbuy-owned-content-readiness-01')
++ROOT=Path("/home/alex/work/pocket4-bestbuy-r3-current-content-readiness-01")
+ SOURCE=ROOT/'source'
+-NONCE='01355f5641b7b932a1ee9b9f21350568'
++NONCE='e762b4b73cfff88ce7bd88d40edbbc9f'
+ FILES={'bestbuy_readiness.py', 'owned_inspect.py', 'INPUTS.json', 'bestbuy_task_context.py'}
+-REFERENCE=Path('/home/alex/work/pocket4-owned-bestbuy-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py')
+-REFERENCE_SHA='e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
++REFERENCE=Path('/home/alex/work/pocket4-current-host-r5-source-01/current_coordinator.py')
++REFERENCE_SHA="fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2"
+ 
+ 
+ def main(packet,manifest_sha256):
+@@ -32,7 +32,7 @@
+     exec(compile(data['owned_inspect.py'],entry.__file__,'exec'),entry.__dict__)
+     assert entry.ROOT==ROOT and entry.SOURCE==SOURCE and entry.HERE==SOURCE and entry.NONCE==NONCE
+     ref=entry.load(REFERENCE,REFERENCE_SHA,'bestbuy_task_stage_reference')
+-    activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++    activation=ref.current_baseline()
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'bestbuy_task_stage_epoch')
+     before=ref.main_guard(activation,epoch)
+     os.umask(0o077);ROOT.mkdir(mode=0o700)
+@@ -53,7 +53,7 @@
+         durable=entry.read(ROOT/'result.json');observed=json.loads(durable)
+         result['coordinator_result']={'path':str(ROOT/'result.json'),'bytes':len(durable),'sha256':hashlib.sha256(durable).hexdigest()}
+         assert observed['nonce']==NONCE and observed['source_manifest_sha256']==manifest_sha256
+-        assert observed['package']==entry.PACKAGE and observed['helper_uid']==10198
++        assert observed['package']==entry.PACKAGE and observed['helper_uid']==entry.HELPER_UID
+         assert rc==0 and observed['ok'] is True and observed['error'] is None and observed['secondary_errors']==[]
+         assert observed['read_only_inspection_completed'] is True and observed['owned_task_absent_after_cleanup'] is True
+         assert observed['business_success_verified'] is False and observed['whole_app_production_ready'] is False

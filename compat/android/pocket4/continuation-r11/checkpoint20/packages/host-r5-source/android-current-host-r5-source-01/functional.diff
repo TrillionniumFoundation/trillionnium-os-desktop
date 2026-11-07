@@ -1,0 +1,272 @@
+--- R4/recorder.py
++++ R5/recorder.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""One explicit Pocket4 business-flow step, bound to a verified activation.
++"""One explicit Pocket4 business-flow step, bound to a typed current baseline.
+ 
+ Private evidence stays in one flow directory. A launched task is closed only by
+ an explicit cleanup step, using its successful native receipt and saved scope.
+@@ -114,6 +114,12 @@
+ class Flow:
+     def __init__(self, args):
+         self.source, self.contract = source_contract(args.adapter_manifest_sha256)
++        self.current_guard = self.contract.load('current_baseline_guard.py', 'p4_current_baseline_guard')
++        require(self.current_guard.BASELINE_SHA == self.source.BASELINE_SHA and
++                self.current_guard.QUALIFICATION_SHA == self.source.BASELINE_QUALIFICATION_SHA and
++                self.current_guard.MAIN_EPOCH == self.source.MAIN_EPOCH,
++                'CURRENT_GUARD_LITERAL_BINDING_CHANGED')
++        self.current_guard.current_guard()
+         self.binding = None
+         self.transport = None
+         self._android_mutation = False
+@@ -132,39 +138,50 @@
+         self.action_attempted = False
+         self.command_index = 0
+         if args.operation == 'init':
+-            raw = read_regular(args.activation_after)
+-            require(digest(raw) == args.activation_sha256, 'ACTIVATION_RECEIPT_PIN')
+-            match = re.fullmatch(r'activation-after-([A-Za-z0-9_-]+)\.json', args.activation_after.name)
+-            require(match is not None, 'NOT_AN_EXPLICIT_ACTIVATION_AFTER_RECEIPT')
+-            verified_path = args.activation_after.with_name('activation-verified-' + match[1] + '.json')
+-            verified_raw = read_regular(verified_path)
+-            verified = json.loads(verified_raw)
+-            self.activation = json.loads(raw)
++            require(args.current_baseline == self.current_guard.BASELINE_PATH and
++                    args.baseline_sha256 == self.source.BASELINE_SHA,
++                    'EXPLICIT_CURRENT_BASELINE_INPUT_REQUIRED')
++            raw = self.current_guard.raw_file(args.current_baseline, 4*1024*1024,
++                    self.source.BASELINE_SHA, self.current_guard.BASELINE_BYTES)
++            qualification_raw = self.current_guard.raw_file(self.current_guard.QUALIFICATION_PATH, 65536,
++                    self.source.BASELINE_QUALIFICATION_SHA, self.current_guard.QUALIFICATION_BYTES)
++            self.activation = json.loads(raw)  # Compatibility attribute; only the new typed baseline is accepted.
++            require(self.activation == self.current_guard.current_baseline(),
++                    'CURRENT_BASELINE_DIFFERS_FROM_QUALIFIED_ORIGINAL')
+             bound = self.activation['framework_epoch']
+-            require(self.activation['main_deployed'] is True and verified['main_deployed'] is True and
+-                    verified['framework_epoch_sha256'] == bound['sha256'], 'ACTIVATION_NOT_VERIFIED')
++            require(self.activation.get('schema') == self.source.BASELINE_SCHEMA and
++                    'main_deployed' not in self.activation and self.activation.get('deployment_performed') is False,
++                    'CURRENT_BASELINE_IS_NOT_A_DEPLOYMENT_RECEIPT')
+             require(self.activation['engine_sha256'] == ENGINE_SHA and
+-                    self.activation['presenter_sha256'] == PRESENTER_SHA, 'WRONG_ACTIVATION_ARTIFACTS')
++                    self.activation['presenter_sha256'] == PRESENTER_SHA, 'WRONG_BASELINE_ARTIFACTS')
+             require(re.fullmatch(r'[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z0-9_]+)+', args.package), 'INVALID_PACKAGE')
+             require(re.fullmatch(re.escape(args.package) + r'/[A-Za-z0-9_.$]+', args.component), 'INVALID_COMPONENT')
+-            self.scope = {'package': args.package, 'component': args.component,
++            self.scope = {'schema':'pocket4-current-recorder-scope-v1',
++                          'current_baseline_schema':self.source.BASELINE_SCHEMA,
++                          'package': args.package, 'component': args.component,
+                           'uid': self.activation['packages'][args.package], 'user': 0,
+-                          'activation_sha256': digest(raw), 'verified_sha256': digest(verified_raw),
++                          'current_baseline_sha256': digest(raw),
++                          'current_baseline_qualification_sha256': digest(qualification_raw),
++                          'historical_activation_sha256':self.source.HISTORICAL_ACTIVATION_SHA,
++                          'historical_verified_sha256':self.source.HISTORICAL_VERIFIED_SHA,
+                           'epoch_sha256': bound['sha256'], 'created_utc': now(),
+                           'adapter_manifest_sha256': self.contract.sha256,
+                           'recorder_sha256': digest(read_regular(__file__)), 'automatic_retry': False}
+             self.guard()
+-            write_new(self.root / 'activation.json', raw)
+-            write_new(self.root / 'activation-verified.json', verified_raw)
++            write_new(self.root / 'baseline.json', raw)
++            write_new(self.root / 'baseline-qualification.json', qualification_raw)
+             write_new(self.root / 'scope.json', self.scope)
+             (self.root / 'steps').mkdir(mode=0o700)
+             (self.root / 'reconciliations').mkdir(mode=0o700)
+         else:
+             self.scope = json.loads(read_regular(self.root / 'scope.json'))
+-            raw = read_regular(self.root / 'activation.json')
+-            require(digest(raw) == self.scope['activation_sha256'] and
+-                    digest(read_regular(self.root / 'activation-verified.json')) == self.scope['verified_sha256'],
+-                    'SAVED_ACTIVATION_CHANGED')
++            raw = self.current_guard.raw_file(self.root / 'baseline.json', 4*1024*1024,
++                    self.source.BASELINE_SHA, self.current_guard.BASELINE_BYTES)
++            self.current_guard.raw_file(self.root / 'baseline-qualification.json', 65536,
++                    self.source.BASELINE_QUALIFICATION_SHA, self.current_guard.QUALIFICATION_BYTES)
++            require(self.scope.get('current_baseline_sha256') == self.source.BASELINE_SHA and
++                    self.scope.get('current_baseline_qualification_sha256') == self.source.BASELINE_QUALIFICATION_SHA,
++                    'SAVED_CURRENT_BASELINE_CHANGED')
+             require(digest(read_regular(__file__)) == self.scope['recorder_sha256'], 'RECORDER_CHANGED_MID_FLOW')
+             self.activation = json.loads(raw)
+         self.source.verify_scope(self.scope, self.activation, self.contract)
+@@ -172,6 +189,7 @@
+     def guard(self, attempted=False):
+         self.contract.verify()
+         self.source.verify_scope(self.scope, self.activation, self.contract)
++        self.current_guard.current_guard(self.activation, action_attempted=attempted)
+         self.epoch.require_unchanged(self.activation['framework_epoch'], action_attempted=attempted)
+         for path, pin in ((APP, APP_SHA), (BACKEND, BACKEND_SHA)):
+             require(digest(read_regular(path)) == pin, 'HELPER_CHANGED')
+@@ -638,11 +656,11 @@
+     parser.add_argument('--adapter-manifest-sha256', required=True)
+     parser.add_argument('--flow-dir', type=Path, required=True)
+     parser.add_argument('--step')
+-    parser.add_argument('--activation-after', type=Path)
+-    parser.add_argument('--activation-sha256')
++    parser.add_argument('--current-baseline', type=Path)
++    parser.add_argument('--baseline-sha256')
+     parser.add_argument('--package')
+     parser.add_argument('--component')
+-    parser.add_argument('--epoch-module', type=Path, default=Path('/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py'))
++    parser.add_argument('--epoch-module', type=Path, default=Path(__file__).resolve().parent / 'references/framework_epoch.py')
+     parser.add_argument('--task-source', type=Path, default=Path(__file__).resolve().parent / 'references/task_scope_baseline.py')
+     parser.add_argument('--request', type=json.loads)
+     parser.add_argument('--unknown-step')
+--- R4/source_contract.py
++++ R5/source_contract.py
+@@ -8,10 +8,14 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ARTIFACT = "pocket4-bilibili-existing-recorder-held-r1"
+-MAIN_EPOCH = "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f"
+-ACTIVATION_SHA = "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615"
+-VERIFIED_SHA = "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
++ARTIFACT = "pocket4-bilibili-current-recorder-held-r5"
++MAIN_EPOCH = "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2"
++BASELINE_SCHEMA = "pocket4-main-current-baseline-v1"
++BASELINE_SHA = "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266"
++BASELINE_QUALIFICATION_SHA = "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6"
++CURRENT_GUARD_SHA = "0ee54ef97c073857609aedb4670395db084ceacc7d28558315647ab2ffbef679"
++HISTORICAL_ACTIVATION_SHA = "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615"
++HISTORICAL_VERIFIED_SHA = "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+ PACKAGE = "tv.danmaku.bili"
+ COMPONENT = PACKAGE + "/tv.danmaku.bili.MainActivityV2"
+ UID = 10117
+@@ -25,7 +29,8 @@
+     "references/bound_android_transport_r3.py": (13721, "def4e9af81bda71cc4125b61c8a15251e07e4866627b577650e77a4fb127ecae"),
+ }
+ PRODUCTION_FILES = {"recorder.py", "source_contract.py", "main_binding.py",
+-                    "existing_ui_entry.py", "bound_android_transport.py"}
++                    "existing_ui_entry.py", "bound_android_transport.py",
++                    "current_baseline_guard.py", "current_coordinator.py"}
+ HELPER_ROOT = Path("/home/alex/work/pocket4-owned-held-ns-runner-r4-01")
+ HELPER_PATH = HELPER_ROOT / "held-namespace-entry"
+ HELPER_SOURCE = HELPER_ROOT / "held_namespace_entry.rs"
+@@ -84,11 +89,18 @@
+         raw = bounded_file(self.path)
+         require(sha(raw) == expected_sha256, "ADAPTER_MANIFEST_PIN_CHANGED")
+         manifest = json.loads(raw)
+-        require(manifest.get("schema") == 1 and manifest.get("artifact") == ARTIFACT,
++        require(manifest.get("schema") == 2 and manifest.get("artifact") == ARTIFACT,
+                 "ADAPTER_MANIFEST_SCHEMA_CHANGED")
++        binding = manifest.get("current_baseline", {})
++        require(binding == {"schema": BASELINE_SCHEMA, "epoch_sha256": MAIN_EPOCH,
++                "baseline_sha256": BASELINE_SHA, "qualification_sha256": BASELINE_QUALIFICATION_SHA,
++                "guard_sha256": CURRENT_GUARD_SHA,
++                "historical_activation_sha256": HISTORICAL_ACTIVATION_SHA,
++                "historical_verified_sha256": HISTORICAL_VERIFIED_SHA},
++                "ACTUAL_CURRENT_HOST_MANIFEST_BINDING_REQUIRED")
+         self.files = manifest["files"]
+         require(isinstance(self.files, dict) and len(self.files) <= 64 and
+-                PRODUCTION_FILES | set(REFERENCE_PINS) <= set(self.files),
++                PRODUCTION_FILES | set(REFERENCE_PINS) == set(self.files),
+                 "ADAPTER_SOURCE_CLOSURE_INCOMPLETE")
+         for name, row in self.files.items():
+             rel = PurePosixPath(name)
+@@ -99,6 +111,8 @@
+         for name, (length, digest) in REFERENCE_PINS.items():
+             require(self.files[name] == {"bytes": length, "sha256": digest},
+                     "FROZEN_REFERENCE_PIN_CHANGED")
++        require(self.files["current_baseline_guard.py"]["sha256"] == CURRENT_GUARD_SHA,
++                "CURRENT_GUARD_SOURCE_PIN_CHANGED")
+         self.verify()
+ 
+     def verify(self):
+@@ -157,14 +171,30 @@
+ 
+ 
+ def verify_scope(scope, activation, contract):
+-    require(scope.get("package") == PACKAGE and scope.get("component") == COMPONENT and
+-            type(scope.get("uid")) is int and scope["uid"] == UID and scope.get("user") == 0,
+-            "BILIBILI_PACKAGE_UID_SCOPE_CHANGED")
+-    require(scope.get("epoch_sha256") == MAIN_EPOCH and
++    require(scope.get("schema") == "pocket4-current-recorder-scope-v1" and
++            scope.get("current_baseline_schema") == BASELINE_SCHEMA and
++            scope.get("package") == PACKAGE and scope.get("component") == COMPONENT and
++            type(scope.get("uid")) is int and scope["uid"] == UID and
++            type(scope.get("user")) is int and scope["user"] == 0 and
++            scope.get("automatic_retry") is False,
++            "CURRENT_BILIBILI_SCOPE_REQUIRED")
++    require(activation.get("schema") == BASELINE_SCHEMA and
++            activation.get("kind") == "current-framework-generation" and
++            "main_deployed" not in activation and activation.get("deployment_performed") is False and
++            scope.get("epoch_sha256") == MAIN_EPOCH and
+             activation["framework_epoch"]["sha256"] == MAIN_EPOCH and
+-            scope.get("activation_sha256") == ACTIVATION_SHA and
+-            scope.get("verified_sha256") == VERIFIED_SHA,
+-            "FIXED_MAIN_ACTIVATION_REQUIRED")
++            scope.get("current_baseline_sha256") == BASELINE_SHA and
++            scope.get("current_baseline_qualification_sha256") == BASELINE_QUALIFICATION_SHA and
++            scope.get("historical_activation_sha256") == HISTORICAL_ACTIVATION_SHA and
++            scope.get("historical_verified_sha256") == HISTORICAL_VERIFIED_SHA and
++            "activation_sha256" not in scope and "verified_sha256" not in scope,
++            "CURRENT_BASELINE_AND_SEPARATE_HISTORY_REQUIRED")
++    history = activation.get("historical_deployment", {})
++    require(history.get("activation_sha256") == HISTORICAL_ACTIVATION_SHA and
++            history.get("verification_sha256") == HISTORICAL_VERIFIED_SHA and
++            activation.get("framework_exit_cause_resolved") is False and
++            activation.get("whole_app_production_ready") is False,
++            "HISTORICAL_LINEAGE_OR_PRODUCTION_BOUNDARY_CHANGED")
+     require(scope.get("adapter_manifest_sha256") == contract.sha256 and
+             scope.get("recorder_sha256") == contract.files["recorder.py"]["sha256"],
+             "RECORDER_ADAPTER_BINDING_CHANGED")
+--- R4/main_binding.py
++++ R5/main_binding.py
+@@ -128,7 +128,10 @@
+                 self.directories["/data/" + relative] = activation["app_directories"][relative]
+             self.verify()
+             guard()
+-            self.record = {"schema": 1, "scope": "fixed Main Bilibili only",
++            self.record = {"schema": 2, "scope": "fixed current-baseline Main Bilibili only",
++                "current_baseline_schema": source.BASELINE_SCHEMA,
++                "current_baseline_sha256": source.BASELINE_SHA,
++                "current_baseline_qualification_sha256": source.BASELINE_QUALIFICATION_SHA,
+                 "epoch_sha256": source.MAIN_EPOCH, "package": source.PACKAGE, "uid": source.UID,
+                 "held_runtime_r5_sha256": source.REFERENCE_PINS["references/held_runtime_r5.py"][1],
+                 "target": self.target.record, "classpath": classpath,
+--- R4/bound_android_transport.py
++++ R5/bound_android_transport.py
+@@ -18,7 +18,7 @@
+ 
+ 
+ ANDROID_APP_SHA256 = "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66"
+-FRAMEWORK_EPOCH_SHA256 = "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f"
++FRAMEWORK_EPOCH_SHA256 = "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2"
+ HELD_HELPER_SHA256 = "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689"
+ EXPECTED_PACKAGE = "tv.danmaku.bili"
+ EXPECTED_UID = 10117
+--- R4/existing_ui_entry.py
++++ R5/existing_ui_entry.py
+@@ -85,11 +85,18 @@
+     step = root / 'steps' / args.step
+     private_directory(root / 'steps'); private_directory(step)
+     active_command_phase(root, step, args.command)
+-    activation_raw = source.bounded_file(root / 'activation.json')
++    current_guard = contract.load('current_baseline_guard.py', 'p4_child_current_baseline_guard')
++    require(current_guard.BASELINE_SHA == source.BASELINE_SHA and
++            current_guard.QUALIFICATION_SHA == source.BASELINE_QUALIFICATION_SHA and
++            current_guard.MAIN_EPOCH == source.MAIN_EPOCH, 'CURRENT_CHILD_GUARD_BINDING_CHANGED')
++    activation_raw = current_guard.raw_file(root / 'baseline.json', 4*1024*1024,
++            source.BASELINE_SHA, current_guard.BASELINE_BYTES)
+     scope = json.loads(source.bounded_file(root / 'scope.json'))
+-    require(source.sha(activation_raw) == scope['activation_sha256'] and
+-            source.sha(source.bounded_file(root / 'activation-verified.json')) == scope['verified_sha256'],
+-            'SAVED_ACTIVATION_CHANGED')
++    current_guard.raw_file(root / 'baseline-qualification.json', 65536,
++            source.BASELINE_QUALIFICATION_SHA, current_guard.QUALIFICATION_BYTES)
++    require(scope.get('current_baseline_sha256') == source.BASELINE_SHA and
++            scope.get('current_baseline_qualification_sha256') == source.BASELINE_QUALIFICATION_SHA,
++            'SAVED_CURRENT_BASELINE_CHANGED')
+     activation = json.loads(activation_raw)
+     source.verify_scope(scope, activation, contract)
+     step_intent = json.loads(source.bounded_file(step / 'intent.json'))
+@@ -113,6 +120,7 @@
+     recorder = contract.load('recorder.py', 'bili_backend_guard_view')
+     view = recorder.Flow.__new__(recorder.Flow)
+     view.source, view.contract = source, contract
++    view.current_guard = current_guard
+     view.root, view.scope, view.activation = root, scope, activation
+     view.epoch = contract.load('references/framework_epoch.py', 'bili_child_epoch')
+     view.app = contract.load('references/android_app.py', 'bili_child_discovery')

@@ -1,0 +1,88 @@
+--- content-ready03/video_navigation.py
++++ content-ready04-normalized/video_navigation.py
+@@ -183,6 +183,72 @@
+             first_null.add_note('BOUNDED_NULL_FOREGROUND_OBSERVATION_EXHAUSTED')
+             raise first_null
+ 
++def waiting_structure(qa, inspection, host_scope):
++    """Exact original non-metadata checks; authorizes no input or player proof."""
++    inspect_record = qa.inspect_record
++    scope = qa.scope
++    require = qa.require
++    PACKAGE = qa.PACKAGE
++    REVEAL_ACTIVITY = qa.REVEAL_ACTIVITY
++    reveal_rect = qa.reveal_rect
++    sha = qa.sha
++    canonical = qa.canonical
++    require_hidden = True
++    inspect_record(inspection)
++    scope(host_scope)
++    require(host_scope['activity'] == REVEAL_ACTIVITY, 'REVEAL_EXACT_COURSE_ACTIVITY')
++    nodes = inspection['nodes']
++    window = inspection['window']
++
++    def eligible(n):
++        return n.get('visible') is True and n.get('enabled') is True and (n.get('password') is False) and (n.get('class_truncated') is False) and (n.get('resource_id_truncated') is False)
++
++    def one(resource, kind, text_hash=None):
++        found = [n for n in nodes if n.get('resource_id') == resource and n.get('class') == kind and eligible(n) and (text_hash is None or (n.get('text_truncated') is False and isinstance(n.get('text'), str) and (n.get('text_sha256') == text_hash == sha(n['text'].encode()))))]
++        require(len(found) == 1, 'REVEAL_UNIQUE_PLAYER_ROLE_REQUIRED')
++        return found[0]
++
++    def under(n, parent):
++        return n['path'].startswith(parent['path'] + '/')
++
++    def inside(a, b):
++        reveal_rect(a)
++        reveal_rect(b)
++        return b[0] <= a[0] and a[2] <= b[2] and (b[1] <= a[1]) and (a[3] <= b[3])
++    area = one(PACKAGE + ':id/video_area', 'android.widget.FrameLayout')
++    container = one(PACKAGE + ':id/video_container', 'android.widget.FrameLayout')
++    overlay = one(PACKAGE + ':id/video_area_float_layer_container', 'android.widget.FrameLayout')
++    toolbar = one(PACKAGE + ':id/collapsing_toolbar', 'android.widget.FrameLayout')
++    full = reveal_rect(area['bounds'])
++    crop = reveal_rect(overlay['bounds'])
++    require(full == container['bounds'] and crop == toolbar['bounds'] and (crop != full) and inside(crop, full) and inside(full, window['bounds']) and under(container, area) and under(overlay, area), 'REVEAL_ABSOLUTE_PLAYER_GEOMETRY')
++    surfaces = [n for n in nodes if n.get('class') in ('android.view.SurfaceView', 'android.view.TextureView')]
++    require(len(surfaces) == 2 and all((n['class'] == 'android.view.SurfaceView' and eligible(n) and (n['resource_id'] == '') and under(n, container) and (not under(n, overlay)) and (not under(n, toolbar)) for n in surfaces)), 'REVEAL_EXACT_TWO_SURFACE_ROLES')
++    area_rows = [n for n in surfaces if n['bounds'] == full]
++    crop_rows = [n for n in surfaces if n['bounds'] == crop]
++    require(len(area_rows) == len(crop_rows) == 1, 'REVEAL_EXACT_TWO_SURFACE_ROLES')
++    for n in nodes:
++        if under(n, container) and n['visible'] is True:
++            require(n['password'] is False, 'REVEAL_PLAYER_PASSWORD_DESCENDANT')
++            text = n['text']
++            require(isinstance(text, str) and (not text or n['text_truncated'] is False), 'REVEAL_PLAYER_TEXT_COMPLETENESS')
++            require(not text.startswith('Buffering...'), 'REVEAL_BUFFERING_PLAYER_REJECTED')
++    if require_hidden:
++        controls = one(PACKAGE + ':id/control_container', 'android.widget.FrameLayout')
++        require(under(controls, container) and type(controls['child_count']) is int and (controls['child_count'] == 0) and (controls['bounds'] == crop), 'REVEAL_CURRENT_HIDDEN_CONTROL_CONTAINER')
++        require(all((n.get('clickable') is False and n['class'] != 'android.widget.SeekBar' for n in nodes if under(n, area) and n['visible'] is True and (n['enabled'] is True))), 'REVEAL_ALREADY_INTERACTIVE_PLAYER_REJECTED')
++    by_path = {n['path']: n for n in nodes}
++    parents = set()
++    render = []
++    for role, node in (('area-sized', area_rows[0]), ('crop-sized', crop_rows[0])):
++        require('/' in node['path'], 'REVEAL_SURFACE_PARENT_PATH')
++        parent_path = node['path'].rsplit('/', 1)[0]
++        parent = by_path.get(parent_path)
++        require(parent is not None and eligible(parent) and under(parent, container) and (parent['class'] == 'android.widget.FrameLayout') and (parent['resource_id'] == '') and (parent['bounds'] == node['bounds']) and (parent_path not in parents), 'REVEAL_EXACT_DISTINCT_SURFACE_PARENTS')
++        parents.add(parent_path)
++        render.append({'role': role, 'node_sha256': node['node_sha256'], 'parent_node_sha256': parent['node_sha256'], 'bounds': node['bounds']})
++    return True
++
+ def content_status(qa, inspection, scope):
+     """Original full proof, or the narrowly observed absent-metadata shape.
+ 
+@@ -215,10 +281,8 @@
+             found = rows(resource)
+             counts[resource] = len(found)
+             qa.require(len(found) == 1 and eligible(found[0], 'android.widget.FrameLayout'), 'CONTENT_READY_FIXED_PLAYER_ROLE_CHANGED')
+-        surfaces = [n for n in nodes if n.get('class') in ('android.view.SurfaceView', 'android.view.TextureView')]
+-        qa.require(len(surfaces) == 2 and all((eligible(n, 'android.view.SurfaceView') for n in surfaces)), 'CONTENT_READY_OBSERVED_RENDERER_SHAPE_CHANGED')
+-        qa.require(not any((n.get('visible') is True and isinstance(n.get('text'), str) and n['text'].startswith('Buffering...') for n in nodes)), 'CONTENT_READY_BUFFERING_SHAPE_CHANGED')
+-        return {'ready': False, 'wait_permitted': True, 'missing_metadata_roles': missing, 'fixed_resource_counts': counts, 'surface_view_count': 2, 'texture_view_count': 0, 'original_predicate_error': {'type': type(error).__name__, 'message': str(error)}}
++        waiting_structure(qa, inspection, scope)
++        return {'ready': False, 'wait_permitted': True, 'missing_metadata_roles': missing, 'fixed_resource_counts': counts, 'surface_view_count': 2, 'texture_view_count': 0, 'original_nonmetadata_structure_qualified': True, 'original_predicate_error': {'type': type(error).__name__, 'message': str(error)}}
+     return {'ready': True, 'wait_permitted': False, 'original_full_player_proof': proof}
+ 
+ def content_observation(base, qa, flow, installed, sequence, summaries, plan, anchor):

@@ -1,0 +1,178 @@
+--- normal07-03/source/actor.py
++++ normal09-01/source/actor.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""One actual producer07 cell inside one inherited, finite private outer unit."""
++"""One actual producer09 cell inside one inherited, finite private outer unit."""
+ import argparse, ctypes, hashlib, json, os, signal, socket, stat, sys, time, traceback, types
+ from pathlib import Path
+ 
+@@ -119,9 +119,40 @@
+         proc.close(); raise
+ 
+ 
++def observe_init_hello(audit, owned):
++    """One live, held identity/clock sample; no kernel log attribution."""
++    matches = [row for row in audit['records'] if row['detail']['event'] == 'init_hello']
++    if not matches: return None
++    owned.need(len(matches) == 1, 'repeated init HELLO in identity observation')
++    row = matches[0]; init = row['detail']['init']
++    nonce = audit['nonce']
++    owned.need(isinstance(nonce, str) and len(nonce) == 64 and nonce != '0' * 64 and
++               all(c in '0123456789abcdef' for c in nonce), 'observed generation nonce malformed')
++    proc = owned.Process(init['process']['pid'])
++    try:
++        proc.live()
++        before = time.monotonic_ns()
++        boot = time.clock_gettime_ns(time.CLOCK_BOOTTIME)
++        realtime = time.time_ns()
++        snapshot = proc.snapshot()
++        after = time.monotonic_ns()
++        for key in ('process', 'namespaces', 'executable', 'executable_sha256'):
++            owned.need(snapshot[key] == init[key], 'observed init differs from actual HELLO: ' + key)
++        owned.need(0 < row['observed_monotonic_ns'] <= before <= after and boot > 0 and realtime > 0,
++                   'observed init clock bracket invalid')
++        proc.live()
++        return proc, {'schema': 1, 'generation_nonce': nonce, 'audit_sequence': row['sequence'],
++            'audit_observed_monotonic_ns': row['observed_monotonic_ns'], 'snapshot': snapshot,
++            'monotonic_before_ns': before, 'monotonic_after_ns': after,
++            'boottime_ns': boot, 'realtime_ns': realtime, 'atomic_clock_sample': False,
++            'global_kernel_lines_attributed': False}
++    except BaseException:
++        proc.close(); raise
++
++
+ def run(args, prepared, plan, modules):
+     owned, support, prepare, qualify = (modules[x] for x in ('owned', 'pinned_support', 'prepare', 'qualify'))
+-    result = {'schema': 1, 'kind': 'owner07-real-normal01', 'attempt_nonce': plan['attempt_nonce'],
++    result = {'schema': 1, 'kind': 'owner09-real-normal01', 'attempt_nonce': plan['attempt_nonce'],
+               'success': False, 'production_ready': False, 'installed_owner_qualified': False,
+               'pressure_effect_qualified': False, 'rc_property_reload_qualified': False, 'errors': [],
+               'prepared_sha256': args.prepared_sha256, 'started_monotonic_ns': time.monotonic_ns()}
+@@ -215,8 +246,18 @@
+         while time.monotonic() < end:
+             response = owned.control(plan['control_socket'], daemon.process, socket_id, {'command': 'status'}, 4)
+             result['latest_status'] = response
++            audit = response.get('relay_lifecycle')
++            if audit and 'init_identity_clock_observation' not in result and 'init_identity_clock_observation_error' not in result:
++                try:
++                    observed = observe_init_hello(audit, owned)
++                    if observed is not None:
++                        held['init'], result['init_identity_clock_observation'] = observed
++                except BaseException as error:
++                    # A diagnostic miss must not replace the original lifecycle
++                    # failure. The success qualifier separately requires this
++                    # live binding, and there is no silent PID retry.
++                    result['init_identity_clock_observation_error'] = repr(error)
+             owned.need(response['ok'] and response['state'] == 'running', 'actual producer stopped or failed before ACTIVE')
+-            audit = response.get('relay_lifecycle')
+             if audit:
+                 owned.need(not audit['recording_incomplete'] and not audit['first_failure'] and not audit['retirement_failure'] and not audit['cleanup_failure'], 'actual lifecycle audit records a failure')
+                 events = [r['detail']['event'] for r in audit['records']]
+@@ -229,7 +270,8 @@
+         for role, record in [('owner', details['owner_attached']['process']),
+                              ('init', details['init_hello']['init']['process']),
+                              ('broker', details['broker_ready']['process'])]:
+-            proc = owned.Process(record['pid']); held[role] = proc
++            if role not in held: held[role] = owned.Process(record['pid'])
++            proc = held[role]
+             owned.need(proc.observation() == record, 'actual ' + role + ' differs from producer audit')
+         native, native_record = native_lmkd(held['init'], plan['artifacts']['lmkd']['sha256'], owned)
+         held['lmkd'] = native; result['native_lmkd'] = native_record
+--- normal07-03/source/coordinator.py
++++ normal09-01/source/coordinator.py
+@@ -49,9 +49,9 @@
+     state = group_fd = -1; actor = None; fence = None; invocation = None; launched = False; tools = {}
+     try:
+         owned.need(os.getuid() == os.geteuid() == os.getgid() == 0, 'external controller requires original host root')
+-        owned.need(plan['unit'] == 'p4-owner08-normal-20261105-01.service' and
+-                   plan['package'] == '/opt/p4-owner08-normal-20261105-01' and
+-                   plan['state'] == '/opt/p4-owner08-normal-20261105-01-state', 'this controller accepts only its fixed fresh unit/package/state')
++        owned.need(plan['unit'] == 'p4-owner09-normal-20261105-01.service' and
++                   plan['package'] == '/opt/p4-owner09-normal-20261105-01' and
++                   plan['state'] == '/opt/p4-owner09-normal-20261105-01-state', 'this controller accepts only its fixed fresh unit/package/state')
+         state = owned.root_directory(plan['state'])
+         owned.need(owned.file_id(state) == prepared['state_identity'], 'prepared state replaced')
+         for name in ('coordinator-claim.json', 'gate.json', 'runtime-claim.json', 'actor-result.json', 'runtime-result.json'):
+--- normal07-03/source/prepare.py
++++ normal09-01/source/prepare.py
+@@ -117,15 +117,15 @@
+ 
+ 
+ def main(plan, sources):
+-    result = {'schema': 1, 'kind': 'owner08-normal-preparation01', 'success': False,
++    result = {'schema': 1, 'kind': 'owner09-normal-preparation01', 'success': False,
+               'attempt_nonce': plan['attempt_nonce'], 'runtime_executed': False,
+               'namespace_or_network_changed': False, 'production_ready': False, 'errors': []}
+     package_fd = state_fd = data_fd = -1; tools = {}; fence = None
+     try:
+         owned.need(os.geteuid() == os.getuid() == os.getegid() == 0, 'preparation requires original host root')
+         owned.need(len(plan['attempt_nonce']) == 64 and
+-                   plan['scope'] == 'REAL_OWNER_ABI2_DETACHED_PROJECTION_FIRST_ACTIVE_ORIGINAL_RETIREMENT' and
+-                   plan['kind'] == 'owned-real-producer08-normal01-detached01', 'wrong fixed profile')
++                   plan['scope'] == 'REAL_OWNER_ABI3_CGROUP_HANDOFF_FIRST_ACTIVE_ORIGINAL_RETIREMENT' and
++                   plan['kind'] == 'owned-real-producer09-normal01-cgroup-handoff01', 'wrong fixed profile')
+         owned.need(not Path(plan['package']).exists() and not Path(plan['state']).exists(), 'preparation root already exists')
+         owned.need(support.props(plan['unit']).get('LoadState') == 'not-found', 'owned unit already exists')
+         fence = support.MainFence(plan, vars(support)); result['main_before'] = fence.check()
+--- normal07-03/source/qualify.py
++++ normal09-01/source/qualify.py
+@@ -11,8 +11,8 @@
+     return isinstance(value, str) and len(value) == 64 and value != '0' * 64 and all(c in '0123456789abcdef' for c in value)
+ 
+ 
+-def qualify_init_v2(detail, generation_nonce):
+-    """Observe the actual ABI2 handshake; these bytes grant no authority."""
++def qualify_init_v3(detail, generation_nonce):
++    """Observe the actual ABI3 handshake; these bytes grant no authority."""
+     need(hex64(generation_nonce), 'init actual generation nonce invalid')
+     records = [(1, detail['init_hello']['init']['hello_wire_hex'])] + [
+         (kind, detail[event]['wire_hex']) for kind, event in
+@@ -23,9 +23,9 @@
+         need(isinstance(text, str) and len(text) == 256 and
+              all(char in '0123456789abcdef' for char in text), 'init protocol wire is not exact hex')
+         wire = bytes.fromhex(text)
+-        need(wire[:8] == b'P4IBV2!!' and int.from_bytes(wire[8:12], 'little') == 2 and
++        need(wire[:8] == b'P4IBV3!!' and int.from_bytes(wire[8:12], 'little') == 3 and
+              int.from_bytes(wire[12:16], 'little') == kind and
+-             wire[16:48].hex() == generation_nonce, 'init ABI2/phase/actual nonce differs')
++             wire[16:48].hex() == generation_nonce, 'init ABI3/phase/actual nonce differs')
+         decoded.append(wire)
+     project = decoded[1]
+     need(all(wire[:12] == project[:12] and wire[16:] == project[16:] for wire in decoded[2:]),
+@@ -41,6 +41,8 @@
+ 
+ 
+ def qualify_lifecycle(plan, actual):
++    need(plan['init_protocol_abi'] == 3 and plan['entry_abi'] == 'droidloom-relay-entry-v3',
++         'actual plan does not bind paired ABI3')
+     active = actual['active_response']; stopped = actual['stop_response']
+     need(active['ok'] is True and active['state'] == 'running' and stopped['ok'] is True and stopped['state'] == 'stopped', 'public lifecycle state failed')
+     a, b = active['relay_lifecycle'], stopped['relay_lifecycle']
+@@ -68,12 +70,25 @@
+     for role, record in (('owner', detail['owner_attached']['process']), ('init', detail['init_hello']['init']['process']), ('broker', detail['broker_ready']['process'])):
+         need(record == actual['observed_processes'][role]['process'], 'held actual process differs: ' + role)
+     init = detail['init_hello']['init']; observed_init = actual['observed_processes']['init']
++    captured = actual['init_identity_clock_observation']
++    hello_row = b['records'][2]
++    need('init_identity_clock_observation_error' not in actual and captured['schema'] == 1 and
++         captured['generation_nonce'] == b['nonce'] and captured['audit_sequence'] == hello_row['sequence'] and
++         captured['audit_observed_monotonic_ns'] == hello_row['observed_monotonic_ns'],
++         'held init clock observation differs from exact HELLO')
++    need(captured['snapshot'] == observed_init and captured['global_kernel_lines_attributed'] is False and
++         captured['atomic_clock_sample'] is False, 'held init observation or log-attribution scope differs')
++    need(all(type(captured[name]) is int and captured[name] > 0 for name in
++             ('monotonic_before_ns', 'monotonic_after_ns', 'boottime_ns', 'realtime_ns')) and
++         hello_row['observed_monotonic_ns'] <= captured['monotonic_before_ns'] <=
++         captured['monotonic_after_ns'] <= actual['active_observed_monotonic_ns'],
++         'held init three-clock observation is outside the actual live phase')
+     need(init['namespaces'] == observed_init['namespaces'] and init['executable'] == observed_init['executable'] and
+          init['executable_sha256'] == observed_init['executable_sha256'] == plan['spec']['pressure_relay']['init_sha256'], 'actual paired init identity differs')
+     need(init['root'] == actual['init_root_identity'] and init['cgroup'] == actual['init_projected_cgroup_identity'] == detail['prepared']['domain'], 'actual init root/cgroup projection differs')
+     need(init['linker_sha256'] == plan['spec']['pressure_relay']['init_linker_sha256'] and
+          init['compat_sha256'] == plan['spec']['pressure_relay']['compat_preload_sha256'], 'actual init loader/preload pairing differs')
+-    qualify_init_v2(detail, b['nonce'])
++    qualify_init_v3(detail, b['nonce'])
+     native = actual['native_lmkd']
+     need(native['fixed_inherited_slots_absent'] is True and native['snapshot']['executable_sha256'] == plan['artifacts']['lmkd']['sha256'] and
+          native['snapshot']['identity']['uids'] == [1069] * 4 and native['snapshot']['namespaces'][0] == init['namespaces'][0], 'actual native LMKD executable/role/namespace differs')

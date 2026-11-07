@@ -1,0 +1,24 @@
+--- preimage/controls/lease_destruction_controls.cc
++++ candidate/controls/lease_destruction_controls.cc
+@@ -118,6 +118,9 @@
+                         std::back_inserter(owned));
+     Require(!owned.empty(), "actual OwnerLease holds independently observable descriptors");
+     owned_descriptors = owned.size();
++    // Allocate before spawning: observation must not throw before the exact
++    // child reaches its existing reap guard, or open an FD that hides the bug.
++    std::vector<bool> still_open(owned.size());
+     std::vector<struct stat> identities;
+     for (int fd : owned) { struct stat value{}; Require(fstat(fd, &value) == 0, "held owner descriptor identity"); identities.push_back(value); }
+     Mapping shared(sizeof(ChildArguments), true);
+@@ -142,9 +145,8 @@
+       role::Descriptor held_child(kernel_pidfd);
+       // Sample before opening another FD: the preimage must not be hidden by
+       // immediate descriptor-number reuse. No freed Impl is read by the parent.
+-      std::vector<bool> still_open;
+-      for (int fd : owned) { errno = 0; const int flags = fcntl(fd, F_GETFD);
+-        still_open.push_back(flags >= 0); if (flags < 0 && errno == EBADF) ++closed_in_foreign; }
++      for (size_t i = 0; i < owned.size(); ++i) { errno = 0; const int flags = fcntl(owned[i], F_GETFD);
++        still_open[i] = flags >= 0; if (flags < 0 && errno == EBADF) ++closed_in_foreign; }
+       OwnedChild child(child_pid);
+       Require(held_child.get() >= 0 && fcntl(held_child.get(), F_GETFD) == FD_CLOEXEC,
+               "kernel child pidfd retained across observation");

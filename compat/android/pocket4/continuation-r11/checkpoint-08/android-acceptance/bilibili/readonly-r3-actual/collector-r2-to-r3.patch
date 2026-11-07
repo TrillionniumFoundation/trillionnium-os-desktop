@@ -1,0 +1,53 @@
+--- r2/collector.py
++++ r3/collector.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed-path, read-only export of this one failed Bilibili admission attempt."""
++"""Fixed-path, read-only export of this one successful readonly Bilibili admission attempt."""
+ import base64
+ import gzip
+ import hashlib
+@@ -9,9 +9,9 @@
+ import stat
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-bilibili-readonly-r2-01')
+-OUT = Path('/home/alex/work/pocket4-bilibili-readonly-r2-export-01')
+-EXPECTED_RESULT = '7100c62f9512e3514c49744fef578575eb895fa7891a1891739ac6a16470fe72'
++ROOT = Path('/home/alex/work/pocket4-bilibili-readonly-r3-01')
++OUT = Path('/home/alex/work/pocket4-bilibili-readonly-r3-export-01')
++EXPECTED_RESULT = 'cae3833ffb97c6879c523a8396b08cf1a88bfd145d17f1eae95e740aab766808'
+ EPOCH_SHA = '48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'
+ EPOCH_FILE = Path('/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py')
+ EPOCH_SOURCE_SHA = 'f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288'
+@@ -104,10 +104,10 @@
+ by_name = {row['path']: row for row in records}
+ assert by_name['result.json']['sha256'] == EXPECTED_RESULT
+ original = json.loads(base64.b64decode(by_name['result.json']['data_base64']))
+-assert original['success'] is False
++assert original['success'] is True
+ after = main_guard()
+-bundle = {'schema': 1, 'scope': 'fixed allowlist for the original failed readonly admission; no activation or unrelated logs',
+-          'original_result_sha256': EXPECTED_RESULT, 'original_success': False,
++bundle = {'schema': 1, 'scope': 'fixed allowlist for the original successful readonly admission; no activation or unrelated logs',
++          'original_result_sha256': EXPECTED_RESULT, 'original_success': True,
+           'Main_before': before, 'Main_after': after, 'files': records, 'absent': absent}
+ OUT.mkdir(mode=0o755)
+ raw = (json.dumps(bundle, sort_keys=True, indent=2) + '\n').encode()
+@@ -121,7 +121,7 @@
+         phases[phase] = {k: value.get(k) for k in ('returncode', 'spawned', 'joined', 'timed_out', 'primary_error', 'secondary_errors')}
+ admission = by_name.get(STEP + 'result.json')
+ admission_value = json.loads(base64.b64decode(admission['data_base64'])) if admission else None
+-report = {'schema': 1, 'collector_success': True, 'original_success': False,
++report = {'schema': 1, 'collector_success': True, 'original_success': True,
+           'original_result_sha256': EXPECTED_RESULT, 'archive': archive_pin,
+           'file_count': len(records), 'payload_bytes': total, 'Main_after': after,
+           'phases': phases, 'admission_result': admission_value, 'absent': absent,
+@@ -132,6 +132,6 @@
+     os.fsync(directory)
+ finally:
+     os.close(directory)
+-print(json.dumps({'collector_success': True, 'original_success': False, 'report': report_pin,
++print(json.dumps({'collector_success': True, 'original_success': True, 'report': report_pin,
+                   'archive': archive_pin, 'phases': phases, 'admission_result': admission_value,
+                   'Main_preserved': True}), flush=True)

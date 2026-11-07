@@ -1,0 +1,184 @@
+{
+  "schema": 1,
+  "kind": "source-bound-initial-memory-investigation",
+  "state": "OPEN_CAUSE_NO_NEW_BUILD_AUTHORIZED",
+  "source_commit": "0f2ba43a6de2607f458fba7e683b4db4dc335a9a",
+  "failure_evidence_commit": "2b918702411dcb1063294d1b9335c5b924b4f9df",
+  "verified_source_inputs": [
+    {
+      "path": "checkpoint-08/native-work/combined05-go6r2-profile-02/references/0008-soong-go6.unchanged.patch",
+      "bytes": 583,
+      "sha256": "6aaaf5ec96a75bb6480c202d6483a5b22bdd4963d6d3b66bbfad4d80ee5ed20e"
+    },
+    {
+      "commit": "0f2ba43a6de2607f458fba7e683b4db4dc335a9a",
+      "path": "checkpoint-07/root-review/source-read-01/android.rs",
+      "sha256": "fa6f6a995a1cedf17c342ac900df34d1742d6177651af4db6d3c44e6f5478958",
+      "bytes": 264052,
+      "encoding": "utf-8"
+    },
+    {
+      "commit": "0f2ba43a6de2607f458fba7e683b4db4dc335a9a",
+      "path": "checkpoint-07/root-review/source-read-01/native_engine.rs",
+      "sha256": "61dcb93b6432dc41429807728ca164fc152507ced97ebf08621cc3be51548970",
+      "bytes": 14715,
+      "encoding": "utf-8"
+    },
+    {
+      "commit": "0f2ba43a6de2607f458fba7e683b4db4dc335a9a",
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/references-read/util.rs",
+      "sha256": "ac8e63e0355d8f2b98c2bf4bc12fd6fbfc295ae3244bb51816c394189440d969",
+      "bytes": 7802,
+      "encoding": "utf-8"
+    },
+    {
+      "commit": "0f2ba43a6de2607f458fba7e683b4db4dc335a9a",
+      "path": "checkpoint-03/evidence/signal-mask-fullbuild-attempt04-success.json",
+      "sha256": "bd24988902d487b8499a3076d157097ca72c43af4ce4340e56df861137831f60",
+      "bytes": 6988,
+      "encoding": "utf-8"
+    },
+    {
+      "commit": "0f2ba43a6de2607f458fba7e683b4db4dc335a9a",
+      "path": "checkpoint-07/root-review/source-read-01/original-signal-attempt04-controller.py",
+      "sha256": "e461786834ced2c99106e1ec1ed37d17aebbbaf2961eeb84596b24a8141d1bdd",
+      "bytes": 6266,
+      "encoding": "utf-8"
+    },
+    {
+      "commit": "2b918702411dcb1063294d1b9335c5b924b4f9df",
+      "path": "compat/android/pocket4/continuation-r11/checkpoint-09/native-work/go6r2-fullbuild-actual-failure-01/attempt-terminal.json",
+      "bytes": 1407,
+      "sha256": "d588bc53ba3235756ac5f0545e9f47a3b546bd62a8059e709560b6ac394c7523"
+    },
+    {
+      "commit": "2b918702411dcb1063294d1b9335c5b924b4f9df",
+      "path": "compat/android/pocket4/continuation-r11/checkpoint-09/native-work/go6r2-fullbuild-actual-failure-01/fence-terminal.json",
+      "bytes": 1122,
+      "sha256": "93ca8f0919fbf57d43ed73a5746b78b9261fb62b8f76c80531e06327b5a2777f"
+    },
+    {
+      "commit": "2b918702411dcb1063294d1b9335c5b924b4f9df",
+      "path": "compat/android/pocket4/continuation-r11/checkpoint-09/native-work/go6r2-fullbuild-actual-failure-01/build.stdout",
+      "bytes": 63524,
+      "sha256": "48f7b7e15f2701256c517b3a88544a0e4162e2c6e971ead75c5c075fbcaf7600"
+    },
+    {
+      "commit": "2b918702411dcb1063294d1b9335c5b924b4f9df",
+      "path": "compat/android/pocket4/continuation-r11/checkpoint-09/native-work/go6r2-fullbuild-actual-failure-01/build.stderr",
+      "bytes": 52110,
+      "sha256": "3f7cd0a4705c1e412f4ab5975cbf5e3f278c80582240ec389b7f949a57b26f99"
+    }
+  ],
+  "observations": {
+    "current_failure": {
+      "schema": 1,
+      "state": "FAILED",
+      "builder_returncode": -15,
+      "error": "InterruptedError('owned build controller received signal 15')",
+      "seconds": 774.404197033029,
+      "finished_utc": "2026-11-04T23:34:35.133839+00:00",
+      "cleanup": {
+        "complete": true,
+        "children": [
+          {
+            "pid": 720972,
+            "wait_status": 65280,
+            "reaped": true
+          },
+          {
+            "pid": 725951,
+            "wait_status": 9,
+            "reaped": true
+          },
+          {
+            "pid": 720939,
+            "wait_status": 9,
+            "reaped": true
+          },
+          {
+            "pid": 725948,
+            "wait_status": 15,
+            "reaped": true
+          },
+          {
+            "pid": 721162,
+            "wait_status": 9,
+            "reaped": true
+          }
+        ],
+        "errors": []
+      },
+      "stdout_sha256": "48f7b7e15f2701256c517b3a88544a0e4162e2c6e971ead75c5c075fbcaf7600",
+      "stderr_sha256": "3f7cd0a4705c1e412f4ab5975cbf5e3f278c80582240ec389b7f949a57b26f99",
+      "memory_events": "low 0\nhigh 0\nmax 3447\noom 1\noom_kill 1\noom_group_kill 0\nsock_throttled 0\n",
+      "memory_peak": "11811164160",
+      "memory_swap_peak": "1073741824",
+      "source_projection_journal_present": true,
+      "artifact_gate": null,
+      "Main_actions": 0,
+      "Android_actions": 0,
+      "service_started": false,
+      "all_apps_ready": false,
+      "owned_resource_gate": {
+        "pass": false,
+        "error": "RuntimeError('owned OOM kill observed; build is not qualified')"
+      }
+    },
+    "stdout_bound_to_terminal": true,
+    "stderr_bound_to_terminal": true,
+    "normalized_go4_go6_stdout": {
+      "equal": false,
+      "bytes": 60794,
+      "sha256": "d014032fee5688db5853cf05e727a1398164438853c84951631df1a28393f46b",
+      "normalization": "Only exact profile-root basename substituted; complete bodies compared."
+    },
+    "prior_success": {
+      "seconds": 1512.316893056035,
+      "memory_peak": 11811160064,
+      "swap_peak": 1073741824,
+      "memory_events_max": 27,
+      "oom_kill": 0,
+      "out": "/home/alex/work/pocket4-signal-mask-r11-build-01/android-out",
+      "controller_requires_attempt_fresh": true,
+      "controller_requires_output_fresh": false
+    },
+    "current_source_contract": {
+      "controller_requires_attempt_and_output_fresh": true,
+      "prior_same_449_builder_manifest": "e7c225bd2842c260d9f4149aca3c4483ed31c569efb31068b6d787892bd17017",
+      "go_patch_scope": "soong.go invocationEnv only; no global or cgroup hard limit",
+      "bootstrap_function": "four sequential go run microfactory invocations; this Go patch does not change their environment",
+      "jobs": "normal soong_ui receives -j1; this alone does not prove its Go graph generator is single-threaded",
+      "go_projection_validation_timing": "go_projection_contract is called only in final artifact_gate, which was not reached"
+    },
+    "root_report_not_yet_independently_read": {
+      "soong_source_sha256": "ea5d759aa3d57c2bc9bce434746309ee988b3554923966a1fb78ec0ce3c18343",
+      "go_version": "go1.25.4",
+      "actual_environment_setting": "line221 GOMEMLIMIT6GiB; line261 Env=invocationEnv",
+      "generated_ninja_observation": "10 build fragments including .8=683061788B; graph output had begun"
+    }
+  },
+  "conclusions": [
+    "An owned cgroup OOM kill is proven; the exact killed process and SIGTERM sender are not proven by these receipts.",
+    "The last completed 273/274 Ninja status line is insufficient to identify the running process or allocator.",
+    "The earlier successful output was not required to be empty; it is not an established cold-output control.",
+    "GOMEMLIMIT is a per-Go-runtime soft limit and does not bound total cgroup memory, other processes, external mappings, or all filesystem cache charges.",
+    "The actual 449-file input copy does not substitute for checking this failed run's pre-bootstrap effective_projection record and generated invocation.",
+    "No resource limit, dependency validation, test scope, Main setting, prior evidence, or frozen source has been changed."
+  ],
+  "primary_reference_urls": [
+    "https://go.dev/doc/gc-guide#Memory_limit",
+    "https://pkg.go.dev/runtime/debug#SetMemoryLimit"
+  ],
+  "next_fixed_source_checks": [
+    "Current and prior actual inputs effective_projection patch map and projected soong.go SHA",
+    "Exact projected soong.go and bootstrap.go writer/invocation chain",
+    "Actual bootstrap.ninja final command/environment, keeping generated-file size limits explicit"
+  ],
+  "qualification": {
+    "new_execution": false,
+    "main_changes": false,
+    "all_apps_production_ready": false,
+    "root_cause_closed": false
+  }
+}

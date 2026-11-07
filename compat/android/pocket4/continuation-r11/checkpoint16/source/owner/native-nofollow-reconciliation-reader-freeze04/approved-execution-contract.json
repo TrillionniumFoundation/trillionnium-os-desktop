@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "original_request": {
+    "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-snapshot-nofollow-run-bound01/exact-request.json",
+    "bytes": 157007,
+    "sha256": "407b5a345263ecdf8a8b6e7582edf4484fa898053cfe930abc23c3498ca3cd8e",
+    "idempotency_key_for_human_context_only": "pocket4-snapshot-nofollow-host-runtime-01-20261105"
+  },
+  "targets": [
+    {
+      "label": "native_nofollow_runtime01",
+      "approved_request_sha256": "407b5a345263ecdf8a8b6e7582edf4484fa898053cfe930abc23c3498ca3cd8e",
+      "stdin_bytes": 138246,
+      "stdin_sha256": "80ae75307eb4043f28857a67d5b5989933260c610a588c63c18298d9b4a5e799",
+      "execution": {
+        "executable": "/usr/bin/sudo",
+        "args": [
+          "-n",
+          "/usr/bin/python3",
+          "-I",
+          "-B",
+          "-"
+        ],
+        "cwd": "/",
+        "env": {},
+        "cpu_quota_percent": 50,
+        "memory_max_bytes": 268435456,
+        "nice": 15,
+        "timeout_seconds": 120
+      }
+    }
+  ],
+  "scan_cannot_verify_original_idempotency_key": true,
+  "stdin_admission": "Exact target size 138246 passed as max(sizes); REQUEST_LIMIT131072 applies only to request.json metadata",
+  "bounds_unchanged": {
+    "entries": 4096,
+    "metadata_per_request": 131072,
+    "total_read_bytes": 33554432,
+    "monotonic_seconds": 10,
+    "matching_records": 8,
+    "output_bytes": 65536
+  },
+  "Owner14_known_job_excluded": "1a1abf6ba7f-fc05-516f",
+  "runtime_or_new_runtime_key_created": false
+}

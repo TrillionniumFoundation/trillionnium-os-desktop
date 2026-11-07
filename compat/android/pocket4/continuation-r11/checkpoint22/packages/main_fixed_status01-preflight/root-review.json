@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "status": "ROOT_REVIEWED_ONE_FIXED_STATUS_REQUEST",
+  "source_tree": "00b2cdd3736999ba1e4976ac85d1f6938c3045bf",
+  "source": {
+    "bytes": 32804,
+    "sha256": "2b82a1debb30498e2c8a5a557d5f8d74d843f28634bb10de18b64e047150cde4",
+    "git_blob_sha1": "69bbe435819c3ac58b4ea1b7fabfcb0d6147921a"
+  },
+  "request": {
+    "bytes": 34820,
+    "sha256": "b8141a942eed658784e21241980ccf48163ebd56d533776bcbe959f3ee827989",
+    "git_blob_sha1": "92626fb9440f9dcd8dfde7ae1a4209ee6d836d53"
+  },
+  "full_source_read": true,
+  "exact_inverse_hunks": 4,
+  "baseline_producer_checked": "af877a5081a331a5b1ebc65a7a0da037def444df",
+  "actual_prior_owner_evidence": "c85e4a7cbf9a8e6a31a79e78f3fae305c97adb8b",
+  "runtime_reference_not_installed_source_equivalence": true,
+  "controls_pending_actual": 33,
+  "decision": "One pinned-daemon Status RPC is authorized as bounded diagnosis; full daemon/owner identity and executable gates precede it, same identities are rechecked after.",
+  "server_behavior_disclosure": "The existing daemon polls first and may reap/teardown an already-exited child; Status may run ip netns pids and nsenter getprop. Client requests no Start, Stop, Restart, WaitReady or Launch. Internal server child counts are not independently qualified.",
+  "new_init_or_epoch_adopted": false,
+  "old_UI_flows_or_task_cleanup_authorized": false,
+  "production_ready": false,
+  "automatic_retry": false
+}

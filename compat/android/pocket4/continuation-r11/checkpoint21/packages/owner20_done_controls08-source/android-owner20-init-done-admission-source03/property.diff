@@ -1,0 +1,247 @@
+--- baseline/property_visibility.py
++++ candidate/property_visibility.py
+@@ -295,6 +295,190 @@
+             'symbol': symbol, 'mapping': matches[0]}
+ 
+ 
++def child_execution_view(view, helper_fd, expected_helper, expected_root, deadline):
++    """One fixed PT_INTERP observation in the already-chrooted child.
++
++    This neither executes a loader nor authorizes property reads. A successful
++    exec still requires the original READY/three-library/getter qualification.
++    """
++    view.update(schema=1, scope='child-owned-root-before-one-held-ELF-exec',
++        before_ns=time.monotonic_ns(), after_ns=None, deadline_ns=deadline,
++        root=None, root_matches_held=False, helper=None,
++        interpreter_path='/system/bin/linker64', interpreter=None,
++        interpreter_fd_opened=False, interpreter_fd_closed=False,
++        interpreter_named_matches_held=False, complete=False,
++        first_error=None, close_error=None)
++    descriptor = None
++    primary = None
++    stage = 'deadline'
++    def check():
++        need(time.monotonic_ns() < deadline, 'SDK_EXEC_VIEW_DEADLINE')
++    def source(fd, maximum):
++        check()
++        before = metadata(fd)
++        need(stat.S_ISREG(before['mode']) and 0 < before['bytes'] <= maximum,
++             'SDK_EXEC_VIEW_FILE_BOUND')
++        raw = bytearray()
++        while len(raw) < before['bytes']:
++            check()
++            part = os.pread(fd, min(65536, before['bytes'] - len(raw)), len(raw))
++            need(part, 'SDK_EXEC_VIEW_FILE_TRUNCATED')
++            raw.extend(part)
++        check()
++        need(os.pread(fd, 1, len(raw)) == b'' and metadata(fd) == before,
++             'SDK_EXEC_VIEW_FILE_CHANGED')
++        summary = elf_summary(bytes(raw))
++        return {'metadata': before, 'bytes': len(raw),
++                'sha256': hashlib.sha256(raw).hexdigest(),
++                'elf': {key: summary[key] for key in
++                        ('class', 'machine', 'type', 'build_id', 'interpreter')}}
++    try:
++        check()
++        stage = 'root_identity'
++        current = os.stat('/')
++        view['root'] = {'device': current.st_dev, 'inode': current.st_ino}
++        need(view['root'] == expected_root, 'SDK_EXEC_VIEW_ROOT_CHANGED')
++        view['root_matches_held'] = True
++        stage = 'held_helper'
++        check()
++        need(metadata(helper_fd) == expected_helper and
++             fcntl.fcntl(helper_fd, fcntl.F_GETFL) & os.O_ACCMODE == os.O_RDONLY and
++             not os.get_inheritable(helper_fd), 'SDK_EXEC_VIEW_HELD_HELPER_CHANGED')
++        view['helper'] = source(helper_fd, HELPER_BYTES)
++        need(view['helper']['bytes'] == HELPER_BYTES and
++             view['helper']['sha256'] == HELPER_SHA256 and
++             view['helper']['elf']['type'] == 3 and
++             view['helper']['elf']['interpreter'] == view['interpreter_path'],
++             'SDK_EXEC_VIEW_HELPER_SOURCE')
++        stage = 'interpreter_open'
++        check()
++        # Ordinary Android aliases resolve within this child's already-bound
++        # chroot. O_NONBLOCK prevents a changed FIFO from blocking before fstat.
++        descriptor = os.open(view['interpreter_path'],
++                             os.O_RDONLY | os.O_CLOEXEC | os.O_NONBLOCK)
++        view['interpreter_fd_opened'] = True
++        stage = 'interpreter_metadata'
++        check()
++        current = metadata(descriptor)
++        need(stat.S_ISREG(current['mode']) and current['uid'] == current['gid'] == 0 and
++             current['nlink'] == 1 and not current['mode'] & 0o7022 and
++             current['mode'] & 0o111 and 0 < current['bytes'] <= LIBRARY_BYTES and
++             not os.get_inheritable(descriptor) and
++             fcntl.fcntl(descriptor, fcntl.F_GETFL) & os.O_ACCMODE == os.O_RDONLY,
++             'SDK_EXEC_VIEW_INTERPRETER_METADATA')
++        stage = 'interpreter_source'
++        view['interpreter'] = source(descriptor, LIBRARY_BYTES)
++        stage = 'interpreter_named'
++        check()
++        named = os.stat(view['interpreter_path'])
++        held = metadata(descriptor)
++        need(held == view['interpreter']['metadata'] and
++             (named.st_dev, named.st_ino, named.st_mode, named.st_uid, named.st_gid,
++              named.st_nlink, named.st_size, named.st_mtime_ns, named.st_ctime_ns) ==
++             (held['device'], held['inode'], held['mode'], held['uid'], held['gid'],
++              held['nlink'], held['bytes'], held['mtime_ns'], held['ctime_ns']),
++             'SDK_EXEC_VIEW_INTERPRETER_NAME_CHANGED')
++        view['interpreter_named_matches_held'] = True
++        stage = 'root_identity'
++        check()
++        current = os.stat('/')
++        need({'device': current.st_dev, 'inode': current.st_ino} == expected_root,
++             'SDK_EXEC_VIEW_ROOT_CHANGED')
++        stage = 'deadline'
++        check()
++    except BaseException as error:
++        primary = error
++    finally:
++        if descriptor is not None:
++            try:
++                os.close(descriptor)
++                view['interpreter_fd_closed'] = True
++            except BaseException as error:
++                view['close_error'] = {'type': type(error).__name__,
++                                       'errno': getattr(error, 'errno', None)}
++                if primary is None:
++                    primary = error
++                    stage = 'interpreter_close'
++                else:
++                    primary.add_note('child interpreter FD close: ' + type(error).__name__)
++        view['after_ns'] = time.monotonic_ns()
++    if primary is None and view['after_ns'] >= deadline:
++        primary = RuntimeError('SDK_EXEC_VIEW_DEADLINE')
++        stage = 'deadline'
++    if primary is not None:
++        view['first_error'] = {'stage': stage, 'type': type(primary).__name__,
++                               'errno': getattr(primary, 'errno', None)}
++        raise primary
++    view['complete'] = True
++
++
++def execution_view_record(value, started, deadline):
++    """Closed metadata-only failure payload; never a successful source proof."""
++    fields = {'schema', 'scope', 'before_ns', 'after_ns', 'deadline_ns', 'root',
++        'root_matches_held', 'helper', 'interpreter_path', 'interpreter',
++        'interpreter_fd_opened', 'interpreter_fd_closed',
++        'interpreter_named_matches_held', 'complete', 'first_error', 'close_error'}
++    need(type(value) is dict and set(value) == fields and type(value['schema']) is int and
++         value['schema'] == 1 and value['scope'] == 'child-owned-root-before-one-held-ELF-exec' and
++         value['interpreter_path'] == '/system/bin/linker64' and value['deadline_ns'] == deadline and
++         type(value['deadline_ns']) is int and integer(value['before_ns']) and
++         integer(value['after_ns']) and started <= value['before_ns'] <= value['after_ns'],
++         'SDK_EXEC_VIEW_RECORD')
++    for key in ('root_matches_held', 'interpreter_fd_opened', 'interpreter_fd_closed',
++                'interpreter_named_matches_held', 'complete'):
++        need(type(value[key]) is bool, 'SDK_EXEC_VIEW_BOOLEAN')
++    if value['root'] is not None:
++        need(type(value['root']) is dict and set(value['root']) == {'device', 'inode'} and
++             all(integer(x, 1) for x in value['root'].values()), 'SDK_EXEC_VIEW_ROOT_RECORD')
++    meta_fields = {'device', 'inode', 'mode', 'uid', 'gid', 'nlink', 'bytes', 'mtime_ns', 'ctime_ns'}
++    for key, maximum in (('helper', HELPER_BYTES), ('interpreter', LIBRARY_BYTES)):
++        row = value[key]
++        if row is None:
++            continue
++        need(type(row) is dict and set(row) == {'metadata', 'bytes', 'sha256', 'elf'} and
++             integer(row['bytes'], 1, maximum) and hex_string(row['sha256'], 64),
++             'SDK_EXEC_VIEW_SOURCE_RECORD')
++        meta = row['metadata']
++        need(type(meta) is dict and set(meta) == meta_fields and
++             all(integer(x) for x in meta.values()) and meta['bytes'] == row['bytes'],
++             'SDK_EXEC_VIEW_METADATA_RECORD')
++        elf = row['elf']
++        need(type(elf) is dict and set(elf) == {'class', 'machine', 'type', 'build_id', 'interpreter'} and
++             type(elf['class']) is int and elf['class'] == 64 and
++             type(elf['machine']) is int and elf['machine'] == 62 and
++             type(elf['type']) is int and elf['type'] in (2, 3) and
++             isinstance(elf['build_id'], str) and 8 <= len(elf['build_id']) <= 128 and
++             len(elf['build_id']) % 2 == 0 and hex_string(elf['build_id'], len(elf['build_id'])) and
++             elf['interpreter'] in (None, '/system/bin/linker64'), 'SDK_EXEC_VIEW_ELF_RECORD')
++    stages = {'deadline', 'root_identity', 'held_helper', 'interpreter_open',
++              'interpreter_metadata', 'interpreter_source', 'interpreter_named', 'interpreter_close'}
++    for key in ('first_error', 'close_error'):
++        row = value[key]
++        if row is None:
++            continue
++        need(type(row) is dict and set(row) == ({'stage', 'type', 'errno'} if key == 'first_error'
++             else {'type', 'errno'}) and isinstance(row['type'], str) and
++             1 <= len(row['type']) <= 64 and all(c.isalnum() or c == '_' for c in row['type']) and
++             (row['errno'] is None or integer(row['errno'], 0, (1 << 31) - 1)),
++             'SDK_EXEC_VIEW_ERROR_RECORD')
++        if key == 'first_error':
++            need(row['stage'] in stages, 'SDK_EXEC_VIEW_ERROR_STAGE')
++    need(not value['interpreter_fd_closed'] or value['interpreter_fd_opened'],
++         'SDK_EXEC_VIEW_CLOSE_WITHOUT_OPEN')
++    if value['complete']:
++        need(value['after_ns'] < deadline and value['root_matches_held'] and
++             value['helper'] is not None and value['interpreter'] is not None and
++             value['helper']['bytes'] == HELPER_BYTES and value['helper']['sha256'] == HELPER_SHA256 and
++             value['helper']['elf']['type'] == 3 and
++             value['helper']['elf']['interpreter'] == '/system/bin/linker64' and
++             value['interpreter_fd_opened'] and value['interpreter_fd_closed'] and
++             value['interpreter_named_matches_held'] and value['first_error'] is None and
++             value['close_error'] is None, 'SDK_EXEC_VIEW_INCOMPLETE_CLAIM')
++    else:
++        need(value['first_error'] is not None, 'SDK_EXEC_VIEW_MISSING_FAILURE')
++    return value
++
++
+ def arm_child_deadline(deadline):
+     """Only the just-forked observer calls this; the actor's timer is unchanged.
+ 
+@@ -689,6 +873,7 @@
+ 
+     def _child(self, inherited, argv, env):
+         stage = 'parent_death'
++        execution_view = None
+         try:
+             if self.libc.prctl(1, signal.SIGKILL, 0, 0, 0) != 0:
+                 code = ctypes.get_errno(); raise OSError(code, os.strerror(code))
+@@ -714,6 +899,10 @@
+             os.set_inheritable(self.child_sock.fileno(), True)
+             os.set_inheritable(self.fds['actor_pidfd'], True)
+             os.set_inheritable(self.fds['helper'], False)
++            stage = 'execution_view'
++            execution_view = {}
++            child_execution_view(execution_view, self.fds['helper'], self.helper_meta,
++                {key: self.record['init_root'][key] for key in ('device', 'inode')}, self.deadline)
+             stage = 'exact_android_exec'
+             verify_child_deadline(self.deadline)
+             os.execve(self.fds['helper'], argv, env)
+@@ -722,7 +911,9 @@
+             try:
+                 raw = json.dumps({'schema': 1, 'phase': 'setup_failure', 'nonce': self.nonce,
+                     'stage': stage, 'errno': getattr(error, 'errno', None),
+-                    'type': type(error).__name__}, separators=(',', ':')).encode()
++                    'type': type(error).__name__, 'execution_view': execution_view},
++                    separators=(',', ':')).encode()
++                need(len(raw) <= PACKET_BYTES, 'SDK_SETUP_FAILURE_PACKET_BOUND')
+                 self.child_sock.send(raw, socket.MSG_DONTWAIT | socket.MSG_NOSIGNAL)
+             except BaseException:
+                 pass
+@@ -999,14 +1190,21 @@
+         phase = value.get('phase')
+         if phase == 'setup_failure':
+             need(not names and creds[1:] == (0, 0) and
+-                 set(value) == {'schema', 'phase', 'nonce', 'stage', 'errno', 'type'} and
++                 set(value) == {'schema', 'phase', 'nonce', 'stage', 'errno', 'type', 'execution_view'} and
+                  type(value['schema']) is int and value['schema'] == 1 and
+                  value['nonce'] == self.nonce and value['stage'] in {
+                      'parent_death', 'deadline_arm', 'owned_domain', 'namespace_entry', 'owned_root',
+-                     'descriptor_retirement', 'exact_android_exec'} and
++                     'descriptor_retirement', 'execution_view', 'exact_android_exec'} and
+                  (value['errno'] is None or integer(value['errno'], 0, (1 << 31) - 1)) and
+                  isinstance(value['type'], str) and len(value['type']) <= 64,
+                  'SDK_CHILD_SETUP_FAILURE_SCHEMA')
++            if value['stage'] in ('execution_view', 'exact_android_exec'):
++                execution_view_record(value['execution_view'], self.started, self.deadline)
++                if value['stage'] == 'exact_android_exec':
++                    need(value['execution_view']['complete'] is True,
++                         'SDK_EXEC_WITHOUT_COMPLETE_VIEW')
++            else:
++                need(value['execution_view'] is None, 'SDK_EARLY_SETUP_HAS_EXEC_VIEW')
+             self.record['child_setup_failure'] = value
+             raise RuntimeError('SDK_CHILD_SETUP_FAILED')
+         if phase == 'failure':

@@ -1,0 +1,67 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "fef8ef00470180e1ee31f6f0393baf3a696fefa0",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 258340,
+    "sha256": "c387413c2cd501e50e23c11e2bd4dec6afb0b648acddb4dc8ed587cf5d3c8b0b",
+    "git_blob_sha1": "45f4919aef45edc0746e6392429751cd47111a8d",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "exact-request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cd51a1f61e2b49c6d61bf39eff6085b243ad1245",
+      "bytes": 22890
+    },
+    {
+      "path": "prior_native_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "de1cdb5138b1392345f87bfb89304306d5c372a6"
+    },
+    {
+      "path": "producer_sources",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6f83716937d754826108450160f70e01e6fc7d43"
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "49015837dc5b923af68948a5ef238ba65c8fba40",
+      "bytes": 1392
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1b874be4be6e167248822178803d00058c3641dc"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "prior_native_actual",
+      "original_tree": "de1cdb5138b1392345f87bfb89304306d5c372a6",
+      "checkpoint": 21,
+      "canonical_package": "bili02_native_read01-actual"
+    },
+    {
+      "path": "producer_sources",
+      "original_tree": "6f83716937d754826108450160f70e01e6fc7d43",
+      "checkpoint": 21,
+      "canonical_package": "bili-producer-source-references"
+    },
+    {
+      "path": "source",
+      "original_tree": "1b874be4be6e167248822178803d00058c3641dc",
+      "checkpoint": 21,
+      "canonical_package": "bili-error02-source"
+    }
+  ],
+  "original_recursive_leaf_count": 527
+}

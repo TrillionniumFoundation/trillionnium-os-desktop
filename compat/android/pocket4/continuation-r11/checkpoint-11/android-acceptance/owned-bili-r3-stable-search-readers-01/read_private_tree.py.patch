@@ -1,0 +1,28 @@
+--- r3-draft/read_private_tree.py
++++ r3-stable-actual/read_private_tree.py
+@@ -15,16 +15,16 @@
+ import time
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-bilibili-r3-search-entry-01')
+-FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-a53815018fc65e6cbcac07538bdd7c7d')
++ROOT=Path('/home/alex/work/pocket4-bilibili-r3-stable-search-entry-01')
++FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-35c49c9f72a6a8323ad1d8f384cad3c6')
+ STEP=FLOW/'steps/search-entry-01'
+-NONCE='313bcbf4c643b9a1a1f844c181caa78e'
+-FLOW_NONCE='a53815018fc65e6cbcac07538bdd7c7d'
+-COORDINATOR_SHA=None
+-COORDINATOR_BYTES=None
+-STAGE_SHA=None
+-STAGE_BYTES=None
+-SOURCE_SHA='383b699100f3f7529b8e8ffc95554e955ee6a50b8f89a1647f2c2c1602abe131'
++NONCE='aff1fd968253a27889ebd473c2380348'
++FLOW_NONCE='35c49c9f72a6a8323ad1d8f384cad3c6'
++COORDINATOR_SHA='5c1c7cdb5451e1e2c0c0e19504f9ab1e45f90a488292414db9c241e1efe06472'
++COORDINATOR_BYTES=40392
++STAGE_SHA='d5e54cdc3208c3dd19ffee599623fda36600f283dbcc157c7e17a2fc97d50397'
++STAGE_BYTES=1650
++SOURCE_SHA='7e35e1696979b82993ee2f31e91215c72ba9d95e5c4752783ade750b289d9ecc'
+ QA_SOURCE=Path('/home/alex/work/pocket4-owned-bili-qa-r3-source-01/source/qa_contract.py')
+ QA_SHA='6789ec1fef825d9738a6f59a14611dc2d60adc994b093f1ee4cfa9eb75ef9470'
+ FILES={ROOT/'result.json':0,ROOT/'stage-result.json':0,STEP/'result.json':0,

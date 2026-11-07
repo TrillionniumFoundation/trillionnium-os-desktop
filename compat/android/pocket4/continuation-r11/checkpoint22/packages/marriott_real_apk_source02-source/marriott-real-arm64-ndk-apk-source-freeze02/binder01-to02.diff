@@ -1,0 +1,11 @@
+--- build01/bind_build.py
++++ build02/bind_build.py
+@@ -92,7 +92,7 @@
+     request={'host':'pocket4','executable':'/usr/bin/python3','args':['-I','-B','-'],
+        'cwd':'/home/alex/work','stdin':bound,'timeout_seconds':660,
+        'cpu_quota_percent':100,'memory_max_bytes':1073741824,'nice':15,
+-       'idempotency_key':'p4-marriott-real-arm64-ndk-apk-build01-'+sha[:16]}
++       'idempotency_key':'p4-marriott-real-arm64-ndk-apk-build02-'+sha[:16]}
+     output=args.output
+     need(not output.exists() and not output.is_symlink(),'binding output must be new')
+     output.mkdir(mode=0o700)

@@ -1,0 +1,70 @@
+--- runtime01/run_body.py
++++ runtime02/run_body.py
+@@ -1,12 +1,12 @@
+-ROOT=Path('/run/pocket4-role-authorization-positive-host-run-01-20261105')
++ROOT=Path('/run/pocket4-role-authorization-positive-host-run-02-20261105')
+ HERE=ROOT/'control-source'
+ OUT=ROOT/'run01'
+-BUILD_ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-01-20261105')
++BUILD_ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-02-20261105')
+ SOURCE=BUILD_ROOT/'source'
+ BUILD_RESULT=BUILD_ROOT/'build01/result.json'
+ BUILD_RESULT_SHA='PENDING_ACTUAL_BUILD_RESULT_SHA256'
+ CASE_PLAN_SHA='PENDING_FROZEN_CASE_PLAN_SHA256'
+-SOURCE_MANIFEST_SHA='d400255a4318ec5856692254cff062280021aeea5bf80662eb939a00d7586aa2'
++SOURCE_MANIFEST_SHA='fda076982c0a26682eb3b6a596a6964e6645cf1eddc7b175e56d9b499c06fda2'
+ DEADLINE=None
+ 
+ 
+--- runtime01/run_registry.template.py
++++ runtime02/run_registry.template.py
+@@ -245,15 +245,15 @@
+         return fd,pin
+     except BaseException:os.close(fd);raise
+ 
+-ROOT=Path('/run/pocket4-role-authorization-positive-host-run-01-20261105')
++ROOT=Path('/run/pocket4-role-authorization-positive-host-run-02-20261105')
+ HERE=ROOT/'control-source'
+ OUT=ROOT/'run01'
+-BUILD_ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-01-20261105')
++BUILD_ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-02-20261105')
+ SOURCE=BUILD_ROOT/'source'
+ BUILD_RESULT=BUILD_ROOT/'build01/result.json'
+ BUILD_RESULT_SHA='PENDING_ACTUAL_BUILD_RESULT_SHA256'
+-CASE_PLAN_SHA='409a3b44cecb6f68200e5bb51840d238d9720fd6d7cef7a4919280323924b53b'
+-SOURCE_MANIFEST_SHA='d400255a4318ec5856692254cff062280021aeea5bf80662eb939a00d7586aa2'
++CASE_PLAN_SHA='77ce88615978dded6cb36bfee8df337e500515a018f83ffc72828e88acb7cd1d'
++SOURCE_MANIFEST_SHA='fda076982c0a26682eb3b6a596a6964e6645cf1eddc7b175e56d9b499c06fda2'
+ DEADLINE=None
+ 
+ 
+--- runtime01/make_run_request.py
++++ runtime02/make_run_request.py
+@@ -7,12 +7,12 @@
+ import json
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT='/run/pocket4-role-authorization-positive-host-run-01-20261105'
+-KEY='pocket4-role-authorization-positive-host-runtime-01-20261105'
+-SOURCE_MANIFEST='d400255a4318ec5856692254cff062280021aeea5bf80662eb939a00d7586aa2'
+-TEMPLATE_SHA='e2873e46a88cc20cb797ff135cc896f4dc05a989de8f72527685ec22620bb5a7'
+-PLAN_SHA='409a3b44cecb6f68200e5bb51840d238d9720fd6d7cef7a4919280323924b53b'
+-BUILD_ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-01-20261105'
++ROOT='/run/pocket4-role-authorization-positive-host-run-02-20261105'
++KEY='pocket4-role-authorization-positive-host-runtime-02-20261105'
++SOURCE_MANIFEST='fda076982c0a26682eb3b6a596a6964e6645cf1eddc7b175e56d9b499c06fda2'
++TEMPLATE_SHA='d81586937de3414222a06bf0cac97ccabf921c913d8ddb032e37a28d9238e200'
++PLAN_SHA='77ce88615978dded6cb36bfee8df337e500515a018f83ffc72828e88acb7cd1d'
++BUILD_ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-02-20261105'
+ 
+ 
+ def pin(raw):return {'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+--- runtime01/CASE_PLAN.json
++++ runtime02/CASE_PLAN.json
+@@ -59,5 +59,5 @@
+   "platform_policy_qualified": false,
+   "snapshot_created": false,
+   "Main_actions": 0,
+-  "production_source_manifest_sha256": "d400255a4318ec5856692254cff062280021aeea5bf80662eb939a00d7586aa2"
++  "production_source_manifest_sha256": "fda076982c0a26682eb3b6a596a6964e6645cf1eddc7b175e56d9b499c06fda2"
+ }

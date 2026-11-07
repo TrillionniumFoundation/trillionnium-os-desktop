@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "scope": "owned approved O_RDONLY snapshot plus exact O_NOFOLLOW kernel flags",
+  "cases": [
+    {
+      "index": 0,
+      "name": "authorized_root_sealed_v2_snapshot",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 1,
+      "name": "wrong_source_rejected_then_same_grant_recovers",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 2,
+      "name": "unsealed_input_rejected_then_same_grant_recovers",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 3,
+      "name": "size_mismatch_rejected_then_same_grant_recovers",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 4,
+      "name": "nofollow_status_flags_and_kernel_reopen",
+      "expected_state": "PASS"
+    }
+  ],
+  "direct_children_expected": 5,
+  "nested_children_expected": 0,
+  "factory_service_started": false,
+  "platform_policy_qualified": false,
+  "snapshot_created": true,
+  "maps_formatter": "owned_fixture",
+  "Main_actions": 0,
+  "production_source_manifest_sha256": "310e7370a78cc63f0ad72527fbeb37f58f884fdf3ca45ee0acc37e1aee46ad36",
+  "known_red": "Kernel reopening support and existing root factory CAP_DAC_READ_SEARCH unqualified; no platform capability or policy changes"
+}

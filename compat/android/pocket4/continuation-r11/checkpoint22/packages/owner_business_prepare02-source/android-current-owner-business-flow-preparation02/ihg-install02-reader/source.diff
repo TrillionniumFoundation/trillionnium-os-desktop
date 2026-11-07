@@ -1,0 +1,72 @@
+--- actual-install01-failure/read.py
++++ install02-unbound/read.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed read-only collection of failed IHG R4 installation originals; no retry."""
++"""Fixed read-only collection of IHG R4 install02 originals; no action or retry."""
+ import argparse
+ import base64
+ import hashlib
+@@ -11,14 +11,14 @@
+ import time
+ import zlib
+ 
+-ROOT = Path("/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-01")
++ROOT = Path("/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-02")
+ STEP = ROOT/'worker'
+-NONCE = "7a9043d8dcc2c5e0b34fc11d7bf8bee5"
++NONCE = "3d004706f9adf4411761495fdc6ed859"
+ PACKAGE = "org.droidloom.qa.ihg.r4"
+ PROTOCOL = "pocket4-owned-ihg-qa-v4"
+-PINS = {'coordinator.json': (4492, '68eb201b47b803e324a2a9dc22759cb3275a2614192bdf3d9fdf7faa96fc4021'), 'stage.json': (8730, '9cb3a2e79e25513d5cc9c41fa52dbf38f922609b53267a60d05994bd9eaca3b0')}
+-INSTALL_NONCE = "2b991bd0c0832109fb97af75690c73b6"
+-SOURCE_SHA = "e3107670749e47f062eb25401dc3b5bb581971400b64eecf80ea2cb0f0add5c3"
++PINS = None  # Bind the two actual terminal pins before creating a request.
++INSTALL_NONCE = "bc503e63d113d5ddd32aba526e7d0075"
++SOURCE_SHA = "bb9957023531b018d95f4a6e747fa71691bf566e53e158c5935db410ea7a8aa6"
+ BASE = {
+     'coordinator.json':ROOT/'result.json',
+     'stage.json':ROOT/'stage-result.json',
+@@ -118,16 +118,18 @@
+ 
+ 
+ def parent_worker_pin(coordinator,stage,coordinator_pin):
+-    # Failure collection preserves the original first/secondary errors. The two
+-    # parents are externally pinned; no successful installation is inferred.
++    # Both externally pinned parents retain their original status and errors.
++    # Collection never qualifies installation or changes a failure/unknown.
+     for value in (coordinator,stage):
+         require(value.get('source_manifest_sha256')==SOURCE_SHA and value.get('nonce')==INSTALL_NONCE and
+                 type(value.get('ok')) is bool and isinstance(value.get('secondary_errors'),list),
+                 'EXACT_ACTUAL_IHG_R4_PARENT_RECEIPTS_REQUIRED')
+-    require(coordinator.get('package')==PACKAGE and stage.get('coordinator_result')==coordinator_pin and
+-            coordinator.get('ok') is False and stage.get('ok') is False and
+-            isinstance(coordinator.get('error'),dict) and isinstance(stage.get('error'),dict),
+-            'EXACT_ACTUAL_FAILED_IHG_R4_PARENT_CHAIN_REQUIRED')
++    require(coordinator.get('package')==PACKAGE and stage.get('coordinator_result')==coordinator_pin,
++            'EXACT_ACTUAL_IHG_R4_PARENT_CHAIN_REQUIRED')
++    for value in (coordinator,stage):
++        require((value['ok'] is True and value.get('error') is None) or
++                (value['ok'] is False and isinstance(value.get('error'),dict)),
++                'EXACT_ORIGINAL_PARENT_STATUS_SHAPE_REQUIRED')
+     rows=[coordinator[key] for key in ('worker_result','failed_worker_result') if key in coordinator]
+     if not rows:
+         return None
+@@ -150,7 +152,7 @@
+             'EXACT_NO_UI_OWNED_WORKER_REQUIRED')
+     for key,wanted in {
+         'runtime_shared_recorder_manifest_sha256':'002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff',
+-        'runtime_ticket_context_sha256':'6e7dc456c6118e48dafb8b55344b71631bbea5dc4382aa23a3b03abfc75d3ed2',
++        'runtime_ticket_context_sha256':"88c3d181a1176a447db4426df04125ce51f77ed03736eb79c1a00bb1544f4364",
+         'runtime_ticket_transport_sha256':'aa4836f35ea0251fbf3942033db2a45e37a882ebf6f7b6076b45c63970d5c516',
+     }.items():
+         if key in worker:require(worker[key]==wanted,'OBSERVED_RUNTIME_SOURCE_CHANGED:'+key)
+@@ -239,7 +241,7 @@
+         observations['state_command']={'present':True,'parent_bound':True,'index':8}
+     else:
+         observations['state_command']={'not_read':True,'parent_pin_available':False}
+-    result={'schema':1,'scope':'exact-owned-ihg-r4-install01-failure-originals',
++    result={'schema':1,'scope':'exact-owned-ihg-r4-install02-originals',
+         'files':r.records,'observations':observations,
+         'total_read_bytes':r.total,'elapsed_seconds':time.monotonic()-r.started,
+         'actual_install_success_qualified':False,'original_failure_and_unknown_preserved':True,

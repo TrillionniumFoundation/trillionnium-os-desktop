@@ -1,0 +1,149 @@
+{
+  "Android_logdr_protocol_qualified": false,
+  "Main_accessed": false,
+  "Owner_runtime_executed": false,
+  "device_calls": 0,
+  "failed": 0,
+  "ipc_environment": {
+    "state": "ACTUAL_OWNED_SEQPACKET_AVAILABLE"
+  },
+  "passed": 12,
+  "real_peer_or_init_admission_qualified": false,
+  "rows": [
+    {
+      "detail": {
+        "actual_android_protocol_qualified": false,
+        "negative_inputs_rejected": [
+          "wrong_buffer",
+          "truncated",
+          "wrong_header",
+          "missing_terminator"
+        ]
+      },
+      "elapsed_ns": 334847,
+      "name": "reference_parser_and_negative_packets",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "partial_bytes_retained": 3,
+        "retry_after_error": false,
+        "write_calls": 2
+      },
+      "elapsed_ns": 3344551,
+      "name": "partial_file_preserves_bytes_and_first_errno",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "actual_fd_closed": true,
+        "all_close_success_claimed": false,
+        "close_attempts": 1,
+        "close_report_errno": 5,
+        "primary_errno": 2
+      },
+      "elapsed_ns": 1915359,
+      "name": "walk_close_preserves_ENOENT",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "only_new_duplicate_closed_on_rejection": true
+      },
+      "elapsed_ns": 1700603,
+      "name": "duplicate_fd_closes_only_new_owner",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "connection_calls": 0,
+        "endpoint_calls": 0,
+        "request_calls": 0
+      },
+      "elapsed_ns": 1941073,
+      "name": "expired_deadline_has_no_endpoint_or_request",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "finish_once": true,
+        "primary_errno": 1,
+        "secondary_errno": 5
+      },
+      "elapsed_ns": 390834,
+      "name": "finish_error_keeps_primary_and_is_once",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "connection_or_send": false,
+        "identity_seam": true,
+        "new_FD_or_file": false,
+        "synthetic_UID": 61288
+      },
+      "elapsed_ns": 458149,
+      "name": "CellSpec_UID_cannot_replace_actual_init_UID",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "connection_admission_attempts": 1,
+        "error": "ENOPROTOOPT",
+        "explicit_socket_identity_seam": true,
+        "numeric_PID_fallback": false,
+        "read_requests": 0
+      },
+      "elapsed_ns": 2016296,
+      "name": "unsupported_peer_pidfd_never_falls_back_or_sends",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "accepted_packets": 1,
+        "no_reconnect": true,
+        "rejected_complete_packets_retained": 1,
+        "subsequent_packet_left_unread": true
+      },
+      "elapsed_ns": 2367809,
+      "name": "protocol_error_retains_one_bad_packet_and_stops",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "close_failure_injected": false,
+        "original_descriptor_untouched": true,
+        "received_descriptor_closed": true,
+        "zero_payload": false
+      },
+      "elapsed_ns": 160589,
+      "name": "received_rights_rejected_after_close",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "close_failure_injected": false,
+        "original_descriptor_untouched": true,
+        "received_descriptor_closed": true,
+        "zero_payload": true
+      },
+      "elapsed_ns": 47171,
+      "name": "empty_payload_rights_rejected_after_close",
+      "state": "PASS"
+    },
+    {
+      "detail": {
+        "close_failure_injected": true,
+        "original_descriptor_untouched": true,
+        "received_descriptor_closed": true,
+        "zero_payload": false
+      },
+      "elapsed_ns": 1739033,
+      "name": "received_close_error_never_claims_all_FDs_closed",
+      "state": "PASS"
+    }
+  ],
+  "schema": 1,
+  "scope": "LOCAL_OWNED_FILES_AND_IPC_WITH_EXPLICIT_EXTERNAL_ADMISSION_SEAM",
+  "source_bytes": 33100,
+  "source_sha256": "0cb46ca1ca813e162e7474a198f5c79dcf70fd68e3b20c5e499abf7def0f1bc3"
+}

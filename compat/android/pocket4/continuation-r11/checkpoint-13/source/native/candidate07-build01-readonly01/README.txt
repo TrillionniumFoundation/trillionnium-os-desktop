@@ -1,0 +1,2 @@
+Fixed read-only candidate07 collector, bound to both actual successful terminal SHA values.
+16 text files, 8 held streaming artifact hashes, one fixed journal lstat. No directory enumeration, no source/binary execution, no writes, no build or test action. Missing/changed/oversized files remain errors. Parent source observe() and transport framing preserved. Runtime qualification is not claimed. Root alone schedules.

@@ -1,0 +1,73 @@
+--- amazon-r1/qa_contract.py
++++ ticket-r1/qa_contract.py
+@@ -5,11 +5,11 @@
+ import re
+ import zlib
+ 
+-PROTOCOL = 'pocket4-owned-amazon-qa-v1'
+-SELF = 'org.droidloom.qa.amazon.r1'
++PROTOCOL = 'pocket4-owned-ticket-qa-v1'
++SELF = 'org.droidloom.qa.ticket.r1'
+ COMPONENT = SELF + '/' + SELF + '.ActionRunner'
+-PACKAGE = 'com.amazon.mShop.android.shopping'
+-UID = 10129
++PACKAGE = 'com.MobileTicket'
++UID = 10121
+ MAIN_EPOCH = '48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'
+ MAX_REQUEST = 16384
+ MAX_RESULT = 524288
+@@ -17,6 +17,7 @@
+ MAX_STDOUT = 4 * ((MAX_COMPRESSED_WIRE + 2) // 3) + 4096
+ MAX_NODES = 512
+ MAX_DEPTH = 32
++# Legacy text branch remains unreachable: this revision rejects set_text at all request entries.
+ PUBLIC_SEARCH_QUERY = "usb c cable"
+ SCOPE_KEYS = {'package', 'uid', 'user', 'display', 'activity', 'window_token', 'main_epoch_sha256'}
+ 
+@@ -68,9 +69,9 @@
+     require(value['package'] == PACKAGE and type(value['uid']) is int and value['uid'] == UID and
+             type(value['user']) is int and value['user'] == 0 and type(value['display']) is int and
+             value['display'] == 0 and value['main_epoch_sha256'] == MAIN_EPOCH,
+-            'FIXED_MAIN_AMAZON_SCOPE_REQUIRED')
++            'FIXED_MAIN_TICKET_SCOPE_REQUIRED')
+     require(isinstance(value['activity'], str) and len(value['activity']) <= 256 and
+-            re.fullmatch(r'com\.amazon\.mShop\.android\.shopping/[A-Za-z0-9_.$]+', value['activity']), 'HOST_ACTIVITY_REQUIRED')
++            re.fullmatch(r'com\.MobileTicket/[A-Za-z0-9_.$]+', value['activity']), 'HOST_ACTIVITY_REQUIRED')
+     require(isinstance(value['window_token'], str) and re.fullmatch('[0-9a-f]{1,32}', value['window_token']),
+             'HOST_WINDOW_TOKEN_REQUIRED')
+     return value
+@@ -80,6 +81,7 @@
+     require(isinstance(value, dict) and value.get('protocol') == PROTOCOL, 'PROTOCOL_REQUIRED')
+     nonce(value.get('nonce'))
+     op = value.get('op')
++    require(op in ('state','inspect','click'),'TICKET_READ_INSPECT_CLICK_ONLY')
+     expected = {'protocol', 'nonce', 'op'}
+     if op in ('inspect', 'click', 'set_text'):
+         expected.add('scope')
+@@ -94,7 +96,7 @@
+         expected.update(('node_resource_id','value'))
+         require(value.get('value') == PUBLIC_SEARCH_QUERY,'ONLY_FIXED_PUBLIC_SEARCH_QUERY_ALLOWED')
+         require(isinstance(value.get('node_resource_id'),str) and
+-                re.fullmatch(r'com\.amazon\.mShop\.android\.shopping:id/[A-Za-z0-9_]+',value['node_resource_id']) and
++                re.fullmatch(r'com\.MobileTicket:id/[A-Za-z0-9_]+',value['node_resource_id']) and
+                 len(value['node_resource_id']) <= 256,'EXACT_EDIT_RESOURCE_REQUIRED')
+     require(op in ('state', 'inspect', 'click', 'set_text') and set(value) == expected, 'EXACT_OPERATION_KEYS_REQUIRED')
+     raw = canonical(value)
+@@ -164,7 +166,7 @@
+             value.get('op') == request['op'] and value.get('request_sha256') == sha(raw_request) and
+             value.get('wire_codec') == 'gzip-canonical-json-v1',
+             'RESULT_REQUEST_BINDING_FAILED')
+-    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10117, 10125, 10164, 10165, 10166, 10169, 10170) and value.get('self_uid') == helper_uid and
++    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10129, 10117, 10125, 10164, 10165, 10166, 10169, 10170, 10175) and value.get('self_uid') == helper_uid and
+             type(value.get('self_pid')) is int and value['self_pid'] > 1, 'INSTALLED_HELPER_IDENTITY_REQUIRED')
+     require(value.get('ok') is True and value.get('error') is None and value.get('secondary_errors') == [] and
+             value.get('claim_persistence_completed') is True and value.get('helper_work_completed') is True,
+@@ -411,7 +413,7 @@
+     require(isinstance(selector,dict) and {'resource_id','class'}<=set(selector) and
+             set(selector)<={'resource_id','class','text','content_desc'} and
+             selector['class']=='android.widget.EditText' and
+-            re.fullmatch(r'com\.amazon\.mShop\.android\.shopping:id/[A-Za-z0-9_]+',selector['resource_id']) and
++            re.fullmatch(r'com\.MobileTicket:id/[A-Za-z0-9_]+',selector['resource_id']) and
+             all(isinstance(v,str) and 0<len(v.encode('utf-8'))<=256 for v in selector.values()),
+             'EXACT_OBSERVED_EDIT_RESOURCE_AND_CLASS_REQUIRED')
+     found=[node for node in inspection['nodes'] if node.get('password') is False and

@@ -1,0 +1,136 @@
+{
+  "actual_owner_qualified": false,
+  "actual_rust_tests_run": false,
+  "base_input_count": 32,
+  "compile_request": {
+    "bytes": 103173,
+    "idempotency_key": "p4-producer08-projection01-compile01-2382c12f407984bf",
+    "sha256": "c27c66d9ee57cf8b21cce83d4c38754079974f29abba4f38092c2d6e7ff2e64a"
+  },
+  "compile_stdin": {
+    "bytes": 98534,
+    "sha256": "2382c12f407984bfc8e19be19830d4c76b723647aaf5febef77ab89830839170"
+  },
+  "execution_status": "NOT_SUBMITTED",
+  "kind": "producer08_controller_binding_01",
+  "negative_config_controls": [
+    {
+      "case": "old_revision",
+      "controller": "compile.py",
+      "rejected": true
+    },
+    {
+      "case": "wrong_pair_manifest",
+      "controller": "compile.py",
+      "rejected": true
+    },
+    {
+      "case": "missing_overlay",
+      "controller": "compile.py",
+      "rejected": true
+    },
+    {
+      "case": "old_overlay_bytes",
+      "controller": "compile.py",
+      "rejected": true
+    },
+    {
+      "case": "old_revision",
+      "controller": "run.py",
+      "rejected": true
+    },
+    {
+      "case": "wrong_pair_manifest",
+      "controller": "run.py",
+      "rejected": true
+    },
+    {
+      "case": "missing_overlay",
+      "controller": "run.py",
+      "rejected": true
+    },
+    {
+      "case": "old_overlay_bytes",
+      "controller": "run.py",
+      "rejected": true
+    }
+  ],
+  "overlays": [
+    "runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs",
+    "runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs"
+  ],
+  "prior_actual_receipt_sha256": "d5ead1b1e83447a4037a07262830fc2b8ad807e004c3dbca95ec0051b3e0fbcf",
+  "resources": {
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 1073741824,
+    "nice": 10,
+    "timeout_seconds": 600
+  },
+  "source_origin_inventory_sha256": "2cc80213dd99a6b7ea4211f4bead6b9f6e15cfe4b7066636929435422bde958f",
+  "source_pair_manifest_sha256": "c2cc6b709c503e7dc5d273e9e400665356e7c0654adf3b828838870eb8a06891",
+  "unchanged_function_or_class_AST": [
+    "compile.py:need",
+    "compile.py:sha",
+    "compile.py:now",
+    "compile.py:json_bytes",
+    "compile.py:stamp",
+    "compile.py:read_regular",
+    "compile.py:file_pin",
+    "compile.py:put",
+    "compile.py:all_source",
+    "compile.py:plain_input_path",
+    "compile.py:inputs",
+    "compile.py:command_env",
+    "compile.py:run_command",
+    "compile.py:candidate_input_pins",
+    "compile.py:_resource_need",
+    "compile.py:_resource_uint",
+    "compile.py:_resource_limit",
+    "compile.py:_resource_counters",
+    "compile.py:_resource_membership",
+    "compile.py:_resource_identity",
+    "compile.py:_resource_fstype",
+    "compile.py:_resource_open_descendant",
+    "compile.py:_resource_read_at",
+    "compile.py:_resource_self_membership",
+    "compile.py:_resource_namespaces",
+    "compile.py:_resource_validate_snapshot",
+    "compile.py:_resource_qualify",
+    "compile.py:OwnJobResources",
+    "compile.py:_resource_record_error",
+    "compile.py:finish_own_resource_gate",
+    "run.py:need",
+    "run.py:sha",
+    "run.py:now",
+    "run.py:json_bytes",
+    "run.py:stamp",
+    "run.py:read_regular",
+    "run.py:file_pin",
+    "run.py:put",
+    "run.py:all_source",
+    "run.py:plain_input_path",
+    "run.py:inputs",
+    "run.py:command_env",
+    "run.py:run_command",
+    "run.py:candidate_input_pins",
+    "run.py:_resource_need",
+    "run.py:_resource_uint",
+    "run.py:_resource_limit",
+    "run.py:_resource_counters",
+    "run.py:_resource_membership",
+    "run.py:_resource_identity",
+    "run.py:_resource_fstype",
+    "run.py:_resource_open_descendant",
+    "run.py:_resource_read_at",
+    "run.py:_resource_self_membership",
+    "run.py:_resource_namespaces",
+    "run.py:_resource_validate_snapshot",
+    "run.py:_resource_qualify",
+    "run.py:OwnJobResources",
+    "run.py:_resource_record_error",
+    "run.py:finish_own_resource_gate",
+    "run.py:fd_digest",
+    "run.py:test_summary",
+    "run.py:run_from_args"
+  ]
+}

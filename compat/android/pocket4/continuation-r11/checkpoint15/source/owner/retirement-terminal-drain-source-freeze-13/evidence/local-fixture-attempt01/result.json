@@ -1,0 +1,16 @@
+{
+  "Rust_or_Owner_executed": false,
+  "child_launched": false,
+  "command": [
+    "python3",
+    "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/retirement-terminal-drain-source-work-13/check_owned_peer_fixture.py"
+  ],
+  "exit_code": 1,
+  "failure": "AttributeError: module 'fcntl' has no attribute 'F_ADD_SEALS'",
+  "private_memfd_and_sockets_closed_in_finally": true,
+  "resolution": "Use existing /usr/bin/python3, whose actual fcntl exports all five Linux seal constants; script unchanged.",
+  "schema": 1,
+  "source_bytes": 4025,
+  "source_sha256": "43b3997f0d13fc26941ad30116fcd0051709f53f4f079d5b5f402da21b721062",
+  "stage": "first case memfd seal; before any subprocess spawn"
+}

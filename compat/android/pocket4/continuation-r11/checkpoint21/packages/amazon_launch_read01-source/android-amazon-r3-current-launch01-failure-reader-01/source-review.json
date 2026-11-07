@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_NOT_EXECUTED",
+  "source": {
+    "bytes": 11801,
+    "sha256": "9e1bb27b5b6f1bfa262a6a8632ff5cfad4b621d1625a575748863b8cbc9a375b"
+  },
+  "request": {
+    "bytes": 12751,
+    "sha256": "eea03a0fb71425a9206f302c1e5a96405cb82a31405bffaad703d7b914cc43ad"
+  },
+  "baseline": {
+    "request_blob": "4063d7a7d7722e999b6abb8846cb18a4b772ae9e",
+    "request_bytes": 8752,
+    "request_sha256": "2e007c363973105645024afc957eb7df886304ceb114d34d3068f20d400b11aa",
+    "source": {
+      "bytes": 7613,
+      "sha256": "162bd843bb0409da072a7e3735f6a591e686e05624a0cb57cb8b315860819e20"
+    }
+  },
+  "changes": [
+    "Bind exact current Amazon parents, source manifest, flow and installed helper UID.",
+    "Allow zero to three exact parent-retained phases; missing phase content is not guessed or exported.",
+    "Add one source-fixed launch command result, pin-bound process streams, and optional metadata-only presence for attempt/scope.",
+    "Export process stdout only if it is JSON exactly equal to the parent-pinned safe launch worker; raw stderr/native stdout/UI not exported.",
+    "Reuse prior reviewed nofollow component Reader with nested finally/FD accounting and the original IHG total 2 MiB cap.",
+    "Nine production metadata/pin/privacy controls run before file access; Python not executed locally."
+  ],
+  "bounds": {
+    "source": 16384,
+    "read_deadline_seconds": 8,
+    "per_phase": 262144,
+    "total_read": 2097152,
+    "bundle": 3145728,
+    "timeout_seconds": 30,
+    "memory": 134217728
+  },
+  "controls": {
+    "count": 9,
+    "executed": false,
+    "failures_preserved": true
+  },
+  "preservation": {
+    "old_launch_failure": true,
+    "unknown_outcomes": true,
+    "no_ui": true,
+    "no_runtime_imports": true,
+    "no_process_spawn": true,
+    "no_main_changes": true,
+    "no_cleanup_authority": true
+  },
+  "machine_checks": {
+    "current_UI_four_source_manifest_members_exact": true,
+    "source_wrapper_len_sha_exact": true,
+    "request_only_readonly_python": true
+  },
+  "remaining": "Root full source review and single actual read; no assertion about launch, current task, or cleanup."
+}

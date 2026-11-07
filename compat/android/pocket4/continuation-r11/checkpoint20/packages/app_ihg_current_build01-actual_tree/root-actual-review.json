@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_STATIC_PASS_WITH_HOST_R5_INTEGRATION_GAP_FOUND_NO_RUNTIME_ADMISSION",
+  "app": "ihg",
+  "job_id": "1a1af92f7d1-fc05-69c2",
+  "source_tree": "228be7d38879153946b9030516bfa90eb758af20",
+  "preflight_tree": "7e96854cda936dda901346ddf74b5399dc095907",
+  "admission_tree": "884f30ad4dfde74ddf0226e23bd51446c911218b",
+  "build_result": {
+    "path": "/home/alex/work/pocket4-owned-ihg-qa-r2-build-01/build-result.json",
+    "bytes": 19374,
+    "sha256": "2ba16082d21ca006cc3a13a7628487b99eb2e2920f39d543c0d1232ffe023cb1",
+    "version": "66306:36095293:19374:1793947020411542650:1793947020411542650",
+    "chunks": [
+      {
+        "offset": 0,
+        "next_offset": 19374,
+        "bytes": 19374,
+        "sha256": "2ba16082d21ca006cc3a13a7628487b99eb2e2920f39d543c0d1232ffe023cb1"
+      }
+    ]
+  },
+  "stage_result": {
+    "path": "/home/alex/work/pocket4-owned-ihg-qa-r2-source-01/stage-result.json",
+    "bytes": 1930,
+    "sha256": "ab121c7798dc5055bcbcc881cbf05b65360228df21a79fd18e273c920d6ee540",
+    "version": "66306:34784858:1930:1793947020412770289:1793947020412770289",
+    "chunks": [
+      {
+        "offset": 0,
+        "next_offset": 1930,
+        "bytes": 1930,
+        "sha256": "ab121c7798dc5055bcbcc881cbf05b65360228df21a79fd18e273c920d6ee540"
+      }
+    ]
+  },
+  "commands": 11,
+  "new_current_scope_cases": 12,
+  "all_children_joined": true,
+  "source_tools_unchanged": true,
+  "APK": {
+    "bytes": 24720,
+    "path": "/home/alex/work/pocket4-owned-ihg-qa-r2-build-01/owned-ihg-qa.apk",
+    "sha256": "be5e9612777b34f308baccad40789d2faf59f4fb20db436b08ec345c94b12026"
+  },
+  "signer": "75cc09cd0cb730b0ed36980847084eb2d5602bcd93ceb4b251c18af69dbbb7a2",
+  "resource_after": {
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1af92f7d1-fc05-69c2.service",
+    "device": 30,
+    "inode": 33216812,
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.current": "99708928",
+    "memory.peak": "237916160",
+    "memory.swap.current": "0",
+    "memory.swap.peak": "0",
+    "cgroup.procs": "686734\n686738"
+  },
+  "discovered_integration_gap": "qa_adapter.RECORDER_MANIFEST_SHA still binds old R4. New R5 host would be rejected; immutable freeze02 with fresh source/build paths and keys is being prepared.",
+  "Android_installed": false,
+  "UI_actions": 0,
+  "whole_app_production_ready": false,
+  "build_replay_authorized": false
+}

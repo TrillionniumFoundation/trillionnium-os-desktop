@@ -1,0 +1,105 @@
+{
+  "Android_peer": {
+    "communication": "independent read-only message; no concrete new blocker reported",
+    "executed_collect": false,
+    "executed_controls": false,
+    "scope": "complete 36349-byte candidate including requested enum/matched-fdinfo/identity/FD-close functions",
+    "wrapper_review": "not included in that source review"
+  },
+  "Hepta_executed": false,
+  "action_or_cleanup_authority": false,
+  "close_failure_semantics": "one close attempt per tracked lifetime; first exception sticky, close errors separately retained, no complete/closed claim after close error",
+  "collect_executed": false,
+  "controls": {
+    "bytes": 788,
+    "encoding": "utf-8",
+    "git_blob_sha1": "109cb025f0fb4edf554c059e17f84bc8c894f62f",
+    "mode": "100644",
+    "path": "controls01-receipt.json",
+    "sha256": "29049259faa5dc8bad43c22c86a1f09a867d937f158178150c022cac7d60e57d"
+  },
+  "delta": {
+    "bytes": 49486,
+    "encoding": "utf-8",
+    "git_blob_sha1": "666f9e2e4085ac0446d38d7ca0ec8748bf9d25bb",
+    "mode": "100644",
+    "path": "lock-table-to-fixed-Main-FD.patch",
+    "sha256": "fb898934472621e243298586ed778f6fdfe2938f0646f9cf571b840c75685dc5"
+  },
+  "device_qualification": false,
+  "exact_bounds": {
+    "cooperative_seconds": 15,
+    "cpu_quota_percent": 100,
+    "fixed_processes": 7,
+    "lock_rows_per_matched_FD": 32,
+    "matched_fdinfo_bytes": 16384,
+    "max_matching_FDs": 64,
+    "memory_max_bytes": 134217728,
+    "outer_seconds": 30,
+    "output_bytes": 2097152,
+    "per_process_fd_entries": 4096,
+    "total_fd_entries": 16384
+  },
+  "final_gates": [
+    "original Main guard equality",
+    "five original input full SHA plus held/named metadata",
+    "original boot",
+    "held/named exact lock metadata",
+    "seven process identity/FD observations complete",
+    "all owned FDs closed with no ambiguous close errors"
+  ],
+  "new_data_access": {
+    "fd_targets": "stat metadata only",
+    "fdinfo": "read only if exact dev 28/inode 8312 already matched; filter regular-file scalars and same-inode lock lines",
+    "lock_table_reads": 0,
+    "matched_target_identity": "full held lock metadata before/after",
+    "proc_context": "own PID and pid/mnt namespace metadata; own mountinfo limited to one /proc output record",
+    "process_reads": "only seven literal original Main PIDs; held proc+pidfd+birth/parent/UID/NSpid/ns/exe/cgroup before/after",
+    "unrelated_FD_contents": false,
+    "unrelated_FD_readlinks": false,
+    "whole_proc_scan": false
+  },
+  "original_support_unchanged": true,
+  "output_limits": [
+    "sequential, not atomic",
+    "matching inode is not same open-file-description proof",
+    "kernel-reported PID is not birth/sender/cleanup authority",
+    "no match is not no-holder proof"
+  ],
+  "prior_source": {
+    "bytes": 21531,
+    "encoding": "utf-8",
+    "git_blob_sha1": "2720b61841e20bb1a1f4af4e5588c3fc88b67119",
+    "mode": "100644",
+    "path": "read_lock_owner.py",
+    "sha256": "c19d8a6ff875ee26e0754a91799d6bd901a50efc9b7fe2069a84a127b9e27019"
+  },
+  "prohibited_effects_absent": [
+    "flock",
+    "getfd",
+    "SCM_RIGHTS",
+    "signal",
+    "subprocess",
+    "namespace entry",
+    "lock write/replacement/deletion",
+    "Android action"
+  ],
+  "schema": 1,
+  "scope": "source/packet/local owned-FD controls; no live collection",
+  "source": {
+    "bytes": 36349,
+    "encoding": "utf-8",
+    "git_blob_sha1": "2992fc25e6e169031243de0882af99cae757ea60",
+    "mode": "100644",
+    "path": "read_main_lock_fds.py",
+    "sha256": "db4916ebee6e6094482236e10ed2ecd3030d7f245de18f53c8a0cfd9c50a2cb0"
+  },
+  "validation": {
+    "bytes": 3090,
+    "encoding": "utf-8",
+    "git_blob_sha1": "4d658c47d1d759c2e463661d8646b524cc378de5",
+    "mode": "100644",
+    "path": "packet-validation.json",
+    "sha256": "786022dd84a390bb8b6e9bde9375c15e7d217096441bb398daf02e5e533cafd5"
+  }
+}

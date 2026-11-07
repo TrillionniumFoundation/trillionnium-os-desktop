@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "source_sha256": "dd1e45b70956f8559e497ab21444e74f47380a0b89d344bd7e7a396e95223f21",
+  "controls_passed": 16,
+  "controls": [
+    "positive external identity/time/peak binding",
+    "reject 0.ExecMainPID",
+    "reject 0.InvocationID",
+    "reject 1.cgroup_device",
+    "reject 1.cgroup_inode",
+    "reject 1.invocation_id",
+    "reject 0.MemoryPeak",
+    "reject 0.MemorySwapPeak",
+    "reject 0.MemoryPeak",
+    "reject 0.ExecMainStartTimestampMonotonic",
+    "reject 0.ExecMainExitTimestampMonotonic",
+    "reject 2.observed_monotonic_ns",
+    "reject 2.memory_peak",
+    "reject qualifier unit substitution",
+    "actual owned directory dev/inode retained",
+    "reject actual owned counter file max1"
+  ],
+  "scope": "pure coordinator binding + owned ordinary directory IO; no device/systemd/namespace/PSI"
+}

@@ -1,0 +1,110 @@
+{
+  "actual_preimage_inputs_verified": 32,
+  "android_or_namespace_executed": false,
+  "cargo_available": false,
+  "changes": [
+    {
+      "candidate": {
+        "bytes": 57311,
+        "git_blob_sha1": "51746e04c73c4b0e767ca57679b2e1b1489dd614",
+        "sha256": "e3d01d609ce7abff8f195209f62a8a622fd622ef09d676f8a72d953331fd5617"
+      },
+      "changed_existing_functions": [
+        "fmt",
+        "capture"
+      ],
+      "old_functions_exact_in_new": 77,
+      "path": "runtime/droidloom-pressure-relay/src/lib.rs",
+      "preimage": {
+        "bytes": 51658,
+        "git_blob_sha1": "d8620c7e6a6b16d8a7b3d8cc96bd8e22d4cb08d2",
+        "sha256": "102456cf0a4754cf04c1f35fbf3c5b0f68b2edea981e21528f5b5e33fe58e9d8"
+      },
+      "tests_after": 7,
+      "tests_before": 5
+    },
+    {
+      "candidate": {
+        "bytes": 95905,
+        "git_blob_sha1": "cb59a99233c684ce5f1c14cf79489acb1cbb48f4",
+        "sha256": "b4a73b76934c79d32fe2a95f6a39829b66be33209ad46c872c14d8ef97d260b1"
+      },
+      "changed_existing_functions": [
+        "try_wait",
+        "stop",
+        "cleanup_inner"
+      ],
+      "old_functions_exact_in_new": 83,
+      "path": "runtime/droidloom-supervisor/src/development.rs",
+      "preimage": {
+        "bytes": 95133,
+        "git_blob_sha1": "9592ee1d7653b92e99fd54fd346756b76e875092",
+        "sha256": "f73b823d53e7bd6a6daca9fff34f7c1ff5844ab39ba55171384414d6d58544c4"
+      },
+      "tests_after": 16,
+      "tests_before": 16
+    },
+    {
+      "candidate": {
+        "bytes": 31293,
+        "git_blob_sha1": "e932c06c3da4d8f2964b9d14cf1a88b656062048",
+        "sha256": "f3392bc50f99b558597f23d9fb2d5110f23cab65b514b999a637d931a29a91f1"
+      },
+      "changed_existing_functions": [
+        "fixture",
+        "new",
+        "failure"
+      ],
+      "old_functions_exact_in_new": 23,
+      "path": "runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs",
+      "preimage": {
+        "bytes": 20910,
+        "git_blob_sha1": "e1f4358b122c3da712600db59b8554932a8586c3",
+        "sha256": "ec021636841d88bb2cd52981c0143685593e87750b97073af99a7f3ea4f8038a"
+      },
+      "tests_after": 10,
+      "tests_before": 4
+    },
+    {
+      "candidate": {
+        "bytes": 40406,
+        "git_blob_sha1": "193b3d5ccadef2f608448ebfb07ca1be2c5bfaef",
+        "sha256": "ebc8c5fb93c45e87102ce76ffc1e597649d2dc949d079d07a38531972cb2ff9d"
+      },
+      "changed_existing_functions": [
+        "prepare",
+        "request_stop",
+        "retire_before_network"
+      ],
+      "old_functions_exact_in_new": 33,
+      "path": "runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs",
+      "preimage": {
+        "bytes": 39607,
+        "git_blob_sha1": "b8fc0f917142ae1ba98a3d484cffbbde7851eefd",
+        "sha256": "5b011974c71d4a5d96091ea98cd55ffe3f69c0a4abe28eb71c9fea58c8a04994"
+      },
+      "tests_after": 2,
+      "tests_before": 2
+    }
+  ],
+  "declared_new_rust_tests": {
+    "relay": 2,
+    "supervisor": 6
+  },
+  "expected_matching_suite_counts_not_executed": {
+    "ordinary_ipc": 7,
+    "relay": 39,
+    "supervisor": 128
+  },
+  "full_owner_runtime_qualified": false,
+  "main_current_budget_change_resolved": false,
+  "new_owner_runtime_admitted": false,
+  "original_lifecycle_capture_body_exact": true,
+  "original_owner14_failure_preserved": true,
+  "passed": true,
+  "rust_compiled": false,
+  "rust_tests_executed": false,
+  "rustc_available": false,
+  "schema": 1,
+  "scope": "offline source/provenance/order check only"
+}

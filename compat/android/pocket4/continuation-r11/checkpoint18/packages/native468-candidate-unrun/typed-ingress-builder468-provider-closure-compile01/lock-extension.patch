@@ -1,0 +1,46 @@
+--- a/android/manifest/m2-role-ingress-source-lock.json
++++ b/android/manifest/m2-role-ingress-provider-source-lock.json
+@@ -1758,7 +1758,13 @@
+         "libraries/compatibility-common-util/Android.bp",
+         "libraries/compatibility-common-util/src",
+         "libraries/rdroidtest",
+-        "libraries/tradefed-error-prone"
++        "libraries/tradefed-error-prone",
++        "libraries/motion/src",
++        "libraries/motion/compose/src",
++        "libraries/motion/compose/values/src",
++        "libraries/screenshot/src/main",
++        "libraries/screenshot/proto",
++        "libraries/uiautomator-helpers/src"
+       ]
+     },
+     {
+@@ -1939,7 +1945,8 @@
+         "extensions/19/system-server",
+         "tools/Android.bp",
+         "tools/core-lambda-stubs.jar",
+-        "update_prebuilts"
++        "update_prebuilts",
++        "current/androidx"
+       ]
+     },
+     {
+@@ -2460,6 +2467,18 @@
+       "sparse_paths": [
+         "include"
+       ]
++    },
++    {
++      "path": "external/kotlinx.coroutines",
++      "name": "platform/external/kotlinx.coroutines",
++      "commit": "16161f019a518241332c1cad686a3e9404c0d5cf",
++      "purpose": "Exact Android 17 superproject coroutine providers for real AndroidX and StructuredConcurrencyPerf dependencies"
++    },
++    {
++      "path": "external/kotlinx.atomicfu",
++      "name": "platform/external/kotlinx.atomicfu",
++      "commit": "867bc63054d694773bd0aef56eeb51296f2f6b03",
++      "purpose": "Exact Android 17 superproject atomicfu source required by the real coroutine provider"
+     }
+   ]
+ }

@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "pass": true,
+  "manifest_sha256": "4918f3634e328caa0c359a38a6a8291f8d2686ce28459ad56e4c01b927f06490",
+  "payloads_verified": {
+    "REVIEW.md": {
+      "bytes": 6884,
+      "sha256": "2decdf5cadd6c8b97e5296ae00b66ad58b3b5696840482ccd42638df9bffb279"
+    },
+    "combined_build_go6r2.py": {
+      "bytes": 38609,
+      "sha256": "714a9de0ac3615ff8a8439f6d808f1ea3e57bd13dad05f3e3cc1565281719a37"
+    },
+    "controller-original-go6-to-go6r2.patch": {
+      "bytes": 9600,
+      "sha256": "c14a14a7e511b829bbaf666c0e66de7ed11e3f14bfdff2f9dda6c6b142133bdc"
+    },
+    "derivation.json": {
+      "bytes": 925,
+      "sha256": "5e6ed62b9467d2fc568830bb8c4bb9e9f47a6749ebdc9cd5c4df62210bd5810f"
+    },
+    "derive_profile.py": {
+      "bytes": 10125,
+      "sha256": "75ad2c6928c5176d16fa050aae1be945dd39736f198d9187240ef5d75941d9a5"
+    },
+    "evidence-references.json": {
+      "bytes": 1726,
+      "sha256": "dee90ca87daf4506ea2b33a8799535f52d46556f354d064279d050999ca23fbe"
+    },
+    "expected-copied-builder-source-manifest.json": {
+      "bytes": 88246,
+      "sha256": "e7c225bd2842c260d9f4149aca3c4483ed31c569efb31068b6d787892bd17017"
+    },
+    "fence-go4-to-go6r2.patch": {
+      "bytes": 1216,
+      "sha256": "675c927aab5bf6b98a8ccb4edcc3afeba45684aa81615ff85ff21727c76b64ed"
+    },
+    "fenced_build_go6r2.template.py": {
+      "bytes": 8594,
+      "sha256": "810710021986054213546a6dfee65c29d3cd8eb86e4de8db11f2553cbc855b0f"
+    },
+    "local-controls.json": {
+      "bytes": 7543,
+      "sha256": "9ddb82f8ed0a611e620d986b199289934a4dd7b4028638453d0093a8af3e15bf"
+    },
+    "main_snapshot.py": {
+      "bytes": 6778,
+      "sha256": "f909bdfcaedfef29fcc1ba6a994c49bc21e99850204bac7e0565548bcd7139cb"
+    },
+    "make_requests.py": {
+      "bytes": 10287,
+      "sha256": "74f47fee3f13ed109c308c5b2a98e9876e20fe56a8e55ef8c19b1df27b9f09b7"
+    },
+    "prepare-request-01/REQUEST_PINS.json": {
+      "bytes": 864,
+      "sha256": "aaaa469fd224bd0d637c449edba447ed4a481680b25220ac5709605fe119e46e"
+    },
+    "prepare-request-01/exact-request.json": {
+      "bytes": 41339,
+      "sha256": "a3304cba21d243543b46b1eaff7341a8b8d66fc0dfd77468d153b25a1d57cdcd"
+    },
+    "preserved-protocols.json": {
+      "bytes": 2622,
+      "sha256": "523e26b3030c07a1f4f832868d1fb42a313657a79f3ba3403859ffe06da2e0ef"
+    },
+    "references/0008-soong-go6.unchanged.patch": {
+      "bytes": 583,
+      "sha256": "6aaaf5ec96a75bb6480c202d6483a5b22bdd4963d6d3b66bbfad4d80ee5ed20e"
+    },
+    "request-generator-go4-to-go6r2.patch": {
+      "bytes": 10863,
+      "sha256": "441eabd2fe72b8a2f45ade5e7d21d00bf7c9aec417cd1b4c21bf06cc03b01407"
+    },
+    "verify_profile.py": {
+      "bytes": 9754,
+      "sha256": "6911007770cbb8c5af07549e32e4a8474acf97b3a8a59e42f43848f67f16c08c"
+    }
+  },
+  "all_three_patches_recomputed_equal": true,
+  "changed_existing_functions": [
+    "artifact_gate",
+    "build",
+    "plan",
+    "source_contract"
+  ],
+  "added_functions": [
+    "go_projection_contract",
+    "memory_admission",
+    "owned_resource_gate"
+  ],
+  "preserved_functions_rechecked": 12,
+  "original_builder_manifest_449_rows_byte_identical": true,
+  "Main_snapshot_byte_identical": true,
+  "prepare_request_exact_generator_bytes": true,
+  "prepare_request_sha256": "a3304cba21d243543b46b1eaff7341a8b8d66fc0dfd77468d153b25a1d57cdcd",
+  "remote_calls": 0,
+  "prepare_build_or_main_execution": false
+}

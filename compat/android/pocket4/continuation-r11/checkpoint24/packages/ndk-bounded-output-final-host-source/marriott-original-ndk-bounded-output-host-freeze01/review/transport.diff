@@ -1,0 +1,21 @@
+--- a/fixture_transport.py
++++ b/fixture_transport.py
+@@ -211,9 +211,17 @@
+                         "stdout_sha256": hashlib.sha256(completed.stdout).hexdigest(),
+                         "stderr_sha256": hashlib.sha256(completed.stderr).hexdigest(),
+                         "action_attempted": True, "outcome_unknown": completed.returncode != 0}
+-                    if getattr(completed, "host_timed_out", False):
++                    earlier_exit_failure = getattr(completed, "observed_failure_preceded_capture_error", False)
++                    if not earlier_exit_failure and getattr(completed, "capture_limit_exceeded", False):
++                        primary = TransportError("ANDROID_COMMAND_OUTPUT_LIMIT", attempted=True,
++                                                 unknown=True, returncode=completed.returncode)
++                    elif not earlier_exit_failure and getattr(completed, "host_timed_out", False):
+                         primary = TransportTimeout("HOST_COMMAND_TIMEOUT", timeout,
+                                                    returncode=completed.returncode)
++                    elif not earlier_exit_failure and getattr(completed, "capture_retirement_error", None) is not None:
++                        primary = TransportError("HOST_COMMAND_CAPTURE_FAILED", attempted=True,
++                            unknown=True, returncode=completed.returncode,
++                            capture_first_error=completed.capture_retirement_error)
+                     elif completed.returncode in (124, 137):
+                         primary = TransportTimeout("ANDROID_COMMAND_TIMEOUT", inner,
+                                                    returncode=completed.returncode)

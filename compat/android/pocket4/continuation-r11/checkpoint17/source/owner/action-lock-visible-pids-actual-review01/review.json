@@ -1,0 +1,61 @@
+{
+  "actual": {
+    "bytes": 12528,
+    "job_id": "1a1ad4cee61-fc05-5958",
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/action-lock-visible-pids-readonly01/stdout.log",
+    "reported_authoritative_exit_code": 1,
+    "sha256": "bcc022d76a56452fd7246e50621861ad8758d28f05d9016cfae3341081f21851"
+  },
+  "all_five_inputs_unchanged": true,
+  "boot_before_after_equal": true,
+  "coverage": {
+    "excluded_collector_PID": 2915964,
+    "fd_stat_attempts": 19782,
+    "gaps": [
+      {
+        "count": 1,
+        "errno": 2,
+        "phase": "visible_pid_fd_scan",
+        "type": "FileNotFoundError"
+      }
+    ],
+    "matched_fdinfo_bytes": 0,
+    "pid_fd_enumerations_completed": 847,
+    "pid_scans_attempted": 848,
+    "root_directory_entries": 912,
+    "visible_numeric_PID_count": 849
+  },
+  "device_or_App_qualification": false,
+  "elapsed_ms": 106,
+  "fd_counts": {
+    "enumerated": 19782,
+    "matches": 0
+  },
+  "lock_held_and_named_before_after_equal": true,
+  "matches": 0,
+  "meaning": [
+    "The bounded numeric-PID scan completed, but exact coverage did not.",
+    "No matching lock FD was observed among 19782 FD target stats.",
+    "The one unavailable process is intentionally not identified by unmatched PID metadata.",
+    "The sample neither identifies a historical holder nor proves lock freedom or initial-host PID visibility.",
+    "No basis for signals, another-process FD close, lock deletion/replacement, or a repeated global/TID scan."
+  ],
+  "next_step": "One fixed existing-inode own-FD nonblocking lock admission; immediately unlock on success and always close. Any later App still takes its own unchanged gate.",
+  "original_Main_before_after_equal": true,
+  "original_result_preserved": "FAIL: one visible-PID FD enumeration ENOENT coverage gap",
+  "owned_fds_closed": true,
+  "production_acquire_review": {
+    "bytes": 32582,
+    "deadline_rethrows_original_first_busy": true,
+    "function": "acquire_action_lock",
+    "non_EAGAIN_rethrown": true,
+    "one_open_inode_for_all_attempts": true,
+    "only_original_EAGAIN_retried": true,
+    "path": "/workspace/scratch/94990735b266/android-12306-qa-r1-install-state-01/install_state.py",
+    "sha256": "a2e26701436053bf9bca03f7a22ab84c899ab1bbc6ec609ac49caedb53115fd8",
+    "specific_errno_misclassification_or_double_acquire_found": false
+  },
+  "schema": 1,
+  "scope": "independent exact retained actual review; no new scan or device action",
+  "secondary_errors": []
+}

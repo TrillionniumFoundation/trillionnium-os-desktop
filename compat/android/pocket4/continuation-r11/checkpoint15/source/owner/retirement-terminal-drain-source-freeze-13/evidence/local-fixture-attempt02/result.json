@@ -1,0 +1,15 @@
+{
+  "Rust_or_Owner_executed": false,
+  "case": "queued-two-frames-exit-zero",
+  "child_launched": true,
+  "child_terminal_status_not_captured": true,
+  "command": [
+    "/usr/bin/python3",
+    "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/retirement-terminal-drain-source-work-13/check_owned_peer_fixture.py"
+  ],
+  "exact_child_wait_in_finally": true,
+  "exit_code": 1,
+  "failure": "AssertionError: observed != frames",
+  "schema": 1,
+  "source_review": "The inherited sockets are nonblocking. Python socket(fileno=...) did not install a timeout; control.recv can run before parent GO. Fix only the test-peer socket timeouts, then rerun with new source."
+}

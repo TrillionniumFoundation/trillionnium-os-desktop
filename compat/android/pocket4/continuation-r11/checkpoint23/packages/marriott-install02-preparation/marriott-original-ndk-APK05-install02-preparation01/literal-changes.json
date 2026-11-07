@@ -1,0 +1,142 @@
+{
+  "worker": [
+    [
+      "ROOT = Path('/home/alex/work/pocket4-original-ndk-fixture-APK03-install-01')",
+      "ROOT = Path('/home/alex/work/pocket4-original-ndk-fixture-APK05-install-02')",
+      1
+    ],
+    [
+      "STEP = ROOT/'steps'/'install-01'",
+      "STEP = ROOT/'steps'/'install-02'",
+      1
+    ],
+    [
+      "INSTALL_NONCE = 'e4b5a1bdac8be04ff2ea3188a6d946d6'",
+      "INSTALL_NONCE = None  # Await the single actual install02 nonce; never reuse install01.",
+      1
+    ],
+    [
+      "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-03-20261106/",
+      "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-05-20261106/",
+      2
+    ],
+    [
+      "BUILD_REPORT_PIN = {'bytes':9811525,'sha256':'02b979004666268ae73814c809ffeba54de261e4c826a130af267fe717f3f46f'}",
+      "BUILD_REPORT_PIN = {'bytes':9811685,'sha256':'d8eb53c924fa6a76bee19304bd8538bf2a57306b7e9bd6a55df8787d4ea33411'}",
+      1
+    ],
+    [
+      "REFERENCE_PINS = json.loads(r'''{\"static-build.original.json\":{\"bytes\":4733,\"sha256\":\"2b6853720b7996087c27c29079f6ba9646b9403282013ef7f8be7b210d0eb4ba\"},\"build-terminal.original.json\":{\"bytes\":729,\"sha256\":\"afa74ed1e367c5f415bea207dd792608a8a75ba8488f1bef23638389bde0cfde\"},\"build-stdout.original.json\":{\"bytes\":228,\"sha256\":\"5896f2916d2c3f62c723162a3f5f7843f1a65d5979f5c09c7b63923bbe501f61\"},\"readonly38.original.json\":{\"bytes\":6406,\"sha256\":\"49efd1b14222ba11e3275eebb8bc62dc2649dc7b85b84fd6f562554091ac09a8\"},\"readonly38-terminal.original.json\":{\"bytes\":731,\"sha256\":\"28d8401555efe95c429c7b475064ffe845ad3cc270b920fa6f96aec89dc8f991\"},\"install-nonce.original.json\":{\"bytes\":796,\"sha256\":\"60d4b010d6927f384494904501511deefaf2e06c49345ba223a23a02985d6807\"},\"install-nonce-terminal.original.json\":{\"bytes\":729,\"sha256\":\"bacee98f31395c26e1825c02d7b434749fb39df0ce135a330a2da84cbf407762\"},\"global890.original.json\":{\"bytes\":33823,\"sha256\":\"62066a9a8b68629be8ea7bf0ec74f112ef5d7714d1a19fb61bdc815bddf5fa1e\"},\"global891.original.json\":{\"bytes\":33861,\"sha256\":\"c19f6007c56b50dd048203f155461a6e11d8c3328254bfc9064d5f94abc84312\"}}''')",
+      "REFERENCE_PINS = None  # Future actual readonly38/nonce originals must bind all nine rows.",
+      1
+    ],
+    [
+      "ENTRY_CONTROL_KIND = 'pocket4-original-ndk-install-entry-controls01'",
+      "ENTRY_CONTROL_KIND = 'pocket4-original-ndk-install-entry-controls02'",
+      1
+    ],
+    [
+      "REFERENCE_PINS['readonly38-terminal.original.json'],'1a1b22e1780-fc05-7cd0',6406)",
+      "REFERENCE_PINS['readonly38-terminal.original.json'],None,None)",
+      1
+    ],
+    [
+      "REFERENCE_PINS['install-nonce-terminal.original.json'],'1a1b2440618-fc05-7d3c',796)",
+      "REFERENCE_PINS['install-nonce-terminal.original.json'],None,None)",
+      1
+    ],
+    [
+      "'global890.original.json'",
+      "'global921.original.json'",
+      1
+    ],
+    [
+      "'global891.original.json'",
+      "'global922.original.json'",
+      1
+    ],
+    [
+      "len(previous) == len(set(previous)) == 890",
+      "len(previous) == len(set(previous)) == 921",
+      1
+    ],
+    [
+      "len(latest) == len(set(latest)) == 891",
+      "len(latest) == len(set(latest)) == 922",
+      1
+    ],
+    [
+      "'pocket4-original-ndk-fixture-install-nonce01'",
+      "'pocket4-original-ndk-fixture-install-nonce02'",
+      1
+    ],
+    [
+      "'pocket4-original-ndk-fixture-APK03-install01'",
+      "'pocket4-original-ndk-fixture-APK05-install02'",
+      1
+    ],
+    [
+      "REFERENCE_PINS['build-terminal.original.json'],'1a1b209747e-fc05-7c26',228)",
+      "REFERENCE_PINS['build-terminal.original.json'],'1a1b299fafc-fc05-7edb',228)",
+      1
+    ],
+    [
+      "binding['manifest_target_sdk'] == 23",
+      "binding['manifest_target_sdk'] == 24",
+      1
+    ],
+    [
+      "'EXACT_ORIGINAL_SIGNED_APK03_BINDING_REQUIRED'",
+      "'EXACT_ORIGINAL_SIGNED_APK05_BINDING_REQUIRED'",
+      1
+    ],
+    [
+      "'pocket4-original-ndk-install-worker01'",
+      "'pocket4-original-ndk-install-worker02'",
+      1
+    ],
+    [
+      "'pocket4-original-ndk-install-worker-summary01'",
+      "'pocket4-original-ndk-install-worker-summary02'",
+      1
+    ]
+  ],
+  "lease": [
+    [
+      "/home/alex/work/pocket4-original-ndk-fixture-APK03-install-01",
+      "/home/alex/work/pocket4-original-ndk-fixture-APK05-install-02",
+      1
+    ],
+    [
+      "'install-01'",
+      "'install-02'",
+      2
+    ]
+  ],
+  "context": [
+    [
+      "Source only: open_context reaches the unbound gate before all Main/OS reads.",
+      "Unbound calls stop before Main/OS reads; installation requires the explicit held\nadmission, fresh Main guards and source verification at every original boundary.",
+      1
+    ]
+  ],
+  "lease_controls": [
+    [
+      "p4-ndk-fixture-install-lease-controls01-20261106",
+      "p4-ndk-fixture-install-lease-controls02-20261106",
+      2
+    ],
+    [
+      "'install-01'",
+      "'install-02'",
+      4
+    ]
+  ],
+  "runner": [
+    [
+      "'pocket4-original-ndk-install-entry-controls01'",
+      "'pocket4-original-ndk-install-entry-controls02'",
+      1
+    ]
+  ]
+}

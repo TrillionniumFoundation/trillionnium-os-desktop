@@ -1,0 +1,26 @@
+--- first-launch-inspect/make_request.py
++++ fresh-search-entry/make_request.py
+@@ -3,17 +3,17 @@
+ import argparse,hashlib,json,os
+ from pathlib import Path
+ HERE=Path(__file__).resolve().parent
+-MANIFEST_SHA='8c6d466e8e75dd4b2261205f61d72848dd6e9bf4b415f798272aba75a29152fb'
+-STAGE_SHA='11560772e9f29dea202e4a8cd424e6508aadde86009f587c5b49c576b63b587c'
+-STAGE_BYTES=4916
+-NONCE='71222d708e933c9afc2472cc1565646a'
+-KEY='pocket4-amazon-owned-launch-inspect-01-20261105'
++MANIFEST_SHA='1c6b1f70daaa562236c434bd38c7c95051ff095f8e92571fb09f85123403f567'
++STAGE_SHA='e0f191fbd7f8901485e65fe47d55d4593fca886bfa51b3bb5cc19f30ae0513b5'
++STAGE_BYTES=5043
++NONCE='853b099b08f0e7a60c3d7b05fcd07461'
++KEY='pocket4-amazon-owned-search-entry-01-20261105'
+ def main():
+     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--write-once',action='store_true');p.add_argument('--output',type=Path);a=p.parse_args()
+     if not a.write_once:
+         print(json.dumps({'state':'PLAN_ONLY','stable_key':KEY,'nonce':NONCE,'device_calls':0,'submitted':False}));return 0
+     raw=(HERE/'SOURCE_PINS.json').read_bytes();assert hashlib.sha256(raw).hexdigest()==MANIFEST_SHA
+-    manifest=json.loads(raw);assert set(manifest['files'])=={'owned_inspect.py','amazon_task_context.py','INPUTS.json'}
++    manifest=json.loads(raw);assert set(manifest['files'])=={'owned_inspect.py','amazon_task_context.py','search_navigation.py','INPUTS.json'}
+     files={'SOURCE_PINS.json':raw.decode()}
+     for name,pin in manifest['files'].items():
+         data=(HERE/name).read_bytes();assert 0<len(data)<=65536 and len(data)==pin['bytes'] and hashlib.sha256(data).hexdigest()==pin['sha256'];files[name]=data.decode('utf-8')

@@ -1,0 +1,18 @@
+--- draft01-read_main_service.py
++++ read_main_service.py
+@@ -195,10 +195,14 @@
+                     else:
+                         # Popen is this thread's sole unreaped direct child owner.
+                         process.kill()
++            except Exception as error:
++                remember('signal_exact_systemctl_child', error)
++            # A signal error never skips the independent wait/reap attempt.
++            try:
+                 record['returncode'] = process.wait(timeout=2.0)
+                 record['child_reaped'] = True
+             except Exception as error:
+-                remember('retire_exact_systemctl_child', error)
++                remember('wait_exact_systemctl_child', error)
+         if selector is not None:
+             try:
+                 selector.close()

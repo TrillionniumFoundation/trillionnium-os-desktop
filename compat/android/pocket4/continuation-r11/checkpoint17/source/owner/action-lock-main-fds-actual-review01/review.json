@@ -1,0 +1,219 @@
+{
+  "FD_stat_errors": 0,
+  "actual": {
+    "bytes": 28778,
+    "elapsed_ms": 35,
+    "job": "1a1ad3d0362-fc05-5923",
+    "original_collection_complete": false,
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/action-lock-main-fds-readonly01/stdout.log",
+    "sha256": "44e2f3f48c5da236c3c9c292a306a6a38c7d926740165e1e753dacdd26f8681c"
+  },
+  "boot_equal": true,
+  "cleanup_or_signal_authority": false,
+  "finding": "All compared namespace identity fields and all other stable process fields match; only the listed nsfs mtime/ctime values changed. The frozen diagnostic treats those changes as failure.",
+  "full_fd_stats": 844,
+  "held_and_named_lock_equal": true,
+  "held_pidfd_observed_live_at_each_recorded_sample": true,
+  "kernel_timestamp_regeneration_cause_proven": false,
+  "limitation": "Three process final named-proc gates were skipped after the timestamp assertion failed. This review does not rerun those gates or replace the original FAIL with PASS. Sequential zero matches do not prove absence of a lock holder.",
+  "matched_FDs": 0,
+  "new_same_seven_PID_collection_planned": false,
+  "original_Main_guard_equal": true,
+  "original_first_error": {
+    "close_notes": [],
+    "errno": null,
+    "message": "FIXED_PROCESS_OBSERVATION_INCOMPLETE",
+    "phase": "fixed_process:launcher_process",
+    "type": "RuntimeError"
+  },
+  "original_five_inputs_equal": true,
+  "original_secondary_errors": [
+    {
+      "close_notes": [],
+      "errno": null,
+      "message": "FIXED_PROCESS_OBSERVATION_INCOMPLETE",
+      "phase": "fixed_process:system_server",
+      "type": "RuntimeError"
+    },
+    {
+      "close_notes": [],
+      "errno": null,
+      "message": "FIXED_PROCESS_OBSERVATION_INCOMPLETE",
+      "phase": "fixed_process:zygote64",
+      "type": "RuntimeError"
+    },
+    {
+      "close_notes": [],
+      "errno": null,
+      "message": "SELF_OR_PROC_MOUNT_CONTEXT_CHANGED",
+      "phase": "final_self_proc_context",
+      "type": "RuntimeError"
+    }
+  ],
+  "owned_FDs_closed": true,
+  "primary_reference": {
+    "scope": "documents st_dev and st_ino namespace identity; does not identify the running Pocket4 kernel or prove why its timestamps changed",
+    "url": "https://man7.org/linux/man-pages/man7/namespaces.7.html"
+  },
+  "process_observations": [
+    {
+      "enumeration_complete": true,
+      "fd_stat_count": 4,
+      "identity_diff": [],
+      "matches": 0,
+      "named_final_gate_executed": true,
+      "original_complete": true,
+      "original_first_error": null,
+      "pid": 3588022,
+      "role": "daemon_process"
+    },
+    {
+      "enumeration_complete": true,
+      "fd_stat_count": 18,
+      "identity_diff": [],
+      "matches": 0,
+      "named_final_gate_executed": true,
+      "original_complete": true,
+      "original_first_error": null,
+      "pid": 3588093,
+      "role": "init"
+    },
+    {
+      "enumeration_complete": true,
+      "fd_stat_count": 3,
+      "identity_diff": [
+        {
+          "after": 1793907821723634928,
+          "before": 1793907821722634904,
+          "path": "/namespaces/mnt/metadata/ctime_ns"
+        },
+        {
+          "after": 1793907821723634928,
+          "before": 1793907821722634904,
+          "path": "/namespaces/mnt/metadata/mtime_ns"
+        }
+      ],
+      "matches": 0,
+      "named_final_gate_executed": false,
+      "original_complete": false,
+      "original_first_error": {
+        "close_notes": [],
+        "errno": null,
+        "message": "FIXED_PROCESS_BEFORE_AFTER_CHANGED",
+        "phase": "fixed_process_final_identity",
+        "type": "RuntimeError"
+      },
+      "pid": 3588089,
+      "role": "launcher_process"
+    },
+    {
+      "enumeration_complete": true,
+      "fd_stat_count": 48,
+      "identity_diff": [],
+      "matches": 0,
+      "named_final_gate_executed": true,
+      "original_complete": true,
+      "original_first_error": null,
+      "pid": 3588024,
+      "role": "presenter_process"
+    },
+    {
+      "enumeration_complete": true,
+      "fd_stat_count": 120,
+      "identity_diff": [],
+      "matches": 0,
+      "named_final_gate_executed": true,
+      "original_complete": true,
+      "original_first_error": null,
+      "pid": 3588912,
+      "role": "surfaceflinger"
+    },
+    {
+      "enumeration_complete": true,
+      "fd_stat_count": 584,
+      "identity_diff": [
+        {
+          "after": 1793907821729635074,
+          "before": 1793907821725634977,
+          "path": "/namespaces/mnt/metadata/ctime_ns"
+        },
+        {
+          "after": 1793907821729635074,
+          "before": 1793907821725634977,
+          "path": "/namespaces/mnt/metadata/mtime_ns"
+        }
+      ],
+      "matches": 0,
+      "named_final_gate_executed": false,
+      "original_complete": false,
+      "original_first_error": {
+        "close_notes": [],
+        "errno": null,
+        "message": "FIXED_PROCESS_BEFORE_AFTER_CHANGED",
+        "phase": "fixed_process_final_identity",
+        "type": "RuntimeError"
+      },
+      "pid": 3589120,
+      "role": "system_server"
+    },
+    {
+      "enumeration_complete": true,
+      "fd_stat_count": 67,
+      "identity_diff": [
+        {
+          "after": 1793907821730635098,
+          "before": 1793907821729635074,
+          "path": "/namespaces/mnt/metadata/ctime_ns"
+        },
+        {
+          "after": 1793907821730635098,
+          "before": 1793907821729635074,
+          "path": "/namespaces/mnt/metadata/mtime_ns"
+        }
+      ],
+      "matches": 0,
+      "named_final_gate_executed": false,
+      "original_complete": false,
+      "original_first_error": {
+        "close_notes": [],
+        "errno": null,
+        "message": "FIXED_PROCESS_BEFORE_AFTER_CHANGED",
+        "phase": "fixed_process_final_identity",
+        "type": "RuntimeError"
+      },
+      "pid": 3588887,
+      "role": "zygote64"
+    }
+  ],
+  "qualification": false,
+  "runtime_authorized": false,
+  "schema": 1,
+  "scope": "independent retained actual JSON and exact source review; no remote execution",
+  "self_namespace_timestamp_diff": [
+    {
+      "after": 1793907821730635098,
+      "before": 1793907821721634879,
+      "path": "/namespaces/mnt/metadata/ctime_ns"
+    },
+    {
+      "after": 1793907821730635098,
+      "before": 1793907821721634879,
+      "path": "/namespaces/mnt/metadata/mtime_ns"
+    },
+    {
+      "after": 1793907821730635098,
+      "before": 1793907821721634879,
+      "path": "/namespaces/pid/metadata/ctime_ns"
+    },
+    {
+      "after": 1793907821730635098,
+      "before": 1793907821721634879,
+      "path": "/namespaces/pid/metadata/mtime_ns"
+    }
+  ],
+  "source": {
+    "bytes": 36349,
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/action-lock-main-fds-readonly-01/read_main_lock_fds.py",
+    "sha256": "db4916ebee6e6094482236e10ed2ecd3030d7f245de18f53c8a0cfd9c50a2cb0"
+  }
+}

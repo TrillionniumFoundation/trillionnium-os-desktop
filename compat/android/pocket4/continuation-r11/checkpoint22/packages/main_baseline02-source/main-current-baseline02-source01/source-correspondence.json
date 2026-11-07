@@ -1,0 +1,152 @@
+{
+  "schema": "pocket4-baseline02-source-correspondence-v1",
+  "local_execution": false,
+  "Python_compile_or_controls_performed": false,
+  "actual_discovery_full_raw_verified": {
+    "bytes": 17817,
+    "sha256": "5f029ed98fa932f060a3617764b29485f09a4b09e1052c280ffd925235f488ae"
+  },
+  "original_baseline01_request": {
+    "bytes": 140175,
+    "sha256": "1164209c7b86074834d6480940572374a280d8abc7d425313e865f0dbd88f3d1",
+    "git_blob_sha": "0b9c23c628daf9c9c66c6ef5979e8e42780f6888"
+  },
+  "original_runtime_source_manifest_sha256": "9bc710444bff9d90cb3375fd5acb155e0438e2a71a65348b23d4483cf81d00f9",
+  "current_manifest_sha256": "68379ffa989e90c72faa7574df5f1541582f302f730864c4818a976446f727ab",
+  "original_reference_files_exact": [
+    {
+      "file": "framework_epoch.py",
+      "exact": true,
+      "bytes": 8658,
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288"
+    },
+    {
+      "file": "held_runtime_r5.py",
+      "exact": true,
+      "bytes": 22691,
+      "sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4"
+    },
+    {
+      "file": "historical_source_contract.py",
+      "exact": true,
+      "bytes": 9103,
+      "sha256": "51c2b3dd7df80a8fcd4881eb7216f7292db77d39c01920f10feb650824919a7d"
+    }
+  ],
+  "function_text_comparison": {
+    "unchanged": {
+      "qualify_baseline.py": [
+        "need",
+        "check",
+        "read",
+        "cg",
+        "safe_error",
+        "bounded_command",
+        "service",
+        "verify_service",
+        "ManagedFDs",
+        "metadata",
+        "exact_path",
+        "open_host",
+        "bounded_regular",
+        "load_module",
+        "persistent_processes",
+        "verify_pidfds",
+        "fixed_roots",
+        "verify_roots",
+        "old_identities_remain_absent",
+        "hash_fd",
+        "process_executables",
+        "verify_executables",
+        "guest_regular",
+        "fixed_packages",
+        "paired_classpaths",
+        "counters_safe",
+        "validate_service_pair",
+        "write_new",
+        "publish"
+      ],
+      "baseline_policy.py": [
+        "need",
+        "canonical",
+        "sha",
+        "no_duplicates",
+        "reject_number",
+        "parse",
+        "validate_identity",
+        "valid_sha",
+        "validate_artifact",
+        "validate_artifact_closure"
+      ],
+      "current_baseline_guard.template.py": [
+        "need",
+        "sha",
+        "meta",
+        "raw_file",
+        "module",
+        "main_guard"
+      ]
+    },
+    "changed": {
+      "qualify_baseline.py": [
+        "validate_packet",
+        "sampled_epoch",
+        "main"
+      ],
+      "baseline_policy.py": [
+        "historical",
+        "old_survivors",
+        "validate_snapshot",
+        "android_epoch",
+        "validate_samples",
+        "validate_new_baseline"
+      ],
+      "current_baseline_guard.template.py": [
+        "source_modules",
+        "load_current",
+        "current_baseline",
+        "current_guard"
+      ]
+    }
+  },
+  "new_ancestry_origin": {
+    "source": "main-live-status-owner-init-halt02-02/read.py",
+    "source_sha256": "2d4808c6ae499443302dc4ecc195116a4e4a4ccb2a52d589ca995cda42173f3b",
+    "copied_methods": [
+      "ManagedFDs",
+      "read_proc_leaf",
+      "parse_pid_words",
+      "join_children",
+      "children_sample",
+      "require_pidfd_live"
+    ],
+    "explicit_adaptations": [
+      "caller tracked FD pool and deadline callbacks",
+      "string JSON keys for per_thread map",
+      "generic held-cell-process pidfd error code",
+      "new intermediary root and fresh user namespace double reads"
+    ],
+    "action_or_discovery_added": false
+  },
+  "fixed_expected_numeric_and_identity_hashes_derived_from_actual": true,
+  "current_cgroup_literal_digest_matches_actual_projection": true,
+  "complete_three_parent_table_hashes_reconstructed_from_actual_only": true,
+  "current_user_namespace_or_intermediary_root_guessed": false,
+  "original_engine_and_target_UID_and_resource_limit_constants_preserved": true,
+  "pipeline_production_authority_is_fixed": true,
+  "synthetic_authority_argument_only_in_controls": true,
+  "control_cases_static_count": 66,
+  "expected_real_compile_count": 8,
+  "expected_real_execution": "Root-only single baseline02 qualification request; source-only until actual",
+  "request": {
+    "bytes": 182870,
+    "sha256": "b0b9072922671d54a16bd189836d42a519ab6ac813a080a09213ceede957a719"
+  },
+  "stdin": {
+    "bytes": 166570,
+    "sha256": "91eaff20ab1c41ec6720c24d5510368199f992336dda03a8731dbb44edd31536"
+  },
+  "private_baseline_exported": false,
+  "old_tasks_or_helpers_reauthorized": false,
+  "production_ready": false
+}

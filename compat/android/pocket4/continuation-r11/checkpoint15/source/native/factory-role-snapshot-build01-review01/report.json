@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "state": "MATCHING_BUILD_RECEIPT_AND_RUNTIME_BINDING_REVIEW_PASS",
+  "reviewer": "native_bridge_repair",
+  "actual_receipt": {
+    "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/factory-role-snapshot-build01/result.json",
+    "bytes": 78562,
+    "sha256": "919f2a52ee0bfd5baa82c8b87f6b1d1b74d351d5a4a23ecb4516af5766ba08ab"
+  },
+  "job_terminal": {
+    "job_id": "1a1abaab45b-fc05-4f85",
+    "root_reported_exit_code": 0,
+    "root_reported_complete_durable": true,
+    "independent_remote_request": false
+  },
+  "source_binding": {
+    "actual_source_inputs": 15,
+    "local_source_bytes_sha_matched": true,
+    "source_mode": "0400",
+    "source_authority": {
+      "bytes": 4422,
+      "identity": [
+        66306,
+        36971993,
+        33024,
+        4422,
+        1793881456215679650,
+        1793881456215679650
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorized-snapshot-host-build-01-20261105/source/snapshot-source-pins.json",
+      "sha256": "53e90ef34ab51ae8b9700f93419c3c050665fb0ea5a50482417b48aa860497e1"
+    },
+    "source_unchanged_after": true
+  },
+  "commands": {
+    "count": 34,
+    "unique_labels": 34,
+    "all_zero_returncode_no_timeout": true,
+    "objects": {
+      "authorization": 181,
+      "context": 38,
+      "control": 306,
+      "snapshot": 158,
+      "wire": 116
+    },
+    "dependency_count": 324,
+    "dependency_changes": [],
+    "tool_changes": [],
+    "raw_dependency_files_not_recollected_by_reviewer": true
+  },
+  "artifact": {
+    "default_plan": {
+      "Main_actions": 0,
+      "factory_service_started": false,
+      "owned_cases": 4,
+      "state": "PLAN_ONLY"
+    },
+    "elf": {
+      "bytes": 125368,
+      "identity": [
+        66306,
+        36972083,
+        33216,
+        125368,
+        1793881458914141273,
+        1793881458914173284
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorized-snapshot-host-build-01-20261105/build01/snapshot_controls",
+      "sha256": "6fea5e887e2827f38c5d5f1a12338a456935d858d911c24b75ee4f891734ec6b"
+    }
+  },
+  "artifact_unchanged_after": true,
+  "resource_gate": {
+    "identity_and_membership_equal": true,
+    "memory_max": "536870912",
+    "cpu_max": "100000 100000",
+    "memory_peak": 158187520,
+    "memory_events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "swap_peak": 0,
+    "swap_max_observed_only": "max"
+  },
+  "cleanup": {
+    "errors": [],
+    "forced_cleanup": false,
+    "initial_owned_children": [],
+    "reaped": [],
+    "remaining": []
+  },
+  "runtime_binding": {
+    "request": {
+      "bytes": 138859,
+      "sha256": "3f8927d8678f522277d9cae39a362ee0c7ef2218d6acf8a313ab24446ef3cffc"
+    },
+    "runner": {
+      "bytes": 27488,
+      "sha256": "74046104d7ae9577bd5f8b800bcd690de083d57a734ef3a7bc34e8c64391c7e7"
+    },
+    "only_actual_receipt_SHA_replaced": true,
+    "packet3_exact": true,
+    "raw_receipt_preserved": true,
+    "dispatched_by_reviewer": false
+  },
+  "scope": {
+    "ordinary_O_RDONLY_cases": 4,
+    "matching_build_only": true,
+    "snapshot_positive_executed": false,
+    "NOFOLLOW_qualified": false,
+    "platform_policy_qualified": false,
+    "factory_service_started": false,
+    "Android_execution": false,
+    "Main_actions": 0,
+    "Main_identity_observed": false
+  }
+}

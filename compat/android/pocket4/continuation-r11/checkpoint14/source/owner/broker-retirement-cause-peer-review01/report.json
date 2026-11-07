@@ -1,0 +1,39 @@
+{
+  "Hepta_calls": 0,
+  "device_actions": 0,
+  "findings": [
+    "The helper receives immutable borrows of status, receipt.reason() and outcome.as_ref().err(). It cannot consume or overwrite either original error or the retirement receipt.",
+    "The sole production call occurs after the existing status state/granted/faulted assignments and before PressureAudit consumes the receipt. The original audit, terminal status, status.faulted handling and return outcome are byte-preserved outside the one inserted call.",
+    "The helper maps each optional cause separately. UTF-8 bytes are encoded exactly as lowercase hex; missing cause remains JSON null. Embedded newlines cannot inject an additional line into the owned diagnostic.",
+    "writeln returns an io::Result that is explicitly ignored. A returned write error does not replace the original lifecycle result or create retirement authority. Healthy/no-cause paths return before writing.",
+    "The four added source controls cover both causes and unchanged originals, healthy silence, raw UTF-8/newline encoding, and a real broken UnixStream writer. These controls were read but not executed by this reviewer."
+  ],
+  "limits": [
+    "No Rust compiler or tests were run by this reviewer. This does not replace the matching build or actual Owner runtime.",
+    "This is not a guarantee against allocator abort, arbitrary Write implementation panics, blocking sinks, or loss of a diagnostic if the output fails. No such broader guarantee is needed to claim that returned io::Errors are ignored.",
+    "The original Owner10 cause remains whatever its actual retirement receipt reports; this source review does not establish that cause."
+  ],
+  "pins": {
+    "candidate/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs": {
+      "bytes": 70517,
+      "sha256": "d88f14b02d17a94feb135fa1089e25a1fffcb52da441fb5edecee01fc6405c2e"
+    },
+    "manifest.json": {
+      "bytes": 1091,
+      "sha256": "259154ae622c5c7ae5d29ca11b3a971dfc7e194ae6c9760b3b3de52e0b41a190"
+    },
+    "preimage/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs": {
+      "bytes": 65775,
+      "sha256": "2ed8fb3bd597e9881584ebce997692d9a1c4f1eba564d9603c875e763a039264"
+    },
+    "source.diff": {
+      "bytes": 6021,
+      "sha256": "637e1b83a8a0ab523e551164f821b84172c804721bee596c6d83db8f4577d4f2"
+    }
+  },
+  "reviewer": "/root/native_bridge_repair",
+  "schema": 1,
+  "scope": "Full 6021-byte frozen delta plus actual joined-receipt consumer, source-only",
+  "source_modified": false,
+  "state": "NO_NEW_CONCRETE_BLOCKER_IN_READ_SCOPE"
+}

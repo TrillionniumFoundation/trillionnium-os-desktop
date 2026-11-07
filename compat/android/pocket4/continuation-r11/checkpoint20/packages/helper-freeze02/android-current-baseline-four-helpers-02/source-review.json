@@ -1,0 +1,200 @@
+{
+  "schema": "pocket4-four-current-host-closure-helper-source-review-v2",
+  "state": "FROZEN_02_STATIC_BUILD_REQUESTS_NOT_EXECUTED",
+  "predecessor": {
+    "tree": "228be7d38879153946b9030516bfa90eb758af20",
+    "status_at_this_freeze": {
+      "bili": "Root reported actual static build PASS; original adapter still pinned R4; no install/UI",
+      "ihg": "Root reported admitted 1a1af92f7d1-fc05-69c2; terminal not independently received by this agent",
+      "amazon": "Root confirms UNRUN",
+      "bestbuy": "Root confirms UNRUN"
+    },
+    "history_preserved": true
+  },
+  "fix": "Replace the four adapters' old R4 recorder-manifest pin with the exact new R5 host manifest. Require typed new Flow scope plus matching baseline schema, epoch, B/Q, target package and UID in the actual Session constructor.",
+  "host_manifest": {
+    "bytes": 3605,
+    "sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e",
+    "blob": "9f93c96bd666ecc70ffdba909c1c036b3ed86b20",
+    "tree": "9bfa347f2948a42a910b62f876d329700cd5114d"
+  },
+  "actual_baseline_result": {
+    "bytes": 7986,
+    "sha256": "4abe5092fe075e78602928d231987ac4a8394a72024dd2a535d8cff80d1ca066",
+    "blob": "813c03c26856513f4178bcd1665775bfc2a33848"
+  },
+  "actual_epoch": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+  "actual_B": {
+    "bytes": 41844,
+    "path": "/home/alex/work/pocket4-main-current-baseline-01/baseline.private.json",
+    "sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266"
+  },
+  "actual_Q": {
+    "bytes": 1365,
+    "path": "/home/alex/work/pocket4-main-current-baseline-01/qualification.json",
+    "sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6"
+  },
+  "current_scope_fields": [
+    "main_baseline_schema",
+    "main_baseline_sha256",
+    "main_baseline_qualification_sha256"
+  ],
+  "changes": {
+    "new_create_only_paths_and_keys": true,
+    "package_revision_same_as_uninstalled_freeze01": true,
+    "all_Java_files_byte_exact_freeze01": true,
+    "original_action_and_restore_bodies_unchanged": true,
+    "recorder_host_closure_static": true,
+    "host_stage_actual_not_claimed": true,
+    "new_scope_controls": 12,
+    "new_production_Session_constructor_controls": 9,
+    "total_new_controls": 21,
+    "previous_idle_and_deep_tree_controls_preserved": true
+  },
+  "compiler": {
+    "bytes": 27476,
+    "sha256": "b1c99df370046f2361b615b628ad27e5c2994ad80f2742145f01bac400592e67",
+    "exact_actual_input_V8_run": true,
+    "all_parent_inverse_byte_exact": true,
+    "Python_and_Java_controls_here_executed": false
+  },
+  "helpers": {
+    "bili": {
+      "helper": "org.droidloom.qa.bili.r9",
+      "protocol": "pocket4-owned-bili-qa-v9",
+      "source_manifest": {
+        "bytes": 4075,
+        "sha256": "4eb11cf497615272c1bef280bbd849de4f983ba4147ea9356356dff076ce9c56"
+      },
+      "request": {
+        "bytes": 269534,
+        "sha256": "669864968d71ac027653a4ec194f7b595c1210fd9eba8c080a9dc20460ca0083",
+        "blob": "70e6512e075b26b525b188bbb8e6d5e3e6bcbb9e"
+      },
+      "packet": {
+        "bytes": 259174,
+        "sha256": "0712496e54c1cb820f32a130b126c6bc12cab1586c6a3be423f87235800a175e"
+      },
+      "delta": {
+        "bytes": 8645,
+        "sha256": "a0f0ae9348233f8c4a5143dc53eb0c372b2d83c5ddafe9f19ccaa751b48dfd57",
+        "blob": "0e7daccc2dce6cb53e7f7f7e3445a5eb1fbf96c4"
+      },
+      "key": "pocket4-owned-bili-qa-r9-current-163e3e3914f4ccbb-host-6d99374e1580-build02",
+      "paths": [
+        "ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r9-source-02')",
+        "OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r9-build-02')"
+      ],
+      "Java_byte_exact_freeze01": true,
+      "new_controls_expected": 21,
+      "source_files": 16,
+      "helper_uid": null,
+      "APK_sha256": null,
+      "signer": null
+    },
+    "ihg": {
+      "helper": "org.droidloom.qa.ihg.r2",
+      "protocol": "pocket4-owned-ihg-qa-v2",
+      "source_manifest": {
+        "bytes": 3404,
+        "sha256": "aac50aec5289c542268c8cff29a07d91ef1be68eb57acb4474c6196850836d38"
+      },
+      "request": {
+        "bytes": 158026,
+        "sha256": "aeb6a152c007c06c2b0250ca6a9698db5d56d4f74f16142e6bc573a35f371a04",
+        "blob": "a587170ca50a2ecfec84dac0338b0a51d67d03a4"
+      },
+      "packet": {
+        "bytes": 151460,
+        "sha256": "a6e9974779284e5b63403c6f9bfc5572cc22a3e1329767e12218f9b71e5bbe83"
+      },
+      "delta": {
+        "bytes": 8618,
+        "sha256": "be8dffcdfb32cf3beaf28bdb37dcf57b1218fe1006b46c87077095d4119d3bcf",
+        "blob": "5a095bfa0084d3bc53fd9bb669378440f3d9398f"
+      },
+      "key": "pocket4-owned-ihg-qa-r2-current-163e3e3914f4ccbb-host-6d99374e1580-build02",
+      "paths": [
+        "ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-source-02')",
+        "OUTPUT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-build-02')"
+      ],
+      "Java_byte_exact_freeze01": true,
+      "new_controls_expected": 21,
+      "source_files": 12,
+      "helper_uid": null,
+      "APK_sha256": null,
+      "signer": null
+    },
+    "amazon": {
+      "helper": "org.droidloom.qa.amazon.r3",
+      "protocol": "pocket4-owned-amazon-qa-v3",
+      "source_manifest": {
+        "bytes": 3905,
+        "sha256": "b6827ffda85db49b90492455bc7bea24105b6490268475521ffa01a44224fe15"
+      },
+      "request": {
+        "bytes": 205551,
+        "sha256": "2bdb6a3afd2c59d65718a001e16c88929b3df232fbb1fdf16fc85e21474b4060",
+        "blob": "8e5ee3e2ca65dacc815f442f7fde4efb699a8942"
+      },
+      "packet": {
+        "bytes": 197305,
+        "sha256": "ccfe3f257c8fc83a4852d3f75eb652f3f2f81c671fea8036199a6d1548481cf4"
+      },
+      "delta": {
+        "bytes": 8659,
+        "sha256": "637075dd259f6ac523171c18d6677f0ed8ab7cf351e1f4918cfdcf52da995c3c",
+        "blob": "33bd85630805a7f0457f2cd4b6fc3bf0841cc8a6"
+      },
+      "key": "pocket4-owned-amazon-qa-r3-current-163e3e3914f4ccbb-host-6d99374e1580-build02",
+      "paths": [
+        "ROOT = Path('/home/alex/work/pocket4-owned-amazon-qa-r3-source-02')",
+        "OUTPUT = Path('/home/alex/work/pocket4-owned-amazon-qa-r3-build-02')"
+      ],
+      "Java_byte_exact_freeze01": true,
+      "new_controls_expected": 21,
+      "source_files": 15,
+      "helper_uid": null,
+      "APK_sha256": null,
+      "signer": null
+    },
+    "bestbuy": {
+      "helper": "org.droidloom.qa.bestbuy.r3",
+      "protocol": "pocket4-owned-bestbuy-qa-v3",
+      "source_manifest": {
+        "bytes": 3568,
+        "sha256": "2643a8f2f7b70189af51b940957ef195dbee6574be1779a585a41fedfec50051"
+      },
+      "request": {
+        "bytes": 173790,
+        "sha256": "2a85719c8756b37664a50d0f9d0d94d85a29d4c5b2c70503dbe04468630ff83c",
+        "blob": "75038e1bea78aef0248be02bd0b1d0a71fbd927d"
+      },
+      "packet": {
+        "bytes": 166614,
+        "sha256": "4d881bc79c4d7686969425b56ca6e3a16dd54be4dcc2eb6d7638e9bd182cbcd3"
+      },
+      "delta": {
+        "bytes": 8697,
+        "sha256": "f2f4f3cdd4edd758e607309722b21b166f5eeffa10ab3bd001b95c7f0717ed13",
+        "blob": "6afefd5d8baa6588e263e0484c366bc6f14e1920"
+      },
+      "key": "pocket4-owned-bestbuy-qa-r3-current-163e3e3914f4ccbb-host-6d99374e1580-build03",
+      "paths": [
+        "ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r3-source-03')",
+        "OUTPUT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r3-build-03')"
+      ],
+      "Java_byte_exact_freeze01": true,
+      "new_controls_expected": 21,
+      "source_files": 13,
+      "helper_uid": null,
+      "APK_sha256": null,
+      "signer": null
+    }
+  },
+  "freeze02_builds_executed": 0,
+  "installs_executed": 0,
+  "UI_actions": 0,
+  "unresolved_framework_exit_cause": true,
+  "whole_app_production_ready_count": 0
+}

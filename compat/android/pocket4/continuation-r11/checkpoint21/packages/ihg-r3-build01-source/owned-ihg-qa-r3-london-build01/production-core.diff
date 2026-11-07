@@ -1,0 +1,231 @@
+--- r2/AndroidManifest.xml
++++ r3/AndroidManifest.xml
+@@ -1,11 +1,11 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+-    package="org.droidloom.qa.ihg.r2" android:versionCode="1" android:versionName="1">
++    package="org.droidloom.qa.ihg.r3" android:versionCode="1" android:versionName="1">
+     <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="33" />
+     <queries><package android:name="com.ihg.apps.android" /></queries>
+     <application android:label="Owned IHG QA" android:debuggable="false"
+         android:testOnly="true" android:allowBackup="false" android:hasCode="true" />
+-    <instrumentation android:name="org.droidloom.qa.ihg.r2.ActionRunner"
+-        android:targetPackage="org.droidloom.qa.ihg.r2"
++    <instrumentation android:name="org.droidloom.qa.ihg.r3.ActionRunner"
++        android:targetPackage="org.droidloom.qa.ihg.r3"
+         android:functionalTest="true" android:handleProfiling="false" />
+ </manifest>
+
+--- r2/build_candidate.py
++++ r3/build_candidate.py
+@@ -16,8 +16,8 @@
+ import zipfile
+ 
+ HERE = Path(__file__).resolve().parent
+-PACKAGE = 'org.droidloom.qa.ihg.r2'
+-OUTPUT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-build-02')
++PACKAGE = 'org.droidloom.qa.ihg.r3'
++OUTPUT = Path('/home/alex/work/pocket4-owned-ihg-qa-r3-build-01')
+ JDK = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86'
+ SDK_BASE = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts'
+ TOOLS = {
+@@ -74,7 +74,7 @@
+         require(not path.is_absolute() and '..' not in path.parts and path.as_posix() == name, 'source relative path')
+         actual = file_pin(HERE / name, 1024 * 1024)
+         require(actual['sha256'] == row['sha256'] and actual['bytes'] == row['bytes'], 'source differs: ' + name)
+-    require({'AndroidManifest.xml', 'src/org/droidloom/qa/ihg/r2/ActionRunner.java', 'qa_contract.py', 'build_candidate.py'} <= set(files), 'required sources missing')
++    require({'AndroidManifest.xml', 'src/org/droidloom/qa/ihg/r3/ActionRunner.java', 'qa_contract.py', 'build_candidate.py'} <= set(files), 'required sources missing')
+     return files
+ 
+ 
+@@ -210,7 +210,19 @@
+                 baseline_controls['main_baseline_qualification_sha256']=='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6',
+                 'ACTUAL_CURRENT_BASELINE_SCOPE_CONTROLS_REQUIRED')
+         result['current_baseline_scope_controls']={'source_sha256':source['check_current_baseline.py']['sha256'],'report':baseline_controls}
+-        source_java = HERE/'src/org/droidloom/qa/ihg/r2/ActionRunner.java'
++        destination_scope={'__file__':str(HERE/'check_destination_input.py'),'__name__':'owned_public_destination_controls'}
++        exec(compile((HERE/'check_destination_input.py').read_bytes(),str(HERE/'check_destination_input.py'),'exec'),destination_scope)
++        destination_controls=destination_scope['run_controls']()
++        require(destination_controls['all_passed'] is True and destination_controls['count']==45 and
++                len(destination_controls['cases'])==45 and all(x['passed'] is True for x in destination_controls['cases']) and
++                destination_controls['production_contract_sha256']==source['qa_contract.py']['sha256'] and
++                destination_controls['production_adapter_sha256']==source['qa_adapter.py']['sha256'] and
++                destination_controls['protocol']=='pocket4-owned-ihg-qa-v3' and
++                destination_controls['fixed_public_value']=='London' and
++                destination_controls['Android_commands']==destination_controls['UI_actions']==0,
++                'ACTUAL_PUBLIC_DESTINATION_INPUT_CONTROLS_REQUIRED')
++        result['public_destination_input_controls']={'source_sha256':source['check_destination_input.py']['sha256'],'report':destination_controls}
++        source_java = HERE/'src/org/droidloom/qa/ihg/r3/ActionRunner.java'
+         command('javac', [tool['javac'], '-J-XX:ActiveProcessorCount=1', '-J-XX:+UseSerialGC', '-J-Xmx256m',
+             '-proc:none','-Xmaxerrs','20','-Xmaxwarns','20','-source','8','-target','8','-bootclasspath',resolved['android_jar'],
+             '-d',str(OUTPUT/'classes'),str(source_java)])
+@@ -232,10 +244,10 @@
+         # pinned Java runtime. No platform/commercial signing key is consumed.
+         command('create-owned-signing-key', java+['-m','java.base/sun.security.tools.keytool.Main',
+             '-genkeypair','-noprompt','-storetype','PKCS12','-keystore',str(store),'-storepass:file',str(password),
+-            '-alias','owned-ihg-qa-r2','-keyalg','RSA','-keysize','3072','-validity','3650',
++            '-alias','owned-ihg-qa-r3','-keyalg','RSA','-keysize','3072','-validity','3650',
+             '-dname','CN=Pocket4 Owned IHG QA R1,O=Owned Test,C=US'])
+         command('sign', [tool['apksigner'],'sign','--ks',str(store),'--ks-pass','file:'+str(password),
+-            '--ks-key-alias','owned-ihg-qa-r2','--min-sdk-version','31','--v1-signing-enabled','false',
++            '--ks-key-alias','owned-ihg-qa-r3','--min-sdk-version','31','--v1-signing-enabled','false',
+             '--v2-signing-enabled','true','--v3-signing-enabled','true','--out',str(OUTPUT/'owned-ihg-qa.apk'),
+             str(OUTPUT/'aligned.apk')])
+         signature = command('signature', [tool['apksigner'],'verify','--verbose','--print-certs','--min-sdk-version','31',str(OUTPUT/'owned-ihg-qa.apk')])
+@@ -245,7 +257,7 @@
+         badging = command('badging', [tool['aapt'],'dump','badging',str(OUTPUT/'owned-ihg-qa.apk')])
+         permissions = command('permissions', [tool['aapt'],'dump','permissions',str(OUTPUT/'owned-ihg-qa.apk')])
+         xml = command('manifest', [tool['aapt'],'dump','xmltree',str(OUTPUT/'owned-ihg-qa.apk'),'AndroidManifest.xml'])
+-        require(b"package: name='org.droidloom.qa.ihg.r2' versionCode='1'" in badging and
++        require(b"package: name='org.droidloom.qa.ihg.r3' versionCode='1'" in badging and
+                 b"sdkVersion:'31'" in badging and b"targetSdkVersion:'33'" in badging, 'actual APK package/SDK differs')
+         require(b'uses-permission' not in permissions and b'uses-permission' not in xml and
+                 b'application-debuggable' not in badging and b'launchable-activity' not in badging, 'actual APK privilege/component differs')
+
+--- r2/make_build_request.py
++++ r3/make_build_request.py
+@@ -5,7 +5,7 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-ihg-qa-r2-current-163e3e3914f4ccbb-host-6d99374e1580-build02'
++KEY='pocket4-owned-ihg-qa-r3-public-London-current-163e3e3914f4ccbb-host-6d99374e1580-build01'
+ 
+ 
+ def encode(value):
+
+--- r2/qa_adapter.py
++++ r3/qa_adapter.py
+@@ -18,7 +18,7 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ RECORDER_MANIFEST_SHA = '6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
+-SELF = 'org.droidloom.qa.ihg.r2'
++SELF = 'org.droidloom.qa.ihg.r3'
+ BUILD_COMMANDS = ['javac','d8','aapt-package','align','create-owned-signing-key','sign',
+                   'signature','alignment','badging','permissions','manifest']
+ 
+@@ -78,14 +78,14 @@
+                 'SOURCE_RELATIVE_PATH_REQUIRED')
+         require(len(pinned(HERE/name, row['sha256'])) == row['bytes'], 'SOURCE_SIZE_CHANGED')
+     require({'qa_adapter.py','qa_contract.py','build_candidate.py','AndroidManifest.xml',
+-             'src/org/droidloom/qa/ihg/r2/ActionRunner.java'} <= set(manifest['files']),
++             'src/org/droidloom/qa/ihg/r3/ActionRunner.java'} <= set(manifest['files']),
+             'OWNED_SOURCE_CLOSURE_INCOMPLETE')
+     return manifest
+ 
+ 
+ def validate_plan(plan, qa):
+     require(isinstance(plan, dict) and plan.get('schema') == 1 and
+-            plan.get('operation') in ('state','inspect','click'), 'OWNED_PLAN_REQUIRED')
++            plan.get('operation') in ('state','inspect','click','set_text'), 'OWNED_PLAN_REQUIRED')
+     op = plan['operation']; keys = {'schema','operation','nonces'}
+     if op in ('click','set_text'):
+         keys.add('selector')
+@@ -154,7 +154,7 @@
+                 flow.scope.get('package') == qa.PACKAGE and type(flow.scope.get('uid')) is int and
+                 flow.scope['uid'] == qa.UID,
+                 'TYPED_CURRENT_HOST_SCOPE_AND_HELPER_BINDING_REQUIRED')
+-        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10137,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190),
++        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10137,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190,10196,10153),
+                 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
+         self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
+         self.nonces = set()
+
+--- r2/qa_contract.py
++++ r3/qa_contract.py
+@@ -5,8 +5,8 @@
+ import re
+ import zlib
+ 
+-PROTOCOL = 'pocket4-owned-ihg-qa-v2'
+-SELF = 'org.droidloom.qa.ihg.r2'
++PROTOCOL = 'pocket4-owned-ihg-qa-v3'
++SELF = 'org.droidloom.qa.ihg.r3'
+ COMPONENT = SELF + '/' + SELF + '.ActionRunner'
+ PACKAGE = 'com.ihg.apps.android'
+ UID = 10137
+@@ -20,8 +20,8 @@
+ MAX_STDOUT = 4 * ((MAX_COMPRESSED_WIRE + 2) // 3) + 4096
+ MAX_NODES = 512
+ MAX_DEPTH = 32
+-# Legacy text branch remains unreachable: this revision rejects set_text at all request entries.
+-PUBLIC_SEARCH_QUERY = "usb c cable"
++# R3 admits only the fixed public destination value through the existing exact resource action.
++PUBLIC_SEARCH_QUERY = "London"
+ SCOPE_KEYS = {'package', 'uid', 'user', 'display', 'activity', 'window_token', 'main_epoch_sha256', 'main_baseline_schema', 'main_baseline_sha256', 'main_baseline_qualification_sha256'}
+ 
+ 
+@@ -87,7 +87,7 @@
+     require(isinstance(value, dict) and value.get('protocol') == PROTOCOL, 'PROTOCOL_REQUIRED')
+     nonce(value.get('nonce'))
+     op = value.get('op')
+-    require(op in ('state','inspect','click'),'IHG_READ_INSPECT_CLICK_ONLY')
++    require(op in ('state','inspect','click','set_text'),'IHG_FIXED_PUBLIC_DESTINATION_OPERATIONS_ONLY')
+     expected = {'protocol', 'nonce', 'op'}
+     if op in ('inspect', 'click', 'set_text'):
+         expected.add('scope')
+@@ -172,7 +172,7 @@
+             value.get('op') == request['op'] and value.get('request_sha256') == sha(raw_request) and
+             value.get('wire_codec') == 'gzip-canonical-json-v1',
+             'RESULT_REQUEST_BINDING_FAILED')
+-    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10121, 10129, 10117, 10125, 10164, 10165, 10166, 10169, 10170, 10175, 10184, 10190) and value.get('self_uid') == helper_uid and
++    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10121, 10129, 10117, 10125, 10164, 10165, 10166, 10169, 10170, 10175, 10184, 10190, 10196, 10153) and value.get('self_uid') == helper_uid and
+             type(value.get('self_pid')) is int and value['self_pid'] > 1, 'INSTALLED_HELPER_IDENTITY_REQUIRED')
+     require(value.get('ok') is True and value.get('error') is None and value.get('secondary_errors') == [] and
+             value.get('claim_persistence_completed') is True and value.get('helper_work_completed') is True,
+
+--- r2/src/org/droidloom/qa/ihg/r2/ActionRunner.java
++++ r3/src/org/droidloom/qa/ihg/r3/ActionRunner.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.ihg.r2;
++package org.droidloom.qa.ihg.r3;
+ 
+ import android.accessibilityservice.AccessibilityServiceInfo;
+ import android.app.Instrumentation;
+@@ -39,9 +39,9 @@
+ 
+ /** An owned self-instrumentation; it never instruments the commercial app. */
+ public final class ActionRunner extends Instrumentation {
+-    static final String PROTOCOL = "pocket4-owned-ihg-qa-v2";
++    static final String PROTOCOL = "pocket4-owned-ihg-qa-v3";
+     static final String PACKAGE = "com.ihg.apps.android";
+-    static final String SELF = "org.droidloom.qa.ihg.r2";
++    static final String SELF = "org.droidloom.qa.ihg.r3";
+     static final String MAIN_EPOCH = "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2";
+     static final String MAIN_BASELINE_SCHEMA = "pocket4-main-current-baseline-v1";
+     static final String MAIN_BASELINE_SHA = "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266";
+@@ -49,8 +49,8 @@
+     static final int TARGET_UID = 10137;
+     static final int MAX_REQUEST = 16384, MAX_RESULT = 524288, MAX_COMPRESSED_WIRE = 262144;
+     static final int MAX_NODES = 512, MAX_DEPTH = 32, MAX_CHILDREN = 64;
+-    // Legacy set_text branch is unreachable: onStart rejects it before claim/connection.
+-    static final String PUBLIC_SEARCH_QUERY = "usb c cable";
++    // R3 admits only the fixed public destination value through the original guarded resource action.
++    static final String PUBLIC_SEARCH_QUERY = "London";
+     static final long DEADLINE_MS = 8000, WATCHDOG_MS = 12000, MAX_INSPECTION_AGE_MS = 10000;
+     static final long WINDOW_WAIT_MS = 2000;
+     static final long WINDOW_RECHECK_MS = 100;
+@@ -172,7 +172,7 @@
+             JSONObject request = new JSONObject(new String(raw, StandardCharsets.UTF_8));
+             need(Arrays.equals(canonical(request).getBytes(StandardCharsets.UTF_8), raw), "CANONICAL_JSON_REQUIRED");
+             String op = string(request, "op", 16);
+-            need(op.equals("state") || op.equals("inspect") || op.equals("click"), "IHG_READ_INSPECT_CLICK_ONLY");
++            need(op.equals("state") || op.equals("inspect") || op.equals("click") || op.equals("set_text"), "IHG_FIXED_PUBLIC_DESTINATION_OPERATIONS_ONLY");
+             if (op.equals("state")) keys(request, "protocol", "nonce", "op");
+             else if (op.equals("inspect")) keys(request, "protocol", "nonce", "op", "scope");
+             else if (op.equals("click")) keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "node_path", "node_sha256");
+
+--- r2/stage_build.py
++++ r3/stage_build.py
+@@ -8,8 +8,8 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-source-02')
+-OUTPUT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-build-02')
++ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r3-source-01')
++OUTPUT = Path('/home/alex/work/pocket4-owned-ihg-qa-r3-build-01')
+ MEMORY = 536870912
+ 
+ 

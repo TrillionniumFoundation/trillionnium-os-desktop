@@ -1,0 +1,81 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "3974b974a363d65cd7d22964d107b2d38ae669a2",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 1954,
+    "sha256": "8d6703522524d02e365ad756e5ce294cde30530a98bb51e20a3fe909c29c78be",
+    "git_blob_sha1": "a623061403dc70ef3b265ebd77347bdf460eaaa2",
+    "retrieval": "shallow roots and complete uncropped descendant trees until canonical dependency cuts",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "35ae09d27d88623f6eda6bb5dba44d9a24ea403b"
+    },
+    {
+      "path": "preflight",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3afe3fe5364cb62a28c1ae1398298587e6ce5215"
+    },
+    {
+      "path": "read-proof.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "989f1a0222169322ee6a125c7442ace8a909be78",
+      "bytes": 457
+    },
+    {
+      "path": "service-status.tool-original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "098ee086450bad4a07dc988a0ba87f3aedbcc68a",
+      "bytes": 1882
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8efdf78907ea68a2ad510b075ed67569b5bafb38"
+    },
+    {
+      "path": "stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2bc9ec6ce7b9484e0f9796cdac1a1dbc72c2a57f",
+      "bytes": 6330
+    },
+    {
+      "path": "terminal.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ab3e95816e22a9aaaa43be73dc599b762df7f8e7",
+      "bytes": 731
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "admission",
+      "original_tree": "35ae09d27d88623f6eda6bb5dba44d9a24ea403b",
+      "checkpoint": 21,
+      "canonical_package": "main_epoch_diagnostic01-admission"
+    },
+    {
+      "path": "preflight",
+      "original_tree": "3afe3fe5364cb62a28c1ae1398298587e6ce5215",
+      "checkpoint": 21,
+      "canonical_package": "main_epoch_diagnostic01-preflight"
+    },
+    {
+      "path": "source",
+      "original_tree": "8efdf78907ea68a2ad510b075ed67569b5bafb38",
+      "checkpoint": 21,
+      "canonical_package": "main_epoch_diagnostic01-source"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

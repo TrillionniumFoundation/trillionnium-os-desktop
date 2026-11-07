@@ -1,0 +1,90 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "b0fd266721f845f1870960be30b4b564866ec52c",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 4430,
+    "sha256": "9d5967728dca0db6aff95d52351014a0dd174bff244485bb547427f30db84d64",
+    "git_blob_sha1": "67c89c5f0bfa3169839b6fd487947312df7ead5d",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "12c79d8324d30cb2b54f84bb4e3bbda93dd703f3"
+    },
+    {
+      "path": "admission/admission.tool-original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "86ce0f4a568184526db46ad741dccaf372d3154e",
+      "bytes": 1028
+    },
+    {
+      "path": "admission/dispatch-intent.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "56817c6717a7a304572bab810784509bc896a23a",
+      "bytes": 360
+    },
+    {
+      "path": "admission/preflight",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ca78d39f6c6f1a4dea900c74e05a93472688903f"
+    },
+    {
+      "path": "admission/preflight/root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5e9b846caf69d72b4842a1d5ea8465c725ef9fb5",
+      "bytes": 1217
+    },
+    {
+      "path": "admission/preflight/source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3b5f4559cfc0a13f9e467ea39d5d2d01886444b8"
+    },
+    {
+      "path": "open_emulation.cc",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5cf194dd0ece5ec2b0ac0a371516539af7b795d6",
+      "bytes": 19557
+    },
+    {
+      "path": "status.tool-original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "024ae4eb53fcab49ed9131693bcc527124361901",
+      "bytes": 733
+    },
+    {
+      "path": "stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0c417debe3fc42c98cfffafe99150118ed5f9155",
+      "bytes": 29100
+    },
+    {
+      "path": "unistd_emulation.cc",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3335b5ad8c2392bca34c1a5285c8a6a160ae85e6",
+      "bytes": 3086
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "admission/preflight/source",
+      "original_tree": "3b5f4559cfc0a13f9e467ea39d5d2d01886444b8",
+      "checkpoint": 21,
+      "canonical_package": "marriott-adapter-reader-source"
+    }
+  ],
+  "original_recursive_leaf_count": 11
+}

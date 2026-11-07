@@ -1,0 +1,46 @@
+--- geometry-reader01/read_summary.py
++++ fresh-before-reader01/read_summary.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed summary-only reader for the fresh r5 exact player-geometry attempt."""
++"""Fixed summary-only reader for the fresh r5 fresh-before capture attempt."""
+ import argparse
+ import base64
+ import gzip
+@@ -11,10 +11,10 @@
+ import stat
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-bilibili-r5-player-geometry-01')
+-FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-9e7c2a173b34236b7f96abc662295fd4')
+-NONCE='9e7c2a173b34236b7f96abc662295fd4'
+-SOURCE_SHA='6620853a66d298cf1d85b16733f56e564654823bbe8c5e9e566bed4faa5b4ab6'
++ROOT=Path('/home/alex/work/pocket4-bilibili-r5-player-fresh-before-01')
++FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-c1eaefa79cbafc86cb32f638900443bf')
++NONCE='c1eaefa79cbafc86cb32f638900443bf'
++SOURCE_SHA='f151b6737f72c53e9f776076ed81fecce4a68b327b59d2bf2f971fe838372283'
+ HELPER_UID=10170
+ FILES={
+     'coordinator.json':ROOT/'result.json',
+@@ -112,7 +112,7 @@
+             need(value.get('helper_package')=='org.droidloom.qa.bili.r5' and type(HELPER_UID) is int and value.get('helper_uid')==HELPER_UID,
+                  'EXACT_R5_HELPER_SCOPE_REQUIRED')
+         files[name]={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':raw.decode('utf-8','strict')}
+-    bundle={'schema':1,'scope':'fixed-r5-player-geometry-summary-only','files':files,'missing':missing,
++    bundle={'schema':1,'scope':'fixed-r5-fresh-before-summary-only','files':files,'missing':missing,
+         'source_manifest_sha256':SOURCE_SHA,'flow_nonce':NONCE,'bytes_read':reader.bytes,
+         'raw_UI_or_commercial_journal_exported':False,'Android_or_process_actions':0,
+         'runtime_qualification_asserted':False,'permission_or_original_file_changes':0}
+--- geometry-reader01/make_summary_request.py
++++ fresh-before-reader01/make_summary_request.py
+@@ -8,8 +8,8 @@
+ import re
+ 
+ HERE=Path(__file__).resolve().parent
+-READER_SHA='cfb34479529610b21e753298c9ca1957c245530e2c0da008a3e9335a445f860f'
+-KEY='pocket4-bilibili-r5-player-geometry-summary-readback-01-20261105'
++READER_SHA='49f5f768365291d941e2e6752e0f4a5e7e7d9b0cc724c4d4f12b53a187a41a03'
++KEY='pocket4-bilibili-r5-player-fresh-before-summary-readback-01-20261105'
+ 
+ def main():
+     p=argparse.ArgumentParser(description=__doc__)

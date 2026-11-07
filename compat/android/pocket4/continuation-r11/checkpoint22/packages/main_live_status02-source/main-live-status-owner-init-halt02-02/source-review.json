@@ -1,0 +1,121 @@
+{
+  "schema": "pocket4-live-status-owner-init-source-review-v2",
+  "status": "SOURCE_ONLY_UNRUN_PENDING_ROOT",
+  "source": {
+    "bytes": 48747,
+    "sha256": "2d4808c6ae499443302dc4ecc195116a4e4a4ccb2a52d589ca995cda42173f3b"
+  },
+  "previous_status_actual": {
+    "job_id": "1a1b10b5f79-fc05-754f",
+    "tree": "5b0623b496dd210ed256842cc648dc1f40281601",
+    "blob": "de625c54aa4a1aeef383c309fcd0a7f55197814a",
+    "stdout": {
+      "bytes": 4812,
+      "sha256": "1910e877b4353d810571ae1e6b074e04fda65771ace73967c7bf52db0ab2a0e3"
+    },
+    "ok": false,
+    "first_phase": "fixed_daemon_and_owner_before",
+    "error_type": "ProcessLookupError",
+    "errno": 3,
+    "exact_process_role_not_recorded": true,
+    "send_attempted": false,
+    "controls": 33,
+    "FDs_closed": 20,
+    "replayed": false
+  },
+  "current_service_observation": {
+    "tree": "b7c273463af04b453509a8fb8a52bb1eeb6008ea",
+    "blob": "098ee086450bad4a07dc988a0ba87f3aedbcc68a",
+    "bytes": 1882,
+    "sha256": "b27a1c54130e747281841adc0b0e5ff8a85ad17d6548640c9d752ff8db3d6d41",
+    "proves_only_service_observation": true,
+    "does_not_replace_runtime_full_daemon_identity": true
+  },
+  "reason": "A fixed owner observed in an earlier job can exit before the next reader starts. This reader accepts an owner candidate only from one response on the authenticated original daemon socket, then proves its current kernel relationship in the same bounded job.",
+  "discovery": [
+    "Pin and privately parse exact historical baseline and unchanged epoch source; preserve its schema/hash and all original host-role field relationships.",
+    "Hold original daemon pidfd/proc; require its complete current identity equals private baseline, and full live executable content/backing equals original baseline.",
+    "Hold root-owned socket path, connect once, require SO_PEERCRED for original daemon PID3588022 UID0; recheck complete daemon identity and pidfd before sending only Status.",
+    "Parse a bounded complete Status reply. Successful running typed host_pid supplies only a candidate. It must be the daemon's sole kernel direct child; newly held owner pidfd, original launcher executable/argv, UID/cgroup/host namespace and full executable bytes/backing are checked immediately and again.",
+    "Follow at most3 unique direct-child edges, each with bounded thread/children list, pidfd, full identity/parent, repeated exact table and identity. Host-namespace intermediaries are relationship observations only, never assigned init authority by name.",
+    "The terminal child must be true namespace PID1, root UID, exact historical init executable/argv and same Main cgroup ancestry. Hash its executable content against original baseline; current inode/root metadata is a new observation, not substituted into history.",
+    "Revalidate original five Main cgroup limits and required OOM/pids error counters before invoking unchanged capture_android for the proven init. The original module may enumerate /proc to locate same-namespace framework roles only after this chain is proven.",
+    "Require original module's full four-role epoch and repeated final observation, fixed presenter complete historical identity, all chain identities/pidfds/child tables, daemon/owner/init executable backing, init root, socket, boot, cell config and Main resource gates."
+  ],
+  "source_references": [
+    {
+      "blob": "2bed3026cc4f00c819de2ba7fd253165d29bebbb",
+      "bytes": 70656,
+      "sha256": "8289b74fdf040d2bd3a85d12f4488a82bdab4e1c4c6844ab90fe113228d91200",
+      "purpose": "one Status protocol and host_pid semantics"
+    },
+    {
+      "blob": "6a49f47b24915f3f69f40e05dd56f9c3459ff742",
+      "bytes": 101180,
+      "sha256": "7b3d817b669efbe3f1a6355b941c982a9d0380d40edda200cba699ac4aa4ae85",
+      "purpose": "owner and namespace child execution reference"
+    },
+    {
+      "blob": "af877a5081a331a5b1ebc65a7a0da037def444df",
+      "bytes": 36910,
+      "sha256": "a535b390d19b419cbda0e12a821e617e42167660d253b4dc945508f4140905e4",
+      "purpose": "private baseline producer field layout"
+    },
+    {
+      "blob": "5b523a412308b79aefc99a6caef4f67fac104c93",
+      "bytes": 19543,
+      "sha256": "addfce0f8dc53c3cc90feedee2bb1279c0e23d107ece3d237894e632ef2ad171",
+      "purpose": "historical limits/role semantics and old init intermediate-parent fact"
+    },
+    {
+      "blob": "ee85b38842efa8d935bbdc5b422c7804f059da92",
+      "bytes": 8658,
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+      "purpose": "byte-unchanged process_identity/capture_android/require_unchanged"
+    }
+  ],
+  "server_behavior": {
+    "reference_Status_calls_normal_poll_first": true,
+    "normal_poll_may_reap_exited_owner_and_teardown_existing_resources": true,
+    "reference_status_may_spawn_ip_netns_pids": true,
+    "reference_status_may_spawn_nsenter_getprop": true,
+    "server_children_or_Android_reads_not_independently_counted": true,
+    "no_Start_Stop_Restart_WaitReady_Launch_requested": true
+  },
+  "privacy": {
+    "raw_baseline": false,
+    "raw_cmdline": false,
+    "raw_cgroup": false,
+    "raw_Status_message": false,
+    "raw_framework_binding": false,
+    "unknown_intermediary_exe_and_argv": "only byte lengths and SHA",
+    "safe_numeric_process_and_file_metadata": true
+  },
+  "bounds": {
+    "read_seconds": 25,
+    "self_watchdog_seconds": 25,
+    "outer_timeout_seconds": 45,
+    "memory_bytes": 134217728,
+    "cpu_quota_percent": 100,
+    "source_stdin_bytes_max": 65536,
+    "status_reply_bytes_max": 65536,
+    "output_bytes_max": 98304,
+    "owner_links_max": 3,
+    "threads_per_parent_max": 64,
+    "direct_children_list_max": 32,
+    "only_one_child_per_followed_link": true
+  },
+  "control_count": 53,
+  "controls_execution_for_this_source": false,
+  "Python_compile_for_this_source": false,
+  "no_ui_install_or_cleanup": true,
+  "no_Start_Stop_Restart_WaitReady_Launch_request": true,
+  "automatic_retry": false,
+  "framework_observation_only": true,
+  "new_baseline_qualified": false,
+  "helper_generation_qualified": false,
+  "old_task874_authority_transferred": false,
+  "installed_Main_source_version_verified": false,
+  "unresolved_cell_exit_cause_remains_production_gate": true,
+  "production_ready": false
+}

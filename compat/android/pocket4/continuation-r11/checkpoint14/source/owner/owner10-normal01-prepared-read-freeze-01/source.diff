@@ -1,0 +1,23 @@
+--- owner09/read.py
++++ owner10/read.py
+@@ -7,9 +7,9 @@
+ import stat
+ import traceback
+ 
+-ROOT_NAME = 'p4-owner09-normal-20261105-01-state'
++ROOT_NAME = 'p4-owner10-normal-20261105-01-state'
+ EXPECTED_REPORT_BYTES = 55139
+-EXPECTED_REPORT_SHA256 = 'ec8c977071cb211f23e30128049ee67d786521f21d334467e6c2ed1b1e279e41'
++EXPECTED_REPORT_SHA256 = '53f327728b4daf732653a189d690f0c1d4e6374aeab5f7b9df7d666598f978e3'
+ NAMES = ('prepared.json',)
+ LIMIT = 1048576
+ 
+@@ -69,7 +69,7 @@
+ 
+ 
+ def main():
+-    result = {'schema': 1, 'kind': 'fixed-owner09-normal01-prepared-read', 'collection_complete': False,
++    result = {'schema': 1, 'kind': 'fixed-owner10-normal01-prepared-read', 'collection_complete': False,
+               'files': {}, 'errors': [], 'mutations': False, 'qualification': False}
+     fds = []
+     try:

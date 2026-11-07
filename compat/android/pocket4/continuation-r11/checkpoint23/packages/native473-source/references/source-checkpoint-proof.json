@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "state": "SOURCE_ONLY_NOT_COMPILED",
+  "scope": "Exact typed-ingress framework-minus-apex/libandroid_runtime route: project one complete observed vendor example cc_binary to its original package metadata; no parent/provider changes.",
+  "targets": [
+    "framework-minus-apex",
+    "libandroid_runtime"
+  ],
+  "actual_failure": {
+    "tree": "995afe8063b1ec883ed8b3b5cca040e98bfaab65",
+    "normal_job": "1a1b21946c4-fc05-7c5a",
+    "stdout_sha256": "b1432c4cbb985f2909b4325a235e7f4edd03afe91b5dc109cd90d74829732834",
+    "stderr_sha256": "cbbc3ea39583d9c3bdb10b7934bd4c568be1a269e336f9b3ce0f91cf25517c14",
+    "error": "\"android.hardware.automotive.audiocontrol-service.example\" depends on undefined module \"powerpolicyclient_defaults\".",
+    "implementation_compiled": false
+  },
+  "consumer": {
+    "path": "hardware/interfaces/automotive/audiocontrol/aidl/default/Android.bp",
+    "bytes": 1869,
+    "sha256": "9c8a0aecfa46ce0f1874362fa9dfff6a34326f9bf569b6fe7206dd6db1b3c9a6",
+    "git_blob_sha1": "1c11c989b787549a3e1da01b4ded84b9689ad1f0",
+    "origin_tree": "f14aa3972a511a8eae09001e092dbb5806af6992",
+    "provenance": "Fixed published-source leaf read after actual Normal08 input_after qualification and journal absence; not a separately verified upstream commit Merkle proof.",
+    "module_kind": "cc_binary",
+    "module_name": "android.hardware.automotive.audiocontrol-service.example",
+    "module_count": 1,
+    "defaults": [
+      "latest_android_hardware_audio_common_ndk_shared",
+      "latest_android_hardware_automotive_audiocontrol_ndk_shared",
+      "powerpolicyclient_defaults",
+      "car.audio.configuration.xsd.default",
+      "car.fade.configuration.xsd.default"
+    ],
+    "projected_metadata": {
+      "bytes": 346,
+      "sha256": "d73b00f17a80375d2d59e408088c5e875c3311bd0f7487b117d4b8d28f7cff93",
+      "git_blob_sha1": "f38d49f77298296d38c741ed7e3232b63dd030d1"
+    }
+  },
+  "source": {
+    "baseline471": {
+      "bytes": 301533,
+      "sha256": "7bbe16d118fe610ae42e9c1b906b65aee5ceeb0804cdbaee93ee61ab5b271629",
+      "git_blob_sha1": "ffcc678a07d760acf10b38ad0671543f0539d661"
+    },
+    "candidate_android": {
+      "bytes": 309074,
+      "sha256": "88732b10c27bb0891cf0cac26bbe876b5ff4b134ee7048d073542fb052878cad",
+      "git_blob_sha1": "516598053f62351ed04b3c405b91905c9cbbfc04"
+    },
+    "expected_map": {
+      "bytes": 99775,
+      "sha256": "a3426e40f9446b85931c82e8ba08335e72cd9bd0ac4a3f70aa01d54200d1ae13",
+      "git_blob_sha1": "cc151f84fe6b1d0a63913b0f631f0eb72d023f91"
+    },
+    "parent_entries": 500,
+    "candidate_entries": 501,
+    "unchanged_existing": 499,
+    "replaced_existing": [
+      "tools/droidloom-update/src/android.rs"
+    ],
+    "added": [
+      "android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp"
+    ],
+    "source_lock_sha256": "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d",
+    "source_lock_bytes": 96957,
+    "projects": 225,
+    "lock_unchanged": true,
+    "systemui471_fix_retained": true,
+    "strict_allow_missing_false_unchanged": true,
+    "whole_inverse_to471": true
+  },
+  "controls": {
+    "new_tests": [
+      "android::tests::typed_audiocontrol_example_projection_keeps_metadata_and_sibling_sources",
+      "android::tests::typed_audiocontrol_example_projection_rejects_source_drift_before_write",
+      "android::tests::typed_audiocontrol_example_projection_recovers_full_observed_original"
+    ],
+    "executed": false,
+    "scope": "Real Projection/put/journal/Drop/recover methods using complete actual fixture. Sibling strings explicitly test write scope only."
+  },
+  "limitations": {
+    "complete_soong_variant_graph_proved": false,
+    "parent_aidl_and_provider_leaves_modified": false,
+    "automotive_adjacent_audit": "PENDING_FIXED_SOURCE_AUDIT",
+    "normal_execution": false,
+    "main_actions": false,
+    "java_jni_artifacts_qualified": false
+  },
+  "cache_recovery": {
+    "previous_unpersisted_candidate_sha256": "be455b38d004af00b44b9232bee48167eb7c74762a3402def67d1e5faf2f983b",
+    "previous_candidate_body_lost": true,
+    "new_candidate_rederived_from_immutable471_and_actual_consumer": true,
+    "previous_candidate_was_never_run": true
+  }
+}

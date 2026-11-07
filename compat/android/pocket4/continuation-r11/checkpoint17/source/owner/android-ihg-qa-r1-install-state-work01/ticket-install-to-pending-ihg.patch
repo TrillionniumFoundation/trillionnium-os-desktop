@@ -1,0 +1,265 @@
+--- ticket-install/install_state.py
++++ pending-ihg-install/install_state.py
+@@ -1,9 +1,9 @@
+ #!/usr/bin/env python3
+-"""One independent 12306 QA install and no-UiAutomation state observation.
++"""One independent IHG QA install and no-UiAutomation state observation.
+ 
+ Default PLAN has no device or filesystem action. The exact signed new helper
+ must be absent, including retained records/all users. Only one explicit -R/-t
+-install is allowed, with no retry or automatic uninstall. Commercial 12306
++install is allowed, with no retry or automatic uninstall. Commercial IHG
+ is never launched; its exact one current APK are held/read-only before and
+ after. No Bili Flow, legacy helper, permission grant, settings, UI or audio.
+ """
+@@ -21,39 +21,39 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01')
+ SOURCE = ROOT/'source'
+ WORKER_ROOT = ROOT/'worker'
+ STEP = WORKER_ROOT/'steps/install-state-01'
+-NONCE = 'd02f83f91e88717ef2df006369881189'
+-STATE_NONCE = '3e666f36e9eb4a9a4260408c325b420d'
+-SELF = 'org.droidloom.qa.ticket.r1'
+-QA_ROOT = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-source-01/source')
+-QA_MANIFEST = '6347d21db7018471ddfa96297f54a4bd77aa98b98a59588e3869bacdabd30632'
+-BUILD = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-build-01/build-result.json')
+-BUILD_SHA = 'd97e05bb923be43ca427a0526fa581b59534d5c5cb0957f1a402ed0f194ca976'
+-BUILD_BYTES = 17389
+-STAGE = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-source-01/stage-result.json')
+-STAGE_SHA = 'd4f9e0fcc261769b63b7b883270241597939d45c3a2060c9fbea841e0a4ef821'
+-STAGE_BYTES = 1947
+-APK = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-build-01/owned-ticket-qa.apk')
+-APK_SHA = 'b138eee4a638e90e02b4ea55a4cad3a6c5d24f7fb09b9e2536d4378f19a1dbdb'
+-APK_BYTES = 24720
+-SIGNER_SHA = '91fbef4532e24cce6667f7f049e50ab227c14c622f3f6c7d7b05a3959595138b'
++NONCE = 'b637e01d62293f5e7c909e75d2b36d50'
++STATE_NONCE = 'c815375703e1143b2a8ce8d7d3c44d6e'
++SELF = 'org.droidloom.qa.ihg.r1'
++QA_ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-source-01/source')
++QA_MANIFEST = 'ab971f5b361f1d97b8036c954a6b88734b7faedbeed6349b873ead85fa79d5f3'
++BUILD = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-build-01/build-result.json')
++BUILD_SHA = None
++BUILD_BYTES = None
++STAGE = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-source-01/stage-result.json')
++STAGE_SHA = None
++STAGE_BYTES = None
++APK = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-build-01/owned-ihg-qa.apk')
++APK_SHA = None
++APK_BYTES = None
++SIGNER_SHA = None
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+-READER_SHA = '77e6a5056f0de303ab8d81b0864999cdbf5d244442eb31d48c65ce49f4981d9d'
+-GUEST_DIR_NAME = 'pocket4-owned-ticket-qa-'+NONCE
++READER_SHA = '51ecf1c0a12d8bfa9ed721265e14c4f06ef3eff72cbf5840de9569eb09797d40'
++GUEST_DIR_NAME = 'pocket4-owned-ihg-qa-'+NONCE
+ GUEST_DIR = '/data/local/tmp/'+GUEST_DIR_NAME
+-GUEST_APK = GUEST_DIR+'/owned-ticket-qa.apk'
++GUEST_APK = GUEST_DIR+'/owned-ihg-qa.apk'
+ PACKAGE_LIST = ['/system/bin/cmd','package','list','packages','-u','-U','--user','all',SELF]
+ INSTALLED_ALL_USERS = ['/system/bin/cmd','package','list','packages','-U','--user','all',SELF]
+ INSTALL = ['/system/bin/cmd','package','install','-R','-t','--user','0','--pkg',SELF,GUEST_APK]
+ ACTION_LOCK_WAIT_SECONDS = 5.0
+ ACTION_LOCK_POLL_SECONDS = 0.05
+ WORK_SECONDS = 175
+-EXPECTED_SOURCE_FILES = {'install_state.py','ticket_context.py','ticket_transport.py','stage_execute.py',
++EXPECTED_SOURCE_FILES = {'install_state.py','ihg_context.py','ihg_transport.py','stage_execute.py',
+     'make_request.py','INPUTS.json','README.md','references/readonly_r3_coordinator.py',
+-    'references/read_12306.py','target-artifact-reference.json'}
++    'references/read_ihg.py','target-artifact-reference.json'}
+ 
+ def require(value, message):
+     if not value:
+@@ -193,7 +193,7 @@
+     match = re.fullmatch(re.escape('package:'+SELF+' uid:') + r'([0-9]+)\n', text)
+     require(match is not None, 'ONE_EXACT_NEW_PACKAGE_UID_REQUIRED')
+     uid = int(match[1])
+-    require(10000 <= uid < 100000 and uid not in (10121,10129,10117,10125,10164,10165,10166,10169,10170,10175), 'NEW_APP_UID_REQUIRED')
++    require(10000 <= uid < 100000 and uid not in (10137,10129,10117,10125,10164,10165,10166,10169,10170,10175), 'NEW_APP_UID_REQUIRED')
+     return uid
+ 
+ class OwnedApk:
+@@ -222,7 +222,7 @@
+         require(self.directory_identity['uid'] == 0, 'OWNED_DIRECTORY_UID_CHANGED')
+         os.fchmod(self.directory, 0o711)
+         self.directory_identity = self.identity_of(self.directory)
+-        self.file = os.open('owned-ticket-qa.apk', os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
++        self.file = os.open('owned-ihg-qa.apk', os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
+                             0o600, dir_fd=self.directory)
+         self.file_created = True
+         count = 0
+@@ -250,11 +250,11 @@
+             if self.file_created:
+                 require(self.directory >= 0 and self.file >= 0, 'OWNED_FILE_FDS_REQUIRED')
+                 expected = os.fstat(self.file)
+-                current = os.stat('owned-ticket-qa.apk', dir_fd=self.directory, follow_symlinks=False)
++                current = os.stat('owned-ihg-qa.apk', dir_fd=self.directory, follow_symlinks=False)
+                 require(stat.S_ISREG(current.st_mode) and current.st_nlink == 1 and
+                         (current.st_dev,current.st_ino) == (expected.st_dev,expected.st_ino),
+                         'OWNED_APK_CLEANUP_IDENTITY_CHANGED')
+-                os.unlink('owned-ticket-qa.apk', dir_fd=self.directory)
++                os.unlink('owned-ihg-qa.apk', dir_fd=self.directory)
+                 os.fsync(self.directory)
+         except BaseException as error:
+             errors.append(error_record('owned_staged_file_retire',error))
+@@ -335,7 +335,7 @@
+     for name,row in manifest['files'].items():
+         read(HERE/name,expected=row['sha256'],size=row['bytes'])
+     require(manifest['files']['references/readonly_r3_coordinator.py']['sha256'] == REFERENCE_SHA and
+-            manifest['files']['references/read_12306.py']['sha256'] == READER_SHA,
++            manifest['files']['references/read_ihg.py']['sha256'] == READER_SHA,
+             'EXACT_SHARED_REFERENCES_REQUIRED')
+     return manifest
+ 
+@@ -363,8 +363,8 @@
+             'ACTUAL_AMAZON_BUILD_STAGE_REQUIRED')
+     data=read(APK,APK_BYTES,APK_SHA,APK_BYTES)
+     proof['stage_receipt_sha256']=STAGE_SHA
+-    require(adapter.SELF == qa.SELF == SELF and qa.PACKAGE == 'com.MobileTicket' and
+-            qa.UID == 10121,'EXACT_DEDICATED_AMAZON_QA_REQUIRED')
++    require(adapter.SELF == qa.SELF == SELF and qa.PACKAGE == 'com.ihg.apps.android' and
++            qa.UID == 10137,'EXACT_DEDICATED_AMAZON_QA_REQUIRED')
+     return adapter,qa,proof,data
+ 
+ 
+@@ -379,7 +379,7 @@
+     ref.write_new(WORKER_ROOT/'once.claim.json',{'nonce':NONCE,'state_nonce':STATE_NONCE,
+         'source_manifest_sha256':expected,'package':SELF,'automatic_retry':False})
+     result={'schema':1,'ok':False,'error':None,'secondary_errors':[],
+-        'package':SELF,'target_package':'com.MobileTicket','nonce':NONCE,
++        'package':SELF,'target_package':'com.ihg.apps.android','nonce':NONCE,
+         'state_nonce':STATE_NONCE,'source_manifest_sha256':expected,
+         'install_attempted':False,'install_success_observed':False,'state_attempted':False,
+         'package_retained':False,'UI_actions':0,'audio_actions':0,'App_launches':0,
+@@ -390,9 +390,9 @@
+     started=time.monotonic()
+     try:
+         adapter,qa,proof,apk=qualified_inputs();result['build']=proof
+-        context=module(HERE/'ticket_context.py',manifest['files']['ticket_context.py']['sha256'],'amazon_install_context')
+-        transport=module(HERE/'ticket_transport.py',manifest['files']['ticket_transport.py']['sha256'],'amazon_r4_transport')
+-        reader=module(HERE/'references/read_12306.py',READER_SHA,'amazon_metadata_primitives')
++        context=module(HERE/'ihg_context.py',manifest['files']['ihg_context.py']['sha256'],'amazon_install_context')
++        transport=module(HERE/'ihg_transport.py',manifest['files']['ihg_transport.py']['sha256'],'amazon_r4_transport')
++        reader=module(HERE/'references/read_ihg.py',READER_SHA,'amazon_metadata_primitives')
+         activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
+         epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'amazon_worker_epoch')
+         guard=lambda:ref.main_guard(activation,epoch)
+@@ -428,8 +428,8 @@
+         uid=uid_from(uid_raw);result['uid_command']=uid_command
+         session=adapter.Session(ctx,recorder,qa,proof,uid)
+         result['runtime_shared_recorder_manifest_sha256']=context.SHARED_MANIFEST
+-        result['runtime_ticket_context_sha256']=manifest['files']['ticket_context.py']['sha256']
+-        result['runtime_ticket_transport_sha256']=manifest['files']['ticket_transport.py']['sha256']
++        result['runtime_ticket_context_sha256']=manifest['files']['ihg_context.py']['sha256']
++        result['runtime_ticket_transport_sha256']=manifest['files']['ihg_transport.py']['sha256']
+         phase='installed_before_state';result['installed_before_state']=session.installed()
+         phase='one_state_only';result['state_attempted']=True
+         result['state']=session.instrument({'protocol':qa.PROTOCOL,'nonce':STATE_NONCE,'op':'state'})
+@@ -492,7 +492,7 @@
+             claim.get('automatic_retry') is False,'EXACT_ONCE_CLAIM_REQUIRED')
+     evidence=ROOT/'evidence';evidence.mkdir(mode=0o700)
+     result={'schema':1,'ok':False,'error':None,'secondary_errors':[],
+-        'source_manifest_sha256':expected,'package':SELF,'target_package':'com.MobileTicket',
++        'source_manifest_sha256':expected,'package':SELF,'target_package':'com.ihg.apps.android',
+         'nonce':NONCE,'worker_root':str(WORKER_ROOT),'automatic_retry':False,
+         'UI_actions':0,'audio_actions':0,'App_launches':0,'whole_app_production_ready':False,
+         'old_v2_helper_called':False,'Bili_Flow_instantiated':False,'install_state_worker_requested':False}
+@@ -553,7 +553,7 @@
+     require(re.fullmatch('[0-9a-f]{32}',NONCE) and re.fullmatch('[0-9a-f]{32}',STATE_NONCE) and
+             NONCE!=STATE_NONCE,'EXACT_DISTINCT_NONCES_REQUIRED')
+     if not a.execute_once and not a.worker_once:
+-        print(json.dumps({'state':'PLAN_ONLY','package':SELF,'target':'com.MobileTicket',
++        print(json.dumps({'state':'PLAN_ONLY','package':SELF,'target':'com.ihg.apps.android',
+             'root':str(ROOT),'actual_build_sha256':BUILD_SHA,'APK_sha256':APK_SHA,'signer_sha256':SIGNER_SHA,
+             'install_argv':INSTALL,'state_nonce':STATE_NONCE,'UiAutomation_connection_requested':False,
+             'permission_grants':0,'UI_actions':0,'App_launches':0,'old_v2_helper_called':False,
+--- ticket-install/ticket_context.py
++++ pending-ihg-install/ihg_context.py
+@@ -1,4 +1,4 @@
+-"""12306-only install/state context using immutable shared recorder primitives.
++"""IHG-only install/state context using immutable shared recorder primitives.
+ 
+ No Bili Flow or legacy client is instantiated. The actual Flow.command body,
+ held Main/root/classpath primitives and R4 BoundArun body are reused; the new
+@@ -14,9 +14,9 @@
+ import time
+ import types
+ 
+-PACKAGE = 'com.MobileTicket'
+-UID = 10121
+-VERSION = 275
++PACKAGE = 'com.ihg.apps.android'
++UID = 10137
++VERSION = 50023219
+ INSTALLED_SHARED = Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/source/recorder-r4')
+ SHARED_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+ CONTRACT_SHA = '51c2b3dd7df80a8fcd4881eb7216f7292db77d39c01920f10feb650824919a7d'
+@@ -44,7 +44,7 @@
+ 
+ def ordered_commands(qa, self_package, guest_apk, state_nonce):
+     require(qa.PACKAGE == PACKAGE and qa.UID == UID and
+-            qa.SELF == self_package == 'org.droidloom.qa.ticket.r1', 'EXACT_AMAZON_QA_SOURCE_REQUIRED')
++            qa.SELF == self_package == 'org.droidloom.qa.ihg.r1', 'EXACT_AMAZON_QA_SOURCE_REQUIRED')
+     state = {'protocol':qa.PROTOCOL,'nonce':state_nonce,'op':'state'}
+     qa.validate_request(state)
+     own_uid = ['/system/bin/cmd','package','list','packages','-U','--user','0',self_package]
+@@ -200,7 +200,7 @@
+     def _paths(self, raw):
+         values = self.reader.apk_paths(raw)
+         require(values == sorted(row['path'] for row in self.expected['artifacts']) and len(values) == 1,
+-                'ACTUAL_ONE_12306_APK_PATH_CHANGED')
++                'ACTUAL_ONE_IHG_APK_PATH_CHANGED')
+         return values
+ 
+     def _hash(self, fd, expected, deadline):
+--- ticket-install/ticket_transport.py
++++ pending-ihg-install/ihg_transport.py
+@@ -20,8 +20,8 @@
+ ANDROID_APP_SHA256 = "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66"
+ FRAMEWORK_EPOCH_SHA256 = "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f"
+ HELD_HELPER_SHA256 = "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689"
+-EXPECTED_PACKAGE = "com.MobileTicket"
+-EXPECTED_UID = 10121
++EXPECTED_PACKAGE = "com.ihg.apps.android"
++EXPECTED_UID = 10137
+ HOST_ENV = {"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "HOME": "/root", "LANG": "C.UTF-8"}
+ REQUIRED_ENV = {"PATH", "BOOTCLASSPATH", "DEX2OATBOOTCLASSPATH",
+                 "ANDROID_ROOT", "ANDROID_DATA", "ANDROID_ART_ROOT"}
+--- ticket-install/stage_execute.py
++++ pending-ihg-install/stage_execute.py
+@@ -7,13 +7,13 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01')
+ SOURCE = ROOT/'source'
+-NONCE = 'd02f83f91e88717ef2df006369881189'
++NONCE = 'b637e01d62293f5e7c909e75d2b36d50'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+-FILES = {'install_state.py','ticket_context.py','ticket_transport.py','stage_execute.py',
++FILES = {'install_state.py','ihg_context.py','ihg_transport.py','stage_execute.py',
+     'make_request.py','INPUTS.json','README.md','references/readonly_r3_coordinator.py',
+-    'references/read_12306.py','target-artifact-reference.json'}
++    'references/read_ihg.py','target-artifact-reference.json'}
+ 
+ 
+ 
+--- ticket-install/make_request.py
++++ pending-ihg-install/make_request.py
+@@ -7,9 +7,9 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-ticket-qa-r1-install-state-01-20261105'
+-ROOT='/home/alex/work/pocket4-owned-ticket-qa-r1-install-state-01'
+-NONCE='d02f83f91e88717ef2df006369881189'
++KEY='pocket4-owned-ihg-qa-r1-install-state-01-20261105'
++ROOT='/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01'
++NONCE='b637e01d62293f5e7c909e75d2b36d50'
+ 
+ 
+ def sha(raw):

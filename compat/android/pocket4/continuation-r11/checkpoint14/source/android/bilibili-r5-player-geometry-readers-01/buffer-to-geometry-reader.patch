@@ -1,0 +1,55 @@
+--- original/read_summary.py
++++ geometry/read_summary.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed summary-only reader for the fresh r5 bounded buffer/viewport attempt."""
++"""Fixed summary-only reader for the fresh r5 exact player-geometry attempt."""
+ import argparse
+ import base64
+ import gzip
+@@ -11,10 +11,10 @@
+ import stat
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-bilibili-r5-buffer-viewport-01')
+-FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-1d7f694a43a8a520665a43e26c5ac1cb')
+-NONCE='1d7f694a43a8a520665a43e26c5ac1cb'
+-SOURCE_SHA='2eeff204605c6165f6bda6cd11f99124d6074d25df98c2104cc8af1669a4a99f'
++ROOT=Path('/home/alex/work/pocket4-bilibili-r5-player-geometry-01')
++FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-9e7c2a173b34236b7f96abc662295fd4')
++NONCE='9e7c2a173b34236b7f96abc662295fd4'
++SOURCE_SHA='6620853a66d298cf1d85b16733f56e564654823bbe8c5e9e566bed4faa5b4ab6'
+ HELPER_UID=10170
+ FILES={
+     'coordinator.json':ROOT/'result.json',
+@@ -112,7 +112,7 @@
+             need(value.get('helper_package')=='org.droidloom.qa.bili.r5' and type(HELPER_UID) is int and value.get('helper_uid')==HELPER_UID,
+                  'EXACT_R5_HELPER_SCOPE_REQUIRED')
+         files[name]={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':raw.decode('utf-8','strict')}
+-    bundle={'schema':1,'scope':'fixed-r5-buffer-viewport-summary-only','files':files,'missing':missing,
++    bundle={'schema':1,'scope':'fixed-r5-player-geometry-summary-only','files':files,'missing':missing,
+         'source_manifest_sha256':SOURCE_SHA,'flow_nonce':NONCE,'bytes_read':reader.bytes,
+         'raw_UI_or_commercial_journal_exported':False,'Android_or_process_actions':0,
+         'runtime_qualification_asserted':False,'permission_or_original_file_changes':0}
+--- original/make_summary_request.py
++++ geometry/make_summary_request.py
+@@ -8,8 +8,8 @@
+ import re
+ 
+ HERE=Path(__file__).resolve().parent
+-READER_SHA='fb7f2fd8cc7dbcd306c6a9815f33adeb843647197d362e5f8d7d570eaac5d240'
+-KEY='pocket4-bilibili-r5-buffer-viewport-summary-readback-01-20261105'
++READER_SHA='cfb34479529610b21e753298c9ca1957c245530e2c0da008a3e9335a445f860f'
++KEY='pocket4-bilibili-r5-player-geometry-summary-readback-01-20261105'
+ 
+ def main():
+     p=argparse.ArgumentParser(description=__doc__)
+@@ -24,7 +24,7 @@
+     assert a.output is not None and all(isinstance(x,str) and re.fullmatch('[0-9a-f]{64}',x)
+                                        for x in (a.coordinator_sha256,a.stage_sha256))
+     raw=(HERE/'read_summary.py').read_bytes()
+-    assert len(raw)==6417 and hashlib.sha256(raw).hexdigest()==READER_SHA
++    assert len(raw)==6415 and hashlib.sha256(raw).hexdigest()==READER_SHA
+     args=['--collect-once','--coordinator-sha256',a.coordinator_sha256,'--stage-sha256',a.stage_sha256]
+     wrapper="import sys,hashlib;raw=sys.stdin.buffer.read(16385);assert 0<len(raw)<=16384 and hashlib.sha256(raw).hexdigest()=="+repr(READER_SHA)+";scope={'__name__':'fixed_owned_summary_reader','__file__':'<verified-fixed-summary-reader>'};exec(compile(raw,'read_summary.py','exec'),scope);raise SystemExit(scope['main']("+repr(args)+"))"
+     request={'host':'pocket4','executable':'/usr/bin/sudo','args':['-n','/usr/bin/python3','-I','-c',wrapper],

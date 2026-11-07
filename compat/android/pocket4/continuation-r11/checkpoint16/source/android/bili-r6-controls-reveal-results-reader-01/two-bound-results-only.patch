@@ -1,0 +1,71 @@
+--- a/read_summary.py
++++ b/read_summary.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed summary-only reader for the fresh r6 controls-reveal attempt."""
++"""Fixed two-result reader for the actual r6 controls-reveal attempt."""
+ import argparse
+ import base64
+ import gzip
+@@ -19,12 +19,6 @@
+ FILES={
+     'coordinator.json':ROOT/'result.json',
+     'stage.json':ROOT/'stage-result.json',
+-    'launch.json':FLOW/'steps/launch-01/result.json',
+-    'navigation.json':FLOW/'steps/controls-reveal-01/result.json',
+-    'cleanup.json':FLOW/'steps/cleanup-01/result.json',
+-    'launch-command-result.json':ROOT/'evidence/02-launch.result.json',
+-    'navigation-command-result.json':ROOT/'evidence/03-navigate.result.json',
+-    'cleanup-command-result.json':ROOT/'evidence/04-cleanup.result.json',
+ }
+ 
+ 
+@@ -59,7 +53,7 @@
+ 
+     def read(self,path,optional=False):
+         need(path in FILES.values(),'EXACT_FILE_ALLOWLIST_REQUIRED')
+-        maximum=1048576 if path == FILES['navigation.json'] else 262144
++        maximum=262144
+         current=os.open('/',os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC);fd=None
+         try:
+             try:
+@@ -104,6 +98,8 @@
+             missing.append({'name':name,'path':str(path)});continue
+         if name in expected:
+             need(sha(raw)==expected[name],'EXTERNAL_TERMINAL_SHA_CHANGED:'+name)
++            need(len(raw)=={'coordinator.json':198643,'stage.json':1647}[name],
++                 'EXTERNAL_TERMINAL_SIZE_CHANGED:'+name)
+         value=json.loads(raw);no_raw_ui(value)
+         if name in ('coordinator.json','stage.json','launch.json','navigation.json'):
+             need(value.get('source_manifest_sha256')==SOURCE_SHA and value.get('nonce')==NONCE,
+@@ -112,7 +108,7 @@
+             need(value.get('helper_package')=='org.droidloom.qa.bili.r6' and type(HELPER_UID) is int and value.get('helper_uid')==HELPER_UID,
+                  'EXACT_R6_HELPER_SCOPE_REQUIRED')
+         files[name]={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':raw.decode('utf-8','strict')}
+-    bundle={'schema':1,'scope':'fixed-r6-controls-reveal-summary-only','files':files,'missing':missing,
++    bundle={'schema':1,'scope':'fixed-r6-controls-reveal-two-bound-results-only','files':files,'missing':missing,
+         'source_manifest_sha256':SOURCE_SHA,'flow_nonce':NONCE,'bytes_read':reader.bytes,
+         'raw_UI_or_commercial_journal_exported':False,'Android_or_process_actions':0,
+         'runtime_qualification_asserted':False,'permission_or_original_file_changes':0}
+--- a/make_summary_request.py
++++ b/make_summary_request.py
+@@ -8,8 +8,8 @@
+ import re
+ 
+ HERE=Path(__file__).resolve().parent
+-READER_SHA='8c33b371b9137b6105e27fa3272939cf4964e27ffbb5d1aa8c474994748ed000'
+-KEY='pocket4-bilibili-r6-controls-reveal-summary-readback-01-20261105'
++READER_SHA='bcf50e9f5b49de462fdc51e1a2bc9434a3a6dd3ee4d09b6edf91611d5b8b4228'
++KEY='pocket4-bilibili-r6-controls-reveal-two-results-readonly-01-20261105'
+ 
+ def main():
+     p=argparse.ArgumentParser(description=__doc__)
+@@ -24,7 +24,7 @@
+     assert a.output is not None and all(isinstance(x,str) and re.fullmatch('[0-9a-f]{64}',x)
+                                        for x in (a.coordinator_sha256,a.stage_sha256))
+     raw=(HERE/'read_summary.py').read_bytes()
+-    assert len(raw)==6409 and hashlib.sha256(raw).hexdigest()==READER_SHA
++    assert len(raw)==6105 and hashlib.sha256(raw).hexdigest()==READER_SHA
+     args=['--collect-once','--coordinator-sha256',a.coordinator_sha256,'--stage-sha256',a.stage_sha256]
+     wrapper="import sys,hashlib;raw=sys.stdin.buffer.read(16385);assert 0<len(raw)<=16384 and hashlib.sha256(raw).hexdigest()=="+repr(READER_SHA)+";scope={'__name__':'fixed_owned_summary_reader','__file__':'<verified-fixed-summary-reader>'};exec(compile(raw,'read_summary.py','exec'),scope);raise SystemExit(scope['main']("+repr(args)+"))"
+     request={'host':'pocket4','executable':'/usr/bin/sudo','args':['-n','/usr/bin/python3','-I','-c',wrapper],

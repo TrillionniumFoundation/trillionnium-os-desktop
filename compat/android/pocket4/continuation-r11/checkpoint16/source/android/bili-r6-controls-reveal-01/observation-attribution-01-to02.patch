@@ -1,0 +1,47 @@
+--- preimage/controls_reveal.py
++++ candidate/controls_reveal.py
+@@ -90,11 +90,13 @@
+     result['controls_reveal_observation'] = record
+     result['controls_reveal_and_observation_completed'] = False
+     input_proof = None
++    input_observation_before = None
+     try:
+         base.require(result.get('video_click_and_observations_completed') is True and
+                      result['error'] is None and result['secondary_errors'] == [],
+                      'ORIGINAL_COURSE_OPEN_MUST_COMPLETE_BEFORE_REVEAL')
+         record['input_sequence_started'] = True
++        input_observation_before = getattr(session, 'sequence_observation', None)
+         sequence = session.sequence(json.loads(json.dumps(REVEAL_PLAN)))
+         record['input_sequence'] = sequence
+         base.require(sequence['installed_before'] == sequence['installed_after'] == installed and
+@@ -121,14 +123,16 @@
+         record.update(input_acknowledged=True, input_assessment=pin,
+                       input_lifecycle=helper['touch'], immediate_post_observation=immediate)
+     except BaseException as error:
+-        if hasattr(session, 'sequence_observation'):
+-            record['failed_input_sequence'] = session.sequence_observation
++        current = getattr(session, 'sequence_observation', None)
++        if record['input_sequence_started'] and current is not None and current is not input_observation_before:
++            record['failed_input_sequence'] = current
+         prior.remember(result, 'controls_reveal_input', error)
+     finally:
+         # Independently observe after any attempted sequence, without repeating
+         # the input. A failed read stays a failure and cannot replace the first.
+         if record['input_sequence_started']:
+             record['independent_read_attempted'] = True
++            post_observation_before = getattr(session, 'sequence_observation', None)
+             try:
+                 sequence = session.sequence(json.loads(json.dumps(POST_PLAN)))
+                 record['independent_sequence'] = sequence
+@@ -148,8 +152,9 @@
+                 base.require(observed['controls_revealed_observed'] is True,
+                              'INDEPENDENT_CURRENT_PLAYER_CONTROLS_NOT_OBSERVED')
+             except BaseException as error:
+-                if hasattr(session, 'sequence_observation'):
+-                    record['failed_independent_sequence'] = session.sequence_observation
++                current = getattr(session, 'sequence_observation', None)
++                if current is not None and current is not post_observation_before:
++                    record['failed_independent_sequence'] = current
+                 prior.remember(result, 'independent_controls_readback', error)
+     result['controls_reveal_and_observation_completed'] = (
+         record['input_acknowledged'] and record['independent_read_completed'] and

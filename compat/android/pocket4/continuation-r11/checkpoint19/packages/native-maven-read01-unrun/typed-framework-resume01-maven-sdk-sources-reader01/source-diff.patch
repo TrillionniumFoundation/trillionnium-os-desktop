@@ -1,0 +1,27 @@
+--- a/provider01/read_sources.py
++++ b/maven-sdk01/read_sources.py
+@@ -70,11 +70,11 @@
+ OUTER_SHA = '2c36ab1cc9ff6f181855f195f9c5b7bc0f58e7fb99d9c76e4871e64b143bf059'
+ PROJECTS = (
+     ('prebuilts/sdk', '0f07e8d60ab0aba46129e427101f96ba459a95c1'),
+-    ('prebuilts/misc', 'be7c3a630b5dc5eb3260035d77a81b2f322754f8'),
++    ('prebuilts/tools', 'b157d1c3bff39161f34ccc44dffbe9568f3bece2'),
+ )
+ PAYLOADS = (
+-    ('aosp-source/prebuilts/sdk/current/androidx/Android.bp', 4194304),
+-    ('aosp-source/prebuilts/misc/common/ub-uiautomator/Android.bp', 65536),
++    ('aosp-source/prebuilts/sdk/current/Android.bp', 4194304),
++    ('aosp-source/prebuilts/tools/common/m2/Android.bp', 4194304),
+ )
+ 
+ 
+@@ -120,6 +120,9 @@
+             return row
+         manifest = read('aosp-source/.droidloom-source-manifest.json', 1048576)
+         need(manifest['complete'], 'published source manifest read failed')
++        need(manifest['bytes'] == 97784 and manifest['sha256'] ==
++             '73a4cc1da8371482164aab2bc149498d03f481f212bb85cb4fda22b6b10c958d',
++             'actual published manifest byte pin differs')
+         value = json.loads(manifest['text'])
+         need(value.get('schema_version') == 1 and value.get('source_lock_sha256') == LOCK_SHA,
+              'published manifest does not bind the actual normal lock')

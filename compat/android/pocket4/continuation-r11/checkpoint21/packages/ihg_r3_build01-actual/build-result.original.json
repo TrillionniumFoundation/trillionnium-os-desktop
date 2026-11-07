@@ -1,0 +1,697 @@
+{
+  "APK": {
+    "bytes": 24720,
+    "path": "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/owned-ihg-qa.apk",
+    "sha256": "58a24079a59c998d35a7233ccadd2a1d3b90480aa9a66d2c4fc7905ca1d51342"
+  },
+  "Android_UI_actions": 0,
+  "Main_mutations": 0,
+  "android_installed": false,
+  "commands": [
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+        "-J-XX:ActiveProcessorCount=1",
+        "-J-XX:+UseSerialGC",
+        "-J-Xmx256m",
+        "-proc:none",
+        "-Xmaxerrs",
+        "20",
+        "-Xmaxwarns",
+        "20",
+        "-source",
+        "8",
+        "-target",
+        "8",
+        "-bootclasspath",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+        "-d",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/classes",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-source-01/source/src/org/droidloom/qa/ihg/r3/ActionRunner.java"
+      ],
+      "error": null,
+      "name": "javac",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "312e9bd919c699a2f8409f70240177012720c94095f0f4374d44152defc50f7e",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-cp",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+        "com.android.tools.r8.D8",
+        "--lib",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+        "--min-api",
+        "31",
+        "--output",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/dex",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/classes/org/droidloom/qa/ihg/r3/ActionRunner$1.class",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/classes/org/droidloom/qa/ihg/r3/ActionRunner$2.class",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/classes/org/droidloom/qa/ihg/r3/ActionRunner$Capture.class",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/classes/org/droidloom/qa/ihg/r3/ActionRunner$Rejected.class",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/classes/org/droidloom/qa/ihg/r3/ActionRunner$SelectedWindows.class",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/classes/org/droidloom/qa/ihg/r3/ActionRunner.class"
+      ],
+      "error": null,
+      "name": "d8",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "package",
+        "-f",
+        "-M",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-source-01/source/AndroidManifest.xml",
+        "-S",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/res",
+        "-I",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+        "-F",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/unsigned.apk"
+      ],
+      "error": null,
+      "name": "aapt-package",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+        "-f",
+        "4",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/unsigned.apk",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/aligned.apk"
+      ],
+      "error": null,
+      "name": "align",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-m",
+        "java.base/sun.security.tools.keytool.Main",
+        "-genkeypair",
+        "-noprompt",
+        "-storetype",
+        "PKCS12",
+        "-keystore",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/private-signing/owned.p12",
+        "-storepass:file",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/private-signing/password.txt",
+        "-alias",
+        "owned-ihg-qa-r3",
+        "-keyalg",
+        "RSA",
+        "-keysize",
+        "3072",
+        "-validity",
+        "3650",
+        "-dname",
+        "CN=Pocket4 Owned IHG QA R1,O=Owned Test,C=US"
+      ],
+      "error": null,
+      "name": "create-owned-signing-key",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "2fae7538bcb16e79c90e475dfc7d0ba888e322d8e2c2dfe4dfaaff4519750ddd",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/apksigner",
+        "sign",
+        "--ks",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/private-signing/owned.p12",
+        "--ks-pass",
+        "file:/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/private-signing/password.txt",
+        "--ks-key-alias",
+        "owned-ihg-qa-r3",
+        "--min-sdk-version",
+        "31",
+        "--v1-signing-enabled",
+        "false",
+        "--v2-signing-enabled",
+        "true",
+        "--v3-signing-enabled",
+        "true",
+        "--out",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/owned-ihg-qa.apk",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/aligned.apk"
+      ],
+      "error": null,
+      "name": "sign",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/apksigner",
+        "verify",
+        "--verbose",
+        "--print-certs",
+        "--min-sdk-version",
+        "31",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/owned-ihg-qa.apk"
+      ],
+      "error": null,
+      "name": "signature",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "4b7424eca0c356b970f6a26aa490651792d7c71402a11d7a040ad252df75f10b"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+        "-c",
+        "4",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/owned-ihg-qa.apk"
+      ],
+      "error": null,
+      "name": "alignment",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "dump",
+        "badging",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/owned-ihg-qa.apk"
+      ],
+      "error": null,
+      "name": "badging",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e80e2f6572a7568fa600a9e23dc0e064ac8cf90151e799cc34eee92b9727c812"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "dump",
+        "permissions",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/owned-ihg-qa.apk"
+      ],
+      "error": null,
+      "name": "permissions",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "ef18840b9a79b71fd3472b6f0c2c575c0e876ae4ec1d8c8ad9f43c1f2bb6692c"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "dump",
+        "xmltree",
+        "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/owned-ihg-qa.apk",
+        "AndroidManifest.xml"
+      ],
+      "error": null,
+      "name": "manifest",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "88a015a1644c55f2572b7fd494a84be20aa8229758143405d8c296a8a2698cf4"
+    }
+  ],
+  "current_baseline_scope_controls": {
+    "report": {
+      "Android_commands": 0,
+      "UI_actions": 0,
+      "all_passed": true,
+      "cases": [
+        {
+          "name": "exact_new_current_scope",
+          "passed": true
+        },
+        {
+          "name": "missing_main_baseline_schema",
+          "passed": true
+        },
+        {
+          "name": "missing_main_baseline_sha256",
+          "passed": true
+        },
+        {
+          "name": "missing_main_baseline_qualification_sha256",
+          "passed": true
+        },
+        {
+          "name": "old_epoch",
+          "passed": true
+        },
+        {
+          "name": "old_baseline_schema",
+          "passed": true
+        },
+        {
+          "name": "wrong_baseline_digest",
+          "passed": true
+        },
+        {
+          "name": "wrong_qualification_digest",
+          "passed": true
+        },
+        {
+          "name": "extra_scope_field",
+          "passed": true
+        },
+        {
+          "name": "wrong_target_uid",
+          "passed": true
+        },
+        {
+          "name": "foreign_package",
+          "passed": true
+        },
+        {
+          "name": "wrong_display",
+          "passed": true
+        },
+        {
+          "name": "actual_R5_session_scope_positive",
+          "passed": true
+        },
+        {
+          "name": "old_R4_recorder_rejected",
+          "passed": true
+        },
+        {
+          "name": "missing_typed_flow_schema",
+          "passed": true
+        },
+        {
+          "name": "wrong_current_baseline_schema",
+          "passed": true
+        },
+        {
+          "name": "old_host_epoch",
+          "passed": true
+        },
+        {
+          "name": "wrong_host_baseline",
+          "passed": true
+        },
+        {
+          "name": "wrong_host_qualification",
+          "passed": true
+        },
+        {
+          "name": "foreign_host_package",
+          "passed": true
+        },
+        {
+          "name": "bool_host_uid",
+          "passed": true
+        }
+      ],
+      "count": 21,
+      "helper_installed_uid": null,
+      "host_recorder_manifest_sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e",
+      "main_baseline_qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+      "main_baseline_schema": "pocket4-main-current-baseline-v1",
+      "main_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+      "main_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+      "production_adapter_sha256": "0b192041fde9f238188051854410c372c5d73eb4f1b24ab6e122c34a15ba082c",
+      "production_contract_sha256": "bec85084822d68090f39215807c60d6ea583526f17d5e2028c3a8fcacbc27c43",
+      "schema": "pocket4-current-baseline-scope-controls-v1"
+    },
+    "source_sha256": "f121f98a72f259fea625bb36a646d042428f75e786c3f3d50dd2895238d16fc5"
+  },
+  "error": null,
+  "finished_utc": "2026-11-06T10:35:40.023890+00:00",
+  "manifest_contract": {
+    "activities": [],
+    "compile_sdk_api": 31,
+    "debuggable": false,
+    "instrumentation": "org.droidloom.qa.ihg.r3.ActionRunner",
+    "min_sdk": 31,
+    "native_libraries": [],
+    "package": "org.droidloom.qa.ihg.r3",
+    "permissions": [],
+    "providers": [],
+    "receivers": [],
+    "services": [],
+    "target_package": "org.droidloom.qa.ihg.r3",
+    "target_sdk": 33,
+    "test_only": true
+  },
+  "package": "org.droidloom.qa.ihg.r3",
+  "private_signing_material_not_public": [
+    "private-signing/password.txt",
+    "private-signing/owned.p12"
+  ],
+  "public_destination_input_controls": {
+    "report": {
+      "Android_commands": 0,
+      "Java_action_runtime_executed": false,
+      "UI_actions": 0,
+      "actual_installed_helper_uid": null,
+      "all_passed": true,
+      "business_success_verified": false,
+      "cases": [
+        {
+          "name": "actual_R3_identity",
+          "passed": true
+        },
+        {
+          "name": "actual_request_state",
+          "passed": true
+        },
+        {
+          "name": "actual_request_inspect",
+          "passed": true
+        },
+        {
+          "name": "actual_request_click",
+          "passed": true
+        },
+        {
+          "name": "actual_request_set_text",
+          "passed": true
+        },
+        {
+          "name": "old_protocol",
+          "passed": true
+        },
+        {
+          "name": "old_public_query",
+          "passed": true
+        },
+        {
+          "name": "different_city",
+          "passed": true
+        },
+        {
+          "name": "wrong_case",
+          "passed": true
+        },
+        {
+          "name": "foreign_resource",
+          "passed": true
+        },
+        {
+          "name": "resource_path_injection",
+          "passed": true
+        },
+        {
+          "name": "duplicate_action_nonce",
+          "passed": true
+        },
+        {
+          "name": "extra_request_key",
+          "passed": true
+        },
+        {
+          "name": "actual_plan_set_text",
+          "passed": true
+        },
+        {
+          "name": "plan_old_query",
+          "passed": true
+        },
+        {
+          "name": "plan_wrong_class",
+          "passed": true
+        },
+        {
+          "name": "plan_foreign_resource",
+          "passed": true
+        },
+        {
+          "name": "plan_duplicate_nonce",
+          "passed": true
+        },
+        {
+          "name": "plan_extra_field",
+          "passed": true
+        },
+        {
+          "name": "actual_unique_editable_selection",
+          "passed": true
+        },
+        {
+          "name": "duplicate_editable",
+          "passed": true
+        },
+        {
+          "name": "selection_password",
+          "passed": true
+        },
+        {
+          "name": "selection_invisible",
+          "passed": true
+        },
+        {
+          "name": "selection_disabled",
+          "passed": true
+        },
+        {
+          "name": "selection_not_editable",
+          "passed": true
+        },
+        {
+          "name": "selection_no_set_text_support",
+          "passed": true
+        },
+        {
+          "name": "selection_truncated_resource",
+          "passed": true
+        },
+        {
+          "name": "selection_truncated_class",
+          "passed": true
+        },
+        {
+          "name": "selection_wrong_actual_class",
+          "passed": true
+        },
+        {
+          "name": "partial_tree",
+          "passed": true
+        },
+        {
+          "name": "window_hash_mismatch",
+          "passed": true
+        },
+        {
+          "name": "node_hash_mismatch",
+          "passed": true
+        },
+        {
+          "name": "actual_state_wire_positive",
+          "passed": true
+        },
+        {
+          "name": "prior_R1_uid_rejected_by_production_denylist",
+          "passed": true
+        },
+        {
+          "name": "prior_R2_uid_rejected_by_production_denylist",
+          "passed": true
+        },
+        {
+          "name": "actual_session_constructor_positive",
+          "passed": true
+        },
+        {
+          "name": "session_prior_R1_uid",
+          "passed": true
+        },
+        {
+          "name": "session_prior_R2_uid",
+          "passed": true
+        },
+        {
+          "name": "actual_set_text_wire_and_readback",
+          "passed": true
+        },
+        {
+          "name": "wrong_value_readback",
+          "passed": true
+        },
+        {
+          "name": "missing_value_readback",
+          "passed": true
+        },
+        {
+          "name": "wrong_actual_resource",
+          "passed": true
+        },
+        {
+          "name": "failed_finish_not_success",
+          "passed": true
+        },
+        {
+          "name": "no_action_ACK",
+          "passed": true
+        },
+        {
+          "name": "partial_final_action_tree",
+          "passed": true
+        }
+      ],
+      "count": 45,
+      "current_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+      "fixed_public_value": "London",
+      "historical_resource_literal_not_reused": true,
+      "processes_spawned": 0,
+      "production_adapter_sha256": "0b192041fde9f238188051854410c372c5d73eb4f1b24ab6e122c34a15ba082c",
+      "production_contract_sha256": "bec85084822d68090f39215807c60d6ea583526f17d5e2028c3a8fcacbc27c43",
+      "protocol": "pocket4-owned-ihg-qa-v3",
+      "schema": "pocket4-ihg-r3-public-destination-input-controls-v1",
+      "synthetic_private_labels_only": true,
+      "target_package": "com.ihg.apps.android"
+    },
+    "source_sha256": "15de7835ce647731ae0af81c2eab4dae00de951e2efbb8cbb41c853f552fb357"
+  },
+  "schema": 1,
+  "signer_certificate_sha256": "df8c2febe4feff3e65d7dc096cad9753bfb2e97b57a65044b314c2a51c7c3f01",
+  "source_manifest_sha256": "8d96686f9e6937548e0295679ae6ecdfd3c3a1bf4e48c5feff7def949e81789a",
+  "source_or_permissions_gate_relaxed": false,
+  "source_sha256": {
+    "AndroidManifest.xml": "2547dadb5241cfb00b202255b3bef23f882b8618e17ad4cfc8f015d125fd0413",
+    "README.md": "c23b6d1f67b3e06fe20a6e1d6a06c2a4daecf13f228f1a20bdf661c5980aa842",
+    "build-input-reference.json": "0a5ea6f2df5c13334526a56bdf3f7bcc44166f81abf398fd5966e07f3c8a5210",
+    "build_candidate.py": "0ee4514cb7f2b0749187cf7c4d75068f10bf8c77540894903063bd659070e923",
+    "check_current_baseline.py": "f121f98a72f259fea625bb36a646d042428f75e786c3f3d50dd2895238d16fc5",
+    "check_destination_input.py": "15de7835ce647731ae0af81c2eab4dae00de951e2efbb8cbb41c853f552fb357",
+    "current-baseline-binding.json": "4b41f24abbf6c2d072a5de1c39cb01bdbfaff2127815888e2600a3647418d1b3",
+    "make_build_request.py": "e295cc9db1e1ec6abf1dd4a4d74ebc866de87c2c103519ca5004d7162f5ab668",
+    "public-destination-reference.json": "989677dca231cceb7803d43933c75b05448b7000204193b893d51185744aeec9",
+    "qa_adapter.py": "0b192041fde9f238188051854410c372c5d73eb4f1b24ab6e122c34a15ba082c",
+    "qa_contract.py": "bec85084822d68090f39215807c60d6ea583526f17d5e2028c3a8fcacbc27c43",
+    "src/org/droidloom/qa/ihg/r3/ActionRunner.java": "90b857c418235e796d46303abe6f3cda63f165f2b2b6e7e501c04e18c7488c46",
+    "stage_build.py": "230812eb03bdb15c6c21fae0f01b1b0cecf17e1779328409c95eca58f4fdd232",
+    "target-artifact-reference.json": "378a4d99e1e3152787503e2b844c08f851978dc102f9f222cb1e5d184fcbfd97"
+  },
+  "source_unchanged": true,
+  "state": "BUILT_STATIC_VERIFIED_ANDROID_UNRUN",
+  "tools_after": {
+    "aapt": {
+      "bytes": 30680,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "sha256": "d9c0d90fc4bcf03d57cbf4fe19ca66c80280ac760c53245c8678b9837844b972"
+    },
+    "android_jar": {
+      "bytes": 21998949,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "sha256": "2e71327d66d43cb85a6ac11029376c19067ccc0f15e73c90f2f6777f3be70fb5"
+    },
+    "apksigner": {
+      "bytes": 2964,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "sha256": "52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f"
+    },
+    "java": {
+      "bytes": 8528,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "sha256": "cfa21aeadd00925925c9e1287f5c08f3e04ee7f26a9e23d9dbfb16149153d842"
+    },
+    "javac": {
+      "bytes": 8824,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "sha256": "18351d7a271f6b8bd17f9e8fef6bb04baa7cf008cbc8a3a782a93a2f5c48ecfa"
+    },
+    "r8": {
+      "bytes": 18294711,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "sha256": "33cab360b273b46ad47c3356cf1fb2ac715870fd3eecc55cbd9d508a7f609ce7"
+    },
+    "zipalign": {
+      "bytes": 227416,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "sha256": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758"
+    }
+  },
+  "tools_baseline_receipt_sha256": "2a8cb152f9dea378ffc180c95ee4cbab1eb2b527c0dc9e176fd89bcee46119c6",
+  "tools_before": {
+    "aapt": {
+      "bytes": 30680,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "sha256": "d9c0d90fc4bcf03d57cbf4fe19ca66c80280ac760c53245c8678b9837844b972"
+    },
+    "android_jar": {
+      "bytes": 21998949,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "sha256": "2e71327d66d43cb85a6ac11029376c19067ccc0f15e73c90f2f6777f3be70fb5"
+    },
+    "apksigner": {
+      "bytes": 2964,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "sha256": "52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f"
+    },
+    "java": {
+      "bytes": 8528,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "sha256": "cfa21aeadd00925925c9e1287f5c08f3e04ee7f26a9e23d9dbfb16149153d842"
+    },
+    "javac": {
+      "bytes": 8824,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "sha256": "18351d7a271f6b8bd17f9e8fef6bb04baa7cf008cbc8a3a782a93a2f5c48ecfa"
+    },
+    "r8": {
+      "bytes": 18294711,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "sha256": "33cab360b273b46ad47c3356cf1fb2ac715870fd3eecc55cbd9d508a7f609ce7"
+    },
+    "zipalign": {
+      "bytes": 227416,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "sha256": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758"
+    }
+  },
+  "tools_unchanged": true,
+  "whole_app_production_ready": false
+}

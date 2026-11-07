@@ -1,0 +1,268 @@
+--- a/plan.json
++++ b/plan.json
+@@ -1,15 +1,15 @@
+ {
+   "schema": 1,
+-  "kind": "owned-real-producer20-normal01-four-public-sdk-observation01",
++  "kind": "owned-real-producer20-normal02-four-public-sdk-observation01",
+   "scope": "REAL_OWNER_ABI3_PINNED_CAUSE_TERMINAL_DRAIN_FIRST_ACTIVE_ORIGINAL_RETIREMENT",
+-  "attempt_nonce": "eae6a2c3c00117d2a6a0f0f08949342de6a14cf8c2dbf695071e7a96b494661c",
+-  "package": "/opt/p4-owner20-normal-20261106-01",
+-  "state": "/opt/p4-owner20-normal-20261106-01-state",
+-  "unit": "p4-owner20-normal-20261106-01.service",
+-  "description": "Pocket4 Owner20 four public SDK visibility NORMAL01 eae6a2c3c00117d2a6a0f0f08949342de6a14cf8c2dbf695071e7a96b494661c",
++  "attempt_nonce": "01fc54ac9d2954bfc4700ab4ef3af465200114dc8eaa887f8ab440584b8d41a5",
++  "package": "/opt/p4-owner20-normal-20261106-02",
++  "state": "/opt/p4-owner20-normal-20261106-02-state",
++  "unit": "p4-owner20-normal-20261106-02.service",
++  "description": "Pocket4 Owner20 four public SDK visibility NORMAL02 01fc54ac9d2954bfc4700ab4ef3af465200114dc8eaa887f8ab440584b8d41a5",
+   "control_socket": "/run/p4-owner07-control.sock",
+-  "claim_store_backing": "/opt/p4-owner20-normal-20261106-01-state/claims",
+-  "canonical_spec_sha256": "9cd4939bae7a31ef04ec941be337f5f0d837fbb09f4db89e461c2835ef70a760",
++  "claim_store_backing": "/opt/p4-owner20-normal-20261106-02-state/claims",
++  "canonical_spec_sha256": "42415125550e6f7f9ed83e219f7391906e07b6e5b3bfe891e9d1883ef0461e15",
+   "spec": {
+     "host_uid": 61288,
+     "subordinate_uids": {
+@@ -211,13 +211,13 @@
+         "target": "/droidloom/wifi-nohw"
+       }
+     ],
+-    "data_dir": "/opt/p4-owner20-normal-20261106-01-state/data",
++    "data_dir": "/opt/p4-owner20-normal-20261106-02-state/data",
+     "runtime_dir": "/run/droidloom/cells/u61288",
+     "render_node": "/dev/dri/renderD128",
+     "graphics_backend": "drm_media_dma_heap",
+     "denial_socket": "/run/p4-owner07-user/droidloom/native-bridge.sock",
+     "pressure_relay": {
+-      "cgroup_parent": "/sys/fs/cgroup/system.slice/p4-owner20-normal-20261106-01.service/domains",
++      "cgroup_parent": "/sys/fs/cgroup/system.slice/p4-owner20-normal-20261106-02.service/domains",
+       "memory_max_bytes": 4294967296,
+       "memory_high_bytes": 3758096384,
+       "memory_swap_max_bytes": 0,
+@@ -229,19 +229,19 @@
+       "lmkd_uid": 1069,
+       "lmkd_gid": 1069,
+       "broker": {
+-        "path": "/opt/p4-owner20-normal-20261106-01/bin/droidloom-psi-owner",
++        "path": "/opt/p4-owner20-normal-20261106-02/bin/droidloom-psi-owner",
+         "sha256": "044c851a88d544aa3ed47a30fbe8beac568b0240b660290541d2c18ac72af167"
+       },
+       "entry_supervisor": {
+-        "path": "/opt/p4-owner20-normal-20261106-01/bin/droidloom-supervisor",
++        "path": "/opt/p4-owner20-normal-20261106-02/bin/droidloom-supervisor",
+         "sha256": "69976328ee7f4850f7308067a8b5437f23cb0739943f5648eb8adbfde87db068"
+       },
+       "lmkd": {
+-        "path": "/opt/p4-owner20-normal-20261106-01/bin/lmkd",
++        "path": "/opt/p4-owner20-normal-20261106-02/bin/lmkd",
+         "sha256": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde"
+       },
+       "init_barrier": {
+-        "path": "/opt/p4-owner20-normal-20261106-01/lib/libdroidloom_init_relay.so",
++        "path": "/opt/p4-owner20-normal-20261106-02/lib/libdroidloom_init_relay.so",
+         "sha256": "5d54b0eb58dc9e8e606a1538baa6403dd2eb22b588fdc60aac01d12198769f30"
+       },
+       "init_sha256": "d6905d43a0dad5219b61c9759ab32352262558e1109762eec1a24be153181c73",
+@@ -1488,7 +1488,7 @@
+   "rc_property_reload_qualified": false,
+   "pressure_effect_qualified": false,
+   "app_qualified": false,
+-  "status": "FROZEN_SOURCE_AND_ACTUAL_HOST_CONTROLS_BOUND_PREPARE_ONLY_RUNTIME_REQUIRES_ACTUAL_PREPARED",
++  "status": "FROZEN_SOURCE_AND_ACTUAL_CONSTRUCTOR_CONTROLS_BOUND_PREPARE_ONLY_RUNTIME_REQUIRES_ACTUAL_PREPARED",
+   "tools_sha256": {
+     "/usr/bin/python3": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41",
+     "/usr/bin/systemctl": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082",
+@@ -1682,32 +1682,79 @@
+       "unique_old_metadata_failure_term_proved": false,
+       "later_image_UID1036_is_not_unique_cause_attribution": true,
+       "HWS_abort_message_observed": false
++    },
++    "previous_owner19_failure": {
++      "runtime_sha256": "6e489440223b2515301d56125a19c9357a4ae211ea960b4a41bf96d0ffe9fce5",
++      "runtime_bytes": 708698,
++      "attempt_nonce": "08eae45fbb6c6c42c38bd67a6bdcc20b1a6fbe915a3e0fa0ce182a51b58029ed",
++      "replayed": false,
++      "old_failure_not_reclassified": true,
++      "safe_derived_runtime": {
++        "bytes": 79099,
++        "sha256": "f8a3b56aa786d38bce4e59a40a2d21c4db0786179d64dff0222ce4924046b3b8",
++        "not_original_report_bytes": true,
++        "private_init_log_fields_omitted": 2
++      },
++      "observed_boundary": "Producer stopped or failed before ACTIVE; independently qualified generation-private logd read captured a closed bounded crash prefix",
++      "crash_connection_attempts": 1,
++      "crash_read_request_attempts": 1,
++      "crash_packets": 257,
++      "crash_packet_file": {
++        "bytes": 28314,
++        "sha256": "34fe9d3ec735cf18e8852b453cdf2616f32498bedf966346ac66a34ef4ba9deb",
++        "raw_bytes_included": false
++      },
++      "exact_unit_cleanup_passed": true,
++      "normal_owner_runtime_qualified": false,
++      "LMKD_missing_sdk_file_key_proved": false,
++      "LMKD_current_property_visibility_proved": false,
++      "HWS_health_proved": false,
++      "property_values_changed": false
+     }
+   },
+   "predecessor_failure": {
+-    "runtime_sha256": "6e489440223b2515301d56125a19c9357a4ae211ea960b4a41bf96d0ffe9fce5",
+-    "runtime_bytes": 708698,
+-    "attempt_nonce": "08eae45fbb6c6c42c38bd67a6bdcc20b1a6fbe915a3e0fa0ce182a51b58029ed",
++    "runtime_sha256": "f3f8afc6f8783b69fe5db48913586dc3f16bda63a4f8820aa1251cffb635bda1",
++    "runtime_bytes": 774912,
++    "attempt_nonce": "eae6a2c3c00117d2a6a0f0f08949342de6a14cf8c2dbf695071e7a96b494661c",
+     "replayed": false,
+     "old_failure_not_reclassified": true,
+     "safe_derived_runtime": {
+-      "bytes": 79099,
+-      "sha256": "f8a3b56aa786d38bce4e59a40a2d21c4db0786179d64dff0222ce4924046b3b8",
++      "bytes": 92277,
++      "sha256": "46427c74b60af66ba02262d323ec128b32ada64d71489c9541e939216c31b1a8",
+       "not_original_report_bytes": true,
+       "private_init_log_fields_omitted": 2
+     },
+-    "observed_boundary": "Producer stopped or failed before ACTIVE; independently qualified generation-private logd read captured a closed bounded crash prefix",
++    "observed_boundary": "Producer stopped before ACTIVE after ABI3 DONE. Independently the property observer failed in initialization with KeyError('init_current_checks') before any helper spawn or protocol token.",
++    "producer_first_failure": {
++      "origin": "runtime",
++      "message": "owned process generation is dead or changed",
++      "observed_monotonic_ns": 984582618273309
++    },
++    "property_observer_first_error": {
++      "stage": "initialization",
++      "type": "KeyError",
++      "error": "KeyError('init_current_checks')"
++    },
++    "property_observer_spawn_attempts": 0,
++    "property_observer_protocol_packets": 0,
++    "observer_KeyError_not_identified_as_producer_stop_cause": true,
++    "namespace_owner_exit_signal": 1,
++    "worker_retirement_started_before_exit_observation": true,
++    "explicit_stop_requested_before_exit_observation": false,
++    "initiating_SIGHUP_source_proved": false,
+     "crash_connection_attempts": 1,
+     "crash_read_request_attempts": 1,
+-    "crash_packets": 257,
++    "crash_packets": 270,
+     "crash_packet_file": {
+-      "bytes": 28314,
+-      "sha256": "34fe9d3ec735cf18e8852b453cdf2616f32498bedf966346ac66a34ef4ba9deb",
++      "bytes": 32006,
++      "sha256": "f872cccf93dc4f1fb333cefed7e0a0f8bfdae4cf0ce078af320aaca91cf4f9a4",
+       "raw_bytes_included": false
+     },
++    "original_six_retirement_events_complete": true,
+     "exact_unit_cleanup_passed": true,
++    "current_Main_three_maps_unchanged": true,
++    "Main_fence_FDs_closed": true,
+     "normal_owner_runtime_qualified": false,
+-    "LMKD_missing_sdk_file_key_proved": false,
+     "LMKD_current_property_visibility_proved": false,
+     "HWS_health_proved": false,
+     "property_values_changed": false
+@@ -1934,9 +1981,9 @@
+   },
+   "property_visibility_source_contract": {
+     "schema": "pocket4-owner20-four-public-sdk-source-contract-v1",
+-    "source_manifest_sha256": "f3f7c47d9bb931f21e3a78176a4c3b2f78cfc94ccb2783c8353936bdbe04fcd8",
+-    "collector_bytes": 68777,
+-    "collector_sha256": "8aa61f8a7a0e79511dc3bb49e4f4f857d7dc40b68a26e431cda0af0629bf56b2",
++    "source_manifest_sha256": "e9cdf5411962647988f013bf7a25c73d80d25257b1aaee1bdd54e61ebe77f118",
++    "collector_bytes": 68817,
++    "collector_sha256": "e5d993f3bc05cebb4c61c44c84976fca491c10714799a684fed16ef85cd87f8d",
+     "actor_bytes": 29821,
+     "actor_sha256": "e4edd2d14f8a699ab2bef35dd77313c06e260768414efe14d38553eddbb6c141",
+     "current_main_bridge_source_sha256": "502252d1fee3e18ba857ab22cfa934b140cf9afaa9ef4cf53bd980420d956585",
+@@ -2049,15 +2096,83 @@
+       "current_Main_runtime_qualified": false
+     },
+     "runtime_binder_requires_bound_actual_host_and_Main_bridge_control_receipts": true,
+-    "runtime_binder_requires_future_actual_prepared": true
++    "runtime_binder_requires_future_actual_prepared": true,
++    "baseline_source_manifest_sha256": "f3f7c47d9bb931f21e3a78176a4c3b2f78cfc94ccb2783c8353936bdbe04fcd8",
++    "baseline_collector_before_constructor_fix": {
++      "bytes": 68777,
++      "sha256": "8aa61f8a7a0e79511dc3bb49e4f4f857d7dc40b68a26e431cda0af0629bf56b2"
++    },
++    "constructor_record_fix": {
++      "new_field": "init_current_checks",
++      "new_value": "fresh empty list per Capture.__init__",
++      "all_other_production_AST_unchanged": true,
++      "production_diff_sha256": "ea58690887494cce29ce0f256267ad2ddc7d31cf2fda66e684d84a0cd9a1970d",
++      "original_failed_runtime_sha256": "f3f8afc6f8783b69fe5db48913586dc3f16bda63a4f8820aa1251cffb635bda1",
++      "actual_safe_projection_sha256": "46427c74b60af66ba02262d323ec128b32ada64d71489c9541e939216c31b1a8",
++      "producer_failure_cause_fixed_claimed": false
++    },
++    "actual_constructor_controls": {
++      "job_id": "1a1b05dbfbf-fc05-7001",
++      "stdout": {
++        "bytes": 22995,
++        "sha256": "48fd7b7eb8d993c18e4cc4ba1530c5f5a69c5c5dc474242c6e6e1ebe66a4d94c",
++        "git_blob_sha": "968970da414261dcb966a34304e38ed74d958e36"
++      },
++      "terminal": {
++        "bytes": 733,
++        "sha256": "4d8b9737c264cb577bf26bd5cb4525c854b0702ec6ef0bf6e79698f6ea69546e",
++        "git_blob_sha": "6bb3b2ced1281b0dd83808178fc470839ed4a366"
++      },
++      "request": {
++        "bytes": 386877,
++        "sha256": "5a165a01735709d73d1b731ca3809165be70d858463db865d6e38d5b2209cf76",
++        "git_blob_sha": "1445c1e803ba943948d7fd6322d7344d4281f2e0"
++      },
++      "packet": {
++        "bytes": 263267,
++        "sha256": "a37c15a0611f5a022ff052f9171b818e68948315c41907e54452ffc565caf7c0",
++        "git_blob_sha": "80432ff827cd541c2822e040f938e7c356104afc"
++      },
++      "actual_tree": "0c41eefaaacdd038aeaa477c5b53dd6df4bb2c2e",
++      "source_runner_template_sha256": "cd07fa350d875c2566579ef79672a956fd7641f702b4ae4ffca6ca5d74b8908d",
++      "actual_shape_constructor_cases": 11,
++      "pure_dependency_ledger_cases": 8,
++      "real_children": 0,
++      "OS_namespace_hash_and_spawn_are_explicit_seams": true,
++      "in_process_all_owned_files_and_fds_closed": false,
++      "in_process_state": "HOST_CONTROLS_COMPLETE_PROCESS_EXIT_PENDING",
++      "independent_terminal_closes_process_lifetime": true,
++      "actual_helper_bionic_or_namespace_qualified": false,
++      "normal_runtime_admission_created": false
++    },
++    "runtime_binder_requires_bound_actual_constructor_controls": true
+   },
+   "attempt_nonce_source": {
+-    "schema": "pocket4-owner20-current-run-nonce-v1",
+-    "profile": "p4-owner20-normal-20261106-01",
++    "schema": "pocket4-owner20-normal02-actual-nonce-authority-v1",
++    "profile": "p4-owner20-normal-20261106-02",
+     "generator": "secrets.token_hex(32)",
+-    "uid": 1000,
+-    "stdout_bytes": 324,
+-    "stdout_sha256": "9690b96526865d6d332ea36a65e3368fb2ada810ab9386f5761502e11b1ab89c",
++    "actual_source_schema": 1,
++    "count": 1,
++    "no_redraw": true,
++    "excluded_known_prior_attempt_and_generation": [
++      "eae6a2c3c00117d2a6a0f0f08949342de6a14cf8c2dbf695071e7a96b494661c",
++      "fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873"
++    ],
++    "stdout": {
++      "bytes": 494,
++      "sha256": "bc04b8b7487204206eb1759a6920a5eef25b0807d777ab195534170951d9a202",
++      "git_blob_sha": "2fae20db2cf77ed250c649e3cc2bd9e4179cb2fb"
++    },
++    "terminal": {
++      "bytes": 729,
++      "sha256": "f011320b13317ecafa5ec1de0cc12536aeaecbfd7205aec425ecae6848ec0b70",
++      "git_blob_sha": "2f28f73030fcd0c6864dcb4e75cc403240071076"
++    },
++    "job_id": "1a1b0636596-fc05-7029",
++    "actual_tree": "51d32e62406032e7a77814f14f19e6d3fbb6d692",
++    "Main_actions": 0,
++    "Android_actions": 0,
++    "issuer_UID_in_stdout_observed": false,
+     "previous_attempt_reused": false,
+     "generation_nonce_must_come_from_actual_producer": true
+   }

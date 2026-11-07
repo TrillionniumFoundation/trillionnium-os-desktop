@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_COMPLETE_READONLY_WINDOW_PASS_SYSTEM_MESSAGE_SIGKILL_HASH_MATCH_CAUSE_UNRESOLVED",
+  "job_id": "1a1af743e64-fc05-68a9",
+  "stdout": {
+    "path": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1af743e64-fc05-68a9/stdout.log",
+    "bytes": 39533,
+    "sha256": "d9a69221de89f8275770db62aec11303c8434aa3bdea8e1dc06c78194f2449cd",
+    "version": "66306:55231620:39533:1793945000308326806:1793945000308326806",
+    "chunks": [
+      {
+        "offset": 0,
+        "next_offset": 39533,
+        "bytes": 39533,
+        "sha256": "d9a69221de89f8275770db62aec11303c8434aa3bdea8e1dc06c78194f2449cd"
+      }
+    ]
+  },
+  "preflight_tree": "9de279f64bff89efda2d3b8e249648fcc0f22aa1",
+  "admission_tree": "1142206823d28edc68c1880a4781098c5dcf958f",
+  "source_tree": "0d3fe63003185f898a752abd5eab18d73059253b",
+  "controls": {
+    "original": 20,
+    "features": 10,
+    "templates": 6,
+    "total": 36,
+    "all_passed": true
+  },
+  "fixed_identities_unchanged": true,
+  "held_pidfds_acquired": 7,
+  "held_pidfds_closed": 7,
+  "joined_children": 4,
+  "kernel_records": 1080,
+  "kernel_bytes": 557211,
+  "distinct_18_exact_message_targets": true,
+  "offline_complete_system_message_hash_matches": [
+    {
+      "body": "Service 'zygote' (pid 649) received SIGKILL",
+      "bytes": 43,
+      "sha256": "af04d9806e856cb494c0932fecd31feaefc67b21e9e97e573d63cb48e893c1f0",
+      "records": [
+        {
+          "monotonic_us": 965863739042,
+          "realtime_us": 1793940154450471
+        }
+      ]
+    },
+    {
+      "body": "Sending SIGKILL to service 'zygote' (pid 649) process group...",
+      "bytes": 62,
+      "sha256": "a6089ec201113c6d2b57043cfbbd819bbd035921a4726e5a89266e78c80a3ac7",
+      "records": [
+        {
+          "monotonic_us": 965863739091,
+          "realtime_us": 1793940154450520
+        }
+      ]
+    }
+  ],
+  "old_zygote_namespace_pid_numeric_match": 649,
+  "earliest_matching_message_utc": "2026-11-06T04:42:34.450471Z",
+  "new_zygote_service_start_utc": "2026-11-06T04:42:35.090636Z",
+  "new_start_after_first_match_us": 640165,
+  "Main_process_attribution_proved": false,
+  "signal_sender_proved": false,
+  "system_server_first_cause_proved": false,
+  "OOM_proved": false,
+  "journal_retention_completeness_proved": false,
+  "raw_journal_or_private_cmdline_exported": false,
+  "Android_commands": 0,
+  "Main_mutations": 0,
+  "new_epoch_authorized": false,
+  "UI_install_admissions": false
+}

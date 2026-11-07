@@ -1,0 +1,125 @@
+--- a/build_snapshot.py
++++ b/build_nofollow.py
+@@ -254,24 +254,24 @@
+         rows[str(requested)]=row
+     return rows
+ 
+-SOURCE_INPUTS={'source/factory_context.cc': {'bytes': 5377, 'sha256': 'afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a'}, 'source/factory_context.h': {'bytes': 954, 'sha256': 'b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1'}, 'source/proc_maps_factory_wire.cc': {'bytes': 8661, 'sha256': '4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608'}, 'source/role_authorization.cc': {'bytes': 38998, 'sha256': '5d9a43b4f9d51ddfe7896de563353c96f75856171d39c1af9a5816394247a03c'}, 'source/role_authorization.h': {'bytes': 5539, 'sha256': '320933ecda593fdb98b16b7bcd506d48ab81e15c0bd5903b38fe4dde49404d8c'}, 'source/role_snapshot.cc': {'bytes': 9965, 'sha256': 'c2c14486d21e852a971835abd0f36631b4eb37b0a53fbcd5697cf4c11c8e4994'}, 'source/role_snapshot.h': {'bytes': 1243, 'sha256': '24ca056261cf6928bcd0be38f9669290287ac5529629cc77901313060af97bd4'}, 'include/berberis/kernel_api/proc_maps_factory_protocol.h': {'bytes': 5051, 'sha256': 'b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9'}, 'include/berberis/kernel_api/proc_maps_kernel_statfs.h': {'bytes': 2480, 'sha256': '77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0'}, 'include/berberis/kernel_api/proc_maps_linux_compat.h': {'bytes': 2072, 'sha256': '131d1eef8d9f789876c965fa2d827b21a59fc64ab7886fa1f78d95623114370c'}, 'controls/snapshot_controls.cc': {'bytes': 14854, 'sha256': 'fb15f8f56474f445caaa7da7e9b96d7623a4f0ce18eb00862be3867ecc6fd760'}, 'references/factory_main.v2.cc': {'bytes': 28588, 'sha256': '18d8134ed6c2077088104d9b5dc22ccfe1c93f73a87ee880595a9eb89821e2b9'}, 'references/registry_controls.cc': {'bytes': 33258, 'sha256': '5ea30aeb58eebeb09542e9ee68c07e1be7ff92fedcc3141f4d336490458e1a94'}}
+-ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorized-snapshot-host-build-01-20261105')
++SOURCE_INPUTS={'controls/snapshot_controls.cc': {'bytes': 17634, 'sha256': '4a2b14b4e5056974128670c50e445ebe5aa9df240778e9bf33a51f293df802b6'}, 'include/berberis/kernel_api/proc_maps_factory_protocol.h': {'bytes': 5051, 'sha256': 'b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9'}, 'include/berberis/kernel_api/proc_maps_kernel_statfs.h': {'bytes': 2480, 'sha256': '77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0'}, 'include/berberis/kernel_api/proc_maps_linux_compat.h': {'bytes': 2072, 'sha256': '131d1eef8d9f789876c965fa2d827b21a59fc64ab7886fa1f78d95623114370c'}, 'references/factory_main.v2.cc': {'bytes': 28588, 'sha256': '18d8134ed6c2077088104d9b5dc22ccfe1c93f73a87ee880595a9eb89821e2b9'}, 'references/registry_controls.cc': {'bytes': 33258, 'sha256': '5ea30aeb58eebeb09542e9ee68c07e1be7ff92fedcc3141f4d336490458e1a94'}, 'source/factory_context.cc': {'bytes': 5377, 'sha256': 'afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a'}, 'source/factory_context.h': {'bytes': 954, 'sha256': 'b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1'}, 'source/proc_maps_factory_wire.cc': {'bytes': 8661, 'sha256': '4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608'}, 'source/role_authorization.cc': {'bytes': 38998, 'sha256': '5d9a43b4f9d51ddfe7896de563353c96f75856171d39c1af9a5816394247a03c'}, 'source/role_authorization.h': {'bytes': 5539, 'sha256': '320933ecda593fdb98b16b7bcd506d48ab81e15c0bd5903b38fe4dde49404d8c'}, 'source/role_snapshot.cc': {'bytes': 10185, 'sha256': '87667dbd72333545ec7a8ff731874f22217bc74f37e54f31eaf43969c4050b62'}, 'source/role_snapshot.h': {'bytes': 1243, 'sha256': '24ca056261cf6928bcd0be38f9669290287ac5529629cc77901313060af97bd4'}, 'include/berberis/kernel_api/proc_maps_snapshot_reopen.h': {'bytes': 2557, 'sha256': '175107cadc296ab714acb83d40f0559fd8bd5f4505ca73f48861d509d3a07977'}, 'source/factory_main.cc': {'bytes': 28804, 'sha256': 'd9a8f398856536025cabdcaeee2e27b7ca7ccf04634f5a2bcd87bfc9306ed837'}}
++ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105')
+ SOURCE=ROOT/'source'
+ OUT=ROOT/'build01'
+-SOURCE_MANIFEST_SHA='53e90ef34ab51ae8b9700f93419c3c050665fb0ea5a50482417b48aa860497e1'
++SOURCE_MANIFEST_SHA='310e7370a78cc63f0ad72527fbeb37f58f884fdf3ca45ee0acc37e1aee46ad36'
+ DEADLINE=None
+ 
+ 
+ def execute():
+     global DEADLINE
+     require(os.getuid()==1000 and os.geteuid()==1000,'ordinary operator UID1000 required')
+-    require(Path(__file__).absolute()==SOURCE/'build_snapshot.py','fixed staged controller required')
++    require(Path(__file__).absolute()==SOURCE/'build_nofollow.py','fixed staged controller required')
+     real_directory(SOURCE);os.umask(0o077);OUT.mkdir(mode=0o700);(OUT/'tmp').mkdir(mode=0o700)
+     DEADLINE=time.monotonic()+180
+     require(ctypes.CDLL(None,use_errno=True).prctl(36,1,0,0,0)==0 and not children(),'owned subreaper required')
+     allowed=sorted(os.sched_getaffinity(0));require(len(allowed)>=3,'cannot leave two logical CPUs free')
+     os.sched_setaffinity(0,[allowed[-1]])
+-    report={'schema':1,'state':'RUNNING','scope':'matching authorized snapshot compile and default PLAN only',
++    report={'schema':1,'state':'RUNNING','scope':'matching nofollow snapshot and standalone V2 factory compile; default PLAN only',
+             'started_utc':utc(),'Main_actions':0,'Main_identity_observed':False,
+             'registry_positive_executed':False,'snapshot_positive_executed':False,'platform_policy_qualified':False,
+             'factory_service_started':False,'snapshot_created':False,
+@@ -282,15 +282,15 @@
+     source_before={};tools={};dependencies={};resource_fd=-1;resource_before=None;artifact_pins={}
+     try:
+         resource_fd,resource_before=begin_resources();report['owned_resources_before']=resource_before
+-        authority,authority_pin=held(SOURCE/'snapshot-source-pins.json',32768)
+-        require(sha(authority)==SOURCE_MANIFEST_SHA,'snapshot source authority differs')
++        authority,authority_pin=held(SOURCE/'nofollow-source-pins.json',32768)
++        require(sha(authority)==SOURCE_MANIFEST_SHA,'nofollow source authority differs')
+         frozen={row['path']:row for row in json.loads(authority)['files']}
+-        require(len(SOURCE_INPUTS)==13,'reviewed exact thirteen source/reference inputs required')
++        require(len(SOURCE_INPUTS)==15,'reviewed exact fifteen source/reference inputs required')
+         for name,pin in SOURCE_INPUTS.items():
+             require(all(frozen[name][key]==pin[key] for key in ['bytes','sha256']),
+                     'reviewed compile input not bound by source authority: '+name)
+         stage_raw,stage_pin=held(ROOT/'stage-receipt.json',32768);stage=json.loads(stage_raw)['files']
+-        source_before=regular_tree(SOURCE,16,512*1024)
++        source_before=regular_tree(SOURCE,18,512*1024)
+         require(set(source_before)==set(stage),'staged source membership differs')
+         for name,pin in source_before.items():
+             require(pin['bytes']==stage[name]['bytes'] and pin['sha256']==stage[name]['sha256'],
+@@ -326,7 +326,7 @@
+                '-I'+str(SOURCE/'source'),'-I'+str(SOURCE/'include')]
+         units=[('authorization','source/role_authorization.cc'),('context','source/factory_context.cc'),
+                ('wire','source/proc_maps_factory_wire.cc'),('snapshot','source/role_snapshot.cc'),
+-               ('control','controls/snapshot_controls.cc')]
++               ('control','controls/snapshot_controls.cc'),('factory','source/factory_main.cc')]
+         before_units={}
+         for label,name in units:
+             raw=command([compiler,*flags,'-M','-MT','CONTROL',str(SOURCE/name)],SOURCE,env,
+@@ -335,7 +335,7 @@
+         require(0<len(dependencies)<=1024,'complete dependency closure out of bound')
+         report['dependency_inputs']=write_new(OUT/'dependency-inputs-before.json',dependencies)
+         report['dependency_count']=len(dependencies)
+-        objects=[]
++        objects={}
+         for label,name in units:
+             target=OUT/(label+'.o');md=OUT/(label+'.d')
+             command([compiler,*flags,'-MD','-MF',str(md),'-MT','CONTROL','-c',str(SOURCE/name),'-o',str(target)],
+@@ -346,10 +346,10 @@
+             artifact_pins[label]=hash_held(target,8*1024*1024)
+             report['objects'][label]={'object':artifact_pins[label],'actual_md':md_pin,
+                                       'dependency_count':len(before_units[label])}
+-            objects.append(str(target))
++            objects[label]=str(target)
+         binary=OUT/'snapshot_controls'
+-        command([compiler,*flags,*objects,'-o',str(binary)],SOURCE,env,'link-control',report['commands'],30)
+-        artifact=hash_held(binary,8*1024*1024);artifact_pins['control']=artifact
++        command([compiler,*flags,*(objects[name]for name in ['authorization','context','wire','snapshot','control']),'-o',str(binary)],SOURCE,env,'link-control',report['commands'],30)
++        artifact=hash_held(binary,8*1024*1024);artifact_pins['control-elf']=artifact
+         with binary.open('rb')as stream:require(stream.read(4)==b'\x7fELF','actual result is not ELF')
+         require(binary.stat().st_mode&0o111,'actual ELF not executable')
+         raw=command(['/usr/bin/ldd',str(binary)],SOURCE,env,'control-libraries',report['commands'],10).decode()
+@@ -361,9 +361,30 @@
+         require(runtime,'actual control library closure empty')
+         report['runtime_libraries']=runtime
+         plan=json.loads(command([str(binary)],SOURCE,env,'default-plan',report['commands'],10))
+-        require(plan=={'state':'PLAN_ONLY','owned_cases':4,
++        require(plan=={'state':'PLAN_ONLY','owned_cases':5,
+                        'factory_service_started':False,'Main_actions':0},'default PLAN contract differs')
+         report['artifacts']['control']={'elf':artifact,'default_plan':plan}
++        factory_binary=OUT/'factory_v2'
++        command([compiler,*flags,*(objects[name]for name in ['context','wire','factory']),
++                 '-o',str(factory_binary)],SOURCE,env,'link-factory',report['commands'],30)
++        factory_artifact=hash_held(factory_binary,8*1024*1024);artifact_pins['factory-elf']=factory_artifact
++        with factory_binary.open('rb')as stream:require(stream.read(4)==b'\x7fELF','factory result is not ELF')
++        require(factory_binary.stat().st_mode&0o111,'factory ELF not executable')
++        raw=command(['/usr/bin/ldd',str(factory_binary)],SOURCE,env,
++                    'factory-libraries',report['commands'],10).decode()
++        require('not found'not in raw,'actual factory library missing')
++        factory_runtime={}
++        for line in raw.splitlines():
++            match=re.search(r'(?:=>\s*)?(/\S+)\s+\(',line)
++            if match:factory_runtime[match[1]]=pin_tool(match[1]);tools[match[1]]=factory_runtime[match[1]]
++        require(factory_runtime,'actual factory library closure empty')
++        report['factory_runtime_libraries']=factory_runtime
++        factory_plan=json.loads(command([str(factory_binary)],SOURCE,env,
++                                         'factory-default-plan',report['commands'],10))
++        require(factory_plan=={'state':'DISABLED_REQUIRES_PINNED_INHERITED_OWNER','protocol':2,
++                               'service_started':False,'production_ready':False},
++                'standalone V2 factory default-disabled contract differs')
++        report['artifacts']['factory']={'elf':factory_artifact,'default_plan':factory_plan}
+         report['tool_inputs']=write_new(OUT/'tool-inputs-before.json',tools)
+         report['state']='PASS_BUILD_ONLY'
+     except Exception as error:
+@@ -373,7 +394,7 @@
+         signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGTERM,signal.SIGINT})
+         report['cleanup']=cleanup_children()
+         try:
+-            report['source_unchanged_after']=bool(source_before)and regular_tree(SOURCE,16,512*1024)==source_before
++            report['source_unchanged_after']=bool(source_before)and regular_tree(SOURCE,18,512*1024)==source_before
+             report['tool_changes']=verify_resolved(list(tools.values()))
+             report['dependency_changes']=verify_resolved(list(dependencies.values()))
+             report['artifacts_unchanged_after']=all(hash_held(Path(row['path']),8*1024*1024)==row for row in artifact_pins.values())

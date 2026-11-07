@@ -1,0 +1,641 @@
+--- original/read_fixed_parents.py
++++ current/read_status_child_evidence.py
+@@ -1,12 +1,12 @@
+ #!/usr/bin/env python3
++"""One fixed native Status with failure-time original child-gate evidence.
+-"""Fixed baseline02 three-parent diagnostic; no relaxation or runtime admission.
+ 
+ The original generated guard, policy and ancestry sources remain immutable.
+ Only complete bounded kernel child tables from three already fixed parents are
+ projected. An original uniqueness rejection is reported as an observation;
+ it never authorizes Main, an App action, a new process, or task retirement.
+ """
++import array,hashlib,json,os,re,select,signal,socket,stat,struct,time,types
+-import hashlib,json,os,re,signal,stat,time,types
+ from pathlib import Path
+ 
+ GUARD_PATH=Path('/home/alex/work/pocket4-current-host-r6-source-01/current_baseline_guard.py')
+@@ -171,18 +171,419 @@
+             'cgroup_sha256':sha(canonical(row['cgroup'])),
+             'complete_identity_equal_baseline':True}
+ 
++
++# The original c.sample implementation accepts its policy as an explicit argument.
++# This diagnostic facade delegates every gate to that exact policy. No shared
++# module or global is changed. A rejected gate still raises the original object.
++SOCKET_PATH='/run/droidloom/control.sock'
++STATUS_REQUEST=b'{"command":"status"}'
++MAX_STATUS_BYTES=65536
++MAX_SAMPLE_CYCLES=64
++SAMPLE_INTERVAL_SECONDS=0.01
++STATUS_WINDOW_SECONDS=12
++PUBLIC_EXECUTABLE_ROLES={
++    '/usr/bin/timeout':'host_timeout',
++    '/usr/bin/nsenter':'host_namespace_enter',
++    '/usr/sbin/ip':'host_ip',
++    '/usr/bin/ip':'host_ip',
++    '/system/bin/getprop':'Android_property_reader',
++    '/vendor/bin/droidloom-task-launcher':'Android_task_launcher',
++}
++
++def strict_status_json(raw):
++    def pairs(items):
++        value={}
++        for key,item in items:
++            need(key not in value,'STATUS_DUPLICATE_KEY');value[key]=item
++        return value
++    def constant(value):raise RuntimeError('STATUS_NONFINITE_NUMBER')
++    return json.loads(raw,object_pairs_hook=pairs,parse_constant=constant)
++
++def require_peer(peer):
++    need(type(peer) is dict and set(peer)=={'pid','uid','gid'} and
++         type(peer['pid']) is int and peer['pid']==PARENTS[0]['pid'] and
++         type(peer['uid']) is int and peer['uid']==0 and
++         type(peer['gid']) is int and 0<=peer['gid']<2**32,'STATUS_PEER_MISMATCH')
++    return True
++
++def parse_status(raw):
++    need(type(raw) is bytes and 0<len(raw)<=MAX_STATUS_BYTES,'STATUS_RESPONSE_BOUND')
++    value=strict_status_json(raw)
++    need(type(value) is dict and {'ok','state','message'}<=set(value),'STATUS_RESPONSE_SCHEMA')
++    optional={'host_pid','launch','applications','application_icon','diagnostics'}
++    need(set(value)<={'ok','state','message'}|optional,'STATUS_UNKNOWN_FIELD')
++    need(type(value['ok']) is bool and value['state'] in ('running','stopped') and
++         type(value['message']) is str and len(value['message'].encode())<=32768,
++         'STATUS_RESPONSE_SCHEMA')
++    need(all(value.get(key) is None for key in optional-{'host_pid'}),'STATUS_RESPONSE_SCHEMA')
++    pid=value.get('host_pid')
++    need(pid is None or (type(pid) is int and 0<pid<=2147483647),'STATUS_RESPONSE_SCHEMA')
++    need((value['state']=='running' and pid is not None) or
++         (value['state']=='stopped' and pid is None),'STATUS_RESPONSE_SCHEMA')
++    return value
++
++def project_status(value,raw):
++    return {'ok':value['ok'],'state':value['state'],'host_pid':value.get('host_pid'),
++            'message_utf8_bytes':len(value['message'].encode()),
++            'message_sha256':sha(value['message'].encode()),
++            'response_bytes':len(raw),'response_sha256':sha(raw),
++            'raw_response_or_message_exported':False,
++            'matches_current_expected_owner':value['ok'] is True and
++                value['state']=='running' and value.get('host_pid')==PARENTS[1]['pid']}
++
++def public_child_identity(value,expected_identities):
++    need(type(value) is dict and set(value)==IDENTITY_KEYS,'CHILD_COMPLETE_IDENTITY_SCHEMA')
++    need(type(value['host_pid']) is int and 0<value['host_pid']<=2147483647 and
++         type(value['parent_host_pid']) is int and 0<=value['parent_host_pid']<=2147483647 and
++         type(value['start_ticks']) is int and 0<value['start_ticks']<2**64 and
++         type(value['namespace_pids']) is list and 1<=len(value['namespace_pids'])<=8 and
++         all(type(x) is int and 0<x<=2147483647 for x in value['namespace_pids']) and
++         type(value['uids']) is list and len(value['uids'])==4 and
++         all(type(x) is int and 0<=x<2**32 for x in value['uids']),'CHILD_IDENTITY_NUMBERS')
++    need(type(value['namespaces']) is dict and set(value['namespaces'])=={'pid','mnt'} and
++         all(type(value['namespaces'][k]) is str and
++             re.fullmatch(k+r':\[[0-9]{1,20}\]',value['namespaces'][k])
++             for k in ('pid','mnt')),'CHILD_IDENTITY_NAMESPACES')
++    need(type(value['cmdline']) is list and len(value['cmdline'])<=256 and
++         all(type(x) is str for x in value['cmdline']) and
++         len(canonical(value['cmdline']))<=65536 and
++         type(value['cgroup']) is list and len(value['cgroup'])<=32 and
++         all(type(x) is str for x in value['cgroup']) and
++         len(canonical(value['cgroup']))<=65536 and
++         type(value['executable']) is str and len(value['executable'].encode())<=4096,
++         'CHILD_PRIVATE_FIELD_BOUND')
++    matches=[role for role,identity in expected_identities.items() if identity==value]
++    need(len(matches)<=1,'CHILD_ROLE_IDENTITY_AMBIGUOUS')
++    return {'host_pid':value['host_pid'],'parent_host_pid':value['parent_host_pid'],
++            'start_ticks':value['start_ticks'],'namespace_pids':value['namespace_pids'],
++            'uids':value['uids'],'namespaces':value['namespaces'],
++            'full_identity_sha256':sha(canonical(value)),
++            'fixed_baseline_role':matches[0] if matches else None,
++            'exact_expected_role_identity':bool(matches),
++            'public_executable_shape':PUBLIC_EXECUTABLE_ROLES.get(value['executable']),
++            'public_executable_shape_is_installed_source_authority':False,
++            'cmdline_json_bytes':len(canonical(value['cmdline'])),
++            'cmdline_sha256':sha(canonical(value['cmdline'])),
++            'executable_utf8_bytes':len(value['executable'].encode()),
++            'executable_sha256':sha(value['executable'].encode()),
++            'cgroup_json_bytes':len(canonical(value['cgroup'])),
++            'cgroup_sha256':sha(canonical(value['cgroup'])),
++            'raw_cmdline_executable_cgroup_exported':False}
++
++def collect_children(pool,c,e,table,row,expected_identities,check):
++    result=[]
++    # Called only after the real validator reached its final uniqueness gate.
++    # Thus the full table shape, integer bounds and no-duplicate union passed.
++    for pid in table['child_host_pids']:
++        item={'host_pid':pid,'sample_started_realtime_ns':time.time_ns(),
++              'sample_started_monotonic_ns':time.monotonic_ns(),
++              'complete_stable_identity_observed':False,'identity':None,'error':None}
++        result.append(item);fd=None
++        try:
++            check();fd=pool.own(os.pidfd_open(pid,0),'diagnostic_observed_child_pidfd')
++            first=e.process_identity(pid)
++            item['identity']=public_child_identity(first,expected_identities)
++            need(first['host_pid']==pid and first['parent_host_pid']==row['pid'],
++                 'OBSERVED_CHILD_PARENT_DIFFERS')
++            c.require_pidfd_live(fd)
++            last=e.process_identity(pid)
++            need(last==first,'OBSERVED_CHILD_IDENTITY_CHANGED')
++            c.require_pidfd_live(fd);check()
++            item['complete_stable_identity_observed']=True
++        except BaseException as error:item['error']=safe_error(error)
++        finally:
++            if fd is not None:pool.close(fd)
++            item['sample_ended_monotonic_ns']=time.monotonic_ns()
++            item['sample_ended_realtime_ns']=time.time_ns()
++    return result
++
++def require_observed_table(policy,table,parent,child,capture,events,clock=time.monotonic_ns,
++                           realtime=time.time_ns):
++    match=[row for row in PARENTS if row['pid']==parent and row['child']==child]
++    need(len(match)==1,'EXACT_FIXED_PARENT_VALIDATION_ROUTE')
++    row=match[0]
++    started=clock();wall=realtime()
++    try:
++        policy.validate_child_table(table,parent,child)
++    except BaseException as original:
++        event={'parent_role':row['role'],'parent_host_pid':parent,
++               'expected_child_host_pid':child,'validation_started_monotonic_ns':started,
++               'validation_failed_monotonic_ns':clock(),'validation_realtime_ns':wall,
++               'original_error':safe_error(original),'original_gate_passed':False,
++               'complete_table':None,'parent_identity_at_failure':None,'observed_children':[],
++               'child_identity_capture_error':None,'runtime_admitted':False}
++        events.append(event)
++        if isinstance(original,RuntimeError) and str(original)=='OWNER_SINGLE_DIRECT_CHILD_REQUIRED':
++            event['complete_table']=json.loads(json.dumps(table))
++            try:
++                captured=capture(table,row)
++                event['parent_identity_at_failure']=captured['parent']
++                event['observed_children']=captured['children']
++            except BaseException as secondary:event['child_identity_capture_error']=safe_error(secondary)
++        # A capture failure must never replace or convert the original failure.
++        raise
++    return True
++
++class ObservedPolicy:
++    def __init__(self,original,capture,events):
++        self.original,self.capture,self.events=original,capture,events
++        self.ROLES=original.ROLES
++        self.EXPECTED_INTERMEDIARY=original.EXPECTED_INTERMEDIARY
++        self.CHAIN_PARENTS=original.CHAIN_PARENTS
++    def validate_child_table(self,table,parent,child):
++        return require_observed_table(self.original,table,parent,child,self.capture,self.events)
++    def validate_cell_lineage(self,value):
++        return self.original.validate_cell_lineage(value)
++
++def sample_once(pool,p,c,e,procs,mid,check,capture,events,observations):
++    index=len(observations)+1
++    record={'index':index,'started_monotonic_ns':time.monotonic_ns(),
++            'started_realtime_ns':time.time_ns(),'complete':False,
++            'tables':None,'lineage_sha256':None,'error':None}
++    observations.append(record)
++    try:
++        # Exact original c.sample, with an explicitly supplied policy facade.
++        # The real production policy is called at every original gate.
++        value=c.sample(pool,ObservedPolicy(p,capture,events),e,procs,mid,check)
++        record['tables']=value['child_tables']
++        record['lineage_sha256']=sha(canonical(value))
++        record['complete']=True
++        return value
++    except BaseException as error:
++        record['error']=safe_error(error);raise
++    finally:
++        record['ended_monotonic_ns']=time.monotonic_ns()
++        record['ended_realtime_ns']=time.time_ns()
++
++def send_status_once(sock,state):
++    need(state['send_attempted'] is False and state['sent_complete'] is False,
++         'STATUS_ALREADY_ATTEMPTED_NO_REPLAY')
++    state['send_attempted']=True
++    state['send_started_monotonic_ns']=time.monotonic_ns()
++    state['send_started_realtime_ns']=time.time_ns()
++    sock.sendall(STATUS_REQUEST)
++    state['sent_complete']=True
++    state['send_completed_monotonic_ns']=time.monotonic_ns()
++    sock.shutdown(socket.SHUT_WR)
++
++def close_ancillary(pool,ancillary):
++    received=[]
++    for level,kind,data in ancillary:
++        if level==socket.SOL_SOCKET and kind==socket.SCM_RIGHTS:
++            ids=array.array('i')
++            ids.frombytes(data[:len(data)-(len(data)%ids.itemsize)])
++            received.extend(ids)
++    admitted=[];first=None
++    for fd in received:
++        try:
++            pool.own(fd,'unexpected_Status_received_FD');admitted.append(fd)
++        except BaseException as error:
++            if first is None:first=error
++    for fd in admitted:pool.close(fd)
++    if first is not None:raise first
++    return bool(ancillary)
++
++def receive_with_samples(sock,pool,state,observe,check,*,clock=time.monotonic,wait_readable=select.select):
++    chunks=[];count=0;deadline=clock()+STATUS_WINDOW_SECONDS
++    first=None;observation_failed=False;sequence=0;next_sample=clock()
++    sock.setblocking(False)
++    while True:
++        check();now=clock()
++        need(now<deadline,'STATUS_RESPONSE_DEADLINE')
++        if not observation_failed and sequence<MAX_SAMPLE_CYCLES and now>=next_sample:
++            sequence+=1
++            state['sample_cycles']=sequence
++            state['maximum_cycles_reached']=sequence==MAX_SAMPLE_CYCLES
++            try:observe()
++            except BaseException as error:
++                first=error;observation_failed=True
++                state['first_sampling_error']=safe_error(error)
++                state['sampling_stopped_after_first_rejection']=True
++            next_sample=clock()+SAMPLE_INTERVAL_SECONDS
++        wait=min(0.01,max(0.0,deadline-clock()))
++        readable,_,_=wait_readable([sock],[],[],wait)
++        if not readable:continue
++        try:
++            chunk,ancillary,flags,_=sock.recvmsg(min(8192,MAX_STATUS_BYTES+1-count),
++                                               socket.CMSG_SPACE(256),socket.MSG_CMSG_CLOEXEC)
++        except BlockingIOError:continue
++        unexpected=close_ancillary(pool,ancillary)
++        need(not unexpected and not(flags&(socket.MSG_TRUNC|socket.MSG_CTRUNC)),
++             'STATUS_ANCILLARY_OR_TRUNCATION')
++        if not chunk:
++            state['response_complete']=True
++            state['response_completed_monotonic_ns']=time.monotonic_ns()
++            state['response_completed_realtime_ns']=time.time_ns()
++            break
++        chunks.append(chunk);count+=len(chunk)
++        need(count<=MAX_STATUS_BYTES,'STATUS_RESPONSE_BOUND')
++    state['sample_cycles']=sequence
++    state['maximum_cycles_reached']=sequence==MAX_SAMPLE_CYCLES
++    state['all_socket_bytes_collected']=True
++    return b''.join(chunks),first
++
++def retain_probe_error(result,phase,error):
++    first=result['Status'].get('first_sampling_error')
++    if first is not None:
++        result['error']={'phase':'one_Status_original_child_gate',**first}
++        if safe_error(error)!=first:
++            result['secondary_errors'].append({'phase':phase,**safe_error(error)})
++    else:result['error']={'phase':phase,**safe_error(error)}
++
++def probe_controls(policy):
++    report=controls(policy);cases=report['cases']
++    def case(name,fn):
++        fn();cases.append({'name':name,'passed':True})
++    def table(children):
++        parent=PARENTS[0]['pid']
++        return {'thread_ids':[parent],'per_thread':{str(parent):children},
++                'child_host_pids':children}
++    def reject(code,fn):
++        try:fn()
++        except RuntimeError as error:need(str(error)==code,'PROBE_CONTROL_WRONG_REJECTION')
++        else:raise RuntimeError('PROBE_CONTROL_EXPECTED_REJECTION')
++    def gate_exact():
++        events=[];calls=[]
++        require_observed_table(policy,table([PARENTS[0]['child']]),PARENTS[0]['pid'],
++            PARENTS[0]['child'],lambda t,r:calls.append(t),events)
++        need(events==[] and calls==[],'EXACT_GATE_SHOULD_NOT_CAPTURE')
++    case('observed_original_exact_gate_no_failure_record',gate_exact)
++    def failed(children):
++        events=[];calls=[]
++        def capture(t,r):
++            calls.append((t,r));return {'parent':{'host_pid':r['pid']},'children':[{'host_pid':x} for x in t['child_host_pids']]}
++        reject('OWNER_SINGLE_DIRECT_CHILD_REQUIRED',lambda:require_observed_table(
++            policy,table(children),PARENTS[0]['pid'],PARENTS[0]['child'],capture,events))
++        need(len(events)==1 and len(calls)==1 and
++             events[0]['parent_role']=='daemon' and events[0]['complete_table']==table(children) and
++             events[0]['observed_children']==[{'host_pid':x} for x in children] and
++             events[0]['original_gate_passed'] is False,'FAILURE_EVIDENCE_ROUTE')
++    case('empty_table_original_failure_with_exact_parent',lambda:failed([]))
++    case('additional_child_original_failure_full_table',lambda:failed(sorted([1,PARENTS[0]['child']])))
++    case('replacement_child_original_failure_not_adopted',lambda:failed([1]))
++    def capture_error():
++        events=[]
++        def fail(t,r):raise RuntimeError('SYNTHETIC_CAPTURE_FAILURE')
++        reject('OWNER_SINGLE_DIRECT_CHILD_REQUIRED',lambda:require_observed_table(
++            policy,table([]),PARENTS[0]['pid'],PARENTS[0]['child'],fail,events))
++        need(events[0]['child_identity_capture_error']['code']=='SYNTHETIC_CAPTURE_FAILURE' and
++             events[0]['original_error']['code']=='OWNER_SINGLE_DIRECT_CHILD_REQUIRED',
++             'CAPTURE_MUST_NOT_MASK_PRIMARY')
++    case('child_capture_failure_preserves_original_gate',capture_error)
++    def malformed():
++        events=[];calls=[]
++        reject('COMPLETE_OWNER_PER_THREAD_CHILDREN_REQUIRED',lambda:require_observed_table(
++            policy,table([1,1]),PARENTS[0]['pid'],PARENTS[0]['child'],
++            lambda t,r:calls.append(t),events))
++        need(calls==[] and events[0]['complete_table'] is None,'SHAPE_FAILURE_NOT_PROJECTED')
++    case('malformed_table_not_projected_as_complete',malformed)
++    def exact_route():
++        events=[]
++        class FakeAncestry:
++            def sample(self,pool,facade,epoch,procs,mid,check):
++                facade.validate_child_table(table([]),PARENTS[0]['pid'],PARENTS[0]['child'])
++                raise RuntimeError('UNREACHABLE')
++        observed=[]
++        reject('OWNER_SINGLE_DIRECT_CHILD_REQUIRED',lambda:sample_once(None,policy,FakeAncestry(),
++            None,{}, {},lambda:None,lambda t,r:{'parent':{'host_pid':r['pid']},'children':[]},events,observed))
++        need(len(events)==len(observed)==1 and observed[0]['complete'] is False and
++             observed[0]['error']['code']=='OWNER_SINGLE_DIRECT_CHILD_REQUIRED',
++             'ACTUAL_SAMPLE_CALLER_FACADE_ROUTE')
++    case('sample_entry_reaches_actual_production_validator',exact_route)
++    def privacy():
++        x={'host_pid':42,'parent_host_pid':11,'start_ticks':100,'namespace_pids':[42],
++           'uids':[0]*4,'cmdline':['PRIVATE_SENTINEL_COMMAND'],'executable':'/PRIVATE_SENTINEL_EXE',
++           'namespaces':{'pid':'pid:[1]','mnt':'mnt:[2]'},'cgroup':['PRIVATE_SENTINEL_GROUP']}
++        r=public_child_identity(x,{'known_role':dict(x,start_ticks=101)})
++        need(r['fixed_baseline_role'] is None and r['public_executable_shape'] is None and
++             'PRIVATE_SENTINEL' not in json.dumps(r),'PRIVATE_CHILD_NOT_EXPORTED')
++        same=public_child_identity(x,{'known_role':x})
++        need(same['fixed_baseline_role']=='known_role' and same['exact_expected_role_identity'],
++             'FULL_IDENTITY_ROLE_REQUIRED')
++    case('child_role_full_identity_and_unknown_text_hash_only',privacy)
++    def once():
++        class FakeSocket:
++            def __init__(self):self.calls=[]
++            def sendall(self,value):self.calls.append(('send',value))
++            def shutdown(self,value):self.calls.append(('shutdown',value))
++        sock=FakeSocket();state={'send_attempted':False,'sent_complete':False}
++        send_status_once(sock,state)
++        reject('STATUS_ALREADY_ATTEMPTED_NO_REPLAY',lambda:send_status_once(sock,state))
++        need(sock.calls==[('send',STATUS_REQUEST),('shutdown',socket.SHUT_WR)] and
++             STATUS_REQUEST==b'{"command":"status"}','ONE_EXACT_STATUS_ONLY')
++    case('single_fixed_status_send_no_replay',once)
++    def status_private():
++        raw=canonical({'ok':True,'state':'running','host_pid':PARENTS[1]['pid'],
++                       'message':'PRIVATE_SENTINEL_STATUS'})
++        value=parse_status(raw);out=project_status(value,raw)
++        need(out['matches_current_expected_owner'] and 'PRIVATE_SENTINEL' not in json.dumps(out),
++             'STATUS_PRIVATE_OUTPUT')
++        reject('STATUS_UNKNOWN_FIELD',lambda:parse_status(canonical(dict(value,extra=1))))
++    case('strict_status_shape_and_private_message',status_private)
++    case('wrong_socket_peer_rejected',lambda:reject('STATUS_PEER_MISMATCH',
++         lambda:require_peer({'pid':1,'uid':0,'gid':0})))
++    case('duplicate_status_key_rejected',lambda:reject('STATUS_DUPLICATE_KEY',
++         lambda:parse_status(b'{"ok":true,"ok":false,"state":"stopped","message":"x"}')))
++    def drain_after_gate_failure():
++        original=RuntimeError('OWNER_SINGLE_DIRECT_CHILD_REQUIRED');seen=[]
++        data=canonical({'ok':True,'state':'running','host_pid':PARENTS[1]['pid'],'message':'x'})
++        class FakeSocket:
++            def __init__(self):self.parts=[data,b''];self.calls=[]
++            def setblocking(self,value):self.calls.append(('blocking',value))
++            def recvmsg(self,*args):self.calls.append(('recv',None));return self.parts.pop(0),[],0,None
++        def observe():
++            seen.append(1);raise original
++        state={};sock=FakeSocket()
++        response,error=receive_with_samples(sock,None,state,observe,lambda:None,
++            clock=lambda:1.0,wait_readable=lambda a,b,c,d:(a,[],[]))
++        need(response==data and error is original and seen==[1] and
++             state['response_complete'] is True and state['sample_cycles']==1 and
++             state['sampling_stopped_after_first_rejection'] is True and
++             len([x for x in sock.calls if x[0]=='recv'])==2,'FIRST_GATE_FAIL_STOPS_ONLY_SAMPLING')
++    case('one_response_drained_without_repeating_failed_gate_sample',drain_after_gate_failure)
++    def secondary_drain_error():
++        primary={'type':'RuntimeError','code':'OWNER_SINGLE_DIRECT_CHILD_REQUIRED'}
++        result={'Status':{'first_sampling_error':primary},'error':None,'secondary_errors':[]}
++        retain_probe_error(result,'same_Status_drain',RuntimeError('STATUS_RESPONSE_DEADLINE'))
++        need(result['error']=={'phase':'one_Status_original_child_gate',**primary} and
++             result['secondary_errors']==[{'phase':'same_Status_drain','type':'RuntimeError',
++                                          'code':'STATUS_RESPONSE_DEADLINE'}],
++             'RPC_DRAIN_ERROR_MUST_NOT_HIDE_FIRST_GATE')
++    case('same_Status_drain_error_retained_secondary',secondary_drain_error)
++    need(len(cases)==24 and len({x['name'] for x in cases})==24,'EXACT_TWENTYFOUR_CONTROLS')
++    return {'count':24,'all_passed':True,'cases':cases,'synthetic_data_only':True,
++            'original_ten_cases_unchanged':True,'actual_production_policy_called':True,
++            'synthetic_ancestry_IO_seam_for_sample_route':True}
++
+ def execute():
++    began=time.monotonic();began_ns=time.monotonic_ns();deadline=began+25;pool=None;phase='input_guard';g=None;b=None;sock=None;held_ready=False;body_complete=False
++    result={'schema':'pocket4-baseline02-one-Status-child-evidence-v1','ok':False,
+-    began=time.monotonic();began_ns=time.monotonic_ns();deadline=began+8;pool=None;phase='input_guard'
+-    result={'schema':'pocket4-baseline02-three-parent-diagnostic-v1','ok':False,
+             'error':None,'secondary_errors':[],'baseline_sha256':BASELINE_SHA,
+             'qualification_sha256':QUALIFICATION_SHA,'expected_epoch_sha256':EPOCH_SHA,
+             'original_Main_guard_source_unchanged':True,'original_unique_child_gate_unchanged':True,
++            'client_Android_commands':0,'client_process_children_created':0,'external_signals':0,
++            'client_namespace_entries':0,'App_or_task_actions':0,'files_written':0,
+-            'Android_actions':0,'process_children_created':0,'external_signals':0,
+-            'namespace_entries':0,'App_or_task_actions':0,'files_written':0,
+             'Main_runtime_requalified':False,'old_tasks_reauthorized':False,
+             'cleanup_authority':False,'raw_private_baseline_or_cmdline_exported':False,
++            'input_FDs':{},'observations':[],'failure_gate_evidence':[],
++            'source_sha256':SOURCE_SHA256,
++            'original_Main_before':None,'original_Main_after':None,
++            'original_guard_and_epoch_internal_FDs_independently_counted':False,
++            'independent_final_observation_complete':False,
++            'Status':{'send_attempted':False,'sent_complete':False,'response_complete':False,
++                      'sampling_stopped_after_first_rejection':False,'first_sampling_error':None,
++                      'sample_cycles':0,'maximum_cycles_reached':False,'all_socket_bytes_collected':False,
++                      'automatic_retry':False,'request_bytes':len(STATUS_REQUEST),
++                      'request_sha256':sha(STATUS_REQUEST)},
++            'server_reference_may_spawn_readonly_ip_nsenter_getprop':True,
++            'server_reference_poll_may_reap_dead_owner':True,
++            'server_internal_children_and_Android_reads_not_precounted':True,
++            'client_Status_RPC_limit':1,'client_threads_created':0,
++            'sampling_cycle_limit':MAX_SAMPLE_CYCLES,'status_deadline_seconds':STATUS_WINDOW_SECONDS,
++            'total_read_budget_seconds':25,'installed_Main_source_version_verified':False,
++            'past_London_failure_attributed':False,'past_London_samples_filled':False,
++            'unobserved_between_samples_is_unknown':True,'gate_failure_stops_sampling':True}
++    def check():need(time.monotonic()<deadline,'DIAGNOSTIC_TWENTYFIVE_SECOND_READ_DEADLINE')
+-            'input_FDs':{},'observations':[]}
+-    def check():need(time.monotonic()<deadline,'DIAGNOSTIC_EIGHT_SECOND_READ_DEADLINE')
+     try:
+         need(os.getuid()==os.geteuid()==0,'ROOT_READ_ONLY_REQUIRED')
+         raw=read_guard(check,result['input_FDs'])
+@@ -194,7 +595,9 @@
+         phase='full_baseline_and_original_source'
+         check();b,q,p,e,h,c=g.load_current()
+         need(tuple(p.CHAIN_PARENTS)==PARENTS,'EXACT_FIXED_THREE_PARENT_CHAIN_REQUIRED')
++        result['controls']=probe_controls(p)
++        phase='original_full_Main_before'
++        result['original_Main_before']=g.current_guard(b,action_attempted=False)
+-        result['controls']=controls(p)
+         # Identical historical and executable-lineage gates used by current_guard.
+         old=p.parse(g.raw_file(p.ACTIVATION_PATH,131072,p.ACTIVATION_SHA,p.ACTIVATION_BYTES))
+         verified=p.parse(g.raw_file(p.VERIFIED_PATH,131072,p.VERIFIED_SHA))
+@@ -238,71 +641,128 @@
+         result['intermediary_before']=identity_projection('owner_intermediary',before_mid,
+                                                          b['owner_lineage']['intermediary_process'])
+         parent_fds={'daemon':procs['daemon'],'launcher':procs['launcher'],'intermediary':mid['proc']}
++        held_ready=True
++        expected_identities={**b['all_seven_processes']['binding']['processes'],
++                             'owner_intermediary':b['owner_lineage']['intermediary_process']}
++        def capture(table,row):
++            role='owner_intermediary' if row['role']=='intermediary' else row['role']
++            check();parent=e.process_identity(row['pid'])
++            projected=identity_projection(role,parent,expected_identities[role])
++            children=collect_children(pool,c,e,table,row,expected_identities,check)
++            need(e.process_identity(row['pid'])==parent,'FAILURE_PARENT_CHANGED_DURING_CAPTURE')
++            return {'parent':projected,'children':children}
++        def observe():
++            value=sample_once(pool,p,c,e,procs,mid,check,capture,
++                              result['failure_gate_evidence'],result['observations'])
++            need(value==b['owner_lineage'],'OBSERVED_FULL_OWNER_LINEAGE_DIFFERS')
++            return value
++        phase='exact_original_sample_before_Status'
++        observe()
++        phase='fixed_Status_socket'
++        socket_path=pool.own(os.open(SOCKET_PATH,os.O_PATH|os.O_NOFOLLOW|os.O_CLOEXEC),
++                             'diagnostic_Status_socket_path')
++        path_before=g.meta(socket_path)
++        need(stat.S_ISSOCK(path_before['st_mode']) and path_before['st_uid']==0 and
++             path_before['st_nlink']==1,'STATUS_SOCKET_SHAPE')
++        sock=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM|socket.SOCK_CLOEXEC)
++        try:pool.own(sock.fileno(),'diagnostic_Status_socket')
++        except BaseException:
++            sock.detach();raise
++        check();sock.settimeout(min(2,max(.001,deadline-time.monotonic())))
++        sock.connect(SOCKET_PATH)
++        peer=dict(zip(('pid','uid','gid'),struct.unpack('3i',
++                      sock.getsockopt(socket.SOL_SOCKET,socket.SO_PEERCRED,12))))
++        require_peer(peer);result['socket_peer']=peer
++        c.require_pidfd_live(pidfds['daemon'])
++        need(e.process_identity(PARENTS[0]['pid'])==expected_identities['daemon'],
++             'FIXED_DAEMON_CHANGED_BEFORE_STATUS')
++        phase='one_Status_and_original_gate_samples'
++        check();send_status_once(sock,result['Status'])
++        status_raw,first_gate_error=receive_with_samples(sock,pool,result['Status'],observe,check)
++        value=parse_status(status_raw);result['Status_response']=project_status(value,status_raw)
++        need(result['Status_response']['matches_current_expected_owner'],'STATUS_CURRENT_OWNER_DIFFERS')
++        named=os.stat(SOCKET_PATH,follow_symlinks=False)
++        need(g.meta(socket_path)==path_before and
++             {key:getattr(named,key) for key in path_before}==path_before,'STATUS_SOCKET_SHAPE')
++        if first_gate_error is not None:raise first_gate_error
++        phase='exact_original_sample_after_Status'
++        observe()
++        body_complete=True
++    except BaseException as error:
++        # If draining the one already-sent Status failed after the real gate
++        # rejected, retain the gate as first cause and record the drain separately.
++        retain_probe_error(result,phase,error)
++    finally:
++        if sock is not None:
++            try:
++                fd=sock.detach()
++                if pool is not None:pool.close(fd)
++                else:os.close(fd)
++            except BaseException as error:
++                result['secondary_errors'].append({'phase':'Status_socket_retirement',**safe_error(error)})
++        if held_ready:
+-        for index in (1,2):
+-            phase='complete_fixed_parent_tables_'+str(index);tables={}
+-            for row in PARENTS:
+-                check();role=row['role']
+-                tables[role]=c.children_sample(pool,parent_fds[role],row['pid'],check)
+-                # Run the unchanged original validator for each complete table.
+-                # Only its exact uniqueness rejection is recorded as diagnostic.
+-                table_verdict(p,tables[role],row['pid'],row['child'])
+-            result['observations'].append({'index':index,'elapsed_ns':time.monotonic_ns()-began_ns,
+-                                           'tables':tables})
+-        result['table_comparison']=table_pair(p,result['observations'][0]['tables'],result['observations'][1]['tables'])
+-        phase='independent_fixed_identity_namespace_executable_after'
+-        check();again=e.capture_processes({k:v['pid'] for k,v in p.EXPECTED.items()})
+-        need(again['binding']==fixed['binding'],'CURRENT_FULL_IDENTITIES_CHANGED_DURING_DIAGNOSTIC')
+-        after_mid=e.process_identity(p.EXPECTED_INTERMEDIARY['pid'])
+-        need(after_mid==before_mid,'CURRENT_INTERMEDIARY_CHANGED_DURING_DIAGNOSTIC')
+-        need(c.namespace_sample(pool,procs,mid,check)==before_ns,'CURRENT_NAMESPACES_CHANGED_DURING_DIAGNOSTIC')
+-        c.require_pidfd_live(mid['pidfd'])
+-        for role in p.ROLES:
+-            check();c.require_pidfd_live(pidfds[role]);st=os.fstat(roots[role])
+-            need({'device':st.st_dev,'inode':st.st_ino}==b['process_roots'][role],'CURRENT_ROOT_CHANGED')
+-            need(g.meta(exes[role])==b['current_process_executables'][role]['file'],
+-                 'CURRENT_EXECUTABLE_FILE_IDENTITY_CHANGED')
+-            fresh=pool.own(os.open('exe',os.O_RDONLY|os.O_CLOEXEC,dir_fd=procs[role]),
+-                           'diagnostic_final_named_executable')
+-            try:need(g.meta(fresh)==b['current_process_executables'][role]['file'],
+-                     'CURRENT_NAMED_EXECUTABLE_CHANGED')
+-            finally:pool.close(fresh)
+-        p.validate_snapshot(again,old,b['process_roots'])
+-        engine=pool.own(h.open_in_root(roots['android_init'],'/system/lib64/libberberis_arm64.so',os.O_RDONLY),
+-                        'diagnostic_current_engine')
+-        need(g.meta(engine)==b['engine_artifact']['file'],'CURRENT_ENGINE_FILE_IDENTITY_CHANGED')
+-        limits={}
+-        for name in p.LIMITS:
+-            check();fd=pool.own(os.open('/sys/fs/cgroup/system.slice/droidloomd.service/'+name,
+-                                       os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW),'diagnostic_cgroup_limit')
+             try:
++                phase='independent_fixed_identity_namespace_executable_after'
++                check();again=e.capture_processes({k:v['pid'] for k,v in p.EXPECTED.items()})
++                need(again['binding']==fixed['binding'],'CURRENT_FULL_IDENTITIES_CHANGED_DURING_DIAGNOSTIC')
++                after_mid=e.process_identity(p.EXPECTED_INTERMEDIARY['pid'])
++                need(after_mid==before_mid,'CURRENT_INTERMEDIARY_CHANGED_DURING_DIAGNOSTIC')
++                need(c.namespace_sample(pool,procs,mid,check)==before_ns,'CURRENT_NAMESPACES_CHANGED_DURING_DIAGNOSTIC')
++                c.require_pidfd_live(mid['pidfd'])
++                for role in p.ROLES:
++                    check();c.require_pidfd_live(pidfds[role]);st=os.fstat(roots[role])
++                    need({'device':st.st_dev,'inode':st.st_ino}==b['process_roots'][role],'CURRENT_ROOT_CHANGED')
++                    need(g.meta(exes[role])==b['current_process_executables'][role]['file'],
++                         'CURRENT_EXECUTABLE_FILE_IDENTITY_CHANGED')
++                    fresh=pool.own(os.open('exe',os.O_RDONLY|os.O_CLOEXEC,dir_fd=procs[role]),
++                                   'diagnostic_final_named_executable')
++                    try:need(g.meta(fresh)==b['current_process_executables'][role]['file'],
++                             'CURRENT_NAMED_EXECUTABLE_CHANGED')
++                    finally:pool.close(fresh)
++                p.validate_snapshot(again,old,b['process_roots'])
++                engine=pool.own(h.open_in_root(roots['android_init'],'/system/lib64/libberberis_arm64.so',os.O_RDONLY),
++                                'diagnostic_current_engine')
++                need(g.meta(engine)==b['engine_artifact']['file'],'CURRENT_ENGINE_FILE_IDENTITY_CHANGED')
++                limits={}
++                for name in p.LIMITS:
++                    check();fd=pool.own(os.open('/sys/fs/cgroup/system.slice/droidloomd.service/'+name,
++                                               os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW),'diagnostic_cgroup_limit')
++                    try:
++                        value=os.read(fd,8193);need(len(value)<=8192,'CGROUP_LIMIT_BOUND')
++                        limits[name]=value.decode('ascii','strict').strip()
++                    finally:pool.close(fd)
++                need(limits==p.LIMITS==b['limits'],'MAIN_RESOURCE_LIMITS_CHANGED')
++                check();e.require_unchanged(b['framework_epoch'],action_attempted=False)
++                phase='independent_pinned_source_and_baseline_after'
++                b2,q2,_,_,_,_=g.load_current()
++                need(b2==b and q2==q,'PINNED_FULL_BASELINE_OR_QUALIFICATION_CHANGED')
++                result['final_input_FDs']={}
++                need(read_guard(check,result['final_input_FDs'])==raw,'PINNED_ORIGINAL_GUARD_SOURCE_CHANGED')
++                check()
++                phase='original_full_Main_after'
++                result['original_Main_after']=g.current_guard(b,action_attempted=False)
++                need(result['original_Main_after']==result['original_Main_before'],
++                     'ORIGINAL_COMPLETE_MAIN_SAMPLE_CHANGED')
++                result['independent_final_observation_complete']=True
++            except BaseException as error:
++                result['secondary_errors'].append({'phase':phase,**safe_error(error)})
+-                value=os.read(fd,8193);need(len(value)<=8192,'CGROUP_LIMIT_BOUND')
+-                limits[name]=value.decode('ascii','strict').strip()
+-            finally:pool.close(fd)
+-        need(limits==p.LIMITS==b['limits'],'MAIN_RESOURCE_LIMITS_CHANGED')
+-        check();e.require_unchanged(b['framework_epoch'],action_attempted=False)
+-        phase='independent_pinned_source_and_baseline_after'
+-        b2,q2,_,_,_,_=g.load_current()
+-        need(b2==b and q2==q,'PINNED_FULL_BASELINE_OR_QUALIFICATION_CHANGED')
+-        result['final_input_FDs']={}
+-        need(read_guard(check,result['final_input_FDs'])==raw,'PINNED_ORIGINAL_GUARD_SOURCE_CHANGED')
+-        check()
+-        result.update(ok=True,full_private_baseline_and_qualification_revalidated=True,
+-                      all_seven_full_identities_equal_before_after=True,
+-                      intermediary_full_identity_equal_before_after=True,
+-                      all_roots_namespaces_and_executable_files_equal=True,
+-                      resource_limits_equal=True,source_set_unchanged=True,
+-                      original_unique_requirement_met_both_samples=
+-                          result['table_comparison']['original_unique_requirement_met_both_samples'])
+-    except BaseException as error:result['error']={'phase':phase,**safe_error(error)}
+-    finally:
+         if pool is not None:
+             pool.close_all();result['managed_FDs']=pool.summary()
+             try:pool.require_clean()
+             except BaseException as error:
++                result['secondary_errors'].append({'phase':'owned_FD_retirement',**safe_error(error)})
++        result['Status']['response_completion_unknown']=bool(
++            result['Status']['send_attempted'] and not result['Status']['response_complete'])
++        result['all_observed_original_gates_passed']=bool(
++            result['observations'] and not result['failure_gate_evidence'] and
++            all(row['complete'] for row in result['observations']))
++        result['diagnostic_body_complete']=body_complete
++        result['ok']=bool(body_complete and result['independent_final_observation_complete'] and
++                          result['all_observed_original_gates_passed'] and
++                          result['error'] is None and not result['secondary_errors'])
+-                result['ok']=False;result['secondary_errors'].append({'phase':'owned_FD_retirement',**safe_error(error)})
+         result['elapsed_ns']=time.monotonic_ns()-began_ns
+         raw=(json.dumps(result,sort_keys=True,separators=(',',':'),allow_nan=False)+'\n').encode()
++        need(len(raw)<=262144,'DIAGNOSTIC_PUBLIC_OUTPUT_BOUND')
+-        need(len(raw)<=131072,'DIAGNOSTIC_PUBLIC_OUTPUT_BOUND')
+         print(raw.decode('utf-8'),end='',flush=True)
+     return 0 if result['ok'] else 1
+ 

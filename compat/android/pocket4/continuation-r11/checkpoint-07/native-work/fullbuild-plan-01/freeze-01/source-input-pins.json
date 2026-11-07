@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "remote_primary_inputs": [
+    {
+      "kind": "combined_candidate",
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/overlay-reconstruction-09/candidate-04-source-manifest.json",
+      "sha256": "00a19fef1ca8e86a3da18eecfb16eedb41e9de55e2934b96987845fa8b749fbd"
+    },
+    {
+      "kind": "builder_source",
+      "path": "/home/alex/work/pocket4-signal-mask-r11-build-memory-01/builder-source-after.json",
+      "sha256": "e7c225bd2842c260d9f4149aca3c4483ed31c569efb31068b6d787892bd17017"
+    },
+    {
+      "kind": "builder_executable",
+      "path": "/home/alex/work/pocket4-signal-semantics-r15-20261104/cargo-target/debug/droidloom-update",
+      "sha256": "16df26d88391c22c9f076917531f022907ec5608bd31e58e05c898605db9dcc4"
+    },
+    {
+      "kind": "R16_full_receipt",
+      "path": "/home/alex/work/pocket4-proc-maps-offset-r16-20261104/frozen-build-01/target/product/droidloom_x86_64/droidloom-native-engine-source.json",
+      "sha256": "9b46dca0395ecc77a75fa493d6788c3ea8c9e7a8f3b844c7a57aa5e78bfccf11"
+    },
+    {
+      "kind": "successful_signal_inputs",
+      "path": "/home/alex/work/pocket4-signal-mask-r11-build-01/android-out/target/product/droidloom_x86_64/droidloom-native-engine-inputs.json",
+      "sha256": "ccf2ebc89bfb4a06722719e292723669332e69691894717d702ff96eaf30e898"
+    }
+  ],
+  "candidate_file_count": 948,
+  "engine_file_count": 925,
+  "builder_manifest_entries": 449,
+  "R16_file_count": 908,
+  "R16_git_head": "a9496d886a85752ba407b76509952c06cd79ddb8",
+  "locked_base": "917021cf3ecd077eb1581146a79d2265011755b8",
+  "locked_origin": "https://github.com/denialwm/teto.git",
+  "signal_outputs": {
+    "guest_os_primitives/arm64/guest_context_arch.h": "c4234d83ce70c526d96cbd9b843dbca1e0645c18d7f371654552d2a8e2f07140",
+    "guest_os_primitives/guest_signal_handling.cc": "7ca556ea512b2262e2bf28709bbb7962d4ef5cb7e4c53c012437b6603fd9623a",
+    "guest_os_primitives/guest_signal_handling_arch.cc": "5fc077ed8538255bac2ac921b1231a3bf60314659f85c79237d724c41f0460b5",
+    "guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h": "ebcc5ac4e092c50916a0f9668c94d3cb2266cece0ff728bc19513e8f7eb218ca",
+    "guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h": "90a35d504656e32520ab84968ae8a3b586264c835489d13f85f42444cb0764c0",
+    "guest_os_primitives/scoped_guest_signal_mask.h": "52c18a437a05e00be80420c39ef03d24b4ec86a2470b66b548c29d8888eecde9"
+  },
+  "verified_local_primary_source_reads": [
+    {
+      "path": "/workspace/scratch/94990735b266/root-cp07/source-read-01/native_engine.rs",
+      "bytes": 14715,
+      "sha256": "61dcb93b6432dc41429807728ca164fc152507ced97ebf08621cc3be51548970"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/root-cp07/source-read-01/android.rs",
+      "bytes": 264052,
+      "sha256": "fa6f6a995a1cedf17c342ac900df34d1742d6177651af4db6d3c44e6f5478958"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/root-cp07/source-read-01/original-signal-attempt04-controller.py",
+      "bytes": 6266,
+      "sha256": "e461786834ced2c99106e1ec1ed37d17aebbbaf2961eeb84596b24a8141d1bdd"
+    }
+  ],
+  "matching_control_report": {
+    "path": "/workspace/scratch/94990735b266/native-new-env-01/combined-candidate04/control-report.json",
+    "sha256": "5309622bd9ab29908f820e28eaaa7266d9a2beac8dbf4af9e1b23234720761df"
+  },
+  "full_engine_built": false,
+  "default_feature_enabled": false,
+  "scope_note": "Preparation includes actual reads of every remote input and records new source/effective expectation pins; no inference from file paths alone."
+}

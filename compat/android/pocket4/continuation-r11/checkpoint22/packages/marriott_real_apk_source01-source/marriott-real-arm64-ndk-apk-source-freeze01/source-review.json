@@ -1,0 +1,162 @@
+{
+  "baseline": {
+    "M04_scope": "six commands/three ARM64 REL only; no TestBody execution/APK/ART",
+    "M04_template": {
+      "bytes": 39333,
+      "git_blob_sha": "47c66c5c59f553d67adede9df2abc866f38114fc",
+      "sha256": "fefae8d458c2b8d46268162b8d42b5b90ba7413809209d727dba71e3710536a7"
+    },
+    "actual_report": {
+      "blob": "3b59327fb4f94cf9ba38ef984a6c2ca2bb6fd5dd",
+      "bytes": 4899108,
+      "sha256": "8a9e478a65606cb296bfc2e208ff11c0203f43902ae3245a8f931f28fc10165a",
+      "tree": "5bdeae34dfb8b4fe9293d5df7637a7933a25dcc0"
+    }
+  },
+  "binder": {
+    "bytes": 6574,
+    "git_blob_sha": "d49c2075cb0184b6876c95dbd52f78145ee75d28",
+    "sha256": "d54e7cbf9e6009b4905879079f887250148d35bbc6ef1e3c0883e0be3e7b3cf4"
+  },
+  "config": {
+    "bytes": 252849,
+    "git_blob_sha": "4d0e19adaa8533058358c43cfe4347db90856609",
+    "sha256": "913b14c04d01885832de34241bf74225ff2db324c234fae3091710947c65879f"
+  },
+  "implementation": {
+    "APK_library_api": "original current10000",
+    "APK_manifest": "original min14/target23, unchanged",
+    "CRT_brand": "must equal observed original product Platform_sdk_version",
+    "GTest_api": "original sdk9 clamped to ARM64 first21 by exact Soong mapping",
+    "ProcSelfMaps_focus": 12,
+    "SDK_interfaces": "exact original symbolfile+ndkstubgen at current10000, fixed five maps; never packaged or executed",
+    "complete_gtest_all_source_and_transitive_MD": true,
+    "cpufeatures_api": "original minimum maps to ARM64 first21",
+    "genuine_original_JNI_runner": true,
+    "new_FD_boundary_cases": 9,
+    "original_23_test_registry": true,
+    "original_VerifyTestList_and_RunAllTests_unchanged": true,
+    "production_translator_deployment": false,
+    "real_Shared_and_User_tests": true,
+    "real_cpufeatures": true,
+    "translator_default_zero_preserved": true
+  },
+  "inheritance": {
+    "command_diff": "--- M04_command\n+++ APK_command\n@@ -28,7 +28,8 @@\n         require(remaining > 0, 'controller work deadline expired before child admission')\n         for path in (output, error_path):\n             streams.append(path.open('xb'))\n-        environment = {'PATH': '/usr/bin:/bin', 'LC_ALL': 'C', 'LANG': 'C',\n+        environment = {'PATH': CFG['java_home']+'/bin:/usr/bin:/bin',\n+                       'JAVA_HOME': CFG['java_home'], 'LC_ALL': 'C', 'LANG': 'C',\n                        'TMPDIR': str(root / 'tmp'), 'PYTHONDONTWRITEBYTECODE': '1'}\n         if 'HOME' in os.environ:\n             environment['HOME'] = os.environ['HOME']  # Inherit exactly; never repurpose/reset HOME.\n",
+    "full_source_diff_inverse": true,
+    "limit_child_outputs_change": "child regular file ceiling only 256KiB ->32MiB",
+    "read_input_change": "event count only 16384 ->131072",
+    "reaper": {
+      "bytes": 11125,
+      "git_blob_sha": "db9a3c5433f878dad12626c0fe5b10fc8114c201",
+      "sha256": "61e3fe49cb1ffc511acdf409befd86d38c0bb2ba432dd2a888e32f3d50c17b42"
+    },
+    "resource_guard_bytes": 13535,
+    "resource_guard_sha256": "4192389de077c41dc395d9f5b083d10372272c45aacb053697d3c24e94a25961",
+    "unchanged_top_level_functions": [
+      "require",
+      "digest",
+      "create",
+      "tick",
+      "stamp",
+      "within"
+    ]
+  },
+  "kind": "p4-marriott-real-arm64-ndk-apk-source-review01",
+  "limits": [
+    "Manual source-equivalent bounded build, not a claim of byte-identical full Soong outputs.",
+    "GTest/cpufeatures are real original TUs linked as objects, not replacement library implementations.",
+    "Tool provenance is the preobserved exact entry-tool set; no claim of a newly complete JDK transitive implementation inventory.",
+    "Interpreter-owned imported descriptors are not claimed closed by the input-FD ledger.",
+    "The original APK Activity empty-test-list route is not an admitted future test entry; instrumentation must provide the nonempty original 23-name list."
+  ],
+  "not_performed": [
+    "Python syntax execution",
+    "pure or host controls of new builder",
+    "new compiler or linker commands",
+    "APK packaging/signing",
+    "Android install/ART/native bridge/test execution"
+  ],
+  "preconditions": {
+    "all_reused_input_hashes_and_metadata_checked_before_after": true,
+    "new_configuration": "None; cannot bind or execute until exact successful original+terminal are provided",
+    "no_architecture_or_candidate_fallback": true,
+    "old_APK13_reader02": "ADMISSION_UNKNOWN; not resubmitted or borrowed",
+    "old_SDK22": "terminal1 whole failure preserved; only its 21 individually complete observations reused and reread",
+    "own_APK13_gate": "full two-read/NOFOLLOW/hash/ARM64 archive+SDK class format before first compiler child"
+  },
+  "resources": {
+    "child_regular_file_ceiling": 33554432,
+    "controller_work_seconds": 600,
+    "cpu_quota_percent": 100,
+    "each_child_retirement_seconds": 5,
+    "each_command_stdout_or_stderr_ceiling": 262144,
+    "full_receipt_ceiling": 67108864,
+    "input_FD_event_ceiling": 131072,
+    "nice": 15,
+    "outer_seconds": 660,
+    "requested_memory": 1073741824,
+    "stdout": "summary plus original report pin",
+    "swap_max_and_pids_max": "original observed resource_guard values preserved; not tightened or invented"
+  },
+  "schema": 1,
+  "scope": {
+    "ARM64_code_run": 0,
+    "ART_or_APK_runtime_qualification": false,
+    "Android_executables_run": 0,
+    "Main_or_namespace_actions": 0,
+    "host_static_build_only": true,
+    "install": 0,
+    "instrumentation_test_execution": false,
+    "signing_private_body_exported": false
+  },
+  "source": {
+    "bytes": 84091,
+    "git_blob_sha": "9af9fcb40a81dc1e84f303f3bf2e8a7f16340639",
+    "sha256": "f04642414ed052a8cd0dad81ac62ef44d4504b8635706283460642046dc0ab8e"
+  },
+  "source_scope": {
+    "Java_tools": "seven original actual IHG static tool identities, no IHG runtime/epoch or signing policy reused",
+    "compiler_and_LLD": "exact actual C20 full tuples, no chmod/fallback",
+    "composed_SDK_input_roles": 27,
+    "inline_sources": 13,
+    "module_target_rule_sources": 2,
+    "new_fixed_config_reader_inputs": 9,
+    "original_APK13_paths": 13,
+    "original_gtest_source_pins": 11,
+    "original_sdk22_individual_complete_inputs": 21
+  },
+  "stages": [
+    {
+      "commands": 7,
+      "outputs": "three REL objects plus genuine begin+brand relocatable join",
+      "stage": "real_Bionic_CRT",
+      "translation_units": 3
+    },
+    {
+      "commands": 15,
+      "outputs": "five generated SDK DSOs, link-only, never APK/runtime",
+      "stage": "original_Soong_link_interfaces",
+      "translation_units": 5
+    },
+    {
+      "commands": 16,
+      "outputs": "GTest, cpufeatures, shared helper, ProcSelfMaps/Shared/User/JNI/runner",
+      "stage": "real_implementation_compilation",
+      "translation_units": 8
+    },
+    {
+      "commands": 2,
+      "outputs": "two ARM64 implementation DSOs",
+      "stage": "real_native_DSO_link",
+      "translation_units": 0
+    },
+    {
+      "commands": 10,
+      "outputs": "two classes, DEX, original manifest/resources, two real DSOs, signed/aligned APK",
+      "stage": "original_Java_APK",
+      "translation_units": 0
+    }
+  ],
+  "status": "SOURCE_ONLY_AWAITING_NEW_CONFIGURATION_ACTUAL"
+}

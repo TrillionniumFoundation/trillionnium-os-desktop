@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "agent": "app_recovery_resume",
+  "received_after_candidate_freeze": true,
+  "pins": {
+    "controls": {
+      "bytes": 22424,
+      "sha256": "c2fc807e9fa658466815134b4a9e81dff1474584776d119e426556b1f2f44b1d",
+      "blob": "f7793f65682d09a010ee0c9d8855159cdc78a234"
+    },
+    "contract": {
+      "bytes": 25331,
+      "sha256": "1b027dc076f0ee5d89df1e95ae76fddeacab1adaafb5e77e4b05b63f47593261",
+      "blob": "6b76abcc871c4ba084f53e529d3dd96168e301aa"
+    }
+  },
+  "scope": "Six production wiring controls plus exact phase/context and unchanged contract; no definite interface or positive-case failure found. Five phase/source calls and four shared/Main calls in open_context align.",
+  "explicit_limitations": "Context, Artifact, task parser and IO are synthetic seams. No Python or device execution, no real R6 task parser or held-FD qualification, no complete worker review.",
+  "old_freeze_peer_status_not_rewritten": true
+}

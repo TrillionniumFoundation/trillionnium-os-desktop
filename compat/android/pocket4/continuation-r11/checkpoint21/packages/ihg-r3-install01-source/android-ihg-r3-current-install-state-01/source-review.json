@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_BUILD_AND_FRESH_NONCE_BOUND_INSTALL_UNRUN",
+  "target": "com.ihg.apps.android",
+  "helper": "org.droidloom.qa.ihg.r3",
+  "helper_uid": null,
+  "source_manifest_sha256": "7d7c97b453ed5e5f75a4bd3fcab92cc3e76603bb1e09745ce509d3cd73c7494d",
+  "request": {
+    "bytes": 146616,
+    "sha256": "6cf5075f2849377d89e455dfffb7b246ed92d7ac65d170c3772eea9a501450b7",
+    "git_blob": "c0784663f9f546baf9aa023ab771d75cd466f112"
+  },
+  "packet": {
+    "bytes": 140049,
+    "sha256": "f8da4909e9142cdd1025718f4aa7c01aba406209b362bf2f93a3bb1bf248082e",
+    "git_blob": "7289741f9eceacab8cc767a8586311fccb926e2c"
+  },
+  "actual_inputs": {
+    "schema": 1,
+    "compiler": "bind_actual.js",
+    "input_contract": "buildIHGR3Install(material, h)",
+    "parent": {
+      "tree": "bede3598ce35e6751f7b2d47d0063d5e8517fc40",
+      "prefix": "android-ihg-r2-current-install-state-02",
+      "exact_request": {
+        "bytes": 144409,
+        "sha256": "a37b91135eec125e68c7c9dd9cef4e0e1980499f28d56c45f86ce9d88d4716f2",
+        "git_blob": "2f092fb4c73c3d36cd1f13c0d275c1bf7c406abf"
+      },
+      "manifest_sha256": "e8cf9d4c04025bb092663519a01624fa40e552600dc5643a50ebf9bace915103"
+    },
+    "helper": {
+      "tree": "d121dfd5e11369590df51fa771cdf019bd0fa0b1",
+      "prefix": "owned-ihg-qa-r3-london-build01",
+      "source_manifest_sha256": "8d96686f9e6937548e0295679ae6ecdfd3c3a1bf4e48c5feff7def949e81789a"
+    },
+    "actual_build": {
+      "bytes": 25686,
+      "sha256": "40a7f7865a962b3bdaee3242cfa1fb7d84d860a3fc973ebb344cbc01fe088505",
+      "git_blob": "a2ca4792d184ec0e18738f478dfae3fea4ea6140"
+    },
+    "actual_stage": {
+      "bytes": 1935,
+      "sha256": "764ca6cb3d3b6ea21f1f0425c5d1028352a5db9450925935b42085bb9460df30",
+      "git_blob": "741fa5e05773e9c0c860bea368e1938ad71d180d"
+    },
+    "actual_nonce": {
+      "bytes": 424,
+      "sha256": "2d49095b886a2d1c9862ef3e8b7d34e0a685e3049244dc260c7783d83cd87d74",
+      "git_blob": "684563437b7b9fc04a978d5913677e6f240b9ef3",
+      "job_id": "1a1b07d886a-fc05-70dc",
+      "global_excluded_count": 607
+    },
+    "old_38_exclusions": {
+      "bytes": 5321,
+      "sha256": "e9e881469c3b5e5730bdee524a4b316b76865c31d1b88c742f4fc5a14ce643f1",
+      "git_blob": "5d143f4d33a92fd8478b388b0480c894aae3401a"
+    },
+    "reconstruction": "Restore parent and helper source text from their exact requests/trees. Pass actual build_raw/stage_raw; nonce_source is original parsed fresh2 plus actual=true, stdout exact pin. Pass original exclusions object. Execute only pure JS compiler; compare every output payload and request."
+  },
+  "original38_controls_retained_source_exact": true,
+  "additional_controls": [
+    "production_ordered_commands_actual_R3_contract_positive",
+    "production_ordered_commands_old_R2_package_rejected"
+  ],
+  "source_controls_count": 40,
+  "original_fixed_commands_count": 13,
+  "source_changes": [
+    "Actual R3 build/source/APK/signer paths and pins; new create-only installation root/key and actual fresh2.",
+    "ihg_context ordered_commands exact helper literal R2 to R3; all other Context/ArtifactSet/transport bodies unchanged.",
+    "Latest exclusion UID 10153 with prior UID 10196 retained; actual new UID remains unknown.",
+    "Existing production verify_source R5 references remain unchanged; two new direct ordered_commands controls run before root staging or Android command.",
+    "Stage controls required count 38 to 40; remaining stage logic preserved."
+  ],
+  "unchanged": [
+    "ihg_transport.py",
+    "references/read_ihg.py",
+    "target-artifact-reference.json",
+    "host/source-manifest.json",
+    "host-stage-actual.json"
+  ],
+  "main_epoch_and_host_R5_unchanged": true,
+  "one_commercial_APK_bound": true,
+  "all_user_absence_before_single_install": true,
+  "UiAutomation_calls": 0,
+  "App_launches": 0,
+  "commercial_app_mutations": 0,
+  "whole_process_tree_cleanup_qualified": false,
+  "framework_exit_cause_resolved": false,
+  "whole_app_production_ready": false,
+  "Hepta_dispatched": false,
+  "Python_compile_executed": false,
+  "Python_new_controls_executed": false,
+  "V8_actual_build_and_packet_binding_verified": true,
+  "static_helper_build_21_plus_45_actual_pass": true
+}

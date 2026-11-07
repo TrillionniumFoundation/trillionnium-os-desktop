@@ -1,0 +1,40 @@
+--- baseline-run-request.json
++++ candidate07-host-run-request.json
+@@ -1,11 +1,9 @@
+ {
+-  "host": "pocket4",
+-  "executable": "/usr/bin/sudo",
+   "args": [
+     "-n",
+     "/usr/bin/systemd-run",
+-    "--unit=p4-signal-host-baseline-ff3127ab4ee2.service",
+-    "--description=Owned full signal host suite ff3127ab4ee244a590a0817e586ce538",
++    "--unit=p4-signal-host-candidate-dfcacd6f6da3.service",
++    "--description=Owned full signal host suite dfcacd6f6da3cf3bdbfcf797f44481c3",
+     "--property=Type=exec",
+     "--property=Restart=no",
+     "--property=RuntimeMaxSec=900",
+@@ -32,17 +30,19 @@
+     "/home/alex/work/pocket4-owned-signal-host-r11-source-01/isolated-signal-canary-runtime-r1/host_suite.py",
+     "run",
+     "--inputs",
+-    "/home/alex/work/pocket4-owned-signal-host-r11-source-01/host-baseline-inputs.json",
++    "/home/alex/work/pocket4-combined07-qualification-inputs-dfcacd6f6da3cf3bdbfcf797f44481c3/host-candidate-inputs.json",
+     "--inputs-sha256",
+-    "6a4f279477b2f7f3cc15f193c40784543e7664e0f0195aa1ef46f11c2cd8e424",
++    "a8e40759ccd97c3defdb59249757e1baae00d17926944826f060f9c612fc4eac",
+     "--source-manifest",
+     "/home/alex/work/pocket4-owned-signal-host-r11-source-01/isolated-signal-canary-runtime-r1/source-manifest.json",
+     "--source-manifest-sha256",
+     "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5"
+   ],
++  "cpu_quota_percent": 20,
+   "cwd": "/home/alex/work",
+-  "idempotency_key": "pocket4-signal-host-baseline-run-r11-ff3127ab4ee2",
+-  "cpu_quota_percent": 20,
++  "executable": "/usr/bin/sudo",
++  "host": "pocket4",
++  "idempotency_key": "pocket4-combined07-host3793-dfcacd6f6da3cf3bdbfcf797f44481c3",
+   "memory_max_bytes": 268435456,
+   "nice": 10,
+   "timeout_seconds": 1000

@@ -1,0 +1,155 @@
+{
+  "schema": 1,
+  "state": "PASS_LOCAL_EXTRACTED_NATIVE_ENTRY",
+  "scope": "exact production native entry + header; JNI exception/runtime credentials are seams",
+  "commands": [
+    {
+      "label": "build",
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-work01/candidate/frameworks/base/core/jni",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-work01/controls/native_entry_controls.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-work01/local/native_entry_controls"
+      ],
+      "returncode": 0,
+      "stdout": {
+        "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-work01/local/build.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          27,
+          3958547,
+          0,
+          1793897076144999117,
+          1793897076144999117
+        ]
+      },
+      "stderr": {
+        "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-work01/local/build.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          27,
+          3958548,
+          0,
+          1793897076144999117,
+          1793897076144999117
+        ]
+      }
+    },
+    {
+      "label": "run",
+      "argv": [
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-work01/local/native_entry_controls"
+      ],
+      "returncode": 0,
+      "stdout": {
+        "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-work01/local/run.stdout",
+        "bytes": 2077,
+        "sha256": "3e4c5022216b25d523611e03bf42e414377f2c713b8a1bb7083abd4500e3d539",
+        "identity": [
+          27,
+          3958549,
+          2077,
+          1793897076152121340,
+          1793897076152121340
+        ]
+      },
+      "stderr": {
+        "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-work01/local/run.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          27,
+          3958550,
+          0,
+          1793897076152121340,
+          1793897076152121340
+        ]
+      }
+    }
+  ],
+  "source_inputs_before": [
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-work01/controls/native_entry_controls.cc",
+      "bytes": 4883,
+      "sha256": "9abc31ddd62d57e1211a951e9a24649829c0447a94a9a3b849b7c73c5eccf5bf",
+      "identity": [
+        27,
+        3958511,
+        4883,
+        1793897051300840573,
+        1793897051300840573
+      ]
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-work01/controls/actual_native_entry.inc",
+      "bytes": 1501,
+      "sha256": "e4c53d442751fc0a9eeda16e4eab86dfcbb4e36177f524cf1457f085f1e45989",
+      "identity": [
+        27,
+        3958512,
+        1501,
+        1793897051902638321,
+        1793897051902638321
+      ]
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-work01/candidate/frameworks/base/core/jni/droidloom_app_zygote_spec.h",
+      "bytes": 1647,
+      "sha256": "a73c497e4979fcb23b996b8d8d98c63eb48fe1eebe65d7ff9ec87d7d4ab8d1ca",
+      "identity": [
+        27,
+        3956745,
+        1647,
+        1793896798835640764,
+        1793896798835640764
+      ]
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-work01/candidate/frameworks/base/core/jni/com_android_internal_os_Zygote.cpp",
+      "bytes": 132241,
+      "sha256": "72d8cf730e8e3ec4ff4b88106e73e076eab7e761a405a5d854e62e7a5fadc095",
+      "identity": [
+        27,
+        3955434,
+        132241,
+        1793897049012866121,
+        1793897049012866121
+      ]
+    }
+  ],
+  "inputs_unchanged_after": true,
+  "compiler": {
+    "path": "/usr/bin/x86_64-linux-gnu-g++-13",
+    "bytes": 1027128,
+    "sha256": "52f1ddb33fe78b9441e0f42e9cd22c571f1101938e046c8a26582494e041cc73",
+    "identity": [
+      27,
+      9223372036855308963,
+      1027128,
+      1725461054000000000,
+      1725461054000000000
+    ]
+  },
+  "assessment": {
+    "state": "PASS_TYPED_NATIVE_REJECTION_CONTROLS",
+    "cases": 20,
+    "assertions": 60,
+    "JNI_and_credentials_seams": true,
+    "forks": 0,
+    "factory_grants": 0,
+    "Android_execution": false
+  },
+  "full_Android_TU_compiled": false,
+  "Java_compiled": false,
+  "Java_runtime_executed": false,
+  "Main_actions": 0,
+  "factory_grants": 0
+}

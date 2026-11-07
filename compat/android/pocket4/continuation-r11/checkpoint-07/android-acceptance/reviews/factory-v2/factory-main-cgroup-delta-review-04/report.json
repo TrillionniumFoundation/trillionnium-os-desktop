@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "scope": "Independent readonly review only of fixed Main service root-or-descendant cgroup admission delta",
+  "preimage": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/controller-fixed-badfc916.py",
+    "bytes": 43424,
+    "sha256": "badfc916b151999ff074847057f3a0e06421636c2d759ce10c3d8576e0203358"
+  },
+  "updated": {
+    "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-fixture-01/controller.py",
+    "bytes": 43492,
+    "sha256": "fb354f07b94d57eca9006c713a0ba0156e548d0f05284ebeaa2579e8b4ab862c"
+  },
+  "parent_actual_evidence_and_delta_receipt": {
+    "path": "/workspace/scratch/94990735b266/root-cp07/factory-main-cgroup-root-admission-fix.json",
+    "bytes": 1554,
+    "sha256": "f2d24080dfad3973472c8e35a8dac80aaabe23dc90e49a899e0f604e599e50e2"
+  },
+  "actual_evidence_read_directly_here": false,
+  "parent_receipt_actual_evidence_sha256": "2e8f289fd98b4b5d4087b6fb62e43b4bc0633a2d84fb541d996e076fbc08ff9c",
+  "source_delta_only_changed_admission_statements": true,
+  "all_other_AST_identical": true,
+  "main_cgroup_constant_unchanged": "/sys/fs/cgroup/system.slice/droidloomd.service",
+  "resource_reads_still_fixed_service_root": true,
+  "main_epoch_activation_three_host_process_guards_unchanged": true,
+  "controls": [
+    {
+      "case": "actual_root",
+      "path": "/sys/fs/cgroup/system.slice/droidloomd.service",
+      "old_condition": false,
+      "new_condition": true,
+      "expected_new": true
+    },
+    {
+      "case": "descendant",
+      "path": "/sys/fs/cgroup/system.slice/droidloomd.service/child",
+      "old_condition": true,
+      "new_condition": true,
+      "expected_new": true
+    },
+    {
+      "case": "similarly_named_sibling",
+      "path": "/sys/fs/cgroup/system.slice/droidloomd.service-other",
+      "old_condition": false,
+      "new_condition": false,
+      "expected_new": false
+    },
+    {
+      "case": "unrelated",
+      "path": "/sys/fs/cgroup/system.slice/other.service",
+      "old_condition": false,
+      "new_condition": false,
+      "expected_new": false
+    }
+  ],
+  "controls_method": "Evaluate the exact old/new condition AST only; no import of controller, no fixture/setup/namespace/systemd call.",
+  "new_concrete_blocker_found": false,
+  "conclusion": "Root equality must be accepted for the reported actual Main binding; true Path parent membership also keeps legitimate descendants and rejects similarly named siblings. No new blocker found in this exact delta.",
+  "Hepta_calls": 0,
+  "Main_actions": 0,
+  "runtime_executed": false,
+  "other_tests_repeated": false,
+  "production_ready": false,
+  "limits": [
+    "Does not independently re-read the full a04 raw runtime; the exact observation and its SHA are supplied by the copied parent receipt.",
+    "Does not qualify a factory service run or replace the existing controller lifecycle, build artifact, uid and resource admission gates.",
+    "Later replacement of build01 artifact pins requires a separate exact-input review; this source still has its reviewed historical pins."
+  ]
+}

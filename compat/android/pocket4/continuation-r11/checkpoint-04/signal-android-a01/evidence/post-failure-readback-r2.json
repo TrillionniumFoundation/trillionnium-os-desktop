@@ -1,0 +1,112 @@
+{
+  "automatic_retry": false,
+  "controller_after": {
+    "ActiveState": "failed",
+    "ControlGroup": "",
+    "Description": "Owned isolated signal canary 9b5f84fe06e445c6bd1bd867e0c0f1e9",
+    "ExecMainStatus": "1",
+    "InvocationID": "95df9ad2935846069961a180088e53d3",
+    "LoadState": "loaded",
+    "MainPID": "0",
+    "Result": "exit-code",
+    "SubState": "failed"
+  },
+  "controller_before": {
+    "ActiveState": "failed",
+    "ControlGroup": "",
+    "Description": "Owned isolated signal canary 9b5f84fe06e445c6bd1bd867e0c0f1e9",
+    "ExecMainStatus": "1",
+    "InvocationID": "95df9ad2935846069961a180088e53d3",
+    "LoadState": "loaded",
+    "MainPID": "0",
+    "Result": "exit-code",
+    "SubState": "failed"
+  },
+  "controller_cgroup_exists": false,
+  "controller_cleanup_action": "read-only; completed failed controller state is retained, no reset-failed or restart",
+  "data_images_and_evidence_retained": true,
+  "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "main_preserved": true,
+  "original_error": "EpochError('FRAMEWORK_PROCESS_SET_AMBIGUOUS_OR_MISSING')",
+  "original_private_init_alive": false,
+  "original_result_sha256": "a36de9cd7d293e8c06fe81a0468c836b4f5926b4c29228a20e58bac9c4f8d65b",
+  "original_state": "INCOMPLETE_OR_FAILED_NO_RETRY",
+  "previous_export_failed_reason": "completed failed systemd state remains failed after stop; no remaining process was inferred from that state",
+  "previous_export_job": "1a1a75d1001-fc05-2b21",
+  "private_cell_restarted": false,
+  "private_units": [
+    {
+      "cgroup_exists": false,
+      "current": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "Description": "p4-signal-mask-r1-20261104-a01-bus.service",
+        "ExecMainStatus": "0",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "Result": "success",
+        "SubState": "dead"
+      },
+      "recorded_invocation": "cadf31b992ca4cc2bddd54ebae9a2337",
+      "remaining_pids": [],
+      "unit": "p4-signal-mask-r1-20261104-a01-bus.service"
+    },
+    {
+      "cgroup_exists": false,
+      "current": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "Description": "p4-signal-mask-r1-20261104-a01-sway.service",
+        "ExecMainStatus": "0",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "Result": "success",
+        "SubState": "dead"
+      },
+      "recorded_invocation": "cd169f9d6f6f418aadd43800b2828de4",
+      "remaining_pids": [],
+      "unit": "p4-signal-mask-r1-20261104-a01-sway.service"
+    },
+    {
+      "cgroup_exists": false,
+      "current": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "Description": "p4-signal-mask-r1-20261104-a01-presenter.service",
+        "ExecMainStatus": "0",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "Result": "success",
+        "SubState": "dead"
+      },
+      "recorded_invocation": "ffdbea0ed5a54a88a61aae0244222617",
+      "remaining_pids": [],
+      "unit": "p4-signal-mask-r1-20261104-a01-presenter.service"
+    },
+    {
+      "cgroup_exists": false,
+      "current": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "Description": "p4-signal-mask-r1-20261104-a01-daemon.service",
+        "ExecMainStatus": "0",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "Result": "success",
+        "SubState": "dead"
+      },
+      "recorded_invocation": "a86d3e5b2e94486a83121f71142ea742",
+      "remaining_pids": [],
+      "unit": "p4-signal-mask-r1-20261104-a01-daemon.service"
+    }
+  ],
+  "probe_installations_attempted": false,
+  "schema": 1,
+  "signal_cases_executed": 0,
+  "state": "ORIGINAL_PRE_PROBE_FAILURE_RETAINED_AND_EXACT_CLEANUP_CONFIRMED",
+  "utc": "2026-11-04T16:24:54.657734+00:00"
+}

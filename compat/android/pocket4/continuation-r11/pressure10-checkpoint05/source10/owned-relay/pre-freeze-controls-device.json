@@ -1,0 +1,390 @@
+{
+  "android_started": false,
+  "code_pins": {
+    "owned-relay/fixture_init.cpp": "d6bf440a8b5434bd05befb2fbfd0b0842090ceba8731f8247326adb932cfe353",
+    "owned-relay/qualify_pressure.py": "73a7405d3b663138e5a321257197ae073a01302631a9c21044076cb211651c31",
+    "owned-relay/test_qualify_pressure.py": "1ea6eb9b518640d9f60caed453e8b2ba238b410546e933da6518d885143860fa"
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++20",
+        "-O1",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "owned-relay/fixture_init.cpp",
+        "-o",
+        "controls/fixture-init"
+      ],
+      "elapsed_seconds": 1.4168184390291572,
+      "name": "strict-actor-compile",
+      "returncode": 0,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "owned-relay",
+        "-p",
+        "test_qualify_pressure.py",
+        "-v"
+      ],
+      "elapsed_seconds": 0.056841744924895465,
+      "name": "pure-qualifier-controls",
+      "returncode": 0,
+      "stderr": "test_empty_or_duplicate_set_rejected_even_when_manifest_pinned (test_qualify_pressure.ExternalPinControls.test_empty_or_duplicate_set_rejected_even_when_manifest_pinned) ... ok\ntest_external_manifest_and_complete_bytes (test_qualify_pressure.ExternalPinControls.test_external_manifest_and_complete_bytes) ... ok\ntest_symlink_cannot_replace_evidence (test_qualify_pressure.ExternalPinControls.test_symlink_cannot_replace_evidence) ... ok\ntest_aging_does_not_relax_duration_or_accept_new_stalls (test_qualify_pressure.QualificationControls.test_aging_does_not_relax_duration_or_accept_new_stalls) ... ok\ntest_changed_native_default_or_actual_write_rejected (test_qualify_pressure.QualificationControls.test_changed_native_default_or_actual_write_rejected) ... ok\ntest_critical_sent_after_exit_cannot_be_correlated (test_qualify_pressure.QualificationControls.test_critical_sent_after_exit_cannot_be_correlated) ... ok\ntest_duplicate_json_keys_rejected (test_qualify_pressure.QualificationControls.test_duplicate_json_keys_rejected) ... ok\ntest_fresh_stale_or_expiry_boundary_is_inconclusive (test_qualify_pressure.QualificationControls.test_fresh_stale_or_expiry_boundary_is_inconclusive) ... ok\ntest_kernel_oom_budget_and_second_kill_rejected (test_qualify_pressure.QualificationControls.test_kernel_oom_budget_and_second_kill_rejected) ... ok\ntest_late_nonvictim_exit_cannot_be_skipped_at_cleanup (test_qualify_pressure.QualificationControls.test_late_nonvictim_exit_cannot_be_skipped_at_cleanup) ... ok\ntest_medium_only_is_partial_and_not_critical_pass (test_qualify_pressure.QualificationControls.test_medium_only_is_partial_and_not_critical_pass) ... ok\ntest_no_real_event_or_incomplete_audit_rejected (test_qualify_pressure.QualificationControls.test_no_real_event_or_incomplete_audit_rejected) ... ok\ntest_nonce_scope_terminal_and_owner_identity_rejected (test_qualify_pressure.QualificationControls.test_nonce_scope_terminal_and_owner_identity_rejected) ... ok\ntest_outer_identity_is_returned_for_external_binding (test_qualify_pressure.QualificationControls.test_outer_identity_is_returned_for_external_binding) ... ok\ntest_outer_old_generation_or_unretired_member_rejected (test_qualify_pressure.QualificationControls.test_outer_old_generation_or_unretired_member_rejected) ... ok\ntest_outer_oom_limit_and_swap_negative_controls (test_qualify_pressure.QualificationControls.test_outer_oom_limit_and_swap_negative_controls) ... ok\ntest_outer_unknown_descendant_cannot_hide_behind_populated_driver (test_qualify_pressure.QualificationControls.test_outer_unknown_descendant_cannot_hide_behind_populated_driver) ... ok\ntest_pre_age_relief_requires_exact_allocator_ack_and_bytes (test_qualify_pressure.QualificationControls.test_pre_age_relief_requires_exact_allocator_ack_and_bytes) ... ok\ntest_relief_and_aging_keep_original_headroom_reserve (test_qualify_pressure.QualificationControls.test_relief_and_aging_keep_original_headroom_reserve) ... ok\ntest_relief_scope_does_not_claim_independent_native_expiry (test_qualify_pressure.QualificationControls.test_relief_scope_does_not_claim_independent_native_expiry) ... ok\ntest_replay_future_and_quiet_events_rejected (test_qualify_pressure.QualificationControls.test_replay_future_and_quiet_events_rejected) ... ok\ntest_stale_asynchronous_critical_after_last_ack_must_still_be_aged (test_qualify_pressure.QualificationControls.test_stale_asynchronous_critical_after_last_ack_must_still_be_aged) ... ok\ntest_stale_medium_only_and_full_total_cannot_replace_actual_critical (test_qualify_pressure.QualificationControls.test_stale_medium_only_and_full_total_cannot_replace_actual_critical) ... ok\ntest_stale_ramp_stop_requires_complete_ack_and_unchanged_bounds (test_qualify_pressure.QualificationControls.test_stale_ramp_stop_requires_complete_ack_and_unchanged_bounds) ... ok\ntest_stale_requires_real_events_and_keeps_targets (test_qualify_pressure.QualificationControls.test_stale_requires_real_events_and_keeps_targets) ... ok\ntest_stale_send_time_also_must_be_strictly_expired (test_qualify_pressure.QualificationControls.test_stale_send_time_also_must_be_strictly_expired) ... ok\ntest_synthetic_critical_positive_scope_is_narrow (test_qualify_pressure.QualificationControls.test_synthetic_critical_positive_scope_is_narrow) ... ok\ntest_wrong_victim_or_priority_and_route_rejected (test_qualify_pressure.QualificationControls.test_wrong_victim_or_priority_and_route_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 28 tests in 0.010s\n\nOK\n",
+      "stderr_sha256": "272d3ceaf6e030b70606449621c6c126c5a08b69f70c08f876c317c7399eef7f",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "error": null,
+  "finished_at": "2026-11-04T17:29:35.324052+00:00",
+  "inputs_after": {
+    "BOOTSTRAP.md": {
+      "bytes": 10588,
+      "sha256": "fb3516922ccb27a8adc196c26fe2012e2585174c317a3c429b3ece0df7e35604"
+    },
+    "Cargo.lock": {
+      "bytes": 2433,
+      "sha256": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03"
+    },
+    "Cargo.toml": {
+      "bytes": 533,
+      "sha256": "6da7eb91c9b965cfc8f2442b018602bf1548e64ab7cb4936d0657f355d433005"
+    },
+    "OUTER-RETIREMENT.md": {
+      "bytes": 3353,
+      "sha256": "4281d3241e43fb19b8f0c760ee1a52b59bf794e45dd849db8130af761cf14001"
+    },
+    "PLAN.md": {
+      "bytes": 6464,
+      "sha256": "f1a60e56a173e3d331de3b58f153384b33167b992951b85838bb99702e93d5c3"
+    },
+    "REVIEW-CHANGES.md": {
+      "bytes": 6640,
+      "sha256": "e66a65eae1e56c770e4c75caf6053f436562badaf1d1214aca24873f30c35a20"
+    },
+    "ancestor-bootstrap04-manifest.json": {
+      "bytes": 3353,
+      "sha256": "0a2926b79240eaf5fd5556fd5c7d3bfd6058119b379b83996618097d9e06838d"
+    },
+    "ancestor-pressure05-manifest.json": {
+      "bytes": 4648,
+      "sha256": "cec434f1e868248f70dbc8a4eea7c924193e9ba633bba61dcf6cea90b642ab29"
+    },
+    "ancestor-pressure06-manifest.json": {
+      "bytes": 5044,
+      "sha256": "9f0472e7aea77cd2f628d38e8378f9148b9db60d4353315d6067a3c271f8325f"
+    },
+    "ancestry/pressure06-qualifier-controls-local.json": {
+      "bytes": 3247,
+      "sha256": "6005b45ef9f2d1c72a3e2b8bcaf80b18aebbf73b6e5b4ff172d75bff48ba7e2b"
+    },
+    "ancestry/pressure07-qualifier-controls-local.json": {
+      "bytes": 3648,
+      "sha256": "45914a311a1b657b595cfff9e75a3eb6cd4338395e9c68c8cb254ef264edb33a"
+    },
+    "ancestry/pressure07-source-manifest.json": {
+      "bytes": 5543,
+      "sha256": "0dd3901441c9d61948dbe04523995a5c7855882868cdfeeb1234dad61bf89ea5"
+    },
+    "ancestry/pressure08-source-manifest.json": {
+      "bytes": 6007,
+      "sha256": "ffe555f1913e2d3f540ec115298580ddb95849e797926511e13acb0eab126de6"
+    },
+    "ancestry/pressure09-actor-compile-local.json": {
+      "bytes": 854,
+      "sha256": "9f33327910888083f78c84551d95ed7956fe2a00bb6ef151ec6193f58a197eec"
+    },
+    "ancestry/pressure09-stale-qualifier-controls-local.json": {
+      "bytes": 4372,
+      "sha256": "cea31240081a8db0931cf253a8e6ee16e402a779c87dd42e9377510ae4ccdf71"
+    },
+    "owned-relay/CANARY.md": {
+      "bytes": 9824,
+      "sha256": "1384946eb719b74ac5ef5c414c66d1193085b59387d2eabf992c098aee1e0ffd"
+    },
+    "owned-relay/PRESSURE.md": {
+      "bytes": 19052,
+      "sha256": "def1f63d8c72b000ad0b9bc23a5c4a0a636deff02a1b84aa0b8bcfa409746141"
+    },
+    "owned-relay/fixture_init.cpp": {
+      "bytes": 57575,
+      "sha256": "d6bf440a8b5434bd05befb2fbfd0b0842090ceba8731f8247326adb932cfe353"
+    },
+    "owned-relay/include/lmkd.h": {
+      "bytes": 13562,
+      "sha256": "458e8c6f6aa145dc89903c0c91f36ea790138443d6b2d46fc38e7f3909282033"
+    },
+    "owned-relay/library-source-receipt.json": {
+      "bytes": 679,
+      "sha256": "fcf360d1ff3a57d6f9e92f99e4470e7aa7e106169fa37f6016b03e11827cdf44"
+    },
+    "owned-relay/minimal-root-libraries.tsv": {
+      "bytes": 2779,
+      "sha256": "784f627d79602deb3b94026cf384b6637cf1c20daefdd2ac7476dbde9588fe61"
+    },
+    "owned-relay/outer-qualifier-controls-local.json": {
+      "bytes": 3834,
+      "sha256": "2fd9f4947cd94743711e8c65edf8acddfbfd45b7cd0dcb0ca6aa4844f43e4e3e"
+    },
+    "owned-relay/qualify_pressure.py": {
+      "bytes": 29014,
+      "sha256": "73a7405d3b663138e5a321257197ae073a01302631a9c21044076cb211651c31"
+    },
+    "owned-relay/test_qualify_pressure.py": {
+      "bytes": 27828,
+      "sha256": "1ea6eb9b518640d9f60caed453e8b2ba238b410546e933da6518d885143860fa"
+    },
+    "parent-source-manifest.json": {
+      "bytes": 6627,
+      "sha256": "c71f8aa93bb96f329177b7797a77d1b6f46238953450a9579b78547770f991b5"
+    },
+    "src/bin/droidloom_psi_owner.rs": {
+      "bytes": 769,
+      "sha256": "e3ca5039c82bd472c8c7e30471085b24a4a681299d8cd1624e101d9f18edddb8"
+    },
+    "src/bin/owned_ipc_controls.rs": {
+      "bytes": 28935,
+      "sha256": "33ba770340d4db205ff52a46c31aacb0e1ee4f7512f1992af8b7e16b73fcd9a0"
+    },
+    "src/bin/owned_relay_canary.rs": {
+      "bytes": 27936,
+      "sha256": "188be4f035bad7fe47fd88e176f83efb72832825f522d1eef947e383e6f04135"
+    },
+    "src/enrollment.rs": {
+      "bytes": 19506,
+      "sha256": "1321146aaaa4c0ff1865eab54568c1da821abc53d5c094473d936486d3da5363"
+    },
+    "src/event_fixture.rs": {
+      "bytes": 23424,
+      "sha256": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54"
+    },
+    "src/lib.rs": {
+      "bytes": 43408,
+      "sha256": "0c682f01c368211dd30b4307b509a0891e360bd21a7cb9dfad67761027400670"
+    },
+    "src/lifecycle_bootstrap.rs": {
+      "bytes": 47843,
+      "sha256": "85abcc95923e8333b2e8fdeef5a8e8086b453cc8e80a59f2473918420ec2403b"
+    },
+    "src/lifecycle_relay.rs": {
+      "bytes": 16229,
+      "sha256": "29516250e21cfa6c8bdeedd676155fe34d53c608021e070a5c03635bba13950a"
+    },
+    "src/pressure_audit.rs": {
+      "bytes": 20193,
+      "sha256": "e68d76f8ce24b1994ddd3620fc04f4f25ac35e9e909e41f399b694443403f08c"
+    },
+    "src/psi.rs": {
+      "bytes": 16179,
+      "sha256": "4e8f566ed27250dd2055a03a5a06b6eda9937341400bb0aac9ccf6f08f101ba2"
+    },
+    "tests/data/grant.hex": {
+      "bytes": 353,
+      "sha256": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29"
+    },
+    "tests/data/request.hex": {
+      "bytes": 289,
+      "sha256": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede"
+    }
+  },
+  "inputs_before": {
+    "BOOTSTRAP.md": {
+      "bytes": 10588,
+      "sha256": "fb3516922ccb27a8adc196c26fe2012e2585174c317a3c429b3ece0df7e35604"
+    },
+    "Cargo.lock": {
+      "bytes": 2433,
+      "sha256": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03"
+    },
+    "Cargo.toml": {
+      "bytes": 533,
+      "sha256": "6da7eb91c9b965cfc8f2442b018602bf1548e64ab7cb4936d0657f355d433005"
+    },
+    "OUTER-RETIREMENT.md": {
+      "bytes": 3353,
+      "sha256": "4281d3241e43fb19b8f0c760ee1a52b59bf794e45dd849db8130af761cf14001"
+    },
+    "PLAN.md": {
+      "bytes": 6464,
+      "sha256": "f1a60e56a173e3d331de3b58f153384b33167b992951b85838bb99702e93d5c3"
+    },
+    "REVIEW-CHANGES.md": {
+      "bytes": 6640,
+      "sha256": "e66a65eae1e56c770e4c75caf6053f436562badaf1d1214aca24873f30c35a20"
+    },
+    "ancestor-bootstrap04-manifest.json": {
+      "bytes": 3353,
+      "sha256": "0a2926b79240eaf5fd5556fd5c7d3bfd6058119b379b83996618097d9e06838d"
+    },
+    "ancestor-pressure05-manifest.json": {
+      "bytes": 4648,
+      "sha256": "cec434f1e868248f70dbc8a4eea7c924193e9ba633bba61dcf6cea90b642ab29"
+    },
+    "ancestor-pressure06-manifest.json": {
+      "bytes": 5044,
+      "sha256": "9f0472e7aea77cd2f628d38e8378f9148b9db60d4353315d6067a3c271f8325f"
+    },
+    "ancestry/pressure06-qualifier-controls-local.json": {
+      "bytes": 3247,
+      "sha256": "6005b45ef9f2d1c72a3e2b8bcaf80b18aebbf73b6e5b4ff172d75bff48ba7e2b"
+    },
+    "ancestry/pressure07-qualifier-controls-local.json": {
+      "bytes": 3648,
+      "sha256": "45914a311a1b657b595cfff9e75a3eb6cd4338395e9c68c8cb254ef264edb33a"
+    },
+    "ancestry/pressure07-source-manifest.json": {
+      "bytes": 5543,
+      "sha256": "0dd3901441c9d61948dbe04523995a5c7855882868cdfeeb1234dad61bf89ea5"
+    },
+    "ancestry/pressure08-source-manifest.json": {
+      "bytes": 6007,
+      "sha256": "ffe555f1913e2d3f540ec115298580ddb95849e797926511e13acb0eab126de6"
+    },
+    "ancestry/pressure09-actor-compile-local.json": {
+      "bytes": 854,
+      "sha256": "9f33327910888083f78c84551d95ed7956fe2a00bb6ef151ec6193f58a197eec"
+    },
+    "ancestry/pressure09-stale-qualifier-controls-local.json": {
+      "bytes": 4372,
+      "sha256": "cea31240081a8db0931cf253a8e6ee16e402a779c87dd42e9377510ae4ccdf71"
+    },
+    "owned-relay/CANARY.md": {
+      "bytes": 9824,
+      "sha256": "1384946eb719b74ac5ef5c414c66d1193085b59387d2eabf992c098aee1e0ffd"
+    },
+    "owned-relay/PRESSURE.md": {
+      "bytes": 19052,
+      "sha256": "def1f63d8c72b000ad0b9bc23a5c4a0a636deff02a1b84aa0b8bcfa409746141"
+    },
+    "owned-relay/fixture_init.cpp": {
+      "bytes": 57575,
+      "sha256": "d6bf440a8b5434bd05befb2fbfd0b0842090ceba8731f8247326adb932cfe353"
+    },
+    "owned-relay/include/lmkd.h": {
+      "bytes": 13562,
+      "sha256": "458e8c6f6aa145dc89903c0c91f36ea790138443d6b2d46fc38e7f3909282033"
+    },
+    "owned-relay/library-source-receipt.json": {
+      "bytes": 679,
+      "sha256": "fcf360d1ff3a57d6f9e92f99e4470e7aa7e106169fa37f6016b03e11827cdf44"
+    },
+    "owned-relay/minimal-root-libraries.tsv": {
+      "bytes": 2779,
+      "sha256": "784f627d79602deb3b94026cf384b6637cf1c20daefdd2ac7476dbde9588fe61"
+    },
+    "owned-relay/outer-qualifier-controls-local.json": {
+      "bytes": 3834,
+      "sha256": "2fd9f4947cd94743711e8c65edf8acddfbfd45b7cd0dcb0ca6aa4844f43e4e3e"
+    },
+    "owned-relay/qualify_pressure.py": {
+      "bytes": 29014,
+      "sha256": "73a7405d3b663138e5a321257197ae073a01302631a9c21044076cb211651c31"
+    },
+    "owned-relay/test_qualify_pressure.py": {
+      "bytes": 27828,
+      "sha256": "1ea6eb9b518640d9f60caed453e8b2ba238b410546e933da6518d885143860fa"
+    },
+    "parent-source-manifest.json": {
+      "bytes": 6627,
+      "sha256": "c71f8aa93bb96f329177b7797a77d1b6f46238953450a9579b78547770f991b5"
+    },
+    "src/bin/droidloom_psi_owner.rs": {
+      "bytes": 769,
+      "sha256": "e3ca5039c82bd472c8c7e30471085b24a4a681299d8cd1624e101d9f18edddb8"
+    },
+    "src/bin/owned_ipc_controls.rs": {
+      "bytes": 28935,
+      "sha256": "33ba770340d4db205ff52a46c31aacb0e1ee4f7512f1992af8b7e16b73fcd9a0"
+    },
+    "src/bin/owned_relay_canary.rs": {
+      "bytes": 27936,
+      "sha256": "188be4f035bad7fe47fd88e176f83efb72832825f522d1eef947e383e6f04135"
+    },
+    "src/enrollment.rs": {
+      "bytes": 19506,
+      "sha256": "1321146aaaa4c0ff1865eab54568c1da821abc53d5c094473d936486d3da5363"
+    },
+    "src/event_fixture.rs": {
+      "bytes": 23424,
+      "sha256": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54"
+    },
+    "src/lib.rs": {
+      "bytes": 43408,
+      "sha256": "0c682f01c368211dd30b4307b509a0891e360bd21a7cb9dfad67761027400670"
+    },
+    "src/lifecycle_bootstrap.rs": {
+      "bytes": 47843,
+      "sha256": "85abcc95923e8333b2e8fdeef5a8e8086b453cc8e80a59f2473918420ec2403b"
+    },
+    "src/lifecycle_relay.rs": {
+      "bytes": 16229,
+      "sha256": "29516250e21cfa6c8bdeedd676155fe34d53c608021e070a5c03635bba13950a"
+    },
+    "src/pressure_audit.rs": {
+      "bytes": 20193,
+      "sha256": "e68d76f8ce24b1994ddd3620fc04f4f25ac35e9e909e41f399b694443403f08c"
+    },
+    "src/psi.rs": {
+      "bytes": 16179,
+      "sha256": "4e8f566ed27250dd2055a03a5a06b6eda9937341400bb0aac9ccf6f08f101ba2"
+    },
+    "tests/data/grant.hex": {
+      "bytes": 353,
+      "sha256": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29"
+    },
+    "tests/data/request.hex": {
+      "bytes": 289,
+      "sha256": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede"
+    }
+  },
+  "installed_files_changed": false,
+  "main_changed": false,
+  "parent_manifest_sha256": "c71f8aa93bb96f329177b7797a77d1b6f46238953450a9579b78547770f991b5",
+  "resources": {
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1a79bdf09-fc05-2bea.service",
+    "cpu.max": "100000 100000",
+    "events_after": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "events_before": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory.max": 536870912,
+    "nice": 10
+  },
+  "review_diff_bytes": 40143,
+  "review_diff_sha256": "58b646d6b55a1204960652e119eb1450d1168fef47014e48dbd8119d2ecb25c9",
+  "runtime_executed": false,
+  "schema": 1,
+  "source_root": "/home/alex/work/pocket4-lmkd-pressure-review-r11-source-10",
+  "started_at": "2026-11-04T17:29:33.824648+00:00",
+  "strict_actor_compile_only": true,
+  "success": true,
+  "synthetic_python_tests_passed": 28
+}

@@ -1,0 +1,72 @@
+--- a/pure_controls.py
++++ b/pure_controls.py
+@@ -172,8 +172,67 @@
+     widened['new_QA_epoch_qualified'] = True
+     bad('host_snapshot_cannot_qualify_QA', lambda: fence['compare'](base, widened),
+         'host build snapshot cannot authorize a QA epoch')
+-    need(len(passed) == len(set(passed)) == 46, 'CONTROL_CASE_COUNT')
++    composer_map = json.loads(packet['expected-builder474-manifest.json'])
++    common = {'schema': 1, 'targets': copy.deepcopy(framework['TARGETS']), 'dependency_mode': 'Strict',
++              'tests_executed': False, 'Android_Binder_ABI_qualified': False,
++              'Wayland_GPU_runtime_qualified': False, 'installation_performed': False,
++              'service_activation_performed': False}
++    composer_attempt = {**copy.deepcopy(common),
++        'state': 'CLAIMED_BEFORE_FRESH_SOURCE_VERIFICATION_OR_PROJECTION',
++        'source_lock': str(framework['BUILD_SOURCE'] / 'android/manifest/m2-role-ingress-hal-provider-source-lock.json'),
++        'source_lock_sha256': framework['EXTENDED_LOCK_SHA'], 'locked_projects': 225,
++        'fixed_production_inputs': copy.deepcopy(framework['COMPOSER_INPUTS']),
++        'fixed_checkout_declarations': copy.deepcopy(framework['COMPOSER_DECLARATIONS']),
++        'source_projection_journal': str(framework['WORK'] / 'source-projection.json'),
++        'command_completed': False}
++    composer_projection = {
++        'files': {name: row['projected_sha256'] for name, row in
++                  framework['COMPOSER_PROJECTED_BLUEPRINTS'].items()},
++        'patches': {name: composer_map[name]['sha256'] for name in [
++            framework['GO_PATCH'], 'android/apex-compat/0009-blueprint-stream-uncached-module-actions.patch']}}
++    composer_inputs = {**copy.deepcopy(common), 'ALLOW_MISSING_DEPENDENCIES': False,
++        'source_lock_sha256': framework['EXTENDED_LOCK_SHA'],
++        'materialized_manifest_sha256': framework['PUBLISHED_MANIFEST_SHA'],
++        'fixed_production_inputs': copy.deepcopy(framework['COMPOSER_INPUTS']),
++        'nine_production_vendor_mirrors_exact': True,
++        'fixed_checkout_declarations': copy.deepcopy(framework['COMPOSER_DECLARATIONS']),
++        'effective_vendor_Android_bp_sha256': framework['COMPOSER_DECLARATIONS']['Android.bp']['sha256'],
++        'source_projection': composer_projection}
++    composer_command = {**copy.deepcopy(common), 'state': 'NORMAL_BUILD_COMMAND_SUCCEEDED',
++        'source_projection_restored': True, 'actual_ELF_AIDL_and_native_link_inputs_qualified': False}
++    composer_records = [composer_attempt, composer_inputs, composer_command]
++    def composer_qualify(records):
++        framework['qualify_composer_records'](*records, framework['PUBLISHED_MANIFEST_SHA'], composer_map)
++    good('composer_exact_three_records_remain_artifact_pending',
++         lambda: composer_qualify(copy.deepcopy(composer_records)))
++    for name, mutate, error in [
++        ('composer_other_targets_rejected', lambda r: r[0].__setitem__('targets',
++            ['framework-minus-apex', 'libandroid_runtime']), 'COMPOSER_RECORD_SCOPE'),
++        ('composer_allow_missing_rejected', lambda r: r[1].__setitem__('ALLOW_MISSING_DEPENDENCIES', True),
++            'COMPOSER_INPUT_BINDING'),
++        ('composer_changed_ACK_input_rejected', lambda r: r[1]['fixed_production_inputs'][
++            'graphics/droidloom-denial-protocol/src/lib.rs'].__setitem__('sha256', '0' * 64),
++            'COMPOSER_FIXED_INPUTS'),
++        ('composer_manifest_digest_mismatch_rejected', lambda r: r[1].__setitem__(
++            'materialized_manifest_sha256', '0' * 64), 'COMPOSER_INPUT_BINDING'),
++        ('composer_unqualified_mirrors_rejected', lambda r: r[1].__setitem__(
++            'nine_production_vendor_mirrors_exact', False), 'COMPOSER_INPUT_BINDING'),
++        ('composer_copied_vendor_blueprint_cannot_be_projected', lambda r: r[1]['source_projection']['files'].__setitem__(
++            'vendor/droidloom/Android.bp', framework['COMPOSER_DECLARATIONS']['Android.bp']['sha256']),
++            'COMPOSER_VENDOR_BLUEPRINT'),
++        ('composer_wrong_exact_projection_rejected', lambda r: r[1]['source_projection']['files'].__setitem__(
++            'hardware/interfaces/automotive/audiocontrol/aidl/default/Android.bp', '0' * 64),
++            'COMPOSER_EXACT_PROJECTION'),
++        ('composer_command_cannot_claim_Binder_ABI', lambda r: r[2].__setitem__(
++            'Android_Binder_ABI_qualified', True), 'COMPOSER_RECORD_SCOPE'),
++        ('composer_missing_restoration_rejected', lambda r: r[2].__setitem__(
++            'source_projection_restored', False), 'COMPOSER_COMMAND'),
++    ]:
++        records = copy.deepcopy(composer_records)
++        mutate(records)
++        bad(name, lambda records=records: composer_qualify(records), error)
++    need(len(passed) == len(set(passed)) == 56, 'CONTROL_CASE_COUNT')
+     return {'schema': 1, 'state': 'PASS', 'passed': len(passed), 'cases': passed,
+-            'scope': 'Actual pure Python functions with synthetic identity/resource/failure fixtures and exact staged lock metadata; no device reuse, Main observation, Rust or Soong qualification.',
++            'scope': 'Actual pure Python functions with synthetic identity/resource/failure fixtures, exact staged lock metadata and ten Composer record gates; no device reuse, Main observation, Rust, Soong, Binder ABI or GPU qualification.',
+             'remote_reads': 0, 'subprocesses': 0, 'Main_actions': 0, 'Android_actions': 0,
+             'normal_build_executed_by_controls': False}

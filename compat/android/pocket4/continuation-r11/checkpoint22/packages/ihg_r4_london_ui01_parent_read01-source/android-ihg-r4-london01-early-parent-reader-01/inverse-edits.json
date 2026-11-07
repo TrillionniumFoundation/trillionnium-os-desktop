@@ -1,0 +1,62 @@
+[
+  {
+    "at": 23,
+    "before": "\"\"\"Fixed summary-only reader for three parent-bound IHG launch/inspect/cleanup phases and two exact terminal parents.\"\"\"",
+    "after": "\"\"\"Fixed two-parent IHG London failure reader; no Main or Android operation.\"\"\""
+  },
+  {
+    "at": 216,
+    "before": "ROOT=Path(\"/home/alex/work/pocket4-ihg-r2-public-search-destination-entry-01\")",
+    "after": "ROOT=Path(\"/home/alex/work/pocket4-ihg-r4-public-london-input-01\")"
+  },
+  {
+    "at": 283,
+    "before": "FLOW=Path(\"/home/alex/work/pocket4-ihg-owned-qa-r2-flow-b2cd08fcaad1f2faaed5de2ff5df01af\")",
+    "after": "FLOW=Path(\"/home/alex/work/pocket4-ihg-owned-qa-r4-flow-ec4f2977574102b1e5869d2494e8416b\")"
+  },
+  {
+    "at": 374,
+    "before": "NONCE=\"b2cd08fcaad1f2faaed5de2ff5df01af\"",
+    "after": "NONCE=\"ec4f2977574102b1e5869d2494e8416b\""
+  },
+  {
+    "at": 415,
+    "before": "SOURCE_SHA=\"996ad8e7072afdf3a4288eebb8488d5dcfcdd073f533b0c535d127b3e6c0424d\"",
+    "after": "SOURCE_SHA=\"24a8491dbb44faf1288869d278da96290597b7af1fcdcce12a72fd62bad9435f\""
+  },
+  {
+    "at": 493,
+    "before": "HELPER_UID=10153",
+    "after": "HELPER_UID=10158"
+  },
+  {
+    "at": 604,
+    "before": "    'launch.json':FLOW/'steps/launch-01/result.json',\n    'inspect.json':FLOW/'steps/inspect-01/result.json',\n    'cleanup.json':FLOW/'steps/cleanup-01/result.json',\n",
+    "after": ""
+  },
+  {
+    "at": 1380,
+    "before": "maximum=66601 if path==FILES['coordinator.json'] else 262144",
+    "after": "maximum=6175 if path==FILES['coordinator.json'] else 2187"
+  },
+  {
+    "at": 3289,
+    "before": "sizes={'coordinator.json':66601,'stage.json':2624}",
+    "after": "sizes={'coordinator.json':6175,'stage.json':2187}"
+  },
+  {
+    "at": 4238,
+    "before": "coordinator.get('helper_package')=='org.droidloom.qa.ihg.r2'",
+    "after": "coordinator.get('helper_package')=='org.droidloom.qa.ihg.r4'"
+  },
+  {
+    "at": 4476,
+    "before": "    retained=coordinator.get('retained_phase_results')\n    fields={'launch':'launch_result','inspect':'inspection_result','cleanup':'cleanup_result'}\n    need(type(retained) is dict and set(retained)==set(fields),'EXACT_THREE_RETAINED_PHASE_PINS_REQUIRED')\n    for phase,field in fields.items():\n        name=phase+'.json';pin=retained[phase];path=FILES[name]\n        need(type(pin) is dict and set(pin)=={'path','bytes','sha256'} and pin['path']==str(path) and\n             type(pin['bytes']) is int and 0<pin['bytes']<=262144 and\n             isinstance(pin['sha256'],str) and re.fullmatch('[0-9a-f]{64}',pin['sha256']),\n             'ONLY_EXACT_PARENT_BOUND_PHASE_PATH_AND_BOUNDED_PIN:'+phase)\n        if field in coordinator:\n            need(coordinator[field]==pin,'TWO_PARENT_PHASE_PINS_DIFFER:'+phase)\n        else:\n            need(coordinator.get('ok') is False and isinstance(coordinator.get('error'),dict),\n                 'MISSING_DUPLICATE_PIN_ONLY_IN_FAILED_PARENT:'+phase)\n        raw=reader.read(path)\n        need(len(raw)==pin['bytes'] and sha(raw)==pin['sha256'],'PARENT_BOUND_PHASE_BYTES_CHANGED:'+phase)\n        value=json.loads(raw);no_raw_ui(value)\n        need(value.get('source_manifest_sha256')==SOURCE_SHA and value.get('nonce')==NONCE and\n             value.get('phase')==phase and value.get('helper_package')=='org.droidloom.qa.ihg.r2' and\n             value.get('helper_uid')==HELPER_UID and value.get('package')=='com.ihg.apps.android' and\n             value.get('uid')==10137,'EXACT_IHG_PHASE_SCOPE_REQUIRED:'+phase)\n        files[name]={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':raw.decode('utf-8','strict')}\n",
+    "after": "    # Export only the exact two original parents. Retained phase pins, if any,\n    # remain original metadata; no child or successful Main guard is assumed.\n"
+  },
+  {
+    "at": 4656,
+    "before": "'scope':'fixed-current-IHG-R2-search-destination01-terminal-parents-and-three-parent-bound-phase-results'",
+    "after": "'scope':'fixed-current-IHG-R4-London01-early-failure-two-terminal-parents-only'"
+  }
+]

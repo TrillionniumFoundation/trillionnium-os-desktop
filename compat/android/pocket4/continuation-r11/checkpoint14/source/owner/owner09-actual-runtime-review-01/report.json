@@ -1,0 +1,158 @@
+{
+  "schema": "p4-owner09-actual-runtime-independent-review-v1",
+  "scope": "Read-only local verification of the exact actual original runtime result; no device execution, repair or result rewriting.",
+  "evidence": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner09-normal01-runtime-read01/runtime-result.json",
+    "bytes": 46987,
+    "sha256": "20a20009beca9d9eb64b0973acfdd749f3b2a8cc8c6ef1c417d517378a518a05"
+  },
+  "actual_overall_result": "failed",
+  "attempt_nonce": "03f75dd099814dce95d8367beac8b10bdc03c90af3bbbc8e3af91986679c02f7",
+  "invocation": "2cb558b9fa9e4cbdaadf58312016a17a",
+  "audit_events": [
+    "prepared",
+    "owner_attached",
+    "init_hello",
+    "retiring"
+  ],
+  "first_runtime_failure": {
+    "message": "rejected: lifecycle packet framing/ancillary data",
+    "observed_monotonic_ns": 886486090348831,
+    "origin": "runtime"
+  },
+  "original_public_Stop": {
+    "ok": false,
+    "state": "cleanup_failed",
+    "message": "Android cell cleanup is incomplete; retained owner blocks start/restart: retire exact init/broker/domain generation: rejected: lifecycle packet framing/ancillary data; retirement remains incomplete: rejected: bootstrap incomplete; retain failed owner"
+  },
+  "retirement_failure": {
+    "message": "rejected: bootstrap incomplete; retain failed owner",
+    "observed_monotonic_ns": 886486100445352,
+    "origin": "retirement"
+  },
+  "cleanup_failure": {
+    "message": "retire exact init/broker/domain generation: rejected: lifecycle packet framing/ancillary data; retirement remains incomplete: rejected: bootstrap incomplete; retain failed owner",
+    "observed_monotonic_ns": 886486102314827,
+    "origin": "cleanup"
+  },
+  "original_Owner_retirement_qualified": false,
+  "init_observation": {
+    "actual_typed_Hello_process": {
+      "birth": 88648401,
+      "pid": 1435011,
+      "pidfd": {
+        "device": 6,
+        "inode": 22355231
+      },
+      "proc_dir": {
+        "device": 26,
+        "inode": 493539868
+      }
+    },
+    "namespaces_exactly_match_Hello": true,
+    "generation_nonce": "791407e4e95494ed3b84977fa375c93d83e3f394523a7ef14c0c26c981a5d9cf",
+    "hello_audit_sequence": 3,
+    "hello_audit_monotonic_ns": 886485886761503,
+    "monotonic_before_ns": 886485966853913,
+    "monotonic_after_ns": 886485966929347,
+    "boottime_ns": 886485966856017,
+    "realtime_ns": 1793860776678285937,
+    "captured_live_before_first_runtime_failure": true,
+    "atomic_clock_sample": false,
+    "external_kernel_lines_attributed": false
+  },
+  "child_retirement": [
+    {
+      "forced_kill": false,
+      "pid": 1434963,
+      "reaped": true,
+      "returncode": 1,
+      "role": "daemon"
+    },
+    {
+      "forced_kill": false,
+      "pid": 1434950,
+      "reaped": true,
+      "returncode": -15,
+      "role": "presenter"
+    },
+    {
+      "forced_kill": false,
+      "pid": 1434911,
+      "reaped": true,
+      "returncode": 0,
+      "role": "sway"
+    },
+    {
+      "forced_kill": false,
+      "pid": 1434910,
+      "reaped": true,
+      "returncode": 0,
+      "role": "bus"
+    }
+  ],
+  "outer_exact_cleanup": {
+    "cgroup_absent": true,
+    "invocation": "2cb558b9fa9e4cbdaadf58312016a17a",
+    "original_actor_dead": true,
+    "unit": "p4-owner09-normal-20261105-01.service",
+    "unit_not_found": true
+  },
+  "outer_cleanup_is_not_original_Owner_retirement": true,
+  "Main_three_points": [
+    {
+      "point": "main_before",
+      "framework_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "held_cgroup_identity": [
+        30,
+        26651611
+      ],
+      "installed_contract_unchanged": true,
+      "original_processes_alive_and_unchanged": true
+    },
+    {
+      "point": "main_before_gate",
+      "framework_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "held_cgroup_identity": [
+        30,
+        26651611
+      ],
+      "installed_contract_unchanged": true,
+      "original_processes_alive_and_unchanged": true
+    },
+    {
+      "point": "main_after",
+      "framework_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "held_cgroup_identity": [
+        30,
+        26651611
+      ],
+      "installed_contract_unchanged": true,
+      "original_processes_alive_and_unchanged": true
+    }
+  ],
+  "Main_continuous_noninterference_proved": false,
+  "terminal": {
+    "Result": "exit-code",
+    "ExecMainStatus": "1",
+    "ExecMainPID": "1434898",
+    "InvocationID": "2cb558b9fa9e4cbdaadf58312016a17a",
+    "MemoryPeak": "173322240",
+    "MemorySwapPeak": "0"
+  },
+  "separate_source_finding": {
+    "preimage_lifecycle_bootstrap_sha256": "3f3f7cc1accb8921b0248adb3257e3737879e90b10bf377231389d5eb18453c1",
+    "preimage_matches_actual09_compiled_input": true,
+    "confirmed_incompatibility": "Old broker bootstrap requires /sys/fs/cgroup already cgroup2 and direct root membership; actual ABI3 bootstrap uses a holding view and init-bootstrap leaf.",
+    "specific_first_error_cause_proved": false,
+    "daemon_stderr_not_consumed_in_this_review": true,
+    "minimal_candidate_manifest_sha256": "019b34bc655bf76235339b533917d523fd2e5db3355214e5a5466e6a61ee3068"
+  },
+  "root_dispatch_only": true,
+  "next_required_step": "Matching producer10 compile and ordinary controls, then a fresh externally bound NORMAL cell; no retry of this attempt.",
+  "production_ready": false,
+  "pressure_effect_qualified": false,
+  "installed_owner_qualified": false,
+  "rc_property_reload_qualified": false,
+  "app_qualified": false
+}

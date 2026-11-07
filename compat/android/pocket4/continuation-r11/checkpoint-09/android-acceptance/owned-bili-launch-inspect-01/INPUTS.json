@@ -1,0 +1,124 @@
+{
+  "actual_build02": {
+    "apk": {
+      "bytes": 20624,
+      "path": "/home/alex/work/pocket4-owned-bili-qa-r1-build-02/owned-bili-qa.apk",
+      "sha256": "d40804b28f13adac16cd66ec8f32560d6083424c673eb94f543a23ee2ac81e27"
+    },
+    "build_result": {
+      "bytes": 17047,
+      "path": "/home/alex/work/pocket4-owned-bili-qa-r1-build-02/build-result.json",
+      "sha256": "914500629ff59c1a27b3f67b962d883bae6f5b6f68dbca335a73de10dfbea03a"
+    },
+    "compile_sdk": 31,
+    "signer_certificate_sha256": "65d64cd59b94c92b8a18bc3ba0d352aa160a2d9c74dc55448683d5df84cca134",
+    "source_manifest_sha256": "d0f9f0f45d0e94a3d6b4a46e0ae0d9048ea2e6ff6c60550b39f54a75029d5aba",
+    "stage_result": {
+      "bytes": 1935,
+      "path": "/home/alex/work/pocket4-owned-bili-qa-r1-source-02/stage-result.json",
+      "sha256": "15bf5790804808b95f05151aa866bed86ef5173b621c07e5ab30617c282111db"
+    },
+    "target_sdk": 33
+  },
+  "actual_install02": {
+    "authoritative_status_reported_by_root": "succeeded",
+    "durable": true,
+    "exit_code": 0,
+    "helper_uid": 10164,
+    "job_id": "1a1a926b70d-fc05-3200",
+    "receipts": {
+      "coordinator": {
+        "bytes": 3022,
+        "path": "/home/alex/work/pocket4-owned-bili-qa-install-state-02/result.json",
+        "sha256": "85f7af26b6576fe850149768988077c78114487dd42d287858d9df8d71d9efa5"
+      },
+      "stage": {
+        "bytes": 2029,
+        "path": "/home/alex/work/pocket4-owned-bili-qa-install-state-02/stage-result.json",
+        "sha256": "5ade9f843cf0634cd2ebcab47c545c6bc52c2f7d4de79961fda73948b530c057"
+      },
+      "worker": {
+        "bytes": 6886,
+        "path": "/home/alex/work/pocket4-bilibili-owned-qa-r1-flow-9eb2de4b3fa0576fd89afc046f8dfb23/steps/install-state-02/result.json",
+        "sha256": "01330c83c983cc6b500c67fcd850409bed4e84028f119af056858af98e40ac25"
+      },
+      "worker_command": {
+        "bytes": 1148,
+        "path": "/home/alex/work/pocket4-owned-bili-qa-install-state-02/evidence/02-install-state.result.json",
+        "sha256": "3fbaab1ae083542137990aae21fefd44d689354cd977d9684f1bb79a75907347"
+      }
+    },
+    "state_wire_sha256": "3a53fa4b2df80842dbb95cc25b189aa611bc69f5d71b0092629d948ccbd20f88"
+  },
+  "new_scope": {
+    "audio_actions": 0,
+    "clicks": 0,
+    "commercial_package": "tv.danmaku.bili",
+    "commercial_uid": 10117,
+    "flow": "/home/alex/work/pocket4-bilibili-owned-qa-r1-flow-07a6a4bf28a23f7b1f8f2e8be7923646",
+    "helper_package": "org.droidloom.qa.bili.r1",
+    "helper_uid": 10164,
+    "install_uninstall_actions": 0,
+    "nonce": "07a6a4bf28a23f7b1f8f2e8be7923646",
+    "old_v2_calls": 0,
+    "original_launch_and_task_cleanup": true,
+    "plan": {
+      "nonces": {
+        "after": "96c48430780bc060fe43c9dd066cccf3",
+        "before": "5eef642a03bcaea1b40e438479efed3f",
+        "inspect": "19ef0b03dd438bbdcc1cb16cd0a4ec03"
+      },
+      "operation": "inspect",
+      "schema": 1
+    },
+    "root": "/home/alex/work/pocket4-bilibili-owned-inspect-01",
+    "text_actions": 0
+  },
+  "prior_failures_preserved": {
+    "install01": "NUMERIC_PID_ENTRY_FORBIDDEN before install runner; original FAIL retained",
+    "no_retry_of_install01_or_install02": true
+  },
+  "privacy": {
+    "public": "scope, UID, hash, activity/window IDs, node count, restoration and exact-task retirement; no account/feed text",
+    "raw_UI_or_journal_in_Git": false,
+    "raw_UI_tree": "remote root-owned flow only",
+    "raw_commercial_journal_collected": false
+  },
+  "qualification_limits": {
+    "actual_Bili_UI_navigation": false,
+    "actual_audio": false,
+    "actual_launch_inspect_run": false,
+    "old_R3_full_wrapper_review_not_invented": true,
+    "whole_app_production_ready": false
+  },
+  "resources": {
+    "Main_limits_changed": false,
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 536870912,
+    "nice": 10,
+    "outer_timeout_seconds": 600,
+    "phase_timeout_seconds": {
+      "cleanup": 100,
+      "init": 25,
+      "inspect": 180,
+      "launch": 180
+    },
+    "swap_max_bytes": 0,
+    "tasks_max": 128
+  },
+  "runtime_dependencies": {
+    "install_entry": {
+      "bytes": 27997,
+      "path": "/home/alex/work/pocket4-owned-bili-qa-install-state-02/source/install_state.py",
+      "sha256": "68ab5003e1eaed47518c4a17238e6cc95b784588a1114439a51a166a3e02b896"
+    },
+    "install_source_manifest_sha256": "84dfb0f0b11bf1740fc00516c1851f4142d8a2c67bf23296d25788d2e24d7e60",
+    "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "recorder_manifest_sha256": "52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1",
+    "recorder_payload_count": 44,
+    "recorder_root": "/home/alex/work/pocket4-owned-bili-qa-install-state-02/source/recorder-r4",
+    "session_binding_sha256": "ab266129313dcfcbe3a2095078833482c5980af1c51195d0830630bbd4f18eba"
+  },
+  "schema": 1,
+  "status": "SOURCE_PROPOSAL_NOT_SUBMITTED"
+}

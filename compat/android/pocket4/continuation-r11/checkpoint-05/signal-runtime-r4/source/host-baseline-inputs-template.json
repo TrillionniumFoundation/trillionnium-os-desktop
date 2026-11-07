@@ -1,0 +1,37 @@
+{
+  "arm": "baseline",
+  "binding": {
+    "layout": {
+      "path": "/ABSOLUTE_REMOTE_RUNTIME_R1/r16-host-layout.json",
+      "sha256": "e369b6bce365bd2553be7193bdeea22975d0e26d13d4bb73e826f10b6be78cd2"
+    }
+  },
+  "cpu": 6,
+  "evidence": "/home/alex/work/pocket4-signal-host-baseline-r11-01-ff3127ab",
+  "kind": "owned-full-host-suite-r1",
+  "main": {
+    "framework_guard": {
+      "path": "/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py",
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288"
+    },
+    "main_activation": {
+      "path": "/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json",
+      "sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615"
+    },
+    "main_resource_baseline": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    }
+  },
+  "nonce": "ff3127ab4ee244a590a0817e586ce538",
+  "preparation_source": "/ABSOLUTE_REMOTE_PREPARATION_R1",
+  "schema": 1,
+  "tools": {
+    "/usr/bin/python3": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41",
+    "/usr/bin/systemctl": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082"
+  },
+  "unit": "p4-signal-host-baseline-ff3127ab4ee2.service"
+}

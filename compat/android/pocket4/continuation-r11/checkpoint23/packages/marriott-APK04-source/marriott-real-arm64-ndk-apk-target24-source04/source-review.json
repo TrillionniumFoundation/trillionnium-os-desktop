@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "state": "ROOT_REVIEW_REQUIRED_BUILD04_UNRUN",
+  "why": "Actual install01 command002 rejected target SDK23 and explicitly required24. Original install result remains UNKNOWN with UIDnull.",
+  "actual_install_failure": {
+    "tree": "abab55d74213b2fabd04598aa50170d3354f39b0",
+    "result": [
+      8994,
+      "0c3669215137fc4b8fce1603c586a6e8d8451777a359c926a29e9b43200cf202",
+      "055af604d46464e7755a74c5fb34e5798ceee5b1"
+    ],
+    "command": [
+      443,
+      "0b04b1ee2d79fdfe56833d6cb6172b1ec13d5446964043e914f4488e8f675f72",
+      "0f7c924a9850caaaed27fc8283df78dfd48df9fd"
+    ],
+    "stdout": [
+      111,
+      "c93c16f3c1199574fa44e070358f7292da1ed55e3c4eea13d97d47270cbc191c",
+      "e6990d74126df4f412cbfde7b28d902a460944cc"
+    ],
+    "rc": 1,
+    "spawned_and_joined": true,
+    "timed_out": false,
+    "root_Main_four_equal": true,
+    "lease_FDs_closed": 23,
+    "staging_removed": true,
+    "absence_not_inferred": true
+  },
+  "lineage": {
+    "actual_APK03_tree": "999febd5c46bfa058e7a1ecd47cc5c76cdd2df9a",
+    "actual_APK03_report": {
+      "bytes": 9811525,
+      "sha256": "02b979004666268ae73814c809ffeba54de261e4c826a130af267fe717f3f46f",
+      "git_blob_sha": "5a87771cf68532d1da5bd24f6dfe3a4dad624496"
+    },
+    "old_build_and_install_preserved": true
+  },
+  "changes": [
+    "Manifest targetSdkVersion23→24 plus historical-comment clarification",
+    "Corresponding strict source/compiled-APK target24 gates and result fields",
+    "Fresh create-only build04 root and request key; three owned cpufeatures source paths follow the new root"
+  ],
+  "unchanged": [
+    "Other15 inline sources including original Java/JNI/GTest test bodies",
+    "23 nonempty registry and exact12 ProcSelfMaps focus",
+    "minSdk14, original permissions/components and original InstrumentationTestRunner",
+    "ARM64 current target10000, original observed SDK37, CRT, all source/tool/library pins",
+    "Default feature0; all50commands, object/link/JNI/ELF/hash gates",
+    "Original1GiB CPU100 nice15 600s work/660s outer resource and child-retirement gates"
+  ],
+  "semantic_boundary": "target24 changes Android target-SDK behavior. Legacy Shared greylist behavior is not preserved or qualified; Shared tests remain registered and are outside exact12 focus. No bypass/testOnly or permission grant.",
+  "future": {
+    "APK_bytes": null,
+    "APK_sha256": null,
+    "signature": null,
+    "installed_UID": null,
+    "install_nonce": null,
+    "run_nonce": null,
+    "retire_nonce": null,
+    "installation_or_runtime_qualified": false
+  },
+  "validation": {
+    "V8_replay_and_full_byte_inverse": true,
+    "base64_input_is_UTF8_bytes_and_decode_equal": true,
+    "Python_executed": false,
+    "build_executed": false,
+    "Hepta_called": false,
+    "new_pure_controls_added": false
+  },
+  "replay": "Load derive_build04.js as Function(source+'\\nreturn deriveAPK04;')(); call(U, input) with all seven original raw UTF8 texts named in replay-inputs.json. U must be the pinned pureJS byte-based hash utility. All output pins and old inverse are enforced inside.",
+  "key": "p4-marriott-real-arm64-ndk-apk-build04-61d25aeddde88322"
+}

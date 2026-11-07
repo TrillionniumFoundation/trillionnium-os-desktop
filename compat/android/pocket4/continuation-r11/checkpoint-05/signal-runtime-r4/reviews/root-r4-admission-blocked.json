@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "artifact": "isolated-signal-canary-runtime-r4",
+  "admission": "BLOCKED_PENDING_NEW_REVISION",
+  "actual_android_canary_started": false,
+  "source_manifest_sha256": "b51efedefd1c458fae0cdf0fe1b353cf9c69db3429fa3c07bdc549d10dec0ed4",
+  "source_archive_sha256": "60d4012d6838de6eb443a267296af3e60f5c0a0786d360e06ef47ef5a6760b9b",
+  "all_72_archive_members_and_71_manifest_payloads_independently_verified": true,
+  "independently_read_complete_production_files": [
+    "run.py",
+    "held_runtime.py",
+    "failure_evidence.py",
+    "prepare_runtime.py"
+  ],
+  "production_pins": {
+    "run.py": "2de643533cc5539cc67a7589ec4c76ddd5745fac49857070f5d7844529c5906a",
+    "held_runtime.py": "7ce058ed5c423598b75b60395fc360c07154ff18d9bbdd7a0902e29a6e1e8f17",
+    "failure_evidence.py": "3f10ff4d991c9d69a9c867ef9ab29b109d0d19cee85854489dc41162e0fd6f97",
+    "prepare_runtime.py": "1eaaf28edfbbd14352b86d1a6e33f146ceb56797d54f28ec438f3fc6fac28521"
+  },
+  "scoped_positive_findings": [
+    "The actual original r1 host verifier is loaded from its qualified directory; source-context and original host-suite pins are preserved.",
+    "Required classpath keys are read from the fixed private zygote's held procdir; limits and IN_ROOT|NO_MAGICLINKS prevent an absolute-symlink escape from the held root.",
+    "All namespace entry uses the qualified held-FD helper; no numeric target is used for actions.",
+    "Instrumentation status is checked before durable claim/result reads. Diagnostic errors do not authorize a retry.",
+    "An unjoined diagnostic child or live sampler permanently closes admission and prevents early authority-FD release.",
+    "Outer finally reconciles unknown launch observation using the exact fresh Description and InvocationID; unknown identities are not blindly stopped."
+  ],
+  "blockers": [
+    {
+      "id": "cleanup-evidence-write-aborts-retirement",
+      "finding": "The retained cleanup calls save(resources-before-cleanup.json) before every cell/unit stop. An exception exits cleanup; the outer r4 handler records failure but has no retirement continuation.",
+      "required": "Record the first evidence error while continuing exact cell stop and each owned unit retirement; run remains failed."
+    },
+    {
+      "id": "hierarchical-retirement-proof",
+      "finding": "The retained cleanup stops a unit only when MainPID > 0 and then checks only the root cgroup.procs. These checks do not establish empty nested cgroups or retirement of surviving descendants when MainPID is 0.",
+      "required": "Bind exact unit generation/control-group identity, retire it even for zero MainPID when owned descendants remain, and verify hierarchical populated/pids state before closure; continue other owned units after an error."
+    },
+    {
+      "id": "zygote-classpath-root-correspondence",
+      "finding": "bind_classpaths pins zygote identity and PID namespace but hashes jars only through init's held root. The existing epoch pins each mount namespace separately and does not establish that those paths resolve to the same jar backing in zygote and command-entry roots.",
+      "required": "Bind the actual private zygote root/mount and prove each required jar corresponds to the command-entry root before supplying the classpath."
+    }
+  ],
+  "qualification_limits": [
+    "The 35+13+AST host controls remain valid for the frozen source; they do not close these newly identified integration paths.",
+    "Original r4 source and a03 failed runtime remain unchanged.",
+    "A new source revision, meaningful negative controls, review and a fresh single-use canary are required.",
+    "No whole-app production qualification."
+  ]
+}

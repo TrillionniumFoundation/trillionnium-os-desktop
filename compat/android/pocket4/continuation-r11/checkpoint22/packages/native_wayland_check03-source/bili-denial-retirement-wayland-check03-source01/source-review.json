@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_NOT_EXECUTED",
+  "baseline": {
+    "tree": "9191a7c0e094044f9709fbbd9237cfbef0cff1c9",
+    "controller": {
+      "bytes": 104008,
+      "sha256": "bbf8bd5656e5b1f0df7265e27ab04c358c372cb52cccea2743450026aa397838",
+      "git_blob": "757ddf5422aee624fb375e6c0780b7ce772ef07b"
+    }
+  },
+  "candidate": {
+    "controller": {
+      "bytes": 108834,
+      "sha256": "b860c9e94f879bfe1eed61201e223269322b45722402d9fcb9e7fed99bc813c2",
+      "git_blob": "1a508edf14a0ff419a3bd6a287e58153a6427a53"
+    },
+    "root": "/home/alex/work/p4-retirement-wayland-check03-20261106",
+    "key": "pocket4-denial-retirement-wayland-check-03-20261106"
+  },
+  "changes": {
+    "exact_source_edits": 6,
+    "inverse_to_actual_check02": true,
+    "changed_functions": [
+      "native_pc_snapshot",
+      "qualify_pkg_config"
+    ],
+    "new_functions": [
+      "absent_pc_directory"
+    ],
+    "unchanged_function_bodies": [
+      "require",
+      "utc",
+      "sha",
+      "identity",
+      "held",
+      "write_new",
+      "real_directory",
+      "resource_text",
+      "resource_events",
+      "resource_snapshot",
+      "begin_resources",
+      "finish_resources",
+      "hash_held",
+      "regular_tree",
+      "portable",
+      "pinned_packet",
+      "exact_source_copy",
+      "read_existing_config",
+      "pin_resolved",
+      "verify_resolved",
+      "toolchain",
+      "qualify_cached_archive",
+      "limit_child_outputs",
+      "OwnChildReaper",
+      "owned_command",
+      "command",
+      "run_child_lifecycle_controls",
+      "apply_candidate_sources",
+      "fresh_host_memory_admission",
+      "pkg_config_path_list",
+      "qualified_vendor_inputs",
+      "selected_dependencies",
+      "qualify_wayland_compile",
+      "compact_preserved_command_logs",
+      "execute"
+    ],
+    "production_sources_changed": 0,
+    "source_map_500_unchanged": true,
+    "workspace_and_Cargo_lock_unchanged": true
+  },
+  "absence_contract": {
+    "trigger": "FileNotFoundError from lstat of an actual default search entry only",
+    "anchor": "Nearest existing protected root-owned directory, strict resolution within /usr or /lib; no fallback or directory creation",
+    "binding": "Named and resolved ancestor identities, a held O_DIRECTORY/O_NOFOLLOW anchor, two dir_fd + nofollow first-child ENOENT observations",
+    "final": "Repeat absence after complete present-directory scan; original final whole snapshot equality across Cargo check",
+    "aliases": "Existing broken alias, ENOTDIR, permission failure, wrong owner or writable ancestor remain failure",
+    "provider_qualified_by_absence": false,
+    "hold_across_complete_Cargo_command": false,
+    "interval_wide_namespace_stability_claimed": false,
+    "close_failure_blocks_success": true,
+    "primary_and_close_errors_retained": true
+  },
+  "preserved": {
+    "fresh_fixed_pkg_config_query_once": true,
+    "default_search_order_and_PKG_CONFIG_LIBDIR": true,
+    "present_directories_complete_immediate_snapshot": true,
+    "pc_files_2048_16MiB_bounds": true,
+    "all_held_pc_hashes_and_namespace_alias_guards": true,
+    "original_real_build_scripts_must_succeed": true,
+    "no_new_fallback_paths_or_system_pc_writes": true,
+    "all_193_vendor_and_8004_file_checks": true,
+    "source_tools_configs_resource_reaper_final_gates": true
+  },
+  "validation": {
+    "pure_V8_exact_generator_reproduction": true,
+    "Python_compile_or_execution": false,
+    "existing_3_lifecycle_controls_not_repeated_here": true,
+    "new_control_suite_added": false,
+    "Cargo_check_link_GPU_or_deployment_qualified": false
+  }
+}

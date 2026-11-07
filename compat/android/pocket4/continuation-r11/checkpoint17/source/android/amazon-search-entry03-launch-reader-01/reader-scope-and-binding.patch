@@ -1,0 +1,93 @@
+--- amazon01-safe8/read_summary.py
++++ amazon03-launch-only/read_summary.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed summary-only reader for one Amazon launch / search-entry / cleanup attempt."""
++"""Fixed summary-only reader for the retained failed Amazon03 launch phase and two bound parents."""
+ import argparse
+ import base64
+ import gzip
+@@ -11,20 +11,15 @@
+ import stat
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-amazon-owned-search-entry-01')
+-FLOW=Path('/home/alex/work/pocket4-amazon-owned-qa-r1-flow-853b099b08f0e7a60c3d7b05fcd07461')
+-NONCE='853b099b08f0e7a60c3d7b05fcd07461'
+-SOURCE_SHA='1c6b1f70daaa562236c434bd38c7c95051ff095f8e92571fb09f85123403f567'
++ROOT=Path('/home/alex/work/pocket4-amazon-owned-search-entry-03')
++FLOW=Path('/home/alex/work/pocket4-amazon-owned-qa-r1-flow-ec46de5bfc594294a385a785deea3e9a')
++NONCE='ec46de5bfc594294a385a785deea3e9a'
++SOURCE_SHA='2242c0a160894629fedb9f97c0347fa2765af44ac9a57b69fe2fe6bd5c3f60fb'
+ HELPER_UID=10175
+ FILES={
+     'coordinator.json':ROOT/'result.json',
+     'stage.json':ROOT/'stage-result.json',
+     'launch.json':FLOW/'steps/launch-01/result.json',
+-    'inspection.json':FLOW/'steps/inspect-01/result.json',
+-    'cleanup.json':FLOW/'steps/cleanup-01/result.json',
+-    'launch-command-result.json':ROOT/'evidence/01-launch.result.json',
+-    'inspection-command-result.json':ROOT/'evidence/02-inspect.result.json',
+-    'cleanup-command-result.json':ROOT/'evidence/03-cleanup.result.json',
+ }
+ 
+ 
+@@ -54,7 +49,7 @@
+ 
+     def read(self,path,optional=False):
+         need(path in FILES.values(),'EXACT_FILE_ALLOWLIST_REQUIRED')
+-        maximum=1048576 if path == FILES['inspection.json'] else 262144
++        maximum=262144
+         current=os.open('/',os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC);fd=None
+         try:
+             try:
+@@ -91,7 +86,8 @@
+     need(os.getuid()==os.geteuid()==0,'ROOT_READ_ONLY_REQUIRED')
+     need(all(isinstance(x,str) and re.fullmatch('[0-9a-f]{64}',x) for x in (coordinator_sha,stage_sha)),
+          'EXTERNAL_EXACT_TERMINAL_PINS_REQUIRED')
+-    expected={'coordinator.json':coordinator_sha,'stage.json':stage_sha}
++    expected={'coordinator.json':coordinator_sha,'stage.json':stage_sha,
++              'launch.json':'5b0c66f234675d9170652729a2cacc66a74d4bb76e2f151ade5280332e935029'}
+     reader=Reader();files={};missing=[]
+     for name,path in FILES.items():
+         raw=reader.read(path,optional=name not in expected)
+@@ -99,6 +95,8 @@
+             missing.append({'name':name,'path':str(path)});continue
+         if name in expected:
+             need(sha(raw)==expected[name],'EXTERNAL_TERMINAL_SHA_CHANGED:'+name)
++            need(len(raw)=={'coordinator.json':5837,'stage.json':1827,'launch.json':6043}[name],
++                 'EXTERNAL_EXACT_SIZE_CHANGED:'+name)
+         value=json.loads(raw);no_raw_ui(value)
+         if name in ('coordinator.json','stage.json','launch.json','inspection.json','cleanup.json'):
+             need(value.get('source_manifest_sha256')==SOURCE_SHA and value.get('nonce')==NONCE,
+@@ -119,7 +117,7 @@
+         for expected_pin in pins:
+             need(name in files,'PINNED_ORIGINAL_PHASE_IS_MISSING:'+phase)
+             need(expected_pin=={k:files[name][k] for k in ('path','bytes','sha256')},'COORDINATOR_PHASE_LINK_REQUIRED:'+phase)
+-    bundle={'schema':1,'scope':'fixed-Amazon-first-search-entry-summary-only','files':files,'missing':missing,
++    bundle={'schema':1,'scope':'fixed-Amazon03-failed-launch-and-parent-results-only','files':files,'missing':missing,
+         'source_manifest_sha256':SOURCE_SHA,'flow_nonce':NONCE,'bytes_read':reader.bytes,
+         'raw_UI_or_commercial_journal_exported':False,'Android_or_process_actions':0,
+         'runtime_qualification_asserted':False,'permission_or_original_file_changes':0}
+--- amazon03-two-result/make_summary_request.py
++++ amazon03-launch-only/make_summary_request.py
+@@ -8,8 +8,8 @@
+ import re
+ 
+ HERE=Path(__file__).resolve().parent
+-READER_SHA='1bdfc831b99f05e1c51f4574967dd2003fbcb9ce797a5d4673757d47cf7331d7'
+-KEY='pocket4-amazon-search-entry03-two-results-readonly-01-20261105'
++READER_SHA='7a27a771cbe7a88eb2666f775f46c6dbbbe84d8db748dedcd63f8ac99faa4697'
++KEY='pocket4-amazon-search-entry03-launch-result-readonly-01-20261105'
+ 
+ def main():
+     p=argparse.ArgumentParser(description=__doc__)
+@@ -24,7 +24,7 @@
+     assert a.output is not None and all(isinstance(x,str) and re.fullmatch('[0-9a-f]{64}',x)
+                                        for x in (a.coordinator_sha256,a.stage_sha256))
+     raw=(HERE/'read_summary.py').read_bytes()
+-    assert len(raw)==6127 and hashlib.sha256(raw).hexdigest()==READER_SHA
++    assert len(raw)==7099 and hashlib.sha256(raw).hexdigest()==READER_SHA
+     args=['--collect-once','--coordinator-sha256',a.coordinator_sha256,'--stage-sha256',a.stage_sha256]
+     wrapper="import sys,hashlib;raw=sys.stdin.buffer.read(16385);assert 0<len(raw)<=16384 and hashlib.sha256(raw).hexdigest()=="+repr(READER_SHA)+";scope={'__name__':'fixed_owned_summary_reader','__file__':'<verified-fixed-summary-reader>'};exec(compile(raw,'read_summary.py','exec'),scope);raise SystemExit(scope['main']("+repr(args)+"))"
+     request={'host':'pocket4','executable':'/usr/bin/sudo','args':['-n','/usr/bin/python3','-I','-c',wrapper],

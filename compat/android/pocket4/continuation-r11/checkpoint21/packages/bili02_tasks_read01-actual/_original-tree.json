@@ -1,0 +1,50 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "40244f6b432f3f52587d5319114135b151253006",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 268203,
+    "sha256": "687104864d091793765ecc17159812f299009d238dfd38b73e5d605e31bf1752",
+    "git_blob_sha1": "55020e6baf568019cea477c124d29395b399a8b8",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3e4c1b4c0485c781bb29578793a51c1df2574856"
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "97b75c059e565096806af19062b5566edd4b4b9c",
+      "bytes": 457
+    },
+    {
+      "path": "status.tool-original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "581d32c9854140e8fa41c3027b36ed58deb9e761",
+      "bytes": 731
+    },
+    {
+      "path": "stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a03bfccf64914128be87f14b99d1416412e0679b",
+      "bytes": 5313
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "admission",
+      "original_tree": "3e4c1b4c0485c781bb29578793a51c1df2574856",
+      "checkpoint": 21,
+      "canonical_package": "bili02_tasks_read01-admission"
+    }
+  ],
+  "original_recursive_leaf_count": 520
+}

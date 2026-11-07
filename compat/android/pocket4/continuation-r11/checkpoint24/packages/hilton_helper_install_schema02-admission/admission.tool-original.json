@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys\nraw=sys.stdin.buffer.read(262145)\nassert hashlib.sha256(raw).hexdigest()=='9aeb3ab162bfa968659296e5e749a306250b18646fa094838b6be4d12d79156e'\np=json.loads(raw);src=p['files']['stage_execute.py'].encode('utf-8')\nassert hashlib.sha256(src).hexdigest()=='2752652a4f3668a0cbaafd0264bc741f50425776f9964673a728aa8ca86b17d5'\nscope={'__name__':'owned_qa_stage','__file__':'/home/alex/work/pocket4-owned-hilton-qa-r1-install-state-01/source/stage_execute.py'}\nexec(compile(src,scope['__file__'],'exec'),scope)\nraise SystemExit(scope['main'](raw))\n"
+    ],
+    "created_unix_ms": 1794003729069,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b2f47aad-fc05-8041",
+    "idempotency_key": "pocket4-owned-hilton-qa-r1-current-r6-install-state-01-schema02-eaf426c17c8818f8",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b2f47aad-fc05-8041",
+    "request_digest": "f68e141c11a015523c65623f72fc81450398806a150ca5f07c04bd557f1eabc8",
+    "request_fingerprint": 17766159690810529106,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b2f47aad-fc05-8041"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b2f47aad-fc05-8041"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

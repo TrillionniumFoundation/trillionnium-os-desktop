@@ -1,0 +1,58 @@
+--- V2/MakeSnapshot
++++ role_v1/MakeSnapshot
+@@ -1,5 +1,5 @@
+-int MakeSnapshot(const Authority& authority,const Peer& peer,const p::CreateRequest& request,
+-                 int source_fd,int input_fd,uint64_t deadline) {
++int MakeSnapshot(Registry& registry, GrantHandle handle, const SnapshotAuthority& authority,
++                 const Request& request, int source_fd, int input_fd, uint64_t deadline) {
+   struct stat source{},canonical{},input{};
+   p::KernelStatfs source_fs{},input_fs{};
+   if(fstat(source_fd,&source)<0||syscall(SYS_fstatfs,static_cast<long>(source_fd),&source_fs)<0||
+@@ -10,15 +10,15 @@
+      (source_flags&(O_ACCMODE|O_PATH))!=O_RDONLY||source.st_mode!=(S_IFREG|0444)||
+      source_fs.f_type!=PROC_SUPER_MAGIC)return Error(EINVAL);
+   char path[80];
+-  if(Path(path,sizeof(path),"maps",peer.visible_tgid)<0)return -1;
+-  Fd canonical_fd(openat(peer.proc.get(),path,O_RDONLY|O_CLOEXEC|O_NOFOLLOW));
++  if(Path(path,sizeof(path),"maps",authority.visible_tgid)<0)return -1;
++  Fd canonical_fd(openat(authority.proc_fd,path,O_RDONLY|O_CLOEXEC|O_NOFOLLOW));
+   if(canonical_fd.get()<0||fstat(canonical_fd.get(),&canonical)<0)return -1;
+   if(!SameInode(source,canonical)||source.st_mode!=canonical.st_mode||
+      source.st_uid!=canonical.st_uid||source.st_gid!=canonical.st_gid)return Error(ESTALE);
+   const int seals=fcntl(input_fd,F_GET_SEALS);
+   if(seals<0)return -1;
+   if(!S_ISREG(input.st_mode)||input_fs.f_type!=TMPFS_MAGIC||input.st_nlink!=0||
+-     input.st_uid!=peer.credentials.uid||input.st_gid!=peer.credentials.gid||
++     input.st_uid!=authority.uid||input.st_gid!=authority.gid||
+      input.st_size<=0||static_cast<uint64_t>(input.st_size)!=request.payload_size||
+      (input_flags&O_PATH)||(input_flags&O_ACCMODE)==O_WRONLY||
+      (seals&p::kRequiredSeals)!=p::kRequiredSeals)return Error(EINVAL);
+@@ -29,7 +29,7 @@
+   while(offset<request.payload_size) {
+     const uint64_t now=Now();
+     if(now==0||now>=deadline)return Error(ETIMEDOUT);
+-    if(OwnerLive(authority)<0||!Alive(peer.pidfd.get()))return -1;
++    if(registry.IsActive(handle)<0)return -1;
+     size_t wanted=sizeof(buffer);
+     if(request.payload_size-offset<wanted)wanted=static_cast<size_t>(request.payload_size-offset);
+     const ssize_t count=pread(input_fd,buffer,wanted,static_cast<off_t>(offset));
+@@ -54,9 +54,9 @@
+   origin.words[p::kFactoryUsernsInode]=p::kTrustedUserNamespaceInode;
+   origin.words[p::kBackingDevice]=backing.st_dev;origin.words[p::kBackingInode]=backing.st_ino;
+   origin.words[p::kBackingSize]=request.payload_size;
+-  origin.words[p::kOriginTgid]=peer.visible_tgid;origin.words[p::kOriginStartTicks]=peer.start_ticks;
++  origin.words[p::kOriginTgid]=authority.visible_tgid;origin.words[p::kOriginStartTicks]=authority.start_ticks;
+   StoreMetadata(source,source_fs,&origin);
+-  const int path_size=snprintf(origin.path,sizeof(origin.path),"/proc/%u/maps",peer.visible_tgid);
++  const int path_size=snprintf(origin.path,sizeof(origin.path),"/proc/%u/maps",authority.visible_tgid);
+   if(path_size<=0||static_cast<size_t>(path_size)>=sizeof(origin.path))return Error(EOVERFLOW);
+   origin.path_size=static_cast<size_t>(path_size);
+   unsigned char tag[p::kMaxTagBytes];
+@@ -88,6 +88,6 @@
+   const ssize_t tag_read=fgetxattr(readable.get(),p::kTagName,observed,sizeof(observed));
+   if(tag_read<0)return -1;
+   if(static_cast<size_t>(tag_read)!=tag_size||memcmp(observed,tag,tag_size))return Error(ESTALE);
+-  if(RecheckPeer(authority,peer)<0)return -1;
++  if(registry.IsActive(handle)<0)return -1;
+   return readable.release();
+ }

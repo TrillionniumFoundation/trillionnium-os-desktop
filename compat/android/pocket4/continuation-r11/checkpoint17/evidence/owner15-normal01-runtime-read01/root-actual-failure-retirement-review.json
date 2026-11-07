@@ -1,0 +1,121 @@
+{
+  "PID_namespace_reboot_is_a_hypothesis_not_proven": true,
+  "SIGHUP_sender_and_first_cause_unknown": true,
+  "actual_job": "1a1ad424be2-fc05-593a",
+  "broker_faulted_incomplete_retirement_preserved": {
+    "authority_generation": "ccd0185eb21c1f9bb7ed8aa6fb870a0dc5d2c36e66ade053c67b6d0cff8f0d91",
+    "budget": "0000000001000000000000e00000000000000000000000000000000001000000",
+    "cgroup": {
+      "device": 30,
+      "inode": 31502214
+    },
+    "event_overflow": false,
+    "event_records": 0,
+    "faulted": true,
+    "granted": false,
+    "incomplete": true,
+    "lease_generation": "0000000000000000000000000000000000000000000000000000000000000000",
+    "observations": 0,
+    "packets_queued": 0,
+    "registrations": [],
+    "retired_monotonic_ns": 933918052260421,
+    "status": {
+      "budget": "0000000001000000000000e00000000000000000000000000000000001000000",
+      "cgroup": {
+        "device": 30,
+        "inode": 31502214
+      },
+      "endpoint": {
+        "device": 1048619,
+        "inode": 66
+      },
+      "faulted": true,
+      "generation": "ccd0185eb21c1f9bb7ed8aa6fb870a0dc5d2c36e66ade053c67b6d0cff8f0d91",
+      "granted": false,
+      "nonce": "330ee01aa364528821c6d2c83b4c0210906c06f2c3559abc80febd6ebf43b844",
+      "state": 3
+    },
+    "stop_reason": 0
+  },
+  "checks": [
+    "exact full pinned runtime report",
+    "full actor canonical bytes bound",
+    "original failures and qualification false retained",
+    "attempt and actual preparation binding",
+    "actual runtime gate binding",
+    "all Main identity/resources exactly original",
+    "held actual actor binding",
+    "actual actor pid and terminal same",
+    "one unit invocation bound throughout",
+    "actual actor normal exit1 failure retained",
+    "exact unit/actor/cgroup retired",
+    "latest failure and cleanup retained same lifecycle",
+    "already stopped original cell response",
+    "lifecycle recording and retirement no added errors",
+    "15 contiguous actual lifecycle records",
+    "exact original lifecycle sequence; no ACTIVE",
+    "record timestamps strictly ordered",
+    "exit bound original owner PID birth/pidfd/proc",
+    "actual SIGHUP observation retained without cause/sender/death-order inference",
+    "cell/UID match",
+    "original init clock/pidfd binding",
+    "four owned child roles",
+    "same four retirement roles",
+    "exact child retirement daemon",
+    "exact child retirement presenter",
+    "exact child retirement sway",
+    "exact child retirement bus",
+    "actual normal stop return codes retained",
+    "actual producer original child snapshot",
+    "matching producer ELF",
+    "same original outer cgroup",
+    "actual outer peak and zero swap retained",
+    "unchanged outer memory.max",
+    "unchanged outer memory.high",
+    "unchanged outer memory.swap.max",
+    "unchanged outer cpu.max",
+    "unchanged outer pids.max",
+    "all seven memory events zero before/after"
+  ],
+  "duration_seconds": 41.126391584,
+  "exact_owned_cleanup_verified": true,
+  "first_failure": {
+    "message": "owned process generation is dead or changed",
+    "observed_monotonic_ns": 933918101881630,
+    "origin": "runtime"
+  },
+  "full_result_reviewed": true,
+  "namespace_owner_exit": {
+    "core_dumped": false,
+    "exit_code": null,
+    "explicit_stop_requested_before_observation": false,
+    "host_pid": 2876106,
+    "observed_monotonic_ns": 933918103549712,
+    "process": {
+      "birth": 93387846,
+      "pid": 2876106,
+      "pidfd": {
+        "device": 6,
+        "inode": 23764074
+      },
+      "proc_dir": {
+        "device": 26,
+        "inode": 522710394
+      }
+    },
+    "raw_status": 1,
+    "signal": 1,
+    "worker_retirement_started_before_observation": true
+  },
+  "no_ACTIVE_or_installed_owner_qualification": true,
+  "original_Main_unchanged": true,
+  "production_ready": false,
+  "report": {
+    "bytes": 59461,
+    "sha256": "6d35b126c24604d373175479c9bc69e0246a45c05f2061bb8f8077399f0926d5"
+  },
+  "runtime_success": false,
+  "schema": 1,
+  "scope": "actual failed Owner15 runtime; exact retirement verified",
+  "whole_app_ready": 0
+}

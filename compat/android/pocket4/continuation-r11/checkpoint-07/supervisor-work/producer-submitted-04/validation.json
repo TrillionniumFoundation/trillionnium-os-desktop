@@ -1,0 +1,112 @@
+{
+  "schema": 1,
+  "revision": "producer-submitted-04",
+  "status": "source-frozen; matching build not yet dispatched",
+  "source_only": true,
+  "new_controls": [
+    {
+      "name": "control::tests::a_retired_run_failure_survives_poll_stop_shutdown_and_status_serialization",
+      "kind": "owned Child and temporary runtime directory, with explicit reason-only seam",
+      "scope": "Real exit/reap and cleanup-error/retry; verifies cause survives repeated poll, stop, shutdown, JSON response, failed start, and a later normal exit. The seam proves no actual relay protocol."
+    },
+    {
+      "name": "relay_lifecycle::entry::tests::generated_native_lmkd_options_remain_inside_one_service_block",
+      "kind": "pure RC output contract",
+      "scope": "Exact service and ten indented options; does not execute Android init parser."
+    },
+    {
+      "name": "relay_lifecycle::entry::tests::final_init_exec_contract_rejects_wrappers_and_other_stage",
+      "kind": "pure Command boundary",
+      "scope": "Only direct /init second_stage accepted; wrapper, wrong stage, extra args rejected. Does not execute init."
+    }
+  ],
+  "required_actual_counts": {
+    "droidloom-pressure-relay": 23,
+    "droidloom-supervisor": 121,
+    "ordinary_ipc": 7
+  },
+  "required_additional_controls": [
+    "actual leader/worker/fork HostContext boundaries",
+    "actual built relay-entry-abi output",
+    "all selected and full source pins unchanged across build"
+  ],
+  "actual_parent": {
+    "receipt_sha256": "cc0209eca13b637a47ae0a7b397f56071baaaca650bd34576ab1f5aa9c6f4bc1",
+    "receipt_bytes": 37019,
+    "remote_path": "/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-producer-build-03/build-result.json",
+    "job_id": "1a1a825bd33-fc05-2dd1",
+    "tests": {
+      "droidloom-pressure-relay": 23,
+      "droidloom-supervisor": 118
+    }
+  },
+  "overlay_paths": [
+    "runtime/droidloom-supervisor/src/control.rs",
+    "runtime/droidloom-supervisor/src/development.rs",
+    "runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs",
+    "runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs",
+    "runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs",
+    "runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs",
+    "runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs"
+  ],
+  "actual_remote_preimages": [
+    {
+      "path": "runtime/droidloom-supervisor/src/control.rs",
+      "submitted03_bytes": 73000,
+      "submitted03_sha256": "e15e5bb552e6e12406522b7fa9f992770db349f65bc55126c5bdf218824c6df3",
+      "actual03_bytes": 73000,
+      "actual03_sha256": "e15e5bb552e6e12406522b7fa9f992770db349f65bc55126c5bdf218824c6df3"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/development.rs",
+      "submitted03_bytes": 91967,
+      "submitted03_sha256": "591e87b7ec03b5f91b2ac36f715e9c572aa5a895c5f7f382c6623eea462c0ab9",
+      "actual03_bytes": 91967,
+      "actual03_sha256": "591e87b7ec03b5f91b2ac36f715e9c572aa5a895c5f7f382c6623eea462c0ab9"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs",
+      "submitted03_bytes": 19594,
+      "submitted03_sha256": "8f647a6b788ffed8a063ed1f59c1275e59d0971a6e0b35d9d6756311fc600c63",
+      "actual03_bytes": 22209,
+      "actual03_sha256": "571a2789ed396f7e667fe82efd85315cea758e7f01599f7741eaaf44c3b13577"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs",
+      "submitted03_bytes": 18113,
+      "submitted03_sha256": "40ed58a3bc60664e99a96432aafc44ada0b8c5b9e9bc9c2f8f6e4b08503b8281",
+      "actual03_bytes": 20072,
+      "actual03_sha256": "64b091b3fd4427fe5353659dbf9f5440e661427b9518ce6f9116a8d7026d2732"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs",
+      "submitted03_bytes": 22230,
+      "submitted03_sha256": "ef23b247f247dd70f4bda216b63a8ac88b6234431bdcf68277fe8c542f507235",
+      "actual03_bytes": 25141,
+      "actual03_sha256": "03daeb285c846344fe6763bcdd44ea571d9f26caa6bb3c35ca01233b55719ea8"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs",
+      "submitted03_bytes": 31252,
+      "submitted03_sha256": "2d437fa32999cd2ce842212951062ba950f53da5cf2f839728c165aa3fa422f2",
+      "actual03_bytes": 36724,
+      "actual03_sha256": "2b1415c34bc5620aa9c3e41f28dad8f1d4cca8a43e355c0ab6ebeb361a205048"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs",
+      "submitted03_bytes": 5377,
+      "submitted03_sha256": "a4b04fe15e3d88cb0fdaaf62f566b57ec044b65a1ccc8bed18d86739a446c9d4",
+      "actual03_bytes": 6037,
+      "actual03_sha256": "47f4f6088e734c5b6798469015f6afe9f2feec377d0b265a035888c92a6dd81f"
+    }
+  ],
+  "runtime_qualified": false,
+  "Android_constructor_executed": false,
+  "installed_files_changed": false,
+  "ordinary_host_tests_executed_for_revision04": false,
+  "prior_failure_history_lifetime": "existing daemon instance; does not claim a durable post-retirement history database",
+  "abandoned_generation_policy": "persistent one-shot claim blocks admission; no automatic recovery or bypass",
+  "legacy_opt_out_does_not_clear_retained_relay_failure": true,
+  "default_policy": "None; no production memory budgets inferred",
+  "pressure_thresholds_or_native_expiry_changed": false
+}

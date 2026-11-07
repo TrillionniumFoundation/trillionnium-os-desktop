@@ -1,0 +1,455 @@
+--- first-launch-inspect/owned_inspect.py
++++ fresh-search-entry/owned_inspect.py
+@@ -1,7 +1,7 @@
+ #!/usr/bin/env python3
+-"""One actual-bound Amazon launch, read-only QA sequence and owned task cleanup.
+-
+-No click, text entry, old v2 helper, screenshot, audio, package change, permission
++"""One actual-bound Amazon launch, public search-entry click and owned cleanup.
++
++One fixed public search-entry click. No text entry, old helper, screenshot, audio, package change, permission
+ grant or settings write. Raw helper tree stays in the new root-private flow.
+ """
+ import argparse
+@@ -15,19 +15,16 @@
+ import types
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-amazon-owned-launch-inspect-01')
++ROOT=Path('/home/alex/work/pocket4-amazon-owned-search-entry-01')
+ SOURCE=ROOT/'source'
+-NONCE='71222d708e933c9afc2472cc1565646a'
++NONCE='853b099b08f0e7a60c3d7b05fcd07461'
+ FLOW=Path('/home/alex/work/pocket4-amazon-owned-qa-r1-flow-'+NONCE)
+ PACKAGE='com.amazon.mShop.android.shopping'
+ UID=10129
+ SELF='org.droidloom.qa.amazon.r1'
+ HELPER_UID=10175
+ COMPONENT=PACKAGE+'/com.amazon.mShop.home.HomeActivity'
+-PLAN={'schema':1,'operation':'inspect','nonces':{
+-    'before':'613364012ce3dec91277c652147731f7',
+-    'inspect':'14b06ed19ee0a0272b34d611869288ac',
+-    'after':'d1f1b84e1886c731ab7973761ad21339'}}
++PLAN={'entry': {'nonces': {'action': 'bcddd26f2559ec5d7947c32197505f8d', 'after': 'a03bea48d6c009d8d2713d91e40b217f', 'before': 'e78e5f01904401a610fa9c764000938a', 'inspect': '58f0306d92412784867f2dbd71d38758'}, 'operation': 'click', 'schema': 1, 'selector': {'class': 'android.widget.ImageButton', 'content_desc': 'Search', 'resource_id': 'com.amazon.mShop.android.shopping:id/chrome_search_box'}}, 'operation': 'search_entry', 'post': {'nonces': {'after': 'c1ce224c47bde845e44c753072332eda', 'before': 'dead46cae6a4d45ebfb763a42921f5a4', 'inspect': '6594bc1e6399d81527e36798aa504af4'}, 'operation': 'inspect', 'schema': 1}, 'schema': 1, 'stability': [{'nonces': {'after': '06fb488ce50de2daf2334c17fe42fd41', 'before': '956831cdddbb256149b0ad20dad4f062', 'inspect': 'a8a6302fa2b10d608a2eb8efc0a82bab'}, 'operation': 'inspect', 'schema': 1}, {'nonces': {'after': '88bab24e9fc6c94f8d386537dd8a04cd', 'before': '6afad278ba5021af033a9f03043b28e8', 'inspect': '2160e26d458d7527dd35683f19ad9220'}, 'operation': 'inspect', 'schema': 1}, {'nonces': {'after': 'ddbf4d2e18b4731f017789957894c6ca', 'before': '58ef8a06eb60280fea239d7d55860feb', 'inspect': 'ee1cde2354b22277ab68400aeb30d661'}, 'operation': 'inspect', 'schema': 1}, {'nonces': {'after': 'ce53e002f28cd3a8439ad90786f86938', 'before': 'de8705b550190f0d9e825aa33f21e20c', 'inspect': '354754889c0c5fcf3318c12cd082df4a'}, 'operation': 'inspect', 'schema': 1}]}
+ RESOLVER_ROOT=Path('/home/alex/work/pocket4-amazon-launcher-resolve-readonly-01')
+ RESOLVER_SOURCE=RESOLVER_ROOT/'source/resolve_amazon.py'
+ RESOLVER_SHA='b963fde5ba1638702623ee707ec21b43f0a86f87f54550f1e0d2df474cb7b058'
+@@ -36,7 +33,7 @@
+ RESOLVER_RECORDS={
+     'worker':('result.json',12204,'ebeaecf791eba4906502cd3167c08e735d826ffd565f7fdd45d66775c016c534'),
+     'stage':('stage-result.json',1599,'9dfa012752b241b1c881514089684d13b56bcaa0250fb7fcb3d2c72633fdb29d')}
+-RUNTIME_FILES={'owned_inspect.py','amazon_task_context.py','INPUTS.json'}
++RUNTIME_FILES={'owned_inspect.py','amazon_task_context.py','search_navigation.py','INPUTS.json'}
+ PHASE_SECONDS={'launch':175,'inspect':175,'cleanup':115}
+ 
+ 
+@@ -122,17 +119,21 @@
+     records={k:json.loads(read(RESOLVER_ROOT/v[0],expected=v[2],size=v[1])) for k,v in RESOLVER_RECORDS.items()}
+     actual_component=actual_resolver(records,resolver.INSTALLED)
+     adapter,qa,proof,apk=util.qualified_inputs();del apk
+-    adapter.validate_plan(PLAN,qa)
++    navigation=load(HERE/'search_navigation.py',manifest['files']['search_navigation.py']['sha256'],'amazon_search_navigation')
++    all_plans=navigation.plans(PLAN)
++    for plan in all_plans:adapter.validate_plan(plan,qa)
+     need(qa.PACKAGE==PACKAGE and qa.UID==UID and qa.SELF==SELF and adapter.SELF==SELF,
+          'DEDICATED_AMAZON_HELPER_SOURCE_REQUIRED')
+-    values=[NONCE,*PLAN['nonces'].values()]
+-    need(len(values)==len(set(values))==4 and all(re.fullmatch('[0-9a-f]{32}',v) for v in values),
+-         'EXACT_NEW_FLOW_AND_THREE_HELPER_NONCES')
++    values=[NONCE,*[n for plan in all_plans for n in plan['nonces'].values()]]
++    need(len(values)==len(set(values))==20 and all(re.fullmatch('[0-9a-f]{32}',v) for v in values),
++         'EXACT_NEW_FLOW_AND_NINETEEN_HELPER_NONCES')
+     inputs=json.loads(read(HERE/'INPUTS.json',65536))
+     need(inputs['nonce']==NONCE and inputs['component']==COMPONENT and inputs['installed_helper']==resolver.INSTALLED
+          and inputs['resolver_records']=={k:{'relative_path':v[0],'bytes':v[1],'sha256':v[2]} for k,v in RESOLVER_RECORDS.items()},
+          'EXACT_RUNTIME_INPUT_RECORD_REQUIRED')
+-    return types.SimpleNamespace(manifest=manifest,resolver=resolver,util=util,ref=util.references(),
++    need(inputs['search_entry_plan']==PLAN and inputs['observed_selector_reference']['raw_retired_nodes_authorize_actions'] is False,
++         'EXACT_PUBLIC_ENTRY_PLAN_AND_RETIRED_SCOPE_BOUNDARY')
++    return types.SimpleNamespace(manifest=manifest,navigation=navigation,resolver=resolver,util=util,ref=util.references(),
+         install_manifest=install_manifest,install=actual_install,resolution=actual_component,
+         adapter=adapter,qa=qa,proof=proof,installed=resolver.INSTALLED)
+ 
+@@ -158,13 +159,13 @@
+     return value,{'path':str(FLOW/'launch-scope.json'),'bytes':len(raw),'sha256':sha(raw)}
+ 
+ 
+-def assessment_summary(q,step,sequence):
++def assessment_summary(q,step,sequence,plan):
+     """No raw UI text, node list, screenshots or recommendations in the result."""
+     result={}
+-    for phase,nonce in PLAN['nonces'].items():
++    for phase,nonce in plan['nonces'].items():
+         path=step/(nonce+'.assessment.json');raw=read(path);value=json.loads(raw);helper=value['helper']
+         need(helper['nonce']==nonce and helper['self_uid']==HELPER_UID and
+-             helper['op']==('inspect' if phase=='inspect' else 'state') and
++             helper['op']==('inspect' if phase=='inspect' else plan['operation'] if phase=='action' else 'state') and
+              value['actual_command_returncode']==0 and value['actual_instrumentation_finish_code']==-1 and
+              value['held_transport_returned_after_post_guard'] is True and helper['ok'] is True and
+              helper['error'] is None and helper['secondary_errors']==[] and
+@@ -181,6 +182,12 @@
+                 connection_scoped_window_id=inspection['connection_scoped_window_id'],
+                 tree_observations=q.qa.tree_observations(helper['tree_observations'],'inspect',True),
+                 complete=True,raw_tree_private_only=True)
++        elif phase=='action':
++            need(helper['op']=='click' and helper['node_action_returned'] is True and
++                 helper['node_action']=='ACTION_CLICK' and helper['inspection_nonce']==plan['nonces']['inspect'],
++                 'ONE_ACTUAL_SOURCE_BOUND_SEARCH_ENTRY_ACTION')
++            row.update(action_acknowledged=True,node_action='ACTION_CLICK',
++                inspection_nonce=helper['inspection_nonce'],action_window=helper['action_window'])
+         result[phase]=row
+     return result
+ 
+@@ -204,7 +211,7 @@
+         flow_lock=u.acquire_action_lock(FLOW/'flow.lock',result['flow_lock_admission'])
+         step.mkdir(mode=0o700)
+         ref.write_new(step/'intent.json',{'phase':phase,'nonce':NONCE,'source_manifest_sha256':expected,
+-            'automatic_retry':False,'mutation':phase in ('launch','cleanup'),'request':PLAN if phase=='inspect' else None})
++            'automatic_retry':False,'mutation':phase in ('launch','inspect','cleanup'),'request':PLAN if phase=='inspect' else None})
+         context=u.module(q.resolver.INSTALL_SOURCE/'amazon_context.py',q.resolver.CONTEXT_SHA,'amazon_exact_artifact_context')
+         transport=u.module(q.resolver.INSTALL_SOURCE/'amazon_transport.py',q.resolver.TRANSPORT_SHA,'amazon_exact_transport')
+         task_module=load(HERE/'amazon_task_context.py',q.manifest['files']['amazon_task_context.py']['sha256'],'amazon_task_context')
+@@ -247,13 +254,13 @@
+                  'EXACT_NEW_NATIVE_TASK_REQUIRED')
+             result['owned_task']=flow.selected_task()
+         elif phase=='inspect':
+-            current='state_inspect_state';result['sequence']=session.sequence(json.loads(json.dumps(PLAN)))
++            current='public_search_entry_and_post_inspection'
++            q.navigation.run(types.SimpleNamespace(read=read,sha=sha,assessment_summary=assessment_summary),
++                q,session,step,PLAN,result)
+             seq=result['sequence']
+             need(seq['installed_before']==seq['installed_after']==q.installed and
+                  seq['after_state_completed'] is True and seq['restoration_qualified'] is True and
+-                 seq['foreground_before']==seq['foreground_after'],'EXACT_READ_ONLY_INSPECTION_SCOPE_REQUIRED')
+-            result['assessments']=assessment_summary(q,step,seq)
+-            result['inspection_completed']=True
++                 seq['foreground_before']==seq['foreground_after'],'EXACT_POST_ENTRY_INSPECTION_SCOPE_REQUIRED')
+         else:
+             current='exact_owned_cleanup';selected=flow.selected_task();result['owned_task']=selected
+             completed=flow.cleanup();result['cleanup']=completed
+@@ -273,10 +280,17 @@
+                 'resolve':1,'stacks':2} and flow.command_index==12 and flow.launch_claimed is True,
+                 'EXACT_LAUNCH_COMMAND_COUNTS_REQUIRED')
+         if phase=='inspect':
+-            need(flow.policy.counts=={'target_uid':2,'target_path':2,'helper_uid':4,'helper_path':4,
+-                'stacks':2,'instrument':3,'foreground':3} and flow.command_index==17 and
+-                flow.policy.used_nonces==set(PLAN['nonces'].values()) and flow.action_attempted is False,
+-                'EXACT_READ_ONLY_INSPECTION_COMMAND_COUNTS_REQUIRED')
++            stable_count=len(result['search_entry']['stability_reads'])
++            need(2<=stable_count<=4,'EXACT_BOUNDED_COMPLETED_STABILITY_READS')
++            completed=[*PLAN['stability'][:stable_count],PLAN['entry'],PLAN['post']]
++            count=len(completed)
++            need(flow.policy.counts=={'target_uid':2,'target_path':2,'helper_uid':2+2*count,
++                'helper_path':2+2*count,'stacks':2*count,'instrument':3*count+1,'foreground':3*count} and
++                flow.command_index==8+9*count+1 and
++                flow.policy.used_nonces=={n for plan in completed for n in plan['nonces'].values()} and
++                flow.policy.action_nonces=={PLAN['entry']['nonces']['action']} and flow.action_attempted is True,
++                'EXACT_SEARCH_ENTRY_COMMAND_AND_NONCE_COUNTS_REQUIRED')
++            result['click_actions']=1
+         result['ok']=True
+     except BaseException as error:
+         if session is not None and hasattr(session,'sequence_observation'):
+@@ -292,6 +306,7 @@
+             except BaseException as error:u.remember(result,'target_FD_cleanup',error)
+         if flow is not None:
+             result['command_counts']=dict(flow.policy.counts)
++            result['click_commands_attempted']=len(flow.policy.action_nonces)
+             result['durable_command_count']=flow.command_index
+             try:flow.guard(attempted=flow.action_attempted);result['final_Main_guard_passed']=True
+             except BaseException as error:u.remember(result,'final_Main_guard',error)
+@@ -332,7 +347,10 @@
+     if phase=='launch':need(value['launch']['native_launch_acknowledged'] is True,'ACTUAL_LAUNCH_ACK')
+     if phase=='inspect':
+         need(value['inspection_completed'] is True and value['sequence']['restoration_qualified'] is True
+-             and value['sequence']['after_state_completed'] is True,'ACTUAL_INSPECT_AND_RESTORATION_REQUIRED')
++             and value['sequence']['after_state_completed'] is True and value['search_entry_click_completed'] is True
++             and value['search_entry']['ok'] is True and value['search_entry']['click_acknowledged'] is True
++             and value['search_entry']['post_inspection_completed'] is True and value['click_commands_attempted']==1,
++             'ACTUAL_ENTRY_CLICK_POST_INSPECT_AND_RESTORATION_REQUIRED')
+     if phase=='cleanup':need(value['owned_task_absent'] is True,'ACTUAL_OWNED_TASK_ABSENT_REQUIRED')
+     return value,{'path':str(path),'bytes':len(raw),'sha256':sha(raw)}
+ 
+@@ -376,7 +394,10 @@
+         result['assessments']=inspection['assessments']
+         result['foreground']=inspection['sequence']['foreground_after']
+         result['restoration']=inspection['sequence']['accessibility_restoration']
+-        result['read_only_inspection_completed']=True
++        result['post_entry_inspection_completed']=True
++        result['search_entry_click_completed']=inspection['search_entry_click_completed']
++        result['search_entry']=inspection['search_entry']
++        result['click_actions']=inspection['click_actions']
+         result['ok']=True
+     except BaseException as error:u.remember(result,'coordinator',error)
+     finally:
+@@ -435,8 +456,8 @@
+     if a.worker_once:return worker(a.source_manifest_sha256,a.worker_once)
+     if a.execute_once:return execute(a.source_manifest_sha256)
+     print(json.dumps({'state':'PLAN_ONLY','nonce':NONCE,'root':str(ROOT),'flow':str(FLOW),'component':COMPONENT,
+-        'helper_uid':HELPER_UID,'maximum_native_launches':1,'new_helper_operations':['state','inspect','state'],
+-        'clicks':0,'text_actions':0,'screenshots':0,'audio':0,'device_calls':0,'submitted':False}))
++        'helper_uid':HELPER_UID,'maximum_native_launches':1,'new_helper_operations':['bounded inspect stability','fresh inspect + one click','independent post inspect'],
++        'maximum_clicks':1,'text_actions':0,'screenshots':0,'audio':0,'device_calls':0,'submitted':False}))
+     return 0
+ 
+ 
+--- first-launch-inspect/amazon_task_context.py
++++ fresh-search-entry/amazon_task_context.py
+@@ -2,8 +2,8 @@
+ 
+ This module has no CLI or standalone execution. A separate frozen coordinator
+ must bind actual resolve/install/source receipts, a new private flow and Main.
+-Only launch, one read-only QA inspection sequence, and exact task retirement
+-are described here. No click/set-text/media/screenshot opcode is admitted.
++Only launch, bounded successful complete reads, one exact search-entry click,
++and exact task retirement are admitted. No set-text/media/screenshot opcode.
+ """
+ import json
+ import math
+@@ -36,11 +36,25 @@
+     def __init__(self,phase,qa,resolve,inspect_plan,step,read,selected_task):
+         need(phase in ('launch','inspect','cleanup'),'EXACT_AMAZON_PHASE_REQUIRED')
+         need(qa.PACKAGE==PACKAGE and qa.UID==UID and qa.SELF==SELF,'EXACT_AMAZON_CONTRACT_REQUIRED')
+-        need(inspect_plan['operation']=='inspect' and set(inspect_plan['nonces'])=={'before','inspect','after'},
+-             'ONLY_FIXED_READ_ONLY_INSPECT_PLAN_REQUIRED')
++        need(type(inspect_plan) is dict and set(inspect_plan)=={'schema','operation','stability','entry','post'} and
++             inspect_plan['schema']==1 and inspect_plan['operation']=='search_entry' and
++             len(inspect_plan['stability'])==4 and all(p['operation']=='inspect' for p in
++             [*inspect_plan['stability'],inspect_plan['post']]) and inspect_plan['entry']['operation']=='click' and
++             inspect_plan['entry']['selector']=={'resource_id':PACKAGE+':id/chrome_search_box',
++                'class':'android.widget.ImageButton','content_desc':'Search'},
++             'ONLY_FIXED_SEARCH_ENTRY_PLAN_REQUIRED')
++        self.plans=[*inspect_plan['stability'],inspect_plan['entry'],inspect_plan['post']]
++        self.request_ops={}
++        for plan in self.plans:
++            expected={'before','inspect','after'}|({'action'} if plan['operation']=='click' else set())
++            need(plan['schema']==1 and set(plan['nonces'])==expected,'EXACT_PHASE_NONCE_KEYS')
++            for name,nonce in plan['nonces'].items():
++                qa.nonce(nonce);need(nonce not in self.request_ops,'DISTINCT_PHASE_NONCES')
++                self.request_ops[nonce]=('inspect' if name=='inspect' else 'click' if name=='action' else 'state')
++        need(len(self.request_ops)==19,'EXACT_NINETEEN_HELPER_NONCES')
+         self.phase,self.qa,self.resolve,self.plan=phase,qa,list(resolve),inspect_plan
+         self.step,self.read,self.selected_task=step,read,selected_task
+-        self.counts={};self.used_nonces=set();self.remove_attempted=False
++        self.counts={};self.used_nonces=set();self.action_nonces=set();self.remove_attempted=False
+ 
+     def claim(self,name,limit):
+         count=self.counts.get(name,0)
+@@ -59,7 +73,7 @@
+             need(timeout==8 and not mutation and not private,'HELPER_METADATA_READ_ONLY')
+             # Inspect phase has an outer current identity pair and the original
+             # Session's own before/after pair. Other phases have only outer pair.
+-            self.claim('helper_uid' if argv==OWN_UID else 'helper_path',4 if self.phase=='inspect' else 2)
++            self.claim('helper_uid' if argv==OWN_UID else 'helper_path',2+2*len(self.plans) if self.phase=='inspect' else 2)
+             return
+         if argv==self.resolve:
+             need(self.phase=='launch' and timeout==15 and not mutation and not private,
+@@ -67,11 +81,11 @@
+             self.claim('resolve',1);return
+         if argv==STACKS:
+             need(not mutation and not private and timeout<=20,'TASK_SNAPSHOT_READ_ONLY')
+-            self.claim('stacks',33 if self.phase=='cleanup' else 2);return
++            self.claim('stacks',33 if self.phase=='cleanup' else 2*len(self.plans) if self.phase=='inspect' else 2);return
+         if argv==FOREGROUND:
+             need(self.phase=='inspect' and timeout==15 and not mutation and private,
+                  'ONLY_PRIVATE_CURRENT_FOREGROUND_READ')
+-            self.claim('foreground',3);return
++            self.claim('foreground',3*len(self.plans));return
+         if self.phase=='cleanup' and argv[:4]==['/system/bin/cmd','activity','stack','remove']:
+             # Full equality below, not a prefix-based permission grant.
+             selected=self.selected_task()
+@@ -81,23 +95,29 @@
+                  'ONLY_EXACT_NEW_OWNED_LEAF_REMOVAL')
+             need(not self.remove_attempted,'REMOVAL_CANNOT_BE_REPLAYED')
+             self.remove_attempted=True;return
+-        need(self.phase=='inspect' and timeout==20 and not mutation and not private,
++        need(self.phase=='inspect' and timeout==20 and not private,
+              'NO_OTHER_AMAZON_COMMAND_ADMITTED')
+         matches=[]
+-        for phase,nonce in self.plan['nonces'].items():
++        for nonce,operation in self.request_ops.items():
+             if nonce in self.used_nonces:
+                 continue
+             path=self.step/(nonce+'.request.json')
+             try:raw=self.read(path,65536)
+             except FileNotFoundError:continue
+             request=json.loads(raw)
+-            need(request.get('nonce')==nonce and request.get('op')==('inspect' if phase=='inspect' else 'state'),
++            need(request.get('nonce')==nonce and request.get('op')==operation,
+                  'FIXED_PHASE_REQUEST_REQUIRED')
+             self.qa.validate_request(request)
+             if self.qa.instrumentation_argv(request)==argv:
++                need(mutation==(operation=='click'),'ONLY_FIXED_CLICK_IS_MUTATING')
++                if operation=='click':
++                    need(nonce==self.plan['entry']['nonces']['action'] and
++                         request['inspection_nonce']==self.plan['entry']['nonces']['inspect'],
++                         'CLICK_MUST_USE_ITS_OWN_FRESH_INSPECTION')
+                 matches.append(nonce)
+-        need(len(matches)==1,'ONLY_ONE_CURRENT_SOURCE_BOUND_STATE_OR_INSPECT_REQUEST')
+-        self.used_nonces.add(matches[0]);self.claim('instrument',3)
++        need(len(matches)==1,'ONLY_ONE_CURRENT_SOURCE_BOUND_STATE_INSPECT_OR_ENTRY_CLICK_REQUEST')
++        self.used_nonces.add(matches[0]);self.claim('instrument',19)
++        if self.request_ops[matches[0]]=='click':self.action_nonces.add(matches[0])
+ 
+ 
+ class Flow:
+--- first-launch-inspect/stage_execute.py
++++ fresh-search-entry/stage_execute.py
+@@ -6,10 +6,10 @@
+ from pathlib import Path
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-amazon-owned-launch-inspect-01')
++ROOT=Path('/home/alex/work/pocket4-amazon-owned-search-entry-01')
+ SOURCE=ROOT/'source'
+-NONCE='71222d708e933c9afc2472cc1565646a'
+-FILES={'owned_inspect.py','amazon_task_context.py','INPUTS.json'}
++NONCE='853b099b08f0e7a60c3d7b05fcd07461'
++FILES={'owned_inspect.py','amazon_task_context.py','search_navigation.py','INPUTS.json'}
+ REFERENCE=Path('/home/alex/work/pocket4-owned-amazon-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py')
+ REFERENCE_SHA='e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ 
+@@ -38,7 +38,7 @@
+     os.umask(0o077);ROOT.mkdir(mode=0o700)
+     result={'schema':1,'ok':False,'nonce':NONCE,'package':entry.PACKAGE,'source_manifest_sha256':manifest_sha256,
+         'Main_before':before,'error':None,'secondary_errors':[],'automatic_retry':False,
+-        'maximum_native_launches':1,'click_actions':0,'text_actions':0,'screenshots':0,'audio_actions':0,
++        'maximum_native_launches':1,'maximum_click_actions':1,'text_actions':0,'screenshots':0,'audio_actions':0,
+         'raw_UI_tree_private_only':True,'business_success_verified':False,'whole_app_production_ready':False}
+     def remember(phase,error):
+         row={'phase':phase,'type':type(error).__name__,'message':str(error)}
+@@ -55,7 +55,8 @@
+         assert observed['nonce']==NONCE and observed['source_manifest_sha256']==manifest_sha256
+         assert observed['package']==entry.PACKAGE and observed['helper_uid']==10175
+         assert rc==0 and observed['ok'] is True and observed['error'] is None and observed['secondary_errors']==[]
+-        assert observed['read_only_inspection_completed'] is True and observed['owned_task_absent_after_cleanup'] is True
++        assert observed['post_entry_inspection_completed'] is True and observed['search_entry_click_completed'] is True
++        assert observed['owned_task_absent_after_cleanup'] is True and observed['click_actions']==1
+         assert observed['business_success_verified'] is False and observed['whole_app_production_ready'] is False
+         result['ok']=True
+     except BaseException as error:remember('stage_or_owned_launch_inspect',error)
+--- first-launch-inspect/make_request.py
++++ fresh-search-entry/make_request.py
+@@ -3,17 +3,17 @@
+ import argparse,hashlib,json,os
+ from pathlib import Path
+ HERE=Path(__file__).resolve().parent
+-MANIFEST_SHA='8c6d466e8e75dd4b2261205f61d72848dd6e9bf4b415f798272aba75a29152fb'
+-STAGE_SHA='11560772e9f29dea202e4a8cd424e6508aadde86009f587c5b49c576b63b587c'
+-STAGE_BYTES=4916
+-NONCE='71222d708e933c9afc2472cc1565646a'
+-KEY='pocket4-amazon-owned-launch-inspect-01-20261105'
++MANIFEST_SHA='1c6b1f70daaa562236c434bd38c7c95051ff095f8e92571fb09f85123403f567'
++STAGE_SHA='e0f191fbd7f8901485e65fe47d55d4593fca886bfa51b3bb5cc19f30ae0513b5'
++STAGE_BYTES=5043
++NONCE='853b099b08f0e7a60c3d7b05fcd07461'
++KEY='pocket4-amazon-owned-search-entry-01-20261105'
+ def main():
+     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--write-once',action='store_true');p.add_argument('--output',type=Path);a=p.parse_args()
+     if not a.write_once:
+         print(json.dumps({'state':'PLAN_ONLY','stable_key':KEY,'nonce':NONCE,'device_calls':0,'submitted':False}));return 0
+     raw=(HERE/'SOURCE_PINS.json').read_bytes();assert hashlib.sha256(raw).hexdigest()==MANIFEST_SHA
+-    manifest=json.loads(raw);assert set(manifest['files'])=={'owned_inspect.py','amazon_task_context.py','INPUTS.json'}
++    manifest=json.loads(raw);assert set(manifest['files'])=={'owned_inspect.py','amazon_task_context.py','search_navigation.py','INPUTS.json'}
+     files={'SOURCE_PINS.json':raw.decode()}
+     for name,pin in manifest['files'].items():
+         data=(HERE/name).read_bytes();assert 0<len(data)<=65536 and len(data)==pin['bytes'] and hashlib.sha256(data).hexdigest()==pin['sha256'];files[name]=data.decode('utf-8')
+--- first-launch-inspect/INPUTS.json
++++ fresh-search-entry/INPUTS.json
+@@ -41,15 +41,16 @@
+     "signer_bound_by_exact_signed_apk_bytes": "1f63759487a0b04e8da9b4088c11dbac8140bf63cb2d64d91460e2525924f424",
+     "uid": 10175
+   },
+-  "nonce": "71222d708e933c9afc2472cc1565646a",
+-  "read_only_inspection_plan": {
+-    "nonces": {
+-      "after": "d1f1b84e1886c731ab7973761ad21339",
+-      "before": "613364012ce3dec91277c652147731f7",
+-      "inspect": "14b06ed19ee0a0272b34d611869288ac"
+-    },
+-    "operation": "inspect",
+-    "schema": 1
++  "nonce": "853b099b08f0e7a60c3d7b05fcd07461",
++  "observed_selector_reference": {
++    "actual_assessment_sha256": "29d6a9fc5951cb7c9a1fa4e2a5e9b991ee424cfb9aebcfdad8f780cdcf522ac5",
++    "actual_inspect_result_sha256": "e81b411f3e92d5d5064010f8879bb66662faddc133354c43ae9cc1bdf0e78011",
++    "first_flow_source_manifest_sha256": "8c6d466e8e75dd4b2261205f61d72848dd6e9bf4b415f798272aba75a29152fb",
++    "private_source_bytes": 67119,
++    "private_source_sha256": "7ede8758b2f44c31b213c986210f8c1251437ef656749a5d4abaa11c3549fe2e",
++    "raw_UI_in_source": false,
++    "raw_retired_nodes_authorize_actions": false,
++    "selector_scope": "Public search-entry resource/class/functional Search label only; reselected from action-bound fresh complete inspection"
+   },
+   "resolver_records": {
+     "stage": {
+@@ -64,5 +65,71 @@
+     }
+   },
+   "schema": 1,
++  "search_entry_plan": {
++    "entry": {
++      "nonces": {
++        "action": "bcddd26f2559ec5d7947c32197505f8d",
++        "after": "a03bea48d6c009d8d2713d91e40b217f",
++        "before": "e78e5f01904401a610fa9c764000938a",
++        "inspect": "58f0306d92412784867f2dbd71d38758"
++      },
++      "operation": "click",
++      "schema": 1,
++      "selector": {
++        "class": "android.widget.ImageButton",
++        "content_desc": "Search",
++        "resource_id": "com.amazon.mShop.android.shopping:id/chrome_search_box"
++      }
++    },
++    "operation": "search_entry",
++    "post": {
++      "nonces": {
++        "after": "c1ce224c47bde845e44c753072332eda",
++        "before": "dead46cae6a4d45ebfb763a42921f5a4",
++        "inspect": "6594bc1e6399d81527e36798aa504af4"
++      },
++      "operation": "inspect",
++      "schema": 1
++    },
++    "schema": 1,
++    "stability": [
++      {
++        "nonces": {
++          "after": "06fb488ce50de2daf2334c17fe42fd41",
++          "before": "956831cdddbb256149b0ad20dad4f062",
++          "inspect": "a8a6302fa2b10d608a2eb8efc0a82bab"
++        },
++        "operation": "inspect",
++        "schema": 1
++      },
++      {
++        "nonces": {
++          "after": "88bab24e9fc6c94f8d386537dd8a04cd",
++          "before": "6afad278ba5021af033a9f03043b28e8",
++          "inspect": "2160e26d458d7527dd35683f19ad9220"
++        },
++        "operation": "inspect",
++        "schema": 1
++      },
++      {
++        "nonces": {
++          "after": "ddbf4d2e18b4731f017789957894c6ca",
++          "before": "58ef8a06eb60280fea239d7d55860feb",
++          "inspect": "ee1cde2354b22277ab68400aeb30d661"
++        },
++        "operation": "inspect",
++        "schema": 1
++      },
++      {
++        "nonces": {
++          "after": "ce53e002f28cd3a8439ad90786f86938",
++          "before": "de8705b550190f0d9e825aa33f21e20c",
++          "inspect": "354754889c0c5fcf3318c12cd082df4a"
++        },
++        "operation": "inspect",
++        "schema": 1
++      }
++    ]
++  },
+   "target_artifact_reference_sha256": "f29fdd340a095b4686b27b5424b7651b0eb5a237b9fb123adb8b9f0d8ad46e35"
+ }

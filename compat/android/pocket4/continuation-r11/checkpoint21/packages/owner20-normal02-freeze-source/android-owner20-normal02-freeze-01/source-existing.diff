@@ -1,0 +1,47 @@
+--- a/source/coordinator.py
++++ b/source/coordinator.py
+@@ -49,9 +49,9 @@
+     state = group_fd = -1; actor = None; fence = None; invocation = None; launched = False; tools = {}
+     try:
+         owned.need(os.getuid() == os.geteuid() == os.getgid() == 0, 'external controller requires original host root')
+-        owned.need(plan['unit'] == 'p4-owner20-normal-20261106-01.service' and
+-                   plan['package'] == '/opt/p4-owner20-normal-20261106-01' and
+-                   plan['state'] == '/opt/p4-owner20-normal-20261106-01-state', 'this controller accepts only its fixed fresh unit/package/state')
++        owned.need(plan['unit'] == 'p4-owner20-normal-20261106-02.service' and
++                   plan['package'] == '/opt/p4-owner20-normal-20261106-02' and
++                   plan['state'] == '/opt/p4-owner20-normal-20261106-02-state', 'this controller accepts only its fixed fresh unit/package/state')
+         state = owned.root_directory(plan['state'])
+         owned.need(owned.file_id(state) == prepared['state_identity'], 'prepared state replaced')
+         for name in ('coordinator-claim.json', 'gate.json', 'runtime-claim.json', 'actor-result.json', 'runtime-result.json'):
+--- a/source/prepare.py
++++ b/source/prepare.py
+@@ -131,7 +131,7 @@
+ 
+ 
+ def main(plan, sources):
+-    result = {'schema': 1, 'kind': 'owner20-normal-preparation01', 'success': False,
++    result = {'schema': 1, 'kind': 'owner20-normal-preparation02', 'success': False,
+               'attempt_nonce': plan['attempt_nonce'], 'runtime_executed': False,
+               'namespace_or_network_changed': False, 'production_ready': False, 'errors': []}
+     package_fd = state_fd = data_fd = -1; tools = {}; fence = None
+@@ -139,7 +139,7 @@
+         owned.need(os.geteuid() == os.getuid() == os.getegid() == 0, 'preparation requires original host root')
+         owned.need(len(plan['attempt_nonce']) == 64 and
+                    plan['scope'] == 'REAL_OWNER_ABI3_PINNED_CAUSE_TERMINAL_DRAIN_FIRST_ACTIVE_ORIGINAL_RETIREMENT' and
+-                   plan['kind'] == 'owned-real-producer20-normal01-four-public-sdk-observation01', 'wrong fixed profile')
++                   plan['kind'] == 'owned-real-producer20-normal02-four-public-sdk-observation01', 'wrong fixed profile')
+         owned.need(not Path(plan['package']).exists() and not Path(plan['state']).exists(), 'preparation root already exists')
+         owned.need(support.props(plan['unit']).get('LoadState') == 'not-found', 'owned unit already exists')
+         fence = support.MainFence(plan, vars(support)); result['main_before'] = fence.check()
+--- a/source/property_visibility.py
++++ b/source/property_visibility.py
+@@ -356,7 +356,8 @@
+             'cold_cache_observation': False, 'property_writes': False,
+             'Main_actions': 0, 'source_qualified_before_reads': False,
+             'protocol_packets': 0, 'start_token_attempts': 0, 'finish_token_attempts': 0,
+-            'finish_token_sent': False, 'wire_records': [], 'held_fds_closed': False,
++            'finish_token_sent': False, 'wire_records': [], 'init_current_checks': [],
++             'held_fds_closed': False,
+             'property_visibility_qualified': False, 'original_Stop_delayed': False,
+             'build_result_sha256': EXPECTED_BUILD, 'source_manifest_sha256': EXPECTED_SOURCE}
+         try:

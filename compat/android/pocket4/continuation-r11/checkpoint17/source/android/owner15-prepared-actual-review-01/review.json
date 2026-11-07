@@ -1,0 +1,153 @@
+{
+  "actual_preparation_job": "1a1ad314935-fc05-58d2",
+  "actual_reader_job": "1a1ad393e2c-fc05-5913",
+  "app_qualification": false,
+  "checks": {
+    "actual_sorted_plan_sha256": "0621e51c012db628241106ddd30e7d5ad693224f072c88c65fcd672bfb248824",
+    "base_records_all86_match_plan_and_before_after": true,
+    "both_complete_durable_exit_zero_terminals": true,
+    "canonical_cell_sha256": "b408e9902e3670a41c51dbbde0d6223d5b3d111c074183879f1c8f6bb1c56833",
+    "copied_artifacts": 5,
+    "copied_artifacts_full_names": [
+      "droidloom-psi-owner",
+      "droidloom-supervisor",
+      "droidloomd",
+      "init-barrier",
+      "lmkd"
+    ],
+    "fresh_ext4_images": 2,
+    "frozen_manifest_members_verified": 30,
+    "gzip_and_original_prepared_bytes": true,
+    "held_main_cgroup": [
+      30,
+      26651611
+    ],
+    "id_availability": {
+      "available_at_observation": true,
+      "host_uid": 61287,
+      "processes_observed": 849,
+      "reservation_created_in_passwd_or_subid_tables": false,
+      "subordinate_range": {
+        "count": 100000,
+        "start": 21000000
+      },
+      "tables": {
+        "/etc/subgid": {
+          "bytes": 18,
+          "sha256": "dc6b239ceac4d0d3f5739daa348847f11f729fb01db535ab05c2458f8e551464"
+        },
+        "/etc/subuid": {
+          "bytes": 18,
+          "sha256": "dc6b239ceac4d0d3f5739daa348847f11f729fb01db535ab05c2458f8e551464"
+        }
+      }
+    },
+    "main_before_after_final_full_maps_equal": true,
+    "mkfs_returncodes": [
+      0,
+      0
+    ],
+    "mkfs_stderr_is_normal_version_banner": true,
+    "original_pids_max": "12288",
+    "package_identity": {
+      "device": 66306,
+      "inode": 44574132
+    },
+    "presenter_pinned": true,
+    "published_plan_sha256": "cf1d859b47518e356ca63663de1933f06aefe30aea1f130435aef4305aaa1c79",
+    "resources_observed": {
+      "MemAvailable_bytes": 13665865728,
+      "disk_available_bytes": 466702880768,
+      "memory_pressure": "some avg10=0.00 avg60=0.00 avg300=0.01 total=5168430665\nfull avg10=0.00 avg60=0.00 avg300=0.01 total=4958597910\n"
+    },
+    "six_sources_equal": true,
+    "state_identity": {
+      "device": 66306,
+      "inode": 44574133
+    },
+    "tools": 8
+  },
+  "fd_and_process_scope": {
+    "independent_final_fd_table_census": false,
+    "individual_mkfs_pidfd_receipts_present": false,
+    "normal_main_pidfds_tool_fds_and_three_final_directory_fds_close_before_summary": true,
+    "original_exit_zero_and_after_close_stdout_support_normal_close_completion": true,
+    "prepare_mkfs_uses_subprocess_run_with_timeout_and_join": true,
+    "prepared_json_is_saved_before_final_three_directory_closes": true,
+    "source_normal_success_path_read_in_full": true
+  },
+  "inputs": [
+    {
+      "bytes": 729,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner15-normal01-prepare01/status01.tool-original.json",
+      "sha256": "a011fa9e73825a8cb0a5880bea8b0eb41e3e5afad73a0b12d548beffb3507ff6"
+    },
+    {
+      "bytes": 233,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner15-normal01-prepare01/stdout.log",
+      "sha256": "6d5e8adfedfb7f5941d65327ea74e19c0b4a9aa1700485aded77eb78707d5fe7"
+    },
+    {
+      "bytes": 733,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner15-normal01-prepared-read01/terminal-status.tool-original.json",
+      "sha256": "caac910519561614e28cb4cd83df1c8ae01baa6f877b7b54ccbfd4eab5db9946"
+    },
+    {
+      "bytes": 11871,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner15-normal01-prepared-read01/stdout.log",
+      "sha256": "b22826e5a01d31754e4fd08bf9589fa1dd65cab550299e1c57efd5052e67c829"
+    },
+    {
+      "bytes": 61076,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner15-normal01-prepared-read01/reader-bundle.json",
+      "sha256": "8793ab2131ecf3eac769f926db31418989494f03aef1b08d4352f9765ec9e62a"
+    },
+    {
+      "bytes": 55139,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner15-normal01-prepared-read01/prepared.json",
+      "sha256": "cdcf0db96db1c7100c17faa5c4b0926b544f8c41b8da8960e49788dee3926de8"
+    },
+    {
+      "bytes": 5034,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner15-normal01-freeze-01/manifest.json",
+      "sha256": "c2bbf0f68b954956f229bb4c2490ed8979fc4951f1a8c397cb0228e6513ac164"
+    },
+    {
+      "bytes": 75683,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner15-normal01-freeze-01/plan.json",
+      "sha256": "cf1d859b47518e356ca63663de1933f06aefe30aea1f130435aef4305aaa1c79"
+    },
+    {
+      "bytes": 8827,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner15-normal01-freeze-01/cell.json",
+      "sha256": "b408e9902e3670a41c51dbbde0d6223d5b3d111c074183879f1c8f6bb1c56833"
+    },
+    {
+      "bytes": 15281,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner15-normal01-freeze-01/source/prepare.py",
+      "sha256": "e8b334966a4e705d09281dbad49ea4f20018ca0a90b30ea058b43cf0a8be891d"
+    },
+    {
+      "bytes": 13377,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner15-normal01-freeze-01/source/pinned_support.py",
+      "sha256": "31e80cbcfb1b330b5daed3aefb1f4d29bbd10d94e703ce8cd1a1f42207deb40e"
+    },
+    {
+      "bytes": 14396,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner15-normal01-freeze-01/source/coordinator.py",
+      "sha256": "374dccc6b6788f0a6254849cbc6e190bcdbe8b413e4972726ce55a7a40bfc0fd"
+    }
+  ],
+  "kind": "independent-owner15-retained-preparation-review",
+  "limits": [
+    "Seven process identities, boot, original three Main inputs and all five resource values are enforced by the pinned MainFence; prepared contains the three successful summary maps, not a separate seven-process raw census.",
+    "UID/subid availability is a point-in-time observation, not a reservation. Frozen coordinator repeats availability, resources and Main checks before creating its once claim.",
+    "Two ext4 images and five copied artifacts are the actual plan/receipt counts. Seven compile artifacts are not seven prepared copies.",
+    "This review reads retained local originals and source; it performs no device operation, runtime, namespace change, App/UI/audio action or new collection."
+  ],
+  "production_ready": false,
+  "result": "PASS_PREPARATION_ONLY",
+  "runtime_executed_by_this_review": false,
+  "runtime_qualification": false,
+  "schema": 1
+}

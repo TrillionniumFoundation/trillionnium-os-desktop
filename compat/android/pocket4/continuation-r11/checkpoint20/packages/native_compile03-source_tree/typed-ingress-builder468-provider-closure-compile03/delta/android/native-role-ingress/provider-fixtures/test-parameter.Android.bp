@@ -1,0 +1,85 @@
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+// To update:
+// - git fetch aosp
+// - git merge --no-ff --allow-unrelated-histories aosp/upstream-main
+// - Update the version and last_upgrade_date of the METADATA file
+// - git commit --amend
+
+java_library {
+    name: "TestParameterInjector",
+    sdk_version: "current",
+    srcs: [
+        "junit4/src/main/java/**/*.java",
+        "junit4/src/main/java/**/*.kt",
+    ],
+    static_libs: [
+        "guava",
+        "auto_value_annotations",
+        "error_prone_annotations",
+        "junit",
+        "libprotobuf-java-lite",
+        "snakeyaml",
+    ],
+    libs: [
+        "kotlin-stdlib",
+        "kotlin-reflect",
+    ],
+    plugins: [
+        "auto_value_plugin",
+        "auto_annotation_plugin",
+    ],
+    host_supported: true,
+    visibility: [
+        "//cts/tests/app/WallpaperTest",
+        "//cts/tests/autofillservice",
+        "//cts/tests/mediapc",
+        "//cts/tests/surfacecontrol",
+        "//cts/tests/tests/app",
+        "//cts/tests/tests/car",
+        "//cts/tests/tests/content",
+        "//cts/tests/tests/graphics",
+        "//cts/tests/tests/packageinstaller/criticaluserjourney",
+        "//cts/tests/tests/packageinstaller/install",
+        "//cts/tests/tests/security",
+        "//external/libtextclassifier:__subpackages__",
+        "//external/protobuf:__subpackages__",
+        "//external/robolectric:__subpackages__",
+        "//external/jetpack-camera-app:__subpackages__",
+        "//frameworks/base/core/tests/coretests",
+        "//frameworks/base/core/tests/packagemonitortests",
+        "//frameworks/base/libs/WindowManager/Shell/tests/unittest",
+        "//frameworks/base/libs/WindowManager/Jetpack/tests/unittest",
+        "//frameworks/base/services/tests/displayservicetests",
+        "//frameworks/base/services/tests/dreamservicetests",
+        "//frameworks/base/services/tests/mockingservicestests",
+        "//frameworks/base/services/tests/powerservicetests",
+        "//frameworks/base/services/tests/servicestests",
+        "//frameworks/base/services/tests/uiservicestests",
+        "//frameworks/base/services/tests/vibrator",
+        "//frameworks/base/tests/UsbManagerTests",
+        "//frameworks/proto_logging/stats/stats_log_api_gen/test_java",
+        "//packages/modules/Bluetooth:__subpackages__",
+        "//packages/modules/HealthFitness:__subpackages__",
+        "//packages/modules/Permission:__subpackages__",
+        "//prebuilts/misc/common/androidx-media3",
+        "//vendor:__subpackages__",
+    ],
+}
+
+java_test_host {
+    name: "TestParameterInjectorTest",
+    srcs: ["junit4/src/test/java/**/*.java"],
+    static_libs: [
+        "TestParameterInjector",
+        "truth",
+    ],
+    javacflags: [
+        "-parameters",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+}

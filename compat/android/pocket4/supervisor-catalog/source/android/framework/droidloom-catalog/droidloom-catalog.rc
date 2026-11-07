@@ -1,0 +1,9 @@
+service droidloom-catalog /system/bin/app_process64 -Xms8m -Xmx128m /system/bin com.android.droidloom.catalog.CatalogMain
+    class main
+    user root
+    group root system graphics
+    setenv CLASSPATH /vendor/framework/droidloom-catalog.jar
+    socket droidloom_catalog stream+listen 0600 root root
+    rlimit nofile 256 256
+    restart_period 5
+    stdio_to_kmsg

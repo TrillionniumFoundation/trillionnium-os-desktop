@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "state": "FROZEN_ACTUAL_BOUND_INSTALL_CANDIDATE_NOT_DISPATCHED",
+  "baseline": {
+    "tree": "d28deed485cdfff7aa8335e7064c63f2979bc02c",
+    "path": "source/owner/android-qa-r7-install-state-01/exact-request.json",
+    "blob": "cb88bd7daee4985006136d0b1fec59b5416cab6e",
+    "bytes": 108807,
+    "sha256": "4b633bc18ad7947f295527ce6774c9652acfc55e7adbd4bd83318bb8121b65b4"
+  },
+  "actual_build": {
+    "schema": 1,
+    "job": "1a1aef89c59-fc05-64a7",
+    "independent_original_bytes_verified": true,
+    "independent_V8_semantic_validation_of_qualified_build_requirements": true,
+    "Python_qualified_build_function_locally_executed": false,
+    "actual_full_build_and_54_controls_pass": true,
+    "Java22": true,
+    "Python32": true,
+    "source14": true,
+    "tools7": true,
+    "joined_commands13": true,
+    "source_manifest_sha256": "8e3454bcc9ebe1ff55dcaf62706ce1176cfa1d0f0ede7099cbbfa46f4ad53f1e",
+    "APK": {
+      "bytes": 37008,
+      "path": "/home/alex/work/pocket4-owned-bili-qa-r8-build-01/owned-bili-qa.apk",
+      "sha256": "b576afe56b97160dc341fe15973f5afe23db03dc2961aedaa500f1527ec13122"
+    },
+    "signer_certificate_sha256": "b1ec4d840f5dd85513d3b3c08fbf97d829b580d4c718d6bf30cce5a8270a457d",
+    "peak": "293048320",
+    "memory_events_all_zero": true,
+    "swap0": true,
+    "Android_runtime_executed": false,
+    "helper_installed": false,
+    "new_helper_UID": null,
+    "whole_app_production_ready": false
+  },
+  "actual_nonces": {
+    "job": "1a1af01f7c1-fc05-64f8",
+    "bytes": 713,
+    "sha256": "aa935cfe262ba2660831c86beb52ee87bcc2fcdad01304fbc5022cd9e0aaad3b",
+    "blob": "393a8ad0797ad9e5dcf9a9170737c73cf2da5de9",
+    "field": "bili_r8_install",
+    "order": [
+      "flow",
+      "state"
+    ],
+    "values": [
+      "fd9784f9e464119899726c3b583243a8",
+      "c296619272cb68fddb8923891ff0dff9"
+    ]
+  },
+  "changes": [
+    "R7 identity/root/key and original two nonce literals replaced with R8 and actual fresh pair",
+    "Exact R8 build/stage/APK/signer/source pins",
+    "UID denylist additionally rejects old R7 helper UID 10202",
+    "Build comment records actual 13 commands plus 22 Java and 32 protocol controls"
+  ],
+  "inverse_byte_equality_after_explicit_literals": {
+    "install_state": true,
+    "stage_execute.py": true,
+    "make_request.py": true,
+    "session_binding.py": true
+  },
+  "reference_bytes_unchanged": [
+    "r4/bound_android_transport.py",
+    "r4/source-manifest.json",
+    "references/R3-SOURCE-MANIFEST.json",
+    "references/readonly_r3_coordinator.py"
+  ],
+  "original_budgets_and_lifecycle": {
+    "Android_commands": 9,
+    "worker_timeout_seconds": 190,
+    "request_timeout_seconds": 300,
+    "global_lock_wait_seconds": 5,
+    "Main_guard_unchanged": true,
+    "held_and_action_lock_cleanup_unchanged": true,
+    "staging_file_and_directory_cleanup_unchanged": true,
+    "no_UiAutomation_state_only": true
+  },
+  "verification": {
+    "packet_source_closure_exact": true,
+    "manifest10_runtime_sources": true,
+    "packet11_files": true,
+    "request_and_wrapper_hashes_recomputed": true,
+    "V8_literal_inverse_and_actual_semantic_review": true,
+    "local_Python_compile": false,
+    "local_Python_qualified_build": false,
+    "actual_installer_must_execute_frozen_R8_qualified_build_before_install": true
+  },
+  "qualification_boundaries": {
+    "new_helper_UID": null,
+    "Android_install_executed": false,
+    "Android_inspection_idle_executed": false,
+    "App_launches": 0,
+    "UI_actions": 0,
+    "new_player_actions": 0,
+    "target_signer_qualification_inherited": false,
+    "shared_helper_whole_process_tree_cleanup_qualification_inherited": false,
+    "whole_app_production_ready": false,
+    "production_ready_apps": 0,
+    "total_apps": 45
+  }
+}

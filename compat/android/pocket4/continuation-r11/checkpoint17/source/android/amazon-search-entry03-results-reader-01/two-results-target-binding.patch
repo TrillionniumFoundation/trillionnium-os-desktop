@@ -1,0 +1,81 @@
+--- bili-r6-two-results/read_summary.py
++++ amazon03-two-results/read_summary.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed two-result reader for the actual r6 controls-reveal attempt."""
++"""Fixed two-result reader for the actual Amazon search-entry03 failed attempt."""
+ import argparse
+ import base64
+ import gzip
+@@ -11,11 +11,11 @@
+ import stat
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-bilibili-r6-controls-reveal-01')
+-FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-395ea60f6cff2da163672b2f660131a4')
+-NONCE='395ea60f6cff2da163672b2f660131a4'
+-SOURCE_SHA='59401749d76711faeb9e9bc0326039d34661c8e27d364d9c9cfdbf23cf63e795'
+-HELPER_UID=10184
++ROOT=Path('/home/alex/work/pocket4-amazon-owned-search-entry-03')
++FLOW=Path('/home/alex/work/pocket4-amazon-owned-qa-r1-flow-ec46de5bfc594294a385a785deea3e9a')
++NONCE='ec46de5bfc594294a385a785deea3e9a'
++SOURCE_SHA='2242c0a160894629fedb9f97c0347fa2765af44ac9a57b69fe2fe6bd5c3f60fb'
++HELPER_UID=10175
+ FILES={
+     'coordinator.json':ROOT/'result.json',
+     'stage.json':ROOT/'stage-result.json',
+@@ -33,8 +33,8 @@
+ 
+ def no_raw_ui(value, path=()):
+     if path == ('navigation','selector'):
+-        need(value == {'resource_id':'tv.danmaku.bili:id/expand_search',
+-                       'class':'android.widget.LinearLayout','content_desc':'Search bar, button'},
++        need(value == {'resource_id':'com.amazon.mShop.android.shopping:id/chrome_search_box',
++                       'class':'android.widget.ImageButton','content_desc':'Search'},
+              'ONLY_THE_FIXED_PUBLIC_CONTROL_SELECTOR_MAY_LEAVE')
+         return
+     if isinstance(value,dict):
+@@ -98,17 +98,17 @@
+             missing.append({'name':name,'path':str(path)});continue
+         if name in expected:
+             need(sha(raw)==expected[name],'EXTERNAL_TERMINAL_SHA_CHANGED:'+name)
+-            need(len(raw)=={'coordinator.json':198643,'stage.json':1647}[name],
++            need(len(raw)=={'coordinator.json':5837,'stage.json':1827}[name],
+                  'EXTERNAL_TERMINAL_SIZE_CHANGED:'+name)
+         value=json.loads(raw);no_raw_ui(value)
+         if name in ('coordinator.json','stage.json','launch.json','navigation.json'):
+             need(value.get('source_manifest_sha256')==SOURCE_SHA and value.get('nonce')==NONCE,
+                  'EXACT_FRESH_FLOW_SOURCE_BINDING_REQUIRED:'+name)
+         if name in ('launch.json','navigation.json'):
+-            need(value.get('helper_package')=='org.droidloom.qa.bili.r6' and type(HELPER_UID) is int and value.get('helper_uid')==HELPER_UID,
+-                 'EXACT_R6_HELPER_SCOPE_REQUIRED')
++            need(value.get('helper_package')=='org.droidloom.qa.amazon.r1' and type(HELPER_UID) is int and value.get('helper_uid')==HELPER_UID,
++                 'EXACT_AMAZON_HELPER_SCOPE_REQUIRED')
+         files[name]={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':raw.decode('utf-8','strict')}
+-    bundle={'schema':1,'scope':'fixed-r6-controls-reveal-two-bound-results-only','files':files,'missing':missing,
++    bundle={'schema':1,'scope':'fixed-Amazon-search-entry03-two-bound-results-only','files':files,'missing':missing,
+         'source_manifest_sha256':SOURCE_SHA,'flow_nonce':NONCE,'bytes_read':reader.bytes,
+         'raw_UI_or_commercial_journal_exported':False,'Android_or_process_actions':0,
+         'runtime_qualification_asserted':False,'permission_or_original_file_changes':0}
+--- bili-r6-two-results/make_summary_request.py
++++ amazon03-two-results/make_summary_request.py
+@@ -8,8 +8,8 @@
+ import re
+ 
+ HERE=Path(__file__).resolve().parent
+-READER_SHA='bcf50e9f5b49de462fdc51e1a2bc9434a3a6dd3ee4d09b6edf91611d5b8b4228'
+-KEY='pocket4-bilibili-r6-controls-reveal-two-results-readonly-01-20261105'
++READER_SHA='1bdfc831b99f05e1c51f4574967dd2003fbcb9ce797a5d4673757d47cf7331d7'
++KEY='pocket4-amazon-search-entry03-two-results-readonly-01-20261105'
+ 
+ def main():
+     p=argparse.ArgumentParser(description=__doc__)
+@@ -24,7 +24,7 @@
+     assert a.output is not None and all(isinstance(x,str) and re.fullmatch('[0-9a-f]{64}',x)
+                                        for x in (a.coordinator_sha256,a.stage_sha256))
+     raw=(HERE/'read_summary.py').read_bytes()
+-    assert len(raw)==6105 and hashlib.sha256(raw).hexdigest()==READER_SHA
++    assert len(raw)==6127 and hashlib.sha256(raw).hexdigest()==READER_SHA
+     args=['--collect-once','--coordinator-sha256',a.coordinator_sha256,'--stage-sha256',a.stage_sha256]
+     wrapper="import sys,hashlib;raw=sys.stdin.buffer.read(16385);assert 0<len(raw)<=16384 and hashlib.sha256(raw).hexdigest()=="+repr(READER_SHA)+";scope={'__name__':'fixed_owned_summary_reader','__file__':'<verified-fixed-summary-reader>'};exec(compile(raw,'read_summary.py','exec'),scope);raise SystemExit(scope['main']("+repr(args)+"))"
+     request={'host':'pocket4','executable':'/usr/bin/sudo','args':['-n','/usr/bin/python3','-I','-c',wrapper],

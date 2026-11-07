@@ -1,0 +1,80 @@
+{
+  "schema": "pocket4-status-deployment-host-fact-inputs-v1",
+  "os": {
+    "tree": "34751cf1da824e73f65ef2d662cbeadd271b97f6",
+    "carrier_blob": "2434e7237f331c4ca27d1a78a5ed907557cbfe47",
+    "path": "/usr/lib/os-release",
+    "bytes": 410,
+    "sha256": "cf72627ff81aef345d0a9f3807eb80f1035e0f80fe2932d12d94efc02fd68104",
+    "ID": "ubuntu",
+    "ID_LIKE": "debian"
+  },
+  "systemctl": {
+    "actual_tree": "34751cf1da824e73f65ef2d662cbeadd271b97f6",
+    "carrier_blob": "201fdc45ae55fcea5fba8aac9adec57a1b8cd187",
+    "metadata": {
+      "acl_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gid": 0,
+      "link_count": 1,
+      "metadata_platform": "linux",
+      "mode": 493,
+      "uid": 0,
+      "xattr_names": [],
+      "xattr_sha256": {}
+    },
+    "mode": 493,
+    "path": "/usr/bin/systemctl",
+    "sha256": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082",
+    "size": 302112,
+    "version": "66306:108017358:302112:1789570531000000000:1792945456488110570"
+  },
+  "dpkg_query": {
+    "actual_tree": "8b99686f29ceaac0a690dcac729a36243c85b560",
+    "carrier_blob": "dc81e5f772b3e5393e5d5b588dbc1ecd36aba26a",
+    "metadata": {
+      "acl_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gid": 0,
+      "link_count": 1,
+      "metadata_platform": "linux",
+      "mode": 493,
+      "uid": 0,
+      "xattr_names": [],
+      "xattr_sha256": {}
+    },
+    "mode": 493,
+    "path": "/usr/bin/dpkg-query",
+    "sha256": "82a19acac53907f83faca7d6494289fe2d074514cf1b09933114635415c2e876",
+    "size": 142160,
+    "version": "66306:108006859:142160:1774968764000000000:1791083543630423241"
+  },
+  "scopes": {
+    "actual_tree": "52d8c08b38d7ed597f3cf9dbbcae44614d57be95",
+    "carrier_blob": "86228ef8e64a881267a0873782e4b0060f9a87b3",
+    "units": [
+      {
+        "name": "droidloomd.service",
+        "scope": "system",
+        "prior_pid": "3588022",
+        "prior_invocation": "67cdc2375f394012ad9d7f39b0d77426",
+        "fragment": "/usr/lib/systemd/system/droidloomd.service",
+        "key": "system-daemon"
+      },
+      {
+        "name": "droidloom.service",
+        "scope": "user",
+        "prior_pid": "3588024",
+        "prior_invocation": "4f9049c783be4359b69523d88ab81d63",
+        "fragment": "/usr/lib/systemd/user/droidloom.service",
+        "key": "user-session"
+      },
+      {
+        "name": "droidloom-applications.service",
+        "scope": "user",
+        "prior_pid": "3588091",
+        "prior_invocation": "c1113ca849d345b5a728205f7132427d",
+        "fragment": "/usr/lib/systemd/user/droidloom-applications.service",
+        "key": "user-applications"
+      }
+    ]
+  }
+}

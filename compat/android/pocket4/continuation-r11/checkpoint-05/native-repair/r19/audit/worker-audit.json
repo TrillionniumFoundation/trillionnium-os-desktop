@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "elf": "/home/alex/work/pocket4-owned-fd-capability-r19-apk-01/fd-owner-probe-r19-source/build-attempt-1/lib/x86_64/libfdownerprobe.so",
+  "elf_sha256": "86fb3fc0eeda63ce0c4827fec65c5a4ff4420f63be24f8704893c877c575dc63",
+  "objdump": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/llvm-objdump",
+  "qualified_worker_closure": true,
+  "worker_symbols": [
+    "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)"
+  ],
+  "reachable_functions": [
+    "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)",
+    "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)",
+    "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)"
+  ],
+  "edges": [
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)"
+    },
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+    },
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)"
+    },
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+    },
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+    },
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)"
+    },
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+    }
+  ],
+  "clone_trampoline": {
+    "name": "berberis_proc_metadata_raw_clone_x86_64",
+    "syscall_sites": 2,
+    "indirect_fixed_entry_calls": [
+      "*(%rsp)"
+    ],
+    "source_binding_required": "Start's sole call passes Worker and null context."
+  },
+  "errors": [],
+  "limits": [
+    "This verifies the named final binary closure, not runtime credential or signal policy.",
+    "The inherited TLS pointer exists but the audited child closure must not dereference it.",
+    "No Bionic pthread registration is created. Credential transitions and host cancellation remain unqualified.",
+    "A host ELF result cannot substitute for auditing the actual Android ELF."
+  ]
+}

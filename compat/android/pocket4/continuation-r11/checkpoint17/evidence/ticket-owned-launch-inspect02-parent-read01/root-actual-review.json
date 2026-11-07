@@ -1,0 +1,61 @@
+{
+  "action_lock_admission": {
+    "Android_actions_attempted": 0,
+    "acquired": false,
+    "attempts": 100,
+    "busy_attempts": 100,
+    "elapsed_seconds": 5.000091903028078,
+    "errno": 11,
+    "error_type": "BlockingIOError",
+    "fd_closed_on_error": true,
+    "last_errno": 11,
+    "opened_identity": {
+      "device": 28,
+      "gid": 0,
+      "inode": 8312,
+      "mode": 33152,
+      "nlink": 1,
+      "uid": 0
+    },
+    "path": "/run/lock/android-digitalis-actions.lock",
+    "phase": "lock_deadline",
+    "wait_limit_seconds": 5.0
+  },
+  "earlier_successful_lock_probe_does_not_guarantee_later_admission": true,
+  "failure": {
+    "errno": 11,
+    "message": "[Errno 11] Resource temporarily unavailable",
+    "phase": "action_lock",
+    "type": "BlockingIOError"
+  },
+  "global_fd_closed_on_error": true,
+  "main_original_fence_and_source_preserved": true,
+  "native_launch_attempted": false,
+  "no_automatic_retry": true,
+  "original_job": "1a1ad88118b-fc05-5a29",
+  "originals": {
+    "coordinator.json": {
+      "bytes": 5828,
+      "path": "/home/alex/work/pocket4-ticket-owned-launch-inspect-02/result.json",
+      "sha256": "ed80537c681a04722817b1e2f8cb28d33ac04f5c645f84a4317d505bcea551e1"
+    },
+    "launch.json": {
+      "bytes": 6051,
+      "path": "/home/alex/work/pocket4-ticket-owned-qa-r1-flow-fbda47500730b71354278064649b0bf9/steps/launch-01/result.json",
+      "sha256": "078e0dcc74ff7719a08f04df81463f30e1540992e547fcabd3f8feda24a0792a"
+    },
+    "stage.json": {
+      "bytes": 1804,
+      "path": "/home/alex/work/pocket4-ticket-owned-launch-inspect-02/stage-result.json",
+      "sha256": "8a3823bbb69469462b19e3998ce5c78587b19cda49ac2a0d8f8a4deba8119814"
+    }
+  },
+  "outcome_unknown": false,
+  "own_flow_lock_released": true,
+  "owned_task_created": false,
+  "reader_job": "1a1ad936e0f-fc05-5a39",
+  "schema": 1,
+  "shared_lock_cause_proven": false,
+  "state": "ORIGINAL_PRE_ACTION_LOCK_FAILURE_PRESERVED_UI_WINDOW_RELEASED",
+  "whole_app_production_ready": false
+}

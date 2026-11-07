@@ -1,0 +1,104 @@
+{
+  "actual_local_checks": {
+    "bytes": 4157,
+    "device_or_Hepta_calls": false,
+    "operations": [
+      "All 15 frozen payload hashes and UTF-8 bytes verified",
+      "Three unified diffs reconstructed byte-for-byte from the frozen Amazon preimage",
+      "Python AST parse and nine selected unchanged function/method AST comparisons",
+      "Exact packet, stdin, embedded stage, wrapper argv and resource/key binding reconstructed"
+    ],
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/12306-readonly-peer-review-01/checks.json",
+    "peer_reexecuted_author_synthetic_controls": false,
+    "reader_or_module_execute": false,
+    "sha256": "c142200550ae1904d65c9af6778c4455ed4f4e7aec879233fb9a00eb3b4808d2"
+  },
+  "conclusion": {
+    "UI_or_installation_qualification": false,
+    "device_metadata_qualification": false,
+    "new_concrete_blocker_in_reviewed_scope": false,
+    "source_review_completed": true,
+    "whole_app_production_ready": false
+  },
+  "findings": [
+    {
+      "finding": "The only admitted command sequence is exact com.MobileTicket USER 0 LIST, PATHS, MAIN/LAUNCHER RESOLVE, PATHS, LIST. Context checks the next exact argv and then calls the original held Flow.command observation method with mutation=False. There is no launch, install, instrumentation or command retry path in this candidate.",
+      "id": "fixed_read_scope"
+    },
+    {
+      "finding": "Current UID and version are parsed from a single exact package row. UID is also checked against the externally pinned Main activation. Version 275 is recorded only as a historical comparison. One to sixteen current APK paths are accepted only beneath one syntactically exact com.MobileTicket installation directory with exactly one base.apk. A changed activation UID is a fail-closed rejection, not an invitation to replace that historical authority.",
+      "id": "observed_identity"
+    },
+    {
+      "finding": "Every APK FD is registered for finally cleanup before its shape is checked. Regular-file, owner, mode, nlink, per-file/aggregate bounds and streaming deadline gates remain. Held identity is checked after hashing and again after actual package re-reads; reopening the name must recover the same identity. APK contents and unrelated package inventory are not exported.",
+      "id": "held_artifact_chain"
+    },
+    {
+      "finding": "Resolver output is bounded and must contain exactly one component for the same package. No fallback is selected. The result explicitly says launch_performed=false and later_launch_requires_new_current_binding=true; this metadata observation cannot authorize a later stale launch.",
+      "id": "launcher_result_scope"
+    },
+    {
+      "finding": "An entry/command error aborts subsequent business reads. Context independently attempts entry release and the post-command guard, preserving the first error with secondary notes. The outer finally closes held APK FDs, closes the target, checks Main, and closes only the acquired action-lock FD; cleanup errors force ok=false without replacing a prior error.",
+      "id": "first_error_and_release"
+    },
+    {
+      "finding": "The stage creates one fresh private root and source, with create-only claims. Its exact request binds the entire stdin packet and embedded stage. A successful stage requires the original worker return code, durable result nonce/package/source pin and ok=true, followed by unchanged source/Main gates. Collection success is not whole-App readiness or signer certification.",
+      "id": "create_once_and_output"
+    }
+  ],
+  "limits": [
+    "No reader, default PLAN, author parser/Context tests, Android command, APK hashing or Hepta operation was executed by this reviewer.",
+    "The previously reviewed shared recorder/held/Main/lock implementation is referenced through its existing pins; this review is not a new exhaustive review of every dependency.",
+    "Before/after identity and held-file checks are discrete observations, not a continuous or atomic device snapshot.",
+    "The frozen candidate source-review NOT_PERFORMED statement remains unmodified historical text; this is a separate additive review."
+  ],
+  "manifest": {
+    "bytes": 2327,
+    "including_manifest_files": 16,
+    "path": "/workspace/scratch/94990735b266/android-12306-artifact-launcher-readonly-01/SOURCE_PINS.json",
+    "payloads_verified": 15,
+    "sha256": "536774fc18e623a83937e0eb7bfd4f0f4ebf1d324e14f4f5e154c5300ee58f2f"
+  },
+  "request": {
+    "request_bytes": 27232,
+    "request_sha256": "4af819e91a34c992b58eb3aabbf4fdbc253372c004488c5fc6e7f75c0c15d21f",
+    "stdin_bytes": 21514,
+    "stdin_sha256": "1434c14b21c34f2a99e365589bcf0bc49ba5c0fdbdea5c6cfc8f77432ef637de"
+  },
+  "reviewed_complete_sources": [
+    {
+      "bytes": 21051,
+      "path": "read_12306.py",
+      "sha256": "77e6a5056f0de303ab8d81b0864999cdbf5d244442eb31d48c65ce49f4981d9d"
+    },
+    {
+      "bytes": 3876,
+      "path": "stage_execute.py",
+      "sha256": "c44e3c24acb5ebc688d776362cfd9b26bdf2df889cd2d2cc858f76343989b5df"
+    },
+    {
+      "bytes": 3043,
+      "path": "make_request.py",
+      "sha256": "adf2bb84b67fa5ef210dfa1eac3d811d036d7ab3b2a9baa24e837606818d8f48"
+    },
+    {
+      "bytes": 13656,
+      "path": "amazon-artifact-to-12306.patch",
+      "sha256": "ccce6ec53e6b890011822e3489a84d181224a8d18891c85f288f57fd77e7e389"
+    },
+    {
+      "bytes": 2280,
+      "path": "stage-to-12306.patch",
+      "sha256": "6ffdc954e149e09547bef1b96157f73a1334026e169c129107d205c3919b71f2"
+    },
+    {
+      "bytes": 2297,
+      "path": "generator-to-12306.patch",
+      "sha256": "7cb742612116f53f1f6813535f7b1eebba1ef47d59e09c94490f15839ca4c7f9"
+    }
+  ],
+  "reviewed_root": "/workspace/scratch/94990735b266/android-12306-artifact-launcher-readonly-01",
+  "reviewer": "local_pocket4_inventory",
+  "schema": 1,
+  "scope": "Independent source-only narrow review of exact 12306 artifact/current launcher reader, its stage, three retained deltas, and exact request binding"
+}

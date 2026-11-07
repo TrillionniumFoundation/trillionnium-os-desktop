@@ -1,0 +1,189 @@
+--- a/compile_builder.py
++++ b/compile_builder.py
+@@ -197,18 +197,17 @@
+             'resource_settings_changed':False, 'swap_max_observed_only':after['fields']['memory.swap.max']}
+ 
+ BASE_SOURCE = Path('/home/alex/work/pocket4-native-typed-ingress-builder465-compile-01-20261105/builder-source')
+-ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder466-go5-compile-01-20261105')
++ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder466-go5-compile-02-20261105')
+ HERE = ROOT/'control-source'
+ OUT = ROOT/'attempt01'
+ COPIED = ROOT/'builder-source'
+-RUSTUP = Path('/home/alex/.cargo/bin/rustup')
+-RUSTUP_HOME = Path('/home/alex/.rustup')
++RUST_SYSROOT = Path('/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu')
+ CARGO_HOME = Path('/home/alex/.cargo')
+ TOOLCHAIN = '1.93.0'
+ MANIFEST_PARENT = '6b15e35c79575f2da99fcaf383a29e1d0ddcfaa34f9bc9bb5ae070fb3367ee10'
+ MANIFEST_466 = 'f09b908745cf294735f897a64d0d956a207d27f78277781f536d5059bb856d0f'
+ GO_PATCH = '9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307'
+-OBSERVATION = '45d3a3307cf40c57c1835f1a275be7cb2e920f0d2b703880756ce0bd89386cfd'
++OBSERVATION = '60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb'
+ GO_CONTROL = '391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674'
+ TESTS = [
+     'android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes',
+@@ -337,40 +336,81 @@
+     return changes
+ 
+ def toolchain(report, base_env):
+-    observation,_=pinned_packet('rust193-tools-read02-result.json',OBSERVATION)
++    observation,observation_pin=pinned_packet('rust193-tools-recheck-read03-result.json',OBSERVATION)
+     actual=json.loads(observation)
+-    require(actual['complete'] is True and actual['repository_channel']==TOOLCHAIN and
+-            actual['repository_toolchain']['sha256']=='8bc51ecab82415fddd8489604f2424e137d71856e7f65cbdcfaa48850d794b46',
+-            'tool authority is not the observed installed repository channel')
+-    expected={r['requested_path']:r for r in actual['tools']}
+-    require(len(expected)==12,'fixed observed repository/linker tool pins missing')
+-    allowed=[Path('/usr/bin'),Path('/usr/lib'),Path('/home/alex/.cargo/bin'),RUSTUP_HOME/'toolchains']
++    require(actual['state']=='PASS_FIXED_TOOL_OBSERVATION_NOT_EXECUTION_APPROVAL' and
++            actual['complete'] is True and actual['repository_channel']==TOOLCHAIN and
++            actual['repository_toolchain']['sha256']=='8bc51ecab82415fddd8489604f2424e137d71856e7f65cbdcfaa48850d794b46' and
++            actual['all_observed_tool_contents_and_aliases_unchanged_after'] is True and
++            actual['owned_resource_gate']['pass'] is True and actual['first_error'] is None and
++            not actual['secondary_errors'] and actual['commands_executed']==0 and actual['tool_execution'] is False,
++            'fixed installed toolchain reobservation is not complete')
++    previous,previous_pin=pinned_packet('prior-compile01-failure.json',
++            '44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3')
++    failed=json.loads(previous)
++    require(previous_pin['bytes']==7681 and actual['actual_build_failure']==
++                {'bytes':previous_pin['bytes'],'sha256':previous_pin['sha256']} and
++            failed['state']=='FAIL' and failed['commands']==[] and
++            failed['error']=="RuntimeError('observed tool changed before compilation: /home/alex/.cargo/bin/rustup')" and
++            not failed['cleanup']['errors'] and not failed['cleanup']['remaining'] and
++            not failed['cleanup']['forced_cleanup'],
++            'prior compile01 failure authority differs')
++    observed={r['requested_path']:r for r in actual['tools']}
++    proxy='/home/alex/.cargo/bin/rustup'
++    require(len(observed)==len(actual['tools'])==12 and proxy in observed and
++            actual['changed_tools']==[{'changed_admission_fields':['sha256','bytes'],
++                'original_object_metadata_equal':False,'path':proxy}],
++            'reobservation is not the exact single proxy-content change')
++    require(all(row['error'] is None and row['content_read'] is True and
++                row['resolution_changed'] is False and
++                row['held_before']==row['held_after']==row['resolved_named_after'] and
++                row['requested_named_before']==row['requested_named_after'] and
++                row['requested_link_text_before']==row['requested_link_text_after']
++                for row in actual['tools']),
++            'fixed observed tool closure changed during reobservation')
++    expected={path:row for path,row in observed.items() if path!=proxy}
++    require(len(expected)==11 and all(row['compilation_admission_fields_equal'] is True and
++                row['changed_compilation_admission_fields']==[] and
++                row['original_object_metadata_equal'] is True for row in expected.values()),
++            'a directly used tool differs from the original installed authority')
++    require(not any(name.startswith('RUSTUP') for name in base_env) and
++            all(name not in base_env for name in ('LD_PRELOAD','LD_LIBRARY_PATH','RUSTC_BOOTSTRAP')) and
++            base_env['PATH']=='/usr/bin:/bin' and
++            base_env['RUSTC']==str(RUST_SYSROOT/'bin/rustc') and
++            base_env['RUSTDOC']==str(RUST_SYSROOT/'bin/rustdoc'),
++            'direct toolchain environment contains a proxy selection or inherited override')
++    real_directory(RUST_SYSROOT)
++    allowed=[Path('/usr/bin'),Path('/usr/lib'),RUST_SYSROOT]
+     rows=[]
+     for path,wanted in expected.items():
+         row=pin_resolved(Path(path),allowed)
+-        require(row['sha256']==wanted['sha256'] and row['bytes']==wanted['bytes'] and row['resolved_path']==wanted['resolved_path'],
+-                'observed tool changed before compilation: '+path)
++        require(row['sha256']==wanted['sha256'] and row['bytes']==wanted['bytes'] and
++                row['resolved_path']==wanted['resolved_path'],
++                'observed direct tool changed before compilation: '+path)
+         rows.append(row)
+-    selected={}
++    selected={name:RUST_SYSROOT/'bin'/name for name in ['cargo','rustc','rustdoc']}
+     for name in ['cargo','rustc']:
+-        raw=command([str(RUSTUP),'which','--toolchain',TOOLCHAIN,name],COPIED,base_env,'resolve-'+name,report['commands'],10)
+-        path=Path(raw.decode().strip())
+-        require(path.is_absolute() and path.name==name and path.is_relative_to(RUSTUP_HOME/'toolchains') and
+-                path.parent.parent.name==TOOLCHAIN+'-x86_64-unknown-linux-gnu','fixed repository toolchain not installed: '+str(path))
+-        selected[name]=path
+-        require(str(path) in expected,'resolved compiler was not pinned by the read-only authority')
+-        observed=pin_resolved(path,allowed)
+-        require(observed['sha256']==expected[str(path)]['sha256'],'repository compiler changed since authority read')
+-        rows.append(observed)
+-    sysroot=selected['rustc'].parent.parent
+-    require(selected['cargo'].parent.parent==sysroot,'cargo/rustc toolchain mismatch')
++        path=selected[name]
++        require(str(path) in expected and path.resolve(strict=True)==path and
++                expected[str(path)]['resolved_path']==str(path),
++                'direct compiler path differs from the fixed Rust 1.93 authority: '+name)
++    # No doctest is requested. Bind the absolute RUSTDOC path to the same
++    # installed sysroot closure now and recheck it with all other tool inputs.
++    # Its bytes were not included in the old read02/read03 observation.
++    rustdoc=pin_resolved(selected['rustdoc'],allowed)
++    require(rustdoc['resolved_path']==str(selected['rustdoc']) and
++            stat.S_ISREG(rustdoc['identity'][2]) and rustdoc['identity'][2]&0o111,
++            'fixed sysroot rustdoc is aliased or not an executable regular file')
++    rows.append(rustdoc)
++    sysroot=RUST_SYSROOT
++    require(selected['cargo'].parent.parent==selected['rustc'].parent.parent==sysroot,
++            'cargo/rustc toolchain mismatch')
+     cargo_version=command([str(selected['cargo']),'--version'],COPIED,base_env,'cargo-version',report['commands'],10).decode()
+     rustc_version=command([str(selected['rustc']),'-vV'],COPIED,base_env,'rustc-version',report['commands'],10).decode()
+     require(cargo_version.startswith('cargo '+TOOLCHAIN+' ') and '\nrelease: '+TOOLCHAIN+'\n' in rustc_version,
+             'actual toolchain version differs from repository pin')
+     for path in [Path('/usr/bin/git'),Path('/usr/bin/ninja'),Path('/usr/bin/cp'),Path('/usr/bin/ldd')]:
+         rows.append(pin_resolved(path,allowed))
+-    # Capture the installed compiler and target-library closure, not just the small rustc driver executable.
+     library_rows=regular_tree(sysroot/'lib/rustlib/x86_64-unknown-linux-gnu/lib',512,1536*1024*1024)
+     for row in library_rows.values():
+         row.update({'requested_path':row['path'],'resolved_path':row['path']})
+@@ -378,7 +418,8 @@
+     for path in sorted((sysroot/'lib').glob('*.so*')):
+         rows.append(pin_resolved(path,allowed))
+     linked=set()
+-    for index,path in enumerate([selected['cargo'],selected['rustc'],Path('/usr/bin/cc'),Path('/usr/bin/ld'),Path('/usr/bin/git'),Path('/usr/bin/ninja')]):
++    for index,path in enumerate([selected['cargo'],selected['rustc'],Path('/usr/bin/cc'),Path('/usr/bin/ld'),
++                                Path('/usr/bin/git'),Path('/usr/bin/ninja'),selected['rustdoc']]):
+         raw=command(['/usr/bin/ldd',str(path)],COPIED,base_env,'linked-libraries-'+str(index),report['commands'],10).decode()
+         require('not found' not in raw,'tool runtime library missing')
+         for line in raw.splitlines():
+@@ -388,9 +429,20 @@
+     for name in sorted(linked):
+         rows.append(pin_resolved(Path(name),allowed+[Path('/usr/lib'),Path('/lib')]))
+     unique={row['requested_path']:row for row in rows}
++    require(proxy not in unique,'unused rustup proxy was retained as a compilation input')
++    report['actual_tool_reobservation']=observation_pin
++    report['prior_compile01_failure_authority']=previous_pin
++    report['unused_proxy_observation']={key:observed[proxy][key] for key in
++            ['requested_path','resolved_path','bytes','sha256','changed_compilation_admission_fields']}
+     report['actual_toolchain']={'repository_version':TOOLCHAIN,'cargo':str(selected['cargo']),
+-                              'rustc':str(selected['rustc']),'cargo_version':cargo_version,'rustc_verbose_version':rustc_version,
+-                              'selection_installs_or_updates':False,'global_stable_1_95_not_used':True}
++            'rustc':str(selected['rustc']),'rustdoc':str(selected['rustdoc']),
++            'cargo_version':cargo_version,'rustc_verbose_version':rustc_version,
++            'selection':'explicit observed installed 1.93 cargo/rustc paths; no rustup command',
++            'selection_installs_or_updates':False,'global_stable_1_95_not_used':True,
++            'rustup_proxy_executed':False,'rustup_proxy_is_compilation_input':False,
++            'rustup_proxy_changed_bytes_approved_for_execution':False,
++            'rustdoc_observed_with_sysroot_closure_this_attempt':rustdoc,
++            'rustdoc_old_hash_prequalified':False,'doctests_requested':False}
+     return selected,list(unique.values())
+ 
+ def parse_selected_tree(raw, copied):
+@@ -829,8 +881,9 @@
+         original_rows,copied_before=exact_source_copy(expected)
+         original_manifest=portable(original_rows,expected)
+         report['original_manifest']=write_new(OUT/'original-builder-source-manifest.json',(json.dumps(original_manifest,indent=2)+'\n').encode())
+-        env={'PATH':'/usr/bin:/bin','HOME':'/home/alex','CARGO_HOME':str(CARGO_HOME),'RUSTUP_HOME':str(RUSTUP_HOME),
+-             'RUSTUP_SKIP_UPDATE_CHECK':'1','RUSTUP_TOOLCHAIN':TOOLCHAIN,'CARGO_NET_OFFLINE':'true','LC_ALL':'C','LANG':'C',
++        env={'PATH':'/usr/bin:/bin','HOME':'/home/alex','CARGO_HOME':str(CARGO_HOME),
++             'RUSTC':str(RUST_SYSROOT/'bin/rustc'),'RUSTDOC':str(RUST_SYSROOT/'bin/rustdoc'),
++             'CARGO_NET_OFFLINE':'true','LC_ALL':'C','LANG':'C',
+              'TMPDIR':str(OUT/'tmp'),'GIT_CONFIG_NOSYSTEM':'1','GIT_CONFIG_GLOBAL':'/dev/null'}
+         tools,tool_rows=toolchain(report,env)
+         report['tool_inputs']=write_new(OUT/'tool-inputs-before.json',tool_rows)
+@@ -910,9 +963,15 @@
+                                 'typed_ingress_framework_patch_changed':False,'source_lock_changed':False,
+                                 'framework_sources_executed_or_built':False,'runtime_authorization_enabled':False}
+         env.update({'PATH':str(tools['cargo'].parent)+':/usr/bin:/bin','RUSTC':str(tools['rustc']),
++                    'RUSTDOC':str(tools['rustdoc']),'RUSTDOCFLAGS':'','CARGO_ENCODED_RUSTDOCFLAGS':'',
+                     'RUSTC_WRAPPER':'','RUSTC_WORKSPACE_WRAPPER':'','RUSTFLAGS':'','CARGO_ENCODED_RUSTFLAGS':'',
+                     'CARGO_TARGET_DIR':str(OUT/'cargo-target'),'CARGO_BUILD_JOBS':'1',
+                     'CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER':'/usr/bin/cc'})
++        require('/home/alex/.cargo/bin' not in env['PATH'].split(':') and
++                all(shutil.which(name,path=env['PATH'])==str(tools[name]) for name in ['cargo','rustc','rustdoc']) and
++                not any(name.startswith('RUSTUP') for name in env) and
++                all(name not in env for name in ('LD_PRELOAD','LD_LIBRARY_PATH','RUSTC_BOOTSTRAP')),
++                'fixed direct compiler tools are shadowed or proxy environment was reintroduced')
+         config_paths=[CARGO_HOME/'config',CARGO_HOME/'config.toml']
+         for parent in [COPIED,*COPIED.parents]:
+             config_paths += [parent/'.cargo/config',parent/'.cargo/config.toml']

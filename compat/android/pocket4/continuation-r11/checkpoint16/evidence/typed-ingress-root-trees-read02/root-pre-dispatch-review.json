@@ -1,0 +1,42 @@
+{
+  "state": "REVIEWED_THREE_FIXED_COMMIT_ROOT_TREE_READ_ONLY",
+  "source": {
+    "bytes": 18114,
+    "sha256": "a7d7577333aa2faa79fb0e55cb84800cecbd0e066a9a079f978eae45e66259dd"
+  },
+  "request": {
+    "bytes": 18806,
+    "sha256": "36184228300039139cb605611226fdf3f48a8864498e669892878276f45554c3"
+  },
+  "review": "Root full read16993-byte read01 source and3644-byte minimal read02 cleanup diff; all frozen payload/Git blob pins, exact stdin and parameters verified; only read_tree/main differ,15 other functions and constants unchanged.",
+  "predecessor": "read01 was never dispatched; this is not a replay of unknown listener build03, which stays unknown.",
+  "actual_authority": {
+    "git_report_bytes": 9419,
+    "git_report_sha256": "45d3a3307cf40c57c1835f1a275be7cb2e920f0d2b703880756ce0bd89386cfd",
+    "tool": "/usr/bin/git",
+    "tool_bytes": 4547768,
+    "tool_sha256": "ed8b2df973b28c0fb773b9c0dc0816d3ee2b3835bb932d9153c21417bb51b362",
+    "lock_bytes": 84522,
+    "lock_sha256": "4d8f2d047254268305f4802d9dd67bebdfd162d836664c733ecc07e2f9ced178"
+  },
+  "fixed_commits": {
+    "frameworks/base": "94b4c163b7dfe5ce3607f7bb8456f9573f7de57d",
+    "frameworks/native": "ae266dcb706d083868578cfedce381ef44488a07",
+    "external/skia": "508606366e71a3daa933a4e08bc49b84e387ec18"
+  },
+  "scope": "Nonrecursive ls-tree-z of three already locked commit roots; no fetch, blob read, source expansion or build. Exact held Git executable, no replacement objects/lazy fetch, fixed command environment.",
+  "bounds": {
+    "entries_per_tree": 128,
+    "bytes_per_stream": 32768,
+    "child_seconds": 6,
+    "overall_seconds": 22,
+    "cpu_quota_percent": 25,
+    "memory_max_bytes": 134217728,
+    "outer_seconds": 30
+  },
+  "first_error_and_cleanup": "All owned pipe/selector/directory/Git/resource closes independent; preserve primary and append cleanup errors; actual direct child joins and before/after owned resource observations required.",
+  "Main_actions": 0,
+  "Android_UI_actions": 0,
+  "transitive_build_closure_qualified": false,
+  "automatic_retry": false
+}

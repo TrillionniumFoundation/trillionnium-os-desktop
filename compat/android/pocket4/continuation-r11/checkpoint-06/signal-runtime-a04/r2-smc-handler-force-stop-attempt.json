@@ -1,0 +1,37 @@
+{
+  "argv": [
+    "/system/bin/am",
+    "force-stop",
+    "--user",
+    "0",
+    "org.droidloom.signalprobe"
+  ],
+  "automatic_retry": false,
+  "init": {
+    "cgroup": "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service\n",
+    "exe": "/system/bin/init",
+    "ns": {
+      "cgroup": "cgroup:[4026533894]",
+      "ipc": "ipc:[4026533867]",
+      "mnt": "mnt:[4026533865]",
+      "net": "net:[4026533791]",
+      "pid": "pid:[4026533868]",
+      "uts": "uts:[4026533866]"
+    },
+    "nspid": [
+      "398265",
+      "1"
+    ],
+    "pid": 398265,
+    "ppid": 398264,
+    "start": "84711689",
+    "uid": [
+      "0",
+      "0",
+      "0",
+      "0"
+    ]
+  },
+  "private_epoch_sha256": "5794590c0583c8a0c207b1028a1647bda7d824c0680a354da129c8d89184f3cb",
+  "utc": "2026-11-04T19:44:49.391920+00:00"
+}

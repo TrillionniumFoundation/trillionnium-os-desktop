@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "full_source_relative_path": "tools/droidloom-update/src/android.rs",
+  "full_source_bytes": 264197,
+  "full_source_sha256": "fae438cf9d20ff3f9980da23582b81421218b5e5420e7124e560d6bfb1e071c0",
+  "actual_compiled_source_manifest_sha256": "6834ea57e4d0402bd5c6e6c405728a111af77fb54ea0e0bea407ba9647fa41b4",
+  "projection_patch_function": "    fn patch(&mut self, source: &Path, cwd: &str, patch: &Path) -> Result<()> {\n        let directory = source.join(cwd);\n        run(Command::new(\"git\")\n            .env(\"GIT_CEILING_DIRECTORIES\", source.parent().unwrap())\n            .arg(\"-C\")\n            .arg(&directory)\n            .args([\"apply\", \"--check\"])\n            .arg(patch))?;\n        let changed = output(\n            Command::new(\"git\")\n                .env(\"GIT_CEILING_DIRECTORIES\", source.parent().unwrap())\n                .arg(\"-C\")\n                .arg(&directory)\n                .args([\"apply\", \"--numstat\"])\n                .arg(patch),\n        )?;\n        for line in changed.lines() {\n            let path = line.split('\\t').nth(2).ok_or(\"invalid patch numstat\")?;\n            if Path::new(path)\n                .components()\n                .any(|c| !matches!(c, std::path::Component::Normal(_)))\n            {\n                return fail(\"unsafe patch path\");\n            }\n            self.save(&directory.join(path))?;\n        }\n        run(Command::new(\"git\")\n            .env(\"GIT_CEILING_DIRECTORIES\", source.parent().unwrap())\n            .arg(\"-C\")\n            .arg(&directory)\n            .arg(\"apply\")\n            .arg(patch))?;\n        self.applied_patches.insert(patch.to_owned(), hash(patch)?);\n        Ok(())\n    }\n",
+  "leaf_runtime_patch_loading": "    if leaf_go_memory_mode(dependency_mode) {\n        p.patch(source, \"build/soong\", &repo.join(\n            \"android/apex-compat/0008-soong-leaf-go-memory-budget.patch\"))?;\n        p.patch(source, \"build/blueprint\", &repo.join(\n            \"android/apex-compat/0009-blueprint-stream-uncached-module-actions.patch\"))?;\n    }\n    for (cwd, patch) in audio_apex_pcm_patches(dependency_mode) {\n",
+  "runtime_patch_path_argument": "android/apex-compat/0008-soong-leaf-go-memory-budget.patch",
+  "runtime_not_Rust_source_edit": true,
+  "all_other_449_runtime_files_equal": true,
+  "Rust_ELF_recompilation_performed": false,
+  "actual_new_projection_observed": false
+}

@@ -1,0 +1,26 @@
+{
+  "host": "pocket4",
+  "cwd": "/home/alex/work",
+  "env": {
+    "LC_ALL": "C",
+    "LANG": "C"
+  },
+  "stdin": "",
+  "timeout_seconds": 15,
+  "memory_max_bytes": 134217728,
+  "cpu_quota_percent": 25,
+  "nice": 10,
+  "executable": "/usr/bin/systemctl",
+  "args": [
+    "--user",
+    "--no-pager",
+    "--no-ask-password",
+    "--full",
+    "show",
+    "--all",
+    "--property=Id,LoadState,ActiveState,SubState,MainPID,InvocationID,FragmentPath,DropInPaths,ExecStart,User,Group,NeedDaemonReload,UnitFileState",
+    "--",
+    "droidloom-applications.service"
+  ],
+  "idempotency_key": "pocket4-status-effective-user-applications-show01-20261106"
+}

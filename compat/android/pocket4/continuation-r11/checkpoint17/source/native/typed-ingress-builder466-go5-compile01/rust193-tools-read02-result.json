@@ -1,0 +1,371 @@
+{
+  "schema": 1,
+  "started_utc": "2026-11-05T01:20:39.195510+00:00",
+  "repository_channel": "1.93.0",
+  "Main_actions": 0,
+  "builds_started": 0,
+  "install_update_actions": 0,
+  "queries": [
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/rustup",
+        "which",
+        "--toolchain",
+        "1.93.0",
+        "cargo"
+      ],
+      "returncode": 0,
+      "stdout": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/rustup",
+        "which",
+        "--toolchain",
+        "1.93.0",
+        "rustc"
+      ],
+      "returncode": 0,
+      "stdout": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "--version"
+      ],
+      "returncode": 0,
+      "stdout": "cargo 1.93.0 (083ac5135 2025-12-15)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "-vV"
+      ],
+      "returncode": 0,
+      "stdout": "rustc 1.93.0 (254b59607 2026-01-19)\nbinary: rustc\ncommit-hash: 254b59607d4417e9dffbc307138ae5c86280fe4c\ncommit-date: 2026-01-19\nhost: x86_64-unknown-linux-gnu\nrelease: 1.93.0\nLLVM version: 21.1.8\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--print",
+        "sysroot"
+      ],
+      "returncode": 0,
+      "stdout": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--print",
+        "target-libdir"
+      ],
+      "returncode": 0,
+      "stdout": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "-print-prog-name=collect2"
+      ],
+      "returncode": 0,
+      "stdout": "/usr/libexec/gcc/x86_64-linux-gnu/15/collect2\n",
+      "stderr": ""
+    }
+  ],
+  "tools": [
+    {
+      "requested_path": "/home/alex/.cargo/bin/rustup",
+      "resolved_path": "/home/alex/.cargo/bin/rustup",
+      "bytes": 20838840,
+      "sha256": "4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10",
+      "held_before": [
+        66306,
+        31732023,
+        33261,
+        20838840,
+        1773571247969072921,
+        1785828354765868529
+      ],
+      "held_after": [
+        66306,
+        31732023,
+        33261,
+        20838840,
+        1773571247969072921,
+        1785828354765868529
+      ]
+    },
+    {
+      "requested_path": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "resolved_path": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "bytes": 40753664,
+      "sha256": "9548937d530bf439ff1ba47a3b2bd26eeb9c3aff1961c20c01798613de922578",
+      "held_before": [
+        66306,
+        37113966,
+        33261,
+        40753664,
+        1793527515454921431,
+        1793527515557925710
+      ],
+      "held_after": [
+        66306,
+        37113966,
+        33261,
+        40753664,
+        1793527515454921431,
+        1793527515557925710
+      ]
+    },
+    {
+      "requested_path": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "resolved_path": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "bytes": 656704,
+      "sha256": "d32249a7c3bfcfc67b471460386e46323accae7125e344567a12d5664d99bb57",
+      "held_before": [
+        66306,
+        37114023,
+        33261,
+        656704,
+        1793527620057550401,
+        1793527625615953418
+      ],
+      "held_after": [
+        66306,
+        37114023,
+        33261,
+        656704,
+        1793527620057550401,
+        1793527625615953418
+      ]
+    },
+    {
+      "requested_path": "/usr/bin/cc",
+      "resolved_path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+      "bytes": 1305304,
+      "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88",
+      "held_before": [
+        66306,
+        108008578,
+        33261,
+        1305304,
+        1774174097000000000,
+        1791083705251606151
+      ],
+      "held_after": [
+        66306,
+        108008578,
+        33261,
+        1305304,
+        1774174097000000000,
+        1791083705251606151
+      ]
+    },
+    {
+      "requested_path": "/usr/bin/ld",
+      "resolved_path": "/usr/bin/x86_64-linux-gnu-ld.bfd",
+      "bytes": 1890472,
+      "sha256": "97f48d93b8b076a92d2809ec29dcb17f0f37c8827358f832255e2ed22fef6075",
+      "held_before": [
+        66306,
+        108034599,
+        33261,
+        1890472,
+        1773538381000000000,
+        1791083704198584053
+      ],
+      "held_after": [
+        66306,
+        108034599,
+        33261,
+        1890472,
+        1773538381000000000,
+        1791083704198584053
+      ]
+    },
+    {
+      "requested_path": "/usr/bin/ar",
+      "resolved_path": "/usr/bin/x86_64-linux-gnu-ar",
+      "bytes": 55944,
+      "sha256": "531473816bf553e863df5aab14c8177c72b732cf80c51dcf0fa990a50125041c",
+      "held_before": [
+        66306,
+        108008448,
+        33261,
+        55944,
+        1773538381000000000,
+        1791083704197584032
+      ],
+      "held_after": [
+        66306,
+        108008448,
+        33261,
+        55944,
+        1773538381000000000,
+        1791083704197584032
+      ]
+    },
+    {
+      "requested_path": "/usr/bin/as",
+      "resolved_path": "/usr/bin/x86_64-linux-gnu-as",
+      "bytes": 826608,
+      "sha256": "4e5fcaa3cdc160173cb5cfe7aa35dc39d7aa1f06ba8d75b8d923bbae5473991b",
+      "held_before": [
+        66306,
+        108034591,
+        33261,
+        826608,
+        1773538381000000000,
+        1791083704197584032
+      ],
+      "held_after": [
+        66306,
+        108034591,
+        33261,
+        826608,
+        1773538381000000000,
+        1791083704197584032
+      ]
+    },
+    {
+      "requested_path": "/usr/bin/git",
+      "resolved_path": "/usr/bin/git",
+      "bytes": 4547768,
+      "sha256": "ed8b2df973b28c0fb773b9c0dc0816d3ee2b3835bb932d9153c21417bb51b362",
+      "held_before": [
+        66306,
+        108004715,
+        33261,
+        4547768,
+        1792159905000000000,
+        1792504324680976384
+      ],
+      "held_after": [
+        66306,
+        108004715,
+        33261,
+        4547768,
+        1792159905000000000,
+        1792504324680976384
+      ]
+    },
+    {
+      "requested_path": "/usr/bin/ninja",
+      "resolved_path": "/usr/bin/ninja",
+      "bytes": 350624,
+      "sha256": "91e9548850cda2799facfdaa7abe33f9e978832f85e98212255708a7bbe437f2",
+      "held_before": [
+        66306,
+        108037344,
+        33261,
+        350624,
+        1763657883000000000,
+        1791083933685882212
+      ],
+      "held_after": [
+        66306,
+        108037344,
+        33261,
+        350624,
+        1763657883000000000,
+        1791083933685882212
+      ]
+    },
+    {
+      "requested_path": "/usr/bin/cp",
+      "resolved_path": "/usr/bin/gnucp",
+      "bytes": 137840,
+      "sha256": "8fcdb2485ebc68f00392d647b3d3d9130f0d4bb9f72c69ee258086dd63e1c122",
+      "held_before": [
+        66306,
+        108025621,
+        33261,
+        137840,
+        1787670447000000000,
+        1791083646529510452
+      ],
+      "held_after": [
+        66306,
+        108025621,
+        33261,
+        137840,
+        1787670447000000000,
+        1791083646529510452
+      ]
+    },
+    {
+      "requested_path": "/usr/bin/ldd",
+      "resolved_path": "/usr/bin/ldd",
+      "bytes": 5390,
+      "sha256": "8b85fafd8313f5e55058f543a66d3826adcd11e073c697f9d0208755378e2054",
+      "held_before": [
+        66306,
+        108017658,
+        33261,
+        5390,
+        1788444579000000000,
+        1791083352725946198
+      ],
+      "held_after": [
+        66306,
+        108017658,
+        33261,
+        5390,
+        1788444579000000000,
+        1791083352725946198
+      ]
+    },
+    {
+      "requested_path": "/usr/libexec/gcc/x86_64-linux-gnu/15/collect2",
+      "resolved_path": "/usr/libexec/gcc/x86_64-linux-gnu/15/collect2",
+      "bytes": 479104,
+      "sha256": "8ab5d946ba2c948e5ea5c91e25a104439302e0599a521785770d10690c565437",
+      "held_before": [
+        66306,
+        3032898,
+        33261,
+        479104,
+        1774174097000000000,
+        1791083705252606172
+      ],
+      "held_after": [
+        66306,
+        3032898,
+        33261,
+        479104,
+        1774174097000000000,
+        1791083705252606172
+      ]
+    }
+  ],
+  "complete": true,
+  "repository_toolchain": {
+    "requested_path": "/home/alex/work/pocket4-signal-mask-r11-build-memory-01/builder-source/rust-toolchain.toml",
+    "resolved_path": "/home/alex/work/pocket4-signal-mask-r11-build-memory-01/builder-source/rust-toolchain.toml",
+    "bytes": 86,
+    "sha256": "8bc51ecab82415fddd8489604f2424e137d71856e7f65cbdcfaa48850d794b46",
+    "held_before": [
+      66306,
+      33732367,
+      33204,
+      86,
+      1793551340473884787,
+      1793804758887232592
+    ],
+    "held_after": [
+      66306,
+      33732367,
+      33204,
+      86,
+      1793551340473884787,
+      1793804758887232592
+    ]
+  },
+  "finished_utc": "2026-11-05T01:20:40.196748+00:00"
+}

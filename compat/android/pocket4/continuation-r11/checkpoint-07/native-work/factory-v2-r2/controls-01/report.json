@@ -1,0 +1,173 @@
+{
+  "schema": 1,
+  "state": "LOCAL_ACTUAL_SOCKETPAIR_RECEIVE_STAGES_PASS",
+  "source_sha256": {
+    "source/factory_main.cc": "18d8134ed6c2077088104d9b5dc22ccfe1c93f73a87ee880595a9eb89821e2b9",
+    "source/factory_context.cc": "afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a",
+    "source/factory_context.h": "b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1",
+    "source/proc_maps_factory_wire.cc": "4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608",
+    "engine-delta/proc_maps_provenance.cc": "f4e6685f5b689d3b408dc6aa7723e36b2174e6e2545e743fbb5c5896f6142137",
+    "tests/ancillary_controls.cc": "c791c4286d00d8fb3e936f750104aa76cd3afee32005b5afc7c4b916ee513a3d"
+  },
+  "compiler": {
+    "path": "/usr/bin/x86_64-linux-gnu-g++-13",
+    "sha256": "52f1ddb33fe78b9441e0f42e9cd22c571f1101938e046c8a26582494e041cc73"
+  },
+  "steps": [
+    {
+      "name": "compile-preimage",
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++20",
+        "-O1",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-I/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/include",
+        "-I/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/source",
+        "-DFACTORY_SOURCE=\"../preimage/source/factory_main.cc\"",
+        "-DPROVENANCE_SOURCE=\"../preimage/derived-client-stage.cc\"",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/tests/ancillary_controls.cc",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/source/factory_context.cc",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/source/proc_maps_factory_wire.cc",
+        "-Wl,--gc-sections",
+        "-o",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/controls-01/preimage-control"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_returncode": 0
+    },
+    {
+      "name": "run-preimage",
+      "argv": [
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/controls-01/preimage-control"
+      ],
+      "returncode": 1,
+      "stdout_sha256": "63168f334b8c0d9c2effe248a4d383dfa1d8afec1417878e1a16a4cfa583ea71",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_returncode": 1
+    },
+    {
+      "name": "compile-fixed",
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++20",
+        "-O1",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-I/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/include",
+        "-I/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/source",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/tests/ancillary_controls.cc",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/source/factory_context.cc",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/source/proc_maps_factory_wire.cc",
+        "-Wl,--gc-sections",
+        "-o",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/controls-01/fixed-control"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_returncode": 0
+    },
+    {
+      "name": "run-fixed",
+      "argv": [
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/controls-01/fixed-control"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "1b6647d0eedea14de54fbf31fa3a44ab4218585203702efed059a2a4094d945c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_returncode": 0
+    }
+  ],
+  "fixed_cases": 34,
+  "fixed_pass": true,
+  "preimage_same_gate_failed": true,
+  "preimage_factory_source_unmodified": true,
+  "preimage_client_stage_extraction_explicit": true,
+  "preimage_failed_rows": [
+    {
+      "stage": "factory_request",
+      "case": "pidfd_with_rights",
+      "leak": 1
+    },
+    {
+      "stage": "factory_request",
+      "case": "pidfd_credentials_rights",
+      "leak": 1
+    },
+    {
+      "stage": "factory_request",
+      "case": "pidfd_only",
+      "leak": 1
+    },
+    {
+      "stage": "factory_request",
+      "case": "short_with_pidfd",
+      "leak": 1
+    },
+    {
+      "stage": "factory_request",
+      "case": "long_with_pidfd",
+      "leak": 1
+    },
+    {
+      "stage": "factory_request",
+      "case": "32_pidfd_rejections",
+      "leak": null
+    },
+    {
+      "stage": "client_reply",
+      "case": "pidfd_with_rights",
+      "leak": 1
+    },
+    {
+      "stage": "client_reply",
+      "case": "pidfd_credentials_rights",
+      "leak": 1
+    },
+    {
+      "stage": "client_reply",
+      "case": "pidfd_only",
+      "leak": 1
+    },
+    {
+      "stage": "client_reply",
+      "case": "short_with_pidfd",
+      "leak": 1
+    },
+    {
+      "stage": "client_reply",
+      "case": "long_with_pidfd",
+      "leak": 1
+    },
+    {
+      "stage": "client_reply",
+      "case": "32_pidfd_rejections",
+      "leak": null
+    },
+    {
+      "stage": "client_reply",
+      "case": "error_with_pidfd_rejected",
+      "leak": 1
+    }
+  ],
+  "source_unchanged": true,
+  "recvmsg_seam": false,
+  "poll_seam": false,
+  "socket_seam": false,
+  "listener_inheritance_observed": false,
+  "factory_service_started": false,
+  "CreateSnapshot_authority_provenance_executed": false,
+  "Android_executed": false,
+  "production_ready": false
+}

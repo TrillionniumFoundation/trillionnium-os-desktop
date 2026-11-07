@@ -1,0 +1,19 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/python3",
+  "args": [
+    "-I",
+    "-c",
+    "import sys,hashlib;raw=sys.stdin.buffer.read();assert hashlib.sha256(raw).hexdigest()=='3834d2f72f24d953a2c565f2039a66bf98cf7cfd2fda6e9f8be188b61fffdd7d';scope={'__name__':'__main__'};exec(compile(raw,'read_memory.py','exec'),scope,scope)"
+  ],
+  "cwd": "/home/alex/work",
+  "env": {
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "stdin": "#!/usr/bin/env python3\n\"\"\"Bounded operator-only reads of eleven fixed memory files. No state changes.\"\"\"\nimport datetime\nimport json\nimport os\nimport signal\nimport time\n\nLIMIT = 32768\nFILES = (\n    '/proc/meminfo',\n    '/proc/pressure/memory',\n    '/sys/fs/cgroup/memory.current',\n    '/sys/fs/cgroup/memory.stat',\n    '/sys/fs/cgroup/memory.swap.current',\n    '/sys/fs/cgroup/system.slice/droidloomd.service/memory.current',\n    '/sys/fs/cgroup/system.slice/droidloomd.service/memory.stat',\n    '/sys/fs/cgroup/system.slice/droidloomd.service/memory.swap.current',\n    '/sys/fs/cgroup/system.slice/droidloomd.service/memory.events',\n    '/sys/fs/cgroup/system.slice/droidloomd.service/memory.max',\n    '/sys/fs/cgroup/system.slice/droidloomd.service/memory.high',\n)\n\n\ndef now():\n    return datetime.datetime.now(datetime.timezone.utc).isoformat()\n\n\ndef expired(signum, frame):\n    raise TimeoutError('fixed readonly memory collection exceeded 20 seconds')\n\n\ndef main():\n    if os.geteuid() == 0:\n        raise RuntimeError('ordinary operator required; no sudo fallback')\n    signal.signal(signal.SIGALRM, expired)\n    signal.alarm(20)\n    report = {'schema': 1, 'scope': 'fixed readonly memory admission diagnostic',\n              'started_utc': now(), 'started_monotonic': time.monotonic(),\n              'uid': os.getuid(), 'euid': os.geteuid(), 'files': [],\n              'per_file_read_limit': LIMIT, 'state_changes': False,\n              'process_scan': False, 'sudo_used': False}\n    try:\n        for path in FILES:\n            row = {'path': path, 'started_utc': now()}\n            descriptor = None\n            data = bytearray()\n            try:\n                descriptor = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)\n                eof = False\n                while len(data) < LIMIT:\n                    part = os.read(descriptor, LIMIT - len(data))\n                    if not part:\n                        eof = True\n                        break\n                    data.extend(part)\n                row.update(bytes=len(data), text=data.decode('utf-8'), complete=eof,\n                           limit_reached=len(data) == LIMIT)\n            except Exception as error:\n                row.update(error_type=type(error).__name__, error=str(error), errno=getattr(error, 'errno', None),\n                           bytes_before_error=len(data), partial_text=data.decode('utf-8', errors='replace'))\n            finally:\n                if descriptor is not None:\n                    os.close(descriptor)\n                row['finished_utc'] = now()\n                report['files'].append(row)\n    finally:\n        signal.alarm(0)\n        report['finished_utc'] = now()\n        report['elapsed_seconds'] = time.monotonic() - report['started_monotonic']\n        print(json.dumps(report, ensure_ascii=False))\n    return 0\n\n\nif __name__ == '__main__':\n    raise SystemExit(main())\n",
+  "idempotency_key": "pocket4-combined05-memory-admission-readonly-diagnostic-01-20261104",
+  "timeout_seconds": 30,
+  "cpu_quota_percent": 25,
+  "memory_max_bytes": 134217728,
+  "nice": 10
+}

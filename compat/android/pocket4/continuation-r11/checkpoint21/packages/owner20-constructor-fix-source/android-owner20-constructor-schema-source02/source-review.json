@@ -1,0 +1,104 @@
+{
+  "Main_changes": 0,
+  "actual_failure_retained": true,
+  "baseline": {
+    "bytes": 68777,
+    "git_blob_sha": "cc52acc6bebc58aa633db89f50b71e5247ece638",
+    "sha256": "8aa61f8a7a0e79511dc3bb49e4f4f857d7dc40b68a26e431cda0af0629bf56b2"
+  },
+  "candidate": {
+    "bytes": 68817,
+    "git_blob_sha": "a9cccddcf1f6c09ad23e6b05dcc14c02b4383495",
+    "sha256": "e5d993f3bc05cebb4c61c44c84976fca491c10714799a684fed16ef85cd87f8d"
+  },
+  "controls": {
+    "Python_compile_or_controls_executed_locally": false,
+    "actual_namespace_or_credential_or_Android_operations": false,
+    "baseline_old_error_reproduction": true,
+    "count": 11,
+    "explicit_seams": [
+      "OS metadata/open/close and credentials",
+      "monotonic clock",
+      "init live/snapshot/current metadata",
+      "helper source binding and init bytes hash",
+      "filesystem type",
+      "spawn boundary"
+    ],
+    "new_children": 0,
+    "real_constructor_and_bind_init_and_borrowed_current_functions": true,
+    "root_or_LMKD_property_qualification": false,
+    "source": {
+      "bytes": 22065,
+      "git_blob_sha": "f6945682c3c8c0187139978cca2cfe7ff73ef9bb",
+      "sha256": "8389a12a4dd3ea742817e0d9ea118c221cd9a23188c6feff8b21a01d45d5bcd5"
+    }
+  },
+  "device_calls": 0,
+  "only_production_change": "Initialize a fresh init_current_checks list in each Capture record before helper/init binding.",
+  "production_delta": {
+    "bytes": 737,
+    "git_blob_sha": "75251a2f3afdcfbffbf3724a44ba84e425dc3db5",
+    "sha256": "ea58690887494cce29ce0f256267ad2ddc7d31cf2fda66e684d84a0cd9a1970d"
+  },
+  "runner": {
+    "all_other_helpers_byte_unchanged": true,
+    "eight_dependency_controls_byte_unchanged": true,
+    "full_delta": {
+      "bytes": 5432,
+      "git_blob_sha": "0e4079ebe58157db0a4c83aa43a37aff43fa7115",
+      "sha256": "089a0558b42346cf516a2c9d2992295103cbba32de3ffb15ec469349bc8cf99f"
+    },
+    "libffi_dependency_exact_actual_authority_unchanged": true,
+    "never_close_unknown_or_dependency_FD": true,
+    "original_FD_baseline_preserved": true,
+    "predecessor_exact_request": {
+      "bytes": 255241,
+      "git_blob_sha": "f875fa7584543525bf0bd10c822dab33399fd97d",
+      "sha256": "4e67acd885aef25104e27b7a54080a48aaf342a4fe1014cd7b8221b18e28edd4"
+    },
+    "predecessor_template": {
+      "bytes": 34120,
+      "git_blob_sha": "1b6fe176a2230fe893e93125799486fe0463c17b",
+      "sha256": "fe3de67b36bdc789c83437f9357037e7e2fe2fd1a406b81c5ea056bb069f7df2"
+    },
+    "process_exit_must_be_observed_by_Root": true,
+    "resources_and_argv_from_actual06_unchanged": true,
+    "successor_template": {
+      "bytes": 34548,
+      "git_blob_sha": "27dbe1463a83c558337b1ebcfe8017d1f1866c65",
+      "sha256": "cd07fa350d875c2566579ef79672a956fd7641f702b4ae4ffca6ca5d74b8908d"
+    }
+  },
+  "runtime_request_created": false,
+  "schema": "owner20-property-constructor-schema-source02",
+  "state": "SOURCE_ONLY_UNRUN",
+  "transport": {
+    "base64_decode_byte_equal": true,
+    "base64_input_type": "Uint8Array from utf8(packet)",
+    "idempotency_key": "p4-owner20-property-constructor-controls07-6707e1a0faec3764",
+    "packet": {
+      "bytes": 263267,
+      "git_blob_sha": "80432ff827cd541c2822e040f938e7c356104afc",
+      "sha256": "a37c15a0611f5a022ff052f9171b818e68948315c41907e54452ffc565caf7c0"
+    },
+    "request": {
+      "bytes": 386877,
+      "git_blob_sha": "1445c1e803ba943948d7fd6322d7344d4281f2e0",
+      "sha256": "5a165a01735709d73d1b731ca3809165be70d858463db865d6e38d5b2209cf76"
+    },
+    "stdin": {
+      "bytes": 385598,
+      "git_blob_sha": "85b1f86289ed142a6963a21231fda5d4d33f3f85",
+      "sha256": "6707e1a0faec3764418491884f6e47f1fdec108680e6e498daf60663523497ab"
+    }
+  },
+  "unchanged": [
+    "C accessor and actual build02 artifact",
+    "actor code and original NORMAL Stop order",
+    "fixed four SDK keys",
+    "2 second observation deadline and 1 second retirement-only deadline",
+    "held/named init/ns/root/executable/cgroup gates",
+    "no retries, no extra spawn, no extra token",
+    "same-process root-warmed cache limitation"
+  ]
+}

@@ -1,0 +1,261 @@
+{
+  "baseline": {
+    "bytes": 85579,
+    "sha256": "5b4e7d699b6ca82c9a60ff28cd49cf7d101fd6b92608fe70a92380182f3aac4f",
+    "git_blob_sha1": "d57dbae7cbe634481849e95598a5e190cb7b3f79"
+  },
+  "candidate": {
+    "bytes": 87186,
+    "sha256": "efe59bf47a15825c607782f9d0956eaa2a1a2588ba8477bb305670fcd7b913c8",
+    "git_blob_sha1": "3837173dbf3e78873315b3f1992246900d271aa2"
+  },
+  "edits": [
+    {
+      "label": "doc scope",
+      "offset": 23,
+      "old": "\"\"\"Compile builder471 fixed SystemUI test projection with 21 updater and 9 source controls; no platform execution.\"\"\"",
+      "new": "\"\"\"Compile builder473 fixed Audiocontrol example projection with 24 updater and 9 source controls; no platform execution.\"\"\""
+    },
+    {
+      "label": "actual parent source",
+      "offset": 9605,
+      "old": "BASE_SOURCE = Path('/home/alex/work/pocket4-native-typed-ingress-builder470-published-lock-alignment-compile-01-20261106/builder-source')",
+      "new": "BASE_SOURCE = Path('/home/alex/work/pocket4-native-typed-ingress-builder471-systemui-test-projection-compile-01-20261106/builder-source')"
+    },
+    {
+      "label": "fresh root",
+      "offset": 9743,
+      "old": "ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder471-systemui-test-projection-compile-01-20261106')",
+      "new": "ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder473-audiocontrol-example-projection-compile-01-20261106')"
+    },
+    {
+      "label": "actual parent map",
+      "offset": 10094,
+      "old": "MANIFEST_PARENT = 'd87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057'",
+      "new": "MANIFEST_PARENT = 'c29c7b05fcfdf3def918d2bc963c6fe0c25a0430c87249f3de781d5d8bf68ae0'"
+    },
+    {
+      "label": "candidate manifest symbol 0",
+      "offset": 10179,
+      "old": "MANIFEST_471",
+      "new": "MANIFEST_473"
+    },
+    {
+      "label": "candidate manifest symbol 1",
+      "offset": 56301,
+      "old": "MANIFEST_471",
+      "new": "MANIFEST_473"
+    },
+    {
+      "label": "candidate manifest symbol 2",
+      "offset": 61434,
+      "old": "MANIFEST_471",
+      "new": "MANIFEST_473"
+    },
+    {
+      "label": "candidate manifest symbol 3",
+      "offset": 66037,
+      "old": "MANIFEST_471",
+      "new": "MANIFEST_473"
+    },
+    {
+      "label": "new 501 map",
+      "offset": 10179,
+      "old": "MANIFEST_473 = 'c29c7b05fcfdf3def918d2bc963c6fe0c25a0430c87249f3de781d5d8bf68ae0'",
+      "new": "MANIFEST_473 = 'a3426e40f9446b85931c82e8ba08335e72cd9bd0ac4a3f70aa01d54200d1ae13'"
+    },
+    {
+      "label": "three focused tests",
+      "offset": 14054,
+      "old": "TESTS = ORIGINAL_TESTS + TYPED_INGRESS_TESTS + PROVIDER_CLOSURE_TESTS + HAL_PROVIDER_TESTS + SYSTEMUI_PROJECTION_TESTS",
+      "new": "AUDIOCONTROL_PROJECTION_TESTS = [\"android::tests::typed_audiocontrol_example_projection_keeps_metadata_and_sibling_sources\",\"android::tests::typed_audiocontrol_example_projection_rejects_source_drift_before_write\",\"android::tests::typed_audiocontrol_example_projection_recovers_full_observed_original\"]\nPROJECTION_TAIL_TESTS = SYSTEMUI_PROJECTION_TESTS + AUDIOCONTROL_PROJECTION_TESTS\nTESTS = ORIGINAL_TESTS + TYPED_INGRESS_TESTS + PROVIDER_CLOSURE_TESTS + HAL_PROVIDER_TESTS + PROJECTION_TAIL_TESTS"
+    },
+    {
+      "label": "exact source delta",
+      "offset": 14554,
+      "old": "FIXED_PROVIDER_DELTA = [\"android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp\",\"tools/droidloom-update/src/android.rs\"]",
+      "new": "FIXED_PROVIDER_DELTA = [\"android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp\",\"tools/droidloom-update/src/android.rs\"]"
+    },
+    {
+      "label": "new proof pin",
+      "offset": 14699,
+      "old": "SYSTEMUI_PROJECTION_PROOF_SHA = '17fe54cebd452ef14258461f0817b9cbc753ccb0619f28e7274e61879a89d762'",
+      "new": "AUDIOCONTROL_PROJECTION_PROOF_SHA = 'c642e886b77adeb07d8f38a3dd10d042218e8e6582d6fd523be751ef1317b2e5'"
+    },
+    {
+      "label": "report scope",
+      "offset": 54767,
+      "old": "fresh builder471 fixed five-module SystemUI test projection compile01, 500 source files, 18 original plus 3 new updater controls and 9 unchanged source-resume controls; no real published source/staging/Soong/Java/Android/service execution",
+      "new": "fresh builder473 fixed one-module Audiocontrol example projection compile01, 501 source files, 21 prior plus 3 new updater controls and 9 unchanged source-resume controls; no real published source/staging/Soong/Java/Android/service execution"
+    },
+    {
+      "label": "parent manifest filename",
+      "offset": 56573,
+      "old": "'compiled-parent470-manifest.json'",
+      "new": "'compiled-parent471-manifest.json'"
+    },
+    {
+      "label": "candidate manifest filename",
+      "offset": 56659,
+      "old": "'expected-builder471-manifest.json'",
+      "new": "'expected-builder473-manifest.json'"
+    },
+    {
+      "label": "map counts",
+      "offset": 56794,
+      "old": "require(len(expected)==499 and len(copied_expected)==500,'source manifest count changed')",
+      "new": "require(len(expected)==500 and len(copied_expected)==501,'source manifest count changed')"
+    },
+    {
+      "label": "actual parent471 full qualification",
+      "offset": 57601,
+      "old": "        parent_raw,parent_pin=pinned_packet('compiled-parent470-result.json',\n            'f4e78f21dec485f59ff2149cb12298c070142dbad4e29b00a776729a376eea4c')\n        parent=json.loads(parent_raw)\n        require(parent_pin['bytes']==172040 and parent['state']=='PASS' and\n                parent['focused_tests_passed']==27 and parent['updater_focused_tests_passed']==18 and\n                parent['source_resume_tests_passed']==9 and parent['provider_closure_tests_passed']==6 and\n                parent['hal_provider_tests_passed']==3 and parent['actual_registered_test_count']==208 and\n                parent['source_actual_registered_test_count']==20 and\n                len(parent['commands'])==65 and all(row['returncode']==0 and not row['timed_out'] for row in parent['commands']) and\n                parent['copied_manifest']['bytes']==99327 and parent['copied_manifest']['sha256']==MANIFEST_PARENT and\n                parent['builder_elf']['bytes']==34767864 and\n                parent['builder_elf']['sha256']=='fd6911bb3919757067c2948a0dac09c7f071beb9801273dd721e24c6d88ec23d' and\n                parent['owned_resource_gate']['pass'] is True and not parent['dependency_changes'] and\n                not parent['tool_changes'] and not parent['cleanup']['errors'] and not parent['cleanup']['remaining'] and\n                not parent['cleanup']['forced_cleanup'] and parent['copied_source_unchanged_after'] is True and\n                parent['original_source_unchanged_after'] is True and parent['cargo_configs_unchanged_after'] is True and\n                parent['source_delta']['actual_source_file_count']==499 and\n                parent['observed_manifest_rebuilt_exactly'] is True and parent['source_lock_writer']=='UNKNOWN' and\n                parent['framework_Java_and_Android_JNI_compiled'] is False and\n                parent['runtime_authorization_enabled'] is False,\n                'actual compiled parent470 qualification differs')\n        report['actual_parent470_compile_authority']=parent_pin\n",
+      "new": "        parent_raw,parent_pin=pinned_packet('compiled-parent471-result.json',\n            '466d01e56fa6579636be8e82eedbc4276c31ce3e6b390dc985fe3bc454ead1e9')\n        parent=json.loads(parent_raw)\n        require(parent_pin['bytes']==181273 and parent['state']=='PASS' and\n                parent['focused_tests_passed']==30 and parent['updater_focused_tests_passed']==21 and\n                parent['source_resume_tests_passed']==9 and parent['provider_closure_tests_passed']==6 and\n                parent['hal_provider_tests_passed']==3 and parent['systemui_test_projection_tests_passed']==3 and\n                parent['actual_registered_test_count']==211 and parent['source_actual_registered_test_count']==20 and\n                len(parent['commands'])==68 and all(row['returncode']==0 and not row['timed_out'] for row in parent['commands']) and\n                parent['copied_manifest']['bytes']==99548 and parent['copied_manifest']['sha256']==MANIFEST_PARENT and\n                parent['builder_elf']['bytes']==34770528 and\n                parent['builder_elf']['sha256']=='2ea23bbeee47e8404fc6d9b91a5b3c3fdc4e7afd70820fd8b388f1dd6ead19be' and\n                parent['owned_resource_gate']['pass'] is True and not parent['dependency_changes'] and\n                not parent['tool_changes'] and not parent['cleanup']['errors'] and not parent['cleanup']['remaining'] and\n                not parent['cleanup']['forced_cleanup'] and parent['copied_source_unchanged_after'] is True and\n                parent['original_source_unchanged_after'] is True and parent['cargo_configs_unchanged_after'] is True and\n                parent['source_delta']['actual_source_file_count']==500 and\n                parent['source_delta']['current_hal_source_lock_unchanged'] is True and\n                parent['source_lock_writer']=='UNKNOWN' and\n                parent['unchanged_225_project_lock_authority']['bytes']==96957 and\n                parent['unchanged_225_project_lock_authority']['sha256']=='72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d' and\n                parent['systemui_test_original_fixture_authority']['bytes']==3392 and\n                parent['systemui_test_original_fixture_authority']['sha256']=='f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da' and\n                parent['SystemUI_application_and_test_modules_qualified'] is False and\n                parent['framework_Java_and_Android_JNI_compiled'] is False and\n                parent['runtime_authorization_enabled'] is False,\n                'actual compiled parent471 qualification differs')\n        report['actual_parent471_compile_authority']=parent_pin\n"
+    },
+    {
+      "label": "exact new proof qualification",
+      "offset": 61961,
+      "old": "        projection_raw,projection_pin=pinned_packet('systemui-test-projection-proof.json',SYSTEMUI_PROJECTION_PROOF_SHA)\n        projection=json.loads(projection_raw)\n        require(projection['state']=='SOURCE_ONLY_FIXED_SYSTEMUI_TEST_PROJECTION_NOT_COMPILED' and\n                projection['baseline']['manifest']['sha256']==MANIFEST_PARENT and\n                projection['baseline']['compile_result']['sha256']==parent_pin['sha256'] and\n                projection['candidate']['manifest']['sha256']==MANIFEST_473 and\n                projection['candidate']['source_delta']==FIXED_PROVIDER_DELTA and\n                projection['candidate']['source_files']==500 and projection['candidate']['unchanged']==498 and\n                projection['candidate']['changed_existing']==['tools/droidloom-update/src/android.rs'] and\n                projection['candidate']['added']==['android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp'] and\n                projection['scope']['source_path']=='frameworks/base/packages/SystemUI/tests/Android.bp' and\n                projection['scope']['excluded_modules']==['SystemUITests_defaults','SystemUITests',\n                    'SystemUITests_systemui_accessibility','SystemUITests_presubmit','SystemUI_test_fixtures'] and\n                projection['scope']['targets']==['framework-minus-apex','libandroid_runtime'] and\n                projection['scope']['dependency_mode']=='Strict' and\n                projection['scope']['ALLOW_MISSING_DEPENDENCIES']=='false' and\n                projection['scope']['no_find_ignore_added'] is True and\n                projection['validation']['new_focused_tests']==SYSTEMUI_PROJECTION_TESTS and\n                projection['validation']['host_compile_performed'] is False,\n                'fixed five-module SystemUI projection proof does not bind this candidate')\n",
+      "new": "        projection_raw,projection_pin=pinned_packet('audiocontrol-example-projection-proof.json',AUDIOCONTROL_PROJECTION_PROOF_SHA)\n        projection=json.loads(projection_raw)\n        require(projection['state']=='SOURCE_ONLY_FIXED_AUDIOCONTROL_EXAMPLE_PROJECTION_NOT_COMPILED' and\n                projection['baseline']['manifest']['sha256']==MANIFEST_PARENT and\n                projection['baseline']['compile_result']['sha256']==parent_pin['sha256'] and\n                projection['candidate']['manifest']['sha256']==MANIFEST_473 and\n                projection['candidate']['source_delta']==FIXED_PROVIDER_DELTA and\n                projection['candidate']['source_files']==501 and projection['candidate']['unchanged']==499 and\n                projection['candidate']['changed_existing']==['tools/droidloom-update/src/android.rs'] and\n                projection['candidate']['added']==['android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp'] and\n                projection['scope']['source_path']=='hardware/interfaces/automotive/audiocontrol/aidl/default/Android.bp' and\n                projection['scope']['excluded_modules']==['android.hardware.automotive.audiocontrol-service.example'] and\n                projection['scope']['excluded_module_types']==['cc_binary'] and\n                projection['scope']['targets']==['framework-minus-apex','libandroid_runtime'] and\n                projection['scope']['dependency_mode']=='Strict' and\n                projection['scope']['ALLOW_MISSING_DEPENDENCIES']=='false' and\n                projection['scope']['no_find_ignore_added'] is True and\n                projection['scope']['SystemUI471_projection_retained'] is True and\n                projection['validation']['new_focused_tests']==AUDIOCONTROL_PROJECTION_TESTS and\n                projection['validation']['host_compile_performed'] is False,\n                'fixed one-module Audiocontrol example projection proof does not bind this candidate')\n"
+    },
+    {
+      "label": "actual new fixture",
+      "offset": 64780,
+      "old": "fixture_name='android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp'",
+      "new": "fixture_name='android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp'"
+    },
+    {
+      "label": "actual fixture authority",
+      "offset": 64873,
+      "old": "        fixture_raw,fixture_pin=pinned_packet('delta/'+fixture_name,\n            'f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da')\n        require(fixture_pin['bytes']==copied_expected[fixture_name]['bytes']==3392 and\n                fixture_pin['sha256']==copied_expected[fixture_name]['sha256']==\n                    projection['scope']['original']['sha256'],\n                'complete locked upstream SystemUI tests fixture differs')\n        report['systemui_test_projection_authority']=projection_pin\n        report['systemui_test_original_fixture_authority']=fixture_pin\n",
+      "new": "        fixture_raw,fixture_pin=pinned_packet('delta/'+fixture_name,\n            '9c8a0aecfa46ce0f1874362fa9dfff6a34326f9bf569b6fe7206dd6db1b3c9a6')\n        require(fixture_pin['bytes']==copied_expected[fixture_name]['bytes']==1869 and\n                fixture_pin['sha256']==copied_expected[fixture_name]['sha256']==\n                    projection['scope']['original']['sha256'],\n                'complete observed Audiocontrol example fixture differs')\n        report['audiocontrol_example_projection_authority']=projection_pin\n        report['audiocontrol_example_original_fixture_authority']=fixture_pin\n        report['systemui_test_projection_retained_from_parent471']=True\n"
+    },
+    {
+      "label": "delta diagnostic",
+      "offset": 66131,
+      "old": "'SystemUI projection delta is not exactly one Rust replacement and one original fixture addition'",
+      "new": "'Audiocontrol example delta is not exactly one Rust replacement and one original fixture addition'"
+    },
+    {
+      "label": "map diagnostic",
+      "offset": 67316,
+      "old": "'actual copied 500-file builder471 manifest differs'",
+      "new": "'actual copied 501-file builder473 manifest differs'"
+    },
+    {
+      "label": "source delta counts",
+      "offset": 67688,
+      "old": "'unchanged_existing':498,'actual_source_file_count':500",
+      "new": "'unchanged_existing':499,'actual_source_file_count':501"
+    },
+    {
+      "label": "revision diagnostic",
+      "offset": 67777,
+      "old": "'builder_revision_name':'471-fixed-systemui-test-projection'",
+      "new": "'builder_revision_name':'473-fixed-audiocontrol-example-projection'"
+    },
+    {
+      "label": "scope report fields",
+      "offset": 68339,
+      "old": "'current_hal_source_lock_unchanged':True,'fixed_SystemUI_tests_BP_original_fixture_added':True,",
+      "new": "'current_hal_source_lock_unchanged':True,'fixed_Audiocontrol_example_BP_original_fixture_added':True,\n                                'SystemUI471_projection_and_fixture_unchanged':True,"
+    },
+    {
+      "label": "test count gates",
+      "offset": 75487,
+      "old": "                len(SYSTEMUI_PROJECTION_TESTS)==3 and len(TESTS)==len(set(TESTS))==21 and\n",
+      "new": "                len(SYSTEMUI_PROJECTION_TESTS)==3 and len(AUDIOCONTROL_PROJECTION_TESTS)==3 and\n                len(PROJECTION_TAIL_TESTS)==6 and len(TESTS)==len(set(TESTS))==24 and\n"
+    },
+    {
+      "label": "all exact registrations",
+      "offset": 75748,
+      "old": "                    PARENT_TESTS+PROVIDER_CLOSURE_TESTS+HAL_PROVIDER_TESTS+SYSTEMUI_PROJECTION_TESTS),",
+      "new": "                    PARENT_TESTS+PROVIDER_CLOSURE_TESTS+HAL_PROVIDER_TESTS+PROJECTION_TAIL_TESTS),"
+    },
+    {
+      "label": "registration diagnostic",
+      "offset": 75863,
+      "old": "'original 26 registrations, nine provider controls or three SystemUI projection controls absent/duplicated'",
+      "new": "'original 26 registrations, nine provider controls or six exact projection controls absent/duplicated'"
+    },
+    {
+      "label": "registered count",
+      "offset": 76070,
+      "old": "require(len(listed_names)==211 and len(listed_names)==len(set(listed_names)) and",
+      "new": "require(len(listed_names)==214 and len(listed_names)==len(set(listed_names)) and"
+    },
+    {
+      "label": "keep original 0 through17 labels",
+      "offset": 77168,
+      "old": "for index,name in enumerate(TESTS[:-len(SYSTEMUI_PROJECTION_TESTS)]):",
+      "new": "for index,name in enumerate(TESTS[:-len(PROJECTION_TAIL_TESTS)]):"
+    },
+    {
+      "label": "keep200through202 and add203through205",
+      "offset": 77474,
+      "old": "for index,name in enumerate(SYSTEMUI_PROJECTION_TESTS,start=200):",
+      "new": "for index,name in enumerate(PROJECTION_TAIL_TESTS,start=200):"
+    },
+    {
+      "label": "focused result fields",
+      "offset": 82957,
+      "old": "        report['systemui_test_projection_tests_passed']=len(SYSTEMUI_PROJECTION_TESTS)\n",
+      "new": "        report['systemui_test_projection_tests_passed']=len(SYSTEMUI_PROJECTION_TESTS)\n        report['audiocontrol_example_projection_tests_passed']=len(AUDIOCONTROL_PROJECTION_TESTS)\n        report['Automotive_audiocontrol_vendor_example_qualified']=False\n"
+    },
+    {
+      "label": "parent history",
+      "offset": 83518,
+      "old": "report['parent_targeted_tests_passed_historically']=27",
+      "new": "report['parent_targeted_tests_passed_historically']=30"
+    },
+    {
+      "label": "commands",
+      "offset": 83785,
+      "old": "require(len(report['commands'])==68 and all(row['returncode']==0 and not row['timed_out'] for row in report['commands']),",
+      "new": "require(len(report['commands'])==71 and all(row['returncode']==0 and not row['timed_out'] for row in report['commands']),"
+    },
+    {
+      "label": "plan only count",
+      "offset": 86753,
+      "old": "'source_files':500,",
+      "new": "'source_files':501,"
+    }
+  ],
+  "unchanged_functions": [
+    "require",
+    "utc",
+    "sha",
+    "identity",
+    "held",
+    "write_new",
+    "real_directory",
+    "children",
+    "cleanup_children",
+    "command",
+    "resource_text",
+    "resource_events",
+    "resource_snapshot",
+    "begin_resources",
+    "finish_resources",
+    "hash_held",
+    "regular_tree",
+    "portable",
+    "pinned_packet",
+    "exact_source_copy",
+    "read_existing_config",
+    "pin_resolved",
+    "verify_resolved",
+    "toolchain",
+    "parse_selected_tree",
+    "qualify_cached_archive",
+    "dependency_sources",
+    "qualify_compiler_inputs",
+    "build_artifact",
+    "image_pin",
+    "image_toolchain",
+    "reap_normal_fakeroot_daemon",
+    "validate_focused_result",
+    "focused_test"
+  ],
+  "whole_inverse": true
+}

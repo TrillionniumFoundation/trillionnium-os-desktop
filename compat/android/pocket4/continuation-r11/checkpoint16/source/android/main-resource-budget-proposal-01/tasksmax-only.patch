@@ -1,0 +1,9 @@
+--- original/etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf
++++ proposal/etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf
+@@ -2,5 +2,5 @@
+ CPUQuota=200%
+ MemoryHigh=5G
+ MemoryMax=6G
+-TasksMax=6144
++TasksMax=12288
+ ExecStartPre=/opt/android-digitalis-validation/check-kernel-compat

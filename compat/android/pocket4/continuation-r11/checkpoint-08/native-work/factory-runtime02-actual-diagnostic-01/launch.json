@@ -1,0 +1,41 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-c",
+      "import os,sys,hashlib\nfrom pathlib import Path\nexpected='2db9c643b177a61989d5fd3c860caba8a40b4abc7b8009db408b08d93caf99f2'\nsource_path=Path('/home/alex/work/pocket4-factory-v2-host-runtime-source-02/controller.py')\nexpected_args=['--execute','--out','/home/alex/work/pocket4-factory-v2-host-runtime-02']\nif sys.argv[1:] != expected_args: raise RuntimeError('exact owned host-only runtime arguments required')\nraw=sys.stdin.buffer.read()\nif hashlib.sha256(raw).hexdigest()!=expected: raise RuntimeError('frozen runtime source changed')\ncompile(raw,str(source_path),'exec')\nos.umask(0o077)\nsource_path.parent.mkdir(mode=0o700)\nfd=os.open(source_path,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW|os.O_CLOEXEC,0o400)\nwith os.fdopen(fd,'wb') as stream:\n stream.write(raw);stream.flush();os.fsync(stream.fileno())\nif source_path.read_bytes()!=raw: raise RuntimeError('new root-owned source differs')\nsys.argv=[str(source_path),*expected_args]\nscope={'__name__':'__main__','__file__':str(source_path)}\nexec(compile(raw,str(source_path),'exec'),scope,scope)\n",
+      "--execute",
+      "--out",
+      "/home/alex/work/pocket4-factory-v2-host-runtime-02"
+    ],
+    "created_unix_ms": 1793831528600,
+    "cwd": "/",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1a8b0e898-fc05-2f7a",
+    "idempotency_key": "pocket4-factory-v2-diagnostic03-host-runtime-02-20261104",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1a8b0e898-fc05-2f7a",
+    "request_digest": "d3d868350d4be7d9f5da0b9190974f8940855681d4dee3d2b56d4c8e8f721f69",
+    "request_fingerprint": 15265065514037930000,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1a8b0e898-fc05-2f7a"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1a8b0e898-fc05-2f7a"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

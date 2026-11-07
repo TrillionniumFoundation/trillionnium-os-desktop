@@ -1,0 +1,36 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-c",
+      "import sys,json,hashlib;raw=sys.stdin.buffer.read(524289);assert len(raw)<=524288 and hashlib.sha256(raw).hexdigest()=='a94e1f489bef3ab13b950208e34328c8d36c23ca68d5972716e7463a513349a3';packet=json.loads(raw);source=packet['stage_source'];assert hashlib.sha256(source.encode()).hexdigest()=='75c51dc864f0c74df182380c37b156ac29d66f023cefeeb9fd2434fac24150c2';scope={'__name__':'__main__','__file__':'<verified-owned-bestbuy-qa-build-stage>','PACKET':packet};exec(compile(source,'stage_build.py','exec'),scope,scope)"
+    ],
+    "created_unix_ms": 1793922207531,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1ae188f2b-fc05-5d5f",
+    "idempotency_key": "pocket4-owned-bestbuy-qa-r1-static-build-01-20261105",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1ae188f2b-fc05-5d5f",
+    "request_digest": "fc3aaeb5acc989c7ca54ad5f0ad3cde041479add30f1d548e2f798eaf96f1c64",
+    "request_fingerprint": 18175031341518260679,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1ae188f2b-fc05-5d5f"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1ae188f2b-fc05-5d5f"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

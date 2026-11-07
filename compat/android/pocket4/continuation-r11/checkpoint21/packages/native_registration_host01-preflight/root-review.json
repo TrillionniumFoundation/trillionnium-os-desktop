@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "state": "ROOT_REVIEWED_RECONCILE_OR_FIRST_ADMISSION_ONLY",
+  "source_tree": "a9829273e86834806b5a341741a8750a659ab22f",
+  "source_proof": {
+    "tree": "a9829273e86834806b5a341741a8750a659ab22f",
+    "leaf_count": 32,
+    "logical_bytes": 1152264,
+    "directory_count_including_root": 3,
+    "recursive_entries": 34,
+    "truncated": false,
+    "all_paths_modes_sizes_blob_sha1_match": true,
+    "all_directory_tree_sha1_recomputed": true
+  },
+  "inverse": [
+    {
+      "file": "packet/candidate-control.rs",
+      "base": "baseline-control.rs",
+      "patch": "production.patch",
+      "hunks": 9,
+      "exact": true
+    },
+    {
+      "file": "stage.py",
+      "base": "stage-base.py",
+      "patch": "stage.patch",
+      "hunks": 4,
+      "exact": true
+    },
+    {
+      "file": "transport.py",
+      "base": "transport-base.py",
+      "patch": "transport.patch",
+      "hunks": 1,
+      "exact": true
+    }
+  ],
+  "functions": {
+    "unchanged469": [
+      "require",
+      "utc",
+      "sha",
+      "identity",
+      "held",
+      "write_new",
+      "real_directory",
+      "resource_text",
+      "resource_events",
+      "resource_snapshot",
+      "begin_resources",
+      "finish_resources",
+      "hash_held",
+      "regular_tree",
+      "portable",
+      "pinned_packet",
+      "exact_source_copy",
+      "read_existing_config",
+      "pin_resolved",
+      "verify_resolved",
+      "toolchain",
+      "qualify_cached_archive"
+    ],
+    "reaper": true
+  },
+  "owner_command_inverse": true,
+  "candidate_changed_paths": [
+    "graphics/droidloom-composer-service/src/control.rs"
+  ],
+  "unchanged_manifest_entries": 498,
+  "independent_request_generation": true,
+  "request": {
+    "bytes": 299448,
+    "sha256": "dda4287f5fd952192490f927bbbb2fab100f9f8b685370825b8b8156d6f3aa96",
+    "git_blob_sha1": "c5e5f34010fd3c69c185b867fe6771ca4141b45f"
+  },
+  "stdin": {
+    "bytes": 276398,
+    "sha256": "908f844d212217d87495cd53469a1799ca2080813a59e5d6e485c35bfd5f187a",
+    "git_blob_sha1": "f3bc758d164b60fcb7d9a414afe01dbbba657047"
+  },
+  "scope": "Real production coordinator + Core + 5 path crates; 27 focused tests; Denial/Composer I/O adapters are explicit test seams.",
+  "work_seconds": 450,
+  "tool_seconds": 600,
+  "ordinary_commands_expected": 42,
+  "own_child_controls_expected": 3,
+  "no_Android_or_Main_actions": true,
+  "whole_apps_ready": 0,
+  "prior_exec_cell": {
+    "id": "409",
+    "terminated_after_prolonged_no_response": true,
+    "admission_unknown": true,
+    "termination_discards_store_writes_demonstrated": true,
+    "read_only_result_probe": {
+      "bytes": 185,
+      "sha256": "ce670576a8b57c661bdae8000cf61e516839dbc47b8754bbfa637151b4faf57c",
+      "git_blob_sha1": "71a84cfcb1408276b5c47161d3ae2b0600e9f374"
+    },
+    "root_directory_absent_at_probe": true
+  },
+  "reconciliation": {
+    "exact_original_request": true,
+    "same_original_idempotency_key": "pocket4-composer-direct-registration-transaction-host-01-20261106",
+    "new_key": false,
+    "tool_contract": "process_start stable key; exact retries reconcile the original durable job",
+    "automatic_retry_loop": false,
+    "admission_or_execution_success_not_yet_claimed": true
+  },
+  "remaining_source_blocker": "Provider unregister_task currently takes display without expected object; next patch needs exact owned-object check and real provider foreign-owner tests. Host fixture pass would not qualify deployment."
+}

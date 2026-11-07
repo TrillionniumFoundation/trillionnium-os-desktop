@@ -1,0 +1,20 @@
+--- amazon-install01/stage_execute.py
++++ ticket-install01/stage_execute.py
+@@ -7,13 +7,13 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-amazon-qa-r1-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-install-state-01')
+ SOURCE = ROOT/'source'
+-NONCE = 'f58bd1b568714618ad9767ce586ae12f'
++NONCE = 'd02f83f91e88717ef2df006369881189'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+-FILES = {'install_state.py','amazon_context.py','amazon_transport.py','stage_execute.py',
++FILES = {'install_state.py','ticket_context.py','ticket_transport.py','stage_execute.py',
+     'make_request.py','INPUTS.json','README.md','references/readonly_r3_coordinator.py',
+-    'references/read_amazon.py','target-artifact-reference.json'}
++    'references/read_12306.py','target-artifact-reference.json'}
+ 
+ 
+ 

@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "ok": true,
+  "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+  "epoch_source_sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "cell_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+  "host_processes": {
+    "daemon_process": {
+      "host_pid": 3588022,
+      "start_ticks": 80796995,
+      "identity_sha256": "0c97203b9dcf0334fb796b6d5264dba1df3644f048180f709b687671a37e7aaa"
+    },
+    "launcher_process": {
+      "host_pid": 3588089,
+      "start_ticks": 80797013,
+      "identity_sha256": "a27ad72baf69813a3fdbd5c70409ed8b8db57c87df242971413cdf250c1e1548"
+    },
+    "presenter_process": {
+      "host_pid": 3588024,
+      "start_ticks": 80796995,
+      "identity_sha256": "346c6eef8623ebdd359432bf8609b143590db470d4e0b5778e17fc312888326c"
+    }
+  },
+  "limits": {
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "cpu.max": "200000 100000",
+    "pids.max": "12288"
+  },
+  "main_cgroup": "/sys/fs/cgroup/system.slice/droidloomd.service",
+  "main_cgroup_identity": {
+    "device": 30,
+    "inode": 26651611
+  },
+  "memory_events": {
+    "low": 0,
+    "high": 21117,
+    "max": 0,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "sock_throttled": 3067
+  },
+  "current_resources": {
+    "memory.current": 3320057856,
+    "memory.swap.current": 4796989440,
+    "pids.current": 3244
+  },
+  "cpu_stat": {
+    "usage_usec": 79869586111,
+    "user_usec": 70720082854,
+    "system_usec": 9149503257,
+    "nice_usec": 9894328000,
+    "core_sched.force_idle_usec": 0,
+    "nr_periods": 734940,
+    "nr_throttled": 32473,
+    "throttled_usec": 2511350488,
+    "nr_bursts": 0,
+    "burst_usec": 0
+  },
+  "memory_pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=7206612\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=6639758",
+  "started_monotonic_ns": 881522756250915,
+  "finished_monotonic_ns": 881522778460775,
+  "Main_actions": 0,
+  "installed_engine_hash_observed": false,
+  "scope": "Activation pin, current framework and host process identity, config, service-root cgroup limits and counters; not continuous sampling."
+}

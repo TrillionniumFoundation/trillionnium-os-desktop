@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "parent_normal09_request": {
+    "bytes": 1037404,
+    "sha256": "d5da9237867a577b4076f0b2ecfd975cb5da5d9dcf907bc906d9cb47c75175d1"
+  },
+  "edits": {
+    "framework": [
+      {
+        "at": 8585,
+        "before": "ROOT = OWNER / 'typed-ingress-framework-provider-build-09-20261106'",
+        "after": "ROOT = OWNER / 'typed-ingress-framework-provider-build-10-20261106'"
+      },
+      {
+        "at": 12799,
+        "before": "PREVIOUS_ROOT = OWNER / 'typed-ingress-framework-provider-build-08-20261106'",
+        "after": "PREVIOUS_ROOT = OWNER / 'typed-ingress-framework-provider-build-08-20261106'\nRESOURCE_REJECTED_ROOT = OWNER / 'typed-ingress-framework-provider-build-09-20261106'"
+      },
+      {
+        "at": 31096,
+        "before": "        (PREVIOUS_ROOT / 'build-fences-01/terminal.json', 'prior-framework-outer-terminal.json', PRIOR_OUTER_SHA, 24714),\n",
+        "after": "        (PREVIOUS_ROOT / 'build-fences-01/terminal.json', 'prior-framework-outer-terminal.json', PRIOR_OUTER_SHA, 24714),\n        (RESOURCE_REJECTED_ROOT / 'build-fences-01/terminal.json', 'prior-normal09-outer-terminal.json',\n         '873a8c03dc51a62e69aaeab28e7929ef2b8b48019d9d1ca949e23ce07d3f3d1a', 24759),\n        (RESOURCE_REJECTED_ROOT / 'resource-admission.json', 'prior-normal09-resource-admission.json',\n         '62bc5109a8ed50722560b6374caa1b0581d53abaa0d300e510adbeb85acfb2cd', 2749),\n"
+      },
+      {
+        "at": 32013,
+        "before": "    inner, outer = documents\n",
+        "after": "    inner, outer, rejected_outer, rejected_resource = documents\n"
+      },
+      {
+        "at": 35610,
+        "before": "    published, row = json_pin(HERE / 'actual-current225-source-manifest.json',\n",
+        "after": "    # Normal09 rejected the fresh RAM gate before its owned builder was started.\n    # Preserve that failure independently of Normal08's genuine Soong failure.\n    # These historical bytes never satisfy the new run's fresh resource admission.\n    require(rejected_outer['state'] == 'FAILED' and\n            rejected_outer['error'] == \"RuntimeError('less than 15 GiB MemAvailable for independent zero-swap profile; no automatic retry')\" and\n            rejected_outer['inner_build_called'] is True and rejected_outer['inner_returncode'] is None and\n            rejected_outer['before_observed'] is True and rejected_outer['after_observed'] is True and\n            rejected_outer['main_fence_assessment']['main_fence_pass'] is True and\n            rejected_outer['main_fence_assessment']['identity_or_limit_changes'] == [] and\n            rejected_outer['main_fence_assessment']['main_oom_delta_zero'] is True and\n            all(value == 0 for value in rejected_outer['main_fence_assessment']['main_memory_event_deltas'].values()) and\n            rejected_outer['main_fence_assessment']['main_current_resource_deltas']['memory.swap.current'] == 0 and\n            rejected_outer['main_fence_assessment']['unobserved_transient_effects_excluded'] is False and\n            rejected_outer['main_fence_assessment']['causal_attribution_of_counter_changes'] is False,\n            'prior Normal09 resource rejection or limited Main fence result differs')\n    resource_controls = rejected_outer['capture_lifecycle_controls']\n    require(resource_controls['state'] == 'PASS' and resource_controls['passed'] == 4 and\n            len(resource_controls['rows']) == 4 and all(row['passed'] is True and\n                row['owned_children_empty'] is True and row['Main_read_performed'] is False\n                for row in resource_controls['rows']) and\n            [row['phase'] for row in rejected_outer['capture_lifecycle_receipts']] == phases,\n            'prior Normal09 four real controls or six capture records differ')\n    for row in rejected_outer['capture_lifecycle_receipts']:\n        command = row['command']\n        require(row['outer_subreaper']['final_children_empty'] is True and\n                row['outer_subreaper']['restored'] is True and\n                row['within_absolute_outer_deadline'] is True and not row['secondary_errors'] and\n                command['child_reaped'] is True and command['owned_tree_cleanup_complete'] is True and\n                command['pidfd_closed'] is True and command['all_acquired_fds_closed'] is True and\n                command['retirement_within_deadline'] is True and\n                not command['remaining_owned_children'] and not command['secondary_errors'],\n                'prior Normal09 capture was not completely retired')\n        if row['phase'] == 'control-outer-pidfd':\n            require(row['qualified_success'] is False and command['returncode'] == -9 and\n                    row['first_error']['errno'] == 24 and command['first_error']['errno'] == 24,\n                    'prior Normal09 expected pidfd failure was relabeled')\n        else:\n            require(row['qualified_success'] is True and command['qualified_success'] is True and\n                    command['returncode'] == 0 and row['first_error'] is None and\n                    command['first_error'] is None, 'prior Normal09 capture failed unexpectedly')\n    require(rejected_resource['schema'] == 1 and\n            rejected_resource['state'] == 'OBSERVED_BEFORE_RESOURCE_ADMISSION' and\n            rejected_resource['profile'] == {\n                'memory_max_bytes': 10737418240, 'memory_swap_max_bytes': 0,\n                'minimum_fresh_MemAvailable_bytes': 16106127360,\n                'admission_difference_bytes': 5368709120, 'global_swap_is_owned_budget': False} and\n            rejected_resource['owned_observed'] == {\n                'memory.max': '10737418240', 'cpu.max': '200000 100000',\n                'memory.swap.max': '0', 'memory.swap.current': '0'} and\n            rejected_resource['decision_performed'] is False and\n            rejected_resource['historical_sample_used_for_admission'] is False,\n            'prior Normal09 resource receipt shape or original zero-swap profile differs')\n    resource_raw = rejected_resource['meminfo']['raw_ascii'].encode('ascii', 'strict')\n    require(len(resource_raw) == rejected_resource['meminfo']['bytes'] == 1672 and\n            hashlib.sha256(resource_raw).hexdigest() == rejected_resource['meminfo']['sha256'] ==\n                'f8edcc866dfa4f605af8a5e50f3a42172b716bf819030f11ed6b533323219b38',\n            'prior Normal09 exact bounded meminfo differs')\n    resource_memory = parse_admission_meminfo(resource_raw)\n    require(resource_memory['MemAvailable'] == 14854873088 and\n            resource_memory['MemAvailable'] < MIN_AVAILABLE and\n            MIN_AVAILABLE - resource_memory['MemAvailable'] == 1251254272,\n            'prior Normal09 failed RAM threshold was changed')\n    published, row = json_pin(HERE / 'actual-current225-source-manifest.json',\n"
+      }
+    ],
+    "fence": [
+      {
+        "at": 730,
+        "before": "typed-ingress-framework-provider-build-09-20261106",
+        "after": "typed-ingress-framework-provider-build-10-20261106"
+      },
+      {
+        "at": 222,
+        "before": "CONTROLLER_SHA = \"fae3c6b215a2448042633d8890800e36725e527538fd12e721bb2afbd22a9860\"",
+        "after": "CONTROLLER_SHA = \"05b6a43c65f2bd2e51ece69d76464c970890a07e5fed61253d3feac2844eb2bb\""
+      }
+    ],
+    "stage": [
+      {
+        "at": 152,
+        "before": "typed-ingress-framework-provider-build-09-20261106",
+        "after": "typed-ingress-framework-provider-build-10-20261106"
+      },
+      {
+        "at": 205,
+        "before": "EXPECTED = {\"main_snapshot.py\":{\"bytes\":14642,\"sha256\":\"264100ef85e1792c437a4f450050041141288a0f25a4387af5774c52d0dcea06\"},\"frozen-work-inventory.py\":{\"bytes\":48443,\"sha256\":\"203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab\"},\"actual-work-preparation.json\":{\"bytes\":11091,\"sha256\":\"ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c\"},\"expected-builder473-manifest.json\":{\"bytes\":99775,\"sha256\":\"a3426e40f9446b85931c82e8ba08335e72cd9bd0ac4a3f70aa01d54200d1ae13\"},\"prior-framework-inner-terminal.json\":{\"bytes\":2898,\"sha256\":\"58a68cae2784bf401315c8016108304576e11d16bf3d5c64552698d4c3a2bb57\"},\"prior-framework-outer-terminal.json\":{\"bytes\":24714,\"sha256\":\"2e10bdca3a1b88fe8e72f87dde5f38d972f8db41ce087386fa189c40ad231612\"},\"actual-published-source-manifest.json\":{\"bytes\":108555,\"sha256\":\"afb23d210fda970a09482a14b9b38af1c92b5be505edd0eda2b76ce5ffc6067f\"},\"actual-native-prebuilt-Android.bp\":{\"bytes\":1017,\"sha256\":\"d1eca99403572ee9d481e777febac8d4e062f44fd8844285ffc452b17beb531a\"},\"actual-hal-provider-source-lock.json\":{\"bytes\":96957,\"sha256\":\"72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d\"},\"framework_build.py\":{\"bytes\":63611,\"sha256\":\"fae3c6b215a2448042633d8890800e36725e527538fd12e721bb2afbd22a9860\"},\"fenced_build.py\":{\"bytes\":25507,\"sha256\":\"088f68201728d29f6c2e94aa0bcfbdef18dfda3e228db67eb4c09b6b015925d9\"},\"pure_controls.py\":{\"bytes\":10982,\"sha256\":\"19d30bb230d148967d106cd43196baf402465a3c34b906ab25f08827951b7b3f\"},\"capture_lifecycle.py\":{\"bytes\":25240,\"sha256\":\"2dcf44609e6ef53e91b2d8e3a07c192fe65a7d44601f218dc8990272285d4dfe\"},\"root_snapshot_supervisor.py\":{\"bytes\":12041,\"sha256\":\"903ae227d9231a361c61fad6fd584c97a548bb5a41b09a4e5fa8824e13e02350\"},\"prior-normal02-outer-terminal.json\":{\"bytes\":24722,\"sha256\":\"42b2d7b8749047df9e1d40ddf9b70b3f3e187c39ce6a15dd0f5721610e814c00\"},\"actual-resource-observation01.json\":{\"bytes\":399,\"sha256\":\"feb95f82087d7c68a8c8c42b54cf267b8f9c343ce41e49bb8193e96f49f050da\"},\"actual-current225-source-manifest.json\":{\"bytes\":109252,\"sha256\":\"5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d\"},\"actual-builder473-result.json\":{\"bytes\":193038,\"sha256\":\"ec5a6d322a80a9bb169b7998410ed6a2a2cfde56260ae4e1a906b2ccd3294826\"}}",
+        "after": "EXPECTED = {\"main_snapshot.py\":{\"bytes\":14642,\"sha256\":\"264100ef85e1792c437a4f450050041141288a0f25a4387af5774c52d0dcea06\"},\"frozen-work-inventory.py\":{\"bytes\":48443,\"sha256\":\"203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab\"},\"actual-work-preparation.json\":{\"bytes\":11091,\"sha256\":\"ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c\"},\"expected-builder473-manifest.json\":{\"bytes\":99775,\"sha256\":\"a3426e40f9446b85931c82e8ba08335e72cd9bd0ac4a3f70aa01d54200d1ae13\"},\"prior-framework-inner-terminal.json\":{\"bytes\":2898,\"sha256\":\"58a68cae2784bf401315c8016108304576e11d16bf3d5c64552698d4c3a2bb57\"},\"prior-framework-outer-terminal.json\":{\"bytes\":24714,\"sha256\":\"2e10bdca3a1b88fe8e72f87dde5f38d972f8db41ce087386fa189c40ad231612\"},\"actual-published-source-manifest.json\":{\"bytes\":108555,\"sha256\":\"afb23d210fda970a09482a14b9b38af1c92b5be505edd0eda2b76ce5ffc6067f\"},\"actual-native-prebuilt-Android.bp\":{\"bytes\":1017,\"sha256\":\"d1eca99403572ee9d481e777febac8d4e062f44fd8844285ffc452b17beb531a\"},\"actual-hal-provider-source-lock.json\":{\"bytes\":96957,\"sha256\":\"72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d\"},\"framework_build.py\":{\"bytes\":69073,\"sha256\":\"05b6a43c65f2bd2e51ece69d76464c970890a07e5fed61253d3feac2844eb2bb\"},\"fenced_build.py\":{\"bytes\":25507,\"sha256\":\"3f7aff3dbe074a23df8caf7b4f1efd6433b95307a5e76a2c070f0823b224c341\"},\"pure_controls.py\":{\"bytes\":10982,\"sha256\":\"19d30bb230d148967d106cd43196baf402465a3c34b906ab25f08827951b7b3f\"},\"capture_lifecycle.py\":{\"bytes\":25240,\"sha256\":\"2dcf44609e6ef53e91b2d8e3a07c192fe65a7d44601f218dc8990272285d4dfe\"},\"root_snapshot_supervisor.py\":{\"bytes\":12041,\"sha256\":\"903ae227d9231a361c61fad6fd584c97a548bb5a41b09a4e5fa8824e13e02350\"},\"prior-normal02-outer-terminal.json\":{\"bytes\":24722,\"sha256\":\"42b2d7b8749047df9e1d40ddf9b70b3f3e187c39ce6a15dd0f5721610e814c00\"},\"actual-resource-observation01.json\":{\"bytes\":399,\"sha256\":\"feb95f82087d7c68a8c8c42b54cf267b8f9c343ce41e49bb8193e96f49f050da\"},\"actual-current225-source-manifest.json\":{\"bytes\":109252,\"sha256\":\"5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d\"},\"actual-builder473-result.json\":{\"bytes\":193038,\"sha256\":\"ec5a6d322a80a9bb169b7998410ed6a2a2cfde56260ae4e1a906b2ccd3294826\"},\"prior-normal09-outer-terminal.json\":{\"bytes\":24759,\"sha256\":\"873a8c03dc51a62e69aaeab28e7929ef2b8b48019d9d1ca949e23ce07d3f3d1a\"},\"prior-normal09-resource-admission.json\":{\"bytes\":2749,\"sha256\":\"62bc5109a8ed50722560b6374caa1b0581d53abaa0d300e510adbeb85acfb2cd\"}}"
+      }
+    ],
+    "transport": [
+      {
+        "at": 24,
+        "before": "WIRE_BYTES = 938293",
+        "after": "WIRE_BYTES = 973991"
+      },
+      {
+        "at": 59,
+        "before": "3c7d46755b550d811aa41ba309a1f9003a85552a6f5fda21b652c09daa3991e0",
+        "after": "f64cb85301abd19524b1dd091dc01d71e1a7ceb69bb920c90bf03017a5bcd9bc"
+      },
+      {
+        "at": 125,
+        "before": "STAGE_BYTES = 5582",
+        "after": "STAGE_BYTES = 5843"
+      },
+      {
+        "at": 160,
+        "before": "29122eaad2149cc23f2b238ad0eef62689da89d37130e88d308b4b6a7edf84bb",
+        "after": "e6c37007f424b37974b109537afb4703fc9b3db49a5bb3a6867b80ae5cb52d1c"
+      }
+    ]
+  }
+}

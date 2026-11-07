@@ -1,0 +1,35 @@
+--- a/read_source.py
++++ b/read_source.py
+@@ -1,4 +1,4 @@
+-"""Read exactly three public Rust sources from the completed owned builder469.
++"""Read exactly three public engine/handshake sources from owned builder469.
+ 
+ No source execution, Git, subprocess, directory enumeration, network, writes,
+ Main access, or inferred remote Destroy completion. All explicit read FDs are
+@@ -13,7 +13,7 @@
+ 
+ ROOT = "/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106"
+ SOURCE = ROOT + '/builder-source'
+-PINS = [{"path":"graphics/droidloom-denial-protocol/src/lib.rs","bytes":97476,"kind":"file","mode":436,"sha256":"abac4785ca16eccd330da0f5d928e5a6a1a11d9f5ac4306bc7c63121c4a84a27"},{"path":"graphics/droidloom-denial-ipc/src/lib.rs","bytes":42737,"kind":"file","mode":436,"sha256":"7724a0778185bfec08c8e2fe23a3168a757a62413ac5403e369a747c59b26a8f"},{"path":"graphics/droidloom-denial-endpoint/src/lib.rs","bytes":44175,"kind":"file","mode":436,"sha256":"4d79ae81810aab3784c0e265fd861cb9fcbacab9160854553d56584b2751ebe6"}]
++PINS = [{"path":"graphics/droidloom-wayland/src/main.rs","bytes":106816,"kind":"file","mode":436,"sha256":"908ec80b8ec2d059b86664cb76d6fe39908c17ba1fa33416e37644416e73357a"},{"path":"graphics/droidloom-composer-service/src/main.rs","bytes":17437,"kind":"file","mode":436,"sha256":"d60ba608023be4325e14e9126c326203188e78d2a7b715b65ba2588dd4cdb6cf"},{"path":"graphics/droidloom-wayland/Cargo.toml","bytes":1766,"kind":"file","mode":436,"sha256":"f369e41d8c86c0b948992d2d07ab8fbdaf3779bd21493e3389730c51a33ea098"}]
+ AUTHORITIES = [{"role":"manifest","path":"/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106/attempt01/copied-builder-source-manifest.json","bytes":99327,"sha256":"88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701","mode":384},{"role":"producer","path":"/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106/attempt01/result.json","bytes":170316,"sha256":"3636057b9a20fc895657064da3fb66d8ded7e69ebfa5a5b92072a51b33f29fd5","mode":384}]
+ MAX_FDS = 40
+ OUTPUT_BYTES = 2 * 1024 * 1024
+@@ -23,7 +23,7 @@
+ ORDER = []
+ ERRORS = []
+ RESULT = {
+-    'schema': 1, 'scope': 'exact-builder469-three-public-Denial-sources-readonly01',
++    'schema': 1, 'scope': 'exact-builder469-engine-retirement-three-sources-readonly01',
+     'source_root': SOURCE, 'started_monotonic_ns': STARTED,
+     'deadline_monotonic_ns': DEADLINE, 'authority_qualified': False,
+     'files': [], 'authorities': [], 'errors': ERRORS,
+@@ -196,7 +196,7 @@
+     qualify_authorities(*authorities)
+     for pin in PINS:
+         fixed = dict(pin, path=SOURCE + '/' + pin['path'])
+-        read_exact(fixed, 'public_Rust_source', True)
++        read_exact(fixed, 'public_source', True)
+     check()
+ except BaseException as exc:
+     error('collect', exc)

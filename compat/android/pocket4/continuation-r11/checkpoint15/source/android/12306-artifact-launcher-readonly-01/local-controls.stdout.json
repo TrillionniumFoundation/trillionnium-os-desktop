@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "scope": "actual metadata parser/Context with explicit command/lease seam",
+  "production_source_sha256": "77e6a5056f0de303ab8d81b0864999cdbf5d244442eb31d48c65ce49f4981d9d",
+  "controls": [
+    {
+      "name": "one_exact_synthetic_package_UID_version",
+      "passed": true
+    },
+    {
+      "name": "another_package_or_multiple_rows_rejected",
+      "passed": true
+    },
+    {
+      "name": "one_synthetic_12306_base_path",
+      "passed": true
+    },
+    {
+      "name": "path_outside_12306_install_directory_rejected",
+      "passed": true
+    },
+    {
+      "name": "duplicate_APK_path_rejected",
+      "passed": true
+    },
+    {
+      "name": "bad_prefix_actual_Context_first_error_and_postguard",
+      "passed": true
+    },
+    {
+      "name": "timeout_release_actual_Context_first_error_and_postguard",
+      "passed": true
+    },
+    {
+      "name": "success_release_actual_Context_first_error_and_postguard",
+      "passed": true
+    },
+    {
+      "name": "historical_45_matrix_binds_package_only_not_current_UID_or_APKs",
+      "passed": true
+    },
+    {
+      "name": "current_version_and_UID_come_from_actual_row_not_historical_number",
+      "passed": true
+    },
+    {
+      "name": "one_base_or_multiple_APKs_no_Amazon_three_file_assumption",
+      "passed": true
+    },
+    {
+      "name": "one_exact_launcher_or_fail_without_fallback",
+      "passed": true
+    },
+    {
+      "name": "five_ordered_current_identity_paths_launcher_reads_then_closed",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "Android_calls": 0,
+  "real_namespace_entry": false,
+  "real_metadata_or_APK_read": false,
+  "remote_execution": false,
+  "whole_App_qualified": false
+}

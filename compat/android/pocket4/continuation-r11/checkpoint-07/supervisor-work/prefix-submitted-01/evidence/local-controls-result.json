@@ -1,0 +1,58 @@
+{
+  "Android_operations": 0,
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "producer05-work/prefix-control/test_prefix_control.py"
+      ],
+      "returncode": 0,
+      "stderr_sha256": "344d2ad2ae305b5e84ce842468d37114b83f01ecbcf80153d299675520f871c8",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests": 16
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "producer05-work/prefix-control/test_prefix_coordinator.py"
+      ],
+      "returncode": 0,
+      "stderr_sha256": "ec9553a810947a8be4a7a1cdb48d16b7ec3fec62ab9cd1d30f899c2e9fdd4d19",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests": 24
+    }
+  ],
+  "files": {
+    "full_prefix_control.py": {
+      "bytes": 30605,
+      "sha256": "1432b761fbc289877465c0a167b7ff213cd9c87f0086495ddfeecf7b55e65745"
+    },
+    "prefix_coordinator.py": {
+      "bytes": 40200,
+      "sha256": "05bf5f46240b303b1af7f3850b5d683dcaa295fd4ee94a973c2b104eb08641ba"
+    },
+    "prefix_probe.c": {
+      "bytes": 9662,
+      "sha256": "d088edf44d523a67e2881ce6c0715a4885664f11c5315938e04f52738c43a34a"
+    },
+    "test_prefix_control.py": {
+      "bytes": 8284,
+      "sha256": "ae1cbf8f7c74afb4b32ffaefc1674e5635777f66833ba7adaf5c4b1f86a4d887"
+    },
+    "test_prefix_coordinator.py": {
+      "bytes": 10441,
+      "sha256": "bab7d9d5ffab2898d41e3b8951f61097c1935547f7fa35e0dc7dfc5cae26f2dc"
+    }
+  },
+  "runtime_prefix_qualified": false,
+  "schema": 1,
+  "scope": "local ordinary owned sockets/processes/files and pure record controls; no namespace/systemd/Android execution",
+  "source_unchanged": true,
+  "strict_native_compile_and_6_ordinary_exec_controls": {
+    "receipt": "../local-build-02/result.json",
+    "sha256": "cd779c553382116a12e2dab237dd2a7c1b646a438be26abbabab76df7d68f6a4"
+  },
+  "success": true
+}

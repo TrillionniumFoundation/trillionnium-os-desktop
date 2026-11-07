@@ -1,0 +1,235 @@
+{
+  "V8_binding_verification": {
+    "Python_controls_executed": false,
+    "all_source_pins_match": true,
+    "cases": [
+      {
+        "error": "ACTUAL_EIGHT_DISTINCT_32HEX_NONCES_REQUIRED",
+        "name": "64hex_nonce_pool_rejected_not_truncated",
+        "passed": true
+      },
+      {
+        "error": "ACTUAL_RAW_PIN_CHANGED",
+        "name": "actual_build_pin_mismatch",
+        "passed": true
+      },
+      {
+        "error": "ACTUAL_RAW_PIN_CHANGED",
+        "name": "actual_host_stage_pin_mismatch",
+        "passed": true
+      }
+    ],
+    "deterministic_exact_regeneration": true,
+    "manifest_sha256": "399cebc279ac8653b943b5c433b248c94dec32062b85b45e9cb6c22fce379a66",
+    "packet_bytes": 71942,
+    "packet_sha256": "a94840408d25f121173a528a5971cfd65bf04db9b47a8be562731bf679f8d840",
+    "schema": "pocket4-bili-r9-install-v8-binding-controls-v1",
+    "source_payloads": 10,
+    "tool": "functions.exec V8"
+  },
+  "actual_build_independent_V8_review": {
+    "APK": {
+      "bytes": 37008,
+      "path": "/home/alex/work/pocket4-owned-bili-qa-r9-build-02/owned-bili-qa.apk",
+      "sha256": "e1cad62bba0266e646e7be4ce5250917fbf5df910ac604dddfe0a8aa25ac320b"
+    },
+    "Python_qualified_build_locally_executed": false,
+    "UiAutomation_requested": false,
+    "V8_source_tool_command_control_bindings_checked": true,
+    "build": {
+      "blob": "71cb0b8325e1a24bf8dd0dac0f071e506de96c90",
+      "bytes": 32483,
+      "sha256": "fa75b7934ac2afe6b032b72234da2ccbb2755b97886197c050aa806eb972596b"
+    },
+    "controls": {
+      "Java_idle": 22,
+      "Python_idle": 32,
+      "current_scope_and_session": 21
+    },
+    "exact_original_bytes_verified": true,
+    "helper_uid": null,
+    "installed": false,
+    "joined_commands": 13,
+    "schema": "pocket4-bili-r9-build02-independent-review-v1",
+    "signer_certificate_sha256": "ab6db98395ad5321ee1012be1eb264e48782857b4def3b02bde8858e1977eda1",
+    "source16": true,
+    "source_manifest": "4eb11cf497615272c1bef280bbd849de4f983ba4147ea9356356dff076ce9c56",
+    "stage": {
+      "blob": "258488a6bec49fb6492ec26a25e6807331fc2ce2",
+      "bytes": 1935,
+      "sha256": "2257ac9fe9b67d88fe92cde127bfe89855bd105a4839458ad707188ccf0d6772"
+    },
+    "state": "ACTUAL_STATIC_BUILD_COMPLETE_RUNTIME_UNRUN",
+    "tools7_exact_historical_declared_bytes_and_SHA": true,
+    "whole_app_production_ready": false
+  },
+  "actual_inputs": {
+    "APK": {
+      "bytes": 37008,
+      "path": "/home/alex/work/pocket4-owned-bili-qa-r9-build-02/owned-bili-qa.apk",
+      "sha256": "e1cad62bba0266e646e7be4ce5250917fbf5df910ac604dddfe0a8aa25ac320b"
+    },
+    "actual_nonce_source": {
+      "bytes": 688,
+      "fields": [
+        "bili_flow",
+        "bili_state"
+      ],
+      "generator": "secrets.token_hex(16)",
+      "sha256": "d40226ff41ae87cfd793fb8de7480fcdc656e0e6daeb2a7a86ba28ba83833222"
+    },
+    "build": {
+      "bytes": 32483,
+      "path": "/home/alex/work/pocket4-owned-bili-qa-r9-build-02/build-result.json",
+      "sha256": "fa75b7934ac2afe6b032b72234da2ccbb2755b97886197c050aa806eb972596b"
+    },
+    "build_stage": {
+      "bytes": 1935,
+      "path": "/home/alex/work/pocket4-owned-bili-qa-r9-source-02/stage-result.json",
+      "sha256": "2257ac9fe9b67d88fe92cde127bfe89855bd105a4839458ad707188ccf0d6772"
+    },
+    "commercial_APK_full_acceptance_pending_fresh_flow": true,
+    "current_baseline": {
+      "baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+      "epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+      "guard_sha256": "0ee54ef97c073857609aedb4670395db084ceacc7d28558315647ab2ffbef679",
+      "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+      "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+      "qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+      "schema": "pocket4-main-current-baseline-v1"
+    },
+    "current_host_source_manifest_sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e",
+    "current_host_stage": {
+      "bytes": 6851,
+      "sha256": "bbd21b3e83f39a355a44e32f3448f747d0e76a6cc79c8d920cac4c8399c986a0"
+    },
+    "framework_exit_cause_resolved": false,
+    "global_action_lock_seconds": 5,
+    "helper_installed": false,
+    "helper_package": "org.droidloom.qa.bili.r9",
+    "helper_uid": null,
+    "install_replace_existing": false,
+    "nonces": {
+      "flow": "d327cfd21d7b59df0c45a68efdd74c98",
+      "state": "dc55b7c139daf6db8fe94faa170916a9"
+    },
+    "ordered_worker_Android_commands": 9,
+    "own_package_absence_required_all_users_including_uninstalled": true,
+    "qa_source_manifest_sha256": "4eb11cf497615272c1bef280bbd849de4f983ba4147ea9356356dff076ce9c56",
+    "schema": 2,
+    "signer_certificate_sha256": "ab6db98395ad5321ee1012be1eb264e48782857b4def3b02bde8858e1977eda1",
+    "source_copies_current_host_files": 14,
+    "source_qualification_controls": 11,
+    "state": "ACTUAL_R9_BUILD_AND_CURRENT_HOST_BOUND_INSTALL_NOT_RUN",
+    "state_UiAutomation_requested": false,
+    "whole_app_production_ready": false,
+    "whole_process_tree_cleanup_qualified": false
+  },
+  "actual_nonce_source": {
+    "blob": "016600ba2da720b4638bd4b32b6edc33935e72c3",
+    "original_64hex_pool_all_unused": true,
+    "tree": "e7eb674f3f068cc82ce75c243f22af0096708991"
+  },
+  "boundaries": {
+    "Hepta_dispatched": false,
+    "UiAutomation_requested": false,
+    "actual_helper_UID": null,
+    "framework_exit_cause_resolved": false,
+    "local_Python_compile": false,
+    "local_Python_controls": false,
+    "new_11_controls_actual_execution_pending": true,
+    "no_App_launch_or_UI_actions": true,
+    "old_failed_or_unknown_history_preserved": true,
+    "original_9_Android_commands_preserved": true,
+    "whole_app_production_ready": false,
+    "whole_process_tree_cleanup_qualified": false
+  },
+  "changes": [
+    "actual R9 build02/APK/signer/source and actual strict 32-hex fresh nonces",
+    "exact actual R5 source-stage receipt qualification plus 14-file private clone",
+    "typed current baseline CLI and current coordinator rooted at recorder-r5",
+    "original production Session with exact R5/helper manifest binding",
+    "11 pure host-receipt and UID parser controls before root creation or Android commands",
+    "old actual R8 helper UID 10204 added to denylist"
+  ],
+  "current_helper_actual": {
+    "build_blob": "71cb0b8325e1a24bf8dd0dac0f071e506de96c90",
+    "stage_blob": "258488a6bec49fb6492ec26a25e6807331fc2ce2",
+    "tree": "7c7e423a2313ac9ae920fc3d417f37fd15ea9db7"
+  },
+  "current_host_actual": {
+    "blob": "da5d6412f1eac8beaee593f15cd951dd7f887f62",
+    "tree": "5741709dcd26d5ae70834973ad454dfb3f9387e6"
+  },
+  "current_host_source_manifest_sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e",
+  "exact_original_guard_correspondence": {
+    "OwnedApk": {
+      "byte_exact": true,
+      "sha256": "48c9aa7c5e4663ae78a40db03c27f741a1cbe04a9bf3e65c2e0427d9e60c4cd6"
+    },
+    "acquire_action_lock": {
+      "byte_exact": true,
+      "sha256": "3e972ca6c53dde1078fc63cbadedd5abe54c7b52cb8b1d7c32cabbfa59c34484"
+    },
+    "command": {
+      "byte_exact": true,
+      "sha256": "dd4e49c5e1a3d4b907964799687a5f1b6291ff1d72887bd28aa7f7864fd1c3b9"
+    },
+    "error_record": {
+      "byte_exact": true,
+      "sha256": "b8768e25c24c503638c4c5044190115a332e2ecd050d8603944672f76fbcc73b"
+    },
+    "module": {
+      "byte_exact": true,
+      "sha256": "ab265fb57fd18ed59b0865526fd50cdc09e30012ba1988a329eab31164bedf86"
+    },
+    "owned_resources": {
+      "byte_exact": true,
+      "sha256": "40cf47f8b2b36cfcc3cd47b463380b14eb006d0a22b4dcd0891265ade1a0604e"
+    },
+    "prepare_owned_limits": {
+      "byte_exact": true,
+      "sha256": "914ba2def879a829f6c303cf6a2441d69db4fd8bdc4ff4706cd3233b9f19ad62"
+    },
+    "read": {
+      "byte_exact": true,
+      "sha256": "5a02b377396166457c0e93b0a45249dcb7aeaed74f031cceba3b49e88913bebd"
+    },
+    "recorder_module": {
+      "byte_exact": true,
+      "sha256": "739fe2f567c98c840d0ad0ca83e1e2e78308288d275869533de6271986241be2"
+    },
+    "remember": {
+      "byte_exact": true,
+      "sha256": "1a5ccc6b6a89105f45bc6310673c3f61a27e986f9c40095bc404c203b71c9477"
+    },
+    "resources_qualified": {
+      "byte_exact": true,
+      "sha256": "7e82649917a5be80ca7b5f68e8257f1b837c2e3d5582db83e51be7c08c266f19"
+    },
+    "verify_source": {
+      "byte_exact": true,
+      "sha256": "6553d10e703109c228fc4db7a43a32727eedf27acc1059b7e4510e524a637a7c"
+    },
+    "worker": {
+      "normalized_byte_exact": true,
+      "only_module_label_r4_to_r5": true
+    }
+  },
+  "prior_install": {
+    "install_source": {
+      "bytes": 32030,
+      "git_blob": "9d6dad4fdcd140d623e8b695e64ec0a72e4ef319",
+      "sha256": "02e046ac198309aea5fc227e73015f2e857a48c3a3c0f2bcdb508f493ae98a1d"
+    },
+    "prefix": "android-qa-r8-install-state-01",
+    "tree": "fd029cf38a8615eea2e00738d8d81b2b7429ca32"
+  },
+  "schema": "pocket4-bili-r9-current-install-source-review-v1",
+  "source_manifest_sha256": "399cebc279ac8653b943b5c433b248c94dec32062b85b45e9cb6c22fce379a66",
+  "status": "FROZEN_SOURCE_ACTUAL_INPUTS_INSTALL_UNRUN",
+  "wrapper": {
+    "Python_generator_executed": false,
+    "equals_make_request_generator_semantics_by_V8": true
+  }
+}

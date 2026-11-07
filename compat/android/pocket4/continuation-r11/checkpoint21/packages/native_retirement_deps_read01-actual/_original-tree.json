@@ -1,0 +1,102 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "2af1e4554a8b810f25abad1a1526ae50afbc9b19",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 2710,
+    "sha256": "c9397cc67e61e8806236c270ef8186bb440640f07f8ddab4120ebc739662d647",
+    "git_blob_sha1": "89902267ebcd3e5e50d4c107147661112678554a",
+    "retrieval": "shallow roots and complete uncropped descendant trees until canonical dependency cuts",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "56b90c99e1b2c5f904d5c460df72f1baeb9959c0"
+    },
+    {
+      "path": "preflight",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "56143e40e2e613c1ff2a0a659bd4dd68d0ffe17b"
+    },
+    {
+      "path": "read-proof.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6fa65f7284e5088ef8a09d990835021d3782b429",
+      "bytes": 630
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "dd266762746bc9cf600c9958e76f924dbe96c4ef"
+    },
+    {
+      "path": "source-0-layers.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a30d8b2fad5bc5d345f47cb7f3fc2a9cafb6aefb",
+      "bytes": 35405
+    },
+    {
+      "path": "source-1-denial.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "04e7615200a800f179a89f776f5e0c558ba465c4",
+      "bytes": 25442
+    },
+    {
+      "path": "source-2-Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "00f4ea1c3aa07b3644ef5e0637b8f8f4a7c494ec",
+      "bytes": 608
+    },
+    {
+      "path": "source-3-Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7647ecffffcbfe8cd5c8b7c4e97fef1c94e57b3b",
+      "bytes": 661
+    },
+    {
+      "path": "stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f4b893010e74eb02e42eeabf5ca4c13e7b6435af",
+      "bytes": 87578
+    },
+    {
+      "path": "terminal.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b1953fc02db06c839124f526cb4e6aae3fe50609",
+      "bytes": 733
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "admission",
+      "original_tree": "56b90c99e1b2c5f904d5c460df72f1baeb9959c0",
+      "checkpoint": 21,
+      "canonical_package": "native_retirement_deps_read01-admission"
+    },
+    {
+      "path": "preflight",
+      "original_tree": "56143e40e2e613c1ff2a0a659bd4dd68d0ffe17b",
+      "checkpoint": 21,
+      "canonical_package": "native_retirement_deps_read01-preflight"
+    },
+    {
+      "path": "source",
+      "original_tree": "dd266762746bc9cf600c9958e76f924dbe96c4ef",
+      "checkpoint": 21,
+      "canonical_package": "native_retirement_deps_read01-source"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

@@ -1,0 +1,76 @@
+--- pause-resume-01/INPUTS.json
++++ pause-resume-metadata02/INPUTS.json
+@@ -9,13 +9,15 @@
+   "actions": {
+     "audio_or_microphone_recording": 0,
+     "automatic_retry_or_fallback": false,
+-    "existing_ACTION_CLICK_limit": 3,
+     "fixed_public_ACTION_SET_TEXT_limit": 1,
+     "native_owned_launches": 1,
++    "navigation_ACTION_CLICK_limit": 3,
+     "new_input_shape": "one DOWN then one UP; on failed input at most one CANCEL cleanup",
+-    "pause_seek_scroll_back_purchase_login_send": 0,
+     "permission_grants_or_settings_writes": 0,
+-    "reveal_input_sequences": 1
++    "player_button_ACTION_CLICK_limit": 2,
++    "reveal_input_sequences": 1,
++    "seek_scroll_back_purchase_login_send": 0,
++    "total_ACTION_CLICK_limit": 5
+   },
+   "actual_install": {
+     "UID": 10184,
+@@ -84,16 +86,16 @@
+     "source_APK_Main_held_binding_and_lock_final_checks": true
+   },
+   "device_execution_performed": false,
+-  "expected_result_scope": "Input lifecycle plus separately observed controls only; pause/resume/seek/back/reopen/audio and whole-app acceptance remain open",
++  "expected_result_scope": "Fresh player button UI-label transitions only; media pause/resume, seek, back/reopen, audio and whole-app acceptance remain open",
+   "flow": {
+     "fresh_source_root_and_once_claim_required": true,
+-    "helper_nonce_count": 110,
++    "helper_nonce_count": 124,
+     "nonce": "f293d9ad6b688c72e7c98e76753a8c3f",
+     "root": "/home/alex/work/pocket4-bilibili-r6-pause-resume-01",
+     "source_file_limit_bytes": 65536,
+     "source_packet_limit_bytes": 131072,
+-    "stage": "controls-reveal-01",
+-    "total_unique_nonce_count_including_flow": 111
++    "stage": "pause-resume-01",
++    "total_unique_nonce_count_including_flow": 125
+   },
+   "helper": {
+     "APK": {
+@@ -152,10 +154,12 @@
+     "actual_controls_only_inside_current_complete_player_container": true,
+     "clickable_or_seek_controls_must_be_observed_for_aggregate_success": true,
+     "failed_input_stops_mutations_but_does_not_suppress_independent_read": true,
++    "failed_pause_observation_prevents_resume": true,
+     "first_error_and_secondary_errors_preserved": true,
+     "immediate_complete_post_input_inspection": true,
++    "independent_read_after_reveal_and_each_started_player_click": true,
+     "no_stale_previous_sequence_diagnostic_attribution": true,
+-    "one_independent_state_inspect_state_in_finally": true,
++    "opposite_public_label_required_after_each_acknowledged_click": true,
+     "raw_text_or_description_in_safe_report": false
+   },
+   "resource_protocol": {
+@@ -181,7 +185,7 @@
+     "source_parser_and_installed_helper_identity_exact": true
+   },
+   "schema": 1,
+-  "scope": "Fresh original public query and course open, then one strictly scoped reveal input and one independent complete controls read; exact owned task cleanup",
++  "scope": "Fresh public query and course open, one strict reveal, then at most two fresh player clicks with independent opposite-label reads; exact owned task cleanup",
+   "state": "SOURCE_FROZEN_ACTUAL_R6_INSTALL_BOUND_UI_NOT_RUN",
+   "target": {
+     "package": "tv.danmaku.bili",
+--- pause-resume-01/make_request.py
++++ pause-resume-metadata02/make_request.py
+@@ -8,7 +8,7 @@
+ from pathlib import Path
+ 
+ HERE = Path(__file__).resolve().parent
+-KEY = 'pocket4-bilibili-r6-pause-resume-01-20261105'
++KEY = 'pocket4-bilibili-r6-pause-resume-metadata02-20261105'
+ ROOT = '/home/alex/work/pocket4-bilibili-r6-pause-resume-01'
+ NONCE = 'f293d9ad6b688c72e7c98e76753a8c3f'
+ 

@@ -1,0 +1,9 @@
+# Owner08 journal diagnostic 02: narrow error context, unchanged bounds
+
+The original journal01 attempt is retained as FAILED at the 256-record export limit, with its partial evidence and exact child reap. This new read excludes routine init parsing and unrelated control messages. It keeps only the original received-monotonic time interval plus recorded-PID-number or named init/processgroup/APEX startup, cgroup error and reboot context. The realtime query envelope, held original runtime/boot/state binding, journalctl executable checks, all I/O limits and child cleanup are unchanged.
+
+Journal receipt time and source/kernel monotonic/boottime fields are recorded separately. The observed roughly 29.1-second difference has not been calibrated. No timestamp or SYSLOG_IDENTIFIER/PID-number match establishes init birth or generation ownership. The candidate bootstrap failure must not be reported as an attributed Owner08 cause without independent evidence.
+
+All original limits remain: 40-second realtime search aid, exact original 3.511-second receive-monotonic export interval, 10-second child limit, 8-MiB stdout, 64-KiB stderr, 256 selected records/256 KiB, CPU1/128MiB outer request. Persistent journal completeness and every qualification flag remain false. No runtime, namespace, deployment or Main mutation is requested.
+
+Eight actual local controls passed, including three private Python children with normal, timeout and malformed-output cleanup. A first local control correctly exposed a missing `could not` error token; the original candidate source and failed control receipt are preserved, then only that token was added and the full eight controls passed. No local journal or device operation was performed. The raw original or newly collected journal belongs only in Root's private evidence; this packet contains none.

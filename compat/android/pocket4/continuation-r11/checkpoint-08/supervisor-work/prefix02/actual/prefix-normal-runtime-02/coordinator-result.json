@@ -1,0 +1,288 @@
+{
+  "Android_operations": 0,
+  "Main_actions": 0,
+  "actor_input": {
+    "sha256": "54153333285ae03fa6601837cfe016a9ece1026778bfad53c4c9b240b6a6b5d1",
+    "value": {
+      "controller": {
+        "path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/source/full_prefix_control.py",
+        "sha256": "1432b761fbc289877465c0a167b7ff213cd9c87f0086495ddfeecf7b55e65745"
+      },
+      "evidence": "/home/alex/work/pocket4-relay-prefix-r11-owned/p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal",
+      "mode": "normal",
+      "network_namespace": {
+        "identity": [
+          5,
+          4026533063
+        ],
+        "name": "p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f"
+      },
+      "nonce": "d5ac0c8b6b3250e8ab02a33f1d04fe9ea64f3a32667325dff1827499ba77336a",
+      "once_claim": "/home/alex/work/pocket4-relay-prefix-r11-owned/p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal/once.claim.json",
+      "probe": {
+        "path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/bin/prefix-probe",
+        "sha256": "79b30f9fa4a1e7635ae4786a50372b3fcaa84ad619269476e40a1badd65c0e82"
+      },
+      "schema": 1,
+      "scope": "OWNED_HOST_PREFIX_ONLY_NO_ANDROID",
+      "tools": {
+        "/usr/bin/ip": "2829deca72cff655d6d1290646abb9cc829da2e2db615eec8bc0ccd283acf3a7",
+        "/usr/bin/python3": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41",
+        "/usr/bin/unshare": "41c65e55107cbbb1a1f6994784a938dd7dbbe255d1fea6b7a58ec96eabe382ef"
+      },
+      "unit": {
+        "cgroup": "/system.slice/p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal.service",
+        "cgroup_identity": [
+          30,
+          28595119
+        ],
+        "invocation": "4a6da1fb975e4446a35a512c339e9658",
+        "limits": {
+          "cpu.max": "100000 100000",
+          "memory.max": "268435456",
+          "memory.swap.max": "0",
+          "pids.max": "32"
+        },
+        "name": "p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal.service"
+      }
+    }
+  },
+  "actor_result_sha256": "22a4677c309a1e3481170a38db14a96793348121fde2ff19c36f20d8ab9877c0",
+  "actual_terminal": {
+    "ActiveState": "active",
+    "ControlGroup": "",
+    "Description": "p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal nonce=d5ac0c8b6b3250e8ab02a33f1d04fe9ea64f3a32667325dff1827499ba77336a owned-host-prefix-no-android",
+    "ExecMainCode": "1",
+    "ExecMainExitTimestampMonotonic": "858609448926",
+    "ExecMainPID": "680262",
+    "ExecMainStartTimestampMonotonic": "858609225126",
+    "ExecMainStatus": "0",
+    "InvocationID": "4a6da1fb975e4446a35a512c339e9658",
+    "LoadState": "loaded",
+    "MainPID": "0",
+    "MemoryPeak": "27275264",
+    "MemorySwapPeak": "0",
+    "Result": "success",
+    "SubState": "exited",
+    "Transient": "yes"
+  },
+  "automatic_retry": false,
+  "cleanup_errors": [],
+  "exact_cleanup_complete": true,
+  "first_unit": {
+    "cgroup_identity": [
+      30,
+      28595119
+    ],
+    "main_pid": 680262,
+    "properties": {
+      "ActiveState": "active",
+      "ControlGroup": "/system.slice/p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal.service",
+      "Description": "p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal nonce=d5ac0c8b6b3250e8ab02a33f1d04fe9ea64f3a32667325dff1827499ba77336a owned-host-prefix-no-android",
+      "ExecMainCode": "0",
+      "ExecMainExitTimestampMonotonic": "0",
+      "ExecMainPID": "680262",
+      "ExecMainStartTimestampMonotonic": "858609225126",
+      "ExecMainStatus": "0",
+      "InvocationID": "4a6da1fb975e4446a35a512c339e9658",
+      "LoadState": "loaded",
+      "MainPID": "680262",
+      "MemoryPeak": "15400960",
+      "MemorySwapPeak": "0",
+      "Result": "success",
+      "SubState": "running",
+      "Transient": "yes"
+    }
+  },
+  "main_after": {
+    "daemon": {
+      "ControlGroup": "/system.slice/droidloomd.service",
+      "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+      "MainPID": "3588022"
+    },
+    "framework_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "held_cgroup_identity": [
+      30,
+      26651611
+    ],
+    "installed_contract_unchanged": true,
+    "original_processes_alive_and_unchanged": true,
+    "resources": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    }
+  },
+  "main_before": {
+    "daemon": {
+      "ControlGroup": "/system.slice/droidloomd.service",
+      "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+      "MainPID": "3588022"
+    },
+    "framework_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "held_cgroup_identity": [
+      30,
+      26651611
+    ],
+    "installed_contract_unchanged": true,
+    "original_processes_alive_and_unchanged": true,
+    "resources": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    }
+  },
+  "mode": "normal",
+  "nonce": "d5ac0c8b6b3250e8ab02a33f1d04fe9ea64f3a32667325dff1827499ba77336a",
+  "original_namespace_identity": [
+    5,
+    4026533063
+  ],
+  "plan_sha256": "cc003f5e6bbb54e1c8a8cd86a78a50b65ee7598ac37992f64b5f89a32923a41f",
+  "production_ready": false,
+  "qualification": {
+    "Android_operations": 0,
+    "actor_outer_final_and_terminal_bound": true,
+    "actual_Rust_Owner_executed": false,
+    "first_cgroup_identity": [
+      30,
+      28595119
+    ],
+    "full_prefix_contract_observed": true,
+    "invocation": "4a6da1fb975e4446a35a512c339e9658",
+    "original_main_pid": 680262
+  },
+  "retirement": {
+    "namespace": {
+      "identity": [
+        5,
+        4026533063
+      ],
+      "name": "p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f",
+      "name_removed": true,
+      "no_live_members_before_delete": true
+    },
+    "unit": {
+      "cgroup": {
+        "empty": true,
+        "identity": [
+          30,
+          28595119
+        ],
+        "proof": "path absent and both original cgroupfs counters deactivated",
+        "removed": true
+      },
+      "final_load_state": "not-found",
+      "invocation": "4a6da1fb975e4446a35a512c339e9658",
+      "name": "p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal.service",
+      "original_pidfd_dead": true,
+      "stop_observation_error": null
+    }
+  },
+  "schema": 1,
+  "scope": "OWNED_HOST_PREFIX_ONLY_NO_ANDROID",
+  "source_after": {
+    "all_pinned_bytes_match": true,
+    "sources": {
+      "actor": {
+        "path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/source/full_prefix_control.py",
+        "sha256": "1432b761fbc289877465c0a167b7ff213cd9c87f0086495ddfeecf7b55e65745"
+      },
+      "coordinator": {
+        "path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/source/prefix_coordinator.py",
+        "sha256": "7b257af1c0b5493ff0a28528146a5ccad96a38bc190402ef1524644a27b9d2e0"
+      },
+      "probe": {
+        "path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/bin/prefix-probe",
+        "sha256": "79b30f9fa4a1e7635ae4786a50372b3fcaa84ad619269476e40a1badd65c0e82"
+      }
+    },
+    "tools": {
+      "/usr/bin/ip": "2829deca72cff655d6d1290646abb9cc829da2e2db615eec8bc0ccd283acf3a7",
+      "/usr/bin/python3": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41",
+      "/usr/bin/systemctl": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082",
+      "/usr/bin/systemd-run": "6eaf6650fc3bc07ba2fb51242d9d286e56770a2abd7306678aa22050ddf9f935",
+      "/usr/bin/unshare": "41c65e55107cbbb1a1f6994784a938dd7dbbe255d1fea6b7a58ec96eabe382ef"
+    }
+  },
+  "source_before": {
+    "all_pinned_bytes_match": true,
+    "sources": {
+      "actor": {
+        "path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/source/full_prefix_control.py",
+        "sha256": "1432b761fbc289877465c0a167b7ff213cd9c87f0086495ddfeecf7b55e65745"
+      },
+      "coordinator": {
+        "path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/source/prefix_coordinator.py",
+        "sha256": "7b257af1c0b5493ff0a28528146a5ccad96a38bc190402ef1524644a27b9d2e0"
+      },
+      "probe": {
+        "path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/bin/prefix-probe",
+        "sha256": "79b30f9fa4a1e7635ae4786a50372b3fcaa84ad619269476e40a1badd65c0e82"
+      }
+    },
+    "tools": {
+      "/usr/bin/ip": "2829deca72cff655d6d1290646abb9cc829da2e2db615eec8bc0ccd283acf3a7",
+      "/usr/bin/python3": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41",
+      "/usr/bin/systemctl": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082",
+      "/usr/bin/systemd-run": "6eaf6650fc3bc07ba2fb51242d9d286e56770a2abd7306678aa22050ddf9f935",
+      "/usr/bin/unshare": "41c65e55107cbbb1a1f6994784a938dd7dbbe255d1fea6b7a58ec96eabe382ef"
+    }
+  },
+  "sources": {
+    "actor": {
+      "path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/source/full_prefix_control.py",
+      "sha256": "1432b761fbc289877465c0a167b7ff213cd9c87f0086495ddfeecf7b55e65745"
+    },
+    "coordinator": {
+      "path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/source/prefix_coordinator.py",
+      "sha256": "7b257af1c0b5493ff0a28528146a5ccad96a38bc190402ef1524644a27b9d2e0"
+    },
+    "probe": {
+      "path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/bin/prefix-probe",
+      "sha256": "79b30f9fa4a1e7635ae4786a50372b3fcaa84ad619269476e40a1badd65c0e82"
+    }
+  },
+  "tools": {
+    "/usr/bin/ip": "2829deca72cff655d6d1290646abb9cc829da2e2db615eec8bc0ccd283acf3a7",
+    "/usr/bin/python3": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41",
+    "/usr/bin/systemctl": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082",
+    "/usr/bin/systemd-run": "6eaf6650fc3bc07ba2fb51242d9d286e56770a2abd7306678aa22050ddf9f935",
+    "/usr/bin/unshare": "41c65e55107cbbb1a1f6994784a938dd7dbbe255d1fea6b7a58ec96eabe382ef"
+  },
+  "unit_launch_argv": [
+    "/usr/bin/systemd-run",
+    "--unit=p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal.service",
+    "--property=Type=exec",
+    "--property=Description=p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal nonce=d5ac0c8b6b3250e8ab02a33f1d04fe9ea64f3a32667325dff1827499ba77336a owned-host-prefix-no-android",
+    "--property=Restart=no",
+    "--property=RemainAfterExit=yes",
+    "--property=RuntimeMaxSec=60",
+    "--property=TimeoutStopSec=8",
+    "--property=KillMode=control-group",
+    "--property=OOMPolicy=stop",
+    "--property=CPUQuota=100%",
+    "--property=CPUQuotaPeriodSec=100ms",
+    "--property=MemoryMax=256M",
+    "--property=MemorySwapMax=0",
+    "--property=TasksMax=32",
+    "--property=Nice=10",
+    "--property=UMask=0077",
+    "--setenv=PATH=/usr/bin:/bin",
+    "--setenv=LANG=C",
+    "--",
+    "/usr/bin/python3",
+    "-I",
+    "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/source/prefix_coordinator.py",
+    "--gate",
+    "--plan",
+    "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/normal-plan-02.json",
+    "--plan-sha256",
+    "cc003f5e6bbb54e1c8a8cd86a78a50b65ee7598ac37992f64b5f89a32923a41f"
+  ],
+  "whole_attempt_qualified": true
+}

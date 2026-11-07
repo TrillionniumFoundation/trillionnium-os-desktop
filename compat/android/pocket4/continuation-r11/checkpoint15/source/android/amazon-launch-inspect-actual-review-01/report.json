@@ -1,0 +1,266 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_OWNED_AMAZON_LAUNCH_INSPECT_EXACT_CLEANUP_SCOPE_VERIFIED",
+  "reviewer": "/root/android_acceptance",
+  "scope": "Independent local review of eight complete retained safe originals; no new device action and no raw commercial UI read.",
+  "source_manifest_sha256": "8c6d466e8e75dd4b2261205f61d72848dd6e9bf4b415f798272aba75a29152fb",
+  "original_job": "1a1ab917856-fc05-4eb3",
+  "reader_report": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/amazon-launch-inspect01-read01/reader-report.json",
+    "bytes": 73827,
+    "sha256": "1d6adf3380094c8310b51d68642c269a8c4fa76935e1c2472cb22f74fc7a3aa1"
+  },
+  "original_files": {
+    "cleanup-command-result.json": {
+      "path": "/home/alex/work/pocket4-amazon-owned-launch-inspect-01/evidence/03-cleanup.result.json",
+      "bytes": 1158,
+      "sha256": "5f6e3e9ee05ca2de7a4eee135174e43a05b854868b241783e58a36647481fa08"
+    },
+    "cleanup.json": {
+      "path": "/home/alex/work/pocket4-amazon-owned-qa-r1-flow-71222d708e933c9afc2472cc1565646a/steps/cleanup-01/result.json",
+      "bytes": 12254,
+      "sha256": "a29f6b95a77dbb091ea6eaeff65b87aafa87445775444598da974b0523759228"
+    },
+    "coordinator.json": {
+      "path": "/home/alex/work/pocket4-amazon-owned-launch-inspect-01/result.json",
+      "bytes": 13736,
+      "sha256": "c7277e75e059795e92b29794f1afe66b15b7f4f2f0b3fc7aa987d9ddb481d859"
+    },
+    "inspection-command-result.json": {
+      "path": "/home/alex/work/pocket4-amazon-owned-launch-inspect-01/evidence/02-inspect.result.json",
+      "bytes": 1159,
+      "sha256": "9b47cfc4832f908ef7316355918810cf8616908614d6709e951eedce9e123007"
+    },
+    "inspection.json": {
+      "path": "/home/alex/work/pocket4-amazon-owned-qa-r1-flow-71222d708e933c9afc2472cc1565646a/steps/inspect-01/result.json",
+      "bytes": 21377,
+      "sha256": "e81b411f3e92d5d5064010f8879bb66662faddc133354c43ae9cc1bdf0e78011"
+    },
+    "launch-command-result.json": {
+      "path": "/home/alex/work/pocket4-amazon-owned-launch-inspect-01/evidence/01-launch.result.json",
+      "bytes": 1157,
+      "sha256": "4ff9efc6c1dda90d556fadcb159c066eefcaeae80e73b00e5e8e748f5a7e9a6a"
+    },
+    "launch.json": {
+      "path": "/home/alex/work/pocket4-amazon-owned-qa-r1-flow-71222d708e933c9afc2472cc1565646a/steps/launch-01/result.json",
+      "bytes": 13420,
+      "sha256": "9a8932ab00d44ec153217728489a0866713b5257f1a22fcada1c7bdcd07f55f7"
+    },
+    "stage.json": {
+      "path": "/home/alex/work/pocket4-amazon-owned-launch-inspect-01/stage-result.json",
+      "bytes": 1726,
+      "sha256": "155fd22b7f3caea358e90ea9dccca4eb75087607566fedaa036248dbc679127c"
+    }
+  },
+  "all_eight_bytes_and_sha_match_reader": true,
+  "all_c_to_phase_s_to_c_and_phase_stdout_pins_match": true,
+  "phase_command_counts": {
+    "launch": 12,
+    "inspect": 17,
+    "cleanup": 11
+  },
+  "all_three_commands_returned_zero_joined_no_timeout_no_secondary": true,
+  "main_all_phase_and_stage_fences_match": {
+    "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "resource_limits_match": true,
+    "three_host_processes_match": true,
+    "verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+  },
+  "launch": {
+    "component": "com.amazon.mShop.android.shopping/com.amazon.mShop.home.HomeActivity",
+    "current_resolve_before_launch": true,
+    "native_acknowledged": true,
+    "new_task": 946,
+    "preexisting_tasks": [
+      851
+    ]
+  },
+  "inspection": {
+    "actual_foreground": {
+      "activity": "com.amazon.mShop.android.shopping/com.amazon.mShop.navigation.MainActivity",
+      "display": 0,
+      "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "package": "com.amazon.mShop.android.shopping",
+      "uid": 10129,
+      "user": 0,
+      "window_token": "67f12fc"
+    },
+    "host_foreground_display_independently_verified": false,
+    "helper_focused_display_zero_app_window_verified": true,
+    "metadata": {
+      "actual_command_returncode": 0,
+      "actual_instrumentation_finish_code": -1,
+      "assessment_bytes": 96754,
+      "assessment_sha256": "29d6a9fc5951cb7c9a1fa4e2a5e9b991ee424cfb9aebcfdad8f780cdcf522ac5",
+      "complete": true,
+      "connection_scoped_window_id": 8608,
+      "node_count": 71,
+      "nonce": "14b06ed19ee0a0272b34d611869288ac",
+      "operation": "inspect",
+      "raw_tree_private_only": true,
+      "recorder_command_result_sha256": "f60caf4e47c612b9ed4c0b7f81a4cb8e117c39e25e491e8825c1c76c6fc94fdd",
+      "tree_observations": [
+        {
+          "attempted_nodes": 71,
+          "began_elapsed_ms": 905516267,
+          "capture": 1,
+          "child_limit": 64,
+          "complete": true,
+          "depth_limit": 32,
+          "emitted_nodes": 71,
+          "json_byte_limit": 458752,
+          "last_elapsed_ms": 905516457,
+          "max_attempted_depth": 12,
+          "max_observed_children": 14,
+          "node_limit": 512,
+          "purpose": "inspection",
+          "serialized_bytes": 64459
+        }
+      ],
+      "tree_sha256": "1f0374e0032c38733cd7660bcfb563ee4d7c67ca8129676cc86624bce92f9f59",
+      "window": {
+        "display": 0,
+        "focused": true,
+        "package": "com.amazon.mShop.android.shopping",
+        "type": 1
+      },
+      "window_observation": {
+        "cache_api": "android.app.UiAutomation.clearCache()",
+        "cache_attempts": 3,
+        "cache_clears": 3,
+        "cache_last_exception": null,
+        "cache_last_result": true,
+        "cache_policy": "require_public_own_connection_clear_before_each_query",
+        "cache_runtime_sdk": 37,
+        "first": {
+          "displays": [
+            0
+          ],
+          "elapsed_ms": 1,
+          "event_serial": 0,
+          "sample": 1,
+          "windows": [
+            {
+              "accessibility_focused": false,
+              "active": false,
+              "display": 0,
+              "focused": false,
+              "id": 8607,
+              "layer": 0,
+              "type": 1
+            }
+          ]
+        },
+        "last": {
+          "displays": [
+            0
+          ],
+          "elapsed_ms": 61,
+          "event_serial": 2,
+          "sample": 3,
+          "windows": [
+            {
+              "accessibility_focused": false,
+              "active": true,
+              "display": 0,
+              "focused": true,
+              "id": 8608,
+              "layer": 1,
+              "type": 1
+            },
+            {
+              "accessibility_focused": false,
+              "active": false,
+              "display": 0,
+              "focused": false,
+              "id": 8607,
+              "layer": 0,
+              "type": 1
+            }
+          ]
+        },
+        "ready": true,
+        "recheck_max_ms": 100,
+        "requested_display": 0,
+        "sample_timings": [
+          {
+            "cache_cleared": true,
+            "elapsed_ms": 1,
+            "event_serial": 0,
+            "sample": 1
+          },
+          {
+            "cache_cleared": true,
+            "elapsed_ms": 1,
+            "event_serial": 1,
+            "sample": 2
+          },
+          {
+            "cache_cleared": true,
+            "elapsed_ms": 61,
+            "event_serial": 2,
+            "sample": 3
+          }
+        ],
+        "samples": 3,
+        "selected_display": 0,
+        "selected_window_id": 8608,
+        "selection": "exact-display-0-focused-application",
+        "wait_budget_ms": 2000,
+        "waited_ms": 61
+      },
+      "window_sha256": "978599cf29fe19b99693baae21a5121fa2071e861a83f56e88d56d12f78e2235",
+      "wire_sha256": "b76d27ec39023c5f6c8ba77b09ba36a61bfd055d85e9e8643742c9c8097a92e0"
+    },
+    "state_before_and_after_equal": true,
+    "independent_after_no_automation_completed": true,
+    "restoration_qualified": true,
+    "action_attempted": false,
+    "outcome_unknown": false
+  },
+  "cleanup": {
+    "new_leaf_removed_and_verified": true,
+    "other_tasks_preserved": true,
+    "task_ids_after": [
+      851
+    ],
+    "all_phases_three_target_APK_FDs_closed": true,
+    "held_binding_and_flow_locks_released": true,
+    "launch_and_inspect_global_action_locks_released": true,
+    "cleanup_global_lock_owned_by_original_exact_Flow_cleanup": true
+  },
+  "artifacts": {
+    "target_three_APKs_before_after_and_across_phases_identical": true,
+    "target_uid": 10129,
+    "target_version_code": 1243240206,
+    "helper_uid": 10175,
+    "helper_base_and_exact_signed_APK_bytes_unchanged": true,
+    "APK_sha256": "f3a7bb2133049022a7d622d35ea2db3390d2804e51ebe344b1d5adcde4437118",
+    "signer_sha256": "1f63759487a0b04e8da9b4088c11dbac8140bf63cb2d64d91460e2525924f424",
+    "source_build_receipts_unchanged": true,
+    "commercial_signer_independently_verified": false
+  },
+  "resources": {
+    "limits": {
+      "cpu.max": "100000 100000",
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "pids.max": "128"
+    },
+    "same_cgroup_device_inode": true,
+    "peak_bytes": 300445696,
+    "swap_peak_bytes": 0,
+    "all_memory_event_counters_zero": true
+  },
+  "limitations": [
+    "Window arrived after three successful own-cache clears at 1, 1 and 61 milliseconds; this single observation does not establish a general cache diagnosis.",
+    "Complete tree is still private and was not read by this review; no selector or public search/business success follows from this initial inspection.",
+    "Host display is not independently proved by its parser; helper display 0/focused/type/package is the actual display gate.",
+    "This report qualifies one launch/inspect/owned task cleanup scope only. Audio, public search, product navigation, reopen and whole-App qualification remain open."
+  ],
+  "business_success_verified": false,
+  "whole_app_production_ready": false,
+  "Main_mutations_by_reviewer": 0
+}

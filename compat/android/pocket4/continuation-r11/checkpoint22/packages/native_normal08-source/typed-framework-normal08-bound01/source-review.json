@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "state": "ACTUAL471_BOUND_NORMAL08_UNRUN",
+  "purpose": "Fresh strict two-target framework build using actual builder471 SystemUI test projection fix.",
+  "source_authorities": {
+    "normal07_source_tree": "f7d505538a6230be1dc2991be3075c168ee03741",
+    "normal07_template_tree": "f37fd06b1e26fd2f2dd7838a8ede41ccffb6fbf7",
+    "actual471_tree": "d92f2fa7df4073f42300e033718659d471340621",
+    "actual_normal07_failure_tree": "8dece274c70366c22ff71248b2362c4cf8790719",
+    "normal07_request": {
+      "bytes": 1016082,
+      "sha256": "97dc97b1d6014c38060417a94f89ee158f5bcfa98915ed2fcb7fa6814b77b2b5",
+      "git_blob_sha1": "2bdc14a5b9b25d110d244117eb8b78eabf74f2de"
+    },
+    "compile_report": {
+      "bytes": 181273,
+      "sha256": "466d01e56fa6579636be8e82eedbc4276c31ce3e6b390dc985fe3bc454ead1e9",
+      "git_blob_sha1": "800a5cb01014e0f7380b99c5733c6fa6e58eff7d"
+    },
+    "compile_stdout": {
+      "bytes": 668,
+      "sha256": "6fae7fc8fd6e31bbd11b4689e5ede5935f15ab633f59fc42b13ca9a70511d7fc",
+      "git_blob_sha1": "a0ac9b9b02520b60c4c000d84897d8ef9831fd35"
+    }
+  },
+  "differences": [
+    "Fresh Normal08 root/key; actual builder471 ELF, full raw report and 500-file copied map. Original source and result nanosecond integers remain verbatim.",
+    "Exact 68 commands and 21 updater + 9 source tests. The three new updater labels are 200/201/202, not 18/19/20; registered updater count is 211.",
+    "Builder471 qualifies actual parent470 report, exact 6531-byte projection proof, original 3392-byte SystemUI tests fixture and unchanged 96957-byte 225-project 728 lock. It does not pretend its report repeats builder470's observed_manifest_rebuilt field.",
+    "Prior-failure contract now binds Normal07's original inner/outer files, real one-child cleanup, log hashes and completed after-input/Main/lifecycle gates. Normal07 remains FAILED; older failures remain anchored in their immutable trees.",
+    "Fence changes only fresh root plus new controller SHA. Twelve packet leaves, including all Main/capture/retirement implementations and 46 pure controls, remain byte-identical to Normal07."
+  ],
+  "strict_scope": {
+    "targets": [
+      "framework-minus-apex",
+      "libandroid_runtime"
+    ],
+    "ALLOW_MISSING_DEPENDENCIES": false,
+    "normal_package_and_source_locks_unchanged": true,
+    "projection_journal_and_restore_unchanged": true,
+    "source_manifest_fresh_verification": true,
+    "source_lock_writer": "UNKNOWN",
+    "published_manifest": {
+      "bytes": 109252,
+      "sha256": "5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d",
+      "git_blob_sha1": "6c133f7db82ac84553624293755648a6b833f05b"
+    },
+    "systemui_projection_boundary": "Exactly five modules in one locked SystemUI/tests/Android.bp omitted for typed two-target projection; original package/license metadata, parent providers, fixture and recoverable original remain. Static target dependency evidence is not a full Soong variant graph proof."
+  },
+  "resources": {
+    "RAM_bytes": 10737418240,
+    "fresh_MemAvailable_min_bytes": 16106127360,
+    "CPU_quota_percent": 200,
+    "jobs": 1,
+    "nice": 10,
+    "owned_swap_max_and_current": 0,
+    "builder_wait_seconds": 6100,
+    "outer_timeout_seconds": 6400,
+    "global_SwapFree_recorded_not_budgeted": true
+  },
+  "actual471_resources": {
+    "memory_peak": 1073741824,
+    "memory_events_max_delta": 1839,
+    "OOM_and_kills": 0,
+    "swap_peak": 0,
+    "swap_max_observed": "max",
+    "memory_pressure_observed": true,
+    "Main_identity_not_observed": true
+  },
+  "Main_boundary": {
+    "snapshot_source_unchanged": true,
+    "root_supervisor_and_protected_8_identities_unchanged": true,
+    "prior_Main_PASS_not_current_admission": true,
+    "current_Main_gate_must_pass_fresh": true,
+    "London_owner_single_direct_child_issue_not_bypassed": true,
+    "interval_wide_noninterference_not_claimed": true
+  },
+  "verification": {
+    "state": "SOURCE_BOUND_NOT_EXECUTED",
+    "all_checks_pass": true,
+    "changed_packet_sources": [
+      "framework_build.py",
+      "fenced_build.py"
+    ],
+    "replaced_packet_authorities": [
+      "expected-builder470-manifest.json -> expected-builder471-manifest.json",
+      "actual-builder470-result.json -> actual-builder471-result.json",
+      "prior-framework-inner-terminal.json",
+      "prior-framework-outer-terminal.json"
+    ],
+    "unchanged_packet_leaves": [
+      "main_snapshot.py",
+      "frozen-work-inventory.py",
+      "actual-work-preparation.json",
+      "actual-published-source-manifest.json",
+      "actual-native-prebuilt-Android.bp",
+      "actual-hal-provider-source-lock.json",
+      "pure_controls.py",
+      "capture_lifecycle.py",
+      "root_snapshot_supervisor.py",
+      "prior-normal02-outer-terminal.json",
+      "actual-resource-observation01.json",
+      "actual-current225-source-manifest.json"
+    ],
+    "request": {
+      "bytes": 1022914,
+      "sha256": "7ac74723eaff25849512943bfe25ec87ec0eff36807f5b787f44862c31033c65",
+      "git_blob_sha1": "8e0d1031966a9206923cdb7e978bfedaf2d30adc"
+    },
+    "stdin": {
+      "bytes": 924773,
+      "sha256": "1f22d7e3cc22e4b9de17b3f8549eb35384806ade0679526c8eef934ec855e396",
+      "git_blob_sha1": "214cb5b3881e4e5ee0c614f02c0ed3cd139b7f20"
+    },
+    "framework": {
+      "bytes": 62706,
+      "sha256": "62d940a8a04c5007baa93eb708f4efd5dfeb326ad8ea1dd9e3d57d0c43a71fc3",
+      "git_blob_sha1": "1c45baff5dce64a88881a0fe0df2febc6d08f198"
+    },
+    "fence": {
+      "bytes": 25507,
+      "sha256": "cbaab322659c60af258730d3477f1be0b721560b95289dbdac6bee90c41a22d3",
+      "git_blob_sha1": "2971a9a7889983debe065890264b2a1580b64484"
+    },
+    "framework_edit_count": 38,
+    "binder_edit_count": 31,
+    "prior_actual_predicates_checked": true,
+    "prior_fail_preserved": true,
+    "prior_cleanup_children": 1,
+    "actual_report_raw_preserved": true,
+    "actual_report_ns_reserialized": false,
+    "reproducer_byte_equal": true,
+    "python_executed": false,
+    "Main_gate_unchanged": true,
+    "Normal08_dispatched": false
+  },
+  "execution": {
+    "Python_controls_in_this_new_package": "NOT_EXECUTED",
+    "Normal08": "UNRUN",
+    "Java_Android_JNI_artifacts": "NOT_QUALIFIED",
+    "App_production_ready": 0,
+    "Hepta_calls_by_agent": 0,
+    "refs_modified": false,
+    "Main_deployment": false
+  }
+}

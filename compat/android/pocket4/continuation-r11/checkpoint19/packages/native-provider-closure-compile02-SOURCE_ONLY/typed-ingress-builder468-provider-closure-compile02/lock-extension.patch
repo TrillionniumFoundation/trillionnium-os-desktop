@@ -1,0 +1,274 @@
+--- a/previous-typed-lock.json
++++ b/candidate-provider-lock.json
+@@ -418,7 +418,8 @@
+         "icu4c/source/stubdata",
+         "libandroidicu",
+         "libandroidicuinit",
+-        "libicu"
++        "libicu",
++        "icu4j/main"
+       ]
+     },
+     {
+@@ -775,7 +776,12 @@
+       "commit": "e20c32fc7f8a49e712a907bcc827a6db074ea582",
+       "purpose": "Pinned Java bytecode library required by Android's JarJar packaging tool",
+       "sparse_paths": [
+-        "Android.bp"
++        "Android.bp",
++        "asm/src/main",
++        "asm-analysis/src/main",
++        "asm-commons/src/main",
++        "asm-tree/src/main",
++        "asm-util/src/main"
+       ]
+     },
+     {
+@@ -1758,7 +1764,27 @@
+         "libraries/compatibility-common-util/Android.bp",
+         "libraries/compatibility-common-util/src",
+         "libraries/rdroidtest",
+-        "libraries/tradefed-error-prone"
++        "libraries/tradefed-error-prone",
++        "libraries/motion/src",
++        "libraries/motion/compose/src",
++        "libraries/motion/compose/values/src",
++        "libraries/screenshot/src/main",
++        "libraries/screenshot/proto",
++        "libraries/uiautomator-helpers/src",
++        "libraries/runner/src/main/java",
++        "libraries/device-collectors/src/main/java",
++        "libraries/collectors-helper/adservices/src",
++        "libraries/collectors-helper/app/src",
++        "libraries/collectors-helper/generic/src",
++        "libraries/collectors-helper/jank/src",
++        "libraries/collectors-helper/lyric/src",
++        "libraries/collectors-helper/memory/src",
++        "libraries/collectors-helper/perfetto/src",
++        "libraries/collectors-helper/power/src",
++        "libraries/collectors-helper/simpleperf/src",
++        "libraries/collectors-helper/system/src",
++        "libraries/collectors-helper/utilities/src",
++        "libraries/junitxml/src"
+       ]
+     },
+     {
+@@ -1866,7 +1892,10 @@
+       "sparse_paths": [
+         "common/commons-cli",
+         "common/json",
+-        "common/kxml2"
++        "common/kxml2",
++        "common/ub-uiautomator",
++        "common/robolectric-native-prebuilt",
++        "common/robolectric/android-all"
+       ]
+     },
+     {
+@@ -1939,7 +1968,13 @@
+         "extensions/19/system-server",
+         "tools/Android.bp",
+         "tools/core-lambda-stubs.jar",
+-        "update_prebuilts"
++        "update_prebuilts",
++        "current/androidx",
++        "18/public",
++        "current/multidex",
++        "current/test",
++        "current/support/v7/appcompat/res",
++        "current/support/manifests/android-support-v7-appcompat"
+       ]
+     },
+     {
+@@ -1981,7 +2016,73 @@
+         "common/m2/repository/org/jetbrains/trove4j/trove4j/20160824",
+         "common/m2/repository/org/ow2/asm/asm-tree/9.7.1",
+         "common/m2/repository/org/ow2/asm/asm/9.7.1",
+-        "common/metalava"
++        "common/metalava",
++        "common/m2/repository/com/almworks/sqlite4java/libsqlite4java-linux-amd64/0.282",
++        "common/m2/repository/com/almworks/sqlite4java/libsqlite4java-linux-i386/0.282",
++        "common/m2/repository/com/almworks/sqlite4java/libsqlite4java-osx/0.282",
++        "common/m2/repository/com/almworks/sqlite4java/sqlite4java-win32-x64/0.282",
++        "common/m2/repository/com/almworks/sqlite4java/sqlite4java-win32-x86/0.282",
++        "common/m2/repository/com/almworks/sqlite4java/sqlite4java/0.282",
++        "common/m2/repository/com/android/support/test/monitor/1.0.2-alpha1",
++        "common/m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/2.0",
++        "common/m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/2.1",
++        "common/m2/repository/com/google/dagger/dagger-compiler/2.7",
++        "common/m2/repository/com/google/dagger/dagger-producers/2.7",
++        "common/m2/repository/com/google/dagger/dagger/2.7",
++        "common/m2/repository/com/google/devtools/ksp/symbol-processing-api/1.4.10-dev-experimental-20201110",
++        "common/m2/repository/com/google/guava/guava/23.0",
++        "common/m2/repository/com/google/guava/guava/listenablefuture/1.0",
++        "common/m2/repository/com/google/http-client/google-http-client-jackson2/1.28.0",
++        "common/m2/repository/com/google/inject/guice/3.0",
++        "common/m2/repository/com/google/j2objc/j2objc-annotations/1.1",
++        "common/m2/repository/com/google/testing/compile/compile-testing/0.19",
++        "common/m2/repository/com/intellij/core-analysis",
++        "common/m2/repository/com/sampullara/cli/1.1.2",
++        "common/m2/repository/com/squareup/kotlinpoet/1.8.0",
++        "common/m2/repository/com/squareup/okhttp/okhttp/2.7.4",
++        "common/m2/repository/com/squareup/okhttp4/okhttp/4.0.0",
++        "common/m2/repository/com/squareup/okio/okio/1.9.0",
++        "common/m2/repository/com/squareup/wire/wire-runtime-jvm/4.7.0",
++        "common/m2/repository/com/thoughtworks/xstream/xstream/1.4.8",
++        "common/m2/repository/commons-codec/commons-codec/1.10",
++        "common/m2/repository/commons-io/commons-io/2.4",
++        "common/m2/repository/io/grpc/grpc-all/1.0.3",
++        "common/m2/repository/io/grpc/grpc-context/1.0.3",
++        "common/m2/repository/io/grpc/grpc-core/1.0.3",
++        "common/m2/repository/io/grpc/grpc-netty-shaded/1.56.0",
++        "common/m2/repository/io/grpc/grpc-okhttp/1.0.3",
++        "common/m2/repository/io/grpc/grpc-protobuf-lite/1.0.3",
++        "common/m2/repository/io/grpc/grpc-stub/1.0.3",
++        "common/m2/repository/io/reactivex/rxjava2/rxjava/2.2.9",
++        "common/m2/repository/javax/annotation/javax.annotation-api/1.2",
++        "common/m2/repository/javax/annotation/javax.annotation-api/1.3.2",
++        "common/m2/repository/javax/inject/javax.inject/1",
++        "common/m2/repository/joda-time/joda-time/2.9.1",
++        "common/m2/repository/kotlinx/html/jvm/0.6.8",
++        "common/m2/repository/me/leolin/ShortcutBadger/1.1.13",
++        "common/m2/repository/net/bytebuddy/byte-buddy-agent/1.14.18",
++        "common/m2/repository/net/bytebuddy/byte-buddy/1.14.18",
++        "common/m2/repository/net/java/dev/jna/jna/3.4.0",
++        "common/m2/repository/net/sf/jopt-simple/jopt-simple/4.9",
++        "common/m2/repository/net/sf/trove4j/trove4j/1.1",
++        "common/m2/repository/org/apache/ant/ant/1.8.0",
++        "common/m2/repository/org/apache/commons/commons-lang3/3.4",
++        "common/m2/repository/org/apache/httpcomponents/httpclient/4.0.3",
++        "common/m2/repository/org/apache/httpcomponents/httpcore/4.0.1",
++        "common/m2/repository/org/apache/james/apache-mime4j-core/0.7.2",
++        "common/m2/repository/org/apache/james/apache-mime4j-dom/0.7.2",
++        "common/m2/repository/org/apache/maven/maven-ant-tasks/2.1.3",
++        "common/m2/repository/org/assertj/assertj-core/3.8.0",
++        "common/m2/repository/org/codehaus/mojo/animal-sniffer-annotations/1.14",
++        "common/m2/repository/org/jetbrains/intellij/deps/trove4j/1.0.20181211",
++        "common/m2/repository/org/jetbrains/markdown/0.1.41",
++        "common/m2/repository/org/jsoup/jsoup/1.8.3",
++        "common/m2/repository/org/mockito/mockito-core/4.8.1",
++        "common/m2/repository/org/mockito/mockito-core/5.14.2",
++        "common/m2/repository/org/mockito/mockito-inline/4.8.1",
++        "common/m2/repository/org/reactivestreams/reactive-streams/1.0.2",
++        "common/m2/repository/org/xerial/sqlite-jdbc/3.28.0",
++        "common/m2/repository/ru/yole/jkid"
+       ]
+     },
+     {
+@@ -2460,6 +2561,116 @@
+       "sparse_paths": [
+         "include"
+       ]
++    },
++    {
++      "path": "external/kotlinx.coroutines",
++      "name": "platform/external/kotlinx.coroutines",
++      "commit": "16161f019a518241332c1cad686a3e9404c0d5cf",
++      "purpose": "Exact Android 17 superproject coroutine providers for real AndroidX and StructuredConcurrencyPerf dependencies"
++    },
++    {
++      "path": "external/kotlinx.atomicfu",
++      "name": "platform/external/kotlinx.atomicfu",
++      "commit": "867bc63054d694773bd0aef56eeb51296f2f6b03",
++      "purpose": "Exact Android 17 superproject atomicfu source required by the real coroutine provider"
++    },
++    {
++      "path": "frameworks/libs/systemui",
++      "name": "platform/frameworks/libs/systemui",
++      "commit": "11e04f60f563aed48e4ec080bd7bde06bae1b2f3",
++      "purpose": "Exact Android 17 tracinglib-platform and genuine compilelib providers",
++      "sparse_paths": [
++        "tracinglib/core/src",
++        "compilelib/src-release",
++        "compilelib/src-debug"
++      ]
++    },
++    {
++      "path": "external/robolectric",
++      "name": "platform/external/robolectric",
++      "commit": "87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1",
++      "purpose": "Real Robolectric_all-target and its upstream implementation providers required by the parametric runner",
++      "sparse_paths": [
++        "soong",
++        "src/main/resources",
++        "annotations/src/main",
++        "junit/src/main",
++        "nativeruntime/src/main",
++        "pluginapi/src/main",
++        "resources/src/main",
++        "robolectric/src/main",
++        "sandbox/src/main",
++        "shadowapi/src/main",
++        "utils/src/main",
++        "utils/reflector/src/main",
++        "shadows/framework/src/main",
++        "shadows/httpclient/src/main",
++        "shadows/multidex/src/main",
++        "shadows/versioning/src/main",
++        "processor/src/main"
++      ]
++    },
++    {
++      "path": "external/TestParameterInjector",
++      "name": "platform/external/TestParameterInjector",
++      "commit": "39be45d7f8988b7b051e14644bc6c51fe856b8f2",
++      "purpose": "Actual TestParameterInjector provider required by real Robolectric libraries",
++      "sparse_paths": [
++        "junit4/src/main"
++      ]
++    },
++    {
++      "path": "external/snakeyaml",
++      "name": "platform/external/snakeyaml",
++      "commit": "629862ff4a73e7656df0ae02ae0cd24fabf603ae",
++      "purpose": "Genuine SnakeYAML implementation and Android patches required by TestParameterInjector",
++      "sparse_paths": [
++        "src/main",
++        "src/patches/android"
++      ]
++    },
++    {
++      "path": "test/robolectric-extensions",
++      "name": "platform/test/robolectric-extensions",
++      "commit": "94254a13a5969eec7a4742320cc3f91e141d5593",
++      "purpose": "Real AOSP Robolectric plugin implementation required by Robolectric_all",
++      "sparse_paths": [
++        "plugins/src/main/java",
++        "clearcut-junit-listener/src/main/java"
++      ]
++    },
++    {
++      "path": "packages/services/Car",
++      "name": "platform/packages/services/Car",
++      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
++      "purpose": "Actual android.car and android.car.builtin.impl providers required by the upstream Robolectric host framework",
++      "sparse_paths": [
++        "aconfig",
++        "car-lib/src",
++        "car-lib/jni/large-parcelable/src",
++        "car-builtin-lib/src",
++        "car-builtin-lib/api",
++        "libs/car-internal-dep-lib/src",
++        "teams"
++      ]
++    },
++    {
++      "path": "system/timezone",
++      "name": "platform/system/timezone",
++      "commit": "cbd571efcf6b551ba83a31147ec7a06182f8ec31",
++      "purpose": "Real robolectric_tzdata generator and timezone inputs",
++      "sparse_paths": [
++        "output_data"
++      ]
++    },
++    {
++      "path": "tools/asuite",
++      "name": "platform/tools/asuite",
++      "commit": "744998cb744c401a5daa77170039ab6337ed7adb",
++      "purpose": "Exact Android 17 proto implementation used by the mandatory Robolectric Clearcut JUnit listener",
++      "sparse_paths": [
++        "atest/proto"
++      ]
+     }
+   ]
+ }

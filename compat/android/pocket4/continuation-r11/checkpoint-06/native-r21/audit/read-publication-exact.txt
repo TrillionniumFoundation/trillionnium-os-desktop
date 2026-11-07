@@ -1,0 +1,355 @@
+
+00000000000050e0 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)>:
+    50e0:      	pushq	%rbp
+    50e1:      	movq	%rsp, %rbp
+    50e4:      	pushq	%r15
+    50e6:      	pushq	%r14
+    50e8:      	pushq	%r13
+    50ea:      	pushq	%r12
+    50ec:      	pushq	%rbx
+    50ed:      	subq	$0x2388, %rsp           # imm = 0x2388
+    50f4:      	movq	%rsi, %r15
+    50f7:      	movl	%edi, %r14d
+    50fa:      	callq	0x10720 <__errno@plt>
+    50ff:      	testl	%r14d, %r14d
+    5102:      	js	0x51f3 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x113>
+    5108:      	testq	%r15, %r15
+    510b:      	je	0x5203 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x123>
+    5111:      	movl	(%rax), %r12d
+    5114:      	movl	0x2bf0e(%rip), %ebx     # 0x31028 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state>
+    511a:      	testl	%ebx, %ebx
+    511c:      	je	0x5213 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x133>
+    5122:      	movq	%rax, -0x30(%rbp)
+    5126:      	movl	$0x27, %eax
+    512b:      	xorl	%edi, %edi
+    512d:      	xorl	%esi, %esi
+    512f:      	xorl	%edx, %edx
+    5131:      	xorl	%r10d, %r10d
+    5134:      	xorl	%r8d, %r8d
+    5137:      	xorl	%r9d, %r9d
+    513a:      	syscall
+    513c:      	cmpl	%eax, %ebx
+    513e:      	jne	0x5223 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x143>
+    5144:      	movq	$0x0, -0x70(%rbp)
+    514c:      	movb	$0x0, -0x68(%rbp)
+    5150:      	movq	$-0x1, -0x23a8(%rbp)
+    515b:      	leaq	-0x23a8(%rbp), %rsi
+    5162:      	leaq	-0x70(%rbp), %rdx
+    5166:      	movl	$0xe, %eax
+    516b:      	movl	$0x2, %edi
+    5170:      	movl	$0x8, %r10d
+    5176:      	xorl	%r8d, %r8d
+    5179:      	xorl	%r9d, %r9d
+    517c:      	syscall
+    517e:      	testq	%rax, %rax
+    5181:      	sete	-0x68(%rbp)
+    5185:      	js	0x5237 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x157>
+    518b:      	movl	0x2be9f(%rip), %eax     # 0x31030 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x8>
+    5191:      	cmpl	$0x1, %eax
+    5194:      	jne	0x5249 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x169>
+    519a:      	movl	%r12d, -0x34(%rbp)
+    519e:      	movq	%r15, -0x78(%rbp)
+    51a2:      	xorl	%r12d, %r12d
+    51a5:      	movl	$0x1, %r13d
+    51ab:      	leaq	0x2be82(%rip), %rdi     # 0x31034 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0xc>
+    51b2:      	movl	$0x80, %esi
+    51b7:      	movl	$0x1, %edx
+    51bc:      	jmp	0x51cb <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0xeb>
+    51be:      	nop
+    51c0:      	movl	%r15d, %r12d
+    51c3:      	testb	%bl, %bl
+    51c5:      	jne	0x525d <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x17d>
+    51cb:      	xorl	%eax, %eax
+    51cd:      	lock
+    51ce:      	cmpxchgl	%r13d, 0x2be5e(%rip)    # 0x31034 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0xc>
+    51d6:      	sete	%bl
+    51d9:      	movb	$0x1, %r15b
+    51dc:      	je	0x51c0 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0xe0>
+    51de:      	movl	$0xca, %eax
+    51e3:      	xorl	%r10d, %r10d
+    51e6:      	xorl	%r8d, %r8d
+    51e9:      	xorl	%r9d, %r9d
+    51ec:      	syscall
+    51ee:      	movl	%r12d, %r15d
+    51f1:      	jmp	0x51c0 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0xe0>
+    51f3:      	movl	$0x9, (%rax)
+    51f9:      	movl	$0xffffffff, %eax       # imm = 0xFFFFFFFF
+    51fe:      	jmp	0x573f <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x65f>
+    5203:      	movl	$0x16, (%rax)
+    5209:      	movl	$0xffffffff, %eax       # imm = 0xFFFFFFFF
+    520e:      	jmp	0x573f <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x65f>
+    5213:      	movl	$0x6c, (%rax)
+    5219:      	movl	$0xffffffff, %eax       # imm = 0xFFFFFFFF
+    521e:      	jmp	0x573f <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x65f>
+    5223:      	movq	-0x30(%rbp), %rax
+    5227:      	movl	$0x5f, (%rax)
+    522d:      	movl	$0xffffffff, %eax       # imm = 0xFFFFFFFF
+    5232:      	jmp	0x573f <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x65f>
+    5237:      	negl	%eax
+    5239:      	movq	-0x30(%rbp), %rcx
+    523d:      	movl	%eax, (%rcx)
+    523f:      	movl	$0xffffffff, %eax       # imm = 0xFFFFFFFF
+    5244:      	jmp	0x5717 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x637>
+    5249:      	movq	-0x30(%rbp), %rax
+    524d:      	movl	$0x6c, (%rax)
+    5253:      	movl	$0xffffffff, %eax       # imm = 0xFFFFFFFF
+    5258:      	jmp	0x5717 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x637>
+    525d:      	movl	0x2bdcd(%rip), %eax     # 0x31030 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x8>
+    5263:      	cmpl	$0x1, %eax
+    5266:      	jne	0x5634 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x554>
+    526c:      	movl	$0x0, -0x460(%rbp)
+    5276:      	movq	$0x0, -0x468(%rbp)
+    5281:      	movq	$0x0, -0x45c(%rbp)
+    528c:      	movl	$0x0, -0x454(%rbp)
+    5296:      	xorps	%xmm0, %xmm0
+    5299:      	movups	%xmm0, -0x450(%rbp)
+    52a0:      	movups	%xmm0, -0x440(%rbp)
+    52a7:      	leaq	-0x430(%rbp), %rdi
+    52ae:      	movl	$0x200, %edx            # imm = 0x200
+    52b3:      	xorl	%esi, %esi
+    52b5:      	callq	0x10770 <memset@plt>
+    52ba:      	movl	$0x0, -0x230(%rbp)
+    52c4:      	leaq	-0x228(%rbp), %rdi
+    52cb:      	movl	$0x1b0, %edx            # imm = 0x1B0
+    52d0:      	xorl	%esi, %esi
+    52d2:      	callq	0x10770 <memset@plt>
+    52d7:      	leaq	-0x468(%rbp), %rdi
+    52de:      	callq	0x44e0 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)>
+    52e3:      	movl	%eax, %r13d
+    52e6:      	testl	%eax, %eax
+    52e8:      	js	0x5643 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x563>
+    52ee:      	leaq	0x2bd7b(%rip), %rsi     # 0x31070 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x48>
+    52f5:      	leaq	-0x468(%rbp), %r12
+    52fc:      	movq	%r12, %rdi
+    52ff:      	callq	0x4700 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)>
+    5304:      	testb	%al, %al
+    5306:      	je	0x5643 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x563>
+    530c:      	movl	$0x160, %edx            # imm = 0x160
+    5311:      	leaq	-0x23a8(%rbp), %rbx
+    5318:      	movq	%rbx, %rdi
+    531b:      	xorl	%esi, %esi
+    531d:      	callq	0x10770 <memset@plt>
+    5322:      	xorps	%xmm0, %xmm0
+    5325:      	movups	%xmm0, -0x2248(%rbp)
+    532c:      	movups	%xmm0, -0x2238(%rbp)
+    5333:      	movups	%xmm0, -0x2228(%rbp)
+    533a:      	movq	$0x0, -0x2218(%rbp)
+    5345:      	movups	%xmm0, -0x2210(%rbp)
+    534c:      	movups	%xmm0, -0x2200(%rbp)
+    5353:      	movups	%xmm0, -0x21f0(%rbp)
+    535a:      	movups	%xmm0, -0x21e0(%rbp)
+    5361:      	movups	%xmm0, -0x21d0(%rbp)
+    5368:      	movups	%xmm0, -0x21c0(%rbp)
+    536f:      	movups	%xmm0, -0x21b0(%rbp)
+    5376:      	movups	%xmm0, -0x21a0(%rbp)
+    537d:      	movl	$0x0, -0x2190(%rbp)
+    5387:      	movq	$0x0, -0x218c(%rbp)
+    5392:      	movl	$0x0, -0x2184(%rbp)
+    539c:      	movups	%xmm0, -0x2180(%rbp)
+    53a3:      	movups	%xmm0, -0x2170(%rbp)
+    53aa:      	leaq	-0x2160(%rbp), %rdi
+    53b1:      	movl	$0x200, %edx            # imm = 0x200
+    53b6:      	xorl	%esi, %esi
+    53b8:      	callq	0x10770 <memset@plt>
+    53bd:      	movl	$0x0, -0x1f60(%rbp)
+    53c7:      	leaq	-0x1f58(%rbp), %rdi
+    53ce:      	movl	$0x1bc, %edx            # imm = 0x1BC
+    53d3:      	xorl	%esi, %esi
+    53d5:      	callq	0x10770 <memset@plt>
+    53da:      	movq	$0x0, -0x1d9c(%rbp)
+    53e5:      	movl	$0x0, -0x1d94(%rbp)
+    53ef:      	xorps	%xmm0, %xmm0
+    53f2:      	movups	%xmm0, -0x1d90(%rbp)
+    53f9:      	movups	%xmm0, -0x1d80(%rbp)
+    5400:      	leaq	-0x1d70(%rbp), %rdi
+    5407:      	movl	$0x200, %edx            # imm = 0x200
+    540c:      	xorl	%esi, %esi
+    540e:      	callq	0x10770 <memset@plt>
+    5413:      	movl	$0x0, -0x1b70(%rbp)
+    541d:      	leaq	-0x1b68(%rbp), %rdi
+    5424:      	leaq	-0x19b0(%rbp), %r13
+    542b:      	movl	$0x1b4, %edx            # imm = 0x1B4
+    5430:      	xorl	%esi, %esi
+    5432:      	callq	0x10770 <memset@plt>
+    5437:      	movl	$0x1158, %edx           # imm = 0x1158
+    543c:      	movq	%r13, %rdi
+    543f:      	xorl	%esi, %esi
+    5441:      	callq	0x10770 <memset@plt>
+    5446:      	movl	$0xba, %eax
+    544b:      	xorl	%edi, %edi
+    544d:      	xorl	%esi, %esi
+    544f:      	xorl	%edx, %edx
+    5451:      	xorl	%r10d, %r10d
+    5454:      	xorl	%r8d, %r8d
+    5457:      	xorl	%r9d, %r9d
+    545a:      	syscall
+    545c:      	movl	%eax, -0x60(%rbp)
+    545f:      	movl	%r14d, -0x5c(%rbp)
+    5463:      	movq	%rbx, -0x58(%rbp)
+    5467:      	movq	%r12, -0x50(%rbp)
+    546b:      	movl	$0xfffffc19, -0x48(%rbp) # imm = 0xFFFFFC19
+    5472:      	movb	$0x0, -0x44(%rbp)
+    5476:      	movl	$0x0, -0x40(%rbp)
+    547d:      	leaq	-0x60(%rbp), %rax
+    5481:      	movq	%rax, 0x2bbc0(%rip)     # 0x31048 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x20>
+    5488:      	movl	$0x1, 0x2bbaa(%rip)     # 0x3103c <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x14>
+    5492:      	lock
+    5493:      	incl	0x2bb9f(%rip)           # 0x31038 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x10>
+    5499:      	leaq	0x2bb98(%rip), %rdi     # 0x31038 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x10>
+    54a0:      	movl	$0xca, %eax
+    54a5:      	movl	$0x81, %esi
+    54aa:      	movl	$0x7fffffff, %edx       # imm = 0x7FFFFFFF
+    54af:      	xorl	%r10d, %r10d
+    54b2:      	xorl	%r8d, %r8d
+    54b5:      	xorl	%r9d, %r9d
+    54b8:      	syscall
+    54ba:      	movl	0x2bb78(%rip), %eax     # 0x31038 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x10>
+    54c0:      	movl	-0x40(%rbp), %ecx
+    54c3:      	testl	%ecx, %ecx
+    54c5:      	jne	0x54f3 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x413>
+    54c7:      	leaq	0x2bb6a(%rip), %rdi     # 0x31038 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x10>
+    54ce:      	movl	$0x80, %esi
+    54d3:      	movslq	%eax, %rdx
+    54d6:      	movl	$0xca, %eax
+    54db:      	xorl	%r10d, %r10d
+    54de:      	xorl	%r8d, %r8d
+    54e1:      	xorl	%r9d, %r9d
+    54e4:      	syscall
+    54e6:      	movl	0x2bb4c(%rip), %eax     # 0x31038 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x10>
+    54ec:      	movl	-0x40(%rbp), %ecx
+    54ef:      	testl	%ecx, %ecx
+    54f1:      	je	0x54d3 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x3f3>
+    54f3:      	movl	$0x0, -0x850(%rbp)
+    54fd:      	movq	$0x0, -0x858(%rbp)
+    5508:      	movq	$0x0, -0x84c(%rbp)
+    5513:      	movl	$0x0, -0x844(%rbp)
+    551d:      	xorps	%xmm0, %xmm0
+    5520:      	movups	%xmm0, -0x840(%rbp)
+    5527:      	movups	%xmm0, -0x830(%rbp)
+    552e:      	leaq	-0x820(%rbp), %rdi
+    5535:      	movl	$0x200, %edx            # imm = 0x200
+    553a:      	xorl	%esi, %esi
+    553c:      	callq	0x10770 <memset@plt>
+    5541:      	movl	$0x0, -0x620(%rbp)
+    554b:      	leaq	-0x618(%rbp), %rdi
+    5552:      	movl	$0x1b0, %edx            # imm = 0x1B0
+    5557:      	xorl	%esi, %esi
+    5559:      	callq	0x10770 <memset@plt>
+    555e:      	leaq	-0x858(%rbp), %rdi
+    5565:      	callq	0x44e0 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)>
+    556a:      	testl	%eax, %eax
+    556c:      	movl	-0x34(%rbp), %ebx
+    556f:      	js	0x5678 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x598>
+    5575:      	leaq	-0x468(%rbp), %rdi
+    557c:      	leaq	-0x858(%rbp), %rsi
+    5583:      	callq	0x4700 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)>
+    5588:      	testb	%al, %al
+    558a:      	je	0x569d <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x5bd>
+    5590:      	cmpb	$0x0, -0x44(%rbp)
+    5594:      	jne	0x569d <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x5bd>
+    559a:      	movl	-0x48(%rbp), %eax
+    559d:      	testl	%eax, %eax
+    559f:      	js	0x5751 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x671>
+    55a5:      	leaq	-0x2288(%rbp), %rax
+    55ac:      	movq	0x70(%rax), %rcx
+    55b0:      	movq	%rcx, 0xe8(%rax)
+    55b7:      	movups	0x60(%rax), %xmm0
+    55bb:      	movups	%xmm0, 0xd8(%rax)
+    55c2:      	movups	0x50(%rax), %xmm0
+    55c6:      	movups	%xmm0, 0xc8(%rax)
+    55cd:      	movups	0x40(%rax), %xmm0
+    55d1:      	movups	%xmm0, 0xb8(%rax)
+    55d8:      	movups	(%rax), %xmm0
+    55db:      	movups	0x10(%rax), %xmm1
+    55df:      	movups	0x20(%rax), %xmm2
+    55e3:      	movups	0x30(%rax), %xmm3
+    55e7:      	movups	%xmm3, 0xa8(%rax)
+    55ee:      	movups	%xmm2, 0x98(%rax)
+    55f5:      	movups	%xmm1, 0x88(%rax)
+    55fc:      	movups	%xmm0, 0x78(%rax)
+    5600:      	andb	$-0x21, -0x21c0(%rbp)
+    5607:      	leaq	-0x23a8(%rbp), %rsi
+    560e:      	movl	$0x1b50, %edx           # imm = 0x1B50
+    5613:      	movq	-0x78(%rbp), %rdi
+    5617:      	callq	0x10780 <memcpy@plt>
+    561c:      	movq	-0x30(%rbp), %rax
+    5620:      	movl	%ebx, (%rax)
+    5622:      	movl	-0x48(%rbp), %eax
+    5625:      	testb	$0x1, %r15b
+    5629:      	jne	0x56e8 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x608>
+    562f:      	jmp	0x5717 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x637>
+    5634:      	movq	-0x30(%rbp), %rax
+    5638:      	movl	$0x6c, (%rax)
+    563e:      	jmp	0x56dd <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x5fd>
+    5643:      	movb	$0x1, 0x2b9e3(%rip)     # 0x3102d <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x5>
+    564a:      	movl	$0x0, 0x2b9dc(%rip)     # 0x31030 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x8>
+    5654:      	movb	$0x0, 0x2b9d1(%rip)     # 0x3102c <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x4>
+    565b:      	callq	0x4800 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::RetireLocked()>
+    5660:      	movl	%r13d, %eax
+    5663:      	negl	%eax
+    5665:      	testl	%r13d, %r13d
+    5668:      	movl	$0x74, %ecx
+    566d:      	cmovsl	%eax, %ecx
+    5670:      	movq	-0x30(%rbp), %rax
+    5674:      	movl	%ecx, (%rax)
+    5676:      	jmp	0x56dd <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x5fd>
+    5678:      	movl	%eax, %r14d
+    567b:      	movb	$0x1, 0x2b9ab(%rip)     # 0x3102d <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x5>
+    5682:      	movl	$0x0, 0x2b9a4(%rip)     # 0x31030 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x8>
+    568c:      	movb	$0x0, 0x2b999(%rip)     # 0x3102c <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x4>
+    5693:      	callq	0x4800 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::RetireLocked()>
+    5698:      	negl	%r14d
+    569b:      	jmp	0x56d6 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x5f6>
+    569d:      	movb	$0x1, 0x2b989(%rip)     # 0x3102d <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x5>
+    56a4:      	movl	$0x0, 0x2b982(%rip)     # 0x31030 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x8>
+    56ae:      	movb	$0x0, 0x2b977(%rip)     # 0x3102c <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x4>
+    56b5:      	callq	0x4800 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::RetireLocked()>
+    56ba:      	movl	-0x48(%rbp), %eax
+    56bd:      	movl	%eax, %r14d
+    56c0:      	negl	%r14d
+    56c3:      	testl	%eax, %eax
+    56c5:      	movl	$0x74, %eax
+    56ca:      	cmovnsl	%eax, %r14d
+    56ce:      	cmpb	$0x0, -0x44(%rbp)
+    56d2:      	cmovel	%eax, %r14d
+    56d6:      	movq	-0x30(%rbp), %rax
+    56da:      	movl	%r14d, (%rax)
+    56dd:      	movl	$0xffffffff, %eax       # imm = 0xFFFFFFFF
+    56e2:      	testb	$0x1, %r15b
+    56e6:      	je	0x5717 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x637>
+    56e8:      	movl	$0x0, 0x2b942(%rip)     # 0x31034 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0xc>
+    56f2:      	leaq	0x2b93b(%rip), %rdi     # 0x31034 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0xc>
+    56f9:      	movl	%eax, %ebx
+    56fb:      	movl	$0xca, %eax
+    5700:      	movl	$0x81, %esi
+    5705:      	movl	$0x7fffffff, %edx       # imm = 0x7FFFFFFF
+    570a:      	xorl	%r10d, %r10d
+    570d:      	xorl	%r8d, %r8d
+    5710:      	xorl	%r9d, %r9d
+    5713:      	syscall
+    5715:      	movl	%ebx, %eax
+    5717:      	cmpb	$0x1, -0x68(%rbp)
+    571b:      	jne	0x573f <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x65f>
+    571d:      	leaq	-0x70(%rbp), %rsi
+    5721:      	movl	%eax, %ebx
+    5723:      	movl	$0xe, %eax
+    5728:      	movl	$0x2, %edi
+    572d:      	movl	$0x8, %r10d
+    5733:      	xorl	%edx, %edx
+    5735:      	xorl	%r8d, %r8d
+    5738:      	xorl	%r9d, %r9d
+    573b:      	syscall
+    573d:      	movl	%ebx, %eax
+    573f:      	addq	$0x2388, %rsp           # imm = 0x2388
+    5746:      	popq	%rbx
+    5747:      	popq	%r12
+    5749:      	popq	%r13
+    574b:      	popq	%r14
+    574d:      	popq	%r15
+    574f:      	popq	%rbp
+    5750:      	retq
+    5751:      	negl	%eax
+    5753:      	movq	-0x30(%rbp), %rcx
+    5757:      	movl	%eax, (%rcx)
+    5759:      	jmp	0x56dd <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x5fd>
+    575b:      	nopl	(%rax,%rax)

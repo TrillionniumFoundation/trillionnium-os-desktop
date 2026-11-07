@@ -1,0 +1,28 @@
+
+running 23 tests
+test ancestry::tests::held_ancestry_accepts_only_root_and_real_descendants ... ok
+test ancestry::tests::moving_an_owned_directory_revokes_a_previously_held_chain ... ok
+test ancestry::tests::replacing_the_same_name_does_not_replace_a_held_generation ... ok
+test enrollment::tests::cross_language_wire_vectors_and_exact_contract ... ok
+test enrollment::tests::request_rights_are_closed_before_admission ... ok
+test lifecycle_bootstrap::tests::audit_and_terminal_packet_survive_peer_close_with_exact_framing ... ok
+test lifecycle_bootstrap::tests::bootstrap_codec_is_fixed_and_rejects_reserved_policy ... ok
+test lifecycle_bootstrap::tests::bootstrap_parent_channel_rejects_extra_rights_and_old_nonce_commands ... ok
+test lifecycle_bootstrap::tests::inherited_rights_are_cloexec_and_owned_on_reject ... ok
+test lifecycle_bootstrap::tests::malformed_packet_closes_all_transferred_rights ... ok
+test lifecycle_bootstrap::tests::producer05_three_second_retirement_is_rejected_before_transport ... ok
+test lifecycle_bootstrap::tests::progress_audit_rejects_and_closes_unexpected_rights ... ok
+test lifecycle_bootstrap::tests::shared_retirement_bound_sends_exact_request_and_receives_terminal_ack ... ok
+test lifecycle_bootstrap::tests::terminal_status_survives_peer_close_but_never_certifies_pressure ... ok
+test lifecycle_relay::tests::cancellation_fd_is_real_bounded_and_idempotent ... ok
+test lifecycle_relay::tests::live_lifecycle_pidfd_is_not_a_replacement_certificate ... ok
+test lifecycle_relay::tests::one_lifecycle_claim_survives_failure_and_concurrent_clones ... ok
+test pressure_audit::tests::actual_trigger_audit_codec_and_bounds ... ok
+test pressure_audit::tests::incomplete_or_lowered_threshold_audit_cannot_qualify ... ok
+test psi::tests::cancellation_keeps_priority_but_accounts_for_consumed_psi_tail ... ok
+test psi::tests::exact_thresholds_and_bounded_progress_are_not_relaxed ... ok
+test tests::poisoned_sender_lock_revokes_existing_real_capability_without_deadlock ... ok
+test tests::retirement_panic_cannot_be_retried_into_success ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

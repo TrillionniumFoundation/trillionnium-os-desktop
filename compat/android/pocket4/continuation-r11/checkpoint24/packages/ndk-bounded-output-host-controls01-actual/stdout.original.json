@@ -1,0 +1,965 @@
+{
+  "Android_commands": 0,
+  "Main_reads": 0,
+  "alarm_restored": true,
+  "all_owned_test_FDs_closed": true,
+  "ambient_FD_baseline_before_production_load": {
+    "0": [
+      66306,
+      59127712,
+      33152,
+      1000,
+      1000,
+      0,
+      1
+    ],
+    "1": [
+      16,
+      3473348838,
+      4480,
+      1000,
+      1000,
+      0,
+      1
+    ],
+    "2": [
+      16,
+      3473348839,
+      4480,
+      1000,
+      1000,
+      0,
+      1
+    ]
+  },
+  "ambient_FD_equality": true,
+  "ambient_FD_final": {
+    "0": [
+      66306,
+      59127712,
+      33152,
+      1000,
+      1000,
+      0,
+      1
+    ],
+    "1": [
+      16,
+      3473348838,
+      4480,
+      1000,
+      1000,
+      0,
+      1
+    ],
+    "2": [
+      16,
+      3473348839,
+      4480,
+      1000,
+      1000,
+      0,
+      1
+    ]
+  },
+  "authority_FD_events": [
+    {
+      "closed": true,
+      "fd": 5,
+      "role": "synthetic_authority"
+    },
+    {
+      "closed": true,
+      "fd": 6,
+      "role": "synthetic_authority"
+    },
+    {
+      "closed": true,
+      "fd": 7,
+      "role": "synthetic_authority"
+    },
+    {
+      "closed": true,
+      "fd": 8,
+      "role": "synthetic_authority"
+    },
+    {
+      "closed": true,
+      "fd": 9,
+      "role": "synthetic_authority"
+    },
+    {
+      "closed": true,
+      "fd": 10,
+      "role": "synthetic_authority"
+    },
+    {
+      "closed": true,
+      "fd": 11,
+      "role": "synthetic_authority"
+    }
+  ],
+  "cleanup_errors": [],
+  "controller_Main_Android_or_namespace_actions": 0,
+  "elapsed_seconds": 2.162882453063503,
+  "enumeration_FDs_already_EBADF": {
+    "after": [
+      3
+    ],
+    "before": [
+      3
+    ]
+  },
+  "error": null,
+  "exact_packet": {
+    "bytes": 205865,
+    "sha256": "bb5695f3f478d342d442d723966215ae10b1b6c4f5b156a59eaf81b9d969449c"
+  },
+  "expected_pure_controls": 2,
+  "expected_real_child_controls": 5,
+  "five_source_members": {
+    "check_bounded_output.py": {
+      "bytes": 29153,
+      "sha256": "6e553b8eff7dc48446ac626190df13af67c96566777f137f011b229c1d71b619"
+    },
+    "fixture_context.py": {
+      "bytes": 42038,
+      "sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c"
+    },
+    "fixture_contract.py": {
+      "bytes": 25331,
+      "sha256": "1b027dc076f0ee5d89df1e95ae76fddeacab1adaafb5e77e4b05b63f47593261"
+    },
+    "fixture_transport.py": {
+      "bytes": 15455,
+      "sha256": "8c4aa937cbc56f3d0eaf104da1782704ce3578256dd8b1fbb0963650a6d08692"
+    },
+    "recorder.py": {
+      "bytes": 41689,
+      "sha256": "c63cbdca615a609ebb41bcb25db6b770f43c4488c46a8f7b1dbee4bc462b4e64"
+    }
+  },
+  "host_namespaces_credentials_and_fsize_unchanged": true,
+  "kind": "pocket4-ndk-bounded-output-host-controls01",
+  "namespace_entries": 0,
+  "network_calls": 0,
+  "ok": true,
+  "original_run01_status": "FAILED_OUTCOME_UNKNOWN_PRESERVED",
+  "own_directory_FD_events": [
+    {
+      "closed": true,
+      "fd": 3,
+      "role": "workspace_parent"
+    },
+    {
+      "closed": true,
+      "fd": 4,
+      "role": "own_directory"
+    },
+    {
+      "closed": true,
+      "fd": 12,
+      "role": "own_directory"
+    },
+    {
+      "closed": true,
+      "fd": 13,
+      "role": "own_directory"
+    },
+    {
+      "closed": true,
+      "fd": 14,
+      "role": "own_directory"
+    },
+    {
+      "closed": true,
+      "fd": 15,
+      "role": "own_directory"
+    },
+    {
+      "closed": true,
+      "fd": 16,
+      "role": "own_directory"
+    }
+  ],
+  "private_fixture_root_removed": true,
+  "production_Android_execution_qualified": false,
+  "pure_transport_order_controls": [
+    {
+      "explicit_CompletedProcess_seam": true,
+      "name": "capture_error_before_cleanup_rc_is_primary",
+      "passed": true,
+      "real_children": 0
+    },
+    {
+      "explicit_CompletedProcess_seam": true,
+      "name": "observed_nonzero_exit_precedes_late_capture_error",
+      "passed": true,
+      "real_children": 0
+    }
+  ],
+  "real_host_child_controls": [
+    {
+      "Main_or_Android_executed": false,
+      "actual_host_child": true,
+      "capture": {
+        "EOF": {
+          "stderr": true,
+          "stdout": true
+        },
+        "RLIMIT_FSIZE_after": [
+          -1,
+          -1
+        ],
+        "RLIMIT_FSIZE_before": [
+          -1,
+          -1
+        ],
+        "RLIMIT_FSIZE_modified": false,
+        "complete": true,
+        "limit_exceeded": false,
+        "maximum_bytes": 262144,
+        "no_stream_reads_after_first_failure": true,
+        "observed_bytes": {
+          "stderr": 22,
+          "stdout": 45
+        },
+        "observed_failure_preceded_capture_error": false,
+        "policy": "per-stream-private-prefix-v1",
+        "prefix_only": false,
+        "stored_bytes": {
+          "stderr": 22,
+          "stdout": 45
+        }
+      },
+      "command_receipt": {
+        "bytes": 2656,
+        "sha256": "7cbc173c42822c333cbac7d3a3c0235e38558e9071e4bacfa8bf60bfb9b96b87"
+      },
+      "name": "own_artifact_larger_than_log_cap",
+      "owned_lifecycle": {
+        "FDs": [
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 13,
+            "role": "selector"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 14,
+            "role": "stdout_log"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 15,
+            "role": "stderr_log"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 16,
+            "role": "stdout_pipe"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 18,
+            "role": "stderr_pipe"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 17,
+            "role": "leader_pidfd"
+          }
+        ],
+        "all_tracked_FDs_closed": true,
+        "direct_child_reaped": true,
+        "escaped_sessions_or_Binder_descendants_qualified": false,
+        "group_signals_after_reap_started": false,
+        "observation_deadline": 1035584.782507544,
+        "reap_started_at": 1035576.818179409,
+        "reaped_at": 1035576.818262687,
+        "retired_at": 1035576.819364184,
+        "retirement_deadline": 1035581.818177155,
+        "retirement_deadline_met": true,
+        "retirement_started": 1035576.818177155,
+        "session_observations": [
+          {
+            "observed_monotonic": 1035576.783407858,
+            "pid": 2613795,
+            "pidfd_open": true,
+            "process_group": 2613795,
+            "reap_started": false,
+            "session": 2613795,
+            "stage": "after_spawn"
+          }
+        ],
+        "signal_observations": [],
+        "waitid_uses_WNOWAIT": true
+      },
+      "passed": true,
+      "returncode": 0,
+      "stderr": {
+        "bytes": 22,
+        "sha256": "925a782d19fef6c645ce1c45432aabd27b46c99e0937a7ad97be74f5d7657b5f"
+      },
+      "stdout": {
+        "bytes": 45,
+        "sha256": "1dc96496d50c980bf3313fac73ec8e238e5f2aa97b06a81052ca0b15ab272081"
+      },
+      "synthetic_guard_calls": 1,
+      "timed_out": false
+    },
+    {
+      "Main_or_Android_executed": false,
+      "actual_host_child": true,
+      "capture": {
+        "EOF": {
+          "stderr": true,
+          "stdout": true
+        },
+        "RLIMIT_FSIZE_after": [
+          -1,
+          -1
+        ],
+        "RLIMIT_FSIZE_before": [
+          -1,
+          -1
+        ],
+        "RLIMIT_FSIZE_modified": false,
+        "complete": true,
+        "limit_exceeded": false,
+        "maximum_bytes": 262144,
+        "no_stream_reads_after_first_failure": true,
+        "observed_bytes": {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        "observed_failure_preceded_capture_error": false,
+        "policy": "per-stream-private-prefix-v1",
+        "prefix_only": false,
+        "stored_bytes": {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      },
+      "command_receipt": {
+        "bytes": 2673,
+        "sha256": "e7a7f68cea2ce4d404c3ca39e26c14802086d97ee67d1ab95d50f8ff8526b7ba"
+      },
+      "name": "both_streams_exactly_at_cap",
+      "owned_lifecycle": {
+        "FDs": [
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 14,
+            "role": "selector"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 15,
+            "role": "stdout_log"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 16,
+            "role": "stderr_log"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 17,
+            "role": "stdout_pipe"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 19,
+            "role": "stderr_pipe"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 18,
+            "role": "leader_pidfd"
+          }
+        ],
+        "all_tracked_FDs_closed": true,
+        "direct_child_reaped": true,
+        "escaped_sessions_or_Binder_descendants_qualified": false,
+        "group_signals_after_reap_started": false,
+        "observation_deadline": 1035584.822298368,
+        "reap_started_at": 1035576.844897091,
+        "reaped_at": 1035576.844969729,
+        "retired_at": 1035576.846275364,
+        "retirement_deadline": 1035581.844895368,
+        "retirement_deadline_met": true,
+        "retirement_started": 1035576.844895368,
+        "session_observations": [
+          {
+            "observed_monotonic": 1035576.823568025,
+            "pid": 2613797,
+            "pidfd_open": true,
+            "process_group": 2613797,
+            "reap_started": false,
+            "session": 2613797,
+            "stage": "after_spawn"
+          }
+        ],
+        "signal_observations": [],
+        "waitid_uses_WNOWAIT": true
+      },
+      "passed": true,
+      "returncode": 0,
+      "stderr": {
+        "bytes": 262144,
+        "sha256": "caf546901c2a1966d4530a5a6d0323691f474ee2d6b44286799c440458c7b77f"
+      },
+      "stdout": {
+        "bytes": 262144,
+        "sha256": "4480ce8e19e155ff39079e3379eafd8f369c739e24931ddc684994c2cd12ca91"
+      },
+      "synthetic_guard_calls": 1,
+      "timed_out": false
+    },
+    {
+      "Main_or_Android_executed": false,
+      "actual_host_child": true,
+      "capture": {
+        "EOF": {
+          "stderr": false,
+          "stdout": false
+        },
+        "RLIMIT_FSIZE_after": [
+          -1,
+          -1
+        ],
+        "RLIMIT_FSIZE_before": [
+          -1,
+          -1
+        ],
+        "RLIMIT_FSIZE_modified": false,
+        "complete": false,
+        "limit_exceeded": true,
+        "maximum_bytes": 262144,
+        "no_stream_reads_after_first_failure": true,
+        "observed_bytes": {
+          "stderr": 23,
+          "stdout": 262145
+        },
+        "observed_failure_preceded_capture_error": false,
+        "policy": "per-stream-private-prefix-v1",
+        "prefix_only": true,
+        "stored_bytes": {
+          "stderr": 23,
+          "stdout": 262144
+        }
+      },
+      "command_receipt": {
+        "bytes": 3657,
+        "sha256": "45c928bcda9721118628e56f81f6a2119ff76c3340f9f387684576786b737328"
+      },
+      "name": "stdout_overflow_preserves_primary",
+      "owned_lifecycle": {
+        "FDs": [
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 15,
+            "role": "selector"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 16,
+            "role": "stdout_log"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 17,
+            "role": "stderr_log"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 18,
+            "role": "stdout_pipe"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 20,
+            "role": "stderr_pipe"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 19,
+            "role": "leader_pidfd"
+          }
+        ],
+        "all_tracked_FDs_closed": true,
+        "direct_child_reaped": true,
+        "escaped_sessions_or_Binder_descendants_qualified": false,
+        "group_signals_after_reap_started": false,
+        "observation_deadline": 1035584.850169907,
+        "reap_started_at": 1035576.867962612,
+        "reaped_at": 1035576.869063056,
+        "retired_at": 1035576.870227042,
+        "retirement_deadline": 1035581.867925952,
+        "retirement_deadline_met": true,
+        "retirement_started": 1035576.867925952,
+        "session_observations": [
+          {
+            "observed_monotonic": 1035576.850840042,
+            "pid": 2613798,
+            "pidfd_open": true,
+            "process_group": 2613798,
+            "reap_started": false,
+            "session": 2613798,
+            "stage": "after_spawn"
+          },
+          {
+            "observed_monotonic": 1035576.86793541,
+            "pid": 2613798,
+            "pidfd_open": true,
+            "process_group": 2613798,
+            "reap_started": false,
+            "session": 2613798,
+            "stage": "before_group_signal"
+          }
+        ],
+        "signal_observations": [
+          {
+            "attempted": true,
+            "kind": "own_process_group",
+            "not_found": false,
+            "observed_monotonic": 1035576.867938977,
+            "pid": 2613798,
+            "reap_started": false,
+            "sent": true
+          },
+          {
+            "attempted": true,
+            "kind": "own_pidfd_leader",
+            "not_found": false,
+            "observed_monotonic": 1035576.86795622,
+            "reap_started": false,
+            "sent": true
+          }
+        ],
+        "waitid_uses_WNOWAIT": true
+      },
+      "passed": true,
+      "returncode": -9,
+      "stderr": {
+        "bytes": 23,
+        "sha256": "29fcc1cb5454d16ce5c8f81eaaae1da2a61169c74be3247d3bd0bb06350552f3"
+      },
+      "stdout": {
+        "bytes": 262144,
+        "sha256": "ce025cafda7f72a18470aa22f1649d4d3bcba46d50da01a878e6191704844c89"
+      },
+      "synthetic_guard_calls": 1,
+      "timed_out": false
+    },
+    {
+      "Main_or_Android_executed": false,
+      "actual_host_child": true,
+      "capture": {
+        "EOF": {
+          "stderr": false,
+          "stdout": false
+        },
+        "RLIMIT_FSIZE_after": [
+          -1,
+          -1
+        ],
+        "RLIMIT_FSIZE_before": [
+          -1,
+          -1
+        ],
+        "RLIMIT_FSIZE_modified": false,
+        "complete": false,
+        "limit_exceeded": true,
+        "maximum_bytes": 262144,
+        "no_stream_reads_after_first_failure": true,
+        "observed_bytes": {
+          "stderr": 262145,
+          "stdout": 23
+        },
+        "observed_failure_preceded_capture_error": false,
+        "policy": "per-stream-private-prefix-v1",
+        "prefix_only": true,
+        "stored_bytes": {
+          "stderr": 262144,
+          "stdout": 23
+        }
+      },
+      "command_receipt": {
+        "bytes": 3660,
+        "sha256": "62fa1fdce6901a293e534c0e304272cb9beb28e48940aa6702867d1849d0e9e1"
+      },
+      "name": "stderr_overflow_preserves_primary",
+      "owned_lifecycle": {
+        "FDs": [
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 16,
+            "role": "selector"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 17,
+            "role": "stdout_log"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 18,
+            "role": "stderr_log"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 19,
+            "role": "stdout_pipe"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 21,
+            "role": "stderr_pipe"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 20,
+            "role": "leader_pidfd"
+          }
+        ],
+        "all_tracked_FDs_closed": true,
+        "direct_child_reaped": true,
+        "escaped_sessions_or_Binder_descendants_qualified": false,
+        "group_signals_after_reap_started": false,
+        "observation_deadline": 1035584.873585594,
+        "reap_started_at": 1035576.892634971,
+        "reaped_at": 1035576.893774901,
+        "retired_at": 1035576.895328788,
+        "retirement_deadline": 1035581.892606758,
+        "retirement_deadline_met": true,
+        "retirement_started": 1035576.892606758,
+        "session_observations": [
+          {
+            "observed_monotonic": 1035576.874220623,
+            "pid": 2613799,
+            "pidfd_open": true,
+            "process_group": 2613799,
+            "reap_started": false,
+            "session": 2613799,
+            "stage": "after_spawn"
+          },
+          {
+            "observed_monotonic": 1035576.892616566,
+            "pid": 2613799,
+            "pidfd_open": true,
+            "process_group": 2613799,
+            "reap_started": false,
+            "session": 2613799,
+            "stage": "before_group_signal"
+          }
+        ],
+        "signal_observations": [
+          {
+            "attempted": true,
+            "kind": "own_process_group",
+            "not_found": false,
+            "observed_monotonic": 1035576.892619532,
+            "pid": 2613799,
+            "reap_started": false,
+            "sent": true
+          },
+          {
+            "attempted": true,
+            "kind": "own_pidfd_leader",
+            "not_found": false,
+            "observed_monotonic": 1035576.892630703,
+            "reap_started": false,
+            "sent": true
+          }
+        ],
+        "waitid_uses_WNOWAIT": true
+      },
+      "passed": true,
+      "returncode": -9,
+      "stderr": {
+        "bytes": 262144,
+        "sha256": "bf45c7fbac0949f796ba42a6c9f202379102a1380607df5edd02a06da3cb6cd2"
+      },
+      "stdout": {
+        "bytes": 23,
+        "sha256": "e1d2a5434646a22f6c9e5fe4301e5202c8faa44dd84636715b45cd071a51aa53"
+      },
+      "synthetic_guard_calls": 1,
+      "timed_out": false
+    },
+    {
+      "Main_or_Android_executed": false,
+      "actual_host_child": true,
+      "capture": {
+        "EOF": {
+          "stderr": false,
+          "stdout": false
+        },
+        "RLIMIT_FSIZE_after": [
+          -1,
+          -1
+        ],
+        "RLIMIT_FSIZE_before": [
+          -1,
+          -1
+        ],
+        "RLIMIT_FSIZE_modified": false,
+        "complete": false,
+        "limit_exceeded": false,
+        "maximum_bytes": 262144,
+        "no_stream_reads_after_first_failure": true,
+        "observed_bytes": {
+          "stderr": 20,
+          "stdout": 20
+        },
+        "observed_failure_preceded_capture_error": false,
+        "policy": "per-stream-private-prefix-v1",
+        "prefix_only": true,
+        "stored_bytes": {
+          "stderr": 20,
+          "stdout": 20
+        }
+      },
+      "command_receipt": {
+        "bytes": 3612,
+        "sha256": "8146da1efa81c3843ce31e1cb087e4b13b6d61244e61bfed4759f28fe2eb4134"
+      },
+      "name": "timeout_retires_own_child",
+      "owned_lifecycle": {
+        "FDs": [
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 17,
+            "role": "selector"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 18,
+            "role": "stdout_log"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 19,
+            "role": "stderr_log"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 20,
+            "role": "stdout_pipe"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 22,
+            "role": "stderr_pipe"
+          },
+          {
+            "close_attempted": true,
+            "closed": true,
+            "fd": 21,
+            "role": "leader_pidfd"
+          }
+        ],
+        "all_tracked_FDs_closed": true,
+        "direct_child_reaped": true,
+        "escaped_sessions_or_Binder_descendants_qualified": false,
+        "group_signals_after_reap_started": false,
+        "observation_deadline": 1035578.898641513,
+        "reap_started_at": 1035578.899758826,
+        "reaped_at": 1035578.900915247,
+        "retired_at": 1035578.903053427,
+        "retirement_deadline": 1035583.89972418,
+        "retirement_deadline_met": true,
+        "retirement_started": 1035578.89972418,
+        "session_observations": [
+          {
+            "observed_monotonic": 1035576.899441707,
+            "pid": 2613800,
+            "pidfd_open": true,
+            "process_group": 2613800,
+            "reap_started": false,
+            "session": 2613800,
+            "stage": "after_spawn"
+          },
+          {
+            "observed_monotonic": 1035578.899737566,
+            "pid": 2613800,
+            "pidfd_open": true,
+            "process_group": 2613800,
+            "reap_started": false,
+            "session": 2613800,
+            "stage": "before_group_signal"
+          }
+        ],
+        "signal_observations": [
+          {
+            "attempted": true,
+            "kind": "own_process_group",
+            "not_found": false,
+            "observed_monotonic": 1035578.899741183,
+            "pid": 2613800,
+            "reap_started": false,
+            "sent": true
+          },
+          {
+            "attempted": true,
+            "kind": "own_pidfd_leader",
+            "not_found": false,
+            "observed_monotonic": 1035578.899753496,
+            "reap_started": false,
+            "sent": true
+          }
+        ],
+        "waitid_uses_WNOWAIT": true
+      },
+      "passed": true,
+      "returncode": -9,
+      "stderr": {
+        "bytes": 20,
+        "sha256": "4cf4cb4b2e18f7dab5da037b1fd764b39bf4cc2104fcfc290d7f534fa64478ef"
+      },
+      "stdout": {
+        "bytes": 20,
+        "sha256": "11ae19ec41b336d68c5a16e75e3d905d5235fc136c61b4055237f49e41c55e0c"
+      },
+      "synthetic_guard_calls": 1,
+      "timed_out": true
+    }
+  ],
+  "runtime_nonce_consumed": false,
+  "schema": 1,
+  "shared_source_mutations": 0,
+  "signal_25_or_file_size_cause_qualified": false,
+  "sources": {
+    "fixture_context.py": {
+      "bytes": 42038,
+      "sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c"
+    },
+    "fixture_contract.py": {
+      "bytes": 25331,
+      "sha256": "1b027dc076f0ee5d89df1e95ae76fddeacab1adaafb5e77e4b05b63f47593261"
+    },
+    "fixture_transport.py": {
+      "bytes": 15455,
+      "sha256": "8c4aa937cbc56f3d0eaf104da1782704ce3578256dd8b1fbb0963650a6d08692"
+    },
+    "recorder.py": {
+      "bytes": 41689,
+      "sha256": "c63cbdca615a609ebb41bcb25db6b770f43c4488c46a8f7b1dbee4bc462b4e64"
+    }
+  },
+  "test_read_FD_events": [
+    {
+      "closed": true,
+      "fd": 13,
+      "role": "test_read"
+    },
+    {
+      "closed": true,
+      "fd": 13,
+      "role": "test_read"
+    },
+    {
+      "closed": true,
+      "fd": 13,
+      "role": "test_read"
+    },
+    {
+      "closed": true,
+      "fd": 13,
+      "role": "test_read"
+    },
+    {
+      "closed": true,
+      "fd": 14,
+      "role": "test_read"
+    },
+    {
+      "closed": true,
+      "fd": 14,
+      "role": "test_read"
+    },
+    {
+      "closed": true,
+      "fd": 14,
+      "role": "test_read"
+    },
+    {
+      "closed": true,
+      "fd": 15,
+      "role": "test_read"
+    },
+    {
+      "closed": true,
+      "fd": 15,
+      "role": "test_read"
+    },
+    {
+      "closed": true,
+      "fd": 15,
+      "role": "test_read"
+    },
+    {
+      "closed": true,
+      "fd": 16,
+      "role": "test_read"
+    },
+    {
+      "closed": true,
+      "fd": 16,
+      "role": "test_read"
+    },
+    {
+      "closed": true,
+      "fd": 16,
+      "role": "test_read"
+    },
+    {
+      "closed": true,
+      "fd": 17,
+      "role": "test_read"
+    },
+    {
+      "closed": true,
+      "fd": 17,
+      "role": "test_read"
+    },
+    {
+      "closed": true,
+      "fd": 17,
+      "role": "test_read"
+    }
+  ],
+  "umask_restored": true,
+  "whole_invocation_resource_qualified": false
+}

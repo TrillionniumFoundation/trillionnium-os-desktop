@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "ok": true,
+  "scope": "revision10 owned staging only",
+  "started_utc": "2026-11-04T17:57:09.773472+00:00",
+  "pressure_executed": false,
+  "installed_files_changed": false,
+  "phase": "stale",
+  "unit": "p4-lmkd-relay-stale-r11-03.service",
+  "coordinator_root": "/home/alex/work/pocket4-lmkd-pressure-r11-coordinator-07",
+  "state": "/run/p4-lmkd-relay-stale-r11-03",
+  "stage": "/opt/p4-lmkd-relay-stale-r11-03",
+  "source_manifest_sha256": "bc996fe6c763b0270de97d85c0f7ace71fd3804ca432c49d79f05ec21edec9e5",
+  "matching_build_receipt_sha256": "153c08dd7744149e0a1ff67f035d6a42cb218800521baca229f4950715076d46",
+  "binaries_sha256": {
+    "actor": "cc610f548fc567ceab31695aacb3c80f4397321051b3a45459835854526c2011",
+    "driver": "a9de6becc67b03ccc877ed54b64ee7c3c1b3398f546fb6464d9b52f707ebe00b",
+    "broker": "6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154",
+    "android_lmkd": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde"
+  },
+  "positive_predecessor": {
+    "path": "/home/alex/work/pocket4-lmkd-pressure-r11-coordinator-06/02-pressure-once/result.json",
+    "sha256": "158ec28a6c0cd05c36314f30a14feec6a93d7a793e34790fe5b957d3b9f5c67e",
+    "partial_medium_only": false
+  },
+  "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "available_memory_bytes": 15541784576,
+  "argv": [
+    "/home/alex/work/pocket4-lmkd-host-pressure-r11-source-10/target/debug/owned-relay-canary",
+    "prepare",
+    "/opt/p4-lmkd-relay-stale-r11-03/root",
+    "/run/p4-lmkd-relay-stale-r11-03",
+    "p4-lmkd-relay-stale-r11-03.service",
+    "/home/alex/work/pocket4-lmkd-host-pressure-r11-source-10/owned-relay/fixture-init",
+    "cc610f548fc567ceab31695aacb3c80f4397321051b3a45459835854526c2011",
+    "/home/alex/work/pocket4-lmkd-enrollment-r6-android-build-01/link/lmkd-cgroup",
+    "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde"
+  ],
+  "returncode": 0,
+  "stdout": "{\"ok\":true,\"prepared\":true,\"processes_started\":false}\n",
+  "stderr": "",
+  "staging_result_sha256": "4045ad85e9a18cef02a2330603329fac58120f1aef9570af6ceefed45e9992ed",
+  "staging_result": {
+    "ok": true,
+    "actor_sha256": "cc610f548fc567ceab31695aacb3c80f4397321051b3a45459835854526c2011",
+    "lmkd_sha256": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde",
+    "pinned_library_files": 15,
+    "all_source_and_copied_hashes_matched": true,
+    "processes_started": false,
+    "namespaces_created": false,
+    "pressure": false
+  },
+  "main_epoch_unchanged": true,
+  "finished_utc": "2026-11-04T17:57:10.046923+00:00"
+}

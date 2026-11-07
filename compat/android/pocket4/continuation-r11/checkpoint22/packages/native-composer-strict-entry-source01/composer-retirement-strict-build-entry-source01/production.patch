@@ -1,0 +1,747 @@
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -2369,6 +2369,240 @@
+     Ok(blueprint.replacen(PRIVATE_CONSCRYPT_FUZZER_MODULE, "", 1))
+ }
+ 
++
++/// These two real Android modules are the whole build-only retirement entry.
++pub const COMPOSER_RETIREMENT_TARGETS: &[&str] = &[
++    "android.hardware.graphics.composer3-service.droidloom",
++    "droidloom-composer-aidl-tests",
++];
++const COMPOSER_RETIREMENT_SOURCE_LOCK_SHA: &str =
++    "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d";
++const COMPOSER_RETIREMENT_INPUTS: &[(&str, usize, &str)] = &[
++    ("graphics/droidloom-denial-protocol/src/lib.rs", 105464, "6c7f8df133f2a9e55bd375da4b39dcba5b00d0c4c3ba6531a6b8be329ebce41c"),
++    ("graphics/droidloom-denial-endpoint/src/lib.rs", 63752, "062b65857160eb6e3aeba2a78c4ce3d8503c02572f24353f8c944d950e52308c"),
++    ("graphics/droidloom-wayland/src/retirement.rs", 11118, "383f4c6f7490c8568f1853af6e9449fdb35bdb088348de4a9856d75f97306873"),
++    ("graphics/droidloom-wayland/src/main.rs", 110131, "0f56264e971db9f246d8db34d7fd5de157fd389a97bfb34492a6f53376d27459"),
++    ("graphics/droidloom-wayland/src/layers.rs", 35990, "d0a81ce5339c5020496e9b73e007d52ee206449827269b272e4ef6ef43df5ecc"),
++    ("graphics/droidloom-composer-aidl/src/denial.rs", 50513, "d6f13720da4267ff46f369617faecbb8c6446eca2c624e381c1ff51ddaebbf09"),
++    ("graphics/droidloom-composer/src/denial.rs", 25541, "ed0080cd33a3a4fa67b3a0c2e95bc274ab38e992ec073ab01d87b910bf2db3c8"),
++    ("graphics/droidloom-composer-service/src/main.rs", 19202, "567c60fd293f35e2e0957db6f38bc967cc0c3fa90354b98491d461a7decdb4ce"),
++    ("graphics/droidloom-composer-service/src/control.rs", 42491, "d3d9f4b763a6e80b6549119e42b4d6c3c6ab7368359f3cc71d2e090f05a881ca"),
++];
++// Metadata contracts are checkout inputs; android/hardware is not part of the
++// existing vendor rsync list and is not invented as an Android source output.
++const COMPOSER_RETIREMENT_DECLARATIONS: &[(&str, usize, &str)] = &[
++    ("Android.bp", 13561, "5f124886cad4dbf79ddac0c71bb2a8743f235ec218c8821d0b9befaf08f1fd80"),
++    ("android/hardware/composer/aidl-lock.json", 863, "7b128d4738e1b645571c6e03b8d29de5c2e8d8a4d53b56b9e53832c9652d5077"),
++    ("android/hardware/composer/service-contract.json", 2636, "18470ab9ce8ee4262871275a3eaf3fe98085d8d820696a69430cccd748e799ac"),
++];
++
++fn validate_composer_retirement_route(
++    mode: SoongDependencyMode,
++    targets: &[&str],
++    product: &str,
++    art_flavor: Option<crate::native_generation_art::Flavor>,
++    typed_ingress: bool,
++    resume_source_staging: Option<&Path>,
++) -> Result<()> {
++    if mode != SoongDependencyMode::Strict || targets != COMPOSER_RETIREMENT_TARGETS
++        || product != "droidloom_x86_64" || art_flavor.is_some()
++        || typed_ingress || resume_source_staging.is_some()
++    {
++        return fail("Composer retirement build requires its two fixed Android targets, strict dependencies, current product and no ART/typed/resume route");
++    }
++    Ok(())
++}
++
++// Read only the explicit production or metadata list. The complete 500-entry
++// checkout remains an independent compiler/controller input authority.
++fn composer_retirement_fixed_inputs(
++    root: &Path, inputs: &[(&str, usize, &str)],
++) -> Result<serde_json::Value> {
++    use sha2::{Digest, Sha256};
++    use std::io::Read;
++    use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
++    if !root.is_absolute() {
++        return fail("Composer retirement source root must be absolute");
++    }
++    let signature = |m: &fs::Metadata| (
++        m.dev(), m.ino(), m.mode(), m.uid(), m.gid(), m.nlink(), m.len(),
++        m.mtime(), m.mtime_nsec(), m.ctime(), m.ctime_nsec(),
++    );
++    let mut inventory = BTreeMap::new();
++    for (relative, expected_bytes, expected_sha256) in inputs {
++        let path = root.join(relative);
++        for parent in path.ancestors().skip(1) {
++            let metadata = fs::symlink_metadata(parent)?;
++            if !metadata.is_dir() || metadata.file_type().is_symlink() {
++                return fail(format!("Composer fixed input parent is not a real directory: {}", parent.display()));
++            }
++        }
++        let mut file = fs::OpenOptions::new().read(true)
++            .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC).open(&path)?;
++        let before = file.metadata()?;
++        if !before.is_file() || before.len() != *expected_bytes as u64
++            || *expected_bytes > 1024 * 1024
++        {
++            return fail(format!("Composer fixed input type/size differs: {relative}"));
++        }
++        let mut bytes = Vec::with_capacity(*expected_bytes);
++        (&mut file).take(*expected_bytes as u64 + 1).read_to_end(&mut bytes)?;
++        let after = file.metadata()?;
++        let named = fs::symlink_metadata(&path)?;
++        let digest = format!("{:x}", Sha256::digest(&bytes));
++        if bytes.len() != *expected_bytes || digest != *expected_sha256
++            || signature(&before) != signature(&after) || signature(&before) != signature(&named)
++        {
++            return fail(format!("Composer fixed input bytes/identity differ: {relative}"));
++        }
++        inventory.insert((*relative).to_owned(), serde_json::json!({
++            "bytes": expected_bytes, "sha256": digest,
++        }));
++    }
++    Ok(serde_json::to_value(inventory)?)
++}
++
++fn composer_retirement_inputs(root: &Path) -> Result<serde_json::Value> {
++    composer_retirement_fixed_inputs(root, COMPOSER_RETIREMENT_INPUTS)
++}
++
++fn composer_retirement_declarations(repo: &Path) -> Result<serde_json::Value> {
++    composer_retirement_fixed_inputs(repo, COMPOSER_RETIREMENT_DECLARATIONS)
++}
++
++const COMPOSER_RETIREMENT_SYSTEMUI_TESTS_BLUEPRINT: &str =
++    "frameworks/base/packages/SystemUI/tests/Android.bp";
++
++fn project_composer_retirement_systemui_tests(p: &mut Projection, source: &Path) -> Result<()> {
++    use sha2::{Digest, Sha256};
++    // This independent vendor Rust service/AIDL-test entry retains the same
++    // exact three parent providers, but does not request any of these five
++    // Java SystemUI tests. Do not broaden the separate typed-ingress route.
++    let path = source.join(COMPOSER_RETIREMENT_SYSTEMUI_TESTS_BLUEPRINT);
++    let original = fs::read_to_string(&path)?;
++    if original.len() != 3392
++        || format!("{:x}", Sha256::digest(original.as_bytes()))
++            != "f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da"
++    {
++        return fail("Composer retirement exact SystemUI test Blueprint changed");
++    }
++    p.put(&path, metadata_only(&original)?)
++}
++
++fn composer_retirement_record(path: &Path, value: serde_json::Value) -> Result<()> {
++    use std::io::Write;
++    use std::os::unix::fs::OpenOptionsExt;
++    let mut file = fs::OpenOptions::new().write(true).create_new(true).mode(0o600)
++        .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC).open(path)?;
++    file.write_all(&serde_json::to_vec_pretty(&value)?)?;
++    file.write_all(b"\n")?;
++    file.sync_all()?;
++    Ok(())
++}
++
++fn begin_composer_retirement_attempt(repo: &Path, work: &Path, out: &Path) -> Result<()> {
++    crate::native_role_ingress::validated_output(work, out)?;
++    let lock = crate::native_role_ingress::source_lock_path(repo)?;
++    if hash(&lock)? != COMPOSER_RETIREMENT_SOURCE_LOCK_SHA {
++        return fail("Composer retirement requires the exact current 225-project source lock");
++    }
++    let inputs = composer_retirement_inputs(repo)?;
++    let declarations = composer_retirement_declarations(repo)?;
++    fs::create_dir(out)?;
++    composer_retirement_record(&out.join("droidloom-composer-retirement-attempt.json"), serde_json::json!({
++        "schema": 1, "state": "CLAIMED_BEFORE_FRESH_SOURCE_VERIFICATION_OR_PROJECTION",
++        "targets": COMPOSER_RETIREMENT_TARGETS, "dependency_mode": "Strict",
++        "source_lock": lock, "source_lock_sha256": COMPOSER_RETIREMENT_SOURCE_LOCK_SHA,
++        "locked_projects": 225, "fixed_production_inputs": inputs,
++        "fixed_checkout_declarations": declarations,
++        "source_projection_journal": work.join("source-projection.json"),
++        "command_completed": false, "tests_executed": false,
++        "Android_Binder_ABI_qualified": false, "Wayland_GPU_runtime_qualified": false,
++        "installation_performed": false, "service_activation_performed": false,
++    }))
++}
++
++fn verify_composer_retirement_workspace(
++    lock_path: &Path,
++    lock: &droidloom_source::SparseSourceLock,
++    source: &Path,
++) -> Result<()> {
++    if hash(lock_path)? != COMPOSER_RETIREMENT_SOURCE_LOCK_SHA {
++        return fail("Composer retirement cannot use a legacy or unqualified source lock");
++    }
++    let metadata = fs::symlink_metadata(source)?;
++    if !metadata.is_dir() || metadata.file_type().is_symlink() {
++        return fail("Composer retirement requires the existing real prepared source directory");
++    }
++    // Unlike typed-ingress compatibility, this route has no previous-lock or
++    // private-staging fallback. The full verifier checks this exact lock/plan
++    // and every current Git project before normal reconcile may run.
++    droidloom_source::verify_materialized(lock_path, lock, source)?;
++    Ok(())
++}
++
++fn write_composer_retirement_inputs(
++    repo: &Path,
++    source: &Path,
++    out: &Path,
++    selected_targets: &[PathBuf],
++    projection_inventory: serde_json::Value,
++) -> Result<()> {
++    let expected: Vec<_> = COMPOSER_RETIREMENT_TARGETS.iter().map(|name| PathBuf::from(*name)).collect();
++    if selected_targets != expected.as_slice() {
++        return fail("Composer retirement resolved targets differ from the exact service and AIDL test");
++    }
++    let original = composer_retirement_inputs(repo)?;
++    let mirrored = composer_retirement_inputs(&source.join("vendor/droidloom"))?;
++    if mirrored != original {
++        return fail("Composer retirement vendor mirror differs from the fixed production source");
++    }
++    composer_retirement_record(&out.join("droidloom-composer-retirement-inputs.json"), serde_json::json!({
++        "schema": 1, "targets": selected_targets, "dependency_mode": "Strict",
++        "ALLOW_MISSING_DEPENDENCIES": false,
++        "source_lock_sha256": COMPOSER_RETIREMENT_SOURCE_LOCK_SHA,
++        "materialized_manifest_sha256": hash(&source.join(".droidloom-source-manifest.json"))?,
++        "fixed_production_inputs": original, "nine_production_vendor_mirrors_exact": true,
++        "fixed_checkout_declarations": composer_retirement_declarations(repo)?,
++        "effective_vendor_Android_bp_sha256": hash(&source.join("vendor/droidloom/Android.bp"))?,
++        "source_projection": projection_inventory,
++        "tests_executed": false, "Android_Binder_ABI_qualified": false,
++        "Wayland_GPU_runtime_qualified": false, "installation_performed": false,
++        "service_activation_performed": false,
++    }))
++}
++
++fn write_composer_retirement_completion(repo: &Path, source: &Path, out: &Path) -> Result<()> {
++    composer_retirement_declarations(repo)?;
++    if composer_retirement_inputs(repo)? != composer_retirement_inputs(&source.join("vendor/droidloom"))? {
++        return fail("Composer retirement production inputs changed before completion");
++    }
++    composer_retirement_record(&out.join("droidloom-composer-retirement-command.json"), serde_json::json!({
++        "schema": 1, "state": "NORMAL_BUILD_COMMAND_SUCCEEDED",
++        "targets": COMPOSER_RETIREMENT_TARGETS, "dependency_mode": "Strict",
++        "source_projection_restored": true, "tests_executed": false,
++        "actual_ELF_AIDL_and_native_link_inputs_qualified": false,
++        "Android_Binder_ABI_qualified": false, "Wayland_GPU_runtime_qualified": false,
++        "installation_performed": false, "service_activation_performed": false,
++    }))
++}
++
++/// Compile the fixed Android Composer service and real AIDL test without
++/// executing either artifact or granting any runtime/deployment authorization.
++pub fn build_composer_retirement(
++    repo: &Path,
++    source: &Path,
++    out: &Path,
++    work: &Path,
++    product: &str,
++    jobs: usize,
++) -> Result<()> {
++    build_targets_with_optional_composer_retirement(
++        repo, source, out, work, product, jobs,
++        COMPOSER_RETIREMENT_TARGETS, SoongDependencyMode::Strict, None, false, None, true,
++    )
++}
++
+ pub fn build_targets(
+     repo: &Path,
+     source: &Path,
+@@ -2467,8 +2701,34 @@
+     typed_ingress: bool,
+     resume_source_staging: Option<&Path>,
+ ) -> Result<()> {
++    build_targets_with_optional_composer_retirement(
++        repo, source, out, work, product, jobs, targets, dependency_mode,
++        art_flavor, typed_ingress, resume_source_staging, false,
++    )
++}
++
++fn build_targets_with_optional_composer_retirement(
++    repo: &Path,
++    source: &Path,
++    out: &Path,
++    work: &Path,
++    product: &str,
++    jobs: usize,
++    targets: &[&str],
++    dependency_mode: SoongDependencyMode,
++    art_flavor: Option<crate::native_generation_art::Flavor>,
++    typed_ingress: bool,
++    resume_source_staging: Option<&Path>,
++    composer_retirement: bool,
++) -> Result<()> {
+     // Reject a widened closure before materializing or projecting any source.
+     validate_soong_dependency_mode(dependency_mode, targets)?;
++    if composer_retirement {
++        validate_composer_retirement_route(
++            dependency_mode, targets, product, art_flavor, typed_ingress, resume_source_staging,
++        )?;
++        begin_composer_retirement_attempt(repo, work, out)?;
++    }
+     if resume_source_staging.is_some() && !typed_ingress {
+         return fail("explicit source staging is limited to the independent strict typed ingress route");
+     }
+@@ -2491,12 +2751,15 @@
+     if dependency_mode == SoongDependencyMode::NativeEngineTargetClosure {
+         crate::native_engine::begin_attempt(out, product)?;
+     }
+-    let lock = if typed_ingress {
++    let lock = if typed_ingress || composer_retirement {
+         crate::native_role_ingress::source_lock_path(repo)?
+     } else {
+         repo.join("android/manifest/m2-sparse-source-lock.json")
+     };
+     let source_lock = droidloom_source::load_lock(&lock)?;
++    if composer_retirement {
++        verify_composer_retirement_workspace(&lock, &source_lock, source)?;
++    }
+     if typed_ingress {
+         // Refuse to expand the shared old-lock materialization in place. Normal
+         // reconcile only permits monotonic extensions; old builders could not
+@@ -2560,7 +2823,7 @@
+         p.patch(source, "build/soong", &repo.join(
+             "android/apex-compat/0007-transitive-default-missing-dependencies.patch"))?;
+     }
+-    if leaf_go_memory_mode(dependency_mode) || art_flavor.is_some() || typed_ingress {
++    if leaf_go_memory_mode(dependency_mode) || art_flavor.is_some() || typed_ingress || composer_retirement {
+         p.patch(source, "build/soong", &repo.join(
+             "android/apex-compat/0008-soong-leaf-go-memory-budget.patch"))?;
+         p.patch(source, "build/blueprint", &repo.join(
+@@ -2583,7 +2846,10 @@
+         p.put(&apex, private_without_named_java_module(
+             &original, "apex", "com.android.tethering")?)?;
+     }
+-    project_blueprints(&mut p, source, typed_ingress)?;
++    project_blueprints(&mut p, source, typed_ingress || composer_retirement)?;
++    if composer_retirement {
++        project_composer_retirement_systemui_tests(&mut p, source)?;
++    }
+     if audio_apex_only_build(targets) || minigbm_only_build(targets) {
+         // Select AOSP's original pinned host test-harness jars. Their actual
+         // provider names, classes and platform-proto dependency are unchanged.
+@@ -2910,6 +3176,11 @@
+             repo, source, out, &selected_targets, p.effective_inventory(repo, source)?,
+         )?;
+     }
++    if composer_retirement {
++        write_composer_retirement_inputs(
++            repo, source, out, &selected_targets, p.effective_inventory(repo, source)?,
++        )?;
++    }
+     let engine_inputs = if dependency_mode == SoongDependencyMode::NativeEngineTargetClosure {
+         Some(crate::native_engine::engine_build_inputs(
+             repo, source, &vendor, work, out, &native_bridge_source,
+@@ -2964,6 +3235,9 @@
+     if let Some(inputs) = engine_inputs {
+         crate::native_engine::write_engine_build_receipt(source, out, product, inputs)?;
+     }
++    if composer_retirement {
++        write_composer_retirement_completion(repo, source, out)?;
++    }
+     if targets.contains(&"droidloom-native-bridge") {
+         write(
+             &out.join("target/product")
+@@ -2978,6 +3252,312 @@
+ mod tests {
+     use super::*;
+ 
++    #[test]
++    fn composer_retirement_route_is_strict_and_disjoint_from_framework() {
++        let valid = |mode, targets, product, flavor, typed, staging| {
++            validate_composer_retirement_route(mode, targets, product, flavor, typed, staging)
++        };
++        valid(SoongDependencyMode::Strict, COMPOSER_RETIREMENT_TARGETS,
++              "droidloom_x86_64", None, false, None).unwrap();
++        for mode in [SoongDependencyMode::NativeBridgeTargetClosure,
++                     SoongDependencyMode::NativeEngineTargetClosure,
++                     SoongDependencyMode::AudioApexTargetClosure,
++                     SoongDependencyMode::MinigbmTargetClosure] {
++            assert!(valid(mode, COMPOSER_RETIREMENT_TARGETS,
++                "droidloom_x86_64", None, false, None).is_err());
++        }
++        let wrong_targets: &[&[&str]] = &[
++            crate::native_role_ingress::TARGETS,
++            &COMPOSER_RETIREMENT_TARGETS[..1],
++            &["droidloom-composer-aidl-tests", "android.hardware.graphics.composer3-service.droidloom"],
++            &["android.hardware.graphics.composer3-service.droidloom", "droidloom-composer-aidl-tests", "services"],
++        ];
++        for targets in wrong_targets {
++            assert!(valid(SoongDependencyMode::Strict, targets,
++                "droidloom_x86_64", None, false, None).is_err());
++        }
++        assert!(valid(SoongDependencyMode::Strict, COMPOSER_RETIREMENT_TARGETS,
++            "unobserved_product", None, false, None).is_err());
++        assert!(valid(SoongDependencyMode::Strict, COMPOSER_RETIREMENT_TARGETS,
++            "droidloom_x86_64", None, true, None).is_err());
++        assert!(valid(SoongDependencyMode::Strict, COMPOSER_RETIREMENT_TARGETS,
++            "droidloom_x86_64", Some(crate::native_generation_art::Flavor::from_build_only_flag(false)),
++            false, None).is_err());
++        assert!(valid(SoongDependencyMode::Strict, COMPOSER_RETIREMENT_TARGETS,
++            "droidloom_x86_64", None, false, Some(Path::new("/not-executed"))).is_err());
++        let mut command = Command::new("not-executed");
++        command.env("ALLOW_MISSING_DEPENDENCIES", "true");
++        configure_soong_dependencies(&mut command, SoongDependencyMode::Strict,
++            COMPOSER_RETIREMENT_TARGETS).unwrap();
++        assert!(command.get_envs().any(|(name, value)|
++            name == "ALLOW_MISSING_DEPENDENCIES" && value == Some(std::ffi::OsStr::new("false"))));
++        assert!(command.get_args().all(|arg| arg != "--soong-only"));
++        assert!(target_closure_soong_patches(SoongDependencyMode::Strict).is_empty());
++    }
++
++    #[test]
++    fn composer_retirement_fixed_sources_reject_alias_drift_and_restore_projection() {
++        let repo = Path::new(env!("CARGO_MANIFEST_DIR"))
++            .parent().unwrap().parent().unwrap();
++        let scratch = tempfile::tempdir().unwrap();
++        let fixed = scratch.path().join("fixed");
++        fs::create_dir(&fixed).unwrap();
++        for (relative, _, _) in COMPOSER_RETIREMENT_INPUTS.iter()
++            .chain(COMPOSER_RETIREMENT_DECLARATIONS.iter())
++        {
++            let destination = fixed.join(relative);
++            fs::create_dir_all(destination.parent().unwrap()).unwrap();
++            fs::write(&destination, fs::read(repo.join(relative)).unwrap()).unwrap();
++        }
++        let original = composer_retirement_inputs(&fixed).unwrap();
++        assert_eq!(original.as_object().unwrap().len(), 9);
++        assert_eq!(composer_retirement_declarations(&fixed).unwrap().as_object().unwrap().len(), 3);
++        let leaf = fixed.join(COMPOSER_RETIREMENT_INPUTS[0].0);
++        let bytes = fs::read(&leaf).unwrap();
++        let mut changed = bytes.clone();
++        changed[0] ^= 1;
++        let journal = scratch.path().join("source-projection.json");
++        {
++            let mut projection = Projection::new(journal.clone()).unwrap();
++            projection.put(&leaf, &changed).unwrap();
++            assert!(composer_retirement_inputs(&fixed).is_err());
++            assert!(journal.is_file());
++        }
++        assert!(!journal.exists());
++        assert_eq!(fs::read(&leaf).unwrap(), bytes);
++        assert_eq!(composer_retirement_inputs(&fixed).unwrap(), original);
++        let target = scratch.path().join("same-bytes-alias.rs");
++        fs::rename(&leaf, &target).unwrap();
++        std::os::unix::fs::symlink(&target, &leaf).unwrap();
++        assert!(composer_retirement_inputs(&fixed).is_err());
++        assert_eq!(fs::read(&target).unwrap(), bytes);
++    }
++
++    #[test]
++    fn composer_retirement_workspace_rejects_prior_lock_and_manifest_only() {
++        let repo = Path::new(env!("CARGO_MANIFEST_DIR"))
++            .parent().unwrap().parent().unwrap();
++        let lock_path = crate::native_role_ingress::source_lock_path(repo).unwrap();
++        let lock = droidloom_source::load_lock(&lock_path).unwrap();
++        let plan = droidloom_source::build_plan(&lock).unwrap();
++        assert_eq!(plan.projects.len(), 225);
++        let scratch = tempfile::tempdir().unwrap();
++        let source = scratch.path().join("aosp-source");
++        fs::create_dir(&source).unwrap();
++        let expected = serde_json::json!({
++            "schema_version": 1,
++            "source_lock_sha256": COMPOSER_RETIREMENT_SOURCE_LOCK_SHA,
++            "plan": plan,
++        });
++        let path = source.join(".droidloom-source-manifest.json");
++        let mut previous_hash = expected.clone();
++        previous_hash["source_lock_sha256"] = serde_json::json!(
++            "5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7");
++        let mut missing_project = expected.clone();
++        missing_project["plan"]["projects"].as_array_mut().unwrap().pop();
++        for invalid in [previous_hash, missing_project] {
++            let bytes = serde_json::to_vec_pretty(&invalid).unwrap();
++            fs::write(&path, &bytes).unwrap();
++            let error = verify_composer_retirement_workspace(&lock_path, &lock, &source).unwrap_err();
++            assert!(matches!(error.downcast_ref::<droidloom_source::SourceError>(),
++                Some(droidloom_source::SourceError::Invalid(_))));
++            assert_eq!(fs::read(&path).unwrap(), bytes);
++        }
++        let bytes = serde_json::to_vec_pretty(&expected).unwrap();
++        fs::write(&path, &bytes).unwrap();
++        let error = verify_composer_retirement_workspace(&lock_path, &lock, &source).unwrap_err();
++        match error.downcast_ref::<droidloom_source::SourceError>() {
++            Some(droidloom_source::SourceError::Command { program, .. }) => assert_eq!(program, "git"),
++            other => panic!("expected the real missing-project verifier, got {other:?}"),
++        }
++        assert_eq!(fs::read(&path).unwrap(), bytes);
++        assert_eq!(fs::read_dir(&source).unwrap().count(), 1);
++        assert!(!scratch.path().join("source-projection.json").exists());
++    }
++
++    #[test]
++    fn composer_retirement_exact_systemui_projection_rejects_drift_and_recovers() {
++        // Complete fixed upstream fixture, retained inline so this independent
++        // entry does not add or replace a typed-ingress fixture/source-map row.
++        let original = r###"//
++// Copyright (C) 2022 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++
++package {
++    default_team: "trendy_team_system_ui_please_use_a_more_specific_subteam_if_possible_",
++    default_applicable_licenses: ["frameworks_base_packages_SystemUI_license"],
++}
++
++java_defaults {
++    name: "SystemUITests_defaults",
++    use_resource_processor: true,
++    defaults: ["systemui-non-platform-apis-defaults"],
++    dxflags: ["--multi-dex"],
++    platform_apis: true,
++    test_suites: ["device-tests"],
++    static_libs: ["SystemUI-tests"],
++    compile_multilib: "both",
++
++    jni_libs: [
++        "libdexmakerjvmtiagent",
++        "libmultiplejvmtiagentsinterferenceagent",
++        "libstaticjvmtiagent",
++    ],
++    libs: [
++        "android.test.runner.stubs.system",
++        "telephony-common",
++        "android.test.base.stubs.system",
++    ],
++    aaptflags: [
++        "--extra-packages com.android.systemui",
++    ],
++
++    // sign this with platform cert, so this test is allowed to inject key events into
++    // UI it doesn't own. This is necessary to allow screenshots to be taken
++    certificate: "platform",
++
++    manifest: "AndroidManifest.xml",
++}
++
++android_test {
++    name: "SystemUITests",
++    defaults: ["SystemUITests_defaults"],
++}
++
++test_module_config {
++    name: "SystemUITests_systemui_accessibility",
++    base: "SystemUITests",
++    test_suites: ["device-tests"],
++    include_filters: ["com.android.systemui.accessibility"],
++    exclude_annotations: [
++        "android.platform.test.annotations.Postsubmit",
++        "android.platform.test.annotations.FlakyTest",
++    ],
++}
++
++test_module_config {
++    name: "SystemUITests_presubmit",
++    base: "SystemUITests",
++    test_suites: ["device-tests"],
++    exclude_annotations: [
++        "android.platform.test.annotations.Ignore",
++        "android.platform.test.annotations.FlakyTest",
++        "androidx.test.filters.FlakyTest",
++        "org.junit.Ignore",
++    ],
++}
++
++android_library {
++    name: "SystemUI_test_fixtures",
++    package_name: "com.android.systemui.tests.fixtures",
++    resource_dirs: [],
++
++    use_resource_processor: true,
++
++    srcs: [
++        "utils/src/**/*.java",
++        "utils/src/**/*.kt",
++        ":SystemUI_pod_fixtureFiles",
++    ],
++
++    static_libs: [
++        "androidx.compose.ui_ui-test-junit4",
++    ],
++
++    libs: [
++        // go/keep-sorted start
++        "PlatformMotionTestingCompose",
++        "SystemUI-application",
++        "SystemUICustomizationTestUtils",
++        "android.test.mock.stubs.system",
++        "androidx.compose.ui_ui-test",
++        "androidx.compose.ui_ui-test-junit4",
++        "androidx.core_core-animation-testing",
++        "flag-junit",
++        "flag-junit-base",
++        "kosmos",
++        "mockito-kotlin-nodeps",
++        "mockito-target-extended-minus-junit4",
++        "ravenwood-junit",
++        "testables",
++        "truth",
++        // go/keep-sorted end
++    ],
++}
++"###;
++        let expected = concat!(
++            "package {\n",
++            "    default_team: \"trendy_team_system_ui_please_use_a_more_specific_subteam_if_possible_\",\n",
++            "    default_applicable_licenses: [\"frameworks_base_packages_SystemUI_license\"],\n",
++            "}\n",
++        );
++        let names = [
++            "SystemUITests_defaults", "SystemUITests",
++            "SystemUITests_systemui_accessibility", "SystemUITests_presubmit",
++            "SystemUI_test_fixtures",
++        ];
++        assert_eq!(original.matches("    name: \"").count(), names.len());
++        for name in names {
++            assert_eq!(original.matches(&format!("    name: \"{name}\",")).count(), 1);
++        }
++        let fixture = tempfile::tempdir().unwrap();
++        let source = fixture.path().join("source");
++        let path = source.join(COMPOSER_RETIREMENT_SYSTEMUI_TESTS_BLUEPRINT);
++        let parent = source.join("frameworks/base/packages/SystemUI/Android.bp");
++        let parent_original = include_str!(
++            "../../../android/native-role-ingress/provider-fixtures/SystemUI.Android.bp");
++        let parent_projected = typed_ingress_shared_blueprint(
++            "frameworks/base/packages/SystemUI/Android.bp", parent_original).unwrap();
++        let unrelated = source.join("frameworks/base/packages/SystemUI/tests/other/Android.bp");
++        let journal = fixture.path().join("source-projection.json");
++        fs::create_dir_all(unrelated.parent().unwrap()).unwrap();
++        fs::write(&parent, &parent_projected).unwrap();
++        fs::write(&unrelated, b"unrelated fixture\n").unwrap();
++        for drift in [
++            original.replacen("SystemUITests_defaults", "SystemUITests_defaultX", 1),
++            format!("{original}\n"),
++        ] {
++            fs::write(&path, &drift).unwrap();
++            let mut projection = Projection::new(journal.clone()).unwrap();
++            let error = project_composer_retirement_systemui_tests(&mut projection, &source)
++                .unwrap_err().to_string();
++            assert!(error.contains("exact SystemUI test Blueprint changed"));
++            assert!(projection.originals.is_empty());
++            assert!(!journal.exists());
++            assert_eq!(fs::read(&path).unwrap(), drift.as_bytes());
++        }
++        fs::write(&path, original).unwrap();
++        let mut projection = Projection::new(journal.clone()).unwrap();
++        project_composer_retirement_systemui_tests(&mut projection, &source).unwrap();
++        assert_eq!(fs::read(&path).unwrap(), expected.as_bytes());
++        assert_eq!(fs::read(&parent).unwrap(), parent_projected.as_bytes());
++        assert_eq!(fs::read(&unrelated).unwrap(), b"unrelated fixture\n");
++        let originals: Vec<Original> =
++            serde_json::from_slice(&fs::read(&journal).unwrap()).unwrap();
++        assert_eq!(originals.len(), 1);
++        assert_eq!(originals[0].path, path);
++        assert_eq!(originals[0].bytes.as_deref(), Some(original.as_bytes()));
++        std::mem::forget(projection);
++        assert!(Projection::new(journal.clone()).is_err());
++        recover(&journal, &source).unwrap();
++        assert_eq!(fs::read(&path).unwrap(), original.as_bytes());
++        assert_eq!(fs::read(&parent).unwrap(), parent_projected.as_bytes());
++        assert_eq!(fs::read(&unrelated).unwrap(), b"unrelated fixture\n");
++        assert!(!journal.exists());
++    }
++
+     const SHARED_PROVIDER_FIXTURES: &[(&str, &str, &str)] = &[
+         ("frameworks/base/packages/SystemUI/Android.bp",
+          include_str!("../../../android/native-role-ingress/provider-fixtures/SystemUI.Android.bp"),
+
+--- a/tools/droidloom-update/src/main.rs
++++ b/tools/droidloom-update/src/main.rs
+@@ -42,6 +42,16 @@
+ }
+ #[derive(Subcommand)]
+ enum Action {
++    /// Compile the fixed Composer service and genuine AIDL tests with strict dependencies.
++    /// Does not run tests, install artifacts, activate services or open a Wayland display.
++    ComposerRetirementBuild {
++        /// Prepared package workspace with the exact current 225-project source lock.
++        #[arg(long)]
++        work: PathBuf,
++        /// Required fresh absolute output directory, separate from aosp-source.
++        #[arg(long)]
++        out: PathBuf,
++    },
+     /// Build the complete framework Java library and Android JNI runtime only.
+     /// Uses its independent exact source lock; does not install or enable roles.
+     NativeRoleIngressBuild {
+@@ -195,6 +205,10 @@
+     Ok(path)
+ }
+ fn selected_build_out(command: Option<&Action>, work: &std::path::Path) -> Result<PathBuf> {
++    if let Some(Action::ComposerRetirementBuild { out, .. }) = command {
++        // Share only the existing fresh, non-aliasing output-path validator.
++        return native_role_ingress::validated_output(work, out);
++    }
+     if let Some(Action::NativeRoleIngressBuild { out, .. }) = command {
+         return native_role_ingress::validated_output(work, out);
+     }
+@@ -307,6 +321,7 @@
+         | Some(Action::NativeEngineBuild { work, .. })
+         | Some(Action::NativeGenerationArtBuild { work, .. })
+         | Some(Action::NativeRoleIngressBuild { work, .. })
++        | Some(Action::ComposerRetirementBuild { work, .. })
+         | Some(Action::MinigbmBuild { work }) => Some(work.canonicalize()?),
+         _ => None,
+     };
+@@ -360,6 +375,11 @@
+     if work.join("source-projection.json").exists() {
+         android::recover(&work.join("source-projection.json"), &source)?;
+     }
++    if matches!(args.command, Some(Action::ComposerRetirementBuild { .. })) {
++        return android::build_composer_retirement(
++            &repo, &source, &out, &work, product, jobs,
++        );
++    }
+     if let Some(Action::NativeRoleIngressBuild { resume_source_staging, .. }) = &args.command {
+         return android::build_native_role_ingress(
+             &repo, &source, &out, &work, product, jobs, resume_source_staging.as_deref(),
+@@ -503,6 +523,44 @@
+     use super::*;
+ 
+     #[test]
++    fn composer_retirement_cli_requires_exact_workspace_and_fresh_output() {
++        for argv in [
++            vec!["droidloom-update", "composer-retirement-build"],
++            vec!["droidloom-update", "composer-retirement-build", "--work", "/not-executed"],
++            vec!["droidloom-update", "composer-retirement-build", "--out", "/not-executed"],
++            vec!["droidloom-update", "composer-retirement-build", "--work", "/not-executed",
++                 "--out", "/not-executed/out", "services"],
++            vec!["droidloom-update", "composer-retirement-build", "--work", "/not-executed",
++                 "--out", "/not-executed/out", "--tests"],
++            vec!["droidloom-update", "composer-retirement-build", "--work", "/not-executed",
++                 "--out", "/not-executed/out", "--resume-source-staging", "/not-executed/partial"],
++        ] {
++            assert!(Args::try_parse_from(argv).is_err());
++        }
++        let temp = tempfile::tempdir().unwrap();
++        let work = temp.path();
++        let out = work.join("composer-out");
++        let parse = |path: &std::path::Path| Args::try_parse_from([
++            "droidloom-update", "composer-retirement-build",
++            "--work", work.to_str().unwrap(), "--out", path.to_str().unwrap(),
++        ]).unwrap();
++        let args = parse(&out);
++        assert!(matches!(args.command, Some(Action::ComposerRetirementBuild { .. })));
++        assert_eq!(selected_build_out(args.command.as_ref(), work).unwrap(), out);
++        for path in [work.to_owned(), work.join("aosp-source"), work.join("aosp-source/out")] {
++            assert!(selected_build_out(parse(&path).command.as_ref(), work).is_err());
++        }
++        fs::create_dir(&out).unwrap();
++        assert!(selected_build_out(parse(&out).command.as_ref(), work).is_err());
++        let alias = work.join("alias");
++        std::os::unix::fs::symlink(work, &alias).unwrap();
++        assert!(selected_build_out(parse(&alias.join("new")).command.as_ref(), work).is_err());
++        assert!(!work.join("package-build.lock").exists());
++        assert!(!work.join("aosp-source-update.lock").exists());
++        assert!(!work.join("source-projection.json").exists());
++    }
++
++    #[test]
+     fn native_generation_pair_cli_requires_one_explicit_product() {
+         assert!(Args::try_parse_from(["droidloom-update", "native-generation-pair"]).is_err());
+         assert!(Args::try_parse_from(["droidloom-update", "native-generation-pair",

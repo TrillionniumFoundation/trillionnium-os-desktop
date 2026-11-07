@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "scope": "Bounded read-only collection of exact activation authority and five original Main cgroup resource limits",
+  "source_full_read": true,
+  "source": {
+    "bytes": 11243,
+    "sha256": "c1f3aa39711ec69d905cdae1e0eee01d89289bd9a6575d39b6f5b7324e57b780"
+  },
+  "request_wrapper_full_read": true,
+  "stdin_byte_equal": true,
+  "frozen_payload_pins_verified": 6,
+  "original_failure": {
+    "job": "1a1ac48ece3-fc05-5349",
+    "stderr_sha256": "bfc5424620edf170e4b25ab1d810baeb6ece5b9ea2c06a7e4909114082078470",
+    "error": "Main resource limits differ",
+    "before_directory_creation_and_UI": true
+  },
+  "activation_expected_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+  "cgroup_expected": {
+    "device": 30,
+    "inode": 26651611
+  },
+  "checks": {
+    "full_component_nofollow": true,
+    "held_and_named_identity_before_after": true,
+    "activation_full_sha": true,
+    "exact_five_names_derived_only_from_activation": true,
+    "pseudo_file_eof_bounded": true,
+    "two_sequential_samples_not_atomic": true
+  },
+  "limits": {
+    "activation_maximum_bytes": 1048576,
+    "per_limit_maximum_bytes": 4096,
+    "output_maximum_bytes": 2097152,
+    "read_deadline_seconds": 8,
+    "outer_timeout_seconds": 30,
+    "memory_max_bytes": 134217728,
+    "cpu_quota_percent": 100
+  },
+  "device_file_writes": 0,
+  "subprocesses_started": 0,
+  "Android_UI_actions": 0,
+  "Main_guard_or_baseline_modified": false,
+  "runtime_authorized": false,
+  "automatic_retry": false
+}

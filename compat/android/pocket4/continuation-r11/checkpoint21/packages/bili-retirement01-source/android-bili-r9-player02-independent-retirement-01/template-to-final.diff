@@ -1,0 +1,79 @@
+--- independent-retirement-WIP01
++++ independent-retirement-01
+@@ -181,11 +181,11 @@
+       INPUTS.get('task')==TASK and INPUTS.get('historical_launch_outcome')=='unknown_retained' and
+       INPUTS.get('existing_launch_scope_must_remain_absent') is True,
+       'ACTUAL_BOUND_RETIREMENT_INPUTS_REQUIRED')
+- need(sha(HISTORICAL_PARSER_SOURCE.encode())=='1be3e65b359788a11b0f875ad8e6a4cce17b04f5b0ef4ffbc2ec4820d4f9a21f',
++ need(sha(HISTORICAL_PARSER_SOURCE.encode())=='ba9e2350304b87e35168ee19166bece041930693ea4feedbab47624dd03ce9af',
+       'EXACT_EXECUTED_ERROR_PARSER_SOURCE')
+  library=types.ModuleType('fixed_historical_native_error')
+  library.__file__='<verified-historical-native-error-reader>'
+- library.SOURCE_SHA256='1be3e65b359788a11b0f875ad8e6a4cce17b04f5b0ef4ffbc2ec4820d4f9a21f'
++ library.SOURCE_SHA256='ba9e2350304b87e35168ee19166bece041930693ea4feedbab47624dd03ce9af'
+  exec(compile(HISTORICAL_PARSER_SOURCE,library.__file__,'exec'),library.__dict__)
+  reader=library.Reader();raw={};primary=None
+  try:
+@@ -195,18 +195,22 @@
+    raw[name]=value
+   worker=library.strict_json(raw['worker'])
+   original=library.qualify_worker(worker)
+-  library.qualify_native(library.strict_json(raw['native_intent']),library.strict_json(raw['native_result']),original)
++  native_intent=library.strict_json(raw['native_intent']);native_result=library.strict_json(raw['native_result'])
++  library.qualify_native(native_intent,native_result,original)
+   parsed=library.pair_projection(raw['native_stdout'],raw['native_stderr'])
+   need(parsed==INPUTS['actual_error_projection'],'ACTUAL_NATIVE_ERROR_PROJECTION_CHANGED')
+   need(parsed['bytes']==414 and parsed['sha256']=='06a69fd403766d93148369a9dc947283dc96f27be71e26e8295d510b2f4c62a3' and
+        parsed['complete_wrapper_match'] is True and parsed['complete_closed_error_shape'] is True and
+        parsed['closed_error']=={'shape':'backend_different_registration_ownership','labelled_fields':{'task':TASK}} and
+-       parsed['task_cleanup_authority_created'] is False,'EXACT_NATIVE_REPORTED_TASK_BINDING_REQUIRED')
++       parsed['task_cleanup_authority_created'] is False and
++       parsed['reference_source_format_match'] is False and parsed['opaque_prefix_semantics_known'] is False and
++       parsed['installed_source_version_verified'] is False,'EXACT_NATIVE_REPORTED_TASK_BINDING_REQUIRED')
+   need(reader.opened==reader.closed,'HISTORICAL_READER_FD_CLOSURE')
+   return {'worker_pin':library.WORKER_PIN,'native_file_pins':library.PINS,
+           'reported_task':TASK,'reported_error':'backend_different_registration_ownership',
+           'source_binary_match_proven':False,'conflict_underlying_cause_known':False,
+-          'historical_reader_FDs_opened':reader.opened,'historical_reader_FDs_closed':reader.closed}
++          'historical_reader_FDs_opened':reader.opened,'historical_reader_FDs_closed':reader.closed,
++          'native_started_utc':native_intent['started_utc'],'native_ended_utc':native_result['ended_utc']}
+  except BaseException as error:
+   primary=error
+   raise
+@@ -247,12 +251,24 @@
+   need(not os.path.lexists(FLOW/'launch-scope.json') and not os.path.lexists(MARKER) and
+        not os.path.lexists(RECONCILIATION),'NO_OLD_SCOPE_OR_RETIREMENT_REPLAY')
+   saved_scope=json.loads(read_exact(FLOW/'scope.json',INPUTS['scope_pin']))
+-  read_exact(FLOW/'launch-attempted.json',INPUTS['attempted_pin'])
++  attempted=json.loads(read_exact(FLOW/'launch-attempted.json',INPUTS['attempted_pin']))
++  need(saved_scope==INPUTS['historical_scope'] and attempted==INPUTS['historical_attempted'] and
++       attempted['scope']==saved_scope and attempted['step']=='launch-01' and
++       saved_scope['component']==COMPONENT and saved_scope['user']==0 and
++       saved_scope['automatic_retry'] is False,'EXACT_ORIGINAL_LAUNCH_SCOPE_AND_ATTEMPT')
++  need(datetime.datetime.fromisoformat(saved_scope['created_utc'])<=
++       datetime.datetime.fromisoformat(attempted['time_utc'])<=
++       datetime.datetime.fromisoformat(result['historical_attribution']['native_started_utc'])<=
++       datetime.datetime.fromisoformat(result['historical_attribution']['native_ended_utc']),
++       'ORIGINAL_SCOPE_ATTEMPT_NATIVE_TIME_ORDER')
+   baseline_raw=read_exact(FLOW/'steps/launch-01/prelaunch-stacks.txt',INPUTS['prelaunch_stacks_pin'])
+   current_raw=read_exact(FLOW/'steps/native-reconciliation-stacks-read-01/command-002.stdout',
+       INPUTS['previous_current_stack_pin'])
+-  read_exact(FLOW/'steps/native-reconciliation-stacks-read-01/command-002.result.json',
+-      INPUTS['previous_current_command_pin'])
++  previous_command=json.loads(read_exact(FLOW/'steps/native-reconciliation-stacks-read-01/command-002.result.json',
++      INPUTS['previous_current_command_pin']))
++  qualify_joined_command(previous_command,current_raw,False)
++  need(datetime.datetime.fromisoformat(result['historical_attribution']['native_ended_utc'])<=
++       datetime.datetime.fromisoformat(previous_command['ended_utc']),'CURRENT_OBSERVATION_FOLLOWS_NATIVE')
+   manifest=json.loads(read_exact(HOST_ROOT/'source-manifest.json',{'bytes':3605,'sha256':HOST_MANIFEST}))
+   need(manifest['files']['recorder.py']=={'bytes':41689,'sha256':RECORDER_SHA},'ORIGINAL_CURRENT_RECORDER_REQUIRED')
+   recorder_raw=read_exact(HOST_ROOT/'recorder.py',manifest['files']['recorder.py'])
+@@ -268,6 +284,8 @@
+     'maximum_remove_commands':1,'native_registration_replay':False},
+    unknown_step=None,observation_step=None,postcondition=None)
+   flow=recorder.Flow(args)
++  need(not os.path.lexists(FLOW/'launch-scope.json') and not os.path.lexists(MARKER) and
++       not os.path.lexists(RECONCILIATION),'NO_SCOPE_OR_RETIREMENT_CREATED_BEFORE_FLOW_LOCK')
+   need(flow.scope==saved_scope and flow.scope['package']==PACKAGE and flow.scope['uid']==10117,
+        'SAVED_FLOW_SCOPE_CHANGED')
+   baseline_roots,baseline_tasks=flow.tasks.parse_stacks(baseline_raw.decode('utf-8','strict'))

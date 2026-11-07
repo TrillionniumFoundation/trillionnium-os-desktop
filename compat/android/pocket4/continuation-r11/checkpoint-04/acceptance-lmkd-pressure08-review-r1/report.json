@@ -1,0 +1,52 @@
+{
+  "all_frozen_payload_hashes_verified": 34,
+  "closed_prior_finding": {
+    "priority": "P1",
+    "resolution": "After exact broker/actor/init joined retirement, the producer reads hierarchical pids.current through the held outer cgroup FD, requires exactly one remaining task, and records pids_current before the success receipt. The pure qualifier requires an integer value exactly equal to one. Existing direct host/root membership and empty-domain checks remain. This closes the missing subtree coverage while the exact single-thread driver remains in host/.",
+    "source_pins_unchanged_for_actor_broker_android": true,
+    "title": "The only-driver predicate did not cover supervisor/unknown descendants"
+  },
+  "decision": "No new confirmed blocker in the revision07-to08 audit delta; proceed with separate matching compilation and externally fenced owned canary.",
+  "delta_control_receipt_sha256": "aca818593f50b10b78c5c64896135591c2f1ee2f09533c9a07a44de0b25ba4e3",
+  "findings": [],
+  "independent_execution": {
+    "device": false,
+    "namespace": false,
+    "phase_count_negative_subcases": 6,
+    "pressure": false,
+    "python_controls": 3,
+    "rust": false
+  },
+  "previous_review": {
+    "path": "acceptance-lmkd-pressure07-review-r1/report.json",
+    "sha256": "2c7d870c2e2906b237066f4d3637512be1f4fb13e4eccea13d76a04919524336"
+  },
+  "remaining_requirements": [
+    "Coordinator must compare returned unit/cgroup device+inode to its first observed exact unit invocation and driver_pid to terminal ExecMainPID.",
+    "Successful unit terminal state, exact InvocationID cleanup, and Main epoch invariance remain independently required.",
+    "This source review and pure controls are not a real PSI, stale-event, production cgroup.kill, installed-supervisor recovery, PID-reuse, or application acceptance claim."
+  ],
+  "reviewed_at": "2026-11-04T16:03:43.196363+00:00",
+  "reviewed_files": {
+    "OUTER-RETIREMENT.md": {
+      "bytes": 3353,
+      "sha256": "4281d3241e43fb19b8f0c760ee1a52b59bf794e45dd849db8130af761cf14001"
+    },
+    "owned-relay/qualify_pressure.py": {
+      "bytes": 25288,
+      "sha256": "8715fc60396624d8dd8e3c8547ba4eccaee0a70065bdef8016a14e6a6730a8b9"
+    },
+    "owned-relay/test_qualify_pressure.py": {
+      "bytes": 21280,
+      "sha256": "f7ddb52968b060bf8aa017b385b2ef9ed6564c4d2ecfdce8eee381663eee6074"
+    },
+    "src/bin/owned_relay_canary.rs": {
+      "bytes": 27936,
+      "sha256": "188be4f035bad7fe47fd88e176f83efb72832825f522d1eef947e383e6f04135"
+    }
+  },
+  "reviewer": "local_pocket4_inventory",
+  "schema": 1,
+  "source_manifest_sha256": "ffe555f1913e2d3f540ec115298580ddb95849e797926511e13acb0eab126de6",
+  "source_root": "/workspace/scratch/94990735b266/lmkd-work/host-pressure-freeze-08"
+}

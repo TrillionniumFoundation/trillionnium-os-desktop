@@ -1,0 +1,170 @@
+--- a/build_destruction.py
++++ b/build_listener.py
+@@ -254,28 +254,29 @@
+         rows[str(requested)]=row
+     return rows
+ 
+-SOURCE_INPUTS={'controls/destruction_controls.cc': {'bytes': 12355, 'sha256': '4657b472cc15dc6e6fcd992d69739062df805b490ca8f2ff5113de23ad5ee614'}, 'references/registry_controls.cc': {'bytes': 33258, 'sha256': '5ea30aeb58eebeb09542e9ee68c07e1be7ff92fedcc3141f4d336490458e1a94'}, 'source/factory_context.cc': {'bytes': 5377, 'sha256': 'afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a'}, 'source/factory_context.h': {'bytes': 954, 'sha256': 'b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1'}, 'source/role_authorization.cc': {'bytes': 39520, 'sha256': 'ca6f41150ba51153d434e17547799a016d0c2d098316f3e508c33a57eb264ec8'}, 'source/role_authorization.h': {'bytes': 5985, 'sha256': 'a993173b2015dc5cb062ec7a157971fac451cd99c74181462a3428c5191491e3'}, 'preimage/source/role_authorization.cc': {'bytes': 38998, 'sha256': '5d9a43b4f9d51ddfe7896de563353c96f75856171d39c1af9a5816394247a03c'}, 'preimage/source/role_authorization.h': {'bytes': 5539, 'sha256': '320933ecda593fdb98b16b7bcd506d48ab81e15c0bd5903b38fe4dde49404d8c'}}
+-ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/registry-owner-destruction-host-build-01-20261105')
++SOURCE_INPUTS={'source/factory_context.cc': {'bytes': 5377, 'sha256': 'afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a', 'authority': 'listener-source-pins.json', 'authority_path': 'source/factory_context.cc'}, 'source/factory_context.h': {'bytes': 954, 'sha256': 'b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1', 'authority': 'listener-source-pins.json', 'authority_path': 'source/factory_context.h'}, 'source/role_authorization.cc': {'bytes': 39949, 'sha256': 'd860c7222e8f5025b19de98a8ed7aceb01d72cd12351a80c93876d8fb8ce5cf5', 'authority': 'listener-source-pins.json', 'authority_path': 'source/role_authorization.cc'}, 'source/role_authorization.h': {'bytes': 6393, 'sha256': 'aa1baefc5b86091d3c9679182356c0be69896958ad472e1aee8d14c0218e4780', 'authority': 'listener-source-pins.json', 'authority_path': 'source/role_authorization.h'}, 'source/role_session.cc': {'bytes': 20238, 'sha256': '696c6065216fb2b608c038876f7615bd04926b973f1fa1e0b428c895e47e4e85', 'authority': 'listener-source-pins.json', 'authority_path': 'source/role_session.cc'}, 'source/role_session.h': {'bytes': 3987, 'sha256': '958eda04a3236ce58482e714a4bf83e50222bc4fc9134adbd6685821f31dddcf', 'authority': 'listener-source-pins.json', 'authority_path': 'source/role_session.h'}, 'source/role_snapshot.cc': {'bytes': 11168, 'sha256': 'f234d00e9823411c9cd55a7e3c6ea52cac505b08c7dbf96894e5b8487dd3e335', 'authority': 'listener-source-pins.json', 'authority_path': 'source/role_snapshot.cc'}, 'source/role_snapshot.h': {'bytes': 1868, 'sha256': 'ee2f92791ad055959f4444e7078553780c53d27e0f649e6920bad954f9bc4ca4', 'authority': 'listener-source-pins.json', 'authority_path': 'source/role_snapshot.h'}, 'source/proc_maps_factory_wire.cc': {'bytes': 8661, 'sha256': '4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608', 'authority': 'listener-source-pins.json', 'authority_path': 'source/proc_maps_factory_wire.cc'}, 'source/role_admission.cc': {'bytes': 11019, 'sha256': '25d161ebf96e50442725df9231833dae032d890954890c691c0f985f4b31bf77', 'authority': 'listener-source-pins.json', 'authority_path': 'source/role_admission.cc'}, 'source/role_admission.h': {'bytes': 2505, 'sha256': '1813fd99e8e8335e7bf45859ceae236d4c2f0dd1bb7dfb44bb78f27609eece4b', 'authority': 'listener-source-pins.json', 'authority_path': 'source/role_admission.h'}, 'include/berberis/kernel_api/proc_maps_factory_protocol.h': {'bytes': 5051, 'sha256': 'b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9', 'authority': 'listener-source-pins.json', 'authority_path': 'include/berberis/kernel_api/proc_maps_factory_protocol.h'}, 'include/berberis/kernel_api/proc_maps_kernel_statfs.h': {'bytes': 2480, 'sha256': '77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0', 'authority': 'listener-source-pins.json', 'authority_path': 'include/berberis/kernel_api/proc_maps_kernel_statfs.h'}, 'include/berberis/kernel_api/proc_maps_linux_compat.h': {'bytes': 2072, 'sha256': '131d1eef8d9f789876c965fa2d827b21a59fc64ab7886fa1f78d95623114370c', 'authority': 'listener-source-pins.json', 'authority_path': 'include/berberis/kernel_api/proc_maps_linux_compat.h'}, 'include/berberis/kernel_api/proc_maps_snapshot_reopen.h': {'bytes': 2557, 'sha256': '175107cadc296ab714acb83d40f0559fd8bd5f4505ca73f48861d509d3a07977', 'authority': 'listener-source-pins.json', 'authority_path': 'include/berberis/kernel_api/proc_maps_snapshot_reopen.h'}, 'controls/admission_controls.cc': {'bytes': 26498, 'sha256': '89d1efb34d449494bd4138d7c590406b8fda5878bb045408cb7ad6c002e74d46', 'authority': 'listener-source-pins.json', 'authority_path': 'controls/admission_controls.cc'}, 'references/registry_controls.cc': {'bytes': 33258, 'sha256': '5ea30aeb58eebeb09542e9ee68c07e1be7ff92fedcc3141f4d336490458e1a94', 'authority': 'listener-source-pins.json', 'authority_path': 'references/registry_controls.cc'}, 'references/snapshot_verification.h': {'bytes': 3409, 'sha256': '685f329d9cbe7aa663fac37d71373655fe9ba95473bbcc3e14cf64d5ce0cb9a2', 'authority': 'listener-source-pins.json', 'authority_path': 'references/snapshot_verification.h'}, 'controls/lease_destruction_controls.cc': {'bytes': 15017, 'sha256': '0d487929a3f1a7668266eda2a8585fd987723bf8ef81fe501c9bbaffe05105cc', 'authority': 'owner-lifetime-source-pins.json', 'authority_path': 'controls/lease_destruction_controls.cc'}, 'preimage/source/role_session.cc': {'bytes': 17240, 'sha256': 'ba298a4d5bce4bf1079fdbdccc867ee0ac837f6a7d6e7f78e25268f97db22bdb', 'authority': 'owner-lifetime-source-pins.json', 'authority_path': 'preimage/source/role_session.cc'}, 'preimage/source/role_session.h': {'bytes': 3741, 'sha256': 'f4b31944536a286d38151e5c1e736fe73b4886373f33dc295518708bb24decc4', 'authority': 'owner-lifetime-source-pins.json', 'authority_path': 'preimage/source/role_session.h'}}
++SOURCE_AUTHORITIES={'listener-source-pins.json': {'bytes': 9518, 'sha256': '7adaade107d05204015482abcee84431d8cd1bcc7776fea2a97dcd6488d210fb'}, 'owner-lifetime-source-pins.json': {'bytes': 7698, 'sha256': '072315957a20bd8fdd83efccbea0ca633a3815f867bb07d6091bc42b07762db5'}}
++ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-listener-lifetime-host-build-01-20261105')
+ SOURCE=ROOT/'source'
+ OUT=ROOT/'build01'
+-SOURCE_MANIFEST_SHA='3cca0b23c8b84de8a072d13206ddf7fa2dc018be37f86f6c3dc8a1cf654432f0'
+-BASE_BUILD={'path': '/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/result.json', 'bytes': 91682, 'sha256': '818bab5d2c0daead8cd597228480b15d7fc12ef7be06cd2b143f316c7f57a4e0'}
+-BASE_TOOLS={'bytes': 15101, 'path': '/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-inputs-before.json', 'sha256': '51cd6fca573cd7d9db0fe2b5e49cd64cb6f2167b12a36ea76cb1e28965d33870'}
++SOURCE_MANIFEST_SHA='7adaade107d05204015482abcee84431d8cd1bcc7776fea2a97dcd6488d210fb'
++BASE_BUILD={'path': '/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/registry-owner-destruction-host-build-01-20261105/build01/result.json', 'bytes': 88374, 'sha256': 'e2ac7f9204b7bf9a2f53f11f28f02ac0c7f9e56202a33e1b4f71b69636e5116d'}
++BASE_TOOLS={'path': '/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/registry-owner-destruction-host-build-01-20261105/build01/tool-inputs-before.json', 'bytes': 15101, 'sha256': '51cd6fca573cd7d9db0fe2b5e49cd64cb6f2167b12a36ea76cb1e28965d33870'}
+ DEADLINE=None
+ 
+ 
+ def execute():
+     global DEADLINE
+     require(os.getuid()==1000 and os.geteuid()==1000,'ordinary operator UID1000 required')
+-    require(Path(__file__).absolute()==SOURCE/'build_destruction.py','fixed staged controller required')
++    require(Path(__file__).absolute()==SOURCE/'build_listener.py','fixed staged controller required')
+     real_directory(SOURCE);os.umask(0o077);OUT.mkdir(mode=0o700);(OUT/'tmp').mkdir(mode=0o700)
+     DEADLINE=time.monotonic()+180
+     require(ctypes.CDLL(None,use_errno=True).prctl(36,1,0,0,0)==0 and not children(),'owned subreaper required')
+     allowed=sorted(os.sched_getaffinity(0));require(len(allowed)>=3,'cannot leave two logical CPUs free')
+     os.sched_setaffinity(0,[allowed[-1]])
+-    report={'schema':1,'state':'RUNNING','scope':'matching actual Registry preimage/candidate destruction controls; default PLAN only',
++    report={'schema':1,'state':'RUNNING','scope':'matching OwnerLease preimage/candidate and listener controls; default PLAN only',
+             'started_utc':utc(),'Main_actions':0,'Main_identity_observed':False,
+-            'registry_positive_executed':False,'destruction_controls_executed':False,'platform_policy_qualified':False,
++            'registry_positive_executed':False,'lease_destruction_controls_executed':False,'listener_controls_executed':False,'platform_policy_qualified':False,
+             'factory_service_started':False,'snapshot_created':False,
+             'source_manifest_sha256':SOURCE_MANIFEST_SHA,'selected_cpus':[allowed[-1]],
+             'commands':[],'objects':{},'artifacts':{}}
+@@ -302,15 +303,20 @@
+                 not verify_resolved(list(prior_tools.values())), 'prior compiler/runtime inputs changed')
+         report['prior_build_authority']=prior_build_pin
+         report['prior_tool_authority']=prior_tools_pin
+-        authority,authority_pin=held(SOURCE/'registry-source-pins.json',32768)
+-        require(sha(authority)==SOURCE_MANIFEST_SHA,'owner destruction source authority differs')
+-        frozen={row['path']:row for row in json.loads(authority)['files']}
+-        require(len(SOURCE_INPUTS)==8,'reviewed exact eight source/reference inputs required')
++        authorities={};authority_pins={}
++        for name,pin in SOURCE_AUTHORITIES.items():
++            raw,observed=held(SOURCE/name,32768)
++            require(observed['bytes']==pin['bytes'] and observed['sha256']==pin['sha256'],
++                    'frozen source authority differs: '+name)
++            authorities[name]={row['path']:row for row in json.loads(raw)['files']}
++            authority_pins[name]=observed
++        require(len(SOURCE_INPUTS)==21,'reviewed exact twenty-one source/reference inputs required')
+         for name,pin in SOURCE_INPUTS.items():
+-            require(all(frozen[name][key]==pin[key] for key in ['bytes','sha256']),
+-                    'reviewed compile input not bound by source authority: '+name)
++            frozen=authorities[pin['authority']][pin['authority_path']]
++            require(all(frozen[key]==pin[key] for key in ['bytes','sha256']),
++                    'reviewed compile input not bound by exact source authority: '+name)
+         stage_raw,stage_pin=held(ROOT/'stage-receipt.json',32768);stage=json.loads(stage_raw)['files']
+-        source_before=regular_tree(SOURCE,11,512*1024)
++        source_before=regular_tree(SOURCE,25,1024*1024)
+         require(set(source_before)==set(stage),'staged source membership differs')
+         for name,pin in source_before.items():
+             require(pin['bytes']==stage[name]['bytes'] and pin['sha256']==stage[name]['sha256'],
+@@ -318,7 +324,7 @@
+         for name,pin in SOURCE_INPUTS.items():
+             require(source_before[name]['bytes']==pin['bytes'] and source_before[name]['sha256']==pin['sha256'],
+                     'reviewed input changed: '+name)
+-        report['source_inputs']=source_before;report['source_authority']=authority_pin;report['stage_authority']=stage_pin
++        report['source_inputs']=source_before;report['source_authorities']=authority_pins;report['stage_authority']=stage_pin
+         env={'PATH':'/usr/bin:/bin','HOME':'/home/alex','LC_ALL':'C','LANG':'C','TMPDIR':str(OUT/'tmp')}
+         report['environment']=env
+         for path in ['/usr/bin/g++','/usr/bin/ldd','/usr/bin/python3']:tools[path]=pin_tool(path)
+@@ -344,21 +350,30 @@
+                 if match:tools[match[1]]=pin_tool(match[1])
+         common_flags=['-std=c++17','-O2','-Wall','-Wextra','-Werror']
+         flags={arm:common_flags+(['-I'+str(SOURCE/'preimage/source')] if arm=='preimage' else [])+
+-                    ['-I'+str(SOURCE/'source')] for arm in ['preimage','candidate']}
++                    ['-I'+str(SOURCE/'source'),'-I'+str(SOURCE/'include')] for arm in ['preimage','candidate']}
+         units=[('context','source/factory_context.cc','candidate'),
+-               ('preimage-authorization','preimage/source/role_authorization.cc','preimage'),
+-               ('preimage-control','controls/destruction_controls.cc','preimage'),
+-               ('candidate-authorization','source/role_authorization.cc','candidate'),
+-               ('candidate-control','controls/destruction_controls.cc','candidate')]
++               ('authorization','source/role_authorization.cc','candidate'),
++               ('snapshot','source/role_snapshot.cc','candidate'),
++               ('wire','source/proc_maps_factory_wire.cc','candidate'),
++               ('preimage-session','preimage/source/role_session.cc','preimage'),
++               ('candidate-session','source/role_session.cc','candidate'),
++               ('admission','source/role_admission.cc','candidate'),
++               ('preimage-lease-control','controls/lease_destruction_controls.cc','preimage'),
++               ('candidate-lease-control','controls/lease_destruction_controls.cc','candidate'),
++               ('listener-control','controls/admission_controls.cc','candidate')]
+         before_units={}
+         for label,name,arm in units:
+             raw=command([compiler,*flags[arm],'-M','-MT','CONTROL',str(SOURCE/name)],SOURCE,env,
+                         'dependencies-'+label,report['commands'],30)
+             before_units[label]=dependency_files(raw);dependencies.update(before_units[label])
+-            if label!='context':
+-                header=SOURCE/('preimage/source/role_authorization.h' if arm=='preimage' else 'source/role_authorization.h')
+-                require(str(header) in {row['resolved_path'] for row in before_units[label].values()},
+-                        'arm did not use its exact Registry header: '+label)
++            resolved={row['resolved_path'] for row in before_units[label].values()}
++            if label not in ['context','wire']:
++                require(str(SOURCE/'source/role_authorization.h') in resolved,
++                        'unit did not use the exact repaired Registry header: '+label)
++            if label in ['preimage-session','candidate-session','admission','preimage-lease-control',
++                         'candidate-lease-control','listener-control']:
++                header=SOURCE/('preimage/source/role_session.h' if arm=='preimage' else 'source/role_session.h')
++                require(str(header) in resolved, 'arm did not use its exact OwnerLease header: '+label)
+         require(0<len(dependencies)<=1024,'complete dependency closure out of bound')
+         report['dependency_inputs']=write_new(OUT/'dependency-inputs-before.json',dependencies)
+         report['dependency_count']=len(dependencies)
+@@ -375,24 +390,30 @@
+                                       'dependency_count':len(before_units[label])}
+             objects[label]=str(target)
+         runtime={}
+-        for arm in ['preimage','candidate']:
+-            binary=OUT/(arm+'_controls')
+-            command([compiler,*flags[arm],objects['context'],objects[arm+'-authorization'],objects[arm+'-control'],
+-                     '-o',str(binary)],SOURCE,env,'link-'+arm,report['commands'],30)
+-            artifact=hash_held(binary,8*1024*1024);artifact_pins[arm+'-elf']=artifact
++        common=['context','authorization','snapshot','wire']
++        targets={'lease-preimage':common+['preimage-session','preimage-lease-control'],
++                 'lease-candidate':common+['candidate-session','candidate-lease-control'],
++                 'listener':common+['candidate-session','admission','listener-control']}
++        for target,unit_names in targets.items():
++            binary=OUT/(target+'_controls')
++            command([compiler,*common_flags,*[objects[name] for name in unit_names],'-o',str(binary)],
++                    SOURCE,env,'link-'+target,report['commands'],30)
++            artifact=hash_held(binary,8*1024*1024);artifact_pins[target+'-elf']=artifact
+             with binary.open('rb')as stream:require(stream.read(4)==b'\x7fELF','actual result is not ELF')
+             require(binary.stat().st_mode&0o111,'actual ELF not executable')
+-            raw=command(['/usr/bin/ldd',str(binary)],SOURCE,env,arm+'-libraries',report['commands'],10).decode()
++            raw=command(['/usr/bin/ldd',str(binary)],SOURCE,env,target+'-libraries',report['commands'],10).decode()
+             require('not found'not in raw,'actual control runtime missing')
+-            arm_runtime={}
++            target_runtime={}
+             for line in raw.splitlines():
+                 match=re.search(r'(?:=>\s*)?(/\S+)\s+\(',line)
+-                if match:arm_runtime[match[1]]=pin_tool(match[1]);tools[match[1]]=arm_runtime[match[1]]
+-            require(arm_runtime,'actual control library closure empty');runtime.update(arm_runtime)
+-            plan=json.loads(command([str(binary)],SOURCE,env,arm+'-default-plan',report['commands'],10))
+-            require(plan=={'state':'PLAN_ONLY','candidate_cases':4,'preimage_cases':2,'Main_actions':0},
+-                    'default PLAN contract differs')
+-            report['artifacts'][arm]={'elf':artifact,'default_plan':plan,'runtime_libraries':arm_runtime}
++                if match:target_runtime[match[1]]=pin_tool(match[1]);tools[match[1]]=target_runtime[match[1]]
++            require(target_runtime,'actual control library closure empty');runtime.update(target_runtime)
++            plan=json.loads(command([str(binary)],SOURCE,env,target+'-default-plan',report['commands'],10))
++            expected=({'state':'PLAN_ONLY','owned_cases':9,'root_children':9,'role_children':9,
++                       'factory_service_started':False,'Main_actions':0} if target=='listener' else
++                      {'state':'PLAN_ONLY','candidate_cases':4,'preimage_cases':2,'Main_actions':0})
++            require(plan==expected,'default PLAN contract differs: '+target)
++            report['artifacts'][target]={'elf':artifact,'default_plan':plan,'runtime_libraries':target_runtime}
+         report['runtime_libraries']=runtime
+         require(all(name in prior_tools and row==prior_tools[name] for name,row in tools.items()),
+                 'a compiler/runtime input differs from the prior qualified build')
+@@ -406,7 +427,7 @@
+         signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGTERM,signal.SIGINT})
+         report['cleanup']=cleanup_children()
+         try:
+-            report['source_unchanged_after']=bool(source_before)and regular_tree(SOURCE,11,512*1024)==source_before
++            report['source_unchanged_after']=bool(source_before)and regular_tree(SOURCE,25,1024*1024)==source_before
+             require(prior_build_pin is not None and prior_tools_pin is not None and
+                     held(Path(BASE_BUILD['path']),131072)[1]==prior_build_pin and
+                     held(Path(BASE_TOOLS['path']),32768)[1]==prior_tools_pin,

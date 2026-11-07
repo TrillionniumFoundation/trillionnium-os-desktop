@@ -1,0 +1,140 @@
+{
+  "Android_execution": false,
+  "DispatchOne_scope": "exact prefix until before Received; continuation sentinel 777 is test-only",
+  "Main_actions": 0,
+  "actual_poll_and_own_descriptors": true,
+  "authority_and_getter_calls_are_explicit_seams": true,
+  "bound_source": {
+    "bytes": 12879,
+    "sha256": "f6a00ca022f81478528ba56170e32b9c2e6c4a8ee78645638d4fb3182236f5cd"
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-work02/local-getter-errors01/bound_callsites.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-work02/local-getter-errors01/bound_callsites"
+      ],
+      "name": "compile",
+      "returncode": 0,
+      "seconds": 1.7268616470028064,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-work02/local-getter-errors01/bound_callsites"
+      ],
+      "name": "run",
+      "returncode": 0,
+      "seconds": 0.009241900996130425,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 1746,
+        "sha256": "c9efb190acedd8d7e62f65feb445b8d4df00aff5998e4a85d6d18b019375242d"
+      }
+    }
+  ],
+  "compiler": {
+    "bytes": 1027128,
+    "path": "/usr/bin/x86_64-linux-gnu-g++-13",
+    "sha256": "52f1ddb33fe78b9441e0f42e9cd22c571f1101938e046c8a26582494e041cc73"
+  },
+  "compiler_unchanged": true,
+  "error": null,
+  "inputs": {
+    "candidate": {
+      "role_admission.cc": {
+        "bytes": 11019,
+        "sha256": "25d161ebf96e50442725df9231833dae032d890954890c691c0f985f4b31bf77"
+      },
+      "role_session.cc": {
+        "bytes": 20238,
+        "sha256": "696c6065216fb2b608c038876f7615bd04926b973f1fa1e0b428c895e47e4e85"
+      }
+    },
+    "preimage": {
+      "role_admission.cc": {
+        "bytes": 10988,
+        "sha256": "fd8cfc69c02523f3d09beab1c6f9ebd4c31229658e6c662bb7bd30d09d5ead22"
+      },
+      "role_session.cc": {
+        "bytes": 19932,
+        "sha256": "95c2d46f0eb6df9e96996db04aca3d8a43e001b8ac2fcdaacefd028c63c7513e"
+      }
+    }
+  },
+  "root_execution": false,
+  "schema": 1,
+  "source_segments": {
+    "candidate": {
+      "DispatchOne_prefix_before_Received": {
+        "bytes": 889,
+        "end_byte": 17315,
+        "sha256": "e63795e3133762442725c31ed223b8b8086115bb047725fc13b1f86ca50b06aa",
+        "start_byte": 16426
+      },
+      "admission_Check_full": {
+        "bytes": 614,
+        "end_byte": 3622,
+        "sha256": "9de28325e7d8ead5dc61bc4d4c08ca37f5a5ca009ab18622576e4baca3a2c2cc",
+        "start_byte": 3008
+      },
+      "admission_Wait_full": {
+        "bytes": 1145,
+        "end_byte": 4767,
+        "sha256": "81546e8958f3350153f32c5a6031c8d9bf098b759d175a165d7ccdce4b5c543e",
+        "start_byte": 3622
+      },
+      "session_Wait_full": {
+        "bytes": 1301,
+        "end_byte": 6268,
+        "sha256": "dafffd4aa954c449cf4de3fcb712757f8a60091e4dee722c09f7bb78d5a5b918",
+        "start_byte": 4967
+      }
+    },
+    "preimage": {
+      "DispatchOne_prefix_before_Received": {
+        "bytes": 707,
+        "end_byte": 17009,
+        "sha256": "b9a8bf89c02e7fd91585d88c7eb60686e97e5662d7a0dacc3cdaa3c957f3fd87",
+        "start_byte": 16302
+      },
+      "admission_Check_full": {
+        "bytes": 614,
+        "end_byte": 3622,
+        "sha256": "9de28325e7d8ead5dc61bc4d4c08ca37f5a5ca009ab18622576e4baca3a2c2cc",
+        "start_byte": 3008
+      },
+      "admission_Wait_full": {
+        "bytes": 1114,
+        "end_byte": 4736,
+        "sha256": "fa759564b71b14f034f7526a48b8c8b92ad73f21f12f6d154a756d68754c2c20",
+        "start_byte": 3622
+      },
+      "session_Wait_full": {
+        "bytes": 1177,
+        "end_byte": 6144,
+        "sha256": "874389539791cacd3ff981749456ba8f3ca96d03a959c2b2ca94dcd646b6fc18",
+        "start_byte": 4967
+      }
+    }
+  },
+  "source_unchanged": true,
+  "state": "PASS_BOUND_CALLSITE_ERROR_CONTROLS"
+}

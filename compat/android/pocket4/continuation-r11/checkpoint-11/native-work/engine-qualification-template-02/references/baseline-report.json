@@ -1,0 +1,207 @@
+{
+  "actual_execution": {
+    "actual_mapped_binary_and_three_libraries_confirmed": true,
+    "argv": [
+      "/home/alex/work/pocket4-signal-host-baseline-r11-01-ff3127ab/fixture/bin/berberis_arm64_host_tests",
+      "--gtest_filter=*",
+      "--gtest_repeat=1",
+      "--gtest_color=no",
+      "--gtest_output=xml:/home/alex/work/pocket4-signal-host-baseline-r11-01-ff3127ab/results.xml"
+    ],
+    "assessment": {
+      "all_expected_registered_executed": true,
+      "completed_count": 3788,
+      "disabled": [
+        "Arm64LiteTranslateRegionDispatchTest.DISABLED_MemsetAarch64_FullBodyFrom0x49cc0_1024ByteZeroFill",
+        "Arm64TierCoverage.DISABLED_RegenerateTable"
+      ],
+      "executed_count": 3791,
+      "failed_cases": [],
+      "registered_count": 3793,
+      "skipped": {
+        "Arm64HeavyOptimizerFrontendTest.FcmpHBailsWithoutF16C": "F16C present; FCMP H lowers in-tier",
+        "Arm64HeavyOptimizerFrontendTest.FmaxvVecHBailsWithoutF16C": "F16C present; FMAXV H lowers in-tier",
+        "Arm64MmapNoreserveTest.UnrealSizedArenaReservesAddressSpaceWithoutCommittingRam": "opt-in policy is disabled"
+      }
+    },
+    "automatic_retry": false,
+    "cpu": 6,
+    "cwd": "/home/alex/work/pocket4-signal-host-baseline-r11-01-ff3127ab/fixture/bin",
+    "environment": {
+      "HOME": "/home/alex/work/pocket4-signal-host-baseline-r11-01-ff3127ab/home",
+      "LANG": "C",
+      "LC_ALL": "C",
+      "LD_LIBRARY_PATH": "/home/alex/work/pocket4-signal-host-baseline-r11-01-ff3127ab/fixture/lib",
+      "PATH": "/usr/bin:/bin",
+      "TMPDIR": "/home/alex/work/pocket4-signal-host-baseline-r11-01-ff3127ab/tmp"
+    },
+    "exact_source_artifacts_unchanged": true,
+    "filter": "*",
+    "finished_utc": "2026-11-04T15:11:00.846490+00:00",
+    "invocation_id": "813d401b819b49859844e6cb7da24225",
+    "limits": {
+      "cpu.max": "100000 100000",
+      "memory.high": "max",
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "pids.max": "128"
+    },
+    "max_oom_and_oom_kill_events_all_zero": true,
+    "repeat": 1,
+    "sharding": false,
+    "start_utc": "2026-11-04T15:10:53.007229+00:00",
+    "test_binary_sha256": "35433eb0e466dd24387b0fcfbe933bcc0477b7fea193ad474e68e1c0a9d5141d",
+    "unit": "p4-signal-host-baseline-ff3127ab4ee2.service"
+  },
+  "authoritative_jobs": {
+    "baseline": {
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1a71ce223-fc05-2a2f",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "timed_out": false
+    },
+    "readback_cleanup_export": {
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1a7218f36-fc05-2a44",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "timed_out": false
+    },
+    "stage": {
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1a71a3e4f-fc05-2a22",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "timed_out": false
+    }
+  },
+  "boundaries": {
+    "Android_runtime_qualification": false,
+    "all_signals_qualified": false,
+    "candidate_executed": false,
+    "candidate_full_build_complete": false,
+    "commercial_app_qualification": false,
+    "production_ready": false,
+    "runtime_wrapper_independent_peer_review_complete": false
+  },
+  "cleanup": {
+    "action": "none; completed unit already absent or inactive",
+    "cgroup_exists_after": false,
+    "commercial_app_data_touched": false,
+    "remaining_owned_pids": [],
+    "source_evidence_and_fixture_retained": true,
+    "unit_after": {
+      "ActiveState": "inactive",
+      "ControlGroup": "",
+      "Description": "p4-signal-host-baseline-ff3127ab4ee2.service",
+      "ExecMainCode": "0",
+      "ExecMainStatus": "0",
+      "InvocationID": "",
+      "LoadState": "not-found",
+      "MainPID": "0",
+      "Result": "success",
+      "SubState": "dead"
+    }
+  },
+  "created_utc": "2026-11-04T15:23:39.553569+00:00",
+  "export_verification": {
+    "chunk_and_archive_sha256_verified": true,
+    "chunks": 2,
+    "every_file_manifest_verified": true,
+    "exact_regular_file_count": 20,
+    "immutable_version": "66306:31368490:122526:1793805360922662239:1793805360922662239",
+    "native_tests_reexecuted_for_export": false,
+    "registration_and_xml_reparsed_locally": true
+  },
+  "host": "pocket4",
+  "jobs": {
+    "baseline": "1a1a71ce223-fc05-2a2f",
+    "readback_cleanup_export": "1a1a7218f36-fc05-2a44",
+    "stage": "1a1a71a3e4f-fc05-2a22"
+  },
+  "kind": "actual-frozen-R16-full-host-baseline-qualification",
+  "main": {
+    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "preserved_through_test_and_cleanup": true,
+    "resources": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    }
+  },
+  "nonce": "ff3127ab4ee244a590a0817e586ce538",
+  "pins": {
+    "archive": {
+      "bytes": 122526,
+      "path": "/workspace/scratch/94990735b266/signal-host-baseline-device-r1/pocket4-owned-signal-host-baseline-r11-01-evidence.tar.gz",
+      "sha256": "61657861d39f5738ab4d6d44f9e0ef3cb93c67dccbd9eb628b17a444c3eb7b33"
+    },
+    "export_manifest": {
+      "bytes": 5251,
+      "path": "/workspace/scratch/94990735b266/signal-host-baseline-device-r1/exported/export-manifest.json",
+      "sha256": "01f81b391057bed4f926279bbf7c0a913bbceea8228d53a987433da5b2b4592a"
+    },
+    "external_inputs": {
+      "bytes": 1489,
+      "path": "/workspace/scratch/94990735b266/signal-host-baseline-device-r1/exported/source/host-baseline-inputs.json",
+      "sha256": "6a4f279477b2f7f3cc15f193c40784543e7664e0f0195aa1ef46f11c2cd8e424"
+    },
+    "post_execution_readback": {
+      "bytes": 3398,
+      "path": "/workspace/scratch/94990735b266/signal-host-baseline-device-r1/exported/evidence/post-execution-readback.json",
+      "sha256": "43899ead10e469522914a80612908e8bca225ce46ccf9ac6d06743fa35a12b51"
+    },
+    "preparation_manifest": {
+      "bytes": 1940,
+      "path": "/workspace/scratch/94990735b266/signal-host-baseline-device-r1/exported/source/preparation-source-manifest.json",
+      "sha256": "3f12e8bcde951712a20208aaeed04f1125bac58993ce1a3f5a93e4f950a9b103"
+    },
+    "result": {
+      "bytes": 25913,
+      "path": "/workspace/scratch/94990735b266/signal-host-baseline-device-r1/exported/evidence/result.json",
+      "sha256": "d99ee51205eeab9b6d33a2fcd6b4fa3d51304b06bc2fc638a470677a8f3a5a2e"
+    },
+    "run_request": {
+      "bytes": 1607,
+      "path": "/workspace/scratch/94990735b266/signal-host-baseline-device-r1/run-request.json",
+      "sha256": "b14d8f9585ccbe4f567b783a978eb07012ba356c0bf7d0c42a259cc3f35a453d"
+    },
+    "runtime_manifest": {
+      "bytes": 2703,
+      "path": "/workspace/scratch/94990735b266/signal-host-baseline-device-r1/exported/source/runtime-source-manifest.json",
+      "sha256": "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5"
+    },
+    "xml": {
+      "bytes": 1065796,
+      "path": "/workspace/scratch/94990735b266/signal-host-baseline-device-r1/exported/evidence/results.xml",
+      "sha256": "7cf3ce961ae9e2fbcf249cfb7f7e096b5438aa964bb1b638eab5baa76e54f069"
+    }
+  },
+  "remote_archive": "/home/alex/work/pocket4-owned-signal-host-baseline-r11-01-evidence.tar.gz",
+  "remote_external_inputs": {
+    "path": "/home/alex/work/pocket4-owned-signal-host-r11-source-01/host-baseline-inputs.json",
+    "sha256": "6a4f279477b2f7f3cc15f193c40784543e7664e0f0195aa1ef46f11c2cd8e424"
+  },
+  "remote_result": {
+    "path": "/home/alex/work/pocket4-signal-host-baseline-r11-01-ff3127ab/result.json",
+    "sha256": "d99ee51205eeab9b6d33a2fcd6b4fa3d51304b06bc2fc638a470677a8f3a5a2e"
+  },
+  "reviewer": "android_acceptance",
+  "schema": 1,
+  "scope": "Exact frozen R16 host test binary, three libraries and three corpora executed once through the new frozen full-suite wrapper in an isolated systemd unit. This closes the new-wrapper baseline environment contract only.",
+  "state": "PASS_FULL_HOST_SUITE_AND_OWNED_PROCESS_CLEANUP_CONFIRMED"
+}

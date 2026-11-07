@@ -1,0 +1,208 @@
+--- a/combined_build_go6r2.py
++++ b/combined_build_streaming.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Independent candidate05 Go6/11GiB second profile. Default: plan; no automatic retry."""
++"""Candidate05 cold engine build with the actual qualified streaming builder. Default: plan."""
+ import argparse
+ import ctypes
+ import datetime
+@@ -21,11 +21,18 @@
+ CANDIDATE = COMPOSITION / "candidate-05"
+ MANIFEST = COMPOSITION / "candidate-05-source-manifest.json"
+ MANIFEST_SHA = "4e2f7f9ea09c6977afbe8d97c040fd2f1344772429f78fe0f16edc913dadc7ba"
+-BUILDER_ORIGIN = P("/home/alex/work/pocket4-signal-mask-r11-build-memory-01/builder-source")
+-BUILDER_MANIFEST = BUILDER_ORIGIN.parent / "builder-source-after.json"
+-BUILDER_MANIFEST_SHA = "e7c225bd2842c260d9f4149aca3c4483ed31c569efb31068b6d787892bd17017"
+-BUILDER = P("/home/alex/work/pocket4-signal-semantics-r15-20261104/cargo-target/debug/droidloom-update")
+-BUILDER_SHA = "16df26d88391c22c9f076917531f022907ec5608bd31e58e05c898605db9dcc4"
++BUILDER_ORIGIN = P('/home/alex/work/pocket4-blueprint-streaming-builder-450-compile-03-20261105/builder-source')
++BUILDER_MANIFEST = BUILDER_ORIGIN.parent / "attempt01/copied-builder-source-manifest.json"
++BUILDER_MANIFEST_SHA = '6834ea57e4d0402bd5c6e6c405728a111af77fb54ea0e0bea407ba9647fa41b4'
++BUILDER = P('/home/alex/work/pocket4-blueprint-streaming-builder-450-compile-03-20261105/attempt01/cargo-target/debug/droidloom-update')
++BUILDER_SHA = 'ea80146d5fc47f9927dd16a1ad91b6b48f0b30f0ce043d4eaef53f0e84f482b6'
++BUILDER_COMPILE_RESULT = BUILDER_ORIGIN.parent / "attempt01/result.json"
++BUILDER_COMPILE_SHA = 'a1d8fe1e891c876baeff555b18fce9bafe6a895d379d9e55261c6df1981785de'
++BUILDER_CONTROL_SHA = "993f59e310f6da3a48c2cd5c1042c94d183cbc886ed795627c4e3d9c025a2485"
++BLUEPRINT_PATCH = 'android/apex-compat/0009-blueprint-stream-uncached-module-actions.patch'
++BLUEPRINT_PATCH_SHA = '9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307'
++BLUEPRINT_SOURCE = "build/blueprint/context.go"
++BLUEPRINT_SOURCE_SHA = '1559969a55db1b682401c01264dd8ba96fa224781c3af277f0996a5050f7c9fa'
+ R16 = P("/home/alex/work/pocket4-proc-maps-offset-r16-20261104/source")
+ R16_RECEIPT = R16.parent / "frozen-build-01/target/product/droidloom_x86_64/droidloom-native-engine-source.json"
+ R16_RECEIPT_SHA = "9b46dca0395ecc77a75fa493d6788c3ea8c9e7a8f3b844c7a57aa5e78bfccf11"
+@@ -35,7 +42,7 @@
+ TETO_BASE = "917021cf3ecd077eb1581146a79d2265011755b8"
+ TETO_URL = "https://github.com/denialwm/teto.git"
+ WORK = P("/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1")
+-ROOT = OWNER / "full-build-combined05-go6-02"
++ROOT = OWNER / "full-build-combined05-go6-streaming-01"
+ BUILD_SOURCE = ROOT / "builder-source"
+ ENGINE_SOURCE = ROOT / "engine-working"
+ OUT = ROOT / "android-out"
+@@ -161,7 +168,7 @@
+     require(MIN_FREE_SWAP - SWAP_MAX == 1024**3,
+             "new profile requires at least one-GiB swap admission difference")
+     require(memory["MemAvailable"] >= MIN_AVAILABLE,
+-            "less than 14 GiB MemAvailable for independent Go6 second profile; no automatic retry")
++            "less than 14 GiB MemAvailable for fresh Go6 streaming profile; no automatic retry")
+     require(memory["SwapFree"] >= MIN_FREE_SWAP,
+             "less than the required 2 GiB free swap; no automatic retry")
+ 
+@@ -180,27 +187,86 @@
+ 
+ 
+ def go_projection_contract(inputs, reference):
+-    # The entire 449-file builder copy, including its Go6 patch, is unchanged.
+-    # Reject a leftover Go4/Go5 projection after normal lock/journal recovery.
++    # The normal builder must recover the old journal and apply exactly one new
++    # Blueprint patch. The Go6 patch and all prior patch hashes stay unchanged.
+     old = reference["effective_projection"]
+     actual = inputs["effective_projection"]
+-    require(old["patches"][GO_PATCH] == GO_PATCH_SHA,
+-            "prior successful projection used a different Go patch")
+-    require(actual["patches"] == old["patches"],
+-            "actual projection patch set differs from the successful Go6 builder")
++    require(old["patches"][GO_PATCH] == GO_PATCH_SHA and BLUEPRINT_PATCH not in old["patches"],
++            "prior successful projection does not match the fixed preimage")
++    expected = dict(old["patches"])
++    expected[BLUEPRINT_PATCH] = BLUEPRINT_PATCH_SHA
++    require(actual["patches"] == expected,
++            "actual normal projection did not apply exactly the streaming delta")
+     projected_hash = actual["files"][SOONG_SOURCE]
+-    require(isinstance(projected_hash, str) and len(projected_hash) == 64 and
+-            all(c in "0123456789abcdef" for c in projected_hash) and
+-            projected_hash == old["files"][SOONG_SOURCE],
++    require(projected_hash == old["files"][SOONG_SOURCE],
+             "actual projected Soong source differs from the successful Go6 builder")
++    require(actual["files"][BLUEPRINT_SOURCE] == BLUEPRINT_SOURCE_SHA,
++            "actual projected Blueprint writer differs from the tested candidate")
+     return {"patch_path": GO_PATCH, "patch_sha256": GO_PATCH_SHA,
+             "projected_soong_path": SOONG_SOURCE, "projected_soong_sha256": projected_hash,
+             "actual_prior_success_projected_hash_equal": True,
+-            "all_applied_patch_hashes_equal_reference": True,
++            "unchanged_prior_patch_hashes": True, "one_new_patch": BLUEPRINT_PATCH,
++            "new_patch_sha256": BLUEPRINT_PATCH_SHA,
++            "projected_blueprint_path": BLUEPRINT_SOURCE,
++            "projected_blueprint_sha256": BLUEPRINT_SOURCE_SHA,
+             "normal_builder_lock_and_journal_recovery_required": True}
+ 
+ 
++
++def builder_compilation_contract():
++    require(digest(BUILDER_COMPILE_RESULT) == BUILDER_COMPILE_SHA,
++            "actual matching builder compile receipt changed")
++    require(digest(BUILDER_ORIGIN.parent / "control-source/compile_builder.py") == BUILDER_CONTROL_SHA,
++            "actual matching compiler controller changed")
++    compiled = json.loads(BUILDER_COMPILE_RESULT.read_bytes())
++    tests = [
++        "android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes",
++        "android::tests::restoration_preserves_original_and_removes_created_file",
++        "android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch",
++        "android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout",
++        "android::patch_tests::interrupted_projection_recovers_before_next_build",
++        "tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets",
++        "tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory",
++    ]
++    require(compiled["state"] == "PASS" and compiled["expected_test_names"] == tests and
++            compiled["focused_tests_passed"] == 7 and len(compiled["commands"]) == 26 and
++            all(row["returncode"] == 0 and not row["timed_out"] for row in compiled["commands"]),
++            "actual builder compilation and original seven tests are not qualified")
++    require(compiled["original_source_unchanged_after"] is True and
++            compiled["copied_source_unchanged_after"] is True and
++            compiled["cargo_configs_unchanged_after"] is True and
++            not compiled["dependency_changes"] and not compiled["tool_changes"] and
++            not compiled["observed_signals"], "actual builder inputs changed")
++    cleanup = compiled["cleanup"]
++    require(not cleanup["forced_cleanup"] and not cleanup["remaining"] and not cleanup["errors"] and
++            compiled["owned_resource_gate"]["pass"] is True and
++            all(compiled["owned_resource_gate"]["memory_events_delta"][key] == 0
++                for key in ("oom", "oom_kill", "oom_group_kill")),
++            "actual builder retirement or OOM qualification failed")
++    require(compiled["copied_manifest"]["path"] == str(BUILDER_MANIFEST) and
++            compiled["copied_manifest"]["sha256"] == BUILDER_MANIFEST_SHA and
++            compiled["source_delta"] == {
++                "Go6_patch_changed": False, "added": [BLUEPRINT_PATCH],
++                "changed_existing": ["tools/droidloom-update/src/android.rs"],
++                "engine_source_files_changed": 0, "unchanged_existing": 448},
++            "actual builder source delta differs")
++    require(compiled["actual_Go_comparison_gate"]["sha256"] ==
++            "391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674" and
++            compiled["actual_registry_archive_authority"]["sha256"] ==
++            "b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993",
++            "actual writer or locked-registry source qualification differs")
++    elf = compiled["builder_elf"]
++    require(elf["path"] == str(BUILDER) and elf["sha256"] == BUILDER_SHA and
++            elf["bytes"] == 32081288 and regular(BUILDER).st_size == elf["bytes"] and
++            digest(BUILDER) == BUILDER_SHA, "actual matching builder ELF changed")
++    return {"receipt_sha256": BUILDER_COMPILE_SHA, "builder_sha256": BUILDER_SHA,
++            "source_manifest_sha256": BUILDER_MANIFEST_SHA, "focused_tests_passed": 7,
++            "upstream_vet_pass_claimed": False,
++            "builder_compile_memory_max_events": compiled["owned_resource_gate"]["memory_events_delta"]["max"]}
++
++
+ def source_contract():
++    builder_compilation_contract()
+     matched_gate_contract()
+     for root in (CANDIDATE, BUILDER_ORIGIN, R16):
+         no_alias(root)
+@@ -223,11 +289,15 @@
+     reference_inputs()
+     require(digest(BUILDER_MANIFEST) == BUILDER_MANIFEST_SHA, "builder manifest changed")
+     builder_files = json.loads(BUILDER_MANIFEST.read_bytes())
+-    require(len(builder_files) == 449 and inventory(BUILDER_ORIGIN) == builder_files,
++    require(len(builder_files) == 450 and inventory(BUILDER_ORIGIN) == builder_files,
+             "builder source changed")
+     require(builder_files[GO_PATCH]["sha256"] == GO_PATCH_SHA and
+             builder_files[GO_PATCH]["bytes"] == 583 and
+             digest(BUILDER_ORIGIN / GO_PATCH) == GO_PATCH_SHA, "original Go6 patch changed")
++    require(builder_files[BLUEPRINT_PATCH]["sha256"] == BLUEPRINT_PATCH_SHA and
++            builder_files[BLUEPRINT_PATCH]["bytes"] == 470 and
++            digest(BUILDER_ORIGIN / BLUEPRINT_PATCH) == BLUEPRINT_PATCH_SHA,
++            "tested Blueprint streaming patch changed")
+     require(digest(R16_RECEIPT) == R16_RECEIPT_SHA, "R16 receipt changed")
+     baseline = json.loads(R16_RECEIPT.read_bytes())
+     require(baseline["source_snapshot"]["commit"] == R16_HEAD, "R16 recorded git head changed")
+@@ -260,7 +330,11 @@
+             "MemAvailable_minimum": MIN_AVAILABLE, "SwapFree_minimum": MIN_FREE_SWAP,
+             "admission_difference_bytes": MIN_AVAILABLE - MEMORY_MAX,
+             "swap_admission_difference_bytes": MIN_FREE_SWAP - SWAP_MAX,
+-            "physical_reservation_claimed": False, "builder_source_delta": None,
++            "physical_reservation_claimed": False,
++            "builder_source_delta": {"changed_existing": ["tools/droidloom-update/src/android.rs"],
++                                     "added": [BLUEPRINT_PATCH], "unchanged_existing": 448},
++            "builder_source_files": 450, "actual_builder_compile_sha256": BUILDER_COMPILE_SHA,
++            "Blueprint_streaming_patch_sha256": BLUEPRINT_PATCH_SHA,
+             "Go_soft_heap": "6GiB",
+             "feature_default_enabled": False, "ART_target_built": False, "factory_target_built": False,
+             "tests_executed_by_build": False, "service_started": False, "Android_actions": 0,
+@@ -317,6 +391,8 @@
+         receipt = {"schema": 1, "state": "PREPARED_NOT_BUILT", "finished_utc": utc(),
+                    "candidate_manifest_sha256": MANIFEST_SHA,
+                    "builder_manifest_sha256": BUILDER_MANIFEST_SHA, "builder_sha256": BUILDER_SHA,
++                   "actual_builder_compile_sha256": BUILDER_COMPILE_SHA,
++                   "Blueprint_streaming_patch_sha256": BLUEPRINT_PATCH_SHA,
+                    "R16_receipt_sha256": R16_RECEIPT_SHA, "git_head": R16_HEAD, "git_base": TETO_BASE,
+                    "original_success_inputs_sha256": SIGNAL_INPUTS_SHA,
+                    "origin": TETO_URL, "engine_files": engine, "engine_file_count": len(engine),
+@@ -412,7 +488,10 @@
+     require(receipt["state"] == "PREPARED_NOT_BUILT" and receipt["candidate_manifest_sha256"] == MANIFEST_SHA,
+             "wrong preparation receipt")
+     files, engine, builder_files, baseline, effective = source_contract()
+-    require(receipt["engine_files"] == engine and receipt["builder_manifest_sha256"] == BUILDER_MANIFEST_SHA,
++    require(receipt["engine_files"] == engine and receipt["builder_manifest_sha256"] == BUILDER_MANIFEST_SHA and
++            receipt["builder_sha256"] == BUILDER_SHA and
++            receipt["actual_builder_compile_sha256"] == BUILDER_COMPILE_SHA and
++            receipt["Blueprint_streaming_patch_sha256"] == BLUEPRINT_PATCH_SHA,
+             "prepared source contract differs")
+     require(inventory(BUILD_SOURCE) == builder_files, "copied builder source changed")
+     require(hashes(ENGINE_SOURCE, True) == engine, "working source changed")
+@@ -537,7 +616,7 @@
+     subreaper()
+     require(child_ids() == [], "controller has preexisting children or cannot enumerate its own children")
+     ATTEMPT.mkdir(mode=0o700)
+-    claim = {"schema": 1, "state": "STARTING_COMBINED05_GO6R2_FLAG0_FULL_BUILD",
++    claim = {"schema": 1, "state": "STARTING_COMBINED05_GO6_STREAMING_FLAG0_COLD_BUILD",
+              "started_utc": utc(), "preparation_sha256": expected_sha, "plan": plan(),
+              "mem_available_before": memory["MemAvailable"], "swap_free_before": memory["SwapFree"],
+              "cpu_affinity_before": affinity,

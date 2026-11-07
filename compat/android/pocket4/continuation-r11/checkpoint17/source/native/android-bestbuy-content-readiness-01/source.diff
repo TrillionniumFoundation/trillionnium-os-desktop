@@ -1,0 +1,674 @@
+--- launch-inspect-01/owned_inspect.py
++++ content-readiness-01/owned_inspect.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""One actual-bound BESTBUY launch, read-only QA sequence and owned task cleanup.
++"""One actual-bound BESTBUY launch, bounded content readiness and owned task cleanup.
+ 
+ No click, text entry, old v2 helper, screenshot, audio, package change, permission
+ grant or settings write. Raw helper tree stays in the new root-private flow.
+@@ -15,16 +15,16 @@
+ import types
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-bestbuy-owned-launch-inspect-01')
++ROOT=Path('/home/alex/work/pocket4-bestbuy-owned-content-readiness-01')
+ SOURCE=ROOT/'source'
+-NONCE='e5c3f2c938e436b52539d52cdbfab8c5'
++NONCE='01355f5641b7b932a1ee9b9f21350568'
+ FLOW=Path('/home/alex/work/pocket4-bestbuy-owned-qa-r1-flow-'+NONCE)
+ PACKAGE='com.bestbuy.android'
+ UID=10130
+ SELF='org.droidloom.qa.bestbuy.r1'
+ HELPER_UID=10198
+ COMPONENT=PACKAGE+'/.activity.SplashActivity'
+-PLAN={'schema': 1, 'operation': 'inspect', 'nonces': {'before': '3f8854a28316a3fca6d02a2718e8cb76', 'inspect': '304e502d5e668874fe3879215395eecd', 'after': '068ed720610afce9d5172ee1498c1fb6'}}
++PLANS=[{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '4d57777354576d9ee0601f542329ccbb', 'inspect': '3ede9c0db6cd5244a48b1655eec594ba', 'after': '81bb9fcd23f77c5d9de85f794926e86f'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '921d22b8386ee30a655a3a0418bd03b3', 'inspect': 'ca298bdacefb140993dfb73269da8178', 'after': '80daa9e7c141176a434a5277fd3f4d32'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'dc9dddbab03003243ec68bc899692b2f', 'inspect': '7989fc90293714dff921a1fa8fdaa59a', 'after': '5e1900cb672de8aa918162e0f436b9e2'}}]
+ INSTALL_ROOT=Path('/home/alex/work/pocket4-owned-bestbuy-qa-r1-install-state-01')
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+ INSTALL_SOURCE_SHA='15d6495c30af3b765c9b4df99d8d170001e66ea54ab23327bfc7d785e192d2a4'
+@@ -44,7 +44,7 @@
+ RESOLVER_NONCE='84c802283ac2ff38b19f671004194e54'
+ RESOLVER_RECORDS={'worker': ('result.json', 10112, 'bd394cac42b9ab536c3646c4c6e5c6e755658855c1a4525aa26b9b73cf80f073'), 'stage': ('stage-result.json', 1587, '424b8f32a7375b31928947b7d870d83bcc4848dc00e3d2fe4493a99aea165ecb')}
+ EXPECTED_TARGET_ARTIFACTS=[{'held_file': {'bytes': 149277165, 'ctime_ns': 1791397157052206558, 'device': 1811, 'gid': 1000, 'inode': 142759, 'mode': 33188, 'mtime_ns': 1791397156944203643, 'nlink': 1, 'uid': 1000}, 'path': '/data/app/~~4o1zzByRq2_9GDr5V_PDzg==/com.bestbuy.android-62Qf1Um9AmtxI8sp9cDOKA==/base.apk', 'sha256': '74ff0f36a2fed0693960af8ec13ae18bef976b51df1433eec15ca195002339b3'}, {'held_file': {'bytes': 93486949, 'ctime_ns': 1791397157057277053, 'device': 1811, 'gid': 1000, 'inode': 142757, 'mode': 33188, 'mtime_ns': 1791397157057277053, 'nlink': 1, 'uid': 1000}, 'path': '/data/app/~~4o1zzByRq2_9GDr5V_PDzg==/com.bestbuy.android-62Qf1Um9AmtxI8sp9cDOKA==/split_config.arm64_v8a.apk', 'sha256': 'ee64286a30d9127fc74deb734f66aaa67c2d4f0ca168138977378719fe01c5a3'}, {'held_file': {'bytes': 2747579, 'ctime_ns': 1791397157052206558, 'device': 1811, 'gid': 1000, 'inode': 142758, 'mode': 33188, 'mtime_ns': 1791397156926874805, 'nlink': 1, 'uid': 1000}, 'path': '/data/app/~~4o1zzByRq2_9GDr5V_PDzg==/com.bestbuy.android-62Qf1Um9AmtxI8sp9cDOKA==/split_config.xxhdpi.apk', 'sha256': '2b1574c80ab02b450ac2370067dc9bcfb828dcf1c3af8fb9d60f197d456f8f67'}]
+-RUNTIME_FILES={'owned_inspect.py','bestbuy_task_context.py','INPUTS.json'}
++RUNTIME_FILES={'bestbuy_readiness.py', 'owned_inspect.py', 'INPUTS.json', 'bestbuy_task_context.py'}
+ PHASE_SECONDS={'launch':175,'inspect':175,'cleanup':115}
+ 
+ 
+@@ -180,15 +180,16 @@
+     records={k:json.loads(read(RESOLVER_ROOT/v[0],expected=v[2],size=v[1])) for k,v in RESOLVER_RECORDS.items()}
+     actual_component=actual_resolver(records,INSTALLED)
+     adapter,qa,proof,apk=util.qualified_inputs();del apk
+-    adapter.validate_plan(PLAN,qa)
++    for plan in PLANS:adapter.validate_plan(plan,qa)
+     need(qa.PACKAGE==PACKAGE and qa.UID==UID and qa.SELF==SELF and adapter.SELF==SELF,
+          'DEDICATED_BESTBUY_HELPER_SOURCE_REQUIRED')
+-    values=[NONCE,*PLAN['nonces'].values()]
+-    need(len(values)==len(set(values))==4 and all(re.fullmatch('[0-9a-f]{32}',v) for v in values),
+-         'EXACT_NEW_FLOW_AND_THREE_HELPER_NONCES')
++    values=[NONCE,*[n for plan in PLANS for n in plan['nonces'].values()]]
++    need(len(values)==len(set(values))==10 and all(re.fullmatch('[0-9a-f]{32}',v) for v in values),
++         'EXACT_NEW_FLOW_AND_NINE_HELPER_NONCES')
+     inputs=json.loads(read(HERE/'INPUTS.json',65536))
+     need(inputs['nonce']==NONCE and inputs['component']==COMPONENT and inputs['installed_helper']==INSTALLED
+-         and inputs['resolver_records']=={k:{'relative_path':v[0],'bytes':v[1],'sha256':v[2]} for k,v in RESOLVER_RECORDS.items()},
++         and inputs['resolver_records']=={k:{'relative_path':v[0],'bytes':v[1],'sha256':v[2]} for k,v in RESOLVER_RECORDS.items()}
++         and inputs['read_only_inspection_plans']==PLANS,
+          'EXACT_RUNTIME_INPUT_RECORD_REQUIRED')
+     # Interface-only binding for the unchanged phase body; no resolver action
+     # is run here and the prior five-command receipt has no helper assertion.
+@@ -221,10 +222,10 @@
+     return value,{'path':str(FLOW/'launch-scope.json'),'bytes':len(raw),'sha256':sha(raw)}
+ 
+ 
+-def assessment_summary(q,step,sequence):
++def assessment_summary(q,step,sequence,plan):
+     """No raw UI text, node list, screenshots or recommendations in the result."""
+     result={}
+-    for phase,nonce in PLAN['nonces'].items():
++    for phase,nonce in plan['nonces'].items():
+         path=step/(nonce+'.assessment.json');raw=read(path);value=json.loads(raw);helper=value['helper']
+         need(helper['nonce']==nonce and helper['self_uid']==HELPER_UID and
+              helper['op']==('inspect' if phase=='inspect' else 'state') and
+@@ -267,7 +268,7 @@
+         flow_lock=u.acquire_action_lock(FLOW/'flow.lock',result['flow_lock_admission'])
+         step.mkdir(mode=0o700)
+         ref.write_new(step/'intent.json',{'phase':phase,'nonce':NONCE,'source_manifest_sha256':expected,
+-            'automatic_retry':False,'mutation':phase in ('launch','cleanup'),'request':PLAN if phase=='inspect' else None})
++            'automatic_retry':False,'mutation':phase in ('launch','cleanup'),'request':PLANS if phase=='inspect' else None})
+         context=u.module(q.resolver.INSTALL_SOURCE/'bestbuy_context.py',q.resolver.CONTEXT_SHA,'bestbuy_exact_artifact_context')
+         transport=u.module(q.resolver.INSTALL_SOURCE/'bestbuy_transport.py',q.resolver.TRANSPORT_SHA,'bestbuy_exact_transport')
+         task_module=load(HERE/'bestbuy_task_context.py',q.manifest['files']['bestbuy_task_context.py']['sha256'],'bestbuy_task_context')
+@@ -291,7 +292,7 @@
+             verify_source(value);u.verify_source(q.resolver.INSTALL_SOURCE_SHA)
+             read(RESOLVER_SOURCE,32768,RESOLVER_SHA,RESOLVER_BYTES)
+         flow,recorder,guard=task_module.open_task_context(ref,u,context,expected,verify_runtime,FLOW,step,
+-            transport,result,began+PHASE_SECONDS[phase],phase,q.qa,PLAN,q.resolver.RESOLVE,scope_record(q,expected))
++            transport,result,began+PHASE_SECONDS[phase],phase,q.qa,PLANS,q.resolver.RESOLVE,scope_record(q,expected))
+         reference=json.loads(u.read(q.resolver.INSTALL_SOURCE/'target-artifact-reference.json',expected=
+             q.install_manifest['files']['target-artifact-reference.json']['sha256']))
+         reader=u.module(q.resolver.INSTALL_SOURCE/'references/read_bestbuy.py',u.READER_SHA,'bestbuy_artifact_parser')
+@@ -310,12 +311,32 @@
+                  'EXACT_NEW_NATIVE_TASK_REQUIRED')
+             result['owned_task']=flow.selected_task()
+         elif phase=='inspect':
+-            current='state_inspect_state';result['sequence']=session.sequence(json.loads(json.dumps(PLAN)))
+-            seq=result['sequence']
+-            need(seq['installed_before']==seq['installed_after']==q.installed and
+-                 seq['after_state_completed'] is True and seq['restoration_qualified'] is True and
+-                 seq['foreground_before']==seq['foreground_after'],'EXACT_READ_ONLY_INSPECTION_SCOPE_REQUIRED')
+-            result['assessments']=assessment_summary(q,step,seq)
++            current='content_readiness'
++            readiness=load(HERE/'bestbuy_readiness.py',
++                q.manifest['files']['bestbuy_readiness.py']['sha256'],'bestbuy_current_public_readiness')
++            selected=flow.selected_task()
++            result['readiness']=readiness.observation_record()
++            def collect_round(plan,index):
++                nonlocal session
++                # A new original Session cannot carry a previous failed observation.
++                session=None
++                result['active_readiness_round']=index+1
++                session=q.adapter.Session(flow,recorder,q.qa,q.proof,HELPER_UID)
++                need(not hasattr(session,'sequence_observation'),'FRESH_ORIGINAL_SESSION_REQUIRED')
++                flow.policy.begin_round(index)
++                seq=session.sequence(json.loads(json.dumps(plan)))
++                need(seq['owned_task']==selected and
++                     seq['installed_before']==seq['installed_after']==q.installed and
++                     seq['after_state_completed'] is True and seq['restoration_qualified'] is True and
++                     seq['foreground_before']==seq['foreground_after'],'EXACT_READ_ONLY_INSPECTION_SCOPE_REQUIRED')
++                metadata=assessment_summary(q,step,seq,plan)
++                raw=read(step/(plan['nonces']['inspect']+'.assessment.json'))
++                need(len(raw)==metadata['inspect']['assessment_bytes'] and
++                     sha(raw)==metadata['inspect']['assessment_sha256'],'CURRENT_ASSESSMENT_BYTES_CHANGED')
++                row=readiness.qualify_current(q.qa,json.loads(raw),seq,plan,metadata,selected,q.installed)
++                result['sequence']=seq;result['assessments']=metadata
++                return row
++            readiness.observe(PLANS,collect_round,flow.guard,result['readiness'])
+             result['inspection_completed']=True
+         else:
+             current='exact_owned_cleanup';selected=flow.selected_task();result['owned_task']=selected
+@@ -336,10 +357,13 @@
+                 'resolve':1,'stacks':2} and flow.command_index==12 and flow.launch_claimed is True,
+                 'EXACT_LAUNCH_COMMAND_COUNTS_REQUIRED')
+         if phase=='inspect':
+-            need(flow.policy.counts=={'target_uid':2,'target_path':2,'helper_uid':4,'helper_path':4,
+-                'stacks':2,'instrument':3,'foreground':3} and flow.command_index==17 and
+-                flow.policy.used_nonces==set(PLAN['nonces'].values()) and flow.action_attempted is False,
+-                'EXACT_READ_ONLY_INSPECTION_COMMAND_COUNTS_REQUIRED')
++            rounds=result['readiness']['completed_rounds']
++            need(1<=rounds<=3 and result['readiness']['rounds_started']==rounds and
++                flow.policy.counts=={'target_uid':2,'target_path':2,'helper_uid':2+2*rounds,'helper_path':2+2*rounds,
++                'stacks':2*rounds,'instrument':3*rounds,'foreground':3*rounds} and
++                flow.command_index==8+9*rounds and
++                flow.policy.used_nonces=={n for plan in PLANS[:rounds] for n in plan['nonces'].values()} and
++                flow.action_attempted is False,'EXACT_READ_ONLY_INSPECTION_COMMAND_COUNTS_REQUIRED')
+         result['ok']=True
+     except BaseException as error:
+         if session is not None and hasattr(session,'sequence_observation'):
+@@ -373,6 +397,8 @@
+         except BaseException as error:u.remember(result,'final_source_and_artifact',error)
+     result['action_attempted']=bool(flow is not None and flow.action_attempted)
+     result['outcome_unknown']=bool(result['action_attempted'] and not result['ok'])
++    result['semantic_ready']=bool(result['ok'] and phase=='inspect' and
++        result.get('readiness',{}).get('public_entry_candidate_present') is True)
+     result['seconds']=time.monotonic()-began
+     try:ref.write_new(step/'result.json',result)
+     except BaseException as error:u.remember(result,'durable_phase_result_write',error)
+@@ -395,7 +421,9 @@
+     if phase=='launch':need(value['launch']['native_launch_acknowledged'] is True,'ACTUAL_LAUNCH_ACK')
+     if phase=='inspect':
+         need(value['inspection_completed'] is True and value['sequence']['restoration_qualified'] is True
+-             and value['sequence']['after_state_completed'] is True,'ACTUAL_INSPECT_AND_RESTORATION_REQUIRED')
++             and value['sequence']['after_state_completed'] is True and
++             1<=value['readiness']['completed_rounds']<=3 and
++             type(value['semantic_ready']) is bool,'ACTUAL_INSPECT_AND_RESTORATION_REQUIRED')
+     if phase=='cleanup':need(value['owned_task_absent'] is True,'ACTUAL_OWNED_TASK_ABSENT_REQUIRED')
+     return value,{'path':str(path),'bytes':len(raw),'sha256':sha(raw)}
+ 
+@@ -436,6 +464,8 @@
+         observed=ref.run_cli('02-inspect',['/usr/bin/python3','-I',str(HERE/'owned_inspect.py'),
+             '--worker-once','inspect','--source-manifest-sha256',expected],190,evidence,guard)
+         inspection,result['inspection_result']=durable(observed,'inspect',expected)
++        result['readiness']=inspection['readiness']
++        result['inspection_semantic_ready']=inspection['semantic_ready']
+         result['assessments']=inspection['assessments']
+         result['foreground']=inspection['sequence']['foreground_after']
+         result['restoration']=inspection['sequence']['accessibility_restoration']
+@@ -483,6 +513,8 @@
+             try:
+                 result['owned_after']=u.owned_resources();u.resources_qualified(resources,result['owned_after'])
+             except BaseException as error:u.remember(result,'final_owned_resources',error)
++        result['semantic_ready']=bool(result['ok'] and
++            result.get('owned_task_absent_after_cleanup') is True and result.get('inspection_semantic_ready') is True)
+         try:pin=ref.write_new(ROOT/'result.json',result)
+         except BaseException as error:u.remember(result,'coordinator_result_write',error);pin=None
+         print(json.dumps({'ok':result['ok'],'result':pin,'error':result['error'],
+@@ -498,7 +530,8 @@
+     if a.worker_once:return worker(a.source_manifest_sha256,a.worker_once)
+     if a.execute_once:return execute(a.source_manifest_sha256)
+     print(json.dumps({'state':'PLAN_ONLY','nonce':NONCE,'root':str(ROOT),'flow':str(FLOW),'component':COMPONENT,
+-        'helper_uid':HELPER_UID,'maximum_native_launches':1,'new_helper_operations':['state','inspect','state'],
++        'helper_uid':HELPER_UID,'maximum_native_launches':1,'new_helper_operations':[['state','inspect','state']]*3,
++        'maximum_inspection_rounds':3,'qualification_window_seconds':30,'execution_kill_after_30_seconds':False,
+         'clicks':0,'text_actions':0,'screenshots':0,'audio':0,'device_calls':0,'submitted':False}))
+     return 0
+ 
+--- launch-inspect-01/bestbuy_task_context.py
++++ content-readiness-01/bestbuy_task_context.py
+@@ -2,7 +2,7 @@
+ 
+ This module has no CLI or standalone execution. A separate frozen coordinator
+ must bind actual resolve/install/source receipts, a new private flow and Main.
+-Only launch, one read-only QA inspection sequence, and exact task retirement
++Only launch, up to three read-only QA inspection sequences, and exact task retirement
+ are described here. No click/set-text/media/screenshot opcode is admitted.
+ """
+ import json
+@@ -36,11 +36,23 @@
+     def __init__(self,phase,qa,resolve,inspect_plan,step,read,selected_task):
+         need(phase in ('launch','inspect','cleanup'),'EXACT_BESTBUY_PHASE_REQUIRED')
+         need(qa.PACKAGE==PACKAGE and qa.UID==UID and qa.SELF==SELF,'EXACT_BESTBUY_CONTRACT_REQUIRED')
+-        need(inspect_plan['operation']=='inspect' and set(inspect_plan['nonces'])=={'before','inspect','after'},
+-             'ONLY_FIXED_READ_ONLY_INSPECT_PLAN_REQUIRED')
+-        self.phase,self.qa,self.resolve,self.plan=phase,qa,list(resolve),inspect_plan
++        need(isinstance(inspect_plan,list) and len(inspect_plan)==3 and all(
++             p.get('schema')==1 and p.get('operation')=='inspect' and
++             set(p)=={'schema','operation','nonces'} and set(p['nonces'])=={'before','inspect','after'}
++             for p in inspect_plan),'ONLY_THREE_FIXED_READ_ONLY_INSPECT_PLANS_REQUIRED')
++        values=[qa.nonce(n) for p in inspect_plan for n in p['nonces'].values()]
++        need(len(values)==len(set(values))==9,'NINE_DISTINCT_READ_ONLY_HELPER_NONCES_REQUIRED')
++        self.phase,self.qa,self.resolve,self.plans=phase,qa,list(resolve),inspect_plan
++        self.plan=None;self.round_index=-1;self.round_instruments=0
+         self.step,self.read,self.selected_task=step,read,selected_task
+         self.counts={};self.used_nonces=set();self.remove_attempted=False
++
++    def begin_round(self,index):
++        need(self.phase=='inspect' and type(index) is int and
++             index==self.round_index+1 and 0<=index<3 and
++             self.used_nonces=={n for p in self.plans[:index] for n in p['nonces'].values()},
++             'NEXT_DISTINCT_COMPLETE_READ_ONLY_ROUND_REQUIRED')
++        self.round_index=index;self.plan=self.plans[index];self.round_instruments=0
+ 
+     def claim(self,name,limit):
+         count=self.counts.get(name,0)
+@@ -57,9 +69,8 @@
+             return
+         if argv in (OWN_UID,OWN_PATH):
+             need(timeout==8 and not mutation and not private,'HELPER_METADATA_READ_ONLY')
+-            # Inspect phase has an outer current identity pair and the original
+-            # Session's own before/after pair. Other phases have only outer pair.
+-            self.claim('helper_uid' if argv==OWN_UID else 'helper_path',4 if self.phase=='inspect' else 2)
++            # Outer pair plus at most three original Session before/after pairs.
++            self.claim('helper_uid' if argv==OWN_UID else 'helper_path',8 if self.phase=='inspect' else 2)
+             return
+         if argv==self.resolve:
+             need(self.phase=='launch' and timeout==15 and not mutation and not private,
+@@ -67,11 +78,11 @@
+             self.claim('resolve',1);return
+         if argv==STACKS:
+             need(not mutation and not private and timeout<=20,'TASK_SNAPSHOT_READ_ONLY')
+-            self.claim('stacks',33 if self.phase=='cleanup' else 2);return
++            self.claim('stacks',33 if self.phase=='cleanup' else 6 if self.phase=='inspect' else 2);return
+         if argv==FOREGROUND:
+             need(self.phase=='inspect' and timeout==15 and not mutation and private,
+                  'ONLY_PRIVATE_CURRENT_FOREGROUND_READ')
+-            self.claim('foreground',3);return
++            self.claim('foreground',9);return
+         if self.phase=='cleanup' and argv[:4]==['/system/bin/cmd','activity','stack','remove']:
+             # Full equality below, not a prefix-based permission grant.
+             selected=self.selected_task()
+@@ -83,8 +94,11 @@
+             self.remove_attempted=True;return
+         need(self.phase=='inspect' and timeout==20 and not mutation and not private,
+              'NO_OTHER_BESTBUY_COMMAND_ADMITTED')
++        need(self.plan is not None and self.round_instruments<3,'CURRENT_READ_ONLY_ROUND_REQUIRED')
++        expected_phase=('before','inspect','after')[self.round_instruments]
+         matches=[]
+         for phase,nonce in self.plan['nonces'].items():
++            if phase!=expected_phase:continue
+             if nonce in self.used_nonces:
+                 continue
+             path=self.step/(nonce+'.request.json')
+@@ -97,7 +111,7 @@
+             if self.qa.instrumentation_argv(request)==argv:
+                 matches.append(nonce)
+         need(len(matches)==1,'ONLY_ONE_CURRENT_SOURCE_BOUND_STATE_OR_INSPECT_REQUEST')
+-        self.used_nonces.add(matches[0]);self.claim('instrument',3)
++        self.used_nonces.add(matches[0]);self.claim('instrument',9);self.round_instruments+=1
+ 
+ 
+ class Flow:
+--- launch-inspect-01/stage_execute.py
++++ content-readiness-01/stage_execute.py
+@@ -1,15 +1,15 @@
+ #!/usr/bin/env python3
+-"""Stage exactly one new BESTBUY task source and execute its reviewed coordinator."""
++"""Stage exactly one new BESTBUY no-input readiness source and its reviewed coordinator."""
+ import hashlib
+ import json
+ import os
+ from pathlib import Path
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-bestbuy-owned-launch-inspect-01')
++ROOT=Path('/home/alex/work/pocket4-bestbuy-owned-content-readiness-01')
+ SOURCE=ROOT/'source'
+-NONCE='e5c3f2c938e436b52539d52cdbfab8c5'
+-FILES={'owned_inspect.py','bestbuy_task_context.py','INPUTS.json'}
++NONCE='01355f5641b7b932a1ee9b9f21350568'
++FILES={'bestbuy_readiness.py', 'owned_inspect.py', 'INPUTS.json', 'bestbuy_task_context.py'}
+ REFERENCE=Path('/home/alex/work/pocket4-owned-bestbuy-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py')
+ REFERENCE_SHA='e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ 
+@@ -57,6 +57,9 @@
+         assert rc==0 and observed['ok'] is True and observed['error'] is None and observed['secondary_errors']==[]
+         assert observed['read_only_inspection_completed'] is True and observed['owned_task_absent_after_cleanup'] is True
+         assert observed['business_success_verified'] is False and observed['whole_app_production_ready'] is False
++        assert type(observed['semantic_ready']) is bool
++        result['semantic_ready']=observed['semantic_ready']
++        result['readiness']=observed['readiness']
+         result['ok']=True
+     except BaseException as error:remember('stage_or_owned_launch_inspect',error)
+     finally:
+@@ -68,6 +71,7 @@
+             for name,raw in data.items():entry.read(SOURCE/name,65536,hashlib.sha256(raw).hexdigest(),len(raw))
+             result['source_unchanged']=True
+         except BaseException as error:remember('stage_final_source',error)
++        result['semantic_ready']=bool(result['ok'] and result.get('semantic_ready') is True)
+         try:pin=ref.write_new(ROOT/'stage-result.json',result)
+         except BaseException as error:remember('stage_result_write',error);pin=None
+         print(json.dumps({'ok':result['ok'],'stage_result':pin,'error':result['error'],
+--- launch-inspect-01/make_request.py
++++ content-readiness-01/make_request.py
+@@ -3,17 +3,17 @@
+ import argparse,hashlib,json,os
+ from pathlib import Path
+ HERE=Path(__file__).resolve().parent
+-MANIFEST_SHA='4ac1247dfd9bba4cfb69c33331d7d4d4cd29b8c22651db7e7994ce40d47f0925'
+-STAGE_SHA='fb453b59be8a700223929c32c75419731044d2f5b1678a3ccfa91dcb3f5daa82'
+-STAGE_BYTES=4923
+-NONCE='e5c3f2c938e436b52539d52cdbfab8c5'
+-KEY='pocket4-bestbuy-owned-launch-inspect-01-20261105'
++MANIFEST_SHA='4d0febdcaf5756fda72dab652e901abeac4cbe43d61640e1494459572ab21618'
++STAGE_SHA='25a09544fd18c991d6fbb2efbe89f1d8e08a13965b2eca7ca513b8f7a19bd578'
++STAGE_BYTES=5217
++NONCE='01355f5641b7b932a1ee9b9f21350568'
++KEY='pocket4-bestbuy-owned-content-readiness-01-20261106'
+ def main():
+     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--write-once',action='store_true');p.add_argument('--output',type=Path);a=p.parse_args()
+     if not a.write_once:
+         print(json.dumps({'state':'PLAN_ONLY','stable_key':KEY,'nonce':NONCE,'device_calls':0,'submitted':False}));return 0
+     raw=(HERE/'SOURCE_PINS.json').read_bytes();assert hashlib.sha256(raw).hexdigest()==MANIFEST_SHA
+-    manifest=json.loads(raw);assert set(manifest['files'])=={'owned_inspect.py','bestbuy_task_context.py','INPUTS.json'}
++    manifest=json.loads(raw);assert set(manifest['files'])=={'owned_inspect.py','bestbuy_task_context.py','bestbuy_readiness.py','INPUTS.json'}
+     files={'SOURCE_PINS.json':raw.decode()}
+     for name,pin in manifest['files'].items():
+         data=(HERE/name).read_bytes();assert 0<len(data)<=65536 and len(data)==pin['bytes'] and hashlib.sha256(data).hexdigest()==pin['sha256'];files[name]=data.decode('utf-8')
+--- launch-inspect-01/INPUTS.json
++++ content-readiness-01/INPUTS.json
+@@ -120,16 +120,7 @@
+     "signer_bound_by_exact_signed_apk_bytes": "0c8d51e314e4f8bdff2febd869845752562db7cd7c4182781ff748e479176918",
+     "uid": 10198
+   },
+-  "nonce": "e5c3f2c938e436b52539d52cdbfab8c5",
+-  "read_only_inspection_plan": {
+-    "nonces": {
+-      "after": "068ed720610afce9d5172ee1498c1fb6",
+-      "before": "3f8854a28316a3fca6d02a2718e8cb76",
+-      "inspect": "304e502d5e668874fe3879215395eecd"
+-    },
+-    "operation": "inspect",
+-    "schema": 1
+-  },
++  "nonce": "01355f5641b7b932a1ee9b9f21350568",
+   "request_generated": true,
+   "resolver_records": {
+     "stage": {
+@@ -146,11 +137,60 @@
+   "schema": 1,
+   "shared_helper_whole_process_tree_cleanup_qualified": false,
+   "source_binding_is_frozen_install_request_not_execution_evidence": false,
+-  "state": "ACTUAL_INSTALL_BOUND_FRESH_BESTBUY_LAUNCH_INSPECT_UNRUN",
++  "state": "ACTUAL_INSTALL_BOUND_FRESH_BESTBUY_CONTENT_READINESS_UNRUN",
+   "state_wire_sha256": "6c58c2ffbb08d1abad53a81fb2bc5d797c721c00f0b3d9513cad707a4cd941c3",
+   "worker_receipt": {
+     "bytes": 13345,
+     "path": "/home/alex/work/pocket4-owned-bestbuy-qa-r1-install-state-01/worker/result.json",
+     "sha256": "7aaff595b0774873aea64b82d0b6742ed80159093c9c790543b052c916a6c04c"
++  },
++  "read_only_inspection_plans": [
++    {
++      "schema": 1,
++      "operation": "inspect",
++      "nonces": {
++        "before": "4d57777354576d9ee0601f542329ccbb",
++        "inspect": "3ede9c0db6cd5244a48b1655eec594ba",
++        "after": "81bb9fcd23f77c5d9de85f794926e86f"
++      }
++    },
++    {
++      "schema": 1,
++      "operation": "inspect",
++      "nonces": {
++        "before": "921d22b8386ee30a655a3a0418bd03b3",
++        "inspect": "ca298bdacefb140993dfb73269da8178",
++        "after": "80daa9e7c141176a434a5277fd3f4d32"
++      }
++    },
++    {
++      "schema": 1,
++      "operation": "inspect",
++      "nonces": {
++        "before": "dc9dddbab03003243ec68bc899692b2f",
++        "inspect": "7989fc90293714dff921a1fa8fdaa59a",
++        "after": "5e1900cb672de8aa918162e0f436b9e2"
++      }
++    }
++  ],
++  "qualification_window_seconds": 30,
++  "qualification_deadline_is_not_execution_kill": true,
++  "maximum_inspection_rounds": 3,
++  "round_offsets_seconds": [
++    0,
++    10,
++    20
++  ],
++  "original_phase_and_command_timeouts_unchanged": true,
++  "historical_role_counts_only": {
++    "bytes": 12446,
++    "sha256": "ad7febadb3ea1a3216bdabd024041e685c327d0333919f6d752165b9ca1ef62d",
++    "retired_task": 1012,
++    "old_task_ids_preserved": [
++      851
++    ],
++    "complete_node_count": 12,
++    "all_31_public_queries_zero": true,
++    "persistence_or_current_state_not_inferred": true
+   }
+ }
+--- /dev/null
++++ content-readiness-01/bestbuy_readiness.py
+@@ -0,0 +1,242 @@
++"""Counts from complete current inspections, with a 30-second qualification deadline.
++
++Only successful all-zero public catalogs permit a later independent read.
++The original Session owns its after-state/finally path even beyond this
++qualification deadline. No execution kill, UI input or network operation.
++"""
++import hashlib
++import time
++
++MAX_ROUNDS=3
++QUALIFICATION_SECONDS=30.0
++ROUND_OFFSETS_SECONDS=(0.0,10.0,20.0)
++ERROR_ROLES=('retry','fixed_network_error')
++SEMANTIC_RESOURCES=('android:id/search_src_text','com.bestbuy.android:id/search_button',
++    'com.bestbuy.android:id/search','com.bestbuy.android:id/search_src_text',
++    'com.bestbuy.android:id/country','com.bestbuy.android:id/country_selector',
++    'com.bestbuy.android:id/continue_button','com.bestbuy.android:id/btn_continue',
++    'com.bestbuy.android:id/skip','com.bestbuy.android:id/continue_as_guest')
++PUBLIC_ROLES={'search_tab': ('search',), 'home_tab': ('home',), 'shop_tab': ('shop',), 'browse_tab': ('browse',), 'search_products': ('search products', 'search best buy', 'search bestbuy'), 'country_selector': ('country', 'select country', 'select your country', 'choose your country', 'country/region', 'select your country or region'), 'united_states': ('united states', 'united states of america', 'usa', 'u.s.', 'u.s.a.'), 'canada': ('canada',), 'continue': ('continue',), 'next': ('next',), 'skip': ('skip',), 'get_started': ('get started',), 'guest_continue': ('continue as guest', 'continue without signing in', 'browse as guest'), 'defer_signin': ('not now', 'maybe later'), 'sign_in': ('sign in', 'log in'), 'retry': ('retry', 'try again'), 'fixed_network_error': ('no internet connection', 'something went wrong')}
++PUBLIC_RESOURCES=('android:id/button1', 'android:id/button2', 'android:id/button3', 'android:id/search_src_text', 'com.bestbuy.android:id/search_button', 'com.bestbuy.android:id/search', 'com.bestbuy.android:id/search_src_text', 'com.bestbuy.android:id/country', 'com.bestbuy.android:id/country_selector', 'com.bestbuy.android:id/continue_button', 'com.bestbuy.android:id/btn_continue', 'com.bestbuy.android:id/skip', 'com.bestbuy.android:id/continue_as_guest', 'com.bestbuy.android:id/bottom_navigation')
++PUBLIC_CLASSES=('android.widget.TextView', 'android.widget.Button', 'android.widget.EditText', 'android.widget.ImageButton', 'android.widget.ImageView', 'android.widget.FrameLayout', 'android.widget.LinearLayout', 'android.view.ViewGroup', 'android.view.View', 'android.webkit.WebView')
++
++def need(value, reason):
++    if not value:raise RuntimeError(reason)
++
++def sha(raw):
++    return hashlib.sha256(raw).hexdigest()
++
++def no_raw_ui(value):
++    if isinstance(value,dict):
++        need(not ({'nodes','text','content_desc','inspection','screenshot','pixels','raw_tree','raw_ui_tree'}&set(value)),
++             'RAW_UI_EXPORT_FORBIDDEN')
++        for item in value.values():no_raw_ui(item)
++    elif isinstance(value,list):
++        for item in value:no_raw_ui(item)
++
++def validated_assessment(qa,assessed,nonce,wire,scope):
++    helper=assessed['helper']
++    need(assessed.get('held_transport_returned_after_post_guard') is True and
++         assessed.get('actual_command_returncode')==0 and assessed.get('actual_instrumentation_finish_code')==-1 and
++         helper.get('ok') is True and helper.get('error') is None and helper.get('secondary_errors')==[] and
++         helper.get('protocol')==qa.PROTOCOL and helper.get('nonce')==nonce and helper.get('op')=='inspect' and
++         helper.get('self_uid')==10198 and helper.get('action_attempted') is False and helper.get('outcome_unknown') is False and
++         helper.get('claim_persistence_completed') is True and helper.get('helper_work_completed') is True and
++         helper.get('automatic_retry') is False and helper.get('business_success_verified') is False,
++         'ACTUAL_SUCCESSFUL_NO_ACTION_INSPECTION_REQUIRED')
++    need(sha(qa.canonical(helper))==assessed.get('wire_sha256')==wire,'ACTUAL_CANONICAL_HELPER_WIRE_PIN_REQUIRED')
++    expected_request={'protocol':qa.PROTOCOL,'nonce':nonce,'op':'inspect','scope':scope}
++    raw_request=qa.validate_request(expected_request)
++    need(helper.get('request_sha256')==sha(raw_request) and helper.get('host_scope_attestation')==scope and
++         helper.get('target_uid_verified')==qa.UID,'EXACT_RETAINED_REQUEST_SCOPE_REQUIRED')
++    restore=helper.get('restoration')
++    need(isinstance(restore,dict) and restore.get('service_info_verified') is True and
++         restore.get('service_info_captured') is True and restore.get('connection_flags')==1 and
++         helper.get('requires_post_termination_state_check') is True,'ORIGINAL_OWN_SERVICE_RESTORATION_REQUIRED')
++    inspection=qa.inspect_record(helper['inspection'])
++    window=qa.window_observation(helper['window_observation'])
++    counters=qa.tree_observations(helper['tree_observations'],'inspect',True)
++    need(window['selected_window_id']==inspection['connection_scoped_window_id'] and
++         counters[0]['emitted_nodes']==len(inspection['nodes']) and
++         counters[0]['serialized_bytes']==len(qa.canonical(inspection)),
++         'ORIGINAL_COMPLETE_INSPECTION_AND_WINDOW_COUNTERS_REQUIRED')
++    return helper,inspection,window,counters
++
++def public_role_counts(qa,inspection):
++    qa.inspect_record(inspection)
++    nodes=inspection['nodes'];by_path={n['path']:n for n in nodes}
++    def eligible(n):
++        return (isinstance(n,dict) and n.get('visible') is True and n.get('enabled') is True and
++            n.get('password') is False and n.get('class_truncated') is False and n.get('resource_id_truncated') is False)
++    def normalized(value):return ' '.join(value.split()).casefold()
++    result={}
++    for role,variants in PUBLIC_ROLES.items():
++        matches=[];via_text=via_description=0;self_targets=set();parent_targets=set();classes={}
++        for node in nodes:
++            if node.get('visible') is not True or node.get('password') is not False:continue
++            fields=[]
++            for field in ('text','content_desc'):
++                value=node.get(field)
++                if isinstance(value,str) and node.get(field+'_truncated') is False and normalized(value) in variants:
++                    need(node.get(field+'_sha256')==qa.sha(value.encode()),'PUBLIC_LABEL_DIGEST_MISMATCH')
++                    fields.append(field)
++            if not fields:continue
++            matches.append(node);via_text+='text' in fields;via_description+='content_desc' in fields
++            kind=node.get('class');kind=kind if kind in PUBLIC_CLASSES else 'other'
++            classes[kind]=classes.get(kind,0)+1
++            if eligible(node):
++                if node.get('clickable') is True:self_targets.add(node['path'])
++                if '/' in node['path']:
++                    parent=by_path.get(node['path'].rsplit('/',1)[0])
++                    if eligible(parent) and parent.get('clickable') is True:parent_targets.add(parent['path'])
++        result[role]={'fixed_public_variants':list(variants),'matching_visible_nonpassword_nodes':len(matches),
++            'via_complete_public_text_count':via_text,'via_complete_public_description_count':via_description,
++            'eligible_matching_nodes':sum(eligible(n) for n in matches),
++            'eligible_clickable_self_count':len(self_targets),
++            'eligible_direct_clickable_parent_count':len(parent_targets),
++            'distinct_self_or_direct_parent_candidates':len(self_targets|parent_targets),
++            'editable_matching_nodes':sum(eligible(n) and n.get('editable') is True for n in matches),
++            'known_class_counts':classes,'current_or_future_action_authority':False}
++    resources={}
++    for resource in PUBLIC_RESOURCES:
++        rows=[n for n in nodes if n.get('resource_id')==resource]
++        resources[resource]={'matching_nodes':len(rows),'eligible_nodes':sum(eligible(n) for n in rows),
++            'eligible_clickable_nodes':sum(eligible(n) and n.get('clickable') is True for n in rows),
++            'eligible_editable_nodes':sum(eligible(n) and n.get('editable') is True for n in rows)}
++    return {'fixed_public_role_queries':result,'fixed_public_resource_queries':resources,
++        'fixed_known_class_counts':{kind:sum(n.get('class')==kind for n in nodes) for kind in PUBLIC_CLASSES},
++        'other_class_count':sum(n.get('class') not in PUBLIC_CLASSES for n in nodes),
++        'unknown_labels_identifiers_paths_or_coordinates_exported':False,
++        'query_catalog_not_asserted_observed':True,'action_selection_performed':False}
++
++def decision(counts):
++    """No target is selected; generic buttons and error labels never grant readiness."""
++    roles=counts['fixed_public_role_queries']
++    resources=counts['fixed_public_resource_queries']
++    need(set(roles)==set(PUBLIC_ROLES) and set(resources)==set(PUBLIC_RESOURCES),
++         'EXACT_PUBLIC_CATALOG_COUNTS_REQUIRED')
++    all_zero=all(row['matching_visible_nonpassword_nodes']==0 for row in roles.values()) and all(
++        row['matching_nodes']==0 for row in resources.values())
++    errors=any(roles[name]['matching_visible_nonpassword_nodes']>0 for name in ERROR_ROLES)
++    actionable_roles=[name for name in PUBLIC_ROLES if name not in ERROR_ROLES and
++        roles[name]['distinct_self_or_direct_parent_candidates']>0]
++    # An editable flag alone is not used as proof of an actionable public entry.
++    actionable_resources=[name for name in SEMANTIC_RESOURCES if resources[name]['eligible_clickable_nodes']>0]
++    candidate=bool(not errors and (actionable_roles or actionable_resources))
++    reason=('ACTIONABLE_PUBLIC_ENTRY_OR_ONBOARDING' if candidate else
++        'PUBLIC_ERROR_OR_RETRY_PRESENT' if errors else
++        'COMPLETE_PUBLIC_CATALOG_ALL_ZERO' if all_zero else
++        'PUBLIC_CATALOG_NONZERO_WITHOUT_ACTIONABLE_ENTRY')
++    return {'catalog_all_zero':all_zero,'public_error_or_retry_present':errors,
++        'public_entry_candidate_present':candidate,'reason':reason,
++        'actionable_fixed_public_roles':actionable_roles,
++        'actionable_fixed_public_resources':actionable_resources,
++        'target_selected':False,'input_action_authority':False,
++        'business_success_verified':False,'whole_app_production_ready':False}
++
++
++def qualify_current(qa,assessed,sequence,plan,metadata,owned_task,installed):
++    """Rebind the retained current assessment to its just-completed original Session."""
++    need(sequence.get('owned_task')==owned_task and
++         sequence.get('installed_before')==sequence.get('installed_after')==installed and
++         sequence.get('error') is None and sequence.get('secondary_errors')==[] and
++         sequence.get('foreground_before')==sequence.get('foreground_after') and
++         sequence.get('after_state_completed') is True and sequence.get('restoration_qualified') is True and
++         sequence.get('post_state_matches_before') is True and
++         sequence['post_termination_state']['nonce']==plan['nonces']['after'] and
++         sequence['post_termination_state']['helper_uid']==10198 and
++         sequence['post_termination_state']['ui_automation_connected'] is False,
++         'CURRENT_COMPLETE_ORIGINAL_SESSION_SAME_TASK_REQUIRED')
++    need(set(metadata)=={'before','inspect','after'} and all(
++         metadata[name]['nonce']==plan['nonces'][name] for name in metadata),
++         'CURRENT_ROUND_ASSESSMENT_NONCES_REQUIRED')
++    wire=sequence['inspection_wire_sha256']
++    helper,inspection,window,counters=validated_assessment(qa,assessed,
++        plan['nonces']['inspect'],wire,sequence['foreground_after'])
++    summary=metadata['inspect']
++    restore=sequence['accessibility_restoration']
++    need(helper['accessibility_state_before_connection']==restore['state_before']==restore['state_after']==
++         sequence['post_termination_state']['state'] and
++         restore['wire_sha256']==[metadata[name]['wire_sha256'] for name in ('before','inspect','after')] and
++         inspection['tree_sha256']==summary['tree_sha256'] and
++         inspection['window_sha256']==summary['window_sha256'] and
++         len(inspection['nodes'])==summary['node_count'] and
++         window==summary['window_observation'] and counters==summary['tree_observations'] and
++         assessed['recorder_command_result_sha256']==summary['recorder_command_result_sha256'],
++         'CURRENT_ASSESSMENT_TREE_WIRE_STATE_AND_COMMAND_BINDING_REQUIRED')
++    counts=public_role_counts(qa,inspection)
++    public=decision(counts)
++    row={'sequence':sequence,'assessments':metadata,'public_role_counts':counts,
++         'public_decision':public,'complete_current_assessment_verified':True,
++         'raw_UI_tree_private_only':True,'business_success_verified':False,
++         'whole_app_production_ready':False}
++    no_raw_ui(row)
++    return row
++
++
++def observation_record():
++    return {'maximum_rounds':MAX_ROUNDS,'qualification_window_seconds':QUALIFICATION_SECONDS,
++        'round_offsets_seconds':list(ROUND_OFFSETS_SECONDS),'rounds':[],
++        'rounds_started':0,'completed_rounds':0,'public_entry_candidate_present':False,
++        'qualification_deadline_is_not_execution_kill':True,
++        'original_after_state_and_finally_retained':True,
++        'continuation_requires_successful_complete_all_31_public_queries_zero':True,
++        'new_read_after_failure':False,'automatic_retry':False,
++        'business_success_verified':False,'whole_app_production_ready':False}
++
++
++def observe(plans,collect,guard,result,*,clock=time.monotonic,sleep=time.sleep):
++    """At most three distinct original Sessions; exceptions leave all prior rows intact."""
++    need(isinstance(plans,list) and len(plans)==MAX_ROUNDS and
++         all(p.get('operation')=='inspect' and set(p['nonces'])=={'before','inspect','after'} for p in plans),
++         'THREE_FIXED_INSPECT_PLANS_REQUIRED')
++    nonces=[n for p in plans for n in p['nonces'].values()]
++    need(len(nonces)==len(set(nonces))==9,'NINE_DISTINCT_INSPECTION_NONCES_REQUIRED')
++    need(result==observation_record(),'FRESH_READINESS_OBSERVATION_REQUIRED')
++    started=clock();deadline=started+QUALIFICATION_SECONDS
++    result['qualification_started_monotonic']=started
++    result['qualification_deadline_monotonic']=deadline
++    try:
++        for index,plan in enumerate(plans):
++            if index:
++                need(result['rounds'][-1]['public_decision']['catalog_all_zero'] is True,
++                     'ONLY_SUCCESSFUL_ALL_ZERO_READ_CAN_CONTINUE')
++                delay=min(started+ROUND_OFFSETS_SECONDS[index],deadline)-clock()
++                if delay>0:
++                    guard();sleep(delay);guard()
++            if clock()>=deadline:
++                result['stop_reason']='QUALIFICATION_DEADLINE_REACHED';break
++            guard()
++            if clock()>=deadline:
++                result['stop_reason']='QUALIFICATION_DEADLINE_REACHED';break
++            result['rounds_started']=index+1
++            began=clock()
++            # No retry or catch/re-enter around an original Session call.
++            row=collect(plan,index)
++            need(row.get('complete_current_assessment_verified') is True,
++                 'COMPLETE_CURRENT_ROUND_REQUIRED')
++            no_raw_ui(row)
++            ended=clock()
++            row['round']=index+1
++            row['began_seconds_after_qualification_start']=began-started
++            row['completed_seconds_after_qualification_start']=ended-started
++            row['completed_within_qualification_window']=ended<=deadline
++            result['rounds'].append(row);result['completed_rounds']=len(result['rounds'])
++            if ended>deadline:
++                result['stop_reason']='COMPLETED_AFTER_QUALIFICATION_DEADLINE';break
++            if row['public_decision']['public_entry_candidate_present'] is True:
++                result['public_entry_candidate_present']=True
++                result['stop_reason']='ACTIONABLE_PUBLIC_ENTRY_OBSERVED';break
++            if row['public_decision']['catalog_all_zero'] is not True:
++                result['stop_reason']=row['public_decision']['reason'];break
++        else:
++            result['stop_reason']='THREE_COMPLETE_PUBLIC_CATALOGS_ALL_ZERO'
++        need(result['completed_rounds']>0,'NO_COMPLETE_READINESS_OBSERVATION')
++        return result
++    except BaseException as error:
++        result['stop_reason']='READ_OR_QUALIFICATION_FAILED_NO_RETRY'
++        result['public_entry_candidate_present']=False
++        result['error']={'type':type(error).__name__,'message':str(error)}
++        raise
++    finally:
++        result['elapsed_seconds']=clock()-started

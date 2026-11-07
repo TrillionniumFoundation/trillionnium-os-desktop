@@ -1,0 +1,31 @@
+--- a/pure_controls.py
++++ b/pure_controls.py
+@@ -85,23 +85,23 @@
+         passed.append('primary_failure_preserved_over_cleanup_and_deadline')
+     else:
+         raise RuntimeError('CONTROL_PRIMARY_FAILURE_LOST')
+-    lock = json.loads(packet['actual-provider-source-lock.json'])
++    lock = json.loads(packet['actual-hal-provider-source-lock.json'])
+     expected = framework['expected_published_manifest'](lock)
+-    need(len(lock['projects']) == 224 and len(lock['links']) == 8, 'CONTROL_LOCK_BINDING')
+-    good('complete_expected_224_project_plan', lambda: framework['qualify_completed_manifest'](expected, lock))
++    need(len(lock['projects']) == 225 and len(lock['links']) == 8, 'CONTROL_LOCK_BINDING')
++    good('complete_expected_225_project_plan', lambda: framework['qualify_completed_manifest'](expected, lock))
+     for name, mutate in [
+         ('partial_project_list', lambda d: d['plan']['projects'].pop()),
+         ('wrong_commit', lambda d: d['plan']['projects'][0].__setitem__('commit', '0' * 40)),
+         ('unlisted_project', lambda d: d['plan']['projects'].append(copy.deepcopy(d['plan']['projects'][0]))),
+         ('changed_root_link', lambda d: d['plan']['links'][0].__setitem__('target', 'wrong-target')),
+-        ('old_source_lock_hash', lambda d: d.__setitem__('source_lock_sha256', framework['PREVIOUS_TYPED_LOCK_SHA'])),
++        ('old_source_lock_hash', lambda d: d.__setitem__('source_lock_sha256', framework['PREVIOUS_PROVIDER_LOCK_SHA'])),
+         ('unrestricted_sync', lambda d: d['plan'].__setitem__('unrestricted_repo_sync', True)),
+     ]:
+         document = copy.deepcopy(expected)
+         mutate(document)
+         bad(name, lambda document=document: framework['qualify_completed_manifest'](document, lock),
+             'normal published manifest is not the exact complete new locked plan')
+-    bad('actual_old_214_manifest_is_not_current_completion',
++    bad('actual_old_224_manifest_is_not_current_completion',
+         lambda: framework['qualify_completed_manifest'](json.loads(packet['actual-published-source-manifest.json']), lock),
+         'normal published manifest is not the exact complete new locked plan')
+     memory = {'MemAvailable': 15 * 1024**3, 'SwapFree': 0}

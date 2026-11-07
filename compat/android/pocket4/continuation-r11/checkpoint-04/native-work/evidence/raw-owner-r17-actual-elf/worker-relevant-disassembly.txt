@@ -1,0 +1,426 @@
+0000000000001810 <pocket4_raw_clone_x86_64>:
+    1810:      	andq	$-0x10, %rsi
+    1814:      	subq	$0x10, %rsi
+    1818:      	movq	%rcx, (%rsi)
+    181b:      	movq	%r8, 0x8(%rsi)
+    181f:      	movq	%rdx, %r10
+    1822:      	xorl	%r8d, %r8d
+    1825:      	movl	$0x38, %eax
+    182a:      	syscall
+    182c:      	testq	%rax, %rax
+    182f:      	jne	0x1846 <pocket4_raw_clone_x86_64+0x36>
+    1831:      	xorl	%ebp, %ebp
+    1833:      	movq	0x8(%rsp), %rdi
+    1838:      	callq	*(%rsp)
+    183b:      	movl	%eax, %edi
+    183d:      	movl	$0x3c, %eax
+    1842:      	syscall
+    1844:      	ud2
+    1846:      	retq
+    1847:      	nopw	(%rax,%rax)
+
+0000000000001850 <pocket4::raw_metadata_owner::Start()>:
+    1850:      	pushq	%rbp
+    1851:      	movq	%rsp, %rbp
+    1854:      	pushq	%r15
+    1856:      	pushq	%r14
+    1858:      	pushq	%r13
+    185a:      	pushq	%r12
+    185c:      	pushq	%rbx
+    185d:      	subq	$0x38, %rsp
+    1861:      	callq	0x40f0 <__errno@plt>
+    1866:      	movq	%rax, %rbx
+    1869:      	movl	(%rax), %r15d
+    186c:      	movl	$0x27, %eax
+    1871:      	xorl	%edi, %edi
+    1873:      	xorl	%esi, %esi
+    1875:      	xorl	%edx, %edx
+    1877:      	xorl	%r10d, %r10d
+    187a:      	xorl	%r8d, %r8d
+    187d:      	xorl	%r9d, %r9d
+    1880:      	syscall
+    1882:      	movq	%rax, %rcx
+    1885:      	xorl	%eax, %eax
+    1887:      	lock
+    1888:      	cmpxchgl	%ecx, 0x12d69(%rip)     # 0x145f8 <pocket4::raw_metadata_owner::(anonymous namespace)::state>
+    188f:      	xorl	%r14d, %r14d
+    1892:      	movl	0x12d60(%rip), %eax     # 0x145f8 <pocket4::raw_metadata_owner::(anonymous namespace)::state>
+    1898:      	cmpl	%ecx, %eax
+    189a:      	jne	0x1941 <pocket4::raw_metadata_owner::Start()+0xf1>
+    18a0:      	movl	0x12d56(%rip), %eax     # 0x145fc <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x4>
+    18a6:      	cmpl	$0x1, %eax
+    18a9:      	je	0x194d <pocket4::raw_metadata_owner::Start()+0xfd>
+    18af:      	movq	$0x0, -0x48(%rbp)
+    18b7:      	movb	$0x0, -0x40(%rbp)
+    18bb:      	movq	$-0x1, -0x58(%rbp)
+    18c3:      	leaq	-0x58(%rbp), %rsi
+    18c7:      	leaq	-0x48(%rbp), %rdx
+    18cb:      	movl	$0xe, %eax
+    18d0:      	movl	$0x2, %edi
+    18d5:      	movl	$0x8, %r10d
+    18db:      	xorl	%r8d, %r8d
+    18de:      	xorl	%r9d, %r9d
+    18e1:      	syscall
+    18e3:      	testq	%rax, %rax
+    18e6:      	sete	-0x40(%rbp)
+    18ea:      	js	0x19ee <pocket4::raw_metadata_owner::Start()+0x19e>
+    18f0:      	movl	%r15d, -0x2c(%rbp)
+    18f4:      	xorl	%r15d, %r15d
+    18f7:      	movl	$0x1, %r14d
+    18fd:      	leaq	0x12cfc(%rip), %rdi     # 0x14600 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x8>
+    1904:      	movl	$0x80, %esi
+    1909:      	movl	$0x1, %edx
+    190e:      	jmp	0x1918 <pocket4::raw_metadata_owner::Start()+0xc8>
+    1910:      	movl	%r12d, %r15d
+    1913:      	testb	%r13b, %r13b
+    1916:      	jne	0x195f <pocket4::raw_metadata_owner::Start()+0x10f>
+    1918:      	xorl	%eax, %eax
+    191a:      	lock
+    191b:      	cmpxchgl	%r14d, 0x12cdd(%rip)    # 0x14600 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x8>
+    1923:      	sete	%r13b
+    1927:      	movb	$0x1, %r12b
+    192a:      	je	0x1910 <pocket4::raw_metadata_owner::Start()+0xc0>
+    192c:      	movl	$0xca, %eax
+    1931:      	xorl	%r10d, %r10d
+    1934:      	xorl	%r8d, %r8d
+    1937:      	xorl	%r9d, %r9d
+    193a:      	syscall
+    193c:      	movl	%r15d, %r12d
+    193f:      	jmp	0x1910 <pocket4::raw_metadata_owner::Start()+0xc0>
+    1941:      	movl	$0x5f, (%rbx)
+    1947:      	movl	$0xffffffff, %r14d      # imm = 0xFFFFFFFF
+    194d:      	movl	%r14d, %eax
+    1950:      	addq	$0x38, %rsp
+    1954:      	popq	%rbx
+    1955:      	popq	%r12
+    1957:      	popq	%r13
+    1959:      	popq	%r14
+    195b:      	popq	%r15
+    195d:      	popq	%rbp
+    195e:      	retq
+    195f:      	movl	0x12c97(%rip), %ecx     # 0x145fc <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x4>
+    1965:      	movl	$0xffffffff, %r15d      # imm = 0xFFFFFFFF
+    196b:      	movl	$0x10, %eax
+    1970:      	cmpl	$0x2, %ecx
+    1973:      	je	0x19ac <pocket4::raw_metadata_owner::Start()+0x15c>
+    1975:      	cmpb	$0x1, 0x12cbc(%rip)     # 0x14638 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x40>
+    197c:      	jne	0x1a25 <pocket4::raw_metadata_owner::Start()+0x1d5>
+    1982:      	movl	$0x1, %ecx
+    1987:      	xorl	%eax, %eax
+    1989:      	lock
+    198a:      	cmpxchgl	%ecx, 0x12c6b(%rip)     # 0x145fc <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x4>
+    1991:      	sete	%cl
+    1994:      	cmpl	$0x1, %eax
+    1997:      	sete	%dl
+    199a:      	orb	%cl, %dl
+    199c:      	movl	$0x10, %eax
+    19a1:      	cmovnel	-0x2c(%rbp), %eax
+    19a5:      	movzbl	%dl, %r15d
+    19a9:      	decl	%r15d
+    19ac:      	movl	%eax, (%rbx)
+    19ae:      	movl	%r15d, %r14d
+    19b1:      	testb	$0x1, %r12b
+    19b5:      	je	0x19e2 <pocket4::raw_metadata_owner::Start()+0x192>
+    19b7:      	movl	$0x0, 0x12c3f(%rip)     # 0x14600 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x8>
+    19c1:      	leaq	0x12c38(%rip), %rdi     # 0x14600 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x8>
+    19c8:      	movl	$0xca, %eax
+    19cd:      	movl	$0x81, %esi
+    19d2:      	movl	$0x7fffffff, %edx       # imm = 0x7FFFFFFF
+    19d7:      	xorl	%r10d, %r10d
+    19da:      	xorl	%r8d, %r8d
+    19dd:      	xorl	%r9d, %r9d
+    19e0:      	syscall
+    19e2:      	cmpb	$0x1, -0x40(%rbp)
+    19e6:      	jne	0x194d <pocket4::raw_metadata_owner::Start()+0xfd>
+    19ec:      	jmp	0x1a02 <pocket4::raw_metadata_owner::Start()+0x1b2>
+    19ee:      	negl	%eax
+    19f0:      	movl	%eax, (%rbx)
+    19f2:      	movl	$0xffffffff, %r14d      # imm = 0xFFFFFFFF
+    19f8:      	cmpb	$0x1, -0x40(%rbp)
+    19fc:      	jne	0x194d <pocket4::raw_metadata_owner::Start()+0xfd>
+    1a02:      	leaq	-0x48(%rbp), %rsi
+    1a06:      	movl	$0xe, %eax
+    1a0b:      	movl	$0x2, %edi
+    1a10:      	movl	$0x8, %r10d
+    1a16:      	xorl	%edx, %edx
+    1a18:      	xorl	%r8d, %r8d
+    1a1b:      	xorl	%r9d, %r9d
+    1a1e:      	syscall
+    1a20:      	jmp	0x194d <pocket4::raw_metadata_owner::Start()+0xfd>
+    1a25:      	cmpq	$0x0, 0x12bfb(%rip)     # 0x14628 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x30>
+    1a2d:      	je	0x1ae7 <pocket4::raw_metadata_owner::Start()+0x297>
+    1a33:      	movl	$0x0, 0x12bcf(%rip)     # 0x1460c <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x14>
+    1a3d:      	movl	$0x0, 0x12bc1(%rip)     # 0x14608 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x10>
+    1a47:      	movl	$0x0, 0x12bcf(%rip)     # 0x14620 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x28>
+    1a51:      	movq	0x12bd8(%rip), %rsi     # 0x14630 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x38>
+    1a58:      	leaq	0x12bb1(%rip), %rdx     # 0x14610 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x18>
+    1a5f:      	leaq	0x14a(%rip), %rcx       # 0x1bb0 <pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)>
+    1a66:      	movl	$0x350900, %edi         # imm = 0x350900
+    1a6b:      	xorl	%r8d, %r8d
+    1a6e:      	callq	0x1810 <pocket4_raw_clone_x86_64>
+    1a73:      	testq	%rax, %rax
+    1a76:      	js	0x1b7c <pocket4::raw_metadata_owner::Start()+0x32c>
+    1a7c:      	movb	$0x1, 0x12bb5(%rip)     # 0x14638 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x40>
+    1a83:      	movl	0x12b7b(%rip), %eax     # 0x14604 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0xc>
+    1a89:      	movl	0x12b7d(%rip), %ecx     # 0x1460c <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x14>
+    1a8f:      	testl	%ecx, %ecx
+    1a91:      	jne	0x1ac3 <pocket4::raw_metadata_owner::Start()+0x273>
+    1a93:      	leaq	0x12b6a(%rip), %rdi     # 0x14604 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0xc>
+    1a9a:      	movl	$0x80, %esi
+    1a9f:      	nop
+    1aa0:      	movslq	%eax, %rdx
+    1aa3:      	movl	$0xca, %eax
+    1aa8:      	xorl	%r10d, %r10d
+    1aab:      	xorl	%r8d, %r8d
+    1aae:      	xorl	%r9d, %r9d
+    1ab1:      	syscall
+    1ab3:      	movl	0x12b4b(%rip), %eax     # 0x14604 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0xc>
+    1ab9:      	movl	0x12b4d(%rip), %ecx     # 0x1460c <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x14>
+    1abf:      	testl	%ecx, %ecx
+    1ac1:      	je	0x1aa0 <pocket4::raw_metadata_owner::Start()+0x250>
+    1ac3:      	cmpl	$0x0, 0x12b56(%rip)     # 0x14620 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x28>
+    1aca:      	je	0x1982 <pocket4::raw_metadata_owner::Start()+0x132>
+    1ad0:      	callq	0x1e70 <pocket4::raw_metadata_owner::(anonymous namespace)::JoinRaw()>
+    1ad5:      	movb	$0x0, 0x12b5c(%rip)     # 0x14638 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x40>
+    1adc:      	movl	0x12b3e(%rip), %eax     # 0x14620 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x28>
+    1ae2:      	jmp	0x19ac <pocket4::raw_metadata_owner::Start()+0x15c>
+    1ae7:      	movl	$0x27, %edi
+    1aec:      	callq	0x4100 <sysconf@plt>
+    1af1:      	movq	%rax, %r13
+    1af4:      	leaq	-0x10001(%rax), %rcx
+    1afb:      	movl	$0x16, %eax
+    1b00:      	cmpq	$-0x10000, %rcx         # imm = 0xFFFF0000
+    1b07:      	jb	0x19ac <pocket4::raw_metadata_owner::Start()+0x15c>
+    1b0d:      	movq	%r13, %rsi
+    1b10:      	orq	$0x20000, %rsi          # imm = 0x20000
+    1b17:      	movl	$0xffffffff, %r14d      # imm = 0xFFFFFFFF
+    1b1d:      	xorl	%edi, %edi
+    1b1f:      	movq	%rsi, -0x50(%rbp)
+    1b23:      	xorl	%edx, %edx
+    1b25:      	movl	$0x22, %ecx
+    1b2a:      	movl	$0xffffffff, %r8d       # imm = 0xFFFFFFFF
+    1b30:      	xorl	%r9d, %r9d
+    1b33:      	callq	0x4110 <mmap@plt>
+    1b38:      	cmpq	$-0x1, %rax
+    1b3c:      	je	0x19b1 <pocket4::raw_metadata_owner::Start()+0x161>
+    1b42:      	movq	%rax, -0x38(%rbp)
+    1b46:      	addq	%rax, %r13
+    1b49:      	movl	$0x20000, %esi          # imm = 0x20000
+    1b4e:      	movq	%r13, %rdi
+    1b51:      	movl	$0x3, %edx
+    1b56:      	callq	0x4120 <mprotect@plt>
+    1b5b:      	movl	%eax, %ecx
+    1b5d:      	testl	%eax, %eax
+    1b5f:      	js	0x1b83 <pocket4::raw_metadata_owner::Start()+0x333>
+    1b61:      	movq	-0x38(%rbp), %rax
+    1b65:      	movq	%rax, 0x12abc(%rip)     # 0x14628 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x30>
+    1b6c:      	addq	$0x20000, %r13          # imm = 0x20000
+    1b73:      	movq	%r13, 0x12ab6(%rip)     # 0x14630 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x38>
+    1b7a:      	jmp	0x1ba0 <pocket4::raw_metadata_owner::Start()+0x350>
+    1b7c:      	negl	%eax
+    1b7e:      	jmp	0x19ac <pocket4::raw_metadata_owner::Start()+0x15c>
+    1b83:      	movl	(%rbx), %eax
+    1b85:      	movl	%eax, -0x30(%rbp)
+    1b88:      	movq	-0x38(%rbp), %rdi
+    1b8c:      	movq	-0x50(%rbp), %rsi
+    1b90:      	movl	%ecx, %r13d
+    1b93:      	callq	0x4130 <munmap@plt>
+    1b98:      	movl	%r13d, %ecx
+    1b9b:      	movl	-0x30(%rbp), %eax
+    1b9e:      	movl	%eax, (%rbx)
+    1ba0:      	testl	%ecx, %ecx
+    1ba2:      	jns	0x1a33 <pocket4::raw_metadata_owner::Start()+0x1e3>
+    1ba8:      	jmp	0x19b1 <pocket4::raw_metadata_owner::Start()+0x161>
+    1bad:      	nopl	(%rax)
+
+0000000000001bb0 <pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)>:
+    1bb0:      	pushq	%r15
+    1bb2:      	pushq	%r14
+    1bb4:      	pushq	%r13
+    1bb6:      	pushq	%r12
+    1bb8:      	pushq	%rbx
+    1bb9:      	movl	$0x1b4, %eax            # imm = 0x1B4
+    1bbe:      	movl	$0xffffffff, %esi       # imm = 0xFFFFFFFF
+    1bc3:      	xorl	%edi, %edi
+    1bc5:      	xorl	%edx, %edx
+    1bc7:      	xorl	%r10d, %r10d
+    1bca:      	xorl	%r8d, %r8d
+    1bcd:      	xorl	%r9d, %r9d
+    1bd0:      	syscall
+    1bd2:      	movq	%rax, %rbx
+    1bd5:      	negl	%eax
+    1bd7:      	movq	%rbx, %rcx
+    1bda:      	sarq	$0x3f, %rcx
+    1bde:      	andl	%eax, %ecx
+    1be0:      	movl	%ecx, 0x12a3a(%rip)     # 0x14620 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x28>
+    1be6:      	movl	$0x1, 0x12a1c(%rip)     # 0x1460c <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x14>
+    1bf0:      	lock
+    1bf1:      	incl	0x12a0d(%rip)           # 0x14604 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0xc>
+    1bf7:      	leaq	0x12a06(%rip), %rdi     # 0x14604 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0xc>
+    1bfe:      	movl	$0xca, %eax
+    1c03:      	movl	$0x81, %esi
+    1c08:      	movl	$0x7fffffff, %edx       # imm = 0x7FFFFFFF
+    1c0d:      	xorl	%r10d, %r10d
+    1c10:      	xorl	%r8d, %r8d
+    1c13:      	xorl	%r9d, %r9d
+    1c16:      	syscall
+    1c18:      	testq	%rbx, %rbx
+    1c1b:      	js	0x1e51 <pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)+0x2a1>
+    1c21:      	leaq	0x129dc(%rip), %rbx     # 0x14604 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0xc>
+    1c28:      	jmp	0x1c72 <pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)+0xc2>
+    1c2a:      	movq	%r15, %r12
+    1c2d:      	movl	%r12d, 0x10(%r14)
+    1c31:      	movq	$0x0, 0x129dc(%rip)     # 0x14618 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x20>
+    1c3c:      	movl	$0x0, 0x129c2(%rip)     # 0x14608 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x10>
+    1c46:      	movl	$0x1, 0x14(%r14)
+    1c4e:      	lock
+    1c4f:      	incl	0x129af(%rip)           # 0x14604 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0xc>
+    1c55:      	movl	$0xca, %eax
+    1c5a:      	movl	$0x81, %esi
+    1c5f:      	movl	$0x7fffffff, %edx       # imm = 0x7FFFFFFF
+    1c64:      	movq	%rbx, %rdi
+    1c67:      	xorl	%r10d, %r10d
+    1c6a:      	xorl	%r8d, %r8d
+    1c6d:      	xorl	%r9d, %r9d
+    1c70:      	syscall
+    1c72:      	movl	0x1298c(%rip), %eax     # 0x14604 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0xc>
+    1c78:      	movl	0x1298a(%rip), %ecx     # 0x14608 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x10>
+    1c7e:      	cmpl	$0x1, %ecx
+    1c81:      	jne	0x1e10 <pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)+0x260>
+    1c87:      	movq	0x1298a(%rip), %r14     # 0x14618 <pocket4::raw_metadata_owner::(anonymous namespace)::state+0x20>
+    1c8e:      	movslq	(%r14), %rdi
+    1c91:      	movl	$0x1b2, %eax            # imm = 0x1B2
+    1c96:      	movl	$0x80, %esi
+    1c9b:      	xorl	%edx, %edx
+    1c9d:      	xorl	%r10d, %r10d
+    1ca0:      	xorl	%r8d, %r8d
+    1ca3:      	xorl	%r9d, %r9d
+    1ca6:      	syscall
+    1ca8:      	movq	%rax, %r15
+    1cab:      	testq	%rax, %rax
+    1cae:      	js	0x1c2a <pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)+0x7a>
+    1cb4:      	movslq	0x4(%r14), %rsi
+    1cb8:      	movl	$0x1b6, %eax            # imm = 0x1B6
+    1cbd:      	movq	%r15, %rdi
+    1cc0:      	xorl	%edx, %edx
+    1cc2:      	xorl	%r10d, %r10d
+    1cc5:      	xorl	%r8d, %r8d
+    1cc8:      	xorl	%r9d, %r9d
+    1ccb:      	syscall
+    1ccd:      	movq	%rax, %r12
+    1cd0:      	testq	%rax, %rax
+    1cd3:      	js	0x1e35 <pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)+0x285>
+    1cd9:      	movq	0x8(%r14), %r13
+    1cdd:      	movl	$0xba, %eax
+    1ce2:      	xorl	%edi, %edi
+    1ce4:      	xorl	%esi, %esi
+    1ce6:      	xorl	%edx, %edx
+    1ce8:      	xorl	%r10d, %r10d
+    1ceb:      	xorl	%r8d, %r8d
+    1cee:      	xorl	%r9d, %r9d
+    1cf1:      	syscall
+    1cf3:      	movl	%eax, 0x230(%r13)
+    1cfa:      	movl	$0x27, %eax
+    1cff:      	xorl	%edi, %edi
+    1d01:      	xorl	%esi, %esi
+    1d03:      	xorl	%edx, %edx
+    1d05:      	xorl	%r10d, %r10d
+    1d08:      	xorl	%r8d, %r8d
+    1d0b:      	xorl	%r9d, %r9d
+    1d0e:      	syscall
+    1d10:      	movl	%eax, 0x234(%r13)
+    1d17:      	leaq	0x228(%r13), %rdx
+    1d1e:      	movl	$0xe, %eax
+    1d23:      	movl	$0x2, %edi
+    1d28:      	movl	$0x8, %r10d
+    1d2e:      	xorl	%esi, %esi
+    1d30:      	xorl	%r8d, %r8d
+    1d33:      	xorl	%r9d, %r9d
+    1d36:      	syscall
+    1d38:      	movl	$0x5, %eax
+    1d3d:      	movq	%r12, %rdi
+    1d40:      	movq	%r13, %rsi
+    1d43:      	xorl	%edx, %edx
+    1d45:      	xorl	%r10d, %r10d
+    1d48:      	xorl	%r8d, %r8d
+    1d4b:      	xorl	%r9d, %r9d
+    1d4e:      	syscall
+    1d50:      	movq	%rax, 0x108(%r13)
+    1d57:      	leaq	0x90(%r13), %rsi
+    1d5e:      	movl	$0x8a, %eax
+    1d63:      	xorl	%edx, %edx
+    1d65:      	xorl	%r10d, %r10d
+    1d68:      	xorl	%r8d, %r8d
+    1d6b:      	xorl	%r9d, %r9d
+    1d6e:      	syscall
+    1d70:      	movq	%rax, 0x110(%r13)
+    1d77:      	movl	$0x48, %eax
+    1d7c:      	movl	$0x40a, %esi            # imm = 0x40A
+    1d81:      	xorl	%edx, %edx
+    1d83:      	xorl	%r10d, %r10d
+    1d86:      	xorl	%r8d, %r8d
+    1d89:      	xorl	%r9d, %r9d
+    1d8c:      	syscall
+    1d8e:      	movq	%rax, 0x118(%r13)
+    1d95:      	leaq	0x128(%r13), %rdx
+    1d9c:      	movl	$0xc1, %eax
+    1da1:      	movl	$0x100, %r10d           # imm = 0x100
+    1da7:      	leaq	-0xa8e(%rip), %rsi      # 0x1320 <pocket4::raw_metadata_owner::(anonymous namespace)::ReadPinned(pocket4::raw_metadata_owner::(anonymous namespace)::Request*)::tag_name>
+    1dae:      	xorl	%r8d, %r8d
+    1db1:      	xorl	%r9d, %r9d
+    1db4:      	syscall
+    1db6:      	movq	%rax, 0x120(%r13)
+    1dbd:      	movl	$0x3, %eax
+    1dc2:      	xorl	%esi, %esi
+    1dc4:      	xorl	%edx, %edx
+    1dc6:      	xorl	%r10d, %r10d
+    1dc9:      	xorl	%r8d, %r8d
+    1dcc:      	xorl	%r9d, %r9d
+    1dcf:      	syscall
+    1dd1:      	movl	$0x3, %eax
+    1dd6:      	movq	%r15, %rdi
+    1dd9:      	xorl	%esi, %esi
+    1ddb:      	xorl	%edx, %edx
+    1ddd:      	xorl	%r10d, %r10d
+    1de0:      	xorl	%r8d, %r8d
+    1de3:      	xorl	%r9d, %r9d
+    1de6:      	syscall
+    1de8:      	movq	0x108(%r13), %r12
+    1def:      	testq	%r12, %r12
+    1df2:      	js	0x1c2d <pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)+0x7d>
+    1df8:      	movq	0x110(%r13), %rax
+    1dff:      	movq	%rax, %r12
+    1e02:      	sarq	$0x3f, %r12
+    1e06:      	andq	%rax, %r12
+    1e09:      	jmp	0x1c2d <pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)+0x7d>
+    1e0e:      	nop
+    1e10:      	cmpl	$0x2, %ecx
+    1e13:      	je	0x1e51 <pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)+0x2a1>
+    1e15:      	movslq	%eax, %rdx
+    1e18:      	movl	$0xca, %eax
+    1e1d:      	movl	$0x80, %esi
+    1e22:      	movq	%rbx, %rdi
+    1e25:      	xorl	%r10d, %r10d
+    1e28:      	xorl	%r8d, %r8d
+    1e2b:      	xorl	%r9d, %r9d
+    1e2e:      	syscall
+    1e30:      	jmp	0x1c72 <pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)+0xc2>
+    1e35:      	movl	$0x3, %eax
+    1e3a:      	movq	%r15, %rdi
+    1e3d:      	xorl	%esi, %esi
+    1e3f:      	xorl	%edx, %edx
+    1e41:      	xorl	%r10d, %r10d
+    1e44:      	xorl	%r8d, %r8d
+    1e47:      	xorl	%r9d, %r9d
+    1e4a:      	syscall
+    1e4c:      	jmp	0x1c2d <pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)+0x7d>
+    1e51:      	movl	$0x3c, %eax
+    1e56:      	xorl	%edi, %edi
+    1e58:      	xorl	%esi, %esi
+    1e5a:      	xorl	%edx, %edx
+    1e5c:      	xorl	%r10d, %r10d
+    1e5f:      	xorl	%r8d, %r8d
+    1e62:      	xorl	%r9d, %r9d
+    1e65:      	syscall
+    1e67:      	nopw	(%rax,%rax)
+

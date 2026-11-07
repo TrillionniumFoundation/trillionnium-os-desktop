@@ -1,0 +1,96 @@
+--- a/build_registry.py
++++ b/build_snapshot.py
+@@ -254,26 +254,26 @@
+         rows[str(requested)]=row
+     return rows
+ 
+-SOURCE_INPUTS={'source/role_authorization.cc': {'bytes': 38998, 'sha256': '5d9a43b4f9d51ddfe7896de563353c96f75856171d39c1af9a5816394247a03c'}, 'source/role_authorization.h': {'bytes': 5539, 'sha256': '320933ecda593fdb98b16b7bcd506d48ab81e15c0bd5903b38fe4dde49404d8c'}, 'source/factory_context.cc': {'bytes': 5377, 'sha256': 'afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a'}, 'source/factory_context.h': {'bytes': 954, 'sha256': 'b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1'}, 'controls/registry_controls.cc': {'bytes': 33258, 'sha256': '5ea30aeb58eebeb09542e9ee68c07e1be7ff92fedcc3141f4d336490458e1a94'}}
+-ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-02-20261105')
++SOURCE_INPUTS={'source/factory_context.cc': {'bytes': 5377, 'sha256': 'afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a'}, 'source/factory_context.h': {'bytes': 954, 'sha256': 'b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1'}, 'source/proc_maps_factory_wire.cc': {'bytes': 8661, 'sha256': '4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608'}, 'source/role_authorization.cc': {'bytes': 38998, 'sha256': '5d9a43b4f9d51ddfe7896de563353c96f75856171d39c1af9a5816394247a03c'}, 'source/role_authorization.h': {'bytes': 5539, 'sha256': '320933ecda593fdb98b16b7bcd506d48ab81e15c0bd5903b38fe4dde49404d8c'}, 'source/role_snapshot.cc': {'bytes': 9965, 'sha256': 'c2c14486d21e852a971835abd0f36631b4eb37b0a53fbcd5697cf4c11c8e4994'}, 'source/role_snapshot.h': {'bytes': 1243, 'sha256': '24ca056261cf6928bcd0be38f9669290287ac5529629cc77901313060af97bd4'}, 'include/berberis/kernel_api/proc_maps_factory_protocol.h': {'bytes': 5051, 'sha256': 'b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9'}, 'include/berberis/kernel_api/proc_maps_kernel_statfs.h': {'bytes': 2480, 'sha256': '77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0'}, 'include/berberis/kernel_api/proc_maps_linux_compat.h': {'bytes': 2072, 'sha256': '131d1eef8d9f789876c965fa2d827b21a59fc64ab7886fa1f78d95623114370c'}, 'controls/snapshot_controls.cc': {'bytes': 14854, 'sha256': 'fb15f8f56474f445caaa7da7e9b96d7623a4f0ce18eb00862be3867ecc6fd760'}, 'references/factory_main.v2.cc': {'bytes': 28588, 'sha256': '18d8134ed6c2077088104d9b5dc22ccfe1c93f73a87ee880595a9eb89821e2b9'}, 'references/registry_controls.cc': {'bytes': 33258, 'sha256': '5ea30aeb58eebeb09542e9ee68c07e1be7ff92fedcc3141f4d336490458e1a94'}}
++ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorized-snapshot-host-build-01-20261105')
+ SOURCE=ROOT/'source'
+ OUT=ROOT/'build01'
+-SOURCE_MANIFEST_SHA='fda076982c0a26682eb3b6a596a6964e6645cf1eddc7b175e56d9b499c06fda2'
++SOURCE_MANIFEST_SHA='53e90ef34ab51ae8b9700f93419c3c050665fb0ea5a50482417b48aa860497e1'
+ DEADLINE=None
+ 
+ 
+ def execute():
+     global DEADLINE
+     require(os.getuid()==1000 and os.geteuid()==1000,'ordinary operator UID1000 required')
+-    require(Path(__file__).absolute()==SOURCE/'build_registry.py','fixed staged controller required')
++    require(Path(__file__).absolute()==SOURCE/'build_snapshot.py','fixed staged controller required')
+     real_directory(SOURCE);os.umask(0o077);OUT.mkdir(mode=0o700);(OUT/'tmp').mkdir(mode=0o700)
+     DEADLINE=time.monotonic()+180
+     require(ctypes.CDLL(None,use_errno=True).prctl(36,1,0,0,0)==0 and not children(),'owned subreaper required')
+     allowed=sorted(os.sched_getaffinity(0));require(len(allowed)>=3,'cannot leave two logical CPUs free')
+     os.sched_setaffinity(0,[allowed[-1]])
+-    report={'schema':1,'state':'RUNNING','scope':'matching registry mechanism compile and default PLAN only',
++    report={'schema':1,'state':'RUNNING','scope':'matching authorized snapshot compile and default PLAN only',
+             'started_utc':utc(),'Main_actions':0,'Main_identity_observed':False,
+-            'registry_positive_executed':False,'platform_policy_qualified':False,
++            'registry_positive_executed':False,'snapshot_positive_executed':False,'platform_policy_qualified':False,
+             'factory_service_started':False,'snapshot_created':False,
+             'source_manifest_sha256':SOURCE_MANIFEST_SHA,'selected_cpus':[allowed[-1]],
+             'commands':[],'objects':{},'artifacts':{}}
+@@ -282,15 +282,15 @@
+     source_before={};tools={};dependencies={};resource_fd=-1;resource_before=None;artifact_pins={}
+     try:
+         resource_fd,resource_before=begin_resources();report['owned_resources_before']=resource_before
+-        authority,authority_pin=held(SOURCE/'role-source-pins.json',32768)
+-        require(sha(authority)==SOURCE_MANIFEST_SHA,'positive fixture source authority differs')
++        authority,authority_pin=held(SOURCE/'snapshot-source-pins.json',32768)
++        require(sha(authority)==SOURCE_MANIFEST_SHA,'snapshot source authority differs')
+         frozen={row['path']:row for row in json.loads(authority)['files']}
+-        require(len(SOURCE_INPUTS)==5,'reviewed exact five compile inputs required')
++        require(len(SOURCE_INPUTS)==13,'reviewed exact thirteen source/reference inputs required')
+         for name,pin in SOURCE_INPUTS.items():
+             require(all(frozen[name][key]==pin[key] for key in ['bytes','sha256']),
+                     'reviewed compile input not bound by source authority: '+name)
+         stage_raw,stage_pin=held(ROOT/'stage-receipt.json',32768);stage=json.loads(stage_raw)['files']
+-        source_before=regular_tree(SOURCE,12,512*1024)
++        source_before=regular_tree(SOURCE,16,512*1024)
+         require(set(source_before)==set(stage),'staged source membership differs')
+         for name,pin in source_before.items():
+             require(pin['bytes']==stage[name]['bytes'] and pin['sha256']==stage[name]['sha256'],
+@@ -322,9 +322,11 @@
+             for line in raw.splitlines():
+                 match=re.search(r'(?:=>\s*)?(/\S+)\s+\(',line)
+                 if match:tools[match[1]]=pin_tool(match[1])
+-        flags=['-std=c++17','-O2','-Wall','-Wextra','-Werror','-I'+str(SOURCE/'source')]
++        flags=['-std=c++17','-O2','-Wall','-Wextra','-Werror',
++               '-I'+str(SOURCE/'source'),'-I'+str(SOURCE/'include')]
+         units=[('authorization','source/role_authorization.cc'),('context','source/factory_context.cc'),
+-               ('control','controls/registry_controls.cc')]
++               ('wire','source/proc_maps_factory_wire.cc'),('snapshot','source/role_snapshot.cc'),
++               ('control','controls/snapshot_controls.cc')]
+         before_units={}
+         for label,name in units:
+             raw=command([compiler,*flags,'-M','-MT','CONTROL',str(SOURCE/name)],SOURCE,env,
+@@ -345,7 +347,7 @@
+             report['objects'][label]={'object':artifact_pins[label],'actual_md':md_pin,
+                                       'dependency_count':len(before_units[label])}
+             objects.append(str(target))
+-        binary=OUT/'registry_controls'
++        binary=OUT/'snapshot_controls'
+         command([compiler,*flags,*objects,'-o',str(binary)],SOURCE,env,'link-control',report['commands'],30)
+         artifact=hash_held(binary,8*1024*1024);artifact_pins['control']=artifact
+         with binary.open('rb')as stream:require(stream.read(4)==b'\x7fELF','actual result is not ELF')
+@@ -359,7 +361,7 @@
+         require(runtime,'actual control library closure empty')
+         report['runtime_libraries']=runtime
+         plan=json.loads(command([str(binary)],SOURCE,env,'default-plan',report['commands'],10))
+-        require(plan=={'state':'PLAN_ONLY','actual_role_registry':False,'owned_cases':10,
++        require(plan=={'state':'PLAN_ONLY','owned_cases':4,
+                        'factory_service_started':False,'Main_actions':0},'default PLAN contract differs')
+         report['artifacts']['control']={'elf':artifact,'default_plan':plan}
+         report['tool_inputs']=write_new(OUT/'tool-inputs-before.json',tools)
+@@ -371,7 +373,7 @@
+         signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGTERM,signal.SIGINT})
+         report['cleanup']=cleanup_children()
+         try:
+-            report['source_unchanged_after']=bool(source_before)and regular_tree(SOURCE,12,512*1024)==source_before
++            report['source_unchanged_after']=bool(source_before)and regular_tree(SOURCE,16,512*1024)==source_before
+             report['tool_changes']=verify_resolved(list(tools.values()))
+             report['dependency_changes']=verify_resolved(list(dependencies.values()))
+             report['artifacts_unchanged_after']=all(hash_held(Path(row['path']),8*1024*1024)==row for row in artifact_pins.values())

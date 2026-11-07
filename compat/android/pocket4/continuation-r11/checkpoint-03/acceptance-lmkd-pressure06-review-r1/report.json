@@ -1,0 +1,75 @@
+{
+  "all_29_frozen_payload_pins_verified": true,
+  "closed_findings": [
+    {
+      "closure": "observe_poll_batch accounts for every monitor POLLPRI in a successful/time-valid batch before the control-first exit; the old per-monitor increment is removed. Simultaneous cancellation sends no event and leaves observation/queued counts unequal, so the unchanged terminal audit marks it incomplete. The second monitor is also counted if the first send later fails.",
+      "evidence": "Exact frozen source review and new Rust test source; Rust not independently run here.",
+      "id": "P05-AUDIT-TAIL"
+    },
+    {
+      "closure": "After exact LMKD wait/reap, all nonvictim targets are revalidated, then each receives Q and must be exactly reaped with normal exit0. Only the positive already-proven/reaped cached SIGKILL is skipped. target-cleanup.json records five target labels/PIDs/UIDs/start times and final exit classes; aggregate qualifier requires this full identity-bound set.",
+      "evidence": "Exact frozen actor and qualifier source plus three independently executed pure Python delta tests covering ordinary positive/stale fixtures and four cleanup rejection variants.",
+      "id": "P05-CLEANUP-LATE-VICTIM"
+    }
+  ],
+  "created_utc": "2026-11-04T15:34:20.849938+00:00",
+  "kind": "independent-narrow-source-followup-review",
+  "limits": {
+    "Android_or_namespace_executed": false,
+    "Rust_independently_executed": false,
+    "actor_full_fixture_executed": false,
+    "all_apps_production_ready": false,
+    "device_access_during_review": false,
+    "frozen_source_modified": false,
+    "installed_supervisor_recovery_qualified": false,
+    "kernel_PSI_or_pressure_executed": false,
+    "pid_reuse_qualified": false,
+    "production_cgroup_kill_qualified": false
+  },
+  "prior_review": {
+    "path": "/workspace/scratch/94990735b266/acceptance-lmkd-pressure05-review-r1/report.json",
+    "preserved_unmodified": true,
+    "sha256": "0377f94fa0927a85e8958a3eef1d02c7e2766fd29c69895e65b72cb7d0540597"
+  },
+  "qualifier_delta_receipt": {
+    "all_passed": true,
+    "negative_variants": 4,
+    "path": "/workspace/scratch/94990735b266/acceptance-lmkd-pressure06-review-r1/qualifier-delta-result.json",
+    "sha256": "3bbe23bc19302e1659d0eaef07f534b5c1a0232fbe5ada42d79ab6e6a7b610f1",
+    "synthetic_only": true,
+    "test_count": 3
+  },
+  "reviewed_files": {
+    "REVIEW-CHANGES.md": {
+      "bytes": 3227,
+      "sha256": "200c646227413f087e010730021305ee62f4cb806930bfdeb8893fd9937a56f9"
+    },
+    "owned-relay/fixture_init.cpp": {
+      "bytes": 53130,
+      "sha256": "343c2421355ba35bc46fb23cd05bf7a327a6ae2e40a5528f017ec876e3e75d8c"
+    },
+    "owned-relay/qualify_pressure.py": {
+      "bytes": 22324,
+      "sha256": "00254b6a7e166c3b9789d5ee417469e6e59375b2ad7bd58604ddafd136336bab"
+    },
+    "owned-relay/test_qualify_pressure.py": {
+      "bytes": 18141,
+      "sha256": "331c21ee341288416b656aaf78ed10c3b61a2a2bfa8a245d4e5a8fcf73674f45"
+    },
+    "src/psi.rs": {
+      "bytes": 16179,
+      "sha256": "4e8f566ed27250dd2055a03a5a06b6eda9937341400bb0aac9ccf6f08f101ba2"
+    }
+  },
+  "reviewer": "android_acceptance",
+  "schema": 1,
+  "source_manifest_sha256": "9f0472e7aea77cd2f628d38e8378f9148b9db60d4353315d6067a3c271f8325f",
+  "source_root": "/workspace/scratch/94990735b266/lmkd-work/host-pressure-freeze-06",
+  "state": "NO_NEW_BLOCKER_FOR_MATCHING_BUILD_AND_SEPARATELY_AUTHORIZED_BOUNDED_QUALIFICATION",
+  "unchanged_constraints": [
+    "512MiB hard,384MiB high,swap0,observed432MiB cap; 4MiB steps with16MiB reserve; original70/700/1000ms thresholds.",
+    "Native critical-decision reason remains separate from fresh critical-event correlation.",
+    "Matching build and actual real PSI/stale effect execution still needed.",
+    "Coordinator still owns exact unit InvocationID, outer OOM/max counters, Main epoch and final unit/cgroup cleanup."
+  ]
+}

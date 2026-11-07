@@ -1,0 +1,92 @@
+{
+  "Android_inputs_nonce_images_services_created": false,
+  "authoritative_dispatch_state": "failed",
+  "cancelled": false,
+  "candidate_host_suite": "original r1 full native suite remains valid; no reexecution or relabeling",
+  "commercial_app_claim": false,
+  "corrected_followup": "new frozen runtime r3 loads qualified verifier from fully verified original r1 manifest directory; new a03 root required",
+  "defect_is_in": "runtime/coordinator verifier module loading; not the native engine or Android",
+  "dispatch_job": "1a1a76f0dd4-fc05-2b6c",
+  "exit_code": 1,
+  "mechanism": "An identical host_suite.py copy was loaded from the r2 directory; verify_report internally verifies HERE/source-manifest.json against the original r1 hash, so the copied context necessarily failed admission.",
+  "negative_device_observation": {
+    "Main_preserved": true,
+    "all_listed_paths_absent": [
+      "/home/alex/work/pocket4-owned-signal-runtime-r11-source-02/android-attempt-02/android-inputs.json",
+      "/home/alex/work/pocket4-owned-signal-runtime-r11-source-02/android-attempt-02/android-prepare-dispatch-claim.json",
+      "/run/droidloom/cells/u2402",
+      "/var/lib/p4-signal-mask-r1-20261104-a02",
+      "/home/alex/work/pocket4-signal-canary-mask-r1-20261104-a02",
+      "/opt/p4-signal-mask-r1-20261104-a02",
+      "/run/p4-signal-mask-r1-20261104-a02",
+      "/run/user/1000/p4-signal-mask-r1-20261104-a02"
+    ],
+    "case_nonces_allocated": false,
+    "images_created": false,
+    "job": "1a1a76f0dd4-fc05-2b6c",
+    "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "old_failure_retried": false,
+    "private_units": [
+      {
+        "properties": {
+          "ActiveState": "inactive",
+          "LoadState": "not-found",
+          "MainPID": "0"
+        },
+        "unit": "p4-signal-mask-r1-20261104-a02-bus.service"
+      },
+      {
+        "properties": {
+          "ActiveState": "inactive",
+          "LoadState": "not-found",
+          "MainPID": "0"
+        },
+        "unit": "p4-signal-mask-r1-20261104-a02-sway.service"
+      },
+      {
+        "properties": {
+          "ActiveState": "inactive",
+          "LoadState": "not-found",
+          "MainPID": "0"
+        },
+        "unit": "p4-signal-mask-r1-20261104-a02-presenter.service"
+      },
+      {
+        "properties": {
+          "ActiveState": "inactive",
+          "LoadState": "not-found",
+          "MainPID": "0"
+        },
+        "unit": "p4-signal-mask-r1-20261104-a02-daemon.service"
+      }
+    ],
+    "root_retained_for_evidence": "/home/alex/work/pocket4-owned-signal-runtime-r11-source-02",
+    "schema": 1,
+    "services_started": false,
+    "source_claim_sha256": "945a7ae950d422aa2292ed97e273257547889188d851a46cf098c9c87ba0de4e",
+    "source_manifest_sha256": "edbc982ada938b847c270c8aabeb6749922c00c92d9dc02202f18e6eee135937",
+    "state": "A02_PRE_PREPARATION_LOADER_FAILURE_NO_ANDROID_EFFECTS",
+    "utc": "2026-11-04T16:44:24.728489+00:00"
+  },
+  "observed_error": "Traceback (most recent call last):\n  File \"<stdin>\", line 47, in <module>\n  File \"/home/alex/work/pocket4-owned-signal-runtime-r11-source-02/isolated-signal-canary-runtime-r2/host_suite.py\", line 380, in verify_report\n    verify_source(HERE / \"source-manifest.json\", source_sha)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/alex/work/pocket4-owned-signal-runtime-r11-source-02/isolated-signal-canary-runtime-r2/host_suite.py\", line 85, in verify_source\n    manifest = read_pin({\"path\": str(path), \"sha256\": expected})\n  File \"/home/alex/work/pocket4-owned-signal-runtime-r11-source-02/isolated-signal-canary-runtime-r2/host_suite.py\", line 65, in read_pin\n    need(path.is_file() and sha(path) == row[\"sha256\"], \"input pin differs: \" + str(path))\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/alex/work/pocket4-owned-signal-runtime-r11-source-02/isolated-signal-canary-runtime-r2/host_suite.py\", line 42, in need\n    raise RuntimeError(message)\nRuntimeError: input pin differs: /home/alex/work/pocket4-owned-signal-runtime-r11-source-02/isolated-signal-canary-runtime-r2/source-manifest.json\n",
+  "pins": {
+    "failure-absence-readback.json": "82af08710669a2e5c8a40718647055fb788fd9980ec55e7204b5bcdfb2779aff",
+    "failure-readback-status.json": "f972ef87706c0f889ac6be25673644c9c6d696b24365dee705f980f2be443f35",
+    "inputs.json": "14f20be3d50dab2fe8cfa17543070cb213914a77c064ae11a44f9b8a2f499c48",
+    "prepare-output-01.json": "21bc1818db5f6983e205c7884ddc8f04296055ca355e5cbaf22707645f8b1dd9",
+    "prepare-status.json": "32f6f70b1de40fc3e68e819c22295e62ac44dced3dcee90b13d7673f873b45c0",
+    "prepare_remote.py": "70dc97d5efaa516a7a6ce89f00293b247c44153f15cad9238e8ed1513f92c94d"
+  },
+  "production_ready": false,
+  "readback_job": "1a1a77285ce-fc05-2b79",
+  "readback_sha256": "82af08710669a2e5c8a40718647055fb788fd9980ec55e7204b5bcdfb2779aff",
+  "readback_state": "succeeded",
+  "run_qualification": "R2_WITHDRAWN; original delta review retained with correction addendum",
+  "runtime_manifest_sha256": "edbc982ada938b847c270c8aabeb6749922c00c92d9dc02202f18e6eee135937",
+  "runtime_revision": "r2",
+  "schema": 1,
+  "signal_behavior_outcome": "NOT_OBSERVED",
+  "source_root_retained": true,
+  "state": "A02_PRE_PREPARATION_HOST_VERIFIER_CONTEXT_FAILURE",
+  "timed_out": false
+}

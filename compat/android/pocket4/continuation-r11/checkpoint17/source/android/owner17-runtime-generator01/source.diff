@@ -1,0 +1,48 @@
+--- owner16/freeze_runtime16.py
++++ owner17/freeze_runtime17.py
+@@ -1,4 +1,4 @@
+-"""Bind the one actual preparation receipt to the frozen Owner16 runtime template.
++"""Bind the one actual preparation receipt to the frozen Owner17 runtime template.
+ 
+ This local generator does not dispatch a request or execute a runtime.
+ """
+@@ -10,9 +10,9 @@
+ import re
+ 
+ BASE = Path('/workspace/scratch/94990735b266')
+-SOURCE = BASE / 'android-owner16-normal01-freeze-01'
+-OUT = Path('/workspace/scratch/94990735b266/android-owner16-normal01-runtime-freeze-01')
+-SOURCE_MANIFEST_SHA256 = 'b9a9cbdc3dcdd1a7c54f72c29eea762cd18d7f1b6e64a5e0a2d33c46d296913d'
++SOURCE = BASE / 'android-owner17-normal01-freeze-01'
++OUT = Path('/workspace/scratch/94990735b266/android-owner17-normal01-runtime-freeze-01')
++SOURCE_MANIFEST_SHA256 = '0b69c268625123af4626964cb59a3cf36278a9345ca6f011af7033569426a262'
+ 
+ 
+ def sha(value):
+@@ -41,7 +41,7 @@
+         assert len(data) == row['bytes'] and sha(data) == row['sha256']
+     plan_raw = (SOURCE / 'plan.json').read_bytes()
+     plan = json.loads(plan_raw)
+-    assert plan['kind'] == 'owned-real-producer16-normal01-bounded-init-log01'
++    assert plan['kind'] == 'owned-real-producer17-normal01-owned-bootstrap-modes01'
+     assert plan['scope'] == 'REAL_OWNER_ABI3_PINNED_CAUSE_TERMINAL_DRAIN_FIRST_ACTIVE_ORIGINAL_RETIREMENT'
+     assert plan['init_protocol_abi'] == 3 and plan['entry_abi'] == 'droidloom-relay-entry-v3'
+     assert actual['success'] is True and actual['errors'] == []
+@@ -80,7 +80,7 @@
+     request['idempotency_key'] = request['idempotency_key'].replace('__ACTUAL_PREPARED_SHA256_PREFIX16__', args.sha256[:16])
+     assert stdin.replace(args.sha256, '__ACTUAL_PREPARED_SHA256__') == template
+     ast.parse(stdin)
+-    compile(stdin, '<Owner16 exact runtime>', 'exec')
++    compile(stdin, '<Owner17 exact runtime>', 'exec')
+     raw = pretty(request)
+     result = {'schema': 1, 'actual_prepared_sha256': args.sha256,
+         'source_manifest_sha256': sha(manifest_raw), 'actual_prepared_plan_and_six_sources_and_five_artifacts_match': True,
+@@ -92,7 +92,7 @@
+     OUT.mkdir(exist_ok=False)
+     members = {'request.json': raw, 'stdin.py': stdin.encode(), 'actual-prepared.json': body,
+         'binding-result.json': pretty(result), 'freeze_runtime16.py': Path(__file__).read_bytes(),
+-        'README.md': b"# Exact fresh Owner16 NORMAL01 runtime request\n\nOnly the externally observed actual prepared SHA and stable key are filled into the already frozen runtime template. This local generator has not dispatched a request. Actual Host16 compile, 39 relay / 136 supervisor ordinary tests, two retirement tests, seven IPC controls, context/ABI3, and paired C16 DSO are bound by the preparation plan. Root must review the original actual prepared receipt and hold the runtime while heavy framework work occupies its resource window.\n\nThe new bounded generation-private init logger and dedicated response/actor capacities do not qualify Android logging until both actual markers reach the held channel before broker start. Full-stream completeness and per-line writer attribution remain false. Original authority, ABI3, ACTIVE, Stop, retirement, Main and exact cleanup gates remain. Owner15's original failed broker receipt is preserved, not reclassified. Actual runtime success or failure and all cleanup evidence remain required; this package does not grant whole-App or production qualification.\n"}
++        'README.md': b"# Exact fresh Owner17 NORMAL01 runtime request\n\nOnly the externally observed actual prepared SHA and stable key are filled into the already frozen runtime template. This local generator has not dispatched a request. Actual Host17 compile, 39 relay / 139 supervisor ordinary tests, two retirement tests, seven IPC controls, context/ABI3, and paired C16 DSO are bound by the preparation plan. Root must review the original actual prepared receipt and hold the runtime while heavy framework work occupies its resource window.\n\nThe unchanged C16 generation-private init logger still requires both fresh generation markers before broker start. The Host17 guest bootstrap directory mode repair is not an Android LMKD or HWS health qualification; private crash-log WIP is excluded. Full-stream completeness and per-line writer attribution remain false. Original authority, ABI3, ACTIVE, Stop, retirement, Main and exact cleanup gates remain. Owner16's original failed broker receipt is preserved, not reclassified. Actual runtime success or failure and all cleanup evidence remain required; this package does not grant whole-App or production qualification.\n"}
+ 
+     rows = []
+     for name, data in members.items():

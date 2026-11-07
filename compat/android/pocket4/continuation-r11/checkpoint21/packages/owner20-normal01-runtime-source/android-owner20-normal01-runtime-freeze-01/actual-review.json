@@ -1,0 +1,104 @@
+{
+  "actual_prepare": {
+    "attempt_nonce": "eae6a2c3c00117d2a6a0f0f08949342de6a14cf8c2dbf695071e7a96b494661c",
+    "canonical_spec_sha256": "9cd4939bae7a31ef04ec941be337f5f0d837fbb09f4db89e461c2835ef70a760",
+    "current_epoch": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+    "errors": [],
+    "main_fence_fds_closed": true,
+    "plan_sha256": "d522369b8a6d3a92b44a5197ddd3cf00b5044758a77200bb12e2cf3607b6a0e7",
+    "resources": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    },
+    "runtime_executed": false,
+    "success": true
+  },
+  "actual_prepared": {
+    "bytes": 60860,
+    "git_blob_sha": "b885da431593e7a5508d08a276b914567c0ac40c",
+    "producer_job": "1a1b030cc15-fc05-6ee9",
+    "reader_job": "1a1b0351c1a-fc05-6f0e",
+    "sha256": "ee857bb187cd27821fc441a2234da9bb16e4457ff64b0b986d5a02e13e95606f",
+    "tree": "8d8f7cad54ddb49b005fbe3d31200d638ccea5c0"
+  },
+  "checks": {
+    "all_passed": true,
+    "base_records_before_after": 86,
+    "copied_artifacts": 6,
+    "count": 427,
+    "current_Main_bridge_controls": 12,
+    "dependency_controls": 8,
+    "exact_current_Main_maps": 3,
+    "fresh_sparse_images": 2,
+    "original_crash_metadata_controls": 15,
+    "property_host_controls": 38,
+    "source_modules": 8,
+    "tool_records": 8
+  },
+  "kind": "owner20-actual-prepared-and-runtime-binding-review01",
+  "method": {
+    "hepta_used": false,
+    "local_checker_corrections": [
+      "parseLossless preserves float 0.5 as a raw JSON token; the independent numeric PSI comparison now converts that token explicitly. Frozen Python/source and actual data were unchanged.",
+      "Independent JavaScript translation of Python bridge.get('first_error') now treats an absent key as None. Actual bridge receipt omits this optional field. Frozen binder already used get; no production change."
+    ],
+    "local_exec_used": false,
+    "python_ast_parse_or_compile_performed": false,
+    "python_binder_executed": false,
+    "serialization": "Python sorted indent=2 ensure_ascii pretty JSON with trailing newline; request inverse equals the exact frozen request template.",
+    "verification": "Equivalent predicates evaluated in V8 against lossless parsed original JSON and exact frozen source/control artifacts."
+  },
+  "preserved_boundaries": {
+    "HELLO_does_not_prove_property_service_readiness": true,
+    "Host17_C16_LMKD_artifacts_unchanged": true,
+    "Main_write_or_restart": false,
+    "additional_retirement_only_seconds": 1,
+    "cold_LMKD_or_capability_or_SELinux_equivalence": false,
+    "control_process_exit_independently_confirmed": true,
+    "earlier_failed_FD_controls_preserved": true,
+    "historical_Main_is_lineage_only": true,
+    "libffi_dependency_report_still_open_at_emission_preserved": true,
+    "new_runtime_must_requalify_init_helper_bionic_getter_namespace_identity": true,
+    "original_65_second_loop_immediate_Stop_and_four_child_retirement_unchanged": true,
+    "private_baseline_body_exported": false,
+    "property_accessor_actual_build02_bound": true,
+    "property_observation_seconds": 2,
+    "runtime_dispatched_by_this_artifact": false,
+    "same_process_UID1069_read_retains_root_warmed_bionic_state": true,
+    "single_helper_child": true,
+    "source_controls_not_Main_runtime_authority": true,
+    "source_modules_unchanged": true
+  },
+  "request": {
+    "bytes": 1529,
+    "git_blob_sha": "2010a5179e032f3ab27feb53d725a3ccccb1fb63",
+    "key": "p4-owner20-normal01-runtime01-ee857bb187cd2782",
+    "only_two_template_substitutions": true,
+    "resource_envelope": {
+      "cpu_quota_percent": 100,
+      "memory_max_bytes": 536870912,
+      "nice": 10,
+      "timeout_seconds": 240
+    },
+    "sha256": "c8d106edb36d1ff5a61fada6c975c273d9a606c6e53667983277f54464bebf92",
+    "stdin": {
+      "bytes": 1174,
+      "git_blob_sha": "a559149ca8fb6eb8d9c10d0c7536b4554bb79bcf",
+      "sha256": "873ef32ae2c0310a6e3c2717147eae07d4af9425ec21fb8b5e994780756c7b07"
+    }
+  },
+  "schema": 1,
+  "source_freeze": {
+    "binder": {
+      "bytes": 21199,
+      "git_blob_sha": "3f508f7f5915c1f2524041e4c0bb57153265b903",
+      "sha256": "0851c60723c33253286cf0f0abd81a39c5f05db2e1f73ef7a006a634000b44b4"
+    },
+    "manifest_sha256": "b1a63e5ffcde80e4b191567786136a21e674ba4b82ce1084aacd178f5c403433",
+    "tree": "eef453897f751c690ea1e2e26ec9602fb9572269"
+  },
+  "state": "ACTUAL_PREPARE_VERIFIED_RUNTIME_NOT_DISPATCHED"
+}

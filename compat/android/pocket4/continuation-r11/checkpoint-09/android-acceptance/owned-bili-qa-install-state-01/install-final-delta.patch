@@ -1,0 +1,70 @@
+--- install_state-draft01.py
++++ install_state.py
+@@ -43,6 +43,7 @@
+ GUEST_DIR = '/data/local/tmp/' + GUEST_DIR_NAME
+ GUEST_APK = GUEST_DIR + '/owned-bili-qa.apk'
+ PACKAGE_LIST = ['/system/bin/cmd', 'package', 'list', 'packages', '-u', '-U', '--user', 'all', SELF]
++INSTALLED_ALL_USERS = ['/system/bin/cmd', 'package', 'list', 'packages', '-U', '--user', 'all', SELF]
+ INSTALL = ['/system/bin/cmd', 'package', 'install', '-R', '-t', '--user', '0', '--pkg', SELF, GUEST_APK]
+ EXPECTED_SOURCE_FILES = {'install_state.py', 'stage_execute.py', 'make_request.py',
+                          'references/readonly_r3_coordinator.py', 'INPUTS.json', 'README.md'}
+@@ -260,7 +261,8 @@
+             error = RuntimeError('OWNED_STAGING_RETIREMENT_FAILED')
+             error.details = errors
+             raise error
+-        return {'staged_apk_removed':True, 'staged_directory_removed':True,
++        return {'staged_apk_created':self.file_created, 'staged_directory_created':self.directory_created,
++                'staged_apk_removed':self.file_created, 'staged_directory_removed':self.directory_created,
+                 'authority_fds_closed':True, 'recursive_cleanup':False}
+ 
+ 
+@@ -314,7 +316,7 @@
+         result['installed_after_state'] = session.installed()
+         require(result['installed_before_state'] == result['installed_after_state'],
+                 'NEW_PACKAGE_IDENTITY_CHANGED_DURING_STATE')
+-        all_rows, row_command = command(flow, PACKAGE_LIST)
++        all_rows, row_command = command(flow, INSTALLED_ALL_USERS)
+         require(uid_from(all_rows) == uid, 'NEW_PACKAGE_APPEARED_FOR_ANOTHER_USER_OR_UID')
+         result['all_users_after'] = row_command
+         result['package_retained'] = True
+@@ -407,12 +409,14 @@
+     require(os.getuid() == os.geteuid() == 0 and HERE == SOURCE, 'ROOT_EXACT_STAGED_SOURCE_REQUIRED')
+     ref = references()
+     require(not os.path.lexists(FLOW), 'FRESH_FLOW_REQUIRED_NO_PARTIAL_RETRY')
+-    read(ROOT/'once.claim.json',65536)
++    claim = json.loads(read(ROOT/'once.claim.json',65536))
++    require(claim.get('nonce') == NONCE and claim.get('source_manifest_sha256') == expected and
++            claim.get('automatic_retry') is False, 'EXACT_ONCE_CLAIM_REQUIRED')
+     evidence = ROOT/'evidence'; evidence.mkdir(mode=0o700)
+     result = {'schema':1,'ok':False,'error':None,'secondary_errors':[],
+         'source_manifest_sha256':expected,'package':SELF,'nonce':NONCE,
+         'flow':str(FLOW),'automatic_retry':False,'UI_actions':0,'audio_actions':0,
+-        'whole_app_production_ready':False,'old_v2_helper_called':False}
++        'whole_app_production_ready':False,'old_v2_helper_called':False,'install_state_worker_requested':False}
+     activation = epoch = resource_before = None
+     try:
+         resource_before = prepare_owned_limits()
+@@ -431,6 +435,7 @@
+             25,evidence,guard)
+         require(initial.get('ok') is True and initial.get('scope_initialized') is True and
+                 initial.get('epoch_sha256') == ref.EPOCH,'FRESH_ORIGINAL_FLOW_INIT_FAILED')
++        result['install_state_worker_requested'] = True
+         observed = ref.run_cli('02-install-state',['/usr/bin/python3','-I',str(HERE/'install_state.py'),
+             '--worker-once','--source-manifest-sha256',expected],190,evidence,guard)
+         durable_raw = read(FLOW/'steps'/STEP/'result.json')
+@@ -450,6 +455,15 @@
+     except BaseException as error:
+         remember(result,'coordinator',error)
+     finally:
++        if result['install_state_worker_requested'] and 'worker_result' not in result:
++            try:
++                path = FLOW/'steps'/STEP/'result.json'
++                if path.exists():
++                    raw = read(path)
++                    result['failed_worker_result'] = {'path':str(path),'bytes':len(raw),'sha256':digest(raw)}
++                result['package_outcome_requires_exact_worker_reconciliation'] = True
++            except BaseException as error:
++                remember(result,'failed_worker_evidence',error)
+         if activation is not None and epoch is not None:
+             try:
+                 result['Main_after'] = ref.main_guard(activation,epoch)

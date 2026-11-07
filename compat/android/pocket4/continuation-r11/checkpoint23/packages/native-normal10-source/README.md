@@ -1,0 +1,13 @@
+# Normal10 — independent candidate awaiting fresh resource observation
+
+This source-only request keeps the actual PASS builder473 and exactly the two Strict targets framework-minus-apex and libandroid_runtime. It retains the current 225-project lock, exact published source plan, both build locks, source projection/restore gates, all 46 pure controls and the original four actual lifecycle controls. The eight-role Main snapshot, root supervisor and capture lifecycle source bytes are unchanged from Normal09.
+
+Normal09 failed at 2026-11-06T19:42:38.840405+00:00 because the freshly read MemAvailable was 14,854,873,088 bytes, 1,251,254,272 below the unchanged 16,106,127,360-byte admission threshold. Its original outer inner_build_called=true and inner_returncode=null are preserved. The exact error was raised after verify_prepared and before subreaper, attempt creation and builder Popen. Normal08's distinct genuine Soong failure remains bound separately.
+
+The only controller-function change adds fixed reads and exact hashes for the Normal09 failed outer terminal and resource receipt to prior_failure_contract. It checks the original rejection, original resource profile, real capture retirement records and lossless raw meminfo. Twenty-eight other controller functions, including resource admission, builder invocation, source verification and cleanup, are unchanged. The new ROOT/key is build10. The outer fence only changes ROOT and the bound controller hash; stage and transport only propagate the new exact file map and hashes.
+
+Owned limits remain 10 GiB RAM, zero swap, two CPUs, j1, nice10, a 6100-second builder wait and 6400-second outer timeout. Global swap is not an owned budget. Fresh MemAvailable must still be at least 15 GiB. The historical receipt can never admit this new build. Root must obtain and assess a new independent fixed resource observation before dispatch; the actual request then performs its own fresh admission again. No automatic retry or replay is authorized by this package.
+
+The request has twenty source members and 973991 bytes of stdin, below the one MiB tool limit. Verify SOURCE_PINS.json, then evaluate reproduce.js and pass the complete UTF-8 file map. It reproduces all controller/stage/transport/request bytes and independently checks the original Normal09 failure from the retained raw sources, including exact numeric-token comparison of Main identities. Original actual JSON text is preserved; it is never parse-reserialized.
+
+This package does not establish future resource availability, current Main health, a successful Soong build, Java/JNI artifacts, runtime readiness, or production acceptance. No Hepta, Python, Rust, Android or Main operation was executed here.

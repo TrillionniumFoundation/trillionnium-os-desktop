@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "state": "FROZEN_EXACT_READ_REQUEST_NOT_SUBMITTED_BY_AUTHOR",
+  "scope": "fixed safe eight originals only; no runtime qualification inferred",
+  "actual_terminal_binding": {
+    "job_id": "1a1ab917856-fc05-4eb3",
+    "reported_by": "/root authoritative terminal and stdout",
+    "coordinator": {
+      "path": "/home/alex/work/pocket4-amazon-owned-launch-inspect-01/result.json",
+      "bytes": 13736,
+      "sha256": "c7277e75e059795e92b29794f1afe66b15b7f4f2f0b3fc7aa987d9ddb481d859"
+    },
+    "stage": {
+      "path": "/home/alex/work/pocket4-amazon-owned-launch-inspect-01/stage-result.json",
+      "bytes": 1726,
+      "sha256": "155fd22b7f3caea358e90ea9dccca4eb75087607566fedaa036248dbc679127c"
+    }
+  },
+  "reader": {
+    "bytes": 7217,
+    "sha256": "9c426801cf2c96d81aebe8a56a083f9e218e1431e342585d49350d179f4dbba3",
+    "git_blob_sha1": "bd84033cdf59640cfa5c75b2c7736763e1c72d01"
+  },
+  "exact_request": {
+    "bytes": 8343,
+    "sha256": "6cf4ffc8cf95a81e6eeae86673baa53bc9e0d64587ae956503ee2cf9b0d61780",
+    "git_blob_sha1": "93a406efd616622dac97f28d3f52d39c049eb588"
+  },
+  "local_checks": {
+    "reader_generator_and_wrapper_AST_parse": true,
+    "generated_request_stdin_exact_reader_bytes": true,
+    "fixed_external_c_s_hashes_in_wrapper": true,
+    "no_remote_request_submitted": true,
+    "default_plan_prior_output_retained_unchanged": true
+  },
+  "author_review": "Full reader/generator text read. Four fixed binding/source changes from the earlier Bili safe reader are retained in the complete diff, together with optional coordinator phase-link validation and Amazon helper/target checks. There is no authority to collect raw commercial UI or to perform Android actions. Original full records and failure states remain unchanged.",
+  "peer_review": "NOT_PERFORMED_FOR_THIS_READER",
+  "whole_app_qualified": false
+}

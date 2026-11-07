@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,os,re,secrets,sys\nraw=sys.stdin.buffer.read(22998)\nassert len(raw)==22997 and hashlib.sha256(raw).hexdigest()==\"d793bd6aad537724fb78d1258d7544a0bd35d7aeda9696e65f0cd29f56920e4a\"\nexcluded=json.loads(raw)\nassert type(excluded) is list and len(excluded)==len(set(excluded))==657 and all(type(x) is str and re.fullmatch(r\"[0-9a-f]{32}\",x) for x in excluded)\nassert os.getuid()==os.geteuid()==1000\nlabels=[\"ihg_r4_install02_flow\",\"ihg_r4_install02_state\"]\nvalues=[secrets.token_hex(16) for _ in labels]\nassert len(set(values))==2 and not set(values).intersection(excluded)\nprint(json.dumps({\"schema\":1,\"purpose\":\"fresh current-cell02 IHG R4 install02 after pre-action owner discovery failure\",\"generator\":\"secrets.token_hex(16)\",\"labels\":labels,\"values\":values,\"count\":2,\"excluded_count\":657,\"excluded_sha256\":hashlib.sha256(raw).hexdigest(),\"no_redraw\":True,\"Main_actions\":0,\"Android_actions\":0,\"children_started\":0,\"filesystem_mutations\":0},sort_keys=True,separators=(\",\",\":\")),flush=True)\n"
+    ],
+    "created_unix_ms": 1793980540508,
+    "cwd": "/",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b192a65c-fc05-79a5",
+    "idempotency_key": "pocket4-current-cell02-ihg-install02-nonces-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b192a65c-fc05-79a5",
+    "request_digest": "65d9b4ba4d2d4daa69af6fa3c87dbf237fe038cd08a5409b654f577a111a3819",
+    "request_fingerprint": 7339095780028665258,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b192a65c-fc05-79a5"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b192a65c-fc05-79a5"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "state": "ROOT_REVIEWED_MODE_FIXED_ORDINARY_ACTUAL_COMPILE_BOUND",
+  "request_source_manifest": "000b72dc68121a788160d26def3829df900a1d40dc216f285784fd7cb105792b",
+  "prior_full_run_diff_review": true,
+  "three_payload_leaves_verified": true,
+  "stdin_exact_reviewed_run_sha256": "9dd0aa22fd6202f099df0eaaa2e1a48817ff500f51a1be0d9be2df729287fe14",
+  "exact_template_only_changes": [
+    "args[-1]",
+    "idempotency_key"
+  ],
+  "compile_original": {
+    "bytes": 50235,
+    "sha256": "86c8078472a4e6ecc271ccb39e86cf8aba24bc7a4828dcabfdf3d3f38bbd5466"
+  },
+  "limits": {
+    "cpu_percent": 100,
+    "memory_bytes": 536870912,
+    "timeout_seconds": 180
+  },
+  "expected_tests": {
+    "relay": 39,
+    "supervisor": 139,
+    "ipc": 7,
+    "retirement_repeat_subsets": 2,
+    "entry_abi": 3
+  },
+  "scope": "normal host tests; not Owner or Android runtime",
+  "single_process_start": true,
+  "automatic_retry": false
+}

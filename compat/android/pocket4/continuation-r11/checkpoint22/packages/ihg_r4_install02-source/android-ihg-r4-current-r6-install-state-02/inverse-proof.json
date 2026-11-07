@@ -1,0 +1,214 @@
+{
+  "schema": "pocket4-current-owner-correction-inverse-v1",
+  "all_original_production_functions_and_modules_restored": true,
+  "edits": [
+    {
+      "file": "install_state.py",
+      "from": "/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-01",
+      "to": "/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-02",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-01",
+      "to": "/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-02",
+      "count": 1
+    },
+    {
+      "file": "make_request.py",
+      "from": "/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-01",
+      "to": "/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-02",
+      "count": 1
+    },
+    {
+      "file": "make_request.py",
+      "from": "pocket4-owned-ihg-qa-r4-current-r6-install-state-01-20261106",
+      "to": "pocket4-owned-ihg-qa-r4-current-r6-install-state-02-20261106",
+      "count": 1
+    },
+    {
+      "file": "install_state.py",
+      "from": "2b991bd0c0832109fb97af75690c73b6",
+      "to": "__FRESH_IHG_INSTALL02_FLOW__",
+      "count": 1
+    },
+    {
+      "file": "install_state.py",
+      "from": "7a9043d8dcc2c5e0b34fc11d7bf8bee5",
+      "to": "__FRESH_IHG_INSTALL02_STATE__",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "2b991bd0c0832109fb97af75690c73b6",
+      "to": "__FRESH_IHG_INSTALL02_FLOW__",
+      "count": 1
+    },
+    {
+      "file": "make_request.py",
+      "from": "2b991bd0c0832109fb97af75690c73b6",
+      "to": "__FRESH_IHG_INSTALL02_FLOW__",
+      "count": 1
+    },
+    {
+      "file": "install_state.py",
+      "from": "EXPECTED_SOURCE_FILES = {'install_state.py','ihg_context.py','ihg_transport.py','stage_execute.py',\n    'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',\n    'check_install_binding.py','references/read_ihg.py','target-artifact-reference.json'}",
+      "to": "EXPECTED_SOURCE_FILES = {'install_state.py','ihg_context.py','ihg_transport.py','stage_execute.py',\n    'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',\n    'check_install_binding.py','references/read_ihg.py','target-artifact-reference.json', 'current_discovery.py', 'check_current_discovery.py'}",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "FILES={'install_state.py','ihg_context.py','ihg_transport.py','stage_execute.py',\n       'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',\n       'check_install_binding.py','references/read_ihg.py','target-artifact-reference.json'}",
+      "to": "FILES={'install_state.py','ihg_context.py','ihg_transport.py','stage_execute.py',\n       'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',\n       'check_install_binding.py','references/read_ihg.py','target-artifact-reference.json', 'current_discovery.py', 'check_current_discovery.py'}",
+      "count": 1
+    },
+    {
+      "file": "ihg_context.py",
+      "from": "def open_context(",
+      "to": "def current_discovery(util, source_manifest, source_verify, source_root,\n                      app, baseline, epoch, guard):\n    manifest = source_verify(source_manifest)\n    row = manifest['files']['current_discovery.py']\n    discovery = util.module(source_root/'current_discovery.py',row['sha256'],\n                            'owned_current_discovery')\n    require(discovery.BASELINE_SHA == BASELINE_SHA and\n            discovery.QUALIFICATION_SHA == QUALIFICATION_SHA and\n            discovery.MAIN_EPOCH == CURRENT_EPOCH,\n            'CURRENT_DISCOVERY_SOURCE_BINDING_REQUIRED')\n    return discovery.discover_current(app,baseline,epoch,guard)\n\n\ndef open_context(",
+      "count": 1
+    },
+    {
+      "file": "ihg_context.py",
+      "from": "        init,discovered,status = app.discover()\n",
+      "to": "        init,discovered,status = current_discovery(util,source_manifest,source_verify,source_root,\n                                                    app,activation,epoch,guard)\n",
+      "count": 1
+    },
+    {
+      "file": "check_install_binding.py",
+      "from": "CONTROL_COUNT = 51",
+      "to": "CONTROL_COUNT = 69",
+      "count": 1
+    },
+    {
+      "file": "check_install_binding.py",
+      "from": "    rows.extend(run_source_controls(entry,files,source_manifest_sha256))\n",
+      "to": "    rows.extend(run_source_controls(entry,files,source_manifest_sha256))\n    discovery_controls = types.ModuleType('production_current_discovery_controls')\n    exec(compile(files['check_current_discovery.py'],'<current-discovery-controls>','exec'),discovery_controls.__dict__)\n    legacy_source = entry.read(entry.BASE_HOST_ROOT/'references/android_app.py',131072,\n                               discovery_controls.LEGACY_SHA)\n    rows.extend(discovery_controls.run_discovery_controls(files['current_discovery.py'],baseline,legacy_source))\n    rows.extend(discovery_controls.run_context_route_controls(context,files,baseline,legacy_source,source_manifest_sha256))\n",
+      "count": 1
+    },
+    {
+      "file": "check_install_binding.py",
+      "from": "'production_verify_source_calls':5}",
+      "to": "'production_verify_source_calls':5,\n            'new_owner_discovery_controls':18,'production_discovery_and_Context_route_used':True,\n            'legacy_discover_failure_reproduced_in_memory':True}",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "controls['count']==51",
+      "to": "controls['count']==69",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "len(controls['cases'])==51",
+      "to": "len(controls['cases'])==69",
+      "count": 1
+    }
+  ],
+  "nonce_bindings": [
+    {
+      "file": "install_state.py",
+      "old": "__FRESH_IHG_INSTALL02_FLOW__",
+      "next": "bc503e63d113d5ddd32aba526e7d0075",
+      "count": 1
+    },
+    {
+      "file": "install_state.py",
+      "old": "__FRESH_IHG_INSTALL02_STATE__",
+      "next": "3d004706f9adf4411761495fdc6ed859",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "old": "__FRESH_IHG_INSTALL02_FLOW__",
+      "next": "bc503e63d113d5ddd32aba526e7d0075",
+      "count": 1
+    },
+    {
+      "file": "make_request.py",
+      "old": "__FRESH_IHG_INSTALL02_FLOW__",
+      "next": "bc503e63d113d5ddd32aba526e7d0075",
+      "count": 1
+    }
+  ],
+  "original_source_pins": {
+    "install_state.py": {
+      "bytes": 39986,
+      "sha256": "b30456375567863c03faaa6473a897f61c2ee2304da28e2df2eb83dff7bf4611"
+    },
+    "ihg_context.py": {
+      "bytes": 17217,
+      "sha256": "6e7dc456c6118e48dafb8b55344b71631bbea5dc4382aa23a3b03abfc75d3ed2"
+    },
+    "ihg_transport.py": {
+      "bytes": 15606,
+      "sha256": "aa4836f35ea0251fbf3942033db2a45e37a882ebf6f7b6076b45c63970d5c516"
+    },
+    "stage_execute.py": {
+      "bytes": 9341,
+      "sha256": "20d32e05127b6f91cb94d040d0dca74412c6083341ea001b54f120a7999198ae"
+    },
+    "make_request.py": {
+      "bytes": 3059,
+      "sha256": "ef48ae0006cb63d02016af6a0873a98cbc5728534ab1f8defceb90a3a9100cd5"
+    },
+    "check_install_binding.py": {
+      "bytes": 13424,
+      "sha256": "42e9bb0e3e695693ff907f350242cfccad9d614b116d8c8bcfc87d23a4484423"
+    },
+    "host/source-manifest.json": {
+      "bytes": 3757,
+      "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+    },
+    "host-stage-actual.json": {
+      "bytes": 10016,
+      "sha256": "e1718fcb3561488c88011f00de0d6e992ff51a64a355da87f1fcb867545fcba6"
+    },
+    "references/read_ihg.py": {
+      "bytes": 21052,
+      "sha256": "51ecf1c0a12d8bfa9ed721265e14c4f06ef3eff72cbf5840de9569eb09797d40"
+    },
+    "target-artifact-reference.json": {
+      "bytes": 1846,
+      "sha256": "12ea3d26347180a6a25961a3f72105d56461d51fc6892283fdaac81fc0fffcff"
+    },
+    "INPUTS.json": {
+      "bytes": 3867,
+      "sha256": "328c435df9e40ab963bf0274f9a901c48a3c0fda1f9117f4c4456d93416e7094"
+    },
+    "README.md": {
+      "bytes": 1882,
+      "sha256": "e4a0d167ae5c01c1575996b165db2b4c63a7bbfcac7d133d9ca6ddfc649bca7d"
+    }
+  },
+  "unchanged_files": [
+    {
+      "name": "ihg_transport.py",
+      "bytes": 15606,
+      "sha256": "aa4836f35ea0251fbf3942033db2a45e37a882ebf6f7b6076b45c63970d5c516"
+    },
+    {
+      "name": "host/source-manifest.json",
+      "bytes": 3757,
+      "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+    },
+    {
+      "name": "host-stage-actual.json",
+      "bytes": 10016,
+      "sha256": "e1718fcb3561488c88011f00de0d6e992ff51a64a355da87f1fcb867545fcba6"
+    },
+    {
+      "name": "references/read_ihg.py",
+      "bytes": 21052,
+      "sha256": "51ecf1c0a12d8bfa9ed721265e14c4f06ef3eff72cbf5840de9569eb09797d40"
+    },
+    {
+      "name": "target-artifact-reference.json",
+      "bytes": 1846,
+      "sha256": "12ea3d26347180a6a25961a3f72105d56461d51fc6892283fdaac81fc0fffcff"
+    }
+  ],
+  "shared_R6_manifest_unchanged": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff",
+  "new_discover_inverse_to_exact_legacy": "16f04a727bd88767a39f6bcf31c1ce1c08a8baf2b87a3d7cfab51dd947578dec",
+  "Bili_sole_bind_argument_difference": null
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "root-current-owner-controls27-preflight-v1",
+  "source_tree": "1fde0680dc10e1d9f0877e758ce331729a1c3baf",
+  "request": {
+    "bytes": 147604,
+    "sha256": "dc79e84a7bc00106496d09e888de180ae8ddd91e7758abf4e6c794c293912014",
+    "git_blob_sha1": "c3ae8e4c1107c4b15dbe6b7d5b0ac07eeac11300"
+  },
+  "tree_proof": {
+    "tree": "1fde0680dc10e1d9f0877e758ce331729a1c3baf",
+    "leaf_count": 17,
+    "logical_bytes": 445138,
+    "directory_count_including_root": 4,
+    "recursive_entries": 20,
+    "truncated": false,
+    "all_paths_modes_sizes_blob_sha1_match": true,
+    "all_directory_tree_sha1_recomputed": true
+  },
+  "exact_packet_and_all_8_sources_verified": true,
+  "root_full_read": [
+    "run_controls.py",
+    "current_discovery.py",
+    "current_flow.py",
+    "check_current_discovery.py"
+  ],
+  "targeted_scope": "15 actual production discovery fixture controls and 3 source-loader/route controls for each of four App entry points",
+  "runtime_IO": "fixed R6 source contract and private baseline, actual double Main guards; fixture discovery uses private memory only",
+  "device_actions": "no Android or App operations; no nonce consumption; no baseline/source writes",
+  "python_unrun": true,
+  "whole_app_production_ready": false,
+  "reason": "Actual IHG01 UNEXPECTED_CELL_OWNER before any Android command"
+}

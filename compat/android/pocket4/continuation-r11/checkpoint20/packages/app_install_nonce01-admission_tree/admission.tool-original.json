@@ -1,0 +1,37 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import json,secrets,re,os\nlabels=[app+\"_\"+kind for app in (\"bili\",\"ihg\",\"amazon\",\"bestbuy\") for kind in (\"flow\",\"state\")]\nvalues=[secrets.token_hex(32) for _ in labels]\nassert len(values)==8 and len(set(values))==8 and all(re.fullmatch(\"[0-9a-f]{64}\",x) for x in values)\nprint(json.dumps({\"schema\":\"pocket4-current-install-nonce-pool-v1\",\"generator\":\"secrets.token_hex(32)\",\"uid\":os.getuid(),\"labels\":labels,\"nonces\":dict(zip(labels,values)),\"Android_commands\":0,\"UI_actions\":0,\"source_only_nonce_generation\":True},sort_keys=True,separators=(\",\",\":\")),flush=True)\n"
+    ],
+    "created_unix_ms": 1793947896020,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1afa088d4-fc05-6a3b",
+    "idempotency_key": "pocket4-current-baseline-four-install-nonce-pool-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1afa088d4-fc05-6a3b",
+    "request_digest": "aad7e0f0b315ed1ff49d16d009db897efaae5f8359daa0943ed8db8122008dcd",
+    "request_fingerprint": 12310555430841871647,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1afa088d4-fc05-6a3b"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1afa088d4-fc05-6a3b"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

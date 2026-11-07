@@ -1,0 +1,230 @@
+{
+  "AndroidManifest.xml": {
+    "parent_path": "AndroidManifest.xml",
+    "parent": {
+      "bytes": 728,
+      "sha256": "82f5b842168f3ffc967128942d6f6fff95d4f4da7cfceed7a973fd41f2d4b033"
+    },
+    "generated": {
+      "bytes": 728,
+      "sha256": "5f2a4bab1f8395dc7829c865c78290ba02877e677fe7d062510184b6970b5c0b"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.bestbuy.r2",
+        "next": "org.droidloom.qa.bestbuy.r3",
+        "count": 3
+      }
+    ]
+  },
+  "build-input-reference.json": {
+    "historical_reference_unchanged": true
+  },
+  "build_candidate.py": {
+    "parent_path": "build_candidate.py",
+    "parent": {
+      "bytes": 18580,
+      "sha256": "263c3664a5dab1aaa9e5f4e16d042078357b5e5a9cc461b55043b62c0bc63a8a"
+    },
+    "generated": {
+      "bytes": 19919,
+      "sha256": "e96682df2595928a908d721221a5fa0b62dcba28879f17676e5f752bf9da80d2"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.bestbuy.r2",
+        "next": "org.droidloom.qa.bestbuy.r3",
+        "count": 2
+      },
+      {
+        "old": "org/droidloom/qa/bestbuy/r2",
+        "next": "org/droidloom/qa/bestbuy/r3",
+        "count": 2
+      },
+      {
+        "old": "owned-bestbuy-qa-r2",
+        "next": "owned-bestbuy-qa-r3",
+        "count": 3
+      },
+      {
+        "old": "        source_java = HERE/'src/org/droidloom/qa/bestbuy/r3/ActionRunner.java'",
+        "next": "        baseline_scope={'__file__':str(HERE/'check_current_baseline.py'),'__name__':'owned_current_baseline_scope_controls'}\n        exec(compile((HERE/'check_current_baseline.py').read_bytes(),str(HERE/'check_current_baseline.py'),'exec'),baseline_scope)\n        baseline_controls=baseline_scope['run_controls']()\n        require(baseline_controls['all_passed'] is True and baseline_controls['count']==12 and\n                len(baseline_controls['cases'])==12 and all(x['passed'] is True for x in baseline_controls['cases']) and\n                baseline_controls['production_contract_sha256']==source['qa_contract.py']['sha256'] and\n                baseline_controls['main_epoch_sha256']=='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2' and\n                baseline_controls['main_baseline_schema']=='pocket4-main-current-baseline-v1' and\n                baseline_controls['main_baseline_sha256']=='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266' and\n                baseline_controls['main_baseline_qualification_sha256']=='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6',\n                'ACTUAL_CURRENT_BASELINE_SCOPE_CONTROLS_REQUIRED')\n        result['current_baseline_scope_controls']={'source_sha256':source['check_current_baseline.py']['sha256'],'report':baseline_controls}\n        source_java = HERE/'src/org/droidloom/qa/bestbuy/r3/ActionRunner.java'",
+        "count": 1
+      }
+    ]
+  },
+  "make_build_request.py": {
+    "parent_path": "make_build_request.py",
+    "parent": {
+      "bytes": 2942,
+      "sha256": "66e67dacb35161e735d58064ed3a201f0c35cfb268aebb811077ab60947027ad"
+    },
+    "generated": {
+      "bytes": 2950,
+      "sha256": "a741647a15b501aba36d1036b9afed266f3966688d244f354483055fe93aadb6"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "owned-bestbuy-qa-r2",
+        "next": "owned-bestbuy-qa-r3",
+        "count": 1
+      },
+      {
+        "old": "KEY='pocket4-owned-bestbuy-qa-r3-static-build-02-20261106'",
+        "next": "KEY='pocket4-owned-bestbuy-qa-r3-current-163e3e3914f4ccbb-build01'",
+        "count": 1
+      }
+    ]
+  },
+  "qa_adapter.py": {
+    "parent_path": "qa_adapter.py",
+    "parent": {
+      "bytes": 20846,
+      "sha256": "d8863f0abfb41a9ee76eca35509449ace86d25057d07636c1d5ec0c68fc4b8ec"
+    },
+    "generated": {
+      "bytes": 21051,
+      "sha256": "31dfc127988a090053ba491ff12789c6de99392a10980a6f06ad4672ed339098"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.bestbuy.r2",
+        "next": "org.droidloom.qa.bestbuy.r3",
+        "count": 1
+      },
+      {
+        "old": "org/droidloom/qa/bestbuy/r2",
+        "next": "org/droidloom/qa/bestbuy/r3",
+        "count": 1
+      },
+      {
+        "old": "'main_epoch_sha256':self.qa.MAIN_EPOCH})",
+        "next": "'main_epoch_sha256':self.qa.MAIN_EPOCH, 'main_baseline_schema':self.qa.MAIN_BASELINE_SCHEMA,\n            'main_baseline_sha256':self.qa.MAIN_BASELINE_SHA,\n            'main_baseline_qualification_sha256':self.qa.MAIN_BASELINE_QUALIFICATION_SHA})",
+        "count": 1
+      }
+    ]
+  },
+  "qa_contract.py": {
+    "parent_path": "qa_contract.py",
+    "parent": {
+      "bytes": 28223,
+      "sha256": "07ab2e9540593df78f6fef406fcd8ff383d2674f1aec5642bf4cc47724915d5b"
+    },
+    "generated": {
+      "bytes": 28787,
+      "sha256": "ebafbdf8df120fa3eceec7773e19935b0680d07e533d47b94ee84cac85cb92b7"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.bestbuy.r2",
+        "next": "org.droidloom.qa.bestbuy.r3",
+        "count": 1
+      },
+      {
+        "old": "pocket4-owned-bestbuy-qa-v2",
+        "next": "pocket4-owned-bestbuy-qa-v3",
+        "count": 1
+      },
+      {
+        "old": "MAIN_EPOCH = '48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'",
+        "next": "MAIN_EPOCH = '734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'\nMAIN_BASELINE_SCHEMA = 'pocket4-main-current-baseline-v1'\nMAIN_BASELINE_SHA = '163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'\nMAIN_BASELINE_QUALIFICATION_SHA = 'f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'",
+        "count": 1
+      },
+      {
+        "old": "'window_token', 'main_epoch_sha256'}",
+        "next": "'window_token', 'main_epoch_sha256', 'main_baseline_schema', 'main_baseline_sha256', 'main_baseline_qualification_sha256'}",
+        "count": 1
+      },
+      {
+        "old": "value['display'] == 0 and value['main_epoch_sha256'] == MAIN_EPOCH,",
+        "next": "value['display'] == 0 and value['main_epoch_sha256'] == MAIN_EPOCH and\n            value['main_baseline_schema'] == MAIN_BASELINE_SCHEMA and\n            value['main_baseline_sha256'] == MAIN_BASELINE_SHA and\n            value['main_baseline_qualification_sha256'] == MAIN_BASELINE_QUALIFICATION_SHA,",
+        "count": 1
+      }
+    ]
+  },
+  "src/org/droidloom/qa/bestbuy/r3/ActionRunner.java": {
+    "parent_path": "src/org/droidloom/qa/bestbuy/r2/ActionRunner.java",
+    "parent": {
+      "bytes": 41603,
+      "sha256": "ee22c17e2fd9748fe0088974b5c6ca5e3a0fab832dce2177c698c1f0a48fab37"
+    },
+    "generated": {
+      "bytes": 42348,
+      "sha256": "dfa7a6382bd52999cda27722770db6a4282524fd950498084c2b533cf10cc2ae"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.bestbuy.r2",
+        "next": "org.droidloom.qa.bestbuy.r3",
+        "count": 2
+      },
+      {
+        "old": "pocket4-owned-bestbuy-qa-v2",
+        "next": "pocket4-owned-bestbuy-qa-v3",
+        "count": 1
+      },
+      {
+        "old": "    static final String MAIN_EPOCH = \"48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f\";",
+        "next": "    static final String MAIN_EPOCH = \"734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2\";\n    static final String MAIN_BASELINE_SCHEMA = \"pocket4-main-current-baseline-v1\";\n    static final String MAIN_BASELINE_SHA = \"163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266\";\n    static final String MAIN_BASELINE_QUALIFICATION_SHA = \"f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6\";",
+        "count": 1
+      },
+      {
+        "old": "keys(scope, \"package\", \"uid\", \"user\", \"display\", \"activity\", \"window_token\", \"main_epoch_sha256\");",
+        "next": "keys(scope, \"package\", \"uid\", \"user\", \"display\", \"activity\", \"window_token\", \"main_epoch_sha256\", \"main_baseline_schema\", \"main_baseline_sha256\", \"main_baseline_qualification_sha256\");",
+        "count": 1
+      },
+      {
+        "old": "        need(MAIN_EPOCH.equals(string(scope, \"main_epoch_sha256\", 64)), \"HOST_EPOCH_ATTESTATION_REQUIRED\");",
+        "next": "        need(MAIN_EPOCH.equals(string(scope, \"main_epoch_sha256\", 64)), \"HOST_EPOCH_ATTESTATION_REQUIRED\");\n        need(MAIN_BASELINE_SCHEMA.equals(string(scope, \"main_baseline_schema\", 64))\n            && MAIN_BASELINE_SHA.equals(string(scope, \"main_baseline_sha256\", 64))\n            && MAIN_BASELINE_QUALIFICATION_SHA.equals(string(scope, \"main_baseline_qualification_sha256\", 64)),\n            \"HOST_CURRENT_BASELINE_ATTESTATION_REQUIRED\");",
+        "count": 1
+      }
+    ]
+  },
+  "stage_build.py": {
+    "parent_path": "stage_build.py",
+    "parent": {
+      "bytes": 7563,
+      "sha256": "7ec8c067b459d2338e868e386b803a80d1883aad8c354b00eb26484d1f4d1891"
+    },
+    "generated": {
+      "bytes": 7563,
+      "sha256": "64e75cf14b716ac707951c53d3ecee6aa7798a55dbe7aa5b3cae090732380d85"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "owned-bestbuy-qa-r2",
+        "next": "owned-bestbuy-qa-r3",
+        "count": 2
+      }
+    ]
+  },
+  "target-artifact-reference.json": {
+    "historical_reference_unchanged": true
+  },
+  "controls/check_deep_tree.py": {
+    "parent_path": "controls/check_deep_tree.py",
+    "parent": {
+      "bytes": 10844,
+      "sha256": "ef0c013201d4bf793196c105ac730a0dd866da64d75e768b4e86b6fa570fab13"
+    },
+    "generated": {
+      "bytes": 11054,
+      "sha256": "52e7c6dbad39bf581e19fc30e312e46eeef4eb6da8589bcdd4489933ec99839e"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "'main_epoch_sha256': qa.MAIN_EPOCH",
+        "next": "'main_epoch_sha256': qa.MAIN_EPOCH, 'main_baseline_schema':qa.MAIN_BASELINE_SCHEMA,\n                      'main_baseline_sha256':qa.MAIN_BASELINE_SHA,\n                      'main_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA",
+        "count": 1
+      }
+    ]
+  }
+}

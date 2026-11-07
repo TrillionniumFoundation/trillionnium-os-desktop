@@ -1,0 +1,11 @@
+# R21 raw and libc statfs review
+
+This is a new revision after the separately preserved R20 host-libc result. The fixed worker now returns a typed, unmodified KernelStatfs. Caller publication derives a separate libc struct; Bionic alone clears ST_VALID in that view. FstatfsKernel and FstatfsForGuest consume the retained raw result. V1 trusted virtual raw projection returns EPROTONOSUPPORT because no verified V1 raw-statfs contract exists. It is an open production gate, not a passing feature.
+
+The original twelve control functions (14,228 bytes) are byte-identical to R20. Four additional controls use real SYS_fstatfs and libc fstatfs for an app-owned memfd and its own proc/maps metadata, compare all 120 bytes/fields/flags, and check errno, EBADF output atomicity, invalid/read-only/cross-page guest destinations, and the still-failing NOFILE=0 resource case. Failed guest memory copies may leave partial prefixes; no stronger atomicity contract is claimed.
+
+Both native glibc and a host harness compiled with the exact pinned Bionic wrapper observe 16/16 expected behaviors, including two known resource failures. Separate intentional mistakes are rejected: normalization of the retained kernel view produces mask efff; omission of libc normalization produces e840. The first negative-fixture compile failure from -Wclass-memaccess is retained; the next attempt changes only that fixture's cast and reuses hash-verified positive output.
+
+Matching Android build and final worker-closure automatic audit passed, using the unchanged pinned builder. The APK ELF is byte-matched to the audited ELF; the source files and objdump tool are hash-verified before/after. Parent manual Start/trampoline/Read/raw-adapter review and one isolated Android install/run/remove cycle are still required. This package contains only UTF-8 sources, textual disassembly, receipts, and owned controls, no APK/ELF or commercial application logs.
+
+Raw owner generation, factory positive provenance, ordinary NOFILE=0, pathname owner resources/negative-alias race, full ART/engine pairing and all-app acceptance remain open. The x86_64 owned APK exercises the actual syscall-copy helper; it does not execute translated ARM64 instructions or the complete installed engine.

@@ -1,0 +1,48 @@
+{
+  "Main_actions": 0,
+  "allocation_reserved": false,
+  "four_cases": [
+    "r2-svc",
+    "r2-smc-handler",
+    "r2-smc-default",
+    "r3-smc-mask-edit"
+  ],
+  "host_gate": {
+    "automatic_retry": false,
+    "completed": 3788,
+    "disabled": 2,
+    "executed": 3791,
+    "filter": "*",
+    "original_skips": 3,
+    "registered": 3793,
+    "repeat": 1,
+    "sharding": false
+  },
+  "host_input_sha256": "a8e40759ccd97c3defdb59249757e1baae00d17926944826f060f9c612fc4eac",
+  "live_original_R5_check_identity_allocation_required": true,
+  "no_automatic_allocation_fallback": true,
+  "nonce": "dfcacd6f6da3cf3bdbfcf797f44481c3",
+  "original_R5_manifest_sha256": "1825e327e039ac58779085444aa69896990eaa06f8fde24cfb4e98642508486a",
+  "phases": [
+    "actual host_result pinned and unchanged full gate verified",
+    "android-prepare generator emits inputs/check/prepare requests",
+    "root reviews and stages exact input into existing owned nonce input directory",
+    "original R5 check-inputs live allocation and authority checks",
+    "fresh private R5 preparation",
+    "actual prepared.json binding emits runtime-check and root review template",
+    "independent root runtime admission emits only the original four-case request"
+  ],
+  "production_ready": false,
+  "proposed_allocation": {
+    "host_uid": 2407,
+    "subid_start": 14600000
+  },
+  "remote_requests_dispatched": 0,
+  "schema": 1,
+  "services_started": false,
+  "state": "WAITING_FOR_ACTUAL_COMPLETE_HOST_RESULT",
+  "unchanged_generator": {
+    "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/engine-qualification-template-03/make_qualification.py",
+    "sha256": "22cfa55a6ba03539b45658f9dfede393724803ec4535a4765a2cbfd55d9ffe57"
+  }
+}

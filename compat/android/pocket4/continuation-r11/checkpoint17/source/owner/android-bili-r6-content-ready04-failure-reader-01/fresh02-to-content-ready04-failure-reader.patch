@@ -1,0 +1,136 @@
+--- /workspace/scratch/94990735b266/android-bili-r6-pause-resume-fresh02-failure-reader-01/read_summary.py
++++ /workspace/scratch/94990735b266/android-bili-r6-content-ready04-failure-reader-01/read_summary.py
+@@ -11,16 +11,16 @@
+ import stat
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-bilibili-r6-pause-resume-02')
+-FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-8f28dc51812add5280cb6b7ba411aad0')
+-NONCE='8f28dc51812add5280cb6b7ba411aad0'
+-SOURCE_SHA='0611a55350a19de18b14b1da7fe6342caed8f8e6082746e83b028b345abd8d97'
++ROOT=Path('/home/alex/work/pocket4-bilibili-r6-pause-resume-04')
++FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-a14743fa3566f851b6724a54b0509744')
++NONCE='a14743fa3566f851b6724a54b0509744'
++SOURCE_SHA='a49770d55b487e4e172aa38ebc1a454220ec7e668c499f8c8d5b838962e9da42'
+ HELPER_UID=10184
+ FILES={
+     'coordinator.json':ROOT/'result.json',
+     'stage.json':ROOT/'stage-result.json',
+     'cleanup.json':FLOW/'steps/cleanup-01/result.json',
+-    'navigation-command.json':ROOT/'evidence/03-navigate.result.json',
++    'launch.json':FLOW/'steps/launch-01/result.json',
+     'navigation.json':FLOW/'steps/pause-resume-01/result.json',
+ }
+ 
+@@ -56,7 +56,7 @@
+ 
+     def read(self,path,optional=False):
+         need(path in FILES.values(),'EXACT_FILE_ALLOWLIST_REQUIRED')
+-        maximum=32768 if path==FILES['navigation-command.json'] else 262144
++        maximum=32768 if path==FILES['launch.json'] else 262144
+         current=os.open('/',os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC);fd=None
+         try:
+             try:
+@@ -96,44 +96,34 @@
+         need(value.get('ok') is False and value.get('secondary_errors')==[] and
+              value.get('business_success_verified') is False and
+              value.get('whole_app_production_ready') is False,'PRESERVE_ORIGINAL_FAILED_ATTEMPT')
+-    need(stage.get('coordinator_result')=={'path':str(FILES['coordinator.json']),'bytes':7406,
+-         'sha256':'d04701a323982b972cdfde1dad4ae0e476f4f2a3b47efcdb973c762b0c9d1f00'},
++    need(stage.get('coordinator_result')=={'path':str(FILES['coordinator.json']),'bytes':7418,
++         'sha256':'360fa744c2162c73c03fe0dd76e9b818544558b4ce732047cf84f208458a6ead'},
+          'ACTUAL_PARENT_COORDINATOR_CHAIN')
+     need(coordinator.get('flow')==str(FLOW) and coordinator.get('package')=='tv.danmaku.bili' and
+          coordinator.get('uid')==10117 and coordinator.get('helper_package')=='org.droidloom.qa.bili.r6' and
+          coordinator.get('helper_uid')==HELPER_UID and coordinator.get('navigation_worker_requested') is True,
+          'EXACT_CURRENT_FAILED_NAVIGATION_SCOPE')
+-    need(coordinator.get('cleanup_result')=={'path':str(FILES['cleanup.json']),'bytes':448,
+-         'sha256':'1f5bc45e0d60e3b94d9c2c2946bca5d3e969bede051fa5714f8987b1a6077a40'} and
++    need(coordinator.get('cleanup_result')=={'path':str(FILES['cleanup.json']),'bytes':457,
++         'sha256':'012da7d203bfdfb7f07426d67f5c9bec107e5d0e21dd2a021a29bf08a0b7c0b2'} and
+          coordinator.get('owned_task_absent_after_cleanup') is True,
+          'ACTUAL_PARENT_CLEANUP_PIN_REQUIRED')
+     need(coordinator.get('retained_phase_results',{}).get('navigate')=={
+-         'path':str(FILES['navigation.json']),'bytes':214331,
+-         'sha256':'e7403db0e2a65637281ed00489d2fa70e796881b06cf8d23720cce28fac834d6'},
++         'path':str(FILES['navigation.json']),'bytes':44783,
++         'sha256':'ecda84ea8a8e701172cd087a3750ea3f06bb34b44bdc6420cd2cbd888db9537e'},
+          'ACTUAL_PARENT_RETAINED_NAVIGATION_PIN_REQUIRED')
+-    need(coordinator.get('retained_phase_commands',{}).get('navigate')=={
+-         'path':str(FILES['navigation-command.json']),'bytes':1162,
+-         'sha256':'069896febd7904e2570f2b61df30c19b81b6f648096b027bfd18c77cf8707163'},
+-         'ACTUAL_PARENT_RETAINED_COMMAND_PIN_REQUIRED')
++    need(coordinator.get('launch_result')==coordinator.get('retained_phase_results',{}).get('launch')=={
++         'path':str(FILES['launch.json']),'bytes':5130,
++         'sha256':'5bc03f3e991f3819c7f6dfd0b4bd48972c36aba2a38b28100ea7ae5bfc321c01'},
++         'ACTUAL_PARENT_RETAINED_LAUNCH_PIN_REQUIRED')
+     need(coordinator['Main_before']==coordinator['Main_after']==stage['Main_before']==stage['Main_after'],
+          'ACTUAL_PARENT_MAIN_CHAIN')
+ 
+ 
+-def fixed_command_binding(value):
+-    need(value.get('name')=='03-navigate' and value.get('argv')==[
+-        '/usr/bin/python3','-I',str(ROOT/'source/owned_navigation.py'),'--worker-once','navigate',
+-        '--source-manifest-sha256',SOURCE_SHA], 'EXACT_ORIGINAL_NAVIGATION_COMMAND')
+-    need(value.get('Main_before') is True and type(value.get('spawned')) is bool and
+-         type(value.get('joined')) is bool and type(value.get('timed_out')) is bool and
+-         (value.get('returncode') is None or type(value.get('returncode')) is int) and
+-         type(value.get('secondary_errors')) is list, 'ORIGINAL_COMMAND_RECORD_SHAPE')
+-    # The whole command is now parent-retained and externally pinned. Validate
+-    # its stream metadata without re-reading the redundant stdout stream.
+-    pin=value.get('stdout')
+-    need(type(pin) is dict and set(pin)=={'bytes','sha256'} and type(pin['bytes']) is int and
+-         0<=pin['bytes']<=262144 and isinstance(pin['sha256'],str) and
+-         re.fullmatch('[0-9a-f]{64}',pin['sha256']), 'ORIGINAL_COMMAND_STDOUT_PIN_REQUIRED')
+-    return pin
++def launch_binding(value):
++    need(value.get('phase')=='launch' and value.get('nonce')==NONCE and
++         value.get('source_manifest_sha256')==SOURCE_SHA and value.get('package')=='tv.danmaku.bili' and
++         value.get('uid')==10117 and value.get('helper_package')=='org.droidloom.qa.bili.r6' and
++         value.get('helper_uid')==HELPER_UID, 'EXACT_ORIGINAL_LAUNCH_BODY_SCOPE')
+ 
+ 
+ def navigation_binding(value):
+@@ -146,12 +136,12 @@
+ def collect(coordinator_sha,stage_sha):
+     need(os.getuid()==os.geteuid()==0,'ROOT_READ_ONLY_REQUIRED')
+     need((coordinator_sha,stage_sha)==(
+-        'd04701a323982b972cdfde1dad4ae0e476f4f2a3b47efcdb973c762b0c9d1f00',
+-        '9ad3fdbd324dedd87bb4570bf0e09c7c5265f92b44f6133f63e1e29b409ad15b'),
++        '360fa744c2162c73c03fe0dd76e9b818544558b4ce732047cf84f208458a6ead',
++        'b0a199faa698e507c6a271968b5101663161276c1159e96f2f0f1d1d1e98f5ad'),
+         'EXACT_CURRENT_TERMINAL_PINS_REQUIRED')
+     reader=Reader();files={};missing=[];observations={};error=None
+-    bindings={'parent_chain':False,'cleanup_external_pin':False,'command_external_pin':False,
+-              'command_fixed_source_path':False,'navigation_external_pin':False,'navigation_scope':False}
++    bindings={'parent_chain':False,'cleanup_external_pin':False,'launch_external_pin':False,
++              'launch_scope':False,'navigation_external_pin':False,'navigation_scope':False}
+     def add(name,expected=None,size=None,optional=False):
+         raw=reader.read(FILES[name],optional=optional)
+         if raw is None:
+@@ -164,18 +154,18 @@
+         files[name]={**observations[name],'text':raw.decode('utf-8','strict')}
+         return value
+     try:
+-        c=add('coordinator.json',coordinator_sha,7406)
++        c=add('coordinator.json',coordinator_sha,7418)
+         s=add('stage.json',stage_sha,1773)
+         fixed_parent_binding(c,s);bindings['parent_chain']=True
+         # Preserve the exact retirement body even if later navigation decoding fails.
+-        add('cleanup.json','1f5bc45e0d60e3b94d9c2c2946bca5d3e969bede051fa5714f8987b1a6077a40',448)
++        add('cleanup.json','012da7d203bfdfb7f07426d67f5c9bec107e5d0e21dd2a021a29bf08a0b7c0b2',457)
+         bindings['cleanup_external_pin']=True
+-        command=add('navigation-command.json',
+-            '069896febd7904e2570f2b61df30c19b81b6f648096b027bfd18c77cf8707163',1162)
+-        bindings['command_external_pin']=True
+-        fixed_command_binding(command);bindings['command_fixed_source_path']=True
++        launched=add('launch.json',
++            '5bc03f3e991f3819c7f6dfd0b4bd48972c36aba2a38b28100ea7ae5bfc321c01',5130)
++        bindings['launch_external_pin']=True
++        launch_binding(launched);bindings['launch_scope']=True
+         worker=add('navigation.json',
+-            'e7403db0e2a65637281ed00489d2fa70e796881b06cf8d23720cce28fac834d6',214331)
++            'ecda84ea8a8e701172cd087a3750ea3f06bb34b44bdc6420cd2cbd888db9537e',44783)
+         bindings['navigation_external_pin']=True
+         navigation_binding(worker);bindings['navigation_scope']=True
+     except Exception as failure:

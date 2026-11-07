@@ -1,0 +1,217 @@
+{
+  "schema": "pocket4-status-compile02-short-owned-root",
+  "status": "SOURCE_ONLY_UNRUN",
+  "parent_source": {
+    "tree": "1c421ea708be02e00a4dc99a21459cd66befb6b6",
+    "request": {
+      "bytes": 468678,
+      "sha256": "db32d3d7abb8821957bd41348784d0abe214b447bfb6962771b0a45c9c13facd",
+      "git_blob": "2866af2fb7af1f38d431822cc375a2ad3df26506"
+    },
+    "review": {
+      "bytes": 28549,
+      "sha256": "67f0cbe8d05081c19a0cd52dd3ed866767a60692788c010a80c19163f109851f",
+      "git_blob": "75bdcf80e5096d2b2a80e2f966c857181c7946a7"
+    }
+  },
+  "previous_actual": {
+    "tree": "6a0115c1221af2d4d9670f3495070913d5198c76",
+    "job": "1a1b2ee425d-fc05-8037",
+    "raw_result": {
+      "bytes": 129588,
+      "sha256": "95e5075de61ee94e9789c4632db9eab77e29e751df8c08da33f2b633e0b9d796",
+      "git_blob": "b9bd0a7228bc948e81836eaf64cdf6325bbdbb70"
+    },
+    "state": "FAIL",
+    "command_count": 32,
+    "complete_pass_prefix": [
+      0,
+      30
+    ],
+    "failed_command": 31,
+    "first_failure": "original first CLI test UnixListener bind rejects path >= SUN_LEN",
+    "raw_stderr": {
+      "bytes": 375,
+      "sha256": "c8c138b30ee36a3fa9a2455fa8f7c113a9a371bbe2a165f91c3b158ac30e5da7",
+      "git_blob": "9e15643abbf2d60ed92ee0525c7387039f9a3cdb"
+    },
+    "libtests8_passed": true,
+    "host_lifecycle_negatives3_passed": true,
+    "owned_children_empty_and_subreaper_restored": true,
+    "source_tools_dependencies_config_and_artifacts_unchanged": true,
+    "owned_resources_pass": true,
+    "owned_memory_events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 2190,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "original_failure_preserved": true,
+    "no_replay_of_old_key": true
+  },
+  "actual_pure20": {
+    "tree": "a53d11553369adb96bdb22caf20eada948731d19",
+    "stdout": {
+      "bytes": 2569,
+      "sha256": "e1e31a233000ba52362173007b1114a93289378844f58f99c3d7761f9bad31c4",
+      "git_blob": "3a44530e188b607580186617ba23424e131c7609"
+    },
+    "state": "PASS",
+    "cases": 20,
+    "fd_acquired": 6,
+    "fd_closed": 6,
+    "Main": 0,
+    "Android": 0,
+    "RPC": 0,
+    "child": 0,
+    "filesystem_writes": 0,
+    "private_baseline_exported": false
+  },
+  "minimal_changes": {
+    "old_root": "/home/alex/work/pocket4-native-status-lifecycle-readiness-compile-01-20261106",
+    "new_root": "/home/alex/work/p4-st02-20261106",
+    "old_key": "pocket4-native-status-lifecycle-readiness-compile-01-20261106",
+    "new_key": "pocket4-native-status-lifecycle-readiness-compile-02-20261106",
+    "controller_one_root_literal": true,
+    "build_scope_one_root_literal": true,
+    "stage_one_root_plus_two_derived_pin_maps": true,
+    "request_envelope_only_stdin_and_boundary_and_key": true,
+    "complete_inverse_file_count": 5,
+    "production_manifest502_unchanged": true,
+    "all_five_Rust_delta_sources_unchanged": true,
+    "tests15_and_commands38_unchanged": true,
+    "reaper_and_three_real_negative_controls_unchanged": true,
+    "tools_lock_archive_and_source_closure_unchanged": true,
+    "resource_limits_unchanged": true,
+    "swap_max_observed_unchanged_not_zero_asserted": true
+  },
+  "socket_path": {
+    "root_ascii_bytes": 32,
+    "owned_tmpdir": "/home/alex/work/p4-st02-20261106/attempt01/tmp",
+    "standard_tempfile_default_basename": ".tmpXXXXXX",
+    "socket_relative_suffix": "control.sock",
+    "new_modeled_path_bytes": 70,
+    "previous_modeled_path_bytes": 115,
+    "sun_path_capacity_including_NUL": 108,
+    "new_modeled_with_NUL": 71,
+    "model_based_on_default_tempfile_directory_layout": true,
+    "actual_new_test_execution": false
+  },
+  "unchanged_leaves": [
+    {
+      "path": "expected-status-manifest.json",
+      "bytes": 99958,
+      "sha256": "d8f6213f73726bd3766645e7decb5ebfac852f49852c49545e511a54b689d16e",
+      "git_blob": "e2ae43e8353fedd37f53e56628cdc9725a8146f8"
+    },
+    {
+      "path": "delta/runtime/droidloom-supervisor/src/control.rs",
+      "bytes": 71588,
+      "sha256": "50d7bc3abd94f83233ef7d461f93cb714f843cacb3fd5c0e929d06671a95f89b",
+      "git_blob": "7dff5640d00c8a578bc7f126e0105d35a6cdf80a"
+    },
+    {
+      "path": "delta/runtime/droidloom-supervisor/src/development.rs",
+      "bytes": 101645,
+      "sha256": "37645978b33d443313694609625a97ac9dd7f6e14053664a48d02ff6d8daea90",
+      "git_blob": "745a5349cd7f82626270c3241ac83e863842d405"
+    },
+    {
+      "path": "delta/runtime/droidloom-supervisor/src/bin/droidloomctl.rs",
+      "bytes": 20606,
+      "sha256": "3733dd7586ebf534aef3d4a5d176a76b8822dd0c6a6b8b39fb64adf8e70cd484",
+      "git_blob": "35da379d049713f41356cafcac4be3143b778921"
+    },
+    {
+      "path": "delta/runtime/droidloom-supervisor/tests/cli_lifecycle.rs",
+      "bytes": 11717,
+      "sha256": "5310bfdb21b006ae1432b584c03fbbfb4c1f3a7cbd3ce226b54770ff4bbca317",
+      "git_blob": "f662a3c274a001f0e88fa4ace3c4d873f80e9646"
+    },
+    {
+      "path": "delta/runtime/droidloom-supervisor/src/control_status_tests.rs",
+      "bytes": 11843,
+      "sha256": "0bafad33112df280c73ceedf675305236275bb043d0909fc4a71f6366c0a6727",
+      "git_blob": "0e8f92b7e91452ecbec6e1d2f8f7373e4c3f6ffc"
+    },
+    {
+      "path": "production.patch",
+      "bytes": 19373,
+      "sha256": "8e7bd0ee451851363beb964139da3ea72e018d537ceb594003904464da56392b",
+      "git_blob": "eaee926e0137142e2989d9730ade272d2f100094"
+    },
+    {
+      "path": "references/cli_lifecycle.original.rs",
+      "bytes": 8921,
+      "sha256": "2f9d7803b6aa696951163c5694c1cb33bf01847548b7b8fbfd48340c30c4f0d7",
+      "git_blob": "c24babc92b48ec9a0b0a77de6ee5e395f049cbc4"
+    },
+    {
+      "path": "references/supervisor.Cargo.toml",
+      "bytes": 844,
+      "sha256": "8a5c31742965d5226baadfae8f9ab3370cb1973b2761f4ab7395689c6425f20f",
+      "git_blob": "564d16388d4215b552a4c816b16b24cb5436c4b0"
+    },
+    {
+      "path": "references/applications.Cargo.toml",
+      "bytes": 640,
+      "sha256": "a16f5016a22a5e94b2ae46007ebfac27bee9ea2d0164e28c61b06e2b8d48c747",
+      "git_blob": "0c20e342e76e6cba9d358112e33a215f968a5689"
+    },
+    {
+      "path": "consumer/current_discovery.py",
+      "bytes": 8436,
+      "sha256": "dfd1208793980d92664f55aab040042cdc4cdd5e0ec7e66f016e0140d87a58f5",
+      "git_blob": "de0fb159fd12481136f10c2389f4b9b5261171ab"
+    },
+    {
+      "path": "consumer/check_readiness_discovery.py",
+      "bytes": 13077,
+      "sha256": "5f8ab4febf99a3fd15ecf79c5c6ccdbb17a0569b289bfed6a4910e6f8a64150f",
+      "git_blob": "48404e015b1a993bf958b75a0677a984172d1fba"
+    },
+    {
+      "path": "consumer/caller-review.json",
+      "bytes": 3163,
+      "sha256": "8167267eaab79bba8e22c7e2aaf290b39bf038f0128d4efc09a14572cee8aee8",
+      "git_blob": "f283c6b8a5b52a7da9043782b37b58c5b4bc20e5"
+    }
+  ],
+  "derivation": {
+    "source": {
+      "bytes": 6102,
+      "sha256": "e2af5b52233ac5d961bd25022c7685abdcaacbb4eebf3d19e7a1bcd40a38ed02",
+      "git_blob": "eea6cdd5f171d332576c0b1ef728cc0c1b8a557b"
+    },
+    "function": "deriveStatusCompile02(oldRequestRaw, oldMaker, actualRaw, pureRaw, H)",
+    "requires_exact_previous_request_and_maker_and_both_actual_raw_inputs": true,
+    "output_full_request_reproduced": true
+  },
+  "request": {
+    "bytes": 468543,
+    "sha256": "9b6a7be869ef3c71c9cf199cd5adad3440f3fc764b4c4f03762e3e09d664f5e8",
+    "git_blob": "6aa27801ee17757fa96c3ff5771687ba0115d092"
+  },
+  "stdin": {
+    "bytes": 436252,
+    "sha256": "141238d219adc73d05a68a4822b2986a6ac94bb5cb7612705c45e67d90ac822d",
+    "git_blob": "236a87e7a7adecda088d19e887bf8e2d938a33e4"
+  },
+  "stage": {
+    "bytes": 9165,
+    "sha256": "bee616fe0688e62694ba66a868d037640512a3352a9146a3a2d58394205e75dc",
+    "git_blob": "14ed99ab7a20111e01aa1123bd0885550b1909a4"
+  },
+  "controller": {
+    "bytes": 84425,
+    "sha256": "4fc3b07c57df08e8b9f36b159d2dc0dc29c99efc1e9d3514d1f611b511fac579",
+    "git_blob": "27baea7ff6fa570e733b41c343e63707be0ecf2f"
+  },
+  "Main_deployment": false,
+  "installed_source_version_verified": false,
+  "old_London_cause_proven": false,
+  "App_runtime_or_cleanup_authority": false
+}

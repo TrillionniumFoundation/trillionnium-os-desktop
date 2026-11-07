@@ -1,0 +1,50 @@
+--- a/read_sources.py
++++ b/read_sources.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Read four fixed current Bionic syscall ABI sources; retain every failed observation."""
++"""Read five fixed trusted zygote-range ingress and Bionic exit sources; retain every failed observation."""
+ import base64
+ import datetime
+ import gzip
+@@ -11,10 +11,11 @@
+ 
+ BASE = Path('/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source')
+ SOURCES = (
+-    ('bionic/libc/SYSCALLS.TXT', 65536),
+-    ('bionic/libc/kernel/uapi/asm-x86/asm/unistd_32.h', 65536),
+-    ('bionic/libc/kernel/uapi/asm-x86/asm/unistd_64.h', 65536),
+-    ('bionic/libc/seccomp/include/seccomp_policy.h', 16384),
++    ('frameworks/base/core/java/com/android/internal/os/ZygoteConnection.java', 262144),
++    ('frameworks/base/core/java/com/android/internal/os/ZygoteArguments.java', 131072),
++    ('frameworks/base/core/java/android/os/ZygoteProcess.java', 262144),
++    ('frameworks/base/core/java/android/os/AppZygote.java', 65536),
++    ('bionic/libc/bionic/pthread_exit.cpp', 65536),
+ )
+ 
+ 
+@@ -79,20 +80,20 @@
+     started = utc()
+     rows = [observe(relative, limit) for relative, limit in SOURCES]
+     complete = all(row['complete'] for row in rows)
+-    result = {'schema': 1, 'scope': 'four fixed current Bionic syscall alias, x86 native/compat number and seccomp interface sources only',
++    result = {'schema': 1, 'scope': 'five fixed current trusted zygote range ingress and Bionic host-thread exit sources only',
+               'source_sha256': SOURCE_SHA256, 'started_utc': started, 'finished_utc': utc(),
+-              'all_four_complete': complete, 'files': rows,
++              'all_five_complete': complete, 'files': rows,
+               'installed_ART_binary_bound': False, 'compiled451_source_bound': False,
+               'source_execution': False, 'recursive_scan': False, 'Main_actions': 0,
+               'files_written': 0, 'policy_or_resource_changes': 0,
+               'remote_service_or_build_started': False}
+     raw = (json.dumps(result, ensure_ascii=True, sort_keys=True) + '\n').encode()
+     if len(raw) > 20000000:
+-        raise RuntimeError('bounded four-source result unexpectedly exceeds encoding bound')
++        raise RuntimeError('bounded five-source result unexpectedly exceeds encoding bound')
+     packed = gzip.compress(raw, compresslevel=6, mtime=0)
+     envelope = {'schema': 1, 'encoding': 'gzip+base64', 'uncompressed_bytes': len(raw),
+                 'sha256': digest(raw), 'gzip_bytes': len(packed), 'gzip_sha256': digest(packed),
+-                'all_four_complete': complete, 'payload': base64.b64encode(packed).decode('ascii')}
++                'all_five_complete': complete, 'payload': base64.b64encode(packed).decode('ascii')}
+     print(json.dumps(envelope, sort_keys=True), flush=True)
+     return 0 if complete else 1
+ 

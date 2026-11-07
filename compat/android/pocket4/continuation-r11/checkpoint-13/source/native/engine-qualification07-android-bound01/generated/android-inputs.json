@@ -1,0 +1,114 @@
+{
+  "attempt": {
+    "data": "/var/lib/p4-signal-combined07-9b4f271386ac6d2d",
+    "evidence": "/home/alex/work/pocket4-signal-canary-combined07-9b4f271386ac6d2d",
+    "host_uid": 2407,
+    "name": "p4-signal-combined07-9b4f271386ac6d2d",
+    "runtime": "/run/p4-signal-combined07-9b4f271386ac6d2d",
+    "stage": "/opt/p4-signal-combined07-9b4f271386ac6d2d",
+    "subid_start": 14600000,
+    "user_runtime": "/run/user/1000/p4-signal-combined07-9b4f271386ac6d2d"
+  },
+  "base": {
+    "manifest": {
+      "path": "/opt/p4-media-composer-diagnostic-20261102-chat2-r5/media-canary-manifest.json",
+      "sha256": "31885dffa33fe30b0249d37acf437c00b348a0ac1020f8c56b427a8dac743183"
+    },
+    "root": "/opt/p4-media-composer-diagnostic-20261102-chat2-r5",
+    "spec": {
+      "path": "/opt/p4-media-composer-diagnostic-20261102-chat2-r5/cell.json",
+      "sha256": "944110b00770d948de050b92efe46d510f7afc142cf2c5742d4d2a898fad00ce"
+    }
+  },
+  "candidate_build_inputs": {
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/target/product/droidloom_x86_64/droidloom-native-engine-inputs.json",
+    "sha256": "97c3b9e686ee2c1d2ac2a5f996cc2cee0a7f54dcb939f09bb44c3f5278f9a5b5"
+  },
+  "candidate_build_receipt": {
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/target/product/droidloom_x86_64/droidloom-native-engine-source.json",
+    "sha256": "648cc61ba4652df24061b45cf7875f7c880d1793e8c217bc519e21e2f3677b90"
+  },
+  "cpu_inventory": {
+    "path": "/home/alex/work/pocket4-native-private-canary-20261104-r1/cpu-inventory-v2.json",
+    "sha256": "590d32e10c5a86934afbd18eebd620d5a07f0e13a4c4af2e4094fac801dc5c62"
+  },
+  "engine": {
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/target/product/droidloom_x86_64/system/lib64/libberberis_arm64.so",
+    "sha256": "3aa9b479a9b66f56ae827477cf9f957fdeb6dcb21f1f8f981e34a1089f80048a"
+  },
+  "framework_guard": {
+    "path": "/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py",
+    "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288"
+  },
+  "main_activation": {
+    "path": "/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json",
+    "sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615"
+  },
+  "main_resource_baseline": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "12288"
+  },
+  "note": "Fresh candidate07 combined-engine qualification using unchanged frozen R5 runtime. All 3793 host registrations and the four original ARM64 cases are required. The inherited signal-mask-r1 preparation arm is a historical schema label. Metadata generation remains disabled; this does not qualify enabled metadata, ART, factory or whole apps. Main activation/epoch/resource and whole owned hierarchy retirement checks remain unchanged.",
+  "original_runner_manifest": {
+    "path": "/home/alex/work/pocket4-native-private-canary-20261104-r1/runner-v5-once-manifest.json",
+    "sha256": "72d3151d28485f536b9f28b9575b248da92c6b289998e28066a82a8a2f776f67"
+  },
+  "presenter": {
+    "path": "/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland",
+    "sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24"
+  },
+  "probes": {
+    "r2": {
+      "apk": {
+        "path": "/home/alex/work/pocket4-owned-signal-apk-r11-source-02/signal-probe/build-attempt-1/owned_signal_probe.apk",
+        "sha256": "7982ebd6e951a6c2159755afa79d1d7bafe43b6b6aa8c29f43a7d0c1496e3f59"
+      },
+      "build_receipt": {
+        "path": "/home/alex/work/pocket4-owned-signal-apk-r11-source-02/signal-probe/build-attempt-1/build-result.json",
+        "sha256": "9bf1e090f79583e496cfea6d2d0eee6afbbea16eb6db970752df80b470bbee20"
+      },
+      "source_pins": {
+        "path": "/home/alex/work/pocket4-owned-signal-apk-r11-source-02/signal-probe/SOURCE_PINS.json",
+        "sha256": "b5d03eb02ad073180fd3a680518bfac3be42b7df292caa3ba74b4139581d458f"
+      }
+    },
+    "r3": {
+      "apk": {
+        "path": "/home/alex/work/pocket4-owned-signal-r3-apk-r11-source-01/signal-probe-r3/build-attempt-1/owned_signal_probe.apk",
+        "sha256": "6ec31387ce9b648bc841b1aa6c4ca6bf67b2544fee804a320f2df100831ef0d9"
+      },
+      "build_receipt": {
+        "path": "/home/alex/work/pocket4-owned-signal-r3-apk-r11-source-01/signal-probe-r3/build-attempt-1/build-result.json",
+        "sha256": "55b2a7da86bbf7ddde0532f292b909a887625823fc89de82a1272ac99df33384"
+      },
+      "source_pins": {
+        "path": "/home/alex/work/pocket4-owned-signal-r3-apk-r11-source-01/signal-probe-r3/SOURCE_PINS.json",
+        "sha256": "1a17f89bf0ab6d03cc6d592528735c23012c3af38bc3b57cae008659631fc456"
+      }
+    }
+  },
+  "runner_manifest": {
+    "path": "/home/alex/work/pocket4-owned-signal-host-r11-source-01/isolated-signal-canary-r1/source-manifest.json",
+    "sha256": "3f12e8bcde951712a20208aaeed04f1125bac58993ce1a3f5a93e4f950a9b103"
+  },
+  "schema": 1,
+  "signal_fix_pins": {
+    "path": "/home/alex/work/pocket4-owned-signal-host-r11-source-01/candidate-attempt-01/signal-mask-r1-pins.json",
+    "sha256": "6a24ef53595e9d8da458a626effbfca4280a5de18c90ad1d5dd036ad3e936bf2"
+  },
+  "tools": {
+    "/usr/bin/cp": "8fcdb2485ebc68f00392d647b3d3d9130f0d4bb9f72c69ee258086dd63e1c122",
+    "/usr/bin/dbus-daemon": "bd0a019f1c4ed911eeb974f6e396d1eae9777ebac19a773361c1291a90addc5c",
+    "/usr/bin/env": "f84e76ea4da1e0c4e92254bd0d7dccdabe2c8b3098e734f27997dae3ee5d8e02",
+    "/usr/bin/journalctl": "d91b5f8629d41d7503fa00d8f4d58b6d0b72b5f0ca7b46667c8b5b1c59d460a2",
+    "/usr/bin/nsenter": "763259c01dca596ed903f1dc430599a938396294723165d0b0fdfdcc15d92aea",
+    "/usr/bin/sway": "5a4c54c1bfbb2fb6fc190e817222c2b10bbec71e030c717f22608a2fae91bdd4",
+    "/usr/bin/systemctl": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082",
+    "/usr/bin/systemd-run": "6eaf6650fc3bc07ba2fb51242d9d286e56770a2abd7306678aa22050ddf9f935",
+    "/usr/bin/timeout": "f84e76ea4da1e0c4e92254bd0d7dccdabe2c8b3098e734f27997dae3ee5d8e02",
+    "/usr/sbin/mkfs.ext4": "e42e49656dfc308efeed86f9bfad7746fc22ad1d4a3b0d508b5dba7a4b9a904f"
+  }
+}

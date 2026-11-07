@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "kind": "root-normal09-actual473-preflight",
+  "state": "SOURCE_AND_ACTUAL_BINDING_REVIEWED_READY_FOR_ONE_DISPATCH",
+  "source_tree": "bd7238352e0bbbc8696a390c034660f1a059dd00",
+  "source_closure": {
+    "tree": "bd7238352e0bbbc8696a390c034660f1a059dd00",
+    "leaf_count": 42,
+    "logical_bytes": 4241298,
+    "directory_count_including_root": 2,
+    "recursive_entries": 43,
+    "truncated": false,
+    "all_paths_modes_sizes_blob_sha1_match": true,
+    "all_directory_tree_sha1_recomputed": true
+  },
+  "reproduction": {
+    "state": "EXACT_REPRODUCTION_PASS_NOT_REMOTE_EXECUTION",
+    "packet_files": 18,
+    "unchanged_authorities": 12,
+    "request": {
+      "bytes": 1037404,
+      "sha256": "d5da9237867a577b4076f0b2ecfd975cb5da5d9dcf907bc906d9cb47c75175d1",
+      "git_blob_sha1": "ff3b86f9b7677f66b5b775ba30633ab4eeba083f"
+    },
+    "stdin": {
+      "bytes": 938293,
+      "sha256": "3c7d46755b550d811aa41ba309a1f9003a85552a6f5fda21b652c09daa3991e0",
+      "git_blob_sha1": "8d1cb19f6f9d594a59de53fd3a42a1b0cafcf88b"
+    },
+    "focused": 33,
+    "commands": 71,
+    "normal_controls": 46,
+    "Main_runtime_actions_performed": 0
+  },
+  "actual473": {
+    "tree": "93580065ac53ccfd40f3334dec7d3f88a737c9ef",
+    "job_id": "1a1b255c32a-fc05-7d94",
+    "raw_report": {
+      "bytes": 193038,
+      "sha256": "ec5a6d322a80a9bb169b7998410ed6a2a2cfde56260ae4e1a906b2ccd3294826",
+      "git_blob_sha1": "dad4614a1f370a98e3661410eccfdd14cc3fc904"
+    },
+    "raw_stdout": {
+      "bytes": 682,
+      "sha256": "4abec2d383eafedac3d21b6841a99421dbfe963984ee95e755851d4c1c0fa205",
+      "git_blob_sha1": "611abb84e346bbf3c4074cc5aa7f7e7b301a074a"
+    },
+    "terminal_exit_code": 0
+  },
+  "prior_normal08": {
+    "tree": "995afe8063b1ec883ed8b3b5cca040e98bfaab65",
+    "state": "FAILED",
+    "inner": {
+      "bytes": 2898,
+      "sha256": "58a68cae2784bf401315c8016108304576e11d16bf3d5c64552698d4c3a2bb57",
+      "git_blob_sha1": "11e6f5b349a30d1c61a0f2ef14dcc068f86029a7"
+    },
+    "outer": {
+      "bytes": 24714,
+      "sha256": "2e10bdca3a1b88fe8e72f87dde5f38d972f8db41ce087386fa189c40ad231612",
+      "git_blob_sha1": "95885243b9712b3cd49f30bcc398e69c70edfe4a"
+    }
+  },
+  "diffs_reviewed": [
+    "framework.diff",
+    "fence.diff",
+    "binder.diff"
+  ],
+  "actual_source_file_count": 501,
+  "actual_host_commands": 71,
+  "actual_focused_tests": 33,
+  "targets": [
+    "framework-minus-apex",
+    "libandroid_runtime"
+  ],
+  "mode": "Strict",
+  "allow_missing_dependencies": false,
+  "fresh_resource_and_Main_gates_retained": true,
+  "Main_mutations": 0,
+  "no_automatic_retry": true,
+  "framework_artifacts_not_yet_qualified": true,
+  "whole_App_ready_count": 0
+}

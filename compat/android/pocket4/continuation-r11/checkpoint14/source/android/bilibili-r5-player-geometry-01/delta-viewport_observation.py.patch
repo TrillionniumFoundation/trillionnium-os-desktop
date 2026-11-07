@@ -1,0 +1,88 @@
+--- buffer01/viewport_observation.py
++++ geometry01/viewport_observation.py
+@@ -12,7 +12,7 @@
+ DETAILS='tv.danmaku.bili/com.bilibili.ship.theseus.detail.UnitedBizDetailsActivity'
+ TITLE='7ff99f77d6b59f394c4c6c0ca167aded470663d4cef66215fcce841ed549afba'
+ AUTHOR='3355707b07511199c7d280b9a77510b5e9b8698c7c7e4aedcf938805a3822d64'
+-NONCES = [['2eb22f9b06b2f8f4bf0c8cb28869eef2', '5758a443628adc4433103222d3c2d697', '6c7eba79353249d66961e277b2adfe79'], ['87c8566045712094c42cf8dfff4b7346', 'd3a6b1f2f4fda0f1b73256919a9f3114', '11f44f14c8ad5f2612c92b7ec9e98ed7'], ['7dbf29e4bad79943ddb275520f3e3aa4', '6eba31a0a4006c014926d047123794eb', 'a025bb1a9777e208db6a1244a226184c'], ['dde7556245a430e07ed883b1469c2559', '05b45f274fa18a27ff567ca09d5abc1a', 'f63faca5e9b1da11e0eb4e43be4e918c'], ['c41a30017d0c8a781dd52eff44f0ec68', '3258e62a03c881c176234f06c3913290', '7fe811c7a1921d23afb52f240893843b'], ['cd827069a3dd235d4ebf381291d07df0', 'c473f6c6e649fe1fa2fc33cef2c57240', 'f92d5fd522a300ccc9216e6b03245eb5'], ['8274841f1c5ea4548ed63d62340da9a2', '2510bbec65ca8b435ce464319c663af3', '8b7dc51d07e197489a3ccdeb40c05962'], ['94654992fd45eb3fc3d185ba8bfbfffe', '08858fa99387a0f3d0b95799b8cf708f', '4eeb5e77066ec3105ff6189a44e0b6b8'], ['6f26d53e2635cf3f339a17ad16e8d3ea', '92243562dedba6451eb22985ae465f35', 'ea11bee87b1ad5f34486d32c201cf2a5'], ['12413762008c59b34605508272872660', '056e6d808acc75a5330377d6d994dfb3', '8e9be61304a197b5136e6000702c9ca9'], ['ddae2f77106150ccef47e56d2b9ab402', '984e39b2e548a1dcba50ecd769517681', 'c7271eaffd3f24dfe12d389b37b69dcc'], ['d98357e4424ba68b773f5ef28ddb5cc7', '31e815b777c647b28b7d7ffbc07e58a8', '20fff707886b34af5deef594732cfa99'], ['eabbce9ad6913c74f089e9a507b20478', 'c2e317dda3cc6dbd4bb76dd1301f49c3', 'ce11a49e266a8772cf5d184b6becc148'], ['322374f798aaa5ffa899e8553f2ee145', '550802a0289303da898846ba02b325b0', '431f88ca063bfce813a97cba06425640'], ['04aa9c793879d3aa820e48ab286fc200', '8575229cc70788dbe9f8a230b99ad655', 'fc660042d58eb91c20290cc650a2e39c']]
++NONCES = [['a17d8eaace047ba4f552486225d57727', '0b5a977103ddc2cc454d545020b3f6fc', 'cee745fc466496a97fe1c9d64b5404f8'], ['8752e7ac524a37e5490d8fdd8bd323d3', '55434fbc05d21b45efca09dcec39027c', '4b4dd14bff878690cee20f187bcfc4d4'], ['90bd4cefc75f4284b319f07a5676c6f4', '0ce7877c11152a3904cd2f2bd51498ea', '4f44f03350884a5246ebbee56059a91a'], ['babbf00d4a979b77934cb3a6c1f456a3', 'da701d4ac79b93bba55eab41a5a2d4c7', '86019a396b87210ad6e1f82e5f8d0af0'], ['838933ced9c6eef5e88a7a0fd822b4e5', '26fdf1be0bba8ec32f212c6a7ba0e745', 'ae87bcb856e0ee8bff9a623daa8c7468'], ['31d6e3e27dd3b6690be4cf6dbd152d2a', 'cf1f045e93bcb1d991453f00975c9775', '55720ea3fabccdbc76528a6d4434a29d'], ['ce8bcc7087bbfd779116a38eba15dae5', 'cebbe8ab0a71733f3004f7a474dbef81', '4f802aa2f68e9eded7f3b35517bb8a63'], ['f77721b5cd90655d693bd0b81fc54d0c', '23c0a3d24125b4dcf00e7671df4970cf', '939724b29ac0a34b0faf0d31dcb67655'], ['cea2b345589d819052f9eacf3cdef32b', 'f9bddd387341f6c36f79e061dd2b70d7', '5718bf5d49a11ede0f4b73a7cacfca97'], ['5c007bf64da0ef9e35fa583e8be11067', '3301f1b4ff96647a779aa3e78753748e', '397164ba7768f81e03f8839434a00187'], ['1e78b002f0068f16922ff79ddd4b22d3', 'd0ef7c74eb0e11b419874a2eead9d574', '1da80d7874c9e0df25fe2cd1071246ec'], ['3fc386ef1ffb0f94ee59e58485ed7a4b', '4db1d3d2d5d7623acfd3c795c2fed8e1', '0818079f012597fbc6cc8cf32aab1107'], ['c611f4e986acdf0f34a7ab28e9d3d420', '318455c0b0e553e1929f99f9a54d6a7a', '574e61a6d16b96ad05bb09bb8ef03988'], ['7eddb4ab616d84c67de43f64d6de679d', '34fa3177e2acc4b90e6de0861078d42d', '36303b3d2e334452ecfe7a363c4cfcba'], ['734540d3033fd9e229db437c8912abd6', '358d57a1f9025d5c8c6791a6e8e3d397', 'e9306051f9624d78489a31ed7985a3b5']]
+ PLANS=[{'schema':1,'operation':'inspect','nonces':dict(zip(('before','inspect','after'),row))}for row in NONCES]
+ 
+ 
+@@ -41,26 +41,58 @@
+     container=one('tv.danmaku.bili:id/video_container','android.widget.FrameLayout')
+     overlay=one('tv.danmaku.bili:id/video_area_float_layer_container','android.widget.FrameLayout')
+     toolbar=one('tv.danmaku.bili:id/collapsing_toolbar','android.widget.FrameLayout')
+-    surfaces=[n for n in nodes if n['class']=='android.view.SurfaceView' and
+-        n['class_truncated'] is False and n['visible'] is True and n['enabled'] is True and
+-        n['password'] is False and n['path'].startswith(container['path']+'/')]
+-    base.require(len(surfaces)==1 and container['path'].startswith(area['path']+'/') and
+-        overlay['path'].startswith(area['path']+'/'),'UNIQUE_CURRENT_PLAYER_STRUCTURE_REQUIRED')
++    surfaces=[n for n in nodes if n['class'] in ('android.view.SurfaceView','android.view.TextureView')]
++    base.require(len(surfaces)==2 and all(n['class']=='android.view.SurfaceView' and
++        n['class_truncated'] is False and n['resource_id']=='' and n['resource_id_truncated'] is False and
++        n['visible'] is True and n['enabled'] is True and n['password'] is False and
++        n['path'].startswith(container['path']+'/') and
++        not n['path'].startswith(overlay['path']+'/') and
++        not n['path'].startswith(toolbar['path']+'/') for n in surfaces) and
++        container['path'].startswith(area['path']+'/') and
++        overlay['path'].startswith(area['path']+'/'),'EXACT_TWO_CURRENT_PLAYER_SURFACES_REQUIRED')
+     def inside(a,b):
+         return (all(type(v)is int for v in a+b) and len(a)==len(b)==4 and
+             b[0]<=a[0]<a[2]<=b[2] and b[1]<=a[1]<a[3]<=b[3])
+     crop=overlay['bounds']
+-    base.require(crop==toolbar['bounds'] and inside(crop,surfaces[0]['bounds']) and
+-        inside(surfaces[0]['bounds'],window['bounds']) and window['focused'] is True and
++    full=area['bounds']
++    base.require(full==container['bounds'] and crop==toolbar['bounds'] and crop!=full and
++        inside(crop,full) and inside(full,window['bounds']) and window['focused'] is True and
+         window['package']==base.BILI and window['display']==0 and window['type']==1,
+         'CURRENT_OVERLAY_CROP_MUST_BE_INSIDE_OBSERVED_WINDOW')
++    # Geometry assigns two unique observed roles. No traversal-order choice or
++    # claim about which renderer produces video/audio is made.
++    area_surfaces=[n for n in surfaces if n['bounds']==full]
++    crop_surfaces=[n for n in surfaces if n['bounds']==crop]
++    base.require(len(area_surfaces)==len(crop_surfaces)==1,
++        'UNIQUE_AREA_AND_CROP_SURFACE_GEOMETRY_REQUIRED')
++    by_path={n['path']:n for n in nodes};render_rows=[];parent_paths=[]
++    for role,rows in (('area-sized',area_surfaces),('crop-sized',crop_surfaces)):
++        node,=rows
++        parent_path=node['path'].rsplit('/',1)[0]
++        parent=by_path.get(parent_path)
++        base.require(parent is not None and parent_path.startswith(container['path']+'/') and
++            parent['class']=='android.widget.FrameLayout' and parent['class_truncated'] is False and
++            parent['resource_id']=='' and parent['resource_id_truncated'] is False and
++            parent['bounds']==node['bounds'],'EXACT_SURFACE_PARENT_STRUCTURE_REQUIRED')
++        parent_paths.append(parent_path)
++        render_rows.append({'role':role,'path_sha256':base.sha(node['path'].encode()),
++            'node_sha256':node['node_sha256'],'bounds':node['bounds'],
++            'parent_path_sha256':base.sha(parent_path.encode()),'parent_node_sha256':parent['node_sha256']})
++    base.require(len(set(parent_paths))==2,'DISTINCT_CURRENT_SURFACE_PARENTS_REQUIRED')
++    fixed_rows=[{'role':role,'path_sha256':base.sha(node['path'].encode()),
++                 'bounds':node['bounds'],'class':node['class'],'resource_id':node['resource_id']}
++        for role,node in (('area',area),('container',container),('overlay',overlay),('toolbar',toolbar))]
++    render_structure={'fixed_roles':fixed_rows,'surfaces':render_rows}
++    render_structure_sha256=base.sha(qa.canonical(render_structure))
+     descendants=[n for n in nodes if n['path'].startswith(container['path']+'/') and n['visible'] is True]
+     texts=[n for n in descendants if n['text']]
+     base.require(all(n['text_truncated'] is False for n in texts),'PLAYER_TEXT_COMPLETENESS_REQUIRED')
+     buffering=[n for n in texts if n['text'].startswith('Buffering...')]
+     base.require(len(buffering)<=1,'AMBIGUOUS_BUFFERING_OBSERVATION')
+     return {'scope':scope,'window':window,'window_sha256':inspection['window_sha256'],
+-        'crop':crop,'surface_bounds':surfaces[0]['bounds'],'title_text_sha256':TITLE,
++        'crop':crop,'surface_bounds':crop,'full_area_surface_bounds':full,
++        'render_structure':render_structure,'render_structure_sha256':render_structure_sha256,
++        'renderer_content_identity_proven':False,'title_text_sha256':TITLE,
+         'author_text_sha256':AUTHOR,'buffering_label_present':bool(buffering),
+         'buffering_label_sha256':buffering[0]['text_sha256'] if buffering else None,
+         'nonempty_player_text_count':len(texts),'video_only_pixels_proven':False}
+@@ -86,7 +118,8 @@
+ 
+ 
+ def same_scope(a,b):
+-    keys=('scope','window','window_sha256','crop','surface_bounds','title_text_sha256','author_text_sha256')
++    keys=('scope','window','window_sha256','crop','surface_bounds','title_text_sha256','author_text_sha256',
++          'full_area_surface_bounds','render_structure_sha256')
+     return all(a[k]==b[k]for k in keys)
+ 
+ 

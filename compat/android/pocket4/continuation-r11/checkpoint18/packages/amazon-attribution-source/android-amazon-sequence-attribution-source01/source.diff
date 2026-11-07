@@ -1,0 +1,38 @@
+--- amazon05/owned_inspect.py
++++ source-only-attribution/owned_inspect.py
+@@ -192,6 +192,24 @@
+     return result
+ 
+ 
++def retain_navigation_failure_observations(result):
++    """Copy only the navigation's retained first-failure and independent post records."""
++    navigation=result.get('search_entry')
++    if type(navigation) is not dict:
++        return
++    if 'failed_sequence_observation' in navigation:
++        result['failed_sequence_observation']=navigation['failed_sequence_observation']
++    else:
++        first=navigation.get('error')
++        if type(first) is dict and first.get('phase')=='independent_post_entry_inspection' and \
++                'failed_post_sequence_observation' in navigation:
++            result['failed_sequence_observation']=navigation['failed_post_sequence_observation']
++    if 'post_sequence' in navigation:
++        result['independent_post_sequence_observation']=navigation['post_sequence']
++    if 'failed_post_sequence_observation' in navigation:
++        result['independent_failed_post_sequence_observation']=navigation['failed_post_sequence_observation']
++
++
+ def worker(expected,phase):
+     need(os.getuid()==os.geteuid()==0 and HERE==SOURCE and phase in PHASE_SECONDS,'EXACT_ROOT_PHASE_REQUIRED')
+     q=qualified(expected);u,ref=q.util,q.ref
+@@ -293,7 +311,9 @@
+             result['click_actions']=1
+         result['ok']=True
+     except BaseException as error:
+-        if session is not None and hasattr(session,'sequence_observation'):
++        if phase=='inspect':
++            retain_navigation_failure_observations(result)
++        elif session is not None and hasattr(session,'sequence_observation'):
+             result['failed_sequence_observation']=session.sequence_observation
+         u.remember(result,current,error)
+     finally:

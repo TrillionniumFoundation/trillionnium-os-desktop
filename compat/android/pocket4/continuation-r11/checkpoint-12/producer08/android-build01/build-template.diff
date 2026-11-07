@@ -1,0 +1,20 @@
+--- diagnostic03/build-template.py
++++ projection01/build-template.py
+@@ -131,7 +131,7 @@
+ 
+ 
+ def main():
+-    require(CFG['kind'] == 'p4-init-project-diagnostic-build03', 'wrong controller kind')
++    require(CFG['kind'] == 'p4-init-socket-projection-build01', 'wrong controller kind')
+     guard = base64.b64decode(CFG['resource_guard']['base64'], validate=True)
+     require(digest(guard) == CFG['resource_guard']['sha256'], 'resource source pin differs')
+     namespace = {'__name__': 'frozen_resource_guard'}
+@@ -148,7 +148,7 @@
+     try:
+         require(os.geteuid() == 0 and os.getegid() == 0, 'root-owned sealed build required')
+         resources.begin()
+-        require(root.parent == Path('/opt') and root.name == 'p4-init-project-diagnostic-20261105-build-03',
++        require(root.parent == Path('/opt') and root.name == 'p4-init-socket-projection-20261105-build-01',
+                 'unexpected create-only root')
+         for parent in (Path('/'), root.parent):
+             meta = parent.lstat()

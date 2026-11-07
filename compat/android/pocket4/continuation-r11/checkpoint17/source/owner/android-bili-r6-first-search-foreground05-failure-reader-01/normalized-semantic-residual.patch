@@ -1,0 +1,97 @@
+--- Bili04-after-literal-bindings/read_summary.py
++++ Bili05/read_summary.py
+@@ -103,20 +103,32 @@
+          coordinator.get('uid')==10117 and coordinator.get('helper_package')=='org.droidloom.qa.bili.r6' and
+          coordinator.get('helper_uid')==HELPER_UID and coordinator.get('navigation_worker_requested') is True,
+          'EXACT_CURRENT_FAILED_NAVIGATION_SCOPE')
+-    need(coordinator.get('cleanup_result')=={'path':str(FILES['cleanup.json']),'bytes':457,
+-         'sha256':'012da7d203bfdfb7f07426d67f5c9bec107e5d0e21dd2a021a29bf08a0b7c0b2'} and
+-         coordinator.get('owned_task_absent_after_cleanup') is True,
+-         'ACTUAL_PARENT_CLEANUP_PIN_REQUIRED')
+-    need(coordinator.get('retained_phase_results',{}).get('navigate')=={
+-         'path':str(FILES['navigation.json']),'bytes':44783,
+-         'sha256':'ecda84ea8a8e701172cd087a3750ea3f06bb34b44bdc6420cd2cbd888db9537e'},
+-         'ACTUAL_PARENT_RETAINED_NAVIGATION_PIN_REQUIRED')
+-    need(coordinator.get('launch_result')==coordinator.get('retained_phase_results',{}).get('launch')=={
+-         'path':str(FILES['launch.json']),'bytes':5130,
+-         'sha256':'5bc03f3e991f3819c7f6dfd0b4bd48972c36aba2a38b28100ea7ae5bfc321c01'},
+-         'ACTUAL_PARENT_RETAINED_LAUNCH_PIN_REQUIRED')
++    need(coordinator.get('owned_task_absent_after_cleanup') is True,
++         'ACTUAL_PARENT_CLEANUP_CLAIM_RETAINED_NOT_YET_INDEPENDENTLY_VERIFIED')
+     need(coordinator['Main_before']==coordinator['Main_after']==stage['Main_before']==stage['Main_after'],
+          'ACTUAL_PARENT_MAIN_CHAIN')
++    return parent_phase_pins(coordinator)
++
++
++def parent_phase_pins(coordinator):
++    retained=coordinator.get('retained_phase_results')
++    need(type(retained) is dict and set(retained)=={'launch','navigate'},
++         'EXACT_TWO_RETAINED_WORKER_PINS_REQUIRED')
++    pins={'launch.json':retained['launch'],'navigation.json':retained['navigate'],
++          'cleanup.json':coordinator.get('cleanup_result')}
++    for name,pin in pins.items():
++        maximum=32768 if name=='launch.json' else 262144
++        need(type(pin) is dict and set(pin)=={'path','bytes','sha256'} and
++             pin.get('path')==str(FILES[name]) and type(pin.get('bytes')) is int and
++             0<pin['bytes']<=maximum and type(pin.get('sha256')) is str and
++             re.fullmatch('[0-9a-f]{64}',pin['sha256']),
++             'EXACT_PARENT_BOUND_PATH_BOUNDED_BYTES_AND_SHA_REQUIRED:'+name)
++    need(coordinator.get('launch_result')==pins['launch.json'],
++         'DUPLICATE_PARENT_LAUNCH_PIN_DIFFERS')
++    if 'navigation_result' in coordinator:
++        need(coordinator['navigation_result']==pins['navigation.json'],
++             'DUPLICATE_PARENT_NAVIGATION_PIN_DIFFERS')
++    return pins
+ 
+ 
+ def launch_binding(value):
+@@ -140,8 +152,8 @@
+         '6d656e3abdf5294cd01f25fb9c09c34df1d60c05650ea05f762745b17daee705'),
+         'EXACT_CURRENT_TERMINAL_PINS_REQUIRED')
+     reader=Reader();files={};missing=[];observations={};error=None
+-    bindings={'parent_chain':False,'cleanup_external_pin':False,'launch_external_pin':False,
+-              'launch_scope':False,'navigation_external_pin':False,'navigation_scope':False}
++    bindings={'parent_chain':False,'cleanup_parent_pin':False,'launch_parent_pin':False,
++              'launch_scope':False,'navigation_parent_pin':False,'navigation_scope':False}
+     def add(name,expected=None,size=None,optional=False):
+         raw=reader.read(FILES[name],optional=optional)
+         if raw is None:
+@@ -156,26 +168,26 @@
+     try:
+         c=add('coordinator.json',coordinator_sha,7407)
+         s=add('stage.json',stage_sha,1773)
+-        fixed_parent_binding(c,s);bindings['parent_chain']=True
+-        # Preserve the exact retirement body even if later navigation decoding fails.
+-        add('cleanup.json','012da7d203bfdfb7f07426d67f5c9bec107e5d0e21dd2a021a29bf08a0b7c0b2',457)
+-        bindings['cleanup_external_pin']=True
+-        launched=add('launch.json',
+-            '5bc03f3e991f3819c7f6dfd0b4bd48972c36aba2a38b28100ea7ae5bfc321c01',5130)
+-        bindings['launch_external_pin']=True
++        pins=fixed_parent_binding(c,s);bindings['parent_chain']=True
++        # Hashes come only from the already externally pinned parent bytes.
++        # Preserve retirement first even if a later worker scope/export guard fails.
++        pin=pins['cleanup.json']
++        add('cleanup.json',pin['sha256'],pin['bytes']);bindings['cleanup_parent_pin']=True
++        pin=pins['launch.json']
++        launched=add('launch.json',pin['sha256'],pin['bytes']);bindings['launch_parent_pin']=True
+         launch_binding(launched);bindings['launch_scope']=True
+-        worker=add('navigation.json',
+-            'ecda84ea8a8e701172cd087a3750ea3f06bb34b44bdc6420cd2cbd888db9537e',44783)
+-        bindings['navigation_external_pin']=True
++        pin=pins['navigation.json']
++        worker=add('navigation.json',pin['sha256'],pin['bytes']);bindings['navigation_parent_pin']=True
+         navigation_binding(worker);bindings['navigation_scope']=True
+     except Exception as failure:
+         error={'type':type(failure).__name__,'message':str(failure),'errno':getattr(failure,'errno',None)}
+-    bundle={'schema':1,'scope':'fixed-r6-pause-resume-failure-and-retirement-only',
++    bundle={'schema':1,'scope':'fixed-r6-first-search-foreground05-failure-and-retirement-only',
+         'files':files,'missing':missing,'observations':observations,'bindings':bindings,'error':error,
+         'collection_complete':error is None,'source_manifest_sha256':SOURCE_SHA,'flow_nonce':NONCE,
+         'bytes_read':reader.bytes,'raw_UI_or_commercial_journal_exported':False,
+         'Android_or_process_actions':0,'runtime_qualification_asserted':False,
+-        'permission_or_original_file_changes':0,'independent_external_failed_navigation_hash_available':True,
++        'permission_or_original_file_changes':0,'independent_external_failed_navigation_hash_available':False,
++        'child_hashes_derived_only_from_exact_external_parent_bytes':True,
+         'cleanup_or_UI_window_release_claimed_by_reader':False,
+         'navigation_worker_required':True,'redundant_navigation_stdout_read':False,'read_is_sequential_not_atomic':True}
+     raw=(json.dumps(bundle,ensure_ascii=False,sort_keys=True,separators=(',',':'))+'\n').encode()

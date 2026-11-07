@@ -1,0 +1,58 @@
+--- original-rejection/full_prefix_control.py
++++ closed-rejection/full_prefix_control.py
+@@ -29,6 +29,7 @@
+ sys.dont_write_bytecode = True
+ FIXED = (198, 199, 200, 201)
+ PARENT_CHANNEL = 197
++SCM_PIDFD = getattr(socket, "SCM_PIDFD", 0x04)  # Linux bits/socket.h ABI.
+ NAMES = ("pid", "pid_for_children", "mnt", "cgroup", "user", "net", "ipc", "uts", "time", "time_for_children")
+ TYPES = (0x20000000, 0x20000000, 0x00020000, 0x02000000, 0x10000000,
+          0x40000000, 0x08000000, 0x04000000, 0x80, 0x80)
+@@ -170,18 +171,24 @@
+         need(wait > 0, "finite packet deadline")
+         if select.select([channel], [], [], min(wait, 0.1))[0]:
+             break
+-    data, ancillary, flags, _ = channel.recvmsg(maximum, socket.CMSG_SPACE(16 * 4) + socket.CMSG_SPACE(12), socket.MSG_CMSG_CLOEXEC)
++    data, ancillary, flags, _ = channel.recvmsg(maximum, socket.CMSG_SPACE(16 * 4) + socket.CMSG_SPACE(12)
++                                             + socket.CMSG_SPACE(4), socket.MSG_CMSG_CLOEXEC)
+     owned = []
+     try:
+         credentials = []
+         errors = []
+         for level, kind, value in ancillary:
+-            if level == socket.SOL_SOCKET and kind == socket.SCM_RIGHTS:
++            if level == socket.SOL_SOCKET and kind in (socket.SCM_RIGHTS, SCM_PIDFD):
+                 rights = array.array("i")
+                 rights.frombytes(value[:len(value) - len(value) % 4])
+                 owned.extend(rights)
+                 if len(value) % 4:
+                     errors.append("malformed rights length")
++                if kind == SCM_PIDFD:
++                    # This protocol never enables SO_PASSPIDFD. If the kernel
++                    # nevertheless delivers one, own and close it on reject;
++                    # unknown ancillary handling must not leak capabilities.
++                    errors.append("unexpected SCM_PIDFD capability")
+             elif level == socket.SOL_SOCKET and kind == socket.SCM_CREDENTIALS:
+                 if len(value) != 12:
+                     errors.append("malformed kernel credentials")
+@@ -438,12 +445,14 @@
+         send(parent, json.dumps({"nonce": c["nonce"], "terminal": terminal}).encode())
+     finally:
+         a.close(); b.close()
+-        safe_stop(child, ownerfd)
+-        if ownerfd is not None:
+-            os.close(ownerfd)
+-        for fd in received + handles:
+-            os.close(fd)
+-        parent.close()
++        try:
++            safe_stop(child, ownerfd)
++        finally:
++            if ownerfd is not None:
++                os.close(ownerfd)
++            for fd in received + handles:
++                os.close(fd)
++            parent.close()
+ 
+ def outer_sample(c):
+     """Sample while this sole remaining actor still keeps its unit cgroup alive."""

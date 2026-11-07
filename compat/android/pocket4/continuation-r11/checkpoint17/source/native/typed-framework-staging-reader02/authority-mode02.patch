@@ -1,0 +1,85 @@
+--- reader01_actual_FAILED/read_staging.py
++++ reader02_exact_authority_modes/read_staging.py
+@@ -47,7 +47,9 @@
+ def error_row(error):
+     # Never echo Git config, an unknown origin URL, or parser error text.
+     return {'type': type(error).__name__, 'errno': getattr(error, 'errno', None),
+-            'reason': str(error) if isinstance(error, RuntimeError) else None}
++            'reason': str(error) if isinstance(error, RuntimeError) else None,
++            'failing_path': getattr(error, 'fixed_authority_path', None),
++            'authority_metadata': getattr(error, 'authority_metadata', None)}
+ 
+ 
+ def directory(base, relative):
+@@ -76,13 +78,17 @@
+         os.close(root)
+ 
+ 
+-def regular(parent, name, maximum):
++def regular(parent, name, maximum, expected_mode=None):
+     budget()
+     need('/' not in name and name not in ('.', '..'), 'FIXED_FILE_LEAF')
+     named = os.stat(name, dir_fd=parent, follow_symlinks=False)
+-    need(stat.S_ISREG(named.st_mode) and named.st_nlink == 1 and named.st_uid == 1000
+-         and named.st_gid == 1000 and not named.st_mode & 0o022
+-         and 0 <= named.st_size <= maximum, 'OWNED_REGULAR_FILE_BOUND')
++    mode_ok = (not named.st_mode & 0o022) if expected_mode is None else named.st_mode == expected_mode
++    if not (stat.S_ISREG(named.st_mode) and named.st_nlink == 1 and named.st_uid == 1000
++            and named.st_gid == 1000 and mode_ok and 0 <= named.st_size <= maximum):
++        error = RuntimeError('OWNED_REGULAR_FILE_BOUND')
++        error.authority_metadata = {**identity(named), 'nlink': named.st_nlink,
++                                    'required_exact_mode': expected_mode}
++        raise error
+     fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC | os.O_NONBLOCK, dir_fd=parent)
+     try:
+         held = os.fstat(fd)
+@@ -125,13 +131,16 @@
+         return {'present': False, 'errno': 2}
+ 
+ 
+-def pinned(path, maximum, expected, size):
++def pinned(path, maximum, expected, size, expected_mode):
+     p = PurePosixPath(path)
+     parent = absolute_directory(str(p.parent))
+     try:
+-        raw, pin = regular(parent, p.name, maximum)
++        raw, pin = regular(parent, p.name, maximum, expected_mode)
+         need(pin == {'bytes': size, 'sha256': expected}, 'FIXED_AUTHORITY_PIN_CHANGED')
+         return json.loads(raw)
++    except Exception as error:
++        error.fixed_authority_path = path
++        raise
+     finally:
+         os.close(parent)
+ 
+@@ -213,8 +222,8 @@
+     work = staging = rework = restaging = None
+     try:
+         need(os.getuid() == os.geteuid() == 1000, 'ORIGINAL_OPERATOR_REQUIRED')
+-        inner = pinned(ROOT + '/attempt-01/terminal.json', 65536, INNER_SHA, 28758)
+-        outer = pinned(ROOT + '/build-fences-01/terminal.json', 4096, OUTER_SHA, 1177)
++        inner = pinned(ROOT + '/attempt-01/terminal.json', 65536, INNER_SHA, 28758, 0o100600)
++        outer = pinned(ROOT + '/build-fences-01/terminal.json', 4096, OUTER_SHA, 1177, 0o100600)
+         need(inner['state'] == 'FAILED' and inner['builder_returncode'] == -9
+              and inner['cleanup']['complete'] is True and inner['cleanup']['errors'] == []
+              and all(row['reaped'] for row in inner['cleanup']['children'])
+@@ -222,7 +231,7 @@
+         need(outer['state'] == 'FAILED' and outer['inner_returncode'] == 1
+              and outer['main_fence_assessment']['main_fence_pass'] is True,
+              'ACTUAL_FAILED_JOB_FENCES_NOT_BOUND')
+-        lock = pinned(LOCK, 131072, LOCK_SHA, 86293)
++        lock = pinned(LOCK, 131072, LOCK_SHA, 86293, 0o100664)
+         need(lock['schema_version'] == 1 and len(lock['projects']) == 214
+              and lock['remote_base'] == 'https://android.googlesource.com/', 'EXACT_LOCK_SHAPE')
+         for project in lock['projects']:
+@@ -265,8 +274,8 @@
+         result['projection_journal_after'] = metadata(work, 'source-projection.json')
+         for name in ('staging', 'aosp_source', 'projection_journal'):
+             need(result[name + '_before'] == result[name + '_after'], 'FIXED_MILESTONE_CHANGED')
+-        pinned(ROOT + '/attempt-01/terminal.json', 65536, INNER_SHA, 28758)
+-        pinned(ROOT + '/build-fences-01/terminal.json', 4096, OUTER_SHA, 1177)
++        pinned(ROOT + '/attempt-01/terminal.json', 65536, INNER_SHA, 28758, 0o100600)
++        pinned(ROOT + '/build-fences-01/terminal.json', 4096, OUTER_SHA, 1177, 0o100600)
+     except Exception as error:
+         result['complete'] = False
+         result['error'] = error_row(error)

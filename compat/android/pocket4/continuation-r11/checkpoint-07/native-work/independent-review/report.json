@@ -1,0 +1,181 @@
+{
+  "schema": 1,
+  "reviewer": "android_acceptance",
+  "kind": "independent actual-source review and two narrow owned local controls",
+  "status": "BLOCKED_AT_REVIEWED_REVISIONS",
+  "production_ready": false,
+  "source_mutations": false,
+  "remote_calls": 0,
+  "Main_actions": 0,
+  "controller_execute": false,
+  "factory_Run_or_Prepare_executed": false,
+  "reported_host_build": {
+    "sha256": "adb1b0cb4bfa12d3d154c0538e931a7752046f8ab295e2bab77687615af6c81e",
+    "not_independently_reexecuted": true
+  },
+  "reviewed_files": [
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source/factory_main.cc",
+      "bytes": 27886,
+      "sha256": "19abcf92feca3bd1ef46306e15fd8110c8e238c443a536625ba308f52fda45fb"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source/factory_context.cc",
+      "bytes": 5377,
+      "sha256": "afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source/factory_context.h",
+      "bytes": 954,
+      "sha256": "b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source/proc_maps_factory_wire.cc",
+      "bytes": 8661,
+      "sha256": "4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/include/berberis/kernel_api/proc_maps_factory_protocol.h",
+      "bytes": 5051,
+      "sha256": "b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/include/berberis/kernel_api/proc_maps_kernel_statfs.h",
+      "bytes": 2480,
+      "sha256": "77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/include/berberis/kernel_api/proc_maps_provenance.h",
+      "bytes": 4201,
+      "sha256": "79e871b78d6fc2461f2fe103df070d6dc6504acf43ff6b64fcecec142eb618b0"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/engine-delta/proc_maps_provenance.cc",
+      "bytes": 31616,
+      "sha256": "bc68ad924a1c3a31d2a8b97099130ad796f52c6d7c9bca5b68267de995e0d62f"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/README.md",
+      "bytes": 5785,
+      "sha256": "544524cb6dd72918f811ce17302f46e7019b7982f3455f51badac9c989ad7486"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-fixture-01/client_control.cc",
+      "bytes": 15956,
+      "sha256": "cdcbbab212b5d4be64094d8050b46c96111cc4bfbc88b2a7348978962d94bd50"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-fixture-01/bionic_branch_view.cc",
+      "bytes": 784,
+      "sha256": "0eaf591282192e3675c44be6ad8ecb37441237082013cd8743b4f5d8ad664857"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-fixture-01/build_fixture.py",
+      "bytes": 11571,
+      "sha256": "f2cd2b63362e2149e0cd166b24f3fd3666b00d2693430fdf3306fd0aede6b9f0"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/controller-reviewed-5e12b5a87c2eed4f5796b5c86559a46b3d4839ef9f76e4b2baf18af2794b6186.py",
+      "bytes": 41461,
+      "sha256": "5e12b5a87c2eed4f5796b5c86559a46b3d4839ef9f76e4b2baf18af2794b6186"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "blocker for complete FD-error cleanup qualification",
+      "source": "factory_main.cc Receive unknown ancillary branch",
+      "evidence": "Actual AF_UNIX SOCK_SEQPACKET socketpair, SO_PASSPIDFD, actual candidate Receive/Rights. Ordinary receiver adopted 2 SCM_RIGHTS and closed both (delta 0). PASSPIDFD receiver returned EPROTO 71 and closed the two SCM_RIGHTS, but left one anon_inode:[pidfd] installed. Control closed only the new leaked FD, all control descriptors restored.",
+      "local_kernel": "6.18.57",
+      "seams": [],
+      "limitation": "No actual inherited listening socket or Pocket4 service. First local listener attempt failed socket(AF_UNIX) with EPERM before service/Receive; preserved separately. ValidateSocket nonlistener accepts PASSPIDFD; listener validation source contains no PASSPIDFD exclusion.",
+      "fix_direction": "In a new revision, adopt/close known FD-bearing SCM_PIDFD on rejection or enforce and verify a complete socket-option invariant before receive; protocol error alone does not close the descriptor."
+    },
+    {
+      "id": "F2",
+      "severity": "blocker for preserving original child failure evidence",
+      "controller_sha256": "5e12b5a87c2eed4f5796b5c86559a46b3d4839ef9f76e4b2baf18af2794b6186",
+      "source": "controller.py Child.join local outputs/open_fds and finish -> retire -> join",
+      "evidence": "Actual spawn/Child, one own bounded child wrote 65,537 bytes. First join raised RuntimeError owned child output exceeded bound. retire then reaped exit 0 but reported empty stdout, retained zero consumed bytes. All owned descriptors restored and child reaped.",
+      "not_an_aggregate_false_pass": true,
+      "fix_direction": "Keep bounded output buffers, pipe-open state and first errors on Child across join/retire; do not reread or reclose invalidated numeric pipe slots. Attach cleanup errors without replacing primary failure."
+    }
+  ],
+  "review_conclusions": [
+    "Exact factory input/output descriptor holders use RAII and close SCM_RIGHTS on malformed/truncated protocol paths, apart from confirmed F1.",
+    "Controller creates separate creator E for control SO_PEERCRED/pidfd. E closes both endpoints before DROPPED; C retains the peer during owner-death kill. Source does not infer factory child identity from listening-socket credentials; READY is checked against owned child PID plus pidfd.",
+    "P -> private PID1 C ownership, held namespace hello type/inode comparison, exact child wait/reap, normal PID-child namespace restoration, and final independent cleanup fences were reviewed. No third concrete blocker found in the reviewed source range; not a proof for arbitrary/adversarial descendants.",
+    "New fixed Main service cgroup, three activation host-process identities, config and limits are read before/after; source has no Android entry or commercial app mutation.",
+    "Client peer_death test proves bounded completion/FD return when paired with controller idle checks, not guaranteed death at a particular snapshot-copy instruction.",
+    "bionic_branch_view is a host namespace-renamed compile branch, not a real Bionic libc or ARM64 execution oracle.",
+    "factory-v2-r1 engine-delta was read; candidate04 build receipt and all runtime build closure were not reexecuted by this review."
+  ],
+  "not_run": [
+    "factory --serve-inherited",
+    "controller --execute",
+    "private namespace fixture",
+    "actual inherited listener SO_PASSPIDFD",
+    "Pocket4 kernel service runtime",
+    "Android/Bionic factory positive",
+    "ART APEX lifecycle",
+    "full engine build/host suite",
+    "Main/app/UI/audio"
+  ],
+  "evidence": [
+    {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/receive_pidfd_control.cc",
+      "bytes": 5685,
+      "sha256": "c050d27a508e1edbef8097f9a01052fbad537eed1c266770175ec1fbf502c045"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/receive-control-result.json",
+      "bytes": 297,
+      "sha256": "d5cebf03c881b0bf1f22cf04ac201a2b11e560bb9ecae19ada51719db99ea266"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/receive-control.stdout.jsonl",
+      "bytes": 116,
+      "sha256": "07417cc87e3bd8fa36573ac25032454a89c139325e8a685308b0fbb92ed1b879"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/receive-control.stderr",
+      "bytes": 34,
+      "sha256": "00083eab9885c1fd59dbbbd463e26650097d184b929c69ee97846a3e933efb7a"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/receive_pidfd_socketpair_control.cc",
+      "bytes": 5073,
+      "sha256": "72e3dd4c0930717b715e383e913bea010e526b9b2a33fe1024dc951152859f1b"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/socketpair-control-result.json",
+      "bytes": 968,
+      "sha256": "7a8217cdeace9d9b02e1468bc796859f9e62aa9ad16884bbfa033a4587c9d750"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/socketpair-run.stdout.jsonl",
+      "bytes": 688,
+      "sha256": "3a137c319ecd4cdc77e555ce088c13fc93646f76e0b1726a0722afb120799753"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/socketpair-run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/child_join_failure_control.py",
+      "bytes": 2603,
+      "sha256": "a66c1427d9dfb72e31d6a0812f3ff975a20cb5a55af4bb1630bf6ca66e0a29dc"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/child-join-control.stdout.json",
+      "bytes": 577,
+      "sha256": "b23dbea68aff64e76cfcab1159217684c02a4cbf2380ff53de1556fa6b06778f"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-cp06/factory-v2-independent-review-01/child-join-control.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

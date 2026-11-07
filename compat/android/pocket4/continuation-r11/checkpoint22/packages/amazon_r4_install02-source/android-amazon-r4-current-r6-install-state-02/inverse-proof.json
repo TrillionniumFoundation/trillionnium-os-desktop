@@ -1,0 +1,165 @@
+{
+  "schema": "pocket4-current-owner-correction-inverse-v1",
+  "all_original_production_functions_and_modules_restored": true,
+  "edits": [
+    {
+      "file": "install_state.py",
+      "from": "/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-01",
+      "to": "/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-02",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-01",
+      "to": "/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-02",
+      "count": 1
+    },
+    {
+      "file": "make_request.py",
+      "from": "/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-01",
+      "to": "/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-02",
+      "count": 1
+    },
+    {
+      "file": "make_request.py",
+      "from": "pocket4-owned-amazon-qa-r4-current-r6-install-state-01-20261106",
+      "to": "pocket4-owned-amazon-qa-r4-current-r6-install-state-02-20261106",
+      "count": 1
+    },
+    {
+      "file": "install_state.py",
+      "from": "EXPECTED_SOURCE_FILES = {'install_state.py','amazon_context.py','amazon_transport.py','stage_execute.py',\n    'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',\n    'check_install_binding.py','references/read_amazon.py','target-artifact-reference.json'}",
+      "to": "EXPECTED_SOURCE_FILES = {'install_state.py','amazon_context.py','amazon_transport.py','stage_execute.py',\n    'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',\n    'check_install_binding.py','references/read_amazon.py','target-artifact-reference.json', 'current_discovery.py', 'check_current_discovery.py'}",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "FILES={'install_state.py','amazon_context.py','amazon_transport.py','stage_execute.py',\n       'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',\n       'check_install_binding.py','references/read_amazon.py','target-artifact-reference.json'}",
+      "to": "FILES={'install_state.py','amazon_context.py','amazon_transport.py','stage_execute.py',\n       'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',\n       'check_install_binding.py','references/read_amazon.py','target-artifact-reference.json', 'current_discovery.py', 'check_current_discovery.py'}",
+      "count": 1
+    },
+    {
+      "file": "amazon_context.py",
+      "from": "def open_context(",
+      "to": "def current_discovery(util, source_manifest, source_verify, source_root,\n                      app, baseline, epoch, guard):\n    manifest = source_verify(source_manifest)\n    row = manifest['files']['current_discovery.py']\n    discovery = util.module(source_root/'current_discovery.py',row['sha256'],\n                            'owned_current_discovery')\n    require(discovery.BASELINE_SHA == BASELINE_SHA and\n            discovery.QUALIFICATION_SHA == QUALIFICATION_SHA and\n            discovery.MAIN_EPOCH == CURRENT_EPOCH,\n            'CURRENT_DISCOVERY_SOURCE_BINDING_REQUIRED')\n    return discovery.discover_current(app,baseline,epoch,guard)\n\n\ndef open_context(",
+      "count": 1
+    },
+    {
+      "file": "amazon_context.py",
+      "from": "        init,discovered,status = app.discover()\n",
+      "to": "        init,discovered,status = current_discovery(util,source_manifest,source_verify,source_root,\n                                                    app,activation,epoch,guard)\n",
+      "count": 1
+    },
+    {
+      "file": "check_install_binding.py",
+      "from": "CONTROL_COUNT = 50",
+      "to": "CONTROL_COUNT = 68",
+      "count": 1
+    },
+    {
+      "file": "check_install_binding.py",
+      "from": "    rows.extend(run_source_controls(entry,files,source_manifest_sha256))\n",
+      "to": "    rows.extend(run_source_controls(entry,files,source_manifest_sha256))\n    discovery_controls = types.ModuleType('production_current_discovery_controls')\n    exec(compile(files['check_current_discovery.py'],'<current-discovery-controls>','exec'),discovery_controls.__dict__)\n    legacy_source = entry.read(entry.BASE_HOST_ROOT/'references/android_app.py',131072,\n                               discovery_controls.LEGACY_SHA)\n    rows.extend(discovery_controls.run_discovery_controls(files['current_discovery.py'],baseline,legacy_source))\n    rows.extend(discovery_controls.run_context_route_controls(context,files,baseline,legacy_source,source_manifest_sha256))\n",
+      "count": 1
+    },
+    {
+      "file": "check_install_binding.py",
+      "from": "'production_verify_source_calls':5}",
+      "to": "'production_verify_source_calls':5,\n            'new_owner_discovery_controls':18,'production_discovery_and_Context_route_used':True,\n            'legacy_discover_failure_reproduced_in_memory':True}",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "controls['count']==50",
+      "to": "controls['count']==68",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "len(controls['cases'])==50",
+      "to": "len(controls['cases'])==68",
+      "count": 1
+    }
+  ],
+  "nonce_bindings": [],
+  "original_source_pins": {
+    "install_state.py": {
+      "bytes": 40098,
+      "sha256": "1a6bb216cccfa9e048a96e2faa40e32df58a48d039dd61634f4c8b49c8a360e2"
+    },
+    "amazon_context.py": {
+      "bytes": 17254,
+      "sha256": "0dcbfd8ec465f10d3e23189900b78598903061b65155c13a8983df62880d38ca"
+    },
+    "amazon_transport.py": {
+      "bytes": 15619,
+      "sha256": "d9a682696cac2e28987b04f3e59f0fa783028fdc069c145816cd87c40eb6ca63"
+    },
+    "stage_execute.py": {
+      "bytes": 9368,
+      "sha256": "ab7628cfc269fb209553c79e24b24295f5ffcc44638b5724fcc9d5684b4042b8"
+    },
+    "make_request.py": {
+      "bytes": 3065,
+      "sha256": "6b1e26a7dc5c7165e028e85b8276b3d4595238c8402ee554ea7bd114e69e5218"
+    },
+    "check_install_binding.py": {
+      "bytes": 13225,
+      "sha256": "244a8760146953a282857eb3f149f9bfdb0234d47be98a3fd3f0fb4bf8fc7d4b"
+    },
+    "host/source-manifest.json": {
+      "bytes": 3757,
+      "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+    },
+    "host-stage-actual.json": {
+      "bytes": 10016,
+      "sha256": "e1718fcb3561488c88011f00de0d6e992ff51a64a355da87f1fcb867545fcba6"
+    },
+    "references/read_amazon.py": {
+      "bytes": 19266,
+      "sha256": "22a6552111154156004aff344d6929db436d5c3fe084893abea931f1399b0588"
+    },
+    "target-artifact-reference.json": {
+      "bytes": 3086,
+      "sha256": "f29fdd340a095b4686b27b5424b7651b0eb5a237b9fb123adb8b9f0d8ad46e35"
+    },
+    "INPUTS.json": {
+      "bytes": 3909,
+      "sha256": "8387e2aa7b5d2029f0233002dcfa10e4e09c477cc5246c36e15350eab41258ba"
+    },
+    "README.md": {
+      "bytes": 1885,
+      "sha256": "4283181e69aa069877ea9dafc698e445f499a9ff5e73b4ea3b065b6058fdf2b9"
+    }
+  },
+  "unchanged_files": [
+    {
+      "name": "amazon_transport.py",
+      "bytes": 15619,
+      "sha256": "d9a682696cac2e28987b04f3e59f0fa783028fdc069c145816cd87c40eb6ca63"
+    },
+    {
+      "name": "host/source-manifest.json",
+      "bytes": 3757,
+      "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+    },
+    {
+      "name": "host-stage-actual.json",
+      "bytes": 10016,
+      "sha256": "e1718fcb3561488c88011f00de0d6e992ff51a64a355da87f1fcb867545fcba6"
+    },
+    {
+      "name": "references/read_amazon.py",
+      "bytes": 19266,
+      "sha256": "22a6552111154156004aff344d6929db436d5c3fe084893abea931f1399b0588"
+    },
+    {
+      "name": "target-artifact-reference.json",
+      "bytes": 3086,
+      "sha256": "f29fdd340a095b4686b27b5424b7651b0eb5a237b9fb123adb8b9f0d8ad46e35"
+    }
+  ],
+  "shared_R6_manifest_unchanged": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff",
+  "new_discover_inverse_to_exact_legacy": "16f04a727bd88767a39f6bcf31c1ce1c08a8baf2b87a3d7cfab51dd947578dec",
+  "Bili_sole_bind_argument_difference": null
+}

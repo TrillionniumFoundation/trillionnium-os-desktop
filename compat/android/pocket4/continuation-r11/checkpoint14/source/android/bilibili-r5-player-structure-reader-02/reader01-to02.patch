@@ -1,0 +1,142 @@
+--- reader01/read_structure.py
++++ reader02/read_structure.py
+@@ -29,6 +29,8 @@
+ POST_NONCES=('91c41cc4b66c2500a5099891f490f3d9','6568a1c106dc6844494a501276feab6f','9b275ee12dfe763a6a2b492820bea86d')
+ FAILED_VIEWPORT_NONCE='5758a443628adc4433103222d3c2d697'
+ FAILED_VIEWPORT_WIRE='a5009b9860f253271ca24e1e7e4b7855dc4d27b3eda6b8d986c8ced052565ec9'
++FAILED_VIEWPORT_ASSESSMENT_SHA='c4d9455fa069461cdb3efe99c63cd335eca68434ee80ef88ffb22b1d2d36032f'
++PRIOR_STRUCTURE_RESULT_SHA='4853c34166b422f074b66394bbeca1da09e3f522ff721a6e288a56a1aee4d0bc'
+ FIRST_ERROR={'phase':'buffer_viewport_observation','type':'RuntimeError',
+              'message':'UNIQUE_CURRENT_PLAYER_STRUCTURE_REQUIRED'}
+ FILES={ROOT/'result.json':0,ROOT/'stage-result.json':0,STEP/'result.json':0,
+@@ -80,6 +82,42 @@
+         finally:
+             if fd is not None:os.close(fd)
+             os.close(current)
++
++
++def surface_geometry(inspection,chosen,surfaces):
++    # This reports only already-qualified render-node geometry and hashes.
++    # It neither selects a surface nor grants any screenshot/action authority.
++    need(len(surfaces)<=8,'FIXED_RENDER_GEOMETRY_REPORT_BOUND')
++    nodes={n['path']:n for n in inspection['nodes']}
++    crop=chosen['overlay']['bounds'] if 'overlay' in chosen else None
++    def inside(a,b):
++        return bool(a is not None and b is not None and
++                    b[0]<=a[0]<a[2]<=b[2] and b[1]<=a[1]<a[3]<=b[3])
++    rows=[]
++    for n in sorted(surfaces,key=lambda value:value['path']):
++        parent_path=n['path'].rsplit('/',1)[0]
++        parent=nodes.get(parent_path)
++        row={'path_sha256':sha(n['path'].encode()),'parent_path_sha256':sha(parent_path.encode()),
++             'node_sha256':n['node_sha256'],'bounds':n['bounds'],
++             'resource_id_sha256':sha(n['resource_id'].encode()),
++             'resource_id_truncated':n['resource_id_truncated'],
++             'parent_present':parent is not None,'crop_is_inside_surface':inside(crop,n['bounds']),
++             'surface_is_inside_crop':inside(n['bounds'],crop),
++             'surface_is_inside_window':inside(n['bounds'],inspection['window']['bounds']),
++             'relative_to_fixed_roles':{role:{'is_direct_child':parent_path==value['path'],
++                 'is_descendant':n['path'].startswith(value['path']+'/'),
++                 'same_bounds':n['bounds']==value['bounds']} for role,value in chosen.items()}}
++        if parent is not None:
++            row['parent']={'node_sha256':parent['node_sha256'],'bounds':parent['bounds'],
++                           'class_sha256':sha(parent['class'].encode()),
++                           'resource_id_sha256':sha(parent['resource_id'].encode())}
++        rows.append(row)
++    return {'eligible_surfaces':rows,
++            'unique_surface_bounds_count':len({tuple(n['bounds']) for n in surfaces}),
++            'all_eligible_surfaces_cover_crop':bool(surfaces) and all(inside(crop,n['bounds']) for n in surfaces),
++            'crop_matches_toolbar':bool(crop is not None and 'toolbar' in chosen and
++                                         crop==chosen['toolbar']['bounds']),
++            'surface_selection_performed':False}
+ 
+ 
+ def fixed_roles(inspection):
+@@ -121,6 +159,7 @@
+             'all_original_three_terms_true':all(v is True for v in terms.values()),
+             'eligible_surface_count_under_container':len(container_surfaces),
+             'surface_predicate_groups':grouped,'two_known_render_class_counts':counts,
++            'geometry':surface_geometry(inspection,chosen,container_surfaces),
+             'unique_eligible_surface_bounds':container_surfaces[0]['bounds'] if len(container_surfaces)==1 else None,
+             'window_bounds':inspection['window']['bounds']}
+ 
+@@ -183,7 +222,8 @@
+              metadata.get('actual_instrumentation_finish_code')==-1,'ORIGINAL_POST_ASSESSMENT_REQUIRED')
+         cases.append((f'post_{index}',nonce,observation['foreground'],metadata))
+     cases.append(('first_viewport',FAILED_VIEWPORT_NONCE,last['foreground_after'],
+-                  {'wire_sha256':FAILED_VIEWPORT_WIRE}))
++                  {'wire_sha256':FAILED_VIEWPORT_WIRE,'assessment_bytes':199428,
++                   'assessment_sha256':FAILED_VIEWPORT_ASSESSMENT_SHA}))
+     records=[]
+     for label,nonce,scope,metadata in cases:
+         qa.scope(scope)
+@@ -232,7 +272,8 @@
+             'cache_clears':window['cache_clears'],'cache_last_result':window['cache_last_result'],
+             'complete_tree_verified':True})
+     result={'schema':1,'state':'COLLECTED_RETAINED_STRUCTURE_DIAGNOSTIC_ONLY',
+-        'scope':'fixed three post observations and first failed viewport predicate',
++        'scope':'fixed three post observations and first failed viewport predicate; geometry-only refinement',
++        'prior_structure_result_sha256':PRIOR_STRUCTURE_RESULT_SHA,
+         'flow_nonce':NONCE,'source_manifest_sha256':SOURCE_SHA,'original_failure':FIRST_ERROR,
+         'original_flow_failure_preserved':True,'records':records,'input_file_pins':reader.records,
+         'raw_commercial_tree_text_descriptions_or_pixels_exported':False,
+--- reader01/make_request.py
++++ reader02/make_request.py
+@@ -7,9 +7,9 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-READER_SHA='8b3b222fa6075d01124f600e4ddf7cf66e40c96f1c9c66cc9781e86eee26cf5e'
+-READER_BYTES=15988
+-KEY='pocket4-bilibili-r5-player-structure-readback-01-20261105'
++READER_SHA='9bfe46d7b8a839f74b064e1a0700dd5470ed7ac4d7c323d8e9ddb58905495008'
++READER_BYTES=18717
++KEY='pocket4-bilibili-r5-player-structure-readback-02-20261105'
+ 
+ def main():
+     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--write-once',action='store_true')
+@@ -19,7 +19,7 @@
+                           'stable_key':KEY,'Android_or_process_actions':0}));return 0
+     raw=(HERE/'read_structure.py').read_bytes()
+     assert len(raw)==READER_BYTES and hashlib.sha256(raw).hexdigest()==READER_SHA and a.output is not None
+-    wrapper="import sys,hashlib;raw=sys.stdin.buffer.read(16385);assert len(raw)==15988 and hashlib.sha256(raw).hexdigest()=="+repr(READER_SHA)+";scope={'__name__':'fixed_retained_structure_reader','__file__':'<verified-retained-structure-reader>'};exec(compile(raw,'read_structure.py','exec'),scope);raise SystemExit(scope['main'](['--collect-once']))"
++    wrapper="import sys,hashlib;raw=sys.stdin.buffer.read(32769);assert len(raw)==18717 and hashlib.sha256(raw).hexdigest()=="+repr(READER_SHA)+";scope={'__name__':'fixed_retained_structure_reader','__file__':'<verified-retained-structure-reader>'};exec(compile(raw,'read_structure.py','exec'),scope);raise SystemExit(scope['main'](['--collect-once']))"
+     request={'host':'pocket4','executable':'/usr/bin/sudo','args':['-n','/usr/bin/python3','-I','-c',wrapper],
+              'cwd':'/home/alex/work','env':{'PYTHONDONTWRITEBYTECODE':'1'},'stdin':raw.decode('utf-8'),
+              'idempotency_key':KEY,'timeout_seconds':30,'cpu_quota_percent':100,
+--- reader01/local_controls.py
++++ reader02/local_controls.py
+@@ -18,9 +18,11 @@
+     qa=types.SimpleNamespace(inspect_record=lambda x:x,scope=lambda x:x)
+     base=types.SimpleNamespace(require=d.need,sha=d.sha,BILI='tv.danmaku.bili')
+     def node(resource,kind,path,bounds,text=''):
+-        return {'resource_id':resource,'class':kind,'path':path,'bounds':bounds,
++        value={'resource_id':resource,'class':kind,'path':path,'bounds':bounds,
+                 'resource_id_truncated':False,'class_truncated':False,'visible':True,
+                 'enabled':True,'password':False,'text':text,'text_truncated':False,'text_sha256':d.sha(text.encode())}
++        value['node_sha256']=d.sha(json.dumps(value,sort_keys=True).encode())
++        return value
+     title='Very Basic Calculus 000: Course Introduction';author='Ayumu爱讲数学'
+     def fixture():
+         nodes=[node('tv.danmaku.bili:id/title','android.widget.TextView','0/1',[0,100,50,120],title),
+@@ -53,6 +55,20 @@
+     try:d.no_raw_ui({'outer':{'nodes':[]}})
+     except RuntimeError:controls.append({'name':'raw_node_export_rejected','passed':True})
+     else:raise AssertionError('raw nodes were not rejected')
++    pair=fixture();pair['nodes'].append({**pair['nodes'][6],'path':'0/0/0/1'})
++    got=d.fixed_roles(pair)
++    assert got['original_three_terms']['one_eligible_SurfaceView_under_container'] is False
++    geometry=got['geometry'];assert geometry['unique_surface_bounds_count']==1
++    assert geometry['all_eligible_surfaces_cover_crop'] is True
++    assert len(geometry['eligible_surfaces'])==2 and geometry['surface_selection_performed'] is False
++    assert all(x['parent_path_sha256']==d.sha(b'0/0/0') for x in geometry['eligible_surfaces'])
++    controls.append({'name':'two_coextensive_surfaces_reported_without_selection_or_old_gate_relaxation','passed':True})
++    pair['nodes'][-1]['bounds']=[10,10,90,90]
++    geometry=d.fixed_roles(pair)['geometry']
++    assert geometry['unique_surface_bounds_count']==2 and geometry['all_eligible_surfaces_cover_crop'] is False
++    assert [x['crop_is_inside_surface'] for x in geometry['eligible_surfaces']]==[True,False]
++    d.no_raw_ui(geometry);assert title not in json.dumps(geometry) and author not in json.dumps(geometry)
++    controls.append({'name':'different_surface_geometry_and_insufficient_cover_visible_as_observation','passed':True})
+     print(json.dumps({'schema':1,'scope':'new structural diagnostic only','passed':len(controls),'controls':controls,
+         'synthetic_node_data':True,'scope_and_hash_validation_seam':True,'original_viewport_predicate_executed':True,
+         'retained_commercial_UI_read':False,'Android_or_Hepta_actions':0,'qualification_asserted':False},ensure_ascii=False,indent=2))

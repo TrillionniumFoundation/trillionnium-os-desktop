@@ -1,0 +1,101 @@
+--- a/kernel_api/include/berberis/kernel_api/proc_maps_fd_owner.h
++++ b/kernel_api/include/berberis/kernel_api/proc_maps_fd_owner.h
+@@ -9,12 +9,13 @@
+ namespace berberis::proc_maps_provenance::fd_owner {
+ 
+ // Run one metadata operation against the caller's real descriptor. The
+-// operation receives a kernel pin in a temporary thread's independent fd table.
++// operation receives a kernel pin in an owner's independent fd table.
+ // No descriptor is installed in, or closed from, the caller's table. The
+ // callback and context must remain valid until this synchronous call returns.
+ //
+-// A short-lived owner avoids a persistent queue/mutex/thread identity inherited
+-// by raw guest fork/clone. It does NOT move pathname resolution into that
++// Until explicit startup opts into reuse, a short-lived owner avoids a queue
++// or thread identity inherited by raw guest fork/clone. Reuse requires the
++// lifecycle APIs below. Neither path moves pathname resolution into that
+ // thread: cwd, dirfd and /proc/thread-self need their own protocol. Required
+ // kernel/policy APIs must be qualified with the owned capability probe before
+ // enabling the provenance candidate on Android.
+@@ -24,7 +25,10 @@
+ // Opt in before entering guest code, while normal startup resources are still
+ // available. Once enabled, WithPinnedFd uses one already-created owner and a
+ // fixed single-request slot, with no pthread creation or queue allocation per
+-// metadata query. This does not remove pidfd_open/getfd's RLIMIT_NOFILE needs.
++// metadata query. A guarded stack mapping survives Stop and private-memory
++// fork so a child/restart does not need a new stack mmap. libc thread/TLS
++// allocation and task-count limits still require separate qualification.
++// This does not remove pidfd_open/getfd's RLIMIT_NOFILE needs.
+ // Pathname operations deliberately retain their per-request owner protocol.
+ int StartReusableMetadataOwner();
+ 
+--- a/kernel_api/proc_maps_fd_owner.cc
++++ b/kernel_api/proc_maps_fd_owner.cc
+@@ -10,6 +10,7 @@
+ #include <sched.h>
+ #include <signal.h>
+ #include <stdio.h>
++#include <sys/mman.h>
+ #include <sys/statfs.h>
+ #include <sys/syscall.h>
+ #include <unistd.h>
+@@ -204,6 +205,13 @@
+   int startup_error = 0;
+   int poison = 0;  // guarded by gate; a failed join must never revive an exited worker
+   pthread_t thread{};
++  // One guarded stack allocation is retained across stop/restart and copied by
++  // private-memory fork. A child can reuse its own COW mapping instead of
++  // needing another stack mmap after the application has lowered RLIMIT_AS.
++  // CLONE_VM/new-TGID admission is rejected before this storage can be touched.
++  void* stack_mapping = nullptr;
++  void* stack_base = nullptr;
++  size_t stack_size = 0;
+   bool joinable = false;
+   bool atfork_registered = false;
+ };
+@@ -328,6 +336,8 @@
+   g_reusable.poison = 0;
+   g_reusable.thread = pthread_t{};
+   g_reusable.joinable = false;
++  // Keep the inherited anonymous stack mapping. The vanished thread cannot
++  // use this child's private COW pages; Start may reuse them under low AS.
+   g_reusable.process.store(CurrentProcess(), std::memory_order_release);
+ }
+ 
+@@ -365,7 +375,35 @@
+   pthread_attr_t attributes;
+   int error = pthread_attr_init(&attributes);
+   if (error != 0) return Error(error);
+-  error = pthread_attr_setstacksize(&attributes, 128u * 1024u);
++  if (g_reusable.stack_mapping == nullptr) {
++    const long page = sysconf(_SC_PAGESIZE);
++    if (page <= 0 || static_cast<size_t>(page) > 128u * 1024u) {
++      pthread_attr_destroy(&attributes);
++      return Error(EINVAL);
++    }
++    const size_t page_bytes = static_cast<size_t>(page);
++    const size_t stack_bytes = ((128u * 1024u + page_bytes - 1) / page_bytes) * page_bytes;
++    const size_t mapping_bytes = stack_bytes + page_bytes;
++    void* mapping = mmap(nullptr, mapping_bytes, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
++    if (mapping == MAP_FAILED) {
++      const int saved = errno;
++      pthread_attr_destroy(&attributes);
++      return Error(saved);
++    }
++    void* stack = static_cast<char*>(mapping) + page_bytes;
++    if (mprotect(stack, stack_bytes, PROT_READ | PROT_WRITE) < 0) {
++      const int saved = errno;
++      munmap(mapping, mapping_bytes);
++      pthread_attr_destroy(&attributes);
++      return Error(saved);
++    }
++    // The private owner is serialized by gate and always joined before reuse.
++    // Its mapping is process-lifetime state, intentionally not freed by Stop.
++    g_reusable.stack_mapping = mapping;
++    g_reusable.stack_base = stack;
++    g_reusable.stack_size = stack_bytes;
++  }
++  error = pthread_attr_setstack(&attributes, g_reusable.stack_base, g_reusable.stack_size);
+   if (error != 0) {
+     pthread_attr_destroy(&attributes);
+     return Error(error);

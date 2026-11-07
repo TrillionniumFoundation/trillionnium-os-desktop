@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys\nEXPECTED={\"bytes\":109840,\"sha256\":\"94d7a6ddc5d9f9ab077f9f0dddf5b1ff1be06f40630bb0a4e750d1a832dc20ee\"}\nSTAGE={\"bytes\":7302,\"sha256\":\"56384d98cf856a42656f47fabbd47a8f4cefbf065aa8c5bea87660c0ce8b68b2\"}\nwire=sys.stdin.buffer.read(EXPECTED['bytes']+1)\nif len(wire)!=EXPECTED['bytes'] or hashlib.sha256(wire).hexdigest()!=EXPECTED['sha256']:\n    raise RuntimeError('fixed locked registry preparer transport length/hash mismatch')\nvalue=json.loads(wire)\nif type(value) is not dict or set(value)!={'schema','stage','packet'} or value['schema']!=1 or type(value['stage']) is not str:\n    raise RuntimeError('fixed locked registry preparer envelope differs')\nstage=value['stage'].encode('utf-8')\nif len(stage)!=STAGE['bytes'] or hashlib.sha256(stage).hexdigest()!=STAGE['sha256']:\n    raise RuntimeError('fixed locked registry preparer stage pin differs')\nscope={'__name__':'__stage__','__file__':'<fixed-locked-registry-stage>'}\nexec(compile(stage,'<fixed-locked-registry-stage>','exec'),scope,scope)\nscope['main'](value['packet'])\n"
+    ],
+    "created_unix_ms": 1793979266861,
+    "cwd": "/",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b17f372d-fc05-792b",
+    "idempotency_key": "pocket4-denial-retirement-wayland-vendor-prep-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b17f372d-fc05-792b",
+    "request_digest": "2187819c9ef520514aaf932220106d2dfdf485e03969dac918430f2bd9d8ce11",
+    "request_fingerprint": 2416042234789306449,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b17f372d-fc05-792b"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b17f372d-fc05-792b"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

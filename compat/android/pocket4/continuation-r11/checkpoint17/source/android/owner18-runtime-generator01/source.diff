@@ -1,0 +1,63 @@
+--- owner17/freeze_runtime17.py
++++ owner18/freeze_runtime18.py
+@@ -1,4 +1,4 @@
+-"""Bind the one actual preparation receipt to the frozen Owner17 runtime template.
++"""Bind the one actual preparation receipt to the frozen Owner18 runtime template.
+ 
+ This local generator does not dispatch a request or execute a runtime.
+ """
+@@ -10,9 +10,9 @@
+ import re
+ 
+ BASE = Path('/workspace/scratch/94990735b266')
+-SOURCE = BASE / 'android-owner17-normal01-freeze-01'
+-OUT = Path('/workspace/scratch/94990735b266/android-owner17-normal01-runtime-freeze-01')
+-SOURCE_MANIFEST_SHA256 = '0b69c268625123af4626964cb59a3cf36278a9345ca6f011af7033569426a262'
++SOURCE = BASE / 'android-owner18-normal01-freeze-01'
++OUT = Path('/workspace/scratch/94990735b266/android-owner18-normal01-runtime-freeze-01')
++SOURCE_MANIFEST_SHA256 = '12db23737188644c67a8a60cff57ab77ed8f46a58512544e6129190c8355bd60'
+ 
+ 
+ def sha(value):
+@@ -41,7 +41,7 @@
+         assert len(data) == row['bytes'] and sha(data) == row['sha256']
+     plan_raw = (SOURCE / 'plan.json').read_bytes()
+     plan = json.loads(plan_raw)
+-    assert plan['kind'] == 'owned-real-producer17-normal01-owned-bootstrap-modes01'
++    assert plan['kind'] == 'owned-real-producer18-normal01-private-crash-buffer01'
+     assert plan['scope'] == 'REAL_OWNER_ABI3_PINNED_CAUSE_TERMINAL_DRAIN_FIRST_ACTIVE_ORIGINAL_RETIREMENT'
+     assert plan['init_protocol_abi'] == 3 and plan['entry_abi'] == 'droidloom-relay-entry-v3'
+     assert actual['success'] is True and actual['errors'] == []
+@@ -50,7 +50,7 @@
+     assert actual['runtime_executed'] is False and actual['namespace_or_network_changed'] is False
+     expected_source = {f.name: {'bytes': len(f.read_bytes()), 'sha256': sha(f.read_bytes())}
+                        for f in (SOURCE / 'source').glob('*.py')}
+-    assert actual['source_files'] == expected_source and len(expected_source) == 6
++    assert actual['source_files'] == expected_source and len(expected_source) == 7
+     assert set(actual['copied_artifacts']) == set(plan['artifacts'])
+     for name, row in actual['copied_artifacts'].items():
+         expected = plan['artifacts'][name]
+@@ -80,10 +80,10 @@
+     request['idempotency_key'] = request['idempotency_key'].replace('__ACTUAL_PREPARED_SHA256_PREFIX16__', args.sha256[:16])
+     assert stdin.replace(args.sha256, '__ACTUAL_PREPARED_SHA256__') == template
+     ast.parse(stdin)
+-    compile(stdin, '<Owner17 exact runtime>', 'exec')
++    compile(stdin, '<Owner18 exact runtime>', 'exec')
+     raw = pretty(request)
+     result = {'schema': 1, 'actual_prepared_sha256': args.sha256,
+-        'source_manifest_sha256': sha(manifest_raw), 'actual_prepared_plan_and_six_sources_and_five_artifacts_match': True,
++        'source_manifest_sha256': sha(manifest_raw), 'actual_prepared_plan_and_seven_sources_and_five_artifacts_match': True,
+         'actual_Main_before_after_final_unchanged': True, 'actual_base86_unchanged': True,
+         'actual_fresh_two_images_and_proposed_ID_admission_passed': True,
+         'only_prepared_SHA_literal_and_stable_key_filled': True, 'request_sha256': sha(raw),
+@@ -91,8 +91,8 @@
+         'runtime_executed': False, 'production_or_App_qualification': False}
+     OUT.mkdir(exist_ok=False)
+     members = {'request.json': raw, 'stdin.py': stdin.encode(), 'actual-prepared.json': body,
+-        'binding-result.json': pretty(result), 'freeze_runtime16.py': Path(__file__).read_bytes(),
+-        'README.md': b"# Exact fresh Owner17 NORMAL01 runtime request\n\nOnly the externally observed actual prepared SHA and stable key are filled into the already frozen runtime template. This local generator has not dispatched a request. Actual Host17 compile, 39 relay / 139 supervisor ordinary tests, two retirement tests, seven IPC controls, context/ABI3, and paired C16 DSO are bound by the preparation plan. Root must review the original actual prepared receipt and hold the runtime while heavy framework work occupies its resource window.\n\nThe unchanged C16 generation-private init logger still requires both fresh generation markers before broker start. The Host17 guest bootstrap directory mode repair is not an Android LMKD or HWS health qualification; private crash-log WIP is excluded. Full-stream completeness and per-line writer attribution remain false. Original authority, ABI3, ACTIVE, Stop, retirement, Main and exact cleanup gates remain. Owner16's original failed broker receipt is preserved, not reclassified. Actual runtime success or failure and all cleanup evidence remain required; this package does not grant whole-App or production qualification.\n"}
++        'binding-result.json': pretty(result), 'freeze_runtime18.py': Path(__file__).read_bytes(),
++        'README.md': b"# Exact fresh Owner18 NORMAL01 runtime request\n\nOnly the actual prepared SHA and stable key are filled into the reviewed runtime template. No dispatch occurs here. Actual Host17 artifacts and ordinary 39/139/7 controls, unchanged LMKD and C16 DSO remain bound. Seven sources include the exact frozen actor and generation-private crash-buffer observer.\n\nOriginal authority, ABI3, first-ACTIVE Stop, failure retirement, Main and exact cleanup gates remain. The observer must qualify fresh init/peer pidfd/root/ELF/domain before its single read request. Its private bounded packet file grants no HWS health or native enrollment; empty or failed capture is not success evidence. The raw packet file is not included in general runtime JSON or this package. The actor's legacy owner17 implementation label is retained; this actual prepared digest and unique plan/nonce/unit identify Owner18.\n\nOwner17's failed runtime stays failed. Root must independently review preparation and serialize the new runtime within its resource window. This package grants neither production nor App qualification.\n"}
+ 
+     rows = []
+     for name, data in members.items():

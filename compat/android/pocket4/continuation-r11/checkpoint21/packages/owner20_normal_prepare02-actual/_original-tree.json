@@ -1,0 +1,95 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "b4a16d18fff808cbeebd22e05a6483ea52491a86",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 2503,
+    "sha256": "8147437b09e0b45bd6fde08e466fad8dc7e6fd284c0e8cefe111125f600234d7",
+    "git_blob_sha1": "69c857db0d9c430dc184629b3dd4b47f9b660b41",
+    "retrieval": "shallow_complete_root_with_catalogued_dependencies",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "prepare-status.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "18389601c0242d3c1a6a377c8492dbda1728e400",
+      "bytes": 729
+    },
+    {
+      "path": "prepare-stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cf735cba948200d38456651c44d3f11f2f1ae8e1",
+      "bytes": 233
+    },
+    {
+      "path": "prepare_admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c703f59bf82b5fb7d223d3c66caa2168cfe47906"
+    },
+    {
+      "path": "prepared.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2d263b76497edf983316b96e3e619c94f1d42eae",
+      "bytes": 60860
+    },
+    {
+      "path": "reader-status.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c097de055c5ae8b2d2a3178fe80688c4d35563b1",
+      "bytes": 733
+    },
+    {
+      "path": "reader-stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "68479d4f83bc9a49be5f954331c1972f933bc779",
+      "bytes": 67163
+    },
+    {
+      "path": "reader_admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a52780c13697346fa4f770ff4840a53c8d62358e"
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "364469f82b524110caae90f912f811a95ae3bc02",
+      "bytes": 592
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "bd92000732c8a35f24dbf432b2263940c88a3015"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "prepare_admission",
+      "original_tree": "c703f59bf82b5fb7d223d3c66caa2168cfe47906",
+      "checkpoint": 21,
+      "canonical_package": "owner20_normal_prepare02-admission"
+    },
+    {
+      "path": "reader_admission",
+      "original_tree": "a52780c13697346fa4f770ff4840a53c8d62358e",
+      "checkpoint": 21,
+      "canonical_package": "owner20_prepared_read02-admission"
+    },
+    {
+      "path": "source",
+      "original_tree": "bd92000732c8a35f24dbf432b2263940c88a3015",
+      "checkpoint": 21,
+      "canonical_package": "owner20-normal02-freeze-source"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

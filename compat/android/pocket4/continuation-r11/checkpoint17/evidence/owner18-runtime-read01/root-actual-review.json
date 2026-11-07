@@ -1,0 +1,147 @@
+{
+  "Main_original_processes_and_installed_contract_unchanged": true,
+  "Main_pids_max": "12288",
+  "actor_first_error": {
+    "error": "RuntimeError('actual producer stopped or failed before ACTIVE')",
+    "stage": "normal"
+  },
+  "actor_result_sha256": "103a59dd3c21943c116f44ca4bca08794d7c0c358bad01267c1b93e0e091bcfe",
+  "actual_job": "1a1ae5cd8da-fc05-5f42",
+  "actual_result": {
+    "bytes": 738082,
+    "sha256": "203a34725e179bfd738780aa8243aa4fe4f53fdd6b65fbf5179d4d38e2ba76d3"
+  },
+  "actual_terminal": {
+    "complete_durable": true,
+    "exit_code": 1,
+    "state": "failed",
+    "stderr_bytes": 0,
+    "stdout_bytes": 516,
+    "timed_out": false
+  },
+  "all_apps_ready": 0,
+  "broker_retired_faulted_and_incomplete_preserved": true,
+  "children_retirement": [
+    {
+      "forced_kill": false,
+      "pid": 3642885,
+      "reaped": true,
+      "returncode": 0,
+      "role": "daemon"
+    },
+    {
+      "forced_kill": false,
+      "pid": 3642871,
+      "reaped": true,
+      "returncode": -15,
+      "role": "presenter"
+    },
+    {
+      "forced_kill": false,
+      "pid": 3642835,
+      "reaped": true,
+      "returncode": 0,
+      "role": "sway"
+    },
+    {
+      "forced_kill": false,
+      "pid": 3642829,
+      "reaped": true,
+      "returncode": 0,
+      "role": "bus"
+    }
+  ],
+  "crash_buffer": {
+    "connection_attempts": 0,
+    "finish_reason": "after original Stop and owned child retirement",
+    "first_error": {
+      "errno": null,
+      "error": "RuntimeError('fixed generation logd ELF metadata differs')",
+      "notes": [],
+      "stage": "bounded_observation"
+    },
+    "held_fds_closed": true,
+    "packet_file": {
+      "bytes": 96,
+      "complete_packets_only": false,
+      "device": 66306,
+      "gid": 0,
+      "inode": 46843237,
+      "mode": 256,
+      "nlink": 1,
+      "relative": "evidence/generation-crash-buffer4.bin",
+      "sha256": "7d58bb65a61b85633ba77b533a3e62d3451d9f1d2f36a1716ddb53c27c34a216",
+      "type": 32768,
+      "uid": 0
+    },
+    "protocol_observed": false,
+    "read_request_attempts": 0,
+    "received_packets": 0,
+    "records": 0,
+    "secondary_errors": [],
+    "source_qualified_before_request": false,
+    "state": "FAILED"
+  },
+  "crash_log_protocol_or_HWS_health_qualified": false,
+  "exact_unit_cleanup": {
+    "cgroup_absent": true,
+    "invocation": "408c44658fdb48e3ad7d7670f90bb6d9",
+    "original_actor_dead": true,
+    "unit": "p4-owner18-normal-20261105-01.service",
+    "unit_not_found": true
+  },
+  "lifecycle_recording_error": null,
+  "lifecycle_recording_incomplete": false,
+  "lifecycle_sequence_complete": true,
+  "namespace_owner_exit": {
+    "core_dumped": false,
+    "exit_code": null,
+    "explicit_stop_requested_before_observation": false,
+    "host_pid": 3642929,
+    "observed_monotonic_ns": 952426382988895,
+    "process": {
+      "birth": 95239449,
+      "pid": 3642929,
+      "pidfd": {
+        "device": 6,
+        "inode": 24439784
+      },
+      "proc_dir": {
+        "device": 26,
+        "inode": 540431663
+      }
+    },
+    "raw_status": 1,
+    "signal": 1,
+    "worker_retirement_started_before_observation": true
+  },
+  "original_Main_maps_equal": 4,
+  "outer_memory_events_all_zero": true,
+  "outer_memory_peak_bytes": 586944512,
+  "outer_swap_peak_bytes": 0,
+  "packet_header_is_not_crash_record": true,
+  "retirement_events": [
+    "prepared",
+    "owner_attached",
+    "init_hello",
+    "broker_ready",
+    "init_project_sent",
+    "init_projected_accepted",
+    "init_commit_sent",
+    "init_done_accepted",
+    "retiring",
+    "broker_retired",
+    "processes_dead",
+    "domain_empty",
+    "retired",
+    "resources_removed",
+    "claim_released"
+  ],
+  "runtime_first_failure": {
+    "message": "owned process generation is dead or changed",
+    "observed_monotonic_ns": 952426378565635,
+    "origin": "runtime"
+  },
+  "schema": 1,
+  "scope": "Runtime remains FAILED; retirement and Main preservation verified, resource window may advance. No raw init log or packet bytes included."
+}

@@ -1,0 +1,127 @@
+{
+  "actual_Owner_qualified": false,
+  "actual_Rust_tests_run": false,
+  "base_input_count": 32,
+  "execution_status": "NOT_SUBMITTED",
+  "negative_config_controls": [
+    {
+      "case": "old_revision",
+      "controller": "compile.py",
+      "rejected": true
+    },
+    {
+      "case": "wrong_pair_manifest",
+      "controller": "compile.py",
+      "rejected": true
+    },
+    {
+      "case": "missing_overlay",
+      "controller": "compile.py",
+      "rejected": true
+    },
+    {
+      "case": "wrong_overlay_bytes",
+      "controller": "compile.py",
+      "rejected": true
+    },
+    {
+      "case": "old_revision",
+      "controller": "run.py",
+      "rejected": true
+    },
+    {
+      "case": "wrong_pair_manifest",
+      "controller": "run.py",
+      "rejected": true
+    },
+    {
+      "case": "missing_overlay",
+      "controller": "run.py",
+      "rejected": true
+    },
+    {
+      "case": "wrong_overlay_bytes",
+      "controller": "run.py",
+      "rejected": true
+    }
+  ],
+  "overlays": [
+    "runtime/droidloom-pressure-relay/src/lib.rs",
+    "runtime/droidloom-supervisor/src/development.rs",
+    "runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs",
+    "runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs"
+  ],
+  "prior_actual_receipt_sha256": "a916592cc708dc76411b482a371214410bca4662f6ff72dccd5083d88872b6a6",
+  "request_argv_resources_and_all_other_keys_unchanged": true,
+  "request_bytes": 284752,
+  "request_sha256": "81d077e2781e2053287ce9cb09e40976f8dd2f0f19cfb41fc945626195c28499",
+  "schema": 1,
+  "source_pair_manifest_sha256": "a50606bd1352c885fe98a20733d340b565a87849413f579321e86e40fecc2634",
+  "stdin_bytes": 273205,
+  "stdin_sha256": "3d8a0cbb2599019bbccbd60fec4d068bbb21a76a6c5e9177c390a9477d1e9b22",
+  "unchanged_function_or_class_AST": [
+    "compile.py:need",
+    "compile.py:sha",
+    "compile.py:now",
+    "compile.py:json_bytes",
+    "compile.py:stamp",
+    "compile.py:read_regular",
+    "compile.py:file_pin",
+    "compile.py:put",
+    "compile.py:all_source",
+    "compile.py:plain_input_path",
+    "compile.py:inputs",
+    "compile.py:command_env",
+    "compile.py:run_command",
+    "compile.py:candidate_input_pins",
+    "compile.py:_resource_need",
+    "compile.py:_resource_uint",
+    "compile.py:_resource_limit",
+    "compile.py:_resource_counters",
+    "compile.py:_resource_membership",
+    "compile.py:_resource_identity",
+    "compile.py:_resource_fstype",
+    "compile.py:_resource_open_descendant",
+    "compile.py:_resource_read_at",
+    "compile.py:_resource_self_membership",
+    "compile.py:_resource_namespaces",
+    "compile.py:_resource_validate_snapshot",
+    "compile.py:_resource_qualify",
+    "compile.py:OwnJobResources",
+    "compile.py:_resource_record_error",
+    "compile.py:finish_own_resource_gate",
+    "run.py:need",
+    "run.py:sha",
+    "run.py:now",
+    "run.py:json_bytes",
+    "run.py:stamp",
+    "run.py:read_regular",
+    "run.py:file_pin",
+    "run.py:put",
+    "run.py:all_source",
+    "run.py:plain_input_path",
+    "run.py:inputs",
+    "run.py:command_env",
+    "run.py:run_command",
+    "run.py:candidate_input_pins",
+    "run.py:_resource_need",
+    "run.py:_resource_uint",
+    "run.py:_resource_limit",
+    "run.py:_resource_counters",
+    "run.py:_resource_membership",
+    "run.py:_resource_identity",
+    "run.py:_resource_fstype",
+    "run.py:_resource_open_descendant",
+    "run.py:_resource_read_at",
+    "run.py:_resource_self_membership",
+    "run.py:_resource_namespaces",
+    "run.py:_resource_validate_snapshot",
+    "run.py:_resource_qualify",
+    "run.py:OwnJobResources",
+    "run.py:_resource_record_error",
+    "run.py:finish_own_resource_gate",
+    "run.py:fd_digest",
+    "run.py:test_summary",
+    "run.py:run_from_args"
+  ]
+}

@@ -1,0 +1,46 @@
+--- reader01/read.py
++++ reader02/read.py
+@@ -139,11 +139,12 @@
+       json.dumps(original,sort_keys=True,separators=(',',':')),'NATIVE_RESULT_MUST_EQUAL_PINNED_WORKER')
+  need(utc(intent['started_utc'])<=utc(result['ended_utc']),'NATIVE_TIMESTAMP_ORDER')
+  return True
+-SOURCE_FORMAT_REFERENCES=json.loads("[{\"name\":\"cli\",\"bytes\":20413,\"sha256\":\"19a9e75d0deb0836fb9d125850600004a4a15be1b1ce8519fb8ca40e2165708d\",\"git_blob\":\"6f523958b64d22b481f77595fae7ab9842a6085a\",\"installed_binary_source_match\":false},{\"name\":\"control\",\"bytes\":70656,\"sha256\":\"8289b74fdf040d2bd3a85d12f4488a82bdab4e1c4c6844ab90fe113228d91200\",\"git_blob\":\"2bed3026cc4f00c819de2ba7fd253165d29bebbb\",\"installed_binary_source_match\":false},{\"name\":\"tasklib\",\"bytes\":56199,\"sha256\":\"8c2bd767a62d6d16a3e02daf7fc992d6c4f79adf6d61efd7c6c199b6650f08d0\",\"git_blob\":\"ada531e16c2ebd29c6d83bbfa1261673f29bff57\",\"installed_binary_source_match\":false},{\"name\":\"taskmain\",\"bytes\":7949,\"sha256\":\"23bb117afd8aa81e23f23b20ce8b4ca9901e7e17a20315d29b3d922b77c789ba\",\"git_blob\":\"3d437b0c5d4672c34906989006a731a255bff436\",\"installed_binary_source_match\":false}]")
++SOURCE_FORMAT_REFERENCES=json.loads("[{\"name\":\"cli\",\"bytes\":20413,\"sha256\":\"19a9e75d0deb0836fb9d125850600004a4a15be1b1ce8519fb8ca40e2165708d\",\"git_blob\":\"6f523958b64d22b481f77595fae7ab9842a6085a\",\"installed_binary_source_match\":false},{\"name\":\"control\",\"bytes\":70656,\"sha256\":\"8289b74fdf040d2bd3a85d12f4488a82bdab4e1c4c6844ab90fe113228d91200\",\"git_blob\":\"2bed3026cc4f00c819de2ba7fd253165d29bebbb\",\"installed_binary_source_match\":false},{\"name\":\"tasklib\",\"bytes\":56199,\"sha256\":\"8c2bd767a62d6d16a3e02daf7fc992d6c4f79adf6d61efd7c6c199b6650f08d0\",\"git_blob\":\"ada531e16c2ebd29c6d83bbfa1261673f29bff57\",\"installed_binary_source_match\":false},{\"name\":\"taskmain\",\"bytes\":7949,\"sha256\":\"23bb117afd8aa81e23f23b20ce8b4ca9901e7e17a20315d29b3d922b77c789ba\",\"git_blob\":\"3d437b0c5d4672c34906989006a731a255bff436\",\"installed_binary_source_match\":false},{\"name\":\"taskcontrol\",\"bytes\":24083,\"sha256\":\"03cb2bb4b13a78adadf173ffae4fd8e3c29a471fd439c7838e44345bd494fd01\",\"git_blob\":\"ef22176682715fc604d37efaf7a2208ed0243d3d\",\"installed_binary_source_match\":false},{\"name\":\"servicecontrol\",\"bytes\":30368,\"sha256\":\"f2314f92862bab1d5354220ecb24954acdbbc536529daf36818b0a8974e1499c\",\"git_blob\":\"5ff38e3b531a6cbe48aa92c45f581ff8e7bcdb17\",\"installed_binary_source_match\":false},{\"name\":\"composertask\",\"bytes\":16609,\"sha256\":\"daa184048871f89545858f30448982bd60212affbc37fe93c6b1b9c5394be350\",\"git_blob\":\"b9aa4e80581a7e4fdc814c0b1bcf320cd5284ebc\",\"installed_binary_source_match\":false}]")
+ 
+ STAGES=('control','policy','wake','snapshot','permission_resolver','activity','alias','discovery','registration')
+ NUMBER=r'(0|[1-9][0-9]{0,12})'
+-CLOSED_CHILD_PATTERNS=()
++CLOSED_CHILD_PATTERNS=(('backend_different_registration_ownership',
++ r'task-control request failed: Backend: Android task (?P<task>[1-9][0-9]{0,9}) is already registered with different ownership'),)
+ def classify_closed_child(error):
+  matches=[]
+  for name,pattern in CLOSED_CHILD_PATTERNS:
+@@ -256,7 +257,17 @@
+  yes('exact_stdout_stderr_agreement',pair_projection(raw,error)==projected)
+  no('stderr_disagreement',lambda:pair_projection(raw,error+b'x'))
+  no('duplicate_JSON_key',lambda:pair_projection(b'{"ok":false,"ok":false}',error))
+- need(len(rows)==16,'CONTROL_COUNT_CHANGED')
++ exact_child='task-control request failed: Backend: Android task 873 is already registered with different ownership'
++ exact=classify_closed_child(exact_child)
++ yes('exact_producer_child',exact=={'shape':'backend_different_registration_ownership','labelled_fields':{'task':873}})
++ closed_message=prefix+timing+'\n'+'droidloom-task-launcher: '+exact_child
++ yes('complete_producer_message',project_message(closed_message)['closed_error']==exact and
++     project_message(closed_message)['complete_closed_error_shape'] is True)
++ yes('producer_suffix_rejected',classify_closed_child(exact_child+' PRIVATE_UNKNOWN_LABEL') is None)
++ yes('producer_wrong_code_rejected',classify_closed_child(exact_child.replace('Backend:','Conflict:')) is None)
++ no('producer_task_range_rejected',lambda:classify_closed_child(exact_child.replace('task 873','task 2147483648')))
++ yes('producer_task_is_parsed_not_assumed',classify_closed_child(exact_child.replace('task 873','task 874'))['labelled_fields']=={'task':874})
++ need(len(rows)==22,'CONTROL_COUNT_CHANGED')
+  return rows
+ def safe_error(error):
+  value=str(error);kind=type(error).__name__
+@@ -282,6 +293,9 @@
+   value=strict_json(raw['native_stdout']);message=value.get('message')
+   need(type(message) is str and len(message.encode())==MESSAGE_PIN['bytes'] and
+        sha(message.encode())==MESSAGE_PIN['sha256'],'EXACT_ACTUAL_MESSAGE_PIN_REQUIRED')
++  child_line=message.split('\n')[-1].encode()
++  need(len(child_line)==126 and sha(child_line)=='557a6cb23e42b9f540c083e98bf7b4548205cb72ad3e4f39fbc4ad705d03fe87',
++       'EXACT_PRIOR_ACTUAL_CHILD_ERROR_LINE')
+   projection=pair_projection(raw['native_stdout'],raw['native_stderr'])
+   bindings={'worker_exact':True,'native_command_equals_worker':True,
+             'stdout_and_stderr_pins_exact':True,'exact_message_pin':True,

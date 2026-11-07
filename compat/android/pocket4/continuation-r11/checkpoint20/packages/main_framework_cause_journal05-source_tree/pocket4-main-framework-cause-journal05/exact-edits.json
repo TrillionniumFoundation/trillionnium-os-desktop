@@ -1,0 +1,32 @@
+[
+  {
+    "label": "allow exactly the complete known bare or init-prefixed control template",
+    "position": 32129,
+    "before": "CONTROL_TEMPLATE=re.compile(r\"init: Control message: Processed ctl\\.(?P<operation>start|stop|restart) for '(?P<role>\"+ROLE+r\")' from pid: (?P<caller>[0-9]{1,10}) \\((?P<cmdline>[^\\r\\n]{0,16000})\\)\")",
+    "after": "CONTROL_TEMPLATE=re.compile(r\"(?:init: )?Control message: Processed ctl\\.(?P<operation>start|stop|restart) for '(?P<role>\"+ROLE+r\")' from pid: (?P<caller>[0-9]{1,10}) \\((?P<cmdline>[^\\r\\n]{0,16000})\\)\")"
+  },
+  {
+    "label": "new pure bare-prefix controls",
+    "position": 35904,
+    "before": "def project_stream(raw,source,stream_complete):",
+    "after": "def bare_prefix_controls():\n    \"\"\"Twelve pure controls for the sole grammar expansion; no raw journal or child access.\"\"\"\n    def row(message):\n        return {\"_BOOT_ID\":BOOT_COMPACT,\"__REALTIME_TIMESTAMP\":str(LOW_US+1),\n                \"__MONOTONIC_TIMESTAMP\":\"965864000000\",\"_TRANSPORT\":\"kernel\",\"MESSAGE\":message}\n    def project(message):\n        return fixed_template_descriptor(row(message),KERNEL_SOURCE,\"0\"*64)\n    passed=[]\n    def ok(name,condition):\n        need(condition,\"BARE_PREFIX_CONTROL_FAILED\")\n        passed.append(name)\n    private=\"PRIVATE_CMDLINE_SENTINEL account=987654321\"\n    bare=\"Control message: Processed ctl.start for 'surfaceflinger' from pid: 830 (\"+private+\")\"\n    item=project(bare)\n    control=item[\"control_template\"]\n    ok(\"bare_complete_public_template\",control is not None and control[\"operation\"]==\"start\" and\n       control[\"target_role\"]==\"surfaceflinger\" and control[\"reported_caller_pid\"]==830 and\n       control[\"caller_cmdline_bytes\"]==len(private.encode(\"utf-8\")) and\n       control[\"caller_cmdline_sha256\"]==hashlib.sha256(private.encode(\"utf-8\")).hexdigest() and\n       private not in json.dumps(item) and \"987654321\" not in json.dumps(item))\n    ok(\"bare_and_original_prefix_same_labelled_fields\",project(\"init: \"+bare)[\"control_template\"]==control)\n    ok(\"reported_caller_never_signal_sender_or_host_identity\",\n       item[\"process_attribution_proved\"] is False and item[\"cause_proved\"] is False and\n       control[\"PID_space\"]==\"Android_init_reported_not_host_attribution\")\n    foreign=project(\"PRIVATE_PREFIX \"+bare)\n    ok(\"foreign_prefix_still_not_authority\",foreign[\"control_template\"] is None and foreign[\"closed_prefix\"] is None)\n    ok(\"unlabelled_number_not_caller\",project(bare.replace(\"from pid: 830\",\"from 830\"))[\"control_template\"] is None)\n    unknown=project(bare.replace(\"'surfaceflinger'\",\"'com.private.account'\"))\n    ok(\"private_service_still_not_exported\",unknown[\"control_template\"] is None and\n       \"com.private.account\" not in json.dumps(unknown))\n    ok(\"trailing_bytes_reject_full_template\",project(bare+\" ignored\")[\"control_template\"] is None)\n    ok(\"embedded_newline_not_a_complete_cmdline\",project(bare.replace(private,private+\"\\nsecond\"))[\"control_template\"] is None)\n    for value,name in [(\"0\",\"zero_labelled_pid_rejected\"),(\"2147483648\",\"out_of_range_labelled_pid_rejected\")]:\n        try:\n            project(bare.replace(\"from pid: 830\",\"from pid: \"+value))\n        except RuntimeError as error:\n            ok(name,str(error)==\"CONTROL_CALLER_PID_BOUND\")\n        else:\n            raise RuntimeError(\"BARE_PREFIX_NUMERIC_NEGATIVE_ACCEPTED\")\n    encoded=(json.dumps(row(bare),sort_keys=True)+\"\\n\").encode()\n    projection=project_stream(encoded,KERNEL_SOURCE,True)\n    ok(\"unlisted_tuple_cannot_enter_locked_templates\",\n       projection[\"all_retained_bytes_parsed\"] is True and projection[\"known_role_templates\"]==[])\n    ok(\"operation_whitelist_not_expanded\",\n       project(bare.replace(\"ctl.start\",\"ctl.kill\"))[\"control_template\"] is None)\n    need(len(passed)==12,\"BARE_PREFIX_CONTROL_COUNT\")\n    return {\"passed\":12,\"cases\":passed,\"filesystem_access\":False,\"subprocesses\":0,\"device_operations\":0}\n\n\ndef project_stream(raw,source,stream_complete):"
+  },
+  {
+    "label": "run added controls before any observations",
+    "position": 48932,
+    "before": "        result[\"template_controls\"]=template_controls()",
+    "after": "        result[\"template_controls\"]=template_controls()\n        result[\"bare_prefix_controls\"]=bare_prefix_controls()"
+  },
+  {
+    "label": "new result kind",
+    "position": 47834,
+    "before": "fixed-Main-framework-cause-host-journal04",
+    "after": "fixed-Main-framework-cause-host-journal05"
+  },
+  {
+    "label": "actual journal04 provenance",
+    "position": 3883,
+    "before": "SOURCE_PINS={\"Root_read02_source_sha256\":\"1fe8a4813901de264e17fd968244171f0e9458373fff936905e466ae8fe89fd7\",\"Root_read02_stdout_sha256\":\"b49bbb4276c5a95de610956c878b0d23a1abdde0a8411bea310dbaca585396a6\",\"original_development_source_sha256\":\"a66cc37191a5bc8d6aac7b55cdc6aba715e4ba8269ed13bc019608fe6c3f7869\",\"original_control_source_sha256\":\"2edcbc5a75d48ceb7371bcaa3462c3acc43f119c2a3b81e806f4eae46be522cb\"}",
+    "after": "SOURCE_PINS={\"Root_read02_source_sha256\":\"1fe8a4813901de264e17fd968244171f0e9458373fff936905e466ae8fe89fd7\",\"Root_read02_stdout_sha256\":\"b49bbb4276c5a95de610956c878b0d23a1abdde0a8411bea310dbaca585396a6\",\"original_development_source_sha256\":\"a66cc37191a5bc8d6aac7b55cdc6aba715e4ba8269ed13bc019608fe6c3f7869\",\"original_control_source_sha256\":\"2edcbc5a75d48ceb7371bcaa3462c3acc43f119c2a3b81e806f4eae46be522cb\",\"Root_journal04_source_sha256\":\"3918e517ac2ce2e2ee19aa862ac60b7631e48bf383c14788a1db2c0e0f4bccb7\",\"Root_journal04_stdout_sha256\":\"d9a69221de89f8275770db62aec11303c8434aa3bdea8e1dc06c78194f2449cd\"}"
+  }
+]

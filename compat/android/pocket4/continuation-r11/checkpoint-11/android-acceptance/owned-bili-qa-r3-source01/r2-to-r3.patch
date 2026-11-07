@@ -1,0 +1,1038 @@
+--- r2/AndroidManifest.xml
++++ r3/AndroidManifest.xml
+@@ -1,11 +1,11 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+-    package="org.droidloom.qa.bili.r2" android:versionCode="1" android:versionName="1">
++    package="org.droidloom.qa.bili.r3" android:versionCode="1" android:versionName="1">
+     <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="33" />
+     <queries><package android:name="tv.danmaku.bili" /></queries>
+     <application android:label="Owned Bili QA" android:debuggable="false"
+         android:testOnly="true" android:allowBackup="false" android:hasCode="true" />
+-    <instrumentation android:name="org.droidloom.qa.bili.r2.ActionRunner"
+-        android:targetPackage="org.droidloom.qa.bili.r2"
++    <instrumentation android:name="org.droidloom.qa.bili.r3.ActionRunner"
++        android:targetPackage="org.droidloom.qa.bili.r3"
+         android:functionalTest="true" android:handleProfiling="false" />
+ </manifest>
+--- r2/README.md
++++ r3/README.md
+@@ -1,125 +1,129 @@
+-# Owned Bili QA r2: explicit display readiness and independent post-state
++# Owned Bili QA r3: bounded complete trees and a fixed public query
+ 
+-This is an uninstalled candidate in the independent package
+-`org.droidloom.qa.bili.r2`, protocol `pocket4-owned-bili-qa-v2`. The existing r1
+-package, UID 10164, APK, claims and failed launch/inspect01 are unchanged. This
+-source does not acquire r1's build, signer, UID or Android qualification. New
+-actual build/APK/signer and fresh installation evidence are required before any
+-r2 instrumentation. No device request has been dispatched by this author.
++This is source for the independent self-instrumentation package
++`org.droidloom.qa.bili.r3`, protocol `pocket4-owned-bili-qa-v3`. The already
++installed r1 and r2 packages are not replaced. Their claims, source, APKs,
++signatures, UIDs and original failures remain separate. A successful r3 build
++does not authorize installation or UI actions. Each later step must bind this
++source manifest, the actual new build/APK/signer, the actual new installed UID,
++and the held Main/recorder gates.
+ 
+-The new protocol requires an explicit `scope.display = 0`. This is the requested
+-target display, verified again by the helper's actual window selection. The
+-unchanged host foreground parser still binds the original activity/window token;
+-its flattened `dumpsys window displays` record does not independently prove a
+-display ID. That limit is not presented as a new platform diagnosis.
++## Actual reason for this revision
+ 
+-## Actual trigger and limits of the diagnosis
++The r2 search-entry run launched a fresh Bilibili task and successfully inspected
++76 nodes. Its subsequent click request failed before `performAction` with
++`TREE_NODE_OR_DEPTH_BOUND`; a fresh independent post-inspection failed the same
++way. Both independent finally after-state commands completed, and exact-owned
++task cleanup removed task 876 while retaining Home task 851. The aggregate run
++remains FAIL. The old failure combined the node and depth limits without
++counters; it cannot establish which one was exceeded, or the later tree size.
++The original source and actual receipts are not rewritten.
+ 
+-The original run successfully launched Bilibili task 874 from a state with only
+-Home task 851. Its before-state finished successfully. Inspect finished with
+-code 0, error `NO_FOCUSED_APPLICATION_WINDOW`, after 10 ms; its own service flags
+-were read back as restored, but the host sequence aborted before independent
+-after-state. Exact-task cleanup succeeded and Main stayed at the pinned 48cb
+-epoch. The aggregate run remains FAIL. These scoped findings do not qualify
+-Bilibili playback or audio. Private raw command output and UI data are excluded
+-from this source tree; the parent holds the original receipts.
++The r3 traversal admits at most 512 nodes, depth 32 and 64 children per node.
++The canonical result is at most 524288 bytes; the tree reserves 65536 bytes for
++non-tree metadata. These are complete traversal limits: exceeding any limit
++fails the operation, never returns a truncated tree as success. The traversal
++still omits the contents and descendants of invisible or password nodes, as
++declared in its existing `visible-non-password-subtrees` contract.
+ 
+-The old host foreground parser identifies one unique `mCurrentFocus` token,
+-package and activity across `dumpsys window displays`; it does not retain the
+-display section. The Java helper used context-associated `getWindows()` and
+-then required display 0. The failure recorded neither the returned list nor
+-its display/focus metadata. Accordingly, neither a display mismatch nor an
+-accessibility readiness race is claimed as the proved root cause.
++Each capture has a small counter record: capture purpose, attempted/emitted
++nodes, maximum attempted depth, maximum children, serialized bytes, timestamps
++and a completion flag. Distinct node, depth, child and result errors retain
++these counters. No node titles or text enter this diagnostic record. Python
++checks the exact bounds and counter schema, rejects incomplete success, and
++matches a successful inspection's counters to its actual complete JSON.
+ 
+-Android documents that `UiAutomation.getWindows()` uses the display associated
+-with its context, while `getWindowsOnAllDisplays()` returns lists keyed by
+-display. The latter is available since API 30. We now explicitly select display
+-0; no other display, active-only window or non-focused window becomes eligible.
++The existing display-0 focused application-window gate, target package and UID,
++host activity/window binding, pre-action whole-tree/window equality, refreshed
++target hash, final whole-tree check, eight-second operation deadline and
++twelve-second watchdog remain. No action is retried. A changed tree still
++fails and requires new evidence; increasing the traversal budget does not
++remove the freshness or focus gates.
+ 
+-Official references (not a claim that these exact public revisions are the
+-installed framework source):
++## Bounded result transport
+ 
+-- https://developer.android.com/reference/android/app/UiAutomation#getWindows()
+-- https://developer.android.com/reference/android/app/UiAutomation#getWindowsOnAllDisplays()
+-- https://android.googlesource.com/platform/frameworks/base/+/HEAD/core/java/android/app/UiAutomation.java
+-- https://android.googlesource.com/platform/frameworks/base/+/b52353b790b08147b6d63a9669790162b769166a/services/accessibility/java/com/android/server/accessibility/AbstractAccessibilityServiceConnection.java
++The helper stores its raw canonical result in its own nonce result file. Its
++instrumentation Bundle carries one gzip member under the new
++`owned_qa_result_gzip_base64` key. The raw result is at most 512 KiB, gzip at most
++256 KiB, and base64 at most 349528 characters. Python bounds decompression to
++512 KiB plus one sentinel byte and requires one complete member with a valid
++checksum and no trailing or concatenated data. It does not accept the old r2
++wire key. Actual command exit, unique successful finish code -1, request hash,
++nonce, helper UID, Main/transport post-guard and restoration are still required.
+ 
+-The AOSP service connection has an `ensureWindowsAvailableTimedLocked` path.
+-That supports treating window availability as an observable condition, but
+-does not prove why the Pocket4 sample lacked an eligible window.
++This codec keeps a larger allowed tree from expanding unchecked into a Bundle
++string. It is not a diagnosis of the original traversal failure and does not
++guarantee Binder availability. Android documents that the Binder buffer is
++shared by concurrent transactions. The original recorder saves full command
++output without its own numeric read cap; this producer and the r3 parser supply
++the explicit output bounds. The parser's stdout cap is 353624 bytes, including
++4096 bytes for instrumentation framing. Future collectors must retain these
++bounds and fail rather than truncate a result into success.
+ 
+-## Narrow Java changes
++## Only one new action: a fixed public query
+ 
+-The helper queries `getWindowsOnAllDisplays()` and accepts exactly one focused
+-application window on display 0, then verifies its root belongs to Bilibili.
+-All original target UID, host activity/window attestation, full-tree identity,
+-fresh click target and single-action checks remain. A click still requires a
+-fresh complete tree matching the successful inspection and remains a separate
+-authorized operation; this build request performs no UI action.
++The existing exact-node click remains available. The new `set_text` operation
++only accepts the literal public query `微积分`. Its plan must specify an observed
++exact `tv.danmaku.bili:id/...` resource and class `android.widget.EditText`.
++The current complete tree must contain exactly one matching enabled, visible,
++non-password editable node that advertises `ACTION_SET_TEXT`. The helper checks
++the same facts after refreshing that target, performs the action once with
++`ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE`, then refreshes it and verifies the
++actual text equals the fixed query. A returned action acknowledgment without
++that readback is insufficient.
+ 
+-Window availability may be observed for at most two seconds within the original
+-eight-second operation budget. The helper subscribes only to window-change
+-event types, never event text/source. An event serial closes the query-to-wait
+-gap. Waiting uses a bounded monitor wait awakened by events or the deadline;
+-there is no fixed sleep or replay of an action. The outer watchdog stays at
+-twelve seconds. IPC returning too late fails the readiness/overall deadline.
++The capability does not itself authorize a particular search-field selector.
++The actual workflow must first observe the real search page. It adds no IME
++submission, clipboard, generic typing, global Back, seek, settings write,
++permission adoption, permission grant or touch-exploration action. Later
++navigation and playback controls remain bound to their own observed controls.
+ 
+-First/last census contain only display IDs, connection-scoped window IDs, type,
+-focus/active/accessibility-focus booleans, layer, counts and timings. They have
+-no titles, node text, accounts or recommendations. Bounds are eight displays,
+-32 windows per display, 128 total windows, 64 queries and at most 32768 bytes of
+-census. A new bounded snapshot is checked before replacing the prior one, so a
+-census bound error still has a small failure envelope. The overall result cap
+-stays 262144 bytes; the tree reserves 65536 bytes for non-tree metadata. Node,
+-depth and child limits are unchanged. Service flags and the event listener
+-have independent finally cleanup, retaining the original error on failure.
++The Python sequence preserves the first error and independently attempts one
++fresh after-state in `finally`, including after action failure. It never
++replays a click or text action. A successful after-state cannot replace a
++failed operation or qualify restoration by itself. The frozen R4 recorder
++manifest remains `52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1`.
++The adapter rejects known old helper UIDs 10164 and 10165 and has no v2 fallback.
+ 
+-## Host failure and restoration changes
++## Build-only scope and actual remaining gates
+ 
+-The host still requires the unique successful instrumentation finish code -1.
+-A separate failure-only decoder can explain an exact finish(0) envelope after
+-checking canonical bytes, request hash, nonce, operation and helper UID. It
+-returns only bounded failure/window metadata and never a qualified assessment.
+-The original parser error remains primary; failed-assessment write errors are
+-notes, not replacements. No raw inspection tree enters the failure summary.
++Compile API is SDK31; min API is 31 and target API is 33. The same pinned JDK21,
++SDK31 public android.jar, D8/R8, aapt, zipalign and apksigner inputs are checked
++before and after the build. This is a non-debuggable, testOnly, no-backup,
++Java-only self-instrumentation APK, with no Activity or Android permission and
++only Bilibili package visibility. It never instruments Bilibili itself.
+ 
+-Once the state sequence begins, its finally path attempts exactly one fresh
+-after-state even if before-state, inspection, foreground validation or a click
+-fails. The same held transport, source, Main and installed identity guards
+-remain. A poisoned transport may safely refuse that after-state attempt; such
+-refusal is a secondary error, not an excuse to bypass the transport guard.
++The create-only source and output roots are
++`/home/alex/work/pocket4-owned-bili-qa-r3-source-01` and
++`/home/alex/work/pocket4-owned-bili-qa-r3-build-01`. The generated request uses
++one CPU, 512 MiB RAM, zero swap, TasksMax 128 and a 300-second deadline. Its
++stable key is `pocket4-owned-bili-qa-r3-static-build-01-20261105`; the author has
++not submitted it. Default builder, stage, adapter and generator entry modes
++remain PLAN_ONLY.
+ 
+-Original exceptions are retained. Independent after-state, foreground, task
+-and installed identity errors cannot replace them. An after-state alone cannot
+-qualify an unsuccessful inspection/action or overwrite its failure. Successful
+-restoration requires the original real own-service readback plus unchanged
+-fresh before/after state. For an action error, the earlier successful inspect
+-is not substituted as the action's restoration evidence.
++Nine local control groups execute the actual Python contract and sequence
++code. They cover old/new tree boundaries, bounded gzip decoding and corrupt or
++concatenated members, strict finish/UID/wire gates, fixed-query restrictions,
++exact editable selection, safe partial counters, and independent after-state.
++The Session control explicitly substitutes Android-facing methods; these
++controls are not Java compilation, Android behavior or accessibility tests.
++The source package includes no private commercial UI or raw journal.
+ 
+-The host adapter explicitly binds the actual R4 recorder manifest
+-`52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1`.
+-It has no old-v2 fallback. The r2 helper UID is still unknown and must come from
+-its own actual install; the adapter rejects old r1 UID 10164.
++Actual r3 compilation, installation, focused-window behavior, fresh click,
++search-field readback and playback are still unqualified. Playback continuation,
++pause/resume, Back/reopen, cold start and app-attributed real audio remain
++separate acceptance gates. No whole-App readiness conclusion follows from this
++source freeze or the preceding launch/inspection successes.
+ 
+-## Build-only qualification
++## Primary API references
+ 
+-The same pinned JDK21, SDK31 public `android.jar`, D8/R8, aapt, zipalign and
+-apksigner inputs from the actual r1 build are used. Compile API is 31; min API
+-31 and target API 33 are distinct and unchanged. No Activity, native library,
+-service, receiver, provider, dangerous permission or network permission is
+-introduced. It is non-debuggable, testOnly, no-backup self-instrumentation, with
+-only Bilibili package visibility. No shell permission adoption, settings write,
+-grant or touch-exploration request is added.
++- Android ACTION_SET_TEXT, its Bundle argument, and editable-node contract:
++  https://developer.android.com/reference/android/view/accessibility/AccessibilityNodeInfo.AccessibilityAction#ACTION_SET_TEXT
++- Android Binder shared-buffer and ambiguous-failure semantics:
++  https://developer.android.com/reference/android/os/TransactionTooLargeException
++- The unchanged all-display window API:
++  https://developer.android.com/reference/android/app/UiAutomation#getWindowsOnAllDisplays()
+ 
+-The build source/output roots are fresh `pocket4-owned-bili-qa-r2-source-01`
+-and `pocket4-owned-bili-qa-r2-build-01`. The generated request is build-only,
+-one CPU, 512 MiB, swap 0, Tasks 128, 300 seconds. Default entry/generator modes
+-remain PLAN_ONLY. Actual tool, source, signer, APK and receipt checks are the
+-unchanged builder gates. No installation or business action is authorized by a
+-successful compile alone.
+-
+-Old/new host controls use explicit synthetic Session seams to exercise the
+-actual Python sequence error/finally code; they are not Android runtime tests.
+-Private original wire is never embedded in those fixtures. Actual compilation,
+-window readiness, event delivery and the new package's runtime behavior remain
+-unqualified until the device produces their receipts.
++These API references explain the selected contracts. They are not asserted to
++be byte-identical source for the installed Android framework. The exact pinned
++SDK31 jar remains the compilation gate.
+--- r2/build-input-reference.json
++++ r3/build-input-reference.json
+@@ -1,13 +1,36 @@
+ {
+-  "schema": 1,
+-  "artifact": "recovery02-recreated-tool-reference",
+-  "original_reference_file_recovered": false,
+   "actual_prior_receipt": {
++    "bytes": 14633,
+     "sha256": "2a8cb152f9dea378ffc180c95ee4cbab1eb2b527c0dc9e176fd89bcee46119c6",
+-    "bytes": 14633,
+     "was_read_and_all_seven_values_checked_before_disconnection": true
+   },
++  "artifact": "owned-bili-qa-r3-pinned-tool-reference",
++  "compile_sdk_api": 31,
++  "min_sdk": 31,
++  "new_helper_compilation_performed": false,
++  "original_reference_file_recovered": false,
++  "r3_actual_compilation_performed": false,
++  "schema": 1,
++  "source_history": {
++    "actual_r2_build_result_bytes": 17188,
++    "actual_r2_build_result_sha256": "714be386573242c2763d6fb69f91e557a5f7537e33b30f75ccdaaebfb694deae",
++    "r2_receipt_is_prior_tool_evidence_not_r3_build_qualification": true,
++    "tool_table_reused_without_changes": true
++  },
++  "target_sdk": 33,
+   "tools": {
++    "aapt": {
++      "path": "/usr/lib/android-sdk/build-tools/debian/aapt",
++      "sha256": "d9c0d90fc4bcf03d57cbf4fe19ca66c80280ac760c53245c8678b9837844b972"
++    },
++    "android_jar": {
++      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
++      "sha256": "2e71327d66d43cb85a6ac11029376c19067ccc0f15e73c90f2f6777f3be70fb5"
++    },
++    "apksigner": {
++      "path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
++      "sha256": "52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f"
++    },
+     "java": {
+       "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+       "sha256": "cfa21aeadd00925925c9e1287f5c08f3e04ee7f26a9e23d9dbfb16149153d842"
+@@ -16,30 +39,14 @@
+       "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+       "sha256": "18351d7a271f6b8bd17f9e8fef6bb04baa7cf008cbc8a3a782a93a2f5c48ecfa"
+     },
+-    "android_jar": {
+-      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+-      "sha256": "2e71327d66d43cb85a6ac11029376c19067ccc0f15e73c90f2f6777f3be70fb5"
+-    },
+     "r8": {
+       "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+       "sha256": "33cab360b273b46ad47c3356cf1fb2ac715870fd3eecc55cbd9d508a7f609ce7"
+     },
+-    "aapt": {
+-      "path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+-      "sha256": "d9c0d90fc4bcf03d57cbf4fe19ca66c80280ac760c53245c8678b9837844b972"
+-    },
+     "zipalign": {
+       "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+       "sha256": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758"
+-    },
+-    "apksigner": {
+-      "path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+-      "sha256": "52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f"
+     }
+   },
+-  "compile_sdk_api": 31,
+-  "min_sdk": 31,
+-  "target_sdk": 33,
+-  "new_helper_compilation_performed": false,
+   "transitive_JDK_modules_or_shared_libraries_fully_frozen": false
+ }
+--- r2/build_candidate.py
++++ r3/build_candidate.py
+@@ -16,8 +16,8 @@
+ import zipfile
+ 
+ HERE = Path(__file__).resolve().parent
+-PACKAGE = 'org.droidloom.qa.bili.r2'
+-OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r2-build-01')
++PACKAGE = 'org.droidloom.qa.bili.r3'
++OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r3-build-01')
+ JDK = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86'
+ SDK_BASE = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts'
+ TOOLS = {
+@@ -74,7 +74,7 @@
+         require(not path.is_absolute() and '..' not in path.parts and path.as_posix() == name, 'source relative path')
+         actual = file_pin(HERE / name, 1024 * 1024)
+         require(actual['sha256'] == row['sha256'] and actual['bytes'] == row['bytes'], 'source differs: ' + name)
+-    require({'AndroidManifest.xml', 'src/org/droidloom/qa/bili/r2/ActionRunner.java', 'qa_contract.py', 'build_candidate.py'} <= set(files), 'required sources missing')
++    require({'AndroidManifest.xml', 'src/org/droidloom/qa/bili/r3/ActionRunner.java', 'qa_contract.py', 'build_candidate.py'} <= set(files), 'required sources missing')
+     return files
+ 
+ 
+@@ -196,7 +196,7 @@
+     try:
+         for name in ('classes','dex','res','private-signing'):
+             (OUTPUT/name).mkdir(mode=0o700)
+-        source_java = HERE/'src/org/droidloom/qa/bili/r2/ActionRunner.java'
++        source_java = HERE/'src/org/droidloom/qa/bili/r3/ActionRunner.java'
+         command('javac', [tool['javac'], '-J-XX:ActiveProcessorCount=1', '-J-XX:+UseSerialGC', '-J-Xmx256m',
+             '-proc:none','-Xmaxerrs','20','-Xmaxwarns','20','-source','8','-target','8','-bootclasspath',resolved['android_jar'],
+             '-d',str(OUTPUT/'classes'),str(source_java)])
+@@ -218,10 +218,10 @@
+         # pinned Java runtime. No platform/commercial signing key is consumed.
+         command('create-owned-signing-key', java+['-m','java.base/sun.security.tools.keytool.Main',
+             '-genkeypair','-noprompt','-storetype','PKCS12','-keystore',str(store),'-storepass:file',str(password),
+-            '-alias','owned-bili-qa-r2','-keyalg','RSA','-keysize','3072','-validity','3650',
+-            '-dname','CN=Pocket4 Owned Bili QA R2,O=Owned Test,C=US'])
++            '-alias','owned-bili-qa-r3','-keyalg','RSA','-keysize','3072','-validity','3650',
++            '-dname','CN=Pocket4 Owned Bili QA R3,O=Owned Test,C=US'])
+         command('sign', [tool['apksigner'],'sign','--ks',str(store),'--ks-pass','file:'+str(password),
+-            '--ks-key-alias','owned-bili-qa-r2','--min-sdk-version','31','--v1-signing-enabled','false',
++            '--ks-key-alias','owned-bili-qa-r3','--min-sdk-version','31','--v1-signing-enabled','false',
+             '--v2-signing-enabled','true','--v3-signing-enabled','true','--out',str(OUTPUT/'owned-bili-qa.apk'),
+             str(OUTPUT/'aligned.apk')])
+         signature = command('signature', [tool['apksigner'],'verify','--verbose','--print-certs','--min-sdk-version','31',str(OUTPUT/'owned-bili-qa.apk')])
+@@ -231,16 +231,16 @@
+         badging = command('badging', [tool['aapt'],'dump','badging',str(OUTPUT/'owned-bili-qa.apk')])
+         permissions = command('permissions', [tool['aapt'],'dump','permissions',str(OUTPUT/'owned-bili-qa.apk')])
+         xml = command('manifest', [tool['aapt'],'dump','xmltree',str(OUTPUT/'owned-bili-qa.apk'),'AndroidManifest.xml'])
+-        require(b"package: name='org.droidloom.qa.bili.r2' versionCode='1'" in badging and
++        require(b"package: name='org.droidloom.qa.bili.r3' versionCode='1'" in badging and
+                 b"sdkVersion:'31'" in badging and b"targetSdkVersion:'33'" in badging, 'actual APK package/SDK differs')
+         require(b'uses-permission' not in permissions and b'uses-permission' not in xml and
+                 b'application-debuggable' not in badging and b'launchable-activity' not in badging, 'actual APK privilege/component differs')
+         for forbidden in (b'E: activity ',b'E: activity-alias ',b'E: service ',b'E: receiver ',b'E: provider '):
+             require(forbidden not in xml, 'unexpected actual APK component')
+-        require(re.search(rb'A: android:targetPackage\([^\n]*="org\.droidloom\.qa\.bili\.r2"',xml) is not None,
++        require(re.search(rb'A: android:targetPackage\([^\n]*="org\.droidloom\.qa\.bili\.r3"',xml) is not None,
+                 'actual self instrumentation target required')
+         require(len(re.findall(rb'E: instrumentation(?:\s|$)',xml)) == 1 and
+-                len(re.findall(rb'A: android:name\([^\n]*="org\.droidloom\.qa\.bili\.r2\.ActionRunner"',xml)) == 1,
++                len(re.findall(rb'A: android:name\([^\n]*="org\.droidloom\.qa\.bili\.r3\.ActionRunner"',xml)) == 1,
+                 'one exact actual instrumentation component required')
+         require(re.search(rb'A: android:testOnly\([^\n]*=\(type 0x12\)0xffffffff',xml) is not None and
+                 re.search(rb'A: android:debuggable\([^\n]*=\(type 0x12\)0x0\b',xml) is not None,
+--- r2/make_build_request.py
++++ r3/make_build_request.py
+@@ -5,7 +5,7 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-bili-qa-r2-static-build-01-20261105'
++KEY='pocket4-owned-bili-qa-r3-static-build-01-20261105'
+ 
+ 
+ def encode(value):
+--- r2/qa_adapter.py
++++ r3/qa_adapter.py
+@@ -18,7 +18,7 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ RECORDER_MANIFEST_SHA = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+-SELF = 'org.droidloom.qa.bili.r2'
++SELF = 'org.droidloom.qa.bili.r3'
+ BUILD_COMMANDS = ['javac','d8','aapt-package','align','create-owned-signing-key','sign',
+                   'signature','alignment','badging','permissions','manifest']
+ 
+@@ -78,24 +78,30 @@
+                 'SOURCE_RELATIVE_PATH_REQUIRED')
+         require(len(pinned(HERE/name, row['sha256'])) == row['bytes'], 'SOURCE_SIZE_CHANGED')
+     require({'qa_adapter.py','qa_contract.py','build_candidate.py','AndroidManifest.xml',
+-             'src/org/droidloom/qa/bili/r2/ActionRunner.java'} <= set(manifest['files']),
++             'src/org/droidloom/qa/bili/r3/ActionRunner.java'} <= set(manifest['files']),
+             'OWNED_SOURCE_CLOSURE_INCOMPLETE')
+     return manifest
+ 
+ 
+ def validate_plan(plan, qa):
+     require(isinstance(plan, dict) and plan.get('schema') == 1 and
+-            plan.get('operation') in ('state','inspect','click'), 'OWNED_PLAN_REQUIRED')
++            plan.get('operation') in ('state','inspect','click','set_text'), 'OWNED_PLAN_REQUIRED')
+     op = plan['operation']; keys = {'schema','operation','nonces'}
+-    if op == 'click':
++    if op in ('click','set_text'):
+         keys.add('selector')
+         selector = plan.get('selector')
+         require(isinstance(selector, dict) and selector and
+                 set(selector) <= {'resource_id','text','content_desc','class'} and
+                 all(isinstance(v, str) and 0 < len(v.encode('utf-8')) <= 256 for v in selector.values()),
+                 'EXACT_NODE_SELECTOR_REQUIRED')
++    if op == 'set_text':
++        keys.add('value')
++        require(plan.get('value') == qa.PUBLIC_SEARCH_QUERY and
++                {'resource_id','class'}<=set(plan['selector']) and plan['selector']['class']=='android.widget.EditText' and
++                re.fullmatch(r'tv\.danmaku\.bili:id/[A-Za-z0-9_]+',plan['selector']['resource_id']),
++                'ONLY_OBSERVED_EXACT_EDIT_RESOURCE_AND_PUBLIC_QUERY')
+     require(set(plan) == keys and isinstance(plan['nonces'], dict), 'EXACT_PLAN_KEYS_REQUIRED')
+-    names = {'state'} if op == 'state' else {'before','inspect','after'} | ({'action'} if op == 'click' else set())
++    names = {'state'} if op == 'state' else {'before','inspect','after'} | ({'action'} if op in ('click','set_text') else set())
+     require(set(plan['nonces']) == names, 'EXACT_PHASE_NONCES_REQUIRED')
+     values = [qa.nonce(value) for value in plan['nonces'].values()]
+     require(len(set(values)) == len(values), 'DISTINCT_PHASE_NONCES_REQUIRED')
+@@ -140,7 +146,7 @@
+     def __init__(self, flow, recorder, qa, proof, helper_uid):
+         require(flow.contract.sha256 == RECORDER_MANIFEST_SHA and not flow._private_backend_transport,
+                 'FROZEN_PUBLIC_RECORDER_TRANSPORT_REQUIRED')
+-        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10117,10125,10164),
++        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10117,10125,10164,10165),
+                 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
+         self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
+         self.nonces = set()
+@@ -173,7 +179,7 @@
+         self.nonces.add(request['nonce'])
+         self.recorder.write_new(f.step/(request['nonce']+'.request.json'), request)
+         before = f.command_index
+-        out = f.android(qa.instrumentation_argv(request), 20, mutation=request['op'] == 'click')
++        out = f.android(qa.instrumentation_argv(request), 20, mutation=request['op'] in ('click','set_text'))
+         require(f.command_index == before+1, 'ONE_ACTUAL_HELD_COMMAND_REQUIRED')
+         stem = f.step/('command-%03d' % f.command_index)
+         raw = bounded(str(stem)+'.result.json', 65536); row = json.loads(raw)
+@@ -269,15 +275,18 @@
+             require(self.foreground() == scope, 'ORIGINAL_ACTIVITY_OR_WINDOW_CHANGED_AFTER_INSPECT')
+             middle = inspected
+             result['inspection_wire_sha256'] = inspected['wire_sha256']
+-            if plan['operation'] == 'click':
+-                node = qa.select_unique_clickable(inspected['helper']['inspection'], plan['selector'])
+-                action = request('action','click', scope=scope, inspection_nonce=names['inspect'],
+-                    inspection_sha256=inspected['wire_sha256'], **node)
++            if plan['operation'] in ('click','set_text'):
++                editing = plan['operation']=='set_text'
++                node = (qa.select_unique_editable if editing else qa.select_unique_clickable)(
++                    inspected['helper']['inspection'], plan['selector'])
++                extra = {'value':plan['value']} if editing else {}
++                action = request('action',plan['operation'], scope=scope, inspection_nonce=names['inspect'],
++                    inspection_sha256=inspected['wire_sha256'], **node, **extra)
+                 middle = None
+                 middle = self.instrument(action)
+                 require(middle['helper']['action_window'] == inspected['helper']['inspection']['window'],
+                         'ACKNOWLEDGED_ACTION_WINDOW_DIFFERS')
+-                result['click_acknowledged'] = True
++                result['set_text_acknowledged' if editing else 'click_acknowledged'] = True
+         except BaseException as error:
+             remember('state_inspection_or_action',error)
+         finally:
+@@ -334,7 +343,7 @@
+     builder = load(HERE/'build_candidate.py', manifest['files']['build_candidate.py']['sha256'], 'owned_qa_build_gate')
+     proof = qualified_build(args, manifest, builder)
+     plan_raw = pinned(args.plan, args.plan_sha256, 16384); plan = validate_plan(json.loads(plan_raw), qa)
+-    require(re.fullmatch(r'/home/alex/work/pocket4-bilibili-owned-qa-r2-flow-[0-9a-f]{32}', str(args.flow_dir)) and
++    require(re.fullmatch(r'/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-[0-9a-f]{32}', str(args.flow_dir)) and
+             args.flow_dir.resolve() == args.flow_dir and args.recorder_root.resolve() == args.recorder_root,
+             'NEW_CANONICAL_OWNED_FLOW_AND_RECORDER_REQUIRED')
+     base = json.loads(pinned(args.recorder_root/'source-manifest.json', RECORDER_MANIFEST_SHA, 131072))
+@@ -365,7 +374,7 @@
+ 
+     try:
+         flow = recorder.Flow(flow_args)
+-        flow.begin(flow_args, mutation=plan['operation'] == 'click')
++        flow.begin(flow_args, mutation=plan['operation'] in ('click','set_text'))
+         action_lock = recorder.lock_file(recorder.ACTION_LOCK)
+         result.update(Session(flow, recorder, qa, proof, args.helper_uid).sequence(plan))
+         result['ok'] = True
+@@ -409,7 +418,7 @@
+     args = parser.parse_args()
+     if not args.execute_once:
+         print(json.dumps({'state':'PLAN_ONLY', 'package':SELF, 'recorder_manifest_sha256':RECORDER_MANIFEST_SHA,
+-            'operations':['state','inspect','click'], 'install_launch_task_cleanup_or_UI_actions':0,
++            'operations':['state','inspect','click','set_text'], 'install_launch_task_cleanup_or_UI_actions':0,
+             'actual_build_install_and_runtime_qualification_required':True}))
+         return 0
+     require(all(getattr(args, name) is not None for name in ('source_manifest_sha256','build_receipt_sha256',
+--- r2/qa_contract.py
++++ r3/qa_contract.py
+@@ -3,16 +3,21 @@
+ import hashlib
+ import json
+ import re
+-
+-PROTOCOL = 'pocket4-owned-bili-qa-v2'
+-SELF = 'org.droidloom.qa.bili.r2'
++import zlib
++
++PROTOCOL = 'pocket4-owned-bili-qa-v3'
++SELF = 'org.droidloom.qa.bili.r3'
+ COMPONENT = SELF + '/' + SELF + '.ActionRunner'
+ PACKAGE = 'tv.danmaku.bili'
+ UID = 10117
+ MAIN_EPOCH = '48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'
+ MAX_REQUEST = 16384
+-MAX_RESULT = 262144
+-MAX_NODES = 128
++MAX_RESULT = 524288
++MAX_COMPRESSED_WIRE = 262144
++MAX_STDOUT = 4 * ((MAX_COMPRESSED_WIRE + 2) // 3) + 4096
++MAX_NODES = 512
++MAX_DEPTH = 32
++PUBLIC_SEARCH_QUERY = "微积分"
+ SCOPE_KEYS = {'package', 'uid', 'user', 'display', 'activity', 'window_token', 'main_epoch_sha256'}
+ 
+ 
+@@ -76,16 +81,22 @@
+     nonce(value.get('nonce'))
+     op = value.get('op')
+     expected = {'protocol', 'nonce', 'op'}
+-    if op in ('inspect', 'click'):
++    if op in ('inspect', 'click', 'set_text'):
+         expected.add('scope')
+         scope(value.get('scope'))
+-    if op == 'click':
++    if op in ('click','set_text'):
+         expected.update(('inspection_nonce', 'inspection_sha256', 'node_path', 'node_sha256'))
+         require(nonce(value.get('inspection_nonce')) != value['nonce'], 'DISTINCT_ACTION_NONCE_REQUIRED')
+         digest(value.get('inspection_sha256')); digest(value.get('node_sha256'))
+         require(isinstance(value.get('node_path'), str) and
+-                re.fullmatch(r'0(?:/[0-9]{1,2}){0,24}', value['node_path']), 'NODE_PATH_REQUIRED')
+-    require(op in ('state', 'inspect', 'click') and set(value) == expected, 'EXACT_OPERATION_KEYS_REQUIRED')
++                re.fullmatch(r'0(?:/[0-9]{1,2}){0,32}', value['node_path']), 'NODE_PATH_REQUIRED')
++    if op == 'set_text':
++        expected.update(('node_resource_id','value'))
++        require(value.get('value') == PUBLIC_SEARCH_QUERY,'ONLY_FIXED_PUBLIC_SEARCH_QUERY_ALLOWED')
++        require(isinstance(value.get('node_resource_id'),str) and
++                re.fullmatch(r'tv\.danmaku\.bili:id/[A-Za-z0-9_]+',value['node_resource_id']) and
++                len(value['node_resource_id']) <= 256,'EXACT_EDIT_RESOURCE_REQUIRED')
++    require(op in ('state', 'inspect', 'click', 'set_text') and set(value) == expected, 'EXACT_OPERATION_KEYS_REQUIRED')
+     raw = canonical(value)
+     require(0 < len(raw) <= MAX_REQUEST, 'REQUEST_BOUND')
+     return raw
+@@ -108,6 +119,26 @@
+     return value
+ 
+ 
++
++def decode_wire(encoded):
++    require(isinstance(encoded,str) and 0<len(encoded)<=4*((MAX_COMPRESSED_WIRE+2)//3),
++            'COMPRESSED_BASE64_BOUND')
++    try:
++        compressed=base64.b64decode(encoded,validate=True)
++    except (ValueError,base64.binascii.Error) as error:
++        raise ProtocolError('INVALID_COMPRESSED_BASE64') from error
++    require(0<len(compressed)<=MAX_COMPRESSED_WIRE and
++            base64.b64encode(compressed).decode('ascii')==encoded,'CANONICAL_COMPRESSED_BASE64_REQUIRED')
++    decoder=zlib.decompressobj(31)
++    try:
++        raw=decoder.decompress(compressed,MAX_RESULT+1)
++    except zlib.error as error:
++        raise ProtocolError('INVALID_GZIP_WIRE') from error
++    require(0<len(raw)<=MAX_RESULT and decoder.eof and not decoder.unconsumed_tail and
++            not decoder.unused_data,'SINGLE_BOUNDED_COMPLETE_GZIP_MEMBER_REQUIRED')
++    return raw
++
++
+ def parse_completed(stdout, stderr, returncode, request, helper_uid):
+     """Call only after the held command is joined and its post-guard is recorded.
+ 
+@@ -116,23 +147,24 @@
+     """
+     raw_request = validate_request(request)
+     require(type(returncode) is int and returncode == 0, 'ACTUAL_COMMAND_FAILED')
+-    require(isinstance(stdout, bytes) and isinstance(stderr, bytes) and len(stdout) <= 4 * MAX_RESULT + 4096,
++    require(isinstance(stdout, bytes) and isinstance(stderr, bytes) and len(stdout) <= MAX_STDOUT,
+             'COMMAND_OUTPUT_BOUND')
+     require(stderr == b'', 'COMMAND_STDERR_REQUIRES_REVIEW')
+     text = stdout.decode('utf-8', 'strict')
+     require('INSTRUMENTATION_FAILED' not in text and 'INSTRUMENTATION_ABORTED' not in text,
+             'FRAMEWORK_INSTRUMENTATION_FAILED')
+-    encoded = re.findall(r'^INSTRUMENTATION_RESULT: owned_qa_result_base64=([^\r\n]*)\r?$', text, re.M)
++    encoded = re.findall(r'^INSTRUMENTATION_RESULT: owned_qa_result_gzip_base64=([^\r\n]*)\r?$', text, re.M)
+     finishes = re.findall(r'^INSTRUMENTATION_CODE: (-?[0-9]+)\r?$', text, re.M)
+     require(len(encoded) == 1 and finishes == ['-1'], 'EXACT_SUCCESSFUL_FINISH_REQUIRED')
+-    raw = base64.b64decode(encoded[0], validate=True)
++    raw = decode_wire(encoded[0])
+     require(0 < len(raw) <= MAX_RESULT, 'RESULT_BOUND')
+     value = json.loads(raw)
+     require(canonical(value) == raw and isinstance(value, dict), 'CANONICAL_RESULT_REQUIRED')
+     require(value.get('protocol') == PROTOCOL and value.get('nonce') == request['nonce'] and
+-            value.get('op') == request['op'] and value.get('request_sha256') == sha(raw_request),
++            value.get('op') == request['op'] and value.get('request_sha256') == sha(raw_request) and
++            value.get('wire_codec') == 'gzip-canonical-json-v1',
+             'RESULT_REQUEST_BINDING_FAILED')
+-    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10125, 10164) and value.get('self_uid') == helper_uid and
++    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10125, 10164, 10165) and value.get('self_uid') == helper_uid and
+             type(value.get('self_pid')) is int and value['self_pid'] > 1, 'INSTALLED_HELPER_IDENTITY_REQUIRED')
+     require(value.get('ok') is True and value.get('error') is None and value.get('secondary_errors') == [] and
+             value.get('claim_persistence_completed') is True and value.get('helper_work_completed') is True,
+@@ -149,7 +181,7 @@
+                 value.get('ui_automation_connected') is False and value.get('requires_post_termination_state_check') is False and
+                 restore.get('service_info_captured') is False, 'STATE_PROBE_MUST_NOT_CONNECT_AUTOMATION')
+         state(value.get('state'))
+-        require(value.get('window_observation') == {},'STATE_CANNOT_ENUMERATE_WINDOWS')
++        require(value.get('window_observation') == {} and value.get('tree_observations') == [],'STATE_CANNOT_ENUMERATE_WINDOWS_OR_TREES')
+     else:
+         require(value.get('host_scope_attestation') == request['scope'] and value.get('activity_verified_inside_helper') is False and
+                 value.get('target_uid_verified') == UID, 'HOST_SCOPE_ECHO_OR_ACTUAL_UID_CHANGED')
+@@ -165,20 +197,29 @@
+                 'SERVICE_READBACK_OR_TOUCH_EXPLORATION_MISMATCH')
+         state(value.get('accessibility_state_before_connection'))
+         observed_window = window_observation(value.get('window_observation'))
++        observed_trees = tree_observations(value.get('tree_observations'),request['op'],complete_required=True)
+         if request['op'] == 'inspect':
+             require(value.get('action_attempted') is False and value.get('outcome_unknown') is False, 'INSPECTION_CANNOT_ACT')
+             inspect_record(value.get('inspection'))
+             require(observed_window['selected_window_id'] == value['inspection']['connection_scoped_window_id'],
+                     'INSPECTION_WINDOW_NOT_SELECTED_CENSUS_WINDOW')
++            require(observed_trees[0]['emitted_nodes'] == len(value['inspection']['nodes']) and
++                    observed_trees[0]['serialized_bytes'] == len(canonical(value['inspection'])),
++                    'COMPLETE_TREE_COUNTERS_MUST_MATCH_ACTUAL_INSPECTION')
+         else:
+             require(value.get('action_attempted') is True and value.get('outcome_unknown') is True and
+-                    value.get('node_action') == 'ACTION_CLICK' and value.get('node_action_returned') is True,
++                    value.get('node_action') == ('ACTION_SET_TEXT' if request['op']=='set_text' else 'ACTION_CLICK') and
++                    value.get('node_action_returned') is True,
+                     'CLICK_DISPATCH_NOT_ACKNOWLEDGED')
+             for source_key, result_key in (('inspection_nonce','inspection_nonce'), ('inspection_sha256','inspection_sha256'),
+                                            ('node_path','target_node_path'), ('node_sha256','target_node_sha256')):
+                 require(value.get(result_key) == request[source_key], 'CLICK_TARGET_BINDING_FAILED')
+             require(observed_window['selected_window_id'] == value.get('connection_scoped_window_id'),
+                     'ACTION_WINDOW_NOT_SELECTED_CENSUS_WINDOW')
++            if request['op']=='set_text':
++                require(value.get('target_resource_id') == request['node_resource_id'] and
++                        value.get('requested_value_sha256') == value.get('observed_value_sha256') == sha(PUBLIC_SEARCH_QUERY.encode()) and
++                        value.get('value_readback_verified') is True,'ACTUAL_PUBLIC_QUERY_READBACK_REQUIRED')
+     return {'helper': value, 'wire_sha256': sha(raw), 'stdout_sha256': sha(stdout), 'stderr_sha256': sha(stderr),
+             'actual_command_returncode': returncode, 'actual_instrumentation_finish_code': -1,
+             'command_join_and_epoch_guards_must_be_bound_separately': True}
+@@ -200,9 +241,11 @@
+     seen = set()
+     for node in nodes:
+         require(isinstance(node, dict) and node.get('package') == PACKAGE and isinstance(node.get('path'), str) and
+-                re.fullmatch(r'0(?:/[0-9]{1,2}){0,24}', node['path']) and node['path'] not in seen, 'NODE_SCOPE_OR_PATH_FAILED')
++                re.fullmatch(r'0(?:/[0-9]{1,2}){0,32}', node['path']) and node['path'] not in seen, 'NODE_SCOPE_OR_PATH_FAILED')
+         seen.add(node['path'])
+         require(node.get('node_sha256') == sha(canonical({k:v for k,v in node.items() if k != 'node_sha256'})), 'NODE_HASH_FAILED')
++        require(type(node.get('editable')) is bool and type(node.get('supports_set_text')) is bool,
++                'ACTUAL_NODE_EDIT_CAPABILITY_REQUIRED')
+         if node.get('password') is True or node.get('visible') is False:
+             require(node.get('content_redacted') is True and not ({'text','text_sha256','content_desc','content_desc_sha256'} & set(node)),
+                     'PASSWORD_OR_INVISIBLE_CONTENT_MUST_NOT_BE_READ')
+@@ -212,17 +255,18 @@
+ def failure_diagnostic(stdout, request, helper_uid):
+     """Bound failure metadata only. This never returns a qualified assessment."""
+     validate_request(request)
+-    require(isinstance(stdout,bytes) and len(stdout) <= 2*MAX_RESULT,'FAILURE_OUTPUT_BOUND')
++    require(isinstance(stdout,bytes) and len(stdout) <= MAX_STDOUT,'FAILURE_OUTPUT_BOUND')
+     text = stdout.decode('utf-8','strict')
+-    encoded = re.findall(r'^INSTRUMENTATION_RESULT: owned_qa_result_base64=([^\r\n]+)\r?$',text,re.M)
++    encoded = re.findall(r'^INSTRUMENTATION_RESULT: owned_qa_result_gzip_base64=([^\r\n]+)\r?$',text,re.M)
+     finishes = re.findall(r'^INSTRUMENTATION_CODE: (-?[0-9]+)\r?$',text,re.M)
+     require(len(encoded) == 1 and finishes == ['0'],'EXACT_FAILURE_FINISH_REQUIRED')
+-    raw = base64.b64decode(encoded[0],validate=True)
++    raw = decode_wire(encoded[0])
+     require(0 < len(raw) <= MAX_RESULT,'FAILURE_WIRE_BOUND')
+     value = json.loads(raw)
+     require(canonical(value) == raw and value.get('protocol') == PROTOCOL and
+             value.get('nonce') == request['nonce'] and value.get('op') == request['op'] and
+-            value.get('request_sha256') == sha(canonical(request)) and value.get('self_uid') == helper_uid,
++            value.get('request_sha256') == sha(canonical(request)) and value.get('self_uid') == helper_uid and
++            value.get('wire_codec') == 'gzip-canonical-json-v1',
+             'FAILURE_REQUEST_IDENTITY_BINDING')
+     require(value.get('ok') is False and isinstance(value.get('error'),str) and
+             re.fullmatch('[A-Z][A-Z0-9_]{0,95}',value['error']),'ACTUAL_HELPER_REJECTION_REQUIRED')
+@@ -231,9 +275,42 @@
+         'claim_persistence_completed','helper_work_completed','action_attempted','outcome_unknown',
+         'started_elapsed_ms','finished_elapsed_ms','requires_post_termination_state_check','restoration')}
+     result.update(wire_sha256=sha(raw),instrumentation_finish_code=0,qualified_success=False)
++    if 'tree_observations' in value:
++        result['tree_observations'] = tree_observations(value['tree_observations'],request['op'],complete_required=False)
+     if 'window_observation' in value:
+         result['window_observation'] = window_observation(value['window_observation'],ready_required=False)
+     return result
++
++
++
++def tree_observations(value, operation, complete_required):
++    require(isinstance(value,list) and len(value)<=3 and len(canonical(value))<=8192,
++            'SAFE_TREE_COUNTER_BOUND')
++    if operation=='state':
++        require(value==[],'STATE_CANNOT_ENUMERATE_TREES')
++        return value
++    expected=['inspection'] if operation=='inspect' else ['action_target','action_final_window']
++    require(len(value)<=len(expected),'TREE_CAPTURE_COUNT_BOUND')
++    if complete_required:require(len(value)==len(expected),'COMPLETE_TREE_CAPTURE_SEQUENCE_REQUIRED')
++    keys={'capture','purpose','node_limit','depth_limit','child_limit','json_byte_limit','attempted_nodes',
++          'emitted_nodes','max_attempted_depth','max_observed_children','serialized_bytes','complete',
++          'began_elapsed_ms','last_elapsed_ms'}
++    for index,row in enumerate(value):
++        require(isinstance(row,dict) and set(row)==keys and row['capture']==index+1 and
++                row['purpose']==expected[index] and type(row['complete']) is bool and
++                all(type(row[k]) is int for k in keys-{'purpose','complete'}),'EXACT_SAFE_TREE_COUNTERS_REQUIRED')
++        require((row['node_limit'],row['depth_limit'],row['child_limit'],row['json_byte_limit'])==
++                (MAX_NODES,MAX_DEPTH,64,MAX_RESULT-65536),'EXACT_TREE_LIMITS_REQUIRED')
++        require(0<=row['attempted_nodes']<=MAX_NODES+1 and 0<=row['emitted_nodes']<=MAX_NODES and
++                0<=row['max_attempted_depth']<=MAX_DEPTH+1 and 0<=row['max_observed_children']<(1<<31) and
++                0<=row['serialized_bytes']<=33554432 and
++                0<=row['began_elapsed_ms']<=row['last_elapsed_ms'],'TREE_COUNTER_VALUE_BOUND')
++        if complete_required:require(row['complete'],'PARTIAL_TREE_CANNOT_QUALIFY')
++        if row['complete']:
++            require(0<row['emitted_nodes']==row['attempted_nodes']<=MAX_NODES and
++                    row['max_attempted_depth']<=MAX_DEPTH and row['max_observed_children']<=64 and
++                    0<row['serialized_bytes']<=MAX_RESULT-65536,'COMPLETE_TREE_COUNTERS_INCONSISTENT')
++    return value
+ 
+ 
+ def window_observation(value, ready_required=True):
+@@ -291,10 +368,28 @@
+     return {'node_path': found[0]['path'], 'node_sha256': found[0]['node_sha256']}
+ 
+ 
++
++def select_unique_editable(inspection, selector):
++    inspect_record(inspection)
++    require(isinstance(selector,dict) and {'resource_id','class'}<=set(selector) and
++            set(selector)<={'resource_id','class','text','content_desc'} and
++            selector['class']=='android.widget.EditText' and
++            re.fullmatch(r'tv\.danmaku\.bili:id/[A-Za-z0-9_]+',selector['resource_id']) and
++            all(isinstance(v,str) and 0<len(v.encode('utf-8'))<=256 for v in selector.values()),
++            'EXACT_OBSERVED_EDIT_RESOURCE_AND_CLASS_REQUIRED')
++    found=[node for node in inspection['nodes'] if node.get('password') is False and
++           node.get('enabled') is True and node.get('visible') is True and node.get('editable') is True and
++           node.get('supports_set_text') is True and
++           all(node.get(k)==v and node.get(k+'_truncated') is False for k,v in selector.items())]
++    require(len(found)==1,'EDIT_SELECTOR_NOT_UNIQUE_AND_ELIGIBLE')
++    return {'node_path':found[0]['path'],'node_sha256':found[0]['node_sha256'],
++            'node_resource_id':found[0]['resource_id']}
++
++
+ def assess_restoration(before, operation, after):
+     """These inputs must be parse_completed returns from three joined commands."""
+     first, middle, last = before['helper'], operation['helper'], after['helper']
+-    require(first['op'] == last['op'] == 'state' and middle['op'] in ('inspect','click'), 'STATE_OPERATION_STATE_SEQUENCE_REQUIRED')
++    require(first['op'] == last['op'] == 'state' and middle['op'] in ('inspect','click','set_text'), 'STATE_OPERATION_STATE_SEQUENCE_REQUIRED')
+     require(len({first['nonce'], middle['nonce'], last['nonce']}) == 3, 'DISTINCT_PHASE_NONCES_REQUIRED')
+     require(first['self_uid'] == middle['self_uid'] == last['self_uid'], 'HELPER_UID_CHANGED')
+     require(first['state'] == middle['accessibility_state_before_connection'] == last['state'] and
+--- r2/src/org/droidloom/qa/bili/r2/ActionRunner.java
++++ r3/src/org/droidloom/qa/bili/r3/ActionRunner.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.bili.r2;
++package org.droidloom.qa.bili.r3;
+ 
+ import android.accessibilityservice.AccessibilityServiceInfo;
+ import android.app.Instrumentation;
+@@ -29,18 +29,20 @@
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Set;
++import java.util.zip.GZIPOutputStream;
+ import org.json.JSONArray;
+ import org.json.JSONObject;
+ 
+ /** An owned self-instrumentation; it never instruments the commercial app. */
+ public final class ActionRunner extends Instrumentation {
+-    static final String PROTOCOL = "pocket4-owned-bili-qa-v2";
++    static final String PROTOCOL = "pocket4-owned-bili-qa-v3";
+     static final String PACKAGE = "tv.danmaku.bili";
+-    static final String SELF = "org.droidloom.qa.bili.r2";
++    static final String SELF = "org.droidloom.qa.bili.r3";
+     static final String MAIN_EPOCH = "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f";
+     static final int TARGET_UID = 10117;
+-    static final int MAX_REQUEST = 16384, MAX_RESULT = 262144;
+-    static final int MAX_NODES = 128, MAX_DEPTH = 24, MAX_CHILDREN = 64;
++    static final int MAX_REQUEST = 16384, MAX_RESULT = 524288, MAX_COMPRESSED_WIRE = 262144;
++    static final int MAX_NODES = 512, MAX_DEPTH = 32, MAX_CHILDREN = 64;
++    static final String PUBLIC_SEARCH_QUERY = "微积分";
+     static final long DEADLINE_MS = 8000, WATCHDOG_MS = 12000, MAX_INSPECTION_AGE_MS = 10000;
+     static final long WINDOW_WAIT_MS = 2000;
+     static final int MAX_WINDOW_QUERIES = 64;
+@@ -55,6 +57,8 @@
+     private final Object windowEvents = new Object();
+     private long windowEventSerial;
+     private JSONObject windowObservation = new JSONObject();
++    private final JSONArray treeObservations = new JSONArray();
++    private JSONObject currentTreeObservation;
+ 
+     static final class Rejected extends Exception {
+         Rejected(String code) { super(code); }
+@@ -161,13 +165,19 @@
+             if (op.equals("state")) keys(request, "protocol", "nonce", "op");
+             else if (op.equals("inspect")) keys(request, "protocol", "nonce", "op", "scope");
+             else if (op.equals("click")) keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "node_path", "node_sha256");
++            else if (op.equals("set_text")) {
++                keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "node_path", "node_sha256", "node_resource_id", "value");
++                need(PUBLIC_SEARCH_QUERY.equals(string(request, "value", 64)), "ONLY_FIXED_PUBLIC_SEARCH_QUERY_ALLOWED");
++                need(string(request, "node_resource_id", 256).matches("tv\\.danmaku\\.bili:id/[A-Za-z0-9_]+"), "EXACT_EDIT_RESOURCE_REQUIRED");
++            }
+             else throw new Rejected("UNSUPPORTED_OPERATION");
+             need(PROTOCOL.equals(string(request, "protocol", 64)), "PROTOCOL_MISMATCH");
+             nonce = string(request, "nonce", 32);
+             need(nonce.matches("[0-9a-f]{32}"), "EXACT_NONCE_REQUIRED");
+             need(SELF.equals(getContext().getPackageName()) && SELF.equals(getTargetContext().getPackageName()), "SELF_INSTRUMENTATION_REQUIRED");
+             need(Process.myUid() / 100000 == 0, "USER_ZERO_REQUIRED");
+-            result.put("protocol", PROTOCOL).put("nonce", nonce).put("op", op).put("request_sha256", hash(raw));
++            result.put("protocol", PROTOCOL).put("nonce", nonce).put("op", op).put("request_sha256", hash(raw))
++                .put("wire_codec", "gzip-canonical-json-v1");
+             result.put("self_uid", Process.myUid()).put("self_pid", Process.myPid()).put("started_elapsed_ms", started);
+             writeNew(nonce + ".claim.json", canonical(request).getBytes(StandardCharsets.UTF_8));
+             claimed = true;
+@@ -181,10 +191,10 @@
+                 result.put("accessibility_state_before_connection", accessibilityState());
+                 connect();
+                 if (op.equals("inspect")) {
+-                    Capture captured = inspect(null);
++                    Capture captured = inspect(null, "inspection");
+                     try { result.put("inspection", captured.json); }
+                     finally { captured.close(); }
+-                } else click(request, result);
++                } else act(request, result);
+             }
+         } catch (Exception error) { primary = error; }
+         finally {
+@@ -203,6 +213,7 @@
+             result.put("restoration", restoration);
+             need(canonical(windowObservation).getBytes(StandardCharsets.UTF_8).length <= 32768, "WINDOW_CENSUS_RESULT_BOUND");
+             result.put("window_observation", windowObservation);
++            result.put("tree_observations", treeObservations);
+             // The adapter must observe the state AFTER am instrument terminates. The helper
+             // cannot honestly assert that framework connection teardown has already completed.
+             result.put("accessibility_mode_restoration_verified", JSONObject.NULL);
+@@ -212,7 +223,11 @@
+             need(output.length <= MAX_RESULT, "RESULT_BOUND");
+             if (claimed) writeNew(nonce + ".result.json", output);
+             Bundle bundle = new Bundle();
+-            bundle.putString("owned_qa_result_base64", Base64.encodeToString(output, Base64.NO_WRAP));
++            ByteArrayOutputStream compressed = new ByteArrayOutputStream();
++            try (GZIPOutputStream stream = new GZIPOutputStream(compressed)) { stream.write(output); }
++            byte[] wire = compressed.toByteArray();
++            need(wire.length > 0 && wire.length <= MAX_COMPRESSED_WIRE, "COMPRESSED_WIRE_BOUND");
++            bundle.putString("owned_qa_result_gzip_base64", Base64.encodeToString(wire, Base64.NO_WRAP));
+             // Keep the watchdog armed through framework teardown. Its return and the
+             // command's actual termination are separately assessed by the host adapter.
+             finish(primary == null ? -1 : 0, bundle);
+@@ -330,12 +345,22 @@
+         out.put(key, full.length() <= 256 ? full : full.substring(0, 256));
+         out.put(key + "_sha256", hash(full.getBytes(StandardCharsets.UTF_8))).put(key + "_truncated", full.length() > 256);
+     }
++    static boolean supportsAction(AccessibilityNodeInfo value, int action) throws Exception {
++        List<AccessibilityNodeInfo.AccessibilityAction> actions = value.getActionList();
++        need(actions != null && actions.size() <= 64, "NODE_ACTION_LIST_BOUND");
++        for (AccessibilityNodeInfo.AccessibilityAction item : actions) {
++            need(item != null, "NODE_ACTION_ENTRY_MISSING");
++            if (item.getId() == action) return true;
++        }
++        return false;
++    }
+     JSONObject node(AccessibilityNodeInfo value, String path) throws Exception {
+         need(PACKAGE.equals(text(value.getPackageName())), "CROSS_PACKAGE_NODE");
+         JSONObject out = new JSONObject();
+         out.put("path", path).put("package", PACKAGE).put("enabled", value.isEnabled()).put("clickable", value.isClickable())
+             .put("visible", value.isVisibleToUser()).put("focused", value.isFocused()).put("selected", value.isSelected())
+-            .put("checked", value.isChecked()).put("password", value.isPassword()).put("child_count", value.getChildCount());
++            .put("checked", value.isChecked()).put("password", value.isPassword()).put("child_count", value.getChildCount())
++            .put("editable", value.isEditable()).put("supports_set_text", supportsAction(value, AccessibilityNodeInfo.ACTION_SET_TEXT));
+         textField(out, "resource_id", value.getViewIdResourceName()); textField(out, "class", value.getClassName());
+         // Password text and content descriptions are never read or hashed.
+         if (!value.isPassword() && value.isVisibleToUser()) { textField(out, "text", value.getText()); textField(out, "content_desc", value.getContentDescription()); }
+@@ -343,9 +368,17 @@
+         Rect box = new Rect(); value.getBoundsInScreen(box); out.put("bounds", bounds(box)); return out;
+     }
+     void walk(AccessibilityNodeInfo value, String path, int depth, JSONArray rows, Capture capture, String wanted) throws Exception {
+-        timeBound(); need(depth <= MAX_DEPTH && rows.length() < MAX_NODES, "TREE_NODE_OR_DEPTH_BOUND");
+-        need(value.getChildCount() >= 0 && value.getChildCount() <= MAX_CHILDREN, "TREE_CHILD_BOUND");
++        timeBound();
++        currentTreeObservation.put("attempted_nodes", currentTreeObservation.getInt("attempted_nodes") + 1)
++            .put("max_attempted_depth", Math.max(depth, currentTreeObservation.getInt("max_attempted_depth")))
++            .put("emitted_nodes", rows.length()).put("last_elapsed_ms", SystemClock.elapsedRealtime());
++        need(depth <= MAX_DEPTH, "TREE_DEPTH_BOUND");
++        need(rows.length() < MAX_NODES, "TREE_NODE_COUNT_BOUND");
++        int children = value.getChildCount();
++        currentTreeObservation.put("max_observed_children", Math.max(children, currentTreeObservation.getInt("max_observed_children")));
++        need(children >= 0 && children <= MAX_CHILDREN, "TREE_CHILD_BOUND");
+         JSONObject row = node(value, path); row.put("node_sha256", hashJson(row)); rows.put(row);
++        currentTreeObservation.put("emitted_nodes", rows.length());
+         if (path.equals(wanted)) { need(capture.target == null, "AMBIGUOUS_NODE_PATH"); capture.target = AccessibilityNodeInfo.obtain(value); }
+         if (value.isPassword() || !value.isVisibleToUser()) return;
+         for (int n = 0; n < value.getChildCount(); n++) {
+@@ -430,8 +463,18 @@
+             need(SystemClock.elapsedRealtime() < deadline, "NO_FOCUSED_APPLICATION_WINDOW");
+         }
+     }
+-    Capture inspect(String wanted) throws Exception {
+-        timeBound(); SelectedWindows windows = awaitFocusedWindow();
++    Capture inspect(String wanted, String purpose) throws Exception {
++        timeBound();
++        need(treeObservations.length() < 3, "TREE_OBSERVATION_COUNT_BOUND");
++        currentTreeObservation = new JSONObject().put("capture", treeObservations.length() + 1)
++            .put("purpose", purpose).put("node_limit", MAX_NODES).put("depth_limit", MAX_DEPTH)
++            .put("child_limit", MAX_CHILDREN).put("json_byte_limit", MAX_RESULT - 65536)
++            .put("attempted_nodes", 0).put("emitted_nodes", 0).put("max_attempted_depth", 0)
++            .put("max_observed_children", 0).put("serialized_bytes", 0).put("complete", false)
++            .put("began_elapsed_ms", SystemClock.elapsedRealtime());
++        currentTreeObservation.put("last_elapsed_ms", currentTreeObservation.getLong("began_elapsed_ms"));
++        treeObservations.put(currentTreeObservation);
++        SelectedWindows windows = awaitFocusedWindow();
+         AccessibilityWindowInfo chosen = windows.selected;
+         AccessibilityNodeInfo root = null;
+         Capture capture = new Capture(new JSONObject());
+@@ -449,7 +492,10 @@
+                 .put("connection_scoped_window_id", chosen.getId()).put("nodes", rows).put("tree_sha256", hashJson(rows))
+                 .put("observed_elapsed_ms", SystemClock.elapsedRealtime()).put("complete", true)
+                 .put("traversal", "visible-non-password-subtrees");
+-            need(canonical(capture.json).getBytes(StandardCharsets.UTF_8).length <= MAX_RESULT - 65536, "TREE_RESULT_BOUND");
++            int serializedBytes = canonical(capture.json).getBytes(StandardCharsets.UTF_8).length;
++            currentTreeObservation.put("serialized_bytes", serializedBytes);
++            need(serializedBytes <= MAX_RESULT - 65536, "TREE_RESULT_BOUND");
++            currentTreeObservation.put("complete", true).put("last_elapsed_ms", SystemClock.elapsedRealtime());
+             return capture;
+         } catch (Exception error) { capture.close(); throw error; }
+         finally {
+@@ -457,7 +503,8 @@
+             windows.close();
+         }
+     }
+-    void click(JSONObject request, JSONObject result) throws Exception {
++    void act(JSONObject request, JSONObject result) throws Exception {
++        final boolean editing = "set_text".equals(string(request, "op", 16));
+         String priorNonce = string(request, "inspection_nonce", 32);
+         need(!priorNonce.equals(string(request, "nonce", 32)), "ACTION_REQUIRES_DISTINCT_NONCE");
+         String expectedHash = string(request, "inspection_sha256", 64);
+@@ -474,29 +521,53 @@
+         long age = SystemClock.elapsedRealtime() - integer(expected, "observed_elapsed_ms");
+         need(age >= 0 && age <= MAX_INSPECTION_AGE_MS, "INSPECTION_TOO_OLD");
+         String path = string(request, "node_path", 160);
+-        need(path.matches("0(?:/[0-9]{1,2}){0,24}"), "EXACT_NODE_PATH_REQUIRED");
++        need(path.matches("0(?:/[0-9]{1,2}){0,32}"), "EXACT_NODE_PATH_REQUIRED");
+         String nodeHash = string(request, "node_sha256", 64);
+         need(nodeHash.matches("[0-9a-f]{64}"), "EXACT_NODE_HASH_REQUIRED");
+-        Capture current = inspect(path);
++        Capture current = inspect(path, "action_target");
+         try {
+             need(current.json.getString("tree_sha256").equals(expected.getString("tree_sha256"))
+                  && current.json.getString("window_sha256").equals(expected.getString("window_sha256")), "INSPECTED_TREE_OR_WINDOW_CHANGED");
+             need(current.target != null && current.target.refresh(), "TARGET_REFRESH_FAILED");
+             need(hashJson(node(current.target, path)).equals(nodeHash), "TARGET_CHANGED_BEFORE_ACTION");
+-            need(current.target.getWindowId() == current.windowId && current.target.isEnabled() && current.target.isClickable()
++            need(current.target.getWindowId() == current.windowId && current.target.isEnabled()
+                  && current.target.isVisibleToUser() && !current.target.isPassword(), "ACTION_TARGET_NOT_ELIGIBLE");
+-            Capture finalWindow = inspect(null);
++            if (editing) {
++                need(current.target.isEditable() && "android.widget.EditText".equals(text(current.target.getClassName()))
++                     && string(request, "node_resource_id", 256).equals(current.target.getViewIdResourceName())
++                     && supportsAction(current.target, AccessibilityNodeInfo.ACTION_SET_TEXT), "EXACT_EDITABLE_RESOURCE_REQUIRED");
++            } else need(current.target.isClickable(), "ACTION_TARGET_NOT_CLICKABLE");
++            Capture finalWindow = inspect(null, "action_final_window");
+             try {
+                 need(finalWindow.windowId == current.windowId && finalWindow.json.getString("tree_sha256").equals(current.json.getString("tree_sha256")), "FOCUS_CHANGED_BEFORE_ACTION");
+             } finally { finalWindow.close(); }
+             timeBound(); actionAttempted = true;
+-            boolean acknowledged = current.target.performAction(AccessibilityNodeInfo.ACTION_CLICK);
++            final boolean acknowledged;
++            if (editing) {
++                Bundle value = new Bundle();
++                value.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, PUBLIC_SEARCH_QUERY);
++                acknowledged = current.target.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, value);
++            } else acknowledged = current.target.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+             result.put("inspection_nonce", priorNonce).put("inspection_sha256", expectedHash)
+                 .put("target_node_path", path).put("target_node_sha256", nodeHash)
+                 .put("action_window", current.json.getJSONObject("window"))
+                 .put("connection_scoped_window_id", current.windowId)
+-                .put("node_action", "ACTION_CLICK").put("node_action_returned", acknowledged);
+-            need(acknowledged, "CLICK_NOT_ACKNOWLEDGED_OUTCOME_UNKNOWN");
++                .put("node_action", editing ? "ACTION_SET_TEXT" : "ACTION_CLICK").put("node_action_returned", acknowledged);
++            need(acknowledged, "ACTION_NOT_ACKNOWLEDGED_OUTCOME_UNKNOWN");
++            if (editing) {
++                result.put("target_resource_id", string(request, "node_resource_id", 256))
++                    .put("requested_value_sha256", hash(PUBLIC_SEARCH_QUERY.getBytes(StandardCharsets.UTF_8)));
++                need(current.target.refresh(), "EDIT_READBACK_REFRESH_FAILED");
++                need(current.target.getWindowId() == current.windowId && current.target.isEditable()
++                     && current.target.isVisibleToUser() && !current.target.isPassword()
++                     && string(request, "node_resource_id", 256).equals(current.target.getViewIdResourceName()),
++                     "EDIT_READBACK_TARGET_CHANGED");
++                String observed = text(current.target.getText());
++                need(observed.length() <= 16384, "EDIT_READBACK_TEXT_BOUND");
++                result.put("observed_value_sha256", hash(observed.getBytes(StandardCharsets.UTF_8)));
++                need(PUBLIC_SEARCH_QUERY.equals(observed), "EDIT_VALUE_NOT_OBSERVED");
++                result.put("value_readback_verified", true);
++            }
+         } finally { current.close(); }
+     }
+ }
+--- r2/stage_build.py
++++ r3/stage_build.py
+@@ -8,8 +8,8 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r2-source-01')
+-OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r2-build-01')
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r3-source-01')
++OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r3-build-01')
+ MEMORY = 536870912
+ 
+ 

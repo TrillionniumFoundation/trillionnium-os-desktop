@@ -1,0 +1,51 @@
+--- R7-renamed/install_state.py
++++ R8/install_state.py
+@@ -30,15 +30,15 @@
+ QA_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r8-source-01/source')
+ QA_MANIFEST = '8e3454bcc9ebe1ff55dcaf62706ce1176cfa1d0f0ede7099cbbfa46f4ad53f1e'
+ BUILD = Path('/home/alex/work/pocket4-owned-bili-qa-r8-build-01/build-result.json')
++BUILD_SHA = '8954a0b50093ed2110bac1e493cc2a847dfe326cb69f7fe03091aaa91d878b3c'
++BUILD_BYTES = 29232
+-BUILD_SHA = 'eb5b84b424b951342c984ab42923da3d35252de816837405c60b4cca93f27090'
+-BUILD_BYTES = 18933
+ STAGE = Path('/home/alex/work/pocket4-owned-bili-qa-r8-source-01/stage-result.json')
++STAGE_SHA = '8eaadc3544d9b2a535ec3713120c053c40cc4eb5c16fd83736aad4c0e4d51438'
+-STAGE_SHA = '37bc868243c1fc005ce7eb68727d748b9bbdbf1ef27a1d43f3041ab14161da03'
+ STAGE_BYTES = 1939
+ APK = Path('/home/alex/work/pocket4-owned-bili-qa-r8-build-01/owned-bili-qa.apk')
++APK_SHA = 'b576afe56b97160dc341fe15973f5afe23db03dc2961aedaa500f1527ec13122'
+-APK_SHA = 'f55b972a5ec968070ea0ea407f4a459913927c4693d0d9e949e6c472bcbcc641'
+ APK_BYTES = 37008
++SIGNER_SHA = 'b1ec4d840f5dd85513d3b3c08fbf97d829b580d4c718d6bf30cce5a8270a457d'
+-SIGNER_SHA = '096152ac7ae183be9c713b61d8dac64eb789593b332fa8636536c2af80021391'
+ RECORDER_ROOT = SOURCE / 'recorder-r4'
+ RECORDER_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+@@ -110,7 +110,7 @@
+ 
+ 
+ def qualified_inputs():
++    # The QA adapter validates the real complete 13-command build plus 22 Java and 32 protocol controls, all source
+-    # The QA adapter validates the real complete 11-command build, all source
+     # and tool pins, manifest permissions/components, exact APK and one signer.
+     source_raw = read(QA_ROOT/'SOURCE_PINS.json', 131072, QA_MANIFEST)
+     source = json.loads(source_raw)
+@@ -245,7 +245,7 @@
+     match = re.fullmatch(re.escape('package:'+SELF+' uid:') + r'([0-9]+)\n', text)
+     require(match is not None, 'ONE_EXACT_NEW_PACKAGE_UID_REQUIRED')
+     uid = int(match[1])
++    require(10000 <= uid < 100000 and uid not in (10117,10125,10164,10165,10166,10169,10170,10175,10184,10202), 'NEW_APP_UID_REQUIRED')
+-    require(10000 <= uid < 100000 and uid not in (10117,10125,10164,10165,10166,10169,10170,10175,10184), 'NEW_APP_UID_REQUIRED')
+     return uid
+ 
+ 
+--- R7-renamed/make_request.py
++++ R8/make_request.py
+--- R7-renamed/r4/bound_android_transport.py
++++ R8/r4/bound_android_transport.py
+--- R7-renamed/references/readonly_r3_coordinator.py
++++ R8/references/readonly_r3_coordinator.py
+--- R7-renamed/session_binding.py
++++ R8/session_binding.py
+--- R7-renamed/stage_execute.py
++++ R8/stage_execute.py

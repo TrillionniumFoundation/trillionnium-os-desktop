@@ -1,0 +1,16 @@
+{"case":"legacy_got_then_EOF_rejected","passed":true,"recv_bytes":0}
+{"case":"single_frame_EOF_normal_exit","passed":true,"got":true,"peer_eof":true,"reaped":true,"forced":false,"error":0,"wait_status":0}
+{"case":"EOF_before_pidfd_ready","passed":true,"got":true,"peer_eof":true,"reaped":true,"forced":false,"error":0,"wait_status":0}
+{"case":"delayed_close","passed":true,"got":true,"peer_eof":true,"reaped":true,"forced":false,"error":0,"wait_status":0}
+{"case":"frame_pending_after_child_exit","passed":true,"got":true,"peer_eof":true,"reaped":true,"forced":false,"error":0,"wait_status":0}
+{"case":"EOF_without_frame_rejected","passed":true,"got":false,"peer_eof":false,"reaped":true,"forced":false,"error":71,"wait_status":0}
+{"case":"second_full_frame_rejected_after_exit","passed":true,"got":true,"peer_eof":false,"reaped":true,"forced":false,"error":71,"wait_status":0}
+{"case":"extra_nonempty_frame_rejected_after_exit","passed":true,"got":true,"peer_eof":false,"reaped":true,"forced":false,"error":71,"wait_status":0}
+{"case":"wrong_nonce_rejected","passed":true,"got":false,"peer_eof":false,"reaped":true,"forced":true,"error":71,"wait_status":0}
+{"case":"short_frame_rejected","passed":true,"got":false,"peer_eof":false,"reaped":true,"forced":false,"error":71,"wait_status":0}
+{"case":"oversized_frame_rejected","passed":true,"got":false,"peer_eof":false,"reaped":true,"forced":true,"error":71,"wait_status":0}
+{"case":"missing_EOF_timeout_forced_failure","passed":true,"got":true,"peer_eof":false,"reaped":true,"forced":true,"error":110,"wait_status":9}
+{"case":"EOF_without_exit_timeout_forced_failure","passed":true,"got":true,"peer_eof":true,"reaped":true,"forced":true,"error":110,"wait_status":9}
+{"case":"nonzero_child_exit_rejected","passed":true,"got":true,"peer_eof":true,"reaped":true,"forced":false,"error":0,"wait_status":1792}
+{"case":"wrong_child_PID_rejected","passed":true,"got":false,"peer_eof":false,"reaped":true,"forced":true,"error":71,"wait_status":0}
+{"cases":15,"passed":15,"namespace_or_mount_executed":false}

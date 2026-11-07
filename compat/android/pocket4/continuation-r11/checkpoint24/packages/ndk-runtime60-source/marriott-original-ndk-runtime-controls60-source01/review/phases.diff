@@ -1,0 +1,83 @@
+--- a/fixture_phases.py
++++ b/fixture_phases.py
+@@ -1,7 +1,9 @@
+-"""Fixed NDK install / original instrumentation / independent retirement steps.
+-SOURCE_ONLY. This module deliberately has no dispatchable CLI, future APK,
+-installed UID or nonce. Install alone requires an explicit held admission;
+-all default, run and retirement routes retain the unbound contract gate. No commercial App is adopted or made ready by this fixture.
++"""Fixed original instrumentation and independent retirement phase bodies.
++SOURCE_ONLY. This module has no dispatchable CLI, installed UID or phase nonce.
++Each runtime entry requires a separately bound phase lease and complete actual
++installation authority. Default calls retain the unbound contract gate.
++The old install body is retained as source lineage and cannot enter this runtime
++context. No commercial App is adopted or made ready by this fixture.
+ """
+ import hashlib
+ import json
+@@ -14,7 +16,7 @@
+ 
+ PACKAGE='com.example.ndk_tests'
+ FIXED_SOURCE_NAMES={'fixture_contract.py','fixture_context.py','fixture_transport.py',
+-                    'fixture_phases.py','current_discovery.py','install_lease.py','install_worker.py'}
++                    'fixture_phases.py','current_discovery.py','phase_lease.py','phase_worker.py'}
+ PENDING_SOURCE_ROOT=None
+ PENDING_SOURCE_MANIFEST=None
+ ACTION_LOCK='/run/lock/android-digitalis-actions.lock'
+@@ -95,7 +97,7 @@
+ 
+ 
+ class FixedSources:
+-    """Exactly seven local install sources; no generic loader or command bridge."""
++    """Exactly seven local phase sources; no generic loader or command bridge."""
+     def __init__(self, manifest_pin=None, source_root=None):
+         # The caller's frozen worker carries the manifest pin. This phase file
+         # is itself a member of that manifest and cannot embed its own digest.
+@@ -398,13 +400,19 @@
+     return result
+ 
+ 
+-def run_original_once(sources,fixture,context_module,scope,build,installed,step,deadline):
+-    fixture.pending_gate()
++def run_original_once(sources,fixture,context_module,scope,build,installed,step,deadline,admission=None):
++    if admission is None:
++        fixture.pending_gate()
++    fixture.validate_scope(scope)
++    need(scope['phase']=='run' and scope['uid']==installed['uid'],
++         'ACTUAL_INSTALLED_UID_RUN_SCOPE_REQUIRED')
++    admission.enter_phase_once(sources,fixture,scope,step,deadline)
+     plan=fixture.run_plan(scope)
+     result=empty_result(scope,sources.pin)
+     context=artifact=guard=None
+     try:
+-        context,binding,guard=context_module.open_context(sources,fixture,scope,step,plan,result,deadline)
++        context,binding,guard=context_module.open_context(
++            sources,fixture,scope,step,plan,result,deadline,admission=admission)
+         raw,_=joined_command(context,*plan[0])
+         metadata=metadata_equal(fixture,raw,installed,context.protected_uids)
+         raw,_=joined_command(context,*plan[1])
+@@ -436,8 +444,13 @@
+     return result
+ 
+ 
+-def retire_once(sources,fixture,context_module,scope,build,installed,run_result,step,deadline):
+-    fixture.pending_gate()
++def retire_once(sources,fixture,context_module,scope,build,installed,run_result,step,deadline,admission=None):
++    if admission is None:
++        fixture.pending_gate()
++    fixture.validate_scope(scope)
++    need(scope['phase']=='retire' and scope['uid']==installed['uid'],
++         'ACTUAL_INSTALLED_UID_RETIREMENT_SCOPE_REQUIRED')
++    admission.enter_phase_once(sources,fixture,scope,step,deadline)
+     plan=fixture.retirement_plan(scope)
+     result=empty_result(scope,sources.pin)
+     context=artifact=guard=None
+@@ -448,7 +461,8 @@
+              run_result['scope']['build_result']==scope['build_result']==build['build_result'] and
+              run_result.get('held_binding_released') is True,
+              'NEW_INDEPENDENT_RETIREMENT_SCOPE_REQUIRED')
+-        context,binding,guard=context_module.open_context(sources,fixture,scope,step,plan,result,deadline)
++        context,binding,guard=context_module.open_context(
++            sources,fixture,scope,step,plan,result,deadline,admission=admission)
+         raw,_=joined_command(context,*plan[0])
+         metadata=metadata_equal(fixture,raw,installed,context.protected_uids)
+         raw,_=joined_command(context,*plan[1])

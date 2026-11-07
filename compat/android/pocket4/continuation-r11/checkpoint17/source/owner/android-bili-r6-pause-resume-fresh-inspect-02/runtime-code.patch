@@ -1,0 +1,164 @@
+--- metadata02/owned_navigation.py
++++ fresh-inspect02-normalized/owned_navigation.py
+@@ -761,11 +761,11 @@
+         'old_v2_helper_called':False,'raw_ui_tree_private_only':True,
+         'business_success_verified':False,'whole_app_production_ready':False,
+         'business_outcome_unknown':True}
+-    activation = epoch = resource_before = recorder = None
++    activation = epoch = resource_before = recorder = video = None
+     try:
+         resource_before = prior.prepare_owned_limits(); result['owned_before'] = resource_before
+         adapter,qa,proof,apk = prior.qualified_inputs(); del apk
+-        video_extension(expected,adapter,qa)
++        video = video_extension(expected,adapter,qa)
+         _,result['actual_install'] = actual_install(prior,qa,proof)
+         adapter.validate_plan(fixed_plan(),qa)
+         adapter.validate_plan(POST_PLAN,qa)
+@@ -856,6 +856,8 @@
+                 prior.remember(result,'exact_owned_task_retirement',error)
+         if result['ok'] and result.get('owned_task_absent_after_cleanup') is not True:
+             prior.remember(result,'cleanup_completion',RuntimeError('ACTUAL_OWNED_CLEANUP_MISSING'))
++        if video is not None:
++            video.playback.retain_phase_results(types.SimpleNamespace(**globals()),prior,result,expected)
+         if activation is not None and epoch is not None:
+             try:
+                 result['Main_after'] = ref.main_guard(activation,epoch)
+--- metadata02/controls_reveal.py
++++ fresh-inspect02-normalized/controls_reveal.py
+@@ -1,4 +1,4 @@
+-"""One current-player reveal input, then one independent controls observation.
++"""One reveal input; independent observation uses pause's own fresh inspect.
+ 
+ This module has no command transport or selector fallback. It uses the exact
+ R6 Session and its fresh complete-tree/player proof. Full assessments remain
+@@ -121,16 +121,17 @@
+                      helper['scope_unchanged_after_input'] is True,
+                      'REVEAL_COMPLETE_IMMEDIATE_POST_SCOPE_REQUIRED')
+         record.update(input_acknowledged=True, input_assessment=pin,
+-                      input_lifecycle=helper['touch'], immediate_post_observation=immediate)
++                      input_lifecycle=helper['touch'], immediate_post_observation=immediate,
++                      independent_read_deferred_to_pause_fresh_inspect=True)
+     except BaseException as error:
+         current = getattr(session, 'sequence_observation', None)
+         if record['input_sequence_started'] and current is not None and current is not input_observation_before:
+             record['failed_input_sequence'] = current
+         prior.remember(result, 'controls_reveal_input', error)
+     finally:
+-        # Independently observe after any attempted sequence, without repeating
+-        # the input. A failed read stays a failure and cannot replace the first.
+-        if record['input_sequence_started']:
++        # A successful input still needs pause's independent fresh inspect.
++        # Failed input retains its original independent finally read.
++        if record['input_sequence_started'] and not record.get('independent_read_deferred_to_pause_fresh_inspect'):
+             record['independent_read_attempted'] = True
+             post_observation_before = getattr(session, 'sequence_observation', None)
+             try:
+@@ -161,3 +162,20 @@
+         record['controls_revealed_observed'] and result['error'] is None and result['secondary_errors'] == [])
+     result['business_outcome_unknown'] = True
+     result['playback_or_audio_success_inferred'] = False
++
++
++def bind_pause_inspection(base, qa, flow, record, nonce, wire, inspection, scope):
++    record['independent_read_attempted'] = True
++    helper, pin = assessment(base, qa, flow, nonce, 'inspect', scope, wire)
++    qa.require(helper['inspection'] == inspection and helper.get('action_attempted') is False and
++               helper.get('outcome_unknown') is False and helper['restoration']['service_info_verified'] is True,
++               'ACTUAL_NO_ACTION_PAUSE_INSPECTION_REQUIRED')
++    observed = controls_evidence(qa, inspection, scope)
++    record.update(independent_read_completed=True, independent_assessment=pin,
++                  independent_observation=observed, final_scope=scope,
++                  controls_revealed_observed=observed['controls_revealed_observed'],
++                  bound_to_pause_fresh_inspection=True, independent_sequence_restoration_qualified=False)
++    qa.require(qa.same_reveal_frame(record['immediate_post_observation']['proof'], observed['proof']),
++               'ABSOLUTE_PLAYER_SCOPE_CHANGED_AFTER_REVEAL')
++    qa.require(observed['controls_revealed_observed'] is True,
++               'INDEPENDENT_CURRENT_PLAYER_CONTROLS_NOT_OBSERVED')
+--- metadata02/playback_controls.py
++++ fresh-inspect02-normalized/playback_controls.py
+@@ -59,7 +59,7 @@
+         'complete_current_inspection':True, 'historical_node_or_coordinate_used':False}
+ 
+ 
+-def click_sequence(qa, reveal, session, row, anchor, owned, record):
++def click_sequence(base, qa, reveal, flow, session, row, anchor, owned, record, ready):
+     qa.require(session.qa is qa, 'ORIGINAL_SESSION_CONTRACT_REQUIRED')
+     class Contract:
+         def __getattr__(self, name):return getattr(qa, name)
+@@ -68,6 +68,9 @@
+             current = session.sequence_observation
+             qa.require(current['owned_task'] == owned and current['foreground_before'] == anchor['scope'],
+                        'ACTION_BOUND_FOREGROUND_AND_OWNED_TASK_REQUIRED')
++            if row['phase'] == 'pause':
++                reveal.bind_pause_inspection(base, qa, flow, ready, row['action']['nonces']['inspect'],
++                    current['inspection_wire_sha256'], inspection, current['foreground_before'])
+             target, proof = select_control(qa, reveal, inspection, current['foreground_before'],
+                                            anchor, row['before_label'])
+             record['action_bound_selection'] = proof
+@@ -93,12 +96,13 @@
+     result['playback_button_observation'] = record
+     result['playback_button_transitions_completed'] = False
+     try:
+-        base.require(result.get('controls_reveal_and_observation_completed') is True and
++        ready = result['controls_reveal_observation']
++        base.require(ready.get('input_acknowledged') is True and
++                     ready.get('independent_read_deferred_to_pause_fresh_inspect') is True and
+                      result['error'] is None and result['secondary_errors'] == [],
+-                     'CURRENT_REVEAL_MUST_COMPLETE_BEFORE_PLAYBACK_BUTTON')
+-        ready = result['controls_reveal_observation']
+-        anchor = ready['independent_observation']['proof']; owned = ready['independent_sequence']['owned_task']
+-        checked_sequence(qa, ready['independent_sequence'], installed, anchor, owned)
++                     'RESTORED_REVEAL_INPUT_AND_PENDING_INDEPENDENT_INSPECTION_REQUIRED')
++        anchor = ready['immediate_post_observation']['proof']; owned = ready['input_sequence']['owned_task']
++        checked_sequence(qa, ready['input_sequence'], installed, anchor, owned)
+         for row in PAIRS:
+             phase = row['phase']; part = {'phase':phase, 'sequence_started':False,
+                 'click_acknowledged':False, 'independent_read_attempted':False,
+@@ -107,8 +111,14 @@
+             previous = getattr(session, 'sequence_observation', None)
+             try:
+                 part['sequence_started'] = True
+-                sequence = click_sequence(qa, reveal, session, row, anchor, owned, part)
++                sequence = click_sequence(base, qa, reveal, flow, session, row, anchor, owned, part, ready)
+                 part['sequence'] = sequence; checked_sequence(qa, sequence, installed, anchor, owned)
++                if phase == 'pause':
++                    qa.require(ready.get('bound_to_pause_fresh_inspection') is True and
++                        ready['independent_assessment']['wire_sha256'] == sequence['inspection_wire_sha256'],
++                        'INDEPENDENT_OBSERVATION_MUST_BIND_THIS_PAUSE_SEQUENCE')
++                    ready['independent_sequence_restoration_qualified'] = True
++                    result['controls_reveal_and_observation_completed'] = True
+                 summaries = base.assessment_summary(prior, qa, flow.step, sequence, row['action'])
+                 helper, pin = reveal.assessment(base, qa, flow, row['action']['nonces']['action'],
+                                                 'click', anchor['scope'], summaries['action']['wire_sha256'])
+@@ -152,3 +162,31 @@
+     except BaseException as error:prior.remember(result, 'playback_button_precondition', error)
+     result['business_outcome_unknown'] = True
+     result['playback_or_audio_success_inferred'] = False
++
++
++def retain_phase_results(base, prior, result, expected):
++    """Pin fixed receipts after cleanup, including a run_cli failure."""
++    result['retained_phase_results'] = {}; result['retained_phase_commands'] = {}
++    for phase, flag, step, command, prior_pin in (
++        ('launch','launch_worker_requested','launch-01','02-launch','launch_result'),
++        ('navigate','navigation_worker_requested','pause-resume-01','03-navigate','navigation_result')):
++        if not result[flag]:continue
++        for kind, path in (('results',base.FLOW/'steps'/step/'result.json'),
++                           ('commands',base.ROOT/'evidence'/(command+'.result.json'))):
++            try:
++                if not base.os.path.lexists(path):continue
++                raw = base.read(path); value = json.loads(raw)
++                if kind == 'results':
++                    binding = {'phase':phase,'nonce':base.NONCE,'package':base.BILI,'uid':base.BILI_UID,
++                        'helper_package':base.SELF,'helper_uid':base.UID,'source_manifest_sha256':expected,
++                        'runtime_recorder_manifest_sha256':base.R4_MANIFEST}
++                    base.require(all(value.get(k) == v for k,v in binding.items()),'RETAINED_WORKER_SCOPE_CHANGED')
++                else:
++                    base.require(value.get('name') == command and value.get('argv') == [
++                        '/usr/bin/python3','-I',str(base.HERE/'owned_navigation.py'),'--worker-once',phase,
++                        '--source-manifest-sha256',expected],'RETAINED_COMMAND_SCOPE_CHANGED')
++                pin = {'path':str(path),'bytes':len(raw),'sha256':base.sha(raw)}
++                if kind == 'results' and prior_pin in result:
++                    base.require(result[prior_pin] == pin,'RETAINED_SUCCESSFUL_RECEIPT_CHANGED')
++                result['retained_phase_'+kind][phase] = pin
++            except BaseException as error:prior.remember(result,'retain_'+phase+'_'+kind,error)

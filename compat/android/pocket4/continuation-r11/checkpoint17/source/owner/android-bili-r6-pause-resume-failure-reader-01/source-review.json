@@ -1,0 +1,79 @@
+{
+  "Reader_only_change": "command receipt maximum32768; others262144; total2097152/deadline8s/finally unchanged",
+  "actual_owned_task": {
+    "cleanup_allowed": true,
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "launch_step": "launch-01",
+    "native_receipt_sha256": "864386e93db3d0e0d0287efaaad3c4cc0fef1edadc8496a7a875fbdb875b808f",
+    "package": "tv.danmaku.bili",
+    "prelaunch_absent": true,
+    "prelaunch_task_ids": [
+      851
+    ],
+    "task": 991
+  },
+  "baseline": {
+    "bytes": 6094,
+    "path": "/workspace/scratch/94990735b266/android-bili-r6-pause-resume-results-reader-01/read_summary.py",
+    "sha256": "ee775c1edca2a7e985d18d59913c54542b2705d4f8e1c7dd4556d4275da42dd3"
+  },
+  "bounds_unchanged_except_command_tighter": true,
+  "cleanup_external_pin": {
+    "bytes": 447,
+    "path": "/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-f293d9ad6b688c72e7c98e76753a8c3f/steps/cleanup-01/result.json",
+    "sha256": "495ee282856887580c664c5d48f340331287bcc2b3a25aba4920ac8079d231bc"
+  },
+  "default_PLAN_rc": 0,
+  "failed_command_binding": "fixed source-owned ROOT/evidence/03-navigate.result.json, exact argv/source manifest/name; not externally hash pinned",
+  "fixed_files": {
+    "cleanup.json": "/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-f293d9ad6b688c72e7c98e76753a8c3f/steps/cleanup-01/result.json",
+    "coordinator.json": "/home/alex/work/pocket4-bilibili-r6-pause-resume-01/result.json",
+    "navigation-command.json": "/home/alex/work/pocket4-bilibili-r6-pause-resume-01/evidence/03-navigate.result.json",
+    "navigation.json": "/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-f293d9ad6b688c72e7c98e76753a8c3f/steps/pause-resume-01/result.json",
+    "navigation.stdout": "/home/alex/work/pocket4-bilibili-r6-pause-resume-01/evidence/03-navigate.stdout",
+    "stage.json": "/home/alex/work/pocket4-bilibili-r6-pause-resume-01/stage-result.json"
+  },
+  "limits": {
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 134217728,
+    "timeout_seconds": 30
+  },
+  "no_collector_or_UI_execution": true,
+  "no_stderr_or_private_tree_path_read": true,
+  "optional_worker_missing_not_runtime_success": true,
+  "original_failed_navigation_external_hash_missing": true,
+  "parent_Main_all_equal": true,
+  "parent_pin_checks": {
+    "coordinator": {
+      "bytes": 6359,
+      "sha256": "05ab6c8427b6994d4b21bc6a58a30cb9285d223ca3b6d78f1a704c49d16bb0c7"
+    },
+    "stage": {
+      "bytes": 1773,
+      "sha256": "530923b0e302736a9897884264f12ec8397841b872b31e1e5d460e7bc17f754e"
+    }
+  },
+  "partial_collection_failure_stays_error_and_retains_already_safe_validated_files": true,
+  "pure_binding_checks": 4,
+  "qualification": {
+    "UI_window_released": false,
+    "runtime": false,
+    "whole_App": false
+  },
+  "request_source_exact": true,
+  "retirement_body_is_read_before_navigation": true,
+  "schema": 1,
+  "scope": "six fixed files: exact parents/cleanup plus source-owned command-to-stdout/worker evidence",
+  "source": {
+    "bytes": 10945,
+    "sha256": "246876f828570aca16cb78e3368eb81c2b92ebc2c8f8aae8817e8008213e46b0"
+  },
+  "stdout_binding": "byte size/SHA recorded by the original parent run_cli before rejection",
+  "unchanged_helpers": [
+    "need",
+    "sha",
+    "no_raw_ui",
+    "main"
+  ],
+  "worker_binding": "fixed FLOW/steps/pause-resume-01/result.json; expected phase/nonce/source/package/helper and JSON equality to original command stdout"
+}

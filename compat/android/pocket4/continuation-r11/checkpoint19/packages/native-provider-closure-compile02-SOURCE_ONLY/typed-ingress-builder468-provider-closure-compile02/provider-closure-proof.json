@@ -1,0 +1,2186 @@
+{
+  "schema": 1,
+  "state": "SOURCE_CANDIDATE_NOT_COMPILED_OR_SOONG_QUALIFIED",
+  "baseline": {
+    "builder_revision": "467-source-resume-compile03",
+    "source_files": 466,
+    "manifest": {
+      "bytes": 91945,
+      "sha256": "71768da388021a870ef5f5516cc3efbfd956288a8fa74cb9b176b312f68d7605"
+    },
+    "compile_result": {
+      "bytes": 140163,
+      "sha256": "cd9f61ca21dd83210299f24dd50b68f5aa7aeba7eab94ac9cada71271d660e28"
+    }
+  },
+  "failure": {
+    "job_id": "1a1ae6b5a97-fc05-5f81",
+    "inner_sha256": "80f3508bab1884421af6db2f6d87537fd950100be009265b7e2efabc9b97fcdc",
+    "outer_sha256": "2c36ab1cc9ff6f181855f195f9c5b7bc0f58e7fb99d9c76e4871e64b143bf059",
+    "stdout_sha256": "f001d60ee86a9c0b5fe32ca98164b0bb1127826aa1e3c9ba97a7ce834c0d0e4e",
+    "stderr_sha256": "12c13559ad20843f350c14e16f32e149cf1c2c4f4ed339d9c862e0e1c2ad753b",
+    "undefined_modules": [
+      "MotionTestDefaults",
+      "SystemUI_optimized_defaults"
+    ],
+    "original_failure_retained": true,
+    "original_consumers_not_modified": true
+  },
+  "source_locks": {
+    "original_sparse_unchanged": "4d8f2d047254268305f4802d9dd67bebdfd162d836664c733ecc07e2f9ced178",
+    "previous_typed_unchanged": "ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54",
+    "candidate": {
+      "bytes": 96322,
+      "sha256": "5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7",
+      "git_blob_sha1": "b2a9a017dce3c0c261e26d42d191fe065e24bd58"
+    },
+    "old_projects": 214,
+    "new_projects": 224,
+    "old_root_links": 8,
+    "new_root_links": 8,
+    "all_other_fields_and_old_order_preserved": true,
+    "extensions": [
+      {
+        "path": "platform_testing",
+        "paths": [
+          "libraries/motion/src",
+          "libraries/motion/compose/src",
+          "libraries/motion/compose/values/src",
+          "libraries/screenshot/src/main",
+          "libraries/screenshot/proto",
+          "libraries/uiautomator-helpers/src",
+          "libraries/runner/src/main/java",
+          "libraries/device-collectors/src/main/java",
+          "libraries/collectors-helper/adservices/src",
+          "libraries/collectors-helper/app/src",
+          "libraries/collectors-helper/generic/src",
+          "libraries/collectors-helper/jank/src",
+          "libraries/collectors-helper/lyric/src",
+          "libraries/collectors-helper/memory/src",
+          "libraries/collectors-helper/perfetto/src",
+          "libraries/collectors-helper/power/src",
+          "libraries/collectors-helper/simpleperf/src",
+          "libraries/collectors-helper/system/src",
+          "libraries/collectors-helper/utilities/src",
+          "libraries/junitxml/src"
+        ]
+      },
+      {
+        "path": "prebuilts/sdk",
+        "paths": [
+          "current/androidx",
+          "18/public",
+          "current/multidex",
+          "current/test",
+          "current/support/v7/appcompat/res",
+          "current/support/manifests/android-support-v7-appcompat"
+        ]
+      },
+      {
+        "path": "prebuilts/misc",
+        "paths": [
+          "common/ub-uiautomator",
+          "common/robolectric-native-prebuilt",
+          "common/robolectric/android-all"
+        ]
+      },
+      {
+        "path": "external/ow2-asm",
+        "paths": [
+          "asm/src/main",
+          "asm-analysis/src/main",
+          "asm-commons/src/main",
+          "asm-tree/src/main",
+          "asm-util/src/main"
+        ]
+      },
+      {
+        "path": "external/icu",
+        "paths": [
+          "icu4j/main"
+        ]
+      },
+      {
+        "path": "prebuilts/tools",
+        "paths": [
+          "common/m2/repository/com/almworks/sqlite4java/libsqlite4java-linux-amd64/0.282",
+          "common/m2/repository/com/almworks/sqlite4java/libsqlite4java-linux-i386/0.282",
+          "common/m2/repository/com/almworks/sqlite4java/libsqlite4java-osx/0.282",
+          "common/m2/repository/com/almworks/sqlite4java/sqlite4java-win32-x64/0.282",
+          "common/m2/repository/com/almworks/sqlite4java/sqlite4java-win32-x86/0.282",
+          "common/m2/repository/com/almworks/sqlite4java/sqlite4java/0.282",
+          "common/m2/repository/com/android/support/test/monitor/1.0.2-alpha1",
+          "common/m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/2.0",
+          "common/m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/2.1",
+          "common/m2/repository/com/google/dagger/dagger-compiler/2.7",
+          "common/m2/repository/com/google/dagger/dagger-producers/2.7",
+          "common/m2/repository/com/google/dagger/dagger/2.7",
+          "common/m2/repository/com/google/devtools/ksp/symbol-processing-api/1.4.10-dev-experimental-20201110",
+          "common/m2/repository/com/google/guava/guava/23.0",
+          "common/m2/repository/com/google/guava/guava/listenablefuture/1.0",
+          "common/m2/repository/com/google/http-client/google-http-client-jackson2/1.28.0",
+          "common/m2/repository/com/google/inject/guice/3.0",
+          "common/m2/repository/com/google/j2objc/j2objc-annotations/1.1",
+          "common/m2/repository/com/google/testing/compile/compile-testing/0.19",
+          "common/m2/repository/com/intellij/core-analysis",
+          "common/m2/repository/com/sampullara/cli/1.1.2",
+          "common/m2/repository/com/squareup/kotlinpoet/1.8.0",
+          "common/m2/repository/com/squareup/okhttp/okhttp/2.7.4",
+          "common/m2/repository/com/squareup/okhttp4/okhttp/4.0.0",
+          "common/m2/repository/com/squareup/okio/okio/1.9.0",
+          "common/m2/repository/com/squareup/wire/wire-runtime-jvm/4.7.0",
+          "common/m2/repository/com/thoughtworks/xstream/xstream/1.4.8",
+          "common/m2/repository/commons-codec/commons-codec/1.10",
+          "common/m2/repository/commons-io/commons-io/2.4",
+          "common/m2/repository/io/grpc/grpc-all/1.0.3",
+          "common/m2/repository/io/grpc/grpc-context/1.0.3",
+          "common/m2/repository/io/grpc/grpc-core/1.0.3",
+          "common/m2/repository/io/grpc/grpc-netty-shaded/1.56.0",
+          "common/m2/repository/io/grpc/grpc-okhttp/1.0.3",
+          "common/m2/repository/io/grpc/grpc-protobuf-lite/1.0.3",
+          "common/m2/repository/io/grpc/grpc-stub/1.0.3",
+          "common/m2/repository/io/reactivex/rxjava2/rxjava/2.2.9",
+          "common/m2/repository/javax/annotation/javax.annotation-api/1.2",
+          "common/m2/repository/javax/annotation/javax.annotation-api/1.3.2",
+          "common/m2/repository/javax/inject/javax.inject/1",
+          "common/m2/repository/joda-time/joda-time/2.9.1",
+          "common/m2/repository/kotlinx/html/jvm/0.6.8",
+          "common/m2/repository/me/leolin/ShortcutBadger/1.1.13",
+          "common/m2/repository/net/bytebuddy/byte-buddy-agent/1.14.18",
+          "common/m2/repository/net/bytebuddy/byte-buddy/1.14.18",
+          "common/m2/repository/net/java/dev/jna/jna/3.4.0",
+          "common/m2/repository/net/sf/jopt-simple/jopt-simple/4.9",
+          "common/m2/repository/net/sf/trove4j/trove4j/1.1",
+          "common/m2/repository/org/apache/ant/ant/1.8.0",
+          "common/m2/repository/org/apache/commons/commons-lang3/3.4",
+          "common/m2/repository/org/apache/httpcomponents/httpclient/4.0.3",
+          "common/m2/repository/org/apache/httpcomponents/httpcore/4.0.1",
+          "common/m2/repository/org/apache/james/apache-mime4j-core/0.7.2",
+          "common/m2/repository/org/apache/james/apache-mime4j-dom/0.7.2",
+          "common/m2/repository/org/apache/maven/maven-ant-tasks/2.1.3",
+          "common/m2/repository/org/assertj/assertj-core/3.8.0",
+          "common/m2/repository/org/codehaus/mojo/animal-sniffer-annotations/1.14",
+          "common/m2/repository/org/jetbrains/intellij/deps/trove4j/1.0.20181211",
+          "common/m2/repository/org/jetbrains/markdown/0.1.41",
+          "common/m2/repository/org/jsoup/jsoup/1.8.3",
+          "common/m2/repository/org/mockito/mockito-core/4.8.1",
+          "common/m2/repository/org/mockito/mockito-core/5.14.2",
+          "common/m2/repository/org/mockito/mockito-inline/4.8.1",
+          "common/m2/repository/org/reactivestreams/reactive-streams/1.0.2",
+          "common/m2/repository/org/xerial/sqlite-jdbc/3.28.0",
+          "common/m2/repository/ru/yole/jkid"
+        ]
+      }
+    ],
+    "added": [
+      {
+        "path": "external/kotlinx.coroutines",
+        "name": "platform/external/kotlinx.coroutines",
+        "commit": "16161f019a518241332c1cad686a3e9404c0d5cf",
+        "purpose": "Exact Android 17 superproject coroutine providers for real AndroidX and StructuredConcurrencyPerf dependencies"
+      },
+      {
+        "path": "external/kotlinx.atomicfu",
+        "name": "platform/external/kotlinx.atomicfu",
+        "commit": "867bc63054d694773bd0aef56eeb51296f2f6b03",
+        "purpose": "Exact Android 17 superproject atomicfu source required by the real coroutine provider"
+      },
+      {
+        "path": "frameworks/libs/systemui",
+        "name": "platform/frameworks/libs/systemui",
+        "commit": "11e04f60f563aed48e4ec080bd7bde06bae1b2f3",
+        "purpose": "Exact Android 17 tracinglib-platform and genuine compilelib providers",
+        "sparse_paths": [
+          "tracinglib/core/src",
+          "compilelib/src-release",
+          "compilelib/src-debug"
+        ]
+      },
+      {
+        "path": "external/robolectric",
+        "name": "platform/external/robolectric",
+        "commit": "87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1",
+        "purpose": "Real Robolectric_all-target and its upstream implementation providers required by the parametric runner",
+        "sparse_paths": [
+          "soong",
+          "src/main/resources",
+          "annotations/src/main",
+          "junit/src/main",
+          "nativeruntime/src/main",
+          "pluginapi/src/main",
+          "resources/src/main",
+          "robolectric/src/main",
+          "sandbox/src/main",
+          "shadowapi/src/main",
+          "utils/src/main",
+          "utils/reflector/src/main",
+          "shadows/framework/src/main",
+          "shadows/httpclient/src/main",
+          "shadows/multidex/src/main",
+          "shadows/versioning/src/main",
+          "processor/src/main"
+        ]
+      },
+      {
+        "path": "external/TestParameterInjector",
+        "name": "platform/external/TestParameterInjector",
+        "commit": "39be45d7f8988b7b051e14644bc6c51fe856b8f2",
+        "purpose": "Actual TestParameterInjector provider required by real Robolectric libraries",
+        "sparse_paths": [
+          "junit4/src/main"
+        ]
+      },
+      {
+        "path": "external/snakeyaml",
+        "name": "platform/external/snakeyaml",
+        "commit": "629862ff4a73e7656df0ae02ae0cd24fabf603ae",
+        "purpose": "Genuine SnakeYAML implementation and Android patches required by TestParameterInjector",
+        "sparse_paths": [
+          "src/main",
+          "src/patches/android"
+        ]
+      },
+      {
+        "path": "test/robolectric-extensions",
+        "name": "platform/test/robolectric-extensions",
+        "commit": "94254a13a5969eec7a4742320cc3f91e141d5593",
+        "purpose": "Real AOSP Robolectric plugin implementation required by Robolectric_all",
+        "sparse_paths": [
+          "plugins/src/main/java",
+          "clearcut-junit-listener/src/main/java"
+        ]
+      },
+      {
+        "path": "packages/services/Car",
+        "name": "platform/packages/services/Car",
+        "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+        "purpose": "Actual android.car and android.car.builtin.impl providers required by the upstream Robolectric host framework",
+        "sparse_paths": [
+          "aconfig",
+          "car-lib/src",
+          "car-lib/jni/large-parcelable/src",
+          "car-builtin-lib/src",
+          "car-builtin-lib/api",
+          "libs/car-internal-dep-lib/src",
+          "teams"
+        ]
+      },
+      {
+        "path": "system/timezone",
+        "name": "platform/system/timezone",
+        "commit": "cbd571efcf6b551ba83a31147ec7a06182f8ec31",
+        "purpose": "Real robolectric_tzdata generator and timezone inputs",
+        "sparse_paths": [
+          "output_data"
+        ]
+      },
+      {
+        "path": "tools/asuite",
+        "name": "platform/tools/asuite",
+        "commit": "744998cb744c401a5daa77170039ab6337ed7adb",
+        "purpose": "Exact Android 17 proto implementation used by the mandatory Robolectric Clearcut JUnit listener",
+        "sparse_paths": [
+          "atest/proto"
+        ]
+      }
+    ]
+  },
+  "provenance": {
+    "superproject": {
+      "name": "platform/superproject",
+      "ref": "refs/heads/android-17.0.0_r1",
+      "commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039"
+    },
+    "added_gitlinks": [
+      {
+        "name": "kotlinx.coroutines",
+        "path": "external/kotlinx.coroutines",
+        "sha": "16161f019a518241332c1cad686a3e9404c0d5cf",
+        "size": 0,
+        "url": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/external/kotlinx.coroutines?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+        "html_url": null,
+        "git_url": null,
+        "download_url": null,
+        "type": "submodule",
+        "submodule_git_url": "../external/kotlinx.coroutines",
+        "_links": {
+          "self": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/external/kotlinx.coroutines?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+          "git": null,
+          "html": null
+        }
+      },
+      {
+        "name": "kotlinx.atomicfu",
+        "path": "external/kotlinx.atomicfu",
+        "sha": "867bc63054d694773bd0aef56eeb51296f2f6b03",
+        "size": 0,
+        "url": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/external/kotlinx.atomicfu?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+        "html_url": null,
+        "git_url": null,
+        "download_url": null,
+        "type": "submodule",
+        "submodule_git_url": "../external/kotlinx.atomicfu",
+        "_links": {
+          "self": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/external/kotlinx.atomicfu?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+          "git": null,
+          "html": null
+        }
+      },
+      {
+        "name": "systemui",
+        "path": "frameworks/libs/systemui",
+        "sha": "11e04f60f563aed48e4ec080bd7bde06bae1b2f3",
+        "size": 0,
+        "url": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/frameworks/libs/systemui?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+        "html_url": null,
+        "git_url": null,
+        "download_url": null,
+        "type": "submodule",
+        "submodule_git_url": "../frameworks/libs/systemui",
+        "_links": {
+          "self": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/frameworks/libs/systemui?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+          "git": null,
+          "html": null
+        }
+      },
+      {
+        "name": "robolectric",
+        "path": "external/robolectric",
+        "sha": "87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1",
+        "size": 0,
+        "url": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/external/robolectric?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+        "html_url": null,
+        "git_url": null,
+        "download_url": null,
+        "type": "submodule",
+        "submodule_git_url": "../external/robolectric",
+        "_links": {
+          "self": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/external/robolectric?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+          "git": null,
+          "html": null
+        }
+      },
+      {
+        "name": "TestParameterInjector",
+        "path": "external/TestParameterInjector",
+        "sha": "39be45d7f8988b7b051e14644bc6c51fe856b8f2",
+        "size": 0,
+        "url": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/external/TestParameterInjector?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+        "html_url": null,
+        "git_url": null,
+        "download_url": null,
+        "type": "submodule",
+        "submodule_git_url": "../external/TestParameterInjector",
+        "_links": {
+          "self": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/external/TestParameterInjector?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+          "git": null,
+          "html": null
+        }
+      },
+      {
+        "name": "snakeyaml",
+        "path": "external/snakeyaml",
+        "sha": "629862ff4a73e7656df0ae02ae0cd24fabf603ae",
+        "size": 0,
+        "url": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/external/snakeyaml?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+        "html_url": null,
+        "git_url": null,
+        "download_url": null,
+        "type": "submodule",
+        "submodule_git_url": "../external/snakeyaml",
+        "_links": {
+          "self": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/external/snakeyaml?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+          "git": null,
+          "html": null
+        }
+      },
+      {
+        "name": "robolectric-extensions",
+        "path": "test/robolectric-extensions",
+        "sha": "94254a13a5969eec7a4742320cc3f91e141d5593",
+        "size": 0,
+        "url": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/test/robolectric-extensions?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+        "html_url": null,
+        "git_url": null,
+        "download_url": null,
+        "type": "submodule",
+        "submodule_git_url": "../test/robolectric-extensions",
+        "_links": {
+          "self": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/test/robolectric-extensions?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+          "git": null,
+          "html": null
+        }
+      },
+      {
+        "name": "Car",
+        "path": "packages/services/Car",
+        "sha": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+        "size": 0,
+        "url": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/packages/services/Car?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+        "html_url": null,
+        "git_url": null,
+        "download_url": null,
+        "type": "submodule",
+        "submodule_git_url": "../packages/services/Car",
+        "_links": {
+          "self": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/packages/services/Car?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+          "git": null,
+          "html": null
+        }
+      },
+      {
+        "name": "timezone",
+        "path": "system/timezone",
+        "sha": "cbd571efcf6b551ba83a31147ec7a06182f8ec31",
+        "size": 0,
+        "url": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/system/timezone?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+        "html_url": null,
+        "git_url": null,
+        "download_url": null,
+        "type": "submodule",
+        "submodule_git_url": "../system/timezone",
+        "_links": {
+          "self": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/system/timezone?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+          "git": null,
+          "html": null
+        }
+      },
+      {
+        "name": "asuite",
+        "path": "tools/asuite",
+        "sha": "744998cb744c401a5daa77170039ab6337ed7adb",
+        "size": 0,
+        "url": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/tools/asuite?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+        "html_url": null,
+        "git_url": null,
+        "download_url": null,
+        "type": "submodule",
+        "submodule_git_url": "../tools/asuite",
+        "_links": {
+          "self": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/tools/asuite?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+          "git": null,
+          "html": null
+        }
+      }
+    ],
+    "source_kind": "Exact commit upstream files, with actual published SDK/manifest reader where public mirror did not contain the locked commit",
+    "actual_provider_reader": {
+      "bytes": 118182,
+      "sha256": "0e2c4ef53dac258d9fc7929f06f334e358db323a7a8acc3bde94914e2b6eb901",
+      "git_blob_sha1": "d90dca04b75a7fdbe87314998a95508bf7ee0693",
+      "state": "FAILED",
+      "authority_qualified": true,
+      "complete_files": 4,
+      "total_files": 5,
+      "sole_missing_path": "prebuilts/misc/common/ub-uiautomator/Android.bp",
+      "missing_path_not_a_Git_object_absence_claim": true
+    },
+    "actual_materialized_manifest": {
+      "bytes": 97784,
+      "sha256": "73a4cc1da8371482164aab2bc149498d03f481f212bb85cb4fda22b6b10c958d",
+      "git_blob_sha1": "d7a0e15340b5461e4606a064c5ad8a58f88bfbb7",
+      "plan_exactly_matches_previous_lock": true
+    },
+    "actual_sdk_root_blueprint": {
+      "bytes": 3315,
+      "sha256": "4b94f0f2501482861312b9d1d92c2d240076ceb7246c5c37e46f9f6571ef566d",
+      "git_blob_sha1": "618a50b838594ce30b4480f3ef1aa44de7b2f8e9",
+      "real_root_only_nine_nodeps_modules": true,
+      "includes_JavaPlugins_bp": true,
+      "Maven_version_paths_not_guessed": true
+    },
+    "actual_Maven_SDK_reader02": {
+      "bytes": 151257,
+      "sha256": "a88fa730de4e68bf4ba7dd9afe655d3aab247fcafe3634ad518c16a1420aad28",
+      "git_blob_sha1": "8fad821bc4399e5231cfee5e2771a8e362ddee59",
+      "state": "PASS",
+      "authority_qualified": true,
+      "complete_files": 6,
+      "raw_original_kept": true,
+      "identity_ns_validation": "Root lossless audit; raw source decoded only for exact text hashing"
+    },
+    "actual_Maven_SDK_sources": [
+      {
+        "path": "prebuilts/sdk/current/Android.bp",
+        "pin": {
+          "bytes": 10999,
+          "sha256": "78604dc3d53a5b8a5921dfd8de0fae54ca7d664513056c3422ea0bbd55fa234d",
+          "git_blob_sha1": "0695f7996b50229b5e355b0ebcb4153663491548"
+        }
+      },
+      {
+        "path": "prebuilts/tools/common/m2/Android.bp",
+        "pin": {
+          "bytes": 19263,
+          "sha256": "74b6fffef659ec1f5d4d82f24d2ec742acbd11c28835e5e7548aded03768522f",
+          "git_blob_sha1": "b1f4fe36702a04bbe2dbf3dcf77fa548edb91544"
+        }
+      },
+      {
+        "path": "prebuilts/tools/common/m2/robolectric.bp",
+        "pin": {
+          "bytes": 3450,
+          "sha256": "d8d44b94f0085fbb5d4bfb07f83baf8581e0b9d0755b9ce5f32f674cfd140e51",
+          "git_blob_sha1": "254169d5fb802fa31661668fdc8ccccb6af55406"
+        }
+      }
+    ],
+    "actual_misc_Git_reader02": {
+      "state": "FAILED",
+      "bytes": 18367,
+      "sha256": "8f540e11fa2ef2304df8ec9004dce74d22e81da28b0ae040f90bff3d5390bf5e",
+      "git_blob_sha1": "c802a4fb47859d80179fe2d715dc96b8a56e6112",
+      "authority_qualified": true,
+      "three_trees_complete": true,
+      "two_blobs_missing_locally": true,
+      "no_lazy_fetch": true
+    },
+    "ub_uiautomator_exact_recovery": {
+      "path": "prebuilts/misc/common/ub-uiautomator/Android.bp",
+      "pin": {
+        "bytes": 785,
+        "sha256": "57fa5cc26bdb1fb97a637efe920a0d81656240902eb8bcec359ad61470e26053",
+        "git_blob_sha1": "629b842ee8b8828783715bd70034b10b466396e0"
+      },
+      "Git_blob_matches_actual_tree": "629b842ee8b8828783715bd70034b10b466396e0",
+      "public_primary_url": "https://android.googlesource.com/platform/prebuilts/misc/+/refs/heads/master/common/ub-uiautomator/Android.bp?format=TEXT",
+      "floating_reference_not_accepted_without_actual_blob_equality": true
+    },
+    "robolectric_native_prebuilt": {
+      "path": "prebuilts/misc/common/robolectric-native-prebuilt",
+      "actual_common_tree_child": "28d2e7b2d373edc79f6782bcad189ad598727c06",
+      "commit": "be7c3a630b5dc5eb3260035d77a81b2f322754f8",
+      "whole_locked_directory_selected_unchanged": true,
+      "Blueprint_body_not_yet_observed": true,
+      "normal_fresh_commit_and_origin_qualification_required": true
+    },
+    "upstream_sources": [
+      {
+        "path": "platform_testing/libraries/motion/compose/values/Android.bp",
+        "source": {
+          "bytes": 1088,
+          "sha256": "ce228aaa2c7fafde349d8d29f31f49c588e64a86d557233f3726aa5bdd9c4a78",
+          "git_blob_sha1": "73daefa6359aa897214d248c9d86fb01bcba9093"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/motion/compose/values/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/screenshot/Android.bp",
+        "source": {
+          "bytes": 2403,
+          "sha256": "53ba33c12075d68266d9c90620b2a0e04934e7d0b9eb73c1faf6c06cde689032",
+          "git_blob_sha1": "98bc54c3f173f008fa0cd7e4a608b04bd8fc261a"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/screenshot/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/uiautomator-helpers/Android.bp",
+        "source": {
+          "bytes": 1214,
+          "sha256": "fba059972176a032d1800367ef349b433934b7d79b803ba83601fc3698a85021",
+          "git_blob_sha1": "b056e412556f0db79e9ac1869648f9110133431b"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/uiautomator-helpers/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/device-collectors/src/main/Android.bp",
+        "source": {
+          "bytes": 1377,
+          "sha256": "25f84e96e9f73ecb3b26f272fa9135aacaca1f940a2d1879d96a66bc6b20290b",
+          "git_blob_sha1": "8bb2de1e1e3f80528c513af2b640f9ef632082ea"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/device-collectors/src/main/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/runner/Android.bp",
+        "source": {
+          "bytes": 2088,
+          "sha256": "e3b51cb5bc9ca15951a4da4b2ab711bfedd084eba95e2434060126accca8f5aa",
+          "git_blob_sha1": "c30fcf0b5a9bf3962efbc82a3351c9672d39c3a0"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/runner/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/collectors-helper/adservices/Android.bp",
+        "source": {
+          "bytes": 1026,
+          "sha256": "6edeb90aec3e8ee50c9f8c10a882f4d0db2fb76502ea3043d568c28952e37fa5",
+          "git_blob_sha1": "1b29a34854195ce95bf08b14d53edf47679da207"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/collectors-helper/adservices/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/collectors-helper/app/Android.bp",
+        "source": {
+          "bytes": 1020,
+          "sha256": "240ef11b575f358e2a6a8b88ea3c2fc193194196f05a50ab3517a5165063072e",
+          "git_blob_sha1": "fa88e1a4c7a8ebd1141948796bfc03dc66f8bf91"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/collectors-helper/app/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/collectors-helper/generic/Android.bp",
+        "source": {
+          "bytes": 1054,
+          "sha256": "964a0c49495bed1fb7fe24c18c9a485b3dd1f093f3b04b8d09ae37fef94098da",
+          "git_blob_sha1": "07127c0268975f725876b9b209a690738f1f8911"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/collectors-helper/generic/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/collectors-helper/jank/Android.bp",
+        "source": {
+          "bytes": 1048,
+          "sha256": "7d0bf222200af97cfecfff1cce07e70041262afb704b2d55cda9b2d436293a73",
+          "git_blob_sha1": "b86f3b77166084570365a88a71f4b29908b14eee"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/collectors-helper/jank/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/collectors-helper/lyric/Android.bp",
+        "source": {
+          "bytes": 1067,
+          "sha256": "7fd24b50c2b17427d2a61d4dc9066acc381ac72e0294909b6bfcf26f6620c9cd",
+          "git_blob_sha1": "84767532df83dadf37d3b1984cf0cd3f2d2552f0"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/collectors-helper/lyric/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/collectors-helper/memory/Android.bp",
+        "source": {
+          "bytes": 1070,
+          "sha256": "a2bcc4c03eb581991d094ba6532e71049250594976ced4465721c5a69f99f3d6",
+          "git_blob_sha1": "7f6daf8e9b3cc96d2432b3ce73aa1abe40b3641f"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/collectors-helper/memory/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/collectors-helper/perfetto/Android.bp",
+        "source": {
+          "bytes": 985,
+          "sha256": "700c37e82e2bee19e9756250b6a66a5d60f8f228c1ef3ec0e10806d41ca6c2ee",
+          "git_blob_sha1": "f137d777fa8c95b36bd7bdd612dca9779db6ac0f"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/collectors-helper/perfetto/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/collectors-helper/power/Android.bp",
+        "source": {
+          "bytes": 1037,
+          "sha256": "3adcd7eb610574b8b2ed4cf301378ef3dbf80be4bcbdbe1a62962dce3621122d",
+          "git_blob_sha1": "1a7268e57d9aed5b3e4bec43e2ff101f3ec98547"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/collectors-helper/power/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/collectors-helper/simpleperf/Android.bp",
+        "source": {
+          "bytes": 990,
+          "sha256": "f9de9cd5da6d37b4dd8d1c0b6112b02c073412b167bb58ae8278dc2914e0d745",
+          "git_blob_sha1": "1962522fd50d60732202c54da06b8c6fdd91d491"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/collectors-helper/simpleperf/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/collectors-helper/system/Android.bp",
+        "source": {
+          "bytes": 1083,
+          "sha256": "a01d289dd02ae0b1a424f84780d5f415f85852ea21e8b7d10838e3e306958713",
+          "git_blob_sha1": "f3992e6ee039ca3a2f132bd1cca8d00196427cd8"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/collectors-helper/system/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/collectors-helper/utilities/Android.bp",
+        "source": {
+          "bytes": 889,
+          "sha256": "8067726a229d062d241e0bfdbe302f18b270968e35b4cab286b36dfa7873665e",
+          "git_blob_sha1": "4f5e441eb2e1407038372f08f2399459dd6ba9d8"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/collectors-helper/utilities/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/system-helpers/Android.bp",
+        "source": {
+          "bytes": 1132,
+          "sha256": "5de952454b460671d24c1c0fbdd02bcd929e7381de328041787f67c4ca384e69",
+          "git_blob_sha1": "1f5c8634d127eba5957eed2e1974434e09a30a13"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/system-helpers/Android.bp"
+      },
+      {
+        "path": "external/kotlinx.coroutines/Android.bp",
+        "source": {
+          "bytes": 9811,
+          "sha256": "346cb0f57f7179d3c4b90dbb622f09a0e868e5bede468040172c73720c44974b",
+          "git_blob_sha1": "2806fc4388148d6c86cd57d0f9f4747e40f69e46"
+        },
+        "url": null
+      },
+      {
+        "path": "external/robolectric/Android.bp",
+        "source": {
+          "bytes": 12618,
+          "sha256": "5491a0f3918f8c5e89276ce13437b29bbd9b64aa2334e81717566e446bb6e1a4",
+          "git_blob_sha1": "994249f475d40cf33e97d16913ae4091d889884c"
+        },
+        "url": null
+      },
+      {
+        "path": "external/kotlinx.atomicfu/Android.bp",
+        "source": {
+          "bytes": 1405,
+          "sha256": "290c44fc9fc2509cc60314315fab82563788d098208eee4c8e3ef891cd9f6e33",
+          "git_blob_sha1": "18b40f69d31da309a9d3c87acd382a34d09b0f4d"
+        },
+        "url": null
+      },
+      {
+        "path": "external/robolectric/annotations/Android.bp",
+        "source": {
+          "bytes": 709,
+          "sha256": "3450d77eba82e47e55d9cc90190395e895cacef8dc3f2e8cbb757dce1e69e0a1",
+          "git_blob_sha1": "1500ae63567445726121ef7a4027fe1d5eec1429"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/annotations/Android.bp"
+      },
+      {
+        "path": "external/robolectric/junit/Android.bp",
+        "source": {
+          "bytes": 851,
+          "sha256": "eedc91e2645ac8c8c7c4e6b0bc72d20a89c165801e848ab32e1b1c060bda450e",
+          "git_blob_sha1": "6d76de83905fd74fd16a4a91ccbdc00d4403927b"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/junit/Android.bp"
+      },
+      {
+        "path": "external/robolectric/nativeruntime/Android.bp",
+        "source": {
+          "bytes": 1477,
+          "sha256": "addbde7160745945b513a529999ecec434ef27ed54a17d43c4ce8edc8dd9f1b6",
+          "git_blob_sha1": "5aa785a0b25a47a78bac479599ecb12d43994c21"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/nativeruntime/Android.bp"
+      },
+      {
+        "path": "external/robolectric/pluginapi/Android.bp",
+        "source": {
+          "bytes": 1131,
+          "sha256": "b85704354df39ea533d97c8d6a2d51ef148889668d2c08d89fb59dd703e4aa15",
+          "git_blob_sha1": "bfe52de83ccba77c7bba09971699467eed958d7c"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/pluginapi/Android.bp"
+      },
+      {
+        "path": "external/robolectric/resources/Android.bp",
+        "source": {
+          "bytes": 1395,
+          "sha256": "83e1f8f513e4c8dc9d3e9896e832cf6d5044f64a950dbb40b3d0ad8da9831bef",
+          "git_blob_sha1": "d3e231b66d9b366609252c57a64c3ba0ffc2ae73"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/resources/Android.bp"
+      },
+      {
+        "path": "external/robolectric/robolectric/Android.bp",
+        "source": {
+          "bytes": 3390,
+          "sha256": "c9ae9050c080977591fa239ef37623826a5c7ffc125c78055059e375573feba4",
+          "git_blob_sha1": "c2a691559820e97be5d2862b48a42e429ec4bbcf"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/robolectric/Android.bp"
+      },
+      {
+        "path": "external/robolectric/sandbox/Android.bp",
+        "source": {
+          "bytes": 1820,
+          "sha256": "0f35d9e221672dc164bd38e9c262fa5b38e892679f659e7e82b7dc5b50cd5e74",
+          "git_blob_sha1": "98d89d3c235f016e4a2ac348964c021daaffdb93"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/sandbox/Android.bp"
+      },
+      {
+        "path": "external/robolectric/shadowapi/Android.bp",
+        "source": {
+          "bytes": 1218,
+          "sha256": "36f67c55ad95f649e8a17a0770b8141d653c96c15f5213721b027154f9a21e69",
+          "git_blob_sha1": "a9de730acd4d1af82fb8353afb26d825530c3d18"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/shadowapi/Android.bp"
+      },
+      {
+        "path": "external/robolectric/utils/Android.bp",
+        "source": {
+          "bytes": 1491,
+          "sha256": "582130b938654da15b073bd6c8a616ad366358d125a0a53d14cc9d30e020b323",
+          "git_blob_sha1": "f2ac59e3314ccef0e8c55e4860349ab46ec0d00a"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/utils/Android.bp"
+      },
+      {
+        "path": "external/robolectric/shadows/framework/Android.bp",
+        "source": {
+          "bytes": 2300,
+          "sha256": "51da47be437d5d06a4da728e169eaf5962109f95e5027c81a9d558beba5130fc",
+          "git_blob_sha1": "ca6d0a7fbacc7f88dd8579740eeddf4d65293274"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/shadows/framework/Android.bp"
+      },
+      {
+        "path": "external/robolectric/shadows/httpclient/Android.bp",
+        "source": {
+          "bytes": 2446,
+          "sha256": "c1d4d324a0e0218c175e2f2e85806ccbeb398d797da57baf5221cf542f3d1268",
+          "git_blob_sha1": "7e542d8c435f1fabb04e2ef017b1e8016151fafb"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/shadows/httpclient/Android.bp"
+      },
+      {
+        "path": "external/robolectric/shadows/multidex/Android.bp",
+        "source": {
+          "bytes": 966,
+          "sha256": "0382cd04c1f97f2f5e8aa1a2ac7633349d2d5df96afa8e4d482c4b4468ccc875",
+          "git_blob_sha1": "9d9f7b9802d2f8bab4c45e04e034a3f22391d8d9"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/shadows/multidex/Android.bp"
+      },
+      {
+        "path": "external/robolectric/shadows/versioning/Android.bp",
+        "source": {
+          "bytes": 1647,
+          "sha256": "71262635df4c0b9aff77b4b8d5b3f80587d3a5d3d30a2941867c4e15dd398485",
+          "git_blob_sha1": "6b8e5bac82695246051febf460a79502dec197a3"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/shadows/versioning/Android.bp"
+      },
+      {
+        "path": "external/robolectric/utils/reflector/Android.bp",
+        "source": {
+          "bytes": 1169,
+          "sha256": "82ed73680ad4eda143f6a38bb62198565e9b3a3b8211d9d3c5da6b5703ddae25",
+          "git_blob_sha1": "ef08f4651f918223a3aa181e09a2f75b31d2ac2b"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/utils/reflector/Android.bp"
+      },
+      {
+        "path": "external/robolectric/soong/Android.bp",
+        "source": {
+          "bytes": 1175,
+          "sha256": "702669ff2bbc1b4fa72a10a0f1566a6603fda8d54631566e1433ebbd19f2619a",
+          "git_blob_sha1": "d725fd1185a38c79492df69b64b42c12746c3b67"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/soong/Android.bp"
+      },
+      {
+        "path": "external/robolectric/processor/Android.bp",
+        "source": {
+          "bytes": 2723,
+          "sha256": "557bec83e3e684a6d9b6466827466043b0b1a1d61605aafaf35e581e974bea00",
+          "git_blob_sha1": "4629d806f10ce43a000c4d2e6aa9f9bbabb60157"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/processor/Android.bp"
+      },
+      {
+        "path": "external/robolectric/nativeruntime/src/main/resources/arsc/Android.bp",
+        "source": {
+          "bytes": 2953,
+          "sha256": "2f27bf08ac2761e13123ad0b61d17a5612bb5602400e2f6341e04bd3db694437",
+          "git_blob_sha1": "4529db4196829b9707c334ede1ec2ccdfe4ce1d2"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_robolectric/87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1/nativeruntime/src/main/resources/arsc/Android.bp"
+      },
+      {
+        "path": "external/TestParameterInjector/Android.bp",
+        "source": {
+          "bytes": 2832,
+          "sha256": "3c39d19867e60e6f45ae39b3ee910b986de4cc158042519facaca18720d4ecf8",
+          "git_blob_sha1": "fd89cb51c721d0c6397403707cc061c31ba78b89"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_TestParameterInjector/39be45d7f8988b7b051e14644bc6c51fe856b8f2/Android.bp"
+      },
+      {
+        "path": "external/snakeyaml/Android.bp",
+        "source": {
+          "bytes": 3658,
+          "sha256": "6478dc4def3d198ebf3615dfffc4a65897590f6bfaad7b0ccd978249b5d56593",
+          "git_blob_sha1": "d99973c280ae506f7af2b500353244bc20b34779"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_snakeyaml/629862ff4a73e7656df0ae02ae0cd24fabf603ae/Android.bp"
+      },
+      {
+        "path": "test/robolectric-extensions/Android.bp",
+        "source": {
+          "bytes": 1751,
+          "sha256": "cfbff8817cd8eb06cbd02bffa253ce0a2eb266e93fec6c8ab1894316e8ca6ab8",
+          "git_blob_sha1": "a829a56ec427632ba50f47ae121c7db3161b5982"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_test_robolectric-extensions/94254a13a5969eec7a4742320cc3f91e141d5593/Android.bp"
+      },
+      {
+        "path": "packages/services/Car/car-lib/Android.bp",
+        "source": {
+          "bytes": 12547,
+          "sha256": "e88e92f8113c3c05f71999adfde6c50612d9d15d6454fbb0db9b98aba26fc6a2",
+          "git_blob_sha1": "e7c821cacaf88aaf34eeff49536506b2ec390211"
+        },
+        "url": "https://raw.githubusercontent.com/LineageOS/android_packages_services_Car/9f04df65daa8b9a65ee05fd4039fe95446874d76/car-lib/Android.bp"
+      },
+      {
+        "path": "packages/services/Car/car-builtin-lib/Android.bp",
+        "source": {
+          "bytes": 3748,
+          "sha256": "b7e38fdc5a873a7cd2607759d4eff2b560db218ea14c6a137da5bde70b4e9ceb",
+          "git_blob_sha1": "fd9f8800385ee3b10c40ce30f1ad90f05910cf82"
+        },
+        "url": "https://raw.githubusercontent.com/LineageOS/android_packages_services_Car/9f04df65daa8b9a65ee05fd4039fe95446874d76/car-builtin-lib/Android.bp"
+      },
+      {
+        "path": "packages/services/Car/aconfig/Android.bp",
+        "source": {
+          "bytes": 2896,
+          "sha256": "9e69b1e2e66d9b79489732297e7eb3b1b40fa5397580471da43b8fbd20f21ae2",
+          "git_blob_sha1": "c67e27e6e30187f2e5e2000c20df91354a3d21f9"
+        },
+        "url": "https://raw.githubusercontent.com/LineageOS/android_packages_services_Car/9f04df65daa8b9a65ee05fd4039fe95446874d76/aconfig/Android.bp"
+      },
+      {
+        "path": "packages/services/Car/car-lib/jni/large-parcelable/Android.bp",
+        "source": {
+          "bytes": 1590,
+          "sha256": "7f20480832afc1c33d54c846c2cab1a8cd6598278cd30f00b2a96b75932cbdb9",
+          "git_blob_sha1": "67fba603b26cc0935cf8dbaab529a56132da4a9e"
+        },
+        "url": "https://raw.githubusercontent.com/LineageOS/android_packages_services_Car/9f04df65daa8b9a65ee05fd4039fe95446874d76/car-lib/jni/large-parcelable/Android.bp"
+      },
+      {
+        "path": "packages/services/Car/teams/Android.bp",
+        "source": {
+          "bytes": 2282,
+          "sha256": "cce757a034d72661c8e9bc8795f91b34b20179d22e2dabe011a514bc70c380fa",
+          "git_blob_sha1": "bac52bf721652923042ccc14330ba65ffd9eb5ab"
+        },
+        "url": "https://raw.githubusercontent.com/LineageOS/android_packages_services_Car/9f04df65daa8b9a65ee05fd4039fe95446874d76/teams/Android.bp"
+      },
+      {
+        "path": "packages/services/Car/libs/car-internal-dep-lib/Android.bp",
+        "source": {
+          "bytes": 1313,
+          "sha256": "8822150eeea5481df0d7d075ca06e5e38c5b7494786e01986e05ea5b416da5b6",
+          "git_blob_sha1": "66c4a12abac9c77abd02ea51d5346e46a7cdd108"
+        },
+        "url": "https://raw.githubusercontent.com/LineageOS/android_packages_services_Car/9f04df65daa8b9a65ee05fd4039fe95446874d76/libs/car-internal-dep-lib/Android.bp"
+      },
+      {
+        "path": "external/ow2-asm/Android.bp",
+        "source": {
+          "bytes": 1517,
+          "sha256": "e150c1b5d865f3165c2b88e6156a7f0529c22f4768781f8d99cf53767be911d0",
+          "git_blob_sha1": "b530e10082d43aeb55916a533c2b27eebe0b4721"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_ow2-asm/e20c32fc7f8a49e712a907bcc827a6db074ea582/Android.bp"
+      },
+      {
+        "path": "external/icu/icu4j/Android.bp",
+        "source": {
+          "bytes": 5919,
+          "sha256": "e5a8137f19dbb133bdfa451c42493dbb481b1745a390817876b4636028a6014b",
+          "git_blob_sha1": "4acc1fc54f9c08b3d127b505c321e8f379d13b3b"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_icu/00c713278f65a4db343c388f0c4f8501f70387b9/icu4j/Android.bp"
+      },
+      {
+        "path": "system/timezone/output_data/Android.bp",
+        "source": {
+          "bytes": 5615,
+          "sha256": "e4ee246e5bd714b039bc8de71e3916b602735ec93fa435a465cd5aed765e48f8",
+          "git_blob_sha1": "22e573f368398f54e135100b64796293f28a7d6c"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_system_timezone/cbd571efcf6b551ba83a31147ec7a06182f8ec31/output_data/Android.bp"
+      },
+      {
+        "path": "frameworks/multidex/library/Android.bp",
+        "source": {
+          "bytes": 1116,
+          "sha256": "e44cff9601b6a06c930882ba51b025009898a20fb47a9fe76bd78aa88b24228e",
+          "git_blob_sha1": "1189c2320faf75071b84420201feef82a354ad80"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_frameworks_multidex/5d0f52831fc7de91d1b74aa737e748e740338a9e/library/Android.bp"
+      },
+      {
+        "path": "prebuilts/misc/common/ub-uiautomator/Android.bp",
+        "source": {
+          "bytes": 785,
+          "sha256": "57fa5cc26bdb1fb97a637efe920a0d81656240902eb8bcec359ad61470e26053",
+          "git_blob_sha1": "629b842ee8b8828783715bd70034b10b466396e0"
+        },
+        "url": null
+      },
+      {
+        "path": "frameworks/libs/systemui/tracinglib/core/Android.bp",
+        "source": {
+          "bytes": 990,
+          "sha256": "7043a4172f8fcc57a28e43618062f65cc780c0a0417bd79aa9b9e6d8c3d94cc7",
+          "git_blob_sha1": "2cf7dbed8ea21c12bb85bee615eab4ee0248e755"
+        },
+        "url": null
+      },
+      {
+        "path": "frameworks/libs/systemui/compilelib/Android.bp",
+        "source": {
+          "bytes": 1369,
+          "sha256": "d797aa3cee7113685f0069e2732ec202f750e10474a8de35f01a0f8115ee7d47",
+          "git_blob_sha1": "29dfc7af9b87b7aad32185809bf3cd7ce520e737"
+        },
+        "url": null
+      },
+      {
+        "path": "platform_testing/libraries/motion/compose/Android.bp",
+        "source": {
+          "bytes": 1335,
+          "sha256": "81afc6a513c21130f09a1b25d71bad430e655760014e5410620e3276194038ee",
+          "git_blob_sha1": "a1f006d1c5a7fd551e89bbf558cdad0b9307c80e"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/motion/compose/Android.bp"
+      },
+      {
+        "path": "prebuilts/sdk/current/Android.bp",
+        "source": {
+          "bytes": 10999,
+          "sha256": "78604dc3d53a5b8a5921dfd8de0fae54ca7d664513056c3422ea0bbd55fa234d",
+          "git_blob_sha1": "0695f7996b50229b5e355b0ebcb4153663491548"
+        },
+        "url": {
+          "reader_stdout_blob": "8fad821bc4399e5231cfee5e2771a8e362ddee59",
+          "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-work-01-20261105/aosp-source/prebuilts/sdk/current/Android.bp",
+          "relative": "aosp-source/prebuilts/sdk/current/Android.bp",
+          "source_lock_sha256": "ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54"
+        }
+      },
+      {
+        "path": "prebuilts/tools/common/m2/Android.bp",
+        "source": {
+          "bytes": 19263,
+          "sha256": "74b6fffef659ec1f5d4d82f24d2ec742acbd11c28835e5e7548aded03768522f",
+          "git_blob_sha1": "b1f4fe36702a04bbe2dbf3dcf77fa548edb91544"
+        },
+        "url": {
+          "reader_stdout_blob": "8fad821bc4399e5231cfee5e2771a8e362ddee59",
+          "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-work-01-20261105/aosp-source/prebuilts/tools/common/m2/Android.bp",
+          "relative": "aosp-source/prebuilts/tools/common/m2/Android.bp",
+          "source_lock_sha256": "ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54"
+        }
+      },
+      {
+        "path": "prebuilts/tools/common/m2/robolectric.bp",
+        "source": {
+          "bytes": 3450,
+          "sha256": "d8d44b94f0085fbb5d4bfb07f83baf8581e0b9d0755b9ce5f32f674cfd140e51",
+          "git_blob_sha1": "254169d5fb802fa31661668fdc8ccccb6af55406"
+        },
+        "url": {
+          "reader_stdout_blob": "8fad821bc4399e5231cfee5e2771a8e362ddee59",
+          "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-work-01-20261105/aosp-source/prebuilts/tools/common/m2/robolectric.bp",
+          "relative": "aosp-source/prebuilts/tools/common/m2/robolectric.bp",
+          "source_lock_sha256": "ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54"
+        }
+      },
+      {
+        "path": "build/soong/java/robolectric.go",
+        "source": {
+          "bytes": 16098,
+          "sha256": "853a4126a2fd333122e20751fdceab3679310e5bb66a073644416553ae28d2a5",
+          "git_blob_sha1": "4a51538c894b90c6d8d4797ae3c4eb78d879ba5b"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_build_soong/6722dd8833db7482df1a2543ca3fcf67ddf0f7b1/java/robolectric.go"
+      },
+      {
+        "path": "prebuilts/misc/common/robolectric/Android.bp",
+        "source": {
+          "bytes": 474,
+          "sha256": "f19d82e8d05a0f582adff7428f53b0ed3b2bbb6fe9b5e6cbf27a17d231351e2c",
+          "git_blob_sha1": "7ca6747736de6dfe94e1043ba5b9dd0a8cd98137"
+        },
+        "url": "https://android.googlesource.com/platform/prebuilts/misc/%2B/4e2b934081be20855305781e073968e788164c33%5E2..4e2b934081be20855305781e073968e788164c33/"
+      },
+      {
+        "path": "test/robolectric-extensions/clearcut-junit-listener/Android.bp",
+        "source": {
+          "bytes": 1132,
+          "sha256": "703b73b507250735b532c3c5f9eb4a0662606110e9a499632804136c0047c941",
+          "git_blob_sha1": "c4ffad28f574a1b47bcf5f10d084655e9654ff3a"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_test_robolectric-extensions/94254a13a5969eec7a4742320cc3f91e141d5593/clearcut-junit-listener/Android.bp"
+      },
+      {
+        "path": "platform_testing/libraries/junitxml/Android.bp",
+        "source": {
+          "bytes": 819,
+          "sha256": "8ec2e6b519c0647fdc69b1e5a52ce390c8fe791c011c687b3cd53715406c914a",
+          "git_blob_sha1": "c4cdc0bc6b3317b8a7e44aa91934d6a93a43aa4e"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_platform_testing/6abefd291d50dee240ed2b22572d273175f070da/libraries/junitxml/Android.bp"
+      },
+      {
+        "path": "tools/asuite/Android.bp",
+        "source": {
+          "bytes": 1960,
+          "sha256": "04118667724a0433770f8d913207c510b5103a41d44600da62c337434ed2c5ae",
+          "git_blob_sha1": "9394be4186e63b8621c9b72c8fa40da561743e43"
+        },
+        "url": "https://github.com/aosp-mirror-neo/platform_tools_asuite/blob/744998cb744c401a5daa77170039ab6337ed7adb/Android.bp"
+      },
+      {
+        "path": "tools/asuite/atest/Android.bp",
+        "source": {
+          "bytes": 4006,
+          "sha256": "c38865f4312919d6452897db8e2e9341919ccb659c7a537ae20690a866e891e1",
+          "git_blob_sha1": "f21611860ce4920428cca438acf0725be97b5107"
+        },
+        "url": "https://github.com/aosp-mirror-neo/platform_tools_asuite/blob/744998cb744c401a5daa77170039ab6337ed7adb/atest/Android.bp"
+      },
+      {
+        "path": "build/make/teams/Android.bp",
+        "source": {
+          "bytes": 93850,
+          "sha256": "ea427ade1e3ba0388e4426192a1e6e6d027996063e3b7b2a73fea559b78b51e4",
+          "git_blob_sha1": "d4578264c4cc95dda06deb9c2783818c41ce195d"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_build/5ce6f787337d0223710bf7d4a16dbe6d2a35f777/teams/Android.bp"
+      },
+      {
+        "path": "tools/asuite/atest/proto/clientanalytics.proto",
+        "source": {
+          "bytes": 470,
+          "sha256": "7ebdfd1948951093a9a23f1f18b52e49835e74fc20505903bfa7703a551cfb84",
+          "git_blob_sha1": "e75bf78e17d143ede4a2475361f933aab2890a91"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_tools_asuite/744998cb744c401a5daa77170039ab6337ed7adb/atest/proto/clientanalytics.proto"
+      },
+      {
+        "path": "tools/asuite/atest/proto/common.proto",
+        "source": {
+          "bytes": 262,
+          "sha256": "0cba08e077c9ff6c8a682c4ef532d42aa709ce961ea0c427f583c204e0715acb",
+          "git_blob_sha1": "49cc48c7e0fa3a02149e7bdf669c0e0d92bfa15f"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_tools_asuite/744998cb744c401a5daa77170039ab6337ed7adb/atest/proto/common.proto"
+      },
+      {
+        "path": "tools/asuite/atest/proto/decision_graph.proto",
+        "source": {
+          "bytes": 19594,
+          "sha256": "8c7824ec852d817e3b6d9760233bf3d0780b99f1b122f7d035769a01db8618dd",
+          "git_blob_sha1": "4b369a9d0faf28aa8cde285685f4ebf6a2a15181"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_tools_asuite/744998cb744c401a5daa77170039ab6337ed7adb/atest/proto/decision_graph.proto"
+      },
+      {
+        "path": "tools/asuite/atest/proto/external_user_log.proto",
+        "source": {
+          "bytes": 1968,
+          "sha256": "cfb51e07366e682b434f6003169f92eff841b01c0b6b2a080f927a0379356a5b",
+          "git_blob_sha1": "43329470316b33920f994c64860c08a86dbebcc1"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_tools_asuite/744998cb744c401a5daa77170039ab6337ed7adb/atest/proto/external_user_log.proto"
+      },
+      {
+        "path": "tools/asuite/atest/proto/file_md5.proto",
+        "source": {
+          "bytes": 280,
+          "sha256": "a0abab3febdbbde5dcba2d54fbcf6b1ea1e628c0d01ca7307abf3e8beeff6d82",
+          "git_blob_sha1": "b3be4aef896783febc56f98e315c9f0d95ff24aa"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_tools_asuite/744998cb744c401a5daa77170039ab6337ed7adb/atest/proto/file_md5.proto"
+      },
+      {
+        "path": "tools/asuite/atest/proto/internal_user_log.proto",
+        "source": {
+          "bytes": 2589,
+          "sha256": "0706677e13746538e8844b01f5a22a48bfd64072c869bbf73e2f4a58e6fc2a4e",
+          "git_blob_sha1": "f4bb6495a8b600bda7f0173605947125bcd0ec43"
+        },
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_tools_asuite/744998cb744c401a5daa77170039ab6337ed7adb/atest/proto/internal_user_log.proto"
+      }
+    ],
+    "robolectric_runtime_exact_recovery": {
+      "path": "prebuilts/misc/common/robolectric/Android.bp",
+      "source": {
+        "bytes": 474,
+        "sha256": "f19d82e8d05a0f582adff7428f53b0ed3b2bbb6fe9b5e6cbf27a17d231351e2c",
+        "git_blob_sha1": "7ca6747736de6dfe94e1043ba5b9dd0a8cd98137"
+      },
+      "commit": "be7c3a630b5dc5eb3260035d77a81b2f322754f8",
+      "method": "Exact reconstruction from official source diff, full Git blob matches actual locked commit tree",
+      "official_diff_url": "https://android.googlesource.com/platform/prebuilts/misc/%2B/4e2b934081be20855305781e073968e788164c33%5E2..4e2b934081be20855305781e073968e788164c33/",
+      "actual_tree": "ff79ed78254affea4d7fc2954b812b5737de897f",
+      "exact_actual_blob_match": true,
+      "selected_real_runtime_inputs": "common/robolectric/android-all",
+      "binary_bytes_not_exported": true
+    }
+  },
+  "provider_projection": [
+    {
+      "path": "frameworks/base/packages/SystemUI/Android.bp",
+      "source": {
+        "bytes": 49535,
+        "sha256": "fa1aaf330d580d6cefb74dc0ef1b52fcebbdd9b6bced5497a3bd29f9fb3647a3",
+        "git_blob_sha1": "44bc84d4da7f238a61e4de40f4fb0e20ddd9c80a"
+      },
+      "modules": [
+        [
+          "soong_config_module_type",
+          "systemui_optimized_java_defaults"
+        ],
+        [
+          "systemui_optimized_java_defaults",
+          "SystemUI_optimized_defaults"
+        ],
+        [
+          "filegroup",
+          "sysui_proguard_common_and_kotlin"
+        ]
+      ],
+      "projected": {
+        "bytes": 1558,
+        "sha256": "f5e81cc5342f8c2d50799c437df0e258e697b560e16052bbfa5cec9385523ce1",
+        "git_blob_sha1": "5953e0c0ff072e4d7eadcff109c522e563d1d2f6"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "platform_testing/libraries/motion/Android.bp",
+      "source": {
+        "bytes": 2098,
+        "sha256": "a29bc25117f71e6acac6722f98950831a16a00f382c3ee0f9e991a36ecba5440",
+        "git_blob_sha1": "5d66e6b6e86bd109cc0c469af303cb98ed73f35c"
+      },
+      "modules": [
+        [
+          "filegroup",
+          "motion_test_template"
+        ],
+        [
+          "java_defaults",
+          "MotionTestDefaults"
+        ],
+        [
+          "filegroup",
+          "PlatformMotionTesting-srcs"
+        ],
+        [
+          "android_library",
+          "PlatformMotionTesting"
+        ]
+      ],
+      "projected": {
+        "bytes": 1175,
+        "sha256": "23e1392f716fbf78efb7b0ea5281c3cf70b4547b6aa41af8cf79df495eace098",
+        "git_blob_sha1": "19e3a391852ceff73b9d3ead2c508a0ca402c21f"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "platform_testing/libraries/screenshot/Android.bp",
+      "source": {
+        "bytes": 2403,
+        "sha256": "53ba33c12075d68266d9c90620b2a0e04934e7d0b9eb73c1faf6c06cde689032",
+        "git_blob_sha1": "98bc54c3f173f008fa0cd7e4a608b04bd8fc261a"
+      },
+      "modules": [
+        [
+          "android_library",
+          "platform-screenshot-diff-core"
+        ],
+        [
+          "java_library",
+          "platform-screenshot-diff-proto"
+        ]
+      ],
+      "projected": {
+        "bytes": 1029,
+        "sha256": "6249d22918a5c2d02a5efc6e20013e75f0eabb0c8e492f40d1e83d4009409007",
+        "git_blob_sha1": "c9a0419281b90f4168e7d1cb546e0ddade83224f"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "platform_testing/libraries/runner/Android.bp",
+      "source": {
+        "bytes": 2088,
+        "sha256": "e3b51cb5bc9ca15951a4da4b2ab711bfedd084eba95e2434060126accca8f5aa",
+        "git_blob_sha1": "c30fcf0b5a9bf3962efbc82a3351c9672d39c3a0"
+      },
+      "modules": [
+        [
+          "java_defaults",
+          "platform-parametric-runner-lib_defaults"
+        ],
+        [
+          "android_library",
+          "platform-parametric-runner-lib"
+        ],
+        [
+          "android_library",
+          "platform-parametric-runner-lib-no-robo"
+        ]
+      ],
+      "projected": {
+        "bytes": 892,
+        "sha256": "fcc2907dfabd23aafa5c63c4b2825769b85884a7f6feab3e3ffeb33e07cb9dfd",
+        "git_blob_sha1": "cf1475ed9773b56ab020d547a3b88ebaf5eccfc2"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "external/robolectric/Android.bp",
+      "source": {
+        "bytes": 12618,
+        "sha256": "5491a0f3918f8c5e89276ce13437b29bbd9b64aa2334e81717566e446bb6e1a4",
+        "git_blob_sha1": "994249f475d40cf33e97d16913ae4091d889884c"
+      },
+      "modules": [
+        [
+          "robolectric_build_props",
+          "robolectric_build_props"
+        ],
+        [
+          "java_genrule",
+          "libandroid_runtime_jar"
+        ],
+        [
+          "java_genrule",
+          "robolectric_props_jar"
+        ],
+        [
+          "java_genrule",
+          "robolectric_framework_res"
+        ],
+        [
+          "java_device_for_host",
+          "robolectric_android-all-device-deps"
+        ],
+        [
+          "java_library",
+          "robolectric-host-android_all"
+        ],
+        [
+          "java_library_host",
+          "Robolectric_all"
+        ],
+        [
+          "java_host_for_device",
+          "ClearcutJunitListenerAar"
+        ],
+        [
+          "java_host_for_device",
+          "Robolectric_all-target"
+        ],
+        [
+          "java_device_for_host",
+          "robolectric-host-androidx-test-core"
+        ],
+        [
+          "java_device_for_host",
+          "robolectric-host-androidx-test-ext-junit"
+        ],
+        [
+          "java_device_for_host",
+          "robolectric-host-androidx-test-monitor"
+        ],
+        [
+          "java_device_for_host",
+          "robolectric-host-androidx-test-ext-truth"
+        ],
+        [
+          "java_device_for_host",
+          "robolectric-host-androidx-test-runner"
+        ],
+        [
+          "java_device_for_host",
+          "robolectric-host-androidx"
+        ],
+        [
+          "java_device_for_host",
+          "robolectric-host-androidx_test_espresso"
+        ],
+        [
+          "java_device_for_host",
+          "robolectric-host-android-support-multidex"
+        ],
+        [
+          "java_device_for_host",
+          "robolectric-host-org_apache_http_legacy"
+        ]
+      ],
+      "projected": {
+        "bytes": 10508,
+        "sha256": "0c1dbf256397da0814954949ae33b53952ad2c2ae97980a7947ea262e4619359",
+        "git_blob_sha1": "717807e1ad9722afd7a0f9a968763654029b4f1e"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "external/TestParameterInjector/Android.bp",
+      "source": {
+        "bytes": 2832,
+        "sha256": "3c39d19867e60e6f45ae39b3ee910b986de4cc158042519facaca18720d4ecf8",
+        "git_blob_sha1": "fd89cb51c721d0c6397403707cc061c31ba78b89"
+      },
+      "modules": [
+        [
+          "java_library",
+          "TestParameterInjector"
+        ]
+      ],
+      "projected": {
+        "bytes": 2355,
+        "sha256": "8c968ba42fd26a4fca996740f91164c5d339616ed04b69b34c79bd3464d1b744",
+        "git_blob_sha1": "18d6454a3eec336d7b5b927854c2a45a378cc9df"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "test/robolectric-extensions/Android.bp",
+      "source": {
+        "bytes": 1751,
+        "sha256": "cfbff8817cd8eb06cbd02bffa253ce0a2eb266e93fec6c8ab1894316e8ca6ab8",
+        "git_blob_sha1": "a829a56ec427632ba50f47ae121c7db3161b5982"
+      },
+      "modules": [
+        [
+          "java_library_host",
+          "Robolectric-aosp-plugins"
+        ]
+      ],
+      "projected": {
+        "bytes": 563,
+        "sha256": "7f784da6379787a862ecd71c32d5f021314bc6705e9e7a6d4bb8360c3ebb5c30",
+        "git_blob_sha1": "078b630654da6490c99eafb238fd5dd4fed6ee70"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "packages/services/Car/car-lib/Android.bp",
+      "source": {
+        "bytes": 12547,
+        "sha256": "e88e92f8113c3c05f71999adfde6c50612d9d15d6454fbb0db9b98aba26fc6a2",
+        "git_blob_sha1": "e7c821cacaf88aaf34eeff49536506b2ec390211"
+      },
+      "modules": [
+        [
+          "filegroup",
+          "android.car-full-src"
+        ],
+        [
+          "java_defaults",
+          "android.car-defaults"
+        ],
+        [
+          "java_library",
+          "android.car"
+        ]
+      ],
+      "projected": {
+        "bytes": 1609,
+        "sha256": "690a87d0a8ce5f3bd628770c7c8d25691290ccc7a85dfbdeeece69facb04647d",
+        "git_blob_sha1": "2658962684be8a5e753f5922ad88e19e10e4b7d1"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "packages/services/Car/car-builtin-lib/Android.bp",
+      "source": {
+        "bytes": 3748,
+        "sha256": "b7e38fdc5a873a7cd2607759d4eff2b560db218ea14c6a137da5bde70b4e9ceb",
+        "git_blob_sha1": "fd9f8800385ee3b10c40ce30f1ad90f05910cf82"
+      },
+      "modules": [
+        [
+          "java_defaults",
+          "android.car.builtin-defaults"
+        ],
+        [
+          "java_sdk_library",
+          "android.car.builtin"
+        ]
+      ],
+      "projected": {
+        "bytes": 2820,
+        "sha256": "a9b66992fe7484f49d6c809f87f6dc481aba9aef75a797bb7e7638f02199cfc8",
+        "git_blob_sha1": "62ba722a5ee47f559e212272ec6d4f9c512c8e07"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "packages/services/Car/car-lib/jni/large-parcelable/Android.bp",
+      "source": {
+        "bytes": 1590,
+        "sha256": "7f20480832afc1c33d54c846c2cab1a8cd6598278cd30f00b2a96b75932cbdb9",
+        "git_blob_sha1": "67fba603b26cc0935cf8dbaab529a56132da4a9e"
+      },
+      "modules": [
+        [
+          "cc_library",
+          "liblargeparcelablejni"
+        ]
+      ],
+      "projected": {
+        "bytes": 579,
+        "sha256": "8baf86d459edd9e216e9d6b5649b1bc560d65c9b8b9a8f30eb44581079466c8a",
+        "git_blob_sha1": "2c114b09365725fe88f8c5853729950c39e73d87"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "external/icu/icu4j/Android.bp",
+      "source": {
+        "bytes": 5919,
+        "sha256": "e5a8137f19dbb133bdfa451c42493dbb481b1745a390817876b4636028a6014b",
+        "git_blob_sha1": "4acc1fc54f9c08b3d127b505c321e8f379d13b3b"
+      },
+      "modules": [
+        [
+          "java_defaults",
+          "icu4j-defaults"
+        ],
+        [
+          "java_library",
+          "icu4j"
+        ],
+        [
+          "java_import",
+          "icu4j-icudata"
+        ],
+        [
+          "java_import",
+          "icu4j-icutzdata"
+        ],
+        [
+          "java_library",
+          "icu4j-icudata-jarjar"
+        ],
+        [
+          "java_library",
+          "icu4j-icutzdata-jarjar"
+        ],
+        [
+          "java_library_host",
+          "icu4j-host"
+        ]
+      ],
+      "projected": {
+        "bytes": 4439,
+        "sha256": "fa4314ac6dead0e1138631c6649c5980e0222e5a54cb523ac2db27809b2b7dc6",
+        "git_blob_sha1": "78471957a9f8e0149a8b0da11b1b53209cf98b4c"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "external/robolectric/pluginapi/Android.bp",
+      "source": {
+        "bytes": 1131,
+        "sha256": "b85704354df39ea533d97c8d6a2d51ef148889668d2c08d89fb59dd703e4aa15",
+        "git_blob_sha1": "bfe52de83ccba77c7bba09971699467eed958d7c"
+      },
+      "modules": [
+        [
+          "java_library_host",
+          "Robolectric_pluginapi"
+        ]
+      ],
+      "projected": {
+        "bytes": 607,
+        "sha256": "2c4d145186abf766583c132dcfb902ce21bb409ab5f5ee3904fcae5214ad518a",
+        "git_blob_sha1": "a79d75ea1fd2b50164cfa67cb0f4723e572ccb50"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "external/robolectric/resources/Android.bp",
+      "source": {
+        "bytes": 1395,
+        "sha256": "83e1f8f513e4c8dc9d3e9896e832cf6d5044f64a950dbb40b3d0ad8da9831bef",
+        "git_blob_sha1": "d3e231b66d9b366609252c57a64c3ba0ffc2ae73"
+      },
+      "modules": [
+        [
+          "java_library_host",
+          "Robolectric_resources"
+        ]
+      ],
+      "projected": {
+        "bytes": 693,
+        "sha256": "881e27bf7db87b8eec7e6236d3a871d84b12af26c53b9a9fb3f74a418e8b9a66",
+        "git_blob_sha1": "9589305567f26cc1724beefa251718e207f3813d"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "external/robolectric/robolectric/Android.bp",
+      "source": {
+        "bytes": 3390,
+        "sha256": "c9ae9050c080977591fa239ef37623826a5c7ffc125c78055059e375573feba4",
+        "git_blob_sha1": "c2a691559820e97be5d2862b48a42e429ec4bbcf"
+      },
+      "modules": [
+        [
+          "java_library_host",
+          "Robolectric_robolectric"
+        ],
+        [
+          "genrule",
+          "robolectric-version-upstream.properties"
+        ]
+      ],
+      "projected": {
+        "bytes": 1689,
+        "sha256": "cabde3f0683d9515a10e155b778c3805122d07a8a6d3d94a71367abac63bfc36",
+        "git_blob_sha1": "1bd8c542df869d127b1c44a32a474842dae871ba"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "external/robolectric/sandbox/Android.bp",
+      "source": {
+        "bytes": 1820,
+        "sha256": "0f35d9e221672dc164bd38e9c262fa5b38e892679f659e7e82b7dc5b50cd5e74",
+        "git_blob_sha1": "98d89d3c235f016e4a2ac348964c021daaffdb93"
+      },
+      "modules": [
+        [
+          "java_library_host",
+          "Robolectric_sandbox"
+        ]
+      ],
+      "projected": {
+        "bytes": 900,
+        "sha256": "7f1364ab109bec260809fa92a9d2a767128179f0986dc609bce8f56d669bdb14",
+        "git_blob_sha1": "83ef7de4843bc5665e6f195699561950983fb250"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "external/robolectric/shadowapi/Android.bp",
+      "source": {
+        "bytes": 1218,
+        "sha256": "36f67c55ad95f649e8a17a0770b8141d653c96c15f5213721b027154f9a21e69",
+        "git_blob_sha1": "a9de730acd4d1af82fb8353afb26d825530c3d18"
+      },
+      "modules": [
+        [
+          "java_library_host",
+          "Robolectric_shadowapi"
+        ]
+      ],
+      "projected": {
+        "bytes": 687,
+        "sha256": "76f38523ee0b8684edcb22c508b329f1e55b93ff3316047fe0ce57efc2b035ad",
+        "git_blob_sha1": "9a1e2c1f9390b06117a021e803eb18ae22ef7bbd"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "external/robolectric/utils/Android.bp",
+      "source": {
+        "bytes": 1491,
+        "sha256": "582130b938654da15b073bd6c8a616ad366358d125a0a53d14cc9d30e020b323",
+        "git_blob_sha1": "f2ac59e3314ccef0e8c55e4860349ab46ec0d00a"
+      },
+      "modules": [
+        [
+          "java_library_host",
+          "Robolectric_utils"
+        ]
+      ],
+      "projected": {
+        "bytes": 808,
+        "sha256": "a8b6af937d2d67d7f1ee3ecd2032976f6c93264ed5dad438f75560ff16df9111",
+        "git_blob_sha1": "3e0c3343b1cbc088b6bad5e7a0ccf886336e738f"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "external/robolectric/shadows/httpclient/Android.bp",
+      "source": {
+        "bytes": 2446,
+        "sha256": "c1d4d324a0e0218c175e2f2e85806ccbeb398d797da57baf5221cf542f3d1268",
+        "git_blob_sha1": "7e542d8c435f1fabb04e2ef017b1e8016151fafb"
+      },
+      "modules": [
+        [
+          "java_library_host",
+          "Robolectric_shadows_httpclient"
+        ]
+      ],
+      "projected": {
+        "bytes": 1050,
+        "sha256": "75572b9618806850fc596f36356316879b0ed2b9ec57376b459b357d5c3dc006",
+        "git_blob_sha1": "bb2a970ef70833504746dfb249e2e8927fee3925"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "external/robolectric/shadows/versioning/Android.bp",
+      "source": {
+        "bytes": 1647,
+        "sha256": "71262635df4c0b9aff77b4b8d5b3f80587d3a5d3d30a2941867c4e15dd398485",
+        "git_blob_sha1": "6b8e5bac82695246051febf460a79502dec197a3"
+      },
+      "modules": [
+        [
+          "java_library_host",
+          "Robolectric_shadows_versioning"
+        ]
+      ],
+      "projected": {
+        "bytes": 652,
+        "sha256": "8de2263cf57483ae007f85835f6401bdb40eb061d8dff62ac8ae206b03d33d28",
+        "git_blob_sha1": "901f8d52de34607113c8e9d57b0a0970d3d82fbe"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "external/robolectric/utils/reflector/Android.bp",
+      "source": {
+        "bytes": 1169,
+        "sha256": "82ed73680ad4eda143f6a38bb62198565e9b3a3b8211d9d3c5da6b5703ddae25",
+        "git_blob_sha1": "ef08f4651f918223a3aa181e09a2f75b31d2ac2b"
+      },
+      "modules": [
+        [
+          "java_library_host",
+          "Robolectric_utils_reflector"
+        ]
+      ],
+      "projected": {
+        "bytes": 600,
+        "sha256": "71eb852c68f73ec03daae1a7b0d5a40aae2ca3ed64d19c3f941452f84b034fca",
+        "git_blob_sha1": "c43365e0414bffd2c778c5ca80218925c34aa7b6"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "external/robolectric/processor/Android.bp",
+      "source": {
+        "bytes": 2723,
+        "sha256": "557bec83e3e684a6d9b6466827466043b0b1a1d61605aafaf35e581e974bea00",
+        "git_blob_sha1": "4629d806f10ce43a000c4d2e6aa9f9bbabb60157"
+      },
+      "modules": [
+        [
+          "java_library",
+          "libRobolectric_processor"
+        ],
+        [
+          "java_plugin",
+          "Robolectric_processor"
+        ]
+      ],
+      "projected": {
+        "bytes": 1512,
+        "sha256": "a371760f74de15214ff0c13db200d09231b00472e87c8784aaf40d5ca423829b",
+        "git_blob_sha1": "5528ca77b7f029a6f0b6a4d8357cab80910040df"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "test/robolectric-extensions/clearcut-junit-listener/Android.bp",
+      "source": {
+        "bytes": 1132,
+        "sha256": "703b73b507250735b532c3c5f9eb4a0662606110e9a499632804136c0047c941",
+        "git_blob_sha1": "c4ffad28f574a1b47bcf5f10d084655e9654ff3a"
+      },
+      "modules": [
+        [
+          "java_library_host",
+          "ClearcutJunitListener"
+        ]
+      ],
+      "projected": {
+        "bytes": 527,
+        "sha256": "2bd33a3e44d8b60dd8296aa892791f85cf128ba31bf3547cc8a796f476b138dc",
+        "git_blob_sha1": "15d980b2a2efee556411a8e0fe94e7683921395f"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "tools/asuite/Android.bp",
+      "source": {
+        "bytes": 1960,
+        "sha256": "04118667724a0433770f8d913207c510b5103a41d44600da62c337434ed2c5ae",
+        "git_blob_sha1": "9394be4186e63b8621c9b72c8fa40da561743e43"
+      },
+      "modules": [
+        [
+          "java_library_host",
+          "asuite_proto_java_lite"
+        ]
+      ],
+      "projected": {
+        "bytes": 434,
+        "sha256": "8d8ed13a96c779c96ce59c848c189a3fdfad5202371ad4317d9f36675b4843ab",
+        "git_blob_sha1": "2bb98b1cbc43d73c3ea411b0c4492a20028a9eb2"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "tools/asuite/atest/Android.bp",
+      "source": {
+        "bytes": 4006,
+        "sha256": "c38865f4312919d6452897db8e2e9341919ccb659c7a537ae20690a866e891e1",
+        "git_blob_sha1": "f21611860ce4920428cca438acf0725be97b5107"
+      },
+      "modules": [],
+      "projected": {
+        "bytes": 69,
+        "sha256": "cf7439663957b768c8a14064f65637122fb4ad5788216a67d8bd9dad8d7215ca",
+        "git_blob_sha1": "7dbf6b648a2979754992d7e19992db44f069890c"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    }
+  ],
+  "direct_dependencies": {
+    "existing_failed_consumer_modules_retained": [
+      "PlatformComposeSceneTransitionLayoutTests",
+      "StructuredConcurrencyPerfTests"
+    ],
+    "real_provider_roots": [
+      "MotionTestDefaults",
+      "SystemUI_optimized_defaults",
+      "platform-parametric-runner-lib",
+      "collector-device-lib",
+      "tracinglib-platform"
+    ],
+    "parametric_runner_keeps_Robolectric_all_target_edge": true,
+    "robolectric_keeps_original_host_framework_Car_native_and_Maven_edges": true,
+    "collector_helper_directories": [
+      "adservices",
+      "app",
+      "generic",
+      "jank",
+      "lyric",
+      "memory",
+      "perfetto",
+      "power",
+      "simpleperf",
+      "system",
+      "utilities"
+    ],
+    "actual_Maven_SDK_resolution": {
+      "android_support_multidex": "Existing exact SDK java_import -> current/multidex/library/android-support-multidex.jar",
+      "legacy_multidex": "Existing exact SDK android_library_import -> current/multidex/multidex-1.0.3.aar",
+      "new_frameworks_multidex_project_not_added_to_avoid_duplicate": true,
+      "rxjava": "Existing exact Maven import -> rxjava2 2.2.9 + reactive-streams 1.0.2",
+      "Maven_sparse_new_dirs": 66,
+      "all_original_Maven_jars_aars_srcs_and_licenses_covered_by_old_plus_new_cone_paths": true
+    },
+    "unchanged_original_cases": [
+      {
+        "path": "frameworks/base/packages/SystemUI/Android.bp",
+        "projected_sha256": "f5e81cc5342f8c2d50799c437df0e258e697b560e16052bbfa5cec9385523ce1"
+      },
+      {
+        "path": "platform_testing/libraries/motion/Android.bp",
+        "projected_sha256": "23e1392f716fbf78efb7b0ea5281c3cf70b4547b6aa41af8cf79df495eace098"
+      },
+      {
+        "path": "platform_testing/libraries/screenshot/Android.bp",
+        "projected_sha256": "6249d22918a5c2d02a5efc6e20013e75f0eabb0c8e492f40d1e83d4009409007"
+      }
+    ],
+    "new_source_packages_tests_not_selected": "Only genuine provider bodies selected in new roots; existing failure consumers unchanged",
+    "whole_global_Soong_graph_pass_claimed": false,
+    "source_selection_not_artifact_qualification": true,
+    "remaining_normal_checks": [
+      "New selected source materialization and exact clean HEAD/origin verification",
+      "Real global Soong dependency, variant and visibility validation",
+      "Android implementation JAR and Android-variant JNI object/header/link qualification"
+    ],
+    "implicit_android_robolectric_test_edges": {
+      "source": {
+        "bytes": 16098,
+        "sha256": "853a4126a2fd333122e20751fdceab3679310e5bb66a073644416553ae28d2a5",
+        "git_blob_sha1": "4a51538c894b90c6d8d4797ae3c4eb78d879ba5b"
+      },
+      "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_build_soong/6722dd8833db7482df1a2543ca3fcf67ddf0f7b1/java/robolectric.go",
+      "dependency_phase": "The fixed Soong DepsMutator adds these edges independently of the consumers' explicit Android.bp property lists",
+      "modules": [
+        "ClearcutJunitListenerAar",
+        "Robolectric_all-target",
+        "mockito-robolectric-prebuilt",
+        "truth",
+        "junitxml",
+        "robolectric-android-all-prebuilts"
+      ],
+      "clearcut_chain": [
+        "ClearcutJunitListenerAar",
+        "ClearcutJunitListener",
+        "asuite_proto_java_lite",
+        "libprotobuf-java-lite"
+      ],
+      "listener_source": "test/robolectric-extensions/clearcut-junit-listener/Android.bp",
+      "proto_source": "tools/asuite/Android.bp",
+      "proto_inputs": [
+        "tools/asuite/atest/proto/clientanalytics.proto",
+        "tools/asuite/atest/proto/common.proto",
+        "tools/asuite/atest/proto/decision_graph.proto",
+        "tools/asuite/atest/proto/external_user_log.proto",
+        "tools/asuite/atest/proto/file_md5.proto",
+        "tools/asuite/atest/proto/internal_user_log.proto"
+      ],
+      "proto_imports_all_inside_selected_directory": true,
+      "original_listener_stanza_unmodified": true,
+      "original_proto_stanza_unmodified": true,
+      "new_asuite_atest_parent_metadata_only": "Newly selected parent file is whole-file SHA-bound; unrelated newly introduced atest CLI/test modules are not selected. No old consumer is removed."
+    }
+  },
+  "published_source_reuse": {
+    "fresh_complete_previous_verify_required_before_reconcile": true,
+    "all_old_HEAD_origin_clean_and_links_required": true,
+    "original_shared_sparse_lock_rejected": true,
+    "unknown_dirty_or_mismatched_previous_tree_rejected": true,
+    "normal_existing_reconcile_only": true,
+    "existing_resume_staging_argument_must_not_be_passed": true,
+    "normal_work_and_source_locks_unchanged": true,
+    "manifest_write_after_normal_reconcile_verification": true,
+    "allowed_previous_source_lock_sha256": "ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54",
+    "observed_previous_manifest_sha256": "73a4cc1da8371482164aab2bc149498d03f481f212bb85cb4fda22b6b10c958d"
+  },
+  "strictness": {
+    "dependency_mode": "Strict",
+    "ALLOW_MISSING_DEPENDENCIES": "false",
+    "targets": [
+      "framework-minus-apex",
+      "libandroid_runtime"
+    ],
+    "fake_defaults_or_framework_stubs": false,
+    "original_failed_consumer_removed": false,
+    "source_resume_library_unchanged": true,
+    "Java_implementation_JAR_qualified": false,
+    "Android_JNI_object_or_link_qualified": false,
+    "install_or_runtime_authorization": false
+  },
+  "source_delta": {
+    "source_files_before": 466,
+    "source_files_after": 491,
+    "unchanged_existing": 464,
+    "replaced": [
+      "tools/droidloom-update/src/android.rs",
+      "tools/droidloom-update/src/native_role_ingress.rs"
+    ],
+    "added": [
+      "android/manifest/m2-role-ingress-provider-source-lock.json",
+      "android/native-role-ingress/provider-fixtures/SystemUI.Android.bp",
+      "android/native-role-ingress/provider-fixtures/asuite-atest-metadata.Android.bp",
+      "android/native-role-ingress/provider-fixtures/asuite-proto.Android.bp",
+      "android/native-role-ingress/provider-fixtures/car-builtin.Android.bp",
+      "android/native-role-ingress/provider-fixtures/car-jni.Android.bp",
+      "android/native-role-ingress/provider-fixtures/car-lib.Android.bp",
+      "android/native-role-ingress/provider-fixtures/clearcut-junit-listener.Android.bp",
+      "android/native-role-ingress/provider-fixtures/icu4j.Android.bp",
+      "android/native-role-ingress/provider-fixtures/motion.Android.bp",
+      "android/native-role-ingress/provider-fixtures/robolectric-aosp-plugins.Android.bp",
+      "android/native-role-ingress/provider-fixtures/robolectric-pluginapi.Android.bp",
+      "android/native-role-ingress/provider-fixtures/robolectric-processor.Android.bp",
+      "android/native-role-ingress/provider-fixtures/robolectric-resources.Android.bp",
+      "android/native-role-ingress/provider-fixtures/robolectric-robolectric.Android.bp",
+      "android/native-role-ingress/provider-fixtures/robolectric-root.Android.bp",
+      "android/native-role-ingress/provider-fixtures/robolectric-sandbox.Android.bp",
+      "android/native-role-ingress/provider-fixtures/robolectric-shadowapi.Android.bp",
+      "android/native-role-ingress/provider-fixtures/robolectric-shadows-httpclient.Android.bp",
+      "android/native-role-ingress/provider-fixtures/robolectric-shadows-versioning.Android.bp",
+      "android/native-role-ingress/provider-fixtures/robolectric-utils-reflector.Android.bp",
+      "android/native-role-ingress/provider-fixtures/robolectric-utils.Android.bp",
+      "android/native-role-ingress/provider-fixtures/runner.Android.bp",
+      "android/native-role-ingress/provider-fixtures/screenshot.Android.bp",
+      "android/native-role-ingress/provider-fixtures/test-parameter.Android.bp"
+    ],
+    "pins": {
+      "tools/droidloom-update/src/android.rs": {
+        "bytes": 286971,
+        "sha256": "e493f5f877e038e283672cadaffe7e7b672d51737edc2d7863a13fd3530d7239",
+        "git_blob_sha1": "f7f81c74a74693fda56673aa2f0d98e9ebe22fa3"
+      },
+      "tools/droidloom-update/src/native_role_ingress.rs": {
+        "bytes": 34533,
+        "sha256": "8eefc5e665a6cd9470ce1643542eadfce1445fe2f5992c64547fe40eef7d8dbb",
+        "git_blob_sha1": "d4b31ca1188f6cfb39a85e703a92f42b27158fcd"
+      },
+      "android/manifest/m2-role-ingress-provider-source-lock.json": {
+        "bytes": 96322,
+        "sha256": "5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7",
+        "git_blob_sha1": "b2a9a017dce3c0c261e26d42d191fe065e24bd58"
+      },
+      "android/native-role-ingress/provider-fixtures/SystemUI.Android.bp": {
+        "bytes": 49535,
+        "sha256": "fa1aaf330d580d6cefb74dc0ef1b52fcebbdd9b6bced5497a3bd29f9fb3647a3",
+        "git_blob_sha1": "44bc84d4da7f238a61e4de40f4fb0e20ddd9c80a"
+      },
+      "android/native-role-ingress/provider-fixtures/motion.Android.bp": {
+        "bytes": 2098,
+        "sha256": "a29bc25117f71e6acac6722f98950831a16a00f382c3ee0f9e991a36ecba5440",
+        "git_blob_sha1": "5d66e6b6e86bd109cc0c469af303cb98ed73f35c"
+      },
+      "android/native-role-ingress/provider-fixtures/screenshot.Android.bp": {
+        "bytes": 2403,
+        "sha256": "53ba33c12075d68266d9c90620b2a0e04934e7d0b9eb73c1faf6c06cde689032",
+        "git_blob_sha1": "98bc54c3f173f008fa0cd7e4a608b04bd8fc261a"
+      },
+      "android/native-role-ingress/provider-fixtures/runner.Android.bp": {
+        "bytes": 2088,
+        "sha256": "e3b51cb5bc9ca15951a4da4b2ab711bfedd084eba95e2434060126accca8f5aa",
+        "git_blob_sha1": "c30fcf0b5a9bf3962efbc82a3351c9672d39c3a0"
+      },
+      "android/native-role-ingress/provider-fixtures/robolectric-root.Android.bp": {
+        "bytes": 12618,
+        "sha256": "5491a0f3918f8c5e89276ce13437b29bbd9b64aa2334e81717566e446bb6e1a4",
+        "git_blob_sha1": "994249f475d40cf33e97d16913ae4091d889884c"
+      },
+      "android/native-role-ingress/provider-fixtures/test-parameter.Android.bp": {
+        "bytes": 2832,
+        "sha256": "3c39d19867e60e6f45ae39b3ee910b986de4cc158042519facaca18720d4ecf8",
+        "git_blob_sha1": "fd89cb51c721d0c6397403707cc061c31ba78b89"
+      },
+      "android/native-role-ingress/provider-fixtures/robolectric-aosp-plugins.Android.bp": {
+        "bytes": 1751,
+        "sha256": "cfbff8817cd8eb06cbd02bffa253ce0a2eb266e93fec6c8ab1894316e8ca6ab8",
+        "git_blob_sha1": "a829a56ec427632ba50f47ae121c7db3161b5982"
+      },
+      "android/native-role-ingress/provider-fixtures/car-lib.Android.bp": {
+        "bytes": 12547,
+        "sha256": "e88e92f8113c3c05f71999adfde6c50612d9d15d6454fbb0db9b98aba26fc6a2",
+        "git_blob_sha1": "e7c821cacaf88aaf34eeff49536506b2ec390211"
+      },
+      "android/native-role-ingress/provider-fixtures/car-builtin.Android.bp": {
+        "bytes": 3748,
+        "sha256": "b7e38fdc5a873a7cd2607759d4eff2b560db218ea14c6a137da5bde70b4e9ceb",
+        "git_blob_sha1": "fd9f8800385ee3b10c40ce30f1ad90f05910cf82"
+      },
+      "android/native-role-ingress/provider-fixtures/car-jni.Android.bp": {
+        "bytes": 1590,
+        "sha256": "7f20480832afc1c33d54c846c2cab1a8cd6598278cd30f00b2a96b75932cbdb9",
+        "git_blob_sha1": "67fba603b26cc0935cf8dbaab529a56132da4a9e"
+      },
+      "android/native-role-ingress/provider-fixtures/icu4j.Android.bp": {
+        "bytes": 5919,
+        "sha256": "e5a8137f19dbb133bdfa451c42493dbb481b1745a390817876b4636028a6014b",
+        "git_blob_sha1": "4acc1fc54f9c08b3d127b505c321e8f379d13b3b"
+      },
+      "android/native-role-ingress/provider-fixtures/robolectric-pluginapi.Android.bp": {
+        "bytes": 1131,
+        "sha256": "b85704354df39ea533d97c8d6a2d51ef148889668d2c08d89fb59dd703e4aa15",
+        "git_blob_sha1": "bfe52de83ccba77c7bba09971699467eed958d7c"
+      },
+      "android/native-role-ingress/provider-fixtures/robolectric-resources.Android.bp": {
+        "bytes": 1395,
+        "sha256": "83e1f8f513e4c8dc9d3e9896e832cf6d5044f64a950dbb40b3d0ad8da9831bef",
+        "git_blob_sha1": "d3e231b66d9b366609252c57a64c3ba0ffc2ae73"
+      },
+      "android/native-role-ingress/provider-fixtures/robolectric-robolectric.Android.bp": {
+        "bytes": 3390,
+        "sha256": "c9ae9050c080977591fa239ef37623826a5c7ffc125c78055059e375573feba4",
+        "git_blob_sha1": "c2a691559820e97be5d2862b48a42e429ec4bbcf"
+      },
+      "android/native-role-ingress/provider-fixtures/robolectric-sandbox.Android.bp": {
+        "bytes": 1820,
+        "sha256": "0f35d9e221672dc164bd38e9c262fa5b38e892679f659e7e82b7dc5b50cd5e74",
+        "git_blob_sha1": "98d89d3c235f016e4a2ac348964c021daaffdb93"
+      },
+      "android/native-role-ingress/provider-fixtures/robolectric-shadowapi.Android.bp": {
+        "bytes": 1218,
+        "sha256": "36f67c55ad95f649e8a17a0770b8141d653c96c15f5213721b027154f9a21e69",
+        "git_blob_sha1": "a9de730acd4d1af82fb8353afb26d825530c3d18"
+      },
+      "android/native-role-ingress/provider-fixtures/robolectric-utils.Android.bp": {
+        "bytes": 1491,
+        "sha256": "582130b938654da15b073bd6c8a616ad366358d125a0a53d14cc9d30e020b323",
+        "git_blob_sha1": "f2ac59e3314ccef0e8c55e4860349ab46ec0d00a"
+      },
+      "android/native-role-ingress/provider-fixtures/robolectric-shadows-httpclient.Android.bp": {
+        "bytes": 2446,
+        "sha256": "c1d4d324a0e0218c175e2f2e85806ccbeb398d797da57baf5221cf542f3d1268",
+        "git_blob_sha1": "7e542d8c435f1fabb04e2ef017b1e8016151fafb"
+      },
+      "android/native-role-ingress/provider-fixtures/robolectric-shadows-versioning.Android.bp": {
+        "bytes": 1647,
+        "sha256": "71262635df4c0b9aff77b4b8d5b3f80587d3a5d3d30a2941867c4e15dd398485",
+        "git_blob_sha1": "6b8e5bac82695246051febf460a79502dec197a3"
+      },
+      "android/native-role-ingress/provider-fixtures/robolectric-utils-reflector.Android.bp": {
+        "bytes": 1169,
+        "sha256": "82ed73680ad4eda143f6a38bb62198565e9b3a3b8211d9d3c5da6b5703ddae25",
+        "git_blob_sha1": "ef08f4651f918223a3aa181e09a2f75b31d2ac2b"
+      },
+      "android/native-role-ingress/provider-fixtures/robolectric-processor.Android.bp": {
+        "bytes": 2723,
+        "sha256": "557bec83e3e684a6d9b6466827466043b0b1a1d61605aafaf35e581e974bea00",
+        "git_blob_sha1": "4629d806f10ce43a000c4d2e6aa9f9bbabb60157"
+      },
+      "android/native-role-ingress/provider-fixtures/clearcut-junit-listener.Android.bp": {
+        "bytes": 1132,
+        "sha256": "703b73b507250735b532c3c5f9eb4a0662606110e9a499632804136c0047c941",
+        "git_blob_sha1": "c4ffad28f574a1b47bcf5f10d084655e9654ff3a"
+      },
+      "android/native-role-ingress/provider-fixtures/asuite-proto.Android.bp": {
+        "bytes": 1960,
+        "sha256": "04118667724a0433770f8d913207c510b5103a41d44600da62c337434ed2c5ae",
+        "git_blob_sha1": "9394be4186e63b8621c9b72c8fa40da561743e43"
+      },
+      "android/native-role-ingress/provider-fixtures/asuite-atest-metadata.Android.bp": {
+        "bytes": 4006,
+        "sha256": "c38865f4312919d6452897db8e2e9341919ccb659c7a537ae20690a866e891e1",
+        "git_blob_sha1": "f21611860ce4920428cca438acf0725be97b5107"
+      }
+    },
+    "expected_manifest": {
+      "bytes": 97525,
+      "sha256": "e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee",
+      "git_blob_sha1": "1a881dce47da3ac9dd27c5073bc0e224d88e35a5"
+    }
+  },
+  "validation": {
+    "V8_exact_old_plan_comparison": true,
+    "V8_monotonic_extension_and_whole_source_map": true,
+    "V8_diff_reconstructs_both_sources": true,
+    "Python_or_Rust_executed_locally": false,
+    "remote_compile_pending": true,
+    "actual_Soong_build_pending": true,
+    "original_214_project_rows_preserved_except_exact_monotonic_paths": true,
+    "original8links_unchanged": true,
+    "actual_Maven_source_full_hashes": true,
+    "exact_fixture_sources": 24,
+    "exact_original_provider_stanzas": 59,
+    "all_added_projects_match_fixed_superproject_gitlinks": true,
+    "exact_fixture_include_paths_and_projected_SHA_literals": true,
+    "source_fixture_projection_invariants": "V8 model checked; the same Rust source tests are still unexecuted until the requested compiler runs them",
+    "implicit_Soong_robolectric_edges_reviewed": true
+  },
+  "candidate": {
+    "revision": "468-provider-closure-compile02",
+    "previous_compile01": "UNRUN_RETAINED_NOT_ADMITTED",
+    "source_build_only": true
+  }
+}

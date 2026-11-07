@@ -1,0 +1,14 @@
+--- positive01/controls/registry_controls.cc
++++ positive02/controls/registry_controls.cc
+@@ -357,7 +357,10 @@
+     std::array<unsigned char, role::kDigestBytes> token{};
+     role::Descriptor client;
+     for (;;) {
+-      Wait(control, POLLIN);
++      // The expiry case deliberately leaves a live pending subject idle for
++      // 2.05 seconds. This command-idle wait must exceed that interval; frame
++      // waits and the production 2-second lease are unchanged.
++      Wait(control, POLLIN, 5000);
+       // ReadControl requires an expected kind; peek only this owned private
+       // protocol to select it, then consume/validate the complete frame.
+       Control peek{};

@@ -1,0 +1,54 @@
+{
+  "scope": "actual local owned socketpair/child parent collection; no namespaces or mounts",
+  "commands": [
+    {
+      "argv": [
+        "cc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-c",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-mount-mechanism-work-03/source/probe.c",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-mount-mechanism-work-03/local-controls01/probe.o"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "cc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-mount-mechanism-work-03/source/parent_controls.c",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-mount-mechanism-work-03/local-controls01/parent-controls"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-mount-mechanism-work-03/local-controls01/parent-controls"
+      ],
+      "returncode": 0,
+      "stdout": "{\"case\":\"legacy_got_then_EOF_rejected\",\"passed\":true,\"recv_bytes\":0}\n{\"case\":\"single_frame_EOF_normal_exit\",\"passed\":true,\"got\":true,\"peer_eof\":true,\"reaped\":true,\"forced\":false,\"error\":0,\"wait_status\":0}\n{\"case\":\"EOF_before_pidfd_ready\",\"passed\":true,\"got\":true,\"peer_eof\":true,\"reaped\":true,\"forced\":false,\"error\":0,\"wait_status\":0}\n{\"case\":\"delayed_close\",\"passed\":true,\"got\":true,\"peer_eof\":true,\"reaped\":true,\"forced\":false,\"error\":0,\"wait_status\":0}\n{\"case\":\"frame_pending_after_child_exit\",\"passed\":true,\"got\":true,\"peer_eof\":true,\"reaped\":true,\"forced\":false,\"error\":0,\"wait_status\":0}\n{\"case\":\"EOF_without_frame_rejected\",\"passed\":true,\"got\":false,\"peer_eof\":false,\"reaped\":true,\"forced\":false,\"error\":71,\"wait_status\":0}\n{\"case\":\"second_full_frame_rejected_after_exit\",\"passed\":true,\"got\":true,\"peer_eof\":false,\"reaped\":true,\"forced\":false,\"error\":71,\"wait_status\":0}\n{\"case\":\"extra_nonempty_frame_rejected_after_exit\",\"passed\":true,\"got\":true,\"peer_eof\":false,\"reaped\":true,\"forced\":false,\"error\":71,\"wait_status\":0}\n{\"case\":\"wrong_nonce_rejected\",\"passed\":true,\"got\":false,\"peer_eof\":false,\"reaped\":true,\"forced\":true,\"error\":71,\"wait_status\":0}\n{\"case\":\"short_frame_rejected\",\"passed\":true,\"got\":false,\"peer_eof\":false,\"reaped\":true,\"forced\":false,\"error\":71,\"wait_status\":0}\n{\"case\":\"oversized_frame_rejected\",\"passed\":true,\"got\":false,\"peer_eof\":false,\"reaped\":true,\"forced\":true,\"error\":71,\"wait_status\":0}\n{\"case\":\"missing_EOF_timeout_forced_failure\",\"passed\":true,\"got\":true,\"peer_eof\":false,\"reaped\":true,\"forced\":true,\"error\":110,\"wait_status\":9}\n{\"case\":\"EOF_without_exit_timeout_forced_failure\",\"passed\":true,\"got\":true,\"peer_eof\":true,\"reaped\":true,\"forced\":true,\"error\":110,\"wait_status\":9}\n{\"case\":\"nonzero_child_exit_rejected\",\"passed\":true,\"got\":true,\"peer_eof\":true,\"reaped\":true,\"forced\":false,\"error\":0,\"wait_status\":1792}\n{\"case\":\"wrong_child_PID_rejected\",\"passed\":true,\"got\":false,\"peer_eof\":false,\"reaped\":true,\"forced\":true,\"error\":71,\"wait_status\":0}\n{\"cases\":15,\"passed\":15,\"namespace_or_mount_executed\":false}\n",
+      "stderr": "",
+      "stdout_sha256": "28663176551923e7b9b4afc24c0d530dc9eca76be434842fdbd1f0c08e8a675e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "success": true,
+  "passed": 15
+}

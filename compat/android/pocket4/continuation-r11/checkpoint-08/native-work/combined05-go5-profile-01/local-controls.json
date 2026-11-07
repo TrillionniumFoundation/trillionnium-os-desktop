@@ -1,0 +1,216 @@
+{
+  "schema": 1,
+  "state": "LOCAL_PROFILE_CONTROLS_PASS",
+  "checks": [
+    {
+      "case": "actual_patch_is_only_one_byte_6_to_5",
+      "pass": true,
+      "detail": {
+        "changed_offset": 468,
+        "bytes": 583,
+        "source": "exact pinned patch pair"
+      }
+    },
+    {
+      "case": "manifest_changes_one_row_and_preserves_base_and_modes",
+      "pass": true,
+      "detail": {
+        "fixture_only": true,
+        "rows": 449,
+        "changed_rows": 1,
+        "base_not_mutated": true
+      }
+    },
+    {
+      "case": "manifest_rejects_changed_sha256",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "base Go patch inventory changed"
+      }
+    },
+    {
+      "case": "manifest_rejects_changed_bytes",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "base Go patch inventory changed"
+      }
+    },
+    {
+      "case": "manifest_rejects_changed_kind",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "base Go patch inventory changed"
+      }
+    },
+    {
+      "case": "manifest_rejects_wrong_count",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "base builder inventory is not the pinned 449-file set"
+      }
+    },
+    {
+      "case": "actual_private_copy_only_is_changed",
+      "pass": true,
+      "detail": {
+        "actual_local_file_io": true,
+        "base_unchanged": true,
+        "mode_preserved": true
+      }
+    },
+    {
+      "case": "hardlink_rejected_before_mutation",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "copied Go patch is not a private regular inode",
+        "preimage_unchanged": true,
+        "actual_local_file_io": true
+      }
+    },
+    {
+      "case": "symlink_rejected_before_mutation",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "[Errno 40] Too many levels of symbolic links: '/tmp/go5-local-control-pxfpyli9/symlinked/android/apex-compat/0008-soong-leaf-go-memory-budget.patch'",
+        "preimage_unchanged": true,
+        "actual_local_file_io": true
+      }
+    },
+    {
+      "case": "changed_preimage_rejected_before_write",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "copied Go patch preimage changed",
+        "bytes_unchanged": true,
+        "actual_local_file_io": true
+      }
+    },
+    {
+      "case": "memory_below_14GiB_rejected",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "less than 14 GiB MemAvailable for independent Go5 profile; no automatic retry"
+      }
+    },
+    {
+      "case": "free_swap_below_1GiB_rejected",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "less than the required 1 GiB free swap; no automatic lower-budget retry"
+      }
+    },
+    {
+      "case": "exact_resource_boundary_retains_4GiB_difference",
+      "pass": true,
+      "detail": {
+        "fixture_values_only": true,
+        "minimum_bytes": 15032385536,
+        "admission_difference_bytes": 4294967296,
+        "actual_host_admission_proven": false
+      }
+    },
+    {
+      "case": "projection_accepts_only_declared_patch_set_delta",
+      "pass": true,
+      "detail": {
+        "patch_path": "android/apex-compat/0008-soong-leaf-go-memory-budget.patch",
+        "patch_sha256": "39211a784284ed319b6abbbe4b327a88896931d39c6bdb91fe727a9a7589325f",
+        "base_patch_sha256": "6aaaf5ec96a75bb6480c202d6483a5b22bdd4963d6d3b66bbfad4d80ee5ed20e",
+        "projected_soong_path": "build/soong/ui/build/soong.go",
+        "projected_soong_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "projected_soong_precomputed_hash_comparison": false,
+        "normal_builder_records_patch_after_successful_git_apply": true,
+        "all_other_applied_patch_hashes_equal_reference": true,
+        "synthetic_receipts_only": true
+      }
+    },
+    {
+      "case": "projection_rejects_old_Go6_patch",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "actual projection patch set differs beyond the one Go5 patch"
+      }
+    },
+    {
+      "case": "projection_rejects_unrelated_patch_changed",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "actual projection patch set differs beyond the one Go5 patch"
+      }
+    },
+    {
+      "case": "projection_rejects_unchanged_projected_file",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "actual projected Soong file was not changed and pinned"
+      }
+    },
+    {
+      "case": "preparation_request_contains_exact_controller",
+      "pass": true,
+      "detail": {
+        "preparation_only": true,
+        "submitted": false,
+        "pinned_source_exact": true
+      }
+    },
+    {
+      "case": "fence_template_rejects_absent_actual_preparation_before_actions",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "error": "a new actual Go5 preparation receipt is required"
+      }
+    },
+    {
+      "case": "default_PLAN_combined_build_go5.py",
+      "pass": true,
+      "detail": {
+        "actual_local_cli": true,
+        "state": "PLAN_ONLY",
+        "stdout_sha256": "67bdc88fe8d6e4aa1c7c0d86817b39198633f2d9fde3a5a6305bff83662e6c20"
+      }
+    },
+    {
+      "case": "default_PLAN_fenced_build_go5.template.py",
+      "pass": true,
+      "detail": {
+        "actual_local_cli": true,
+        "state": "PLAN_ONLY",
+        "stdout_sha256": "c5397bd0e161e26a81204864937449ffd56f75e5ecedaf8f6446faf1f3be7b6a"
+      }
+    },
+    {
+      "case": "default_PLAN_make_requests.py",
+      "pass": true,
+      "detail": {
+        "actual_local_cli": true,
+        "state": "PLAN_ONLY",
+        "stdout_sha256": "b4c21a1d54e80e76d47ecdd2151f49e55bc0fb1e7de505094fa41b5138d5fc46"
+      }
+    }
+  ],
+  "count": 22,
+  "all_pass": true,
+  "controller_sha256": "506c528d110f4b3e73d8e6c7d6d12217a8e4b9b6e7105935be3404805aba3e15",
+  "scope": "Actual frozen Python functions and local file syscalls; manifests, memory readings and projection receipts are explicit fixtures.",
+  "actual_449_remote_inventory_read": false,
+  "remote_preparation_performed": false,
+  "compiler_executed": false,
+  "remote_requests_submitted": 0,
+  "Main_actions": 0,
+  "full_engine_built": false,
+  "production_ready": false
+}

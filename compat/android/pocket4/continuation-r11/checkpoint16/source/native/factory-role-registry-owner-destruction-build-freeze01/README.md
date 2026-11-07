@@ -1,0 +1,9 @@
+# Registry destruction matching build-only request
+
+This create-only request stages eight exact frozen source/reference files, their complete source manifest and one compiler controller under the existing private native-owned parent. It builds the same control against the preimage and candidate Registry, with the correct arm header forced and observed in the actual compiler dependency closure. The original context/helper source is shared byte-for-byte.
+
+The twenty existing resource, file holding, child cleanup, compiler dependency and tool/library functions are unchanged from the actual NOFOLLOW build controller. Only execute and fixed paths/input pins change. CPU 100%, MemoryMax 512 MiB, nice 15 and timeout 240 seconds remain; the inner deadline is 180 seconds. Swap limit is observed, not silently claimed bounded. No Main identity observation is asserted.
+
+Compiler warning/optimization flags remain -std=c++17 -O2 -Wall -Wextra -Werror. Required include roots differ only to select the preimage header for that arm. Actual MD output must equal the precompiled dependency observation. Each ELF and runtime library is held and checked after the two default PLAN calls. The earlier actual build receipt 818bab5d... and its 15101-byte tool manifest 51cd6fca... are read from fixed owned locations; their current full contents, named/held identities and all compiler/runtime input pins must remain unchanged. This adds a concrete prior-tool match, not just a path reuse claim.
+
+No --execute-once call is passed to either C++ fixture. The preimage/candidate actual execution must be a later request bound to these two actual ELF hashes and full build result. Actual source controls remain pending. No service, capability, namespace, system package or Main change is performed. The prior dispatcher freeze still contains its old Registry until an explicit reviewed integration revision.

@@ -1,0 +1,229 @@
+--- reviewed-16be2586/restore_main.py
++++ candidate-final/restore_main.py
+@@ -17,6 +17,7 @@
+ import signal
+ import stat
+ import subprocess
++import sys
+ import time
+ 
+ ROOT = '/home/alex/work/pocket4-main-tasksmax-restore-01'
+@@ -62,7 +63,7 @@
+ 
+ def fail(phase, error):
+     return dict(phase=phase, type=type(error).__name__, message=str(error),
+-                errno=getattr(error, 'errno', None))
++                errno=getattr(error, 'errno', None), notes=list(getattr(error, '__notes__', ())))
+ 
+ 
+ class ToolFailure(RuntimeError):
+@@ -94,6 +95,26 @@
+ 
+ def same_identity(left, right):
+     return all(left[key] == right[key] for key in FIELDS)
++
++
++def close_owned(fds):
++    """Attempt every close; an active primary exception remains primary."""
++    primary = sys.exception()
++    new_error = None
++    for fd in fds:
++        if fd is not None:
++            try:
++                os.close(fd)
++            except Exception as error:
++                if primary is not None:
++                    primary.add_note('secondary owned FD close error: ' + repr(error))
++                elif new_error is None:
++                    new_error = error
++                    new_error.add_note('owned FD close did not report success')
++                else:
++                    new_error.add_note('secondary owned FD close error: ' + repr(error))
++    if new_error is not None:
++        raise new_error
+ 
+ 
+ def pread_bound(fd, maximum, deadline):
+@@ -189,15 +210,16 @@
+     """Only one fresh root; each bounded record is create-only and fsynced."""
+     def __init__(self, identity, deadline):
+         self.identity = identity
+-        self.fd = None
+-        path_fd = identity.open_fixed('/home/alex/work', True, deadline)
++        self.fd = self.parent = path_fd = None
+         try:
+-            self.parent = os.open('.', os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW,
+-                                  dir_fd=path_fd)
+-        finally:
+-            os.close(path_fd)
+-        self.parent_identity = metadata(self.parent)
+-        try:
++            path_fd = identity.open_fixed('/home/alex/work', True, deadline)
++            try:
++                self.parent = os.open('.', os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW,
++                                      dir_fd=path_fd)
++            finally:
++                closing, path_fd = path_fd, None
++                close_owned((closing,))
++            self.parent_before_creation = metadata(self.parent)
+             os.mkdir(ROOT.rsplit('/', 1)[1], 0o700, dir_fd=self.parent)
+             self.fd = os.open(ROOT.rsplit('/', 1)[1], os.O_RDONLY | os.O_DIRECTORY |
+                               os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=self.parent)
+@@ -207,8 +229,12 @@
+             self.directory_identity = s
+             os.fsync(self.fd)
+             os.fsync(self.parent)
++            self.parent_identity = metadata(self.parent)
++            require(all(self.parent_identity[key] == self.parent_before_creation[key]
++                        for key in ('device', 'inode', 'mode', 'uid', 'gid')),
++                    'EVIDENCE_PARENT_CHANGED_DURING_OWN_DIRECTORY_CREATION')
+         except Exception as primary:
+-            for fd in (self.fd, self.parent):
++            for fd in (self.fd, self.parent, path_fd):
+                 if fd is not None:
+                     try:
+                         os.close(fd)
+@@ -228,9 +254,7 @@
+             require(same_identity(metadata(self.fd), self.directory_identity) and
+                     metadata(named) == metadata(self.fd), 'OWNED_EVIDENCE_NAMED_IDENTITY')
+         finally:
+-            if named is not None:
+-                os.close(named)
+-            os.close(named_parent)
++            close_owned((named, named_parent))
+ 
+     def save(self, name, value):
+         self.check()
+@@ -248,21 +272,13 @@
+                 offset += count
+             os.fsync(fd)
+         finally:
+-            os.close(fd)
++            close_owned((fd,))
+         os.fsync(self.fd)
+         self.check()
+         return dict(path=ROOT + '/' + name, bytes=len(raw), sha256=sha(raw))
+ 
+     def close(self):
+-        first = None
+-        for fd in (self.fd, self.parent):
+-            try:
+-                os.close(fd)
+-            except Exception as error:
+-                if first is None:
+-                    first = error
+-        if first is not None:
+-            raise first
++        close_owned((self.fd, self.parent))
+ 
+ 
+ class ConfigAnchor:
+@@ -276,7 +292,7 @@
+                 self.parent = os.open('.', os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW,
+                                       dir_fd=path_fd)
+             finally:
+-                os.close(path_fd)
++                close_owned((path_fd,))
+             self.parent_before = metadata(self.parent)
+             require(stat.S_ISDIR(self.parent_before['mode']) and self.parent_before['uid'] == 0 and
+                     not self.parent_before['mode'] & 0o022, 'ROOT_OWNED_FIXED_CONFIG_PARENT')
+@@ -300,7 +316,7 @@
+             require(permit_time_change or held_now == self.parent_before, 'CONFIG_PARENT_METADATA_CHANGED')
+             return dict(before=self.parent_before, held=held_now, named=named_now)
+         finally:
+-            os.close(named)
++            close_owned((named,))
+ 
+     def check(self, expected_metadata, body, deadline):
+         parent = self.parent_check(deadline)
+@@ -315,7 +331,7 @@
+                     'CONFIG_HELD_NAMED_BODY_CHANGED')
+             return dict(path=self.path, bytes=len(body), sha256=sha(body), metadata=first, parent=parent)
+         finally:
+-            os.close(named)
++            close_owned((named,))
+ 
+     def observe_named50(self, deadline):
+         parent = self.parent_check(deadline, True)
+@@ -332,7 +348,7 @@
+                         metadata_changed=before != self.spec['before'], bytes=len(body), sha256=sha(body),
+                         parent=parent, original_held_metadata=metadata(self.fd))
+         finally:
+-            os.close(named)
++            close_owned((named,))
+ 
+     def close(self):
+         errors = []
+@@ -345,6 +361,8 @@
+                     errors.append(error)
+                 setattr(self, name, None)
+         if errors:
++            for error in errors[1:]:
++                errors[0].add_note('secondary configuration FD close error: ' + repr(error))
+             raise errors[0]
+ 
+ 
+@@ -412,7 +430,7 @@
+                 sha(body) == TOOL_SHA and metadata(named) == metadata(fd) == expected['metadata'],
+                 'SYSTEMCTL_ORIGINAL_HELD_ELF_HASH')
+     finally:
+-        os.close(named)
++        close_owned((named,))
+ 
+ 
+ def run_tool(identity, fd, binding, kind, record, deadline):
+@@ -539,7 +557,7 @@
+     try:
+         require(metadata(named) == metadata(fd), 'ACTION_LOCK_NAMED_IDENTITY')
+     finally:
+-        os.close(named)
++        close_owned((named,))
+ 
+ 
+ def execute_once(identity, binding, prior_raw):
+@@ -562,6 +580,11 @@
+     preflight = False
+     try:
+         journal = Journal(identity, deadline)
++        result['evidence_parent_observed'] = journal.parent_identity
++        result['evidence_parent_before_own_mkdir'] = journal.parent_before_creation
++        result['evidence_directory_observed'] = journal.directory_identity
++        result['evidence_parent_is_root_owned'] = journal.parent_identity['uid'] == 0
++        result['evidence_path_scope'] = 'held/named checks below existing operator-writable parent; no parent chmod'
+         journal.save('claim.json', dict(nonce=NONCE, key=KEY, source_binding=binding))
+         journal.save('prior-main-identity-original.json', prior_raw)
+         lock = identity.open_fixed(LOCK, False, deadline)
+@@ -573,7 +596,7 @@
+         check_tool(identity, tool, binding, deadline)
+         anchor50 = ConfigAnchor(identity, binding['configs'][0], False, deadline)
+         anchor90 = ConfigAnchor(identity, binding['configs'][1], True, deadline)
+-        journal.save('original-50-TasksMax.conf', OLD50)
++        journal.save('original-50-tasksmax.conf', OLD50)
+         journal.save('original-90-validation.conf', OLD90)
+         journal.save('new-90-validation.conf', NEW90)
+         before_service = result['commands']['show_before'] = {}
+@@ -605,6 +628,9 @@
+     except Exception as error:
+         remember(result, 'transaction', error)
+     finally:
++        property_record = result['commands'].get('set_property', {})
++        result['property_process_launch_attempted'] = property_record.get('attempted', False)
++        result['property_direct_child_started'] = 'child_pid' in property_record
+         result['side_effects_possible'] = bool(result['write90'].get('attempted') or result['property_attempted'])
+         if preflight:
+             # Every observation is independent: one failed read cannot skip the rest.
+@@ -669,10 +695,12 @@
+             except Exception as error:
+                 close_errors.append(fail('close_action_lock', error))
+                 remember(result, 'close_action_lock', error)
+-        result['held_fds_closed'] = not close_errors
++        result['held_fds_closed'] = (not close_errors and not any(item and item.get('notes')
++            for item in [result['error']] + result['secondary_errors']))
+         conditions_passed = bool(preflight and result['error'] is None and not result['secondary_errors'] and
+             result.get('original_main_guard_passed_after') and result.get('systemd_and_kernel_12288_proven') and
+-            result.get('config50_after') and result.get('config90_after') and result['action_lock_released'])
++            result.get('config50_after') and result.get('config90_after') and result['action_lock_released'] and
++            result['held_fds_closed'])
+         result['conditions_passed_before_evidence_close'] = conditions_passed
+         result['evidence_fds_closed'] = False
+         result['state'] = 'FINAL_EVIDENCE_CLOSE_PENDING' if conditions_passed else 'MAIN_RESTORE_NOT_QUALIFIED'

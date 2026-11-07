@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "state": "REAL_SOURCE_CONTEXT_CONTROLS_PASS",
+  "controls": [
+    {
+      "name": "actual-frozen-r2-copied-module-reproduces-manifest-context-rejection",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "input pin differs: /workspace/scratch/94990735b266/isolated-signal-canary-runtime-r2/source-manifest.json"
+    },
+    {
+      "name": "r3-loads-complete-pinned-r1-context-and-original-verifier-passes",
+      "passed": true,
+      "module_here": "/workspace/scratch/94990735b266/isolated-signal-canary-runtime-r1",
+      "source_manifest_sha256": "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5"
+    },
+    {
+      "name": "reject-declared-changed-host_suite.py",
+      "passed": true,
+      "expected_rejection": true,
+      "fixture": "explicit in-memory mutated expected file hash"
+    },
+    {
+      "name": "reject-declared-changed-host-test-contract.json",
+      "passed": true,
+      "expected_rejection": true,
+      "fixture": "explicit in-memory mutated expected file hash"
+    },
+    {
+      "name": "reject-declared-changed-r16-host-layout.json",
+      "passed": true,
+      "expected_rejection": true,
+      "fixture": "explicit in-memory mutated expected file hash"
+    }
+  ],
+  "count": 5,
+  "native_suite_executed": false,
+  "Android_started": false,
+  "device_operations": 0,
+  "scope": "source verifier module context only"
+}

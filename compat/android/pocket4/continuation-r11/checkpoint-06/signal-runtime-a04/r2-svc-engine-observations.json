@@ -1,0 +1,53 @@
+{
+  "errors": [],
+  "held_engine_before": {
+    "bytes": 2708864,
+    "device": 66306,
+    "inode": 44086581,
+    "sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0"
+  },
+  "observations": [
+    {
+      "binding": {
+        "actual_host_maps": [
+          "765294762000-7652947d1000 r--p 00000000 103:02 44086581                  /system/lib64/libberberis_arm64.so",
+          "7652947d2000-7652949a0000 r-xp 00070000 103:02 44086581                  /system/lib64/libberberis_arm64.so",
+          "7652949a2000-7652949e5000 r--p 00240000 103:02 44086581                  /system/lib64/libberberis_arm64.so",
+          "7652949e6000-7652949e7000 rw-p 00284000 103:02 44086581                  /system/lib64/libberberis_arm64.so"
+        ],
+        "engine_sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
+        "hash_bound_by_held_file_before_and_after_case": true,
+        "mapped_device": 66306,
+        "mapped_inode": 44086581
+      },
+      "observed_utc": "2026-11-04T19:44:47.619888+00:00",
+      "process": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/apps/uid_10114/pid_5591"
+        ],
+        "cmdline": [
+          "org.droidloom.signalprobe"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 406352,
+        "namespace_pids": [
+          406352,
+          5591
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534239]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84719678,
+        "uids": [
+          10114,
+          10114,
+          10114,
+          10114
+        ]
+      }
+    }
+  ],
+  "sampler_stopped": true
+}

@@ -1,0 +1,15 @@
+--- a/candidate05/fenced_build_streaming.template.py
++++ b/candidate06/fenced_build_streaming.template.py
+@@ -9,10 +9,10 @@
+ import subprocess
+ import time
+ 
+-CONTROLLER_SHA = 'acf81b5192a4832061d6feb442f40aefd42df9c95c213d62cec71c57cf3158dd'
++CONTROLLER_SHA = 'BOUND_CANDIDATE06_CONTROLLER_SHA_REQUIRED'
+ SNAPSHOT_SHA = 'f909bdfcaedfef29fcc1ba6a994c49bc21e99850204bac7e0565548bcd7139cb'
+ PREPARATION_SHA = 'ACTUAL_GO5_STREAMING_PREPARATION_SHA_REQUIRED'
+-ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go5-streaming-01')
++ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined06-go5-streaming-01')
+ FENCE_ROOT = ROOT / 'build-fences-01'
+ 
+ 

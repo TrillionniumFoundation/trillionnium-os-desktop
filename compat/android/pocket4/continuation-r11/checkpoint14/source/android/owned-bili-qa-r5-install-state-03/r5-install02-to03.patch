@@ -1,0 +1,317 @@
+--- install02/INPUTS.json
++++ install03/INPUTS.json
+@@ -1,4 +1,20 @@
+ {
++  "action_lock_admission": {
++    "Main_rechecked_after_lock": true,
++    "failure_close_error_secondary": true,
++    "failure_closes_own_FD": true,
++    "mode": "LOCK_EX|LOCK_NB",
++    "no_Android_command_replay": true,
++    "no_lock_delete_replace_unlock_of_others": true,
++    "only_EAGAIN_is_waitable": true,
++    "original_error_preserved_on_deadline": true,
++    "outer_timeout_seconds_unchanged": 300,
++    "path_identity_rechecked_after_acquisition": true,
++    "poll_interval_seconds": 0.05,
++    "same_open_inode_only": true,
++    "wait_limit_seconds": 5.0,
++    "worker_timeout_seconds_unchanged": 190
++  },
+   "actual_install_state_not_run": true,
+   "actual_r5_build_job_reported_by_root": "1a1aa74aa92-fc05-4355",
+   "apk": {
+@@ -15,8 +31,8 @@
+   "helper_uid": null,
+   "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+   "nonces": {
+-    "flow": "2b677053c75cb4e91aada7fd108071bf",
+-    "state": "0cd510d1c7647441f250b0cad35599d8"
++    "flow": "a25b59395264b89f9f97d5f0db74a3c5",
++    "state": "2ad38fb92a0c5cfd6cde23b0c03c4ae6"
+   },
+   "official_cli_reference": {
+     "bytes": 220141,
+@@ -49,6 +65,29 @@
+     "not_install_qualified": true,
+     "preserved": true
+   },
++  "prior_R5_install02_failure": {
++    "coordinator": {
++      "bytes": 3064,
++      "sha256": "672d1fd70f97587eb0b49d3196ea9fcce90472079ec468b9c8cdfa604e7a6515"
++    },
++    "external_holder_not_inferred": true,
++    "first_error": {
++      "message": "[Errno 11] Resource temporarily unavailable",
++      "phase": "install_or_state",
++      "type": "BlockingIOError"
++    },
++    "job": "1a1aa88bddb-fc05-440e",
++    "no_Android_action_observed": true,
++    "preserved": true,
++    "stage": {
++      "bytes": 2151,
++      "sha256": "f9b6c1698443b49ca1ff2470094c33c8275c7bbb056ecbe1fcc558c997b3e3af"
++    },
++    "worker": {
++      "bytes": 1594,
++      "sha256": "f145fc4f93818aaf86b4075835775c971e6276da62b356ea965626717c34fe71"
++    }
++  },
+   "prior_install01_failure": {
+     "bytes": 3055,
+     "error": "NUMERIC_PID_ENTRY_FORBIDDEN",
+@@ -67,18 +106,18 @@
+     "manifest_sha256": "52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1",
+     "only_changed_inherited_production_file": "bound_android_transport.py",
+     "production_transport_sha256": "7edecc741b8a61bea30d885ab9107666aab9407d6a6928bf799bd8efd4b4a23b",
+-    "root": "/home/alex/work/pocket4-owned-bili-qa-r5-install-state-02/source/recorder-r4",
++    "root": "/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/source/recorder-r4",
+     "source_sha256": "5f25f22db55ba94e6ac895c2ce274b6959a274b64c9aa82bbc30d8c3c860f511",
+     "staged_private_copy_only": true
+   },
+   "schema": 1,
+-  "scope": "Install only the actual qualified R5 build02 APK and one no-UiAutomation state; no UI actions",
++  "scope": "New exact R5 install03 and one no-UiAutomation state, after bounded same-inode original action-lock admission",
+   "source_review_only": true,
+   "stage": {
+     "bytes": 1939,
+     "path": "/home/alex/work/pocket4-owned-bili-qa-r5-source-02/stage-result.json",
+     "sha256": "6d12174970b04a2078972602eef64e93016715eeac300b27b368f8609549acb9"
+   },
+-  "state": "SOURCE_FROZEN_ACTUAL_BUILD02_BOUND_INSTALL_AND_STATE02_UNRUN",
++  "state": "SOURCE_CANDIDATE_ACTUAL_BUILD02_AND_NO_ACTION_FAILURE02_BOUND_INSTALL03_UNRUN",
+   "whole_app_production_ready": false
+ }
+--- install02/README.md
++++ install03/README.md
+@@ -1,9 +1,11 @@
+-# Owned R5 build02 installation and state02, once
++# R5 install/state03: bounded original action-lock admission
+ 
+-Bind only the newly qualified R5 build02 artifact to the original install/state mechanism. The original R5 build01 failed its escaped package gates and remains unusable for this admission. The new build02 has eleven successful joined commands, all nine exact sources and unchanged tool records. Its actual APK/signature/manifest and owned resource receipts are externally pinned.
++This fresh attempt uses the actual build02 APK and signer unchanged. Install/state02 remains FAILED. Its original six-file collector shows BlockingIOError EAGAIN before installation or state, no Android action or unknown outcome, and unchanged Main. The original recorder lock function can leak its newly opened descriptor when flock fails; process exit eventually closes it. The original receipt has no traceback or acquisition phase, so it does not identify the external holder or prove that every possible lower-level I/O source of EAGAIN is excluded.
+ 
+-This fresh root/key/flow uses the unchanged R4 held namespace transport, Main fence and action lock. Across-user installed and retained-uninstalled package absence is required. Explicit cmd package install -R -t forbids replacement; no permission grant, clearing, setting change or fallback is allowed. The installed UID is observed, never guessed; known older helpers including UID10169 are rejected and untouched. The actual installed base APK is read through the held Main root and checked before/after one state operation.
++The new worker records admission phases and errno. Its small admission helper opens the original action-lock pathname once with NOFOLLOW/CLOEXEC, verifies a root-owned single-link regular file, and keeps that same descriptor and inode. Only LOCK_EX|LOCK_NB EAGAIN is waited for, for at most five seconds inside the existing 190-second worker and 300-second outer timeouts. It never removes, replaces or unlocks another holder's lock and never reopens the pathname while waiting. A successful acquisition must still match the named inode; Main is rechecked before the first Android command. On failure its own descriptor is closed, and a close error is secondary to the original failure. Expiry preserves the original EAGAIN and refuses all later actions.
+ 
+-The only instrumentation operation is state, which does not connect UiAutomation. Its actual nonce, UID, finish -1, returncode and post guard must all match. Original first-error/finally logic releases held FDs/action lock and removes only the held temporary APK file/directory. The installed helper is retained for a later independently qualified fresh functional flow. Failed/unknown installation is not replayed or uninstalled automatically.
++The original failed coordinator/stage/worker bytes and their receipt chain are required inputs to this new attempt. The old claim, flow, nonces and failed results are never resumed or rewritten. The fixed package must still be absent across all users and retained uninstalled records; installation still uses explicit -R -t, without replacement, grant, fallback or uninstall. Exactly one no-UiAutomation state follows a successful exact install and actual APK/signer/UID verification. R1–R4 and legacy v2 are untouched.
+ 
+-Compile SDK31, minSdk31 and targetSdk33 are unchanged. R5 UI operations use public clearCache on runtime API34+, but this state does not exercise it. Runtime cache cause, window readiness, viewport/playback/audio and whole-App readiness remain unqualified. Actual build02 job: 1a1aa74aa92-fc05-4355. Source manifest: 83f642432c59f8e441f32402e278e9b52467a1a848e9d8e59eedaa22ed2a9577. This install/state source/request has not executed Android.
++The frozen R4 held transport, original recorder source and source manifest, Main fences, action semantics, state contract, owned staging inode cleanup and all resource limits are retained. No Java/APK rebuild or UI action is introduced. Actual installed UID and state remain unknown until this new attempt runs. No whole-App readiness is claimed.
++
++Six local controls use actual two-process flock and real clocks, with only owned temporary lock files and bounded child processes. They reproduce the original EAGAIN plus one-descriptor leak, verify the new deadline and zero follow-on admission, verify release then exclusive acquisition, verify a second process can acquire after our close, reject a replacement pathname without reopening it, and close the descriptor after an actual multi-link metadata rejection. No flock or clock syscall seam, device operation or private commercial UI is used.
+--- install02/install_state.py
++++ install03/install_state.py
+@@ -7,6 +7,8 @@
+ fallback, permission grant, install replacement, task or commercial data action.
+ """
+ import argparse
++import errno
++import fcntl
+ import hashlib
+ import json
+ import os
+@@ -14,15 +16,16 @@
+ import re
+ import stat
+ import sys
++import time
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-02')
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03')
+ SOURCE = ROOT / 'source'
+-NONCE = '2b677053c75cb4e91aada7fd108071bf'
+-STATE_NONCE = '0cd510d1c7647441f250b0cad35599d8'
++NONCE = 'a25b59395264b89f9f97d5f0db74a3c5'
++STATE_NONCE = '2ad38fb92a0c5cfd6cde23b0c03c4ae6'
+ FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-' + NONCE)
+-STEP = 'install-state-r5-02'
++STEP = 'install-state-r5-03'
+ SELF = 'org.droidloom.qa.bili.r5'
+ QA_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-source-02/source')
+ QA_MANIFEST = '83f642432c59f8e441f32402e278e9b52467a1a848e9d8e59eedaa22ed2a9577'
+@@ -45,6 +48,20 @@
+ PACKAGE_LIST = ['/system/bin/cmd', 'package', 'list', 'packages', '-u', '-U', '--user', 'all', SELF]
+ INSTALLED_ALL_USERS = ['/system/bin/cmd', 'package', 'list', 'packages', '-U', '--user', 'all', SELF]
+ INSTALL = ['/system/bin/cmd', 'package', 'install', '-R', '-t', '--user', '0', '--pkg', SELF, GUEST_APK]
++ACTION_LOCK_WAIT_SECONDS = 5.0
++ACTION_LOCK_POLL_SECONDS = 0.05
++PRIOR_FAILURE_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-02')
++PRIOR_FAILURE_NONCE = '2b677053c75cb4e91aada7fd108071bf'
++PRIOR_FAILURE_STATE_NONCE = '0cd510d1c7647441f250b0cad35599d8'
++PRIOR_FAILURE_SOURCE = '7317d344da48a2819618968c9589ae839b08bcd1405ea8f3cc80b4bf8b68310b'
++PRIOR_FAILURE_RECORDS = {
++    'coordinator': (PRIOR_FAILURE_ROOT/'result.json', 3064,
++        '672d1fd70f97587eb0b49d3196ea9fcce90472079ec468b9c8cdfa604e7a6515'),
++    'stage': (PRIOR_FAILURE_ROOT/'stage-result.json', 2151,
++        'f9b6c1698443b49ca1ff2470094c33c8275c7bbb056ecbe1fcc558c997b3e3af'),
++    'worker': (Path('/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-2b677053c75cb4e91aada7fd108071bf/steps/install-state-r5-02/result.json'), 1594,
++        'f145fc4f93818aaf86b4075835775c971e6276da62b356ea965626717c34fe71'),
++}
+ EXPECTED_SOURCE_FILES = {'install_state.py', 'stage_execute.py', 'make_request.py',
+                          'references/readonly_r3_coordinator.py', 'INPUTS.json', 'README.md',
+                          'references/R3-SOURCE-MANIFEST.json', 'r4/source-manifest.json',
+@@ -126,7 +143,102 @@
+             'ACTUAL_STAGE_RECEIPT_REQUIRED')
+     data = read(APK, APK_BYTES, APK_SHA, APK_BYTES)
+     proof['stage_receipt_sha256'] = STAGE_SHA
++    prior_no_action_failure(proof)
+     return adapter, qa, proof, data
++
++
++def prior_no_action_failure(proof):
++    """Require the original failed attempt; never treat it as an install."""
++    rows = {name:json.loads(read(path,65536,pin,size))
++            for name,(path,size,pin) in PRIOR_FAILURE_RECORDS.items()}
++    c,s,w = (rows[name] for name in ('coordinator','stage','worker'))
++    require(all(row.get('ok') is False and row.get('secondary_errors') == [] for row in (c,s,w)),
++            'ORIGINAL_FAILED_ATTEMPT_REQUIRED')
++    require(c.get('source_manifest_sha256') == s.get('source_manifest_sha256') == PRIOR_FAILURE_SOURCE and
++            c.get('nonce') == s.get('nonce') == w.get('nonce') == PRIOR_FAILURE_NONCE and
++            c.get('package') == w.get('package') == SELF and w.get('state_nonce') == PRIOR_FAILURE_STATE_NONCE,
++            'EXACT_PRIOR_FAILED_SCOPE_REQUIRED')
++    for key,name in (('failed_worker_result','worker'),):
++        path,size,pin = PRIOR_FAILURE_RECORDS[name]
++        require(c.get(key) == {'path':str(path),'bytes':size,'sha256':pin},
++                'PRIOR_FAILED_WORKER_PIN_REQUIRED')
++    path,size,pin = PRIOR_FAILURE_RECORDS['coordinator']
++    require(s.get('coordinator_result') == {'path':str(path),'bytes':size,'sha256':pin} and
++            s.get('coordinator_returncode') == 1, 'PRIOR_FAILED_COORDINATOR_PIN_REQUIRED')
++    require(w.get('error') == {'phase':'install_or_state','type':'BlockingIOError',
++            'message':'[Errno 11] Resource temporarily unavailable'} and
++            all(w.get(key) is False for key in ('install_attempted','install_success_observed',
++                'state_attempted','action_attempted','outcome_unknown','possible_owned_package_retained')) and
++            w.get('build') == proof and w.get('final_Main_guard_passed') is True and
++            w.get('held_binding_released') is True and c.get('source_and_artifact_unchanged') is True and
++            c.get('Main_before') == c.get('Main_after') == s.get('Main_before') == s.get('Main_after'),
++            'PRIOR_FAILURE_WAS_NOT_PROVEN_NO_ACTION')
++    return True
++
++
++def acquire_action_lock(path, observation):
++    """Wait only for the original exclusive lock; return one owned FD."""
++    start = time.monotonic()
++    deadline = start + ACTION_LOCK_WAIT_SECONDS
++    observation.update({'path':str(path),'wait_limit_seconds':ACTION_LOCK_WAIT_SECONDS,
++        'phase':'open','attempts':0,'busy_attempts':0,'acquired':False,
++        'fd_closed_on_error':False,'Android_actions_attempted':0})
++    fd = None
++    first_busy = None
++    try:
++        fd = os.open(path, os.O_RDWR|os.O_CREAT|os.O_NOFOLLOW|os.O_CLOEXEC, 0o600)
++        observation['phase'] = 'validate_opened_inode'
++        initial = os.fstat(fd)
++        require(stat.S_ISREG(initial.st_mode) and initial.st_nlink == 1 and initial.st_uid == 0,
++                'UNSAFE_ACTION_LOCK')
++        observation['opened_identity'] = {'device':initial.st_dev,'inode':initial.st_ino,
++            'mode':initial.st_mode,'uid':initial.st_uid,'gid':initial.st_gid,'nlink':initial.st_nlink}
++        while True:
++            observation['elapsed_seconds'] = time.monotonic()-start
++            if time.monotonic() >= deadline:
++                observation['phase'] = 'lock_deadline'
++                if first_busy is not None:
++                    raise first_busy
++                raise TimeoutError(errno.ETIMEDOUT, 'ACTION_LOCK_ADMISSION_DEADLINE')
++            observation['phase'] = 'flock_exclusive_nonblocking'
++            observation['attempts'] += 1
++            try:
++                fcntl.flock(fd, fcntl.LOCK_EX|fcntl.LOCK_NB)
++            except OSError as error:
++                observation['last_errno'] = error.errno
++                if error.errno != errno.EAGAIN:
++                    raise
++                if first_busy is None:
++                    first_busy = error
++                observation['busy_attempts'] += 1
++                observation['phase'] = 'waiting_same_open_inode'
++                remaining = deadline-time.monotonic()
++                if remaining > 0:
++                    time.sleep(min(ACTION_LOCK_POLL_SECONDS,remaining))
++                continue
++            observation['phase'] = 'verify_locked_inode'
++            held = os.fstat(fd)
++            named = os.stat(path, follow_symlinks=False)
++            require(all(stat.S_ISREG(row.st_mode) and row.st_nlink == 1 and row.st_uid == 0 and
++                        (row.st_dev,row.st_ino) == (initial.st_dev,initial.st_ino)
++                        for row in (held,named)), 'ACTION_LOCK_NAME_OR_HELD_INODE_CHANGED')
++            require(time.monotonic() < deadline, 'ACTION_LOCK_ADMISSION_EXCEEDED_DEADLINE')
++            observation.update({'phase':'acquired','acquired':True,
++                'elapsed_seconds':time.monotonic()-start,'same_inode_confirmed':True})
++            return fd
++    except BaseException as original:
++        observation['error_type'] = type(original).__name__
++        observation['errno'] = getattr(original,'errno',None)
++        observation['elapsed_seconds'] = time.monotonic()-start
++        if fd is not None:
++            try:
++                os.close(fd)
++                observation['fd_closed_on_error'] = True
++            except BaseException as secondary:
++                observation['close_error'] = {'type':type(secondary).__name__,
++                    'errno':getattr(secondary,'errno',None),'message':str(secondary)}
++                original.add_note('action lock FD close failed: '+repr(secondary))
++        raise
+ 
+ 
+ def recorder_module():
+@@ -136,6 +248,8 @@
+ 
+ def error_record(phase, error):
+     value = {'phase':phase, 'type':type(error).__name__, 'message':str(error)}
++    if isinstance(error, OSError):
++        value['errno'] = error.errno
+     for name in ('command_observation', 'details', '__notes__'):
+         if hasattr(error, name):
+             value[name] = getattr(error, name)
+@@ -287,10 +401,16 @@
+         'old_v2_helper_called':False, 'automatic_retry':False, 'whole_app_production_ready':False}
+     flow = stage = None; action_lock = None
+     try:
++        result['admission_phase'] = 'flow_constructor'
+         flow = recorder.Flow(flow_args)
++        result['admission_phase'] = 'flow_begin'
+         flow.begin(flow_args, mutation=True)
+-        action_lock = recorder.lock_file(recorder.ACTION_LOCK)
++        result['admission_phase'] = 'action_lock_acquisition'
++        result['action_lock_admission'] = {}
++        action_lock = acquire_action_lock(recorder.ACTION_LOCK, result['action_lock_admission'])
++        result['admission_phase'] = 'post_lock_Main_guard'
+         flow.guard()
++        result['admission_phase'] = 'locked_install_and_state'
+         binding = flow.bind()
+         absence, absence_command = command(flow, PACKAGE_LIST)
+         require(absence == b'', 'NEW_PACKAGE_OR_RETAINED_RECORD_ALREADY_EXISTS')
+--- install02/make_request.py
++++ install03/make_request.py
+@@ -7,9 +7,9 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-bili-qa-r5-install-state-02-20261105'
+-ROOT='/home/alex/work/pocket4-owned-bili-qa-r5-install-state-02'
+-NONCE='2b677053c75cb4e91aada7fd108071bf'
++KEY='pocket4-owned-bili-qa-r5-install-state-03-20261105'
++ROOT='/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03'
++NONCE='a25b59395264b89f9f97d5f0db74a3c5'
+ 
+ 
+ def sha(raw):
+--- install02/stage_execute.py
++++ install03/stage_execute.py
+@@ -7,9 +7,9 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-02')
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03')
+ SOURCE = ROOT/'source'
+-NONCE = '2b677053c75cb4e91aada7fd108071bf'
++NONCE = 'a25b59395264b89f9f97d5f0db74a3c5'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ FILES = {'install_state.py','stage_execute.py','make_request.py',
+          'references/readonly_r3_coordinator.py','INPUTS.json','README.md',

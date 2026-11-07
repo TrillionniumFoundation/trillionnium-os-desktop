@@ -1,0 +1,59 @@
+{
+  "actual_local_control_count": 6,
+  "actual_local_stdout_bytes": 1454,
+  "actual_local_stdout_sha256": "9efd2fa11724ab1ce23add40a3a9e319d988da82fe4659ab2afa9fbfbaea5d00",
+  "baseline": "action-lock-main-fds-readonly-01/read_main_lock_fds.py",
+  "baseline_sha256": "db4916ebee6e6094482236e10ed2ecd3030d7f245de18f53c8a0cfd9c50a2cb0",
+  "device_run": false,
+  "fixed_prior_ticket_launch_sha256": "13179fb6aa36a1fde53892cc6287994ae269e492199a94eb12eeafe83fe290cc",
+  "guards_preserved": [
+    "five exact input pins with held/named final equality",
+    "original Main guard before/after equal prior zero-action failure",
+    "original boot before/after",
+    "exact root0600 nlink1 lock dev28 ino8312 O_PATH anchor plus named before/after",
+    "first error sticky; own FD close once, ambiguous close remains failure"
+  ],
+  "inherited_helpers_byte_identical": [
+    "need",
+    "sha",
+    "error_record",
+    "OwnedFDs",
+    "open_fixed",
+    "read_input",
+    "read_boot",
+    "validate_prior"
+  ],
+  "limitations": [
+    "single reversible admission not read-only",
+    "success does not identify historical holder or prove future availability",
+    "future App must pass its own original lock gate",
+    "local injected errors do not prove device syscall outcome"
+  ],
+  "new_functions": [
+    "exact_lock",
+    "named_lock",
+    "admit_once",
+    "collect",
+    "main"
+  ],
+  "operation": [
+    "one existing O_RDWR NOFOLLOW CLOEXEC FD",
+    "one LOCK_EX|LOCK_NB with no sleep or retry",
+    "only successful EX leads immediately to one LOCK_UN",
+    "all paths close own FD; no O_CREAT or lock content writes",
+    "no Android/context/child/PID/FD enumeration"
+  ],
+  "peer": {
+    "agent": "android_acceptance",
+    "new_specific_blocker_found": false,
+    "scope": "complete16466Bsource and exact8inheritedhelpers, no wrapper or execution"
+  },
+  "runtime_authorized": false,
+  "schema": 1,
+  "scope": "source and actual local owned-file controls; not device admission",
+  "source": {
+    "bytes": 16466,
+    "sha256": "c98c6031edf12b7984c06553e429afcb4430f6e2dce7a10b143691b39a8a8368"
+  },
+  "unchanged_support_sha256": "4b955afce019418e98282aa4af549ab1089afc040a5c8990b7713be5f8b4585e"
+}

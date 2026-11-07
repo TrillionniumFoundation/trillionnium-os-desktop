@@ -1,0 +1,39 @@
+{
+  "state": "REVIEWED_FOR_ONE_OWNED_HOST_BUILD",
+  "production_ready": false,
+  "Main_actions": 0,
+  "request": {
+    "bytes": 314787,
+    "sha256": "df1f39f3070c02ff466bc6649c19d78dc1c3eed1154627929e1a50c633b6484f",
+    "stdin_bytes": 296162,
+    "stdin_sha256": "69f980d7d15812ecc02b26411b8a19c21db68db83e1852c38d95052cf1c5b78a"
+  },
+  "source_review": "Root fully read 2857-byte observer fixture diff; all 13 payloads and 37 build/27 stage pins verified; independent Owner peer found no blocker in the scoped close observer correction.",
+  "predecessor_result": "Runtime02 original FAIL remains; source03 only corrects the detach observer, no production source or role authority modification.",
+  "packet": {
+    "members": 25,
+    "identical_to_build02": 22,
+    "changed": [
+      "build_listener.py",
+      "controls/admission_controls.cc"
+    ],
+    "added": [
+      "listener-observer-source-pins.json"
+    ],
+    "compile_inputs": 21
+  },
+  "controller_unchanged_checks": "21 controller and 3 staging generator functions AST identical to build02; 50 commands, 10 translation units, 3 links and 3 PLAN-only gates retained.",
+  "local_controls": {
+    "cases": 8,
+    "assertions": 120,
+    "scope": "real local socket observer only; no Pocket4 runtime or role qualification"
+  },
+  "limits": {
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 536870912,
+    "nice": 15,
+    "timeout_seconds": 240
+  },
+  "review_script_correction": "First Root script assumed the wrong authority filename; corrected script passed. It did not dispatch a process or change source.",
+  "dispatch": "one exact idempotency key; no automatic retry"
+}

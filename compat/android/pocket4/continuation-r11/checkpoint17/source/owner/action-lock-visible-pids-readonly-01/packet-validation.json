@@ -1,0 +1,118 @@
+{
+  "PLAN_actual_returncode": 0,
+  "PLAN_stdout": {
+    "bytes": 461,
+    "encoding": "utf-8",
+    "git_blob_sha1": "95d36fd8f8c79747b1f20473625214af074f9a21",
+    "mode": "100644",
+    "path": "plan.stdout.json",
+    "sha256": "c5cda1a4bd20e96d0524fb018e13986db2a5296c472c09b5d7104b804a6397ec"
+  },
+  "PLAN_variant_changed_only_collect_argument": true,
+  "added_functions": [
+    "coverage_gap",
+    "inode_identity",
+    "namespace_identity",
+    "numeric_pid_names",
+    "stable_self_part"
+  ],
+  "all_members_byte_equal": true,
+  "changed_functions": [
+    "collect",
+    "main",
+    "namespace_metadata",
+    "process_sample",
+    "scan_process",
+    "self_context",
+    "stable_process_part"
+  ],
+  "collect_executed": false,
+  "controls": {
+    "bytes": 794,
+    "encoding": "utf-8",
+    "git_blob_sha1": "6feff1580f61a6b12e73f328032d316309de54b0",
+    "mode": "100644",
+    "path": "controls01-receipt.json",
+    "sha256": "7fdecedf4c696ebbf9f0e61c641f68666801db2b0dabb7f327f8a1824f5c3bbc"
+  },
+  "delta": {
+    "bytes": 32761,
+    "encoding": "utf-8",
+    "git_blob_sha1": "5b9ca77292a56ada8bbd8869a9dd79872ee1e521",
+    "mode": "100644",
+    "path": "main7-to-visible-PIDs.patch",
+    "sha256": "deabbdbd43c623ece9ec39f5d27fe34c9483dc4c9b479928891136e3cdfa2ea4"
+  },
+  "live_proc_reads": false,
+  "original": {
+    "bytes": 36349,
+    "encoding": "utf-8",
+    "git_blob_sha1": "2992fc25e6e169031243de0882af99cae757ea60",
+    "mode": "100644",
+    "path": "read_main_lock_fds.py",
+    "sha256": "db4916ebee6e6094482236e10ed2ecd3030d7f245de18f53c8a0cfd9c50a2cb0"
+  },
+  "original_Main_guard_function_AST_unchanged": true,
+  "original_support_and_prior_exact": true,
+  "passed": true,
+  "qualification": false,
+  "remote_calls": false,
+  "removed_functions": [
+    "expected_processes"
+  ],
+  "request": {
+    "bytes": 71943,
+    "encoding": "utf-8",
+    "git_blob_sha1": "40e1fe0b50aca4c481f8ba9fbb01577d7dbf99cb",
+    "mode": "100644",
+    "path": "exact-request.json",
+    "sha256": "ecba999b0821d5355fa43941fe2ec6ec4abbbaa869d5716d6045a9b305ca8a90"
+  },
+  "request_stdin_exact": true,
+  "runtime_member_count": 3,
+  "schema": 1,
+  "source": {
+    "bytes": 41061,
+    "encoding": "utf-8",
+    "git_blob_sha1": "1da2d16d6f7fd928a1c34e697fdb3dd002c26383",
+    "mode": "100644",
+    "path": "read_visible_lock_fds.py",
+    "sha256": "8fed4dffbfb67467571189895f6dc56e8bd13aba0fba094107260526a697200e"
+  },
+  "stdin": {
+    "bytes": 67530,
+    "encoding": "utf-8",
+    "git_blob_sha1": "583c404531d4f85fc6d7dc0cc08b068f80d69812",
+    "mode": "100644",
+    "path": "request-stdin.json",
+    "sha256": "b79069998bba4a192cf2f5531b4c8593c82c16388a44c59f9152c3b433605e75"
+  },
+  "unchanged_helper_AST": [
+    "OwnedFDs",
+    "directory_names",
+    "error_record",
+    "identity_key",
+    "metadata_from_stat",
+    "need",
+    "open_fixed",
+    "open_lock_metadata",
+    "parse_fd_name",
+    "parse_fdinfo",
+    "parse_proc_mount",
+    "parse_proc_stat",
+    "pidfd_alive",
+    "read_boot",
+    "read_input",
+    "read_relative",
+    "sha",
+    "validate_prior"
+  ],
+  "wrapper": {
+    "bytes": 1790,
+    "encoding": "utf-8",
+    "git_blob_sha1": "efe4175eac7a00b00768b1ad364f4e14dc58bb7a",
+    "mode": "100644",
+    "path": "wrapper.py",
+    "sha256": "3b9ed4d3e4821d70ba1139c755c8ebb51d453419c67407b31269bdc3cc58f0e9"
+  }
+}

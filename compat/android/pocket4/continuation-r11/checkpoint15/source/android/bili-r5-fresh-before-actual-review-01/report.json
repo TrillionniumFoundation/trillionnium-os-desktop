@@ -1,0 +1,356 @@
+{
+  "Main_before_after_equal": true,
+  "actions_by_reviewer": {
+    "Android": 0,
+    "UI": 0,
+    "device": 0,
+    "retry": 0
+  },
+  "actual_helper_uid": 10170,
+  "actual_job": "1a1ab5c780b-fc05-4cfe",
+  "actual_scope_result": "THREE_FRESH_BEFORE_AFTER_CAPTURE_TRANSACTIONS_AND_EXACT_TASK_CLEANUP_VERIFIED",
+  "all_observed_absolute_scopes_equal_this_run": true,
+  "capture_phase_unique_nonces": 18,
+  "cleanup": {
+    "new_leaf_removed_and_verified": true,
+    "observations": 2,
+    "other_tasks_preserved": true,
+    "outcome_unknown": false,
+    "owned_task": 936,
+    "preexisting_tasks": [
+      851
+    ],
+    "remaining_tasks": [
+      851
+    ]
+  },
+  "commercial_uid": 10117,
+  "flow_nonce": "c1eaefa79cbafc86cb32f638900443bf",
+  "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "movement_branch_actually_exercised_this_run": false,
+  "not_verified": [
+    "pause and resume behavior",
+    "seek position/time advancement",
+    "reopen/resume and cold-start continuity",
+    "app-attributed actual audio output",
+    "continuous playback or producer attribution",
+    "atomic screenshot/window ownership",
+    "content of these three PNGs: this reviewer has not read image pixels",
+    "inter-transaction move branch on the actual device in this run"
+  ],
+  "original_geometry_failure_preserved": true,
+  "original_pins": {
+    "cleanup-command-result.json": {
+      "bytes": 1287,
+      "sha256": "b92f4117e5b892dc17addaa90ebc399d0f2d929cefe74acfda2b87c5138472e5"
+    },
+    "cleanup.json": {
+      "bytes": 446,
+      "sha256": "14ad1897af7ee9c0b8d220de63213f07a121aea640f363dd87d43d38b64e0eda"
+    },
+    "coordinator.json": {
+      "bytes": 249889,
+      "sha256": "ff2c8e0f8a09f194c7dea3ae1358e425a1c1376d5b68fe273e779cd7b5f75ec3"
+    },
+    "launch-command-result.json": {
+      "bytes": 1163,
+      "sha256": "3cb2d1309c242bf01238d3f8fba0fdb4b007bff8d3e2b68d9a59478602dd76ee"
+    },
+    "launch.json": {
+      "bytes": 5090,
+      "sha256": "c4364e176563f8eadf92af218cd55b9ca5cc9c79b4b9295a60625a0fee17fe4f"
+    },
+    "navigation-command-result.json": {
+      "bytes": 1169,
+      "sha256": "f00ab6fb3487ccd307b1746c0499b0eba7e2aacf131d8942b6df8838b1ee138a"
+    },
+    "navigation.json": {
+      "bytes": 268643,
+      "sha256": "b1cc104486632c7ec6c42d609c8c0d23c97a72ca3e2823c5ff48abc93bba7483"
+    },
+    "stage.json": {
+      "bytes": 1651,
+      "sha256": "780d97c06491bcfd51ff9da0d97552b08cda25406f839ff160dc8e989e1b567a"
+    }
+  },
+  "outcome_semantics": {
+    "business_success_verified": false,
+    "coordinator_business_outcome_unknown": true,
+    "interpretation": "The frozen producer intentionally retains unknown business outcome for navigate even when acknowledged actions and bounded observations pass; no command timeout or unacknowledged attempt was inferred from this field. The durable phase gate itself requires this true value.",
+    "navigation_action_attempted": true,
+    "navigation_ok": true,
+    "navigation_outcome_unknown": true,
+    "source_rule": "action_attempted and (phase == 'navigate' or not ok)",
+    "whole_app_production_ready": false
+  },
+  "privacy": {
+    "pixels_read": false,
+    "private_images_in_Git": false,
+    "raw_UI_tree_read": false,
+    "raw_journal_read": false
+  },
+  "reader_pin": {
+    "bytes": 571202,
+    "sha256": "df77c0232486b52e50c4c4d2aeb0570f3aa78730e2d9486995d79d85c516cb70"
+  },
+  "resources": {
+    "cgroup_device": 30,
+    "cgroup_inode": 30278291,
+    "cpu_max": "100000 100000",
+    "events": {
+      "high": "0",
+      "low": "0",
+      "max": "0",
+      "oom": "0",
+      "oom_group_kill": "0",
+      "oom_kill": "0",
+      "sock_throttled": "0"
+    },
+    "memory_max": 536870912,
+    "memory_peak": 197746688,
+    "pids_max": 128,
+    "swap_peak": 0
+  },
+  "reviewed_source_pins": {
+    "owned_navigation.py": {
+      "bytes": 65215,
+      "sha256": "b4232e8b341144dbc41d957811a0a8ba2e6036ea1a382b0e83e00da99a196596"
+    },
+    "viewport_observation.py": {
+      "bytes": 17420,
+      "sha256": "2f1b46c7d4f4a5ed5626421aded9cd4936aede7bbc87e5e8bee382057afae20f"
+    }
+  },
+  "samples": [
+    {
+      "absolute_before_after_scope_equal": true,
+      "capture_ms": 495,
+      "crop_bounds": [
+        320,
+        45,
+        1520,
+        720
+      ],
+      "index": 1,
+      "observations": [
+        {
+          "cache_clears": 2,
+          "inspection_pin": {
+            "assessment_bytes": 199325,
+            "assessment_sha256": "c954fa2b6be18bdd0f51d1e3857fad1ac717a6eaf1015fc5b878ed3d56307a93",
+            "node_count": 153,
+            "tree_sha256": "396e3ce14634facc9bc01e1d3d387f8ee536e8977d4c025e94ffc32a8b971633",
+            "window_sha256": "b77a2ca09720fc0ff1f4cf9e588ecd50aa5c4260f6a76c050d2c5be0672f91be",
+            "wire_sha256": "0b3d4207a0447d1f481ff96f6b0ade7b8fb8dd41bd4311c7d378103bd070bbe4"
+          },
+          "nonces": {
+            "after": "303ca2425a78f2fab0d578ff661e88e9",
+            "before": "95508c1dc30fa77664c766612a0c6dc4",
+            "inspect": "9d992eb0f7504e856d7c9002f3f1476f"
+          },
+          "plan_index": 12,
+          "ready_samples": 2,
+          "restoration_qualified": true,
+          "side": "before"
+        },
+        {
+          "cache_clears": 1,
+          "inspection_pin": {
+            "assessment_bytes": 199419,
+            "assessment_sha256": "ae6be84da03a2aafd47de592547544aa67f72c9eb0a73b193921126935833688",
+            "node_count": 153,
+            "tree_sha256": "396e3ce14634facc9bc01e1d3d387f8ee536e8977d4c025e94ffc32a8b971633",
+            "window_sha256": "b77a2ca09720fc0ff1f4cf9e588ecd50aa5c4260f6a76c050d2c5be0672f91be",
+            "wire_sha256": "bfe920ef8478337b9abdc3420f6f9a59ea71a97153cd0aaf6424b9768e1c4ca5"
+          },
+          "nonces": {
+            "after": "2b8c080cda45004c1124944daf51beb7",
+            "before": "9a3cc12cae59986247d21c34320c5392",
+            "inspect": "38b51d70be5b3cfb9b0fc5169059bcec"
+          },
+          "plan_index": 13,
+          "ready_samples": 1,
+          "restoration_qualified": true,
+          "side": "after"
+        }
+      ],
+      "private_crop_pin": {
+        "bounds": [
+          320,
+          45,
+          1520,
+          720
+        ],
+        "bytes": 494282,
+        "height": 675,
+        "must_not_enter_Git": true,
+        "path": "/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-c1eaefa79cbafc86cb32f638900443bf/steps/buffer-viewport-01/player-viewport-01.png",
+        "pixel_sha256": "bcd7689a9877b816a728adee0f51c0d8000a46cfd7c2944f835d34ff45e9a4bf",
+        "sha256": "871f2a9a5861e2fc70f700793c367f50cbbb7705199428e95f36d51c6a22d668",
+        "width": 1200
+      },
+      "render_structure_sha256": "85d0c17f42798b0f5a89e86e7a58344b079141b9f7d8c6034b66944128f8f7c3",
+      "window_bounds": [
+        320,
+        0,
+        1520,
+        1520
+      ]
+    },
+    {
+      "absolute_before_after_scope_equal": true,
+      "capture_ms": 486,
+      "crop_bounds": [
+        320,
+        45,
+        1520,
+        720
+      ],
+      "index": 2,
+      "observations": [
+        {
+          "cache_clears": 1,
+          "inspection_pin": {
+            "assessment_bytes": 199415,
+            "assessment_sha256": "1deb722bbc2146c346c8df024bd9265616bc24bfbea69bdd9aaebd06d3805b83",
+            "node_count": 153,
+            "tree_sha256": "396e3ce14634facc9bc01e1d3d387f8ee536e8977d4c025e94ffc32a8b971633",
+            "window_sha256": "b77a2ca09720fc0ff1f4cf9e588ecd50aa5c4260f6a76c050d2c5be0672f91be",
+            "wire_sha256": "86a38404eb5c97661daa69878bf5012bfe7abc90016cdc6f59b42baf7bdbdfe0"
+          },
+          "nonces": {
+            "after": "ea33708a235a6ee928bd7bafc951eb53",
+            "before": "930892e678d4bb88d6b59070ee97bdb6",
+            "inspect": "087b9c657c9de6d82b0c01fa9d565bc3"
+          },
+          "plan_index": 14,
+          "ready_samples": 1,
+          "restoration_qualified": true,
+          "side": "before"
+        },
+        {
+          "cache_clears": 2,
+          "inspection_pin": {
+            "assessment_bytes": 199325,
+            "assessment_sha256": "dc70b13dbdebdf97d20a1a3a5ec82e613f487656216aa6ac8d09e298e55e8b80",
+            "node_count": 153,
+            "tree_sha256": "396e3ce14634facc9bc01e1d3d387f8ee536e8977d4c025e94ffc32a8b971633",
+            "window_sha256": "b77a2ca09720fc0ff1f4cf9e588ecd50aa5c4260f6a76c050d2c5be0672f91be",
+            "wire_sha256": "d946a7c520bf5aefdc310ad7bf673369c849bf9c750f4e007c88ff55912d1cf6"
+          },
+          "nonces": {
+            "after": "9b19466a3ce9921c42d49302244b3bde",
+            "before": "65639b2af171a5d93b93da7d5782f7ce",
+            "inspect": "33c2a7c94c848821471a41ab58351b6f"
+          },
+          "plan_index": 15,
+          "ready_samples": 2,
+          "restoration_qualified": true,
+          "side": "after"
+        }
+      ],
+      "private_crop_pin": {
+        "bounds": [
+          320,
+          45,
+          1520,
+          720
+        ],
+        "bytes": 494730,
+        "height": 675,
+        "must_not_enter_Git": true,
+        "path": "/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-c1eaefa79cbafc86cb32f638900443bf/steps/buffer-viewport-01/player-viewport-02.png",
+        "pixel_sha256": "b498282d162741a022baac6246d89b4f4ceab1a243acf3ace9360cc3b7a572bc",
+        "sha256": "158bdf518061b900c2e92bbd2e410d14289161f95cc6fa0f552d66da56c1cb8d",
+        "width": 1200
+      },
+      "render_structure_sha256": "85d0c17f42798b0f5a89e86e7a58344b079141b9f7d8c6034b66944128f8f7c3",
+      "window_bounds": [
+        320,
+        0,
+        1520,
+        1520
+      ]
+    },
+    {
+      "absolute_before_after_scope_equal": true,
+      "capture_ms": 460,
+      "crop_bounds": [
+        320,
+        45,
+        1520,
+        720
+      ],
+      "index": 3,
+      "observations": [
+        {
+          "cache_clears": 1,
+          "inspection_pin": {
+            "assessment_bytes": 199415,
+            "assessment_sha256": "a32255d410fe50d215d81e64e27037f83b33cb304186e3c0549abfc212881424",
+            "node_count": 153,
+            "tree_sha256": "396e3ce14634facc9bc01e1d3d387f8ee536e8977d4c025e94ffc32a8b971633",
+            "window_sha256": "b77a2ca09720fc0ff1f4cf9e588ecd50aa5c4260f6a76c050d2c5be0672f91be",
+            "wire_sha256": "d4d5e3d8fb7618fdb4fd18231051c7c83e8e2df885403b8fbe20ff9278f30632"
+          },
+          "nonces": {
+            "after": "aaf7b43fb6b2ce1c000ea6a16f0d67b9",
+            "before": "2a77e81cce50c52da9bfcf3ca1f9d72a",
+            "inspect": "6dc4166396c10395929c7dd557b07953"
+          },
+          "plan_index": 16,
+          "ready_samples": 1,
+          "restoration_qualified": true,
+          "side": "before"
+        },
+        {
+          "cache_clears": 1,
+          "inspection_pin": {
+            "assessment_bytes": 199415,
+            "assessment_sha256": "7ee64382e85ca7b9d7c28ac28910ff08f69c97404aadfb4d95e4dc99bc00a859",
+            "node_count": 153,
+            "tree_sha256": "396e3ce14634facc9bc01e1d3d387f8ee536e8977d4c025e94ffc32a8b971633",
+            "window_sha256": "b77a2ca09720fc0ff1f4cf9e588ecd50aa5c4260f6a76c050d2c5be0672f91be",
+            "wire_sha256": "a03587dfaf2bbfbfa2a130b14ba74edd8a90e94ade6d0200728a4ec6d915f2e3"
+          },
+          "nonces": {
+            "after": "42e0a4b532e284a5e24222fd606c0375",
+            "before": "f81c934bf260e10e4db3b61bc5930279",
+            "inspect": "a519199d1d99892d6d0616dd85e1277a"
+          },
+          "plan_index": 17,
+          "ready_samples": 1,
+          "restoration_qualified": true,
+          "side": "after"
+        }
+      ],
+      "private_crop_pin": {
+        "bounds": [
+          320,
+          45,
+          1520,
+          720
+        ],
+        "bytes": 494901,
+        "height": 675,
+        "must_not_enter_Git": true,
+        "path": "/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-c1eaefa79cbafc86cb32f638900443bf/steps/buffer-viewport-01/player-viewport-03.png",
+        "pixel_sha256": "f5fbd9aba8a0590b14dd6867b0f721faa89d9b052f6a9c018deeb9bbef36045b",
+        "sha256": "5df196641f46d133ff67d231f77157ca293b3b3e94b6ac488fef5c0f50377d45",
+        "width": 1200
+      },
+      "render_structure_sha256": "85d0c17f42798b0f5a89e86e7a58344b079141b9f7d8c6034b66944128f8f7c3",
+      "window_bounds": [
+        320,
+        0,
+        1520,
+        1520
+      ]
+    }
+  ],
+  "schema": 1,
+  "scope": "independent local retained-safe-record review of one actual fresh-before Bilibili flow",
+  "source_manifest_sha256": "f151b6737f72c53e9f776076ed81fecce4a68b327b59d2bf2f971fe838372283",
+  "source_unchanged": true,
+  "terminal_source": "Root supplied authoritative exit0 complete/durable; this review does not issue device RPCs"
+}

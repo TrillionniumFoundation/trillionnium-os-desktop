@@ -1,0 +1,404 @@
+--- a/source/INPUTS.json
++++ b/source/INPUTS.json
+@@ -96,7 +96,7 @@
+   "own_package_absence_required_all_users_including_uninstalled": true,
+   "install_replace_existing": false,
+   "UiAutomation_requested": false,
+-  "source_qualification_controls": 75,
++  "source_qualification_controls": 85,
+   "Bili_Flow_or_MainBinding_instantiated": false,
+   "whole_process_tree_cleanup_qualified": false,
+   "framework_exit_cause_resolved": false,
+
+--- a/source/README.md
++++ b/source/README.md
+@@ -4,8 +4,10 @@
+ 
+ The full successful metadata receipt and built helper artifact reference are staged byte-for-byte. The own Context checks both source pins, the full target UID/version/APK reference and both data-directory identities. It does not add packages or directories to the immutable Main baseline. Original R6 source/guard, current discovery, held init, packages.list, two root/classpath checks, recorder and cleanup boundaries remain active.
+ 
+-The stage runs 75 controls: 68 inherited controls adapted to this fixed target and seven real authority/open_context routes with explicit synthetic I/O boundaries. They reach the actual metadata loader, target-data verification, current discovery, Context/BoundArun construction and held-binding record creation. They reject changed directory, source pin, Main observation and discovered init. These controls have not run during preparation and do not claim real held descriptors or Android observations.
++The stage runs 85 controls: the original 75 below remain, followed by ten actual artifact-reference controls. 68 inherited controls adapted to this fixed target and seven real authority/open_context routes with explicit synthetic I/O boundaries. They reach the actual metadata loader, target-data verification, current discovery, Context/BoundArun construction and held-binding record creation. They reject changed directory, source pin, Main observation and discovered init. These controls have not run during preparation and do not claim real held descriptors or Android observations.
+ 
+ There are 13 ordered Android commands, exactly one fixed cmd package install -R -t --user 0 --pkg mutation. The others verify the commercial target, helper absence/identity or one state invocation. The helper must be absent for all users, including retained uninstalled records. The original action lock, once claim, worker budget, exact command policy, fresh APK hashes, state protocol, staging removal and FD/held cleanup remain. No automatic retry, uninstall, commercial launch, UI, settings, permissions or audio operation is provided.
+ 
+ The actual six-value source assigns only this target's flow/state pair; all 913 prior values were excluded with one draw per label. Values are retained after any failure. Failed or uncertain installation requires durable-evidence reconciliation. Installation gives no business flow or whole-app qualification.
++
++Schema03 uses the immutable artifact reference's top-level package/UID/user/version and current_artifacts rows. The ten added controls extend real open_context and its held record through ArtifactSet, use the original target metadata parsers, exercise before/after/held/named/close routing with an explicit hash return-value seam, and separately exercise the original streaming hash method on small synthetic bytes. These tests do not qualify actual APK contents, descriptors, Android execution or installation. The original 13-command plan, streaming/time limits and all Main/R6/FD/lock guards remain.
+
+--- a/source/SOURCE_PINS.json
++++ b/source/SOURCE_PINS.json
+@@ -18,11 +18,11 @@
+   "files": {
+     "INPUTS.json": {
+       "bytes": 6916,
+-      "sha256": "dcc9c3a17006d2ac4b4958cbb49c4cc993e6ef994be09b58d8e17da8b386a731"
++      "sha256": "b7d71f6cc75f77a59560a1bcdac43c735c10f7dc460d78fdd72680703b128739"
+     },
+     "README.md": {
+-      "bytes": 2121,
+-      "sha256": "f7e3b65f336c1f596df1aab82db8d8ca947a9e3e4c9404aab17ec28245fea0be"
++      "bytes": 2807,
++      "sha256": "e434f24a1f3013ca7a865cf3d58fafc79790e79894b50704c74b595c04cefaf3"
+     },
+     "actual-target-metadata.json": {
+       "bytes": 11978,
+@@ -33,8 +33,8 @@
+       "sha256": "b567fee71cc27a4ff70c562bd8092c8d85d28fe2df480a23f7ee1f9ed1eb9b9a"
+     },
+     "check_install_binding.py": {
+-      "bytes": 28570,
+-      "sha256": "34ed04cf0edb5af6de052c64e2b08979909732992ffb9b8b44e5414123b7885a"
++      "bytes": 40403,
++      "sha256": "50c1194207faaf8b69b0bff05473b09d22009068c61bc8b6ad36541c55bba7ca"
+     },
+     "current_discovery.py": {
+       "bytes": 8332,
+@@ -54,7 +54,7 @@
+     },
+     "make_request.py": {
+       "bytes": 3092,
+-      "sha256": "91c2b5b0c64559090f823d3153e02a90ba136b94cd952c1083fde16d45359dfd"
++      "sha256": "1b9a063582cd6f360341309c85e67a8e3847054ddc8d144f6ba0f6be13dc9853"
+     },
+     "references/target_metadata_parsers.py": {
+       "bytes": 1972,
+@@ -62,15 +62,15 @@
+     },
+     "stage_execute.py": {
+       "bytes": 9505,
+-      "sha256": "6dd05437e2598db0d65a120233c183ba1fb2023fe28390d2a47442a7a6470c91"
++      "sha256": "28a5b218bf17d0bc4d92a79dffe4844d64e4b26696555afd76976bc7e1e49a3f"
+     },
+     "target-artifact-reference.json": {
+       "bytes": 3513,
+       "sha256": "57220958eacec13fb0b82755d4e22ffb6e02e42ecb05224103c6c5d37036db0c"
+     },
+     "ticket12306_context.py": {
+-      "bytes": 25356,
+-      "sha256": "c117d8dcc0ea905614106d95c6581a3e27d968b58ff6afab3d3537d2049145b1"
++      "bytes": 26127,
++      "sha256": "a2f50904bc9152f883a71fcb3545d43ea03a361c65e387c02e8a97f85c58fe2d"
+     },
+     "ticket12306_transport.py": {
+       "bytes": 15602,
+
+--- a/source/check_install_binding.py
++++ b/source/check_install_binding.py
+@@ -3,7 +3,7 @@
+ import types
+ import json
+ 
+-CONTROL_COUNT = 75
++CONTROL_COUNT = 85
+ 
+ def run_controls(entry, actual_host, manifest, context, transport, baseline, ref, files, source_manifest_sha256):
+     rows = []
+@@ -162,6 +162,9 @@
+             'new_owner_discovery_controls':18,'production_discovery_and_Context_route_used':True,
+             'legacy_discover_failure_reproduced_in_memory':True,
+             'independent_target_authority_and_held_route_controls':7,
++            'actual_artifact_reference_schema_controls':10,
++            'artifact_route_hash_is_explicit_memory_seam':True,
++            'original_stream_hash_method_uses_small_synthetic_bytes':True,
+             'immutable_baseline_packages_modified':False,
+             'new_target_held_IO_is_explicit_synthetic_seam':True}
+ 
+@@ -427,4 +430,195 @@
+                   state['commands'] == 0 and state['writes'] == [] and baseline == original_baseline,
+                   'MISMATCHED_MAIN_MUST_NOT_ENTER_OR_MUTATE_BASELINE')
+     entry.require(len(rows) == 7,'EXACT_SEVEN_INDEPENDENT_TARGET_CONTROLS')
++    rows.extend(run_artifact_reference_controls(entry,context,files,artifact,open_fixture))
+     return rows
++
++def run_artifact_reference_controls(entry, context, files, artifact, open_fixture):
++    """Real methods and exact frozen reference; synthetic I/O never qualifies installed APKs."""
++    import hashlib
++    import os
++    import time
++    rows = []
++    tag = entry.SELF.split('.')[3].upper()
++    exact = {key:artifact[key] for key in ('package','uid','user','version_code')}
++    original = copy.deepcopy(artifact)
++    parser = types.ModuleType('actual_fixed_target_metadata_parser')
++    exec(compile(files['references/target_metadata_parsers.py'],'<fixed-target-parser>','exec'),parser.__dict__)
++    metadata_raw = ('package:'+context.PACKAGE+' versionCode:'+str(context.VERSION)+
++                    ' uid:'+str(context.UID)+'\n').encode()
++    paths_raw = ''.join('package:'+row['path']+'\n' for row in artifact['current_artifacts']).encode()
++    def add(name): rows.append({'name':name,'passed':True})
++    def reject(name, code, call):
++        try:call()
++        except RuntimeError as error:
++            entry.require(str(error) == code, 'ARTIFACT_CONTROL_WRONG_FIRST_ERROR:'+name)
++        else:raise RuntimeError('ARTIFACT_CONTROL_NEGATIVE_ACCEPTED:'+name)
++        add(name)
++    # Extend the exact production open_context path past the former KeyError.
++    f,state,result,invoke = open_fixture()
++    ctx = owned = None
++    try:
++        ctx,recorder,guard = invoke()
++        owned = context.ArtifactSet(ctx,artifact,parser)
++        entry.require(owned.expected is artifact and owned.metadata == exact and
++                      owned._metadata(metadata_raw) == exact and
++                      owned._paths(paths_raw) == sorted(row['path'] for row in artifact['current_artifacts']) and
++                      len(state['writes']) == 1 and
++                      state['writes'][0][1]['target'] == ctx.target.record and
++                      state['writes'][0][1]['current_target_scope'] == context.current_scope() and
++                      state['writes'][0][1]['target_package'] == context.PACKAGE and
++                      state['commands'] == 0 and state['opened'] == state['closed'],
++                      'REAL_OPEN_HELD_RECORD_AND_FROZEN_ARTIFACT_ROUTE')
++    finally:
++        if owned is not None:owned.close()
++        if ctx is not None:ctx.close()
++    entry.require(state['held_created'] == state['held_closed'] == 1 and
++                  artifact == original, 'REAL_OPEN_ARTIFACT_ROUTE_CLOSE_AND_NO_REFERENCE_MUTATION')
++    add('real_open_context_held_record_then_actual_artifact_reference')
++    dummy = types.SimpleNamespace(artifacts=None)
++    wrong = copy.deepcopy(artifact);wrong['uid'] += 1;wrong['target'] = exact
++    reject('actual_top_level_identity_cannot_be_shadowed_by_legacy_target',
++           'ACTUAL_'+tag+'_METADATA_REFERENCE_REQUIRED',
++           lambda:context.ArtifactSet(dummy,wrong,parser))
++    wrong = copy.deepcopy(artifact);wrong['artifacts'] = wrong.pop('current_artifacts')
++    reject('legacy_artifacts_cannot_replace_current_artifacts',
++           'ACTUAL_'+tag+'_ARTIFACT_REFERENCE_REQUIRED',
++           lambda:context.ArtifactSet(dummy,wrong,parser))
++    wrong = copy.deepcopy(artifact);wrong['current_APK_count'] += 1
++    reject('actual_reference_count_mismatch_rejected',
++           'ACTUAL_'+tag+'_ARTIFACT_REFERENCE_REQUIRED',
++           lambda:context.ArtifactSet(dummy,wrong,parser))
++    wrong = copy.deepcopy(artifact);wrong['current_total_APK_bytes'] += 1
++    reject('actual_reference_total_bytes_mismatch_rejected',
++           'ACTUAL_'+tag+'_ARTIFACT_REFERENCE_REQUIRED',
++           lambda:context.ArtifactSet(dummy,wrong,parser))
++    def fd_fixture():
++        state = {'opened':[],'closed':[],'read':0,'seek':0,'hash_routes':[],'commands':[]}
++        records = {};contents = {};offsets = {};counter = [1900000000]
++        def allocate(row, data=b''):
++            counter[0] += 1;fd = counter[0]
++            records[fd] = copy.deepcopy(row);contents[fd] = data;offsets[fd] = 0
++            state['opened'].append(fd)
++            return fd
++        def live(fd):
++            entry.require(fd in records and fd not in state['closed'], 'LIVE_ARTIFACT_MEMORY_FD_REQUIRED')
++        def fstat(fd):
++            live(fd);row = records[fd]
++            return types.SimpleNamespace(st_dev=row['device'],st_ino=row['inode'],st_mode=row['mode'],
++                st_uid=row['uid'],st_gid=row['gid'],st_nlink=row['nlink'],st_size=row['bytes'],
++                st_mtime_ns=row['mtime_ns'],st_ctime_ns=row['ctime_ns'])
++        def close(fd):
++            live(fd);state['closed'].append(fd)
++        def lseek(fd, offset, whence):
++            live(fd);entry.require(offset == 0 and whence == os.SEEK_SET, 'FIXED_ARTIFACT_STREAM_REWIND')
++            offsets[fd] = 0;state['seek'] += 1
++            return 0
++        def read(fd, count):
++            live(fd);entry.require(type(count) is int and 0 < count <= 65536, 'BOUNDED_ARTIFACT_MEMORY_READ')
++            state['read'] += 1;start = offsets[fd];raw = contents[fd][start:start+count]
++            offsets[fd] += len(raw);return raw
++        fake_os = types.SimpleNamespace(**{key:value for key,value in vars(os).items()
++            if key not in ('fstat','close','lseek','read')})
++        fake_os.fstat=fstat;fake_os.close=close;fake_os.lseek=lseek;fake_os.read=read
++        namespace = dict(context.__dict__);namespace['os'] = fake_os
++        namespace['identity'] = types.FunctionType(context.identity.__code__,namespace)
++        methods = {name:types.FunctionType(method.__code__,namespace,name,method.__defaults__)
++                   for name,method in vars(context.ArtifactSet).items()
++                   if isinstance(method,types.FunctionType)}
++        Production = type('ProductionArtifactSetWithMemoryOS',(),methods)
++        return state,records,allocate,fake_os,Production
++    # Only hashing is a declared return-value seam here, because actual APK bytes
++    # are not part of pure controls. All before/after/held/named/close bodies run.
++    def stream_route(named_drift=False):
++        state,records,allocate,fake_os,Production = fd_fixture()
++        known = {row['path']:row for row in artifact['current_artifacts']}
++        opens = {}
++        def open_root(path,flags):
++            entry.require(path in known and flags == os.O_RDONLY|os.O_NOFOLLOW, 'ONLY_FROZEN_APK_MEMORY_OPEN')
++            opens[path] = opens.get(path,0)+1
++            identity = copy.deepcopy(known[path]['held_file'])
++            if named_drift and opens[path] == 2:identity['inode'] += 1
++            return allocate(identity)
++        def android(argv,timeout):
++            expected = [context.LIST,context.PATHS,context.PATHS,context.LIST]
++            index = len(state['commands'])
++            entry.require(index < len(expected) and list(argv) == expected[index] and timeout == 15,
++                          'EXACT_FOUR_ARTIFACT_METADATA_MEMORY_COMMANDS')
++            state['commands'].append(list(argv))
++            return metadata_raw if argv == context.LIST else paths_raw
++        def hash_boundary(self,fd,row,deadline):
++            entry.require(records[fd] == row['held_file'] and fd not in state['closed'] and
++                          row == known[row['path']], 'ACTUAL_HELD_FILE_MAPPING_TO_HASH_BOUNDARY')
++            state['hash_routes'].append(row['path'])
++            return copy.deepcopy(row)
++        Route = type('ProductionArtifactRouteWithHashBoundary',(Production,),{'_hash':hash_boundary})
++        ctx = types.SimpleNamespace(target=types.SimpleNamespace(open_root=open_root),android=android,
++                                    deadline=time.monotonic()+1000,artifacts=None)
++        held = Route(ctx,artifact,parser)
++        try:
++            before = held.before()
++            entry.require(before == {'metadata':exact,'artifacts':artifact['current_artifacts'],
++                'fresh_streaming_hashes':True,'signer_independently_verified':False},
++                'REAL_ARTIFACT_BEFORE_FIXED_REFERENCE_MAPPING')
++            if named_drift:
++                try:held.after()
++                except RuntimeError as error:
++                    entry.require(str(error) == tag+'_APK_NAMED_PATH_CHANGED', 'NAMED_DRIFT_FIRST_ERROR')
++                else:raise RuntimeError('NAMED_ARTIFACT_DRIFT_ACCEPTED')
++            else:
++                after = held.after()
++                entry.require(before == after and
++                              state['hash_routes'] == [row['path'] for row in artifact['current_artifacts']]*2,
++                              'REAL_ARTIFACT_AFTER_FIXED_REFERENCE_MAPPING')
++        finally:
++            closed = held.close()
++        entry.require(sorted(state['opened']) == sorted(state['closed']) and
++                      len(set(state['closed'])) == len(state['closed']) and ctx.artifacts is None and
++                      closed['held_APK_FDs_closed'] == context.APK_COUNT and
++                      len(state['commands']) == 4 and artifact == original,
++                      'ARTIFACT_ROUTE_COMPLETE_MEMORY_FD_CLOSURE')
++        return state
++    stream_route()
++    add('production_before_after_routes_current_artifacts_and_exact_held_file')
++    stream_route(True)
++    add('production_named_identity_drift_rejected_and_all_memory_FDs_closed')
++    # Exercise the original hash implementation separately with a small, explicit
++    # byte fixture. Its identity schema is copied from the actual held_file row.
++    data = b'fixed-original-hash-method-control\n'*2200
++    row = copy.deepcopy(artifact['current_artifacts'][0])
++    row['held_file']['bytes'] = len(data);row['sha256'] = hashlib.sha256(data).hexdigest()
++    def hash_case(identity_drift=False, wrong_sha=False):
++        state,records,allocate,fake_os,Production = fd_fixture()
++        observed = copy.deepcopy(row['held_file'])
++        if identity_drift:observed['mtime_ns'] += 1
++        fd = allocate(observed,data)
++        expected = copy.deepcopy(row)
++        if wrong_sha:expected['sha256'] = '0'*64
++        held = Production(types.SimpleNamespace(artifacts=None),artifact,parser)
++        try:
++            if identity_drift:
++                try:held._hash(fd,expected,time.monotonic()+5)
++                except RuntimeError as error:
++                    entry.require(str(error) == 'ACTUAL_'+tag+'_APK_IDENTITY_CHANGED', 'HASH_IDENTITY_FIRST_ERROR')
++                else:raise RuntimeError('HASH_IDENTITY_DRIFT_ACCEPTED')
++                entry.require(state['read'] == state['seek'] == 0, 'IDENTITY_DRIFT_READ_BEFORE_REJECTION')
++            elif wrong_sha:
++                try:held._hash(fd,expected,time.monotonic()+5)
++                except RuntimeError as error:
++                    entry.require(str(error) == 'ACTUAL_'+tag+'_APK_CONTENT_CHANGED', 'HASH_CONTENT_FIRST_ERROR')
++                else:raise RuntimeError('WRONG_ARTIFACT_HASH_ACCEPTED')
++            else:
++                result = held._hash(fd,expected,time.monotonic()+5)
++                entry.require(result == row and state['read'] >= 3 and state['seek'] == 1,
++                              'REAL_ARTIFACT_STREAM_HASH_AND_HELD_RECORD_SCHEMA')
++        finally:
++            fake_os.close(fd);held.close()
++        entry.require(state['opened'] == state['closed'], 'HASH_CONTROL_MEMORY_FD_CLOSURE')
++    hash_case()
++    add('original_stream_hash_method_accepts_small_bytes_with_actual_held_file_schema')
++    hash_case(identity_drift=True)
++    add('original_stream_hash_method_rejects_held_ns_drift_before_read')
++    hash_case(wrong_sha=True)
++    add('original_stream_hash_method_rejects_wrong_content_sha')
++    entry.require(len(rows) == 10 and artifact == original, 'EXACT_TEN_ARTIFACT_SCHEMA_CONTROLS')
++    return rows
+
+--- a/source/make_request.py
++++ b/source/make_request.py
+@@ -7,7 +7,7 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY = 'pocket4-owned-ticket12306-qa-r1-current-r6-install-state-02-schema02-d9bbd44ae20b88ca'
++KEY = 'pocket4-owned-ticket12306-qa-r1-current-r6-install-state-02-schema03-609dc720370ef272'
+ ROOT = '/home/alex/work/pocket4-owned-ticket12306-qa-r1-install-state-02'
+ NONCE = '1feb4f390c5fb40171037480e860dbba'
+ 
+
+--- a/source/stage_execute.py
++++ b/source/stage_execute.py
+@@ -99,8 +99,8 @@
+     transport=load_text(files['ticket12306_transport.py'],SOURCE/'ticket12306_transport.py','current_target_transport_controls')
+     controls_module=load_text(files['check_install_binding.py'],SOURCE/'check_install_binding.py','current_install_pure_controls')
+     controls=controls_module.run_controls(entry,actual_host,host_manifest,context,transport,baseline,ref,files,packet['source_manifest_sha256'])
+-    require(controls['all_passed'] is True and controls['count']==75 and
+-            len(controls['cases'])==75 and all(x['passed'] is True for x in controls['cases']),
++    require(controls['all_passed'] is True and controls['count']==85 and
++            len(controls['cases'])==85 and all(x['passed'] is True for x in controls['cases']),
+             'ACTUAL_CURRENT_APP_CONTEXT_CONTROLS_REQUIRED')
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'current_install_stage_epoch')
+     before=ref.main_guard(baseline,epoch)
+
+--- a/source/ticket12306_context.py
++++ b/source/ticket12306_context.py
+@@ -372,8 +372,19 @@
+ class ArtifactSet:
+     """The exact 1 installed commercial APKs, read-only and held to exit."""
+     def __init__(self, context, expected, reader):
+-        require(expected['target'] == {'package':PACKAGE,'uid':UID,'user':0,'version_code':VERSION},
++        exact = {'package':PACKAGE,'uid':UID,'user':0,'version_code':VERSION}
++        require(type(expected) is dict and expected.get('schema') == 1 and
++                {key:expected.get(key) for key in exact} == exact and
++                all(type(expected.get(key)) is int for key in ('uid','user','version_code')),
+                 'ACTUAL_TICKET12306_METADATA_REFERENCE_REQUIRED')
++        require(type(expected.get('current_artifacts')) is list and
++                type(expected.get('current_APK_count')) is int and
++                len(expected['current_artifacts']) == expected['current_APK_count'] == APK_COUNT and
++                type(expected.get('current_total_APK_bytes')) is int and
++                expected['current_total_APK_bytes'] ==
++                    sum(row['held_file']['bytes'] for row in expected['current_artifacts']),
++                'ACTUAL_TICKET12306_ARTIFACT_REFERENCE_REQUIRED')
++        self.metadata = exact
+         self.context,self.expected,self.reader = context,expected,reader
+         self.opened = []
+         self.records = []
+@@ -381,12 +392,12 @@
+ 
+     def _metadata(self, raw):
+         value = self.reader.metadata(raw)
+-        require(value == self.expected['target'],'ACTUAL_TICKET12306_UID_OR_VERSION_CHANGED')
++        require(value == self.metadata,'ACTUAL_TICKET12306_UID_OR_VERSION_CHANGED')
+         return value
+ 
+     def _paths(self, raw):
+         values = self.reader.apk_paths(raw)
+-        require(values == sorted(row['path'] for row in self.expected['artifacts']) and len(values) == APK_COUNT,
++        require(values == sorted(row['path'] for row in self.expected['current_artifacts']) and len(values) == APK_COUNT,
+                 'ACTUAL_FIXED_TICKET12306_APK_PATH_CHANGED')
+         return values
+ 
+@@ -412,16 +423,16 @@
+     def before(self):
+         self._metadata(self.context.android(LIST,15))
+         self._paths(self.context.android(PATHS,15))
+-        require(sum(row['held_file']['bytes'] for row in self.expected['artifacts']) <= TOTAL_LIMIT,
++        require(sum(row['held_file']['bytes'] for row in self.expected['current_artifacts']) <= TOTAL_LIMIT,
+                 'FIXED_APK_TOTAL_BOUND')
+         deadline = min(self.context.deadline,time.monotonic()+HASH_SECONDS)
+-        for row in self.expected['artifacts']:
++        for row in self.expected['current_artifacts']:
+             fd = self.context.target.open_root(row['path'],os.O_RDONLY|os.O_NOFOLLOW)
+             self.opened.append(fd)
+             self.records.append(self._hash(fd,row,deadline))
+         require(len(self.opened) == len(self.records) == APK_COUNT,'EXACT_FIXED_HELD_APKS_REQUIRED')
+         self.context.artifacts = self
+-        return {'metadata':self.expected['target'],'artifacts':self.records,
++        return {'metadata':self.metadata,'artifacts':self.records,
+                 'fresh_streaming_hashes':True,'signer_independently_verified':False}
+ 
+     def verify_held(self):
+@@ -438,7 +449,7 @@
+         self.verify_held()
+         deadline = min(self.context.deadline,time.monotonic()+HASH_SECONDS)
+         after = []
+-        for fd,row in zip(self.opened,self.expected['artifacts']):
++        for fd,row in zip(self.opened,self.expected['current_artifacts']):
+             after.append(self._hash(fd,row,deadline))
+             named = self.context.target.open_root(row['path'],os.O_RDONLY|os.O_NOFOLLOW)
+             try:
+@@ -446,7 +457,7 @@
+             finally:
+                 os.close(named)
+         require(after == self.records,'TICKET12306_APK_SET_CHANGED')
+-        return {'metadata':self.expected['target'],'artifacts':after,
++        return {'metadata':self.metadata,'artifacts':after,
+                 'fresh_streaming_hashes':True,'signer_independently_verified':False}
+ 
+     def close(self):

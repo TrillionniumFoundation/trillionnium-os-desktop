@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "success": true,
+  "scope": "local static protected runtime result reader review; no Hepta or reader execution",
+  "original_runtime_stdout": {
+    "bytes": 515,
+    "sha256": "ba4c3a79c88c236ecbd12ea107195c20900d6b9f72fa1c3cb61458d986d9e623"
+  },
+  "fixed_path": "/opt/p4-owner14-normal-20261105-01-state/runtime-result.json",
+  "actual_bytes": 57774,
+  "actual_sha256": "954fa535427e79780cb3764d0eb28e2ab12b4a4af642c4bccf3244a4e1c97fea",
+  "preimage_reader_sha256": "fd87aa8d233eee659986184a338aa74c8871a6f39206865b019a1b545d68f5e2",
+  "all_literal_forward_and_inverse_bytes_exact": true,
+  "literal_mappings": [
+    [
+      "p4-owner11-normal-20261105-01-state",
+      "p4-owner14-normal-20261105-01-state"
+    ],
+    [
+      "EXPECTED_REPORT_BYTES = 55139",
+      "EXPECTED_REPORT_BYTES = 57774"
+    ],
+    [
+      "d48a503751555736dd85b54211a89c4a2b51371adf41c860f44cd3887b8c5bf5",
+      "954fa535427e79780cb3764d0eb28e2ab12b4a4af642c4bccf3244a4e1c97fea"
+    ],
+    [
+      "fixed-owner11-normal01-prepared-read",
+      "fixed-owner14-normal01-runtime-read"
+    ],
+    [
+      "prepared.json",
+      "runtime-result.json"
+    ],
+    [
+      "externally pinned actual prepared report differs",
+      "externally pinned actual runtime report differs"
+    ],
+    [
+      "held prepared directory changed",
+      "held runtime directory changed"
+    ]
+  ],
+  "unchanged_request_nonbinding_fields": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-"
+    ],
+    "cpu_quota_percent": 100,
+    "cwd": "/",
+    "executable": "/usr/bin/sudo",
+    "host": "pocket4",
+    "memory_max_bytes": 134217728,
+    "nice": 10,
+    "timeout_seconds": 30
+  },
+  "request_bytes": 5320,
+  "request_sha256": "91c5e4569ddafb55cda4c452993c720f39373979b7b24fdee2ff77f678480f24",
+  "stdin_bytes": 4860,
+  "stdin_sha256": "cabb2b946d778172757c5447630f16b82ad0338ce39827adccbbf0f1f866c7c3",
+  "manifest_sha256": "97bdb8de245baac163a348dea06a223324fad30b6e7fb89fa6d912a92cd89da8",
+  "runtime_first_cause_inferred": false,
+  "original_retirement_or_outer_cleanup_qualified": false,
+  "UI_window_released": false
+}

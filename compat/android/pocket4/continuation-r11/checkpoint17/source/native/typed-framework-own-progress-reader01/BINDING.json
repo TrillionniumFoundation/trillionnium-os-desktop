@@ -1,0 +1,73 @@
+{
+  "build_success_or_runtime_qualification_claimed": false,
+  "cgroup_path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ad81164b-fc05-5a14.service",
+  "created_at": "2026-11-05T22:07:45.615978+00:00",
+  "files": {
+    "exact-request.json": {
+      "bytes": 15669,
+      "sha256": "47a2944919b6d855cb426f39c3dfc678a098540b57663fa388b8d065a56e8dd8"
+    },
+    "read_progress.py": {
+      "bytes": 13368,
+      "sha256": "6f020cf032073d9ecdc70ad4925e223aab472fa7ff3dc3d712ce1c4ca28c482c"
+    }
+  },
+  "idempotency_key": "pocket4-native-typed-framework-build01-own-progress-readonly-01-20261105",
+  "job": "1a1ad81164b-fc05-5a14",
+  "limits": {
+    "cpu_quota_percent": 25,
+    "memory_max_bytes": 67108864,
+    "output_bytes_max": 131072,
+    "per_proc_cmdline_bytes": 16384,
+    "per_proc_comm_and_wchan_bytes": 128,
+    "per_proc_stat_and_membership_bytes": 4096,
+    "process_ids_from_exact_cgroup_procs_only": 128,
+    "request_timeout_seconds": 3,
+    "source_soft_read_deadline_seconds": 2.4
+  },
+  "privacy": {
+    "cwd_outside_owned_roots_disclosed": false,
+    "environment_read": false,
+    "fd_directory_read": false,
+    "proc_directory_enumerated": false,
+    "raw_argv_returned": false,
+    "remote_URL_content_returned": false,
+    "remote_URL_only_sha256": true
+  },
+  "read_only": {
+    "Android_actions": false,
+    "Main_actions": false,
+    "build_executed": false,
+    "filesystem_mutation": false,
+    "retries": false,
+    "signals": false,
+    "subprocesses_started": false
+  },
+  "request_executed": false,
+  "schema": 1,
+  "scope": "ONE_READONLY_OWN_JOB_PROGRESS_SNAPSHOT",
+  "scope_basis": {
+    "actual_claim": {
+      "bytes": 3352,
+      "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/typed-framework-normal-build01/attempt-claim-progress01.json",
+      "sha256": "9b62693a7c1b8b08cde5bad848f154e934c00e48943341f4040a3585836d1482"
+    },
+    "derivation": "Actual claim unit plus reviewed controller unified-user-service prefix; PID membership must match this exact path before and after every observation. Reviewed producer has no child-cgroup creation; unexpected descendants reject without enumeration.",
+    "reviewed_controller": {
+      "bytes": 38463,
+      "local_path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-framework-normal-build-freeze01/framework_build.py",
+      "sha256": "12a86ce8fc03b281193a5942a5b7be0c1d7531f7f4e489f1eeca8db9688d1307"
+    }
+  },
+  "stdin": {
+    "bytes": 14473,
+    "sha256": "4b186f51b989b8c93ba2babf36091e49aa0f3be45b7d09bc0549cc01cb44750b"
+  },
+  "unit": "hepta-runtime-job-1a1ad81164b-fc05-5a14.service",
+  "validation": {
+    "AST_syntax_and_forbidden_operation_scan": "PASS",
+    "live_proc_or_device_reads_performed": 0,
+    "pure_PID_bound_stat_parser_and_redaction_cases": "PASS",
+    "wrapper_source_byte_binding": "PASS"
+  }
+}

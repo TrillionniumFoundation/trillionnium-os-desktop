@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/home/alex/work/pocket4-signal-runtime-r4-work-01/source-candidate-r4/verify_r4.py", line 245, in <module>
+    held = H.HeldTarget(identity, "/declared-helper-not-executed")
+  File "/home/alex/work/pocket4-signal-runtime-r4-work-01/source-candidate-r4/held_runtime.py", line 146, in __init__
+    require(os.readlink("cwd", dir_fd=self.proc_fd) == "/", "init cwd is not root")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/alex/work/pocket4-signal-runtime-r4-work-01/source-candidate-r4/held_runtime.py", line 36, in require
+    raise BindingError(message)
+held_r4_control.BindingError: init cwd is not root

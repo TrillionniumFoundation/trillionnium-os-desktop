@@ -1,0 +1,100 @@
+{
+  "collection": {
+    "all_three_original_bytes_hashes_exact": true,
+    "bundle": {
+      "bytes": 15941,
+      "sha256": "bf02007318282fecd732962a2afc3b6420756bda0a7537c3ea2417f42526d3d8"
+    },
+    "sequential_not_atomic_snapshot": true,
+    "stage_to_coordinator_and_coordinator_to_launch_pins_exact": true,
+    "stdout": {
+      "bytes": 4866,
+      "sha256": "797c0aec4395f1b45f801fe581d5b17f51f9b1822d5ffc9bd96699bd9d40f679"
+    }
+  },
+  "fences": {
+    "all_six_Main_snapshots_equal": true,
+    "original_resource_gate_passed": true,
+    "own_memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "own_peak_bytes": 45629440,
+    "own_swap_peak_bytes": 0,
+    "secondary_errors_empty": true,
+    "source_and_artifact_unchanged": true
+  },
+  "first_error": {
+    "errno": 11,
+    "message": "[Errno 11] Resource temporarily unavailable",
+    "phase": "action_lock",
+    "type": "BlockingIOError"
+  },
+  "limits": {
+    "UI_or_whole_app_qualification": false,
+    "no_automatic_retry_or_lock_bypass": true,
+    "outer_generic_error_does_not_identify_Main_failure": true,
+    "parent_command_result_independently_collected": false,
+    "parent_join_retirement_only_source_path_not_extra_runtime_evidence": true
+  },
+  "local_verification_note": "Initial check used unsuffixed envelope keys and stopped before output; corrected to the actual coordinator.json/stage.json/launch.json schema, originals unchanged.",
+  "lock": {
+    "attempts": 100,
+    "busy_attempts": 100,
+    "contention_source_proven": false,
+    "elapsed_seconds": 5.000083943945356,
+    "fd_closed_on_error": true,
+    "holder_identity_proven": false,
+    "opened_identity": {
+      "device": 28,
+      "gid": 0,
+      "inode": 8312,
+      "mode": 33152,
+      "nlink": 1,
+      "uid": 0
+    },
+    "path": "/run/lock/android-digitalis-actions.lock",
+    "wait_limit_seconds": 5
+  },
+  "no_action_boundary": {
+    "actual_action_attempted": false,
+    "actual_outcome_unknown": false,
+    "flow_lock_acquired_separate_inode_and_released": true,
+    "no_current_target_or_helper_observation_claimed": true,
+    "no_inspect_requested": true,
+    "no_owned_launch_scope_no_cleanup_authority": true,
+    "source_global_lock_precedes_open_task_context_and_all_target_or_helper_commands": true
+  },
+  "original_job": {
+    "id": "1a1ad224efa-fc05-58a7",
+    "terminal_failed_exit1_complete_durable_confirmed": "Root-reported original status, not independently reacquired"
+  },
+  "originals": {
+    "coordinator": {
+      "bytes": 5828,
+      "sha256": "0c257f559bcb604fefdbbf277fdef2e1e063b5cc0c9c3350171d64475d82206c"
+    },
+    "launch": {
+      "bytes": 6053,
+      "sha256": "13179fb6aa36a1fde53892cc6287994ae269e492199a94eb12eeafe83fe290cc"
+    },
+    "stage": {
+      "bytes": 1804,
+      "sha256": "75b623c469aabfd8fa7c2e0b685c543717b44b2bce09cc8c1927d5bbf73d56c6"
+    }
+  },
+  "schema": 1,
+  "scope": "Local full read of fixed safe three-result collection and exact frozen source; no new remote action",
+  "source_pins": {
+    "install_state.py": {
+      "bytes": 32582,
+      "sha256": "a2e26701436053bf9bca03f7a22ab84c899ab1bbc6ec609ac49caedb53115fd8"
+    },
+    "owned_inspect.py": {
+      "bytes": 34450,
+      "sha256": "5f900ef7028cf104d0495666a1d9f8d5918dfb37c2d5087b513d6a2e70872ee7"
+    },
+    "readonly_r3_coordinator.py": {
+      "bytes": 16900,
+      "sha256": "e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd"
+    }
+  },
+  "state": "ACTUAL_TICKET_LAUNCH01_PRE_ACTION_LOCK_ADMISSION_FAILED_PRESERVED"
+}

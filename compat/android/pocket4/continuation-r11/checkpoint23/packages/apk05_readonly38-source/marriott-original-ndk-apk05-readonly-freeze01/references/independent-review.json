@@ -1,0 +1,348 @@
+{
+  "schema": 1,
+  "kind": "marriott-real-arm64-original-ndk-apk05-independent-review",
+  "scope": "Complete immutable actual report, exact source/config/request replay, independent terminal, every command output hash and full before/after metadata. No device, Main read, installation or ARM64 execution.",
+  "original": {
+    "bytes": 9811685,
+    "sha256": "d8eb53c924fa6a76bee19304bd8538bf2a57306b7e9bd6a55df8787d4ea33411",
+    "git_blob_sha": "b9e554da10457c28186be38db3c8916bc7edb79f",
+    "actual_tree": "8a327ae27f0f50e4fcacbe63e8aa537f1bfcfaf1"
+  },
+  "raw_lossless_decode": {
+    "raw_bytes": 9811685,
+    "raw_sha256": "d8eb53c924fa6a76bee19304bd8538bf2a57306b7e9bd6a55df8787d4ea33411",
+    "raw_git_blob_sha1": "b9e554da10457c28186be38db3c8916bc7edb79f",
+    "compressed_bytes": 796095,
+    "compressed_sha256": "8b50de03115899110327ada77f38283eb050978578bba2fa37716b86ebe9c3bf",
+    "exact_ascii_utf8_roundtrip": true,
+    "raw_not_JSON_resequenced": true
+  },
+  "terminal": {
+    "bytes": 729,
+    "sha256": "7df30068ee3849645f69085f9c16f1bc1094744fbacc26d765a09be0c21ded3d",
+    "git_blob_sha": "58a7513006a1085082c0b2d4f94c0d6c492a0ec1",
+    "job_id": "1a1b299fafc-fc05-7edb",
+    "exit_code": 0,
+    "full": true,
+    "durable": true,
+    "stderr_bytes": 0
+  },
+  "stdout": {
+    "bytes": 228,
+    "sha256": "7e22891b785542a355a55f67b2235180d1dd216d176871338e88ebd6a2d706f6",
+    "git_blob_sha": "cb42b8b497a934e40aedd2c6e9c2d708edb7d6ea"
+  },
+  "checks": {
+    "total": 21296,
+    "failures": [],
+    "part1": {
+      "checks": 20933,
+      "failures": [],
+      "dependency_rows": 4880,
+      "unique_watch_before": 973,
+      "final_rows": 976,
+      "duplicate_rows_checked": 8895,
+      "command_stderr_nonempty": 2,
+      "extra_known_java_dex_outputs": [
+        "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-05-20261106/classes/com/example/ndk_tests/NdkTests.class",
+        "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-05-20261106/classes/com/example/ndk_tests/NdkTestsActivity.class",
+        "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-05-20261106/dex/classes.dex"
+      ],
+      "group_signal_attempted": 50,
+      "memory_peak": 504676352
+    },
+    "part2": {
+      "checks": 352,
+      "failures": [],
+      "composed_sdk_inputs": 27,
+      "apk_inputs": 13,
+      "observer_FDs": 428,
+      "complete_bytes_read": 104555928,
+      "class_count": 7,
+      "registry23": 23,
+      "focus12": 12,
+      "new_FD_tests": 9,
+      "actual_signer": "a899ddfa8c4b57a962c2bb1ae885a44bd904d7b63f6fd301abf514edf70ad72c"
+    },
+    "part3": {
+      "checks": 11,
+      "failures": [],
+      "original": {
+        "bytes": 9811685,
+        "sha256": "d8eb53c924fa6a76bee19304bd8538bf2a57306b7e9bd6a55df8787d4ea33411",
+        "git_blob_sha": "b9e554da10457c28186be38db3c8916bc7edb79f"
+      },
+      "terminal": {
+        "bytes": 729,
+        "sha256": "7df30068ee3849645f69085f9c16f1bc1094744fbacc26d765a09be0c21ded3d",
+        "git_blob_sha": "58a7513006a1085082c0b2d4f94c0d6c492a0ec1",
+        "job_id": "1a1b299fafc-fc05-7edb"
+      },
+      "stdout": {
+        "bytes": 228,
+        "sha256": "7e22891b785542a355a55f67b2235180d1dd216d176871338e88ebd6a2d706f6",
+        "git_blob_sha": "cb42b8b497a934e40aedd2c6e9c2d708edb7d6ea"
+      },
+      "outer_terminal_closes_process_lifetime": true,
+      "raw_not_JSON_resequenced": true,
+      "exact_source_request_reproduction": true
+    }
+  },
+  "actual_build": {
+    "command_count": 50,
+    "all_returncode_zero": true,
+    "all_command_stdout_stderr_complete_and_hash_verified": true,
+    "all_joined": true,
+    "kill_attempted_all_50": true,
+    "group_signal_attempted_all_50": true,
+    "leaders_observed_exited_zero_before_group_cleanup": true,
+    "no_descendants_observed": true,
+    "objects_AArch64_REL": 16,
+    "SDK_link_interfaces": 5,
+    "real_APK_DSOs": 2,
+    "sources_inline": 16,
+    "composed_SDK_input_rows": 27,
+    "APKincluded_input_rows": 13,
+    "Java_tools": 7,
+    "before_after_dependency_sets": 16,
+    "dependency_rows": 4880,
+    "final_unique_source_and_artifact_rows": 976,
+    "tracked_input_FDs": 10902,
+    "own_observer_FDs": 428,
+    "all_tracked_closed": true,
+    "registry_static_TestBodies": 23,
+    "focus_TestBodies": 12,
+    "new_FD_TestBodies": 9,
+    "original_Mmap_TestBodies": 3,
+    "registration_runtime_observed": false,
+    "TestBody_execution_observed": false,
+    "source_builder_SDK": 37,
+    "original_current_API": 10000,
+    "GTest_and_cpufeatures_target_API": 21,
+    "Java_compile_SDK": 31,
+    "manifest_min_SDK": 14,
+    "manifest_target_SDK": 24,
+    "original_VerifyTestList_runtime_required": true,
+    "package_version_in_badging": "unspecified; no versionCode is invented for future install"
+  },
+  "actual_artifacts": {
+    "APK": {
+      "bytes": 1397258,
+      "ctime_ns": 1793997817893717337,
+      "device": 66306,
+      "gid": 1000,
+      "inode": 37397229,
+      "mode": 33152,
+      "mtime_ns": 1793997817893717337,
+      "nlink": 1,
+      "path": "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-05-20261106/ndk-tests.apk",
+      "resolved_path": "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-05-20261106/ndk-tests.apk",
+      "sha256": "b3bf438dedbcdd5f3ac871733a273b3cece446db6be308df73f95b08cb46d164",
+      "uid": 1000
+    },
+    "APK_contract": {
+      "Activity_empty_test_list_route_admitted": false,
+      "SDK_interfaces_packaged": false,
+      "instrumentation": "android.test.InstrumentationTestRunner",
+      "java_classes": 2,
+      "min_sdk": 14,
+      "native_members": [
+        {
+          "bytes": 5519360,
+          "member": "lib/arm64-v8a/libberberis_ndk_tests.so",
+          "sha256": "876429081f576bcaadf96355b09c498a08cbc74f6191b16fbeb1f23156bedc2a"
+        },
+        {
+          "bytes": 5240,
+          "member": "lib/arm64-v8a/libberberis_ndk_tests_shared_lib.so",
+          "sha256": "d91f43e4ec866d2a58e56a6e9c49e8f0c6c2fb403917bc6f20760615acb956c8"
+        }
+      ],
+      "package": "com.example.ndk_tests",
+      "private_signing_material_body_exported": false,
+      "private_signing_paths": [
+        "private-signing/password.txt",
+        "private-signing/owned.p12"
+      ],
+      "runtime_executed": false,
+      "runtime_must_use_instrumentation_with_nonempty_23_test_list": true,
+      "signature_certificate_sha256": "a899ddfa8c4b57a962c2bb1ae885a44bd904d7b63f6fd301abf514edf70ad72c",
+      "target_sdk": 24
+    },
+    "native_libraries": [
+      {
+        "SDK_link_interface_only": false,
+        "SharedFunction": {
+          "binding": 1,
+          "defined": true,
+          "name": "SharedFunction",
+          "size": 8,
+          "type": 2,
+          "visibility": 0
+        },
+        "artifact": {
+          "bytes": 5240,
+          "ctime_ns": 1793997813089532018,
+          "device": 66306,
+          "gid": 1000,
+          "inode": 38966666,
+          "mode": 33216,
+          "mtime_ns": 1793997813089532018,
+          "nlink": 1,
+          "path": "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-05-20261106/libraries/libberberis_ndk_tests_shared_lib.so",
+          "resolved_path": "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-05-20261106/libraries/libberberis_ndk_tests_shared_lib.so",
+          "sha256": "d91f43e4ec866d2a58e56a6e9c49e8f0c6c2fb403917bc6f20760615acb956c8",
+          "uid": 1000
+        },
+        "executed": false,
+        "needed": [
+          "libc.so",
+          "libm.so",
+          "libdl.so"
+        ],
+        "notes": {
+          "GNU_build_id": [
+            "1681a8fd8a57345a6beda1344d91e936b16a9b39"
+          ],
+          "android_sdk_ident": [
+            37
+          ]
+        },
+        "soname": "libberberis_ndk_tests_shared_lib.so"
+      },
+      {
+        "GNU_EH_FRAME_program_headers": 1,
+        "JNI_exports": {
+          "JNI_OnLoad": {
+            "binding": 1,
+            "defined": true,
+            "name": "JNI_OnLoad",
+            "size": 24,
+            "type": 2,
+            "visibility": 0
+          },
+          "Java_com_example_ndk_1tests_NdkTests_returnFloat": {
+            "binding": 1,
+            "defined": true,
+            "name": "Java_com_example_ndk_1tests_NdkTests_returnFloat",
+            "size": 4,
+            "type": 2,
+            "visibility": 0
+          },
+          "Java_com_example_ndk_1tests_NdkTests_returnInt": {
+            "binding": 1,
+            "defined": true,
+            "name": "Java_com_example_ndk_1tests_NdkTests_returnInt",
+            "size": 8,
+            "type": 2,
+            "visibility": 0
+          },
+          "Java_com_example_ndk_1tests_NdkTests_runTests": {
+            "binding": 1,
+            "defined": true,
+            "name": "Java_com_example_ndk_1tests_NdkTests_runTests",
+            "size": 60,
+            "type": 2,
+            "visibility": 0
+          }
+        },
+        "SDK_link_interface_only": false,
+        "artifact": {
+          "bytes": 5519360,
+          "ctime_ns": 1793997813109532790,
+          "device": 66306,
+          "gid": 1000,
+          "inode": 38966667,
+          "mode": 33216,
+          "mtime_ns": 1793997813108532751,
+          "nlink": 1,
+          "path": "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-05-20261106/libraries/libberberis_ndk_tests.so",
+          "resolved_path": "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-05-20261106/libraries/libberberis_ndk_tests.so",
+          "sha256": "876429081f576bcaadf96355b09c498a08cbc74f6191b16fbeb1f23156bedc2a",
+          "uid": 1000
+        },
+        "executed": false,
+        "needed": [
+          "libberberis_ndk_tests_shared_lib.so",
+          "liblog.so",
+          "libz.so",
+          "libc.so",
+          "libm.so",
+          "libdl.so"
+        ],
+        "notes": {
+          "GNU_build_id": [
+            "91da26b0ae22f614ce4c42a61a4d7b96264d17a9"
+          ],
+          "android_sdk_ident": [
+            37
+          ]
+        },
+        "soname": "libberberis_ndk_tests.so"
+      }
+    ],
+    "compiled_JNI_symbol_join": {
+      "RunAllTests": "_ZN8ndk_test11RunAllTestsEP7_JNIEnvP8_jobjectP8_jstringS5_",
+      "entry": "Java_com_example_ndk_1tests_NdkTests_runTests",
+      "executed": false,
+      "linked": true
+    }
+  },
+  "resource": {
+    "held_own_cgroup_gate_passed": true,
+    "exact_limits": {
+      "cpu.max": [
+        100000,
+        100000
+      ],
+      "memory.high": "max",
+      "memory.max": 1073741824,
+      "memory.swap.max": "max",
+      "pids.max": 30053
+    },
+    "observed_memory_peak": 504676352,
+    "observed_swap_current": 0,
+    "observed_swap_peak": 0,
+    "memory_event_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "scope": "held own cgroup until final pre-receipt sample; durable outer terminal remains required",
+    "whole_invocation_resource_qualified": false,
+    "swap_zero_claimed": false,
+    "outer_terminal_closes_process_lifetime": true
+  },
+  "qualification": {
+    "complete_static_APK_build": true,
+    "standalone_fresh_fixture_binding_allowed": true,
+    "installation_performed": false,
+    "actual_installed_UID_known": false,
+    "ART_or_Android_native_execution": false,
+    "runtime_nonempty23_registry_verified": false,
+    "actual12_XML_pass": false,
+    "Main_runtime_admission": false,
+    "Marriott_current_reproduction_or_root_cause_proven": false,
+    "commercial_45_App_readiness": false,
+    "original_engine_feature_default_enabled": false
+  },
+  "prior_failures_preserved": {
+    "SDK22": "Original missing generic soong.variables overall failure retained; 21 individually complete rows composed with actual product-derived configuration.",
+    "original_APK13_reader02": "ADMISSION_UNKNOWN_NOT_RETRIED_OR_BORROWED",
+    "APK01": "0 commands, original fixed-source and class-distribution failures retained.",
+    "APK02": "27 commands passed; inappropriate __config_site requirement on header-free TU retained as original failure.",
+    "APK04": "0 commands; embedded observer own paths and 13 specifications mismatch preserved.",
+    "install01": "Original target23 PM denial; transport result UNKNOWN remains unchanged. No installation replay.",
+    "residual01": "EAGAIN at one existing global-lock attempt; no package/data observation. Fresh independent residual02 is separate and has not run by this reviewer."
+  },
+  "verification_limits": {
+    "unsafe_integer_metadata": "Original numeric tokens preserved losslessly; raw report never JSON reserialized.",
+    "observer_expected_is_prior_actual": "Original suffix-based anchor field not upgraded into provenance for every actual whole pin.",
+    "audit_verifier_development": "Initial verifier-only assumptions about a <=90s command bound, cfg declared_path bookkeeping and max_adopted field spelling were corrected against exact frozen controller; that initial verifier and result retained as separate development evidence. No production source was changed."
+  },
+  "followup": "Only separately authorized com.example.ndk_tests installation with a new nonce and fresh original Main/lock gates, then original NdkTests#testMain with nonempty23 list, exact12 nofail/noskip XML and independent termination/cleanup can qualify runtime."
+}

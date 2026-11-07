@@ -1,0 +1,15 @@
+# Producer07 compile-only and ordinary controllers
+
+Status: NOT_SUBMITTED. Root owns any subsequent device window. No Hepta, Rust, namespace, Android or Main action was performed while constructing this revision.
+
+The frozen producer07 source tree is 52dd841fcdf47f5053116491bd74da62cd8504cd, source manifest c91fcbb5318d01848d00eb533ddef8b4bed4ad53b59c95a54db0e12315bb672d. The new controller copies the exact successful recovery04 candidate and binds its actual compile receipt 2eb658308593cf760b7f99bbc9e3d7762295ef18c4628b050221838ffa274d4f and full source inventory 731fcdae3856011a418e244b19b0568160f9316e94b31ba3aa6e75e423cab5eb. Original source is read only. The destination is a fresh create-only root.
+
+Nine existing sources require their exact preimage. The only new path is runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs: its parents must be real directories, the leaf must be absent, and the actual write uses O_CREAT|O_EXCL|O_NOFOLLOW. Both prior and candidate manifests are checked, giving 31 basis and 32 candidate inputs. Any unexpected existing path, source mismatch or compiler failure remains a failed original invocation.
+
+Compilation preserves the actual recovery04 two-library --lib --no-run selection, four binary identity checks, full inventory comparison, separate target, locked/offline one-job Cargo and unchanged own-cgroup resource gate. Budget remains one CPU, 1 GiB, nice 10 and 600 seconds. The compile request is exact and ready for root review; it has not been submitted.
+
+The ordinary request is a non-executable template until its required external successful producer07 compile receipt SHA is supplied. It preserves held ELF identity/hash execution, two targeted real retirement transport tests (1 pass/22 filtered each), 23 relay library tests, 119 predicted supervisor library tests (the actual prior 112 plus seven new audit controls), seven IPC controls, worker-context and entry ABI. Its unchanged budget is one CPU, 512 MiB, nice 10 and 180 seconds. Source-derived counts are not actual test results. No integration/bin-test suites are selected.
+
+Thirteen local AST/binding/owned-file controls passed. The resource guard, process execution, timeout, ELF and full inventory functions are AST-identical to recovery04; they were not needlessly re-run as new resource qualification. Local testing executed the actual new overlay loop against exact frozen source bytes, including existing-leaf, symlink, ancestor-symlink, O_EXCL race and unapproved-path rejection. The first local overlay test failed because copytree carried the deliberately 0444 transport-freeze mode into the test fixture; that report and exact first validator source remain unchanged. The corrected fixture makes fresh writable byte copies, without predicting remote permissions. Production controller bytes did not change for this fixture adjustment.
+
+Neither compilation, these ordinary controls nor an audit snapshot qualifies the full actual Rust Owner/init/broker lifecycle. The private CellSpec normal invocation remains a separate reviewed step after actual matching results. No ref or PR update is performed by this bundle.

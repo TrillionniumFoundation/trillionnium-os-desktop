@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "success": true,
+  "scope": "local exact literal and request binding only; reader not executed",
+  "original_prepare_stdout": {
+    "bytes": 233,
+    "sha256": "0c2a338f82b02fb700e93fecc72bfe09b50fd7ebf5fa28176841779e130c3b31"
+  },
+  "initial_local_checker_failure": {
+    "check": "raw function AST equality",
+    "observed": "AssertionError",
+    "cause": "intentional fixed output-scope label in main changes its literal AST; no production/source mutation",
+    "corrected_check": "inverse exact state root/digest/output-scope literals reconstructs all original bytes"
+  },
+  "preimage_reader_sha256": "fd87aa8d233eee659986184a338aa74c8871a6f39206865b019a1b545d68f5e2",
+  "reader_sha256": "7a6408e2da7d9b0a37ae88ee56d7ba5187fcfa6b4381cf154cc38a7b0b8f5770",
+  "reader_bytes": 4839,
+  "request_sha256": "0b9f771a73bfdf5ed5ef1db56896aced202f70190453ef0307f36e8fd865be61",
+  "request_bytes": 5300,
+  "fixed_path": "/opt/p4-owner14-normal-20261105-01-state/prepared.json",
+  "expected_bytes": 55139,
+  "expected_sha256": "5771673f20af6833e070da267b0ad9bcbbf58c87e03542104ac57fb9a4466770",
+  "inverse_byte_equality": true,
+  "request_nonbinding_fields_identical": true,
+  "AST_parse_compile_only": true,
+  "reader_executed": false,
+  "runtime_generated_or_submitted": false
+}

@@ -1,0 +1,128 @@
+--- previous/owned_navigation.py
++++ owner02/owned_navigation.py
+@@ -33,11 +33,11 @@
+ SUBMIT_STABILITY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'__FRESH_NONCE_079__','inspect':'__FRESH_NONCE_080__','after':'__FRESH_NONCE_081__'}},{'schema':1,'operation':'inspect','nonces':{'before':'__FRESH_NONCE_082__','inspect':'__FRESH_NONCE_083__','after':'__FRESH_NONCE_084__'}},{'schema':1,'operation':'inspect','nonces':{'before':'__FRESH_NONCE_085__','inspect':'__FRESH_NONCE_086__','after':'__FRESH_NONCE_087__'}},{'schema':1,'operation':'inspect','nonces':{'before':'__FRESH_NONCE_088__','inspect':'__FRESH_NONCE_089__','after':'__FRESH_NONCE_090__'}}]
+ SELF,UID=("org.droidloom.qa.bili.r10",None)  # Actual R10 installation required.
+ BILI,BILI_UID=('tv.danmaku.bili',10117)
+-INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-bili-qa-r10-install-state-01")
++INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-bili-qa-r10-install-state-02")
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+-INSTALL_ENTRY_SHA="e3515ebf47dd3f8fd1b7a48141f868aed7e9582f24f806687327b9d6897560c0"
+-INSTALL_ENTRY_BYTES=38822
+-INSTALL_MANIFEST_SHA="6d2a66f4c4920c8ed32f5738020a516bb4df1f6ca3e87f6d6d9e16744f988c42"
++INSTALL_ENTRY_SHA="55458ecb899956dd3475c454a4f8993df036a2439992c32527a66cc852cb71c3"
++INSTALL_ENTRY_BYTES=39575
++INSTALL_MANIFEST_SHA="e3cb2adbcfe46a47ca81ec3b5883f1e1a0cd806b21e964d75944e8fe5cd49387"
+ R6_MANIFEST="002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+ SESSION_SHA="d896b750b6e35fc859c773a5f9797c22c33631a9bfc4c3c4d327706438cf0013"
+ OLD_FLOW=Path("/home/alex/work/pocket4-bilibili-owned-qa-r10-flow-d5a77071f725e6bfb854effcd467cc99")
+@@ -450,7 +450,7 @@
+  action_lock=None
+  session=None
+  try:
+-  flow=recorder.Flow(args)
++  flow=prior.current_flow_type(prior.verify_source(INSTALL_MANIFEST_SHA),recorder)(args)
+   flow.begin(args,mutation=True)
+   action_lock=recorder.lock_file(recorder.ACTION_LOCK)
+   flow.guard()
+@@ -519,6 +519,54 @@
+  selected=json.loads(raw)
+  require(set(selected)=={'task','package','epoch_sha256','prelaunch_absent','cleanup_allowed','launch_step','prelaunch_task_ids','native_receipt_sha256'}and selected['package']==BILI and(selected['epoch_sha256']==MAIN_EPOCH)and(selected['launch_step']=='launch-01')and(selected['prelaunch_absent']is True)and(selected['cleanup_allowed']is True)and(type(selected['task'])is int)and(selected['task']>0)and isinstance(selected['prelaunch_task_ids'],list)and all((type(task)is int and task>=0 for task in selected['prelaunch_task_ids']))and(selected['task']not in selected['prelaunch_task_ids'])and re.fullmatch('[0-9a-f]{64}',selected['native_receipt_sha256']),'ORIGINAL_EXACT_OWNED_LAUNCH_SCOPE_REQUIRED')
+  return(selected,{'path':str(FLOW/'launch-scope.json'),'bytes':len(raw),'sha256':sha(raw)})
++def cleanup_worker(expected):
++    """Own cleanup entry; original R6 cleanup and completion semantics remain."""
++    verify_source(expected)
++    require(os.getuid()==os.geteuid()==0 and HERE==SOURCE,'EXACT_ROOT_CLEANUP_REQUIRED')
++    prior=load_prior()
++    recorder=prior.recorder_module()
++    manifest=prior.verify_source(INSTALL_MANIFEST_SHA)
++    Flow=prior.current_flow_type(manifest,recorder)
++    now=recorder.now
++    write_new=recorder.write_new
++    args=types.SimpleNamespace(operation='cleanup',adapter_manifest_sha256=R6_MANIFEST,
++        flow_dir=FLOW,step='cleanup-01',
++        epoch_module=prior.RECORDER_ROOT/'references/framework_epoch.py',
++        task_source=prior.RECORDER_ROOT/'references/task_scope_baseline.py',
++        request=None,unknown_step=None,observation_step=None,postcondition=None)
++    os.umask(0o077)
++    flow=Flow(args)
++    mutation=True
++    result = {'ok': False, 'automatic_retry': False, 'action_attempted': False, 'outcome_unknown': False,
++              'business_success_verified': False}
++    try:
++        flow.begin(args, mutation)
++        result.update(flow.cleanup())
++        flow.guard(attempted=flow.action_attempted)
++        result['ok'] = True
++    except BaseException as exc:
++        result.update(error_type=type(exc).__name__, error=str(exc), outcome_unknown=flow.action_attempted)
++        if hasattr(exc, 'command_observation'):
++            result['command_observation'] = exc.command_observation
++        if hasattr(exc, 'details'):
++            result['transport_failure'] = exc.details
++    finally:
++        try:
++            flow.close()
++        except BaseException as exc:
++            result['ok'] = False
++            result['outcome_unknown'] = flow.action_attempted
++            if 'error' not in result:
++                result.update(error_type=type(exc).__name__, error='HELD_BINDING_RELEASE_FAILED')
++            result['release_error_type'] = type(exc).__name__
++    result.update(action_attempted=flow.action_attempted, ended_utc=now(), epoch_sha256=flow.scope['epoch_sha256'])
++    if flow.step is not None:
++        write_new(flow.step / 'result.json', result)
++    print(json.dumps(result, ensure_ascii=False))
++    if not result['ok']:
++        return 2
++    return 0
++
+ def execute(expected):
+  verify_source(expected)
+  fixed_plan()
+@@ -579,7 +627,7 @@
+      result['owned_scope']=scope_pin
+      require(activation is not None and epoch is not None,'CLEANUP_MAIN_BINDING_REQUIRED')
+      result['cleanup_requested']=True
+-     cleanup=ref.run_cli('04-cleanup',['/usr/bin/python3','-I','-B',str(prior.RECORDER_ROOT/'recorder.py'),'cleanup','--adapter-manifest-sha256',R6_MANIFEST,'--flow-dir',str(FLOW),'--step','cleanup-01'],100,evidence,lambda:ref.main_guard(activation,epoch))
++     cleanup=ref.run_cli('04-cleanup',['/usr/bin/python3','-I','-B',str(HERE/'owned_navigation.py'),'--cleanup-once','--source-manifest-sha256',expected],100,evidence,lambda:ref.main_guard(activation,epoch))
+      path=FLOW/'steps/cleanup-01/result.json'
+      raw=read(path)
+      durable=json.loads(raw)
+@@ -627,13 +675,15 @@
+  modes=parser.add_mutually_exclusive_group()
+  modes.add_argument('--execute-once',action='store_true')
+  modes.add_argument('--worker-once',choices=('launch','navigate'))
++ modes.add_argument('--cleanup-once',action='store_true')
+  parser.add_argument('--source-manifest-sha256')
+  args=parser.parse_args()
+  fixed_plan()
+- if not args.execute_once and args.worker_once is None:
++ if not args.execute_once and args.worker_once is None and not args.cleanup_once:
+   print(json.dumps({'state':'PLAN_ONLY','root':str(ROOT),'flow':str(FLOW),'helper_uid':UID,'operation':'original launch/query/course open + one R10 reveal + two button label transitions + exact-task cleanup','plan':PLAN,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'result_observation_plans':RESULT_OBSERVATION_PLANS,'click_limit':5,'text_action_limit':1,'reveal_input_limit':1,'audio_actions':0,'old_v2_helper_called':False,'private_raw_tree_not_for_Git':True,'remote_actions':0}))
+   return 0
+  os.umask(63)
++ if args.cleanup_once:return cleanup_worker(args.source_manifest_sha256)
+  return worker(args.source_manifest_sha256,args.worker_once)if args.worker_once else execute(args.source_manifest_sha256)
+ if __name__=='__main__':
+  raise SystemExit(main())
+--- previous/stage_execute.py
++++ owner02/stage_execute.py
+@@ -15,7 +15,7 @@
+ def sha(raw):
+  return hashlib.sha256(raw).hexdigest()
+ def checked_packet(raw):
+- require(isinstance(raw,bytes)and 0<len(raw)<=131072,'EXACT_BOUNDED_PACKET_REQUIRED')
++ require(isinstance(raw,bytes)and 0<len(raw)<=196608,'EXACT_BOUNDED_PACKET_REQUIRED')
+  packet=json.loads(raw)
+  require(set(packet)=={'schema','source_manifest_sha256','nonce','files'}and packet['schema']==1 and(packet['nonce']==NONCE),'FIXED_PACKET_REQUIRED')
+  require(isinstance(packet['files'],dict)and set(packet['files'])==FILES|{'SOURCE_PINS.json'},'EXACT_SOURCE_SET_REQUIRED')
+@@ -34,7 +34,7 @@
+  return(packet,encoded)
+ def main(raw=None):
+  if raw is None:
+-  raw=sys.stdin.buffer.read(131073)
++  raw=sys.stdin.buffer.read(196609)
+  packet,files=checked_packet(raw)
+  require(os.getuid()==os.geteuid()==0,'ROOT_STAGE_REQUIRED')
+  require(ROOT.parent.resolve()==ROOT.parent and(not os.path.lexists(ROOT)),'FRESH_CANONICAL_ROOT_REQUIRED')

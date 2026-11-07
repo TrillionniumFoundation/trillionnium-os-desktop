@@ -1,0 +1,11 @@
+# Bili R10 install and state on current cell baseline02
+
+This create-only request binds the complete actual R6 host source-stage receipt, exact new signed R10 helper build and two actual fresh installation nonces. It copies the fourteen source-bound R6 host leaves unchanged into this request's private recorder directory and retains the dedicated Bili Flow's current-generation source/scope/Main gates. The previous R9 installed UID is excluded along with the prior denylist; no old helper, cell, task or nonce gains new authority.
+
+19 exact source, current-stage and UID controls precede staging/Android. The nine original install/state commands retain the single -R/-t package install, all-user absence checks, exact installed APK/UID identity, one no-UiAutomation state, exact guest staging cleanup, Main guards, held target and global action lock. There is no App launch, UI inspection, input, permission grant, settings write, package replacement or automatic replay. The new UID is unknown until the actual package receipt. Prior partial/failed/unknown results are historical and unchanged.
+
+The source-stage and APK build are prerequisites, not UI qualification. Direct owned-child joined results are recorded under the original contract; whole-process-tree cleanup remains unqualified. Framework exit attribution and whole-App business readiness remain unresolved.
+
+## Current owner discovery correction 02
+
+The original android-app owner argv constant rejected the qualified baseline02 intermediary before any installation or state command. This successor uses its own pinned current_discovery module; the old reference remains unchanged. Status, the unique InputBridge, namespace, environment and paired-classpath checks remain. The complete actual launcher/intermediary/init/daemon identities and original full Main guard on both sides are required. No old task or failed input is replayed. The shared R6 source, helper APK, QA adapter/contract and target transport remain exact original bytes. Fifteen targeted discovery controls reproduce the old production failure and exercise the new complete identity gates, plus three controls exercise the actual source loader and own Context/bind route. All prior installation controls remain. New controls have not been executed locally.

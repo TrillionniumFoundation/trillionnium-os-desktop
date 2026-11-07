@@ -1,0 +1,38 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-c",
+      "import sys,hashlib;raw=sys.stdin.buffer.read(32769);assert len(raw)==19209 and hashlib.sha256(raw).hexdigest()=='e6413134cb585885c45ad36a644f04170193bb948216612d2c8559c6c0233aa9';scope={'__name__':'fixed_retained_structure_reader','__file__':'<verified-retained-structure-reader>'};exec(compile(raw,'read_roles.py','exec'),scope);raise SystemExit(scope['main'](['--collect-once']))"
+    ],
+    "created_unix_ms": 1793921153876,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1ae087b54-fc05-5cca",
+    "idempotency_key": "pocket4-ihg-launch01-public-hotel-roles-readonly-01-20261105",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1ae087b54-fc05-5cca",
+    "request_digest": "28e4201781f2dfccbf928d1bcca3f234a974f44b8e506ec8de0856d1723f1a2e",
+    "request_fingerprint": 2946515341543661516,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1ae087b54-fc05-5cca"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1ae087b54-fc05-5cca"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

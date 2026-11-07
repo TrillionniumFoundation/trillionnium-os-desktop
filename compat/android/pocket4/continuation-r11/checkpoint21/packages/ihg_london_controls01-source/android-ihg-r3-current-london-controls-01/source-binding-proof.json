@@ -1,0 +1,319 @@
+{
+  "source_pins": {
+    "coordinator": {
+      "bytes": 45725,
+      "sha256": "eb78713ce3acb768cf4fd7ca4059cb2fbfe3d81c3c67670c496e394785dc327e"
+    },
+    "context": {
+      "bytes": 19401,
+      "sha256": "93fbda4e30044bd2b3ff9e5d836ccdfd2147a89c97436a66c5606387c7e99248"
+    },
+    "public_destination": {
+      "bytes": 42662,
+      "sha256": "30738abe4b4ba740fd3e0c47de8437792f8d52a539e74afd5e140878e29a4076"
+    },
+    "stage": {
+      "bytes": 5193,
+      "sha256": "98fb728648e1e97dee1adf64f8712c03a6fea681b13b7c0fc159b7ca7bfac2c4"
+    },
+    "contract": {
+      "bytes": 28750,
+      "sha256": "bec85084822d68090f39215807c60d6ea583526f17d5e2028c3a8fcacbc27c43"
+    },
+    "adapter": {
+      "bytes": 21670,
+      "sha256": "0b192041fde9f238188051854410c372c5d73eb4f1b24ab6e122c34a15ba082c"
+    },
+    "transport": {
+      "bytes": 15606,
+      "sha256": "27e07fbaaccca4e5113e1750a3b7baa9d05048a1e8588f09cdc8f9ed5cf44089"
+    }
+  },
+  "edits": [
+    {
+      "file": "coordinator",
+      "from": "HELPER_UID=None  # Actual R3 install receipt required.",
+      "to": "HELPER_UID=10156",
+      "why": "actual-helper-uid"
+    },
+    {
+      "file": "context",
+      "from": "HELPER_UID=None  # Await actual R3 installation receipt.",
+      "to": "HELPER_UID=10156",
+      "why": "actual-helper-uid"
+    },
+    {
+      "file": "coordinator",
+      "from": "STATE_WIRE=None  # Actual R3 installation original required.",
+      "to": "STATE_WIRE=\"135985d2abcf6ade7f343a658b975c657dd97ed144889397543eb4a6cf5d4164\"",
+      "why": "actual-state-wire"
+    },
+    {
+      "file": "coordinator",
+      "from": "INSTALLED=None  # Actual R3 installation original required.",
+      "to": "INSTALLED={\"apk_sha256\":\"58a24079a59c998d35a7233ccadd2a1d3b90480aa9a66d2c4fc7905ca1d51342\",\"base_apk\":\"/data/app/~~Y8Qt47OKgz2fFAZz3Im2PA==/org.droidloom.qa.ihg.r3-TYuGv20iRp2NVMzxN8Ld-Q==/base.apk\",\"bytes\":24720,\"held_file\":{\"bytes\":24720,\"device\":1811,\"gid\":1000,\"inode\":786521,\"mode\":33188,\"mtime_ns\":1793963793187449749,\"nlink\":1,\"uid\":1000},\"package\":\"org.droidloom.qa.ihg.r3\",\"signer_bound_by_exact_signed_apk_bytes\":\"df8c2febe4feff3e65d7dc096cad9753bfb2e97b57a65044b314c2a51c7c3f01\",\"uid\":10156}",
+      "why": "lossless-current-installed-tuple"
+    },
+    {
+      "file": "coordinator",
+      "from": "PRIOR=None  # Actual R3 installation original required.",
+      "to": "PRIOR={\"coordinator\":(\"result.json\",3961,\"6b5e539c535f2cb39e04dcdaebbdfa02545db33e11c640022d4af6196ca804d3\"),\"stage\":(\"stage-result.json\",7082,\"771d062222c3a9af23ddcfa095fdcf755036d557438f36e05c8d42fb6dc9a132\"),\"worker\":(\"worker/result.json\",12552,\"ee3f30004e68748fc0ad9af8258866bf272b4642f5868fb28a3dc5a03af3ebcc\")}",
+      "why": "exact-python-tuple-prior-pins"
+    },
+    {
+      "file": "coordinator",
+      "from": "'new_helper_operations':['state','inspect','click','state','state','inspect','click','state','state','inspect','state']",
+      "to": "'new_helper_operations':['bounded restored Search readiness','fresh Search click','fresh Destination click','fresh current-editor London set_text','independent post inspect']",
+      "why": "accurate-plan-only-operation-summary"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_FLOW__",
+      "to": "af8bcdbe1fdb1fa9d8af91a7ca26b53f",
+      "why": "fresh-actual-nonce-flow"
+    },
+    {
+      "file": "stage",
+      "from": "__FRESH_FLOW__",
+      "to": "af8bcdbe1fdb1fa9d8af91a7ca26b53f",
+      "why": "fresh-actual-nonce-flow"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_SEARCH_BEFORE__",
+      "to": "6b30a833bb64e8865302d0b02e7779c2",
+      "why": "fresh-actual-nonce-search.before"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_SEARCH_INSPECT__",
+      "to": "671f295fef659b20985569444175032d",
+      "why": "fresh-actual-nonce-search.inspect"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_SEARCH_ACTION__",
+      "to": "b53d1e9582d0e5e445b2ed5c4253968f",
+      "why": "fresh-actual-nonce-search.action"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_SEARCH_AFTER__",
+      "to": "a1013460dc47bbda0d80ccf6d0e95845",
+      "why": "fresh-actual-nonce-search.after"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_DESTINATION_BEFORE__",
+      "to": "a4493c3b20c5bfecdb4f139bb18d13f5",
+      "why": "fresh-actual-nonce-destination.before"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_DESTINATION_INSPECT__",
+      "to": "fbb50c3489b91291d5f19af3b759cfc0",
+      "why": "fresh-actual-nonce-destination.inspect"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_DESTINATION_ACTION__",
+      "to": "03957013c5dbf044fade6c4be5067d17",
+      "why": "fresh-actual-nonce-destination.action"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_DESTINATION_AFTER__",
+      "to": "fcaea51fdfed2422947b5cb0b36f5b50",
+      "why": "fresh-actual-nonce-destination.after"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_INPUT_BEFORE__",
+      "to": "a98b8fda9a1d906ce589157ef0db04fb",
+      "why": "fresh-actual-nonce-input.before"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_INPUT_INSPECT__",
+      "to": "6118925cb2c6ed87d24fec5efe9b6168",
+      "why": "fresh-actual-nonce-input.inspect"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_INPUT_ACTION__",
+      "to": "85a1e25daba20e3a7fb8ace5596359c5",
+      "why": "fresh-actual-nonce-input.action"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_INPUT_AFTER__",
+      "to": "75bd19353a7921d6a6b65de4cc55d9bd",
+      "why": "fresh-actual-nonce-input.after"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_POST_BEFORE__",
+      "to": "81c932f6f1ad24002778089211970c8c",
+      "why": "fresh-actual-nonce-post.before"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_POST_INSPECT__",
+      "to": "a1d8163ab54df641cf7c39a5bf22e76c",
+      "why": "fresh-actual-nonce-post.inspect"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_POST_AFTER__",
+      "to": "19700a8741707301195befc89b333aad",
+      "why": "fresh-actual-nonce-post.after"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_1_BEFORE__",
+      "to": "5b90402b4f7c23ce33778272bce48b1e",
+      "why": "fresh-actual-nonce-readiness.1.before"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_1_INSPECT__",
+      "to": "2677b6c1d847232431dbab9b34e72fde",
+      "why": "fresh-actual-nonce-readiness.1.inspect"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_1_AFTER__",
+      "to": "7644d507d277d48c1993abd9602e7d1c",
+      "why": "fresh-actual-nonce-readiness.1.after"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_2_BEFORE__",
+      "to": "e01d6a2d647bbed23948d39c2784ff88",
+      "why": "fresh-actual-nonce-readiness.2.before"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_2_INSPECT__",
+      "to": "e29e57c2a3bc0a46cc6a950c8035ee8f",
+      "why": "fresh-actual-nonce-readiness.2.inspect"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_2_AFTER__",
+      "to": "708a62b0235fe3875febbe13e8fe478d",
+      "why": "fresh-actual-nonce-readiness.2.after"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_3_BEFORE__",
+      "to": "ecb4ae6ce9df58aa2c52f746d545a7bb",
+      "why": "fresh-actual-nonce-readiness.3.before"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_3_INSPECT__",
+      "to": "dcc941cba0ec9efa13bd0e2612afe96d",
+      "why": "fresh-actual-nonce-readiness.3.inspect"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_3_AFTER__",
+      "to": "e6a45ad266f72718741ad3a8b0543d12",
+      "why": "fresh-actual-nonce-readiness.3.after"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_4_BEFORE__",
+      "to": "401177735e1e961afb92ec7e58de9cbf",
+      "why": "fresh-actual-nonce-readiness.4.before"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_4_INSPECT__",
+      "to": "5e617e15de874ee0338604b67d4c4458",
+      "why": "fresh-actual-nonce-readiness.4.inspect"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_4_AFTER__",
+      "to": "792ffe31d8b73e1ef870a0a2e6562a7e",
+      "why": "fresh-actual-nonce-readiness.4.after"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_5_BEFORE__",
+      "to": "023ae8ad6451af6ba359004cf0ff28f6",
+      "why": "fresh-actual-nonce-readiness.5.before"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_5_INSPECT__",
+      "to": "1cd4f5fec8b9e9afbd3bedd9411b12fe",
+      "why": "fresh-actual-nonce-readiness.5.inspect"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_5_AFTER__",
+      "to": "f96725199592694b505b35a9b7a19491",
+      "why": "fresh-actual-nonce-readiness.5.after"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_6_BEFORE__",
+      "to": "875282c61fa93ced8c0e9efe0aaa152b",
+      "why": "fresh-actual-nonce-readiness.6.before"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_6_INSPECT__",
+      "to": "a4895e09d9639bf85c6cbe541aceadfc",
+      "why": "fresh-actual-nonce-readiness.6.inspect"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_6_AFTER__",
+      "to": "bfd6a9ee5173d5b167ebc33585a1eefd",
+      "why": "fresh-actual-nonce-readiness.6.after"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_7_BEFORE__",
+      "to": "b3c9405c0d9a50598fa63df7c54b134c",
+      "why": "fresh-actual-nonce-readiness.7.before"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_7_INSPECT__",
+      "to": "b03784c97ab271e2e9b48d266d94484f",
+      "why": "fresh-actual-nonce-readiness.7.inspect"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_7_AFTER__",
+      "to": "600608c01bf4e0d34333547fa0167183",
+      "why": "fresh-actual-nonce-readiness.7.after"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_8_BEFORE__",
+      "to": "aa911ba1f1d79bdb9ea8ecdd95b4317b",
+      "why": "fresh-actual-nonce-readiness.8.before"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_8_INSPECT__",
+      "to": "4ecb2e675c4e330dc02ff6500c461cd8",
+      "why": "fresh-actual-nonce-readiness.8.inspect"
+    },
+    {
+      "file": "coordinator",
+      "from": "__FRESH_READINESS_8_AFTER__",
+      "to": "f759f00b7ae8885f2031fd2763cb0b26",
+      "why": "fresh-actual-nonce-readiness.8.after"
+    }
+  ],
+  "actual_qualification": true,
+  "nonce_committed": true,
+  "Python_controls_performed": false
+}

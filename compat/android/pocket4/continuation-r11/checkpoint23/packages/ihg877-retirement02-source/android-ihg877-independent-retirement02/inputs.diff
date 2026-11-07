@@ -1,0 +1,176 @@
+--- retirement01/inputs.json
++++ retirement02/inputs.json
+@@ -260,5 +260,173 @@
+       "bytes": 4293,
+       "sha256": "e7d04dfd8746d1a847e1e0420b5985f36aafc04b3223747558ca949e3702f062"
+     }
++  },
++  "current_retirement02_baseline": {
++    "schema": "pocket4-independent-current-IHG877-retirement02-baseline-v1",
++    "actual_failed_retirement": {
++      "tree": "9398613a97fc015d4d202c50f1ffffcfa4213de6",
++      "blob": "eef5723a89f6e55c3cb6dec46d593e4b18d38178",
++      "bytes": 24051,
++      "sha256": "dd040d4a5ac8050a2fd3d854e0dec74be386c048f33b68d0e4b200aaa4a79e9a"
++    },
++    "actual_saved_projection": {
++      "tree": "7e292c099ab91f6ee0baf677edaeeedae20f761f",
++      "blob": "690f9bf079567e23b9ac44194d5918fc92a5844c",
++      "bytes": 6956,
++      "sha256": "c0a2ba798ead0f887b44f86a0e124e38762039d4b2bd9d309ad0ec648056ff70"
++    },
++    "prior_failed_run": {
++      "source_sha256": "c2f3d2e849d3d2dbabd58d5c6ebf35ad7cb6c729a153a94bf415f780fb94fbfc",
++      "step_name": "current-ihg877-independent-retirement-01",
++      "first_error": {
++        "exception_type": "RuntimeError",
++        "fixed_code": "OTHER_TASK_SET_CHANGED",
++        "message_sha256": "822aca1d3693d9ce997c9600640cb0abbb958113cf18c14feb0c2bd957073bc3",
++        "phase": "current_complete_table_1",
++        "raw_message_exported": false
++      },
++      "ok": false,
++      "remove_requested": false,
++      "remove_acknowledged": false,
++      "removal_action_attempted": false,
++      "retirement_outcome_unknown": false,
++      "actual_command_count": 9,
++      "controls_passed": 38,
++      "helper_UiAutomation_calls": 0,
++      "native_launches": 0,
++      "historical_launch_outcome": "unknown_retained",
++      "current_Main_window_complete": true,
++      "Main_before_lock": {
++        "Main_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
++        "authenticated_owner_chain_matches": true,
++        "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
++        "current_baseline_qualification_sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e",
++        "current_baseline_sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364",
++        "current_executable_and_root_backing_match": true,
++        "current_user_namespaces_match": true,
++        "framework_exit_cause_resolved": false,
++        "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
++        "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
++        "old_helpers_and_tasks_reauthorized": false,
++        "previous_current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
++        "production_ready": false,
++        "resource_limits_match": true,
++        "schema": "pocket4-current-main-guard-v2",
++        "seven_processes_match": true,
++        "three_host_processes_match": true
++      },
++      "Main_after_locks": {
++        "Main_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
++        "authenticated_owner_chain_matches": true,
++        "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
++        "current_baseline_qualification_sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e",
++        "current_baseline_sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364",
++        "current_executable_and_root_backing_match": true,
++        "current_user_namespaces_match": true,
++        "framework_exit_cause_resolved": false,
++        "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
++        "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
++        "old_helpers_and_tasks_reauthorized": false,
++        "previous_current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
++        "production_ready": false,
++        "resource_limits_match": true,
++        "schema": "pocket4-current-main-guard-v2",
++        "seven_processes_match": true,
++        "three_host_processes_match": true
++      },
++      "Main_after": {
++        "Main_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
++        "authenticated_owner_chain_matches": true,
++        "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
++        "current_baseline_qualification_sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e",
++        "current_baseline_sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364",
++        "current_executable_and_root_backing_match": true,
++        "current_user_namespaces_match": true,
++        "framework_exit_cause_resolved": false,
++        "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
++        "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
++        "old_helpers_and_tasks_reauthorized": false,
++        "previous_current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
++        "production_ready": false,
++        "resource_limits_match": true,
++        "schema": "pocket4-current-main-guard-v2",
++        "seven_processes_match": true,
++        "three_host_processes_match": true
++      },
++      "target_helper_before_after_unchanged": true,
++      "target_FD_closed": 1,
++      "held_binding_released": true,
++      "flow_lock_released": true,
++      "global_action_lock_released": true
++    },
++    "command005": {
++      "bytes": 443,
++      "path": "/home/alex/work/pocket4-ihg-owned-qa-r4-flow-ec4f2977574102b1e5869d2494e8416b/steps/current-ihg877-independent-retirement-01/command-005.result.json",
++      "record": {
++        "action_attempted": false,
++        "automatic_retry": false,
++        "ended_utc": "2026-11-06T19:49:06.853589+00:00",
++        "error": null,
++        "errors": [],
++        "owned_command_joined": true,
++        "returncode": 0,
++        "seconds": 0.0328486351063475,
++        "spawned": true,
++        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
++        "stdout_sha256": "bf84e8d77523a712a7b4dc5712dea5ab7e65d7c0a6c3b285eed2b30baec18b8b",
++        "timed_out": false
++      },
++      "sha256": "f887e2f9da435418a3c6da526efb258015a734c8b901ed29b62f0a7652c40879"
++    },
++    "saved_files": [
++      {
++        "path": "/home/alex/work/pocket4-ihg-owned-qa-r4-flow-ec4f2977574102b1e5869d2494e8416b/steps/current-ihg877-independent-retirement-01/command-005.stdout",
++        "bytes": 1963,
++        "sha256": "bf84e8d77523a712a7b4dc5712dea5ab7e65d7c0a6c3b285eed2b30baec18b8b"
++      },
++      {
++        "path": "/home/alex/work/pocket4-ihg-owned-qa-r4-flow-ec4f2977574102b1e5869d2494e8416b/steps/current-ihg877-independent-retirement-01/before-stacks-01.txt",
++        "bytes": 1963,
++        "sha256": "bf84e8d77523a712a7b4dc5712dea5ab7e65d7c0a6c3b285eed2b30baec18b8b"
++      }
++    ],
++    "complete_parsed_roots_sha256": "0924224e93023e950dfc6385785df1d6ceebd66ce22a1ba6dba6ed73b6952bee",
++    "current_tasks": [
++      875,
++      877,
++      878
++    ],
++    "current_root_ids": [
++      1,
++      877,
++      878
++    ],
++    "preserved_current_tasks": [
++      875,
++      878
++    ],
++    "preserved_current_root_ids": [
++      1,
++      878
++    ],
++    "root_record_sha256": {
++      "1": "d7cf29998b32a57a3680dd9e3b5b1af813a2cde6216db4f376403e633cc3618a",
++      "877": "8539928b108b7b26fec241c4d3cb1ff010aa600269f78bf6c0c0e16f11f7f588",
++      "878": "d5e4b2babee582003fed221edb695fd88520f6f02f3f056f406732e9cf8efb82"
++    },
++    "target_component": "com.ihg.apps.android/com.ihg.apps.android.activity.MainActivity",
++    "foreign878_component": {
++      "bytes": 51,
++      "sha256": "c4af06acbbcc90d8d1c4d7e5e07fc9d09c20998956e86760c1b1b9231f6bb28a",
++      "package_is_IHG": false
++    },
++    "saved_file_count": 2,
++    "independent_prior_Android_samples": 1,
++    "foreign878_source_attributed": false,
++    "original_launch_outcome_unknown_retained": true,
++    "previous_retirement01_failure_retained": true,
++    "previous_retirement01_replayed": false,
++    "current_Main_requalified_by_saved_reader": false,
++    "cleanup_authority_created_by_saved_reader": false
+   }
+ }

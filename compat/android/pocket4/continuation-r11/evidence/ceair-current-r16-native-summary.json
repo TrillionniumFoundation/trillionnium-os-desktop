@@ -1,0 +1,60 @@
+{
+  "schema": "pocket4-ceair-current-r16-native-summary-v1",
+  "application": {
+    "package": "com.rytong.ceair",
+    "version_code": 238
+  },
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+  "engine_build_id": "eae778923ec4e6be224913a9f71b5681",
+  "single_launch_attempt": true,
+  "automatic_retry": false,
+  "launch_result_unknown_retained": true,
+  "readonly_reconciliation": {
+    "fresh_exact_uid_native_crash": true,
+    "exit_timestamp_utc": "2026-11-04T12:06:33.021Z",
+    "exit_reason": 5,
+    "status": 4,
+    "signal": "SIGILL",
+    "si_code": "ILL_ILLOPC"
+  },
+  "private_tombstone": {
+    "sha256": "207577181ed001027aab558e9979094f81df4fbf2fb059985c5f038cd705c2ea",
+    "bytes": 840434,
+    "raw_published": false
+  },
+  "faulting_guest_pc": "0x7e8342b455c4",
+  "faulting_guest_tid": 81847,
+  "host_backtrace": [
+    "berberis_QueueUndefinedSignal+15",
+    "berberis::UndefinedInsnWithContext+508",
+    "berberis::InterpretBatch+148",
+    "berberis_entry_Interpret+21"
+  ],
+  "instruction_evidence": {
+    "jit_break_log_word": "0xd4000003",
+    "jit_log_lines": [
+      9613,
+      9614
+    ],
+    "undefined_helper_log_word": "0xd4000003",
+    "helper_log_line": 9615,
+    "helper_exact_binary_disassembly_load": "0x21b647: movl (%rdi), %r15d",
+    "helper_exact_binary_disassembly_log_call": "0x21b690: call __android_log_print",
+    "helper_code_word_later_overwritten": true,
+    "nearby_stack_word_alone_not_used_as_proof": true,
+    "stock_libc_sha256": "79fe67929fa14e3bb7dd31864e0df774d6fca42952f0d3a3844b268b5eccc5bb",
+    "stock_file_offset": "0xba5c4",
+    "stock_word": "0xd4000001",
+    "elf_pt_load_file_offset": "0x58000",
+    "elf_pt_load_vaddr": "0x58000",
+    "elf_pt_load_filesz": "0x897f0",
+    "observed_runtime_word_differs_from_mapped_file_word": true,
+    "writer_and_time_of_code_change_unproven": true,
+    "decoder_time_and_helper_read_time_are_distinct": true
+  },
+  "interpretation": "The actual retained JIT and undefined-helper logs report the SMC encoding at the fault PC. SMC at EL0 is undefined; treating it as an SVC is not a valid compatibility repair. The installed file contains SVC at the verified corresponding ELF file offset. Instruction origin, code-cache behavior and guest signal recovery require separate owned tests.",
+  "commercial_apk_changed": false,
+  "debugger_or_ptrace_attached": false,
+  "production_ready": false
+}

@@ -1,0 +1,87 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/gcc",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fsyntax-only",
+        "/workspace/scratch/94990735b266/android-owner16-init-log-work01/candidate/android/init_relay_barrier.c"
+      ],
+      "elapsed_seconds": 0.03916730498895049,
+      "joined": true,
+      "label": "syntax",
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "/usr/bin/gcc",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "/workspace/scratch/94990735b266/android-owner16-init-log-work01/controls/init_log_controls.c",
+        "-ldl",
+        "-o",
+        "/workspace/scratch/94990735b266/android-owner16-init-log-work01/local-control02/init-log-controls"
+      ],
+      "elapsed_seconds": 0.31884544000786263,
+      "joined": true,
+      "label": "compile",
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "/workspace/scratch/94990735b266/android-owner16-init-log-work01/local-control02/init-log-controls"
+      ],
+      "elapsed_seconds": 0.010072429999127053,
+      "joined": true,
+      "label": "control",
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 199,
+        "sha256": "a73d2c4d878abd6519905172f102fcf198c7ffef37f6b22163f16781aea780c5"
+      }
+    }
+  ],
+  "scope": "real owned local memfd/exec; explicit KernelLogger seam; no Android or namespaces",
+  "source_pins": {
+    "candidate/android/init_relay_barrier.c": {
+      "bytes": 29895,
+      "sha256": "307b7471857377c64efa662b89643f4238c5f65271cb28dcbb22268308b2608a"
+    },
+    "candidate/android/init_relay_protocol.h": {
+      "bytes": 1713,
+      "sha256": "02083140d88fb5f662ab3e1c8e27b313cd922425553474f560ce621826dd1af0"
+    },
+    "controls/init_log_controls.c": {
+      "bytes": 6739,
+      "sha256": "2a4556c6dd43691b4c2a1aac707491d51b984b9eb85f8e99653ed88015dc4e83"
+    }
+  },
+  "success": true
+}

@@ -1,0 +1,76 @@
+{
+  "scope": "actual Python source-copy functions only; no Go compilation or remote operation",
+  "controls": [
+    {
+      "name": "original_rejects_actual_fixture_shape",
+      "pass": true,
+      "rejected": true,
+      "error": "source directory symlink rejected"
+    },
+    {
+      "name": "all_ten_known_links_preserved",
+      "pass": true,
+      "copied_links": 10,
+      "regular_files": 3,
+      "followed_link_contents": false
+    },
+    {
+      "name": "known_target_changed_external",
+      "pass": true,
+      "rejected": true,
+      "error": "test fixture link target changed: /workspace/scratch/94990735b266/native-recovery-20261105-02/blueprint-streaming-r3/controls/fixture-links-7keunxzv/known_target_changed_external/aosp/build/blueprint/pathtools/testdata/symlinks/b"
+    },
+    {
+      "name": "unknown_directory_symlink",
+      "pass": true,
+      "rejected": true,
+      "error": "unlisted source symlink rejected: /workspace/scratch/94990735b266/native-recovery-20261105-02/blueprint-streaming-r3/controls/fixture-links-7keunxzv/unknown_directory_symlink/aosp/build/blueprint/unknown-dir"
+    },
+    {
+      "name": "unknown_go_file_symlink",
+      "pass": true,
+      "rejected": true,
+      "error": "unlisted source symlink rejected: /workspace/scratch/94990735b266/native-recovery-20261105-02/blueprint-streaming-r3/controls/fixture-links-7keunxzv/unknown_go_file_symlink/aosp/build/blueprint/unknown.go"
+    },
+    {
+      "name": "unknown_dangling_symlink",
+      "pass": true,
+      "rejected": true,
+      "error": "unlisted source symlink rejected: /workspace/scratch/94990735b266/native-recovery-20261105-02/blueprint-streaming-r3/controls/fixture-links-7keunxzv/unknown_dangling_symlink/aosp/build/blueprint/unknown"
+    },
+    {
+      "name": "known_link_missing",
+      "pass": true,
+      "rejected": true,
+      "error": "source test fixture link set differs: /workspace/scratch/94990735b266/native-recovery-20261105-02/blueprint-streaming-r3/controls/fixture-links-7keunxzv/known_link_missing/aosp/build/blueprint"
+    },
+    {
+      "name": "known_link_became_regular",
+      "pass": true,
+      "rejected": true,
+      "error": "expected test fixture link became regular: /workspace/scratch/94990735b266/native-recovery-20261105-02/blueprint-streaming-r3/controls/fixture-links-7keunxzv/known_link_became_regular/aosp/build/blueprint/pathtools/testdata/symlinks/b"
+    },
+    {
+      "name": "link_after_copy_mutation_rejected",
+      "pass": true,
+      "error": "test fixture link target changed: /workspace/scratch/94990735b266/native-recovery-20261105-02/blueprint-streaming-r3/controls/fixture-links-7keunxzv/pin-link"
+    },
+    {
+      "name": "external_subtree_not_followed",
+      "pass": true,
+      "error": "unlisted source symlink rejected: /workspace/scratch/94990735b266/native-recovery-20261105-02/blueprint-streaming-r3/controls/fixture-links-7keunxzv/outside-target/aosp/build/blueprint/escape"
+    }
+  ],
+  "passed": 10,
+  "failed": 0,
+  "unchanged_actual_function_AST": [
+    "resource_text",
+    "resource_snapshot",
+    "begin_resources",
+    "finish_resources",
+    "command",
+    "dependency_files",
+    "cleanup_children"
+  ],
+  "Go_test_and_production_patch_exactly_unchanged": true
+}

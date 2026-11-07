@@ -1,0 +1,85 @@
+{
+  "schema": "pocket4-daemon-direct-children-diagnostic-review-v1",
+  "status": "SOURCE_ONLY_NOT_EXECUTED",
+  "source": {
+    "bytes": 22982,
+    "sha256": "246e3c07125ce8227ec482310ab4fae3fcba68c390a210640bcd75ac15a61cbd",
+    "git_blob_sha": "bfad8422b864e8d8bb2ccb23ca506a7463ee23de"
+  },
+  "request": {
+    "bytes": 24766,
+    "sha256": "1c4cf4bc316687a4399b67310cc70efba62621582c48b1d90577283607cf4a59",
+    "git_blob_sha": "6b538e4bf517bbaa31912624b521a611ae2ae6aa"
+  },
+  "actual_basis": {
+    "job_id": "1a1b0e8db48-fc05-73e5",
+    "git_tree": "3974b974a363d65cd7d22964d107b2d38ae669a2",
+    "stdout": {
+      "bytes": 6330,
+      "sha256": "3ef47314dee82877b8be995dede8a4082ea8af1e17160bb5a3a92d4040a7ccaa",
+      "git_blob_sha": "2bc9ec6ce7b9484e0f9796cdac1a1dbc72c2a57f"
+    },
+    "old_four_role_errno": 2,
+    "capture_android_called": false
+  },
+  "read_scope": {
+    "fixed_private_baseline_and_epoch_source_full_pins": true,
+    "old_host_roles": [
+      "daemon",
+      "launcher",
+      "presenter"
+    ],
+    "kernel_boot_id": true,
+    "child_enumeration_gate": "Complete historical daemon process_identity equality AND original baseline boot equality",
+    "kernel_paths": "Only /proc/3588022/task/<observed-tid>/children, with nofollow held daemon/task/thread directories",
+    "max_daemon_threads": 64,
+    "max_direct_children": 32,
+    "each_child_list_max_bytes": 16384,
+    "kernel_table_samples": 2,
+    "child_full_identity_samples": 2,
+    "daemon_full_identity_before_after": true,
+    "daemon_pidfd": true,
+    "unknown_child_executable_cmdline_cgroup_hash_only": true
+  },
+  "limits": {
+    "read_budget_seconds": 8,
+    "self_watchdog_seconds": 8,
+    "request_timeout_seconds": 30,
+    "memory_max_bytes": 134217728,
+    "cpu_quota_percent": 100,
+    "nice": 10,
+    "stdout_bound_bytes": 65536,
+    "python_flags": [
+      "-I",
+      "-B"
+    ]
+  },
+  "qualifications": {
+    "diagnostic_protocol_only": true,
+    "original_ten_privacy_controls_preserved": true,
+    "new_controls": 10,
+    "total_controls": 20,
+    "Python_controls_executed": false,
+    "kernel_children_observation_is_not_daemon_state_RPC": true,
+    "matching_launcher_program_shape_is_not_owner_authority": true,
+    "changed_or_incomplete_tables_fail_closed": true,
+    "root_input_FDs_and_owned_proc_FDs_counted": true,
+    "original_process_identity_internal_FDs_independently_counted": false
+  },
+  "forbidden_actions": {
+    "child_process_spawn": 0,
+    "Android_commands": 0,
+    "UI_actions": 0,
+    "files_written": 0,
+    "other_process_signals": 0,
+    "global_proc_scan": false,
+    "descendant_recursion": false,
+    "status_RPC": false,
+    "cell_adoption": false,
+    "new_init_discovery": false,
+    "new_baseline_or_rebind": false,
+    "old_unknown_replay": false,
+    "cleanup_authority": false,
+    "production_qualification": false
+  }
+}

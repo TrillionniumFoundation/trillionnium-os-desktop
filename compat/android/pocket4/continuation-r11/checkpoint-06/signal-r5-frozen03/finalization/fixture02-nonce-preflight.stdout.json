@@ -1,0 +1,89 @@
+{
+  "Android_operations": 0,
+  "Main_actions": 0,
+  "actual_production_guard_sha256": "45661ea4b0c3d9de0708571cdab3521d6827bed1f2108abf6814493d812fdbd3",
+  "actual_systemd_fixture": "NOT_RUN",
+  "controls": [
+    {
+      "default_returncode": 0,
+      "expected_old_negative": true,
+      "name": "actual-old-default-plan-accepts-33hex-while-production-guard-rejects",
+      "nonce_length": 33,
+      "passed": true,
+      "production_rejection": {
+        "message": "private unit name or nonce is invalid",
+        "type": "CleanupError"
+      },
+      "unit_started": false
+    },
+    {
+      "name": "actual-new-default-plan-invokes-pinned-production-guard-before-output",
+      "passed": true,
+      "preflight": {
+        "Android_operations": 0,
+        "claim_created": false,
+        "cleanup_source": {
+          "bytes": 23861,
+          "sha256": "45661ea4b0c3d9de0708571cdab3521d6827bed1f2108abf6814493d812fdbd3"
+        },
+        "group": "/system.slice/p4-signal-r5-unit-control-20261104-02-bus.service",
+        "nonce_hex_length": 32,
+        "services_started": 0,
+        "state": "ACTUAL_PRODUCTION_PLANNED_PREFLIGHT_PASS",
+        "unit": "p4-signal-r5-unit-control-20261104-02-bus.service",
+        "worker_identity_constants_match": true
+      }
+    },
+    {
+      "actual_entry": "default",
+      "claim_created": false,
+      "directory_created": false,
+      "forbidden_follow_on_calls": 0,
+      "name": "old-33hex-rejected-before-default-claim-directory-source-contract-or-command",
+      "passed": true,
+      "rejection": {
+        "message": "private unit name or nonce is invalid",
+        "type": "CleanupError"
+      },
+      "systemd_commands": 0
+    },
+    {
+      "actual_entry": "execute",
+      "claim_created": false,
+      "directory_created": false,
+      "forbidden_follow_on_calls": 0,
+      "name": "old-33hex-rejected-before-execute-claim-directory-source-contract-or-command",
+      "passed": true,
+      "rejection": {
+        "message": "private unit name or nonce is invalid",
+        "type": "CleanupError"
+      },
+      "systemd_commands": 0
+    }
+  ],
+  "effect_spies": "source_contract/write_new/raw/Path.mkdir are forbidden follow-on detectors only",
+  "only_subprocess": "actual frozen old default PLAN; never execute-once",
+  "passed": 4,
+  "production_ready": false,
+  "schema": 1,
+  "services_started": 0,
+  "source_pins": {
+    "cleanup_owned.py": {
+      "bytes": 23861,
+      "sha256": "45661ea4b0c3d9de0708571cdab3521d6827bed1f2108abf6814493d812fdbd3"
+    },
+    "owned_cleanup_fixture.py": {
+      "bytes": 19041,
+      "sha256": "f03655a8c00a0728fe6e8343d1844b1c87324698d67a4da37ab2f532c34ff634"
+    },
+    "owned_cleanup_fixture_child.py": {
+      "bytes": 3153,
+      "sha256": "f3f6e3d1058d552d0fd11056a8b572bd4f14c94df2a50528cd76155779f49609"
+    },
+    "verify_fixture02_preflight.py": {
+      "bytes": 5228,
+      "sha256": "aedd9275d1d0561507ca0164ff2b5f091ded32a8fa47c05753f4e71113e4363d"
+    }
+  },
+  "state": "FIXTURE02_ACTUAL_NONCE_PREFLIGHT_CONTROLS_PASS"
+}

@@ -1,0 +1,5 @@
+# amazon current-baseline first helper install and state
+
+The exact newly built signed helper is installed once with -R/-t after all-users absence checks. The target-specific Context preserves its 13-command plan, commercial APK streaming hashes, held namespace/classpath checks and cleanup. Its new scope comes only from the actual typed current baseline, with independent target UID and both user/user_de directory identities checked through the held root. The shared R5 source contract is a byte-verified source closure; no Bili Flow or Bili MainBinding is instantiated.
+
+33 pure source controls run before root staging or any Android command. The helper UID remains unknown until actual installation. State does not connect UiAutomation. No launch, inspect, click, text, permission or settings action is requested. Failure is not automatically retried or uninstalled. Historical failed and unknown outcomes remain unchanged. The unresolved framework exit cause and business acceptance remain production gates. Only direct owned process join is inherited; whole-process-tree cleanup qualification remains false.

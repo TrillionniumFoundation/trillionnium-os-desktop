@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "state": "FROZEN_BESTBUY_NO_INPUT_CONTENT_READINESS_UNRUN",
+  "source_manifest": {
+    "bytes": 592,
+    "sha256": "4d0febdcaf5756fda72dab652e901abeac4cbe43d61640e1494459572ab21618"
+  },
+  "runtime_source_files": 4,
+  "runtime_source_bytes": 78512,
+  "exact_request": {
+    "bytes": 90181,
+    "sha256": "8526a376466a4a825b915e76a72ef38ce715207a0d767f029b7b2d6bc072df6f"
+  },
+  "stdin": {
+    "bytes": 81071,
+    "sha256": "7d80c25d4b18b65c8ac7ed18006180d4110f1b2eceb04cb40e071ffffe845ede"
+  },
+  "stage": {
+    "bytes": 5217,
+    "sha256": "25a09544fd18c991d6fbb2efbe89f1d8e08a13965b2eca7ca513b8f7a19bd578"
+  },
+  "whole_wrapper_and_packet_exactly_bound": true,
+  "changed_original_top_level_function_or_class_ASTs": {
+    "owned_inspect.py": [
+      "assessment_summary",
+      "durable",
+      "execute",
+      "main",
+      "qualified",
+      "worker"
+    ],
+    "bestbuy_task_context.py": [
+      "Policy"
+    ],
+    "stage_execute.py": [
+      "main"
+    ],
+    "make_request.py": [
+      "main"
+    ]
+  },
+  "Flow_and_open_task_context_AST_unchanged": true,
+  "public_role_catalog_and_original_validator_function_ASTs_unchanged": true,
+  "shared_QA_adapter_contract_and_helper_not_modified": true,
+  "ten_unique_fresh_nonce_values_and_no_old_nonce_reused": true,
+  "request_fields_changed_only": [
+    "args",
+    "stdin",
+    "idempotency_key"
+  ],
+  "original_request_resources_and_env_unchanged": true,
+  "original_phase_seconds": {
+    "launch": 175,
+    "inspect": 175,
+    "cleanup": 115
+  },
+  "qualification_deadline_seconds": 30,
+  "qualification_deadline_not_execution_kill": true,
+  "native_launches_maximum": 1,
+  "independent_inspect_rounds_maximum": 3,
+  "helper_instruments_maximum": 9,
+  "failed_read_retried": false,
+  "semantic_ready_requires_all_final_guards_and_owned_cleanup": true,
+  "semantic_readiness_not_business_or_app_production_readiness": true,
+  "local_control_count": 38,
+  "local_controls": {
+    "bytes": 4693,
+    "sha256": "d6361f29301f0c2080c6c9624e64f03f1e5ea45c059d6a3a61c68578c9600a8c"
+  },
+  "private_retained_UI_read_locally": false,
+  "device_calls": 0,
+  "submitted": false,
+  "independent_peer_review_scope": "App recovery agent read the three production files at exact pins; no concrete failure/false-ready/after-state retry blocker found. No peer tests/device actions or full packet review."
+}

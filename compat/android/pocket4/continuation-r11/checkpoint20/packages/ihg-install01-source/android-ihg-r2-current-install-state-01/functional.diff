@@ -1,0 +1,740 @@
+--- historical-IHG-R1/install_state.py
++++ current-IHG-R2/install_state.py
+@@ -21,26 +21,34 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-01')
+ SOURCE = ROOT/'source'
+ WORKER_ROOT = ROOT/'worker'
+ STEP = WORKER_ROOT/'steps/install-state-01'
+-NONCE = 'b637e01d62293f5e7c909e75d2b36d50'
+-STATE_NONCE = 'c815375703e1143b2a8ce8d7d3c44d6e'
+-SELF = 'org.droidloom.qa.ihg.r1'
+-QA_ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-source-01/source')
+-QA_MANIFEST = 'ab971f5b361f1d97b8036c954a6b88734b7faedbeed6349b873ead85fa79d5f3'
+-BUILD = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-build-01/build-result.json')
+-BUILD_SHA = '26a45b337c5dad2bd98b18ce093b321b8c0805de7cb9d759d5dd4088be05a053'
+-BUILD_BYTES = 17246
+-STAGE = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-source-01/stage-result.json')
+-STAGE_SHA = '94bfea341c50b648a2da13752044434cff04e74b7e7549c0d0e0b10c2ce77c41'
+-STAGE_BYTES = 1935
+-APK = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-build-01/owned-ihg-qa.apk')
+-APK_SHA = '3f3164062d8b4f0ebd49d631953ef1a667ec315d2ab7ac0fab8b3b933a6b7324'
++NONCE = '92b900dd770f1834f96b7dd1a6bfdf6c'
++STATE_NONCE = 'a2fdf5a5645ea0b2c5367defa5deb409'
++SELF = 'org.droidloom.qa.ihg.r2'
++QA_ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-source-02/source')
++QA_MANIFEST = 'aac50aec5289c542268c8cff29a07d91ef1be68eb57acb4474c6196850836d38'
++BUILD = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-build-02/build-result.json')
++BUILD_SHA = 'cb13d895c16840ac88835105b31523de7449b26071b535e1e623c8adc97feefd'
++BUILD_BYTES = 20396
++STAGE = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-source-02/stage-result.json')
++STAGE_SHA = '3c42dfef6ac80cce7bb4a0e37ae2836e70f7bb4ac9f1d836bb56af40a09e6260'
++STAGE_BYTES = 1930
++APK = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-build-02/owned-ihg-qa.apk')
++APK_SHA = 'db7012b9a66f4177f8b4ac57ac3d39e77b8c9871a8b2c364343c420fb9d42f41'
+ APK_BYTES = 24720
+-SIGNER_SHA = 'c1502f9d917628e7c64a03b197e1edb2a641a3171afba15b15311aeb23954553'
+-REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
++SIGNER_SHA = 'a2ae584189d8faa5f3705b9278b29b38f2f32e6ca97b1224e80f9b1dfc0d1e5a'
++REFERENCE_SHA = 'fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2'
++BASE_HOST_ROOT = Path('/home/alex/work/pocket4-current-host-r5-source-01')
++RECORDER_MANIFEST = '6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
++HOST_STAGE_SHA = 'bbd21b3e83f39a355a44e32f3448f747d0e76a6cc79c8d920cac4c8399c986a0'
++HOST_STAGE_BYTES = 6851
++CURRENT_EPOCH = '734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'
++BASELINE_SHA = '163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'
++QUALIFICATION_SHA = 'f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'
++PREVIOUS_HELPER_UID = 10196
+ READER_SHA = '51ecf1c0a12d8bfa9ed721265e14c4f06ef3eff72cbf5840de9569eb09797d40'
+ GUEST_DIR_NAME = 'pocket4-owned-ihg-qa-'+NONCE
+ GUEST_DIR = '/data/local/tmp/'+GUEST_DIR_NAME
+@@ -52,8 +60,8 @@
+ ACTION_LOCK_POLL_SECONDS = 0.05
+ WORK_SECONDS = 175
+ EXPECTED_SOURCE_FILES = {'install_state.py','ihg_context.py','ihg_transport.py','stage_execute.py',
+-    'make_request.py','INPUTS.json','README.md','references/readonly_r3_coordinator.py',
+-    'references/read_ihg.py','target-artifact-reference.json'}
++    'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',
++    'check_install_binding.py','references/read_ihg.py','target-artifact-reference.json'}
+ 
+ def require(value, message):
+     if not value:
+@@ -193,7 +201,7 @@
+     match = re.fullmatch(re.escape('package:'+SELF+' uid:') + r'([0-9]+)\n', text)
+     require(match is not None, 'ONE_EXACT_NEW_PACKAGE_UID_REQUIRED')
+     uid = int(match[1])
+-    require(10000 <= uid < 100000 and uid not in (10137,10129,10117,10125,10164,10165,10166,10169,10170,10175), 'NEW_APP_UID_REQUIRED')
++    require(10000 <= uid < 100000 and uid != PREVIOUS_HELPER_UID and uid not in (10137,10129,10117,10125,10164,10165,10166,10169,10170,10175), 'NEW_APP_UID_REQUIRED')
+     return uid
+ 
+ class OwnedApk:
+@@ -341,19 +349,80 @@
+ 
+ 
+ def references():
+-    return module(HERE/'references/readonly_r3_coordinator.py',REFERENCE_SHA,'amazon_main_reference')
++    return module(BASE_HOST_ROOT/'current_coordinator.py',REFERENCE_SHA,'current_target_install_reference')
+ 
++def qualify_host_stage(value, manifest):
++    require(value.get('schema') == 'pocket4-current-host-source-stage-result-v1' and
++            value.get('ok') is True and value.get('source_stage_qualified') is True and
++            value.get('error') is None and value.get('secondary_errors') == [] and
++            value.get('source_published') is True and
++            value.get('source_root') == str(BASE_HOST_ROOT) and
++            value.get('source_manifest_sha256') == RECORDER_MANIFEST and
++            value.get('source_files') == manifest['files'],
++            'ACTUAL_COMPLETE_R5_HOST_SOURCE_STAGE_REQUIRED')
++    controls = value.get('controls', {})
++    require(controls.get('all_passed') is True and controls.get('count') == 26 and
++            len(controls.get('cases', [])) == 26 and
++            len({x.get('name') for x in controls['cases']}) == 26 and
++            all(x.get('passed') is True for x in controls['cases']) and
++            len(controls.get('compiled_sources', [])) == 14,
++            'ACTUAL_26_CURRENT_HOST_CONTROLS_REQUIRED')
++    fds = value.get('owned_fds', {})
++    require(type(fds.get('acquired')) is int and fds['acquired'] > 0 and
++            fds['acquired'] == fds.get('close_attempts') == fds.get('closed') and
++            fds.get('remaining') == 0 and fds.get('errors') == [],
++            'ACTUAL_CURRENT_HOST_SOURCE_FDS_NOT_RETIRED')
++    expected_guard = {'schema':'pocket4-current-main-guard-v1',
++        'Main_epoch_sha256':CURRENT_EPOCH, 'current_baseline_sha256':BASELINE_SHA,
++        'current_baseline_qualification_sha256':QUALIFICATION_SHA,
++        'historical_activation_sha256':'7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615',
++        'historical_verified_sha256':'2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387',
++        'config_sha256':'f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc',
++        'seven_processes_match':True, 'three_host_processes_match':True, 'resource_limits_match':True,
++        'current_executable_and_root_backing_match':True, 'framework_exit_cause_resolved':False,
++        'production_ready':False}
++    require(all(value.get(k) == expected_guard for k in ('Main_before','Main_after','Main_final')),
++            'CURRENT_HOST_STAGE_MAIN_FENCES_CHANGED')
++    require(value.get('namespace_entry') is False and value.get('automatic_retry') is False and
++            value.get('framework_exit_cause_resolved') is False and value.get('whole_app_production_ready') is False and
++            value.get('current_runtime_admitted') is False and
++            all(type(value.get(k)) is int and value[k] == 0 for k in
++                ('Android_commands','UI_actions','helper_installs','App_launches','all45_app_production_ready_count')),
++            'CURRENT_HOST_STAGE_SCOPE_NOT_READONLY_SOURCE')
++    return True
+ 
++
+ def qualified_inputs():
++    host_manifest=json.loads(read(HERE/'host/source-manifest.json',131072,RECORDER_MANIFEST))
++    qualify_host_stage(json.loads(read(HERE/'host-stage-actual.json',65536,HOST_STAGE_SHA,HOST_STAGE_BYTES)),host_manifest)
+     source=json.loads(read(QA_ROOT/'SOURCE_PINS.json',131072,QA_MANIFEST))
+     adapter=module(QA_ROOT/'qa_adapter.py',source['files']['qa_adapter.py']['sha256'],'amazon_actual_qa_adapter')
+     manifest=adapter.own_source(QA_MANIFEST)
+     qa=adapter.load(QA_ROOT/'qa_contract.py',manifest['files']['qa_contract.py']['sha256'],'amazon_actual_qa_contract')
+     builder=adapter.load(QA_ROOT/'build_candidate.py',manifest['files']['build_candidate.py']['sha256'],'amazon_actual_qa_builder')
+-    read(BUILD,expected=BUILD_SHA,size=BUILD_BYTES)
++    build_receipt=json.loads(read(BUILD,expected=BUILD_SHA,size=BUILD_BYTES))
+     args=types.SimpleNamespace(build_receipt=BUILD,build_receipt_sha256=BUILD_SHA,
+         source_manifest_sha256=QA_MANIFEST,apk_sha256=APK_SHA,signer_certificate_sha256=SIGNER_SHA)
+     proof=adapter.qualified_build(args,manifest,builder)
++    require(adapter.RECORDER_MANIFEST_SHA == RECORDER_MANIFEST and
++            qa.MAIN_EPOCH == CURRENT_EPOCH and qa.MAIN_BASELINE_SHA == BASELINE_SHA and
++            qa.MAIN_BASELINE_QUALIFICATION_SHA == QUALIFICATION_SHA and
++            qa.MAIN_BASELINE_SCHEMA == 'pocket4-main-current-baseline-v1',
++            'BUILT_HELPER_AND_CURRENT_HOST_BINDING_REQUIRED')
++    current_controls = build_receipt.get('current_baseline_scope_controls', {})
++    report = current_controls.get('report', {})
++    require(current_controls.get('source_sha256') == manifest['files']['check_current_baseline.py']['sha256'] and
++            report.get('all_passed') is True and report.get('count') == 21 and
++            len(report.get('cases', [])) == 21 and len({x.get('name') for x in report['cases']}) == 21 and
++            all(x.get('passed') is True for x in report['cases']) and
++            report.get('production_contract_sha256') == manifest['files']['qa_contract.py']['sha256'] and
++            report.get('production_adapter_sha256') == manifest['files']['qa_adapter.py']['sha256'] and
++            report.get('host_recorder_manifest_sha256') == RECORDER_MANIFEST and
++            report.get('main_epoch_sha256') == CURRENT_EPOCH and
++            report.get('main_baseline_schema') == 'pocket4-main-current-baseline-v1' and
++            report.get('main_baseline_sha256') == BASELINE_SHA and
++            report.get('main_baseline_qualification_sha256') == QUALIFICATION_SHA,
++            'ACTUAL_21_SCOPE_AND_HOST_SESSION_CONTROLS_REQUIRED')
+     require(proof['APK'] == {'path':str(APK),'bytes':APK_BYTES,'sha256':APK_SHA},'EXACT_ACTUAL_AMAZON_HELPER_APK_REQUIRED')
+     stage=json.loads(read(STAGE,expected=STAGE_SHA,size=STAGE_BYTES))
+     require(stage.get('state') == 'OWNED_QA_APK_STATIC_BUILD_PASS_ANDROID_UNRUN' and
+@@ -393,7 +462,7 @@
+         context=module(HERE/'ihg_context.py',manifest['files']['ihg_context.py']['sha256'],'amazon_install_context')
+         transport=module(HERE/'ihg_transport.py',manifest['files']['ihg_transport.py']['sha256'],'amazon_r4_transport')
+         reader=module(HERE/'references/read_ihg.py',READER_SHA,'amazon_metadata_primitives')
+-        activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++        activation=ref.current_baseline()
+         epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'amazon_worker_epoch')
+         guard=lambda:ref.main_guard(activation,epoch)
+         result['Main_before_lock']=guard()
+@@ -500,7 +569,7 @@
+     try:
+         resource_before=prepare_owned_limits();result['owned_before']=resource_before
+         qualified_inputs()
+-        activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
++        activation=ref.current_baseline()
+         epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'amazon_coordinator_epoch')
+         guard=lambda:ref.main_guard(activation,epoch)
+         result['Main_before']=guard()
+
+--- historical-IHG-R1/ihg_context.py
++++ current-IHG-R2/ihg_context.py
+@@ -1,8 +1,8 @@
+ """IHG-only install/state context using immutable shared recorder primitives.
+ 
+ No Bili Flow or legacy client is instantiated. The actual Flow.command body,
+-held Main/root/classpath primitives and R4 BoundArun body are reused; the new
+-transport has only its two target identity literals changed in a separate file.
++held Main/root/classpath primitives and the target-specific BoundArun body are reused.
++The transport's current-epoch literal is rebound; all action/cleanup bodies are unchanged.
+ An exact ordered command plan prevents this context being used for UI or launch.
+ """
+ import hashlib
+@@ -17,9 +17,12 @@
+ PACKAGE = 'com.ihg.apps.android'
+ UID = 10137
+ VERSION = 50023219
+-INSTALLED_SHARED = Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/source/recorder-r4')
+-SHARED_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+-CONTRACT_SHA = '51c2b3dd7df80a8fcd4881eb7216f7292db77d39c01920f10feb650824919a7d'
++INSTALLED_SHARED = Path('/home/alex/work/pocket4-current-host-r5-source-01')
++SHARED_MANIFEST = '6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
++CONTRACT_SHA = '47389dc89f2257c4f80ae475d977fb63b04a994414772ed708f49b479fcd0783'
++CURRENT_EPOCH = '734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'
++BASELINE_SHA = '163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'
++QUALIFICATION_SHA = 'f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'
+ LIST = ['/system/bin/cmd','package','list','packages','-U','--show-versioncode','--user','0',PACKAGE]
+ PATHS = ['/system/bin/cmd','package','path','--user','0',PACKAGE]
+ FILE_LIMIT = 256*1024*1024
+@@ -44,7 +47,7 @@
+ 
+ def ordered_commands(qa, self_package, guest_apk, state_nonce):
+     require(qa.PACKAGE == PACKAGE and qa.UID == UID and
+-            qa.SELF == self_package == 'org.droidloom.qa.ihg.r1', 'EXACT_AMAZON_QA_SOURCE_REQUIRED')
++            qa.SELF == self_package == 'org.droidloom.qa.ihg.r2', 'EXACT_AMAZON_QA_SOURCE_REQUIRED')
+     state = {'protocol':qa.PROTOCOL,'nonce':state_nonce,'op':'state'}
+     qa.validate_request(state)
+     own_uid = ['/system/bin/cmd','package','list','packages','-U','--user','0',self_package]
+@@ -61,11 +64,76 @@
+     ]
+ 
+ 
++def current_scope():
++    return {'schema':'pocket4-current-recorder-scope-v1',
++            'current_baseline_schema':'pocket4-main-current-baseline-v1',
++            'epoch_sha256':CURRENT_EPOCH,'current_baseline_sha256':BASELINE_SHA,
++            'current_baseline_qualification_sha256':QUALIFICATION_SHA,
++            'package':PACKAGE,'uid':UID,'user':0}
++
++
++def baseline_scope(ref, baseline):
++    require(baseline.get('schema') == 'pocket4-main-current-baseline-v1' and
++            baseline.get('kind') == 'current-framework-generation' and
++            'main_deployed' not in baseline and baseline.get('deployment_performed') is False and
++            baseline['framework_epoch']['sha256'] == CURRENT_EPOCH == ref.EPOCH and
++            ref.BASELINE_SHA == BASELINE_SHA and ref.QUALIFICATION_SHA == QUALIFICATION_SHA and
++            type(baseline['packages'].get(PACKAGE)) is int and baseline['packages'][PACKAGE] == UID and
++            baseline.get('framework_exit_cause_resolved') is False and
++            baseline.get('whole_app_production_ready') is False,
++            'TYPED_CURRENT_BASELINE_AND_ACTUAL_TARGET_UID_REQUIRED')
++    for kind in ('user','user_de'):
++        row = baseline['app_directories'][kind+'/0/'+PACKAGE]
++        require(type(row) is dict and set(row) == {'device','inode','uid','gid'} and
++                all(type(v) is int and v >= 0 for v in row.values()) and
++                row['inode'] > 0 and row['uid'] == UID,
++                'CURRENT_TARGET_DATA_DIRECTORY_BINDING_REQUIRED')
++    return {'schema':'pocket4-current-recorder-scope-v1',
++            'current_baseline_schema':baseline['schema'],
++            'epoch_sha256':baseline['framework_epoch']['sha256'],
++            'current_baseline_sha256':ref.BASELINE_SHA,
++            'current_baseline_qualification_sha256':ref.QUALIFICATION_SHA,
++            'package':PACKAGE,'uid':baseline['packages'][PACKAGE],'user':0}
++
++
++def verify_target_data(target, baseline, binding):
++    target.verify()
++    raw, _ = target.read_file('/data/system/packages.list',1024*1024)
++    binding.package_uids(raw,{PACKAGE:UID})
++    del raw
++    for kind in ('user','user_de'):
++        relative = kind+'/0/'+PACKAGE
++        expected = baseline['app_directories'][relative]
++        fd = target.open_root('/data/'+relative,os.O_PATH|os.O_DIRECTORY|os.O_NOFOLLOW)
++        primary = None
++        try:
++            value = os.fstat(fd)
++            require(stat.S_ISDIR(value.st_mode) and
++                    (value.st_dev,value.st_ino,value.st_uid,value.st_gid) ==
++                    (expected['device'],expected['inode'],expected['uid'],expected['gid']),
++                    'CURRENT_TARGET_DATA_DIRECTORY_IDENTITY_CHANGED')
++        except BaseException as error:
++            primary = error
++            raise
++        finally:
++            try:
++                os.close(fd)
++            except BaseException as cleanup:
++                if primary is None:
++                    raise
++                primary.add_note('current target directory close: '+type(cleanup).__name__)
++    target.verify()
++
++
+ class Context:
+     def __init__(self, recorder, contract, target, environment, transport_module,
+-                 main_guard, step, plan, expected_init, deadline):
++                 main_guard, step, plan, expected_init, deadline, scope):
++        require(contract.sha256 == SHARED_MANIFEST and type(scope) is dict and scope == current_scope() and
++                type(scope.get('uid')) is int and type(scope.get('user')) is int,
++                'EXACT_TYPED_CURRENT_TARGET_CONTEXT_REQUIRED')
+         self.recorder = recorder
+         self.contract = contract
++        self.scope = dict(scope)
+         self.target = target
+         self.main_guard = main_guard
+         self.step = step
+@@ -93,6 +161,8 @@
+             package=PACKAGE,uid=UID,interactive_production=True,runner=runner)
+ 
+     def guard(self, attempted=False):
++        require(self.scope == current_scope() and type(self.scope.get('uid')) is int and
++                type(self.scope.get('user')) is int, 'TYPED_CURRENT_TARGET_SCOPE_CHANGED')
+         require(type(attempted) is bool and not self.closed, 'OPEN_AMAZON_CONTEXT_REQUIRED')
+         self.main_guard()
+         self.target.verify()
+@@ -134,19 +204,20 @@
+     recorder = contract.load('recorder.py','amazon_shared_command_only')
+     held = contract.load('references/held_runtime_r5.py','amazon_actual_held_main')
+     binding = contract.load('main_binding.py','amazon_shared_classpath_only')
+-    activation = json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
+-    verified = json.loads(ref.read(ref.VERIFIED,expected=ref.VERIFIED_SHA))
+-    require(activation['main_deployed'] is True and verified['main_deployed'] is True and
+-            verified['framework_epoch_sha256'] == ref.EPOCH and activation['packages'][PACKAGE] == UID,
+-            'FIXED_MAIN_AND_AMAZON_UID_ACTIVATION_REQUIRED')
++    activation = ref.current_baseline()
++    scope = baseline_scope(ref,activation)
+     epoch = ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'amazon_fixed_epoch')
++    target = None
+     def guard():
+         require(time.monotonic() < deadline,'AMAZON_INSTALL_STATE_WORKER_DEADLINE')
+         source_verify(source_manifest)
+         contract.verify()
+         ref.read(recorder.APP,expected=recorder.APP_SHA)
+         util.read(source.HELPER_PATH,source.HELPER_BYTES,source.HELPER_SHA,source.HELPER_BYTES)
+-        return ref.main_guard(activation,epoch)
++        observation = ref.main_guard(activation,epoch)
++        if target is not None:
++            verify_target_data(target,activation,binding)
++        return observation
+     result['Main_before'] = guard()
+     result['shared_helper'] = source.verify_shared_helper()
+     expected = activation['framework_epoch']['binding']['processes']['init']
+@@ -156,7 +227,6 @@
+     finally:
+         os.close(proc)
+     require(binding.same_epoch_identity(actual,expected),'FIXED_MAIN_INIT_IDENTITY_CHANGED')
+-    target = None
+     try:
+         target = held.HeldTarget(actual,source.HELPER_PATH,source.HELPER_SHA)
+         guard()
+@@ -167,11 +237,12 @@
+         values,classpath = binding.main_classpaths(held,target,activation['framework_epoch'],epoch,guard)
+         require(all(discovered.get(key) == value for key,value in values.items()),'CLASSPATH_DISCOVERY_CHANGED')
+         environment = transport.environment_values(discovered)
+-        ctx = Context(recorder,contract,target,environment,transport,guard,step,plan,expected['host_pid'],deadline)
++        ctx = Context(recorder,contract,target,environment,transport,guard,step,plan,expected['host_pid'],deadline,scope)
+         ref.write_new(step/'held-main-binding.json',{'target':target.record,'classpath':classpath,
+             'shared_helper':result['shared_helper'],'target_package':PACKAGE,'target_uid':UID,
+             'shared_recorder_primitive_manifest':SHARED_MANIFEST,
+-            'amazon_runtime_source_manifest':source_manifest,'Bili_Flow_instantiated':False})
++            'amazon_runtime_source_manifest':source_manifest,'Bili_Flow_instantiated':False,
++            'current_target_scope':scope,'current_target_data_directory_count':2})
+         return ctx,recorder,lambda:ref.main_guard(activation,epoch)
+     except BaseException as primary:
+         if target is not None:
+
+--- historical-IHG-R1/ihg_transport.py
++++ current-IHG-R2/ihg_transport.py
+@@ -18,7 +18,7 @@
+ 
+ 
+ ANDROID_APP_SHA256 = "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66"
+-FRAMEWORK_EPOCH_SHA256 = "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f"
++FRAMEWORK_EPOCH_SHA256 = "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2"
+ HELD_HELPER_SHA256 = "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689"
+ EXPECTED_PACKAGE = "com.ihg.apps.android"
+ EXPECTED_UID = 10137
+
+--- historical-IHG-R1/stage_execute.py
++++ current-IHG-R2/stage_execute.py
+@@ -1,125 +1,147 @@
+ #!/usr/bin/env python3
+-"""Exact root-owned staging for one install/state request; no retry path."""
+-import hashlib
+-import json
+-import os
+-from pathlib import Path, PurePosixPath
+-import sys
+-import types
+-
+-ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01')
+-SOURCE = ROOT/'source'
+-NONCE = 'b637e01d62293f5e7c909e75d2b36d50'
+-REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+-FILES = {'install_state.py','ihg_context.py','ihg_transport.py','stage_execute.py',
+-    'make_request.py','INPUTS.json','README.md','references/readonly_r3_coordinator.py',
+-    'references/read_ihg.py','target-artifact-reference.json'}
+-
+-
+-
+-def require(value, reason):
+-    if not value:
+-        raise RuntimeError(reason)
+-
+-
+-def digest(raw):
+-    return hashlib.sha256(raw).hexdigest()
+-
+-
+-def load_text(source, path, name):
+-    module = types.ModuleType(name); module.__file__ = str(path)
+-    exec(compile(source,str(path),'exec'),module.__dict__)
+-    return module
+-
++"""Exact ihg current-baseline install/state staging with its own target context."""
++import hashlib,json,os,stat,sys,types
++from pathlib import Path,PurePosixPath
++ROOT=Path('/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-01')
++SOURCE=ROOT/'source'
++NONCE='92b900dd770f1834f96b7dd1a6bfdf6c'
++REFERENCE_SHA='fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2'
++FILES={'install_state.py','ihg_context.py','ihg_transport.py','stage_execute.py',
++       'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',
++       'check_install_binding.py','references/read_ihg.py','target-artifact-reference.json'}
++BASE_ROOT=Path('/home/alex/work/pocket4-current-host-r5-source-01')
++R5_MANIFEST='6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
++def require(value,reason):
++    if not value:raise RuntimeError(reason)
++def digest(raw):return hashlib.sha256(raw).hexdigest()
++def read(path, maximum=1048576, expected=None, size=None):
++    fd = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
++    try:
++        before = os.fstat(fd)
++        require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1 and
++                0 <= before.st_size <= maximum, 'INPUT_SHAPE_OR_BOUND: ' + str(path))
++        chunks = []; count = 0
++        while True:
++            part = os.read(fd, min(65536, maximum + 1 - count))
++            if not part:
++                break
++            chunks.append(part); count += len(part)
++            require(count <= maximum, 'INPUT_GREW: ' + str(path))
++        after = os.fstat(fd)
++        fields = ('st_dev','st_ino','st_mode','st_nlink','st_uid','st_gid','st_size','st_mtime_ns','st_ctime_ns')
++        require(all(getattr(before, k) == getattr(after, k) for k in fields) and count == before.st_size,
++                'INPUT_CHANGED: ' + str(path))
++        raw = b''.join(chunks)
++        require(expected is None or digest(raw) == expected, 'INPUT_SHA_CHANGED: ' + str(path))
++        require(size is None or len(raw) == size, 'INPUT_SIZE_CHANGED: ' + str(path))
++        return raw
++    finally:
++        os.close(fd)
+ 
++def load_text(source,path,name):
++    value=types.ModuleType(name);value.__file__=str(path)
++    exec(compile(source,str(path),'exec'),value.__dict__)
++    return value
+ def checked_packet(raw):
+-    require(isinstance(raw,bytes) and 0 < len(raw) <= 262144,'BOUNDED_PACKET_REQUIRED')
+-    packet = json.loads(raw)
+-    require(set(packet) == {'schema','source_manifest_sha256','nonce','files'} and
+-            packet['schema'] == 1 and packet['nonce'] == NONCE,'EXACT_PACKET_REQUIRED')
+-    files = packet['files']
+-    require(isinstance(files,dict) and set(files) == FILES | {'SOURCE_PINS.json'},
+-            'EXACT_SOURCE_FILE_SET_REQUIRED')
+-    encoded = {}
++    require(isinstance(raw,bytes) and 0<len(raw)<=262144,'BOUNDED_PACKET_REQUIRED')
++    packet=json.loads(raw)
++    require(set(packet)=={'schema','source_manifest_sha256','nonce','files'} and
++            packet['schema']==2 and packet['nonce']==NONCE and
++            isinstance(NONCE,str) and len(NONCE)==32 and all(c in '0123456789abcdef' for c in NONCE),
++            'EXACT_CURRENT_HOST_INSTALL_PACKET_REQUIRED')
++    files=packet['files']
++    require(isinstance(files,dict) and set(files)==FILES|{'SOURCE_PINS.json'},'EXACT_SOURCE_FILE_SET_REQUIRED')
++    encoded={}
+     for name,text in files.items():
+-        rel = PurePosixPath(name)
+-        require(not rel.is_absolute() and '..' not in rel.parts and str(rel) == name and isinstance(text,str),
++        rel=PurePosixPath(name)
++        require(not rel.is_absolute() and '..' not in rel.parts and str(rel)==name and isinstance(text,str),
+                 'SOURCE_NAME_OR_UTF8_CHANGED')
+-        encoded[name] = text.encode('utf-8')
+-        require(0 < len(encoded[name]) <= 65536,'SOURCE_SIZE_BOUND')
+-    manifest_raw = encoded['SOURCE_PINS.json']
+-    require(digest(manifest_raw) == packet['source_manifest_sha256'],'EXTERNAL_SOURCE_MANIFEST_MISMATCH')
+-    manifest = json.loads(manifest_raw)
+-    require(set(manifest['files']) == FILES,'EXACT_MANIFEST_FILE_SET_REQUIRED')
++        encoded[name]=text.encode('utf-8')
++        require(0<len(encoded[name])<=65536,'SOURCE_SIZE_BOUND')
++    manifest_raw=encoded['SOURCE_PINS.json'];manifest=json.loads(manifest_raw)
++    require(digest(manifest_raw)==packet['source_manifest_sha256'] and manifest.get('schema')==2 and
++            manifest.get('host_recorder_manifest_sha256')==R5_MANIFEST and
++            set(manifest['files'])==FILES,'EXTERNAL_CURRENT_SOURCE_MANIFEST_REQUIRED')
+     for name,row in manifest['files'].items():
+-        require(row == {'bytes':len(encoded[name]),'sha256':digest(encoded[name])},'SOURCE_PAYLOAD_CHANGED:'+name)
+-    require(digest(encoded['references/readonly_r3_coordinator.py']) == REFERENCE_SHA,'ORIGINAL_COORDINATOR_CHANGED')
++        require(row=={'bytes':len(encoded[name]),'sha256':digest(encoded[name])},'SOURCE_PAYLOAD_CHANGED:'+name)
++    require(digest(encoded['host/source-manifest.json'])==R5_MANIFEST,'CURRENT_HOST_MANIFEST_CHANGED')
+     return packet,encoded
+-
+-
++def load_original_host(files):
++    raw=read(BASE_ROOT/'source-manifest.json',131072,R5_MANIFEST)
++    require(raw==files['host/source-manifest.json'],'EXACT_PUBLISHED_HOST_MANIFEST_REQUIRED')
++    manifest=json.loads(raw)
++    require(manifest.get('schema')==2 and manifest.get('revision')==5 and
++            manifest.get('artifact')=='pocket4-bilibili-current-recorder-held-r5' and len(manifest['files'])==14,
++            'EXACT_CURRENT_HOST_SOURCE_SCHEMA_REQUIRED')
++    row=manifest['files']['source_contract.py']
++    mod=load_text(read(BASE_ROOT/'source_contract.py',131072,row['sha256'],row['bytes']),
++                  BASE_ROOT/'source_contract.py','original_current_host_contract')
++    original=mod.SourceContract(BASE_ROOT/'source-manifest.json',R5_MANIFEST)
++    original.verify()
++    row=manifest['files']['current_coordinator.py']
++    require(row['sha256']==REFERENCE_SHA,'CURRENT_COORDINATOR_PIN_CHANGED')
++    ref=load_text(read(BASE_ROOT/'current_coordinator.py',131072,REFERENCE_SHA,row['bytes']),
++                  BASE_ROOT/'current_coordinator.py','current_install_stage_reference')
++    return ref,original,manifest
+ def main(raw=None):
+-    if raw is None:
+-        raw = sys.stdin.buffer.read(262145)
+-    packet,files = checked_packet(raw)
+-    require(os.getuid() == os.geteuid() == 0,'ROOT_STAGE_REQUIRED')
+-    require(ROOT.parent.resolve() == ROOT.parent and not os.path.lexists(ROOT),'FRESH_CANONICAL_ROOT_REQUIRED')
+-    ref = load_text(files['references/readonly_r3_coordinator.py'],SOURCE/'references/readonly_r3_coordinator.py',
+-                    'qa_install_stage_reference')
+-    activation = json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
+-    epoch = ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'qa_install_stage_epoch')
+-    before = ref.main_guard(activation,epoch)
+-    os.umask(0o077)
+-    ROOT.mkdir(mode=0o700)
+-    result = {'schema':1,'ok':False,'source_manifest_sha256':packet['source_manifest_sha256'],
+-        'packet_sha256':digest(raw),'nonce':NONCE,'Main_before':before,
++    if raw is None:raw=sys.stdin.buffer.read(262145)
++    packet,files=checked_packet(raw)
++    require(os.getuid()==os.geteuid()==0,'ROOT_STAGE_REQUIRED')
++    require(ROOT.parent.resolve()==ROOT.parent and not os.path.lexists(ROOT),'FRESH_CANONICAL_ROOT_REQUIRED')
++    entry=load_text(files['install_state.py'],SOURCE/'install_state.py','current_install_entry_before_stage')
++    actual_host=json.loads(files['host-stage-actual.json'])
++    require(digest(files['host-stage-actual.json'])==entry.HOST_STAGE_SHA and
++            len(files['host-stage-actual.json'])==entry.HOST_STAGE_BYTES,'ACTUAL_HOST_STAGE_RECEIPT_PIN')
++    host_manifest=json.loads(files['host/source-manifest.json'])
++    ref,original,manifest=load_original_host(files)
++    baseline=ref.current_baseline()
++    context=load_text(files['ihg_context.py'],SOURCE/'ihg_context.py','current_target_context_controls')
++    transport=load_text(files['ihg_transport.py'],SOURCE/'ihg_transport.py','current_target_transport_controls')
++    controls_module=load_text(files['check_install_binding.py'],SOURCE/'check_install_binding.py','current_install_pure_controls')
++    controls=controls_module.run_controls(entry,actual_host,host_manifest,context,transport,baseline,ref)
++    require(controls['all_passed'] is True and controls['count']==33 and
++            len(controls['cases'])==33 and all(x['passed'] is True for x in controls['cases']),
++            'ACTUAL_CURRENT_APP_CONTEXT_CONTROLS_REQUIRED')
++    epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'current_install_stage_epoch')
++    before=ref.main_guard(baseline,epoch)
++    os.umask(0o077);ROOT.mkdir(mode=0o700)
++    result={'schema':2,'ok':False,'source_manifest_sha256':packet['source_manifest_sha256'],
++        'packet_sha256':digest(raw),'nonce':NONCE,'Main_before':before,'controls':controls,
+         'error':None,'secondary_errors':[],'automatic_retry':False,'UI_actions':0,'audio_actions':0,
+-        'whole_app_production_ready':False}
++        'current_host_manifest_sha256':R5_MANIFEST,'whole_app_production_ready':False}
+     def remember(phase,error):
+         value={'phase':phase,'type':type(error).__name__,'message':str(error)}
+-        if result['error'] is None:
+-            result['error']=value
+-        else:
+-            result['secondary_errors'].append(value)
++        if result['error'] is None:result['error']=value
++        else:result['secondary_errors'].append(value)
+         result['ok']=False
+     try:
+         ref.write_new(ROOT/'once.claim.json',{'nonce':NONCE,'source_manifest_sha256':packet['source_manifest_sha256'],
+                                             'packet_sha256':digest(raw),'automatic_retry':False})
+         SOURCE.mkdir(mode=0o700)
+         for name,value in files.items():
+-            path=SOURCE/name
+-            path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
++            path=SOURCE/name;path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
+             ref.write_new(path,value,mode=0o444)
+-        entry=load_text(files['install_state.py'],SOURCE/'install_state.py','qa_install_actual_entry')
++        result['shared_current_host_source_verified']=True
++        result['Bili_Flow_or_MainBinding_instantiated']=False
++        entry=load_text(files['install_state.py'],SOURCE/'install_state.py','qa_install_current_actual_entry')
+         code=entry.execute(packet['source_manifest_sha256'])
+         result['coordinator_returncode']=code
+         durable_raw=ref.read(ROOT/'result.json')
+         result['coordinator_result']={'path':str(ROOT/'result.json'),'bytes':len(durable_raw),'sha256':digest(durable_raw)}
+-        durable=json.loads(durable_raw)
+-        require(code == 0 and durable.get('ok') is True,'ACTUAL_AMAZON_INSTALL_STATE_NOT_QUALIFIED')
++        require(code==0 and json.loads(durable_raw).get('ok') is True,'ACTUAL_INSTALL_STATE_NOT_QUALIFIED')
+         result['ok']=True
+-    except BaseException as error:
+-        remember('stage_or_coordinator',error)
++    except BaseException as error:remember('stage_or_coordinator',error)
+     finally:
+-        try:
+-            result['Main_after']=ref.main_guard(activation,epoch)
+-        except BaseException as error:
+-            remember('stage_final_Main',error)
+-        try:
+-            for name,value in files.items():
+-                ref.read(SOURCE/name,expected=digest(value))
+-            result['source_unchanged']=True
+-        except BaseException as error:
+-            remember('stage_final_source',error)
++        try:result['Main_after']=ref.main_guard(baseline,epoch)
++        except BaseException as error:remember('stage_final_Main',error)
+         try:
+-            pin=ref.write_new(ROOT/'stage-result.json',result)
+-        except BaseException as error:
+-            remember('stage_result_write',error)
+-            pin=None
++            for name,value in files.items():ref.read(SOURCE/name,expected=digest(value))
++            original.verify();result['source_unchanged']=True
++        except BaseException as error:remember('stage_final_source',error)
++        try:pin=ref.write_new(ROOT/'stage-result.json',result)
++        except BaseException as error:remember('stage_result_write',error);pin=None
+         print(json.dumps({'ok':result['ok'],'stage_result':pin,'error':result['error'],
+             'secondary_errors':result['secondary_errors'],'UI_actions':0,'audio_actions':0,
+             'whole_app_production_ready':False}),flush=True)
+     return 0 if result['ok'] else 1
+-
+-
+-if __name__ == '__main__':
+-    raise SystemExit(main())
++if __name__=='__main__':raise SystemExit(main())
+
+--- historical-IHG-R1/make_request.py
++++ current-IHG-R2/make_request.py
+@@ -7,9 +7,9 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-ihg-qa-r1-install-state-01-20261105'
+-ROOT='/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01'
+-NONCE='b637e01d62293f5e7c909e75d2b36d50'
++KEY='pocket4-owned-ihg-qa-r2-current-r5-install-state-01-20261106'
++ROOT='/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-01'
++NONCE='92b900dd770f1834f96b7dd1a6bfdf6c'
+ 
+ 
+ def sha(raw):
+@@ -34,7 +34,7 @@
+         assert len(raw)==row['bytes'] and sha(raw)==row['sha256']
+         files[name]=raw.decode('utf-8')
+     files['SOURCE_PINS.json']=manifest_raw.decode('utf-8')
+-    packet={'schema':1,'source_manifest_sha256':a.source_manifest_sha256,'nonce':NONCE,'files':files}
++    packet={'schema':2,'source_manifest_sha256':a.source_manifest_sha256,'nonce':NONCE,'files':files}
+     payload=(json.dumps(packet,sort_keys=True,ensure_ascii=False,separators=(',',':'))+'\n').encode()
+     assert len(payload)<=262144
+     stage_sha=manifest['files']['stage_execute.py']['sha256']
+--- /dev/null
++++ current-IHG-R2/check_install_binding.py
+@@ -1,0 +1,103 @@
++"""Pure current-host and per-App Context construction controls; no device authority."""
++import copy
++import types
++
++CONTROL_COUNT = 33
++
++def run_controls(entry, actual_host, manifest, context, transport, baseline, ref):
++    rows = []
++    def yes(name):
++        rows.append({'name':name,'passed':True})
++    def rejected(name, call):
++        try:
++            call()
++        except (RuntimeError,KeyError):
++            pass
++        else:
++            raise RuntimeError('CURRENT_CONTEXT_NEGATIVE_ACCEPTED:'+name)
++        yes(name)
++    entry.qualify_host_stage(actual_host,manifest)
++    yes('complete_actual_host_stage_accepted')
++    def host_no(name,change):
++        value=copy.deepcopy(actual_host);change(value)
++        rejected(name,lambda:entry.qualify_host_stage(value,manifest))
++    host_no('host_stage_error',lambda v:v.update(ok=False))
++    host_no('old_host_manifest',lambda v:v.update(source_manifest_sha256='52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'))
++    host_no('missing_final_Main',lambda v:v.pop('Main_final'))
++    host_no('wrong_final_epoch',lambda v:v['Main_final'].update(Main_epoch_sha256='48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'))
++    host_no('FD_close_incomplete',lambda v:v['owned_fds'].update(closed=v['owned_fds']['closed']-1))
++    host_no('partial_source',lambda v:v.update(source_published=False))
++    host_no('controls_count_changed',lambda v:v['controls'].update(count=25))
++    host_no('production_claim',lambda v:v.update(whole_app_production_ready=True))
++    entry.require(entry.uid_from(('package:'+entry.SELF+' uid:99999\n').encode())==99999,
++                  'SYNTHETIC_UID_PARSER_POSITIVE')
++    yes('synthetic_uid_positive_not_actual_identity')
++    rejected('previous_actual_helper_uid_rejected',lambda:entry.uid_from(
++        ('package:'+entry.SELF+' uid:'+str(entry.PREVIOUS_HELPER_UID)+'\n').encode()))
++    scope=context.baseline_scope(ref,baseline)
++    entry.require(scope==context.current_scope() and scope['package']==context.PACKAGE and
++                  scope['uid']==context.UID,'ACTUAL_CURRENT_SCOPE_CONSTRUCTION')
++    yes('actual_baseline_projects_own_target_scope')
++    def base_no(name,change):
++        value=copy.deepcopy(baseline);change(value)
++        rejected(name,lambda:context.baseline_scope(ref,value))
++    base_no('old_baseline_schema',lambda v:v.update(schema='legacy-activation'))
++    base_no('forged_deployment_flag',lambda v:v.update(main_deployed=True))
++    base_no('old_framework_epoch',lambda v:v['framework_epoch'].update(sha256='48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'))
++    base_no('wrong_target_uid',lambda v:v['packages'].update({context.PACKAGE:10117}))
++    base_no('bool_target_uid',lambda v:v['packages'].update({context.PACKAGE:True}))
++    base_no('missing_current_target_directory',lambda v:v['app_directories'].pop('user_de/0/'+context.PACKAGE))
++    base_no('foreign_current_target_directory_owner',lambda v:v['app_directories']['user/0/'+context.PACKAGE].update(uid=10117))
++    base_no('baseline_production_claim',lambda v:v.update(whole_app_production_ready=True))
++    for field in ('BASELINE_SHA','QUALIFICATION_SHA'):
++        wrong=types.SimpleNamespace(EPOCH=ref.EPOCH,BASELINE_SHA=ref.BASELINE_SHA,
++                                    QUALIFICATION_SHA=ref.QUALIFICATION_SHA)
++        setattr(wrong,field,'0'*64)
++        rejected('wrong_reference_'+field.lower(),lambda wrong=wrong:context.baseline_scope(wrong,baseline))
++    calls={'Main':0,'target':0,'command':0}
++    def forbidden_command(*args,**kwargs):
++        calls['command']+=1
++        raise RuntimeError('PURE_CONTEXT_CONTROL_COMMAND_FORBIDDEN')
++    def fake_guard():
++        calls['Main']+=1
++    def fake_verify():
++        calls['target']+=1
++    target=types.SimpleNamespace(expected={'pid':baseline['framework_epoch']['binding']['processes']['init']['host_pid']},
++        helper_sha256=transport.HELD_HELPER_SHA256,verify=fake_verify,close=lambda:None)
++    recorder=types.SimpleNamespace(Flow=types.SimpleNamespace(command=forbidden_command),
++                                  write_new=forbidden_command)
++    environment={'PATH':'/system/bin','BOOTCLASSPATH':'/synthetic/boot.jar',
++                 'DEX2OATBOOTCLASSPATH':'/synthetic/boot.jar','ANDROID_ROOT':'/system',
++                 'ANDROID_DATA':'/data','ANDROID_ART_ROOT':'/apex/com.android.art'}
++    def create(value,manifest_sha=context.SHARED_MANIFEST):
++        contract=types.SimpleNamespace(sha256=manifest_sha)
++        return context.Context(recorder,contract,target,environment,transport,fake_guard,
++                               None,[],target.expected['pid'],1,copy.deepcopy(value))
++    ctx=create(scope)
++    entry.require(ctx.scope==scope and ctx.command_index==ctx.next_command==0 and
++                  ctx.action_attempted is False,'PURE_OWN_TARGET_CONTEXT_CONSTRUCTOR')
++    yes('production_context_constructor_own_target')
++    rejected('constructor_old_R4_manifest',lambda:create(scope,'52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'))
++    def scope_no(name,change):
++        value=copy.deepcopy(scope);change(value)
++        rejected(name,lambda:create(value))
++    scope_no('constructor_old_scope_schema',lambda v:v.update(schema='legacy-scope'))
++    scope_no('constructor_Bili_scope',lambda v:v.update(package='tv.danmaku.bili',uid=10117))
++    scope_no('constructor_old_epoch',lambda v:v.update(epoch_sha256='48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'))
++    scope_no('constructor_wrong_baseline',lambda v:v.update(current_baseline_sha256='0'*64))
++    scope_no('constructor_wrong_qualification',lambda v:v.update(current_baseline_qualification_sha256='0'*64))
++    scope_no('constructor_bool_user',lambda v:v.update(user=False))
++    scope_no('constructor_extra_old_activation',lambda v:v.update(activation_sha256='0'*64))
++    scope_no('constructor_missing_baseline',lambda v:v.pop('current_baseline_schema'))
++    ctx.scope['package']='tv.danmaku.bili'
++    rejected('guard_rejects_tampered_target_before_callbacks',lambda:ctx.guard())
++    entry.require(calls=={'Main':0,'target':0,'command':0},'PURE_CONTROL_CALLBACK_OR_COMMAND_ATTEMPTED')
++    entry.require(len(rows)==CONTROL_COUNT and len({x['name'] for x in rows})==CONTROL_COUNT,
++                  'EXACT_CURRENT_CONTEXT_CONTROL_COUNT')
++    return {'schema':'pocket4-current-app-install-context-controls-v1','all_passed':True,
++            'count':CONTROL_COUNT,'cases':rows,'target_package':context.PACKAGE,
++            'target_uid':context.UID,'synthetic_context_is_not_runtime_observation':True,
++            'production_Context_and_BoundArun_constructors_used':True,
++            'actual_qualified_baseline_only_in_memory':True,
++            'Bili_Flow_or_MainBinding_instantiated':False,'private_baseline_exported':False,
++            'Android_commands':0,'UI_actions':0,'children':0,'filesystem_operations':0}

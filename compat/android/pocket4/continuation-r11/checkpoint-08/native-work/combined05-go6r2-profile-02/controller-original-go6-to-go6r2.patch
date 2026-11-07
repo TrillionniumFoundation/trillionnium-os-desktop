@@ -1,0 +1,162 @@
+--- a/combined_build05.py
++++ b/combined_build_go6r2.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Owned candidate05 preparation and normal full engine build. Default: plan."""
++"""Independent candidate05 Go6/11GiB second profile. Default: plan; no automatic retry."""
+ import argparse
+ import ctypes
+ import datetime
+@@ -35,14 +35,18 @@
+ TETO_BASE = "917021cf3ecd077eb1581146a79d2265011755b8"
+ TETO_URL = "https://github.com/denialwm/teto.git"
+ WORK = P("/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1")
+-ROOT = OWNER / "full-build-combined05-01"
++ROOT = OWNER / "full-build-combined05-go6-02"
+ BUILD_SOURCE = ROOT / "builder-source"
+ ENGINE_SOURCE = ROOT / "engine-working"
+ OUT = ROOT / "android-out"
+ ATTEMPT = ROOT / "attempt-01"
+ MEMORY_MAX = 11 * 1024**3
+ SWAP_MAX = 1024**3
+-MIN_AVAILABLE = 15 * 1024**3
++MIN_AVAILABLE = 14 * 1024**3
++MIN_FREE_SWAP = 2 * 1024**3
++GO_PATCH = "android/apex-compat/0008-soong-leaf-go-memory-budget.patch"
++GO_PATCH_SHA = "6aaaf5ec96a75bb6480c202d6483a5b22bdd4963d6d3b66bbfad4d80ee5ed20e"
++SOONG_SOURCE = "build/soong/ui/build/soong.go"
+ FEATURE = "BERBERIS_PROCMAPS_RAW_METADATA_OWNER"
+ MATCHED_GATE = COMPOSITION / "combined-ancillary-controls-07/report.json"
+ MATCHED_GATE_SHA = 'e53c3e9e5846d36f971bae6140c394b837fa54525c0e2df4ac153c9ef5540803'
+@@ -150,6 +154,51 @@
+             gate["actual_listener_inheritance_fixed"] is True and
+             len(gate["commands"]) == 8 and all(row["returncode"] == 0 for row in gate["commands"]),
+             "matched candidate05 gate is not complete")
++
++def memory_admission(memory):
++    require(MIN_AVAILABLE - MEMORY_MAX == 3 * 1024**3,
++            "new profile requires an explicit three-GiB admission difference")
++    require(MIN_FREE_SWAP - SWAP_MAX == 1024**3,
++            "new profile requires at least one-GiB swap admission difference")
++    require(memory["MemAvailable"] >= MIN_AVAILABLE,
++            "less than 14 GiB MemAvailable for independent Go6 second profile; no automatic retry")
++    require(memory["SwapFree"] >= MIN_FREE_SWAP,
++            "less than the required 2 GiB free swap; no automatic retry")
++
++
++def owned_resource_gate(text):
++    require(isinstance(text, str), "owned memory.events was not observed")
++    rows = [line.split() for line in text.splitlines()]
++    require(rows and all(len(row) == 2 and row[1].isdigit() for row in rows),
++            "malformed owned memory.events")
++    events = {row[0]: int(row[1]) for row in rows}
++    require(len(events) == len(rows) and all(name in events for name in ("oom", "oom_kill", "oom_group_kill")),
++            "incomplete or duplicate owned memory.events")
++    require(events["oom_kill"] == 0 and events["oom_group_kill"] == 0,
++            "owned OOM kill observed; build is not qualified")
++    return {"pass": True, "events": events, "owned_oom_kills_zero": True}
++
++
++def go_projection_contract(inputs, reference):
++    # The entire 449-file builder copy, including its Go6 patch, is unchanged.
++    # Reject a leftover Go4/Go5 projection after normal lock/journal recovery.
++    old = reference["effective_projection"]
++    actual = inputs["effective_projection"]
++    require(old["patches"][GO_PATCH] == GO_PATCH_SHA,
++            "prior successful projection used a different Go patch")
++    require(actual["patches"] == old["patches"],
++            "actual projection patch set differs from the successful Go6 builder")
++    projected_hash = actual["files"][SOONG_SOURCE]
++    require(isinstance(projected_hash, str) and len(projected_hash) == 64 and
++            all(c in "0123456789abcdef" for c in projected_hash) and
++            projected_hash == old["files"][SOONG_SOURCE],
++            "actual projected Soong source differs from the successful Go6 builder")
++    return {"patch_path": GO_PATCH, "patch_sha256": GO_PATCH_SHA,
++            "projected_soong_path": SOONG_SOURCE, "projected_soong_sha256": projected_hash,
++            "actual_prior_success_projected_hash_equal": True,
++            "all_applied_patch_hashes_equal_reference": True,
++            "normal_builder_lock_and_journal_recovery_required": True}
++
+ 
+ def source_contract():
+     matched_gate_contract()
+@@ -176,6 +225,9 @@
+     builder_files = json.loads(BUILDER_MANIFEST.read_bytes())
+     require(len(builder_files) == 449 and inventory(BUILDER_ORIGIN) == builder_files,
+             "builder source changed")
++    require(builder_files[GO_PATCH]["sha256"] == GO_PATCH_SHA and
++            builder_files[GO_PATCH]["bytes"] == 583 and
++            digest(BUILDER_ORIGIN / GO_PATCH) == GO_PATCH_SHA, "original Go6 patch changed")
+     require(digest(R16_RECEIPT) == R16_RECEIPT_SHA, "R16 receipt changed")
+     baseline = json.loads(R16_RECEIPT.read_bytes())
+     require(baseline["source_snapshot"]["commit"] == R16_HEAD, "R16 recorded git head changed")
+@@ -205,7 +257,10 @@
+                      "native-engine-build", "--work", str(WORK), "--tests", "--out", str(OUT)],
+             "source_env": {"DROIDLOOM_NATIVE_BRIDGE_SOURCE": str(ENGINE_SOURCE)},
+             "CPUQuota": 200, "MemoryMax": MEMORY_MAX, "MemorySwapMax": SWAP_MAX,
+-            "MemAvailable_minimum": MIN_AVAILABLE, "SwapFree_minimum": SWAP_MAX,
++            "MemAvailable_minimum": MIN_AVAILABLE, "SwapFree_minimum": MIN_FREE_SWAP,
++            "admission_difference_bytes": MIN_AVAILABLE - MEMORY_MAX,
++            "swap_admission_difference_bytes": MIN_FREE_SWAP - SWAP_MAX,
++            "physical_reservation_claimed": False, "builder_source_delta": None,
+             "Go_soft_heap": "6GiB",
+             "feature_default_enabled": False, "ART_target_built": False, "factory_target_built": False,
+             "tests_executed_by_build": False, "service_started": False, "Android_actions": 0,
+@@ -389,6 +444,7 @@
+     # Capture their actual values and reject drift instead of treating the
+     # compiler revision name or the builder's successful return as a pin.
+     reference = reference_inputs()
++    go_projection = go_projection_contract(inputs, reference)
+     for field in EXTERNAL_FIELDS:
+         require(inputs[field] == reference[field], "external input drift: " + field)
+     require(inputs["builder_files"] == {
+@@ -443,7 +499,8 @@
+         require(digest(P(test["shared_library_directory"]) / name) == wanted["sha256"], "host shared library drift")
+     return {"input_receipt_sha256": digest(before_path), "final_receipt_sha256": digest(final_path),
+             "engine": final["engine"], "host_tests": test, "feature_default_enabled": False,
+-            "private_entry_export_observed": True, "raw_source_files": len(engine),
++            "private_entry_export_observed": True, "go_projection": go_projection,
++            "raw_source_files": len(engine),
+             "effective_source_files": len(effective), "six_signal_hashes_match": True,
+             "host_suite_executed": False, "Android_executed": False, "ART_built": False,
+             "factory_built": False, "installed": False, "production_ready": False}
+@@ -458,8 +515,9 @@
+     require(not ATTEMPT.exists() and not OUT.exists(), "attempt and output must both be fresh")
+     memory = {a: int(b.split()[0]) * 1024 for a, b in
+               (line.split(":", 1) for line in P("/proc/meminfo").read_text().splitlines())}
+-    require(memory["MemAvailable"] >= MIN_AVAILABLE, "less than 15 GiB MemAvailable; no automatic lower-budget retry")
+-    require(memory["SwapFree"] >= SWAP_MAX, "less than the required 1 GiB free swap; no automatic lower-budget retry")
++    # Fresh kernel counters are read above at this actual attempt; historical
++    # diagnostic samples are evidence only, never admission authorization.
++    memory_admission(memory)
+     affinity = sorted(os.sched_getaffinity(0))
+     require(len(affinity) >= 4, "original two-core placement requires at least four allowed CPUs")
+     selected = affinity[-2:]
+@@ -479,9 +537,10 @@
+     subreaper()
+     require(child_ids() == [], "controller has preexisting children or cannot enumerate its own children")
+     ATTEMPT.mkdir(mode=0o700)
+-    claim = {"schema": 1, "state": "STARTING_COMBINED05_FLAG0_FULL_BUILD",
++    claim = {"schema": 1, "state": "STARTING_COMBINED05_GO6R2_FLAG0_FULL_BUILD",
+              "started_utc": utc(), "preparation_sha256": expected_sha, "plan": plan(),
+-             "mem_available_before": memory["MemAvailable"], "cpu_affinity_before": affinity,
++             "mem_available_before": memory["MemAvailable"], "swap_free_before": memory["SwapFree"],
++             "cpu_affinity_before": affinity,
+              "cpu_affinity": selected, "unit": unit, "normal_builder_lock_and_recovery": True,
+              "automatic_retry": False, "Main_resource_changes": False}
+     save(ATTEMPT / "claim.json", claim)
+@@ -554,6 +613,14 @@
+                     "source_projection_journal_present": (WORK / "source-projection.json").exists(),
+                     "artifact_gate": artifact, "Main_actions": 0, "Android_actions": 0,
+                     "service_started": False, "all_apps_ready": False}
++        try:
++            terminal["owned_resource_gate"] = owned_resource_gate(terminal["memory_events"])
++        except Exception as error:
++            terminal["owned_resource_gate"] = {"pass": False, "error": repr(error)}
++            if failure is None:
++                failure = "owned resource qualification failed: " + repr(error)
++                terminal["state"] = "FAILED"
++                terminal["error"] = failure
+         if observation_errors:
+             terminal["observation_errors"] = observation_errors
+             if failure is None:

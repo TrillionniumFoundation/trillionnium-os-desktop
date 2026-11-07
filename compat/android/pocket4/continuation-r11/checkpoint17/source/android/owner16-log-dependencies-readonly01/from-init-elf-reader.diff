@@ -1,0 +1,198 @@
+--- exact-init-reader
++++ two-fixed-build-inputs
+@@ -1,31 +1,18 @@
+-"""Read one pinned retired-input init ELF's dynamic metadata; never execute it."""
+-import hashlib
+-import json
+-import os
+-import stat
+-import struct
+-import sys
+-import time
++"""Observe only two fixed, not-yet-qualified Android build inputs."""
++import base64, hashlib, json, os, stat, struct, sys, time
+ 
+-PATH = '/opt/p4-media-composer-diagnostic-20261102-chat2-r5/payload/android-init'
+-SIZE = 2967000
+-SHA256 = 'd6905d43a0dad5219b61c9759ab32352262558e1109762eec1a24be153181c73'
+-MAX_OUTPUT = 32768
+-
++PATHS = [('/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/include/dlfcn.h', 32768, 'header'), ('/home/alex/work/pocket4-lmkd-production-candidate-20261104/android-link-01/deps/libdl.so', 4194304, 'library')]
++PRIOR_ACTUAL_147_INPUT_RECEIPT_SHA256 = "718b131c94126d6d7f9df30a2f164e8f85335fc027a2db3101b0e5904c291b64"
++MAX_OUTPUT = 65536
+ 
+ def need(value, message):
+-    if not value:
+-        raise RuntimeError(message)
+-
++    if not value: raise RuntimeError(message)
+ 
+ def stamp(s, directory=False):
+-    keys = {'dev': s.st_dev, 'ino': s.st_ino, 'mode': s.st_mode,
+-            'uid': s.st_uid, 'gid': s.st_gid}
++    result = dict(dev=s.st_dev, ino=s.st_ino, mode=s.st_mode, uid=s.st_uid, gid=s.st_gid)
+     if not directory:
+-        keys.update(size=s.st_size, nlink=s.st_nlink,
+-                    mtime_ns=s.st_mtime_ns, ctime_ns=s.st_ctime_ns)
+-    return keys
+-
++        result.update(size=s.st_size, nlink=s.st_nlink, mtime_ns=s.st_mtime_ns, ctime_ns=s.st_ctime_ns)
++    return result
+ 
+ def parse(raw):
+     need(raw[:7] == b'\x7fELF\x02\x01\x01', 'ELF64 little-endian version1 required')
+@@ -59,7 +46,7 @@
+             need(1 < len(value) <= 256 and value[-1:] == b'\0' and b'\0' not in value[:-1],
+                  'invalid ELF interpreter')
+             interpreters.append(value[:-1].decode('ascii'))
+-    need(len(interpreters) == 1, 'one dynamic ELF interpreter required')
++    need(not interpreters, 'shared library must not have an interpreter')
+     dyn_count = sym_count = 0
+     for index, s in enumerate(sections):
+         name = string(names, s[0])
+@@ -89,83 +76,86 @@
+             for offset in range(0, s[5], 24):
+                 n, info, other, shndx, value, size = struct.unpack('<IBBHQQ', body(s[4] + offset, 24))
+                 symbol = string(table, n)
+-                if 'KernelLogger' in symbol or 'InitLogging' in symbol:
++                if symbol in ('dlsym', 'dlerror', 'dladdr'):
+                     symbols.append({'name': symbol, 'binding': info >> 4, 'type': info & 15,
+                                     'visibility': other & 3, 'section_index': shndx,
+                                     'value': value, 'size': size, 'table': name,
+                                     'defined': shndx != 0})
+     need(dyn_count == sym_count == 1 and len(dynamic) <= 64 and len(symbols) <= 32,
+          'unique bounded dynamic tables required')
+-    return {'elf_machine': machine, 'elf_type': kind, 'interpreter': interpreters[0],
+-            'dynamic_strings': dynamic, 'logger_symbols': symbols,
++    return {'elf_machine': machine, 'elf_type': kind, 'interpreter': None,
++            'dynamic_strings': dynamic, 'lookup_symbols': symbols,
+             'shared_library_definition_read': False, 'call_abi_verified': False,
+             'logger_called': False, 'binary_executed': False}
+ 
+ 
+ def collect():
+-    result = {'schema': 1, 'kind': 'OWNER15_EXACT_INIT_ELF_DYNAMIC_METADATA_ONLY',
+-              'path': PATH, 'expected_bytes': SIZE, 'expected_sha256': SHA256,
+-              'collection_complete': False, 'files_modified': False,
+-              'android_or_ui_action': False, 'main_qualification': False,
+-              'error': None, 'close_errors': [], 'held_fds_closed': False}
+-    owned = []
+-    held = []
++    out = dict(schema=1, kind="OWNER16_FIXED_TWO_BUILD_DEPENDENCIES_READONLY", inputs=[],
++        prior_147_input_receipt_sha256=PRIOR_ACTUAL_147_INPUT_RECEIPT_SHA256,
++        collection_complete=False, expected_new_input_sha256=None,
++        build_or_runtime_qualified=False, android_or_ui_action=False,
++        files_modified=False, subprocess_started=False, error=None,
++        close_errors=[], held_fds_closed=False)
++    owned, held = [], []
+     deadline = time.monotonic() + 5
+     try:
+-        parent = None
+-        for name in ['/', 'opt', 'p4-media-composer-diagnostic-20261102-chat2-r5', 'payload']:
+-            fd = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+-                         **({} if parent is None else {'dir_fd': parent}))
++        for path, maximum, kind in PATHS:
++            parent = None
++            parts = path.split('/')
++            for name in ['/'] + parts[1:-1]:
++                need(time.monotonic() <= deadline, 'two-input deadline exceeded')
++                fd = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
++                             **({} if parent is None else {'dir_fd': parent}))
++                owned.append(fd)
++                meta = os.fstat(fd)
++                need(stat.S_ISDIR(meta.st_mode) and meta.st_uid in (0, 1000), 'candidate ancestor identity differs')
++                held.append((fd, parent, name, stamp(meta, True), True))
++                parent = fd
++            leaf = parts[-1]
++            fd = os.open(leaf, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=parent)
+             owned.append(fd)
+-            value = os.fstat(fd)
+-            need(stat.S_ISDIR(value.st_mode) and value.st_uid == value.st_gid == 0 and
+-                 value.st_mode & 0o22 == 0, 'fixed ancestor authority differs')
+-            held.append((fd, parent, name, stamp(value, True), True))
+-            parent = fd
+-        fd = os.open('android-init', os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=parent)
+-        owned.append(fd)
+-        value = os.fstat(fd)
+-        need(stat.S_ISREG(value.st_mode) and value.st_uid == value.st_gid == 0 and
+-             value.st_nlink == 1 and stat.S_IMODE(value.st_mode) == 0o555 and
+-             value.st_size == SIZE, 'actual pinned init metadata differs')
+-        before = stamp(value)
+-        held.append((fd, parent, 'android-init', before, False))
+-        for item, directory_parent, name, original, directory in held:
+-            need(stamp(os.stat(name, follow_symlinks=False,
+-                               **({} if directory_parent is None else {'dir_fd': directory_parent})),
+-                       directory) == original, 'initial named/held identity differs')
+-        raw = bytearray()
+-        while len(raw) < SIZE:
+-            need(time.monotonic() <= deadline, 'fixed ELF deadline exceeded')
+-            chunk = os.pread(fd, min(65536, SIZE - len(raw)), len(raw))
+-            need(bool(chunk), 'short pinned ELF')
+-            raw.extend(chunk)
+-        need(not os.pread(fd, 1, SIZE), 'pinned ELF grew')
+-        need(hashlib.sha256(raw).hexdigest() == SHA256, 'pinned init SHA differs')
+-        result.update(identity=before, actual_bytes=len(raw), actual_sha256=SHA256,
+-                      dynamic_metadata=parse(bytes(raw)))
+-        for item, directory_parent, name, original, directory in held:
+-            need(stamp(os.fstat(item), directory) == original, 'held input changed')
+-            need(stamp(os.stat(name, follow_symlinks=False,
+-                               **({} if directory_parent is None else {'dir_fd': directory_parent})),
+-                       directory) == original, 'named input changed')
+-        need(time.monotonic() <= deadline, 'fixed ELF deadline exceeded')
+-        result['named_and_held_unchanged'] = True
++            meta = os.fstat(fd)
++            need(stat.S_ISREG(meta.st_mode) and meta.st_uid in (0, 1000) and meta.st_nlink == 1
++                 and 0 < meta.st_size <= maximum, 'candidate file is not bounded regular single-link input')
++            identity = stamp(meta)
++            held.append((fd, parent, leaf, identity, False))
++            need(stamp(os.stat(leaf, dir_fd=parent, follow_symlinks=False)) == identity, 'initial named input differs')
++            raw = bytearray()
++            while len(raw) < meta.st_size:
++                need(time.monotonic() <= deadline, 'two-input deadline exceeded')
++                block = os.pread(fd, min(65536, meta.st_size - len(raw)), len(raw))
++                need(block, 'candidate input truncated')
++                raw.extend(block)
++            need(not os.pread(fd, 1, len(raw)), 'candidate input grew')
++            row = dict(path=path, kind=kind, identity=identity, bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest())
++            if kind == 'header':
++                raw.decode('utf-8')
++                row['utf8_original_base64'] = base64.b64encode(raw).decode()
++            else:
++                value = parse(bytes(raw))
++                need(value['elf_machine'] == 62 and value['elf_type'] == 3, 'x86_64 DSO required')
++                need([v['value'] for v in value['dynamic_strings'] if v['tag'] == 'SONAME'] == ['libdl.so'], 'candidate SONAME differs')
++                names = {v['name'] for v in value['lookup_symbols'] if v['defined'] and v['binding'] in (1, 2) and v['type'] == 2 and v['visibility'] == 0}
++                need(names == {'dlsym', 'dladdr', 'dlerror'}, 'candidate lookup exports differ')
++                row['dynamic_metadata'] = value
++            out['inputs'].append(row)
++        for fd, parent, name, before, directory in held:
++            need(stamp(os.fstat(fd), directory) == before, 'held candidate changed')
++            need(stamp(os.stat(name, follow_symlinks=False, **({} if parent is None else {'dir_fd': parent})), directory) == before, 'named candidate changed')
++        need(time.monotonic() <= deadline, 'two-input deadline exceeded')
++        out['all_named_and_held_unchanged'] = True
+     except BaseException as error:
+-        result['error'] = {'type': type(error).__name__, 'text': str(error)[:1024]}
++        out['error'] = dict(type=type(error).__name__, message=str(error)[:1024])
+     finally:
+         for fd in reversed(owned):
+-            try:
+-                os.close(fd)
+-            except OSError as error:
+-                result['close_errors'].append({'fd': fd, 'errno': error.errno})
+-        result['held_fds_closed'] = not result['close_errors']
+-    result['collection_complete'] = result['error'] is None and result['held_fds_closed']
+-    encoded = (json.dumps(result, sort_keys=True, separators=(',', ':')) + '\n').encode()
+-    need(len(encoded) <= MAX_OUTPUT, 'bounded metadata report exceeded')
++            try: os.close(fd)
++            except OSError as error: out['close_errors'].append(dict(fd=fd, errno=error.errno))
++        out['held_fds_closed'] = not out['close_errors']
++    out['collection_complete'] = out['error'] is None and len(out['inputs']) == 2 and out['held_fds_closed']
++    encoded = (json.dumps(out, sort_keys=True, separators=(',', ':')) + '\n').encode()
++    need(len(encoded) <= MAX_OUTPUT, 'two-input output bound exceeded')
+     sys.stdout.buffer.write(encoded)
+-    return 0 if result['collection_complete'] else 1
+-
++    return 0 if out['collection_complete'] else 1
+ 
+ if __name__ == '__main__':
+     raise SystemExit(collect())

@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "probe": "owned_fixed_raw_metadata_r17",
+  "package": "local.pocket4.fdownerprobe.r11",
+  "version_code": 11,
+  "abi": "x86_64",
+  "minimum_sdk": 24,
+  "build_entry": "owner_probe.cpp (includes raw_owner_cases.cc and exact fixed-operation worker)",
+  "same_pinned_builder_and_signer_as_r15_r16": true,
+  "expected_cases": 8,
+  "expected_behavior_mask": "0xff",
+  "known_reds_counted_as_expected": {
+    "NOFILE_0_remains_EMFILE_known_red": "native fstat/statfs succeed but worker Read remains -1/EMFILE24"
+  },
+  "controller_limits": {
+    "per_direct_child_ms": 3000,
+    "suite_budget_ms": 15000,
+    "post_kill_reap_ms": 1000,
+    "owned_nested_child_ms": 1500
+  },
+  "wait_scope": "Only own fork PIDs; SIGCHLD=DFL and no SA_NOCLDWAIT prerequisite; PDEATHSIG on owned descendants; ECHILD never authorizes kill. Direct/nested started and reaped counts separate from assertions.",
+  "worker": "Fixed stat/statfs/fcntl-seals/owned-user-xattr snapshot. Pure x86_64 raw clone trampoline and raw syscall worker; no arbitrary callback or libc/TLS use in child closure.",
+  "flags": [
+    "CLONE_VM",
+    "CLONE_SIGHAND",
+    "CLONE_THREAD",
+    "CLONE_SYSVSEM",
+    "CLONE_PARENT_SETTID",
+    "CLONE_CHILD_CLEARTID"
+  ],
+  "independent_fdtable": "CLONE_FILES omitted; close_range operates only on worker copied table. PIDFD_THREAD+pidfd_getfd bind each request to its actual caller TID.",
+  "exit_lifetime": "Stop waits kernel clear_child_tid using shared FUTEX_WAIT before stack reuse.",
+  "source_worker_no_libc_calls": true,
+  "final_android_worker_binary_audit_required_before_install": true,
+  "binary_audit_command": [
+    "python3",
+    "audit_worker_binary.py",
+    "PATH_TO_ACTUAL_LIBFDOWNERPROBE_SO",
+    "--objdump",
+    "PINNED_LLVM_OBJDUMP",
+    "--output",
+    "NEW_OWNED_OUTPUT_JSON"
+  ],
+  "host_evidence": {
+    "report_sha256": "64099ae505bbf366cabd3f46a134d8860c43fa1b2f36c00614e48b9feb1fd0b8",
+    "all_8_expected": true,
+    "android_evidence": false
+  },
+  "known_limits": [
+    "Full provenance/root-factory identity and projection are not integrated or tested.",
+    "Raw private fork under AS1 is tested with active idle owner; deterministic in-flight request fork is not covered.",
+    "NOFILE0 remains EMFILE; task-count/kernel memory failures remain possible.",
+    "Worker is not Bionic-pthread-registered. It must never remain alive across application credential/root/mount/capability transitions or zygote stop/fork boundaries.",
+    "Independent FD table does not isolate credentials. No prewarmed root worker may enter an app credential generation.",
+    "Host cancellation, Bionic thread broadcasts, foreign CLONE_VM callers, runtime/zygote/exec/last-thread retirement hooks are not qualified by this suite.",
+    "Existing ordinary alias-to-maps admission race is unchanged."
+  ],
+  "runtime_hooks_installed": false,
+  "candidate_production_ready": false,
+  "peer_review": "NOT_PERFORMED",
+  "changes_to_system_policy": false,
+  "changes_to_commercial_apps": false
+}

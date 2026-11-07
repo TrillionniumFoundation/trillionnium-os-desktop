@@ -1,0 +1,126 @@
+--- r2/controls/run_control.py
++++ r3/controls/run_control.py
+@@ -15,7 +15,7 @@
+ import time
+ 
+ SOURCE = Path('/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source')
+-ROOT = Path('/home/alex/work/pocket4-blueprint-streaming-controls-02-20261105')
++ROOT = Path('/home/alex/work/pocket4-blueprint-streaming-controls-03-20261105')
+ HERE = ROOT / 'source'
+ OUT = ROOT / 'attempt01'
+ GOROOT = SOURCE / 'prebuilts/go/linux-x86'
+@@ -91,27 +91,75 @@
+     for item in (path, *path.parents):
+         require(stat.S_ISDIR(item.lstat().st_mode), 'directory alias rejected: '+str(item))
+ 
++# Exact fixture links observed without following them in source-layout-read01.
++# Production .go files and every unlisted symlink remain rejected.
++SOURCE_TEST_LINKS = {'pathtools/testdata/dangling/a/a/f': '../../f', 'pathtools/testdata/dangling/b': 'a', 'pathtools/testdata/dangling/c': 'a/a', 'pathtools/testdata/dangling/d': 'c', 'pathtools/testdata/dangling/dangling': 'missing', 'pathtools/testdata/dangling/e': 'a/a/a', 'pathtools/testdata/symlinks/b': 'a', 'pathtools/testdata/symlinks/c': 'a/a', 'pathtools/testdata/symlinks/d': 'c', 'pathtools/testdata/symlinks/e': 'a/a/a'}
++
++def held_link(path, expected_target):
++    before = path.lstat()
++    require(stat.S_ISLNK(before.st_mode), 'expected test fixture link missing: '+str(path))
++    target = os.readlink(path)
++    require(target == expected_target, 'test fixture link target changed: '+str(path))
++    require(identity(before) == identity(path.lstat()), 'test fixture link changed during read: '+str(path))
++    raw = target.encode('utf-8')
++    return {'path':str(path), 'bytes':len(raw), 'sha256':sha(raw), 'identity':identity(before),
++            'kind':'symlink', 'target':target}
++
++def copied_link(path, row):
++    observed = held_link(path, row['target'])
++    require(observed['sha256'] == row['sha256'], 'copied test fixture link differs: '+str(path))
++    return observed
++
++def write_link(path, row):
++    path.parent.mkdir(parents=True, exist_ok=True)
++    os.symlink(row['target'], path)
++    copied_link(path, row)
++
+ def copy_source_tree(source, destination):
+     real_directory(source)
++    key = str(source.relative_to(SOURCE))
++    require(key in ['build/blueprint','external/pogreb'], 'unexpected source tree: '+str(source))
++    expected_links = SOURCE_TEST_LINKS if key == 'build/blueprint' else {}
++    observed_links = set()
+     rows = []
+     total = 0
+     destination.mkdir(parents=True)
++    def take_link(path):
++        relative = str(path.relative_to(source))
++        require(relative in expected_links, 'unlisted source symlink rejected: '+str(path))
++        row = held_link(path, expected_links[relative])
++        require(len(rows) < 4096, 'fixed source-tree inventory bound exceeded')
++        row['relative'] = relative
++        write_link(destination/relative, row)
++        rows.append(row)
++        observed_links.add(relative)
+     for directory, dirs, files in os.walk(source, followlinks=False):
+-        dirs[:] = sorted(d for d in dirs if d != '.git')
+-        for name in dirs:
+-            require(stat.S_ISDIR((Path(directory)/name).lstat().st_mode), 'source directory symlink rejected')
++        descend = []
++        for name in sorted(d for d in dirs if d != '.git'):
++            path = Path(directory)/name
++            mode = path.lstat().st_mode
++            if stat.S_ISLNK(mode):
++                take_link(path)
++            else:
++                require(stat.S_ISDIR(mode), 'source directory changed type: '+str(path))
++                descend.append(name)
++        dirs[:] = descend
+         for name in sorted(files):
+             if name == '.git':
+                 continue
+             path = Path(directory)/name
+-            relative = path.relative_to(source)
++            relative = str(path.relative_to(source))
++            if stat.S_ISLNK(path.lstat().st_mode):
++                take_link(path)
++                continue
++            require(relative not in expected_links, 'expected test fixture link became regular: '+str(path))
+             data, row = held(path)
+             total += len(data)
+             require(len(rows) < 4096 and total <= 64*1024*1024, 'fixed source-tree inventory bound exceeded')
+             write_new(destination/relative, data)
+-            row['relative'] = str(relative)
++            row['relative'] = relative
+             rows.append(row)
+-    require(rows, 'empty source tree')
++    require(rows and observed_links == set(expected_links), 'source test fixture link set differs: '+str(source))
+     return rows
+ 
+ def children():
+@@ -325,9 +373,13 @@
+             _, current = held(Path(row['path']))
+             require(current == row, 'authority source changed before compilation')
+         for row in blueprint_rows:
+-            data, _ = held(pre/row['relative'])
+-            require(sha(data) == row['sha256'], 'copied preimage changed')
+-            write_new(cand/row['relative'], data)
++            if row.get('kind') == 'symlink':
++                copied_link(pre/row['relative'], row)
++                write_link(cand/row['relative'], row)
++            else:
++                data, _ = held(pre/row['relative'])
++                require(sha(data) == row['sha256'], 'copied preimage changed: '+row['relative'])
++                write_new(cand/row['relative'], data)
+         original_tests = []
+         for path in sorted(pre.glob('*_test.go')):
+             data, row = held(path)
+@@ -407,8 +459,13 @@
+             changed = []
+             for row in rows:
+                 try:
+-                    _, after = held(Path(row['path']), 64*1024*1024)
+-                    if after != {k:row[k] for k in ['path','bytes','sha256','identity']}:
++                    if row.get('kind') == 'symlink':
++                        after = held_link(Path(row['path']), row['target'])
++                        before = {k:row[k] for k in ['path','bytes','sha256','identity','kind','target']}
++                    else:
++                        _, after = held(Path(row['path']), 64*1024*1024)
++                        before = {k:row[k] for k in ['path','bytes','sha256','identity']}
++                    if after != before:
+                         changed.append(row['path'])
+                 except Exception as error:
+                     changed.append({'path':row['path'], 'error':repr(error)})

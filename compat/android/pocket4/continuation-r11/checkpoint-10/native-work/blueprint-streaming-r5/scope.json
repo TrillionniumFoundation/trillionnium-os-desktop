@@ -1,0 +1,28 @@
+{
+  "revision": "r5",
+  "change": "fresh-generation fixture always forbids restored modules; requires cache keys exactly when incremental mode is enabled",
+  "unchanged": [
+    "470-byte production patch",
+    "preimage/candidate production sources",
+    "all six top-level tests and eighteen leaf cases",
+    "both-arm complete whole-output equality and allocation comparisons",
+    "ENOSPC controls",
+    "incremental enabled13 positive arm",
+    "explicit vet=off from r4",
+    "resource/cleanup/tool/source gates"
+  ],
+  "prior_r4": {
+    "state": "FAIL",
+    "result_bytes": 13033,
+    "result_sha256": "ae30c9c322b721c6b1c167941d315f40860087e32ac1e3aea0fab41fc34e3cd5",
+    "runtime_stdout_bytes": 6238,
+    "runtime_stdout_sha256": "65821080db2f180ebe05a43d11476d3618777c2c8ecf175d864ba7eb9a31a558",
+    "scope": "parent reported original preimage-only execution; complete original receipts retained by root",
+    "failed_leaf": "WholeShardOutput/enabled13",
+    "preimage_other_leaf_passed": 17,
+    "candidate_executed": false
+  },
+  "vet_pass_claimed": false,
+  "local_Go_compilation": false,
+  "remote_dispatch_performed": false
+}

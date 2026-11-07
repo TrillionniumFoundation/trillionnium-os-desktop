@@ -1,0 +1,53 @@
+--- runtime02/controller.py
++++ runtime03/controller.py
+@@ -54,6 +54,21 @@
+ libc.unshare.argtypes = [ctypes.c_int]
+ libc.setns.argtypes = [ctypes.c_int, ctypes.c_int]
+ libc.mount.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_ulong, ctypes.c_void_p]
++
++
++class CapabilityHeader(ctypes.Structure):
++    _fields_ = [('version', ctypes.c_uint32), ('pid', ctypes.c_int)]
++
++
++class CapabilityData(ctypes.Structure):
++    _fields_ = [('effective', ctypes.c_uint32), ('permitted', ctypes.c_uint32),
++                ('inheritable', ctypes.c_uint32)]
++
++
++libc.capget.argtypes = [ctypes.POINTER(CapabilityHeader), ctypes.POINTER(CapabilityData)]
++libc.capget.restype = ctypes.c_int
++libc.capset.argtypes = [ctypes.POINTER(CapabilityHeader), ctypes.POINTER(CapabilityData)]
++libc.capset.restype = ctypes.c_int
+ 
+ 
+ def must(condition, message):
+@@ -303,12 +318,28 @@
+                 os.close(original_ns)
+ 
+ 
++def clear_dropped_client_capabilities(uid):
++    # setresuid clears effective/permitted capabilities but can retain the
++    # inheritable set. Drop all three sets only in this already-unprivileged
++    # owned child; the factory/root actors and production guard stay unchanged.
++    must(uid in (ALLOW_UID, DENY_UID) and os.getresuid() == (uid, uid, uid) and
++         os.getresgid() == (uid, uid, uid) and os.getgroups() == [],
++         'client credentials must already be fully dropped')
++    header = CapabilityHeader(0x20080522, 0)  # Linux capability ABI version 3.
++    values = (CapabilityData * 2)()
++    checked(libc.capset(ctypes.byref(header), values), 'clear owned client capabilities')
++    checked(libc.capget(ctypes.byref(header), values), 'verify owned client capabilities')
++    must(all(row.effective == row.permitted == row.inheritable == 0 for row in values),
++         'owned client retained capabilities after drop')
++
++
+ def child_exec(elf_fd, argv, uid=None):
+     def execute(parent_fd):
+         if uid is not None:
+             os.setgroups([])
+             os.setresgid(uid, uid, uid)
+             os.setresuid(uid, uid, uid)
++            clear_dropped_client_capabilities(uid)
+             # Linux clears this setting during the credential transition.
+             arm_parent(parent_fd)
+         must(alive(parent_fd), 'parent lost before exact ELF exec')

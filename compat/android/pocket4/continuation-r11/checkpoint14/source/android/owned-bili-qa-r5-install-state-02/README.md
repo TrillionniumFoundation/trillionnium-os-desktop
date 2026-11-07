@@ -1,0 +1,9 @@
+# Owned R5 build02 installation and state02, once
+
+Bind only the newly qualified R5 build02 artifact to the original install/state mechanism. The original R5 build01 failed its escaped package gates and remains unusable for this admission. The new build02 has eleven successful joined commands, all nine exact sources and unchanged tool records. Its actual APK/signature/manifest and owned resource receipts are externally pinned.
+
+This fresh root/key/flow uses the unchanged R4 held namespace transport, Main fence and action lock. Across-user installed and retained-uninstalled package absence is required. Explicit cmd package install -R -t forbids replacement; no permission grant, clearing, setting change or fallback is allowed. The installed UID is observed, never guessed; known older helpers including UID10169 are rejected and untouched. The actual installed base APK is read through the held Main root and checked before/after one state operation.
+
+The only instrumentation operation is state, which does not connect UiAutomation. Its actual nonce, UID, finish -1, returncode and post guard must all match. Original first-error/finally logic releases held FDs/action lock and removes only the held temporary APK file/directory. The installed helper is retained for a later independently qualified fresh functional flow. Failed/unknown installation is not replayed or uninstalled automatically.
+
+Compile SDK31, minSdk31 and targetSdk33 are unchanged. R5 UI operations use public clearCache on runtime API34+, but this state does not exercise it. Runtime cache cause, window readiness, viewport/playback/audio and whole-App readiness remain unqualified. Actual build02 job: 1a1aa74aa92-fc05-4355. Source manifest: 83f642432c59f8e441f32402e278e9b52467a1a848e9d8e59eedaa22ed2a9577. This install/state source/request has not executed Android.

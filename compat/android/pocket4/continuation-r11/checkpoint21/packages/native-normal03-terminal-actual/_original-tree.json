@@ -1,0 +1,77 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "8fdb90ccf2dedb20d63ac1b1f578db274bd9c983",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 24274,
+    "sha256": "34c6cfb8a15d5f2809b9ae304a386f3914211b7842094d5ba9167d9a2db79f78",
+    "git_blob_sha1": "939fc89a73a664b05d0ad8246e6367b6c3dd7bda",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "inner.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d5fb26bc425227ea8a385322a98e76c34d545536",
+      "bytes": 5239
+    },
+    {
+      "path": "original-pins.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e74f991f54a4a83fd716b622d7390fe0e059af4d",
+      "bytes": 488
+    },
+    {
+      "path": "outer.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d75089c789c449343a07ad18792420b4903ab46c",
+      "bytes": 24689
+    },
+    {
+      "path": "receipt",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b4332efb81f0fcb153af6c3ae94a1eec56fdd0ee"
+    },
+    {
+      "path": "receipt/admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1a5d9297c14433371df43b869be91412f99caa86"
+    },
+    {
+      "path": "receipt/reader-receipt.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3fd51f13dd312b6e3d534363342107515dc73f72",
+      "bytes": 624
+    },
+    {
+      "path": "receipt/stdout.original.jsonl",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b36d2aba42545aad37a872d64100f8f3178a23cf",
+      "bytes": 6671
+    },
+    {
+      "path": "receipt/terminal.tool-original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5a89170295bfde514c9fbdae214efd32437093d4",
+      "bytes": 728
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "receipt/admission",
+      "original_tree": "1a5d9297c14433371df43b869be91412f99caa86",
+      "checkpoint": 20,
+      "canonical_package": "native_normal03-admission_tree"
+    }
+  ],
+  "original_recursive_leaf_count": 70
+}

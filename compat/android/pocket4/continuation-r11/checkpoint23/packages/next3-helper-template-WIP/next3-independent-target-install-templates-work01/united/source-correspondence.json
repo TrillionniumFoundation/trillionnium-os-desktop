@@ -1,0 +1,417 @@
+{
+  "schema": "independent-target-installer-template-proof-v1",
+  "state": "SOURCE_ONLY_CONTROLS_PENDING_NONCES_UNBOUND",
+  "newRoot": "/home/alex/work/pocket4-owned-united-qa-r1-install-state-01",
+  "helper_package": "org.droidloom.qa.united.r1",
+  "target": {
+    "slug": "united",
+    "label": "United",
+    "package": "com.united.mobile.android",
+    "uid": 10133,
+    "version": 3617,
+    "apks": 4,
+    "tree": "1e57b20f9f7783db37fa12d3edf43876a35e5a1b",
+    "job": "1a1b229e173-fc05-7cbd",
+    "blob": "a47962c9d7fb8cd344dd67f8667ed1d3520a7a7f",
+    "bytes": 13946,
+    "sha256": "7820efe97d7a8ebd55f91b6234d829576e2f0c2c0e6277710f143aca3759dc76",
+    "reference_pin": {
+      "bytes": 5048,
+      "sha256": "9fd00a8b3b3f88e958b75d093247e27d8736747e9191bda26b4ac9955f16cc9a"
+    }
+  },
+  "edits": {
+    "bestbuy_transport.py": {
+      "parent_sha256": "5666d94ba5d9c90a8ea8edd7b063ff4764b83b1bfafe4dd238018d720ab7d4a9",
+      "source_sha256": "f9be976eddf67e1b1a90925c434ace5eed279496294a15234e75d7b18a84990a",
+      "inverse_exact": true,
+      "steps": [
+        {
+          "before": "EXPECTED_PACKAGE = \"com.bestbuy.android\"",
+          "after": "EXPECTED_PACKAGE = \"com.united.mobile.android\"",
+          "positions": [
+            829
+          ]
+        },
+        {
+          "before": "EXPECTED_UID = 10130",
+          "after": "EXPECTED_UID = 10133",
+          "positions": [
+            876
+          ]
+        }
+      ]
+    },
+    "install_state.py": {
+      "parent_sha256": "fb8ebc169dcc8b8e65893028c57dcdbd750d2f5d6253368eae1b6f6e3918fc3c",
+      "source_sha256": "f010112adecb442fcc3a49bcd5a2310d12130388c6b5f0835a22a035c298c228",
+      "inverse_exact": true,
+      "steps": [
+        {
+          "before": "com.bestbuy.android",
+          "after": "com.united.mobile.android",
+          "positions": [
+            26867,
+            27658,
+            35423,
+            39567
+          ]
+        },
+        {
+          "before": "bestbuy",
+          "after": "united",
+          "positions": [
+            737,
+            981,
+            1038,
+            1195,
+            1380,
+            1563,
+            1591,
+            2528,
+            2622,
+            3048,
+            3068,
+            3259,
+            11704,
+            13279,
+            13614,
+            18438,
+            23908,
+            24072,
+            24205,
+            28378,
+            28416,
+            28447,
+            28503,
+            28543,
+            28576,
+            28642,
+            28665,
+            28836,
+            29045,
+            29243,
+            31206,
+            31305,
+            36005
+          ]
+        },
+        {
+          "before": "BestBuy",
+          "after": "United",
+          "positions": [
+            42,
+            324
+          ]
+        },
+        {
+          "before": "BESTBUY",
+          "after": "UNITED",
+          "positions": [
+            17838,
+            26165,
+            26659,
+            26919,
+            27122,
+            32299,
+            34830,
+            36887
+          ]
+        },
+        {
+          "before": "pocket4-owned-united-qa-r4-install-state-02",
+          "after": "pocket4-owned-united-qa-r1-install-state-01",
+          "positions": [
+            721
+          ]
+        },
+        {
+          "before": "org.droidloom.qa.united.r4",
+          "after": "org.droidloom.qa.united.r1",
+          "positions": [
+            962
+          ]
+        },
+        {
+          "before": "pocket4-owned-united-qa-r4-source-01",
+          "after": "pocket4-owned-united-qa-r1-source-01",
+          "positions": [
+            1022,
+            1364
+          ]
+        },
+        {
+          "before": "pocket4-owned-united-qa-r4-build-01",
+          "after": "pocket4-owned-united-qa-r1-build-01",
+          "positions": [
+            1179,
+            1547
+          ]
+        },
+        {
+          "before": "united_r4_transport",
+          "after": "united_r1_transport",
+          "positions": [
+            28569
+          ]
+        },
+        {
+          "before": "NONCE = 'b6275faedda72f2dec85914ab42b2b7b'",
+          "after": "NONCE = '__FRESH_INSTALL_FLOW__'",
+          "positions": [
+            862
+          ]
+        },
+        {
+          "before": "STATE_NONCE = 'a499f5a6a566ed0cebed5c98e234eede'",
+          "after": "STATE_NONCE = '__FRESH_INSTALL_STATE__'",
+          "positions": [
+            895
+          ]
+        },
+        {
+          "before": "QA_MANIFEST = 'cda79d5b01ebfd91d6b9148be6853c78495da92130fb4f153422daac7d14ad0b'",
+          "after": "QA_MANIFEST = \"1317ce458785a654ff04c82e340c08774e71b3c925662af1996b4ccb0e2a1dd6\"",
+          "positions": [
+            1049
+          ]
+        },
+        {
+          "before": "BUILD_SHA = '8bd0c70e64a543129aca0d8eeb08030bb135f95eb1be6bcda3b7933ac02433fb'",
+          "after": "BUILD_SHA = \"3f3b22b58eea4daf77b979e82fc7389bd076eb2c3056de5208bace8fa17c21b4\"",
+          "positions": [
+            1216
+          ]
+        },
+        {
+          "before": "BUILD_BYTES = 23340",
+          "after": "BUILD_BYTES = 23290",
+          "positions": [
+            1295
+          ]
+        },
+        {
+          "before": "STAGE_SHA = '037ffdf74d57b1cad24d40dd06754032ec4adbd50c9ef3e99b529471730089c7'",
+          "after": "STAGE_SHA = \"3d0e795709fbafbfa7fcc348152ac620ed0352e806d4147ee3ca30301ecba099\"",
+          "positions": [
+            1402
+          ]
+        },
+        {
+          "before": "STAGE_BYTES = 1950",
+          "after": "STAGE_BYTES = 1946",
+          "positions": [
+            1481
+          ]
+        },
+        {
+          "before": "APK_SHA = '708887e252bad787781768e4c96db9040444b4b32308381ec1d38af3deb0cc2c'",
+          "after": "APK_SHA = \"6cecb979ae1b50148df2010cb9a3aa2fb7423c52d652b618f94afb33abad7400\"",
+          "positions": [
+            1586
+          ]
+        },
+        {
+          "before": "SIGNER_SHA = '32b07f5c29e267541086154af0e5b0424cd53a65feb1b64f82b9277cccfb7c31'",
+          "after": "SIGNER_SHA = \"ff4dad8b3251ae18d60fda3bb6c9c8de5928ceb1ffdf86fe797315bde1311859\"",
+          "positions": [
+            1681
+          ]
+        },
+        {
+          "before": "READER_SHA = 'ce4ff1399953fe0d5e89bc0210ae9cdb323d1e08e436327df1521f6cb167ef77'",
+          "after": "READER_SHA = \"13862d58dff080c86227f9adc57557f68dc5a7c45f2dcc0c15030f4153008070\"",
+          "positions": [
+            2395
+          ]
+        },
+        {
+          "before": "PREVIOUS_HELPER_UID",
+          "after": "PARENT_HELPER_UID",
+          "positions": [
+            2367,
+            10144
+          ]
+        },
+        {
+          "before": "PARENT_HELPER_UID = 10155",
+          "after": "PARENT_HELPER_UID = 10160",
+          "positions": [
+            2367
+          ]
+        },
+        {
+          "before": "uid not in (10130,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190,10137,10196,10198,10203)",
+          "after": "uid != 10133",
+          "positions": [
+            10166
+          ]
+        },
+        {
+          "before": "references/read_united.py",
+          "after": "references/target_metadata_parsers.py",
+          "positions": [
+            3220,
+            18306,
+            28518
+          ]
+        },
+        {
+          "before": "qa.UID == 10130",
+          "after": "qa.UID == 10133",
+          "positions": [
+            26785
+          ]
+        },
+        {
+          "before": "if len(artifacts.records)==3 and",
+          "after": "if len(artifacts.records)==4 and",
+          "positions": [
+            32832
+          ]
+        },
+        {
+          "before": "'current_discovery.py', 'check_current_discovery.py'}",
+          "after": "'current_discovery.py', 'check_current_discovery.py', 'actual-target-metadata.json'}",
+          "positions": [
+            3293
+          ]
+        },
+        {
+          "before": "its exact three current APKs",
+          "after": "its exact 4 current APKs",
+          "positions": [
+            350
+          ]
+        }
+      ]
+    },
+    "stage_execute.py": {
+      "parent_sha256": "b2c76ff89ffda73a0b5fe3372baaea6b72a9e128cfc539d1f2aa5ee44a43133c",
+      "source_sha256": "5cecb7ee9f977c95c222034d9d34519b2b4ce340c6eda0e6a0d2ea11124dd5ae",
+      "inverse_exact": true,
+      "steps": [
+        {
+          "before": "bestbuy",
+          "after": "united",
+          "positions": [
+            32,
+            230,
+            436,
+            456,
+            653,
+            5868,
+            5896,
+            5981,
+            6011
+          ]
+        },
+        {
+          "before": "pocket4-owned-united-qa-r4-install-state-02",
+          "after": "pocket4-owned-united-qa-r1-install-state-01",
+          "positions": [
+            216
+          ]
+        },
+        {
+          "before": "NONCE = 'b6275faedda72f2dec85914ab42b2b7b'",
+          "after": "NONCE = '__FRESH_INSTALL_FLOW__'",
+          "positions": [
+            283
+          ]
+        },
+        {
+          "before": "references/read_united.py",
+          "after": "references/target_metadata_parsers.py",
+          "positions": [
+            627
+          ]
+        },
+        {
+          "before": "'current_discovery.py', 'check_current_discovery.py'}",
+          "after": "'current_discovery.py', 'check_current_discovery.py', 'actual-target-metadata.json'}",
+          "positions": [
+            700
+          ]
+        }
+      ]
+    },
+    "make_request.py": {
+      "parent_sha256": "e9ae15f782837b86956c1e8085daa213fa59574c2a6243ba36adde297338423d",
+      "source_sha256": "9ee43cf88abb0c3968421eccc7dd78f9bcce5ffab5c48012af97a7d56d37cf3c",
+      "inverse_exact": true,
+      "steps": [
+        {
+          "before": "bestbuy",
+          "after": "united",
+          "positions": [
+            241,
+            330
+          ]
+        },
+        {
+          "before": "pocket4-owned-united-qa-r4-current-r6-install-state-02",
+          "after": "pocket4-owned-united-qa-r1-current-r6-install-state-01",
+          "positions": [
+            227
+          ]
+        },
+        {
+          "before": "pocket4-owned-united-qa-r4-install-state-02",
+          "after": "pocket4-owned-united-qa-r1-install-state-01",
+          "positions": [
+            316
+          ]
+        },
+        {
+          "before": "NONCE = 'b6275faedda72f2dec85914ab42b2b7b'",
+          "after": "NONCE = '__FRESH_INSTALL_FLOW__'",
+          "positions": [
+            361
+          ]
+        }
+      ]
+    },
+    "check_current_discovery.py": {
+      "parent_sha256": "8ccff7b0b23f88431f9b275cb332ac8f941e94de7722902471bf25b2e70d9599",
+      "source_sha256": "a73f9ecc30898674295e1c872beacf0f0b8edd3099c4e187772de2cc9d5c6e6d",
+      "inverse_exact": true,
+      "steps": [
+        {
+          "before": "context_source = files[{\"com.ihg.apps.android\":\"ihg_context.py\",\n        \"com.amazon.mShop.android.shopping\":\"amazon_context.py\",\n        \"com.bestbuy.android\":\"bestbuy_context.py\"}[context_name]]",
+          "after": "need(context_name == \"com.united.mobile.android\", \"EXACT_INDEPENDENT_TARGET_CONTEXT_REQUIRED\")\n    context_source = files[\"united_context.py\"]",
+          "positions": [
+            10318
+          ]
+        }
+      ]
+    }
+  },
+  "parser": {
+    "parent": {
+      "bytes": 21069,
+      "sha256": "ce4ff1399953fe0d5e89bc0210ae9cdb323d1e08e436327df1521f6cb167ef77"
+    },
+    "source": {
+      "bytes": 1981,
+      "sha256": "13862d58dff080c86227f9adc57557f68dc5a7c45f2dcc0c15030f4153008070"
+    },
+    "original_functions": [
+      "need",
+      "metadata",
+      "apk_paths"
+    ],
+    "bodies_exact": true,
+    "no_execution_entry": true
+  },
+  "unchanged": [
+    "current_discovery.py",
+    "host/source-manifest.json",
+    "host-stage-actual.json",
+    "helper target-artifact-reference.json",
+    "all helper QA/Java sources"
+  ],
+  "installed_UID": null,
+  "scope_not_added_to_baseline": true,
+  "no_execution_request": true
+}

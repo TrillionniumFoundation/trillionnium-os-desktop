@@ -1,0 +1,198 @@
+{
+  "Main_three_exact_maps": {
+    "daemon": {
+      "ControlGroup": "/system.slice/droidloomd.service",
+      "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+      "MainPID": "3588022"
+    },
+    "framework_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "held_cgroup_identity": [
+      30,
+      26651611
+    ],
+    "installed_contract_unchanged": true,
+    "original_processes_alive_and_unchanged": true,
+    "resources": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    }
+  },
+  "actual_id_availability": {
+    "available_at_observation": true,
+    "host_uid": 61288,
+    "processes_observed": 866,
+    "reservation_created_in_passwd_or_subid_tables": false,
+    "subordinate_range": {
+      "count": 100000,
+      "start": 22000000
+    },
+    "tables": {
+      "/etc/subgid": {
+        "bytes": 18,
+        "sha256": "dc6b239ceac4d0d3f5739daa348847f11f729fb01db535ab05c2458f8e551464"
+      },
+      "/etc/subuid": {
+        "bytes": 18,
+        "sha256": "dc6b239ceac4d0d3f5739daa348847f11f729fb01db535ab05c2458f8e551464"
+      }
+    }
+  },
+  "actual_prepared": {
+    "bytes": 55139,
+    "sha256": "b31dbe0fccd293b05687f28caa7e747f0f5b6092585611c9670ffb86c87d0b8d"
+  },
+  "actual_resources_before": {
+    "MemAvailable_bytes": 14028775424,
+    "disk_available_bytes": 382449860608,
+    "memory_pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=5176469740\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=4966204735\n"
+  },
+  "actual_sorted_plan_sha256": "b06999b8082c918e51720a5fd678325e75d61d7e72d03fcfe3a7a7c2b75cd88a",
+  "artifacts": {
+    "droidloom-psi-owner": {
+      "bytes": 1327696,
+      "identity": {
+        "device": 66306,
+        "inode": 45139249
+      },
+      "path": "/opt/p4-owner17-normal-20261105-01/bin/droidloom-psi-owner",
+      "sha256": "044c851a88d544aa3ed47a30fbe8beac568b0240b660290541d2c18ac72af167"
+    },
+    "droidloom-supervisor": {
+      "bytes": 6623376,
+      "identity": {
+        "device": 66306,
+        "inode": 45139248
+      },
+      "path": "/opt/p4-owner17-normal-20261105-01/bin/droidloom-supervisor",
+      "sha256": "69976328ee7f4850f7308067a8b5437f23cb0739943f5648eb8adbfde87db068"
+    },
+    "droidloomd": {
+      "bytes": 6600824,
+      "identity": {
+        "device": 66306,
+        "inode": 45139247
+      },
+      "path": "/opt/p4-owner17-normal-20261105-01/bin/droidloomd",
+      "sha256": "b625080e77d9ae0c2ed375c5a4fcfe27eb918766dd2b59e3df19e9a10606c9b3"
+    },
+    "init-barrier": {
+      "bytes": 28488,
+      "identity": {
+        "device": 66306,
+        "inode": 45139251
+      },
+      "path": "/opt/p4-owner17-normal-20261105-01/lib/libdroidloom_init_relay.so",
+      "sha256": "5d54b0eb58dc9e8e606a1538baa6403dd2eb22b588fdc60aac01d12198769f30"
+    },
+    "lmkd": {
+      "bytes": 162952,
+      "identity": {
+        "device": 66306,
+        "inode": 45139250
+      },
+      "path": "/opt/p4-owner17-normal-20261105-01/bin/lmkd",
+      "sha256": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde"
+    }
+  },
+  "base_records": 86,
+  "canonical_spec_sha256": "947e51218328012fb2d6b99d6d10e542d754129d0966bc57c324ae6598da6c4a",
+  "check_count": 42,
+  "checks": [
+    "exact owner17-prepared-read01/prepared.json",
+    "exact owner17-prepared-read01/stdout.log",
+    "full compressed wire hash",
+    "full uncompressed envelope hash",
+    "collection complete and no errors or mutation",
+    "single exact prepared original",
+    "terminal 1a1ae26ce67-fc05-5dc7",
+    "terminal 1a1ae2e2d49-fc05-5df0",
+    "exact owner17-normal-prepare01/stdout.log",
+    "original preparation summary binds report after close path",
+    "frozen plan manifest",
+    "all 26 original frozen payload pins",
+    "actual success with no runtime or namespace effects",
+    "actual attempt and sorted plan hash",
+    "exact canonical CellSpec",
+    "all six sources exactly prepared",
+    "exact five artifacts only",
+    "actual copied droidloom-psi-owner",
+    "actual copied droidloom-supervisor",
+    "actual copied droidloomd",
+    "actual copied init-barrier",
+    "actual copied lmkd",
+    "base86 entire original identities unchanged",
+    "base86 each bytes and SHA equals plan",
+    "all three original Main gates equal",
+    "Main unit framework five limits exact original12288",
+    "all eight fixed tools",
+    "actual fixed tool /usr/bin/dbus-daemon",
+    "actual fixed tool /usr/bin/ip",
+    "actual fixed tool /usr/bin/python3",
+    "actual fixed tool /usr/bin/sway",
+    "actual fixed tool /usr/bin/systemctl",
+    "actual fixed tool /usr/bin/systemd-run",
+    "actual fixed tool /usr/bin/unshare",
+    "actual fixed tool /usr/sbin/mkfs.ext4",
+    "actual presenter same paired artifact",
+    "two fresh ext4 images original shape",
+    "actual fresh image data.img",
+    "actual fresh image metadata.img",
+    "actual proposed IDs available without reservation",
+    "actual fresh memory disk PSI admission",
+    "actual state root same as independent protected reader"
+  ],
+  "collector_stdout_sha256": "d6fac30957d58b1e8648169c48ee27cab8e3274b56e145f7c6254b6eede7de47",
+  "data_images": [
+    {
+      "bytes": 8589934592,
+      "existing_userdata_copied": false,
+      "fresh_sparse_created": true,
+      "identity": {
+        "device": 66306,
+        "inode": 45269831
+      },
+      "name": "data.img",
+      "returncode": 0
+    },
+    {
+      "bytes": 134217728,
+      "existing_userdata_copied": false,
+      "fresh_sparse_created": true,
+      "identity": {
+        "device": 66306,
+        "inode": 45269832
+      },
+      "name": "metadata.img",
+      "returncode": 0
+    }
+  ],
+  "fixed_tools": 8,
+  "held_prepared_file_identity": [
+    66306,
+    45139260,
+    55139,
+    1793923161155079353,
+    1793923161156081230,
+    33060,
+    0,
+    0,
+    1
+  ],
+  "limits": [
+    "Original preparation exit0 summary is emitted after its fixed FD closes; no independent FD-table census was performed.",
+    "The two mkfs returncodes are from frozen subprocess.run direct-child joins; no independent child scan or ext4 header read.",
+    "The original MainFence revalidates its seven process identities and artifacts; this report consumes its complete returned maps, not a new Main scan.",
+    "UID61288/subid availability is a point observation, not a reservation or assertion that init runs with that UID.",
+    "No runtime, LMKD execution repair, HWS health, complete log stream or App qualification follows from preparation."
+  ],
+  "original_summary_sha256": "8f68e350fc607dac62264e712e27b1543f650c571662baad142856f7d05100e8",
+  "private_logdr_WIP_included": false,
+  "result": "ACTUAL_PREPARATION_PASS_RUNTIME_NOT_EXECUTED_BY_REVIEW",
+  "runtime_executed_by_review": false,
+  "schema": 1,
+  "source_files": 6,
+  "whole_App_qualified": false
+}

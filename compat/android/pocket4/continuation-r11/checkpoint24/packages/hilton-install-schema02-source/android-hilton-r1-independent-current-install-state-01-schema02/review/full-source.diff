@@ -1,0 +1,78 @@
+--- a/SOURCE_PINS.json
++++ b/SOURCE_PINS.json
+@@ -41,8 +41,8 @@
+       "sha256": "9ed0069897faebba50cec3d93b08da54f1c791d6e2e775d26ec798c38b227886"
+     },
+     "hilton_context.py": {
+-      "bytes": 24457,
+-      "sha256": "695b7e0c21761900aa97af797e4cb21520655512b1b603a889745883dccc506e"
++      "bytes": 25248,
++      "sha256": "eaf426c17c8818f88f0abcf4d7ab59d86b10e5e536d10640a15db80d6b37d460"
+     },
+     "hilton_transport.py": {
+       "bytes": 15612,
+@@ -61,8 +61,8 @@
+       "sha256": "d07caafae6c5092531b1fe533b5e91debf806af618c6b144f007d0b723404109"
+     },
+     "make_request.py": {
+-      "bytes": 3065,
+-      "sha256": "d3a8226f8e1f4c4cdf72a107203025c36dedc63bd195b4aa9d2222edaf8b15bf"
++      "bytes": 3082,
++      "sha256": "f566a0a8c5cf79014c5545a8fc75d4b09ddb3f5fdf8c18ddf967ffbff5d7e61d"
+     },
+     "references/target_metadata_parsers.py": {
+       "bytes": 1982,
+--- a/hilton_context.py
++++ b/hilton_context.py
+@@ -120,14 +120,21 @@
+             value.get('target_data_directory_contents_read') is False and
+             value.get('APK_bytes_exported') is False,
+             'FIVE_COMPLETED_READONLY_METADATA_COMMANDS_REQUIRED')
+-    require(type(artifact_reference) is dict and artifact_reference.get('target') == exact and
+-            value.get('artifacts') == artifact_reference.get('artifacts') and
++    require(type(artifact_reference) is dict and artifact_reference.get('schema') == 1 and
++            {k:artifact_reference.get(k) for k in exact} == exact and
++            all(type(artifact_reference.get(k)) is int for k in ('uid','user','version_code')) and
++            value.get('artifacts') == artifact_reference.get('current_artifacts') and
+             type(value.get('artifacts')) is list and len(value['artifacts']) == APK_COUNT and
++            type(artifact_reference.get('current_APK_count')) is int and
++            artifact_reference['current_APK_count'] == APK_COUNT and
+             value.get('apk_paths_before') == sorted(r['path'] for r in value['artifacts']) and
+-            value.get('total_apk_bytes') == sum(r['held_file']['bytes'] for r in value['artifacts']),
++            type(artifact_reference.get('current_total_APK_bytes')) is int and
++            artifact_reference['current_total_APK_bytes'] == value.get('total_apk_bytes') ==
++                sum(r['held_file']['bytes'] for r in value['artifacts']),
+             'ACTUAL_METADATA_AND_BUILT_TARGET_ARTIFACT_REFERENCE_MUST_MATCH')
+     dirs = value.get('data_directories_before')
+-    require(type(dirs) is list and dirs == value.get('data_directories_after') and len(dirs) == 2 and
++    require(type(dirs) is list and dirs == value.get('data_directories_after') ==
++            artifact_reference.get('current_data_directories') and len(dirs) == 2 and
+             [r.get('path') for r in dirs] == ['/data/user/0/'+PACKAGE,'/data/user_de/0/'+PACKAGE] and
+             value.get('target_directory_cleanup') == {'contents_read':False,'held_data_directory_FDs_closed':2},
+             'COMPLETE_INDEPENDENT_TARGET_DIRECTORY_PAIR_REQUIRED')
+@@ -174,8 +181,13 @@
+             baseline.get('whole_app_production_ready') is False,
+             'TYPED_CURRENT_BASELINE_AND_INDEPENDENT_TARGET_REQUIRED')
+     # Separate pinned authority, never additions to B.packages/app_directories.
++    metadata = authority.get('metadata_before')
+     qualify_target_metadata(authority, {
+-        'target':authority.get('metadata_before'),'artifacts':authority.get('artifacts')})
++        **(metadata if type(metadata) is dict else {}), 'schema':1,
++        'current_APK_count':APK_COUNT,
++        'current_artifacts':authority.get('artifacts'),
++        'current_total_APK_bytes':authority.get('total_apk_bytes'),
++        'current_data_directories':authority.get('data_directories_before')})
+     return current_scope()
+ 
+ 
+--- a/make_request.py
++++ b/make_request.py
+@@ -7,7 +7,7 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY = 'pocket4-owned-hilton-qa-r1-current-r6-install-state-01-20261106'
++KEY = 'pocket4-owned-hilton-qa-r1-current-r6-install-state-01-schema02-eaf426c17c8818f8'
+ ROOT = '/home/alex/work/pocket4-owned-hilton-qa-r1-install-state-01'
+ NONCE = '2fd1a0e95fa54abae85ff1b6602a35c8'
+ 

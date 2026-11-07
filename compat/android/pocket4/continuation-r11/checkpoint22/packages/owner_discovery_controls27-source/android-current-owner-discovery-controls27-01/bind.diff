@@ -1,0 +1,13 @@
+--- original/R6.Flow.bind
++++ owned/CurrentFlow.bind
+@@ -3,7 +3,9 @@
+             return self.binding
+         module = self.contract.load('main_binding.py', 'bili_main_binding')
+         binding = module.MainBinding(contract=self.contract, source=self.source, scope=self.scope,
+-            activation=self.activation, epoch=self.epoch, app=self.app, guard=lambda: self.guard())
++            activation=self.activation, epoch=self.epoch,
++            app=discovery.discovery_view(self.app,self.activation,self.epoch,lambda:self.guard()),
++            guard=lambda: self.guard())
+         try:
+             write_new(self.step / 'held-main-binding.json', binding.record)
+         except BaseException as original:

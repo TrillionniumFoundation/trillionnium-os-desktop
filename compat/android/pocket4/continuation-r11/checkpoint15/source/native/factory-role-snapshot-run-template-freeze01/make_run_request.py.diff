@@ -1,0 +1,61 @@
+--- a/make_run_request.py
++++ b/make_run_request.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Bind a fresh root-only mechanism run to a successful actual build. No dispatch."""
++"""Bind a fresh root-only owned snapshot run to a successful actual build. No dispatch."""
+ from pathlib import Path
+ import argparse
+ import ast
+@@ -7,12 +7,12 @@
+ import json
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT='/run/pocket4-role-authorization-positive-host-run-02-20261105'
+-KEY='pocket4-role-authorization-positive-host-runtime-02-20261105'
+-SOURCE_MANIFEST='fda076982c0a26682eb3b6a596a6964e6645cf1eddc7b175e56d9b499c06fda2'
+-TEMPLATE_SHA='d81586937de3414222a06bf0cac97ccabf921c913d8ddb032e37a28d9238e200'
+-PLAN_SHA='77ce88615978dded6cb36bfee8df337e500515a018f83ffc72828e88acb7cd1d'
+-BUILD_ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-02-20261105'
++ROOT='/run/pocket4-role-authorized-snapshot-host-run-01-20261105'
++KEY='pocket4-role-authorized-snapshot-host-runtime-01-20261105'
++SOURCE_MANIFEST='53e90ef34ab51ae8b9700f93419c3c050665fb0ea5a50482417b48aa860497e1'
++TEMPLATE_SHA='140f94169b2514d586bde30276c2ca63fced58141330a8ac084e916ddc9c1e5d'
++PLAN_SHA='d79fb33dbf54d7082c6bd70a1f1db12b604853482dd1a1c7ee050e65f5143494'
++BUILD_ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorized-snapshot-host-build-01-20261105'
+ 
+ 
+ def pin(raw):return {'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+@@ -26,7 +26,7 @@
+     raw=build_path.read_bytes()
+     if len(raw)>262144:raise RuntimeError('actual build receipt exceeds the fixed bound')
+     build=json.loads(raw)
+-    source=(HERE/'run_registry.template.py').read_text()
++    source=(HERE/'run_snapshot.template.py').read_text()
+     plan=(HERE/'CASE_PLAN.json').read_bytes()
+     if pin(source.encode())['sha256']!=TEMPLATE_SHA or pin(plan)['sha256']!=PLAN_SHA:
+         raise RuntimeError('reviewed run template or case plan changed')
+@@ -40,12 +40,12 @@
+     exec(compile(ast.Module(body=selected,type_ignores=[]),'frozen_build_predicate','exec'),scope)
+     scope['qualified_build'](build)
+     elf=build['artifacts']['control']['elf']
+-    if elf['path']!=BUILD_ROOT+'/build01/registry_controls' or not 0<elf['bytes']<=8*1024*1024:
++    if elf['path']!=BUILD_ROOT+'/build01/snapshot_controls' or not 0<elf['bytes']<=8*1024*1024:
+         raise RuntimeError('actual matching control ELF path or size differs')
+     if source.count('PENDING_ACTUAL_BUILD_RESULT_SHA256')!=1:
+         raise RuntimeError('single actual build binding placeholder required')
+     source=source.replace('PENDING_ACTUAL_BUILD_RESULT_SHA256',pin(raw)['sha256']);ast.parse(source)
+-    files={'run_registry.py':source,'actual-build-result.json':raw.decode(),'CASE_PLAN.json':plan.decode()}
++    files={'run_snapshot.py':source,'actual-build-result.json':raw.decode(),'CASE_PLAN.json':plan.decode()}
+     pins={name:pin(text.encode())for name,text in files.items()}
+     stage='''import hashlib,json,os,stat
+ from pathlib import Path
+@@ -81,7 +81,7 @@
+            (after.st_dev,after.st_ino)!=(named.st_dev,named.st_ino):
+             raise RuntimeError('root parent changed during create-only staging')
+     finally:os.close(parent)
+-    os.execve('/usr/bin/python3',['/usr/bin/python3','-I','-B',str(source/'run_registry.py'),'--execute-once'],
++    os.execve('/usr/bin/python3',['/usr/bin/python3','-I','-B',str(source/'run_snapshot.py'),'--execute-once'],
+               {'PATH':'/usr/bin:/bin','HOME':'/root','LANG':'C','LC_ALL':'C'})
+ '''%(ROOT,pins)
+     entry=stage+'\nPACKET=json.loads('+repr(json.dumps(files,sort_keys=True))+')\nmain(PACKET)\n'

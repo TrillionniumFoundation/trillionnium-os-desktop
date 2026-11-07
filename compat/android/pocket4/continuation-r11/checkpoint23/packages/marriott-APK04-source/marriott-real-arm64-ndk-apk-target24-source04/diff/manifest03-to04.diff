@@ -1,0 +1,16 @@
+--- APK03/AndroidManifest.xml
++++ APK04/AndroidManifest.xml
+@@ -4,9 +4,10 @@
+     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+     <!-- Network permission is required for socket testing. -->
+     <uses-permission android:name="android.permission.INTERNET" />
+-    <!-- Note: we MUST use targetSdkVersion="23" (or less) here - otherwise shared libraries
+-         greylist is permanently disabled -->
+-    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="23" />
++    <!-- Upstream target 23 supports legacy shared-library greylist tests.
++         This fixture targets 24 after the actual PackageManager rejection of 23.
++         Shared tests remain registered; only ProcSelfMaps.* is selected for this fixture. -->
++    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="24" />
+     <application android:label="NDK Tests"
+                  android:debuggable="true">
+         <uses-library android:name="android.test.runner" />

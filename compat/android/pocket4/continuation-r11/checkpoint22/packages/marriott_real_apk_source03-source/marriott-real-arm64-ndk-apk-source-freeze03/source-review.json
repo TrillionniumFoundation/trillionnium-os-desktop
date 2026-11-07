@@ -1,0 +1,94 @@
+{
+  "actual_failure": {
+    "complete_original_report_independently_reviewed": false,
+    "exact_bound_build_line": 2383,
+    "first_error": "wrong target C++ configuration in dependency set: []",
+    "other_stage_qualification_inferred": false,
+    "source_call": "compile_object(..., 'shared-lib', .../source/shared_lib.cc, cpp, roots, watch, cpp=True)",
+    "terminal": "failed exit1/full/durable reported by Root",
+    "whole_report": {
+      "bytes": 2778880,
+      "sha256": "4ac6808bb258b7595f1eafa1e1f76716288d47e7c0796d60d4ec748bc2f16cae"
+    }
+  },
+  "admission": "Root review and independent actual02 cleanup qualification required before Root-only fresh03 submission.",
+  "baseline": {
+    "actual_job": "1a1b1f0f831-fc05-7b9b",
+    "actual_request_blob": "c46236db9f0e3bf3507b607bd951270d467e3f6c",
+    "binder": {
+      "bytes": 6574,
+      "git_blob_sha": "2b5cbb3e9653039b26c971c8b11bd096684c4e95",
+      "sha256": "978b676933c3c45225740b0ecbd8859729cc62449f5fac9109a25c9ed6bb1389"
+    },
+    "config": {
+      "bytes": 328810,
+      "git_blob_sha": "6e5fdf750d05245092d7feff642c0b38fbe1929c",
+      "sha256": "d7102bea3f0fb7dc4c931e5854a7cf46b22587ea84ab73d7135db60823f5d2de"
+    },
+    "source": {
+      "bytes": 84091,
+      "git_blob_sha": "9325026a10c1104370cd1fbea10b12b7937748dc",
+      "sha256": "6c2cafd587c043ebb7d58d3501d5398dadcebd9b6f9cdb5c624aa54104d1211b"
+    },
+    "tree": "6b3f9400f42dbfb3ed05d5d4133bbff140c64523"
+  },
+  "bounds": {
+    "controller_seconds": 600,
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 1073741824,
+    "nice": 15,
+    "outer_seconds": 660
+  },
+  "freshness": {
+    "binder_delta": "key-prefix build02 to build03 only",
+    "kind": "p4-marriott-real-arm64-ndk-apk-build03",
+    "observer_delta": "three exact owned cpufeatures path roots and kind only",
+    "old_roots_reused": false,
+    "root": "/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-03-20261106"
+  },
+  "preserved": {
+    "actual_7_archive_and_JAR_whole_pins": true,
+    "actual_C20_compiler_and_linker_complete_tuple": true,
+    "all13_input_roles_and_required_class_gates": true,
+    "all16_inline_originals_exact": true,
+    "all_Bionic_CRT_and_SDK_generator_sources": true,
+    "all_compile_dependency_functions": true,
+    "all_input_before_after_and_full_report": true,
+    "all_observer_functions": true,
+    "command_count50": true,
+    "complete_test_registry23_and_focus12": true,
+    "java_tools": true,
+    "linked_library_count7": true,
+    "manifest_min14_target23": true,
+    "no_undefined_and_whole_link_qualification": true,
+    "object_count16": true,
+    "old_failures_and_unknown_reader02": true,
+    "original_VerifyTestList_JNI_GTest": true,
+    "reaper_and_resources": true,
+    "sdk37_and_current10000_and_ARM64_minimum21": true
+  },
+  "schema": 1,
+  "source_cause": {
+    "behavioral_delta": "one fixed call cpp=True to cpp=False; no function changes outside main",
+    "compiler_language": "unchanged -x c++ -std=gnu++17 and all original cpp flags",
+    "include_directives": 0,
+    "new_expectation": "For this one header-free shared-lib TU require zero __config_site entries. All other original header-using C++ TUs require exactly the fixed ARM64 config path; C/assembler remain zero.",
+    "old_cpp_keyword_role": "Only dependency_rows __config_site exact-set expectation; it does not choose the compiler language or flags.",
+    "original_shared_lib_source": {
+      "bytes": 696,
+      "git_blob_sha": "feb8fb423f4f625de2ea73bc4372829dee218101",
+      "sha256": "b050ca1d07c8df5d33af6a41c31cdf9710b04246fba3ed93224fc157d08ae47b"
+    },
+    "original_source_changed": false
+  },
+  "state": "SOURCE_ONLY_NEW_FIXED_BUILD03_NOT_EXECUTED",
+  "validation": {
+    "APK_built": false,
+    "ART_or_runtime_qualified": false,
+    "Android_or_Main_actions": 0,
+    "Python_compilation_or_controls_run": false,
+    "all_non_main_functions_byte_identical": true,
+    "four_full_diffs_replayed_to_exact_candidate": true,
+    "installed": false
+  }
+}

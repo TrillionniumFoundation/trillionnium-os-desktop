@@ -1,0 +1,38 @@
+import hashlib,json,os,stat
+from pathlib import Path
+ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-listener-lifetime-host-build-03-20261105')
+EXPECTED={'listener-source-pins.json': {'bytes': 9518, 'sha256': '7adaade107d05204015482abcee84431d8cd1bcc7776fea2a97dcd6488d210fb'}, 'owner-lifetime-source-pins.json': {'bytes': 1698, 'sha256': 'de1ef1fb3044b9bdc935fe32b812bb53e88aaf4be54b439df7d78f963e813209'}, 'listener-observer-source-pins.json': {'bytes': 3052, 'sha256': '03fb2fa44f8e3917e31e72dd0c194dccedf66e4bc801d3cc767e977b462c363b'}, 'controls/admission_controls.cc': {'bytes': 28379, 'sha256': '2f62cf48ae6fcea36f23fdfacab2e4acaadffaf5712543b8a1b88d0a6791a31e'}, 'controls/lease_destruction_controls.cc': {'bytes': 15207, 'sha256': '6ec8abe52c50c14c535a29e099ddad997dfd7a571db0484337eb5e080b5bff3f'}, 'include/berberis/kernel_api/proc_maps_factory_protocol.h': {'bytes': 5051, 'sha256': 'b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9'}, 'include/berberis/kernel_api/proc_maps_kernel_statfs.h': {'bytes': 2480, 'sha256': '77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0'}, 'include/berberis/kernel_api/proc_maps_linux_compat.h': {'bytes': 2072, 'sha256': '131d1eef8d9f789876c965fa2d827b21a59fc64ab7886fa1f78d95623114370c'}, 'include/berberis/kernel_api/proc_maps_snapshot_reopen.h': {'bytes': 2557, 'sha256': '175107cadc296ab714acb83d40f0559fd8bd5f4505ca73f48861d509d3a07977'}, 'preimage/source/role_session.cc': {'bytes': 17240, 'sha256': 'ba298a4d5bce4bf1079fdbdccc867ee0ac837f6a7d6e7f78e25268f97db22bdb'}, 'preimage/source/role_session.h': {'bytes': 3741, 'sha256': 'f4b31944536a286d38151e5c1e736fe73b4886373f33dc295518708bb24decc4'}, 'references/registry_controls.cc': {'bytes': 33258, 'sha256': '5ea30aeb58eebeb09542e9ee68c07e1be7ff92fedcc3141f4d336490458e1a94'}, 'references/snapshot_verification.h': {'bytes': 3409, 'sha256': '685f329d9cbe7aa663fac37d71373655fe9ba95473bbcc3e14cf64d5ce0cb9a2'}, 'source/factory_context.cc': {'bytes': 5377, 'sha256': 'afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a'}, 'source/factory_context.h': {'bytes': 954, 'sha256': 'b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1'}, 'source/proc_maps_factory_wire.cc': {'bytes': 8661, 'sha256': '4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608'}, 'source/role_admission.cc': {'bytes': 11019, 'sha256': '25d161ebf96e50442725df9231833dae032d890954890c691c0f985f4b31bf77'}, 'source/role_admission.h': {'bytes': 2505, 'sha256': '1813fd99e8e8335e7bf45859ceae236d4c2f0dd1bb7dfb44bb78f27609eece4b'}, 'source/role_authorization.cc': {'bytes': 39949, 'sha256': 'd860c7222e8f5025b19de98a8ed7aceb01d72cd12351a80c93876d8fb8ce5cf5'}, 'source/role_authorization.h': {'bytes': 6393, 'sha256': 'aa1baefc5b86091d3c9679182356c0be69896958ad472e1aee8d14c0218e4780'}, 'source/role_session.cc': {'bytes': 20238, 'sha256': '696c6065216fb2b608c038876f7615bd04926b973f1fa1e0b428c895e47e4e85'}, 'source/role_session.h': {'bytes': 3987, 'sha256': '958eda04a3236ce58482e714a4bf83e50222bc4fc9134adbd6685821f31dddcf'}, 'source/role_snapshot.cc': {'bytes': 11168, 'sha256': 'f234d00e9823411c9cd55a7e3c6ea52cac505b08c7dbf96894e5b8487dd3e335'}, 'source/role_snapshot.h': {'bytes': 1868, 'sha256': 'ee2f92791ad055959f4444e7078553780c53d27e0f649e6920bad954f9bc4ca4'}, 'build_listener.py': {'bytes': 33156, 'sha256': 'd5e14eea91e712a7546e40b1f17a34ac121813581191dcb84159706a33aaa7d1'}}
+def main(packet):
+    if os.getuid()!=1000 or os.geteuid()!=1000:raise RuntimeError('operator UID1000 required')
+    if set(packet)!=set(EXPECTED):raise RuntimeError('packet members differ')
+    for name,text in packet.items():
+        raw=text.encode()
+        if len(raw)!=EXPECTED[name]['bytes']or hashlib.sha256(raw).hexdigest()!=EXPECTED[name]['sha256']:
+            raise RuntimeError('frozen packet differs: '+name)
+    for path in [ROOT.parent,*ROOT.parent.parents]:
+        if not stat.S_ISDIR(path.lstat().st_mode):raise RuntimeError('parent directory alias')
+    parent=os.open(ROOT.parent,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC|os.O_NOFOLLOW)
+    try:
+        before=os.fstat(parent);named=ROOT.parent.lstat()
+        if (before.st_dev,before.st_ino,before.st_uid,before.st_gid,stat.S_IMODE(before.st_mode))!=(66306,34351895,1000,1000,0o700):
+            raise RuntimeError('known private source parent identity differs')
+        if (before.st_dev,before.st_ino)!=(named.st_dev,named.st_ino):raise RuntimeError('parent alias changed')
+        os.umask(0o077);os.mkdir(ROOT.name,mode=0o700,dir_fd=parent)
+        source=ROOT/'source';source.mkdir(mode=0o700)
+        for name,text in packet.items():
+            path=source/name;path.parent.mkdir(parents=True,exist_ok=True)
+            for directory in [path.parent,*path.parent.parents]:
+                if not stat.S_ISDIR(directory.lstat().st_mode):raise RuntimeError('source parent alias')
+            fd=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o400)
+            with os.fdopen(fd,'wb')as stream:
+                stream.write(text.encode());stream.flush();os.fsync(stream.fileno())
+        receipt=(json.dumps({'schema':1,'files':EXPECTED,'registry_positive_executed':False,'Main_actions':0},indent=2)+'\n').encode()
+        fd=os.open(ROOT/'stage-receipt.json',os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o400)
+        with os.fdopen(fd,'wb')as stream:
+            stream.write(receipt);stream.flush();os.fsync(stream.fileno())
+        after=os.fstat(parent);named=ROOT.parent.lstat()
+        if (after.st_dev,after.st_ino,after.st_uid,after.st_gid,stat.S_IMODE(after.st_mode))!=(66306,34351895,1000,1000,0o700)or (after.st_dev,after.st_ino)!=(named.st_dev,named.st_ino):
+            raise RuntimeError('private parent changed during create-only staging')
+    finally:os.close(parent)
+    os.execve('/usr/bin/python3',['/usr/bin/python3','-I','-B',str(source/'build_listener.py'),'--execute-once'],
+              {'PATH':'/usr/bin:/bin','LANG':'C','LC_ALL':'C'})

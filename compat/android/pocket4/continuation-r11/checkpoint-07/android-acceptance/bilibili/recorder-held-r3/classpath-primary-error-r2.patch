@@ -1,0 +1,28 @@
+--- r1/main_binding.py
++++ r2/main_binding.py
+@@ -36,6 +36,7 @@
+             "MAIN_ZYGOTE_CHANGED_BEFORE_ENVIRONMENT_READ")
+     deadline = time.monotonic() + held.CLASSPATH_SECONDS
+     view = held.HeldZygoteRoot(expected, deadline)
++    primary = None
+     try:
+         raw = held.read_at(view.proc_fd, "environ", held.ENV_LIMIT, deadline)
+         values = held.selected_classpaths(raw)
+@@ -61,8 +62,16 @@
+             "different_mount_namespaces_permitted": True,
+             "different_backing_files_permitted": False,
+             "main_classpath_read": True}
++    except BaseException as error:
++        primary = error
++        raise
+     finally:
+-        view.close()
++        try:
++            view.close()
++        except BaseException as cleanup:
++            if primary is None:
++                raise
++            primary.add_note("Main zygote root cleanup: " + type(cleanup).__name__ + ": " + str(cleanup))
+ 
+ 
+ def package_uids(raw, packages):

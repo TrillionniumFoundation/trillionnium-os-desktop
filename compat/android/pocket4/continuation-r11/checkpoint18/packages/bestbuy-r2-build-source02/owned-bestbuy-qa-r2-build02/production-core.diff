@@ -1,0 +1,117 @@
+--- r1/source/build_candidate.py
++++ r2-normalized/source/build_candidate.py
+@@ -81,7 +81,7 @@
+ def manifest_contract():
+     manifest = ET.fromstring((HERE / 'AndroidManifest.xml').read_bytes())
+     require(manifest.tag == 'manifest' and manifest.attrib == {'package':PACKAGE,
++            ATTR+'versionCode':'2', ATTR+'versionName':'2'}, 'manifest package/version')
+-            ATTR+'versionCode':'1', ATTR+'versionName':'1'}, 'manifest package/version')
+     require([x.tag for x in manifest] == ['uses-sdk','queries','application','instrumentation'], 'unexpected manifest component or permission')
+     sdk, queries, application, instrument = list(manifest)
+     require(sdk.attrib == {ATTR+'minSdkVersion':'31', ATTR+'targetSdkVersion':'33'}, 'sdk contract')
+@@ -200,6 +200,13 @@
+         command('javac', [tool['javac'], '-J-XX:ActiveProcessorCount=1', '-J-XX:+UseSerialGC', '-J-Xmx256m',
+             '-proc:none','-Xmaxerrs','20','-Xmaxwarns','20','-source','8','-target','8','-bootclasspath',resolved['android_jar'],
+             '-d',str(OUTPUT/'classes'),str(source_java)])
++        controls = json.loads(command('deep-tree-contract',
++            [sys.executable, '-I', '-B', str(HERE/'controls/check_deep_tree.py')], 20))
++        require(controls.get('state') == 'PASS_PROTOCOL_CONTROLS_ONLY' and
++                controls.get('cases') == 16 and controls.get('max_depth') == 128 and
++                controls.get('Java_scanner_executed') is False and controls.get('Android_actions') == 0,
++                'actual complete-tree protocol controls did not finish')
++        result['deep_tree_protocol_controls'] = controls
+         classes = sorted((OUTPUT/'classes').rglob('*.class'))
+         require(1 <= len(classes) <= 32 and all(x.is_file() and x.stat().st_size <= 262144 for x in classes), 'class output bound')
+         command('d8', java+['-cp',resolved['r8'],'com.android.tools.r8.D8','--lib',resolved['android_jar'],
+@@ -231,7 +238,7 @@
+         badging = command('badging', [tool['aapt'],'dump','badging',str(OUTPUT/'owned-bestbuy-qa.apk')])
+         permissions = command('permissions', [tool['aapt'],'dump','permissions',str(OUTPUT/'owned-bestbuy-qa.apk')])
+         xml = command('manifest', [tool['aapt'],'dump','xmltree',str(OUTPUT/'owned-bestbuy-qa.apk'),'AndroidManifest.xml'])
++        require(b"package: name='org.droidloom.qa.bestbuy.r1' versionCode='2'" in badging and
+-        require(b"package: name='org.droidloom.qa.bestbuy.r1' versionCode='1'" in badging and
+                 b"sdkVersion:'31'" in badging and b"targetSdkVersion:'33'" in badging, 'actual APK package/SDK differs')
+         require(b'uses-permission' not in permissions and b'uses-permission' not in xml and
+                 b'application-debuggable' not in badging and b'launchable-activity' not in badging, 'actual APK privilege/component differs')
+--- r1/source/qa_adapter.py
++++ r2-normalized/source/qa_adapter.py
+@@ -19,7 +19,7 @@
+ HERE = Path(__file__).resolve().parent
+ RECORDER_MANIFEST_SHA = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+ SELF = 'org.droidloom.qa.bestbuy.r1'
++BUILD_COMMANDS = ['javac','deep-tree-contract','d8','aapt-package','align','create-owned-signing-key','sign',
+-BUILD_COMMANDS = ['javac','d8','aapt-package','align','create-owned-signing-key','sign',
+                   'signature','alignment','badging','permissions','manifest']
+ 
+ 
+@@ -146,7 +146,7 @@
+     def __init__(self, flow, recorder, qa, proof, helper_uid):
+         require(flow.contract.sha256 == RECORDER_MANIFEST_SHA and not flow._private_backend_transport,
+                 'FROZEN_PUBLIC_RECORDER_TRANSPORT_REQUIRED')
++        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10130,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190,10137,10196,10198),
+-        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10130,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190,10137,10196),
+                 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
+         self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
+         self.nonces = set()
+--- r1/source/qa_contract.py
++++ r2-normalized/source/qa_contract.py
+@@ -16,7 +16,8 @@
+ MAX_COMPRESSED_WIRE = 262144
+ MAX_STDOUT = 4 * ((MAX_COMPRESSED_WIRE + 2) // 3) + 4096
+ MAX_NODES = 512
++MAX_DEPTH = 128
++NODE_PATH_PATTERN = r'0(?:/[0-9]{1,2}){0,%d}' % MAX_DEPTH
+-MAX_DEPTH = 32
+ # Legacy text branch remains unreachable: this revision rejects set_text at all request entries.
+ PUBLIC_SEARCH_QUERY = "usb c cable"
+ SCOPE_KEYS = {'package', 'uid', 'user', 'display', 'activity', 'window_token', 'main_epoch_sha256'}
+@@ -91,7 +92,7 @@
+         require(nonce(value.get('inspection_nonce')) != value['nonce'], 'DISTINCT_ACTION_NONCE_REQUIRED')
+         digest(value.get('inspection_sha256')); digest(value.get('node_sha256'))
+         require(isinstance(value.get('node_path'), str) and
++                re.fullmatch(NODE_PATH_PATTERN, value['node_path']), 'NODE_PATH_REQUIRED')
+-                re.fullmatch(r'0(?:/[0-9]{1,2}){0,32}', value['node_path']), 'NODE_PATH_REQUIRED')
+     if op == 'set_text':
+         expected.update(('node_resource_id','value'))
+         require(value.get('value') == PUBLIC_SEARCH_QUERY,'ONLY_FIXED_PUBLIC_SEARCH_QUERY_ALLOWED')
+@@ -166,7 +167,7 @@
+             value.get('op') == request['op'] and value.get('request_sha256') == sha(raw_request) and
+             value.get('wire_codec') == 'gzip-canonical-json-v1',
+             'RESULT_REQUEST_BINDING_FAILED')
++    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10121, 10129, 10117, 10125, 10164, 10165, 10166, 10169, 10170, 10175, 10184, 10190, 10137, 10196, 10198) and value.get('self_uid') == helper_uid and
+-    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10121, 10129, 10117, 10125, 10164, 10165, 10166, 10169, 10170, 10175, 10184, 10190, 10137, 10196) and value.get('self_uid') == helper_uid and
+             type(value.get('self_pid')) is int and value['self_pid'] > 1, 'INSTALLED_HELPER_IDENTITY_REQUIRED')
+     require(value.get('ok') is True and value.get('error') is None and value.get('secondary_errors') == [] and
+             value.get('claim_persistence_completed') is True and value.get('helper_work_completed') is True,
+@@ -243,7 +244,7 @@
+     seen = set()
+     for node in nodes:
+         require(isinstance(node, dict) and node.get('package') == PACKAGE and isinstance(node.get('path'), str) and
++                re.fullmatch(NODE_PATH_PATTERN, node['path']) and node['path'] not in seen, 'NODE_SCOPE_OR_PATH_FAILED')
+-                re.fullmatch(r'0(?:/[0-9]{1,2}){0,32}', node['path']) and node['path'] not in seen, 'NODE_SCOPE_OR_PATH_FAILED')
+         seen.add(node['path'])
+         require(node.get('node_sha256') == sha(canonical({k:v for k,v in node.items() if k != 'node_sha256'})), 'NODE_HASH_FAILED')
+         require(type(node.get('editable')) is bool and type(node.get('supports_set_text')) is bool,
+--- r1/source/src/org/droidloom/qa/bestbuy/r1/ActionRunner.java
++++ r2-normalized/source/src/org/droidloom/qa/bestbuy/r1/ActionRunner.java
+@@ -45,7 +45,9 @@
+     static final String MAIN_EPOCH = "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f";
+     static final int TARGET_UID = 10130;
+     static final int MAX_REQUEST = 16384, MAX_RESULT = 524288, MAX_COMPRESSED_WIRE = 262144;
++    static final int MAX_NODES = 512, MAX_DEPTH = 128, MAX_CHILDREN = 64;
++    static final String NODE_PATH_PATTERN = "0(?:/[0-9]{1,2}){0," + MAX_DEPTH + "}";
++    static final int MAX_NODE_PATH = 1 + 3 * MAX_DEPTH;
+-    static final int MAX_NODES = 512, MAX_DEPTH = 32, MAX_CHILDREN = 64;
+     // Legacy set_text branch is unreachable: onStart rejects it before claim/connection.
+     static final String PUBLIC_SEARCH_QUERY = "usb c cable";
+     static final long DEADLINE_MS = 8000, WATCHDOG_MS = 12000, MAX_INSPECTION_AGE_MS = 10000;
+@@ -579,8 +581,8 @@
+         JSONObject expected = previous.getJSONObject("inspection");
+         long age = SystemClock.elapsedRealtime() - integer(expected, "observed_elapsed_ms");
+         need(age >= 0 && age <= MAX_INSPECTION_AGE_MS, "INSPECTION_TOO_OLD");
++        String path = string(request, "node_path", MAX_NODE_PATH);
++        need(path.matches(NODE_PATH_PATTERN), "EXACT_NODE_PATH_REQUIRED");
+-        String path = string(request, "node_path", 160);
+-        need(path.matches("0(?:/[0-9]{1,2}){0,32}"), "EXACT_NODE_PATH_REQUIRED");
+         String nodeHash = string(request, "node_sha256", 64);
+         need(nodeHash.matches("[0-9a-f]{64}"), "EXACT_NODE_HASH_REQUIRED");
+         Capture current = inspect(path, "action_target");

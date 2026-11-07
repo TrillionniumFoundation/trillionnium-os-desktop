@@ -1,0 +1,121 @@
+{
+  "schema": 1,
+  "state": "BILIBILI_R3_READONLY_BINDING_ADMISSION_PASS",
+  "scope": "One fresh flow init and one read-only held-namespace package UID admission. No UI/audio/playback/launch/close and no whole-App qualification.",
+  "job_id": "1a1a8a103bd-fc05-2f47",
+  "stable_key": "pocket4-bilibili-readonly-r3-admission-01",
+  "authoritative_terminal": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-device-r3-01/terminal.json",
+    "bytes": 730,
+    "sha256": "c0a6632a344d2d0100c00f74118bef4d76669a59f9e0112e7f06d3ef65a96cde"
+  },
+  "original_result": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-device-r3-01/decoded/result.json",
+    "bytes": 1536,
+    "sha256": "cae3833ffb97c6879c523a8396b08cf1a88bfd145d17f1eae95e740aab766808"
+  },
+  "source_manifest_sha256": "4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906",
+  "source_archive_sha256": "8bcbbc4d8a313c37394fda2345516512cd1ba911433311d8d46e7d9577d88126",
+  "source_unchanged": true,
+  "Main_before": {
+    "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "resource_limits_match": true,
+    "three_host_processes_match": true,
+    "verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+  },
+  "Main_after": {
+    "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "resource_limits_match": true,
+    "three_host_processes_match": true,
+    "verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+  },
+  "actual_command": {
+    "argv": [
+      "/system/bin/cmd",
+      "package",
+      "list",
+      "packages",
+      "-U",
+      "--user",
+      "0",
+      "tv.danmaku.bili"
+    ],
+    "package": "tv.danmaku.bili",
+    "uid": 10117,
+    "returncode": 0,
+    "stdout": "package:tv.danmaku.bili uid:10117\n",
+    "stdout_sha256": "6ccabdca04cf7be1ceb3e0dbf7284e375fcb90c62a0030ecb3d51ef17f579582",
+    "stderr_bytes": 0,
+    "owned_command_joined": true,
+    "numeric_pid_target_used": false,
+    "only_command_sequence": 1,
+    "command_result": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-device-r3-01/decoded/flow/steps/readonly-admission-01/command-001.result.json",
+      "bytes": 445,
+      "sha256": "3d63bbd27e815bdcdfdba89cb9194696459b1e1d31a489f725bc2f7824ab884a"
+    },
+    "verified_transport_result": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-device-r3-01/decoded/flow/steps/readonly-admission-01/transport-001.verified-result.json",
+      "bytes": 652,
+      "sha256": "12f39050c7521053b3ae7c81bc9a200ccc51f4f2f2c7e3382ae562d30376cdaa"
+    }
+  },
+  "held_binding": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-device-r3-01/decoded/flow/steps/readonly-admission-01/held-main-binding.json",
+    "bytes": 54571,
+    "sha256": "cc4b401a780caf99f5c5acd52e3d6fb53e0fa3eb00c3e300dedca1b76d2dd467"
+  },
+  "admission_result": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-device-r3-01/decoded/flow/steps/readonly-admission-01/result.json",
+    "bytes": 531,
+    "sha256": "dbaace454d0a62b0e56c9e3918005391f5e5e3b3972a2e47740a839ae349b7b6"
+  },
+  "collector": {
+    "job_id": "1a1a8a23907-fc05-2f4d",
+    "source": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-device-r3-01/collector.py",
+      "bytes": 6331,
+      "sha256": "d09e08d2d6c1c5b87525e260cd37de5fa189b7646f33f85833e062dcfdb8d7ca"
+    },
+    "exact_request": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-device-r3-01/collector-start-request.json",
+      "bytes": 6807,
+      "sha256": "06f2da3a7f16f3e914a5ed4ac836208f79046ae4c0c2365634cefabd0188069d"
+    },
+    "terminal": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-device-r3-01/collector-terminal.json",
+      "bytes": 732,
+      "sha256": "45e19012b6c40de4676391559177a43a516bacb2eac298fa8db84c76b92fa5c0"
+    },
+    "report": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-device-r3-01/collector-report.json",
+      "bytes": 1738,
+      "sha256": "965074e9df7e26289c2e76c097c9767f045adc04f0d38c52ee238a169e92e119"
+    },
+    "archive_external_pin": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-device-r3-01/evidence.json.gz",
+      "bytes": 19621,
+      "sha256": "897b9dcaee449e2165114b39e9fb375a6827ee648e0a6c9169e89444b1fae27f"
+    },
+    "decoded_file_count": 20,
+    "decoded_payload_bytes": 78072,
+    "all_record_hashes_verified": true,
+    "activation_body_exported": false,
+    "unrelated_commercial_logs_exported": false
+  },
+  "boundaries": [
+    "R2 first-red remains unchanged; this is one new R3 root/flow and a separately pinned one-artifact size correction.",
+    "Transport action_attempted=true records dispatch of the read-only command; recorder mutation/action_attempted=false and admission UI/audio/action=false retain the business-action boundary. No UI/instrumentation was attempted.",
+    "This closes actual original-helper and held Main namespace/root/classpath/package UID admission only. It does not close the ActionRunner APK\u2192source/build/signature gate or audio/reopen playback gates."
+  ],
+  "action_runner_apk_source_qualified": false,
+  "business_success_verified": false,
+  "UI_audio_launch_close": false,
+  "whole_app_production_ready": false,
+  "Hepta_window_returned": true,
+  "pending_remote_requests": 0
+}

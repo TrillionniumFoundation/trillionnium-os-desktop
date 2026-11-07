@@ -1,0 +1,171 @@
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -405,6 +405,9 @@
+             &[("soong_config_module_type", "systemui_optimized_java_defaults"),
+               ("systemui_optimized_java_defaults", "SystemUI_optimized_defaults"),
+               ("filegroup", "sysui_proguard_common_and_kotlin")]),
++        "frameworks/base/packages/SystemUI/tests/Android.bp" => (3392,
++            "f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da",
++            &[]),
+         "platform_testing/libraries/motion/Android.bp" => (2098,
+             "a29bc25117f71e6acac6722f98950831a16a00f382c3ee0f9e991a36ecba5440",
+             &[("filegroup", "motion_test_template"),
+@@ -569,6 +572,20 @@
+     Ok(())
+ }
+ 
++const TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT: &str =
++    "frameworks/base/packages/SystemUI/tests/Android.bp";
++
++fn project_typed_ingress_systemui_tests(p: &mut Projection, source: &Path) -> Result<()> {
++    // The typed route retains three providers in SystemUI/Android.bp, not the
++    // SystemUI application/test build. Match that boundary for these five
++    // exact test modules only; other subdirectories are not traversed.
++    // A complete upstream body is required before the original is journaled.
++    let path = source.join(TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT);
++    let original = fs::read_to_string(&path)?;
++    p.put(&path, typed_ingress_shared_blueprint(
++        TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT, &original)?)
++}
++
+ fn project_blueprints(p: &mut Projection, source: &Path, typed_ingress: bool) -> Result<()> {
+     // In this exact Android17 sparse product, the original Connectivity Module
+     // SDK is the source for framework-connectivity-b; no source implementation
+@@ -640,6 +657,7 @@
+             p.put(&path, typed_ingress_shared_blueprint(relative, &original)?)?;
+         }
+         project_typed_ingress_hal_blueprints(p, source)?;
++        project_typed_ingress_systemui_tests(p, source)?;
+     }
+     let permission = source.join("packages/modules/Permission/framework-s/Android.bp");
+     let mut text = fs::read_to_string(&permission)?;
+@@ -2982,6 +3000,9 @@
+         ("frameworks/base/packages/SystemUI/Android.bp",
+          include_str!("../../../android/native-role-ingress/provider-fixtures/SystemUI.Android.bp"),
+          "f5e81cc5342f8c2d50799c437df0e258e697b560e16052bbfa5cec9385523ce1"),
++        (TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT,
++         include_str!("../../../android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp"),
++         "42118873220b0cc4d07e21a961052ddd5d81ab67be8df5d7c9dba9bd966aaeb5"),
+         ("platform_testing/libraries/motion/Android.bp",
+          include_str!("../../../android/native-role-ingress/provider-fixtures/motion.Android.bp"),
+          "23e1392f716fbf78efb7b0ea5281c3cf70b4547b6aa41af8cf79df495eace098"),
+@@ -3102,7 +3123,7 @@
+     fn typed_hal_provider_projection_restores_real_sources_and_keeps_consumers() {
+         use sha2::{Digest, Sha256};
+         assert_eq!(TYPED_INGRESS_HAL_BLUEPRINTS.len(), 5);
+-        assert_eq!(SHARED_PROVIDER_FIXTURES.len(), 29);
++        assert_eq!(SHARED_PROVIDER_FIXTURES.len(), 30);
+         let fixture = tempfile::tempdir().unwrap();
+         let source = fixture.path().join("aosp-source");
+         let journal = fixture.path().join("projection.json");
+@@ -3174,6 +3195,110 @@
+     }
+ 
+     #[test]
++    fn typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths() {
++        let original = include_str!(
++            "../../../android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp");
++        let parent_original = include_str!(
++            "../../../android/native-role-ingress/provider-fixtures/SystemUI.Android.bp");
++        let names = [
++            "SystemUITests_defaults", "SystemUITests",
++            "SystemUITests_systemui_accessibility", "SystemUITests_presubmit",
++            "SystemUI_test_fixtures",
++        ];
++        assert_eq!(original.matches("    name: \"").count(), names.len());
++        for name in names {
++            assert_eq!(original.matches(&format!("    name: \"{name}\",")).count(), 1);
++        }
++        let expected = concat!(
++            "package {\n",
++            "    default_team: \"trendy_team_system_ui_please_use_a_more_specific_subteam_if_possible_\",\n",
++            "    default_applicable_licenses: [\"frameworks_base_packages_SystemUI_license\"],\n",
++            "}\n",
++        );
++        let fixture = tempfile::tempdir().unwrap();
++        let source = fixture.path().join("aosp-source");
++        let path = source.join(TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT);
++        let parent = source.join("frameworks/base/packages/SystemUI/Android.bp");
++        let untouched = source.join("frameworks/base/packages/SystemUI/tests/other/Android.bp");
++        let journal = fixture.path().join("projection.json");
++        write(&path, original).unwrap();
++        write(&parent, parent_original).unwrap();
++        write(&untouched, "unrelated exact bytes\n").unwrap();
++        let parent_projected = typed_ingress_shared_blueprint(
++            "frameworks/base/packages/SystemUI/Android.bp", parent_original).unwrap();
++        {
++            let mut projection = Projection::new(journal.clone()).unwrap();
++            projection.put(&parent, &parent_projected).unwrap();
++            project_typed_ingress_systemui_tests(&mut projection, &source).unwrap();
++            assert_eq!(fs::read(&path).unwrap(), expected.as_bytes());
++            assert_eq!(fs::read(&parent).unwrap(), parent_projected.as_bytes());
++            assert_eq!(fs::read(&untouched).unwrap(), b"unrelated exact bytes\n");
++            let originals: Vec<Original> = serde_json::from_slice(&fs::read(&journal).unwrap()).unwrap();
++            assert_eq!(originals.len(), 2);
++            assert_eq!(originals[0].path, parent);
++            assert_eq!(originals[0].bytes.as_deref(), Some(parent_original.as_bytes()));
++            assert_eq!(originals[1].path, path);
++            assert_eq!(originals[1].bytes.as_deref(), Some(original.as_bytes()));
++        }
++        assert!(!journal.exists());
++        assert_eq!(fs::read(&path).unwrap(), original.as_bytes());
++        assert_eq!(fs::read(&parent).unwrap(), parent_original.as_bytes());
++        assert_eq!(fs::read(&untouched).unwrap(), b"unrelated exact bytes\n");
++    }
++
++    #[test]
++    fn typed_systemui_test_projection_rejects_wrong_source_before_journal_or_write() {
++        let original = include_str!(
++            "../../../android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp");
++        for changed in [
++            original.replacen("SystemUITests_defaults", "SystemUITests_defaultX", 1),
++            format!("{original}\n"),
++        ] {
++            let fixture = tempfile::tempdir().unwrap();
++            let source = fixture.path().join("aosp-source");
++            let path = source.join(TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT);
++            let journal = fixture.path().join("projection.json");
++            write(&path, &changed).unwrap();
++            {
++                let mut projection = Projection::new(journal.clone()).unwrap();
++                let error = project_typed_ingress_systemui_tests(&mut projection, &source)
++                    .unwrap_err().to_string();
++                assert!(error.contains("typed ingress shared provider source changed"));
++                assert!(error.contains(TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT));
++                assert!(projection.originals.is_empty());
++                assert!(!journal.exists());
++                assert_eq!(fs::read(&path).unwrap(), changed.as_bytes());
++            }
++            assert!(!journal.exists());
++            assert_eq!(fs::read(&path).unwrap(), changed.as_bytes());
++        }
++    }
++
++    #[test]
++    fn typed_systemui_test_projection_recovers_complete_original_from_durable_journal() {
++        let original = include_str!(
++            "../../../android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp");
++        let fixture = tempfile::tempdir().unwrap();
++        let source = fixture.path().join("aosp-source");
++        let path = source.join(TYPED_INGRESS_SYSTEMUI_TESTS_BLUEPRINT);
++        let journal = fixture.path().join("projection.json");
++        write(&path, original).unwrap();
++        let mut projection = Projection::new(journal.clone()).unwrap();
++        project_typed_ingress_systemui_tests(&mut projection, &source).unwrap();
++        assert_ne!(fs::read(&path).unwrap(), original.as_bytes());
++        let originals: Vec<Original> = serde_json::from_slice(&fs::read(&journal).unwrap()).unwrap();
++        assert_eq!(originals.len(), 1);
++        assert_eq!(originals[0].path, path);
++        assert_eq!(originals[0].bytes.as_deref(), Some(original.as_bytes()));
++        // Model an interrupted process while exercising the real recover entry.
++        std::mem::forget(projection);
++        assert!(Projection::new(journal.clone()).is_err());
++        recover(&journal, &source).unwrap();
++        assert_eq!(fs::read(&path).unwrap(), original.as_bytes());
++        assert!(!journal.exists());
++    }
++
++    #[test]
+     fn native_engine_mode_rejects_widening_before_command_mutation() {
+         for targets in [
+             &[][..], &["berberis_arm64_host_tests"][..], &["droidloom-native-bridge"][..],

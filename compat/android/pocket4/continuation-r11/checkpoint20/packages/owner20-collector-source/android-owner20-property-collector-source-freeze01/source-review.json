@@ -1,0 +1,80 @@
+{
+  "actual_build": {
+    "blob": "65b73e78dbc48d7e62e2c9ca6276909b8b8efd16",
+    "bytes": 728003,
+    "scope": "static build only; seven commands, original34 C cases/256 assertions and three host lifecycle controls already passed; Android not executed",
+    "sha256": "5cc813715a261701cad3be931b9e53145229dec7c803d828a1097e4fe4ad166b",
+    "tree": "816a0407060727e91c4658c2abbc97bd1e6794e2"
+  },
+  "baseline": {
+    "actor": {
+      "bytes": 28108,
+      "git_blob_sha": "aec8351eed1942c0af336815efe86f714156f157",
+      "sha256": "59c4892b95159fc29751b847c36375febc80e72f3051d5880920490e7450bc63"
+    },
+    "owned": {
+      "bytes": 17466,
+      "git_blob_sha": "26fcaffb5d6e9e19386f1f9ecce35b81be4fa517",
+      "sha256": "fb2371b148bac2faf644cbf30cb2fc959260e0d9af7c3424bba027f1dc62abfd"
+    },
+    "support": {
+      "bytes": 13377,
+      "git_blob_sha": "64ae215395933d6894515e4ab25c882c266c0b48",
+      "sha256": "31e80cbcfb1b330b5daed3aefb1f4d29bbd10d94e703ce8cd1a1f42207deb40e"
+    }
+  },
+  "controls": {
+    "actual_host_control_result": "PENDING_ROOT_SINGLE_DISPATCH",
+    "additional_checks": "Exact protocol negative cases, actual owned SCM credentials/rights/CLOEXEC and EOF, ELF/BuildId/getter mapping, post-fork cleanup, close-EIO seams, source proof failure before tokens, lower proof failure preserving root, expired/ignored/blocked alarm gates and source AST/Stop order.",
+    "c_controls_rerun": false,
+    "host_children": "Three sequential host fixture children, maximum1live: exact pidfd kill/reap; explicit missing-pidfd seam; held current host Python exec with child timer. No Android artifact is executed.",
+    "limits_not_claimed": "No invented swap.max or pids.max cap. This control request requests only its exposed CPU/memory/time limits.",
+    "local_python_syntax_or_controls_executed": false,
+    "proposed_python_cases": 38,
+    "request_scope": "sudo -n /usr/bin/python3 -I -B -, host-only; 30s tool budget,15s self watchdog,CPU100%,128MiB,nice10. A fresh exact/tmp fixture directory is created and removed only if still owned/empty. No unknown tool or Android execution."
+  },
+  "explicit_limits": [
+    "Root-first property mappings/cache remain when UID1069 reads. This cannot establish fresh LMKD visibility, actual LMKD capabilities/SELinux domain or a cold-cache result.",
+    "Actor PID namespace is retained, so guest /proc/self and other PID-dependent behavior can differ from actual LMKD. This difference is emitted, never silently qualified.",
+    "The new bionic/current root/namespace proof is source code only until an actual owned run. Current Python API presence is not setns/chroot/Android runtime permission qualification.",
+    "Linux interval timers can be delivered after their requested expiry because of scheduling. Accepted evidence must independently lie inside host monotonic bounds.",
+    "Original Main epoch/baseline and all failed Owner reports are unchanged. This packet has no NORMAL prepare/runtime request and no new Main baseline authority.",
+    "The first58640B work checkpoint remains incomplete history. This is a new implementation reconstructed from retained actor/support/C sources, not a claim of byte-identical recovery of lost WIP."
+  ],
+  "implementation": {
+    "actor_changes": "Only load/run: load one pinned module, admit/poll at most once after the unchanged lifecycle checks in the original65s loop, finish after unchanged originalStop and all four original children. Existing native lifecycle qualifiers are not relaxed.",
+    "child_deadline": "Only observer child receives one ITIMER_REAL with remaining host budget before exec. SIGALRM is explicitly default, unblocked, active single-shot and rechecked immediately before exec. The unchanged C still enforces its own2s main-relative budget. Timer signal scheduling latency remains possible; host monotonic rejection is independent and no hard real-time death claim is made.",
+    "credential_protocol": "Kernel SCM_CREDENTIALS for every packet, exact helper host PID, root then1069 credentials. SO_PEERCRED from socketpair creation is not reused after credential drop. Lower kernel credentials require empty groups, all capability sets0 and no_new_privs1. Four keys/order/length/nonce and monotonic brackets are exact.",
+    "error_handling": "First observation error is sticky. Constructor-close failures track newly acquired FDs before parent close. Every received SCM_RIGHTS FD is owned immediately. EOF cannot be fabricated by a zero-length read after stderr overflow. Child allocation failure kills only its still-unreaped direct child. A cleanup failure contributes a separate actor error without replacing original lifecycle failure.",
+    "host_deadline": "One absolute host2s deadline starts at constructor admission and includes source proofs and both token send returns. Root read lower bound uses send admission, not send return, because the child may run before send returns. Lower process/library/init verification and finalACK all must finish within the same2s.",
+    "new_child": "One os.fork; direct pidfd/proc/birth ownership; child-only cgroup membership write to the exact new generation, join mnt/net/ipc/uts/cgroup, chroot held synthetic root, held-FD exec of exact0555 helper. No fallback, second child, retry or Main namespace entry.",
+    "retirement": "After originalStop/four children, no recv or token or new property read is performed. At most one extra second for exact-child kill/join and bounded evidence/FD retirement, with distinct deadline and actual exit/reap/close records. Every error remains failure. Private stderr is a bounded prefix in a fresh owned evidence file; no raw stderr enters public result.",
+    "runtime_view": "Init HELLO process/source/full hash, all ten held/named namespaces, current root UID/GID, held/named root, exact audit domain and current membership are checked before authorization and after lower read. Init current-check timestamps are emitted. Helper PID namespace intentionally remains the actor's; same initial user/time namespaces are required.",
+    "source_authorization": "Actual helper full hash plus prepared copied identity. C-ready sends three read-only CLOEXEC bionic FDs. Host full-hashes each, verifies ELF64/BuildId, fixed root-confined named APEX path, current process maps and exact libc __system_property_get dynamic symbol address/PT_LOAD file offset before one READ token. Libc/linker BuildIds match prior actual crash evidence; libdl full hash is newly observed, not preclaimed."
+  },
+  "kind": "owner20-property-collector-source-review01",
+  "next_step": "Root full source/request review and one host-only control run. Actual controls are a separate receipt. Then bind a fresh Owner20 plan/current Main fence/actual prepared input before any Root-only owned runtime admission.",
+  "objective": "Observe four fixed public SDK properties through the actual-built unchanged Android accessor, first as root and then permanently UID/GID1069 with empty groups and capabilities, in one new owned generation.",
+  "official_references": [
+    {
+      "supports": "Interval timers are not inherited by fork, survive execve, and delivery can be later than requested expiry.",
+      "url": "https://man7.org/linux/man-pages/man2/setitimer.2.html"
+    },
+    {
+      "supports": "Default/ignored dispositions persist; caught handlers reset. This candidate explicitly resets and unmasks SIGALRM in the child rather than relying on parent disposition.",
+      "url": "https://man7.org/linux/man-pages/man2/execve.2.html"
+    }
+  ],
+  "schema": 1,
+  "status": "FROZEN_SOURCE_CANDIDATE_HOST_CONTROLS_NOT_YET_EXECUTED",
+  "verification_performed": {
+    "Hepta_or_device_calls_by_agent": false,
+    "Python_execution": false,
+    "V8_full_UTF8_SHA_Git_pins": true,
+    "actor_diff_exact_rebuild": true,
+    "all_five_packet_members_exact": true,
+    "checkpoint_delta_exact_rebuild": true,
+    "request_stdin_exact": true,
+    "unsafe_actual_nanosecond_literals_preserved": true
+  }
+}

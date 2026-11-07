@@ -1,0 +1,206 @@
+--- mechanism02/probe.c
++++ mechanism03/probe.c
+@@ -22,8 +22,8 @@
+ #include <time.h>
+ #include <unistd.h>
+ 
+-#define FIXTURE_ROOT "/opt/p4-cgroup-mount-mechanism-20261105-01/mountpoint"
+-#define FIXTURE_NONCE "62746bd0d951a88f277158788ec25a02"
++#define FIXTURE_ROOT "/opt/p4-cgroup-mount-mechanism-20261105-02/mountpoint"
++#define FIXTURE_NONCE "782a06e513cc0b63cd93d6022c6495b5"
+ #define MAGIC UINT64_C(0x503443474d4e5431)
+ #define CGROUP2_MAGIC 0x63677270
+ #define MOUNT_FLAGS (MS_NOSUID | MS_NODEV | MS_NOEXEC)
+@@ -219,6 +219,76 @@
+            (unsigned long long)value->monotonic_ns, (unsigned long long)value->boottime_ns,
+            (unsigned long long)value->realtime_ns);
+ }
++struct collection {
++    int got, peer_eof, reaped, forced, status, error;
++};
++
++/* A seqpacket stream has exactly one evidence frame followed by EOF. EOF
++ * after that frame is completion, not a second frame. Keep draining until
++ * EOF even if the exact child has exited, so queued extra data is rejected. */
++static struct collection collect_child(int channel, pid_t child,
++                                      struct evidence *e, uint64_t timeout_ns) {
++    struct collection out = {0};
++    int pidfd = (int)syscall(SYS_pidfd_open, child, 0);
++    uint64_t deadline = clock_ns(CLOCK_MONOTONIC) + timeout_ns;
++    if (pidfd < 0) out.error = errno;
++    while (!out.error && (!out.reaped || !out.peer_eof)) {
++        uint64_t now = clock_ns(CLOCK_MONOTONIC);
++        if (!now || now >= deadline) { out.error = ETIMEDOUT; break; }
++        struct pollfd polls[2] = {
++            {out.peer_eof ? -1 : channel, POLLIN | POLLRDHUP, 0},
++            {out.reaped ? -1 : pidfd, POLLIN, 0}
++        };
++        int rc = poll(polls, 2, 100);
++        if (rc < 0 && errno == EINTR) continue;
++        if (rc < 0) { out.error = errno; break; }
++        if (polls[0].revents & (POLLIN | POLLHUP | POLLRDHUP)) {
++            struct evidence candidate;
++            ssize_t n = recv(channel, &candidate, sizeof(candidate), MSG_DONTWAIT | MSG_TRUNC);
++            if (n < 0) {
++                if (errno != EAGAIN && errno != EWOULDBLOCK && errno != EINTR) out.error = errno;
++            } else if (n == 0) {
++                if (!out.got || !(polls[0].revents & (POLLHUP | POLLRDHUP))) out.error = EPROTO;
++                else out.peer_eof = 1;
++            } else if (out.got || n != (ssize_t)sizeof(candidate) || candidate.magic != MAGIC ||
++                       memcmp(candidate.nonce, FIXTURE_NONCE, sizeof(candidate.nonce)) ||
++                       candidate.child_pid != child) {
++                out.error = EPROTO;
++            } else {
++                *e = candidate; out.got = 1;
++            }
++        }
++        if (polls[1].revents & (POLLIN | POLLHUP)) {
++            pid_t waited = waitpid(child, &out.status, WNOHANG);
++            if (waited == child) out.reaped = 1;
++            else if (waited < 0 && errno != EINTR && !out.error) out.error = errno;
++        }
++        if (((polls[0].revents | polls[1].revents) & (POLLERR | POLLNVAL)) && !out.error) out.error = EIO;
++    }
++    if (!out.reaped) {
++        /* Recheck the exact child before a cleanup signal. An exited child
++         * must not be classified as forced merely because pidfd poll lagged. */
++        pid_t waited = waitpid(child, &out.status, WNOHANG);
++        if (waited == child) out.reaped = 1;
++        else if (waited < 0 && errno != EINTR && !out.error) out.error = errno;
++    }
++    if (!out.reaped) {
++        if (pidfd >= 0) syscall(SYS_pidfd_send_signal, pidfd, SIGKILL, NULL, 0);
++        else kill(child, SIGKILL);
++        out.forced = 1;
++        uint64_t reap_deadline = clock_ns(CLOCK_MONOTONIC) + UINT64_C(3000000000);
++        while (clock_ns(CLOCK_MONOTONIC) < reap_deadline) {
++            pid_t waited = waitpid(child, &out.status, WNOHANG);
++            if (waited == child) { out.reaped = 1; break; }
++            if (waited < 0 && errno != EINTR) { if (!out.error) out.error = errno; break; }
++            struct timespec delay = {0, 5000000}; nanosleep(&delay, NULL);
++        }
++        if (!out.reaped && !out.error) out.error = ETIMEDOUT;
++    }
++    if ((!out.got || !out.peer_eof) && !out.error) out.error = EPROTO;
++    close_fd(&pidfd);
++    return out;
++}
+ int main(int argc, char **argv) {
+     int expected_parent = 0, domain_fd = -1;
+     if (argc != 3 || decimal(argv[1], &expected_parent) || decimal(argv[2], &domain_fd) ||
+@@ -234,66 +304,16 @@
+     if (child < 0) { close_fd(&pair[0]); close_fd(&pair[1]); return 2; }
+     if (!child) { close_fd(&pair[0]); child_run(pair[1], domain_fd, self, e); }
+     close_fd(&pair[1]); close_fd(&domain_fd);
+-    int pidfd = (int)syscall(SYS_pidfd_open, child, 0);
+-    int status = 0, reaped = 0, forced = 0, got = 0, parent_error = 0;
+-    uint64_t deadline = clock_ns(CLOCK_MONOTONIC) + UINT64_C(15000000000);
+-    if (pidfd < 0) parent_error = errno;
+-    while (!parent_error && !reaped) {
+-        uint64_t now = clock_ns(CLOCK_MONOTONIC);
+-        if (!now || now >= deadline) { parent_error = ETIMEDOUT; break; }
+-        struct pollfd polls[2] = {{pair[0], POLLIN, 0}, {pidfd, POLLIN, 0}};
+-        int rc = poll(polls, 2, 100);
+-        if (rc < 0 && errno == EINTR) continue;
+-        if (rc < 0) { parent_error = errno; break; }
+-        if (polls[0].revents & POLLIN) {
+-            struct evidence candidate;
+-            ssize_t n = recv(pair[0], &candidate, sizeof(candidate), MSG_DONTWAIT | MSG_TRUNC);
+-            if (got || n != (ssize_t)sizeof(candidate) || candidate.magic != MAGIC ||
+-                memcmp(candidate.nonce, FIXTURE_NONCE, sizeof(candidate.nonce)) || candidate.child_pid != child) {
+-                parent_error = EPROTO; break;
+-            }
+-            e = candidate; got = 1;
+-        }
+-        if (polls[1].revents & (POLLIN | POLLHUP)) {
+-            pid_t waited = waitpid(child, &status, WNOHANG);
+-            if (waited == child) reaped = 1;
+-            else if (waited < 0) { parent_error = errno; break; }
+-        }
+-        if ((polls[0].revents | polls[1].revents) & (POLLERR | POLLNVAL)) { parent_error = EIO; break; }
+-    }
+-    if (!reaped) {
+-        /* Still this exact unreaped child: pidfd if acquired, otherwise the
+-         * nonrecyclable direct child PID. No process-name or namespace kill. */
+-        if (pidfd >= 0) syscall(SYS_pidfd_send_signal, pidfd, SIGKILL, NULL, 0);
+-        else kill(child, SIGKILL);
+-        forced = 1;
+-        uint64_t reap_deadline = clock_ns(CLOCK_MONOTONIC) + UINT64_C(3000000000);
+-        while (clock_ns(CLOCK_MONOTONIC) < reap_deadline) {
+-            pid_t waited = waitpid(child, &status, WNOHANG);
+-            if (waited == child) { reaped = 1; break; }
+-            if (waited < 0 && errno != EINTR) { if (!parent_error) parent_error = errno; break; }
+-            struct timespec delay = {0, 5000000}; nanosleep(&delay, NULL);
+-        }
+-        if (!reaped && !parent_error) parent_error = ETIMEDOUT;
+-    }
+-    /* pidfd can become ready after poll examined the socket. A completed
+-     * send remains readable even after the exact child has been reaped. */
+-    if (reaped && !got) {
+-        struct evidence candidate;
+-        ssize_t n = recv(pair[0], &candidate, sizeof(candidate), MSG_DONTWAIT | MSG_TRUNC);
+-        if (n == (ssize_t)sizeof(candidate) && candidate.magic == MAGIC &&
+-            !memcmp(candidate.nonce, FIXTURE_NONCE, sizeof(candidate.nonce)) && candidate.child_pid == child) {
+-            e = candidate; got = 1;
+-        } else if (!parent_error) parent_error = EPROTO;
+-    }
+-    close_fd(&pidfd); close_fd(&pair[0]);
+-    int success = got && !parent_error && reaped && !forced && WIFEXITED(status) && WEXITSTATUS(status) == 0 &&
++    struct collection out = collect_child(pair[0], child, &e, UINT64_C(15000000000));
++    close_fd(&pair[0]);
++    int success = out.got && out.peer_eof && !out.error && out.reaped && !out.forced &&
++        WIFEXITED(out.status) && WEXITSTATUS(out.status) == 0 &&
+         e.success && e.all_private_mounts_unmounted && e.inherited_domain_closed;
+     printf("{\"schema\":1,\"nonce\":\"%s\",\"success\":%s,\"Android_executed\":false,"
+            "\"cgroup_controls_written\":false,\"child_pid\":%d,\"child_birth_ticks\":%llu,\"child_stage\":%d,\"child_errno\":%d,"
+-           "\"parent_errno\":%d,\"child_reaped\":%s,\"forced_kill\":%s,\"child_wait_status\":%d,",
++           "\"parent_errno\":%d,\"peer_eof\":%s,\"child_reaped\":%s,\"forced_kill\":%s,\"child_wait_status\":%d,",
+            FIXTURE_NONCE, success ? "true" : "false", child, (unsigned long long)e.child_birth_ticks, e.stage, e.first_error,
+-           parent_error, reaped ? "true" : "false", forced ? "true" : "false", status);
++           out.error, out.peer_eof ? "true" : "false", out.reaped ? "true" : "false", out.forced ? "true" : "false", out.status);
+     printf("\"domain\":"); print_identity(&e.domain);
+     printf(",\"first_target\":"); print_identity(&e.first_target);
+     printf(",\"fresh_target\":"); print_identity(&e.fresh_target);
+--- mechanism02/controller-template.py
++++ mechanism03/controller-template.py
+@@ -156,7 +156,7 @@
+ 
+ 
+ def main():
+-    report = {'schema': 1, 'kind': 'owned-cgroup-repeat-mount-mechanism01', 'success': False,
++    report = {'schema': 1, 'kind': 'owned-cgroup-repeat-mount-mechanism03', 'success': False,
+               'first_error': None, 'errors': [], 'commands': [], 'Android_executed': False,
+               'Main_modified': False, 'host_network_modified': False, 'production_qualified': False,
+               'probe_nonce': CFG['nonce'], 'actual_normal08_runtime_sha256': CFG['normal08_runtime_sha256']}
+@@ -165,7 +165,7 @@
+     try:
+         need(os.getuid() == os.geteuid() == os.getgid() == os.getegid() == 0, 'root-only owned control')
+         need(re.fullmatch('[0-9a-f]{32}', CFG['nonce']) and
+-             str(root) == '/opt/p4-cgroup-mount-mechanism-20261105-01', 'fixed profile changed')
++             str(root) == '/opt/p4-cgroup-mount-mechanism-20261105-02', 'fixed profile changed')
+         decoded = {}
+         for name, item in CFG['sources'].items():
+             need(name in ('probe.c', 'pinned_support.py', 'resource_guard.py'), 'unexpected source')
+@@ -244,7 +244,7 @@
+             actual = control[label]
+             need(actual == report['held_invocation_domain_before'],
+                  'mounted view does not match held finite invocation cgroup')
+-        need(control['child_reaped'] and not control['forced_kill'] and control['child_wait_status'] == 0 and
++        need(control['peer_eof'] is True and control['child_reaped'] and not control['forced_kill'] and control['child_wait_status'] == 0 and
+              control['all_private_mounts_unmounted'] and control['inherited_domain_closed'],
+              'owned mechanism cleanup incomplete')
+         current = os.fstat(guard.fd)
+--- mechanism02/profile.json
++++ mechanism03/profile.json
+@@ -258,9 +258,9 @@
+       }
+     }
+   },
+-  "nonce": "62746bd0d951a88f277158788ec25a02",
++  "nonce": "782a06e513cc0b63cd93d6022c6495b5",
+   "normal08_runtime_sha256": "027848bec17ae20259e3ab2ddd8637bc820608b7f62e580c06b019f0e9ff8f16",
+-  "root": "/opt/p4-cgroup-mount-mechanism-20261105-01",
++  "root": "/opt/p4-cgroup-mount-mechanism-20261105-02",
+   "tools_sha256": {
+     "/usr/bin/python3": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41",
+     "/usr/bin/systemctl": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082"

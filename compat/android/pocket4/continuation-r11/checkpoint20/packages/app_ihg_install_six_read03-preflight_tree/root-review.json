@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "state": "FRESH_READ_ONLY_DIAGNOSTIC_NOT_INSTALL_REPLAY",
+  "previous_reader_failure": "EXACT_JOINED_WORKER_COMMAND_CHAIN; old metadata reader did not emit originals.",
+  "change": "Read exact owned worker stdout bound to command receipt, compare lossless JSON semantics to parent-bound durable worker; avoid presuming durable file key order equals printed insertion order.",
+  "file_allowlist": 6,
+  "raw_Android_state_command_streams_or_commercial_UI_read": false,
+  "exact_all_parent_hashes_no_UI_state_and_joined_command_gate_retained": true,
+  "source_fixes": [
+    {
+      "old": "'worker-command.json':ROOT/'evidence/01-install-state.result.json',",
+      "next": "'worker-command.json':ROOT/'evidence/01-install-state.result.json',\n    'worker-stdout.json':ROOT/'evidence/01-install-state.stdout',",
+      "count": 1
+    },
+    {
+      "old": "EXACT_FIVE_FILE_ALLOWLIST_REQUIRED",
+      "next": "EXACT_SIX_FILE_ALLOWLIST_REQUIRED",
+      "count": 1
+    },
+    {
+      "old": "    printed=(json.dumps(worker,ensure_ascii=False)+'\\n').encode('utf-8')",
+      "next": "    printed=r.read(BASE['worker-stdout.json'])\n    require(command.get('stdout')=={'bytes':len(printed),'sha256':sha(printed)},'ACTUAL_WORKER_STDOUT_PARENT_PIN')\n    printed_value=json.loads(printed);no_raw_ui(printed_value)\n    require(printed_value==worker,'ACTUAL_WORKER_STDOUT_AND_DURABLE_JSON_SEMANTICS')\n    r.add('worker-stdout.json',BASE['worker-stdout.json'],printed)",
+      "count": 1
+    },
+    {
+      "old": "'worker_and_state_command_metadata_exported':True",
+      "next": "'worker_and_state_command_metadata_exported':True,'owned_worker_json_stdout_exported':True",
+      "count": 1
+    }
+  ],
+  "Android_commands": 0,
+  "Main_actions": 0
+}

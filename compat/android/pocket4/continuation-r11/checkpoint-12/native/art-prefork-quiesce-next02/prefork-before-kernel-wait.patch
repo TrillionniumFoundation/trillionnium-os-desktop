@@ -1,0 +1,25 @@
+--- a/art/runtime/runtime.cc
++++ b/art/runtime/runtime.cc
+@@ -870,6 +870,12 @@
+   if (GetJit() != nullptr) {
+     GetJit()->PreZygoteFork();
+   }
++#if defined(DROIDLOOM_NATIVE_GENERATION_RUNTIME) && DROIDLOOM_NATIVE_GENERATION_RUNTIME
++  // The native bridge owns a kernel thread that is not in ART's ThreadList.
++  // Its callback closes guest log state before retiring that owner. Finish
++  // both operations before waiting for the kernel's single-threaded state.
++  PreZygoteForkNativeBridge();
++#endif
+   // All other threads have already been joined, but they may not have finished
+   // removing themselves from the thread list. Wait until the other threads have completely
+   // finished, and are no longer in the thread list.
+@@ -910,7 +916,9 @@
+     class_linker_->VisitClasses(&visitor);
+   }
+   heap_->PreZygoteFork();
++#if !defined(DROIDLOOM_NATIVE_GENERATION_RUNTIME) || !DROIDLOOM_NATIVE_GENERATION_RUNTIME
+   PreZygoteForkNativeBridge();
++#endif
+ }
+ 
+ void Runtime::PostZygoteFork() {

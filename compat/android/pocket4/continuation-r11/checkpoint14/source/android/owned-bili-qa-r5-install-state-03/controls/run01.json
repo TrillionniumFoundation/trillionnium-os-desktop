@@ -1,0 +1,119 @@
+{
+  "Hepta_or_Android_actions": 0,
+  "actual_result": {
+    "Hepta_or_Android_actions": 0,
+    "actual_device_install_qualification": false,
+    "actual_two_process_flock": true,
+    "all_fds_reclaimed": true,
+    "all_own_children_reaped": true,
+    "cases": [
+      {
+        "case": "original_busy_actual_EAGAIN_and_one_fd_leak",
+        "controller_closed_its_own_fd": true,
+        "expected_red": true,
+        "leaked_descriptors": 1,
+        "pass": true
+      },
+      {
+        "case": "actual_busy_deadline_preserves_EAGAIN_no_followup_no_fd_leak",
+        "observation": {
+          "Android_actions_attempted": 0,
+          "acquired": false,
+          "attempts": 98,
+          "busy_attempts": 98,
+          "elapsed_seconds": 5.05295906199899,
+          "errno": 11,
+          "error_type": "BlockingIOError",
+          "fd_closed_on_error": true,
+          "last_errno": 11,
+          "opened_identity": {
+            "device": 27,
+            "gid": 0,
+            "inode": 3427412,
+            "mode": 33152,
+            "nlink": 1,
+            "uid": 0
+          },
+          "path": "/workspace/scratch/94990735b266/android-qa-r5-install-state-03/controls/owned-lock03-_ab837e7/action.lock",
+          "phase": "lock_deadline",
+          "wait_limit_seconds": 5.0
+        },
+        "pass": true
+      },
+      {
+        "case": "actual_holder_release_then_exclusive_same_inode_admission",
+        "observation": {
+          "Android_actions_attempted": 0,
+          "acquired": true,
+          "attempts": 2,
+          "busy_attempts": 1,
+          "elapsed_seconds": 0.05366664299799595,
+          "fd_closed_on_error": false,
+          "last_errno": 11,
+          "opened_identity": {
+            "device": 27,
+            "gid": 0,
+            "inode": 3427412,
+            "mode": 33152,
+            "nlink": 1,
+            "uid": 0
+          },
+          "path": "/workspace/scratch/94990735b266/android-qa-r5-install-state-03/controls/owned-lock03-_ab837e7/action.lock",
+          "phase": "acquired",
+          "same_inode_confirmed": true,
+          "wait_limit_seconds": 5.0
+        },
+        "pass": true,
+        "second_process_rejected": true
+      },
+      {
+        "case": "actual_second_process_acquires_after_own_fd_close",
+        "pass": true
+      },
+      {
+        "case": "actual_owned_path_replacement_rejected_without_reopening",
+        "observation": {
+          "Android_actions_attempted": 0,
+          "acquired": false,
+          "attempts": 2,
+          "busy_attempts": 1,
+          "elapsed_seconds": 0.059321761000319384,
+          "errno": null,
+          "error_type": "RuntimeError",
+          "fd_closed_on_error": true,
+          "last_errno": 11,
+          "opened_identity": {
+            "device": 27,
+            "gid": 0,
+            "inode": 3427412,
+            "mode": 33152,
+            "nlink": 1,
+            "uid": 0
+          },
+          "path": "/workspace/scratch/94990735b266/android-qa-r5-install-state-03/controls/owned-lock03-_ab837e7/action.lock",
+          "phase": "verify_locked_inode",
+          "wait_limit_seconds": 5.0
+        },
+        "pass": true
+      },
+      {
+        "case": "actual_metadata_rejection_closes_opened_fd_without_flock",
+        "pass": true
+      }
+    ],
+    "fixture_release_thread_only": true,
+    "flock_or_clock_seams": false,
+    "no_external_lock_holder_identified": true,
+    "original_recorder_sha256": "5f25f22db55ba94e6ac895c2ce274b6959a274b64c9aa82bbc30d8c3c860f511",
+    "pass": true,
+    "production_source_sha256": "6614f2eb92ffd2a339c733d6fc58262fbb918d3e9c8eb15cfca3fa275b8bd329",
+    "schema": 1,
+    "temporary_own_lock_files_only": true
+  },
+  "elapsed_seconds": 5.510504505000426,
+  "returncode": 0,
+  "stderr_bytes": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_bytes": 3405,
+  "stdout_sha256": "042c28e2beab3f25968188379c9366d3cf6d4413112d35e6ec2f0df5ea41873d"
+}

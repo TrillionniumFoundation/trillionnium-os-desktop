@@ -1,0 +1,57 @@
+--- baseline/source/actor.py
++++ candidate/source/actor.py
+@@ -12,7 +12,7 @@
+     if not prepared.get('success'): raise RuntimeError('preparation did not succeed')
+     here = Path(__file__).parent
+     modules = {}
+-    for name in ('pinned_support', 'owned', 'prepare', 'qualify', 'crash_log'):
++    for name in ('pinned_support', 'owned', 'prepare', 'qualify', 'crash_log', 'property_visibility'):
+         path = here / (name + '.py'); fd = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+         try:
+             st = os.fstat(fd); body = os.read(fd, 256 * 1024)
+@@ -159,6 +159,7 @@
+     evidence = state = outer = host = domains = -1; tools = {}; children = []; held = {}; domain = endpoint_fd = -1
+     daemon = None; socket_id = None; stop_requested = False; before = None; start_attempted = False
+     crash_capture = None; crash_capture_attempted = False
++    property_capture = None; property_capture_attempted = False
+     try:
+         owned.need(os.getuid() == os.geteuid() == os.getgid() == 0 and os.uname().machine == 'x86_64', 'real owned actor requires host root/x86_64')
+         state = owned.root_directory(plan['state']); evidence = owned.root_directory(plan['state'] + '/evidence')
+@@ -274,6 +275,15 @@
+                     result['crash_buffer_construction_error'] = repr(error)[:512]
+             if crash_capture is not None:
+                 crash_capture.poll()
++            if 'init' in held and not property_capture_attempted:
++                property_capture_attempted = True
++                try:
++                    property_capture = modules['property_visibility'].Capture(
++                        held['init'], audit, plan, prepared, tools['sdk-visibility'], evidence, owned, end)
++                except BaseException as error:
++                    result['property_visibility_construction_error'] = repr(error)[:512]
++            if property_capture is not None:
++                property_capture.poll()
+             time.sleep(0.05)
+         owned.need('active_response' in result, 'actual native enrollment ACTIVE deadline exceeded')
+         audit = result['active_response']['relay_lifecycle']
+@@ -351,6 +361,21 @@
+                 result['crash_buffer_finish_error'] = repr(error)[:512]
+         result['crash_buffer_capture_attempted'] = crash_capture_attempted
+         result['crash_buffer_HWS_health_qualified'] = False
++        # The one property child is retired only here, after the unchanged Stop
++        # and original four children. No new property token/read is sent here.
++        if property_capture is not None:
++            try:
++                observation = property_capture.finish('after original Stop and owned child retirement')
++                result['property_visibility_observation'] = observation
++                owned.need(observation['held_fds_closed'] and
++                           (not observation['child_started'] or observation['child_reaped']),
++                           'owned property observer retirement incomplete')
++            except BaseException as error:
++                owned.record_error(result, 'property_observer_retirement', error)
++        result['property_visibility_capture_attempted'] = property_capture_attempted
++        result['property_visibility_diagnostic_qualified'] = (
++            result.get('property_visibility_observation', {}).get('property_visibility_qualified') is True)
++        result['property_visibility_is_actual_LMKD_or_cold_cache'] = False
+         for role, proc in held.items():
+             try: owned.need(owned.dead(proc.pidfd), 'generation process survived actual producer shutdown: ' + role)
+             except BaseException as error: owned.record_error(result, 'generation_final_' + role, error)

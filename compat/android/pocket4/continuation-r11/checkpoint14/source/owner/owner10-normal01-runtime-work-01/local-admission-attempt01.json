@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "kind": "local_retained_receipt_checker_schema_assumption_failure",
+  "exit_code": 1,
+  "error": "KeyError: 'bytes'",
+  "location": "local stdin line 23, plan['presenter']['bytes']",
+  "cause": "The frozen presenter contract has exact path and whole-file SHA but does not have a bytes key. The additional local checker incorrectly assumed it did.",
+  "resolution": "check_prepared10.py matches the actual pinned path/SHA and requires the observed positive size without inventing an expected size field.",
+  "actual_prepare_result_changed": false,
+  "source_or_runtime_changed": false,
+  "output_admission_file_created": false,
+  "Hepta_calls": 0,
+  "runtime_executed": false
+}

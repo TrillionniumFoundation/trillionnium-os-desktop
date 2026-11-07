@@ -1,0 +1,62 @@
+{
+  "Android_or_Hepta_actions": 0,
+  "absence_or_staged_APK_fields_present": false,
+  "action_attempted": false,
+  "action_lock_released_field_present": false,
+  "actual_R5_install_qualified": false,
+  "actual_job": "1a1aa88bddb-fc05-440e",
+  "actual_original_files": {
+    "coordinator.json": {
+      "bytes": 3064,
+      "sha256": "672d1fd70f97587eb0b49d3196ea9fcce90472079ec468b9c8cdfa604e7a6515"
+    },
+    "reader-report.json": {
+      "bytes": 11942,
+      "sha256": "1b19d7459bd16ece9b60bd7aab49f6408a96d514f1fc051ff7f2f85116823cd9"
+    },
+    "stage.json": {
+      "bytes": 2151,
+      "sha256": "f9b6c1698443b49ca1ff2470094c33c8275c7bbb056ecbe1fcc558c997b3e3af"
+    },
+    "worker-command-result.json": {
+      "bytes": 1152,
+      "sha256": "10f78447f3dc8f3e6fb21d1be1969ae6a67aafed1b65e4636ca859bcd2e10c78"
+    },
+    "worker.json": {
+      "bytes": 1594,
+      "sha256": "f145fc4f93818aaf86b4075835775c971e6276da62b356ea965626717c34fe71"
+    },
+    "worker.stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "worker.stdout": {
+      "bytes": 1470,
+      "sha256": "935ef2aee4a18201a142128f9784ad7d1041de28c1c8740f1155c89176b9dbfa"
+    }
+  },
+  "actual_worker_first_error": {
+    "message": "[Errno 11] Resource temporarily unavailable",
+    "phase": "install_or_state",
+    "type": "BlockingIOError"
+  },
+  "final_Main_guard_passed": true,
+  "gate_local_IO_path_redirection_only": true,
+  "install_attempted": false,
+  "old_failure_preserved": true,
+  "outcome_unknown": false,
+  "production_prior_failure_gate_actual_original_bytes_passed": true,
+  "schema": 1,
+  "six_exported_files_exactly_verified": true,
+  "source_analysis": {
+    "does_not_exclude_every_possible_lower_level_IO_EAGAIN": true,
+    "external_lock_holder_not_identified": true,
+    "flow_constructor_returned": true,
+    "global_action_lock_assignment_did_not_return": true,
+    "no_original_traceback_or_acquisition_phase": true,
+    "old_lock_function_leaks_open_fd_on_flock_exception_until_process_exit": true,
+    "only_explicit_nonblocking_flock_after_Flow_construction": "recorder.lock_file(recorder.ACTION_LOCK)",
+    "step_was_created": true
+  },
+  "state_attempted": false
+}

@@ -1,0 +1,191 @@
+{
+  "context": [
+    {
+      "count": 1,
+      "next": "\n\ndef baseline_scope(ref, baseline):\n    require(baseline.get('schema') == 'pocket4-main-current-baseline-v1' and\n            baseline.get('kind') == 'current-framework-generation' and\n            'main_deployed' not in baseline and baseline.get('deployment_performed') is False and\n            baseline['framework_epoch']['sha256'] == CURRENT_EPOCH == ref.EPOCH and\n            ref.BASELINE_SHA == BASELINE_SHA and ref.QUALIFICATION_SHA == QUALIFICATION_SHA and\n            type(baseline['packages'].get(PACKAGE)) is int and baseline['packages'][PACKAGE] == UID and\n            baseline.get('framework_exit_cause_resolved') is False and\n            baseline.get('whole_app_production_ready') is False,\n            'TYPED_CURRENT_BASELINE_AND_ACTUAL_TARGET_UID_REQUIRED')\n    for kind in ('user','user_de'):\n        row = baseline['app_directories'][kind+'/0/'+PACKAGE]\n        require(type(row) is dict and set(row) == {'device','inode','uid','gid'} and\n                all(type(v) is int and v >= 0 for v in row.values()) and\n                row['inode'] > 0 and row['uid'] == UID,\n                'CURRENT_TARGET_DATA_DIRECTORY_BINDING_REQUIRED')\n    return {'schema':'pocket4-current-recorder-scope-v1',\n            'current_baseline_schema':baseline['schema'],\n            'epoch_sha256':baseline['framework_epoch']['sha256'],\n            'current_baseline_sha256':ref.BASELINE_SHA,\n            'current_baseline_qualification_sha256':ref.QUALIFICATION_SHA,\n            'package':PACKAGE,'uid':baseline['packages'][PACKAGE],'user':0}\n\n\ndef verify_target_data(target, baseline, binding):\n    target.verify()\n    raw, _ = target.read_file('/data/system/packages.list',1024*1024)\n    binding.package_uids(raw,{PACKAGE:UID})\n    del raw\n    for kind in ('user','user_de'):\n        relative = kind+'/0/'+PACKAGE\n        expected = baseline['app_directories'][relative]\n        fd = target.open_root('/data/'+relative,os.O_PATH|os.O_DIRECTORY|os.O_NOFOLLOW)\n        primary = None\n        try:\n            value = os.fstat(fd)\n            require(stat.S_ISDIR(value.st_mode) and\n                    (value.st_dev,value.st_ino,value.st_uid,value.st_gid) ==\n                    (expected['device'],expected['inode'],expected['uid'],expected['gid']),\n                    'CURRENT_TARGET_DATA_DIRECTORY_IDENTITY_CHANGED')\n        except BaseException as error:\n            primary = error\n            raise\n        finally:\n            try:\n                os.close(fd)\n            except BaseException as cleanup:\n                if primary is None:\n                    raise\n                primary.add_note('current target directory close: '+type(cleanup).__name__)\n    target.verify()\n\n\nclass Context:\n",
+      "old": "\n\nclass Context:\n"
+    },
+    {
+      "count": 1,
+      "next": "                 main_guard, step, plan, expected_init, deadline, scope):\n        require(contract.sha256 == SHARED_MANIFEST and type(scope) is dict and scope == current_scope() and\n                type(scope.get('uid')) is int and type(scope.get('user')) is int,\n                'EXACT_TYPED_CURRENT_TARGET_CONTEXT_REQUIRED')\n        self.recorder = recorder",
+      "old": "                 main_guard, step, plan, expected_init, deadline):\n        self.recorder = recorder"
+    },
+    {
+      "count": 1,
+      "next": "        self.scope = dict(scope)",
+      "old": "        self.scope = current_scope()"
+    },
+    {
+      "count": 1,
+      "next": "        require(self.scope == current_scope() and type(self.scope.get('uid')) is int and\n                type(self.scope.get('user')) is int, 'TYPED_CURRENT_TARGET_SCOPE_CHANGED')",
+      "old": "        require(self.scope == current_scope(), 'TYPED_CURRENT_TARGET_SCOPE_CHANGED')"
+    },
+    {
+      "count": 1,
+      "next": "    scope = baseline_scope(ref,activation)",
+      "old": "    require(activation.get('schema') == 'pocket4-main-current-baseline-v1' and\n            activation.get('kind') == 'current-framework-generation' and\n            'main_deployed' not in activation and activation.get('deployment_performed') is False and\n            activation['framework_epoch']['sha256'] == CURRENT_EPOCH == ref.EPOCH and\n            ref.BASELINE_SHA == BASELINE_SHA and ref.QUALIFICATION_SHA == QUALIFICATION_SHA and\n            activation['packages'][PACKAGE] == UID,\n            'TYPED_CURRENT_BASELINE_AND_ACTUAL_TARGET_UID_REQUIRED')"
+    },
+    {
+      "count": 1,
+      "next": "    target = None\n    def guard():\n        require(time.monotonic() < deadline,",
+      "old": "    def guard():\n        require(time.monotonic() < deadline,"
+    },
+    {
+      "count": 1,
+      "next": "        observation = ref.main_guard(activation,epoch)\n        if target is not None:\n            verify_target_data(target,activation,binding)\n        return observation\n    result['Main_before']",
+      "old": "        return ref.main_guard(activation,epoch)\n    result['Main_before']"
+    },
+    {
+      "count": 1,
+      "next": "    require(binding.same_epoch_identity(actual,expected),'FIXED_MAIN_INIT_IDENTITY_CHANGED')\n",
+      "old": "    require(binding.same_epoch_identity(actual,expected),'FIXED_MAIN_INIT_IDENTITY_CHANGED')\n    target = None\n"
+    },
+    {
+      "count": 1,
+      "next": "ctx = Context(recorder,contract,target,environment,transport,guard,step,plan,expected['host_pid'],deadline,scope)",
+      "old": "ctx = Context(recorder,contract,target,environment,transport,guard,step,plan,expected['host_pid'],deadline)"
+    },
+    {
+      "count": 1,
+      "next": "'Bili_Flow_instantiated':False,\n            'current_target_scope':scope,'current_target_data_directory_count':2})",
+      "old": "'Bili_Flow_instantiated':False})"
+    },
+    {
+      "count": 1,
+      "next": "held Main/root/classpath primitives and the target-specific BoundArun body are reused.\nThe transport's current-epoch literal is rebound; all action/cleanup bodies are unchanged.",
+      "old": "held Main/root/classpath primitives and R4 BoundArun body are reused; the new\ntransport has only its two target identity literals changed in a separate file."
+    }
+  ],
+  "install": [
+    {
+      "count": 1,
+      "next": "ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r3-install-state-02')",
+      "old": "ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-install-state-01')"
+    },
+    {
+      "count": 1,
+      "next": "NONCE = '97e9cacd2361c50bdca834b416f2aa47'",
+      "old": "NONCE = '2501969dfcbe4bb492e5401c0bfcf420'"
+    },
+    {
+      "count": 1,
+      "next": "STATE_NONCE = 'd56f2ff711a71596e1679716f3587b87'",
+      "old": "STATE_NONCE = '233184c3820388b9fb3567c7ec726cbb'"
+    },
+    {
+      "count": 1,
+      "next": "SELF = 'org.droidloom.qa.bestbuy.r3'",
+      "old": "SELF = 'org.droidloom.qa.bestbuy.r2'"
+    },
+    {
+      "count": 1,
+      "next": "QA_ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r3-source-03/source')",
+      "old": "QA_ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-source-02/source')"
+    },
+    {
+      "count": 1,
+      "next": "QA_MANIFEST = '2643a8f2f7b70189af51b940957ef195dbee6574be1779a585a41fedfec50051'",
+      "old": "QA_MANIFEST = 'f7f13e75bf38518581581a2851714a3bb67a169dddeec1d444de2150398f01f9'"
+    },
+    {
+      "count": 1,
+      "next": "BUILD = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r3-build-03/build-result.json')",
+      "old": "BUILD = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-build-02/build-result.json')"
+    },
+    {
+      "count": 1,
+      "next": "BUILD_SHA = 'a13efe867b2cb90ff4bc8b341d52dbb776f50da824db7cfa6fa63839785be43c'",
+      "old": "BUILD_SHA = 'b4e419dca29b41925f86766a904412fbaf13a46fa64d9c3a51e3487a19334158'"
+    },
+    {
+      "count": 1,
+      "next": "BUILD_BYTES = 22250",
+      "old": "BUILD_BYTES = 19100"
+    },
+    {
+      "count": 1,
+      "next": "STAGE = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r3-source-03/stage-result.json')",
+      "old": "STAGE = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-source-02/stage-result.json')"
+    },
+    {
+      "count": 1,
+      "next": "STAGE_SHA = '02860f93456636bbbc592f404535952a26e56acabd193aaf8d89560186d90795'",
+      "old": "STAGE_SHA = '45eee95f5bb1438a7696a89c0fb0f19469c63b58bb9ceb3a068a1da5c5e1a0f5'"
+    },
+    {
+      "count": 1,
+      "next": "STAGE_BYTES = 1946",
+      "old": "STAGE_BYTES = 1951"
+    },
+    {
+      "count": 1,
+      "next": "APK = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r3-build-03/owned-bestbuy-qa.apk')",
+      "old": "APK = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-build-02/owned-bestbuy-qa.apk')"
+    },
+    {
+      "count": 1,
+      "next": "APK_SHA = '0c2598a901a18e714ca4b090f45b9e67da9273600cb7649d73c40e78882f6897'",
+      "old": "APK_SHA = '2959c657a8c0c970da80f45b5986aa34d63b0faa8df6cd0c0010a0d730a1bc54'"
+    },
+    {
+      "count": 1,
+      "next": "APK_BYTES = 24720",
+      "old": "APK_BYTES = 24720"
+    },
+    {
+      "count": 1,
+      "next": "SIGNER_SHA = '7af0ec407087ce326478a5d163cce0e982ec8b918afc7a114b36d2082e7eb526'",
+      "old": "SIGNER_SHA = 'a9e3b67e42cab6f94aa3679ea71bdcc74be04f8aa93d3534b0923d4367c6e7ea'"
+    },
+    {
+      "count": 1,
+      "next": "REFERENCE_SHA = 'fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2'",
+      "old": "REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'"
+    },
+    {
+      "count": 1,
+      "next": "REFERENCE_SHA = 'fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2'\nBASE_HOST_ROOT = Path('/home/alex/work/pocket4-current-host-r5-source-01')\nRECORDER_MANIFEST = '6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'\nHOST_STAGE_SHA = 'bbd21b3e83f39a355a44e32f3448f747d0e76a6cc79c8d920cac4c8399c986a0'\nHOST_STAGE_BYTES = 6851\nCURRENT_EPOCH = '734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'\nBASELINE_SHA = '163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'\nQUALIFICATION_SHA = 'f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'\nPREVIOUS_HELPER_UID = 10203",
+      "old": "REFERENCE_SHA = 'fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2'"
+    },
+    {
+      "count": 1,
+      "next": "EXPECTED_SOURCE_FILES = {'install_state.py','bestbuy_context.py','bestbuy_transport.py','stage_execute.py',\n    'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',\n    'check_install_binding.py','references/read_bestbuy.py','target-artifact-reference.json'}",
+      "old": "EXPECTED_SOURCE_FILES = {'install_state.py','bestbuy_context.py','bestbuy_transport.py','stage_execute.py',\n    'make_request.py','INPUTS.json','README.md','references/readonly_r3_coordinator.py',\n    'references/read_bestbuy.py','target-artifact-reference.json'}"
+    },
+    {
+      "count": 1,
+      "next": "def references():\n    return module(BASE_HOST_ROOT/'current_coordinator.py',REFERENCE_SHA,'current_target_install_reference')",
+      "old": "def references():\n    return module(HERE/'references/readonly_r3_coordinator.py',REFERENCE_SHA,'bestbuy_main_reference')\n"
+    },
+    {
+      "count": 1,
+      "next": "    require(10000 <= uid < 100000 and uid != PREVIOUS_HELPER_UID and uid not in ",
+      "old": "    require(10000 <= uid < 100000 and uid not in "
+    },
+    {
+      "count": 1,
+      "next": "def qualify_host_stage(value, manifest):\n    require(value.get('schema') == 'pocket4-current-host-source-stage-result-v1' and\n            value.get('ok') is True and value.get('source_stage_qualified') is True and\n            value.get('error') is None and value.get('secondary_errors') == [] and\n            value.get('source_published') is True and\n            value.get('source_root') == str(BASE_HOST_ROOT) and\n            value.get('source_manifest_sha256') == RECORDER_MANIFEST and\n            value.get('source_files') == manifest['files'],\n            'ACTUAL_COMPLETE_R5_HOST_SOURCE_STAGE_REQUIRED')\n    controls = value.get('controls', {})\n    require(controls.get('all_passed') is True and controls.get('count') == 26 and\n            len(controls.get('cases', [])) == 26 and\n            len({x.get('name') for x in controls['cases']}) == 26 and\n            all(x.get('passed') is True for x in controls['cases']) and\n            len(controls.get('compiled_sources', [])) == 14,\n            'ACTUAL_26_CURRENT_HOST_CONTROLS_REQUIRED')\n    fds = value.get('owned_fds', {})\n    require(type(fds.get('acquired')) is int and fds['acquired'] > 0 and\n            fds['acquired'] == fds.get('close_attempts') == fds.get('closed') and\n            fds.get('remaining') == 0 and fds.get('errors') == [],\n            'ACTUAL_CURRENT_HOST_SOURCE_FDS_NOT_RETIRED')\n    expected_guard = {'schema':'pocket4-current-main-guard-v1',\n        'Main_epoch_sha256':CURRENT_EPOCH, 'current_baseline_sha256':BASELINE_SHA,\n        'current_baseline_qualification_sha256':QUALIFICATION_SHA,\n        'historical_activation_sha256':'7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615',\n        'historical_verified_sha256':'2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387',\n        'config_sha256':'f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc',\n        'seven_processes_match':True, 'three_host_processes_match':True, 'resource_limits_match':True,\n        'current_executable_and_root_backing_match':True, 'framework_exit_cause_resolved':False,\n        'production_ready':False}\n    require(all(value.get(k) == expected_guard for k in ('Main_before','Main_after','Main_final')),\n            'CURRENT_HOST_STAGE_MAIN_FENCES_CHANGED')\n    require(value.get('namespace_entry') is False and value.get('automatic_retry') is False and\n            value.get('framework_exit_cause_resolved') is False and value.get('whole_app_production_ready') is False and\n            value.get('current_runtime_admitted') is False and\n            all(type(value.get(k)) is int and value[k] == 0 for k in\n                ('Android_commands','UI_actions','helper_installs','App_launches','all45_app_production_ready_count')),\n            'CURRENT_HOST_STAGE_SCOPE_NOT_READONLY_SOURCE')\n    return True\n\n\ndef qualified_inputs():\n    host_manifest=json.loads(read(HERE/'host/source-manifest.json',131072,RECORDER_MANIFEST))\n    qualify_host_stage(json.loads(read(HERE/'host-stage-actual.json',65536,HOST_STAGE_SHA,HOST_STAGE_BYTES)),host_manifest)",
+      "old": "def qualified_inputs():"
+    },
+    {
+      "count": 1,
+      "next": "    build_receipt=json.loads(read(BUILD,expected=BUILD_SHA,size=BUILD_BYTES))",
+      "old": "    read(BUILD,expected=BUILD_SHA,size=BUILD_BYTES)"
+    },
+    {
+      "count": 1,
+      "next": "    proof=adapter.qualified_build(args,manifest,builder)\n    require(adapter.RECORDER_MANIFEST_SHA == RECORDER_MANIFEST and\n            qa.MAIN_EPOCH == CURRENT_EPOCH and qa.MAIN_BASELINE_SHA == BASELINE_SHA and\n            qa.MAIN_BASELINE_QUALIFICATION_SHA == QUALIFICATION_SHA and\n            qa.MAIN_BASELINE_SCHEMA == 'pocket4-main-current-baseline-v1',\n            'BUILT_HELPER_AND_CURRENT_HOST_BINDING_REQUIRED')\n    current_controls = build_receipt.get('current_baseline_scope_controls', {})\n    report = current_controls.get('report', {})\n    require(current_controls.get('source_sha256') == manifest['files']['check_current_baseline.py']['sha256'] and\n            report.get('all_passed') is True and report.get('count') == 21 and\n            len(report.get('cases', [])) == 21 and len({x.get('name') for x in report['cases']}) == 21 and\n            all(x.get('passed') is True for x in report['cases']) and\n            report.get('production_contract_sha256') == manifest['files']['qa_contract.py']['sha256'] and\n            report.get('production_adapter_sha256') == manifest['files']['qa_adapter.py']['sha256'] and\n            report.get('host_recorder_manifest_sha256') == RECORDER_MANIFEST and\n            report.get('main_epoch_sha256') == CURRENT_EPOCH and\n            report.get('main_baseline_schema') == 'pocket4-main-current-baseline-v1' and\n            report.get('main_baseline_sha256') == BASELINE_SHA and\n            report.get('main_baseline_qualification_sha256') == QUALIFICATION_SHA,\n            'ACTUAL_21_SCOPE_AND_HOST_SESSION_CONTROLS_REQUIRED')",
+      "old": "    proof=adapter.qualified_build(args,manifest,builder)"
+    },
+    {
+      "count": 2,
+      "next": "activation=ref.current_baseline()",
+      "old": "activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))"
+    },
+    {
+      "count": 1,
+      "next": "    host_raw=read(HERE/'host/source-manifest.json',131072,RECORDER_MANIFEST)\n    host_manifest=json.loads(host_raw)\n    row=host_manifest['files']['current_coordinator.py']\n    require(host_manifest.get('schema') == 2 and host_manifest.get('revision') == 5 and\n            host_manifest.get('artifact') == 'pocket4-bilibili-current-recorder-held-r5' and\n            row['sha256'] == REFERENCE_SHA and\n            manifest['files']['references/read_bestbuy.py']['sha256'] == READER_SHA,\n            'EXACT_CURRENT_SHARED_REFERENCES_REQUIRED')\n    read(BASE_HOST_ROOT/'source-manifest.json',131072,RECORDER_MANIFEST,len(host_raw))\n    read(BASE_HOST_ROOT/'current_coordinator.py',131072,REFERENCE_SHA,row['bytes'])",
+      "old": "    require(manifest['files']['references/readonly_r3_coordinator.py']['sha256'] == REFERENCE_SHA and\n            manifest['files']['references/read_bestbuy.py']['sha256'] == READER_SHA,\n            'EXACT_SHARED_REFERENCES_REQUIRED')"
+    }
+  ]
+}

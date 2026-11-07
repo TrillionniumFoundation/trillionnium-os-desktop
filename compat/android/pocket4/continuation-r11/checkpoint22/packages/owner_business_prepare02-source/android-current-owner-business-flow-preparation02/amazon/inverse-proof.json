@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "edits": [
+    {
+      "file": "coordinator",
+      "from": "/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-01",
+      "to": "/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-02",
+      "why": "qualified-next-installation-source-root"
+    },
+    {
+      "file": "coordinator",
+      "from": "INSTALL_SOURCE_SHA=None  # Actual R4 installation closure required.",
+      "to": "INSTALL_SOURCE_SHA=\"ed611217d1721dc5f0e30a4a6c5163c9f35c6f50404e0118e2e2deff6679b7bc\"",
+      "why": "exact-frozen-install02-INSTALL_SOURCE_SHA"
+    },
+    {
+      "file": "coordinator",
+      "from": "UTIL_SHA=None  # Actual R4 installation closure required.",
+      "to": "UTIL_SHA=\"dea588899bd93d9a658f875aedd071456a1ce2d16180f60f697a6528f13420e1\"",
+      "why": "exact-frozen-install02-UTIL_SHA"
+    },
+    {
+      "file": "coordinator",
+      "from": "UTIL_BYTES=None  # Actual R4 installation closure required.",
+      "to": "UTIL_BYTES=40152",
+      "why": "exact-frozen-install02-UTIL_BYTES"
+    },
+    {
+      "file": "coordinator",
+      "from": "CONTEXT_SHA=None  # Actual R4 installation closure required.",
+      "to": "CONTEXT_SHA=\"d081ba9b8d6da9cdaa4a071ae40b5c74efe2428921bae947a5f93e8afa8add37\"",
+      "why": "exact-frozen-install02-CONTEXT_SHA"
+    },
+    {
+      "file": "coordinator",
+      "from": "TRANSPORT_SHA=None  # Actual R4 installation closure required.",
+      "to": "TRANSPORT_SHA=\"d9a682696cac2e28987b04f3e59f0fa783028fdc069c145816cd87c40eb6ca63\"",
+      "why": "exact-frozen-install02-TRANSPORT_SHA"
+    },
+    {
+      "file": "coordinator",
+      "from": "STATE_NONCE=None  # Actual R4 installation closure required.",
+      "to": "STATE_NONCE=\"7e2b1d49365866364ecaa9bf59942c87\"",
+      "why": "exact-frozen-install02-STATE_NONCE"
+    },
+    {
+      "file": "context",
+      "from": "transport,result,deadline,phase,qa,inspect_plan,resolve,expected_scope):",
+      "to": "transport,result,deadline,phase,qa,inspect_plan,resolve,expected_scope, *,\n                      install_source_manifest):",
+      "why": "explicit-install-source-manifest-argument"
+    },
+    {
+      "file": "context",
+      "from": "init,discovered,status=app.discover()",
+      "to": "init,discovered,status=context.current_discovery(\n            util,install_source_manifest,util.verify_source,util.HERE,\n            app,activation,epoch,guard)",
+      "why": "actual-task-entry-routes-through-pinned-install02-discovery"
+    },
+    {
+      "file": "coordinator",
+      "from": "transport,result,began+PHASE_SECONDS[phase],phase,q.qa,PLAN,q.resolver.RESOLVE,scope_record(q,expected))",
+      "to": "transport,result,began+PHASE_SECONDS[phase],phase,q.qa,PLAN,q.resolver.RESOLVE,scope_record(q,expected),\n            install_source_manifest=q.resolver.INSTALL_SOURCE_SHA)",
+      "why": "pass-actual-qualified-install-source-manifest"
+    }
+  ],
+  "complete_inverse_exact": true,
+  "original_pins": {
+    "coordinator": {
+      "bytes": 40237,
+      "sha256": "c8c31c0583952bfe1edad42ec68e315a4fb1dfadb5c958d39b43442ec2d0ac76",
+      "git_blob": "a372f094c085d7ed997226d5bf6181b4cf85dc49"
+    },
+    "context": {
+      "bytes": 19340,
+      "sha256": "90c0f37821348d0bb35570a07bbee22df9164c8a77d6e7d69b837ad30ddbc63d",
+      "git_blob": "4376b6b131b309b39996f023e0d5e332a6a2bef0"
+    },
+    "business": {
+      "bytes": 8699,
+      "sha256": "b6b6f64e62e1c1107839fbb01609d486ea2200d028b54bb610bd817bbbbf44dc",
+      "git_blob": "daf764e608c1357719baaaf0b2c5e3f58195704a"
+    },
+    "stage": {
+      "bytes": 4967,
+      "sha256": "b1b262a212bd2b4c33648b3573d4cd5ca84facb4d8827dbdcb467105b5263ed2",
+      "git_blob": "aae122e7e9fdee71e532749ea99353590111a854"
+    },
+    "contract": {
+      "bytes": 33461,
+      "sha256": "fdac6b691424459a4d4ce9cc3905016a45c5c2971d86d0b79d285e55a24465a6",
+      "git_blob": "e0fa641cdaf63422385a70819c0e53991a4c4687"
+    },
+    "adapter": {
+      "bytes": 23246,
+      "sha256": "49e0f313a74c2478ce60b794597020000181a306a2b78d2dbb5d2b1b489dde16",
+      "git_blob": "b4483e5398c99afa0792b704bcfcd043856f5677"
+    }
+  },
+  "current_pins": {
+    "coordinator": {
+      "bytes": 40319,
+      "sha256": "f2e208544164cd9f30b685f093b375aa3f714f7654032187d4c77eb7e501745c"
+    },
+    "context": {
+      "bytes": 19513,
+      "sha256": "de755f6e2a13486774ec9d31f247b7c5c7a776d5e3ba64ac34d0ed190da5fffb"
+    },
+    "business": {
+      "bytes": 8699,
+      "sha256": "b6b6f64e62e1c1107839fbb01609d486ea2200d028b54bb610bd817bbbbf44dc"
+    },
+    "stage": {
+      "bytes": 4967,
+      "sha256": "b1b262a212bd2b4c33648b3573d4cd5ca84facb4d8827dbdcb467105b5263ed2"
+    },
+    "contract": {
+      "bytes": 33461,
+      "sha256": "fdac6b691424459a4d4ce9cc3905016a45c5c2971d86d0b79d285e55a24465a6"
+    },
+    "adapter": {
+      "bytes": 23246,
+      "sha256": "49e0f313a74c2478ce60b794597020000181a306a2b78d2dbb5d2b1b489dde16"
+    }
+  },
+  "Policy_Flow_and_current_task_scope_byte_exact": true,
+  "original_business_source_byte_exact": true,
+  "open_task_context_only_two_changes": true,
+  "same_installer02_loader_actual27_qualified": true
+}

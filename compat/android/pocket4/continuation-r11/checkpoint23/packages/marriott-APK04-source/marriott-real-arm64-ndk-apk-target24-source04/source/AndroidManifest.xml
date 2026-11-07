@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="com.example.ndk_tests">
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- Network permission is required for socket testing. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Upstream target 23 supports legacy shared-library greylist tests.
+         This fixture targets 24 after the actual PackageManager rejection of 23.
+         Shared tests remain registered; only ProcSelfMaps.* is selected for this fixture. -->
+    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="24" />
+    <application android:label="NDK Tests"
+                 android:debuggable="true">
+        <uses-library android:name="android.test.runner" />
+        <activity android:name=".NdkTestsActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+    <instrumentation android:name="android.test.InstrumentationTestRunner"
+                     android:targetPackage="com.example.ndk_tests"
+                     android:label="Tests for com.example.ndk_tests"/>
+</manifest>

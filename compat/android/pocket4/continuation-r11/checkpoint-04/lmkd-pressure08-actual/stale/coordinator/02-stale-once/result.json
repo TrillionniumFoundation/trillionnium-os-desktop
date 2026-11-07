@@ -1,0 +1,226 @@
+{
+  "schema": 1,
+  "ok": false,
+  "scope": "one owned revision08 PIDFD-only minimal-root phase; no Main deployment",
+  "started_utc": "2026-11-04T16:24:06.541846+00:00",
+  "source_manifest_sha256": "ffe555f1913e2d3f540ec115298580ddb95849e797926511e13acb0eab126de6",
+  "matching_build_receipt_sha256": "e77c1f2b8ff072076a68cd43ea677bc12f8e3c7b80c61e7b614bbffefb257857",
+  "binaries_sha256": {
+    "actor": "4bbf0137a0e8ea089dca4b9e6c2ec800d587e6293fba28eb4ea452d44a898cd9",
+    "driver": "a9de6becc67b03ccc877ed54b64ee7c3c1b3398f546fb6464d9b52f707ebe00b",
+    "broker": "6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154",
+    "android_lmkd": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde"
+  },
+  "dispatch_attempted": true,
+  "outcome_unknown": false,
+  "forced_teardown": false,
+  "pressure_qualified": false,
+  "stale_qualified": false,
+  "partial_medium_only": false,
+  "all_apps_production_ready": false,
+  "phase": "stale",
+  "unit": "p4-lmkd-relay-stale-r11-01.service",
+  "coordinator_root": "/home/alex/work/pocket4-lmkd-pressure-r11-coordinator-03",
+  "state": "/run/p4-lmkd-relay-stale-r11-01",
+  "stage": "/opt/p4-lmkd-relay-stale-r11-01",
+  "positive_predecessor": {
+    "path": "/home/alex/work/pocket4-lmkd-pressure-r11-coordinator-02/02-pressure-once/result.json",
+    "sha256": "c2cfe52ea009cf1a181ce9ca84f23954022ef8e7480417a4b6edfd0ab09e246f",
+    "partial_medium_only": false
+  },
+  "description": "p4-owned-r11-rev08-stale-a54bce91f34899fdd6434134562d1c42",
+  "main_namespaces": {
+    "pid": 4026533288,
+    "mnt": 4026533284,
+    "cgroup": 4026533394,
+    "ipc": 4026533286,
+    "uts": 4026533285,
+    "net": 4026533041
+  },
+  "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "available_memory_bytes": 11886510080,
+  "dispatch_returncode": 0,
+  "dispatch_stdout": "",
+  "dispatch_stderr": "",
+  "invocation_id": "a93c3a72c2894ae3978037772e52ed98",
+  "resources_first_observed": {
+    "invocation_id": "a93c3a72c2894ae3978037772e52ed98",
+    "cgroup_device": 30,
+    "cgroup_inode": 27713759,
+    "observed_monotonic_ns": 835155864307857,
+    "limits": {
+      "memory.max": "536870912",
+      "memory.high": "max",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "64"
+    },
+    "memory_events": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_current": 1835008,
+    "memory_peak": 1835008,
+    "swap_current": 0,
+    "swap_peak": 0,
+    "cgroup_events": "populated 1\nfrozen 0\n"
+  },
+  "terminal_status": {
+    "Description": "p4-owned-r11-rev08-stale-a54bce91f34899fdd6434134562d1c42",
+    "LoadState": "loaded",
+    "ActiveState": "failed",
+    "SubState": "failed",
+    "InvocationID": "a93c3a72c2894ae3978037772e52ed98",
+    "MainPID": "0",
+    "Result": "exit-code",
+    "ExecMainStartTimestampMonotonic": "835155857331",
+    "ExecMainExitTimestampMonotonic": "835167527670",
+    "ExecMainPID": "115602",
+    "ExecMainCode": "1",
+    "ExecMainStatus": "1",
+    "ExecStart": "{ path=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-08/target/debug/owned-relay-canary ; argv[]=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-08/target/debug/owned-relay-canary stale /opt/p4-lmkd-relay-stale-r11-01/root /run/p4-lmkd-relay-stale-r11-01 p4-lmkd-relay-stale-r11-01.service 4bbf0137a0e8ea089dca4b9e6c2ec800d587e6293fba28eb4ea452d44a898cd9 bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde /home/alex/work/pocket4-lmkd-host-pressure-r11-source-08/target/debug/droidloom-psi-owner 6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154 4026533288 4026533284 4026533394 4026533286 4026533285 4026533041 ; ignore_errors=no ; start_time=[Wed 2026-11-04 08:24:06 PST] ; stop_time=[Wed 2026-11-04 08:24:18 PST] ; pid=115602 ; code=exited ; status=1 }",
+    "ControlGroup": "",
+    "MemoryPeak": "428953600",
+    "MemorySwapPeak": "0"
+  },
+  "error": "RuntimeError: owned unit did not exit normally with its retained successful invocation",
+  "traceback": "Traceback (most recent call last):\n  File \"<stdin>\", line 167, in main\n  File \"<stdin>\", line 24, in need\nRuntimeError: owned unit did not exit normally with its retained successful invocation\n",
+  "pre_stop_status": {
+    "Description": "p4-owned-r11-rev08-stale-a54bce91f34899fdd6434134562d1c42",
+    "LoadState": "loaded",
+    "ActiveState": "failed",
+    "SubState": "failed",
+    "InvocationID": "a93c3a72c2894ae3978037772e52ed98",
+    "MainPID": "0",
+    "Result": "exit-code",
+    "ExecMainStartTimestampMonotonic": "835155857331",
+    "ExecMainExitTimestampMonotonic": "835167527670",
+    "ExecMainPID": "115602",
+    "ExecMainCode": "1",
+    "ExecMainStatus": "1",
+    "ExecStart": "{ path=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-08/target/debug/owned-relay-canary ; argv[]=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-08/target/debug/owned-relay-canary stale /opt/p4-lmkd-relay-stale-r11-01/root /run/p4-lmkd-relay-stale-r11-01 p4-lmkd-relay-stale-r11-01.service 4bbf0137a0e8ea089dca4b9e6c2ec800d587e6293fba28eb4ea452d44a898cd9 bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde /home/alex/work/pocket4-lmkd-host-pressure-r11-source-08/target/debug/droidloom-psi-owner 6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154 4026533288 4026533284 4026533394 4026533286 4026533285 4026533041 ; ignore_errors=no ; start_time=[Wed 2026-11-04 08:24:06 PST] ; stop_time=[Wed 2026-11-04 08:24:18 PST] ; pid=115602 ; code=exited ; status=1 }",
+    "ControlGroup": "",
+    "MemoryPeak": "428953600",
+    "MemorySwapPeak": "0"
+  },
+  "stop_returncode": 0,
+  "stop_stdout": "",
+  "stop_stderr": "",
+  "reset_failed_returncode": 0,
+  "reset_failed_stdout": "",
+  "reset_failed_stderr": "",
+  "post_stop_status": {
+    "Description": "p4-lmkd-relay-stale-r11-01.service",
+    "LoadState": "not-found",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "InvocationID": "",
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainStartTimestampMonotonic": "0",
+    "ExecMainExitTimestampMonotonic": "0",
+    "ExecMainPID": "0",
+    "ExecMainCode": "0",
+    "ExecMainStatus": "0",
+    "ControlGroup": "",
+    "MemoryPeak": "[not set]",
+    "MemorySwapPeak": "[not set]"
+  },
+  "owned_cgroup_after_stop": "absent",
+  "exact_owned_cleanup_verified": true,
+  "main_epoch_unchanged_after_cleanup": true,
+  "retained_files": {
+    "broker-active.json": {
+      "sha256": "ff5ef0f062e80c32d95dfd48f056af4c6c73c9c7e1d5adb7ad2fed1ae52d07ec",
+      "bytes": 374
+    },
+    "broker-ready.json": {
+      "sha256": "b4becbba5f4049ff0d0d844cea5d355dce8a759d81aac6f97f7a2c75292e8bc0",
+      "bytes": 374
+    },
+    "identities.json": {
+      "sha256": "355cfe3cacbde753be2f174ce2171086051572a126796130101da82f530b2581",
+      "bytes": 494
+    },
+    "inner-preflight.json": {
+      "sha256": "384384032cb15a948eb7d4b0086584dacf1cb591afcc782d868e55fadee6a3c9",
+      "bytes": 537
+    },
+    "lmkd-fds.txt": {
+      "sha256": "6da449059eb370b2dc03e82040eb118a97384f76a4f6f6e1e661049e1778f172",
+      "bytes": 857
+    },
+    "lmkd-maps.txt": {
+      "sha256": "489ac2e004f15abb03f673f6f29855ed5f207cd9605c2e9ec6c9f8a353787392",
+      "bytes": 4014
+    },
+    "lmkd-post-registration-fds.txt": {
+      "sha256": "103318a4f5220b8b02aa371fffa4c057545931e319955d6a07cd5fb776e8841e",
+      "bytes": 923
+    },
+    "lmkd-post-registration-maps.txt": {
+      "sha256": "489ac2e004f15abb03f673f6f29855ed5f207cd9605c2e9ec6c9f8a353787392",
+      "bytes": 4014
+    },
+    "lmkd-post-registration-pressure-file.json": {
+      "sha256": "d69aff7a4f1bc29eadf33794feee8eca6425244b11606570f22334558cd5035f",
+      "bytes": 91
+    },
+    "lmkd-post-registration-status.txt": {
+      "sha256": "0e9eead115f38a21641ca761542ac11f77f65153b0f39911873ac78594eb22eb",
+      "bytes": 1494
+    },
+    "lmkd-pressure-file.json": {
+      "sha256": "d69aff7a4f1bc29eadf33794feee8eca6425244b11606570f22334558cd5035f",
+      "bytes": 91
+    },
+    "lmkd-status.txt": {
+      "sha256": "85ddad64bf3326777a2b18de8950fb7e2b43624493daf0a7372b82abc1e58ae0",
+      "bytes": 1493
+    },
+    "logdw.records": {
+      "sha256": "21f659e75add2c3ecb3487b020df5e0161e9e5200891f8036942aef4b1bf9d60",
+      "bytes": 2263
+    },
+    "outer-preflight.json": {
+      "sha256": "3b95d68b50c3b9d6235a948efe000ca34585b6bc290f1579ef3ba8f3a1ab9b48",
+      "bytes": 294
+    },
+    "phase-failure.json": {
+      "sha256": "09002e1a1e5d499fae97327aac2bd055564279500f77b3ea02186e6741706727",
+      "bytes": 1539
+    },
+    "pressure-before.json": {
+      "sha256": "c573a14166be41cd58bea7b52a8cf92b9c77eff867993374a0c8d5cd855798a0",
+      "bytes": 1522
+    },
+    "protocol-complete.json": {
+      "sha256": "04b68ce979389fcd781a40004f69c7504e517b9beb215ad31563013817daf685",
+      "bytes": 1515
+    },
+    "quiet-after.json": {
+      "sha256": "2e738bef07062b9d547713496f6f01dcd3893bb40a4161e0d97e00a6cdf4ea12",
+      "bytes": 1522
+    },
+    "quiet-before.json": {
+      "sha256": "3cdee1112993752bacf65003a2d0ba5167b27cc0ebbc0e88ef2ad72ae62dfafd",
+      "bytes": 1522
+    },
+    "relay-projection.json": {
+      "sha256": "d1df07449764c5eed2baf90b5ae9eaf4d753896c59ccf40cacf10a699636beb9",
+      "bytes": 62
+    },
+    "staging-result.json": {
+      "sha256": "eece4225e9ed1514de3232e80cf872cc6e56cf5c7e05cd2077b6bbdd7f89905d",
+      "bytes": 315
+    }
+  },
+  "unit.stdout": "",
+  "unit.stderr": "WARNING: linker: Warning: failed to find generated linker configuration from \"/linkerconfig/ld.config.txt\"\nWARNING: linker: Warning: failed to find generated linker configuration from \"/linkerconfig/ld.config.txt\"\nprivate fixture stopped: bounded pressure allocation deadline: Resource temporarily unavailable\nprivate fixture stopped: real protocol complete: Success\nowned-relay-canary: owned actor control failed\n",
+  "finished_utc": "2026-11-04T16:24:18.583008+00:00"
+}

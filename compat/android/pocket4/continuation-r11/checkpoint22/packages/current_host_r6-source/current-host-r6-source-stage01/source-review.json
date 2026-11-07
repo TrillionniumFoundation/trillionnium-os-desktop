@@ -1,0 +1,107 @@
+{
+  "schema": "pocket4-host-r6-source-review-v1",
+  "state": "SOURCE_FROZEN_REQUEST_UNSUBMITTED",
+  "root": "/home/alex/work/pocket4-current-host-r6-source-01",
+  "actual_baseline_result": {
+    "job_id": "1a1b1378566-fc05-76f7",
+    "git_tree": "df158984ab6f8565c64db454acc7b9872f56a8a2",
+    "git_blob": "3cb41fac4621cf346d94be170f187251785c38ff",
+    "bytes": 13221,
+    "sha256": "107bf1487ace30a38c113057812a0a18415e3430640f11db0b5131e462d05269"
+  },
+  "actual_binding": {
+    "schema": "pocket4-main-current-baseline-v2",
+    "epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "baseline_sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364",
+    "qualification_sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e",
+    "guard_sha256": "96dbdaf7673d5298e6fe17cb1b7ebae29b37110ee59f31b0c927e2cb0ef4b150",
+    "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+  },
+  "private_baseline": {
+    "bytes": 44959,
+    "path": "/home/alex/work/pocket4-main-current-baseline-02/baseline.private.json",
+    "sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364"
+  },
+  "qualification": {
+    "bytes": 5565,
+    "path": "/home/alex/work/pocket4-main-current-baseline-02/qualification.json",
+    "sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e"
+  },
+  "generated_guard": {
+    "bytes": 11541,
+    "path": "/home/alex/work/pocket4-main-current-baseline-02/current_baseline_guard.py",
+    "sha256": "96dbdaf7673d5298e6fe17cb1b7ebae29b37110ee59f31b0c927e2cb0ef4b150"
+  },
+  "qualification_and_guard_provenance": "independently regenerated using frozen actual publisher and complete safe stdout; byte and SHA exact; no claim of private-path re-read",
+  "previous_host_manifest": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e",
+  "new_host_manifest": {
+    "bytes": 3757,
+    "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+  },
+  "scope_schema": "pocket4-current-recorder-scope-v2",
+  "baseline_kind": "current-cell-generation",
+  "source_diff": {
+    "bytes": 22473,
+    "sha256": "a89ebaf24ac8b4f5b27a5f7a498d2aa4de72bc4f0852b699524d2a9814a9ed87"
+  },
+  "changes": [
+    "Explicit baseline-v2/scope-v2/current-cell-generation plus actual B/Q/epoch/guard and R6 artifact binding.",
+    "Exact generated actual guard retained as a source leaf; no edits to generated guard.",
+    "Seven original references, main_binding and existing_ui_entry are byte exact R5.",
+    "Original Flow action/lock/cleanup and current_coordinator.run_cli bodies unchanged; typed fields only.",
+    "Original 26 controls retained, six old-generation rejection controls and six actual SourceContract constructor/verify fixtures added.",
+    "Staging checks actual generated guard before create-only root, writes exact source, runs real on-disk SourceContract, checks current Main after/final and all source bytes."
+  ],
+  "controls": {
+    "source_bytes": 12662,
+    "source_sha256": "47df73fa3495931ef29e4050ee96df2c8ac33e97977203a187049fa3e9c3baa0",
+    "expected": 38,
+    "actual_python_execution": false,
+    "old_cases": 26,
+    "new_cases": 12,
+    "constructor_fixture": "Actual production class; only Path.resolve and bounded file I/O replaced by memory fixture. Not an observation of real Main."
+  },
+  "stage": {
+    "bytes": 13759,
+    "sha256": "f4c5896337572b4e726fdc211b62404f69553a6929e32fa86f5f939b75adfe28",
+    "inherited_exact_helpers": [
+      "need",
+      "check",
+      "safe_error",
+      "ManagedFDs",
+      "metadata",
+      "exact_path",
+      "open_host",
+      "bounded_regular",
+      "load_module",
+      "write_new"
+    ],
+    "helper_source": {
+      "bytes": 40419,
+      "sha256": "a949d51bad870db6e95941849faac1c91e95c6fe574bf270702c6c039fa4313e"
+    }
+  },
+  "request": {
+    "bytes": 398043,
+    "sha256": "9890b394a335288b8b400f1b94865c79e47f5af9a6ff5b4e43e6ab9daeb62e93",
+    "stdin_bytes": 382234,
+    "stdin_sha256": "eb71a2eaf4e074c0a834aedc08d7ff7439031a0485616026248c6ebf09eace0a",
+    "key": "pocket4-current-host-r6-source-stage01-eb71a2eaf4e074c0",
+    "timeout_seconds": 90,
+    "cpu_quota_percent": 25,
+    "memory_max_bytes": 134217728
+  },
+  "direct_child_join_not_whole_tree_guarantee": true,
+  "namespace_entry": false,
+  "Android_commands": 0,
+  "UI_actions": 0,
+  "helper_installs": 0,
+  "children_spawned": 0,
+  "private_baseline_exported": false,
+  "old_flows_reauthorized": false,
+  "old_helpers_and_tasks_reauthorized": false,
+  "framework_exit_cause_resolved": false,
+  "whole_app_production_ready": false,
+  "source_stage_is_not_App_runtime_admission": true
+}

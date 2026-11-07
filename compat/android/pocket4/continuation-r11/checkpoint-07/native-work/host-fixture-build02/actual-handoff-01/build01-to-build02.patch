@@ -1,0 +1,80 @@
+--- a/actual-build01/build_fixture.py
++++ b/build02/build_fixture.py
+@@ -15,11 +15,17 @@
+ import time
+ import traceback
+ 
+-CANDIDATE = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/overlay-reconstruction-09/candidate-04')
+-MANIFEST = CANDIDATE.parent / 'candidate-04-source-manifest.json'
+-MANIFEST_SHA = '00a19fef1ca8e86a3da18eecfb16eedb41e9de55e2934b96987845fa8b749fbd'
++CANDIDATE = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/overlay-reconstruction-09/candidate-05')
++MANIFEST = CANDIDATE.parent / 'candidate-05-source-manifest.json'
++MANIFEST_SHA = '4e2f7f9ea09c6977afbe8d97c040fd2f1344772429f78fe0f16edc913dadc7ba'
+ COMPILER = Path('/usr/bin/x86_64-linux-gnu-g++-15')
+ COMPILER_SHA = 'e6718f7e0c7d057c3ff77b550c603da9bc4030e3ede3c053705acce1293dbe4d'
++SOURCE_RECEIPT = CANDIDATE.parent / 'candidate-05-report.json'
++SOURCE_RECEIPT_SHA = '33697d93292428c660f69c629ab9851248f5e5e1c3653f9531e5382f49479d36'
++MATCHED_GATE = CANDIDATE.parent / 'combined-ancillary-controls-07/report.json'
++MATCHED_GATE_SHA = 'e53c3e9e5846d36f971bae6140c394b837fa54525c0e2df4ac153c9ef5540803'
++EXACT_SOURCE = Path('/home/alex/work/pocket4-owned-factory-v2-host-source-02')
++EXACT_OUT = Path('/home/alex/work/pocket4-owned-factory-v2-host-build-02')
+ 
+ 
+ def digest(data: bytes) -> str:
+@@ -51,7 +57,23 @@
+         os.fsync(stream.fileno())
+ 
+ 
++def matched_gate_contract() -> None:
++    source_raw = SOURCE_RECEIPT.read_bytes()
++    gate_raw = MATCHED_GATE.read_bytes()
++    if digest(source_raw) != SOURCE_RECEIPT_SHA or digest(gate_raw) != MATCHED_GATE_SHA:
++        raise RuntimeError('actual candidate05 receipts changed')
++    source, gate = json.loads(source_raw), json.loads(gate_raw)
++    if not (source['source_manifest_sha256'] == MANIFEST_SHA and
++            gate['state'] == 'MATCHED_SMALL_GATES_PASSED' and gate['source_manifest_sha256'] == MANIFEST_SHA and
++            gate['source_unchanged'] is True and gate['all_commands_pass'] is True and
++            gate['actual_host_adapter_checks'] == 8 and gate['actual_ancillary_cases'] == 34 and
++            gate['actual_listener_inheritance_fixed'] is True and len(gate['commands']) == 8 and
++            all(row['returncode'] == 0 for row in gate['commands'])):
++        raise RuntimeError('actual candidate05 matched gate is incomplete')
++
++
+ def inventory() -> dict[str, str]:
++    matched_gate_contract()
+     raw = MANIFEST.read_bytes()
+     if digest(raw) != MANIFEST_SHA:
+         raise RuntimeError('combined manifest changed')
+@@ -93,11 +115,13 @@
+     if os.geteuid() == 0:
+         raise RuntimeError('the host build must run as the existing unprivileged operator')
+     out = arguments.out
+-    if out is None or out.parent != Path('/home/alex/work') or not out.name.startswith('pocket4-owned-factory-v2-host-build-'):
++    if out != EXACT_OUT:
+         raise RuntimeError('fresh task-owned build output required')
+     if out.exists() or out.is_symlink():
+         raise RuntimeError('build output already claimed; no automatic retry')
+     source = Path(__file__).resolve().parent
++    if source != EXACT_SOURCE:
++        raise RuntimeError('exact fresh fixture source02 required')
+     source_before = inventory()
+     if pin(COMPILER)['sha256'] != COMPILER_SHA:
+         raise RuntimeError('observed host compiler changed')
+@@ -106,6 +130,8 @@
+     out.mkdir(mode=0o700)
+     report = {'schema': 1, 'scope': 'actual combined candidate host factory and client ELF build only',
+               'candidate_manifest_sha256': MANIFEST_SHA, 'candidate_files': 948, 'engine_files': 925,
++              'actual_source_receipt_sha256': SOURCE_RECEIPT_SHA, 'matched_gate_sha256': MATCHED_GATE_SHA,
++              'prior_build01_receipt_sha256': 'adb1b0cb4bfa12d3d154c0538e931a7752046f8ab295e2bab77687615af6c81e',
+               'service_started': False, 'Android_execution': False, 'production_ready': False,
+               'success': False, 'commands': [], 'started_monotonic': time.monotonic(),
+               'input_source_pins': own_before, 'compiler': pin(COMPILER)}
+@@ -158,6 +184,8 @@
+             command(name + '-dependencies', [*flags, '-M', '-MF', str(dependency), '-MT', name + '.o', str(path)])
+             dependencies_by_unit[name] = dependencies(dependency)
+         input_paths = sorted({path for paths in dependencies_by_unit.values() for path in paths}, key=str)
++        if len(input_paths) != 291:
++            raise RuntimeError('host fixture dependency cardinality changed')
+         inputs_before = {str(path): pin(path) for path in input_paths}
+         save(out / 'input-closure-before.json', {'inputs': inputs_before, 'units': {k: [str(p) for p in v] for k, v in dependencies_by_unit.items()}})
+         for name, path, flags in units:

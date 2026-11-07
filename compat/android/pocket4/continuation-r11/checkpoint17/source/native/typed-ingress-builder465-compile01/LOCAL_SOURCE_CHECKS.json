@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "state": "FROZEN_MATCHING_RUST_BUILD_REQUEST_NOT_SUBMITTED",
+  "source_tree": "3fe7867c6fa7ea4824cd57742e60137e60cc01e2",
+  "source_prefix": "typed-ingress-builder-source02",
+  "actual_lock_tree": "04620916e15d0cf64e7b06e69f1730238de2c37d",
+  "actual_parent_build_report": {
+    "bytes": 136350,
+    "sha256": "f9a3dd01d9ebdb60a0e6a34ee99e3b1a2f646a30191eda3643cee5ca36ff544f"
+  },
+  "source_files": 465,
+  "source_changed": [
+    "tools/droidloom-update/src/android.rs",
+    "tools/droidloom-update/src/main.rs"
+  ],
+  "source_added": [
+    "android/manifest/m2-role-ingress-source-lock.json",
+    "android/native-role-ingress/typed-ingress02-framework.patch",
+    "tools/droidloom-update/src/native_role_ingress.rs"
+  ],
+  "source_unchanged": 460,
+  "changed_existing_functions": [
+    "execute"
+  ],
+  "unchanged_functions": [
+    "begin_resources",
+    "build_artifact",
+    "children",
+    "cleanup_children",
+    "command",
+    "dependency_sources",
+    "exact_source_copy",
+    "finish_resources",
+    "focused_test",
+    "hash_held",
+    "held",
+    "identity",
+    "image_pin",
+    "image_toolchain",
+    "parse_selected_tree",
+    "pin_resolved",
+    "pinned_packet",
+    "portable",
+    "qualify_cached_archive",
+    "qualify_compiler_inputs",
+    "read_existing_config",
+    "real_directory",
+    "reap_normal_fakeroot_daemon",
+    "regular_tree",
+    "require",
+    "resource_events",
+    "resource_snapshot",
+    "resource_text",
+    "sha",
+    "toolchain",
+    "utc",
+    "validate_focused_result",
+    "verify_resolved",
+    "write_new"
+  ],
+  "stage_main_AST_unchanged": true,
+  "transport_AST_unchanged_except_three_pins": true,
+  "inherited_authority_packets": {
+    "go-control-result.json": {
+      "bytes": 44083,
+      "sha256": "391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674"
+    },
+    "image-tools-result.json": {
+      "bytes": 34633,
+      "sha256": "b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292"
+    },
+    "registry-result.json": {
+      "bytes": 211021,
+      "sha256": "b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993"
+    },
+    "rust193-tools-read02-result.json": {
+      "bytes": 9419,
+      "sha256": "45d3a3307cf40c57c1835f1a275be7cb2e920f0d2b703880756ce0bd89386cfd"
+    },
+    "selected-build.stdout": {
+      "bytes": 2121,
+      "sha256": "82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d"
+    },
+    "selection-result.json": {
+      "bytes": 14132,
+      "sha256": "185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf"
+    }
+  },
+  "packet_files": 17,
+  "uncompressed_stage": {
+    "bytes": 1344731,
+    "sha256": "507259d04f5846f17dd49b6066d0f2da1cebc3a366086c308393ee7586bba1c2"
+  },
+  "compressed_stage": {
+    "bytes": 236306,
+    "sha256": "50a8b56b4f389836dc6cf88f36fa4c1f59a082bb04e093eb2550183608b728e6"
+  },
+  "stdin_envelope": {
+    "bytes": 315342,
+    "sha256": "4c1929177171b438a3e9f3afab7be65b362efd06042560fd831fab697edcd1e0"
+  },
+  "controller": {
+    "bytes": 66298,
+    "sha256": "2742d19a6de247655a8f3ae067e970b6e753f1cdae0c053de1f0587b088f84e5"
+  },
+  "retained_existing_test_names": [
+    "android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes",
+    "android::tests::restoration_preserves_original_and_removes_created_file",
+    "android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch",
+    "android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout",
+    "android::patch_tests::interrupted_projection_recovers_before_next_build",
+    "tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets",
+    "tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory",
+    "native_generation::tests::legacy_and_disabled_preserve_the_disabled_mode",
+    "native_generation::tests::rejects_every_mixed_old_new_combination",
+    "native_generation::tests::enabled_triplet_requires_exact_contract",
+    "native_generation::tests::rejects_malformed_foreign_or_ambiguous_marker",
+    "native_generation::tests::rejects_foreign_elf_and_unrecognized_contract",
+    "native_generation::tests::rejects_symlinked_components",
+    "native_generation::tests::rejects_previous_protocol_for_each_role_and_mode",
+    "native_generation::tests::rejects_previous_protocol_inside_self_consistent_enabled_contract",
+    "native_generation::tests::rejects_previous_protocol_contract",
+    "native_generation::tests::real_ext4_apex_extraction_rejects_changed_nested_component",
+    "native_generation::tests::product_contract_generation_requires_enabled_triplet",
+    "native_generation::tests::product_contract_generation_is_create_only_and_binds_components",
+    "native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair",
+    "native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata",
+    "tests::native_generation_pair_cli_requires_one_explicit_product",
+    "native_generation_art::tests::output_rejects_source_overlap_alias_and_reuse",
+    "native_generation_art::tests::records_are_create_only_and_never_grant_runtime_readiness"
+  ],
+  "new_test_names": [
+    "native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate",
+    "native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions"
+  ],
+  "expected_registered": 199,
+  "expected_targeted": 26,
+  "Rust_tests_executed_locally": false,
+  "Rust_compiler_available_locally": false,
+  "decoded_stage_executed_locally": false,
+  "remote_request_submitted": false,
+  "Soong_Java_Android_JNI_build_requested": false,
+  "runtime_authorization_enabled": false,
+  "Main_actions": 0,
+  "parent_failures_and_UNKNOWN_listener_build03_preserved": true
+}

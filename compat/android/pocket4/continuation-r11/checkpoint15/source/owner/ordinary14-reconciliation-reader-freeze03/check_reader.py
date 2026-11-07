@@ -1,0 +1,131 @@
+"""Local parser/owned-file controls; never scans the worker's real jobs root."""
+from pathlib import Path
+import copy
+import hashlib
+import json
+import os
+import tempfile
+import time
+import types
+
+ROOT = Path(__file__).resolve().parent
+SOURCE = ROOT / 'read_requests.py'
+APPROVED = ROOT.parent / 'producer14-fixture-ordinary-freeze-01/request.json'
+APPROVED_B = Path('/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-snapshot-runtime-result-read01/exact-request.json')
+
+
+def main():
+    source = SOURCE.read_bytes()
+    approved_raw = APPROVED.read_bytes()
+    assert hashlib.sha256(approved_raw).hexdigest() == 'd383190cf90e1d752e1fcc3de757c9c9cb9092e1646235ad33e40cd71d535fc6'
+    approved = json.loads(approved_raw)
+    approved_b_raw = APPROVED_B.read_bytes()
+    assert hashlib.sha256(approved_b_raw).hexdigest() == '1abe8d99f05c416230160e0c91954044f41e0baee7a44a7d11efb5c349ecdec8'
+    approved_b = json.loads(approved_b_raw)
+    m = types.ModuleType('owned_reader_controls')
+    m.__file__ = str(SOURCE)
+    exec(compile(source, str(SOURCE), 'exec'), m.__dict__)
+    assert m.TARGETS[0]['execution'] == {key: approved.get(key, {}) for key in m.TARGETS[0]['execution']}
+    assert m.TARGETS[1]['execution'] == {key: approved_b.get(key, {}) for key in m.TARGETS[1]['execution']}
+    assert m.TARGETS[1]['stdin_bytes'] == len(approved_b['stdin'].encode()) and m.TARGETS[1]['stdin_sha256'] == hashlib.sha256(approved_b['stdin'].encode()).hexdigest()
+    assert len(approved['stdin'].encode()) == m.TARGETS[0]['stdin_bytes']
+    assert hashlib.sha256(approved['stdin'].encode()).hexdigest() == m.TARGETS[0]['stdin_sha256']
+    results = []
+    def check(name, predicate):
+        assert predicate, name
+        results.append(name)
+    for suffix in ['1','12','123','1234']:
+        check('observed_job_suffix_length_' + str(len(suffix)),
+              m.JOB_ID.fullmatch('1a1ab000001-fc05-' + suffix) is not None)
+    for index,bad in enumerate(['1a1ab000001-fc05-', '1a1ab000001-fc05-12345',
+        '../1a1ab000001-fc05-1', '1a1ab000001-fc05-1/request.json',
+        '1a1ab000001-fc05-g', '1a1ab000001-fc05-A',
+        '1a1ab000001-fc05-1\n', '1a1ab000001-fc05-1\x00']):
+        check('invalid_job_name_rejected_' + str(index),m.JOB_ID.fullmatch(bad) is None)
+    check('exact_execution_tuple_accepted', m.tuple_matches(copy.deepcopy(m.TARGETS[0]['execution']),m.TARGETS[0]['execution']))
+    for key in m.TARGETS[0]['execution']:
+        value = copy.deepcopy(m.TARGETS[0]['execution'])
+        if type(value[key]) is int: value[key] += 1
+        elif type(value[key]) is str: value[key] += '-changed'
+        elif type(value[key]) is list: value[key] = value[key] + ['unexpected']
+        else: value[key] = {'unexpected': 'value'}
+        check('reject_changed_' + key, not m.tuple_matches(value,m.TARGETS[0]['execution']))
+    value = copy.deepcopy(m.TARGETS[0]['execution']); value['cpu_quota_percent'] = True
+    check('boolean_is_not_resource_integer', not m.tuple_matches(value,m.TARGETS[0]['execution']))
+    value = copy.deepcopy(m.TARGETS[0]['execution'])
+    for key in value:
+        if type(value[key]) is int:value[key] = float(value[key])
+    check('identical_integral_JSON_numbers_match_without_rounding',m.tuple_matches(value,m.TARGETS[0]['execution']))
+    for raw in [b'{"args":[],"args":[]}', b'[]', b'\xff']:
+        try: m.request_object(raw)
+        except m.MetadataError: pass
+        else: raise AssertionError('invalid/duplicate JSON accepted')
+    results.append('duplicate_nonobject_and_nonUTF8_rejected')
+    fd_before = len(os.listdir('/proc/self/fd'))
+    with tempfile.TemporaryDirectory(prefix='owned-only-', dir=ROOT) as temp:
+        # These are local I/O seams, not a bypass reachable through main().
+        m.JOBS = temp; m.EXPECTED_UID = os.getuid()
+        def create(job_id, changed=False, stdin=None, execution=None):
+            directory = Path(temp) / job_id; directory.mkdir(mode=0o700)
+            value = copy.deepcopy(m.TARGETS[0]['execution'] if execution is None else execution)
+            if changed: value['nice'] += 1
+            value.update(job_id=job_id, job_dir=str(directory), stdin_path=str(directory/'stdin.bin'),
+                         request_digest='1'*64, request_fingerprint='1'*64)
+            (directory/'request.json').write_text(json.dumps(value))
+            (directory/'stdin.bin').write_bytes(approved['stdin'].encode() if stdin is None else stdin)
+            return directory
+        exact_id='1a1ab000001-fc05-0001'; changed_id='1a1ab000002-fc05-0002'
+        exact=create(exact_id); create(changed_id, changed=True, stdin=b'NONMATCHING_STDIN_MUST_NOT_BE_READ')
+        b_id='1a1ab000003-fc05-3'; bad_size_id='1a1ab000004-fc05-44'; bad_hash_id='1a1ab000005-fc05-555'
+        exact_b=create(b_id,execution=m.TARGETS[1]['execution'],stdin=approved_b['stdin'].encode())
+        bad_size=create(bad_size_id,execution=m.TARGETS[1]['execution'],stdin=b'TOO_SHORT')
+        bad_hash=create(bad_hash_id,execution=m.TARGETS[1]['execution'],stdin=b'x'*m.TARGETS[1]['stdin_bytes'])
+        original=m.read_regular; reads=[]
+        def observed(parent,name,maximum,state,allowed_sizes=None):
+            before=state['read_bytes']
+            try:return original(parent,name,maximum,state,allowed_sizes=allowed_sizes)
+            finally:reads.append((os.fstat(parent).st_ino,name,state['read_bytes']-before))
+        m.read_regular=observed
+        state={'deadline':time.monotonic()+10,'read_bytes':0,'entries_seen':0,'requests_read':0,
+               'nonmatching_requests':0,'unrecognized_names':0,'unreadable_or_rejected_counts':{},
+               'matches':[],'close_errors':[],'enumeration_exhausted':False,
+               'execution_tuple_candidates':0,'different_stdin_size_candidates':0,
+               'candidate_stdin_reads':0,'different_stdin_hash_candidates':0}
+        fd=os.open(temp,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC)
+        try: m.scan(fd,state)
+        finally: os.close(fd)
+        check('five_real_owned_metadata_files_scanned',state['enumeration_exhausted'] and state['requests_read']==5)
+        check('two_targets_have_separate_exact_matches',{(x['target_label'],x['job_id']) for x in state['matches']}=={('ordinary14',exact_id),('native_snapshot_result_reader01',b_id)} and all(x['stdin_matches'] and x['held_job_directory_stable'] for x in state['matches']))
+        check('nonmatching_tuple_stdin_never_opened',not any(x[0]==(Path(temp)/changed_id).stat().st_ino and x[1]=='stdin.bin' for x in reads))
+        check('shared_tuple_different_size_reads_zero_bytes',[x[2] for x in reads if x[0]==bad_size.stat().st_ino and x[1]=='stdin.bin']==[0])
+        check('shared_tuple_wrong_hash_is_not_output',state['different_stdin_hash_candidates']==1 and bad_hash_id not in json.dumps(state['matches']) and bad_size_id not in json.dumps(state['matches']))
+        check('stdin_pins_cannot_cross_targets',not m.stdin_matches(m.TARGETS[0],{'bytes':m.TARGETS[1]['stdin_bytes'],'sha256':m.TARGETS[1]['stdin_sha256']}) and not m.stdin_matches(m.TARGETS[1],{'bytes':m.TARGETS[0]['stdin_bytes'],'sha256':m.TARGETS[0]['stdin_sha256']}))
+        m.read_regular=original
+        fd=os.open(exact,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC)
+        try:
+            (exact/'link.json').symlink_to('request.json')
+            try: original(fd,'link.json',131072,state)
+            except OSError as error: check('symlink_denied',error.errno==40)
+            else: raise AssertionError('symlink followed')
+            try: original(fd,'request.json',1,state)
+            except m.BoundError: results.append('single_file_bound_rejected')
+            else: raise AssertionError('file bound ignored')
+            expired=dict(state,deadline=time.monotonic()-1)
+            try: original(fd,'request.json',131072,expired)
+            except m.BoundError: results.append('expired_read_opens_nothing')
+            else: raise AssertionError('deadline ignored')
+        finally: os.close(fd)
+    check('local_owned_FDs_return_to_baseline',len(os.listdir('/proc/self/fd'))==fd_before)
+    assert SOURCE.read_bytes()==source
+    report={'schema':1,'scope':'Local exact-parser and five owned temporary metadata files only',
+            'source_sha256':hashlib.sha256(source).hexdigest(),'approved_request_sha256':hashlib.sha256(approved_raw).hexdigest(),'approved_request_B_sha256':hashlib.sha256(approved_b_raw).hexdigest(),
+            'controls_passed':len(results),'controls':results,'production_main_executed':False,
+            'real_jobs_root_accessed':False,'ordinary14_or_Android_executed':False,
+            'test_seams':['Only local module globals JOBS and EXPECTED_UID were redirected to the owned temporary directory/current local uid; production source unchanged','A local read_regular observer records file names/inodes solely in the synthetic fixture; no other user metadata was read'],
+            'source_unchanged':True}
+    raw=(json.dumps(report,sort_keys=True,indent=2)+'\n').encode()
+    with (ROOT/'checks.json').open('xb') as f:f.write(raw)
+    print(json.dumps({'controls':len(results),'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}))
+
+
+if __name__=='__main__':main()

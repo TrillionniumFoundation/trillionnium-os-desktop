@@ -1,0 +1,303 @@
+{
+  "AndroidManifest.xml": {
+    "parent_path": "AndroidManifest.xml",
+    "parent": {
+      "bytes": 712,
+      "sha256": "60cf7c7f101b7df30e0dbed7ef1b1b85e3e890b86ab6317a05da897ef05427fa"
+    },
+    "generated": {
+      "bytes": 712,
+      "sha256": "74e57467fc57c779ca200d26bc55f3d478e04c6014cdd4f9cf847b9e1ceb0b72"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.bili.r8",
+        "next": "org.droidloom.qa.bili.r9",
+        "count": 3
+      }
+    ]
+  },
+  "build-input-reference.json": {
+    "historical_reference_unchanged": true
+  },
+  "build_candidate.py": {
+    "parent_path": "build_candidate.py",
+    "parent": {
+      "bytes": 24054,
+      "sha256": "810f59472021b13d8bc000c9168d2d7ef698bba2a5b9d99f4a3bb35061a68679"
+    },
+    "generated": {
+      "bytes": 25393,
+      "sha256": "7ee0862e0418ae7997c3b605cf2ca84068dcc1217d350344eca0344b477258f5"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.bili.r8",
+        "next": "org.droidloom.qa.bili.r9",
+        "count": 2
+      },
+      {
+        "old": "org/droidloom/qa/bili/r8",
+        "next": "org/droidloom/qa/bili/r9",
+        "count": 6
+      },
+      {
+        "old": "owned-bili-qa-r8",
+        "next": "owned-bili-qa-r9",
+        "count": 3
+      },
+      {
+        "old": "        source_java = HERE/'src/org/droidloom/qa/bili/r9/ActionRunner.java'",
+        "next": "        baseline_scope={'__file__':str(HERE/'check_current_baseline.py'),'__name__':'owned_current_baseline_scope_controls'}\n        exec(compile((HERE/'check_current_baseline.py').read_bytes(),str(HERE/'check_current_baseline.py'),'exec'),baseline_scope)\n        baseline_controls=baseline_scope['run_controls']()\n        require(baseline_controls['all_passed'] is True and baseline_controls['count']==12 and\n                len(baseline_controls['cases'])==12 and all(x['passed'] is True for x in baseline_controls['cases']) and\n                baseline_controls['production_contract_sha256']==source['qa_contract.py']['sha256'] and\n                baseline_controls['main_epoch_sha256']=='734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2' and\n                baseline_controls['main_baseline_schema']=='pocket4-main-current-baseline-v1' and\n                baseline_controls['main_baseline_sha256']=='163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266' and\n                baseline_controls['main_baseline_qualification_sha256']=='f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6',\n                'ACTUAL_CURRENT_BASELINE_SCOPE_CONTROLS_REQUIRED')\n        result['current_baseline_scope_controls']={'source_sha256':source['check_current_baseline.py']['sha256'],'report':baseline_controls}\n        source_java = HERE/'src/org/droidloom/qa/bili/r9/ActionRunner.java'",
+        "count": 1
+      }
+    ]
+  },
+  "check_idle_contract.py": {
+    "parent_path": "check_idle_contract.py",
+    "parent": {
+      "bytes": 13271,
+      "sha256": "e7c0ecdf0f4717f6c064a59b5ef3e4972478da5a343de61f6f208b816ea2a0cd"
+    },
+    "generated": {
+      "bytes": 13481,
+      "sha256": "96e696553bb8bd7b9dc8aeac1562112cb6dd85ff422c33858a172f479c5028a5"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "'main_epoch_sha256':qa.MAIN_EPOCH",
+        "next": "'main_epoch_sha256':qa.MAIN_EPOCH, 'main_baseline_schema':qa.MAIN_BASELINE_SCHEMA,\n                      'main_baseline_sha256':qa.MAIN_BASELINE_SHA,\n                      'main_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA",
+        "count": 1
+      }
+    ]
+  },
+  "make_build_request.py": {
+    "parent_path": "make_build_request.py",
+    "parent": {
+      "bytes": 2936,
+      "sha256": "eb2e742c36179604db3debe346ae18ca0e8d8c4ca35d512a2b5d63cf313bbb60"
+    },
+    "generated": {
+      "bytes": 2944,
+      "sha256": "f63b9cdc987589b2a990a93322d9b59eda69ed84e4aeed4e89f533ebb1fb0de5"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "owned-bili-qa-r8",
+        "next": "owned-bili-qa-r9",
+        "count": 1
+      },
+      {
+        "old": "KEY='pocket4-owned-bili-qa-r9-static-build-01-20261106'",
+        "next": "KEY='pocket4-owned-bili-qa-r9-current-163e3e3914f4ccbb-build01'",
+        "count": 1
+      }
+    ]
+  },
+  "qa_adapter.py": {
+    "parent_path": "qa_adapter.py",
+    "parent": {
+      "bytes": 28016,
+      "sha256": "96a31157fec87974047371a95fb16953890f756fb795b567b80e073c6bea670e"
+    },
+    "generated": {
+      "bytes": 28221,
+      "sha256": "c1f6a1f4f7ca673e169b1d09fa10ce65172e0e28815594379a6c2ca8c3cfbb70"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.bili.r8",
+        "next": "org.droidloom.qa.bili.r9",
+        "count": 1
+      },
+      {
+        "old": "org/droidloom/qa/bili/r8",
+        "next": "org/droidloom/qa/bili/r9",
+        "count": 5
+      },
+      {
+        "old": "'main_epoch_sha256':self.qa.MAIN_EPOCH})",
+        "next": "'main_epoch_sha256':self.qa.MAIN_EPOCH, 'main_baseline_schema':self.qa.MAIN_BASELINE_SCHEMA,\n            'main_baseline_sha256':self.qa.MAIN_BASELINE_SHA,\n            'main_baseline_qualification_sha256':self.qa.MAIN_BASELINE_QUALIFICATION_SHA})",
+        "count": 1
+      }
+    ]
+  },
+  "qa_contract.py": {
+    "parent_path": "qa_contract.py",
+    "parent": {
+      "bytes": 51256,
+      "sha256": "a173eef3c7165b477d25e39206ff83f2e3815b8569fa96c090cf45a03cfb36ad"
+    },
+    "generated": {
+      "bytes": 51820,
+      "sha256": "0cdf34a459387c74af5fde17c47810148682e28d3df5e6ec7c9507e63c818a68"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.bili.r8",
+        "next": "org.droidloom.qa.bili.r9",
+        "count": 1
+      },
+      {
+        "old": "pocket4-owned-bili-qa-v8",
+        "next": "pocket4-owned-bili-qa-v9",
+        "count": 1
+      },
+      {
+        "old": "MAIN_EPOCH = '48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'",
+        "next": "MAIN_EPOCH = '734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'\nMAIN_BASELINE_SCHEMA = 'pocket4-main-current-baseline-v1'\nMAIN_BASELINE_SHA = '163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'\nMAIN_BASELINE_QUALIFICATION_SHA = 'f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'",
+        "count": 1
+      },
+      {
+        "old": "'window_token', 'main_epoch_sha256'}",
+        "next": "'window_token', 'main_epoch_sha256', 'main_baseline_schema', 'main_baseline_sha256', 'main_baseline_qualification_sha256'}",
+        "count": 1
+      },
+      {
+        "old": "value['display'] == 0 and value['main_epoch_sha256'] == MAIN_EPOCH,",
+        "next": "value['display'] == 0 and value['main_epoch_sha256'] == MAIN_EPOCH and\n            value['main_baseline_schema'] == MAIN_BASELINE_SCHEMA and\n            value['main_baseline_sha256'] == MAIN_BASELINE_SHA and\n            value['main_baseline_qualification_sha256'] == MAIN_BASELINE_QUALIFICATION_SHA,",
+        "count": 1
+      }
+    ]
+  },
+  "src/org/droidloom/qa/bili/r9/ActionRunner.java": {
+    "parent_path": "src/org/droidloom/qa/bili/r8/ActionRunner.java",
+    "parent": {
+      "bytes": 73893,
+      "sha256": "549881790c837188d4d5ff579ded2793fdeae6dccc0aae26a10bd85eb38303b6"
+    },
+    "generated": {
+      "bytes": 74638,
+      "sha256": "2f123f873553ba79c4f7c23258017305c6522cc08aa8236316d6fcbc228ed63f"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.bili.r8",
+        "next": "org.droidloom.qa.bili.r9",
+        "count": 2
+      },
+      {
+        "old": "pocket4-owned-bili-qa-v8",
+        "next": "pocket4-owned-bili-qa-v9",
+        "count": 1
+      },
+      {
+        "old": "    static final String MAIN_EPOCH = \"48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f\";",
+        "next": "    static final String MAIN_EPOCH = \"734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2\";\n    static final String MAIN_BASELINE_SCHEMA = \"pocket4-main-current-baseline-v1\";\n    static final String MAIN_BASELINE_SHA = \"163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266\";\n    static final String MAIN_BASELINE_QUALIFICATION_SHA = \"f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6\";",
+        "count": 1
+      },
+      {
+        "old": "keys(scope, \"package\", \"uid\", \"user\", \"display\", \"activity\", \"window_token\", \"main_epoch_sha256\");",
+        "next": "keys(scope, \"package\", \"uid\", \"user\", \"display\", \"activity\", \"window_token\", \"main_epoch_sha256\", \"main_baseline_schema\", \"main_baseline_sha256\", \"main_baseline_qualification_sha256\");",
+        "count": 1
+      },
+      {
+        "old": "        need(MAIN_EPOCH.equals(string(scope, \"main_epoch_sha256\", 64)), \"HOST_EPOCH_ATTESTATION_REQUIRED\");",
+        "next": "        need(MAIN_EPOCH.equals(string(scope, \"main_epoch_sha256\", 64)), \"HOST_EPOCH_ATTESTATION_REQUIRED\");\n        need(MAIN_BASELINE_SCHEMA.equals(string(scope, \"main_baseline_schema\", 64))\n            && MAIN_BASELINE_SHA.equals(string(scope, \"main_baseline_sha256\", 64))\n            && MAIN_BASELINE_QUALIFICATION_SHA.equals(string(scope, \"main_baseline_qualification_sha256\", 64)),\n            \"HOST_CURRENT_BASELINE_ATTESTATION_REQUIRED\");",
+        "count": 1
+      }
+    ]
+  },
+  "src/org/droidloom/qa/bili/r9/InspectionIdleGate.java": {
+    "parent_path": "src/org/droidloom/qa/bili/r8/InspectionIdleGate.java",
+    "parent": {
+      "bytes": 3921,
+      "sha256": "280b24ba10f5c3dce2ffd889f851af4e2e11c3ad8bd88d88d32c9bafcfe682c8"
+    },
+    "generated": {
+      "bytes": 3921,
+      "sha256": "8fe3db24ea70cec07c9013eb7d99fc935517bce4bbf3efcdc7029ee39fa59c48"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.bili.r8",
+        "next": "org.droidloom.qa.bili.r9",
+        "count": 1
+      }
+    ]
+  },
+  "src/org/droidloom/qa/bili/r9/PlayerButtonTransaction.java": {
+    "parent_path": "src/org/droidloom/qa/bili/r8/PlayerButtonTransaction.java",
+    "parent": {
+      "bytes": 2897,
+      "sha256": "e1b117cf30ad4be88d39d7c83b7b7e0b6fec23fea3fd47cdb85dd5aac395c767"
+    },
+    "generated": {
+      "bytes": 2897,
+      "sha256": "745ff923eaef435414d70b0a3d6a7acffc9e3dca58a972d66a65f30d814b979b"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.bili.r8",
+        "next": "org.droidloom.qa.bili.r9",
+        "count": 1
+      }
+    ]
+  },
+  "src/org/droidloom/qa/bili/r9/TouchTransaction.java": {
+    "parent_path": "src/org/droidloom/qa/bili/r8/TouchTransaction.java",
+    "parent": {
+      "bytes": 4979,
+      "sha256": "2a56b8640b60b427fa5f75a14ee1c93a4ef21556121406a9d2bf0b7f9d743b71"
+    },
+    "generated": {
+      "bytes": 4979,
+      "sha256": "5c8312a8671598225ba0bf14e839695b96af1f9ad59280697f54b8d793293923"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.bili.r8",
+        "next": "org.droidloom.qa.bili.r9",
+        "count": 1
+      }
+    ]
+  },
+  "stage_build.py": {
+    "parent_path": "stage_build.py",
+    "parent": {
+      "bytes": 7554,
+      "sha256": "f899640029be4db9b00a6a24dd709005277eb3f73c6e74c3e09fbceb92268b4f"
+    },
+    "generated": {
+      "bytes": 7554,
+      "sha256": "98099e32ac16341bfd8e35f9aa16c50e2f7356c525d049a3969cf820b6c9a180"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "owned-bili-qa-r8",
+        "next": "owned-bili-qa-r9",
+        "count": 2
+      }
+    ]
+  },
+  "tests/InspectionIdleGateChecks.java": {
+    "parent_path": "tests/InspectionIdleGateChecks.java",
+    "parent": {
+      "bytes": 11432,
+      "sha256": "86b823a9f4b61048747cf328683e4edb70a77bc36bdfb7a511a46744b456fe40"
+    },
+    "generated": {
+      "bytes": 11432,
+      "sha256": "e39b0018c56b7fa19a927279300364773a257334bbe164f0a9352e7f086360bf"
+    },
+    "inverse_byte_exact": true,
+    "edits": [
+      {
+        "old": "org.droidloom.qa.bili.r8",
+        "next": "org.droidloom.qa.bili.r9",
+        "count": 1
+      }
+    ]
+  }
+}

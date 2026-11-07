@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+"""Actual original Session and backend foreground function; explicit I/O seams.
+
+No namespace, process, service or UI actions. Private historical inspection is
+read only for the selector and never printed or copied. Dumpsys samples below
+are owned fixtures, not historical raw window evidence.
+"""
+import ast
+import copy
+import hashlib
+import json
+from pathlib import Path
+import re
+import types
+
+HERE=Path(__file__).resolve().parent
+BASE=HERE.parent
+QA=BASE/'owned-bili-qa-r3-search-01/source'
+BACKEND=HERE/'reference_android_backend.py'
+PRIVATE=BASE/'root-recovery-20261104-02/private/qa-r3-results-observe01-tree/private-tree.json'
+
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def load(path,name):
+    m=types.ModuleType(name);m.__file__=str(path)
+    exec(compile(path.read_bytes(),str(path),'exec'),m.__dict__);return m
+
+def run():
+    m=load(HERE/'owned_navigation.py','main')
+    v=load(HERE/'video_navigation.py','video')
+    qa=load(QA/'qa_contract.py','qa')
+    adapter=load(QA/'qa_adapter.py','adapter')
+    assert sha((QA/'qa_adapter.py').read_bytes())=='f58ee613069a6e8e4d6f1aa7c6532f2faeb5790a70564d294591444fa7de1767'
+    raw=BACKEND.read_bytes()
+    assert len(raw)==36401 and sha(raw)=='088be6d783e80006645a05b8c5b90cd100d3e38b6f3d4634dd499ab1de7898ae'
+    names={'ControlError','require','package_name','foreground'}
+    selected=[n for n in ast.parse(raw).body if isinstance(n,(ast.FunctionDef,ast.ClassDef))and n.name in names]
+    assert len(selected)==4
+    backend=types.ModuleType('actual_pinned_backend_foreground');backend.re=re
+    exec(compile(ast.Module(body=selected,type_ignores=[]),str(BACKEND),'exec'),backend.__dict__)
+    historical=PRIVATE.read_bytes()
+    assert sha(historical)=='1b3cdaf5f70f4eeef2adcbb2e45feb56e7891a2edab6d4ad3da84a012ee56f10'
+    private=json.loads(historical);inspection=qa.inspect_record(private['inspection']);scope=private['scope']
+    search=('mCurrentFocus=Window{'+scope['window_token']+' u0 '+scope['activity']+'}\n').encode()
+    details=b'mCurrentFocus=Window{abc123 u0 tv.danmaku.bili/com.bilibili.ship.theseus.detail.UnitedBizDetailsActivity}\n'
+    null=b'mCurrentFocus=null\n'
+    other=b'mCurrentFocus=Window{def456 u0 owned.other/owned.other.Activity}\n'
+    installed=m.EXPECTED_INSTALLED_IDENTITY
+    cases=[('immediate_ready',[details],None),('single_null_then_ready',[null,details],None),
+        ('null_exhaustion',[null]*6,'FOREGROUND_UNVERIFIED'),
+        ('other_package',[other],'FOREGROUND_MUST_STILL_BE_BILI'),
+        ('multiple_focus',[search+details],'FOREGROUND_UNVERIFIED'),
+        ('malformed_focus',[b'mCurrentFocus=invalid\n'],'FOREGROUND_UNVERIFIED'),
+        ('missing_focus',[b'owned empty display fixture\n'],'FOREGROUND_UNVERIFIED'),
+        ('transport_failure',[OSError(9,'owned transport error')],'owned transport error'),
+        ('invalid_utf8',[b'\xffmCurrentFocus=null\n'],'utf-8'),
+        ('pre_action_null',[], 'FOREGROUND_UNVERIFIED'),
+        ('after_state_failure',[null],'OWNED_AFTER_STATE_FAILURE'),
+        ('instance_bindings_restored',[null,details],None)]
+    rows=[]
+    for name,post,expected in cases:
+        class Flow:
+            _private_backend_transport=False
+            def __init__(self):
+                self.samples=([null]if name=='pre_action_null'else[search,search])+post
+                self.calls=[]
+                class Contract:
+                    def load(self,path,label):
+                        assert path=='references/android_backend.py'
+                        assert label=='owned_qa_exact_foreground'
+                        return backend
+                self.contract=Contract()
+            def android(self,argv,timeout,**kwargs):
+                assert argv==['/system/bin/dumpsys','window','displays']and kwargs=={'mutation':False}
+                self.calls.append({'argv':argv,'timeout':timeout})
+                assert self.samples,'unexpected extra sample'
+                value=self.samples.pop(0)
+                if isinstance(value,BaseException):raise value
+                return value
+        flow=Flow();session=adapter.Session.__new__(adapter.Session)
+        session.qa=qa;session.flow=flow;session.installed=lambda:installed
+        session.task=lambda:{'owned_fixture':1};ops=[]
+        state={'accessibility_enabled':False,'touch_exploration_enabled':False,
+            'enabled_service_count':0,'enabled_services_sha256':sha(b'owned fixture')}
+        def instrument(request):
+            op=request['op'];ops.append(op)
+            if name=='after_state_failure'and request['nonce']==v.VIDEO_PLAN['nonces']['after']:
+                raise RuntimeError('OWNED_AFTER_STATE_FAILURE')
+            helper={'op':op,'nonce':request['nonce'],'self_uid':m.UID,'ui_automation_connected':op!='state'}
+            if op=='state':helper['state']=state
+            else:
+                helper.update(accessibility_state_before_connection=state,restoration={'service_info_verified':True})
+                if op=='inspect':helper['inspection']=inspection
+                elif op=='click':helper['action_window']=inspection['window']
+                else:raise AssertionError(op)
+            return {'helper':helper,'wire_sha256':sha(qa.canonical(helper))}
+        session.instrument=instrument
+        if name=='instance_bindings_restored':
+            flow.android=flow.android;session.foreground=session.foreground
+        android_attr=flow.__dict__.get('android');foreground_attr=session.__dict__.get('foreground')
+        observed={};error=None;result=None
+        try:result=v.course_sequence(m,qa,session,observed)
+        except BaseException as caught:error=caught
+        assert flow._private_backend_transport is False and session.qa is qa
+        assert flow.__dict__.get('android')is android_attr and session.__dict__.get('foreground')is foreground_attr
+        if expected is None:
+            assert error is None and result['click_acknowledged']and result['restoration_qualified']
+            assert result['foreground_after']['activity'].endswith('/com.bilibili.ship.theseus.detail.UnitedBizDetailsActivity')
+            assert observed['video_post_foreground_transition']['qualified']is True
+        else:
+            assert error is not None and expected in str(error),(name,error)
+            assert session.sequence_observation['error']is not None
+        transition=observed.get('video_post_foreground_transition')
+        if name in ('pre_action_null','after_state_failure'):
+            assert transition is None
+            assert all(c['timeout']==15 for c in flow.calls)
+            if name=='pre_action_null':assert ops==['state','state']and len(flow.calls)==1
+            else:
+                assert len(flow.calls)==3 and session.sequence_observation['error']['message']=='OWNED_AFTER_STATE_FAILURE'
+                assert session.sequence_observation['secondary_errors'][0]['message']=='FOREGROUND_UNVERIFIED'
+        else:
+            assert [x['timeout']for x in flow.calls[:2]]==[15,15]
+            assert all(0<x['timeout']<=3 for x in flow.calls[2:])
+            assert ops==['state','inspect','click','state']
+            assert session.sequence_observation['after_state_completed']is True
+            assert session.sequence_observation['restoration_qualified']is True
+            count=len(transition['samples'])
+            expected_count=2 if name in ('single_null_then_ready','instance_bindings_restored') else 6 if name=='null_exhaustion' else 1
+            assert count==expected_count and len(flow.calls)==count+2
+            if name=='null_exhaustion':assert 'BOUNDED_NULL_FOREGROUND_OBSERVATION_EXHAUSTED'in error.__notes__
+        rows.append({'control':name,'passed':True,'instrument_operations':ops,'foreground_commands':len(flow.calls),
+            'post_transition_samples':len(transition['samples'])if transition else 0,
+            'post_wait_only_after_ACK_and_restoration':True,'all_temporary_bindings_restored':True,
+            'raw_window_or_commercial_tree_exported':False})
+    return {'schema':1,'state':'LOCAL_POST_FOREGROUND_CONTROLS_PASS','count':len(rows),'controls':rows,
+        'module_sha256':sha((HERE/'video_navigation.py').read_bytes()),
+        'actual_backend_sha256':sha(raw),'actual_adapter_sha256':sha((QA/'qa_adapter.py').read_bytes()),
+        'actual_unmodified_backend_AST_functions':sorted(names),
+        'explicit_seams':['Flow.android dumpsys bytes/errors','installed/task/instrument I/O'],
+        'old_runtime_null_cause_proven':False,'Android_actions':0,'remote_actions':0,'whole_app_production_ready':False}
+
+if __name__=='__main__':print(json.dumps(run(),sort_keys=True,indent=2))

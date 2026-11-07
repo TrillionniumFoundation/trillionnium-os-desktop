@@ -1,0 +1,24 @@
+--- build03/compile/build-template.py
++++ build04/compile/build-template.py
+@@ -549,8 +549,8 @@
+     report['resource_health'] = resources.record
+     try:
+         require(os.getuid() == os.geteuid() == 1000, 'ordinary operator only')
+-        require(CFG['kind'] == 'p4-marriott-proc-readlink-outer-tu-build03' and
+-                root == Path('/home/alex/work/pocket4-marriott-proc-readlink-outer-tu-03-20261106') and
++        require(CFG['kind'] == 'p4-marriott-proc-readlink-outer-tu-build04' and
++                root == Path('/home/alex/work/pocket4-marriott-proc-readlink-outer-tu-04-20261106') and
+                 aosp == Path('/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source'),
+                 'fixed work/source root differs')
+         resources.begin()
+@@ -753,7 +753,9 @@
+         report['all_children_reaped'] and resources.record['held_own_cgroup_gate_passed'])
+     report['elapsed_seconds'] = time.monotonic()-BUILD_STARTED
+     encoded = (json.dumps(report,sort_keys=True,indent=2)+'\n').encode()
+-    require(len(encoded) <= 4194304, 'complete compile receipt exceeds bound')
++    # Retain complete before/after dependency rows, final rechecks and child records.
++    # Only the summary and complete file pin go to stdout after create-only storage.
++    require(len(encoded) <= 67108864, 'complete compile receipt exceeds bound')
+     if created:
+         output = root/'build-result.json'
+         create(output,encoded,mode=0o400)

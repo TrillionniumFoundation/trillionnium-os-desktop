@@ -1,0 +1,103 @@
+{
+  "actual": {
+    "observer_finish_token_attempts": 0,
+    "observer_setup_failure": {
+      "errno": 2,
+      "nonce": "88a9ba8305606eed7860c3a4510ea06949d01fa6e12bce2ac1720bb99c54af08",
+      "phase": "setup_failure",
+      "schema": 1,
+      "stage": "exact_android_exec",
+      "type": "FileNotFoundError"
+    },
+    "observer_spawn_attempts": 1,
+    "observer_start_token_attempts": 0,
+    "original_private": {
+      "bytes": 817470,
+      "sha256": "7f91108de0fbec45051dae9cb8ca8e43e6bb99986915d51f74bd2d4f6dfc843e"
+    },
+    "producer_failure_is_independent": true,
+    "producer_first_failure": {
+      "message": "owned process generation is dead or changed",
+      "observed_monotonic_ns": 988499110274939,
+      "origin": "runtime"
+    },
+    "runtime_job": "1a1b0831ea7-fc05-710c",
+    "safe_projection": {
+      "bytes": 100499,
+      "git_blob_sha": "286d5fa67ff5fadf671ad57ba4c4a764f03aad8f",
+      "sha256": "a6d96c0d48c8ea2ba7f8d2b397a8aa53d7a8a60a3e9bcd3b0d06bfb83d274405"
+    },
+    "safe_tree": "a8edc45333e61318b219db12a27ce756ec617fcc",
+    "timing": {
+      "broker_ready": 988458921775826,
+      "done": 988458923008021,
+      "hello": 988458671472416,
+      "helper_fork": 988458736474343,
+      "observer_started": 988458729505000
+    }
+  },
+  "changes": [
+    "Actor calls property_capture_step from the original status loop only after unchanged producer failure/ACTIVE handling. Same nonce, canonical spec, HELLO binding, ordered exact eight-event prefix, and unchanged qualify_init_v3 must pass before one Capture construction.",
+    "Fresh held init live/snapshot comparison is followed by the unchanged Capture _bind_init and _borrowed_init_current checks for current named root, ten namespaces, executable, UID/GID and generation domain before fork.",
+    "DONE is only a lifecycle prerequisite. It does not establish that PT_INTERP, APEX or bionic exists.",
+    "The existing child, after entering its already qualified owned root and retiring inherited descriptors, reads only its held helper and fixed /system/bin/linker64. Full bounded hashes, ELF metadata and held/named identity are collected before the one held-FD exec.",
+    "The fixed interpreter path may use ordinary Android symlinks within the already chrooted child. No extraction, mount, path search, fallback, write or second exec is added.",
+    "Closed metadata facts are attached only to the existing setup_failure datagram. Failure before the view uses null. Missing interpreter and a later exec ENOENT with a complete visible view remain distinct evidence.",
+    "Successful exec still requires the unchanged READY credentials, three actual bionic files, mapped getter and source proof before the original start token. No setup metadata qualifies property reads.",
+    "Only the interpreter FD opened by the view is closed by it. Close error is recorded separately and cannot replace a prior read error or claim completeness.",
+    "Observation remains the same absolute two-second window, protected by the already installed child SIGALRM/default/unblocked policy. Extra retirement time is unchanged, and the original 65-second actor Stop/finally suffix is byte-identical."
+  ],
+  "controls": {
+    "Python_execution": "NOT_PERFORMED",
+    "critical_negative_cases": [
+      "HELLO only",
+      "late or never DONE",
+      "wrong generation and DONE wire nonce",
+      "duplicate DONE",
+      "stale held init",
+      "constructor error no retry",
+      "original ACTIVE/failure priority",
+      "missing PT_INTERP",
+      "wrong helper identity/hash",
+      "interpreter type/owner/mode/size/race/truncation",
+      "deadline without new read",
+      "close-error first-error preservation",
+      "visible interpreter plus exec ENOENT",
+      "extra payload body field rejected"
+    ],
+    "host_context": "No real child, Main object, namespace entry, UID change, Android ELF execution or property reads. Original FD baseline and exact retained libffi dependency remain visible; actual terminal exit must close process lifetime.",
+    "method": "Execute the actual actor.run status-loop AST, production admission helper, unchanged ABI3 qualifier, fixed child-view function and actual _child/_accept paths under explicit virtual clock/process/file/constructor seams.",
+    "new_cases": 31,
+    "synthetic_ELF_detail": "Bounded ELF64 fixtures are parsed and hashed by production code. HELPER_BYTES/SHA constants are temporarily replaced for these synthetic fixtures then restored. They are not actual Android build evidence.",
+    "unchanged_dependency_ledger_cases": 8
+  },
+  "not_proven": [
+    "The exact ENOENT cause in NORMAL02.",
+    "A successful Android accessor execution or property visibility.",
+    "Producer stopped-before-ACTIVE cause.",
+    "HWS or LMKD health.",
+    "Any cold-cache UID1069 observation."
+  ],
+  "preserved": {
+    "C_accessor_and_build02_artifact_unchanged": true,
+    "Main_baseline_or_guards_modified": false,
+    "actual_LMKD_capability_simulation": false,
+    "new_normal_runtime_request_created": false,
+    "normal_Stop_and_retirement_unchanged": true,
+    "private_init_or_crash_body_exported": false,
+    "producer_failure_not_reclassified": true,
+    "protocol_packet_cap": 4,
+    "root_warmed_bionic_cache_limitation": true,
+    "single_held_FD_exec": true,
+    "single_observer_child": true,
+    "start_and_finish_token_counts_unchanged": true
+  },
+  "schema": 1,
+  "scope": "Owner20 actual NORMAL02 observer admission and exact-exec diagnostic successor",
+  "status": "SOURCE_ONLY_NOT_DISPATCHED",
+  "verification": {
+    "Python_syntax_controls_and_runtime_not_executed": true,
+    "V8_exact_checks": 44,
+    "actual_runtime_qualification": false
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "base_commit": "4af46935a44ecb5e19ddc65fa39558ddf1f0b733",
+  "inherited_payload_count": 741,
+  "inherited_payloads_modified": 0,
+  "client_archive_decoder_controls": {
+    "gzip": [
+      {
+        "name": "empty",
+        "bytes": 0,
+        "passed": true
+      },
+      {
+        "name": "abc",
+        "bytes": 3,
+        "passed": true
+      },
+      {
+        "name": "overlap-dynamic",
+        "bytes": 25200,
+        "passed": true
+      },
+      {
+        "name": "all-bytes-fixed",
+        "bytes": 1280,
+        "passed": true
+      },
+      {
+        "name": "stored",
+        "bytes": 1024,
+        "passed": true
+      }
+    ],
+    "tar_members": 3,
+    "all_passed": true
+  },
+  "checked_inputs": [
+    {
+      "scope": "shared namespace entry",
+      "payloads": 14,
+      "bundle_sha256": "f1a61df109ada362656e77a6a7203b6555e660d685e2e18af3ee572e80383417"
+    },
+    {
+      "scope": "LMKD09/10",
+      "payloads": 234,
+      "archive_sha256": "8b3ca88392de7d91801f5e09a6ba45945f7a2e2bc2ebe52e8c263d2fc67df9d6",
+      "manifest_sha256": "1f5afb60f5959c2c75939fcdb0cb076c6dde4a0bdd37fec99ae7a27bcefa780a"
+    },
+    {
+      "scope": "native source/host/build/audit",
+      "payloads": 250,
+      "archive_sha256": "9301c1649c21a4160e1800baf6e3ca54d10530b66bc364ac1f2243e97d310f33",
+      "manifest_sha256": "5fa9ccccc5fc58fda806be1ac7faf8935f269e76e54d5ab50e4e62a4dd2bf80d"
+    },
+    {
+      "scope": "signal r4 source",
+      "payloads": 72,
+      "archive_sha256": "60d4012d6838de6eb443a267296af3e60f5c0a0786d360e06ef47ef5a6760b9b",
+      "manifest_sha256": "b51efedefd1c458fae0cdf0fe1b353cf9c69db3429fa3c07bdc549d10dec0ed4"
+    },
+    {
+      "scope": "signal r4 remaining evidence and independent reviews",
+      "payloads": 18,
+      "bundle_sha256": "9a5cb029621486d1bd43a8eeea9f0295141b6a65fedf0b827692ee42e7c21fc5"
+    },
+    {
+      "scope": "metadata r18 actual runtime",
+      "payloads": 16,
+      "bundle_sha256": "ffc4a5bbd1035a47b91f0a091f96bb34d23203e0f21c01918fc5f293157f4202"
+    },
+    {
+      "scope": "metadata r19 actual runtime",
+      "payloads": 18,
+      "bundle_sha256": "06da2ab5e4064337215d293f3e634137c111bff1238d9bd84d367d24ab42ef69"
+    },
+    {
+      "scope": "metadata r20 actual runtime",
+      "payloads": 18,
+      "bundle_sha256": "5f06a1ae5e52bb272406a8bb12f60e61de9d906d1605c8960b16bb86642f1ef6"
+    }
+  ],
+  "required_native_primary_bindings": [
+    {
+      "name": "r18_build",
+      "sha256": "5d15e154208b97cc03d3432a2156b929f9f7f1787d1b48a240334838dcf7f608",
+      "path": "r18/audit/build-result.json"
+    },
+    {
+      "name": "r18_audit",
+      "sha256": "2f082862debae528f401e161226f0187cac15168e61419540a1b2bcb7c696f9c",
+      "path": "r18/audit/receipt.json"
+    },
+    {
+      "name": "r19_build",
+      "sha256": "2215a7baaaa9c0e701bf935d7b72d54d8908f0c26cfe6abfb1cad08b4753b046",
+      "path": "r19/build/build-result.json"
+    },
+    {
+      "name": "r19_audit",
+      "sha256": "e84b21ecb155e89651906eb7f2b4399bda82bb332f959b65226b7ced9aa41c5b",
+      "path": "r19/audit/audit-receipt.json"
+    },
+    {
+      "name": "r20_build",
+      "sha256": "09a8a5ab25c897405b70bebdeb6c75c98d94ec9124365fdb51956b35df96db43",
+      "path": "r20/build/build-result.json"
+    },
+    {
+      "name": "r20_audit",
+      "sha256": "4db3d1736597844dfeccf09646591db92201dece70b2231d769ac8f2b08cee33",
+      "path": "r20/audit/audit-receipt.json"
+    }
+  ],
+  "all_new_payloads_decoded_as_exact_utf8": true,
+  "binary_executables_or_private_app_logs_included": false,
+  "publication_does_not_change_runtime_qualification": true,
+  "all_apps_production_ready": false
+}

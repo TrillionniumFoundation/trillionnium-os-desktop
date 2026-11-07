@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys,types\nraw=sys.stdin.buffer.read(524289)\nassert 0<len(raw)<=524288 and hashlib.sha256(raw).hexdigest()=='f78f0daf69595d4a687ecaaa9ebb5dbc060b8723a413720ba3563e743ffeff15'\np=json.loads(raw);assert p['schema']==1 and set(p)=={'schema','control_source','control_pin','payload'}\nsrc=p['control_source'].encode();assert p['control_pin']=={'bytes':len(src),'sha256':hashlib.sha256(src).hexdigest()}\nassert hashlib.sha256(src).hexdigest()=='6a4f68593262292c30593291ea2d6952a3e5ce294bae0ff59a7b8eeb5c3238da'\nmodule=types.ModuleType('amazon_current_owner_controls');module.__file__='<amazon-pure-controls>'\nexec(compile(src,module.__file__,'exec'),module.__dict__);out=module.run_controls(p['payload'])\nassert out['ok'] is True and out['count']==42 and len(out['cases'])==42 and all(v['passed'] is True for v in out['cases'])\nassert out['current_owner_task_route_controls']==3 and out['current_cell02_generation_controls']==9\nout.update(control_source_sha256=p['control_pin']['sha256'],control_stdin_sha256=hashlib.sha256(raw).hexdigest(),\n    bound_source_pins=p['payload']['bound_source_pins'],nonce_actual=p['payload']['nonce_actual'],\n    actual_helper_uid=10159,fresh_nonce_count=32,scope='PURE_CURRENT_AMAZON_R4_OWNER_AND_BUSINESS_CONTROLS',\n    actual_Main_and_target_callbacks=False,real_Java_helper_executed=False,UI_flow_dispatched=False,\n    whole_app_production_ready=False)\nencoded=json.dumps(out,sort_keys=True,separators=(',',':'));assert len(encoded.encode())<=32768;print(encoded,flush=True)\n"
+    ],
+    "created_unix_ms": 1793985947046,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b1e525a6-fc05-7b61",
+    "idempotency_key": "pocket4-current-amazon-r4-owner-business42-controls01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b1e525a6-fc05-7b61",
+    "request_digest": "90a42751942896cfd875e405b1ac6799723716675b40e480f47fba1660f7593e",
+    "request_fingerprint": 10422498668973692623,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b1e525a6-fc05-7b61"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b1e525a6-fc05-7b61"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

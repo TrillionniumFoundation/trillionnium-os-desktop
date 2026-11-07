@@ -1,0 +1,402 @@
+{
+  "schema": 1,
+  "scope": "one owned PIDFD-only minimal-root real pressure phase; no Main deployment",
+  "started_utc": "2026-11-04T15:43:11.493816+00:00",
+  "unit": "p4-lmkd-relay-pressure-r11-01.service",
+  "source_manifest_sha256": "9f0472e7aea77cd2f628d38e8378f9148b9db60d4353315d6067a3c271f8325f",
+  "matching_build_receipt_sha256": "2e593f7229ed98e34ec5dc23d1586739c125c74a741c76ae19809a01cc16021e",
+  "binaries_sha256": {
+    "actor": "4bbf0137a0e8ea089dca4b9e6c2ec800d587e6293fba28eb4ea452d44a898cd9",
+    "driver": "4e063d9c39ba5c5cadd63f9efbc6fd06379c4d5dda23826b42a3f0cdd6a0e1cc",
+    "broker": "6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154",
+    "android_lmkd": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde"
+  },
+  "dispatch_attempted": true,
+  "outcome_unknown": true,
+  "forced_teardown": false,
+  "pressure_qualified": false,
+  "all_apps_production_ready": false,
+  "main_namespaces": {
+    "pid": 4026533288,
+    "mnt": 4026533284,
+    "cgroup": 4026533394,
+    "ipc": 4026533286,
+    "uts": 4026533285,
+    "net": 4026533041
+  },
+  "available_memory_bytes": 13294174208,
+  "dispatch_returncode": 0,
+  "dispatch_stdout": "",
+  "dispatch_stderr": "",
+  "invocation_id": "81b8e78bbe1644bfa5609b3c9f8b8ede",
+  "resources_first_observed": {
+    "limits": {
+      "memory.max": "536870912",
+      "memory.high": "max",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "64"
+    },
+    "memory_events": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_current": 1835008,
+    "memory_peak": 1835008,
+    "cgroup_events": "populated 1\nfrozen 0\n"
+  },
+  "terminal_status": {
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "81b8e78bbe1644bfa5609b3c9f8b8ede",
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainPID": "45134",
+    "ExecMainCode": "1",
+    "ExecMainStatus": "0",
+    "ExecStart": "{ path=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-06/target/debug/owned-relay-canary ; argv[]=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-06/target/debug/owned-relay-canary pressure /opt/p4-lmkd-relay-pressure-r11-01/root /run/p4-lmkd-relay-pressure-r11-01 p4-lmkd-relay-pressure-r11-01.service 4bbf0137a0e8ea089dca4b9e6c2ec800d587e6293fba28eb4ea452d44a898cd9 bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde /home/alex/work/pocket4-lmkd-host-pressure-r11-source-06/target/debug/droidloom-psi-owner 6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154 4026533288 4026533284 4026533394 4026533286 4026533285 4026533041 ; ignore_errors=no ; start_time=[Wed 2026-11-04 07:43:11 PST] ; stop_time=[Wed 2026-11-04 07:43:17 PST] ; pid=45134 ; code=exited ; status=0 }",
+    "ControlGroup": "",
+    "MemoryPeak": "417271808",
+    "MemorySwapPeak": "0"
+  },
+  "ok": false,
+  "error": "AssertionError()",
+  "retained_files": {
+    "after-relay-hup.json": {
+      "sha256": "42aff11e40cc37d9232f1b3a6d90b53a9a8a3e99c97686aeb1311816a6813cfe",
+      "bytes": 1567
+    },
+    "broker-active.json": {
+      "sha256": "a1008256a9141986c5f1479c70c3a3cc54937783e8f28a4ca7303502d67412ca",
+      "bytes": 374
+    },
+    "broker-pressure-audit.json": {
+      "sha256": "6af38ff291b29220029eb5a5928d842aa2749ea3d034c526f7d8cad5adf7ca34",
+      "bytes": 1272
+    },
+    "broker-ready.json": {
+      "sha256": "a92989c9be5ea2ab69bf2a921057801489a83ab4afbcb95ef9300029a556f0e4",
+      "bytes": 374
+    },
+    "broker-retired.json": {
+      "sha256": "f1f0308775cb55b0693f3c08f4c03359ffd38e90329732022cb383de79581e24",
+      "bytes": 375
+    },
+    "cached-exit.json": {
+      "sha256": "185b5ea01caa88892be5a45e9c853e0be5dd914923b68377990b2cbeb46da937",
+      "bytes": 92
+    },
+    "cached-kill-diagnostic.json": {
+      "sha256": "5d2509e1fcbefdf679fe7ce3b2331ae107a3567317179010f661b4dffe161cac",
+      "bytes": 222
+    },
+    "cached-kill-notification.json": {
+      "sha256": "c90814349782ad4d22afa452abe99c60ebb69bbc49667b7cb1152bb36df02229",
+      "bytes": 100
+    },
+    "driver-result.json": {
+      "sha256": "ed12f314babac9c7e9f1abf50cf51356a37f82e9a7a1d3947671a32f2afb9097",
+      "bytes": 482
+    },
+    "identities.json": {
+      "sha256": "f4e63dfb3cfa25a65b6dad119d0dca0698706adedc242a84587ced16fb3c587b",
+      "bytes": 494
+    },
+    "inner-preflight.json": {
+      "sha256": "10636754032e956b39257dcd03e6305218a0a8b22b8744110472dbee65e85f16",
+      "bytes": 537
+    },
+    "lmkd-fds.txt": {
+      "sha256": "40657b995b3e0cfab0f1153a15f5eecb8f35795bdce0b43c771ba86b8d44e8c0",
+      "bytes": 863
+    },
+    "lmkd-maps.txt": {
+      "sha256": "be4680b3ae0cfb5144e0b6381cbad0d2630dd2341c8e32c6fea4ea859619a50f",
+      "bytes": 4014
+    },
+    "lmkd-post-registration-fds.txt": {
+      "sha256": "227dccbd373294f93c55e87a31ece9112d060e08f1174f5151cabf4f98b5969a",
+      "bytes": 929
+    },
+    "lmkd-post-registration-maps.txt": {
+      "sha256": "be4680b3ae0cfb5144e0b6381cbad0d2630dd2341c8e32c6fea4ea859619a50f",
+      "bytes": 4014
+    },
+    "lmkd-post-registration-pressure-file.json": {
+      "sha256": "ec828465cbba5ac7ef78c0440ebda00491bc614b73ea8350877a985c37e2c172",
+      "bytes": 91
+    },
+    "lmkd-post-registration-status.txt": {
+      "sha256": "3e60d2ab9518caf75b9a9fcbef6553920b3f34ebb5313c8343408af3ce92badd",
+      "bytes": 1493
+    },
+    "lmkd-pressure-file.json": {
+      "sha256": "ec828465cbba5ac7ef78c0440ebda00491bc614b73ea8350877a985c37e2c172",
+      "bytes": 91
+    },
+    "lmkd-status.txt": {
+      "sha256": "bada445c320a5998f66b1372bb233e4480980fbd94d2427dbebed48a5218ce14",
+      "bytes": 1493
+    },
+    "logdw.records": {
+      "sha256": "4b4a746db9e0111a324c365070eb00c8ff08de8745f48d0a16125523d6c536c8",
+      "bytes": 3119
+    },
+    "outer-preflight.json": {
+      "sha256": "4a353f92521e320b32d2e8553731cf6962059a788420cf3991630f428176d78f",
+      "bytes": 295
+    },
+    "phase-result.json": {
+      "sha256": "b65533b378087324d5c670cbe53b65b2bf8bc8c9ba1434b2ea7111cb31081a30",
+      "bytes": 354
+    },
+    "pressure-after.json": {
+      "sha256": "12fb09a8a80380196158337075050e940a2366777fc8be94ac5a821643966f95",
+      "bytes": 1567
+    },
+    "pressure-before.json": {
+      "sha256": "c010f75e3ee9122454eeb7cb597a2339362c03e8d87aa8f4888394fbb654eeb9",
+      "bytes": 1546
+    },
+    "pressure-workload.json": {
+      "sha256": "3ccc6a8d7ada92ad63ba87576e4e245bad9be81211de67a4a57aeb8b154c795c",
+      "bytes": 898
+    },
+    "protocol-complete.json": {
+      "sha256": "a3558dad2384aa800cd2e4da2f48b8518ce370afe70b0e9bbe23b2fae1c6ef1b",
+      "bytes": 1536
+    },
+    "quiet-after.json": {
+      "sha256": "c010f75e3ee9122454eeb7cb597a2339362c03e8d87aa8f4888394fbb654eeb9",
+      "bytes": 1546
+    },
+    "quiet-before.json": {
+      "sha256": "331c070aad88588faba5378c48bb6cb52d196367b707aa61e7774a4292a2c361",
+      "bytes": 1546
+    },
+    "relay-projection.json": {
+      "sha256": "cec2f60b64056058e5c908edfc89f76ca6a3d986bbb0b6c71ff4e190cd0454a4",
+      "bytes": 62
+    },
+    "staging-result.json": {
+      "sha256": "eece4225e9ed1514de3232e80cf872cc6e56cf5c7e05cd2077b6bbdd7f89905d",
+      "bytes": 315
+    },
+    "target-cleanup.json": {
+      "sha256": "a7131dda2679b22d67f8eaea15aefa619554dfa473372a0768828f4bedb5cbfc",
+      "bytes": 641
+    }
+  },
+  "driver-result.json": {
+    "ok": true,
+    "phase": "pressure",
+    "nonce": "f5d034eddbcaad8513819ebb209ff468461f1b493d28099b970015a7850069a6",
+    "actual_broker": true,
+    "broker_pid": 45138,
+    "owner_pid": 45135,
+    "init_pid": 45137,
+    "bootstrap_rights": 16,
+    "same_cell_retry_denied": true,
+    "broker_retired_and_reaped": true,
+    "owner_and_init_exited": true,
+    "domain_populated": false,
+    "android_enrollment": true,
+    "joined_host_audit_present": true,
+    "pressure_workload_requested": true,
+    "real_pressure_verified": false,
+    "installed_supervisor_changed": false
+  },
+  "phase-result.json": {
+    "ok": true,
+    "phase": "pressure",
+    "marked_contract_rejected": true,
+    "real_protocol_verified": true,
+    "actual_relay_hup_verified": true,
+    "nonvictim_cleanup_verified": true,
+    "pressure_workload_complete": true,
+    "host_audit_required": true,
+    "real_pressure_verified": false,
+    "route": "PIDFD-only minimal root",
+    "production_cgroup_kill_qualified": false,
+    "pid_reuse_qualified": false
+  },
+  "broker-pressure-audit.json": {
+    "schema": 1,
+    "source": "actual-registration-write-and-POLLPRI-send-after-joined-retirement",
+    "nonce": "f5d034eddbcaad8513819ebb209ff468461f1b493d28099b970015a7850069a6",
+    "authority_generation": "3f29f46ad36c4783eb6853c870d474a9e253281c9e133b98baa3f23ba71e06b0",
+    "lease_generation": "9889c18a6526c3b50298c5925445fe05e4d1d09e037c6d3fde2b83f6f2f834eb",
+    "cgroup_device": 30,
+    "cgroup_inode": 27617352,
+    "budget_hex": "0000002000000000000000180000000000000000000000000000000001000000",
+    "granted": true,
+    "faulted": false,
+    "incomplete": false,
+    "overflow": false,
+    "observations": 2,
+    "packets_queued": 2,
+    "stop_reason": 1,
+    "retired_monotonic_ns": 832706457744842,
+    "registrations": [
+      {
+        "level": 1,
+        "trigger": "some 70000 1000000",
+        "window_us": 1000000,
+        "stall_us": 70000,
+        "pressure_device": 30,
+        "pressure_inode": 27617368,
+        "write_started_ns": 832700968664104,
+        "write_completed_ns": 832700968803220,
+        "bytes_written": 18
+      },
+      {
+        "level": 2,
+        "trigger": "full 700000 1000000",
+        "window_us": 1000000,
+        "stall_us": 700000,
+        "pressure_device": 30,
+        "pressure_inode": 27617368,
+        "write_started_ns": 832700969647919,
+        "write_completed_ns": 832700969649452,
+        "bytes_written": 19
+      }
+    ],
+    "events": [
+      {
+        "level": 1,
+        "sequence": 1,
+        "observed_ns": 832704603076423,
+        "send_completed_ns": 832704603859473
+      },
+      {
+        "level": 2,
+        "sequence": 1,
+        "observed_ns": 832705227044176,
+        "send_completed_ns": 832705227857544
+      }
+    ]
+  },
+  "pressure-workload.json": {
+    "phase": "pressure",
+    "workload_complete": true,
+    "host_audit_required": true,
+    "real_pressure_verified": false,
+    "max": 536870912,
+    "high": 402653184,
+    "first_kill_current_cap": 452984832,
+    "peak_observed_current": 414023680,
+    "final_current": 347795456,
+    "cached_bytes": 67108864,
+    "foreground_bytes": 134217728,
+    "allocator_bytes": 185597952,
+    "pressure_start_ns": 832704484896249,
+    "quiet_started_ns": 832702276109248,
+    "quiet_completed_ns": 832704484721033,
+    "allocation_finished_ns": 832705237645204,
+    "stopped_ns": 0,
+    "resume_ns": 0,
+    "cached_exit_observed_ns": 832705231153768,
+    "quiet_end_ns": 832706437781279,
+    "some_before": 0,
+    "some_after": 716956,
+    "full_before": 0,
+    "full_after": 714209,
+    "events_before": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+    "events_after": "low 0\nhigh 467\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+    "kill_count": 1,
+    "protected_targets_alive": true,
+    "budget_unchanged": true
+  },
+  "target-cleanup.json": {
+    "lmkd_reaped_before_nonvictim_check": true,
+    "children": [
+      {
+        "label": "cached",
+        "pid": 8,
+        "uid": 10001,
+        "start": 83270099,
+        "known_cached_victim": true,
+        "exit_code": -1,
+        "exit_signal": 9
+      },
+      {
+        "label": "foreground",
+        "pid": 9,
+        "uid": 10002,
+        "start": 83270099,
+        "known_cached_victim": false,
+        "exit_code": 0,
+        "exit_signal": 0
+      },
+      {
+        "label": "protected",
+        "pid": 10,
+        "uid": 10003,
+        "start": 83270099,
+        "known_cached_victim": false,
+        "exit_code": 0,
+        "exit_signal": 0
+      },
+      {
+        "label": "sentinel",
+        "pid": 11,
+        "uid": 10004,
+        "start": 83270099,
+        "known_cached_victim": false,
+        "exit_code": 0,
+        "exit_signal": 0
+      },
+      {
+        "label": "allocator",
+        "pid": 12,
+        "uid": 10005,
+        "start": 83270099,
+        "known_cached_victim": false,
+        "exit_code": 0,
+        "exit_signal": 0
+      }
+    ]
+  },
+  "unit.stdout": "{\"ok\":true,\"phase\":\"pressure\",\"real_pressure_verified\":false}\n",
+  "unit.stderr": "WARNING: linker: Warning: failed to find generated linker configuration from \"/linkerconfig/ld.config.txt\"\nWARNING: linker: Warning: failed to find generated linker configuration from \"/linkerconfig/ld.config.txt\"\n",
+  "pre_stop_status": {
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "81b8e78bbe1644bfa5609b3c9f8b8ede",
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainPID": "45134",
+    "ExecMainCode": "1",
+    "ExecMainStatus": "0",
+    "ExecStart": "{ path=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-06/target/debug/owned-relay-canary ; argv[]=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-06/target/debug/owned-relay-canary pressure /opt/p4-lmkd-relay-pressure-r11-01/root /run/p4-lmkd-relay-pressure-r11-01 p4-lmkd-relay-pressure-r11-01.service 4bbf0137a0e8ea089dca4b9e6c2ec800d587e6293fba28eb4ea452d44a898cd9 bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde /home/alex/work/pocket4-lmkd-host-pressure-r11-source-06/target/debug/droidloom-psi-owner 6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154 4026533288 4026533284 4026533394 4026533286 4026533285 4026533041 ; ignore_errors=no ; start_time=[Wed 2026-11-04 07:43:11 PST] ; stop_time=[Wed 2026-11-04 07:43:17 PST] ; pid=45134 ; code=exited ; status=0 }",
+    "ControlGroup": "",
+    "MemoryPeak": "417271808",
+    "MemorySwapPeak": "0"
+  },
+  "stop_returncode": 0,
+  "post_stop_status": {
+    "LoadState": "not-found",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "InvocationID": "",
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainPID": "0",
+    "ExecMainCode": "0",
+    "ExecMainStatus": "0",
+    "ControlGroup": "",
+    "MemoryPeak": "[not set]",
+    "MemorySwapPeak": "[not set]"
+  },
+  "owned_cgroup_after_stop": "absent",
+  "exact_owned_cleanup_verified": true,
+  "main_epoch_unchanged_after_cleanup": true,
+  "finished_utc": "2026-11-04T15:43:17.473277+00:00"
+}

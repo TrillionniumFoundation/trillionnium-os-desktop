@@ -1,0 +1,136 @@
+--- a/runtime/droidloom-pressure-relay/src/lib.rs
++++ b/runtime/droidloom-pressure-relay/src/lib.rs
+@@ -55,6 +55,11 @@
+     Io(&'static str, io::Error),
+     RelativeIo { name: String, flags: libc::c_int, base: Option<FileId>, error: io::Error },
+     Context(&'static str, Box<Error>),
++    LifecycleCapture {
++        cause: Box<Error>, pid: libc::pid_t, birth: u64,
++        pidfd: Option<FileId>, proc_dir: Option<FileId>,
++        poll_result: libc::c_int, poll_revents: libc::c_short, poll_errno: Option<i32>,
++    },
+     Reject(&'static str),
+ }
+ pub type Result<T> = std::result::Result<T, Error>;
+@@ -65,6 +70,8 @@
+             Self::RelativeIo { name, flags, base, error } => write!(f,
+                 "open relative pinned directory name={name:?} flags={flags:#x} base={base:?}: {error}"),
+             Self::Context(context, error) => write!(f, "{context}: {error}"),
++            Self::LifecycleCapture { cause, pid, birth, pidfd, proc_dir, poll_result, poll_revents, poll_errno } => write!(f,
++                "{cause}; after-error held pidfd observation pid={pid} birth={birth} pidfd={pidfd:?} proc_dir={proc_dir:?} poll_result={poll_result} revents={poll_revents:#x} errno={poll_errno:?}"),
+             Self::Reject(reason) => write!(f, "rejected: {reason}"),
+         }
+     }
+@@ -274,6 +281,22 @@
+         }
+         Ok(())
+     }
++    /// Preserve the original failed capture, then sample this same held pidfd
++    /// once without waiting. A ready result is later death evidence; zero is
++    /// only not-ready at this observation, never a successful identity check or
++    /// proof that the process was alive at the earlier failing namespace open.
++    fn observe_capture_failure(&self, cause: Error) -> Error {
++        let mut p = libc::pollfd { fd: self.pidfd.as_raw_fd(), events: libc::POLLIN, revents: 0 };
++        let poll_result = unsafe { libc::poll(&mut p, 1, 0) };
++        let poll_errno = if poll_result < 0 { io::Error::last_os_error().raw_os_error() } else { None };
++        let mut stat: libc::stat = unsafe { zeroed() };
++        let pidfd = if unsafe { libc::fstat(self.pidfd.as_raw_fd(), &mut stat) } == 0 {
++            Some(FileId { device: stat.st_dev as u64, inode: stat.st_ino as u64 })
++        } else { None };
++        Error::LifecycleCapture { cause: Box::new(cause), pid: self.pid, birth: self.start,
++            pidfd, proc_dir: FileId::of(&self.proc_dir).ok(), poll_result,
++            poll_revents: p.revents, poll_errno }
++    }
+ }
+ 
+ struct LifecycleSnapshot {
+@@ -282,6 +305,9 @@
+ }
+ impl LifecycleSnapshot {
+     fn capture(pin: &ProcessPin) -> Result<Self> {
++        Self::capture_inner(pin).map_err(|cause| pin.observe_capture_failure(cause))
++    }
++    fn capture_inner(pin: &ProcessPin) -> Result<Self> {
+         pin.live()?;
+         let status = parse_status(&read_at(&pin.proc_dir, "status", MAX_PROC_BYTES)?, pin.pid)?;
+         let namespaces = NamespacePins::capture(&pin.proc_dir)?;
+@@ -843,6 +869,79 @@
+             if self.0.try_wait().ok().flatten().is_none() { let _ = self.0.kill(); }
+             let _ = self.0.wait();
+         }
++    }
++    fn observation_owned_child() -> (RelativeIoChild, ProcessPin) {
++        use std::process::{Command, Stdio};
++        let child = RelativeIoChild(Command::new("/bin/cat").stdin(Stdio::piped())
++            .stdout(Stdio::null()).stderr(Stdio::null()).spawn().unwrap());
++        let pid = child.0.id() as libc::pid_t;
++        let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, pid, 0) };
++        assert!(raw >= 0);
++        let pidfd = unsafe { OwnedFd::from_raw_fd(raw as RawFd) };
++        let proc_dir = open_dir(&PathBuf::from(format!("/proc/{pid}"))).unwrap();
++        let start = process_birth(&read_at(&proc_dir, "stat", MAX_PROC_BYTES).unwrap(), pid).unwrap();
++        let pin = ProcessPin { pid, pidfd, proc_dir, start };
++        pin.live().unwrap();
++        (child, pin)
++    }
++    fn reap_observation_child(child: &mut RelativeIoChild) {
++        drop(child.0.stdin.take());
++        let deadline = Instant::now() + Duration::from_secs(2);
++        loop {
++            if let Some(status) = child.0.try_wait().unwrap() { assert!(status.success()); break; }
++            assert!(Instant::now() < deadline, "owned observation child did not exit");
++            thread::sleep(Duration::from_millis(1));
++        }
++    }
++    #[test]
++    fn failed_owned_lookup_keeps_errno_and_records_later_not_ready_pidfd() {
++        let (mut child, pin) = observation_owned_child();
++        // This is a real missing proc entry plus the production error observer,
++        // not a claim to reproduce an absent live pid_for_children namespace.
++        let cause = open_at(&pin.proc_dir, "droidloom-absent-observation", libc::O_RDONLY).unwrap_err();
++        let original = cause.to_string();
++        let error = pin.observe_capture_failure(cause);
++        assert!(error.to_string().starts_with(&original));
++        match error {
++            Error::LifecycleCapture { cause, pid, birth, pidfd, proc_dir, poll_result, poll_revents, poll_errno } => {
++                assert_eq!(pid, child.0.id() as libc::pid_t);
++                assert_eq!(birth, pin.birth());
++                assert!(pidfd.is_some());
++                assert_eq!(proc_dir, Some(FileId::of(&pin.proc_dir).unwrap()));
++                assert_eq!(poll_result, 0);
++                assert_eq!(poll_revents, 0);
++                assert_eq!(poll_errno, None);
++                match *cause {
++                    Error::RelativeIo { name, base, error, .. } => {
++                        assert_eq!(name, "droidloom-absent-observation");
++                        assert_eq!(base, proc_dir);
++                        assert_eq!(error.raw_os_error(), Some(libc::ENOENT));
++                    }
++                    other => panic!("original error replaced: {other}"),
++                }
++            }
++            other => panic!("missing post-error observation: {other}"),
++        }
++        pin.live().unwrap();
++        reap_observation_child(&mut child);
++    }
++    #[test]
++    fn failed_dead_owned_snapshot_stays_rejected_and_records_ready_pidfd() {
++        let (mut child, pin) = observation_owned_child();
++        reap_observation_child(&mut child);
++        let error = LifecycleSnapshot::capture(&pin).err().expect("dead snapshot accepted");
++        match error {
++            Error::LifecycleCapture { cause, pid, birth, poll_result, poll_revents, poll_errno, .. } => {
++                assert!(matches!(*cause, Error::Reject("process generation is dead")));
++                assert_eq!(pid, child.0.id() as libc::pid_t);
++                assert_eq!(birth, pin.birth());
++                assert_eq!(poll_result, 1);
++                assert_ne!(poll_revents & (libc::POLLIN | libc::POLLHUP), 0);
++                assert_eq!(poll_errno, None);
++            }
++            other => panic!("wrong original cause or post-error observation: {other}"),
++        }
++        assert!(pin.live().is_err());
+     }
+     #[test]
+     fn exited_owned_child_retains_exact_proc_base_and_role_without_revival() {

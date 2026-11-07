@@ -1,0 +1,73 @@
+--- amazon-install01/amazon_context.py
++++ ticket-install01/ticket_context.py
+@@ -1,4 +1,4 @@
+-"""Amazon-only install/state context using immutable shared recorder primitives.
++"""12306-only install/state context using immutable shared recorder primitives.
+ 
+ No Bili Flow or legacy client is instantiated. The actual Flow.command body,
+ held Main/root/classpath primitives and R4 BoundArun body are reused; the new
+@@ -14,9 +14,9 @@
+ import time
+ import types
+ 
+-PACKAGE = 'com.amazon.mShop.android.shopping'
+-UID = 10129
+-VERSION = 1243240206
++PACKAGE = 'com.MobileTicket'
++UID = 10121
++VERSION = 275
+ INSTALLED_SHARED = Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/source/recorder-r4')
+ SHARED_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+ CONTRACT_SHA = '51c2b3dd7df80a8fcd4881eb7216f7292db77d39c01920f10feb650824919a7d'
+@@ -44,7 +44,7 @@
+ 
+ def ordered_commands(qa, self_package, guest_apk, state_nonce):
+     require(qa.PACKAGE == PACKAGE and qa.UID == UID and
+-            qa.SELF == self_package == 'org.droidloom.qa.amazon.r1', 'EXACT_AMAZON_QA_SOURCE_REQUIRED')
++            qa.SELF == self_package == 'org.droidloom.qa.ticket.r1', 'EXACT_AMAZON_QA_SOURCE_REQUIRED')
+     state = {'protocol':qa.PROTOCOL,'nonce':state_nonce,'op':'state'}
+     qa.validate_request(state)
+     own_uid = ['/system/bin/cmd','package','list','packages','-U','--user','0',self_package]
+@@ -183,7 +183,7 @@
+ 
+ 
+ class ArtifactSet:
+-    """The exact three installed commercial APKs, read-only and held to exit."""
++    """The exact one installed commercial APK, read-only and held to exit."""
+     def __init__(self, context, expected, reader):
+         require(expected['target'] == {'package':PACKAGE,'uid':UID,'user':0,'version_code':VERSION},
+                 'ACTUAL_AMAZON_METADATA_REFERENCE_REQUIRED')
+@@ -199,8 +199,8 @@
+ 
+     def _paths(self, raw):
+         values = self.reader.apk_paths(raw)
+-        require(values == sorted(row['path'] for row in self.expected['artifacts']) and len(values) == 3,
+-                'ACTUAL_THREE_AMAZON_APK_PATHS_CHANGED')
++        require(values == sorted(row['path'] for row in self.expected['artifacts']) and len(values) == 1,
++                'ACTUAL_ONE_12306_APK_PATH_CHANGED')
+         return values
+ 
+     def _hash(self, fd, expected, deadline):
+@@ -226,19 +226,19 @@
+         self._metadata(self.context.android(LIST,15))
+         self._paths(self.context.android(PATHS,15))
+         require(sum(row['held_file']['bytes'] for row in self.expected['artifacts']) <= TOTAL_LIMIT,
+-                'THREE_APK_TOTAL_BOUND')
++                'ONE_APK_TOTAL_BOUND')
+         deadline = min(self.context.deadline,time.monotonic()+HASH_SECONDS)
+         for row in self.expected['artifacts']:
+             fd = self.context.target.open_root(row['path'],os.O_RDONLY|os.O_NOFOLLOW)
+             self.opened.append(fd)
+             self.records.append(self._hash(fd,row,deadline))
+-        require(len(self.opened) == len(self.records) == 3,'EXACT_THREE_HELD_APKS_REQUIRED')
++        require(len(self.opened) == len(self.records) == 1,'EXACT_ONE_HELD_APK_REQUIRED')
+         self.context.artifacts = self
+         return {'metadata':self.expected['target'],'artifacts':self.records,
+                 'fresh_streaming_hashes':True,'signer_independently_verified':False}
+ 
+     def verify_held(self):
+-        require(not self.closed and len(self.opened) == len(self.records) == 3,'OPEN_THREE_APK_SET_REQUIRED')
++        require(not self.closed and len(self.opened) == len(self.records) == 1,'OPEN_ONE_APK_SET_REQUIRED')
+         for fd,row in zip(self.opened,self.records):
+             require(identity(fd) == row['held_file'],'HELD_AMAZON_APK_CHANGED')
+ 

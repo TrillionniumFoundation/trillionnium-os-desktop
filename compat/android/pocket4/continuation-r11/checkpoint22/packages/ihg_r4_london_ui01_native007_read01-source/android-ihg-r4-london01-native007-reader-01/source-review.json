@@ -1,0 +1,101 @@
+{
+  "schema": "pocket4-ihg-london-native007-reader-source-review-v1",
+  "source_only": true,
+  "Python_compile_or_controls_executed_here": false,
+  "Hepta_dispatched": false,
+  "prior_actual_reader": {
+    "tree": "747c2b6e05c1885493d084451180b74a5eaca98d",
+    "source": {
+      "bytes": 22570,
+      "sha256": "36bfe5a58ebe2f542c973b855688a296d27165bb19539a4409a3cf636d97b8d9",
+      "blob": "c95d412a33a0c228606b9e9088c81176a1155589"
+    },
+    "request": {
+      "bytes": 23844,
+      "sha256": "fed0a4d199f8ee44f490fe271c561f23a939e0832f0114fdad16a0c02e5d84fe",
+      "blob": "eed4c772c5e2b2ad985de4c7444e22d347c272cf"
+    }
+  },
+  "actual_originals": {
+    "coordinator": {
+      "bytes": 6175,
+      "sha256": "09e528df22c01ffbb293264309c028ce549666602e4a97669c3eac80d62488b1",
+      "blob": "a29726448abd0fdef71a5f1ef725d033ffd2583d"
+    },
+    "stage": {
+      "bytes": 2187,
+      "sha256": "a4b5d60e30dd33ad06a4e127b6bb41c22bf7639a0c7842dd5ea6b74de5465d59",
+      "blob": "2ab90942edd01b777099c02905cd72435adccaee"
+    },
+    "worker": {
+      "bytes": 12051,
+      "sha256": "3ab8190051ab6c628a7e6b67c0f10567cb18e273db6ecc067b5856098e37034b",
+      "blob": "c84214240fca64ca426437f40975a550c88d57e1"
+    }
+  },
+  "actual_scope": {
+    "schema": "pocket4-current-recorder-scope-v2",
+    "current_baseline_schema": "pocket4-main-current-baseline-v2",
+    "package": "com.ihg.apps.android",
+    "component": "com.ihg.apps.android/.activity.MainActivity",
+    "uid": 10137,
+    "user": 0,
+    "nonce": "ec4f2977574102b1e5869d2494e8416b",
+    "epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "current_baseline_sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364",
+    "current_baseline_qualification_sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e",
+    "amazon_task_source_manifest_sha256": "24a8491dbb44faf1288869d278da96290597b7af1fcdcce12a72fd62bad9435f",
+    "automatic_retry": false,
+    "original_recorder_manifest_sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff",
+    "actual_resolution_result_sha256": "153ddbfc8393570621b64a478675c2a0180826a7a6ecada0ade8a6aa4ed79722"
+  },
+  "current_Main_guard_required_for_this_file_reader": false,
+  "current_Main_requalified": false,
+  "original_post_guard_failure_retained": true,
+  "durable_result_derivation": "Pinned R6 Flow.command writes command-NNN.result.json with errors=list(errors) before post guard; failure.command_observation then copies receipt and substitutes later errors. Only errors[] is expected in durable original; every other field remains exact.",
+  "fixed_write_order_source": {
+    "path": "/home/alex/work/pocket4-current-host-r6-source-01/recorder.py",
+    "bytes": 41689,
+    "sha256": "c63cbdca615a609ebb41bcb25db6b770f43c4488c46a8f7b1dbee4bc462b4e64"
+  },
+  "real_controls_to_execute": 19,
+  "old12_controls_preserved_except_expected_owner_literal": true,
+  "new7_controls": "actual failed worker; durable pre-post-guard receipt; old source rejection; missing post-guard sidecar rejection; stream drift rejection; later error wrongly put into durable rejection; later Main observation cannot fill missing historical after",
+  "unknown_native_message_private": true,
+  "unknown_task_names_hash_only": true,
+  "whole_error_attribution_qualified": false,
+  "installed_source_version_verified": false,
+  "task_cleanup_authority": false,
+  "task_state_observed": false,
+  "Android_commands": 0,
+  "App_launches": 0,
+  "UI_actions": 0,
+  "child_processes": 0,
+  "original_files_modified": 0,
+  "exact_paths_and_limits": "Fixed parent/worker and command007 intent/result/streams, fixed scope/attempt, command006 prelaunch result/stdout/verified-transport and complete parser; no scanning. Original read limits 8s/1MiB/32KiB source/65KiB summary, 30s 128MiB command envelope; -B added explicitly.",
+  "complete_inverse": true,
+  "edits": [
+    "description",
+    "root",
+    "flow",
+    "nonce",
+    "source",
+    "package",
+    "component",
+    "fixed_scope_main",
+    "R6_read_sources",
+    "original_pins",
+    "streams",
+    "qualify_worker",
+    "qualify_intent",
+    "scope_errorlabel",
+    "actual_owner_candidate_from_B02",
+    "control_owner",
+    "receipt_controls",
+    "controls_call",
+    "command_binding_label",
+    "target_uid",
+    "output_schema",
+    "explicit_no_requalification"
+  ]
+}

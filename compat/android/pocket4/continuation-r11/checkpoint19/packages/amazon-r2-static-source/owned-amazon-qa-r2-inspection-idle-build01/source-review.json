@@ -1,0 +1,146 @@
+{
+  "actual_host_attribution_fix": {
+    "actual_controls_stdout": {
+      "bytes": 1427,
+      "git_blob_sha": "faa76ffde6b295ababbdd7e82c549885dec6a88e",
+      "sha256": "ea997b653389d86b7d834565de972f125cbf6a30db5fb4b1abbc917356075fcd"
+    },
+    "actual_pass_independently_verified": true,
+    "candidate_sha256": "0e861800ce12cbb63f9ca5cfa80abbf9ecf9bfde00392c2d03cae9827af31ec1",
+    "cases": 9,
+    "included_in_helper_build": false,
+    "required_when_later_host_flow_is_derived": true,
+    "separate_source_tree": "393738e590c3291fe02407fdee795483e39d7faf"
+  },
+  "baseline": {
+    "ActionRunner": {
+      "bytes": 41296,
+      "git_blob_sha": "07bb845d8257a088ecc17a0441d12c72a90a9f2d",
+      "sha256": "77ed79a7ac048f8ef927ac8505843961a2c3bdd0022332ac4fc742d3a676cac3"
+    },
+    "manifest": {
+      "bytes": 2211,
+      "git_blob_sha": "d4c5dc69cd9a7d1b8f9797afee91d3c8923c8015",
+      "sha256": "08e2a223acae096d6ce4beb5d611395892fe1b2b26d593832510c11af36a4cf3"
+    },
+    "original_source_count": 10
+  },
+  "bounds": {
+    "builder_seconds": 230,
+    "cpu_quota_percent": 100,
+    "expected_commands": 13,
+    "gate_Java_controls": 22,
+    "idle_test_class_max": 64,
+    "job_seconds": 300,
+    "memory_max_bytes": 536870912,
+    "production_class_max": 32,
+    "source_file_max_bytes": 262144,
+    "source_member_count": 13,
+    "source_packet_max_bytes": 524288,
+    "swap_max_bytes": 0,
+    "tasks_max": 128,
+    "wire_controls": 32
+  },
+  "candidate": {
+    "full_source_diff": {
+      "bytes": 68318,
+      "git_blob_sha": "46e4231af0857e827da3987cdaa5e24841edb433",
+      "sha256": "2003629d19bfad5aeb14c33ff16334b802e720d4ce231c6088a4dc49d1192a26"
+    },
+    "packet_files": 14,
+    "production_core_diff": {
+      "bytes": 19593,
+      "git_blob_sha": "efaeeceacdaa9b5fc2619522ddc8f59b3248bccf",
+      "sha256": "9f4f322f64121820bd5408d7e0f313d6b1061bc9f70ee6ae73adb7beb9382eac"
+    },
+    "production_core_diff_scope": "ActionRunner, new gate, qa_contract, qa_adapter after declared identity renames; complete build/tests/docs changes remain in full source.diff.",
+    "request": {
+      "bytes": 197120,
+      "git_blob_sha": "c90ed876a544c8a0b3e4be2536255bf22e6aece6",
+      "sha256": "474cbbdfb2e80624a7788eee8152eea1ad1bb1f8fd9819b4c51ef58c6cebf30e"
+    },
+    "source_files": 13,
+    "source_manifest": {
+      "bytes": 3216,
+      "git_blob_sha": "0ea71820abae5a4c50fb6cc1a6dddef290cc9f3a",
+      "sha256": "32be752c72fc4cfe7f50a73bba54cd6444e9ed3990b4f0cd809cb7023b540b98"
+    },
+    "stdin": {
+      "bytes": 189383,
+      "git_blob_sha": "e1c4828aaab9270532605574446120e2097bdd3b",
+      "sha256": "36930f2e22bb5eb58107522c34fe17b7d45fee92fb13629e126192c7e30f334b"
+    }
+  },
+  "changes": [
+    "Only standalone inspect calls the shared pure Java gate once before first original capture. No idle call added to act, state, set_text, refresh or restoration.",
+    "quiet500/global2000 bounded by original started+8000 deadline; 12s watchdog, 2s focused window, 64queries, depth32/node512 and all complete-tree guards unchanged.",
+    "20-field protocol metadata validation requires operation-start binding, exact budget arithmetic, no errors, successful API return, finish/capture clocks and explicit event-only scope. Other operations must carry empty metadata.",
+    "Helper R1 package/protocol/source/build roots become R2, and prior actual R1 UID10175 is added to refusal lists; commercial target package/UID/query/resource syntax stays Amazon.",
+    "Builder adds exactly idle-gate-javac and idle-gate-java before original11commands and an in-process32-case production-parser run; all pinned Python sources compile first. Test classes remain outside APK classes.",
+    "Adapter requires13exact joined commands and full actual22/32 reports/sourcepins/command stdout hash. Standalone execute remains refused; no install, launch, UI or permission request is in this package.",
+    "Fresh source/output roots, manifest and request key. No new binary tool and no modification to original guard/activation/Main or any prior helper.",
+    "README is updated to current source-only status; original tools table and actual target reference are retained with their historical limits."
+  ],
+  "checks": {
+    "AST_run": false,
+    "actual_UI": false,
+    "actual_install": false,
+    "actual_remote_build": false,
+    "declared_core_patch_count": 20,
+    "declared_core_patch_inverse_restores_identity_only_baseline": true,
+    "local_Python_or_Java_execution": false,
+    "no_Bili_package_or_helper_UID_or_player_guard_imported": true,
+    "original_Session_and_Java_action_logic_restored_by_full_inverse": true,
+    "original_ten_sources_independently_pinned": true,
+    "shared_gate_and_java_test_package_inverse_exact": true,
+    "target_artifact_reference_identical_to_R1": true,
+    "whole_app_qualified": false
+  },
+  "identity": {
+    "explicit_prior_helper_UID_refused": 10175,
+    "new_APK": null,
+    "new_helper_UID": null,
+    "new_signer": null,
+    "package": "org.droidloom.qa.amazon.r2",
+    "protocol": "pocket4-owned-amazon-qa-v2",
+    "target_package": "com.amazon.mShop.android.shopping",
+    "target_uid": 10129
+  },
+  "kind": "owned-amazon-qa-r2-inspection-idle-source-review01",
+  "limitations": [
+    "Local executor is unavailable; no local syntax/AST/compiler/test claim. V8 source and serialization checks are not runtime acceptance.",
+    "Actual Amazon R2 build must compile and execute54controls using exact pinned tools. Bili actual parent success is not imported.",
+    "R2 installation/UID/source tuple and fresh per-App controlled flow remain future distinct steps. No action is authorized from the retired Amazon05 tree.",
+    "Original TREE_CHANGED_NULL_CHILD and failed restoration sidecar remain failures. Independent post is separate; no partial tree is promoted.",
+    "Historical target artifact identity is not a future APK revalidation or signer qualification.",
+    "The seven original top-level tool artifacts are pinned; the earlier full transitive JDK/shared-library closure limitation remains explicit."
+  ],
+  "references": {
+    "public_API": "https://developer.android.com/reference/android/app/UiAutomation#waitForIdle(long,%20long)",
+    "semantics": "Accessibility-event quiet gap is only a bounded precondition, never full-tree/business/future-action proof."
+  },
+  "schema": 1,
+  "shared_gate": {
+    "Bili_54_actual_control_originals_not_yet_received": true,
+    "Bili_actual_parent_build_success_reported": true,
+    "full_Bili_runtime_or_helper_identity_imported": false,
+    "gate_and_Java_controls_port_package_only": true,
+    "java_controls": {
+      "bytes": 11432,
+      "git_blob_sha": "425baa85fe61d16ae87599223762c78c03a05fbf",
+      "sha256": "86b823a9f4b61048747cf328683e4edb70a77bc36bdfb7a511a46744b456fe40"
+    },
+    "python_controls": {
+      "bytes": 13271,
+      "git_blob_sha": "cfea5c45fb6e2d2b3a9a5800c1d9d7a5aaec1f45",
+      "sha256": "e7c0ecdf0f4717f6c064a59b5ef3e4972478da5a343de61f6f208b816ea2a0cd"
+    },
+    "source": {
+      "bytes": 3921,
+      "git_blob_sha": "9c6a64c7e6dffa06c8110c4bd419355186d3038d",
+      "sha256": "280b24ba10f5c3dce2ffd889f851af4e2e11c3ad8bd88d88d32c9bafcfe682c8"
+    },
+    "source_tree": "7770137cfaf86d2fa58d7180c8e9207e64147b85"
+  },
+  "state": "SOURCE_ONLY_ACTUAL_BUILD_REQUIRED"
+}

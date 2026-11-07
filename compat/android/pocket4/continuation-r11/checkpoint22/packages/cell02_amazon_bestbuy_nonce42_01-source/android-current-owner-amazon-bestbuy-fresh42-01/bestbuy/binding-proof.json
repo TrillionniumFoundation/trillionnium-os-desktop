@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "complete_inverse_exact": true,
+  "actual_install": {
+    "coordinator": {
+      "bytes": 4466,
+      "sha256": "5f7403e89de4a10f2f348b2ec24905a7f9998c53c77119459d3a69efaf4dd8f1",
+      "git_blob": "d0dd541cc6436b283a7d03dbcc78138c1a5010c9"
+    },
+    "stage": {
+      "bytes": 10445,
+      "sha256": "edf83bb4d07bdd6eb63e5349d7c3389cfbe040c53f7285f94ee65562b9173370",
+      "git_blob": "d30381521a32c199b818ed6c3cbb3f6df88dcc6a"
+    },
+    "worker": {
+      "bytes": 15422,
+      "sha256": "f3ec3d475dcccb894c68bd3bb471d85976cfa39f38bf437250d501de47d7b3e3",
+      "git_blob": "ed8df6e48ba062706e72784d21a4c4b11f5db85e"
+    },
+    "state_command": {
+      "bytes": 443,
+      "sha256": "98daa5f3e0bd4d17737bdef5f429b0215bd5e6debcd53afa86d2f77646b3e67e",
+      "git_blob": "b91f82f57d44617a1a3a7186b2a66f89a7510bdb"
+    },
+    "worker_command": {
+      "bytes": 1858,
+      "sha256": "62d647a5e9bc908731d245cae4dbc03fb560d00b409f84c945ec35b8049829d5",
+      "git_blob": "ec4bb694bd9b4f587ae1cc4dbfdd802386a6b07c"
+    },
+    "worker_stdout": {
+      "bytes": 13298,
+      "sha256": "5c18b281df48766d942fdf15a7d913320b4d3fa24c706bc7cd913f368fbb0ed7",
+      "git_blob": "e2febbfb480957458b83fb4e3b1cd9dd885eb47e"
+    }
+  },
+  "source_pins": {
+    "coordinator": {
+      "bytes": 40834,
+      "sha256": "02144fe0e29a1f02086b97713b5f9ece0faf916c560eb73a147874596e44ff8f"
+    },
+    "context": {
+      "bytes": 18837,
+      "sha256": "8863192c745c605a6d0931b9b76a76cda4c6c28e1c27e7b470b84f5b53822de0"
+    },
+    "business": {
+      "bytes": 16462,
+      "sha256": "c3ad47183ce2a6d5195f2f4e7dcdc4e1ee183e0c59fef942ca250a58b701ef69"
+    },
+    "stage": {
+      "bytes": 5140,
+      "sha256": "12bcbfbb90ef49fb9c5527c398aeba233948d4fee426ad00e306e913527e5153"
+    },
+    "contract": {
+      "bytes": 28794,
+      "sha256": "4ed40507d3175339fd42be8622b257201d0ab540a68baf83a884bc128b144d46"
+    },
+    "adapter": {
+      "bytes": 21714,
+      "sha256": "299538df75c772206aaaf96af164d99940ef6352d22b3c54d1d26c458b96cb77"
+    }
+  },
+  "edits": [
+    {
+      "file": "coordinator",
+      "from": "HELPER_UID=None  # Actual R4 installation required.",
+      "to": "HELPER_UID=10160",
+      "why": "actual-helper-UID",
+      "count": 1
+    },
+    {
+      "file": "context",
+      "from": "HELPER_UID=None  # Actual R4 installation required.",
+      "to": "HELPER_UID=10160",
+      "why": "actual-helper-UID",
+      "count": 1
+    },
+    {
+      "file": "business",
+      "from": "HELPER_UID=None  # Actual R4 installation required.",
+      "to": "HELPER_UID=10160",
+      "why": "actual-helper-UID",
+      "count": 1
+    },
+    {
+      "file": "coordinator",
+      "from": "STATE_WIRE=None  # Actual R4 installation closure required.",
+      "to": "STATE_WIRE=\"cec83d28fd8c7e165b6e547d79ec57d5ead05ef78be5c8a9b4dff2cf6ffb9cc4\"",
+      "why": "actual-state-wire",
+      "count": 1
+    },
+    {
+      "file": "coordinator",
+      "from": "INSTALLED=None  # Actual R4 installation closure required.",
+      "to": "INSTALLED={\"apk_sha256\":\"708887e252bad787781768e4c96db9040444b4b32308381ec1d38af3deb0cc2c\",\"base_apk\":\"/data/app/~~s1BfWM3SkuOhKkPBu_lctw==/org.droidloom.qa.bestbuy.r4-ShAz09XbvTfAbjSKTrM6Tg==/base.apk\",\"bytes\":24720,\"held_file\":{\"bytes\":24720,\"device\":1811,\"gid\":1000,\"inode\":656342,\"mode\":33188,\"mtime_ns\":1793982642805572447,\"nlink\":1,\"uid\":1000},\"package\":\"org.droidloom.qa.bestbuy.r4\",\"signer_bound_by_exact_signed_apk_bytes\":\"32b07f5c29e267541086154af0e5b0424cd53a65feb1b64f82b9277cccfb7c31\",\"uid\":10160}",
+      "why": "lossless-installed-identity",
+      "count": 1
+    },
+    {
+      "file": "coordinator",
+      "from": "PRIOR=None  # Actual R4 installation closure required.",
+      "to": "PRIOR={\"coordinator\":(\"result.json\",4466,\"5f7403e89de4a10f2f348b2ec24905a7f9998c53c77119459d3a69efaf4dd8f1\"),\"stage\":(\"stage-result.json\",10445,\"edf83bb4d07bdd6eb63e5349d7c3389cfbe040c53f7285f94ee65562b9173370\"),\"worker\":(\"worker/result.json\",15422,\"f3ec3d475dcccb894c68bd3bb471d85976cfa39f38bf437250d501de47d7b3e3\")}",
+      "why": "exact-parent-Python-tuples",
+      "count": 1
+    }
+  ]
+}

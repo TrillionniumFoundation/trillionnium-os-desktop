@@ -1,0 +1,29 @@
+--- a/compile/build-template.py
++++ b/compile/build-template.py
+@@ -544,8 +544,8 @@
+     report['resource_health'] = resources.record
+     try:
+         require(os.getuid() == os.geteuid() == 1000, 'ordinary operator only')
+-        require(CFG['kind'] == 'p4-marriott-proc-readlink-outer-tu-build01' and
+-                root == Path('/home/alex/work/pocket4-marriott-proc-readlink-outer-tu-01-20261106') and
++        require(CFG['kind'] == 'p4-marriott-proc-readlink-outer-tu-build02' and
++                root == Path('/home/alex/work/pocket4-marriott-proc-readlink-outer-tu-02-20261106') and
+                 aosp == Path('/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source'),
+                 'fixed work/source root differs')
+         resources.begin()
+@@ -570,10 +570,13 @@
+             watch[str(root/'source'/name)] = row
+         compiler = Path(CFG['compiler']['path'])
+         _, tool_before = read_input(compiler, 8*1024*1024, CFG['compiler'], roots=[aosp])
+-        require(tool_before['mode'] & 0o111 and not(tool_before['mode'] & 0o022),
+-                'pinned compiler not executable or is group/world writable')
++        # Record the actual tuple before its gate so any rejection remains diagnosable.
+         report['compiler_before'] = tool_before
+         watch[str(compiler)] = tool_before
++        # C20 actually used this operator-owned 0775 compiler. Bind that full tuple;
++        # the original read_input regular-file and single-link gates still apply.
++        require(tool_before == dict(CFG['compiler']['actual_C20_tuple'], nlink=1),
++                'pinned compiler differs from complete actual C20 tuple')
+         manifest_raw, manifest_row = read_input(CFG['candidate_manifest']['path'], 524288,
+                                                 CFG['candidate_manifest'])
+         manifest = json.loads(manifest_raw)
