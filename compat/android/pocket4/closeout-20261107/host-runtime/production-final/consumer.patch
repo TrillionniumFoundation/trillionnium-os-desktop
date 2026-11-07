@@ -1,0 +1,69 @@
+--- /usr/local/bin/android-app
++++ /usr/local/bin/android-app
+@@ -45,7 +45,7 @@
+     return None
+ 
+ def discover():
+-    status=json.loads(subprocess.run([CTL,'status','--json'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=8,env=HOST_ENV,check=True).stdout)
++    status=json.loads(subprocess.run([CTL,'readiness','--json'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=8,env=HOST_ENV,check=True).stdout)
+     if status.get('state')!='running' or 'Android is ready' not in status.get('message',''):
+         raise RuntimeError('DROIDLOOM_NOT_READY')
+     host=status.get('host_pid')
+@@ -506,12 +506,11 @@
+     # The production Android 17 is now a physical GNOME foreground phone.
+     # Read-only metadata remains available; UI observation and all actions
+     # require explicit foreground authorization. Background agents must target
+-    # the already isolated QA cell through android-app-qa.
+     native=(not os.path.exists('/home/alex/.config/systemd/user/droidloom.service.d/80-pocket4-isolated-desktop.conf')
+             and os.path.exists('/run/user/1000/wayland-0'))
+     if native and r['op'] not in ('status','apps') and not interactive_authorized:
+         print(json.dumps({'ok':False,'error':'INTERACTIVE_PRODUCTION_PROTECTED',
+-                          'target':'qa_cell_u1984','qa_cli':'android-app-qa',
++                          
+                           'requires_flag':'--interactive-production',
+                           'action_taken':False,'automatic_retry':False},
+                          ensure_ascii=False),file=sys.stderr)
+--- /usr/local/bin/android-app-digitalis-validation
++++ /usr/local/bin/android-app-digitalis-validation
+@@ -49,7 +49,7 @@
+     return False
+ 
+ def discover():
+-    status=json.loads(subprocess.run([CTL,'status','--json'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=8,env=HOST_ENV,check=True).stdout)
++    status=json.loads(subprocess.run([CTL,'readiness','--json'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=8,env=HOST_ENV,check=True).stdout)
+     if status.get('state')!='running' or 'Android is ready' not in status.get('message',''):
+         raise RuntimeError('DROIDLOOM_NOT_READY')
+     host=status.get('host_pid')
+--- /usr/local/bin/android-app-digitalis
++++ /usr/local/bin/android-app-digitalis
+@@ -240,7 +240,7 @@
+     # UID, data image, init, runtime socket and display.
+     if r['op'] not in ('status','apps') and not explicit_interactive:
+         print(json.dumps({'ok':False,'error':'INTERACTIVE_PRODUCTION_PROTECTED',
+-                          'target':'qa_cell_u1984','qa_cli':'android-app-qa',
++                          
+                           'requires_flag':'--interactive-production',
+                           'action_taken':False,'automatic_retry':False},
+                           ensure_ascii=False),file=sys.stderr)
+--- /usr/local/libexec/android-digitalis-observe-helper
++++ /usr/local/libexec/android-digitalis-observe-helper
+@@ -45,7 +45,7 @@
+     return None
+ 
+ def discover():
+-    status=json.loads(subprocess.run([CTL,'status','--json'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=8,env=HOST_ENV,check=True).stdout)
++    status=json.loads(subprocess.run([CTL,'readiness','--json'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=8,env=HOST_ENV,check=True).stdout)
+     if status.get('state')!='running' or 'Android is ready' not in status.get('message',''):
+         raise RuntimeError('DROIDLOOM_NOT_READY')
+     host=status.get('host_pid')
+--- /usr/local/libexec/android-digitalis-validation-helper
++++ /usr/local/libexec/android-digitalis-validation-helper
+@@ -49,7 +49,7 @@
+     return False
+ 
+ def discover():
+-    status=json.loads(subprocess.run([CTL,'status','--json'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=8,env=HOST_ENV,check=True).stdout)
++    status=json.loads(subprocess.run([CTL,'readiness','--json'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=8,env=HOST_ENV,check=True).stdout)
+     if status.get('state')!='running' or 'Android is ready' not in status.get('message',''):
+         raise RuntimeError('DROIDLOOM_NOT_READY')
+     host=status.get('host_pid')

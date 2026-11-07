@@ -1,0 +1,464 @@
+{
+  "state": "FAIL",
+  "started_at": "2026-11-07T01:27:28.038699+00:00",
+  "root": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1",
+  "source": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/source",
+  "source_base": "500dd3af851aaadb95537b68129b8bd889504951",
+  "original_failed_result": "/home/alex/work/pocket4-native-status-lifecycle-readiness-compile-01-20261106/attempt01/result.json",
+  "original_failed_result_sha256": "95e5075de61ee94e9789c4632db9eab77e29e751df8c08da33f2b633e0b9d796",
+  "Main_actions": 0,
+  "runtime_qualified": false,
+  "commands": [
+    {
+      "name": "cargo-version",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "--version"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/command01.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/command01.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.008,
+      "stdout_sha256": "49f46ff5ffe434e6c1c66388a9230ac33bbe3dbd9175314e9ffc9aa7c418d329",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "rustc-version",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--version",
+        "--verbose"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/command02.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/command02.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.008,
+      "stdout_sha256": "83e4eefd5e010a92d9f63328bf8219e23fe5e4cf5e5d17ce53d0263cfa4218a6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "build-four-release-binaries",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-j1",
+        "--release",
+        "-p",
+        "droidloom-supervisor",
+        "-p",
+        "droidloom-applications",
+        "--bins",
+        "--message-format=json-render-diagnostics"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/command03.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/command03.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 17.082,
+      "stdout_sha256": "b1c3a5406283aa164c324e3ac774ba112b7c7d728897f6b5c68a1b8487c58278",
+      "stderr_sha256": "b3b3490beb6774a77f1be9a8bd85d85dd34e3b10569781fbbbdf6527caaf4dfc"
+    },
+    {
+      "name": "build-selected-release-tests",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-j1",
+        "--release",
+        "-p",
+        "droidloom-supervisor",
+        "--lib",
+        "--test",
+        "cli_lifecycle",
+        "--no-run",
+        "--message-format=json-render-diagnostics"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/command04.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/command04.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 17.92,
+      "stdout_sha256": "19e31f36e909492898eced86c1ad8a8374c0724b7492262a98f526bfc08f5208",
+      "stderr_sha256": "39675e4c9dfb8ac75503aae207a640ec17383bcdac3c76e2cfba8032f20a9d12"
+    },
+    {
+      "name": "namespace-selected-tests",
+      "argv": [
+        "/usr/bin/sudo",
+        "-n",
+        "/usr/bin/unshare",
+        "--mount",
+        "--pid",
+        "--fork",
+        "--mount-proc",
+        "--net",
+        "--",
+        "/usr/bin/python3",
+        "-I",
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/namespace-tests.py"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/command05.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/command05.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.966,
+      "stdout_sha256": "da6cab976b83933eb6e9913afb5a42e0c4a2bf7a6740e83c79bfa117916cdc45",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "build-complete-runtime-unit-suites",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-j1",
+        "--release",
+        "--lib",
+        "--no-run",
+        "--message-format=json-render-diagnostics",
+        "-p",
+        "droidloom-supervisor",
+        "-p",
+        "droidloom-applications",
+        "-p",
+        "droidloom-contracts",
+        "-p",
+        "droidloom-cpu-placement",
+        "-p",
+        "droidloom-window-policy"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/command06.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/command06.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 5.989,
+      "stdout_sha256": "ffa07465abf9401ef29195e78a6067cd44d5b2e844f53c1cc24339a1a4d40732",
+      "stderr_sha256": "c228e0810b85a08c087ae7e53c8851472c857172a3ae8202ac5f063c5819c721"
+    },
+    {
+      "name": "namespace-complete-runtime-suites",
+      "argv": [
+        "/usr/bin/sudo",
+        "-n",
+        "/usr/bin/unshare",
+        "--mount",
+        "--pid",
+        "--fork",
+        "--mount-proc",
+        "--net",
+        "--",
+        "/usr/bin/python3",
+        "-I",
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/namespace-suites.py"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/command07.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/command07.stderr",
+      "returncode": 1,
+      "elapsed_seconds": 0.766,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "69eb625a2443849f1d3eef53558ecbe4796da5dea75c4e0cd453df19db7ef67c"
+    }
+  ],
+  "host_root_mount_before": "33 2 259:2 / / rw,relatime shared:1 - ext4 /dev/nvme0n1p2 rw",
+  "resources_before": {
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1b39e01ea-fc05-83dd.service",
+    "memory.max": "2147483648",
+    "memory.current": "21708800",
+    "memory.peak": "23060480",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.swap.max": "0",
+    "memory.swap.current": "0",
+    "memory.swap.peak": "0",
+    "cpu.max": "100000 100000"
+  },
+  "source_delta_sha256": {
+    "runtime/droidloom-supervisor/src/control.rs": "50d7bc3abd94f83233ef7d461f93cb714f843cacb3fd5c0e929d06671a95f89b",
+    "runtime/droidloom-supervisor/src/development.rs": "3aac4a8ca9902598094972afa803c896350316b46dafca6d5ad56c14328bd258",
+    "runtime/droidloom-supervisor/src/bin/droidloomctl.rs": "3733dd7586ebf534aef3d4a5d176a76b8822dd0c6a6b8b39fb64adf8e70cd484",
+    "runtime/droidloom-supervisor/tests/cli_lifecycle.rs": "e5d2b54a7f735ab6c18e8f6ca10fde347f8da832f4d8d7db720399caf0c8377c",
+    "runtime/droidloom-supervisor/src/control_status_tests.rs": "0bafad33112df280c73ceedf675305236275bb043d0909fc4a71f6366c0a6727",
+    "runtime/droidloom-supervisor/src/lib.rs": "b539588d8d353a9b5b658600687f532bd03a9b7c37a5c063c25b6612a58b0370",
+    "runtime/droidloom-supervisor/src/linux_plan.rs": "e7204473b982b1d26fbf13e59d67efbad2d24f04beaa9db0b664081e27bfbaaf"
+  },
+  "source_provenance_sha256": "84b3db060192fc71f3d67e1f14227653187fbbddaa38203afd6d1074f67c62a0",
+  "package_marker_sha256_before": "429d24757e8948a6c631488810abd30c02c07d5916e18f29f2ee3976c18b9d74",
+  "source_commit": "7e744668649997e4e193866535dd7ad5bce7f5fa",
+  "source_tree": "d1a2dbbaa76ddfa5467877d99d22daebba3c1fc3",
+  "toolchain": {
+    "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
+    "rustc": "rustc 1.93.0 (254b59607 2026-01-19)\nbinary: rustc\ncommit-hash: 254b59607d4417e9dffbc307138ae5c86280fe4c\ncommit-date: 2026-01-19\nhost: x86_64-unknown-linux-gnu\nrelease: 1.93.0\nLLVM version: 21.1.8",
+    "cargo_sha256": "9548937d530bf439ff1ba47a3b2bd26eeb9c3aff1961c20c01798613de922578",
+    "rustc_sha256": "d32249a7c3bfcfc67b471460386e46323accae7125e344567a12d5664d99bb57",
+    "rustdoc_sha256": "ece7829b8e7448a9d59c88080e2b16253b885c560f792002837901c7f24b7695"
+  },
+  "tests": {
+    "state": "PASS",
+    "uid": 1000,
+    "gid": 1000,
+    "cap_eff": "0000000000000000",
+    "mount_ns": "mnt:[4026533783]",
+    "pid_ns": "pid:[4026534439]",
+    "marker_absent": true,
+    "helper_dev_null": true,
+    "private_run": true,
+    "long_tmpdir_bytes": 211,
+    "tests": [
+      {
+        "index": 1,
+        "name": "control::status_lifecycle_tests::status_and_readiness_are_distinct_explicit_wire_requests",
+        "argv": [
+          "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+          "--exact",
+          "control::status_lifecycle_tests::status_and_readiness_are_distinct_explicit_wire_requests",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test01.stdout",
+        "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test01.stderr",
+        "returncode": 0,
+        "elapsed_seconds": 0.003,
+        "exactly_one_passed": true
+      },
+      {
+        "index": 2,
+        "name": "control::status_lifecycle_tests::stopped_dispatch_does_not_claim_android_ready",
+        "argv": [
+          "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+          "--exact",
+          "control::status_lifecycle_tests::stopped_dispatch_does_not_claim_android_ready",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test02.stdout",
+        "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test02.stderr",
+        "returncode": 0,
+        "elapsed_seconds": 0.001,
+        "exactly_one_passed": true
+      },
+      {
+        "index": 3,
+        "name": "control::status_lifecycle_tests::running_status_dispatch_creates_no_child_and_cannot_replace_fresh_readiness",
+        "argv": [
+          "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+          "--exact",
+          "control::status_lifecycle_tests::running_status_dispatch_creates_no_child_and_cannot_replace_fresh_readiness",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test03.stdout",
+        "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test03.stderr",
+        "returncode": 0,
+        "elapsed_seconds": 0.064,
+        "exactly_one_passed": true
+      },
+      {
+        "index": 4,
+        "name": "control::tests::boot_complete_does_not_hide_a_failed_input_service",
+        "argv": [
+          "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+          "--exact",
+          "control::tests::boot_complete_does_not_hide_a_failed_input_service",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test04.stdout",
+        "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test04.stderr",
+        "returncode": 0,
+        "elapsed_seconds": 0.004,
+        "exactly_one_passed": true
+      },
+      {
+        "index": 5,
+        "name": "control::tests::boot_progress_uses_observed_services_and_checks_every_readiness_gate",
+        "argv": [
+          "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+          "--exact",
+          "control::tests::boot_progress_uses_observed_services_and_checks_every_readiness_gate",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test05.stdout",
+        "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test05.stderr",
+        "returncode": 0,
+        "elapsed_seconds": 0.001,
+        "exactly_one_passed": true
+      },
+      {
+        "index": 6,
+        "name": "control::tests::boot_wait_reports_changes_and_a_stall_has_the_last_phase_and_log_commands",
+        "argv": [
+          "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+          "--exact",
+          "control::tests::boot_wait_reports_changes_and_a_stall_has_the_last_phase_and_log_commands",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test06.stdout",
+        "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test06.stderr",
+        "returncode": 0,
+        "elapsed_seconds": 0.032,
+        "exactly_one_passed": true
+      },
+      {
+        "index": 7,
+        "name": "control::tests::only_missing_android_services_are_treated_as_boot_progress",
+        "argv": [
+          "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+          "--exact",
+          "control::tests::only_missing_android_services_are_treated_as_boot_progress",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test07.stdout",
+        "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test07.stderr",
+        "returncode": 0,
+        "elapsed_seconds": 0.004,
+        "exactly_one_passed": true
+      },
+      {
+        "index": 8,
+        "name": "control::tests::only_root_or_the_exact_cell_owner_is_authorized",
+        "argv": [
+          "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+          "--exact",
+          "control::tests::only_root_or_the_exact_cell_owner_is_authorized",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test08.stdout",
+        "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test08.stderr",
+        "returncode": 0,
+        "elapsed_seconds": 0.001,
+        "exactly_one_passed": true
+      },
+      {
+        "index": 9,
+        "name": "start_waits_for_boot_and_keeps_progress_out_of_json",
+        "argv": [
+          "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/cli_lifecycle-dd22c3c273958517",
+          "--exact",
+          "start_waits_for_boot_and_keeps_progress_out_of_json",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test09.stdout",
+        "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test09.stderr",
+        "returncode": 0,
+        "elapsed_seconds": 0.007,
+        "exactly_one_passed": true
+      },
+      {
+        "index": 10,
+        "name": "lifecycle_controls_the_whole_user_service",
+        "argv": [
+          "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/cli_lifecycle-dd22c3c273958517",
+          "--exact",
+          "lifecycle_controls_the_whole_user_service",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test10.stdout",
+        "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test10.stderr",
+        "returncode": 0,
+        "elapsed_seconds": 0.315,
+        "exactly_one_passed": true
+      },
+      {
+        "index": 11,
+        "name": "service_failure_is_reported",
+        "argv": [
+          "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/cli_lifecycle-dd22c3c273958517",
+          "--exact",
+          "service_failure_is_reported",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test11.stdout",
+        "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test11.stderr",
+        "returncode": 0,
+        "elapsed_seconds": 0.114,
+        "exactly_one_passed": true
+      },
+      {
+        "index": 12,
+        "name": "internal_cell_operations_do_not_recurse_into_systemd",
+        "argv": [
+          "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/cli_lifecycle-dd22c3c273958517",
+          "--exact",
+          "internal_cell_operations_do_not_recurse_into_systemd",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test12.stdout",
+        "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test12.stderr",
+        "returncode": 0,
+        "elapsed_seconds": 0.004,
+        "exactly_one_passed": true
+      },
+      {
+        "index": 13,
+        "name": "explicit_mode_reaches_service_and_restart_preserves_it",
+        "argv": [
+          "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/cli_lifecycle-dd22c3c273958517",
+          "--exact",
+          "explicit_mode_reaches_service_and_restart_preserves_it",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test13.stdout",
+        "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test13.stderr",
+        "returncode": 0,
+        "elapsed_seconds": 0.315,
+        "exactly_one_passed": true
+      },
+      {
+        "index": 14,
+        "name": "lifecycle_rejects_a_symlink_runtime_directory",
+        "argv": [
+          "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/cli_lifecycle-dd22c3c273958517",
+          "--exact",
+          "lifecycle_rejects_a_symlink_runtime_directory",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test14.stdout",
+        "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test14.stderr",
+        "returncode": 0,
+        "elapsed_seconds": 0.004,
+        "exactly_one_passed": true
+      },
+      {
+        "index": 15,
+        "name": "status_and_readiness_use_distinct_single_requests_without_wait_fallback",
+        "argv": [
+          "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/cli_lifecycle-dd22c3c273958517",
+          "--exact",
+          "status_and_readiness_use_distinct_single_requests_without_wait_fallback",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test15.stdout",
+        "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/test15.stderr",
+        "returncode": 0,
+        "elapsed_seconds": 0.016,
+        "exactly_one_passed": true
+      }
+    ],
+    "Main_actions": 0,
+    "passed": 15,
+    "production_plan_equivalent": true,
+    "actual_cell_config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc"
+  },
+  "error": "AssertionError('namespace-complete-runtime-suites exited 1; inspect /home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt05-production/command07.stderr')",
+  "finished_at": "2026-11-07T01:28:10.863923+00:00",
+  "resources_final": {
+    "memory.max": "2147483648",
+    "memory.peak": "334479360",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.swap.max": "0",
+    "memory.swap.current": "0",
+    "memory.swap.peak": "0",
+    "cpu.max": "100000 100000"
+  }
+}

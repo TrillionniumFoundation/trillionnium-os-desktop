@@ -1,0 +1,307 @@
+{
+  "schema": "pocket4-readiness-consumer-validation-v1",
+  "state": "PASS",
+  "Main_actions": 0,
+  "tests": [
+    {
+      "consumer": "android-app",
+      "case": "lifecycle_is_not_ready",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-app",
+      "case": "boot_progress_is_not_ready",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-app",
+      "case": "readiness_timeout_has_no_fallback",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-app",
+      "case": "readiness_nonzero_has_no_fallback",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-app",
+      "case": "ready_still_requires_owner",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-app-digitalis-validation",
+      "case": "lifecycle_is_not_ready",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-app-digitalis-validation",
+      "case": "boot_progress_is_not_ready",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-app-digitalis-validation",
+      "case": "readiness_timeout_has_no_fallback",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-app-digitalis-validation",
+      "case": "readiness_nonzero_has_no_fallback",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-app-digitalis-validation",
+      "case": "ready_still_requires_owner",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-digitalis-observe-helper",
+      "case": "lifecycle_is_not_ready",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-digitalis-observe-helper",
+      "case": "boot_progress_is_not_ready",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-digitalis-observe-helper",
+      "case": "readiness_timeout_has_no_fallback",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-digitalis-observe-helper",
+      "case": "readiness_nonzero_has_no_fallback",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-digitalis-observe-helper",
+      "case": "ready_still_requires_owner",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-digitalis-validation-helper",
+      "case": "lifecycle_is_not_ready",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-digitalis-validation-helper",
+      "case": "boot_progress_is_not_ready",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-digitalis-validation-helper",
+      "case": "readiness_timeout_has_no_fallback",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-digitalis-validation-helper",
+      "case": "readiness_nonzero_has_no_fallback",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    },
+    {
+      "consumer": "android-digitalis-validation-helper",
+      "case": "ready_still_requires_owner",
+      "passed": true,
+      "requests": 1,
+      "timeout_seconds": 8
+    }
+  ],
+  "candidates": [
+    {
+      "target": "/usr/local/bin/android-app",
+      "candidate": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/consumers-production/android-app",
+      "baseline_copy": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/consumers-production/android-app.baseline",
+      "baseline_sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66",
+      "candidate_sha256": "e775301b11960df8109f39ef1adfc662bebd8fc536414580c71c7aa0da263efe",
+      "bytes": 37467,
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755",
+      "only_semantic_changes": [
+        "Status command becomes explicit Readiness",
+        "Remove retired QA suggestion fields; interactive protection condition and error preserved"
+      ],
+      "ast_equivalence_after_declared_changes": true,
+      "readiness_consumer": true,
+      "changed": true
+    },
+    {
+      "target": "/usr/local/bin/android-app-digitalis-validation",
+      "candidate": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/consumers-production/android-app-digitalis-validation",
+      "baseline_copy": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/consumers-production/android-app-digitalis-validation.baseline",
+      "baseline_sha256": "434c1fe8544b28538538619d160fa37ddcc01bed6ec8c894fe5d2fcc6efda4d2",
+      "candidate_sha256": "1b7f380c8e78187a73f7c96a736709252613c8cd8b437916e911b1596c5a5db1",
+      "bytes": 14121,
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755",
+      "only_semantic_changes": [
+        "Status command becomes explicit Readiness"
+      ],
+      "ast_equivalence_after_declared_changes": true,
+      "readiness_consumer": true,
+      "changed": true
+    },
+    {
+      "target": "/usr/local/bin/android-app-digitalis",
+      "candidate": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/consumers-production/android-app-digitalis",
+      "baseline_copy": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/consumers-production/android-app-digitalis.baseline",
+      "baseline_sha256": "1c50f4b494f20211b1bfb845c60647bdf66bdd28bce547ab2b4290a912a67521",
+      "candidate_sha256": "6bfbf38d7106b6b38816ce176a951476a57f2289dae3ce332629ad8bfee73102",
+      "bytes": 14759,
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755",
+      "only_semantic_changes": [
+        "Remove retired QA suggestion fields; interactive protection condition and error preserved"
+      ],
+      "ast_equivalence_after_declared_changes": true,
+      "readiness_consumer": false,
+      "changed": true
+    },
+    {
+      "target": "/usr/local/libexec/android-digitalis-observe-helper",
+      "candidate": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/consumers-production/android-digitalis-observe-helper",
+      "baseline_copy": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/consumers-production/android-digitalis-observe-helper.baseline",
+      "baseline_sha256": "088be6d783e80006645a05b8c5b90cd100d3e38b6f3d4634dd499ab1de7898ae",
+      "candidate_sha256": "d1fc02bdbbd72c8e9ee440dbf81274662d60228a4e7ecc661484241d889d7bd4",
+      "bytes": 36404,
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755",
+      "only_semantic_changes": [
+        "Status command becomes explicit Readiness"
+      ],
+      "ast_equivalence_after_declared_changes": true,
+      "readiness_consumer": true,
+      "changed": true
+    },
+    {
+      "target": "/usr/local/libexec/android-digitalis-validation-helper",
+      "candidate": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/consumers-production/android-digitalis-validation-helper",
+      "baseline_copy": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/consumers-production/android-digitalis-validation-helper.baseline",
+      "baseline_sha256": "434c1fe8544b28538538619d160fa37ddcc01bed6ec8c894fe5d2fcc6efda4d2",
+      "candidate_sha256": "1b7f380c8e78187a73f7c96a736709252613c8cd8b437916e911b1596c5a5db1",
+      "bytes": 14121,
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755",
+      "only_semantic_changes": [
+        "Status command becomes explicit Readiness"
+      ],
+      "ast_equivalence_after_declared_changes": true,
+      "readiness_consumer": true,
+      "changed": true
+    },
+    {
+      "target": "/usr/local/libexec/android-digitalis-helper",
+      "candidate": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/consumers-production/android-digitalis-helper",
+      "baseline_copy": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/consumers-production/android-digitalis-helper.baseline",
+      "baseline_sha256": "9c4ef950fab47d018fd186baa3990e78dcd4973f47e9c424a02e8d9e1125a207",
+      "candidate_sha256": "9c4ef950fab47d018fd186baa3990e78dcd4973f47e9c424a02e8d9e1125a207",
+      "bytes": 13816,
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755",
+      "only_semantic_changes": [],
+      "ast_equivalence_after_declared_changes": true,
+      "readiness_consumer": false,
+      "changed": false
+    }
+  ],
+  "aliases": [
+    {
+      "path": "/usr/local/bin/android-app",
+      "symlink": null,
+      "realpath": "/usr/local/bin/android-app",
+      "sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66"
+    },
+    {
+      "path": "/usr/local/bin/android-app-digitalis",
+      "symlink": null,
+      "realpath": "/usr/local/bin/android-app-digitalis",
+      "sha256": "1c50f4b494f20211b1bfb845c60647bdf66bdd28bce547ab2b4290a912a67521"
+    },
+    {
+      "path": "/usr/local/bin/android-app-digitalis-validation",
+      "symlink": null,
+      "realpath": "/usr/local/bin/android-app-digitalis-validation",
+      "sha256": "434c1fe8544b28538538619d160fa37ddcc01bed6ec8c894fe5d2fcc6efda4d2"
+    },
+    {
+      "path": "/usr/local/bin/android-app-digitalis.before-process-derived-discovery-20261007T1330",
+      "symlink": null,
+      "realpath": "/usr/local/bin/android-app-digitalis.before-process-derived-discovery-20261007T1330",
+      "sha256": "a1a321baaa76e07a8b4412162f6e8c21bbf6210c42ee47a67f0a52e11c4560cb"
+    },
+    {
+      "path": "/usr/local/bin/android-app-qa",
+      "symlink": null,
+      "realpath": "/usr/local/bin/android-app-qa",
+      "sha256": "d3a79148f7b890a5a3c3dc68c8298aec20b76b2d5b9969b6fbead99ac9fb164c"
+    },
+    {
+      "path": "/usr/local/bin/android-app-v2",
+      "symlink": null,
+      "realpath": "/usr/local/bin/android-app-v2",
+      "sha256": "c3fda96c8f1b1847ecacf72c773320e00b9cdcf6353a5c60aafb7ba7d114ba8a"
+    },
+    {
+      "path": "/usr/local/bin/android-camera",
+      "symlink": null,
+      "realpath": "/usr/local/bin/android-camera",
+      "sha256": "f588b821eb68b06d35c1da644151cb74652db7fa06282fe07f6e3d2375682334"
+    },
+    {
+      "path": "/usr/local/bin/android-desktop",
+      "symlink": null,
+      "realpath": "/usr/local/bin/android-desktop",
+      "sha256": "8f08b3e70d8e2d3f0f3fd97eb1f3af6768e55405eaa4dee3cd9addd7319f733e"
+    },
+    {
+      "path": "/usr/local/bin/android-wechat-mode",
+      "symlink": null,
+      "realpath": "/usr/local/bin/android-wechat-mode",
+      "sha256": "30e5077e8272ebe6a3f201837f8a2ad17231bf81936dc8a726668f5103bff896"
+    }
+  ],
+  "patch_sha256": "45a21fd7b7941b0c8166b9e397d054b81b6de4a54186b401bee9b6fa3306d0ce"
+}

@@ -1,0 +1,46 @@
+{
+  "state": "FAIL",
+  "started_at": "2026-11-07T01:21:59.396358+00:00",
+  "root": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1",
+  "source": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/source",
+  "source_base": "500dd3af851aaadb95537b68129b8bd889504951",
+  "original_failed_result": "/home/alex/work/pocket4-native-status-lifecycle-readiness-compile-01-20261106/attempt01/result.json",
+  "original_failed_result_sha256": "95e5075de61ee94e9789c4632db9eab77e29e751df8c08da33f2b633e0b9d796",
+  "Main_actions": 0,
+  "runtime_qualified": false,
+  "commands": [],
+  "host_root_mount_before": "33 2 259:2 / / rw,relatime shared:1 - ext4 /dev/nvme0n1p2 rw",
+  "resources_before": {
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1b3990cde-fc05-83c3.service",
+    "memory.max": "2147483648",
+    "memory.current": "18751488",
+    "memory.peak": "19726336",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.swap.max": "0",
+    "memory.swap.current": "0",
+    "memory.swap.peak": "0",
+    "cpu.max": "100000 100000"
+  },
+  "source_delta_sha256": {
+    "runtime/droidloom-supervisor/src/control.rs": "50d7bc3abd94f83233ef7d461f93cb714f843cacb3fd5c0e929d06671a95f89b",
+    "runtime/droidloom-supervisor/src/development.rs": "2140f8d23ff51016851ae7d2c0983dab7c1727604691748a2b8e9daa0dec858a",
+    "runtime/droidloom-supervisor/src/bin/droidloomctl.rs": "3733dd7586ebf534aef3d4a5d176a76b8822dd0c6a6b8b39fb64adf8e70cd484",
+    "runtime/droidloom-supervisor/tests/cli_lifecycle.rs": "e5d2b54a7f735ab6c18e8f6ca10fde347f8da832f4d8d7db720399caf0c8377c",
+    "runtime/droidloom-supervisor/src/control_status_tests.rs": "0bafad33112df280c73ceedf675305236275bb043d0909fc4a71f6366c0a6727",
+    "runtime/droidloom-supervisor/src/lib.rs": "b539588d8d353a9b5b658600687f532bd03a9b7c37a5c063c25b6612a58b0370",
+    "runtime/droidloom-supervisor/src/linux_plan.rs": "e7204473b982b1d26fbf13e59d67efbad2d24f04beaa9db0b664081e27bfbaaf"
+  },
+  "source_provenance_sha256": "84b3db060192fc71f3d67e1f14227653187fbbddaa38203afd6d1074f67c62a0",
+  "package_marker_sha256_before": "429d24757e8948a6c631488810abd30c02c07d5916e18f29f2ee3976c18b9d74",
+  "error": "AssertionError({'runtime/droidloom-supervisor/src/linux_plan.rs', 'runtime/droidloom-supervisor/src/lib.rs', 'untime/droidloom-supervisor/src/development.rs'})",
+  "finished_at": "2026-11-07T01:21:59.432608+00:00",
+  "resources_final": {
+    "memory.max": "2147483648",
+    "memory.peak": "21012480",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.swap.max": "0",
+    "memory.swap.current": "0",
+    "memory.swap.peak": "0",
+    "cpu.max": "100000 100000"
+  }
+}
