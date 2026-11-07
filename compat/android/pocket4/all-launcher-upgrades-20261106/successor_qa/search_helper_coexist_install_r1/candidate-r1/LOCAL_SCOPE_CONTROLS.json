@@ -1,0 +1,53 @@
+{
+  "Android_commands": 0,
+  "Main_reads": 0,
+  "actual_new_helper_UID_or_signer_proven": false,
+  "all_passed": true,
+  "candidate_source": {
+    "bytes": 24933,
+    "path": "successor_qa/search_helper_coexist_install_r1/candidate-r1/install_search_helper_full_scope.py",
+    "sha256": "a15d1322c1bbf6001d0870307243bf4509e00111484b042038ad583871f101c6"
+  },
+  "cases": [
+    {
+      "name": "exact_projection_control_only",
+      "passed": true
+    },
+    {
+      "actual_rejection": "EXACT_OBSERVED_49_SCOPE_REQUIRED",
+      "name": "missing_one_original_package",
+      "passed": true
+    },
+    {
+      "actual_rejection": "ALL_48_COMPLETE_ORIGINAL_ROWS_MUST_REMAIN_UNCHANGED",
+      "name": "changed_original_APK_full_stat",
+      "passed": true
+    },
+    {
+      "actual_rejection": "OBSERVED_NEW_HELPER_PM_IDENTITY_AND_NEW_OWNED_SIGNER",
+      "name": "wrong_new_PM_signer",
+      "passed": true
+    },
+    {
+      "actual_rejection": "NEW_HELPER_SAME_HELD_APK_IDENTITY",
+      "name": "changed_new_held_APK_inode",
+      "passed": true
+    },
+    {
+      "actual_rejection": "NEW_HELPER_CE_DE_OWNERSHIP_REQUIRED",
+      "name": "wrong_new_CE_owner",
+      "passed": true
+    },
+    {
+      "actual_rejection": "ACTUAL_NEW_HELPER_UID_MUST_NOT_SHARE_OLD_SCOPE",
+      "name": "reuse_original_UID",
+      "passed": true
+    }
+  ],
+  "count": 7,
+  "fixture_saved_as_scope_or_install_result": false,
+  "installations": 0,
+  "installer_execute_called": false,
+  "schema": "pocket4-local-pure-coexistence-projection-controls-v1",
+  "synthetic_new_helper_fixture_only": true
+}

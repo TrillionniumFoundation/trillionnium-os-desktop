@@ -1,0 +1,26 @@
+--- preserved-original45/coordinator-against-original45.diff
++++ actual49-fixed46/coordinator-against-original45.diff
+@@ -8,10 +8,10 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-PROJECT = HERE.parents[1]
+-GATE_SHA = 'dc4fffb3f11e8428db732b96cd1925f0bdce239cdce81ff64ab369dc14c751f4'
+-PLAN_SHA = '802c9616b99c0c753c7a31188ab7b594e5baba39d6940d963c2c1b9bd2cdb749'
+-LEDGER = PROJECT / 'successor_audit_requests/actual/permissions-fixed45-r1'
++PROJECT = HERE.parents[2]
++GATE_SHA = '9a38444242ef45aa5f7f94d2595d7a6aa342d7249973e200ec8ea63ae42da898'
++PLAN_SHA = 'facee24ef983eafb0324cf34dc803f5590599ec4ae4d0126015995679b019abc'
++LEDGER = PROJECT / 'successor_audit_requests/actual/permissions-fixed46-r1'
+ 
+ 
+ def sha(raw):
+@@ -102,7 +102,7 @@
+ 
+ if __name__ == '__main__':
+     assert len(sys.argv) in (3, 4)
+-    operation, number = sys.argv[1], int(sys.argv[2]); assert 1 <= number <= 13
++    operation, number = sys.argv[1], int(sys.argv[2]); assert 1 <= number <= 14
+     if operation == 'claim':
+         assert len(sys.argv) == 3
+         claim(number)

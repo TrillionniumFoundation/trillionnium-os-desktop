@@ -1,0 +1,154 @@
+# This extension is outside the frozen helper build closure. It only adds
+# whole-scope pre/post proof to the original normal PM install transaction.
+PARENT_SCOPE = @PARENT_SCOPE@
+ORIGINAL_PACKAGES = @ORIGINAL_PACKAGES@
+CURRENT_GUARD = @CURRENT_GUARD@
+SCOPE_READER = @SCOPE_READER@
+EXPECTED_HELPER_MANIFEST = '0bd7c10043f46063fdbf46e19a48e40430c02f3373d697ad7a44af8ad64b8489'
+OLD_HELPER = 'org.droidloom.qa.successor.p8f89f253350ba2fa.r1'
+RUNTIME_EPOCH = 'a7c7091a9e57eb6b373aa8a9225bb2f17b4ec0f1248679b56aaadc78eb0faca9'
+
+
+def validate_parent_scope(parent):
+    need(type(parent) is dict and parent.get('schema') == 'pocket4-versioned-app-scope-v1' and
+         parent.get('runtime_epoch_sha256') == RUNTIME_EPOCH and type(parent.get('apps')) is dict and
+         sorted(parent['apps']) == ORIGINAL_PACKAGES and len(parent['apps']) == 48 and
+         SELF not in parent['apps'], 'EXACT_LATEST_48_PARENT_NOT_A_SUBSET')
+    need(sum(len(row['apks']) for row in parent['apps'].values()) == 88,
+         'EXACT_PARENT_88_APKS')
+    old = parent['apps'][OLD_HELPER]
+    need(old['uid'] == 10157 and old['version_code'] == 1 and len(old['apks']) == 1 and
+         old['apks'][0]['bytes'] == 37008 and
+         old['apks'][0]['sha256'] == '006b3bdd64fcd8a03a4ceac0d036b3b99906140feadee61d198756cb6c55c8d9',
+         'ORIGINAL_R1_HELPER_MUST_REMAIN')
+    return parent
+
+
+def validate_scope_transition(parent, observed, proof, uid, installed):
+    validate_parent_scope(parent)
+    names = sorted((*ORIGINAL_PACKAGES, SELF))
+    need(type(observed) is dict and observed.get('schema') == 'pocket4-versioned-app-scope-v1' and
+         observed.get('runtime_epoch_sha256') == RUNTIME_EPOCH and
+         observed.get('kind') == 'explicit-current-app-observation' and observed.get('parent_app_scope') == PARENT_SCOPE and
+         type(observed.get('apps')) is dict and sorted(observed['apps']) == names and len(observed['apps']) == 49,
+         'EXACT_OBSERVED_49_SCOPE_REQUIRED')
+    need(observed.get('fresh_signature_verification_performed') is False and
+         observed.get('UI_or_install_runtime_admitted') is False and
+         observed.get('external_evidence_policy_validated_by_this_reader') is False,
+         'OBSERVER_IDENTITY_SCOPE_CANNOT_PROMOTE_ITSELF')
+    need({name: observed['apps'][name] for name in ORIGINAL_PACKAGES} == parent['apps'],
+         'ALL_48_COMPLETE_ORIGINAL_ROWS_MUST_REMAIN_UNCHANGED')
+    need(type(uid) is int and 10000 <= uid < 100000 and uid not in {row['uid'] for row in parent['apps'].values()},
+         'ACTUAL_NEW_HELPER_UID_MUST_NOT_SHARE_OLD_SCOPE')
+    row = observed['apps'][SELF]
+    need(row['package'] == SELF and row['uid'] == uid and row['version_code'] == 1 and
+         row['package_manager_certificate_sha256'] == [proof['signer_certificate_sha256']] and
+         proof['signer_certificate_sha256'] not in parent['apps'][OLD_HELPER]['package_manager_certificate_sha256'],
+         'OBSERVED_NEW_HELPER_PM_IDENTITY_AND_NEW_OWNED_SIGNER')
+    need(len(row['apks']) == 1 and sum(len(app['apks']) for app in observed['apps'].values()) == 89,
+         'EXACTLY_ONE_NEW_BASE_APK_AND_89_TOTAL')
+    apk = row['apks'][0]
+    need(row['code_path'] + '/base.apk' == apk['path'] == installed['base_apk'] and
+         apk['sha256'] == installed['apk_sha256'] == proof['APK']['sha256'] and
+         apk['bytes'] == installed['bytes'] == proof['APK']['bytes'] and
+         installed['package'] == SELF and installed['uid'] == uid and
+         installed['signer_bound_by_exact_signed_apk_bytes'] == proof['signer_certificate_sha256'],
+         'SAME_ACTUAL_SIGNED_APK_FROM_PM_AND_ORIGINAL_SESSION')
+    mapping = {'device': 'st_dev', 'inode': 'st_ino', 'mode': 'st_mode', 'uid': 'st_uid', 'gid': 'st_gid',
+               'bytes': 'st_size', 'mtime_ns': 'st_mtime_ns', 'nlink': 'st_nlink'}
+    need(set(installed['held_file']) == set(mapping) and
+         all(installed['held_file'][key] == apk['file'][field] for key, field in mapping.items()),
+         'NEW_HELPER_SAME_HELD_APK_IDENTITY')
+    need(set(row['data_directories']) == {'user', 'user_de'} and
+         all(item['status'] == 'PRESENT' and item['uid'] == uid and item['gid'] == uid
+             for item in row['data_directories'].values()), 'NEW_HELPER_CE_DE_OWNERSHIP_REQUIRED')
+    return {'protected_original_packages': 48, 'observed_packages': 49, 'observed_APKs': 89,
+            'all_original_rows_byte_structure_equal': True, 'only_new_package': SELF,
+            'new_UID': uid, 'original_r1_retained': True,
+            'normal_PM_signature_and_exact_verified_APK_bound': True,
+            'new_CE_DE_owned_by_actual_new_UID': True,
+            'full_Android_installed_inventory_or_launcher_enumeration_claimed': False,
+            'effective_permission_AppOps_role_regression_completed': False,
+            'UI_or_install_runtime_admitted_by_scope': False, 'production_ready': False}
+
+
+class WholeScopeProtection:
+    def __init__(self, flow, args, proof, recorder):
+        self.flow, self.args, self.proof, self.recorder = flow, args, proof, recorder
+        self.guard = flow.current_guard
+        need(flow.source.BINDING['runtime_guard'] == CURRENT_GUARD and
+             args.source_manifest_sha256 == EXPECTED_HELPER_MANIFEST,
+             'EXACT_EXISTING_TYPED_GUARD_AND_FROZEN_HELPER_CLOSURE')
+        self.core = self.guard._core()
+        self.parent = validate_parent_scope(self.core.parse(self.core.pinned_record(PARENT_SCOPE)))
+        self.before_guard = None
+
+    def verify_parent(self):
+        current = self.guard.current_guard(action_attempted=self.flow.action_attempted)
+        need(current['schema'] == 'pocket4-successor-main-guard-v1' and
+             current['runtime_epoch_sha256'] == RUNTIME_EPOCH and
+             (self.before_guard is None or current == self.before_guard), 'COEXISTENCE_TYPED_RUNTIME_UNCHANGED')
+        need(self.core.parse(self.core.pinned_record(PARENT_SCOPE)) == self.parent, 'ORIGINAL_SCOPE_BYTES_CHANGED')
+        value = self.guard.check_app_scope(PARENT_SCOPE, ORIGINAL_PACKAGES)
+        need(value['packages'] == ORIGINAL_PACKAGES and value['app_scope_sha256'] == PARENT_SCOPE['sha256'] and
+             value['current_apk_paths_and_file_identities_match'] is True, 'EXACT_ALL_48_CURRENT_GUARD_REQUIRED')
+        self.before_guard = current
+        return value
+
+    def admit(self):
+        need(self.proof['signer_certificate_sha256'] not in self.parent['apps'][OLD_HELPER]['package_manager_certificate_sha256'],
+             'NEW_HELPER_REQUIRES_ITS_NEW_OWNED_SIGNER')
+        return self.verify_parent()
+
+    def publish_after(self, result):
+        need(result['install_success_observed'] is True and result['state_attempted'] is True and
+             result['installed_before_state'] == result['installed_after_state'] and
+             result['state']['helper']['ui_automation_connected'] is False and
+             result['state']['helper']['action_attempted'] is False and result['state']['helper']['outcome_unknown'] is False,
+             'ORIGINAL_NORMAL_INSTALL_AND_STATE_ONLY_PROOF_REQUIRED')
+        before = self.verify_parent()
+        build_raw = read(self.args.build_receipt)
+        need(sha(build_raw) == self.args.build_receipt_sha256 == self.proof['build_receipt_sha256'],
+             'ACTUAL_REVIEWED_BUILD_RECEIPT_STILL_EXACT')
+        build_pin = {'path': str(self.args.build_receipt), 'bytes': len(build_raw), 'sha256': sha(build_raw)}
+        install_observation = {
+            'schema': 'pocket4-owned-helper-normal-install-before-whole-scope-v1',
+            'package': SELF, 'parent_app_scope': PARENT_SCOPE, 'build': self.proof,
+            'helper_source_manifest_sha256': EXPECTED_HELPER_MANIFEST,
+            'installer_source_sha256': self.args.coexistence_source_sha256,
+            'normal_PM_install_success_observed': True, 'replacement': False,
+            'installed_before_state': result['installed_before_state'],
+            'installed_after_state': result['installed_after_state'], 'state': result['state'],
+            'actual_scope_after_pending': True, 'outer_owned_child_and_durable_terminal_pending': True,
+            'automatic_retry': False, 'UI_actions': 0, 'production_ready': False}
+        observation_pin = self.core.write_new(str(self.flow.step / 'normal-install-before-scope.private.json'),
+                                              self.core.canonical(install_observation) + b'\n')
+        reader_raw = self.core.pinned_record(SCOPE_READER, 65536)
+        reader = types.ModuleType('unchanged_actual_explicit_app_scope_reader')
+        reader.__file__ = SCOPE_READER['path']
+        exec(compile(reader_raw, reader.__file__, 'exec'), reader.__dict__)
+        request = {'schema': 'pocket4-successor-app-observation-request-v1', 'guard': CURRENT_GUARD,
+                   'packages': sorted((*ORIGINAL_PACKAGES, SELF)), 'parent_app_scope': PARENT_SCOPE,
+                   'install_or_signature_evidence': [build_pin, observation_pin],
+                   'output_scope': str(self.flow.step / 'app-scope-after.private.json'),
+                   'output_binding': str(self.flow.step / 'observation-binding.private.json')}
+        request_pin = self.core.write_new(str(self.flow.step / 'scope-observation-request.json'),
+                                         self.core.canonical(request) + b'\n')
+        observed = reader.run(request)
+        need(observed.get('ok') is True and observed['observation_fds']['acquired'] == observed['observation_fds']['closed'] and
+             observed['observation_fds']['remaining'] == 0 and observed['observation_fds']['errors'] == [],
+             'ORIGINAL_SCOPE_READER_AND_ALL_FDS_MUST_COMPLETE')
+        scope = self.core.parse(self.core.pinned_record(observed['app_scope']))
+        proof = validate_scope_transition(self.parent, scope, self.proof, result['helper_uid'], result['installed_after_state'])
+        need(observed['app_scope_guard']['packages'] == request['packages'] and
+             observed['app_scope_guard']['app_scope_sha256'] == observed['app_scope']['sha256'] and
+             observed['app_scope_guard']['current_apk_paths_and_file_identities_match'] is True,
+             'ORIGINAL_FRESH_49_SCOPE_GUARD')
+        after = self.verify_parent()
+        need(before == after, 'ALL_48_PRE_POST_SCOPE_GUARD_IDENTICAL')
+        self.core.pinned_record(SCOPE_READER, 65536)
+        self.core.pinned_record(build_pin)
+        return {'parent_app_scope': PARENT_SCOPE, 'normal_install_observation': observation_pin,
+                'observer_request': request_pin, 'observation': observed, 'transition': proof,
+                'next_app_scope': observed['app_scope'], 'original_48_guard_before': before,
+                'original_48_guard_after': after, 'outer_owned_child_and_durable_terminal_still_required': True}

@@ -1,0 +1,86 @@
+--- preserved-r1-pipeline/prepare_completed_readback.py
++++ new-r2-capture-pipeline/prepare_completed_readback.py
+@@ -14,9 +14,10 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
++CAPTURE = HERE.parent / "bound-candidate-r2"
+ PROJECT = HERE.parents[2]
+-GATE_SHA = "9a38444242ef45aa5f7f94d2595d7a6aa342d7249973e200ec8ea63ae42da898"
+-PLAN_SHA = "facee24ef983eafb0324cf34dc803f5590599ec4ae4d0126015995679b019abc"
++GATE_SHA = "2dbf56bace4ccca9e668d47cefda885fb5f1cbbfe8fe8a4018ff33dabd57bcbe"
++PLAN_SHA = "ae7570780e890f0855b2dc98ff4b5b387e52048deef4dcb9f33e2983e1735e58"
+ RENDERER = {"file": "successor_audit_requests/effective_permissions_batch_readback_r2/prepare_compressed_readback.py",
+             "bytes": 11301, "sha256": "ff4344162b5f552bf5c8365f1fa198ef1a8dff6259861a838872f5cf6bb69356"}
+ 
+@@ -41,8 +42,8 @@
+ 
+ def select_complete(number):
+     need(type(number) is int and 1 <= number <= 14, "EXACT_NEW14_BATCH_RANGE")
+-    gate = load(HERE / "permission_capture_gate.py", GATE_SHA, 29733)
+-    need(sha((HERE / "CAPTURE_PLAN.json").read_bytes()) == PLAN_SHA, "EXACT_NEW46_CAPTURE_PLAN")
++    gate = load(CAPTURE / "permission_capture_gate.py", GATE_SHA, 30205)
++    need(sha((CAPTURE / "CAPTURE_PLAN.json").read_bytes()) == PLAN_SHA, "EXACT_NEW46_CAPTURE_PLAN")
+     g, plan, loaded = gate.load_closure()
+     state = gate.inspect(g, plan, loaded)
+     matches = [row for row in state["completed"] if row["batch"] == number]
+@@ -94,7 +95,7 @@
+     need(len(packet_raw) == 4091 and sha(packet_raw) == renderer.PACKET_SHA, "ORIGINAL_ACTUAL_HOST_READER_PACKET")
+     packet = json.loads(packet_raw)
+     packet["args"][-1] = source
+-    packet["idempotency_key"] = "pocket4-fixed46-permission-readback-20261107-r1-b%02d" % args.batch
++    packet["idempotency_key"] = "pocket4-fixed46-permission-readback-20261107-r2-b%02d" % args.batch
+     parent = HERE / "readbacks"
+     parent.mkdir(mode=0o700, exist_ok=True)
+     need(parent.is_dir() and not parent.is_symlink(), "REGULAR_NEW_READER_PARENT")
+@@ -104,7 +105,7 @@
+     pp = renderer.write_new(out, "process-request.review-only.json", renderer.canonical(packet))
+     dp = renderer.write_new(out, "reader-against-actual-pilot.diff", "".join(difflib.unified_diff(
+         original.splitlines(True), source.splitlines(True), fromfile="actual-pilot-file-reader", tofile="new46-actual-settled-batch-reader")))
+-    private = PROJECT.parent / "p4_private_ui/fixed46-permissions-compressed-readback-r1" / out.name
++    private = PROJECT.parent / "p4_private_ui/fixed46-permissions-compressed-readback-r2" / out.name
+     readback = {"schema": "pocket4-fixed-batch-compressed-private-readback-plan-v2", "source_only": True,
+         "reader": rp, "process_request": pp, "diff": dp, "capture_binding": binding,
+         "fixed_files": pins, "per_file_capture_limits": limits, "actual_aggregate_log_bytes": sum(p["bytes"] for p in pins),
+--- preserved-r1-pipeline/decode_completed_readback.py
++++ new-r2-capture-pipeline/decode_completed_readback.py
+@@ -126,7 +126,7 @@
+     raw_plan = read(folder / "READBACK_PLAN.json", 65536)
+     need(sha(raw_plan) == args.plan_sha256, "EXACT_REVIEWED_READBACK_PLAN")
+     plan = parse(raw_plan)
+-    private = PROJECT.parent / "p4_private_ui/fixed46-permissions-compressed-readback-r1" / folder.name
++    private = PROJECT.parent / "p4_private_ui/fixed46-permissions-compressed-readback-r2" / folder.name
+     public = folder / "actual-public"
+     need(plan["schema"] == "pocket4-fixed-batch-compressed-private-readback-plan-v2" and
+          plan["private_destination_required"] == str(private) and plan["public_actual_directory"] == str(public) and
+--- preserved-r1-pipeline/interpret_completed_readback.py
++++ new-r2-capture-pipeline/interpret_completed_readback.py
+@@ -17,8 +17,8 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ PROJECT = HERE.parents[2]
+-SELECTOR = (7985, "d208bb26172b6c2ba7a06f687b69eb0fdc5b8a058920c63b686f31beef665150")
+-DECODER = (10148, "57be2c04cb87fed4fbc94197cb4a7fb4c9ffe18f08aeadba31406a1d1ac48bb6")
++SELECTOR = (8036, "4b1426f1295b5924f1821709344b2d96109e2e1647c10a7f1a1dca21cfcc298a")
++DECODER = (10148, "2e3e0f8d297c3bad50b8e5489a3604783e573f6f52abab51b65c1c9df8680ad9")
+ PARSER = ("successor_audit_requests/effective_permissions_microg_parser_r1/interpret_microg_exact.py", 20711,
+           "c38b558a5c0d1b1a9649d688f0b3318622097f93e0b993ed6e0fb723adf342e1")
+ CORE_NAMES = ("need", "sha", "unknown", "lines", "section", "parse_package", "parse_appops", "derive")
+@@ -55,7 +55,7 @@
+     grammar, grammar_raw = module(PROJECT / PARSER[0], PARSER[1], PARSER[2])
+     folder = HERE / "readbacks" / ("batch-%02d" % args.batch)
+     public = folder / "actual-public"
+-    private = PROJECT.parent / "p4_private_ui/fixed46-permissions-compressed-readback-r1" / folder.name
++    private = PROJECT.parent / "p4_private_ui/fixed46-permissions-compressed-readback-r2" / folder.name
+     for path in (folder, public, private):
+         need(path.is_dir() and not path.is_symlink(), "ACTUAL_READBACK_DIRECTORIES_REQUIRED")
+     records = {}
+@@ -80,7 +80,7 @@
+         need(len(data) == plan[key]["bytes"] and sha(data) == plan[key]["sha256"], "REVIEWED_READBACK_SOURCE_CHANGED")
+     packet = g.parse(packet_raw)
+     need(packet["args"][-1] == reader_raw.decode() and packet["idempotency_key"] ==
+-         "pocket4-fixed46-permission-readback-20261107-r1-b%02d" % args.batch, "ACTUAL_FIXED_READER_ARGV_AND_KEY")
++         "pocket4-fixed46-permission-readback-20261107-r2-b%02d" % args.batch, "ACTUAL_FIXED_READER_ARGV_AND_KEY")
+     start = g.parse(read_public("actual-public/start.original.txt", 131072))
+     job = start["job"]
+     need(job["idempotency_key"] == packet["idempotency_key"] and job["host"] == packet["host"] and

@@ -1,0 +1,13 @@
+--- preserved-original45/batch-02/stager-against-original-b01.diff
++++ actual49-fixed46/batch-02/stager-against-original-b01.diff
+@@ -7,8 +7,8 @@
+ import stat
+ import sys
+ 
+-ROOT = '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b01'
+-FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 19964, 'sha256': '0db1088ebd9a2d19d0f6a9ef2e5bbe2dd7415d7827d9c1c6c1d66c14d4d82cfa'}, {'name': 'observe_current_services.py', 'bytes': 46457, 'sha256': 'c261aa5e00dd1980a2154053fdd25ee72881f6963b584fa1761e3410425ceab5'}, {'name': 'readonly_services_transport.py', 'bytes': 16116, 'sha256': 'bb2c347f3a208175a9db8b31aa8462d862bf732954adf726c795eb1c4fa20b3e'}, {'name': 'request.review-only.json', 'bytes': 2455, 'sha256': '9e3e72f0693f76d04f71584ebb809a4ca6e08868b24bd2efe377abda8f9169f4'}, {'name': 'inputs/cmd-appops-help.original.txt', 'bytes': 1309, 'sha256': '95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc'}]
++ROOT = '/home/alex/work/pocket4-launcher46-permissions-source-20261107-r1-b02'
++FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 22631, 'sha256': 'b1347379ab6bd70874d77644dc18985bf01c977ae9102456715e69d40adde667'}, {'name': 'observe_current_services.py', 'bytes': 50593, 'sha256': 'a018d61c1f659576a598b4564ff9c869b59e4efbccba42129793897e80596224'}, {'name': 'readonly_services_transport.py', 'bytes': 16112, 'sha256': 'bdfc87c1321ef07bd50a429026fb41dd26be6785bf77e9b8e5d856fa3a075861'}, {'name': 'request.review-only.json', 'bytes': 2580, 'sha256': '69047cd9c6a3cb4d1bf4edb4d4899800ae08b1f46c10f73365b72d44000ba935'}, {'name': 'inputs/cmd-appops-help.original.txt', 'bytes': 1309, 'sha256': '95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc'}]
+ STAT_KEYS=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+ 
+ def need(value,code):

@@ -1,0 +1,56 @@
+{
+  "B_evidence_header_uses_actual_originals": true,
+  "actual_new_helper_UID": null,
+  "actual_new_scope49": null,
+  "cases": [
+    {
+      "name": "actual_B_complete_stdout_durable_terminal_and_normal_child_header",
+      "passed": true
+    },
+    {
+      "name": "actual_build_durable_terminal_and_exact_log_length",
+      "passed": true
+    },
+    {
+      "name": "non_durable_B_is_rejected",
+      "observed_rejection": "ACTUAL_AUTHORITATIVE_OBSERVER_DURABLE_COMPLETE_ZERO",
+      "passed": true
+    },
+    {
+      "name": "unretired_B_child_is_rejected",
+      "observed_rejection": "NORMAL_ORIGINAL_CHILD_LIFETIME_REQUIRED",
+      "passed": true
+    },
+    {
+      "name": "exact_fixed_install_request",
+      "passed": true
+    },
+    {
+      "name": "preassigned_UID_is_rejected",
+      "observed_rejection": "EXACT_SINGLE_NORMAL_INSTALL_REQUEST_NO_UID_OR_COMMAND_OVERRIDE",
+      "passed": true
+    },
+    {
+      "name": "actual_file_version_metadata_model",
+      "passed": true
+    },
+    {
+      "name": "same_build_bytes_different_inode_not_accepted",
+      "observed_rejection": "ACTUAL_UID1000_BUILD_RECEIPT_FULL_IDENTITY",
+      "passed": true
+    },
+    {
+      "name": "root_owned_build_copy_not_accepted",
+      "observed_rejection": "ACTUAL_UID1000_BUILD_RECEIPT_FULL_IDENTITY",
+      "passed": true
+    }
+  ],
+  "count": 9,
+  "file_identity_negative_cases_are_local_metadata_models": true,
+  "full_211_host_file_gate_executed_here": false,
+  "install_performed": false,
+  "new_Android_or_host_remote_actions": 0,
+  "production_ready": false,
+  "schema": "pocket4-coexistence-host-integration-local-controls-v1",
+  "status": "LOCAL_ONLY_PASS"
+}

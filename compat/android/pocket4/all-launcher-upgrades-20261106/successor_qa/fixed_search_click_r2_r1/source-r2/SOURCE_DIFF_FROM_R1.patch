@@ -1,0 +1,24 @@
+--- successor_qa/fixed_search_click_r2_r1/source-r1/owned_fixed_search_click_once.py
++++ successor_qa/fixed_search_click_r2_r1/source-r2/owned_fixed_search_click_once.py
+@@ -339,10 +339,10 @@
+ 
+ 
+ 
+-def whole_scope_guard(base, core):
++def whole_scope_guard(base, core, *, action_attempted=False):
+     validate_scope49(core.document(base.pinned(CURRENT_SCOPE)))
+     guard = base.load(CURRENT_GUARD, 'unchanged_typed_current_Main_guard')
+-    typed = guard.current_guard(action_attempted=False)
++    typed = guard.current_guard(action_attempted=action_attempted)
+     need(typed.get('schema') == 'pocket4-successor-main-guard-v1' and
+          typed.get('runtime_epoch_sha256') == RUNTIME_EPOCH, 'SAME_ACTUAL_CURRENT_TYPED_RUNTIME')
+     current = guard.check_app_scope(CURRENT_SCOPE, ALL_PACKAGES)
+@@ -480,7 +480,7 @@
+                           original_stdout_sha256=sha(raw), original_argv=argv)
+         need(type(returned) is int and returned == 0, 'ORIGINAL_ENTRY_FAILED_NO_RETRY')
+         original, result_pin = verify_original(base, core, request, payload, mutation, raw, scope, selected)
+-        result['whole_scope_after'] = whole_scope_guard(base, core)
++        result['whole_scope_after'] = whole_scope_guard(base, core, action_attempted=original['action_attempted'])
+         need(result['whole_scope_after'] == result['whole_scope_before'], 'ALL49_AND_TYPED_RUNTIME_CHANGED_DURING_INSPECT')
+         need(completed_install_gate(base, core) == result['completed_install'], 'ACTUAL_INSTALL_BUILD_B_AND_OLD_FAILURES_CHANGED')
+         need(prior_inspect_gate(base, core) == result['prior_readonly_inspect'], 'ACTUAL_PRIOR_INSPECT_EVIDENCE_CHANGED')

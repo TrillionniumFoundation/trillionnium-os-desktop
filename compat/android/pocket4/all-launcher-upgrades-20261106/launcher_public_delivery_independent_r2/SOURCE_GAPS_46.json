@@ -1,0 +1,1946 @@
+{
+  "counts_by_classification": {
+    "OWNER_AND_SOURCE_UNKNOWN": 1,
+    "framework_owned_AOSP_component": 10,
+    "framework_owned_AOSP_demo": 1,
+    "framework_owned_test_shell": 1,
+    "local_owner_built_QA": 2,
+    "third_party_commercial": 29,
+    "upstream_open_source_service_or_IME": 2
+  },
+  "current_inventory_reference": {
+    "bytes": 1703185,
+    "path": "current_launcher_inventory_r3/INVENTORY.json",
+    "sha256": "8932d7b7f18218717de09a2b05860f29d0f3d80f646127d89b6959bd60cc1ea9"
+  },
+  "inherited_references_are_not_fresh_queries": true,
+  "inventory_input": {
+    "bytes": 1703185,
+    "path": "current_launcher_inventory_r3/INVENTORY.json",
+    "sha256": "8932d7b7f18218717de09a2b05860f29d0f3d80f646127d89b6959bd60cc1ea9"
+  },
+  "membership_requeried_by_this_research": false,
+  "no_publisher_direct_URL_does_not_imply_no_legal_public_distribution": true,
+  "prepared_utc": "2026-11-07T00:05:59.577436+00:00",
+  "prior_full46_reference": {
+    "bytes": 90249,
+    "path": "launcher_public_delivery_r1/SOURCE_GAPS_46.json",
+    "sha256": "8d5b1c370cff2fc12663f74f64afd0a28659b687eec5730b49049d6e8cc0e529"
+  },
+  "rows": [
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 3,
+      "current_PM_certificate_sha256": [
+        "e41d0b302b56ee0a44ab0fd9da6fa712b0d2a60344ef2e85459fd75396e34971"
+      ],
+      "current_effective_version_code": 26090096,
+      "current_version_name": "26.9.0",
+      "gap": "厂商直链尚未核实；这不排除其他正常公开同包签名包。此前官方商店信息不是完整 APK。",
+      "inherited_source_evidence": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "This round retrieved the public benefits/member information page but no complete Android binary link; the previous HTTP 403 in baseline evidence is kept separately.",
+          "url": "https://world.hyatt.com/content/gp/en/rewards/mobile.html?language=en",
+          "web_reference_ids": [
+            "turn149view1"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "Publisher instructions identify App Store or Google Play for the World of Hyatt app.",
+          "url": "https://www.hyatt.com/zh-CN/info/chromecast",
+          "web_reference_ids": [
+            "turn140search5"
+          ]
+        }
+      ],
+      "label_reference": "Hyatt",
+      "latest_usable_version_qualified": false,
+      "next_channel": "正常官方商店交付，或另行审阅公开同包完整APK/split集合；逐件实际验签。",
+      "official_observed_version_name": "26.9.0",
+      "official_store_url": "https://play.google.com/store/apps/details?id=com.Hyatt.hyt&hl=en_US&gl=US",
+      "official_version_reference_kind": "INHERITED_S22_METADATA_VIA_S44_NOT_CURRENT_ARTIFACT",
+      "package": "com.Hyatt.hyt",
+      "production_ready": false,
+      "public_same_package_delivery_state": "UNKNOWN_NOT_EXCLUDED",
+      "publisher_direct_APK_state": "NOT_VERIFIED_IN_EXAMINED_PUBLISHER_PAGES"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "53a2508d2efcef95deadf8ff74ef41eadcd1e96fbcc49b53d741787806c01904"
+      ],
+      "current_effective_version_code": 275,
+      "current_version_name": "5.9.4.5",
+      "gap": "5.9.6.8已知交付只有105119744B已验证前缀；两个TLS失败保留，未重试相同端点。",
+      "historical_evidence": "reference/rail-zbj-delivery-research-r1/findings.json",
+      "label_reference": "Railway 12306",
+      "latest_usable_version_qualified": false,
+      "next_channel": "厂商新发布的正常完整同包交付，或正常商店/新公开分发路径；完整验签前不升级。",
+      "official_observed_version_name": "5.9.6.8",
+      "package": "com.MobileTicket",
+      "production_ready": false,
+      "public_same_package_delivery_state": "KNOWN_TENCENT_CANDIDATE_INCOMPLETE_TLS_FAILURE_PRESERVED",
+      "publisher_direct_APK_state": "PUBLISHER_NAVIGATION_OBSERVED_NO_FRESH_COMPLETE_URL"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 3,
+      "current_PM_certificate_sha256": [
+        "2f19adeb284eb36f7f07786152b9a1d14b21653203ad0b04ebbf9c73ab6d7625"
+      ],
+      "current_effective_version_code": 1243240206,
+      "current_version_name": "32.18.0.100",
+      "gap": "公开32.20.0.100候选为base+3 splits；普通下载页已报nonce失效，未重放。中国版包名不同。",
+      "inherited_source_evidence": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The web tool returned DisabledError, not an observed HTTP 403 and not a download URL.",
+          "url": "https://www.amazon.com/androidapp",
+          "web_reference_ids": [
+            "turn138view1"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "Amazon states ordinary Android Appstore support ended August 20, 2025; Fire tablet/TV distribution is separate.",
+          "url": "https://developer.amazon.com/apps-and-games/blogs/2025/02/upcoming-changes-to-amazon-appstore-for-android-devices-and-coins-program",
+          "web_reference_ids": [
+            "turn137search1"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "Not accessible through this web tool; no complete same-package delivery was observed.",
+          "url": "https://sj.qq.com/appdetail/com.amazon.mShop.android.shopping",
+          "web_reference_ids": [
+            "turn146view0"
+          ]
+        }
+      ],
+      "label_reference": "Amazon Shopping",
+      "latest_usable_version_qualified": false,
+      "next_channel": "新的正常公开交付需版本关联和完整split集合，不能用中国版替换。",
+      "official_observed_version_name": "32.19.0.100",
+      "official_store_url": "https://play.google.com/store/apps/details?id=com.amazon.mShop.android.shopping&hl=en_US&gl=US",
+      "official_version_reference_kind": "INHERITED_S22_METADATA_VIA_S44_NOT_CURRENT_ARTIFACT",
+      "package": "com.amazon.mShop.android.shopping",
+      "production_ready": false,
+      "public_same_package_delivery_state": "PUBLIC_MIRROR_BUNDLE_METADATA_ONLY_NORMAL_LINK_EXPIRED",
+      "publisher_direct_APK_state": "NOT_VERIFIED_IN_EXAMINED_PUBLISHER_PAGES"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "framework_owned_AOSP_component",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+      ],
+      "current_effective_version_code": 37,
+      "current_version_name": "17",
+      "gap": "需与当前Android/framework源码及签名/权限合同匹配；商店同名包不是替代证据。",
+      "label_reference": "Calendar",
+      "latest_usable_version_qualified": false,
+      "next_channel": "继续原合法framework构建/资源准入与运行验证；当前没有合格替代产物。",
+      "official_observed_version_name": null,
+      "package": "com.android.calendar",
+      "production_ready": false,
+      "public_same_package_delivery_state": "NOT_AN_INDEPENDENT_STORE_UPGRADE",
+      "publisher_direct_APK_state": "MATCHING_FRAMEWORK_SOURCE_BUILD_REQUIRED"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "framework_owned_AOSP_component",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+      ],
+      "current_effective_version_code": 20002000,
+      "current_version_name": "2.0.002",
+      "gap": "需与当前Android/framework源码及签名/权限合同匹配；商店同名包不是替代证据。",
+      "label_reference": "Camera",
+      "latest_usable_version_qualified": false,
+      "next_channel": "继续原合法framework构建/资源准入与运行验证；当前没有合格替代产物。",
+      "official_observed_version_name": null,
+      "package": "com.android.camera2",
+      "production_ready": false,
+      "public_same_package_delivery_state": "NOT_AN_INDEPENDENT_STORE_UPGRADE",
+      "publisher_direct_APK_state": "MATCHING_FRAMEWORK_SOURCE_BUILD_REQUIRED"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "framework_owned_AOSP_component",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
+      ],
+      "current_effective_version_code": 10734,
+      "current_version_name": "1.7.34",
+      "gap": "需与当前Android/framework源码及签名/权限合同匹配；商店同名包不是替代证据。",
+      "label_reference": "Contacts",
+      "latest_usable_version_qualified": false,
+      "next_channel": "继续原合法framework构建/资源准入与运行验证；当前没有合格替代产物。",
+      "official_observed_version_name": null,
+      "package": "com.android.contacts",
+      "production_ready": false,
+      "public_same_package_delivery_state": "NOT_AN_INDEPENDENT_STORE_UPGRADE",
+      "publisher_direct_APK_state": "MATCHING_FRAMEWORK_SOURCE_BUILD_REQUIRED"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "framework_owned_AOSP_component",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+      ],
+      "current_effective_version_code": 37,
+      "current_version_name": "17",
+      "gap": "需与当前Android/framework源码及签名/权限合同匹配；商店同名包不是替代证据。",
+      "label_reference": "Clock",
+      "latest_usable_version_qualified": false,
+      "next_channel": "继续原合法framework构建/资源准入与运行验证；当前没有合格替代产物。",
+      "official_observed_version_name": null,
+      "package": "com.android.deskclock",
+      "production_ready": false,
+      "public_same_package_delivery_state": "NOT_AN_INDEPENDENT_STORE_UPGRADE",
+      "publisher_direct_APK_state": "MATCHING_FRAMEWORK_SOURCE_BUILD_REQUIRED"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "framework_owned_AOSP_component",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
+      ],
+      "current_effective_version_code": 2900000,
+      "current_version_name": "23.0",
+      "gap": "需与当前Android/framework源码及签名/权限合同匹配；商店同名包不是替代证据。",
+      "label_reference": "Phone",
+      "latest_usable_version_qualified": false,
+      "next_channel": "继续原合法framework构建/资源准入与运行验证；当前没有合格替代产物。",
+      "official_observed_version_name": null,
+      "package": "com.android.dialer",
+      "production_ready": false,
+      "public_same_package_delivery_state": "NOT_AN_INDEPENDENT_STORE_UPGRADE",
+      "publisher_direct_APK_state": "MATCHING_FRAMEWORK_SOURCE_BUILD_REQUIRED"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "framework_owned_AOSP_component",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8"
+      ],
+      "current_effective_version_code": 37,
+      "current_version_name": "17",
+      "gap": "需与当前Android/framework源码及签名/权限合同匹配；商店同名包不是替代证据。",
+      "label_reference": "Files",
+      "latest_usable_version_qualified": false,
+      "next_channel": "继续原合法framework构建/资源准入与运行验证；当前没有合格替代产物。",
+      "official_observed_version_name": null,
+      "package": "com.android.documentsui",
+      "production_ready": false,
+      "public_same_package_delivery_state": "NOT_AN_INDEPENDENT_STORE_UPGRADE",
+      "publisher_direct_APK_state": "MATCHING_FRAMEWORK_SOURCE_BUILD_REQUIRED"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "framework_owned_AOSP_component",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+      ],
+      "current_effective_version_code": 40030,
+      "current_version_name": "1.1.40030",
+      "gap": "需与当前Android/framework源码及签名/权限合同匹配；商店同名包不是替代证据。",
+      "label_reference": "Gallery",
+      "latest_usable_version_qualified": false,
+      "next_channel": "继续原合法framework构建/资源准入与运行验证；当前没有合格替代产物。",
+      "official_observed_version_name": null,
+      "package": "com.android.gallery3d",
+      "production_ready": false,
+      "public_same_package_delivery_state": "NOT_AN_INDEPENDENT_STORE_UPGRADE",
+      "publisher_direct_APK_state": "MATCHING_FRAMEWORK_SOURCE_BUILD_REQUIRED"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "framework_owned_AOSP_component",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8"
+      ],
+      "current_effective_version_code": 10001040,
+      "current_version_name": "1.0.001",
+      "gap": "需与当前Android/framework源码及签名/权限合同匹配；商店同名包不是替代证据。",
+      "label_reference": "Messaging",
+      "latest_usable_version_qualified": false,
+      "next_channel": "继续原合法framework构建/资源准入与运行验证；当前没有合格替代产物。",
+      "official_observed_version_name": null,
+      "package": "com.android.messaging",
+      "production_ready": false,
+      "public_same_package_delivery_state": "NOT_AN_INDEPENDENT_STORE_UPGRADE",
+      "publisher_direct_APK_state": "MATCHING_FRAMEWORK_SOURCE_BUILD_REQUIRED"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "framework_owned_AOSP_component",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
+      ],
+      "current_effective_version_code": 37,
+      "current_version_name": "17",
+      "gap": "需与当前Android/framework源码及签名/权限合同匹配；商店同名包不是替代证据。",
+      "label_reference": "Search",
+      "latest_usable_version_qualified": false,
+      "next_channel": "继续原合法framework构建/资源准入与运行验证；当前没有合格替代产物。",
+      "official_observed_version_name": null,
+      "package": "com.android.quicksearchbox",
+      "production_ready": false,
+      "public_same_package_delivery_state": "NOT_AN_INDEPENDENT_STORE_UPGRADE",
+      "publisher_direct_APK_state": "MATCHING_FRAMEWORK_SOURCE_BUILD_REQUIRED"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "framework_owned_AOSP_component",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8"
+      ],
+      "current_effective_version_code": 37,
+      "current_version_name": "17",
+      "gap": "需与当前Android/framework源码及签名/权限合同匹配；商店同名包不是替代证据。",
+      "label_reference": "Settings",
+      "latest_usable_version_qualified": false,
+      "next_channel": "继续原合法framework构建/资源准入与运行验证；当前没有合格替代产物。",
+      "official_observed_version_name": null,
+      "package": "com.android.settings",
+      "production_ready": false,
+      "public_same_package_delivery_state": "NOT_AN_INDEPENDENT_STORE_UPGRADE",
+      "publisher_direct_APK_state": "MATCHING_FRAMEWORK_SOURCE_BUILD_REQUIRED"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "framework_owned_AOSP_demo",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8"
+      ],
+      "current_effective_version_code": 37,
+      "current_version_name": "17",
+      "gap": "需与当前Android/framework源码及签名/权限合同匹配；商店同名包不是替代证据。",
+      "label_reference": "ThreadNetworkDemoApp",
+      "latest_usable_version_qualified": false,
+      "next_channel": "继续原合法framework构建/资源准入与运行验证；当前没有合格替代产物。",
+      "official_observed_version_name": null,
+      "package": "com.android.threadnetwork.demoapp",
+      "production_ready": false,
+      "public_same_package_delivery_state": "NOT_AN_INDEPENDENT_STORE_UPGRADE",
+      "publisher_direct_APK_state": "MATCHING_FRAMEWORK_SOURCE_BUILD_REQUIRED"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 3,
+      "current_PM_certificate_sha256": [
+        "83e0e906d7f06f4e2ed11f7fcf51962a72543d1af41899fead87f546afccce9b"
+      ],
+      "current_effective_version_code": 2012312321,
+      "current_version_name": "26.9.20",
+      "gap": "厂商直链尚未核实；这不排除其他正常公开同包签名包。此前官方商店信息不是完整 APK。",
+      "inherited_source_evidence": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The official page identifies Google Play for Android; an optional SMS route exists but no SMS was sent.",
+          "url": "https://www.bestbuy.com/discover-learn/benefits-of-the-best-buy-app/pcmcat1674162066016/",
+          "web_reference_ids": [
+            "turn147search1"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The current official page points to App Store or Google Play.",
+          "url": "https://www.bestbuy.com/site/misc/best-buy-drops/pcmcat1714764109320.c?id=pcmcat1714764109320%2F",
+          "web_reference_ids": [
+            "turn147search3"
+          ]
+        }
+      ],
+      "label_reference": "Best Buy",
+      "latest_usable_version_qualified": false,
+      "next_channel": "正常官方商店交付，或另行审阅公开同包完整APK/split集合；逐件实际验签。",
+      "official_observed_version_name": "26.10.10",
+      "official_store_url": "https://play.google.com/store/apps/details?id=com.bestbuy.android&hl=en_US&gl=US",
+      "official_version_reference_kind": "INHERITED_S22_METADATA_VIA_S44_NOT_CURRENT_ARTIFACT",
+      "package": "com.bestbuy.android",
+      "production_ready": false,
+      "public_same_package_delivery_state": "UNKNOWN_NOT_EXCLUDED",
+      "publisher_direct_APK_state": "NOT_VERIFIED_IN_EXAMINED_PUBLISHER_PAGES"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 4,
+      "current_PM_certificate_sha256": [
+        "bef72da965ea0b91d0d69aae9aae41bcc232fad8643adefcc85e5870db405cfa"
+      ],
+      "current_effective_version_code": 9354,
+      "current_version_name": "6.15.0.9354",
+      "gap": "公开分发页列出独立XAPK选项；尚无实际完整文件、split集合、code或正常签名证明。",
+      "inherited_source_evidence": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The normal official page is readable this round, with Download the App imagery; text retrieval exposes no complete APK URL. Earlier baseline access failures are not rewritten.",
+          "url": "https://www.nationalcar.com/en/emerald-club/national-mobile-app.html",
+          "web_reference_ids": [
+            "turn148view0"
+          ]
+        }
+      ],
+      "label_reference": "National",
+      "latest_usable_version_qualified": false,
+      "new_evidence": {
+        "candidate_id": "national",
+        "no_artifact_obtained": true,
+        "page": "https://national-car-rental.en.softonic.com/android/download",
+        "research": "RESEARCH.json"
+      },
+      "next_channel": "只读固定公开页面取得原始HTML/literal控制；另审完整交付，不安装分发商应用。",
+      "official_observed_version_name": "6.16.0.9403",
+      "official_store_url": "https://play.google.com/store/apps/details?id=com.ehi.national.mobile&hl=en_US&gl=US",
+      "official_version_reference_kind": "INHERITED_S22_METADATA_VIA_S44_NOT_CURRENT_ARTIFACT",
+      "package": "com.ehi.national.mobile",
+      "production_ready": false,
+      "public_same_package_delivery_state": "PUBLIC_SEPARATE_XAPK_OPTION_NORMAL_LITERAL_REQUEST_PENDING",
+      "publisher_direct_APK_state": "NOT_VERIFIED_IN_EXAMINED_PUBLISHER_PAGES"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 3,
+      "current_PM_certificate_sha256": [
+        "1428a295a31d63d9e9361cf6c7b71a76b71bf5ff254f7549c7e6d9341e476354"
+      ],
+      "current_effective_version_code": 15733,
+      "current_version_name": "26.40.1.0",
+      "gap": "完整同包新包未取得；官方说明北美资格，目标真实账户/设备/地区资格未知，不规避。",
+      "inherited_source_evidence": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The normal page request returned HTTP 403 Forbidden; no retry or client alteration was attempted.",
+          "url": "https://www.textnow.com/downloads",
+          "web_reference_ids": [
+            "turn138view0"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The publisher instructs Android updates through Google Play; Google account sign-in may be required.",
+          "url": "https://help.textnow.com/hc/en-us/articles/360042573174-How-to-update-the-TextNow-app",
+          "web_reference_ids": [
+            "turn136search3",
+            "turn137search5",
+            "turn149view3"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The publisher says download/use is currently in North America and new registration is not available outside North America. This is not a measurement of the Pocket4 account or location.",
+          "url": "https://help.textnow.com/hc/en-us/articles/360042529194-Is-TextNow-available-in-my-country/",
+          "web_reference_ids": [
+            "turn137search6"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The publisher states Android 9 or later; an acquired APK manifest is still required for candidate qualification.",
+          "url": "https://help.textnow.com/hc/en-us/articles/360042572274-TextNow-Supported-Platforms",
+          "web_reference_ids": [
+            "turn136search4",
+            "turn137search4"
+          ]
+        }
+      ],
+      "label_reference": "TextNow",
+      "latest_usable_version_qualified": false,
+      "next_channel": "正常官方商店交付，或另行审阅公开同包完整APK/split集合；逐件实际验签。",
+      "official_observed_version_name": "26.44.2.0",
+      "official_store_url": "https://play.google.com/store/apps/details?id=com.enflick.android.TextNow&hl=en_US&gl=US",
+      "official_version_reference_kind": "INHERITED_S22_METADATA_VIA_S44_NOT_CURRENT_ARTIFACT",
+      "package": "com.enflick.android.TextNow",
+      "production_ready": false,
+      "public_same_package_delivery_state": "UNKNOWN_NOT_EXCLUDED",
+      "publisher_direct_APK_state": "NOT_VERIFIED_IN_EXAMINED_PUBLISHER_PAGES"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "OWNER_AND_SOURCE_UNKNOWN",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "a899ddfa8c4b57a962c2bb1ae885a44bd904d7b63f6fd301abf514edf70ad72c"
+      ],
+      "current_effective_version_code": 0,
+      "current_version_name": null,
+      "gap": "实际NDK APK已正常审计，版本属性未声明/PM有效code0；所有者与原始来源仍未知。",
+      "label_reference": null,
+      "latest_usable_version_qualified": false,
+      "next_channel": "先取得真实owner/source/build来源，不将测试入口误认商店产品。",
+      "official_observed_version_name": null,
+      "package": "com.example.ndk_tests",
+      "production_ready": false,
+      "public_same_package_delivery_state": "UNKNOWN",
+      "publisher_direct_APK_state": "UNKNOWN"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "upstream_open_source_service_or_IME",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "9bd06727e62796c0130eb6dab39b73157451582cbd138e86c468acc395d14165"
+      ],
+      "current_effective_version_code": 252432034,
+      "current_version_name": "0.3.17.252432",
+      "gap": "本次公开latest导航仍是当前release；已装字节与原官方asset引用匹配，运行回归仍待完成。",
+      "label_reference": "microG Settings",
+      "latest_usable_version_qualified": false,
+      "next_channel": "保持当前服务，验证业务兼容性。",
+      "official_observed_version_name": "0.3.17.252432",
+      "package": "com.google.android.gms",
+      "prior_reference": {
+        "byte_identity_rechecked_locally": true,
+        "install_performed_for_this_match": false,
+        "latest_release_requeried_now": false,
+        "latest_usable_business_qualified": false,
+        "raw_prior_evidence_locally_available": false,
+        "raw_prior_evidence_status": "UNAVAILABLE_LOCALLY_REFERENCE_RETAINED_NOT_RETRIEVED",
+        "reference": {
+          "asset": {
+            "browser_download_url": "https://github.com/microg/GmsCore/releases/download/v0.3.17.252432/com.google.android.gms-252432034.apk",
+            "digest": "sha256:e5e6cba078bdec812b5450599350e5c1a12c8b7438da5bf77123af170f8c1a35",
+            "name": "com.google.android.gms-252432034.apk",
+            "size": 108113833
+          },
+          "business_compatibility_qualified": false,
+          "current_bound_full_APK_bytes_equal_official_asset_digest_and_length": true,
+          "evidence_ref": {
+            "bytes": 21084,
+            "path": "reference/remaining34-source-receipts/microg-release-latest.raw.json",
+            "sha256": "4918dc10aae4b960f5b69e05971e77bf155d121f9abb297d3169054176e21413"
+          },
+          "fresh_cryptographic_APK_signature_verification_in_this_step": false,
+          "official_release_url": "https://github.com/microg/GmsCore/releases/tag/v0.3.17.252432",
+          "published_at": "2026-09-29T10:37:35Z",
+          "release_tag": "v0.3.17.252432"
+        },
+        "source_matrix": {
+          "bytes": 259476,
+          "path": "reference/remaining34-source-actions.json",
+          "sha256": "7523031c7a1ef2e17d32d786512f8e06cfc39777f350a35b7987eededdfde6b4"
+        },
+        "state": "CURRENT_APK_BYTE_IDENTICAL_TO_PRIOR_OFFICIAL_RELEASE_REFERENCE"
+      },
+      "production_ready": false,
+      "public_same_package_delivery_state": "CURRENT_BYTES_EQUAL_PRIOR_OFFICIAL_RELEASE_ASSET",
+      "publisher_direct_APK_state": "OFFICIAL_PROJECT_RELEASE_ASSET_REFERENCE"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 4,
+      "current_PM_certificate_sha256": [
+        "e9d15336458a6e042394a586276be5a1c1ddc77c2d70378662fd5e2c62910700"
+      ],
+      "current_effective_version_code": 1389,
+      "current_version_name": "5.6.0",
+      "gap": "厂商直链尚未核实；这不排除其他正常公开同包签名包。此前官方商店信息不是完整 APK。",
+      "inherited_source_evidence": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The official page is readable and describes download, but retrieved content exposes no complete Android binary URL.",
+          "url": "https://www.hertz.com/us/en/products-and-services/hertz-mobile-app",
+          "web_reference_ids": [
+            "turn148view1"
+          ]
+        }
+      ],
+      "label_reference": "Hertz",
+      "latest_usable_version_qualified": false,
+      "next_channel": "正常官方商店交付，或另行审阅公开同包完整APK/split集合；逐件实际验签。",
+      "official_observed_version_name": "5.7.1",
+      "official_store_url": "https://play.google.com/store/apps/details?id=com.hertz.android.digital&hl=en_US&gl=US",
+      "official_version_reference_kind": "INHERITED_S22_METADATA_VIA_S44_NOT_CURRENT_ARTIFACT",
+      "package": "com.hertz.android.digital",
+      "production_ready": false,
+      "public_same_package_delivery_state": "UNKNOWN_NOT_EXCLUDED",
+      "publisher_direct_APK_state": "NOT_VERIFIED_IN_EXAMINED_PUBLISHER_PAGES"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 4,
+      "current_PM_certificate_sha256": [
+        "889135370ff205e8640a08c98c5b19c8a6855b1728f3b245459191db521374d7"
+      ],
+      "current_effective_version_code": 1004,
+      "current_version_name": "2026.9.29",
+      "gap": "已查中国官网/商店为cn.hilton.android.hhonors，不能更新当前com包；其他同包公开交付未知。",
+      "inherited_source_evidence": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The official Android button follows hilton.app.link.",
+          "url": "https://www.hilton.com/en/hilton-honors/mobile-app/",
+          "web_reference_ids": [
+            "turn139search0",
+            "turn145view1"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The normal publisher link presents Google Play; following that link reaches the exact com.hilton.android.hhonors Play listing.",
+          "url": "https://hilton.app.link/cZEMfpKruJb?cid=OH,WW,AppDownloadGoogle,MULTIPR,imageHeadliner1,",
+          "web_reference_ids": [
+            "turn146view5"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "Normal publisher-link traversal reaches the correct official Play package. This is not an APK delivery.",
+          "url": "https://play.google.com/store/apps/details?id=com.hilton.android.hhonors",
+          "web_reference_ids": [
+            "turn149view5"
+          ]
+        }
+      ],
+      "label_reference": "Hilton Honors",
+      "latest_usable_version_qualified": false,
+      "next_channel": "正常官方商店交付，或另行审阅公开同包完整APK/split集合；逐件实际验签。",
+      "official_observed_version_name": "2026.10.20",
+      "official_store_url": "https://play.google.com/store/apps/details?id=com.hilton.android.hhonors&hl=en_US&gl=US",
+      "official_version_reference_kind": "INHERITED_S22_METADATA_VIA_S44_NOT_CURRENT_ARTIFACT",
+      "package": "com.hilton.android.hhonors",
+      "production_ready": false,
+      "public_same_package_delivery_state": "UNKNOWN_NOT_EXCLUDED",
+      "publisher_direct_APK_state": "NOT_VERIFIED_IN_EXAMINED_PUBLISHER_PAGES"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "1448dc9480a27e52b06c886b3f6386f2b122b115b1df1f156b81b9aebcc73163"
+      ],
+      "current_effective_version_code": 50023219,
+      "current_version_name": "5.108.1",
+      "gap": "普通UID1000首次GET实际403/Cf-Mitigated:challenge；第二页未请求；没有APK。",
+      "inherited_source_evidence": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The current official Chinese support page is readable and expressly offers Android Google Play; no APK URL appears in retrieved content. This does not erase the earlier US-page access failure.",
+          "url": "https://www.ihg.com/content/cn/zh/support/mobile?scmisc=applestore",
+          "web_reference_ids": [
+            "turn144search3",
+            "turn145view2"
+          ]
+        }
+      ],
+      "label_reference": "IHG",
+      "latest_usable_version_qualified": false,
+      "new_evidence": {
+        "inputs": [
+          {
+            "bytes": 4757,
+            "path": "launcher_public_delivery_r1/actual/stdout.original.json",
+            "sha256": "acf3430ad2b4c759e54afe06a17c0b3ff71da0cbd945fcf13e4972a16db63260"
+          },
+          {
+            "bytes": 728,
+            "path": "launcher_public_delivery_r1/actual/terminal.original.json",
+            "sha256": "9ba6041290ae4b9479fa5edc16040f9aa32849af8115fcd143da719ad6e3eff0"
+          },
+          {
+            "bytes": 997,
+            "path": "launcher_public_delivery_r1/actual/root-validation.json",
+            "sha256": "0ad0b1a0ddfd8e21161970f974354029af1efbaf284f331dc03ac11e37979b1b"
+          }
+        ],
+        "job_id": "1a1b3437276-fc05-818f",
+        "no_retry": true
+      },
+      "next_channel": "当前APKMirror路径终止；不得通过浏览器、身份、端点、CDN、代理、TLS/DNS或nonce调整处理挑战。",
+      "official_observed_version_name": "5.110.0",
+      "official_store_url": "https://play.google.com/store/apps/details?id=com.ihg.apps.android&hl=en_US&gl=US",
+      "official_version_reference_kind": "INHERITED_S22_METADATA_VIA_S44_NOT_CURRENT_ARTIFACT",
+      "package": "com.ihg.apps.android",
+      "previous_candidate_reference": {
+        "path": "launcher_public_delivery_r1/SOURCE_GAPS_46.json",
+        "sha256": "8d5b1c370cff2fc12663f74f64afd0a28659b687eec5730b49049d6e8cc0e529"
+      },
+      "production_ready": false,
+      "public_same_package_delivery_state": "ACTUAL_403_CHALLENGE_LANE_TERMINATED",
+      "publisher_direct_APK_state": "NOT_VERIFIED_IN_EXAMINED_PUBLISHER_PAGES"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "actual_upgrade_job": "1a1b120faf4-fc05-760d",
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": true,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "a5fdbfa8a769a9f2041c7f6706a52b8d981c0f12a6f10e989a9f583a43ed217d"
+      ],
+      "current_effective_version_code": 102918,
+      "current_version_name": "16.1.50",
+      "gap": "已实际正常升级；来源/正常签名与安装身份有回执，最新版业务回归仍未完成。",
+      "label_reference": "JD.COM",
+      "latest_usable_version_qualified": false,
+      "next_channel": "按当前已装版本推进业务回归；保留原实际来源和旧版本。",
+      "official_observed_version_name": "16.1.50",
+      "package": "com.jingdong.app.mall",
+      "production_ready": false,
+      "public_same_package_delivery_state": "ACTUAL_COMPLETE_VENDOR_SIGNED_ARTIFACT_INSTALLED",
+      "publisher_direct_APK_state": "SEE_ORIGINAL_QUALIFIED_DELIVERY_REFERENCE_NOT_RECLASSIFIED",
+      "qualification_reference": {
+        "bytes": 2262,
+        "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-jd-resume-s9/com.jingdong.app.mall-signature-verify-r1/result.json",
+        "sha256": "cc8a08d6d7cb8259c7cb01779cce8ab710906c1243000fab74f844b634e4cd6e"
+      }
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "actual_upgrade_job": "1a1b083d024-fc05-7115",
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": true,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "0b66624117621bb9bc3e7d12a1fe5436794cf8999b0253d9ff9bec71e0932178"
+      ],
+      "current_effective_version_code": 3067100,
+      "current_version_name": "3.06.71",
+      "gap": "已实际正常升级；来源/正常签名与安装身份有回执，最新版业务回归仍未完成。",
+      "label_reference": "贝壳找房",
+      "latest_usable_version_qualified": false,
+      "next_channel": "按当前已装版本推进业务回归；保留原实际来源和旧版本。",
+      "official_observed_version_name": "3.06.71",
+      "package": "com.lianjia.beike",
+      "production_ready": false,
+      "public_same_package_delivery_state": "ACTUAL_COMPLETE_VENDOR_SIGNED_ARTIFACT_INSTALLED",
+      "publisher_direct_APK_state": "SEE_ORIGINAL_QUALIFIED_DELIVERY_REFERENCE_NOT_RECLASSIFIED",
+      "qualification_reference": {
+        "canonical_sha256": "df0e24f57b035ca349f03a461c350afea3d891b99d0244e407696974e2411bfb",
+        "result": {
+          "bytes": 2153,
+          "held_and_path_unchanged": true,
+          "path": "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/com.lianjia.beike-signature-verify-r1/result.json",
+          "sha256": "4a814af640517a402828315731ce022d8350fdca13bd2cbad1246a300f9c01bd",
+          "stat": {
+            "ctime_ns": 1793959491037209162,
+            "dev": 66306,
+            "gid": 0,
+            "ino": 41470579,
+            "mode": 33152,
+            "mtime_ns": 1793959491037209162,
+            "nlink": 1,
+            "size": 2153,
+            "uid": 0
+          }
+        },
+        "verification_outputs": [
+          {
+            "bytes": 18483,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/com.lianjia.beike-signature-verify-r1/apksigner.stdout",
+            "sha256": "e9527b81388118ab04043cabfc7a5b8c1f6c8c900aed048d524b5183c91f0808",
+            "stat": {
+              "ctime_ns": 1793959490846613326,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 41470575,
+              "mode": 33152,
+              "mtime_ns": 1793959490846613326,
+              "nlink": 1,
+              "size": 18483,
+              "uid": 0
+            }
+          },
+          {
+            "bytes": 0,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/com.lianjia.beike-signature-verify-r1/apksigner.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stat": {
+              "ctime_ns": 1793959490846613326,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 41470576,
+              "mode": 33152,
+              "mtime_ns": 1793959490846613326,
+              "nlink": 1,
+              "size": 0,
+              "uid": 0
+            }
+          },
+          {
+            "bytes": 7073,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/com.lianjia.beike-signature-verify-r1/aapt-badging.stdout",
+            "sha256": "dc2b005038158dd7665f2d762fb6765a94117bde4dbdae9917395297553b0f60",
+            "stat": {
+              "ctime_ns": 1793959490857358312,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 41470577,
+              "mode": 33152,
+              "mtime_ns": 1793959490857358312,
+              "nlink": 1,
+              "size": 7073,
+              "uid": 0
+            }
+          },
+          {
+            "bytes": 0,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/com.lianjia.beike-signature-verify-r1/aapt-badging.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stat": {
+              "ctime_ns": 1793959490857358312,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 41470578,
+              "mode": 33152,
+              "mtime_ns": 1793959490857358312,
+              "nlink": 1,
+              "size": 0,
+              "uid": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "actual_failed_public_request": {
+        "details": {
+          "APK_downloads": 0,
+          "Main_actions": 0,
+          "descriptor_identities_restored": true,
+          "durable_exit_code": 1,
+          "entry_requests": 1,
+          "job_id": "1a1b2f15943-fc05-803c",
+          "normal_UID": 1000,
+          "production_ready": false,
+          "redirects": 0,
+          "retries": 0,
+          "schema": "pocket4-root-s44-actual-failure-validation-v1",
+          "second_entry_requested": false,
+          "state": "BLOCKED_HTTP_403_ORIGINAL_FAILURE_PRESERVED",
+          "stdout_bytes": 2206,
+          "stdout_sha256": "a1a8464db80c7432192f9c756cc71e52a196945d8a6a45606de1a1b1bcd17040",
+          "terminal_bytes": 728,
+          "terminal_sha256": "7470c748caf5d290def22ed58b1350b65679b634a713024a53e765d3562efcd0"
+        },
+        "source": "official_source_scripts/s44_international_delivery_metadata/candidate-r1/actual/root-validation.actual.json"
+      },
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 3,
+      "current_PM_certificate_sha256": [
+        "fdfc71760356174de3c1405a54b772efd2564a4dde91eae7eff3a02de0ffd059"
+      ],
+      "current_effective_version_code": 671,
+      "current_version_name": "10.79.0",
+      "gap": "S44普通UID1000页面请求HTTP403，已停且保留失败；其他合法交付未被排除。",
+      "inherited_source_evidence": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The actual official Chinese page Android button links to a.app.qq.com/o/simple.jsp?pkgname=com.marriott.mrt.",
+          "url": "https://www.marriott.com.cn/mobileapp.mi",
+          "web_reference_ids": [
+            "turn145view0"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The same-package public market page displays version 11.15.0 and 231.37 MB. It also advertises the separate Tencent Appstore bootstrap; the latter is not a Marriott artifact.",
+          "url": "https://a.app.qq.com/o/simple.jsp?pkgname=com.marriott.mrt",
+          "web_reference_ids": [
+            "turn146view4"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The official market page displays 11.15.0, updated 2026-10-30, Marriott developer and 上海姜根酒店管理有限公司 operator, but the rendered download control exposes no complete APK URL.",
+          "url": "https://sj.qq.com/appdetail/com.marriott.mrt",
+          "web_reference_ids": [
+            "turn149view0"
+          ]
+        }
+      ],
+      "label_reference": "Marriott",
+      "latest_usable_version_qualified": false,
+      "next_channel": "正常官方商店交付，或另行审阅公开同包完整APK/split集合；逐件实际验签。",
+      "official_observed_version_name": "10.81.0",
+      "official_store_url": "https://play.google.com/store/apps/details?id=com.marriott.mrt&hl=en_US&gl=US",
+      "official_version_reference_kind": "INHERITED_S22_METADATA_VIA_S44_NOT_CURRENT_ARTIFACT",
+      "package": "com.marriott.mrt",
+      "production_ready": false,
+      "public_same_package_delivery_state": "UNKNOWN_NOT_EXCLUDED",
+      "publisher_direct_APK_state": "NOT_VERIFIED_IN_EXAMINED_PUBLISHER_PAGES"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 4,
+      "current_PM_certificate_sha256": [
+        "cf257fbcc5b17b162a2fb79a7d76f5aabd0e1c101b86838e14d0151f2ee7bcb0"
+      ],
+      "current_effective_version_code": 260172,
+      "current_version_name": "13.28",
+      "gap": "厂商直链尚未核实；这不排除其他正常公开同包签名包。此前官方商店信息不是完整 APK。",
+      "inherited_source_evidence": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "textfree.us normally redirects here. The vendor page describes Android/Play availability and QR download controls, but no complete APK URL appears in retrieved content.",
+          "url": "https://textfree.com/",
+          "web_reference_ids": [
+            "turn148view3"
+          ]
+        }
+      ],
+      "label_reference": "TextFree",
+      "latest_usable_version_qualified": false,
+      "next_channel": "正常官方商店交付，或另行审阅公开同包完整APK/split集合；逐件实际验签。",
+      "official_observed_version_name": "13.28.1",
+      "official_store_url": "https://play.google.com/store/apps/details?id=com.pinger.textfree&hl=en_US&gl=US",
+      "official_version_reference_kind": "INHERITED_S22_METADATA_VIA_S44_NOT_CURRENT_ARTIFACT",
+      "package": "com.pinger.textfree",
+      "production_ready": false,
+      "public_same_package_delivery_state": "UNKNOWN_NOT_EXCLUDED",
+      "publisher_direct_APK_state": "NOT_VERIFIED_IN_EXAMINED_PUBLISHER_PAGES"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "actual_upgrade_job": "1a1b0943dea-fc05-7179",
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": true,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "b48f75514e956be6bd7d56f1701136c8d76f19459bd724ac52390a572bc0ecbf"
+      ],
+      "current_effective_version_code": 75300,
+      "current_version_name": "7.53.0",
+      "gap": "已实际正常升级；来源/正常签名与安装身份有回执，最新版业务回归仍未完成。",
+      "label_reference": "Air China",
+      "latest_usable_version_qualified": false,
+      "next_channel": "按当前已装版本推进业务回归；保留原实际来源和旧版本。",
+      "official_observed_version_name": "7.53.0",
+      "package": "com.rytong.airchina",
+      "production_ready": false,
+      "public_same_package_delivery_state": "ACTUAL_COMPLETE_VENDOR_SIGNED_ARTIFACT_INSTALLED",
+      "publisher_direct_APK_state": "SEE_ORIGINAL_QUALIFIED_DELIVERY_REFERENCE_NOT_RECLASSIFIED",
+      "qualification_reference": {
+        "canonical_sha256": "2f6d7c4e46f23221f00bf985e25ccfca69732240c3ec55baaed87848494c1f09",
+        "result": {
+          "bytes": 2222,
+          "held_and_path_unchanged": true,
+          "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.rytong.airchina-signature-verify-r1/result.json",
+          "sha256": "47c9a97ba0394c1eb360e7b06264926cc961d11f4a2f9f48962742f855cc8333",
+          "stat": {
+            "ctime_ns": 1793962026464336343,
+            "dev": 66306,
+            "gid": 0,
+            "ino": 57324816,
+            "mode": 33152,
+            "mtime_ns": 1793962026464336343,
+            "nlink": 1,
+            "size": 2222,
+            "uid": 0
+          }
+        },
+        "verification_outputs": [
+          {
+            "bytes": 969,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.rytong.airchina-signature-verify-r1/apksigner.stdout",
+            "sha256": "c0fa4bb8eba81d050234f624a4608793881dc2e18ae74f4da3759a6037fc677d",
+            "stat": {
+              "ctime_ns": 1793962026276905134,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 57324812,
+              "mode": 33152,
+              "mtime_ns": 1793962026276905134,
+              "nlink": 1,
+              "size": 969,
+              "uid": 0
+            }
+          },
+          {
+            "bytes": 0,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.rytong.airchina-signature-verify-r1/apksigner.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stat": {
+              "ctime_ns": 1793962026276905134,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 57324813,
+              "mode": 33152,
+              "mtime_ns": 1793962026276905134,
+              "nlink": 1,
+              "size": 0,
+              "uid": 0
+            }
+          },
+          {
+            "bytes": 7234,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.rytong.airchina-signature-verify-r1/aapt-badging.stdout",
+            "sha256": "1cf033e235496ab08860891efba5cab4c983b237ab2c54bdf1ac1bc0aab9d3ed",
+            "stat": {
+              "ctime_ns": 1793962026283179599,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 57324814,
+              "mode": 33152,
+              "mtime_ns": 1793962026283179599,
+              "nlink": 1,
+              "size": 7234,
+              "uid": 0
+            }
+          },
+          {
+            "bytes": 0,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.rytong.airchina-signature-verify-r1/aapt-badging.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stat": {
+              "ctime_ns": 1793962026283179599,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 57324815,
+              "mode": 33152,
+              "mtime_ns": 1793962026283179599,
+              "nlink": 1,
+              "size": 0,
+              "uid": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "actual_upgrade_job": "1a1b092eb36-fc05-7170",
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": true,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "b48f75514e956be6bd7d56f1701136c8d76f19459bd724ac52390a572bc0ecbf"
+      ],
+      "current_effective_version_code": 239,
+      "current_version_name": "9.5.16",
+      "gap": "已实际正常升级；来源/正常签名与安装身份有回执，最新版业务回归仍未完成。",
+      "label_reference": "China Eastern Airlines (CEA)",
+      "latest_usable_version_qualified": false,
+      "next_channel": "按当前已装版本推进业务回归；保留原实际来源和旧版本。",
+      "official_observed_version_name": "9.5.16",
+      "package": "com.rytong.ceair",
+      "production_ready": false,
+      "public_same_package_delivery_state": "ACTUAL_COMPLETE_VENDOR_SIGNED_ARTIFACT_INSTALLED",
+      "publisher_direct_APK_state": "SEE_ORIGINAL_QUALIFIED_DELIVERY_REFERENCE_NOT_RECLASSIFIED",
+      "qualification_reference": {
+        "canonical_sha256": "2d01623642a90464da7c2b5baea2ca1ff73b4e1683d8bc491d0c3b76c916c564",
+        "result": {
+          "bytes": 2140,
+          "held_and_path_unchanged": true,
+          "path": "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/com.rytong.ceair-signature-verify-r1/result.json",
+          "sha256": "d1085499cee50e625c11e617257e2bae58cc192cb297935e3c6d4d61c8d6dd46",
+          "stat": {
+            "ctime_ns": 1793961703682780878,
+            "dev": 66306,
+            "gid": 0,
+            "ino": 53398269,
+            "mode": 33152,
+            "mtime_ns": 1793961703682780878,
+            "nlink": 1,
+            "size": 2140,
+            "uid": 0
+          }
+        },
+        "verification_outputs": [
+          {
+            "bytes": 970,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/com.rytong.ceair-signature-verify-r1/apksigner.stdout",
+            "sha256": "bfce87c4d09b297047519ca74a0dff538e09a4950fe53550d6a213931effb521",
+            "stat": {
+              "ctime_ns": 1793961703464584885,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 53398265,
+              "mode": 33152,
+              "mtime_ns": 1793961703464584885,
+              "nlink": 1,
+              "size": 970,
+              "uid": 0
+            }
+          },
+          {
+            "bytes": 0,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/com.rytong.ceair-signature-verify-r1/apksigner.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stat": {
+              "ctime_ns": 1793961703464584885,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 53398266,
+              "mode": 33152,
+              "mtime_ns": 1793961703464584885,
+              "nlink": 1,
+              "size": 0,
+              "uid": 0
+            }
+          },
+          {
+            "bytes": 13342,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/com.rytong.ceair-signature-verify-r1/aapt-badging.stdout",
+            "sha256": "23b0567f1c9315601beb33065d035413900981b4b3d42a85890ff3e8139b5944",
+            "stat": {
+              "ctime_ns": 1793961703478626381,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 53398267,
+              "mode": 33152,
+              "mtime_ns": 1793961703478626381,
+              "nlink": 1,
+              "size": 13342,
+              "uid": 0
+            }
+          },
+          {
+            "bytes": 0,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/com.rytong.ceair-signature-verify-r1/aapt-badging.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stat": {
+              "ctime_ns": 1793961703478626381,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 53398268,
+              "mode": 33152,
+              "mtime_ns": 1793961703478626381,
+              "nlink": 1,
+              "size": 0,
+              "uid": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "8b6737279ed0a9839ec3c4b256256e68eb1e5f7e1386b0dc6c38eb7a04742bbd"
+      ],
+      "current_effective_version_code": 800830002,
+      "current_version_name": "8.83.2",
+      "gap": "已取得候选与当前合法签名不匹配；不能绕过检查、卸载替换或主动开位置权限。",
+      "label_reference": "美团外卖",
+      "latest_usable_version_qualified": false,
+      "next_channel": "正常同包当前合法签名/有效签名轮换交付；实际完整性仍必须通过。",
+      "official_observed_version_name": null,
+      "package": "com.sankuai.meituan.takeoutnew",
+      "prior_reference": {
+        "candidate_is_not_latest_observed_store_version": true,
+        "current_PM_signer_sha256": [
+          "8b6737279ed0a9839ec3c4b256256e68eb1e5f7e1386b0dc6c38eb7a04742bbd"
+        ],
+        "latest_usable_business_qualified": false,
+        "proactive_location_grant_permitted": false,
+        "raw_prior_evidence_locally_available": false,
+        "raw_prior_evidence_status": "UNAVAILABLE_LOCALLY_REFERENCE_RETAINED_NOT_RETRIEVED",
+        "reference": {
+          "complete_APK": {
+            "bytes": 66055667,
+            "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.sankuai.meituan.takeoutnew.apk",
+            "sha256": "1fa4c8610d254a72cbd4f111f840d77466e3ed6c51a5f454cdb29bcc32eb6424"
+          },
+          "current_signer_matches": false,
+          "evidence_ref": {
+            "bytes": 7591,
+            "path": "reference/launcher-candidate-verifications-r2.json",
+            "sha256": "4c7d115102da373d43ae4955985c4c4ea4e9babea83cc37721ec65976470d4fb"
+          },
+          "latest_official_eligible_artifact_established": false,
+          "manifest": {
+            "min_sdk": "21",
+            "native_abis": [
+              "arm64-v8a"
+            ],
+            "package": "com.sankuai.meituan.takeoutnew",
+            "target_sdk": "30",
+            "version_code": 800840002,
+            "version_name": "8.84.2"
+          },
+          "matches_latest_observed_store_version": false,
+          "signature_verified": true,
+          "signer_certificate_sha256": [
+            "73a611c3a01dc6e11388873daeee1e556ad9e5768e5c222055f508a24c3a8215"
+          ],
+          "source_url": "https://api.mobile.meituan.com/appupdate/download/simple/waimai?channel=1013&scheme=null"
+        },
+        "signature_or_integrity_bypass_permitted": false,
+        "source_matrix": {
+          "bytes": 259476,
+          "path": "reference/remaining34-source-actions.json",
+          "sha256": "7523031c7a1ef2e17d32d786512f8e06cfc39777f350a35b7987eededdfde6b4"
+        },
+        "state": "BLOCKED_CANDIDATE_SIGNER_MISMATCH"
+      },
+      "production_ready": false,
+      "public_same_package_delivery_state": "PRIOR_CANDIDATE_SIGNER_MISMATCH_OTHER_DELIVERY_UNKNOWN",
+      "publisher_direct_APK_state": "NOT_RECLASSIFIED_FROM_PRIOR_CANDIDATE_SOURCE"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "actual_upgrade_job": "1a1b10a9850-fc05-7547",
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": true,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "613cc829902938fe4074bbc839f1fcdd332640df9217b95c602bd590e82a7551"
+      ],
+      "current_effective_version_code": 1208001805,
+      "current_version_name": "8.0.18",
+      "gap": "已实际正常升级；来源/正常签名与安装身份有回执，最新版业务回归仍未完成。",
+      "label_reference": "DiDi",
+      "latest_usable_version_qualified": false,
+      "next_channel": "按当前已装版本推进业务回归；保留原实际来源和旧版本。",
+      "official_observed_version_name": "8.0.18",
+      "package": "com.sdu.didi.psnger",
+      "production_ready": false,
+      "public_same_package_delivery_state": "ACTUAL_COMPLETE_VENDOR_SIGNED_ARTIFACT_INSTALLED",
+      "publisher_direct_APK_state": "SEE_ORIGINAL_QUALIFIED_DELIVERY_REFERENCE_NOT_RECLASSIFIED",
+      "qualification_reference": {
+        "bytes": 2292,
+        "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-source-s12/com.sdu.didi.psnger-signature-verify-r1/result.json",
+        "sha256": "09aa65d6d338fe41750faea01450662bd12be888535db868166d50e03cc64be2"
+      }
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "actual_upgrade_job": "1a1b125038f-fc05-7639",
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": true,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "5182ae3b1b85337bb182cf24882449f84447ded18e296a747a9f6a0a2622512e"
+      ],
+      "current_effective_version_code": 410001,
+      "current_version_name": "41.0.0",
+      "gap": "已实际正常升级；来源/正常签名与安装身份有回执，最新版业务回归仍未完成。",
+      "label_reference": "抖音",
+      "latest_usable_version_qualified": false,
+      "next_channel": "按当前已装版本推进业务回归；保留原实际来源和旧版本。",
+      "official_observed_version_name": "41.0.0",
+      "package": "com.ss.android.ugc.aweme",
+      "production_ready": false,
+      "public_same_package_delivery_state": "ACTUAL_COMPLETE_VENDOR_SIGNED_ARTIFACT_INSTALLED",
+      "publisher_direct_APK_state": "SEE_ORIGINAL_QUALIFIED_DELIVERY_REFERENCE_NOT_RECLASSIFIED",
+      "qualification_reference": {
+        "bytes": 2504,
+        "path": "/home/alex/work/pocket4-official-source-receipts-20261106-s33/result.json",
+        "sha256": "1e7413b3fff71bcbd861d8f90372e314bfec1a9a0c9e104c71860ac65af91d69"
+      }
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "additional_evidence": [
+        {
+          "bytes": 25448,
+          "path": "official_source_scripts/s38_szzc_operator_signature/actual/stdout.original.json",
+          "sha256": "3ba6894d1d084f8d95b4ebfb342a3710990ce3b0aadf0e17710e9f608f8228a6"
+        },
+        {
+          "bytes": 35952,
+          "path": "official_source_scripts/s39_szzc_operator_manifest/local-reinterpretation-r1/derived-result.json",
+          "sha256": "9e3c0258dae647cb6f6af0ba0f0d02bd0d42e20ca23c4907c777a8ab46d873e2"
+        }
+      ],
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "d85bed4d2a7c08e1b6b5f0097d6c66a79a5b12b58d97e794d3b5c5bff2aeaf44"
+      ],
+      "current_effective_version_code": 327,
+      "current_version_name": "9.6.1",
+      "gap": "S36完整220579134B，S38实际同签名正常验签，S39原文解释为9.6.1/code327，与当前同版本且字节不同。",
+      "label_reference": "神州租车",
+      "latest_usable_version_qualified": false,
+      "newer_candidate_qualified": false,
+      "next_channel": "不为增加升级计数重装同版；等待正常新版本或按当前版本做真实回归。",
+      "official_observed_version_name": "9.6.1",
+      "package": "com.szzc",
+      "production_ready": false,
+      "public_same_package_delivery_state": "COMPLETE_SAME_VERSION_VENDOR_SIGNED_ARTIFACT_AVAILABLE",
+      "publisher_direct_APK_state": "PUBLIC_STORE_ARTIFACT_NORMAL_SIGNATURE_VERIFIED"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "actual_upgrade_job": "1a1b108c6f9-fc05-7530",
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": true,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "c5e9bc4c5cc7a34482c627cb9a76b88e30b509d0da3ba54a66274200e19c2743"
+      ],
+      "current_effective_version_code": 866,
+      "current_version_name": "10.69.0",
+      "gap": "已实际正常升级；来源/正常签名与安装身份有回执，最新版业务回归仍未完成。",
+      "label_reference": "淘宝",
+      "latest_usable_version_qualified": false,
+      "next_channel": "按当前已装版本推进业务回归；保留原实际来源和旧版本。",
+      "official_observed_version_name": "10.69.0",
+      "package": "com.taobao.taobao",
+      "production_ready": false,
+      "public_same_package_delivery_state": "ACTUAL_COMPLETE_VENDOR_SIGNED_ARTIFACT_INSTALLED",
+      "publisher_direct_APK_state": "SEE_ORIGINAL_QUALIFIED_DELIVERY_REFERENCE_NOT_RECLASSIFIED",
+      "qualification_reference": {
+        "bytes": 2300,
+        "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-source-s10/com.taobao.taobao-signature-verify-r1/result.json",
+        "sha256": "591b821fd20b0fd762ae5715a6c962bd951b406b4587b47cbc2320a8934073fe"
+      }
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "actual_upgrade_job": "1a1b09ac6ca-fc05-71a4",
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": true,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "0fe4ff85c215918396dadc7cd8ce6963339af33d37751a56e54c7206b63a3c7c"
+      ],
+      "current_effective_version_code": 3220,
+      "current_version_name": "8.0.80",
+      "gap": "已实际正常升级；来源/正常签名与安装身份有回执，最新版业务回归仍未完成。",
+      "label_reference": "WeChat",
+      "latest_usable_version_qualified": false,
+      "next_channel": "按当前已装版本推进业务回归；保留原实际来源和旧版本。",
+      "official_observed_version_name": "8.0.80",
+      "package": "com.tencent.mm",
+      "production_ready": false,
+      "public_same_package_delivery_state": "ACTUAL_COMPLETE_VENDOR_SIGNED_ARTIFACT_INSTALLED",
+      "publisher_direct_APK_state": "SEE_ORIGINAL_QUALIFIED_DELIVERY_REFERENCE_NOT_RECLASSIFIED",
+      "qualification_reference": {
+        "canonical_sha256": "fcd355fdcb19f8276c304e050d350473e99298080f8a310762e935ff9793b5b9",
+        "result": {
+          "bytes": 2219,
+          "held_and_path_unchanged": true,
+          "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.tencent.mm-signature-verify-r1/result.json",
+          "sha256": "09f5a6e8839e9063fc45b16e9f2b856264bcbb05626374b5377153eea637b338",
+          "stat": {
+            "ctime_ns": 1793962025386425191,
+            "dev": 66306,
+            "gid": 0,
+            "ino": 54053576,
+            "mode": 33152,
+            "mtime_ns": 1793962025386425191,
+            "nlink": 1,
+            "size": 2219,
+            "uid": 0
+          }
+        },
+        "verification_outputs": [
+          {
+            "bytes": 1066,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.tencent.mm-signature-verify-r1/apksigner.stdout",
+            "sha256": "db541503e5c582d18d03b33e330293e9f141b04049edf0e603ceb5e85a318689",
+            "stat": {
+              "ctime_ns": 1793962025169522487,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 54053572,
+              "mode": 33152,
+              "mtime_ns": 1793962025169522487,
+              "nlink": 1,
+              "size": 1066,
+              "uid": 0
+            }
+          },
+          {
+            "bytes": 0,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.tencent.mm-signature-verify-r1/apksigner.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stat": {
+              "ctime_ns": 1793962025169522487,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 54053573,
+              "mode": 33152,
+              "mtime_ns": 1793962025169522487,
+              "nlink": 1,
+              "size": 0,
+              "uid": 0
+            }
+          },
+          {
+            "bytes": 9379,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.tencent.mm-signature-verify-r1/aapt-badging.stdout",
+            "sha256": "43c231b2600905f8aa1163a78e0171752a41d9fddcf5d6f97e0f5c9b7ebb71de",
+            "stat": {
+              "ctime_ns": 1793962025185108287,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 54053574,
+              "mode": 33152,
+              "mtime_ns": 1793962025185108287,
+              "nlink": 1,
+              "size": 9379,
+              "uid": 0
+            }
+          },
+          {
+            "bytes": 0,
+            "held_and_path_unchanged": true,
+            "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.tencent.mm-signature-verify-r1/aapt-badging.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stat": {
+              "ctime_ns": 1793962025185108287,
+              "dev": 66306,
+              "gid": 0,
+              "ino": 54053575,
+              "mode": 33152,
+              "mtime_ns": 1793962025185108287,
+              "nlink": 1,
+              "size": 0,
+              "uid": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 10,
+      "current_PM_certificate_sha256": [
+        "4003231ab42feb8d955e62fdfaa4fad59567054b9c6bbc3d950299ddfc268392"
+      ],
+      "current_effective_version_code": 316108,
+      "current_version_name": "4.651.10003",
+      "gap": "公开分发页列出独立XAPK选项；尚无实际完整文件、split集合、code或正常签名证明。",
+      "inherited_source_evidence": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The publisher provides Google Play and App Store buttons routed through rides.sng.link.",
+          "url": "https://www.uber.com/global/en/ride/app/",
+          "web_reference_ids": [
+            "turn138view3"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The web tool reported a non-retryable 500/access failure after the ordinary publisher redirect; no APK was returned.",
+          "url": "https://rides.sng.link/Aw5zn/o4sf?_dl=uber%3A%2F%2Fhome&_forward_params=1&_smtype=3&pcn=ubercom-ride-app-page&pscn=wb_uber_chameleon_UBRdc2zsnpx54r68hu6kt50",
+          "web_reference_ids": [
+            "turn139view0"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The rider help page specifies Android 8 or later and Google Play installation. Driver-app requirements are a different product.",
+          "url": "https://help.uber.com/riders/article/downloading-the-rider-app-?nodeId=bd546eae-73e0-49e3-a2da-0dbfa2a1d526",
+          "web_reference_ids": [
+            "turn140search0"
+          ]
+        }
+      ],
+      "label_reference": "Uber",
+      "latest_usable_version_qualified": false,
+      "new_evidence": {
+        "candidate_id": "uber",
+        "no_artifact_obtained": true,
+        "page": "https://uber.en.uptodown.com/android/download",
+        "research": "RESEARCH.json"
+      },
+      "next_channel": "只读固定公开页面取得原始HTML/literal控制；另审完整交付，不安装分发商应用。",
+      "official_observed_version_name": null,
+      "official_store_url": "https://play.google.com/store/apps/details?id=com.ubercab&hl=en_US&gl=US",
+      "official_version_reference_kind": "INHERITED_S22_METADATA_VIA_S44_NOT_CURRENT_ARTIFACT",
+      "package": "com.ubercab",
+      "production_ready": false,
+      "public_same_package_delivery_state": "PUBLIC_SEPARATE_XAPK_OPTION_NORMAL_LITERAL_REQUEST_PENDING",
+      "publisher_direct_APK_state": "NOT_VERIFIED_IN_EXAMINED_PUBLISHER_PAGES"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 4,
+      "current_PM_certificate_sha256": [
+        "e833171fd602255f030ed251c64a9989c7eabc4ebe1c3d7b097ae0f9aea8f946"
+      ],
+      "current_effective_version_code": 3617,
+      "current_version_name": "4.2.98",
+      "gap": "厂商直链尚未核实；这不排除其他正常公开同包签名包。此前官方商店信息不是完整 APK。",
+      "inherited_source_evidence": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "Only a JavaScript-required shell was available to this text retrieval; no Android APK URL was exposed.",
+          "url": "https://www.united.com/en/us/fly/travel-experience/united-app.html",
+          "web_reference_ids": [
+            "turn145view3"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The official legacy path was not accessible through this web tool; its present download service is unverified.",
+          "url": "https://www.united.com/web/en-US/content/travel/wireless/download-apk/default.aspx",
+          "web_reference_ids": [
+            "turn138view2"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The actual rendered page is recommendations, including 中国联合航空 and other apps, rather than a United same-package APK listing.",
+          "url": "https://sj.qq.com/appdetail/com.united.mobile.android",
+          "web_reference_ids": [
+            "turn146view2"
+          ]
+        }
+      ],
+      "label_reference": "United Airlines",
+      "latest_usable_version_qualified": false,
+      "next_channel": "正常官方商店交付，或另行审阅公开同包完整APK/split集合；逐件实际验签。",
+      "official_observed_version_name": "4.2.102",
+      "official_store_url": "https://play.google.com/store/apps/details?id=com.united.mobile.android&hl=en_US&gl=US",
+      "official_version_reference_kind": "INHERITED_S22_METADATA_VIA_S44_NOT_CURRENT_ARTIFACT",
+      "package": "com.united.mobile.android",
+      "production_ready": false,
+      "public_same_package_delivery_state": "UNKNOWN_NOT_EXCLUDED",
+      "publisher_direct_APK_state": "NOT_VERIFIED_IN_EXAMINED_PUBLISHER_PAGES"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "actual_upgrade_job": "1a1b1031e3b-fc05-74e4",
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": true,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "dd3923e78df33f08b0fb4a533ab1e860425ca7f6777fbe14f85a6cf5687143d6"
+      ],
+      "current_effective_version_code": 83000,
+      "current_version_name": "8.30.0",
+      "gap": "已实际正常升级；来源/正常签名与安装身份有回执，最新版业务回归仍未完成。",
+      "label_reference": "拼多多",
+      "latest_usable_version_qualified": false,
+      "next_channel": "按当前已装版本推进业务回归；保留原实际来源和旧版本。",
+      "official_observed_version_name": "8.30.0",
+      "package": "com.xunmeng.pinduoduo",
+      "production_ready": false,
+      "public_same_package_delivery_state": "ACTUAL_COMPLETE_VENDOR_SIGNED_ARTIFACT_INSTALLED",
+      "publisher_direct_APK_state": "SEE_ORIGINAL_QUALIFIED_DELIVERY_REFERENCE_NOT_RECLASSIFIED",
+      "qualification_reference": {
+        "bytes": 2236,
+        "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-source-s6/com.xunmeng.pinduoduo-signature-verify-r1/result.json",
+        "sha256": "dbf86cacea6d84cc43c0c55770eb737db18f9ae27ab39e42a4ed385795426166"
+      }
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "actual_upgrade_job": "1a1b32567fe-fc05-80c6",
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": true,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "556246aaaf05f61c8bbb9587dfc0660e01f6c3c6813ec038d18684d3ab378bbe"
+      ],
+      "current_effective_version_code": 370,
+      "current_version_name": "9.5.20",
+      "gap": "已实际正常升级；来源/正常签名与安装身份有回执，最新版业务回归仍未完成。",
+      "label_reference": "ExpandableTextViewLibrary",
+      "latest_usable_version_qualified": false,
+      "next_channel": "按当前已装版本推进业务回归；保留原实际来源和旧版本。",
+      "official_observed_version_name": "9.5.20",
+      "package": "com.zhubajie.client",
+      "production_ready": false,
+      "public_same_package_delivery_state": "ACTUAL_COMPLETE_VENDOR_SIGNED_ARTIFACT_INSTALLED",
+      "publisher_direct_APK_state": "SEE_ORIGINAL_QUALIFIED_DELIVERY_REFERENCE_NOT_RECLASSIFIED",
+      "qualification_reference": null
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 4,
+      "current_PM_certificate_sha256": [
+        "4013b8087b27ab0d941658f0f8ac37a5efda05689dbc65cab91460889a0d9bed"
+      ],
+      "current_effective_version_code": 22850,
+      "current_version_name": "3.127.1",
+      "gap": "厂商直链尚未核实；这不排除其他正常公开同包签名包。此前官方商店信息不是完整 APK。",
+      "inherited_source_evidence": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The normal observed client request redirects to the iOS StreetEasy store page, which is not an Android artifact.",
+          "url": "https://streeteasy.com/mobile",
+          "web_reference_ids": [
+            "turn149view2"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "An older official page identifies Android Google Play; this is a normal channel reference, not current APK bytes.",
+          "url": "https://streeteasy.com/blog/streeteasy-mobile-app-updates/",
+          "web_reference_ids": [
+            "turn147search11"
+          ]
+        }
+      ],
+      "label_reference": "StreetEasy",
+      "latest_usable_version_qualified": false,
+      "next_channel": "正常官方商店交付，或另行审阅公开同包完整APK/split集合；逐件实际验签。",
+      "official_observed_version_name": "3.131.0",
+      "official_store_url": "https://play.google.com/store/apps/details?id=com.zillow.android.streeteasy&hl=en_US&gl=US",
+      "official_version_reference_kind": "INHERITED_S22_METADATA_VIA_S44_NOT_CURRENT_ARTIFACT",
+      "package": "com.zillow.android.streeteasy",
+      "production_ready": false,
+      "public_same_package_delivery_state": "UNKNOWN_NOT_EXCLUDED",
+      "publisher_direct_APK_state": "NOT_VERIFIED_IN_EXAMINED_PUBLISHER_PAGES"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "actual_upgrade_job": "1a1b11208ab-fc05-7582",
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": true,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "8155dc0644fed517e8ef6bef9718c363d0eb3eb2c22c06455044d88268bdcf0a"
+      ],
+      "current_effective_version_code": 2133,
+      "current_version_name": "8.97.4",
+      "gap": "已实际正常升级；来源/正常签名与安装身份有回执，最新版业务回归仍未完成。",
+      "label_reference": "携程旅行",
+      "latest_usable_version_qualified": false,
+      "next_channel": "按当前已装版本推进业务回归；保留原实际来源和旧版本。",
+      "official_observed_version_name": "8.97.4",
+      "package": "ctrip.android.view",
+      "production_ready": false,
+      "public_same_package_delivery_state": "ACTUAL_COMPLETE_VENDOR_SIGNED_ARTIFACT_INSTALLED",
+      "publisher_direct_APK_state": "SEE_ORIGINAL_QUALIFIED_DELIVERY_REFERENCE_NOT_RECLASSIFIED",
+      "qualification_reference": {
+        "bytes": 2243,
+        "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-ctrip-s13/ctrip.android.view-signature-verify-r1/result.json",
+        "sha256": "3b89d64f9d2f2c69868a0cf504cbc31c306161b8008dd39e8d6917e06c4489d0"
+      }
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 4,
+      "current_PM_certificate_sha256": [
+        "d8be425771a11f7a2b121cdb21a14710420f1caa1665eb554e9ff5ad337c91fd"
+      ],
+      "current_effective_version_code": 339,
+      "current_version_name": "7.6.0",
+      "gap": "厂商直链尚未核实；这不排除其他正常公开同包签名包。此前官方商店信息不是完整 APK。",
+      "inherited_source_evidence": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The current official ANA app page links to the normal Google Play entry.",
+          "url": "https://www.ana.co.jp/en/jp/serviceinfo/mobile/ana_app/",
+          "web_reference_ids": [
+            "turn148view2"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "Following the actual publisher link reaches the exact target package; no full APK is exposed.",
+          "url": "https://play.google.com/store/apps/details?hl=en&id=jp.co.ana.android.tabidachi",
+          "web_reference_ids": [
+            "turn149view4"
+          ]
+        }
+      ],
+      "label_reference": "ANA",
+      "latest_usable_version_qualified": false,
+      "next_channel": "正常官方商店交付，或另行审阅公开同包完整APK/split集合；逐件实际验签。",
+      "official_observed_version_name": "7.6.2",
+      "official_store_url": "https://play.google.com/store/apps/details?id=jp.co.ana.android.tabidachi&hl=en_US&gl=US",
+      "official_version_reference_kind": "INHERITED_S22_METADATA_VIA_S44_NOT_CURRENT_ARTIFACT",
+      "package": "jp.co.ana.android.tabidachi",
+      "production_ready": false,
+      "public_same_package_delivery_state": "UNKNOWN_NOT_EXCLUDED",
+      "publisher_direct_APK_state": "NOT_VERIFIED_IN_EXAMINED_PUBLISHER_PAGES"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "local_owner_built_QA",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "df1baddab9b5bf8ec8581a35c5294519511e3bbeb709ce14dfee5e873afa3e1b"
+      ],
+      "current_effective_version_code": 0,
+      "current_version_name": null,
+      "gap": "本地QA/fixture以固定源码、正常签名及真实身份合同为准，不虚构商店最新版。",
+      "label_reference": "Sidecar Verification",
+      "latest_usable_version_qualified": false,
+      "next_channel": "保留当前复现源码和有效合同；只按明确QA需求生成后继。",
+      "official_observed_version_name": null,
+      "package": "local.pocket4.fixture",
+      "production_ready": false,
+      "public_same_package_delivery_state": "NOT_A_PUBLIC_STORE_PRODUCT",
+      "publisher_direct_APK_state": "OWNER_SOURCE_AND_FIXED_BUILD_CONTRACT"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "framework_owned_test_shell",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+      ],
+      "current_effective_version_code": 1,
+      "current_version_name": "1.0",
+      "gap": "需与当前Android/framework源码及签名/权限合同匹配；商店同名包不是替代证据。",
+      "label_reference": "WebView Browser Tester",
+      "latest_usable_version_qualified": false,
+      "next_channel": "继续原合法framework构建/资源准入与运行验证；当前没有合格替代产物。",
+      "official_observed_version_name": null,
+      "package": "org.chromium.webview_shell",
+      "production_ready": false,
+      "public_same_package_delivery_state": "NOT_AN_INDEPENDENT_STORE_UPGRADE",
+      "publisher_direct_APK_state": "MATCHING_FRAMEWORK_SOURCE_BUILD_REQUIRED"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "local_owner_built_QA",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "df1808318c5ed4932aee812962be781f4946692074c998b06fbbbd0d8a3fa322"
+      ],
+      "current_effective_version_code": 1,
+      "current_version_name": "1.0",
+      "gap": "本地QA/fixture以固定源码、正常签名及真实身份合同为准，不虚构商店最新版。",
+      "label_reference": "Owned Editor Contract",
+      "latest_usable_version_qualified": false,
+      "next_channel": "保留当前复现源码和有效合同；只按明确QA需求生成后继。",
+      "official_observed_version_name": null,
+      "package": "org.droidloom.qa.editorcontract",
+      "production_ready": false,
+      "public_same_package_delivery_state": "NOT_A_PUBLIC_STORE_PRODUCT",
+      "publisher_direct_APK_state": "OWNER_SOURCE_AND_FIXED_BUILD_CONTRACT"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "classification": "upstream_open_source_service_or_IME",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": false,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "e4db1e9edff13629d07de4bbf8165fe9bd8557ab55092672da8e40dbe484ecd7"
+      ],
+      "current_effective_version_code": 114,
+      "current_version_name": "0.1.3-0-g048f581c",
+      "gap": "本次公开latest导航仍是当前release；已装字节与原官方asset引用匹配，运行回归仍待完成。",
+      "label_reference": "Fcitx5",
+      "latest_usable_version_qualified": false,
+      "next_channel": "保持当前x86_64 code114输入法；ARM64同release code112不是升级。",
+      "official_observed_version_name": "0.1.3",
+      "package": "org.fcitx.fcitx5.android",
+      "prior_reference": {
+        "byte_identity_rechecked_locally": true,
+        "install_performed_for_this_match": false,
+        "latest_release_requeried_now": false,
+        "latest_usable_business_qualified": false,
+        "raw_prior_evidence_locally_available": false,
+        "raw_prior_evidence_status": "UNAVAILABLE_LOCALLY_REFERENCE_RETAINED_NOT_RETRIEVED",
+        "reference": {
+          "asset": {
+            "browser_download_url": "https://github.com/fcitx5-android/fcitx5-android/releases/download/0.1.3/org.fcitx.fcitx5.android-0.1.3-0-g048f581c-x86_64-release.apk",
+            "digest": "sha256:aaeb569fc3e9e8ec532b0ea33be39ce77b143c8add824d172f17356ddc3b9ed2",
+            "name": "org.fcitx.fcitx5.android-0.1.3-0-g048f581c-x86_64-release.apk",
+            "size": 46106936
+          },
+          "business_compatibility_qualified": false,
+          "current_bound_full_APK_bytes_equal_official_asset_digest_and_length": true,
+          "evidence_ref": {
+            "bytes": 93112,
+            "path": "reference/remaining34-source-receipts/fcitx-release-latest.raw.json",
+            "sha256": "454172ad079b4e2588e08df9039d0bd2ab88e5bed45a224ce95ec5ecef505da2"
+          },
+          "fresh_cryptographic_APK_signature_verification_in_this_step": false,
+          "official_release_url": "https://github.com/fcitx5-android/fcitx5-android/releases/tag/0.1.3",
+          "published_at": "2026-07-26T10:38:52Z",
+          "release_tag": "0.1.3"
+        },
+        "source_matrix": {
+          "bytes": 259476,
+          "path": "reference/remaining34-source-actions.json",
+          "sha256": "7523031c7a1ef2e17d32d786512f8e06cfc39777f350a35b7987eededdfde6b4"
+        },
+        "state": "CURRENT_APK_BYTE_IDENTICAL_TO_PRIOR_OFFICIAL_RELEASE_REFERENCE"
+      },
+      "production_ready": false,
+      "public_same_package_delivery_state": "CURRENT_BYTES_EQUAL_PRIOR_OFFICIAL_RELEASE_ASSET",
+      "publisher_direct_APK_state": "OFFICIAL_PROJECT_RELEASE_ASSET_REFERENCE"
+    },
+    {
+      "absence_of_all_legal_public_delivery_proved": false,
+      "actual_upgrade_job": "1a1b117ada1-fc05-75ae",
+      "classification": "third_party_commercial",
+      "cleanup_eligible": false,
+      "completed_upgrade_in_this_round": true,
+      "current_APK_count": 1,
+      "current_PM_certificate_sha256": [
+        "93ba270f5521139ecafe4bb638ac5b1198bc548f62d9fd8f8580a079faf5910e"
+      ],
+      "current_effective_version_code": 9180300,
+      "current_version_name": "9.18.0",
+      "gap": "已实际正常升级；来源/正常签名与安装身份有回执，最新版业务回归仍未完成。",
+      "label_reference": "哔哩哔哩",
+      "latest_usable_version_qualified": false,
+      "next_channel": "按当前已装版本推进业务回归；保留原实际来源和旧版本。",
+      "official_observed_version_name": "9.18.0",
+      "package": "tv.danmaku.bili",
+      "production_ready": false,
+      "public_same_package_delivery_state": "ACTUAL_COMPLETE_VENDOR_SIGNED_ARTIFACT_INSTALLED",
+      "publisher_direct_APK_state": "SEE_ORIGINAL_QUALIFIED_DELIVERY_REFERENCE_NOT_RECLASSIFIED",
+      "qualification_reference": {
+        "bytes": 2086,
+        "path": "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/bilibili-signature-verify-r2/result.json",
+        "sha256": "cca312150f7252f94d4566ee7b572575a5619c13ce481e8f0574f238f7e8e6d6"
+      }
+    }
+  ],
+  "schema": "pocket4-all46-public-source-gaps-v2",
+  "scope": "46 membership rows from last native/framework resolver observation; latest installed identities from post-ZBJ scope",
+  "state": "LOCAL_RESEARCH_ONLY_NO_NEW_ARTIFACT_OR_MAIN_OBSERVATION",
+  "summary": {
+    "Launcher_rows": 46,
+    "actual_completed_upgrades": 12,
+    "commercial_apps": 29,
+    "commercial_not_upgraded": 17,
+    "deleted_bytes": 0,
+    "new_APK_downloads": 0,
+    "new_upgrades": 0,
+    "production_ready": 0,
+    "selected_new_metadata_candidates": 2
+  }
+}

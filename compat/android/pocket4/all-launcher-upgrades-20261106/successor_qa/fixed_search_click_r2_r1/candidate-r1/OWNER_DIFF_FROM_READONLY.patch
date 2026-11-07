@@ -1,0 +1,297 @@
+--- successor_qa/search_helper_readonly_inspect_r1/candidate-r1/owned_readonly_inspect_once.py
++++ successor_qa/fixed_search_click_r2_r1/candidate-r1/owned_fixed_search_click_once.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""One exact r2 readonly inspect over the unchanged owned QA adapter. No action or reconciliation."""
++"""One fixed search_click bound to actual completed r2 inspect. No retry or business-success assertion."""
+ import contextlib
+ import hashlib
+ import io
+@@ -22,7 +22,7 @@
+ LAUNCH_SCOPE_SHA = '54a669eb54fa0dcf6df5afcd17848af7511c2122623192051eb6370e42bfbb06'
+ RECORDER_ROOT = '/home/alex/work/pocket4-successor-qa-source-b34f158f88bbebf112840fd88df25d03/recorder'
+ TASK = 878
+-ROOT = '/home/alex/work/pocket4-beike-search-helper-r2-readonly-inspect-20261107-r1'
++ROOT = '/home/alex/work/pocket4-beike-r2-fixed-search-click-20261107-r1'
+ ADAPTER = {'path': '/home/alex/work/pocket4-successor-qa-build-source-362bdb6f45eeb344b3584aa998cb03e1/qa_adapter.py', 'bytes': 31253, 'sha256': '15559f9f1cd59bb1e9540251d4270a4f37a9e229bf86d9ec1e2f9b65d625692f'}
+ HELPER_MANIFEST = '0bd7c10043f46063fdbf46e19a48e40430c02f3373d697ad7a44af8ad64b8489'
+ BUILD = '/home/alex/work/pocket4-successor-qa-build-362bdb6f45eeb344b3584aa998cb03e1/build-result.json'
+@@ -44,7 +44,16 @@
+ ALL_PACKAGES = ['com.Hyatt.hyt', 'com.MobileTicket', 'com.amazon.mShop.android.shopping', 'com.android.calendar', 'com.android.camera2', 'com.android.contacts', 'com.android.deskclock', 'com.android.dialer', 'com.android.documentsui', 'com.android.gallery3d', 'com.android.messaging', 'com.android.quicksearchbox', 'com.android.settings', 'com.android.threadnetwork.demoapp', 'com.bestbuy.android', 'com.ehi.national.mobile', 'com.enflick.android.TextNow', 'com.example.ndk_tests', 'com.google.android.gms', 'com.hertz.android.digital', 'com.hilton.android.hhonors', 'com.ihg.apps.android', 'com.jingdong.app.mall', 'com.lianjia.beike', 'com.marriott.mrt', 'com.pinger.textfree', 'com.rytong.airchina', 'com.rytong.ceair', 'com.sankuai.meituan.takeoutnew', 'com.sdu.didi.psnger', 'com.ss.android.ugc.aweme', 'com.szzc', 'com.taobao.taobao', 'com.tencent.mm', 'com.ubercab', 'com.united.mobile.android', 'com.xunmeng.pinduoduo', 'com.zhubajie.client', 'com.zillow.android.streeteasy', 'ctrip.android.view', 'jp.co.ana.android.tabidachi', 'local.pocket4.actions.v2', 'local.pocket4.fixture', 'org.chromium.webview_shell', 'org.droidloom.qa.editorcontract', 'org.droidloom.qa.successor.p8f89f253350ba2fa.r1', 'org.droidloom.qa.successor.p8f89f253350ba2fa.r2', 'org.fcitx.fcitx5.android', 'tv.danmaku.bili']
+ INSTALLED_HELPER = {'apk_sha256': '968c23aac929130a76dfa49d796fbe5264c073f805b7f048b68737e427d96372', 'base_apk': '/data/app/~~JXDsFn3iELFB7Qsu2biSdg==/org.droidloom.qa.successor.p8f89f253350ba2fa.r2-Cena3iBWf04tEYE0_iVnsA==/base.apk', 'bytes': 41104, 'held_file': {'bytes': 41104, 'device': 1811, 'gid': 1000, 'inode': 656461, 'mode': 33188, 'mtime_ns': 1794009719346538707, 'nlink': 1, 'uid': 1000}, 'package': 'org.droidloom.qa.successor.p8f89f253350ba2fa.r2', 'signer_bound_by_exact_signed_apk_bytes': 'f5eb5f24311fb19187b37219db272837d2d68632d9e8b855a89b2b6518904143', 'uid': 10167}
+ INSTALLED_HELPER_SCOPE_ROW = {'apks': [{'bytes': 41104, 'file': {'st_ctime_ns': 1794009719346538707, 'st_dev': 1811, 'st_gid': 1000, 'st_ino': 656461, 'st_mode': 33188, 'st_mtime_ns': 1794009719346538707, 'st_nlink': 1, 'st_size': 41104, 'st_uid': 1000}, 'path': '/data/app/~~JXDsFn3iELFB7Qsu2biSdg==/org.droidloom.qa.successor.p8f89f253350ba2fa.r2-Cena3iBWf04tEYE0_iVnsA==/base.apk', 'sha256': '968c23aac929130a76dfa49d796fbe5264c073f805b7f048b68737e427d96372'}], 'code_path': '/data/app/~~JXDsFn3iELFB7Qsu2biSdg==/org.droidloom.qa.successor.p8f89f253350ba2fa.r2-Cena3iBWf04tEYE0_iVnsA==', 'data_directories': {'user': {'device': 1811, 'gid': 10167, 'inode': 143016, 'status': 'PRESENT', 'uid': 10167}, 'user_de': {'device': 1811, 'gid': 10167, 'inode': 152887, 'status': 'PRESENT', 'uid': 10167}}, 'fresh_signature_verification': False, 'package': 'org.droidloom.qa.successor.p8f89f253350ba2fa.r2', 'package_manager_certificate_sha256': ['f5eb5f24311fb19187b37219db272837d2d68632d9e8b855a89b2b6518904143'], 'uid': 10167, 'version_code': 1}
+-FIXED_REQUEST = {'schema': 'pocket4-fixed-r2-readonly-inspect-request-v1', 'kind': 'plan', 'step': 'r2-readonly-inspect-01', 'payload_text': '{"nonces":{"after":"7d1fb5b142df41e0a238ea4d0de4d7aa","before":"c20cae3e0baa4b0a8a329afba5fb11a6","inspect":"8598a0f4db21458f9a4a3924386b8ed1"},"operation":"inspect","schema":1}\n', 'payload_sha256': '9f9b34d4b176c847fa754caea7c127a398dad139cd4aa46a192b29586b2fc575'}
++FIXED_REQUEST = {'schema': 'pocket4-fixed-r2-search-click-request-v1', 'kind': 'plan', 'step': 'r2-fixed-search-click-01', 'payload_text': '{"nonces":{"action":"c9df0017d7a64731b9e27df9973ac928","after":"8aa4e9f3aa2e4556b22dd0ca7c10f3ed","before":"2dcf1b82a4f34e4b974beb48d4156d19","inspect":"1396fd1e88454afdabba7b73a1bb8a96"},"operation":"search_click","schema":1,"selector":{"class":"android.widget.TextView","resource_id":"com.lianjia.beike:id/tv_nav_right_search_text","text":"\\u641c\\u7d22"}}\n', 'payload_sha256': '31e03eacb0ef1a13b85b42146c061b140e2a99f3d28344aba87bcb6dfdda90e8'}
++INSPECT_INPUTS_BOUND = True
++INSPECT_OWNER = {'path': '/home/alex/work/pocket4-beike-search-helper-r2-readonly-inspect-20261107-r1/owned_readonly_inspect_once.py', 'bytes': 37462, 'sha256': 'a7734300638acbd93535b2bdf03df8af2bf186e782cba47809bab058e5379ab1'}
++INSPECT_REQUEST = {'path': '/home/alex/work/pocket4-beike-search-helper-r2-readonly-inspect-20261107-r1/request.json', 'bytes': 405, 'sha256': 'a800f1eb0bef99f1bb6ad6fd4d22cc349c68bd3a3d9baa3d523d74de82412acc'}
++INSPECT_JOB = '1a1b35f9774-fc05-827f'
++INSPECT_STDOUT = {'path': '/home/alex/work/pocket4-beike-r2-fixed-search-click-20261107-r1/inspect.stdout.original.json', 'bytes': 24661, 'sha256': '7e4c812377d3562ad9fd236899ba151c2bb11772672c3f04956e02a469d487ed'}
++INSPECT_TERMINAL = {'path': '/home/alex/work/pocket4-beike-r2-fixed-search-click-20261107-r1/inspect.terminal.original.json', 'bytes': 733, 'sha256': 'e58b70b49e0a9e61be8d7dcfe72517652cedc8e890f135f618c9558b3c70b6f0'}
++INSPECT_RESULT = {'bytes': 6362, 'path': '/home/alex/work/pocket4-successor-qa-flow-b6de2bd4f04bcd572a074ef984ba7dbe/steps/r2-readonly-inspect-01/result.json', 'sha256': 'e9537722eab7ef9e575597d1c420549388b9540ac348cab472409dc699e8ab1a'}
++INSPECT_JOINT = {'bytes': 24390, 'path': '/home/alex/work/pocket4-beike-search-helper-r2-readonly-inspect-20261107-r1/result-a800f1eb0bef99f1bb6ad6fd4d22cc349c68bd3a3d9baa3d523d74de82412acc.json', 'sha256': '58607e7ab4d3463ac50f7d915b4c886ea7286d57cd6ea77a9fd8d392990aed47'}
++INSPECT_WIRE_SHA = 'c44cfe0deb683261c272029d938b2ae13d41bf94b09243130a08b3ff70785223'
+ SELF = REQUEST = None
+ 
+ 
+@@ -97,13 +106,14 @@
+ 
+ def entry(mode):
+     global SELF, REQUEST
++    need(INSPECT_INPUTS_BOUND is True and FIXED_REQUEST is not None, 'ACTUAL_R2_INSPECT_AND_ACTION_REQUEST_NOT_YET_BOUND')
+     need(os.getuid() == os.geteuid() == 0 and len(sys.argv) == 10 and sys.argv[1] == mode and
+          sys.argv[2] == '--source-sha256' and re.fullmatch('[0-9a-f]{64}', sys.argv[3]) and
+          sys.argv[4] == '--source-bytes' and sys.argv[5].isdigit() and
+          sys.argv[6] == '--request-sha256' and re.fullmatch('[0-9a-f]{64}', sys.argv[7]) and
+          sys.argv[8] == '--request-bytes' and sys.argv[9].isdigit() and 0 < int(sys.argv[9]) <= 65536,
+          'EXACT_ROOT_FIXED_SOURCE_AND_PER_STEP_INPUT')
+-    need(str(Path(__file__).resolve()) == ROOT + '/owned_readonly_inspect_once.py', 'REAL_FIXED_R2_READONLY_ENTRY_LOCATION')
++    need(str(Path(__file__).resolve()) == ROOT + '/owned_fixed_search_click_once.py', 'REAL_FIXED_R2_SEARCH_CLICK_ENTRY_LOCATION')
+     SELF = {'path': str(Path(__file__).resolve()), 'bytes': int(sys.argv[5]), 'sha256': sys.argv[3]}
+     REQUEST = {'path': ROOT + '/request.json', 'bytes': int(sys.argv[9]), 'sha256': sys.argv[7]}
+     os.umask(0o077)
+@@ -115,7 +125,7 @@
+ def outer_request(raw, core):
+     value = core.document(raw)
+     need(set(value) == {'schema', 'kind', 'step', 'payload_text', 'payload_sha256'} and
+-         value == FIXED_REQUEST and value['schema'] == 'pocket4-fixed-r2-readonly-inspect-request-v1' and value['kind'] == 'plan' and
++         value == FIXED_REQUEST and value['schema'] == 'pocket4-fixed-r2-search-click-request-v1' and value['kind'] == 'plan' and
+          type(value['step']) is str and re.fullmatch('[A-Za-z0-9][A-Za-z0-9_-]{0,63}', value['step']) and
+          type(value['payload_text']) is str and re.fullmatch('[0-9a-f]{64}', value['payload_sha256']),
+          'CLOSED_FIXED_UI_REQUEST_NO_COMMAND_OR_PATH_PARAMETERS')
+@@ -130,8 +140,9 @@
+ def declared_request(raw, core, adapter, qa):
+     request, body, payload = outer_request(raw, core)
+     adapter.validate_plan(payload, qa)
+-    need(payload['operation'] == 'inspect', 'ONLY_ONE_COMPILED_READONLY_INSPECT')
+-    return request, body, payload, False
++    need(payload['operation'] == 'search_click' and payload['selector'] == qa.SEARCH_SELECTOR,
++         'ONLY_THE_COMPILED_FIXED_BEIKE_SEARCH_CLICK')
++    return request, body, payload, True
+ 
+ 
+ def write_once(base, path, raw):
+@@ -205,8 +216,9 @@
+         '--flow-dir', FLOW, '--helper-uid', str(HELPER_UID)]
+ 
+ 
++
+ def verify_original(base, core, request, payload, mutation, raw, scope, selected):
+-    need(mutation is False and request['kind'] == 'plan' and payload['operation'] == 'inspect', 'READONLY_PLAN_ONLY')
++    need(mutation is True and request['kind'] == 'plan' and payload['operation'] == 'search_click', 'FIXED_SEARCH_CLICK_PLAN_ONLY')
+     need(raw.endswith(b'\n') and len(raw.splitlines()) == 1, 'ONE_ORIGINAL_ADAPTER_OR_CASE_RESULT')
+     result = core.document(raw); folder = Path(FLOW) / 'steps' / request['step']
+     saved_raw, _ = base.read(folder / 'result.json')
+@@ -230,8 +242,10 @@
+              result.get('installed_before') == result.get('installed_after') and
+              result['installed_before'].get('uid') == HELPER_UID and result['installed_before'].get('apk_sha256') == APK_SHA,
+              'FULL_ORIGINAL_OWNED_PLAN_RESTORATION_AND_HELPER_IDENTITY')
+-    need(result['installed_before'] == INSTALLED_HELPER and result['foreground_before'] == result['foreground_after'],
+-         'ACTUAL_NORMAL_INSTALL_IDENTITY_AND_FULL_READONLY_FOREGROUND_UNCHANGED')
++    need(result['installed_before'] == INSTALLED_HELPER, 'ACTUAL_NORMAL_INSTALL_IDENTITY_UNCHANGED')
++    need(result.get('search_click_acknowledged') is True and result.get('atomic_android_transaction') is False and
++         type(result.get('search_selection_sha256')) is str and re.fullmatch('[0-9a-f]{64}', result['search_selection_sha256']),
++         'EXACT_ORIGINAL_FIXED_SEARCH_ACK_AND_FULL_TREE_SELECTION')
+     return result, {'path': str(folder / 'result.json'), 'bytes': len(saved_raw), 'sha256': sha(saved_raw)}
+ 
+ 
+@@ -282,6 +296,7 @@
+     return outer, child, original_raw
+ 
+ 
++
+ def completed_install_gate(base, core):
+     """Read only actual install/build/B evidence, never invoke those owners."""
+     owner = base.load(INSTALL_OWNER, 'completed_install_readonly_definitions')
+@@ -308,6 +323,7 @@
+             'install_or_B_execution_entries_called': False, 'production_ready': False}
+ 
+ 
++
+ def validate_scope49(value):
+     need(type(value) is dict and value.get('schema') == 'pocket4-versioned-app-scope-v1' and
+          value.get('kind') == 'explicit-current-app-observation' and
+@@ -322,10 +338,11 @@
+     return value
+ 
+ 
+-def whole_scope_guard(base, core):
++
++def whole_scope_guard(base, core, *, action_attempted=False):
+     validate_scope49(core.document(base.pinned(CURRENT_SCOPE)))
+     guard = base.load(CURRENT_GUARD, 'unchanged_typed_current_Main_guard')
+-    typed = guard.current_guard(action_attempted=False)
++    typed = guard.current_guard(action_attempted=action_attempted)
+     need(typed.get('schema') == 'pocket4-successor-main-guard-v1' and
+          typed.get('runtime_epoch_sha256') == RUNTIME_EPOCH, 'SAME_ACTUAL_CURRENT_TYPED_RUNTIME')
+     current = guard.check_app_scope(CURRENT_SCOPE, ALL_PACKAGES)
+@@ -340,10 +357,85 @@
+ 
+ 
+ 
++def completed_inspect_header(base, partial, raw, terminal):
++    need(INSPECT_INPUTS_BOUND is True, 'ACTUAL_COMPLETED_R2_INSPECT_NOT_YET_BOUND')
++    partial.original_terminal(terminal, INSPECT_JOB, len(raw))
++    outer = partial.document(raw)
++    need(outer.get('schema') == 'pocket4-fixed-r2-readonly-inspect-result-v1' and
++         outer.get('ok') is True and outer.get('errors') == [] and
++         outer.get('source') == INSPECT_OWNER and outer.get('request') == INSPECT_REQUEST and
++         outer.get('flow') == FLOW and outer.get('task') == TASK and outer.get('kind') == 'plan' and
++         outer.get('step') == 'r2-readonly-inspect-01' and outer.get('helper_uid') == HELPER_UID and
++         outer.get('current_explicit_scope') == CURRENT_SCOPE and outer.get('original_result') == INSPECT_RESULT and
++         outer.get('joint_artifact') == INSPECT_JOINT and
++         all(outer.get(k) is True for k in ('all49_guard_before_after_equal',
++             'all_owned_child_resources_retired_by_normal_pidfd_exit',
++             'acceptance_requires_original_stdout_and_authoritative_durable_terminal')) and
++         all(outer.get(k) is False for k in ('original_action_attempted', 'original_action_outcome_unknown',
++             'outcome_unknown', 'original_UNKNOWN_rewritten', 'reconciliation_published', 'production_ready',
++             'automatic_retry', 'full_PM_or_launcher_inventory_claimed',
++             'allows_new_mutation_without_original_Flow_checks')),
++         'EXACT_ACTUAL_READONLY_INSPECT_COMPLETE_AND_DURABLE')
++    child_raw = outer['child_stdout_original'].encode('utf-8')
++    stderr = outer['child_stderr_original'].encode('utf-8')
++    need(outer['child_stdout_bytes'] == len(child_raw) and outer['child_stdout_sha256'] == sha(child_raw) and
++         outer['child_stderr_bytes'] == len(stderr) == 0 and outer['child_stderr_sha256'] == sha(stderr),
++         'ACTUAL_PRIOR_INSPECT_CHILD_STREAMS')
++    base.require_owned_exit(outer['child_lifecycle'], stderr)
++    child = partial.document(child_raw)
++    need(child.get('schema') == 'pocket4-fixed-r2-readonly-inspect-child-v1' and child.get('ok') is True and
++         child.get('errors') == [] and child.get('source') == INSPECT_OWNER and child.get('request') == INSPECT_REQUEST and
++         child.get('flow') == FLOW and child.get('task') == TASK and child.get('kind') == 'plan' and
++         child.get('step') == outer['step'] and child.get('helper_uid') == HELPER_UID and
++         child.get('current_explicit_scope') == CURRENT_SCOPE and child.get('original_result') == INSPECT_RESULT and
++         child.get('original_entry_invoked') is True and child.get('original_returncode') == 0 and
++         child.get('declared_mutation') is False and child.get('original_action_attempted') is False and
++         child.get('original_action_outcome_unknown') is False and child.get('outcome_unknown') is False and
++         child.get('whole_scope_before') == child.get('whole_scope_after') and
++         child.get('completed_install') == outer.get('completed_install') and
++         child.get('original_namespace_authority_released') is True and
++         child.get('normal_process_exit_required_for_lock_and_library') is True and
++         child.get('unknown_descriptors_closed') == 0 and child.get('manual_library_close') is False and
++         child.get('original_private_UI_nodes_exported') is False,
++         'ACTUAL_PRIOR_READONLY_CHILD_AND_NORMAL_RETIREMENT')
++    original_raw = child['original_stdout'].encode('utf-8')
++    need(child['original_stdout_bytes'] == len(original_raw) and child['original_stdout_sha256'] == sha(original_raw),
++         'ACTUAL_PRIOR_ORIGINAL_ADAPTER_BYTES')
++    return outer, child, original_raw
++
++
++def prior_inspect_gate(base, core):
++    """Read completed observer evidence; do not reuse its nodes for dispatch."""
++    need(INSPECT_INPUTS_BOUND is True, 'ACTUAL_COMPLETED_R2_INSPECT_NOT_YET_BOUND')
++    previous = base.load(INSPECT_OWNER, 'completed_readonly_inspect_definitions_only')
++    install_owner = base.load(INSTALL_OWNER, 'completed_install_terminal_parser_reference_only')
++    partial = base.load(install_owner.NO_ACTION_CORE, 'unchanged_original_terminal_parser_only')
++    outer, child, original_raw = completed_inspect_header(base, partial, base.pinned(INSPECT_STDOUT),
++        partial.document(base.pinned(INSPECT_TERMINAL)))
++    joint = dict(outer); joint.pop('joint_artifact')
++    need(base.pinned(INSPECT_JOINT) == canonical(joint) + b'\n',
++         'ACTUAL_PRIOR_INSPECT_PUBLISHED_JOINT_EQUALS_FULL_STDOUT')
++    request, body, payload = previous.outer_request(base.pinned(INSPECT_REQUEST), core)
++    scope, selected = previous.launch_gate(base, core)
++    original, original_pin = previous.verify_original(base, core, request, payload, False, original_raw, scope, selected)
++    need(original_pin == INSPECT_RESULT and original['inspection_wire_sha256'] == INSPECT_WIRE_SHA and
++         original['installed_before'] == INSTALLED_HELPER and original['installed_after'] == INSTALLED_HELPER,
++         'ACTUAL_COMPLETED_R2_INSPECT_AND_SAME_INSTALLED_HELPER')
++    return {'job_id': INSPECT_JOB, 'source': INSPECT_OWNER, 'request': INSPECT_REQUEST,
++            'stdout': INSPECT_STDOUT, 'terminal': INSPECT_TERMINAL, 'joint': INSPECT_JOINT,
++            'original_result': INSPECT_RESULT, 'inspection_wire_sha256': INSPECT_WIRE_SHA,
++            'actual_helper_uid': HELPER_UID, 'actual_scope49': CURRENT_SCOPE,
++            'previous_nodes_reused_for_action': False, 'search_page_navigation_proved': False,
++            'current_button_presence_prejudged': False,
++            'dispatch_still_requires_new_original_inspection_and_fixed_full_tree_transaction': True,
++            'prior_observer_execution_entry_called': False}
++
++
++
+ def child():
+     base = entry('--child')
+     need(sys.stdin.buffer.read(1) == b'R', 'PARENT_HELD_PIDFD_RELEASE_REQUIRED')
+-    result = {'schema': 'pocket4-fixed-r2-readonly-inspect-child-v1', 'ok': False, 'errors': [], 'source': SELF, 'request': REQUEST,
++    result = {'schema': 'pocket4-fixed-r2-search-click-child-v1', 'ok': False, 'errors': [], 'source': SELF, 'request': REQUEST,
+         'flow': FLOW, 'task': TASK, 'original_entry_invoked': False, 'original_sources_modified': False,
+         'original_UNKNOWN_rewritten': False, 'reconciliation_published': False, 'permission_changes': 0,
+         'installs': 0, 'native_launches': 0, 'cleanup_or_focus_actions': 0, 'production_ready': False,
+@@ -357,6 +449,7 @@
+         bodies, identities, old_scope = session.predecessor(base, core)
+         scope, selected = launch_gate(base, core)
+         _, same_scope = session.new_scope(base, core, old_scope); need(same_scope == SCOPE, 'UNCHANGED_NEW_SCOPE')
++        result['prior_readonly_inspect'] = prior_inspect_gate(base, core)
+         result['completed_install'] = completed_install_gate(base, core)
+         result['whole_scope_before'] = whole_scope_guard(base, core)
+         adapter = base.load(ADAPTER, 'unchanged_actual_r2_owned_adapter')
+@@ -387,12 +480,13 @@
+                           original_stdout_sha256=sha(raw), original_argv=argv)
+         need(type(returned) is int and returned == 0, 'ORIGINAL_ENTRY_FAILED_NO_RETRY')
+         original, result_pin = verify_original(base, core, request, payload, mutation, raw, scope, selected)
+-        result['whole_scope_after'] = whole_scope_guard(base, core)
++        result['whole_scope_after'] = whole_scope_guard(base, core, action_attempted=original['action_attempted'])
+         need(result['whole_scope_after'] == result['whole_scope_before'], 'ALL49_AND_TYPED_RUNTIME_CHANGED_DURING_INSPECT')
+         need(completed_install_gate(base, core) == result['completed_install'], 'ACTUAL_INSTALL_BUILD_B_AND_OLD_FAILURES_CHANGED')
++        need(prior_inspect_gate(base, core) == result['prior_readonly_inspect'], 'ACTUAL_PRIOR_INSPECT_EVIDENCE_CHANGED')
+         base.preserved(bodies, identities)
+         launch_gate(base, core)
+-        for pin in (SELF, REQUEST, BASE, SESSION, ADAPTER, LAUNCH_STDOUT, LAUNCH_TERMINAL, INSTALL_OWNER, INSTALL_REQUEST, INSTALL_STDOUT, INSTALL_TERMINAL, CURRENT_SCOPE, CURRENT_GUARD, base.RECORDER, base.CORE, base.SUPPORT, support.PROBE_SOURCE):
++        for pin in (SELF, REQUEST, BASE, SESSION, ADAPTER, LAUNCH_STDOUT, LAUNCH_TERMINAL, INSTALL_OWNER, INSTALL_REQUEST, INSTALL_STDOUT, INSTALL_TERMINAL, INSPECT_OWNER, INSPECT_REQUEST, INSPECT_STDOUT, INSPECT_TERMINAL, CURRENT_SCOPE, CURRENT_GUARD, base.RECORDER, base.CORE, base.SUPPORT, support.PROBE_SOURCE):
+             base.pinned(pin)
+         support.pin_runtime_files(probe, observed)
+         final = probe.census(); extra = set(final) - set(frozen)
+@@ -402,7 +496,9 @@
+              held['status_flags'] & os.O_ACCMODE == os.O_RDWR and
+              support.stable_library(probe.library_binding(library_fd, final[str(library_fd)])) == support.stable_library(library),
+              'ORIGINAL_FLOW_LOCK_AND_EXPLICIT_LIBRARY_UNCHANGED')
+-        result.update(ok=True, helper_uid=HELPER_UID, current_explicit_scope=CURRENT_SCOPE, original_result=result_pin, original_action_attempted=original['action_attempted'],
++        result.update(ok=True, helper_uid=HELPER_UID, current_explicit_scope=CURRENT_SCOPE, original_result=result_pin,
++            search_click_acknowledged=original['search_click_acknowledged'], search_selection_sha256=original['search_selection_sha256'],
++            atomic_android_transaction=False, search_page_navigation_verified=False, independent_after_inspect_required=True, original_action_attempted=original['action_attempted'],
+             original_action_outcome_unknown=original['outcome_unknown'], original_old_close_outcome='unknown_retained',
+             original_namespace_authority_released=True, normal_process_exit_required_for_lock_and_library=True,
+             final_descriptors=final, unknown_descriptors_closed=0, manual_library_close=False,
+@@ -418,7 +514,7 @@
+ 
+ def parent():
+     base = entry('--execute-request')
+-    result = {'schema': 'pocket4-fixed-r2-readonly-inspect-result-v1', 'ok': False, 'errors': [], 'source': SELF,
++    result = {'schema': 'pocket4-fixed-r2-search-click-result-v1', 'ok': False, 'errors': [], 'source': SELF,
+         'request': REQUEST, 'flow': FLOW, 'task': TASK, 'original_UNKNOWN_rewritten': False, 'reconciliation_published': False,
+         'production_ready': False, 'automatic_retry': False, 'permission_changes': 0, 'installs': 0,
+         'native_launches': 0, 'cleanup_or_focus_actions': 0, 'old_products_deleted': False,
+@@ -443,21 +539,28 @@
+             child_stdout_sha256=sha(raw), child_stderr_original=stderr.decode('utf-8', 'replace'),
+             child_stderr_bytes=len(stderr), child_stderr_sha256=sha(stderr))
+         value = core.document(raw); base.require_owned_exit(life, stderr)
+-        need(value.get('schema') == 'pocket4-fixed-r2-readonly-inspect-child-v1' and value.get('ok') is True and value.get('errors') == [] and
++        need(value.get('schema') == 'pocket4-fixed-r2-search-click-child-v1' and value.get('ok') is True and value.get('errors') == [] and
+              value.get('source') == SELF and value.get('request') == REQUEST and value.get('flow') == FLOW and value.get('task') == TASK and
+              value.get('step') == request['step'] and value.get('kind') == request['kind'] and
+-             value.get('original_action_outcome_unknown') is False and value.get('declared_mutation') is False and
++             value.get('original_action_attempted') is True and value.get('original_action_outcome_unknown') is True and
++             value.get('declared_mutation') is True and value.get('search_click_acknowledged') is True and
++             value.get('atomic_android_transaction') is False and value.get('search_page_navigation_verified') is False and
++             value.get('independent_after_inspect_required') is True and
++             value.get('prior_readonly_inspect', {}).get('job_id') == INSPECT_JOB and
+              value.get('helper_uid') == HELPER_UID and value.get('current_explicit_scope') == CURRENT_SCOPE and
+              value.get('whole_scope_before') == value.get('whole_scope_after') and
+              value.get('completed_install', {}).get('job_id') == INSTALL_JOB,
+              'ORIGINAL_QA_SUCCESS_AND_NORMAL_CHILD_EXIT_JOINTLY_REQUIRED')
+-        for pin in (SELF, REQUEST, BASE, SESSION, ADAPTER, LAUNCH_STDOUT, LAUNCH_TERMINAL, INSTALL_OWNER, INSTALL_REQUEST, INSTALL_STDOUT, INSTALL_TERMINAL, CURRENT_SCOPE, CURRENT_GUARD, base.SUPPORT, support.PROBE_SOURCE):
++        for pin in (SELF, REQUEST, BASE, SESSION, ADAPTER, LAUNCH_STDOUT, LAUNCH_TERMINAL, INSTALL_OWNER, INSTALL_REQUEST, INSTALL_STDOUT, INSTALL_TERMINAL, INSPECT_OWNER, INSPECT_REQUEST, INSPECT_STDOUT, INSPECT_TERMINAL, CURRENT_SCOPE, CURRENT_GUARD, base.SUPPORT, support.PROBE_SOURCE):
+             base.pinned(pin)
+         support.pin_runtime_files(probe, observed)
+         need(probe.same_descriptors(before, probe.census()), 'PARENT_FD_IDENTITIES_RESTORED')
+         result.update(ok=True, step=request['step'], kind=request['kind'], original_result=value['original_result'],
+             helper_uid=HELPER_UID, current_explicit_scope=CURRENT_SCOPE, completed_install=value['completed_install'],
+             all49_guard_before_after_equal=True, full_PM_or_launcher_inventory_claimed=False,
++            prior_readonly_inspect=value['prior_readonly_inspect'], search_click_acknowledged=True,
++            search_selection_sha256=value['search_selection_sha256'], atomic_android_transaction=False,
++            search_page_navigation_verified=False, independent_after_inspect_required=True,
+             original_action_attempted=value['original_action_attempted'], original_action_outcome_unknown=value['original_action_outcome_unknown'],
+             outcome_unknown=value['original_action_outcome_unknown'], all_owned_child_resources_retired_by_normal_pidfd_exit=True,
+             allows_new_mutation_without_original_Flow_checks=False, original_old_close_outcome='unknown_retained')
+@@ -479,5 +582,5 @@
+     mode = sys.argv[1:2]
+     if mode == ['--child']:
+         raise SystemExit(child())
+-    need(mode == ['--execute-request'], 'CLOSED_ONE_FIXED_READONLY_INSPECT_ENTRY')
++    need(mode == ['--execute-request'], 'CLOSED_ONE_FIXED_SEARCH_CLICK_ENTRY')
+     raise SystemExit(parent())

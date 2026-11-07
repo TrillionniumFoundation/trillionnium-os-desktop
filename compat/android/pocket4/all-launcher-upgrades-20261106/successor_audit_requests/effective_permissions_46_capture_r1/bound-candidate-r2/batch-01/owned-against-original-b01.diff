@@ -1,0 +1,135 @@
+--- preserved-original45/batch-01/owned-against-original-b01.diff
++++ actual49-fixed46/batch-01/owned-against-original-b01.diff
+@@ -14,7 +14,8 @@
+ import zlib
+ 
+ sys.dont_write_bytecode = True
+-CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'services', 'stage_root': '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b01', 'worker': {'path': '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b01/observe_current_services.py', 'bytes': 46457, 'sha256': 'c261aa5e00dd1980a2154053fdd25ee72881f6963b584fa1761e3410425ceab5'}, 'request': {'path': '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b01/request.review-only.json', 'bytes': 2455, 'sha256': '9e3e72f0693f76d04f71584ebb809a4ca6e08868b24bd2efe377abda8f9169f4'}, 'prior_source': {'bytes': 16637, 'sha256': '1b6bca427c4a01cd1a5a8ea2526f9223e884658ef3a1784f3a8fad885f004ecc', 'preserved': True, 'actual_prior_execution_job': '1a1b1e97bb7-fc05-7b79', 'scope_authority_not_inherited': True}}
++CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'services', 'stage_root': '/home/alex/work/pocket4-launcher46-permissions-source-20261107-r2-b01', 'worker': {'path': '/home/alex/work/pocket4-launcher46-permissions-source-20261107-r2-b01/observe_current_services.py', 'bytes': 48571, 'sha256': '1f336b5ca9537f4f6b88809d5235ee7f2cab1d4ee8a10efa06f1427bd03c2e59'}, 'request': {'path': '/home/alex/work/pocket4-launcher46-permissions-source-20261107-r2-b01/request.review-only.json', 'bytes': 2582, 'sha256': '2e18453d72014e184f6854e9cbd105ce39ed3e8ec3fab9cbbbec78ebe007f240'}, 'prior_source': {'bytes': 16637, 'sha256': '1b6bca427c4a01cd1a5a8ea2526f9223e884658ef3a1784f3a8fad885f004ecc', 'preserved': True, 'actual_prior_execution_job': '1a1b1e97bb7-fc05-7b79', 'scope_authority_not_inherited': True}}
++CAPTURE_BINDING = {'guard': {'Main_epoch_sha256': '7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c', 'UI_or_install_runtime_admitted': False, 'baseline_sha256': '7c52723c372b9f486067456e720709ef401bcebe1a7aad158f6b8c099f67fcc8', 'complete_paired_classpath_matches': True, 'eight_roles_including_composer_match': True, 'production_ready': False, 'resource_limits_match': True, 'runtime_epoch_sha256': 'a7c7091a9e57eb6b373aa8a9225bb2f17b4ec0f1248679b56aaadc78eb0faca9', 'runtime_only_app_scopes_checked_separately': True, 'schema': 'pocket4-successor-main-guard-v1'}, 'app_scope': {'path': '/home/alex/work/pocket4-successor-qa-flow-b6de2bd4f04bcd572a074ef984ba7dbe/steps/install-search-helper-r2-01/app-scope-after.private.json', 'bytes': 60614, 'sha256': '7187bc544cf6812ad47efdf141cd111897a1124b9532f84b7cf599b0c0fee1e3'}, 'packages': ['com.Hyatt.hyt', 'com.MobileTicket', 'com.amazon.mShop.android.shopping', 'com.android.calendar', 'com.android.camera2', 'com.android.contacts', 'com.android.deskclock', 'com.android.dialer', 'com.android.documentsui', 'com.android.gallery3d', 'com.android.messaging', 'com.android.quicksearchbox', 'com.android.settings', 'com.android.threadnetwork.demoapp', 'com.bestbuy.android', 'com.ehi.national.mobile', 'com.enflick.android.TextNow', 'com.example.ndk_tests', 'com.google.android.gms', 'com.hertz.android.digital', 'com.hilton.android.hhonors', 'com.ihg.apps.android', 'com.jingdong.app.mall', 'com.lianjia.beike', 'com.marriott.mrt', 'com.pinger.textfree', 'com.rytong.airchina', 'com.rytong.ceair', 'com.sankuai.meituan.takeoutnew', 'com.sdu.didi.psnger', 'com.ss.android.ugc.aweme', 'com.szzc', 'com.taobao.taobao', 'com.tencent.mm', 'com.ubercab', 'com.united.mobile.android', 'com.xunmeng.pinduoduo', 'com.zhubajie.client', 'com.zillow.android.streeteasy', 'ctrip.android.view', 'jp.co.ana.android.tabidachi', 'local.pocket4.actions.v2', 'local.pocket4.fixture', 'org.chromium.webview_shell', 'org.droidloom.qa.editorcontract', 'org.droidloom.qa.successor.p8f89f253350ba2fa.r1', 'org.droidloom.qa.successor.p8f89f253350ba2fa.r2', 'org.fcitx.fcitx5.android', 'tv.danmaku.bili'], 'batch': 1, 'targets': ['org.fcitx.fcitx5.android'], 'identities': [{'package': 'org.fcitx.fcitx5.android', 'uid': 10150, 'version_code': 114}], 'command_count': 3, 'native_comparison': {'actual_framework_resolver_reference_job': '1a1b307f521-fc05-807a', 'expected_count': 46, 'observed_count': 46, 'added_components': [], 'missing_components': [], 'framework_resolver_requeried_by_this_worker': False}, 'microg_capture_policy': None}
+ SELF_PIN = None
+ SUPPORT = {
+     "path": "/home/alex/work/pocket4-beike-owned-generation-20261106-b34f158f88bbebf112840fd88df25d03/prepare_beike_owned_lifetime.py",
+@@ -109,62 +110,67 @@
+ 
+ 
+ def worker_gate(value, returned):
+-    need(returned == 0 and value.get("errors") == [] and value.get("automatic_retry") is False and
+-         value.get("production_ready") is False and value.get("process_FDs_before") == value.get("process_FDs_after"),
+-         "ORIGINAL_WORKER_DID_NOT_PASS")
+-    guard = value.get("guard_before", {})
+-    need(guard.get("schema") == "pocket4-successor-main-guard-v1" and
+-         guard.get("runtime_epoch_sha256") == "a7c7091a9e57eb6b373aa8a9225bb2f17b4ec0f1248679b56aaadc78eb0faca9" and
+-         value.get("guard_after") == guard and retired(value.get("owned_descriptors_final")), "ORIGINAL_RUNTIME_OR_FD_GATE_FAILED")
+-    if CONFIG["kind"] == "explicit47":
+-        need(value.get("schema") == "pocket4-explicit-47-app-scope-observation-v1" and value.get("ok") is True and
+-             value.get("status") == "EXPLICIT_47_PACKAGE_SCOPE_OBSERVED" and value.get("package_count") == 47 and
+-             value.get("original_46_unchanged") is True and value.get("new_helper_matches_actual_install") is True and
+-             value.get("locks_released") is True and retired(value.get("observation", {}).get("observation_fds")),
+-             "EXPLICIT47_OBSERVATION_GATE_FAILED")
+-        actions = ("Main_UI_actions", "native_commands", "Android_namespace_commands", "ADB_commands", "installs", "permission_changes",
+-                   "business_data_content_reads")
+-        need(value.get("framework_MAIN_LAUNCHER_resolver_queried") is False and value.get("all_Android_installed_packages_enumerated") is False,
+-             "EXPLICIT_SCOPE_MUST_NOT_CLAIM_GLOBAL_RESOLVER")
+-    elif CONFIG["kind"] == "calendar":
+-        need(value.get("schema") == "pocket4-independent-calendar-aapt2-resource-comparison-v2" and
+-             value.get("status") == "INDEPENDENT_TWO_APK_RESOURCE_COMPARISON_COMPLETE" and
+-             all(value.get(key) is True for key in ("snapshot_consistent", "all_primary_commands_succeeded",
+-                 "legacy_badging_observations_complete", "all_manifests_and_signatures_verified", "all_tool_children_joined", "action_lock_released")) and
+-             value.get("unjoined_tool_pids") == [] and len(value.get("commands", [])) == 8 and
+-             value.get("packages") == ["com.android.calendar", "org.fcitx.fcitx5.android"], "CALENDAR_COMPARISON_GATE_FAILED")
+-        need(value.get("original_failed_audit_reclassified") is False and value.get("original_batch_05_gate_advanced") is False,
+-             "ORIGINAL_FAILURE_MUST_REMAIN")
+-        actions = ("UI_actions", "App_launches", "permission_changes", "installs", "Android_namespace_commands", "ADB_commands", "business_data_content_reads")
++    need(CONFIG["kind"] == "services" and type(returned) is int and returned == 0 and
++         value.get("errors") == [] and value.get("automatic_retry") is False and
++         value.get("production_ready") is False and
++         type(value.get("process_FDs_before")) is int and
++         value["process_FDs_before"] == value.get("process_FDs_after"), "ORIGINAL_WORKER_DID_NOT_PASS")
++    need(value.get("guard_before") == CAPTURE_BINDING["guard"] == value.get("guard_after") and
++         retired(value.get("owned_descriptors_final")) and
++         value.get("owned_descriptors_final") == value.get("observation_FDs_final"),
++         "ORIGINAL_RUNTIME_OR_FD_GATE_FAILED")
++    need(value.get("schema") == "pocket4-fixed46-launcher-permission-raw-capture-v1" and
++         value.get("ok") is True and value.get("status") == "FIXED_LAUNCHER_PERMISSION_SERVICE_RAW_CAPTURE_COMPLETE" and
++         value.get("current_scope_49_unchanged") is True and value.get("packages") == CAPTURE_BINDING["packages"] and
++         value.get("app_scope_reference") == CAPTURE_BINDING["app_scope"] and
++         type(value.get("batch")) is int and value["batch"] == CAPTURE_BINDING["batch"] and
++         value.get("target_packages") == value.get("service_target_packages") == CAPTURE_BINDING["targets"] and
++         type(value.get("target_user")) is int and value["target_user"] == 0 and
++         value.get("target_identities_from_pinned_scope") == CAPTURE_BINDING["identities"] and
++         value.get("service_output_capture_complete") is True and
++         value.get("PM_user0_installed_APK_packages_enumerated") is False and
++         value.get("MAIN_LAUNCHER_resolver_queried") is False and
++         type(value.get("Android_namespace_commands")) is int and
++         value["Android_namespace_commands"] == CAPTURE_BINDING["command_count"] and
++         type(value.get("native_command_count")) is int and value["native_command_count"] == 3 and
++         len(value.get("android_commands", [])) == CAPTURE_BINDING["command_count"] and
++         len(value.get("native_commands", [])) == 3 and
++         all(type(row.get("returncode")) is int and row["returncode"] == 0 and
++             all(row.get(k) is True for k in ("complete", "joined", "stdout_eof", "stderr_eof", "stream_artifacts_complete")) and
++             row.get("termination_attempted") is False and row.get("errors") == [] for row in value["android_commands"]) and
++         value.get("held_namespace_target_closed") is True and value.get("action_lock_released") is True and
++         retired(value.get("lease_FDs_final")), "RAW_PERMISSION_SERVICE_CAPTURE_AND_RETIREMENT_GATE_FAILED")
++    scope = value.get("scope_guard_before", {})
++    need(scope == value.get("scope_guard_after") and scope.get("schema") == "pocket4-app-scope-guard-v1" and
++         scope.get("app_scope_sha256") == CAPTURE_BINDING["app_scope"]["sha256"] and
++         scope.get("packages") == CAPTURE_BINDING["packages"] and
++         scope.get("runtime_epoch_sha256") == CAPTURE_BINDING["guard"]["runtime_epoch_sha256"] and
++         scope.get("current_apk_paths_and_file_identities_match") is True and
++         scope.get("new_signature_verification_performed") is False and
++         scope.get("UI_or_install_runtime_admitted") is False, "EXACT_CURRENT49_SCOPE_GUARDS_REQUIRED")
++    need(value.get("permission_queries_executed") is True and value.get("service_output_semantics_verified") is False and
++         value.get("effective_permission_grants") == "UNKNOWN_PENDING_SERVICE_OUTPUT_INTERPRETATION" and
++         value.get("effective_AppOps_modes") == "UNKNOWN_PENDING_SERVICE_OUTPUT_INTERPRETATION" and
++         value.get("role_status") == "UNKNOWN_NOT_QUERIED" and value.get("package_dump_user_filter_applied") is False and
++         value.get("permission_name_normalization") == "NONE_RAW_BYTES_PRESERVED" and
++         set(value.get("help_results", {})) == {"package"} and
++         len(value.get("service_reports", [])) == 2 * len(CAPTURE_BINDING["targets"]) and
++         all(row.get("interpretation_status") == "RAW_CAPTURE_ONLY_NOT_INTERPRETED" for row in value["service_reports"]) and
++         value.get("native_catalog_matches_actual46_component_reference") is True and
++         value.get("native_catalog_comparison") == CAPTURE_BINDING["native_comparison"] and
++         value.get("compiled_Beike_scope_modified") is False and value.get("old_Bili_unknown_reclassified") is False and
++         value.get("meituan_saved_location_unchanged") is True and value.get("all_installed_APK_bytes_bound") is False,
++         "READONLY_QUERY_MUST_NOT_CLAIM_GRANTS_OR_EXPAND_UI_AUTHORITY")
++    policy = CAPTURE_BINDING["microg_capture_policy"]
++    if policy is None:
++        need("capture_policy" not in value and all("capture_limits" not in row for row in value["android_commands"]),
++             "DEFAULT_LIMITS_CANNOT_GAIN_AN_EXCEPTION")
+     else:
+-        need(value.get("schema") == "pocket4-fixed-launcher-permission-raw-capture-v1" and value.get("ok") is True and
+-             value.get("status") == "FIXED_LAUNCHER_PERMISSION_SERVICE_RAW_CAPTURE_COMPLETE" and
+-             value.get("current_scope_47_unchanged") is True and len(value.get("packages", [])) == 47 and
+-             value.get("app_scope_reference", {}).get("sha256") == "44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f" and
+-             value.get("batch") == 1 and value.get("target_packages") == ['org.fcitx.fcitx5.android'] and
+-             type(value.get("target_user")) is int and value["target_user"] == 0 and
+-             value.get("target_identities_from_pinned_scope") == [{'package': 'org.fcitx.fcitx5.android', 'uid': 10150, 'version_code': 114}] and
+-             value.get("service_target_packages") == ['org.fcitx.fcitx5.android'] and value.get("service_output_capture_complete") is True and
+-             value.get("PM_user0_installed_APK_packages_enumerated") is False and value.get("MAIN_LAUNCHER_resolver_queried") is False and
+-             value.get("Android_namespace_commands") == 3 and value.get("native_command_count") == 3 and
+-             len(value.get("android_commands", [])) == 3 and len(value.get("native_commands", [])) == 3 and
+-             all(row.get("complete") is True and row.get("joined") is True and row.get("returncode") == 0 and
+-                 row.get("termination_attempted") is False and row.get("errors") == [] and
+-                 row.get("stream_artifacts_complete") is True for row in value["android_commands"]) and
+-             value.get("held_namespace_target_closed") is True and value.get("action_lock_released") is True and
+-             retired(value.get("lease_FDs_final")), "RAW_PERMISSION_SERVICE_CAPTURE_AND_RETIREMENT_GATE_FAILED")
+-        need(value.get("permission_queries_executed") is True and value.get("service_output_semantics_verified") is False and
+-             value.get("effective_permission_grants") == "UNKNOWN_PENDING_SERVICE_OUTPUT_INTERPRETATION" and
+-             value.get("effective_AppOps_modes") == "UNKNOWN_PENDING_SERVICE_OUTPUT_INTERPRETATION" and
+-             value.get("role_status") == "UNKNOWN_NOT_QUERIED" and value.get("package_dump_user_filter_applied") is False and
+-             value.get("permission_name_normalization") == "NONE_RAW_BYTES_PRESERVED" and set(value.get("help_results", {})) == {"package"} and
+-             len(value.get("service_reports", [])) == 2 and
+-             all(row.get("interpretation_status") == "RAW_CAPTURE_ONLY_NOT_INTERPRETED" for row in value["service_reports"]) and
+-             value.get("native_catalog_matches_actual45_component_reference") is True and
+-             value.get("compiled_Beike_scope_modified") is False and value.get("old_Bili_unknown_reclassified") is False and
+-             value.get("meituan_saved_location_unchanged") is True and value.get("all_installed_APK_bytes_bound") is False,
+-             "READONLY_QUERY_MUST_NOT_CLAIM_GRANTS_OR_EXPAND_UI_AUTHORITY")
+-        actions = ("UI_actions", "App_launches", "installs", "permission_changes", "lifecycle_commands", "ADB_commands", "business_data_content_reads")
++        need(CAPTURE_BINDING["batch"] == 2 and CAPTURE_BINDING["targets"] == ["com.google.android.gms"] and
++             value.get("capture_policy") == policy and
++             [row.get("capture_limits") for row in value["android_commands"]] == policy["stream_limits"],
++             "ONLY_EXACT_MICROG_SECOND_STDOUT_HAS_2MIB_BUDGET")
++    actions = ("UI_actions", "App_launches", "installs", "permission_changes", "lifecycle_commands", "ADB_commands", "business_data_content_reads")
+     need(all(type(value.get(key)) is int and value[key] == 0 for key in actions), "READ_ONLY_ACTION_BOUNDARY_CHANGED")
+ 
+ 

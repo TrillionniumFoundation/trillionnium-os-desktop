@@ -1,0 +1,230 @@
+{
+  "automatic_retry": false,
+  "claims_created_by_status": 0,
+  "completed": [
+    {
+      "artifact_bytes": 38803,
+      "artifact_sha256": "3b9a06610ac2244c1711883c66a8c6222bac1c07708533c73b28f286ccab7437",
+      "batch": 1,
+      "interpretation_status": "RAW_CAPTURE_ONLY_NOT_INTERPRETED",
+      "job_id": "1a1b372fedd-fc05-82f2",
+      "lease_FDs_closed": 20,
+      "observation_FDs_closed": 10606,
+      "original_owned_child_pidfd_retirement_verified": true,
+      "outer_stdout_sha256": "3e26c37769cd40080b467d7f1a5c8d7fc363cb30b3ea88f8650b56bcee83982b",
+      "production_ready": false,
+      "role_status": "UNKNOWN_NOT_QUERIED",
+      "service_reports": [
+        {
+          "argv": [
+            "/system/bin/cmd",
+            "package",
+            "dump-package",
+            "org.fcitx.fcitx5.android"
+          ],
+          "complete": true,
+          "interpretation_status": "RAW_CAPTURE_ONLY_NOT_INTERPRETED",
+          "joined": true,
+          "returncode": 0,
+          "service": "package-dump-package",
+          "stderr": {
+            "bytes": 0,
+            "path": "/home/alex/work/pocket4-launcher46-permissions-observation-20261107-r2-b01/android-02.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 14599,
+            "path": "/home/alex/work/pocket4-launcher46-permissions-observation-20261107-r2-b01/android-02.stdout",
+            "sha256": "1d2434ef6996e1e3917a5695eb31b93821055ca56f547bc9b39d9494b34902f7"
+          },
+          "stream_artifacts_complete": true,
+          "target_package": "org.fcitx.fcitx5.android",
+          "target_user": 0
+        },
+        {
+          "argv": [
+            "/system/bin/cmd",
+            "appops",
+            "get",
+            "--user",
+            "0",
+            "org.fcitx.fcitx5.android"
+          ],
+          "complete": true,
+          "interpretation_status": "RAW_CAPTURE_ONLY_NOT_INTERPRETED",
+          "joined": true,
+          "returncode": 0,
+          "service": "appops-get-user0",
+          "stderr": {
+            "bytes": 0,
+            "path": "/home/alex/work/pocket4-launcher46-permissions-observation-20261107-r2-b01/android-03.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 1312,
+            "path": "/home/alex/work/pocket4-launcher46-permissions-observation-20261107-r2-b01/android-03.stdout",
+            "sha256": "1d2b65b298c31458b408e307736cb8dd97e08124e6919b882190643056cc0500"
+          },
+          "stream_artifacts_complete": true,
+          "target_package": "org.fcitx.fcitx5.android",
+          "target_user": 0
+        }
+      ],
+      "target_packages": [
+        "org.fcitx.fcitx5.android"
+      ],
+      "terminal_sha256": "f6898106e71a5199bed76dcc2dfb0987495d1ca2bf3e833154adbcc0abcb5dc9",
+      "whole_49_current_identity_checked": true
+    }
+  ],
+  "next": {
+    "Android_commands": [
+      [
+        "/system/bin/cmd",
+        "package",
+        "help"
+      ],
+      [
+        "/system/bin/cmd",
+        "package",
+        "dump-package",
+        "com.google.android.gms"
+      ],
+      [
+        "/system/bin/cmd",
+        "appops",
+        "get",
+        "--user",
+        "0",
+        "com.google.android.gms"
+      ]
+    ],
+    "batch": 2,
+    "idempotency_key": "pocket4-fixed46-permissions-20261107-r2-b02",
+    "microg_capture_policy": {
+      "Android_timeout_seconds": 25,
+      "automatic_retry": false,
+      "command_timeout_seconds": 30,
+      "commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "help"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.google.android.gms"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.google.android.gms"
+        ]
+      ],
+      "other_package_limits_changed": false,
+      "raw_output_private": true,
+      "scope": "exact_microG_second_command_stdout_only",
+      "stream_limits": [
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 2097152
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      ],
+      "total_worker_budget_seconds": 900
+    },
+    "native_operations": [
+      "status",
+      "applications",
+      "status"
+    ],
+    "original_partition_batch": 2,
+    "output_root": "/home/alex/work/pocket4-launcher46-permissions-observation-20261107-r2-b02",
+    "process_request": {
+      "bytes": 111787,
+      "file": "batch-02/process-request.review-only.json",
+      "sha256": "261639fc78a39ef47e0d4ba64d6d93f44bad7e9229d207589a4d8dd3ebc72507"
+    },
+    "request": {
+      "bytes": 2580,
+      "path": "/home/alex/work/pocket4-launcher46-permissions-source-20261107-r2-b02/request.review-only.json",
+      "sha256": "c3267b730654f0642d15fe57f1ae6395c7115b6d87563436abddd35a61ff66f1"
+    },
+    "request_file": "batch-02/request.review-only.json",
+    "source_root": "/home/alex/work/pocket4-launcher46-permissions-source-20261107-r2-b02",
+    "stage_files": [
+      {
+        "bytes": 22631,
+        "name": "owned_readonly_lifetime.py",
+        "sha256": "0bdbd9462fb27b04a6970d89585039286202e201acb2dbb72dbfb87a6986189f"
+      },
+      {
+        "bytes": 50593,
+        "name": "observe_current_services.py",
+        "sha256": "2409070638f656cbc5c4434bcb88dfc2c07ad3a7b241cea5f0cfb6c81fef5010"
+      },
+      {
+        "bytes": 16112,
+        "name": "readonly_services_transport.py",
+        "sha256": "70e2a9c3e49dd0eb55112ebab2eeaf6b59e8ba2fabc266f579bdf1325df3442d"
+      },
+      {
+        "bytes": 2580,
+        "name": "request.review-only.json",
+        "sha256": "c3267b730654f0642d15fe57f1ae6395c7115b6d87563436abddd35a61ff66f1"
+      },
+      {
+        "bytes": 1309,
+        "name": "inputs/cmd-appops-help.original.txt",
+        "sha256": "95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc"
+      }
+    ],
+    "stager": {
+      "bytes": 6918,
+      "file": "batch-02/stage_and_run_services.py",
+      "sha256": "0b5f2bd66704400b2445abaeca765cbab72203144433935e2222146d0b124f69"
+    },
+    "target_identities": [
+      {
+        "package": "com.google.android.gms",
+        "uid": 10118,
+        "version_code": 252432034
+      }
+    ],
+    "targets": [
+      "com.google.android.gms"
+    ],
+    "transport": {
+      "bytes": 16112,
+      "path": "/home/alex/work/pocket4-launcher46-permissions-source-20261107-r2-b02/readonly_services_transport.py",
+      "sha256": "70e2a9c3e49dd0eb55112ebab2eeaf6b59e8ba2fabc266f579bdf1325df3442d"
+    },
+    "transport_file": "batch-02/readonly_services_transport.py",
+    "worker": {
+      "bytes": 50593,
+      "path": "/home/alex/work/pocket4-launcher46-permissions-source-20261107-r2-b02/observe_current_services.py",
+      "sha256": "2409070638f656cbc5c4434bcb88dfc2c07ad3a7b241cea5f0cfb6c81fef5010"
+    },
+    "worker_file": "batch-02/observe_current_services.py",
+    "wrapper": {
+      "bytes": 22631,
+      "path": "/home/alex/work/pocket4-launcher46-permissions-source-20261107-r2-b02/owned_readonly_lifetime.py",
+      "sha256": "0bdbd9462fb27b04a6970d89585039286202e201acb2dbb72dbfb87a6986189f"
+    },
+    "wrapper_file": "batch-02/owned_readonly_lifetime.py"
+  },
+  "raw_capture_is_semantic_grant_proof": false,
+  "state": "NEXT_READY"
+}

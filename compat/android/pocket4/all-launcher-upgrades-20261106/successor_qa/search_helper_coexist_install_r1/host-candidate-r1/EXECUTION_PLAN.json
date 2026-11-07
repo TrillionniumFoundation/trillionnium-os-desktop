@@ -1,0 +1,97 @@
+{
+  "UI_actions": 0,
+  "actual_B": {
+    "envelope": {
+      "bytes": 29722,
+      "path": "/home/alex/work/pocket4-successor-qa-flow-b6de2bd4f04bcd572a074ef984ba7dbe/reconciliations/search-click-after-partial-commit-01.json",
+      "sha256": "306475d1ac5f9d03626c325653e9c158b3c6b06dc99baccabcc45808d53e1da4"
+    },
+    "job": "1a1b33fbae4-fc05-8172",
+    "joint": {
+      "bytes": 18719,
+      "path": "/home/alex/work/pocket4-beike-no-action-commit-20261106-r1/owned-partial-reconciliation-joint.json",
+      "sha256": "72097e70113a7b753a212c84bf33152cca319547a90d3eb4cad5b2b24a429ff4"
+    },
+    "original_FAILED_UNKNOWN_retained": true,
+    "terminal": {
+      "bytes": 733,
+      "path": "successor_qa/no_action_runtime_commit_r1/stage-b-candidate-r1/actual/terminal.original.json",
+      "sha256": "29f4241e351442586e8080fa0d252c883075df864934add9657216cecde72ece"
+    }
+  },
+  "actual_build": {
+    "APK": {
+      "bytes": 41104,
+      "path": "/home/alex/work/pocket4-successor-qa-build-362bdb6f45eeb344b3584aa998cb03e1/owned-bili-qa.apk",
+      "sha256": "968c23aac929130a76dfa49d796fbe5264c073f805b7f048b68737e427d96372"
+    },
+    "job": "1a1b339c056-fc05-8136",
+    "result": {
+      "bytes": 39246,
+      "path": "/home/alex/work/pocket4-successor-qa-build-362bdb6f45eeb344b3584aa998cb03e1/build-result.json",
+      "sha256": "0d6a4e19388358032c9ba4ad4f034e714470d7d194c36599226bd0ba6745330f"
+    },
+    "signer": "f5eb5f24311fb19187b37219db272837d2d68632d9e8b855a89b2b6518904143",
+    "terminal": {
+      "bytes": 729,
+      "path": "successor_qa/search_click_same_process_r1/candidate-r2/hostprep-r1/actual-build/terminal.original.json",
+      "sha256": "121ac5733395c1e66d280ff8cb69df38fe7a163f07ff6c99df18aee73ac4ae7b"
+    }
+  },
+  "actual_parent_explicit48": {
+    "bytes": 59259,
+    "path": "/home/alex/work/pocket4-successor-native-install-20261106-zbj-s43-full48-r4-01/app-scope-after.private.json",
+    "sha256": "9aeb555bbc287e168d1bb8f1df09e33f8fd37777ee01a58fe2c563e2725cf01a"
+  },
+  "cleanup_bytes": 0,
+  "fixed_flow": "/home/alex/work/pocket4-successor-qa-flow-b6de2bd4f04bcd572a074ef984ba7dbe",
+  "fixed_install_step": "install-search-helper-r2-01",
+  "install_owner": "One fixed marker and one child, no retry. Reads completed B only; no B producer entries. Calls reviewed installer main once. No general UI API.",
+  "locks": "Original Flow.begin unresolved-UNKNOWN/flow.lock and actions lock; actions lock covers PM install, state, complete49 observation and durable result. Normal pidfd-owned child exit retires original flow.lock and declared libffi FD.",
+  "new_UID": null,
+  "new_scope49": null,
+  "normal_install": "Absent new .r2 only; original PM install -R -t, original signatures/integrity, no -g/downgrade/replacement/uninstall.",
+  "permission_grants": 0,
+  "post_scope_consumers": "Subsequent whole-scope QA/permissions/framework must bind exact actual49 output. Preserve old48/47 and permission failures. No complete PM/launcher enumeration is claimed.",
+  "private_UI_body_copied_to_packet": false,
+  "production_ready": false,
+  "requests": [
+    {
+      "bytes": 125232,
+      "path": "successor_qa/search_helper_coexist_install_r1/host-candidate-r1/exact-stage-request.review-only.json",
+      "sha256": "8119d2392b6eeec63c2700c3980890b5f65784bc9c5e0f9c0c53fce11b9c4bf3"
+    },
+    {
+      "bytes": 728,
+      "path": "successor_qa/search_helper_coexist_install_r1/host-candidate-r1/exact-install-request.review-only.json",
+      "sha256": "506380013d14f72e5409a227959a0b1efcfe2829c9f3766c5974f194d8fdd696"
+    }
+  ],
+  "resources": {
+    "full_framework_resource_gates_changed": false,
+    "install": {
+      "child_stderr_bytes": 16384,
+      "child_stdout_bytes": 131072,
+      "cpu_percent": 100,
+      "memory_bytes": 1073741824,
+      "nice": 10,
+      "outer_timeout_seconds": 660,
+      "owned_child_seconds": 600,
+      "parent_stdout_bytes": 262144
+    },
+    "references": [
+      "Existing helper normal install 1 GiB/one CPU",
+      "Existing owned UI case child600/outer660 and unchanged pidfd probe"
+    ],
+    "source_stage": {
+      "cpu_percent": 50,
+      "memory_bytes": 268435456,
+      "timeout_seconds": 60
+    }
+  },
+  "schema": "pocket4-owned-normal-helper-coexistence-execution-plan-v1",
+  "scope_transition": "All48 original full rows stay equal; new UID/APK/cert/CEDE read from normal PM and original observer; complete49/89APKs. New scope cannot be adopted unless original installer, full fences, normal owned child and authoritative controller terminal jointly succeed.",
+  "source_root": "/home/alex/work/pocket4-beike-search-helper-coexist-install-20261106-r1",
+  "source_stage": "Separate host-only seven files; no Main/Android/namespace/lock/library initialization. Does not run owner.",
+  "status": "SEALED_REVIEW_ONLY_NOT_SUBMITTED"
+}

@@ -1,0 +1,90 @@
+--- unsealed46/worker.normal.template.py
++++ unsealed46/worker.microg.template.py
+@@ -290,13 +290,18 @@
+         result["code"] = "UNEXPECTED_FAILURE_DETAILS_RETAINED_PRIVATELY"
+     return result
+ 
+-def held_bounded_child(argv, seconds, limit, pass_fds, host_env):
++def held_bounded_child(argv, seconds, limit, pass_fds, host_env, *, stdout_limit=None):
+     """No shell. Only the owned client process group may be killed on failure."""
+     need(0 < seconds <= 60 and 0 < limit <= 262144, "CHILD_BOUNDS_REQUIRED")
++    need(stdout_limit is None or type(stdout_limit) is int and stdout_limit in (limit, 2097152), "CLOSED_STDOUT_LIMIT")
++    need(stdout_limit != 2097152 or limit == 262144 and tuple(argv[-4:]) == CORRECTION_COMMANDS[1],
++         "ONLY_EXACT_MICROG_DUMP_STDOUT_MAY_USE_TWO_MIB")
++    stream_limits = {"stdout": limit if stdout_limit is None else stdout_limit, "stderr": limit}
+     end = time.monotonic() + seconds
+     buffers = {"stdout": bytearray(), "stderr": bytearray()}
+     record = {"argv": list(argv), "started_monotonic_ns": time.monotonic_ns(), "joined": False,
+-              "returncode": None, "stdout_eof": False, "stderr_eof": False, "errors": [], "termination_attempted": False}
++              "returncode": None, "stdout_eof": False, "stderr_eof": False, "errors": [], "termination_attempted": False,
++              "capture_limits": stream_limits}
+     child, pipes = None, []
+     selector = selectors.DefaultSelector()
+     try:
+@@ -311,7 +316,7 @@
+             need(time.monotonic() < end, "CHILD_TIMEOUT")
+             for key, _ in selector.select(min(.1, max(0, end - time.monotonic()))):
+                 try:
+-                    data = os.read(key.fileobj.fileno(), min(65536, limit + 1 - len(buffers[key.data])))
++                    data = os.read(key.fileobj.fileno(), min(65536, stream_limits[key.data] + 1 - len(buffers[key.data])))
+                 except BlockingIOError:
+                     continue
+                 if not data:
+@@ -319,7 +324,7 @@
+                     selector.unregister(key.fileobj)
+                     continue
+                 buffers[key.data].extend(data)
+-                need(len(buffers[key.data]) <= limit, "CHILD_OUTPUT_BOUND")
++                need(len(buffers[key.data]) <= stream_limits[key.data], "CHILD_OUTPUT_BOUND")
+         child.wait(timeout=max(.01, end - time.monotonic()))
+         record["joined"], record["returncode"] = True, child.returncode
+     except BaseException as error:
+@@ -352,6 +357,17 @@
+                               record["stderr_eof"] and not record["errors"] and not buffers["stderr"])
+     return bytes(buffers["stdout"]), bytes(buffers["stderr"]), record
+ 
++CORRECTION_COMMANDS = (('/system/bin/cmd', 'package', 'help'), ('/system/bin/cmd', 'package', 'dump-package', 'com.google.android.gms'), ('/system/bin/cmd', 'appops', 'get', '--user', '0', 'com.google.android.gms'))
++CAPTURE_POLICY = {'scope': 'exact_microG_second_command_stdout_only', 'commands': [['/system/bin/cmd', 'package', 'help'], ['/system/bin/cmd', 'package', 'dump-package', 'com.google.android.gms'], ['/system/bin/cmd', 'appops', 'get', '--user', '0', 'com.google.android.gms']], 'stream_limits': [{'stdout': 262144, 'stderr': 262144}, {'stdout': 2097152, 'stderr': 262144}, {'stdout': 262144, 'stderr': 262144}], 'command_timeout_seconds': 30, 'Android_timeout_seconds': 25, 'total_worker_budget_seconds': 900, 'other_package_limits_changed': False, 'raw_output_private': True, 'automatic_retry': False}
++
++def capture_limits_for(index, argv):
++    """A 2 MiB stdout budget exists for only the second exact microG dump."""
++    need(type(index) is int and 1 <= index <= 3, "EXACT_THREE_READ_COMMANDS_ONLY")
++    command = CORRECTION_COMMANDS[index - 1]
++    need(tuple(argv[-len(command):]) == command, "EXACT_READ_COMMAND_SUFFIX_REQUIRED")
++    return dict(CAPTURE_POLICY["stream_limits"][index - 1])
++
++
+ def write_empty_raw_stream(core, pool, directory, root_identity, path, raw):
+     """Create only an exact empty command stream; other artifacts use frozen core."""
+     name = path.rsplit("/", 1)[-1]
+@@ -390,6 +406,7 @@
+ 
+ 
+ def validate_request(request):
++    need(BATCH_NUMBER == 2 and TARGET_PACKAGES == ["com.google.android.gms"], "ONLY_FIXED_MICROG_BATCH_MAY_USE_EXCEPTION")
+     need(SOURCE_SEALED is True and type(APP_SCOPE) is dict and type(PACKAGES) is list and
+          type(NEW_HELPER) is str and len(PACKAGES) == len(set(PACKAGES)) == 49 and
+          PACKAGES == sorted((*LAUNCHERS, ACTIONS, HELPER, NEW_HELPER)) and
+@@ -509,7 +526,7 @@
+               "effective_permission_grants": "UNKNOWN_PENDING_SERVICE_OUTPUT_INTERPRETATION",
+               "effective_AppOps_modes": "UNKNOWN_PENDING_SERVICE_OUTPUT_INTERPRETATION",
+               "role_status": "UNKNOWN_NOT_QUERIED", "service_output_semantics_verified": False,
+-              "service_output_capture_complete": False, "permission_name_normalization": "NONE_RAW_BYTES_PRESERVED",
++              "service_output_capture_complete": False, "capture_policy": CAPTURE_POLICY, "permission_name_normalization": "NONE_RAW_BYTES_PRESERVED",
+               "batch": BATCH_NUMBER, "target_packages": TARGET_PACKAGES, "target_user": TARGET_USER,
+               "service_target_packages": TARGET_PACKAGES, "package_dump_user_filter_applied": False,
+               "packages": PACKAGES, "app_scope_reference": APP_SCOPE,
+@@ -576,9 +593,11 @@
+              "ORIGINAL_HELD_RUNNER_PROTOCOL_REQUIRED")
+         budget()
+         index = len(result["android_commands"]) + 1
++        capture_limits = capture_limits_for(index, argv)
+         write("android-%02d.intent.json" % index, canonical({"argv": list(argv), "authority_fds": list(options["pass_fds"]),
+-              "timeout_seconds": options["timeout"], "readonly": True, "automatic_retry": False})+b"\n")
+-        raw, stderr, row = held_bounded_child(argv, options["timeout"], 262144, tuple(options["pass_fds"]), options["env"])
++              "timeout_seconds": options["timeout"], "capture_limits": capture_limits, "readonly": True, "automatic_retry": False})+b"\n")
++        raw, stderr, row = held_bounded_child(argv, options["timeout"], 262144, tuple(options["pass_fds"]), options["env"],
++                                              stdout_limit=capture_limits["stdout"])
+         result["Android_namespace_commands"] += 1
+         try:
+             remember_child_streams(result["android_commands"], row, write, "android-%02d" % index, raw, stderr)

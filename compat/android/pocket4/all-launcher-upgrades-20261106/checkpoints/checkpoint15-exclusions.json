@@ -1,0 +1,101 @@
+{
+  "schema": "pocket4-checkpoint15-publication-exclusions-v1",
+  "allowed_roots": [
+    "successor_qa/search_helper_coexist_install_r1",
+    "successor_qa/search_helper_readonly_inspect_r1",
+    "successor_qa/fixed_search_click_r2_r1",
+    "successor_audit_requests/effective_permissions_46_capture_r1",
+    "successor_audit_requests/actual/permissions-fixed46-r1/batch-01",
+    "successor_audit_requests/actual/permissions-fixed46-r1/batch-02",
+    "launcher_public_delivery_independent_r2",
+    "launcher_public_delivery_national_intermediate_r1"
+  ],
+  "excluded_path_parts": [
+    "__pycache__",
+    "actual-private",
+    "p4_private_ui",
+    "private",
+    "private-ui"
+  ],
+  "excluded_suffixes": [
+    ".aab",
+    ".apk",
+    ".apks",
+    ".class",
+    ".gif",
+    ".gz",
+    ".html",
+    ".jar",
+    ".jks",
+    ".jpeg",
+    ".jpg",
+    ".key",
+    ".keystore",
+    ".mp4",
+    ".p12",
+    ".pem",
+    ".png",
+    ".pyc",
+    ".tar",
+    ".webp",
+    ".xapk",
+    ".zip",
+    ".zst"
+  ],
+  "private_filename_rule": "Exclude .private. except the exact 60614-byte actual49 identity-only scope pin.",
+  "identity_metadata_exception": {
+    "successor_qa/search_helper_coexist_install_r1/post_install_scope_readback_r1/actual/app-scope-after.private.json": [
+      60614,
+      "7187bc544cf6812ad47efdf141cd111897a1124b9532f84b7cf599b0c0fee1e3"
+    ]
+  },
+  "National_first_page_actual_allowlist": [
+    "launcher_public_delivery_independent_r2/actual/public-observation.derived.json"
+  ],
+  "National_first_page_original_stdout_read_start_terminal_and_other_actual_files_not_exported": true,
+  "National_intermediate_response_cookie_values_must_be_redacted": true,
+  "private_HTML_and_UI_and_PM_AppOps_bodies_not_included": true,
+  "private_material_is_not_copied_to_stage_groups": true,
+  "Git_deletions": 0,
+  "excluded_files_in_walked_roots": [
+    {
+      "path": "launcher_public_delivery_independent_r2/actual/read-00000.original.json",
+      "reason": "FIRST_NATIONAL_PAGE_ACTUAL_ONLY_PUBLIC_DERIVED_OBSERVATION_ALLOWED",
+      "contents_read_for_this_checkpoint": false
+    },
+    {
+      "path": "launcher_public_delivery_independent_r2/actual/root-validation.actual.json",
+      "reason": "FIRST_NATIONAL_PAGE_ACTUAL_ONLY_PUBLIC_DERIVED_OBSERVATION_ALLOWED",
+      "contents_read_for_this_checkpoint": false
+    },
+    {
+      "path": "launcher_public_delivery_independent_r2/actual/start.original.json",
+      "reason": "FIRST_NATIONAL_PAGE_ACTUAL_ONLY_PUBLIC_DERIVED_OBSERVATION_ALLOWED",
+      "contents_read_for_this_checkpoint": false
+    },
+    {
+      "path": "launcher_public_delivery_independent_r2/actual/status-01.original.json",
+      "reason": "FIRST_NATIONAL_PAGE_ACTUAL_ONLY_PUBLIC_DERIVED_OBSERVATION_ALLOWED",
+      "contents_read_for_this_checkpoint": false
+    },
+    {
+      "path": "launcher_public_delivery_independent_r2/actual/stdout.original.json",
+      "reason": "FIRST_NATIONAL_PAGE_ACTUAL_ONLY_PUBLIC_DERIVED_OBSERVATION_ALLOWED",
+      "contents_read_for_this_checkpoint": false
+    },
+    {
+      "path": "launcher_public_delivery_independent_r2/actual/terminal.original.json",
+      "reason": "FIRST_NATIONAL_PAGE_ACTUAL_ONLY_PUBLIC_DERIVED_OBSERVATION_ALLOWED",
+      "contents_read_for_this_checkpoint": false
+    }
+  ],
+  "claim_or_device_API_called": false,
+  "freeze_revision": 2,
+  "active_permission_batches_03_through_14_not_traversed": true,
+  "new_capture_batches_included": [
+    1,
+    2
+  ],
+  "r1_frozen_groups_and_manifest_preserved_unchanged": true,
+  "new_batch02_compressed_worker_body_checked_as_public_metadata_only": true
+}

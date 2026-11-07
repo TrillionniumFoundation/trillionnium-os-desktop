@@ -1,0 +1,26 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/effective_permissions_46_capture_r1/bound-candidate-r1/assemble_bound.py", line 270, in <module>
+    main()
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/effective_permissions_46_capture_r1/bound-candidate-r1/assemble_bound.py", line 124, in main
+    guard = literal(normal, "GUARD")
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/effective_permissions_46_capture_r1/bound-candidate-r1/assemble_bound.py", line 65, in literal
+    return ast.literal_eval(node.value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/ast.py", line 112, in literal_eval
+    return _convert(node_or_string)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/ast.py", line 101, in _convert
+    return dict(zip(map(_convert, node.keys),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/ast.py", line 104, in _convert
+    left = _convert_signed_num(node.left)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/ast.py", line 85, in _convert_signed_num
+    return _convert_num(node)
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/ast.py", line 76, in _convert_num
+    _raise_malformed_node(node)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/ast.py", line 73, in _raise_malformed_node
+    raise ValueError(msg + f': {node!r}')
+ValueError: malformed node or string on line 27: <ast.Name object at 0x7f6cd685b2d0>

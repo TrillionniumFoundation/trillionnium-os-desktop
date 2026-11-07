@@ -1,0 +1,64 @@
+{
+  "UI_actions": 0,
+  "action_request": null,
+  "actual_r2_inspect_job": null,
+  "actual_r2_inspect_stdout": null,
+  "actual_r2_inspect_terminal": null,
+  "added_functions": [
+    "completed_inspect_header",
+    "prior_inspect_gate"
+  ],
+  "changed_original_functions": [
+    "entry",
+    "outer_request",
+    "declared_request",
+    "verify_original",
+    "whole_scope_guard",
+    "child",
+    "parent"
+  ],
+  "correction": "Additional full49 typed post-guard now receives the already verified original action_attempted flag. Underlying guard predicates/return fields/budgets remain unchanged; only post-action failure attribution is corrected. Before-guard remains false. Both revisions unexecuted.",
+  "foreground_semantics": "Original Session permits search_click navigation with changed activity/window inside the same target package and exact owned task; do not compare foreground_before to foreground_after in this action owner. Original action-window, task, helper and before/after state restoration guards remain.",
+  "generic_click_set_text_case_player_operations_opened": false,
+  "helper_source_and_original_adapter_Session_modified": false,
+  "mutation_semantics": "Original action_attempted=true/outcome_unknown=true even after acknowledged successful action. No postcondition reconciliation is performed.",
+  "new_fresh_inspection_required_by_action": true,
+  "next_observation": "One separately reviewed independent readonly inspect after action actual terminal. Do not loop or retry; do not infer navigation from homepage \u641c\u7d22 TextView.",
+  "only_proposed_operation": "search_click",
+  "parent": {
+    "bytes": 37462,
+    "path": "successor_qa/search_helper_readonly_inspect_r1/candidate-r1/owned_readonly_inspect_once.py",
+    "sha256": "a7734300638acbd93535b2bdf03df8af2bf186e782cba47809bab058e5379ab1"
+  },
+  "parent_source_revision": {
+    "bytes": 45079,
+    "path": "successor_qa/fixed_search_click_r2_r1/source-r1/owned_fixed_search_click_once.py",
+    "sha256": "4cafb3d27333275a00cb36323ade37fc60d7c41c9e80d9a300e42893f79f8cb8"
+  },
+  "prior_readonly_nodes_reused_for_dispatch": false,
+  "production_ready": false,
+  "remote_calls": 0,
+  "resource_budgets_changed": false,
+  "schema": "pocket4-fixed-r2-search-click-source-preparation-v1",
+  "selector_source": "unchanged compiled qa.SEARCH_SELECTOR",
+  "source": {
+    "bytes": 45164,
+    "path": "successor_qa/fixed_search_click_r2_r1/source-r2/owned_fixed_search_click_once.py",
+    "sha256": "50bf55a0fa3c23cbe125c619ef1e18d6d7ac34f7bcb9b61f5f90b3c68633e591"
+  },
+  "source_entry_refuses_unbound_inputs": true,
+  "state": "UNBOUND_SOURCE_ONLY_NO_PROCESS_REQUEST",
+  "static_compilation_only": true,
+  "unchanged_original_functions": [
+    "need",
+    "sha",
+    "canonical",
+    "load_base",
+    "write_once",
+    "launch_gate",
+    "original_argv",
+    "completed_install_header",
+    "completed_install_gate",
+    "validate_scope49"
+  ]
+}

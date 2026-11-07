@@ -1,0 +1,321 @@
+--- launcher_public_delivery_independent_r2/observe_independent_public_page.py
++++ launcher_public_delivery_national_intermediate_r1/observe_national_intermediate_page.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Observe one fixed independent public HTML page; never follow a delivery URL or enter Android."""
++"""Rebind one actual public HTML input and observe its exact literal intermediate page once."""
+ import datetime
+ import fcntl
+ import hashlib
+@@ -17,8 +17,10 @@
+ import urllib.parse
+ import urllib.request
+ 
+-PROFILES = {'national': {'package': 'com.ehi.national.mobile', 'url': 'https://national-car-rental.en.softonic.com/android/download', 'output_root': '/home/alex/work/pocket4-national-public-distribution-page-20261107-r1', 'expected_web_version_label': '6.16.0.9403', 'expected_web_container_sha256': 'a901bc4949fe241750cd7ea3fb5df690d00b21e217b2212be813bbd51e5a36bb', 'literal_control_label': 'free xapk download for android', 'literal_control_meaning': 'published standalone XAPK download control; destination still unfetched'}}
+-ROOT = Path(PROFILES['national']['output_root'])
++ROOT = Path('/home/alex/work/pocket4-national-public-distribution-post-page-20261107-r1')
++INPUT = {'path': '/home/alex/work/pocket4-national-public-distribution-page-20261107-r1/page-01.html', 'bytes': 302453, 'sha256': 'abad1338055c580f8fff71da6b68983995262d6c8f0cb5ca6cbfe4967311a6bb', 'uid': 1000, 'gid': 1000, 'mode': 384, 'parent_mode': 448}
++SOURCE_PAGE_URL = 'https://national-car-rental.en.softonic.com/android/download'
++INTERMEDIATE_URL = 'https://en.softonic.com/download/national-car-rental/android/post-download?dt=internalDownload'
+ MAX_BODY = 2 * 1024 * 1024
+ MAX_ERROR_BODY = 65536
+ TOTAL_SECONDS = 120
+@@ -127,44 +129,151 @@
+     return item
+ 
+ 
+-def observe_unfollowed_controls(raw, profile):
++def full_stat(st):
++    return {key: getattr(st, key) for key in
++            ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_nlink',
++             'st_size', 'st_mtime_ns', 'st_ctime_ns')}
++
++
++def directory_identity(st):
++    return {key: getattr(st, key) for key in ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid')}
++
++
++class FixedPriorHTML:
++    """Hold the sole pinned ordinary-owner input; no arbitrary-path argument."""
++    def __init__(self, end, accounting):
++        self.end, self.accounting = end, accounting
++        self.owned, self.dirs = [], []
++        self.fd = self.before = self.parent_fd = self.name = None
++        try:
++            parts = Path(INPUT['path']).parts
++            need(parts[0] == '/' and len(parts) > 2 and all(x not in ('.', '..') for x in parts[1:]),
++                 'FIXED_ABSOLUTE_INPUT_PATH')
++            fd = os.open('/', os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW)
++            self.owned.append(fd)
++            accounting['acquired'] += 1
++            self.dirs.append({'fd': fd, 'parent': None, 'name': '/', 'before': full_stat(os.fstat(fd))})
++            for part in parts[1:-1]:
++                parent = fd
++                fd = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=parent)
++                self.owned.append(fd)
++                accounting['acquired'] += 1
++                self.dirs.append({'fd': fd, 'parent': parent, 'name': part, 'before': full_stat(os.fstat(fd))})
++            self.parent_fd, self.name = fd, parts[-1]
++            parent_st = os.fstat(fd)
++            need(parent_st.st_uid == INPUT['uid'] and parent_st.st_gid == INPUT['gid']
++                 and stat.S_IMODE(parent_st.st_mode) == INPUT['parent_mode'], 'EXACT_PRIVATE_INPUT_PARENT')
++            self.fd = os.open(self.name, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=fd)
++            self.owned.append(self.fd)
++            accounting['acquired'] += 1
++            st = os.fstat(self.fd)
++            need(stat.S_ISREG(st.st_mode) and st.st_nlink == 1 and st.st_uid == INPUT['uid']
++                 and st.st_gid == INPUT['gid'] and stat.S_IMODE(st.st_mode) == INPUT['mode']
++                 and st.st_size == INPUT['bytes'], 'EXACT_PRIOR_HTML_REGULAR_OWNER_SIZE_MODE')
++            self.before = full_stat(st)
++            self.raw = self.recheck()
++        except BaseException:
++            self.close()
++            raise
++
++    def path_recheck(self):
++        for row in self.dirs:
++            st = os.fstat(row['fd'])
++            need(stat.S_ISDIR(st.st_mode), 'HELD_INPUT_DIRECTORY_REQUIRED')
++            saved = {k: row['before'][k] for k in ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid')}
++            need(directory_identity(st) == saved, 'HELD_INPUT_DIRECTORY_IDENTITY_CHANGED')
++            named = (os.stat('/', follow_symlinks=False) if row['parent'] is None else
++                     os.stat(row['name'], dir_fd=row['parent'], follow_symlinks=False))
++            need(directory_identity(named) == saved, 'NAMED_INPUT_DIRECTORY_IDENTITY_CHANGED')
++        need(full_stat(os.fstat(self.fd)) == self.before, 'HELD_PRIOR_HTML_STAT_CHANGED')
++        need(full_stat(os.stat(self.name, dir_fd=self.parent_fd, follow_symlinks=False)) == self.before,
++             'NAMED_PRIOR_HTML_STAT_CHANGED')
++
++    def recheck(self):
++        need(time.monotonic() < self.end, 'PRIOR_HTML_READ_DEADLINE')
++        self.path_recheck()
++        chunks, offset, digest = [], 0, hashlib.sha256()
++        while offset < INPUT['bytes']:
++            need(time.monotonic() < self.end, 'PRIOR_HTML_READ_DEADLINE')
++            part = os.pread(self.fd, min(65536, INPUT['bytes'] - offset), offset)
++            need(bool(part), 'PRIOR_HTML_SHORT_READ')
++            chunks.append(part)
++            digest.update(part)
++            offset += len(part)
++        need(os.pread(self.fd, 1, offset) == b'' and digest.hexdigest() == INPUT['sha256'],
++             'PRIOR_HTML_COMPLETE_BYTE_PIN_REQUIRED')
++        self.path_recheck()
++        return b''.join(chunks)
++
++    def public_binding(self):
++        return {'path': INPUT['path'], 'bytes': INPUT['bytes'], 'sha256': INPUT['sha256'],
++                'file': self.before, 'held_directory_count': len(self.dirs),
++                'directories': [{'name': x['name'], 'before_full_stat': x['before']} for x in self.dirs],
++                'directory_stability_fields': ['st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid'],
++                'file_stability_fields': list(self.before), 'read_only': True}
++
++    def close(self):
++        while self.owned:
++            try:
++                os.close(self.owned.pop())
++                self.accounting['closed'] += 1
++            except OSError as error:
++                self.accounting['errors'].append({'errno': error.errno, 'operation': 'close_owned_input_fd'})
++
++
++def public_response_headers(rows):
++    """Do not persist or replay anonymous response cookie values."""
++    result = []
++    for name, value in rows:
++        if name.casefold() in ('set-cookie', 'set-cookie2'):
++            raw = value.encode('utf-8', 'strict')
++            value = '[redacted value: bytes=' + str(len(raw)) + '; sha256=' + hashlib.sha256(raw).hexdigest() + ']'
++        result.append((name, value))
++    return result
++
++
++def derive_exact_intermediate(raw):
+     parser, title = parse_html(raw)
+-    literal_controls = []
+-    candidate_control_urls = set()
+-    ignored_non_https_controls = 0
++    selected = set()
++    for row in parser.rows:
++        if ' '.join(row['text'].split()).casefold() != 'free xapk download for android' or not row['href']:
++            continue
++        absolute = urllib.parse.urljoin(SOURCE_PAGE_URL, row['href'])
++        normal_https_url(absolute)
++        selected.add(absolute)
++    need(selected == {INTERMEDIATE_URL}, 'ONE_ACTUAL_PINNED_LITERAL_INTERMEDIATE_REQUIRED')
++    text = raw.decode('utf-8', 'strict')
++    need(all(token in text for token in
++             ('com.ehi.national.mobile', '6.16.0.9403',
++              'a901bc4949fe241750cd7ea3fb5df690d00b21e217b2212be813bbd51e5a36bb')),
++         'PRIOR_ACTUAL_METADATA_LITERALS_CHANGED')
++    return {'source_title': title, 'literal_url': next(iter(selected)),
++            'url_rederived_from_exact_prior_HTML': True, 'URL_inferred_or_synthesized': False}
++
++
++def observe_intermediate_controls(raw):
++    parser, title = parse_html(raw)
++    rows = []
+     for anchor in parser.rows:
+         label = ' '.join(anchor['text'].split())
+-        href = anchor['href']
+-        if not href or not any(word in label.casefold() for word in ('download', 'variant', 'xapk', 'apk')):
++        if not anchor['href']:
+             continue
+-        absolute = urllib.parse.urljoin(profile['url'], href)
+-        parsed = urllib.parse.urlsplit(absolute)
+-        if parsed.scheme != 'https' or parsed.fragment:
+-            ignored_non_https_controls += 1
++        absolute = urllib.parse.urljoin(INTERMEDIATE_URL, anchor['href'])
++        item = urllib.parse.urlsplit(absolute)
++        if not (any(x in label.casefold() for x in ('download', 'xapk', 'apk'))
++                or label.casefold() in ('here', 'click here')
++                or item.path.casefold().endswith(('.apk', '.xapk'))):
++            continue
++        if item.scheme != 'https' or item.fragment:
+             continue
+         normal_https_url(absolute)
+-        need(len(literal_controls) < 64 and len(label) <= 512, 'BOUNDED_PUBLIC_CONTROL_OBSERVATION')
+-        literal_controls.append({'literal_label': label, 'literal_url': absolute,
+-                                 'followed': False, 'file_or_installer_identity_verified': False})
+-        if label.casefold() == profile['literal_control_label']:
+-            candidate_control_urls.add(absolute)
+-    text = raw.decode('utf-8', 'strict')
+-    return {
+-        'title': title,
+-        'literal_download_or_variant_anchors': literal_controls,
+-        'ignored_non_https_or_fragment_controls': ignored_non_https_controls,
+-        'expected_web_literals_present_in_HTML_not_verified_metadata': {
+-            'package': profile['package'] in text,
+-            'version_label': profile['expected_web_version_label'] in text,
+-            'container_sha256_label': profile['expected_web_container_sha256'] in text,
+-        },
+-        'candidate_control_urls': sorted(candidate_control_urls),
+-        'candidate_control_state': ('ONE_LITERAL_UNFOLLOWED_CONTROL' if len(candidate_control_urls) == 1
+-                                    else 'UNRESOLVED_OR_AMBIGUOUS_NO_INFERRED_URL'),
+-        'automatic_script_execution': False, 'all_links_followed': 0,
+-        'APK_or_container_obtained': False, 'direct_binary_delivery_qualified': False,
+-        'a_complete_HTML_observation_is_not_download_or_signature_success': True,
+-    }
++        need(len(rows) < 64 and len(label) <= 512, 'BOUNDED_INTERMEDIATE_CONTROLS')
++        rows.append({'literal_label': label, 'literal_url': absolute, 'followed': False,
++                     'referenced_file_identity': 'UNKNOWN_NOT_FETCHED'})
++    return {'title': title, 'unfollowed_literal_controls': rows,
++            'automatic_script_execution': False, 'binary_URL_qualified': False,
++            'APK_or_XAPK_downloaded': False, 'store_installer_used': False,
++            'unknown_or_empty_control_requires_original_HTML_review': True}
+ 
+ 
+ def deadline_signal(signum, frame):
+@@ -182,7 +291,7 @@
+     opener = urllib.request.build_opener(NoAutomaticRedirect(), urllib.request.HTTPSHandler(context=TLS))
+     try:
+         with opener.open(url, timeout=min(20, end - time.monotonic())) as response:
+-            row.update(status=response.status, final_url=response.geturl(), headers=list(response.headers.items()))
++            row.update(status=response.status, final_url=response.geturl(), headers=public_response_headers(response.headers.items()))
+             need(response.status == 200 and response.geturl() == url, 'EXACT_URL_HTTP200_REQUIRED')
+             need(response.headers.get_content_type() == 'text/html', 'HTML_ONLY_BODY_NOT_READ')
+             need(response.headers.get('Content-Encoding', 'identity').lower() == 'identity', 'UNREQUESTED_ENCODING_STOP')
+@@ -202,7 +311,7 @@
+         return bytes(body), row
+     except urllib.error.HTTPError as error:
+         with error:
+-            row.update(status=error.code, final_url=error.geturl(), headers=list(error.headers.items()),
++            row.update(status=error.code, final_url=error.geturl(), headers=public_response_headers(error.headers.items()),
+                        retry_after=error.headers.get('Retry-After'))
+             raw = error.read(MAX_ERROR_BODY + 1)
+             row['error_body_truncated_at_bound'] = len(raw) > MAX_ERROR_BODY
+@@ -216,44 +325,49 @@
+ 
+ 
+ def main():
+-    global ROOT
+-    flags = {'--observe-national-page-only': 'national'}
+     need(os.getuid() == os.geteuid() == os.getgid() == os.getegid() == 1000
+-         and len(sys.argv) == 2 and sys.argv[1] in flags, 'EXACT_ORDINARY_OWNER_CLOSED_PAGE_ENTRY')
+-    key = flags[sys.argv[1]]
+-    profile = PROFILES[key]
+-    ROOT = Path(profile['output_root'])
++         and sys.argv[1:] == ['--observe-pinned-national-intermediate-only'], 'EXACT_ORDINARY_OWNER_ENTRY')
+     need(ROOT.parent.resolve(strict=True) == ROOT.parent, 'EXISTING_NORMAL_PARENT_REQUIRED')
+     os.umask(0o077)
+     before = census()
+     ROOT.mkdir(mode=0o700)
++    accounting = {'acquired': 0, 'closed': 0, 'errors': []}
+     result = {
+-        'schema': 'pocket4-independent-public-single-page-observation-v2',
+-        'ok': False, 'candidate_id': key, 'package': profile['package'],
+-        'meaning_of_ok': 'one complete ordinary public HTML response and bounded untrusted control observation only',
+-        'distribution_class': 'public-third-party-distribution', 'publisher_direct_APK': False,
+-        'started_utc': now(), 'requests': [], 'errors': [], 'ordinary_uid': os.getuid(),
+-        'maximum_HTTP_GET_requests': 1, 'maximum_bytes_per_HTML': MAX_BODY,
+-        'maximum_total_seconds': TOTAL_SECONDS,
++        'schema': 'pocket4-national-literal-intermediate-observation-v1', 'ok': False,
++        'meaning_of_ok': 'one complete ordinary intermediate HTML observation; no binary qualification',
++        'package': 'com.ehi.national.mobile', 'started_utc': now(), 'requests': [], 'errors': [],
++        'prior_successful_page_job': '1a1b356f0cc-fc05-8238',
++        'prior_HTML_reference': INPUT, 'input_owned_descriptors': accounting,
++        'maximum_HTTP_GET_requests': 1, 'maximum_HTML_bytes': MAX_BODY,
++        'maximum_total_seconds': TOTAL_SECONDS, 'ordinary_uid': os.getuid(),
+         'user_agent_policy': 'urllib default unmodified', 'TLS_policy': 'system trust/default verification',
+-        'automatic_redirects': False, 'automatic_retry': False, 'challenge_solving': False,
+-        'DNS_IP_proxy_TLS_modifications': False, 'ordinary_resolver_internal_attempts_not_instrumented': True,
+-        'APK_downloads': 0, 'APK_signature_verified': False, 'APK_candidate_qualified': False,
+-        'delivery_link_requests': 0, 'distributor_installer_used': False,
+-        'existing_private_files_read': 0, 'subprocesses_started': 0,
+-        'Main_actions': 0, 'Android_commands': 0, 'UI_actions': 0, 'installs': 0,
+-        'permission_changes': 0, 'production_ready': False, 'cleanup_eligible': False,
++        'cookie_jar_created': False, 'prior_cookie_values_read_or_replayed': False,
++        'response_cookie_values_persisted': False, 'response_cookie_values_hashed_and_redacted': True,
++        'automatic_redirects': False, 'automatic_retry': False, 'script_execution': False,
++        'challenge_solving': False, 'DNS_IP_proxy_TLS_modifications': False,
++        'ordinary_resolver_internal_attempts_not_instrumented': True,
++        'delivery_link_requests': 0, 'APK_downloads': 0, 'APK_signature_verified': False,
++        'APK_candidate_qualified': False, 'store_installer_used': False,
++        'subprocesses_started': 0, 'Main_actions': 0, 'Android_commands': 0,
++        'UI_actions': 0, 'installs': 0, 'permission_changes': 0,
++        'production_ready': False, 'cleanup_eligible': False,
+         'before_descriptor_identities': before,
+-        'artifact_pin_semantics': 'hash of bytes written; no separate disk readback or directory crash-persistence proof',
++        'output_pin_semantics': 'hash of bytes written; no separate output readback or directory crash-persistence proof',
+     }
++    held = None
+     previous_handler = signal.signal(signal.SIGALRM, deadline_signal)
+     try:
+         end = time.monotonic() + TOTAL_SECONDS
+         signal.setitimer(signal.ITIMER_REAL, TOTAL_SECONDS, 0)
+-        raw, row = fetch_html_once(1, profile['url'], end, result)
+-        need(not any(name.lower() == 'cf-mitigated' and value.casefold() == 'challenge'
++        held = FixedPriorHTML(end, accounting)
++        result['prior_HTML_binding'] = held.public_binding()
++        result['literal_rederivation'] = derive_exact_intermediate(held.raw)
++        raw, row = fetch_html_once(1, result['literal_rederivation']['literal_url'], end, result)
++        need(not any(name.casefold() == 'cf-mitigated' and value.casefold() == 'challenge'
+                      for name, value in row['headers']), 'PUBLIC_CHALLENGE_STOP_NO_SOLVING_OR_ALTERNATE_IDENTITY')
+-        row['parsed_observation'] = observe_unfollowed_controls(raw, profile)
++        row['parsed_observation'] = observe_intermediate_controls(raw)
++        need(held.recheck() == held.raw, 'PRIOR_HTML_BYTES_CHANGED_AFTER_REQUEST')
++        result['prior_HTML_complete_bytes_stat_path_rechecked_after_request'] = True
+         result['ok'] = len(result['requests']) == 1 and row['complete'] is True
+     except BaseException as error:
+         result['errors'].append({'type': type(error).__name__, 'reason': str(error)[:512]})
+@@ -261,9 +375,21 @@
+     finally:
+         signal.setitimer(signal.ITIMER_REAL, 0, 0)
+         signal.signal(signal.SIGALRM, previous_handler)
++        if held is not None:
++            try:
++                held.path_recheck()
++                result['prior_HTML_path_stat_stable_at_final_close'] = True
++            except BaseException as error:
++                result['errors'].append({'type': type(error).__name__, 'reason': str(error)[:512],
++                                         'phase': 'input_final_path_stat'})
++                result['ok'] = False
++            finally:
++                held.close()
+     result['after_descriptor_identities'] = census()
+     result['original_descriptor_identities_restored'] = result['after_descriptor_identities'] == before
+-    result['ok'] = result['ok'] and result['original_descriptor_identities_restored'] and not result['errors']
++    result['ok'] = (result['ok'] and result['original_descriptor_identities_restored']
++                    and accounting['acquired'] == accounting['closed'] and not accounting['errors']
++                    and not result['errors'])
+     result['ended_utc'] = now()
+     raw = (json.dumps(result, sort_keys=True, ensure_ascii=True, allow_nan=False) + '\n').encode()
+     save('result.json', raw)

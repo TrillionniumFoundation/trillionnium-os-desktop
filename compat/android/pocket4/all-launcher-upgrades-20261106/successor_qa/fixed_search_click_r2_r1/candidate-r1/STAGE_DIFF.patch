@@ -1,0 +1,51 @@
+--- successor_qa/search_helper_readonly_inspect_r1/candidate-r1/stage_source_once.py
++++ successor_qa/fixed_search_click_r2_r1/candidate-r1/stage_source_once.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Publish the fixed readonly inspect owner and actual install receipts. No Android entry."""
++"""Publish the single fixed search owner and completed r2 inspect receipts. No Android entry."""
+ import base64
+ import errno
+ import hashlib
+@@ -9,9 +9,9 @@
+ import stat
+ import sys
+ 
+-ROOT = Path('/home/alex/work/pocket4-beike-search-helper-r2-readonly-inspect-20261107-r1')
+-PINS = {'owned_readonly_inspect_once.py': {'bytes': 37462, 'sha256': 'a7734300638acbd93535b2bdf03df8af2bf186e782cba47809bab058e5379ab1'}, 'request.json': {'bytes': 405, 'sha256': 'a800f1eb0bef99f1bb6ad6fd4d22cc349c68bd3a3d9baa3d523d74de82412acc'}, 'install.stdout.original.json': {'bytes': 33582, 'sha256': '5d7d4e22f8351a3ab58b99bb9236bda69bcf51a1a3a115f079f2834d8d83fbcf'}, 'install.terminal.original.json': {'bytes': 733, 'sha256': '5350ed913cfb078591d6bf2a13a7fc39b7f74990d9e26009f38bb16a67365bfc'}}
+-PAYLOAD_SHA = 'd304d4bb331f6dc68526e684cb46561693697377776b2eae81d94f415ac2205e'
++ROOT = Path('/home/alex/work/pocket4-beike-r2-fixed-search-click-20261107-r1')
++PINS = {'owned_fixed_search_click_once.py': {'bytes': 46665, 'sha256': '757ceea2cc7edd48733f18b40a63fdc19f3a249baa2f36fa8728ddd9ee0d9a3f'}, 'request.json': {'bytes': 603, 'sha256': 'fc726abf645484cf103032a70a4581d88f0f4de63056b85f71773f9f7259a38a'}, 'inspect.stdout.original.json': {'bytes': 24661, 'sha256': '7e4c812377d3562ad9fd236899ba151c2bb11772672c3f04956e02a469d487ed'}, 'inspect.terminal.original.json': {'bytes': 733, 'sha256': 'e58b70b49e0a9e61be8d7dcfe72517652cedc8e890f135f618c9558b3c70b6f0'}}
++PAYLOAD_SHA = '6e53a5efcf01dddbe075cc0834301fac079fca74d9789e3754225f17beb78c80'
+ FIELDS = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_nlink', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
+ 
+ 
+@@ -48,7 +48,7 @@
+     need(len(raw) <= 524288 and sha(raw) == PAYLOAD_SHA, 'EXACT_BOUNDED_PAYLOAD')
+     payload = json.loads(raw)
+     need(set(payload) == {'schema', 'root', 'files'} and
+-         payload['schema'] == 'pocket4-r2-readonly-inspect-source-stage-payload-v1' and
++         payload['schema'] == 'pocket4-r2-fixed-search-click-source-stage-payload-v1' and
+          payload['root'] == str(ROOT) and set(payload['files']) == set(PINS), 'CLOSED_FIXED_STAGE_PAYLOAD')
+     bodies = {}
+     for name, pin in PINS.items():
+@@ -61,7 +61,7 @@
+         if name.endswith('.py'):
+             compile(body, str(ROOT / name), 'exec')
+         bodies[name] = body
+-    need(ROOT.parent.resolve() == ROOT.parent and ROOT.name == 'pocket4-beike-search-helper-r2-readonly-inspect-20261107-r1',
++    need(ROOT.parent.resolve() == ROOT.parent and ROOT.name == 'pocket4-beike-r2-fixed-search-click-20261107-r1',
+          'EXACT_NEW_HOST_PRIVATE_ROOT')
+     os.umask(0o077)
+     ROOT.mkdir(mode=0o700)
+@@ -102,8 +102,8 @@
+     finally:
+         os.close(directory)
+     need(census() == before, 'STAGE_WHOLE_PROCESS_FD_IDENTITIES_CHANGED')
+-    print(json.dumps({'schema': 'pocket4-r2-readonly-inspect-source-stage-v1', 'root': str(ROOT),
+-        'files': PINS, 'whole_process_fd_identities_unchanged': True, 'mode': 'source-only-readonly-inspect-owner-not-invoked',
++    print(json.dumps({'schema': 'pocket4-r2-fixed-search-click-source-stage-v1', 'root': str(ROOT),
++        'files': PINS, 'whole_process_fd_identities_unchanged': True, 'mode': 'source-only-fixed-search-click-owner-not-invoked',
+         'Main_commands': 0, 'namespace_entries': 0, 'Main_locks_or_guards': 0,
+         'private_bundle_copied': False, 'reconciliation_published': False}, sort_keys=True), flush=True)
+ 

@@ -1,0 +1,1572 @@
+{
+  "Android_timeout_seconds": 25,
+  "actual_46_components": [
+    "com.Hyatt.hyt/com.hyt.auth.activities.SplashActivity",
+    "com.MobileTicket/com.MobileTicket.ui.activity.WelcomeGuideActivity",
+    "com.amazon.mShop.android.shopping/com.amazon.mShop.home.HomeActivity",
+    "com.android.calendar/com.android.calendar.AllInOneActivity",
+    "com.android.camera2/com.android.camera.CameraLauncher",
+    "com.android.contacts/com.android.contacts.activities.PeopleActivity",
+    "com.android.deskclock/com.android.deskclock.DeskClock",
+    "com.android.dialer/com.android.dialer.main.impl.MainActivity",
+    "com.android.documentsui/com.android.documentsui.LauncherActivity",
+    "com.android.gallery3d/com.android.gallery3d.app.GalleryActivity",
+    "com.android.messaging/com.android.messaging.ui.conversationlist.ConversationListActivity",
+    "com.android.quicksearchbox/com.android.quicksearchbox.SearchActivity",
+    "com.android.settings/com.android.settings.Settings",
+    "com.android.threadnetwork.demoapp/com.android.threadnetwork.demoapp.MainActivity",
+    "com.bestbuy.android/com.bestbuy.android.activity.SplashActivity",
+    "com.ehi.national.mobile/com.ehi.national.mobile.MainActivity",
+    "com.enflick.android.TextNow/authorization.ui.AuthorizationActivity",
+    "com.example.ndk_tests/com.example.ndk_tests.NdkTestsActivity",
+    "com.google.android.gms/org.microg.gms.ui.SettingsActivity",
+    "com.hertz.android.digital/com.hertz.android.digital.MainActivity",
+    "com.hilton.android.hhonors/com.mofo.android.hilton.core.activity.BootActivity",
+    "com.ihg.apps.android/com.ihg.apps.android.activity.MainActivity",
+    "com.jingdong.app.mall/com.jingdong.app.mall.MainFrameActivity",
+    "com.lianjia.beike/com.lianjia.activity.MainActivity",
+    "com.marriott.mrt/com.marriott.mrt.v10.features.common.splash_screen.SplashScreenActivity",
+    "com.pinger.textfree/com.pinger.textfree.call.activities.TFSplash",
+    "com.rytong.airchina/com.rytong.airchina.unility.splash.activity.SplashActivity",
+    "com.rytong.ceair/com.rytong.ceair.main.ColdLaunchActivity",
+    "com.sankuai.meituan.takeoutnew/com.sankuai.meituan.takeoutnew.ui.page.boot.WelcomeActivity",
+    "com.sdu.didi.psnger/com.didi.sdk.app.launch.splash.SplashActivity",
+    "com.ss.android.ugc.aweme/com.ss.android.ugc.aweme.splash.SplashActivity",
+    "com.szzc/com.sz.ucar.rentcar.splash.activity.DefaultIcon",
+    "com.taobao.taobao/com.taobao.tao.welcome.Welcome",
+    "com.tencent.mm/com.tencent.mm.ui.LauncherUI",
+    "com.ubercab/com.ubercab.presidio.app.core.root.RootActivity",
+    "com.united.mobile.android/com.united.mobile.android.ui.splash.SplashActivity",
+    "com.xunmeng.pinduoduo/com.xunmeng.pinduoduo.ui.activity.MainFrameActivity",
+    "com.zhubajie.client/com.zhubajie.bundle_basic.home.LauncherActivity",
+    "com.zillow.android.streeteasy/com.zillow.android.streeteasy.home.HomeActivity",
+    "ctrip.android.view/ctrip.business.splash.CtripSplashActivity",
+    "jp.co.ana.android.tabidachi/jp.co.ana.android.tabidachi.home.SplashActivity",
+    "local.pocket4.fixture/local.pocket4.fixture.ProbeActivity",
+    "org.chromium.webview_shell/org.chromium.webview_shell.WebViewBrowserActivity",
+    "org.droidloom.qa.editorcontract/org.droidloom.qa.editorcontract.EditorContractActivity",
+    "org.fcitx.fcitx5.android/org.fcitx.fcitx5.android.ui.main.MainActivity",
+    "tv.danmaku.bili/tv.danmaku.bili.MainActivityV2"
+  ],
+  "actual_bound_scope": null,
+  "actual_new_helper_install_job": null,
+  "actual_scope49_observation_job": null,
+  "actual_scope49_readback": null,
+  "automatic_retry": false,
+  "batches": [
+    {
+      "Android_commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "help"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "org.fcitx.fcitx5.android"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "org.fcitx.fcitx5.android"
+        ]
+      ],
+      "actual_results": "UNKNOWN_NOT_RUN",
+      "app_scope": null,
+      "batch": 1,
+      "idempotency_key": null,
+      "original_partition_batch": 1,
+      "output_root": null,
+      "process_request": null,
+      "source_root": null,
+      "stream_limits": [
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      ],
+      "target_identities": null,
+      "targets": [
+        "org.fcitx.fcitx5.android"
+      ]
+    },
+    {
+      "Android_commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "help"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.google.android.gms"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.google.android.gms"
+        ]
+      ],
+      "actual_results": "UNKNOWN_NOT_RUN",
+      "app_scope": null,
+      "batch": 2,
+      "idempotency_key": null,
+      "original_partition_batch": 2,
+      "output_root": null,
+      "process_request": null,
+      "source_root": null,
+      "stream_limits": [
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 2097152
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      ],
+      "target_identities": null,
+      "targets": [
+        "com.google.android.gms"
+      ]
+    },
+    {
+      "Android_commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "help"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.lianjia.beike"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.lianjia.beike"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.rytong.ceair"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.rytong.ceair"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.rytong.airchina"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.rytong.airchina"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.tencent.mm"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.tencent.mm"
+        ]
+      ],
+      "actual_results": "UNKNOWN_NOT_RUN",
+      "app_scope": null,
+      "batch": 3,
+      "idempotency_key": null,
+      "original_partition_batch": 3,
+      "output_root": null,
+      "process_request": null,
+      "source_root": null,
+      "stream_limits": [
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      ],
+      "target_identities": null,
+      "targets": [
+        "com.lianjia.beike",
+        "com.rytong.ceair",
+        "com.rytong.airchina",
+        "com.tencent.mm"
+      ]
+    },
+    {
+      "Android_commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "help"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.Hyatt.hyt"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.Hyatt.hyt"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.enflick.android.TextNow"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.enflick.android.TextNow"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.szzc"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.szzc"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "tv.danmaku.bili"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "tv.danmaku.bili"
+        ]
+      ],
+      "actual_results": "UNKNOWN_NOT_RUN",
+      "app_scope": null,
+      "batch": 4,
+      "idempotency_key": null,
+      "original_partition_batch": 4,
+      "output_root": null,
+      "process_request": null,
+      "source_root": null,
+      "stream_limits": [
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      ],
+      "target_identities": null,
+      "targets": [
+        "com.Hyatt.hyt",
+        "com.enflick.android.TextNow",
+        "com.szzc",
+        "tv.danmaku.bili"
+      ]
+    },
+    {
+      "Android_commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "help"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.MobileTicket"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.MobileTicket"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.amazon.mShop.android.shopping"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.amazon.mShop.android.shopping"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.android.calendar"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.android.calendar"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.android.camera2"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.android.camera2"
+        ]
+      ],
+      "actual_results": "UNKNOWN_NOT_RUN",
+      "app_scope": null,
+      "batch": 5,
+      "idempotency_key": null,
+      "original_partition_batch": 5,
+      "output_root": null,
+      "process_request": null,
+      "source_root": null,
+      "stream_limits": [
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      ],
+      "target_identities": null,
+      "targets": [
+        "com.MobileTicket",
+        "com.amazon.mShop.android.shopping",
+        "com.android.calendar",
+        "com.android.camera2"
+      ]
+    },
+    {
+      "Android_commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "help"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.android.contacts"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.android.contacts"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.android.deskclock"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.android.deskclock"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.android.dialer"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.android.dialer"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.android.documentsui"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.android.documentsui"
+        ]
+      ],
+      "actual_results": "UNKNOWN_NOT_RUN",
+      "app_scope": null,
+      "batch": 6,
+      "idempotency_key": null,
+      "original_partition_batch": 6,
+      "output_root": null,
+      "process_request": null,
+      "source_root": null,
+      "stream_limits": [
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      ],
+      "target_identities": null,
+      "targets": [
+        "com.android.contacts",
+        "com.android.deskclock",
+        "com.android.dialer",
+        "com.android.documentsui"
+      ]
+    },
+    {
+      "Android_commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "help"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.android.gallery3d"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.android.gallery3d"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.android.messaging"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.android.messaging"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.android.quicksearchbox"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.android.quicksearchbox"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.android.settings"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.android.settings"
+        ]
+      ],
+      "actual_results": "UNKNOWN_NOT_RUN",
+      "app_scope": null,
+      "batch": 7,
+      "idempotency_key": null,
+      "original_partition_batch": 7,
+      "output_root": null,
+      "process_request": null,
+      "source_root": null,
+      "stream_limits": [
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      ],
+      "target_identities": null,
+      "targets": [
+        "com.android.gallery3d",
+        "com.android.messaging",
+        "com.android.quicksearchbox",
+        "com.android.settings"
+      ]
+    },
+    {
+      "Android_commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "help"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.android.threadnetwork.demoapp"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.android.threadnetwork.demoapp"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.bestbuy.android"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.bestbuy.android"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.ehi.national.mobile"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.ehi.national.mobile"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.hertz.android.digital"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.hertz.android.digital"
+        ]
+      ],
+      "actual_results": "UNKNOWN_NOT_RUN",
+      "app_scope": null,
+      "batch": 8,
+      "idempotency_key": null,
+      "original_partition_batch": 8,
+      "output_root": null,
+      "process_request": null,
+      "source_root": null,
+      "stream_limits": [
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      ],
+      "target_identities": null,
+      "targets": [
+        "com.android.threadnetwork.demoapp",
+        "com.bestbuy.android",
+        "com.ehi.national.mobile",
+        "com.hertz.android.digital"
+      ]
+    },
+    {
+      "Android_commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "help"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.hilton.android.hhonors"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.hilton.android.hhonors"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.ihg.apps.android"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.ihg.apps.android"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.jingdong.app.mall"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.jingdong.app.mall"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.marriott.mrt"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.marriott.mrt"
+        ]
+      ],
+      "actual_results": "UNKNOWN_NOT_RUN",
+      "app_scope": null,
+      "batch": 9,
+      "idempotency_key": null,
+      "original_partition_batch": 9,
+      "output_root": null,
+      "process_request": null,
+      "source_root": null,
+      "stream_limits": [
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      ],
+      "target_identities": null,
+      "targets": [
+        "com.hilton.android.hhonors",
+        "com.ihg.apps.android",
+        "com.jingdong.app.mall",
+        "com.marriott.mrt"
+      ]
+    },
+    {
+      "Android_commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "help"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.pinger.textfree"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.pinger.textfree"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.sankuai.meituan.takeoutnew"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.sankuai.meituan.takeoutnew"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.sdu.didi.psnger"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.sdu.didi.psnger"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.ss.android.ugc.aweme"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.ss.android.ugc.aweme"
+        ]
+      ],
+      "actual_results": "UNKNOWN_NOT_RUN",
+      "app_scope": null,
+      "batch": 10,
+      "idempotency_key": null,
+      "original_partition_batch": 10,
+      "output_root": null,
+      "process_request": null,
+      "source_root": null,
+      "stream_limits": [
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      ],
+      "target_identities": null,
+      "targets": [
+        "com.pinger.textfree",
+        "com.sankuai.meituan.takeoutnew",
+        "com.sdu.didi.psnger",
+        "com.ss.android.ugc.aweme"
+      ]
+    },
+    {
+      "Android_commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "help"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.taobao.taobao"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.taobao.taobao"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.ubercab"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.ubercab"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.united.mobile.android"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.united.mobile.android"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.xunmeng.pinduoduo"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.xunmeng.pinduoduo"
+        ]
+      ],
+      "actual_results": "UNKNOWN_NOT_RUN",
+      "app_scope": null,
+      "batch": 11,
+      "idempotency_key": null,
+      "original_partition_batch": 11,
+      "output_root": null,
+      "process_request": null,
+      "source_root": null,
+      "stream_limits": [
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      ],
+      "target_identities": null,
+      "targets": [
+        "com.taobao.taobao",
+        "com.ubercab",
+        "com.united.mobile.android",
+        "com.xunmeng.pinduoduo"
+      ]
+    },
+    {
+      "Android_commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "help"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.zhubajie.client"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.zhubajie.client"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.zillow.android.streeteasy"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.zillow.android.streeteasy"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "ctrip.android.view"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "ctrip.android.view"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "jp.co.ana.android.tabidachi"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "jp.co.ana.android.tabidachi"
+        ]
+      ],
+      "actual_results": "UNKNOWN_NOT_RUN",
+      "app_scope": null,
+      "batch": 12,
+      "idempotency_key": null,
+      "original_partition_batch": 12,
+      "output_root": null,
+      "process_request": null,
+      "source_root": null,
+      "stream_limits": [
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      ],
+      "target_identities": null,
+      "targets": [
+        "com.zhubajie.client",
+        "com.zillow.android.streeteasy",
+        "ctrip.android.view",
+        "jp.co.ana.android.tabidachi"
+      ]
+    },
+    {
+      "Android_commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "help"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "local.pocket4.fixture"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "local.pocket4.fixture"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "org.chromium.webview_shell"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "org.chromium.webview_shell"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "org.droidloom.qa.editorcontract"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "org.droidloom.qa.editorcontract"
+        ]
+      ],
+      "actual_results": "UNKNOWN_NOT_RUN",
+      "app_scope": null,
+      "batch": 13,
+      "idempotency_key": null,
+      "original_partition_batch": 13,
+      "output_root": null,
+      "process_request": null,
+      "source_root": null,
+      "stream_limits": [
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      ],
+      "target_identities": null,
+      "targets": [
+        "local.pocket4.fixture",
+        "org.chromium.webview_shell",
+        "org.droidloom.qa.editorcontract"
+      ]
+    },
+    {
+      "Android_commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "help"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "dump-package",
+          "com.example.ndk_tests"
+        ],
+        [
+          "/system/bin/cmd",
+          "appops",
+          "get",
+          "--user",
+          "0",
+          "com.example.ndk_tests"
+        ]
+      ],
+      "actual_results": "UNKNOWN_NOT_RUN",
+      "app_scope": null,
+      "batch": 14,
+      "idempotency_key": null,
+      "original_partition_batch": null,
+      "output_root": null,
+      "process_request": null,
+      "source_root": null,
+      "stream_limits": [
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        },
+        {
+          "stderr": 262144,
+          "stdout": 262144
+        }
+      ],
+      "target_identities": null,
+      "targets": [
+        "com.example.ndk_tests"
+      ]
+    }
+  ],
+  "claims_created": 0,
+  "cleanup_actions": 0,
+  "current_new_helper_APK": null,
+  "current_new_helper_UID": null,
+  "default_per_stream_bytes": 262144,
+  "expected_future_identity_context_packages": 49,
+  "fresh_framework_resolver_requeried_by_capture_worker": false,
+  "guard": {
+    "bytes": 3213,
+    "path": "/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01/current_baseline_guard.py",
+    "sha256": "d84df98d55352ef9ae66753ee15f3746d9d9a64c35fddf392a08f10ba4105cb3"
+  },
+  "microg_dump_stdout_only_bytes": 2097152,
+  "native_component_difference_stops_before_service_queries": true,
+  "native_operations_per_batch": [
+    "status",
+    "applications",
+    "status"
+  ],
+  "new_ledger_proposed_relative_path": "successor_audit_requests/actual/permissions-fixed46-r1",
+  "old45_STOP3_preserved": true,
+  "old_ledger_advanced_or_reclassified": false,
+  "outer_process_seconds": 1100,
+  "owned_child_seconds": 1000,
+  "packets_sealed": 0,
+  "per_command_seconds": 30,
+  "private_PM_AppOps_body_in_Git": false,
+  "production_ready_apps": 0,
+  "raw_capture_is_semantic_grant_proof": false,
+  "remote_jobs_submitted": 0,
+  "resolver_reference": {
+    "bytes": 112546,
+    "file": "successor_audit_requests/native46_discovery_r1/actual/artifact.original.json",
+    "job_id": "1a1b307f521-fc05-807a",
+    "sha256": "69482778466e03dceff2defc85fb8f68880c360a3f112e129561a8fd5e6e5400"
+  },
+  "roles": "UNKNOWN_NOT_QUERIED",
+  "runtime_epoch_sha256": "a7c7091a9e57eb6b373aa8a9225bb2f17b4ec0f1248679b56aaadc78eb0faca9",
+  "schema": "pocket4-fixed46-permission-unsealed-plan-v1",
+  "service_target_packages": 46,
+  "state": "WAITING_FOR_ACTUAL_NEW_HELPER_AND_SCOPE49",
+  "target_packages": [
+    "org.fcitx.fcitx5.android",
+    "com.google.android.gms",
+    "com.lianjia.beike",
+    "com.rytong.ceair",
+    "com.rytong.airchina",
+    "com.tencent.mm",
+    "com.Hyatt.hyt",
+    "com.enflick.android.TextNow",
+    "com.szzc",
+    "tv.danmaku.bili",
+    "com.MobileTicket",
+    "com.amazon.mShop.android.shopping",
+    "com.android.calendar",
+    "com.android.camera2",
+    "com.android.contacts",
+    "com.android.deskclock",
+    "com.android.dialer",
+    "com.android.documentsui",
+    "com.android.gallery3d",
+    "com.android.messaging",
+    "com.android.quicksearchbox",
+    "com.android.settings",
+    "com.android.threadnetwork.demoapp",
+    "com.bestbuy.android",
+    "com.ehi.national.mobile",
+    "com.hertz.android.digital",
+    "com.hilton.android.hhonors",
+    "com.ihg.apps.android",
+    "com.jingdong.app.mall",
+    "com.marriott.mrt",
+    "com.pinger.textfree",
+    "com.sankuai.meituan.takeoutnew",
+    "com.sdu.didi.psnger",
+    "com.ss.android.ugc.aweme",
+    "com.taobao.taobao",
+    "com.ubercab",
+    "com.united.mobile.android",
+    "com.xunmeng.pinduoduo",
+    "com.zhubajie.client",
+    "com.zillow.android.streeteasy",
+    "ctrip.android.view",
+    "jp.co.ana.android.tabidachi",
+    "local.pocket4.fixture",
+    "org.chromium.webview_shell",
+    "org.droidloom.qa.editorcontract",
+    "com.example.ndk_tests"
+  ],
+  "total_Android_readonly_commands": 106,
+  "total_native_readonly_commands": 42,
+  "worker_deadline_seconds": 900
+}

@@ -1,0 +1,97 @@
+--- preserved-unsubmitted-r1/assemble_bound.py
++++ corrected-r2/assemble_bound.py
+@@ -130,12 +130,13 @@
+     rows, inheritance = [], []
+     for number, targets in enumerate(groups, 1):
+         name = "batch-%02d" % number
+-        stage_root = "/home/alex/work/pocket4-launcher46-permissions-source-20261107-r1-b%02d" % number
+-        output_root = "/home/alex/work/pocket4-launcher46-permissions-observation-20261107-r1-b%02d" % number
+-        key = "pocket4-fixed46-permissions-20261107-r1-b%02d" % number
++        stage_root = "/home/alex/work/pocket4-launcher46-permissions-source-20261107-r2-b%02d" % number
++        output_root = "/home/alex/work/pocket4-launcher46-permissions-observation-20261107-r2-b%02d" % number
++        key = "pocket4-fixed46-permissions-20261107-r2-b%02d" % number
+         commands = source.command_list(targets)
+         identities = [{k: scope["apps"][p][k] for k in ("package", "uid", "version_code")} for p in targets]
+         transport = assignment(transport_template, "READ_ONLY_COMMANDS", tuple(tuple(c) for c in commands))
++        transport = assignment(transport, "EXPLICIT_SCOPE_SHA256", summary["scope"]["sha256"])
+         tp = write(name + "/readonly_services_transport.py", transport)
+         remote_transport = {"path": stage_root + "/readonly_services_transport.py", "bytes": tp["bytes"], "sha256": tp["sha256"]}
+         help_pin = {"path": stage_root + "/inputs/cmd-appops-help.original.txt", "bytes": len(help_raw), "sha256": sha(help_raw)}
+--- preserved-unsubmitted-r1/gate_closure.py.inc
++++ corrected-r2/gate_closure.py.inc
+@@ -41,11 +41,11 @@
+         for package in group:
+             needed_commands.extend((["/system/bin/cmd", "package", "dump-package", package],
+                                     ["/system/bin/cmd", "appops", "get", "--user", "0", package]))
+-        stage_root = "/home/alex/work/pocket4-launcher46-permissions-source-20261107-r1-b%02d" % number
+-        output_root = "/home/alex/work/pocket4-launcher46-permissions-observation-20261107-r1-b%02d" % number
++        stage_root = "/home/alex/work/pocket4-launcher46-permissions-source-20261107-r2-b%02d" % number
++        output_root = "/home/alex/work/pocket4-launcher46-permissions-observation-20261107-r2-b%02d" % number
+         need(row["Android_commands"] == needed_commands and row["native_operations"] == ["status", "applications", "status"] and
+              row["source_root"] == stage_root and row["output_root"] == output_root and
+-             row["idempotency_key"] == "pocket4-fixed46-permissions-20261107-r1-b%02d" % number,
++             row["idempotency_key"] == "pocket4-fixed46-permissions-20261107-r2-b%02d" % number,
+              "CLOSED_FIXED_QUERY_LIST_AND_UNIQUE_ROOTS_AND_KEY_REQUIRED")
+         sources = [remote_local_pin(g, row[key], row[key + "_file"]) for key in ("worker", "transport", "wrapper")]
+         request = g.parse(remote_local_pin(g, row["request"], row["request_file"]))
+@@ -63,6 +63,11 @@
+              wc["APP_SCOPE"] == plan["app_scope"] and wc["GUARD"] == plan["guard"] and
+              wc["STAGE"] == stage_root and wc["OUTPUT"] == output_root and wc["TRANSPORT"] == row["transport"] and
+              wc["APP_OPS_HELP"] == help_pin and [list(c) for c in tc["READ_ONLY_COMMANDS"]] == needed_commands and
++             tc["EXPLICIT_SCOPE_SHA256"] == plan["app_scope"]["sha256"] and
++             tc["FRAMEWORK_EPOCH_SHA256"] == bound["expected_guard"]["Main_epoch_sha256"] ==
++                 constants(templates["transport"])["FRAMEWORK_EPOCH_SHA256"] and
++             tc["HELD_HELPER_SHA256"] == wc["HELPER_SHA"] == constants(templates["transport"])["HELD_HELPER_SHA256"] and
++             tc["ANDROID_APP_SHA256"] == constants(templates["transport"])["ANDROID_APP_SHA256"] and
+              oc["CONFIG"]["worker"] == row["worker"] and oc["CONFIG"]["request"] == row["request"] and
+              oc["CONFIG"]["kind"] == "services" and oc["CONFIG"]["stage_root"] == stage_root,
+              "EXACT_SCOPE_TARGETS_TRANSPORT_AND_WRAPPER_REQUIRED")
+--- preserved-unsubmitted-r1/permission_capture_gate.py
++++ corrected-r2/permission_capture_gate.py
+@@ -20,7 +20,7 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ PROJECT = HERE.parents[2]
+-PLAN_SHA = 'facee24ef983eafb0324cf34dc803f5590599ec4ae4d0126015995679b019abc'
++PLAN_SHA = 'ae7570780e890f0855b2dc98ff4b5b387e52048deef4dcb9f33e2983e1735e58'
+ PLAN_BYTES = 54870
+ PRIMITIVES_FILE = "successor_audit_requests/revisions/gate-r2-terminal-protocol/audit_serial_gate.py"
+ PRIMITIVES_SHA = "59568b064ea70628ae78a04755f3866d771a82b2907ded11122b2cdb1751c59d"
+@@ -265,11 +265,11 @@
+         for package in group:
+             needed_commands.extend((["/system/bin/cmd", "package", "dump-package", package],
+                                     ["/system/bin/cmd", "appops", "get", "--user", "0", package]))
+-        stage_root = "/home/alex/work/pocket4-launcher46-permissions-source-20261107-r1-b%02d" % number
+-        output_root = "/home/alex/work/pocket4-launcher46-permissions-observation-20261107-r1-b%02d" % number
++        stage_root = "/home/alex/work/pocket4-launcher46-permissions-source-20261107-r2-b%02d" % number
++        output_root = "/home/alex/work/pocket4-launcher46-permissions-observation-20261107-r2-b%02d" % number
+         need(row["Android_commands"] == needed_commands and row["native_operations"] == ["status", "applications", "status"] and
+              row["source_root"] == stage_root and row["output_root"] == output_root and
+-             row["idempotency_key"] == "pocket4-fixed46-permissions-20261107-r1-b%02d" % number,
++             row["idempotency_key"] == "pocket4-fixed46-permissions-20261107-r2-b%02d" % number,
+              "CLOSED_FIXED_QUERY_LIST_AND_UNIQUE_ROOTS_AND_KEY_REQUIRED")
+         sources = [remote_local_pin(g, row[key], row[key + "_file"]) for key in ("worker", "transport", "wrapper")]
+         request = g.parse(remote_local_pin(g, row["request"], row["request_file"]))
+@@ -287,6 +287,11 @@
+              wc["APP_SCOPE"] == plan["app_scope"] and wc["GUARD"] == plan["guard"] and
+              wc["STAGE"] == stage_root and wc["OUTPUT"] == output_root and wc["TRANSPORT"] == row["transport"] and
+              wc["APP_OPS_HELP"] == help_pin and [list(c) for c in tc["READ_ONLY_COMMANDS"]] == needed_commands and
++             tc["EXPLICIT_SCOPE_SHA256"] == plan["app_scope"]["sha256"] and
++             tc["FRAMEWORK_EPOCH_SHA256"] == bound["expected_guard"]["Main_epoch_sha256"] ==
++                 constants(templates["transport"])["FRAMEWORK_EPOCH_SHA256"] and
++             tc["HELD_HELPER_SHA256"] == wc["HELPER_SHA"] == constants(templates["transport"])["HELD_HELPER_SHA256"] and
++             tc["ANDROID_APP_SHA256"] == constants(templates["transport"])["ANDROID_APP_SHA256"] and
+              oc["CONFIG"]["worker"] == row["worker"] and oc["CONFIG"]["request"] == row["request"] and
+              oc["CONFIG"]["kind"] == "services" and oc["CONFIG"]["stage_root"] == stage_root,
+              "EXACT_SCOPE_TARGETS_TRANSPORT_AND_WRAPPER_REQUIRED")
+--- preserved-unsubmitted-r1/batch-01/readonly_services_transport.py
++++ corrected-r2/batch-01/readonly_services_transport.py
+@@ -20,7 +20,7 @@
+ ANDROID_APP_SHA256 = "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66"
+ FRAMEWORK_EPOCH_SHA256 = '7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c'
+ HELD_HELPER_SHA256 = "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689"
+-EXPLICIT_SCOPE_SHA256 = "44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f"
++EXPLICIT_SCOPE_SHA256 = '7187bc544cf6812ad47efdf141cd111897a1124b9532f84b7cf599b0c0fee1e3'
+ READ_ONLY_COMMANDS = (('/system/bin/cmd', 'package', 'help'), ('/system/bin/cmd', 'package', 'dump-package', 'org.fcitx.fcitx5.android'), ('/system/bin/cmd', 'appops', 'get', '--user', '0', 'org.fcitx.fcitx5.android'))
+ HOST_ENV = {"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "HOME": "/root", "LANG": "C.UTF-8"}
+ REQUIRED_ENV = {"PATH", "BOOTCLASSPATH", "DEX2OATBOOTCLASSPATH",

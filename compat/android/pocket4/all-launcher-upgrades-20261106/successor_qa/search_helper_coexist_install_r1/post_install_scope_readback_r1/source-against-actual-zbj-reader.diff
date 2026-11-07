@@ -1,0 +1,20 @@
+--- successor_install/source-r4-zbj-full48/candidate-r1/post_install_scope_readback_r1/read_actual_scope_once.py
++++ successor_qa/search_helper_coexist_install_r1/post_install_scope_readback_r1/read_actual_scope_once.py
+@@ -5,7 +5,7 @@
+ import os
+ import stat
+ 
+-PIN = {'bytes': 59259, 'path': '/home/alex/work/pocket4-successor-native-install-20261106-zbj-s43-full48-r4-01/app-scope-after.private.json', 'sha256': '9aeb555bbc287e168d1bb8f1df09e33f8fd37777ee01a58fe2c563e2725cf01a'}
++PIN = {'bytes': 60614, 'path': '/home/alex/work/pocket4-successor-qa-flow-b6de2bd4f04bcd572a074ef984ba7dbe/steps/install-search-helper-r2-01/app-scope-after.private.json', 'sha256': '7187bc544cf6812ad47efdf141cd111897a1124b9532f84b7cf599b0c0fee1e3'}
+ FIELDS = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_size',
+           'st_nlink', 'st_mtime_ns', 'st_ctime_ns')
+ 
+@@ -72,7 +72,7 @@
+         need(not errors, 'OWNED_FDS_NOT_RETIRED')
+     need(census() == before, 'WHOLE_PROCESS_FD_IDENTITIES_CHANGED')
+     result = {
+-        'schema': 'pocket4-zbj-post-install48-scope-readback-v1', 'ok': True,
++        'schema': 'pocket4-owned-r2-post-install49-scope-readback-v1', 'ok': True,
+         'file': PIN, 'metadata': metadata, 'raw_utf8': bytes(body).decode('utf-8', 'strict'),
+         'whole_process_FD_identities_restored': True,
+         'owned_FDs_acquired': len(owned), 'owned_FDs_closed': len(owned),

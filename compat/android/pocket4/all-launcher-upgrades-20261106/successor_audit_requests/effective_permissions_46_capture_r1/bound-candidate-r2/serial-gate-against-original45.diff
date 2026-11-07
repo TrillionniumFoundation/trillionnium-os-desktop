@@ -1,0 +1,288 @@
+--- preserved-original45/serial-gate-against-original45.diff
++++ actual49-fixed46/serial-gate-against-original45.diff
+@@ -1,10 +1,10 @@
+ #!/usr/bin/env python3
+-"""Local-only serial gate for the fixed 13 permission raw-capture jobs.
++"""Local-only serial gate for the fixed 14 permission raw-capture jobs.
+ 
+ This separate observation ledger never changes the APK-audit ledger. No process
+ submission, Android command, permission mutation, or interpretation occurs here.
+ The actual successful Beike pilot proves the source/lifetime baseline only; it
+-does not count as a new result for any of these 45 service targets.
++does not count as a new result for any of these 46 service targets.
+ """
+ import sys
+ sys.dont_write_bytecode = True
+@@ -19,13 +19,13 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-PROJECT = HERE.parents[1]
+-PLAN_SHA = "802c9616b99c0c753c7a31188ab7b594e5baba39d6940d963c2c1b9bd2cdb749"
+-PLAN_BYTES = 47161
++PROJECT = HERE.parents[2]
++PLAN_SHA = 'ae7570780e890f0855b2dc98ff4b5b387e52048deef4dcb9f33e2983e1735e58'
++PLAN_BYTES = 54870
+ PRIMITIVES_FILE = "successor_audit_requests/revisions/gate-r2-terminal-protocol/audit_serial_gate.py"
+ PRIMITIVES_SHA = "59568b064ea70628ae78a04755f3866d771a82b2907ded11122b2cdb1751c59d"
+ EMPTY_SHA = hashlib.sha256(b"").hexdigest()
+-LEDGER = PROJECT / "successor_audit_requests/actual/permissions-fixed45-r1"
++LEDGER = PROJECT / "successor_audit_requests/actual/permissions-fixed46-r1"
+ STAGE_SCHEMA = "pocket4-fixed-launcher-permission-source-stage-result-v1"
+ JOB_ID = re.compile(r"[0-9a-f]+-[0-9a-f]+-[0-9a-f]+")
+ 
+@@ -146,12 +146,13 @@
+          type(command.get("host_pid")) is int and command["host_pid"] > 0, "EVERY_COMMAND_MUST_COMPLETE_NORMALLY")
+ 
+ 
+-def stream_pair(command, record, root, prefix):
++def stream_pair(command, record, root, prefix, stdout_limit=262144):
++    need(type(stdout_limit) is int and stdout_limit in (262144, 2097152), "CLOSED_STREAM_BUDGET_REQUIRED")
+     need(record.get("stream_artifacts_complete") is True, "EVERY_RAW_STREAM_MUST_BE_PUBLISHED")
+     for name in ("stdout", "stderr"):
+         pin = record[name]
+         need(set(pin) == {"path", "bytes", "sha256"} and pin["path"] == root + "/" + prefix + "." + name and
+-             type(pin["bytes"]) is int and 0 <= pin["bytes"] <= 262144 and
++             type(pin["bytes"]) is int and 0 <= pin["bytes"] <= (stdout_limit if name == "stdout" else 262144) and
+              re.fullmatch(r"[0-9a-f]{64}", pin["sha256"]) is not None and
+              command.get(name + "_bytes") == pin["bytes"] and command.get(name + "_sha256") == pin["sha256"],
+              "RAW_STREAM_PIN_MUST_MATCH_ACTUAL_COMMAND_CAPTURE")
+@@ -160,6 +161,7 @@
+ 
+ 
+ def service_gate(result, request, commands, identities, expected_guard, baseline=False):
++    need(baseline is False, "HISTORICAL45_PILOT_IS_NOT_A_NEW46_RESULT")
+     root = request["output_root"]
+     request_raw = json.dumps(request, ensure_ascii=True, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("ascii") + b"\n"
+     need(result.get("request") == {"path": root + "/request.json", "bytes": len(request_raw), "sha256": sha(request_raw)} and
+@@ -171,13 +173,13 @@
+          scope.get("app_scope_sha256") == request["app_scope"]["sha256"] and scope.get("packages") == request["packages"] and
+          scope.get("runtime_epoch_sha256") == expected_guard["runtime_epoch_sha256"] and
+          scope.get("current_apk_paths_and_file_identities_match") is True and scope.get("new_signature_verification_performed") is False and
+-         scope.get("UI_or_install_runtime_admitted") is False, "FULL_47_CURRENT_IDENTITY_GUARDS_REQUIRED")
++         scope.get("UI_or_install_runtime_admitted") is False, "FULL_49_CURRENT_IDENTITY_GUARDS_REQUIRED")
+     if not baseline:
+         need(result.get("target_identities_from_pinned_scope") == identities and
+              result.get("target_packages") == request["target_packages"] and result.get("batch") == request["batch"], "EXACT_FIXED_TARGET_IDENTITIES_REQUIRED")
+         comparison = result.get("native_catalog_comparison", {})
+-        need(result.get("native_catalog_matches_actual45_component_reference") is True and comparison == {
+-            "actual_framework_resolver_reference_job": "1a1b22e95d0-fc05-7cd4", "expected_count": 45, "observed_count": 45,
++        need(result.get("native_catalog_matches_actual46_component_reference") is True and comparison == {
++            "actual_framework_resolver_reference_job": "1a1b307f521-fc05-807a", "expected_count": 46, "observed_count": 46,
+             "added_components": [], "missing_components": [], "framework_resolver_requeried_by_this_worker": False}, "CURRENT_NATIVE_CATALOG_CHANGED")
+     native_argv = ["/usr/bin/sudo", "-n", "-u", "#1000", "--", "/usr/bin/env", "XDG_RUNTIME_DIR=/run/user/1000",
+                    "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus", "/usr/bin/droidloomctl", "--socket", "/run/droidloom/control.sock", "--json"]
+@@ -192,7 +194,13 @@
+     need(len(result["android_commands"]) == len(commands), "ALL_CLOSED_ANDROID_COMMANDS_REQUIRED")
+     for index, (row, command) in enumerate(zip(result["android_commands"], commands), 1):
+         clean_command(row)
+-        stream_pair(row, row, root, "android-%02d" % index)
++        microg = request["batch"] == 2 and request["target_packages"] == ["com.google.android.gms"]
++        limits = {"stdout": 2097152 if microg and index == 2 else 262144, "stderr": 262144}
++        if microg:
++            need(row.get("capture_limits") == limits, "EXACT_MICROG_STREAM_LIMIT_INTENT_REQUIRED")
++        else:
++            need("capture_limits" not in row, "DEFAULT_STREAM_BUDGET_MUST_NOT_GAIN_EXCEPTION")
++        stream_pair(row, row, root, "android-%02d" % index, limits["stdout"])
+         suffix = ["/system/xbin/su", "2000", "/system/bin/timeout", "-k", "2", "25"] + command
+         need(row.get("argv", [])[-len(suffix):] == suffix, "EXACT_BOUND_READONLY_ANDROID_SUFFIX_REQUIRED")
+     help_row = result["android_commands"][0]
+@@ -217,67 +225,96 @@
+ def load_closure():
+     g = primitives()
+     raw = g.read(HERE / "CAPTURE_PLAN.json", 262144)
+-    need(len(raw) == PLAN_BYTES and sha(raw) == PLAN_SHA, "FROZEN_PERMISSION_PLAN_CHANGED")
++    need(len(raw) == PLAN_BYTES and sha(raw) == PLAN_SHA, "FROZEN_PERMISSION46_PLAN_CHANGED")
+     plan = g.parse(raw)
+-    need(plan["schema"] == "pocket4-fixed-45-permission-raw-capture-plan-v1" and len(plan["batches"]) == 13 and
+-         plan["identity_context_packages"] == 47 and plan["service_target_packages"] == 45 and
+-         plan["runtime_ledger_relative_path"] == str(LEDGER.relative_to(PROJECT)), "EXACT_NEW_PERMISSION_TASK_PLAN_REQUIRED")
++    need(plan["schema"] == "pocket4-fixed46-permission-raw-capture-plan-v1" and len(plan["batches"]) == 14 and
++         plan["identity_context_packages"] == 49 and plan["service_target_packages"] == 46 and
++         plan["runtime_ledger_relative_path"] == str(LEDGER.relative_to(PROJECT)) and
++         plan["total_Android_readonly_commands"] == 106 and plan["automatic_retry"] is False,
++         "EXACT_NEW46_PERMISSION_TASK_PLAN_REQUIRED")
++    old_raw = local_pin(g, plan["original_gate"])
++    old = module(old_raw, PROJECT / plan["original_gate"]["file"], "preserved45_source_baseline_only")
++    _, old_plan, old_loaded = old.load_closure()
++    binding_raw = local_pin(g, plan["binding_validator"], HERE)
++    bound = module(binding_raw, HERE / plan["binding_validator"]["file"], "exact_actual49_binding_validator").validate_binding()
++    need(bound["summary"] == plan["actual49_binding"] and bound["summary"]["scope"] == plan["app_scope"] and
++         bound["expected_guard"] == old_loaded[1]["expected_guard"] and plan["guard"] == old_plan["guard"],
++         "REAL_INSTALL_AND_SCOPE_READBACK_OR_ORIGINAL_RUNTIME_BASELINE_CHANGED")
++    scope, components = bound["scope"], bound["components"]
+     original = g.parse(local_pin(g, plan["original_partition"]))
+-    scope = g.parse(local_pin(g, plan["app_scope_local"]))
+-    resolver = g.parse(local_pin(g, plan["resolver_reference"]))
+-    components = sorted(row["component"] for row in resolver["MAIN_LAUNCHER_components"])
+-    targets = [package for row in original["batches"] for package in row["packages"]]
+-    need(targets == plan["target_packages"] and len(targets) == len(set(targets)) == 45 and
+-         set(targets) == {row["package"] for row in resolver["MAIN_LAUNCHER_components"]} and len(scope["apps"]) == 47,
+-         "EXACT_ORIGINAL_PARTITION_AND_ACTUAL_RESOLVER_REQUIRED")
+-    proof = [local_pin(g, pin) for pin in plan["baseline_pilot_public_proof"]]
+-    pilot_wrapper = module(proof[2], PROJECT / plan["baseline_pilot_public_proof"][2]["file"], "actual_pilot_owned_gate")
+-    pilot_stage = g.parse(proof[3].splitlines()[0])
+-    pilot, pilot_raw, _ = owned_gate(g, proof[3], g.parse(proof[4]), plan["baseline_pilot_job"], pilot_wrapper,
+-        pilot_stage["files"], pilot_wrapper.CONFIG["stage_root"], "pocket4-beike-permission-pilot-source-stage-result-v1")
+-    pilot_request_pin = pilot_wrapper.CONFIG["request"]
+-    pilot_request_raw = remote_local_pin(g, pilot_request_pin, "successor_audit_requests/beike_permission_pilot_r1/request.review-only.json", PROJECT)
+-    pilot_request = g.parse(pilot_request_raw)
+-    need(pilot_raw == proof[5] and pilot_request["guard"] == plan["guard"] and pilot["app_scope_reference"] == plan["app_scope"],
+-         "ACTUAL_SUCCESSFUL_PILOT_BASELINE_REQUIRED")
+-    old_transport_constants = constants(proof[1])
+-    service_gate(pilot, pilot_request, [list(c) for c in old_transport_constants["READ_ONLY_COMMANDS"]],
+-                 [pilot["target_identity_from_pinned_scope"]], pilot["guard_before"], True)
+-    baseline_defs = [definitions(proof[index]) for index in range(3)]
++    groups = [row["packages"] for row in original["batches"]] + [["com.example.ndk_tests"]]
++    targets = [package for group in groups for package in group]
++    need(len(groups) == 14 and len(targets) == len(set(targets)) == 46 and
++         targets == plan["target_packages"] and sorted(targets) == bound["launchers"] and
++         len(scope["apps"]) == 49 and len(components) == 46 and
++         plan["runtime_epoch_sha256"] == scope["runtime_epoch_sha256"],
++         "ORIGINAL13_PLUS_NDK14_AND_ACTUAL46_MEMBERSHIP_REQUIRED")
++    for pin in plan["preserved_old45_stop"]:
++        local_pin(g, pin)
++    templates = {key: local_pin(g, pin) for key, pin in plan["templates"].items()}
++    old_owner = remote_local_pin(g, old_plan["batches"][0]["wrapper"],
++                                 "successor_audit_requests/effective_permissions_45_capture_r1/" + old_plan["batches"][0]["wrapper_file"], PROJECT)
++    baseline_defs = definitions(old_owner)
+     loaded = {}
+     for number, row in enumerate(plan["batches"], 1):
+-        group = original["batches"][number - 1]["packages"]
+-        need(row["batch"] == row["original_partition_batch"] == number and row["targets"] == group,
+-             "ORIGINAL_13_PARTITIONS_MUST_REMAIN_EXACT")
++        group = groups[number - 1]
++        need(type(row["batch"]) is int and row["batch"] == number and row["targets"] == group and
++             row["original_partition_batch"] == (number if number <= 13 else None), "EXACT_PARTITION_MEMBERSHIP_REQUIRED")
+         folder = "batch-%02d/" % number
+         needed_commands = [["/system/bin/cmd", "package", "help"]]
+         for package in group:
+             needed_commands.extend((["/system/bin/cmd", "package", "dump-package", package],
+                                     ["/system/bin/cmd", "appops", "get", "--user", "0", package]))
++        stage_root = "/home/alex/work/pocket4-launcher46-permissions-source-20261107-r2-b%02d" % number
++        output_root = "/home/alex/work/pocket4-launcher46-permissions-observation-20261107-r2-b%02d" % number
+         need(row["Android_commands"] == needed_commands and row["native_operations"] == ["status", "applications", "status"] and
+-             row["idempotency_key"] == "sidecar-evidence-20261106-fixed-launcher-permissions-r1-b%02d" % number,
+-             "CLOSED_FIXED_QUERY_LIST_AND_KEY_REQUIRED")
++             row["source_root"] == stage_root and row["output_root"] == output_root and
++             row["idempotency_key"] == "pocket4-fixed46-permissions-20261107-r2-b%02d" % number,
++             "CLOSED_FIXED_QUERY_LIST_AND_UNIQUE_ROOTS_AND_KEY_REQUIRED")
+         sources = [remote_local_pin(g, row[key], row[key + "_file"]) for key in ("worker", "transport", "wrapper")]
+-        request_raw = remote_local_pin(g, row["request"], row["request_file"])
+-        request = g.parse(request_raw)
+-        worker_constants, transport_constants, wrapper_constants = map(constants, sources)
++        request = g.parse(remote_local_pin(g, row["request"], row["request_file"]))
++        wc, tc, oc = map(constants, sources)
+         identities = [{key: scope["apps"][p][key] for key in ("package", "uid", "version_code")} for p in group]
+-        need(request == {"schema": "pocket4-fixed-launcher-permission-capture-request-v1", "guard": plan["guard"],
++        help_pin = {"path": stage_root + "/inputs/cmd-appops-help.original.txt", "bytes": 1309,
++                    "sha256": "95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc"}
++        need(request == {"schema": "pocket4-fixed46-launcher-permission-capture-request-v1", "guard": plan["guard"],
+             "app_scope": plan["app_scope"], "packages": sorted(scope["apps"]), "worker": row["worker"], "transport": row["transport"],
+-            "output_root": row["output_root"], "target_packages": group, "target_user": 0, "batch": number,
+-            "appops_help": {"path": row["source_root"] + "/inputs/cmd-appops-help.original.txt", "bytes": 1309,
+-                            "sha256": "95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc"}} and
+-            row["target_identities"] == identities and worker_constants["TARGET_PACKAGES"] == group and
+-            worker_constants["BATCH_NUMBER"] == number and worker_constants["ACTUAL45_COMPONENTS"] == components and
+-            [list(c) for c in transport_constants["READ_ONLY_COMMANDS"]] == needed_commands and
+-            wrapper_constants["CONFIG"]["worker"] == row["worker"] and wrapper_constants["CONFIG"]["request"] == row["request"],
+-            "EXACT_WHOLE_SCOPE_TARGETS_TRANSPORT_AND_WRAPPER_REQUIRED")
+-        for index, key in enumerate(("preserved_worker_definitions", "preserved_transport_definitions", "preserved_owned_definitions")):
+-            new_defs = definitions(sources[index])
+-            need(all(new_defs[name] == baseline_defs[index][name] for name in plan[key]), "ORIGINAL_TRANSPORT_OR_LIFETIME_DEFINITION_CHANGED")
++            "output_root": output_root, "target_packages": group, "target_user": 0, "batch": number, "appops_help": help_pin},
++            "EXACT49_REQUEST_REQUIRED")
++        need(row["target_identities"] == identities and wc["SOURCE_SEALED"] is True and wc["NEW_HELPER"] == bound["summary"]["new_helper"] and
++             wc["TARGET_PACKAGES"] == group and wc["BATCH_NUMBER"] == number and wc["ACTUAL46_COMPONENTS"] == components and
++             list(wc["LAUNCHERS"]) == bound["launchers"] and wc["PACKAGES"] == sorted(scope["apps"]) and
++             wc["APP_SCOPE"] == plan["app_scope"] and wc["GUARD"] == plan["guard"] and
++             wc["STAGE"] == stage_root and wc["OUTPUT"] == output_root and wc["TRANSPORT"] == row["transport"] and
++             wc["APP_OPS_HELP"] == help_pin and [list(c) for c in tc["READ_ONLY_COMMANDS"]] == needed_commands and
++             tc["EXPLICIT_SCOPE_SHA256"] == plan["app_scope"]["sha256"] and
++             tc["FRAMEWORK_EPOCH_SHA256"] == bound["expected_guard"]["Main_epoch_sha256"] ==
++                 constants(templates["transport"])["FRAMEWORK_EPOCH_SHA256"] and
++             tc["HELD_HELPER_SHA256"] == wc["HELPER_SHA"] == constants(templates["transport"])["HELD_HELPER_SHA256"] and
++             tc["ANDROID_APP_SHA256"] == constants(templates["transport"])["ANDROID_APP_SHA256"] and
++             oc["CONFIG"]["worker"] == row["worker"] and oc["CONFIG"]["request"] == row["request"] and
++             oc["CONFIG"]["kind"] == "services" and oc["CONFIG"]["stage_root"] == stage_root,
++             "EXACT_SCOPE_TARGETS_TRANSPORT_AND_WRAPPER_REQUIRED")
++        template = templates["worker_microg" if number == 2 else "worker_normal"]
++        need(definitions(sources[0]) == definitions(template) and definitions(sources[1]) == definitions(templates["transport"]),
++             "FROZEN_WORKER_OR_TRANSPORT_DEFINITION_CHANGED")
++        owner_defs = definitions(sources[2])
++        need(set(owner_defs) == set(baseline_defs) and all(owner_defs[name] == baseline_defs[name]
++             for name in baseline_defs if name != "worker_gate") and
++             owner_defs["worker_gate"] == definitions(local_pin(g, plan["owner_gate_fragment"], HERE))["worker_gate"],
++             "ORIGINAL_OWNED_LIFETIME_OR_REVIEWED_NEW_GATE_CHANGED")
++        policy = constants(templates["worker_microg"])["CAPTURE_POLICY"] if number == 2 else None
++        expected_binding = {"guard": bound["expected_guard"], "app_scope": plan["app_scope"], "packages": sorted(scope["apps"]),
++            "batch": number, "targets": group, "identities": identities, "command_count": len(needed_commands),
++            "native_comparison": {"actual_framework_resolver_reference_job": "1a1b307f521-fc05-807a", "expected_count": 46,
++                "observed_count": 46, "added_components": [], "missing_components": [], "framework_resolver_requeried_by_this_worker": False},
++            "microg_capture_policy": policy}
++        need(oc["CAPTURE_BINDING"] == expected_binding and row["microg_capture_policy"] == policy,
++             "EXACT_OWNED_CAPTURE_BINDING_REQUIRED")
+         stager_raw = local_pin(g, row["stager"], HERE)
+         stage_constants = constants(stager_raw)
+-        need(stage_constants["ROOT"] == row["source_root"] and stage_constants["FILES"] == row["stage_files"], "EXACT_SOURCE_STAGE_MANIFEST_REQUIRED")
++        need(stage_constants["ROOT"] == stage_root and stage_constants["FILES"] == row["stage_files"] and
++             definitions(stager_raw) == definitions(templates["stager"]), "EXACT_ORIGINAL_SOURCE_STAGE_REQUIRED")
+         payload_raw = g.read(HERE / folder / "stage.stdin.original.json", 262144)
+         payload = g.parse(payload_raw)
+         need(set(payload) == {"schema", "files"} and payload["schema"] == "pocket4-fixed-launcher-permission-source-stage-v1" and
+@@ -290,8 +327,8 @@
+         need(packet == {"host": "pocket4", "executable": "/usr/bin/sudo", "args": ["-n", "/usr/bin/python3", "-I", "-B", "-c", stager_raw.decode()],
+             "cwd": "/", "stdin": payload_raw.decode(), "cpu_quota_percent": 100, "memory_max_bytes": 1073741824, "nice": 10,
+             "timeout_seconds": 1100, "idempotency_key": row["idempotency_key"]}, "EXACT_SINGLE_EXISTING_HOST_PROCESS_REQUEST_REQUIRED")
+-        wrapper = module(sources[2], HERE / row["wrapper_file"], "batch_%02d_local_gate" % number)
+-        loaded[number] = {"row": row, "request": request, "wrapper": wrapper, "expected_guard": pilot["guard_before"]}
++        wrapper = module(sources[2], HERE / row["wrapper_file"], "batch46_%02d_local_gate" % number)
++        loaded[number] = {"row": row, "request": request, "wrapper": wrapper, "expected_guard": bound["expected_guard"]}
+     return g, plan, loaded
+ 
+ 
+@@ -316,7 +353,7 @@
+     reports = service_gate(result, item["request"], row["Android_commands"], row["target_identities"], item["expected_guard"])
+     completed = {"batch": row["batch"], "job_id": submitted["job_id"], "target_packages": row["targets"],
+         "artifact_bytes": len(artifact), "artifact_sha256": sha(artifact), "outer_stdout_sha256": sha(raw), "terminal_sha256": sha(terminal_raw),
+-        "whole_47_current_identity_checked": True, "service_reports": reports,
++        "whole_49_current_identity_checked": True, "service_reports": reports,
+         "observation_FDs_closed": result["observation_FDs_final"]["closed"], "lease_FDs_closed": result["lease_FDs_final"]["closed"],
+         "original_owned_child_pidfd_retirement_verified": True,
+         "interpretation_status": "RAW_CAPTURE_ONLY_NOT_INTERPRETED", "role_status": "UNKNOWN_NOT_QUERIED", "production_ready": False}
+@@ -327,12 +364,12 @@
+     if ledger.exists():
+         need(ledger.is_dir() and not ledger.is_symlink(), "REGULAR_LOCAL_LEDGER_DIRECTORY_REQUIRED")
+     existing = {path.name for path in ledger.iterdir()} if ledger.exists() else set()
+-    need(existing <= {"batch-%02d" % n for n in range(1, 14)}, "UNEXPECTED_PERMISSION_LEDGER_ENTRY")
++    need(existing <= {"batch-%02d" % n for n in range(1, 15)}, "UNEXPECTED_PERMISSION_LEDGER_ENTRY")
+     completed = []
+-    for number in range(1, 14):
++    for number in range(1, 15):
+         folder = ledger / ("batch-%02d" % number)
+         if not folder.exists():
+-            need(not any((ledger / ("batch-%02d" % n)).exists() for n in range(number + 1, 14)), "OUT_OF_ORDER_PERMISSION_BATCH")
++            need(not any((ledger / ("batch-%02d" % n)).exists() for n in range(number + 1, 15)), "OUT_OF_ORDER_PERMISSION_BATCH")
+             return {"state": "NEXT_READY", "completed": completed, "next": loaded[number]["row"], "automatic_retry": False,
+                     "raw_capture_is_semantic_grant_proof": False, "claims_created_by_status": 0}
+         need(folder.is_dir() and not folder.is_symlink(), "REGULAR_BATCH_DIRECTORY_REQUIRED")
+@@ -345,7 +382,7 @@
+         except (RuntimeError, KeyError, ValueError, TypeError, OSError) as error:
+             return {"state": "STOP_FAILED_OR_UNVERIFIED_BATCH", "batch": number, "completed": completed, "automatic_retry": False,
+                     "error": {"type": type(error).__name__, "reason": str(error)[:256]}, "original_failure_must_remain": True}
+-    return {"state": "ALL_45_RAW_CAPTURES_COMPLETE", "completed": completed, "automatic_retry": False,
++    return {"state": "ALL_46_RAW_CAPTURES_COMPLETE", "completed": completed, "automatic_retry": False,
+             "raw_capture_is_semantic_grant_proof": False, "role_status": "UNKNOWN_NOT_QUERIED", "production_ready": False}
+ 
+ 
+@@ -385,8 +422,8 @@
+     args = parser.parse_args()
+     g, plan, loaded = load_closure()
+     if args.action == "validate":
+-        result = {"state": "SOURCE_CLOSURE_AND_ACTUAL_PILOT_BASELINE_VERIFIED", "plan_sha256": PLAN_SHA,
+-                  "batches": 13, "target_packages": 45, "Android_commands": 103, "claims_created": 0, "processes_submitted": 0,
++        result = {"state": "SOURCE_CLOSURE_AND_ACTUAL49_INSTALL_READBACK_VERIFIED", "plan_sha256": PLAN_SHA,
++                  "batches": 14, "target_packages": 46, "Android_commands": 106, "claims_created": 0, "processes_submitted": 0,
+                   "new_target_observations": 0, "semantic_permissions_interpreted": 0, "production_ready": False}
+     else:
+         result = inspect(g, plan, loaded)

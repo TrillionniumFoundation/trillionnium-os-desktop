@@ -1,0 +1,51 @@
+--- successor_qa/search_helper_coexist_install_r1/host-candidate-r1/stage_source_once.py
++++ successor_qa/search_helper_readonly_inspect_r1/candidate-r1/stage_source_once.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Publish only the fixed coexistence owner and completed build/B receipts. No Android entry."""
++"""Publish the fixed readonly inspect owner and actual install receipts. No Android entry."""
+ import base64
+ import errno
+ import hashlib
+@@ -9,9 +9,9 @@
+ import stat
+ import sys
+ 
+-ROOT = Path('/home/alex/work/pocket4-beike-search-helper-coexist-install-20261106-r1')
+-PINS = {'owned_install_once.py': {'bytes': 39677, 'sha256': '0288098834b039fad646331dce2caa2c4bde7166224a1b770866c7c09b5cae41'}, 'install_search_helper_full_scope.py': {'bytes': 24933, 'sha256': 'a15d1322c1bbf6001d0870307243bf4509e00111484b042038ad583871f101c6'}, 'request.json': {'bytes': 2066, 'sha256': 'b2ed2b01358ff4e15fcc997554042cdf1edf7bfdf6da1d4af73bc58ad70d7324'}, 'build.stdout.original.json': {'bytes': 263, 'sha256': '608d7dec90de0bba10dd8e5e7daf3999a22f984dcd289edb18e7547e4babbc57'}, 'build.terminal.original.json': {'bytes': 729, 'sha256': '121ac5733395c1e66d280ff8cb69df38fe7a163f07ff6c99df18aee73ac4ae7b'}, 'stage-b.stdout.original.jsonl': {'bytes': 19805, 'sha256': '3a046f40503768c5e0411daee65c5b233e6245b32c0098c8fd4493a8915a9cbf'}, 'stage-b.terminal.original.json': {'bytes': 733, 'sha256': '29f4241e351442586e8080fa0d252c883075df864934add9657216cecde72ece'}}
+-PAYLOAD_SHA = '44860460305c1d3bfb4e6a35ecb1a920755b9660e4147476a552807c63f0beb8'
++ROOT = Path('/home/alex/work/pocket4-beike-search-helper-r2-readonly-inspect-20261107-r1')
++PINS = {'owned_readonly_inspect_once.py': {'bytes': 37462, 'sha256': 'a7734300638acbd93535b2bdf03df8af2bf186e782cba47809bab058e5379ab1'}, 'request.json': {'bytes': 405, 'sha256': 'a800f1eb0bef99f1bb6ad6fd4d22cc349c68bd3a3d9baa3d523d74de82412acc'}, 'install.stdout.original.json': {'bytes': 33582, 'sha256': '5d7d4e22f8351a3ab58b99bb9236bda69bcf51a1a3a115f079f2834d8d83fbcf'}, 'install.terminal.original.json': {'bytes': 733, 'sha256': '5350ed913cfb078591d6bf2a13a7fc39b7f74990d9e26009f38bb16a67365bfc'}}
++PAYLOAD_SHA = 'd304d4bb331f6dc68526e684cb46561693697377776b2eae81d94f415ac2205e'
+ FIELDS = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_nlink', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
+ 
+ 
+@@ -48,7 +48,7 @@
+     need(len(raw) <= 524288 and sha(raw) == PAYLOAD_SHA, 'EXACT_BOUNDED_PAYLOAD')
+     payload = json.loads(raw)
+     need(set(payload) == {'schema', 'root', 'files'} and
+-         payload['schema'] == 'pocket4-search-helper-coexist-source-stage-payload-v1' and
++         payload['schema'] == 'pocket4-r2-readonly-inspect-source-stage-payload-v1' and
+          payload['root'] == str(ROOT) and set(payload['files']) == set(PINS), 'CLOSED_FIXED_STAGE_PAYLOAD')
+     bodies = {}
+     for name, pin in PINS.items():
+@@ -61,7 +61,7 @@
+         if name.endswith('.py'):
+             compile(body, str(ROOT / name), 'exec')
+         bodies[name] = body
+-    need(ROOT.parent.resolve() == ROOT.parent and ROOT.name == 'pocket4-beike-search-helper-coexist-install-20261106-r1',
++    need(ROOT.parent.resolve() == ROOT.parent and ROOT.name == 'pocket4-beike-search-helper-r2-readonly-inspect-20261107-r1',
+          'EXACT_NEW_HOST_PRIVATE_ROOT')
+     os.umask(0o077)
+     ROOT.mkdir(mode=0o700)
+@@ -102,8 +102,8 @@
+     finally:
+         os.close(directory)
+     need(census() == before, 'STAGE_WHOLE_PROCESS_FD_IDENTITIES_CHANGED')
+-    print(json.dumps({'schema': 'pocket4-search-helper-coexist-source-stage-v1', 'root': str(ROOT),
+-        'files': PINS, 'whole_process_fd_identities_unchanged': True, 'mode': 'source-only-normal-coexist-installer-not-invoked',
++    print(json.dumps({'schema': 'pocket4-r2-readonly-inspect-source-stage-v1', 'root': str(ROOT),
++        'files': PINS, 'whole_process_fd_identities_unchanged': True, 'mode': 'source-only-readonly-inspect-owner-not-invoked',
+         'Main_commands': 0, 'namespace_entries': 0, 'Main_locks_or_guards': 0,
+         'private_bundle_copied': False, 'reconciliation_published': False}, sort_keys=True), flush=True)
+ 

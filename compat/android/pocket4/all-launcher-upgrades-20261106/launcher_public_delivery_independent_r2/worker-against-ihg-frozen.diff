@@ -1,0 +1,171 @@
+--- launcher_public_delivery_r1/read_ihg_public_pages_once.py
++++ launcher_public_delivery_independent_r2/observe_independent_public_page.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Observe two ordinary public HTML pages; never fetch an APK or enter Android."""
++"""Observe one fixed independent public HTML page; never follow a delivery URL or enter Android."""
+ import datetime
+ import fcntl
+ import hashlib
+@@ -17,13 +17,11 @@
+ import urllib.parse
+ import urllib.request
+ 
+-ROOT = Path('/home/alex/work/pocket4-ihg-public-distribution-pages-20261106-r1')
+-VARIANT_URL = 'https://www.apkmirror.com/apk/ihg-mobile/ihg-hotel-deals-rewards/ihg-one-rewards-book-hotels-5-110-0-release/ihg-one-rewards-book-hotels-5-110-0-android-apk-download/'
+-PACKAGE = 'com.ihg.apps.android'
++PROFILES = {'national': {'package': 'com.ehi.national.mobile', 'url': 'https://national-car-rental.en.softonic.com/android/download', 'output_root': '/home/alex/work/pocket4-national-public-distribution-page-20261107-r1', 'expected_web_version_label': '6.16.0.9403', 'expected_web_container_sha256': 'a901bc4949fe241750cd7ea3fb5df690d00b21e217b2212be813bbd51e5a36bb', 'literal_control_label': 'free xapk download for android', 'literal_control_meaning': 'published standalone XAPK download control; destination still unfetched'}}
++ROOT = Path(PROFILES['national']['output_root'])
+ MAX_BODY = 2 * 1024 * 1024
+ MAX_ERROR_BODY = 65536
+ TOTAL_SECONDS = 120
+-MINIMUM_ORDINARY_WAIT_SECONDS = 15
+ TLS = ssl.create_default_context()
+ 
+ 
+@@ -129,42 +127,44 @@
+     return item
+ 
+ 
+-def select_intermediate(raw):
++def observe_unfollowed_controls(raw, profile):
+     parser, title = parse_html(raw)
+-    selected = set()
+-    expected_path = urllib.parse.urlsplit(VARIANT_URL).path + 'download/'
++    literal_controls = []
++    candidate_control_urls = set()
++    ignored_non_https_controls = 0
+     for anchor in parser.rows:
++        label = ' '.join(anchor['text'].split())
+         href = anchor['href']
+-        if not href:
++        if not href or not any(word in label.casefold() for word in ('download', 'variant', 'xapk', 'apk')):
+             continue
+-        absolute = urllib.parse.urljoin(VARIANT_URL, href)
+-        item = urllib.parse.urlsplit(absolute)
+-        if item.hostname != 'www.apkmirror.com' or item.path != expected_path:
++        absolute = urllib.parse.urljoin(profile['url'], href)
++        parsed = urllib.parse.urlsplit(absolute)
++        if parsed.scheme != 'https' or parsed.fragment:
++            ignored_non_https_controls += 1
+             continue
+         normal_https_url(absolute)
+-        pairs = urllib.parse.parse_qsl(item.query, keep_blank_values=True, strict_parsing=True)
+-        need(len(pairs) == 1 and pairs[0][0] == 'key'
+-             and re.fullmatch(r'[A-Za-z0-9_-]{1,256}', pairs[0][1]), 'OBSERVED_SINGLE_LITERAL_KEY_REQUIRED')
+-        selected.add(absolute)
+-    need(len(selected) == 1, 'ONE_FRESH_LITERAL_INTERMEDIATE_LINK_REQUIRED')
+-    return {'title': title, 'literal_intermediate_url': next(iter(selected)),
+-            'source': 'single_unique_literal_anchor_in_this_complete_page',
+-            'key_from_prior_web_observation_used': False}
+-
+-
+-def select_unfetched_delivery(raw, base):
+-    parser, title = parse_html(raw)
+-    selected = set()
+-    for anchor in parser.rows:
+-        if ' '.join(anchor['text'].split()).casefold() != 'here' or not anchor['href']:
+-            continue
+-        absolute = urllib.parse.urljoin(base, anchor['href'])
+-        normal_https_url(absolute)
+-        selected.add(absolute)
+-    need(len(selected) == 1, 'ONE_LITERAL_HERE_LINK_REQUIRED')
+-    return {'title': title, 'unfetched_literal_delivery_url': next(iter(selected)),
+-            'source': 'single_unique_literal_here_anchor_in_this_complete_page',
+-            'delivery_url_followed': False, 'needs_separate_bounded_acquisition_request': True}
++        need(len(literal_controls) < 64 and len(label) <= 512, 'BOUNDED_PUBLIC_CONTROL_OBSERVATION')
++        literal_controls.append({'literal_label': label, 'literal_url': absolute,
++                                 'followed': False, 'file_or_installer_identity_verified': False})
++        if label.casefold() == profile['literal_control_label']:
++            candidate_control_urls.add(absolute)
++    text = raw.decode('utf-8', 'strict')
++    return {
++        'title': title,
++        'literal_download_or_variant_anchors': literal_controls,
++        'ignored_non_https_or_fragment_controls': ignored_non_https_controls,
++        'expected_web_literals_present_in_HTML_not_verified_metadata': {
++            'package': profile['package'] in text,
++            'version_label': profile['expected_web_version_label'] in text,
++            'container_sha256_label': profile['expected_web_container_sha256'] in text,
++        },
++        'candidate_control_urls': sorted(candidate_control_urls),
++        'candidate_control_state': ('ONE_LITERAL_UNFOLLOWED_CONTROL' if len(candidate_control_urls) == 1
++                                    else 'UNRESOLVED_OR_AMBIGUOUS_NO_INFERRED_URL'),
++        'automatic_script_execution': False, 'all_links_followed': 0,
++        'APK_or_container_obtained': False, 'direct_binary_delivery_qualified': False,
++        'a_complete_HTML_observation_is_not_download_or_signature_success': True,
++    }
+ 
+ 
+ def deadline_signal(signum, frame):
+@@ -216,40 +216,45 @@
+ 
+ 
+ def main():
++    global ROOT
++    flags = {'--observe-national-page-only': 'national'}
+     need(os.getuid() == os.geteuid() == os.getgid() == os.getegid() == 1000
+-         and sys.argv[1:] == ['--observe-two-public-pages-no-apk'], 'EXACT_ORDINARY_OWNER_ENTRY')
++         and len(sys.argv) == 2 and sys.argv[1] in flags, 'EXACT_ORDINARY_OWNER_CLOSED_PAGE_ENTRY')
++    key = flags[sys.argv[1]]
++    profile = PROFILES[key]
++    ROOT = Path(profile['output_root'])
+     need(ROOT.parent.resolve(strict=True) == ROOT.parent, 'EXISTING_NORMAL_PARENT_REQUIRED')
+     os.umask(0o077)
+     before = census()
+     ROOT.mkdir(mode=0o700)
+-    result = {'schema': 'pocket4-ihg-public-third-party-page-observation-v1', 'ok': False,
+-              'meaning_of_ok': 'two ordinary complete HTML observations and one unfetched literal URL only',
+-              'distribution_class': 'public-third-party-distribution', 'publisher_direct_APK': False,
+-              'started_utc': now(), 'requests': [], 'errors': [], 'ordinary_uid': os.getuid(),
+-              'maximum_HTTP_GET_requests': 2, 'maximum_bytes_per_HTML': MAX_BODY,
+-              'maximum_total_seconds': TOTAL_SECONDS, 'minimum_wait_seconds': MINIMUM_ORDINARY_WAIT_SECONDS,
+-              'user_agent_policy': 'urllib default unmodified', 'TLS_policy': 'system trust/default verification',
+-              'automatic_redirects': False, 'automatic_retry': False, 'challenge_solving': False,
+-              'DNS_IP_proxy_TLS_modifications': False, 'ordinary_resolver_internal_attempts_not_instrumented': True,
+-              'APK_downloads': 0, 'APK_signature_verified': False, 'APK_candidate_qualified': False,
+-              'existing_private_files_read': 0, 'subprocesses_started': 0,
+-              'Main_actions': 0, 'Android_commands': 0, 'UI_actions': 0, 'installs': 0,
+-              'permission_changes': 0, 'production_ready': False, 'cleanup_eligible': False,
+-              'before_descriptor_identities': before}
++    result = {
++        'schema': 'pocket4-independent-public-single-page-observation-v2',
++        'ok': False, 'candidate_id': key, 'package': profile['package'],
++        'meaning_of_ok': 'one complete ordinary public HTML response and bounded untrusted control observation only',
++        'distribution_class': 'public-third-party-distribution', 'publisher_direct_APK': False,
++        'started_utc': now(), 'requests': [], 'errors': [], 'ordinary_uid': os.getuid(),
++        'maximum_HTTP_GET_requests': 1, 'maximum_bytes_per_HTML': MAX_BODY,
++        'maximum_total_seconds': TOTAL_SECONDS,
++        'user_agent_policy': 'urllib default unmodified', 'TLS_policy': 'system trust/default verification',
++        'automatic_redirects': False, 'automatic_retry': False, 'challenge_solving': False,
++        'DNS_IP_proxy_TLS_modifications': False, 'ordinary_resolver_internal_attempts_not_instrumented': True,
++        'APK_downloads': 0, 'APK_signature_verified': False, 'APK_candidate_qualified': False,
++        'delivery_link_requests': 0, 'distributor_installer_used': False,
++        'existing_private_files_read': 0, 'subprocesses_started': 0,
++        'Main_actions': 0, 'Android_commands': 0, 'UI_actions': 0, 'installs': 0,
++        'permission_changes': 0, 'production_ready': False, 'cleanup_eligible': False,
++        'before_descriptor_identities': before,
++        'artifact_pin_semantics': 'hash of bytes written; no separate disk readback or directory crash-persistence proof',
++    }
+     previous_handler = signal.signal(signal.SIGALRM, deadline_signal)
+     try:
+         end = time.monotonic() + TOTAL_SECONDS
+         signal.setitimer(signal.ITIMER_REAL, TOTAL_SECONDS, 0)
+-        first, first_row = fetch_html_once(1, VARIANT_URL, end, result)
+-        observed = select_intermediate(first)
+-        first_row['parsed_observation'] = observed
+-        need(time.monotonic() + MINIMUM_ORDINARY_WAIT_SECONDS + 5 < end, 'WAIT_AND_SECOND_GET_BUDGET')
+-        waiting_started = time.monotonic()
+-        time.sleep(MINIMUM_ORDINARY_WAIT_SECONDS)
+-        result['actual_wait_seconds'] = time.monotonic() - waiting_started
+-        second, second_row = fetch_html_once(2, observed['literal_intermediate_url'], end, result)
+-        second_row['parsed_observation'] = select_unfetched_delivery(second, observed['literal_intermediate_url'])
+-        result['ok'] = len(result['requests']) == 2 and all(row['complete'] for row in result['requests'])
++        raw, row = fetch_html_once(1, profile['url'], end, result)
++        need(not any(name.lower() == 'cf-mitigated' and value.casefold() == 'challenge'
++                     for name, value in row['headers']), 'PUBLIC_CHALLENGE_STOP_NO_SOLVING_OR_ALTERNATE_IDENTITY')
++        row['parsed_observation'] = observe_unfollowed_controls(raw, profile)
++        result['ok'] = len(result['requests']) == 1 and row['complete'] is True
+     except BaseException as error:
+         result['errors'].append({'type': type(error).__name__, 'reason': str(error)[:512]})
+         result['ok'] = False

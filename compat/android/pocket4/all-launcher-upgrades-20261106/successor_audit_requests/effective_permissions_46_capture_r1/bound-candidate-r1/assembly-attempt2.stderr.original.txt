@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/effective_permissions_46_capture_r1/bound-candidate-r1/assemble_bound.py", line 270, in <module>
+    main()
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/effective_permissions_46_capture_r1/bound-candidate-r1/assemble_bound.py", line 143, in main
+    worker = assignment(worker, k, v)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/effective_permissions_46_capture_r1/bound-candidate-r1/assemble_bound.py", line 59, in assignment
+    return once(text, ast.get_source_segment(text, found[0]), name + " = " + repr(value))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/effective_permissions_46_capture_r1/bound-candidate-r1/assemble_bound.py", line 51, in once
+    need(text.count(before) == 1, "EXACT_SOURCE_FRAGMENT:" + before[:100])
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/effective_permissions_46_capture_r1/bound-candidate-r1/assemble_bound.py", line 25, in need
+    raise RuntimeError(reason)
+RuntimeError: EXACT_SOURCE_FRAGMENT:PACKAGES = None

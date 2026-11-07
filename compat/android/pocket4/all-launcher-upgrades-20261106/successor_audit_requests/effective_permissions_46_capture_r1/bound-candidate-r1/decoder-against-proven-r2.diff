@@ -1,0 +1,28 @@
+--- proven-private-decoder-r2
++++ new46-private-decoder
+@@ -16,8 +16,8 @@
+ import stat
+ import zlib
+ 
+-HERE = Path(__file__).resolve().parent
+-PROJECT = HERE.parents[1]
++HERE = Path(__file__).resolve().parent / 'readbacks'
++PROJECT = Path(__file__).resolve().parents[3]
+ EMPTY_SHA = hashlib.sha256(b"").hexdigest()
+ 
+ 
+@@ -121,12 +121,12 @@
+     parser.add_argument("--batch", type=int, required=True)
+     parser.add_argument("--plan-sha256", required=True)
+     args = parser.parse_args()
+-    need(2 <= args.batch <= 13, "FIXED_BATCH_RANGE")
++    need(1 <= args.batch <= 14, "FIXED_BATCH_RANGE")
+     folder = HERE / ("batch-%02d" % args.batch)
+     raw_plan = read(folder / "READBACK_PLAN.json", 65536)
+     need(sha(raw_plan) == args.plan_sha256, "EXACT_REVIEWED_READBACK_PLAN")
+     plan = parse(raw_plan)
+-    private = PROJECT.parent / "p4_private_ui/fixed45-permissions-compressed-readback-r2" / folder.name
++    private = PROJECT.parent / "p4_private_ui/fixed46-permissions-compressed-readback-r1" / folder.name
+     public = folder / "actual-public"
+     need(plan["schema"] == "pocket4-fixed-batch-compressed-private-readback-plan-v2" and
+          plan["private_destination_required"] == str(private) and plan["public_actual_directory"] == str(public) and
