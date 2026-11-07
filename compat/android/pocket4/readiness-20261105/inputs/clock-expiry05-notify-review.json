@@ -1,0 +1,103 @@
+{
+  "NMS_record": {
+    "alternate_body_present": false,
+    "full_screen_pending_intent": true,
+    "key": "0|com.android.deskclock|2147483644|null|10063",
+    "post_elapsed_ms": 921180679,
+    "record_sha256": "b4212008e433d60bd4a2c941bb8318df59c20301ca719addce7fc814791ae4af",
+    "text": "Time's up",
+    "timer_channel": true,
+    "title": "Time's up",
+    "uid": 10063,
+    "user": 0
+  },
+  "absence_is_not_App_failure": true,
+  "clock_basis": {
+    "after_ns": 921125095952019,
+    "before_ns": 921125052383555,
+    "uptime_ms": 921125070
+  },
+  "desktop_popup_observed": false,
+  "duration_ms": 60000,
+  "exact_NMS_pair_received_after_due": true,
+  "expiry_timing": {
+    "created_start_ms": 921120436,
+    "expected_due_ms": 921180436,
+    "observations_count": 55,
+    "observed_uptime_ms": 921181250
+  },
+  "host_record": {
+    "hidden": false,
+    "id": 709,
+    "version": "5512d041-8478-45cb-8058-3d3b8e613fc1-23"
+  },
+  "host_record_states": {
+    "host_notify_after_delete": {
+      "bus_id": "f93731a024b4e445a5dd308b6ade9dda",
+      "key": "0|com.android.deskclock|2147483644|null|10063",
+      "owner": ":1.311419",
+      "record": null,
+      "utc": "2026-11-05T16:18:16.151584+00:00"
+    },
+    "host_notify_expired": {
+      "bus_id": "f93731a024b4e445a5dd308b6ade9dda",
+      "key": "0|com.android.deskclock|2147483644|null|10063",
+      "owner": ":1.311419",
+      "record": {
+        "hidden": false,
+        "id": 709,
+        "version": "5512d041-8478-45cb-8058-3d3b8e613fc1-23"
+      },
+      "utc": "2026-11-05T16:17:53.348480+00:00"
+    },
+    "host_notify_running": {
+      "bus_id": "f93731a024b4e445a5dd308b6ade9dda",
+      "key": "0|com.android.deskclock|2147483644|null|10063",
+      "owner": ":1.311419",
+      "record": null,
+      "utc": "2026-11-05T16:16:55.920421+00:00"
+    }
+  },
+  "independent_peer_review": {
+    "conclusion": "Exact expired key/UID and title-body pair, post due+243ms, cookie41 complete line starting at running offset30323, and host absent->709/new version->absent agree. This is not running-only evidence.",
+    "reviewer": "review_android_acceptance",
+    "scope": "Notify transport association only; sender timestamp, desktop popup and physical audio are unqualified.",
+    "source_sha256": "6c6d7e4c073e956c089ff3a7a63c1173771d76d4cea7c1e7c1936620f39752cf"
+  },
+  "key": "0|com.android.deskclock|2147483644|null|10063",
+  "matched_calls": [
+    {
+      "app": "Clock",
+      "body": "Time's up",
+      "cookie": 41,
+      "desktop_popup_observed": false,
+      "destination": "org.freedesktop.Notifications",
+      "local_receive": {
+        "chunk_end_byte_offset": 60658,
+        "line_byte_range": [
+          30323,
+          60658
+        ],
+        "monotonic_ns": "921180689125912",
+        "realtime_ns": "1793895471400555170",
+        "receive_time_is_upper_bound": true,
+        "source": "local_read_completion_not_sender_or_delivery_timestamp"
+      },
+      "replaces_id": 0,
+      "sender": ":1.808414",
+      "timestamp_realtime": 1793895471399807,
+      "title": "Time's up"
+    }
+  ],
+  "owned_timer_id": 0,
+  "raw_private_NMS_or_DBus_payload_included": false,
+  "receive_after_offset": 30323,
+  "receive_due_window_ns": [
+    "921180418383555",
+    "921210461952019"
+  ],
+  "running_text_excluded": true,
+  "sender_timestamp_proven": false,
+  "snapshot_utc": "2026-11-05T16:17:53.399794+00:00",
+  "verified": true
+}

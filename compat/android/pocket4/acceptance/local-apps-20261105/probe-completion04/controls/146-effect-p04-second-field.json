@@ -1,0 +1,39 @@
+{
+  "action_replayed": false,
+  "actual_state": {
+    "editor": "Pocket4 QA r12 6ea71c49 \u4e2d\u6587 caf\u00e9 \ud83d\ude00",
+    "other_editor": "Owned Probe second field 6ea71c49 \u03a9",
+    "result": "\u5df2\u70b9\u51fb\uff1a"
+  },
+  "intent": {
+    "automatic_retry": false,
+    "before": [
+      "Pocket4 QA r12 6ea71c49 \u4e2d\u6587 caf\u00e9 \ud83d\ude00",
+      "",
+      "\u5df2\u70b9\u51fb\uff1a"
+    ],
+    "expected": [
+      "Pocket4 QA r12 6ea71c49 \u4e2d\u6587 caf\u00e9 \ud83d\ude00",
+      "Owned Probe second field 6ea71c49 \u03a9",
+      "\u5df2\u70b9\u51fb\uff1a"
+    ],
+    "id": "p04-second-field",
+    "native_acknowledged": true,
+    "owned_task": 1008,
+    "request": {
+      "accessibility_mode": "none",
+      "display": 0,
+      "expected_package": "local.pocket4.fixture",
+      "op": "set-text",
+      "selector": {
+        "class": "android.widget.EditText",
+        "editable": true,
+        "enabled": true,
+        "id": "local.pocket4.fixture:id/other_editor",
+        "package": "local.pocket4.fixture",
+        "text": "\u7b2c\u4e8c\u4e2a\u8f93\u5165\u6846\uff1a\u9a8c\u8bc1\u6b67\u4e49\u62d2\u7edd"
+      },
+      "value": "Owned Probe second field 6ea71c49 \u03a9"
+    }
+  }
+}

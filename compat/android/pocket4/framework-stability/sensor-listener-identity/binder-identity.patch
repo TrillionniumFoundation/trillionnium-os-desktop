@@ -1,0 +1,31 @@
+--- a/services/sensorservice/SensorService.h
++++ b/services/sensorservice/SensorService.h
+@@ -77,10 +77,17 @@
+ 
+ namespace android {
+ 
+-// Custom hasher for sp<ISensorClientListener>
++// Remote interface wrappers can differ for the same Binder across transactions.
+ struct SensorClientListenerHasher {
+     size_t operator()(const sp<hardware::sensor::ISensorClientListener>& listener) const {
+-        return std::hash<hardware::sensor::ISensorClientListener*>()(listener.get());
++        return std::hash<IBinder*>()(IInterface::asBinder(listener).get());
++    }
++};
++
++struct SensorClientListenerEqual {
++    bool operator()(const sp<hardware::sensor::ISensorClientListener>& left,
++                    const sp<hardware::sensor::ISensorClientListener>& right) const {
++        return IInterface::asBinder(left) == IInterface::asBinder(right);
+     }
+ };
+ 
+@@ -665,7 +672,7 @@
+     // List of death receipients to clean up dead client listeners
+     mutable Mutex mBinderStateRecipientsLock;
+     std::unordered_map<sp<hardware::sensor::ISensorClientListener>, sp<ClientStateRecipient>,
+-                       SensorClientListenerHasher>
++                       SensorClientListenerHasher, SensorClientListenerEqual>
+             mBinderStateRecipients GUARDED_BY(mBinderStateRecipientsLock);
+ 
+     // WARNING: these SensorEventConnection instances must not be promoted to sp, except via

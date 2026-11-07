@@ -1,0 +1,127 @@
+--- pre-review-draft.py
++++ timer_expiry06.py
+@@ -21,6 +21,12 @@
+ KEY = '0|com.android.deskclock|2147483644|null|10063'
+ DURATION = 60000
+ ALARM_SHA = '655c545ee9487dc380100d6300376d0bb82d0d12beddd96f283ab7814ff19fea'
++NATIVE_APK = '/data/app/~~VquA6bMTTcqJR9oO6Bn2cg==/local.pocket4.actions.v2-RP5LXAm7yJWXCBcnEc7YkA==/base.apk'
++NATIVE_SHA = 'a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058'
++PREINPUT_ERRORS = frozenset(('AMBIGUOUS_MATCH', 'INCOMPLETE_TREE_NO_ACTION_TAKEN',
++    'WINDOW_CHANGED_NO_ACTION_TAKEN', 'WINDOW_BOUNDS_CHANGED_NO_ACTION_TAKEN',
++    'TARGET_CHANGED_NO_ACTION_TAKEN', 'AMBIGUOUS_MATCH_NO_ACTION_TAKEN',
++    'MATCH_SET_CHANGED_NO_ACTION_TAKEN', 'ACCESSIBILITY_TREE_NOT_READY_NO_ACTION_TAKEN'))
+ 
+ 
+ def need(ok, reason):
+@@ -43,6 +49,51 @@
+ 
+ def activity(value):
+     return PACKAGE + value if value.startswith('.') else value
++
++
++def native_pin(session):
++    raw, _ = session.target.read_file(NATIVE_APK, 65536)
++    need(len(raw) == 20847 and sha(raw) == NATIVE_SHA, 'REVIEWED_NATIVE_ACTION_APK_CHANGED')
++    need(session.android(['/system/bin/pm', 'path', 'local.pocket4.actions.v2']).decode().splitlines()
++         == ['package:' + NATIVE_APK], 'ACTIVE_NATIVE_ACTION_PATH_CHANGED')
++    session.guard()
++    return {'guest_path': NATIVE_APK, 'bytes': len(raw), 'sha256': sha(raw)}
++
++
++def no_input_error(exc, helper):
++    detail = getattr(exc, 'details', {})
++    # Exact eb24 Python wrapper exposes this native error only after verified
++    # restoration. Actual a536 ActionRunner sets actionAttempted BEFORE click;
++    # these named branches all occur before that store. Other errors retain both
++    # pending effects even if a caller supplied an unsupported false field.
++    return (isinstance(exc, helper.ControlError) and str(exc) in PREINPUT_ERRORS
++        and detail.get('outcome_unknown') is False and detail.get('automatic_retry') is False
++        and detail.get('accessibility_mode_restoration_verified') is True)
++
++
++def actual_target_matches(target, selector):
++    mapping = {'id': 'resource-id', 'text': 'text', 'desc': 'content-desc',
++        'class': 'class', 'package': 'package', 'enabled': 'enabled', 'clickable': 'clickable'}
++    return isinstance(target, dict) and all(target.get(mapping[k]) == v for k, v in selector.items())
++
++
++def cleanup_pause_proof(running, paused, uptime_before, uptime_after, unused):
++    need(running['state'] == 1 and paused['state'] == 2
++         and running['id'] == paused['id'] and running['length_ms'] == paused['length_ms'] == DURATION
++         and running['total_length_ms'] == paused['total_length_ms'] == DURATION
++         and running['last_start_ms'] > 0 and uptime_before <= uptime_after
++         and uptime_before >= running['last_start_ms'] - 10
++         and paused['last_start_ms'] == paused['last_wall_ms'] == unused,
++         'CLEANUP_PAUSE_ID_OR_CLOCKS_CHANGED')
++    # Actual Timer.pause() stores getRemainingTime(), without clamping to zero.
++    # Negative values are legitimate when the expiry scheduler has failed. The
++    # exact prior start/remaining and two uptime reads bound the permitted value.
++    lower = running['remaining_ms'] - max(0, uptime_after - running['last_start_ms']) - 10
++    upper = running['remaining_ms'] - max(0, uptime_before - running['last_start_ms']) + 10
++    need(lower <= paused['remaining_ms'] <= upper, 'CLEANUP_PAUSE_REMAINING_OUTSIDE_EXACT_CLOCK_INTERVAL')
++    return {'before_uptime_ms': uptime_before, 'after_uptime_ms': uptime_after,
++        'remaining_lower_bound_ms': lower, 'remaining_upper_bound_ms': upper,
++        'actual_remaining_ms': paused['remaining_ms'], 'negative_remaining_is_source_defined': True}
+ 
+ 
+ def owned_timer(value, ident, duration):
+@@ -257,7 +308,8 @@
+             except BaseException as exc:
+                 details = getattr(exc, 'details', {})
+                 self.t.record('expiry-stop-exception-' + ident, {'error': str(exc), 'details': details})
+-                if details.get('outcome_unknown') is False and details.get('automatic_retry') is False:
++                self.t.s.guard()
++                if no_input_error(exc, self.t.s.helper):
+                     self.t.record('expiry-stop-explicit-no-input', {'intent': self.effect_pending,
+                         'automatic_retry': False, 'stop_request_will_not_be_replayed': True})
+                     self.c.pending = None
+@@ -269,8 +321,7 @@
+             need(reply.get('ok') is True and reply.get('performed') == 'click'
+                  and reply.get('outcome_unknown') is not True
+                  and reply.get('accessibility_mode_restoration_verified') is True
+-                 and target.get('package') == PACKAGE
+-                 and target.get('resource-id') == PACKAGE + ':id/fab',
++                 and actual_target_matches(target, selector),
+                  'EXPIRED_STOP_ACK_UNKNOWN_NO_REPLAY')
+             self.c.pending = None
+             until = min(self.deadline, time.monotonic() + 12)
+@@ -379,11 +430,12 @@
+                 self.delete_reset('cleanup')
+             else:
+                 if item['state'] == 1:
++                    running = copy.deepcopy(item)
++                    pause_before = self.uptime()
+                     self.act('cleanup-pause', self.node('fab', ('Pause', 'Stop')), 1)
+                     item = owned_timer(self.read('cleanup-paused', 2), self.timer_id, DURATION)
+-                    need(0 < item['remaining_ms'] <= DURATION
+-                         and item['last_start_ms'] == item['last_wall_ms'] == self.m.UNUSED,
+-                         'CLEANUP_PAUSE_EFFECT_NOT_VERIFIED')
++                    proof = cleanup_pause_proof(running, item, pause_before, self.uptime(), self.m.UNUSED)
++                    self.t.record('cleanup-pause-clock-interval', proof)
+                     self.complete_effect('pause', self.r['phases']['cleanup-paused'])
+                 self.act('cleanup-delete', self.node('left_button', ('Delete',)), item['state'])
+                 self.deleted('cleanup-deleted')
+@@ -445,6 +497,7 @@
+                 flow = make_flow(core, base)(trial, loop, timer, result)
+                 try:
+                     result['guard_before'] = session.guard()
++                    result['native_before'] = native_pin(session)
+                     result['protected_before'] = installer.snapshot(session, tx, model, timer, 'before')
+                     result['identity_before'] = model.identity(session)
+                     result['alarms_before'] = model.state(session)
+@@ -473,6 +526,7 @@
+                         result['final_actions_blocked_by_unknown'] = {'input': flow.c.pending,
+                             'timer_effect': flow.effect_pending, 'close': flow.close_pending, 'read_only': True}
+                     result['identity_after'] = model.identity(session)
++                    result['native_after'] = native_pin(session)
+                     result['alarms_after'] = model.state(session)
+                     result['templates_sha_after'] = shared.alarm_fingerprint(session, model)
+                     result['timer_final'] = timer.read(session)
+@@ -494,6 +548,7 @@
+         need(flow.owned == flow.closed and len(set(flow.owned)) == 2 and trial.owned is None
+              and trial.removals == 2 and result['task_set_restored']
+              and result['identity_before'] == result['identity_after']
++             and result['native_before'] == result['native_after']
+              and result['guard_before'] == result['guard_after'], 'EXPIRY_FINAL_IDENTITY_OR_CLEANUP_INCOMPLETE')
+         result['business_success_verified'] = True
+     except BaseException as exc:

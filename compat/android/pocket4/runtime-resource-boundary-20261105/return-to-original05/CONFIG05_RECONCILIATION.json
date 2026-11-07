@@ -1,0 +1,147 @@
+{
+  "Android_commands": 0,
+  "Main_limit_writes": 0,
+  "UI_actions": 0,
+  "USB_current_presence_observed": false,
+  "actual_diagnostic_job": "1a1acd3ae0c-fc05-572e",
+  "actual_exit_code": 0,
+  "actual_terminal": "succeeded",
+  "automatic_resource_rebaseline": false,
+  "config_change_actor_proven": false,
+  "configuration_file_differences_from_config04": [
+    {
+      "changes": {
+        "ctime_ns": {
+          "after": "1793900377628479652",
+          "before": "1793757666595952630"
+        },
+        "mtime_ns": {
+          "after": "1793900377628479652",
+          "before": "1793757666595952630"
+        }
+      },
+      "observed_mtime_utc": "2026-11-05T17:39:37.628480+00:00",
+      "path": "/etc/systemd/system.control/droidloomd.service.d/50-TasksMax.conf"
+    },
+    {
+      "changes": {
+        "bytes": {
+          "after": 133,
+          "before": 132
+        },
+        "ctime_ns": {
+          "after": "1793900377621479804",
+          "before": "1791606739021216291"
+        },
+        "mtime_ns": {
+          "after": "1793900377621479804",
+          "before": "1791606739021216291"
+        },
+        "selected_resource_directives": {
+          "after": [
+            {
+              "line": 2,
+              "section": "[Service]",
+              "text": "CPUQuota=200%"
+            },
+            {
+              "line": 3,
+              "section": "[Service]",
+              "text": "MemoryHigh=5G"
+            },
+            {
+              "line": 4,
+              "section": "[Service]",
+              "text": "MemoryMax=6G"
+            },
+            {
+              "line": 5,
+              "section": "[Service]",
+              "text": "TasksMax=12288"
+            }
+          ],
+          "before": [
+            {
+              "line": 2,
+              "section": "[Service]",
+              "text": "CPUQuota=200%"
+            },
+            {
+              "line": 3,
+              "section": "[Service]",
+              "text": "MemoryHigh=5G"
+            },
+            {
+              "line": 4,
+              "section": "[Service]",
+              "text": "MemoryMax=6G"
+            },
+            {
+              "line": 5,
+              "section": "[Service]",
+              "text": "TasksMax=6144"
+            }
+          ]
+        },
+        "sha256": {
+          "after": "9ce11617715c28e3dc3a0a8a7446d29d93e0684490ce9ef69777bb47853bac22",
+          "before": "1ddafeb233beabb556bdc9f1cbd3a1af78d00a0489675facad2d02493ba431a7"
+        }
+      },
+      "observed_mtime_utc": "2026-11-05T17:39:37.621480+00:00",
+      "path": "/etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf"
+    }
+  ],
+  "effective_tasks_max": "12288",
+  "exact_difference_from_6144_profile": {
+    "pids.max": {
+      "after": "12288",
+      "before": "12288",
+      "expected": "6144"
+    }
+  },
+  "fixed_framework_and_host_identity_verified_twice": true,
+  "journal_exit_code": 1,
+  "journal_selected_stdout": "-- No entries --\n",
+  "need_daemon_reload": "no",
+  "observed_after": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "limits": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    },
+    "pids_current": "3601",
+    "pids_events": "max 0",
+    "utc": "2026-11-05T17:48:42.882216+00:00"
+  },
+  "observed_before": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "limits": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    },
+    "pids_current": "3601",
+    "pids_events": "max 0",
+    "utc": "2026-11-05T17:48:42.784699+00:00"
+  },
+  "original_12288_guard_executed_by_this_diagnostic": false,
+  "original_12288_profile_limits_equal_actual": true,
+  "original_USB04_failed_at": "2026-11-05T17:42:20.738770+00:00",
+  "original_USB04_result_sha256": "7349e42437c60b5739158b62078906b64cdc74c37533e0806a2c8602bd5308cb",
+  "raw_result": {
+    "bytes": 10422,
+    "path": "config05-result-original.json",
+    "sha256": "b664de19568666a8fb4a276df82ef51232e7d4928b92e629b82b9f2695d55d13"
+  },
+  "reason_for_change_proven": false,
+  "schema": "pocket4-main-resource-mismatch05-reconciliation-v1",
+  "scope": "Read-only diagnostic; no guard/resource/systemd/configuration/App mutation or new qualification.",
+  "system_configuration_writes": 0,
+  "systemd_tasks_max": "12288"
+}

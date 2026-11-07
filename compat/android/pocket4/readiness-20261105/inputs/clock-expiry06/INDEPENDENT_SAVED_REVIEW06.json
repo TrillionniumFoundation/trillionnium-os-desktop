@@ -1,0 +1,128 @@
+{
+  "Stop_native_ACK_and_actual_selector_verified": true,
+  "actual_observed_expiry_delay_ms": 1037,
+  "android_user": 0,
+  "apk_sha256": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+  "duration_ms": 60000,
+  "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "final_tasks": [
+    851
+  ],
+  "limitations": [
+    "This independent review classifies saved observations; no fresh runtime query was made.",
+    "The 60-second alarm naturally left the active scheduler store at expiry. Pause/resume cancellation belongs to the separate current-APK Timer04 evidence.",
+    "Timer04 and expiry06 are separate owned fixtures, each created from and cleaned to an empty timer baseline.",
+    "Native main-window Stop was used; a new full-screen alert task, desktop popup/action and physical audio were not observed.",
+    "Original scheduler_cancellation_verified=false remains unchanged. Registry and whole-App readiness are not modified."
+  ],
+  "native_UI_actions": 6,
+  "new_Android_or_UI_calls": 0,
+  "no_pending_effects": true,
+  "normal_closed_tasks": [
+    1003,
+    1004
+  ],
+  "notifications": {
+    "actual-expired": {
+      "observed_uptime_ms": 944248010,
+      "owned_active_records": [
+        {
+          "android_user": 0,
+          "channel": "TimerModelNotification",
+          "desktop_popup_or_sound_observed": false,
+          "full_screen_pending_intent_present": true,
+          "key": "0|com.android.deskclock|2147483644|null|10063",
+          "record_sha256": "3c538a05d9bd365868d02f5ae8f4f3c8c9d30ce07179556119ea6d10ca1d9a77",
+          "uid": 10063
+        }
+      ],
+      "raw_bytes": 13821,
+      "raw_sha256": "de24b79fffa88ded2350f42e5856275015f94ad0df439b25b7bbc341ab965b7d"
+    },
+    "before": {
+      "observed_uptime_ms": 944145290,
+      "owned_active_records": [],
+      "raw_bytes": 8017,
+      "raw_sha256": "c83e6539067a43c9b7cb8028f223931cdb5fdc8e2ebb0be7667a28d4c9b412df"
+    },
+    "deleted": {
+      "observed_uptime_ms": 944270290,
+      "owned_active_records": [],
+      "raw_bytes": 8018,
+      "raw_sha256": "99b39f2dbe8a1a5d45e36069000b178b12ce7f3360d1ed604fd9cf8c8811d065"
+    }
+  },
+  "original_alarm_templates_and_sound_state_preserved": true,
+  "original_result_modified": false,
+  "original_result_sha256": "6b584428d4145416d26c72400ab966b9be8df185aec35655177ad799f62ea86e",
+  "original_scheduler_cancellation_verified": false,
+  "owned_timer_id": 0,
+  "package": "com.android.deskclock",
+  "raw_private_dumps_published": false,
+  "same_ID_reset_before_delete_verified": true,
+  "saved_export_sha256": "41a9ffd9b73efc62efa48c533c543363b7baab35083241ff3f2416dfd9c596e6",
+  "scheduler_phases": [
+    {
+      "clock_UID_current_pending_count": 0,
+      "current_records": [],
+      "historical_timer_tags_excluded": 7,
+      "observed_utc": "2026-11-05T22:40:35.894956+00:00",
+      "other_application_records_published": false,
+      "phase": "before",
+      "raw_bytes": 52148,
+      "raw_global_UID_header_sha256": "7ff7dc050115749c10e7cd4b75ef2df0cc46eb5a5c38fda727d269ef4270ddec",
+      "raw_sha256": "e242d72db39ba11569728a9d4434007ad9529146ccaf1291ff84bbd3957abf66",
+      "uptime_ms": 944145200
+    },
+    {
+      "clock_UID_current_pending_count": 1,
+      "current_records": [
+        {
+          "action": "com.android.deskclock.action.TIMER_EXPIRED",
+          "due_uptime_ms": 944246753,
+          "exact_owned_timer_deadline_match": true,
+          "operation_type": "startForegroundService",
+          "record_sha256": "dbd17b69dda7c6075b4687a48320ef2b7d1b56918467eebd952b3aecdbcbadf2",
+          "source_line_number": 119,
+          "type": "ELAPSED_WAKEUP"
+        }
+      ],
+      "historical_timer_tags_excluded": 7,
+      "observed_utc": "2026-11-05T22:41:22.459234+00:00",
+      "other_application_records_published": false,
+      "phase": "created-running",
+      "raw_bytes": 52974,
+      "raw_global_UID_header_sha256": "90408ebe43f2e411472e2cab6c3a8969b54299cc53b6bf7cde642da5fb46aef6",
+      "raw_sha256": "754559dc6b387cfde9a243c6e0e4ca306c2e98d7d5d642b4edcc15da11a15a50",
+      "uptime_ms": 944191770
+    },
+    {
+      "clock_UID_current_pending_count": 0,
+      "current_records": [],
+      "historical_timer_tags_excluded": 7,
+      "observed_utc": "2026-11-05T22:42:18.617492+00:00",
+      "other_application_records_published": false,
+      "phase": "actual-expired",
+      "raw_bytes": 52123,
+      "raw_global_UID_header_sha256": "7ff7dc050115749c10e7cd4b75ef2df0cc46eb5a5c38fda727d269ef4270ddec",
+      "raw_sha256": "a03ada2d1fcc13c5d11a3d47c15fe0f8f64645c46cfa86ee68a2ae9de6d05e3d",
+      "uptime_ms": 944247930
+    },
+    {
+      "clock_UID_current_pending_count": 0,
+      "current_records": [],
+      "historical_timer_tags_excluded": 7,
+      "observed_utc": "2026-11-05T22:42:40.892065+00:00",
+      "other_application_records_published": false,
+      "phase": "final-deleted",
+      "raw_bytes": 52099,
+      "raw_global_UID_header_sha256": "7ff7dc050115749c10e7cd4b75ef2df0cc46eb5a5c38fda727d269ef4270ddec",
+      "raw_sha256": "a83bcd2d9426425948388c38edc4738fa942b02928667ceb9a95b2d3901f42c9",
+      "uptime_ms": 944270200
+    }
+  ],
+  "schema": "pocket4-expiry06-independent-saved-review/v1",
+  "state": "CURRENT_APK_SCHEDULE_EXPIRE_STOP_AND_EMPTY_READBACK_VERIFIED",
+  "timer_and_stopwatch_final_empty": true,
+  "uid": 10063
+}

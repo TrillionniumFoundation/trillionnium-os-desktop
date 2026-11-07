@@ -1,0 +1,18 @@
+{
+  "UI_actions": 0,
+  "actual_negative_control": "execution09/core09-retained-result.json: UID10061 AllInOneActivity.onOptionsItemSelected VerifyError [0xC] Object expected Long",
+  "determined_blockers": [],
+  "device_or_ART_pass_claimed": false,
+  "findings": [
+    "v4 receives explicit null before the branch and only Long on the controller-present branch",
+    "Controller lives in local v0; onMenu result redefines v0 afterward",
+    "registers17 means p0=v15 and p1=v16; v0/v2/v3/v4 do not alias parameters",
+    "Original fallback getItemId/move-result resets v0 before use",
+    "Original cond26 wide v2/v3 and v4 Time and cond44 v3 int are assigned before use",
+    "No original try/catch ranges in the target method; handler coverage is unchanged"
+  ],
+  "remote_calls": 0,
+  "reviewer": "camera_runtime_review",
+  "schema": "calendar09-menu-type-join-peer-review-v1",
+  "source_sha256": "dbf0f4b591cbac0f739a31dfd95a5bf09c05eab97b1b9cb592e387d0bbd70af8"
+}

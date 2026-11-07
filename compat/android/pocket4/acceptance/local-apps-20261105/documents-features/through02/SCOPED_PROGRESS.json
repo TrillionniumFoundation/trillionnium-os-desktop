@@ -1,0 +1,149 @@
+{
+  "additional_deferred_features": [
+    "search",
+    "sort"
+  ],
+  "android_uid": 10022,
+  "apk_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+  "cleanup": {
+    "errors": [],
+    "exact_fixture_tree_removed": true,
+    "helper_package_and_CE_DE_absent": true,
+    "host_fallback_files_unlinked": 2,
+    "normal_owned_tasks_closed": [
+      952,
+      951
+    ],
+    "owned_tasks_remaining": {},
+    "pending": false,
+    "runtime_thread_joined": true,
+    "staged_apk_removed": true,
+    "task_set_restored": true,
+    "ui_delete_credit": false
+  },
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "next_attempt": {
+    "UI_handoff_required": true,
+    "idempotency_key": "pocket4-documents-features-flow-r12-03",
+    "request_sha256": "7480121a812c52f17e4b865d839d40dfc8b2f60cffa250c0e520f2d82e04ac40",
+    "source_change_patch_sha256": "16cce9de83b363ff105b2b8cb37144390bc5d5ea24f3472d9f3a5708de311e99",
+    "status": "PREPARED_NOT_EXECUTED_AT_PUBLICATION"
+  },
+  "observation_failure": {
+    "actual_title": {
+      "class": "android.widget.TextView",
+      "editable": false,
+      "enabled": true,
+      "package": "com.android.documentsui",
+      "resource-id": "com.android.documentsui:id/alertTitle",
+      "text": "New folder"
+    },
+    "business_failure_claimed": false,
+    "error": "RuntimeError: ACTUAL_NEW_FOLDER_DIALOG_TITLE",
+    "new_folder_create_confirmation_sent": false
+  },
+  "observed_at_utc": "2026-11-05T13:36:44.153889+00:00",
+  "package": "com.android.documentsui",
+  "prior_flow11_scope_retained_unchanged": {
+    "result_sha256": "095fb0441fdf39d4fdd84f337b3a343ee556d384ec6aef3a6312863b114dc712",
+    "scope_overwritten": false
+  },
+  "progress": {
+    "evidence": [
+      {
+        "bytes": 1732,
+        "path": "inputs/flow01-scoped-result.json",
+        "sha256": "542c17b2d1759cd2e61381993d029f9373679eca8cb8350a69aa64f89985d9d9"
+      },
+      {
+        "bytes": 6217,
+        "path": "inputs/flow02-scoped-result.json",
+        "sha256": "dbc6e9cc650ba95915909f7e958a6ee482f2bef81519fcc6e307b14b8b1db6c9"
+      },
+      {
+        "bytes": 10479,
+        "path": "inputs/flow02-actual-result.json",
+        "sha256": "dcb68ce19b9ffdac949654150110a18dd39f7e31873bd851e7315e5ff79c1074"
+      },
+      {
+        "bytes": 20291,
+        "path": "inputs/flow02-runtime-dialog-review.json",
+        "sha256": "1a4eb7b6e4f1bcf5349af4c730288a961fe6e99b0c2e5fa09ff311640523b07c"
+      },
+      {
+        "bytes": 731,
+        "path": "inputs/flow02-terminal.json",
+        "sha256": "4919d3f7d228209e6071d9b1df99efe886113392c2cfe00e6cd7ed7d71c2e842"
+      }
+    ],
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "gates": {
+      "documents.provider": "pending"
+    },
+    "id": "documents_features02_cancel_and_exact_tree_grant",
+    "limits": [
+      "Only GET_CONTENT cancellation, OPEN_DOCUMENT_TREE cancellation, and exact owned tree persisted RW grant passed in this new feature batch.",
+      "The complete session failed at the actual New folder title observation; no name input or create confirmation was sent.",
+      "Helper seed created two owned files; this is fixture setup, not Files UI creation.",
+      "Cleanup used two exact host fallback unlinks; no Files UI delete credit.",
+      "Original Flow11 IO/persistence/lifecycle scope remains separately reviewed and unchanged.",
+      "Complete native/engine exclusion, all supported features, and whole-App production readiness remain unqualified."
+    ],
+    "observed_at_utc": "2026-11-05T13:36:44.153889+00:00",
+    "owned_cleanup_verified": true,
+    "package": "com.android.documentsui",
+    "scoped_business_flow_completed": false,
+    "scoped_gate_results": {
+      "EXACT_TREE_GRANT": {
+        "broader_root_granted": false,
+        "passed": true,
+        "persisted_read_write_grants": 1,
+        "tree": "primary:Pocket4_DocFeatures_r12_eeff7aa90e47139a"
+      },
+      "GET_CONTENT_CANCEL": {
+        "RESULT_CANCELED": true,
+        "URI_returned": false,
+        "grants_empty": true,
+        "passed": true
+      },
+      "TREE_CANCEL": {
+        "RESULT_CANCELED": true,
+        "URI_returned": false,
+        "grants_empty": true,
+        "passed": true
+      }
+    },
+    "status": "THREE_SCOPED_GATES_PASSED_FULL_SESSION_STOPPED_AT_DIALOG_OBSERVATION",
+    "version_code": 37,
+    "whole_app_production_ready": false
+  },
+  "remaining_feature_batch_gates": [
+    "FILES_NEW_FOLDER",
+    "FILES_MULTIPLE_COPY",
+    "FILES_MULTIPLE_MOVE",
+    "FILES_MULTIPLE_DELETE_COPIES",
+    "NORMAL_CLOSE_REOPEN_APP_READBACK",
+    "REVOKED_EXISTING_URI_SECURITY_DENIAL",
+    "GET_CONTENT_EXACT_FILE_READ",
+    "FILES_UI_FINAL_DELETE",
+    "FINAL_GRANTS_EMPTY"
+  ],
+  "runtime_review": {
+    "complete_executable_object_coverage": false,
+    "engine_exclusion_verified": false,
+    "file_operation_service_observed": false,
+    "historical_result_reclassified_as_native_qualified": false,
+    "old_collector_missed_eligible_code_objects_per_process": 371,
+    "original_scoped_summary_unchanged": true,
+    "process_names": [
+      "com.android.documentsui",
+      "com.android.externalstorage"
+    ],
+    "revision03_moves_seen_mark_after_eligibility": true,
+    "sample_count": 150,
+    "selected_projection_now_available": true
+  },
+  "schema": "pocket4-documents-features-through02-publication-v1",
+  "version_code": 37,
+  "whole_app_production_ready": false
+}

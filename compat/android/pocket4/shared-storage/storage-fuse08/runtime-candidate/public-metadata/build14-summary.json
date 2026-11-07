@@ -1,0 +1,91 @@
+{
+  "actual_result_sha256": "15947f9c0831e1419988dba12e2cf9a4dfa3bea66fdd229a857200fca2f76bd1",
+  "android_art_verifier_run": false,
+  "candidate_dex": {
+    "bytes": 10892756,
+    "checksum_and_signature_valid": true,
+    "format": "039",
+    "sha256": "8f74a77571feed8bc011bbaaa369f1cc8d75b793d6c3993d6f3b1cca49f912e3"
+  },
+  "commands": {
+    "assemble": {
+      "joined": true,
+      "rc": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "timed_out": false
+    },
+    "fresh-original": {
+      "joined": true,
+      "rc": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "timed_out": false
+    },
+    "roundtrip": {
+      "joined": true,
+      "rc": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "timed_out": false
+    },
+    "smali-version": {
+      "joined": true,
+      "rc": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "c2b3a36a4f6c3d200ae239fff190236829a200c71503083b34a2d791e2d153c2",
+      "timed_out": false
+    },
+    "zipalign-check-input": {
+      "joined": true,
+      "rc": 127,
+      "stderr_sha256": "21558b57bfcce882eb6e8757098438685062cbaedb6ff94fbc14575eba9bee6d",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "timed_out": false
+    },
+    "zipalign-libraries": {
+      "joined": true,
+      "rc": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "741d014bb0181ea40562160b7921172709b22401197c1116fd6637f22b22bad0",
+      "timed_out": false
+    }
+  },
+  "deployed": false,
+  "exit_code": 0,
+  "finished_utc": "2026-11-05T09:07:37.173404+00:00",
+  "job_id": "1a1aaf62cf8-fc05-490f",
+  "preparation_failures": "The overlong initial request was rejected before launch. A staged first launch could not read the script because of umask; source bytes remained fixed and the subsequent run corrected only the owned staging permissions.",
+  "resources": {
+    "cpus": [
+      20,
+      21
+    ],
+    "java_heap_max_bytes": 1073741824,
+    "memory_max_bytes": 2147483648,
+    "swap_max_bytes": 0,
+    "unit_runtime_max_seconds": 320
+  },
+  "semantic_verification": {
+    "class_metadata_and_method_sets_equal": true,
+    "classes": 7582,
+    "differences": [
+      {
+        "file": "com/android/server/storage/StorageSessionController.smali",
+        "method": "public onVolumeUnmount(Lcom/android/server/storage/ImmutableVolumeInfo;)V"
+      }
+    ],
+    "evidence_sha256": "3de6eecad04daf7a6a8d52d5478ce6c220ecb8864b480feec545b7ec2bf843e5",
+    "methods": 53839,
+    "non_target_semantic_changes": 0,
+    "reviewed_target_ir_equal": true
+  },
+  "started_utc": "2026-11-05T09:07:03.708035+00:00",
+  "state": "DEX_VERIFIED_ALIGNMENT_PENDING",
+  "tool_and_input_pins_unchanged": true,
+  "zip_payloads": {
+    "evidence_sha256": "86843bc17da1753c5f2f4acc1cafcc6a443a8758c86af2d0534ad5828bb29602",
+    "members": 65,
+    "only_changed_member": "classes3.dex"
+  }
+}

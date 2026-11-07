@@ -1,0 +1,61 @@
+--- execution07/calendar_install07.py
++++ execution08/calendar_install08.py
+@@ -8,11 +8,11 @@
+ PROFILE_TX_SHA='e65a47bea8b3800d0b1a89247bd8c356dd291523c2d248d401d05d1d3b55fb83'
+ PROFILE_ACTIVATION_SHA='91c7a4a911a7bcf908726750f55f3fda66f40263ddf3fac457473e0a6c780435'
+ 
+-ROOT=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-07')
+-BUILD=Path('/home/alex/work/pocket4-calendar-repair-build-20261105-r12-07')
+-BUILD_SHA='ac003401a25bea8d4bdae1ed6cd4c02a0c17277dd19f627a520302bf41c22fba'
++ROOT=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-08')
++BUILD=Path('/home/alex/work/pocket4-calendar-repair-build-20261105-r12-08')
++BUILD_SHA='ba572f71849781d142a9bcc80fe54325e6169d0425d7fbc7b41909e5b890e617'
+ OLD_SHA='7522e88fe03f4997513b0e03591da215b8ebc67f6c933939a73addc3c75495a9'
+-NEW_SHA='3feed84a217f333639bdb14ac42c70b0bcf0a48b8b3458ebc5183bfc6f7596fd'
++NEW_SHA='95633138efb7209631638eef05ad54021b647740a6278d7de8976bb499f6b935'
+ OLD_BYTES,NEW_BYTES=2532558,2631117
+ PACKAGE='com.android.calendar'
+ PROVIDER='com.android.providers.calendar'
+--- execution07/read_owned_calendar07.py
++++ execution08/read_owned_calendar08.py
+@@ -4,7 +4,7 @@
+ import hashlib, json, os, re, stat
+ from urllib.parse import urlencode
+ 
+-RUN='calendar-core07-7f8db9ae421e49c3'
++RUN='calendar-core08-b9e521a7ce8d4f63'
+ CALENDAR_LABEL='Pocket4 Calendar QA '+RUN
+ TITLE='Pocket4 event '+RUN
+ EDITED=TITLE+' Edited'
+--- execution07/calendar_accept_core07.py
++++ execution08/calendar_accept_core08.py
+@@ -8,13 +8,13 @@
+ PROFILE_ACTIVATION_SHA='91c7a4a911a7bcf908726750f55f3fda66f40263ddf3fac457473e0a6c780435'
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-calendar-accept-core-20261105-r12-07')
++ROOT=Path('/home/alex/work/pocket4-calendar-accept-core-20261105-r12-08')
+ ORIGINAL=Path('/home/alex/work/pocket4-calendar-flow-tools-20261105-r12-01/run_calendar01.py')
+ ORIGINAL_SHA='d307f4ceda9fc80e216f280cb1a9558fbe4e27b43cd659ecc83a1c6edab9c8fa'
+-INSTALL=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-07/result.json')
+-NEW_SHA='3feed84a217f333639bdb14ac42c70b0bcf0a48b8b3458ebc5183bfc6f7596fd'
++INSTALL=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-08/result.json')
++NEW_SHA='95633138efb7209631638eef05ad54021b647740a6278d7de8976bb499f6b935'
+ PROVIDER_SHA='eebf12f81981f7d8c59a9b9ed465945818d2ab0208c121d858cbc4e6426f5fff'
+-READER_SHA='079a3ec66d7eaa0510d0ab9fcb0da54648ecb14f551bc31742f12f1b80d8ee83'
++READER_SHA='c002a256edc0c17a5f719e58baa08d88a20440a49f15070a9495d31aa3c5d1e5'
+ ADAPTER_SHA='48103b75fc286997c1dff4a5fe0a8960de023babbe7179faad75dfd02f4c4032'
+ PROBE=Path('/home/alex/work/pocket4-calendar-shell-query-tools-20261105-r12-02/probe_shell_cleanup02.py')
+ PROBE_SHA='3696994fe45fba3152418e32667ac3ac6ed437cf5191189bfe65a27f21bccb88'
+@@ -302,9 +302,9 @@
+     m.PINS={str(PROFILE_TX) if path==previous_tx else path: PROFILE_TX_SHA if path==previous_tx else pin
+             for path,pin in m.PINS.items()}
+     m.TX=PROFILE_TX
+-    model=load(HERE/'read_owned_calendar07.py',READER_SHA,'calendar_core_owned_reader')
++    model=load(HERE/'read_owned_calendar08.py',READER_SHA,'calendar_core_owned_reader')
+     tx,oldbase,doc,diag=[m.load(Path(p),pin,'calendar_core_dependency_'+str(i)) for i,(p,pin) in enumerate(m.PINS.items())]
+-    base=load(HERE/'calendar_ui07.py',ADAPTER_SHA,'calendar_private_ui')
++    base=load(HERE/'calendar_ui08.py',ADAPTER_SHA,'calendar_private_ui')
+     probe=load(PROBE,PROBE_SHA,'calendar_existing_shell_grants')
+     proof_raw=(HERE/'atomic-delete-review.json').read_bytes()
+     need(hashlib.sha256(proof_raw).hexdigest()==ATOMIC_SHA and

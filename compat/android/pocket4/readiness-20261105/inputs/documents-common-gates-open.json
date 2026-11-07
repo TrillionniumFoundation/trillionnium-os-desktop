@@ -1,0 +1,422 @@
+{
+  "schema": "pocket4-documents-common-gate-review-v1",
+  "reviewed_utc": "2026-11-05T11:49:22.033905+00:00",
+  "mode": "LOCAL_RETAINED_EVIDENCE_REVIEW_ONLY",
+  "new_device_calls": 0,
+  "new_UI_actions": 0,
+  "package": "com.android.documentsui",
+  "whole_app_production_ready": false,
+  "automatic_readiness_promotion": false,
+  "business_scope_completed": true,
+  "current_owned_test_state": "CLEAN",
+  "already_completed_scope": [
+    "CREATE_DOCUMENT picker and exact returned URI",
+    "one ContentResolver write and exact Unicode hash readback",
+    "provider rename",
+    "Files UI rename and real VIEW result",
+    "OPEN_DOCUMENT picker result",
+    "normal close/reopen persisted grant and bytes",
+    "provider delete, exact ENOENT, grant/package/task/directory cleanup"
+  ],
+  "sources": {
+    "flow11": {
+      "path": "documents-flow08/FLOW11_SCOPED_REVIEW.json",
+      "bytes": 10233,
+      "sha256": "7f852dcb2e052234c395512fd60e2fbcedb8a4e4ad16dbb11fe071e88a6dc336"
+    },
+    "flow11_receipts": {
+      "path": "documents-flow08/FLOW11_VERIFIED_RECEIPTS.json",
+      "bytes": 17472,
+      "sha256": "c70bd842f1eebdd9e32fe1773f49eee30e8516a9d4a9e1f96eee24e97f90967d"
+    },
+    "installed_identity_projection": {
+      "path": "app-identity08/public-metadata/installed-app-identities.json",
+      "bytes": 183597,
+      "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+    },
+    "identity_audit": {
+      "path": "app-identity08/public-metadata/audit-summary.json",
+      "bytes": 3675,
+      "sha256": "7b9ff52ebe28bf4089c33e41ca2bc9e4d5b4ccec8722f9c0e406cb92564e86bc"
+    },
+    "retained_preflight": {
+      "path": "documents-flow08/read-only-preflight-result.json",
+      "bytes": 56444,
+      "sha256": "33b49d71907648b5a07ebe8ae3881d2a05384e87ec7c0b6639599e7b65d2b90d"
+    },
+    "local_axml_decoder": {
+      "path": "webview-flow08/decode_manifest.py",
+      "bytes": 4677,
+      "sha256": "2483008850e6e6d2de61612e3e87833e9d4fc40251d9d43ce75a98fbd2445dd2"
+    },
+    "release_gate_definitions": {
+      "path": "all-app-readiness08/app-gates.json",
+      "bytes": 24135,
+      "sha256": "441289f9c04b46f38e1dd6e19f23ec6e4c6729b6a6f814cab81c0ae6fbbb1e78"
+    },
+    "native_candidate07_qualification": {
+      "path": "publication/compat/android/pocket4/readiness-20261105/inputs/platform-native-candidate07-actual-update.json",
+      "bytes": 4169,
+      "sha256": "000ae4feeeb9cdd50493ac74e6f07e4aa3dddc5b94a63557a4e73fbc786dbc4c"
+    }
+  },
+  "retained_documents_identity": {
+    "android_user": 0,
+    "apk_signature_qualified": true,
+    "apks": [
+      {
+        "bytes": 8599849,
+        "manifest_identity": {
+          "declared_min_sdk": "31",
+          "declared_target_sdk": "37",
+          "embedded_native_abis": [],
+          "package": "com.android.documentsui",
+          "split_name": null,
+          "version_code": 37,
+          "version_name": "17"
+        },
+        "manifest_source": "ORIGINAL_AAPT_BADGING_EXIT0",
+        "ordinal": 0,
+        "original_held_hash_before_after_equal": true,
+        "sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+        "signature": {
+          "signer_certificate_sha256": [
+            "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8"
+          ],
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_sha256": "e83b38f4a3fbc5f306bfe074be7f97a3897fb4cf152f7f7adb2ab9fd3a71a60d",
+          "tool_exit_code": 0,
+          "verified": true,
+          "verified_schemes": {
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v3.1": false,
+            "v4": false
+          }
+        }
+      }
+    ],
+    "app_id": 10022,
+    "base_split_certificate_identity_equal": true,
+    "business_flow_qualified_by_this_audit": false,
+    "content_identity_readback": "ORIGINAL_HELD_FD_HASH_AND_CURRENT_PATH_READBACK",
+    "cpu_abi": {
+      "cpuAbiOverride": "null",
+      "primaryCpuAbi": "null",
+      "secondaryCpuAbi": "null"
+    },
+    "identity_qualified": true,
+    "launcher_components": [
+      "com.android.documentsui/.LauncherActivity"
+    ],
+    "min_sdk": 31,
+    "original_combined_gate_passed": true,
+    "original_observation_window": {
+      "finished_utc": "2026-11-05T11:03:04.326573+00:00",
+      "started_utc": "2026-11-05T11:03:03.808066+00:00"
+    },
+    "package": "com.android.documentsui",
+    "prior_inventory_uid_and_version_equal": true,
+    "runtime_engine": {
+      "process_mapping_observed": false,
+      "status": "NOT_QUALIFIED_BY_THIS_AUDIT"
+    },
+    "target_sdk": 37,
+    "uid": 10022,
+    "user_state_observed": {
+      "enabled": "0",
+      "hidden": "false",
+      "installed": "true",
+      "stopped": "false",
+      "suspended": "false"
+    },
+    "version_code": 37,
+    "version_name": "17"
+  },
+  "manifest_projection": {
+    "com.android.documentsui": {
+      "apk_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+      "manifest_sha256": "ac77cfc52655c9322e76aa938bc971e488b0e84277828c7ae18d1223ed62f3b0",
+      "manifest_bytes": 17728,
+      "components": [
+        {
+          "kind": "activity",
+          "name": "com.android.documentsui.picker.TrampolineActivity",
+          "exported": true,
+          "process": null,
+          "actions": [
+            "android.intent.action.GET_CONTENT"
+          ]
+        },
+        {
+          "kind": "activity",
+          "name": "com.android.documentsui.picker.PickActivity",
+          "exported": true,
+          "process": null,
+          "actions": [
+            "android.intent.action.OPEN_DOCUMENT",
+            "android.intent.action.CREATE_DOCUMENT",
+            "android.intent.action.GET_CONTENT",
+            "android.intent.action.OPEN_DOCUMENT_TREE"
+          ]
+        },
+        {
+          "kind": "activity",
+          "name": "com.android.documentsui.files.LauncherActivity",
+          "exported": null,
+          "process": null,
+          "actions": []
+        },
+        {
+          "kind": "activity-alias",
+          "name": "com.android.documentsui.LauncherActivity",
+          "exported": true,
+          "process": null,
+          "actions": [
+            "android.intent.action.MAIN"
+          ]
+        },
+        {
+          "kind": "activity",
+          "name": "com.android.documentsui.inspector.InspectorActivity",
+          "exported": null,
+          "process": null,
+          "actions": []
+        },
+        {
+          "kind": "activity",
+          "name": "com.android.documentsui.files.FilesActivity",
+          "exported": true,
+          "process": null,
+          "actions": [
+            "android.intent.action.MAIN",
+            "android.intent.action.VIEW",
+            "android.intent.action.VIEW"
+          ]
+        },
+        {
+          "kind": "activity-alias",
+          "name": "com.android.documentsui.ViewDownloadsActivity",
+          "exported": true,
+          "process": null,
+          "actions": [
+            "android.intent.action.VIEW_DOWNLOADS"
+          ]
+        },
+        {
+          "kind": "activity",
+          "name": "com.android.documentsui.ScopedAccessActivity",
+          "exported": true,
+          "process": null,
+          "actions": [
+            "android.os.storage.action.OPEN_EXTERNAL_DIRECTORY"
+          ]
+        },
+        {
+          "kind": "provider",
+          "name": "com.android.documentsui.picker.LastAccessedProvider",
+          "exported": false,
+          "process": null,
+          "actions": []
+        },
+        {
+          "kind": "provider",
+          "name": "com.android.documentsui.picker.PickCountRecordProvider",
+          "exported": false,
+          "process": null,
+          "actions": []
+        },
+        {
+          "kind": "provider",
+          "name": "com.android.documentsui.archives.ArchivesProvider",
+          "exported": true,
+          "process": null,
+          "actions": [
+            "android.content.action.DOCUMENTS_PROVIDER"
+          ]
+        },
+        {
+          "kind": "receiver",
+          "name": "com.android.documentsui.PackageReceiver",
+          "exported": true,
+          "process": null,
+          "actions": [
+            "android.intent.action.PACKAGE_FULLY_REMOVED",
+            "android.intent.action.PACKAGE_DATA_CLEARED"
+          ]
+        },
+        {
+          "kind": "receiver",
+          "name": "com.android.documentsui.roots.BootReceiver",
+          "exported": true,
+          "process": null,
+          "actions": [
+            "android.intent.action.BOOT_COMPLETED"
+          ]
+        },
+        {
+          "kind": "receiver",
+          "name": "com.android.documentsui.PreBootReceiver",
+          "exported": true,
+          "process": null,
+          "actions": [
+            "android.intent.action.PRE_BOOT_COMPLETED"
+          ]
+        },
+        {
+          "kind": "service",
+          "name": "com.android.documentsui.services.FileOperationService",
+          "exported": false,
+          "process": ":com.android.documentsui.services",
+          "actions": []
+        },
+        {
+          "kind": "receiver",
+          "name": "androidx.profileinstaller.ProfileInstallReceiver",
+          "exported": true,
+          "process": null,
+          "actions": [
+            "androidx.profileinstaller.action.INSTALL_PROFILE",
+            "androidx.profileinstaller.action.SKIP_FILE",
+            "androidx.profileinstaller.action.SAVE_PROFILE",
+            "androidx.profileinstaller.action.BENCHMARK_OPERATION"
+          ]
+        }
+      ]
+    },
+    "com.android.externalstorage": {
+      "apk_sha256": "50d1e6f2be950e049cdc898dd812c8e609f421cc167013d4ee2c795dcdc0e5ea",
+      "manifest_sha256": "b28733a6bdb73b6ec5f278c2c8f548e542f842f29323f73fab3db3b4db356241",
+      "manifest_bytes": 4076,
+      "components": [
+        {
+          "kind": "provider",
+          "name": ".ExternalStorageProvider",
+          "exported": true,
+          "process": null,
+          "actions": [
+            "android.content.action.DOCUMENTS_PROVIDER"
+          ]
+        },
+        {
+          "kind": "receiver",
+          "name": ".MountReceiver",
+          "exported": true,
+          "process": null,
+          "actions": [
+            "android.os.storage.action.VOLUME_STATE_CHANGED"
+          ]
+        },
+        {
+          "kind": "provider",
+          "name": ".TestDocumentsProvider",
+          "exported": true,
+          "process": null,
+          "actions": [
+            "android.content.action.DOCUMENTS_PROVIDER"
+          ]
+        }
+      ]
+    }
+  },
+  "actual_primary_provider_route_queries": {
+    "external_provider_roots": {
+      "ok": true,
+      "stdout": "Row: 0 root_id=primary, flags=1114139, title=Cuttlefish, document_id=primary:, available_bytes=-1\n"
+    },
+    "resolve_create_document": {
+      "ok": true,
+      "stdout": "priority=100 preferredOrder=0 match=0x608000 specificIndex=-1 isDefault=true\ncom.android.documentsui/.picker.PickActivity\n"
+    },
+    "resolve_open_document": {
+      "ok": true,
+      "stdout": "priority=100 preferredOrder=0 match=0x608000 specificIndex=-1 isDefault=true\ncom.android.documentsui/.picker.PickActivity\n"
+    },
+    "resolve_open_tree": {
+      "ok": true,
+      "stdout": "priority=100 preferredOrder=0 match=0x108000 specificIndex=-1 isDefault=true\ncom.android.documentsui/.picker.PickActivity\n"
+    }
+  },
+  "common_gates": {
+    "identity": {
+      "status": "PARTIAL_RUNTIME_MAPPING_PENDING",
+      "qualified": "Same APK, UID10022, Android user0, code37, R16 epoch and CE/DE identity before/after Flow11; the same APK has independently verified v3 certificate c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8.",
+      "remaining": "Bind actual DocumentsUI, any active file-operation service, and ExternalStorageProvider processes to their UID/package/namespace/start time and executable/mapped native objects. ExternalStorageProvider certificate verification is not in this 45-launcher audit.",
+      "absence_is_not_proof": "primary/secondary ABI=null and embedded_native_abis=[] do not prove that no native bridge, engine or framework native code was involved."
+    },
+    "lifecycle": {
+      "status": "PASS_FOR_NORMAL_TASK_CLOSE_REOPEN_SCOPE",
+      "evidence": "Flow11 REOPEN_OK; three exact owned leaf removals verified absent and other task preserved.",
+      "limit": "No process-death or reboot persistence claim. Require additional lifecycle cases only for the declared supported release contract."
+    },
+    "stability": {
+      "status": "PENDING",
+      "gap": "Flow11 has successful phase/task/identity receipts, but no exact-UID before/after crash, ANR, exit-reason and resource observation budget. Clean task removal is not a substitute.",
+      "minimum_next": "Collect those baselines and final deltas around the remaining necessary feature/error-path sessions. Use a reviewed finite repeat/soak budget and state its duration; do not rerun the complete successful11 flow solely to add repetitions."
+    },
+    "data_permissions": {
+      "status": "PASS_FOR_OWNED_FIXTURE_CLEANUP_PARTIAL_FOR_WHOLE_APP",
+      "qualified": "Exact generated document deleted through its provider; all permitted names absent; URI grants empty; own new package/directory/stage absent; no user file contents accessed; APK/UID/CE/DE ownership unchanged.",
+      "remaining": "For the next required sessions, retain relevant permission/AppOps/grant state before/after and metadata-only preservation of unrelated namespace/task state. CE/DE inode equality does not prove arbitrary user databases or permission flags unchanged."
+    },
+    "ui_observation": {
+      "status": "PASS_FOR_OBSERVED_CREATE_RENAME_OPEN_SCOPE",
+      "qualified": "Actual owned task/window/native controls and field readbacks; exact system Resolver UID1000; complete pointer snapshot guards; no-effect and unknown paths kept distinct.",
+      "remaining": "Observe each additional supported UI control before adaptation. Provider delete does not qualify Files UI Delete."
+    },
+    "release_scope": {
+      "status": "PENDING",
+      "gap": "No complete reviewed support contract or per-feature disposition exists. The installed manifest actually exposes more routes than Flow11 covered.",
+      "minimum_next": "Resolve every declared user-facing route and real Files operation against an explicit supported contract. Test supported paths with owned fixtures; document a source/product-backed exclusion for unsupported capability. Lack of an attached provider or missing evidence alone is not an unsupported-feature exemption."
+    }
+  },
+  "minimum_remaining_work": [
+    {
+      "order": 1,
+      "id": "runtime_native_attribution",
+      "kind": "READ_ONLY_DURING_NECESSARY_SESSION",
+      "acceptance": [
+        "Capture exact package/UID ProcessRecord attribution, host PID and namespace PID, boot/start ticks, held Main epoch, and executable ELF machine for each involved live process.",
+        "Read complete maps with process identity checked before/after; hash/pin the actual native bridge or engine and relevant ART/framework mapping. Cover the declared separate file-operation service when that supported operation runs. Do not read process memory or user document contents.",
+        "If no ARM engine is involved, record that as a scoped observed exclusion only after complete positive x86_64 process/framework attribution; do not mark it N/A from APK ABI metadata. If an engine is involved, bind that exact mapped hash to its applicable qualification. Candidate07 host/isolated Android tests alone do not establish Main deployment or Docs mapping."
+      ]
+    },
+    {
+      "order": 2,
+      "id": "supported_file_manager_and_saf_paths",
+      "kind": "BOUNDED_OWNED_FIXTURES_AFTER_QUEUE_HANDOFF",
+      "acceptance": [
+        "Retain Flow11 credit; do not repeat Save/write solely because earlier failures exist.",
+        "Using an independent exclusive directory and only generated files, qualify real Files UI Delete and supported create-folder/copy/move/multi-selection/search/sort operations observed in the actual APK/UI. Host setup earns no App operation credit.",
+        "Qualify actual GET_CONTENT and OPEN_DOCUMENT_TREE contracts, grant containment/release and cancellation; resolve declared Downloads/archive routes and supported MIME/multiple-file behavior. A tree grant must never be to the user storage root.",
+        "External/removable/remote providers require an explicit supported-capability disposition and a controlled provider/medium if included; primary-only evidence cannot silently cover them."
+      ]
+    },
+    {
+      "order": 3,
+      "id": "error_paths_and_stability",
+      "kind": "COMBINE_WITH_NECESSARY_FEATURE_SESSIONS",
+      "acceptance": [
+        "Exercise create/open cancellation, a collision or invalid filename path without altering unrelated files, and owned missing/revoked-URI behavior; require a usable return and no unintended document/grant.",
+        "Correlate exact-UID crash/ANR/exit evidence with each known action and normal close; retain observer failures separately from App failures.",
+        "Take resource and process/FD baselines/final deltas under the same epoch during a finite reviewed observation budget; report unexplained process exits, leaked owned work or growing resources. Do not induce host/global storage failure or reboot for this checklist."
+      ]
+    },
+    {
+      "order": 4,
+      "id": "release_review",
+      "kind": "LOCAL_RECONCILIATION",
+      "acceptance": [
+        "Attach per-gate evidence and final actual supported-feature dispositions; preserve historical failed01–10 and the immutable02 entry fence.",
+        "Update the 45-App matrix only for the qualified scope; whole-App ready requires all applicable common/business gates explicitly reviewed.",
+        "Any new test installation/package/URI/files must be fully reconciled, with actual normal task cleanup, before release promotion."
+      ]
+    }
+  ],
+  "limits": [
+    "This is a proposed minimal completion checklist, not an execution authorization or new device result.",
+    "No additional optional Docs UI trial was run to write this checklist.",
+    "No production-ready claim is inferred from a signature, an inventory row, a launch, host-only tests or the temporary test client."
+  ]
+}

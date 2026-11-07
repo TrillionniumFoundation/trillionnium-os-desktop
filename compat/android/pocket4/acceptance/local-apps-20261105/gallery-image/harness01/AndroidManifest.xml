@@ -1,0 +1,11 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.droidloom.qa.media.r12.na1d407c85b3e6f92"
+    android:versionCode="1" android:versionName="1">
+  <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="33" />
+  <queries><package android:name="com.android.gallery3d" /></queries>
+  <application android:label="@string/app_name" android:allowBackup="false"
+      android:debuggable="false" android:testOnly="true" android:usesCleartextTraffic="false" />
+  <instrumentation android:name=".MediaFixture"
+      android:targetPackage="org.droidloom.qa.media.r12.na1d407c85b3e6f92"
+      android:functionalTest="true" android:handleProfiling="false" />
+</manifest>

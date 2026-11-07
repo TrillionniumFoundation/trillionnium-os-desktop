@@ -1,0 +1,191 @@
+--- clock_install03.py
++++ clock_install04.py
+@@ -5,18 +5,29 @@
+ import argparse, hashlib, io, json, os, re, stat, time, types, zipfile
+ import xml.etree.ElementTree as ET
+ 
+-ROOT = Path('/home/alex/work/pocket4-clock-expired-text-20261105-r12-02')
+-RUN = ROOT / 'install-03'
++ROOT = Path('/home/alex/work/pocket4-clock-alarm-dispatch-20261105-r12-04')
++RUN = ROOT / 'install-04'
+ CLOCK = Path('/home/alex/work/pocket4-clock-session-tools-20261105-r12-01')
+-CANDIDATE = ROOT / 'build/DeskClock-pocket4-expired-text.apk'
+-OLD_SHA = 'cc7eece9d0429267d1950f0ca9287b041493bc5c05602ffc2119e1866381fb73'
+-NEW_SHA = 'e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172'
+-OLD_BYTES, NEW_BYTES = 7593129, 7593129
++CANDIDATE = ROOT / 'build/DeskClock-pocket4-alarm-dispatch.apk'
++OLD_SHA = 'e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172'
++NEW_SHA = '433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d'
++OLD_BYTES, NEW_BYTES = 7593129, 7597225
+ PACKAGE, UID, VERSION = 'com.android.deskclock', 10063, 37
+ FACTORY = '/product/app/DeskClock/DeskClock.apk'
+ MODEL_SHA = 'fd3ffdfbb397b561bf251236c117966ea18b2ca176e4908c6a31ad0db4cc0048'
+ TIMER_SHA = 'c3bf02f38e05ab7a55285ca2245ffe2bda3eb528cc1f85d54723294047948b08'
+-BUILD_SHA = 'bc68d095b4aedfbc5d66763a5095bc2d0192ac79bdf68f596f7c2eb5dee278d8'
++BUILD_SHA = '4b4e23003f52b80f896cff316b930095ef4dd959e0fdbcb99b2ea0fc674b6881'
++DEX_SHA = 'deff3873f215d97ab47908c7f60cb6ab62d4a6e4f6274dc3f3130023f0630c98'
++ART_RESULT = Path('/home/alex/work/pocket4-clock-alarm-art-20261105-r12-04/result.json')
++ART_SHA = 'cb6ebadca9c9736ce9e60877f13d33698d5f7a1bb918ae178e37d7c6da697ac9'
++TRANSPORT_SHA = 'b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
++ACTIVATION_SHA = '7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
++ART_TARGETS = (
++    'Lcom/android/deskclock/alarms/AlarmService;',
++    'Lcom/android/deskclock/alarms/AlarmStateManager$AlarmManagerStateChangeScheduler;',
++    'Lcom/android/deskclock/alarms/AlarmStateManager$Companion;',
++    'Lcom/android/deskclock/alarms/AlarmStateManager;',
++)
+ ALARM_SHA = '655c545ee9487dc380100d6300376d0bb82d0d12beddd96f283ab7814ff19fea'
+ SOUND_KEYS = ('volume_alarm','volume_ring','volume_notification','volume_music',
+               'alarm_alert','notification_sound','ringtone')
+@@ -40,7 +51,64 @@
+ 
+ def modules():
+     model = load(CLOCK/'read_clock.py', MODEL_SHA)
+-    return model, model.load_session(), load(CLOCK/'read_timer.py', TIMER_SHA)
++    require(model.SOURCE_SHA == TRANSPORT_SHA, 'ORIGINAL_STRICT_TRANSPORT_REQUIRED')
++    tx = model.load_session()
++    require(tx.ACTIVATION_SHA == ACTIVATION_SHA, 'ORIGINAL_STRICT_RESOURCE_PROFILE_REQUIRED')
++    return model, tx, load(CLOCK/'read_timer.py', TIMER_SHA)
++
++
++def artifact_preconditions(build, art, tx):
++    require(build['state'] == 'SIGNED_OFFLINE_CANDIDATE_VERIFIED'
++        and build['original_apk_sha256'] == OLD_SHA
++        and build['candidate_apk']['sha256'] == NEW_SHA
++        and build['candidate_apk']['bytes'] == NEW_BYTES
++        and build['candidate_apk']['certificate_sha256'] == tx.CERT_SHA
++        and build['candidate_dex']['sha256'] == DEX_SHA
++        and build['inputs_tools_and_clock_state_unchanged'] is True,
++        'OFFLINE_CANDIDATE_NOT_VERIFIED')
++    payload = build['payload_verification']; semantic = build['semantic_verification']
++    require(payload['members'] == 1281 and payload['only_changed_payload'] == 'classes.dex'
++        and all(payload[key] is True for key in ('alignment_16k_verified',
++            'same_certificate_verified','signature_v3_verified'))
++        and semantic['all_2941_class_IR_compared'] is True
++        and semantic['all_original_methods_retained'] is True
++        and semantic['non_target_semantic_changes'] == 0
++        and len(semantic['differences']) == 5 and len(semantic['added_methods']) == 6,
++        'BUILD_CHANGE_SCOPE_NOT_VERIFIED')
++    require(art['state'] == 'ALL_FOUR_MODIFIED_CLOCK_CLASSES_ART_VERIFIED_NOT_INSTALLED'
++        and art.get('error') is None and art['apk_sha256'] == NEW_SHA
++        and art['build_result_sha256'] == BUILD_SHA
++        and art['transport_sha256'] == TRANSPORT_SHA
++        and art['activation_sha256'] == ACTIVATION_SHA
++        and art['guard_before'] == art['guard_after']
++        and art['guard_after']['epoch_sha256'] == tx.EPOCH_SHA
++        and art['all_four_target_classes_stored_status_verified'] is True
++        and art['input_boot_apex_classpaths_unchanged'] is True
++        and art['installed_clock_and_shared_libraries_unchanged'] is True
++        and art['fd_proof']['all_descriptor_identities_exact'] is True,
++        'ACTUAL_ART_OR_RUNTIME_BINDING_NOT_VERIFIED')
++    proof = art['target_status_proof']
++    require(tuple(art['expected_targets']) == ART_TARGETS
++        and proof['expected_target_classes'] == 4
++        and set(proof['target_statuses']) == set(ART_TARGETS)
++        and proof['missing'] == [] and proof['unverified'] == {}
++        and proof['other_nonverified_statuses'] == {}
++        and all(row['status'] == 'Verified' and row['compilation_kind'] == 'NoneCompiled'
++            for row in proof['target_statuses'].values()), 'ACTUAL_ART_TARGET_SET_NOT_VERIFIED')
++    for key in ('compiler','oatdump','android_compiler_log'):
++        command = art[key]
++        require(command['rc'] == 0 and command['joined'] is True
++            and command['timed_out'] is False, 'ACTUAL_ART_COMMAND_FAILED:' + key)
++    limits = {'cpu.max':'200000 100000','memory.max':'2147483648',
++              'memory.swap.max':'0','pids.max':'64'}
++    for key in ('resource_admission','resource_usage'):
++        value = art[key]
++        require(value['limits'] == limits and value['memory_peak_bytes'] < int(limits['memory.max'])
++            and all(value['memory_events'].get(name) == 0 for name in ('max','oom','oom_kill')),
++            'ART_RESOURCE_BOUNDARY_NOT_PRESERVED')
++    return {'build_result_sha256':BUILD_SHA,'art_result_sha256':ART_SHA,
++        'actual_art_target_classes_verified':4,'actual_art_epoch_sha256':tx.EPOCH_SHA,
++        'actual_art_finished_utc':art['finished_utc'],'business_success_inferred':False}
+ 
+ 
+ def parse_identity(text, guest):
+@@ -194,6 +262,7 @@
+     tx.write_new(session.journal_dir/(label+'-tasks.txt'),tasks.encode())
+     session.guard()
+     result = {'package':PACKAGE,'epoch_sha256':session.epoch_sha256,'identity':identity,'directories':directories,
++        'observed_utc':datetime.now(timezone.utc).isoformat(),
+         'alarm_state':alarms,'alarm_content_sha256':ALARM_SHA,'preferences_sha256':sha(preferences),
+         'preferences_metadata':pref_meta,
+         'timer_and_stopwatch_empty':True,'notification_appop_allow':True,'sound_state':sounds,'tasks_sha256':sha(tasks.encode()),
+@@ -221,7 +290,7 @@
+         require(names == {n for n in b.namelist() if keep(n)} and len(names) == 1281, 'CLOCK_APK_PAYLOAD_SET_CHANGED')
+         changed = [n for n in sorted(names) if a.read(n) != b.read(n)]
+         require(changed == ['classes.dex'] and sha(b.read('classes.dex')) ==
+-            'c6721db34c21c5bab07712a6ddc3eaaf9c6617196856f9abf29741c18f956d22', 'CLOCK_PAYLOAD_CHANGE_EXCEEDS_REVIEW')
++            DEX_SHA, 'CLOCK_PAYLOAD_CHANGE_EXCEEDS_REVIEW')
+ 
+ 
+ def verify_signature(session,tx,path,label):
+@@ -234,6 +303,27 @@
+     require(re.findall(r'^Signer #\d+ certificate SHA-256 digest: (\w+)$',text,re.M) == [tx.CERT_SHA]
+         and 'Verified using v3 scheme (APK Signature Scheme v3): true' in text, 'APK_SIGNER_OR_V3_DIFFERS')
+     tx.read_regular(signer,pin)
++
++
++def installed_observation(session,tx,after,label,expected_sha,expected_bytes):
++    """Independent readback identity; no business credit or build-only identity."""
++    require(after['apk']['sha256'] == expected_sha and after['apk']['bytes'] == expected_bytes,
++            'IDENTITY_REQUIRES_EXACT_INSTALLED_APK_READBACK')
++    evidence = session.journal_dir/(label+'.json')
++    raw = tx.read_regular(evidence)
++    require(json.loads(raw) == after, 'INSTALLED_SNAPSHOT_EVIDENCE_CHANGED')
++    return {'schema':'clock-installed-identity-observation-v1','package':PACKAGE,
++        'observed_utc':after['observed_utc'],'epoch_sha256':after['epoch_sha256'],
++        'android_user':0,'uid':after['identity']['uid'],
++        'version_code':after['identity']['version'],'min_sdk':after['identity']['min_sdk'],
++        'target_sdk':after['identity']['target_sdk'],
++        'all_observed_apk_files':[after['apk']], 'installed_apk_sha256':expected_sha,
++        'certificate_sha256':tx.CERT_SHA,
++        'certificate_basis':'Installed whole APK bytes equal the independently v3-verified staged APK.',
++        'package_and_apk_readback_verified':True,'snapshot_evidence_path':str(evidence),
++        'snapshot_evidence_sha256':sha(raw),'transport_sha256':TRANSPORT_SHA,
++        'activation_sha256':ACTIVATION_SHA,'whole_app_production_ready':False,
++        'business_review_from_prior_APK_inherited':False}
+ 
+ 
+ def update():
+@@ -251,8 +341,8 @@
+         try:
+             require(re.fullmatch('[0-9a-f]{64}',BUILD_SHA), 'ACTUAL_BUILD_RESULT_NOT_PINNED')
+             build = json.loads(tx.read_regular(ROOT/'build/result.json',BUILD_SHA))
+-            require(build['state'] == 'SIGNED_OFFLINE_CANDIDATE_VERIFIED' and build['candidate_apk']['sha256'] == NEW_SHA
+-                and build['inputs_tools_and_clock_state_unchanged'] is True, 'OFFLINE_CANDIDATE_NOT_VERIFIED')
++            art = json.loads(tx.read_regular(ART_RESULT,ART_SHA))
++            result['artifact_preconditions'] = artifact_preconditions(build,art,tx)
+             with tx.CameraSession(RUN/'commands') as session:
+                 before = snapshot(session,tx,model,timers,'before')
+                 require(before['apk']['sha256'] == OLD_SHA and before['apk']['bytes'] == OLD_BYTES, 'EXACT_CLOCK_PREIMAGE_REQUIRED')
+@@ -287,6 +377,10 @@
+                 result['observed_apk'] = after['apk'] if after else None
+                 result['protected_business_and_sound_state_preserved'] = after is not None and preserved(before,after)
+                 result['preferences_review'] = preference_review(before,after) if after else None
++                if after and after['apk']['sha256'] == NEW_SHA and after['apk']['bytes'] == NEW_BYTES:
++                    observation = installed_observation(session,tx,after,'after',NEW_SHA,NEW_BYTES)
++                    tx.write_new(RUN/'latest-installed-identity.json',observation,alex_readable=True)
++                    result['installed_identity_observation'] = observation
+                 session.caller_status('clock-install-caller-after');session.guard()
+         except BaseException as error:
+             result['error'] = type(error).__name__+':'+str(error)
+@@ -332,6 +426,10 @@
+                 result['observed_apk'] = after['apk']
+                 result['current_protected_business_and_sound_preserved'] = preserved(current,after)
+                 result['preferences_review'] = preference_review(current,after)
++                if after['apk']['sha256'] == OLD_SHA and after['apk']['bytes'] == OLD_BYTES:
++                    observation = installed_observation(session,tx,after,'after-rollback',OLD_SHA,OLD_BYTES)
++                    tx.write_new(folder/'latest-installed-identity.json',observation,alex_readable=True)
++                    result['installed_identity_observation'] = observation
+                 result['state'] = ('ROLLBACK_OUTCOME_UNKNOWN' if not result['rollback_response_verified'] else
+                     'ROLLED_BACK_VERIFIED' if after['apk']['sha256'] == OLD_SHA and after['apk']['bytes'] == OLD_BYTES
+                         and preserved(current,after) else 'ROLLBACK_READBACK_DIFFERS')
+@@ -373,6 +471,7 @@
+         value = {'state':'PLAN_ONLY','candidate':str(CANDIDATE),'candidate_sha256':NEW_SHA,
+             'original_sha256':OLD_SHA,'host_uid':1000,'android_user':0,'package':PACKAGE,
+             'candidate_bytes':NEW_BYTES,'original_bytes':OLD_BYTES,'install_path':str(RUN),'production_actions':0}
++        value['actual_art_result_sha256'] = ART_SHA
+     else:
+         require(os.geteuid() == 0 and (args.mode == 'reconcile' or args.execute), 'EXPLICIT_ROOT_EXECUTION_REQUIRED')
+         value = {'install':update,'rollback':rollback,'reconcile':reconcile}[args.mode]()

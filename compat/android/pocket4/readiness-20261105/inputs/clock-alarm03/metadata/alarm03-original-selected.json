@@ -1,0 +1,115 @@
+{
+  "created_unlabelled_claim": {
+    "alarm": {
+      "_id": 3,
+      "daysofweek": 0,
+      "delete_after_use": 0,
+      "enabled": 1,
+      "hour": 18,
+      "label": "",
+      "minutes": 54,
+      "ringtone": "content://settings/system/alarm_alert",
+      "vibrate": 1
+    },
+    "instances": [
+      {
+        "_id": 1,
+        "alarm_id": 3,
+        "alarm_state": 3,
+        "day": 5,
+        "hour": 18,
+        "label": "",
+        "minutes": 54,
+        "month": 10,
+        "ringtone": "content://settings/system/alarm_alert",
+        "vibrate": 1,
+        "year": 2026
+      }
+    ],
+    "summary": {
+      "enabled_count": 1,
+      "instance_count": 1,
+      "instance_ids": [
+        {
+          "_id": 1,
+          "alarm_id": 3,
+          "alarm_state": 3
+        }
+      ],
+      "marker_count": 0,
+      "original_enabled": 0,
+      "template_count": 3,
+      "template_ids": [
+        1,
+        2,
+        3
+      ]
+    }
+  },
+  "original_fields": {
+    "UI_actions": 5,
+    "acknowledged_inputs": [
+      {
+        "id": "a01-open-time-picker",
+        "label": "open-time-picker",
+        "op": "click"
+      },
+      {
+        "id": "a02-time-text-mode",
+        "label": "time-text-mode",
+        "op": "click"
+      },
+      {
+        "id": "a03-set-alarm-hour",
+        "label": "set-alarm-hour",
+        "op": "set-text"
+      },
+      {
+        "id": "a04-set-alarm-minute",
+        "label": "set-alarm-minute",
+        "op": "set-text"
+      },
+      {
+        "id": "a05-create-alarm-save",
+        "label": "create-alarm-save",
+        "op": "click"
+      }
+    ],
+    "cleanup_error": "RuntimeError: OWNED_ALARM_ROW_CONTAINER_AMBIGUOUS",
+    "close_pending": null,
+    "creation_native_ACK": true,
+    "delete_native_ACK": false,
+    "dismiss_native_ACK": false,
+    "error": "RuntimeError: OWNED_ALARM_ROW_CONTAINER_AMBIGUOUS",
+    "final_guard_error": "RuntimeError: EXACT_TWO_DISABLED_ORIGINALS_EMPTY_BASELINE_REQUIRED",
+    "finished_utc": "2026-11-05T18:50:42.922197+00:00",
+    "label_native_ACK": false,
+    "native_launched_tasks": [
+      975
+    ],
+    "normally_closed_tasks": [
+      975
+    ],
+    "owned_task_remaining": null,
+    "pending_database_effect": null,
+    "pending_effect": null,
+    "started_utc": "2026-11-05T18:49:56.446889+00:00",
+    "state": "FAILED",
+    "target": {
+      "day": 5,
+      "epoch_seconds": 1793904840,
+      "hour": 18,
+      "local_iso": "2026-11-05T18:54:00+00:00",
+      "minutes": 54,
+      "month": 10,
+      "timezone_property": "GMT",
+      "utc_offset_seconds": 0,
+      "year": 2026
+    }
+  },
+  "source": {
+    "bytes": 14335,
+    "sha256": "56a64945ceca3fa907b0c8593660b46255ccac3d2df67ec058469f486d2bf100"
+  },
+  "whole_app_production_ready": false
+}

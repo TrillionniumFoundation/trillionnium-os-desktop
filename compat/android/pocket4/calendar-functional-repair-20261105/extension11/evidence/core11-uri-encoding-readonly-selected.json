@@ -1,0 +1,109 @@
+{
+  "UI_inputs": 0,
+  "exact_empty_predicate": "_id='1' AND account_name='Droidloom local calendars' AND account_type='LOCAL' AND name='droidloom-local-efd72389-2a26-41b1-8b0c-37d68b64fbad' AND calendar_displayName='Pocket4 Calendar QA calendar-core11-27ebae28e2f1d930' AND ownerAccount='Droidloom local calendars' AND NOT EXISTS (SELECT 1 FROM Events WHERE calendar_id=1)",
+  "fixture_retained": true,
+  "form_plus": {
+    "exact_one_owned_id": false,
+    "stdout": "No result found.\n",
+    "uri": "content://com.android.calendar/calendars?caller_is_syncadapter=true&account_name=Droidloom+local+calendars&account_type=LOCAL"
+  },
+  "guard_after": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  },
+  "guard_before": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  },
+  "install_uninstall_calls": 0,
+  "job_id": "1a1ad097826-fc05-5830",
+  "new_or_replayed_writes": 0,
+  "original_failed_receipt_rewritten": false,
+  "percent20": {
+    "exact_one_owned_id": true,
+    "stdout": "Row: 0 _id=1\n",
+    "uri": "content://com.android.calendar/calendars?caller_is_syncadapter=true&account_name=Droidloom%20local%20calendars&account_type=LOCAL"
+  },
+  "prior_result_sha256": "b47f30619fcfd96d19e3a620b8a1f3c1826903a565fcfe027f97da2566f6b146",
+  "provider_after": {
+    "calendars": [
+      {
+        "_id": 1,
+        "account_name": "Droidloom local calendars",
+        "account_type": "LOCAL",
+        "calendar_access_level": 700,
+        "calendar_displayName": "Pocket4 Calendar QA calendar-core11-27ebae28e2f1d930",
+        "calendar_timezone": "GMT",
+        "name": "droidloom-local-efd72389-2a26-41b1-8b0c-37d68b64fbad",
+        "ownerAccount": "Droidloom local calendars",
+        "sync_events": 1,
+        "visible": 1
+      }
+    ],
+    "counts": {
+      "Attendees": 0,
+      "CalendarAlerts": 0,
+      "Calendars": 1,
+      "Events": 0,
+      "EventsRawTimes": 0,
+      "ExtendedProperties": 0,
+      "Instances": 0,
+      "Reminders": 0
+    },
+    "events": []
+  },
+  "provider_before": {
+    "calendars": [
+      {
+        "_id": 1,
+        "account_name": "Droidloom local calendars",
+        "account_type": "LOCAL",
+        "calendar_access_level": 700,
+        "calendar_displayName": "Pocket4 Calendar QA calendar-core11-27ebae28e2f1d930",
+        "calendar_timezone": "GMT",
+        "name": "droidloom-local-efd72389-2a26-41b1-8b0c-37d68b64fbad",
+        "ownerAccount": "Droidloom local calendars",
+        "sync_events": 1,
+        "visible": 1
+      }
+    ],
+    "counts": {
+      "Attendees": 0,
+      "CalendarAlerts": 0,
+      "Calendars": 1,
+      "Events": 0,
+      "EventsRawTimes": 0,
+      "ExtendedProperties": 0,
+      "Instances": 0,
+      "Reminders": 0
+    },
+    "events": []
+  },
+  "provider_mutations": 0,
+  "provider_unchanged": true,
+  "raw": {
+    "bytes": 4705,
+    "sha256": "91e3be348d02511bca703096e8081a829c35e1636a57db885f1d3cbe58f74cc7"
+  },
+  "schema": "calendar-core11-uri-encoding-readonly-selected-v1",
+  "source_sha256": "33dcbb00d53d4daaa7f414f86d8f25fb79f7805bfdf7928390e734e843b65d10",
+  "state": "READ_ONLY_RECEIPTS_TASKS_AND_EXACT_EMPTY_CALENDAR_COLLECTED",
+  "tasks_after": {
+    "Calendar_activity_present": false,
+    "ids": [
+      851
+    ],
+    "sha256": "1402ee6eb186ecda31466bdb84783d5e05098bafad6e5994caa293677b7ef7c1"
+  },
+  "tasks_before": {
+    "Calendar_activity_present": false,
+    "ids": [
+      851
+    ],
+    "sha256": "1402ee6eb186ecda31466bdb84783d5e05098bafad6e5994caa293677b7ef7c1"
+  }
+}

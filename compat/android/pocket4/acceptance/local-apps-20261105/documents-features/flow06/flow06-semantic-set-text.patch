@@ -1,0 +1,172 @@
+--- revision05/features_ui.py
++++ revision06/features_ui.py
+@@ -164,28 +164,38 @@
+             'CONTROL_NOT_FULLY_VISIBLE_IN_OWNED_SCOPE')
+         return [(bounds[0]+bounds[2])//2,(bounds[1]+bounds[3])//2]
+ 
+-    def validate_text_preinput_snapshot(self,request,frame,label,step,actions_before):
+-        # Both call sites are before the input intent, counter, pending marker,
+-        # and dispatch. The frozen helper omits outcome_unknown for this local
+-        # validation exception; establish no input from this exact caller stage.
+-        try:self.s.helper.validate_snapshot(request,frame)
+-        except self.s.helper.ControlError as exc:
+-            details=exc.details
+-            if (str(exc)!='STALE_FRAME' or details.get('action_taken') is not False
+-                or ('outcome_unknown' in details and details['outcome_unknown'] is not False)
+-                or self.pending or self.actions!=actions_before):raise
+-            proof={'action_taken':False,'outcome_unknown':False,'automatic_retry':False,
+-                'proof_source':'local_set_text_pre_input_snapshot','input_dispatch_started':False,
+-                'input_intent_recorded':False,'snapshot_step':step,'input_action_count':actions_before,
+-                'original_details':details,
+-                'expected_digests':{k:request[k] for k in ('frame_sha256','scope_sha256','context_token')},
+-                'actual_digests':{k:frame['meta'][k] for k in ('frame_sha256','scope_sha256','context_token')}}
+-            self.record(label+'-pre-input-no-effect',proof)
+-            raise self.s.helper.ControlError('STALE_FRAME',**proof) from exc
+-
+-    def input(self,obs,label,node,kind='tap',value=None,transition=None,popup=False):
++    def validate_text_window(self,shot,frame,label,step):
++        # The exact installed v2 setter resolves a unique semantic node, then
++        # rechecks its window/node and verifies ACTION_SET_TEXT by value. A
++        # blinking caret is not part of that operation's target identity.
++        meta=frame['meta'];before=shot['scope'];after=meta['scope']
++        need(all(scope.get('a11y_window_id_is_connection_scoped') is True
++            and type(scope.get('window_id')) is int and scope['window_id']>=0
++            for scope in (before,after)),'TEXT_CONNECTION_SCOPE_REQUIRED')
++        need({k:v for k,v in before.items() if k!='window_id'}
++            =={k:v for k,v in after.items() if k!='window_id'},'TEXT_WINDOW_CONTEXT_CHANGED')
++        keys=('source','context_token','width','height','scope_bounds','scope_width',
++            'scope_height','coordinate_space')
++        need(all(meta[k]==shot[k] for k in keys),'TEXT_SCOPE_CONTEXT_CHANGED')
++        self.record(label+'-semantic-window-'+step,{'same_window_context_and_geometry':True,
++            'scope':after,'context_token':meta['context_token'],
++            'pixel_equality_required':False,'input_dispatch_started':False})
++
++    @staticmethod
++    def same_semantic_node(nodes,node,package):
++        matches=[n for n in nodes if n.get('package')==package
++            and n.get('class')==node.get('class') and n.get('resource-id')==node.get('resource-id')
++            and n.get('editable')==node.get('editable') and n.get('text')==node.get('text')]
++        need(len(matches)==1,'FULL_EDITOR_NODE_CHANGED_BEFORE_TEXT')
++        current=matches[0]
++        need(all(type(n.get('window_id')) is int and n['window_id']>=0 for n in (node,current)),
++            'EDITOR_CONNECTION_WINDOW_ID_REQUIRED')
++        need({k:v for k,v in current.items() if k!='window_id'}
++            =={k:v for k,v in node.items() if k!='window_id'},'FULL_EDITOR_NODE_CHANGED_BEFORE_TEXT')
++        return current
++
++    def input(self,obs,label,node,kind='tap',value=None,transition=None,popup=False,semantic_context=()):
+         self.budget();need(not self.pending,'PENDING_INPUT_NOT_REPLAYABLE')
+-        actions_before=self.actions
+         self.check_tasks('before-'+label);need(self.focus()==obs['focus'],'INPUT_FOCUS_CHANGED')
+         need(node.get('enabled') is True,'INPUT_NODE_DISABLED')
+         shot=obs['screenshot'];scope=shot['scope'];point=self.box(obs,node)
+@@ -193,8 +203,9 @@
+             'window_token':scope['window_token'],'frame_sha256':shot['frame_sha256'],
+             'scope_sha256':shot['scope_sha256'],'context_token':shot['context_token'],'coords':point,'input_source':'touch'}
+         if kind=='set-text':
+-            need(node.get('editable') is True and node.get('password') is not True,'EDITABLE_NONPASSWORD_REQUIRED')
+-            selector={'package':scope['package'],'class':node['class'],'editable':True,'enabled':True}
++            need(node.get('editable') is True and node.get('password') is not True
++                and node.get('focused') is True,'FOCUSED_EDITABLE_NONPASSWORD_REQUIRED')
++            selector={'package':scope['package'],'class':node['class'],'editable':True,'enabled':True,'focused':True}
+             if node.get('resource-id'):selector['id']=node['resource-id']
+             if isinstance(node.get('text'),str):selector['text']=node['text']
+             request={'op':'set-text','package':scope['package'],'display':0,'accessibility_mode':'none',
+@@ -207,7 +218,7 @@
+             'scope_sha256':shot['scope_sha256'],'context_token':shot['context_token']}
+         if kind in ('set-text','long-press'):
+             frame=self.s.helper.capture(snapshot_request)
+-            if kind=='set-text':self.validate_text_preinput_snapshot(snapshot_request,frame,label,'first',actions_before)
++            if kind=='set-text':self.validate_text_window(shot,frame,label,'first')
+             else:self.s.helper.validate_snapshot(snapshot_request,frame)
+             if kind=='set-text':
+                 fresh=self.s.helper.ui({'op':'dump','expected_package':scope['package'],
+@@ -215,23 +226,17 @@
+                 self.record(label+'-fresh-native',fresh)
+                 need(fresh.get('ok') is True and fresh.get('outcome_unknown') is not True
+                     and fresh.get('accessibility_mode_restoration_verified') is True,'FRESH_NATIVE_NOT_VERIFIED')
+-                matches=[n for n in fresh.get('nodes',[]) if n.get('package')==scope['package']
+-                    and n.get('class')==node.get('class') and n.get('resource-id')==node.get('resource-id')
+-                    and n.get('editable') is True and n.get('text')==node.get('text')]
+-                need(len(matches)==1,'FULL_EDITOR_NODE_CHANGED_BEFORE_TEXT')
+-                current=matches[0]
++                current=self.same_semantic_node(fresh.get('nodes',[]),node,scope['package'])
++                for context_node in semantic_context:
++                    self.same_semantic_node(fresh.get('nodes',[]),context_node,scope['package'])
+                 # Each helper.ui dump creates a separate instrumentation connection.
+                 # Actual flow08 differs only in its connection-scoped window_id.
+-                # WM token, task, scope and pixels remain independently bound below.
+-                need(all(type(n.get('window_id')) is int and n['window_id']>=0 for n in (node,current)),
+-                    'EDITOR_CONNECTION_WINDOW_ID_REQUIRED')
+-                need({k:v for k,v in current.items() if k!='window_id'}
+-                    =={k:v for k,v in node.items() if k!='window_id'},'FULL_EDITOR_NODE_CHANGED_BEFORE_TEXT')
++                # WM token, task, scope, context and geometry remain bound below.
+                 self.record(label+'-cross-connection-editor-verified',{
+                     'original_connection_window_id':node['window_id'],'fresh_connection_window_id':current['window_id'],
+                     'all_other_node_fields_equal':True,'wm_window_token':scope['window_token']})
+             frame=self.s.helper.capture(snapshot_request)
+-            if kind=='set-text':self.validate_text_preinput_snapshot(snapshot_request,frame,label,'last',actions_before)
++            if kind=='set-text':self.validate_text_window(shot,frame,label,'last')
+             else:self.s.helper.validate_snapshot(snapshot_request,frame)
+             need(self.focus()==obs['focus'],'LAST_INPUT_FOCUS_CHANGED')
+         self.record(label+'-intent',{'request':request,'kind':kind,'node':node,'automatic_retry':False})
+--- revision05/run_features01.py
++++ revision06/run_features01.py
+@@ -4,11 +4,11 @@
+ from datetime import datetime,timezone
+ import argparse,hashlib,json,os,re,signal,time,types
+ 
+-ROOT=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-05')
+-TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-05')
++ROOT=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-06')
++TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-06')
+ TRANSPORT=Path('/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/camera_transaction.py')
+ TRANSPORT_SHA='e65a47bea8b3800d0b1a89247bd8c356dd291523c2d248d401d05d1d3b55fb83'
+-PINS={'features_ui.py': '764bd557c00748d3ae209096140ec11ba52f3294ffcd31c30aee86ba4c647078', 'package_fixture.py': '596dfb03273f2810cf9f98871668042bb62f85807d6cdad9a113b87003b8d932', 'owned_tree.py': 'e4b19adc1e47719413bfae5656bac8b04f5624c779ee7118b490327e2776a445', 'runtime_evidence.py': 'a8aa502e397187d0460c18efa1da09f46bafce9f019b1048046bfce8d2468c65', 'bounded_diagnostics.py': 'd3ab104ff92a942de1d45855ec3c8d44b742373ce67087e67773d15b46abf064'}
++PINS={'features_ui.py': 'edaf39c50d6ff85748fef1b287bf3875fd51321a0a2a837ff6f30e59a8cd4417', 'package_fixture.py': '596dfb03273f2810cf9f98871668042bb62f85807d6cdad9a113b87003b8d932', 'owned_tree.py': 'e4b19adc1e47719413bfae5656bac8b04f5624c779ee7118b490327e2776a445', 'runtime_evidence.py': 'a8aa502e397187d0460c18efa1da09f46bafce9f019b1048046bfce8d2468c65', 'bounded_diagnostics.py': 'd3ab104ff92a942de1d45855ec3c8d44b742373ce67087e67773d15b46abf064'}
+ RUN='eeff7aa90e47139a';PACKAGE='org.droidloom.qa.documents.r12.n'+RUN
+ FOLDER='Pocket4_DocFeatures_r12_'+RUN;SOURCE='source-'+RUN;COPIES='copies-'+RUN
+ ALPHA='alpha-'+RUN+'.txt';BETA='beta-'+RUN+'.txt';APP_LABEL='Pocket4 Owned Documents eeff7aa9'
+@@ -234,41 +234,7 @@
+         need(field.get('resource-id')=='android:id/text1' and field.get('class')=='android.widget.EditText'
+             and field.get('text')==field.get('hint')=='Name' and field.get('value')==''
+             and field.get('showing-hint') is True,'ACTUAL_EMPTY_NEW_FOLDER_FIELD_REQUIRED')
+-        def context(obs):
+-            shot=obs['screenshot'];scope=shot['scope']
+-            need(scope.get('a11y_window_id_is_connection_scoped') is True
+-                and type(scope.get('window_id')) is int and scope['window_id']>=0,'CONNECTION_SCOPE_REQUIRED')
+-            return {'focus':obs['focus'],'scope':{k:v for k,v in scope.items() if k!='window_id'},
+-                **{k:shot[k] for k in ('source','context_token','width','height','scope_bounds',
+-                    'scope_width','scope_height','coordinate_space')}}
+-        original_context=context(dialog);original_field=stable_node(field);original_title=stable_node(title)
+-        actions_before=self.ui.actions
+-        for decision in range(3):
+-            label='new-folder-name-'+str(decision+1)
+-            try:self.ui.input(dialog,label,field,'set-text',COPIES);return
+-            except self.s.helper.ControlError as exc:
+-                proof=exc.details
+-                if (str(exc)!='STALE_FRAME' or proof.get('action_taken') is not False
+-                    or proof.get('outcome_unknown') is not False
+-                    or proof.get('proof_source')!='local_set_text_pre_input_snapshot'
+-                    or proof.get('input_dispatch_started') is not False or proof.get('input_intent_recorded') is not False
+-                    or proof.get('input_action_count')!=actions_before or self.ui.actions!=actions_before
+-                    or self.ui.pending or decision==2):raise
+-                fresh=self.ui.observe('new-folder-name-fresh-'+str(decision+2),[FILES])
+-                need(context(fresh)==original_context,'NEW_FOLDER_CONTEXT_CHANGED_AFTER_NO_INPUT')
+-                newtitle=self.ui.one(fresh,lambda n:n.get('resource-id')==DOCS+':id/alertTitle',
+-                    'ONE_FRESH_NEW_FOLDER_TITLE')
+-                newfield=self.ui.one(fresh,lambda n:n.get('editable') is True and n.get('enabled') is True
+-                    and n.get('password') is False,'ONE_FRESH_NEW_FOLDER_EDITOR')
+-                need(all(type(n.get('window_id')) is int and n['window_id']>=0
+-                    for n in (title,field,newtitle,newfield)),'EDITOR_CONNECTION_WINDOW_ID_REQUIRED')
+-                need(stable_node(newtitle)==original_title and stable_node(newfield)==original_field,
+-                    'NEW_FOLDER_FORM_CHANGED_AFTER_NO_INPUT')
+-                self.ui.record('new-folder-name-fresh-decision',{'previous_label':label,
+-                    'action_taken':False,'outcome_unknown':False,'maximum_decisions':3,
+-                    'same_owned_dialog_field_original_value_and_geometry':True,
+-                    'all_snapshot_digest_checks_retained':True,'unknown_input_replayed':False})
+-                dialog,title,field=fresh,newtitle,newfield
++        self.ui.input(dialog,'new-folder-name',field,'set-text',COPIES,semantic_context=(title,))
+ 
+     def new_folder(self,obs):
+         self.location(obs);self.rows(obs,{SOURCE})

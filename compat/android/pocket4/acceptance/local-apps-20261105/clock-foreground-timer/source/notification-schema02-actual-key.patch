@@ -1,0 +1,11 @@
+--- frozen-expiry02-active_notifications
++++ actual-dump-notification-schema02
+@@ -27,7 +27,7 @@
+             return {'parsed': False, 'reason': 'ACTIVE_RECORD_IDENTITY_UNKNOWN'}
+         channel = bool(re.search(r'\bchannel=TimerModelNotification\b', block)
+                        or "mId='TimerModelNotification'" in block)
+-        fullscreen = bool(re.search(r'\bfullScreenIntent=PendingIntent\{', block))
++        fullscreen = bool(re.search(r'\bfullscreenIntent=PendingIntent\{', block))
+         records.append({'uid': 10063, 'user': 0, 'timer_channel': channel,
+                         'full_screen_pending_intent': fullscreen,
+                         'record_sha256': hashlib.sha256(block.encode()).hexdigest()})

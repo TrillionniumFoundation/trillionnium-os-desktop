@@ -1,0 +1,71 @@
+{
+  "state": "OWNED_KEY_RECONCILED",
+  "business_flow_completed": false,
+  "whole_app_production_ready": false,
+  "navigation_scope": "original-origin exact-key reconciliation only",
+  "run": "9ef6872a170db189c5ce94cd02d2f1ac",
+  "automatic_retry": false,
+  "origin": "http://127.0.0.1:41565",
+  "fixture_port": 41565,
+  "owned_storage_key": "pocket4.webview.r12.9ef6872a170db189c5ce94cd02d2f1ac",
+  "owned_storage_state": "ABSENT_VERIFIED_BY_SAME_ORIGIN_RECONCILIATION",
+  "owned_storage_key_removal_verified": false,
+  "reconciliation_completed": true,
+  "owned_storage_key_absence_verified": true,
+  "cleanup_input_calls": 0,
+  "original_result_canonical_sha256": "4975b2545f9b6f1abda2efc873c86b0b0cd236d5df956ec0d274475b003be865",
+  "foreign_keys_accessed": false,
+  "save_replayed": false,
+  "original_key_observed_status": "OWNED_KEY_ABSENT",
+  "action_calls": 4,
+  "launch_calls": 1,
+  "owned_remove_calls": 1,
+  "pending_effects": [],
+  "outcome_unknown": false,
+  "elapsed_seconds": 11.738123628892936,
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "fixture_cleanup": {
+    "server_started": true,
+    "own_child_reaped": true,
+    "other_process_signals": 0,
+    "ready": {
+      "state": "FIXTURE_READY",
+      "pid": 1581566,
+      "start_ticks": 89193935,
+      "uid": 1000,
+      "gid": 1000,
+      "groups": [],
+      "net_namespace": "net:[4026533041]",
+      "other_namespaces_unchanged": true,
+      "address": "127.0.0.1",
+      "port": 41565,
+      "socket_inode": 498864562,
+      "run": "9ef6872a170db189c5ce94cd02d2f1ac",
+      "lease_seconds": 600,
+      "assets": {
+        "reconcile.html": "c0d7d9069766abafb9d91d9ffa970bb9f5037ace67b9e092a82d119d71d4c6f0",
+        "app.js": "332435ebc8e65789bafd649e095623f832bb28521d3ef54fd6128a4d09d6529b"
+      }
+    },
+    "exit_code": 0,
+    "child_stdout": "{\"state\": \"FIXTURE_CLOSED\", \"reason\": \"PARENT_PIPE_CLOSED\", \"requests\": {\"reconcile.html\": 1, \"app.js\": 1}, \"rejected_requests\": 0, \"socket_closed\": true}\n",
+    "child_stderr": "",
+    "source_sha256": "3edfe85e2d5afe962ce44f726900ebef058b88232051156c9f815fed71127ba0",
+    "terminal": {
+      "state": "FIXTURE_CLOSED",
+      "reason": "PARENT_PIPE_CLOSED",
+      "requests": {
+        "reconcile.html": 1,
+        "app.js": 1
+      },
+      "rejected_requests": 0,
+      "socket_closed": true
+    }
+  },
+  "final_guard": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  }
+}

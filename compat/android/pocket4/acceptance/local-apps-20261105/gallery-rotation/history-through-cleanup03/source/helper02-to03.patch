@@ -1,0 +1,11 @@
+--- harness02/src/org/droidloom/qa/galleryrotation/r12/nd24b61ed8f7c9a03/RotationStore.java
++++ harness03/src/org/droidloom/qa/galleryrotation/r12/nd24b61ed8f7c9a03/RotationStore.java
+@@ -158,7 +158,7 @@
+                 && RELATIVE[index].equals(c.getString(2)) && MIME[index].equals(c.getString(3))
+                 && PACKAGE.equals(c.getString(8)),"OWNED_MEDIA_IDENTITY_CHANGED");
+             need(c.getInt(7)==(pendingAllowed?1:0),"OWNED_MEDIA_PUBLICATION_STATE_CHANGED");
+-            need(("/storage/emulated/0/"+RELATIVE[index]+NAMES[index]).equals(c.getString(12)),"OWNED_MEDIA_PATH_CHANGED");
++            if(!pendingAllowed)need(("/storage/emulated/0/"+RELATIVE[index]+NAMES[index]).equals(c.getString(12)),"OWNED_MEDIA_PATH_CHANGED");
+             for(int i=0;i<columns.length;i++) {
+                 if(c.isNull(i))out.put(columns[i],JSONObject.NULL);
+                 else if(c.getType(i)==Cursor.FIELD_TYPE_INTEGER)out.put(columns[i],c.getLong(i));

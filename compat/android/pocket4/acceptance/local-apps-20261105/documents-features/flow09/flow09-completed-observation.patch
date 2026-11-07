@@ -1,0 +1,71 @@
+--- revision08/run_features01.py
++++ revision09/run_features01.py
+@@ -4,8 +4,8 @@
+ from datetime import datetime,timezone
+ import argparse,hashlib,json,os,re,signal,time,types
+ 
+-ROOT=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-08')
+-TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-08')
++ROOT=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-09')
++TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-09')
+ TRANSPORT=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ TRANSPORT_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+ PINS={'features_ui.py': 'edaf39c50d6ff85748fef1b287bf3875fd51321a0a2a837ff6f30e59a8cd4417', 'package_fixture.py': '596dfb03273f2810cf9f98871668042bb62f85807d6cdad9a113b87003b8d932', 'owned_tree.py': 'e4b19adc1e47719413bfae5656bac8b04f5624c779ee7118b490327e2776a445', 'runtime_evidence.py': 'a8aa502e397187d0460c18efa1da09f46bafce9f019b1048046bfce8d2468c65', 'bounded_diagnostics.py': 'd3ab104ff92a942de1d45855ec3c8d44b742373ce67087e67773d15b46abf064'}
+@@ -356,6 +356,48 @@
+         self.rows(obs,{SOURCE,COPIES});self.gate('FILES_NEW_FOLDER',{'app_ui_created_directory':COPIES,'layout':proof})
+         return obs
+ 
++    def completed_operation_observation(self,obs,relative,names,label):
++        # Actual08 reused the copy-result frame after its file readback. The
++        # next pre-input capture differed only where "Copying 2 items." faded.
++        # Resolve this phase boundary with reads, leaving every pointer digest
++        # check and all unknown-input handling in Adapter.input unchanged.
++        need(self.operation_pending is None and not self.ui.pending and not self.helper_pending,
++            'OPERATION_OR_INPUT_PENDING_NO_NEW_OBSERVATION_DECISION')
++        self.location(obs,relative);anchor=stable_node(self.more(obs))
++        original=obs['screenshot'];focus=obs['focus'];previous=None
++        end=time.monotonic()+12
++        for index in range(4):
++            need(time.monotonic()<end,'COMPLETED_OPERATION_VIEW_DID_NOT_SETTLE')
++            self.ui.budget();fresh=self.ui.observe(label+'-settled-'+str(index+1),[FILES])
++            shot=fresh['screenshot']
++            need(fresh['focus']==focus,'COMPLETED_OPERATION_FOCUS_CHANGED')
++            for scope in (original['scope'],shot['scope']):
++                need(scope.get('a11y_window_id_is_connection_scoped') is True
++                    and type(scope.get('window_id')) is int and scope['window_id']>=0,
++                    'COMPLETED_OPERATION_CONNECTION_SCOPE_REQUIRED')
++            need({k:v for k,v in original['scope'].items() if k!='window_id'}
++                =={k:v for k,v in shot['scope'].items() if k!='window_id'},
++                'COMPLETED_OPERATION_WINDOW_CHANGED')
++            keys=('source','context_token','width','height','scope_bounds','scope_width',
++                'scope_height','coordinate_space')
++            need(all(shot[k]==original[k] for k in keys),'COMPLETED_OPERATION_GEOMETRY_CHANGED')
++            self.rows(fresh,names,relative)
++            need(stable_node(self.more(fresh))==anchor,'COMPLETED_OPERATION_CONTROL_CHANGED')
++            self.tree.expect(self.tree.expected,label+'-settled-namespace-'+str(index+1))
++            transient=[n for n in fresh['nodes'] if n.get('resource-id')==DOCS+':id/snackbar_text']
++            self.ui.record(label+'-settled-readback',{'observation_index':index+1,
++                'frame_sha256':shot['frame_sha256'],'scope_sha256':shot['scope_sha256'],
++                'transient_texts':[n.get('text') for n in transient],
++                'file_effect_already_verified':True,'UI_input_sent':False,
++                'prior_input_replayed':False})
++            need(time.monotonic()<end,'COMPLETED_OPERATION_VIEW_DID_NOT_SETTLE')
++            if transient:previous=None
++            elif previous is not None and all(shot[k]==previous[k]
++                for k in ('frame_sha256','scope_sha256')):
++                return fresh
++            else:previous=shot
++        raise RuntimeError('COMPLETED_OPERATION_VIEW_DID_NOT_SETTLE')
++
+     def copy_or_move(self,obs,move=False):
+         label='move' if move else 'copy';obs=self.select(obs,SOURCE,{ALPHA,BETA},label)
+         self.ui.input(obs,label+'-menu',self.more(obs,2),popup=True)
+@@ -374,7 +416,7 @@
+         self.location(obs,SOURCE)
+         self.gate('FILES_MULTIPLE_MOVE' if move else 'FILES_MULTIPLE_COPY',{'files':[ALPHA,BETA],
+             'source':SOURCE,'destination':'' if move else COPIES,'layout':proof,'operation_replayed':False})
+-        return obs
++        return self.completed_operation_observation(obs,SOURCE,set() if move else {ALPHA,BETA},label)
+ 
+     def delete_entries(self,obs,relative,names,gate,label):
+         obs=self.select(obs,relative,set(names),label)

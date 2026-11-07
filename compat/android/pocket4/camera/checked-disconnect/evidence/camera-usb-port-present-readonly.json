@@ -1,0 +1,109 @@
+{
+  "result": {
+    "attributes": {
+      "connect_type": "hardwired\n",
+      "disable": "0\n",
+      "over_current_count": "0\n",
+      "power/control": "auto\n",
+      "power/pm_qos_no_power_off": {
+        "errno": 2,
+        "error": "FileNotFoundError"
+      },
+      "power/runtime_active_time": "885958954\n",
+      "power/runtime_status": "active\n",
+      "power/runtime_suspended_time": "0\n",
+      "state": "configured\n",
+      "usb3_lpm_permit": {
+        "errno": 2,
+        "error": "FileNotFoundError"
+      }
+    },
+    "boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1",
+    "host_mount_namespace": "mnt:[4026531832]",
+    "kernel_events": {
+      "rc": 0,
+      "stderr": "",
+      "stdout": "2026-11-04T22:04:21.646521-08:00 alex-G1628-04 kernel: usb 3-4: new high-speed USB device number 15 using xhci_hcd\n2026-11-04T22:04:21.809586-08:00 alex-G1628-04 kernel: usb 3-4: New USB device found, idVendor=1e08, idProduct=5520, bcdDevice= 9.23\n2026-11-04T22:04:21.810033-08:00 alex-G1628-04 kernel: usb 3-4: New USB device strings: Mfr=1, Product=2, SerialNumber=3\n2026-11-04T22:04:21.810188-08:00 alex-G1628-04 kernel: usb 3-4: Product: Integrated Camera\n2026-11-04T22:04:21.810320-08:00 alex-G1628-04 kernel: usb 3-4: Manufacturer: SunplusIT Inc\n2026-11-04T22:04:21.810471-08:00 alex-G1628-04 kernel: usb 3-4: SerialNumber: JX20250923V2\n2026-11-04T22:04:21.868510-08:00 alex-G1628-04 kernel: uvcvideo 3-4:1.0: Found UVC 1.00 device Integrated Camera (1e08:5520)\n2026-11-04T22:04:35.792452-08:00 alex-G1628-04 kernel: usb 3-4: USB disconnect, device number 15\n2026-11-04T22:23:02.141452-08:00 alex-G1628-04 kernel: usb 3-4: new high-speed USB device number 16 using xhci_hcd\n2026-11-04T22:23:02.304466-08:00 alex-G1628-04 kernel: usb 3-4: New USB device found, idVendor=1e08, idProduct=5520, bcdDevice= 9.23\n2026-11-04T22:23:02.304710-08:00 alex-G1628-04 kernel: usb 3-4: New USB device strings: Mfr=1, Product=2, SerialNumber=3\n2026-11-04T22:23:02.305039-08:00 alex-G1628-04 kernel: usb 3-4: Product: Integrated Camera\n2026-11-04T22:23:02.305253-08:00 alex-G1628-04 kernel: usb 3-4: Manufacturer: SunplusIT Inc\n2026-11-04T22:23:02.305420-08:00 alex-G1628-04 kernel: usb 3-4: SerialNumber: JX20250923V2\n2026-11-04T22:23:02.352506-08:00 alex-G1628-04 kernel: uvcvideo 3-4:1.0: Found UVC 1.00 device Integrated Camera (1e08:5520)\n"
+    },
+    "links": {
+      "device": "../../3-4",
+      "driver": {
+        "errno": 2,
+        "error": "FileNotFoundError"
+      },
+      "peer": {
+        "errno": 2,
+        "error": "FileNotFoundError"
+      },
+      "subsystem": {
+        "errno": 2,
+        "error": "FileNotFoundError"
+      }
+    },
+    "matching_usb_devices": [
+      {
+        "canonical": "/sys/devices/pci0000:00/0000:00:08.3/0000:c7:00.0/usb3/3-4",
+        "path": "/sys/bus/usb/devices/3-4",
+        "power_control": "auto\n",
+        "runtime_status": "active\n",
+        "serial": "JX20250923V2\n"
+      }
+    ],
+    "observed_at_utc": "2026-11-05T06:30:51.187552+00:00",
+    "port_exists": true,
+    "port_path": "/sys/devices/pci0000:00/0000:00:08.3/0000:c7:00.0/usb3/3-0:1.0/usb3-port4",
+    "port_realpath": "/sys/devices/pci0000:00/0000:00:08.3/0000:c7:00.0/usb3/3-0:1.0/usb3-port4",
+    "read_only": true,
+    "sysfs_writes": 0,
+    "video_devices": [
+      "/dev/video1",
+      "/dev/video0"
+    ]
+  },
+  "coordinator": {
+    "at_unix_ms": 1793860251304,
+    "audit_recorded": true,
+    "automatic_retry": false,
+    "cancelled": false,
+    "exit_code": 0,
+    "job_id": "1a1aa6729ff-fc05-4288",
+    "launch_nonce": "5a12ed5e6d14c08daa4e5f48b98371e7",
+    "log_bytes": {
+      "stderr": {
+        "seen": 0,
+        "stored": 0
+      },
+      "stdout": {
+        "seen": 3223,
+        "stored": 3223
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_synced": {
+      "stderr": true,
+      "stdout": true
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
+  },
+  "prior_collector_failure": {
+    "job_id": "1a1aa666f06-fc05-427a",
+    "state": "failed",
+    "exit_code": 1,
+    "reason": "Collector applied string.strip to a structured missing-attribute result",
+    "ui_actions": 0,
+    "sysfs_writes": 0
+  }
+}
+

@@ -1,0 +1,69 @@
+--- frozen02/contacts_search02.py
++++ private03/contacts_search03.py
+@@ -3,10 +3,10 @@
+ from pathlib import Path
+ import argparse, copy, hashlib, json, os, re, signal, time, types
+ 
+-TOOLS = Path('/home/alex/work/pocket4-contacts-search-tools-20261105-r12-02')
+-ROOT = Path('/home/alex/work/pocket4-contacts-search-flow-20261105-r12-02')
++TOOLS = Path('/home/alex/work/pocket4-contacts-search-tools-20261105-r12-03')
++ROOT = Path('/home/alex/work/pocket4-contacts-search-flow-20261105-r12-03')
+ PACKAGE = 'com.android.contacts'
+-PINS = {'contacts_crud11.py': '4de5eace361865990baab07f5bd445df1345a7ae0f579d40356d0913b76a9578', 'ui_preflight05.py': '2e99a4d0b2a9f4be7046c3504ec65d754bd91c959cb0f4f1adfe873aa3a16237', 'session_loop08.py': 'c4a985ddcfe54104a7d90dd4ce8dd44b708016dd44911faa92ac16e3c38a9db3', 'verify_contact.py': '81a5db9f2dc1e17632fac96d7c0fef626b6ee35bc9599a81f96f51f6240bb1f2'}
++PINS = {'contacts_crud11.py': '4de5eace361865990baab07f5bd445df1345a7ae0f579d40356d0913b76a9578', 'ui_preflight05.py': '2e99a4d0b2a9f4be7046c3504ec65d754bd91c959cb0f4f1adfe873aa3a16237', 'session_loop08.py': 'c4a985ddcfe54104a7d90dd4ce8dd44b708016dd44911faa92ac16e3c38a9db3', 'verify_contact.py': '853e5c6951ad4e351eb793be244eb3626b324cff7233965db85709234e4ffec3', 'owned_search_mouse03.py': 'cdc1045430a70326c2f96a4f521f4b65497971b0557073583e84753b8e29e98e', 'owned_menu03.py': '290be2ed46f09f33bdc24599c60aed00f52af3c8671accab6b83f4c34646c694'}
+ WORK_SECONDS, CLEANUP_SECONDS, MAX_INPUTS = 240, 60, 24
+ 
+ def need(ok, code):
+@@ -23,7 +23,7 @@
+ def expired(signum, frame):
+     raise TimeoutError('CONTACTS_SEARCH_LEASE_EXPIRED_NO_REPLAY')
+ 
+-def build_flow(base):
++def build_flow(base, mouse):
+     class SearchFlow(base.Flow):
+         def __init__(self, trial, loop, verifier, result):
+             super().__init__(trial, loop, verifier, result)
+@@ -31,6 +31,12 @@
+             self.effect_pending = self.close_pending = self.commit_tag = None
+             self.delete_dispatched = self.cleanup_dispatched = False
+             self.ownership_journal = False
++
++        def click(self, tag, node, approved_fixture_label=False, contact_list_marker=False):
++            if tag == 'open-search-result':
++                need(approved_fixture_label and contact_list_marker, 'OWNED_RESULT_SCOPE_REQUIRED')
++                return mouse.open_search_result(self, tag, node)
++            return super().click(tag, node, approved_fixture_label, contact_list_marker)
+ 
+         def may_mutate(self):
+             need(self.c.pending is None and self.close_pending is None and self.effect_pending is None,
+@@ -314,6 +320,7 @@
+ def execute():
+     base, adapter, loop, verifier = [load(name) for name in
+         ('contacts_crud11.py', 'ui_preflight05.py', 'session_loop08.py', 'verify_contact.py')]
++    mouse, menu = load('owned_search_mouse03.py'), load('owned_menu03.py')
+     tx = adapter.load_session()
+     need(adapter.SOURCE_SHA == verifier.SESSION_SHA == 'b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+          and tx.ACTIVATION_SHA == '7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615', 'ORIGINAL_MAIN_PROFILE_REQUIRED')
+@@ -333,10 +340,11 @@
+             os.umask(0o077); ROOT.mkdir(mode=0o750); os.chown(ROOT, 0, 1000); os.chmod(ROOT, 0o750)
+             signal.setitimer(signal.ITIMER_REAL, WORK_SECONDS)
+             with tx.CameraSession(ROOT / 'commands') as session:
+-                trial = adapter.Trial(session, tx)
+-                flow = build_flow(base)(trial, loop, verifier, result)
++                trial = menu.trial_class(adapter, verifier, result)(session, tx)
++                flow = build_flow(base, mouse)(trial, loop, verifier, result)
+                 result['guard_before'] = session.guard()
+                 verifier.identity(session)
++                result['native_actions_before'] = mouse.native_identity(session)
+                 result['account_topology_before'] = verifier.unchanged_account_topology(session)
+                 roots, tasks = trial.stacks('initial-coordinated-taskset')
+                 need(tasks == {851}, 'FORMAL_UI_HANDOFF_BASELINE_REQUIRED')
+@@ -368,6 +376,8 @@
+                         else: result['deleted_final_proof'] = verifier.validate_deleted(result['contacts_after'], flow.created)
+                         result['account_topology_after'] = verifier.unchanged_account_topology(session)
+                         verifier.identity(session)
++                        result['native_actions_after'] = mouse.native_identity(session)
++                        need(result['native_actions_after'] == result['native_actions_before'], 'NATIVE_ACTIONS_IDENTITY_CHANGED')
+                         final_roots, final_tasks = trial.stacks('final-coordinated-taskset')
+                         need(final_tasks == {851} and final_roots == baseline_roots, 'TASK_BASELINE_NOT_RESTORED')
+                         session.caller_status('contacts-search-final')

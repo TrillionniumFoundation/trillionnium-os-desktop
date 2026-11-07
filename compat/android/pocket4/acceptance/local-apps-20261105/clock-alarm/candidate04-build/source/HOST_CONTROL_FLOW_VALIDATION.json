@@ -1,0 +1,255 @@
+{
+  "Android_runtime_executed": false,
+  "business_success": false,
+  "checks": [
+    {
+      "name": "route-and-cancel-state-0",
+      "passed": true
+    },
+    {
+      "name": "route-and-cancel-state-1",
+      "passed": true
+    },
+    {
+      "name": "route-and-cancel-state-2",
+      "passed": true
+    },
+    {
+      "name": "route-and-cancel-state-3",
+      "passed": true
+    },
+    {
+      "name": "route-and-cancel-state-4",
+      "passed": true
+    },
+    {
+      "name": "route-and-cancel-state-5",
+      "passed": true
+    },
+    {
+      "name": "route-and-cancel-state-6",
+      "passed": true
+    },
+    {
+      "name": "route-and-cancel-state-7",
+      "passed": true
+    },
+    {
+      "name": "route-and-cancel-state-8",
+      "passed": true
+    },
+    {
+      "name": "legacy-plus-two-new-types-cancelled-on-reschedule-foreign-PI-preserved",
+      "passed": true
+    },
+    {
+      "name": "unsupported-scheduler-state--1",
+      "passed": true
+    },
+    {
+      "name": "unsupported-scheduler-state-9",
+      "passed": true
+    },
+    {
+      "name": "old-generation",
+      "passed": true
+    },
+    {
+      "name": "other-occurrence",
+      "passed": true
+    },
+    {
+      "name": "reused-id-other-parent",
+      "passed": true
+    },
+    {
+      "name": "source-state-changed",
+      "passed": true
+    },
+    {
+      "name": "wrong-category",
+      "passed": true
+    },
+    {
+      "name": "wrong-action",
+      "passed": true
+    },
+    {
+      "name": "missing-occurrence",
+      "passed": true
+    },
+    {
+      "name": "unsupported-version",
+      "passed": true
+    },
+    {
+      "name": "negative-request",
+      "passed": true
+    },
+    {
+      "name": "unknown-request",
+      "passed": true
+    },
+    {
+      "name": "terminal-state-6-cannot-fire",
+      "passed": true
+    },
+    {
+      "name": "terminal-state-7-cannot-fire",
+      "passed": true
+    },
+    {
+      "name": "terminal-state-8-cannot-fire",
+      "passed": true
+    },
+    {
+      "name": "DB-FIRED-recovery-accepted",
+      "passed": true
+    },
+    {
+      "name": "unmarked-existing-handler-contract-bypasses-new-envelope",
+      "passed": true
+    },
+    {
+      "name": "service-fresh",
+      "passed": true
+    },
+    {
+      "name": "service-recovery",
+      "passed": true
+    },
+    {
+      "name": "service-duplicate",
+      "passed": true
+    },
+    {
+      "name": "service-old-generation",
+      "passed": true
+    },
+    {
+      "name": "service-missing",
+      "passed": true
+    },
+    {
+      "name": "service-wrong-parent",
+      "passed": true
+    },
+    {
+      "name": "service-expired",
+      "passed": true
+    },
+    {
+      "name": "service-early",
+      "passed": true
+    },
+    {
+      "name": "service-terminal",
+      "passed": true
+    },
+    {
+      "name": "service-malformed",
+      "passed": true
+    },
+    {
+      "name": "service-non-fired",
+      "passed": true
+    },
+    {
+      "name": "service-no-write",
+      "passed": true
+    },
+    {
+      "name": "service-delete",
+      "passed": true
+    },
+    {
+      "name": "service-reuse",
+      "passed": true
+    },
+    {
+      "name": "service-new-generation",
+      "passed": true
+    },
+    {
+      "name": "service-throw",
+      "passed": true
+    },
+    {
+      "name": "service-old-generation-preserves-existing-alarm",
+      "passed": true
+    },
+    {
+      "name": "service-missing-preserves-existing-alarm",
+      "passed": true
+    },
+    {
+      "name": "service-wrong-parent-preserves-existing-alarm",
+      "passed": true
+    },
+    {
+      "name": "service-terminal-preserves-existing-alarm",
+      "passed": true
+    },
+    {
+      "name": "service-throw-preserves-existing-alarm",
+      "passed": true
+    },
+    {
+      "name": "receiver-non-FIRED",
+      "passed": true
+    },
+    {
+      "name": "receiver-FIRED",
+      "passed": true
+    },
+    {
+      "name": "receiver-handler-throws",
+      "passed": true
+    },
+    {
+      "name": "receiver-finish-throws",
+      "passed": true
+    },
+    {
+      "name": "actual-preimage-negative-old-generation-handler-reject-still-starts",
+      "passed": true
+    }
+  ],
+  "passed": 53,
+  "schema": "actual-smali-host-control-flow-tests-v1",
+  "scope": "Actual reviewed smali instructions and catch ranges; Android services/provider/PI/clock are explicit doubles. ART and actual owned-alarm acceptance remain separate.",
+  "sources": {
+    "candidate/com/android/deskclock/alarms/AlarmService.smali": {
+      "bytes": 24588,
+      "sha256": "04ad66765c9536f7f114da6bfa8bc1bc10443660b6f29c9543e3f1d2539b9560"
+    },
+    "candidate/com/android/deskclock/alarms/AlarmStateManager$AlarmManagerStateChangeScheduler.smali": {
+      "bytes": 8230,
+      "sha256": "34b4a3d96e25cd37b309f358e18e75f94a77beacb009afbcc06666c06e9086c6"
+    },
+    "candidate/com/android/deskclock/alarms/AlarmStateManager$Companion.smali": {
+      "bytes": 87039,
+      "sha256": "7dc0c412c482aa6d6dceaaa010cf3111efe5a56d1314373d25901d27a32805fb"
+    },
+    "candidate/com/android/deskclock/alarms/AlarmStateManager.smali": {
+      "bytes": 5923,
+      "sha256": "42e9009e53b18545dbb059c4f7b92aaf8e3e5e70ca6ac827f6f85bafbbef86eb"
+    },
+    "original/com/android/deskclock/alarms/AlarmService.smali": {
+      "bytes": 18231,
+      "sha256": "f8e1cef35a288d402f266684274831691563f2644c1c028c8c2e5c72cec57bef"
+    },
+    "original/com/android/deskclock/alarms/AlarmStateManager$AlarmManagerStateChangeScheduler.smali": {
+      "bytes": 6274,
+      "sha256": "e99302efa381b66db316a294184d4eadc967046b40b59f11859c10992f613677"
+    },
+    "original/com/android/deskclock/alarms/AlarmStateManager$Companion.smali": {
+      "bytes": 81562,
+      "sha256": "dbe2f5063df95d8fdb2692ac3ac0c06169d27dc718965dbe6e23c1ac6d60ebee"
+    },
+    "original/com/android/deskclock/alarms/AlarmStateManager.smali": {
+      "bytes": 4575,
+      "sha256": "05fe15a3fb79fe4404f7cf73ab8fee96d846c9a435ad63d5c7d58d7bd0226b39"
+    }
+  }
+}

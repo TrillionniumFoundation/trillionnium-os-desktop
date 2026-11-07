@@ -1,0 +1,40 @@
+--- run_saf01.py
++++ run_saf02.py
+@@ -6,9 +6,9 @@
+ 
+ SOURCE=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ SOURCE_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+-ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-01/ui_adapter01.py')
++ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-02/ui_adapter01.py')
+ ADAPTER_SHA='0dc186a9bc552b576a361b2c3e18128d31f2473ae9344ade1a1089f0f1d147d3'
+-ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-01')
++ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-02')
+ APK=Path('/home/alex/work/pocket4-documents-saf-build-20261105-r12-02/owned-saf.apk')
+ APK_SHA='3b2b8d01b551f68256a25c351b34f2a6c74f74cbfc9b44b226ea708dba9fffe6'
+ CERT_SHA='f772d334443bb5cd71abcc179d04e21ee3e70d424290df69828b94e42bc448f2'
+@@ -267,12 +267,20 @@
+ 
+     def grants(self,label,expect_empty=False):
+         raw=self.s.android(['/system/bin/dumpsys','activity','package',PACKAGE,'permissions']).decode()
+-        lines=[line.strip() for line in raw.splitlines() if line.strip()]
+-        need(lines and lines[0]=='ACTIVITY MANAGER URI PERMISSIONS (dumpsys activity permissions)',
+-            'URI_GRANT_DUMP_GRAMMAR_UNRECOGNIZED')
+-        empty=lines==['ACTIVITY MANAGER URI PERMISSIONS (dumpsys activity permissions)','(nothing)']
++        # Actual Android 17 package-scoped dump includes several sections. The
++        # retained flow01 stdout has one exact URI-permission header, followed
++        # by (nothing), then the Services header. Never treat a missing section
++        # or any additional content as an empty grant set.
++        header='ACTIVITY MANAGER URI PERMISSIONS (dumpsys activity permissions)'
++        lines=raw.splitlines();indices=[i for i,line in enumerate(lines) if line.strip()==header]
++        need(len(indices)==1,'URI_GRANT_SECTION_NOT_UNIQUE')
++        begin=indices[0];end=next((i for i in range(begin+1,len(lines))
++            if lines[i].startswith('ACTIVITY MANAGER ')),len(lines))
++        section='\n'.join(lines[begin:end]);body=[line.strip() for line in lines[begin+1:end] if line.strip()]
++        empty=body==['(nothing)']
+         if expect_empty:need(empty,'OWNED_URI_GRANTS_NOT_EMPTY')
+-        self.ui.record(label,{'raw':raw,'package_filter':PACKAGE,'empty':empty});return empty
++        self.ui.record(label,{'raw_sha256':sha(raw.encode()),'raw_output_bytes':len(raw.encode()),
++            'exact_uri_grant_section':section,'package_filter':PACKAGE,'empty':empty});return empty
+ 
+     def business(self):
+         before=self.packages('target-identities-before');self.install();self.folder.setup()

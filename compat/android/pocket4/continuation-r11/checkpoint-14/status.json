@@ -1,0 +1,65 @@
+{
+  "schema": "pocket4-continuation-checkpoint14/v1",
+  "recorded_utc": "2026-11-06",
+  "fixed_tracked_apps": 45,
+  "historical_cp13": {
+    "whole_apps_ready": 1,
+    "accepted_app": "local.pocket4.fixture",
+    "matrix_sha256": "7431baeb6cf835199a7fb5cd0573cf2e2272ad38605ba438b0c7ec52402de83d",
+    "device_observation_cutoff_utc": "2026-11-06T00:15:28.272540Z",
+    "preserved": true
+  },
+  "current_framework": {
+    "old_epoch": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "observed_candidate": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+    "adopted": false,
+    "whole_app_readiness": null,
+    "ui_and_install_acceptance": "HOLD_FOR_FRAMEWORK_RECONCILIATION",
+    "old_evidence_carried_forward": false
+  },
+  "progress": [
+    {
+      "app": "Calendar",
+      "scope": "Core21 local calendar business regression",
+      "status": "scoped historical pass on old framework",
+      "business_scopes": 9,
+      "result_sha256": "54e8331ac7488483abb92ec4c573c07413daadbb0deb545c471c544b02437224",
+      "new_reminder_trial": "prepared, never executed"
+    },
+    {
+      "app": "WebView shell",
+      "scope": "Installed tracing guard and local business regression",
+      "status": "scoped historical pass on old framework",
+      "installed_apk_sha256": "45e7be6309d8675cce6e2281f00d887c2e297b770fa19378b34350971dc8a06b",
+      "business_result_sha256": "185b22762a5e889156084699019dc5e3f4476d793627a36a63289b92880be9f0",
+      "permission_metadata_delta": "Install added INSTALLER_EXEMPT to READ/WRITE_EXTERNAL_STORAGE while grants remained false; original failed receipt preserved and separately reconciled.",
+      "media_https_trial": "prepared, never executed"
+    },
+    {
+      "app": "Gallery",
+      "scope": "Candidate15 and ART17 reconciliation",
+      "status": "candidate not installed",
+      "candidate_apk_sha256": "052e448c94aae064490539b23b32e130071ce80285d55d7e99654e1335749a5c",
+      "verified_classes": 2055,
+      "art_reconciliation_sha256": "2c60de07bcb3eeae30732d41976e6f37d2fafd8c3a39581cbb5787af51b71536",
+      "installer18": "prepared only, no current context or install request",
+      "installer_prepared_manifest_sha256": "322efb055612fa894cec8a6305260fcd4356ecd5946284696b1fe99b40b0dfa3"
+    },
+    {
+      "app": "Clock",
+      "scope": "Alarm06",
+      "status": "rejected by old-epoch guard before any control/launch/alarm effect",
+      "original_failed_job_preserved": true,
+      "replay_allowed": false
+    },
+    {
+      "app": "Framework",
+      "scope": "Sensor client Binder identity",
+      "status": "source fix and 17 host contracts pass; Android library build and deployment pending",
+      "evidence": "../../framework-stability/sensor-listener-identity/evidence-summary.json"
+    }
+  ],
+  "all_remaining_apps_retained": true,
+  "new_whole_app_readiness_granted": false,
+  "new_hardware_or_commercial_scope_waiver": false
+}

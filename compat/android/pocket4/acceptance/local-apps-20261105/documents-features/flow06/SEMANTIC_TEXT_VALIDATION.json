@@ -1,0 +1,42 @@
+{
+  "Android_actions": 0,
+  "actual_old_method_negative_control": "saved caret-on vs caret-off frame fails STALE_FRAME before any input intent/counter/dispatch",
+  "adapter_sha256": "edaf39c50d6ff85748fef1b287bf3875fd51321a0a2a837ff6f30e59a8cd4417",
+  "command": "python documents-features08/revision06/test_semantic_set_text.py",
+  "device_UI_success_claimed": false,
+  "errors": 0,
+  "failures": 0,
+  "negative_scope": [
+    "wrong window/task/activity",
+    "duplicate editor or title",
+    "changed original value/hint/geometry/focus/password",
+    "unknown native response retained without replay",
+    "unverified or missing readback",
+    "long-press still rejects pixel change"
+  ],
+  "positive_scope": "same actual field/title/window/context with caret pixel difference reaches one semantic dispatch boundary",
+  "record_kind": "selected outcome of completed local exec; full console output retained in tool transcript",
+  "runner_sha256": "971b6543aa99a9fb384a626e7cd9af761607e3d72c19e428d0a13fbe928f8dd0",
+  "saved_flow05_original_sha256": "226aa0114cedd64048ef6a97f77fa6a2fde89e9dd0ec537af9bc88ecedd23ccb",
+  "schema": "pocket4-documents-semantic-text-host-validation-v1",
+  "state": "PASS_HOST_BOUNDARY_ONLY",
+  "test_names": [
+    "test_absent_connection_scoped_window_identity_has_no_input",
+    "test_changed_geometry_context_screen_or_init_has_no_input",
+    "test_changed_or_duplicate_dialog_title_has_no_input",
+    "test_changed_value_hint_geometry_focus_or_password_has_no_input",
+    "test_duplicate_fresh_editor_has_no_input",
+    "test_long_press_still_enforces_the_actual_frozen_pixel_validator",
+    "test_missing_or_false_readback_retains_unknown_input",
+    "test_native_explicit_no_effect_is_not_replayed",
+    "test_old_actual_method_rejects_saved_caret_frame_before_input",
+    "test_saved_caret_only_change_allows_one_exact_semantic_decision",
+    "test_unknown_native_outcome_keeps_pending_and_is_never_replayed",
+    "test_unverified_fresh_native_response_has_no_input",
+    "test_wrong_owned_task_or_focus_before_action_has_no_input",
+    "test_wrong_window_in_either_capture_has_no_input"
+  ],
+  "test_source_sha256": "ccd8c84f45f06f4cc36c529ce548d714474ce3bc9b33ea49a642dc7bc6fd4706",
+  "tests_run": 14,
+  "unittest_reported_seconds": 0.157
+}

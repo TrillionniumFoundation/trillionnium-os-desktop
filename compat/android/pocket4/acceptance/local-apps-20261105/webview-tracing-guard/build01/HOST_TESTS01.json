@@ -1,0 +1,24 @@
+{
+  "IR_parser": {
+    "bytes": 6289,
+    "path": "webview-tracing-guard08/smali_equivalence.py",
+    "sha256": "a895a4e3963f958ea6a6ff45b9d0c51f6239118b3a10fddff6d0f17e22e25f9f"
+  },
+  "actual_tool_chunk_id": "9324d1",
+  "cases": 6,
+  "command": "python3 webview-tracing-guard08/test_lifecycle_method01.py",
+  "does_not_prove": [
+    "actual Android BadToken behavior",
+    "actual ART verifier",
+    "runtime trace callback timing"
+  ],
+  "exit_code": 0,
+  "framework_calls_doubled": true,
+  "method_interpreted_from_actual_original_and_candidate_smali": true,
+  "output": "test_all_19_classes_only_one_method_changes (__main__.ActualMethodBoundaries.test_all_19_classes_only_one_method_changes) ... ok\ntest_flags_are_read_when_delayed_runnable_executes (__main__.ActualMethodBoundaries.test_flags_are_read_when_delayed_runnable_executes) ... ok\ntest_live_activity_preserves_exact_presentation (__main__.ActualMethodBoundaries.test_live_activity_preserves_exact_presentation) ... ok\ntest_null_activity_does_not_allocate_a_window (__main__.ActualMethodBoundaries.test_null_activity_does_not_allocate_a_window) ... ok\ntest_original_negative_destroyed_still_attempts_show (__main__.ActualMethodBoundaries.test_original_negative_destroyed_still_attempts_show) ... ok\ntest_original_negative_finishing_still_attempts_show (__main__.ActualMethodBoundaries.test_original_negative_finishing_still_attempts_show) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.041s\n\nOK\n",
+  "source": {
+    "bytes": 7983,
+    "path": "webview-tracing-guard08/test_lifecycle_method01.py",
+    "sha256": "db752722b52543dd77a5bb1849da54368851dc406487ebecf732dfdc147358a3"
+  }
+}

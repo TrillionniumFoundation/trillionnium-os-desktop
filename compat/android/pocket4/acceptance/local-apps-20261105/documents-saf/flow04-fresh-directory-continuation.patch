@@ -1,0 +1,106 @@
+--- run_saf03.py
++++ run_saf04.py
+@@ -6,9 +6,9 @@
+ 
+ SOURCE=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ SOURCE_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+-ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-03/ui_adapter01.py')
++ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-04/ui_adapter01.py')
+ ADAPTER_SHA='0dc186a9bc552b576a361b2c3e18128d31f2473ae9344ade1a1089f0f1d147d3'
+-ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-03')
++ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-04')
+ APK=Path('/home/alex/work/pocket4-documents-saf-build-20261105-r12-02/owned-saf.apk')
+ APK_SHA='3b2b8d01b551f68256a25c351b34f2a6c74f74cbfc9b44b226ea708dba9fffe6'
+ CERT_SHA='f772d334443bb5cd71abcc179d04e21ee3e70d424290df69828b94e42bc448f2'
+@@ -22,7 +22,7 @@
+ CREATED='created-'+RUN+'.txt';PROVIDER='provider-'+RUN+'.txt';FILES='files-ui-'+RUN+'.txt'
+ NAMES={CREATED,PROVIDER,FILES}
+ PAYLOAD_SHA='5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7'
+-MAX_SECONDS=720;CLEANUP_RESERVE=120
++MAX_SECONDS=300;CLEANUP_RESERVE=90
+ DOCS='com.android.documentsui';AUTHORITY='com.android.externalstorage.documents'
+ CLIENT_ROUTE=(PACKAGE,PACKAGE+'.SafActivity');PICKER_ROUTE=(DOCS,DOCS+'.picker.PickActivity')
+ FILES_ROUTE=(DOCS,DOCS+'.files.FilesActivity');RESOLVER_ROUTE=('android','com.android.internal.app.ResolverActivity')
+@@ -99,7 +99,16 @@
+         need(self.created and self.fd is not None and not self.removed,'NO_OWNED_DIRECTORY')
+         self.s.guard();info=os.stat(FOLDER,dir_fd=self.parent,follow_symlinks=False)
+         need(fp(info)==self.birth and fp(os.fstat(self.fd))==self.birth,'OWNED_DIRECTORY_REPLACED')
+-        names=os.listdir(self.fd);need(len(names)<=1 and set(names)<=NAMES,'UNEXPECTED_OWNED_DIRECTORY_ENTRY_PRESERVED')
++        # Keep the held directory as the identity anchor. A new open file
++        # description avoids reusing its pre-create enumeration snapshot.
++        fresh=os.open('.',os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=self.fd)
++        try:
++            need(fp(os.fstat(fresh))==self.birth,'FRESH_ENUMERATION_DIRECTORY_CHANGED')
++            names=os.listdir(fresh)
++        finally:os.close(fresh)
++        need(fp(os.stat(FOLDER,dir_fd=self.parent,follow_symlinks=False))==self.birth
++            and fp(os.fstat(self.fd))==self.birth,'OWNED_DIRECTORY_CHANGED_AFTER_ENUMERATION')
++        need(len(names)<=1 and set(names)<=NAMES,'UNEXPECTED_OWNED_DIRECTORY_ENTRY_PRESERVED')
+         return names
+ 
+     def verify(self,name,label):
+@@ -283,16 +292,45 @@
+             'exact_uri_grant_section':section,'package_filter':PACKAGE,'empty':empty});return empty
+ 
+     def business(self):
+-        before=self.packages('target-identities-before');self.install();self.folder.setup()
+-        self.grants('new-package-grants-empty',True)
+-        self.ui.launch();obs=self.status_ui('NEW')
+-        self.client_button(obs,'create_document','create-picker')
+-        obs=self.ui.observe('create-picker',[PICKER_ROUTE]);self.own_location(obs)
+-        self.ui.one(obs,lambda n:n.get('editable') is True and n.get('text')==CREATED,'EXACT_CREATE_FILENAME_REQUIRED')
+-        need(self.folder.check()==[],'OWNED_FOLDER_NOT_EMPTY_BEFORE_PICKER_SAVE')
+-        self.ui.input(obs,'picker-save',self.control(obs,'Save'))
+-        obs=self.status_ui('CREATE_WRITE_READ_OK');self.folder.verify(CREATED,'created-file-readback')
+-        self.grants('created-document-persisted-grants')
++        original_root=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-03')
++        original=json.loads(self.tx.read_regular(original_root/'result.json',
++            'c3243ed89e9edbc53f773e6211c3728c0654549e795044267003a522792d8eb0',65536))
++        born=json.loads(self.tx.read_regular(original_root/'006-fixture-directory-created.json',
++            '5bd7cf3909a8e149cce5d388f12f97531cfe7561417cc3674c2ce5743d5bc6bd',16384))
++        need(original['state']=='OWNED_CLEANUP_UNVERIFIED' and original['pending_effects']=={}
++            and original['outcome_unknown'] is False and original['owned_task_ids_closed']==[919]
++            and original['native_launch_calls']==original['owned_remove_calls']==1
++            and original['cleanup']['staged_apk_removed'] is True
++            and original['gates']['CREATE_WRITE_READ_OK']['passed'] is True
++            and original['final_guard']==self.s.guard(),'ORIGINAL_CREATE_RECEIPT_CHANGED')
++        before=self.packages('target-identities-before')
++        current=identity(self.s,PACKAGE,APK_SHA,10172)
++        need(current==original['installed_identity'],'RETAINED_PACKAGE_IDENTITY_CHANGED')
++        phase=self.pref_state()
++        need(phase is not None and phase.get('phase')=='CREATE_WRITE_READ_OK'
++            and phase.get('pending','')==phase.get('error','')==''
++            and phase.get('content_writes')==phase.get('content_readbacks')==phase.get('create_picker_calls')==1
++            and all(phase.get(k,0)==0 for k in ('provider_rename_calls','provider_delete_calls',
++                'open_picker_calls','files_launch_calls','files_view_results'))
++            and phase.get('uri')==original['gates']['CREATE_WRITE_READ_OK']['client_status']['uri'],
++            'RETAINED_CLIENT_PHASE_OR_COUNTS_CHANGED')
++        self.folder.parent=self.s.target.open_root('/storage/emulated/0',os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
++        self.folder.fd=os.open(FOLDER,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=self.folder.parent)
++        self.folder.birth=born['identity'];self.folder.created=True
++        proof=self.folder.verify(CREATED,'original-created-file-fresh-readback')
++        need(proof['identity']=={'st_dev':158,'st_ino':166916,'st_uid':10108,'st_gid':1023,'st_mode':33200}
++            and proof['mtime_ns']==proof['ctime_ns']==1793872497685432000,'RETAINED_CREATED_FILE_IDENTITY_CHANGED')
++        self.installed=current;self.result['installed_identity']=current
++        self.result['continued_from']={'job_id':'1a1ab21c7dc-fc05-4ac6','original_result_sha256':
++            'c3243ed89e9edbc53f773e6211c3728c0654549e795044267003a522792d8eb0',
++            'create_or_save_replayed':False,'original_failure_preserved':True}
++        self.result['gates']['CREATE_WRITE_READ_OK']=original['gates']['CREATE_WRITE_READ_OK']
++        age=int(time.time()*1000)-phase.get('started_ms',0)
++        self.ui.record('original-lease-readonly',{'age_ms':age,'original_started_ms':phase.get('started_ms'),
++            'lease_ms':1200000,'required_remaining_ms':MAX_SECONDS*1000,'lease_modified':False})
++        need(0<=age<=1200000-MAX_SECONDS*1000,'ORIGINAL_LEASE_INSUFFICIENT_CLEANUP_ONLY')
++        self.grants('retained-created-document-grants')
++        self.ui.launch();obs=self.status_ui('CREATE_WRITE_READ_OK')
+         self.client_button(obs,'provider_rename','provider-rename')
+         obs=self.status_ui('PROVIDER_RENAME_OK');self.folder.verify(PROVIDER,'provider-rename-readback')
+         self.client_button(obs,'open_files','open-files',FILES_ROUTE)
+@@ -398,7 +436,7 @@
+     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--execute',action='store_true');args=parser.parse_args()
+     if not args.execute:
+         print(json.dumps({'state':'PLAN_ONLY','package':PACKAGE,'apk_sha256':APK_SHA,'max_seconds':MAX_SECONDS,
+-            'max_ui_actions':36,'permissions':[],'launcher':False,'ui_actions':0,'installs':0}));return 0
++            'max_ui_actions':36,'permissions':[],'launcher':False,'ui_actions':0,'installs':0,'continuation_only':True,'create_or_save_replayed':False}));return 0
+     tx=load(SOURCE,SOURCE_SHA,'saf_frozen_session');adapter=load(ADAPTER,ADAPTER_SHA,'saf_ui_adapter')
+     result={'state':'NOT_STARTED','business_flow_completed':False,'whole_app_production_ready':False}
+     with tx.ui_lock():

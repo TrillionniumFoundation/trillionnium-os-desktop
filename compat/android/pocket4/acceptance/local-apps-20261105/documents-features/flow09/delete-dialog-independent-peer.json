@@ -1,0 +1,42 @@
+{
+  "actual_app_delete_implementation_available_locally": false,
+  "actual_dialog": {
+    "message": "2 items will be deleted forever. This can\u2019t be undone.",
+    "message_resource_id": "android:id/message",
+    "positive_class": "android.widget.Button",
+    "positive_clickable": true,
+    "positive_enabled": true,
+    "positive_resource_id": "android:id/button1",
+    "positive_text": "OK",
+    "title": "Delete forever?",
+    "title_resource_id": "com.android.documentsui:id/alertTitle"
+  },
+  "cleanup_boundary": "After original worker is terminal, bind saved root and exact ledger, verify fresh owned layout and target/provider/helper identity before a separate once-only cleanup. Preserve original unknown/failed receipt.",
+  "controller_sha256": "9dbfa3eb072efc77a4872c86c5392103f2a58efd92a2679aa8fd8a94a3650210",
+  "findings": [
+    "delete_entries accepts only delete/delete forever for button1, so the actual OK button is not submitted.",
+    "Its subsequent message filter also misses the actual namespaced alertTitle; the message contains deleted, which does not match the exact word-boundary delete regex.",
+    "The complete selected journal has no delete-copies-confirm or after-confirm record; the original error is the bounded unchanged-layout wait.",
+    "The toolbar response input completed but lacked post-action observation; the saved later observation binds the confirmation dialog."
+  ],
+  "original_result_sha256": "4361723c1bca9601a0770feb6492aa93ad3bfa9f4eeb6eebafcec01b2f7ac4be",
+  "qualification_boundary": "The controller source proves no confirmation dispatch. It does not replace fresh exact filesystem/helper/provider reconciliation or prove all possible App asynchronous effects absent. No deletion business gate is awarded.",
+  "review_scope": "Existing local saved records and frozen controller only; zero remote/Main/UI calls.",
+  "reviewer": "recover_android_state",
+  "saved_archive_sha256": "361363c90b3b94a198576e85bbdea6339b1f25d245add71f87f735dd653659b3",
+  "schema": "docs09-saved-delete-independent-review-v1",
+  "selected_record_pins": {
+    "842-delete-copies-selection-proof.json": {
+      "bytes": 224,
+      "sha256": "805a8c8a909ab3775e6d574e64f74684f540d3cdb56a9fd84311bc0ca06fb160"
+    },
+    "854-delete-copies-request-response.json": {
+      "bytes": 1597,
+      "sha256": "b04dc7a4cb0bbb90ad321fb8ff379aacdf7388a631c0cdca951ab1030362ce17"
+    },
+    "861-delete-copies-dialog-or-result.json": {
+      "bytes": 20868,
+      "sha256": "474e54d2247b9c09897bfeb6be4c089dd7bf6cafb12f60c89984e215bd7f29ce"
+    }
+  }
+}

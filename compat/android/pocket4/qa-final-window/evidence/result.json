@@ -1,0 +1,249 @@
+{
+  "APK_built": false,
+  "App_production_qualification": false,
+  "actual_Android_actions": 0,
+  "arms": {
+    "candidate": {
+      "cases": [
+        {
+          "action_attempted_marker": true,
+          "actual_error": null,
+          "case": "unchanged_window_and_tree",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 1,
+          "dispatch_marker_reached": true,
+          "expected_error": null,
+          "final_capture_closes": 1,
+          "inspect_calls": 1,
+          "passed": true
+        },
+        {
+          "action_attempted_marker": false,
+          "actual_error": "Rejected:FOCUS_CHANGED_BEFORE_ACTION",
+          "case": "same_id_tree_changed_window_envelope",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 0,
+          "dispatch_marker_reached": false,
+          "expected_error": "Rejected:FOCUS_CHANGED_BEFORE_ACTION",
+          "final_capture_closes": 1,
+          "inspect_calls": 1,
+          "passed": true
+        },
+        {
+          "action_attempted_marker": false,
+          "actual_error": "Rejected:FOCUS_CHANGED_BEFORE_ACTION",
+          "case": "window_id_changed",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 0,
+          "dispatch_marker_reached": false,
+          "expected_error": "Rejected:FOCUS_CHANGED_BEFORE_ACTION",
+          "final_capture_closes": 1,
+          "inspect_calls": 1,
+          "passed": true
+        },
+        {
+          "action_attempted_marker": false,
+          "actual_error": "Rejected:FOCUS_CHANGED_BEFORE_ACTION",
+          "case": "tree_changed",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 0,
+          "dispatch_marker_reached": false,
+          "expected_error": "Rejected:FOCUS_CHANGED_BEFORE_ACTION",
+          "final_capture_closes": 1,
+          "inspect_calls": 1,
+          "passed": true
+        },
+        {
+          "action_attempted_marker": false,
+          "actual_error": "IllegalStateException:MISSING_window_sha256",
+          "case": "final_window_digest_missing",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 0,
+          "dispatch_marker_reached": false,
+          "expected_error": "IllegalStateException:MISSING_window_sha256",
+          "final_capture_closes": 1,
+          "inspect_calls": 1,
+          "passed": true
+        },
+        {
+          "action_attempted_marker": false,
+          "actual_error": "IllegalStateException:MISSING_tree_sha256",
+          "case": "final_tree_digest_missing",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 0,
+          "dispatch_marker_reached": false,
+          "expected_error": "IllegalStateException:MISSING_tree_sha256",
+          "final_capture_closes": 1,
+          "inspect_calls": 1,
+          "passed": true
+        },
+        {
+          "action_attempted_marker": false,
+          "actual_error": "Rejected:CONTROL_INSPECT_FAILED",
+          "case": "final_inspection_failure",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 0,
+          "dispatch_marker_reached": false,
+          "expected_error": "Rejected:CONTROL_INSPECT_FAILED",
+          "final_capture_closes": 0,
+          "inspect_calls": 1,
+          "passed": true
+        },
+        {
+          "action_attempted_marker": false,
+          "actual_error": "Rejected:OWNED_DEADLINE",
+          "case": "deadline_before_dispatch",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 1,
+          "dispatch_marker_reached": false,
+          "expected_error": "Rejected:OWNED_DEADLINE",
+          "final_capture_closes": 1,
+          "inspect_calls": 1,
+          "passed": true
+        }
+      ],
+      "compiler_returncode": 0,
+      "fragment_sha256": "90311e080c33f21dea5c10f3f666a4ff345bca5a855d6619cf488acc078d819d",
+      "harness_sha256": "fb51e5b56b92a60db01930442079d6b72da98fb7c760e9cf127469a8a12ed740",
+      "passed": 8,
+      "source_bytes": 37949,
+      "source_sha256": "d43660d0a3ccfd4226ed8619a52e8d7cf160cf84ec11450a35a03af768a0eb97",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "3707c9860200e68732432cfec48620704281f00b6da08b5b236778015237e879",
+      "test_returncode": 0,
+      "total": 8
+    },
+    "preimage": {
+      "cases": [
+        {
+          "action_attempted_marker": true,
+          "actual_error": null,
+          "case": "unchanged_window_and_tree",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 1,
+          "dispatch_marker_reached": true,
+          "expected_error": null,
+          "final_capture_closes": 1,
+          "inspect_calls": 1,
+          "passed": true
+        },
+        {
+          "action_attempted_marker": true,
+          "actual_error": null,
+          "case": "same_id_tree_changed_window_envelope",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 1,
+          "dispatch_marker_reached": true,
+          "expected_error": "Rejected:FOCUS_CHANGED_BEFORE_ACTION",
+          "final_capture_closes": 1,
+          "inspect_calls": 1,
+          "passed": false
+        },
+        {
+          "action_attempted_marker": false,
+          "actual_error": "Rejected:FOCUS_CHANGED_BEFORE_ACTION",
+          "case": "window_id_changed",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 0,
+          "dispatch_marker_reached": false,
+          "expected_error": "Rejected:FOCUS_CHANGED_BEFORE_ACTION",
+          "final_capture_closes": 1,
+          "inspect_calls": 1,
+          "passed": true
+        },
+        {
+          "action_attempted_marker": false,
+          "actual_error": "Rejected:FOCUS_CHANGED_BEFORE_ACTION",
+          "case": "tree_changed",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 0,
+          "dispatch_marker_reached": false,
+          "expected_error": "Rejected:FOCUS_CHANGED_BEFORE_ACTION",
+          "final_capture_closes": 1,
+          "inspect_calls": 1,
+          "passed": true
+        },
+        {
+          "action_attempted_marker": true,
+          "actual_error": null,
+          "case": "final_window_digest_missing",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 1,
+          "dispatch_marker_reached": true,
+          "expected_error": "IllegalStateException:MISSING_window_sha256",
+          "final_capture_closes": 1,
+          "inspect_calls": 1,
+          "passed": false
+        },
+        {
+          "action_attempted_marker": false,
+          "actual_error": "IllegalStateException:MISSING_tree_sha256",
+          "case": "final_tree_digest_missing",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 0,
+          "dispatch_marker_reached": false,
+          "expected_error": "IllegalStateException:MISSING_tree_sha256",
+          "final_capture_closes": 1,
+          "inspect_calls": 1,
+          "passed": true
+        },
+        {
+          "action_attempted_marker": false,
+          "actual_error": "Rejected:CONTROL_INSPECT_FAILED",
+          "case": "final_inspection_failure",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 0,
+          "dispatch_marker_reached": false,
+          "expected_error": "Rejected:CONTROL_INSPECT_FAILED",
+          "final_capture_closes": 0,
+          "inspect_calls": 1,
+          "passed": true
+        },
+        {
+          "action_attempted_marker": false,
+          "actual_error": "Rejected:OWNED_DEADLINE",
+          "case": "deadline_before_dispatch",
+          "current_capture_closes_in_fragment": 0,
+          "deadline_calls": 1,
+          "dispatch_marker_reached": false,
+          "expected_error": "Rejected:OWNED_DEADLINE",
+          "final_capture_closes": 1,
+          "inspect_calls": 1,
+          "passed": true
+        }
+      ],
+      "compiler_returncode": 0,
+      "fragment_sha256": "0ee547e09b016b883a0d3f52cfd4f578b9a985dad3c16a337b76bb863a4cec24",
+      "harness_sha256": "31fd144a13774de881092f43efc33e8d203ec3355a78b7825d8c67e061426a6f",
+      "passed": 6,
+      "source_bytes": 37812,
+      "source_sha256": "374c4b3ba1d83a97a376613b2ab2e015006019a61dd36970b27c64693d5bcef5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "603669ef9dfa8ad663c90478fa0d4d5898a7924470f06b60d633022d8e46783a",
+      "test_returncode": 1,
+      "total": 8
+    }
+  },
+  "installed": false,
+  "not_claimed": [
+    "complete ActionRunner Android compilation",
+    "live window geometry race",
+    "whole action method lifecycle",
+    "current Bili buffering cause",
+    "full App or platform readiness"
+  ],
+  "only_expected_source_delta": true,
+  "patch_sha256": "dae116553fdb7a219fac54d3b21a71edf64940c3050f723c3546e2d4139a48da",
+  "preimage_unchanged": true,
+  "schema": 1,
+  "scope": "final action-window predicate and its unchanged immediate cleanup/deadline order",
+  "seams": [
+    "inspect supplies captures or rejection",
+    "JSON string field storage",
+    "Capture.close counter",
+    "deadline clock",
+    "post-guard dispatch marker"
+  ],
+  "state": "EXACT_JAVA_FRAGMENT_DIFFERENTIAL_PASS",
+  "test_type": "compiled production-source fragment with controlled IO seams"
+}

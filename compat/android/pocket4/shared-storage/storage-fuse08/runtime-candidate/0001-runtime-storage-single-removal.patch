@@ -1,0 +1,84 @@
+--- a/com/android/server/storage/StorageSessionController.smali
++++ b/com/android/server/storage/StorageSessionController.smali
+@@ -1832,8 +1832,18 @@
+ .end method
+ 
+ .method public onVolumeUnmount(Lcom/android/server/storage/ImmutableVolumeInfo;)V
+-    .registers 9
++    .registers 11
+     .param p1, "vol"    # Lcom/android/server/storage/ImmutableVolumeInfo;
++
++    invoke-direct {p0, p1}, Lcom/android/server/storage/StorageSessionController;->shouldHandle(Lcom/android/server/storage/ImmutableVolumeInfo;)Z
++
++    move-result v0
++
++    if-nez v0, :storage_unmount_supported
++
++    return-void
++
++    :storage_unmount_supported
+ 
+     .line 255
+     const-string v0, "StorageSessionController"
+@@ -1851,9 +1861,31 @@
+     .line 258
+     .local v2, "token":J
+     :try_start_a
+-    invoke-virtual {p0, p1}, Lcom/android/server/storage/StorageSessionController;->onVolumeRemove(Lcom/android/server/storage/ImmutableVolumeInfo;)Lcom/android/server/storage/StorageUserConnection;
++    invoke-virtual {p0, p1}, Lcom/android/server/storage/StorageSessionController;->getConnectionUserIdForVolume(Lcom/android/server/storage/ImmutableVolumeInfo;)I
++
++    move-result v7
++
++    iget-object v8, p0, Lcom/android/server/storage/StorageSessionController;->mLock:Ljava/lang/Object;
++
++    monitor-enter v8
++    :storage_before_lookup_end
++    .catch Lcom/android/server/storage/StorageSessionController$ExternalStorageServiceException; {:try_start_a .. :storage_before_lookup_end} :catch_2a
++    .catchall {:try_start_a .. :storage_before_lookup_end} :catchall_28
++
++    :storage_lookup_start
++    iget-object v4, p0, Lcom/android/server/storage/StorageSessionController;->mConnections:Landroid/util/SparseArray;
++
++    invoke-virtual {v4, v7}, Landroid/util/SparseArray;->get(I)Ljava/lang/Object;
+ 
+     move-result-object v4
++
++    check-cast v4, Lcom/android/server/storage/StorageUserConnection;
++
++    monitor-exit v8
++    :storage_lookup_end
++    .catchall {:storage_lookup_start .. :storage_lookup_end} :storage_lookup_failed
++
++    :storage_after_lookup
+ 
+     .line 259
+     .local v4, "connection":Lcom/android/server/storage/StorageUserConnection;
+@@ -1879,8 +1911,8 @@
+     .line 261
+     invoke-virtual {v4, v1}, Lcom/android/server/storage/StorageUserConnection;->removeSessionAndWait(Ljava/lang/String;)V
+     :try_end_27
+-    .catch Lcom/android/server/storage/StorageSessionController$ExternalStorageServiceException; {:try_start_a .. :try_end_27} :catch_2a
+-    .catchall {:try_start_a .. :try_end_27} :catchall_28
++    .catch Lcom/android/server/storage/StorageSessionController$ExternalStorageServiceException; {:storage_after_lookup .. :try_end_27} :catch_2a
++    .catchall {:storage_after_lookup .. :try_end_27} :catchall_28
+ 
+     goto :goto_2c
+ 
+@@ -1949,6 +1981,17 @@
+ 
+     .line 267
+     throw v0
++
++    :storage_lookup_failed
++    move-exception v4
++
++    :storage_unlock_start
++    monitor-exit v8
++
++    throw v4
++    :storage_unlock_end
++    .catch Lcom/android/server/storage/StorageSessionController$ExternalStorageServiceException; {:storage_unlock_start .. :storage_unlock_end} :catch_2a
++    .catchall {:storage_unlock_start .. :storage_unlock_end} :catchall_28
+ .end method
+ 
+ .method public supportsExternalStorage(I)Z

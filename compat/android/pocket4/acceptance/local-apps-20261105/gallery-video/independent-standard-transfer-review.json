@@ -1,0 +1,382 @@
+{
+  "actual_frame_proof": {
+    "audio_qualified": false,
+    "color_order": [
+      "red",
+      "green",
+      "blue",
+      "yellow"
+    ],
+    "color_tolerance": 6,
+    "full_pattern_verified": true,
+    "quadrant_counts": [
+      9462,
+      9576,
+      9351,
+      9348
+    ],
+    "sample_pattern_bounds": [
+      3,
+      65,
+      237,
+      238
+    ],
+    "sample_quadrant_bounds": [
+      [
+        3,
+        66,
+        117,
+        149
+      ],
+      [
+        123,
+        65,
+        237,
+        149
+      ],
+      [
+        3,
+        155,
+        117,
+        238
+      ],
+      [
+        123,
+        156,
+        237,
+        238
+      ]
+    ],
+    "sample_size": [
+      240,
+      304
+    ],
+    "scope_fraction": 0.5548519736842106,
+    "scope_size": [
+      1200,
+      1520
+    ],
+    "source_aspect": [
+      640,
+      480
+    ],
+    "thumbnail_excluded": true,
+    "timecode_samples": [
+      {
+        "sample_center": [
+          44,
+          152
+        ],
+        "values": [
+          [
+            253,
+            255,
+            255
+          ],
+          [
+            253,
+            255,
+            255
+          ],
+          [
+            253,
+            255,
+            255
+          ]
+        ]
+      },
+      {
+        "sample_center": [
+          70,
+          152
+        ],
+        "values": [
+          [
+            253,
+            255,
+            255
+          ],
+          [
+            253,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255
+          ]
+        ]
+      },
+      {
+        "sample_center": [
+          98,
+          152
+        ],
+        "values": [
+          [
+            0,
+            0,
+            6
+          ],
+          [
+            0,
+            0,
+            6
+          ],
+          [
+            0,
+            0,
+            6
+          ]
+        ]
+      },
+      {
+        "sample_center": [
+          124,
+          152
+        ],
+        "values": [
+          [
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255
+          ]
+        ]
+      },
+      {
+        "sample_center": [
+          152,
+          152
+        ],
+        "values": [
+          [
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255
+          ]
+        ]
+      },
+      {
+        "sample_center": [
+          178,
+          152
+        ],
+        "values": [
+          [
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255
+          ]
+        ]
+      }
+    ],
+    "visual_second_bits": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "visual_second_code": 4
+  },
+  "actual_png_sha256": "7ef9d6c59c8bed56fdb6c9b0e68d14f1970468f88506c22ea867120423eebd1f",
+  "device_actions": 0,
+  "fixed_official_source": "https://android.googlesource.com/platform/frameworks/native/+/db4192ada9dee591ec897a51c07c489c84c860c1/libs/nativewindow/include/android/data_space.h",
+  "formula": "round(255 * sRGB_OETF(SMPTE170M_inverse_OETF(source_channel / 255)))",
+  "limits": [
+    "The standard transfer predicts all four observed colors within two 8-bit codes, but the actual Main compositor transfer implementation has not been bound to this upstream header.",
+    "Accept this as a video-only fixture recognition model. It is not a color-fidelity qualification or evidence that every video uses this transfer.",
+    "Retain the original PNG palette. Keep all current geometry, occupancy, aspect, timecode, elapsed motion, pause and thumbnail conditions.",
+    "The original flow01 failure remains unchanged; this offline single-frame review is not a full playback gate."
+  ],
+  "local_checks": [
+    {
+      "case": "original_png_palette_rejects_real_video_frame",
+      "reason": "FOUR_OWNED_QUADRANTS_REQUIRED",
+      "rejected": true
+    },
+    {
+      "case": "standard_prediction_accepts_real_frame_with_unchanged_geometry_and_timecode",
+      "passed": true,
+      "visual_second_code": 4
+    },
+    {
+      "case": "standard_transfer_synthetic_second_0",
+      "passed": true
+    },
+    {
+      "case": "standard_transfer_synthetic_second_1",
+      "passed": true
+    },
+    {
+      "case": "standard_transfer_synthetic_second_17",
+      "passed": true
+    },
+    {
+      "case": "standard_transfer_synthetic_second_59",
+      "passed": true
+    },
+    {
+      "case": "bypassed_video_transfer_wrong_palette",
+      "reason": "FOUR_OWNED_QUADRANTS_REQUIRED",
+      "rejected": true
+    },
+    {
+      "case": "wrong_quadrant_order",
+      "reason": "OWNED_QUADRANT_ORDER_CHANGED",
+      "rejected": true
+    },
+    {
+      "case": "thumbnail_still_rejected",
+      "reason": "THUMBNAIL_NOT_FULL_IMAGE",
+      "rejected": true
+    },
+    {
+      "case": "timecode_nonbinary_still_rejected",
+      "reason": "VISUAL_TIMECODE_NOT_BINARY",
+      "rejected": true
+    },
+    {
+      "case": "still_pixels_are_not_motion",
+      "reason": "VIDEO_PIXELS_DID_NOT_ADVANCE_WITH_TIME",
+      "rejected": true
+    },
+    {
+      "case": "original_png_palette_unchanged",
+      "passed": true
+    }
+  ],
+  "maximum_absolute_channel_residual": 2,
+  "observed_minus_standard": [
+    [
+      0,
+      0,
+      -1
+    ],
+    [
+      -1,
+      0,
+      -1
+    ],
+    [
+      0,
+      0,
+      -2
+    ],
+    [
+      0,
+      0,
+      0
+    ]
+  ],
+  "observed_palette": [
+    [
+      255,
+      74,
+      63
+    ],
+    [
+      67,
+      205,
+      102
+    ],
+    [
+      0,
+      134,
+      253
+    ],
+    [
+      255,
+      209,
+      0
+    ]
+  ],
+  "official_blob": "d4278bedf3e5745105197386a242cd6fd1f1b4bf",
+  "palette_fitted_to_screenshot": false,
+  "playback_business_gate_passed": false,
+  "root_source_files_modified": false,
+  "schema": "gallery-video-standard-transfer-independent-review-v1",
+  "source_files_sha256": {
+    "make_owned_video.py": "0140ab7ea03a55bea85ebaf3a09a20caf7d8022ac6798b6e49eaf05b5985816e",
+    "verify_pattern.py": "0206850626989ddd3a52693252d211dbd5e03addfe86332190da8ca1cb6951e9",
+    "verify_video.py": "2b52f1514fff4507a9618ac5695d0dd64820f2e34f9c242cb5d640f6c79fe93d",
+    "video-provenance.json": "0c066bbf402295a8ff92d8fb3cd83fb8d6a0a2233c9894ed7f3d82fa42d48978"
+  },
+  "source_palette": [
+    [
+      255,
+      59,
+      48
+    ],
+    [
+      52,
+      199,
+      89
+    ],
+    [
+      0,
+      122,
+      255
+    ],
+    [
+      255,
+      204,
+      0
+    ]
+  ],
+  "standard_predicted_palette": [
+    [
+      255,
+      74,
+      64
+    ],
+    [
+      68,
+      205,
+      103
+    ],
+    [
+      0,
+      134,
+      255
+    ],
+    [
+      255,
+      209,
+      0
+    ]
+  ],
+  "tolerance_unchanged": 6
+}

@@ -1,0 +1,114 @@
+{
+  "kind": "verbatim-production-method-host-regression",
+  "device_actions": 0,
+  "framework_or_kernel_integration": false,
+  "passed": true,
+  "variants": {
+    "upstream": {
+      "compiled": true,
+      "cases": {
+        "waits_for_exit": {
+          "rc": 2,
+          "expected_rc": 2,
+          "expected_result": true
+        },
+        "rapid_remount": {
+          "rc": 2,
+          "expected_rc": 2,
+          "expected_result": true
+        },
+        "duplicate_start": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "remove_without_wait": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "only_target_session": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "unsupported_and_reset": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "missing_connection": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "error_restores_identity": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "clone_parent_connection": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        }
+      }
+    },
+    "candidate": {
+      "compiled": true,
+      "cases": {
+        "waits_for_exit": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "rapid_remount": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "duplicate_start": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "remove_without_wait": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "only_target_session": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "unsupported_and_reset": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "missing_connection": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "error_restores_identity": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "clone_parent_connection": {
+          "rc": 0,
+          "expected_rc": 0,
+          "expected_result": true
+        }
+      }
+    }
+  },
+  "production_methods_extracted_verbatim": true,
+  "boundary_substitutions": [
+    "Android context and Binder transport",
+    "JNI/native FUSE loop; thread lifecycle and waiting execute real Java methods"
+  ],
+  "deployment_to_Main": false
+}

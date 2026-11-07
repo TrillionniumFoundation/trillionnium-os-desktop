@@ -1,0 +1,79 @@
+{
+  "actual_terminal": "succeeded",
+  "affinity_after": [
+    20
+  ],
+  "affinity_before": [
+    20
+  ],
+  "alignment_16k_verified": true,
+  "all_8_commands_exit0_joined_no_timeout_stderr0": true,
+  "candidate": {
+    "bytes": 75170,
+    "sha256": "45e7be6309d8675cce6e2281f00d887c2e297b770fa19378b34350971dc8a06b"
+  },
+  "certificate_sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+  "exit_code": 0,
+  "finished_utc": "2026-11-05T23:23:22.460150+00:00",
+  "input_postcheck_passed": true,
+  "job_id": "1a1ae05f67d-fc05-5cb6",
+  "limits_after": {
+    "cpu.max": "50000 100000",
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "pids.max": "128"
+  },
+  "limits_before": {
+    "cpu.max": "50000 100000",
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "pids.max": "128"
+  },
+  "observed_CPU_quota_throttling": true,
+  "output_complete": true,
+  "output_durable": true,
+  "payload_proof": {
+    "non_signature_entries": 15,
+    "only_changed_non_signature_payload": "classes.dex",
+    "original_manifest_resources_permissions_byte_equal": true,
+    "proof": {
+      "bytes": 5080,
+      "path": "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/payload-proof.json",
+      "sha256": "b6c5ec66ec4814e6d2ebfd5b5c477e599641e56806ef153b16827a2b526c8bdd"
+    }
+  },
+  "resource_usage": {
+    "cpu.stat": "usage_usec 3627422\nuser_usec 3311693\nsystem_usec 315729\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 73\nnr_throttled 70\nthrottled_usec 3154305\nnr_bursts 0\nburst_usec 0",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.peak": "248360960"
+  },
+  "schema": "webview-tracing-build01-selected.v1",
+  "scope": "Real host assembly/roundtrip/ZIP/signature/alignment gate only. Original lifecycle failure is source-inferred and was not triggered. No ART, installation, Main mutation, UI, App execution or tracing.",
+  "semantic_proof": {
+    "branches_and_exception_coverage_compared": true,
+    "changed_methods": [
+      [
+        "org/chromium/webview_shell/WebViewBrowserActivity$TracingLogger$1.smali",
+        "public run()V"
+      ]
+    ],
+    "classes": 19,
+    "fields_annotations_and_method_sets_equal": true,
+    "methods": 99,
+    "proof": {
+      "bytes": 11591,
+      "path": "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/class-ir-proof.json",
+      "sha256": "6bb573cecaa76029494549721e811b12e279397f2267d5895b8f6aeef6a7c815"
+    },
+    "roundtrip_all_classes_equal": true
+  },
+  "signature_v3_verified": true,
+  "source_and_tools_and_retained_inputs_unchanged": true,
+  "source_result": {
+    "bytes": 33392,
+    "sha256": "a2d1326b76cbd3b76be99ed851d01f996c6c54703833630f0ae8f80a82526e42"
+  },
+  "started_utc": "2026-11-05T23:23:15.297672+00:00",
+  "state": "BUILT_SAME_CERTIFICATE_NOT_ART_VERIFIED_NOT_INSTALLED",
+  "whole_app_ready": false
+}

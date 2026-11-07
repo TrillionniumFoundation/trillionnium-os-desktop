@@ -1,0 +1,39 @@
+{
+  "Main_or_device_actions": 0,
+  "applies_to_manifest_sha256": "a59935b485b26a15fedc93791c270929701c420dba26945af2186a1daf64eaf3",
+  "business_credit_changed": false,
+  "corrections": [
+    {
+      "JSON_values_equal": true,
+      "original_stdout": {
+        "bytes": 11346,
+        "path_in_frozen_bundle": "evidence/result01-original.json",
+        "sha256": "23ab3c6f0cccf56d0607fadb5c0cf4dac6a1376d41ec2ebf52e3652acb459c52"
+      },
+      "precise_claim": "The published file is the original process stdout, not a byte-for-byte copy of the remote result file. Their parsed JSON values are equal. The remote file uses the fixed transaction serializer.",
+      "remote_result_file": {
+        "bytes": 11346,
+        "full_remote_hash_verified_by_subsequent_hash_bound_readers": true,
+        "local_byte_sequence_derivation": "json.dumps(json.loads(original_stdout_bytes),indent=2,sort_keys=True) + newline, encoded UTF-8",
+        "path": "/home/alex/work/pocket4-gallery-rotation-flow-20261105-r12-01/result.json",
+        "sha256": "836a9aef54eb5ea0ac623ff30635e3cd0aca595ff130931cc332bf749109bd77"
+      },
+      "stdout_and_remote_file_bytes_identical": false,
+      "topic": "flow01 receipt serialization"
+    },
+    {
+      "classification": "source_bound_inference",
+      "independent_facts": "Saved command completed rc0; two subsequent read-only observations found row92 and both pending/final paths absent. Cleanup03 later proved the independently held backing directory inode nlink0 and completed exact remaining cleanup.",
+      "observed_error": "FileNotFoundError:[Errno 2] No such file or directory",
+      "old_deleted_FUSE_FD_nlink_zero_observed": false,
+      "original_failed_unknown_receipt_rewritten": false,
+      "original_result_sha256": "1ed05eebfc606306a7f60b34980f288b98736985afde081c59a8a6f9116935c3",
+      "original_traceback_available": false,
+      "precise_claim": "The saved row92-absence journal and source order make deleted-FUSE-FD fstat the candidate failure point. The original receipt has no traceback, so this is not a directly observed failing stack frame.",
+      "topic": "cleanup02 ENOENT localization"
+    }
+  ],
+  "frozen_original_bundle_modified": false,
+  "schema": "gallery-history-publication-addendum-v1",
+  "whole_app_production_ready": false
+}

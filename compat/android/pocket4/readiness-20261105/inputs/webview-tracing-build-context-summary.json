@@ -1,0 +1,64 @@
+{
+  "actual_build": {
+    "CPU_throttled_events": 70,
+    "CPU_throttled_usec": 3154305,
+    "alignment_16KiB_verified": true,
+    "changed_methods": 1,
+    "classes": 19,
+    "exit_code": 0,
+    "job_id": "1a1ae05f67d-fc05-5cb6",
+    "memory_oom_events": 0,
+    "memory_peak_bytes": 248360960,
+    "methods": 99,
+    "non_signing_zip_payloads": 15,
+    "signature_v3_verified": true,
+    "terminal": "succeeded",
+    "unchanged_other_zip_payloads": 14
+  },
+  "candidate_apk": {
+    "bytes": 75170,
+    "installed": false,
+    "sha256": "45e7be6309d8675cce6e2281f00d887c2e297b770fa19378b34350971dc8a06b"
+  },
+  "certificate_sha256_unchanged": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+  "context01": {
+    "cause": "DUPLICATE_TEST_LIBRARY_DECLARATION observer assumption; not an App or ART failure",
+    "exit_code": 2,
+    "job_id": "1a1ae0fcfd0-fc05-5d02",
+    "terminal": "failed"
+  },
+  "context02": {
+    "PM_order_is_not_ART_FD_order": true,
+    "duplicate_declarations": "All original source paths and attributes retained; no winner selected.",
+    "exit_code": 0,
+    "job_id": "1a1ae13ad3c-fc05-5d2e",
+    "observed_classloader_context": false,
+    "resolved_library_flat_order": [
+      "android.test.base",
+      "android.test.mock",
+      "android.test.runner"
+    ],
+    "runner_declared_dependencies": [
+      "android.test.base",
+      "android.test.mock"
+    ],
+    "terminal": "succeeded",
+    "three_exact_OAT_paths_absent": true
+  },
+  "not_done": [
+    "actual ART verification",
+    "candidate installation",
+    "App tracing UI or output file execution",
+    "actual lifecycle failure reproduction",
+    "live runtime loader observation"
+  ],
+  "original_apk": {
+    "bytes": 70877,
+    "sha256": "0f9dbb8ef3af284a08eb86f9558cd6c21a35dbeca2482b4b6e4b85ea49c183df"
+  },
+  "patch_scope": "Only TracingLogger$1.run: return if captured Activity is null/finishing/destroyed, otherwise preserve original dialog path.",
+  "readiness_gate_credit": 0,
+  "schema": "webview-tracing-build-context-public-delta/v1",
+  "source_finding": "Lifecycle dialog risk inferred from captured Runnable source, not an actual tracing crash observation.",
+  "whole_app_ready": false
+}

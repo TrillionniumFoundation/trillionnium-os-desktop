@@ -1,0 +1,104 @@
+{
+  "actual_controls_performed": 0,
+  "baseline_task_ids": [
+    851
+  ],
+  "business_credit": false,
+  "business_pending": null,
+  "candidate_apk_sha256": "00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f",
+  "cleanup": {
+    "calendar_removed": true,
+    "errors": [],
+    "provider_baseline_restored": true
+  },
+  "control_requests": 1,
+  "control_requests_counts_entry_attempts_not_input_effects": true,
+  "diagnostics": {
+    "automatic_retry": false,
+    "background_workers": 0,
+    "clear": true,
+    "coverage": "all_contiguous_segments_pass_original_parser",
+    "from_guest_seconds": 1793916484,
+    "maximum_segments": 72,
+    "old_core13_result_rewritten": false,
+    "segments": [
+      {
+        "from_guest_seconds": 1793916484,
+        "label": "after-launch",
+        "proof": {
+          "clear": true,
+          "new_crash_or_anr_exits": 0,
+          "new_exit_events": 0,
+          "new_package_crash_anr_events": 0,
+          "new_uid_crash_lines": 0
+        },
+        "to_guest_seconds": 1793916487
+      },
+      {
+        "from_guest_seconds": 1793916487,
+        "label": "before-cleanup",
+        "proof": {
+          "clear": true,
+          "new_crash_or_anr_exits": 0,
+          "new_exit_events": 0,
+          "new_package_crash_anr_events": 0,
+          "new_uid_crash_lines": 0
+        },
+        "to_guest_seconds": 1793916491
+      },
+      {
+        "from_guest_seconds": 1793916491,
+        "label": "final",
+        "proof": {
+          "clear": true,
+          "new_crash_or_anr_exits": 0,
+          "new_exit_events": 1,
+          "new_package_crash_anr_events": 0,
+          "new_uid_crash_lines": 0
+        },
+        "to_guest_seconds": 1793916492
+      }
+    ],
+    "to_guest_seconds": 1793916492
+  },
+  "empty_calendar_cleanup_pending": false,
+  "error": "ControlError:INCOMPLETE_TREE_NO_ACTION_TAKEN",
+  "event_save_calls": 0,
+  "exact_identities_and_Main_unchanged": true,
+  "final_counts": {
+    "Attendees": 0,
+    "CalendarAlerts": 0,
+    "Calendars": 0,
+    "Events": 0,
+    "EventsRawTimes": 0,
+    "ExtendedProperties": 0,
+    "Instances": 0,
+    "Reminders": 0
+  },
+  "finished_utc": "2026-11-05T22:08:12.440333+00:00",
+  "helper_event_writes": 0,
+  "job": {
+    "exit_code": 1,
+    "job_id": "1a1adc13181-fc05-5ac5",
+    "output_complete": true,
+    "output_durable": true,
+    "state": "failed",
+    "timed_out": false
+  },
+  "normally_closed_tasks": [
+    999
+  ],
+  "original_failed_result_preserved": true,
+  "original_result": {
+    "bytes": 10932,
+    "sha256": "968772b8251722429a424751074033ce0f0cc205af47bbbef57a571857a83e0c"
+  },
+  "provider_write_commands_excluding_empty_calendar_cleanup": 0,
+  "schema": "calendar-discovery-selected-terminal/v1",
+  "started_utc": "2026-11-05T22:08:03.479991+00:00",
+  "state": "FAILED",
+  "task_set_restored": true,
+  "ui_actions": 3,
+  "ui_pending": {},
+  "whole_app_production_ready": false
+}

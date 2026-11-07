@@ -1,0 +1,79 @@
+{
+  "installed_apk_sha256": "ded49b00e5045bdd184c2a4f09b1b8650ce8f708134ac9f0f8c4cf0594bb0fae",
+  "installed_dex_sha256": "edecc8894d9a5795f86b5625e6b501941805de1adf8a89912df7b530d70aaadb",
+  "source_extract_job": "1a1ab4c7c0f-fc05-4c39",
+  "source_extract_exit_code": 0,
+  "source_extract_android_commands": 0,
+  "source_extract_UI_actions": 0,
+  "contracts": {
+    "Timer.State": "Actual value EXPIRED=3; RUNNING=1, PAUSED=2, RESET=4, MISSED=5.",
+    "Timer.expire": "Same ID and length; totalLength=0, remaining=min(0,previous), fresh monotonic/wall start clocks.",
+    "Timer.reset": "Same ID, totalLength and remaining restore original length; clocks become Long.MIN_VALUE.",
+    "ExpiredTimersActivity": "SingleInstance/empty affinity/non-resizable; actual global expired list, no per-ID Intent URI.",
+    "ExpiredTimersActivity.FabClickListener": "Actual onClick calls resetOrDeleteExpiredTimers and then finish(); self-finish is distinct from normal task remove.",
+    "TimerNotificationBuilder.buildHeadsUp": "TimerModelNotification channel, explicit ExpiredTimersActivity content and fullScreen PendingIntents; flags NEW_TASK|NO_USER_ACTION; no per-timer extra.",
+    "TimerNotificationBuilder.buildChannel": "Initial importance=3; no channel/volume/ringtone mutation in proposed trial.",
+    "TimerService": "RESET_EXPIRED_TIMERS resets or deletes global expired list, reinforcing sole-ID requirement; trial never sends this internal Intent."
+  },
+  "class_manifest": {
+    "com/android/deskclock/alarms/AlarmActivity.smali": {
+      "bytes": 86884,
+      "sha256": "55312043ab50b2a5e8f2c7195ac677b08816e39bad131dbdb833e03b97134b86"
+    },
+    "com/android/deskclock/alarms/AlarmNotifications.smali": {
+      "bytes": 70368,
+      "sha256": "66174d9fe06810ed4576072de8b747f8a0f3e68c7ad98ce534494e6ea4708110"
+    },
+    "com/android/deskclock/data/DataModel$SilentSetting$ChangeAppNotificationSettingsListener.smali": {
+      "bytes": 3302,
+      "sha256": "9e82c3f41f120f0b37a0557ed3213c7d6eedefad5652f38caba879e1a5d3620a"
+    },
+    "com/android/deskclock/data/SilentSettingsModel.smali": {
+      "bytes": 11680,
+      "sha256": "9dabb3defecc6b2ba18789afb99faf9282706009abd10d2962926308a43dc2d5"
+    },
+    "com/android/deskclock/data/Timer$State.smali": {
+      "bytes": 5564,
+      "sha256": "4e6309321631560e47b41126ab0babb109bd20a6c33b6ea921c441284b782b72"
+    },
+    "com/android/deskclock/data/Timer.smali": {
+      "bytes": 29188,
+      "sha256": "999de734494ec038b09dd43dd3c119483cb194a58f2f9ebf872861ebd96c6e3c"
+    },
+    "com/android/deskclock/data/TimerDAO.smali": {
+      "bytes": 28769,
+      "sha256": "4bd33451deb0cd12deac43b498d3c471b01fb3cf63b5b363c59ddf48b537820f"
+    },
+    "com/android/deskclock/data/TimerNotificationBuilder$Companion.smali": {
+      "bytes": 1532,
+      "sha256": "f7e27a37eecb8c63c7fa1310e86de415b3842bcd12a061115005852658898e71"
+    },
+    "com/android/deskclock/data/TimerNotificationBuilder.smali": {
+      "bytes": 52641,
+      "sha256": "6df1845e689b0219908a051b679e39707e08e680a0db3f36f85c2d6be8e81dbd"
+    },
+    "com/android/deskclock/timer/ExpiredTimersActivity$FabClickListener.smali": {
+      "bytes": 2750,
+      "sha256": "57380ed0b4b46ae44dca10920e1f590fc3740d3a0b91ab0df8ab8ae5579bfe5c"
+    },
+    "com/android/deskclock/timer/ExpiredTimersActivity.smali": {
+      "bytes": 22525,
+      "sha256": "4b2159daa732abd17456ae9b18601d4d792881ccd734ae05e060a58e2faedb82"
+    },
+    "com/android/deskclock/timer/TimerService$Companion.smali": {
+      "bytes": 5781,
+      "sha256": "3e543d29be25fd24f604351e6e4fc8c03e0c272467267feba3efb8cfedc179dc"
+    },
+    "com/android/deskclock/timer/TimerService.smali": {
+      "bytes": 15100,
+      "sha256": "d11dd83417f67e14a5f9fe615da9f171dd94f510992b0bd5b228e9ec23082904"
+    }
+  },
+  "qualification_limits": [
+    "Real timer elapsed state and notification/alert delivery are separate readbacks.",
+    "Native Stop ACK alone is not business success; same-ID reset and alert self-finish, if applicable, are required.",
+    "No audible output is inferred.",
+    "All original alarm templates remain unchanged.",
+    "No artificial invocation of non-exported alert Activity or TimerService."
+  ]
+}

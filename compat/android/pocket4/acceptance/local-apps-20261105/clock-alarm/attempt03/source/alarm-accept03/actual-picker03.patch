@@ -1,0 +1,20 @@
+--- alarm-accept02/alarm_accept02.py
++++ alarm-accept03/alarm_accept03.py
+@@ -12,7 +12,7 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-clock-alarm-accept-20261105-r12-02')
++ROOT = Path('/home/alex/work/pocket4-clock-alarm-accept-20261105-r12-03')
+ PACKAGE = 'com.android.deskclock'
+ MAIN = PACKAGE + '.DeskClock'
+ ALERT = PACKAGE + '.alarms.AlarmActivity'
+@@ -430,7 +430,7 @@
+         fields = [n for n in self.visible() if n.get('resource-id') == 'android:id/input_hour' and n.get('editable') is True]
+         if not fields:
+             toggle = self.unique(lambda n: n.get('resource-id') == 'android:id/toggle_mode'
+-                and n.get('clickable') is True and n.get('content-desc') == 'Switch to text input mode',
++                and n.get('clickable') is True and n.get('content-desc') == 'Switch to text input mode for the time input.',
+                 'OBSERVED_TIME_PICKER_TEXT_MODE_REQUIRED')
+             self.native('time-text-mode', toggle)
+         self.by_id('android:id/input_hour', True)

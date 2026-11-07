@@ -1,0 +1,147 @@
+{
+  "android_uid": 10022,
+  "apk_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+  "cleanup": {
+    "UI_delete_credit": false,
+    "errors": [],
+    "exact_fixture_tree_removed": true,
+    "helper_CE_DE_absent": true,
+    "helper_package_absent_verified": true,
+    "helper_uninstalled_verified": true,
+    "host_fallback_files_unlinked": 2,
+    "normal_owned_tasks_closed": [
+      957,
+      956
+    ],
+    "owned_remove_calls": 2,
+    "owned_tasks_remaining": {},
+    "runtime_thread_joined": true,
+    "staged_APK_removed": true,
+    "task_set_restored": true
+  },
+  "durable_terminal": {
+    "exit_code": 1,
+    "output_complete": true,
+    "output_durable": true,
+    "state": "failed",
+    "timed_out": false
+  },
+  "failed_input_review_complete": true,
+  "historical_evidence_overwritten": false,
+  "job_id": "1a1ac31fc50-fc05-52c6",
+  "new_business_failure_claimed": false,
+  "next_candidate": {
+    "UI_calls": 0,
+    "idempotency_key": "pocket4-documents-features-flow-r12-04",
+    "local_tests_passed": 14,
+    "request_sha256": "b9f8063e95e42ba225f5436b54f829ccd0e4f7d1f73c2c5c343c95bcb1608c0f",
+    "revision": "04",
+    "source_manifest_sha256": "e9302bac1ce93b107b4bfa2ce53a3c02a8188d3aa7333a3ff97301d108548760",
+    "stage_calls": 0,
+    "state": "LOCAL_CANDIDATE_MAIN_BOUNDARY_HOLD_NOT_STAGED",
+    "transport_guard_changed": false
+  },
+  "observed_at_utc": "2026-11-05T14:53:20.783159+00:00",
+  "original_error": "ControlError: STALE_FRAME",
+  "package": "com.android.documentsui",
+  "pending": {
+    "UI": {},
+    "file_operation": null,
+    "helper": {},
+    "install": false,
+    "outcome_unknown": false,
+    "uninstall": false
+  },
+  "prior_flow11_scoped_result_sha256": "095fb0441fdf39d4fdd84f337b3a343ee556d384ec6aef3a6312863b114dc712",
+  "progress": {
+    "evidence": [
+      {
+        "bytes": 10460,
+        "path": "inputs/flow03-actual-result.json",
+        "sha256": "062d210d61a7be9ffdff4a486ecc99d145972d3ff6c9da4eb9976510ffb36ecc"
+      },
+      {
+        "bytes": 3068,
+        "path": "inputs/flow03-export-recovery.json",
+        "sha256": "e423a41d1c547d1ba127512ce11c36bd339681d12ae953f60b3a022b5b851c2d"
+      },
+      {
+        "bytes": 18764,
+        "path": "inputs/flow03-no-input-journal.json",
+        "sha256": "80820819624162ad615b380f31fd4dc420a5bba85eadfff0e48d23bf00511487"
+      },
+      {
+        "bytes": 17848,
+        "path": "inputs/flow03-saved-review.json",
+        "sha256": "60a1f680a3d8afe1e502cc662b7ed3dcf685b3d139e111f1b931732c7ab89665"
+      },
+      {
+        "bytes": 6959,
+        "path": "inputs/flow03-scoped-result.json",
+        "sha256": "c83233286658a82883eb9ea1f92c3e66df57820c3f6c06e06c018cb467fda041"
+      },
+      {
+        "bytes": 731,
+        "path": "inputs/flow03-terminal.json",
+        "sha256": "dbbaf6f2cfa70885637378ddfa64eae99363805f1166e8b05a471e4c396ae6a6"
+      }
+    ],
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "gates": {
+      "documents.provider": "pending"
+    },
+    "id": "documents_features03_grants_repeated_preinput_snapshot_failure",
+    "limits": [
+      "The original feature session remains failed/exit1; three grant gates repeated, no new Files operation passed.",
+      "STALE_FRAME occurred before text dispatch and create confirmation; this is a harness snapshot precondition failure, not proof of an App create failure.",
+      "Helper setup created two owned files; two exact host fallback unlinks provide cleanup but no Files UI Delete credit.",
+      "The selected stable maps are before-ui observations, not an active FileOperationService sample. Dynamic/JIT code and all engine paths are not qualified.",
+      "Revision04 is locally checked only and remains unstaged while Main limits are reconciled. The frozen transport guard is unchanged.",
+      "Original Documents flow11 IO/persistence/lifecycle evidence and the through02 publication remain unchanged."
+    ],
+    "observed_at_utc": "2026-11-05T14:53:20.783159+00:00",
+    "owned_cleanup_verified": true,
+    "package": "com.android.documentsui",
+    "scoped_business_flow_completed": false,
+    "scoped_gate_results": {
+      "EXACT_TREE_GRANT": {
+        "broader_root_granted": false,
+        "passed": true,
+        "persisted_read_write_grants": 1,
+        "tree": "primary:Pocket4_DocFeatures_r12_eeff7aa90e47139a"
+      },
+      "GET_CONTENT_CANCEL": {
+        "RESULT_CANCELED": true,
+        "URI_returned": false,
+        "grants_empty": true,
+        "passed": true
+      },
+      "TREE_CANCEL": {
+        "RESULT_CANCELED": true,
+        "URI_returned": false,
+        "grants_empty": true,
+        "passed": true
+      }
+    },
+    "status": "THREE_GRANT_GATES_REPEATED_PREINPUT_SNAPSHOT_BLOCKED_FULL_FEATURE_BATCH",
+    "version_code": 37,
+    "whole_app_production_ready": false
+  },
+  "runtime": {
+    "collected_code_objects_per_selected_process": 377,
+    "dynamic_code_or_engine_exclusion_qualified": false,
+    "file_operation_service_observed": false,
+    "full_SHA256_ELF_objects_per_selected_process": 376,
+    "long_stress_qualified": false,
+    "named_Dalvik_JIT_executable_mappings_per_process": 2,
+    "non_ELF_overlay_candidate_per_process": 1,
+    "representative_phase": "before-ui",
+    "sample_count": 149,
+    "unresolved_readonly_name_candidates_per_process": 2
+  },
+  "runtime_selected_projection_complete": true,
+  "schema": "pocket4-documents-features-flow03-public-delta-v1",
+  "through02_manifest_sha256": "c567b654f1b84ccbbbb4b01ae5507b17e5fbcc399fab9111b7c68c69cce708cb",
+  "version_code": 37,
+  "whole_app_production_ready": false
+}

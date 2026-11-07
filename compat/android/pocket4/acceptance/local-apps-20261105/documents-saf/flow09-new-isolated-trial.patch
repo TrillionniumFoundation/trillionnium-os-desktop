@@ -1,0 +1,46 @@
+--- run_saf08.py
++++ run_saf09.py
+@@ -6,9 +6,9 @@
+ 
+ SOURCE=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ SOURCE_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+-ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-08/ui_adapter01.py')
+-ADAPTER_SHA='0dc186a9bc552b576a361b2c3e18128d31f2473ae9344ade1a1089f0f1d147d3'
+-ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-08')
++ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-09/ui_adapter02.py')
++ADAPTER_SHA='74234c0a3db0659e4632ce3e76510d80fe8b015514c6a72dc9e34bca31a83a54'
++ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-09')
+ APK=Path('/home/alex/work/pocket4-documents-saf-build-20261105-r12-02/owned-saf.apk')
+ APK_SHA='3b2b8d01b551f68256a25c351b34f2a6c74f74cbfc9b44b226ea708dba9fffe6'
+ CERT_SHA='f772d334443bb5cd71abcc179d04e21ee3e70d424290df69828b94e42bc448f2'
+@@ -347,14 +347,14 @@
+     def business(self):
+         # This is a new trial only after the previous known document and package
+         # were removed. The indeterminate stage02 remains permanently fenced.
+-        prior=json.loads(self.tx.read_regular(Path('/home/alex/work/pocket4-documents-flow-20261105-r12-07/result.json'),
+-            '8973d10d34ad4ae03ad7341c7b4d8db047279422d784a466ecbf88b5b5ec4e92',65536))
++        prior=json.loads(self.tx.read_regular(Path('/home/alex/work/pocket4-documents-flow-20261105-r12-08/result.json'),
++            'c23d0bc6786bd75598b3f2ecb6c432d480b61b8732d0921d839ad0ab7cae192e',65536))
+         fence=json.loads(self.tx.read_regular(Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-02/NEVER_EXECUTE_OR_REUSE.json'),
+             '6a98cf8d82ead8506afeb1ff831d1e9fd99d1c8e112f5f750c828125dc6debe1',16384))
+-        need(prior['state']=='DOCUMENTS_FLOW_STOPPED' and prior['error']=='RuntimeError: ONE_ACTUAL_FILES_OVERFLOW_REQUIRED'
++        need(prior['state']=='DOCUMENTS_FLOW_STOPPED' and prior['error']=='RuntimeError: FULL_EDITOR_NODE_CHANGED_BEFORE_TEXT'
+             and prior['pending_effects']=={} and prior['outcome_unknown'] is False
+-            and prior['ui_actions']==9 and prior['native_launch_calls']==1 and prior['owned_remove_calls']==2
+-            and prior['owned_task_ids_closed']==[929,928] and prior['source_bound_adopted_tasks']==[929]
++            and prior['ui_actions']==11 and prior['native_launch_calls']==1 and prior['owned_remove_calls']==2
++            and prior['owned_task_ids_closed']==[933,932] and prior['source_bound_adopted_tasks']==[933]
+             and prior['cleanup']['staged_apk_removed'] is True
+             and prior['cleanup']['errors']==[] and prior['cleanup']['package_absent_verified'] is True
+             and prior['cleanup']['package_uninstalled_verified'] is True
+@@ -363,8 +363,8 @@
+             and prior['final_guard']==self.s.guard(),'PRIOR_EXACT_CLEANUP_RECEIPT_CHANGED')
+         need(fence['state']=='OLD_STAGE_ENTRY_FENCED' and fence['job_id']=='1a1ab190ab3-fc05-4a51'
+             and fence['must_never_remove_or_reuse'] is True,'ORIGINAL_UNKNOWN_STAGE_FENCE_CHANGED')
+-        self.result['new_trial_after_verified_cleanup']={'prior_cleanup_job':'1a1ab4b5862-fc05-4c1f',
+-            'prior_cleanup_result_sha256':'8973d10d34ad4ae03ad7341c7b4d8db047279422d784a466ecbf88b5b5ec4e92',
++        self.result['new_trial_after_verified_cleanup']={'prior_cleanup_job':'1a1ab56e186-fc05-4cc4',
++            'prior_cleanup_result_sha256':'c23d0bc6786bd75598b3f2ecb6c432d480b61b8732d0921d839ad0ab7cae192e',
+             'previous_created_document_removed':True,'previous_package_uninstalled':True,
+             'original_stage02_fenced':True,'previous_failures_preserved':True}
+         self.ui.record('prior-known-cleanup-and-old-entry-fence',self.result['new_trial_after_verified_cleanup'])

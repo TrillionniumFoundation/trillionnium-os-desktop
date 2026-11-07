@@ -1,0 +1,65 @@
+{
+  "sources": {
+    "flow06-receipts/092-files-owned-folder.json": "a6f5f6067d91c0a851b221a323e181c0fab11cd123d0c5e5fbe2e548114a73a2",
+    "flow07-receipts/131-files-selected.json": "d1bdcd7db1e66bd4bd671c299d235b399f2ec8882e34d803c334a704fc806c5e",
+    "flow07-receipts/131-files-selected.png": "7d12751babe54dcc620344e1c4828ef3010f0858833a765adab3c904f127cddf",
+    "run_saf08.py": "90d6d85d24823680dc7e0a0396ca55d7406819ff0f41f766bc219c040ef3a875"
+  },
+  "cases": [
+    {
+      "name": "old_selector_rejects_two_actual_more_nodes",
+      "passed": true,
+      "reason": "ONE_ACTUAL_FILES_OVERFLOW_REQUIRED"
+    },
+    {
+      "name": "normal_actual_toolbar_selects_normal_more",
+      "passed": true,
+      "bounds": [
+        1114,
+        56,
+        1178,
+        120
+      ]
+    },
+    {
+      "name": "selection_actual_bar_selects_front_more",
+      "passed": true,
+      "bounds": [
+        1125,
+        45,
+        1189,
+        109
+      ]
+    },
+    {
+      "name": "duplicate_active_more_rejected",
+      "passed": true,
+      "reason": "ONE_ACTUAL_FILES_OVERFLOW_IN_TOOLBAR_REQUIRED"
+    },
+    {
+      "name": "changed_active_bar_excludes_target",
+      "passed": true,
+      "reason": "ONE_SELECTED_FILE_TITLE_IN_ACTION_MODE_BAR_REQUIRED"
+    },
+    {
+      "name": "multiple_selection_not_accepted",
+      "passed": true,
+      "reason": "ONE_SELECTED_FILE_TITLE_IN_ACTION_MODE_BAR_REQUIRED"
+    },
+    {
+      "name": "unselected_own_file_rejected",
+      "passed": true,
+      "reason": "OWNED_FILE_CARD_NOT_SELECTED"
+    },
+    {
+      "name": "normal_selector_rejects_active_selection_overlay",
+      "passed": true,
+      "reason": "NORMAL_TOOLBAR_WITH_ACTIVE_SELECTION_MODE"
+    }
+  ],
+  "passed": 8,
+  "ui_inputs": 0,
+  "apk_installs": 0,
+  "actual_png_visually_reviewed": true,
+  "new_business_pass_claimed": false
+}

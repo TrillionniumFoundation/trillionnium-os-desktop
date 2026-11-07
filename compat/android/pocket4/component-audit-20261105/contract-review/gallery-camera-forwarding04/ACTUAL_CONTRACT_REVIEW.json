@@ -1,0 +1,96 @@
+{
+  "Android_UI_inputs": 0,
+  "actual_camera_entry": {
+    "class": "com.android.camera.CameraActivity",
+    "explicit_component_alias": "com.android.camera.CameraLauncher",
+    "explicit_package": "com.android.camera2",
+    "intent_action": "android.intent.action.MAIN",
+    "onCreate": "Obtain IntentHelper.getCameraIntent, startActivity and finish the forwarding activity.",
+    "real_forwarding_launch_executed": false,
+    "target_alias_declared_in_installed_camera_audit": {
+      "alias": "com.android.camera.CameraLauncher",
+      "alias_name_is_not_a_class_reference": true,
+      "apk_ordinal": 0,
+      "target_activity": "com.android.camera.CameraActivity",
+      "target_declared_in_this_manifest": true
+    },
+    "target_manifest_audit": {
+      "bytes": 74047,
+      "sha256": "6b66065b83fb828a2d356795b7782c13ebf4230e3ec3e59b6f428745f9bd4146"
+    }
+  },
+  "actual_sources": {
+    "Lcom/android/camera/CameraActivity;": {
+      "bytes": 1122,
+      "dex": "classes.dex",
+      "path": "actual-smali/com/android/camera/CameraActivity.smali",
+      "sha256": "a2d6a965a29a426c77575f532b07261079d5782492ea4db1fda832582ee24c4f"
+    },
+    "Lcom/android/camera/DisableCameraReceiver;": {
+      "bytes": 3954,
+      "dex": "classes.dex",
+      "path": "actual-smali/com/android/camera/DisableCameraReceiver.smali",
+      "sha256": "23d23de0aa0cdf68cd2b415b424fdbff2644b45a6ef0bb8df76c512f1033ab9d"
+    },
+    "Lcom/android/gallery3d/app/GalleryAppImpl;": {
+      "bytes": 8437,
+      "dex": "classes.dex",
+      "path": "actual-smali/com/android/gallery3d/app/GalleryAppImpl.smali",
+      "sha256": "c730a98fd07eba2671ec94ac8f438ce1b6e37424fa88da74b21cc046346f6d81"
+    },
+    "Lcom/android/gallery3d/util/IntentHelper;": {
+      "bytes": 1372,
+      "dex": "classes.dex",
+      "path": "actual-smali/com/android/gallery3d/util/IntentHelper.smali",
+      "sha256": "e5190295788cfc220fba604b209881f6d93ad84cf4011825651eca71844fa0fc"
+    }
+  },
+  "camera_provider_or_hardware_operations": 0,
+  "installed_apk": {
+    "bytes": 7385781,
+    "metadata": {
+      "bytes": 7385781,
+      "device": 1809,
+      "gid": 0,
+      "inode": 577408,
+      "mode": 33188,
+      "mtime_ns": 1230768000000000000,
+      "nlink": 1,
+      "uid": 0
+    },
+    "path": "/product/app/Gallery2/Gallery2.apk",
+    "sha256": "347c376f07a4365fa3828ddf9f011994fe527a53fd2f5bd059997ffd3904d46e"
+  },
+  "missing_service": {
+    "all_com_android_camera_defined_classes": [
+      "Lcom/android/camera/CameraActivity;",
+      "Lcom/android/camera/DisableCameraReceiver;"
+    ],
+    "class": "com.android.camera.MediaSaveService",
+    "defined_in_installed_gallery_DEX": false,
+    "interpretation": "The inspected camera Activity forwards to the separate Camera app. This evidence does not establish a live Gallery MediaSaveService path or justify removing a feature, fabricating a service, or importing unrelated camera modules.",
+    "live_service_start_or_crash_reproduced": false,
+    "manifest_declaration_retained": true,
+    "reflection_or_dynamic_classloader_absence_proved": false,
+    "slash_and_dot_literal_occurrences": 0
+  },
+  "new_gate_credit": false,
+  "package_or_permission_changes": 0,
+  "schema": "gallery-actual-camera-entry-contract-review/v1",
+  "source02_observed_utc": "2026-11-05T17:11:47.081608+00:00",
+  "source02_receipt": {
+    "bytes": 12234,
+    "sha256": "5be3ddd1b45e21d6c2d48ad4481e8b4fda1b3afb016010912b3d6bd1a041a309"
+  },
+  "source04_observed_utc": "2026-11-05T17:28:13.358476+00:00",
+  "source04_receipt": {
+    "bytes": 517864,
+    "sha256": "0f155de746be40baa5acd4e2430967419e53f3ac342313dbd04b698a25461d0b"
+  },
+  "source_jobs": {
+    "source02": "1a1acb1e9a7-fc05-5671",
+    "source04": "1a1acc0f61f-fc05-56b5"
+  },
+  "state": "CAMERA_ENTRY_FORWARDS_TO_SEPARATE_APP_MISSING_SERVICE_DECLARATION_UNRESOLVED",
+  "whole_app_production_ready": false
+}

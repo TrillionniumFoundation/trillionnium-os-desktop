@@ -1,0 +1,50 @@
+{
+  "device_commands_by_this_peer": 0,
+  "not_qualified": [
+    "actual cleanup execution",
+    "UI event delete gate",
+    "Calendar production readiness"
+  ],
+  "original_failed_receipt_rewritten": false,
+  "reviewed_inputs": {
+    "cleanup_core12_owned01.py": {
+      "bytes": 12403,
+      "sha256": "1fc91e29c345be62a2a5b9103e6f63d3d01739639eff754d23892c4f33d723c8"
+    },
+    "core12-readonly01-result.json": {
+      "bytes": 23590,
+      "sha256": "7d976aa401bf91481725d18e4a125ad1c1a18b4c201a3b6cd91fe75f0207ad8c"
+    },
+    "core12-result.json": {
+      "bytes": 13317,
+      "sha256": "89e5ba58f72707cc3235a8d5054ee83b4b613b09115989f9327f9ad591fff575"
+    },
+    "event-delete-review.json": {
+      "bytes": 4111,
+      "sha256": "b7425ae6b3d49a699b4d7d4ada792da1399a8c4c3183d5830c1fbbedf9ee10c3"
+    },
+    "install11-result.json": {
+      "bytes": 10454,
+      "sha256": "0ca5846a91a737ff795ce7f856b3916e3903bb2f6498f5f5ad25e1a893fb420a"
+    },
+    "read_owned_calendar12.py": {
+      "bytes": 7454,
+      "sha256": "5cae87cf11dab38ad838ee97b43d652fd9f772348030e3cacec138f3fe5fef4e"
+    }
+  },
+  "schema": "calendar-core12-exact-cleanup-root-peer-v1",
+  "scope": [
+    "b227 original Main guard and global UI lock; current task 851 only; no Calendar activity",
+    "original failed Core12 is preserved and fresh read-only proof is separately bound to actual remote bytes",
+    "existing shell permission identity and exact Calendar/Provider package identity before and after",
+    "one Events collection delete with all 15 event fields plus 10 calendar fields; zero other child/exception rows; same predicate on actual delete",
+    "one exact owned empty calendar delete only after physical event and child removal is read back",
+    "no UI inputs, launches, package changes, grants or retries; unknown delete returns stop",
+    "success set only after CameraSession exit; exceptions downgrade state and retain pending ambiguity"
+  ],
+  "source": {
+    "bytes": 12403,
+    "sha256": "1fc91e29c345be62a2a5b9103e6f63d3d01739639eff754d23892c4f33d723c8"
+  },
+  "state": "NO_CONCRETE_SOURCE_BLOCKER_FOR_ONE_EXACT_OWNED_CLEANUP"
+}

@@ -1,0 +1,158 @@
+--- /dev/null
++++ private03/owned_search_mouse03.py
+@@ -0,0 +1,155 @@
++"""One Contacts search-result mouse click resolved by the installed native helper."""
++import copy, hashlib, re, time
++
++PACKAGE='com.android.contacts'
++ACTIVITY=PACKAGE+'.activities.PeopleActivity'
++NATIVE='local.pocket4.actions.v2'
++NATIVE_SHA='a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058'
++
++def need(ok, reason):
++    if not ok: raise RuntimeError(reason)
++
++def native_identity(session):
++    lines=session.android(['/system/bin/pm','path','--user','0',NATIVE]).decode().splitlines()
++    need(len(lines)==1 and lines[0].startswith('package:/data/app/') and lines[0].endswith('/base.apk'),
++         'ONE_INSTALLED_NATIVE_V2_APK_REQUIRED')
++    path=lines[0][8:]
++    raw,_=session.target.read_file(path,65536)
++    need(len(raw)==20847 and hashlib.sha256(raw).hexdigest()==NATIVE_SHA,'INSTALLED_NATIVE_V2_BYTES_CHANGED')
++    dump=session.android(['/system/bin/dumpsys','package',NATIVE]).decode('utf-8','strict')
++    sections=re.findall(r'^Packages:\n(.*?)(?=^\S|\Z)',dump,re.M|re.S)
++    need(len(sections)==1 and re.findall(r'^  Package \[([^]]+)\]',sections[0],re.M)==[NATIVE],
++         'NATIVE_V2_ACTIVE_PACKAGE_AMBIGUOUS')
++    need(re.findall(r'^    appId=(\d+)$',sections[0],re.M)==['10125'] and
++         re.findall(r'^    versionCode=(\d+)\b',sections[0],re.M)==['2'],'NATIVE_V2_UID_OR_VERSION_CHANGED')
++    session.guard()
++    return {'package':NATIVE,'user':0,'uid':10125,'version_code':2,'apk_path':path,
++            'apk_bytes':len(raw),'apk_sha256':NATIVE_SHA}
++
++def normalized(node):
++    need(isinstance(node,dict) and type(node.get('window_id')) is int and node['window_id']>=0,
++         'ACTUAL_CONNECTION_WINDOW_ID_REQUIRED')
++    return {k:v for k,v in node.items() if k!='window_id'}
++
++def same_window(shot, frame):
++    current=frame['meta'];a,b=shot['scope'],current['scope']
++    need(all(x.get('a11y_window_id_is_connection_scoped') is True and
++             type(x.get('window_id')) is int and x['window_id']>=0 for x in (a,b)),
++         'ACTUAL_CONNECTION_SCOPE_REQUIRED')
++    need({k:v for k,v in a.items() if k!='window_id'}=={k:v for k,v in b.items() if k!='window_id'},
++         'SEARCH_RESULT_WINDOW_CHANGED')
++    need(all(shot[k]==current[k] for k in ('source','context_token','width','height','scope_bounds',
++              'scope_width','scope_height','coordinate_space')),'SEARCH_RESULT_CONTEXT_OR_GEOMETRY_CHANGED')
++
++def binding(loop, nodes, name, shot):
++    need(shot['scope']['package']==PACKAGE and shot['scope']['activity']==ACTIVITY,
++         'OWNED_PEOPLE_SEARCH_ACTIVITY_REQUIRED')
++    def one(predicate,reason):
++        matches=[n for n in nodes if n.get('package')==PACKAGE and n.get('visible') is True
++                 and n.get('enabled') is True and predicate(n)]
++        need(len(matches)==1,reason);return matches[0]
++    leaf=one(lambda n:n.get('resource-id')==PACKAGE+':id/cliv_name_textview'
++             and n.get('class')=='android.widget.TextView' and n.get('text')==n.get('content-desc')==name
++             and n.get('editable') is False and n.get('password') is False and n.get('clickable') is False,
++             'ONE_EXACT_OWNED_SEARCH_RESULT_REQUIRED')
++    query=one(lambda n:n.get('resource-id')==PACKAGE+':id/search_view'
++              and n.get('class')=='android.widget.AutoCompleteTextView' and n.get('hint')=='Search contacts'
++              and n.get('text')==name and n.get('showing-hint') is not True
++              and n.get('editable') is True and n.get('password') is False
++              and 2097152 in n.get('supported_actions',[]),'EXACT_SEARCH_QUERY_REQUIRED')
++    old=loop.owned_contact_list_row(nodes,leaf,PACKAGE)
++    row=one(lambda n:loop.node_identity(n)==old['row'],'ONE_EXACT_OWNED_ROW_REQUIRED')
++    listing=one(lambda n:loop.node_identity(n)==old['list'],'ONE_EXACT_OWNED_LIST_REQUIRED')
++    value={'leaf':leaf,'query':query,'row':row,'list':listing}
++    need(len({n['window_id'] for n in value.values()})==1,'SEARCH_NODES_CROSS_WINDOWS')
++    box=leaf.get('bounds_array');scope=shot['scope_bounds']
++    need(isinstance(box,list) and len(box)==4 and all(type(x) is int for x in box)
++         and scope[0]<=box[0]<box[2]<=scope[2] and scope[1]<=box[1]<box[3]<=scope[3],
++         'SEARCH_LEAF_OUTSIDE_OWNED_WINDOW')
++    return value
++
++def open_search_result(flow, tag, node):
++    need(tag=='open-search-result' and flow.created is not None and flow.ownership_journal,
++         'ONLY_DURABLY_OWNED_SEARCH_RESULT')
++    flow.may_mutate()
++    need(time.monotonic()<flow.deadline and flow.number<24,'ORIGINAL_UI_BUDGET')
++    flow.number+=1;ident='c%02d-'%flow.number+tag
++    c,t,s=flow.c,flow.t,flow.t.s
++    need(ident not in c.seen and c.pending is None,'UNIQUE_SEARCH_CLICK_NO_REPLAY')
++    c.seen.add(ident)
++    proof=flow.v.validate_owned(flow.owned(flow.v.EDITED,tag+'-mouse-before'),flow.v.EDITED,flow.created)
++    need(flow.r['search_result']['same_contact']==proof and
++         flow.r['search_result']['observation']==c.latest,'CURRENT_SAME_ID_SEARCH_RESULT_REQUIRED')
++    shot=copy.deepcopy(t.last_observation['screenshot'])
++    original=binding(flow.loop,c.nodes,flow.v.EDITED,shot)
++    need(normalized(node)==normalized(original['leaf']),'CALLER_SEARCH_NODE_CHANGED')
++    flow.search_field(flow.v.EDITED)
++    focus=t.ready_focus(allow_permission=False)
++    need(focus['package']==PACKAGE and focus['activity']==ACTIVITY and
++         focus['window_token']==shot['scope']['window_token'] and t.owned is not None
++         and focus['task']==t.owned[0],'OWNED_SEARCH_FOCUS_CHANGED')
++    capture={'package':PACKAGE,'window_token':focus['window_token'],'display':0,
++             'context_token':shot['context_token'],'accessibility_mode':'none'}
++    t.record('request-'+ident,{'op':'click','method':'mouse','observation':c.latest,
++        'same_owned_contact':proof,'automatic_retry':False})
++    first=s.helper.capture(capture);same_window(shot,first)
++    fresh=s.helper.ui({'op':'dump','expected_package':PACKAGE,'display':0,'accessibility_mode':'none'})
++    t.record('fresh-native-'+ident,fresh)
++    need(fresh.get('ok') is True and fresh.get('outcome_unknown') is not True and
++         fresh.get('accessibility_mode_restoration_verified') is True,'FRESH_NATIVE_NOT_VERIFIED')
++    current=binding(flow.loop,fresh.get('nodes',[]),flow.v.EDITED,shot)
++    need({k:normalized(n) for k,n in original.items()}=={k:normalized(n) for k,n in current.items()},
++         'FULL_SEARCH_QUERY_LEAF_ROW_OR_LIST_CHANGED')
++    last=s.helper.capture(capture);same_window(shot,last)
++    need(t.ready_focus(allow_permission=False)==focus,'LAST_OWNED_SEARCH_FOCUS_CHANGED')
++    need(time.monotonic()<flow.deadline,'SEARCH_DEADLINE_BEFORE_DISPATCH')
++    selector={'id':node['resource-id'],'text':node['text'],'desc':node['content-desc'],
++              'class':node['class'],'package':PACKAGE,'enabled':True,'clickable':False,'editable':False}
++    command={'op':'click','method':'mouse','package':PACKAGE,'window_token':focus['window_token'],
++             'display':0,'accessibility_mode':'none','selector':selector}
++    t.record('intent-'+ident,{'command':command,'full_binding':current,'same_owned_contact':proof,
++        'pixel_equality_required':False,'coordinates_supplied_by_controller':False,'automatic_retry':False})
++    c.pending=ident;c.actions+=1
++    s.guard();original_ui=s.helper.ui;acks=[]
++    def record_native(request):
++        value=original_ui(request)
++        if request.get('op')=='click':
++            acks.append(copy.deepcopy(value));t.record('native-ack-'+ident,acks[-1])
++        return value
++    s.helper.ui=record_native
++    try:
++        reply=s.helper.dispatch(command)
++    except BaseException as exc:
++        details=getattr(exc,'details',{})
++        if not acks and details.get('outcome_unknown') is not True and (
++                details.get('outcome_unknown') is False or details.get('action_taken') is False):
++            t.record('no-effect-'+ident,{'error':str(exc),'details':details,'automatic_retry':False})
++            c.pending=None
++        raise
++    finally:s.helper.ui=original_ui
++    s.guard();t.record('response-'+ident,reply)
++    need(len(acks)==1,'ONE_NATIVE_MOUSE_RECEIPT_REQUIRED')
++    ack=acks[0]
++    need(ack.get('ok') is True and ack.get('performed')=='click' and ack.get('method')=='mouse'
++         and ack.get('source')=='native_bounds_mouse' and ack.get('outcome_unknown') is not True
++         and ack.get('accessibility_mode_restoration_verified') is True
++         and ack.get('visual_verified') is False and ack.get('business_success_verified') is False,
++         'NATIVE_MOUSE_OUTCOME_UNKNOWN_NO_REPLAY')
++    box=node['bounds_array'];center=[(box[0]+box[2])//2,(box[1]+box[3])//2]
++    need(ack.get('coordinates')==center and all(type(x) is int for x in ack['coordinates'])
++         and normalized(ack.get('target'))==normalized(node)
++         and ack.get('target')==ack.get('actual_target'),'NATIVE_MOUSE_TARGET_OR_COORDINATES_CHANGED')
++    need(reply.get('ok') is True and reply.get('performed')=='click'
++         and all(reply.get(k)==ack.get(k) for k in ('method','source','coordinates','target','actual_target',
++             'accessibility_mode_restoration_verified','visual_verified','business_success_verified'))
++         and (reply.get('outcome_unknown') is not True or reply.get('post_action_observation_available') is False),
++         'HELPER_MOUSE_OUTCOME_UNKNOWN_NO_REPLAY')
++    # An acknowledged mouse pair is input evidence only. Unknown post-capture
++    # remains in its original receipt; a fresh owned observation must succeed.
++    c.observe('after-'+ident)
++    t.record('mouse-input-observed-'+ident,{'native_input_acknowledged':True,
++        'original_post_capture_unknown_retained':reply.get('outcome_unknown') is True,
++        'fresh_observation':c.latest,'business_success_verified':False,'automatic_retry':False})
++    c.pending=None
++    need(time.monotonic()<flow.deadline,'UI_DEADLINE_AFTER_MOUSE_READBACK')
++

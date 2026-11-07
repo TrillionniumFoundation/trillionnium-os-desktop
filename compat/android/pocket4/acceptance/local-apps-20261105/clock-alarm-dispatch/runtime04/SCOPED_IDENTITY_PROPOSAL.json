@@ -1,0 +1,62 @@
+{
+  "business_gates_proposed": [],
+  "proposed_gate_review": {
+    "android_user": 0,
+    "apk_sha256": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+    "checks": {
+      "identity": "passed"
+    },
+    "evidence": [
+      {
+        "bytes": 94159,
+        "path": "inputs/clock-runtime04/ELF_INVENTORY.json",
+        "sha256": "c4f526bc60d577a0f047008654e810be7d7a994d5bc63008533f983e815d3f1e"
+      },
+      {
+        "bytes": 87264,
+        "path": "inputs/clock-runtime04/SELECTED_CODE_OBSERVATIONS.json",
+        "sha256": "99e383bc64ce736255aba526474f7b01e67522c7f19e28d49cc1ccf2aa68afd4"
+      },
+      {
+        "bytes": 5295,
+        "path": "inputs/clock-runtime04/INDEPENDENT_REVIEW_SELECTED.json",
+        "sha256": "ebb05ec8b26154cd7ad2637277ecc9a4628b12d186de817ee908f86392ba5169"
+      },
+      {
+        "bytes": 1704,
+        "path": "inputs/clock-runtime04/SIGNATURE_BINDING.json",
+        "sha256": "67b7418d9d4f7137ea4484e1998d126d403e2ac0731af30f35f5c286b44a5524"
+      },
+      {
+        "bytes": 1239,
+        "path": "inputs/clock-runtime04/RUNTIME_TERMINAL_SELECTED.json",
+        "sha256": "7da291301a03acc14712f8d61e06cc688b61b870d68a77dfb82101f416bcef3b"
+      }
+    ],
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "id": "clock_runtime04_current433ff_observed_identity",
+    "observed_at_utc": "2026-11-05T21:07:25.654128+00:00",
+    "package": "com.android.deskclock",
+    "qualification_scope": "Only the exact installed 433ff APK/signing identity, UID/user/version/epoch and four actual stable process/code snapshots from two generations.",
+    "reviewed_at_utc": "2026-11-05T21:44:00.327891+00:00",
+    "reviewer": "camera_runtime_review_independent_saved_inventory",
+    "scope": "scoped",
+    "uid": 10063,
+    "unresolved_findings": [
+      "Only first and last selected stable full snapshots of each of two actual process generations were independently inventoried.",
+      "The original complete-mapping counter and automatic engine qualification remain unchanged.",
+      "One overlay APK was identified from its first 64 bytes only; its whole bytes are not qualified by this collector.",
+      "The two unresolved labels correspond to read-only, non-executable property/idmap mappings in the captured engine-name candidate rows. Their contents were not read.",
+      "Both Dalvik JIT mappings and the kernel vdso/vsyscall mappings have names and boundaries only; no process-memory contents were read.",
+      "Library names containing engine or nativebridge are heuristic candidates, not independent proof of an emulator or of its absence.",
+      "These bounded process observations do not prove long-duration memory stability, UI delivery, Dismiss, audio output, or an entire App production-ready.",
+      "Alarm04 remains FAILED. Firing and notification are partial observations, not a complete alarm gate.",
+      "No prior APK timer, alarm, lifecycle, stability, audio or release-scope qualification is inherited."
+    ],
+    "version_code": 37
+  },
+  "registry_edits": 0,
+  "schema": "clock-runtime04-scoped-identity-proposal/v1",
+  "state": "PROPOSED_FOR_ROOT_REVIEW_NOT_APPLIED",
+  "whole_app_production_ready": false
+}

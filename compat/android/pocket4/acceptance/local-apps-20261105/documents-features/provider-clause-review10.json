@@ -1,0 +1,157 @@
+{
+  "actual_PM_selected_registration_lines": [
+    "android.intent.action.VIEW_DOWNLOADS:",
+    "6365001 com.android.documentsui/.ViewDownloadsActivity filter 3468ea6",
+    "Action: \"android.intent.action.VIEW_DOWNLOADS\"",
+    "742d518 com.android.documentsui/.archives.ArchivesProvider filter cf23b71",
+    "com.android.documentsui/.archives.ArchivesProvider:",
+    "Provider{742d518 com.android.documentsui/.archives.ArchivesProvider}",
+    "[com.android.documentsui.archives]:",
+    "Provider{742d518 com.android.documentsui/.archives.ArchivesProvider}"
+  ],
+  "actual_PM_text_sha256": "c9e5040788838c0df925a2e3c4afcae95678917e8f4fce03b336cb4af10d91ba",
+  "actual_manifest_sha256": "ac77cfc52655c9322e76aa938bc971e488b0e84277828c7ae18d1223ed62f3b0",
+  "additional_actual_permission_evidence": {
+    "GET_CONTENT_CANCEL": true,
+    "GET_CONTENT_alpha59B_hash_with_zero_persisted_grants": true,
+    "OPEN_DOCUMENT_TREE_CANCEL": true,
+    "existing_beta_URI_read_throws_SecurityException_before_GET_CONTENT": true,
+    "final_URI_permissions_empty": true,
+    "helper_package_CE_DE_removed": true,
+    "release_then_normal_close_reopen": true,
+    "root_storage_grant_not_taken": true,
+    "single_exact_owned_RW_tree_grant": true
+  },
+  "apk_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+  "automatic_readiness_promotion": false,
+  "clause_reviews": [
+    {
+      "actual": "Documents11 OPEN_OK, REOPEN_OK and physical same87-byte digest. Exactly one OPEN_DOCUMENT result from the real picker; same APK before/after.",
+      "clause": "open-document URI grants",
+      "limitations": "This is a text/plain, primary ExternalStorageProvider URI; it does not qualify a different provider or every MIME type.",
+      "source_contract": "Fixed SafActivity onActivityResult validates the exact single returned document before any query/read/grant, requires returned RW and persistable flags, calls takePersistableUriPermission, and requires the exact persisted RW grant before completing OPEN_OK.",
+      "status": "PROVEN_FOR_OWNED_PRIMARY_TEXT_DOCUMENT"
+    },
+    {
+      "actual": "Documents11 CREATE_WRITE_READ_OK records one actual picker call, one87-byte ContentResolver write and exact App plus filesystem hash readback.",
+      "clause": "create-document URI grants",
+      "limitations": "Host created only the exclusive containing directory; it did not create the document or earn UI creation credit.",
+      "source_contract": "The same exact URI/returned-flags/persisted-grant checks execute before the one write. The helper manifest has no broad storage/network permission.",
+      "status": "PROVEN_FOR_OWNED_PRIMARY_TEXT_DOCUMENT"
+    },
+    {
+      "actual": "flow10 copy/move routes require actual primary/Cuttlefish/primary:/flags1114139 provider metadata tied to UID10024+exact APK. Show roots selects that verified root and the exact owned directory; child/breadcrumb navigation, copy/move and later URI readbacks are verified.",
+      "clause": "supported file-provider navigation",
+      "not_a_complete_route_disposition": true,
+      "status": "PRIMARY_PROVIDER_PROVEN_OTHER_CONCRETE_ROUTES_UNQUALIFIED",
+      "supported_observed_scope": "com.android.externalstorage.documents root primary only, controlled generated directories/files."
+    }
+  ],
+  "gate": "documents.provider",
+  "immutable_wording": "Verify open/create-document URI grants and supported file-provider navigation.",
+  "mode": "LOCAL_RETAINED_SOURCE_AND_ACTUAL_RECEIPTS_ONLY",
+  "new_UI_actions": 0,
+  "new_device_calls": 0,
+  "not_used_to_keep_provider_gate_pending": [
+    "search",
+    "sort",
+    "name collision handling",
+    "long-duration stability",
+    "native engine qualification"
+  ],
+  "package": "com.android.documentsui",
+  "provider_apk_sha256": "50d1e6f2be950e049cdc898dd812c8e609f421cc167013d4ee2c795dcdc0e5ea",
+  "recommendation": "KEEP_GATE_PENDING_WITH_PRIMARY_PROVIDER_SUBSCOPE_PROVEN",
+  "release_scope_remaining_independent": [
+    "search",
+    "sort",
+    "owned name collision handling",
+    "complete route and supported MIME/capability disposition",
+    "stability and runtime qualification under their separate common gates"
+  ],
+  "reviewed_utc": "2026-11-05T20:31:08.030758+00:00",
+  "schema": "pocket4-documents-provider-immutable-gate-review-v1",
+  "scope_reuse_rule": "Preserve Documents11 IO/persistence/lifecycle and all12 flow10 scoped checks. Do not rewrite old failures or narrow the immutable provider wording to the primary provider silently.",
+  "sources": [
+    {
+      "bytes": 24135,
+      "path": "all-app-readiness08/app-gates.json",
+      "sha256": "441289f9c04b46f38e1dd6e19f23ec6e4c6729b6a6f814cab81c0ae6fbbb1e78"
+    },
+    {
+      "bytes": 7790,
+      "path": "documents-flow08/flow11-result.json",
+      "sha256": "095fb0441fdf39d4fdd84f337b3a343ee556d384ec6aef3a6312863b114dc712"
+    },
+    {
+      "bytes": 10233,
+      "path": "documents-flow08/FLOW11_SCOPED_REVIEW.json",
+      "sha256": "7f852dcb2e052234c395512fd60e2fbcedb8a4e4ad16dbb11fe071e88a6dc336"
+    },
+    {
+      "bytes": 17472,
+      "path": "documents-flow08/FLOW11_VERIFIED_RECEIPTS.json",
+      "sha256": "c70bd842f1eebdd9e32fe1773f49eee30e8516a9d4a9e1f96eee24e97f90967d"
+    },
+    {
+      "bytes": 16590,
+      "path": "documents-flow08/harness02/src/org/droidloom/qa/saf/r12/n69814e80ea71f485/SafActivity.java",
+      "sha256": "1ab0eb0a2270de63ed642262b4e999102beafb5560355fe02f998ca4691d3099"
+    },
+    {
+      "bytes": 1137,
+      "path": "documents-flow08/harness02/AndroidManifest.xml",
+      "sha256": "54266f3e8925e0451440515930e267110aecfab05f4c3cfe5fedb3e24c476ddf"
+    },
+    {
+      "bytes": 56444,
+      "path": "documents-flow08/read-only-preflight-result.json",
+      "sha256": "33b49d71907648b5a07ebe8ae3881d2a05384e87ec7c0b6639599e7b65d2b90d"
+    },
+    {
+      "bytes": 27623,
+      "path": "documents-features08/revision10/flow10-result-original.json",
+      "sha256": "59860aba0b6e576b271566c92133e2233a1d3f14383a6183b1536c9198720853"
+    },
+    {
+      "bytes": 30356,
+      "path": "documents-features08/revision10/saved-success10-original.json",
+      "sha256": "60f8561837656ea71f92d95ea169914ae03ce75d17e4ff40ba2d4505d70c0d41"
+    },
+    {
+      "bytes": 48836,
+      "path": "documents-features08/revision10/run_features01.py",
+      "sha256": "c72f393a9fa36b6bb26e3ebe23d61048ea54fa16077a5de97a7ec72ed7bd1d30"
+    }
+  ],
+  "specific_navigation_gaps": [
+    {
+      "attributes": {
+        "authorities": "com.android.documentsui.archives",
+        "exported": true,
+        "grantUriPermissions": true,
+        "name": "com.android.documentsui.archives.ArchivesProvider",
+        "permission": "android.permission.MANAGE_DOCUMENTS"
+      },
+      "authority": "com.android.documentsui.archives",
+      "basis": "Actual installed same-APK manifest declaration plus PackageManager registered provider/authority, not an inferred removable or remote provider.",
+      "minimal_next_scope": "One exclusive generated archive with one known text entry; preserve original archive bytes, inspect only that entry, close/grant-clean and remove only own fixture. No replay of earlier successful full flow is required.",
+      "missing_evidence": "An owned ZIP/archive opened through Files, followed by navigation to its known entry and an exact returned/read URI byte hash; alternatively an explicit reviewed product/source-supported exclusion. No such receipt or exclusion exists in Documents11/flow10.",
+      "route": "com.android.documentsui.archives.ArchivesProvider"
+    },
+    {
+      "attributes": {
+        "enabled": "@0x7f050016",
+        "exported": true,
+        "name": "com.android.documentsui.ViewDownloadsActivity",
+        "targetActivity": "com.android.documentsui.files.FilesActivity"
+      },
+      "authority_not_guessed": true,
+      "basis": "Actual manifest alias and PackageManager intent registration. flow10 default Downloads observation was followed by navigation away to primary.",
+      "missing_evidence": "Identity-bound provider/root navigation to an owned fixture through the supported Downloads entry, or an explicit reviewed support disposition. Observing and leaving the default root does not qualify its own file-provider flow.",
+      "route": "com.android.documentsui.ViewDownloadsActivity -> com.android.documentsui.files.FilesActivity, ACTION_VIEW_DOWNLOADS"
+    }
+  ],
+  "whole_app_production_ready": false,
+  "wording_modified": false
+}

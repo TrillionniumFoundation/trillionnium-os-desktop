@@ -1,0 +1,24 @@
+--- read_current_usb_provider04.py
++++ read_current_usb_provider05.py
+@@ -4,7 +4,7 @@
+ from datetime import datetime, timezone
+ import argparse, hashlib, json, os, stat, subprocess, types
+ 
+-OUT = Path('/home/alex/work/pocket4-camera-usb-current-20261105-r12-04.json')
++OUT = Path('/home/alex/work/pocket4-camera-usb-current-20261105-r12-05.json')
+ TARGET = Path('/sys/devices/pci0000:00/0000:00:08.3/0000:c7:00.0/usb3/3-4')
+ ALIAS = Path('/sys/bus/usb/devices/3-4')
+ IDENTITY = {'idVendor':'1e08','idProduct':'5520','serial':'JX20250923V2',
+@@ -44,9 +44,9 @@
+ 
+ 
+ 
+-TX_PATH = Path('/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/camera_transaction.py')
+-TX_SHA = 'e65a47bea8b3800d0b1a89247bd8c356dd291523c2d248d401d05d1d3b55fb83'
+-ACTIVATION_SHA = '91c7a4a911a7bcf908726750f55f3fda66f40263ddf3fac457473e0a6c780435'
++TX_PATH = Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
++TX_SHA = 'b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
++ACTIVATION_SHA = '7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
+ 
+ 
+ def fixed_main_guard():

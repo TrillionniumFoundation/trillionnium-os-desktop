@@ -1,0 +1,39 @@
+--- a/org/chromium/webview_shell/WebViewBrowserActivity$TracingLogger$1.smali
++++ b/org/chromium/webview_shell/WebViewBrowserActivity$TracingLogger$1.smali
+@@ -32,13 +32,27 @@
+     .registers 3
+ 
+     .line 216
+-    new-instance v0, Landroid/app/AlertDialog$Builder;
+-
+     iget-object v1, p0, Lorg/chromium/webview_shell/WebViewBrowserActivity$TracingLogger$1;->this$0:Lorg/chromium/webview_shell/WebViewBrowserActivity$TracingLogger;
+ 
+     invoke-static {v1}, Lorg/chromium/webview_shell/WebViewBrowserActivity$TracingLogger;->-$$Nest$fgetmActivity(Lorg/chromium/webview_shell/WebViewBrowserActivity$TracingLogger;)Landroid/app/Activity;
+ 
+     move-result-object v1
++
++    if-eqz v1, :trace_activity_unavailable
++
++    invoke-virtual {v1}, Landroid/app/Activity;->isFinishing()Z
++
++    move-result v0
++
++    if-nez v0, :trace_activity_unavailable
++
++    invoke-virtual {v1}, Landroid/app/Activity;->isDestroyed()Z
++
++    move-result v0
++
++    if-nez v0, :trace_activity_unavailable
++
++    new-instance v0, Landroid/app/AlertDialog$Builder;
+ 
+     invoke-direct {v0, v1}, Landroid/app/AlertDialog$Builder;-><init>(Landroid/content/Context;)V
+ 
+@@ -73,5 +87,6 @@
+     .line 221
+     invoke-virtual {p0}, Landroid/app/AlertDialog;->show()V
+ 
++    :trace_activity_unavailable
+     return-void
+ .end method

@@ -1,0 +1,51 @@
+{
+  "Main_guard_modified": false,
+  "business_or_whole_app_pass_claimed": false,
+  "checksum_bound_actual_saved03_sha256": "d5c735fab5b3c10c594057abc3816b16091147d79ca3108b2c4276d51c06ef6c",
+  "device_calls": 0,
+  "execution_blocked_by_Main_boundary": true,
+  "exit_code": 0,
+  "frozen_helper_source_sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66",
+  "method_comparison": {
+    "features_ui.py": {
+      "all_other_methods_ast_equal": true,
+      "changed_methods": [
+        "Adapter.input",
+        "Adapter.validate_text_preinput_snapshot"
+      ]
+    },
+    "run_features01.py": {
+      "all_other_methods_ast_equal": true,
+      "changed_methods": [
+        "Flow.new_folder",
+        "Flow.new_folder_name_input"
+      ]
+    },
+    "runtime_evidence.py": {
+      "all_other_methods_ast_equal": true,
+      "changed_methods": [
+        "RuntimeEvidence.process",
+        "RuntimeEvidence.stop"
+      ]
+    }
+  },
+  "patch_sha256": "d775989c12af89735150521d8a9b462d55f1896ae35a674b883e4ee8faee9f66",
+  "schema": "pocket4-documents-feature04-local-validation-v1",
+  "source_manifest_sha256": "e9302bac1ce93b107b4bfa2ce53a3c02a8188d3aa7333a3ff97301d108548760",
+  "test_command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+    "-m",
+    "unittest",
+    "-v",
+    "test_preinput_decision.py"
+  ],
+  "test_stderr_sha256": "48929a90e54129b72e06cd43c577593eac378f5060d7740ed0ab6165ff82b14f",
+  "test_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "tests_passed": 14,
+  "tests_run": 14,
+  "unchanged_dependencies": [
+    "package_fixture.py",
+    "owned_tree.py",
+    "bounded_diagnostics.py"
+  ]
+}

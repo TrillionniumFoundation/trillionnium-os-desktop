@@ -1,0 +1,23 @@
+--- /dev/null
++++ private03/owned_menu03.py
+@@ -0,0 +1,20 @@
++"""Private Trial fixes only the previous fixture's stale menu marker binding."""
++import re
++
++def trial_class(adapter, verifier, result):
++    class OwnedSearchTrial(adapter.Trial):
++        def bind_owned_contact_menu(self, proof):
++            original=result.get('owned_contact_identity')
++            adapter.require(self.owned is not None and self.menu_contact is None
++                and isinstance(original,dict) and proof.get('name')==verifier.EDITED
++                and proof.get('local_null_account') is True
++                and all(re.fullmatch('[1-9][0-9]*',proof.get(key,''))
++                    and proof[key]==original.get(key) for key in
++                    ('raw_contact_id','contact_id','name_data_id')),
++                'MORE_MENU_REQUIRES_EXACT_CURRENT_OWNED_LOCAL_CONTACT')
++            scope=self.last_observation['screenshot']['scope']
++            adapter.require(scope['package']==adapter.PACKAGE and scope['activity']==adapter.QUICK_ACTIVITY,
++                'MORE_MENU_SOURCE_IS_NOT_OWNED_QUICK_CONTACT')
++            self.menu_contact=dict(proof)
++            self.record('owned-contact-menu-proof',proof)
++    return OwnedSearchTrial

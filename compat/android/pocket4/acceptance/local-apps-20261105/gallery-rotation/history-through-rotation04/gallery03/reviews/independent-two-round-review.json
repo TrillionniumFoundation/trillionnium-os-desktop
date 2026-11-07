@@ -1,0 +1,78 @@
+{
+  "all_compared_keys_equal_except_route_block": [
+    "helper_identity",
+    "gallery_identity",
+    "private_state",
+    "provider",
+    "media",
+    "directory_rows",
+    "fuse_parent_birth",
+    "backing_parent_birth",
+    "backing_folder_birth"
+  ],
+  "business_scope_pass": false,
+  "cleanup_executed": false,
+  "directory_ids": {
+    "control": 97,
+    "copy": 99
+  },
+  "exact_only_block_replacements": [
+    {
+      "after": "lastLaunchTime=-30m29s49ms",
+      "before": "lastLaunchTime=-30m28s294ms"
+    },
+    {
+      "after": "lastVisibleTime=-19m6s841ms",
+      "before": "lastVisibleTime=-19m6s86ms"
+    }
+  ],
+  "full_raw_block_diff": "--- before\n+++ after\n@@ -19,7 +19,7 @@\n       taskDescription: label=\"null\" icon=null iconResource=/0 iconFilename=null primaryColor=ff222222\n         backgroundColor=0 statusBarColor=ff000000 navigationBarColor=808080\n        backgroundColorFloating=ff000000\n-      launchFailed=false launchCount=1 lastLaunchTime=-30m28s294ms\n+      launchFailed=false launchCount=1 lastLaunchTime=-30m29s49ms\n       mHaveState=false mIcicle=null\n       state=RESUMED finishing=false\n       keysPaused=false inHistory=true idle=true\n@@ -33,7 +33,7 @@\n       mVisibleRequested=true mVisible=true mClientVisible=true reportedDrawn=true reportedVisible=true\n       mNumInterestingWindows=1 mNumDrawnWindows=1 allDrawn=true)\n       startingData=null firstWindowDrawn=true\n-      nowVisible=true lastVisibleTime=-19m6s86ms\n+      nowVisible=true lastVisibleTime=-19m6s841ms\n       connections={ConnectionRecord{cc84d97 u0 CR com.android.gallery3d/.app.BatchService:@ad6e016 flags=0x1}}\n       resizeMode=RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION\n       mLastReportedMultiWindowMode=true mLastReportedPictureInPictureMode=false\n",
+  "guard_limitations": {
+    "aggregate_guard_after_field_present": false,
+    "explicit_fresh_strict_before_and_after_guard_required_for_new_cleanup": true,
+    "last_per_round_verify_returned_and_round_record_appended": true,
+    "source_verify_checks_held_guard_before_return": true
+  },
+  "image_ids": {
+    "control": 98,
+    "copy": 100
+  },
+  "independent_conclusion": "Two real rounds bind the exact same retained own album route and unchanged original fixture; only two relative diagnostic duration values changed inside the compared activity dump block.",
+  "lease_elapsed_ms": [
+    1833990,
+    1834760
+  ],
+  "lease_ms": 1200000,
+  "next_authorized_scope_to_review": "New bounded exact task1005 normal close, images98/100, directories97/99 and temporary helper UID10197 cleanup; no Open replay, no rotation or old-lease extension.",
+  "old_business_lease_expired": true,
+  "original_mutations": 0,
+  "original_observer_error": "RuntimeError:RETAINED_STATE_CHANGED_DURING_READ_ONLY_RECONCILIATION",
+  "original_observer_state": "FAILED",
+  "original_pending_rewritten": false,
+  "original_result_bytes": 38390,
+  "original_result_sha256": "8f13efcbd0f8a3f80e11b648a9b2866c0d75b2d871c4ff329b36bd11b53e822d",
+  "review_does_not_change_original": true,
+  "route_semantic_values_exactly_equal": {
+    "actual_stack_component": [
+      "org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03",
+      "org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03.RotationActivity"
+    ],
+    "album_uri": "content://media/external/images/media?bucketId=-1681480384",
+    "caller_package": "org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03",
+    "caller_uid": 10197,
+    "component": [
+      "com.android.gallery3d",
+      "com.android.gallery3d.app.GalleryActivity"
+    ],
+    "foreground": {
+      "activity": "com.android.gallery3d.app.GalleryActivity",
+      "package": "com.android.gallery3d",
+      "popup": false,
+      "task": 1005,
+      "window_token": "c4ad8a1"
+    },
+    "new_task": false,
+    "task": 1005
+  },
+  "schema": "gallery03-independent-saved-two-round-review-v1"
+}

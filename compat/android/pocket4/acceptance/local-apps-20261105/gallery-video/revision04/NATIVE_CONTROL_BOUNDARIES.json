@@ -1,0 +1,170 @@
+{
+  "actual_Gallery_controls_qualified": false,
+  "actual_adapter_sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66",
+  "actual_new_Android_commands": 0,
+  "actual_new_UI_inputs": 0,
+  "actual_saved_export_sha256": "3e631e8c9cf613d47b97f67819275300542534f056a395fdb8b03f6ec0ce70f6",
+  "cases": [
+    {
+      "case": "saved_actual03_native_schema",
+      "expected_error": null,
+      "passed": true,
+      "pending_retained": false,
+      "synthetic_native_mutation_requests": 0
+    },
+    {
+      "case": "single_native_mouse_then_fresh_pause",
+      "expected_error": null,
+      "passed": true,
+      "pending_retained": false,
+      "synthetic_native_mutation_requests": 1
+    },
+    {
+      "case": "already_visible_pause_requires_no_show_input",
+      "expected_error": null,
+      "passed": true,
+      "pending_retained": false,
+      "synthetic_native_mutation_requests": 0
+    },
+    {
+      "case": "duplicate_video_blocks_before_input",
+      "expected_error": "UNIQUE_OBSERVED_NATIVE_VIDEO_VIEW_REQUIRED",
+      "passed": true,
+      "pending_retained": false,
+      "synthetic_native_mutation_requests": 0
+    },
+    {
+      "case": "incomplete_tree_blocks_before_input",
+      "expected_error": "NATIVE_CONTROL_SCOPE_INCOMPLETE",
+      "passed": true,
+      "pending_retained": false,
+      "synthetic_native_mutation_requests": 0
+    },
+    {
+      "case": "wrong_display_blocks_before_input",
+      "expected_error": "NATIVE_CONTROL_SCOPE_INCOMPLETE",
+      "passed": true,
+      "pending_retained": false,
+      "synthetic_native_mutation_requests": 0
+    },
+    {
+      "case": "mismatched_native_window_blocks_before_input",
+      "expected_error": "NATIVE_CONTROL_SCOPE_INCOMPLETE",
+      "passed": true,
+      "pending_retained": false,
+      "synthetic_native_mutation_requests": 0
+    },
+    {
+      "case": "out_of_window_video_bounds_block_before_input",
+      "expected_error": "NATIVE_VIDEO_VIEW_OUTSIDE_OWNED_WINDOW",
+      "passed": true,
+      "pending_retained": false,
+      "synthetic_native_mutation_requests": 0
+    },
+    {
+      "case": "foreign_activity_blocks_before_input",
+      "expected_error": "EXACT_MOVIE_FOCUS_REQUIRED",
+      "passed": true,
+      "pending_retained": false,
+      "synthetic_native_mutation_requests": 0
+    },
+    {
+      "case": "unowned_task_blocks_before_input",
+      "expected_error": "NATIVE_CONTROL_WINDOW_CHANGED",
+      "passed": true,
+      "pending_retained": false,
+      "synthetic_native_mutation_requests": 0
+    },
+    {
+      "case": "native_definite_no_effect_not_retried",
+      "expected_error": "AMBIGUOUS_MATCH",
+      "passed": true,
+      "pending_retained": false,
+      "synthetic_native_mutation_requests": 1
+    },
+    {
+      "case": "native_unknown_is_retained_without_replay",
+      "expected_error": "MOUSE_INPUT_MAY_HAVE_OCCURRED",
+      "passed": true,
+      "pending_retained": true,
+      "synthetic_native_mutation_requests": 1
+    },
+    {
+      "case": "transport_unknown_is_retained_without_replay",
+      "expected_error": "UI_RUNNER_TRANSPORT_ERROR",
+      "passed": true,
+      "pending_retained": true,
+      "synthetic_native_mutation_requests": 1
+    },
+    {
+      "case": "restoration_unknown_blocks_credit",
+      "expected_error": "ACCESSIBILITY_MODE_RESTORATION_UNVERIFIED",
+      "passed": true,
+      "pending_retained": true,
+      "synthetic_native_mutation_requests": 1
+    },
+    {
+      "case": "wrong_returned_mouse_center_blocks_credit",
+      "expected_error": "NATIVE_MOUSE_RECEIPT_NOT_JOINED",
+      "passed": true,
+      "pending_retained": true,
+      "synthetic_native_mutation_requests": 1
+    },
+    {
+      "case": "ack_without_visible_pause_is_not_success",
+      "expected_error": "PLAYING_CONTROL_NOT_OBSERVED_AFTER_NATIVE_SHOW",
+      "passed": true,
+      "pending_retained": true,
+      "synthetic_native_mutation_requests": 1
+    },
+    {
+      "case": "post_action_window_change_retains_pending",
+      "expected_error": "PLAYING_CONTROL_NOT_OBSERVED_AFTER_NATIVE_SHOW",
+      "passed": true,
+      "pending_retained": true,
+      "synthetic_native_mutation_requests": 1
+    },
+    {
+      "case": "duplicate_post_action_pause_retains_pending",
+      "expected_error": "PLAYBACK_CONTROL_AMBIGUOUS",
+      "passed": true,
+      "pending_retained": true,
+      "synthetic_native_mutation_requests": 1
+    },
+    {
+      "case": "semantic_pause_requires_actual_state_control",
+      "expected_error": null,
+      "passed": true,
+      "pending_retained": false,
+      "synthetic_native_mutation_requests": 1
+    },
+    {
+      "case": "semantic_resume_requires_actual_state_control",
+      "expected_error": null,
+      "passed": true,
+      "pending_retained": false,
+      "synthetic_native_mutation_requests": 1
+    },
+    {
+      "case": "semantic_pause_ack_without_state_change_is_not_success",
+      "expected_error": "PLAYBACK_STATE_CONTROL_NOT_CHANGED",
+      "passed": true,
+      "pending_retained": true,
+      "synthetic_native_mutation_requests": 1
+    },
+    {
+      "case": "exhausted_input_budget_blocks_mutation",
+      "expected_error": "INPUT_SCOPE_OR_BUDGET",
+      "passed": true,
+      "pending_retained": false,
+      "synthetic_native_mutation_requests": 0
+    }
+  ],
+  "controller_sha256": "7d3e8e81c36eb18a4d0f1c46c23e37ec2ba657fc885f2e5197cfb730c4657d26",
+  "passed": 22,
+  "schema": "gallery-native-controls04-local-boundaries/v1",
+  "source_sha256": "61919920ce23d51d8627bc47b59a5cd6596dde38f939f5b3ced82749a043d259",
+  "state": "LOCAL_BOUNDARIES_PASSED",
+  "synthetic_protocol_replies_are_not_business_evidence": true,
+  "whole_app_production_ready": false
+}

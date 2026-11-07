@@ -1,0 +1,92 @@
+{
+  "UI_actions": 2,
+  "acknowledged_inputs": [
+    {
+      "id": "a01-alarm-tab",
+      "label": "alarm-tab",
+      "op": "click"
+    },
+    {
+      "id": "a02-open-time-picker",
+      "label": "open-time-picker",
+      "op": "click"
+    }
+  ],
+  "alarm_save_dispatched": false,
+  "classification": "The exact native description includes an additional phrase. Controller observation rejected before toggling or Save; no alarm scheduling, delivery or Dismiss behavior was exercised.",
+  "cleanup": {
+    "SQL_or_provider_fallback": false,
+    "close_pending_retained": null,
+    "database_effect_pending_retained": null,
+    "new_inputs": 0,
+    "no_alarm_created": true,
+    "original_failure_retained": true,
+    "pending_retained": null
+  },
+  "clock_alarm_gate_granted": false,
+  "close_pending": null,
+  "exit_code": 1,
+  "final_alarm_notification_present": false,
+  "final_alarm_readback": {
+    "enabled_count": 0,
+    "instance_count": 0,
+    "instance_ids": [],
+    "marker_count": 0,
+    "original_enabled": 0,
+    "template_count": 2,
+    "template_ids": [
+      1,
+      2
+    ]
+  },
+  "final_scheduler_count": 0,
+  "finished_utc": "2026-11-05T18:25:00.063988+00:00",
+  "global_intent_counter_after": 121,
+  "global_intent_counter_before": 121,
+  "job": "1a1acf4b359-fc05-57c0",
+  "lifecycle_gate_granted": false,
+  "native_launched_tasks": [
+    973
+  ],
+  "normally_closed_tasks": [
+    973
+  ],
+  "original_alarm_content_preserved": true,
+  "original_alarm_content_sha256": "655c545ee9487dc380100d6300376d0bb82d0d12beddd96f283ab7814ff19fea",
+  "original_failure": "RuntimeError: OBSERVED_TIME_PICKER_TEXT_MODE_REQUIRED",
+  "original_result_sha256": "b7d533e98a5164de04a459e5ec44447de6cac5ec7b513e382b54f973545b7695",
+  "owned_alarm_id": null,
+  "owned_task_remaining": null,
+  "pending_database_effect": null,
+  "pending_effect": null,
+  "physical_audio_or_popup_qualification": false,
+  "preference_bytes_preserved": false,
+  "preference_hash_after": "035189ab217bdf167f360d2e98fbddc224d956044e1e371598f7504809ffd517",
+  "preference_hash_before": "ac11db35d5dcceb9fbbc07ed28144f9c244a16ef785476b0d37ff7c7e0813eb3",
+  "preferences_restored_or_modified_by_controller": false,
+  "protected_differing_keys": [
+    "preferences_metadata",
+    "preferences_sha256"
+  ],
+  "protected_equal_keys": [
+    "alarm_content_sha256",
+    "alarm_state",
+    "apk",
+    "directories",
+    "epoch_sha256",
+    "identity",
+    "notification_appop_allow",
+    "package",
+    "sound_state",
+    "tasks_sha256",
+    "timer_and_stopwatch_empty"
+  ],
+  "runtime_app_failure_claimed": false,
+  "same_identity": true,
+  "schema": "clock-alarm02-actual-failure-review-v1",
+  "specific_changed_preference_key_not_read": true,
+  "started_utc": "2026-11-05T18:24:42.433460+00:00",
+  "state": "ACTUAL_FAILED_BEFORE_NEW_ALARM_SAVE_OWNED_TASK_CLEAN",
+  "task_set_restored": true,
+  "whole_app_production_ready": false
+}

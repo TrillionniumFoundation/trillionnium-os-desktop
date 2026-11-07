@@ -1,0 +1,32 @@
+{
+  "schema": "actual-cleanup-handler-context-exit-negative-control-v1",
+  "old_source_sha256": "a48167e75aaf1977705aff5f1d62de553dca3d870a641012a47a6390390cb15f",
+  "new_source_sha256": "9be7a14c3cf0514fa5b1fb55a8d924e2f554ad7d0be860203946a16e32c7495b",
+  "tested_boundary": "actual execute except-handler and return AST; mutation body replaced by context success then exit failure",
+  "old_negative_control": {
+    "rc": 0,
+    "result": {
+      "state": "EXACT_RETAINED_FIXTURE_AND_PACKAGE_CLEANED",
+      "outcome_unknown": false,
+      "error": "RuntimeError:owned-session-exit-failed"
+    }
+  },
+  "new_failure": {
+    "rc": 2,
+    "result": {
+      "state": "FAILED",
+      "outcome_unknown": true,
+      "error": "RuntimeError:owned-session-exit-failed"
+    }
+  },
+  "new_normal": {
+    "rc": 0,
+    "result": {
+      "state": "EXACT_RETAINED_FIXTURE_AND_PACKAGE_CLEANED",
+      "outcome_unknown": false
+    }
+  },
+  "device_actions": 0,
+  "production_mutations": 0,
+  "passed": true
+}

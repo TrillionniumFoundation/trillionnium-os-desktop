@@ -1,0 +1,252 @@
+{
+  "apk_sha256": "7522e88fe03f4997513b0e03591da215b8ebc67f6c933939a73addc3c75495a9",
+  "components": [
+    {
+      "attributes": {
+        "appComponentFactory": "androidx.core.app.CoreComponentFactory",
+        "backupAgent": "com.android.calendar.CalendarBackupAgent",
+        "extractNativeLibs": true,
+        "hardwareAccelerated": true,
+        "icon": "@0x7f0d0000",
+        "label": "@0x7f0f0022",
+        "name": "com.android.calendar.CalendarApplication",
+        "requiredAccountType": "*",
+        "taskAffinity": "android.task.calendar",
+        "usesCleartextTraffic": false
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "application",
+      "name": "com.android.calendar.CalendarApplication",
+      "target_class": "com.android.calendar.CalendarApplication"
+    },
+    {
+      "attributes": {
+        "exported": true,
+        "launchMode": 2,
+        "name": "com.android.calendar.AllInOneActivity",
+        "theme": "@0x7f100004",
+        "windowSoftInputMode": "0x00000020"
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "activity",
+      "name": "com.android.calendar.AllInOneActivity",
+      "target_class": "com.android.calendar.AllInOneActivity"
+    },
+    {
+      "attributes": {
+        "exported": true,
+        "name": "com.android.calendar.LaunchActivity",
+        "targetActivity": "com.android.calendar.AllInOneActivity"
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "activity-alias",
+      "name": "com.android.calendar.LaunchActivity",
+      "target_class": "com.android.calendar.AllInOneActivity"
+    },
+    {
+      "attributes": {
+        "exported": true,
+        "name": "com.android.calendar.EventInfoActivity",
+        "parentActivityName": "com.android.calendar.AllInOneActivity",
+        "theme": "@0x7f100004"
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "activity",
+      "name": "com.android.calendar.EventInfoActivity",
+      "target_class": "com.android.calendar.EventInfoActivity"
+    },
+    {
+      "attributes": {
+        "name": "com.android.calendar.event.EditEventActivity",
+        "theme": "@0x7f100004"
+      },
+      "defined_in_complete_apk_dex_set": false,
+      "kind": "activity",
+      "name": "com.android.calendar.event.EditEventActivity",
+      "target_class": "com.android.calendar.event.EditEventActivity"
+    },
+    {
+      "attributes": {
+        "exported": true,
+        "name": "com.android.calendar.EditEventActivity",
+        "targetActivity": "com.android.calendar.event.EditEventActivity"
+      },
+      "defined_in_complete_apk_dex_set": false,
+      "kind": "activity-alias",
+      "name": "com.android.calendar.EditEventActivity",
+      "target_class": "com.android.calendar.event.EditEventActivity"
+    },
+    {
+      "attributes": {
+        "configChanges": "0x000000a0",
+        "exported": true,
+        "label": "@0x7f0f0022",
+        "name": "com.android.calendar.GoogleCalendarUriIntentFilter",
+        "theme": "@0x01030055"
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "activity",
+      "name": "com.android.calendar.GoogleCalendarUriIntentFilter",
+      "target_class": "com.android.calendar.GoogleCalendarUriIntentFilter"
+    },
+    {
+      "attributes": {
+        "excludeFromRecents": true,
+        "label": "@0x7f0f00a9",
+        "launchMode": 3,
+        "name": "com.android.calendar.alerts.QuickResponseActivity",
+        "theme": "@0x0103006f"
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "activity",
+      "name": "com.android.calendar.alerts.QuickResponseActivity",
+      "target_class": "com.android.calendar.alerts.QuickResponseActivity"
+    },
+    {
+      "attributes": {
+        "exported": true,
+        "name": "com.android.calendar.alerts.AlertReceiver"
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "receiver",
+      "name": "com.android.calendar.alerts.AlertReceiver",
+      "target_class": "com.android.calendar.alerts.AlertReceiver"
+    },
+    {
+      "attributes": {
+        "exported": false,
+        "name": "com.android.calendar.alerts.GlobalDismissManager"
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "receiver",
+      "name": "com.android.calendar.alerts.GlobalDismissManager",
+      "target_class": "com.android.calendar.alerts.GlobalDismissManager"
+    },
+    {
+      "attributes": {
+        "exported": true,
+        "name": "com.android.calendar.UpgradeReceiver"
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "receiver",
+      "name": "com.android.calendar.UpgradeReceiver",
+      "target_class": "com.android.calendar.UpgradeReceiver"
+    },
+    {
+      "attributes": {
+        "name": "com.android.calendar.alerts.AlertService"
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "service",
+      "name": "com.android.calendar.alerts.AlertService",
+      "target_class": "com.android.calendar.alerts.AlertService"
+    },
+    {
+      "attributes": {
+        "name": "com.android.calendar.alerts.DismissAlarmsService"
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "service",
+      "name": "com.android.calendar.alerts.DismissAlarmsService",
+      "target_class": "com.android.calendar.alerts.DismissAlarmsService"
+    },
+    {
+      "attributes": {
+        "name": "com.android.calendar.alerts.SnoozeAlarmsService"
+      },
+      "defined_in_complete_apk_dex_set": false,
+      "kind": "service",
+      "name": "com.android.calendar.alerts.SnoozeAlarmsService",
+      "target_class": "com.android.calendar.alerts.SnoozeAlarmsService"
+    },
+    {
+      "attributes": {
+        "name": "com.android.calendar.alerts.InitAlarmsService"
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "service",
+      "name": "com.android.calendar.alerts.InitAlarmsService",
+      "target_class": "com.android.calendar.alerts.InitAlarmsService"
+    },
+    {
+      "attributes": {
+        "exported": true,
+        "label": "@0x7f0f0066",
+        "name": "com.android.calendar.widget.CalendarAppWidgetProvider"
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "receiver",
+      "name": "com.android.calendar.widget.CalendarAppWidgetProvider",
+      "target_class": "com.android.calendar.widget.CalendarAppWidgetProvider"
+    },
+    {
+      "attributes": {
+        "exported": true,
+        "name": "com.android.calendar.widget.CalendarAppWidgetService$CalendarFactory"
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "receiver",
+      "name": "com.android.calendar.widget.CalendarAppWidgetService$CalendarFactory",
+      "target_class": "com.android.calendar.widget.CalendarAppWidgetService$CalendarFactory"
+    },
+    {
+      "attributes": {
+        "exported": false,
+        "name": "com.android.calendar.widget.CalendarAppWidgetService",
+        "permission": "android.permission.BIND_REMOTEVIEWS"
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "service",
+      "name": "com.android.calendar.widget.CalendarAppWidgetService",
+      "target_class": "com.android.calendar.widget.CalendarAppWidgetService"
+    },
+    {
+      "attributes": {
+        "name": "com.android.calendar.AsyncQueryServiceHelper"
+      },
+      "defined_in_complete_apk_dex_set": true,
+      "kind": "service",
+      "name": "com.android.calendar.AsyncQueryServiceHelper",
+      "target_class": "com.android.calendar.AsyncQueryServiceHelper"
+    },
+    {
+      "attributes": {
+        "authorities": "com.android.calendar.androidx-startup",
+        "exported": false,
+        "name": "androidx.startup.InitializationProvider"
+      },
+      "defined_in_complete_apk_dex_set": null,
+      "kind": "provider",
+      "name": "androidx.startup.InitializationProvider",
+      "status": "EXTERNAL_PACKAGE_DEFINITIONS_NOT_INCLUDED_IN_FIRST_PROJECTION",
+      "target_class": "androidx.startup.InitializationProvider"
+    },
+    {
+      "attributes": {
+        "directBootAware": false,
+        "enabled": true,
+        "exported": true,
+        "name": "androidx.profileinstaller.ProfileInstallReceiver",
+        "permission": "android.permission.DUMP"
+      },
+      "defined_in_complete_apk_dex_set": null,
+      "kind": "receiver",
+      "name": "androidx.profileinstaller.ProfileInstallReceiver",
+      "status": "EXTERNAL_PACKAGE_DEFINITIONS_NOT_INCLUDED_IN_FIRST_PROJECTION",
+      "target_class": "androidx.profileinstaller.ProfileInstallReceiver"
+    }
+  ],
+  "dex_sha256": [
+    "ad94f4234e06c7b97ff5f4631fadd22ed7fc03f01187ded30f3c5c3125b194d8"
+  ],
+  "manifest_sha256": "4745f217753636e077e65c7308123ab636dfec719ab0826f759bb14a547927dd",
+  "missing_components": 3,
+  "schema": "calendar-full-manifest-component-dex-coverage-v1",
+  "scope": "All manifest component declarations compared with complete com.android.calendar package class definitions from the one verified installed APK DEX. Other namespaces were not projected and remain pending; this is not full component closure.",
+  "total_components": 21,
+  "unique_missing_app_classes": [
+    "com.android.calendar.alerts.SnoozeAlarmsService",
+    "com.android.calendar.event.EditEventActivity"
+  ],
+  "unqualified_external_components": 2
+}

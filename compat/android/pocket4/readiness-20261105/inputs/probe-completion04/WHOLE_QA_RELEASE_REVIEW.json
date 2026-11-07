@@ -1,0 +1,130 @@
+{
+  "all_features_reviewed": true,
+  "android_user": 0,
+  "apk_bytes": 12713,
+  "apk_sha256": "91e352c25e7c6ef54aa53ce652931e40ad1437dfcd0ebad2529bc662558a3dd6",
+  "app_kind": "qa_fixture",
+  "certificate_sha256": "df1baddab9b5bf8ec8581a35c5294519511e3bbeb709ce14dfee5e873afa3e1b",
+  "check_reasoning": {
+    "data_permissions": "CE/DE inode, ownership and mode preserved; files/shared_prefs/databases/no_backup remain absent before and after. Exact permissions remain empty;0 package/permission/account/Provider mutations and no such API in the complete app code. Framework-generated cache contents are outside this App-model contract.",
+    "fixture.contract": "All five actual DEX classes and the sole manifest Activity reviewed. The shipping purpose is a tracked local QA fixture with two independent text fields, Confirm and a result label; no account/network/provider/file or additional component contract is present.",
+    "fixture.controls": "Actual empty Confirm, Unicode/emoji first field, independent second field, first-field echo, each field clearing, two fresh-empty reopen confirmations and duplicate-selector refusal cover every declared control and positive/negative QA contract.",
+    "fixture.isolation": "Both original model stores remain empty, target UID maps only to this package, baseline task851 is preserved, all own tasks are closed and no pending launch/input/close remains. Other packages and user media were not modified by this flow.",
+    "identity": "Both current held APK reads match91e352, UID10115/user0/version0/48cb epoch; original45 verifier v2/v3 certificate df1b is bound by identical full APK bytes. Six stable snapshots across all three actual process generations bind x86_64 app_process64/ART and381 identical whole-hashed filesystem ELF objects. Non-executable heuristic candidates and named JIT/kernel mappings are explicitly classified in the runtime review.",
+    "lifecycle": "Three separately owned tasks1008/1009/1010 launched and normally removed, each closing to original task851; two independent reopens restore the intentional default view-only state, and actual Confirm verifies empty contents. All three exact guest process exits are owned remove-task events.",
+    "release_scope": "Root explicitly accepts the complete declared QA-fixture release for this exact APK and epoch after independent feature and runtime reviews. Retained parser/hint failures are reconciled by actual later source/state evidence; no unresolved finding remains within this declared contract.",
+    "stability": "The predeclared three>=30-second QA-fixture repeat budget completed118.238466 seconds of live observation.255 samples cover three process generations with no unexplained within-round replacement. Independent resource reconstruction matches the frozen caps and late-growth thresholds;20 consecutive retained diagnostic intervals show no new exact-UID crash/ANR or unexplained exit.",
+    "ui_observation": "Source-enforced current owned foreground/window/native/geometry validation and fresh exact state comparisons precede and follow the9 positive controls; saved effect records independently match each expectation. Raw ambiguity reply confirms refusal without effect; no inferred or replayed inputs."
+  },
+  "checks": {
+    "data_permissions": "passed",
+    "fixture.contract": "passed",
+    "fixture.controls": "passed",
+    "fixture.isolation": "passed",
+    "identity": "passed",
+    "lifecycle": "passed",
+    "release_scope": "passed",
+    "stability": "passed",
+    "ui_observation": "passed"
+  },
+  "dependencies": "Current unchanged native action v2 APK a5368465 supplies the QA control interface; actual exact UID process mapping records the installed ART/runtime dependency. No external accounts, network service or Provider is needed by the fixture.",
+  "evidence": [
+    {
+      "bytes": 41618,
+      "path": "qa-fixtures-common08/probe-completion04/result04-original.json",
+      "sha256": "3e94b99a354719380674a7115d8b202c613beee4e2d90fccc6d443c3d7664327"
+    },
+    {
+      "bytes": 952,
+      "path": "qa-fixtures-common08/probe-completion04/status04-02-tool-original.json",
+      "sha256": "7509527eab6665ed651907d0fe82464d16160592a85b7f9bd0863902f08df62b"
+    },
+    {
+      "bytes": 1145,
+      "path": "qa-fixtures-common08/probe-completion04/ROOT_TERMINAL_REVIEW.json",
+      "sha256": "dfae8f82186873209d91cc994024d62dd05ef476cdfb4a4df2ecaa914435777b"
+    },
+    {
+      "bytes": 14597,
+      "path": "qa-fixtures-common08/probe-completion04/ROOT_RUNTIME_DIAGNOSTICS_REVIEW04.json",
+      "sha256": "955125dc87cb9961320fc0483e0d57c20b207a137fb264b39007d4a0a8a52851"
+    },
+    {
+      "bytes": 94239,
+      "path": "qa-fixtures-common08/probe-completion04/INDEPENDENT_ELF_INVENTORY04.json",
+      "sha256": "40bb9f296213e560bb696fa6536a792ab23c75f3fc27fa9cdb6258a298f4e274"
+    },
+    {
+      "bytes": 18235,
+      "path": "qa-fixtures-common08/probe-completion04/CLOCK_ACTUAL_FEATURE_REVIEW04.json",
+      "sha256": "6d9a0d7dc6202555e84e281e5a8aa8b787cdfe9b8b5d01d3b4cf5603cacac1e5"
+    },
+    {
+      "bytes": 2664820,
+      "path": "qa-fixtures-common08/probe-completion04/saved-runtime-export04.json",
+      "sha256": "c061b63f1fe43d115dfc3ab5ef7c085c1a7f5d54dee9460caf2e24c2f0420e0d"
+    },
+    {
+      "bytes": 2745,
+      "path": "qa-fixtures-common08/probe-completion04/SOURCE_REVIEW04.json",
+      "sha256": "62440caa3671e66df86125f0f888fa3d57448a641f1311a821e967ac1ed983e9"
+    }
+  ],
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "gate_definitions": {
+    "bytes": 24135,
+    "path": "all-app-readiness08/app-gates.json",
+    "sha256": "441289f9c04b46f38e1dd6e19f23ec6e4c6729b6a6f814cab81c0ae6fbbb1e78"
+  },
+  "limits": [
+    "Runtime identity describes the actual sampled UID process generations, not an Asterinas or system-wide engine qualification.",
+    "The two unresolved name candidates are actual read-only non-executable property/idmap mappings; no property/idmap contents were read.",
+    "One overlay APK had only a non-ELF header classification in this collector, not a whole-file integrity claim.",
+    "Dalvik JIT and kernel vdso/vsyscall mappings were identified by saved names, permissions and boundaries; no process-memory contents were read.",
+    "Nativebridge support libraries are present. Their names alone do not prove that a translator was active or that all emulation is absent.",
+    "Stability credit is limited to the predeclared three-round bounded QA-fixture budget; no long-duration leak or stress claim.",
+    "Crash/ANR review covers consecutive retained-buffer intervals. Original external-log-clear and older-history limitations remain.",
+    "This is one QA fixture entry in the fixed45-App denominator, not an end-user business App completion or an Android/native-helper/Asterinas release.",
+    "Normal task removal/reopen default state is qualified; no unsupported persistent-editor, IME composition or unspecified UI feature is claimed."
+  ],
+  "new_device_or_UI_operations": 0,
+  "observed_at_utc": "2026-11-05T23:55:23.344323+00:00",
+  "original_controller_fields_preserved": {
+    "release_scope_requires_independent_review": true,
+    "stable_complete_mapping_samples": 0,
+    "whole_app_production_ready": false
+  },
+  "other_app_readiness_changed": false,
+  "package": "local.pocket4.fixture",
+  "qualification_scope": "Exact installed five-class Pocket4 local QA fixture on the current Linux/DroidLoom Android17 epoch, for its complete declared view-only controls/isolation contract and predeclared bounded repeat/resource budget.",
+  "retained_attempt_reconciliation": [
+    {
+      "bytes": 801,
+      "path": "qa-fixtures08/probe-ui01-output.json",
+      "reconciliation": "Retained FAILED: active package-field parser rejected before launch; zero UI inputs/owned tasks. Current exact appId/version and byte identity independently observed.",
+      "sha256": "1833221c68c7f69f08b7485095bd87f8f60031c34d5b2176aafafa8d81efee8c"
+    },
+    {
+      "bytes": 612,
+      "path": "qa-fixtures08/probe-ui02-output.json",
+      "reconciliation": "Retained FAILED: empty EditText hint display was treated as text; zero UI inputs, task914 normally closed. Current native empty readback plus actual empty Confirm output resolves that observation assumption.",
+      "sha256": "4a3f0b6e9374bbd131eab31b2d60da9d5dbd7d41702fe062e4dd962768c5c7c1"
+    },
+    {
+      "bytes": 2779,
+      "path": "qa-fixtures08/probe-ui03-result.json",
+      "reconciliation": "Retained prior two-round scoped PASS on identical APK; does not replace current repeat/resource/ambiguity evidence.",
+      "sha256": "9c2526a4e717c1de0f2c52ef649dfe2de02be7a19442e33f68cfcd0e6cf2754f"
+    }
+  ],
+  "retained_failures_reconciled": true,
+  "reviewed_at_utc": "2026-11-06T00:16:09.898464+00:00",
+  "reviewer": "root",
+  "schema": "pocket4-probe04-whole-qa-app-release-review/v1",
+  "scope": "whole_app_release",
+  "separate_review_not_original_result_rewrite": true,
+  "uid": 10115,
+  "unresolved_findings": [],
+  "version_code": 0,
+  "whole_app_production_ready": true
+}

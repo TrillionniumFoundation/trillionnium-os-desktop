@@ -1,0 +1,95 @@
+{
+  "actual_core12_final_diagnostics": "not reached because retained fixture failed zero-baseline check; no new diagnostic gate granted",
+  "automatic_matrix_gate_credit": false,
+  "excluded": [
+    "APKs/DEX/private signing keys",
+    "screenshots/full private UI transcript",
+    "base64 stage/request envelopes",
+    "unrelated account or user data",
+    "unrun Core13 candidate"
+  ],
+  "fresh_reconciliation": "exact original-title event1 and calendar1 unchanged; no Calendar Activity; only task851; same Main and package identities",
+  "independent_cleanup": {
+    "Main_and_package_identity_unchanged": true,
+    "calendar_delete_calls": 1,
+    "calendar_delete_pending": false,
+    "counts_after": {
+      "Attendees": 0,
+      "CalendarAlerts": 0,
+      "Calendars": 0,
+      "Events": 0,
+      "EventsRawTimes": 0,
+      "ExtendedProperties": 0,
+      "Instances": 0,
+      "Reminders": 0
+    },
+    "counts_as_ui_event_delete": false,
+    "event_delete_calls": 1,
+    "event_delete_pending": false,
+    "finished_utc": "2026-11-05T20:01:44.415949+00:00",
+    "only_original_task": [
+      851
+    ],
+    "result_bytes": 9590,
+    "result_sha256": "f28eae64a0c2ff53526b4a6c571ae9ab921f31fa4ed0e0b32b5523af52499ef9",
+    "started_utc": "2026-11-05T20:01:39.065533+00:00",
+    "state": "EXACT_CORE12_EVENT_AND_EMPTY_CALENDAR_REMOVED_BASELINE_RESTORED",
+    "ui_inputs": 0
+  },
+  "installed_apk_sha256": "00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f",
+  "installed_observation_source_sha256": "0ca5846a91a737ff795ce7f856b3916e3903bb2f6498f5f5ad25e1a893fb420a",
+  "late_command_transport_outcome": "unknown, preserved; absent from complete original controller transcript and journal",
+  "not_claimed": [
+    "full Calendar core pass",
+    "recurrence or reminder/snooze runtime pass",
+    "new runtime identity gate",
+    "new crash/ANR gate",
+    "whole-App production readiness",
+    "unrun Core13 success"
+  ],
+  "original_command_not_replayed": true,
+  "original_error": "LeaseExpired:CALENDAR_LEASE_EXPIRED_NO_REPLAY",
+  "original_finished_utc": "2026-11-05T19:49:25.046407+00:00",
+  "original_lease_seconds": 720,
+  "original_result": {
+    "bytes": 13317,
+    "sha256": "89e5ba58f72707cc3235a8d5054ee83b4b613b09115989f9327f9ad591fff575"
+  },
+  "original_started_utc": "2026-11-05T19:37:24.720848+00:00",
+  "original_state": "FAILED",
+  "owned_task_normally_closed": [
+    979
+  ],
+  "read_only_result": {
+    "bytes": 23590,
+    "sha256": "7d976aa401bf91481725d18e4a125ad1c1a18b4c201a3b6cd91fe75f0207ad8c"
+  },
+  "recorded_partial_gates": [
+    "cancel_unsaved_without_event_write",
+    "created_in_calendar_ui",
+    "explicit_first_use_local_calendar"
+  ],
+  "roles": {
+    "cancel-confirm": 1,
+    "cancel-open": 1,
+    "cancel-title": 1,
+    "edit-title": 1,
+    "focus-cancel-title": 1,
+    "focus-edit-title": 1,
+    "focus-local-name": 1,
+    "local-confirm": 1,
+    "local-name": 1,
+    "local-open": 1,
+    "open-edit": 1,
+    "open-new": 1,
+    "save-create": 1
+  },
+  "schema": "calendar-core12-partial-and-independent-cleanup-v1",
+  "ui_actions": 19,
+  "uncompleted_core_gates": [
+    "edited_same_event",
+    "normal_close_reopen_detail",
+    "deleted_in_calendar_ui"
+  ],
+  "whole_app_production_ready": false
+}

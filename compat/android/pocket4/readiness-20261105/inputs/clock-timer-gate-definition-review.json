@@ -1,0 +1,50 @@
+{
+  "binding": {
+    "apk_sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172",
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "package": "com.android.deskclock",
+    "uid": 10063,
+    "user": 0,
+    "version_code": 37
+  },
+  "composition_disclosure": "Two separate owned fixtures/runs on the same APK. This does not claim one timer was paused/resumed and then expired in one continuous run.",
+  "coverage": [
+    {
+      "evidence_sha256": "ed01ff52b5dfee169a1218e23836ebe5eb6392cf8e589d3082fd172bc1223c6d",
+      "finished_utc": "2026-11-05T14:48:34.547728+00:00",
+      "scope": "Current-binary core03 owned timer start/pause/normal close/reopen/resume/reset/delete."
+    },
+    {
+      "evidence_sha256": "6c6d7e4c073e956c089ff3a7a63c1173771d76d4cea7c1e7c1936620f39752cf",
+      "finished_utc": "2026-11-05T16:18:16.958837+00:00",
+      "scope": "Current-binary expiry05 sole 60s timer, normal close/process death, cold FGS EXPIRED, Stop reset and Delete."
+    }
+  ],
+  "decision_is_recommendation_only": true,
+  "existing_original_report_or_matrix_edited": false,
+  "independent_audio_and_visual_limits": [
+    "No physical speaker audibility qualification",
+    "No matched host Pulse stream",
+    "No observed desktop popup"
+  ],
+  "not_granted": [
+    "clock.alarm",
+    "clock.persist",
+    "identity engine mapping",
+    "stability",
+    "release_scope",
+    "whole-App production ready"
+  ],
+  "original_HAL_false_preserved": true,
+  "original_outer05_exit_code": 1,
+  "plan": {
+    "bytes": 24135,
+    "definition": "Start/pause/resume an owned timer and observe completion.",
+    "gate": "clock.timer",
+    "path": "all-app-readiness08/app-gates.json",
+    "sha256": "441289f9c04b46f38e1dd6e19f23ec6e4c6729b6a6f814cab81c0ae6fbbb1e78"
+  },
+  "plan_modified": false,
+  "recommendation": "An explicit independent review may pass this narrowly defined gate on the current e4ff binary, using core03 and expiry05 together. Neither existing reports nor the frozen plan should be rewritten.",
+  "schema": "Clock-timer-gate-recommendation/v1"
+}

@@ -1,0 +1,26 @@
+--- a/frameworks/base/services/core/java/com/android/server/storage/StorageSessionController.java
++++ b/frameworks/base/services/core/java/com/android/server/storage/StorageSessionController.java
+@@ -247,13 +247,21 @@
+      * Call {@link #onVolumeRemove} to remove the connection without waiting for exit
+      */
+     public void onVolumeUnmount(VolumeInfo vol) {
++        if (!shouldHandle(vol)) {
++            return;
++        }
+         String sessionId = vol.getId();
+         final long token = Binder.clearCallingIdentity();
+         try {
+-            StorageUserConnection connection = onVolumeRemove(vol);
++            int userId = getConnectionUserIdForVolume(vol);
++            StorageUserConnection connection;
++            synchronized (mLock) {
++                connection = mConnections.get(userId);
++            }
+             Slog.i(TAG, "On volume unmount " + vol);
+             if (connection != null) {
+-              connection.removeSessionAndWait(sessionId);
++                // This must be the only removal, so the session can be ended and awaited.
++                connection.removeSessionAndWait(sessionId);
+             }
+         } catch (ExternalStorageServiceException e) {
+             Slog.e(TAG, "Failed to end session for vol with id: " + sessionId, e);

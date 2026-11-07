@@ -1,0 +1,90 @@
+{
+  "actual_failure": {
+    "activity_launch_was_in_original_task": true,
+    "actual_guest_pid": 2340,
+    "actual_uid": 10061,
+    "at_utc": "2026-11-05T12:46:40.946Z",
+    "delete_commands": 0,
+    "edit_commands": 0,
+    "exit_reason": 4,
+    "exit_reason_name": "APP CRASH(EXCEPTION)",
+    "helper_event_writes": 0,
+    "missing_activity": "com.android.calendar.event.EditEventActivity",
+    "normal_task_close": false,
+    "save_commands": 0,
+    "task_id": 949,
+    "task_removed_by_force_crash": true,
+    "type": "ClassNotFoundException"
+  },
+  "business_scope_passed": false,
+  "calendar_identity": {
+    "apk_sha256": "7522e88fe03f4997513b0e03591da215b8ebc67f6c933939a73addc3c75495a9",
+    "package": "com.android.calendar",
+    "uid": 10061,
+    "version_code": 37
+  },
+  "cleanup": {
+    "completed": false,
+    "error_type": "IllegalArgumentException",
+    "existing_calendar_identity_and_permissions_unchanged": true,
+    "independent_followup": "inspect-04",
+    "last_counts": {
+      "Attendees": 0,
+      "Calendars": 1,
+      "Events": 0,
+      "Instances": 0,
+      "Reminders": 0
+    },
+    "last_observed_task_ids": [
+      851
+    ],
+    "lease_reset": false,
+    "other_tasks_unchanged": true,
+    "request": "cleanup-03",
+    "request_replayed": false,
+    "result": "RECORDED_FAILURE",
+    "retained_helper": {
+      "apk_sha256": "77812a53ee71aea182598692fc9dbe99643941754d0173874898532546902f30",
+      "package": "org.droidloom.qa.calendar.r12.n11d95b10e4c4545d",
+      "uid": 10181
+    },
+    "retained_owned_calendar_id": 1
+  },
+  "current_state": "EDITOR_CRASH_CONFIRMED_EMPTY_FIXTURE_RETAINED",
+  "evidence": [
+    {
+      "bytes": 8025,
+      "file": "actual-flow01-result.json",
+      "sha256": "34b6d944cc880ae66dd61d71523e848d55816125bfe89ae6160587205177567c"
+    },
+    {
+      "bytes": 17703,
+      "file": "read01-result.json",
+      "sha256": "90274c58ec73acb34072db9f0838d0b553f3eec91c0b5bce8276f7ecd68a7171"
+    },
+    {
+      "bytes": 18568,
+      "file": "cleanup01-result.json",
+      "sha256": "65356ee742d25ad747d32b60348ef21ed0eb0722dee0c45969e71074dac2ab75"
+    },
+    {
+      "bytes": 11259,
+      "file": "reconcile01-result.json",
+      "sha256": "5678b53da1dd69ae3910f7adb326bd8c9c4f0d6627c3cad14693911e6110c043"
+    }
+  ],
+  "limits": [
+    "The original UI and cleanup failures remain unchanged.",
+    "Host-side code inspection and a repair candidate do not establish restored editor functionality.",
+    "The upstream CalendarProvider selection guard is a lead pending exact installed-code/log confirmation.",
+    "No account login or synchronization business is qualified."
+  ],
+  "schema": "pocket4-calendar-runtime01-selected-status-v1",
+  "ui_handoff": {
+    "calendar_ui_install_delete_paused": true,
+    "condition": "Root adjusted internal scheduling after terminal mutation jobs and independent empty-state readback; the retained fixture is disclosed and not called clean.",
+    "handoff_to": "Documents features",
+    "new_scope_required_for_any_later_cleanup": true
+  },
+  "whole_app_production_ready": false
+}

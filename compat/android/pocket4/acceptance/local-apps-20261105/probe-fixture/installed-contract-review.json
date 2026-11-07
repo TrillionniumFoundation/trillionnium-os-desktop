@@ -1,0 +1,26 @@
+{
+  "schema": "pocket4-installed-probe-contract-review-v1",
+  "reviewed_at_utc": "2026-11-05T09:36:06.735899+00:00",
+  "package": "local.pocket4.fixture",
+  "uid": 10115,
+  "version_code": 0,
+  "apk_bytes": 12713,
+  "apk_sha256": "91e352c25e7c6ef54aa53ce652931e40ad1437dfcd0ebad2529bc662558a3dd6",
+  "dex_sha256": "d478d42ec1aad8d05734e3ea8b817d89f20979b369656cda421b7080967ca559",
+  "actual_disassembly_job": "1a1aae3115e-fc05-4877",
+  "disassembly_success": true,
+  "disassembly_result_sha256": "6df51c5d608a8732706843021ba6132f79b75bd3ed02add7974cffbc1b4b9a79",
+  "all_five_classes_reviewed": true,
+  "declared_fixture_purpose": "Local two-editor input and confirmation fixture; retained in all-App scope.",
+  "controls": [
+    "editor: Unicode plain-text field",
+    "other_editor: independent plain-text field",
+    "confirm: set result to 已点击： plus first editor getText()",
+    "result: initially 尚未点击, then exact confirmation text"
+  ],
+  "new_launch_state": "fresh empty editor values and initial result by design",
+  "external_business_actions_in_reviewed_source": [],
+  "raw_personal_content_included": false,
+  "remaining_control_case": "Exact ambiguous-selector rejection for the two-field fixture is not yet exercised.",
+  "whole_app_production_ready": false
+}

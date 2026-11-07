@@ -1,0 +1,32 @@
+--- revision07/run_features01.py
++++ revision08/run_features01.py
+@@ -4,10 +4,10 @@
+ from datetime import datetime,timezone
+ import argparse,hashlib,json,os,re,signal,time,types
+ 
+-ROOT=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-07')
+-TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-07')
+-TRANSPORT=Path('/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/camera_transaction.py')
+-TRANSPORT_SHA='e65a47bea8b3800d0b1a89247bd8c356dd291523c2d248d401d05d1d3b55fb83'
++ROOT=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-08')
++TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-08')
++TRANSPORT=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
++TRANSPORT_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+ PINS={'features_ui.py': 'edaf39c50d6ff85748fef1b287bf3875fd51321a0a2a837ff6f30e59a8cd4417', 'package_fixture.py': '596dfb03273f2810cf9f98871668042bb62f85807d6cdad9a113b87003b8d932', 'owned_tree.py': 'e4b19adc1e47719413bfae5656bac8b04f5624c779ee7118b490327e2776a445', 'runtime_evidence.py': 'a8aa502e397187d0460c18efa1da09f46bafce9f019b1048046bfce8d2468c65', 'bounded_diagnostics.py': 'd3ab104ff92a942de1d45855ec3c8d44b742373ce67087e67773d15b46abf064'}
+ RUN='eeff7aa90e47139a';PACKAGE='org.droidloom.qa.documents.r12.n'+RUN
+ FOLDER='Pocket4_DocFeatures_r12_'+RUN;SOURCE='source-'+RUN;COPIES='copies-'+RUN
+--- revision07/stage_run01.py
++++ revision08/stage_run01.py
+@@ -3,9 +3,9 @@
+ from pathlib import Path
+ import ast, base64, hashlib, json, os, sys, zlib
+ 
+-TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-07')
+-RUN=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-07')
+-PINS={'features_ui.py': 'edaf39c50d6ff85748fef1b287bf3875fd51321a0a2a837ff6f30e59a8cd4417', 'package_fixture.py': '596dfb03273f2810cf9f98871668042bb62f85807d6cdad9a113b87003b8d932', 'owned_tree.py': 'e4b19adc1e47719413bfae5656bac8b04f5624c779ee7118b490327e2776a445', 'runtime_evidence.py': 'a8aa502e397187d0460c18efa1da09f46bafce9f019b1048046bfce8d2468c65', 'bounded_diagnostics.py': 'd3ab104ff92a942de1d45855ec3c8d44b742373ce67087e67773d15b46abf064', 'run_features01.py': 'b54063e7275ddd29c8b42a4204783e82499ddfa1c2b9710c623bcce35fb45368'}
++TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-08')
++RUN=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-08')
++PINS={'features_ui.py': 'edaf39c50d6ff85748fef1b287bf3875fd51321a0a2a837ff6f30e59a8cd4417', 'package_fixture.py': '596dfb03273f2810cf9f98871668042bb62f85807d6cdad9a113b87003b8d932', 'owned_tree.py': 'e4b19adc1e47719413bfae5656bac8b04f5624c779ee7118b490327e2776a445', 'runtime_evidence.py': 'a8aa502e397187d0460c18efa1da09f46bafce9f019b1048046bfce8d2468c65', 'bounded_diagnostics.py': 'd3ab104ff92a942de1d45855ec3c8d44b742373ce67087e67773d15b46abf064', 'run_features01.py': '403c43d0b39dabc5c5898277b7c3370d530ace0b5d94146f55fd54b5addd81ba'}
+ 
+ 
+ def need(value,reason):

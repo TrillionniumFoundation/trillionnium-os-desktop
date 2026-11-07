@@ -1,0 +1,67 @@
+--- probe_ui02.py
++++ probe_ui03.py
+@@ -5,7 +5,7 @@
+ import argparse, hashlib, json, re, signal, time, types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-qa-probe-ui-20261105-r12-02')
++ROOT = Path('/home/alex/work/pocket4-qa-probe-ui-20261105-r12-03')
+ CONTACT = Path('/home/alex/work/pocket4-contacts-session-tools-20261105-r12-01')
+ PACKAGE = 'local.pocket4.fixture'
+ COMPONENT = PACKAGE + '/.ProbeActivity'
+@@ -82,11 +82,19 @@
+             need(node.get('editable') is True and node.get('password') is False,
+                  'OWNED_PLAIN_TEXT_FIELD_REQUIRED')
+         if expected is not None:
+-            need(node.get('text') == expected, 'EXACT_FIXTURE_READBACK_REQUIRED_' + name)
++            # The actual Android 17 tree reports TextView's visible hint in text.
++            # Do not rewrite that node. The empty first-field value is proved
++            # separately by ProbeActivity's own getText() -> confirmation result.
++            hints = {'editor': '中文与 Unicode 输入',
++                     'other_editor': '第二个输入框：验证歧义拒绝'}
++            observed_hint = (editable and expected == '' and name in hints
++                and node.get('hint') == node.get('text') == hints[name])
++            need(node.get('text') == expected or observed_hint,
++                 'EXACT_FIXTURE_READBACK_REQUIRED_' + name)
+         return node
+ 
+     def act(self, tag, operation, node, value=None):
+-        need(time.monotonic() < self.deadline and self.number < 12 and self.c.pending is None,
++        need(time.monotonic() < self.deadline and self.number < 14 and self.c.pending is None,
+              'UI_ACTION_BUDGET_OR_PENDING')
+         selector = {'id': node['resource-id'], 'class': node['class']}
+         if node.get('text'):
+@@ -128,6 +136,8 @@
+             self.node('other_editor', '', True)
+             self.node('result', '尚未点击')
+             self.node('confirm', '确认测试')
++            self.act('confirm-initial-empty', 'click', self.node('confirm', '确认测试'))
++            self.node('result', '已点击：')
+             value = 'Pocket4 QA r12 7d2ab6f9 round%d 中文 café 😀' % index
+             second = 'Owned second field %d Ω' % index
+             self.act('unicode', 'set-text', self.node('editor', '', True), value)
+@@ -188,7 +198,7 @@
+                     result['identity_after'] = identity(session)
+                     need(result['identity_before'] == result['identity_after'], 'IDENTITY_OR_PERMISSIONS_CHANGED')
+                     need(len(flow.closed) == len(set(flow.owned)) == 2 and flow.closed == flow.owned
+-                         and flow.c.pending is None and flow.c.actions == 12, 'UI_ACTION_OR_CLEANUP_COUNT_MISMATCH')
++                         and flow.c.pending is None and flow.c.actions == 14, 'UI_ACTION_OR_CLEANUP_COUNT_MISMATCH')
+                     session.caller_status('probe-final-caller')
+                     result.update(state='TWO_ROUND_UNICODE_CONFIRM_REOPEN_AND_CLEANUP_VERIFIED',
+                                   ui_business_and_diagnostics_verified=True)
+@@ -209,7 +219,7 @@
+             finished_utc=datetime.now(timezone.utc).isoformat())
+         if ROOT.is_dir():
+             tx.write_new(ROOT / 'result.json', result)
+-        tx.write_new(HERE / 'probe-ui02-result.json', result, alex_readable=True)
++        tx.write_new(HERE / 'probe-ui03-result.json', result, alex_readable=True)
+         print(json.dumps({key: result.get(key) for key in ('state','error','terminal_error',
+             'ui_actions','pending_effect','owned_tasks','closed_tasks')}))
+     return 0 if result['ui_business_and_diagnostics_verified'] else 1
+@@ -221,5 +231,5 @@
+     if parser.parse_args().execute:
+         raise SystemExit(execute())
+     print(json.dumps({'state': 'PLAN_ONLY', 'package': PACKAGE, 'ui_actions': 0,
+-        'planned_launches': 2, 'planned_inputs': 12, 'planned_normal_closes': 2,
++        'planned_launches': 2, 'planned_inputs': 14, 'planned_normal_closes': 2,
+         'package_changes': 0, 'account_operations': 0}))

@@ -1,0 +1,198 @@
+--- revision03/features_ui.py
++++ revision04/features_ui.py
+@@ -164,8 +164,28 @@
+             'CONTROL_NOT_FULLY_VISIBLE_IN_OWNED_SCOPE')
+         return [(bounds[0]+bounds[2])//2,(bounds[1]+bounds[3])//2]
+ 
++    def validate_text_preinput_snapshot(self,request,frame,label,step,actions_before):
++        # Both call sites are before the input intent, counter, pending marker,
++        # and dispatch. The frozen helper omits outcome_unknown for this local
++        # validation exception; establish no input from this exact caller stage.
++        try:self.s.helper.validate_snapshot(request,frame)
++        except self.s.helper.ControlError as exc:
++            details=exc.details
++            if (str(exc)!='STALE_FRAME' or details.get('action_taken') is not False
++                or ('outcome_unknown' in details and details['outcome_unknown'] is not False)
++                or self.pending or self.actions!=actions_before):raise
++            proof={'action_taken':False,'outcome_unknown':False,'automatic_retry':False,
++                'proof_source':'local_set_text_pre_input_snapshot','input_dispatch_started':False,
++                'input_intent_recorded':False,'snapshot_step':step,'input_action_count':actions_before,
++                'original_details':details,
++                'expected_digests':{k:request[k] for k in ('frame_sha256','scope_sha256','context_token')},
++                'actual_digests':{k:frame['meta'][k] for k in ('frame_sha256','scope_sha256','context_token')}}
++            self.record(label+'-pre-input-no-effect',proof)
++            raise self.s.helper.ControlError('STALE_FRAME',**proof) from exc
++
+     def input(self,obs,label,node,kind='tap',value=None,transition=None,popup=False):
+         self.budget();need(not self.pending,'PENDING_INPUT_NOT_REPLAYABLE')
++        actions_before=self.actions
+         self.check_tasks('before-'+label);need(self.focus()==obs['focus'],'INPUT_FOCUS_CHANGED')
+         need(node.get('enabled') is True,'INPUT_NODE_DISABLED')
+         shot=obs['screenshot'];scope=shot['scope'];point=self.box(obs,node)
+@@ -186,7 +206,9 @@
+             'window_token':scope['window_token'],'frame_sha256':shot['frame_sha256'],
+             'scope_sha256':shot['scope_sha256'],'context_token':shot['context_token']}
+         if kind in ('set-text','long-press'):
+-            frame=self.s.helper.capture(snapshot_request);self.s.helper.validate_snapshot(snapshot_request,frame)
++            frame=self.s.helper.capture(snapshot_request)
++            if kind=='set-text':self.validate_text_preinput_snapshot(snapshot_request,frame,label,'first',actions_before)
++            else:self.s.helper.validate_snapshot(snapshot_request,frame)
+             if kind=='set-text':
+                 fresh=self.s.helper.ui({'op':'dump','expected_package':scope['package'],
+                     'display':0,'accessibility_mode':'none'})
+@@ -208,7 +230,9 @@
+                 self.record(label+'-cross-connection-editor-verified',{
+                     'original_connection_window_id':node['window_id'],'fresh_connection_window_id':current['window_id'],
+                     'all_other_node_fields_equal':True,'wm_window_token':scope['window_token']})
+-            frame=self.s.helper.capture(snapshot_request);self.s.helper.validate_snapshot(snapshot_request,frame)
++            frame=self.s.helper.capture(snapshot_request)
++            if kind=='set-text':self.validate_text_preinput_snapshot(snapshot_request,frame,label,'last',actions_before)
++            else:self.s.helper.validate_snapshot(snapshot_request,frame)
+             need(self.focus()==obs['focus'],'LAST_INPUT_FOCUS_CHANGED')
+         self.record(label+'-intent',{'request':request,'kind':kind,'node':node,'automatic_retry':False})
+         self.actions+=1;self.pending[label]={'input_acknowledged':False,'kind':kind}
+--- revision03/run_features01.py
++++ revision04/run_features01.py
+@@ -4,11 +4,11 @@
+ from datetime import datetime,timezone
+ import argparse,hashlib,json,os,re,signal,time,types
+ 
+-ROOT=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-03')
+-TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-03')
++ROOT=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-04')
++TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-04')
+ TRANSPORT=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ TRANSPORT_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+-PINS={'features_ui.py': '99225ca32314addfe3d429b73d70eea989bd94d686bb5d0eaf3b80eec080b066', 'package_fixture.py': '596dfb03273f2810cf9f98871668042bb62f85807d6cdad9a113b87003b8d932', 'owned_tree.py': 'e4b19adc1e47719413bfae5656bac8b04f5624c779ee7118b490327e2776a445', 'runtime_evidence.py': 'cf88000ea1a82ffd8c24daea26140ae1d76d21f9b48dd782e84ae674a863d82b', 'bounded_diagnostics.py': 'd3ab104ff92a942de1d45855ec3c8d44b742373ce67087e67773d15b46abf064'}
++PINS={'features_ui.py': '764bd557c00748d3ae209096140ec11ba52f3294ffcd31c30aee86ba4c647078', 'package_fixture.py': '596dfb03273f2810cf9f98871668042bb62f85807d6cdad9a113b87003b8d932', 'owned_tree.py': 'e4b19adc1e47719413bfae5656bac8b04f5624c779ee7118b490327e2776a445', 'runtime_evidence.py': 'a8aa502e397187d0460c18efa1da09f46bafce9f019b1048046bfce8d2468c65', 'bounded_diagnostics.py': 'd3ab104ff92a942de1d45855ec3c8d44b742373ce67087e67773d15b46abf064'}
+ RUN='eeff7aa90e47139a';PACKAGE='org.droidloom.qa.documents.r12.n'+RUN
+ FOLDER='Pocket4_DocFeatures_r12_'+RUN;SOURCE='source-'+RUN;COPIES='copies-'+RUN
+ ALPHA='alpha-'+RUN+'.txt';BETA='beta-'+RUN+'.txt';APP_LABEL='Pocket4 Owned Documents eeff7aa9'
+@@ -230,18 +230,58 @@
+         obs=self.status(phase,obs);self.tree.expect(set(),label+'-still-empty')
+         self.pkg.grants(label+'-no-uri-grants',True);return obs
+ 
++    def new_folder_name_input(self,dialog,title,field):
++        need(field.get('resource-id')=='android:id/text1' and field.get('class')=='android.widget.EditText'
++            and field.get('text')==field.get('hint')=='Name' and field.get('value')==''
++            and field.get('showing-hint') is True,'ACTUAL_EMPTY_NEW_FOLDER_FIELD_REQUIRED')
++        def context(obs):
++            shot=obs['screenshot'];scope=shot['scope']
++            need(scope.get('a11y_window_id_is_connection_scoped') is True
++                and type(scope.get('window_id')) is int and scope['window_id']>=0,'CONNECTION_SCOPE_REQUIRED')
++            return {'focus':obs['focus'],'scope':{k:v for k,v in scope.items() if k!='window_id'},
++                **{k:shot[k] for k in ('source','context_token','width','height','scope_bounds',
++                    'scope_width','scope_height','coordinate_space')}}
++        original_context=context(dialog);original_field=stable_node(field);original_title=stable_node(title)
++        actions_before=self.ui.actions
++        for decision in range(3):
++            label='new-folder-name-'+str(decision+1)
++            try:self.ui.input(dialog,label,field,'set-text',COPIES);return
++            except self.s.helper.ControlError as exc:
++                proof=exc.details
++                if (str(exc)!='STALE_FRAME' or proof.get('action_taken') is not False
++                    or proof.get('outcome_unknown') is not False
++                    or proof.get('proof_source')!='local_set_text_pre_input_snapshot'
++                    or proof.get('input_dispatch_started') is not False or proof.get('input_intent_recorded') is not False
++                    or proof.get('input_action_count')!=actions_before or self.ui.actions!=actions_before
++                    or self.ui.pending or decision==2):raise
++                fresh=self.ui.observe('new-folder-name-fresh-'+str(decision+2),[FILES])
++                need(context(fresh)==original_context,'NEW_FOLDER_CONTEXT_CHANGED_AFTER_NO_INPUT')
++                newtitle=self.ui.one(fresh,lambda n:n.get('resource-id')==DOCS+':id/alertTitle',
++                    'ONE_FRESH_NEW_FOLDER_TITLE')
++                newfield=self.ui.one(fresh,lambda n:n.get('editable') is True and n.get('enabled') is True
++                    and n.get('password') is False,'ONE_FRESH_NEW_FOLDER_EDITOR')
++                need(all(type(n.get('window_id')) is int and n['window_id']>=0
++                    for n in (title,field,newtitle,newfield)),'EDITOR_CONNECTION_WINDOW_ID_REQUIRED')
++                need(stable_node(newtitle)==original_title and stable_node(newfield)==original_field,
++                    'NEW_FOLDER_FORM_CHANGED_AFTER_NO_INPUT')
++                self.ui.record('new-folder-name-fresh-decision',{'previous_label':label,
++                    'action_taken':False,'outcome_unknown':False,'maximum_decisions':3,
++                    'same_owned_dialog_field_original_value_and_geometry':True,
++                    'all_snapshot_digest_checks_retained':True,'unknown_input_replayed':False})
++                dialog,title,field=fresh,newtitle,newfield
++
+     def new_folder(self,obs):
+         self.location(obs);self.rows(obs,{SOURCE})
+         self.ui.input(obs,'new-folder-menu',self.more(obs),popup=True)
+         menu=self.ui.observe('new-folder-menu',[FILES])
+         self.ui.input(menu,'new-folder-dialog',self.control(menu,'New folder'))
+         dialog=self.ui.observe('new-folder-dialog',[FILES])
+-        self.ui.one(dialog,lambda n:n.get('resource-id')==DOCS+':id/alertTitle'
++        title=self.ui.one(dialog,lambda n:n.get('resource-id')==DOCS+':id/alertTitle'
+             and n.get('class')=='android.widget.TextView' and n.get('editable') is False
+             and n.get('enabled') is True and n.get('text')=='New folder','ACTUAL_NEW_FOLDER_DIALOG_TITLE')
+         field=self.ui.one(dialog,lambda n:n.get('editable') is True and n.get('enabled') is True
+             and n.get('password') is False,'ONE_ACTUAL_NEW_FOLDER_EDITOR')
+-        self.ui.input(dialog,'new-folder-name',field,'set-text',COPIES)
++        self.new_folder_name_input(dialog,title,field)
+         dialog=self.ui.observe('new-folder-name-readback',[FILES]);expected=self.tree.expected|{COPIES}
+         self.begin_operation('new-folder',expected)
+         self.dialog_confirm(dialog,'new-folder-confirm',COPIES,{'ok','create'})
+--- revision03/runtime_evidence.py
++++ revision04/runtime_evidence.py
+@@ -141,6 +141,12 @@
+                 row.update(maps_sha256=digest(maps),maps_bytes=len(maps),maps_rows=parsed,
+                     maps_before_after_equal=maps==after_maps,mapped_code_objects=objects,unresolved_executable_objects=unresolved,
+                     anonymous_executable_mappings=[m for m in parsed if 'x' in m['permissions'] and not m['inode']],
++                    non_filesystem_executable_mappings=[m for m in parsed if 'x' in m['permissions']
++                        and not m['path'].startswith('/')],
++                    named_dalvik_jit_executable_mappings=[m for m in parsed if 'x' in m['permissions']
++                        and m['path'] in ('[anon_shmem:dalvik-zygote-jit-code-cache]',
++                            '[anon_shmem:dalvik-jit-code-cache]')],
++                    non_filesystem_mapping_contents_read=False,
+                     engine_mappings=[m for m in parsed if ENGINE_NAME.search(m['path'])],
+                     actual_engine_exclusion_automatically_qualified=False)
+             after=self.s.held.proc_identity_at(proc,pid,time.monotonic()+3)
+@@ -222,6 +228,7 @@
+             'target_android_uids':TARGETS,'target_host_uids':self.host_uids,'thread_joined':True,'errors':self.errors,
+             'processes_observed':sorted({r['process_name'] for s in self.samples for r in s['rows']}),
+             'stable_complete_mapping_samples':sum(r['stable_process_identity'] and r['maps_before_after_equal'] and r['unresolved_executable_objects']==0 for r in full),
++            'stable_complete_mapping_samples_scope':'stable filesystem object observations without unresolved name candidates; excludes dynamic code qualification',
+             'scan_error_count':sum(len(s['errors']) for s in self.samples),
+             'file_operation_service_observed':any(r['process_name']=='com.android.documentsui:com.android.documentsui.services' for r in full),
+             'bounded_process_resource_observations':list(resources.values()),
+--- revision03/stage_run01.py
++++ revision04/stage_run01.py
+@@ -3,9 +3,9 @@
+ from pathlib import Path
+ import ast, base64, hashlib, json, os, sys, zlib
+ 
+-TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-03')
+-RUN=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-03')
+-PINS={'features_ui.py': '99225ca32314addfe3d429b73d70eea989bd94d686bb5d0eaf3b80eec080b066', 'package_fixture.py': '596dfb03273f2810cf9f98871668042bb62f85807d6cdad9a113b87003b8d932', 'owned_tree.py': 'e4b19adc1e47719413bfae5656bac8b04f5624c779ee7118b490327e2776a445', 'runtime_evidence.py': 'cf88000ea1a82ffd8c24daea26140ae1d76d21f9b48dd782e84ae674a863d82b', 'bounded_diagnostics.py': 'd3ab104ff92a942de1d45855ec3c8d44b742373ce67087e67773d15b46abf064', 'run_features01.py': '88000b64499752922e775ccf58f14b4a75e2f62c7d400d9b9d41b533bfe54644'}
++TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-04')
++RUN=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-04')
++PINS={'features_ui.py': '764bd557c00748d3ae209096140ec11ba52f3294ffcd31c30aee86ba4c647078', 'package_fixture.py': '596dfb03273f2810cf9f98871668042bb62f85807d6cdad9a113b87003b8d932', 'owned_tree.py': 'e4b19adc1e47719413bfae5656bac8b04f5624c779ee7118b490327e2776a445', 'runtime_evidence.py': 'a8aa502e397187d0460c18efa1da09f46bafce9f019b1048046bfce8d2468c65', 'bounded_diagnostics.py': 'd3ab104ff92a942de1d45855ec3c8d44b742373ce67087e67773d15b46abf064', 'run_features01.py': 'e9e0cbc7dd902694cac96bfbe7a0919787880885af909da7263657d795437be0'}
+ 
+ 
+ def need(value,reason):
+--- revision03/prepare_bundle.py
++++ revision04/prepare_bundle.py
+@@ -23,19 +23,21 @@
+     argv=['-n','/usr/bin/python3','-I','-',base64.b64encode(compressed).decode(),sha(compressed)]
+     request={'host':'pocket4','executable':'/usr/bin/sudo','cwd':'/home/alex/work',
+         'args':argv,'stdin':stage.read_text(),
+-        'timeout_seconds':960,'idempotency_key':'pocket4-documents-features-flow-r12-03'}
++        'timeout_seconds':960,'idempotency_key':'pocket4-documents-features-flow-r12-04'}
+     write(HERE/'flow01-request.json',request)
+-    files_for_review=(*names,'stage_run01.py','test_owned_tree.py','test_flow_boundaries.py','test_actual_flow02_regressions.py')
+-    manifest={'schema':'pocket4-documents-features-prepared-source-v1','state':'BUILT_UNINSTALLED_PREPARED_NOT_EXECUTED',
++    files_for_review=(*names,'stage_run01.py','test_preinput_decision.py')
++    manifest={'schema':'pocket4-documents-features-prepared-source-v1','state':'LOCAL_CANDIDATE_MAIN_BOUNDARY_HOLD_NOT_STAGED',
+         'temporary_package':'org.droidloom.qa.documents.r12.neeff7aa90e47139a',
+         'transport_sha256':'b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470',
+         'source_files':{n:{'bytes':len((HERE/n).read_bytes()),'sha256':sha((HERE/n).read_bytes())} for n in files_for_review},
+         'request_sha256':sha((HERE/'flow01-request.json').read_bytes()),
+         'bundle':{'compressed_bytes':len(compressed),'uncompressed_bytes':len(raw),'sha256':sha(compressed)},
+-        'new_tool_root':'/home/alex/work/pocket4-documents-features-tools-20261105-r12-03',
+-        'new_result_root':'/home/alex/work/pocket4-documents-features-flow-20261105-r12-03',
++        'new_tool_root':'/home/alex/work/pocket4-documents-features-tools-20261105-r12-04',
++        'new_result_root':'/home/alex/work/pocket4-documents-features-flow-20261105-r12-04',
+         'idempotency_key':request['idempotency_key'],'max_seconds':900,'max_ui_actions':80,'business_gate_count':12,
+         'remote_install_calls':0,'remote_UI_calls':0,'whole_app_production_ready':False,
++        'execution_blocked_until_parent_reconciles_Main_limits':True,
++        'frozen_transport_guard_modified':False,
+         'frozen_prior_checkpoint_modified':False}
+     write(HERE/'SOURCE_MANIFEST.json',manifest)
+     print(json.dumps({'state':manifest['state'],'runner_sha256':allpins['run_features01.py'],

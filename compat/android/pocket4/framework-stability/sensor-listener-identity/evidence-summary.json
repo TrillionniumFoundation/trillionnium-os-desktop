@@ -1,0 +1,115 @@
+{
+  "schema": "pocket4-sensor-listener-identity-evidence/v1",
+  "recorded_utc": "2026-11-06",
+  "scope": "Source fix and bounded host regression, with independent installed-code diagnosis. No Android deployment or whole-App qualification.",
+  "source": {
+    "frameworks_native": "ae266dcb706d083868578cfedce381ef44488a07",
+    "system_core": "545d2487e38192a2ce25040897ced877cf6b4f53",
+    "frameworks_base": "94b4c163b7dfe5ce3607f7bb8456f9573f7de57d",
+    "selected_git_blob_equal_files": 15,
+    "source_chain_receipt_sha256": "24cf9e979aa62ae78e61465b28702336856479469dd2267a1800e8fea1b60cd1",
+    "original_sensor_header_sha256": "e03bd5b9bc9c97b3828dce4ea1343a9b282afb1d9bf1730ebae06f1b562010e8",
+    "candidate_sensor_header_sha256": "025e28cc24edf7deda1466074f66d82b76f590e95fac484c8de7388ebcf0ac0d",
+    "patch_sha256": "f3c95284d310ddee09f991d99ba2d058e980241dc233e02e0eaf7ea8b1a36b4d",
+    "full_source_to_installed_build_identity_proven": false
+  },
+  "crash": {
+    "logcat_fatal_utc": "2026-11-06T04:42:33.540Z",
+    "tombstone_utc": "2026-11-06T04:42:33.774794186Z",
+    "signal": "SIGABRT",
+    "direct_trigger": "RefBase::weakref_type::incWeak safety assertion at previous weak count 1048576",
+    "call_path": [
+      "SensorService::registerClientListener",
+      "BpBinder::addFrozenStateChangeCallback",
+      "RefBase::weakref_type::incWeak"
+    ],
+    "counter_object": "Current BpBinder, identified by saved same-BuildID instruction flow",
+    "incWeak_call_offset": "0x65ee8",
+    "reported_tombstone_offset": "0x65eec",
+    "tombstone_offset_is_instruction_end_not_required_instruction_label": true,
+    "temporary_reference_normal_release_present": true,
+    "integer_wraparound_not_observed": true,
+    "all_historical_references_attributed_to_map": false,
+    "raw_tombstone_published": false,
+    "safe_projection_sha256": "4d551ec3da76cee0bd18a77956a87fa210faef87ff987cb0fd893d14753ebc6c",
+    "filtered_logcat_receipt_sha256": "8616c6e810fb04a5d1805a8d576bab6292bb25fbe20c01425fa7496fc7624ccc"
+  },
+  "installed_libraries": [
+    {
+      "name": "libutils.so",
+      "bytes": 168664,
+      "sha256": "1b8363ff798e5380759cfb841af281985a2584c8e22916595a52e68cf4123dc1",
+      "build_id": "5a9d60e47b8abaa40634f81d5a03ed1a"
+    },
+    {
+      "name": "libbinder.so",
+      "bytes": 1001920,
+      "sha256": "ec1311242bed21ae44c53fbbaf7a91b0b1af4f7492e40f95085797b8ec6f3695",
+      "build_id": "46b16fde21f2e1a084ce35fdc98c638d"
+    },
+    {
+      "name": "libsensorservice.so",
+      "bytes": 482192,
+      "sha256": "17cc6b64c31a4020c909c03bdb1f09dcd02c1f041286085dd5bf1dfbdb13351f",
+      "build_id": "79bbc9b3ea0e4d628c0612ad92a9718a"
+    }
+  ],
+  "installed_code_review": {
+    "all_three_build_ids_match_old_crash": true,
+    "selected_mappings_backing_dev_inode_equal": true,
+    "two_complete_hash_reads_equal": true,
+    "fixed_framework_guard_before_after_final_equal": true,
+    "all_owned_fds_closed": true,
+    "capture_receipt_sha256": "546afd091e3141b58d0224a2acdd1810a23e7403dc13e86fe6bddadba17e2128",
+    "instruction_review_sha256": "149ec2b968c566ce9ab7c68843e08dfe1b259960c5ad2cb76585743079763c61",
+    "sensor_disassembly_sha256": "455a00424b6a90f7d1032844218c9c601e501507b6a7b98acea24c0775f37e46",
+    "binder_disassembly_sha256": "5628e561bce989775e2992d6182855800efd5c3b77eaa450a7d08868f7aa2fb3",
+    "observed_identity_defect": "Installed count/insert hash the raw interface wrapper pointer, equality compares that same pointer, and each miss retains another listener through a new recipient and map entry.",
+    "production_layout_equivalence_claimed": false
+  },
+  "host_regression": {
+    "compiler": "GNU C++ 15.2.0",
+    "language": "C++20",
+    "original_cases": 17,
+    "original_expected_defects_reproduced": 4,
+    "original_unexpected_failures": 0,
+    "candidate_cases_passed": 17,
+    "candidate_unexpected_failures": 0,
+    "repeat_64": {
+      "original_entries": 64,
+      "candidate_entries": 1,
+      "original_callbacks": 64,
+      "candidate_callbacks": 1,
+      "original_test_binder_strong_count": 65,
+      "candidate_test_binder_strong_count": 2
+    },
+    "concurrent_16": {
+      "original_successes": 16,
+      "candidate_successes": 1,
+      "candidate_already_exists": 15
+    },
+    "actual_result_sha256": "5677d3d974def0a40a2057463d97c1c1886668f15f795f4921c3c6c61ab1ef64",
+    "portable_runner_actual_replay": {
+      "completed": true,
+      "original_compile_rc": 0,
+      "original_run_rc": 0,
+      "candidate_compile_rc": 0,
+      "candidate_run_rc": 0,
+      "result_sha256": "ce0e6f5291e8a3bc247bdfad32141904318675968b538036e3a3acc7fcbab229"
+    },
+    "kernel_binder_weak_count_measured": false,
+    "full_android_class_compiled": false
+  },
+  "patch_peer": {
+    "sha256": "6e17591eb6f323f0d7a2df770b919f372e6fac592c2e8420152dcc15a69716af",
+    "scope": "Complete hash/equality patch and four original lifecycle method bodies; no additional concrete source blocker found."
+  },
+  "release": {
+    "android_library_built": false,
+    "android_abi_validated": false,
+    "main_deployed": false,
+    "new_framework_adopted": false,
+    "whole_app_readiness_granted": false,
+    "threshold_changed": false
+  }
+}

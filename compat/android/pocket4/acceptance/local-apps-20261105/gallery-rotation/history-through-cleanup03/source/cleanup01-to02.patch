@@ -1,0 +1,91 @@
+--- executed-cleanup01/cleanup_seed01.py
++++ candidate-cleanup02/cleanup_seed02.py
+@@ -9,7 +9,9 @@
+ READ=Path('/home/alex/work/pocket4-gallery-rotation-seed-state-20261105-r12-01/result.json')
+ READ_SHA='ac94c7e3cfd6583479f44af065af73700a01cfc82143b412689c39e9f5e640ee'
+ SEED_SHA='5d23a581acbac7fdf63c7a452b4bfb4fe6b26bc0af381eab51f64b8742e7f567'
+-OUT=Path('/home/alex/work/pocket4-gallery-rotation-seed-cleanup-20261105-r12-01')
++OUT=Path('/home/alex/work/pocket4-gallery-rotation-seed-cleanup-20261105-r12-02')
++NO_EFFECT=Path('/home/alex/work/pocket4-gallery-rotation-seed-cleanup-20261105-r12-01/result.json')
++NO_EFFECT_SHA='234fa557fc4b724f48d2e18d236271db8728460c3665f6838ea8e0d9e4471386'
+ TOOLS=Path('/home/alex/work/pocket4-gallery-rotation-tools-20261105-r12-01')
+ TX=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ TX_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+@@ -92,6 +94,10 @@
+     media=load(TOOLS/'owned_media.py',PINS['owned_media.py']);ui=load(TOOLS/'rotation_ui.py',PINS['rotation_ui.py'])
+     diag=load(TOOLS/'bounded_diagnostics.py',PINS['bounded_diagnostics.py'])
+     old=json.loads(tx.read_regular(OLD/'result.json',OLD_SHA,65536));seen=json.loads(tx.read_regular(READ,READ_SHA,65536))
++    no_effect=json.loads(tx.read_regular(NO_EFFECT,NO_EFFECT_SHA,16384))
++    need(no_effect['state']=='FAILED' and no_effect['provider_delete_calls']==no_effect['uninstall_calls']==no_effect['rmdir_calls']==0
++        and no_effect['pending_effect'] is None and no_effect['outcome_unknown'] is False,
++        'PREVIOUS_CLEANUP_NOT_PROVEN_ZERO_EFFECT')
+     paths=list((OLD/'ui').glob('*-helper-seed-response.json'));need(len(paths)==1,'ONE_SAVED_SEED_TERMINAL')
+     reply=json.loads(tx.read_regular(paths[0],SEED_SHA,16384))['stdout'];lines=reply.splitlines()
+     need(len(lines)==2 and lines[1]=='INSTRUMENTATION_CODE: 1'
+@@ -121,6 +127,9 @@
+     need(expected_file['sha256']==media.PNG_SHA and expected_file['bytes']==2416,'FIXED_PNG_BYTES')
+     result={'schema':'gallery01-owned-seed-cleanup-v1','state':'FAILED','cleanup_verified':False,
+         'started_utc':stamp(),'original_result_sha256':OLD_SHA,'readonly_result_sha256':READ_SHA,
++        'previous_cleanup_zero_effect_sha256':NO_EFFECT_SHA,
++        'directory_empty_guard':'Exact held inode empty rmdir; row deletion only after that original directory is physically absent',
++        'cross_row_SQL_atomicity_claimed':False,
+         'original_failed_receipt_preserved':True,'original_helper_pending_preserved':'seed',
+         'UI_actions':0,'seed_replayed':False,'published_images':0,'App_business_or_UI_delete_credit':False,
+         'provider_delete_calls':0,'uninstall_calls':0,'rmdir_calls':0,'pending_effect':None,'outcome_unknown':False}
+@@ -164,8 +173,7 @@
+                 image_where=predicate(image);directory_where=predicate(directory)
+                 children="(parent=91 OR _data GLOB '"+media.folder('control')+"/*')"
+                 queried(s,'image-delete-readonly-preflight','content://media/external_primary/file/92',image_where,92)
+-                queried(s,'directory-atomic-readonly-preflight','content://media/external_primary/file/91',
+-                    directory_where+' AND NOT EXISTS(SELECT 1 FROM files WHERE '+children+' AND _id!=92)',91)
++                queried(s,'directory-tuple-readonly-preflight','content://media/external_primary/file/91',directory_where,91)
+                 need(owned.query('only-observed-child','SELECT _id FROM files WHERE '+children+' ORDER BY _id')==[{'_id':92}],
+                     'UNOWNED_CHILD_INDEX')
+                 need(private(s)==seen['private_after'] and owned.namespace('immediate-namespace')==rows
+@@ -179,15 +187,8 @@
+                 else:raise RuntimeError('PENDING_PNG_PHYSICAL_FILE_REMAINS')
+                 need(os.fstat(file_fd).st_nlink==0,'IMAGE_MOVED_INSTEAD_OF_REMOVED')
+                 result.update(pending_effect=None,outcome_unknown=False,image92_row_and_file_absent=True)
+-                if after:
+-                    no_child=directory_where+' AND NOT EXISTS(SELECT 1 FROM files WHERE '+children+')'
+-                    queried(s,'empty-directory-delete-readonly-preflight','content://media/external_primary/file/91',no_child,91)
+-                    fresh=os.open('.',os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=folder_fd)
+-                    try:need(os.listdir(fresh)==[],'OWNED_DIRECTORY_NOT_EMPTY')
+-                    finally:os.close(fresh)
+-                    s.guard();dispatch_delete(s,'delete-exact-empty-directory91','content://media/external_primary/file/91',no_child)
+-                    need(owned.namespace('after-directory-delete')==[],'DIRECTORY_INDEX_NOT_ABSENT')
+-                    result.update(pending_effect=None,outcome_unknown=False)
++                need(owned.query('directory-child-absence','SELECT _id FROM files WHERE '+children+' ORDER BY _id')==[],
++                    'DIRECTORY_CHILD_INDEX_REMAINS')
+                 try:current=os.stat(media.FOLDERS['control'],dir_fd=parent,follow_symlinks=False)
+                 except FileNotFoundError:pass
+                 else:
+@@ -206,7 +207,27 @@
+                     try:os.stat(name,dir_fd=parent,follow_symlinks=False)
+                     except FileNotFoundError:continue
+                     raise RuntimeError('OWNED_DIRECTORY_STILL_PRESENT')
+-                result.update(pending_effect=None,outcome_unknown=False,physical_and_indexed_namespace_absent=True)
++                result.update(pending_effect=None,outcome_unknown=False,original_physical_directory_removed_empty=True)
++                after=owned.namespace('after-exact-empty-rmdir')
++                need(after in ([],[directory]),'NAMESPACE_CHANGED_AFTER_RMDIR')
++                if after:
++                    queried(s,'absent-physical-directory-row-preflight','content://media/external_primary/file/91',directory_where,91)
++                    need(owned.query('no-child-after-rmdir','SELECT _id FROM files WHERE '+children+' ORDER BY _id')==[],
++                        'DIRECTORY_CHILD_INDEX_REAPPEARED')
++                    fresh_parent=s.target.open_root('/storage/emulated/0/DCIM',os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
++                    try:need(birth(os.fstat(fresh_parent))==birth(os.fstat(parent))==parent_birth,'PARENT_REPLACED_BEFORE_INDEX_DELETE')
++                    finally:os.close(fresh_parent)
++                    need(os.fstat(folder_fd).st_nlink==0,'ORIGINAL_DIRECTORY_NOT_UNLINKED')
++                    try:os.stat(media.FOLDERS['control'],dir_fd=parent,follow_symlinks=False)
++                    except FileNotFoundError:pass
++                    else:raise RuntimeError('DIRECTORY_PATH_RECREATED_KEEP_INDEX')
++                    need(owned.namespace('immediate-empty-index-tuple')==[directory]
++                        and owned.query('immediate-zero-child-index','SELECT _id FROM files WHERE '+children+' ORDER BY _id')==[],
++                        'FINAL_DIRECTORY_TUPLE_OR_CHILDREN_CHANGED')
++                    s.guard();dispatch_delete(s,'delete-exact-absent-directory-index91','content://media/external_primary/file/91',directory_where)
++                    need(owned.namespace('after-directory-index-delete')==[],'DIRECTORY_INDEX_NOT_ABSENT')
++                    result.update(pending_effect=None,outcome_unknown=False)
++                result['physical_and_indexed_namespace_absent']=True
+                 need(private(s)==seen['private_after'] and pkg.identity(s,PKG,pkg.APK_SHA,10194)==old['installed_identity'],
+                     'EXACT_HELPER_CHANGED_BEFORE_UNINSTALL')
+                 need(owned.namespace('before-uninstall')==[] and owned.original('original-preuninstall')==baseline,'MEDIA_PREUNINSTALL_CHANGED')

@@ -1,0 +1,38 @@
+{
+  "actual-expired": {
+    "Clock_events": [
+      "11-05 16:16:13.046   830   866 I am_proc_start: [0,732426,10063,com.android.deskclock,top-activity,{com.android.deskclock/com.android.deskclock.DeskClock}]",
+      "11-05 16:16:55.484   830   859 I am_kill : [0,732426,com.android.deskclock,905,remove task,157436]",
+      "11-05 16:16:55.497   830   912 I am_proc_died: [0,732426,com.android.deskclock,905,19]",
+      "11-05 16:17:51.151   830   865 I am_wtf  : [0,830,system_server,-1,ActivityManager,Background started FGS: Allowed [callingPackage: com.android.deskclock; callingUid: 10063; uidState: NONE; uidBFSL: n/a; BFGS denied: false; intent: Intent { act=com.android.deskclock.action.TIMER_EXPIRED flg=0x4 xflg=0x4 cmp=com.android.deskclock/.timer.TimerService (has extras) }; code:ALARM_MANAGER_WHILE_IDLE; tempAllowListReason:<,reasonCode:ALARM_MANAGER_WHILE_IDLE,duration:10000,callingUid:1000>; allowWiu:-1; targetSdkVersion:30; callerTargetSdkVersion:30; startForegroundCount:0; bindFromPackage:null; isBindService:false]]",
+      "11-05 16:17:51.157   830   866 I am_proc_start: [0,735449,10063,com.android.deskclock,started-service,{com.android.deskclock/com.android.deskclock.timer.TimerService}]",
+      "11-05 16:17:51.189   830   912 I am_foreground_service_start: [0,com.android.deskclock/.timer.TimerService,0,ALARM_MANAGER_WHILE_IDLE,30,30,0,0,0,1,UNKNOWN,0]"
+    ],
+    "events_source_sha256": "b1b7e3f9ae1600d9122843e80f38852e8792155651aeb4882dcc128e19b1eaaf",
+    "observed_utc": "2026-11-05T16:17:51.973497+00:00",
+    "service_app_process_pids": [
+      735449
+    ],
+    "service_state_lines": [
+      "app=ProcessRecord{c32a06c 735449:com.android.deskclock/u0a63}",
+      "startForegroundCount=1",
+      "isForeground=true foregroundId=2147483644 types=0x00000000 foregroundNoti=Notification(channel=TimerModelNotification shortcut=null contentView=com.android.deskclock/0x7f0d0024 vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|NO_CLEAR|FOREGROUND_SERVICE|HIGH_PRIORITY|LOCAL_ONLY color=0xff1a237e actions=2 vis=PRIVATE)",
+      "startRequested=true delayedStop=false stopIfKilled=true callStart=true lastStartId=1"
+    ],
+    "services_source_sha256": "6bb75ef891f7e70a45c7c76293a2a24a94d6f22529206d13c7a672b3efc12946",
+    "uptime_ms": 921181280
+  },
+  "after-owned-close": {
+    "Clock_events": [
+      "11-05 16:16:13.046   830   866 I am_proc_start: [0,732426,10063,com.android.deskclock,top-activity,{com.android.deskclock/com.android.deskclock.DeskClock}]",
+      "11-05 16:16:55.484   830   859 I am_kill : [0,732426,com.android.deskclock,905,remove task,157436]",
+      "11-05 16:16:55.497   830   912 I am_proc_died: [0,732426,com.android.deskclock,905,19]"
+    ],
+    "events_source_sha256": "39da3af5fb64e24f42596ca57aba25cc51cff3e5758843952b640bf9a82a3486",
+    "observed_utc": "2026-11-05T16:16:55.988379+00:00",
+    "service_app_process_pids": [],
+    "service_state_lines": [],
+    "services_source_sha256": "e9990d2b9ce9e862271712ca1ecd0c280ac8cd7a2fd48fc18fb69623521c33b0",
+    "uptime_ms": 921125300
+  }
+}

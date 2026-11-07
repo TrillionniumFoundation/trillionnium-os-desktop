@@ -1,0 +1,65 @@
+{
+  "Android_commands": 0,
+  "UI_actions": 0,
+  "after_sha256": "0f7faef704da224ba669f688862cfadef0009e890000ad9c13a0cffa4f9d9807",
+  "before_sha256": "1ce79f10e8889a85a2bcfd034ec5f2c91ee68096fd978014f01070e6d302bd8b",
+  "differences": [
+    {
+      "after": 7593129,
+      "before": 7449572,
+      "field": "/apk/bytes"
+    },
+    {
+      "after": "/data/app/~~xsYWlTJZScitaVx0PPhpRg==/com.android.deskclock-1Osktcwu1xSJkGkIxMeuoQ==/base.apk",
+      "before": "/product/app/DeskClock/DeskClock.apk",
+      "field": "/apk/guest_path"
+    },
+    {
+      "after": "cc7eece9d0429267d1950f0ca9287b041493bc5c05602ffc2119e1866381fb73",
+      "before": "ded49b00e5045bdd184c2a4f09b1b8650ce8f708134ac9f0f8c4cf0594bb0fae",
+      "field": "/apk/sha256"
+    },
+    {
+      "after": " USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_INSTALLER_EXEMPT|RESTRICTION_UPGRADE_EXEMPT",
+      "before": " USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_UPGRADE_EXEMPT",
+      "field": "/identity/runtime_permissions/android.permission.READ_EXTERNAL_STORAGE/flags"
+    },
+    {
+      "after": "2eb569d90fed2625825354851e9597905e191b5670e837a980a2b9d25e6c1745",
+      "before": "dba5288e001fa6d4e9705f3032b0024f3486688a6829e971cb9781c90e3c1e35",
+      "field": "/preferences_sha256"
+    }
+  ],
+  "non_apk_differences": [
+    {
+      "after": " USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_INSTALLER_EXEMPT|RESTRICTION_UPGRADE_EXEMPT",
+      "before": " USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_UPGRADE_EXEMPT",
+      "field": "/identity/runtime_permissions/android.permission.READ_EXTERNAL_STORAGE/flags"
+    },
+    {
+      "after": "2eb569d90fed2625825354851e9597905e191b5670e837a980a2b9d25e6c1745",
+      "before": "dba5288e001fa6d4e9705f3032b0024f3486688a6829e971cb9781c90e3c1e35",
+      "field": "/preferences_sha256"
+    }
+  ],
+  "original_result": {
+    "UI_actions": 0,
+    "app_data_write_commands": 0,
+    "automatic_retry": false,
+    "data_and_sound_state_preserved": false,
+    "finished_utc": "2026-11-05T12:04:56.657626+00:00",
+    "install_response_verified": true,
+    "new_sha256": "cc7eece9d0429267d1950f0ca9287b041493bc5c05602ffc2119e1866381fb73",
+    "observed_apk": {
+      "bytes": 7593129,
+      "guest_path": "/data/app/~~xsYWlTJZScitaVx0PPhpRg==/com.android.deskclock-1Osktcwu1xSJkGkIxMeuoQ==/base.apk",
+      "sha256": "cc7eece9d0429267d1950f0ca9287b041493bc5c05602ffc2119e1866381fb73"
+    },
+    "old_sha256": "ded49b00e5045bdd184c2a4f09b1b8650ce8f708134ac9f0f8c4cf0594bb0fae",
+    "package": "com.android.deskclock",
+    "production_ready": false,
+    "started_utc": "2026-11-05T12:04:53.540596+00:00",
+    "state": "POST_INSTALL_STATE_DIFFERS"
+  },
+  "package_writes": 0
+}

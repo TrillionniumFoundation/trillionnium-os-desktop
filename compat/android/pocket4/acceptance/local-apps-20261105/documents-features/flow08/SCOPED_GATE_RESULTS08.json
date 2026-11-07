@@ -1,0 +1,206 @@
+{
+  "add_global_unpassed_cutoff": false,
+  "deferred_supported_features": [
+    "search",
+    "sort"
+  ],
+  "evidence_result_sha256": "6f6e0b0a4ae1f32a386665a228efcabb9aeea5841a56511878138f5099994f35",
+  "full_flow_passed": false,
+  "observed_utc": "2026-11-05T18:21:06.869857+00:00",
+  "old_Documents11_scope_preserved": true,
+  "package": "com.android.documentsui",
+  "remaining_in_this_batch": [
+    "FILES_MULTIPLE_MOVE",
+    "FILES_MULTIPLE_DELETE_COPIES",
+    "NORMAL_CLOSE_REOPEN_APP_READBACK",
+    "REVOKED_EXISTING_URI_SECURITY_DENIAL",
+    "GET_CONTENT_EXACT_FILE_READ",
+    "FILES_UI_FINAL_DELETE",
+    "FINAL_GRANTS_EMPTY"
+  ],
+  "required_APK_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+  "schema": "pocket4-documents-flow08-scoped-gate-results/v1",
+  "scoped_gate_results": [
+    {
+      "gate": "EXACT_TREE_GRANT",
+      "passed": true,
+      "scope": {
+        "broader_root_granted": false,
+        "passed": true,
+        "persisted_read_write_grants": 1,
+        "tree": "primary:Pocket4_DocFeatures_r12_eeff7aa90e47139a"
+      }
+    },
+    {
+      "gate": "FILES_MULTIPLE_COPY",
+      "passed": true,
+      "scope": {
+        "destination": "copies-eeff7aa90e47139a",
+        "files": [
+          "alpha-eeff7aa90e47139a.txt",
+          "beta-eeff7aa90e47139a.txt"
+        ],
+        "layout": {
+          "copies-eeff7aa90e47139a": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167630,
+              "st_mode": 17912,
+              "st_uid": 10108
+            },
+            "kind": "directory"
+          },
+          "copies-eeff7aa90e47139a/alpha-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167592,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 59,
+            "ctime_ns": "1793902861142053392",
+            "kind": "file",
+            "mtime_ns": "1793902861142053392",
+            "sha256": "5cffe960dad99f99bdc3aeace1389e7a67a03e478c17bf92e689999a7fc8ffe1"
+          },
+          "copies-eeff7aa90e47139a/beta-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167640,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 118,
+            "ctime_ns": "1793902861159054189",
+            "kind": "file",
+            "mtime_ns": "1793902861159054189",
+            "sha256": "a57fd69e8058d3534a67c331e12042b370be4c7ce496b971e1e31ce06bc88842"
+          },
+          "source-eeff7aa90e47139a": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167285,
+              "st_mode": 17912,
+              "st_uid": 10108
+            },
+            "kind": "directory"
+          },
+          "source-eeff7aa90e47139a/alpha-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167632,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 59,
+            "ctime_ns": "1793902766097602077",
+            "kind": "file",
+            "mtime_ns": "1793902766097602077",
+            "sha256": "5cffe960dad99f99bdc3aeace1389e7a67a03e478c17bf92e689999a7fc8ffe1"
+          },
+          "source-eeff7aa90e47139a/beta-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167636,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 118,
+            "ctime_ns": "1793902766150456409",
+            "kind": "file",
+            "mtime_ns": "1793902766150456409",
+            "sha256": "a57fd69e8058d3534a67c331e12042b370be4c7ce496b971e1e31ce06bc88842"
+          }
+        },
+        "operation_replayed": false,
+        "passed": true,
+        "source": "source-eeff7aa90e47139a"
+      }
+    },
+    {
+      "gate": "FILES_NEW_FOLDER",
+      "passed": true,
+      "scope": {
+        "app_ui_created_directory": "copies-eeff7aa90e47139a",
+        "layout": {
+          "copies-eeff7aa90e47139a": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167630,
+              "st_mode": 17912,
+              "st_uid": 10108
+            },
+            "kind": "directory"
+          },
+          "source-eeff7aa90e47139a": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167285,
+              "st_mode": 17912,
+              "st_uid": 10108
+            },
+            "kind": "directory"
+          },
+          "source-eeff7aa90e47139a/alpha-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167632,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 59,
+            "ctime_ns": "1793902766097602077",
+            "kind": "file",
+            "mtime_ns": "1793902766097602077",
+            "sha256": "5cffe960dad99f99bdc3aeace1389e7a67a03e478c17bf92e689999a7fc8ffe1"
+          },
+          "source-eeff7aa90e47139a/beta-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167636,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 118,
+            "ctime_ns": "1793902766150456409",
+            "kind": "file",
+            "mtime_ns": "1793902766150456409",
+            "sha256": "a57fd69e8058d3534a67c331e12042b370be4c7ce496b971e1e31ce06bc88842"
+          }
+        },
+        "passed": true
+      }
+    },
+    {
+      "gate": "GET_CONTENT_CANCEL",
+      "passed": true,
+      "scope": {
+        "RESULT_CANCELED": true,
+        "URI_returned": false,
+        "grants_empty": true,
+        "passed": true
+      }
+    },
+    {
+      "gate": "TREE_CANCEL",
+      "passed": true,
+      "scope": {
+        "RESULT_CANCELED": true,
+        "URI_returned": false,
+        "grants_empty": true,
+        "passed": true
+      }
+    }
+  ],
+  "whole_app_production_ready": false
+}

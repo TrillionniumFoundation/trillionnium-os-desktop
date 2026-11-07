@@ -1,0 +1,33 @@
+{
+  "state": "PLAN_ONLY",
+  "host_reads_performed": false,
+  "sysfs_writes": 0,
+  "target": {
+    "alias": "/sys/bus/usb/devices/3-4",
+    "required_canonical": "/sys/devices/pci0000:00/0000:00:08.3/0000:c7:00.0/usb3/3-4",
+    "idVendor": "1e08",
+    "idProduct": "5520",
+    "serial": "JX20250923V2",
+    "manufacturer": "SunplusIT Inc",
+    "product": "Integrated Camera",
+    "bcdDevice": "0923",
+    "busnum": "3",
+    "devpath": "4"
+  },
+  "kernel_required": "7.0.0-38-generic",
+  "observation_seconds": 30.0,
+  "execute_preconditions": [
+    "explicit execute mode and fresh expected boot_id",
+    "target present now, complete exact identity, same retained sysfs generation",
+    "target own power/control=auto and 0<=autosuspend_delay_ms<30000",
+    "existing cooperative Android action lock acquired nonblocking",
+    "new create-only evidence directory"
+  ],
+  "maximum_power_writes": {
+    "on": 1,
+    "restore_auto_same_fd": 1
+  },
+  "wait_for_future_device": false,
+  "provider_or_ui_actions": 0,
+  "causality_or_production_qualification": false
+}

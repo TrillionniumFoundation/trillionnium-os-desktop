@@ -1,0 +1,68 @@
+{
+  "schema": "pocket4-installed-editor-contract-review-v1",
+  "reviewer": "root",
+  "apk_sha256": "0d08f59024e4228e5d5b8f56742aafd1fbc04966d74224acd48542e09482743d",
+  "apk_bytes": 20883,
+  "dex_sha256": "07370b01a50f994d3ff465d1001989e48ff0d5c285564d35b97c81fdb9fa787d",
+  "complete_installed_class_count": 6,
+  "reviewed_installed_classes": {
+    "EditorContractActivity$0.smali": {
+      "bytes": 1262,
+      "sha256": "d7eec314c39bc846e0405300cb64ee76bc0e2e459d58c75b562895886d8a25b4"
+    },
+    "EditorContractActivity$1.smali": {
+      "bytes": 1174,
+      "sha256": "4104858f7eebf059fe374021a8ff62b86d160831719395fc2e738befe5d72459"
+    },
+    "EditorContractActivity$2.smali": {
+      "bytes": 1095,
+      "sha256": "5c57239b1795bad8b3e21b369d7331f5febfcf569eb87c5144a266251b1b874b"
+    },
+    "EditorContractActivity$ContractEditText$1.smali": {
+      "bytes": 3657,
+      "sha256": "b023ea58c707eb7537775c3eb8b8e5cc26ef93a372a9cfb9da7fa7ec1f0109a0"
+    },
+    "EditorContractActivity$ContractEditText.smali": {
+      "bytes": 6296,
+      "sha256": "b2810b530d560dd41cdd03f3cf327b161e8bbeb5d9ad8a3923012566dfb9b0de"
+    },
+    "EditorContractActivity.smali": {
+      "bytes": 34319,
+      "sha256": "efcec9c8801a4a43c7141b174a9adbe3db3fea45beed96357d447d1027e74e89"
+    }
+  },
+  "manifest": {
+    "bytes": 1812,
+    "sha256": "9b3ff2e39fcafb3c87cb5c8e865f81e266a3520eab0d65abc646b85c0041bcca"
+  },
+  "declared_contract": {
+    "run_id_regex": "[A-Za-z0-9_]{1,64}",
+    "missing_nonce_screen": "A unique run identifier is required",
+    "unique_claim_and_atomic_json": true,
+    "duplicate_nonce_rejected": true,
+    "event_limit": 96,
+    "byte_limit": 65536,
+    "event_journal_contains_text_lengths_not_text": true,
+    "editor_field_id": 1050881,
+    "hint": "Owned editor contract",
+    "single_line": true,
+    "advertised_ime_action": 3,
+    "save_enabled": false,
+    "editor_action_listener_returns_true": true,
+    "native_set_text_has_no_textwatcher_record": true
+  },
+  "actual_scope": "Two fresh nonce rounds; Unicode/native readback, physical Enter callbacks, one trailing emoji deletion, clear, normal close, exact two-file cleanup and separate launch.",
+  "not_exercised": [
+    "IME composition/candidate selection",
+    "selection ranges and paste",
+    "resize and focus-transition matrix",
+    "configuration recreation with an existing nonce",
+    "complete release stability/signing/engine/resource scope"
+  ],
+  "task_option_proof": {
+    "bytes": 17797,
+    "sha256": "9cb008b7050d3bb0b8da2221140c02b39ebde973833b5ee24039932e266e90a5"
+  },
+  "task_option_scope": "Exact installed AM handler and runStartActivity methods were reviewed. --task reaches ActivityOptions; actual trials separately verify task ownership.",
+  "whole_app_production_ready": false
+}

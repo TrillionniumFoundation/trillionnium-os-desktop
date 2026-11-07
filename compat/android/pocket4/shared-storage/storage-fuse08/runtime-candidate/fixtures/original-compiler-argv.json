@@ -1,0 +1,32 @@
+{
+  "source_receipt": {
+    "bytes": 112326,
+    "sha256": "1138ea24880808e639112691c5e224497705a82b289aa646d1687c0117583292"
+  },
+  "scope": "Only the actual compiler argv is projected; no environment, process map or cache inventory.",
+  "argv": [
+    "/apex/com.android.art/bin/dex2oat64",
+    "--zip-fd=71",
+    "--zip-location=/system/framework/services.jar",
+    "--oat-fd=74",
+    "--output-vdex-fd=75",
+    "--oat-location=/proc/self/fd/76/original.odex",
+    "--instruction-set=x86_64",
+    "--boot-image=/system/framework/boot.art",
+    "--runtime-arg",
+    "-Xbootclasspath:/apex/com.android.art/javalib/core-oj.jar:/apex/com.android.art/javalib/core-libart.jar:/apex/com.android.art/javalib/okhttp.jar:/apex/com.android.art/javalib/bouncycastle.jar:/apex/com.android.art/javalib/apache-xml.jar:/system/framework/framework.jar:/system/framework/framework-graphics.jar:/system/framework/framework-location.jar:/system/framework/ext.jar:/system/framework/telephony-common.jar:/system/framework/voip-common.jar:/system/framework/ims-common.jar:/system/framework/framework-ondeviceintelligence-platform.jar:/apex/com.android.i18n/javalib/core-icu4j.jar:/apex/com.android.adservices/javalib/framework-adservices.jar:/apex/com.android.adservices/javalib/framework-sdksandbox.jar:/apex/com.android.appsearch/javalib/framework-appsearch.jar:/apex/com.android.bt/javalib/framework-bluetooth.jar:/apex/com.android.configinfrastructure/javalib/framework-configinfrastructure.jar:/apex/com.android.conscrypt/javalib/conscrypt.jar:/apex/com.android.conscrypt/javalib/framework-conscrypt-nsc.jar:/apex/com.android.crashrecovery/javalib/framework-crashrecovery.jar:/apex/com.android.devicelock/javalib/framework-devicelock.jar:/apex/com.android.healthfitness/javalib/framework-healthfitness.jar:/apex/com.android.ipsec/javalib/android.net.ipsec.ike.jar:/apex/com.android.media/javalib/updatable-media.jar:/apex/com.android.mediaprovider/javalib/framework-mediaprovider.jar:/apex/com.android.mediaprovider/javalib/framework-pdf.jar:/apex/com.android.mediaprovider/javalib/framework-pdf-v.jar:/apex/com.android.mediaprovider/javalib/framework-photopicker.jar:/apex/com.android.nfcservices/javalib/framework-nfc.jar:/apex/com.android.npumanager/javalib/framework-npumanager.jar:/apex/com.android.ondevicepersonalization/javalib/framework-ondevicepersonalization.jar:/apex/com.android.os.statsd/javalib/framework-statsd.jar:/apex/com.android.permission/javalib/framework-permission.jar:/apex/com.android.permission/javalib/framework-permission-s.jar:/apex/com.android.profiling/javalib/framework-anomaly-detector.jar:/apex/com.android.profiling/javalib/framework-profiling.jar:/apex/com.android.scheduling/javalib/framework-scheduling.jar:/apex/com.android.sdkext/javalib/framework-sdkextensions.jar:/apex/com.android.telephonycore/javalib/framework-telecom.jar:/apex/com.android.telephonycore/javalib/framework-telephony.jar:/apex/com.android.tethering/javalib/framework-connectivity.jar:/apex/com.android.tethering/javalib/framework-connectivity-b.jar:/apex/com.android.tethering/javalib/framework-connectivity-t.jar:/apex/com.android.tethering/javalib/framework-tethering.jar:/apex/com.android.uprobestats/javalib/framework-uprobestats.jar:/apex/com.android.uwb/javalib/framework-ranging.jar:/apex/com.android.uwb/javalib/framework-uwb.jar:/apex/com.android.virt/javalib/framework-virtualization.jar:/apex/com.android.webapp/javalib/framework-webapp.jar:/apex/com.android.wifi/javalib/framework-wifi.jar",
+    "--runtime-arg",
+    "-Xbootclasspathfds:17:18:19:20:21:22:23:24:25:26:27:28:29:30:31:32:33:34:35:36:37:38:39:40:41:42:43:44:45:46:47:48:49:50:51:52:53:54:55:56:57:58:59:60:61:62:63:64:65:66:67:68",
+    "--class-loader-context=PCL[/system/framework/com.android.location.provider.jar]",
+    "--class-loader-context-fds=69",
+    "--compiler-filter=verify",
+    "--abort-on-hard-verifier-error",
+    "--abort-on-soft-verifier-error",
+    "--copy-dex-files=always",
+    "--runtime-arg",
+    "-Xms32m",
+    "--runtime-arg",
+    "-Xmx768m",
+    "-j2"
+  ]
+}

@@ -1,0 +1,295 @@
+{
+  "UI_actions": 0,
+  "actual_runtime_class_resolution_tested": false,
+  "apps": {
+    "com.android.contacts": {
+      "actual_audit_finished_utc": "2026-11-05T14:43:25.734922+00:00",
+      "actual_audit_started_utc": "2026-11-05T14:43:25.451778+00:00",
+      "base_apk": {
+        "bytes": 11839391,
+        "path": "/product/priv-app/Contacts/Contacts.apk",
+        "sha256": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0"
+      },
+      "declared_libraries": [],
+      "dex": [
+        {
+          "bytes": 4493268,
+          "class_count": 4706,
+          "class_descriptor_list_sha256": "949ab9902b6d5adc8b8d5bfb6cf5946845084fecc18aeab34deaba749f8e5fd1",
+          "format": "035",
+          "name": "classes.dex",
+          "sha256": "bf85e172e2286e2dd99c0ea36c0cdc43a7163d2e5f3414e4bd7d6dcbf9e0afed"
+        }
+      ],
+      "missing_default_APK_classes": [
+        "com.android.contacts.test.FragmentTestActivity"
+      ],
+      "prior_certificate_identity_bound_by_same_APK_bytes": [
+        "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
+      ],
+      "signature_verifier_rerun": false
+    },
+    "org.chromium.webview_shell": {
+      "actual_audit_finished_utc": "2026-11-05T14:43:28.463316+00:00",
+      "actual_audit_started_utc": "2026-11-05T14:43:28.275161+00:00",
+      "base_apk": {
+        "bytes": 70877,
+        "path": "/product/app/Browser2/Browser2.apk",
+        "sha256": "0f9dbb8ef3af284a08eb86f9558cd6c21a35dbeca2482b4b6e4b85ea49c183df"
+      },
+      "declared_libraries": [
+        {
+          "apk_ordinal": 0,
+          "kind": "uses-library",
+          "name": "android.test.runner",
+          "required": null
+        }
+      ],
+      "dex": [
+        {
+          "bytes": 27968,
+          "class_count": 19,
+          "class_descriptor_list_sha256": "efb1d8092940e7af569c8d08ef60b3d30a50296ec736a9609d8b3a63ac220e0b",
+          "format": "039",
+          "name": "classes.dex",
+          "sha256": "c1b969aba7363bebe8b54a83c6115165cc8bfca82ca3536cf6d8bdc9f29c624e"
+        }
+      ],
+      "missing_default_APK_classes": [
+        "org.chromium.webview_shell.WebViewCreateDestroyActivity",
+        "org.chromium.webview_shell.WebViewLayoutTestActivity",
+        "org.chromium.webview_shell.WebViewThreadTestActivity",
+        "org.chromium.test.broker.OnDeviceInstrumentationBroker",
+        "org.chromium.webview_shell.PageCyclerTestActivity",
+        "org.chromium.webview_shell.WebViewTracingActivity"
+      ],
+      "prior_certificate_identity_bound_by_same_APK_bytes": [
+        "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+      ],
+      "signature_verifier_rerun": false
+    }
+  },
+  "broker_contract": {
+    "class": "org.chromium.test.broker.OnDeviceInstrumentationBroker",
+    "classification": "UPSTREAM_INSTRUMENTATION_TOOL; CURRENT_REQUIRED_TEST_APK_AND_CLASSPATH_UNVERIFIED",
+    "decision": "Do not graft a generic exported broker into the production browser solely to make the audit green. Verify which test APK/package the intended driver targets and how its classpath is composed.",
+    "evidence": [
+      {
+        "bytes": 6872,
+        "fixed_source_url": "https://api.github.com/repos/chromium/chromium/contents/android_webview/tools/system_webview_shell/apk/AndroidManifest.xml?ref=053692b20bf98c2e04a7cfd55801a55bff10886a",
+        "local_path": "upstream/WebViewManifest.txt",
+        "sha256": "8702ef58174a5adfe6b33b90c61d786b4235e024fda733d0143a68b3ded1172f"
+      },
+      {
+        "bytes": 5655,
+        "fixed_source_url": "https://api.github.com/repos/chromium/chromium/contents/android_webview/tools/system_webview_shell/BUILD.gn?ref=053692b20bf98c2e04a7cfd55801a55bff10886a",
+        "local_path": "upstream/WebViewBuild.txt",
+        "sha256": "34fe2eac45a1c2df3253c98f4e937c99dc45ffb0c2e8bdb6e9fcc178307523f5"
+      },
+      {
+        "bytes": 192579,
+        "fixed_source_url": "https://api.github.com/repos/chromium/chromium/contents/build/config/android/rules.gni?ref=053692b20bf98c2e04a7cfd55801a55bff10886a",
+        "local_path": "upstream/ChromiumAndroidRules.gni",
+        "sha256": "eb14aef8df78d8d19a99a256d8501e82931008b0ea85485f304882c8f0859f55"
+      },
+      {
+        "bytes": 2207,
+        "fixed_source_url": "https://api.github.com/repos/chromium/chromium/contents/testing/android/broker/java/src/org/chromium/test/broker/OnDeviceInstrumentationBroker.java?ref=053692b20bf98c2e04a7cfd55801a55bff10886a",
+        "local_path": "upstream/broker.java",
+        "sha256": "d22e6a93949c8c8744bf3772a6cc3b040b581466b73c6f4844aa52b02c6d5c2a"
+      },
+      {
+        "bytes": 12592,
+        "fixed_source_url": "https://api.github.com/repos/chromium/chromium/contents/testing/android/driver/java/src/org/chromium/test/driver/OnDeviceInstrumentationDriver.java?ref=053692b20bf98c2e04a7cfd55801a55bff10886a",
+        "local_path": "upstream/OnDeviceInstrumentationDriver.java",
+        "sha256": "9b73b39afb08cdd53743f1a6cbe30114423938953cc0665dbad63c980ec8fca3"
+      }
+    ],
+    "facts": [
+      "The shell manifest declares the broker. Its normal android_apk sources/deps do not directly include broker_java.",
+      "instrumentation_test_apk delegates to android_test_apk, which adds //testing/android/broker:broker_java.",
+      "The driver addresses the broker in its configured target package and supplies instrumentation package/class, test selector, and argument Bundle.",
+      "The broker starts the specified instrumentation and finishes; this is a testing contract, not browser navigation."
+    ],
+    "upstream_commit": "053692b20bf98c2e04a7cfd55801a55bff10886a",
+    "upstream_tag": "84.0.4147.125"
+  },
+  "contacts_contract": {
+    "class": "com.android.contacts.test.FragmentTestActivity",
+    "classification": "UPSTREAM_TEST_APK_PROVIDED_CONTAINER; CURRENT_INSTRUMENTATION_CLASSPATH_UNVERIFIED",
+    "decision": "Do not add an empty production Activity or remove the declaration. Preserve the default-APK audit finding while separately checking the intended test APK and instrumentation classpath if this test route is required. Main Contacts CRUD evidence is not evidence for this test route.",
+    "evidence": [
+      {
+        "bytes": 31702,
+        "fixed_source_url": "https://api.github.com/repos/aosp-mirror/platform_packages_apps_contacts/contents/AndroidManifest.xml?ref=c326c157541978c180be4e3432327eceb1e66637",
+        "local_path": "upstream/ContactsManifest.txt",
+        "sha256": "2b16f71e2d17fae2fe14860595f208ba843bca73380a2d9e7b2094e7ef23fc42"
+      },
+      {
+        "bytes": 1417,
+        "fixed_source_url": "https://api.github.com/repos/aosp-mirror/platform_packages_apps_contacts/contents/Android.bp?ref=c326c157541978c180be4e3432327eceb1e66637",
+        "local_path": "upstream/contacts_build.txt",
+        "sha256": "e68e9bdc28dd8c6a9fd7cbc5e3ead53b87e53673d71104d4456555ea476e2038"
+      },
+      {
+        "bytes": 5089,
+        "fixed_source_url": "https://api.github.com/repos/aosp-mirror/platform_packages_apps_contacts/contents/tests/AndroidManifest.xml?ref=c326c157541978c180be4e3432327eceb1e66637",
+        "local_path": "upstream/ContactsTestManifest.txt",
+        "sha256": "52ed38d881fe6b507d7e5b2d5686c02702b96115dd49316293fa4083e689f0c9"
+      },
+      {
+        "bytes": 1038,
+        "fixed_source_url": "https://api.github.com/repos/aosp-mirror/platform_packages_apps_contacts/contents/tests/Android.bp?ref=c326c157541978c180be4e3432327eceb1e66637",
+        "local_path": "upstream/contacts_test_build.txt",
+        "sha256": "8d28fba53b0505defbf938332470bc87ab693535f4cabdfb75ed372fb1b49791"
+      },
+      {
+        "bytes": 1663,
+        "fixed_source_url": "https://api.github.com/repos/aosp-mirror/platform_packages_apps_contacts/contents/tests/src/com/android/contacts/test/FragmentTestActivity.java?ref=c326c157541978c180be4e3432327eceb1e66637",
+        "local_path": "upstream/FragmentTestActivity.java",
+        "sha256": "cbee0ee823b3ad7a4a07cad06bcaa63c88a699c5fd3e40925143047757ed05d8"
+      }
+    ],
+    "facts": [
+      "The main Contacts manifest declares the test Activity, with category android.intent.category.TEST.",
+      "The Contacts android_app source globs are src and src-bind; they do not include tests/src.",
+      "ContactsTests is an android_test with instrumentation_for Contacts and tests/src/**/*.java.",
+      "FragmentTestActivity exists in that tests/src set. Its functional contract is a FrameLayout with LAYOUT_ID=1 for test-added fragments, plus explicit test window flags."
+    ],
+    "upstream_commit": "c326c157541978c180be4e3432327eceb1e66637"
+  },
+  "device_commands": 0,
+  "installation_or_app_data_changes": 0,
+  "instrumentation_classpath_mechanism": {
+    "boundaries": [
+      "The installed Android 17 framework and actual active instrumentation were not read/executed by this review.",
+      "The installed Contacts CoreComponentFactory method body has not been examined. Its mere manifest class name proves no redirection.",
+      "No new class-loading failure or crash is inferred from these source references."
+    ],
+    "evidence": [
+      {
+        "bytes": 98771,
+        "fixed_source_url": "https://api.github.com/repos/aosp-mirror/platform_frameworks_base/contents/core/java/android/app/LoadedApk.java?ref=android-15.0.0_r1",
+        "local_path": "upstream/FrameworkLoadedApk.java",
+        "sha256": "66bf1c037a67ded027395e4200e1e5234d58684c815b50a18981c4ffdcc2bb76"
+      }
+    ],
+    "facts": [
+      "Android 15 reference LoadedApk.makePaths explicitly combines instrumentation and instrumented app source/split paths when either directory matches the process app.",
+      "This supplies a concrete reason why default APK DEX coverage is not a full runtime class-resolution test."
+    ],
+    "status": "PRIMARY_UPSTREAM_REFERENCE; NOT_PROVEN_BYTE_EQUAL_TO_POCKET4_FRAMEWORK"
+  },
+  "narrow_next_step": [
+    "Obtain only the exact observed Browser2 APK through the original fixed-epoch held init-root descriptor; no Android commands or UI are needed.",
+    "Verify base APK/DEX/manifest and signing certificate, disassemble the 19 actual classes, and bind the resource names/IDs before choosing a restoration patch.",
+    "If current byte evidence confirms no app factory or other loader source, restore the five genuine implementations with their dependencies/resources; retain all existing behavior and full non-target DEX/payload equality checks.",
+    "Treat Contacts test container and broker as separate instrumentation contracts; no immediate production APK edit is recommended for them."
+  ],
+  "original_audit_scope_preserved": "NOT_IN_APK_DEX_REQUIRES_CLASS_LOADER_REVIEW",
+  "original_audit_sha256": "430e57ab0e72ab9a6162f9ff27f190caa5ece958a10621976a35b3d0cc61ff78",
+  "schema": "installed-component-missing-class-contract-review-v1",
+  "webview_five_ordinary_shell_classes": [
+    {
+      "class": "org.chromium.webview_shell.WebViewCreateDestroyActivity",
+      "classification": "ABSENT_FROM_CURRENT_APK; INCLUDED_IN_ORDINARY_UPSTREAM_SHELL_BUILD",
+      "evidence": [
+        {
+          "bytes": 5655,
+          "fixed_source_url": "https://api.github.com/repos/chromium/chromium/contents/android_webview/tools/system_webview_shell/BUILD.gn?ref=053692b20bf98c2e04a7cfd55801a55bff10886a",
+          "local_path": "upstream/WebViewBuild.txt",
+          "sha256": "34fe2eac45a1c2df3253c98f4e937c99dc45ffb0c2e8bdb6e9fcc178307523f5"
+        },
+        {
+          "bytes": 3108,
+          "fixed_source_url": "https://api.github.com/repos/chromium/chromium/contents/android_webview/tools/system_webview_shell/apk/src/org/chromium/webview_shell/WebViewCreateDestroyActivity.java?ref=053692b20bf98c2e04a7cfd55801a55bff10886a",
+          "local_path": "upstream/WebViewCreateDestroyActivity.java",
+          "sha256": "0e01d514029547a23e20e8b685c13ac7d95f4f9e45fad465698860b7ad9cd5b2"
+        }
+      ],
+      "future_validation": "Activity recreation, at most one owned WebView, URL readback, and resource bindings.",
+      "upstream_contract": "onCreate/onNewIntent destroy the prior static WebView, create one new WebView, attach it to activity_empty/emptyview, load the intent URL or about:blank; onDestroy destroys it."
+    },
+    {
+      "class": "org.chromium.webview_shell.WebViewLayoutTestActivity",
+      "classification": "ABSENT_FROM_CURRENT_APK; INCLUDED_IN_ORDINARY_UPSTREAM_SHELL_BUILD",
+      "evidence": [
+        {
+          "bytes": 5655,
+          "fixed_source_url": "https://api.github.com/repos/chromium/chromium/contents/android_webview/tools/system_webview_shell/BUILD.gn?ref=053692b20bf98c2e04a7cfd55801a55bff10886a",
+          "local_path": "upstream/WebViewBuild.txt",
+          "sha256": "34fe2eac45a1c2df3253c98f4e937c99dc45ffb0c2e8bdb6e9fcc178307523f5"
+        },
+        {
+          "bytes": 5377,
+          "fixed_source_url": "https://api.github.com/repos/chromium/chromium/contents/android_webview/tools/system_webview_shell/apk/src/org/chromium/webview_shell/WebViewLayoutTestActivity.java?ref=053692b20bf98c2e04a7cfd55801a55bff10886a",
+          "local_path": "upstream/WebViewLayoutTestActivity.java",
+          "sha256": "f79bea55700182ec0e619716bc70a4aa74fe98561e7bc2548d2e561bc0bb5f90"
+        }
+      ],
+      "future_validation": "A deterministic local page must deliver the sentinel and exact collected result; unknown completion must not become pass.",
+      "upstream_contract": "A WebView captures JavaScript console output until TEST FINISHED, supports a bounded blocking completion callback, exposes result text/loadUrl and explicit permission decision hooks."
+    },
+    {
+      "class": "org.chromium.webview_shell.WebViewThreadTestActivity",
+      "classification": "ABSENT_FROM_CURRENT_APK; INCLUDED_IN_ORDINARY_UPSTREAM_SHELL_BUILD",
+      "evidence": [
+        {
+          "bytes": 5655,
+          "fixed_source_url": "https://api.github.com/repos/chromium/chromium/contents/android_webview/tools/system_webview_shell/BUILD.gn?ref=053692b20bf98c2e04a7cfd55801a55bff10886a",
+          "local_path": "upstream/WebViewBuild.txt",
+          "sha256": "34fe2eac45a1c2df3253c98f4e937c99dc45ffb0c2e8bdb6e9fcc178307523f5"
+        },
+        {
+          "bytes": 9532,
+          "fixed_source_url": "https://api.github.com/repos/chromium/chromium/contents/android_webview/tools/system_webview_shell/apk/src/org/chromium/webview_shell/WebViewThreadTestActivity.java?ref=053692b20bf98c2e04a7cfd55801a55bff10886a",
+          "local_path": "upstream/WebViewThreadTestActivity.java",
+          "sha256": "79e188753542309bf711a2078b7bc245c0ab7184eb4d5b3ce23d2cc610d82e48"
+        }
+      ],
+      "future_validation": "Both thread paths and owned-thread cleanup, including cancellation and no leaked WebView/Looper.",
+      "upstream_contract": "Creates WebViews on UI or dedicated Looper threads, routes loadData/loadUrl via Handler, waits on bounded latches, and quits the owned Looper on destruction."
+    },
+    {
+      "class": "org.chromium.webview_shell.PageCyclerTestActivity",
+      "classification": "ABSENT_FROM_CURRENT_APK; INCLUDED_IN_ORDINARY_UPSTREAM_SHELL_BUILD",
+      "evidence": [
+        {
+          "bytes": 5655,
+          "fixed_source_url": "https://api.github.com/repos/chromium/chromium/contents/android_webview/tools/system_webview_shell/BUILD.gn?ref=053692b20bf98c2e04a7cfd55801a55bff10886a",
+          "local_path": "upstream/WebViewBuild.txt",
+          "sha256": "34fe2eac45a1c2df3253c98f4e937c99dc45ffb0c2e8bdb6e9fcc178307523f5"
+        },
+        {
+          "bytes": 794,
+          "fixed_source_url": "https://api.github.com/repos/chromium/chromium/contents/android_webview/tools/system_webview_shell/apk/src/org/chromium/webview_shell/PageCyclerTestActivity.java?ref=053692b20bf98c2e04a7cfd55801a55bff10886a",
+          "local_path": "upstream/PageCyclerTestActivity.java",
+          "sha256": "9a6fbfffaf97ce9cadd353ea2eca4eb790a46e9a2ad6c9f6a15c68fdc19136ea"
+        }
+      ],
+      "future_validation": "Real local-page load and rendering; a blank Activity is not this API contract.",
+      "upstream_contract": "Attaches activity_webview and exposes getWebView for instrumentation-driven URL cycling."
+    },
+    {
+      "class": "org.chromium.webview_shell.WebViewTracingActivity",
+      "classification": "ABSENT_FROM_CURRENT_APK; INCLUDED_IN_ORDINARY_UPSTREAM_SHELL_BUILD",
+      "evidence": [
+        {
+          "bytes": 5655,
+          "fixed_source_url": "https://api.github.com/repos/chromium/chromium/contents/android_webview/tools/system_webview_shell/BUILD.gn?ref=053692b20bf98c2e04a7cfd55801a55bff10886a",
+          "local_path": "upstream/WebViewBuild.txt",
+          "sha256": "34fe2eac45a1c2df3253c98f4e937c99dc45ffb0c2e8bdb6e9fcc178307523f5"
+        },
+        {
+          "bytes": 5338,
+          "fixed_source_url": "https://api.github.com/repos/chromium/chromium/contents/android_webview/tools/system_webview_shell/apk/src/org/chromium/webview_shell/WebViewTracingActivity.java?ref=053692b20bf98c2e04a7cfd55801a55bff10886a",
+          "local_path": "upstream/WebViewTracingActivity.java",
+          "sha256": "8fcbcb2a42c6b238266c05cc256e0e3cbab5bd15c99c3042cd663051d90d9ffe"
+        }
+      ],
+      "future_validation": "Exact trace completion/output and cleanup with API/resource binding; do not create arbitrary export paths.",
+      "upstream_contract": "Loads an intent URL, optionally starts Android TracingController, records load/trace duration and asynchronously writes trace output on stop."
+    }
+  ],
+  "whole_app_production_ready": false
+}

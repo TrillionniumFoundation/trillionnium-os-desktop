@@ -1,0 +1,232 @@
+--- timer03.py
++++ timer_core04.py
+@@ -3,12 +3,14 @@
+ from pathlib import Path
+ from datetime import datetime, timezone
+ from decimal import Decimal
++import copy
+ import argparse, hashlib, json, re, signal, time, types
+ 
+ HERE = Path(__file__).resolve().parent
+ CONTACT_TOOLS = Path('/home/alex/work/pocket4-contacts-session-tools-20261105-r12-01')
+-ROOT = Path('/home/alex/work/pocket4-clock-timer-20261105-r12-03')
+-PUBLIC = HERE / 'clock-timer03-result.json'
++ROOT = Path('/home/alex/work/pocket4-clock-timer-20261105-r12-04')
++CANDIDATE_BINDING_READY = False
++PUBLIC = HERE / 'clock-timer04-result.json'
+ PACKAGE = 'com.android.deskclock'
+ DURATION = 900000  # Fifteen minutes, longer than the whole 360 + 35 second lease.
+ PINS = {
+@@ -47,6 +49,8 @@
+         self.creation_dispatch_before = None
+         self.creation_uptime_before = None
+         self.number = 0
++        self.effect_pending = None
++        self.close_pending = None
+         self.deadline = time.monotonic() + 350
+ 
+     def visible(self):
+@@ -89,7 +93,8 @@
+             self.c.observe('notice-%02d-%d' % (self.number + 1, attempt))
+ 
+     def act(self, label, node, expected_state=None):
+-        require(time.monotonic() < self.deadline and self.number < 20 and self.c.pending is None,
++        require(time.monotonic() < self.deadline and self.number < 20 and self.c.pending is None
++                and self.effect_pending is None and self.close_pending is None,
+                 'TIMER_ACTION_BUDGET_OR_PENDING')
+         selector = {k: node[n] for k, n in (('id', 'resource-id'), ('text', 'text'), ('desc', 'content-desc'))
+                     if node.get(n)}
+@@ -105,9 +110,54 @@
+             current = self.m.owned(self.m.read(self.t.s), self.timer_id, DURATION)
+             require(current['state'] == expected_state, 'OWNED_TIMER_CHANGED_BEFORE_' + label)
+         self.number += 1
+-        self.c.step({'id': 't%02d-' % self.number + label, 'op': 'click',
+-                     'observation': self.c.latest, 'selector': selector})
++        ident = 't%02d-' % self.number + label
++        effects = {'create-start':'create','pause':'pause','pause-again':'pause',
++            'cleanup-pause':'pause','resume':'resume','reset':'reset',
++            'delete':'delete','cleanup-delete':'delete'}
++        effect = effects.get(label)
++        require(expected_state is None or effect is not None, 'UNDECLARED_TIMER_EFFECT')
++        if effect:
++            self.effect_pending = {'operation':effect,'native_request_id':ident,
++                'timer_id':self.timer_id,'duration_ms':DURATION,'automatic_retry':False}
++            self.t.record('timer-effect-intent-'+ident,copy.deepcopy(self.effect_pending))
++        before_actions = self.c.actions
++        try:
++            self.c.step({'id': ident, 'op': 'click',
++                         'observation': self.c.latest, 'selector': selector})
++        except BaseException as exc:
++            detail = getattr(exc,'details',{})
++            no_input = (self.c.pending is None and (self.c.actions == before_actions
++                or (detail.get('action_taken') is False and detail.get('outcome_unknown') is not True)))
++            if no_input and self.effect_pending is not None:
++                self.t.record('timer-explicit-no-input-'+ident,{'intent':self.effect_pending,
++                    'details':detail,'action_replayed':False})
++                self.effect_pending = None
++            raise
+         require(time.monotonic() < self.deadline, 'TIMER_DEADLINE_AFTER_INPUT')
++
++    def complete_effect(self, operation, value):
++        require(self.c.pending is None and self.effect_pending is not None
++            and self.effect_pending['operation'] == operation, 'TIMER_EFFECT_COMPLETION_ORDER')
++        self.t.record('timer-effect-complete-'+self.effect_pending['native_request_id'],
++            {'intent':self.effect_pending,'exact_readback':value,'action_replayed':False})
++        self.effect_pending = None
++
++    def deleted(self, label):
++        require(self.timer_id is not None and self.c.pending is None
++            and self.effect_pending is not None and self.effect_pending['operation'] == 'delete'
++            and self.effect_pending['timer_id'] == self.timer_id, 'EXACT_ACKNOWLEDGED_DELETE_REQUIRED')
++        for attempt in range(3):
++            value = self.m.read(self.t.s)
++            if not value['ids']:
++                self.m.empty(value)
++                self.r['phases'][label] = value
++                self.complete_effect('delete',value)
++                self.timer_id = None
++                self.observe_scheduler(label)
++                return value
++            self.m.owned(value,self.timer_id,DURATION)
++            time.sleep(.25)
++        raise RuntimeError('ACKNOWLEDGED_TIMER_DELETE_NOT_READ_BACK')
+ 
+     def setup(self, expected):
+         nodes = [n for n in self.visible() if n.get('resource-id') == PACKAGE + ':id/timer_setup_time'
+@@ -138,7 +188,8 @@
+ 
+     def claim_created(self):
+         require(self.creation_dispatch_before is not None
+-                and self.c.actions == self.creation_dispatch_before + 1 and self.c.pending is None,
++                and self.c.actions == self.creation_dispatch_before + 1 and self.c.pending is None
++                and self.effect_pending is not None and self.effect_pending['operation'] == 'create',
+                 'ONE_ACKNOWLEDGED_CREATE_REQUIRED')
+         current = self.m.read(self.t.s)
+         require(len(current['ids']) == 1 and self.timer_id is None, 'ONE_NEW_TIMER_REQUIRED')
+@@ -153,6 +204,7 @@
+         self.t.record('owned-timer-created', {'id': ident, 'timer': timer,
+             'empty_baseline': self.r['phases']['before'],
+             'uptime_before_ms': self.creation_uptime_before, 'uptime_after_ms': now})
++        self.complete_effect('create',current)
+         self.observe_scheduler('created-running')
+ 
+     def observe_scheduler(self, label):
+@@ -172,7 +224,8 @@
+         self.t.record('scheduler-' + label, value)
+ 
+     def launch(self, label):
+-        require(time.monotonic() < self.deadline and self.t.owned is None and self.c.pending is None,
++        require(time.monotonic() < self.deadline and self.t.owned is None and self.c.pending is None
++                and self.effect_pending is None and self.close_pending is None,
+                 'TIMER_LAUNCH_DEADLINE_OR_PENDING')
+         self.c.pending = 'launch-' + label
+         self.t.launch(); self.owned.append(self.t.owned[0]); self.c.pending = None
+@@ -182,13 +235,18 @@
+             self.act('timer-tab' if len(self.owned) == 1 else 'reopen-timer-tab', tab)
+ 
+     def close(self):
++        require(self.c.pending is None and self.effect_pending is None and self.close_pending is None,
++                'UNKNOWN_TIMER_INPUT_EFFECT_OR_CLOSE_RETAINED')
+         if self.t.owned is None:
+             return
+         task = self.t.owned[0]; before = self.t.removals
++        self.close_pending = {'task':task,'automatic_retry':False}
++        self.t.record('timer-normal-close-intent-'+str(task),self.close_pending)
+         self.t.close()
+         require(self.t.removals == before + 1 and self.t.result.get('other_tasks_preserved') is True,
+                 'TIMER_NORMAL_OWNED_CLOSE_UNVERIFIED')
+         self.closed.append(task)
++        self.close_pending = None
+ 
+     def run(self):
+         before = self.read('before'); self.m.empty(before)
+@@ -211,6 +269,7 @@
+             'TIMER_PAUSE_DID_NOT_PERSIST_POSITIVE_REMAINING_TIME')
+         time.sleep(.4)
+         require(self.read('paused-stable', 2) == paused, 'PAUSED_TIMER_CONTINUED_CHANGING')
++        self.complete_effect('pause',paused)
+         self.close()
+         require(self.read('after-normal-close', 2) == paused, 'CLOSE_CHANGED_PAUSED_TIMER')
+         self.launch('reopen')
+@@ -219,23 +278,26 @@
+         resumed = self.m.owned(self.read('resumed', 1), self.timer_id, DURATION)
+         require(resumed['last_start_ms'] > self.r['phases']['created-running']['timers'][0]['last_start_ms']
+             and 0 < resumed['remaining_ms'] <= item['remaining_ms'], 'TIMER_RESUME_DID_NOT_CONTINUE')
++        self.complete_effect('resume',self.r['phases']['resumed'])
+         time.sleep(.4)
+         self.act('pause-again', self.node('fab', ('Pause', 'Stop')), 1)
+         later = self.m.owned(self.read('paused-after-resume', 2), self.timer_id, DURATION)
+         require(0 < later['remaining_ms'] < item['remaining_ms'], 'RESUMED_TIMER_DID_NOT_DECREASE')
++        self.complete_effect('pause',self.r['phases']['paused-after-resume'])
+         self.act('reset', self.node('reset_add', ('Reset',)), 2)
+         reset = self.m.owned(self.read('reset', 4), self.timer_id, DURATION)
+         require(reset['remaining_ms'] == DURATION
+             and reset['last_start_ms'] == reset['last_wall_ms'] == self.m.UNUSED, 'TIMER_RESET_UNVERIFIED')
++        self.complete_effect('reset',self.r['phases']['reset'])
+         self.act('delete', self.node('left_button', ('Delete',)), 4)
+-        self.timer_id = None
+-        self.m.empty(self.read('deleted'))
++        self.deleted('deleted')
+         self.r['state'] = 'OWNED_TIMER_CORE_FLOW_VERIFIED_CLEAN'
+ 
+     def cleanup(self):
+         self.r['cleanup'] = {'original_failure_retained': True, 'new_inputs': 0,
+-                             'pending_retained': self.c.pending}
+-        if self.c.pending is not None or self.t.owned is None:
++                             'pending_retained': self.c.pending,
++                             'timer_effect_retained':self.effect_pending,'close_pending_retained':self.close_pending}
++        if self.c.pending is not None or self.effect_pending is not None or self.close_pending is not None or self.t.owned is None:
+             return
+         self.deadline = time.monotonic() + 30
+         current = self.m.read(self.t.s)
+@@ -252,13 +314,17 @@
+         if item['state'] == 1:
+             self.act('cleanup-pause', self.node('fab', ('Pause', 'Stop')), 1)
+             item = self.m.owned(self.read('cleanup-paused', 2), self.timer_id, DURATION)
++            require(0 < item['remaining_ms'] <= DURATION
++                and item['last_start_ms'] == item['last_wall_ms'] == self.m.UNUSED,
++                'CLEANUP_PAUSE_EFFECT_UNVERIFIED')
++            self.complete_effect('pause',self.r['phases']['cleanup-paused'])
+         self.act('cleanup-delete', self.node('left_button', ('Delete',)), item['state'])
+-        self.timer_id = None
+-        self.m.empty(self.read('cleanup-deleted'))
++        self.deleted('cleanup-deleted')
+         self.r['cleanup'].update(new_inputs=self.c.actions - actions, exact_timer_removed=True)
+ 
+ 
+ def execute():
++    require(CANDIDATE_BINDING_READY, 'NEW_CLOCK_INSTALL_IDENTITY_NOT_BOUND')
+     modules = {name: load(*pin) for name, pin in PINS.items()}
+     base, loop, model, shared, timer = [modules[x] for x in ('base', 'loop', 'model', 'shared', 'timer')]
+     tx = model.load_session()
+@@ -301,7 +367,12 @@
+                         result['cleanup_error'] = type(cleanup).__name__ + ': ' + str(cleanup)
+                 finally:
+                     signal.setitimer(signal.ITIMER_REAL, 35)
+-                    flow.close()
++                    if flow.c.pending is None and flow.effect_pending is None and flow.close_pending is None:
++                        flow.close()
++                    else:
++                        result['final_actions_blocked_by_unknown'] = {
++                            'input':flow.c.pending,'timer_effect':flow.effect_pending,
++                            'close':flow.close_pending,'read_only':True}
+                     result['identity_after'] = model.identity(session)
+                     result['alarms_after'] = model.state(session)
+                     result['templates_sha_after'] = shared.alarm_fingerprint(session, model)
+@@ -312,6 +383,7 @@
+         if result['business_success_verified']:
+             timer.empty(result['timer_final'])
+             require(flow.owned == flow.closed and len(set(flow.owned)) == 2 and flow.c.pending is None
++                    and flow.effect_pending is None and flow.close_pending is None
+                     and result['identity_before'] == result['identity_after'],
+                     'TIMER_SUCCESS_REQUIRES_IDENTITY_AND_TWO_NORMAL_CLOSES')
+     except BaseException as exc:
+@@ -319,6 +391,8 @@
+     finally:
+         signal.setitimer(signal.ITIMER_REAL, 0); signal.signal(signal.SIGALRM, prior)
+         result.update(ui_actions=flow.c.actions if flow else 0, pending_effect=flow.c.pending if flow else None,
++            pending_timer_effect=flow.effect_pending if flow else None,
++            close_pending=flow.close_pending if flow else None,
+             owned_tasks=flow.owned if flow else [], closed_tasks=flow.closed if flow else [],
+             owned_task_remove_calls=trial.removals if trial else 0, finished_utc=datetime.now(timezone.utc).isoformat())
+         if ROOT.is_dir():

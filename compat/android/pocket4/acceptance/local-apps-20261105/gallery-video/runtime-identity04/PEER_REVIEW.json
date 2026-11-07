@@ -1,0 +1,110 @@
+{
+  "accepted_claim": "In these five stable observations across two specifically identified Gallery process generations, the executable and 381 mapped ELF files were bound to that process and hashed; the observed executable, ART, Android runtime and nativebridge/lazy bridge file identities are established for this exact signed APK and Main epoch.",
+  "app": {
+    "android_user": 0,
+    "apk_bytes": 7385781,
+    "apk_sha256": "347c376f07a4365fa3828ddf9f011994fe527a53fd2f5bd059997ffd3904d46e",
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "package": "com.android.gallery3d",
+    "signature_v3_verified": true,
+    "signer_certificate_sha256": [
+      "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+    ],
+    "uid": 10064,
+    "version_code": 40030
+  },
+  "decision": "APPROVE_OBSERVED_PER_APP_RUNTIME_IDENTITY_ONLY",
+  "file_backed_ELF_objects": 381,
+  "input_pins": {
+    "app-identity08/public-metadata/installed-app-identities.json": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821",
+    "gallery-video08/revision04/engine-review/IDENTITY_REVIEW.json": "390888ac6e6f8a76c0557421fb9b294e6fe60606b12985cb3fd7e7eb48228345",
+    "gallery-video08/revision04/engine-review/derive_identity.py": "1ceacee5ec0a1075e5a20c73155d8ccdbfb60070a6c7cb45f5c2aea1ad839656",
+    "gallery-video08/revision04/export_saved04.py": "3e308617265a939915a75de543a670a447d5129c8c912dba36a63835c548c757",
+    "gallery-video08/revision04/result-original.json": "550d1525bd28cd074d3317dd4e3c3c38c43e78924209612a751d01bbb7c787fb",
+    "gallery-video08/revision04/runtime_evidence.py": "670af6f9a2ecd16591babc3e40387dc6f25474d27f73fc93f42b881d3d60d5df",
+    "gallery-video08/revision04/saved-export-original.json": "d9aa8e8bf8da9c3cc9e1ff04ea9fdacc82fbb88c4dc6090ae08d4286b21db1af"
+  },
+  "named_non_path_executable_mappings": [
+    "[anon_shmem:dalvik-zygote-jit-code-cache]",
+    "[anon_shmem:dalvik-jit-code-cache]",
+    "[vdso]",
+    "[vsyscall]"
+  ],
+  "new_process_reads": 0,
+  "not_granted": [
+    "Whole App production readiness",
+    "Business qualification beyond existing separate reviews",
+    "Stress/leak/lifecycle/audio/rotation qualification",
+    "Anonymous/JIT memory byte integrity",
+    "Proof that nativebridge actually translated ARM code in these samples",
+    "Future-workload ARM/native translation exclusion",
+    "An active ARM backend protocol/version identity not observed here",
+    "Immutable or universally root-owned system-code assertion"
+  ],
+  "observations": [
+    {
+      "PID_namespace": "pid:[4026533288]",
+      "android_pid": 770788,
+      "host_pid": 2585031,
+      "maps_before_after_equal": true,
+      "per_UID_cgroup_before_after_equal": true,
+      "phase": "paused",
+      "start_ticks": "92480054"
+    },
+    {
+      "PID_namespace": "pid:[4026533288]",
+      "android_pid": 770788,
+      "host_pid": 2585031,
+      "maps_before_after_equal": true,
+      "per_UID_cgroup_before_after_equal": true,
+      "phase": "resumed",
+      "start_ticks": "92480054"
+    },
+    {
+      "PID_namespace": "pid:[4026533288]",
+      "android_pid": 770788,
+      "host_pid": 2585031,
+      "maps_before_after_equal": true,
+      "per_UID_cgroup_before_after_equal": true,
+      "phase": "round-0-playback",
+      "start_ticks": "92480054"
+    },
+    {
+      "PID_namespace": "pid:[4026533288]",
+      "android_pid": 772206,
+      "host_pid": 2587281,
+      "maps_before_after_equal": true,
+      "per_UID_cgroup_before_after_equal": true,
+      "phase": "round-1-launch",
+      "start_ticks": "92483758"
+    },
+    {
+      "PID_namespace": "pid:[4026533288]",
+      "android_pid": 772206,
+      "host_pid": 2587281,
+      "maps_before_after_equal": true,
+      "per_UID_cgroup_before_after_equal": true,
+      "phase": "round-1-playback",
+      "start_ticks": "92483758"
+    }
+  ],
+  "process_generations": 2,
+  "raw_collector_modified": false,
+  "raw_stable_complete_mapping_samples_remains": 0,
+  "review_RPC_calls": 0,
+  "review_device_actions": 0,
+  "reviewer": "/root/recover_android_state",
+  "sampler_completeness_gate_upgraded": false,
+  "schema": "independent-gallery04-observed-runtime-identity-review-v1",
+  "source_derived_projection_recomputed_equal": true,
+  "source_mutations": 0,
+  "source_review_findings": [
+    "Sampler binds PID birth, pidfd liveness, four UIDs through held Main uid_map, process name, PID namespace and actual /proc/PID/exe; identity is checked again after collection.",
+    "Each mapped file is opened beneath the held target process root and checked against maps device major/minor and inode, then hashed with stable stat; complete maps bytes and process root identity are checked before/after.",
+    "The cache uses full observed stat identity including ctime/mtime/size/device/inode, so this is observed file identity, not immutable filesystem attestation.",
+    "Both unresolved path candidates are exactly r--s property/idmap mappings selected by the broad ENGINE_NAME regex; the one non-ELF overlay candidate is also r--s. They do not establish an unidentified executable mapping.",
+    "The exporter retains the four non-path executable mappings: two named Dalvik JIT caches, vDSO and vsyscall. None is silently converted into a hashed file.",
+    "The stable set excludes the actual first round launch with maps_before_after_equal=false.",
+    "Existing independent signature audit binds the same7385781-byte APK SHA347c376f and UID10064/version40030; no new signature claim is inferred from filenames."
+  ]
+}

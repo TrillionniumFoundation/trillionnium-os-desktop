@@ -1,0 +1,54 @@
+{
+  "schema": "pocket4-documents-editor-connection-proof-v1",
+  "created_utc": "2026-11-05T10:57:53.684128+00:00",
+  "source_evidence": {
+    "flow08-result.json": "c23d0bc6786bd75598b3f2ecb6c432d480b61b8732d0921d839ad0ab7cae192e",
+    "flow08-receipts/170-files-rename-dialog.json": "aa7b9941cd99712ff72fe2ad2b553f9d9c3c1012bb2708510222511c91d62143",
+    "flow08-receipts/177-files-rename-text-fresh-native.json": "edd242521aaf01121f858634d55e8afe24d57b1f4d035b72b2628a5440dc079f",
+    "ui_adapter01.py": "0dc186a9bc552b576a361b2c3e18128d31f2473ae9344ade1a1089f0f1d147d3",
+    "ui_adapter02.py": "74234c0a3db0659e4632ce3e76510d80fe8b015514c6a72dc9e34bca31a83a54",
+    "test_editor_connection09.py": "344de0caffafd3f65d7031c8a52bd6ae8fc9a9849c70d39d8893d1e4a4db6249",
+    "fixtures/owned-rename-editor08.json": "0b44f23ea1af95a9b74a12ee4de51d35fca711046b9c9468ea14c2579879352e"
+  },
+  "actual_node_differences": {
+    "window_id": {
+      "original": 6556,
+      "fresh": 6576
+    }
+  },
+  "all_other_keys_equal": true,
+  "independent_instrumentation_source": {
+    "path": "../camera-accept08/reference/android-app.py",
+    "sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66",
+    "function": "ui",
+    "argv": [
+      "/system/bin/am",
+      "instrument",
+      "-w",
+      "-r",
+      "-e",
+      "request",
+      "<encoded request>",
+      "local.pocket4.actions.v2/.ActionRunner"
+    ]
+  },
+  "regression": {
+    "command": "python test_editor_connection09.py",
+    "tests": 6,
+    "passed": 6,
+    "includes": "actual original negative; actual revised positive with two snapshot checks; any semantic/geometry/unknown-field change negative; invalid connection ID negative; final WM change negative; second snapshot failure negative",
+    "device_calls": 0
+  },
+  "new_trial": {
+    "state": "ACTUALLY_LAUNCHED_INFLIGHT",
+    "source": {
+      "run_saf09.py": "93ce75cffa2ac2dadf70d5f10647f4ec0c9ef597baed7d06f96cbe0d5719056d",
+      "stage_run09.py": "e5eb27dc88854ecaca6f693264f242aa3e7087fb6f4d80a33f016cb2202f3d2d",
+      "flow09-request.json": "696ba437d427804d5563e506acb029b0a40f3827ad40f69de0887e474636b56a"
+    },
+    "prior08_exact_cleanup_pinned": true,
+    "stage02_entry_fence_pinned": true,
+    "job_id": "1a1ab5d9616-fc05-4d05"
+  },
+  "whole_app_production_ready": false
+}

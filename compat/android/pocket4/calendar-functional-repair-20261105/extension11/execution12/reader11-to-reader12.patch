@@ -1,0 +1,23 @@
+--- execution11/read_owned_calendar11.py
++++ execution12/read_owned_calendar12.py
+@@ -2,9 +2,9 @@
+ """Private, read-only proof of this one Calendar UI run; no account enumeration."""
+ from pathlib import Path
+ import hashlib, json, os, re, stat
+-from urllib.parse import urlencode
++from urllib.parse import urlencode,quote as url_quote
+ 
+-RUN='calendar-core11-27ebae28e2f1d930'
++RUN='calendar-core12-4d958c110b6e7a2f'
+ CALENDAR_LABEL='Pocket4 Calendar QA '+RUN
+ TITLE='Pocket4 event '+RUN
+ EDITED=TITLE+' Edited'
+@@ -125,7 +125,7 @@
+         where=' AND '.join(k+'='+quote(row[k]) for k in fields)
+         where+=' AND NOT EXISTS (SELECT 1 FROM Events WHERE calendar_id='+str(row['_id'])+')'
+         uri='content://com.android.calendar/calendars?'+urlencode({
+-            'caller_is_syncadapter':'true','account_name':ACCOUNT,'account_type':'LOCAL'})
++            'caller_is_syncadapter':'true','account_name':ACCOUNT,'account_type':'LOCAL'},quote_via=url_quote)
+         return uri,where
+ 
+ if __name__=='__main__':

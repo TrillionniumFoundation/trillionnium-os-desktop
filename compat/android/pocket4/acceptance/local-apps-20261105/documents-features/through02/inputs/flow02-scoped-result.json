@@ -1,0 +1,193 @@
+{
+  "android_uid": 10022,
+  "apk_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+  "business_scope_completed": false,
+  "calendar_fixture_outside_scope_untouched": true,
+  "cleanup": {
+    "errors": [],
+    "exact_fixture_tree_removed": true,
+    "helper_package_and_CE_DE_absent": true,
+    "host_fallback_files_unlinked": 2,
+    "normal_owned_tasks_closed": [
+      952,
+      951
+    ],
+    "owned_tasks_remaining": {},
+    "pending": false,
+    "runtime_thread_joined": true,
+    "staged_apk_removed": true,
+    "task_set_restored": true,
+    "ui_delete_credit": false
+  },
+  "deferred_features": [
+    "search",
+    "sort"
+  ],
+  "diagnostics": {
+    "no_new_crash_or_anr_observed": true,
+    "packages": {
+      "com.android.documentsui": {
+        "android_uid": 10022,
+        "bounded_log_window_retained": true,
+        "full_historical_or_external_log_reset_exclusion": false,
+        "new_crash_or_anr_exits": 0,
+        "new_exit_events": 1,
+        "new_package_crash_anr_events": 0,
+        "new_uid_crash_lines": 0,
+        "no_new_crash_or_anr_observed": true,
+        "old_exit_records_retained": true,
+        "raw_log_unknown_line_count": 0
+      },
+      "com.android.externalstorage": {
+        "android_uid": 10024,
+        "bounded_log_window_retained": true,
+        "full_historical_or_external_log_reset_exclusion": false,
+        "new_crash_or_anr_exits": 0,
+        "new_exit_events": 0,
+        "new_package_crash_anr_events": 0,
+        "new_uid_crash_lines": 0,
+        "no_new_crash_or_anr_observed": true,
+        "old_exit_records_retained": true,
+        "raw_log_unknown_line_count": 0
+      }
+    },
+    "since_guest_seconds": 1793885724,
+    "through_guest_seconds": 1793885803,
+    "whole_app_production_ready": false
+  },
+  "durable_terminal": {
+    "exit_code": 1,
+    "output_complete": true,
+    "output_durable": true,
+    "state": "failed",
+    "timed_out": false
+  },
+  "finished_utc": "2026-11-05T13:36:44.153889+00:00",
+  "fixture_setup": {
+    "App_UI_creation_credit": false,
+    "content_writes": 2,
+    "file_bytes": [
+      59,
+      118
+    ],
+    "provider_directory_creates": 1,
+    "provider_file_creates": 2
+  },
+  "fixture_setup_counts_as_Files_UI_creation": false,
+  "job_id": "1a1abebd6ac-fc05-5149",
+  "main_guard": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  },
+  "new_folder_create_confirmation_sent": false,
+  "new_folder_creation_business_failure_claimed": false,
+  "observation_blocker": "RuntimeError: ACTUAL_NEW_FOLDER_DIALOG_TITLE",
+  "package": "com.android.documentsui",
+  "prior_flow11_scope_retained_unchanged": {
+    "result_sha256": "095fb0441fdf39d4fdd84f337b3a343ee556d384ec6aef3a6312863b114dc712",
+    "scope_overwritten": false
+  },
+  "remaining_required_gates": [
+    "FILES_NEW_FOLDER",
+    "FILES_MULTIPLE_COPY",
+    "FILES_MULTIPLE_MOVE",
+    "FILES_MULTIPLE_DELETE_COPIES",
+    "NORMAL_CLOSE_REOPEN_APP_READBACK",
+    "REVOKED_EXISTING_URI_SECURITY_DENIAL",
+    "GET_CONTENT_EXACT_FILE_READ",
+    "FILES_UI_FINAL_DELETE",
+    "FINAL_GRANTS_EMPTY"
+  ],
+  "result_sha256": "dcb68ce19b9ffdac949654150110a18dd39f7e31873bd851e7315e5ff79c1074",
+  "runner_sha256": "8ddfdd57c85201d5d56f94c39bbbe6046f4b1df35ef107e4c964c8e40f5f8a77",
+  "runtime_selected_projection_pending": true,
+  "runtime_summary": {
+    "Android_commands_from_sampler_thread": 0,
+    "boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1",
+    "bounded_process_resource_observations": [
+      {
+        "first_observed_utc": "2026-11-05T13:35:25.803872+00:00",
+        "host_pid": 2003022,
+        "last_observed_utc": "2026-11-05T13:36:42.339894+00:00",
+        "maximum_fd_count": 186,
+        "maximum_threads": 58,
+        "memory_kib_max": {
+          "VmHWM": 181596,
+          "VmRSS": 181596,
+          "VmSize": 16866860
+        },
+        "process_name": "com.android.documentsui",
+        "samples": 149,
+        "start_ticks": "90369513"
+      },
+      {
+        "first_observed_utc": "2026-11-05T13:35:25.833013+00:00",
+        "host_pid": 3593977,
+        "last_observed_utc": "2026-11-05T13:36:42.863882+00:00",
+        "maximum_fd_count": 77,
+        "maximum_threads": 18,
+        "memory_kib_max": {
+          "VmHWM": 103296,
+          "VmRSS": 54544,
+          "VmSize": 16785376
+        },
+        "process_name": "com.android.externalstorage",
+        "samples": 150,
+        "start_ticks": "80801834"
+      }
+    ],
+    "elapsed_seconds": 77.19743488996755,
+    "errors": [],
+    "exact_engine_review_required": true,
+    "file_operation_service_observed": false,
+    "long_duration_leak_or_stress_qualification": false,
+    "process_memory_or_environment_read": false,
+    "processes_observed": [
+      "com.android.documentsui",
+      "com.android.externalstorage"
+    ],
+    "sample_count": 150,
+    "scan_error_count": 0,
+    "schema": "pocket4-documents-active-runtime-evidence-v1",
+    "stable_complete_mapping_samples": 0,
+    "target_android_uids": {
+      "com.android.documentsui": 10022,
+      "com.android.externalstorage": 10024
+    },
+    "target_host_uids": {
+      "com.android.documentsui": 10022,
+      "com.android.externalstorage": 10024
+    },
+    "thread_joined": true,
+    "uid_map": "         0          0 4294967295\n",
+    "user_document_contents_read": false,
+    "whole_app_production_ready": false
+  },
+  "schema": "documents-features-flow02-scoped-result-v1",
+  "scope_passes": {
+    "EXACT_TREE_GRANT": {
+      "broader_root_granted": false,
+      "passed": true,
+      "persisted_read_write_grants": 1,
+      "tree": "primary:Pocket4_DocFeatures_r12_eeff7aa90e47139a"
+    },
+    "GET_CONTENT_CANCEL": {
+      "RESULT_CANCELED": true,
+      "URI_returned": false,
+      "grants_empty": true,
+      "passed": true
+    },
+    "TREE_CANCEL": {
+      "RESULT_CANCELED": true,
+      "URI_returned": false,
+      "grants_empty": true,
+      "passed": true
+    }
+  },
+  "started_utc": "2026-11-05T13:35:24.489006+00:00",
+  "state": "THREE_SCOPED_GATES_PASSED_FULL_SESSION_STOPPED_AT_DIALOG_OBSERVATION",
+  "version_code": 37,
+  "whole_app_production_ready": false
+}

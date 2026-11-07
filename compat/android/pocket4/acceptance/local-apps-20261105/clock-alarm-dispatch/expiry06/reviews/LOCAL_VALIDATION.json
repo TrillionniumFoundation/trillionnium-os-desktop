@@ -1,0 +1,30 @@
+{
+  "schema": "pocket4-expiry06-host-validation-v1",
+  "controller": {
+    "bytes": 34300,
+    "sha256": "fba956b1b2a681d5181b60ab5fccad55964a46029b89970ad1c9ad646a0776fc"
+  },
+  "test_source": {
+    "bytes": 10969,
+    "sha256": "932070f2e7dcfdd2caedda9cbc83e6793a6b69db86350d23d7790af297bdd465"
+  },
+  "exit_code": 0,
+  "cases": 14,
+  "stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr": {
+    "bytes": 1753,
+    "sha256": "d6326a4944bff8f194f905ea06ac87253abc359aa2ded49c6b0933c9dff5bd62"
+  },
+  "default_inert": true,
+  "syntax": true,
+  "actual_Android_or_UI_calls": 0,
+  "scope": "Actual controller methods execute on host with native UI, task topology, Android reads and clocks explicitly doubled. The negative-pause case uses exact old values with a constructed clock interval; no new App behavior is established.",
+  "actual_saved_evidence_used": {
+    "alarm_record_projection": "81b12baa291b0d93cf30cb0933949129478fa12448aec6852c7f1b9c5f13af18",
+    "original_negative_pause": "90617209a0ed0ca29f13872293f1d5ed33e82b1ba8825fc54c9c29b58a6ca7f2"
+  },
+  "current_timer_core_not_rerun": true
+}

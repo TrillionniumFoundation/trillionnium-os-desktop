@@ -1,0 +1,242 @@
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
+import java.util.function.*;
+import android.os.ParcelableException;
+
+/** Host fixture: production bodies inserted verbatim; Android/JNI boundaries below. */
+public final class LifecycleHarness {
+    @interface Nullable {} @interface NonNull {} @interface SessionFlag {}
+    static final String EXTRA_ERROR="error", EXTRA_SESSION_ID="session";
+    static final int FLAG_SESSION_TYPE_FUSE=1, FLAG_SESSION_ATTRIBUTE_INDEXABLE=2;
+    static class ExternalStorageServiceException extends Exception {
+        ExternalStorageServiceException(String s, Throwable t) { super(s,t); }
+    }
+    static class RemoteException extends Exception { RemoteException(String s) { super(s); } }
+    static class Bundle extends HashMap<String,Object> {
+        void putString(String k,String v) { put(k,v); }
+        void putParcelable(String k,Object v) { put(k,v); }
+        <T> T getParcelable(String k,Class<T> c) { return c.cast(get(k)); }
+    }
+    static class RemoteCallback {
+        final Consumer<Bundle> callback;
+        RemoteCallback(Consumer<Bundle> c) { callback=c; }
+        void sendResult(Bundle b) { callback.accept(b); }
+    }
+    static class ParcelFileDescriptor {
+        final int token; boolean closed, detached;
+        ParcelFileDescriptor(int n) { token=n; }
+        int detachFd() { check(!closed && !detached,"INVALID_FD"); detached=true; return token; }
+        void close() throws IOException { closed=true; }
+    }
+    static class Binder {
+        static final AtomicInteger clears=new AtomicInteger(), restores=new AtomicInteger();
+        static long clearCallingIdentity() { return clears.incrementAndGet(); }
+        static void restoreCallingIdentity(long n) { restores.incrementAndGet(); }
+    }
+    static class Slog {
+        static final AtomicInteger errors=new AtomicInteger();
+        static void i(String t,String m) {} static void w(String t,String m) {}
+        static void e(String t,String m,Throwable e) { errors.incrementAndGet(); }
+    }
+    static class Log {
+        static void i(String t,String m) {} static void w(String t,String m) {}
+        static void v(String t,String m) {} static void e(String t,String m) {}
+        static void e(String t,String m,Throwable e) {}
+    }
+    static class Preconditions { static void checkArgument(boolean b) { if(!b) throw new IllegalArgumentException(); } }
+    static class UserHandle { static int of(int n) { return n; } }
+    static class UserInfo { int profileGroupId; UserInfo(int n) { profileGroupId=n; } }
+    static class UserManager {
+        final Map<Integer,UserInfo> info=new HashMap<>(); final Set<Integer> shared=new HashSet<>(); int user;
+        UserInfo getUserInfo(int n) { return info.get(n); }
+        boolean isMediaSharedWithParent() { return shared.contains(user); }
+    }
+    static class Context {
+        IExternalStorageService service; UserManager users; final int user;
+        Context(IExternalStorageService s,UserManager u,int n) {service=s;users=u;user=n;}
+        Context createContextAsUser(int n,int flags) { return new Context(service,users,n); }
+        <T> T getSystemService(Class<T> c) {
+            UserManager view=new UserManager(); view.info.putAll(users.info); view.shared.addAll(users.shared);view.user=user;
+            return c.cast(view);
+        }
+    }
+    static class VolumeInfo {
+        static final int TYPE_PUBLIC=0,TYPE_PRIVATE=1,TYPE_EMULATED=2,TYPE_STUB=5;
+        final String id; int mountUserId,type=TYPE_EMULATED; boolean visible=true;
+        VolumeInfo(String n,int u) {id=n;mountUserId=u;}
+        String getId() {return id;} boolean isVisible() {return visible;}
+        File getPath() {return new File("/storage/emulated");}
+        File getInternalPath() {return new File("/data/media");}
+    }
+    static class StorageSessionController {
+        static final String TAG="StorageSessionController";
+        final Object mLock=new Object(); final Context mContext; final UserManager mUserManager;
+        final Map<Integer,StorageUserConnection> mConnections=new HashMap<>(); boolean mIsResetting;
+        StorageSessionController(Context c) {mContext=c;mUserManager=c.users;}
+        /*__CONTROLLER__*/
+    }
+    static class StorageUserConnection {
+        static final String TAG="StorageUserConnection"; static final int DEFAULT_REMOTE_TIMEOUT_SECONDS=20;
+        final Object mSessionsLock=new Object(); final Map<String,Session> mSessions=new HashMap<>();
+        final Map<Integer,Integer> mUidsBlockedOnIo=new HashMap<>(); final Context mContext;
+        final ActiveConnection mActiveConnection=new ActiveConnection();
+        StorageUserConnection(Context c,int user,StorageSessionController owner) {mContext=c;}
+        /*__CONNECTION__*/
+        final class ActiveConnection {
+            final Object mLock=new Object();
+            final ArrayList<CompletableFuture<Void>> mOutstandingOps=new ArrayList<>();
+            CompletableFuture<IExternalStorageService> connectIfNeeded() {
+                return CompletableFuture.completedFuture(mContext.service); // Binder binding boundary
+            }
+            /*__ACTIVE__*/
+        }
+    }
+    interface IExternalStorageService {
+        void startSession(String id,int flags,ParcelFileDescriptor fd,String upper,String lower,RemoteCallback cb) throws RemoteException;
+        void endSession(String id,RemoteCallback cb) throws RemoteException;
+        abstract class Stub implements IExternalStorageService {}
+    }
+    static class Handler {
+        final ExecutorService executor=Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"binder-boundary");t.setDaemon(true);return t;});
+        void post(Runnable r) {executor.submit(r);}
+    }
+    abstract static class ExternalStorageService {
+        final Handler mHandler=new Handler(); final ExternalStorageServiceWrapper mWrapper=new ExternalStorageServiceWrapper();
+        abstract void onStartSession(String id,int flags,ParcelFileDescriptor fd,File upper,File lower);
+        abstract void onEndSession(String id);
+        <T> T getSystemService(Class<T> c) {return c.cast(new StorageManager());}
+        class ExternalStorageServiceWrapper extends IExternalStorageService.Stub {
+            /*__WRAPPER__*/
+        }
+    }
+    static class SdkLevel {static boolean isAtLeastT() {return false;} }
+    static class StorageManager {StorageVolume getStorageVolume(File f) {return null;} }
+    static class StorageVolume {boolean isExternallyManaged() {return false;} }
+    static class MediaProvider {
+        List<String> getSupportedTranscodingRelativePaths() {return List.of();}
+        List<String> getSupportedUncachedRelativePaths() {return List.of();}
+    }
+    static class FileUtils {static File toFuseFile(File f) {return f;} }
+    static class ExternalStorageServiceImpl extends ExternalStorageService {
+        static final String TAG="ExternalStorageServiceImpl";
+        static final Object sLock=new Object(); static final Map<String,FuseDaemon> sFuseDaemons=new HashMap<>();
+        MediaProvider getMediaProvider() {return new MediaProvider();} // ContentProvider boundary
+        /*__SERVICE__*/
+    }
+    static class FuseDaemon extends Thread {
+        static final String TAG="FuseDaemonThread"; static final int POLL_INTERVAL_MS=100,POLL_COUNT=50;
+        final Object mLock=new Object(); final MediaProvider mMediaProvider; final int mFuseDeviceFd;
+        final String mPath; final boolean mUncachedMode; final String[] mSupportedTranscodingRelativePaths,mSupportedUncachedRelativePaths;
+        final ExternalStorageServiceImpl mService; long mPtr;
+        /*__DAEMON__*/
+        // JNI boundary only. All production constructor/run/start/join code above is unchanged.
+        long native_new(MediaProvider p) {return Kernel.newPointer();}
+        void native_start(long p,int fd,String path,boolean uncached,String[] a,String[] b) {Kernel.start(p,fd);}
+        void native_delete(long p) {Kernel.states.get(p).deleted=true;}
+        boolean native_is_started(long p) {return Kernel.states.get(p).started;}
+        void native_initialize_device_id(long p,String path) {}
+    }
+    static class Kernel {
+        static class State {int fd;volatile boolean started,deleted;Thread thread;final CountDownLatch release=new CountDownLatch(1);}
+        static final AtomicLong seq=new AtomicLong(); static final Map<Long,State> states=new ConcurrentHashMap<>();
+        static long newPointer() {long p=seq.incrementAndGet();states.put(p,new State());return p;}
+        static void start(long p,int fd) {
+            State s=states.get(p);s.fd=fd;s.thread=Thread.currentThread();s.started=true;
+            try {s.release.await();} catch(InterruptedException e) {Thread.currentThread().interrupt();throw new IllegalStateException(e);}
+        }
+        static State forFd(int fd) {return states.values().stream().filter(s->s.fd==fd).findFirst().orElse(null);}
+        static void release(int fd) {State s=forFd(fd);if(s!=null)s.release.countDown();}
+        static void cleanup() throws Exception {
+            for(State s:states.values())s.release.countDown();
+            for(State s:states.values())if(s.thread!=null)s.thread.join(1500);
+        }
+    }
+    static class Proxy implements IExternalStorageService {
+        final ExternalStorageServiceImpl service;final AtomicInteger starts=new AtomicInteger(),ends=new AtomicInteger();
+        volatile boolean failEnd;
+        Proxy(ExternalStorageServiceImpl s) {service=s;}
+        public void startSession(String id,int flags,ParcelFileDescriptor fd,String up,String low,RemoteCallback cb) throws RemoteException {
+            starts.incrementAndGet();service.mWrapper.startSession(id,flags,new ParcelFileDescriptor(fd.token),up,low,cb); // Binder dup boundary
+        }
+        public void endSession(String id,RemoteCallback cb) throws RemoteException {
+            ends.incrementAndGet();if(failEnd)throw new RemoteException("injected end failure");
+            service.mWrapper.endSession(id,cb);
+        }
+    }
+    static class Fixture {
+        final ExternalStorageServiceImpl service=new ExternalStorageServiceImpl(); final Proxy proxy=new Proxy(service);
+        final UserManager users=new UserManager(); final Context context=new Context(proxy,users,0);
+        final StorageSessionController controller=new StorageSessionController(context);
+        final ExecutorService executor=Executors.newCachedThreadPool(r->{Thread t=new Thread(r);t.setDaemon(true);return t;});
+        VolumeInfo mount(String id,int user,int fd) throws Exception {
+            VolumeInfo v=new VolumeInfo(id,user);controller.onVolumeMount(new ParcelFileDescriptor(fd),v);
+            check(Kernel.forFd(fd)!=null,"INITIAL_FD_NOT_CONSUMED");return v;
+        }
+        void close() throws Exception {Kernel.cleanup();executor.shutdownNow();service.mHandler.executor.shutdownNow();}
+    }
+    static void check(boolean ok,String why) {if(!ok)throw new AssertionError(why);}
+    static boolean await(BooleanSupplier predicate,int ms) throws Exception {
+        long stop=System.nanoTime()+TimeUnit.MILLISECONDS.toNanos(ms);
+        while(System.nanoTime()<stop){if(predicate.getAsBoolean())return true;Thread.sleep(5);}return predicate.getAsBoolean();
+    }
+    static void run(String name,Fixture f) throws Exception {
+        if(name.equals("waits_for_exit")) {
+            VolumeInfo v=f.mount("emulated;0",0,101);FuseDaemon d=ExternalStorageServiceImpl.getFuseDaemon(v.id);
+            Future<?> end=f.executor.submit(()->f.controller.onVolumeUnmount(v));
+            check(await(()->f.proxy.ends.get()==1,300),"END_SESSION_NOT_SENT");
+            check(!end.isDone(),"UNMOUNT_RETURNED_BEFORE_DAEMON_EXIT");
+            Kernel.release(101);end.get(2,TimeUnit.SECONDS);
+            check(!d.isAlive() && ExternalStorageServiceImpl.getFuseDaemon(v.id)==null,"DAEMON_NOT_JOINED");
+            check(f.controller.mConnections.get(0).mSessions.isEmpty(),"SESSION_NOT_REMOVED");
+        } else if(name.equals("rapid_remount")) {
+            VolumeInfo v=f.mount("emulated;0",0,201);FuseDaemon old=ExternalStorageServiceImpl.getFuseDaemon(v.id);
+            Future<?> cycle=f.executor.submit(()->{f.controller.onVolumeUnmount(v);try {f.controller.onVolumeMount(new ParcelFileDescriptor(202),v);}catch(Exception e){throw new RuntimeException(e);}});
+            // Hold old native exit while the caller tries the normal unmount-then-mount sequence.
+            Thread.sleep(300);Kernel.release(201);cycle.get(3,TimeUnit.SECONDS);old.join(1000);
+            check(Kernel.forFd(202)!=null,"NEW_DEVICE_FD_NOT_CONSUMED");
+            check(ExternalStorageServiceImpl.getFuseDaemon(v.id)!=old && ExternalStorageServiceImpl.getFuseDaemon(v.id)!=null,"NEW_SESSION_LOST");
+            check(f.proxy.ends.get()==1,"EXACTLY_ONE_END_REQUIRED");
+        } else if(name.equals("duplicate_start")) {
+            VolumeInfo v=f.mount("emulated;0",0,301);FuseDaemon original=ExternalStorageServiceImpl.getFuseDaemon(v.id);
+            CompletableFuture<Bundle> done=new CompletableFuture<>();f.proxy.startSession(v.id,1,new ParcelFileDescriptor(302),"/storage/emulated","/data/media",new RemoteCallback(done::complete));
+            check(done.get(1,TimeUnit.SECONDS).get(EXTRA_ERROR)==null,"DUPLICATE_CONTRACT_CHANGED");
+            check(ExternalStorageServiceImpl.getFuseDaemon(v.id)==original && Kernel.forFd(302)==null,"DUPLICATE_REPLACED_ACTIVE_SESSION");
+        } else if(name.equals("remove_without_wait")) {
+            VolumeInfo v=f.mount("emulated;0",0,401);StorageUserConnection c=f.controller.onVolumeRemove(v);
+            check(c!=null && c.mSessions.isEmpty() && f.proxy.ends.get()==0,"REMOVE_API_CHANGED");
+            check(ExternalStorageServiceImpl.getFuseDaemon(v.id).isAlive(),"REMOVE_SHOULD_NOT_JOIN");
+        } else if(name.equals("only_target_session")) {
+            VolumeInfo a=f.mount("emulated;0",0,501),b=f.mount("public:9",0,502),c=f.mount("emulated;10",10,503);
+            Future<?> end=f.executor.submit(()->f.controller.onVolumeUnmount(a));Kernel.release(501);end.get(2,TimeUnit.SECONDS);
+            check(!f.controller.mConnections.get(0).mSessions.containsKey(a.id),"TARGET_RETAINED");
+            check(f.controller.mConnections.get(0).mSessions.containsKey(b.id) && f.controller.mConnections.get(10).mSessions.containsKey(c.id),"OTHER_SESSION_REMOVED");
+            check(ExternalStorageServiceImpl.getFuseDaemon(b.id).isAlive() && ExternalStorageServiceImpl.getFuseDaemon(c.id).isAlive(),"OTHER_DAEMON_STOPPED");
+        } else if(name.equals("unsupported_and_reset")) {
+            VolumeInfo v=f.mount("emulated;0",0,601);f.controller.mIsResetting=true;f.controller.onVolumeUnmount(v);
+            f.controller.mIsResetting=false;v.type=VolumeInfo.TYPE_PRIVATE;f.controller.onVolumeUnmount(v);
+            check(f.proxy.ends.get()==0 && f.controller.mConnections.get(0).mSessions.containsKey(v.id),"HANDLE_GUARD_CHANGED");
+        } else if(name.equals("missing_connection")) {
+            f.controller.onVolumeUnmount(new VolumeInfo("emulated;0",0));check(f.proxy.ends.get()==0,"MISSING_CONNECTION_SENT_END");
+        } else if(name.equals("error_restores_identity")) {
+            VolumeInfo v=f.mount("emulated;0",0,701);f.proxy.failEnd=true;f.controller.onVolumeUnmount(v);
+            // Baseline skips end entirely; candidate must preserve existing catch/log contract.
+            check(f.proxy.ends.get()==0 || Slog.errors.get()==1,"ERROR_NOT_RECORDED");
+            check(f.controller.mConnections.get(0).mSessions.isEmpty(),"FAILED_END_RETAINED_FRAMEWORK_SESSION");
+        } else if(name.equals("clone_parent_connection")) {
+            f.users.info.put(10,new UserInfo(0));f.users.shared.add(10);
+            VolumeInfo v=f.mount("emulated;10",10,801);check(f.controller.mConnections.containsKey(0) && !f.controller.mConnections.containsKey(10),"CLONE_CONNECTION_ROUTED_WRONG");
+            Future<?> end=f.executor.submit(()->f.controller.onVolumeUnmount(v));Kernel.release(801);end.get(2,TimeUnit.SECONDS);
+            check(f.controller.mConnections.get(0).mSessions.isEmpty(),"CLONE_SESSION_NOT_REMOVED");
+        } else throw new AssertionError("UNKNOWN_CASE");
+        check(Binder.clears.get()==Binder.restores.get(),"IDENTITY_NOT_RESTORED");
+    }
+    public static void main(String[] args) throws Exception {
+        Fixture f=new Fixture();int rc=0;
+        try {run(args[0],f);System.out.println("PASS "+args[0]);}
+        catch(Throwable t){rc=2;t.printStackTrace(System.err);}
+        finally {f.close();}
+        System.exit(rc);
+    }
+}

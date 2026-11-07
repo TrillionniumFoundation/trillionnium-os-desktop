@@ -1,0 +1,146 @@
+1962: Lcom/android/server/storage/StorageSessionController; (offset=0x000267f0) (type_idx=4527) (Verified) (NoneCompiled)
+  20: void com.android.server.storage.StorageSessionController.onVolumeUnmount(com.android.server.storage.ImmutableVolumeInfo) (dex_method_idx=21963)
+    DEX CODE:
+      0x0000: 1a00 3983                	| const-string v0, "StorageSessionController" // string@33593
+      0x0002: 6e10 a655 0800           	| invoke-virtual {v8}, java.lang.String com.android.server.storage.ImmutableVolumeInfo.getId() // method@21926
+      0x0005: 0c01                     	| move-result-object v1
+      0x0006: 7100 bb0e 0000           	| invoke-static {}, long android.os.Binder.clearCallingIdentity() // method@3771
+      0x0009: 0b02                     	| move-result-wide v2
+      0x000a: 6e20 ca55 8700           	| invoke-virtual {v7, v8}, com.android.server.storage.StorageUserConnection com.android.server.storage.StorageSessionController.onVolumeRemove(com.android.server.storage.ImmutableVolumeInfo) // method@21962
+      0x000d: 0c04                     	| move-result-object v4
+      0x000e: 2205 6f22                	| new-instance v5, java.lang.StringBuilder // type@8815
+      0x0010: 7010 bed0 0500           	| invoke-direct {v5}, void java.lang.StringBuilder.<init>() // method@53438
+      0x0013: 1a06 f277                	| const-string v6, "On volume unmount " // string@30706
+      0x0015: 6e20 c8d0 6500           	| invoke-virtual {v5, v6}, java.lang.StringBuilder java.lang.StringBuilder.append(java.lang.String) // method@53448
+      0x0018: 6e20 c7d0 8500           	| invoke-virtual {v5, v8}, java.lang.StringBuilder java.lang.StringBuilder.append(java.lang.Object) // method@53447
+      0x001b: 6e10 d0d0 0500           	| invoke-virtual {v5}, java.lang.String java.lang.StringBuilder.toString() // method@53456
+      0x001e: 0c05                     	| move-result-object v5
+      0x001f: 7120 7c16 5000           	| invoke-static {v0, v5}, int android.util.Slog.i(java.lang.String, java.lang.String) // method@5756
+      0x0022: 3804 0a00                	| if-eqz v4, +10
+      0x0024: 6e20 1356 1400           	| invoke-virtual {v4, v1}, void com.android.server.storage.StorageUserConnection.removeSessionAndWait(java.lang.String) // method@22035
+      0x0027: 2805                     	| goto +5
+      0x0028: 0d00                     	| move-exception v0
+      0x0029: 2820                     	| goto +32
+      0x002a: 0d04                     	| move-exception v4
+      0x002b: 2806                     	| goto +6
+      0x002c: 0000                     	| nop
+      0x002d: 7120 c20e 3200           	| invoke-static {v2, v3}, void android.os.Binder.restoreCallingIdentity(long) // method@3778
+      0x0030: 2818                     	| goto +24
+      0x0031: 0000                     	| nop
+      0x0032: 2205 6f22                	| new-instance v5, java.lang.StringBuilder // type@8815
+      0x0034: 7010 bed0 0500           	| invoke-direct {v5}, void java.lang.StringBuilder.<init>() // method@53438
+      0x0037: 1a06 e837                	| const-string v6, "Failed to end session for vol with id: " // string@14312
+      0x0039: 6e20 c8d0 6500           	| invoke-virtual {v5, v6}, java.lang.StringBuilder java.lang.StringBuilder.append(java.lang.String) // method@53448
+      0x003c: 6e20 c8d0 1500           	| invoke-virtual {v5, v1}, java.lang.StringBuilder java.lang.StringBuilder.append(java.lang.String) // method@53448
+      0x003f: 6e10 d0d0 0500           	| invoke-virtual {v5}, java.lang.String java.lang.StringBuilder.toString() // method@53456
+      0x0042: 0c05                     	| move-result-object v5
+      0x0043: 7130 7b16 5004           	| invoke-static {v0, v5, v4}, int android.util.Slog.e(java.lang.String, java.lang.String, java.lang.Throwable) // method@5755
+      0x0046: 0000                     	| nop
+      0x0047: 28e6                     	| goto -26
+      0x0048: 0e00                     	| return-void
+      0x0049: 7120 c20e 3200           	| invoke-static {v2, v3}, void android.os.Binder.restoreCallingIdentity(long) // method@3778
+      0x004c: 2700                     	| throw v0
+    VERIFIER TYPE ANALYSIS:
+      Register Types:
+        0: Undefined
+        1: Conflict
+        2: Boolean
+        3: Byte
+        4: Char
+        5: Short
+        6: Integer
+        7: Long (Low Half)
+        8: Long (High Half)
+        9: Float
+        10: Double (Low Half)
+        11: Double (High Half)
+        12: Zero/null
+        13: BooleanConstant
+        14: PositiveByteConstant
+        15: PositiveShortConstant
+        16: CharConstant
+        17: ByteConstant
+        18: ShortConstant
+        19: IntegerConstant
+        20: Low-half Constant
+        21: High-half Constant
+        22: null
+        23: Reference java.lang.Object
+        24: Uninitialized Reference: java.lang.Object
+        25: Reference: com.android.server.storage.StorageSessionController
+        26: Reference: com.android.server.storage.ImmutableVolumeInfo
+        27: Reference: java.lang.String
+        28: Reference: android.os.Binder
+        29: Reference: com.android.server.storage.StorageUserConnection
+        30: Reference: java.lang.StringBuilder
+        31: Uninitialized Reference: java.lang.StringBuilder
+        32: Reference: android.util.Slog
+        33: Reference: java.lang.Throwable
+        34: Reference: com.android.server.storage.StorageSessionController$ExternalStorageServiceException
+      Dumping instructions and register lines:
+        0:[Undefined],1:[Undefined],2:[Undefined],3:[Undefined],4:[Undefined],5:[Undefined],6:[Undefined],7:[Reference: com.android.server.storage.StorageSessionController],8:[Reference: com.android.server.storage.ImmutableVolumeInfo],
+        0x0000: V-O-B- const-string v0, "StorageSessionController" // string@33593
+        0x0002: V-O--- invoke-virtual {v8}, java.lang.String com.android.server.storage.ImmutableVolumeInfo.getId() // method@21926
+        0x0005: V-O--- move-result-object v1
+        0x0006: V-O--- invoke-static {}, long android.os.Binder.clearCallingIdentity() // method@3771
+        0x0009: V-O--- move-result-wide v2
+        0x000a: V-OT-- invoke-virtual {v7, v8}, com.android.server.storage.StorageUserConnection com.android.server.storage.StorageSessionController.onVolumeRemove(com.android.server.storage.ImmutableVolumeInfo) // method@21962
+        0x000d: V-OT-- move-result-object v4
+        0x000e: V-OT-- new-instance v5, java.lang.StringBuilder // type@8815
+        0x0010: V-OT-- invoke-direct {v5}, void java.lang.StringBuilder.<init>() // method@53438
+        0x0013: V-OT-- const-string v6, "On volume unmount " // string@30706
+        0x0015: V-OT-- invoke-virtual {v5, v6}, java.lang.StringBuilder java.lang.StringBuilder.append(java.lang.String) // method@53448
+        0x0018: V-OT-- invoke-virtual {v5, v8}, java.lang.StringBuilder java.lang.StringBuilder.append(java.lang.Object) // method@53447
+        0x001b: V-OT-- invoke-virtual {v5}, java.lang.String java.lang.StringBuilder.toString() // method@53456
+        0x001e: V-OT-- move-result-object v5
+        0x001f: V-OT-- invoke-static {v0, v5}, int android.util.Slog.i(java.lang.String, java.lang.String) // method@5756
+        0x0022: V-OT-- if-eqz v4, +10
+        0x0024: V-OT-- invoke-virtual {v4, v1}, void com.android.server.storage.StorageUserConnection.removeSessionAndWait(java.lang.String) // method@22035
+        0x0027: V-O--- goto +5
+        0:[Reference: java.lang.String],1:[Reference: java.lang.String],2:[Long (Low Half)],3:[Long (High Half)],4:[Undefined],5:[Undefined],6:[Undefined],7:[Reference: com.android.server.storage.StorageSessionController],8:[Reference: com.android.server.storage.ImmutableVolumeInfo],
+        0x0028: V-O-B- move-exception v0
+        0x0029: V-O--- goto +32
+        0:[Reference: java.lang.String],1:[Reference: java.lang.String],2:[Long (Low Half)],3:[Long (High Half)],4:[Undefined],5:[Undefined],6:[Undefined],7:[Reference: com.android.server.storage.StorageSessionController],8:[Reference: com.android.server.storage.ImmutableVolumeInfo],
+        0x002a: V-O-B- move-exception v4
+        0x002b: V-O--- goto +6
+        0:[Reference: java.lang.String],1:[Reference: java.lang.String],2:[Long (Low Half)],3:[Long (High Half)],4:[Reference: com.android.server.storage.StorageUserConnection],5:[Reference: java.lang.String],6:[Reference: java.lang.String],7:[Reference: com.android.server.storage.StorageSessionController],8:[Reference: com.android.server.storage.ImmutableVolumeInfo],
+        0x002c: V-O-B- nop
+        0:[Reference: java.lang.String],1:[Reference: java.lang.String],2:[Long (Low Half)],3:[Long (High Half)],4:[Reference java.lang.Object],5:[Reference: java.lang.String],6:[Reference: java.lang.String],7:[Reference: com.android.server.storage.StorageSessionController],8:[Reference: com.android.server.storage.ImmutableVolumeInfo],
+        0x002d: V-O-B- invoke-static {v2, v3}, void android.os.Binder.restoreCallingIdentity(long) // method@3778
+        0x0030: V-O--- goto +24
+        0:[Reference: java.lang.String],1:[Reference: java.lang.String],2:[Long (Low Half)],3:[Long (High Half)],4:[Reference: com.android.server.storage.StorageSessionController$ExternalStorageServiceException],5:[Undefined],6:[Undefined],7:[Reference: com.android.server.storage.StorageSessionController],8:[Reference: com.android.server.storage.ImmutableVolumeInfo],
+        0x0031: V-O-B- nop
+        0x0032: V-OT-- new-instance v5, java.lang.StringBuilder // type@8815
+        0x0034: V-OT-- invoke-direct {v5}, void java.lang.StringBuilder.<init>() // method@53438
+        0x0037: V-OT-- const-string v6, "Failed to end session for vol with id: " // string@14312
+        0x0039: V-OT-- invoke-virtual {v5, v6}, java.lang.StringBuilder java.lang.StringBuilder.append(java.lang.String) // method@53448
+        0x003c: V-OT-- invoke-virtual {v5, v1}, java.lang.StringBuilder java.lang.StringBuilder.append(java.lang.String) // method@53448
+        0x003f: V-OT-- invoke-virtual {v5}, java.lang.String java.lang.StringBuilder.toString() // method@53456
+        0x0042: V-OT-- move-result-object v5
+        0x0043: V-OT-- invoke-static {v0, v5, v4}, int android.util.Slog.e(java.lang.String, java.lang.String, java.lang.Throwable) // method@5755
+        0x0046: V-O--- nop
+        0x0047: V-O--- goto -26
+        0:[Reference: java.lang.String],1:[Reference: java.lang.String],2:[Long (Low Half)],3:[Long (High Half)],4:[Reference java.lang.Object],5:[Reference: java.lang.String],6:[Reference: java.lang.String],7:[Reference: com.android.server.storage.StorageSessionController],8:[Reference: com.android.server.storage.ImmutableVolumeInfo],
+        0x0048: V-O-BR return-void
+        0:[Reference: java.lang.Throwable],1:[Reference: java.lang.String],2:[Long (Low Half)],3:[Long (High Half)],4:[Undefined],5:[Undefined],6:[Undefined],7:[Reference: com.android.server.storage.StorageSessionController],8:[Reference: com.android.server.storage.ImmutableVolumeInfo],
+        0x0049: V-O-B- invoke-static {v2, v3}, void android.os.Binder.restoreCallingIdentity(long) // method@3778
+        0x004c: V-O--- throw v0
+    OatMethodOffsets (offset=0x00000000)
+      code_offset: 0x00000000 
+    OatQuickMethodHeader (offset=0x00000000)
+      vmap_table: (offset=0x00000000)
+    QuickMethodFrameInfo
+      frame_size_in_bytes: 0
+      core_spill_mask: 0x00000000 
+      fp_spill_mask: 0x00000000 
+      vr_stack_locations:
+      	locals: v0[sp + #4294967264] v1[sp + #4294967268] v2[sp + #4294967272] v3[sp + #4294967276] v4[sp + #4294967280] v5[sp + #4294967284] v6[sp + #4294967288]
+      	ins: v7[sp + #8] v8[sp + #12]
+      	method*: v9[sp + #0]
+      	outs: v0[sp + #8] v1[sp + #12] v2[sp + #16]
+    CODE: (code_offset=0x00000000 size=0)
+
+OAT FILE STATS:
+OatFile                                                   1    195.008KB  100.0%
+  (other)                                                 1    195.008KB  100.0%
+  Code                                                    1      0.000KB    0.0%

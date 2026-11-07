@@ -1,0 +1,80 @@
+{
+  "scope": "owned directory/file enumeration only",
+  "original_directory_receipt": {
+    "name": "006-fixture-directory-created.json",
+    "sha256": "5bd7cf3909a8e149cce5d388f12f97531cfe7561417cc3674c2ce5743d5bc6bd",
+    "content": {
+      "created_by_app": false,
+      "entries": [],
+      "identity": {
+        "st_dev": 158,
+        "st_gid": 1023,
+        "st_ino": 166914,
+        "st_mode": 17912,
+        "st_uid": 10108
+      }
+    }
+  },
+  "original_directory_empty_at_creation": true,
+  "old_held_empty_listing_basis": {
+    "classification": "inferred from frozen executed control flow; no separate raw old getdents/list result was printed",
+    "source": {
+      "path": "run_saf03.py",
+      "bytes": 29201,
+      "sha256": "c00e0d61fdbcbe4473c77a09ee3cd388ca80f6bc907e0aa25b32cecb81109438"
+    },
+    "actual_error": "RuntimeError: EXACT_SINGLE_OWNED_FILENAME_REQUIRED:created-69814e80ea71f485.txt",
+    "cleanup_error": [
+      "fixture_or_package:RuntimeError:DOCUMENT_STILL_PRESENT"
+    ],
+    "reason": "OwnedFolder.cleanup reached absence() only after check() returned an empty list; absence() accepted a second empty check() then exact-name stat found a file."
+  },
+  "fresh_same_identity": {
+    "st_dev": 158,
+    "st_ino": 166914,
+    "st_uid": 10108,
+    "st_gid": 1023,
+    "st_mode": 17912
+  },
+  "fresh_listings": [
+    [
+      "created-69814e80ea71f485.txt"
+    ],
+    [
+      "created-69814e80ea71f485.txt"
+    ],
+    [
+      "created-69814e80ea71f485.txt"
+    ]
+  ],
+  "owned_file": {
+    "identity": {
+      "st_dev": 158,
+      "st_ino": 166916,
+      "st_uid": 10108,
+      "st_gid": 1023,
+      "st_mode": 33200
+    },
+    "bytes": 87,
+    "sha256": "5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7",
+    "mtime_ns": "1793872497685431975",
+    "ctime_ns": "1793872497685431975"
+  },
+  "other_exact_names_absent": [
+    "provider-69814e80ea71f485.txt",
+    "files-ui-69814e80ea71f485.txt"
+  ],
+  "observed_behavior": "The retained directory handle enumeration did not refresh; new open file descriptions of the same directory saw the single complete created file.",
+  "not_established": [
+    "FUSE data loss",
+    "Android App create failure",
+    "generic kernel cause for every directory handle"
+  ],
+  "source": {
+    "path": "flow03-directory-readonly-exact-stdout.json",
+    "bytes": 2822,
+    "sha256": "6c0b812371e6f848db8fd70eb1e727b3456ece7d525c112e311fc33686e79075"
+  },
+  "device_mutations": 0,
+  "ui_actions": 0
+}

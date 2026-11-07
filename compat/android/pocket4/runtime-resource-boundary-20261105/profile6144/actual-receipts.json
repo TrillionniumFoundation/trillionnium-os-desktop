@@ -1,0 +1,39 @@
+{
+  "start": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\n  \"audit_recorded\": true,\n  \"job\": {\n    \"args\": [\n      \"-n\",\n      \"/usr/bin/python3\",\n      \"-I\",\n      \"-\",\n      \"--prepare\"\n    ],\n    \"created_unix_ms\": 1793894618349,\n    \"cwd\": \"/home/alex/work\",\n    \"env_keys\": [],\n    \"executable\": \"/usr/bin/sudo\",\n    \"execution_mode\": \"operator\",\n    \"host\": \"pocket4\",\n    \"id\": \"1a1ac7394ed-fc05-546c\",\n    \"idempotency_key\": \"pocket4-main-profile-6144-prepare-r12-01\",\n    \"launch_error\": null,\n    \"launch_state\": \"launched\",\n    \"remote_job_dir\": \"/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1ac7394ed-fc05-546c\",\n    \"request_digest\": \"d90266a4fb1ee7f1afebb717d2340e5b7dcce4465617c642c263def913b90c7f\",\n    \"request_fingerprint\": 15637173714957559793,\n    \"ssh_target\": \"hepta-pocket4\",\n    \"system_jobctl\": false,\n    \"unit\": \"hepta-runtime-job-1a1ac7394ed-fc05-546c\"\n  },\n  \"launch\": {\n    \"backend\": \"systemd\",\n    \"launcher_pid\": null,\n    \"ok\": true,\n    \"unit\": \"hepta-runtime-job-1a1ac7394ed-fc05-546c\"\n  },\n  \"local_record_pending\": false,\n  \"reused\": false\n}"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  },
+  "status": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\n  \"at_unix_ms\": 1793894620063,\n  \"audit_recorded\": true,\n  \"automatic_retry\": false,\n  \"cancelled\": false,\n  \"exit_code\": 0,\n  \"job_id\": \"1a1ac7394ed-fc05-546c\",\n  \"launch_nonce\": \"deb64c5403b39ae8ccbaf8863d8e02b3\",\n  \"log_bytes\": {\n    \"stderr\": {\n      \"seen\": 0,\n      \"stored\": 0\n    },\n    \"stdout\": {\n      \"seen\": 691,\n      \"stored\": 691\n    }\n  },\n  \"log_errors\": {\n    \"stderr\": null,\n    \"stdout\": null\n  },\n  \"log_synced\": {\n    \"stderr\": true,\n    \"stdout\": true\n  },\n  \"log_truncated\": {\n    \"stderr\": false,\n    \"stdout\": false\n  },\n  \"output_complete\": true,\n  \"output_durable\": true,\n  \"state\": \"succeeded\",\n  \"terminal_publication_confirmed\": true,\n  \"terminal_publication_protocol\": 1,\n  \"timed_out\": false\n}"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  },
+  "streams": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\n  \"audit_recorded\": true,\n  \"job_id\": \"1a1ac7394ed-fc05-546c\",\n  \"stderr\": {\n    \"bytes_hex\": \"\",\n    \"eof\": true,\n    \"next_offset\": 0,\n    \"offset\": 0,\n    \"size\": 0,\n    \"text\": \"\"\n  },\n  \"stdout\": {\n    \"bytes_hex\": \"7b227374617465223a2022484f53545f50524f46494c455f50524550415245445f414e445f524541445f4f4e4c595f4755415244535f5645524946494544222c2022726573756c74223a207b2270617468223a20222f686f6d652f616c65782f776f726b2f706f636b6574342d72756e74696d652d70726f66696c652d32303236313130352d7231322d363134342d30312f70726f66696c652d6372656174696f6e2d726573756c742e6a736f6e222c20226279746573223a20353536362c2022736861323536223a202266616335653032336236393534333230303335343965376634313332636562353334383232313561663136383730623737626135333530623462366138626462227d2c20226e65775f61637469766174696f6e223a207b2270617468223a20222f686f6d652f616c65782f776f726b2f706f636b6574342d72756e74696d652d70726f66696c652d32303236313130352d7231322d363134342d30312f61637469766174696f6e2d61667465722d30312e6a736f6e222c2022736861323536223a202239316337613461393131613762636639303837323637353066353566336664613636663430323633646466336661633435373437336530613663373830343335222c20226279746573223a2036333637347d2c20226e65775f7472616e73616374696f6e223a207b2270617468223a20222f686f6d652f616c65782f776f726b2f706f636b6574342d72756e74696d652d70726f66696c652d32303236313130352d7231322d363134342d30312f63616d6572615f7472616e73616374696f6e2e7079222c2022736861323536223a202265363561343762656138623338303064306231613839323437626438633335366464323931353233633264323438643430316430356431643362353566623833222c20226279746573223a2032393038357d7d0a\",\n    \"eof\": true,\n    \"next_offset\": 691,\n    \"offset\": 0,\n    \"size\": 691,\n    \"text\": \"{\\\"state\\\": \\\"HOST_PROFILE_PREPARED_AND_READ_ONLY_GUARDS_VERIFIED\\\", \\\"result\\\": {\\\"path\\\": \\\"/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/profile-creation-result.json\\\", \\\"bytes\\\": 5566, \\\"sha256\\\": \\\"fac5e023b695432003549e7f4132ceb53482215af16870b77ba5350b4b6a8bdb\\\"}, \\\"new_activation\\\": {\\\"path\\\": \\\"/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/activation-after-01.json\\\", \\\"sha256\\\": \\\"91c7a4a911a7bcf908726750f55f3fda66f40263ddf3fac457473e0a6c780435\\\", \\\"bytes\\\": 63674}, \\\"new_transaction\\\": {\\\"path\\\": \\\"/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/camera_transaction.py\\\", \\\"sha256\\\": \\\"e65a47bea8b3800d0b1a89247bd8c356dd291523c2d248d401d05d1d3b55fb83\\\", \\\"bytes\\\": 29085}}\\n\"\n  }\n}"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  },
+  "result": {
+    "eof": true,
+    "path": "/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/profile-creation-result.json",
+    "sha256": "fac5e023b695432003549e7f4132ceb53482215af16870b77ba5350b4b6a8bdb",
+    "size": 5566,
+    "version": "66306:44325673:5566:1793894620006175290:1793894620006175290"
+  }
+}

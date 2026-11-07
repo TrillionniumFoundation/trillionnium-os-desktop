@@ -1,0 +1,45 @@
+--- contacts-flow08/contacts_crud10.py	2026-11-05 16:06:13.251022786 +0800
++++ contacts-flow08/contacts_crud11.py	2026-11-05 16:25:08.253452705 +0800
+@@ -10,12 +10,12 @@
+ import types
+ 
+ TOOLS = Path('/home/alex/work/pocket4-contacts-session-tools-20261105-r12-01')
+-ROOT = Path('/home/alex/work/pocket4-contacts-crud-20261105-r12-10')
+-PUBLIC = TOOLS / 'contacts-crud10-result.json'
++ROOT = Path('/home/alex/work/pocket4-contacts-crud-20261105-r12-11')
++PUBLIC = TOOLS / 'contacts-crud11-result.json'
+ PACKAGE = 'com.android.contacts'
+ PINS = {
+-    'ui_preflight04.py': 'd02821d751736a9e3cf275ec0b27383852e24362928fd4257ebb6d3dee7f6a58',
+-    'session_loop07.py': 'c8cd713f3e323016dbfdce8e41a5c474ac58d365ebcd613dd539fc9568bb7784',
++    'ui_preflight05.py': '2e99a4d0b2a9f4be7046c3504ec65d754bd91c959cb0f4f1adfe873aa3a16237',
++    'session_loop08.py': 'c4a985ddcfe54104a7d90dd4ce8dd44b708016dd44911faa92ac16e3c38a9db3',
+     'verify_contact.py': '8b6105eb7e3832577ca9ee55f0b539a233af0f0f67107a0149d5df9cdb8aa681',
+ }
+ 
+@@ -203,6 +203,8 @@
+             require(len(direct) == 0, 'DELETE_ACTION_AMBIGUOUS')
+             menu = one(self.c.nodes, lambda n: n.get('clickable') is True
+                        and n.get('content-desc') == 'More options', 'OWNED_DETAIL_MORE_OPTIONS_NOT_UNIQUE')
++            state = self.owned(self.v.EDITED, 'before-more-options')
++            self.t.bind_owned_contact_menu(self.v.validate_owned(state, self.v.EDITED, self.created))
+             self.click('more-options', menu)
+             option = one(self.c.nodes, lambda n: str(n.get('text', '')).casefold() in ('delete', 'delete contact'),
+                          'OBSERVED_DELETE_MENU_ITEM_NOT_UNIQUE')
+@@ -318,6 +320,7 @@
+                 flow = Flow(trial, loop, verifier, result)
+                 try:
+                     verifier.identity(session)
++                    result['identity_before'] = verifier.PINS
+                     result['epoch_sha256'] = session.epoch_sha256
+                     result['account_topology_before'] = verifier.unchanged_account_topology(session)
+                     result['contacts_before'] = verifier.current_state(session)
+@@ -337,6 +340,8 @@
+                 finally:
+                     signal.setitimer(signal.ITIMER_REAL, 35)
+                     flow.close()
++                    verifier.identity(session)
++                    result['identity_after'] = verifier.PINS
+                     session.caller_status('contacts-crud-final-caller')
+         if result['business_success_verified']:
+             require(len(flow.owned_tasks) == len(flow.closed_tasks) == 2

@@ -1,0 +1,86 @@
+{
+  "schema": "pocket4-contacts-owned-crud-scoped-observation-v1",
+  "run": "crud09",
+  "job_id": "1a1aab209ba-fc05-4630",
+  "terminal": "failed",
+  "exit_code": 1,
+  "output_complete": true,
+  "output_durable": true,
+  "original_result_sha256": "b77c7194b9b2d0350096a1c8b6bf45a4056fc2c16cae560becd99c9fc1b490da",
+  "state": "FAILED",
+  "error": "RuntimeError: DEVICE_LABEL_CLICKABLE_CONTAINER_NOT_UNIQUE",
+  "business_success_verified": false,
+  "whole_app_production_ready": false,
+  "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "empty_baseline_verified": true,
+  "external_sync_actions": 0,
+  "ui_actions": 6,
+  "owned_tasks": [
+    901,
+    902
+  ],
+  "closed_tasks": [
+    901,
+    902
+  ],
+  "pending_effect": null,
+  "phase_proofs": {
+    "created": {
+      "contact_id": "1",
+      "local_null_account": true,
+      "name": "Pocket4 Local QA r12 9c38f5a1",
+      "name_data_id": "1",
+      "raw_contact_id": "1"
+    },
+    "edited": {
+      "contact_id": "1",
+      "local_null_account": true,
+      "name": "Pocket4 Local QA r12 9c38f5a1 Edited",
+      "name_data_id": "1",
+      "raw_contact_id": "1"
+    },
+    "persisted-after-owned-close": {
+      "contact_id": "1",
+      "local_null_account": true,
+      "name": "Pocket4 Local QA r12 9c38f5a1 Edited",
+      "name_data_id": "1",
+      "raw_contact_id": "1"
+    },
+    "persisted-after-reopen": {
+      "contact_id": "1",
+      "local_null_account": true,
+      "name": "Pocket4 Local QA r12 9c38f5a1 Edited",
+      "name_data_id": "1",
+      "raw_contact_id": "1"
+    },
+    "persisted-before-open": {
+      "contact_id": "1",
+      "local_null_account": true,
+      "name": "Pocket4 Local QA r12 9c38f5a1 Edited",
+      "name_data_id": "1",
+      "raw_contact_id": "1"
+    }
+  },
+  "persisted_ui_marker_observed_after_reopen": false,
+  "fixture_cleanup": {
+    "automatic_retry": false,
+    "does_not_prove_ui_delete": true,
+    "input_calls": 1,
+    "method": "exact-owned-provider-fallback",
+    "original_ui_failure_retained": true,
+    "readback": {
+      "active_owned_contact_absent": true,
+      "database_returned_to_empty": true,
+      "owned_tombstone_count": 0
+    },
+    "stdout": ""
+  },
+  "account_topology_preserved": true,
+  "account_names_or_types_published": false,
+  "source_pins": {
+    "session_loop06.py": "9112ef07643a71d07b67c37ceeee406bb150d56f1a2bde9e0e72fba41bbc3e4d",
+    "ui_preflight04.py": "d02821d751736a9e3cf275ec0b27383852e24362928fd4257ebb6d3dee7f6a58",
+    "verify_contact.py": "8b6105eb7e3832577ca9ee55f0b539a233af0f0f67107a0149d5df9cdb8aa681"
+  },
+  "classification": "Acceptance adapter stopped at actual UI control/focus boundary; this result is not proof of App crash. Actual creation/edit/provider persistence remain valid scoped observations; provider fallback does not qualify UI deletion."
+}

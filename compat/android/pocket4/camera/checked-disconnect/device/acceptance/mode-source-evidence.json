@@ -1,0 +1,74 @@
+{
+  "schema": "pocket4-camera-photo-mode-source-review-v1",
+  "read_only_remote": true,
+  "device_ui_actions": 0,
+  "source_root": "/home/alex/work/pocket4-camera-source-20261104/Camera2-full",
+  "files": [
+    {
+      "name": "SettingsManager.java",
+      "path": "/home/alex/work/pocket4-camera-source-20261104/Camera2-full/src/com/android/camera/settings/SettingsManager.java",
+      "bytes": 21928,
+      "sha256": "a72125090306e79c2c7cd1b6e872be914b6801c4e6ca3f80a370d00cbb080d73",
+      "source_version": "66306:43546499:21928:1793753745704901921:1793753745704901921",
+      "excerpts": [
+        {
+          "first_line": 103,
+          "last_line": 109,
+          "text": "    public SettingsManager(Context context) {\n        mLock = new Object();\n        mContext = context;\n        mPackageName = mContext.getPackageName();\n\n        mDefaultPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);\n    }"
+        },
+        {
+          "first_line": 267,
+          "last_line": 283,
+          "text": "    /** This scope stores and retrieves settings from\n        default preferences. */\n    public static final String SCOPE_GLOBAL = \"default_scope\";\n\n    /**\n     * Returns the SharedPreferences file matching the scope\n     * argument.\n     *\n     * Camera and module preferences files are cached,\n     * until the camera id or module id changes, then the listeners\n     * are unregistered and a new file is opened.\n     */\n    private SharedPreferences getPreferencesFromScope(String scope) {\n        synchronized (mLock) {\n            if (scope.equals(SCOPE_GLOBAL)) {\n                return mDefaultPreferences;\n            }"
+        },
+        {
+          "first_line": 465,
+          "last_line": 484,
+          "text": "    /**\n     * Store a setting's value using a String value.  No conversion\n     * occurs before this value is stored in SharedPreferences.\n     */\n    public void set(String scope, String key, String value) {\n        synchronized (mLock) {\n            SharedPreferences preferences = getPreferencesFromScope(scope);\n            preferences.edit().putString(key, value).apply();\n        }\n    }\n\n    /**\n     * Store a setting's value using an Integer value.  Type conversion\n     * to String occurs before this value is stored in SharedPreferences.\n     */\n    public void set(String scope, String key, int value) {\n        synchronized (mLock) {\n            set(scope, key, convert(value));\n        }\n    }"
+        }
+      ]
+    },
+    {
+      "name": "Keys.java",
+      "path": "/home/alex/work/pocket4-camera-source-20261104/Camera2-full/src/com/android/camera/settings/Keys.java",
+      "bytes": 11064,
+      "sha256": "3ca785bb23a834923dd20ae36c61a168a06911e08b4e6bf795cbf820d5838fc9",
+      "source_version": "66306:43546492:11064:1793753745704901921:1793753745704901921",
+      "excerpts": [
+        {
+          "first_line": 50,
+          "last_line": 59,
+          "text": "    public static final String KEY_CAMERA_HDR = \"pref_camera_hdr_key\";\n    public static final String KEY_CAMERA_HDR_PLUS = \"pref_camera_hdr_plus_key\";\n    public static final String KEY_CAMERA_FIRST_USE_HINT_SHOWN =\n            \"pref_camera_first_use_hint_shown_key\";\n    public static final String KEY_VIDEO_FIRST_USE_HINT_SHOWN =\n            \"pref_video_first_use_hint_shown_key\";\n    public static final String KEY_STARTUP_MODULE_INDEX = \"camera.startup_module\";\n    public static final String KEY_CAMERA_MODULE_LAST_USED =\n            \"pref_camera_module_last_used_index\";\n    public static final String KEY_CAMERA_PANO_ORIENTATION = \"pref_camera_pano_orientation\";"
+        },
+        {
+          "first_line": 158,
+          "last_line": 165,
+          "text": "        settingsManager.setDefaults(KEY_VIDEO_FIRST_USE_HINT_SHOWN, true);\n\n        settingsManager.setDefaults(KEY_STARTUP_MODULE_INDEX, 0,\n            context.getResources().getIntArray(R.array.camera_modes));\n\n        settingsManager.setDefaults(KEY_CAMERA_MODULE_LAST_USED,\n            context.getResources().getInteger(R.integer.camera_mode_photo),\n            context.getResources().getIntArray(R.array.camera_modes));"
+        }
+      ]
+    },
+    {
+      "name": "arrays.xml",
+      "path": "/home/alex/work/pocket4-camera-source-20261104/Camera2-full/res/values/arrays.xml",
+      "bytes": 21727,
+      "sha256": "aabe9c23fb6fe48481ff9223421f897884aa0f913b438d3bc97cead73d9d0b0e",
+      "source_version": "66306:43545924:21727:1793753745687643090:1793753745687643090",
+      "excerpts": [
+        {
+          "first_line": 401,
+          "last_line": 410,
+          "text": "\n\n    <!--Index of camera modes. -->\n    <integer name=\"camera_mode_photo\">0</integer>\n    <integer name=\"camera_mode_video\">1</integer>\n    <integer name=\"camera_mode_refocus\">2</integer>\n    <integer name=\"camera_mode_photosphere\">3</integer>\n    <integer name=\"camera_mode_panorama\">4</integer>\n    <integer name=\"camera_mode_gcam\">5</integer>\n    <integer name=\"camera_mode_capture_intent\">6</integer>"
+        }
+      ]
+    }
+  ],
+  "conclusions": {
+    "startup_key": "camera.startup_module",
+    "storage_type": "string",
+    "photo_mode_index": 0,
+    "video_mode_index": 1,
+    "global_preferences": "PreferenceManager.getDefaultSharedPreferences(context)",
+    "writes": "SharedPreferences.Editor.putString(...).apply()",
+    "requirement": "For the accepted MAIN/launcher path, read the existing key as exact string 0 before launch and again immediately before the single shutter. Missing/unknown/video values block; do not modify preference."
+  }
+}
