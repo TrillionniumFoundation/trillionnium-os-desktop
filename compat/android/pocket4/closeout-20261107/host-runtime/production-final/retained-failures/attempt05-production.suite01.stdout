@@ -1,0 +1,141 @@
+
+running 118 tests
+test control::apk::tests::descriptor_survives_unlink_and_is_close_on_exec ... ok
+test control::apk::tests::legacy_json_needs_no_descriptor ... ok
+test control::apk::tests::package_command_receives_apk_on_standard_input ... ok
+test control::apk::tests::rejects_multiple_and_truncated_descriptors ... ok
+test control::apk::tests::rejects_non_files_empty_oversized_and_non_zip_inputs ... ok
+test control::apk::tests::requires_explicit_package_manager_success ... ok
+test control::apk::tests::stdin_install_ends_with_size_not_a_bare_dash_option ... ok
+test control::apk_set::tests::failed_commit_and_failed_cleanup_are_not_reported_as_success ... ok
+test control::apk_set::tests::failed_write_abandons_and_never_commits ... ok
+test control::apk_set::tests::invalid_create_response_never_guesses_session_to_abandon ... ok
+test control::apk_set::tests::invalid_payload_never_creates_a_session ... ok
+test control::apk_set::tests::namespace_command_has_fixed_argv_and_bounded_timeout ... ok
+test control::apk_set::tests::preparation_is_byte_identical_and_fails_before_any_socket ... ok
+test control::apk_set::tests::preserves_bytes_then_commits_once_without_uninstall_or_downgrade ... ok
+test control::apk_set::tests::requires_unambiguous_bounded_positive_session_identity ... ok
+test control::apk_set::tests::success_is_exact_and_failure_cannot_be_hidden ... ok
+test control::apk_set::tests::validates_original_segment_headers_and_exact_total ... ok
+test control::diagnostics::tests::binder_timeout_is_not_a_valid_exit_history ... ok
+test control::diagnostics::tests::crash_report_keeps_native_traces_when_activity_service_is_down ... ok
+test control::diagnostics::tests::crash_report_preserves_exits_when_event_buffer_unavailable ... ok
+test control::diagnostics::tests::invalid_line_bounds_do_not_contact_android ... ok
+test control::diagnostics::tests::lifecycle_events_match_exact_packages_not_prefix_neighbors ... ok
+test control::diagnostics::tests::logs_use_installed_uid_even_when_the_process_is_dead ... ok
+test control::diagnostics::tests::missing_service_with_zero_status_is_marked_unavailable ... ok
+test control::diagnostics::tests::oversized_output_keeps_bounded_tail_and_announces_truncation ... ok
+test control::diagnostics::tests::package_log_filter_precedes_the_rendered_tail ... ok
+test control::diagnostics::tests::quoted_error_in_a_real_description_does_not_hide_history ... ok
+test control::diagnostics::tests::sampled_events_do_not_claim_system_kill_sender_or_change_global_requests ... ok
+test control::diagnostics::tests::sampled_lifecycle_events_are_bounded_and_explicitly_not_exhaustive ... ok
+test control::diagnostics::tests::timed_out_commands_report_failure ... ok
+test control::diagnostics::tests::two_unavailable_sections_do_not_report_success ... ok
+test control::diagnostics::tests::uid_tail_preserves_byte_truncation_notice_and_unicode ... ok
+test control::diagnostics::tests::unfiltered_and_crash_log_reads_retain_the_global_limit ... ok
+test control::diagnostics::tests::unrelated_global_tail_cannot_make_package_logs_falsely_empty ... ok
+test control::progress::tests::fragmented_progress_and_result_are_delivered_before_disconnect ... ok
+test control::progress::tests::full_accept_queue_is_reported_without_blocking_connect ... ok
+test control::progress::tests::legacy_result_without_newline_still_works ... ok
+test control::progress::tests::partial_response_and_progress_only_disconnect_do_not_report_success ... ok
+test control::progress::tests::progress_envelope_preserves_strict_request_validation ... ok
+test control::progress::tests::silent_and_chatty_daemons_both_have_a_wall_clock_deadline ... ok
+test control::status_lifecycle_tests::owned_lifecycle_process_fixture ... ignored, private subprocess entry used only by RunningFixture
+test control::status_lifecycle_tests::running_status_dispatch_creates_no_child_and_cannot_replace_fresh_readiness ... ok
+test control::status_lifecycle_tests::status_and_readiness_are_distinct_explicit_wire_requests ... ok
+test control::status_lifecycle_tests::stopped_dispatch_does_not_claim_android_ready ... ok
+test control::tests::application_catalog_protocol_round_trip_is_explicit ... ok
+test control::tests::boot_complete_does_not_hide_a_failed_input_service ... ok
+test control::tests::boot_progress_uses_observed_services_and_checks_every_readiness_gate ... ok
+test control::tests::boot_wait_reports_changes_and_a_stall_has_the_last_phase_and_log_commands ... ok
+test control::tests::install_missing_file_fails_before_connecting ... ok
+test control::tests::install_transport_delivers_open_file_and_preserves_android_failure ... ok
+test control::tests::launch_resolution_validation_and_old_clients ... ok
+test control::tests::local_daemon_status_and_stopped_teardown_are_idempotent ... ok
+test control::tests::only_missing_android_services_are_treated_as_boot_progress ... ok
+test control::tests::only_root_or_the_exact_cell_owner_is_authorized ... ok
+test control::tests::package_and_component_validation_reject_shell_syntax ... ok
+test control::tests::persistent_density_protocol_round_trip_is_explicit ... ok
+test control::tests::protocol_round_trip_is_explicit ... ok
+test control::tests::split_missing_file_fails_before_connecting ... ok
+test control::tests::split_transport_preserves_all_original_bytes_and_android_failure ... ok
+test cpu_placement::service_tests::preserves_bootstrap_import_and_other_service_policies ... ok
+test cpu_placement::tests::boot_policy_respects_capacity_classes_and_homogeneous_fallback ... ok
+test cpu_placement::tests::translates_placement_without_dropping_unrelated_actions ... ok
+test development::tests::android_file_override_source_must_be_a_regular_file ... ok
+test development::tests::android_init_override_must_be_a_regular_executable_file ... ok
+test development::tests::android_sparse_magic_is_little_endian_uapi_value ... ok
+test development::tests::binder_ioctl_matches_linux_uapi ... ok
+test development::tests::cpu_lists_accept_real_kernel_range_and_sparse_forms ... ok
+test development::tests::cpu_lists_reject_empty_malformed_and_overlapping_input ... ok
+test development::tests::cpu_projection_never_follows_input_symlinks ... ok
+test development::tests::development_base_accepts_erofs_and_raw_ext4 ... ok
+test development::tests::development_base_rejects_unknown_images ... ok
+test development::tests::development_cgroups_keep_unavailable_v1_controllers_optional ... ok
+test development::tests::existing_target_is_not_replaced_or_followed ... ok
+test development::tests::inspect_does_not_remove_root_requirement_from_activation_entries ... ok
+test development::tests::inspect_missing_metadata_image_is_an_io_failure ... ok
+test development::tests::inspect_readable_metadata_preserves_inputs_and_does_not_prepare_runtime ... ok
+test development::tests::inspect_unreadable_input_is_permission_denied_not_success ... ok
+test development::tests::invalid_inventory_fails_before_any_bind ... ok
+test development::tests::linux_device_numbers_decode_render_node ... ok
+test development::tests::loop_device_minors_follow_host_partition_geometry ... ok
+test development::tests::loop_device_minors_reject_overflow_and_out_of_range_devices ... ok
+test development::tests::missing_cpu_inventory_fails_before_any_bind ... ok
+test development::tests::namespace_owner_argv_preserves_the_production_term_contract ... ok
+test development::tests::namespace_owner_parent_death_arms_real_kernel_sigterm ... FAILED
+test development::tests::native_media_heap_preflight_rejects_regular_files_and_symlinks ... ok
+test development::tests::only_three_inventory_files_are_projected_read_only ... ok
+test development::tests::owned_parent_death_probe ... ignored, private owned child, called by the real parent-death regression
+test development::tests::pci_render_node_projection_includes_bounded_libdrm_identity ... ok
+test development::tests::read_only_bind_failure_is_not_ignored ... ok
+test development::tests::render_node_sysfs_projection_contains_only_selected_metadata ... ok
+test development::tests::storage_identity_uses_installed_media_provider_not_media_rw_or_other_apps ... ok
+test development_network::tests::cell_and_gateway_use_the_same_bounded_subnet ... ok
+test development_network::tests::network_objects_are_stable_and_interface_names_fit_linux ... ok
+test gapps::tests::fresh_only_data_preserves_existing_users_and_rejects_implicit_disable ... ok
+test gapps::tests::update_invalidates_only_google_parser_cache_without_following_links ... ok
+test linux_plan::tests::android_file_overrides_are_read_only_but_mappable ... ok
+test linux_plan::tests::android_init_override_is_read_only_but_executable ... ok
+test linux_plan::tests::android_runtime_directories_are_private_read_only_projections ... ok
+test linux_plan::tests::android_writable_storage_uses_dedicated_images ... ok
+test linux_plan::tests::binder_and_partition_allowlists_are_exact ... ok
+test linux_plan::tests::device_plan_contains_one_render_node_and_no_host_device_tree ... ok
+test linux_plan::tests::explicit_shared_storage_is_idmapped_and_unmounted_before_data ... ok
+test linux_plan::tests::gapps_selects_only_product_and_system_ext_before_boot ... ok
+test linux_plan::tests::native_media_heap_adds_only_the_explicit_read_only_allocation_device ... ok
+test linux_plan::tests::network_objects_are_bounded_and_tagged ... ok
+test linux_plan::tests::plan_uses_transaction_order_and_reverse_teardown ... ok
+test package_cache::tests::clean_data_image_needs_no_cache_directory ... ok
+test package_cache::tests::drops_stale_systemui_manifests_without_touching_other_apps_or_symlinks ... ok
+test tests::complete_start_and_teardown_are_strictly_ordered ... ok
+test tests::every_start_failure_rolls_back_completed_stages ... ok
+test tests::graphics_backend_is_explicit_and_bounded ... ok
+test tests::native_media_backend_roundtrips_with_only_a_read_only_system_heap ... ok
+test tests::rollback_residue_remains_owned_and_is_retryable ... ok
+test tests::spec_rejects_card_nodes_and_host_uid_aliasing ... ok
+test tests::spec_rejects_unsafe_and_duplicate_shared_storage_names ... ok
+test tests::spec_rejects_unsafe_or_duplicate_android_file_overrides ... ok
+test tests::spec_rejects_unsafe_or_overlapping_runtime_directories ... ok
+test tests::teardown_of_absent_cell_is_successful_and_explicit ... ok
+
+failures:
+
+---- development::tests::namespace_owner_parent_death_arms_real_kernel_sigterm stdout ----
+
+thread 'development::tests::namespace_owner_parent_death_arms_real_kernel_sigterm' (115) panicked at runtime/droidloom-supervisor/src/development.rs:2352:9:
+
+thread 'development::tests::owned_parent_death_probe' (117) panicked at runtime/droidloom-supervisor/src/development.rs:2366:9:
+assertion `left == right` failed
+  left: 0
+ right: 15
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    development::tests::namespace_owner_parent_death_arms_real_kernel_sigterm
+
+test result: FAILED. 115 passed; 1 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.65s
+

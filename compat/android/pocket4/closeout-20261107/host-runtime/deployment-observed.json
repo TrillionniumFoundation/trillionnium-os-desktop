@@ -1,0 +1,141 @@
+{
+  "schema": 1,
+  "claim": "Exact eleven-file cohort installed; normal start and readiness wait succeeded. Fresh Main and Storage lifecycle qualifications remain separate.",
+  "manifest_sha256": "b9d5c284356744e3f6a9d90389a72cb41dd946598c0858b7fa49f87ccab9cbbc",
+  "apply_job": "1a1b3c31e98-fc05-84a0",
+  "apply_result_bytes": 10906,
+  "apply_result_sha256": "849e77a71ee5b3370f38198a205172b9d6b800462b7dc9d725f7610dd1288ce4",
+  "apply_success": true,
+  "rollback_completed": false,
+  "target_count": 11,
+  "ended_utc": "2026-11-07T02:07:53.520774+00:00",
+  "installed": {
+    "droidloom-supervisor": {
+      "path": "/usr/bin/droidloom-supervisor",
+      "sha256": "1f1518fe515089ab02f2533f9ab1c2b006292f2f4bef0b2c2e0258740bd0015c",
+      "bytes": 1999040,
+      "uid": 0,
+      "gid": 0,
+      "mode": 493
+    },
+    "droidloomd": {
+      "path": "/usr/bin/droidloomd",
+      "sha256": "f7fbc031ca9c342782d447cc02652d97a89c084b889bf01bee16be408fb0e5eb",
+      "bytes": 1981472,
+      "uid": 0,
+      "gid": 0,
+      "mode": 493
+    },
+    "droidloomctl": {
+      "path": "/usr/bin/droidloomctl",
+      "sha256": "71b905e9852509f07e1ad0297f12d97eda6186bc3b3e384f70b03ed2566f734b",
+      "bytes": 1744496,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 493
+    },
+    "droidloom-applications": {
+      "path": "/usr/bin/droidloom-applications",
+      "sha256": "3ca8e33e0d8ecd8a6e4a3818debfda18e102260d70f77654de7b671be4fe4bcc",
+      "bytes": 1576080,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 493
+    },
+    "android-app": {
+      "path": "/usr/local/bin/android-app",
+      "sha256": "e775301b11960df8109f39ef1adfc662bebd8fc536414580c71c7aa0da263efe",
+      "bytes": 37467,
+      "uid": 0,
+      "gid": 0,
+      "mode": 493
+    },
+    "android-app-digitalis-validation": {
+      "path": "/usr/local/bin/android-app-digitalis-validation",
+      "sha256": "1b7f380c8e78187a73f7c96a736709252613c8cd8b437916e911b1596c5a5db1",
+      "bytes": 14121,
+      "uid": 0,
+      "gid": 0,
+      "mode": 493
+    },
+    "android-app-digitalis": {
+      "path": "/usr/local/bin/android-app-digitalis",
+      "sha256": "6bfbf38d7106b6b38816ce176a951476a57f2289dae3ce332629ad8bfee73102",
+      "bytes": 14759,
+      "uid": 0,
+      "gid": 0,
+      "mode": 493
+    },
+    "android-digitalis-observe-helper": {
+      "path": "/usr/local/libexec/android-digitalis-observe-helper",
+      "sha256": "d1fc02bdbbd72c8e9ee440dbf81274662d60228a4e7ecc661484241d889d7bd4",
+      "bytes": 36404,
+      "uid": 0,
+      "gid": 0,
+      "mode": 493
+    },
+    "android-digitalis-validation-helper": {
+      "path": "/usr/local/libexec/android-digitalis-validation-helper",
+      "sha256": "1b7f380c8e78187a73f7c96a736709252613c8cd8b437916e911b1596c5a5db1",
+      "bytes": 14121,
+      "uid": 0,
+      "gid": 0,
+      "mode": 493
+    },
+    "android-digitalis-helper": {
+      "path": "/usr/local/libexec/android-digitalis-helper",
+      "sha256": "9c4ef950fab47d018fd186baa3990e78dcd4973f47e9c424a02e8d9e1125a207",
+      "bytes": 13816,
+      "uid": 0,
+      "gid": 0,
+      "mode": 493
+    },
+    "services.jar": {
+      "path": "/opt/pocket4-wifi-disabled-api-20261023-chat2-v2/payload/services-candidate.jar",
+      "sha256": "f1acb56e23cd9082a77ef686f2e840a736e7769dd8843830e53e56b1ac31566f",
+      "bytes": 34667535,
+      "uid": 0,
+      "gid": 0,
+      "mode": 292
+    }
+  },
+  "lifecycle": {
+    "stop": {
+      "job_id": "1a1b3bdb8e7-fc05-8487",
+      "exit_code": 0,
+      "message": "Droidloom is stopped"
+    },
+    "applications_stop": {
+      "job_id": "1a1b3c28791-fc05-849d",
+      "exit_code": 0
+    },
+    "start": {
+      "job_id": "1a1b3c3e6f1-fc05-84a4",
+      "exit_code": 0,
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false,
+      "response": {
+        "ok": true,
+        "state": "running",
+        "message": "Droidloom services are running; Android readiness has not been checked. Use `droidloomctl wait` to follow boot progress."
+      }
+    },
+    "wait": {
+      "job_id": "1a1b3c47d70-fc05-84a9",
+      "exit_code": 0,
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false,
+      "response": {
+        "ok": true,
+        "state": "running",
+        "message": "Droidloom is running; Android is ready"
+      }
+    }
+  },
+  "fresh_main_baseline_qualification": "pending",
+  "storage_unmount_remount_qualification": "pending",
+  "application_business_acceptance_claimed": false,
+  "all_blockers_closed": false
+}
