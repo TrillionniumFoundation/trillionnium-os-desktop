@@ -1,0 +1,93 @@
+{
+  "schema": "catalog-public-workspace-runtime-dependencies-v1",
+  "scope": "Concrete source-derived examples, not a claim to enumerate every runtime dependency of 28 tools.",
+  "rows": [
+    {
+      "scope": "All Cargo members",
+      "requires": "Original Cargo.lock plus the selected platform's registry sources, Rust toolchain and native development libraries.",
+      "qualified": "host47 selected normal/build/dev dependency union: 5 path crates + 45 registry crates only.",
+      "source": "Cargo.toml"
+    },
+    {
+      "scope": "tools/droidloom-dmabuf-probe",
+      "requires": [
+        "C compiler",
+        "EGL",
+        "GLESv2"
+      ],
+      "included": [
+        "tools/droidloom-dmabuf-probe/build.rs",
+        "tools/droidloom-dmabuf-probe/src/egl_renderer.c"
+      ],
+      "qualified_here": false
+    },
+    {
+      "scope": "graphics/droidloom-wayland",
+      "requires": "Wayland/GBM/DRM platform dependencies and the selected registry build scripts/libraries; the two local Wayland XML inputs are included.",
+      "source": "graphics/droidloom-wayland/Cargo.toml",
+      "qualified_here": false
+    },
+    {
+      "scope": "runtime/droidloom-contracts repository integration tests",
+      "requires": [
+        "android/manifest/source-lock.json",
+        "android/manifest/source-lock-x86_64.json",
+        "android/manifest/m2-sparse-source-lock.json",
+        "Android.bp",
+        "packaging/systemd/user/droidloom.service",
+        "packaging/systemd/user/droidloom-applications.service",
+        "packaging/tests",
+        "Python3 and the remaining repository Android contracts/patches"
+      ],
+      "source": "runtime/droidloom-contracts/tests/repository_contracts.rs",
+      "entire_suite_run": false
+    },
+    {
+      "scope": "droidloom-update dma_heap_layout integration test",
+      "requires": [
+        ".work/aosp-m2-source/external/minigbm",
+        "host libdrm headers",
+        "android/aosp-patches/0010-minigbm-dma-heap-images.patch"
+      ],
+      "source": "tools/droidloom-update/tests/dma_heap_layout.rs",
+      "originally_ignored_unless_external_checkout_supplied": true
+    },
+    {
+      "scope": "droidloom-update release_queue integration tests",
+      "requires": [
+        "android/surfaceflinger/0007-droidloom-wayland-layers.patch",
+        "android/surfaceflinger/0008-droidloom-release-fences.patch",
+        "android/surfaceflinger/tests/layer_staging.cpp",
+        "android/surfaceflinger/tests/release_queue.cpp",
+        "git",
+        "C++20 compiler",
+        "timeout"
+      ],
+      "source": "tools/droidloom-update/tests/release_queue.rs",
+      "entire_suite_run": false
+    },
+    {
+      "scope": "Android/package/image construction",
+      "requires": "Additional Android source/patch/product inputs, external native toolchains and package infrastructure. The included original docs/BUILDING.md and install.sh are upstream compile-time/reference inputs, not this source drop's reproduction or deployment instructions.",
+      "qualified_here": false
+    },
+    {
+      "scope": "Independent Android resident service",
+      "requires": [
+        "Fresh qualified current cell/init ancestry",
+        "Actual app_process/ART and reflection/API smoke",
+        "Root-owned 0600 pathname socket and exact held-root/peer checks",
+        "New persistent runtime directory and explicit init import mapping",
+        "Fresh owned deployment/rollback with existing presenter/drop-ins/camera/bridge state preserved"
+      ],
+      "existing_SDK31_D8_compile_does_not_supply_runtime_qualification": true
+    }
+  ],
+  "current_Main": "Previous baseline epoch no longer qualified; generation discovery is separate. No old PID, helper UID, task or nonce authority transfers.",
+  "deployment_reference": {
+    "tree": "681f28ddba30dd1c70798a0ce96d3c9f898bb78b",
+    "plan_blob": "bad68796c38507e967c38038bd475bb73985b959",
+    "executable_mutation_request": false
+  },
+  "source_rc": "The 366-byte rc is the SDK03 source input. A separate deployment derivation changes CLASSPATH and appends one import to an exact copy of the installed 972-byte bridge rc; it does not authorize replacing installed rc with this source rc."
+}

@@ -1,0 +1,1352 @@
+{
+  "schema": "pocket4-public-catalog-source-assembly-scope-v1",
+  "source_root": "compat/android/pocket4/supervisor-catalog/source/",
+  "unified_source_tree": "4d499f50ba17fc58f28f403e3d142f6fdf8f04c8",
+  "manifest_bytes": 103724,
+  "manifest_sha256": "9ff887e3edd168647ebe8c11c4ae904a5fc7e404aef8c67266d82355c21591f8",
+  "manifest_blob": "273774e0c102c0c511ffbd52b72d27731d964235",
+  "inventory_tree": "a6f5c995024034e3c17686677a23037eebc056e3",
+  "workspace_members": [
+    "android/framework/droidloom-task-launcher",
+    "android/runtime/droidloom-classpath-wrapper",
+    "runtime/droidloom-applications",
+    "runtime/droidloom-cpu-placement",
+    "runtime/droidloom-package-support",
+    "runtime/droidloom-contracts",
+    "runtime/droidloom-doctor",
+    "runtime/droidloom-supervisor",
+    "runtime/droidloom-window-policy",
+    "graphics/droidloom-composer",
+    "graphics/droidloom-denial-ipc",
+    "graphics/droidloom-denial-endpoint",
+    "graphics/droidloom-wayland",
+    "graphics/droidloom-denial-protocol",
+    "graphics/droidloom-input-protocol",
+    "graphics/droidloom-minigbm",
+    "graphics/droidloom-syncobj",
+    "graphics/droidloom-surface-bridge",
+    "graphics/droidloom-task-control",
+    "graphics/droidloom-transport",
+    "tools/droidloom-image",
+    "tools/droidloom-gapps",
+    "tools/droidloom-update",
+    "tools/droidloom-package",
+    "tools/droidloom-mesa",
+    "tools/droidloom-source",
+    "tools/droidloom-dmabuf-probe",
+    "tools/droidloom-translation-bench"
+  ],
+  "selected_actual47_files": [
+    "Cargo.lock",
+    "Cargo.toml",
+    "runtime/droidloom-applications/Cargo.toml",
+    "runtime/droidloom-applications/src/lib.rs",
+    "runtime/droidloom-applications/src/main.rs",
+    "runtime/droidloom-contracts/Cargo.toml",
+    "runtime/droidloom-contracts/src/gapps.rs",
+    "runtime/droidloom-contracts/src/lib.rs",
+    "runtime/droidloom-contracts/tests/repository_contracts.rs",
+    "runtime/droidloom-cpu-placement/Cargo.toml",
+    "runtime/droidloom-cpu-placement/src/lib.rs",
+    "runtime/droidloom-cpu-placement/src/linux.rs",
+    "runtime/droidloom-supervisor/Cargo.toml",
+    "runtime/droidloom-supervisor/assets/development-cgroups.json",
+    "runtime/droidloom-supervisor/examples/cpu-placement-probe.rs",
+    "runtime/droidloom-supervisor/src/apk.rs",
+    "runtime/droidloom-supervisor/src/apk_set.rs",
+    "runtime/droidloom-supervisor/src/bin/droidloomctl.rs",
+    "runtime/droidloom-supervisor/src/bin/droidloomd.rs",
+    "runtime/droidloom-supervisor/src/control.rs",
+    "runtime/droidloom-supervisor/src/control_catalog.rs",
+    "runtime/droidloom-supervisor/src/control_catalog_tests.rs",
+    "runtime/droidloom-supervisor/src/control_progress.rs",
+    "runtime/droidloom-supervisor/src/control_status_tests.rs",
+    "runtime/droidloom-supervisor/src/cpu_placement.rs",
+    "runtime/droidloom-supervisor/src/development.rs",
+    "runtime/droidloom-supervisor/src/development_network.rs",
+    "runtime/droidloom-supervisor/src/diagnostics.rs",
+    "runtime/droidloom-supervisor/src/gapps.rs",
+    "runtime/droidloom-supervisor/src/lib.rs",
+    "runtime/droidloom-supervisor/src/linux_plan.rs",
+    "runtime/droidloom-supervisor/src/main.rs",
+    "runtime/droidloom-supervisor/src/package_cache.rs",
+    "runtime/droidloom-supervisor/tests/cli_diagnostics.rs",
+    "runtime/droidloom-supervisor/tests/cli_inspect.rs",
+    "runtime/droidloom-supervisor/tests/cli_install.rs",
+    "runtime/droidloom-supervisor/tests/cli_install_multiple.rs",
+    "runtime/droidloom-supervisor/tests/cli_lifecycle.rs",
+    "runtime/droidloom-window-policy/Cargo.toml",
+    "runtime/droidloom-window-policy/src/lib.rs"
+  ],
+  "paths": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 4088,
+      "sha256": "eac22deaa59d6906afe7eef3dfc9696fbacf20e71a90590608d744b096a8ff46",
+      "observed_mode": 436
+    },
+    {
+      "path": "Cargo.lock",
+      "bytes": 51836,
+      "sha256": "c1dfa6f13f789cf40435d0d72973d029d0e264b27bd833eabb5a727492127f62",
+      "observed_mode": 436
+    },
+    {
+      "path": "Cargo.toml",
+      "bytes": 1996,
+      "sha256": "e33185d2fc5a65e0a4ed6df552e4f8f8f40c793ec07f7289ed27e3c0d5fa4e60",
+      "observed_mode": 436
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 978,
+      "sha256": "cb11d98501e64414c7fc563d70e4b3bff68652582804ff6beb72e515b8cf3f3e",
+      "observed_mode": 436
+    },
+    {
+      "path": "LICENSES/Apache-2.0.txt",
+      "bytes": 9475,
+      "sha256": "4ed9e2b296b570d6b17b3ea846a3f5fbef9c7204c5be681c4b9335797653bc47",
+      "observed_mode": 436
+    },
+    {
+      "path": "LICENSES/GPL-3.0-or-later.txt",
+      "bytes": 35132,
+      "sha256": "fe92c7ac268ce17193b98298336d3793a843a94eba9efc7ad112f9f48ad9b214",
+      "observed_mode": 436
+    },
+    {
+      "path": "LICENSES/MIT.txt",
+      "bytes": 1036,
+      "sha256": "2fd397aa1818e4ad832a15c2b17dd1b18c42c05c435b50207de56cb7c2c06dab",
+      "observed_mode": 436
+    },
+    {
+      "path": "THIRD_PARTY.md",
+      "bytes": 4736,
+      "sha256": "6a6975209c7fffd24324d4a1345693208d707c60c67c968c08c3dbf44b29353e",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-catalog/droidloom-catalog.rc",
+      "bytes": 366,
+      "sha256": "94487953762dfa0c34c4ee8ca297618515221b79800a6882e2a503f70ac84fe8",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-catalog/src/com/android/droidloom/catalog/ApplicationCatalog.java",
+      "bytes": 15253,
+      "sha256": "006d2a50866a8e615b731e2324e9cce8e526de6195cb6de164e6dd3f59305a47",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-catalog/src/com/android/droidloom/catalog/CatalogAncillary.java",
+      "bytes": 1493,
+      "sha256": "22206b8b48479b6021c73511958bd72060bf45d49cb3dd8faccbe660c80cf024",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-catalog/src/com/android/droidloom/catalog/CatalogBudget.java",
+      "bytes": 5898,
+      "sha256": "c2adcddde78e436c2cd3e6ef4bd697816f740d8943f36d2cb77ee332c62fc63d",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-catalog/src/com/android/droidloom/catalog/CatalogConnection.java",
+      "bytes": 1552,
+      "sha256": "47b7692c2fbfcbb91ea55979e4371f8a097ee3c39580040aca1983d7a2fef25d",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-catalog/src/com/android/droidloom/catalog/CatalogFrameworkQuery.java",
+      "bytes": 4702,
+      "sha256": "48675be5038221ed45898cab08e26a91c19aefb7c6981d0a5ac3837004071c49",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-catalog/src/com/android/droidloom/catalog/CatalogGuardedInput.java",
+      "bytes": 1897,
+      "sha256": "1f81149f32445e6c3d001095884013c002207edf64ee9b9b16581d69478d9d4b",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-catalog/src/com/android/droidloom/catalog/CatalogLifetime.java",
+      "bytes": 1679,
+      "sha256": "d45e88f98fd6fb76ea85bdfee982a991c81a12b0eee5f7b38cbcbaa7aa704cbf",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-catalog/src/com/android/droidloom/catalog/CatalogMain.java",
+      "bytes": 1782,
+      "sha256": "92378e35e8990f0ada551af6e5308f198f806d64554d86e76085b054b3ecfed4",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-catalog/src/com/android/droidloom/catalog/CatalogProtocol.java",
+      "bytes": 5679,
+      "sha256": "f2fc2647211ac0392278db800335bd54bc98023d653243f9186eddef9f2cf496",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-catalog/src/com/android/droidloom/catalog/CatalogResidentServer.java",
+      "bytes": 13257,
+      "sha256": "bae7941461be429ebeb6ee9f220c1e67f92a5a653cd675814076ede569b7a64e",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-catalog/src/com/android/droidloom/catalog/CatalogSession.java",
+      "bytes": 2565,
+      "sha256": "d569248bb31ce2e1765af2ccc17c138a13aff938785d7f7215dd15972f6cc1e2",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-catalog/tests/com/android/droidloom/catalog/CatalogLifetimeTest.java",
+      "bytes": 14541,
+      "sha256": "57cb31352aa2cd5d616a46cf1b49b8a469356565ab1e790e658b6bdf05da0b94",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-catalog/tests/com/android/droidloom/catalog/CatalogProtocolTest.java",
+      "bytes": 18514,
+      "sha256": "887f18a58a8f8aab95e51d0887cccfa60cbb87eeab4499f694bdd57e6a9dd018",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-task-launcher/Cargo.toml",
+      "bytes": 501,
+      "sha256": "055c5fca26b41199627017965fd1bd8aef914da1067755b7c2d94978be9c4148",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-task-launcher/src/lib.rs",
+      "bytes": 56199,
+      "sha256": "8c2bd767a62d6d16a3e02daf7fc992d6c4f79adf6d61efd7c6c199b6650f08d0",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-task-launcher/src/main.rs",
+      "bytes": 7949,
+      "sha256": "23bb117afd8aa81e23f23b20ce8b4ca9901e7e17a20315d29b3d922b77c789ba",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/framework/droidloom-task-launcher/src/policy.rs",
+      "bytes": 10624,
+      "sha256": "bc1d6832cbac2741fa2e279d1fa1aacf8ced94dba712b48c283b686b935c2d29",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/manifest/native-bridge-lock.json",
+      "bytes": 240,
+      "sha256": "8f87d2ab4c7d55ba46c868ab09dc10b3ca99026abf236f0e74960a3840e52de3",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/SystemUI.Android.bp",
+      "bytes": 49535,
+      "sha256": "fa1aaf330d580d6cefb74dc0ef1b52fcebbdd9b6bced5497a3bd29f9fb3647a3",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/asuite-atest-metadata.Android.bp",
+      "bytes": 4006,
+      "sha256": "c38865f4312919d6452897db8e2e9341919ccb659c7a537ae20690a866e891e1",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/asuite-proto.Android.bp",
+      "bytes": 1960,
+      "sha256": "04118667724a0433770f8d913207c510b5103a41d44600da62c337434ed2c5ae",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp",
+      "bytes": 1869,
+      "sha256": "9c8a0aecfa46ce0f1874362fa9dfff6a34326f9bf569b6fe7206dd6db1b3c9a6",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/car-builtin.Android.bp",
+      "bytes": 3748,
+      "sha256": "b7e38fdc5a873a7cd2607759d4eff2b560db218ea14c6a137da5bde70b4e9ceb",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/car-jni.Android.bp",
+      "bytes": 1590,
+      "sha256": "7f20480832afc1c33d54c846c2cab1a8cd6598278cd30f00b2a96b75932cbdb9",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/car-large-parcelable.Android.bp",
+      "bytes": 1355,
+      "sha256": "66b33bf0a2234c0f301dfabed4e5ab7e69562d4bed111cedc6cd81ffa68ecfb8",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/car-lib.Android.bp",
+      "bytes": 12547,
+      "sha256": "e88e92f8113c3c05f71999adfde6c50612d9d15d6454fbb0db9b98aba26fc6a2",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/car-vhal-client.Android.bp",
+      "bytes": 1705,
+      "sha256": "d27df8040413d7575e066bded28bf04c72a62436dab9659b553eb1ae88819098",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/clearcut-junit-listener.Android.bp",
+      "bytes": 1132,
+      "sha256": "703b73b507250735b532c3c5f9eb4a0662606110e9a499632804136c0047c941",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/hardware-neural-common.Android.bp",
+      "bytes": 1757,
+      "sha256": "03d240c5d70281ce23758c4a87bda16d99138433926778b6493f7d59dafba053",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/hardware-remote-access.Android.bp",
+      "bytes": 3400,
+      "sha256": "fc163b9fd4bf32871e600e2dfea89fd3223b82e4445053a69db316ea6d5683e3",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/icu4j.Android.bp",
+      "bytes": 5919,
+      "sha256": "e5a8137f19dbb133bdfa451c42493dbb481b1745a390817876b4636028a6014b",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/motion.Android.bp",
+      "bytes": 2098,
+      "sha256": "a29bc25117f71e6acac6722f98950831a16a00f382c3ee0f9e991a36ecba5440",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp",
+      "bytes": 13060,
+      "sha256": "4153fd69cfeabb40bcefa51456a6b3747d835e96698150ed4e8bb950eba1f265",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/neuralnetworks-root.Android.bp",
+      "bytes": 1726,
+      "sha256": "f408846ebf2fcbf1fc3075a312b2c388888bedd5bd7be96efb07301a9085ad08",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/neuralnetworks-types.Android.bp",
+      "bytes": 3279,
+      "sha256": "f3a14a68f3d0c918f44099b318fc22c8ff0067b4ddbc55b6c8e29177dff6487d",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/robolectric-aosp-plugins.Android.bp",
+      "bytes": 1751,
+      "sha256": "cfbff8817cd8eb06cbd02bffa253ce0a2eb266e93fec6c8ab1894316e8ca6ab8",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/robolectric-pluginapi.Android.bp",
+      "bytes": 1131,
+      "sha256": "b85704354df39ea533d97c8d6a2d51ef148889668d2c08d89fb59dd703e4aa15",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/robolectric-processor.Android.bp",
+      "bytes": 2723,
+      "sha256": "557bec83e3e684a6d9b6466827466043b0b1a1d61605aafaf35e581e974bea00",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/robolectric-resources.Android.bp",
+      "bytes": 1395,
+      "sha256": "83e1f8f513e4c8dc9d3e9896e832cf6d5044f64a950dbb40b3d0ad8da9831bef",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/robolectric-robolectric.Android.bp",
+      "bytes": 3390,
+      "sha256": "c9ae9050c080977591fa239ef37623826a5c7ffc125c78055059e375573feba4",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/robolectric-root.Android.bp",
+      "bytes": 12618,
+      "sha256": "5491a0f3918f8c5e89276ce13437b29bbd9b64aa2334e81717566e446bb6e1a4",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/robolectric-sandbox.Android.bp",
+      "bytes": 1820,
+      "sha256": "0f35d9e221672dc164bd38e9c262fa5b38e892679f659e7e82b7dc5b50cd5e74",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/robolectric-shadowapi.Android.bp",
+      "bytes": 1218,
+      "sha256": "36f67c55ad95f649e8a17a0770b8141d653c96c15f5213721b027154f9a21e69",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/robolectric-shadows-httpclient.Android.bp",
+      "bytes": 2446,
+      "sha256": "c1d4d324a0e0218c175e2f2e85806ccbeb398d797da57baf5221cf542f3d1268",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/robolectric-shadows-versioning.Android.bp",
+      "bytes": 1647,
+      "sha256": "71262635df4c0b9aff77b4b8d5b3f80587d3a5d3d30a2941867c4e15dd398485",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/robolectric-utils-reflector.Android.bp",
+      "bytes": 1169,
+      "sha256": "82ed73680ad4eda143f6a38bb62198565e9b3a3b8211d9d3c5da6b5703ddae25",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/robolectric-utils.Android.bp",
+      "bytes": 1491,
+      "sha256": "582130b938654da15b073bd6c8a616ad366358d125a0a53d14cc9d30e020b323",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/runner.Android.bp",
+      "bytes": 2088,
+      "sha256": "e3b51cb5bc9ca15951a4da4b2ab711bfedd084eba95e2434060126accca8f5aa",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/screenshot.Android.bp",
+      "bytes": 2403,
+      "sha256": "53ba33c12075d68266d9c90620b2a0e04934e7d0b9eb73c1faf6c06cde689032",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/test-parameter.Android.bp",
+      "bytes": 2832,
+      "sha256": "3c39d19867e60e6f45ae39b3ee910b986de4cc158042519facaca18720d4ecf8",
+      "observed_mode": 420
+    },
+    {
+      "path": "android/runtime/droidloom-classpath-wrapper/Cargo.toml",
+      "bytes": 278,
+      "sha256": "3fed6b819a112ecc40a85d4762b5afd7fcd6a62d4beaad9f491060399a4b0801",
+      "observed_mode": 436
+    },
+    {
+      "path": "android/runtime/droidloom-classpath-wrapper/src/main.rs",
+      "bytes": 9587,
+      "sha256": "75a1bdf30ee496ba1e824f0f9c9ecd238f28483b6395fcc358324ee178803b8d",
+      "observed_mode": 436
+    },
+    {
+      "path": "docs/BUILDING.md",
+      "bytes": 32597,
+      "sha256": "d54ebabd0abc329f1653c186eb1896d541ff860d79dafdc8bf24b9adb571ddc5",
+      "observed_mode": 436
+    },
+    {
+      "path": "docs/examples/cell-spec-u1000.json",
+      "bytes": 847,
+      "sha256": "6ad95711c590431e49867b4728d9c445c98cf677a2db4844f8255798e2fb6e71",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-composer/Cargo.toml",
+      "bytes": 455,
+      "sha256": "bd4bcfd2abf75a2823f678aa455fdc6a82ed6f823aa919c313cee1e989ce1040",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-composer/src/denial.rs",
+      "bytes": 25541,
+      "sha256": "ed0080cd33a3a4fa67b3a0c2e95bc274ab38e992ec073ab01d87b910bf2db3c8",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-composer/src/hwc3.rs",
+      "bytes": 21011,
+      "sha256": "139c40b813c3f269a5aee0ce2212e92b7f5bfff9cc7b36807e4fec5ec1738471",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-composer/src/lib.rs",
+      "bytes": 44353,
+      "sha256": "1c6ef3408c8018c58ef9ed9ac0d847856cc4deb670a6424243e9a064e25baf83",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-composer/src/task_control.rs",
+      "bytes": 16609,
+      "sha256": "daa184048871f89545858f30448982bd60212affbc37fe93c6b1b9c5394be350",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-denial-endpoint/Cargo.toml",
+      "bytes": 608,
+      "sha256": "23b939ff7249e53c58f92e5379f612829905bf1d652eecabe2e505c0a98770ed",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-denial-endpoint/src/lib.rs",
+      "bytes": 63752,
+      "sha256": "062b65857160eb6e3aeba2a78c4ce3d8503c02572f24353f8c944d950e52308c",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-denial-ipc/Cargo.toml",
+      "bytes": 702,
+      "sha256": "92dad4273d4bf8d26dec64c7d00ef7366b17626d9fe4aad778f464a6dd1eda8e",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-denial-ipc/src/lib.rs",
+      "bytes": 42737,
+      "sha256": "7724a0778185bfec08c8e2fe23a3168a757a62413ac5403e369a747c59b26a8f",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-denial-protocol/Cargo.toml",
+      "bytes": 385,
+      "sha256": "94d285d82d7ab46f73cc1800932b36c27185dfb6b566249b43b29816478da48f",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-denial-protocol/src/lib.rs",
+      "bytes": 105464,
+      "sha256": "6c7f8df133f2a9e55bd375da4b39dcba5b00d0c4c3ba6531a6b8be329ebce41c",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-input-protocol/Cargo.toml",
+      "bytes": 279,
+      "sha256": "b21951b38413102969baf168bb9b198a557cf29b944f43be68cd150328d49cc5",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-input-protocol/src/lib.rs",
+      "bytes": 17287,
+      "sha256": "8a473280ae0691639c8180e8046f3119d73e2d8a8e773fb717e602525ffe29de",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-minigbm/Cargo.toml",
+      "bytes": 366,
+      "sha256": "5d2717f4427aa5af3f76d3d67841ec65ec4f3a9bc820ff9474b6db16c56bbb2c",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-minigbm/src/lib.rs",
+      "bytes": 13936,
+      "sha256": "460660afe08c9e79ae8fbe7de544a74a46078d154e9488684ad7722bcf55a544",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-surface-bridge/Cargo.toml",
+      "bytes": 246,
+      "sha256": "30cfe57faba130de83f30267442b9f3ccefec0fa2f4bb90c101748c210a44843",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-surface-bridge/src/layers.rs",
+      "bytes": 22002,
+      "sha256": "5b8dbc2dc76f7865373b995a6af68cb0cd2324b20d2502812a2c007af73ee033",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-surface-bridge/src/lib.rs",
+      "bytes": 19707,
+      "sha256": "421e5b34160d69ac1929a50951a48a1e9024df3e3b2bf7880a803ae5f6766f9f",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-syncobj/Cargo.toml",
+      "bytes": 661,
+      "sha256": "8239ab6aeccaf1f338a089d9dd90318094a25dea122699d5a36a33da0c505848",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-syncobj/src/frame_trace.rs",
+      "bytes": 7574,
+      "sha256": "763277012e2d5cbeae3519e6e2b4f3396089e6ada59b4fb29420983fbd2c2e8d",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-syncobj/src/lib.rs",
+      "bytes": 28639,
+      "sha256": "762e97897baaa87e8e32cd25ee591b151cdcb648d684715cdcba156baa52ff5e",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-task-control/Cargo.toml",
+      "bytes": 324,
+      "sha256": "02d1ad41a764667119b84f3b4a35a20c382a2b18703f29f8dcd7bfff999ad1ed",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-task-control/src/lib.rs",
+      "bytes": 24083,
+      "sha256": "03cb2bb4b13a78adadf173ffae4fd8e3c29a471fd439c7838e44345bd494fd01",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-transport/Cargo.toml",
+      "bytes": 340,
+      "sha256": "d400e4383f8d6301776077a399221ae309a8a01161a6c725ced34fc3bada0b89",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-transport/src/lib.rs",
+      "bytes": 18363,
+      "sha256": "8b5d46672e508d7d97ab5f00d03d32764818588d7f388c4916c904e4dc1ba64e",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/Cargo.toml",
+      "bytes": 1766,
+      "sha256": "f369e41d8c86c0b948992d2d07ab8fbdaf3779bd21493e3389730c51a33ea098",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/examples/notification-test-server.rs",
+      "bytes": 4729,
+      "sha256": "32809f2bc015e0ce317630d98ff970f53745a722101f4982ab3fbdbc030612c7",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/protocol/denial-insets-v1.xml",
+      "bytes": 2055,
+      "sha256": "f969e463527ca30cedbcdc855cd0964cb5b8c121c7eed113b8a9ceb5f8250017",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/protocol/denial-text-input-panel-v1.xml",
+      "bytes": 2233,
+      "sha256": "9c56acb08e228ae349362f8664424680a729a5ff328b864688ded4453e134b40",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/src/activation.rs",
+      "bytes": 7428,
+      "sha256": "aa77f6c4bb00c3680946396fafb985921d6c321dc791218f29ac80ac0424b205",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/src/clipboard/backend.rs",
+      "bytes": 9655,
+      "sha256": "009411aad2bf7e6777294097e37a57dcfd29bb50db146d4283007fb176b55756",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/src/clipboard/mod.rs",
+      "bytes": 28538,
+      "sha256": "9bcc69a1d4ecc04486b0d37bbea1730df95587ba058da59827fece0a3f046f78",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/src/clipboard/wire.rs",
+      "bytes": 9470,
+      "sha256": "0cf89f2d1cafa1bc200d788d2951aaa4ca6b046ed381c8c86a4e857692426aa4",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/src/fence_wakeup.rs",
+      "bytes": 5637,
+      "sha256": "a48a7874571d8b18aae447d4a6dc349d46bf81a3d91ae8b567a69977e54746c2",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/src/insets.rs",
+      "bytes": 876,
+      "sha256": "27e7249970fdf647968f58a95dd085ad1862ca71cf21e8bc62e9b2281d6a554f",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/src/layers.rs",
+      "bytes": 35990,
+      "sha256": "d0a81ce5339c5020496e9b73e007d52ee206449827269b272e4ef6ef43df5ecc",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/src/main.rs",
+      "bytes": 110131,
+      "sha256": "0f56264e971db9f246d8db34d7fd5de157fd389a97bfb34492a6f53376d27459",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/src/notifications/mod.rs",
+      "bytes": 20019,
+      "sha256": "fda6d19ed558467367189afa0af64fae637c2eb09c8e73c8bc0d7fc6e6117cd3",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/src/notifications/tests.rs",
+      "bytes": 12967,
+      "sha256": "bb08fd257f3669594543a21149cb2bd1671632ab7c727bd06c8cc85d68f645a5",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/src/presentation_audit.rs",
+      "bytes": 4253,
+      "sha256": "879d809325e399f5a19065f315a7586622667b17b7a8b1bbe61757301ad41223",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/src/retirement.rs",
+      "bytes": 11118,
+      "sha256": "383f4c6f7490c8568f1853af6e9449fdb35bdb088348de4a9856d75f97306873",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/src/text_input.rs",
+      "bytes": 17800,
+      "sha256": "c6e746449e4e18306a6a86aee4e1e6d1dc25900cfd9fa3da7cdd50224f571469",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/src/text_input/panel.rs",
+      "bytes": 1543,
+      "sha256": "0ea726f678aa67c078d790fedf5b4c0f7b4a846db8fcc4064522adcc18a3079d",
+      "observed_mode": 436
+    },
+    {
+      "path": "graphics/droidloom-wayland/tests/clipboard_backends.rs",
+      "bytes": 8372,
+      "sha256": "facdbfa56b4af035fae942e61f7bcf1083965e372c7b7bdd4316da59b415e579",
+      "observed_mode": 436
+    },
+    {
+      "path": "install.sh",
+      "bytes": 2280,
+      "sha256": "a997622188b1c4421f4d7595a3b98ba8a193aaef7fdcbc118c91f2ed1be021f0",
+      "observed_mode": 509
+    },
+    {
+      "path": "packaging/arch/60-droidloom-gapps.hook",
+      "bytes": 302,
+      "sha256": "864710301fe0a9726da4897bf9bf63fa79845e2793968a68ffb435497fba8cd3",
+      "observed_mode": 436
+    },
+    {
+      "path": "packaging/cell-spec-x86_64-u1000.json",
+      "bytes": 6530,
+      "sha256": "9545ce4e028b750a8707572f7d7aec8a0b51f4f6071c31233be3a39a7bfc114d",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-applications/Cargo.toml",
+      "bytes": 640,
+      "sha256": "a16f5016a22a5e94b2ae46007ebfac27bee9ea2d0164e28c61b06e2b8d48c747",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-applications/src/lib.rs",
+      "bytes": 34447,
+      "sha256": "e219a1dbeeda5c58f7efa4828b39f3e9f3e90777821e44e0a0aa3684353ec023",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-applications/src/main.rs",
+      "bytes": 2893,
+      "sha256": "a75f608367ea58989eaac0882a2eed62bd2015f5fe0188c90e0e39a9142bd409",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-contracts/Cargo.toml",
+      "bytes": 454,
+      "sha256": "8f48f9a7a95e34c8f801b6d0dc7a9525cbf2e28e5c7d54686d11a494c114ac3c",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-contracts/src/gapps.rs",
+      "bytes": 12689,
+      "sha256": "f248c099d083c21402f013bca066571f68bd08e5c03faa253d6c7fca2ec10913",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-contracts/src/lib.rs",
+      "bytes": 15048,
+      "sha256": "6f8fdc032c835aa29cae4962cee9d9db2f0b85429214d336e285f104c9f694e8",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-contracts/tests/repository_contracts.rs",
+      "bytes": 17515,
+      "sha256": "916ecb848e8ed328f27d0eb87a16a23c1235c0daf48b03db026a51f6e9ac8cee",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-cpu-placement/Cargo.toml",
+      "bytes": 287,
+      "sha256": "7e7c7368d5e96ea1a1004cd35b149dbee191c4029d634fde79dc9c2783d34153",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-cpu-placement/src/lib.rs",
+      "bytes": 1956,
+      "sha256": "b711e37a7245dc0d817e69d6589263b864cfd7ea43f2428c6d590c7e47863ab0",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-cpu-placement/src/linux.rs",
+      "bytes": 11370,
+      "sha256": "addc956fcae5d493cdf9bf55bd82ea79119caffb58bd8bc1fee44e17069357f8",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-doctor/Cargo.toml",
+      "bytes": 471,
+      "sha256": "06dafa6ff40cc3127fe44ddc5dab46b53e5ee2258d09d21c837c907d3595d5f0",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-doctor/src/lib.rs",
+      "bytes": 35125,
+      "sha256": "26ceac9de377c5dab904b56fc15ec65354c5eb995aef79c058aac9c2f33a2788",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-doctor/src/main.rs",
+      "bytes": 1960,
+      "sha256": "bf8a8a5605c64428e1fa62aabf5bb624e1ce96c795e052923296b2fd339fa8f9",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-package-support/Cargo.toml",
+      "bytes": 381,
+      "sha256": "a78d509945f5e743108cee15b883ced8d1b6b521498c79d026adcab5a664f202",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-package-support/src/main.rs",
+      "bytes": 19998,
+      "sha256": "a77dae842518e2f1af11a5196a96251fa23bd918fa02703c931af94ec3e0ab7f",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/Cargo.toml",
+      "bytes": 844,
+      "sha256": "8a5c31742965d5226baadfae8f9ab3370cb1973b2761f4ab7395689c6425f20f",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/assets/development-cgroups.json",
+      "bytes": 876,
+      "sha256": "f03de3fc015e9fce4630ccdeb3db7f300d7c1d122f30a7fb54654a642690f3c7",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/examples/cpu-placement-probe.rs",
+      "bytes": 5017,
+      "sha256": "8cacf7cce2b7bc54017d5a03f2b716dfd239cc816d1e9779b3f4eca190590f4d",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/apk.rs",
+      "bytes": 11695,
+      "sha256": "b515b306528884947f6ba0d3329c9c22cc35f7d4904db440f66f5a0c40c3c12f",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/apk_set.rs",
+      "bytes": 16047,
+      "sha256": "3e2409266ebe3c5cde34fcc7c4f7f493aa11a79e7eaf2f61498c7b60932fae02",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/bin/droidloomctl.rs",
+      "bytes": 20606,
+      "sha256": "3733dd7586ebf534aef3d4a5d176a76b8822dd0c6a6b8b39fb64adf8e70cd484",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/bin/droidloomd.rs",
+      "bytes": 1869,
+      "sha256": "85ba21c0d4bdb99218f95e3ea5c4242f01634e1266fff6b9b13ad84afeddb9b0",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/control.rs",
+      "bytes": 68444,
+      "sha256": "8dd9d694bf1448a656d11e45abdeb19ed745cc810b84c262b87394d03e252142",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/control_catalog.rs",
+      "bytes": 25653,
+      "sha256": "f476ea83d71fea4096770267e4f8a7ba6affe89fbf59214a4ab1dd44166570b7",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/control_catalog_tests.rs",
+      "bytes": 12582,
+      "sha256": "d7d3b0bca5763fb8a09c2115709a4acb87ac4a67310c300f3358e252fcef1c3b",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/control_progress.rs",
+      "bytes": 15046,
+      "sha256": "3dcbc825033a9ea53991833deaf8440c320e105268962227a98a7a58b407eb76",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/control_status_tests.rs",
+      "bytes": 19824,
+      "sha256": "94b905798123702712a801c181e37ed78961974d80304c839c9a63c048f79070",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/cpu_placement.rs",
+      "bytes": 15291,
+      "sha256": "e21d849f086e28b8e9e16cc29aa62bd163a200282bdc03ca0e48293fc85137a6",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/development.rs",
+      "bytes": 101645,
+      "sha256": "37645978b33d443313694609625a97ac9dd7f6e14053664a48d02ff6d8daea90",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/development_network.rs",
+      "bytes": 19654,
+      "sha256": "19918ce2f6bbc6a6ffccf416ab1b2f91527a9c7ffbda785a72a4e01016627576",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/diagnostics.rs",
+      "bytes": 25225,
+      "sha256": "c71dd05076e5f5950673134aa5fc75efea251333374123743915b0a50c26009f",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/gapps.rs",
+      "bytes": 10178,
+      "sha256": "5aae77729f0389ebdd80c41c55ba7dab980ab6caf38f427b0e7cbfab6d2f1978",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/lib.rs",
+      "bytes": 31830,
+      "sha256": "e2399c04e88427a2b886b6aa05adec538e51bbb767eb0153f7c4da603501a001",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/linux_plan.rs",
+      "bytes": 38600,
+      "sha256": "94bdca5d90fc59bab93509ad197d5031f9ce28f8d931e82f394792fe845b2385",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/main.rs",
+      "bytes": 3223,
+      "sha256": "feff8417443e1b8cbe02fb84ee7c253fe136dee205f316d2184ec4a94345c862",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/package_cache.rs",
+      "bytes": 2690,
+      "sha256": "fd5803956af8704a569c9ceb82d4ace598b6db52823b51f0fcc1cb33cd787aec",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/tests/cli_diagnostics.rs",
+      "bytes": 2772,
+      "sha256": "7224422fa08769f30fc7c4fab711c0224d84ad5ed7811d2b2c9707fb29e32934",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/tests/cli_inspect.rs",
+      "bytes": 1172,
+      "sha256": "748c2ad181f533dba32724b3095af9b9ffaf606f6096391d570cbca1bf973f64",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/tests/cli_install.rs",
+      "bytes": 3305,
+      "sha256": "5ea16c69f3b6e38c98917318877a5e2150334a8260abedfcc6a416001544b6ce",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/tests/cli_install_multiple.rs",
+      "bytes": 5114,
+      "sha256": "67bd2fbb4047afe9410ea6edc6ca52616aa9cb439996a85d987161be9947db2c",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-supervisor/tests/cli_lifecycle.rs",
+      "bytes": 11717,
+      "sha256": "5310bfdb21b006ae1432b584c03fbbfb4c1f3a7cbd3ce226b54770ff4bbca317",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-window-policy/Cargo.toml",
+      "bytes": 407,
+      "sha256": "e77f560fce926fd9f6dee999444fd3034fa5565866e18ee6a230fdc304c392bb",
+      "observed_mode": 436
+    },
+    {
+      "path": "runtime/droidloom-window-policy/src/lib.rs",
+      "bytes": 24252,
+      "sha256": "afc406e9e2d592e86a08938406b0e4cb12f0da9e7e35dd844bbbca1ecab0ecf8",
+      "observed_mode": 436
+    },
+    {
+      "path": "rust-toolchain.toml",
+      "bytes": 86,
+      "sha256": "8bc51ecab82415fddd8489604f2424e137d71856e7f65cbdcfaa48850d794b46",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-dmabuf-probe/Cargo.toml",
+      "bytes": 887,
+      "sha256": "93cb82413531192f44c7fa7b5a16929de4184a2c68a9af506ffa44185eae3c9f",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-dmabuf-probe/build.rs",
+      "bytes": 390,
+      "sha256": "1e01860fa4c1b56dbb6cc3c21fbd7cb3626cdee91db63eedc39bfb5498117719",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-dmabuf-probe/src/egl_renderer.c",
+      "bytes": 10819,
+      "sha256": "bfc5d9f4ec5632f6b212551c13e2ba72f0326e7b0d227f9309d690f7ea4c8838",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-dmabuf-probe/src/main.rs",
+      "bytes": 26390,
+      "sha256": "06ef71a45d8a12729486deadb4715df8a585081a98e5d13c918ca719a1074f63",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-gapps/Cargo.toml",
+      "bytes": 381,
+      "sha256": "322f478dd62b6ab9d34483bda502d99f58094d85f37d1543162691e75ff058e3",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-gapps/src/archive.rs",
+      "bytes": 5931,
+      "sha256": "9f64ac28f0a26f9abf51071112fa90daa2a63030bef4b5d3cc8fa2b735ad0f87",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-gapps/src/erofs.rs",
+      "bytes": 11690,
+      "sha256": "fe7f1333d92132990077e1b97ee6bcde4644384bcd8926c207ddd0f13f450a2a",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-gapps/src/ext4.rs",
+      "bytes": 14731,
+      "sha256": "b2d73b10c4f67fb420d6f450e5fa2e32bc98390b1f2d8a535d067d0aaec12f2e",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-gapps/src/import.rs",
+      "bytes": 15691,
+      "sha256": "2761ecef455ae3ef8a80730544598015f8fa140c8b789cd344ea8f21384ad58e",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-gapps/src/main.rs",
+      "bytes": 11904,
+      "sha256": "8ccc544517696f7fe3505b90b13264fe23509eb427e7cb938a5edb05169c07b7",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-gapps/src/package.rs",
+      "bytes": 6824,
+      "sha256": "fb5620e39efaa4a554d5a25f6a57df54642ef9a1914491fdd470dffeff7ce277",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-gapps/src/util.rs",
+      "bytes": 2620,
+      "sha256": "a33cb7a13f94a22ac8181b72ab7647a02ed42160d8ba6a017dfdc242f0c3b5d8",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-gapps/src/xml.rs",
+      "bytes": 8192,
+      "sha256": "53bea4f0cb2186c442c358d655bdd19bdd34965585f1df28698ae17389cdb0c9",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-image/Cargo.toml",
+      "bytes": 466,
+      "sha256": "f20f7ef5dd8642c53c7ee9580cac86063c50c39e6d77a46801d9a7a327e351a7",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-image/src/lib.rs",
+      "bytes": 22219,
+      "sha256": "2061c9d672746a38c5a0ba097df0ae0280d51e85975328840354d000707b000e",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-image/src/main.rs",
+      "bytes": 2527,
+      "sha256": "5247e0f196ca5cd297e1d7e371641d3d9d9087fbe900ed7d963a980d6825e049",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-mesa/Cargo.toml",
+      "bytes": 466,
+      "sha256": "ba157c1bf283579c3900ef4f295896c1ec8c7720f954459785d3b56002f65020",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-mesa/src/lib.rs",
+      "bytes": 15693,
+      "sha256": "0243d8befab73ea6caf3b3770fcb21faf451c7a39c9d6a8e0146442cb06368ab",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-mesa/src/main.rs",
+      "bytes": 1501,
+      "sha256": "9d78744e2608b934e0ef7ba67d4be285a875c50317abd532f0eea7b9a8415412",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-package/Cargo.toml",
+      "bytes": 331,
+      "sha256": "249d617ce5179e1737debfc77748282b8705e73b8ecfb8088eabed25df8e691c",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-package/src/components.rs",
+      "bytes": 12689,
+      "sha256": "a00fddf7f44297404f8661d25e0304d67bd9d6e45caf31db6a11260289e28f64",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-package/src/main.rs",
+      "bytes": 28284,
+      "sha256": "b56f4637368c82048c67ff77dc97433ac4aeec093c061fefa0b7457c4d1a6aab",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-package/src/runner.rs",
+      "bytes": 8575,
+      "sha256": "558d0dba8dee8716b4328148bf7b7cbe18733083186267d95a847a41fcbd3ce5",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-package/src/shipping.rs",
+      "bytes": 6836,
+      "sha256": "692722ae3c524dfdf3d420847b2aa4f53cc4413dc512f06340a121ea2dc765be",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-package/src/validation.rs",
+      "bytes": 8423,
+      "sha256": "f6a641ac67b697020028e973766c1abb7e55674317f2e783700db869a5f871c5",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-package/tests/installer.rs",
+      "bytes": 2641,
+      "sha256": "da055e31f7551142388900d2431f0c534d9222d6292254234155e1aa3a54a4d1",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-source/Cargo.toml",
+      "bytes": 460,
+      "sha256": "eda1c444ff769e426c6c44e3fe6119304a65f87aa42da5eb8defb60f4afe52de",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-source/src/lib.rs",
+      "bytes": 44272,
+      "sha256": "40153ed05004620876fc6ef240b9d89373781baee3111bbbd3c65d446c31e5b3",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-source/src/main.rs",
+      "bytes": 3894,
+      "sha256": "2de5ec3ffec3a1d6ec13127cf02cf1edcc9fbeace77b923aff6bee9504bb823b",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-source/src/resume.rs",
+      "bytes": 38414,
+      "sha256": "2026055997ba7d8392bada503d0e1c229cad13bba931f13b410457ac86daafe6",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-translation-bench/Cargo.toml",
+      "bytes": 426,
+      "sha256": "02d40e953420ead9211b9300e3e3c2c05332a658becdf9c02d963f290288821c",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-translation-bench/src/main.rs",
+      "bytes": 30303,
+      "sha256": "5078399329b4ce5a2523512ca5a884f1530c57b3d31b5bec8995a9c4a59d5e49",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/Cargo.toml",
+      "bytes": 443,
+      "sha256": "37b7d95f831bcd75902bf728fba7231e515bbe042066129c72712c9787bd8e05",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/README.md",
+      "bytes": 5601,
+      "sha256": "a9843e421ecc9875c391497721fbb1b2ecad3c47260a6c368c5d719dd1755de9",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/src/android.rs",
+      "bytes": 329800,
+      "sha256": "72fe8ba4dfec2422b5809fa5af8c84387537527245c35d0e3a13c10060a361cc",
+      "observed_mode": 420
+    },
+    {
+      "path": "tools/droidloom-update/src/assemble.rs",
+      "bytes": 21737,
+      "sha256": "8863f18ded14bb26c320eff7a62e1aa8c99e6d668e2e86f18b7b76b029c43e18",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/src/bundle.rs",
+      "bytes": 14523,
+      "sha256": "3ee0ec4c91a4b24e0886577760b441e3dd0f8ddd0d8811f90044cf7f8d07e868",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/src/dependencies.rs",
+      "bytes": 2947,
+      "sha256": "e505631d876b91ff5df24c1b450c25147f806d2f39363b7ebd758339f24e6543",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/src/image_policy.rs",
+      "bytes": 10435,
+      "sha256": "89b67df01bb4ff320738df527af4a654a27cb29dd493a21e2d71aa48880af4bd",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/src/install.rs",
+      "bytes": 17854,
+      "sha256": "0920d6e590b9eed49a4d4e780f6c63951eaa161772acae641bbe139bcdb31351",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/src/licenses.rs",
+      "bytes": 8697,
+      "sha256": "a43fe06b02090f3a3a3b9d2407f4bea0bfd902e7c1d719fe1fea2ec1888646c6",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/src/main.rs",
+      "bytes": 24381,
+      "sha256": "f6be56d7f64144c0be40b3c6c519a966b9d733ef3e5f857d8140bef1be3a8ace",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/src/native_bridge.rs",
+      "bytes": 37984,
+      "sha256": "dbdc2047120c3ce607a3127ac261c4ffd9218c09acd5f490f835fae3b79827e0",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/src/native_engine.rs",
+      "bytes": 14715,
+      "sha256": "61dcb93b6432dc41429807728ca164fc152507ced97ebf08621cc3be51548970",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/src/native_generation.rs",
+      "bytes": 23569,
+      "sha256": "bfe0f4046358fa6599b0dc5596f50e593de8dc766b2164e796f80b91c4821c58",
+      "observed_mode": 420
+    },
+    {
+      "path": "tools/droidloom-update/src/native_generation_art.rs",
+      "bytes": 11106,
+      "sha256": "2f6f6a799b90c3f534e89ce8015cae5e889bb59966e8894f9fbbfc58214b6905",
+      "observed_mode": 420
+    },
+    {
+      "path": "tools/droidloom-update/src/native_role_ingress.rs",
+      "bytes": 39648,
+      "sha256": "43cbfceac6f2a5dbcaea93fa6848e0f8740c096cf5412361f42ab86d22c219f3",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/src/package.rs",
+      "bytes": 9339,
+      "sha256": "f3887667421bb72c815d25ee391febf309e97eb244c9f4e887029646f93f2a26",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/src/python.rs",
+      "bytes": 3141,
+      "sha256": "9d7e0561ddea70bda91a6e2ba215ff7487ce1c59d4e9f925e1cef03b08dc3216",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/src/util.rs",
+      "bytes": 7802,
+      "sha256": "ac8e63e0355d8f2b98c2bf4bc12fd6fbfc295ae3244bb51816c394189440d969",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/tests/dma_heap_layout.rs",
+      "bytes": 1840,
+      "sha256": "34b3b9896b37a8d944ddca28a4a926f5d5c323942eb9bacf13529364a6505c17",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/tests/fixtures/native-engine-jarjar/connectivity-347fbd3-framework-Android.bp",
+      "bytes": 14118,
+      "sha256": "c849c61254d23ebc906de5ff850307ad2a224b6314546567db7851ddc413110f",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/tests/fixtures/native-engine-jarjar/connectivity-347fbd3-service-r4-effective.bp",
+      "bytes": 17018,
+      "sha256": "e5b482317718cea8ce2a8dbe5c339daaf7837e92b1fa58c735dd4f3f48c58c44",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/tests/fixtures/native-engine-jarjar/connectivity-347fbd3-tetheringlib-Android.bp",
+      "bytes": 4569,
+      "sha256": "6d2460b6a01fb62c655798c113ce3e9a6c97de7696f7e3e8de7f1a1d5af33191",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/tests/fixtures/native-engine-jarjar/libcore-4ebfb39-JavaLibrary.bp",
+      "bytes": 48448,
+      "sha256": "1c742a30e72d7a03f44aee32b0c513ef98327dec13986bec96092b13e004b9b6",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/tests/fixtures/native-engine-jarjar/networkstack-928a826-Android.bp",
+      "bytes": 11671,
+      "sha256": "8eebb8c42ce09f520743ca2fd913471be1c8d9a178fe3256ba365f29c0b76d14",
+      "observed_mode": 436
+    },
+    {
+      "path": "tools/droidloom-update/tests/release_queue.rs",
+      "bytes": 3949,
+      "sha256": "f3b93640f030def76804ba28d572c17de9ec4f519f9ddbfe444196961d7e7590",
+      "observed_mode": 436
+    }
+  ],
+  "private_dotgit_or_provenance_allowed": false,
+  "source_scope": "Original28 Cargo workspace member files, their observed literal compile inputs, original licensing/toolchain support, and independent SDK03 catalog14. Not the complete Android/Soong/packaging runtime source tree.",
+  "runtime_test_assets_or_external_native_libraries_qualified": false
+}

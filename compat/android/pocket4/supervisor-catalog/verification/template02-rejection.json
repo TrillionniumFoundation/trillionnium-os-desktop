@@ -1,0 +1,656 @@
+{
+  "schema": "public-source-assembly-includes-complete-read-v1",
+  "template_tree": "a33c34024b37b4697c6677d00c8e23fb9637df24",
+  "template_blob": "784fb70e1f98c6faa1feca11f804c1341fb1c0e2",
+  "source_scope_blob": "7421d04e81adc8483833f9b9aef6aa487d493600",
+  "current518_blob": "273774e0c102c0c511ffbd52b72d27731d964235",
+  "root51_tree": "acaaad37cf948d9c151534ab2471e54872fa3362",
+  "root51_pins_blob": "6ed793df9fa3045f364b721a34478e7cb799bb50",
+  "all210_complete_bytes_verified": true,
+  "all51_complete_bytes_verified": true,
+  "first_failure": "NEW_COMPILE_INCLUDE_REQUIRED:android/manifest/native-bridge-lock.json",
+  "source_tree_created": false,
+  "all_literal_include_count": 48,
+  "unique_targets": 44,
+  "unsupported": [],
+  "missing": [
+    {
+      "path": "android/manifest/native-bridge-lock.json",
+      "bytes": 240,
+      "kind": "file",
+      "mode": 436,
+      "sha256": "8f87d2ab4c7d55ba46c868ab09dc10b3ca99026abf236f0e74960a3840e52de3",
+      "sources": [
+        "tools/droidloom-update/src/native_bridge.rs"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "runtime/droidloom-package-support/src/main.rs",
+      "macro": "include_str",
+      "literal": "../../../packaging/cell-spec-x86_64-u1000.json",
+      "target": "packaging/cell-spec-x86_64-u1000.json",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 6530,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9545ce4e028b750a8707572f7d7aec8a0b51f4f6071c31233be3a39a7bfc114d"
+      }
+    },
+    {
+      "source": "runtime/droidloom-supervisor/src/development.rs",
+      "macro": "include_str",
+      "literal": "../assets/development-cgroups.json",
+      "target": "runtime/droidloom-supervisor/assets/development-cgroups.json",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 876,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "f03de3fc015e9fce4630ccdeb3db7f300d7c1d122f30a7fb54654a642690f3c7"
+      }
+    },
+    {
+      "source": "runtime/droidloom-supervisor/tests/cli_inspect.rs",
+      "macro": "include_str",
+      "literal": "../../../docs/examples/cell-spec-u1000.json",
+      "target": "docs/examples/cell-spec-u1000.json",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 847,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6ad95711c590431e49867b4728d9c445c98cf677a2db4844f8255798e2fb6e71"
+      }
+    },
+    {
+      "source": "tools/droidloom-gapps/src/package.rs",
+      "macro": "include_str",
+      "literal": "../../../docs/BUILDING.md",
+      "target": "docs/BUILDING.md",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 32597,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "d54ebabd0abc329f1653c186eb1896d541ff860d79dafdc8bf24b9adb571ddc5"
+      }
+    },
+    {
+      "source": "tools/droidloom-gapps/src/package.rs",
+      "macro": "include_str",
+      "literal": "../../../packaging/arch/60-droidloom-gapps.hook",
+      "target": "packaging/arch/60-droidloom-gapps.hook",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 302,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "864710301fe0a9726da4897bf9bf63fa79845e2793968a68ffb435497fba8cd3"
+      }
+    },
+    {
+      "source": "tools/droidloom-package/tests/installer.rs",
+      "macro": "include_str",
+      "literal": "../../../install.sh",
+      "target": "install.sh",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 2280,
+        "kind": "file",
+        "mode": 509,
+        "sha256": "a997622188b1c4421f4d7595a3b98ba8a193aaef7fdcbc118c91f2ed1be021f0"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1869,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "9c8a0aecfa46ce0f1874362fa9dfff6a34326f9bf569b6fe7206dd6db1b3c9a6"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1869,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "9c8a0aecfa46ce0f1874362fa9dfff6a34326f9bf569b6fe7206dd6db1b3c9a6"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1869,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "9c8a0aecfa46ce0f1874362fa9dfff6a34326f9bf569b6fe7206dd6db1b3c9a6"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/SystemUI.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/SystemUI.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 49535,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "fa1aaf330d580d6cefb74dc0ef1b52fcebbdd9b6bced5497a3bd29f9fb3647a3"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/SystemUI.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/SystemUI.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 49535,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "fa1aaf330d580d6cefb74dc0ef1b52fcebbdd9b6bced5497a3bd29f9fb3647a3"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/motion.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/motion.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 2098,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "a29bc25117f71e6acac6722f98950831a16a00f382c3ee0f9e991a36ecba5440"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/screenshot.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/screenshot.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 2403,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "53ba33c12075d68266d9c90620b2a0e04934e7d0b9eb73c1faf6c06cde689032"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/runner.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/runner.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 2088,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "e3b51cb5bc9ca15951a4da4b2ab711bfedd084eba95e2434060126accca8f5aa"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/robolectric-root.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/robolectric-root.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 12618,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "5491a0f3918f8c5e89276ce13437b29bbd9b64aa2334e81717566e446bb6e1a4"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/test-parameter.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/test-parameter.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 2832,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "3c39d19867e60e6f45ae39b3ee910b986de4cc158042519facaca18720d4ecf8"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/robolectric-aosp-plugins.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/robolectric-aosp-plugins.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1751,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "cfbff8817cd8eb06cbd02bffa253ce0a2eb266e93fec6c8ab1894316e8ca6ab8"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/car-lib.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/car-lib.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 12547,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "e88e92f8113c3c05f71999adfde6c50612d9d15d6454fbb0db9b98aba26fc6a2"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/car-builtin.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/car-builtin.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 3748,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "b7e38fdc5a873a7cd2607759d4eff2b560db218ea14c6a137da5bde70b4e9ceb"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/car-jni.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/car-jni.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1590,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "7f20480832afc1c33d54c846c2cab1a8cd6598278cd30f00b2a96b75932cbdb9"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/icu4j.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/icu4j.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 5919,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "e5a8137f19dbb133bdfa451c42493dbb481b1745a390817876b4636028a6014b"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/robolectric-pluginapi.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/robolectric-pluginapi.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1131,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "b85704354df39ea533d97c8d6a2d51ef148889668d2c08d89fb59dd703e4aa15"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/robolectric-resources.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/robolectric-resources.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1395,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "83e1f8f513e4c8dc9d3e9896e832cf6d5044f64a950dbb40b3d0ad8da9831bef"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/robolectric-robolectric.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/robolectric-robolectric.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 3390,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "c9ae9050c080977591fa239ef37623826a5c7ffc125c78055059e375573feba4"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/robolectric-sandbox.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/robolectric-sandbox.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1820,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "0f35d9e221672dc164bd38e9c262fa5b38e892679f659e7e82b7dc5b50cd5e74"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/robolectric-shadowapi.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/robolectric-shadowapi.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1218,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "36f67c55ad95f649e8a17a0770b8141d653c96c15f5213721b027154f9a21e69"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/robolectric-utils.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/robolectric-utils.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1491,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "582130b938654da15b073bd6c8a616ad366358d125a0a53d14cc9d30e020b323"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/robolectric-shadows-httpclient.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/robolectric-shadows-httpclient.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 2446,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "c1d4d324a0e0218c175e2f2e85806ccbeb398d797da57baf5221cf542f3d1268"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/robolectric-shadows-versioning.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/robolectric-shadows-versioning.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1647,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "71262635df4c0b9aff77b4b8d5b3f80587d3a5d3d30a2941867c4e15dd398485"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/robolectric-utils-reflector.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/robolectric-utils-reflector.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1169,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "82ed73680ad4eda143f6a38bb62198565e9b3a3b8211d9d3c5da6b5703ddae25"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/robolectric-processor.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/robolectric-processor.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 2723,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "557bec83e3e684a6d9b6466827466043b0b1a1d61605aafaf35e581e974bea00"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/clearcut-junit-listener.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/clearcut-junit-listener.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1132,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "703b73b507250735b532c3c5f9eb4a0662606110e9a499632804136c0047c941"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/asuite-proto.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/asuite-proto.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1960,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "04118667724a0433770f8d913207c510b5103a41d44600da62c337434ed2c5ae"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/asuite-atest-metadata.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/asuite-atest-metadata.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 4006,
+        "kind": "file",
+        "mode": 420,
+        "sha256": "c38865f4312919d6452897db8e2e9341919ccb659c7a537ae20690a866e891e1"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/car-vhal-client.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/car-vhal-client.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1705,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "d27df8040413d7575e066bded28bf04c72a62436dab9659b553eb1ae88819098"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/car-large-parcelable.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/car-large-parcelable.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1355,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "66b33bf0a2234c0f301dfabed4e5ab7e69562d4bed111cedc6cd81ffa68ecfb8"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/neuralnetworks-root.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/neuralnetworks-root.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1726,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "f408846ebf2fcbf1fc3075a312b2c388888bedd5bd7be96efb07301a9085ad08"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 13060,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "4153fd69cfeabb40bcefa51456a6b3747d835e96698150ed4e8bb950eba1f265"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/neuralnetworks-types.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/neuralnetworks-types.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 3279,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "f3a14a68f3d0c918f44099b318fc22c8ff0067b4ddbc55b6c8e29177dff6487d"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/hardware-remote-access.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/hardware-remote-access.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 3400,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "fc163b9fd4bf32871e600e2dfea89fd3223b82e4445053a69db316ea6d5683e3"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../../../android/native-role-ingress/provider-fixtures/hardware-neural-common.Android.bp",
+      "target": "android/native-role-ingress/provider-fixtures/hardware-neural-common.Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 1757,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "03d240c5d70281ce23758c4a87bda16d99138433926778b6493f7d59dafba053"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../tests/fixtures/native-engine-jarjar/networkstack-928a826-Android.bp",
+      "target": "tools/droidloom-update/tests/fixtures/native-engine-jarjar/networkstack-928a826-Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 11671,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8eebb8c42ce09f520743ca2fd913471be1c8d9a178fe3256ba365f29c0b76d14"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../tests/fixtures/native-engine-jarjar/connectivity-347fbd3-framework-Android.bp",
+      "target": "tools/droidloom-update/tests/fixtures/native-engine-jarjar/connectivity-347fbd3-framework-Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 14118,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "c849c61254d23ebc906de5ff850307ad2a224b6314546567db7851ddc413110f"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../tests/fixtures/native-engine-jarjar/connectivity-347fbd3-tetheringlib-Android.bp",
+      "target": "tools/droidloom-update/tests/fixtures/native-engine-jarjar/connectivity-347fbd3-tetheringlib-Android.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 4569,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "6d2460b6a01fb62c655798c113ce3e9a6c97de7696f7e3e8de7f1a1d5af33191"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../tests/fixtures/native-engine-jarjar/connectivity-347fbd3-service-r4-effective.bp",
+      "target": "tools/droidloom-update/tests/fixtures/native-engine-jarjar/connectivity-347fbd3-service-r4-effective.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 17018,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "e5b482317718cea8ce2a8dbe5c339daaf7837e92b1fa58c735dd4f3f48c58c44"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/android.rs",
+      "macro": "include_str",
+      "literal": "../tests/fixtures/native-engine-jarjar/libcore-4ebfb39-JavaLibrary.bp",
+      "target": "tools/droidloom-update/tests/fixtures/native-engine-jarjar/libcore-4ebfb39-JavaLibrary.bp",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 48448,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "1c742a30e72d7a03f44aee32b0c513ef98327dec13986bec96092b13e004b9b6"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/native_bridge.rs",
+      "macro": "include_str",
+      "literal": "../../../android/manifest/native-bridge-lock.json",
+      "target": "android/manifest/native-bridge-lock.json",
+      "in210": false,
+      "manifest_pin": {
+        "bytes": 240,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "8f87d2ab4c7d55ba46c868ab09dc10b3ca99026abf236f0e74960a3840e52de3"
+      }
+    },
+    {
+      "source": "tools/droidloom-update/src/package.rs",
+      "macro": "include_str",
+      "literal": "../../../packaging/cell-spec-x86_64-u1000.json",
+      "target": "packaging/cell-spec-x86_64-u1000.json",
+      "in210": true,
+      "manifest_pin": {
+        "bytes": 6530,
+        "kind": "file",
+        "mode": 436,
+        "sha256": "9545ce4e028b750a8707572f7d7aec8a0b51f4f6071c31233be3a39a7bfc114d"
+      }
+    }
+  ],
+  "ref_changed": false,
+  "build_executed": false
+}
