@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys\nraw=sys.stdin.buffer.read(262145)\nassert hashlib.sha256(raw).hexdigest()=='7f9b9476db6713303e33a737c6b01ad4d1cfc1dc163fc9a9052c748597512871'\np=json.loads(raw);src=p['files']['stage_execute.py'].encode('utf-8')\nassert hashlib.sha256(src).hexdigest()=='28a5b218bf17d0bc4d92a79dffe4844d64e4b26696555afd76976bc7e1e49a3f'\nscope={'__name__':'owned_qa_stage','__file__':'/home/alex/work/pocket4-owned-ticket12306-qa-r1-install-state-02/source/stage_execute.py'}\nexec(compile(src,scope['__file__'],'exec'),scope)\nraise SystemExit(scope['main'](raw))\n"
+    ],
+    "created_unix_ms": 1794007351970,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b32bc2a2-fc05-80e9",
+    "idempotency_key": "pocket4-owned-ticket12306-qa-r1-current-r6-install-state-02-schema03-609dc720370ef272",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b32bc2a2-fc05-80e9",
+    "request_digest": "5745d6e63d4ea3e1f3f3ede71383b38bf96feb9f8fa4eaaf0a5daa091c68b091",
+    "request_fingerprint": 6288668739052151777,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b32bc2a2-fc05-80e9"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b32bc2a2-fc05-80e9"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

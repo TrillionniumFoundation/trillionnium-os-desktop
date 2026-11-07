@@ -1,0 +1,48 @@
+--- old/read.py
++++ candidate/read_packaging.py
+@@ -1,7 +1,7 @@
++"""Read exactly four public installer/service sources from owned builder469.
+-"""Read exactly three public engine/handshake sources from owned builder469.
+ 
+ No source execution, Git, subprocess, directory enumeration, network, writes,
++Main access, or installed package/binary provenance qualification. All explicit read FDs are
+-Main access, or inferred remote Destroy completion. All explicit read FDs are
+ held through the final named/held check and closed once before output.
+ """
+ import hashlib
+@@ -13,7 +13,7 @@
+ 
+ ROOT = "/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106"
+ SOURCE = ROOT + '/builder-source'
++PINS = [{"path":"packaging/install-supervisor","bytes":3106,"kind":"file","mode":509,"sha256":"81a3107cd599a57d8984ed7afe6fb428c0f8f73ab1f96628dc0eaad50c862eb3"},{"path":"packaging/systemd/system/droidloomd.service","bytes":291,"kind":"file","mode":436,"sha256":"3dc60679d7d65c2fb051a75733ea0cab888e501f280ff37afcf20d5167305d2d"},{"path":"packaging/systemd/user/droidloom-applications.service","bytes":248,"kind":"file","mode":436,"sha256":"4ef2be1261bdcd1da489cc117cfb9ca66b078bf980354c8d6764c88c1f56d138"},{"path":"packaging/install-runtime","bytes":8739,"kind":"file","mode":509,"sha256":"fb4c0e18fb3f6e9f04575cd2986488c7e4db0390f9612801a601ea3567190ca8"}]
+-PINS = [{"path":"graphics/droidloom-wayland/src/main.rs","bytes":106816,"kind":"file","mode":436,"sha256":"908ec80b8ec2d059b86664cb76d6fe39908c17ba1fa33416e37644416e73357a"},{"path":"graphics/droidloom-composer-service/src/main.rs","bytes":17437,"kind":"file","mode":436,"sha256":"d60ba608023be4325e14e9126c326203188e78d2a7b715b65ba2588dd4cdb6cf"},{"path":"graphics/droidloom-wayland/Cargo.toml","bytes":1766,"kind":"file","mode":436,"sha256":"f369e41d8c86c0b948992d2d07ab8fbdaf3779bd21493e3389730c51a33ea098"}]
+ AUTHORITIES = [{"role":"manifest","path":"/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106/attempt01/copied-builder-source-manifest.json","bytes":99327,"sha256":"88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701","mode":384},{"role":"producer","path":"/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106/attempt01/result.json","bytes":170316,"sha256":"3636057b9a20fc895657064da3fb66d8ded7e69ebfa5a5b92072a51b33f29fd5","mode":384}]
+ MAX_FDS = 40
+ OUTPUT_BYTES = 2 * 1024 * 1024
+@@ -23,7 +23,7 @@
+ ORDER = []
+ ERRORS = []
+ RESULT = {
++    'schema': 1, 'scope': 'exact-builder469-status-packaging-four-sources-readonly01',
+-    'schema': 1, 'scope': 'exact-builder469-engine-retirement-three-sources-readonly01',
+     'source_root': SOURCE, 'started_monotonic_ns': STARTED,
+     'deadline_monotonic_ns': DEADLINE, 'authority_qualified': False,
+     'files': [], 'authorities': [], 'errors': ERRORS,
+@@ -31,7 +31,7 @@
+     'source_executed': False, 'children_started': 0,
+     'network_operations': 0, 'filesystem_writes': 0,
+     'Main_accessed': False, 'installed_Main_same_source_qualified': False,
++    'deployment_authorized': False,
+-    'remote_Destroy_completion_qualified': False,
+ }
+ 
+ def need(value, code):
+@@ -216,7 +216,7 @@
+     if RESULT['finished_monotonic_ns'] >= DEADLINE:
+         error('final_deadline', RuntimeError('READ_DEADLINE'))
+     RESULT['collection_complete'] = (
++        RESULT['authority_qualified'] and len(RESULT['files']) == 4 and
+-        RESULT['authority_qualified'] and len(RESULT['files']) == 3 and
+         all(row['qualified'] for row in RESULT['files']) and
+         RESULT['all_explicit_read_fds_closed'] and not ERRORS)
+     RESULT['state'] = 'PASS' if RESULT['collection_complete'] else 'FAIL'

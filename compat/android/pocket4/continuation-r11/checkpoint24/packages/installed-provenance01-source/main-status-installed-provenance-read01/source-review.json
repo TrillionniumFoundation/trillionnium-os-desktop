@@ -1,0 +1,63 @@
+{
+  "schema": "pocket4-fixed-installed-provenance-source-review-v1",
+  "state": "SOURCE_ONLY_NOT_EXECUTED",
+  "source": {
+    "bytes": 26537,
+    "sha256": "019d5f24023df60b6b35a6ae8a9c89369cd726e0450979de82c61962820c2f64",
+    "git_blob": "0bd72a59d0a2c263990164ccfdfcfbe5f8e9e7b1"
+  },
+  "request": {
+    "bytes": 28705,
+    "sha256": "c67da166d09677618ee0f6e2f9e120a54458f06a0447c7fc07132b658aa2135d",
+    "git_blob": "ed960b30872e93b9fd6b8644ce7e4e2f315b791d",
+    "idempotency_key": "pocket4-current-baseline02-fixed-installed-provenance-read01-20261106"
+  },
+  "purpose": "Observe source-derived candidate four binary paths, three base units, fixed cell config and CLI package marker; compare held running daemon bytes. No replacement or package/service operation.",
+  "bounds": {
+    "fixed_paths": 9,
+    "collector_FD_acquisitions": 128,
+    "input_guard_bytes": 11541,
+    "one_named_ELF_bytes": 67108864,
+    "held_daemon_ELF_bytes": 268435456,
+    "total_content_bytes_including_rechecks": 402653184,
+    "stream_chunk_bytes": 65536,
+    "unit_bytes": 32768,
+    "config_bytes": 131072,
+    "marker_bytes": 65536,
+    "body_wall_seconds": 45,
+    "self_watchdog_seconds": 55,
+    "outer_timeout_seconds": 60,
+    "public_output_bytes": 131072,
+    "memory_max_bytes": 134217728,
+    "cpu_quota_percent": 25
+  },
+  "controls": {
+    "count": 12,
+    "kind": "Real new shape/projection/read_content functions with explicit in-memory IO seams",
+    "actual_python_execution": false
+  },
+  "closure": [
+    "Original guard source full pin -> in-memory module -> unchanged load_current B/Q/source closure -> original full current_guard before content reads.",
+    "Exact B daemon process_identity -> live pidfd/held proc/exe -> original executable file/content pin. No filename-based process adoption.",
+    "O_PATH|NOFOLLOW on every fixed named component; unsupported ancestor or leaf metadata only. Every content open equals held O_PATH leaf, full SHA twice, held and named ancestors/leaf rechecked.",
+    "Independent original full current_guard after; then unchanged full B/Q/source reload and raw guard reread. No parent uniqueness or resource gate relaxed.",
+    "Own pool close_all/require_clean; first failure retained, independent after/closure errors secondary. Guard internal descriptors remain its own original finally gates, outside collector counts.",
+    "Wrapper -I -B validates complete source SHA before exec, explicitly injects SOURCE_SHA256 into globals, and installs a self-only 55s alarm."
+  ],
+  "limits_of_result": [
+    "Stable missing/unsupported paths are observations, not guessed destinations.",
+    "Base-unit literal facts do not establish effective service configuration or drop-ins.",
+    "Package marker presence/hash does not establish package ownership, rollback archive or database transaction authority.",
+    "Collection PASS does not qualify installed source-version, deployment, new baseline, App readiness, or historical London cause/outcome."
+  ],
+  "operations": {
+    "Main_mutations": 0,
+    "Android": 0,
+    "Status_or_Readiness": 0,
+    "children": 0,
+    "namespace_entries": 0,
+    "action_locks": 0,
+    "writes": 0,
+    "external_signals": 0
+  }
+}

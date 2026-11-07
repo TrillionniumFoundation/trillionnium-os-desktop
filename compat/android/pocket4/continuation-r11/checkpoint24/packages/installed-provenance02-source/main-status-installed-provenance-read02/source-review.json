@@ -1,0 +1,80 @@
+{
+  "schema": "pocket4-observed-installed-provenance-read02-review-v1",
+  "state": "SOURCE_ONLY_NOT_EXECUTED",
+  "original_source": {
+    "bytes": 26537,
+    "sha256": "019d5f24023df60b6b35a6ae8a9c89369cd726e0450979de82c61962820c2f64",
+    "git_blob": "0bd72a59d0a2c263990164ccfdfcfbe5f8e9e7b1"
+  },
+  "candidate_source": {
+    "bytes": 45482,
+    "sha256": "4520795ad091411ec0f8c7a6044a6428d4eb8a41f178d6ebeb4aa240b82b7772",
+    "git_blob": "e460d24f45fe079f52ba20bdde6f89c9f85ca885"
+  },
+  "original_actual_tree": "372f42d3f023b4cf92dfb81fb6a5006a5bf9348f",
+  "prior_actual": {
+    "bytes": 9114,
+    "sha256": "fcedd5789d0ebd29782620569cd644c8c490b4a7d4f598c3fe488de91fc56fc3",
+    "git_blob": "b4d2e168140be65aa10870b8f8a72e4b0a8e2433"
+  },
+  "full_source_inverse_edits": 18,
+  "full_source_inverse_exact": true,
+  "purpose": "Hash the already observed fixed installed binaries and unit files, including the five exact UID/GID1000 leaves that read01 correctly left unsupported; independently observe only the fixed package marker final leaf below its exact previously observed directory.",
+  "actual_binding": "The complete original 9114-byte stdout is embedded byte-for-byte in PREVIOUS_RAW and parsed by Python json.loads. All filesystem nanosecond integers retain their original tokens; no JavaScript reserialization produces the metadata authority.",
+  "prior_original_policy_unchanged": "shape remains root-only and all twelve original controls are byte-for-byte unchanged. Explicit observed_content_shape is supplied only by the fixed nine-path inventory, requiring the full original held/named metadata for every previously observed leaf.",
+  "nonroot_exceptions": {
+    "leaf_keys": [
+      "cli_binary",
+      "applications_binary",
+      "daemon_unit",
+      "session_unit",
+      "applications_unit"
+    ],
+    "uid": 1000,
+    "gid": 1000,
+    "gate": "Exact actual full metadata tuple, regular, single-link, same byte size and fixed path. One nanosecond, inode, owner, mode, size or link drift rejects.",
+    "marker_ancestor": "Only the exact observed /usr/share/droidloom directory at component_index2 may be nonroot; its full actual tuple is compared before the generic root-directory branch and again held/named after.",
+    "marker_final_leaf": "First observation only at package.json within that fixed parent. Regular single-link bounded UID0 or UID1000, or this final leaf absent. No missing known ancestor or previously observed regular leaf is accepted."
+  },
+  "controls": {
+    "original_unchanged": 12,
+    "observed_admission": 9,
+    "total": 21,
+    "python_executed": false,
+    "two_specific_repairs": [
+      "Root ownership on the previously UID1000 marker parent cannot bypass exact prior metadata.",
+      "Only the not-yet-observed marker final leaf may be absent; all known leaf/ancestor disappearance fails."
+    ]
+  },
+  "retained_gates": [
+    "Original complete current_guard before and after, with before equal to the last actual inventory Main map; no assumption that this passes now.",
+    "Full private B/Q/source revalidation unchanged; old Main, failures and deployment records untouched.",
+    "Daemon pidfd/full process identity, complete executable content and held/named file metadata before/after unchanged.",
+    "All fixed path held/named checks, full content two reads, byte budgets and FD finally unchanged except the explicit observed metadata gate.",
+    "Unit projection unchanged; unknown unit values are hash/length only. Config and package marker bodies are not exported."
+  ],
+  "limitations": [
+    "Literal unit file contents do not establish effective systemd configuration; the separate fixed systemctl show requests provide that observation.",
+    "Package marker existence/hash and dpkg search no-match are not proof of package ownership or an unmanaged installation.",
+    "No source or release artifact is deployed; source-version correspondence of installed Main is still unproven.",
+    "No new epoch, current Main runtime qualification, App scope, rollback or deployment authority is issued."
+  ],
+  "request_bounds": {
+    "read_seconds": 45,
+    "self_watchdog_seconds": 55,
+    "outer_seconds": 60,
+    "memory_bytes": 134217728,
+    "cpu_quota_percent": 25
+  },
+  "no_actions": {
+    "Main_mutations": 0,
+    "Android": 0,
+    "Status_or_Readiness_RPC": 0,
+    "host_children": 0,
+    "namespace_entries": 0,
+    "action_lock_operations": 0,
+    "external_signals": 0,
+    "file_writes": 0
+  },
+  "root_dispatch_only": true
+}

@@ -1,0 +1,325 @@
+{
+  "schema": "pocket4-status-release-rollout-plan-v2",
+  "state": "SOURCE_ONLY_ACTUAL_RELEASE_BOUND_INSTALLED_PROVENANCE_PENDING",
+  "deployment_authorized": false,
+  "executable_deployment_request": null,
+  "release_candidate": {
+    "tree": "ca7a553c8369f3415175058520d5ebd4b6660d5f",
+    "request": {
+      "bytes": 476954,
+      "sha256": "7505b58ec2c17765a5b7832edd161091a9c400f4aa6ef8f8073f09f93b8ba722",
+      "git_blob": "883b6c13b2df3b1674a4440b04bb1d380a19b17f"
+    },
+    "root": "/home/alex/work/p4-sr01-20261106",
+    "source_count": 502,
+    "actual_release_report": {
+      "tree": "87ccdef7ae4687cfc48ab4efdb07bfb0dde6b527",
+      "bytes": 146722,
+      "sha256": "cb0628aac421253277aad72b616d290503d62ca48bf8bcfd05bf97cf37640ea2",
+      "git_blob": "459b355cfc7a4cadf4ed63706f9f6882f86084f4",
+      "qualified_build_only": true
+    }
+  },
+  "binary_bundle": [
+    {
+      "package": "droidloom-supervisor",
+      "name": "droidloom-supervisor",
+      "source": "runtime/droidloom-supervisor/src/main.rs",
+      "candidate_output_directory": "/home/alex/work/p4-sr01-20261106/attempt01/cargo-target/release",
+      "candidate_actual_path": "/home/alex/work/p4-sr01-20261106/attempt01/cargo-target/release/droidloom-supervisor",
+      "candidate_bytes": 1997840,
+      "candidate_sha256": "c94ccb72f1a78494b65ee76e0dcaaa207d7d427bc4ef765e32b2d9c194678409",
+      "installed_path": null,
+      "installed_bytes": null,
+      "installed_sha256": null,
+      "installed_identity": null,
+      "backup_authority": null,
+      "candidate_profile": {
+        "debug_assertions": false,
+        "debuginfo": 0,
+        "opt_level": "3",
+        "overflow_checks": false,
+        "test": false
+      },
+      "source_derived_named_candidate": "/usr/bin/droidloom-supervisor",
+      "source_derived_candidate_is_actual_installation_path": false
+    },
+    {
+      "package": "droidloom-supervisor",
+      "name": "droidloomd",
+      "source": "runtime/droidloom-supervisor/src/bin/droidloomd.rs",
+      "candidate_output_directory": "/home/alex/work/p4-sr01-20261106/attempt01/cargo-target/release",
+      "candidate_actual_path": "/home/alex/work/p4-sr01-20261106/attempt01/cargo-target/release/droidloomd",
+      "candidate_bytes": 1981536,
+      "candidate_sha256": "8f43a4873d57cda4bfb9cafc0debbedda88626f60a825171a1296ea42e567a7e",
+      "installed_path": null,
+      "installed_bytes": null,
+      "installed_sha256": null,
+      "installed_identity": null,
+      "backup_authority": null,
+      "candidate_profile": {
+        "debug_assertions": false,
+        "debuginfo": 0,
+        "opt_level": "3",
+        "overflow_checks": false,
+        "test": false
+      },
+      "source_derived_named_candidate": "/usr/bin/droidloomd",
+      "source_derived_candidate_is_actual_installation_path": false
+    },
+    {
+      "package": "droidloom-supervisor",
+      "name": "droidloomctl",
+      "source": "runtime/droidloom-supervisor/src/bin/droidloomctl.rs",
+      "candidate_output_directory": "/home/alex/work/p4-sr01-20261106/attempt01/cargo-target/release",
+      "candidate_actual_path": "/home/alex/work/p4-sr01-20261106/attempt01/cargo-target/release/droidloomctl",
+      "candidate_bytes": 1744472,
+      "candidate_sha256": "c9f9a36647dc18801f911117413f34e5240684076250e20414ac29e71f2e973a",
+      "installed_path": null,
+      "installed_bytes": null,
+      "installed_sha256": null,
+      "installed_identity": null,
+      "backup_authority": null,
+      "candidate_profile": {
+        "debug_assertions": false,
+        "debuginfo": 0,
+        "opt_level": "3",
+        "overflow_checks": false,
+        "test": false
+      },
+      "source_derived_named_candidate": "/usr/bin/droidloomctl",
+      "source_derived_candidate_is_actual_installation_path": false
+    },
+    {
+      "package": "droidloom-applications",
+      "name": "droidloom-applications",
+      "source": "runtime/droidloom-applications/src/main.rs",
+      "candidate_output_directory": "/home/alex/work/p4-sr01-20261106/attempt01/cargo-target/release",
+      "candidate_actual_path": "/home/alex/work/p4-sr01-20261106/attempt01/cargo-target/release/droidloom-applications",
+      "candidate_bytes": 1576016,
+      "candidate_sha256": "71f51160685485fba0ef54727c66351a83b0e2dc236fd22f8c91471aac049534",
+      "installed_path": null,
+      "installed_bytes": null,
+      "installed_sha256": null,
+      "installed_identity": null,
+      "backup_authority": null,
+      "candidate_profile": {
+        "debug_assertions": false,
+        "debuginfo": 0,
+        "opt_level": "3",
+        "overflow_checks": false,
+        "test": false
+      },
+      "source_derived_named_candidate": "/usr/bin/droidloom-applications",
+      "source_derived_candidate_is_actual_installation_path": false
+    }
+  ],
+  "consumer": {
+    "candidate": {
+      "bytes": 8436,
+      "sha256": "dfd1208793980d92664f55aab040042cdc4cdd5e0ec7e66f016e0140d87a58f5",
+      "git_blob": "de0fb159fd12481136f10c2389f4b9b5261171ab"
+    },
+    "actual_pure20": {
+      "tree": "a53d11553369adb96bdb22caf20eada948731d19",
+      "blob": "3a44530e188b607580186617ba23424e131c7609",
+      "bytes": 2569,
+      "sha256": "e1e31a233000ba52362173007b1114a93289378844f58f99c3d7761f9bad31c4"
+    },
+    "protocol_operation": "Readiness",
+    "old_checked_timeout_seconds": 8,
+    "no_Status_fallback": true,
+    "old_owner_InputBridge_namespace_environment_classpath_gates_unchanged": true,
+    "current_B02_scope_reuse_after_restart": false,
+    "new_host_scope_and_new_baseline_required": true,
+    "in_place_R6_modification": false
+  },
+  "historical_authority": {
+    "baseline_private_sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364",
+    "qualification_sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e",
+    "epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "current_8_roles_changed": false,
+    "old_London_UNKNOWN_preserved": true,
+    "old_UI_nonces_retired": true,
+    "old_task_cleanup_authority_reused": false
+  },
+  "required_installed_inventory": [
+    "Fixed source-derived installation paths for exactly the four named binaries; complete held/named bytes SHA and dev/inode/mode/owner/link-count/mtime/ctime; do not accept an unqualified symlink.",
+    "Actual system and user service definitions and drop-ins selected by the service manager; exact executable/config references, InvocationID, MainPID and enabled/active state.",
+    "Current complete original Main guard before/after the read-only inventory; same B02/Q and all eight original process identities. No new process is adopted by a binary filename.",
+    "Presence/absence and bounded private interpretation of /usr/share/droidloom/package.json, the existing CLI's package-management marker. Its source meaning alone does not establish actual package ownership.",
+    "If package-managed: exact owning package versions and recoverable original package archives/database transaction authority. Four copied ELF backups alone do not qualify package rollback.",
+    "Artifact/source/config/Android image lineage and the old activation/deployment evidence remain immutable; a new deployment receipt is separate."
+  ],
+  "ordered_stages": [
+    {
+      "id": "qualify_release",
+      "actions": "Read the actual new release report/38 command receipts, 15 independent test results, three lifecycle controls and six executable profiles; select only the four normal binaries.",
+      "must_complete_before_mutation": true
+    },
+    {
+      "id": "qualify_installation",
+      "actions": "Use the fixed source definitions plus actual installed inventory to choose one supported installation transaction. Resolve destinations and exact old-byte/package rollback material.",
+      "must_complete_before_mutation": true
+    },
+    {
+      "id": "stage_bundle",
+      "actions": "Create an isolated candidate/backup workspace; hash actual four candidate ELFs and all rollback material; write immutable transaction manifest. No replacement or service operation in this stage.",
+      "must_complete_before_mutation": true
+    },
+    {
+      "id": "prepare_generation_transition",
+      "actions": "Prepare a deployment-aware baseline producer and new host/custom contexts. It must accept the explicit deployment receipt and observe a new authoritative service/owner/init chain; it must not relabel B02 as unchanged or deployment_performed=false.",
+      "must_complete_before_mutation": true
+    },
+    {
+      "id": "review_and_authorize",
+      "actions": "Root presents exact four destination changes or package transaction, observed old/new hashes, service downtime, new-baseline plan and bounded rollback actions for final deployment approval.",
+      "must_complete_before_mutation": true
+    },
+    {
+      "id": "quiesce_and_replace",
+      "actions": "After explicit approval, serialize against all users of current Main and use source-qualified lifecycle/service ordering. Verify stop completion. Perform the reviewed four-file/package transaction with per-step durable receipts and exact ownership; no unrelated file replacement.",
+      "must_complete_before_mutation": false
+    },
+    {
+      "id": "verify_new_generation",
+      "actions": "Start via the qualified unchanged service configuration; verify installed hashes and actual running image identity. Observe authorized lifecycle Status and explicit fresh Readiness separately. Capture a complete new generation with stable resource/identity/parent tables before any App admission.",
+      "must_complete_before_mutation": false
+    },
+    {
+      "id": "bind_consumers",
+      "actions": "Bind the new current_discovery source hash and a new explicit baseline/schema/epoch into all real production entry points; preserve original full guards and the eight-second fresh readiness gate. Rebuild/reinstall only the necessary generation-bound helpers from newly qualified targets and fresh nonces.",
+      "must_complete_before_mutation": false
+    }
+  ],
+  "rollback": {
+    "automatic_main_restart_in_this_plan": false,
+    "explicit_final_approval_must_cover_rollback": true,
+    "eligibility": "Only the exact original bundle or package archives qualified before replacement, with the same held/named identity and complete hashes.",
+    "sequence": [
+      "Close admissions and preserve the failed new deployment outcome.",
+      "Use only the reviewed service stop path and verify its own process/cell retirement. Do not kill unrelated processes, clear unknown locks or remove task IDs from an earlier generation.",
+      "Restore the complete original four-file bundle or the qualified original package transaction. Preserve ownership/mode and verify every restored byte; retain partial-step/cleanup errors.",
+      "Restart using the original qualified service configuration only if that restart is included in approval.",
+      "Treat the restored software's process/cell identities as another new generation. Requalify a fresh baseline; old B02 or old task/UID/nonce authority never becomes current again."
+    ]
+  },
+  "explicit_nonclaims": [
+    "Debug02 PASS does not make its six debug ELFs release artifacts.",
+    "A successful release build does not establish current installed Main source provenance, deployment permission or whole-App readiness.",
+    "The in-flight Status observation proves the observed parent-child conflict only; it does not establish the cause of the historical London launch failure.",
+    "New Status is authorized lifecycle observation, not Android-ready evidence. Readiness retains the prior fresh snapshot and failure semantics.",
+    "Restart or rollback cannot preserve the original eight live process identities by editing their expected values.",
+    "Unknown installed paths, original package archives, service ordering, release hashes and future baseline values are null until observed; no placeholder is dispatched."
+  ],
+  "packaging_source_actual": {
+    "tree": "3058983a8d7367d7eea93a2ab4b99fde5fa15e6a",
+    "bytes": 33473,
+    "sha256": "b975549abd1beca25358d484f334e35f7d146f53cfcc41f2dca45bd859c3a9bf",
+    "git_blob": "d07d41e61b6a105093d171a6c619e33c28bc5760",
+    "files": {
+      "packaging/install-supervisor": {
+        "bytes": 3106,
+        "sha256": "81a3107cd599a57d8984ed7afe6fb428c0f8f73ab1f96628dc0eaad50c862eb3",
+        "git_blob": "32fbde2261fd8a98c468c2c530a18c7a430daea3"
+      },
+      "packaging/systemd/system/droidloomd.service": {
+        "bytes": 291,
+        "sha256": "3dc60679d7d65c2fb051a75733ea0cab888e501f280ff37afcf20d5167305d2d",
+        "git_blob": "e762a872d089b95a23aab70df7ea69545d6475ee"
+      },
+      "packaging/systemd/user/droidloom-applications.service": {
+        "bytes": 248,
+        "sha256": "4ef2be1261bdcd1da489cc117cfb9ca66b078bf980354c8d6764c88c1f56d138",
+        "git_blob": "c140379d7295f5cfcbdebc2e3899844891472ac3"
+      },
+      "packaging/install-runtime": {
+        "bytes": 8739,
+        "sha256": "fb4c0e18fb3f6e9f04575cd2986488c7e4db0390f9612801a601ea3567190ca8",
+        "git_blob": "bd7dec1bde9df326e1262f9cf299d8bc19ef2b77"
+      }
+    },
+    "reference_only": true,
+    "installed_Main_source_version_verified": false
+  },
+  "packaging_decision": {
+    "execute_existing_install_supervisor": false,
+    "install_supervisor_reason": "The exact source admits only aarch64, OnePlus aston and logix UID1001, and changes only three supervisor binaries plus cell/vold. It is not the current x86_64 four-binary transaction.",
+    "execute_existing_install_runtime": false,
+    "install_runtime_reason": "The exact source also changes Android runtime/image/data activation, Wayland, cell configuration, units, environment, policy and service enablement. Those changes are outside this four-binary repair.",
+    "dedicated_transaction_required": true,
+    "candidate_destination_source": "packaging/install-runtime names /usr/bin for the four binaries, three /usr/lib/systemd units and /etc/droidloom/cell.json. Runtime paths are not adopted until observed.",
+    "packaging_status_check_cannot_stand_for_Readiness": true,
+    "service_order_source_is_reference_only": "install-runtime and install-supervisor stop the user session before the system daemon; current effective service configuration, all enabled user instances and actual retirement must still be qualified.",
+    "unchanged_files_if_dedicated_transaction_qualifies": [
+      "current effective service/unit/drop-in definitions",
+      "/etc/droidloom/cell.json",
+      "Android image/runtime/data",
+      "Wayland/presenter binaries",
+      "environment/policy/service enablement"
+    ]
+  },
+  "installed_provenance_request": {
+    "tree": "ab9136b456ecd200b8ac322f60d49da453282a12",
+    "prefix": "main-status-installed-provenance-read01",
+    "source": {
+      "bytes": 26537,
+      "sha256": "019d5f24023df60b6b35a6ae8a9c89369cd726e0450979de82c61962820c2f64",
+      "git_blob": "0bd72a59d0a2c263990164ccfdfcfbe5f8e9e7b1"
+    },
+    "exact_request": {
+      "bytes": 28705,
+      "sha256": "c67da166d09677618ee0f6e2f9e120a54458f06a0447c7fc07132b658aa2135d",
+      "git_blob": "ed960b30872e93b9fd6b8644ce7e4e2f315b791d",
+      "idempotency_key": "pocket4-current-baseline02-fixed-installed-provenance-read01-20261106"
+    },
+    "state": "SOURCE_ONLY_NOT_DISPATCHED_BY_APP_AGENT",
+    "paths": 9,
+    "original_current_guard_unchanged": true,
+    "managed_daemon_image_full_hash": true,
+    "effective_service_or_package_qualification": false
+  },
+  "remaining_readonly_evidence": [
+    {
+      "id": "fixed_inventory",
+      "source_ready": true,
+      "request_tree": "ab9136b456ecd200b8ac322f60d49da453282a12",
+      "required_result": "All fixed observations, original before/after Main and source/B/Q checks and FD closure complete; preserve missing/unsupported file states."
+    },
+    {
+      "id": "effective_service_configuration",
+      "source_ready": false,
+      "required_result": "Service manager's actual system droidloomd and relevant user-session/catalog unit FragmentPath, DropInPaths, ExecStart, state, InvocationID/MainPID and applicable UID; fixed returned paths only. No guessed drop-in scan."
+    },
+    {
+      "id": "package_ownership_and_rollback",
+      "source_ready": false,
+      "required_result": "If a package marker is present or manager ownership is reported, qualify exact owning package/version, four-file correspondence and recoverable original archive/database transaction. A marker alone cannot select direct file replacement."
+    },
+    {
+      "id": "prepare_backup_and_candidate",
+      "source_ready": false,
+      "required_result": "After destination and package branch are selected, prepare immutable old/new bundle and restore metadata in an isolated owned staging root; verify full hash and file identity. No service or installed-file mutation."
+    },
+    {
+      "id": "post_deployment_baseline_producer",
+      "source_ready": false,
+      "required_result": "Separate deployment-aware schema rooted in exact approved receipt and authenticated new daemon/owner/init chain, stable all-eight identities and resource/image/source lineage; never edit old B02 or pretend no deployment."
+    }
+  ],
+  "mutation_manifest_requirements": {
+    "fixed_artifact_count": 4,
+    "selection": "Only four named normal release executables; the two libtest/CLI test ELFs are excluded.",
+    "destination_paths": "Each must be from actual installed-file/effective-service/package authority; source-derived candidate alone is insufficient.",
+    "old_byte_and_metadata_authority": "Retain full bytes/hash/mode/uid/gid/dev/ino/link count/mtime_ns/ctime_ns from actual report. Preserve original integer tokens or parse with Python lossless integers, never through JS rounded nanoseconds.",
+    "new_byte_authority": {
+      "binding_git_blob": "f65f644e079fc0277af16546ed25c5a1b1935050",
+      "actual_report_git_blob": "459b355cfc7a4cadf4ed63706f9f6882f86084f4"
+    },
+    "backup": "Distinct create-only backup names, verified complete old hashes, source parent identities, fsync and same-directory atomic replacement prerequisites recorded. Four independent renames are not claimed to be one atomic transaction.",
+    "first_error_and_partial_commit": "Durable per-file step records identify every completed replacement. First error remains primary; rollback/stop/start failures are separate and cannot mark restoration complete.",
+    "package_branch": "If managed, the reviewed transaction must use a qualified package path/rollback authority; raw four-file overwrite is not assumed acceptable.",
+    "action_boundary": "No mutation request is generated until exact service/package branch, current Main guard, backup/staging, generation policy and final approval are all concrete."
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "state": "BOUND_SOURCE_ONLY_NEVER_DISPATCHED_BY_AGENT",
+  "phase": "retire",
+  "root": "/home/alex/work/pocket4-original-ndk-fixture-APK05-retire-01",
+  "source_manifest": {
+    "bytes": 1050,
+    "sha256": "7ea8d117de4a6c4cbeceebc4d5d4cf56fd7f075f3cb068b8f3610be4283df582"
+  },
+  "unchanged_production_sources": 7,
+  "raw_references": 16,
+  "actual_controls": {
+    "job": "1a1b3127850-fc05-8092",
+    "tree": "70b71f6d5066903b78182b40b591c24072696094",
+    "count": 60
+  },
+  "actual_run": {
+    "job": "1a1b31bedf5-fc05-80a3",
+    "tree": "7333355118e72ac917f01b28ffd15c5b759bd97a",
+    "status": "FAILED_OUTCOME_UNKNOWN",
+    "instrumentation_attempted": true,
+    "instrumentation_verified": false
+  },
+  "original_installed_UID": 10162,
+  "original_run_nonce_consumed": true,
+  "assigned_retirement_nonce_from_existing_actual_material": true,
+  "new_nonce_generated": false,
+  "scope": "Eight fixed retirement commands for the same installed com.example.ndk_tests authority; no new run or instrumentation attempt.",
+  "failed_run_policy": "The unchanged phases source only reads fresh native XML when prior instrumentation_verified is true. The actual prior run is false. A successful retirement must not upgrade the original failed run or native twelve-test qualification.",
+  "pre_run_task_baseline": {
+    "task_ids": [
+      875,
+      878
+    ],
+    "root_ids": [
+      1,
+      878
+    ],
+    "fixture_tasks": 0
+  },
+  "retained_boundaries": [
+    "All current Main, exact original installed APK/UID, source and namespace guards remain unchanged.",
+    "The original run result/summary/terminal are included byte-for-byte; large integer tokens are never rewritten.",
+    "Same global/action/step locks, one-shot claim, 175-second worker and 240-second outer request limits remain.",
+    "Shared Android descendant cleanup and whole-invocation resource qualification remain unproven; no broader cleanup assertion is made.",
+    "Only Root may dispatch this request. No Python, Main, Android, or Hepta execution occurred during binding."
+  ],
+  "request": {
+    "bytes": 349170,
+    "sha256": "f8a5c03ba762282ff609c70ed76dae19e5ae2a2a97fcaea872ca5ccfa527fc0f"
+  },
+  "independent_replay_passed": true
+}

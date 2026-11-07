@@ -1,0 +1,186 @@
+{
+  "schema": 1,
+  "kind": "ndk-runtime-limited-independent-source-peer01",
+  "status": "LIMITED_SOURCE_REVIEW_NO_DETERMINISTIC_BLOCKER_FOUND",
+  "roots": {
+    "runtime_source": "daaf676d6b2d21c512bdf6972ff300823cb6e0a1",
+    "actual_only_binder": "5b2d458c73256f5b9c57312ac22ef72b890ed85a"
+  },
+  "source_inputs": [
+    {
+      "key": "worker",
+      "bytes": 33969,
+      "sha256": "6bc5f7d0bdca28a7275d6eeb97f4889e40b66788437af806ac5e5d6daa43d83e",
+      "git_blob_sha1": "0c088a5683c6242eafac9ed0675d794a4ad58a75"
+    },
+    {
+      "key": "lease",
+      "bytes": 22026,
+      "sha256": "eda443631a8487502a97758e3d72b9ae1cd65b0f17298055c8fd2bbdfcf01389",
+      "git_blob_sha1": "7c56531c5e5f40db16cede28d4e442a6e1db86e4"
+    },
+    {
+      "key": "binder",
+      "bytes": 22965,
+      "sha256": "7b8aebf6797b2148237f5b725135c4df3ce89a1026825896474dac2295e4bdc9",
+      "git_blob_sha1": "86dc06c96b843b6248122ebb7048190896e771e6"
+    },
+    {
+      "key": "wrapper",
+      "bytes": 4961,
+      "sha256": "09408c678a9a9909ceecf4d09b9a5b256a1ec75e581636751d9eb0d5441db649",
+      "git_blob_sha1": "3c91b5d9ec8f2ca9aea354f71a5980581edbe7a4"
+    },
+    {
+      "key": "phases",
+      "bytes": 25716,
+      "sha256": "b62970bc45d109ccde774c6bad158b9f4623e2619901a2e209d58f6469b6d845",
+      "git_blob_sha1": "7e3077e8a761e4fbe5de879d12b82a6496fd2e2d"
+    },
+    {
+      "key": "contract",
+      "bytes": 25331,
+      "sha256": "1b027dc076f0ee5d89df1e95ae76fddeacab1adaafb5e77e4b05b63f47593261",
+      "git_blob_sha1": "6b76abcc871c4ba084f53e529d3dd96168e301aa"
+    },
+    {
+      "key": "context",
+      "bytes": 22014,
+      "sha256": "8d544b38250c3994bea62f5b00c5a9a1f8999d951643f4fe06133861a362b9d4",
+      "git_blob_sha1": "8970aadd66bc600983d38d1b48485e8990e0731c"
+    },
+    {
+      "key": "transport",
+      "bytes": 14639,
+      "sha256": "8430f9384f61ad1b59534d7cc3d2006c5aa848bc404a067680d8b20845027fe6",
+      "git_blob_sha1": "9890dc83ff7a5a00a911fa995a7a9383671f1cfb"
+    },
+    {
+      "key": "pins",
+      "bytes": 1050,
+      "sha256": "7ea8d117de4a6c4cbeceebc4d5d4cf56fd7f075f3cb068b8f3610be4283df582",
+      "git_blob_sha1": "122b1644ab016a78bdc4a6cf55b889fb6687eae2"
+    }
+  ],
+  "existing_actual_install_inputs": [
+    {
+      "name": "install-result.original.json",
+      "bytes": 11271,
+      "sha256": "e17df04e2eda0e0f489ec6fee992bcca2c5ae1fd584e9fc4e57a20334fb16143",
+      "git_blob_sha1": "f79a722f1e20ac72488609c2a52d5fd6064cadec"
+    },
+    {
+      "name": "install-summary.original.json",
+      "bytes": 455,
+      "sha256": "8910ed011d65439e3e7d315e4b8f31b928ee892427fa0c8a5789eea5ae823d19",
+      "git_blob_sha1": "3ab1e6194a8007d426f8281445ebe85e3d678d6a"
+    },
+    {
+      "name": "install-terminal.original.json",
+      "bytes": 729,
+      "sha256": "80e7fce35bfa39535e0fa0513d10f3e2d4f9e0bfba6a618a0c17426f249951bf",
+      "git_blob_sha1": "3e545411b516d70d0da7999e2050ff92cb3e4ba8"
+    }
+  ],
+  "review_performed": {
+    "complete_source_bodies_read": true,
+    "UTF8_bytes_SHA256_and_Git_blob_verified": true,
+    "seven_source_manifest_and_binder_expected_pins_matched": true,
+    "original_install_result_summary_terminal_read_and_lossless_tuple_compared": true,
+    "Python_executed": false,
+    "Hepta_called": false,
+    "Android_command": false,
+    "Main_observation": false,
+    "new_controls_executed": false,
+    "actual60_claimed_as_reviewers_execution": false
+  },
+  "findings": [
+    {
+      "id": "fixed_scope_and_prior_install",
+      "sources": [
+        "phase_worker.py:66-239",
+        "bind-runtime.js:247-323",
+        "fixture_contract.py:116-259"
+      ],
+      "finding": "Frozen source/ref hashes bind the successful independent install result, summary and terminal. The binder requires com.example.ndk_tests UID 10162. The worker reparses the exact installation original and returns the full installed tuple separately from the scope authority, preserving inode/ns fields as original text in transport and exact Python integers at runtime.",
+      "existing_observation": "The archived install original has eight commands, UID 10162, identical installed_before/artifact_after, four equal public Main observations, 23 lease FDs closed and no lease errors. This historical qualification is not a current device observation."
+    },
+    {
+      "id": "distinct_phase_material",
+      "sources": [
+        "phase_worker.py:66-184",
+        "bind-runtime.js:262-323"
+      ],
+      "finding": "The actual-only binder requires the sixty exact named new controls and their complete independent terminal, plus the frozen two-label nonce material and its own terminal. The original 924-entry exclusion authority remains whole-hash bound. Run/retire nonces are nonzero, distinct, excluded from the prior pool and cannot reuse the consumed installation nonce. No nonce or pool is printed in this review.",
+      "actual60_state": "The review checks source predicates and producer field compatibility only; no claim that this reviewer executed or qualified the future actual60 result."
+    },
+    {
+      "id": "single_live_lease",
+      "sources": [
+        "phase_lease.py:65-438",
+        "fixture_context.py:168-258"
+      ],
+      "finding": "Only the two fixed phase roots are admitted. New root, flow lock, step lock and once claim use exclusive creation; the existing shared action lock is opened without create/truncate/chmod. Scope, installation, source manifest, root/step, deadline and held/named ancestry are rechecked under the same live lease before phase entry, each context guard and the independent final guard. enter_phase_once rejects a second entry. The bounded EAGAIN lock-acquisition wait does not replay an Android phase."
+    },
+    {
+      "id": "entry_plan_and_final_cleanup",
+      "sources": [
+        "fixture_phases.py:403-513",
+        "phase_worker.py:419-564",
+        "phase_lease.py:403-438",
+        "fixture_context.py:221-258,263-448"
+      ],
+      "finding": "Phase entry and plan construction occur before the inner phase try block but inside the worker's outer try/finally, so their failure still reaches lease closure. Context construction failure closes its held target; partial InstalledFixture construction closes acquired artifact FDs. Original phase finally retains the first error and appends secondary errors. Worker final checks reverify source/Main/static authority and close the same lease. Unlock or close failures cannot make result.ok true; FD close is not retried after an uncertain close result."
+    },
+    {
+      "id": "exact_android_capabilities",
+      "sources": [
+        "fixture_contract.py:275-299",
+        "fixture_phases.py:403-513",
+        "fixture_context.py:147-161"
+      ],
+      "finding": "Run has exactly five ordered commands ending in the fixed original instrumentation with the complete 23-name registry and twelve ProcSelfMaps filter. Retirement has exactly eight ordered commands and one force-stop for com.example.ndk_tests user 0. The actual installed metadata/path/full APK hash/data-directory tuple is rechecked, and the installed UID must not alias a protected baseline package. No arbitrary kill, uninstall, general cleanup or commercial App scope is added."
+    },
+    {
+      "id": "independent_run_to_retirement",
+      "sources": [
+        "phase_worker.py:242-308",
+        "bind-runtime.js:337-375"
+      ],
+      "finding": "Retirement requires the exact prior run result, summary and a complete independent succeeded/0 or failed/1 terminal with no timeout/cancellation/truncation/stderr. It binds the assigned run nonce, installed tuple, source manifest, build authority and joined held-binding release. Successful prior runs must not hide errors. Failed or unknown instrumentation may authorize only this owned retirement, not native test acceptance."
+    },
+    {
+      "id": "xml_acceptance_after_retirement",
+      "sources": [
+        "fixture_phases.py:447-513",
+        "fixture_context.py:399-433",
+        "fixture_contract.py:371-403",
+        "phase_worker.py:534-564"
+      ],
+      "finding": "XML is read only after the fixed stop, two complete empty own-UID observations and restored task/root-ID sets. Before run, stale XML must be absent. The post-retirement XML is bounded, tied to the same own data directory/UID, double-read with identical metadata/content, and parsed for the exact twelve completed ProcSelfMaps cases without failures/errors/skips/disabled cases. Final test acceptance additionally requires a successful original run and all retirement/held/Main/artifact final gates. A failed run is never promoted merely because retirement succeeds."
+    },
+    {
+      "id": "actual_only_transport",
+      "sources": [
+        "bind-runtime.js:189-407",
+        "wrapper-template.py:46-107"
+      ],
+      "finding": "The binder preserves all authority bodies as their original strings and parses unsafe JSON integers using exact lexical BigInt conversion for comparisons. It pins all seven source members, controls and wrapper before constructing one selected phase. Base64 is generated from actual UTF-8 bytes and round-tripped. Wrapper hashes the complete envelope and unmodified worker before entry; an exception after worker entry preserves an unknown outcome rather than manufacturing a completed report."
+    }
+  ],
+  "limitations": {
+    "source_review_not_runtime_acceptance": true,
+    "no_future_run_or_retire_originals_observed": true,
+    "no_current_Main_requalification": true,
+    "no_current_installed_UID_reobservation": true,
+    "no_kernel_pidfd_or_interval_process_absence_proof": true,
+    "shared_helper_guarantee": "The existing helper retains its documented direct entry-child boundary; this review does not claim ownership or retirement of the entire Android process tree.",
+    "budget": "The 175-second worker phase clock starts after initial exact build/APK/install/prior-run reads. The wrapper has a separate 240-second outer timeout. The worker explicitly does not claim whole-invocation resource observation.",
+    "result_publication": "Worker result records pending emission and requires a separate full terminal; a pre-emission flag alone is not acceptance.",
+    "controls_seams": "Host wiring controls use explicit synthetic Main/Android IO boundaries. Source inspection of their output shapes is not an actual runtime observation.",
+    "root_only_dispatch": true,
+    "no_source_modified": true,
+    "no_new_runtime_request_created": true,
+    "no_ref_or_PR_change": true
+  }
+}

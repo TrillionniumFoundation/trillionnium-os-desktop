@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "production_and_frozen_inputs": {
+    "tree": "daaf676d6b2d21c512bdf6972ff300823cb6e0a1",
+    "prefix": "marriott-original-ndk-runtime-controls60-source01",
+    "mapping": "files: object of all original tree leaves with the prefix removed; do not parse and serialize raw JSON leaves"
+  },
+  "binder_tree": "5b2d458c73256f5b9c57312ac22ef72b890ed85a",
+  "invocation": {
+    "phase": "retire",
+    "files": "production_and_frozen_inputs mapping",
+    "wrapper_template": "wrapper-template.py",
+    "actual_controls_stdout": "actual/controls60-stdout.original.json",
+    "actual_controls_terminal": "actual/controls60-terminal.original.json",
+    "controls_job": "1a1b3127850-fc05-8092",
+    "prior_run": {
+      "job": "1a1b31bedf5-fc05-80a3",
+      "result_raw": "actual/run01-result.original.json",
+      "summary_raw": "actual/run01-summary.original.json",
+      "terminal_raw": "actual/run01-terminal.original.json"
+    }
+  },
+  "independent_replay": {
+    "script": "reproduce-retire01.js",
+    "function": "reproduceBoundRetire01",
+    "inputs": {
+      "binder": "bind-runtime.js",
+      "wrapper": "wrapper-template.py",
+      "actual": "actual/controls60-stdout.original.json",
+      "terminal": "actual/controls60-terminal.original.json",
+      "run": "actual/run01-result.original.json",
+      "run_summary": "actual/run01-summary.original.json",
+      "run_terminal": "actual/run01-terminal.original.json",
+      "files": "production_and_frozen_inputs mapping",
+      "bound_request": "exact-request.json"
+    },
+    "U": "pinned pure JS utility 443e39b58cd6fe72faa1cb1d1c7b0a813fa0032d; hashes receive UTF8 bytes",
+    "B": "byte base64 helper; encode consumes Uint8Array; full encode/decode roundtrip is independently checked"
+  }
+}

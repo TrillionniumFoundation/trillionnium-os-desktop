@@ -1,0 +1,147 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_NOT_EXECUTED",
+  "root": "/home/alex/work/p4-sr01-20261106",
+  "base": {
+    "tree": "f4bc8f85602ec6b33b692297fd2349261fb304be",
+    "actual_tree": "277a3e5d83999b26c303998a683cb641c82ca525",
+    "manifest": {
+      "blob": "a7d4b9f738c1304d98ac76610550ca21a7696b17",
+      "bytes": 99750,
+      "sha256": "e18fe837795e9c3bd684592f3c91228604b2b21ca9d918ac56cebdb4b40754dd"
+    },
+    "result": {
+      "blob": "7eb6b9df263275e5c5362c15dc2800ff69143305",
+      "bytes": 197750,
+      "sha256": "d3b0264441b2af0684c9f147bbb32e274a6d42f96fd83c19f0f24ba6937ad294"
+    }
+  },
+  "candidate_source_count": 502,
+  "deltas": {
+    "runtime/droidloom-supervisor/src/control.rs": {
+      "kind": "file",
+      "mode": 436,
+      "bytes": 71588,
+      "sha256": "50d7bc3abd94f83233ef7d461f93cb714f843cacb3fd5c0e929d06671a95f89b"
+    },
+    "runtime/droidloom-supervisor/src/development.rs": {
+      "kind": "file",
+      "mode": 436,
+      "bytes": 101645,
+      "sha256": "37645978b33d443313694609625a97ac9dd7f6e14053664a48d02ff6d8daea90"
+    },
+    "runtime/droidloom-supervisor/src/bin/droidloomctl.rs": {
+      "kind": "file",
+      "mode": 436,
+      "bytes": 20606,
+      "sha256": "3733dd7586ebf534aef3d4a5d176a76b8822dd0c6a6b8b39fb64adf8e70cd484"
+    },
+    "runtime/droidloom-supervisor/tests/cli_lifecycle.rs": {
+      "kind": "file",
+      "mode": 436,
+      "bytes": 11717,
+      "sha256": "5310bfdb21b006ae1432b584c03fbbfb4c1f3a7cbd3ce226b54770ff4bbca317"
+    },
+    "runtime/droidloom-supervisor/src/control_status_tests.rs": {
+      "kind": "file",
+      "mode": 436,
+      "bytes": 11843,
+      "sha256": "0bafad33112df280c73ceedf675305236275bb043d0909fc4a71f6366c0a6727"
+    }
+  },
+  "host_binaries": [
+    [
+      "droidloom-supervisor",
+      "droidloom-supervisor",
+      "runtime/droidloom-supervisor/src/main.rs"
+    ],
+    [
+      "droidloom-supervisor",
+      "droidloomd",
+      "runtime/droidloom-supervisor/src/bin/droidloomd.rs"
+    ],
+    [
+      "droidloom-supervisor",
+      "droidloomctl",
+      "runtime/droidloom-supervisor/src/bin/droidloomctl.rs"
+    ],
+    [
+      "droidloom-applications",
+      "droidloom-applications",
+      "runtime/droidloom-applications/src/main.rs"
+    ]
+  ],
+  "libtests": [
+    "control::status_lifecycle_tests::status_and_readiness_are_distinct_explicit_wire_requests",
+    "control::status_lifecycle_tests::stopped_dispatch_does_not_claim_android_ready",
+    "control::status_lifecycle_tests::running_status_dispatch_creates_no_child_and_cannot_replace_fresh_readiness",
+    "control::tests::boot_complete_does_not_hide_a_failed_input_service",
+    "control::tests::boot_progress_uses_observed_services_and_checks_every_readiness_gate",
+    "control::tests::boot_wait_reports_changes_and_a_stall_has_the_last_phase_and_log_commands",
+    "control::tests::only_missing_android_services_are_treated_as_boot_progress",
+    "control::tests::only_root_or_the_exact_cell_owner_is_authorized"
+  ],
+  "cli_tests": [
+    "start_waits_for_boot_and_keeps_progress_out_of_json",
+    "lifecycle_controls_the_whole_user_service",
+    "service_failure_is_reported",
+    "internal_cell_operations_do_not_recurse_into_systemd",
+    "explicit_mode_reaches_service_and_restart_preserves_it",
+    "lifecycle_rejects_a_symlink_runtime_directory",
+    "status_and_readiness_use_distinct_single_requests_without_wait_fallback"
+  ],
+  "old_gate_bodies_unchanged": [
+    "android_boot_snapshot",
+    "wait_for_android_init",
+    "wait_for_boot",
+    "android_boot_phase",
+    "launch",
+    "list_applications",
+    "application_icon"
+  ],
+  "newStatus": "authorized lifecycle-only; no readiness assertion; no snapshot subprocess",
+  "newReadiness": "old status body exactly preserved under new explicit request",
+  "consumer": {
+    "source_blob": "de0fb159fd12481136f10c2389f4b9b5261171ab",
+    "bytes": 8436,
+    "sha256": "dfd1208793980d92664f55aab040042cdc4cdd5e0ec7e66f016e0140d87a58f5",
+    "old8seconds_and_ready_gate_preserved": true,
+    "not_deployed": true,
+    "actual_pure20": {
+      "tree": "a53d11553369adb96bdb22caf20eada948731d19",
+      "blob": "3a44530e188b607580186617ba23424e131c7609",
+      "bytes": 2569,
+      "sha256": "e1e31a233000ba52362173007b1114a93289378844f58f99c3d7761f9bad31c4",
+      "production_runtime_qualification": false
+    }
+  },
+  "Main_operations": 0,
+  "Android_operations": 0,
+  "deployment_or_runtime_qualification": false,
+  "expected_ordinary_commands": 38,
+  "expected_host_child_lifecycle_controls": 3,
+  "build_profile": "release",
+  "profile_authority": {
+    "workspace": {
+      "path": "Cargo.toml",
+      "bytes": 1996,
+      "sha256": "e33185d2fc5a65e0a4ed6df552e4f8f8f40c793ec07f7289ed27e3c0d5fa4e60",
+      "blob": "af55bc93ef30f0a8a4eac1e29dc364d0784b0dfc"
+    },
+    "workspace_profile_override": false,
+    "cargo_switch": "--release",
+    "new_LTO_strip_or_panic_override": false,
+    "cargo_configs_must_be_absent": true,
+    "environment_profile_overrides_not_forwarded": true,
+    "six_executable_profiles_must_be_observed": true,
+    "dependencies_not_assumed_opt_level_3": true
+  },
+  "actual_debug02_parent": {
+    "tree": "cb84df470d6d1fab3c781bb1ccecc5a3e44dea41",
+    "blob": "1ef0797cf5fac90dbdd7a06dd3dd2428fdaea7ca",
+    "path": "/home/alex/work/p4-st02-20261106/attempt01/result.json",
+    "bytes": 144339,
+    "sha256": "9fa8108aab968a2a7428906fea074c44010e7a12bac545d78361c04c27e9cae6",
+    "debug_ELFs_reused": false
+  }
+}

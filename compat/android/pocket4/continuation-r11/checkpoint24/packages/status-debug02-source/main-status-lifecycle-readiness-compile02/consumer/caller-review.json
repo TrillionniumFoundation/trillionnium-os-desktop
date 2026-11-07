@@ -1,0 +1,88 @@
+{
+  "schema": "pocket4-status-caller-migration-review-v1",
+  "state": "SOURCE_ONLY_NOT_COMPILED_OR_DEPLOYED",
+  "reference_sources": {
+    "control": {
+      "blob": "2bed3026cc4f00c819de2ba7fd253165d29bebbb",
+      "bytes": 70656,
+      "sha256": "8289b74fdf040d2bd3a85d12f4488a82bdab4e1c4c6844ab90fe113228d91200"
+    },
+    "cli": {
+      "blob": "6f523958b64d22b481f77595fae7ab9842a6085a",
+      "bytes": 20413,
+      "sha256": "19a9e75d0deb0836fb9d125850600004a4a15be1b1ce8519fb8ca40e2165708d"
+    },
+    "ui_lib": {
+      "blob": "96c2e01b9d3a7d57df7f3f06a620bd9b9e8f5f2c",
+      "bytes": 34447,
+      "sha256": "e219a1dbeeda5c58f7efa4828b39f3e9f3e90777821e44e0a0aa3684353ec023"
+    },
+    "ui_main": {
+      "blob": "fdf92a5238b19d723d27e25d440e3c0defe2c026",
+      "bytes": 2893,
+      "sha256": "a75f608367ea58989eaac0882a2eed62bd2015f5fe0188c90e0e39a9142bd409"
+    },
+    "legacy_android_app": {
+      "blob": "4d0a3c9c23830c77708ec80bdf008693631dd764",
+      "bytes": 37574,
+      "sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66"
+    },
+    "current_discovery": {
+      "bytes": 8332,
+      "sha256": "9ed0069897faebba50cec3d93b08da54f1c791d6e2e775d26ec798c38b227886",
+      "blob": "d94308531ea7d6b014c79900a1c61f001e081717"
+    }
+  },
+  "observed_routes": [
+    {
+      "caller": "CLI Start/Restart default",
+      "route": "Start/Restart success -> WaitReady",
+      "change": "none; original fresh wait remains"
+    },
+    {
+      "caller": "CLI --no-wait",
+      "route": "lifecycle only; explicit readiness-not-checked message",
+      "change": "none"
+    },
+    {
+      "caller": "Applications main",
+      "route": "periodic reconcile -> ControlCatalog.applications -> ListApplications -> original fresh wait -> typed catalog",
+      "change": "none; does not poll Status or parse ready messages"
+    },
+    {
+      "caller": "Applications icons",
+      "route": "ApplicationIcon -> original fresh wait -> typed icon",
+      "change": "none"
+    },
+    {
+      "caller": "Desktop launchers",
+      "route": "droidloomctl launch -> Launch -> original fresh wait -> native launcher",
+      "change": "none"
+    },
+    {
+      "caller": "current_discovery",
+      "route": "one explicit readiness CLI call, timeout=8, check=True; original state/message predicate and all owner/namespace guards",
+      "change": "status command changed to readiness, no fallback"
+    },
+    {
+      "caller": "frozen legacy android_app discover",
+      "route": "historical Status ready-message gate",
+      "change": "frozen reference unchanged; not an active route in the migrated explicitly supplied discovery facade; direct legacy callers fail closed on lifecycle message"
+    }
+  ],
+  "boundary": {
+    "installed_binary_source_version_proven": false,
+    "current_Main_mutated": false,
+    "old_London_unknown_preserved": true,
+    "old_installer_packets_modified": false,
+    "private_B_exported": false,
+    "new_runtime_admission": false
+  },
+  "tests": {
+    "Rust_real_dispatch": 3,
+    "Rust_owned_fixture_ignored_entry": 1,
+    "Python_original_owner": 15,
+    "Python_new_readiness": 5,
+    "actual_execution": false
+  }
+}

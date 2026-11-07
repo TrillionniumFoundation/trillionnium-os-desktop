@@ -1,0 +1,166 @@
+{
+  "schema": 1,
+  "kind": "pocket4-native-independent-ndk-bounded-output-host-envelope-review01",
+  "status": "SOURCE_AND_PURE_V8_REPRODUCTION_ONLY",
+  "reviewer": "native_recovery_resume",
+  "candidate_tree": "ae35b60270b86e8e19ae03130f65e7f7c27926e9",
+  "candidate_full_tree_verification": {
+    "tree": "ae35b60270b86e8e19ae03130f65e7f7c27926e9",
+    "leaf_count": 21,
+    "logical_bytes": 1004847,
+    "directory_count_including_root": 8,
+    "recursive_entries": 28,
+    "truncated": false,
+    "all_paths_modes_sizes_blob_sha1_match": true,
+    "all_directory_tree_sha1_recomputed": true
+  },
+  "reviewed_file_pins": {
+    "controls/check_bounded_output.py": {
+      "bytes": 29153,
+      "sha256": "6e553b8eff7dc48446ac626190df13af67c96566777f137f011b229c1d71b619",
+      "git_blob_sha1": "bfdb77bbb3331cd37e3245a81f2690bfdd008929"
+    },
+    "requests/host-controls-template.py": {
+      "bytes": 2727,
+      "sha256": "9b31b23aa5910be7683d20a1193db0e1c6296489b9e080abe2e8aae2e8efcfa3",
+      "git_blob_sha1": "f10800100dbc09683a36d4c40aaf4edae12544ff"
+    },
+    "make-controls.js": {
+      "bytes": 2731,
+      "sha256": "9e8cadae07f9fb2c2bdc58d6c5ac7c7e02b08960ab44683eb187326033f48d8f",
+      "git_blob_sha1": "99fd97f7699d3e96ad87e44fd5415ecaef50036d"
+    },
+    "requests/packet.json": {
+      "bytes": 205865,
+      "sha256": "bb5695f3f478d342d442d723966215ae10b1b6c4f5b156a59eaf81b9d969449c",
+      "git_blob_sha1": "6a6c1d3d7b397eeb4839de9f2f104bce5905fd1f"
+    },
+    "requests/stdin.py": {
+      "bytes": 277321,
+      "sha256": "19a32036754cf09d75e14086a49d62ff88f21c26392f79789c4358d66c989c46",
+      "git_blob_sha1": "0dbac1339cfbff4bed2ea64090a6226e77f11ae1"
+    },
+    "requests/exact-request.json": {
+      "bytes": 277727,
+      "sha256": "49a37ba1e52bcd1a11ec3df7f5958d93be6d6c242acafc00ae58cf9c25128729",
+      "git_blob_sha1": "39351bc8bebb95748de3c48bb547fcd902b55a25"
+    },
+    "review/reproduction-proof.json": {
+      "bytes": 1561,
+      "sha256": "0b378eb860da485eca8b1bd6f242a150340a73e6219734c4122d61da9501e839",
+      "git_blob_sha1": "f6d0175baedf4ad4ddadc60ef5f8f6420b1257f7"
+    }
+  },
+  "prior_core_review_tree": "f8ff5c90b0701da04c340695129c27bac91ce6bd",
+  "wire_reproduction": {
+    "tree": "ae35b60270b86e8e19ae03130f65e7f7c27926e9",
+    "all_three_wire_files_byte_identical": true,
+    "reproduction_proof_byte_identical": true,
+    "all_five_raw_source_members_byte_identical": true,
+    "stdin_within_1MiB": true,
+    "request_without_stdin": {
+      "args": [
+        "-I",
+        "-B",
+        "-"
+      ],
+      "cpu_quota_percent": 100,
+      "cwd": "/home/alex/work",
+      "executable": "/usr/bin/python3",
+      "host": "pocket4",
+      "idempotency_key": "p4-ndk-output-host-controls01-19a32036754cf09d",
+      "memory_max_bytes": 268435456,
+      "nice": 15,
+      "timeout_seconds": 60
+    },
+    "Python_executed": false,
+    "Hepta": false
+  },
+  "source_review": {
+    "new_deterministic_blocker_found": false,
+    "wrapper_full_body_read": true,
+    "controls_full_body_read": true,
+    "generator_full_body_read": true,
+    "source_and_template_sources_from_fixed_candidate_only": true,
+    "whole_five_members_decoded_to_bytes_and_hashed_before_compile": true,
+    "only_two_template_literals_bound": true,
+    "no_other_request_members_changed_by_reproduction": true,
+    "host_invocation": [
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-"
+    ],
+    "child_invocation_prefix": [
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c"
+    ],
+    "exact_fixed_real_child_scripts": 5,
+    "exact_pure_transport_order_controls": 2,
+    "no_other_subprocess_path_in_executed_fixture": true,
+    "shared_recorder_only_original_now_and_write_new_AST_functions_loaded": true,
+    "production_context_transport_and_contract_loaded_without_runtime_open_context": true,
+    "seven_passed_fds_are_synthetic_owned_regular_files": true,
+    "held_namespace_entry_source_is_reference_only_not_transmitted_or_executed": true,
+    "no_Main_Status_Readiness_or_Android_calls_in_fixture": true,
+    "no_namespace_entry": true,
+    "no_runtime_nonce_consumption": true
+  },
+  "owned_fixture_and_cleanup": {
+    "workspace_parent_fd_is_held_read_only_and_not_removed": true,
+    "root_and_case_directories_are_create_only_0700": true,
+    "known_file_cleanup_uses_held_parent_dirfd": true,
+    "directory_removal_requires_original_named_held_identity": true,
+    "authority_fd_events": 7,
+    "test_read_fd_events": 16,
+    "test_directory_fd_events": 7,
+    "per_command_capture_fd_events": 6,
+    "own_file_reader_checks_whole_content_and_metadata_before_after": true,
+    "per_case_fd_equation_and_final_preload_baseline_equation": true,
+    "credentials_namespaces_and_fsize_before_after_checked": true,
+    "original_umask_and_alarm_restored": true,
+    "primary_error_kept_separate_from_cleanup_errors": true,
+    "all_source_report_closure_predicates_required_for_ok": true,
+    "wrapper_returns_failure_for_report_ok_false": true
+  },
+  "ordinary_execution_boundary": {
+    "request_contains_sudo_or_privilege_escalation": false,
+    "explicit_source_uid1000_gate": false,
+    "source_guarantee": "The fixture records credentials and requires them unchanged. Ordinary UID1000 is a dispatcher execution fact, not a separate source-level rejection of UID0.",
+    "whole_invocation_resource_qualified_by_source": false
+  },
+  "qualifier_static_review": {
+    "qualifier_pin": {
+      "bytes": 10104,
+      "sha256": "eee3ec3df3571f7bcf7391e7931027312f31ed0ac9be403dba647b7196779c4a",
+      "git_blob_sha1": "32398189575ee0a93e95ce75e6324a988a93fe5f"
+    },
+    "expected_members_and_packet_exact": true,
+    "expected_control_names_exact": true,
+    "counts_from_source": {
+      "real_children": 5,
+      "pure": 2,
+      "capture_FDs_per_child": 6,
+      "authority_FD_events": 7,
+      "test_read_FD_events": 16,
+      "own_directory_FD_events": 7
+    },
+    "no_actual_report_was_supplied": true,
+    "no_qualification_function_invoked": true,
+    "qualifier_preserves_runtime_false": true,
+    "scope": "Field and count correspondence with the same final wrapper/control/core sources; complete original terminal and stdout must be supplied by the caller.",
+    "no_deterministic_shape_blocker_found": true,
+    "terminal_requires_full_durable_success_and_exact_stdout_bytes": true,
+    "runtime_upgrade_forbidden": true
+  },
+  "limits": [
+    "No Python, real child, Hepta, Main, Android, namespace entry, deployment or ref mutation was performed by this reviewer.",
+    "The actual qualification function was not invoked with a report. Root reported a subsequent actual result; its independent review is owned by Android and is outside this receipt.",
+    "Source and pure V8 reproduction do not establish actual resource sufficiency or privileged Android child retirement.",
+    "Escaped sessions and shared Binder descendants remain unqualified; original rc153 cause remains UNKNOWN.",
+    "Tracked FD-event counts distinguish capture descriptors, explicit test descriptors, and original writer internals; the writer finally gates and ambient-FD equality remain separate evidence.",
+    "No CP24 cut, seed, authorized root set, branch or PR update is selected by this review."
+  ]
+}

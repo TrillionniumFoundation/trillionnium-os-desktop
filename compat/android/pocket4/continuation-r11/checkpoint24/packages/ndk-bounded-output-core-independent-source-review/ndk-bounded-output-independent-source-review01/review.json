@@ -1,0 +1,132 @@
+{
+  "schema": 1,
+  "kind": "pocket4-native-independent-ndk-bounded-output-source-review01",
+  "review_status": "SOURCE_REVIEW_ONLY",
+  "reviewer": "native_recovery_resume",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "inputs": {
+    "context": {
+      "bytes": 42038,
+      "sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c",
+      "git_blob_sha1": "b0f7bf2a855cff9d09b87be6aeee4fb9e643f990"
+    },
+    "transport": {
+      "bytes": 15455,
+      "sha256": "8c4aa937cbc56f3d0eaf104da1782704ce3578256dd8b1fbb0963650a6d08692",
+      "git_blob_sha1": "575c930285bef22bca65ec5c571b4a0b7857729b"
+    },
+    "controls": {
+      "bytes": 29153,
+      "sha256": "6e553b8eff7dc48446ac626190df13af67c96566777f137f011b229c1d71b619",
+      "git_blob_sha1": "bfdb77bbb3331cd37e3245a81f2690bfdd008929"
+    },
+    "originalContext": {
+      "bytes": 22014,
+      "sha256": "8d544b38250c3994bea62f5b00c5a9a1f8999d951643f4fe06133861a362b9d4",
+      "git_blob_sha1": "8970aadd66bc600983d38d1b48485e8990e0731c"
+    },
+    "originalTransport": {
+      "bytes": 14639,
+      "sha256": "8430f9384f61ad1b59534d7cc3d2006c5aa848bc404a067680d8b20845027fe6",
+      "git_blob_sha1": "9890dc83ff7a5a00a911fa995a7a9383671f1cfb"
+    },
+    "unchangedContextTail": {
+      "bytes": 17472,
+      "sha256": "f90cd06a811a40e89db2083eea827f8e9238f4fdd97049cf5fd8f91248f1f818",
+      "git_blob_sha1": "01a905c390184fd6421dececaf41a416ebc06e6a"
+    }
+  },
+  "additional_unchanged_sources": {
+    "contract": {
+      "bytes": 25331,
+      "sha256": "1b027dc076f0ee5d89df1e95ae76fddeacab1adaafb5e77e4b05b63f47593261",
+      "git_blob_sha1": "6b76abcc871c4ba084f53e529d3dd96168e301aa"
+    },
+    "recorder": {
+      "bytes": 41689,
+      "sha256": "c63cbdca615a609ebb41bcb25db6b770f43c4488c46a8f7b1dbee4bc462b4e64",
+      "git_blob_sha1": "bf71c5720c8afe7da2f5cf9fe44ae03d87999d9a"
+    }
+  },
+  "scope": [
+    "Full new _OwnedCommandCapture and command_with_bound bodies, including acquisition, selector draining, first-error ordering, WNOWAIT, own-session and pidfd signalling, join, and FD finalization.",
+    "Production BoundArun classification delta, preserving observed real nonzero exit precedence over later capture errors.",
+    "Five fixed owned host Python child controls and two explicit pure transport ordering controls, including final held-directory cleanup delta.",
+    "Original context tail from the class Context declaration compared byte-for-byte with its fixed baseline."
+  ],
+  "source_findings": {
+    "new_deterministic_blocker_found": false,
+    "per_stream_cap_bytes": 262144,
+    "authority_pass_fds": 7,
+    "does_not_call_setrlimit": true,
+    "no_capture_poll_or_communicate_calls": true,
+    "context_tail_byte_identical": true,
+    "normal_capture_requires_both_pipe_eof_and_observed_leader_exit": true,
+    "no_process_group_signal_after_reap_started": true,
+    "first_error_snapshot_not_rewritten_by_later_cleanup": true,
+    "cleanup_fallback_uses_previously_observed_clock_and_fixed_grace_seconds": 5,
+    "cleanup_retry_does_not_extend_deadline": true,
+    "test_cleanup_uses_held_parent_fds": true,
+    "test_directory_removal_requires_named_held_original_identity": true,
+    "test_directory_fds_included_in_final_close_equation": true,
+    "expected_real_host_child_controls": 5,
+    "expected_pure_transport_controls": 2
+  },
+  "resolved_specific_review_findings": [
+    {
+      "finding": "A capture failure followed by cleanup SIGKILL could be classified only as an Android return-code failure.",
+      "resolution": "Capture records whether an already observed nonzero or signal exit preceded the first capture error. Transport gives a true earlier capture/limit/timeout fault priority while preserving an already observed real exit failure. Two pure controls invoke the actual remember method before the explicit CompletedProcess seam."
+    },
+    {
+      "finding": "Known test paths were unlinked before ancestor identity validation.",
+      "resolution": "Test root and case directory FDs are held. Known-file reads, stat and unlink use those parent FDs; directory removal requires named/held/original identity equality; all directory FDs enter close accounting and ambient-FD comparison."
+    }
+  ],
+  "controls_reviewed": [
+    {
+      "name": "own artifact larger than stream cap",
+      "method": "Real command_with_bound is called by the proposed fixture; the fixed child writes 1048593 bytes to its own file and reports inherited RLIMIT_FSIZE."
+    },
+    {
+      "name": "concurrent stdout and stderr at exact caps",
+      "method": "Fixed child interleaves writes totaling exactly 262144 bytes on each stream; expected EOF, returncode, prefix hashes and file reads agree."
+    },
+    {
+      "name": "stdout overflow",
+      "method": "Real BoundArun and command_with_bound with explicit synthetic entry/guard seams; prefix is bounded, overflow evidence retains the extra observed byte, and cleanup signals precede leader reap."
+    },
+    {
+      "name": "stderr overflow",
+      "method": "Symmetric fixed child and real production path with bounded prefix and first-error transport checks."
+    },
+    {
+      "name": "timeout",
+      "method": "Fixed sleeping owned child with initial prefixes; own-session/pidfd stop, leader join and FD closure are asserted."
+    },
+    {
+      "name": "capture failure precedes cleanup signal",
+      "method": "No child; actual remember method followed by explicit CompletedProcess transport seam."
+    },
+    {
+      "name": "observed real exit precedes later capture error",
+      "method": "No child; actual remember method freezes order, and transport rejects stale capture marker precedence."
+    }
+  ],
+  "limitations": [
+    "No Python, host child, Android, namespace entry, Hepta action, or runtime test was executed by this reviewer.",
+    "The final wrapper, request envelope, packaging and dispatcher admission were outside this review.",
+    "Host control seams do not qualify privileged or cross-UID Android execution, GPU behavior, or shared Binder process retirement.",
+    "The source explicitly does not qualify escaped sessions or Binder descendants; its retirement authority is its own direct child and newly created process group.",
+    "The five-second retirement deadline is recorded and checked; this review does not claim that arbitrary blocking filesystem syscalls are preempted by a monotonic-time comparison.",
+    "The old command005 return code 153 remains unexplained. No signal or file-size-cause conclusion is added.",
+    "Source review is not a statement that the proposed controls passed."
+  ],
+  "execution": {
+    "python": false,
+    "host_children": false,
+    "android": false,
+    "hepta": false,
+    "branch_or_ref_mutation": false
+  },
+  "original_failed_runtime_preserved": true
+}

@@ -1,0 +1,26 @@
+{
+  "schema": 3,
+  "original_tree": "42a7a627a223dbc1063f55d5b7adacacfcc91a1e",
+  "canonical_root_key": "original_tree_sha",
+  "cuts": [
+    {
+      "path": "hilton_failure",
+      "tree_sha": "f48f407da7689722180540c129d0fb86e5f8cf4c",
+      "checkpoint": 24,
+      "canonical_package": "hilton_helper_install_schema02-actual"
+    },
+    {
+      "path": "prior_nonce_actual",
+      "tree_sha": "c5a6357da4a38adb1101bd325c07fe3e3c5cc261",
+      "checkpoint": 24,
+      "canonical_package": "ndk_run_retire_nonce01-actual"
+    },
+    {
+      "path": "source",
+      "tree_sha": "3c08451e3cb8934a99fb60c33807dcbb118c82fa",
+      "checkpoint": 24,
+      "canonical_package": "hilton-install02-nonce2-source"
+    }
+  ],
+  "scope": "Reconstruct each omitted directory from its exact canonical checkpoint package and recursively apply that package metadata; all original file body bytes are unchanged."
+}

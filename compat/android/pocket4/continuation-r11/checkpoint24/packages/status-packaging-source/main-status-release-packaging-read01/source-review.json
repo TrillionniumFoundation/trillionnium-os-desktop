@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_NOT_EXECUTED",
+  "reason": "Fix the four-binary deployment/rollback model to original packaging and service definitions; no execution of installer scripts and no assumption about current installed Main provenance.",
+  "base_reader": {
+    "blob": "c794210b397288769b526fcda4535e4cb8549256",
+    "bytes": 10849,
+    "sha256": "a867855b234015c9012c3620a32a11d4f3502f53976debaf65f8f101a5d42704"
+  },
+  "base_request": {
+    "blob": "35cd09099f2646c87584cfac2d3669142015fa1e",
+    "bytes": 11512,
+    "sha256": "222af2027cfd4cbec36939693716e520d469140e3d58291439705dd86895fe08"
+  },
+  "source": {
+    "bytes": 10996,
+    "sha256": "f844d88dc6cb89d7d2ad382f75b4330593f3deec5ccc23052937f0c09298c851",
+    "blob": "7bcdfd2b73d069dada7a626c4ccff4a91b937676"
+  },
+  "request": {
+    "bytes": 11671,
+    "sha256": "53f6c2b6d96a738d377cb8e79d58921b924ecba8bc7697e375583b10572f17eb",
+    "blob": "70c23875c5be9149c6b99a7700d0c6224a759ff5"
+  },
+  "pins": [
+    {
+      "path": "packaging/install-supervisor",
+      "bytes": 3106,
+      "kind": "file",
+      "mode": 509,
+      "sha256": "81a3107cd599a57d8984ed7afe6fb428c0f8f73ab1f96628dc0eaad50c862eb3"
+    },
+    {
+      "path": "packaging/systemd/system/droidloomd.service",
+      "bytes": 291,
+      "kind": "file",
+      "mode": 436,
+      "sha256": "3dc60679d7d65c2fb051a75733ea0cab888e501f280ff37afcf20d5167305d2d"
+    },
+    {
+      "path": "packaging/systemd/user/droidloom-applications.service",
+      "bytes": 248,
+      "kind": "file",
+      "mode": 436,
+      "sha256": "4ef2be1261bdcd1da489cc117cfb9ca66b078bf980354c8d6764c88c1f56d138"
+    },
+    {
+      "path": "packaging/install-runtime",
+      "bytes": 8739,
+      "kind": "file",
+      "mode": 509,
+      "sha256": "fb4c0e18fb3f6e9f04575cd2986488c7e4db0390f9612801a601ea3567190ca8"
+    }
+  ],
+  "all_four_469_rows_equal_actual474_501_and_status502_rows": true,
+  "full_inverse": true,
+  "edits": [
+    {
+      "before": "Read exactly three public engine/handshake sources from owned builder469.",
+      "after": "Read exactly four public installer/service sources from owned builder469."
+    },
+    {
+      "before": "Main access, or inferred remote Destroy completion.",
+      "after": "Main access, or installed package/binary provenance qualification."
+    },
+    {
+      "before": "PINS = [{\"path\":\"graphics/droidloom-wayland/src/main.rs\",\"bytes\":106816,\"kind\":\"file\",\"mode\":436,\"sha256\":\"908ec80b8ec2d059b86664cb76d6fe39908c17ba1fa33416e37644416e73357a\"},{\"path\":\"graphics/droidloom-composer-service/src/main.rs\",\"bytes\":17437,\"kind\":\"file\",\"mode\":436,\"sha256\":\"d60ba608023be4325e14e9126c326203188e78d2a7b715b65ba2588dd4cdb6cf\"},{\"path\":\"graphics/droidloom-wayland/Cargo.toml\",\"bytes\":1766,\"kind\":\"file\",\"mode\":436,\"sha256\":\"f369e41d8c86c0b948992d2d07ab8fbdaf3779bd21493e3389730c51a33ea098\"}]",
+      "after": "PINS = [{\"path\":\"packaging/install-supervisor\",\"bytes\":3106,\"kind\":\"file\",\"mode\":509,\"sha256\":\"81a3107cd599a57d8984ed7afe6fb428c0f8f73ab1f96628dc0eaad50c862eb3\"},{\"path\":\"packaging/systemd/system/droidloomd.service\",\"bytes\":291,\"kind\":\"file\",\"mode\":436,\"sha256\":\"3dc60679d7d65c2fb051a75733ea0cab888e501f280ff37afcf20d5167305d2d\"},{\"path\":\"packaging/systemd/user/droidloom-applications.service\",\"bytes\":248,\"kind\":\"file\",\"mode\":436,\"sha256\":\"4ef2be1261bdcd1da489cc117cfb9ca66b078bf980354c8d6764c88c1f56d138\"},{\"path\":\"packaging/install-runtime\",\"bytes\":8739,\"kind\":\"file\",\"mode\":509,\"sha256\":\"fb4c0e18fb3f6e9f04575cd2986488c7e4db0390f9612801a601ea3567190ca8\"}]"
+    },
+    {
+      "before": "exact-builder469-engine-retirement-three-sources-readonly01",
+      "after": "exact-builder469-status-packaging-four-sources-readonly01"
+    },
+    {
+      "before": "'remote_Destroy_completion_qualified': False,",
+      "after": "'deployment_authorized': False,"
+    },
+    {
+      "before": "len(RESULT['files']) == 3",
+      "after": "len(RESULT['files']) == 4"
+    }
+  ],
+  "limits": {
+    "read_seconds": 8,
+    "outer_seconds": 15,
+    "memory": 134217728,
+    "cpu": 25,
+    "max_fds": 40,
+    "output_bytes": 2097152
+  },
+  "no_Main_access": true,
+  "no_Android": true,
+  "no_subprocesses": true,
+  "no_directory_enumeration": true,
+  "no_writes": true,
+  "installed_Main_same_source_qualified": false,
+  "deployment_authorized": false
+}

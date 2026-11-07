@@ -1,0 +1,167 @@
+--- a/install_lease.py
++++ b/phase_lease.py
+@@ -1,7 +1,8 @@
+-"""One fixed NDK installation lease. Source only; no module-level IO.
+-Owns one new private source/step directory, the original global action lock,
+-one own flow lock and one exclusive step lock. It never supplies a Main guard,
+-installed UID, command runner, instrumentation capability, or retry route.
++"""Two fixed original NDK phase leases. No module-level IO or default admission.
++Each run / retire phase owns a fresh private source root, the existing global
++action lock, one own flow lock and one exclusive once-claimed step. An actual
++installation authority and a fresh phase nonce are required before construction.
++The lease supplies no Main guard, namespace entry, command runner or UID inference.
+ """
+ import errno
+ import fcntl
+@@ -14,13 +15,15 @@
+ import stat
+ import time
+ 
+-ROOT = Path('/home/alex/work/pocket4-original-ndk-fixture-APK05-install-02')
+-SOURCE = ROOT/'source'
+-STEP = ROOT/'steps'/'install-02'
++PHASE_ROOTS = {
++    'run':Path('/home/alex/work/pocket4-original-ndk-fixture-APK05-run-01'),
++    'retire':Path('/home/alex/work/pocket4-original-ndk-fixture-APK05-retire-01'),
++}
++PHASE_STEPS = {'run':'run-01','retire':'retire-01'}
+ ACTION_LOCK = '/run/lock/android-digitalis-actions.lock'
+ SOURCE_NAMES = {
+     'fixture_contract.py','fixture_context.py','fixture_transport.py',
+-    'fixture_phases.py','current_discovery.py','install_lease.py','install_worker.py',
++    'fixture_phases.py','current_discovery.py','phase_lease.py','phase_worker.py',
+ }
+ LOCK_WAIT_SECONDS = 5.0
+ LOCK_POLL_SECONDS = 0.05
+@@ -59,15 +62,35 @@
+     return result
+ 
+ 
+-class InstallLease:
+-    def __init__(self, scope, source_pin, deadline):
+-        need(type(scope) is dict and scope.get('phase') == 'install' and
++class PhaseLease:
++    def __init__(self, scope, source_pin, deadline, installation):
++        need(type(scope) is dict and scope.get('phase') in PHASE_ROOTS and
+              scope.get('package') == 'com.example.ndk_tests' and
+-             scope.get('uid') is None and scope.get('user') == 0 and
+-             scope.get('automatic_retry') is False and
++             type(scope.get('uid')) is int and 10000 <= scope['uid'] < 100000 and
++             scope.get('user') == 0 and scope.get('automatic_retry') is False and
+              type(scope.get('attempt_nonce')) is str and
+              re.fullmatch('[0-9a-f]{32}', scope['attempt_nonce']) and
+-             scope['attempt_nonce'] != '0'*32, 'INSTALL_LEASE_SCOPE_REQUIRED')
++             scope['attempt_nonce'] != '0'*32, 'FIXED_RUNTIME_PHASE_LEASE_SCOPE_REQUIRED')
++        need(type(installation) is dict and installation.get('runtime_qualified') is False and
++             type(installation.get('installed_tuple')) is dict and
++             type(installation.get('scope_installation')) is dict and
++             installation['installed_tuple'].get('package') == scope['package'] and
++             installation['installed_tuple'].get('uid') == scope['uid'] and
++             installation['installed_tuple'].get('user') == 0 and
++             installation['scope_installation'] == {
++                 'package':scope['package'],'uid':scope['uid'],'user':0,
++                 'owned_install_qualified':True,'Main_epoch':scope.get('Main_epoch'),
++                 'build_result':scope.get('build_result')} and
++             type(installation.get('install_attempt_nonce')) is str and
++             re.fullmatch('[0-9a-f]{32}',installation['install_attempt_nonce']) and
++             installation['install_attempt_nonce'] != scope['attempt_nonce'],
++             'DISTINCT_PHASE_WITH_ACTUAL_OWN_INSTALLATION_REQUIRED')
++        self.phase = scope['phase']
++        self.root_path = PHASE_ROOTS[self.phase]
++        self.source_path = self.root_path/'source'
++        self.step_path = self.root_path/'steps'/PHASE_STEPS[self.phase]
++        self.installation = json.loads(json.dumps(installation))
++        self.installation_bytes = canonical(installation)
+         need(type(source_pin) is dict and set(source_pin) == {'bytes','sha256'} and
+              type(source_pin['bytes']) is int and 0 < source_pin['bytes'] <= 65536 and
+              re.fullmatch('[0-9a-f]{64}', source_pin['sha256']),
+@@ -90,7 +113,7 @@
+         self.claim_raw = None
+         self.root_identity = None
+         self.observation = {
+-            'schema':1, 'root':str(ROOT), 'step':str(STEP),
++            'schema':1, 'phase':self.phase, 'root':str(self.root_path), 'step':str(self.step_path),
+             'global_action_lock':ACTION_LOCK, 'root_create_only':True,
+             'flow_lock_exclusive':False, 'step_lock_exclusive':False,
+             'step_claim_create_only':False, 'global_lock_acquired':False,
+@@ -243,19 +266,19 @@
+             need(type(raw) is bytes and 0 < len(raw) <= 131072 and
+                  manifest['files'][name] == {'bytes':len(raw),'sha256':sha(raw)},
+                  'INSTALL_SOURCE_BODY_PIN_CHANGED')
+-        self.parent = self._walk_directory(ROOT.parent,'fixed-root-parent')
++        self.parent = self._walk_directory(self.root_path.parent,'fixed-root-parent')
+         need(os.fstat(self.parent).st_uid == 1000, 'FIXED_WORK_PARENT_OWNER_REQUIRED')
+         # Existing/partial roots are never adopted. mkdir is the atomic once claim.
+-        os.mkdir(ROOT.name,0o700,dir_fd=self.parent)
++        os.mkdir(self.root_path.name,0o700,dir_fd=self.parent)
+         self.root_created = True
+-        self.root = self._take(os.open(ROOT.name,os.O_RDONLY|os.O_DIRECTORY|
++        self.root = self._take(os.open(self.root_path.name,os.O_RDONLY|os.O_DIRECTORY|
+             os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=self.parent),'root')
+         os.fchmod(self.root,0o700)
+-        self.root_identity = self._remember_name('root',self.parent,ROOT.name,self.root,True)
++        self.root_identity = self._remember_name('root',self.parent,self.root_path.name,self.root,True)
+         os.fsync(self.parent)
+         self.source = self._directory(self.root,'source','source')
+         self.steps = self._directory(self.root,'steps','steps')
+-        self.step = self._directory(self.steps,'install-02','step')
++        self.step = self._directory(self.steps,PHASE_STEPS[self.phase],'step')
+         for name in sorted(sources):
+             self._write_new(self.source,name,sources[name],0o444)
+         self._write_new(self.source,'SOURCE_PINS.json',manifest_raw,0o444)
+@@ -312,10 +335,13 @@
+         self.step_lock = self._own_lock(self.step,'step.lock','step-lock')
+         self.observation['step_lock_exclusive'] = True
+         self.claim_raw = canonical({
+-            'schema':1,'kind':'pocket4-original-ndk-exclusive-install-step',
++            'schema':1,'kind':'pocket4-original-ndk-exclusive-'+self.phase+'-step',
+             'scope':self.scope,'source_manifest':self.pin,
+-            'root':str(ROOT),'step':str(STEP),'automatic_retry':False,
+-            'installed_UID':None,'instrumentation_admitted':False})+b'\n'
++            'root':str(self.root_path),'step':str(self.step_path),'automatic_retry':False,
++            'install_result':self.installation['install_result'],
++            'installed_UID':self.scope['uid'],
++            'instrumentation_admitted':self.phase == 'run',
++            'own_retirement_admitted':self.phase == 'retire'})+b'\n'
+         self.claim = self._write_new(self.step,'once.claim.json',self.claim_raw,0o400,True)
+         self._remember_name('claim',self.step,'once.claim.json',self.claim)
+         self.claimed = True
+@@ -349,25 +375,30 @@
+             raw = os.pread(self.claim,len(self.claim_raw)+1,0)
+             need(raw == self.claim_raw, 'EXCLUSIVE_INSTALL_CLAIM_CHANGED')
+ 
+-    def verify_install(self, sources, fixture, scope, step, deadline):
++    def verify_phase(self, sources, fixture, scope, step, deadline):
+         need(not self.closed and self.claimed and
+              len(self.locked) == 3 and {x[0] for x in self.locked} ==
+              {'flow-lock','action-lock','step-lock'},
+              'ALL_THREE_OWN_INSTALL_LOCKS_REQUIRED')
+         fixture.validate_scope(scope)
+-        need(scope['phase'] == 'install' and scope['uid'] is None and
++        need(scope['phase'] == self.phase and scope['uid'] ==
++             self.installation['installed_tuple']['uid'] and
+              canonical(scope) == self.scope_bytes and sources.pin == self.pin and
+-             str(sources.root) == str(SOURCE) and str(step) == str(STEP) and
++             canonical(self.installation) == self.installation_bytes and
++             self.root_path == PHASE_ROOTS[self.phase] and
++             self.source_path == self.root_path/'source' and
++             self.step_path == self.root_path/'steps'/PHASE_STEPS[self.phase] and
++             str(sources.root) == str(self.source_path) and str(step) == str(self.step_path) and
+              deadline == self.deadline and time.monotonic() < self.deadline,
+-             'EXACT_LIVE_INSTALL_ADMISSION_REQUIRED')
++             'EXACT_LIVE_OWN_RUNTIME_PHASE_ADMISSION_REQUIRED')
+         self._verify_objects()
+         return True
+ 
+-    def enter_install_once(self, sources, fixture, scope, step, deadline):
+-        self.verify_install(sources,fixture,scope,step,deadline)
+-        need(not self.entered, 'INSTALL_PHASE_ALREADY_ENTERED_NO_REPLAY')
++    def enter_phase_once(self, sources, fixture, scope, step, deadline):
++        self.verify_phase(sources,fixture,scope,step,deadline)
++        need(not self.entered, 'FIXED_PHASE_ALREADY_ENTERED_NO_REPLAY')
+         self.entered = True
+-        self.observation['install_phase_entered_once'] = True
++        self.observation['phase_entered_once'] = True
+ 
+     def close(self):
+         if self.closed:

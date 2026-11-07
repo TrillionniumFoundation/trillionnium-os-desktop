@@ -1,0 +1,462 @@
+{
+  "schema": "pocket4-status-lifecycle-fresh-readiness-build01",
+  "status": "SOURCE_ONLY_NOT_EXECUTED",
+  "actual_cause_evidence": {
+    "tree": "c9466b22f297239cdfe70a0d0ce2d4255ff643d9",
+    "stdout_blob": "7e0f7862f333226c5b75b51d22b06a3b4fbbe186",
+    "observation": "one Status inflight complete daemon child table violated original uniqueness; final full Main matched; no historical London attribution"
+  },
+  "public_reference_sources_not_installed_Main_proof": true,
+  "core_inverse": {
+    "control.rs": {
+      "bytes": 70656,
+      "sha256": "8289b74fdf040d2bd3a85d12f4488a82bdab4e1c4c6844ab90fe113228d91200",
+      "git_blob": "2bed3026cc4f00c819de2ba7fd253165d29bebbb",
+      "edits": 3
+    },
+    "droidloomctl.rs": {
+      "bytes": 20413,
+      "sha256": "19a9e75d0deb0836fb9d125850600004a4a15be1b1ce8519fb8ca40e2165708d",
+      "git_blob": "6f523958b64d22b481f77595fae7ab9842a6085a",
+      "edits": 2
+    },
+    "current_discovery.py": {
+      "bytes": 8332,
+      "sha256": "9ed0069897faebba50cec3d93b08da54f1c791d6e2e775d26ec798c38b227886",
+      "git_blob": "d94308531ea7d6b014c79900a1c61f001e081717",
+      "edits": 1
+    }
+  },
+  "tests": {
+    "schema": "pocket4-status-real-dispatch-tests-work01",
+    "state": "SOURCE_ONLY_UNCOMPILED_UNEXECUTED",
+    "parent_tree": "e25f44af4b5bb2e26f286f21ad688eff1b6fc8de",
+    "test_cases": 3,
+    "ignored_subprocess_entry": 1,
+    "production_development_delta": {
+      "anchor": "impl DevelopmentCell {\n",
+      "insert": "    /// Test-only ownership of an ordinary child, with no Android resources.\n    ///\n    /// The caller must stop and join this child. The fixture has created no\n    /// namespace, network, or runtime directory for cleanup to mutate.\n    #[cfg(test)]\n    pub(crate) fn owned_process_for_lifecycle_test(spec: CellSpec, child: Child) -> Self {\n        Self {\n            spec,\n            child,\n            network: None,\n            cleaned: true,\n        }\n    }\n\n",
+      "all_other_bytes_equal": true
+    },
+    "real_route": "Daemon.handle -> poll -> exact selected request arm",
+    "process_filter": {
+      "platform": "linux-x86_64",
+      "scope": "current test thread only",
+      "denied": [
+        "fork",
+        "vfork",
+        "clone",
+        "clone3",
+        "x32 aliases"
+      ],
+      "failure_is_test_failure": true
+    },
+    "fixture": {
+      "ordinary_owned_child": true,
+      "Android": false,
+      "Main_service": false,
+      "seccomp_installed_after_fixture_start": true,
+      "explicit_stop_and_join": true
+    },
+    "unchanged_ready_routes": [
+      "WaitReady",
+      "Launch",
+      "ListApplications",
+      "ApplicationIcon"
+    ],
+    "kernel_reference": "https://docs.kernel.org/userspace-api/seccomp_filter.html",
+    "installed_version_verified": false
+  },
+  "exact_borrowed_function_correspondence": {
+    "old474": {
+      "blob": "e8f7b6cdc188828b85106c060bcea962d3314bc5",
+      "bytes": 95194,
+      "sha256": "cce160807e3466c98fd3fd43f4a1b7c25e160d94a0e05fc39ad8103508da398a"
+    },
+    "modernHost112": {
+      "blob": "9423b57f4925f02249b06bf0f610a0d07e09624d",
+      "bytes": 101052,
+      "sha256": "0a17b25035fc9742bd840ed685124b736b0f4a9bbee52a7701682d06da12d66d"
+    },
+    "exact474functions": [
+      {
+        "name": "require",
+        "bytes": 78,
+        "sha256": "e1964fd49db1248ade6f7e5a92407ee9a8db511078c55450d04e2dd802e0ba9e"
+      },
+      {
+        "name": "utc",
+        "bytes": 80,
+        "sha256": "7be38ebd469ff3fa4bdad9a1cf71023d6d4e497fb6fe56c76bcdd3783c202c28"
+      },
+      {
+        "name": "sha",
+        "bytes": 60,
+        "sha256": "62ec5d555c55f75044d8903e6cbafe3f181a87304d3b26eb63e8abe9318134ab"
+      },
+      {
+        "name": "identity",
+        "bytes": 109,
+        "sha256": "35c8c104a8493aefab36dadd51972b3ee23b0c9bd333d561a6226f7d4efc4aed"
+      },
+      {
+        "name": "held",
+        "bytes": 832,
+        "sha256": "bbf984e28c15b7a06714342ad144fc0aa2934a339fd5632f610b9f3e84db2177"
+      },
+      {
+        "name": "write_new",
+        "bytes": 469,
+        "sha256": "51bee0b5ae197ff6f5aa63ae60d7935470e571fe41bcb4b246fcb792f770012a"
+      },
+      {
+        "name": "real_directory",
+        "bytes": 158,
+        "sha256": "115832a5665c3a44d5e2e5b68da8ba6563d584d0998f089308432bfd99791bdc"
+      },
+      {
+        "name": "resource_text",
+        "bytes": 326,
+        "sha256": "64c3e56e8e80d6dbada348de5a4843560948b75fd504de69c8c048f9f636fcc7"
+      },
+      {
+        "name": "resource_events",
+        "bytes": 414,
+        "sha256": "5c9e198f78f8b7f8b949ed5f62ae72c6ebe6dea2a612479001d6db966a43ee12"
+      },
+      {
+        "name": "resource_snapshot",
+        "bytes": 1434,
+        "sha256": "345ddd5fa6d261d44a4198e4771aca13e4604732e7519f3fe1e19fb58f9d8e04"
+      },
+      {
+        "name": "begin_resources",
+        "bytes": 859,
+        "sha256": "6ed4957e47d73b73060e7f7de7557293b1909a082075655b56f295c96587aff1"
+      },
+      {
+        "name": "finish_resources",
+        "bytes": 1382,
+        "sha256": "b78b8f85de77fb84141299935eed086cda86e91074e69dbbc87d34d06b6f454f"
+      },
+      {
+        "name": "hash_held",
+        "bytes": 870,
+        "sha256": "1ef24691391b25c2d8616a55d194ce5ae8876ac4994e217d42d265a0d64dd5f0"
+      },
+      {
+        "name": "regular_tree",
+        "bytes": 908,
+        "sha256": "d4767637a796f7802e11247c93aad1d0bd1799cbcebe379b9f89683bf00e0eea"
+      },
+      {
+        "name": "portable",
+        "bytes": 394,
+        "sha256": "cca21465f3ba7a185d0c31c26ffb1864d3806a8d9286a36927e87779c1943b25"
+      },
+      {
+        "name": "pinned_packet",
+        "bytes": 156,
+        "sha256": "89b4228afe2d7ff2eb4afb1e73bb47685a6bf44da7e97686ee31471c2a7953ff"
+      },
+      {
+        "name": "exact_source_copy",
+        "bytes": 719,
+        "sha256": "1994ddc4053f5b753953aa952a402faf751c2b149e59e2e2dba74424fac39857"
+      },
+      {
+        "name": "read_existing_config",
+        "bytes": 283,
+        "sha256": "ccbe2fa41af5954e8ecb7a55dbcdaeb66974d99d934c92f7f7893c8c58c057a4"
+      },
+      {
+        "name": "pin_resolved",
+        "bytes": 515,
+        "sha256": "e7bf6a08b0e43c177e9301c16a9c384d1e9f6b91132e4805d06841c30a7e34f0"
+      },
+      {
+        "name": "verify_resolved",
+        "bytes": 501,
+        "sha256": "af82d7b802e167a7fcb40ad3bfc114095a7290a64a6d2d86e3b98111652ccab5"
+      },
+      {
+        "name": "toolchain",
+        "bytes": 7763,
+        "sha256": "57b87163e255d32b7a5b3b58a47c702b7af5f79b30fa426b3a43b86c8c261403"
+      },
+      {
+        "name": "parse_selected_tree",
+        "bytes": 989,
+        "sha256": "2c7ed7f587d390ad9568c67a1bd45d357e71e5d82a7881925f0ea6f2d875c864"
+      },
+      {
+        "name": "qualify_cached_archive",
+        "bytes": 4384,
+        "sha256": "d905589635d3e49abb42bbcacf33ed73d31288b51a11b51c1b8152c45d19a78f"
+      },
+      {
+        "name": "qualify_compiler_inputs",
+        "bytes": 1218,
+        "sha256": "c68fc41352446af4ae09352d70339c92da44d56baff53176174607b7929807d7"
+      }
+    ],
+    "exact_host112_reaper_block": {
+      "start": "limit_child_outputs",
+      "end_before": "apply_candidate_sources",
+      "bytes": 21576,
+      "sha256": "ab43095661ccfdf3fd59d707177d8f8b60031a0ed2c9f20a38ae69a7d851e7c4"
+    },
+    "resource_contract": {
+      "memory_max_bytes": 1073741824,
+      "cpu_quota_percent": 100,
+      "swap_max_policy": "observe and require unchanged, not assert zero",
+      "main_operations": 0
+    },
+    "status": "SOURCE_ONLY_NOT_EXECUTED"
+  },
+  "stage_exact_inverse": {
+    "parent_blob": "ed2a1cf80abfb72307ff65771ae77a5f8b9eb9eb",
+    "parent_bytes": 12034,
+    "edits": [
+      {
+        "old": "ROOT=Path(\"/home/alex/work/pocket4-native-builder474-composer-audiocontrol-projection-compile-01-20261106\")",
+        "new": "ROOT=Path(\"/home/alex/work/pocket4-native-status-lifecycle-readiness-compile-01-20261106\")"
+      },
+      {
+        "old": "TRANSFERRED={\"compile_builder.py\":{\"bytes\":95194,\"sha256\":\"cce160807e3466c98fd3fd43f4a1b7c25e160d94a0e05fc39ad8103508da398a\"},\"expected-builder474-manifest.json\":{\"bytes\":99750,\"sha256\":\"e18fe837795e9c3bd684592f3c91228604b2b21ca9d918ac56cebdb4b40754dd\"},\"composer-audiocontrol-proof.json\":{\"bytes\":12564,\"sha256\":\"2a3d0c6c6727e83aa8c325c63488e932774d8c9fa41e32065b5a5952b8f5a1ab\"},\"build-scope.json\":{\"bytes\":7076,\"sha256\":\"65f48507f685808728c1cd5a7f4a44e09e9b57f0588befbb97ba77a94a25da3d\"},\"delta/tools/droidloom-update/src/android.rs\":{\"bytes\":329800,\"sha256\":\"72fe8ba4dfec2422b5809fa5af8c84387537527245c35d0e3a13c10060a361cc\"},\"delta/android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp\":{\"bytes\":1869,\"sha256\":\"9c8a0aecfa46ce0f1874362fa9dfff6a34326f9bf569b6fe7206dd6db1b3c9a6\"}}",
+        "new": "TRANSFERRED={\"compile_status.py\":{\"bytes\":84470,\"sha256\":\"66757ecc000a401f0f3ba690982945301d330a54fc84ab855923dbb236abe025\"},\"expected-status-manifest.json\":{\"bytes\":99958,\"sha256\":\"d8f6213f73726bd3766645e7decb5ebfac852f49852c49545e511a54b689d16e\"},\"build-scope.json\":{\"bytes\":4272,\"sha256\":\"554d3eee89100697b69336ccad6b97ca983aed064a75a000bf1cfa175709437b\"},\"delta/runtime/droidloom-supervisor/src/control.rs\":{\"bytes\":71588,\"sha256\":\"50d7bc3abd94f83233ef7d461f93cb714f843cacb3fd5c0e929d06671a95f89b\"},\"delta/runtime/droidloom-supervisor/src/development.rs\":{\"bytes\":101645,\"sha256\":\"37645978b33d443313694609625a97ac9dd7f6e14053664a48d02ff6d8daea90\"},\"delta/runtime/droidloom-supervisor/src/bin/droidloomctl.rs\":{\"bytes\":20606,\"sha256\":\"3733dd7586ebf534aef3d4a5d176a76b8822dd0c6a6b8b39fb64adf8e70cd484\"},\"delta/runtime/droidloom-supervisor/tests/cli_lifecycle.rs\":{\"bytes\":11717,\"sha256\":\"5310bfdb21b006ae1432b584c03fbbfb4c1f3a7cbd3ce226b54770ff4bbca317\"},\"delta/runtime/droidloom-supervisor/src/control_status_tests.rs\":{\"bytes\":11843,\"sha256\":\"0bafad33112df280c73ceedf675305236275bb043d0909fc4a71f6366c0a6727\"}}"
+      },
+      {
+        "old": "REUSED_AUTHORITY={\"go-control-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/go-control-result.json\",\"bytes\":44083,\"sha256\":\"391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674\",\"mode\":256},\"image-tools-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/image-tools-result.json\",\"bytes\":34633,\"sha256\":\"b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292\",\"mode\":256},\"prior-compile01-failure.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/prior-compile01-failure.json\",\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\",\"mode\":256},\"registry-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/registry-result.json\",\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\",\"mode\":256},\"rust193-tools-recheck-read03-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/rust193-tools-recheck-read03-result.json\",\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\",\"mode\":256},\"selected-build.stdout\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selected-build.stdout\",\"bytes\":2121,\"sha256\":\"82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d\",\"mode\":256},\"selection-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selection-result.json\",\"bytes\":14132,\"sha256\":\"185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf\",\"mode\":256},\"typed-lock-derivation.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-lock-derivation.json\",\"bytes\":6051,\"sha256\":\"c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0\",\"mode\":256},\"typed-root-trees-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-root-trees-result.json\",\"bytes\":51842,\"sha256\":\"0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8\",\"mode\":256},\"compiled-parent472-manifest.json\":{\"path\":\"/home/alex/work/pocket4-native-builder472-composer-retirement-entry-compile-01-20261106/attempt01/copied-builder-source-manifest.json\",\"bytes\":99523,\"sha256\":\"fcbf72b891d9a9bbbcd015777e50cc3ade436f25732a603b51de261eab9cb27a\",\"mode\":384},\"compiled-parent472-result.json\":{\"path\":\"/home/alex/work/pocket4-native-builder472-composer-retirement-entry-compile-01-20261106/attempt01/result.json\",\"bytes\":185025,\"sha256\":\"4c2f97bee3d6dbcc742f736c46fa18e9dc869830fe82211fb83c0afed6dfdbf4\",\"mode\":384},\"parent472-entry-proof.json\":{\"path\":\"/home/alex/work/pocket4-native-builder472-composer-retirement-entry-compile-01-20261106/control-source/composer-entry-proof.json\",\"bytes\":11586,\"sha256\":\"3bc022c9924dc13f7e2ad8d6ed85a079af1dec61733433b88c2c76d0df0c60da\",\"mode\":256},\"parent472-build-scope.json\":{\"path\":\"/home/alex/work/pocket4-native-builder472-composer-retirement-entry-compile-01-20261106/control-source/build-scope.json\",\"bytes\":6535,\"sha256\":\"f43cd778b75e484d53899eab543680e6b32ae5e54d6eca373b34223dcfcc8af9\",\"mode\":256},\"actual-wayland03-result.json\":{\"path\":\"/home/alex/work/p4-retirement-wayland-check03-20261106/attempt01/result.json\",\"bytes\":81805,\"sha256\":\"57546b6c6c2d4e05aea6099097944cdbe6746bbcc0124768a314414ec5663abd\",\"mode\":384}}",
+        "new": "REUSED_AUTHORITY={\"compiled-parent474-manifest.json\":{\"path\":\"/home/alex/work/pocket4-native-builder474-composer-audiocontrol-projection-compile-01-20261106/attempt01/copied-builder-source-manifest.json\",\"bytes\":99750,\"sha256\":\"e18fe837795e9c3bd684592f3c91228604b2b21ca9d918ac56cebdb4b40754dd\",\"mode\":384},\"compiled-parent474-result.json\":{\"path\":\"/home/alex/work/pocket4-native-builder474-composer-audiocontrol-projection-compile-01-20261106/attempt01/result.json\",\"bytes\":197750,\"sha256\":\"d3b0264441b2af0684c9f147bbb32e274a6d42f96fd83c19f0f24ba6937ad294\",\"mode\":384},\"prior-compile01-failure.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/prior-compile01-failure.json\",\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\",\"mode\":256},\"registry-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/registry-result.json\",\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\",\"mode\":256},\"rust193-tools-recheck-read03-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/rust193-tools-recheck-read03-result.json\",\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\",\"mode\":256}}"
+      },
+      {
+        "old": "EXPECTED={\"compile_builder.py\":{\"bytes\":95194,\"sha256\":\"cce160807e3466c98fd3fd43f4a1b7c25e160d94a0e05fc39ad8103508da398a\"},\"expected-builder474-manifest.json\":{\"bytes\":99750,\"sha256\":\"e18fe837795e9c3bd684592f3c91228604b2b21ca9d918ac56cebdb4b40754dd\"},\"composer-audiocontrol-proof.json\":{\"bytes\":12564,\"sha256\":\"2a3d0c6c6727e83aa8c325c63488e932774d8c9fa41e32065b5a5952b8f5a1ab\"},\"build-scope.json\":{\"bytes\":7076,\"sha256\":\"65f48507f685808728c1cd5a7f4a44e09e9b57f0588befbb97ba77a94a25da3d\"},\"delta/tools/droidloom-update/src/android.rs\":{\"bytes\":329800,\"sha256\":\"72fe8ba4dfec2422b5809fa5af8c84387537527245c35d0e3a13c10060a361cc\"},\"delta/android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp\":{\"bytes\":1869,\"sha256\":\"9c8a0aecfa46ce0f1874362fa9dfff6a34326f9bf569b6fe7206dd6db1b3c9a6\"},\"go-control-result.json\":{\"bytes\":44083,\"sha256\":\"391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674\"},\"image-tools-result.json\":{\"bytes\":34633,\"sha256\":\"b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292\"},\"prior-compile01-failure.json\":{\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\"},\"registry-result.json\":{\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\"},\"rust193-tools-recheck-read03-result.json\":{\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\"},\"selected-build.stdout\":{\"bytes\":2121,\"sha256\":\"82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d\"},\"selection-result.json\":{\"bytes\":14132,\"sha256\":\"185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf\"},\"typed-lock-derivation.json\":{\"bytes\":6051,\"sha256\":\"c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0\"},\"typed-root-trees-result.json\":{\"bytes\":51842,\"sha256\":\"0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8\"},\"compiled-parent472-manifest.json\":{\"bytes\":99523,\"sha256\":\"fcbf72b891d9a9bbbcd015777e50cc3ade436f25732a603b51de261eab9cb27a\"},\"compiled-parent472-result.json\":{\"bytes\":185025,\"sha256\":\"4c2f97bee3d6dbcc742f736c46fa18e9dc869830fe82211fb83c0afed6dfdbf4\"},\"parent472-entry-proof.json\":{\"bytes\":11586,\"sha256\":\"3bc022c9924dc13f7e2ad8d6ed85a079af1dec61733433b88c2c76d0df0c60da\"},\"parent472-build-scope.json\":{\"bytes\":6535,\"sha256\":\"f43cd778b75e484d53899eab543680e6b32ae5e54d6eca373b34223dcfcc8af9\"},\"actual-wayland03-result.json\":{\"bytes\":81805,\"sha256\":\"57546b6c6c2d4e05aea6099097944cdbe6746bbcc0124768a314414ec5663abd\"}}",
+        "new": "EXPECTED={\"compile_status.py\":{\"bytes\":84470,\"sha256\":\"66757ecc000a401f0f3ba690982945301d330a54fc84ab855923dbb236abe025\"},\"expected-status-manifest.json\":{\"bytes\":99958,\"sha256\":\"d8f6213f73726bd3766645e7decb5ebfac852f49852c49545e511a54b689d16e\"},\"build-scope.json\":{\"bytes\":4272,\"sha256\":\"554d3eee89100697b69336ccad6b97ca983aed064a75a000bf1cfa175709437b\"},\"delta/runtime/droidloom-supervisor/src/control.rs\":{\"bytes\":71588,\"sha256\":\"50d7bc3abd94f83233ef7d461f93cb714f843cacb3fd5c0e929d06671a95f89b\"},\"delta/runtime/droidloom-supervisor/src/development.rs\":{\"bytes\":101645,\"sha256\":\"37645978b33d443313694609625a97ac9dd7f6e14053664a48d02ff6d8daea90\"},\"delta/runtime/droidloom-supervisor/src/bin/droidloomctl.rs\":{\"bytes\":20606,\"sha256\":\"3733dd7586ebf534aef3d4a5d176a76b8822dd0c6a6b8b39fb64adf8e70cd484\"},\"delta/runtime/droidloom-supervisor/tests/cli_lifecycle.rs\":{\"bytes\":11717,\"sha256\":\"5310bfdb21b006ae1432b584c03fbbfb4c1f3a7cbd3ce226b54770ff4bbca317\"},\"delta/runtime/droidloom-supervisor/src/control_status_tests.rs\":{\"bytes\":11843,\"sha256\":\"0bafad33112df280c73ceedf675305236275bb043d0909fc4a71f6366c0a6727\"},\"compiled-parent474-manifest.json\":{\"bytes\":99750,\"sha256\":\"e18fe837795e9c3bd684592f3c91228604b2b21ca9d918ac56cebdb4b40754dd\"},\"compiled-parent474-result.json\":{\"bytes\":197750,\"sha256\":\"d3b0264441b2af0684c9f147bbb32e274a6d42f96fd83c19f0f24ba6937ad294\"},\"prior-compile01-failure.json\":{\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\"},\"registry-result.json\":{\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\"},\"rust193-tools-recheck-read03-result.json\":{\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\"}}"
+      },
+      {
+        "old": "len(TRANSFERRED)==6 and len(REUSED_AUTHORITY)==14 and len(EXPECTED)==20",
+        "new": "len(TRANSFERRED)==8 and len(REUSED_AUTHORITY)==5 and len(EXPECTED)==13"
+      },
+      {
+        "old": "# All fourteen fixed actual/source inputs are re-read before creating ROOT.",
+        "new": "# All five fixed actual/source inputs are re-read before creating ROOT."
+      },
+      {
+        "old": "str(source/'compile_builder.py')",
+        "new": "str(source/'compile_status.py')"
+      }
+    ],
+    "full_inverse_equal": true
+  },
+  "closure": {
+    "original_sources": 501,
+    "candidate_sources": 502,
+    "changed_existing": 4,
+    "added_test_module": 1,
+    "full_expected_manifest": {
+      "bytes": 99958,
+      "sha256": "d8f6213f73726bd3766645e7decb5ebfac852f49852c49545e511a54b689d16e",
+      "git_blob": "e2ae43e8353fedd37f53e56628cdc9725a8146f8"
+    },
+    "original_lock_unchanged": true,
+    "original_workspace_Cargo_unchanged": true,
+    "root_Cargo_actual": {
+      "supervisor": {
+        "bytes": 844,
+        "sha256": "8a5c31742965d5226baadfae8f9ab3370cb1973b2761f4ab7395689c6425f20f",
+        "git_blob": "564d16388d4215b552a4c816b16b24cb5436c4b0"
+      },
+      "applications": {
+        "bytes": 640,
+        "sha256": "a16f5016a22a5e94b2ae46007ebfac27bee9ea2d0164e28c61b06e2b8d48c747",
+        "git_blob": "0c20e342e76e6cba9d358112e33a215f968a5689"
+      }
+    },
+    "selected_dependencies": "runtime offline Cargo tree for both roots, normal/build and normal/build/dev; every selected registry package must be in original actual45, current complete archive/extracted source comparison; no package-count inference from original update root"
+  },
+  "execution": {
+    "exactordinarycommands": 38,
+    "real_process_lifecycle_controls": 3,
+    "new_dispatch_tests": 3,
+    "preserved_readiness_auth_tests": 5,
+    "old_CLI_tests": 6,
+    "new_CLI_route_test": 1,
+    "own_memory_bytes": 1073741824,
+    "own_cpu_percent": 100,
+    "nice": 15,
+    "deadline_seconds": 550,
+    "tool_timeout_seconds": 600,
+    "swapmax": "observed and unchanged; not forced to zero",
+    "Main": 0,
+    "Android": 0,
+    "service_modification": 0,
+    "deploy": 0
+  },
+  "consumer": {
+    "schema": "pocket4-status-caller-migration-review-v1",
+    "state": "SOURCE_ONLY_NOT_COMPILED_OR_DEPLOYED",
+    "reference_sources": {
+      "control": {
+        "blob": "2bed3026cc4f00c819de2ba7fd253165d29bebbb",
+        "bytes": 70656,
+        "sha256": "8289b74fdf040d2bd3a85d12f4488a82bdab4e1c4c6844ab90fe113228d91200"
+      },
+      "cli": {
+        "blob": "6f523958b64d22b481f77595fae7ab9842a6085a",
+        "bytes": 20413,
+        "sha256": "19a9e75d0deb0836fb9d125850600004a4a15be1b1ce8519fb8ca40e2165708d"
+      },
+      "ui_lib": {
+        "blob": "96c2e01b9d3a7d57df7f3f06a620bd9b9e8f5f2c",
+        "bytes": 34447,
+        "sha256": "e219a1dbeeda5c58f7efa4828b39f3e9f3e90777821e44e0a0aa3684353ec023"
+      },
+      "ui_main": {
+        "blob": "fdf92a5238b19d723d27e25d440e3c0defe2c026",
+        "bytes": 2893,
+        "sha256": "a75f608367ea58989eaac0882a2eed62bd2015f5fe0188c90e0e39a9142bd409"
+      },
+      "legacy_android_app": {
+        "blob": "4d0a3c9c23830c77708ec80bdf008693631dd764",
+        "bytes": 37574,
+        "sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66"
+      },
+      "current_discovery": {
+        "bytes": 8332,
+        "sha256": "9ed0069897faebba50cec3d93b08da54f1c791d6e2e775d26ec798c38b227886",
+        "blob": "d94308531ea7d6b014c79900a1c61f001e081717"
+      }
+    },
+    "observed_routes": [
+      {
+        "caller": "CLI Start/Restart default",
+        "route": "Start/Restart success -> WaitReady",
+        "change": "none; original fresh wait remains"
+      },
+      {
+        "caller": "CLI --no-wait",
+        "route": "lifecycle only; explicit readiness-not-checked message",
+        "change": "none"
+      },
+      {
+        "caller": "Applications main",
+        "route": "periodic reconcile -> ControlCatalog.applications -> ListApplications -> original fresh wait -> typed catalog",
+        "change": "none; does not poll Status or parse ready messages"
+      },
+      {
+        "caller": "Applications icons",
+        "route": "ApplicationIcon -> original fresh wait -> typed icon",
+        "change": "none"
+      },
+      {
+        "caller": "Desktop launchers",
+        "route": "droidloomctl launch -> Launch -> original fresh wait -> native launcher",
+        "change": "none"
+      },
+      {
+        "caller": "current_discovery",
+        "route": "one explicit readiness CLI call, timeout=8, check=True; original state/message predicate and all owner/namespace guards",
+        "change": "status command changed to readiness, no fallback"
+      },
+      {
+        "caller": "frozen legacy android_app discover",
+        "route": "historical Status ready-message gate",
+        "change": "frozen reference unchanged; not an active route in the migrated explicitly supplied discovery facade; direct legacy callers fail closed on lifecycle message"
+      }
+    ],
+    "boundary": {
+      "installed_binary_source_version_proven": false,
+      "current_Main_mutated": false,
+      "old_London_unknown_preserved": true,
+      "old_installer_packets_modified": false,
+      "private_B_exported": false,
+      "new_runtime_admission": false
+    },
+    "tests": {
+      "Rust_real_dispatch": 3,
+      "Rust_owned_fixture_ignored_entry": 1,
+      "Python_original_owner": 15,
+      "Python_new_readiness": 5,
+      "actual_execution": false
+    }
+  },
+  "limitations": {
+    "Python_or_Rust_this_candidate_executed": false,
+    "installed_Main_source_version_verified": false,
+    "old_London_failure_attributed": false,
+    "live_Status_repair_qualified": false,
+    "current_Applications_UI_changed": false,
+    "existing_R6_frozen_source_updated": false,
+    "consumer_integration_and_runtime_deployment_require_separate_actual_binding": true
+  },
+  "staged_packet_pins": {
+    "compile_status.py": {
+      "bytes": 84470,
+      "sha256": "66757ecc000a401f0f3ba690982945301d330a54fc84ab855923dbb236abe025"
+    },
+    "expected-status-manifest.json": {
+      "bytes": 99958,
+      "sha256": "d8f6213f73726bd3766645e7decb5ebfac852f49852c49545e511a54b689d16e"
+    },
+    "build-scope.json": {
+      "bytes": 4272,
+      "sha256": "554d3eee89100697b69336ccad6b97ca983aed064a75a000bf1cfa175709437b"
+    },
+    "delta/runtime/droidloom-supervisor/src/control.rs": {
+      "bytes": 71588,
+      "sha256": "50d7bc3abd94f83233ef7d461f93cb714f843cacb3fd5c0e929d06671a95f89b"
+    },
+    "delta/runtime/droidloom-supervisor/src/development.rs": {
+      "bytes": 101645,
+      "sha256": "37645978b33d443313694609625a97ac9dd7f6e14053664a48d02ff6d8daea90"
+    },
+    "delta/runtime/droidloom-supervisor/src/bin/droidloomctl.rs": {
+      "bytes": 20606,
+      "sha256": "3733dd7586ebf534aef3d4a5d176a76b8822dd0c6a6b8b39fb64adf8e70cd484"
+    },
+    "delta/runtime/droidloom-supervisor/tests/cli_lifecycle.rs": {
+      "bytes": 11717,
+      "sha256": "5310bfdb21b006ae1432b584c03fbbfb4c1f3a7cbd3ce226b54770ff4bbca317"
+    },
+    "delta/runtime/droidloom-supervisor/src/control_status_tests.rs": {
+      "bytes": 11843,
+      "sha256": "0bafad33112df280c73ceedf675305236275bb043d0909fc4a71f6366c0a6727"
+    },
+    "compiled-parent474-manifest.json": {
+      "bytes": 99750,
+      "sha256": "e18fe837795e9c3bd684592f3c91228604b2b21ca9d918ac56cebdb4b40754dd"
+    },
+    "compiled-parent474-result.json": {
+      "bytes": 197750,
+      "sha256": "d3b0264441b2af0684c9f147bbb32e274a6d42f96fd83c19f0f24ba6937ad294"
+    },
+    "prior-compile01-failure.json": {
+      "bytes": 7681,
+      "sha256": "44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3"
+    },
+    "registry-result.json": {
+      "bytes": 211021,
+      "sha256": "b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993"
+    },
+    "rust193-tools-recheck-read03-result.json": {
+      "bytes": 31452,
+      "sha256": "60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb"
+    }
+  },
+  "transport": {
+    "wire": {
+      "bytes": 436387,
+      "sha256": "6e5fc5de1c18d647cf71b23229d9953a077e4db928dfbeda3a1aba13d947b65a"
+    },
+    "stage": {
+      "bytes": 9210,
+      "sha256": "b3c5d25e7994b158755055107e4c9e2f26a59cd18fcc09c59ad69cf5dee0a86c"
+    },
+    "request": {
+      "bytes": 468678,
+      "sha256": "db32d3d7abb8821957bd41348784d0abe214b447bfb6962771b0a45c9c13facd",
+      "git_blob": "2866af2fb7af1f38d431822cc375a2ad3df26506"
+    }
+  }
+}

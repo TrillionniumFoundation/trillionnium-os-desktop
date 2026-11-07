@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "source_only_causality_review": true,
+  "actual_command_evidence_handling": "Original command005 bodies remain private with Root. This trace records only Root-supplied safe result metadata.",
+  "safe_actual": {
+    "returncode": 153,
+    "stdout_bytes": 0,
+    "stderr_bytes": 0,
+    "timed_out": false,
+    "spawned": true,
+    "owned_command_joined": true,
+    "command_result": {
+      "bytes": 444,
+      "sha256": "fa0e15d2fad30c1c1d811a41235fc55815efe9978a4b7d7dc3310698742c74c8"
+    }
+  },
+  "original_context": {
+    "bytes": 22014,
+    "sha256": "8d544b38250c3994bea62f5b00c5a9a1f8999d951643f4fe06133861a362b9d4",
+    "git_blob_sha1": "8970aadd66bc600983d38d1b48485e8990e0731c"
+  },
+  "recorder": {
+    "bytes": 41689,
+    "sha256": "c63cbdca615a609ebb41bcb25db6b770f43c4488c46a8f7b1dbee4bc462b4e64",
+    "git_blob_sha1": "bf71c5720c8afe7da2f5cf9fe44ae03d87999d9a"
+  },
+  "exact_held_helper_source": {
+    "bytes": 6653,
+    "sha256": "adf5b08f7854bec061ab8d2a208f3414339701c816218881e6550afde2e6c31c",
+    "git_blob_sha1": "81d23b778ecc85e2a0c931feb7f256cb06f21101",
+    "source_url": "https://raw.githubusercontent.com/TrillionniumFoundation/trillionnium-os-desktop/32df6ea6403c24588638e3fbbfe6edc1897393e9/compat/android/pocket4/continuation-r11/checkpoint-05/namespace-entry-r4/source/held_namespace_entry.rs"
+  },
+  "source_facts": [
+    "Original fixture command_with_bound sets RLIMIT_FSIZE soft=262144 around R6 Flow.command and restores the parent afterward.",
+    "The original R6 recorder passes process.wait() returncode through; it has no preexec_fn and starts one new session.",
+    "The exact held helper maps wait status: a normal child exit uses its exit code; a signaled child uses 128 plus the signal number. Setup failure paths call fail(), which emits a message and exits125.",
+    "Thus return153 is compatible with child exit153 or a helper-encoded signal25. This is a many-to-one status mapping and is not evidence of which happened.",
+    "A file-size resource limit covers regular-file growth by an inheriting process, not just stdout/stderr. The replacement avoids altering that limit and instead bounds its own log writes."
+  ],
+  "not_proven": [
+    "Which process or syscall produced the original 153",
+    "Any actual write exceeding262144 in run01",
+    "Which signal, if any, occurred",
+    "Which exact current Main am script branch ran",
+    "Native/ART/test failure cause or twelve tests passing"
+  ],
+  "primary_references": [
+    "https://docs.python.org/3.14/library/subprocess.html#subprocess.CompletedProcess.returncode",
+    "https://man7.org/linux/man-pages/man2/getrlimit.2.html",
+    "https://raw.githubusercontent.com/TrillionniumFoundation/trillionnium-os-desktop/32df6ea6403c24588638e3fbbfe6edc1897393e9/compat/android/pocket4/continuation-r11/checkpoint-05/namespace-entry-r4/source/held_namespace_entry.rs"
+  ]
+}

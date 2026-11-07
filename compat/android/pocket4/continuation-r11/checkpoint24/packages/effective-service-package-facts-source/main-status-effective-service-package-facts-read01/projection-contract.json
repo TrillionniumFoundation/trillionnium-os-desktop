@@ -1,0 +1,111 @@
+{
+  "schema": "pocket4-fixed-effective-service-and-package-projection-contract-v1",
+  "state": "SOURCE_ONLY_NOT_EXECUTED",
+  "execution": {
+    "dispatcher": "Root only, native process_start; no shell or new collector",
+    "command_groups": 4,
+    "exact_requests": true,
+    "manager_fallback": false,
+    "privilege_fallback": false,
+    "automatic_retries": false,
+    "before_and_after_tool_file_info": "Root compares complete path/bytes/SHA256/version/ownership/mode/nlink against the preserved actual tool metadata. Any drift prevents facts qualification.",
+    "resources_per_job": {
+      "timeout_seconds": 15,
+      "memory_max_bytes": 134217728,
+      "cpu_quota_percent": 25,
+      "nice": 10
+    },
+    "raw_stdout_handling": "Root privately retains full stdout/stderr and exact terminal metadata. Export only this closed projection and exact byte/hash references; no raw unknown unit values, paths, arguments or stderr.",
+    "output_limits_per_job": {
+      "stdout_bytes": 65536,
+      "stderr_bytes": 16384
+    },
+    "completion_gate": "Exact single job, terminal joined, no timeout, complete durable untruncated streams; tool observations stable. Bound overflow or incomplete streams stays unqualified."
+  },
+  "systemctl": {
+    "exact_properties": [
+      "Id",
+      "LoadState",
+      "ActiveState",
+      "SubState",
+      "MainPID",
+      "InvocationID",
+      "FragmentPath",
+      "DropInPaths",
+      "ExecStart",
+      "User",
+      "Group",
+      "NeedDaemonReload",
+      "UnitFileState"
+    ],
+    "requested_units": [
+      {
+        "name": "droidloomd.service",
+        "scope": "system"
+      },
+      {
+        "name": "droidloom.service",
+        "scope": "user"
+      },
+      {
+        "name": "droidloom-applications.service",
+        "scope": "user"
+      }
+    ],
+    "input_gate": "Strict UTF-8 LF property records. Split each record once at its first '='; require each exact requested key once, no unknown/duplicate keys or continuation lines.",
+    "required_exit_code": 0,
+    "required_stderr_empty": true,
+    "public_fields": {
+      "Id": "Must equal the one requested known unit, else expose only length/hash and mark mismatch.",
+      "LoadState": "Literal only from stub, loaded, not-found, bad-setting, error, merged, masked; unknown hash-only.",
+      "ActiveState": "Literal only from active, reloading, inactive, failed, activating, deactivating, maintenance, refreshing; unknown hash-only.",
+      "SubState": "Literal only from running, dead, exited, failed, start-pre, start, start-post, stop, stop-sigterm, stop-sigkill, stop-post, final-sigterm, final-sigkill, auto-restart; unknown hash-only.",
+      "MainPID": "Decimal integer 0..2147483647; compare to the actual prior per-unit observation, reporting equality without adopting a new PID.",
+      "InvocationID": "Empty or exact 32 lowercase hex; compare to actual prior per-unit observation, reporting equality without assuming stability outside the read.",
+      "FragmentPath": "Literal only if exactly one of the three supplied public paths. Otherwise UTF8 byte count/full SHA256 and known_path_match=false; do not adopt an unknown path.",
+      "DropInPaths": "Always full byte count/SHA256. Exact empty string is confirmed no listed drop-ins; nonempty remains private for Root review and requires future individually fixed paths before file access.",
+      "ExecStart": "Full byte count/SHA256, not raw argv. Root privately checks actual executable/arguments and reports exact matches to the four known public binary paths separately. Do not infer complete execution semantics from a substring.",
+      "User": "Empty is manager-default, not root. A decimal UID or literal root may be emitted; other values hash-only. User-manager actor must not be inferred solely from this empty property.",
+      "Group": "Empty is manager-default, not root. Decimal GID or literal root may be emitted; other values hash-only.",
+      "NeedDaemonReload": "Exact yes/no only.",
+      "UnitFileState": "Literal only from enabled, enabled-runtime, linked, linked-runtime, alias, masked, masked-runtime, static, disabled, indirect, generated, transient, bad; unknown hash-only."
+    },
+    "changed_or_unresolved": "Record actual mismatches and hashes. Service query success is not current_guard pass, Android readiness, deployed-source identity or deployment authorization.",
+    "user_manager": "Use only the already observed user manager under the configured native host execution identity. A missing user bus is a failure, not permission for sudo, a second manager, guessed XDG variables or retry."
+  },
+  "dpkg_query": {
+    "exact_paths": [
+      "/usr/bin/droidloom-supervisor",
+      "/usr/bin/droidloomd",
+      "/usr/bin/droidloomctl",
+      "/usr/bin/droidloom-applications",
+      "/usr/lib/systemd/system/droidloomd.service",
+      "/usr/lib/systemd/user/droidloom.service",
+      "/usr/lib/systemd/user/droidloom-applications.service"
+    ],
+    "exit_codes": {
+      "0": "dpkg-query reports successful search; still parse every requested path independently.",
+      "1": "One or more requested patterns have no match; preserve per-path matched/no-match/unresolved outcomes.",
+      "other": "Query failure, no package-ownership qualification."
+    },
+    "stdout": "Only accept exact '<package-list>: <requested-full-path>' records, with suffix equal to one of the seven requested paths. Split at the last ': ' so architecture-qualified package names remain intact.",
+    "package_token_grammar": "[a-z0-9][a-z0-9+.-]*(?::[a-z0-9][a-z0-9-]*)?",
+    "multiple_owners": "Split the package-list only at literal ', '; every token must match the closed grammar. Keep all owners, never choose one silently.",
+    "no_match": "Only a fixed English no-path-found diagnostic whose whole path equals one requested argument establishes that path's no-match observation. Unknown diagnostics and diversion records are length/hash-only and keep the affected path unresolved.",
+    "no_match_not_unmanaged": "No dpkg file owner is not proof that the runtime is unmanaged. An independent marker or another installation record can still exist.",
+    "followup": "If an exact owner is observed, prepare one separate read-only dpkg-query --show with explicit Package/Architecture/Version/db:Status-Abbrev fields for only the observed package names. No installation, removal, database repair or package mutation."
+  },
+  "no_authority": {
+    "Main_guard_pass": false,
+    "Android_ready": false,
+    "runtime_requalified": false,
+    "installed_source_version_verified": false,
+    "package_mutation": false,
+    "service_mutation": false,
+    "deploy": false,
+    "restart": false,
+    "rollback": false
+  },
+  "side_effect_disclosure": "These invoke fixed systemctl/dpkg-query host processes. systemctl queries its explicitly selected systemd manager over D-Bus; neither operation calls Droidloom Status/Readiness or Android. They do not claim zero host children.",
+  "existing_failures": "Ticket pre-install read-only HOST_COMMAND_INTERRUPTED/post-guard UNKNOWN, London launch UNKNOWN and all old source/result history remain unchanged."
+}

@@ -1,0 +1,102 @@
+[
+  {
+    "before": "\"\"\"One fixed host-only entry-control execution for the seven install sources.\n38 original pure controls + four explicit manifest constructor seams + eight real\nhost-owned lease controls. No Main, Android, namespace entry, child or install.\n\"\"\"",
+    "after": "\"\"\"One fixed host-only entry-control execution for seven runtime phase sources.\n38 original pure controls, four manifest constructor controls, twelve real owned\nlease controls and six production phase/context wiring controls. Complete original\ninstall receipts are qualified through an explicit read seam. No Main, Android,\nnamespace entry, child, install, run, or retirement is dispatched.\n\"\"\"",
+    "count": 1
+  },
+  {
+    "before": "pocket4-original-ndk-install-entry-controls02",
+    "after": "pocket4-original-ndk-runtime-entry-controls01",
+    "count": 1
+  },
+  {
+    "before": "'fixture_phases.py','current_discovery.py','install_lease.py','install_worker.py',",
+    "after": "'fixture_phases.py','current_discovery.py','phase_lease.py','phase_worker.py',",
+    "count": 1
+  },
+  {
+    "before": "CONTROL_NAMES = {'check_fixture.py','check_external_manifest.py','check_install_lease.py'}",
+    "after": "CONTROL_NAMES = {'check_fixture.py','check_external_manifest.py',\n                 'check_phase_lease.py','check_phase_wiring.py'}\nREFERENCE_NAMES = {'static-build.original.json','install-result.original.json',\n                   'install-summary.original.json','install-terminal.original.json'}",
+    "count": 1
+  },
+  {
+    "before": "def main():",
+    "after": "def qualify_original_install(sources,refs):\n    \"\"\"Run the actual new worker's receipt gate; only read IO is a named seam.\n    The original raw receipt/terminal remain unchanged. No current file, Main or\n    installed package observation is claimed by this host-only qualification.\n    \"\"\"\n    fixture=module(sources['fixture_contract.py'],'actual_install_contract')\n    phases=module(sources['fixture_phases.py'],'actual_install_read_boundary')\n    worker=module(sources['phase_worker.py'],'actual_install_worker_gate')\n    need(set(refs)==REFERENCE_NAMES,'EXACT_ORIGINAL_INSTALL_REFERENCE_SET')\n    for name,raw in refs.items():\n        need({'bytes':len(raw),'sha256':digest(raw)}==worker.REFERENCE_PINS[name],\n             'ACTUAL_ORIGINAL_INSTALL_REFERENCE_CHANGED')\n    binding=json.loads(refs['static-build.original.json'])\n    need(binding.get('complete_static_build_qualified') is True and\n         binding.get('actual_original_NdkTests_runtime_qualified') is False and\n         binding.get('manifest_target_sdk')==24,'ACTUAL_APK05_STATIC_AUTHORITY_REQUIRED')\n    build={'build_result':dict(worker.BUILD_REPORT_PIN),'APK':binding['APK'],\n           'signer_sha256':binding['signature_certificate_sha256']}\n    original=phases.read_exact_file\n    reads=[]\n    def read(path,limit,pin=None,expected_identity=None):\n        need(path==worker.INSTALL_RESULT and limit==worker.RESULT_LIMIT and\n             pin==worker.REFERENCE_PINS['install-result.original.json'] and\n             expected_identity is None,'ONLY_FIXED_ORIGINAL_INSTALL_READ_SEAM')\n        reads.append(path)\n        return refs['install-result.original.json']\n    try:\n        phases.read_exact_file=read\n        authority=worker.original_installation(phases,fixture,refs,build)\n        need(authority['installed_tuple']['uid']==10162 and\n             authority['scope_installation']['uid']==10162 and\n             authority['runtime_qualified'] is False and\n             authority['install_result']==worker.REFERENCE_PINS['install-result.original.json'] and\n             reads==[worker.INSTALL_RESULT],'COMPLETE_REAL_INSTALL_CONSTRUCTOR_REQUIRED')\n    finally:\n        phases.read_exact_file=original\n    need(phases.read_exact_file is original,'ACTUAL_INSTALL_READ_SEAM_RESTORED')\n    return {'original_install_report':dict(authority['install_result']),\n        'qualified_original_install_UID':authority['installed_tuple']['uid'],\n        'explicit_original_read_seam_calls':len(reads),'actual_files_read':0,\n        'Main_or_Android':0,'children':0,'current_device_UID_observed':False,\n        'runtime_qualified':False,'read_seam_restored':True}\n\n\ndef main():",
+    "count": 1
+  },
+  {
+    "before": "'counts':{'fixture':0,'manifest':0,'lease':0},'cases':[],",
+    "after": "'counts':{'fixture':0,'manifest':0,'lease':0,'wiring':0},'cases':[],",
+    "count": 1
+  },
+  {
+    "before": "'source_manifest':None,'sources':{},'controls':{},'groups':{},",
+    "after": "'source_manifest':None,'sources':{},'controls':{},'groups':{},\n        'reference_pins':{},'original_install_reference':None,",
+    "count": 1
+  },
+  {
+    "before": "'namespace_entry':False,'actual_install_nonce_consumed':False,",
+    "after": "'namespace_entry':False,'actual_install_nonce_consumed':False,\n        'actual_run_or_retire_nonce_consumed':False,",
+    "count": 1
+  },
+  {
+    "before": "set(packet)=={'schema','kind','sources','manifest','controls'}",
+    "after": "set(packet)=={'schema','kind','sources','manifest','controls','references'}",
+    "count": 1
+  },
+  {
+    "before": "set(packet['sources'])==SOURCE_NAMES and set(packet['controls'])==CONTROL_NAMES,",
+    "after": "set(packet['sources'])==SOURCE_NAMES and set(packet['controls'])==CONTROL_NAMES and\n             set(packet['references'])==REFERENCE_NAMES,",
+    "count": 1
+  },
+  {
+    "before": "controls={name:member(row,32768) for name,row in packet['controls'].items()}",
+    "after": "controls={name:member(row,32768) for name,row in packet['controls'].items()}\n        refs={name:member(row,131072) for name,row in packet['references'].items()}",
+    "count": 1
+  },
+  {
+    "before": "        stage='original_fixture38'",
+    "after": "        stage='original_install_reference'\n        result['reference_pins']={name:{'bytes':len(raw),'sha256':digest(raw)}\n                                  for name,raw in refs.items()}\n        result['original_install_reference']=qualify_original_install(sources,refs)\n        stage='original_fixture38'",
+    "count": 1
+  },
+  {
+    "before": "stage='real_owned_lease8'",
+    "after": "stage='real_owned_lease12'",
+    "count": 1
+  },
+  {
+    "before": "lease_test=module(controls['check_install_lease.py'],'real_owned_lease8')",
+    "after": "lease_test=module(controls['check_phase_lease.py'],'real_owned_lease12')",
+    "count": 1
+  },
+  {
+    "before": "third.get('count')==8",
+    "after": "third.get('count')==12",
+    "count": 1
+  },
+  {
+    "before": "third.get('actual_install_nonce_consumed') is False",
+    "after": "third.get('actual_run_or_retire_nonce_consumed') is False",
+    "count": 1
+  },
+  {
+    "before": "'EIGHT_REAL_OWNED_LEASE_CONTROLS_AND_CLOSURE_REQUIRED'",
+    "after": "'TWELVE_REAL_OWNED_LEASE_CONTROLS_AND_CLOSURE_REQUIRED'",
+    "count": 1
+  },
+  {
+    "before": "result['counts']['lease']=8",
+    "after": "result['counts']['lease']=12",
+    "count": 1
+  },
+  {
+    "before": "        need(result['counts']=={'fixture':38,'manifest':4,'lease':8} and\n             len(result['cases'])==len({x['name'] for x in result['cases']})==50 and",
+    "after": "        stage='production_phase_wiring6'\n        wiring_test=module(controls['check_phase_wiring.py'],'production_phase_wiring6')\n        fourth=wiring_test.run_controls(sources,manifest_raw)\n        result['groups']['wiring']=fourth\n        need(fourth.get('ok') is True and fourth.get('count')==6 and\n             fourth.get('seams_restored') is True and\n             fourth.get('production_phase_bodies_and_joined_receipt_parser_called') is True and\n             fourth.get('production_open_context_and_guard_closures_called') is True and\n             fourth.get('synthetic_IO_only') is True and\n             fourth.get('actual_Main_or_Android')==fourth.get('actual_children')==\n             fourth.get('actual_files_read')==fourth.get('actual_files_written')==0 and\n             fourth.get('actual_run_or_retire_nonce_consumed') is False and\n             fourth.get('runtime_qualified') is False,\n             'SIX_PRODUCTION_PHASE_AND_CONTEXT_WIRING_CONTROLS_REQUIRED')\n        result['counts']['wiring']=6\n        result['cases'].extend(fourth['cases'])\n        need(result['counts']=={'fixture':38,'manifest':4,'lease':12,'wiring':6} and\n             len(result['cases'])==len({x['name'] for x in result['cases']})==60 and",
+    "count": 1
+  },
+  {
+    "before": "'EXACT_FIFTY_UNIQUE_PASSED_CASES_REQUIRED'",
+    "after": "'EXACT_SIXTY_UNIQUE_PASSED_CASES_REQUIRED'",
+    "count": 1
+  }
+]

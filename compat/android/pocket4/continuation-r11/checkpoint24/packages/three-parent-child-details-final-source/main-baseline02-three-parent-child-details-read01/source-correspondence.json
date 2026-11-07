@@ -1,0 +1,42 @@
+{
+  "schema": "pocket4-fixed-three-parent-child-details-source-correspondence-v1",
+  "state": "SOURCE_ONLY_NOT_EXECUTED",
+  "original": {
+    "bytes": 19475,
+    "sha256": "6349b8bb54ec14fb670593d92944b817ea900f9976f9fd89a6870d99893ea2de",
+    "git_blob": "80b00df48560e6e6bddac1e8a256da724b0e9d84"
+  },
+  "candidate": {
+    "bytes": 33703,
+    "sha256": "93153ae726e2ad1bef35b8785fdf0eaacf3f3070768e919b5271e988b62860f3",
+    "git_blob": "0dd136e45a5343a7597d33d61ba92108d3805554"
+  },
+  "original_request": {
+    "bytes": 20809,
+    "sha256": "39857a02a07e596eb9f76a78ab45afdf5beafab4c6b2d6a7afdf578a4780282a",
+    "git_blob": "608dd085e3959ecc13809cea4becdf6387d1cf8e"
+  },
+  "exact_reverse_edits": 6,
+  "whole_source_inverse_exact": true,
+  "original_pre_execute_prefix": {
+    "bytes": 9776,
+    "sha256": "8877297d36fd2b55130afbf24104e008ab9b65a13912995eb2c2adb8ca4db011",
+    "git_blob": "171d6af8888e6b9b607fa7fadb363ec16fff263d"
+  },
+  "original_pre_execute_prefix_unchanged": true,
+  "original_main_tail_unchanged": true,
+  "original_production_policy_file_unchanged": true,
+  "original_ten_controls_byte_unchanged": true,
+  "original_base_read_seconds": 8,
+  "new_child_projection_controls": 8,
+  "total_controls": 18,
+  "source_wrapper_injection": "SOURCE_SHA256 is assigned only after exact stdin length and full SHA256 equality.",
+  "wrapper_changes": [
+    "fresh unique key and module label",
+    "exact 33703-byte/SHA source pin",
+    "65537 stdin ceiling",
+    "SOURCE_SHA256 injection",
+    "finally timer cancellation and handler restoration",
+    "self watchdog 15 -> 12 seconds; outer timeout 30 -> 15 seconds"
+  ]
+}

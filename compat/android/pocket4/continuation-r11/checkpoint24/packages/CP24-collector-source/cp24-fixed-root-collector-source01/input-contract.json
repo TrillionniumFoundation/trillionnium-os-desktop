@@ -1,0 +1,48 @@
+{
+  "schema": "cp24-collector-source-input-contract-v1",
+  "status": "SOURCE_ONLY_UNBOUND_NO_CP24_SEED_OR_CUT_SELECTED",
+  "authority": null,
+  "seed_raw": null,
+  "parent_cut_raw": null,
+  "required_authority_fields": {
+    "schema": "literal root-cp24-assembly-authority-v1",
+    "checkpoint": "literal integer 24",
+    "cut_utc": "Root supplied exact UTC cut string",
+    "base_commit": "Root supplied CP23 published commit SHA",
+    "base_tree": "Root supplied CP23 published root tree SHA",
+    "seed": "Root supplied original bytes/SHA256/git_blob_sha1",
+    "previous_cut_scope": "Root supplied original CP23 cut_scope bytes/SHA256/git_blob_sha1",
+    "previous_master": "Root supplied original CP23 master bytes/SHA256/git_blob_sha1",
+    "new_root_count": "Root supplied exact authorized count",
+    "inherited_root_count": "Root supplied exact count independently matched against the CP23 parent"
+  },
+  "seed_schema": "root-checkpoint24-fixed-seed-v1",
+  "seed_fields_used": [
+    "cut_utc",
+    "base_commit",
+    "base_tree",
+    "previous_master",
+    "previous_cut_scope",
+    "new_roots",
+    "canonical_inherited_roots"
+  ],
+  "status_fields": "Preserve the original seed; never infer operational acceptance from them.",
+  "archive_reference_policy": {
+    "leaf": "Retain original body with full UTF8 bytes/SHA256/Git verification.",
+    "authority": "Only frozen seed root lists and real canonical Git subtree cuts.",
+    "JSON_links": "Opaque; neither known nor unknown fields cause traversal or authorization.",
+    "unknown_links": "Preserved unexpanded. A new grant requires Root's explicit immutable seed."
+  },
+  "capabilities": {
+    "Git": "Fixed repository; exact get blob/get tree/create blob/create tree only.",
+    "mutation": "Immutable objects/progress only; no commit/ref/PR methods.",
+    "trees": "Shallow original reads with immediate Merkle recomputation.",
+    "blobs": "Complete UTF8 body only. An explicit Root-authorized carrier may supply the same original through the blob adapter, but must pass whole original verification. No carrier is inferred from JSON.",
+    "failure": "Stop and retain failed read/pending immutable SHA; no automatic unknown write replay."
+  },
+  "output": "Collection progress and normalized packages with original leaf pins and canonical cuts. Root later supplies status, final index/cut_scope and independent lossless parent-master append.",
+  "no_actual_seed_processing": true,
+  "no_Hepta": true,
+  "no_local_execution": true,
+  "no_refs": true
+}

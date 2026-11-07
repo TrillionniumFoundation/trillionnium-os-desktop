@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys\nEXPECTED={\"bytes\":436387,\"sha256\":\"6e5fc5de1c18d647cf71b23229d9953a077e4db928dfbeda3a1aba13d947b65a\"}\nSTAGE={\"bytes\":9210,\"sha256\":\"b3c5d25e7994b158755055107e4c9e2f26a59cd18fcc09c59ad69cf5dee0a86c\"}\nwire=sys.stdin.buffer.read(EXPECTED['bytes']+1)\nif len(wire)!=EXPECTED['bytes'] or hashlib.sha256(wire).hexdigest()!=EXPECTED['sha256']:\n    raise RuntimeError('fixed provider compiler transport length/hash mismatch')\nvalue=json.loads(wire)\nif type(value) is not dict or set(value)!={'schema','stage','packet'} or value['schema']!=1 or type(value['stage']) is not str:\n    raise RuntimeError('fixed provider compiler envelope differs')\nstage=value['stage'].encode('utf-8')\nif len(stage)!=STAGE['bytes'] or hashlib.sha256(stage).hexdigest()!=STAGE['sha256']:\n    raise RuntimeError('fixed provider compiler stage pin differs')\nscope={'__name__':'__stage__','__file__':'<fixed-provider-stage>'}\nexec(compile(stage,'<fixed-provider-stage>','exec'),scope,scope)\nscope['main'](value['packet'])\n"
+    ],
+    "created_unix_ms": 1794003321437,
+    "cwd": "/",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b2ee425d-fc05-8037",
+    "idempotency_key": "pocket4-native-status-lifecycle-readiness-compile-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b2ee425d-fc05-8037",
+    "request_digest": "52b0ab61281dcccd68ced786b4bb2cacc411b979504a5c112274a1c106dd4b38",
+    "request_fingerprint": 5958450740784385229,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b2ee425d-fc05-8037"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b2ee425d-fc05-8037"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

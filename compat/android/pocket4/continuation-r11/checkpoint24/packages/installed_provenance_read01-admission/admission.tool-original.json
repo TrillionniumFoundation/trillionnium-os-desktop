@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "import signal,sys,hashlib\nold=signal.signal(signal.SIGALRM,lambda signum,frame:(_ for _ in ()).throw(TimeoutError(\"INVENTORY_SELF_WATCHDOG\")))\nsignal.setitimer(signal.ITIMER_REAL,55)\ntry:\n raw=sys.stdin.buffer.read(65537)\n assert len(raw)==26537 and hashlib.sha256(raw).hexdigest()==\"019d5f24023df60b6b35a6ae8a9c89369cd726e0450979de82c61962820c2f64\"\n ns={\"__name__\":\"fixed_installed_provenance\",\"__file__\":\"<verified-fixed-installed-provenance>\",\"SOURCE_SHA256\":\"019d5f24023df60b6b35a6ae8a9c89369cd726e0450979de82c61962820c2f64\"}\n exec(compile(raw,\"read_installed_provenance.py\",\"exec\"),ns)\n rc=ns[\"main\"]()\nfinally:\n signal.setitimer(signal.ITIMER_REAL,0)\n signal.signal(signal.SIGALRM,old)\nraise SystemExit(rc)\n"
+    ],
+    "created_unix_ms": 1794007071187,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b32779d3-fc05-80d2",
+    "idempotency_key": "pocket4-current-baseline02-fixed-installed-provenance-read01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b32779d3-fc05-80d2",
+    "request_digest": "0560cf598b28e3a8c7cbfbcc955e9e191c5b676de182a771707f8e28ba92842d",
+    "request_fingerprint": 387537551447614376,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b32779d3-fc05-80d2"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b32779d3-fc05-80d2"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

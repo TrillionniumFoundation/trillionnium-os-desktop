@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "kind": "pocket4-native-independent-presenter-existing-evidence-review01",
+  "reviewer": "native_recovery_resume",
+  "status": "PUBLIC_EXISTING_EVIDENCE_REVIEW_ONLY",
+  "inputs": {
+    "derived_bridge": {
+      "bytes": 3050,
+      "sha256": "d4867b77ee989e0852672d48a73155e5b658483b99a37abd3dd1f36a1c22e247",
+      "git_blob_sha1": "88f5cbd6c9efb4bcb10ad8c322d9f1954c5a9093"
+    },
+    "public_three_parent_actual": {
+      "bytes": 35276,
+      "sha256": "fde7488aa24ca4dd7ecb162b7e56da5f5a33194558a408d1849b6478cd94acef",
+      "git_blob_sha1": "1b053cb3b3ac87661675a49acb32f9c4f63b2494"
+    },
+    "actual_bound_three_parent_source": {
+      "bytes": 33703,
+      "sha256": "93153ae726e2ad1bef35b8785fdf0eaacf3f3070768e919b5271e988b62860f3",
+      "git_blob_sha1": "0dd136e45a5343a7597d33d61ba92108d3805554"
+    },
+    "original_public_baseline_policy": {
+      "bytes": 32044,
+      "sha256": "c42514e346a5d61efe59c438ae64e4e90a0c37dfcd539552661f2fc87c64516d",
+      "git_blob_sha1": "bc893fd0811ba1c5f83c6ec2ee792a9c631b32bf"
+    },
+    "extracted_original_identity_projection": {
+      "bytes": 795,
+      "sha256": "6fac446f56be84d9250be880d0f69c618f8df8d9bd0a0c1790c89313c9190bf4",
+      "git_blob_sha1": "8a2b971ab083c156df1c69cb3662fa0964f348b3"
+    },
+    "content02_actual": {
+      "bytes": 12649,
+      "sha256": "7e89e45c58e150146d4fc1b74a37f6c363b4303c9ac08cfb7e16e081a0798aee",
+      "git_blob_sha1": "3b78d0f3f014cc749b78eb394ca4eeebee1173b3"
+    }
+  },
+  "checks": {
+    "bridge_private_originals_not_fetched": true,
+    "source_actual_pin_matches": true,
+    "projection_exact_original_slice": true,
+    "path_encoding_domains_separate": true,
+    "public_path_digest_matches": true,
+    "pid_matches": true,
+    "start_matches": true,
+    "full_identity_hash_matches": true,
+    "full_identity_equality_matches": true,
+    "policy_literal_equals_derived_file_hash": true,
+    "policy_equals_claimed_expected": true,
+    "mode_is_0755": true,
+    "metadata_root_and_single_link": true,
+    "public_original_complete": true,
+    "content02_original_complete": true,
+    "scope_kept_separate_in_time": true
+  },
+  "verified_public_correspondence": {
+    "presenter_pid": 3588024,
+    "presenter_start_ticks": 80796995,
+    "full_identity_sha256": "346c6eef8623ebdd359432bf8609b143590db470d4e0b5778e17fc312888326c",
+    "canonical_executable_path_sha256": "c6b60faf5d89737f506b0a0513c3feb3c171e71d35b2644328bb2110ab65c465",
+    "policy_PRESENTER_SHA_and_derived_named_file_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+    "path_digest_domain": "The actual source hashes compact JSON serialization of row['executable']; the bridge compares its canonical-JSON digest to this value. Raw UTF-8 path digest is a separate domain.",
+    "identity_projection": "The exact 795-byte archived function occurs once in the actual source. It requires complete row equality with the expected baseline identity before exporting hashes.",
+    "policy_enforcement": "The fixed public policy passes PRESENTER_SHA to validate_artifact for presenter in validate_artifact_closure and executable_content.",
+    "content02_public_completion": {
+      "controls": 21,
+      "files": 9,
+      "managed_fds_closed": 48,
+      "guard_input_fds_closed_before": 6,
+      "guard_input_fds_closed_after": 6,
+      "main_samples_equal": true,
+      "source_unchanged": true
+    }
+  },
+  "root_derived_private_input_boundary": {
+    "private_systemctl_stdout_read_by_reviewer": false,
+    "private_file_info_response_read_by_reviewer": false,
+    "private_executable_path_read_by_reviewer": false,
+    "private_raw_path_and_canonical_hash_recomputed_by_reviewer": false,
+    "unique_execstart_and_same_single_argv_claim_independently_reparsed": false,
+    "file_info_original_metadata_independently_recomputed": false,
+    "description": "Private original pins and values remain Root-derived observations. This review verifies the frozen public bridge, public actuals and original source semantics; it does not claim direct access to private originals."
+  },
+  "qualification_limits": {
+    "observations_are_separate_in_time": true,
+    "continuous_stability_qualified": false,
+    "future_Main_authority": false,
+    "installed_source_version_qualified": false,
+    "deployment_authorized": false,
+    "whole_apps_ready": 0,
+    "original_failures_or_unknowns_reclassified": false
+  },
+  "actions": {
+    "new_presenter_reader_created": false,
+    "new_request_created": false,
+    "device_read": false,
+    "Hepta": false,
+    "Status_or_Readiness": false,
+    "private_baseline_body_read": false,
+    "CP24_cut_or_seed_selected": false,
+    "branch_or_ref_change": false
+  },
+  "archive_reference_policy": "JSON reference fields were used only to locate explicitly named public review sources. They confer no CP24 root-expansion authority."
+}

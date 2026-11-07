@@ -1,0 +1,35 @@
+--- a/read.py
++++ b/read.py
+@@ -1,9 +1,9 @@
+-"""Collect exactly two pinned owned Hilton failure reports; no runtime actions."""
++"""Collect exactly two pinned owned Ticket12306 failure reports; no runtime actions."""
+ import base64,hashlib,json,os,re,signal,stat,sys,time
+-FILES={"result":{"path":"/home/alex/work/pocket4-owned-hilton-qa-r1-install-state-01/result.json","bytes":4507,"sha256":"bd397bbde590e5437abf90049608f2debdd63703e8ae18b5d295095b48e5feb6"},"stage_result":{"path":"/home/alex/work/pocket4-owned-hilton-qa-r1-install-state-01/stage-result.json","bytes":11616,"sha256":"bab19a08f9e024be687cc17e6a428dae7d265b07d5dc23cb966971c2d1cc1141"}}
+-AUTHORITY_RAW={"stdout":"{\"ok\": false, \"result\": {\"path\": \"/home/alex/work/pocket4-owned-hilton-qa-r1-install-state-01/result.json\", \"bytes\": 4507, \"sha256\": \"bd397bbde590e5437abf90049608f2debdd63703e8ae18b5d295095b48e5feb6\"}, \"error\": {\"phase\": \"coordinator\", \"type\": \"RuntimeError\", \"message\": \"01-install-state did not complete exactly once with a preserved Main fence\"}, \"secondary_errors\": [], \"package\": \"org.droidloom.qa.hilton.r1\", \"UI_actions\": 0, \"audio_actions\": 0, \"whole_app_production_ready\": false}\n{\"ok\": false, \"stage_result\": {\"path\": \"/home/alex/work/pocket4-owned-hilton-qa-r1-install-state-01/stage-result.json\", \"bytes\": 11616, \"sha256\": \"bab19a08f9e024be687cc17e6a428dae7d265b07d5dc23cb966971c2d1cc1141\"}, \"error\": {\"phase\": \"stage_or_coordinator\", \"type\": \"RuntimeError\", \"message\": \"ACTUAL_INSTALL_STATE_NOT_QUALIFIED\"}, \"secondary_errors\": [], \"UI_actions\": 0, \"audio_actions\": 0, \"whole_app_production_ready\": false}\n","terminal":"{\n  \"at_unix_ms\": 1794003734050,\n  \"audit_recorded\": true,\n  \"automatic_retry\": false,\n  \"cancelled\": false,\n  \"exit_code\": 1,\n  \"job_id\": \"1a1b2f47aad-fc05-8041\",\n  \"launch_nonce\": \"d737234c1686095a346d45f5611d38a5\",\n  \"log_bytes\": {\n    \"stderr\": {\n      \"seen\": 0,\n      \"stored\": 0\n    },\n    \"stdout\": {\n      \"seen\": 919,\n      \"stored\": 919\n    }\n  },\n  \"log_errors\": {\n    \"stderr\": null,\n    \"stdout\": null\n  },\n  \"log_synced\": {\n    \"stderr\": true,\n    \"stdout\": true\n  },\n  \"log_truncated\": {\n    \"stderr\": false,\n    \"stdout\": false\n  },\n  \"output_complete\": true,\n  \"output_durable\": true,\n  \"state\": \"failed\",\n  \"terminal_publication_confirmed\": true,\n  \"terminal_publication_protocol\": 1,\n  \"timed_out\": false\n}"}
+-AUTHORITY_PINS={"stdout":{"bytes":919,"sha256":"336c8ddce2d1cacede9228f67dec1c3fc9d4fd3d848329ec028bc29907f61444"},"terminal":{"bytes":726,"sha256":"e0c31be63a923076756d516da0c1b04a516e1ac5a214517b0e4f71beffa1b880"}}
+-JOB='1a1b2f47aad-fc05-8041'
++FILES={"result":{"path":"/home/alex/work/pocket4-owned-ticket12306-qa-r1-install-state-02/result.json","bytes":3498,"sha256":"8953cdd7a45d0c12624e3654e31cadfcfad72c045aea325b4d94bd7785fb44f5"},"stage_result":{"path":"/home/alex/work/pocket4-owned-ticket12306-qa-r1-install-state-02/stage-result.json","bytes":12969,"sha256":"8761ae4760095dd408f32ebdfba40d9b31fff47cd2b199235d75bc595371d499"}}
++AUTHORITY_RAW={"stdout":"{\"ok\": false, \"result\": {\"path\": \"/home/alex/work/pocket4-owned-ticket12306-qa-r1-install-state-02/result.json\", \"bytes\": 3498, \"sha256\": \"8953cdd7a45d0c12624e3654e31cadfcfad72c045aea325b4d94bd7785fb44f5\"}, \"error\": {\"phase\": \"coordinator\", \"type\": \"RuntimeError\", \"message\": \"01-install-state did not complete exactly once with a preserved Main fence\"}, \"secondary_errors\": [{\"phase\": \"coordinator_final_Main\", \"type\": \"RuntimeError\", \"message\": \"OWNER_SINGLE_DIRECT_CHILD_REQUIRED\"}], \"package\": \"org.droidloom.qa.ticket12306.r1\", \"UI_actions\": 0, \"audio_actions\": 0, \"whole_app_production_ready\": false}\n{\"ok\": false, \"stage_result\": {\"path\": \"/home/alex/work/pocket4-owned-ticket12306-qa-r1-install-state-02/stage-result.json\", \"bytes\": 12969, \"sha256\": \"8761ae4760095dd408f32ebdfba40d9b31fff47cd2b199235d75bc595371d499\"}, \"error\": {\"phase\": \"stage_or_coordinator\", \"type\": \"RuntimeError\", \"message\": \"ACTUAL_INSTALL_STATE_NOT_QUALIFIED\"}, \"secondary_errors\": [], \"UI_actions\": 0, \"audio_actions\": 0, \"whole_app_production_ready\": false}\n","terminal":"{\n  \"at_unix_ms\": 1794007363122,\n  \"audit_recorded\": true,\n  \"automatic_retry\": false,\n  \"cancelled\": false,\n  \"exit_code\": 1,\n  \"job_id\": \"1a1b32bc2a2-fc05-80e9\",\n  \"launch_nonce\": \"460ecd04b67dc1df64da575ea88ceb43\",\n  \"log_bytes\": {\n    \"stderr\": {\n      \"seen\": 0,\n      \"stored\": 0\n    },\n    \"stdout\": {\n      \"seen\": 1042,\n      \"stored\": 1042\n    }\n  },\n  \"log_errors\": {\n    \"stderr\": null,\n    \"stdout\": null\n  },\n  \"log_synced\": {\n    \"stderr\": true,\n    \"stdout\": true\n  },\n  \"log_truncated\": {\n    \"stderr\": false,\n    \"stdout\": false\n  },\n  \"output_complete\": true,\n  \"output_durable\": true,\n  \"state\": \"failed\",\n  \"terminal_publication_confirmed\": true,\n  \"terminal_publication_protocol\": 1,\n  \"timed_out\": false\n}"}
++AUTHORITY_PINS={"stdout":{"bytes":1042,"sha256":"63306308126c6e7e0f41e86bc992caba51a19d31fae15b17fcf28df480e1ef1f"},"terminal":{"bytes":728,"sha256":"9caf0d62124b0b78faf6128bce6ebd7a748228e2be3e81203e6c084a1c306beb"}}
++JOB='1a1b32bc2a2-fc05-80e9'
+ def need(ok,code):
+     if not ok:raise RuntimeError(code)
+ def sha(raw):return hashlib.sha256(raw).hexdigest()
+@@ -86,7 +86,7 @@
+ 
+ def main():
+     start=time.monotonic()
+-    result={'schema':1,'kind':'pocket4-owned-hilton-install01-fixed-two-results-read01',
++    result={'schema':1,'kind':'pocket4-owned-ticket12306-install02-fixed-two-results-read01',
+         'original_job':JOB,'collection_complete':False,'first_error':None,'errors':[],
+         'files':{},'read_events':[],'body_encoding':'base64-original-bytes',
+         'Main_reads':0,'Android_commands':0,'namespace_entries':0,'children':0,
+@@ -118,7 +118,7 @@
+              t['output_complete'] is True and t['output_durable'] is True and
+              t['terminal_publication_confirmed'] is True and
+              t['timed_out'] is False and t['cancelled'] is False and t['automatic_retry'] is False and
+-             t['log_bytes']=={'stdout':{'seen':919,'stored':919},'stderr':{'seen':0,'stored':0}} and
++             t['log_bytes']=={'stdout':{'seen':1042,'stored':1042},'stderr':{'seen':0,'stored':0}} and
+              all(t['log_synced'][k] is True and t['log_truncated'][k] is False and
+                  t['log_errors'][k] is None for k in ('stdout','stderr')),
+              'EXACT_COMPLETE_FAILED_TERMINAL')

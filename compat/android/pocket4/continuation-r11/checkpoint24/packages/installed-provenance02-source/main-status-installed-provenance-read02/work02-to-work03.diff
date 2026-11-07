@@ -1,0 +1,56 @@
+--- work02/read_installed_provenance.py
++++ work03/read_installed_provenance.py
+@@ -135,10 +135,15 @@
+     return original
+ 
+ def observed_ancestor_allowed(row,spec,index):
+-    if stat.S_ISDIR(row['st_mode']) and row['st_uid']==0:return True
+     marker=PREVIOUS_FILES['package_marker']
++    if spec['key']=='package_marker' and index==marker['component_index']:
++        return bool(row==marker['file'] and stat.S_ISDIR(row['st_mode']))
++    return bool(stat.S_ISDIR(row['st_mode']) and row['st_uid']==0)
++
++def require_unobserved_missing_leaf(spec,index):
++    need(spec in SPECS and spec['key']=='package_marker' and
++         index==len(spec['path'][1:].split('/'))-1,
++         'FIXED_PREVIOUS_FILE_OR_ANCESTOR_DISAPPEARED')
+-    return bool(spec['key']=='package_marker' and index==marker['component_index'] and
+-                row==marker['file'] and stat.S_ISDIR(row['st_mode']))
+ 
+ def observed_admission_controls():
+     qualify_previous();rows=[]
+@@ -174,7 +179,16 @@
+         same(observed_content_shape(first,marker['limit'],marker),'regular_content_admitted')
+         same(observed_content_shape({**first,'st_uid':1001},marker['limit'],marker),'unsupported_owner')
+     case('first_marker_leaf_owner_is_closed',marker_first)
++    case('observed_parent_root_owner_change_cannot_use_generic_rule',lambda:same(
++        observed_ancestor_allowed({**directory,'st_uid':0,'st_gid':0},marker,2),False))
++    def missing_fixed():
++        reject(lambda:require_unobserved_missing_leaf(cli,len(cli['path'][1:].split('/'))-1),
++               'FIXED_PREVIOUS_FILE_OR_ANCESTOR_DISAPPEARED')
++        reject(lambda:require_unobserved_missing_leaf(marker,2),
++               'FIXED_PREVIOUS_FILE_OR_ANCESTOR_DISAPPEARED')
++        same(require_unobserved_missing_leaf(marker,len(marker['path'][1:].split('/'))-1),None)
++    case('only_first_observed_marker_leaf_may_be_absent',missing_fixed)
++    need(len(rows)==9 and len({r['name'] for r in rows})==9,'EXACT_NINE_OBSERVED_ADMISSION_CONTROLS_REQUIRED')
+-    need(len(rows)==7 and len({r['name'] for r in rows})==7,'EXACT_SEVEN_OBSERVED_ADMISSION_CONTROLS_REQUIRED')
+     return rows
+ 
+ def file_meta(fd):
+@@ -245,6 +259,7 @@
+         try:fd=own(pool,os.open(name,os.O_PATH|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=parent),
+                    'fixed_inventory_path_component')
+         except FileNotFoundError:
++            require_unobserved_missing_leaf(spec,index)
+             entry['terminal']={'parent':parent,'name':name,'state':'absent','index':index}
+             return entry
+         before=file_meta(fd)
+@@ -402,7 +417,7 @@
+         result['controls']=controls()
+         extra=observed_admission_controls()
+         result['controls']['cases']+=extra;result['controls']['count']+=len(extra)
++        need(result['controls']['count']==21,'EXACT_TWENTYONE_INVENTORY_CONTROLS_REQUIRED')
+-        need(result['controls']['count']==19,'EXACT_NINETEEN_INVENTORY_CONTROLS_REQUIRED')
+         phase='pinned_original_guard';guard_raw=read_guard(check,result['inputs_before_FDs'])
+         g=types.ModuleType('fixed_original_current_guard');g.__file__=str(GUARD_PATH)
+         exec(compile(guard_raw,str(GUARD_PATH),'exec'),g.__dict__)

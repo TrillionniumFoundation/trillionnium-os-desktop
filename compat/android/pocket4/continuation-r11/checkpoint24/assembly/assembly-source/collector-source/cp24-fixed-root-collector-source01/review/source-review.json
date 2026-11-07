@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "kind": "cp24-fixed-root-collector-source-review01",
+  "status": "SOURCE_ONLY_UNBOUND",
+  "actual_CP24_cut": null,
+  "actual_CP24_seed": null,
+  "original_CP24_roots_processed": 0,
+  "baseline": {
+    "assembly": {
+      "bytes": 5103,
+      "sha256": "d98a2a66c364a75e0d14f2e194ed555a233dce0304e9403587ae979f49c7575a",
+      "git_blob_sha1": "c85e410f00ecff005c32191e5d9db708ad92fe1c"
+    },
+    "normalize": {
+      "bytes": 3852,
+      "sha256": "54ed09bf52a0803ed01ca5bb06e6394c90c29f7b0d19e17dd3ae791a5b291eeb",
+      "git_blob_sha1": "966c348e5397b1fcae9171a520d3dff98e5a0b79"
+    },
+    "utility": {
+      "bytes": 12984,
+      "sha256": "ad72d62a90713b5cc06ecbd1c67bf7bde08e3eb22587ec9c351ac9304dda1401",
+      "git_blob_sha1": "443e39b58cd6fe72faa1cb1d1c7b0a813fa0032d"
+    }
+  },
+  "preserved_functions": [
+    "shallow",
+    "traverse",
+    "metadata",
+    "verifyBlob",
+    "normalizedTree"
+  ],
+  "original_function_block_exact": true,
+  "authority": "Complete Root-pinned CP24 seed and CP23 cut_scope only; no roots inferred from arbitrary JSON.",
+  "archive_references": "Opaque original leaf with full pin; zero JSON links followed or authority grants.",
+  "source_checks": {
+    "JavaScript_functions_compiled": true,
+    "null_authority_rejected": true,
+    "Git_collection_callbacks_executed": 0,
+    "Python_or_Hepta_executed": false,
+    "synthetic_seed_constructed": false
+  },
+  "progressive_preservation": "Bounded batches preserve complete original pins and directory maps. Generated metadata is fully read back; every normalized recursive tree is verified. Unknown write outcomes remain pending and block automatic replay.",
+  "evidence_limits": "Only Root-authorized public Git evidence is read. No new device/private baseline access. No operational acceptance inference. Parent master body is not verified or reserialized by the collector.",
+  "preparation_errors_resolved_before_freeze": [
+    "Function with default parameter plus local use-strict directive rejected during JS compilation; fixed by assigning default limits after entry.",
+    "CP23 helper references have no final newline; exact full replacement diffs now retain missing-newline markers rather than altering the reference originals."
+  ],
+  "no_ref_or_PR_change": true
+}

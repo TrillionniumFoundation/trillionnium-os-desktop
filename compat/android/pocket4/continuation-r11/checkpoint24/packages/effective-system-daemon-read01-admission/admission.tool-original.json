@@ -1,0 +1,43 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "--system",
+      "--no-pager",
+      "--no-ask-password",
+      "--full",
+      "show",
+      "--all",
+      "--property=Id,LoadState,ActiveState,SubState,MainPID,InvocationID,FragmentPath,DropInPaths,ExecStart,User,Group,NeedDaemonReload,UnitFileState",
+      "--",
+      "droidloomd.service"
+    ],
+    "created_unix_ms": 1794008519404,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "LANG",
+      "LC_ALL"
+    ],
+    "executable": "/usr/bin/systemctl",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b33d92ec-fc05-8160",
+    "idempotency_key": "pocket4-status-effective-system-daemon-show01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b33d92ec-fc05-8160",
+    "request_digest": "60f9c69a77917007ebc9fd85b726099a162f96ce4c66dfdd5081867c2d7022ef",
+    "request_fingerprint": 6987834663575318535,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b33d92ec-fc05-8160"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b33d92ec-fc05-8160"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

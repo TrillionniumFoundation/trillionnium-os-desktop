@@ -1,0 +1,13 @@
+--- a/bind_install.js
++++ b/bind_install.js
+@@ -199,8 +199,8 @@
+   const globalAfter=JSON.parse(base.references["global922.original.json"].body);
+   need(oldNonce.nonce===EXPECTED.install_nonce&&oldNonce.ok===true&&oldNonce.draw_count===1&&
+     oldNonce.phase==="install"&&oldNonce.package==="com.example.ndk_tests"&&oldNonce.runtime_authorized===false&&
+-    globalBefore.length===921&&new Set(globalBefore).size===890&&!globalBefore.includes(EXPECTED.install_nonce)&&
+-    globalAfter.length===922&&new Set(globalAfter).size===891&&equal([...globalBefore,EXPECTED.install_nonce].sort(),globalAfter),
++    globalBefore.length===921&&new Set(globalBefore).size===921&&!globalBefore.includes(EXPECTED.install_nonce)&&
++    globalAfter.length===922&&new Set(globalAfter).size===922&&equal([...globalBefore,EXPECTED.install_nonce].sort(),globalAfter),
+     "ONE_ACTUAL_UNCONSUMED_INSTALL_NONCE");
+   const binding={schema:1,kind:"pocket4-original-ndk-install-binding-v1",root:EXPECTED.root,
+     source_manifest:EXPECTED.source_manifest,entry_controls:actual.stdout_pin,

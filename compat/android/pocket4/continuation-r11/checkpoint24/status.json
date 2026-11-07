@@ -1,0 +1,367 @@
+{
+  "schema": "pocket4-r11-checkpoint24-current-status-v1",
+  "checkpoint": 24,
+  "cut_utc": "2026-11-07 00:12:51 UTC",
+  "base_commit": "32df6ea6403c24588638e3fbbfe6edc1897393e9",
+  "whole_apps_ready": 0,
+  "apps_in_scope": 45,
+  "commercial_apps": 29,
+  "other_apps": 16,
+  "all_apps_production_ready": false,
+  "Main_deployed": false,
+  "current_Main_runtime_admitted": false,
+  "shared_UI_hold": true,
+  "previous_checkpoint_is_historical": true,
+  "assembly_authority": {
+    "seed": {
+      "bytes": 173256,
+      "sha256": "fb9661b538d9392ca5072efa1e6c76cf48097ebde6a263c2ea0537d31a34f7c5",
+      "git_blob_sha1": "73cd8ae3a9ba939b616028c4b7218e93913faeb1"
+    },
+    "new_roots": 157,
+    "inherited_canonical_roots": 934,
+    "archive_reference_JSON_links_followed": 0
+  },
+  "Main": {
+    "original_B02_reference_retained": true,
+    "epoch": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "new_baseline_created": false,
+    "failed_unique_direct_child_guard_retained": true,
+    "Ticket12306_failure_parent_attributed": false,
+    "later_three_parent_observation": {
+      "original_tree": "8abbe29d565ebfef91b9376d21d98eab088b815a",
+      "checkpoint": 24,
+      "canonical_package": "three-parent-child-details-read01-actual",
+      "controls": 18,
+      "complete_TID_child_tables_per_parent": 2,
+      "parents": 3,
+      "managed_and_guard_FDs_closed": 111,
+      "original_Main8_equal": true,
+      "past_guard_failure_explained": false,
+      "new_runtime_authority": false
+    },
+    "London_UNKNOWN_preserved": true,
+    "unknown_875_878_ownership_not_upgraded": true
+  },
+  "NDK": {
+    "scope": "Owned original com.example.ndk_tests fixture; separate from Marriott whole-app acceptance",
+    "install02": {
+      "original_tree": "fb5f40f85ade47c317545bf099da5e6be7842443",
+      "checkpoint": 24,
+      "canonical_package": "marriott_install02-actual",
+      "state": "PASS_OWNED_INSTALL_ONLY",
+      "uid": 10162,
+      "commands": 8,
+      "original_install01_unknown_preserved": true
+    },
+    "historical_protocol60": {
+      "original_tree": "70b71f6d5066903b78182b40b591c24072696094",
+      "checkpoint": 24,
+      "canonical_package": "ndk_runtime_controls60_01-actual",
+      "controls": 60,
+      "actual_Main_Android_commands": 0
+    },
+    "run01": {
+      "original_tree": "7333355118e72ac917f01b28ffd15c5b759bd97a",
+      "checkpoint": 24,
+      "canonical_package": "ndk_original_run01-actual",
+      "state": "FAILED_OUTCOME_UNKNOWN",
+      "commands": 5,
+      "instrumentation_attempted": true,
+      "instrumentation_verified": false,
+      "outcome_unknown": true,
+      "nonce_pair_retired": true,
+      "automatic_replay": false,
+      "command005_metadata": {
+        "original_tree": "23a41d87d75833d5d3ee581d2191d1d29557c694",
+        "checkpoint": 24,
+        "canonical_package": "ndk-private-command005-public-metadata",
+        "returncode": 153,
+        "stdout_bytes": 0,
+        "stderr_bytes": 0,
+        "timed_out": false,
+        "owned_command_joined": true,
+        "actual_exit_or_signal_cause": "UNKNOWN",
+        "raw_bodies_private": true
+      }
+    },
+    "retire01": {
+      "original_tree": "5c0b84bf452f69c7c6446742ae228d5c31200665",
+      "checkpoint": 24,
+      "canonical_package": "ndk_original_retire01-actual",
+      "state": "PASS_INDEPENDENT_OWNED_SCOPE_RETIREMENT",
+      "commands": 8,
+      "uid": 10162,
+      "two_complete_empty_UID_tables": true,
+      "own_fixture_task_absent": true,
+      "task_set_restored": [
+        875,
+        878
+      ],
+      "artifact_FDs_closed": 3,
+      "lease_FDs_closed": 23,
+      "locks_released": 3,
+      "package_retained": true,
+      "own_retirement_outcome_unknown": false,
+      "prior_run_failed_unknown_preserved": true,
+      "original_twelve_tests_qualified": false,
+      "whole_process_tree_or_invocation_resources_qualified": false
+    },
+    "bounded_capture_fix": {
+      "source": {
+        "original_tree": "ae35b60270b86e8e19ae03130f65e7f7c27926e9",
+        "checkpoint": 24,
+        "canonical_package": "ndk-bounded-output-final-host-source"
+      },
+      "actual": {
+        "original_tree": "88245b3cf3058bb5b48d3726815288fe82ee5650",
+        "checkpoint": 24,
+        "canonical_package": "ndk-bounded-output-host-controls01-actual"
+      },
+      "core_review": {
+        "original_tree": "f8ff5c90b0701da04c340695129c27bac91ce6bd",
+        "checkpoint": 24,
+        "canonical_package": "ndk-bounded-output-core-independent-source-review"
+      },
+      "envelope_review": {
+        "original_tree": "fa05d2f6fd5614968fa40341939916ca504e8bdd",
+        "checkpoint": 24,
+        "canonical_package": "ndk-bounded-output-host-envelope-independent-review"
+      },
+      "real_host_children": 5,
+      "pure_order_controls": 2,
+      "all_passed": true,
+      "per_stream_stored_limit": 262144,
+      "maximum_observed_per_stream": 262145,
+      "RLIMIT_FSIZE_modified": false,
+      "capture_FDs_closed": 30,
+      "test_authority_FDs_closed": 7,
+      "test_read_FDs_closed": 16,
+      "test_directory_FDs_closed": 7,
+      "ambient_FD_equality": true,
+      "owned_root_removed": true,
+      "Android_runtime_qualified": false,
+      "prior_rc153_cause_qualified": false
+    },
+    "new_Android_run_at_cut": false,
+    "original_twelve_tests_qualified": false
+  },
+  "helpers": {
+    "schema03_source": {
+      "original_tree": "9a73ad6a4437fe2ddb08f5d995242874dcb7cfef",
+      "checkpoint": 24,
+      "canonical_package": "helpers-schema03-source"
+    },
+    "United": {
+      "original_tree": "eb1037f53f70ea2b2582c0631a3610147c9d9e3f",
+      "checkpoint": 24,
+      "canonical_package": "united_helper_install_schema03-actual",
+      "worker_reader": {
+        "original_tree": "e44caee7cc7a2be7fafb55adaf0753353344c065",
+        "checkpoint": 24,
+        "canonical_package": "united_install01_worker_result_read01-actual"
+      },
+      "state": "PASS_OWNED_HELPER_INSTALL_AND_STATE",
+      "helper_uid": 10163,
+      "target_uid": 10133,
+      "controls": 85,
+      "commands": 13,
+      "Main_windows_equal": 7,
+      "target_APKs_unchanged": 4,
+      "staging_removed": true,
+      "held_binding_and_action_lock_released": true,
+      "memory_max": 536870912,
+      "memory_peak": 465670144,
+      "swap_max": 0,
+      "swap_observed": 0,
+      "memory_events_delta_zero": true,
+      "whole_United_ready": false
+    },
+    "Ticket12306": {
+      "original_tree": "691b0ce7f332a3113a3f8a0e135929de847b5fc5",
+      "checkpoint": 24,
+      "canonical_package": "ticket12306_helper_install_schema03-actual",
+      "worker_reader": {
+        "original_tree": "4c7ffd0743fb72b8f34e2baa39838570e0e3bed6",
+        "checkpoint": 24,
+        "canonical_package": "ticket12306_install02_worker_result_read01-actual"
+      },
+      "state": "FAILED_BEFORE_INSTALL_AT_ABSENCE_POST_GUARD",
+      "controls": 85,
+      "phase": "new_helper_absence",
+      "primary_error": "HOST_COMMAND_INTERRUPTED",
+      "post_command_guard_failed": true,
+      "transport_outcome_unknown": true,
+      "worker_install_attempted": false,
+      "worker_state_attempted": false,
+      "worker_package_retained": false,
+      "worker_possible_owned_package_retained": false,
+      "worker_outcome_unknown": false,
+      "worker_and_coordinator_final_guard_error": "OWNER_SINGLE_DIRECT_CHILD_REQUIRED",
+      "later_stage_final_guard_pass_does_not_erase_failure": true,
+      "target_APK_unchanged": true,
+      "owned_FDs_and_action_lock_closed": true,
+      "old_pair_retired": true,
+      "automatic_replay": false,
+      "original_seed_metadata_typo_correction_preserved": true
+    },
+    "Hilton": {
+      "historical_schema02_failure": {
+        "original_tree": "f48f407da7689722180540c129d0fb86e5f8cf4c",
+        "checkpoint": 24,
+        "canonical_package": "hilton_helper_install_schema02-actual"
+      },
+      "historical_state": "FAIL_CONSTRUCTOR_BEFORE_ANDROID",
+      "source02": {
+        "original_tree": "725b6946fe31ac9b25dbf998d9b99455c5b2298b",
+        "checkpoint": 24,
+        "canonical_package": "hilton-install02-schema03-source"
+      },
+      "new_pair_consumed": false,
+      "new_install_started": false,
+      "hold": "Current Main guard and shared UI holds remain"
+    }
+  },
+  "Status_Readiness": {
+    "release01": {
+      "original_tree": "87ccdef7ae4687cfc48ab4efdb07bfb0dde6b527",
+      "checkpoint": 24,
+      "canonical_package": "status_lifecycle_release01-actual",
+      "state": "PASS_RELEASE_BUILD_NOT_DEPLOYED",
+      "commands": 38,
+      "Rust_CLI_tests": 15,
+      "real_owned_child_lifecycle_controls": 3,
+      "source_files": 502,
+      "dependencies": 50,
+      "release_ELFs": 6,
+      "release_tool_binaries": 4,
+      "test_ELFs": 2,
+      "production_profile_opt_level": 3,
+      "debug_assertions": false,
+      "source_inputs_and_artifacts_unchanged": true,
+      "owned_memory_peak": 715108352,
+      "owned_memory_events_delta_zero": true,
+      "swap_observed": 0,
+      "swap_max": "max",
+      "whole_invocation_resource_qualified": false
+    },
+    "deployed": false,
+    "installed_Main_source_revision_qualified": false,
+    "consumer_source_remains_uninstalled": true
+  },
+  "deployment_facts": {
+    "provenance01": {
+      "original_tree": "372f42d3f023b4cf92dfb81fb6a5006a5bf9348f",
+      "checkpoint": 24,
+      "canonical_package": "installed_provenance_read01-actual"
+    },
+    "provenance02": {
+      "original_tree": "0dae5d85892110c7d7a47b44eb245d8f3d72c346",
+      "checkpoint": 24,
+      "canonical_package": "installed-provenance-read02-actual",
+      "controls": 21,
+      "complete_regular_file_contents": 9,
+      "managed_FDs_closed": 48,
+      "guard_FDs_closed": 12,
+      "original_Main_before_after_equal": true
+    },
+    "effective_service_package_queries": {
+      "original_tree": "98339cc0e7860d3b3b89ba8d99e36af075f161ad",
+      "checkpoint": 24,
+      "canonical_package": "effective-service-package-facts-public-actual"
+    },
+    "presenter_and_dropins": {
+      "original_tree": "46677a1542bf6091f8cbb43eb1cd88ccc23bc435",
+      "checkpoint": 24,
+      "canonical_package": "effective-dropins-and-presenter-public-bridge"
+    },
+    "metadata_and_literal_session": {
+      "original_tree": "8954890254acbf4bf946b8699e1e463d30a21ec3",
+      "checkpoint": 24,
+      "canonical_package": "installed-binary-metadata-and-session-unit-observations"
+    },
+    "daemon_prestart_semantics": {
+      "original_tree": "b8195bba4db6212c685e511379c7d706c17529ec",
+      "checkpoint": 24,
+      "canonical_package": "daemon-execstartpre-public-semantics"
+    },
+    "roles": {
+      "daemon": "active system service /usr/bin/droidloomd",
+      "catalog": "active user service /usr/bin/droidloom-applications",
+      "CLI": "command-line release tool",
+      "usr_bin_supervisor": "release tool not used by the three observed services",
+      "presenter": "Existing B02 presenter; not one of the four release binaries"
+    },
+    "presenter_named_file": {
+      "bytes": 7026568,
+      "sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24"
+    },
+    "presenter_replacement_authorized": false,
+    "presenter_path_body_private": true,
+    "dropins_observed": 5,
+    "dpkg_exact_paths_without_match": 7,
+    "dpkg_no_match_proves_unmanaged": false,
+    "marker": {
+      "version": "0.1.0",
+      "release": 20,
+      "architecture": "x86_64",
+      "installed_source_revision_proof": false
+    },
+    "four_binary_ACLs_and_xattrs_observed_empty": true,
+    "service_stop_start_not_executed": true,
+    "private_query_bodies_exported": false
+  },
+  "Native": {
+    "normal10_source_reviewed_unrun": true,
+    "Composer_normal01_source_reviewed_unrun": true,
+    "latest_resource_read": {
+      "original_tree": "3f4fc5c2a75f0e3989c4a48752ba417845dbd3c0",
+      "checkpoint": 24,
+      "canonical_package": "normal10-memory-read04-actual",
+      "observed_utc": "2026-11-07T00:11:06.663781+00:00",
+      "MemAvailable_bytes": 13807906816,
+      "required_bytes": 16106127360,
+      "shortfall_bytes": 2298220544,
+      "threshold_pass": false,
+      "build_admission": false
+    },
+    "threshold_lowered": false,
+    "unrelated_processes_killed": false
+  },
+  "Hyatt": {
+    "original_tree": "6a14eb3ea552ffa46563611f7c14f5c445f93400",
+    "checkpoint": 24,
+    "canonical_package": "hyatt_apk_elf01-actual",
+    "state": "READ_ONLY_ELF_DIAGNOSTIC_PASS",
+    "parser_controls": 15,
+    "APKs_unchanged": 3,
+    "owned_FDs_closed": 105,
+    "JNICALL_executed": false,
+    "static_JNIOnLoad_constant_zero_return_proved": false,
+    "historical_minus500_cause": "UNKNOWN",
+    "whole_app_ready": false
+  },
+  "nonce_ledger": {
+    "global_count": 928,
+    "original": {
+      "bytes": 35267,
+      "sha256": "48cf54500173794b80b90a2f7bf0e6f4d7c35377258798c6850263494157e601",
+      "git_blob_sha1": "e18dff2a6a7e2d7b408da58da371003574b80305"
+    },
+    "all_failed_unknown_consumed_pairs_retired": true,
+    "no_nonce_values_printed_in_status": true
+  },
+  "next_required": [
+    "Requalify changed NDK protocol sources and new phase admission code before any fresh run; retain run01 FAILED/UNKNOWN and its separate retirement.",
+    "Complete deployable Main repair, preserve actual presenter/configuration and original metadata, prepare backup/rollback and a new deployment-aware baseline.",
+    "Keep Main unique-child guards and shared UI holds until concrete fresh authority is available; do not replay failed helper attempts.",
+    "Require a fresh 15GiB MemAvailable gate for normal and Composer builds.",
+    "Complete fresh per-app functional, process/FD/resource and recovery acceptance across all45 apps; helper/source/host tests alone do not satisfy those rows."
+  ],
+  "cut_policy": {
+    "immutable": true,
+    "subsequent_work_is_not_included": true,
+    "raw_prior_originals_preserved": true,
+    "archive_reference_JSON_is_not_authority": true
+  }
+}

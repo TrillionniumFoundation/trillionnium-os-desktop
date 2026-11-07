@@ -1,0 +1,282 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_NOT_EXECUTED",
+  "kind": "status_lifecycle_readiness_default_release_build01",
+  "previous_source": {
+    "tree": "fcdc3bc30ba90fada2e15859fdff6d60b29c0209",
+    "prefix": "main-status-lifecycle-readiness-compile02",
+    "request": {
+      "bytes": 468543,
+      "sha256": "9b6a7be869ef3c71c9cf199cd5adad3440f3fc764b4c4f03762e3e09d664f5e8",
+      "git_blob": "6aa27801ee17757fa96c3ff5771687ba0115d092"
+    }
+  },
+  "debug_actual": {
+    "tree": "cb84df470d6d1fab3c781bb1ccecc5a3e44dea41",
+    "job_id": "1a1b2fa4e3a-fc05-8052",
+    "result": {
+      "path": "/home/alex/work/p4-st02-20261106/attempt01/result.json",
+      "bytes": 144339,
+      "sha256": "9fa8108aab968a2a7428906fea074c44010e7a12bac545d78361c04c27e9cae6",
+      "blob": "1ef0797cf5fac90dbdd7a06dd3dd2428fdaea7ca"
+    },
+    "qualified_actual_commands": 38,
+    "qualified_actual_focused_tests": 15,
+    "qualified_actual_lifecycle_controls": 3,
+    "all_six_ELFs_debug": true,
+    "debug_ELFs_reused": false
+  },
+  "candidate": {
+    "root": "/home/alex/work/p4-sr01-20261106",
+    "key": "pocket4-native-status-lifecycle-readiness-release-01-20261106",
+    "request": {
+      "bytes": 476954,
+      "sha256": "7505b58ec2c17765a5b7832edd161091a9c400f4aa6ef8f8073f09f93b8ba722",
+      "git_blob": "883b6c13b2df3b1674a4440b04bb1d380a19b17f"
+    },
+    "stdin": {
+      "bytes": 444342,
+      "sha256": "ba58dc5a921e413c2c59bf6eb77577590a154342af95fd3b2fb04d7e8aa3ed6c",
+      "git_blob": "3e1a084bba4cc7436cc3f6f962969bb93e96ccee"
+    },
+    "controller": {
+      "bytes": 90731,
+      "sha256": "f836097a5fea8ca1629c9d862d0bd73102e7ecd4b853f6b692cb79ce76384b5e",
+      "git_blob": "287d4088c58d98247032c6ac07ce19a515ca6516"
+    },
+    "stage": {
+      "bytes": 9483,
+      "sha256": "d2968e7d2337ede050a7d95b8528b3a1a3f8cad2c103891e0f4c0940f7ab5b5f",
+      "git_blob": "9a7b45a791489d6b321d449a589ee64a276719fb"
+    },
+    "Rust_manifest": {
+      "bytes": 99958,
+      "sha256": "d8f6213f73726bd3766645e7decb5ebfac852f49852c49545e511a54b689d16e",
+      "git_blob": "e2ae43e8353fedd37f53e56628cdc9725a8146f8"
+    },
+    "Rust_source_count": 502,
+    "production_and_Rust_test_sources_changed_from_debug02": false
+  },
+  "release_decision": {
+    "basis": "The exact workspace Cargo.toml has no profile table; both exact crate manifests also have no profile overrides. Use the existing builtin release profile without changing the workspace or Cargo.lock.",
+    "source": "references/workspace.Cargo.toml",
+    "cargo_switch": "--release",
+    "scope": "Both test binaries and all four normal executables are rebuilt under the release profile.",
+    "actual_selected_executable_checks": [
+      "exact package ID/target name/kind/source/test flag",
+      "Cargo opt_level string 3",
+      "debug_assertions false",
+      "overflow_checks false",
+      "debuginfo field present and null or exact integer 0",
+      "unique executable under the fresh target/release directory",
+      "regular executable ELF64 little-endian x86_64 ET_EXEC or ET_DYN",
+      "full held/named byte identity and SHA before and after all tests"
+    ],
+    "dependency_build_profile": "Dependencies/build scripts/proc macros are not required to have opt-level 3; their existing selected package/source/lock/registry gates remain unchanged.",
+    "new_LTO_strip_panic_or_profile_override": false,
+    "documentation": [
+      "https://doc.rust-lang.org/cargo/reference/profiles.html",
+      "https://doc.rust-lang.org/cargo/reference/external-tools.html#compiler-artifacts"
+    ],
+    "gate_locations": {
+      "actual_executable": 1036,
+      "qualify_debug_parent": 1208,
+      "execute": 1263,
+      "owned_command": 712,
+      "OwnChildReaper": 476
+    }
+  },
+  "runtime_request_scope": {
+    "Main_actions": 0,
+    "Main_identity_reads": 0,
+    "Android_actions": 0,
+    "namespace_entry": false,
+    "install": false,
+    "deploy": false,
+    "restart": false,
+    "network_download": false,
+    "transferred_files": 8,
+    "readonly_actual_authorities": 6,
+    "staged_files": 14,
+    "owned_root_create_only": true,
+    "outer_seconds": 600,
+    "controller_seconds": 550,
+    "per_command_timeouts_unchanged": true,
+    "memory_max_bytes": 1073741824,
+    "cpu_quota_percent": 100,
+    "cargo_jobs": 1,
+    "affinity_cpus": 1,
+    "at_least_two_logical_cpus_outside": true,
+    "swap_max": "observed unchanged; not rewritten",
+    "all_original_child_tree_cleanup_and_signal_gates_preserved": true
+  },
+  "validation_plan": {
+    "ordinary_command_count": 38,
+    "exact_labels": [
+      "cargo-version",
+      "rustc-version",
+      "linked-libraries-0",
+      "linked-libraries-1",
+      "linked-libraries-2",
+      "linked-libraries-3",
+      "linked-libraries-4",
+      "linked-libraries-5",
+      "linked-libraries-6",
+      "linked-libraries-7",
+      "workspace-no-deps",
+      "supervisor-build",
+      "supervisor-test",
+      "applications-build",
+      "applications-test",
+      "supervisor-libtest-compile",
+      "supervisor-libtest-list",
+      "supervisor-libtest-help",
+      "cli-lifecycle-compile",
+      "cli-lifecycle-list",
+      "cli-lifecycle-help",
+      "host-binaries-compile",
+      "ctl-help",
+      "projection-test-0",
+      "projection-test-1",
+      "projection-test-2",
+      "projection-test-3",
+      "projection-test-4",
+      "projection-test-5",
+      "projection-test-6",
+      "projection-test-7",
+      "projection-test-8",
+      "projection-test-9",
+      "projection-test-10",
+      "projection-test-11",
+      "projection-test-12",
+      "projection-test-13",
+      "projection-test-14"
+    ],
+    "focused_rust_and_cli_count": 15,
+    "original_lib_test_order": [
+      "control::status_lifecycle_tests::status_and_readiness_are_distinct_explicit_wire_requests",
+      "control::status_lifecycle_tests::stopped_dispatch_does_not_claim_android_ready",
+      "control::status_lifecycle_tests::running_status_dispatch_creates_no_child_and_cannot_replace_fresh_readiness",
+      "control::tests::boot_complete_does_not_hide_a_failed_input_service",
+      "control::tests::boot_progress_uses_observed_services_and_checks_every_readiness_gate",
+      "control::tests::boot_wait_reports_changes_and_a_stall_has_the_last_phase_and_log_commands",
+      "control::tests::only_missing_android_services_are_treated_as_boot_progress",
+      "control::tests::only_root_or_the_exact_cell_owner_is_authorized"
+    ],
+    "original_cli_test_order": [
+      "start_waits_for_boot_and_keeps_progress_out_of_json",
+      "lifecycle_controls_the_whole_user_service",
+      "service_failure_is_reported",
+      "internal_cell_operations_do_not_recurse_into_systemd",
+      "explicit_mode_reaches_service_and_restart_preserves_it",
+      "lifecycle_rejects_a_symlink_runtime_directory",
+      "status_and_readiness_use_distinct_single_requests_without_wait_fallback"
+    ],
+    "real_lifecycle_controls": [
+      "timeout-descendant",
+      "escaped-descendant",
+      "pidfd-failure"
+    ],
+    "new_Python_or_release_execution_performed": false,
+    "static_review": {
+      "python_controls_executed": false,
+      "actual_parent_semantic_checks_in_pure_JS": true,
+      "unchanged_functions": [
+        "OwnChildReaper",
+        "owned_command",
+        "run_child_lifecycle_controls",
+        "begin_resources",
+        "finish_resources",
+        "selected_status_dependencies",
+        "qualify_compiler_inputs",
+        "focused_test",
+        "command"
+      ],
+      "unchanged_packet_members": 6,
+      "actual_38_labels": [
+        "cargo-version",
+        "rustc-version",
+        "linked-libraries-0",
+        "linked-libraries-1",
+        "linked-libraries-2",
+        "linked-libraries-3",
+        "linked-libraries-4",
+        "linked-libraries-5",
+        "linked-libraries-6",
+        "linked-libraries-7",
+        "workspace-no-deps",
+        "supervisor-build",
+        "supervisor-test",
+        "applications-build",
+        "applications-test",
+        "supervisor-libtest-compile",
+        "supervisor-libtest-list",
+        "supervisor-libtest-help",
+        "cli-lifecycle-compile",
+        "cli-lifecycle-list",
+        "cli-lifecycle-help",
+        "host-binaries-compile",
+        "ctl-help",
+        "projection-test-0",
+        "projection-test-1",
+        "projection-test-2",
+        "projection-test-3",
+        "projection-test-4",
+        "projection-test-5",
+        "projection-test-6",
+        "projection-test-7",
+        "projection-test-8",
+        "projection-test-9",
+        "projection-test-10",
+        "projection-test-11",
+        "projection-test-12",
+        "projection-test-13",
+        "projection-test-14"
+      ],
+      "candidate_Cargo_release_invocations": 3
+    }
+  },
+  "reproduction": {
+    "function": "deriveStatusRelease01",
+    "file": "derive_release.js",
+    "arguments": [
+      "debug02 exact-request.json raw",
+      "debug02 make_request.js raw",
+      "actual debug02 result raw 144339",
+      "actual pure20 stdout raw 2569",
+      "this controller-edits.json raw",
+      "H={utf8,sha}"
+    ],
+    "independent_maker": "makeStatusCompileRequest(packet,stage,H)",
+    "derived_request_and_stdin_exact": true,
+    "all_32_edits_inverse_to_debug02_exact": true
+  },
+  "consumer": {
+    "source": {
+      "bytes": 8436,
+      "sha256": "dfd1208793980d92664f55aab040042cdc4cdd5e0ec7e66f016e0140d87a58f5",
+      "git_blob": "de0fb159fd12481136f10c2389f4b9b5261171ab"
+    },
+    "pure20_actual": {
+      "tree": "a53d11553369adb96bdb22caf20eada948731d19",
+      "blob": "3a44530e188b607580186617ba23424e131c7609",
+      "bytes": 2569,
+      "sha256": "e1e31a233000ba52362173007b1114a93289378844f58f99c3d7761f9bad31c4"
+    },
+    "integration_not_deployed": true,
+    "bound_baseline02_not_future_restart_authority": true,
+    "old8seconds_and_complete_readiness_and_owner_gates_preserved": true,
+    "no_lifecycle_Status_fallback": true
+  },
+  "deployment_boundaries": {
+    "release_actual_artifact_pins": null,
+    "installed_Main_source_provenance_qualified": false,
+    "current_installed_binary_inventory_complete": false,
+    "Main_B02_R6_or_current8_changed": false,
+    "old_London_UNKNOWN_preserved": true,
+    "UI_hold_preserved": true,
+    "production_ready": false,
+    "deployment_authorized": false,
+    "post_restart_new_baseline_required": true
+  }
+}

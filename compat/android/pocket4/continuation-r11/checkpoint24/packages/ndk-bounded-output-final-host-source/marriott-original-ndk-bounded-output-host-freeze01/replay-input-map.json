@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "reproduce_function": "makeBoundedOutputControls",
+  "script": "make-controls.js",
+  "template": "requests/host-controls-template.py",
+  "input_files": {
+    "fixture_context.py": "source/fixture_context.py",
+    "fixture_transport.py": "source/fixture_transport.py",
+    "fixture_contract.py": "references/fixture_contract.py",
+    "recorder.py": "references/recorder.py",
+    "check_bounded_output.py": "controls/check_bounded_output.py"
+  },
+  "U": {
+    "git_blob_sha1": "443e39b58cd6fe72faa1cb1d1c7b0a813fa0032d",
+    "functions": [
+      "utf8",
+      "sha256",
+      "gitBlob"
+    ]
+  },
+  "B": "Standard byte-only base64 encode/decode; full UTF8 source and packet roundtrips are checked.",
+  "outputs": [
+    "requests/packet.json",
+    "requests/stdin.py",
+    "requests/exact-request.json",
+    "review/reproduction-proof.json"
+  ]
+}

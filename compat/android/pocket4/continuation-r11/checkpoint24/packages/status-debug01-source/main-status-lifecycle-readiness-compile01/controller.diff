@@ -1,0 +1,1856 @@
+--- actual474/compile_builder.py
++++ status01/compile_status.py
+@@ -1,12 +1,15 @@
+ #!/usr/bin/env python3
++"""Build fixed host Status/Readiness sources and run owned dispatch regressions."""
+-"""Compile builder474 fixed Composer Audiocontrol example projection with 26 updater and 9 source controls; no platform execution."""
+ import ctypes
+ import datetime
++import errno
+ import hashlib
+ import json
+ import os
++from pathlib import Path, PurePosixPath
+-from pathlib import Path
+ import re
++import resource
++import select
+ import signal
+ import shutil
+ import stat
+@@ -15,7 +18,29 @@
+ import time
+ import tomllib
+ import tarfile
++
++BASE_SOURCE = Path('/home/alex/work/pocket4-native-builder474-composer-audiocontrol-projection-compile-01-20261106/builder-source')
++ROOT = Path('/home/alex/work/pocket4-native-status-lifecycle-readiness-compile-01-20261106')
++HERE = ROOT/'control-source'
++OUT = ROOT/'attempt01'
++COPIED = ROOT/'builder-source'
++RUST_SYSROOT = Path('/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu')
++CARGO_HOME = Path('/home/alex/.cargo')
++TOOLCHAIN = '1.93.0'
++OBSERVATION = '60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb'
++MANIFEST_PARENT = 'e18fe837795e9c3bd684592f3c91228604b2b21ca9d918ac56cebdb4b40754dd'
++MANIFEST_CANDIDATE = 'd8f6213f73726bd3766645e7decb5ebfac852f49852c49545e511a54b689d16e'
++PARENT_RESULT_SHA = 'd3b0264441b2af0684c9f147bbb32e274a6d42f96fd83c19f0f24ba6937ad294'
++DELTAS = {"runtime/droidloom-supervisor/src/control.rs":{"kind":"file","mode":436,"bytes":71588,"sha256":"50d7bc3abd94f83233ef7d461f93cb714f843cacb3fd5c0e929d06671a95f89b"},"runtime/droidloom-supervisor/src/development.rs":{"kind":"file","mode":436,"bytes":101645,"sha256":"37645978b33d443313694609625a97ac9dd7f6e14053664a48d02ff6d8daea90"},"runtime/droidloom-supervisor/src/bin/droidloomctl.rs":{"kind":"file","mode":436,"bytes":20606,"sha256":"3733dd7586ebf534aef3d4a5d176a76b8822dd0c6a6b8b39fb64adf8e70cd484"},"runtime/droidloom-supervisor/tests/cli_lifecycle.rs":{"kind":"file","mode":436,"bytes":11717,"sha256":"5310bfdb21b006ae1432b584c03fbbfb4c1f3a7cbd3ce226b54770ff4bbca317"},"runtime/droidloom-supervisor/src/control_status_tests.rs":{"kind":"file","mode":436,"bytes":11843,"sha256":"0bafad33112df280c73ceedf675305236275bb043d0909fc4a71f6366c0a6727"}}
++CHANGED_PATHS = ["runtime/droidloom-supervisor/src/control.rs","runtime/droidloom-supervisor/src/development.rs","runtime/droidloom-supervisor/src/bin/droidloomctl.rs","runtime/droidloom-supervisor/tests/cli_lifecycle.rs"]
++NEW_TEST_PATH = 'runtime/droidloom-supervisor/src/control_status_tests.rs'
++LIB_TESTS = ["control::status_lifecycle_tests::status_and_readiness_are_distinct_explicit_wire_requests","control::status_lifecycle_tests::stopped_dispatch_does_not_claim_android_ready","control::status_lifecycle_tests::running_status_dispatch_creates_no_child_and_cannot_replace_fresh_readiness","control::tests::boot_complete_does_not_hide_a_failed_input_service","control::tests::boot_progress_uses_observed_services_and_checks_every_readiness_gate","control::tests::boot_wait_reports_changes_and_a_stall_has_the_last_phase_and_log_commands","control::tests::only_missing_android_services_are_treated_as_boot_progress","control::tests::only_root_or_the_exact_cell_owner_is_authorized"]
++OWNED_FIXTURE_TEST = 'control::status_lifecycle_tests::owned_lifecycle_process_fixture'
++CLI_TESTS = ["start_waits_for_boot_and_keeps_progress_out_of_json","lifecycle_controls_the_whole_user_service","service_failure_is_reported","internal_cell_operations_do_not_recurse_into_systemd","explicit_mode_reaches_service_and_restart_preserves_it","lifecycle_rejects_a_symlink_runtime_directory","status_and_readiness_use_distinct_single_requests_without_wait_fallback"]
++HOST_BINARIES = [["droidloom-supervisor","droidloom-supervisor","runtime/droidloom-supervisor/src/main.rs"],["droidloom-supervisor","droidloomd","runtime/droidloom-supervisor/src/bin/droidloomd.rs"],["droidloom-supervisor","droidloomctl","runtime/droidloom-supervisor/src/bin/droidloomctl.rs"],["droidloom-applications","droidloom-applications","runtime/droidloom-applications/src/main.rs"]]
++DEADLINE = None
++CHILD_REAPER = None
++OBSERVED_SIGNALS = []
+-from pathlib import PurePosixPath
+ 
+ def require(ok, message):
+     if not ok:
+@@ -64,73 +89,6 @@
+     for item in (path, *path.parents):
+         require(stat.S_ISDIR(item.lstat().st_mode), 'directory alias rejected: '+str(item))
+ 
+-def children():
+-    return [int(x) for x in Path('/proc/self/task/%d/children' % os.getpid()).read_text().split()]
+-
+-def cleanup_children():
+-    initial = children()
+-    errors = []
+-    reaped = []
+-    deadline = time.monotonic()+8
+-    while children() and time.monotonic() < deadline:
+-        for pid in children():
+-            try:
+-                got, status = os.waitpid(pid, os.WNOHANG)
+-                if got:
+-                    reaped.append({'pid': got, 'status': status})
+-                    continue
+-                fd = os.pidfd_open(pid, 0)
+-                try:
+-                    signal.pidfd_send_signal(fd, signal.SIGKILL)
+-                finally:
+-                    os.close(fd)
+-            except ChildProcessError:
+-                continue
+-            except ProcessLookupError:
+-                continue
+-            except Exception as error:
+-                errors.append(repr(error))
+-        time.sleep(0.02)
+-    remaining = children()
+-    return {'initial_owned_children': initial, 'forced_cleanup': bool(initial), 'reaped': reaped, 'remaining': remaining, 'errors': errors}
+-
+-def command(argv, cwd, env, label, records, maximum_seconds=180):
+-    require(not children(), 'unreaped child before command')
+-    maximum_seconds = min(maximum_seconds, DEADLINE-time.monotonic())
+-    require(maximum_seconds > 0, 'owned overall deadline exhausted')
+-    stdout = OUT/(label+'.stdout')
+-    stderr = OUT/(label+'.stderr')
+-    started = utc()
+-    with stdout.open('xb') as out, stderr.open('xb') as err:
+-        proc = subprocess.Popen(argv, cwd=cwd, env=env, stdin=subprocess.DEVNULL,
+-                                stdout=out, stderr=err, start_new_session=True)
+-        timeout = False
+-        try:
+-            code = proc.wait(timeout=maximum_seconds)
+-        except subprocess.TimeoutExpired:
+-            timeout = True
+-            os.killpg(proc.pid, signal.SIGTERM)
+-            try:
+-                code = proc.wait(timeout=3)
+-            except subprocess.TimeoutExpired:
+-                os.killpg(proc.pid, signal.SIGKILL)
+-                code = proc.wait(timeout=3)
+-    output, outrow = held(stdout, 32*1024*1024)
+-    _, errrow = held(stderr, 4*1024*1024)
+-    row = {'argv': [str(x) for x in argv], 'cwd': str(cwd), 'label': label,
+-           'started_utc': started, 'finished_utc': utc(), 'returncode': code,
+-           'timed_out': timeout, 'stdout': outrow, 'stderr': errrow}
+-    records.append(row)
+-    require(code == 0 and not timeout, 'command failed: '+label)
+-    if label == 'projection-test-20':
+-        require(argv[1:] == ['--exact',FAKEROOT_TEST,'--test-threads=1','--nocapture',
+-                            '--logfile',str(OUT/'projection-test-20.libtest')],
+-                'normal daemon retirement is restricted to the exact fakeroot metadata test')
+-        row['normal_fakeroot_daemon_retirement'] = {}
+-        reap_normal_fakeroot_daemon(row['normal_fakeroot_daemon_retirement'])
+-    require(not children(), 'command left owned children: '+label)
+-    return output
+-
+ def resource_text(directory_fd, name):
+     fd = os.open(name, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=directory_fd)
+     try:
+@@ -196,49 +154,6 @@
+             'memory_peak':int(after['fields']['memory.peak']), 'memory_swap_peak':int(after['fields']['memory.swap.peak']),
+             'resource_settings_changed':False, 'swap_max_observed_only':after['fields']['memory.swap.max']}
+ 
+-BASE_SOURCE = Path('/home/alex/work/pocket4-native-builder472-composer-retirement-entry-compile-01-20261106/builder-source')
+-ROOT = Path('/home/alex/work/pocket4-native-builder474-composer-audiocontrol-projection-compile-01-20261106')
+-HERE = ROOT/'control-source'
+-OUT = ROOT/'attempt01'
+-COPIED = ROOT/'builder-source'
+-RUST_SYSROOT = Path('/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu')
+-CARGO_HOME = Path('/home/alex/.cargo')
+-TOOLCHAIN = '1.93.0'
+-MANIFEST_PARENT = 'fcbf72b891d9a9bbbcd015777e50cc3ade436f25732a603b51de261eab9cb27a'
+-MANIFEST_474 = 'e18fe837795e9c3bd684592f3c91228604b2b21ca9d918ac56cebdb4b40754dd'
+-GO_PATCH = '9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307'
+-OBSERVATION = '60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb'
+-GO_CONTROL = '391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674'
+-TESTS = [
+-    'android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes',
+-    'android::tests::restoration_preserves_original_and_removes_created_file',
+-    'android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch',
+-    'android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout',
+-    'android::patch_tests::interrupted_projection_recovers_before_next_build',
+-    'tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets',
+-    'tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory',
+-]
+-ORIGINAL_TESTS = list(TESTS)
+-PAIR_TESTS = ['native_generation::tests::legacy_and_disabled_preserve_the_disabled_mode', 'native_generation::tests::rejects_every_mixed_old_new_combination', 'native_generation::tests::enabled_triplet_requires_exact_contract', 'native_generation::tests::rejects_malformed_foreign_or_ambiguous_marker', 'native_generation::tests::rejects_foreign_elf_and_unrecognized_contract', 'native_generation::tests::rejects_symlinked_components', 'native_generation::tests::rejects_previous_protocol_for_each_role_and_mode', 'native_generation::tests::rejects_previous_protocol_inside_self_consistent_enabled_contract', 'native_generation::tests::rejects_previous_protocol_contract', 'native_generation::tests::real_ext4_apex_extraction_rejects_changed_nested_component', 'native_generation::tests::product_contract_generation_requires_enabled_triplet', 'native_generation::tests::product_contract_generation_is_create_only_and_binds_components', 'native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair', 'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata', 'tests::native_generation_pair_cli_requires_one_explicit_product']
+-ART_PROJECTION_TESTS = ['native_generation_art::tests::output_rejects_source_overlap_alias_and_reuse', 'native_generation_art::tests::records_are_create_only_and_never_grant_runtime_readiness']
+-TYPED_INGRESS_TESTS = ['native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate', 'native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions']
+-PARENT_TESTS = ORIGINAL_TESTS + PAIR_TESTS + ART_PROJECTION_TESTS + TYPED_INGRESS_TESTS
+-PROVIDER_CLOSURE_TESTS = ["android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata","android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas","android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged","native_role_ingress::tests::provider_extension_rejects_unlisted_path_commit_metadata_or_project_change","native_role_ingress::tests::published_workspace_selects_only_exact_current_or_previous_typed_lock","native_role_ingress::tests::previous_typed_manifest_does_not_bypass_fresh_project_verification"]
+-HAL_PROVIDER_TESTS = ["android::tests::typed_hal_provider_projection_restores_real_sources_and_keeps_consumers","android::tests::typed_hal_provider_late_source_drift_restores_earlier_projections","native_role_ingress::tests::hal_provider_extension_preserves_all_prior_projects_and_rejects_unlisted_changes"]
+-COMPOSER_ENTRY_TESTS = ["tests::composer_retirement_cli_requires_exact_workspace_and_fresh_output","android::tests::composer_retirement_route_is_strict_and_disjoint_from_framework","android::tests::composer_retirement_fixed_sources_reject_alias_drift_and_restore_projection","android::tests::composer_retirement_workspace_rejects_prior_lock_and_manifest_only","android::tests::composer_retirement_exact_systemui_projection_rejects_drift_and_recovers"]
+-COMPOSER_AUDIOCONTROL_TESTS = ["android::tests::composer_retirement_audiocontrol_example_projection_keeps_metadata_and_sibling_sources","android::tests::composer_retirement_audiocontrol_example_projection_rejects_source_drift_before_write","android::tests::composer_retirement_audiocontrol_example_projection_recovers_full_observed_original"]
+-TESTS = ORIGINAL_TESTS + TYPED_INGRESS_TESTS + PROVIDER_CLOSURE_TESTS + HAL_PROVIDER_TESTS + COMPOSER_ENTRY_TESTS + COMPOSER_AUDIOCONTROL_TESTS
+-PARENT_PROVIDER_DELTA = ["graphics/droidloom-composer-aidl/src/denial.rs","graphics/droidloom-composer-service/src/control.rs","graphics/droidloom-composer-service/src/main.rs","graphics/droidloom-composer/src/denial.rs","graphics/droidloom-denial-endpoint/src/lib.rs","graphics/droidloom-denial-protocol/src/lib.rs","graphics/droidloom-wayland/src/layers.rs","graphics/droidloom-wayland/src/main.rs","graphics/droidloom-wayland/src/retirement.rs","tools/droidloom-update/src/android.rs","tools/droidloom-update/src/main.rs"]
+-FIXED_PROVIDER_DELTA = ["android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp","tools/droidloom-update/src/android.rs"]
+-COMPOSER_ENTRY_PROOF_SHA = '3bc022c9924dc13f7e2ad8d6ed85a079af1dec61733433b88c2c76d0df0c60da'
+-COMPOSER_AUDIOCONTROL_PROOF_SHA = '2a3d0c6c6727e83aa8c325c63488e932774d8c9fa41e32065b5a5952b8f5a1ab'
+-COMPOSER_BUILD_SCOPE_SHA = '65f48507f685808728c1cd5a7f4a44e09e9b57f0588befbb97ba77a94a25da3d'
+-ACK_SOURCE_PINS = json.loads("{\"candidate-composer-main.rs\":{\"bytes\":19202,\"path\":\"graphics/droidloom-composer-service/src/main.rs\",\"sha256\":\"567c60fd293f35e2e0957db6f38bc967cc0c3fa90354b98491d461a7decdb4ce\"},\"candidate-control.rs\":{\"bytes\":42491,\"path\":\"graphics/droidloom-composer-service/src/control.rs\",\"sha256\":\"d3d9f4b763a6e80b6549119e42b4d6c3c6ab7368359f3cc71d2e090f05a881ca\"},\"candidate-core-denial.rs\":{\"bytes\":25541,\"path\":\"graphics/droidloom-composer/src/denial.rs\",\"sha256\":\"ed0080cd33a3a4fa67b3a0c2e95bc274ab38e992ec073ab01d87b910bf2db3c8\"},\"candidate-endpoint.rs\":{\"bytes\":63752,\"path\":\"graphics/droidloom-denial-endpoint/src/lib.rs\",\"sha256\":\"062b65857160eb6e3aeba2a78c4ce3d8503c02572f24353f8c944d950e52308c\"},\"candidate-engine-retirement.rs\":{\"bytes\":11118,\"path\":\"graphics/droidloom-wayland/src/retirement.rs\",\"sha256\":\"383f4c6f7490c8568f1853af6e9449fdb35bdb088348de4a9856d75f97306873\"},\"candidate-protocol.rs\":{\"bytes\":105464,\"path\":\"graphics/droidloom-denial-protocol/src/lib.rs\",\"sha256\":\"6c7f8df133f2a9e55bd375da4b39dcba5b00d0c4c3ba6531a6b8be329ebce41c\"},\"candidate-provider.rs\":{\"bytes\":50513,\"path\":\"graphics/droidloom-composer-aidl/src/denial.rs\",\"sha256\":\"d6f13720da4267ff46f369617faecbb8c6446eca2c624e381c1ff51ddaebbf09\"},\"candidate-wayland-layers.rs\":{\"bytes\":35990,\"path\":\"graphics/droidloom-wayland/src/layers.rs\",\"sha256\":\"d0a81ce5339c5020496e9b73e007d52ee206449827269b272e4ef6ef43df5ecc\"},\"candidate-wayland-main.rs\":{\"bytes\":110131,\"path\":\"graphics/droidloom-wayland/src/main.rs\",\"sha256\":\"0f56264e971db9f246d8db34d7fd5de157fd389a97bfb34492a6f53376d27459\"}}")
+-SOURCE_RESUME_TESTS = ['resume::tests::completed_project_reuse_has_no_fetch_or_checkout_and_publishes_only_after_verify', 'resume::tests::initial_checkout_reuses_cached_commit_and_preserves_interrupted_index_lock', 'resume::tests::nonempty_interrupted_index_lock_is_preserved_in_place_and_rejected', 'resume::tests::dirty_completed_project_keeps_original_bytes_and_never_gets_manifest', 'resume::tests::conflicting_untracked_partial_file_is_not_forced_or_removed', 'resume::tests::wrong_origin_is_rejected_before_any_fetch_or_checkout', 'resume::tests::recovered_parent_symlink_cannot_create_a_project_outside_staging', 'resume::tests::mismatched_staging_manifest_is_preserved_and_not_published', 'resume::tests::sparse_parent_normalization_keeps_exact_locked_selection']
+-SOURCE_REGISTERED_TESTS = ['tests::project_bound_admits_superproject_gitlink_extensions_but_not_unbounded_sync', 'tests::source_lock_accepts_bounded_133_sparse_paths_but_rejects_257', 'tests::plan_uses_only_exact_official_projects', 'tests::platform_compat_uses_its_official_tools_namespace', 'tests::traversal_and_full_sync_policy_are_rejected_together', 'tests::duplicate_projects_and_moving_refs_are_rejected', 'tests::root_links_are_relative_to_their_parent', 'tests::exact_local_git_fetch_and_manifest_link_are_verified', 'tests::reconciliation_accepts_only_monotonic_plan_expansion', 'tests::reconciliation_accepts_bounded_sparse_path_expansion', 'tests::materialized_verification_rejects_dirty_projects', 'resume::tests::completed_project_reuse_has_no_fetch_or_checkout_and_publishes_only_after_verify', 'resume::tests::initial_checkout_reuses_cached_commit_and_preserves_interrupted_index_lock', 'resume::tests::nonempty_interrupted_index_lock_is_preserved_in_place_and_rejected', 'resume::tests::dirty_completed_project_keeps_original_bytes_and_never_gets_manifest', 'resume::tests::conflicting_untracked_partial_file_is_not_forced_or_removed', 'resume::tests::wrong_origin_is_rejected_before_any_fetch_or_checkout', 'resume::tests::recovered_parent_symlink_cannot_create_a_project_outside_staging', 'resume::tests::mismatched_staging_manifest_is_preserved_and_not_published', 'resume::tests::sparse_parent_normalization_keeps_exact_locked_selection']
+-DEADLINE = None
+-OBSERVED_SIGNALS = []
+-
+ def hash_held(path, maximum=512*1024*1024):
+     fd = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+     try:
+@@ -531,82 +446,6 @@
+         return comparison,source_before,archive_pin
+     finally:os.close(fd)
+ 
+-def dependency_sources(metadata, build_tree, test_tree, observed_tree, registry_authority):
+-    require(metadata['resolve'] is None and metadata['workspace_root']==str(COPIED),
+-            'no-deps metadata must describe only the exact copied workspace')
+-    packages={p['id']:p for p in metadata['packages']}
+-    roots=[p['id'] for p in packages.values() if p['name']=='droidloom-update' and Path(p['manifest_path'])==COPIED/'tools/droidloom-update/Cargo.toml']
+-    require(len(roots)==1, 'selected package not the exact copied builder')
+-    previous=Path('/home/alex/work/pocket4-blueprint-streaming-builder-450-compile-01-20261105/builder-source')
+-    expected=observed_tree.decode().replace(str(previous),'<BUILDER_SOURCE>')
+-    for raw in [build_tree,test_tree]:
+-        require(raw.decode().replace(str(COPIED),'<BUILDER_SOURCE>')==expected,
+-                'selected tree differs from the actual offline package-selection authority')
+-    selected=parse_selected_tree(build_tree,COPIED)
+-    require(selected==parse_selected_tree(test_tree,COPIED) and len(selected)==49,
+-            'actual selected build/test package sets changed')
+-    lock=tomllib.loads((COPIED/'Cargo.lock').read_text())
+-    lock_by_key={}
+-    for package in lock['package']:
+-        lock_by_key.setdefault((package['name'],package['version']),[]).append(package)
+-    registry=CARGO_HOME/'registry/src';real_directory(registry)
+-    sources=sorted(registry.iterdir())
+-    require(0 < len(sources) <= 16 and all(stat.S_ISDIR(p.lstat().st_mode) for p in sources),
+-            'registry source roots are ambiguous aliases or exceed the bound')
+-    collected={};descriptions=[]
+-    for (name,version),selected_directory in sorted(selected.items()):
+-        locked=lock_by_key.get((name,version),[])
+-        require(len(locked)==1, 'selected package is ambiguous or absent in unchanged Cargo.lock')
+-        package=locked[0]
+-        if selected_directory is not None:
+-            matches=[p for p in packages.values() if p['name']==name and p['version']==version and
+-                     p['source'] is None and p['manifest_path']==str(Path(selected_directory)/'Cargo.toml')]
+-            require(package.get('source') is None and len(matches)==1,
+-                    'selected path package is not the exact no-deps workspace member')
+-            descriptions.append({'id':matches[0]['id'],'kind':'pinned-builder-source','manifest':matches[0]['manifest_path']})
+-            continue
+-        require(package.get('source')=='registry+https://github.com/rust-lang/crates.io-index' and
+-                re.fullmatch(r'[0-9a-f]{64}',package.get('checksum','')) is not None,
+-                'selected package is not the original locked crates.io source')
+-        candidates=[]
+-        for root in sources:
+-            candidate=root/(name+'-'+version)
+-            try:
+-                st=candidate.lstat()
+-            except FileNotFoundError:
+-                continue
+-            require(stat.S_ISDIR(st.st_mode), 'selected registry package is a directory alias')
+-            candidates.append(candidate)
+-        require(len(candidates)==1, 'selected package must have one existing local registry source: '+name+'@'+version)
+-        directory=candidates[0]
+-        observed=registry_authority.get((name,version))
+-        require(observed is not None and observed['source_directory']==str(directory) and
+-                observed['expected_lock_checksum']==package['checksum'] and
+-                observed['comparison']['archive_matches_lock'] is True and
+-                observed['comparison']['every_archive_file_matches_held_extracted_source'] is True,
+-                'selected source differs from actual locked-archive authority')
+-        archive=CARGO_HOME/'registry/cache'/directory.parent.name/(name+'-'+version+'.crate')
+-        require(str(archive)==observed['expected_archive_path'],'actual archive source location changed')
+-        real_directory(archive.parent)
+-        comparison,rows,archive_pin=qualify_cached_archive(archive,directory,name,version,package['checksum'])
+-        require(archive_pin['sha256']==observed['comparison']['archive']['sha256'],'actual archive digest changed')
+-        collected[str(archive)]=archive_pin
+-        manifest_raw,manifest_pin=held(directory/'Cargo.toml',1024*1024)
+-        manifest=tomllib.loads(manifest_raw.decode())
+-        require(manifest['package']['name']==name and manifest['package']['version']==version and
+-                rows['Cargo.toml']==manifest_pin,
+-                'cached package manifest/checksum changed or names a different package')
+-        for row in rows.values():
+-            require(len(collected)<16384, 'complete dependency inventory too large')
+-            collected[row['path']]=row
+-        package_id=package['source']+'#'+name+'@'+version
+-        descriptions.append({'id':package_id,'kind':'offline-registry','manifest':str(directory/'Cargo.toml'),
+-                             'recorded_files':len(rows),'package_checksum':package['checksum'],
+-                             'archive':archive_pin,'archive_to_source':comparison['source_inventory']})
+-    require(sum(p['kind']=='offline-registry' for p in descriptions)==45 and len(descriptions)==49,
+-            'selected existing dependency closure count changed')
+-    return roots[0],descriptions,collected
+-
+ def qualify_compiler_inputs(raw,packages,dependency_rows,candidate_rows):
+     qualified={p['manifest']:p for p in packages}
+     qualified_ids={p['id'] for p in packages}
+@@ -628,195 +467,625 @@
+     require(observed, 'no actual compiler-artifact inputs observed')
+     return sorted(observed)
+ 
++def limit_child_outputs():
++    # Cargo artifacts need more than the C-only fixture's 256 KiB file ceiling.
++    # Stdout/stderr still have independent complete-capture bounds below.
++    resource.setrlimit(resource.RLIMIT_FSIZE, (128*1024*1024, 128*1024*1024))
++
++
++class OwnChildReaper:
++    """Retire only children of this single-threaded isolated controller."""
++    def __init__(self):
++        self.pid = os.getpid()
++        self.original = None
++        self.changed = False
++        self.active = False
++        self.record = {'pid': self.pid, 'begin_passed': False, 'restored': False,
++                       'final_children_empty': False, 'max_adopted_per_command': 128,
++                       'cleanup_seconds_per_command': 5}
++        self.libc = ctypes.CDLL(None, use_errno=True)
++        self.prctl = self.libc.prctl
++        self.prctl.argtypes = [ctypes.c_int, ctypes.c_ulong, ctypes.c_ulong,
++                              ctypes.c_ulong, ctypes.c_ulong]
++        self.prctl.restype = ctypes.c_int
++
++    def flag(self):
++        value = ctypes.c_int(-1)
++        if self.prctl(37, ctypes.addressof(value), 0, 0, 0) != 0:
++            raise OSError(ctypes.get_errno(), 'PR_GET_CHILD_SUBREAPER')
++        require(value.value in (0, 1), 'invalid own subreaper flag')
++        return value.value
++
++    def set_flag(self, value):
++        if self.prctl(36, value, 0, 0, 0) != 0:
++            raise OSError(ctypes.get_errno(), 'PR_SET_CHILD_SUBREAPER')
++
++    def single_thread(self):
++        require(os.getpid() == self.pid and signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL,
++                'controller PID/SIGCHLD ownership changed')
++        names = []
++        with os.scandir('/proc/%d/task' % self.pid) as rows:
++            for row in rows:
++                names.append(row.name)
++                require(len(names) <= 1, 'controller is no longer single-threaded')
++        require(names == [str(self.pid)], 'controller thread identity changed')
++
++    def children(self):
++        # Fixed self task only, never an all-/proc or other-actor enumeration.
++        fd = os.open('/proc/%d/task/%d/children' % (self.pid, self.pid),
++                     os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
++        try:
++            data = os.read(fd, 8193)
++            require(len(data) <= 8192 and os.read(fd, 1) == b'', 'own children list exceeds bound')
++        finally:
++            os.close(fd)
++        fields = data.split()
++        require(len(fields) <= 128 and len(fields) == len(set(fields)), 'own child count differs')
++        require(all(x.isdigit() and x == str(int(x)).encode() and 0 < int(x) < 2**31
++                    for x in fields), 'malformed own children list')
++        return [int(x) for x in fields]
++
++    def empty(self):
++        self.single_thread()
++        require(self.children() == [], 'controller retains child processes')
++        try:
++            os.waitid(os.P_ALL, 0, os.WEXITED | os.WNOHANG | os.WNOWAIT)
++        except ChildProcessError:
++            return True
++        raise RuntimeError('kernel wait authority did not confirm ECHILD')
++
++    def begin(self):
++        require(hasattr(os, 'P_PIDFD') and hasattr(os, 'WNOWAIT'), 'held nonreaping wait unavailable')
++        self.empty()
++        self.original = self.flag()
++        self.record['original_subreaper_flag'] = self.original
++        if self.original == 0:
++            self.set_flag(1)
++            self.changed = True
++        require(self.flag() == 1, 'own subreaper did not become active')
++        self.active = True
++        self.record['begin_passed'] = True
++
++    def before_command(self):
++        require(self.active and self.flag() == 1, 'own subreaper not active')
++        self.empty()
++
++    def finish(self):
++        self.empty()
++        self.record['final_children_empty'] = True
++        if self.original is not None:
++            require(self.flag() == 1, 'own subreaper flag changed during commands')
++            if self.changed:
++                self.set_flag(self.original)
++                self.changed = False
++            require(self.flag() == self.original, 'own subreaper flag not restored')
++        self.active = False
++        self.record['restored'] = True
++
++    @staticmethod
++    def peek(pid, pidfd):
++        info = os.waitid(os.P_PIDFD if pidfd is not None else os.P_PID,
++                         pidfd if pidfd is not None else pid,
++                         os.WEXITED | os.WNOHANG | os.WNOWAIT)
++        if info is not None:
++            require(info.si_pid == pid and info.si_code in
++                    (os.CLD_EXITED, os.CLD_KILLED, os.CLD_DUMPED),
++                    'owned child wait status differs')
++        return info
++
++    @staticmethod
++    def observed(info):
++        return {'pid': info.si_pid, 'code': info.si_code, 'status': info.si_status}
++
++    def await_exit(self, pid, pidfd, deadline):
++        poller = select.poll()
++        poller.register(pidfd, select.POLLIN)
++        while True:
++            info = self.peek(pid, pidfd)
++            if info is not None:
++                return info
++            remaining = deadline - time.monotonic()
++            if remaining <= 0:
++                raise TimeoutError('owned child exit deadline')
++            poller.poll(max(1, min(100, int(remaining * 1000))))
++
++    def retire(self, process, pidfd, record, remember, deadline):
++        record['descendants'] = []
++        record['owned_tree_cleanup_complete'] = False
++        try:
++            # WNOWAIT / direct-child relationship reserves the leader PID until
++            # after group signalling. No killpg occurs after leader reaping.
++            info = self.peek(process.pid, pidfd)
++            record['leader_unreaped_before_group_cleanup'] = True
++            record['leader_alive_before_group_cleanup'] = info is None
++            if info is not None:
++                record['leader_observed_before_reap'] = self.observed(info)
++            require(os.getpgid(process.pid) == process.pid and
++                    os.getsid(process.pid) == process.pid, 'owned session/group identity changed')
++            record['owned_group_kill_attempted'] = True
++            record['kill_attempted'] = True
++            try:
++                os.killpg(process.pid, signal.SIGKILL)
++                record['owned_group_kill_completed'] = True
++            except ProcessLookupError:
++                require(info is not None, 'live original group disappeared')
++                record['owned_group_already_absent'] = True
++        except Exception as error:
++            remember(error, 'owned_group_cleanup')
++            # If group qualification failed, kill only the known direct child.
++            try:
++                if self.peek(process.pid, pidfd) is None:
++                    if pidfd is not None:
++                        signal.pidfd_send_signal(pidfd, signal.SIGKILL)
++                    else:
++                        # The successful P_PID wait above proves this is still
++                        # this controller's unreaped child, so its PID cannot be reused.
++                        process.kill()
++                    record['direct_child_fallback_kill_attempted'] = True
++            except Exception as error:
++                remember(error, 'direct_child_fallback_cleanup')
++        try:
++            process.wait(timeout=max(0, deadline - time.monotonic()))
++            record['returncode'] = process.returncode
++            record['child_reaped'] = True
++        except Exception as error:
++            remember(error, 'reap_direct_child')
++        if not record['child_reaped']:
++            return
++        seen = set()
++        while True:
++            try:
++                children = self.children()
++                if not children:
++                    self.empty()
++                    record['owned_tree_cleanup_complete'] = True
++                    break
++                require(time.monotonic() < deadline, 'adopted child cleanup deadline')
++                require(not (set(children) & seen), 'an earlier adopted child was not reaped')
++                require(len(seen) + len(children) <= 128, 'adopted child total bound exceeded')
++            except Exception as error:
++                remember(error, 'adopted_child_list_or_gate')
++                break
++            complete = True
++            for child in children:
++                if time.monotonic() >= deadline:
++                    remember(TimeoutError('adopted child cleanup deadline'), 'adopted_child_deadline')
++                    complete = False
++                    break
++                seen.add(child)
++                item = {'pid': child, 'kill_attempted': False, 'reaped': False, 'pidfd_closed': True}
++                record['descendants'].append(item)
++                held = None
++                try:
++                    # The kernel-listed unreaped direct/adopted child cannot be
++                    # reaped by another waiter: this controller is single-threaded.
++                    try:
++                        held = os.pidfd_open(child, 0)
++                        item['pidfd_closed'] = False
++                    except Exception as error:
++                        # Keep this failure, but still retire the kernel-proven
++                        # unreaped child if descriptor allocation itself failed.
++                        item['pidfd_open_error'] = repr(error)
++                        remember(error, 'adopted_pidfd_open')
++                    info = self.peek(child, held)
++                    if info is None:
++                        item['kill_attempted'] = True
++                        if held is not None:
++                            signal.pidfd_send_signal(held, signal.SIGKILL)
++                            info = self.await_exit(child, held, deadline)
++                        else:
++                            os.kill(child, signal.SIGKILL)
++                            while info is None and time.monotonic() < deadline:
++                                time.sleep(0.005)
++                                info = self.peek(child, None)
++                            require(info is not None, 'owned child fallback wait deadline')
++                    item['observed_before_reap'] = self.observed(info)
++                    waited, status = os.waitpid(child, os.WNOHANG)
++                    require(waited == child, 'observed terminal adopted child was not reaped')
++                    item['wait_status'] = status
++                    item['reaped'] = True
++                except Exception as error:
++                    complete = False
++                    item['error'] = repr(error)
++                    remember(error, 'adopted_child_cleanup')
++                finally:
++                    if held is not None:
++                        value, held = held, None
++                        try:
++                            os.close(value)
++                            item['pidfd_closed'] = True
++                        except Exception as error:
++                            complete = False
++                            remember(error, 'adopted_pidfd_close')
++            if not complete:
++                break
++        record['cleanup_elapsed_seconds'] = time.monotonic() - (deadline - 5)
++        if record['descendants']:
++            # Successful drivers must normally reap their own helpers. Cleanup
++            # success is not permission to count orphaned/forced helpers as a
++            # successful compilation.
++            remember(RuntimeError('driver left descendant processes after its exit'),
++                     'driver_left_descendants')
++
++
+-def build_artifact(raw, package_id, test):
+-    artifacts=[]
+-    for line in raw.decode().splitlines():
+-        if not line.strip():
+-            continue
+-        item=json.loads(line)
+-        if item.get('reason')=='compiler-artifact' and item.get('package_id')==package_id and item['target']['name']=='droidloom-update' and item.get('executable') and bool(item['profile']['test'])==test:
+-            artifacts.append(Path(item['executable']))
+-    require(len(artifacts)==1,'actual Cargo artifact set is not the one selected builder')
+-    artifact=artifacts[0]
+-    require(artifact.is_relative_to(OUT/'cargo-target'),'artifact escaped fresh owned target')
+-    return artifact
+ 
++def owned_command(report, root, argv, timeout=25, pidfd_factory=None, environment=None, cwd=None, label=None):
++    index = len(report['commands'])
++    output = root / ('command%02d.stdout' % index)
++    error_path = root / ('command%02d.stderr' % index)
++    record = {'argv': argv, 'cwd': str(cwd or root), 'label': label, 'timeout_seconds': timeout,
++              'timed_out': False, 'child_started': False, 'child_reaped': False,
++              'kill_attempted': False, 'pidfd_closed': True, 'output_fds_closed': False,
++              'first_error': None, 'secondary_errors': [],
++              'owned_tree_cleanup_complete': False}
++    report['commands'].append(record)
++    process = None
++    pidfd = None
++    streams = []
++    first = None
+-IMAGE_TOOL_OBSERVATION = 'b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292'
+-IMAGE_TEST_PATH = '/usr/bin:/usr/sbin:/bin:/sbin'
+-FAKEROOT_DAEMON = '/usr/bin/faked-sysv'
+-FAKEROOT_PRELOAD = '/usr/lib/x86_64-linux-gnu/libfakeroot/libfakeroot-sysv.so'
+-FAKEROOT_TEST = 'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata'
+-IMAGE_TOOL_PATHS = {
+-    'zip':'/usr/bin/zip', 'unzip':'/usr/bin/unzip', 'debugfs':'/usr/sbin/debugfs',
+-    'mke2fs':'/usr/sbin/mke2fs', 'fsck.erofs':'/usr/bin/fsck.erofs',
+-    'mkfs.erofs':'/usr/bin/mkfs.erofs', 'fakeroot':'/usr/bin/fakeroot',
+-    'chown':'/usr/bin/chown', 'setfattr':'/usr/bin/setfattr',
+-}
+-IMAGE_TOOL_NAMES = tuple(IMAGE_TOOL_PATHS)
+-FAKEROOT_AUXILIARIES = ('/usr/bin/sed', '/usr/bin/cut', '/usr/bin/cat')
+ 
++    def remember(error, stage):
++        nonlocal first
++        item = {'stage': stage, 'error': repr(error)}
++        if first is None:
++            first = error
++            record['first_error'] = item
++        else:
++            record['secondary_errors'].append(item)
+ 
+-def image_pin(path, allowed, native_elf):
+-    row = pin_resolved(path, allowed)
+-    resolved = Path(row['resolved_path'])
+-    for parent in resolved.parents:
+-        value = parent.lstat()
+-        require(stat.S_ISDIR(value.st_mode) and value.st_uid == 0 and not value.st_mode & 0o022,
+-                'image tool ancestor is not immutable to this operator: '+str(parent))
+-    fd = os.open(resolved, os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW)
+     try:
++        CHILD_REAPER.before_command()
++        remaining = DEADLINE - time.monotonic()
++        require(remaining > 0, 'controller work deadline expired before child admission')
++        for path in (output, error_path):
++            streams.append(path.open('xb'))
++        require(type(environment) is dict and environment.get('CARGO_NET_OFFLINE') == 'true',
++                'fixed offline child environment missing')
++        process = subprocess.Popen(argv, cwd=cwd or root, stdin=subprocess.DEVNULL,
++            stdout=streams[0], stderr=streams[1], close_fds=True, start_new_session=True,
++            preexec_fn=limit_child_outputs, env=environment)
++        record['pid'] = process.pid
++        record['child_started'] = True
++        pidfd = (pidfd_factory or os.pidfd_open)(process.pid, 0)
++        record['pidfd_closed'] = False
++        try:
++            info = CHILD_REAPER.await_exit(process.pid, pidfd,
++                time.monotonic() + min(timeout, remaining))
++            record['leader_observed_without_reap'] = CHILD_REAPER.observed(info)
++            if info.si_code != os.CLD_EXITED or info.si_status != 0:
++                remember(RuntimeError('original command exited unsuccessfully before cleanup'),
++                         'leader_exit_status')
++        except TimeoutError:
++            record['timed_out'] = True
++            raise subprocess.TimeoutExpired(argv, timeout)
++    except Exception as error:
++        remember(error, 'start_or_wait')
+-        before = os.fstat(fd)
+-        require(identity(before) == row['identity'] and before.st_uid == 0 and
+-                not before.st_mode & 0o022, 'image input owner/mode changed or is not root-owned')
+-        is_elf = os.read(fd,4) == b'\x7fELF'
+-        require(is_elf is native_elf, 'image input ELF/script kind differs')
+-        require(identity(before) == identity(os.fstat(fd)) == identity(resolved.lstat()),
+-                'image input changed during owner/type verification')
+-        require(path.resolve(strict=True) == resolved, 'image input resolution changed')
+     finally:
++        if process is not None:
++            cleanup_deadline = time.monotonic() + 5
++            try:
++                CHILD_REAPER.retire(process, pidfd, record, remember, cleanup_deadline)
++            except Exception as error:
++                remember(error, 'unexpected_owned_tree_cleanup_error')
++                # Do not let an unexpected diagnostic error skip the direct
++                # child's final wait. Group/adoption qualification stays false.
++                try:
++                    if process.returncode is None and CHILD_REAPER.peek(process.pid, pidfd) is None:
++                        if pidfd is not None:
++                            signal.pidfd_send_signal(pidfd, signal.SIGKILL)
++                        else:
++                            process.kill()
++                except Exception as error:
++                    remember(error, 'final_direct_kill')
++                try:
++                    process.wait(timeout=max(0, cleanup_deadline - time.monotonic()))
++                    record['returncode'] = process.returncode
++                    record['child_reaped'] = True
++                except Exception as error:
++                    remember(error, 'final_direct_wait')
++        if pidfd is not None:
++            value, pidfd = pidfd, None
++            try:
++                os.close(value)
++                record['pidfd_closed'] = True
++            except Exception as error:
++                remember(error, 'close_pidfd')
++        closed = True
++        for stream in reversed(streams):
++            try:
++                stream.close()
++            except Exception as error:
++                closed = False
++                remember(error, 'close_output_file')
++        record['output_fds_closed'] = closed
++    # Each output is retained independently; a capture error cannot hide the
++    # earlier child failure or prevent the other stream from being checked.
++    for key, path in [('stdout', output), ('stderr', error_path)]:
++        try:
++            data, pin = held(path, 32*1024*1024 if key == 'stdout' else 4*1024*1024)
++            record[key + '_bytes'] = len(data)
++            record[key + '_sha256'] = pin['sha256']
++            record[key + '_pin'] = pin
++            record[key] = data.decode('utf-8')
++            record[key + '_complete'] = True
++        except Exception as error:
++            record[key + '_complete'] = False
++            remember(error, 'capture_' + key)
++    if first is not None:
++        raise first
++    require(record.get('returncode') == 0 and record['child_reaped'] and
++            record['pidfd_closed'] and record['output_fds_closed'] and
++            record['owned_tree_cleanup_complete'] and not record['timed_out'],
++            'matching build/control command failed: ' + str(index))
++    return record
++
++
++
++def command(argv, cwd, env, label, records, maximum_seconds=180):
++    row = owned_command({'commands': records}, OUT, [str(x) for x in argv],
++                        timeout=maximum_seconds, environment=env, cwd=cwd, label=label)
++    raw = row.pop('stdout').encode('utf-8')
++    row.pop('stderr')
++    row['stdout'] = row.pop('stdout_pin')
++    row['stderr'] = row.pop('stderr_pin')
++    return raw
++
++
++HOST_LIFECYCLE_FIXTURE = r"""import os
++import sys
++import time
++
++mode = sys.argv[1]
++if mode == 'pidfd-failure':
++    time.sleep(30)
++    raise SystemExit(0)
++if mode not in ('timeout-descendant', 'escaped-descendant'):
++    raise SystemExit(2)
++read_end, write_end = os.pipe()
++child = os.fork()
++if child == 0:
++    os.close(read_end)
++    if mode == 'escaped-descendant':
++        os.setsid()
++    os.write(write_end, b'R')
++    os.close(write_end)
++    time.sleep(30)
++    os._exit(0)
++os.close(write_end)
++if os.read(read_end, 1) != b'R':
++    os._exit(3)
++os.close(read_end)
++print('READY %d %d' % (os.getpid(), child), flush=True)
++if mode == 'escaped-descendant':
++    os._exit(0)
++time.sleep(30)
++"""
++
++
++def run_child_lifecycle_controls(report, root, environment):
++    control_root = root / 'host-child-lifecycle-controls'
++    control_root.mkdir(mode=0o700)
++    report['host_child_lifecycle_controls'] = []
++    modes = ('timeout-descendant', 'escaped-descendant', 'pidfd-failure')
++    for index, mode in enumerate(modes):
++        case_root = control_root / ('case%02d' % index)
++        case_root.mkdir(mode=0o700)
++        case = {'name': mode, 'passed': False, 'commands': [],
++                'Android_executed': False, 'namespace_or_UID_changes': False,
++                'pidfd_failure_seam': mode == 'pidfd-failure'}
++        report['host_child_lifecycle_controls'].append(case)
++        first = None
+-        os.close(fd)
+-    row['root_owner_and_nonwritable_parents_verified'] = True
+-    row['is_ELF'] = is_elf
+-    return row
+ 
++        def denied_pidfd(pid, flags):
++            raise OSError(errno.EMFILE, 'explicit owned-child pidfd-open control seam')
+ 
++        try:
++            owned_command(case, case_root,
++                    [sys.executable, '-I', '-B', '-c', HOST_LIFECYCLE_FIXTURE, mode],
++                    timeout=1 if mode == 'timeout-descendant' else 5,
++                    pidfd_factory=denied_pidfd if mode == 'pidfd-failure' else None, environment=environment)
++        except Exception as error:
++            first = error
++        require(first is not None and len(case['commands']) == 1,
++                'lifecycle negative control unexpectedly succeeded')
++        row = case['commands'][0]
++        require(row['child_started'] and row['child_reaped'] and
++                row['owned_tree_cleanup_complete'] and row['pidfd_closed'] and
++                row['output_fds_closed'] and row.get('stdout_complete') and row.get('stderr_complete'),
++                'lifecycle negative control did not completely retire its owned tree')
++        require(row['stderr'] == '' and row['first_error'] is not None,
++                'lifecycle negative control lost its first error or had unexpected stderr')
++        if mode == 'pidfd-failure':
++            require(isinstance(first, OSError) and first.errno == errno.EMFILE and
++                    row['first_error']['stage'] == 'start_or_wait' and
++                    row['returncode'] == -signal.SIGKILL and not row['descendants'],
++                    'post-Popen pidfd failure did not preserve errno and reap the child')
+-def image_toolchain(report, environment):
+-    raw, authority_pin = pinned_packet('image-tools-result.json', IMAGE_TOOL_OBSERVATION)
+-    authority = json.loads(raw)
+-    require(authority['state'] == 'PASS_FIXED_READ_ONLY_OBSERVATIONS' and
+-            authority['commands_executed'] == 0 and authority['image_or_mount_actions'] == 0 and
+-            authority['install_update_actions'] == 0 and authority['observations_unchanged_after'] is True and
+-            authority['owned_resource_gate']['pass'] is True and set(authority['tools']) == set(IMAGE_TOOL_NAMES) and
+-            authority['controlled_selection_PATH'] == IMAGE_TEST_PATH and not authority['missing_required_tools'] and
+-            sum(len(rows) for rows in authority['tool_candidate_observations'].values()) == 13 and
+-            len(authority['backend_observations']) == 10,
+-            'fixed image tool observation is not complete')
+-    require(all(name not in environment for name in ('FAKEROOTKEY','LD_PRELOAD','LD_LIBRARY_PATH')),
+-            'image tool environment contains inherited fakeroot or loader state')
+-    wrapper = authority['tools']['fakeroot']['complete_script_source']
+-    require(sha(wrapper.encode()) == authority['tools']['fakeroot']['sha256'] and
+-            wrapper.startswith('#!/bin/sh\n') and
+-            'FAKEROOT_PREFIX=/usr\nFAKEROOT_BINDIR=/usr/bin\n' in wrapper and
+-            'USEABSLIBPATH=0\nFAKEROOT_LIB=libfakeroot-sysv.so\n' in wrapper and
+-            'PATHS=/usr/lib/x86_64-linux-gnu/libfakeroot:${FAKEROOT_PREFIX}/lib64/libfakeroot:${FAKEROOT_PREFIX}/lib32/libfakeroot\n' in wrapper and
+-            'FAKED=${FAKEROOT_BINDIR}/faked-sysv\n' in wrapper,
+-            'complete observed fakeroot wrapper does not select the fixed sysv backend')
+-    allowed = [Path('/usr/bin'), Path('/usr/sbin'), Path('/usr/lib')]
+-    rows = []
+-    executables = []
+-    for name in IMAGE_TOOL_NAMES:
+-        before = authority['tools'][name]
+-        requested = IMAGE_TOOL_PATHS[name]
+-        require(before['requested_path'] == requested and before['uid'] == 0 and
+-                shutil.which(name,path=IMAGE_TEST_PATH) == requested,
+-                'image tool does not match the explicit controlled PATH selection')
+-        row = image_pin(Path(requested), allowed, before['is_ELF'])
+-        require(row['sha256'] == before['sha256'] and row['bytes'] == before['bytes'] and
+-                row['resolved_path'] == before['resolved_path'], 'observed image tool changed: '+name)
+-        rows.append(row)
+-        if before['is_ELF']:
+-            executables.append(Path(requested))
+         else:
++            fields = row['stdout'].strip().split()
++            require(len(fields) == 3 and fields[0] == 'READY' and
++                    int(fields[1]) == row['pid'] and len(row['descendants']) == 1 and
++                    row['descendants'][0]['pid'] == int(fields[2]) and
++                    row['descendants'][0]['reaped'] and row['descendants'][0]['pidfd_closed'] and
++                    os.WIFSIGNALED(row['descendants'][0]['wait_status']) and
++                    os.WTERMSIG(row['descendants'][0]['wait_status']) == signal.SIGKILL,
++                    'real descendant readiness/reaping proof differs')
++            if mode == 'timeout-descendant':
++                require(isinstance(first, subprocess.TimeoutExpired) and row['timed_out'] and
++                        row['returncode'] == -signal.SIGKILL and
++                        row['first_error']['stage'] == 'start_or_wait',
++                        'timeout control did not retain the original failure')
++            else:
++                require(row['returncode'] == 0 and not row['timed_out'] and
++                        row['descendants'][0]['kill_attempted'] and
++                        row['first_error']['stage'] == 'driver_left_descendants',
++                        'escaped descendant was not rejected and independently retired')
++        CHILD_REAPER.empty()
++        case['expected_failure'] = repr(first)
++        case['passed'] = True
++    require(len(report['host_child_lifecycle_controls']) == 3 and
++            all(item['passed'] for item in report['host_child_lifecycle_controls']),
++            'owned tree cleanup controls incomplete')
++
++def selected_status_dependencies(metadata, trees, registry_authority, source_map):
++    require(metadata.get('resolve') is None and metadata.get('workspace_root') == str(COPIED) and
++            metadata.get('target_directory') == str(OUT/'cargo-target') and
++            type(metadata.get('packages')) is list and 0 < len(metadata['packages']) <= 128,
++            'no-deps metadata must describe the exact copied host workspace')
++    packages = {p['id']: p for p in metadata['packages']}
++    require(len(packages) == len(metadata['packages']), 'duplicate workspace package identity')
++    allowed_paths = {
++        'droidloom-supervisor': 'runtime/droidloom-supervisor',
++        'droidloom-applications': 'runtime/droidloom-applications',
++        'droidloom-contracts': 'runtime/droidloom-contracts',
++        'droidloom-cpu-placement': 'runtime/droidloom-cpu-placement',
++        'droidloom-window-policy': 'runtime/droidloom-window-policy',
++    }
++    roots = {}
++    for name in ('droidloom-supervisor', 'droidloom-applications'):
++        found = [p for p in packages.values() if p['name'] == name and p['source'] is None and
++                 p['manifest_path'] == str(COPIED/allowed_paths[name]/'Cargo.toml') and
++                 p['id'] in metadata['workspace_members']]
++        require(len(found) == 1, 'exact supervisor/application workspace root is absent: '+name)
++        roots[name] = found[0]
++    require(set(trees) == {'supervisor-build', 'supervisor-test', 'applications-build', 'applications-test'},
++            'both real root normal/build and normal/build/dev trees required')
++    parsed = {name: parse_selected_tree(raw, COPIED) for name, raw in trees.items()}
++    selected = {}
++    for root in ('supervisor', 'applications'):
++        build, test = parsed[root+'-build'], parsed[root+'-test']
++        require(build and all(key in test and test[key] == value for key,value in build.items()),
++                'test dependency graph lost or changed a normal/build dependency')
++        for key, value in test.items():
++            require(key not in selected or selected[key] == value, 'cross-root dependency identity differs')
++            selected[key] = value
++    require(0 < len(selected) <= 50, 'host root closure exceeds five path plus 45 observed registry packages')
++    lock_raw, lock_pin = held(COPIED/'Cargo.lock', 1024*1024)
++    require(lock_pin['bytes'] == 51836 and lock_pin['sha256'] ==
++            'c1dfa6f13f789cf40435d0d72973d029d0e264b27bd833eabb5a727492127f62',
++            'host compile changed the immutable original workspace lock')
++    lock = tomllib.loads(lock_raw.decode('utf-8'))
++    by_key = {}
++    for package in lock['package']:
++        by_key.setdefault((package['name'], package['version']), []).append(package)
++    require(len(registry_authority) == 45, 'original complete 45-package authority is required')
++    source_roots = {str(Path(row['source_directory']).parent) for row in registry_authority.values()}
++    archive_roots = {str(Path(row['expected_archive_path']).parent) for row in registry_authority.values()}
++    require(len(source_roots) == len(archive_roots) == 1, 'paired fixed registry namespaces required')
++    source_root, archive_root = Path(next(iter(source_roots))), Path(next(iter(archive_roots)))
++    require(source_root.parent == CARGO_HOME/'registry/src' and
++            archive_root.parent == CARGO_HOME/'registry/cache' and
++            source_root.name == archive_root.name and '..' not in source_root.parts,
++            'registry authority escaped the observed Cargo namespace')
++    real_directory(source_root)
++    real_directory(archive_root)
++    descriptions, collected = [], {}
++    for (name, version), directory_text in sorted(selected.items()):
++        rows = by_key.get((name, version), [])
++        require(len(rows) == 1, 'selected package is missing or ambiguous in unchanged Cargo.lock')
++        locked = rows[0]
++        if directory_text is not None:
++            require(name in allowed_paths and directory_text == str(COPIED/allowed_paths[name]) and
++                    locked.get('source') is None, 'selected path crate left the five fixed host providers')
++            manifest_path = Path(directory_text)/'Cargo.toml'
++            relative = str(manifest_path.relative_to(COPIED))
++            require(relative in source_map and hash_held(manifest_path)['sha256'] ==
++                    source_map[relative]['sha256'], 'path dependency manifest changed')
++            matches = [p for p in packages.values() if p['name'] == name and p['version'] == version and
++                       p['source'] is None and p['manifest_path'] == str(manifest_path)]
++            require(len(matches) == 1 and matches[0]['id'] in metadata['workspace_members'],
++                    'path dependency is not the exact observed workspace member')
++            descriptions.append({'id':matches[0]['id'], 'name':name, 'version':version,
++                                 'kind':'pinned-host-source', 'manifest':str(manifest_path)})
++            continue
++        observed = registry_authority.get((name, version))
++        require(observed is not None and locked.get('source') ==
++                'registry+https://github.com/rust-lang/crates.io-index' and
++                re.fullmatch(r'[0-9a-f]{64}', locked.get('checksum', '')) is not None,
++                'selected registry dependency has no actual fixed archive authority')
++        directory, archive = source_root/(name+'-'+version), archive_root/(name+'-'+version+'.crate')
++        require(observed['source_directory'] == str(directory) and
++                observed['expected_archive_path'] == str(archive) and
++                observed['expected_lock_checksum'] == locked['checksum'] and
++                observed['comparison']['archive_matches_lock'] is True and
++                observed['comparison']['every_archive_file_matches_held_extracted_source'] is True,
++                'selected registry source differs from actual archive/source authority')
++        comparison, inventory, archive_pin = qualify_cached_archive(
++            archive, directory, name, version, locked['checksum'])
++        require(archive_pin['sha256'] == observed['comparison']['archive']['sha256'],
++                'existing archive differs from historical complete observation')
++        manifest_raw, manifest_pin = held(directory/'Cargo.toml', 1024*1024)
++        manifest = tomllib.loads(manifest_raw.decode('utf-8'))['package']
++        require(manifest['name'] == name and manifest['version'] == version and
++                inventory['Cargo.toml'] == manifest_pin, 'selected package manifest differs')
++        collected[str(archive)] = archive_pin
++        for row in inventory.values():
++            require(len(collected) < 16384, 'complete selected dependency inventory exceeds bound')
++            collected[row['path']] = row
++        descriptions.append({'id':locked['source']+'#'+name+'@'+version,
++            'name':name, 'version':version, 'kind':'offline-registry',
++            'manifest':str(directory/'Cargo.toml'), 'recorded_files':len(inventory),
++            'package_checksum':locked['checksum'], 'archive':archive_pin,
++            'archive_to_source':comparison['source_inventory']})
++    require(all(any(row['id'] == p['id'] for row in descriptions) for p in roots.values()) and
++            sum(p['kind'] == 'offline-registry' for p in descriptions) <= 45 and
++            sum(p['kind'] == 'pinned-host-source' for p in descriptions) <= 5,
++            'actual selected host closure is incomplete or outside fixed authority')
++    return roots, descriptions, collected
++
+-            require(name == 'fakeroot', 'only the independently read fakeroot script may be a wrapper')
+-    backends = {row['requested_path']:row for row in authority['backend_observations']}
+-    for name in (FAKEROOT_DAEMON, FAKEROOT_PRELOAD, '/bin/sh', '/usr/bin/getopt'):
+-        require(name in backends and backends[name].get('absent') is not True,
+-                'exact fakeroot backend/interpreter is absent from the fixed read authority')
+-        before = backends[name]
+-        row = image_pin(Path(name), allowed, True)
+-        require(before['is_ELF'] is True and row['sha256'] == before['sha256'] and
+-                row['bytes'] == before['bytes'] and row['resolved_path'] == before['resolved_path'],
+-                'fakeroot backend/interpreter changed')
+-        rows.append(row)
+-        executables.append(Path(name))
+-    # These three fixed auxiliary paths were identified in the complete wrapper.
+-    # They are first observed here before execution, not claimed as reader02 pins.
+-    auxiliaries = []
+-    for name in FAKEROOT_AUXILIARIES:
+-        require(shutil.which(Path(name).name,path=IMAGE_TEST_PATH) == name,
+-                'fixed fakeroot auxiliary is shadowed in the controlled PATH')
+-        row = image_pin(Path(name), allowed, True)
+-        rows.append(row)
+-        auxiliaries.append(row)
+-        executables.append(Path(name))
+-    require(shutil.which('getopt',path=IMAGE_TEST_PATH) == '/usr/bin/getopt',
+-            'observed getopt is shadowed in the controlled PATH')
+-    # Fixed root-owned native ELF inputs only; no fixture/candidate program is
+-    # passed to ldd. Runtime dependencies are held/hash-pinned and rechecked.
+-    linked = set()
+-    for index,path in enumerate(executables):
+-        raw = command(['/usr/bin/ldd',str(path)],COPIED,environment,
+-                      'image-linked-libraries-'+str(index),report['commands'],10).decode()
+-        require('not found' not in raw, 'image tool runtime library is missing')
+-        for line in raw.splitlines():
+-            match = re.search(r'(?:=>\s*)?(/\S+)\s+\(',line)
+-            if match:
+-                linked.add(match.group(1))
+-    for name in sorted(linked):
+-        rows.append(image_pin(Path(name), allowed+[Path('/lib')], True))
+-    report['actual_image_tools_authority'] = authority_pin
+-    report['image_tools_scope'] = {
+-        'tool_names':list(IMAGE_TOOL_NAMES), 'controlled_test_PATH':IMAGE_TEST_PATH,
+-        'fixed_fakeroot_daemon':FAKEROOT_DAEMON, 'fixed_fakeroot_preload':FAKEROOT_PRELOAD,
+-        'auxiliaries_first_observed_before_execution':auxiliaries,
+-        'fakeroot_args':'-- <actual held test executable> --exact <fixed metadata test> --nocapture',
+-        'fakeroot_save_or_load_flags_permitted':False,
+-        'real_ext4_erofs_zip_fakeroot_tests_required':5,
+-        'mount_or_install_commands_permitted':False,
+-        'fixtures_are_test_marked_bytes_not_platform_signed_APEX':True,
+-        'uutils_chown_compatibility_not_assumed':True}
+-    return list({row['requested_path']:row for row in rows}.values())
+ 
++def actual_executable(raw, package_id, target_name, target_kind, source_path, test):
++    records = []
++    for line in raw.decode('utf-8').splitlines():
++        if not line.strip():
++            continue
++        item = json.loads(line)
++        if item.get('reason') == 'compiler-artifact' and item.get('package_id') == package_id and \
++                item.get('target', {}).get('name') == target_name and item.get('executable'):
++            require(item['target']['kind'] == [target_kind] and
++                    item['target']['src_path'] == str(source_path) and
++                    item['profile']['test'] is test,
++                    'Cargo executable has a wrong target/source/profile')
++            records.append(Path(item['executable']))
++    require(len(records) == 1, 'expected actual executable missing or duplicate')
++    path = records[0]
++    require(path.is_relative_to(OUT/'cargo-target') and '..' not in path.parts,
++            'actual executable escaped the fresh owned Cargo target')
++    real_directory(path.parent)
++    data, pin = held(path, 128*1024*1024)
++    require(data[:4] == b'\x7fELF' and pin['identity'][2] & 0o111,
++            'actual executable is not an executable regular ELF')
++    return path, pin
+ 
+-def reap_normal_fakeroot_daemon(record):
+-    # The exact test wrapper owns one daemon and requests its normal TERM on
+-    # exit. The controller is a subreaper: an exited adopted daemon still needs
+-    # waitpid. This function never signals a child or treats a live one as done.
+-    record.update({'maximum_seconds':2,'signal_actions':0,'reaped':[],'remaining':[]})
+-    deadline = min(time.monotonic()+2, DEADLINE)
+-    while True:
+-        current = children()
+-        record['remaining'] = current
+-        require(len(current)+len(record['reaped']) <= 1,
+-                'exact fakeroot test left more than its one owned daemon')
+-        if not current:
+-            return
+-        for pid in current:
+-            got,status = os.waitpid(pid,os.WNOHANG)
+-            if got:
+-                record['reaped'].append({'pid':got,'status':status})
+-                require((os.WIFEXITED(status) and os.WEXITSTATUS(status)==0) or
+-                        (os.WIFSIGNALED(status) and os.WTERMSIG(status)==signal.SIGTERM),
+-                        'owned fakeroot daemon did not exit normally or by wrapper TERM')
+-        if not children():
+-            record['remaining'] = []
+-            return
+-        require(time.monotonic()<deadline,'owned fakeroot daemon remained live after bounded normal retirement')
+-        time.sleep(0.01)
+ 
++def test_registration(binary, expected, environment, report, label):
++    listing = command([str(binary), '--list'], COPIED, environment, label+'-list', report['commands'], 10).decode('utf-8')
++    names = [line[:-6] for line in listing.splitlines() if line.endswith(': test')]
++    require(0 < len(names) <= 4096 and len(names) == len(set(names)) and
++            all(names.count(name) == 1 for name in expected) and
++            not any(line.endswith(': benchmark') for line in listing.splitlines()),
++            'fixed selected test registrations are missing or duplicated')
++    trailer = [line for line in listing.splitlines() if re.fullmatch(r'\d+ tests, \d+ benchmarks', line)]
++    require(trailer == [str(len(names))+' tests, 0 benchmarks'], 'complete libtest registry trailer differs')
++    help_text = command([str(binary), '--help'], COPIED, environment, label+'-help', report['commands'], 10).decode('utf-8')
++    require(re.search(r'^\s*--logfile\s', help_text, re.MULTILINE) is not None and
++            'Write logs to the specified file' in help_text, 'actual libtest lacks independent result file')
++    return names
+ 
+ 
+ def validate_focused_result(name, index, output, log, registered_count):
+-    # Rust 1.93 libtest writes this one result directly to its own File, so
+-    # inherited stdout from mkfs.erofs or a nested fakeroot test cannot splice it.
+     require(log == ('ok '+name+'\n').encode(),
++            'independent libtest result is not exactly one selected success')
+-            'independent libtest result is not exactly one success for the selected test')
+-    expected_runs = 2 if index == 20 else 1
+-    require((index == 20) == (name == FAKEROOT_TEST), 'nested fakeroot test index differs')
+     summaries = [line for line in output.splitlines() if line.startswith('test result:')]
+     pattern = r'test result: ok\. 1 passed; 0 failed; 0 ignored; 0 measured; (\d+) filtered out; finished in \d+(?:\.\d+)?s'
++    require(len(summaries) == 1, 'selected test produced an unexpected result count')
++    match = re.fullmatch(pattern, summaries[0])
++    require(match is not None and int(match.group(1)) == registered_count-1 and
++            output.splitlines().count('running 1 test') == 1 and
++            output.count('test '+name+' ... ') == 1, 'complete single libtest invocation differs')
++    return {'outer_results':1, 'expected_stdout_runs':1, 'registered_tests':registered_count,
++            'filtered_out_per_run':registered_count-1, 'exact_name':name,
++            'summary_and_independent_result_agree':True}
+-    parsed = [re.fullmatch(pattern, line) for line in summaries]
+-    require(len(parsed) == expected_runs and all(parsed) and
+-            all(int(match.group(1)) == registered_count-1 for match in parsed),
+-            'complete libtest summary/count/filter contract differs')
+-    require(output.splitlines().count('running 1 test') == expected_runs and
+-            output.count('test '+name+' ... ') == expected_runs,
+-            'selected test start/count differs from the exact registration')
+-    return {'outer_results': 1, 'expected_stdout_runs': expected_runs,
+-            'registered_tests': registered_count, 'filtered_out_per_run': registered_count-1,
+-            'exact_name': name, 'summary_and_independent_result_agree': True}
+ 
+-
+ def focused_test(test_binary, name, index, registered_count, environment, records):
+     label = 'projection-test-'+str(index)
+     path = OUT/(label+'.libtest')
+@@ -846,485 +1115,342 @@
+     finally:
+         os.close(fd)
+ 
++def staged_inputs(report):
++    raw, row = held(ROOT/'stage-receipt.json', 1024*1024)
++    receipt = json.loads(raw)
++    require(receipt['schema'] == 1 and receipt['Main_actions'] == 0 and
++            receipt['only_owned_root_written'] is True and
++            type(receipt['files']) is dict and 1 <= len(receipt['files']) <= 32,
++            'fixed stage receipt shape differs')
++    current = regular_tree(HERE, 32, 2*1024*1024)
++    require(set(current) == set(receipt['files']), 'complete staged source set differs')
++    for name, wanted in receipt['files'].items():
++        require(current[name]['bytes'] == wanted['bytes'] and
++                current[name]['sha256'] == wanted['sha256'] and
++                stat.S_IMODE(current[name]['identity'][2]) == 0o400,
++                'staged source differs: '+name)
++    report['stage_receipt'] = row
++    report['complete_stage_member_count'] = len(current)
++    return current
+ 
++
++def qualify_parent_and_patch(report, expected, candidate):
++    raw, pin = pinned_packet('compiled-parent474-result.json', PARENT_RESULT_SHA)
++    parent = json.loads(raw)
++    require(pin['bytes'] == 197750 and parent['state'] == 'PASS' and
++            parent['source_delta']['actual_source_file_count'] == 501 and
++            parent['copied_manifest'] == {
++                'path':str(BASE_SOURCE.parent/'attempt01/copied-builder-source-manifest.json'),
++                'bytes':99750, 'sha256':MANIFEST_PARENT} and
++            parent['original_source_unchanged_after'] is True and
++            parent['copied_source_unchanged_after'] is True and
++            parent['dependency_changes'] == [] and parent['tool_changes'] == [] and
++            parent['cargo_configs_unchanged_after'] is True and
++            parent['owned_resource_gate']['pass'] is True and
++            parent['observed_signals'] == [] and
++            not parent['cleanup']['forced_cleanup'] and not parent['cleanup']['remaining'] and
++            not parent['cleanup']['errors'] and len(parent['commands']) == 74 and
++            all(row['returncode'] == 0 and not row['timed_out'] for row in parent['commands']),
++            'actual parent474 source/tool/command/cleanup authority is incomplete')
++    report['actual_parent474_source_authority'] = pin
++    require(len(expected) == 501 and len(candidate) == 502 and
++            set(candidate) - set(expected) == {NEW_TEST_PATH} and
++            set(expected) - set(candidate) == set() and
++            {path for path in expected if expected[path] != candidate[path]} == set(CHANGED_PATHS) and
++            set(DELTAS) == set(CHANGED_PATHS) | {NEW_TEST_PATH},
++            'Status candidate does not have exactly four changed and one added source')
++    for path in ('Cargo.lock', 'Cargo.toml', 'runtime/droidloom-supervisor/Cargo.toml',
++                 'runtime/droidloom-applications/Cargo.toml',
++                 'runtime/droidloom-applications/src/lib.rs',
++                 'runtime/droidloom-applications/src/main.rs'):
++        require(candidate[path] == expected[path], 'original dependency or Applications source was changed')
++    for relative in sorted(DELTAS):
++        wanted = DELTAS[relative]
++        raw, delta_pin = pinned_packet('delta/'+relative, wanted['sha256'])
++        require(delta_pin['bytes'] == wanted['bytes'] and candidate[relative] == wanted,
++                'candidate delta does not match its complete manifest')
++        path = COPIED/relative
++        if relative in expected:
++            before = hash_held(path)
++            require(before['sha256'] == expected[relative]['sha256'] and
++                    before['bytes'] == expected[relative]['bytes'] and
++                    stat.S_IMODE(before['identity'][2]) == expected[relative]['mode'],
++                    'candidate changed before its one source replacement')
++            fd = os.open(path, os.O_WRONLY | os.O_TRUNC | os.O_NOFOLLOW | os.O_CLOEXEC)
++            with os.fdopen(fd, 'wb') as stream:
++                require(stream.write(raw) == len(raw), 'short candidate source replacement')
++                stream.flush()
++                os.fsync(stream.fileno())
++        else:
++            write_new(path, raw)
++        os.chmod(path, wanted['mode'], follow_symlinks=False)
++    rows = regular_tree(COPIED)
++    portable(rows, candidate)
++    report['source_delta'] = {
++        'changed_existing':CHANGED_PATHS, 'added':[NEW_TEST_PATH],
++        'actual_source_file_count':502, 'unchanged_existing':497,
++        'workspace_or_lock_modified':False, 'Applications_sources_modified':False,
++        'namespace_or_installed_Main_sources_modified':False,
++        'test_only_owned_process_constructor':True,
++        'runtime_qualification_or_deployment':False}
++    return rows
++
++
+ def execute():
++    global DEADLINE, CHILD_REAPER
++    require(os.getuid() == 1000 and os.geteuid() == 1000, 'ordinary operator UID1000 required')
++    require(Path(__file__).absolute() == HERE/'compile_status.py', 'exact staged controller required')
+-    global DEADLINE
+-    require(os.getuid()==1000 and os.geteuid()==1000,'ordinary operator UID1000 required')
+-    require(Path(__file__).absolute()==HERE/'compile_builder.py','exact staged controller required')
+     real_directory(HERE)
++    require(not OUT.exists() and not OUT.is_symlink(), 'create-only attempt already exists')
+-    require(not OUT.exists() and not OUT.is_symlink(),'create-only attempt already exists')
+     os.umask(0o077)
+     OUT.mkdir(mode=0o700)
+     (OUT/'tmp').mkdir(mode=0o700)
++    DEADLINE = time.monotonic() + 550
++    report = {
++        'schema':1, 'state':'RUNNING', 'started_utc':utc(),
++        'scope':'exact host lifecycle Status / explicit fresh Readiness; actual dispatcher and CLI regressions',
++        'Main_actions':0, 'Main_identity_observed':False, 'install_actions':0,
++        'Android_or_Soong_executed':False, 'namespace_entry':False,
++        'installed_Main_source_provenance_qualified':False, 'old_London_cause_proven':False,
++        'production_ready':False, 'deployed':False, 'commands':[],
++        'network_downloads_permitted':False, 'secondary_errors':[],
++        'expected_dispatch_and_preserved_gate_tests':LIB_TESTS,
++        'expected_cli_tests':CLI_TESTS,
++        'compiled_status_protocol_qualified':False,
++        'Main_or_future_App_qualification':False,
++    }
++    def interrupted(number, frame):
+-    DEADLINE=time.monotonic()+550
+-    libc=ctypes.CDLL(None,use_errno=True)
+-    require(libc.prctl(36,1,0,0,0)==0,'cannot establish owned subreaper')
+-    require(not children(),'unexpected initial child')
+-    allowed=sorted(os.sched_getaffinity(0))
+-    require(len(allowed)>=3,'cannot leave two logical CPUs free')
+-    os.sched_setaffinity(0,[allowed[-1]])
+-    report={'schema':1,'state':'RUNNING','started_utc':utc(),'scope':'fresh builder474 Composer exact Audiocontrol example projection compile01, 501 source files, 23 existing plus 3 new updater controls and 9 unchanged source-resume controls; no real published source/staging/Soong/Java/Android/service execution',
+-            'Main_actions':0,'Main_identity_observed':False,'install_actions':0,'network_downloads_permitted':False,
+-            'commands':[],'allowed_cpus_before':allowed,'selected_cpus':[allowed[-1]],'expected_test_names':TESTS,'expected_source_resume_test_names':SOURCE_RESUME_TESTS}
+-    def interrupted(number,frame):
+         OBSERVED_SIGNALS.append(number)
+         raise RuntimeError('owned controller interrupted by signal '+str(number))
++    signal.signal(signal.SIGTERM, interrupted)
++    signal.signal(signal.SIGINT, interrupted)
++    resource_fd, resource_before = -1, None
++    original_rows = candidate_rows = input_rows = None
++    dependency_rows, tool_rows, config_rows, config_paths, artifact_pins = {}, [], [], [], {}
++    def secondary(stage, error):
++        report['state'] = 'FAIL'
++        report['secondary_errors'].append({'stage':stage, 'error':repr(error)})
+-    signal.signal(signal.SIGTERM,interrupted)
+-    signal.signal(signal.SIGINT,interrupted)
+-    resource_fd=-1;resource_before=None
+-    original_rows={};candidate_rows={};dependency_rows={};tool_rows=[];config_rows=[]
+-    copied_expected=None;config_paths=[];builder=None;builder_pin=None;test_binary=None;test_pin=None
+     try:
++        resource_fd, resource_before = begin_resources()
++        report['owned_resources_before'] = resource_before
++        CHILD_REAPER = OwnChildReaper()
++        CHILD_REAPER.begin()
++        allowed = sorted(os.sched_getaffinity(0))
++        require(len(allowed) >= 3, 'cannot leave two logical CPUs outside this compile')
++        os.sched_setaffinity(0, [allowed[-1]])
++        report['allowed_cpus_before'] = allowed
++        report['selected_cpus'] = [allowed[-1]]
++        input_rows = staged_inputs(report)
++        old_raw, _ = pinned_packet('compiled-parent474-manifest.json', MANIFEST_PARENT)
++        new_raw, _ = pinned_packet('expected-status-manifest.json', MANIFEST_CANDIDATE)
++        expected, candidate = json.loads(old_raw), json.loads(new_raw)
++        original_rows, _ = exact_source_copy(expected)
++        report['original_manifest'] = write_new(OUT/'original-source-manifest.json', old_raw)
++        candidate_rows = qualify_parent_and_patch(report, expected, candidate)
++        report['copied_manifest'] = write_new(OUT/'copied-status-source-manifest.json', new_raw)
++        env = {'PATH':'/usr/bin:/bin', 'CARGO_HOME':str(CARGO_HOME),
++               'RUSTC':str(RUST_SYSROOT/'bin/rustc'), 'RUSTDOC':str(RUST_SYSROOT/'bin/rustdoc'),
++               'CARGO_NET_OFFLINE':'true', 'LC_ALL':'C', 'LANG':'C',
++               'TMPDIR':str(OUT/'tmp'), 'GIT_CONFIG_NOSYSTEM':'1', 'GIT_CONFIG_GLOBAL':'/dev/null'}
++        run_child_lifecycle_controls(report, OUT, env)
++        tools, tool_rows = toolchain(report, env)
++        report['tool_inputs'] = write_new(OUT/'tool-inputs-before.json', tool_rows)
++        env.update({'PATH':str(tools['cargo'].parent)+':/usr/bin:/bin',
++                    'RUSTC':str(tools['rustc']), 'RUSTDOC':str(tools['rustdoc']),
++                    'RUSTDOCFLAGS':'', 'CARGO_ENCODED_RUSTDOCFLAGS':'',
++                    'RUSTC_WRAPPER':'', 'RUSTC_WORKSPACE_WRAPPER':'',
++                    'RUSTFLAGS':'', 'CARGO_ENCODED_RUSTFLAGS':'',
++                    'CARGO_TARGET_DIR':str(OUT/'cargo-target'), 'CARGO_BUILD_JOBS':'1',
+-        resource_fd,resource_before=begin_resources()
+-        report['owned_resources_before']=resource_before
+-        go_control_raw,go_control_pin=pinned_packet('go-control-result.json',GO_CONTROL)
+-        go_control=json.loads(go_control_raw)
+-        require(go_control['state']=='PASS' and go_control['patch']['sha256']==GO_PATCH and
+-                go_control['fixture']['sha256']=='5a928d10fbaabab5a1198c9c4a5abe9281da091abdde923a2e0a500071e8fbc5' and
+-                go_control['whole_output_files_equal']>0 and go_control['owned_resource_gate']['pass'] is True,
+-                'actual complete-package comparison gate is not qualified')
+-        report['actual_Go_comparison_gate']=go_control_pin
+-        report['upstream_vet_pass_claimed']=False
+-        old_bytes,_=pinned_packet('compiled-parent472-manifest.json',MANIFEST_PARENT)
+-        new_bytes,_=pinned_packet('expected-builder474-manifest.json',MANIFEST_474)
+-        expected=json.loads(old_bytes);copied_expected=json.loads(new_bytes)
+-        require(len(expected)==500 and len(copied_expected)==501,'source manifest count changed')
+-        original_rows,copied_before=exact_source_copy(expected)
+-        original_manifest=portable(original_rows,expected)
+-        report['original_manifest']=write_new(OUT/'original-builder-source-manifest.json',(json.dumps(original_manifest,indent=2)+'\n').encode())
+-        env={'PATH':'/usr/bin:/bin','CARGO_HOME':str(CARGO_HOME),
+-             'RUSTC':str(RUST_SYSROOT/'bin/rustc'),'RUSTDOC':str(RUST_SYSROOT/'bin/rustdoc'),
+-             'CARGO_NET_OFFLINE':'true','LC_ALL':'C','LANG':'C',
+-             'TMPDIR':str(OUT/'tmp'),'GIT_CONFIG_NOSYSTEM':'1','GIT_CONFIG_GLOBAL':'/dev/null'}
+-        tools,tool_rows=toolchain(report,env)
+-        report['tool_inputs']=write_new(OUT/'tool-inputs-before.json',tool_rows)
+-        parent_raw,parent_pin=pinned_packet('compiled-parent472-result.json',
+-            '4c2f97bee3d6dbcc742f736c46fa18e9dc869830fe82211fb83c0afed6dfdbf4')
+-        parent=json.loads(parent_raw)
+-        require(parent_pin['bytes']==185025 and parent['state']=='PASS' and
+-                parent['focused_tests_passed']==32 and parent['updater_focused_tests_passed']==23 and
+-                parent['source_resume_tests_passed']==9 and parent['provider_closure_tests_passed']==6 and
+-                parent['hal_provider_tests_passed']==3 and parent['composer_entry_tests_passed']==5 and
+-                parent['actual_registered_test_count']==213 and parent['source_actual_registered_test_count']==20 and
+-                parent['expected_test_names']==TESTS[:-len(COMPOSER_AUDIOCONTROL_TESTS)] and
+-                parent['expected_source_resume_test_names']==SOURCE_RESUME_TESTS and
+-                len(parent['commands'])==71 and all(row['returncode']==0 and not row['timed_out'] for row in parent['commands']) and
+-                parent['copied_manifest']['bytes']==99523 and parent['copied_manifest']['sha256']==MANIFEST_PARENT and
+-                parent['builder_elf']['bytes']==34883904 and
+-                parent['builder_elf']['sha256']=='db544d5d4fb3f8aabb37d4c41248bf19968dc015c16f7e65511a50486b017043' and
+-                parent['owned_resource_gate']['pass'] is True and not parent['dependency_changes'] and
+-                not parent['tool_changes'] and not parent['cleanup']['errors'] and not parent['cleanup']['remaining'] and
+-                not parent['cleanup']['forced_cleanup'] and parent['copied_source_unchanged_after'] is True and
+-                parent['original_source_unchanged_after'] is True and parent['cargo_configs_unchanged_after'] is True and
+-                parent['source_delta']['actual_source_file_count']==500 and
+-                parent['source_delta']['ACK_nine_production_sources_unchanged_from_actual_Wayland03'] is True and
+-                parent['source_delta']['current_hal_source_lock_unchanged'] is True and parent['source_lock_writer']=='UNKNOWN' and
+-                parent['Composer_Android_Binder_ABI_compiled'] is False and
+-                parent['Composer_service_or_AIDL_tests_executed'] is False and
+-                parent['framework_Java_and_Android_JNI_compiled'] is False and
+-                parent['runtime_authorization_enabled'] is False,
+-                'actual compiled parent472 qualification differs')
+-        report['actual_parent472_compile_authority']=parent_pin
+-        roots_raw,roots_pin=pinned_packet('typed-root-trees-result.json',
+-            '0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8')
+-        roots=json.loads(roots_raw)
+-        require(roots['state']=='PASS_THREE_FIXED_COMMIT_ROOT_TREES' and
+-                roots['all_started_children_joined'] is True and roots['first_error'] is None and
+-                not roots['secondary_errors'] and roots['owned_resource_gate']['pass'] is True and
+-                roots['source_lock_reference_sha256']==expected['android/manifest/m2-sparse-source-lock.json']['sha256'],
+-                'actual fixed root-tree input authority differs')
+-        derivation_raw,derivation_pin=pinned_packet('typed-lock-derivation.json',
+-            'c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0')
+-        derivation=json.loads(derivation_raw)
+-        require(derivation['state']=='DERIVED_THREE_PROJECT_SOURCE_EXTENSION_NOT_COMPILED' and
+-                derivation['actual_report_sha256']==roots_pin['sha256'] and
+-                derivation['base_lock_sha256']==roots['source_lock_reference_sha256'] and
+-                derivation['derived_lock_sha256']==copied_expected['android/manifest/m2-role-ingress-source-lock.json']['sha256'] and
+-                derivation['derived_lock_bytes']==copied_expected['android/manifest/m2-role-ingress-source-lock.json']['bytes'] and
+-                derivation['other_lock_fields_unchanged'] is True and derivation['original_lock_modified'] is False,
+-                'derived lock authority does not bind the exact source delta')
+-        report['actual_typed_root_tree_authority']=roots_pin
+-        report['typed_lock_derivation_authority']=derivation_pin
+-        proof_raw,proof_pin=pinned_packet('parent472-entry-proof.json',COMPOSER_ENTRY_PROOF_SHA)
+-        proof=json.loads(proof_raw)
+-        require(proof['state']=='SOURCE_ONLY_COMPOSER_RETIREMENT_ENTRY_NOT_COMPILED' and
+-                proof['baseline']['manifest']['sha256']=='d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057' and
+-                proof['baseline']['compile_result']['sha256']==parent['actual_parent470_compile_authority']['sha256'] and
+-                proof['candidate']['manifest']['sha256']==MANIFEST_PARENT and
+-                proof['candidate']['source_delta']==PARENT_PROVIDER_DELTA and
+-                proof['candidate']['source_files']==500 and proof['candidate']['unchanged']==489 and
+-                proof['candidate']['replaced']==[name for name in PARENT_PROVIDER_DELTA if name!='graphics/droidloom-wayland/src/retirement.rs'] and
+-                proof['candidate']['added']==['graphics/droidloom-wayland/src/retirement.rs'] and
+-                proof['new_focused_tests']==COMPOSER_ENTRY_TESTS and proof['host_compile_performed'] is False and
+-                proof['ACK_SOURCE_PINS']==ACK_SOURCE_PINS and proof['separate_from_typed_builder471'] is True,
+-                'compiled parent472 entry/source proof changed')
+-        parent_scope_raw,parent_scope_pin=pinned_packet('parent472-build-scope.json',
+-            'f43cd778b75e484d53899eab543680e6b32ae5e54d6eca373b34223dcfcc8af9')
+-        parent_scope=json.loads(parent_scope_raw)
+-        require(parent_scope==proof['scope'] and
+-                parent['composer_entry_proof_authority']['sha256']==proof_pin['sha256'] and
+-                parent['composer_build_scope_authority']['sha256']==parent_scope_pin['sha256'],
+-                'actual parent472 fixed entry scope differs')
+-        projection_raw,projection_pin=pinned_packet('composer-audiocontrol-proof.json',COMPOSER_AUDIOCONTROL_PROOF_SHA)
+-        projection=json.loads(projection_raw)
+-        require(projection['state']=='SOURCE_ONLY_COMPOSER_AUDIOCONTROL_EXAMPLE_NOT_COMPILED' and
+-                projection['baseline']['manifest']['sha256']==MANIFEST_PARENT and
+-                projection['baseline']['actual']['sha256']==parent_pin['sha256'] and
+-                projection['candidate']['manifest']['sha256']==MANIFEST_474 and
+-                projection['candidate']['source_files']==501 and projection['candidate']['unchanged']==499 and
+-                projection['candidate']['source_delta']==FIXED_PROVIDER_DELTA and
+-                projection['candidate']['replaced']==['tools/droidloom-update/src/android.rs'] and
+-                projection['candidate']['added']==['android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp'] and
+-                projection['new_focused_tests']==COMPOSER_AUDIOCONTROL_TESTS and
+-                projection['host_compile_performed'] is False and projection['ACK_SOURCE_PINS']==ACK_SOURCE_PINS and
+-                projection['typed473_projection_not_used_as_parent'] is True,
+-                'fixed Composer Audiocontrol projection proof differs')
+-        fixture_raw,fixture_pin=pinned_packet(
+-            'delta/android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp',
+-            '9c8a0aecfa46ce0f1874362fa9dfff6a34326f9bf569b6fe7206dd6db1b3c9a6')
+-        require(fixture_pin['bytes']==1869 and projection['fixture']['bytes']==1869 and
+-                projection['fixture']['sha256']==fixture_pin['sha256'],
+-                'observed full Audiocontrol example fixture changed')
+-        scope_raw,scope_pin=pinned_packet('build-scope.json',COMPOSER_BUILD_SCOPE_SHA)
+-        scope=json.loads(scope_raw)
+-        require(scope==projection['scope'] and scope['entry']=='composer-retirement-build' and
+-                scope['targets']==['android.hardware.graphics.composer3-service.droidloom','droidloom-composer-aidl-tests'] and
+-                scope['dependency_mode']=='Strict' and scope['ALLOW_MISSING_DEPENDENCIES'] is False and
+-                scope['map_entries']==501 and scope['read_fresh_every_project_before_reconcile'] is True and
+-                scope['work_locks']==['package-build.lock','aosp-source-update.lock'] and
+-                scope['projection_journal']=='source-projection.json' and
+-                scope['resume_or_prior_lock_fallback'] is False and
+-                scope['source_tests_executed'] is False and scope['android_tests_built'] is False and
+-                scope['Binder_ABI_qualified'] is False and scope['Main_actions']==0 and
+-                scope['fixed_SystemUI_child_projection']['independent_composer_only_call'] is True and
+-                scope['fixed_SystemUI_child_projection']['typed_471_candidate_not_changed'] is True and
+-                scope['fixed_Audiocontrol_example_projection']['independent_composer_only_call'] is True and
+-                scope['fixed_Audiocontrol_example_projection']['typed473_candidate_not_changed'] is True,
+-                'fixed Composer targets, exact example projection, strict lock or build-only scope differs')
+-        lock_name='android/manifest/m2-role-ingress-hal-provider-source-lock.json'
+-        lock_raw,lock_pin=held(COPIED/lock_name)
+-        require(expected[lock_name]==copied_expected[lock_name] and
+-                lock_pin['bytes']==expected[lock_name]['bytes']==96957 and
+-                lock_pin['sha256']==expected[lock_name]['sha256']==
+-                    '72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d' and
+-                scope['source_lock']['sha256']==lock_pin['sha256'],
+-                'exact 225-project source lock changed')
+-        current_lock=json.loads(lock_raw)
+-        require(len(current_lock['projects'])==225 and len(current_lock['links'])==8,
+-                'fixed source-lock project or link inventory differs')
+-        wayland_raw,wayland_pin=pinned_packet('actual-wayland03-result.json',
+-            '57546b6c6c2d4e05aea6099097944cdbe6746bbcc0124768a314414ec5663abd')
+-        wayland=json.loads(wayland_raw)
+-        require(wayland_pin['bytes']==81805 and wayland['state']=='PASS' and
+-                wayland['Wayland_complete_crate_typecheck_qualified'] is True and
+-                len(wayland['commands'])==15 and all(row['returncode']==0 and not row['timed_out'] for row in wayland['commands']) and
+-                wayland['source_delta']['candidate_files']==ACK_SOURCE_PINS and
+-                wayland['copied_manifest']['sha256']=='3f2320687f074d48b19bc5284e6ba665a6cfaeb7adab9d59f519de5f3c96d2f4' and
+-                all(wayland[key] is True for key in ['copied_source_unchanged_after','original_source_unchanged_after',
+-                    'cargo_configs_unchanged_after','check_outputs_unchanged_after','native_pc_inputs_unchanged_after',
+-                    'offline_vendor_input_gate_qualified','pkg_config_input_gate_qualified','owned_resource_fd_closed']) and
+-                not wayland['dependency_changes'] and not wayland['tool_changes'] and not wayland['secondary_errors'] and
+-                wayland['owned_child_reaper']['final_children_empty'] is True and
+-                wayland['owned_child_reaper']['restored'] is True and wayland['owned_resource_gate']['pass'] is True and
+-                wayland['Android_Binder_provider_compile'] is False and wayland['Wayland_runtime_GPU_qualified'] is False,
+-                'actual complete Wayland check/source authority differs')
+-        for source_name,row in ACK_SOURCE_PINS.items():
+-            require(copied_expected[row['path']]['kind']=='file' and
+-                    copied_expected[row['path']]['bytes']==row['bytes'] and
+-                    copied_expected[row['path']]['sha256']==row['sha256'],
+-                    'candidate ACK production source differs from actual checked source: '+source_name)
+-        report['composer_entry_proof_authority']=proof_pin
+-        report['parent472_build_scope_authority']=parent_scope_pin
+-        report['composer_audiocontrol_projection_authority']=projection_pin
+-        report['audiocontrol_example_original_fixture_authority']=fixture_pin
+-        report['composer_build_scope_authority']=scope_pin
+-        report['actual_prior_wayland03_check_authority']=wayland_pin
+-        report['unchanged_225_project_lock_authority']=lock_pin
+-        report['source_lock_writer']='UNKNOWN'
+-        changes=[name for name in copied_expected if copied_expected[name]!=expected.get(name)]
+-        wanted=FIXED_PROVIDER_DELTA
+-        require(sorted(changes)==wanted and set(expected)<set(copied_expected) and
+-                sum(name not in expected for name in changes)==1 and
+-                sum(name in expected for name in changes)==1 and
+-                all(copied_expected[name]==expected[name] for name in expected if name not in wanted),
+-                'Composer projection delta is not exactly one Rust replacement and one observed fixture addition')
+-        for name in changes:
+-            wanted_row=copied_expected[name]
+-            data,pin=pinned_packet('delta/'+name,wanted_row['sha256'])
+-            require(pin['bytes']==wanted_row['bytes'] and wanted_row['kind']=='file','provider source delta differs')
+-            target=COPIED/name
+-            if name in expected:
+-                require(hash_held(target)==copied_before[name],
+-                        'copied parent source differs before provider delta')
+-                fd=os.open(target,os.O_WRONLY|os.O_TRUNC|os.O_CLOEXEC|os.O_NOFOLLOW)
+-                with os.fdopen(fd,'wb') as stream:
+-                    require(stream.write(data)==len(data),'short provider delta write')
+-                    stream.flush();os.fsync(stream.fileno())
+-            else:
+-                write_new(target,data)
+-            os.chmod(target,wanted_row['mode'],follow_symlinks=False)
+-        candidate_rows=regular_tree(COPIED)
+-        actual_map=portable(candidate_rows,copied_expected)
+-        require(json.loads(new_bytes)==actual_map and sha(new_bytes)==MANIFEST_474,
+-                'actual copied 501-file builder474 manifest differs')
+-        report['copied_manifest']=write_new(OUT/'copied-builder-source-manifest.json',new_bytes)
+-        report['source_delta']={'changed_existing':[name for name in wanted if name in expected],
+-                                'added':[name for name in wanted if name not in expected],
+-                                'unchanged_existing':499,'actual_source_file_count':501,
+-                                'builder_revision_name':'474-composer-audiocontrol-example-projection','Rust_source_files_changed':1,
+-                                'Cargo_lock_or_dependency_manifest_changed':False,
+-                                'Go5_or_Blueprint_patch_changed':False,'engine_source_files_changed':0,
+-                                'typed_ingress_framework_patch_changed':False,'previous_source_locks_changed':False,
+-                                'new_exact_provider_source_lock_added':False,'new_exact_hal_provider_source_lock_added':False,
+-                                'current_hal_source_lock_unchanged':True,'ACK_nine_production_sources_unchanged_from_actual_Wayland03':True,
+-                                'typed_builder473_not_changed_or_used_as_baseline':True,
+-                                'Composer472_entry_and_SystemUI_projection_retained':True,
+-                                'fixed_Audiocontrol_example_BP_original_fixture_added':True,
+-                                'source_resume_library_changed':False,'real_published_source_accessed':False,
+-                                'real_source_staging_accessed':False,'framework_sources_executed_or_built':False,
+-                                'runtime_authorization_enabled':False}
+-        env.update({'PATH':str(tools['cargo'].parent)+':/usr/bin:/bin','RUSTC':str(tools['rustc']),
+-                    'RUSTDOC':str(tools['rustdoc']),'RUSTDOCFLAGS':'','CARGO_ENCODED_RUSTDOCFLAGS':'',
+-                    'RUSTC_WRAPPER':'','RUSTC_WORKSPACE_WRAPPER':'','RUSTFLAGS':'','CARGO_ENCODED_RUSTFLAGS':'',
+-                    'CARGO_TARGET_DIR':str(OUT/'cargo-target'),'CARGO_BUILD_JOBS':'1',
+                     'CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER':'/usr/bin/cc'})
++        require(all(shutil.which(name, path=env['PATH']) == str(tools[name])
++                    for name in ('cargo', 'rustc', 'rustdoc')) and
++                '/home/alex/.cargo/bin' not in env['PATH'].split(':') and
+-        require('/home/alex/.cargo/bin' not in env['PATH'].split(':') and
+-                all(shutil.which(name,path=env['PATH'])==str(tools[name]) for name in ['cargo','rustc','rustdoc']) and
+                 not any(name.startswith('RUSTUP') for name in env) and
++                all(name not in env for name in ('LD_PRELOAD', 'LD_LIBRARY_PATH', 'RUSTC_BOOTSTRAP')),
++                'direct observed toolchain was shadowed or overridden')
++        config_paths = [CARGO_HOME/'config', CARGO_HOME/'config.toml']
++        for parent in [COPIED, *COPIED.parents]:
++            config_paths += [parent/'.cargo/config', parent/'.cargo/config.toml']
++        config_rows = read_existing_config(config_paths)
++        report['cargo_config_inputs_before'] = config_rows
++        require(config_rows and all(row.get('absent') is True for row in config_rows),
++                'fixed existing registry build requires absent Cargo configuration overrides')
++        report['build_environment'] = env
++        metadata_raw = command([str(tools['cargo']), 'metadata', '--offline', '--locked',
++                                '--no-deps', '--format-version', '1'],
++                               COPIED, env, 'workspace-no-deps', report['commands'], 30)
++        metadata = json.loads(metadata_raw)
++        trees = {}
++        for short, package in [('supervisor', 'droidloom-supervisor'), ('applications', 'droidloom-applications')]:
++            for suffix, edges in [('build', 'normal,build'), ('test', 'normal,build,dev')]:
++                label = short+'-'+suffix
++                trees[label] = command([str(tools['cargo']), 'tree', '--offline', '--locked', '-p', package,
++                    '--target', 'x86_64-unknown-linux-gnu', '--edges', edges,
++                    '--prefix', 'none', '--format', '{p}', '--color', 'never'],
++                    COPIED, env, label, report['commands'], 30)
++        registry_raw, registry_pin = pinned_packet('registry-result.json',
++            'b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993')
++        registry = json.loads(registry_raw)
++        require(registry['state'] == 'PASS' and registry['collection_complete'] is True and
++                registry['all_45_archive_and_source_matches'] is True and
++                registry['authorities_unchanged_after'] is True and
++                registry['owned_resource_gate']['pass'] is True and len(registry['packages']) == 45,
++                'actual original 45-package archive authority is incomplete')
++        authority = {(r['name'], r['version']):r for r in registry['packages']}
++        roots, packages, dependency_rows = selected_status_dependencies(metadata, trees, authority, candidate)
++        report['actual_registry_archive_authority'] = registry_pin
++        report['dependency_inputs'] = write_new(OUT/'dependency-inputs-before.json',
++                                               {'packages':packages, 'files':dependency_rows})
++        report['actual_root_package_ids'] = {name:p['id'] for name,p in roots.items()}
++        report['selected_dependency_count'] = len(packages)
++        report['normal_build_and_dev_selected_for_both_roots'] = True
++        cargo = str(tools['cargo'])
++        sup = roots['droidloom-supervisor']
++        lib_build = command([cargo, 'test', '--offline', '--locked', '-j', '1',
++            '-p', 'droidloom-supervisor', '--lib', '--no-run', '--message-format=json-render-diagnostics'],
++            COPIED, env, 'supervisor-libtest-compile', report['commands'], 180)
++        report['actual_libtest_compile_packages'] = qualify_compiler_inputs(lib_build, packages, dependency_rows, candidate_rows)
++        lib_binary, lib_pin = actual_executable(lib_build, sup['id'], 'droidloom_supervisor', 'lib',
++            COPIED/'runtime/droidloom-supervisor/src/lib.rs', True)
++        artifact_pins['supervisor-libtest'] = lib_pin
++        lib_names = test_registration(lib_binary, LIB_TESTS+[OWNED_FIXTURE_TEST], env, report, 'supervisor-libtest')
++        cli_build = command([cargo, 'test', '--offline', '--locked', '-j', '1',
++            '-p', 'droidloom-supervisor', '--test', 'cli_lifecycle', '--no-run',
++            '--message-format=json-render-diagnostics'],
++            COPIED, env, 'cli-lifecycle-compile', report['commands'], 180)
++        report['actual_cli_test_compile_packages'] = qualify_compiler_inputs(cli_build, packages, dependency_rows, candidate_rows)
++        cli_binary, cli_pin = actual_executable(cli_build, sup['id'], 'cli_lifecycle', 'test',
++            COPIED/'runtime/droidloom-supervisor/tests/cli_lifecycle.rs', True)
++        artifact_pins['cli-lifecycle-test'] = cli_pin
++        cli_names = test_registration(cli_binary, CLI_TESTS, env, report, 'cli-lifecycle')
++        require(set(cli_names) == set(CLI_TESTS), 'CLI integration registry differs from original six plus one route test')
++        # Compile the normal executables after both test-build phases so their
++        # recorded artifact identity cannot be invalidated by Cargo's test setup.
++        build = command([cargo, 'build', '--offline', '--locked', '-j', '1',
++                         '-p', 'droidloom-supervisor', '-p', 'droidloom-applications',
++                         '--bins', '--message-format=json-render-diagnostics'],
++                        COPIED, env, 'host-binaries-compile', report['commands'], 240)
++        report['actual_binary_compile_packages'] = qualify_compiler_inputs(build, packages, dependency_rows, candidate_rows)
++        executables = {}
++        for package_name, name, relative in HOST_BINARIES:
++            path, pin = actual_executable(build, roots[package_name]['id'], name, 'bin', COPIED/relative, False)
++            executables[name] = path
++            artifact_pins[name] = pin
++        cli_help = command([str(executables['droidloomctl']), '--help'], COPIED, env,
++                           'ctl-help', report['commands'], 10)
++        require(all(re.search(rb'^\s*'+name+rb'\s', cli_help, re.MULTILINE) for name in
++                    (b'status', b'readiness', b'wait', b'launch', b'applications')),
++                'compiled CLI is missing an original or explicit readiness command')
++        report['actual_registered_test_counts'] = {'supervisor_library':len(lib_names), 'cli_lifecycle':len(cli_names)}
++        report['focused_result_gates'] = []
++        for binary, names, registered in [(lib_binary, LIB_TESTS, lib_names), (cli_binary, CLI_TESTS, cli_names)]:
++            for name in names:
++                index = len(report['focused_result_gates'])
++                report['focused_result_gates'].append(focused_test(binary, name, index, len(registered), env, report['commands']))
++        report['focused_tests_passed'] = len(report['focused_result_gates'])
++        require(report['focused_tests_passed'] == 15 and len(report['commands']) == 38 and
++                all(row.get('returncode') == 0 and row.get('child_reaped') is True and
++                    row.get('owned_tree_cleanup_complete') is True and not row['timed_out'] and
++                    row['first_error'] is None and not row['secondary_errors'] for row in report['commands']),
++                'host compile or exact selected regressions did not fully complete')
++        require(time.monotonic() < DEADLINE, 'host compiler completion deadline exceeded')
++        report['actual_elfs'] = artifact_pins
++        report['state'] = 'PASS'
+-                all(name not in env for name in ('LD_PRELOAD','LD_LIBRARY_PATH','RUSTC_BOOTSTRAP')),
+-                'fixed direct compiler tools are shadowed or proxy environment was reintroduced')
+-        config_paths=[CARGO_HOME/'config',CARGO_HOME/'config.toml']
+-        for parent in [COPIED,*COPIED.parents]:
+-            config_paths += [parent/'.cargo/config',parent/'.cargo/config.toml']
+-        config_rows=read_existing_config(config_paths)
+-        report['cargo_config_inputs_before']=config_rows
+-        report['build_environment']=env
+-        tool_rows += image_toolchain(report,env)
+-        report['image_and_compiler_tool_inputs']=write_new(OUT/'all-tool-inputs-before-tests.json',tool_rows)
+-        require(all(row.get('absent') is True for row in config_rows),
+-                'selected cache qualification requires the actually observed absent Cargo configuration inputs')
+-        selection_raw,selection_pin=pinned_packet('selection-result.json','185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf')
+-        selection=json.loads(selection_raw)
+-        require(selection['state']=='PASS' and selection['owned_resource_gate']['pass'] is True and
+-                all(selection[k] is True for k in ['source_unchanged_after','tools_unchanged_after','configs_unchanged_after','authority_unchanged_after']) and
+-                len(selection['commands'])==3 and all(c['returncode']==0 for c in selection['commands']),
+-                'actual offline selection observation is not qualified')
+-        observed_tree,tree_pin=pinned_packet('selected-build.stdout','82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d')
+-        require(selection['commands'][1]['stdout']['sha256']==tree_pin['sha256'] and selection['commands'][2]['stdout']['sha256']==tree_pin['sha256'],
+-                'actual selected tree does not bind both build and test dependency queries')
+-        report['actual_selected_dependency_authority']=selection_pin
+-        metadata_raw=command([str(tools['cargo']),'metadata','--offline','--locked','--no-deps','--format-version','1'],COPIED,env,'workspace-no-deps',report['commands'],30)
+-        metadata=json.loads(metadata_raw)
+-        trees=[]
+-        for label,edges in [('selected-build','normal,build'),('selected-test','normal,build,dev')]:
+-            trees.append(command([str(tools['cargo']),'tree','--offline','--locked','-p','droidloom-update','--target','x86_64-unknown-linux-gnu',
+-                                  '--edges',edges,'--prefix','none','--format','{p}','--color','never'],COPIED,env,label,report['commands'],30))
+-        registry_raw,registry_pin=pinned_packet('registry-result.json','b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993')
+-        registry=json.loads(registry_raw)
+-        require(registry['state']=='PASS' and registry['collection_complete'] is True and
+-                registry['all_45_archive_and_source_matches'] is True and registry['authorities_unchanged_after'] is True and
+-                registry['owned_resource_gate']['pass'] is True and len(registry['packages'])==45,
+-                'actual existing archive/source qualification is incomplete')
+-        registry_authority={(r['name'],r['version']):r for r in registry['packages']}
+-        require(len(registry_authority)==45,'duplicate registry authority package')
+-        report['actual_registry_archive_authority']=registry_pin
+-        package_id,packages,dependency_rows=dependency_sources(metadata,trees[0],trees[1],observed_tree,registry_authority)
+-        report['dependency_inputs']=write_new(OUT/'dependency-inputs-before.json',{'packages':packages,'files':dependency_rows})
+-        common=[str(tools['cargo']),'--offline','--locked','-j','1','-p','droidloom-update','--bin','droidloom-update']
+-        build=command([common[0],'build',*common[1:],'--message-format=json-render-diagnostics'],COPIED,env,'builder-compile',report['commands'],240)
+-        report['actual_build_packages']=qualify_compiler_inputs(build,packages,dependency_rows,candidate_rows)
+-        builder=build_artifact(build,package_id,False)
+-        builder_pin=hash_held(builder)
+-        require((builder.lstat().st_mode&0o111)!=0,'builder artifact is not executable')
+-        with builder.open('rb') as stream:
+-            require(stream.read(4)==b'\x7fELF','builder artifact is not ELF')
+-        help_output=command([str(builder),'--help'],COPIED,env,'builder-help',report['commands'],10)
+-        require(b'Usage:' in help_output and b'native-engine-build' in help_output and
+-                b'native-generation-pair' in help_output and b'native-generation-art-build' in help_output and
+-                b'native-role-ingress-build' in help_output and b'composer-retirement-build' in help_output,
+-                'normal builder or explicit paired-record/ART/typed-ingress build-only CLI missing')
+-        resume_help=command([str(builder),'native-role-ingress-build','--help'],COPIED,env,'source-resume-cli-help',report['commands'],10)
+-        require(all(option in resume_help for option in [b'--work',b'--out',b'--resume-source-staging']),
+-                'typed source-resume CLI does not expose the explicit fixed route arguments')
+-        composer_help=command([str(builder),'composer-retirement-build','--help'],COPIED,env,
+-                              'composer-retirement-cli-help',report['commands'],10)
+-        require(all(option in composer_help for option in [b'--work',b'--out']) and
+-                all(option not in composer_help for option in [b'--targets',b'--resume-source-staging']),
+-                'Composer build-only CLI must expose only exact work/output arguments')
+-        test_build=command([common[0],'test',*common[1:],'--no-run','--message-format=json-render-diagnostics'],COPIED,env,'builder-test-compile',report['commands'],180)
+-        report['actual_test_compile_packages']=qualify_compiler_inputs(test_build,packages,dependency_rows,candidate_rows)
+-        test_binary=build_artifact(test_build,package_id,True)
+-        test_pin=hash_held(test_binary)
+-        test_list=command([str(test_binary),'--list'],COPIED,env,'builder-test-list',report['commands'],10).decode()
+-        require(len(ORIGINAL_TESTS)==7 and len(PAIR_TESTS)==15 and len(ART_PROJECTION_TESTS)==2 and len(TYPED_INGRESS_TESTS)==2 and len(PARENT_TESTS)==len(set(PARENT_TESTS))==26 and
+-                len(PROVIDER_CLOSURE_TESTS)==6 and len(HAL_PROVIDER_TESTS)==3 and
+-                len(COMPOSER_ENTRY_TESTS)==5 and len(COMPOSER_AUDIOCONTROL_TESTS)==3 and len(TESTS)==len(set(TESTS))==26 and
+-                all(test_list.splitlines().count(name+': test')==1 for name in
+-                    PARENT_TESTS+PROVIDER_CLOSURE_TESTS+HAL_PROVIDER_TESTS+COMPOSER_ENTRY_TESTS+COMPOSER_AUDIOCONTROL_TESTS),
+-                'original registrations, nine provider, five Composer entry or three Audiocontrol controls absent/duplicated')
+-        listed_names=[line[:-6] for line in test_list.splitlines() if line.endswith(': test')]
+-        require(len(listed_names)==216 and len(listed_names)==len(set(listed_names)) and
+-                not any(line.endswith(': benchmark') for line in test_list.splitlines()),
+-                'actual registration list is duplicate/empty or contains unqualified benchmarks')
+-        libtest_help=command([str(test_binary),'--help'],COPIED,env,'builder-test-help',report['commands'],10).decode()
+-        require(re.search(r'^\s*--logfile\s',libtest_help,re.MULTILINE) is not None and
+-                'Write logs to the specified file' in libtest_help,
+-                'actual pinned libtest does not advertise the independently reviewed logfile option')
+-        report['actual_libtest_logfile_support']=True
+-        report['actual_registered_test_count']=len(listed_names)
+-        test_env=dict(env)
+-        test_env['PATH']=IMAGE_TEST_PATH
+-        require(all(name not in test_env for name in ('FAKEROOTKEY','LD_PRELOAD','LD_LIBRARY_PATH')),
+-                'test environment already contains fakeroot state')
+-        report['test_environment']=test_env
+-        report['focused_result_gates']=[]
+-        for index,name in enumerate(TESTS[:-len(COMPOSER_ENTRY_TESTS)-len(COMPOSER_AUDIOCONTROL_TESTS)]):
+-            report['focused_result_gates'].append(focused_test(
+-                test_binary,name,index,len(listed_names),test_env,report['commands']))
+-        # Preserve every original label and the reserved exact fakeroot index20.
+-        for index,name in enumerate(COMPOSER_ENTRY_TESTS,start=200):
+-            report['focused_result_gates'].append(focused_test(
+-                test_binary,name,index,len(listed_names),test_env,report['commands']))
+-        for index,name in enumerate(COMPOSER_AUDIOCONTROL_TESTS,start=205):
+-            report['focused_result_gates'].append(focused_test(
+-                test_binary,name,index,len(listed_names),test_env,report['commands']))
+-        source_packages=[p for p in metadata['packages'] if p['name']=='droidloom-source' and
+-                         p['manifest_path']==str(COPIED/'tools/droidloom-source/Cargo.toml') and p['source'] is None]
+-        require(len(source_packages)==1,'source controls do not identify the exact copied library package')
+-        source_package=source_packages[0]
+-        source_tree=command([str(tools['cargo']),'tree','--offline','--locked','-p','droidloom-source',
+-                             '--target','x86_64-unknown-linux-gnu','--edges','normal,build,dev',
+-                             '--prefix','none','--format','{p}','--color','never'],
+-                            COPIED,env,'source-resume-selected-test',report['commands'],30)
+-        selected_source=parse_selected_tree(source_tree,COPIED)
+-        selected_builder=parse_selected_tree(trees[1],COPIED)
+-        require(selected_source and all(key in selected_builder and selected_builder[key]==directory
+-                for key,directory in selected_source.items()),
+-                'source test dependency closure adds a package outside the already qualified complete builder closure')
+-        source_build=command([str(tools['cargo']),'test','--offline','--locked','-j','1','-p',
+-                              'droidloom-source','--lib','--no-run','--message-format=json-render-diagnostics'],
+-                             COPIED,env,'source-resume-test-compile',report['commands'],90)
+-        report['actual_source_test_compile_packages']=qualify_compiler_inputs(
+-            source_build,packages,dependency_rows,candidate_rows)
+-        source_artifacts=[]
+-        for line in source_build.decode().splitlines():
+-            if not line.strip():continue
+-            item=json.loads(line)
+-            if item.get('reason')=='compiler-artifact' and item.get('package_id')==source_package['id'] and item.get('executable'):
+-                require(item['profile']['test'] is True and item['target']['kind']==['lib'] and
+-                        item['target']['src_path']==str(COPIED/'tools/droidloom-source/src/lib.rs'),
+-                        'source control artifact is not the exact copied library test target')
+-                source_artifacts.append(Path(item['executable']))
+-        require(len(source_artifacts)==1 and source_artifacts[0].is_relative_to(OUT/'cargo-target'),
+-                'source test executable is ambiguous or escaped the new target')
+-        source_test_binary=source_artifacts[0]
+-        source_test_pin=hash_held(source_test_binary)
+-        require(source_test_binary.lstat().st_mode&0o111,'source test artifact is not executable')
+-        with source_test_binary.open('rb') as stream:
+-            require(stream.read(4)==b'\x7fELF','source test artifact is not ELF')
+-        source_list=command([str(source_test_binary),'--list'],COPIED,env,'source-resume-test-list',report['commands'],10).decode()
+-        source_names=[line[:-6] for line in source_list.splitlines() if line.endswith(': test')]
+-        require(len(source_names)==len(set(source_names))==20 and set(source_names)==set(SOURCE_REGISTERED_TESTS) and
+-                not any(line.endswith(': benchmark') for line in source_list.splitlines()),
+-                'source test registrations differ from the eleven baseline and nine new controls')
+-        source_help=command([str(source_test_binary),'--help'],COPIED,env,'source-resume-test-help',report['commands'],10).decode()
+-        require(re.search(r'^\s*--logfile\s',source_help,re.MULTILINE) is not None and
+-                'Write logs to the specified file' in source_help,
+-                'source test executable lacks independent libtest result support')
+-        report['source_resume_result_gates']=[]
+-        # Keep source labels disjoint from the historical exact fakeroot label 20.
+-        for index,name in enumerate(SOURCE_RESUME_TESTS,start=100):
+-            report['source_resume_result_gates'].append(focused_test(
+-                source_test_binary,name,index,len(source_names),test_env,report['commands']))
+-        require(hash_held(source_test_binary)==source_test_pin,'source test ELF changed while tested')
+-        report['source_test_elf']=source_test_pin
+-        report['source_actual_registered_test_count']=len(source_names)
+-        report['source_resume_tests_passed']=len(SOURCE_RESUME_TESTS)
+-        report['source_original_tests_listed_not_rerun']=len(SOURCE_REGISTERED_TESTS)-len(SOURCE_RESUME_TESTS)
+-        report['source_test_fixtures_network_disabled']=True
+-        report['actual_device_staging_reuse_qualified']=False
+-        require(hash_held(builder)==builder_pin and hash_held(test_binary)==test_pin,'actual ELF changed while tested')
+-        report['builder_elf']=builder_pin
+-        report['test_elf']=test_pin
+-        report['updater_focused_tests_passed']=len(TESTS)
+-        report['focused_tests_passed']=len(TESTS)+len(SOURCE_RESUME_TESTS)
+-        report['original_projection_tests_passed']=len(ORIGINAL_TESTS)
+-        report['pairing_tests_passed']=0
+-        report['ART_projection_tests_passed']=0
+-        report['typed_ingress_lock_tests_passed']=len(TYPED_INGRESS_TESTS)
+-        report['provider_closure_tests_passed']=len(PROVIDER_CLOSURE_TESTS)
+-        report['hal_provider_tests_passed']=len(HAL_PROVIDER_TESTS)
+-        report['composer_entry_tests_passed']=len(COMPOSER_ENTRY_TESTS)
+-        report['composer_audiocontrol_projection_tests_passed']=len(COMPOSER_AUDIOCONTROL_TESTS)
+-        report['Automotive_audiocontrol_vendor_example_qualified']=False
+-        report['Composer_Android_Binder_ABI_compiled']=False
+-        report['Composer_service_or_AIDL_tests_executed']=False
+-        report['SystemUI_application_and_test_modules_qualified']=False
+-        report['framework_Java_and_Android_JNI_compiled']=False
+-        report['transitive_framework_closure_qualified']=False
+-        report['runtime_authorization_enabled']=False
+-        report['real_image_test_count']=0
+-        report['parent_targeted_tests_passed_historically']=27
+-        report['parent_only_test_names_not_rerun']=PAIR_TESTS+ART_PROJECTION_TESTS
+-        report['platform_APEX_signature_validated']=False
+-        report['actual_enabled_ART_lifecycle_validated']=False
+-        require(len(report['commands'])==74 and all(row['returncode']==0 and not row['timed_out'] for row in report['commands']),
+-                'fixed provider compiler command sequence differs')
+-        report['state']='PASS'
+     except Exception as error:
++        report['state'] = 'FAIL'
++        report['error'] = repr(error)
++        report['error_detail'] = {'type':type(error).__name__, 'message':str(error),
++                                  'errno':getattr(error, 'errno', None), 'filename':getattr(error, 'filename', None)}
+-        report['state']='FAIL'
+-        report['error']=repr(error)
+-        report['error_detail']={'type':type(error).__name__,'message':str(error),'errno':getattr(error,'errno',None),'filename':getattr(error,'filename',None)}
+     finally:
++        signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGTERM, signal.SIGINT})
++        report['observed_signals'] = OBSERVED_SIGNALS
++        if OBSERVED_SIGNALS:
++            secondary('signals', RuntimeError('owned controller was interrupted'))
++        if CHILD_REAPER is not None:
+-        signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGTERM,signal.SIGINT})
+-        report['observed_signals']=OBSERVED_SIGNALS
+-        report['cleanup']=cleanup_children()
+-        for label,source,rows in [('original_source',BASE_SOURCE,original_rows),('copied_source',COPIED,candidate_rows)]:
+             try:
++                CHILD_REAPER.finish()
+-                unchanged=bool(rows) and regular_tree(source)==rows
+-                report[label+'_unchanged_after']=unchanged
+-                if not unchanged:
+-                    report['state']='FAIL'
+             except Exception as error:
++                secondary('owned_child_reaper_finish', error)
++            report['owned_child_reaper'] = CHILD_REAPER.record
++        else:
++            report['owned_child_reaper'] = None
++        for label, directory, rows, bounds in [
++                ('original_source', BASE_SOURCE, original_rows, (2048, 32*1024*1024)),
++                ('copied_source', COPIED, candidate_rows, (2048, 32*1024*1024)),
++                ('control_source', HERE, input_rows, (32, 2*1024*1024))]:
++            report[label+'_unchanged_after'] = None
++            report[label+'_baseline_established'] = rows is not None
++            if rows is not None:
++                try:
++                    same = regular_tree(directory, *bounds) == rows
++                    report[label+'_unchanged_after'] = same
++                    require(same, label+' complete source inputs changed')
++                except Exception as error:
++                    secondary(label+'_after', error)
++            elif report['state'] == 'PASS':
++                secondary(label+'_after', RuntimeError('complete source baseline was never established'))
++        changes = []
++        for path, row in dependency_rows.items():
+-                report[label+'_after_error']=repr(error);report['state']='FAIL'
+-        changes=[]
+-        for path,row in dependency_rows.items():
+             try:
++                if hash_held(Path(path)) != row:
+-                if hash_held(Path(path))!=row:
+                     changes.append(path)
+             except Exception as error:
++                changes.append({'path':path, 'error':repr(error)})
++        report['dependency_changes'] = changes
++        if changes:
++            secondary('dependency_after', RuntimeError('qualified archive or extracted source changed'))
++        report['tool_changes'] = verify_resolved(tool_rows)
++        if report['tool_changes'] or (report['state'] == 'PASS' and not tool_rows):
++            secondary('tools_after', RuntimeError('used tool closure missing or changed'))
++        report['cargo_configs_unchanged_after'] = None
++        if config_rows:
++            try:
++                same = read_existing_config(config_paths) == config_rows
++                report['cargo_configs_unchanged_after'] = same
++                require(same, 'Cargo configuration inputs changed')
++            except Exception as error:
++                secondary('cargo_configs_after', error)
++        elif report['state'] == 'PASS':
++            secondary('cargo_configs_after', RuntimeError('Cargo configuration baseline missing'))
++        report['artifact_changes'] = []
++        for name, row in artifact_pins.items():
++            try:
++                require(hash_held(Path(row['path'])) == row, 'built ELF changed')
++            except Exception as error:
++                report['artifact_changes'].append({'name':name, 'error':repr(error)})
++                secondary('artifact_after', error)
+-                changes.append({'path':path,'error':repr(error)})
+-        report['dependency_changes']=changes
+-        report['tool_changes']=verify_resolved(tool_rows)
+         try:
++            require(resource_fd >= 0 and resource_before is not None, 'owned resource admission not observed')
++            report['owned_resource_gate'] = finish_resources(resource_fd, resource_before, report)
+-            report['cargo_configs_unchanged_after']=bool(config_rows) and read_existing_config(config_paths)==config_rows
+         except Exception as error:
++            report['owned_resource_gate'] = {'pass':False, 'error':repr(error)}
++            secondary('owned_resources_after', error)
+-            report['cargo_configs_unchanged_after']=False;report['cargo_config_after_error']=repr(error)
+-        if changes or report['tool_changes'] or not report['cargo_configs_unchanged_after']:
+-            report['state']='FAIL'
+-        cleanup=report['cleanup']
+-        if cleanup['forced_cleanup'] or cleanup['remaining'] or cleanup['errors']:
+-            report['state']='FAIL'
+-        try:
+-            require(resource_fd>=0 and resource_before is not None,'owned resource admission not observed')
+-            report['owned_resource_gate']=finish_resources(resource_fd,resource_before,report)
+-        except Exception as error:
+-            report['owned_resource_gate']={'pass':False,'error':repr(error)};report['state']='FAIL'
+         finally:
++            if resource_fd >= 0:
++                value, resource_fd = resource_fd, -1
++                try:
++                    os.close(value)
++                    report['owned_resource_fd_closed'] = True
++                except Exception as error:
++                    report['owned_resource_fd_closed'] = False
++                    secondary('owned_resource_fd_close', error)
++        report['compiled_status_protocol_qualified'] = report['state'] == 'PASS'
++        report['finished_utc'] = utc()
++        result = write_new(OUT/'result.json', report)
++        print(json.dumps({'state':report['state'], 'result':result,
++            'actual_elfs':report.get('actual_elfs'), 'focused_tests_passed':report.get('focused_tests_passed', 0),
++            'Main_actions':0, 'deployed':False, 'production_ready':False,
++            'commands':len(report['commands']), 'error':report.get('error'),
++            'secondary_errors':report['secondary_errors']}), flush=True)
++    return 0 if report['state'] == 'PASS' else 1
++
+-            if resource_fd>=0:
+-                os.close(resource_fd)
+-        report['finished_utc']=utc()
+-        result=write_new(OUT/'result.json',report)
+-        print(json.dumps({'state':report['state'],'result':result,'builder_elf':report.get('builder_elf'),
+-                          'Main_actions':0,'full_engine_build':False}),flush=True)
+-    return 0 if report['state']=='PASS' else 1
+ 
++if __name__ == '__main__':
++    if sys.argv[1:] == []:
++        print(json.dumps({'mode':'PLAN', 'root':str(ROOT), 'base_source':str(BASE_SOURCE),
++            'source_files':502, 'requires_explicit_execute_once':True, 'Main_actions':0,
++            'Android_execution':False, 'deploy':False, 'lib_tests':LIB_TESTS, 'cli_tests':CLI_TESTS}))
++    elif sys.argv[1:] == ['--execute-once']:
+-if __name__=='__main__':
+-    if sys.argv[1:]==[]:
+-        print(json.dumps({'mode':'PLAN','root':str(ROOT),'base_source':str(BASE_SOURCE),'source_files':501,
+-                          'requires_explicit_execute_once':True,'Rust_toolchain':TOOLCHAIN,'Main_actions':0,
+-                          'Android_and_full_engine_execution':False,'focused_existing_tests':TESTS,'source_resume_tests':SOURCE_RESUME_TESTS}))
+-    elif sys.argv[1:]==['--execute-once']:
+         raise SystemExit(execute())
+     else:
++        raise SystemExit('usage: compile_status.py [--execute-once]')
+-        raise SystemExit('usage: compile_builder.py [--execute-once]')

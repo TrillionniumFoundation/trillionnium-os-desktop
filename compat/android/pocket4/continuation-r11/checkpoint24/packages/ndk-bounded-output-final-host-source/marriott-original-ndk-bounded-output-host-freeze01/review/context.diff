@@ -1,0 +1,482 @@
+--- a/fixture_context.py
++++ b/fixture_context.py
+@@ -9,6 +9,8 @@
+ import os
+ from pathlib import Path
+ import resource
++import selectors
++import signal
+ import stat
+ import subprocess
+ import time
+@@ -60,46 +62,435 @@
+     return protected
+ 
+ 
+-def command_with_bound(context, argv, options):
+-    """Preserve actual Flow.command lifecycle; constrain its private output files.
+-    The lower soft file-size limit is inherited by the new helper process. The
+-    current worker limit is restored on every path before the caller proceeds.
+-    This is a new fixture seam and is not yet a qualified runtime control.
++class CommandCaptureError(RuntimeError):
++    pass
++
++
++class _OwnedCommandCapture:
++    """One unreaped new session, two bounded pipes and exact private log files.
++
++    The leader stays waitable until all group signalling has finished.
++    waitid always uses WNOHANG|WNOWAIT; Popen.poll/communicate are never used.
++    This owns the direct entry process and its new process group only. It does
++    not assert ownership of escaped sessions or Binder-launched processes.
+     """
+-    need(options['close_fds'] is True and options['stdout']==subprocess.PIPE and
+-         options['stderr']==subprocess.PIPE,'EXACT_SHARED_RUNNER_PROTOCOL_REQUIRED')
+-    prior=resource.getrlimit(resource.RLIMIT_FSIZE)
+-    need(all(v==resource.RLIM_INFINITY or v>=OUTPUT_LIMIT for v in prior),
+-         'CURRENT_FILE_SIZE_LIMIT_TOO_SMALL')
+-    first=None
+-    changed=False
+-    try:
+-        resource.setrlimit(resource.RLIMIT_FSIZE,(OUTPUT_LIMIT,prior[1]))
+-        changed=True
+-        need(resource.getrlimit(resource.RLIMIT_FSIZE)==(OUTPUT_LIMIT,prior[1]),
+-             'COMMAND_OUTPUT_LIMIT_NOT_APPLIED')
+-        result=context.recorder.Flow.command(context,argv,options['timeout'],
+-            mutation=context._android_mutation,label='Android command',
+-            pass_fds=options['pass_fds'],check=False,host_env=options['env'])
+-        need(type(result.stdout) is bytes and type(result.stderr) is bytes and
+-             len(result.stdout)<=OUTPUT_LIMIT and len(result.stderr)<=OUTPUT_LIMIT,
+-             'COMMAND_OUTPUT_BOUND')
+-        return result
+-    except BaseException as error:
+-        first=error
+-        raise
+-    finally:
+-        if changed:
++    def __init__(self,context,argv,options):
++        self.context,self.argv,self.options=context,list(argv),options
++        self.process=self.selector=None
++        self.pidfd=None
++        self.pidfd_registered=False
++        self.reap_started=self.spawned=False
++        self.reap_started_at=None
++        self.joined=True
++        self.errors=[]
++        self.capture_retirement_error=None
++        self.observed_failure_preceded_capture_error=False
++        self.journal=[]
++        self.logs={}
++        self.pipe_rows={}
++        self.buffers={'stdout':[],'stderr':[]}
++        self.observed={'stdout':0,'stderr':0}
++        self.stored={'stdout':0,'stderr':0}
++        self.eof={'stdout':False,'stderr':False}
++        self.limit_exceeded=False
++        self.timed_out=False
++        self.returncode=None
++        self.exit_observation=None
++        self.identity_observations=[]
++        self.signal_observations=[]
++        self.started=self.deadline=self.last_observed_monotonic=None
++        self.retirement_started=self.retirement_deadline=self.reaped_at=self.retired_at=None
++        self.fsize_before=resource.getrlimit(resource.RLIMIT_FSIZE)
++        self.fsize_after=None
++
++    def remember(self,phase,error,code=None):
++        if not self.errors:
++            observed=self.exit_observation
++            self.observed_failure_preceded_capture_error=bool(observed is not None and
++                (observed['code']!=os.CLD_EXITED or observed['status']!=0))
++        value={'phase':phase,'exception_type':type(error).__name__,
++               'errno':getattr(error,'errno',None)}
++        if code is not None:
++            value['code']=code
++        self.errors.append(value)
++
++    def own(self,role,fd,closer):
++        row={'role':role,'fd':fd,'close_attempted':False,'closed':False,
++             '_closer':closer}
++        self.journal.append(row)
++        return row
++
++    def close_row(self,row):
++        if row['close_attempted']:
++            return
++        row['close_attempted']=True
++        try:
++            row['_closer']()
++            row['closed']=True
++        except BaseException as error:
++            self.remember('command_'+row['role']+'_close',error)
++
++    def waitable(self):
++        need(self.process is not None and not self.reap_started,
++             'OWN_LEADER_MUST_STILL_BE_UNREAPED')
++        kind= os.P_PIDFD if self.pidfd is not None else os.P_PID
++        identity=self.pidfd if self.pidfd is not None else self.process.pid
++        event=os.waitid(kind,identity,os.WEXITED|os.WNOHANG|os.WNOWAIT)
++        if event is not None:
++            need(event.si_pid==self.process.pid and
++                 event.si_code in (os.CLD_EXITED,os.CLD_KILLED,os.CLD_DUMPED),
++                 'OWN_WAIT_IDENTITY_CHANGED')
++            value={'pid':event.si_pid,'code':event.si_code,'status':event.si_status}
++            if self.exit_observation is not None:
++                need(self.exit_observation==value,'OWN_WAIT_STATUS_CHANGED')
++            self.exit_observation=value
++        return event
++
++    def session_view(self,stage):
++        # This first establishes that the exact child remains ours to wait for.
++        # No reaping call has occurred, so the leader PID cannot be recycled.
++        self.waitable()
++        pid=self.process.pid
++        view={'stage':stage,'pid':pid,'process_group':os.getpgid(pid),
++              'session':os.getsid(pid),'pidfd_open':self.pidfd is not None,
++              'reap_started':self.reap_started,'observed_monotonic':time.monotonic()}
++        self.identity_observations.append(view)
++        need(view['process_group']==pid and view['session']==pid,
++             'OWN_NEW_SESSION_IDENTITY_CHANGED')
++        return view
++
++    def signal_owned(self):
++        need(self.process is not None and not self.reap_started,
++             'NO_PROCESS_GROUP_SIGNAL_AFTER_REAP_STARTED')
++        # Failure to establish the fresh group relation prevents killpg.
++        try:
++            view=self.session_view('before_group_signal')
++            entry={'kind':'own_process_group','pid':view['pid'],'attempted':True,
++                   'sent':False,'not_found':False,'reap_started':self.reap_started,
++                   'observed_monotonic':time.monotonic()}
++            self.signal_observations.append(entry)
+             try:
+-                resource.setrlimit(resource.RLIMIT_FSIZE,prior)
+-                need(resource.getrlimit(resource.RLIMIT_FSIZE)==prior,
+-                     'COMMAND_OUTPUT_LIMIT_RESTORE_FAILED')
++                os.killpg(view['pid'],signal.SIGKILL)
++                entry['sent']=True
++            except ProcessLookupError:
++                entry['not_found']=True
++        except BaseException as error:
++            self.remember('owned_command_group_stop',error)
++        if self.pidfd is not None:
++            entry={'kind':'own_pidfd_leader','attempted':True,
++                   'sent':False,'not_found':False,'reap_started':self.reap_started,
++                   'observed_monotonic':time.monotonic()}
++            self.signal_observations.append(entry)
++            try:
++                signal.pidfd_send_signal(self.pidfd,signal.SIGKILL,None,0)
++                entry['sent']=True
++            except ProcessLookupError:
++                entry['not_found']=True
++            except BaseException as error:
++                self.remember('owned_command_leader_stop',error)
++        else:
++            # pidfd acquisition itself may have failed. A never-reaped direct
++            # child plus a fresh own-session check still permits its exact PID.
++            # That path retains the pidfd error and can never become success.
++            try:
++                view=self.session_view('before_direct_child_signal_without_pidfd')
++                entry={'kind':'own_unreaped_direct_child','pid':view['pid'],
++                       'attempted':True,'sent':False,'not_found':False,
++                       'reap_started':self.reap_started,'observed_monotonic':time.monotonic()}
++                self.signal_observations.append(entry)
++                try:
++                    os.kill(view['pid'],signal.SIGKILL)
++                    entry['sent']=True
++                except ProcessLookupError:
++                    entry['not_found']=True
++            except BaseException as error:
++                self.remember('owned_command_leader_stop_without_pidfd',error)
++
++    def close_pipe(self,name):
++        row=self.pipe_rows.get(name)
++        if row is None or row['close_attempted']:
++            return
++        try:
++            self.selector.unregister(row['fd'])
++        except KeyError:
++            pass
++        except BaseException as error:
++            self.remember('command_'+name+'_unregister',error)
++        self.close_row(row)
++
++    def write_prefix(self,name,part):
++        offset=0
++        while offset<len(part):
++            amount=os.write(self.logs[name]['fd'],part[offset:])
++            need(amount>0,'OWN_COMMAND_LOG_WRITE_STALLED')
++            self.buffers[name].append(part[offset:offset+amount])
++            self.stored[name]+=amount
++            offset+=amount
++            need(self.stored[name]<=OUTPUT_LIMIT,'OWN_COMMAND_LOG_BOUND')
++
++    def capture(self):
++        self.selector=selectors.DefaultSelector()
++        self.own('selector',self.selector.fileno(),self.selector.close)
++        for name in ('stdout','stderr'):
++            fd=os.open(str(self.stem)+'.'+name,
++                       os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW|os.O_CLOEXEC,0o600)
++            self.logs[name]=self.own(name+'_log',fd,lambda fd=fd:os.close(fd))
++            observed=os.fstat(fd)
++            self.logs[name]['_path']=str(self.stem)+'.'+name
++            self.logs[name]['_identity']=(observed.st_dev,observed.st_ino,observed.st_mode,
++                                         observed.st_uid,observed.st_gid,observed.st_nlink)
++            need(stat.S_ISREG(observed.st_mode) and observed.st_nlink==1 and
++                 observed.st_size==0,'OWN_COMMAND_LOG_SHAPE')
++        before_spawn=time.monotonic()
++        self.last_observed_monotonic=before_spawn
++        need(before_spawn<self.deadline,'OWN_COMMAND_DEADLINE_BEFORE_SPAWN')
++        self.process=subprocess.Popen(self.argv,stdout=subprocess.PIPE,stderr=subprocess.PIPE,
++            env=self.options['env'],start_new_session=True,
++            pass_fds=tuple(self.options['pass_fds']),close_fds=True)
++        self.spawned=True
++        self.joined=False
++        self.context.action_attempted |= self.context._android_mutation
++        for name in ('stdout','stderr'):
++            stream=getattr(self.process,name)
++            need(stream is not None,'OWN_COMMAND_PIPE_MISSING')
++            self.pipe_rows[name]=self.own(name+'_pipe',stream.fileno(),stream.close)
++        self.pidfd=os.pidfd_open(self.process.pid,0)
++        self.own('leader_pidfd',self.pidfd,lambda:os.close(self.pidfd))
++        need(not os.get_inheritable(self.pidfd),'OWN_PIDFD_MUST_BE_CLOEXEC')
++        self.session_view('after_spawn')
++        for name,row in self.pipe_rows.items():
++            os.set_blocking(row['fd'],False)
++            self.selector.register(row['fd'],selectors.EVENT_READ,('pipe',name))
++        self.selector.register(self.pidfd,selectors.EVENT_READ,('leader',None))
++        self.pidfd_registered=True
++        while not self.errors:
++            now=time.monotonic()
++            self.last_observed_monotonic=now
++            if now>=self.deadline:
++                self.timed_out=True
++                self.remember('command_wait',subprocess.TimeoutExpired(
++                    '<owned Android command>',self.options['timeout']),'COMMAND_TIMEOUT')
++                break
++            self.waitable()
++            if self.exit_observation is not None and self.pidfd_registered:
++                self.selector.unregister(self.pidfd)
++                self.pidfd_registered=False
++            if self.exit_observation is not None and all(self.eof.values()):
++                break
++            events=self.selector.select(min(0.05,self.deadline-now))
++            for key,_mask in events:
++                if self.errors:
++                    break
++                before_read=time.monotonic()
++                self.last_observed_monotonic=before_read
++                if before_read>=self.deadline:
++                    self.timed_out=True
++                    self.remember('command_wait',subprocess.TimeoutExpired(
++                        '<owned Android command>',self.options['timeout']),'COMMAND_TIMEOUT')
++                    break
++                kind,name=key.data
++                if kind=='leader':
++                    self.waitable()
++                    continue
++                remaining=OUTPUT_LIMIT-self.stored[name]
++                try:
++                    part=os.read(key.fd,min(65536,remaining+1))
++                except BlockingIOError:
++                    continue
++                if not part:
++                    self.eof[name]=True
++                    self.close_pipe(name)
++                    continue
++                self.observed[name]+=len(part)
++                self.write_prefix(name,part[:remaining])
++                if len(part)>remaining:
++                    self.limit_exceeded=True
++                    self.remember('command_output_bound',CommandCaptureError(
++                        'per-stream output bound'),'COMMAND_OUTPUT_BOUND')
++                    break
++
++    def join_leader(self):
++        if self.process is None or self.joined:
++            return
++        if self.errors and not self.reap_started:
++            try:
++                self.signal_owned()
++            except BaseException as error:
++                self.remember('owned_command_stop',error)
++        if not self.reap_started:
++            self.reap_started_at=time.monotonic()
++        self.reap_started=True
++        try:
++            self.returncode=self.process.wait(
++                timeout=max(0.001,self.retirement_deadline-time.monotonic()))
++            self.joined=True
++            self.reaped_at=time.monotonic()
++        except BaseException as error:
++            self.remember('owned_command_join',error)
++            # Never call killpg after Popen.wait may have reaped the leader.
++            # A held pidfd remains an exact leader-only authority.
++            if self.pidfd is not None:
++                entry={'kind':'own_pidfd_after_wait','attempted':True,
++                       'sent':False,'not_found':False,'reap_started':self.reap_started,
++                       'observed_monotonic':time.monotonic()}
++                self.signal_observations.append(entry)
++                try:
++                    signal.pidfd_send_signal(self.pidfd,signal.SIGKILL,None,0)
++                    entry['sent']=True
++                except ProcessLookupError:
++                    entry['not_found']=True
++                except BaseException as close_error:
++                    self.remember('owned_command_late_leader_stop',close_error)
++            remaining=self.retirement_deadline-time.monotonic()
++            if remaining>0:
++                try:
++                    self.returncode=self.process.wait(timeout=remaining)
++                    self.joined=True
++                    self.reaped_at=time.monotonic()
++                except BaseException as close_error:
++                    self.remember('owned_command_final_join',close_error)
++
++    def finish(self):
++        self.capture_retirement_error=(dict(self.errors[0]) if self.errors and
++            not self.observed_failure_preceded_capture_error else None)
++        # Establish an already-observed fallback before consulting the clock:
++        # a phase alarm at cleanup entry still leaves a finite, non-extended
++        # cleanup bound and reaches the same-child stop/join path.
++        self.retirement_started=self.last_observed_monotonic
++        self.retirement_deadline=self.retirement_started+5.0
++        try:
++            self.retirement_started=time.monotonic()
++            self.retirement_deadline=self.retirement_started+5.0
++            self.join_leader()
++        except BaseException as error:
++            self.remember('owned_command_retirement',error)
++            # Best-effort cleanup of the same child, never a new command.
++            # The already-established absolute retirement deadline stays.
++            try:
++                self.join_leader()
+             except BaseException as close_error:
+-                if first is None:
+-                    raise
+-                first.add_note('COMMAND_OUTPUT_LIMIT_RESTORE_FAILED:'+type(close_error).__name__)
++                self.remember('owned_command_retirement_secondary',close_error)
++        finally:
++            for name in ('stdout','stderr'):
++                self.close_pipe(name)
++            for name,row in self.logs.items():
++                if not row['close_attempted']:
++                    try:
++                        observed=os.fstat(row['fd'])
++                        named=os.stat(row['_path'],follow_symlinks=False)
++                        fixed=(observed.st_dev,observed.st_ino,observed.st_mode,
++                               observed.st_uid,observed.st_gid,observed.st_nlink)
++                        need(fixed==row['_identity'] and
++                             (named.st_dev,named.st_ino,named.st_mode,named.st_uid,named.st_gid,
++                              named.st_nlink,named.st_size,named.st_mtime_ns,named.st_ctime_ns)==
++                             (observed.st_dev,observed.st_ino,observed.st_mode,observed.st_uid,observed.st_gid,
++                              observed.st_nlink,observed.st_size,observed.st_mtime_ns,observed.st_ctime_ns) and
++                             observed.st_size==self.stored[name] and
++                             observed.st_size<=OUTPUT_LIMIT,'OWN_COMMAND_LOG_SHAPE_OR_BOUND_CHANGED')
++                        os.fsync(row['fd'])
++                    except BaseException as error:
++                        self.remember('command_'+name+'_log_sync',error)
++            for row in reversed(self.journal):
++                self.close_row(row)
++            try:
++                self.fsize_after=resource.getrlimit(resource.RLIMIT_FSIZE)
++                need(self.fsize_after==self.fsize_before,'AMBIENT_FILE_SIZE_LIMIT_CHANGED')
++            except BaseException as error:
++                self.remember('command_file_size_limit_observation',error)
++            try:
++                self.retired_at=time.monotonic()
++                need(self.retirement_deadline is not None and
++                     self.retired_at<=self.retirement_deadline,
++                     'OWN_COMMAND_RETIREMENT_DEADLINE_EXCEEDED')
++            except BaseException as error:
++                self.remember('owned_command_retirement_deadline',error)
++            if self.process is not None and not self.joined and self.context.binding is not None:
++                try:
++                    self.context.binding.target.poison_unjoined_command()
++                except BaseException as error:
++                    self.remember('owned_unjoined_command_poison',error)
+ 
++    def run(self):
++        self.context.guard()
++        self.context.command_index+=1
++        self.stem=self.context.step/('command-%03d'%self.context.command_index)
++        self.context.recorder.write_new(str(self.stem)+'.intent.json',{
++            'argv':self.argv,'execution_argv':self.argv,
++            'timeout_seconds':self.options['timeout'],
++            'authority_fds_passed':list(self.options['pass_fds']),
++            'mutation':self.context._android_mutation,'label':'Android command',
++            'started_utc':self.context.recorder.now(),'automatic_retry':False})
++        self.started=time.monotonic()
++        self.last_observed_monotonic=self.started
++        self.deadline=min(self.started+self.options['timeout'],self.context.deadline)
++        try:
++            self.capture()
++        except BaseException as error:
++            self.remember('command_capture',error)
++        finally:
++            self.finish()
++        output={name:b''.join(self.buffers[name]) for name in ('stdout','stderr')}
++        complete=all(self.eof.values()) and not self.errors and self.joined
++        receipt={'ended_utc':self.context.recorder.now(),
++            'seconds':time.monotonic()-self.started,'returncode':self.returncode,
++            'timed_out':self.timed_out,'spawned':self.spawned,
++            'error':self.errors[0] if self.errors else None,'errors':list(self.errors),
++            'owned_command_joined':self.joined,
++            'stdout_sha256':sha(output['stdout']),'stderr_sha256':sha(output['stderr']),
++            'action_attempted':self.spawned and self.context._android_mutation,
++            'automatic_retry':False,
++            'output_capture':{'policy':'per-stream-private-prefix-v1','maximum_bytes':OUTPUT_LIMIT,
++                'stored_bytes':dict(self.stored),'observed_bytes':dict(self.observed),
++                'EOF':dict(self.eof),'complete':complete,'limit_exceeded':self.limit_exceeded,
++                'prefix_only':not all(self.eof.values()),
++                'no_stream_reads_after_first_failure':True,
++                'observed_failure_preceded_capture_error':self.observed_failure_preceded_capture_error,
++                'RLIMIT_FSIZE_before':list(self.fsize_before),
++                'RLIMIT_FSIZE_after':list(self.fsize_after) if self.fsize_after is not None else None,
++                'RLIMIT_FSIZE_modified':False},
++            'owned_lifecycle':{'observation_deadline':self.deadline,
++                'retirement_started':self.retirement_started,'retirement_deadline':self.retirement_deadline,
++                'reap_started_at':self.reap_started_at,
++                'reaped_at':self.reaped_at,'retired_at':self.retired_at,
++                'retirement_deadline_met':self.retired_at is not None and
++                    self.retirement_deadline is not None and self.retired_at<=self.retirement_deadline,
++                'direct_child_reaped':self.spawned and self.joined,
++                'session_observations':self.identity_observations,
++                'signal_observations':self.signal_observations,
++                'waitid_uses_WNOWAIT':True,'group_signals_after_reap_started':False,
++                'all_tracked_FDs_closed':all(row['closed'] for row in self.journal),
++                'FDs':[{k:v for k,v in row.items() if not k.startswith('_')} for row in self.journal],
++                'escaped_sessions_or_Binder_descendants_qualified':False}}
++        try:
++            self.context.recorder.write_new(str(self.stem)+'.result.json',receipt)
++        except BaseException as error:
++            self.remember('command_result_record',error)
++        captured=subprocess.CompletedProcess(self.argv,self.returncode,output['stdout'],output['stderr'])
++        captured.host_timed_out=self.timed_out
++        captured.capture_limit_exceeded=self.limit_exceeded
++        captured.capture_retirement_error=self.capture_retirement_error
++        captured.observed_failure_preceded_capture_error=self.observed_failure_preceded_capture_error
++        captured.recorder_errors=list(self.errors)
++        captured.recorder_spawned=self.spawned
++        captured.recorder_joined=self.joined
++        return captured
+ 
++
++def command_with_bound(context,argv,options):
++    """Bound only this command's private logs; do not change runtime rlimits."""
++    need(options['close_fds'] is True and options['stdout']==subprocess.PIPE and
++         options['stderr']==subprocess.PIPE and
++         type(options['timeout']) in (int,float) and 0<options['timeout']<=70 and
++         isinstance(options['pass_fds'],(tuple,list)) and len(options['pass_fds'])==7 and
++         len(set(options['pass_fds']))==7 and
++         all(type(fd) is int and fd>=3 for fd in options['pass_fds']),
++         'EXACT_SHARED_RUNNER_PROTOCOL_REQUIRED')
++    need(signal.getsignal(signal.SIGCHLD)==signal.SIG_DFL and
++         hasattr(os,'P_PIDFD') and hasattr(os,'pidfd_open') and
++         hasattr(signal,'pidfd_send_signal'),'OWN_UNREAPED_CHILD_PROTOCOL_REQUIRED')
++    return _OwnedCommandCapture(context,argv,options).run()
++
++
+ class Context:
+     def __init__(self,recorder,contract,target,environment,transport,main_guard,
+                  step,plan,expected_init,deadline,fixture,scope,protected_uids):

@@ -1,0 +1,43 @@
+--- original/hilton_context.py
++++ candidate/hilton_context.py
+@@ -120,14 +120,21 @@
+             value.get('target_data_directory_contents_read') is False and
+             value.get('APK_bytes_exported') is False,
+             'FIVE_COMPLETED_READONLY_METADATA_COMMANDS_REQUIRED')
+-    require(type(artifact_reference) is dict and artifact_reference.get('target') == exact and
+-            value.get('artifacts') == artifact_reference.get('artifacts') and
++    require(type(artifact_reference) is dict and artifact_reference.get('schema') == 1 and
++            {k:artifact_reference.get(k) for k in exact} == exact and
++            all(type(artifact_reference.get(k)) is int for k in ('uid','user','version_code')) and
++            value.get('artifacts') == artifact_reference.get('current_artifacts') and
+             type(value.get('artifacts')) is list and len(value['artifacts']) == APK_COUNT and
++            type(artifact_reference.get('current_APK_count')) is int and
++            artifact_reference['current_APK_count'] == APK_COUNT and
+             value.get('apk_paths_before') == sorted(r['path'] for r in value['artifacts']) and
+-            value.get('total_apk_bytes') == sum(r['held_file']['bytes'] for r in value['artifacts']),
++            type(artifact_reference.get('current_total_APK_bytes')) is int and
++            artifact_reference['current_total_APK_bytes'] == value.get('total_apk_bytes') ==
++                sum(r['held_file']['bytes'] for r in value['artifacts']),
+             'ACTUAL_METADATA_AND_BUILT_TARGET_ARTIFACT_REFERENCE_MUST_MATCH')
+     dirs = value.get('data_directories_before')
+-    require(type(dirs) is list and dirs == value.get('data_directories_after') and len(dirs) == 2 and
++    require(type(dirs) is list and dirs == value.get('data_directories_after') ==
++            artifact_reference.get('current_data_directories') and len(dirs) == 2 and
+             [r.get('path') for r in dirs] == ['/data/user/0/'+PACKAGE,'/data/user_de/0/'+PACKAGE] and
+             value.get('target_directory_cleanup') == {'contents_read':False,'held_data_directory_FDs_closed':2},
+             'COMPLETE_INDEPENDENT_TARGET_DIRECTORY_PAIR_REQUIRED')
+@@ -174,8 +181,13 @@
+             baseline.get('whole_app_production_ready') is False,
+             'TYPED_CURRENT_BASELINE_AND_INDEPENDENT_TARGET_REQUIRED')
+     # Separate pinned authority, never additions to B.packages/app_directories.
++    metadata = authority.get('metadata_before')
+     qualify_target_metadata(authority, {
+-        'target':authority.get('metadata_before'),'artifacts':authority.get('artifacts')})
++        **(metadata if type(metadata) is dict else {}), 'schema':1,
++        'current_APK_count':APK_COUNT,
++        'current_artifacts':authority.get('artifacts'),
++        'current_total_APK_bytes':authority.get('total_apk_bytes'),
++        'current_data_directories':authority.get('data_directories_before')})
+     return current_scope()
+ 
+ 
