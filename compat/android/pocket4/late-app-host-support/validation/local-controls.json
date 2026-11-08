@@ -1,0 +1,105 @@
+{
+  "scope": "local Linux source controls, not Pocket4 or app acceptance",
+  "observed_date_utc": "2026-11-08",
+  "execution_tool_chunk_id": "ad7282",
+  "command": [
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "runtime-acceptance-audit/late-app-host-support-candidate/tests",
+    "-p",
+    "test_*.py",
+    "-v"
+  ],
+  "working_directory": "/workspace/scratch/347ef2dfe9ad",
+  "exit_code": 0,
+  "tests_run": 15,
+  "tests_passed": 15,
+  "unittest_reported_seconds": 0.457,
+  "tests": [
+    {
+      "id": "test_host_support_binding.QuickSearchHostBinding.test_actual_local_bootstrap_rejects_changed_common_pin",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_host_support_binding.QuickSearchHostBinding.test_actual_local_inspect_source_composition_is_inert",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_host_support_binding.QuickSearchHostBinding.test_candidate_admits_current_host_for_every_identity_role",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_host_support_binding.QuickSearchHostBinding.test_candidate_rejects_legacy_clock_and_tampered_manifest",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_host_support_binding.QuickSearchHostBinding.test_original_binding_rejects_current_host_before_collector",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_host_support_binding.SettingsHostBinding.test_actual_local_bootstrap_rejects_changed_common_pin",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_host_support_binding.SettingsHostBinding.test_actual_local_inspect_source_composition_is_inert",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_host_support_binding.SettingsHostBinding.test_candidate_admits_current_host_for_every_identity_role",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_host_support_binding.SettingsHostBinding.test_candidate_rejects_legacy_clock_and_tampered_manifest",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_host_support_binding.SettingsHostBinding.test_original_binding_rejects_current_host_before_collector",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_host_support_binding.WebViewHostBinding.test_actual_local_bootstrap_rejects_changed_common_pin",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_host_support_binding.WebViewHostBinding.test_actual_local_inspect_source_composition_is_inert",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_host_support_binding.WebViewHostBinding.test_candidate_admits_current_host_for_every_identity_role",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_host_support_binding.WebViewHostBinding.test_candidate_rejects_legacy_clock_and_tampered_manifest",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_host_support_binding.WebViewHostBinding.test_original_binding_rejects_current_host_before_collector",
+      "outcome": "passed"
+    }
+  ],
+  "test_source": {
+    "path": "tests/test_host_support_binding.py",
+    "bytes": 10702,
+    "sha256": "414a12c1a83eb9e75e2b3b5f80ccb28de18a30fe51f6fce695eb9a8617fcdfc4"
+  },
+  "runtime_boundary": {
+    "identity_bootstrap_substituted": true,
+    "identity_collector_substituted": true,
+    "local_source_only_preparation_synthetic": true,
+    "actual_local_inspect_source_cli_positive_runs": 3,
+    "actual_local_bootstrap_tamper_negative_runs": 3,
+    "BusinessBaseline_instances": 0,
+    "Main_actions": 0,
+    "Android_UI_actions": 0,
+    "app_acceptance_claimed": false
+  },
+  "production_manifest": {
+    "path": "source-manifest.json",
+    "bytes": 35255,
+    "sha256": "e484f962239a421fdd271e4aaa325bfa45330330c58213a0a0c0563b2486d3e9"
+  }
+}
