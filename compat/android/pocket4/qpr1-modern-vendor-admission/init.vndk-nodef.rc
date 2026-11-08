@@ -1,0 +1,5 @@
+# Android 15+ vendors do not publish ro.vndk.version.  Keep the legacy import
+# selector, but admit this explicitly reviewed modern vendor/system API pair.
+# All other tuples retain the original reboot-to-bootloader failure action.
+on early-init
+    exec - root -- /system/bin/sh /vendor/etc/qpr1-modern-vendor-guard.sh

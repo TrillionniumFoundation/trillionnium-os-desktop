@@ -1,6 +1,6 @@
 # Pocket4 Android closeout continuation
 
-Current state: **`QPR1_INIT_REACHED_MODERN_VENDOR_ADAPTATION_AND_FULL_BUILDS_PENDING`**. Native597 and Audio316 have actual successful normal source materialization records. The ABI-qualified Sensor library is staged in the canonical candidate. Full Native/ART and Audio artifacts, final deployment, fresh runtime checks and original whole-application acceptance remain pending; applications remain **0/45**.
+Current state: **`QPR1_GUEST_UMASK_REPAIR_AUDIO_FULL_R5_AND_FINAL42_PENDING`**. Native597 and Audio316 have actual successful normal source materialization records. The ABI-qualified Sensor library is staged in the canonical candidate. Full Native/ART and Audio artifacts, final deployment, fresh runtime checks and original whole-application acceptance remain pending; applications remain **0/45**.
 
 The [current state](continuation/state.json) and [latest execution reconciliation](continuation/build-observations-20261108-native597-audio316.json) distinguish actual completed work, preserved failures and remaining gates. The [earlier build observations](continuation/build-observations-20261108-native-tls-audio316.json) retain their original observation time. The [source repair package](build-source-repair-20261108/README.md) contains independently reconstructable frozen Native, current Audio316, historical Audio and separate combined-builder source chains.
 
@@ -223,3 +223,37 @@ six files and 1,237,524,480 allocated bytes. This is separate from the original
 807-root inventory, which remains 763 removed / 44 retained at this snapshot.
 Final42 runtime acceptance, coherent deployment and production isolation remain
 open; no source or early-init result grants them.
+
+## Current vendor admission, guest permissions and source closure
+
+The exact modern-vendor metadata guard has now executed in actual QPR1 and
+exited zero. Init progressed into normal service startup. Seven live-init
+samples then measured `0700` on the guest socket/property/device and CPU
+directories. The normal Android first stage clears umask; this host enters
+second stage after providing the mounts, so the private host umask leaked
+into Android. The new host source capsule contains the explicit private
+directory and final PID1 exec-boundary repair, with its actual controls.
+The next actual boot confirmed the repaired modes, including the bionic-created
+property directory at `0711`. It then failed at vold startup and retained the
+original reboot-on-failure behavior. The exact abort is still being diagnosed;
+the early boot and source controls do not grant complete runtime acceptance.
+
+The Audio source extension passed all 90 normal source commands with the
+same 316 projects and unchanged CTS revision. Its new full r5 passed fresh
+source and resource admissions with a 36 GiB owned-output budget plus the
+16 GiB shared floor. Its actual Go entry and exit limits matched 2 / 5 GiB / 50.
+The graph then rejected an Error Prone provider removed by the existing Audio
+projection. That next source repair, complete artifacts and runtime remain
+pending. CI now requires all 21 portable
+controls for the Go records, short-process exit window and vendor guard.
+
+Calendar, DeskClock and Gallery now each have a rebuilt QPR1 candidate
+with SDK37 v2/v3 verification under the existing signer, byte-bound ZIP
+payload checks and 16 KiB alignment. They are not installed or granted
+runtime acceptance. Their five old patch roots were retired after exact
+canonical source adoption: 7,307 files and 112,766,976 allocated bytes.
+Another nine input roots were retired after normal read-only controls and
+selection of the complete 13-preparation manifest; 525 current source inputs
+remained unchanged. The original807 inventory is now 777 removed / 30 retained.
+The remaining real source/evidence references are being migrated before cleanup;
+original account data and the still-required signing material remain intact.

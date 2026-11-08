@@ -1,0 +1,10 @@
+--- a/target/product/gsi/init.vndk-nodef.rc
++++ b/target/product/gsi/init.vndk-nodef.rc
+@@ -1,3 +1,5 @@
++# Android 15+ vendors do not publish ro.vndk.version.  Keep the legacy import
++# selector, but admit this explicitly reviewed modern vendor/system API pair.
++# All other tuples retain the original reboot-to-bootloader failure action.
+ on early-init
+-    # Reboot if BOARD_VNDK_VERSION is not defined
+-    exec - root -- /system/bin/reboot bootloader
++    exec - root -- /system/bin/sh /vendor/etc/qpr1-modern-vendor-guard.sh

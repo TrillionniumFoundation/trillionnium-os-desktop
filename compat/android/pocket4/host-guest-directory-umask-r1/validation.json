@@ -1,0 +1,71 @@
+{
+  "schema": "host-guest-directory-umask-sanitized-validation-v1",
+  "state": "PASS",
+  "source_commit": "fcb5afd7347b13f32c96daa073a63a048e95ecb2",
+  "normal_tests": {
+    "passed": 130,
+    "failed": 0,
+    "default_ignored": 13,
+    "exit_code": 0
+  },
+  "actual_control": {
+    "explicit_root_control_passed": 1,
+    "skipped": 0,
+    "exit_code": 0,
+    "elapsed_seconds": 0.06252026907168329,
+    "test_binary": {
+      "bytes": 28998272,
+      "sha256": "6ca43b918e5c382077ac9bc14da2c102173d0cdd42532f9bb798fce16dab7767"
+    },
+    "host_preparation_umask": "0077",
+    "android_pid1_exec_umask": "0000",
+    "old_socket_and_property_access_errno": 13,
+    "new_directory_mode": "0755",
+    "bionic_created_property_directory_mode": "0711",
+    "property_info_mode": "0444",
+    "uid1000_socket_connect": true,
+    "uid1000_property_info_read": true,
+    "projected_cpu_files_readable": 3,
+    "host_control_directory_mode": "0700",
+    "host_control_file_mode": "0600",
+    "host_bind_unchanged": true,
+    "host_umask_unchanged": true,
+    "private_namespaces": [
+      "mnt",
+      "pid",
+      "cgroup",
+      "ipc",
+      "uts"
+    ],
+    "owned_outer_child_reaped": true,
+    "bound_init_pidfd_exited": true,
+    "host_namespace_identities_unchanged": true,
+    "android_inputs_used": false
+  },
+  "release_build": {
+    "exit_code": 0,
+    "elapsed_seconds": 44.589332634117454
+  },
+  "source_patch_applies_to_exact_parent_and_reproduces_all_three_files": true,
+  "prior_qualified_source_and_binaries_unchanged": true,
+  "retained_evidence_identities": {
+    "normal_tests": {
+      "bytes": 957,
+      "sha256": "b57ecfdadcf03c4f00f0877e24a75a00a8a1d02e1f219e76908b3213ef3ea662"
+    },
+    "actual_namespace_control": {
+      "bytes": 1946,
+      "sha256": "7de457ba6d33c99f76d05eb066b5382a639ff95b282e6d6029055f590a16e345"
+    },
+    "release_receipt": {
+      "bytes": 3236,
+      "sha256": "173109631d6eeae6dca3fad9a75cfbf2d5f0ae4aca9c5cd69f93f14087406f1e"
+    }
+  },
+  "earlier_attempts": {
+    "directory_only_control": "PASS, limited to the earlier directory-only source",
+    "receipt_read_prepare": "FAILED before source mutation; subsequent read-only sudo access used, original permissions preserved"
+  },
+  "production_isolation_qualified": false,
+  "android_boot_qualified_by_this_control": false
+}

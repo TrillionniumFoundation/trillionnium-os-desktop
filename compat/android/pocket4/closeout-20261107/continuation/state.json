@@ -1,6 +1,87 @@
 {
   "QPR1_actual_empty_data_boot": {
     "Android_boot_completed": false,
+    "VINTF_qualified": false,
+    "actual_next_init_actions_observed": true,
+    "actual_observation": {
+      "bytes": 454655,
+      "sha256": "7b3bc5b0f74e22adbe29b1b59b272e48359a742d31d860897a87dbd64a0ebeec"
+    },
+    "actual_private_namespaces": 6,
+    "exact_system_build": "CP3A.260905.010/16176746",
+    "guard_actual_exit_code": 0,
+    "kernel_observation": {
+      "bytes": 121546,
+      "sha256": "a439978f1c28764cc502609e8aac542a368e11daa768103b8d8edd81a8485e5e"
+    },
+    "next_observed_permission_defect": {
+      "live_init_samples": 7,
+      "mode": "0700",
+      "paths": [
+        "/dev/socket",
+        "/dev/__properties__",
+        "/dev/dri",
+        "/dev/dma_heap",
+        "/sys/devices",
+        "/sys/devices/system",
+        "/sys/devices/system/cpu"
+      ]
+    },
+    "next_terminal_cause": "hwservicemanager critical repeated abort before boot completed",
+    "original_VNDK_property_absent": true,
+    "owned_resources_retired": true,
+    "protected_original_data_unchanged": true,
+    "runtime_qualified": false,
+    "schema": "qpr1-modern-vendor-actual-admission-summary-v1",
+    "source_controls_passed": 9,
+    "system_sdk": "37.1",
+    "underlying_hwservicemanager_abort_not_yet_qualified": true,
+    "vendor_board_LLNDK_API": 202604,
+    "vendor_sdk": "37.0",
+    "whole_application_acceptance": false
+  },
+  "QPR1_actual_guest_permission_followup": {
+    "Android_boot_completed": false,
+    "OOM_events": 0,
+    "actual_bionic_property_directory_mode": "0711",
+    "actual_property_info_mode": "0444",
+    "actual_socket_device_CPU_directory_mode": "0755",
+    "generation": "r6",
+    "host_commit": "fcb5afd7347b13f32c96daa073a63a048e95ecb2",
+    "hwservicemanager_reports_HIDL_not_required": true,
+    "kernel_observation": {
+      "bytes": 50624,
+      "sha256": "997fbf2b9a5214f5bd60efd4549fce15deb8b63c7f798d4586d95c0257821b27"
+    },
+    "new_empty_data_used": true,
+    "next_failure": "vold startup abort invokes original reboot_on_failure",
+    "original_account_data_used": false,
+    "original_user_data_unchanged": true,
+    "owned_resources_retired": true,
+    "permission_defect_corrected_in_real_Android": true,
+    "result": {
+      "bytes": 127891,
+      "sha256": "b5561663c5cbcee0ce0ce83bdeba8362907cfd185a4ff70012735f5e12afb29e"
+    },
+    "underlying_abort_diagnosis_pending": true
+  },
+  "QPR1_later_guard_projection_attempt": {
+    "Android_boot_completed": false,
+    "concrete_blocker": "new Android override requires an existing parent: the proposed /vendor/etc/droidloom directory does not exist",
+    "corrected_in_actual_r5": true,
+    "disposable_data_content_unchanged": true,
+    "existing_parent_correction_in_progress": false,
+    "generation": "r4",
+    "guard_executed": false,
+    "owned_resources_retired": true,
+    "protected_original_data_unchanged": true,
+    "result": {
+      "bytes": 72598,
+      "sha256": "cde7c557b797939fa4453e616cf2ff78fb91b1fdcc3c0d66646b86e95c274ba7"
+    }
+  },
+  "QPR1_previous_actual_empty_data_boot": {
+    "Android_boot_completed": false,
     "actual_child_private_namespaces": {
       "cgroup": true,
       "ipc": true,
@@ -39,20 +120,6 @@
     "state": "BOOT_ATTEMPT_DID_NOT_COMPLETE",
     "subsequent_shutdown_wait": "vdc volume abort_fuse waits for service-manager readiness"
   },
-  "QPR1_later_guard_projection_attempt": {
-    "Android_boot_completed": false,
-    "concrete_blocker": "new Android override requires an existing parent: the proposed /vendor/etc/droidloom directory does not exist",
-    "disposable_data_content_unchanged": true,
-    "existing_parent_correction_in_progress": true,
-    "generation": "r4",
-    "guard_executed": false,
-    "owned_resources_retired": true,
-    "protected_original_data_unchanged": true,
-    "result": {
-      "bytes": 72598,
-      "sha256": "cde7c557b797939fa4453e616cf2ff78fb91b1fdcc3c0d66646b86e95c274ba7"
-    }
-  },
   "QPR1_previous_unshare_failure": {
     "Android_boot_completed": false,
     "actual_daemon_and_cell_start_attempted": true,
@@ -68,6 +135,30 @@
       "sha256": "e8081e7c1d18dd72a16151ee8b1a671a24b5140c8c6f12242bc2b130ea57d1d9"
     },
     "runtime_qualified": false
+  },
+  "QPR1_three_source_port_artifacts": {
+    "Calendar": {
+      "bytes": 2672653,
+      "non_target_classes_preserved": 439,
+      "sha256": "8d3ca352655a27c25e9c0da12edd2fcd18bf26816fc53d04a209cf7ff7717b9f"
+    },
+    "DeskClock": {
+      "all_classes_checked": 3053,
+      "bytes": 7821343,
+      "non_target_classes_preserved": 3049,
+      "sha256": "e8b7e2d5e90b2ec4100bd8b06403c659d4a86c9f29e45bb6b06363aed2f1f30a"
+    },
+    "Gallery": {
+      "all_classes_checked": 2144,
+      "bytes": 7493022,
+      "non_target_classes_preserved": 2142,
+      "sha256": "6677d382076f10f0502c813c7614c32127ccf3cd8f02756b75a8c3574980e87e"
+    },
+    "actual_SDK37_v2_v3_verified": true,
+    "installed": false,
+    "runtime_passes": 0,
+    "same_signer_SHA256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+    "signed_and_content_bound": true
   },
   "actual_audio_source": {
     "full_APEX_qualified": false,
@@ -99,6 +190,37 @@
     "source_commit": "2884a01f853caa94f7b66c7e945b0e2818f8ca74",
     "source_lock_sha256": "ac2f7fa3d7e53be1b0e69f486876f8ad229dcc64686af208251bd4aee2424ae4",
     "source_tree": "f5b7455507f68f4d2b60e763701149ac784aa401"
+  },
+  "additional_app_patch_root_cleanup": {
+    "allocated_bytes_removed": 112766976,
+    "original807_remaining": 39,
+    "original807_removed": 768,
+    "protected_user_data_unchanged": true,
+    "remaining_fixture_owner_dependencies": 3,
+    "remaining_source_evidence_dependencies": 35,
+    "remaining_unique_signing_root": 1,
+    "removed_files": 7307,
+    "removed_roots": 5,
+    "result": {
+      "bytes": 2855,
+      "sha256": "c68ece4ef084f3d6a3eaf26c6ae42fdef85258b29fe37558d8f3b5c1737e7b08"
+    }
+  },
+  "additional_qualification_input_root_cleanup": {
+    "allocated_bytes_removed": 136040448,
+    "current_source_consumer_inputs_verified": 525,
+    "original807_remaining": 30,
+    "original807_removed": 777,
+    "protected_user_data_unchanged": true,
+    "remaining_fixture_owner_dependencies": 3,
+    "remaining_source_evidence_dependencies": 26,
+    "remaining_unique_signing_root": 1,
+    "removed_files": 9348,
+    "removed_roots": 9,
+    "result": {
+      "bytes": 3700,
+      "sha256": "f8e921b903ec602976d3670b722dab634b275e68f1429c6e86c23edac9c569e1"
+    }
   },
   "all_blockers_closed": false,
   "application_reaudit": {
@@ -531,7 +653,7 @@
     "build_memory_max_bytes": 25769803776,
     "complete_build_fit_demonstrated": false,
     "cpu_count": 8,
-    "current_generation": "Audio r5 pending new source verification and frozen request",
+    "current_generation": "Audio r5 failure retained; real Error Prone provider projection repair in progress",
     "fresh_MemAvailable_minimum_bytes": 31138512896,
     "fresh_disk_admission_bytes": 55834574848,
     "host": "desktop",
@@ -572,6 +694,42 @@
     "actual_Go_GOMEMLIMIT_bytes": 5368709120,
     "actual_Go_version": "go1.25.4",
     "actual_Go_visible_CPUs": 8,
+    "audio_CTS_source_extension": {
+      "full_result_is_separate": true,
+      "materialized_manifest": {
+        "bytes": 151290,
+        "sha256": "72443eab81b26981fba24167334b5714a5c8deffe6e67f5a5913f80bd5deb355"
+      },
+      "normal_reconcile_and_verify_passed": true,
+      "normal_source_commands": 90,
+      "owned_unit_retired": true,
+      "projects": 316,
+      "recipe_commit": "68b7b1af1d55db8f361a994af422caaa931c41ff"
+    },
+    "audio_full_r5": {
+      "CPU_count": 8,
+      "actual_Go_enter_and_leave": {
+        "GOGC": 50,
+        "GOMAXPROCS": 2,
+        "GOMEMLIMIT_bytes": 5368709120,
+        "continuous_measurement_claimed": false
+      },
+      "actual_Go_entry_and_exit_metrics_required": true,
+      "artifact_qualified": false,
+      "cause": "existing Audio projection removed the real provider",
+      "complete_final_retirement_not_yet_claimed": true,
+      "full_build_success": false,
+      "memory_max_bytes": 25769803776,
+      "next_graph_failure": "systemfeatures-errorprone-tests depends on error_prone_test_helpers",
+      "normal_full_return_code": 1,
+      "normal_source_before_verified": true,
+      "owned_work_budget_bytes": 38654705664,
+      "provider_source_already_materialized": true,
+      "runtime_qualified": false,
+      "shared_floor_bytes": 17179869184,
+      "source_projection_restored": true,
+      "state": "NORMAL_FULL_RETURNED_FAILURE_SOURCE_AFTER_IN_PROGRESS"
+    },
     "complete_compiled_APEX_qualified": false,
     "first_full_failure": {
       "driver_started": true,
@@ -674,7 +832,7 @@
     "total_registered_packages_observed": 208
   },
   "pending": {
-    "audio": "The actual r4 full reached Soong graph generation and failed on two real CTS defaults providers. It retired completely and its source was verified afterwards. A new source generation adds the same-commit CTS compilation cone and repairs Blueprint resetting Go parallelism from the requested 2 to 8. The next full is limited to 36 GiB owned output with an unchanged 16 GiB public floor. Artifact and runtime qualification remain pending.",
+    "audio": "The r5 full passed the CTS defaults and actually recorded the requested Go limits on entry and exit, then failed because the Audio projection removed an already-present Error Prone provider. Its source-after and retirement remain required before the next immutable repair generation. Complete artifact, ELF, signatures and runtime gates remain pending.",
     "camera_and_storage": "Current Camera source38, decoder8, owned display negative4 and formal preparation passed in the canonical location. Real Main/display/audio, Camera2/UVC, Camera recovery, Storage lifecycle and whole-app acceptance remain pending.",
     "cleanup": "The original inventory is now 729 removed / 78 retained. Migrate live references and retire obsolete roots, old payloads and experiments after replacement validation; preserve user images and current signing material.",
     "final_deployment": "Compose and inspect the complete canonical cohort before using the reviewed installation transaction.",
@@ -682,7 +840,7 @@
     "native": "Normal597 materialization and R11 source consumption passed. All desktop copy batches finished; source-only checksum and normal verification continuation is active. Full engine/ART artifacts and QPR1-compatible native bridge remain unqualified.",
     "production_isolation": "The development runner has not qualified production UID mapping or seccomp. A successful isolated empty-data boot probe cannot close this gate.",
     "release_currency": "The verified official QPR1 GSI is on Pocket4 and the actual host layout passed. Preserve official QPR1 ART, bionic, APEX and framework components while qualifying necessary compatibility changes. September SPL does not imply November coverage. Official app delivery and data-preserving signature migration remain pending.",
-    "runtime_and_applications": "The host namespace option and owned shutdown defects are fixed and actually tested. QPR1 reached init second stage but selected the obsolete no-VNDK reboot action despite modern vendor/LLNDK API 202604. Qualify the scoped modern metadata admission, correct guest directory permissions if confirmed, and complete coherent Android/Main and final42 application acceptance. Production UID mapping and seccomp remain pending."
+    "runtime_and_applications": "Actual modern-vendor admission exits zero. The next actual boot confirms the guest directory and bionic property modes are repaired. Vold now aborts during early startup and its original reboot_on_failure acts; the exact abort is being captured. Production isolation, Main and final42 workflows remain pending."
   },
   "previous_public_observation": {
     "bytes": 28107,
@@ -692,15 +850,18 @@
   "production_isolation_gate": {
     "actual_QPR1_probe_without_outer_cgroup_wrapper": true,
     "actual_development_child_six_private_namespaces_measured": true,
+    "actual_new_host_QPR1_boot_not_granted_by_source_controls": true,
     "development_UID_map_and_seccomp_qualified": false,
     "development_cgroup_namespace_argument_missing": false,
-    "guest_directory_permissions_under_private_host_umask_under_investigation": true,
+    "guest_directory_permission_defect_actually_measured": true,
+    "guest_directory_permissions_under_private_host_umask_under_investigation": false,
     "installed_unshare_option_and_owned_shutdown_defects_fixed": true,
     "layout_patch_does_not_implement_production_hardening": true,
+    "new_guest_permission_source_capsule": "host-guest-directory-umask-r1",
     "probe_outer_cgroup_namespace_does_not_qualify_production_runner": true
   },
-  "publication_state": "HOST_NAMESPACE_OWNERSHIP_AND_ACTUAL_QPR1_INIT",
-  "recorded_utc": "2026-11-08T21:42:00Z",
+  "publication_state": "ACTUAL_MODERN_VENDOR_ADMISSION_GUEST_PERMISSIONS_AND_SOURCE_REPAIRS",
+  "recorded_utc": "2026-11-08T22:13:00Z",
   "resume_order": [
     "Finish the new normal Audio source reconciliation, then freeze and run the strict serial full under its explicit 36+16 GiB disk contract.",
     "Finish the actual QPR1 modern-vendor admission and guest runtime diagnosis with exact new generation inputs and owned retirement.",
@@ -711,6 +872,19 @@
   "runtime_qualified": false,
   "schema": "pocket4-android-continuation-v1",
   "scope": "Pocket4 local Droidloom Android",
+  "selected_application_preparation_inputs": {
+    "origin_files_adopted": 26,
+    "read_only_controls_passed": 6,
+    "replaced": 2,
+    "runtime_credit_transferred": false,
+    "selected_preparations": 13,
+    "selection": {
+      "bytes": 6541,
+      "sha256": "03602d4429a47ca8c446decf46aebc7e849c4526befcfb5b253453ab1fd46aa7"
+    },
+    "source_files_preserved_byte_for_byte": 66,
+    "unchanged": 11
+  },
   "sensor_canonical_stage": {
     "production_changed": false,
     "ready_for_apply": false,
@@ -720,6 +894,24 @@
       "sha256": "8328cced4ea06abad0b4f873588a92a0226387d1d20f4a75abb37eaf889b3933"
     },
     "state": "ABI_QUALIFIED_CANONICAL_PAYLOAD_STAGED_RUNTIME_PENDING"
+  },
+  "source_correction_capsules": {
+    "audio-cts-compilation-budget-r1": {
+      "bytes": 1100,
+      "sha256": "08f9eae10457fb82f452d6509b6eb4f67f19101cf0bb419663c1cf6f6c15f9b2"
+    },
+    "host-guest-directory-umask-r1": {
+      "bytes": 528,
+      "sha256": "480b4ebe2786cf617fbd780de738d7eb3275938e69167e0e8889b078b32a2314"
+    },
+    "process-start-observation-r1": {
+      "bytes": 671,
+      "sha256": "a57aa91df98f2d4e3da6991b87e8a1abf55e932f6e75b82cd87329ced6fb6f57"
+    },
+    "qpr1-modern-vendor-admission": {
+      "bytes": 821,
+      "sha256": "a9cab2a99e1a5ba2068c8e644a283ca98107ccbb38b7a5024a9356c538cc41a9"
+    }
   },
   "source_package": {
     "bytes": 10716,
@@ -892,5 +1084,5 @@
     "production_actions_performed_by_this_continuation": false,
     "ready_for_apply": false
   },
-  "status": "QPR1_INIT_REACHED_MODERN_VENDOR_ADAPTATION_AND_FULL_BUILDS_PENDING"
+  "status": "QPR1_GUEST_UMASK_REPAIR_AUDIO_FULL_R5_AND_FINAL42_PENDING"
 }

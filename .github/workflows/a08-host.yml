@@ -135,6 +135,43 @@ jobs:
                       raise SystemExit('Host capsule source pin differs: ' + str(path))
               print(name + ': exact source capsule pins verified; Android runtime not executed by this step')
           PYHOST
+      - name: Verify current source and admission corrections
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PYCLOSURE' 2>&1 | tee "$RUNNER_TEMP/a08/current-source-corrections.log"
+          import hashlib
+          import importlib.util
+          import json
+          from pathlib import Path
+          import sys
+          import unittest
+          capsules = ['audio-cts-compilation-budget-r1', 'process-start-observation-r1', 'qpr1-modern-vendor-admission', 'host-guest-directory-umask-r1']
+          for name in capsules:
+              directory = Path('compat/android/pocket4') / name
+              manifest = json.loads((directory / 'FILES.json').read_bytes())
+              for leaf, expected in manifest.get('files', manifest).items():
+                  path = directory / leaf
+                  if path.is_symlink() or path.resolve().parent != directory.resolve():
+                      raise SystemExit('Source capsule path is not a direct regular file')
+                  raw = path.read_bytes()
+                  if {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()} != expected:
+                      raise SystemExit('Source capsule pin differs: ' + str(path))
+          suites = [('audio-cts-compilation-budget-r1', 'test_go_runtime_budget.py', 8),
+                    ('process-start-observation-r1', 'test_start_observation.py', 4),
+                    ('qpr1-modern-vendor-admission', 'test_modern_vendor_guard.py', 9)]
+          for index, (name, leaf, expected) in enumerate(suites):
+              directory = (Path('compat/android/pocket4') / name).resolve()
+              sys.path.insert(0, str(directory))
+              spec = importlib.util.spec_from_file_location('closure_controls_' + str(index), directory / leaf)
+              module = importlib.util.module_from_spec(spec)
+              spec.loader.exec_module(module)
+              result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(module))
+              if result.testsRun != expected or result.skipped or not result.wasSuccessful():
+                  raise SystemExit('All exact source correction controls must execute: ' + name)
+              sys.path.pop(0)
+          print('21 source/admission controls passed; Android runtime is a separate gate')
+          PYCLOSURE
       - name: Verify Audio compiler and Ninja evidence guards
         shell: bash
         run: |
