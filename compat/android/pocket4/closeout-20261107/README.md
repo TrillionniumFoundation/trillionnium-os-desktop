@@ -1,6 +1,6 @@
 # Pocket4 Android closeout continuation
 
-Current state: **`QPR1_GUEST_UMASK_REPAIR_AUDIO_FULL_R5_AND_FINAL42_PENDING`**. Native597 and Audio316 have actual successful normal source materialization records. The ABI-qualified Sensor library is staged in the canonical candidate. Full Native/ART and Audio artifacts, final deployment, fresh runtime checks and original whole-application acceptance remain pending; applications remain **0/45**.
+Current state: **`QPR1_BINDER_KERNEL_REPAIR_AUDIO_FULL_R6_FINAL42_RUNTIME_PENDING`**. Native597 and Audio316 have actual successful normal source materialization records. The ABI-qualified Sensor library is staged in the canonical candidate. Full Native/ART and Audio artifacts, final deployment, fresh runtime checks and original whole-application acceptance remain pending; applications remain **0/45**.
 
 The [current state](continuation/state.json) and [latest execution reconciliation](continuation/build-observations-20261108-native597-audio316.json) distinguish actual completed work, preserved failures and remaining gates. The [earlier build observations](continuation/build-observations-20261108-native-tls-audio316.json) retain their original observation time. The [source repair package](build-source-repair-20261108/README.md) contains independently reconstructable frozen Native, current Audio316, historical Audio and separate combined-builder source chains.
 
@@ -235,8 +235,8 @@ into Android. The new host source capsule contains the explicit private
 directory and final PID1 exec-boundary repair, with its actual controls.
 The next actual boot confirmed the repaired modes, including the bionic-created
 property directory at `0711`. It then failed at vold startup and retained the
-original reboot-on-failure behavior. The exact abort is still being diagnosed;
-the early boot and source controls do not grant complete runtime acceptance.
+original reboot-on-failure behavior. The later r7 capture below locates the exact Binder security-context failure;
+early boot and source controls do not grant complete runtime acceptance.
 
 The Audio source extension passed all 90 normal source commands with the
 same 316 projects and unchanged CTS revision. Its new full r5 passed fresh
@@ -257,3 +257,35 @@ selection of the complete 13-preparation manifest; 525 current source inputs
 remained unchanged. The original807 inventory is now 777 removed / 30 retained.
 The remaining real source/evidence references are being migrated before cleanup;
 original account data and the still-required signing material remain intact.
+
+## Real Binder failure and current source closure
+
+The r7 continuous log and kernel window identify the same failing Binder
+context-manager transactions: the kernel cannot obtain the caller security
+context and returns EINVAL. Official QPR1 libbinder reports the error and
+vold's original failure action reboots the guest. The exact Ubuntu source
+shows that active AppArmor has the secid-to-context hook but lacks the hook
+that supplies a security ID from Binder's saved credentials. The kernel
+repair and isolated real-IPC controls are being prepared separately. No host
+kernel installation, reboot or production isolation qualification is claimed.
+
+Audio r5 fully restored its source, passed normal source-after verification
+and retired all owned resources. Its 102 evidence files were adopted and
+independently read back. The real Error Prone provider is now preserved in
+Audio; the exact Jimfs source increases the lock from 316 to 317 projects.
+Seventeen source tests and 30 Audio tests passed, followed by all ten normal
+source reconciliation/verification commands. The unique r6 full has started
+with the unchanged 24 GiB / 8 CPU / 36 GiB owned-output and 16 GiB free-space
+floor. A successful complete APEX and Android runtime remain separate gates.
+
+The earlier shallow application-input checks did not prove the recursive
+EvidenceWitness graph. An actual IHG source branch exposed historical host
+fixtures and obsolete APK references. Six replacement preparations now
+separate current execution dependencies from original immutable history.
+The Witness implementation and business logic remain unchanged; 30 real
+source-subtree, wrong-pin and required-input controls passed, along with
+seven other normal source inspections. The complete 13-preparation selector
+is now selected and 392 retained files were independently verified. These
+checks perform no Main or Android actions and grant zero final42 acceptance.
+The published cleanup snapshot remains 777 removed / 30 retained; later
+deletions require fresh owner, mount and unique-material evidence.

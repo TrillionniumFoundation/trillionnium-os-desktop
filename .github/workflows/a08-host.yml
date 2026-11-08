@@ -146,7 +146,7 @@ jobs:
           from pathlib import Path
           import sys
           import unittest
-          capsules = ['audio-cts-compilation-budget-r1', 'process-start-observation-r1', 'qpr1-modern-vendor-admission', 'host-guest-directory-umask-r1']
+          capsules = ['audio-cts-compilation-budget-r1', 'process-start-observation-r1', 'qpr1-modern-vendor-admission', 'host-guest-directory-umask-r1', 'audio-errorprone-provider-r1']
           for name in capsules:
               directory = Path('compat/android/pocket4') / name
               manifest = json.loads((directory / 'FILES.json').read_bytes())

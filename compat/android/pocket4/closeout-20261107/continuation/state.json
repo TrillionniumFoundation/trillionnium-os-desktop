@@ -1,4 +1,33 @@
 {
+  "QPR1_actual_Binder_failure": {
+    "Android_boot_completed": false,
+    "actual_failure": "Binder context-manager transaction cannot obtain security context; BR_FAILED_REPLY / -22 / EINVAL",
+    "actual_libbinder_build_id": "e89047067e2911cf405320ee968a514c",
+    "actual_original_fatal_and_reboot_on_failure_retained": true,
+    "continuous_logcat": {
+      "bytes": 37127,
+      "sha256": "ee8b7fa9fcb3e1d51027a516c3dfca0d975d09b48212fb11a8bb61437e9a74ae"
+    },
+    "generation": "r7",
+    "host_kernel": "7.0.0-38-generic",
+    "kernel_location": "drivers/android/binder.c:3375",
+    "kernel_observation": {
+      "bytes": 103045,
+      "sha256": "f4763527950827b2bc45b6310902d17130b8b6f32cc4fd4d8e631ba6ab966163"
+    },
+    "kernel_repair_and_actual_VM_qualification_pending": true,
+    "kernel_source_version": "7.0.0-38.38",
+    "observed_kernel_message": "failed to get security context",
+    "official_QPR1_libbinder_preserved": true,
+    "original_user_data_unchanged": true,
+    "owned_resources_retired": true,
+    "result": {
+      "bytes": 169223,
+      "sha256": "43f0cc8a077f1a8a96d3b2c16336abeedac7e7ca28d19fd59857aa59e341e484"
+    },
+    "runtime_qualified": false,
+    "source_root_cause": "Active AppArmor registers secid_to_secctx but lacks cred_getsecid; security_cred_getsecid leaves secid zero and AppArmor rejects it"
+  },
   "QPR1_actual_empty_data_boot": {
     "Android_boot_completed": false,
     "VINTF_qualified": false,
@@ -63,7 +92,8 @@
       "bytes": 127891,
       "sha256": "b5561663c5cbcee0ce0ce83bdeba8362907cfd185a4ff70012735f5e12afb29e"
     },
-    "underlying_abort_diagnosis_pending": true
+    "superseded_by_r7_exact_Binder_diagnosis": true,
+    "underlying_abort_diagnosis_pending": false
   },
   "QPR1_later_guard_projection_attempt": {
     "Android_boot_completed": false,
@@ -653,7 +683,7 @@
     "build_memory_max_bytes": 25769803776,
     "complete_build_fit_demonstrated": false,
     "cpu_count": 8,
-    "current_generation": "Audio r5 failure retained; real Error Prone provider projection repair in progress",
+    "current_generation": "Audio r6 normal full launched from verified source317; no full artifact accepted",
     "fresh_MemAvailable_minimum_bytes": 31138512896,
     "fresh_disk_admission_bytes": 55834574848,
     "host": "desktop",
@@ -706,8 +736,43 @@
       "projects": 316,
       "recipe_commit": "68b7b1af1d55db8f361a994af422caaa931c41ff"
     },
+    "audio_errorprone_source_extension": {
+      "actual_result": {
+        "bytes": 115425,
+        "sha256": "2ce1744b89b0deb93a727683d28e9a2820fc388c527ad0be331c4ba95f14fb9f"
+      },
+      "all_normal_commands_succeeded_and_retired": true,
+      "complete_apex_qualified": false,
+      "full_build_qualified": false,
+      "independent_after_verify_disables_lazy_fetch": true,
+      "materialized_manifest": {
+        "bytes": 151684,
+        "sha256": "e46a593898fd38df5349c5daacaf911464b457bbd93697812003d18f4eed87f3"
+      },
+      "normal_reconcile_may_fetch_exact_pinned_partial_clone_objects": true,
+      "normal_source_commands": 10,
+      "outer_retirement_result": {
+        "bytes": 4997,
+        "sha256": "fb560b22325bfb757c8848bda185b733c4030c4ead62c52e2c537cd4403e8129"
+      },
+      "owned_unit_retired": true,
+      "previous_316_projects_unchanged": true,
+      "recipe_commit": "d6dda88fc3d7dbbe54516c94992c822291dbf73c",
+      "recipe_tree": "fe7ef689d67c60c25d299c86f6747303529f5f59",
+      "runtime_qualified": false,
+      "schema": "audio317-normal-source-reconciliation-v1",
+      "source_lock": {
+        "bytes": 134371,
+        "sha256": "dbcfc28fe99865aae9b103daebdab120a8fdcb932202da183f3fd5b62e41b593"
+      },
+      "source_project_count": 317,
+      "source_projection_absent_after": true,
+      "state": "SOURCE_RECONCILED_AND_NORMAL_VERIFIED_ON_NEW_HOST"
+    },
     "audio_full_r5": {
       "CPU_count": 8,
+      "OOM_events": 0,
+      "OOM_kill_events": 0,
       "actual_Go_enter_and_leave": {
         "GOGC": 50,
         "GOMAXPROCS": 2,
@@ -715,20 +780,56 @@
         "continuous_measurement_claimed": false
       },
       "actual_Go_entry_and_exit_metrics_required": true,
+      "actual_work_growth_bytes": 1302577152,
+      "all_canonical_copies_independently_read_back": true,
       "artifact_qualified": false,
+      "canonical_failed_full_custody": {
+        "bytes": 72936,
+        "sha256": "7d0ef170f87d9d7f6367cfe6a83108370f1775dc63dd5851a0e0e4a8594f5c31"
+      },
       "cause": "existing Audio projection removed the real provider",
-      "complete_final_retirement_not_yet_claimed": true,
+      "complete_final_retirement_not_yet_claimed": false,
+      "custody_bytes": 20405045,
+      "custody_file_count": 102,
       "full_build_success": false,
       "memory_max_bytes": 25769803776,
       "next_graph_failure": "systemfeatures-errorprone-tests depends on error_prone_test_helpers",
       "normal_full_return_code": 1,
+      "normal_source_after_verified": true,
       "normal_source_before_verified": true,
+      "observed_work_growth_peak_bytes": 1356857344,
+      "owned_unit_retired": true,
       "owned_work_budget_bytes": 38654705664,
       "provider_source_already_materialized": true,
       "runtime_qualified": false,
       "shared_floor_bytes": 17179869184,
       "source_projection_restored": true,
-      "state": "NORMAL_FULL_RETURNED_FAILURE_SOURCE_AFTER_IN_PROGRESS"
+      "state": "NORMAL_FULL_FAILED_REAL_PROVIDER_EDGE_FULLY_RESTORED_AND_RETIRED"
+    },
+    "audio_full_r6": {
+      "CPU_count": 8,
+      "Go_GC_percent": 50,
+      "Go_max_procs": 2,
+      "Go_memory_limit_bytes": 5368709120,
+      "artifact_qualified": false,
+      "configuration": {
+        "bytes": 333250,
+        "sha256": "21f916de9881c677bd9fee81687c934ebd5b78f06fa98ac61a5b7e1fa39a6ba2"
+      },
+      "exact_start_request": {
+        "bytes": 16871,
+        "sha256": "694c9093ae7b121ba16e05e6ea5017188d2809927616b24150edb615721edd06"
+      },
+      "fresh_source_and_resource_admission_required_by_both_layers": true,
+      "full_build_success": false,
+      "memory_max_bytes": 25769803776,
+      "owned_work_budget_bytes": 38654705664,
+      "runtime_qualified": false,
+      "shared_floor_bytes": 17179869184,
+      "source_generation_verified_and_retired_before_launch": true,
+      "source_projects": 317,
+      "state": "UNIQUE_OUTER_FULL_JOB_RUNNING",
+      "swap_max_bytes": 0
     },
     "complete_compiled_APEX_qualified": false,
     "first_full_failure": {
@@ -832,7 +933,7 @@
     "total_registered_packages_observed": 208
   },
   "pending": {
-    "audio": "The r5 full passed the CTS defaults and actually recorded the requested Go limits on entry and exit, then failed because the Audio projection removed an already-present Error Prone provider. Its source-after and retirement remain required before the next immutable repair generation. Complete artifact, ELF, signatures and runtime gates remain pending.",
+    "audio": "The source317 repair preserves the real Error Prone provider and adds the exact Jimfs project. Normal source reconciliation, independent verification and retirement passed. The unique r6 full is running; complete APEX, compiler/link evidence and runtime remain pending.",
     "camera_and_storage": "Current Camera source38, decoder8, owned display negative4 and formal preparation passed in the canonical location. Real Main/display/audio, Camera2/UVC, Camera recovery, Storage lifecycle and whole-app acceptance remain pending.",
     "cleanup": "The original inventory is now 729 removed / 78 retained. Migrate live references and retire obsolete roots, old payloads and experiments after replacement validation; preserve user images and current signing material.",
     "final_deployment": "Compose and inspect the complete canonical cohort before using the reviewed installation transaction.",
@@ -840,7 +941,7 @@
     "native": "Normal597 materialization and R11 source consumption passed. All desktop copy batches finished; source-only checksum and normal verification continuation is active. Full engine/ART artifacts and QPR1-compatible native bridge remain unqualified.",
     "production_isolation": "The development runner has not qualified production UID mapping or seccomp. A successful isolated empty-data boot probe cannot close this gate.",
     "release_currency": "The verified official QPR1 GSI is on Pocket4 and the actual host layout passed. Preserve official QPR1 ART, bionic, APEX and framework components while qualifying necessary compatibility changes. September SPL does not imply November coverage. Official app delivery and data-preserving signature migration remain pending.",
-    "runtime_and_applications": "Actual modern-vendor admission exits zero. The next actual boot confirms the guest directory and bionic property modes are repaired. Vold now aborts during early startup and its original reboot_on_failure acts; the exact abort is being captured. Production isolation, Main and final42 workflows remain pending."
+    "runtime_and_applications": "Actual r7 logs and the exact Ubuntu source locate Binder security-context EINVAL in the missing AppArmor credential hook. A separate host-kernel repair and isolated real-IPC controls are in preparation. Six current application source closures and seven other normal source admissions pass; full Main and final42 acceptance remain pending."
   },
   "previous_public_observation": {
     "bytes": 28107,
@@ -855,13 +956,14 @@
     "development_cgroup_namespace_argument_missing": false,
     "guest_directory_permission_defect_actually_measured": true,
     "guest_directory_permissions_under_private_host_umask_under_investigation": false,
+    "host_Binder_credential_security_context_repair_pending": true,
     "installed_unshare_option_and_owned_shutdown_defects_fixed": true,
     "layout_patch_does_not_implement_production_hardening": true,
     "new_guest_permission_source_capsule": "host-guest-directory-umask-r1",
     "probe_outer_cgroup_namespace_does_not_qualify_production_runner": true
   },
-  "publication_state": "ACTUAL_MODERN_VENDOR_ADMISSION_GUEST_PERMISSIONS_AND_SOURCE_REPAIRS",
-  "recorded_utc": "2026-11-08T22:13:00Z",
+  "publication_state": "AUDIO317_REAL_PROVIDER_SOURCE_VERIFIED_BINDER_KERNEL_ROOT_CAUSE_RECORDED",
+  "recorded_utc": "2026-11-08T22:52:00Z",
   "resume_order": [
     "Finish the new normal Audio source reconciliation, then freeze and run the strict serial full under its explicit 36+16 GiB disk contract.",
     "Finish the actual QPR1 modern-vendor admission and guest runtime diagnosis with exact new generation inputs and owned retirement.",
@@ -873,17 +975,30 @@
   "schema": "pocket4-android-continuation-v1",
   "scope": "Pocket4 local Droidloom Android",
   "selected_application_preparation_inputs": {
-    "origin_files_adopted": 26,
-    "read_only_controls_passed": 6,
-    "replaced": 2,
-    "runtime_credit_transferred": false,
+    "actual_source_subtree_controls_passed": 30,
+    "byte_identical_source_files": 164,
+    "current_source_files": 174,
+    "full_Main_execute_or_full_runtime_seed_executed": false,
+    "historical_runtime_credit_transferred": false,
+    "new_Clock_live_dependency_manifest": 1,
+    "old_20_root_opens": 0,
+    "other_normal_source_inspections_passed": 7,
+    "path_or_required_filename_only_Python_changes": 9,
+    "prior_IHG_historical_source_dependency_failure_fixed_in_selected_source_generation": true,
+    "replaced": 6,
+    "retained_files_independently_checked": 392,
+    "runtime_passes": 0,
+    "same_EvidenceWitness_implementation": true,
     "selected_preparations": 13,
     "selection": {
-      "bytes": 6541,
-      "sha256": "03602d4429a47ca8c446decf46aebc7e849c4526befcfb5b253453ab1fd46aa7"
+      "bytes": 12834,
+      "sha256": "bdf2a4b652a9a07c427d7c47050a66195a153fa624d9e1f6b77583e13944662e"
     },
-    "source_files_preserved_byte_for_byte": 66,
-    "unchanged": 11
+    "summary": {
+      "bytes": 10427,
+      "sha256": "d7c79ded0125f6cd2a452c61ec4c8dfd4cd48102798271e7429cc5263a4d187f"
+    },
+    "unchanged": 7
   },
   "sensor_canonical_stage": {
     "production_changed": false,
@@ -899,6 +1014,10 @@
     "audio-cts-compilation-budget-r1": {
       "bytes": 1100,
       "sha256": "08f9eae10457fb82f452d6509b6eb4f67f19101cf0bb419663c1cf6f6c15f9b2"
+    },
+    "audio-errorprone-provider-r1": {
+      "bytes": 1107,
+      "sha256": "f585ab80e22768a056f269b58b4a3e4c2fed15bf2297ed553839b7dde62b3555"
     },
     "host-guest-directory-umask-r1": {
       "bytes": 528,
@@ -1084,5 +1203,5 @@
     "production_actions_performed_by_this_continuation": false,
     "ready_for_apply": false
   },
-  "status": "QPR1_GUEST_UMASK_REPAIR_AUDIO_FULL_R5_AND_FINAL42_PENDING"
+  "status": "QPR1_BINDER_KERNEL_REPAIR_AUDIO_FULL_R6_FINAL42_RUNTIME_PENDING"
 }
