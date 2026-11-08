@@ -1,0 +1,71 @@
+--- public-capacity-lib.rs
++++ actual-recipe-source-r3-lib.rs
+@@ -846,11 +846,45 @@
+             .all(|component| matches!(component, Component::Normal(_)))
+ }
+ 
++// Exact nonstandard repository names in frozen manifest 2b699174977614e080cf99a991f3e648774b24581c4ecdc29f1bd53b7b01ef23.
++// The ordinary-pair validator separately pins every project/path/commit and the complete lock.
++const NATIVE_FROZEN_EXTRA_PROJECT_NAMES: &[&str] = &[
++    "device/generic/goldfish",
++    "device/generic/trusty",
++    "device/google/cuttlefish",
++    "device/sample",
++    "trusty/external/trusted-firmware-a",
++    "trusty/external/trusty",
++    "trusty/external/headers",
++    "trusty/lk/common",
++    "trusty/external/musl",
++    "trusty/device/arm/generic-arm64",
++    "trusty/device/common",
++    "trusty/device/desktop",
++    "trusty/device/x86/generic-x86_64",
++    "trusty/host/common",
++    "trusty/lk/trusty",
++    "trusty/app/authmgr",
++    "trusty/app/avb",
++    "trusty/app/cast-auth",
++    "trusty/app/confirmationui",
++    "trusty/app/gatekeeper",
++    "trusty/app/keymaster",
++    "trusty/app/keymint",
++    "trusty/app/sample",
++    "trusty/app/secretkeeper",
++    "trusty/app/storage",
++    "trusty/lib",
++    "trusty/user/desktop",
++    "trusty/vendor/google/aosp",
++];
++
+ fn is_project_name(name: &str) -> bool {
+     (name.starts_with("platform/")
+         || name.starts_with("kernel/")
+         || name.starts_with("toolchain/")
+-        || name == "tools/platform-compat")
++        || name == "tools/platform-compat"
++        || NATIVE_FROZEN_EXTRA_PROJECT_NAMES.contains(&name))
+         && name.len() <= 255
+         && name
+             .split('/')
+@@ -1143,6 +1177,21 @@
+         for invalid in ["tools/other", "tools/platform-compat/../other"] {
+             lock.projects[0].name = invalid.into();
+             assert!(build_plan(&lock).is_err());
++        }
++    }
++
++    #[test]
++    fn exact_frozen_device_and_trusty_names_keep_other_names_rejected() {
++        let mut lock = valid_lock();
++        for name in NATIVE_FROZEN_EXTRA_PROJECT_NAMES {
++            lock.projects[0].name = (*name).into();
++            assert_eq!(build_plan(&lock).unwrap().projects[0].url,
++                       format!("https://android.googlesource.com/{name}"));
++        }
++        for invalid in ["device/unlisted", "trusty/unlisted", "device/generic/goldfish/extra",
++                        "trusty/user/base/../unlisted", "https://other.example/device/generic/goldfish"] {
++            lock.projects[0].name = invalid.into();
++            assert!(build_plan(&lock).is_err(), "unexpected namespace widening: {invalid}");
+         }
+     }
+ 

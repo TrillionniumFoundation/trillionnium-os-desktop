@@ -1,0 +1,39 @@
+--- a/tools/droidloom-source/examples/frozen_pair_recipe.rs
++++ b/tools/droidloom-source/examples/frozen_pair_recipe.rs
+@@ -24,7 +24,10 @@
+ const BASE_SHA: &str = "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d";
+ const PREVIOUS_SHA: &str = "94d2a5d2e00d3b5d126752ee58337e71fb88a5763f7b977be4a56471f4e68ee6";
+ const PAIR_TEMPLATE_SHA: &str = "d512fe696a66c635920c8757497151d7f50841e11d3272137e4dee206eeeee82";
+-const SOURCE_TEMPLATE: &str = include_str!("../src/lib.rs");
++// This generator reproduces the historical 268-to-frozen transition. Its
++// exact pre-generation template must not follow the current builder source.
++const SOURCE_TEMPLATE_SHA: &str = "fb510211dbc52a32b6e4d83ecab6c514828b338749fcb4cf135cf09432cb0c7c";
++const SOURCE_TEMPLATE: &str = include_str!("../tests/fixtures/frozen-pair-268/source-lib.rs");
+ 
+ #[derive(Parser)]
+ #[command(about = "Prepare a detached exact-source patch; never activate it")]
+@@ -243,6 +246,7 @@
+ 
+ fn render(recipe: &Recipe, pair: &str, lib: &str) -> Result<(String, String)> {
+     authenticate(pair.as_bytes(), PAIR_TEMPLATE_SHA)?;
++    authenticate(SOURCE_TEMPLATE.as_bytes(), SOURCE_TEMPLATE_SHA)?;
+     need(lib == SOURCE_TEMPLATE, "capacity source template drift")?;
+     let mut pair = replace_once(pair, "const SOURCE_LOCK_BYTES: usize = 116325;",
+         &format!("const SOURCE_LOCK_BYTES: usize = {};", recipe.manifest_bytes))?;
+@@ -347,7 +351,7 @@
+ mod tests {
+     use super::*;
+     const BASE: &[u8] = include_bytes!("../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json");
+-    const PREVIOUS: &[u8] = include_bytes!("../../../android/native-generation-pair/source-lock.json");
++    const PREVIOUS: &[u8] = include_bytes!("../tests/fixtures/frozen-pair-268/source-lock.json");
+ 
+     fn previous() -> Value { serde_json::from_slice(PREVIOUS).unwrap() }
+ 
+@@ -355,6 +359,7 @@
+     fn existing_exact_extension_is_retained() {
+         authenticate(BASE, BASE_SHA).unwrap();
+         authenticate(PREVIOUS, PREVIOUS_SHA).unwrap();
++        authenticate(SOURCE_TEMPLATE.as_bytes(), SOURCE_TEMPLATE_SHA).unwrap();
+         monotonic(&serde_json::from_slice(BASE).unwrap(), &previous()).unwrap();
+         monotonic(&previous(), &previous()).unwrap();
+         let lock = source_plan_checks(&previous()).unwrap();
