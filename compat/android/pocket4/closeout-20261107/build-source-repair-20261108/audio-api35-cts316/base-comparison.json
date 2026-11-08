@@ -1,0 +1,120 @@
+{
+  "actual309": {
+    "commit": "2884a01f853caa94f7b66c7e945b0e2818f8ca74",
+    "difference_from_published308": {
+      "added": [
+        "tools/droidloom-update/tests/fixtures/audio-providers/icu4j.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/junit-params.bp"
+      ],
+      "changed": [
+        "android/manifest/audio-bridge-source-lock.json",
+        "tools/droidloom-source/src/lib.rs",
+        "tools/droidloom-update/src/android.rs"
+      ],
+      "removed": []
+    },
+    "files": 411,
+    "tree": "3865514b9e2377430c1e3276e229fc0193df331b"
+  },
+  "alternative_delta_sizes": {
+    "historical_prepared309_to_actual309": 19125,
+    "published308_to_actual316_combined": 138681
+  },
+  "compiled316": {
+    "commit": "3b4199c0af6e430a852131a71f87aa65aef8f813",
+    "difference_from_actual309": {
+      "added": [
+        "tools/droidloom-update/tests/fixtures/audio-providers/cts-core-runner.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/cts-install.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/cts-privileged-update.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/cts-runner.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/cts-shim.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/cts-stagedinstall.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/cts-tradefed.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/cts-vogar-expect.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/deqp-android-cts-original.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/deqp-android-cts-runner-tests-original.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-SPIRV-Headers-original.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-SPIRV-Tools-original.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-amber-original.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-glslang-original.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/deqp-original.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/deviceinfra-prebuilts.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/e2fsprogs-debugfs.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/easymock-original.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/framework-stagedinstall.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/perfetto-sdk35-modules.bp"
+      ],
+      "changed": [
+        "android/manifest/audio-bridge-source-lock.json",
+        "tools/droidloom-source/src/lib.rs",
+        "tools/droidloom-update/src/android.rs"
+      ],
+      "removed": []
+    },
+    "files": 431,
+    "tree": "2c21ee1bbcbde46c8d07a26c6083e372d550c1c1"
+  },
+  "exclusions": {
+    "additional_zero_byte_tool_sidecars": {
+      "actual309": [],
+      "compiled316": [],
+      "historical_prepared309": [],
+      "published308": []
+    },
+    "arbitrary_empty_files_excluded": false,
+    "fixed_paths": [
+      ".github/FUNDING.yml",
+      ".github/workflows/ship.yml",
+      "AGENTS.md",
+      "assets/screenshots/whatsapp.png",
+      "m831-provenance.json"
+    ],
+    "git_metadata": true
+  },
+  "historical_prepared309": {
+    "commit": "7775926d69db45b4fb4989d2fd81db5fda4c3b4d",
+    "consumed_by_selected_chain": false,
+    "difference_to_actual309": {
+      "added": [
+        "tools/droidloom-update/tests/fixtures/audio-providers/icu4j.bp",
+        "tools/droidloom-update/tests/fixtures/audio-providers/junit-params.bp"
+      ],
+      "changed": [
+        "android/manifest/audio-bridge-source-lock.json",
+        "tools/droidloom-source/src/lib.rs",
+        "tools/droidloom-update/src/android.rs"
+      ],
+      "removed": []
+    },
+    "files": 409,
+    "inventory": {
+      "bytes": 76828,
+      "sha256": "37ec4cf810b1d1012e80902be502e3955a2e7e47e189d62ea8a7fec8053494a5"
+    },
+    "published_inventory": {
+      "bytes": 76828,
+      "path": "audio-junit309-source-files.json",
+      "sha256": "37ec4cf810b1d1012e80902be502e3955a2e7e47e189d62ea8a7fec8053494a5"
+    },
+    "qualification_transferred": false,
+    "tree": "74ac3f46c712db6d4867bfa9cf0d77a53606b0d1"
+  },
+  "schema": "audio-published-base-versus-actual-lineage-v1",
+  "selected_public_base": {
+    "commit": "6eb50f3e0a2184cb822d0704c6f53f261ebd2de4",
+    "files": 409,
+    "inventory": {
+      "bytes": 76828,
+      "sha256": "b0004c7e0db781a473a059af05c30a403469576e170dd68b403e943cacb21743"
+    },
+    "name": "published308",
+    "published_inventory": {
+      "bytes": 76828,
+      "path": "audio-final-source-files.json",
+      "sha256": "b0004c7e0db781a473a059af05c30a403469576e170dd68b403e943cacb21743"
+    },
+    "tree": "660de60cfd4b57fd3b823dff7757e0a4f098df49"
+  },
+  "selection_reason": "The public308 source is the exact parent of the actual309 compiled lineage. Reuse its three published patches, add the actual309 delta, then the unmodified actual316 delta. The historical prepared309 branch is compared but is not a dependency or a qualification source."
+}

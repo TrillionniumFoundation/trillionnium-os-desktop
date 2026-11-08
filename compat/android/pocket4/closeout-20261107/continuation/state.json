@@ -14,10 +14,69 @@
   },
   "all_blockers_closed": false,
   "artifact_policy": "Public repair source and compact hashed observations only. Private runtime identities, device/account data, raw private logs and user application data are excluded. Source checks do not establish runtime acceptance.",
+  "audio316_actual_observation": {
+    "candidate_source_commit": "3b4199c0af6e430a852131a71f87aa65aef8f813",
+    "candidate_source_tree": "5ccefae63418a1efdd6bb716b63a77deb80601c0",
+    "current_materialized_manifest_sha256": "b7c42d4574d048bce42a0994856121e38355f16e0b96884785686e37b7c7ae03",
+    "current_materialized_projects": 309,
+    "first_entry": {
+      "Soong_invocations": 0,
+      "acquired_source_locks": 0,
+      "full_build_started": false,
+      "mutation_attempted": false,
+      "normal_source_commands": 0,
+      "outer_output_complete": true,
+      "outer_output_durable": true,
+      "result_sha256": "96657f737c9fe360e10b35157570d8c9e74303b3f9f7d8ff42c75c18f505f798",
+      "source_locks_released": true,
+      "state": "FIRST_ORIGINAL_NATIVE_LOCK_ADMISSION_REFUSED"
+    },
+    "focused_tests_passed": 9,
+    "full_APEX_qualified": false,
+    "full_memory_max_bytes": 10737418240,
+    "new_lock_sha256": "c104640627a1beb35b25423656e751a4b56ac17287505c0ee2efeeb7d0419560",
+    "next_entry": {
+      "completed_normal_verifications": [
+        {
+          "exit_code": 0,
+          "name": "verify-old-materialized"
+        },
+        {
+          "exit_code": 0,
+          "name": "verify-new-lock"
+        }
+      ],
+      "completed_verification_capture_and_retirement": true,
+      "full_APEX_qualified": false,
+      "full_build_started": false,
+      "normal_reconcile_started": true,
+      "recorded_utc": "2026-11-08T13:08:38Z",
+      "runtime_admission_sha256": "f0c009bebe5dd0f6bc3bbb8ebd05724a70bb985aea26b3b21793b7cea304b8ea",
+      "six_original_locks_admitted": true,
+      "source_materialization_qualified": false,
+      "state": "NORMAL_RECONCILE316_RUNNING_AT_LAST_SUCCESSFUL_READBACK"
+    },
+    "normal_cli_profile": "dev",
+    "normal_cli_tools_built": 2,
+    "public_source": {
+      "actual309_base_commit": "2884a01f853caa94f7b66c7e945b0e2818f8ca74",
+      "files": 431,
+      "historical_prepared309_qualification_inherited": false,
+      "patches": 5,
+      "proof": "build-source-repair-20261108/audio-api35-cts316/public-proof.json",
+      "tree": "2c21ee1bbcbde46c8d07a26c6083e372d550c1c1"
+    },
+    "release_builds": 0,
+    "required_fresh_memavailable_bytes": 16106127360,
+    "runtime_qualified": false,
+    "source_memory_max_bytes": 6442450944,
+    "source_migration_qualified": false,
+    "target_projects": 316
+  },
   "build_observations": {
-    "bytes": 5217,
-    "path": "continuation/build-observations-20261108-native-audio-sensor.json",
-    "sha256": "f8ffed286b083d6d35613144cd75ddac0a1af379e55c39f0418a2ab943ca3156"
+    "bytes": 6285,
+    "path": "continuation/build-observations-20261108-native-tls-audio316.json",
+    "sha256": "ff6f8f63a3b391bee0ba661b7639b3bbcd2d8fcc2d74fdf522f6de69f17b7cb7"
   },
   "cleanup_app_experiments": {
     "all_deleted_paths_absent": true,
@@ -37,6 +96,73 @@
   },
   "final_candidate_deployed": false,
   "last_observed_android_state": "Normally stopped; no deployment performed by this continuation.",
+  "native_actual_observation": {
+    "existing_owner": {
+      "adopted_children_reaped": 60,
+      "controller_sha256": "b56fd639a8250c85bbf67b966e406fa3af4687962c3063327f1d82db21e59c6d",
+      "fresh_entry_recheck_required": true,
+      "inner_EOF_stderr": true,
+      "inner_EOF_stdout": true,
+      "inner_capture_complete": true,
+      "inner_capture_prefix_only": false,
+      "lifecycle_operations_unchanged": true,
+      "memory_max_bytes": 3221225472,
+      "memory_max_events": 0,
+      "memory_peak_bytes": 2887106560,
+      "nonzero_status_children": 0,
+      "normal_cli_unchanged": true,
+      "normal_command_exit_codes": [
+        0,
+        0,
+        1
+      ],
+      "observed_error": "Git exit 128: curl 56 Recv failure: Connection timed out; 27824 bytes of body still expected; early EOF; index-pack failed; promisor fetch failed",
+      "oom_events": 0,
+      "outer_output_complete": true,
+      "outer_output_durable": true,
+      "owned_retirement_qualified": true,
+      "physical_retirement_observed_utc": "2026-11-08T13:02:06.939245628Z",
+      "physical_retirement_sha256": "294b52223e88ddbafcb593cbf49c001619132ac8031b5772b319b0f072149d5e",
+      "preparation_sha256": "75c156d4c254ec088a10ee36cce3d3600f49a0dbc4a8756d249811d0d8a1910d",
+      "result_bytes": 1143044,
+      "result_sha256": "45ec3f8e8a8f23c5ae0864d4fe863d48e641ae832f2402d673a555cdfd664b99",
+      "signals_sent": 0,
+      "six_original_locks_observed_free": true,
+      "source_locks_released": true,
+      "state": "FAILED_RETIRED",
+      "swap_bytes": 0,
+      "terminal_received": true,
+      "zero_status_children": 60
+    },
+    "frozen_lock_sha256": "2b699174977614e080cf99a991f3e648774b24581c4ecdc29f1bd53b7b01ef23",
+    "full_native_ART_qualified": false,
+    "normal_materialization_qualified": false,
+    "physical_fixedpoint_qualified": false,
+    "previous_failure": {
+      "adopted_children_reaped": 379,
+      "inner_capture_complete": false,
+      "inner_capture_prefix_only": true,
+      "memory_max_bytes": 3221225472,
+      "memory_max_events": 15976,
+      "nonzero_exit_code": 128,
+      "nonzero_status_children": 1,
+      "observed_error_prefix": "Git exit 128: GnuTLS recv error (-110): The TLS connection was non-properly terminated.",
+      "oom_events": 0,
+      "outer_output_complete": true,
+      "outer_output_durable": true,
+      "owned_retirement_qualified": true,
+      "project": "platform/packages/services/CrossDeviceSync",
+      "reclaim_max_events_are_not_oom": true,
+      "result_sha256": "fde6cac7067c0a405a59a6b9d9a598080f9f2ed26977923d0649c80d1eec4b88",
+      "signals_sent": 0,
+      "state": "NORMAL_MATERIALIZATION_FAILED_PRESERVED",
+      "swap_bytes": 0,
+      "zero_status_children": 378
+    },
+    "published_source_projects": 268,
+    "runtime_qualified": false,
+    "target_projects": 597
+  },
   "native_attempt12": {
     "build_qualified": false,
     "bytes": 1943,
@@ -52,12 +178,12 @@
     "source_or_host_checks_count_as_whole_application_acceptance": false
   },
   "pending": {
-    "audio": "Actual normal 308-to-309 migration passed on the recorded lineage. Full host-r2 preserved a real SDK35/CTS provider failure with successful source restoration and retirement. Finish the original SDK35/CTS/ATS/dEQP provider closure, then exact normal source migration and full Audio APEX.",
+    "audio": "The actual316 repair passed nine focused controls and two normal dev-profile CLI builds, with release builds0. The r2 entry passed six-lock admission, verify-old-materialized and verify-new-lock and was running normal reconcile at the last readback. Source migration, full APEX and runtime remain unqualified.",
     "camera_and_storage": "Preserve their prior source and qualification history; establish current installed behavior and required Camera2/UVC and Storage lifecycle evidence.",
     "cleanup": "723 obsolete application experiment roots have been removed and verified absent. 84 roots retain current source/provenance references; release and recheck them after final cohort deployment and qualification. Other final build/cache/payload retirement remains gated on real final validation.",
     "final_deployment": "Compose and inspect the complete canonical cohort before using the reviewed installation transaction.",
     "framework": "The ABI-qualified Sensor library is staged in the canonical candidate. Its actual fresh installed Binder identity/death behavior remains pending.",
-    "native": "Recover the existing exact597 normal source owner using its actual declared resource and lifecycle contract, complete terminal and physical retirement. A separate source attempt was refused at the original lock before source work. Full Native/ART and artifact qualification remain required.",
+    "native": "The latest original normal597 source attempt failed on curl56 receive timeout with complete output and verified retirement; publication remains268. Materialization597, actual physical discovery closure and full Native/ART remain unqualified. The separately qualified N2 source CLI has not run a network materialization.",
     "runtime_and_applications": "Qualify one fresh generation and the original 45 whole applications; current accepted count remains zero."
   },
   "previous_public_observation": {
@@ -67,14 +193,13 @@
     "semantics": "Exact prior state retained; previous failure and qualification scopes remain unchanged.",
     "sha256": "d68089d9b2a868279e302980035490d67775309b8f6293cd8db7e889bb00ce89"
   },
-  "publication_state": "NATIVE_TRANSPORT_TOOLS_QUALIFIED_SENSOR_STAGED_AUDIO_PROVIDER_REPAIR_PENDING",
-  "recorded_utc": "2026-11-08T11:18:08.593673+00:00",
+  "publication_state": "SOURCE_AND_TOOL_REPAIRS_QUALIFIED_FINAL_RUNTIME_PENDING",
+  "recorded_utc": "2026-11-08T13:14:17.254708+00:00",
   "resume_order": [
-    "Preserve actual original source/controller/result identities and observe the existing Native source owner through its complete terminal and physical retirement.",
-    "Use only a source qualification matching the actual frozen full builder; heavy Native/ART and Audio source/build work stays serial.",
-    "Complete admitted full artifacts and integrate the canonical cohort with the already staged Sensor candidate.",
-    "Inspect and apply the reviewed deployment transaction, then complete fresh runtime and all original 45 application gates.",
-    "Release current dependencies and retire retained obsolete source/build/payload/application artifacts after final validation."
+    "Audio316 normal source migration and full strict APEX with fresh six-lock and resource admission",
+    "Native597 normal source reconciliation with the qualified bounded transport tool, real physical discovery closure and full strict Native/ART",
+    "Coherent canonical deployment, fresh host and six consumers, original 45-application acceptance",
+    "Retire obsolete versions and experiment artifacts after final reference and dependency release checks"
   ],
   "runtime_qualified": false,
   "schema": "pocket4-android-continuation-v1",
@@ -90,11 +215,46 @@
     "state": "ABI_QUALIFIED_CANONICAL_PAYLOAD_STAGED_RUNTIME_PENDING"
   },
   "source_package": {
-    "bytes": 8421,
+    "bytes": 10716,
     "path": "build-source-repair-20261108/manifest.json",
-    "sha256": "e5ecc2330bc02a63c044c7dae71a6790069d9f5a36e5b2193c25759736bce850"
+    "sha256": "9e6a461c5921699d222cf1ddddf79ec30c6634a6f571f8b18ebab6a16777a653"
   },
   "source_repairs": {
+    "audio_api35_cts316": {
+      "Mac_replay": {
+        "bytes": 3402,
+        "path": "build-source-repair-20261108/audio-api35-cts316-mac-replay-proof.json",
+        "sha256": "59acc54b0a81466dda0fde2b0fa7bd4f8566616b2ac61d91c6c0503b81b39792"
+      },
+      "candidate_deployed": false,
+      "full_audio_apex_build_qualified": false,
+      "historical_prepared309_qualification_inherited": false,
+      "normal_dev_tools_built": 2,
+      "package": {
+        "bytes": 1992,
+        "path": "build-source-repair-20261108/audio-api35-cts316/manifest.json",
+        "sha256": "1e783aa2f1986e995cab0463545924963627d5c977c3417ddd04f0189dd6f0a6"
+      },
+      "project_count": 316,
+      "public_source_files": 431,
+      "public_source_tree": "2c21ee1bbcbde46c8d07a26c6083e372d550c1c1",
+      "release_builds": 0,
+      "results": {
+        "bytes": 9383,
+        "path": "build-source-repair-20261108/audio-api35-cts316/public-proof.json",
+        "sha256": "0eee63076b490f1ead285d38e73f0fd73e783277d8d866469eac45c53e9ac35d"
+      },
+      "runtime_qualified": false,
+      "source_chain": {
+        "bytes": 2842,
+        "path": "build-source-repair-20261108/audio-api35-cts316/source-chain.json",
+        "sha256": "773d57bda7220c1f849a2032096334d3d77b735d710784de8d9416da6a9e4fca"
+      },
+      "source_commit": "3b4199c0af6e430a852131a71f87aa65aef8f813",
+      "source_reconcile_qualified": false,
+      "state": "EXACT316_ORIGINAL_PROVIDERS_NINE_CONTROLS_TWO_DEV_TOOLS_AND_FIVE_PATCH_REPLAY_VERIFIED",
+      "tests_passed": 9
+    },
     "audio_junit309": {
       "complete_audio_APEX_build_qualified": false,
       "exact_project_count": 309,
@@ -185,28 +345,29 @@
     },
     "native_transport_retry": {
       "Mac_replay": {
-        "bytes": 1875,
+        "bytes": 2707,
         "path": "build-source-repair-20261108/native-transport-retry/mac-replay-proof.json",
-        "sha256": "c15d1cb04a1428d81080d0ac66f243db8af67a8d7bae6b1d99d55eb63ffb1bd2"
+        "sha256": "bec981e7228bde62124e13397c4d9daf3bc31baa6308f36babc066dac4bcf38c"
       },
       "focused_tests": 4,
       "full_builder_modified": false,
+      "normal_materialization_run": false,
       "normal_release_tools_built": 1,
-      "result_git_tree": "e3a894768cbc93ed8bbec3e84c25528db3271781",
+      "result_git_tree": "31d9c2d58cab931a5e914cb18df7b139a76e3f0b",
       "results": {
-        "bytes": 5258,
+        "bytes": 6158,
         "path": "build-source-repair-20261108/native-transport-retry/public-proof.json",
-        "sha256": "c9923a39d99f898e8ccfdfe597667277436727a4a4075837ad0f0ed7cf17f4d3"
+        "sha256": "a99268e5a36e73f486bfbc3c53c2172abf4ad97df1e44ff47deb34a974fd415e"
       },
       "runtime_qualified": false,
       "source_chain": {
-        "bytes": 2213,
+        "bytes": 2472,
         "path": "build-source-repair-20261108/native-transport-retry/source-chain.json",
-        "sha256": "ab38cbf21d3b2b8c821a08f04c13caa31e3a46f453701669868fafcd4b8dd822"
+        "sha256": "1d99804ccdc5461b57918fdda6df716d110069c2a36b2158806aa36fa91c7345"
       },
       "source_files": 451,
       "source_reconcile_qualification_inherited": false,
-      "state": "ISOLATED_NORMAL_SOURCE_CLI_AND_FOCUSED_TESTS_PASSED"
+      "state": "ISOLATED_GNUTLS_SOURCE_CLI_AND_FOUR_FOCUSED_TESTS_PASSED"
     }
   },
   "stage": {

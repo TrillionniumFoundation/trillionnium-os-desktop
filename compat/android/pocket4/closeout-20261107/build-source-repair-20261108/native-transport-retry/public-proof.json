@@ -1,130 +1,69 @@
 {
+  "baseline": {
+    "full_frozen_base_manifest_sha256": "58b5ed7edb05db6165c0185cb207a269e89597bc606ca039cbbedb84400df6e9",
+    "public_file_count_before_transport_retry": 450,
+    "public_tree_before_transport_retry": "144db4382ee5b5d4fe3c44c38294269caf3f4869"
+  },
   "cargo_lock": {
     "sha256": "c1dfa6f13f789cf40435d0d72973d029d0e264b27bd833eabb5a727492127f62",
     "unchanged": true
   },
-  "change": "Opt-in bounded fetch/checkout retries for explicit transient Git transport failures",
-  "component": "droidloom-source",
-  "evidence_sha256": {
-    "build_test_result": "8835e8d37ce7742be4031d321bb2930b57a883468ff62fd21bb4a0455cc6090f",
-    "complete_process_result": "c97017f6d65e064dfab380b5581783df6f187e4a52f7a49fcb3e499dc2a83dd3",
-    "offline_replay": "4bc8c33fbc6fe4e00508e69abedb4b414c47a4465f09ea661baf3d5bf266db58",
-    "physical_retirement": "3d5f7817b68409937a2cd226315529ff26d6486ef668b5d6b04234f21ba55413",
-    "public_subset_derivation": "6cd676728be568b318a6269627dfc450be90efea09afc013b4c898f59152aef9",
-    "qualification": "587caea060ffba189be382b978f4db952543ee492505e6a21bc332b9ce5292d4"
+  "compiled_source": {
+    "full_file_count": 457,
+    "full_manifest_sha256": "128959e09aae1dc08b0fed60015ce0174e72ca350aa9d2b401fa9c0d703108a1",
+    "public_file_count": 451,
+    "public_inventory": {
+      "bytes": 85665,
+      "file": "compiled-source-files.json",
+      "sha256": "a33a5e3fe7e93f6d9cfbd8669ced7ead1de4de17adb3a71d8339ab3c1fe846ef"
+    },
+    "public_tree": "31d9c2d58cab931a5e914cb18df7b139a76e3f0b"
   },
-  "execution": {
-    "build_cgroup_absent": true,
-    "exit_code": 0,
-    "network_isolated": true,
-    "oom_events": 0,
-    "output_complete": true,
-    "output_durable": true,
-    "remaining_build_or_candidate_tool_processes": 0,
-    "retirement_scan_errors": 0,
-    "swap_used_bytes": 0,
-    "terminal_publication_confirmed": true
-  },
-  "focused_tests": [
-    {
-      "exit_code": 0,
-      "failed": 0,
-      "name": "git_retry::tests::transport_classifier_parameterized",
-      "passed": 1
-    },
-    {
-      "exit_code": 0,
-      "failed": 0,
-      "name": "git_retry::tests::transport_retry_and_journal_parameterized",
-      "passed": 1
-    },
-    {
-      "exit_code": 0,
-      "failed": 0,
-      "name": "tests::exact_local_git_fetch_and_manifest_link_are_verified",
-      "passed": 1
-    },
-    {
-      "exit_code": 0,
-      "failed": 0,
-      "name": "tests::materialized_verification_rejects_dirty_projects",
-      "passed": 1
-    }
-  ],
-  "full_source_manifests": {
-    "base": {
-      "file_count": 456,
-      "sha256": "58b5ed7edb05db6165c0185cb207a269e89597bc606ca039cbbedb84400df6e9"
-    },
-    "compiled": {
-      "file_count": 457,
-      "sha256": "d7093351ae2eb17a8141dfbe683fcc21e4be7b90a57080809174a616ae0c24dd"
-    },
-    "scope": "Complete private build inputs; distinct from the public source subset"
-  },
-  "offline_patch_replay": {
-    "byte_equal_to_compiled_inputs": true,
-    "count": 1,
-    "exit_code": 0,
-    "files": [
-      {
-        "bytes": 28282,
-        "path": "tools/droidloom-source/src/git_retry.rs",
-        "sha256": "71fa5cfaa4b97ef7b42a428c7361a428c22c65e144b0980cfea9907243879c5f"
-      },
-      {
-        "bytes": 55085,
-        "path": "tools/droidloom-source/src/lib.rs",
-        "sha256": "00d1ec69ffd0ffe816c3168809e9267cce989b41bdba3d3796c916231e4a6c4c"
-      },
-      {
-        "bytes": 5117,
-        "path": "tools/droidloom-source/src/main.rs",
-        "sha256": "1ce6a3134ebbfc7f05af0a26353bdc2652c9194ee8e7c73e1cb9b401044025be"
-      }
+  "delta": {
+    "bytes": 4776,
+    "changed_paths": [
+      "tools/droidloom-source/src/git_retry.rs"
     ],
-    "public_base_git_tree": "144db4382ee5b5d4fe3c44c38294269caf3f4869",
-    "public_result_git_tree": "e3a894768cbc93ed8bbec3e84c25528db3271781",
-    "temporary_tree_removed": true,
-    "tests_rerun": false
+    "file": "source-transport-retry-gnutls.patch",
+    "sha256": "da92ba4b896c1daf5af3f24d2ef6fef500039f3b899521d58a168228a44194be"
   },
-  "patch": {
-    "bytes": 37070,
-    "file": "source-transport-retry.patch",
-    "sha256": "7ee9709916c57d0eb4bc26208a40d27bca3276905d525666774693a8731f5ab7"
+  "frozen_597_lock": {
+    "sha256": "2b699174977614e080cf99a991f3e648774b24581c4ecdc29f1bd53b7b01ef23",
+    "unchanged": true
   },
-  "public_source_subset": {
-    "additional_patch_replays": 0,
-    "base": {
-      "file_count": 450,
-      "git_tree": "144db4382ee5b5d4fe3c44c38294269caf3f4869",
-      "source_files_bytes": 85486,
-      "source_files_sha256": "f3687bc9d40e279d431b0813f326b7751001b0d36b350a37ddba183034784d24"
-    },
-    "baseline_matches_existing_public_chain": true,
-    "compiled": {
-      "file_count": 451,
-      "git_tree": "e3a894768cbc93ed8bbec3e84c25528db3271781",
-      "inventory": {
-        "bytes": 85665,
-        "file": "compiled-source-files.json",
-        "sha256": "a72628777c0f084930de93946eca654184c668317263e132059bd482ac4949de"
-      }
-    },
-    "excluded_files": [
-      "AGENTS.md",
-      "m831-provenance.json",
-      "assets/screenshots/whatsapp.png",
+  "predecessor": {
+    "binary_sha256": "d1fca51f176abe22ebcc7e340eacc9a4926655a693fa10d2030c248936412839",
+    "full_compiled_source_manifest_sha256": "d7093351ae2eb17a8141dfbe683fcc21e4be7b90a57080809174a616ae0c24dd",
+    "public_file_count": 451,
+    "public_inventory_sha256": "a72628777c0f084930de93946eca654184c668317263e132059bd482ac4949de",
+    "public_proof_sha256": "c9923a39d99f898e8ccfdfe597667277436727a4a4075837ad0f0ed7cf17f4d3",
+    "public_tree": "e3a894768cbc93ed8bbec3e84c25528db3271781",
+    "source_unchanged": true
+  },
+  "public_inventory_exclusions": {
+    "additional_zero_byte_tool_sidecars": [
+      "tools/droidloom-source/src/.hepta-lock-0544fc952eefa8d170bbd200"
+    ],
+    "arbitrary_empty_files_excluded": false,
+    "fixed_paths": [
       ".github/FUNDING.yml",
-      ".github/workflows/ship.yml"
+      ".github/workflows/ship.yml",
+      "AGENTS.md",
+      "assets/screenshots/whatsapp.png",
+      "m831-provenance.json"
     ],
-    "excluded_metadata": [
-      ".git metadata",
-      "zero-byte .hepta-lock-* tool sidecars only"
-    ],
-    "temporary_tree_removed": true,
-    "tree_derivation": "Single recorded three-file patch replay, composed with 448 verified unchanged public baseline files"
+    "git_metadata": true
   },
+  "qualification_scope": {
+    "android_full_build_run": false,
+    "current_source_modified": false,
+    "full_builder_modified": false,
+    "network_materialization_run": false,
+    "nonzero_adopted_child_failure_remains_a_separate_outer_gate": true,
+    "observed_tls_text_was_in_incomplete_inner_stderr_prefix": true,
+    "runtime_or_app_acceptance_claimed": false
+  },
+  "qualification_sha256": "3b463c4d6ca664efc5848882b5278e59960bbf450290fb667c4e3950ead8a71d",
   "release": {
     "argv": [
       "cargo",
@@ -139,29 +78,94 @@
       "--bin",
       "droidloom-source",
       "--target-dir",
-      "<isolated-target>"
+      "<independent-target>"
     ],
     "binary": {
-      "bytes": 1627008,
-      "name": "droidloom-source",
-      "sha256": "d1fca51f176abe22ebcc7e340eacc9a4926655a693fa10d2030c248936412839"
+      "bytes": 1627024,
+      "sha256": "0a4a4bc426b1db8ec325d093858e9d9ce3200e8f0be33c93f4ea266566b73bda"
     },
-    "exit_code": 0
+    "build_result_sha256": "f68af44ab5c89edf8009cd45381044abbac9e10d42dbd3d3ac7b174535cd56e5",
+    "exit_code": 0,
+    "network_namespace_isolated": true
   },
-  "resources": {
+  "repair": "Exact GnuTLS -110 transport diagnostic added to the existing bounded fetch/checkout policy",
+  "replay": {
+    "after_tree": "31d9c2d58cab931a5e914cb18df7b139a76e3f0b",
+    "all_451_files_equal_actual_compiled_bytes_and_git_modes": true,
+    "apply_invocations": 1,
+    "before_tree": "e3a894768cbc93ed8bbec3e84c25528db3271781",
+    "receipt_sha256": "fbbf8f83bf3d73ce6c1f487b8e4379bc0fe75393b94d34e586fd7f6298b4535c",
+    "temporary_replay_removed": true
+  },
+  "resource_limits": {
     "cpu_quota_percent": 100,
-    "fresh_available_bytes": 17076535296,
+    "fresh_available_bytes": 16791052288,
     "memory_max_bytes": 1610612736,
     "nice": 10,
-    "peak_memory_bytes": 564776960,
+    "peak_memory_bytes": 536969216,
     "required_available_bytes": 8589934592,
     "swap_max_bytes": 0
   },
+  "retirement": {
+    "active_build_or_candidate_tools": 0,
+    "build_cgroup_absent": true,
+    "exit_code": 0,
+    "outer_output_complete": true,
+    "outer_output_durable": true,
+    "receipt_sha256": "426638ec211132c0df4f880b0c6dfe866a1742ff27534c1340b5a83690c8eb00",
+    "scan_errors": 0,
+    "terminal_publication_confirmed": true,
+    "terminal_state": "succeeded"
+  },
+  "retry_boundary": {
+    "complete_attempt_journal_before_exec_and_retry": true,
+    "default_attempts": 1,
+    "full_stderr_hard_deny_precedes_transient_match": true,
+    "journal_create_only": true,
+    "maximum_total_attempts": 3,
+    "nested_retry": false,
+    "opt_in_attempts": 3,
+    "outer_nonzero_adopted_child_gate_modified": false,
+    "retry_operations": [
+      "fetch",
+      "checkout"
+    ],
+    "same_argv_cwd_and_environment": true,
+    "signal_io_and_journal_failure_retried": false
+  },
   "schema_version": 1,
-  "scope": {
-    "android_full_build_run": false,
-    "frozen_base_and_original_binaries_unchanged": true,
-    "full_builder_modified": false,
-    "network_reconcile_run": false
-  }
+  "tests": [
+    {
+      "exit_code": 0,
+      "failed": 0,
+      "name": "git_retry::tests::transport_classifier_parameterized",
+      "passed": 1,
+      "stderr_sha256": "92188e7940bed8fa574b3e07a4818abb9e76a2662247e8dc5a75cdeaa5c2786c",
+      "stdout_sha256": "25d1ff7c5d2beaafcf74cfac521a15f7d45642e888f30edd52d1ff183fc64550"
+    },
+    {
+      "exit_code": 0,
+      "failed": 0,
+      "name": "git_retry::tests::transport_retry_and_journal_parameterized",
+      "passed": 1,
+      "stderr_sha256": "3397a733157947b0229bdaea37bae4c1cbcc74dddf293f3d618b17cf445ee274",
+      "stdout_sha256": "c4eca1310f09386da731a36249b45b86fb13fc1687261f68a0197e6ab7dbdd8c"
+    },
+    {
+      "exit_code": 0,
+      "failed": 0,
+      "name": "tests::exact_local_git_fetch_and_manifest_link_are_verified",
+      "passed": 1,
+      "stderr_sha256": "cd48de64ac06ee51f08ac57b13839c7a35e2c0a9530a38446e2d3485a16bf5a2",
+      "stdout_sha256": "585a1f8b80977d1f79c00e19e57cec40149c140cce4d1ea0da199b6f451f22c1"
+    },
+    {
+      "exit_code": 0,
+      "failed": 0,
+      "name": "tests::materialized_verification_rejects_dirty_projects",
+      "passed": 1,
+      "stderr_sha256": "cd48de64ac06ee51f08ac57b13839c7a35e2c0a9530a38446e2d3485a16bf5a2",
+      "stdout_sha256": "b36f869af8500258b316d732fef26837af2d8a806ae1ee70391f861cfadf493d"
+    }
+  ]
 }

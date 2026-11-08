@@ -1,0 +1,104 @@
+{
+  "AOSP_source_commands": 0,
+  "Android_build_run": false,
+  "Cargo_invocations": 0,
+  "Rust_tests_rerun": false,
+  "actual_result": {
+    "AOSP_source_commands": 0,
+    "Cargo_invocations": 0,
+    "files": 431,
+    "network_requests": 0,
+    "patches_applied": 5,
+    "source_tree": "2c21ee1bbcbde46c8d07a26c6083e372d550c1c1",
+    "state": "EXACT_AUDIO316_PUBLIC_SOURCE_RECONSTRUCTED"
+  },
+  "all_five_patches_replayed_in_this_execution": true,
+  "application_order": [
+    "source-prerequisites/base-source.patch",
+    "source-prerequisites/audio-prerequisite.patch",
+    "integrated-builder/audio-final.patch",
+    "audio-api35-cts316/audio-actual309.patch",
+    "audio-api35-cts316/audio-api35-cts-original-providers.patch"
+  ],
+  "argv": [
+    "python3",
+    "audio-api35-cts316/reconstruct_source.py",
+    "--package-root",
+    ".",
+    "--output",
+    "<new-private-source-output>"
+  ],
+  "execution_environment": "Independent Mac native Git replay",
+  "exit_code": 0,
+  "final_source_independently_rechecked": true,
+  "helper": {
+    "bytes": 6064,
+    "path": "audio-api35-cts316/reconstruct_source.py",
+    "sha256": "5aec06d097039f851fa5fd4513cea27d249ce6ae584bc46ae2fe81a040d44e50"
+  },
+  "inputs": [
+    {
+      "bytes": 3814733,
+      "path": "source-prerequisites/base-source.patch",
+      "sha256": "40ad41624358deb27ce67ea61d557e5ae5f672c19e2b0e805679caa71cf0c2aa"
+    },
+    {
+      "bytes": 463169,
+      "path": "source-prerequisites/audio-prerequisite.patch",
+      "sha256": "af0e4e87db09b39407fb6689cff451fe7dbe3a6a91f3661148f38c76e1fe10d0"
+    },
+    {
+      "bytes": 231428,
+      "path": "integrated-builder/audio-final.patch",
+      "sha256": "376e574d1a463a3d7548f73cd3aeb0db08afd4ebecf8b9b051ea06f5ec045d70"
+    },
+    {
+      "bytes": 19234,
+      "path": "audio-api35-cts316/audio-actual309.patch",
+      "sha256": "6379d07a21603a9f7a84a9bbc792833405be51b2b36e2e8ec805ab52e8902e85"
+    },
+    {
+      "bytes": 123376,
+      "path": "audio-api35-cts316/audio-api35-cts-original-providers.patch",
+      "sha256": "b9f00884ab878d54017f54658b1e6971227762843549447cff68a6611b0929c7"
+    }
+  ],
+  "original_twelve_package_files_unchanged": true,
+  "package_manifest": {
+    "bytes": 1992,
+    "path": "audio-api35-cts316/manifest.json",
+    "sha256": "1e783aa2f1986e995cab0463545924963627d5c977c3417ddd04f0189dd6f0a6"
+  },
+  "recorded_utc": "2026-11-08T13:14:17.252054+00:00",
+  "runtime_qualified": false,
+  "schema": "pocket4-audio316-independent-five-patch-replay-v1",
+  "source_inventory": {
+    "bytes": 81554,
+    "path": "audio-api35-cts316/compiled-source-files.json",
+    "sha256": "ce3fb16398debf2bfdd553ad5477fcb034f47d4cfb10137a90a541000f0d6617"
+  },
+  "state": "ALL_PUBLIC_SOURCE_BYTES_AND_GIT_MODES_EQUAL",
+  "stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 225,
+    "sha256": "b7fe7423e8abb9aaecf62e4521d02ef60e3d9f640e6bbe178173cbdc93ccde81"
+  },
+  "temporary_output_retirement_record": "The private publication receipt records guarded cleanup after remote readback.",
+  "verified_stages": [
+    {
+      "files": 409,
+      "tree": "660de60cfd4b57fd3b823dff7757e0a4f098df49"
+    },
+    {
+      "files": 411,
+      "tree": "3865514b9e2377430c1e3276e229fc0193df331b"
+    },
+    {
+      "files": 431,
+      "tree": "2c21ee1bbcbde46c8d07a26c6083e372d550c1c1"
+    }
+  ]
+}

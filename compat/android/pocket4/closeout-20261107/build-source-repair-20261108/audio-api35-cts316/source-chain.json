@@ -1,0 +1,78 @@
+{
+  "AOSP_sources_included": false,
+  "Cargo_registry_dependencies_included": false,
+  "actual309_inventory": {
+    "bytes": 77237,
+    "file": "actual309-source-files.json",
+    "sha256": "98af93dfe405188b42f1d594f63038d9b43454997cd7d43fe7301bd50c432bcd"
+  },
+  "actual309_source_tree": "3865514b9e2377430c1e3276e229fc0193df331b",
+  "actual_controls": {
+    "bytes": 9383,
+    "file": "public-proof.json",
+    "sha256": "0eee63076b490f1ead285d38e73f0fd73e783277d8d866469eac45c53e9ac35d"
+  },
+  "application_order": [
+    "source-prerequisites/base-source.patch",
+    "source-prerequisites/audio-prerequisite.patch",
+    "integrated-builder/audio-final.patch",
+    "audio-api35-cts316/audio-actual309.patch",
+    "audio-api35-cts316/audio-api35-cts-original-providers.patch"
+  ],
+  "application_order_paths_relative_to": "compat/android/pocket4/closeout-20261107/build-source-repair-20261108",
+  "base_comparison": {
+    "bytes": 5204,
+    "file": "base-comparison.json",
+    "sha256": "8c74ae4e1b9adfd920a1d9fa92a8a8e500f178e2a1a2645748ea2f81a5b20f5f"
+  },
+  "binary_included": false,
+  "compiled_inventory": {
+    "bytes": 81554,
+    "file": "compiled-source-files.json",
+    "sha256": "ce3fb16398debf2bfdd553ad5477fcb034f47d4cfb10137a90a541000f0d6617"
+  },
+  "existing_base": {
+    "file_count": 409,
+    "locally_observed_commit": "6eb50f3e0a2184cb822d0704c6f53f261ebd2de4",
+    "published_chain": [
+      "source-prerequisites/base-source.patch",
+      "source-prerequisites/audio-prerequisite.patch",
+      "integrated-builder/audio-final.patch"
+    ],
+    "published_inventory": {
+      "bytes": 76828,
+      "path": "audio-final-source-files.json",
+      "sha256": "b0004c7e0db781a473a059af05c30a403469576e170dd68b403e943cacb21743"
+    },
+    "source_tree": "660de60cfd4b57fd3b823dff7757e0a4f098df49"
+  },
+  "full_audio_apex_build_qualified": false,
+  "historical_prepared309_qualification_inherited": false,
+  "new_patches": [
+    {
+      "bytes": 19234,
+      "file": "audio-actual309.patch",
+      "sha256": "6379d07a21603a9f7a84a9bbc792833405be51b2b36e2e8ec805ab52e8902e85"
+    },
+    {
+      "bytes": 123376,
+      "file": "audio-api35-cts-original-providers.patch",
+      "sha256": "b9f00884ab878d54017f54658b1e6971227762843549447cff68a6611b0929c7"
+    }
+  ],
+  "original_providers": {
+    "bytes": 18346,
+    "file": "original-blueprint-provenance.json",
+    "sha256": "03356766393588c3e54479d9727426e19f2875be7b82a7aafd79f075dfedd360"
+  },
+  "private_runtime_identity_included": false,
+  "result_file_count": 431,
+  "result_source_tree": "2c21ee1bbcbde46c8d07a26c6083e372d550c1c1",
+  "runtime_qualified": false,
+  "schema": "audio316-public-source-chain-v1",
+  "source_replay": {
+    "bytes": 1376,
+    "file": "source-replay-proof.json",
+    "sha256": "d0809ed03e7ae01eaa832880dad13fecbad632196535aae62a4cb47f6cf7abe6"
+  }
+}

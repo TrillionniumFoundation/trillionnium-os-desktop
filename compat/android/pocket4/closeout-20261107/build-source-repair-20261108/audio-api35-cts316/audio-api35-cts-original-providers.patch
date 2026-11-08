@@ -1,0 +1,3380 @@
+diff --git a/android/manifest/audio-bridge-source-lock.json b/android/manifest/audio-bridge-source-lock.json
+index b00eb69..b59421e 100644
+--- a/android/manifest/audio-bridge-source-lock.json
++++ b/android/manifest/audio-bridge-source-lock.json
+@@ -96,7 +96,15 @@
+         "common/device-side/nativetesthelper/jni",
+         "common/device-side/nativetesthelper/src",
+         "libs/json",
+-        "common/device-side/util-axt"
++        "common/device-side/util-axt",
++        "libs/shim",
++        "libs/install",
++        "hostsidetests/stagedinstall",
++        "hostsidetests/appsecurity/test-apps/PrivilegedUpdateApp",
++        "tools/cts-tradefed",
++        "libs/runner",
++        "tests/core/runner-axt",
++        "libs/vogar-expect"
+       ]
+     },
+     {
+@@ -304,6 +312,80 @@
+       "commit": "57aa7c004b11466c0154144865e937b9a46a4688",
+       "purpose": "Exact original provider source consumed by the retained audio APEX target-closure consumers"
+     },
++    {
++      "commit": "eae519aaa6980b2a34ec07141bb19de3f6ddf69e",
++      "name": "platform/external/deqp",
++      "path": "external/deqp",
++      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
++      "sparse_paths": [
++        "android/cts/main",
++        "android/openglcts/AndroidManifest.xml",
++        "android/openglcts/src",
++        "android/package",
++        "data",
++        "execserver",
++        "executor",
++        "external",
++        "framework",
++        "modules",
++        "android/cts/runner",
++        "android/cts/angle"
++      ]
++    },
++    {
++      "commit": "d425c460bde47239483e36ccbec5674cf39eb431",
++      "name": "platform/external/deqp-deps/SPIRV-Headers",
++      "path": "external/deqp-deps/SPIRV-Headers",
++      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
++      "sparse_paths": [
++        "include"
++      ]
++    },
++    {
++      "commit": "4e0aa7940f17b47e67f7be80442d526b4fc54142",
++      "name": "platform/external/deqp-deps/SPIRV-Tools",
++      "path": "external/deqp-deps/SPIRV-Tools",
++      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
++      "sparse_paths": [
++        "include",
++        "source",
++        "test",
++        "tools",
++        "utils"
++      ]
++    },
++    {
++      "commit": "e2217d1616b410dc65f72d0cdd0b73f0b72a860d",
++      "name": "platform/external/deqp-deps/amber",
++      "path": "external/deqp-deps/amber",
++      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
++      "sparse_paths": [
++        "android_sample",
++        "include",
++        "samples/config_helper.h",
++        "samples/config_helper_dawn.h",
++        "samples/config_helper_vulkan.h",
++        "samples/log.h",
++        "samples/png.h",
++        "samples/ppm.h",
++        "samples/timestamp.h",
++        "src",
++        "tools"
++      ]
++    },
++    {
++      "commit": "14422bdc57fb93221192a0c542dde144980dfb69",
++      "name": "platform/external/deqp-deps/glslang",
++      "path": "external/deqp-deps/glslang",
++      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
++      "sparse_paths": [
++        "SPIRV",
++        "StandAlone",
++        "Test",
++        "glslang",
++        "gtests"
++      ]
++    },
+     {
+       "path": "external/dexmaker",
+       "name": "platform/external/dexmaker",
+@@ -346,7 +428,20 @@
+       "purpose": "Official pinned libext2_uuid for fs_mgr libdm",
+       "sparse_paths": [
+         "Android.bp",
+-        "lib/uuid"
++        "lib/uuid",
++        "debugfs",
++        "lib",
++        "misc",
++        "e2fsck"
++      ]
++    },
++    {
++      "commit": "06a9728c3609f856e87db38a6602196cec3ab727",
++      "name": "platform/external/easymock",
++      "path": "external/easymock",
++      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
++      "sparse_paths": [
++        "src"
+       ]
+     },
+     {
+@@ -2715,7 +2810,8 @@
+         "libraries/app-helpers/spectatio/spectatio-util",
+         "libraries/systemui-tapl",
+         "libraries/systemui-helper",
+-        "libraries/tapl-common"
++        "libraries/tapl-common",
++        "scripts"
+       ]
+     },
+     {
+@@ -2935,7 +3031,10 @@
+         "36/module-lib/api/framework-ondeviceintelligence.txt",
+         "36/module-lib/api/framework-ondeviceintelligence-removed.txt",
+         "current/androidx-legacy",
+-        "current/extras/app-toolkit"
++        "current/extras/app-toolkit",
++        "35/public/android.jar",
++        "35/public/framework.aidl",
++        "35/public/core-for-system-modules.jar"
+       ]
+     },
+     {
+@@ -3548,6 +3647,18 @@
+         "atest/proto"
+       ]
+     },
++    {
++      "path": "tools/deviceinfra/prebuilts",
++      "name": "platform/tools/deviceinfra/prebuilts",
++      "commit": "bb2d5f519bd0bf57641d74f40c12bab281423781",
++      "purpose": "Same-superproject original ATS prebuilt providers required by the retained CTS suite dependency mutator",
++      "sparse_paths": [
++        "Android.bp",
++        "ats_console_deploy.jar",
++        "ats_olc_server_local_mode_deploy.jar",
++        "ats_olc_server_deploy.jar"
++      ]
++    },
+     {
+       "path": "tools/dexter",
+       "name": "platform/tools/dexter",
+diff --git a/tools/droidloom-source/src/lib.rs b/tools/droidloom-source/src/lib.rs
+index ec46205..251b224 100644
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -23,7 +23,7 @@ use thiserror::Error;
+ const MAX_LOCK_BYTES: u64 = 1024 * 1024;
+ // This independent audio builder consumes the exact pinned audio lock below.
+ // Keep the smallest finite 16-project boundary; URL/commit/path checks remain.
+-const AUDIO_SOURCE_PROJECT_COUNT: usize = 309;
++const AUDIO_SOURCE_PROJECT_COUNT: usize = 316;
+ const MAX_PROJECTS: usize = AUDIO_SOURCE_PROJECT_COUNT.div_ceil(16) * 16;
+ const MAX_LINKS: usize = 64;
+ // Android17 hardware/interfaces requires 133 exact paths in the pinned lock.
+@@ -946,7 +946,7 @@ mod tests {
+     fn audio_source_capacity_is_bound_to_the_exact_frozen_lock() {
+         let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
+         assert_eq!(format!("{:x}", Sha256::digest(raw.as_bytes())),
+-            "ac2f7fa3d7e53be1b0e69f486876f8ad229dcc64686af208251bd4aee2424ae4");
++            "c104640627a1beb35b25423656e751a4b56ac17287505c0ee2efeeb7d0419560");
+         let lock: SparseSourceLock = serde_json::from_str(raw).unwrap();
+         assert_eq!(lock.projects.len(), AUDIO_SOURCE_PROJECT_COUNT);
+         assert_eq!(MAX_PROJECTS, 320);
+@@ -989,6 +989,8 @@ mod tests {
+     fn audio_junit_extension_keeps_the_actual_previous_projects_unchanged() {
+         let lock: SparseSourceLock = serde_json::from_str(include_str!(
+             "../../../android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let mut lock = lock;
++        lock.projects.retain(|project| ![Path::new("tools/deviceinfra/prebuilts"), Path::new("external/deqp"), Path::new("external/deqp-deps/SPIRV-Headers"), Path::new("external/deqp-deps/SPIRV-Tools"), Path::new("external/deqp-deps/amber"), Path::new("external/deqp-deps/glslang"), Path::new("external/easymock")].contains(&project.path.as_path()));
+         let current = build_plan(&lock).unwrap();
+         let mut previous = current.clone();
+         previous.projects.retain(|project| project.path != Path::new("external/junit-params"));
+@@ -1002,6 +1004,32 @@ mod tests {
+         assert_eq!(provider.sparse_paths, vec![PathBuf::from("lib"), PathBuf::from("src")]);
+     }
+ 
++
++    #[test]
++    fn audio_api35_cts_extension_preserves_the_previous_materialized_plan() {
++        let lock: SparseSourceLock = serde_json::from_str(include_str!(
++            "../../../android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let current = build_plan(&lock).unwrap();
++        let mut previous = current.clone();
++        previous.projects.retain(|p| ![Path::new("tools/deviceinfra/prebuilts"), Path::new("external/deqp"), Path::new("external/deqp-deps/SPIRV-Headers"), Path::new("external/deqp-deps/SPIRV-Tools"), Path::new("external/deqp-deps/amber"), Path::new("external/deqp-deps/glslang"), Path::new("external/easymock")].contains(&p.path.as_path()));
++        for (relative, added) in [
++            ("prebuilts/sdk", &["35/public/android.jar", "35/public/framework.aidl", "35/public/core-for-system-modules.jar"][..]),
++            ("cts", &["libs/shim", "libs/install", "hostsidetests/stagedinstall", "hostsidetests/appsecurity/test-apps/PrivilegedUpdateApp", "tools/cts-tradefed", "libs/runner", "tests/core/runner-axt", "libs/vogar-expect"][..]),
++            ("external/e2fsprogs", &["debugfs", "lib", "misc", "e2fsck"][..]),
++            ("platform_testing", &["scripts"][..]),
++        ] {
++            let project = previous.projects.iter_mut().find(|p| p.path == Path::new(relative)).unwrap();
++            project.sparse_paths.retain(|p| !added.iter().any(|added| p == Path::new(added)));
++        }
++        assert_eq!(previous.projects.len(), 309);
++        assert_eq!(current.projects.len(), AUDIO_SOURCE_PROJECT_COUNT);
++        validate_plan_extension(&previous, &current).unwrap();
++        let mut wrong = current;
++        wrong.projects.iter_mut().find(|p| p.path == Path::new("prebuilts/sdk"))
++            .unwrap().commit = "0000000000000000000000000000000000000000".into();
++        assert!(validate_plan_extension(&previous, &wrong).is_err());
++    }
++
+     #[test]
+     fn project_bound_admits_superproject_gitlink_extensions_but_not_unbounded_sync() {
+         let mut lock = valid_lock();
+diff --git a/tools/droidloom-update/src/android.rs b/tools/droidloom-update/src/android.rs
+index f08dabc..f9f9087 100644
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -516,6 +516,63 @@ fn validate_audio_provider_source_paths(
+         return Ok(());
+     }
+     for (relative, commit, required) in [
++        ("external/deqp", "eae519aaa6980b2a34ec07141bb19de3f6ddf69e", "android/cts/main"),
++        ("external/deqp", "eae519aaa6980b2a34ec07141bb19de3f6ddf69e", "android/openglcts/AndroidManifest.xml"),
++        ("external/deqp", "eae519aaa6980b2a34ec07141bb19de3f6ddf69e", "android/openglcts/src"),
++        ("external/deqp", "eae519aaa6980b2a34ec07141bb19de3f6ddf69e", "android/package"),
++        ("external/deqp", "eae519aaa6980b2a34ec07141bb19de3f6ddf69e", "data"),
++        ("external/deqp", "eae519aaa6980b2a34ec07141bb19de3f6ddf69e", "execserver"),
++        ("external/deqp", "eae519aaa6980b2a34ec07141bb19de3f6ddf69e", "executor"),
++        ("external/deqp", "eae519aaa6980b2a34ec07141bb19de3f6ddf69e", "external"),
++        ("external/deqp", "eae519aaa6980b2a34ec07141bb19de3f6ddf69e", "framework"),
++        ("external/deqp", "eae519aaa6980b2a34ec07141bb19de3f6ddf69e", "modules"),
++        ("external/deqp", "eae519aaa6980b2a34ec07141bb19de3f6ddf69e", "android/cts/runner"),
++        ("external/deqp", "eae519aaa6980b2a34ec07141bb19de3f6ddf69e", "android/cts/angle"),
++        ("external/deqp-deps/SPIRV-Headers", "d425c460bde47239483e36ccbec5674cf39eb431", "include"),
++        ("external/deqp-deps/SPIRV-Tools", "4e0aa7940f17b47e67f7be80442d526b4fc54142", "include"),
++        ("external/deqp-deps/SPIRV-Tools", "4e0aa7940f17b47e67f7be80442d526b4fc54142", "source"),
++        ("external/deqp-deps/SPIRV-Tools", "4e0aa7940f17b47e67f7be80442d526b4fc54142", "test"),
++        ("external/deqp-deps/SPIRV-Tools", "4e0aa7940f17b47e67f7be80442d526b4fc54142", "tools"),
++        ("external/deqp-deps/SPIRV-Tools", "4e0aa7940f17b47e67f7be80442d526b4fc54142", "utils"),
++        ("external/deqp-deps/amber", "e2217d1616b410dc65f72d0cdd0b73f0b72a860d", "android_sample"),
++        ("external/deqp-deps/amber", "e2217d1616b410dc65f72d0cdd0b73f0b72a860d", "include"),
++        ("external/deqp-deps/amber", "e2217d1616b410dc65f72d0cdd0b73f0b72a860d", "samples/config_helper.h"),
++        ("external/deqp-deps/amber", "e2217d1616b410dc65f72d0cdd0b73f0b72a860d", "samples/config_helper_dawn.h"),
++        ("external/deqp-deps/amber", "e2217d1616b410dc65f72d0cdd0b73f0b72a860d", "samples/config_helper_vulkan.h"),
++        ("external/deqp-deps/amber", "e2217d1616b410dc65f72d0cdd0b73f0b72a860d", "samples/log.h"),
++        ("external/deqp-deps/amber", "e2217d1616b410dc65f72d0cdd0b73f0b72a860d", "samples/png.h"),
++        ("external/deqp-deps/amber", "e2217d1616b410dc65f72d0cdd0b73f0b72a860d", "samples/ppm.h"),
++        ("external/deqp-deps/amber", "e2217d1616b410dc65f72d0cdd0b73f0b72a860d", "samples/timestamp.h"),
++        ("external/deqp-deps/amber", "e2217d1616b410dc65f72d0cdd0b73f0b72a860d", "src"),
++        ("external/deqp-deps/amber", "e2217d1616b410dc65f72d0cdd0b73f0b72a860d", "tools"),
++        ("external/deqp-deps/glslang", "14422bdc57fb93221192a0c542dde144980dfb69", "SPIRV"),
++        ("external/deqp-deps/glslang", "14422bdc57fb93221192a0c542dde144980dfb69", "StandAlone"),
++        ("external/deqp-deps/glslang", "14422bdc57fb93221192a0c542dde144980dfb69", "Test"),
++        ("external/deqp-deps/glslang", "14422bdc57fb93221192a0c542dde144980dfb69", "glslang"),
++        ("external/deqp-deps/glslang", "14422bdc57fb93221192a0c542dde144980dfb69", "gtests"),
++        ("external/easymock", "06a9728c3609f856e87db38a6602196cec3ab727", "src"),
++        ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "9/public"),
++        ("prebuilts/clang/host/linux-x86", "29182889399818f97baa65ea238c80e8117981eb", "clang-r584948b"),
++        ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "35/public/android.jar"),
++        ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "35/public/framework.aidl"),
++        ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "35/public/core-for-system-modules.jar"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "libs/shim"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "libs/install"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/stagedinstall"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/PrivilegedUpdateApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tools/cts-tradefed"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "libs/runner"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/core/runner-axt"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "libs/vogar-expect"),
++        ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "debugfs"),
++        ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "lib"),
++        ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "misc"),
++        ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "e2fsck"),
++        ("platform_testing", "6abefd291d50dee240ed2b22572d273175f070da", "scripts"),
++        ("tools/deviceinfra/prebuilts", "bb2d5f519bd0bf57641d74f40c12bab281423781", "Android.bp"),
++        ("tools/deviceinfra/prebuilts", "bb2d5f519bd0bf57641d74f40c12bab281423781", "ats_console_deploy.jar"),
++        ("tools/deviceinfra/prebuilts", "bb2d5f519bd0bf57641d74f40c12bab281423781", "ats_olc_server_local_mode_deploy.jar"),
++        ("tools/deviceinfra/prebuilts", "bb2d5f519bd0bf57641d74f40c12bab281423781", "ats_olc_server_deploy.jar"),
+         ("external/junit-params", "1a5f3f8b0c829e257386c56cfda5e5a442377282", "lib"),
+         ("external/junit-params", "1a5f3f8b0c829e257386c56cfda5e5a442377282", "src"),
+         ("system/gatekeeper", "5b5e75b5bda9fccbc3132e9624cb25286babdaac", "include"),
+@@ -821,12 +878,12 @@ fn audio_apex_pcm_patches(mode: SoongDependencyMode) -> &'static [(&'static str,
+     }
+ }
+ 
+-const AUDIO_SOURCE_LOCK_SHA256: &str = "ac2f7fa3d7e53be1b0e69f486876f8ad229dcc64686af208251bd4aee2424ae4";
++const AUDIO_SOURCE_LOCK_SHA256: &str = "c104640627a1beb35b25423656e751a4b56ac17287505c0ee2efeeb7d0419560";
+ fn selected_source_lock(repo: &Path, mode: SoongDependencyMode) -> Result<PathBuf> {
+     if mode == SoongDependencyMode::AudioApexTargetClosure {
+         let lock = repo.join("android/manifest/audio-bridge-source-lock.json");
+         if hash(&lock)? != AUDIO_SOURCE_LOCK_SHA256 {
+-            return fail("audio build requires its exact independent 309-project source lock");
++            return fail("audio build requires its exact independent 316-project source lock");
+         }
+         Ok(lock)
+     } else {
+@@ -3165,6 +3222,167 @@ mod tests {
+         }
+     }
+ 
++
++    #[test]
++    fn audio_api35_cts_keeps_real_consumers_and_original_provider_modules() {
++        use sha2::{Digest, Sha256};
++        let perfetto = include_str!("../tests/fixtures/audio-providers/perfetto-sdk35-modules.bp");
++        assert_eq!(perfetto.matches("sdk_version: \"35\"").count(), 2);
++        assert!(perfetto.contains("name: \"perfetto_src_java_sdk_main_perfetto_lib\""));
++        let consumer = include_str!("../tests/fixtures/audio-providers/framework-stagedinstall.bp");
++        assert!(consumer.contains("name: \"StagedInstallInternalTest\""));
++        for dependency in ["cts-shim-host-lib", "cts-install-lib-host"] {
++            assert!(consumer.contains(&format!("\"{dependency}\"")));
++        }
++        let install = include_str!("../tests/fixtures/audio-providers/cts-install.bp");
++        for name in ["cts-install-lib", "cts-install-lib-host", "cts-install-lib-java",
++                     "StagedInstallTestApexV1", "StagedInstallTestApexV2", "StagedInstallTestApexV3"] {
++            assert!(install.contains(name), "{name}");
++        }
++        let suite = include_str!("../tests/fixtures/audio-providers/cts-tradefed.bp");
++        let ats = include_str!("../tests/fixtures/audio-providers/deviceinfra-prebuilts.bp");
++        for name in ["ats_console_deploy", "ats_olc_server_local_mode_deploy"] {
++            assert!(suite.contains(&format!("\"{name}\"")));
++            assert!(ats.contains(&format!("name: \"{name}\"")));
++            assert!(ats.contains(&format!("\"{name}.jar\"")));
++        }
++        let runner_tests = include_str!("../tests/fixtures/audio-providers/deqp-android-cts-runner-tests-original.bp");
++        for dependency in ["CtsDeqpTestCases", "easymock"] {
++            assert!(runner_tests.contains(&format!("\"{dependency}\"")));
++        }
++        let runner = include_str!("../tests/fixtures/audio-providers/deqp-android-cts-original.bp");
++        for input in ["runner/src/**/*.java", "llvm-strip-tools", "com.drawelements.deqp", "deqp-binary"] {
++            assert!(runner.contains(input), "{input}");
++        }
++        let deqp = include_str!("../tests/fixtures/audio-providers/deqp-original.bp");
++        for provider in ["deqp_amber", "deqp_spirv-tools", "deqp_glslang_glslang",
++                         "external/deqp-deps/SPIRV-Headers/include"] {
++            assert!(deqp.contains(provider), "{provider}");
++        }
++        let easymock = include_str!("../tests/fixtures/audio-providers/easymock-original.bp");
++        assert!(easymock.contains("name: \"easymock\""));
++        assert_eq!(easymock.matches("sdk_version: \"9\"").count(), 2);
++        // Keep complete upstream BPs, including sibling test modules and resources.
++        for (relative, original, expected) in [
++            ("external/deqp/android/cts/runner/tests/Android.bp", include_str!("../tests/fixtures/audio-providers/deqp-android-cts-runner-tests-original.bp"), "53e34061eaf71d2da1d036c16646a4327015a7c583f4df3d6397afb7e73a568c"),
++            ("external/deqp/Android.bp", include_str!("../tests/fixtures/audio-providers/deqp-original.bp"), "b30ff8e5e19b5be1482c0f3fa254d9f87d090dd602ed5652d912f29c27a60c3f"),
++            ("external/deqp/android/cts/Android.bp", include_str!("../tests/fixtures/audio-providers/deqp-android-cts-original.bp"), "e3fa268b76d5859389513f650a1d23caf7e7b33e3ec7712d7a55d94821c170c9"),
++            ("external/deqp-deps/SPIRV-Headers/Android.bp", include_str!("../tests/fixtures/audio-providers/deqp-deps-SPIRV-Headers-original.bp"), "0fa6b9ebeed222d0fb4f290848a89d220e8ae7eca1776ad40b2613959c1fe70b"),
++            ("external/deqp-deps/SPIRV-Tools/Android.bp", include_str!("../tests/fixtures/audio-providers/deqp-deps-SPIRV-Tools-original.bp"), "58f22ee12a282cb9dbf607a24451a6d258d7ad54b3e4976e6804a36beb473f2b"),
++            ("external/deqp-deps/amber/Android.bp", include_str!("../tests/fixtures/audio-providers/deqp-deps-amber-original.bp"), "5481fc9068794994db28a51d3e80368641e82df2b50ca9693031d28f525f4eab"),
++            ("external/deqp-deps/glslang/Android.bp", include_str!("../tests/fixtures/audio-providers/deqp-deps-glslang-original.bp"), "40bde4a1f43c1d1a59cbdcfbf7206f3ddf5412119d1bcdf4f3be1af10195ba1b"),
++            ("external/easymock/Android.bp", include_str!("../tests/fixtures/audio-providers/easymock-original.bp"), "d4f9a44c826f62d5c3a47dfea6241b030bc28aaf693352572c7eaf86aaa40fe4"),
++            ("frameworks/base/tests/StagedInstallTest/Android.bp", include_str!("../tests/fixtures/audio-providers/framework-stagedinstall.bp"), "50226d00f53449f2a4e9aefc381442d8abfba778793028e61bdc6a0c412fd9b3"),
++            ("cts/libs/shim/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-shim.bp"), "c9ccd47197e6bdf106c24efd80ab3f4278ad2572ee170ec8480e30cde5864afd"),
++            ("cts/libs/install/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-install.bp"), "d45d89054e58c9f915f047038f7be99fe68f47fe9321a0e7ae60bbc8407ec2cf"),
++            ("cts/hostsidetests/stagedinstall/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-stagedinstall.bp"), "d6472b9904aa6ff5ca7a4b054b8762f4fd90adc5d202d5999767a39a41a7d348"),
++            ("cts/hostsidetests/appsecurity/test-apps/PrivilegedUpdateApp/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-privileged-update.bp"), "3eb2869132b8043971bdfdf2b6da5aa41a776f3ae8f0015644873b69d2b17612"),
++            ("cts/tools/cts-tradefed/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-tradefed.bp"), "78456ae08c26a0dbba7a859dc7860c57332ab198009dbccbb86f3793c392ea42"),
++            ("cts/libs/runner/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-runner.bp"), "3dfdbba783609e6b4c19fe4d355fb3a2d1f3a44a553f8bfce1b70de94261cc16"),
++            ("cts/tests/core/runner-axt/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-core-runner.bp"), "df2551b27025f35c3474b7b341058d8884bfd91ee9216462aa4bb2508f322ab1"),
++            ("cts/libs/vogar-expect/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-vogar-expect.bp"), "60317351f2eeac4aa1010b52f9c6d9c60bb38a25655d8bccd9505c9bd9cda86b"),
++            ("tools/deviceinfra/prebuilts/Android.bp", include_str!("../tests/fixtures/audio-providers/deviceinfra-prebuilts.bp"), "5c1d4fcbdf68b1e01affd6012db6dcf2f3835a10e3d1d51ab5f05d8b21450d82"),
++            ("external/e2fsprogs/debugfs/Android.bp", include_str!("../tests/fixtures/audio-providers/e2fsprogs-debugfs.bp"), "9c53b1b7be61444930c241815554df9b0dc4f85cf1ed13e1f73e52a034e6e78d"),
++        ] {
++            assert_eq!(format!("{:x}", Sha256::digest(original.as_bytes())), expected);
++            assert!(audio_original_shared_provider(relative, original,
++                SoongDependencyMode::AudioApexTargetClosure).unwrap().is_none(), "{relative}");
++            assert!(audio_new_source_root_scope(relative, original,
++                SoongDependencyMode::AudioApexTargetClosure).unwrap().is_none(), "{relative}");
++        }
++    }
++
++    #[test]
++    fn audio_api35_cts_rejects_the_observed_missing_original_inputs() {
++        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
++        let lock = droidloom_source::load_lock(
++            &repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        validate_audio_provider_source_paths(&lock, audio).unwrap();
++        for (relative, required) in [
++            ("external/deqp", "android/cts/main"),
++            ("external/deqp", "android/openglcts/AndroidManifest.xml"),
++            ("external/deqp", "android/openglcts/src"),
++            ("external/deqp", "android/package"),
++            ("external/deqp", "data"),
++            ("external/deqp", "execserver"),
++            ("external/deqp", "executor"),
++            ("external/deqp", "external"),
++            ("external/deqp", "framework"),
++            ("external/deqp", "modules"),
++            ("external/deqp", "android/cts/runner"),
++            ("external/deqp", "android/cts/angle"),
++            ("external/deqp-deps/SPIRV-Headers", "include"),
++            ("external/deqp-deps/SPIRV-Tools", "include"),
++            ("external/deqp-deps/SPIRV-Tools", "source"),
++            ("external/deqp-deps/SPIRV-Tools", "test"),
++            ("external/deqp-deps/SPIRV-Tools", "tools"),
++            ("external/deqp-deps/SPIRV-Tools", "utils"),
++            ("external/deqp-deps/amber", "android_sample"),
++            ("external/deqp-deps/amber", "include"),
++            ("external/deqp-deps/amber", "samples/config_helper.h"),
++            ("external/deqp-deps/amber", "samples/config_helper_dawn.h"),
++            ("external/deqp-deps/amber", "samples/config_helper_vulkan.h"),
++            ("external/deqp-deps/amber", "samples/log.h"),
++            ("external/deqp-deps/amber", "samples/png.h"),
++            ("external/deqp-deps/amber", "samples/ppm.h"),
++            ("external/deqp-deps/amber", "samples/timestamp.h"),
++            ("external/deqp-deps/amber", "src"),
++            ("external/deqp-deps/amber", "tools"),
++            ("external/deqp-deps/glslang", "SPIRV"),
++            ("external/deqp-deps/glslang", "StandAlone"),
++            ("external/deqp-deps/glslang", "Test"),
++            ("external/deqp-deps/glslang", "glslang"),
++            ("external/deqp-deps/glslang", "gtests"),
++            ("external/easymock", "src"),
++            ("prebuilts/sdk", "9/public"),
++            ("prebuilts/clang/host/linux-x86", "clang-r584948b"),
++            ("prebuilts/sdk", "35/public/android.jar"),
++            ("prebuilts/sdk", "35/public/framework.aidl"),
++            ("prebuilts/sdk", "35/public/core-for-system-modules.jar"),
++            ("cts", "libs/shim"),
++            ("cts", "libs/install"),
++            ("cts", "hostsidetests/stagedinstall"),
++            ("cts", "hostsidetests/appsecurity/test-apps/PrivilegedUpdateApp"),
++            ("cts", "tools/cts-tradefed"),
++            ("cts", "libs/runner"),
++            ("cts", "tests/core/runner-axt"),
++            ("cts", "libs/vogar-expect"),
++            ("external/e2fsprogs", "debugfs"),
++            ("external/e2fsprogs", "lib"),
++            ("external/e2fsprogs", "misc"),
++            ("external/e2fsprogs", "e2fsck"),
++            ("platform_testing", "scripts"),
++            ("tools/deviceinfra/prebuilts", "Android.bp"),
++            ("tools/deviceinfra/prebuilts", "ats_console_deploy.jar"),
++            ("tools/deviceinfra/prebuilts", "ats_olc_server_local_mode_deploy.jar"),
++            ("tools/deviceinfra/prebuilts", "ats_olc_server_deploy.jar"),
++        ] {
++            let mut missing = lock.clone();
++            let provider = missing.projects.iter_mut()
++                .find(|p| p.path == Path::new(relative)).unwrap();
++            provider.sparse_paths.retain(|p| p != Path::new(required));
++            // An empty sparse list means a complete checkout, so model a missing cone explicitly.
++            if provider.sparse_paths.is_empty() {
++                provider.sparse_paths.push(std::path::PathBuf::from("Android.bp"));
++            }
++            assert!(validate_audio_provider_source_paths(&missing, audio).is_err(),
++                "{relative}/{required}");
++            for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
++                         SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
++                validate_audio_provider_source_paths(&missing, mode).unwrap();
++            }
++        }
++        for relative in ["prebuilts/sdk", "cts", "external/e2fsprogs",
++                         "platform_testing", "tools/deviceinfra/prebuilts", "prebuilts/clang/host/linux-x86",
++                         "external/deqp", "external/deqp-deps/SPIRV-Headers", "external/deqp-deps/SPIRV-Tools", "external/deqp-deps/amber", "external/deqp-deps/glslang", "external/easymock"] {
++            let mut substituted = lock.clone();
++            substituted.projects.iter_mut().find(|p| p.path == Path::new(relative))
++                .unwrap().commit = "0000000000000000000000000000000000000000".into();
++            assert!(validate_audio_provider_source_paths(&substituted, audio).is_err());
++        }
++    }
++
+     #[test]
+     fn audio_junit_provider_keeps_the_real_icu_consumer_and_all_original_dependencies() {
+         use sha2::{Digest, Sha256};
+@@ -3209,7 +3427,7 @@ mod tests {
+         validate_audio_provider_source_paths(&lock, audio).unwrap();
+         let mut old = lock.clone();
+         old.projects.retain(|project| project.path != Path::new("external/junit-params"));
+-        assert_eq!(old.projects.len(), 308);
++        assert_eq!(old.projects.len() + 1, lock.projects.len());
+         assert!(validate_audio_provider_source_paths(&old, audio).is_err());
+         for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
+                      SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
+@@ -3237,7 +3455,7 @@ mod tests {
+         let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
+         let lock = selected_source_lock(repo, SoongDependencyMode::AudioApexTargetClosure).unwrap();
+         let parsed = droidloom_source::load_lock(&lock).unwrap();
+-        assert_eq!(parsed.projects.len(), 309);
++        assert_eq!(parsed.projects.len(), 316);
+         assert!(droidloom_source::build_plan(&parsed).is_ok());
+         for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
+                      SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-core-runner.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-core-runner.bp
+new file mode 100644
+index 0000000..76f082f
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-core-runner.bp
+@@ -0,0 +1,56 @@
++// Copyright (C) 2009 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++//==========================================================
++// Build the core runner.
++//==========================================================
++
++// temporary cts-core-test-runner variant that brings in androidx.test transitively, instead
++// of android.support.test target. Will be removed after androidx.test CTS conversion is complete.
++package {
++    default_team: "trendy_team_java_core_libraries",
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++java_library {
++    name: "cts-core-test-runner-axt",
++
++    srcs: ["src/**/*.java"],
++    static_libs: [
++        "compatibility-device-util-axt",
++        "androidx.test.rules",
++        "core-test-rules",
++        "platform-test-annotations",
++        "vogarexpect",
++        "testng",
++    ],
++
++    libs: ["android.test.runner.stubs.test"],
++    sdk_version: "test_current",
++
++}
++
++//==========================================================
++// Build the run listener
++//==========================================================
++
++// Build library
++java_library {
++    name: "cts-test-runner-axt",
++
++    srcs: ["src/com/android/cts/runner/**/*.java"],
++    static_libs: ["androidx.test.rules"],
++    sdk_version: "current",
++
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-install.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-install.bp
+new file mode 100644
+index 0000000..46e6d46
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-install.bp
+@@ -0,0 +1,234 @@
++// Copyright (C) 2019 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_team: "trendy_team_framework_android_packages",
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++android_test_helper_app {
++    name: "TestAppSv1",
++    manifest: "testapp/Sv1.xml",
++    srcs: ["testapp/src/**/*.java"],
++    min_sdk_version: "28",
++    target_sdk_version: "28",
++}
++
++android_test_helper_app {
++    name: "TestAppSv2",
++    manifest: "testapp/Sv2.xml",
++    srcs: ["testapp/src/**/*.java"],
++    min_sdk_version: "28",
++    target_sdk_version: "28",
++}
++
++android_test_helper_app {
++    name: "TestAppAv1",
++    manifest: "testapp/Av1.xml",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v1"],
++    apex_available: ["com.android.apex.apkrollback.test_v1"],
++    min_sdk_version: "28",
++    target_sdk_version: "28",
++}
++
++android_test_helper_app {
++    name: "TestAppAv2",
++    manifest: "testapp/Av2.xml",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v2"],
++    apex_available: ["com.android.apex.apkrollback.test_v2"],
++    min_sdk_version: "28",
++    target_sdk_version: "28",
++}
++
++android_test_helper_app {
++    name: "TestAppAv3",
++    manifest: "testapp/Av3.xml",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v3"],
++    min_sdk_version: "28",
++    target_sdk_version: "28",
++}
++
++android_test_helper_app {
++    name: "TestAppACrashingV2",
++    manifest: "testapp/ACrashingV2.xml",
++    sdk_version: "current",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v2"],
++    apex_available: ["com.android.apex.apkrollback.test_v2Crashing"],
++}
++
++android_test_helper_app {
++    name: "TestAppBv1",
++    manifest: "testapp/Bv1.xml",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v1"],
++    min_sdk_version: "28",
++    target_sdk_version: "28",
++}
++
++android_test_helper_app {
++    name: "TestAppBv2",
++    manifest: "testapp/Bv2.xml",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v2"],
++    min_sdk_version: "28",
++    target_sdk_version: "28",
++}
++
++android_test_helper_app {
++    name: "TestAppBv3",
++    manifest: "testapp/Bv3.xml",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v3"],
++    min_sdk_version: "28",
++    target_sdk_version: "28",
++}
++
++android_test_helper_app {
++    name: "TestAppCv1",
++    manifest: "testapp/Cv1.xml",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v1"],
++    min_sdk_version: "28",
++    target_sdk_version: "28",
++}
++
++android_test_helper_app {
++    name: "TestAppCv2",
++    manifest: "testapp/Cv2.xml",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v2"],
++    min_sdk_version: "28",
++    target_sdk_version: "28",
++}
++
++android_test_helper_app {
++    name: "TestAppASplitV1",
++    manifest: "testapp/Av1.xml",
++    sdk_version: "current",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v1"],
++    package_splits: ["anydpi"],
++}
++
++android_test_helper_app {
++    name: "TestAppASplitV2",
++    manifest: "testapp/Av2.xml",
++    sdk_version: "current",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v2"],
++    package_splits: ["anydpi"],
++}
++
++android_test_helper_app {
++    name: "TestAppAOriginalV1",
++    manifest: "testapp/Av1.xml",
++    sdk_version: "current",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v1"],
++    certificate: ":cts-ec-p256",
++}
++
++android_test_helper_app {
++    name: "TestAppARotatedV2",
++    manifest: "testapp/Av2.xml",
++    sdk_version: "current",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v2"],
++    certificate: ":cts-ec-p256",
++    additional_certificates: [":cts-ec-p256_2"],
++    lineage: "testapp/signing/ec-p256-por-1_2",
++}
++
++android_test_helper_app {
++    name: "TestAppARollbackWipeV2",
++    manifest: "testapp/ARollbackWipeV2.xml",
++    sdk_version: "current",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v2"],
++}
++
++android_test_helper_app {
++    name: "TestAppBRollbackRestoreV2",
++    manifest: "testapp/BRollbackRestoreV2.xml",
++    sdk_version: "current",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v2"],
++}
++
++android_test_helper_app {
++    name: "TestAppCRollbackRetainV2",
++    manifest: "testapp/CRollbackRetainV2.xml",
++    sdk_version: "current",
++    srcs: ["testapp/src/**/*.java"],
++    resource_dirs: ["testapp/res_v2"],
++}
++
++java_library {
++    name: "cts-install-lib-java",
++    srcs: ["src/**/lib/*.java"],
++    static_libs: [
++        "androidx.test.rules",
++        "compatibility-device-util-axt",
++        "cts-shim-lib",
++        "modules-utils-build",
++        "truth",
++    ],
++    sdk_version: "test_current",
++    java_resources: [
++        ":TestAppAv1",
++        ":TestAppAv2",
++        ":TestAppAv3",
++        ":TestAppBv1",
++        ":TestAppBv2",
++        ":TestAppBv3",
++        ":TestAppCv1",
++        ":TestAppCv2",
++        ":TestAppSv1",
++        ":TestAppSv2",
++        ":TestAppACrashingV2",
++        ":TestAppASplitV1",
++        ":TestAppASplitV2",
++        ":TestAppAOriginalV1",
++        ":TestAppARotatedV2",
++        ":TestAppARollbackWipeV2",
++        ":TestAppBRollbackRestoreV2",
++        ":TestAppCRollbackRetainV2",
++        ":StagedInstallTestApexV1",
++        ":StagedInstallTestApexV2",
++        ":StagedInstallTestApexV3",
++    ],
++}
++
++android_library {
++    name: "cts-install-lib",
++    manifest: "AndroidManifest.xml",
++    static_libs: [
++        "cts-install-lib-java",
++    ],
++    min_sdk_version: "29",
++    sdk_version: "test_current",
++}
++
++java_library_host {
++    name: "cts-install-lib-host",
++    srcs: ["src/**/host/InstallUtilsHost.java"],
++    libs: [
++        "tradefed",
++        "cts-shim-host-lib",
++    ],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-privileged-update.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-privileged-update.bp
+new file mode 100644
+index 0000000..ce8e973
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-privileged-update.bp
+@@ -0,0 +1,91 @@
++//##########################################################
++// Package w/ tests
++
++package {
++    default_team: "trendy_team_framework_android_packages",
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++android_test_helper_app {
++    name: "CtsPrivilegedUpdateTests",
++    defaults: ["cts_support_defaults"],
++    sdk_version: "test_current",
++    static_libs: [
++        "androidx.test.rules",
++        "compatibility-device-util-axt",
++        "ctstestrunner-axt",
++    ],
++    libs: ["android.test.base.stubs.test"],
++    // Tag this module as a cts test artifact
++    test_suites: [
++        "general-tests",
++    ],
++    optimize: {
++        enabled: false,
++    },
++    dex_preopt: {
++        enabled: false,
++    },
++    srcs: ["src/**/*.java"],
++}
++
++//##########################################################
++// Variant: Privileged app upgrade
++
++android_test_import {
++    name: "CtsShimPrivUpgradePrebuilt",
++    // Make sure the build system doesn't try to resign the APK
++    presigned: true,
++    preprocessed: true,
++    test_suites: [
++        "general-tests",
++    ],
++    // The 'arm' apk has both arm and arm64 so's. Same for x86/x86_64.
++    arch: {
++        arm: {
++            apk: "apk/arm/CtsShimPrivUpgrade.apk",
++        },
++        arm64: {
++            apk: "apk/arm/CtsShimPrivUpgrade.apk",
++        },
++        x86: {
++            apk: "apk/x86/CtsShimPrivUpgrade.apk",
++        },
++        x86_64: {
++            apk: "apk/x86/CtsShimPrivUpgrade.apk",
++        },
++        riscv64: {
++            apk: "apk/riscv64/CtsShimPrivUpgrade.apk",
++        },
++    },
++}
++
++//##########################################################
++// Variant: Privileged app upgrade (wrong SHA)
++
++android_test_import {
++    name: "CtsShimPrivUpgradeWrongSHAPrebuilt",
++    // Make sure the build system doesn't try to resign the APK
++    presigned: true,
++    preprocessed: true,
++    test_suites: [
++        "general-tests",
++    ],
++    arch: {
++        arm: {
++            apk: "apk/arm/CtsShimPrivUpgradeWrongSHA.apk",
++        },
++        arm64: {
++            apk: "apk/arm/CtsShimPrivUpgradeWrongSHA.apk",
++        },
++        x86: {
++            apk: "apk/x86/CtsShimPrivUpgradeWrongSHA.apk",
++        },
++        x86_64: {
++            apk: "apk/x86/CtsShimPrivUpgradeWrongSHA.apk",
++        },
++        riscv64: {
++            apk: "apk/riscv64/CtsShimPrivUpgradeWrongSHA.apk",
++        },
++    },
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-runner.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-runner.bp
+new file mode 100644
+index 0000000..c3a1eec
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-runner.bp
+@@ -0,0 +1,27 @@
++// Copyright (C) 2012 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++// The library variant that brings in androidx-test transitively
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++java_library {
++    name: "ctstestrunner-axt",
++
++    static_libs: ["cts-test-runner-axt"],
++
++    sdk_version: "current",
++
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-shim.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-shim.bp
+new file mode 100644
+index 0000000..4f116dd
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-shim.bp
+@@ -0,0 +1,32 @@
++//
++// Copyright (C) 2020 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++java_library {
++    name: "cts-shim-lib",
++    host_supported: true,
++    srcs: ["src/**/*.java"],
++    sdk_version: "current",
++}
++
++// Compatibility version of host library
++java_library_host {
++    name: "cts-shim-host-lib",
++    static_libs: ["cts-shim-lib"],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-stagedinstall.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-stagedinstall.bp
+new file mode 100644
+index 0000000..3361b40
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-stagedinstall.bp
+@@ -0,0 +1,706 @@
++// Copyright (C) 2019 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_team: "trendy_team_framework_android_packages",
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++java_test_host {
++    name: "CtsStagedInstallHostTestCases",
++    defaults: ["cts_defaults"],
++    srcs: [
++        "src/**/*.java",
++        ":apex-info-list",
++    ],
++    libs: [
++        "cts-tradefed",
++        "cts-shim-host-lib",
++        "tradefed",
++        "truth",
++        "hamcrest",
++        "hamcrest-library",
++    ],
++    static_libs: [
++        "android.content.pm.flags-aconfig-java-host",
++        "cts-install-lib-host",
++        "flag-junit-host",
++    ],
++    data: [
++        ":deapexer.zip",
++    ],
++    device_common_data: [
++        ":StagedInstallTest",
++    ],
++    test_suites: [
++        "cts",
++        "general-tests",
++        "mts",
++    ],
++}
++
++android_test_helper_app {
++    name: "StagedInstallTest",
++    srcs: ["app/src/**/*.java"],
++    manifest: "app/AndroidManifest.xml",
++    java_resources: [
++        ":ApexKeyRotationTestV2_SignedBob",
++        ":ApexKeyRotationTestV2_SignedBobRot",
++        ":ApexKeyRotationTestV2_SignedBobRotRollback",
++        ":ApexKeyRotationTestV3_SignedBob",
++        ":ApexKeyRotationTestV3_SignedBobRot",
++        ":CtsShimPrivUpgradePrebuilt",
++        ":StagedInstallTestApexV1_NotPreInstalled",
++        ":StagedInstallTestApexV2_AdditionalFile",
++        ":StagedInstallTestApexV2_AdditionalFolder",
++        ":StagedInstallTestApexV2_DifferentCertificate",
++        ":StagedInstallTestApexV2_DifferentPackageName",
++        ":StagedInstallTestApexV2_WithPostInstallHook",
++        ":StagedInstallTestApexV2_WithPreInstallHook",
++        ":StagedInstallTestApexV2_WrongSha",
++        ":StagedInstallTestApexV2_WithoutApkInApex",
++        ":StagedInstallTestAppSamePackageNameAsApex",
++        ":StagedInstallTestApexV2_SdkTargetP",
++        ":StagedInstallTestApexV2_ApkInApexSdkTargetP",
++        ":StagedInstallTestCorruptedApex_b146895998",
++        ":StagedInstallTestApexV2_NoApkSignature",
++        ":StagedInstallTestApexV2_UnsignedPayload",
++        ":StagedInstallTestApexV2_SignPayloadWithDifferentKey",
++        ":StagedInstallTestApexV2_Rebootless",
++        ":StagedInstallTestApexV3_Rebootless",
++    ],
++    static_libs: [
++        "androidx.test.runner",
++        "androidx.test.core",
++        "truth",
++        "cts-install-lib",
++    ],
++    sdk_version: "test_current",
++    test_suites: ["device-tests"],
++
++}
++
++android_test_helper_app {
++    name: "StagedInstallTestAppSamePackageNameAsApex",
++
++    srcs: ["testdata/apk/src/**/*java"],
++
++    manifest: "testdata/apk/StagedInstallTestAppSamePackageNameAsApex.xml",
++}
++
++prebuilt_apex {
++    name: "ApexKeyRotationTestV2_SignedBob",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_signed_bob.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_signed_bob.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_signed_bob.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_signed_bob.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_signed_bob.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_signed_bob.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "ApexKeyRotationTestV2_SignedBobRot",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_signed_bob_rot.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_signed_bob_rot.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_signed_bob_rot.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_signed_bob_rot.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_signed_bob_rot.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_signed_bob_rot.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "ApexKeyRotationTestV2_SignedBobRotRollback",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_signed_bob_rot_rollback.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_signed_bob_rot_rollback.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_signed_bob_rot_rollback.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_signed_bob_rot_rollback.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_signed_bob_rot_rollback.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_signed_bob_rot_rollback.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "ApexKeyRotationTestV3_SignedBob",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v3_signed_bob.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v3_signed_bob.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v3_signed_bob.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v3_signed_bob.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v3_signed_bob.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v3_signed_bob.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "ApexKeyRotationTestV3_SignedBobRot",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v3_signed_bob_rot.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v3_signed_bob_rot.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v3_signed_bob_rot.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v3_signed_bob_rot.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v3_signed_bob_rot.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v3_signed_bob_rot.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV1",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v1.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v1.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v1.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v1.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v1.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v1.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV2",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV3",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v3.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v3.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v3.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v3.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v3.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v3.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV2_AddApkToApex",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_add_apk_to_apex.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_add_apk_to_apex.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_add_apk_to_apex.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_add_apk_to_apex.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_add_apk_to_apex.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_add_apk_to_apex.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV2_AdditionalFile",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_additional_file.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_additional_file.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_additional_file.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_additional_file.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_additional_file.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_additional_file.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV2_AdditionalFolder",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_additional_folder.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_additional_folder.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_additional_folder.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_additional_folder.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_additional_folder.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_additional_folder.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV2_WithPostInstallHook",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_with_post_install_hook.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_with_post_install_hook.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_with_post_install_hook.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_with_post_install_hook.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_with_post_install_hook.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_with_post_install_hook.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV2_WithPreInstallHook",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_with_pre_install_hook.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_with_pre_install_hook.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_with_pre_install_hook.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_with_pre_install_hook.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_with_pre_install_hook.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_with_pre_install_hook.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV2_WrongSha",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_wrong_sha.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_wrong_sha.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_wrong_sha.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_wrong_sha.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_wrong_sha.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_wrong_sha.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV2_WithoutApkInApex",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_without_apk_in_apex.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_without_apk_in_apex.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_without_apk_in_apex.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_without_apk_in_apex.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_without_apk_in_apex.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_without_apk_in_apex.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV1_NotPreInstalled",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim_not_pre_installed.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim_not_pre_installed.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim_not_pre_installed.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim_not_pre_installed.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim_not_pre_installed.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim_not_pre_installed.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV2_DifferentCertificate",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_different_certificate.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_different_certificate.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_different_certificate.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_different_certificate.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_different_certificate.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_different_certificate.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV2_DifferentPackageName",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_different_package_name.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_different_package_name.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_different_package_name.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_different_package_name.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_different_package_name.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_different_package_name.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV2_SdkTargetP",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_sdk_target_p.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_sdk_target_p.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_sdk_target_p.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_sdk_target_p.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_sdk_target_p.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_sdk_target_p.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV2_ApkInApexSdkTargetP",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_apk_in_apex_sdk_target_p.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_apk_in_apex_sdk_target_p.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_apk_in_apex_sdk_target_p.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_apk_in_apex_sdk_target_p.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_apk_in_apex_sdk_target_p.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_apk_in_apex_sdk_target_p.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestCorruptedApex_b146895998",
++    src: "testdata/apex/corrupted_b146895998.apex",
++    filename: "corrupted_b146895998.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV2_NoApkSignature",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_unsigned_apk_container.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_unsigned_apk_container.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_unsigned_apk_container.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_unsigned_apk_container.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_unsigned_apk_container.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_unsigned_apk_container.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV2_UnsignedPayload",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_unsigned_payload.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_unsigned_payload.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_unsigned_payload.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_unsigned_payload.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_unsigned_payload.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_unsigned_payload.apex",
++    installable: false,
++}
++
++ApexFilenameSigningPayloadWithDifferentKey = "com.android.apex.cts.shim.v2_sign_payload_with_different_key.apex"
++prebuilt_apex {
++    name: "StagedInstallTestApexV2_SignPayloadWithDifferentKey",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/" + ApexFilenameSigningPayloadWithDifferentKey,
++        },
++        arm64: {
++            src: "testdata/apex/arm/" + ApexFilenameSigningPayloadWithDifferentKey,
++        },
++        x86: {
++            src: "testdata/apex/x86/" + ApexFilenameSigningPayloadWithDifferentKey,
++        },
++        x86_64: {
++            src: "testdata/apex/x86/" + ApexFilenameSigningPayloadWithDifferentKey,
++        },
++    },
++    filename: ApexFilenameSigningPayloadWithDifferentKey,
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV2_Rebootless",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_rebootless.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v2_rebootless.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v2_rebootless.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_rebootless.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v2_rebootless.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v2_rebootless.apex",
++    installable: false,
++}
++
++prebuilt_apex {
++    name: "StagedInstallTestApexV3_Rebootless",
++    arch: {
++        arm: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v3_rebootless.apex",
++        },
++        arm64: {
++            src: "testdata/apex/arm/com.android.apex.cts.shim.v3_rebootless.apex",
++        },
++        riscv64: {
++            src: "testdata/apex/riscv64/com.android.apex.cts.shim.v3_rebootless.apex",
++        },
++        x86: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v3_rebootless.apex",
++        },
++        x86_64: {
++            src: "testdata/apex/x86/com.android.apex.cts.shim.v3_rebootless.apex",
++        },
++    },
++    filename: "com.android.apex.cts.shim.v3_rebootless.apex",
++    installable: false,
++}
++
++// collects deapexer and its dependency modules (libc++ and debugfs_static) to the zip file.
++genrule {
++    name: "deapexer.zip",
++    tools: [
++        "deapexer",
++        "debugfs_static",
++        "fsck.erofs",
++        "soong_zip",
++    ],
++    cmd: "rm -rf mkdir $(genDir)/deapexer && mkdir $(genDir)/deapexer && " +
++        "cp $(location deapexer) $(genDir)/deapexer && " +
++        "cp $(location debugfs_static) $(genDir)/deapexer && " +
++        "cp $(location fsck.erofs) $(genDir)/deapexer && " +
++        "HOST_OUT_SHARED_LIBRARIES=$$(dirname $(location deapexer))/../lib64 && " +
++        "cp $${HOST_OUT_SHARED_LIBRARIES}/libc++.* $(genDir)/deapexer && " +
++        "$(location soong_zip) -o $(out) -C $(genDir)/deapexer -D $(genDir)/deapexer",
++    out: ["deapexer.zip"],
++}
++
++test_module_config_host {
++    name: "CtsStagedInstallHostTestCases_NoLarge",
++    base: "CtsStagedInstallHostTestCases",
++    test_suites: ["general-tests"],
++    exclude_annotations: ["android.platform.test.annotations.LargeTest"],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-tradefed.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-tradefed.bp
+new file mode 100644
+index 0000000..12c5a55
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-tradefed.bp
+@@ -0,0 +1,67 @@
++// Copyright (C) 2023 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++java_library_host {
++    name: "cts-tradefed-harness",
++
++    java_resource_dirs: ["res"],
++    libs: [
++        "tradefed",
++        "compatibility-host-util",
++    ],
++    static_libs: [
++        "compatibility-tradefed",
++    ],
++}
++
++tradefed_binary_host {
++    name: "cts-tradefed",
++    wrapper: "etc/cts-tradefed",
++    short_name: "CTS",
++    full_name: "Compatibility Test Suite",
++    version: "17_r1",
++    static_libs: ["cts-tradefed-harness"],
++    required: ["compatibility-host-util"],
++}
++
++compatibility_test_suite_package {
++    name: "cts",
++    tradefed: "cts-tradefed",
++    dynamic_config: "DynamicConfig.xml",
++    readme: "README",
++    tools: [
++        "ats_console_deploy",
++        "ats_olc_server_local_mode_deploy",
++    ],
++    build_test_list: true,
++    build_metadata: true,
++    phony_deps: [
++        "cts-verifier",
++        "cts_platform_releases_check",
++    ] + select(release_flag("RELEASE_PLATFORM_VERSION_CODENAME"), {
++        "REL": [],
++        default: ["cts_platform_version_check"],
++    }),
++}
++
++phony_rule {
++    name: "cts_v2",
++    phony_deps: [
++        "cts",
++    ],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-vogar-expect.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-vogar-expect.bp
+new file mode 100644
+index 0000000..b94a9ca
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-vogar-expect.bp
+@@ -0,0 +1,48 @@
++//
++// Copyright (C) 2010 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++java_library {
++    name: "vogarexpect",
++    host_supported: true,
++    srcs: ["src/**/*.java"],
++
++    sdk_version: "current",
++
++    static_libs: [
++        "guava",
++        "json",
++    ],
++}
++
++java_library_host {
++    name: "vogarexpectlib",
++    static_libs: ["vogarexpect"],
++}
++
++// Version of the lib without dependencies statically linked
++java_library_host {
++    name: "vogarexpect-no-deps",
++    srcs: ["src/**/*.java"],
++
++    libs: [
++        "guava",
++	"json",
++    ],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/deqp-android-cts-original.bp b/tools/droidloom-update/tests/fixtures/audio-providers/deqp-android-cts-original.bp
+new file mode 100644
+index 0000000..a85006d
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/deqp-android-cts-original.bp
+@@ -0,0 +1,101 @@
++// Copyright (C) 2015 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++
++package {
++    // See: http://go/android-license-faq
++    // A large-scale-change added 'default_applicable_licenses' to import
++    // all of the 'license_kinds' from "external_deqp_license"
++    // to get the below license kinds:
++    //   SPDX-license-identifier-Apache-2.0
++    default_applicable_licenses: ["external_deqp_license"],
++}
++
++filegroup {
++    name: "deqp_main_caselists",
++    srcs: [
++        "main/*.txt",
++        "main/vk-*/**/*.txt",
++    ],
++    path: "main",
++}
++
++filegroup {
++    name: "deqp_angle_exclude_caselists",
++    srcs: [
++        "angle/*.txt",
++    ],
++    path: "angle",
++}
++
++genrule {
++    name: "llvm-strip-tools",
++    srcs: [
++        ":llvm-tools",
++    ],
++    out: [
++        "llvm_strip_bin/llvm-objcopy",
++        "llvm_strip_bin/llvm-strip",
++    ],
++    cmd: "mkdir -p $(genDir)/llvm_strip_bin && " +
++        "cp -f prebuilts/clang/host/linux-x86/*/bin/llvm-objcopy $(genDir)/llvm_strip_bin && " +
++        "cp -f prebuilts/clang/host/linux-x86/*/bin/llvm-strip $(genDir)/llvm_strip_bin",
++    visibility: [":__subpackages__"],
++}
++
++java_test_host {
++    name: "CtsDeqpTestCases",
++
++    // Tag this module as a cts test artifact
++    test_suites: [
++        "cts",
++        "dts",
++        "general-tests",
++        "automotive-general-tests",
++    ],
++
++    srcs: ["runner/src/**/*.java"],
++    libs: [
++        "cts-tradefed",
++        "compatibility-host-util",
++        "tradefed",
++    ],
++
++    per_testcase_directory: true,
++    data: [
++        ":deqp_binary_data",
++        ":deqp_binary_data_vulkancts",
++        ":deqp_binary_data_graphicsfuzz",
++        ":deqp_main_caselists",
++        ":deqp_angle_exclude_caselists",
++        ":llvm-strip-tools",
++    ],
++    device_common_data: [
++        ":com.drawelements.deqp",
++    ],
++    data_device_bins_both: [
++        "deqp-binary",
++    ],
++}
++
++java_library_host {
++    name: "CtsDeqpTestCasesJavaHostLib",
++    srcs: ["runner/src/**/*.java"],
++    libs: [
++        "cts-tradefed",
++        "compatibility-tradefed",
++        "compatibility-host-util",
++        "tradefed",
++    ],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/deqp-android-cts-runner-tests-original.bp b/tools/droidloom-update/tests/fixtures/audio-providers/deqp-android-cts-runner-tests-original.bp
+new file mode 100644
+index 0000000..6f98cc2
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/deqp-android-cts-runner-tests-original.bp
+@@ -0,0 +1,37 @@
++// Copyright (C) 2010 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    // See: http://go/android-license-faq
++    // A large-scale-change added 'default_applicable_licenses' to import
++    // all of the 'license_kinds' from "external_deqp_license"
++    // to get the below license kinds:
++    //   SPDX-license-identifier-Apache-2.0
++    default_applicable_licenses: ["external_deqp_license"],
++}
++
++java_test_host {
++    name: "CtsDeqpRunnerTests",
++
++    // Only compile source java files in this lib.
++    srcs: ["src/**/*.java"],
++
++    libs: [
++        "cts-tradefed",
++        "compatibility-host-util",
++        "tradefed",
++        "CtsDeqpTestCases",
++    ],
++    static_libs: ["easymock"],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-SPIRV-Headers-original.bp b/tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-SPIRV-Headers-original.bp
+new file mode 100644
+index 0000000..b8e9c66
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-SPIRV-Headers-original.bp
+@@ -0,0 +1,112 @@
++// SPIRV-Tools requires the following filegroups:
++//
++// deqp_spirv_headers_unified1_extinst.debuginfo.grammar.json
++// deqp_spirv_headers_unified1_extinst.glsl.std.450.grammar.json
++// deqp_spirv_headers_unified1_extinst.nonsemantic.clspvreflection.grammar.json
++// deqp_spirv_headers_unified1_extinst.nonsemantic.vkspreflection.grammar.json
++// deqp_spirv_headers_unified1_extinst.nonsemantic.shader.debuginfo.100.grammar.json
++// deqp_spirv_headers_unified1_extinst.opencl.debuginfo.100.grammar.json
++// deqp_spirv_headers_unified1_extinst.opencl.std.100.grammar.json
++// deqp_spirv_headers_unified1_extinst.spv-amd-gcn-shader.grammar.json
++// deqp_spirv_headers_unified1_extinst.spv-amd-shader-ballot.grammar.json
++// deqp_spirv_headers_unified1_extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json
++// deqp_spirv_headers_unified1_extinst.spv-amd-shader-trinary-minmax.grammar.json
++// deqp_spirv_headers_unified1_spirv.core.grammar.json
++//
++// deqp_spirv_headers_spir-v.xml
++
++package {
++    default_applicable_licenses: ["external_deqp-deps_SPIRV-Headers_license"],
++}
++
++// Added automatically by a large-scale-change that took the approach of
++// 'apply every license found to every target'. While this makes sure we respect
++// every license restriction, it may not be entirely correct.
++//
++// e.g. GPL in an MIT project might only apply to the contrib/ directory.
++//
++// Please consider splitting the single license below into multiple licenses,
++// taking care not to lose any license_kind information, and overriding the
++// default license using the 'licenses: [...]' property on targets as needed.
++//
++// For unused files, consider creating a 'fileGroup' with "//visibility:private"
++// to attach the license to, and including a comment whether the files may be
++// used in the current project.
++// See: http://go/android-license-faq
++license {
++    name: "external_deqp-deps_SPIRV-Headers_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-BSD",
++        "SPDX-license-identifier-MIT",
++        "legacy_unencumbered",
++    ],
++    license_text: [
++        "LICENSE",
++    ],
++}
++
++filegroup {
++    name: "deqp_spirv_headers_unified1_extinst.debuginfo.grammar.json",
++    srcs: ["include/spirv/unified1/extinst.debuginfo.grammar.json"],
++}
++
++filegroup {
++    name: "deqp_spirv_headers_unified1_extinst.glsl.std.450.grammar.json",
++    srcs: ["include/spirv/unified1/extinst.glsl.std.450.grammar.json"],
++}
++
++filegroup {
++    name: "deqp_spirv_headers_unified1_extinst.nonsemantic.clspvreflection.grammar.json",
++    srcs: ["include/spirv/unified1/extinst.nonsemantic.clspvreflection.grammar.json"],
++}
++
++filegroup {
++    name: "deqp_spirv_headers_unified1_extinst.nonsemantic.vkspreflection.grammar.json",
++    srcs: ["include/spirv/unified1/extinst.nonsemantic.vkspreflection.grammar.json"],
++}
++
++filegroup {
++    name: "deqp_spirv_headers_unified1_extinst.nonsemantic.shader.debuginfo.100.grammar.json",
++    srcs: ["include/spirv/unified1/extinst.nonsemantic.shader.debuginfo.100.grammar.json"],
++}
++
++filegroup {
++    name: "deqp_spirv_headers_unified1_extinst.opencl.debuginfo.100.grammar.json",
++    srcs: ["include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json"],
++}
++
++filegroup {
++    name: "deqp_spirv_headers_unified1_extinst.opencl.std.100.grammar.json",
++    srcs: ["include/spirv/unified1/extinst.opencl.std.100.grammar.json"],
++}
++
++filegroup {
++    name: "deqp_spirv_headers_unified1_extinst.spv-amd-gcn-shader.grammar.json",
++    srcs: ["include/spirv/unified1/extinst.spv-amd-gcn-shader.grammar.json"],
++}
++
++filegroup {
++    name: "deqp_spirv_headers_unified1_extinst.spv-amd-shader-ballot.grammar.json",
++    srcs: ["include/spirv/unified1/extinst.spv-amd-shader-ballot.grammar.json"],
++}
++
++filegroup {
++    name: "deqp_spirv_headers_unified1_extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json",
++    srcs: ["include/spirv/unified1/extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json"],
++}
++
++filegroup {
++    name: "deqp_spirv_headers_unified1_extinst.spv-amd-shader-trinary-minmax.grammar.json",
++    srcs: ["include/spirv/unified1/extinst.spv-amd-shader-trinary-minmax.grammar.json"],
++}
++
++filegroup {
++    name: "deqp_spirv_headers_unified1_spirv.core.grammar.json",
++    srcs: ["include/spirv/unified1/spirv.core.grammar.json"],
++}
++
++filegroup {
++    name: "deqp_spirv_headers_spir-v.xml",
++    srcs: ["include/spirv/spir-v.xml"],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-SPIRV-Tools-original.bp b/tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-SPIRV-Tools-original.bp
+new file mode 100644
+index 0000000..aaf688f
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-SPIRV-Tools-original.bp
+@@ -0,0 +1,125 @@
++
++package {
++    default_applicable_licenses: ["external_deqp-deps_SPIRV-Tools_license"],
++}
++
++// Added automatically by a large-scale-change that took the approach of
++// 'apply every license found to every target'. While this makes sure we respect
++// every license restriction, it may not be entirely correct.
++//
++// e.g. GPL in an MIT project might only apply to the contrib/ directory.
++//
++// Please consider splitting the single license below into multiple licenses,
++// taking care not to lose any license_kind information, and overriding the
++// default license using the 'licenses: [...]' property on targets as needed.
++//
++// For unused files, consider creating a 'fileGroup' with "//visibility:private"
++// to attach the license to, and including a comment whether the files may be
++// used in the current project.
++// See: http://go/android-license-faq
++license {
++    name: "external_deqp-deps_SPIRV-Tools_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-Apache-2.0",
++        "SPDX-license-identifier-BSD",
++        "SPDX-license-identifier-MIT",
++    ],
++    license_text: [
++        "LICENSE",
++    ],
++}
++
++genrule {
++    name: "deqp_spvtools_ggt",
++    out: [
++        "core_tables_body.inc",
++        "core_tables_header.inc",
++    ],
++    srcs: [
++        ":deqp_spirv_headers_unified1_extinst.debuginfo.grammar.json",
++        ":deqp_spirv_headers_unified1_extinst.glsl.std.450.grammar.json",
++        ":deqp_spirv_headers_unified1_extinst.nonsemantic.clspvreflection.grammar.json",
++        ":deqp_spirv_headers_unified1_extinst.nonsemantic.vkspreflection.grammar.json",
++        ":deqp_spirv_headers_unified1_extinst.nonsemantic.shader.debuginfo.100.grammar.json",
++        ":deqp_spirv_headers_unified1_extinst.opencl.debuginfo.100.grammar.json",
++        ":deqp_spirv_headers_unified1_extinst.opencl.std.100.grammar.json",
++        ":deqp_spirv_headers_unified1_extinst.spv-amd-gcn-shader.grammar.json",
++        ":deqp_spirv_headers_unified1_extinst.spv-amd-shader-ballot.grammar.json",
++        ":deqp_spirv_headers_unified1_extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json",
++        ":deqp_spirv_headers_unified1_extinst.spv-amd-shader-trinary-minmax.grammar.json",
++        ":deqp_spirv_headers_unified1_spirv.core.grammar.json",
++    ],
++    tool_files: ["utils/ggt.py", "utils/Table/Context.py", "utils/Table/IndexRange.py", "utils/Table/StringList.py", "utils/Table/Operand.py"],
++    cmd: "$(location) --core-tables-body-output=$(location core_tables_body.inc) --core-tables-header-output=$(location core_tables_header.inc) --spirv-core-grammar=$(location :deqp_spirv_headers_unified1_spirv.core.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.glsl.std.450.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.opencl.std.100.grammar.json) --extinst=CLDEBUG100_,$(location :deqp_spirv_headers_unified1_extinst.opencl.debuginfo.100.grammar.json) --extinst=SHDEBUG100_,$(location :deqp_spirv_headers_unified1_extinst.nonsemantic.shader.debuginfo.100.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.spv-amd-shader-trinary-minmax.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.spv-amd-gcn-shader.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.spv-amd-shader-ballot.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.debuginfo.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.nonsemantic.clspvreflection.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.nonsemantic.vkspreflection.grammar.json) ",
++}
++
++genrule {
++    name: "deqp_spvtools_generate_language_headers",
++    out: [
++        "DebugInfo.h",
++        "NonSemanticShaderDebugInfo100.h",
++        "OpenCLDebugInfo100.h",
++    ],
++    srcs: [
++        ":deqp_spirv_headers_unified1_extinst.debuginfo.grammar.json",
++        ":deqp_spirv_headers_unified1_extinst.nonsemantic.shader.debuginfo.100.grammar.json",
++        ":deqp_spirv_headers_unified1_extinst.opencl.debuginfo.100.grammar.json",
++    ],
++    tool_files: ["utils/generate_language_headers.py"],
++    cmd:
++        "$(location) --extinst-grammar=$(location :deqp_spirv_headers_unified1_extinst.debuginfo.grammar.json) --extinst-output-path=$(location DebugInfo.h); "+
++        "$(location) --extinst-grammar=$(location :deqp_spirv_headers_unified1_extinst.nonsemantic.shader.debuginfo.100.grammar.json) --extinst-output-path=$(location NonSemanticShaderDebugInfo100.h); "+
++        "$(location) --extinst-grammar=$(location :deqp_spirv_headers_unified1_extinst.opencl.debuginfo.100.grammar.json) --extinst-output-path=$(location OpenCLDebugInfo100.h); "
++}
++
++genrule {
++    name: "deqp_spvtools_generate_registry_tables",
++    out: [
++        "generators.inc"
++    ],
++    srcs: [
++        ":deqp_spirv_headers_spir-v.xml"
++    ],
++    tool_files: ["utils/generate_registry_tables.py"],
++    cmd: "$(location) --xml=$(location :deqp_spirv_headers_spir-v.xml) --generator-output=$(location generators.inc)",
++}
++
++genrule { // FIXME this relies on `git` which is no good on build machines
++    name: "deqp_spvtools_update_build_version",
++    out: ["build-version.inc"],
++    srcs: ["CHANGES"],
++    tool_files: ["utils/update_build_version.py"],
++    cmd: "$(location) $(location CHANGES) $(location build-version.inc)",
++}
++
++cc_library {
++    name: "deqp_spirv-tools",
++    defaults: ["deqp_and_deps_defaults"],
++    srcs: [
++        "source/*.cpp",
++        "source/util/*.cpp",
++        "source/val/*.cpp",
++        "source/opt/*.cpp",
++    ],
++    local_include_dirs: [
++        ".",
++    ],
++    export_include_dirs: [
++        "include",
++    ],
++    include_dirs: [
++        "external/deqp-deps/SPIRV-Headers/include"
++    ],
++    generated_headers: [
++        "deqp_spvtools_ggt",
++        "deqp_spvtools_generate_language_headers",
++        "deqp_spvtools_update_build_version",
++        "deqp_spvtools_generate_registry_tables",
++    ],
++    cppflags: [
++        "-Wno-implicit-fallthrough",
++        "-Wno-sign-conversion",
++        "-Wno-switch",
++    ],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-amber-original.bp b/tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-amber-original.bp
+new file mode 100644
+index 0000000..04d58c2
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-amber-original.bp
+@@ -0,0 +1,103 @@
++package {
++    default_applicable_licenses: ["external_deqp-deps_amber_license"],
++}
++
++// Added automatically by a large-scale-change
++//
++// large-scale-change included anything that looked like it might be a license
++// text as a license_text. e.g. LICENSE, NOTICE, COPYING etc.
++//
++// Please consider removing redundant or irrelevant files from 'license_text:'.
++// See: http://go/android-license-faq
++license {
++    name: "external_deqp-deps_amber_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-Apache-2.0",
++    ],
++    license_text: [
++        "LICENSE",
++    ],
++}
++
++genrule {
++    name: "deqp_amber_gen_vk_wrappers",
++    out: ["vk-wrappers-1-0.inc", "vk-wrappers-1-0.h", "vk-wrappers-1-1.inc", "vk-wrappers-1-1.h"],
++    srcs: ["src/vulkan/vk-funcs-1-0.inc", "src/vulkan/vk-funcs-1-1.inc"],
++    tool_files: ["tools/update_vk_wrappers.py"],
++    cmd: "$(location) $(genDir) $$(dirname $(location src/vulkan/vk-funcs-1-0.inc))/../..",
++}
++
++cc_library_static {
++    name: "deqp_amber",
++    defaults: ["deqp_and_deps_defaults"],
++    export_include_dirs: [
++        "include",
++        ".",
++    ],
++    generated_headers: [
++        "deqp_amber_gen_vk_wrappers",
++    ],
++    header_libs: [
++        "deqp_vulkan_headers",
++    ],
++    srcs: [
++	"src/acceleration_structure.cc",
++        "src/amber.cc",
++        "src/amberscript/parser.cc",
++        "src/buffer.cc",
++        "src/command_data.cc",
++        "src/command.cc",
++        "src/descriptor_set_and_binding_parser.cc",
++        "src/engine.cc",
++        "src/executor.cc",
++        "src/float16_helper.cc",
++        "src/format.cc",
++        "src/parser.cc",
++        "src/pipeline_data.cc",
++        "src/pipeline.cc",
++        "src/recipe.cc",
++        "src/result.cc",
++        "src/sampler.cc",
++        "src/script.cc",
++        "src/shader_compiler.cc",
++        "src/shader.cc",
++        "src/sleep.cc",
++        "src/tokenizer.cc",
++        "src/type_parser.cc",
++        "src/type.cc",
++        "src/value.cc",
++        "src/verifier.cc",
++        "src/virtual_file_store.cc",
++        "src/vkscript/command_parser.cc",
++        "src/vkscript/datum_type_parser.cc",
++        "src/vkscript/parser.cc",
++        "src/vkscript/section_parser.cc",
++        "src/vulkan_engine_config.cc",
++        "src/vulkan/blas.cc",
++        "src/vulkan/buffer_backed_descriptor.cc",
++        "src/vulkan/buffer_descriptor.cc",
++        "src/vulkan/command_buffer.cc",
++        "src/vulkan/command_pool.cc",
++        "src/vulkan/compute_pipeline.cc",
++        "src/vulkan/descriptor.cc",
++        "src/vulkan/device.cc",
++        "src/vulkan/engine_vulkan.cc",
++        "src/vulkan/frame_buffer.cc",
++        "src/vulkan/graphics_pipeline.cc",
++        "src/vulkan/image_descriptor.cc",
++        "src/vulkan/index_buffer.cc",
++        "src/vulkan/pipeline.cc",
++        "src/vulkan/push_constant.cc",
++        "src/vulkan/raytracing_pipeline.cc",
++        "src/vulkan/resource.cc",
++        "src/vulkan/sampler_descriptor.cc",
++        "src/vulkan/sampler.cc",
++        "src/vulkan/sbt.cc",
++        "src/vulkan/tlas.cc",
++        "src/vulkan/tlas_descriptor.cc",
++        "src/vulkan/transfer_buffer.cc",
++        "src/vulkan/transfer_image.cc",
++        "src/vulkan/vertex_buffer.cc",
++    ],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-glslang-original.bp b/tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-glslang-original.bp
+new file mode 100644
+index 0000000..93a5f5d
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/deqp-deps-glslang-original.bp
+@@ -0,0 +1,293 @@
++// This file is derived (manually) from the CMake targets.
++// We only consider the targets that dEQP depends on (including transitive
++// dependencies). Search for "GLSLANG_LIBRARIES" in dEQP.
++//
++// dEQP depends on:
++// - glslang
++//   - OSDependent
++//   - MachineIndependent
++//     - OGLCompiler
++//     - OSDependent
++//     - GenericCodeGen
++// - SPIRV (does not depend on SPIRV-Tools-opt because ENABLE_OPT=0)
++//   - MachineIndependent
++//     - ...
++// - SPVRemapper
++
++package {
++    default_applicable_licenses: ["external_deqp-deps_glslang_license"],
++}
++
++// Added automatically by a large-scale-change that took the approach of
++// 'apply every license found to every target'. While this makes sure we respect
++// every license restriction, it may not be entirely correct.
++//
++// e.g. GPL in an MIT project might only apply to the contrib/ directory.
++//
++// Please consider splitting the single license below into multiple licenses,
++// taking care not to lose any license_kind information, and overriding the
++// default license using the 'licenses: [...]' property on targets as needed.
++//
++// For unused files, consider creating a 'fileGroup' with "//visibility:private"
++// to attach the license to, and including a comment whether the files may be
++// used in the current project.
++//
++// large-scale-change included anything that looked like it might be a license
++// text as a license_text. e.g. LICENSE, NOTICE, COPYING etc.
++//
++// Please consider removing redundant or irrelevant files from 'license_text:'.
++//
++// large-scale-change filtered out the below license kinds as false-positives:
++//   SPDX-license-identifier-GPL
++//   SPDX-license-identifier-GPL-3.0
++// See: http://go/android-license-faq
++license {
++    name: "external_deqp-deps_glslang_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-Apache-2.0",
++        "SPDX-license-identifier-BSD",
++        "SPDX-license-identifier-MIT",
++    ],
++    license_text: [
++        "LICENSE",
++        "LICENSE.txt",
++    ],
++}
++
++genrule {
++    name: "deqp_glslang_gen_build_info_h",
++    srcs: [
++        "CHANGES.md",
++        "build_info.h.tmpl",
++    ],
++    out: ["glslang/build_info.h"],
++    cmd: "$(location) $$(dirname $(location CHANGES.md)) -i $(location build_info.h.tmpl) -o $(location glslang/build_info.h)",
++    tool_files: ["build_info.py"],
++}
++
++cc_defaults {
++    name: "deqp_glslang_defaults",
++    defaults: ["deqp_and_deps_defaults"],
++    cppflags: [
++        "-Wno-enum-enum-conversion",
++        "-Wno-implicit-fallthrough",
++        "-Wno-missing-field-initializers",
++        "-Wno-unused-variable",
++        "-Wno-implicit-int-conversion",
++        "-Wno-sign-conversion",
++        "-Wno-unused-parameter",
++        "-Wno-unused-but-set-variable",
++        "-Wno-shorten-64-to-32",
++    ],
++    host_supported: true,
++    export_include_dirs: [
++        ".",
++    ],
++    generated_headers: [
++        "deqp_glslang_gen_build_info_h",
++    ],
++}
++
++cc_library_static {
++    name: "deqp_glslang_OSDependent",
++    defaults: [
++        "deqp_glslang_defaults",
++    ],
++    export_include_dirs: [
++        "glslang/OSDependent",
++    ],
++    srcs: [
++        "glslang/OSDependent/Unix/ossource.cpp",
++    ],
++}
++
++cc_library_static {
++    name: "deqp_glslang_MachineIndependent",
++    defaults: [
++        "deqp_glslang_defaults",
++    ],
++    export_include_dirs: [
++        "glslang/MachineIndependent",
++        "glslang/HLSL",
++    ],
++    srcs: [
++        //        "glslang/MachineIndependent/glslang.m4",
++        //        "glslang/MachineIndependent/glslang.y",
++        "glslang/MachineIndependent/glslang_tab.cpp",
++        "glslang/MachineIndependent/attribute.cpp",
++        "glslang/MachineIndependent/Constant.cpp",
++        "glslang/MachineIndependent/iomapper.cpp",
++        "glslang/MachineIndependent/InfoSink.cpp",
++        "glslang/MachineIndependent/Initialize.cpp",
++        "glslang/MachineIndependent/IntermTraverse.cpp",
++        "glslang/MachineIndependent/Intermediate.cpp",
++        "glslang/MachineIndependent/ParseContextBase.cpp",
++        "glslang/MachineIndependent/ParseHelper.cpp",
++        "glslang/MachineIndependent/PoolAlloc.cpp",
++        "glslang/MachineIndependent/RemoveTree.cpp",
++        "glslang/MachineIndependent/Scan.cpp",
++        "glslang/MachineIndependent/ShaderLang.cpp",
++        "glslang/MachineIndependent/SpirvIntrinsics.cpp",
++        "glslang/MachineIndependent/SymbolTable.cpp",
++        "glslang/MachineIndependent/Versions.cpp",
++        "glslang/MachineIndependent/intermOut.cpp",
++        "glslang/MachineIndependent/limits.cpp",
++        "glslang/MachineIndependent/linkValidate.cpp",
++        "glslang/MachineIndependent/parseConst.cpp",
++        "glslang/MachineIndependent/reflection.cpp",
++        "glslang/MachineIndependent/preprocessor/Pp.cpp",
++        "glslang/MachineIndependent/preprocessor/PpAtom.cpp",
++        "glslang/MachineIndependent/preprocessor/PpContext.cpp",
++        "glslang/MachineIndependent/preprocessor/PpScanner.cpp",
++        "glslang/MachineIndependent/preprocessor/PpTokens.cpp",
++        "glslang/MachineIndependent/propagateNoContraction.cpp",
++
++        "glslang/HLSL/hlslAttributes.cpp",
++        "glslang/HLSL/hlslParseHelper.cpp",
++        "glslang/HLSL/hlslScanContext.cpp",
++        "glslang/HLSL/hlslOpMap.cpp",
++        "glslang/HLSL/hlslTokenStream.cpp",
++        "glslang/HLSL/hlslGrammar.cpp",
++        "glslang/HLSL/hlslParseables.cpp",
++    ],
++    static_libs: [
++        "deqp_glslang_OSDependent",
++        "deqp_glslang_GenericCodeGen",
++    ],
++}
++
++cc_library_static {
++    name: "deqp_glslang_glslang",
++    defaults: [
++        "deqp_glslang_defaults",
++    ],
++    export_include_dirs: [
++        "glslang",
++    ],
++    srcs: [
++        "glslang/CInterface/glslang_c_interface.cpp",
++    ],
++    static_libs: [
++        "deqp_glslang_OSDependent",
++        "deqp_glslang_MachineIndependent",
++    ],
++}
++
++cc_library_static {
++    name: "deqp_glslang_SPIRV",
++    defaults: [
++        "deqp_glslang_defaults",
++    ],
++    export_include_dirs: [
++        "SPIRV",
++    ],
++    srcs: [
++        "SPIRV/GlslangToSpv.cpp",
++        "SPIRV/InReadableOrder.cpp",
++        "SPIRV/Logger.cpp",
++        "SPIRV/SpvBuilder.cpp",
++        "SPIRV/SpvPostProcess.cpp",
++        "SPIRV/doc.cpp",
++        "SPIRV/SpvTools.cpp",
++        "SPIRV/disassemble.cpp",
++        "SPIRV/CInterface/spirv_c_interface.cpp",
++    ],
++    static_libs: [
++        "deqp_glslang_MachineIndependent",
++    ],
++}
++
++cc_library_static {
++    name: "deqp_glslang_SPVRemapper",
++    defaults: [
++        "deqp_glslang_defaults",
++    ],
++    export_include_dirs: [
++        "SPIRV",
++    ],
++    srcs: [
++        "SPIRV/doc.cpp",
++    ],
++}
++
++cc_library_static {
++    name: "deqp_glslang_GenericCodeGen",
++    defaults: [
++        "deqp_glslang_defaults",
++    ],
++    export_include_dirs: [
++        "glslang/GenericCodeGen",
++    ],
++    srcs: [
++        "glslang/GenericCodeGen/CodeGen.cpp",
++        "glslang/GenericCodeGen/Link.cpp",
++    ],
++}
++
++cc_library_headers {
++    name: "deqp_glslang_ResourceLimits_headers",
++    defaults: ["deqp_and_deps_defaults"],
++    host_supported: true,
++    export_include_dirs: [
++        "glslang/Public/ResourceLimits.h",
++    ],
++}
++
++cc_library_static {
++    name: "deqp_glslang_ResourceLimits",
++    defaults: [
++        "deqp_glslang_defaults",
++    ],
++    export_include_dirs: [
++        "glslang/ResourceLimits",
++    ],
++    srcs: [
++        "glslang/ResourceLimits/ResourceLimits.cpp",
++    ],
++    header_libs: [
++        "deqp_glslang_ResourceLimits_headers",
++    ],
++}
++
++genrule {
++    name: "deqp_glslang_intrinsic_h",
++    srcs: ["glslang/ExtensionHeaders/**/*"],
++    out: ["glslang/glsl_intrinsic_header.h"],
++    cmd: "python3 $(location gen_extension_headers.py) " +
++        "-i $$(dirname glslang/ExtensionHeaders) " +
++        "-o $(location glslang/glsl_intrinsic_header.h)",
++    tool_files: ["gen_extension_headers.py"],
++}
++
++cc_binary_host {
++    name: "glslangValidator",
++    visibility: ["//visibility:public"],
++
++    defaults: [
++        "deqp_glslang_defaults",
++    ],
++
++    srcs: [
++        "StandAlone/StandAlone.cpp",
++    ],
++
++    cppflags: [
++        "-DENABLE_OPT=0",
++        "-DENABLE_SPIRV=1",
++    ],
++
++    generated_headers: [
++        "deqp_glslang_intrinsic_h",
++        "deqp_glslang_ResourceLimits_headers",
++    ],
++
++    static_libs: [
++        "deqp_glslang_SPIRV",
++        "deqp_glslang_glslang",
++        "deqp_glslang_ResourceLimits",
++        "deqp_glslang_MachineIndependent",
++        "deqp_glslang_GenericCodeGen",
++        "deqp_glslang_OSDependent",
++    ],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/deqp-original.bp b/tools/droidloom-update/tests/fixtures/audio-providers/deqp-original.bp
+new file mode 100644
+index 0000000..1ed2542
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/deqp-original.bp
+@@ -0,0 +1,423 @@
++package {
++    default_team: "trendy_team_android_gpu",
++    default_applicable_licenses: ["external_deqp_license"],
++}
++
++// Added automatically by a large-scale-change that took the approach of
++// 'apply every license found to every target'. While this makes sure we respect
++// every license restriction, it may not be entirely correct.
++//
++// e.g. GPL in an MIT project might only apply to the contrib/ directory.
++//
++// Please consider splitting the single license below into multiple licenses,
++// taking care not to lose any license_kind information, and overriding the
++// default license using the 'licenses: [...]' property on targets as needed.
++//
++// For unused files, consider creating a 'fileGroup' with "//visibility:private"
++// to attach the license to, and including a comment whether the files may be
++// used in the current project.
++//
++// large-scale-change included anything that looked like it might be a license
++// text as a license_text. e.g. LICENSE, NOTICE, COPYING etc.
++//
++// Please consider removing redundant or irrelevant files from 'license_text:'.
++// See: http://go/android-license-faq
++license {
++    name: "external_deqp_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-Apache-2.0",
++        "SPDX-license-identifier-BSD",
++        "SPDX-license-identifier-MIT",
++    ],
++    license_text: [
++        "LICENSE",
++        "NOTICE",
++    ],
++}
++
++build = [
++    "AndroidGen.bp",
++    "AndroidKhronosCTSGen.bp",
++]
++
++// Used by Amber.
++// Amber includes "vkDefs.h".
++cc_library_headers {
++    name: "deqp_vulkan_headers",
++    defaults: ["deqp_and_deps_defaults"],
++    export_include_dirs: [
++        "external/vulkancts/framework/vulkan",
++        "external/vulkancts/framework/vulkan/generated/vulkan",
++        "framework/delibs/debase",
++    ],
++}
++
++// These defaults ensure we have a consistent set of defines and compiler flags
++// across dEQP and its dependencies.
++cc_defaults {
++    name: "deqp_and_deps_defaults",
++    cpp_std: "c++17",
++    cflags: [
++        // Amber defines.
++        "-DAMBER_CTS_VULKAN_HEADER=1",
++        "-DAMBER_ENABLE_CLSPV=0",
++        "-DAMBER_ENABLE_DXC=0",
++        "-DAMBER_ENABLE_LODEPNG=1", // This has no effect.
++        "-DAMBER_ENABLE_RTTI=1",
++        "-DAMBER_ENABLE_SHADERC=0",
++        "-DAMBER_ENABLE_SPIRV_TOOLS=0",
++        "-DAMBER_ENABLE_VK_DEBUGGING=0",
++        "-DAMBER_ENGINE_DAWN=0",
++        "-DAMBER_ENGINE_VULKAN=1",
++
++        // glslang defines:
++        "-DENABLE_HLSL",
++        "-DENABLE_OPT=0",
++        "-DGLSLANG_OSINCLUDE_UNIX",
++
++        // SPIRV-Tools defines:
++        "-DSPIRV_ANDROID",
++        "-DSPIRV_CHECK_CONTEXT",
++        "-DSPIRV_COLOR_TERMINAL",
++        "-DSPIRV_TIMER_ENABLED",
++
++        // Android/Clang defines (not needed):
++        // -D_FORTIFY_SOURCE=2
++        // -DANDROID
++        // -DNDEBUG
++
++        // dEQP defines that we don't want/need:
++        // -DDE_DEBUG
++        // -DDEQP_USE_RELEASE_INFO_FILE
++        // -DPNG_DEBUG
++
++        // dEQP defines that are worked out in deDefs.h, without needing
++        // explicit defs:
++        // -DDE_PTR_SIZE=8
++        // -DDE_CPU=DE_CPU_ARM_64
++        //"-DDE_FENV_ACCESS_ON=_Pragma(\"STDC FENV_ACCESS ON\")",
++
++        // dEQP defines:
++        "-D_XOPEN_SOURCE=600",
++        "-DDE_ASSERT_FAILURE_CALLBACK",
++        "-DDE_COMPILER=DE_COMPILER_CLANG",
++        "-DDE_MINGW=0",
++        "-DDE_OS=DE_OS_ANDROID",
++        "-DDEQP_GLES2_DIRECT_LINK=1",
++        "-DDEQP_HAVE_RENDERDOC_HEADER=0", // Needs to be 0.
++        "-DDEQP_EXCLUDE_VK_VIDEO_TESTS",
++        "-DDEQP_SUPPORT_DRM=0",
++        "-DDEQP_SUPPORT_GLES1=1",
++        "-DDEQP_TARGET_NAME=\"Android\"",
++        "-DQP_SUPPORT_PNG",
++        "-DCTS_USES_VULKAN",
++
++        "-Wall",
++        "-Werror",
++        "-Wconversion",
++
++        "-fwrapv",
++    ],
++    cppflags: [
++        "-fexceptions",
++    ],
++    sdk_version: "27",
++    rtti: true,
++    stl: "c++_static",
++    product_variables: {
++        platform_sdk_version: {
++            cflags: [
++                // dEQP defines:
++                "-DDE_ANDROID_API=%d",
++            ],
++        },
++    },
++    ldflags: [
++        // b/358374878 workaround suspected 32b linker bug
++        "-Wl,-icf=none",
++    ],
++}
++
++cc_library_shared {
++    name: "libdeqp",
++    defaults: ["libdeqp_defaults"],
++}
++
++cc_defaults {
++    name: "libdeqp_defaults",
++    defaults: [
++        "libdeqp_gen",
++        "deqp_and_deps_defaults",
++    ],
++
++    tidy_checks: [
++        // The clang-tidy google-explicit-constructor warning is issued to nearly
++        // 1000 conversion constructors in this project. They are from more than
++        // 500 source files. Most of them should be declared explicit, but many
++        // of them need to be implicit. Until we correctly mark them as explicit
++        // or NOLINT(implicit), we suppress the google-explicit-constructor check.
++        "-google-explicit-constructor",
++
++        "-google-build-explicit-make-pair",
++        "-google-global-names-in-headers",
++        "-google-runtime-member-string-references",
++        "-google-runtime-operator",
++    ],
++
++    header_libs: ["jni_headers"],
++
++    include_dirs: [
++        "external/deqp-deps/SPIRV-Headers/include",
++    ],
++
++    shared_libs: [
++        "libEGL",
++        "libGLESv2",
++        "libandroid",
++        "liblog",
++        "libm",
++        "libc",
++        "libz",
++        "libdl",
++    ],
++
++    static_libs: [
++        "libpng_ndk",
++        "deqp_glslang_glslang",
++        "deqp_glslang_OSDependent",
++        "deqp_glslang_MachineIndependent",
++        "deqp_glslang_GenericCodeGen",
++        "deqp_glslang_SPIRV",
++        "deqp_glslang_SPVRemapper",
++        "deqp_spirv-tools",
++        "deqp_amber",
++    ],
++
++    cflags: [
++        "-Wno-implicit-fallthrough",
++        "-Wno-sign-conversion",
++        "-Wno-unused-private-field",
++        "-Wno-shorten-64-to-32",
++    ],
++
++    cppflags: [
++        "-Wno-non-virtual-dtor",
++        "-Wno-delete-non-virtual-dtor",
++        "-Wno-implicit-int-conversion",
++        "-Wno-missing-field-initializers",
++        "-Wno-switch",
++        "-Wno-unused-parameter",
++        "-Wno-unused-variable",
++        // Disabled as part of ongoing development for multi-window parallel execution support.
++        //"-DENABLE_MULTI_WINDOW_PARALLEL",
++    ],
++}
++
++android_test {
++    name: "com.drawelements.deqp",
++
++    test_suites: [
++        "vts10",
++    ],
++
++    srcs: ["android/package/src/**/*.java"],
++    resource_dirs: ["android/package/res"],
++    manifest: "android/package/AndroidManifest-integration.xml",
++
++    asset_dirs: [
++        "data",
++        "external/vulkancts/data",
++        "external/graphicsfuzz/data",
++    ],
++
++    jni_libs: ["libdeqp"],
++
++    compile_multilib: "both",
++
++    // We could go down all the way to API-13 for 32bit. 22 is required for 64bit ARM.
++    sdk_version: "test_current",
++
++    // Avoid apk installation failures ('Requires development platform...' errors)
++    min_sdk_version: "31",
++    target_sdk_version: "34",
++}
++
++cc_test {
++    name: "deqp-binary",
++    defaults: ["libdeqp_defaults"],
++
++    cflags: [
++        "-DDEQP_GLES3_RUNTIME_LOAD=1",
++    ],
++
++    cppflags: [
++        "-Wno-macro-redefined",
++    ],
++
++    srcs: [
++        "framework/platform/tcuMain.cpp",
++        "framework/platform/surfaceless/tcuSurfacelessPlatform.cpp",
++    ],
++
++    local_include_dirs: [
++        "framework/platform/surfaceless",
++    ],
++
++    multilib: {
++        lib32: {
++            suffix: "32",
++        },
++        lib64: {
++            suffix: "64",
++        },
++    },
++
++    compile_multilib: "both",
++
++    version_script: "deqp_binary.lds",
++
++    host_supported: false,
++    gtest: false,
++    auto_gen_config: false,
++    test_options: {
++        unit_test: false,
++    },
++    data: [
++        ":deqp_binary_incremental_test_lists",
++        ":deqp_binary_data",
++        ":deqp_binary_data_vulkancts",
++        ":deqp_binary_data_graphicsfuzz",
++    ],
++}
++
++cc_library_shared {
++    name: "libkhronosopenglcts",
++    defaults: ["khronoscts_default"],
++
++    srcs: [
++        "framework/platform/android/tcuAndroidMain.cpp",
++        "framework/platform/android/tcuAndroidJNI.cpp",
++        "framework/platform/android/tcuAndroidPlatformCapabilityQueryJNI.cpp",
++        "framework/platform/android/tcuTestLogParserJNI.cpp",
++        "external/openglcts/modules/runner/glcAndroidMain.cpp",
++        "external/openglcts/modules/glcTestPackageEntry.cpp",
++        "modules/gles2/tes2TestPackageEntry.cpp",
++        "modules/gles3/tes3TestPackageEntry.cpp",
++        "modules/gles31/tes31TestPackageEntry.cpp",
++        "modules/egl/teglTestPackageEntry.cpp",
++        "modules/internal/ditTestPackageEntry.cpp",
++    ],
++
++    local_include_dirs: [
++        "external/openglcts/modules/runner",
++        "external/openglcts/modules",
++        "framework/platform/android",
++        "modules/gles2",
++        "modules/gles3",
++        "modules/gles31",
++        "modules/egl",
++        "modules/internal",
++    ],
++
++    static_libs: [
++        "libkhronoscts_common",
++        "libkhronoscts_modules_gles",
++        "libkhronoscts_openglcts",
++        "libkhronoscts_vulkancts",
++        "libkhronoscts_platform",
++    ],
++}
++
++cc_defaults {
++    name: "khronoscts_default",
++
++    defaults: [
++        "khronosctscompilationflag_default",
++    ],
++
++    shared_libs: [
++        "libEGL",
++        "libGLESv2",
++        "libandroid",
++        "liblog",
++        "libm",
++        "libc",
++        "libz",
++        "libdl",
++    ],
++
++    static_libs: [
++        "libpng_ndk",
++        "deqp_glslang_glslang",
++        "deqp_glslang_OSDependent",
++        "deqp_glslang_MachineIndependent",
++        "deqp_glslang_GenericCodeGen",
++        "deqp_glslang_SPIRV",
++        "deqp_glslang_SPVRemapper",
++        "deqp_spirv-tools",
++        "deqp_amber",
++    ],
++}
++
++android_test {
++    name: "org.khronos.gl_cts",
++
++    srcs: ["android/openglcts/src/**/*.java"],
++    manifest: "android/openglcts/AndroidManifest.xml",
++
++    asset_dirs: [
++        "data",
++        "external/openglcts/data/",
++        "external/graphicsfuzz/data",
++        "external/vulkancts/data",
++    ],
++
++    jni_libs: ["libkhronosopenglcts"],
++    compile_multilib: "both",
++
++    sdk_version: "test_current",
++
++    min_sdk_version: "31",
++    target_sdk_version: "34",
++}
++
++filegroup {
++    name: "deqp_binary_incremental_test_lists",
++    srcs: [
++        "android/cts/main/*-incremental-deqp*.txt",
++    ],
++    path: "android/cts/main",
++}
++
++filegroup {
++    name: "deqp_binary_data",
++    srcs: [
++        "data/**/*",
++    ],
++    path: "data",
++}
++
++filegroup {
++    name: "deqp_binary_data_vulkancts",
++    srcs: [
++        "external/vulkancts/data/**/*",
++    ],
++    path: "external/vulkancts/data",
++}
++
++filegroup {
++    name: "deqp_binary_data_graphicsfuzz",
++    srcs: [
++        "external/graphicsfuzz/data/**/*",
++    ],
++    path: "external/graphicsfuzz/data",
++}
++
++filegroup {
++    name: "khronos_cts_gles_caselists",
++    srcs: [
++        "external/openglcts/data/gl_cts/data/mustpass/**/*.txt",
++    ],
++    path: "external/openglcts/data/",
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/deviceinfra-prebuilts.bp b/tools/droidloom-update/tests/fixtures/audio-providers/deviceinfra-prebuilts.bp
+new file mode 100644
+index 0000000..a450169
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/deviceinfra-prebuilts.bp
+@@ -0,0 +1,67 @@
++// Copyright (C) 2024 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["deviceinfra_license"],
++}
++
++license {
++    name: "deviceinfra_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-Apache-2.0",
++    ],
++    license_text: [
++        "LICENSE",
++    ],
++}
++
++filegroup {
++    name: "ats_console_prebuilt",
++    srcs: [
++        "ats_console_deploy.jar",
++    ],
++}
++
++filegroup {
++    name: "ats_olc_server_local_mode_prebuilt",
++    srcs: [
++        "ats_olc_server_local_mode_deploy.jar",
++    ],
++}
++
++filegroup {
++    name: "ats_olc_server_prebuilt",
++    srcs: [
++        "ats_olc_server_deploy.jar",
++    ],
++}
++
++java_import_host {
++    name: "ats_console_deploy",
++    jars: [":ats_console_prebuilt"],
++    installable: true,
++}
++
++java_import_host {
++    name: "ats_olc_server_deploy",
++    jars: [":ats_olc_server_prebuilt"],
++    installable: true,
++}
++
++java_import_host {
++    name: "ats_olc_server_local_mode_deploy",
++    jars: [":ats_olc_server_local_mode_prebuilt"],
++    installable: true,
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/e2fsprogs-debugfs.bp b/tools/droidloom-update/tests/fixtures/audio-providers/e2fsprogs-debugfs.bp
+new file mode 100644
+index 0000000..3d8a31d
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/e2fsprogs-debugfs.bp
+@@ -0,0 +1,89 @@
++// Copyright 2017 The Android Open Source Project
++
++//########################
++// Build the debugfs binary
++
++package {
++    // See: http://go/android-license-faq
++    // A large-scale-change added 'default_applicable_licenses' to import
++    // all of the 'license_kinds' from "external_e2fsprogs_license"
++    // to get the below license kinds:
++    //   SPDX-license-identifier-GPL
++    //   SPDX-license-identifier-GPL-2.0
++    default_applicable_licenses: ["external_e2fsprogs_license"],
++}
++
++cc_defaults {
++    name: "debugfs-defaults",
++    defaults: ["e2fsprogs-defaults"],
++    srcs: [
++        "debug_cmds.c",
++        "debugfs.c",
++        "do_orphan.c",
++        "util.c",
++        "ncheck.c",
++        "icheck.c",
++        "ls.c",
++        "lsdel.c",
++        "dump.c",
++        "set_fields.c",
++        "logdump.c",
++        "htree.c",
++        "unused.c",
++        "e2freefrag.c",
++        "filefrag.c",
++        "extent_cmds.c",
++        "extent_inode.c",
++        "zap.c",
++        "quota.c",
++        "xattrs.c",
++        "journal.c",
++        "revoke.c",
++        "recovery.c",
++        "do_journal.c",
++    ],
++    cflags: [
++        "-DDEBUGFS",
++    ],
++    include_dirs: [
++        "external/e2fsprogs/misc",
++        "external/e2fsprogs/e2fsck",
++    ],
++}
++
++debugfs_libs = [
++    "libext2_misc",
++    "libext2fs",
++    "libext2_blkid",
++    "libext2_uuid",
++    "libext2_ss",
++    "libext2_quota",
++    "libext2_com_err",
++    "libext2_e2p",
++    "libext2_support",
++]
++
++cc_binary {
++    name: "debugfs",
++    host_supported: true,
++    defaults: ["debugfs-defaults"],
++
++    shared_libs: debugfs_libs,
++}
++
++cc_binary {
++    name: "debugfs_static",
++    static_executable: true,
++    host_supported: true,
++    defaults: ["debugfs-defaults"],
++
++    static_libs: debugfs_libs,
++
++    target: {
++        glibc: {
++            // Do not link against old prebuilts of glibc.
++            // Note that this can be overridden with BUILD_HOST_static=1
++            static_executable: false,
++        },
++    },
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/easymock-original.bp b/tools/droidloom-update/tests/fixtures/audio-providers/easymock-original.bp
+new file mode 100644
+index 0000000..57cd05a
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/easymock-original.bp
+@@ -0,0 +1,51 @@
++// Copyright (C) 2010 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++//
++
++package {
++    default_applicable_licenses: ["external_easymock_license"],
++}
++
++// Added automatically by a large-scale-change
++//
++// large-scale-change included anything that looked like it might be a license
++// text as a license_text. e.g. LICENSE, NOTICE, COPYING etc.
++//
++// Please consider removing redundant or irrelevant files from 'license_text:'.
++// See: http://go/android-license-faq
++license {
++    name: "external_easymock_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-Apache-2.0",
++    ],
++    license_text: [
++        "LICENSE.txt",
++        "NOTICE",
++    ],
++}
++
++java_library {
++    name: "easymock",
++    host_supported: true,
++    srcs: ["src/**/*.java"],
++    sdk_version: "9",
++}
++
++java_library {
++    name: "easymocklib",
++    static_libs: ["easymock"],
++    sdk_version: "9",
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/framework-stagedinstall.bp b/tools/droidloom-update/tests/fixtures/audio-providers/framework-stagedinstall.bp
+new file mode 100644
+index 0000000..451870e
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/framework-stagedinstall.bp
+@@ -0,0 +1,73 @@
++// Copyright (C) 2020 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_team: "trendy_team_framework_android_packages",
++    // See: http://go/android-license-faq
++    // A large-scale-change added 'default_applicable_licenses' to import
++    // all of the 'license_kinds' from "frameworks_base_license"
++    // to get the below license kinds:
++    //   SPDX-license-identifier-Apache-2.0
++    default_applicable_licenses: ["frameworks_base_license"],
++}
++
++android_test_helper_app {
++    name: "StagedInstallInternalTestApp",
++    manifest: "app/AndroidManifest.xml",
++    srcs: ["app/src/**/*.java"],
++    static_libs: [
++        "androidx.test.rules",
++        "cts-install-lib",
++    ],
++    test_suites: ["general-tests"],
++    java_resources: [
++        ":apex.apexd_test_classpath",
++        ":com.android.apex.apkrollback.test_v2",
++        ":StagedInstallTestApexV2",
++        ":StagedInstallTestApexV2_WrongSha",
++        ":test.rebootless_apex_v1",
++        ":test.rebootless_apex_v2",
++    ],
++    platform_apis: true,
++}
++
++java_test_host {
++    name: "StagedInstallInternalTest",
++    srcs: ["src/**/*.java"],
++    libs: [
++        "tradefed",
++        "cts-shim-host-lib",
++    ],
++    static_libs: [
++        "testng",
++        "compatibility-tradefed",
++        "frameworks-base-hostutils",
++        "cts-install-lib-host",
++    ],
++    device_common_data: [
++        ":StagedInstallInternalTestApp",
++        ":apex.apexd_test",
++        ":com.android.apex.apkrollback.test_v1",
++        ":com.android.apex.apkrollback.test_v2",
++        ":StagedInstallInternalTestApp",
++        ":StagedInstallTestApexV2",
++        ":StagedInstallTestApexV2_WrongSha",
++        ":TestAppAv1",
++        ":test.rebootless_apex_v1",
++        ":test.rebootless_apex_v2",
++        ":test_com.android.server",
++    ],
++    test_suites: ["general-tests"],
++    test_config: "StagedInstallInternalTest.xml",
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/perfetto-sdk35-modules.bp b/tools/droidloom-update/tests/fixtures/audio-providers/perfetto-sdk35-modules.bp
+new file mode 100644
+index 0000000..e94ab93
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/perfetto-sdk35-modules.bp
+@@ -0,0 +1,27 @@
++// GN: //src/java_sdk/main:perfetto_lib
++android_library {
++    name: "perfetto_src_java_sdk_main_perfetto_lib",
++    srcs: [
++        "src/java_sdk/main/java/com/google/perfetto/sdk/PerfettoExampleWrapper.java",
++    ],
++    manifest: "src/java_sdk/main/LibraryAndroidManifest.xml",
++    sdk_version: "35",
++}
++
++// GN: //src/java_sdk/test:perfetto_test_lib
++android_library {
++    name: "perfetto_src_java_sdk_test_perfetto_test_lib",
++    srcs: [
++        "src/java_sdk/test/java/com/google/perfetto/sdk/test/SimpleInstrumentationTest.java",
++    ],
++    manifest: "src/java_sdk/test/TestLibraryAndroidManifest.xml",
++    static_libs: [
++        "androidx.test.ext.junit",
++        "androidx.test.runner",
++        "junit",
++        "perfetto_src_java_sdk_main_perfetto_lib",
++        "truth",
++    ],
++    sdk_version: "35",
++}
++
