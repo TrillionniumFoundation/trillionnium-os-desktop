@@ -1,0 +1,320 @@
+--- a/source/app_common.py
++++ b/source/app_common.py
+@@ -17,11 +17,11 @@
+ import types
+ 
+ FINAL = Path('/home/alex/work/pocket4-android-final')
+-SUPPORT = FINAL / 'qualification/business-support-frozen-resume-20261107-r9'
++SUPPORT = FINAL / 'qualification/business-support-host-20261108-r1'
+ SUPPORT_REF = {'path': str(SUPPORT / 'source-manifest.json'), 'bytes': 1002,
+-               'sha256': '656101c6576a7749a55311750342749660944f0e67d143665bd03cc6c1eeb167'}
+-CLOCK_SUPPORT_REF = {'path': str(FINAL / 'qualification/business-support-frozen-resume-20261107-r10/source-manifest.json'),
+-                     'bytes': 1002, 'sha256': '60d756127dba7e124b8acf39af80330c7d8fc9c6956363a58b631f00b0576612'}
++               'sha256': '8cfa9cb05bb7e7768350dbe04acd4cd6421b9f4e8493746aad49b64c37969e70'}
++CLOCK_SUPPORT_REF = {'path': str(FINAL / 'qualification/business-support-host-clock-20261108-r1/source-manifest.json'),
++                     'bytes': 1002, 'sha256': '0e1ea6f0d3b02c47f240b1aa26ccccf1b05f82bef7edee65331de421965a53ce'}
+ SCOPE_SHA = 'e2a9b509102806483c64c181034e59aded211f42e5f05fcfd85057cc25c9fb7a'
+ GATES = {'path': '/home/alex/work/pocket4-cp13-canonical-app-gates-20261106-r12-01.json',
+          'bytes': 24135, 'sha256': '441289f9c04b46f38e1dd6e19f23ec6e4c6729b6a6f814cab81c0ae6fbbb1e78'}
+--- a/source/camera_audio_binding.py
++++ b/source/camera_audio_binding.py
+@@ -86,22 +86,48 @@
+     text = raw.decode('utf-8', 'strict')
+     need('Permission Denial' not in text and 'Thread may be deadlocked' not in text
+         and 'AudioFlinger may be deadlocked' not in text, 'LIVE_COMPLETE_AUDIO_DUMP_REQUIRED')
+-    need(text.count(' ## BEGIN thread dump ') == 1 and text.count(' ## BEGIN setParameters dump ') == 1,
++    begin, end = '\n ## BEGIN thread dump \n', '\n ## BEGIN setParameters dump \n'
++    need(text.count(' ## BEGIN thread dump ') == text.count(begin) == 1
++        and text.count(' ## BEGIN setParameters dump ') == text.count(end) == 1
++        and text.index(begin) < text.index(end),
+          'LOCKED_AUDIOFLINGER_CURRENT_THREAD_SECTION')
+-    body = text.split(' ## BEGIN thread dump ', 1)[1].split(' ## BEGIN setParameters dump ', 1)[0]
+-    # ThreadLog is historical. It must never supply a current PID/UID row.
+-    body = body.split('Historical Thread Log ', 1)[0]
+-    headers = list(THREAD.finditer(body)); need(len(headers) <= 64, 'BOUNDED_AUDIO_THREADS')
++    body = text.split(begin, 1)[1].split(end, 1)[0]
++    # AudioFlinger::dump emits every current thread via ThreadBase::dump,
++    # before ThreadLog. Historical thread lines use the separate "- " prefix
++    # in AudioFlinger::dumpToThreadLog_l; they cannot supply current rows.
++    history = re.search(r'^Historical Thread Log ', body, re.M)
++    if 'Historical Thread Log ' in body:
++        need(history is not None and body.index('Historical Thread Log ') == history.start(),
++             'UNRECOGNIZED_HISTORICAL_AUDIO_THREAD_BOUNDARY')
++        need(not re.search(r'^(?:Input|Output) thread\b', body[history.start():], re.M),
++             'CURRENT_AUDIO_THREAD_AFTER_HISTORICAL_BOUNDARY')
++        body = body[:history.start()]
++    headers = list(THREAD.finditer(body))
++    # Zero matches are not evidence of idle audio. Every nonempty current
++    # top-level line must be a complete pinned ThreadBase header. Opaque HAL,
++    # effect or scheduler text at column zero is unsupported and is refused;
++    # no unknown thread grammar can be skipped as an empty track table.
++    need(1 <= len(headers) <= 64, 'COMPLETE_NONEMPTY_CURRENT_AUDIO_THREAD_SET')
++    need(not body[:headers[0].start()].strip()
++        and all(THREAD.fullmatch(line) for line in body.split('\n')
++                if line and not line[0].isspace())
++        and not re.search(r'^[ \t]+(?:Input|Output) thread\b', body, re.M),
++         'UNRECOGNIZED_CURRENT_AUDIO_THREAD_FRAMING')
++    need('  Orphan Effect Chains\n' not in body, 'UNQUALIFIED_ORPHAN_AUDIO_EFFECT_CHAINS')
+     result = []
+     for index, header in enumerate(headers):
+         segment = body[header.end():headers[index + 1].start() if index + 1 < len(headers) else len(body)]
+-        need(segment.count('  Local log:') == 1, 'EXACT_CURRENT_THREAD_END')
+-        current = segment.split('  Local log:', 1)[0]
++        endings = list(re.finditer(r'^  Local log:\n', segment, re.M))
++        need(len(endings) == 1, 'EXACT_CURRENT_THREAD_END')
++        current = segment[:endings[0].start()]
+         direction, pointer, name, tid, _, kind = header.groups()
+-        # Mmap has a separate format and is explicitly not silently treated as
+-        # a regular track. Any owned UID there is refused, not ignored as idle.
+-        need(kind in ('MIXER', 'DIRECT', 'DUPLICATING', 'RECORD', 'DIRECT_RECORD',
+-                      'OFFLOAD', 'SPATIALIZER'), 'UNQUALIFIED_AUDIO_THREAD_TYPE:' + kind)
++        # Mmap has a separate table. Refuse it (and every other unsupported
++        # kind) for every UID, even when its own table reports zero tracks.
++        kinds = ('RECORD', 'DIRECT_RECORD') if direction == 'Input' else (
++            'MIXER', 'DIRECT', 'DUPLICATING', 'OFFLOAD', 'SPATIALIZER')
++        need(kind in kinds, 'UNQUALIFIED_AUDIO_THREAD_TYPE:' + kind)
++        need('The following tracks are in the active list but not in the track list' not in current,
++             'INCONSISTENT_CURRENT_ACTIVE_TRACK_LIST')
+         io = int(one(r'^  I/O handle: ([0-9]+)$', current))
+         standby = one(r'^  Standby: (yes|no)$', current) == 'yes'
+         count = re.findall(r'^  ([0-9]+) Tracks(?: of which ([0-9]+) are active)?$', current, re.M)
+@@ -124,15 +150,37 @@
+         result.append(row)
+     need(len({row['io_handle'] for row in result}) == len(result), 'UNIQUE_CURRENT_IO_HANDLES')
+     return {'raw_sha256': hashlib.sha256(raw).hexdigest(), 'bytes': len(raw),
+-        'framework_commit': FRAMEWORK_COMMIT, 'threads': result, 'runtime_qualified': False}
++        'framework_commit': FRAMEWORK_COMMIT, 'current_thread_headers': len(headers),
++        'historical_thread_log_excluded': history is not None,
++        'threads': result, 'runtime_qualified': False}
++
++
++def active_tracks(value):
++    need(value['framework_commit'] == FRAMEWORK_COMMIT
++        and 1 <= len(value['threads']) == value['current_thread_headers'] <= 64,
++         'PINNED_NONEMPTY_CURRENT_AUDIO_TABLES_REQUIRED')
++    return [(thread, track) for thread in value['threads']
++            for track in thread['tracks'] if track['active']]
++
++
++def quiescent(value):
++    need(not active_tracks(value), 'UNEXPECTED_ACTIVE_ANDROID_AUDIO_TRACK')
++    # This receipt is scoped to current Android track tables at one sample.
++    # It does not prove host PipeWire quiescence or exclusivity between samples.
++    return {'scope': 'android-audioflinger-current-track-tables-all-uids',
++        'framework_commit': FRAMEWORK_COMMIT, 'raw_sha256': value['raw_sha256'],
++        'observed_threads': value['current_thread_headers'], 'active_track_count': 0,
++        'host_audio_quiescence_qualified': False, 'continuous_exclusivity_qualified': False,
++        'runtime_qualified': False}
+ 
+ 
+ def owned_track(value, *, direction, uid, pid):
+     need(direction in ('Input', 'Output') and type(uid) is type(pid) is int and pid > 0,
+          'CURRENT_APPLICATION_PID_UID_REQUIRED')
+-    rows = [(thread, track) for thread in value['threads'] if thread['direction'] == direction
+-            for track in thread['tracks'] if track['active'] and track['uid'] == uid]
+-    need(len(rows) == 1 and rows[0][1]['pid'] == pid, 'ONE_CURRENT_APP_ATTRIBUTED_ACTIVE_AUDIO_TRACK')
++    rows = active_tracks(value)
++    need(len(rows) == 1 and rows[0][0]['direction'] == direction
++        and rows[0][1]['uid'] == uid and rows[0][1]['pid'] == pid,
++         'ONE_EXCLUSIVE_CURRENT_APP_ATTRIBUTED_ACTIVE_AUDIO_TRACK')
+     thread, track = rows[0]
+     need(thread['standby'] is False and track['session'] > 0 and track['port'] > 0
+         and track['buffer_frames'] > 0 and 8000 <= track['sample_rate'] <= 192000,
+--- a/source/camera_audio_runtime.py
++++ b/source/camera_audio_runtime.py
+@@ -202,15 +202,19 @@
+         need(len(raw) == self.hal_source['bytes'] and c.sha(raw) == self.hal_source['sha256'],
+             'CURRENT_MOUNTED_AUDIO_APEX_HAL_BYTES_DIFFER')
+         self.hardware_before = self.hardware('before')
++        before_start = time.monotonic_ns()
+         before_audio = s.android(['/system/bin/dumpsys', 'media.audio_flinger'], 15)
++        before_finish = time.monotonic_ns()
++        need(type(before_audio) is bytes and 0 < len(before_audio) <= 1048576, 'BOUNDED_ACTUAL_AUDIOFLINGER_DUMP')
++        before_audio_ref = s.tx.write_new(s.evidence_root / 'audio-flinger-before.txt', before_audio)
+         parsed_before = self.binding.flinger(before_audio)
+-        self.binding.absent(parsed_before, 10062, 'Input')
+-        self.binding.absent(parsed_before, 10064, 'Output')
+-        before_audio_ref = s.tx.write_new(s.evidence_root / 'audio-flinger-before.txt', before_audio)
++        quiet_before = self.binding.quiescent(parsed_before)
+         self.preflight_result = s.record('current-audio-source-admission', {'source_qualification': life['source_qualification'],
+             'apex_qualification': packet['evidence']['apex_qualification'], 'hal_source': self.hal_source,
+             'actual_guest_hal_file': meta, 'hardware': self.hardware_before, 'audio_before': before_audio_ref,
+-            'no_preexisting_camera_or_gallery_audio_tracks': True, 'runtime_qualified': False,
++            'android_tracks_before': quiet_before,
++            'started_monotonic_ns': before_start, 'finished_monotonic_ns': before_finish,
++            'runtime_qualified': False,
+             'historical_physical_receipt_used': False, 'settings_writes': 0})
+         s.guard(); return self.preflight_result
+ 
+@@ -278,21 +282,25 @@
+         need(self.preflight_result is not None and role in ('input', 'output'), 'CURRENT_AUDIO_PREFLIGHT_REQUIRED')
+         s = self.s; s.guard(); start = time.monotonic_ns()
+         raw = s.android(['/system/bin/dumpsys', 'media.audio_flinger'], 15)
+-        finish = time.monotonic_ns(); dump = self.binding.flinger(raw)
++        finish = time.monotonic_ns()
++        need(type(raw) is bytes and 0 < len(raw) <= 1048576, 'BOUNDED_ACTUAL_AUDIOFLINGER_DUMP')
++        rawref = s.tx.write_new(s.evidence_root / (label + '-flinger.txt'), raw)
++        dump = self.binding.flinger(raw)
+         uid, key = (10062, 'camera') if role == 'input' else (10064, 'player')
+         direction = 'Input' if role == 'input' else 'Output'
+         candidates = [t for thread in dump['threads'] if thread['direction'] == direction for t in thread['tracks']
+             if t['active'] and t['uid'] == uid]
+         need(len(candidates) == 1, 'ONE_CURRENT_BUSINESS_APP_AUDIO_TRACK')
+         guest = candidates[0]['pid']
++        track = self.binding.owned_track(dump, direction=direction, uid=uid, pid=guest)
+         if key not in self.handles: self.bind_guest(key, uid, guest)
+         h = self.handles[key]; h.verify(); need(h.identity['namespace_pids'][-1] == guest, 'SAME_AUDIOFLINGER_APP_PID')
+         if 'hal' not in self.handles: self.bind_guest('hal', 1041)
+         self.handles['hal'].verify(); unit = self.helper(role)
+-        track = self.binding.owned_track(dump, direction=direction, uid=uid, pid=guest)
+-        rawref = s.tx.write_new(s.evidence_root / (label + '-flinger.txt'), raw)
+         value = {'role': role, 'label': label, 'started_monotonic_ns': start, 'finished_monotonic_ns': finish,
+             'flinger': dump, 'raw': rawref, 'selected': track, 'app': h.identity,
++            'activity_scope': 'one-active-android-track-all-uids-at-this-sample',
++            'host_audio_quiescence_qualified': False, 'continuous_exclusivity_qualified': False,
+             'hal': self.handles['hal'].identity, 'helper': self.units[role], 'scope': s.flow.scope_ref,
+             'phase': s.phase_ref, 'runtime_qualified': False}
+         value['reference'] = s.record(label + '-audio-runtime', value); s.guard(); return value
+@@ -344,13 +352,20 @@
+ 
+     def verify_final(self):
+         s = self.s; need(set(self.windows) == {'input', 'output'}, 'BOTH_CURRENT_HAL_AUDIO_WINDOWS_REQUIRED')
+-        raw = s.android(['/system/bin/dumpsys', 'media.audio_flinger'], 15); parsed = self.binding.flinger(raw)
+-        self.binding.absent(parsed, 10062, 'Input'); self.binding.absent(parsed, 10064, 'Output')
++        s.guard(); start = time.monotonic_ns()
++        raw = s.android(['/system/bin/dumpsys', 'media.audio_flinger'], 15)
++        finish = time.monotonic_ns()
++        need(type(raw) is bytes and 0 < len(raw) <= 1048576, 'BOUNDED_ACTUAL_AUDIOFLINGER_DUMP')
++        rawref = s.tx.write_new(s.evidence_root / 'audio-flinger-after.txt', raw)
++        parsed = self.binding.flinger(raw); quiet_after = self.binding.quiescent(parsed)
+         after = self.hardware('after')
+         need(all(after[r]['current'] == self.hardware_before[r]['current'] and after[r]['properties'] == self.hardware_before[r]['properties']
+             for r in ('input', 'output')), 'PRESERVE_PREEXISTING_PHYSICAL_AUDIO_ROUTING_AND_VOLUME')
++        s.guard()
+         return s.record('audio-final', {'source_admission': self.preflight_result, 'windows': self.windows,
+-            'owned_app_tracks_absent': True, 'hardware_before': self.hardware_before, 'hardware_after': after,
++            'audio_after': rawref, 'android_tracks_after': quiet_after,
++            'started_monotonic_ns': start, 'finished_monotonic_ns': finish,
++            'hardware_before': self.hardware_before, 'hardware_after': after,
+             'settings_writes': 0, 'application_processes_signalled': 0, 'runtime_qualified': False})
+ 
+     def close(self):
+--- a/source/camera_case.py
++++ b/source/camera_case.py
+@@ -55,7 +55,9 @@
+         try:
+             driver.run()
+         except BaseException as error:
+-            if isinstance(error, components['camera_decode.py'].DecodeOutcomeUnknown): driver.host_unknown = True
++            if (isinstance(error, components['camera_decode.py'].DecodeOutcomeUnknown)
++                    or driver.decoder is not None and driver.decoder.unknown):
++                driver.host_unknown = True
+             remember('current_camera_video_business', error)
+         finally:
+             retiring = True
+--- a/source/camera_decode.py
++++ b/source/camera_decode.py
+@@ -154,6 +154,9 @@
+                     pass_fds=(self.decode_fd, executable), start_new_session=True,
+                     env={'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'HOME': '/home/alex'},
+                     user=1000, group=1000, extra_groups=(), preexec_fn=child_limits)
++            # A dispatch may lose its reply. Keep that uncertainty before the
++            # actual boundary; a later evidence-write error cannot erase it.
++            self.unknown = True
+             record, out, err, error = self.capture.invoke_owned(reaper, factory, b'', deadline, deadline + 8,
+                 output_bound=bound, cleanup_enter=cancel.enter_retirement, retirement_grace=5)
+             if error is not None: remember('actual_owned_decoder', error)
+@@ -171,18 +174,24 @@
+             except BaseException as error: finish_error = finish_error or error; remember('decode_executable_close', error)
+         subreaper = {} if reaper is None else copy.deepcopy(reaper.record)
+         retired = self.commands.retirement_complete(record, subreaper, finish_error)
++        self.unknown = not retired or type(out) is not bytes or type(err) is not bytes
+         result.update(lifecycle=record, subreaper=subreaper, host_retirement_proved=retired,
+             cancellation={'signals': cancel.signals, 'count': cancel.count},
+             returncode=record.get('returncode'), timed_out=record.get('timed_out', False))
+-        for name, raw in (('stdout', out), ('stderr', err)):
+-            if type(raw) is bytes:
+-                result[name] = {'bytes': len(raw), 'sha256': c.sha(raw), 'persisted': False}
+-                if kind != 'audio': result[name]['reference'] = c.write_new(s.evidence_root / ('decode-' + kind + '.' + name), raw)
+-        try: self.verify()
+-        except BaseException as error: remember('decode_post_guard', error)
+-        ref = s.record('decode-' + kind + '-result', result); self.done[kind] = {'result': result, 'reference': ref}
+-        if not retired or type(out) is not bytes or type(err) is not bytes:
+-            self.unknown = True
++        try:
++            for name, raw in (('stdout', out), ('stderr', err)):
++                if type(raw) is bytes:
++                    result[name] = {'bytes': len(raw), 'sha256': c.sha(raw), 'persisted': False}
++                    if kind != 'audio': result[name]['reference'] = c.write_new(s.evidence_root / ('decode-' + kind + '.' + name), raw)
++            try: self.verify()
++            except BaseException as error: remember('decode_post_guard', error)
++            ref = s.record('decode-' + kind + '-result', result); self.done[kind] = {'result': result, 'reference': ref}
++        except BaseException as error:
++            if first is not None and error is not first:
++                first.add_note('DECODER_EVIDENCE_FAILURE:' + repr(error))
++                raise first from error
++            raise
++        if self.unknown:
+             raise DecodeOutcomeUnknown('OWNED_DECODER_RETIREMENT_OR_OUTPUT_UNKNOWN') from first
+         c.need(first is None and not result['errors'] and not cancel.signals and record['returncode'] == 0
+             and not record['timed_out'] and err == b'' and record['descendants'] == [],
+--- a/source/camera_entry.py
++++ b/source/camera_entry.py
+@@ -9,7 +9,7 @@
+ import stat
+ import types
+ 
+-COMMON_PIN = (38269, '468e0fa093ec1c741547912b8fef41560e1ea9b1e124a76113ec97da7fe03420')
++COMMON_PIN = (38256, '6003e96be02cd0c6328340865bbb2962d39967f2b823656af258ed5a48f598d0')
+ SOURCE_NAMES = {'app_common.py', 'app_flow.py', 'app_runtime.py', 'camera_audio_binding.py',
+     'camera_audio_challenge.py', 'camera_audio_channel.py', 'camera_audio_runtime.py',
+     'camera_audio_supervisor.py', 'camera_base_session.py', 'camera_case.py', 'camera_decode.py',
+@@ -57,7 +57,7 @@
+             raise RuntimeError('FROZEN_VIDEO_COMPONENT_CHANGED:' + name)
+         sources[name] = data
+     if (refs['app_common.py']['bytes'], refs['app_common.py']['sha256']) != COMMON_PIN:
+-        raise RuntimeError('EXACT_CURRENT_R9_COMMON_LIBRARY')
++        raise RuntimeError('EXACT_CURRENT_HOST_COMMON_LIBRARY')
+     if read(Path(__file__).resolve(), 262144) != sources['camera_entry.py']:
+         raise RuntimeError('ACTUAL_VIDEO_ENTRY_NOT_THE_REVIEWED_SOURCE')
+     def load(name):
+@@ -99,7 +99,7 @@
+         profiles = planner.named(c, packet, 'camera_profiles.py')
+         profile = {'camera': profiles.CAMERA, 'player': profiles.PLAYER, 'native-helper': profiles.HELPER}[args.role]
+         c.need(set(request) == {'baseline', 'qualification'}
+-            and c.parse(c.read_ref(request['qualification']))['source_manifest'] == c.SUPPORT_REF, 'EXACT_CURRENT_R9_MAIN_BASELINE')
++            and c.parse(c.read_ref(request['qualification']))['source_manifest'] == c.SUPPORT_REF, 'EXACT_CURRENT_HOST_MAIN_BASELINE')
+         entry = next(r for r in packet['files'] if Path(r['path']).name == 'camera_entry.py')
+         result = c.collect_identity(request, args.output, profile, entry)
+     elif args.mode == 'plan':
+--- a/source/camera_video_media.py
++++ b/source/camera_video_media.py
+@@ -88,7 +88,15 @@
+ 
+ def parse_probe(raw, row):
+     need(type(raw) is bytes and 0 < len(raw) <= 1048576, 'BOUNDED_OWNED_CLIP_PROBE')
+-    result = json.loads(raw)
++    def pairs(values):
++        result = {}
++        for key, value in values:
++            need(key not in result, 'DUPLICATE_PROBE_JSON_FIELD')
++            result[key] = value
++        return result
++    def nonfinite(_):
++        raise RuntimeError('NONFINITE_PROBE_JSON_NUMBER')
++    result = json.loads(raw, object_pairs_hook=pairs, parse_constant=nonfinite)
+     streams = result.get('streams'); fmt = result.get('format')
+     need(type(streams) is list and len(streams) == 2 and type(fmt) is dict,
+          'ONE_VIDEO_AND_ONE_AUDIO_STREAM_REQUIRED')
+@@ -145,9 +153,9 @@
+          'DECODER_MUST_READ_THE_SAME_HELD_OWNED_DESCRIPTOR')
+     if kind == 'probe':
+         return ['/usr/bin/ffprobe', '-v', 'error', '-count_frames', '-show_streams', '-show_format',
+-                '-of', 'json', '-protocol_whitelist', 'file,pipe', '-i', held_path]
++                '-of', 'json', '-protocol_whitelist', 'file,pipe', '-f', 'mov', '-i', held_path]
+     common = ['/usr/bin/ffmpeg', '-nostdin', '-v', 'error', '-xerror', '-err_detect', 'explode',
+-              '-threads', '1', '-protocol_whitelist', 'file,pipe', '-i', held_path]
++              '-threads', '1', '-protocol_whitelist', 'file,pipe', '-f', 'mov', '-i', held_path]
+     if kind == 'video':
+         return common + ['-map', '0:v:0', '-an', '-vsync', '0', '-f', 'framemd5', 'pipe:1']
+     if kind == 'audio':

@@ -1,0 +1,81 @@
+{
+  "schema": "source-derived-audioflinger-projections-v1",
+  "framework_commit": "475269ec44acec82792be6b01fb8e16357d4d2c8",
+  "kind": "raw-text unit fixtures projected from the fixed C++ writers; not captured runtime dumps",
+  "source_pins": {
+    "services/audioflinger/Threads.cpp": {
+      "bytes": 490438,
+      "sha256": "a5416ff05a3683712075ca1a383a73ebfb9331b18e88bfadfbc6aba2b62a13bc"
+    },
+    "services/audioflinger/Tracks.cpp": {
+      "bytes": 154428,
+      "sha256": "420040347f18e8708e2faeec1991c06238a467558190435788492b8e1648b6e2"
+    },
+    "services/audioflinger/AudioFlinger.cpp": {
+      "bytes": 209703,
+      "sha256": "4906b0655b008b9fdb5584bca19128ecbe0beee3ec1105a103f17b4ce06e1a76"
+    }
+  },
+  "writer_functions": [
+    "AudioFlinger::dump",
+    "ThreadBase::dump",
+    "ThreadBase::dumpBase_l",
+    "PlaybackThread::dumpTracks_l",
+    "RecordThread::dumpTracks_l",
+    "Track::appendDump",
+    "RecordTrack::appendDump"
+  ],
+  "limits": [
+    "Opaque HAL, effect, scheduler and local log bodies are omitted.",
+    "IAfTrack/IAfRecordTrack::getLogHeader strings are outside the three pinned C++ files and are omitted, not guessed.",
+    "Numeric thread-type tokens are illustrative and are not enum ABI validation; parser validates the pinned printed kind and direction.",
+    "These controls exercise current raw framing, row parsing and all-UID admission. They do not qualify an actual complete dumpsys stream, Main, physical audio, host PipeWire or any app runtime."
+  ],
+  "files": {
+    "idle.txt": {
+      "bytes": 708,
+      "sha256": "c9066fdf6c98ddfcba1379b2cff4bfb5ea768fb04bcbedb44d6a6c000f0d796f"
+    },
+    "inactive-foreign.txt": {
+      "bytes": 1088,
+      "sha256": "6739333f3b9ec0fd6bf01ba1294b817f16596543b937a42d4003885a7cef0aa3"
+    },
+    "camera.txt": {
+      "bytes": 848,
+      "sha256": "a543ca075c6ef42da5ef59a8e2029ef277bce8b0a1fe0ad4b725979080ec5868"
+    },
+    "gallery.txt": {
+      "bytes": 946,
+      "sha256": "b8915e55d7d9c521aabd573c1c8fa749789133e04e302d98fdbd32b23d2f5344"
+    },
+    "foreign-input.txt": {
+      "bytes": 848,
+      "sha256": "db104d4b144e536ecc79c52a07d2ca2a8385d7e9e68fd0faab31c814bbd4e807"
+    },
+    "foreign-output.txt": {
+      "bytes": 946,
+      "sha256": "775979bc0f6e77e0e43f6058b7a0b0fc18d92925a3d72779eb89f095e4dae6fb"
+    },
+    "camera-foreign-output.txt": {
+      "bytes": 1086,
+      "sha256": "94f72e40f337a775ab9d0a503816d8d34eee6a594fadaa6b7d661727ed7d3123"
+    },
+    "gallery-foreign-input.txt": {
+      "bytes": 1086,
+      "sha256": "04e59d8ba3a4e6d03558aae30540c10cc044f12c71c696152d1051ca694f6af7"
+    },
+    "camera-second-input.txt": {
+      "bytes": 967,
+      "sha256": "d8ecef8c1ce691adfd99d354a87dc8a43bb440b683e881321d83519666dfb590"
+    },
+    "camera-next.txt": {
+      "bytes": 848,
+      "sha256": "59f072619c6bc2caed77ab6d4c92ef9226bca60db82ab2b5c75827dd9348fca8"
+    },
+    "gallery-next.txt": {
+      "bytes": 946,
+      "sha256": "2f51f606655a1cd4f0cf55c14f78197377906e21c7e318d6383c3beb48047447"
+    }
+  },
+  "runtime_qualified": false
+}

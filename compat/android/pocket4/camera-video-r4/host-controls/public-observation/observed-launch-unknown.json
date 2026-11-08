@@ -1,0 +1,149 @@
+{
+  "Android_actions": 0,
+  "Main_actions": 0,
+  "actual_reaper_qualified": false,
+  "controls": {
+    "expected": [
+      "normal_decoder_and_fresh_nonce",
+      "uid1000_and_exact_two_fds",
+      "all_seals_and_denied_write_metadata",
+      "malformed_mov_known_failure",
+      "actual_timeout_and_owned_retirement",
+      "actual_output_bound_and_retirement",
+      "actual_adopted_descendant_retirement",
+      "actual_finish_fault_keeps_unknown"
+    ],
+    "expected_count": 8,
+    "failed": [],
+    "not_run": [
+      "normal_decoder_and_fresh_nonce",
+      "uid1000_and_exact_two_fds",
+      "all_seals_and_denied_write_metadata",
+      "malformed_mov_known_failure",
+      "actual_timeout_and_owned_retirement",
+      "actual_output_bound_and_retirement",
+      "actual_adopted_descendant_retirement",
+      "actual_finish_fault_keeps_unknown"
+    ],
+    "passed": [],
+    "passed_count": 0,
+    "skipped": []
+  },
+  "execution_observation": {
+    "absence_proves_cancellation": false,
+    "formal_cancel": {
+      "automatic_retry": false,
+      "outcome": "unknown",
+      "receipt": {
+        "bytes": 252,
+        "sha256": "d344bfae2b972b6f2f31f67e9db44fd883a69025077fadd3f4fa50d5c0f26de4"
+      },
+      "result": "cancel_unknown",
+      "status_authoritative": false,
+      "termination_confirmed": false
+    },
+    "late_launch_ruled_out": false,
+    "launch": {
+      "automatic_retry": false,
+      "outcome": "unknown",
+      "receipt": {
+        "bytes": 12346,
+        "sha256": "65d9e150c0ca11c7d356a893940aeba859d5a9d949740a6505fb7502226a150d"
+      },
+      "state": "launch_unknown",
+      "status_authoritative": false
+    },
+    "new_key_relaunch_performed": false,
+    "original_job_terminal_proved": false,
+    "readonly_reconcile": {
+      "mutations": 0,
+      "qualification_result_observed": false,
+      "qualifier_source_inspection_observed": false,
+      "receipt": {
+        "bytes": 40563,
+        "sha256": "e297dab8ec1274b1fb1fc2daa83d6264e3531d06f6908ea2fbec1a3122012c42"
+      },
+      "root_exists": false,
+      "root_is_symlink": false,
+      "unit_active_state": "inactive",
+      "unit_has_cgroup": false,
+      "unit_has_main_process": false,
+      "unit_load_state": "not-found",
+      "unit_query_exit_code": 0,
+      "unit_sub_state": "dead"
+    },
+    "same_key_reuse": {
+      "automatic_retry": false,
+      "outcome": "unknown",
+      "receipt": {
+        "bytes": 12322,
+        "sha256": "9c44e404f9e5922c84fa4f1cb263131d571a9ebd2a3fac855db56abe932574fe"
+      },
+      "retried_launch": false,
+      "reused": true,
+      "state": "status_unavailable",
+      "status_authoritative": false
+    }
+  },
+  "host_component_qualified": false,
+  "live_Session_admission_qualified": false,
+  "local_inspection": {
+    "actual_host_controls_run": 0,
+    "fallback_used": false,
+    "inert_cleanup_controls_passed": 4,
+    "local_kernel_admission_passed": false,
+    "local_kernel_admission_refusal": "ACTUAL_SELF_PID_AND_SINGLE_THREAD_PROC",
+    "receipt": {
+      "bytes": 4307,
+      "sha256": "3870f90dc41e4b75cb6e1c7f48c83490df842152a7ac7a35dacc7875a2947fe1"
+    },
+    "source_inspection_exit_code": 0,
+    "source_inspection_passed": true
+  },
+  "physical_audio_actions": 0,
+  "runtime_qualified": false,
+  "schema": "pocket4-camera-r4-decoder-host-public-proof-v1",
+  "scope": "synthetic_linux_owned_child_decoder_components",
+  "source_inputs": {
+    "camera_audio_challenge.py": {
+      "bytes": 6956,
+      "sha256": "30b8560cf4f43e77e051e4915492ed18fe3c78e8b2a67527f4e14c02643dcd4c"
+    },
+    "camera_decode.py": {
+      "bytes": 14597,
+      "sha256": "7a42785a9d5d16fbc4644d0db961acd965b42f79dc9a75b2f101d88ab51574a4"
+    },
+    "camera_video_media.py": {
+      "bytes": 9197,
+      "sha256": "58c5b6508fe23532fe4282c38446e75dfc25800ed6b063691da80bd431f74190"
+    },
+    "capture": {
+      "bytes": 14933,
+      "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+    },
+    "commands": {
+      "bytes": 12813,
+      "sha256": "cfe92077ebb75db4f7f0fd577fcd7e6d664afd9338128a05435512549ceeb1f3"
+    },
+    "control_packet": {
+      "bytes": 2355,
+      "sha256": "21bf3adee748faad01e41b5f6eef47cd602391041658da77bf7cce7b722f2893"
+    },
+    "lifecycle": {
+      "bytes": 25312,
+      "sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877"
+    },
+    "qualifier": {
+      "bytes": 43675,
+      "sha256": "94a12172fccf7026f69a86788b60bb02ce0dc58703ad35dcf4c9c0bd674a46af"
+    },
+    "stager": {
+      "bytes": 10896,
+      "sha256": "d30514804dea4f084c4911e553ca2c25c35137017dd5dc2bdfdabf70c572a505"
+    }
+  },
+  "source_only_Session_fixture": true,
+  "state": "observed_launch_unknown_not_run",
+  "synthetic_media_only": true,
+  "whole_app_business_accepted": false
+}

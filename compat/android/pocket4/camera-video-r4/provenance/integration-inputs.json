@@ -1,0 +1,134 @@
+{
+  "schema": "camera-r4-integrated-frozen-inputs-v1",
+  "host_capsule_inventory": {
+    "path": "/workspace/scratch/347ef2dfe9ad/runtime-acceptance-audit/camera-video-r4-host-support-candidate/PACKAGE-SHA256.json",
+    "bytes": 6767,
+    "sha256": "1b19ad8638fe4f12e0ba6d2ff9603ddd93419b8f3a1da98c529569c6d3f0889e"
+  },
+  "host_production_manifest": {
+    "path": "/workspace/scratch/347ef2dfe9ad/runtime-acceptance-audit/camera-video-r4-host-support-candidate/source-manifest.json",
+    "bytes": 14485,
+    "sha256": "efe7d0150bd1e495591fb6bbbbfe9ee5b75cd9b749bcf0d6206cf778ba197f6e"
+  },
+  "decoder_component_manifest": {
+    "path": "/workspace/scratch/347ef2dfe9ad/audio-runtime-independent-audit/camera-video-owner-r4-decoder-candidate-r1/source-manifest.json",
+    "bytes": 2865,
+    "sha256": "fa4d5da86ceaf5254196a482907041c3ee8e9778cff2db129da9bbc5b839f812"
+  },
+  "decoder_production_and_test_pins": {
+    "source/camera_case.py": {
+      "bytes": 7576,
+      "sha256": "19f015a8dcf836e6aa8160af9566abc04923b1fe9d5fad34bd98e89ec9d883d7"
+    },
+    "source/camera_decode.py": {
+      "bytes": 14597,
+      "sha256": "7a42785a9d5d16fbc4644d0db961acd965b42f79dc9a75b2f101d88ab51574a4"
+    },
+    "source/camera_video_media.py": {
+      "bytes": 9197,
+      "sha256": "58c5b6508fe23532fe4282c38446e75dfc25800ed6b063691da80bd431f74190"
+    },
+    "tests/fixtures/business_commands.py": {
+      "bytes": 12813,
+      "sha256": "cfe92077ebb75db4f7f0fd577fcd7e6d664afd9338128a05435512549ceeb1f3"
+    },
+    "tests/test_camera_r4_decode.py": {
+      "bytes": 17926,
+      "sha256": "4033987ec8ebb6bab42445920df33c98348cc2b05c3093e8caabffad0f9e6849"
+    }
+  },
+  "original_owner_manifest": {
+    "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/manifest.json",
+    "bytes": 8308,
+    "sha256": "963b8724906da54e70147b3a3268dd29640a85b45b947274fda7d5e61a55c5c4"
+  },
+  "host_test_original": {
+    "path": "/workspace/scratch/347ef2dfe9ad/runtime-acceptance-audit/camera-video-r4-host-support-candidate/tests/test_host_support_binding.py",
+    "bytes": 16505,
+    "sha256": "0eb229722f33b433538d3bc6f5bfdc6a0d825bdb61d95e6d68e1e088b5a5c1fc"
+  },
+  "decoder_test_copy_is_byte_identical": true,
+  "component_inputs_modified": false,
+  "quiescence_component_manifest": {
+    "path": "/workspace/scratch/347ef2dfe9ad/camera-audio-quiescence-candidate/candidate-manifest.json",
+    "bytes": 3666,
+    "sha256": "9e201cc2dc4b30ea0ac487b029e96d2aecf23f105fb990e36dbde77908d0309d"
+  },
+  "quiescence_component_handoff": {
+    "path": "/workspace/scratch/347ef2dfe9ad/camera-audio-quiescence-candidate/HANDOFF.md",
+    "bytes": 8185,
+    "sha256": "4f83e33cfa431b64b35f1513cf636b1d041080437f2383a8fa92012a34b74736"
+  },
+  "quiescence_test_copy_is_byte_identical": true,
+  "quiescence_fixture_copies_are_byte_identical": true,
+  "quiescence_peer_review": {
+    "path": "/workspace/scratch/347ef2dfe9ad/runtime-acceptance-audit/camera-audio-quiescence-peer-review/review.json",
+    "bytes": 16696,
+    "sha256": "37a47878e3d7e64d7f52bb54da0f8a78cd0a94bd46374e999a6ac70f21a4fb34"
+  },
+  "quiescence_production_and_test_pins": {
+    "source/camera_audio_binding.py": {
+      "bytes": 18775,
+      "sha256": "c8c0c123153a83a2397595d2efcf6ba3b40f60916362403348d1f6f6a57a4754"
+    },
+    "source/camera_audio_runtime.py": {
+      "bytes": 26272,
+      "sha256": "b480c7e99cd44bd9ff79e7d95fb87e80f7634c843e8e9c77f3f38ea8ab9f8cee"
+    },
+    "tests/test_camera_audio_quiescence.py": {
+      "bytes": 22993,
+      "sha256": "db921ee7ca03873ef10c4ac0e9cad6d47421b00cf2e0c4c2d12b8ddaee70071b"
+    },
+    "tests/fixtures/camera-foreign-output.txt": {
+      "bytes": 1086,
+      "sha256": "94f72e40f337a775ab9d0a503816d8d34eee6a594fadaa6b7d661727ed7d3123"
+    },
+    "tests/fixtures/camera-next.txt": {
+      "bytes": 848,
+      "sha256": "59f072619c6bc2caed77ab6d4c92ef9226bca60db82ab2b5c75827dd9348fca8"
+    },
+    "tests/fixtures/camera-second-input.txt": {
+      "bytes": 967,
+      "sha256": "d8ecef8c1ce691adfd99d354a87dc8a43bb440b683e881321d83519666dfb590"
+    },
+    "tests/fixtures/camera.txt": {
+      "bytes": 848,
+      "sha256": "a543ca075c6ef42da5ef59a8e2029ef277bce8b0a1fe0ad4b725979080ec5868"
+    },
+    "tests/fixtures/foreign-input.txt": {
+      "bytes": 848,
+      "sha256": "db104d4b144e536ecc79c52a07d2ca2a8385d7e9e68fd0faab31c814bbd4e807"
+    },
+    "tests/fixtures/foreign-output.txt": {
+      "bytes": 946,
+      "sha256": "775979bc0f6e77e0e43f6058b7a0b0fc18d92925a3d72779eb89f095e4dae6fb"
+    },
+    "tests/fixtures/gallery-foreign-input.txt": {
+      "bytes": 1086,
+      "sha256": "04e59d8ba3a4e6d03558aae30540c10cc044f12c71c696152d1051ca694f6af7"
+    },
+    "tests/fixtures/gallery-next.txt": {
+      "bytes": 946,
+      "sha256": "2f51f606655a1cd4f0cf55c14f78197377906e21c7e318d6383c3beb48047447"
+    },
+    "tests/fixtures/gallery.txt": {
+      "bytes": 946,
+      "sha256": "b8915e55d7d9c521aabd573c1c8fa749789133e04e302d98fdbd32b23d2f5344"
+    },
+    "tests/fixtures/idle.txt": {
+      "bytes": 708,
+      "sha256": "c9066fdf6c98ddfcba1379b2cff4bfb5ea768fb04bcbedb44d6a6c000f0d796f"
+    },
+    "tests/fixtures/inactive-foreign.txt": {
+      "bytes": 1088,
+      "sha256": "6739333f3b9ec0fd6bf01ba1294b817f16596543b937a42d4003885a7cef0aa3"
+    },
+    "tests/fixtures/origin.json": {
+      "bytes": 3064,
+      "sha256": "501728945128ac3a8d0819d681dd658ba1bce2654c13c502b883b9d10cff3380"
+    }
+  },
+  "portable_control_count": 41,
+  "linux_decoder_control_count": 11,
+  "total_control_count": 52
+}

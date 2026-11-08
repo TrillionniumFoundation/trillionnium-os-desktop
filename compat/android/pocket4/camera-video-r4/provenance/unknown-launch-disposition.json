@@ -1,0 +1,105 @@
+{
+  "absence_observation": {
+    "bytes": 40563,
+    "path": "/workspace/scratch/347ef2dfe9ad/camera-r4-launch-reconcile-observation.json",
+    "sha256": "e297dab8ec1274b1fb1fc2daa83d6264e3531d06f6908ea2fbec1a3122012c42"
+  },
+  "actual_remote_controls_executed": null,
+  "disposition": {
+    "additional_process_scan_or_cleanup_by_reviewer": false,
+    "fabricated_failed_or_retired_terminal": false,
+    "host_credit_update_condition": "Only after actual control receipts, exact source binding, final resource/owned retirement/unit readback and authoritative durable terminal evidence are confirmed.",
+    "new_key_replay_or_renamed_same_transfer_recovery": false,
+    "preserve_original_unknown_and_cancel_unknown": true,
+    "reconcile_owner": "/root",
+    "registry_or_job_metadata_rewrite": false,
+    "source_publication_evidence": "Retain the preparation/source-inspection eight not_run entries and attach the separate actual-dispatch UNKNOWN status. Zero verified controls is not a claim that the unknown remote attempt could never have executed.",
+    "source_publication_may_continue_without_host_credit": true
+  },
+  "formal_tool_contract": {
+    "process_cancel": {
+      "current_status": "Parent attempted this formal path; cancel_unknown/termination_confirmed=false preserved.",
+      "name": "mcp__codex_apps__h_process_cancel",
+      "ownership_contract": "Cancel only a durable process created by this runtime; ownership is verified from stored unit/job metadata; arbitrary PID signalling is not exposed."
+    },
+    "shell_start": {
+      "name": "mcp__codex_apps__h_shell_start",
+      "relevant_instruction": "Never retry uncertain execution with a new key.",
+      "source": "available tool metadata inspected locally; no tool invocation"
+    }
+  },
+  "host_component_accepted": false,
+  "observation_limits": [
+    "ROOT absent and inner unit not-found are observations at one time; they do not prove absence of an in-flight or delayed old H entry.",
+    "The saved JSON contains ControlGroup empty from systemctl; it does not contain a separate old-H-unit or old-entry-process enumeration or cgroup.procs scan.",
+    "Result=success alongside LoadState=not-found is not an observed successful control execution and grants no host credit.",
+    "The original H private directory being absent and formal cancellation returning unknown do not provide a terminal state."
+  ],
+  "observed_utc": "2026-11-08T13:51:43.789909+00:00",
+  "original_attempt_as_reported_by_parent": {
+    "formal_cancel_state": "cancel_unknown",
+    "job_id": "1a1bb5e84bf-13c47-224",
+    "launch_state": "launch_unknown",
+    "old_H_unit_independently_queried": false,
+    "provenance": "parent messages; no invented H terminal",
+    "remote_private_job_directory": "FileNotFound",
+    "same_key_retry": "reused status_unavailable",
+    "status_authoritative": false,
+    "termination_confirmed": false
+  },
+  "previous_delta_review": {
+    "bytes": 5904,
+    "path": "/workspace/scratch/347ef2dfe9ad/camera-decoder-host-controller-peer-review/manager-readback-delta-review.json",
+    "sha256": "75169edd266631504464948dd8fde8e083a5cf5ac7d0ccff2839592bb716c831"
+  },
+  "reconcile_H_completion_as_reported_by_parent": {
+    "exit_code": 0,
+    "job_id": "1a1bb65302c-13c47-240",
+    "output_complete": true,
+    "output_durable": true,
+    "provenance": "parent message; reviewer read the saved local observation only",
+    "terminal_publication_confirmed": true
+  },
+  "relevant_observed_fields": {
+    "mutations": 0,
+    "root_exists": false,
+    "root_symlink": false,
+    "schema": "camera-r4-own-launch-readonly-reconcile-v1",
+    "unit": {
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "LoadState=not-found\nActiveState=inactive\nSubState=dead\nInvocationID=\nMainPID=0\nResult=success\nControlGroup=\n"
+    }
+  },
+  "reviewer_actions": {
+    "controller_executions": 0,
+    "deletions": 0,
+    "local_audit_files_created": 1,
+    "new_remote_jobs": 0,
+    "remote_calls": 0,
+    "shared_state_writes": 0
+  },
+  "runtime_qualified": false,
+  "schema": "camera-r4-unknown-launch-recovery-disposition-v1",
+  "scope": "local technical/protocol review and this audit write only; no remote call or shared mutation",
+  "source": {
+    "bytes": 10896,
+    "path": "/workspace/scratch/347ef2dfe9ad/stage_run_camera_r4_host.py",
+    "sha256": "d30514804dea4f084c4911e553ca2c25c35137017dd5dc2bdfdabf70c572a505"
+  },
+  "technical_conclusion": {
+    "conditional_at_most_once": "If every old/new entry retains this exact ordering and exact canonical ROOT, and ROOT is never removed/renamed/recreated, at most one entry can win mkdir and reach its internal launch dispatch. Two entries passing the earlier absence checks do not defeat atomic mkdir.",
+    "current_fence_state": "The saved observation found ROOT absent. This review did not create a fence or launch recovery.",
+    "linearization_point": "ROOT.mkdir(mode=0o700) uses Path.mkdir default exist_ok=False, before any staged source write or the single systemd-run dispatch. Earlier exists/unit reads are not locks.",
+    "not_provided": [
+      "No determination of which caller wins.",
+      "No proof that the winner reaches launch or finishes.",
+      "No authoritative H terminal, cancellation, retirement, or durable output receipt.",
+      "No fence over H admission/transport metadata or outer pre-mkdir processes.",
+      "No prevention of a delayed second admission if ROOT is later removed or renamed."
+    ],
+    "partial_winner_boundary": "A winner interrupted by delayed cancellation can leave a partial ROOT; the losing call must not adopt it, clear it, use exist_ok=True or remove it to retry."
+  },
+  "verified_actual_host_controls": 0,
+  "whole_app_business_accepted": false
+}

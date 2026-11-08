@@ -73,6 +73,28 @@ jobs:
           set -euo pipefail
           /usr/bin/python3 -I -B compat/android/pocket4/camera-video-media/tests/test_camera_video_decode.py \
             --report "$RUNNER_TEMP/a08/camera-video-controls.json"
+      - name: Exercise current Camera r4 decoder through actual Linux descriptors
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e "$RUNNER_TEMP/a08/camera-r4-decoder-controls.json"
+          /usr/bin/python3 -I -B compat/android/pocket4/camera-video-r4/tests/test_camera_r4_decode.py \
+            --report "$RUNNER_TEMP/a08/camera-r4-decoder-controls.json"
+          /usr/bin/python3 -I -B - "$RUNNER_TEMP/a08/camera-r4-decoder-controls.json" <<'PYGATE'
+          import json
+          import sys
+          from pathlib import Path
+          report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          if report.get("schema") != "pocket4-camera-r4-decoder-component-controls-v1":
+              raise SystemExit("Unexpected Camera r4 decoder report schema")
+          for key, expected in (("tests_run", 11), ("failures", 0), ("errors", 0), ("skipped", 0)):
+              if type(report.get(key)) is not int or report[key] != expected:
+                  raise SystemExit("Camera r4 decoder report count mismatch: " + key)
+          if report.get("passed") is not True or report.get("failed_tests") != []:
+              raise SystemExit("Camera r4 decoder controls did not all pass")
+          print(json.dumps({"Camera_r4_decoder_tests": 11, "failures": 0, "errors": 0, "skipped": 0,
+                            "runtime_qualified": False}, sort_keys=True))
+          PYGATE
       - name: Preserve host evidence without implying Android guest success
         if: always()
         uses: actions/upload-artifact@v4
