@@ -76,6 +76,7 @@ REQUIRED_FILES = (
     "tests/workloads/android/test_kernel_source_audit.py",
     "tests/workloads/android/test_native_apk.py",
     "tests/workloads/android/test_seccomp_guest_contract.py",
+    "tests/workloads/android/test_pocket4_editor_support.py",
     "tests/workloads/android/test_source_integrity.py",
     "tests/workloads/android/test_verified_artifacts.py",
     "tests/workloads/android/test_verify_launch_preflight.py",
