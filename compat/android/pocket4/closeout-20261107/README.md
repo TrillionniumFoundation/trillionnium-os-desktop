@@ -10,6 +10,23 @@ These are source and host-tool results. Native 597-project source materializatio
 
 Previous states are retained byte-for-byte in [continuation history](continuation/history/). Earlier production-cohort, Storage, camera, cleanup and test files keep their original scope. Full Native/ART and Audio artifacts, installed Sensor Binder behavior, coherent deployment, fresh runtime checks and original application acceptance remain required before all blockers can be declared closed.
 
+## Camera video mode restoration
+
+The [Camera video state module](continuation/camera_video_state.py) now accepts
+both permitted completion orders: restore Photo before playback verification,
+or restore Photo after playback verification. Previously the latter reached
+MODE_RESTORED but the terminal check required PLAYBACK_VERIFIED, rejecting an
+otherwise completed sequence.
+
+The [regression test](continuation/camera_video_state_test.py) exercises nine
+public-API state-machine cases. It reproduces the original ordering failure and
+preserves rejection of missing audio/playback evidence, incomplete retirement,
+unclosed tasks, changed state and an unacknowledged restore action. The
+[source repair record](continuation/camera-video-state-repair.json) binds the
+original and fixed module hashes. These are synthetic state-machine tests;
+actual Camera video/audio recording and same-URI playback still require the
+complete entry and a fresh final Android runtime.
+
 ## Verified application experiment cleanup
 
 The latest scoped cleanup accounted for all 807 candidate roots across 17 batches: 723 were actually removed, representing 5,150,584,832 allocated bytes (about 4.80 GiB), and 84 were retained for current dependencies. Deleted original and isolation paths were verified absent, retained identities and protected current state were unchanged, and the remaining reference reasons were rechecked. This byte count measures removed objects; it is not a filesystem-free-space measurement during concurrent builds.
