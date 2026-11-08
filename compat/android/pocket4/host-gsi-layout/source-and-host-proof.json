@@ -1,0 +1,166 @@
+{
+  "all_blockers_closed": false,
+  "installed": false,
+  "normal_host_controls": {
+    "build_jobs": 1,
+    "effective_uid": 1000,
+    "failed": 0,
+    "host": "Pocket4 Linux",
+    "ignored": 3,
+    "locked": true,
+    "offline": true,
+    "passed": 127,
+    "release_build_succeeded": true,
+    "stdout": {
+      "bytes": 11650,
+      "sha256": "dc28341b5fed79499aea3f24e58d525654b64f8219e59ff6c3da2aed2d4d8c5d"
+    }
+  },
+  "not_granted": [
+    "Android boot",
+    "Main or compositor",
+    "Native/ART or Audio payload compatibility",
+    "production UID-map or seccomp hardening",
+    "application acceptance",
+    "November security coverage"
+  ],
+  "raw_receipt_pins": {
+    "build-result.json": {
+      "bytes": 6473,
+      "sha256": "d7ba4579eee979c65ba297a1825105c5de145da5be6610076548c076f18c1061"
+    },
+    "official-mount-result.json": {
+      "bytes": 3623,
+      "sha256": "fc71979485564a450911d41872eb380ada5c3f77938acc5236370ff8ca77c3e1"
+    },
+    "source-commit.json": {
+      "bytes": 3513,
+      "sha256": "56493c1c08efd2519d64065b9efce836d8b4c6b2620814816e039b17e143da14"
+    }
+  },
+  "real_image_mount_control": {
+    "actual_compiled_runtime_functions_exercised": true,
+    "failed": 0,
+    "ignored": 0,
+    "known_partition_aliases_remain_inside_cell_before_chroot": true,
+    "namespace": "fresh private mount namespace",
+    "new_image_loops_absent": true,
+    "new_product_and_system_ext_overrides_created_in_private_projection": true,
+    "original_images_unchanged": true,
+    "override_and_official_file_write_opens_rejected_EROFS": true,
+    "owned_cgroup_absent": true,
+    "owned_namespace_mounts_absent": true,
+    "passed": 1,
+    "protected_data_metadata_unchanged": true,
+    "read_only_ext4_journal_replay_disabled": true,
+    "stderr": {
+      "bytes": 332,
+      "sha256": "6663ac576e1ba4d9cc06fbcc5242d8989571f2efbd27198c50352c848a609c65"
+    },
+    "stdout": {
+      "bytes": 213,
+      "sha256": "b7553ad677872461b3c27452ca417a71184835681041b81b985cefe409b25d84"
+    },
+    "system_build": "CP3A.260905.010 / 16176746",
+    "system_image": {
+      "bytes": 2294853632,
+      "sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"
+    },
+    "temporary_fixture_removed": true,
+    "test": "development::tests::gsi_image_layout_mounts_official_image_and_private_alias_overrides",
+    "test_binary": {
+      "bytes": 28261136,
+      "sha256": "7b93f9b1172a51dbaeebf372f903a0fa403397e66479e8ef7d93b37b638d46bb"
+    },
+    "unit_after": {
+      "ActiveState": "inactive",
+      "ControlGroup": "",
+      "LoadState": "not-found",
+      "MainPID": "0",
+      "SubState": "dead"
+    },
+    "vendor_image": {
+      "bytes": 1073741824,
+      "sha256": "aa253f25d4567a08e5310a364126584ffe2d0d19a1d47908d7d81cb8ad3c4108"
+    }
+  },
+  "release_binaries": [
+    {
+      "bytes": 2063016,
+      "name": "droidloom-supervisor",
+      "sha256": "690f422832b50abbe5f4c2d7be98589a16a220dfc490e46143580fe856c35a61"
+    },
+    {
+      "bytes": 1992152,
+      "name": "droidloomd",
+      "sha256": "34de7cf47f62c0adfe17770e57258181f2e645076d1f66f2b3266425da65f90f"
+    },
+    {
+      "bytes": 1747312,
+      "name": "droidloomctl",
+      "sha256": "a3bbfae108cf1686f3b64042a6206b8cf1f66d2ebb51d703dd8d8777e9382f10"
+    },
+    {
+      "bytes": 1578200,
+      "name": "droidloom-applications",
+      "sha256": "bfd32eee2d982b6fee2448721988e255ecb4bfd736209b9283fdb5903d164de5"
+    }
+  ],
+  "runtime_qualified": false,
+  "schema": "pocket4-host-gsi-layout-source-and-actual-mount-v1",
+  "scope": "ACTUAL_HOST_LAYOUT_FUNCTIONS_ONLY",
+  "source": {
+    "base_commit": "5957addac279b11110c6cdd406e32ef871a7c511",
+    "commit": "ce2150070260a660a4f634d5bb43085fd6df541b",
+    "files": [
+      {
+        "bytes": 14111,
+        "path": "docs/contracts/runtime-layout-v1.md",
+        "sha256": "f737014cf45be70b7a2089f37c189d2540bfcd9f9c19a2086677f8f6b39c5ce9"
+      },
+      {
+        "bytes": 1220,
+        "path": "packaging/ime/setup",
+        "sha256": "d2a76b0ea356d94b78a20911a0e203838194b90b1791fb778dbd734760338b87"
+      },
+      {
+        "bytes": 11907,
+        "path": "runtime/droidloom-supervisor/src/control_status_tests.rs",
+        "sha256": "54810199ebc83f282495183a9b608fd2f8dc10691319739ea9c2f9ec6e765422"
+      },
+      {
+        "bytes": 112518,
+        "path": "runtime/droidloom-supervisor/src/development.rs",
+        "sha256": "1467dc35752b7eb2b2faab380970b5cee177db5d51f89829ea15ef6706abb778"
+      },
+      {
+        "bytes": 19718,
+        "path": "runtime/droidloom-supervisor/src/development_network.rs",
+        "sha256": "604941e541d50de976a5bcea1342257ca9b52762ba8e58a410467ff86bd6bb7d"
+      },
+      {
+        "bytes": 10345,
+        "path": "runtime/droidloom-supervisor/src/gapps.rs",
+        "sha256": "d1676bd56aff2b87c6b7a86fe762687e5bc5d1299564c4ab77d7368a8e888a34"
+      },
+      {
+        "bytes": 4624,
+        "path": "runtime/droidloom-supervisor/src/image_layout.rs",
+        "sha256": "9374fb3261f7133a165ec5d075ffebc58cc7f3b2fd4301b3e068f48f215c89be"
+      },
+      {
+        "bytes": 35756,
+        "path": "runtime/droidloom-supervisor/src/lib.rs",
+        "sha256": "7e61eebb595583f47d76dc2fc0c47f05a643f852b2d85bae223b2488961d1d70"
+      },
+      {
+        "bytes": 41550,
+        "path": "runtime/droidloom-supervisor/src/linux_plan.rs",
+        "sha256": "51638df0266e5a7e8abc148c08917c62b8de6467bde0dec097a70afd097de92f"
+      }
+    ],
+    "original_source_unchanged": true,
+    "tree": "5ef17a4d859c510b39804774e4dae0464922a9cb",
+    "worktree_clean": true
+  }
+}

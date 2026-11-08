@@ -81,6 +81,40 @@ jobs:
             2>&1 | tee "$RUNNER_TEMP/a08/native-stage-release-controls.log"
           python3 -B -m unittest discover -s compat/android/pocket4/audio-continuation-r1/tests -v \
             2>&1 | tee "$RUNNER_TEMP/a08/audio-continuation-controls.log"
+      - name: Verify exact source transfers and Linux build ownership
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd compat/android/pocket4/source-transfer-batches-r1 && python3 -B -m unittest discover -s tests -v) \
+            2>&1 | tee "$RUNNER_TEMP/a08/source-transfer-batches.log"
+          python3 -B compat/android/pocket4/git-transfer-layout-r1/test_git_transfer_layout.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/git-transfer-layout.log"
+          python3 -B - <<'PYOWNED' 2>&1 | tee "$RUNNER_TEMP/a08/linux-build-ownership.log"
+          import importlib.util
+          from pathlib import Path
+          import unittest
+          path = Path('compat/android/pocket4/linux-build-lifecycle-r1/test_linux_build_support.py')
+          spec = importlib.util.spec_from_file_location('owned_build_controls', path)
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(module))
+          if result.testsRun != 9 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('All nine Linux ownership controls must actually execute')
+          PYOWNED
+          python3 -B - <<'PYCOMMAND' 2>&1 | tee "$RUNNER_TEMP/a08/process-command-witness.log"
+          import importlib.util
+          from pathlib import Path
+          import sys
+          import unittest
+          directory = Path('compat/android/pocket4/process-command-witness-r1').resolve()
+          sys.path.insert(0, str(directory))
+          spec = importlib.util.spec_from_file_location('process_command_controls', directory / 'test_process_command_witness.py')
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(module))
+          if result.testsRun != 10 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('All ten process command witness controls must actually execute on Linux')
+          PYCOMMAND
       - name: Preserve the qualified Sensor candidate during composition
         shell: bash
         run: |

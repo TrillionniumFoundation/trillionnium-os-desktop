@@ -1,6 +1,6 @@
 # Pocket4 Android closeout continuation
 
-Current state: **`SOURCE_QUALIFIED_FULL_BUILDS_AND_RUNTIME_PENDING`**. Native597 and Audio316 have actual successful normal source materialization records. The ABI-qualified Sensor library is staged in the canonical candidate. Full Native/ART and Audio artifacts, final deployment, fresh runtime checks and original whole-application acceptance remain pending; applications remain **0/45**.
+Current state: **`QPR1_HOST_LAYOUT_VERIFIED_FULL_ARTIFACTS_AND_RUNTIME_PENDING`**. Native597 and Audio316 have actual successful normal source materialization records. The ABI-qualified Sensor library is staged in the canonical candidate. Full Native/ART and Audio artifacts, final deployment, fresh runtime checks and original whole-application acceptance remain pending; applications remain **0/45**.
 
 The [current state](continuation/state.json) and [latest execution reconciliation](continuation/build-observations-20261108-native597-audio316.json) distinguish actual completed work, preserved failures and remaining gates. The [earlier build observations](continuation/build-observations-20261108-native-tls-audio316.json) retain their original observation time. The [source repair package](build-source-repair-20261108/README.md) contains independently reconstructable frozen Native, current Audio316, historical Audio and separate combined-builder source chains.
 
@@ -67,7 +67,7 @@ A read-only registry audit found all 45 original package registrations (37 data 
 
 The installed build identifies Android 17 / API 37, `CP2A.260605.016`, with the June 2026 security patch level. The [official AOSP build table](https://source.android.com/docs/setup/reference/build-numbers) maps it to the initial stable Android 17 release; the [newer stable QPR1 GSI](https://developer.android.com/topic/generic-system-image/releases) and [November security bulletin](https://source.android.com/docs/security/bulletin/2026/2026-11-01) require a separate release/security assessment. The currently frozen Native and Audio source inputs must not drift during their full builds. A new base or security cohort requires new pinned inputs, complete build/deployment and fresh acceptance. Official store update dates alone do not establish that an installed commercial APK is the current device/channel variant.
 
-The original acceptance denominator remains 45. The planned final production set has 41 applications after retiring four QA/demo applications, with the actual WebView provider retained separately. An installed local test-signature commercial package also requires a normal migration to an official release; changing certificate records or deleting user data is not an accepted upgrade path.
+The original acceptance denominator remains 45. The original selected set has 41 retained applications after four QA/demo retirements; a separately verified official Firefox replacement is prepared but not installed, which would make that selected set 42. System packages and production dependencies are inventoried separately, with the actual WebView provider retained. An installed local test-signature commercial package also requires a normal migration to an official release; changing certificate records or deleting user data is not an accepted upgrade path.
 
 ## Current Camera source convergence (2026-11-08)
 
@@ -85,11 +85,79 @@ business child in the four negative cases were fixtures, so real display,
 Main/audio/video and whole-app acceptance remain unqualified. The exact
 29 production modules were unchanged by these runs.
 
-Both current source trees are being copied to the isolated desktop data
-workspace in explicit nonrecursive batches of at most 8192 approved files,
-followed by file checksum/mode/mtime/symlink and normal CLI verification.
-The previous long unbatched transfers were explicitly cancelled and their
-owned processes retired before this continuation. Full builds have not yet
-started. The prepared desktop resource contract is 24 GiB, eight CPUs, swap
-disabled, a fresh 29 GiB host-memory floor, one 62 GiB output budget and a
-16 GiB free-disk reserve. Audio and Native full builds are serialized.
+Audio316 completed the exact desktop source copy, checksum verification,
+normal lock and materialized-source verification, and original-source checks.
+The file-only copy had omitted empty Git refs containers; their restoration
+required the original empty-directory witnesses and changed no source file,
+object, ref, or locked manifest. Native597 completed all 103 copy batches and
+continues with complete checksum and normal source verification.
+
+A desktop Audio generation reached its actual normal full driver with six
+requested jobs and the pinned Go 1.25.4 toolchain. The actual Go process saw
+eight CPUs, GOMAXPROCS=2 and a 5 GiB Go memory limit. Build temporary paths
+are explicit owned directories on the data volume. This is build execution,
+not complete-APEX or runtime qualification. Audio and Native full builds
+remain serialized within 24 GiB, eight CPUs, zero swap, a fresh 29 GiB memory
+floor, one 62 GiB work/output budget and a 16 GiB free-disk reserve.
+
+The portable source repairs are preserved in the
+[exact batch partitioner](../source-transfer-batches-r1/README.md),
+[empty Git container repair](../git-transfer-layout-r1/README.md), and
+[Linux build lifecycle](../linux-build-lifecycle-r1/README.md). Their 8, 8,
+and 9 controls retain their actual scope; three lifecycle controls require
+Linux pidfd/waitid/subreaper facilities and must execute without skips in CI.
+
+The first actual full driver exposed a further observer defect: its earliest
+`/proc` command line was empty during exec, while its PID, start time,
+executable and cgroup stayed the same. The frozen generation incorrectly
+treated the later complete argv as a new process. It failed and its normal
+driver was retired; source recovery and lock checks passed, with independent
+final retirement still required. Its incomplete outer cancellation log is
+not accepted as a clean success. The [command witness repair](../process-command-witness-r1/README.md)
+separates stable ownership from mutable command observations while still
+requiring the exact executed argv and a held, SHA-pinned executable inode.
+Nine portable controls passed. The actual build host subsequently passed all
+ten controls with zero skips, including the real Linux `/proc` executable
+observation; CI must also execute all ten. This repair never alters the frozen failed
+generation or grants build qualification retroactively.
+
+## Official QPR1 host layout and application identity
+
+The complete official QPR1 GSI was delivered to Pocket4 and checked by whole
+archive and extracted-image SHA-256. The [host layout repair](../host-gsi-layout/README.md)
+has now passed 127 ordinary supervisor tests, the normal release build of
+four executables, and a separate real-image mount test through its compiled
+runtime functions. The GSI uses explicit integrated partition aliases;
+read-only ext4 mounts disable journal replay. Original image hashes and
+user-data metadata were preserved and the owned test mounts were retired.
+The new executables were not installed by that qualification.
+
+The corrected APK audit binds every result to one unique full-content APK
+path, raw binary manifest, raw application signing block, and SDK37 signature
+verification. It passed 70 installed data packages containing 110 base/split
+APKs, plus 94 QPR1 outer APKs and 33 APKs inside 38 APEX containers. The initial
+shared-temporary-path comparisons are invalid and must not be consumed.
+The earlier Calendar and Dialer signature/UID conflict claims are withdrawn;
+the corrected QPR1 comparison found no registry or shared-UID signer conflict.
+All fields for the previous 31-package/71-APK subset match the newly bound
+evidence. These read-only identity results grant no whole-app acceptance.
+
+The [content-bound APK verifier](../apk-content-identity/README.md) preserves
+the actual parser and identity repair. Real signed-APK controls passed for
+the trusted official reference, wrong-package rejection, Source Stamp
+separation, and altered signed DEX bytes at the same external filename. The
+reference was unchanged and temporary counterexamples were removed. These
+controls require an independently trusted reference APK and Android Build
+Tools 37; their result is recorded separately from portable CI.
+
+The final selected production manifest has 42 candidates: 41 retained
+production applications plus the prepared Firefox replacement. All require
+fresh runtime acceptance, currently 0/42. The original 0/45 inventory remains
+historical; its four QA/demo entries are excluded from the final product.
+System packages and production helpers are retained according to dependency
+checks and are not pruned using a 42-package allowlist.
+
+QPR1 framework and native compatibility still require their own ABI and
+runtime gates. The existing development runner's production UID mapping and
+seccomp limitations are also outside the completed layout change. No old
+CP2A full-build result may be relabelled as QPR1 production qualification.

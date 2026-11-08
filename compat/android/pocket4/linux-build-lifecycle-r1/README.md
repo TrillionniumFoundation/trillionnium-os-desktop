@@ -1,0 +1,11 @@
+# Bounded Linux build lifecycle and resource contract
+
+This package contains the source controls used for a new Linux whole-APEX build generation: strict resource-profile types, complete file witnesses, create-only evidence, held file locks, actual cgroup inspection, PIDFD plus WNOWAIT command ownership, adopted-child reaping, bounded cancellation, and retirement before evidence can claim success.
+
+The profile fixes 24 GiB build memory, eight visible CPUs, six requested build jobs, zero swap, and 5 GiB host reserve. It preserves the source tool's separate 5 GiB / two-thread Go budget. Fresh disk admission is 62 GiB for incremental work/output plus 16 GiB shared reserve. Memory-limit `max` counters are recorded; actual OOM events remain failure conditions. A cache limit event alone is not relabelled as OOM.
+
+Host binding belongs to the caller: supply the already reviewed absolute shared lock path and expected owner UID to `serial_lock`; supply `owner_uid` to `work_lock_probe`. The shared lock must remain held through retirement and normal source recovery. The two normal build work-lock inodes are checked again after retirement. The caller must also observe the normal source verifier, actual build cgroup and command, whole output artifact, source restoration, and same-generation raw terminal records. This module never grants payload, runtime, or deployment qualification.
+
+The extraction preserves the full resource values, file-witness functions, process-identity functions, owned-command implementation, and both lifecycle helpers. Only the private lock path, fixed login UID arguments, and host/source-generation label are parameterized or omitted. No prior job/PID, accounts, devices, private source allowlist, raw logs, or signing material is included.
+
+Run `python3 -B -m unittest -v test_linux_build_support.py`. Six controls are portable on POSIX. Three additional integration controls require actual Linux pidfd/waitid/subreaper and visible `/proc/.../children`: successful child, nonzero child, and timeout retirement. They are explicitly skipped where those facilities are unavailable, and must run on Linux in release CI. The corresponding frozen Linux implementation already passed all nine on the actual build host; this package retains no private execution log.

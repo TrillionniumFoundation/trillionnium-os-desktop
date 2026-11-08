@@ -31,6 +31,27 @@
     "source_tree": "f5b7455507f68f4d2b60e763701149ac784aa401"
   },
   "all_blockers_closed": false,
+  "application_reaudit": {
+    "QPR1_APEX_containers": 38,
+    "QPR1_APEX_inner_APKs_content_bound": 33,
+    "QPR1_outer_APKs_content_bound": 94,
+    "QPR1_registry_signer_conflicts": 0,
+    "QPR1_shared_UID_signer_conflicts": 0,
+    "data_app_APKs_and_splits_content_bound": 110,
+    "data_app_identity_failures": 0,
+    "data_app_packages_content_bound": 70,
+    "old_audit_may_not_be_consumed_independently": true,
+    "prior31_packages_71_APKs_fields_match_new_bound_audit": true,
+    "prior_Calendar_Dialer_conflict_claims_retracted": true,
+    "prior_shared_temporary_path_comparison_invalidated": true,
+    "registered_packages": 208,
+    "source_package": {
+      "bytes": 1436,
+      "path": "../apk-content-identity/SOURCE_MANIFEST.json",
+      "sha256": "a60ef0dd5ea3abd804f38fd383b6687f2183abc3f0ed166e5ccc37c9a98b3263"
+    },
+    "whole_app_acceptance_granted": false
+  },
   "artifact_policy": "Public repair source and compact hashed observations only. Private runtime identities, device/account data, raw private logs and user application data are excluded. Source checks do not establish runtime acceptance.",
   "audio316_actual_observation": {
     "candidate_source_commit": "3b4199c0af6e430a852131a71f87aa65aef8f813",
@@ -160,6 +181,17 @@
     "retained_canonical_and_external_sources_unchanged": true,
     "state": "PRIOR_SUCCESS_RECONCILED_NOT_REPLAYED"
   },
+  "camera_current_superseded_cleanup": {
+    "allocated_bytes_deleted": 1667072,
+    "apply_receipt": {
+      "bytes": 4273,
+      "sha256": "ca016aa9708679746ca6f663a4daf9a320303877cacb73b3d7d06b1a3e3b2af5"
+    },
+    "canonical_current_source_and_user_data_unchanged": true,
+    "original807_inventory_count_unchanged": true,
+    "removed_entries": 162,
+    "removed_roots": 3
+  },
   "camera_merged_source": {
     "A08_conclusion": "success",
     "A08_run_id": 42508471657,
@@ -223,6 +255,26 @@
     "total": 84
   },
   "final_candidate_deployed": false,
+  "final_selected_production_acceptance": {
+    "Firefox_prepared_not_installed": true,
+    "QA_demo_packages_excluded": 4,
+    "accepted": 0,
+    "candidate_manifest_sha256": "73b7578fe2376f700edd68184ed6e16182bf4b58d3b5c75554a5c597f5f3a603",
+    "original45_kept_as_history": true,
+    "original_selected_production": 41,
+    "required": 42,
+    "system_and_production_dependencies_retained_separately": true
+  },
+  "host_GSI_layout": {
+    "bytes": 5561,
+    "installed": false,
+    "normal_tests_passed": 127,
+    "path": "../host-gsi-layout/source-and-host-proof.json",
+    "real_official_image_mount_tests_passed": 1,
+    "release_binaries_built": 4,
+    "runtime_qualified": false,
+    "sha256": "b39070304764e687192652a08ea5a2971fcf3db490fab0f0726acd0698675652"
+  },
   "last_observed_android_state": "Normally stopped; no deployment performed by this continuation.",
   "native_actual_observation": {
     "R11_source_consumer": {
@@ -389,52 +441,100 @@
     "host_reserve_bytes": 5368709120,
     "swap_max_bytes": 0
   },
+  "offload_actual_progress": {
+    "Audio316_complete_copy_and_normal_source_verification_passed": true,
+    "Audio_normal_full_driver_reached": true,
+    "Audio_normal_full_request_jobs": 6,
+    "Native597_all_103_copy_batches_completed": true,
+    "Native597_checksum_and_normal_verification_continuation_required": true,
+    "TMPDIR_and_GOTMPDIR_inside_owned_data_work_budget": true,
+    "actual_Go_GOMAXPROCS": 2,
+    "actual_Go_GOMEMLIMIT_bytes": 5368709120,
+    "actual_Go_version": "go1.25.4",
+    "actual_Go_visible_CPUs": 8,
+    "complete_compiled_APEX_qualified": false,
+    "first_full_failure": {
+      "driver_started": true,
+      "frozen_failed_generation_not_modified": true,
+      "independent_final_unit_and_source_reconciliation_required": true,
+      "normal_driver_owned_retirement_complete": true,
+      "normal_driver_returncode": -9,
+      "normal_lock_after_exit_code": 0,
+      "normal_source_recovery_exit_code": 0,
+      "outer_log_incomplete_terminal_not_accepted_as_clean_success": true,
+      "reason": "observer compared mutable argv with process generation during the exec window"
+    },
+    "process_command_repair": {
+      "actual_Linux_controls_passed": 10,
+      "actual_Linux_controls_skipped": 0,
+      "actual_Linux_executable_control_required": 1,
+      "actual_Linux_result": {
+        "bytes": 2306,
+        "sha256": "3f5a2d85a71dd23ca24efbd28d023d4a0ac08c56199dfea4f53df0275eefa434"
+      },
+      "bytes": 6245,
+      "exact_post_exec_argv_and_held_pinned_executable_still_required": true,
+      "portable_controls_passed": 9,
+      "sha256": "fedaa7d676e059a15ba505f5d97354316c377492792cfe220f18f86674c3b8ff",
+      "source": "../process-command-witness-r1/process_command_witness.py"
+    },
+    "runtime_qualified": false
+  },
   "offload_preparation": {
-    "audio_source_transfer_complete": false,
-    "audio_source_transfer_job": "1a1bc7196b9-138b0-288",
+    "audio_source_transfer_complete": true,
+    "audio_source_transfer_job": "1a1bc96e6a7-138b0-370",
     "copied_previous_runtime_evidence_qualifies_new_build": false,
-    "destination_data_available_observed_bytes": 205116530688,
+    "destination_data_available_observed_bytes": 86224359424,
     "files_per_batch_max": 8192,
-    "full_build_started": false,
+    "full_artifacts_qualified": false,
+    "full_build_started": true,
+    "native_source_finalizer_job": "1a1bcb6ed02-138b0-438",
     "native_source_transfer_complete": false,
     "native_source_transfer_job": "1a1bc6ea7b1-138b0-26f",
     "new_host_build_generation_required": true,
     "previous_unbatched_transfers_cancelled_and_retired": true,
     "production_data_or_signing_secrets_transferred": false,
     "source316_observed_bytes": 39471591424,
-    "state": "BOUNDED_EXACT_FILE_BATCH_SOURCE_TRANSFERS_RUNNING"
+    "state": "AUDIO_SOURCE_VERIFIED_NATIVE_FINALIZATION_AND_FULL_BUILD_CONTINUATIONS_PENDING"
   },
   "original_application_acceptance": {
     "accepted": 0,
     "actual_WebView_provider_retained_separately": true,
+    "all_inventory_retirement_candidates": 33,
     "experimental_packages_to_retire_after_original_acceptance": 4,
-    "final_production_package_count_planned": 41,
+    "final_count_requires_Firefox_installation": true,
+    "final_production_package_count_planned": 42,
     "installed_registrations_observed": 45,
     "latest_upstream_versions_verified": false,
+    "original_selected_after_four_QA_retirements": 41,
     "registry_audit_did_not_write_or_mount_user_image": true,
     "registry_observation_utc": "2026-11-08T16:39:26Z",
     "required": 45,
-    "source_or_host_checks_count_as_whole_application_acceptance": false
+    "source_or_host_checks_count_as_whole_application_acceptance": false,
+    "total_registered_packages_observed": 208
   },
   "pending": {
-    "audio": "Source316 is qualified. Exact source transfer to desktop is running; fresh whole-APEX and compiled-bridge full evidence remain required. No previous host runtime authority transfers.",
+    "audio": "Desktop source316 copy and normal verification passed; the actual full driver exposed a process-command observation race. Preserve its failure and complete recovery, then use a new source-bound generation. Whole vendor Audio APEX and QPR1 compatibility remain unqualified.",
     "camera_and_storage": "Current Camera source38, decoder8, owned display negative4 and formal preparation passed in the canonical location. Real Main/display/audio, Camera2/UVC, Camera recovery, Storage lifecycle and whole-app acceptance remain pending.",
     "cleanup": "The original inventory is now 729 removed / 78 retained. Migrate live references and retire obsolete roots, old payloads and experiments after replacement validation; preserve user images and current signing material.",
     "final_deployment": "Compose and inspect the complete canonical cohort before using the reviewed installation transaction.",
     "framework": "The ABI-qualified Sensor library is staged in the canonical candidate. Its actual fresh installed Binder identity/death behavior remains pending.",
-    "native": "Normal597 materialization and R11 source consumption are qualified. Exact source transfer to a separately qualified desktop generation is running; full normal engine and whole-ART build remain unstarted.",
-    "release_currency": "Resolve the installed Android June security baseline against the current stable release/security target, and compare exact official device/channel app metadata. Public store dates alone cannot establish latest APK identity.",
-    "runtime_and_applications": "Qualify one fresh generation and the original 45 whole applications; current accepted count remains zero."
+    "native": "Normal597 materialization and R11 source consumption passed. All desktop copy batches finished; source-only checksum and normal verification continuation is active. Full engine/ART artifacts and QPR1-compatible native bridge remain unqualified.",
+    "production_isolation": "The development runner has not qualified production UID mapping or seccomp. A successful isolated empty-data boot probe cannot close this gate.",
+    "release_currency": "The verified official QPR1 GSI is on Pocket4 and the actual host layout passed. Preserve official QPR1 ART, bionic, APEX and framework components while qualifying necessary compatibility changes. September SPL does not imply November coverage. Official app delivery and data-preserving signature migration remain pending.",
+    "runtime_and_applications": "Create a fresh coherent runtime and accept the final selected production applications; historical original45 acceptance remains zero. The planned set is 42 if the prepared official Firefox replacement is installed."
   },
   "previous_public_observation": {
-    "bytes": 9012,
-    "path": "continuation/history/state-20261108-before-native-retry-sensor-stage.json",
-    "repository_commit": "056533ec5c5a450a315c8eaa8b68f5c28527dfca",
-    "semantics": "Exact prior state retained; previous failure and qualification scopes remain unchanged.",
-    "sha256": "d68089d9b2a868279e302980035490d67775309b8f6293cd8db7e889bb00ce89"
+    "bytes": 28107,
+    "path": "continuation/history/state-before-qpr1-host-20261108.json",
+    "sha256": "4ca9eb963eb9bd3c3930466f973386f000cffb4fa72260310fc424592774564a"
   },
-  "publication_state": "SOURCE_MATERIALIZATIONS_QUALIFIED_FULL_ARTIFACTS_AND_RUNTIME_PENDING",
-  "recorded_utc": "2026-11-08T18:43:39Z",
+  "production_isolation_gate": {
+    "development_UID_map_and_seccomp_qualified": false,
+    "layout_patch_does_not_implement_production_hardening": true
+  },
+  "publication_state": "HOST_GSI_LAYOUT_AND_SOURCE_OFFLOAD_CONTROLS",
+  "recorded_utc": "2026-11-08T20:08:00Z",
   "resume_order": [
     "Audio316 full-only strict APEX with fresh original locks and 8 GiB cap plus 5 GiB host reserve",
     "Native597 normal strict full Native/ART after Audio retirement",
@@ -626,5 +726,5 @@
     "production_actions_performed_by_this_continuation": false,
     "ready_for_apply": false
   },
-  "status": "SOURCE_QUALIFIED_FULL_BUILDS_AND_RUNTIME_PENDING"
+  "status": "QPR1_HOST_LAYOUT_VERIFIED_FULL_ARTIFACTS_AND_RUNTIME_PENDING"
 }
