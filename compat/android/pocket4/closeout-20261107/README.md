@@ -1,17 +1,29 @@
 # Pocket4 Android closeout continuation
 
-Current state: **`BUILD_SOURCE_REPAIR_IN_PROGRESS_NOT_DEPLOYED`**. Final deployment and runtime qualification have not occurred; original whole-application acceptance remains **0/45**.
+Current state: **`BUILD_SOURCE_REPAIR_IN_PROGRESS_NOT_DEPLOYED`**. The ABI-qualified Sensor library is staged in the canonical candidate. Full Native/ART and Audio artifacts, final deployment, fresh runtime checks and original whole-application acceptance remain pending; applications remain **0/45**.
 
-The [current state](continuation/state.json) records the remaining gates. The [source repair package](build-source-repair-20261108/README.md) now includes independently replayed source chains for the real Native 597-project input, Audio 308-project candidate and a separate combined builder. The combined source passed 29 library tests, 6 recipe tests, the actual historical 597-source render, 58 distinct updater tests and both normal release-tool builds. Every count is bound to its actual source and result; original failed attempts and earlier checks retain their historical scope.
+The [current state](continuation/state.json) and [latest build observations](continuation/build-observations-20261108-native-audio-sensor.json) distinguish actual completed work, preserved failures and remaining gates. The [source repair package](build-source-repair-20261108/README.md) contains independently reconstructable frozen Native, historical Audio and separate combined-builder source chains.
 
-These are source and host-tool results. Native 597-project source materialization remains pending during transport recovery. The actual Audio full host-r1 build failed in Soong bootstrap: `icu4j-tests` requires the undefined `junit-params` provider. No complete Audio APEX was produced. Its minimal 309-project source repair and normal tools now pass their focused checks and independent replay. Normal source migration and all full build, artifact, deployment and runtime gates remain pending. See [build observations](build-source-repair-20261108/integrated-builder/build-observations.json).
+## Qualified source tool and Sensor staging
 
-[Native attempt 12](continuation/native-attempt12-reconciliation.json) remains authoritatively FAILED and retired because Soong could not resolve `PermissionUtils`. Its cleanup observations do not establish successful build, continuous absence or deployment authorization.
+The [bounded source transport repair](build-source-repair-20261108/native-transport-retry/README.md) passed its four focused tests, normal offline release build and retirement checks. Its fifth source patch reconstructs a 451-file public tree, independently checked on Mac against every byte and executable mode. The original frozen full Native builder remains unchanged.
 
-Previous states are retained byte-for-byte in [continuation history](continuation/history/). Earlier production-cohort, Storage, camera, cleanup and test files keep their original scope. Full Native/ART and Audio artifacts, installed Sensor Binder behavior, coherent deployment, fresh runtime checks and original application acceptance remain required before all blockers can be declared closed.
+An existing normal source owner is reconciling the same exact 597-project lock after verifying the previous 268-project publication. A separate new entry was safely refused at the original lock before source work. Its complete failure remains recorded; no duplicate source sequence was substituted. Source materialization and full Native/ART qualification require the actual owner's final records.
+
+The [Sensor staging proof](sensor-canonical-stage-20261108/verification.json) records the qualified 482,440-byte library and the matching 1,032-byte allocation/layout contract. Canonical staging passed 43 checksum checks, with 28 install targets and 47 Android file overrides. This did not change production or start services. Installed Sensor Binder identity and death behavior still require a fresh runtime generation.
+
+## Current Audio provider repair
+
+The actual normal 308-to-309 migration completed on the recorded source lineage. The subsequent full Audio host-r2 build removed the earlier JUnitParams failure and exposed the original SDK35 and CTS providers still needed by its graph. That failed build preserved complete output, successful source verification/restoration and resource/process retirement; no Audio APEX qualification is claimed.
+
+The next repair follows the original SDK35, CTS, ATS, dEQP and supporting provider dependencies at their pinned commits. The earlier public prepared 309 source chain and its focused results retain their historical scope. Current source migration, complete Audio APEX and matching payload qualification remain required.
+
+[Native attempt 12](continuation/native-attempt12-reconciliation.json) remains FAILED and retired because Soong could not resolve `PermissionUtils`. Earlier failed source and build attempts are preserved; cleanup observations do not turn them into successful builds.
 
 ## Verified application experiment cleanup
 
-The latest scoped cleanup accounted for all 807 candidate roots across 17 batches: 723 were actually removed, representing 5,150,584,832 allocated bytes (about 4.80 GiB), and 84 were retained for current dependencies. Deleted original and isolation paths were verified absent, retained identities and protected current state were unchanged, and the remaining reference reasons were rechecked. This byte count measures removed objects; it is not a filesystem-free-space measurement during concurrent builds.
+The scoped cleanup accounted for all 807 candidate roots across 17 batches: 723 were actually removed, representing 5,150,584,832 allocated bytes (about 4.80 GiB), and 84 were retained for current dependencies. Deleted original and isolation paths were verified absent; retained identities and protected current state were unchanged. This byte count measures removed objects, not filesystem free space during concurrent builds.
 
-[The compact cleanup summary](cleanup/app-retirement-20261108-summary.json) records each original receipt hash and the final audit. Current source/provenance dependencies must be released and checked again after final deployment and qualification before the retained roots and remaining build/payload history are retired. Android deployment and original whole-application acceptance remain pending.
+[The compact cleanup summary](cleanup/app-retirement-20261108-summary.json) records the original receipt hashes and final audit. After final deployment and qualification, current dependencies must be released and checked again before the retained roots and remaining build, cache, payload and backup history are retired.
+
+Previous states remain byte-for-byte in [continuation history](continuation/history/). Original Storage, camera, source, cleanup and test records keep their original scope. The user data images and accounts remain protected.

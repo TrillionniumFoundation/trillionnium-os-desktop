@@ -1,0 +1,1030 @@
+diff --git a/tools/droidloom-source/src/git_retry.rs b/tools/droidloom-source/src/git_retry.rs
+new file mode 100644
+--- /dev/null
++++ b/tools/droidloom-source/src/git_retry.rs
+@@ -0,0 +1,795 @@
++//! Opt-in, bounded retries for ordinary Git fetch and checkout transport failures.
++use std::collections::BTreeMap;
++use std::ffi::{OsStr, OsString};
++use std::fs::{self, File, OpenOptions};
++use std::io::{self, Write};
++use std::os::unix::ffi::OsStrExt;
++use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
++use std::os::unix::process::ExitStatusExt;
++use std::path::{Component, Path, PathBuf};
++use std::process::{Command, Output, Stdio};
++use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
++
++use serde_json::{Value, json};
++use sha2::{Digest, Sha256};
++
++use super::{SourceError, io_error};
++
++/// Optional transport policy for the ordinary materializer; the default is one attempt.
++#[derive(Default)]
++pub struct GitTransportRetry {
++    journal: Option<Journal>,
++    command_id: u64,
++}
++
++impl GitTransportRetry {
++    /// Open a create-only private journal when explicitly enabling three attempts.
++    ///
++    /// A journal may also be used with one attempt. It must be outside the output
++    /// and source staging trees, with an existing, real, privately owned parent.
++    ///
++    /// # Errors
++    /// Rejects unsupported limits, a missing retry journal, unsafe paths or I/O errors.
++    pub fn new(
++        attempts: u8,
++        journal_path: Option<&Path>,
++        destination: &Path,
++        lock_path: &Path,
++    ) -> Result<Self, SourceError> {
++        if attempts != 1 && attempts != 3 {
++            return Err(invalid("git transport attempts must be 1 or 3"));
++        }
++        let Some(path) = journal_path else {
++            return if attempts == 1 {
++                Ok(Self::default())
++            } else {
++                Err(invalid(
++                    "three git transport attempts require a new attempt journal",
++                ))
++            };
++        };
++        let mut journal = Journal::create(path, destination, attempts)?;
++        journal
++            .record(&json!({
++                "schema_version": 1, "event": "header", "process_id": std::process::id(),
++                "at_unix_ms": unix_ms(), "maximum_attempts": attempts,
++                "retry_operations": ["fetch", "checkout"], "backoff_ms": [1000, 3000],
++                "lock_sha256": super::sha256_file(lock_path)?,
++                "destination_hex": hex::encode(destination.as_os_str().as_bytes()),
++                "output_encoding": "hex", "environment_values_logged": false
++            }))
++            .map_err(|error| io_error("persist git attempt journal header", error))?;
++        File::open(path.parent().expect("validated journal parent"))
++            .and_then(|parent| parent.sync_all())
++            .map_err(|error| io_error("persist git attempt journal directory", error))?;
++        Ok(Self {
++            journal: Some(journal),
++            command_id: 0,
++        })
++    }
++
++    pub(super) fn run(
++        &mut self,
++        operation: Operation,
++        checkout: &Path,
++        args: &[&OsStr],
++    ) -> Result<(), SourceError> {
++        if args.first().copied() != Some(OsStr::new(operation.name())) {
++            return Err(invalid(
++                "transport retry operation does not match Git arguments",
++            ));
++        }
++        let Some(journal) = self.journal.as_mut() else {
++            return super::run_git(checkout, args);
++        };
++        self.command_id += 1;
++        let command = CommandSpec::git(checkout, args)
++            .map_err(|error| io_error("capture git command context", error))?;
++        execute(
++            self.command_id,
++            operation,
++            &command,
++            journal.attempts,
++            journal,
++            &mut RealRunner,
++            &mut |delay| std::thread::sleep(delay),
++        )
++        .map(drop)
++    }
++}
++
++#[derive(Clone, Copy)]
++pub(super) enum Operation {
++    Fetch,
++    Checkout,
++}
++impl Operation {
++    fn name(self) -> &'static str {
++        match self {
++            Self::Fetch => "fetch",
++            Self::Checkout => "checkout",
++        }
++    }
++}
++
++fn invalid(message: &str) -> SourceError {
++    SourceError::Invalid(vec![message.to_owned()])
++}
++
++struct Journal {
++    file: File,
++    attempts: u8,
++}
++impl Journal {
++    fn create(path: &Path, destination: &Path, attempts: u8) -> Result<Self, SourceError> {
++        if !path.is_absolute()
++            || path
++                .components()
++                .any(|c| matches!(c, Component::ParentDir | Component::CurDir))
++        {
++            return Err(invalid(
++                "attempt journal must be an absolute normalized path",
++            ));
++        }
++        if path.components().any(|c| {
++            c.as_os_str().as_bytes().starts_with(b".droidloom-project-")
++                || c.as_os_str().as_bytes().starts_with(b".droidloom-source-")
++        }) {
++            return Err(invalid(
++                "attempt journal must be outside temporary source staging",
++            ));
++        }
++        let parent = path
++            .parent()
++            .ok_or_else(|| invalid("attempt journal needs a parent"))?;
++        let meta = fs::symlink_metadata(parent).map_err(|e| io_error("stat journal parent", e))?;
++        let owner = fs::metadata("/proc/self")
++            .map_err(|e| io_error("stat journal owner", e))?
++            .uid();
++        if !meta.is_dir()
++            || meta.file_type().is_symlink()
++            || meta.mode() & 0o077 != 0
++            || meta.uid() != owner
++            || fs::canonicalize(parent).map_err(|e| io_error("resolve journal parent", e))?
++                != parent
++        {
++            return Err(invalid(
++                "attempt journal parent must be real, private and owned by the caller",
++            ));
++        }
++        let resolved_output = projected_path(destination)?;
++        if path.starts_with(&resolved_output) {
++            return Err(invalid(
++                "attempt journal must be outside the materialized output",
++            ));
++        }
++        let file = OpenOptions::new()
++            .write(true)
++            .create_new(true)
++            .mode(0o600)
++            .open(path)
++            .map_err(|e| io_error("create new git attempt journal", e))?;
++        let file_meta = file
++            .metadata()
++            .map_err(|e| io_error("stat new git attempt journal", e))?;
++        if !file_meta.is_file()
++            || file_meta.nlink() != 1
++            || file_meta.mode() & 0o777 != 0o600
++            || file_meta.uid() != owner
++        {
++            return Err(invalid("new attempt journal is not a private regular file"));
++        }
++        Ok(Self { file, attempts })
++    }
++}
++
++fn projected_path(path: &Path) -> Result<PathBuf, SourceError> {
++    let absolute = if path.is_absolute() {
++        path.to_owned()
++    } else {
++        std::env::current_dir()
++            .map_err(|e| io_error("resolve output working directory", e))?
++            .join(path)
++    };
++    if absolute
++        .components()
++        .any(|c| matches!(c, Component::ParentDir))
++    {
++        return Err(invalid(
++            "journaled materialization needs an output without parent traversal",
++        ));
++    }
++    let mut existing = absolute.as_path();
++    let mut missing = Vec::new();
++    loop {
++        match fs::canonicalize(existing) {
++            Ok(mut resolved) => {
++                for part in missing.iter().rev() {
++                    resolved.push(part);
++                }
++                return Ok(resolved);
++            }
++            Err(e) if e.kind() == io::ErrorKind::NotFound => {
++                missing.push(
++                    existing
++                        .file_name()
++                        .ok_or_else(|| invalid("cannot resolve output"))?,
++                );
++                existing = existing
++                    .parent()
++                    .ok_or_else(|| invalid("cannot resolve output parent"))?;
++            }
++            Err(e) => return Err(io_error("resolve materialized output", e)),
++        }
++    }
++}
++
++trait AttemptLog {
++    fn record(&mut self, event: &Value) -> io::Result<()>;
++}
++impl AttemptLog for Journal {
++    fn record(&mut self, event: &Value) -> io::Result<()> {
++        let mut bytes = serde_json::to_vec(event).map_err(io::Error::other)?;
++        bytes.push(b'\n');
++        self.file.write_all(&bytes)?;
++        self.file.sync_all()
++    }
++}
++
++#[derive(Clone, Debug, PartialEq, Eq)]
++struct CommandSpec {
++    program: OsString,
++    args: Vec<OsString>,
++    cwd: PathBuf,
++    environment: BTreeMap<OsString, OsString>,
++}
++impl CommandSpec {
++    fn git(checkout: &Path, args: &[&OsStr]) -> io::Result<Self> {
++        let mut all_args = vec![OsString::from("-C"), checkout.as_os_str().to_owned()];
++        all_args.extend(args.iter().map(|arg| (*arg).to_owned()));
++        Ok(Self {
++            program: "git".into(),
++            args: all_args,
++            cwd: std::env::current_dir()?,
++            environment: std::env::vars_os().collect(),
++        })
++    }
++    fn environment_sha256(&self) -> String {
++        let mut hash = Sha256::new();
++        for (key, value) in &self.environment {
++            for bytes in [key.as_bytes(), value.as_bytes()] {
++                hash.update((bytes.len() as u64).to_le_bytes());
++                hash.update(bytes);
++            }
++        }
++        hex::encode(hash.finalize())
++    }
++}
++
++struct AttemptOutput {
++    child_pid: u32,
++    output: Output,
++}
++struct RunError {
++    stage: &'static str,
++    child_pid: Option<u32>,
++    source: io::Error,
++}
++trait Runner {
++    fn run(&mut self, command: &CommandSpec) -> Result<AttemptOutput, RunError>;
++}
++struct RealRunner;
++impl Runner for RealRunner {
++    fn run(&mut self, command: &CommandSpec) -> Result<AttemptOutput, RunError> {
++        let child = Command::new(&command.program)
++            .args(&command.args)
++            .current_dir(&command.cwd)
++            .env_clear()
++            .envs(&command.environment)
++            .stdin(Stdio::null())
++            .stdout(Stdio::piped())
++            .stderr(Stdio::piped())
++            .spawn()
++            .map_err(|source| RunError {
++                stage: "spawn",
++                child_pid: None,
++                source,
++            })?;
++        let child_pid = child.id();
++        child
++            .wait_with_output()
++            .map(|output| AttemptOutput { child_pid, output })
++            .map_err(|source| RunError {
++                stage: "wait",
++                child_pid: Some(child_pid),
++                source,
++            })
++    }
++}
++
++/// Complete stderr is classified before the ordinary 4096-character error rendering.
++fn transient_transport(output: &Output) -> bool {
++    if output.status.code() != Some(128) || output.status.signal().is_some() {
++        return false;
++    }
++    let text = String::from_utf8_lossy(&output.stderr).to_ascii_lowercase();
++    let denied = [
++        "authentication failed",
++        "authorization failed",
++        "could not read username",
++        "could not read password",
++        "permission denied",
++        "access denied",
++        "proxy authentication required",
++        "http 401",
++        "http 403",
++        "http 407",
++        "returned error: 401",
++        "returned error: 403",
++        "returned error: 407",
++        "repository not found",
++        "returned error: 404",
++        "couldn't find remote ref",
++        "could not find remote ref",
++        "not our ref",
++        "unadvertised object",
++        "reference is not a tree",
++        "not a valid object",
++        "invalid object",
++        "bad object",
++        "bad tree object",
++        "corrupt",
++        "checksum mismatch",
++        "sha1 mismatch",
++        "sha-1 mismatch",
++        "sha256 mismatch",
++        "sha-256 mismatch",
++        "inflate: data stream error",
++        "inflate returned",
++        "invalid pack",
++        "did not receive expected object",
++        "no space left",
++        "disk quota exceeded",
++        "read-only file system",
++        "input/output error",
++        "too many open files",
++        "unable to create",
++        "cannot create",
++        "index.lock",
++        "shallow.lock",
++        "packed-refs.lock",
++        "another git process",
++        "dubious ownership",
++        "certificate",
++        "ssl peer",
++        "ssl routines",
++        "tls handshake",
++    ];
++    if denied.iter().any(|pattern| text.contains(pattern)) {
++        return false;
++    }
++    text.contains("curl 56 ")
++        && (text.contains("recv failure: connection timed out")
++            || text.contains("recv failure: connection reset by peer"))
++}
++
++fn unix_ms() -> u128 {
++    SystemTime::now()
++        .duration_since(UNIX_EPOCH)
++        .unwrap_or_default()
++        .as_millis()
++}
++
++fn execute(
++    command_id: u64,
++    operation: Operation,
++    command: &CommandSpec,
++    attempts: u8,
++    log: &mut impl AttemptLog,
++    runner: &mut impl Runner,
++    sleep: &mut impl FnMut(Duration),
++) -> Result<Output, SourceError> {
++    for attempt in 1..=attempts {
++        let start = Instant::now();
++        let started_at = unix_ms();
++        log.record(&json!({
++            "schema_version":1, "event":"attempt_start", "process_id":std::process::id(),
++            "command_id":command_id, "attempt":attempt, "operation":operation.name(),
++            "at_unix_ms":started_at,
++            "program_hex":hex::encode(command.program.as_bytes()),
++            "argv_hex":command.args.iter().map(|a| hex::encode(a.as_bytes())).collect::<Vec<_>>(),
++            "cwd_hex":hex::encode(command.cwd.as_os_str().as_bytes()),
++            "environment_sha256":command.environment_sha256(),
++        }))
++        .map_err(|e| io_error("persist git attempt start", e))?;
++        let result = match runner.run(command) {
++            Ok(result) => result,
++            Err(error) => {
++                log.record(&json!({
++                    "schema_version":1, "event":"execution_error", "process_id":std::process::id(),
++                    "command_id":command_id, "attempt":attempt, "stage":error.stage,
++                    "child_pid":error.child_pid, "at_unix_ms":unix_ms(),
++                    "elapsed_ms":start.elapsed().as_millis(), "retry":false,
++                    "io_error":error.source.to_string(), "raw_os_error":error.source.raw_os_error(),
++                }))
++                .map_err(|e| io_error("persist git execution error", e))?;
++                return Err(io_error(&format!("{} git", error.stage), error.source));
++            }
++        };
++        let output = result.output;
++        let transient = transient_transport(&output);
++        let retry = transient && attempt < attempts;
++        let delay_ms: u64 = if retry {
++            if attempt == 1 { 1000 } else { 3000 }
++        } else {
++            0
++        };
++        let decision = if output.status.success() {
++            "success"
++        } else if output.status.signal().is_some() {
++            "signal_no_retry"
++        } else if retry {
++            "transient_retry"
++        } else if transient {
++            "transient_exhausted"
++        } else {
++            "non_retryable"
++        };
++        log.record(&json!({
++            "schema_version":1, "event":"attempt_finish", "process_id":std::process::id(),
++            "command_id":command_id, "attempt":attempt, "operation":operation.name(),
++            "child_pid":result.child_pid, "started_at_unix_ms":started_at, "at_unix_ms":unix_ms(),
++            "elapsed_ms":start.elapsed().as_millis(), "exit_code":output.status.code(),
++            "signal":output.status.signal(), "status":output.status.to_string(),
++            "stdout_hex":hex::encode(&output.stdout), "stderr_hex":hex::encode(&output.stderr),
++            "decision":decision, "retry":retry, "backoff_ms":delay_ms,
++        }))
++        .map_err(|e| io_error("persist complete git attempt result", e))?;
++        if output.status.success() {
++            return Ok(output);
++        }
++        if !retry {
++            return Err(SourceError::Command {
++                program: "git".to_owned(),
++                status: output.status.to_string(),
++                stderr: String::from_utf8_lossy(&output.stderr)
++                    .chars()
++                    .take(4096)
++                    .collect(),
++            });
++        }
++        sleep(Duration::from_millis(delay_ms));
++    }
++    Err(invalid("invalid empty transport attempt budget"))
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use std::cell::RefCell;
++    use std::collections::VecDeque;
++    use std::os::unix::fs::PermissionsExt;
++    use std::process::ExitStatus;
++    use std::rc::Rc;
++
++    const TRANSIENT: &str = "error: RPC failed; curl 56 Recv failure: Connection timed out\nerror: 9746 bytes of body are still expected\nfetch-pack: unexpected disconnect while reading sideband packet\nfatal: early EOF\nfatal: index-pack failed\nfatal: could not fetch 3a64e7ba5c593b3e17a90700021c82ac26475668 from promisor remote\n";
++    fn output(code: i32, stderr: &str) -> Output {
++        Output {
++            status: ExitStatus::from_raw(code << 8),
++            stdout: b"\x00full\xffstdout".to_vec(),
++            stderr: stderr.as_bytes().to_vec(),
++        }
++    }
++    #[test]
++    fn transport_classifier_parameterized() {
++        let cases = [
++            (output(128, TRANSIENT), true),
++            (
++                output(
++                    128,
++                    "error: RPC failed; curl 56 Recv failure: Connection reset by peer",
++                ),
++                true,
++            ),
++            (
++                output(128, "fatal: early EOF\nfatal: index-pack failed"),
++                false,
++            ),
++            (
++                output(128, "fatal: could not fetch object from promisor remote"),
++                false,
++            ),
++            (output(1, TRANSIENT), false),
++            (output(0, TRANSIENT), false),
++            (
++                Output {
++                    status: ExitStatus::from_raw(15),
++                    ..output(128, TRANSIENT)
++                },
++                false,
++            ),
++        ];
++        for (result, expected) in cases {
++            assert_eq!(transient_transport(&result), expected);
++        }
++        for denial in [
++            "Authentication failed",
++            "HTTP 403",
++            "The requested URL returned error: 401",
++            "repository not found",
++            "not our ref deadbeef",
++            "couldn't find remote ref pinned",
++            "object file is corrupt",
++            "pack checksum mismatch",
++            "No space left on device",
++            "Disk quota exceeded",
++            "Permission denied",
++            "Read-only file system",
++            "Input/output error",
++            "Unable to create index.lock",
++            "SSL certificate problem",
++            "detected dubious ownership",
++        ] {
++            let full = format!("{TRANSIENT}{}fatal: {denial}\n", "x".repeat(5000));
++            assert!(!transient_transport(&output(128, &full)), "{denial}");
++        }
++    }
++
++    struct MemoryLog {
++        events: Vec<Value>,
++        timeline: Rc<RefCell<Vec<String>>>,
++        fail_at: Option<usize>,
++    }
++    impl AttemptLog for MemoryLog {
++        fn record(&mut self, value: &Value) -> io::Result<()> {
++            if self.fail_at == Some(self.events.len()) {
++                return Err(io::Error::other("injected journal failure"));
++            }
++            self.timeline
++                .borrow_mut()
++                .push(value["event"].as_str().unwrap().to_owned());
++            self.events.push(value.clone());
++            Ok(())
++        }
++    }
++    struct ScriptedRunner {
++        results: VecDeque<Result<AttemptOutput, RunError>>,
++        seen: Vec<CommandSpec>,
++        timeline: Rc<RefCell<Vec<String>>>,
++    }
++    impl Runner for ScriptedRunner {
++        fn run(&mut self, command: &CommandSpec) -> Result<AttemptOutput, RunError> {
++            self.timeline.borrow_mut().push("run".into());
++            self.seen.push(command.clone());
++            self.results
++                .pop_front()
++                .expect("no unexpected fourth attempt")
++        }
++    }
++    #[test]
++    fn transport_retry_and_journal_parameterized() {
++        // Default API remains exactly one attempt, with no journal and no opt-in.
++        assert!(GitTransportRetry::default().journal.is_none());
++        let success = || output(0, "complete success output");
++        let transient = || output(128, TRANSIENT);
++        let signal = || Output {
++            status: ExitStatus::from_raw(15),
++            ..transient()
++        };
++        let scenarios = [
++            (
++                "success_after_transient",
++                3,
++                vec![transient(), success()],
++                None,
++                2,
++                true,
++                vec![1000],
++            ),
++            (
++                "exhausted",
++                3,
++                vec![transient(), transient(), transient()],
++                None,
++                3,
++                false,
++                vec![1000, 3000],
++            ),
++            (
++                "permanent_after_transient",
++                3,
++                vec![transient(), output(128, "Authentication failed")],
++                None,
++                2,
++                false,
++                vec![1000],
++            ),
++            ("signal", 3, vec![signal()], None, 1, false, vec![]),
++            (
++                "default_budget",
++                1,
++                vec![transient()],
++                None,
++                1,
++                false,
++                vec![],
++            ),
++            (
++                "start_log_failure",
++                3,
++                vec![transient()],
++                Some(0),
++                0,
++                false,
++                vec![],
++            ),
++            (
++                "finish_log_failure",
++                3,
++                vec![transient()],
++                Some(1),
++                1,
++                false,
++                vec![],
++            ),
++            (
++                "second_start_log_failure",
++                3,
++                vec![transient(), success()],
++                Some(2),
++                1,
++                false,
++                vec![1000],
++            ),
++        ];
++        let command = CommandSpec {
++            program: "git".into(),
++            args: vec![
++                "-C".into(),
++                "/fixed/checkout".into(),
++                "fetch".into(),
++                "--depth=1".into(),
++                "origin".into(),
++                "pinned".into(),
++            ],
++            cwd: "/fixed/cwd".into(),
++            environment: BTreeMap::from([
++                ("PATH".into(), "/fixed/bin".into()),
++                ("TEST_LITERAL".into(), "unchanged".into()),
++            ]),
++        };
++        for (name, attempts, outputs, fail_at, count, ok, expected_delays) in scenarios {
++            for operation in [Operation::Fetch, Operation::Checkout] {
++                let timeline = Rc::new(RefCell::new(Vec::new()));
++                let mut log = MemoryLog {
++                    events: Vec::new(),
++                    timeline: timeline.clone(),
++                    fail_at,
++                };
++                let mut runner = ScriptedRunner {
++                    results: outputs
++                        .iter()
++                        .enumerate()
++                        .map(|(i, o)| {
++                            Ok(AttemptOutput {
++                                child_pid: 4200 + i as u32,
++                                output: Output {
++                                    status: o.status,
++                                    stdout: o.stdout.clone(),
++                                    stderr: o.stderr.clone(),
++                                },
++                            })
++                        })
++                        .collect(),
++                    seen: Vec::new(),
++                    timeline: timeline.clone(),
++                };
++                let mut delays = Vec::new();
++                let result = execute(
++                    7,
++                    operation,
++                    &command,
++                    attempts,
++                    &mut log,
++                    &mut runner,
++                    &mut |d| {
++                        timeline.borrow_mut().push("sleep".into());
++                        delays.push(d.as_millis() as u64);
++                    },
++                );
++                assert_eq!(result.is_ok(), ok, "{name}");
++                assert_eq!(runner.seen.len(), count, "{name}");
++                assert!(runner.seen.iter().all(|seen| seen == &command), "{name}");
++                assert_eq!(delays, expected_delays, "{name}");
++                for event in log.events.iter().filter(|e| e["event"] == "attempt_finish") {
++                    let index = event["attempt"].as_u64().unwrap() as usize - 1;
++                    assert_eq!(
++                        hex::decode(event["stdout_hex"].as_str().unwrap()).unwrap(),
++                        outputs[index].stdout
++                    );
++                    assert_eq!(
++                        hex::decode(event["stderr_hex"].as_str().unwrap()).unwrap(),
++                        outputs[index].stderr
++                    );
++                    assert_eq!(event["child_pid"].as_u64().unwrap(), 4200 + index as u64);
++                }
++                let trace = timeline.borrow();
++                for (i, event) in trace.iter().enumerate() {
++                    if event == "run" {
++                        assert!(i > 0 && trace[i - 1] == "attempt_start");
++                    }
++                    if event == "sleep" {
++                        assert!(i > 0 && trace[i - 1] == "attempt_finish");
++                    }
++                }
++            }
++        }
++        for stage in ["spawn", "wait"] {
++            let timeline = Rc::new(RefCell::new(Vec::new()));
++            let mut log = MemoryLog {
++                events: Vec::new(),
++                timeline: timeline.clone(),
++                fail_at: None,
++            };
++            let mut runner = ScriptedRunner {
++                results: VecDeque::from([Err(RunError {
++                    stage,
++                    child_pid: None,
++                    source: io::Error::other("injected execution error"),
++                })]),
++                seen: Vec::new(),
++                timeline,
++            };
++            assert!(
++                execute(
++                    1,
++                    Operation::Fetch,
++                    &command,
++                    3,
++                    &mut log,
++                    &mut runner,
++                    &mut |_| panic!("execution I/O failure must not retry")
++                )
++                .is_err()
++            );
++            assert_eq!(runner.seen.len(), 1);
++            assert_eq!(log.events[1]["event"], "execution_error");
++        }
++        let temp = tempfile::tempdir().unwrap();
++        fs::set_permissions(temp.path(), fs::Permissions::from_mode(0o700)).unwrap();
++        let destination = temp.path().join("output");
++        let lock = temp.path().join("lock.json");
++        fs::write(&lock, b"exact test lock").unwrap();
++        assert!(GitTransportRetry::new(3, None, &destination, &lock).is_err());
++        assert!(GitTransportRetry::new(2, None, &destination, &lock).is_err());
++        let journal = temp.path().join("attempts.jsonl");
++        let mut policy = GitTransportRetry::new(3, Some(&journal), &destination, &lock).unwrap();
++        policy
++            .journal
++            .as_mut()
++            .unwrap()
++            .record(&json!({"event":"byte_integrity","hex":hex::encode(b"\0\xff")}))
++            .unwrap();
++        assert_eq!(fs::metadata(&journal).unwrap().mode() & 0o777, 0o600);
++        let original = fs::read(&journal).unwrap();
++        assert!(GitTransportRetry::new(3, Some(&journal), &destination, &lock).is_err());
++        assert_eq!(fs::read(&journal).unwrap(), original);
++        fs::create_dir(&destination).unwrap();
++        fs::set_permissions(&destination, fs::Permissions::from_mode(0o700)).unwrap();
++        assert!(
++            GitTransportRetry::new(
++                3,
++                Some(&destination.join("inside.jsonl")),
++                &destination,
++                &lock
++            )
++            .is_err()
++        );
++        let shared = temp.path().join("shared");
++        fs::create_dir(&shared).unwrap();
++        fs::set_permissions(&shared, fs::Permissions::from_mode(0o755)).unwrap();
++        assert!(
++            GitTransportRetry::new(3, Some(&shared.join("journal")), &destination, &lock).is_err()
++        );
++    }
++}
+diff --git a/tools/droidloom-source/src/lib.rs b/tools/droidloom-source/src/lib.rs
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -20,7 +20,9 @@
+ use tempfile::Builder;
+ use thiserror::Error;
+ 
++mod git_retry;
+ mod resume;
++pub use git_retry::GitTransportRetry;
+ pub use resume::materialize_resuming;
+ 
+ const MAX_LOCK_BYTES: u64 = 1024 * 1024;
+@@ -414,6 +416,19 @@
+     lock: &SparseSourceLock,
+     destination: &Path,
+ ) -> Result<MaterializedManifest, SourceError> {
++    materialize_with_git_transport(lock_path, lock, destination, &mut GitTransportRetry::default())
++}
++
++/// Ordinary materialize with an explicitly selected Git transport policy.
++///
++/// # Errors
++/// Returns the ordinary materialization errors or an attempt-journal failure.
++pub fn materialize_with_git_transport(
++    lock_path: &Path,
++    lock: &SparseSourceLock,
++    destination: &Path,
++    transport: &mut GitTransportRetry,
++) -> Result<MaterializedManifest, SourceError> {
+     let plan = build_plan(lock)?;
+     if destination.exists() {
+         return Err(SourceError::Invalid(vec![format!(
+@@ -432,7 +447,7 @@
+         .map_err(|source| io_error("create source staging directory", source))?;
+ 
+     for project in &plan.projects {
+-        materialize_project(staging.path(), project)?;
++        materialize_project_with_git_transport(staging.path(), project, transport)?;
+     }
+     for link in &plan.links {
+         create_root_link(staging.path(), link)?;
+@@ -472,6 +487,19 @@
+     lock: &SparseSourceLock,
+     destination: &Path,
+ ) -> Result<MaterializedManifest, SourceError> {
++    reconcile_with_git_transport(lock_path, lock, destination, &mut GitTransportRetry::default())
++}
++
++/// Ordinary reconcile with an explicitly selected Git transport policy.
++///
++/// # Errors
++/// Returns the ordinary materialization errors or an attempt-journal failure.
++pub fn reconcile_with_git_transport(
++    lock_path: &Path,
++    lock: &SparseSourceLock,
++    destination: &Path,
++    transport: &mut GitTransportRetry,
++) -> Result<MaterializedManifest, SourceError> {
+     let plan = build_plan(lock)?;
+     let old_manifest_path = destination.join(".droidloom-source-manifest.json");
+     let old_bytes = fs::read(&old_manifest_path)
+@@ -491,7 +519,7 @@
+             apply_sparse_checkout(&checkout, project)?;
+             verify_project(&checkout, project)?;
+         } else {
+-            install_missing_project(destination, project)?;
++            install_missing_project(destination, project, transport)?;
+             verify_project(&checkout, project)?;
+         }
+     }
+@@ -638,7 +666,11 @@
+     Ok(())
+ }
+ 
+-fn install_missing_project(root: &Path, project: &PlannedProject) -> Result<(), SourceError> {
++fn install_missing_project(
++    root: &Path,
++    project: &PlannedProject,
++    transport: &mut GitTransportRetry,
++) -> Result<(), SourceError> {
+     let parent = root
+         .parent()
+         .filter(|path| !path.as_os_str().is_empty())
+@@ -647,7 +679,7 @@
+         .prefix(".droidloom-project-")
+         .tempdir_in(parent)
+         .map_err(|source| io_error("create project staging directory", source))?;
+-    materialize_project(staging.path(), project)?;
++    materialize_project_with_git_transport(staging.path(), project, transport)?;
+     let checkout = root.join(&project.path);
+     let checkout_parent = checkout
+         .parent()
+@@ -717,7 +749,16 @@
+     Ok(())
+ }
+ 
++#[cfg(test)]
+ fn materialize_project(root: &Path, project: &PlannedProject) -> Result<(), SourceError> {
++    materialize_project_with_git_transport(root, project, &mut GitTransportRetry::default())
++}
++
++fn materialize_project_with_git_transport(
++    root: &Path,
++    project: &PlannedProject,
++    transport: &mut GitTransportRetry,
++) -> Result<(), SourceError> {
+     let checkout = root.join(&project.path);
+     let parent = checkout
+         .parent()
+@@ -742,7 +783,8 @@
+         ],
+     )?;
+     apply_sparse_checkout(&checkout, project)?;
+-    run_git(
++    transport.run(
++        git_retry::Operation::Fetch,
+         &checkout,
+         &[
+             OsStr::new("fetch"),
+@@ -753,7 +795,8 @@
+             OsStr::new(&project.commit),
+         ],
+     )?;
+-    run_git(
++    transport.run(
++        git_retry::Operation::Checkout,
+         &checkout,
+         &[
+             OsStr::new("checkout"),
+diff --git a/tools/droidloom-source/src/main.rs b/tools/droidloom-source/src/main.rs
+--- a/tools/droidloom-source/src/main.rs
++++ b/tools/droidloom-source/src/main.rs
+@@ -4,14 +4,42 @@
+ 
+ use std::path::PathBuf;
+ 
+-use clap::{Parser, Subcommand};
+-use droidloom_source::{build_plan, load_lock, materialize, reconcile, verify_materialized};
++use clap::{Args, Parser, Subcommand};
++use droidloom_source::{
++    GitTransportRetry, build_plan, load_lock, materialize_with_git_transport,
++    reconcile_with_git_transport, verify_materialized,
++};
+ 
+ #[derive(Debug, Parser)]
+ #[command(name = "droidloom-source", version, about)]
+ struct Cli {
+     #[command(subcommand)]
+     command: Command,
++}
++
++#[derive(Debug, Args)]
++struct TransportArgs {
++    /// Total attempts for transient fetch/checkout failures: 1 (default) or 3.
++    #[arg(long, default_value_t = 1)]
++    git_transport_attempts: u8,
++    /// New private JSONL journal, required for three attempts and outside output.
++    #[arg(long)]
++    git_attempt_journal: Option<PathBuf>,
++}
++
++impl TransportArgs {
++    fn policy(
++        &self,
++        output: &std::path::Path,
++        lock: &std::path::Path,
++    ) -> Result<GitTransportRetry, droidloom_source::SourceError> {
++        GitTransportRetry::new(
++            self.git_transport_attempts,
++            self.git_attempt_journal.as_deref(),
++            output,
++            lock,
++        )
++    }
+ }
+ 
+ #[derive(Debug, Subcommand)]
+@@ -36,6 +64,8 @@
+         /// New output directory. Existing paths are refused.
+         #[arg(long)]
+         output: PathBuf,
++        #[command(flatten)]
++        transport: TransportArgs,
+     },
+     /// Add newly locked projects to an existing verified materialization.
+     Reconcile {
+@@ -45,6 +75,8 @@
+         /// Existing droidloom-source output directory.
+         #[arg(long)]
+         output: PathBuf,
++        #[command(flatten)]
++        transport: TransportArgs,
+     },
+     /// Verify an existing materialization without fetching or modifying it.
+     VerifyMaterialized {
+@@ -80,18 +112,29 @@
+             let lock = load_lock(&lock)?;
+             println!("{}", serde_json::to_string_pretty(&build_plan(&lock)?)?);
+         }
+-        Command::Materialize { lock, output } => {
++        Command::Materialize {
++            lock,
++            output,
++            transport,
++        } => {
+             let source_lock = load_lock(&lock)?;
+-            let manifest = materialize(&lock, &source_lock, &output)?;
++            let mut policy = transport.policy(&output, &lock)?;
++            let manifest =
++                materialize_with_git_transport(&lock, &source_lock, &output, &mut policy)?;
+             println!(
+                 "materialized {} exact AOSP projects at {}",
+                 manifest.plan.projects.len(),
+                 output.display()
+             );
+         }
+-        Command::Reconcile { lock, output } => {
++        Command::Reconcile {
++            lock,
++            output,
++            transport,
++        } => {
+             let source_lock = load_lock(&lock)?;
+-            let manifest = reconcile(&lock, &source_lock, &output)?;
++            let mut policy = transport.policy(&output, &lock)?;
++            let manifest = reconcile_with_git_transport(&lock, &source_lock, &output, &mut policy)?;
+             println!(
+                 "reconciled {} exact AOSP projects at {}",
+                 manifest.plan.projects.len(),

@@ -1,0 +1,167 @@
+{
+  "cargo_lock": {
+    "sha256": "c1dfa6f13f789cf40435d0d72973d029d0e264b27bd833eabb5a727492127f62",
+    "unchanged": true
+  },
+  "change": "Opt-in bounded fetch/checkout retries for explicit transient Git transport failures",
+  "component": "droidloom-source",
+  "evidence_sha256": {
+    "build_test_result": "8835e8d37ce7742be4031d321bb2930b57a883468ff62fd21bb4a0455cc6090f",
+    "complete_process_result": "c97017f6d65e064dfab380b5581783df6f187e4a52f7a49fcb3e499dc2a83dd3",
+    "offline_replay": "4bc8c33fbc6fe4e00508e69abedb4b414c47a4465f09ea661baf3d5bf266db58",
+    "physical_retirement": "3d5f7817b68409937a2cd226315529ff26d6486ef668b5d6b04234f21ba55413",
+    "public_subset_derivation": "6cd676728be568b318a6269627dfc450be90efea09afc013b4c898f59152aef9",
+    "qualification": "587caea060ffba189be382b978f4db952543ee492505e6a21bc332b9ce5292d4"
+  },
+  "execution": {
+    "build_cgroup_absent": true,
+    "exit_code": 0,
+    "network_isolated": true,
+    "oom_events": 0,
+    "output_complete": true,
+    "output_durable": true,
+    "remaining_build_or_candidate_tool_processes": 0,
+    "retirement_scan_errors": 0,
+    "swap_used_bytes": 0,
+    "terminal_publication_confirmed": true
+  },
+  "focused_tests": [
+    {
+      "exit_code": 0,
+      "failed": 0,
+      "name": "git_retry::tests::transport_classifier_parameterized",
+      "passed": 1
+    },
+    {
+      "exit_code": 0,
+      "failed": 0,
+      "name": "git_retry::tests::transport_retry_and_journal_parameterized",
+      "passed": 1
+    },
+    {
+      "exit_code": 0,
+      "failed": 0,
+      "name": "tests::exact_local_git_fetch_and_manifest_link_are_verified",
+      "passed": 1
+    },
+    {
+      "exit_code": 0,
+      "failed": 0,
+      "name": "tests::materialized_verification_rejects_dirty_projects",
+      "passed": 1
+    }
+  ],
+  "full_source_manifests": {
+    "base": {
+      "file_count": 456,
+      "sha256": "58b5ed7edb05db6165c0185cb207a269e89597bc606ca039cbbedb84400df6e9"
+    },
+    "compiled": {
+      "file_count": 457,
+      "sha256": "d7093351ae2eb17a8141dfbe683fcc21e4be7b90a57080809174a616ae0c24dd"
+    },
+    "scope": "Complete private build inputs; distinct from the public source subset"
+  },
+  "offline_patch_replay": {
+    "byte_equal_to_compiled_inputs": true,
+    "count": 1,
+    "exit_code": 0,
+    "files": [
+      {
+        "bytes": 28282,
+        "path": "tools/droidloom-source/src/git_retry.rs",
+        "sha256": "71fa5cfaa4b97ef7b42a428c7361a428c22c65e144b0980cfea9907243879c5f"
+      },
+      {
+        "bytes": 55085,
+        "path": "tools/droidloom-source/src/lib.rs",
+        "sha256": "00d1ec69ffd0ffe816c3168809e9267cce989b41bdba3d3796c916231e4a6c4c"
+      },
+      {
+        "bytes": 5117,
+        "path": "tools/droidloom-source/src/main.rs",
+        "sha256": "1ce6a3134ebbfc7f05af0a26353bdc2652c9194ee8e7c73e1cb9b401044025be"
+      }
+    ],
+    "public_base_git_tree": "144db4382ee5b5d4fe3c44c38294269caf3f4869",
+    "public_result_git_tree": "e3a894768cbc93ed8bbec3e84c25528db3271781",
+    "temporary_tree_removed": true,
+    "tests_rerun": false
+  },
+  "patch": {
+    "bytes": 37070,
+    "file": "source-transport-retry.patch",
+    "sha256": "7ee9709916c57d0eb4bc26208a40d27bca3276905d525666774693a8731f5ab7"
+  },
+  "public_source_subset": {
+    "additional_patch_replays": 0,
+    "base": {
+      "file_count": 450,
+      "git_tree": "144db4382ee5b5d4fe3c44c38294269caf3f4869",
+      "source_files_bytes": 85486,
+      "source_files_sha256": "f3687bc9d40e279d431b0813f326b7751001b0d36b350a37ddba183034784d24"
+    },
+    "baseline_matches_existing_public_chain": true,
+    "compiled": {
+      "file_count": 451,
+      "git_tree": "e3a894768cbc93ed8bbec3e84c25528db3271781",
+      "inventory": {
+        "bytes": 85665,
+        "file": "compiled-source-files.json",
+        "sha256": "a72628777c0f084930de93946eca654184c668317263e132059bd482ac4949de"
+      }
+    },
+    "excluded_files": [
+      "AGENTS.md",
+      "m831-provenance.json",
+      "assets/screenshots/whatsapp.png",
+      ".github/FUNDING.yml",
+      ".github/workflows/ship.yml"
+    ],
+    "excluded_metadata": [
+      ".git metadata",
+      "zero-byte .hepta-lock-* tool sidecars only"
+    ],
+    "temporary_tree_removed": true,
+    "tree_derivation": "Single recorded three-file patch replay, composed with 448 verified unchanged public baseline files"
+  },
+  "release": {
+    "argv": [
+      "cargo",
+      "build",
+      "--locked",
+      "--offline",
+      "--release",
+      "-j",
+      "1",
+      "-p",
+      "droidloom-source",
+      "--bin",
+      "droidloom-source",
+      "--target-dir",
+      "<isolated-target>"
+    ],
+    "binary": {
+      "bytes": 1627008,
+      "name": "droidloom-source",
+      "sha256": "d1fca51f176abe22ebcc7e340eacc9a4926655a693fa10d2030c248936412839"
+    },
+    "exit_code": 0
+  },
+  "resources": {
+    "cpu_quota_percent": 100,
+    "fresh_available_bytes": 17076535296,
+    "memory_max_bytes": 1610612736,
+    "nice": 10,
+    "peak_memory_bytes": 564776960,
+    "required_available_bytes": 8589934592,
+    "swap_max_bytes": 0
+  },
+  "schema_version": 1,
+  "scope": {
+    "android_full_build_run": false,
+    "frozen_base_and_original_binaries_unchanged": true,
+    "full_builder_modified": false,
+    "network_reconcile_run": false
+  }
+}

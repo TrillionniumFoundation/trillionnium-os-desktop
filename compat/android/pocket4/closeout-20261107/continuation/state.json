@@ -1,10 +1,23 @@
 {
+  "actual_audio_source": {
+    "materialized_manifest": {
+      "bytes": 147165,
+      "sha256": "b7c42d4574d048bce42a0994856121e38355f16e0b96884785686e37b7c7ae03"
+    },
+    "normal_commands_completed": 4,
+    "normal_migration_state": "SUCCEEDED",
+    "projects": 309,
+    "relationship_to_earlier_public_candidate": "A distinct actual source lineage. Earlier public prepared309 source and its focused test results remain historical; their qualification is not transferred.",
+    "source_commit": "2884a01f853caa94f7b66c7e945b0e2818f8ca74",
+    "source_lock_sha256": "ac2f7fa3d7e53be1b0e69f486876f8ad229dcc64686af208251bd4aee2424ae4",
+    "source_tree": "f5b7455507f68f4d2b60e763701149ac784aa401"
+  },
   "all_blockers_closed": false,
   "artifact_policy": "Public repair source and compact hashed observations only. Private runtime identities, device/account data, raw private logs and user application data are excluded. Source checks do not establish runtime acceptance.",
   "build_observations": {
-    "bytes": 2016,
-    "path": "build-source-repair-20261108/integrated-builder/build-observations.json",
-    "sha256": "0a5d55958e06e81a7f3a433f2da6d36c2b171dc09859ea3acc502d3497e54703"
+    "bytes": 5217,
+    "path": "continuation/build-observations-20261108-native-audio-sensor.json",
+    "sha256": "f8ffed286b083d6d35613144cd75ddac0a1af379e55c39f0418a2ab943ca3156"
   },
   "cleanup_app_experiments": {
     "all_deleted_paths_absent": true,
@@ -39,42 +52,53 @@
     "source_or_host_checks_count_as_whole_application_acceptance": false
   },
   "pending": {
-    "audio": "The 309-project original JUnitParams repair, normal tools and focused checks passed. After actual Native source-owner retirement, run normal 308 verification, 309 reconcile/final verification and the matched full Audio APEX/payload/restoration gates.",
+    "audio": "Actual normal 308-to-309 migration passed on the recorded lineage. Full host-r2 preserved a real SDK35/CTS provider failure with successful source restoration and retirement. Finish the original SDK35/CTS/ATS/dEQP provider closure, then exact normal source migration and full Audio APEX.",
     "camera_and_storage": "Preserve their prior source and qualification history; establish current installed behavior and required Camera2/UVC and Storage lifecycle evidence.",
     "cleanup": "723 obsolete application experiment roots have been removed and verified absent. 84 roots retain current source/provenance references; release and recheck them after final cohort deployment and qualification. Other final build/cache/payload retirement remains gated on real final validation.",
     "final_deployment": "Compose and inspect the complete canonical cohort before using the reviewed installation transaction.",
-    "framework": "Complete installed Sensor Binder identity/death behavior in the fresh runtime generation; source/build checks alone do not qualify this gate.",
-    "native": "Finish actual 597-project source materialization after transport recovery, then full engine/ART build, exact terminal/resource release and artifact qualification.",
+    "framework": "The ABI-qualified Sensor library is staged in the canonical candidate. Its actual fresh installed Binder identity/death behavior remains pending.",
+    "native": "Recover the existing exact597 normal source owner using its actual declared resource and lifecycle contract, complete terminal and physical retirement. A separate source attempt was refused at the original lock before source work. Full Native/ART and artifact qualification remain required.",
     "runtime_and_applications": "Qualify one fresh generation and the original 45 whole applications; current accepted count remains zero."
   },
   "previous_public_observation": {
-    "bytes": 7362,
-    "path": "continuation/history/state-20261108-before-junit309.json",
-    "repository_commit": "7afc2ec87233321d9700636ef944e01d2c8d784a",
-    "semantics": "Exact prior state preserved; historical failures and qualification scopes are unchanged.",
-    "sha256": "d12be21e2b32a6dff0f71844b2a9687456877b9e4b16e97519a6599121d14663"
+    "bytes": 9012,
+    "path": "continuation/history/state-20261108-before-native-retry-sensor-stage.json",
+    "repository_commit": "056533ec5c5a450a315c8eaa8b68f5c28527dfca",
+    "semantics": "Exact prior state retained; previous failure and qualification scopes remain unchanged.",
+    "sha256": "d68089d9b2a868279e302980035490d67775309b8f6293cd8db7e889bb00ce89"
   },
-  "publication_state": "AUDIO_JUNIT309_SOURCE_AND_TOOLS_PASSED_FULL_BUILDS_PENDING",
-  "recorded_utc": "2026-11-08T09:14:25.370907+00:00",
+  "publication_state": "NATIVE_TRANSPORT_TOOLS_QUALIFIED_SENSOR_STAGED_AUDIO_PROVIDER_REPAIR_PENDING",
+  "recorded_utc": "2026-11-08T11:18:08.593673+00:00",
   "resume_order": [
-    "Use exact published chains and preserve each frozen input identity; the combined tool candidate does not inherit either old binary qualification.",
-    "Complete the active Native source materialization. After its actual retirement, run the exact Audio 308-to-309 normal source migration and full APEX build, then the full Native/ART build under serial resource admission.",
-    "Complete admitted full Native/ART and Audio APEX builds, resource release and artifact qualification.",
-    "Bind the complete canonical candidate and fresh baseline, inspect it, and execute the reviewed final deployment transaction.",
-    "Complete fresh runtime and all original whole-application gates before final retirement of obsolete artifacts."
+    "Preserve actual original source/controller/result identities and observe the existing Native source owner through its complete terminal and physical retirement.",
+    "Use only a source qualification matching the actual frozen full builder; heavy Native/ART and Audio source/build work stays serial.",
+    "Complete admitted full artifacts and integrate the canonical cohort with the already staged Sensor candidate.",
+    "Inspect and apply the reviewed deployment transaction, then complete fresh runtime and all original 45 application gates.",
+    "Release current dependencies and retire retained obsolete source/build/payload/application artifacts after final validation."
   ],
   "runtime_qualified": false,
   "schema": "pocket4-android-continuation-v1",
   "scope": "Pocket4 local Droidloom Android",
+  "sensor_canonical_stage": {
+    "production_changed": false,
+    "ready_for_apply": false,
+    "results": {
+      "bytes": 3203,
+      "path": "sensor-canonical-stage-20261108/verification.json",
+      "sha256": "8328cced4ea06abad0b4f873588a92a0226387d1d20f4a75abb37eaf889b3933"
+    },
+    "state": "ABI_QUALIFIED_CANONICAL_PAYLOAD_STAGED_RUNTIME_PENDING"
+  },
   "source_package": {
-    "bytes": 7437,
+    "bytes": 8421,
     "path": "build-source-repair-20261108/manifest.json",
-    "sha256": "b0b3d34d29f5e85e881cf260facf9adde3db47d4f75b14fe5812034e4f887690"
+    "sha256": "e5ecc2330bc02a63c044c7dae71a6790069d9f5a36e5b2193c25759736bce850"
   },
   "source_repairs": {
     "audio_junit309": {
       "complete_audio_APEX_build_qualified": false,
       "exact_project_count": 309,
+      "execution_observation": "Historical prepared 309 source chain retained. Its old308 entry refused before source work after another exact309 branch had already migrated; current actual lineage and full-host-r2 failure are recorded separately.",
       "independent_replay_passed": true,
       "normal_tools_built": 2,
       "parent_commit": "6eb50f3e0a2184cb822d0704c6f53f261ebd2de4",
@@ -158,16 +182,43 @@
         "recipe": 6,
         "separate_generated_pair": 11
       }
+    },
+    "native_transport_retry": {
+      "Mac_replay": {
+        "bytes": 1875,
+        "path": "build-source-repair-20261108/native-transport-retry/mac-replay-proof.json",
+        "sha256": "c15d1cb04a1428d81080d0ac66f243db8af67a8d7bae6b1d99d55eb63ffb1bd2"
+      },
+      "focused_tests": 4,
+      "full_builder_modified": false,
+      "normal_release_tools_built": 1,
+      "result_git_tree": "e3a894768cbc93ed8bbec3e84c25528db3271781",
+      "results": {
+        "bytes": 5258,
+        "path": "build-source-repair-20261108/native-transport-retry/public-proof.json",
+        "sha256": "c9923a39d99f898e8ccfdfe597667277436727a4a4075837ad0f0ed7cf17f4d3"
+      },
+      "runtime_qualified": false,
+      "source_chain": {
+        "bytes": 2213,
+        "path": "build-source-repair-20261108/native-transport-retry/source-chain.json",
+        "sha256": "ab38cbf21d3b2b8c821a08f04c13caa31e3a46f453701669868fafcd4b8dd822"
+      },
+      "source_files": 451,
+      "source_reconcile_qualification_inherited": false,
+      "state": "ISOLATED_NORMAL_SOURCE_CLI_AND_FOCUSED_TESTS_PASSED"
     }
   },
   "stage": {
+    "canonical_Sensor_staged": true,
     "post_start_required": [
       "main",
       "storage",
       "native",
       "framework",
       "applications",
-      "camera"
+      "camera",
+      "audio"
     ],
     "production_actions_performed_by_this_continuation": false,
     "ready_for_apply": false

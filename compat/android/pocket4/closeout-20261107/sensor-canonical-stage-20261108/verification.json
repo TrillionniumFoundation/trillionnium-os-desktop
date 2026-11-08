@@ -1,0 +1,90 @@
+{
+  "candidate": {
+    "artifact": "libsensorservice.so",
+    "bytes": 482440,
+    "sha256": "8db6580b97dea3e1e8e1109e29953bd46e4300f113d1a1d738b1dbc7a8057b20"
+  },
+  "effects": {
+    "bounded_stage_preimages_removed": true,
+    "data_image_contents_read": false,
+    "production_changed": false,
+    "protected_data_metadata_unchanged": true,
+    "service_start_requested": false,
+    "service_stop_requested": false,
+    "source_changes": 0
+  },
+  "qualification": {
+    "abi_contract_pass": true,
+    "abi_receipt": {
+      "bytes": 19308,
+      "sha256": "4ba55c62471f54b9cc845b86285c9747b5f7b3c608a29d7b049502cdeb15f226"
+    },
+    "actual_compiler_layout_contract_pass": true,
+    "candidate_sensor_sizeof_bytes": 1032,
+    "comparison": {
+      "bytes": 20188,
+      "sha256": "4c1a14bdde48e9904b4b228a48095a8f05bfe871d04e243dadfe8a8459c6d15b"
+    },
+    "current_external_allocation_bytes": 1032,
+    "normal_build_receipt": {
+      "bytes": 105577,
+      "sha256": "1cb327308d93fd83d7e3582ee710e12cd8f4d27b7628aa89f6b4472fdd9f701d"
+    },
+    "normal_build_reconciliation": {
+      "bytes": 126784,
+      "sha256": "9ddd29813bd4237a53b3d6a69b2e82b949a2a78444b8c9e8aef18f67ba3314a9"
+    },
+    "original_failed_terminal_preserved": {
+      "bytes": 134980,
+      "sha256": "b208970de6e0aa67cbf3798c2ec448c2543d46cb507c20831bb02f6b6dc5b753"
+    }
+  },
+  "remaining": {
+    "deployed": false,
+    "framework_gate": "Actual fresh Sensor Binder identity and death behavior after coherent deployment.",
+    "other_candidates": [
+      "Complete Native engine and ART APEX",
+      "Matched native generation pair and actual-engine profile",
+      "Complete Audio APEX and matching formal audio payload"
+    ],
+    "ready_for_apply": false,
+    "runtime_gates": "Original NDK, Storage/catalog, Camera2, microphone/record/decode/same-URI playback/output and original application gates remain pending.",
+    "runtime_qualified": false,
+    "whole_applications_accepted": 0,
+    "whole_applications_required": 45
+  },
+  "schema": "pocket4-framework-canonical-stage-public-v1",
+  "stage_completed_utc": "2026-11-08T09:53:01.158Z",
+  "staged": {
+    "android_file_overrides": 47,
+    "android_runtime_directories": 4,
+    "candidate_cell": {
+      "bytes": 8149,
+      "sha256": "d5e9184dc6078e46acf1f0ce3124a727ccfc9fbe2ee3258b18d490f5e00b80cb"
+    },
+    "checksum_file": {
+      "bytes": 4990,
+      "sha256": "3eb000180a19a2c5be4d7003763e6b90ac16d89078282cd49fc5a19dd01c1ff5"
+    },
+    "checksums_verified": 43,
+    "deployment_manifest": {
+      "bytes": 99500,
+      "sha256": "8df3d0fe6a40b9509155290e201c13afa96781e6e0425b1e0e78e6cf893e682c"
+    },
+    "install_targets": 28,
+    "integration_receipt": {
+      "bytes": 3629,
+      "sha256": "0832861edd6611ae42d5add4367cdc210ce03f0ccd149264151e66a0d3b19385"
+    },
+    "state": "VERIFIED_NOT_APPLIED",
+    "transaction_plan": {
+      "bytes": 32004,
+      "sha256": "bc3383d304a12cdd9046da403f00a26ccc59a017e6fb154603ae8efa9cb25277"
+    },
+    "verification": {
+      "bytes": 1843,
+      "sha256": "bfb69b188bfaacc7f1769b619107d0f78fb5c0736a5c0ec462fd488b9a591786"
+    }
+  },
+  "state": "ABI_QUALIFIED_CANONICAL_PAYLOAD_STAGED_RUNTIME_PENDING"
+}
