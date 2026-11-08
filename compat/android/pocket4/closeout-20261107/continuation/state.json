@@ -1,72 +1,81 @@
 {
-  "schema": "pocket4-android-continuation-v1",
-  "recorded_utc": "2026-11-07 09:33:39 UTC",
-  "scope": "Pocket4 local Droidloom Android",
-  "status": "CONTROL_UNAVAILABLE_NOT_DEPLOYED",
   "all_blockers_closed": false,
+  "artifact_policy": "Public repair source and compact hashed observations only. Private runtime identities, device/account data, raw private logs and user application data are excluded. Source checks do not establish runtime acceptance.",
   "final_candidate_deployed": false,
-  "last_observed_android_state": "stopped; staged inspection observed all three Droidloom units inactive",
-  "control_failure": {
-    "service": "h",
-    "error": "MCP -32603 Internal error",
-    "failed_read_operations": [
-      "process_status",
-      "process_read",
-      "read_multiple_files",
-      "host_list",
-      "host_health",
-      "request_start(effective_config)"
-    ],
-    "remote_build_outcome": "unknown",
-    "independent_configured_ssh_available": false
+  "last_observed_android_state": "Normally stopped; no deployment performed by this continuation.",
+  "native_attempt12": {
+    "build_qualified": false,
+    "bytes": 1943,
+    "clean_retirement_observed": true,
+    "continuous_absence_or_unobserved_interference_excluded": false,
+    "path": "continuation/native-attempt12-reconciliation.json",
+    "sha256": "6182a47a6645051e2bb5d13c025197baac27ecf8084dbac25cabe6eec6ffafa6",
+    "state": "FAILED_BUILD_RECONCILED_AND_RETIRED"
   },
-  "completed": {
-    "host_cohort": {
-      "source_commit": "5957addac279b11110c6cdd406e32ef871a7c511",
-      "release_binaries": 4,
-      "build_receipt": "host-build/cohort-build-01/result.json",
-      "build_receipt_sha256": "040f2ed3112fbb99c14e44b24964e32b17f4c8a80a5b671068038012be8cbc61",
-      "real_private_mount_receipt": "host-build/mount-qualification-02/result.json",
-      "real_private_mount_receipt_sha256": "cabbfda3fc06442ba933dbaa58387ad87249118dd8d6b0fcad44de1000200689"
+  "original_application_acceptance": {
+    "accepted": 0,
+    "required": 45,
+    "source_or_host_checks_count_as_whole_application_acceptance": false
+  },
+  "pending": {
+    "audio": "Finish the exact original-provider repair, bind its actual results, and complete the audio APEX build and restoration/release gates.",
+    "camera_and_storage": "Preserve their prior source and qualification history; establish current installed behavior and required Camera2/UVC and Storage lifecycle evidence.",
+    "cleanup": "Retire obsolete source/build/backup inputs only after final dependency and live-reference checks; preserve user data.",
+    "final_deployment": "Compose and inspect the complete canonical cohort before using the reviewed installation transaction.",
+    "framework": "Complete installed Sensor Binder identity/death behavior in the fresh runtime generation; source/build checks alone do not qualify this gate.",
+    "native": "Complete actual AOSP source/provider closure, full engine/ART build, exact terminal/resource release and artifact qualification.",
+    "runtime_and_applications": "Qualify one fresh generation and the original 45 whole applications; current accepted count remains zero."
+  },
+  "previous_public_observation": {
+    "bytes": 8046,
+    "path": "continuation/history/state-20261107-093339.json",
+    "recorded_utc": "2026-11-07 09:33:39 UTC",
+    "repository_commit": "6daa2e15d878a322d6192ea75cc2575b219624a9",
+    "semantics": "Exact historical bytes retained; old failed/unknown attempts are not relabelled by newer evidence.",
+    "sha256": "cc58d3834c23f5c44d3a2ddc9281559b1d8e142aa9f68be980fb37c8572c08ef",
+    "status": "CONTROL_UNAVAILABLE_NOT_DEPLOYED"
+  },
+  "publication_state": "COMMON_BASE_AND_NATIVE_REPAIR_BOUND_AUDIO_FINAL_REPAIR_PENDING",
+  "recorded_utc": "2026-11-08 03:59:10 UTC",
+  "resume_order": [
+    "Use the exact published source chains; bind any later audio repair to its final tested bytes.",
+    "Complete only admitted native and audio build attempts, retaining every real terminal or unknown outcome.",
+    "Complete source, resource-release and artifact qualification without reusing the prior probe-specific exception.",
+    "Reconstruct and inspect the complete canonical candidate, then execute the reviewed final deployment transaction.",
+    "Complete fresh runtime and original whole-application acceptance before final retirement of obsolete artifacts."
+  ],
+  "runtime_qualified": false,
+  "schema": "pocket4-android-continuation-v1",
+  "scope": "Pocket4 local Droidloom Android",
+  "source_package": {
+    "bytes": 3585,
+    "path": "build-source-repair-20261108/manifest.json",
+    "sha256": "82429156b47545da25e4809ce82e4ee88dbb69f9c9b2ff973338b8d5d32bff37"
+  },
+  "source_repairs": {
+    "audio_source_projection": {
+      "bytes": 1386,
+      "complete_audio_APEX_build_qualified": false,
+      "final_repair_published": false,
+      "final_repair_tests_reported": false,
+      "path": "build-source-repair-20261108/audio-source-projection/source-manifest.json",
+      "sha256": "48c7798f1c64189bd03200190b620fddf4b8fcad94d575d2d61107b97a84624b",
+      "source_commit": "fc90abf09eb0f09cc5f46bead149b4d324882722",
+      "state": "PREREQUISITE_RECONSTRUCTED_FINAL_REPAIR_PENDING"
     },
-    "native_source": {
-      "independent_projects": 228,
-      "root_links": 8,
-      "normal_reconcile_and_verify_passed": true,
-      "source_lock_sha256": "ab26451d2b0b563fe49f5d076b178612cf52b09ac8f31e6ec53e94e0c13ac575",
-      "source_receipt_sha256": "9a1c08475ce3a87c69487fe0e33257563343755cd74c2c81894307eb338f0654",
-      "host_builder_controls_passed": 22,
-      "qualified_builder_receipt": "native/builder-fix-08/result.json",
-      "qualified_builder_receipt_sha256": "8710c9ec54ba04f1799ab8a061c7ddcd31c5bc67f953f903c9301392d488b38f"
-    },
-    "cleanup": {
-      "deleted_historical_roots": 88,
-      "retired_historical_transient_units": 215,
-      "deleted_allocated_bytes": 99954049024,
-      "observed_free_byte_increases": 99953934336,
-      "summary": "cleanup/summary.json",
-      "summary_sha256": "9de9b6f5b808001c7b3c9d9433b767cdcbd0001c09ad5180435df5344a5c3f53"
-    },
-    "work_audit": {
-      "roots": 1861,
-      "git_control_files": 4385,
-      "git_roots": 102,
-      "errors": 0,
-      "report": "cleanup/work-root-reference-inventory.json",
-      "report_sha256": "0163b308c4c70f8167bcc0e49c0419a3acd971c2c10719e75ae04d95afc43bf7",
-      "unreferenced_app_roots_first_phase": 807,
-      "first_phase_allocated_bytes": 5852471296,
-      "candidates_deleted": false
+    "native_sparse_capacity_and_recipe": {
+      "bytes": 1556,
+      "complete_native_ART_build_qualified": false,
+      "path": "build-source-repair-20261108/native-sparse-capacity/source-manifest.json",
+      "sha256": "5d2786da760f71975da06f07782b6359d1285a3411759000cb153ecd352c8120",
+      "tests": {
+        "library": 25,
+        "recipe": 6,
+        "separate_generated_pair": 11
+      }
     }
   },
   "stage": {
-    "ready_for_apply": false,
-    "manifest_sha256": "c3f8028c471aebaff9e0d15847a402d41317414c2d3958c9df793d1fc247b3d8",
-    "transaction_runner_sha256": "510a084792cc1669a7bacb73ee5b0530f9e1724440690f828dcb3b4d392a0a3e",
-    "transaction_plan_sha256": "d553d02486a010f3a942bf02235fa9a750944b40a514ae79132ea5b8d329a117",
-    "qualification_plan_sha256": "03c11c8964f3227d791dc87cd554076f6f4a34675f23b3bfdb234ce0dd55862d",
-    "qualification_config_sha256": "66d34a80d6679af7a9b68888f2403b21895a4d81c27358c4905b865a3e859063",
-    "production_actions_performed": false,
     "post_start_required": [
       "main",
       "storage",
@@ -74,94 +83,9 @@
       "framework",
       "applications",
       "camera"
-    ]
+    ],
+    "production_actions_performed_by_this_continuation": false,
+    "ready_for_apply": false
   },
-  "existing_jobs_to_reconcile": [
-    {
-      "component": "native full engine and ART",
-      "job_id": "1a1b547dab9-fc05-8bd2",
-      "last_observation": "Soong bootstrap 242/276",
-      "argv": "soong_ui --make-mode -j2 libberberis_arm64 com.android.art",
-      "allow_missing_dependencies": false,
-      "cpu_quota_percent": 200,
-      "memory_max_bytes": 10737418240,
-      "swap_max_bytes": 0,
-      "outer_supervision_seconds": 6900,
-      "inner_deadline_seconds": 6100,
-      "terminal_state": "unknown",
-      "resource_release_published": false,
-      "idempotency_key": "p4-native-final-real228-source-fullpair-attempt08-20261107-01",
-      "started_utc": "2026-11-07T09:12:35.081998+00:00",
-      "result_directory": "native/attempt-05",
-      "production_fences_directory": "native/build-fences-07",
-      "build_packet_sha256": "19ff7bf17895c9cd470d9fff4614ba54bc8e83b6645ad77db1a8f0acf61981c5"
-    },
-    {
-      "component": "framework coordinator",
-      "job_id": "1a1b49dd7ad-fc05-88c1",
-      "idempotency_key": "android-fw-baseline-candidate-coordinator-20261107-a",
-      "last_observation": "waiting_for_explicit_native_resource_release",
-      "original_wait_deadline_utc": "2026-11-07 10:06:45 UTC",
-      "full_soong_started": false,
-      "terminal_state": "unknown"
-    },
-    {
-      "component": "consumer and Storage source names read",
-      "job_id": "1a1b54c8980-fc05-8be1",
-      "stdout_observed_bytes": 30785,
-      "next_stdout_offset": 16000,
-      "terminal_state": "not yet read; do not infer from stdout EOF"
-    }
-  ],
-  "pending": {
-    "camera": {
-      "remote_runtime_sha256": "c719cafbe71b2795072e6befbe676469d95d6046ed0e980b9c291611c4002dc8",
-      "reviewed_local_candidate_sha256": "9357eafe31d557ee30a0e23cb89bdaeb12c851034f8a08ffed1841c5c8141503",
-      "cold_controls_passed": 15,
-      "candidate_uploaded": false,
-      "runtime_qualified": false,
-      "change": "Global known-package absence query uses all users, rejects stderr even on exit zero, and avoids a text-XML-only registry assumption."
-    },
-    "framework": {
-      "full_baseline_and_candidate_complete": false,
-      "required_actual_sensorservice_size_bytes": 1032,
-      "actual_dependency_abi_qualification_complete": false
-    },
-    "native": {
-      "complete_pair_result_received": false,
-      "actual_base_art_complete_extraction_and_signature_verification_pending": true,
-      "source_dissociation_complete": false,
-      "historical_source_retirement_allowed": false,
-      "note": "Frozen packet and Git alternates still depend on historical inputs until terminal fences and source dissociation complete."
-    },
-    "consumer_review": {
-      "twelve_ast_parses_passed": true,
-      "old_work_path_literals_found": false,
-      "observed_globs_are_proc": true,
-      "full_runtime_dependency_review_complete": false
-    },
-    "storage_preservation": {
-      "current_jar_sha256": "f1acb56e23cd9082a77ef686f2e840a736e7769dd8843830e53e56b1ac31566f",
-      "art_receipt_preserved": "cleanup/current-storage-art-proof.json",
-      "art_receipt_sha256": "89276b32a4a2d40dd27524f92a8ff9afb1b7997e5136b0333e2a79232d94697c",
-      "transform_sources_pending": [
-        "frozen13/build_runtime13.py",
-        "frozen13/smali_equivalence.py",
-        "frozen13/StorageSessionController.smali",
-        "frozen15/align_runtime15.py"
-      ],
-      "entire_installed_jar_java_source_commit_proven": false,
-      "old_storage_root_retained": true
-    }
-  },
-  "resume_order": [
-    "Restore the existing h connection and reconcile existing durable jobs before any new build, restart or deployment.",
-    "Complete actual native base ART verification and full-pair qualification; publish resource release only when the native work is truly terminal and qualified.",
-    "Reconcile the old framework coordinator, then complete the real baseline/candidate build and ABI gates under the explicit resource gate.",
-    "Finish consumer and current Storage source preservation; upload the reviewed camera candidate; reseal all coupled inputs.",
-    "Complete the canonical deployment stage and qualification plan, then use the reviewed transaction runner.",
-    "Qualify one fresh Main epoch: installed consumer controls, accepted Storage bytes and fresh mounted state, original twelve native tests with complete pair mapped, Sensor Binder identity/death behavior, two real Camera2/UVC cycles, and application catalog.",
-    "Remove obsolete source/build/backup trees and duplicates only after final dependencies and live references are resolved; preserve current user data."
-  ],
-  "artifact_policy": "These are continuation sources and observed status, not final runtime acceptance evidence. Original failures and unknown outcomes are not re-labelled."
+  "status": "BUILD_SOURCE_REPAIR_IN_PROGRESS_NOT_DEPLOYED"
 }
