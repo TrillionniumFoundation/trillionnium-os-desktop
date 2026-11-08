@@ -1,5 +1,23 @@
 {
   "actual_audio_source": {
+    "full_APEX_qualified": false,
+    "materialized_manifest": {
+      "bytes": 151251,
+      "sha256": "39160dee9948e4680b73da42f25a43132902e1d113f34223e5dabecfb9781428"
+    },
+    "normal_commands_completed": 4,
+    "normal_migration_state": "SUCCEEDED",
+    "projects": 316,
+    "source_commit": "3b4199c0af6e430a852131a71f87aa65aef8f813",
+    "source_lock_sha256": "c104640627a1beb35b25423656e751a4b56ac17287505c0ee2efeeb7d0419560",
+    "source_locks_released": true,
+    "source_result": {
+      "bytes": 25639,
+      "sha256": "85e923e977cbcb91997fc48c482ea35c5507d9f675383dee120b0d40d3f8ea37"
+    },
+    "source_tree": "5ccefae63418a1efdd6bb716b63a77deb80601c0"
+  },
+  "actual_audio_source_previous_309": {
     "materialized_manifest": {
       "bytes": 147165,
       "sha256": "b7c42d4574d048bce42a0994856121e38355f16e0b96884785686e37b7c7ae03"
@@ -17,8 +35,8 @@
   "audio316_actual_observation": {
     "candidate_source_commit": "3b4199c0af6e430a852131a71f87aa65aef8f813",
     "candidate_source_tree": "5ccefae63418a1efdd6bb716b63a77deb80601c0",
-    "current_materialized_manifest_sha256": "b7c42d4574d048bce42a0994856121e38355f16e0b96884785686e37b7c7ae03",
-    "current_materialized_projects": 309,
+    "current_materialized_manifest_sha256": "39160dee9948e4680b73da42f25a43132902e1d113f34223e5dabecfb9781428",
+    "current_materialized_projects": 316,
     "first_entry": {
       "Soong_invocations": 0,
       "acquired_source_locks": 0,
@@ -33,9 +51,56 @@
     },
     "focused_tests_passed": 9,
     "full_APEX_qualified": false,
-    "full_memory_max_bytes": 10737418240,
-    "new_lock_sha256": "c104640627a1beb35b25423656e751a4b56ac17287505c0ee2efeeb7d0419560",
-    "next_entry": {
+    "full_attempts": [
+      {
+        "entry": "r2",
+        "job_id": "1a1bb44bfcb-13c47-191",
+        "reason": "Historical terminal omitted from pin map",
+        "state": "FAILED_BEFORE_FULL_COMMAND"
+      },
+      {
+        "entry": "r3",
+        "job_id": "1a1bb63263d-13c47-237",
+        "state": "FAILED_ORIGINAL_LOCK_ADMISSION",
+        "terminal_sha256": "fd0823013d07ec54e6281132166be2267e27d1fab834a1eac3d70109494ae25b"
+      },
+      {
+        "entry": "r4",
+        "exit_code": 1,
+        "full_output_created": false,
+        "inner_service_started": false,
+        "job_id": "1a1bc0b9232-10b31-56",
+        "memory_max_bytes": 10737418240,
+        "minimum_MemAvailable_bytes": 16106127360,
+        "source_projection_started": false,
+        "state": "FAILED_FRESH_MEMORY_ADMISSION_BEFORE_INNER"
+      },
+      {
+        "Soong_invocations": 0,
+        "artifact_qualified": false,
+        "entry": "r5",
+        "host_reserve_bytes": 5368709120,
+        "inner_MemAvailable_bytes": 13316415488,
+        "input_after_qualified": true,
+        "job_id": "1a1bc2b3d52-138b0-a4",
+        "memory_max_bytes": 8589934592,
+        "normal_builder_started": false,
+        "outer_MemAvailable_bytes": 14082367488,
+        "owned_retirement_complete": true,
+        "required_MemAvailable_bytes": 13958643712,
+        "runtime_admission": {
+          "bytes": 25446,
+          "sha256": "5ea8447292b3db580337197198e28ccac034544c7d5e86b551c4a9b5b6ab4c56"
+        },
+        "state": "FAILED_INNER_FRESH_MEMORY_ADMISSION_BEFORE_NORMAL_BUILD",
+        "terminal": {
+          "bytes": 287493,
+          "sha256": "7e220d77932f3b55646e441d214b52e423d89f35195f84d6567d2b2d990f5ead"
+        }
+      }
+    ],
+    "full_memory_max_bytes": 8589934592,
+    "historical_reconcile_observation": {
       "completed_normal_verifications": [
         {
           "exit_code": 0,
@@ -56,6 +121,8 @@
       "source_materialization_qualified": false,
       "state": "NORMAL_RECONCILE316_RUNNING_AT_LAST_SUCCESSFUL_READBACK"
     },
+    "host_reserve_bytes": 5368709120,
+    "new_lock_sha256": "c104640627a1beb35b25423656e751a4b56ac17287505c0ee2efeeb7d0419560",
     "normal_cli_profile": "dev",
     "normal_cli_tools_built": 2,
     "public_source": {
@@ -67,22 +134,44 @@
       "tree": "2c21ee1bbcbde46c8d07a26c6083e372d550c1c1"
     },
     "release_builds": 0,
-    "required_fresh_memavailable_bytes": 16106127360,
+    "required_fresh_memavailable_bytes": 13958643712,
     "runtime_qualified": false,
     "source_memory_max_bytes": 6442450944,
-    "source_migration_qualified": false,
+    "source_migration_qualified": true,
     "target_projects": 316
   },
   "build_observations": {
+    "bytes": 6682,
+    "path": "continuation/build-observations-20261108-native597-audio316.json",
+    "sha256": "3db21f3ffeef82871c7896765f4ebee8dc89de621b0b9748f85ff82543108730"
+  },
+  "build_observations_previous": {
     "bytes": 6285,
     "path": "continuation/build-observations-20261108-native-tls-audio316.json",
     "sha256": "ff6f8f63a3b391bee0ba661b7639b3bbcd2d8fcc2d74fdf522f6de69f17b7cb7"
+  },
+  "camera_child_cleanup_reconciled": {
+    "all_original_and_isolated_paths_absent": true,
+    "allocated_bytes_deleted": 10301440,
+    "deleted_trees": 2,
+    "job_id": "1a1bb826634-13c47-2ba",
+    "part_of_original_807_inventory": false,
+    "result_sha256": "ae286e61650230d502289cf8357ecc1497279a924bf9abc4c46ab1c7c1ca7d58",
+    "retained_canonical_and_external_sources_unchanged": true,
+    "state": "PRIOR_SUCCESS_RECONCILED_NOT_REPLAYED"
   },
   "cleanup_app_experiments": {
     "all_deleted_paths_absent": true,
     "allocated_bytes_deleted": 5150584832,
     "batches": 17,
-    "deleted_roots": 723,
+    "current_retirement_summary": {
+      "bytes": 4184,
+      "path": "cleanup/obsolete-output-retirement-summary.json",
+      "sha256": "c3a1ca3f2241dd0e7318909a75d29bdee851885f4d0afb46fcb492e4560ab7d9"
+    },
+    "deleted_roots": 729,
+    "original_retirement_deleted_roots": 723,
+    "original_retirement_retained_roots": 84,
     "protected_identities_unchanged": true,
     "remaining_retirement": "After final deployment and runtime/application qualification, release current dependencies and recheck references/use before retirement.",
     "requested_roots": 807,
@@ -91,13 +180,88 @@
       "path": "cleanup/app-retirement-20261108-summary.json",
       "sha256": "1a2f7ca8b5e97b0ec0e68371aba3299d5b6dbcf0535868a84b113227da1ff5e7"
     },
-    "retained_roots": 84,
+    "retained_roots": 78,
     "state": "COMPLETED_WITH_RETAINED_CURRENT_DEPENDENCIES"
+  },
+  "current_source_controls": {
+    "audio_continuation": 24,
+    "native_full_resource_profile": 26,
+    "native_release_consumer": 29,
+    "preserve_existing_sensor": 5,
+    "publication_python": "3.9.6",
+    "required_source_inputs": 72,
+    "runtime_or_app_acceptance_claimed": false,
+    "source_integrity_checked": 424,
+    "total": 84
   },
   "final_candidate_deployed": false,
   "last_observed_android_state": "Normally stopped; no deployment performed by this continuation.",
   "native_actual_observation": {
-    "existing_owner": {
+    "R11_source_consumer": {
+      "Soong_invocations": 0,
+      "actual_authorities": 107,
+      "job_id": "1a1bc00fa71-10b31-13",
+      "passed": true,
+      "result": {
+        "bytes": 72656,
+        "sha256": "c1577a12f363d58f5ea0f02940daa9f3d559088c5d31b48c8b30b07953c044e3"
+      },
+      "source_commands": 0,
+      "state": "ACTUAL_READONLY_SOURCE_CONSUMER_QUALIFIED",
+      "work_locks": 0
+    },
+    "actual_source": {
+      "H_terminal_sha256": "402b2b777e7608b10627c60a421f055f4aaf654a1a9f15a8bd13a58484d2c4ff",
+      "adopted_children_reaped": 48,
+      "all_adopted_children_exit_zero": true,
+      "authority_projection_sha256": "52e6f45986eb408ebd2783200915f7a3a91f16b8f76824da623e203c52432ab7",
+      "contract": "normal-peer-promisor-recovery-v1",
+      "errors": [],
+      "job_id": "1a1bb6057d2-13c47-22d",
+      "materialized_manifest": {
+        "bytes": 386397,
+        "sha256": "f92b8096e7df2ea7eeff112be9817e0744cf1a829d28a655c0415d0087232807"
+      },
+      "normal_full_build_started": false,
+      "physical_retirement_sha256": "446cd500518fa2025ae6352d2b0fb7f23852b55f3ec332d1bda24d10ba70e416",
+      "result": {
+        "bytes": 68810,
+        "sha256": "1d89dcaa0267cebeb30989428802af8cd4117b4629cbebf985a6d0eb5519755b"
+      },
+      "source_locks_released": true,
+      "state": "NORMAL_EXACT_597_MATERIALIZATION_VERIFIED"
+    },
+    "current_full_execution_binding": {
+      "bytes": 75828,
+      "full_build_started": false,
+      "packet_sha256": "6c1ad3b16edba560d54d59dbf439044892ca4e44c3ed289ac2ace1878f9a5b34",
+      "sha256": "bc1aa383f812245b45c7e1f76310cadbe95ac89528ac27a5bc8c0c0ff1eaea94"
+    },
+    "current_preflight_attempts": [
+      {
+        "Soong_invocations": 0,
+        "job_id": "1a1bc2f841f-138b0-bb",
+        "memory_max_events": 4727,
+        "memory_peak_bytes": 1073741824,
+        "oom_events": 0,
+        "result_sha256": "f7f9bf96af1cf60371f652d932698f6000904b219310b79308c11fc78b1dbe57",
+        "state": "FAILED_PREFLIGHT_1GIB_MEMORY_MAX_EVENTS",
+        "swap_bytes": 0
+      },
+      {
+        "Soong_invocations": 0,
+        "job_id": "1a1bc336e91-138b0-d4",
+        "preflight_memory_max_bytes": 2147483648,
+        "result_sha256": "cc34e161cba11dd9be195f2ef4fe76976ace3d385b3ad71384f9ad72ac4bce17",
+        "state": "FAILED_PREFLIGHT_FRESH_13GIB_MEMORY_ADMISSION"
+      }
+    ],
+    "frozen_lock_sha256": "2b699174977614e080cf99a991f3e648774b24581c4ecdc29f1bd53b7b01ef23",
+    "full_native_ART_qualified": false,
+    "normal_full_entry_requirement": "Consume the actual R8 source and R11 qualification, then run the original normal strict builder. A separate source-only physical-discovery producer is not a prerequisite; the full graph remains unqualified until real execution.",
+    "normal_materialization_qualified": true,
+    "physical_fixedpoint_qualified": false,
+    "previous_curl56_failure": {
       "adopted_children_reaped": 60,
       "controller_sha256": "b56fd639a8250c85bbf67b966e406fa3af4687962c3063327f1d82db21e59c6d",
       "fresh_entry_recheck_required": true,
@@ -134,10 +298,6 @@
       "terminal_received": true,
       "zero_status_children": 60
     },
-    "frozen_lock_sha256": "2b699174977614e080cf99a991f3e648774b24581c4ecdc29f1bd53b7b01ef23",
-    "full_native_ART_qualified": false,
-    "normal_materialization_qualified": false,
-    "physical_fixedpoint_qualified": false,
     "previous_failure": {
       "adopted_children_reaped": 379,
       "inner_capture_complete": false,
@@ -159,7 +319,7 @@
       "swap_bytes": 0,
       "zero_status_children": 378
     },
-    "published_source_projects": 268,
+    "published_source_projects": 597,
     "runtime_qualified": false,
     "target_projects": 597
   },
@@ -172,18 +332,48 @@
     "sha256": "6182a47a6645051e2bb5d13c025197baac27ecf8084dbac25cabe6eec6ffafa6",
     "state": "FAILED_BUILD_RECONCILED_AND_RETIRED"
   },
+  "next_full_build_resource_profile": {
+    "Go_memory_limit": "5GiB",
+    "build_memory_max_bytes": 8589934592,
+    "complete_build_fit_demonstrated": false,
+    "cpu_affinity": [
+      0,
+      1
+    ],
+    "cpu_quota_percent": 200,
+    "fresh_MemAvailable_minimum_bytes": 13958643712,
+    "host_reserve_bytes": 5368709120,
+    "swap_max_bytes": 0
+  },
+  "offload_preparation": {
+    "copied_previous_runtime_evidence_qualifies_new_build": false,
+    "destination_data_available_observed_bytes": 205116530688,
+    "full_build_started": false,
+    "new_host_build_generation_required": true,
+    "production_data_or_signing_secrets_transferred": false,
+    "source316_observed_bytes": 39471591424,
+    "state": "SOURCE_ONLY_WORKSPACE_PREPARATION"
+  },
   "original_application_acceptance": {
     "accepted": 0,
+    "actual_WebView_provider_retained_separately": true,
+    "experimental_packages_to_retire_after_original_acceptance": 4,
+    "final_production_package_count_planned": 41,
+    "installed_registrations_observed": 45,
+    "latest_upstream_versions_verified": false,
+    "registry_audit_did_not_write_or_mount_user_image": true,
+    "registry_observation_utc": "2026-11-08T16:39:26Z",
     "required": 45,
     "source_or_host_checks_count_as_whole_application_acceptance": false
   },
   "pending": {
-    "audio": "The actual316 repair passed nine focused controls and two normal dev-profile CLI builds, with release builds0. The r2 entry passed six-lock admission, verify-old-materialized and verify-new-lock and was running normal reconcile at the last readback. Source migration, full APEX and runtime remain unqualified.",
+    "audio": "Source316 is actually qualified. Actual r5 failed its inner 13 GiB fresh memory floor before the normal builder. Prepare an isolated source-only desktop generation, then qualify its own complete normal build, actual APEX and compiled bridge inputs. Do not transfer Pocket4 runtime authority to another host.",
     "camera_and_storage": "Preserve their prior source and qualification history; establish current installed behavior and required Camera2/UVC and Storage lifecycle evidence.",
-    "cleanup": "723 obsolete application experiment roots have been removed and verified absent. 84 roots retain current source/provenance references; release and recheck them after final cohort deployment and qualification. Other final build/cache/payload retirement remains gated on real final validation.",
+    "cleanup": "The original inventory is now 729 removed / 78 retained. Migrate live references and retire obsolete roots, old payloads and experiments after replacement validation; preserve user images and current signing material.",
     "final_deployment": "Compose and inspect the complete canonical cohort before using the reviewed installation transaction.",
     "framework": "The ABI-qualified Sensor library is staged in the canonical candidate. Its actual fresh installed Binder identity/death behavior remains pending.",
-    "native": "The latest original normal597 source attempt failed on curl56 receive timeout with complete output and verified retirement; publication remains268. Materialization597, actual physical discovery closure and full Native/ART remain unqualified. The separately qualified N2 source CLI has not run a network materialization.",
+    "native": "Normal597 materialization and R11 source consumption are qualified. Exact 8 GiB full binding is prepared. The 1 GiB preflight hit memory.max without OOM; the separately bound 2 GiB preflight then refused insufficient host MemAvailable. Full remains unstarted, pending a fresh stable resource window or a separately qualified offload generation.",
+    "release_currency": "Resolve the installed Android June security baseline against the current stable release/security target, and compare exact official device/channel app metadata. Public store dates alone cannot establish latest APK identity.",
     "runtime_and_applications": "Qualify one fresh generation and the original 45 whole applications; current accepted count remains zero."
   },
   "previous_public_observation": {
@@ -193,13 +383,14 @@
     "semantics": "Exact prior state retained; previous failure and qualification scopes remain unchanged.",
     "sha256": "d68089d9b2a868279e302980035490d67775309b8f6293cd8db7e889bb00ce89"
   },
-  "publication_state": "SOURCE_AND_TOOL_REPAIRS_QUALIFIED_FINAL_RUNTIME_PENDING",
-  "recorded_utc": "2026-11-08T13:14:17.254708+00:00",
+  "publication_state": "SOURCE_MATERIALIZATIONS_QUALIFIED_FULL_ARTIFACTS_AND_RUNTIME_PENDING",
+  "recorded_utc": "2026-11-08T17:39:47.084856+00:00",
   "resume_order": [
-    "Audio316 normal source migration and full strict APEX with fresh six-lock and resource admission",
-    "Native597 normal source reconciliation with the qualified bounded transport tool, real physical discovery closure and full strict Native/ART",
-    "Coherent canonical deployment, fresh host and six consumers, original 45-application acceptance",
-    "Retire obsolete versions and experiment artifacts after final reference and dependency release checks"
+    "Audio316 full-only strict APEX with fresh original locks and 8 GiB cap plus 5 GiB host reserve",
+    "Native597 normal strict full Native/ART after Audio retirement",
+    "Complete payload consumers and coherent canonical deployment, fresh host generation and original 45-application acceptance",
+    "Resolve current Android/security and official application release identities; rebuild and requalify changed cohort",
+    "Retire superseded versions and experiment artifacts after reference migration and actual replacement validation"
   ],
   "runtime_qualified": false,
   "schema": "pocket4-android-continuation-v1",
@@ -251,7 +442,7 @@
         "sha256": "773d57bda7220c1f849a2032096334d3d77b735d710784de8d9416da6a9e4fca"
       },
       "source_commit": "3b4199c0af6e430a852131a71f87aa65aef8f813",
-      "source_reconcile_qualified": false,
+      "source_reconcile_qualified": true,
       "state": "EXACT316_ORIGINAL_PROVIDERS_NINE_CONTROLS_TWO_DEV_TOOLS_AND_FIVE_PATCH_REPLAY_VERIFIED",
       "tests_passed": 9
     },
@@ -330,7 +521,8 @@
         "path": "build-source-repair-20261108/integrated-builder/source-chains.json",
         "sha256": "ea550089483fd56cf2a31da4871fd5d585fb887c10176a1dba2a8a3016a8b3b1"
       },
-      "state": "FROZEN_SOURCE_PUBLISHED_MATERIALIZATION_PENDING"
+      "source_materialization_qualified": true,
+      "state": "FROZEN597_SOURCE_MATERIALIZED_NORMAL_FULL_PENDING"
     },
     "native_sparse_capacity_and_recipe": {
       "bytes": 1556,
@@ -384,5 +576,5 @@
     "production_actions_performed_by_this_continuation": false,
     "ready_for_apply": false
   },
-  "status": "BUILD_SOURCE_REPAIR_IN_PROGRESS_NOT_DEPLOYED"
+  "status": "SOURCE_QUALIFIED_FULL_BUILDS_AND_RUNTIME_PENDING"
 }

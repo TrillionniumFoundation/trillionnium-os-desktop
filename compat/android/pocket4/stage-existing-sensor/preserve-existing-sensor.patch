@@ -1,0 +1,147 @@
+--- a/stage_model.py
++++ b/stage_model.py
+@@ -15,12 +15,12 @@
+ KNOWN_SHA = '9c7c9a00b049a55d8040e7835f7ba8ae2c990639144ebaacaf51ae5bbe9fa15d'
+ FRAMEWORK_GATE_SHA = 'cf6a775745666d13cfb3e6a7ef720373ff8cd2f66fc61b30efc70bee27eee85e'
+ BASE_PINS = {
+-    'deployment/manifest.json': 'c0f993e906d27d4e0873466ef3b6e7ea97f3c9b6138600d805140001cc31a4a1',
+-    'deployment/transaction-plan.json': '72998e828d725f5fd46a643d59b5127fdf104cb45b0a41759571690865d2db5c',
+-    'deployment/cell.candidate.json': '8b4099284591fc95afe382bff45b9af812c1c1b53216afba2801cdc62667e876',
++    'deployment/manifest.json': '8df3d0fe6a40b9509155290e201c13afa96781e6e0425b1e0e78e6cf893e682c',
++    'deployment/transaction-plan.json': 'bc3383d304a12cdd9046da403f00a26ccc59a017e6fb154603ae8efa9cb25277',
++    'deployment/cell.candidate.json': 'd5e9184dc6078e46acf1f0ce3124a727ccfc9fbe2ee3258b18d490f5e00b80cb',
+     'deployment/qualification-config.json': '288d228f72d7274f5e067c39a2ba14e362e0c1cfb05bb9c5a5d4f91fc7540d3d',
+     'qualification/plan.json': '1558939f681b2a0ba15134a32a124ad2c7c417b3fd8d3c72b7944372de6c36c4',
+-    'deployment/SHA256SUMS': '64bc0e65d1b83bc34778d747d71e59fee50a0d49d66fae184e3b3c07cd276703',
++    'deployment/SHA256SUMS': '3eb000180a19a2c5be4d7003763e6b90ac16d89078282cd49fc5a19dd01c1ff5',
+     'deployment/verification.json': 'c013dd2db258492e950d9f50c41696ee655f03677d256b9290d4c21ab96e4a16',
+     'camera/runtime-entry.json': '8d4b36e48fcd7b567cf3314474a014f14b34183aa243665ed12d26a32fb6d719',
+ }
+@@ -39,7 +39,7 @@
+     'bridge_profile': '/system/etc/droidloom-native-bridge.json',
+     'sensor': '/system/lib64/libsensorservice.so',
+ }
+-CHANGED_ROLES = ('engine', 'bridge_profile', 'art_apex', 'pair', 'sensor')
++CHANGED_ROLES = ('engine', 'bridge_profile', 'art_apex', 'pair')
+ REPLACED_ROLES = ('engine', 'bridge_profile')
+ REQUIRED_TUS = {
+     'art/runtime/runtime.cc', 'art/runtime/native_bridge_art_interface.cc',
+@@ -126,23 +126,44 @@
+         row, _ = io.pinned({'path': str(DEPLOY / relative), 'sha256': digest})
+         records['deployment/' + relative] = row
+         rows.append((digest, relative))
+-    io.need(len(rows) == len({r for _, r in rows}) == 40, 'EXACT_ORIGINAL_40_CHECKSUM_ROWS')
++    io.need(len(rows) == len({r for _, r in rows}) == 43, 'EXACT_CURRENT_43_CHECKSUM_ROWS')
+     manifest = values['deployment/manifest.json']; plan = values['deployment/transaction-plan.json']
+-    io.need(len(manifest['payload']) == len(plan['install_operations']) == 27
+-            and len(manifest['android_file_overrides']) == 46
++    io.need(len(manifest['payload']) == len(plan['install_operations']) == 28
++            and len(manifest['android_file_overrides']) == 47
+             and len(manifest['android_runtime_directories']) == 4
+             and manifest['ready_for_apply'] is False and values['qualification/plan.json']['ready'] is False,
+             'EXPECTED_UNDEPLOYED_BASELINE_SHAPE')
+     io.need(manifest['transaction_runner']['sha256'] == RUNNER_SHA
+             and values['deployment/qualification-config.json']['maintenance_gate']['sha256'] == QUALIFIER_SHA,
+             'UNCHANGED_QUALIFIED_PUBLIC_TOOLING')
+-    for role in CHANGED_ROLES:
++    # SensorService was independently staged and sealed before this consumer.
++    # Keep its payload, operation, override, checksum and integration metadata.
++    sensor_target = str(PREFIX / GUEST['sensor'].lstrip('/'))
++    sensor_payload = [r for r in manifest['payload'] if r['install_target'] == sensor_target]
++    sensor_operation = [r for r in plan['install_operations'] if r['target'] == sensor_target]
++    sensor_override = [r for r in manifest['android_file_overrides'] if r['guest_target'] == GUEST['sensor']]
++    io.need(len(sensor_payload) == len(sensor_operation) == len(sensor_override) == 1,
++            'EXACT_EXISTING_SENSOR_ROWS')
++    staged_sensor = records[payload_relative('sensor')]
++    io.need(staged_sensor['bytes'] == sensor_payload[0]['bytes'] == 482440
++            and staged_sensor['sha256'] == sensor_payload[0]['sha256'] == sensor_operation[0]['sha256']
++                == '8db6580b97dea3e1e8e1109e29953bd46e4300f113d1a1d738b1dbc7a8057b20'
++            and sensor_operation[0]['expected_current'] == {'absent': True}
++            and sensor_override[0]['operation'] == 'install_staged'
++            and sensor_override[0]['candidate_source'] == sensor_target,
++            'EXACT_PREVIOUSLY_QUALIFIED_SENSOR_PAYLOAD')
++    io.need(manifest['framework_integration'] == plan['framework_integration']
++                == sensor_payload[0]['framework_integration'] == sensor_override[0]['framework_integration']
++            and manifest['framework_integration']['sha256']
++                == '0832861edd6611ae42d5add4367cdc210ce03f0ccd149264151e66a0d3b19385',
++            'EXISTING_FRAMEWORK_STAGE_PROOF_RETAINED')
++    for role in (*CHANGED_ROLES, 'sensor'):
+         installed = str(PREFIX / GUEST[role].lstrip('/'))
+         observed, _ = io.held_read(installed, absent=True, single=True)
+         io.need(observed.get('absent') is True, 'ACTUAL_CANONICAL_INSTALL_TARGET_MUST_BE_ABSENT:' + installed)
+         witness.observed[installed] = observed
+         rel = payload_relative(role)
+-        if role not in REPLACED_ROLES:
++        if role in ('art_apex', 'pair'):
+             current, _ = io.held_read(FINAL / rel, absent=True, single=True)
+             io.need(current.get('absent') is True, 'NEW_STAGED_PAYLOAD_ALREADY_EXISTS:' + rel)
+             records[rel] = current
+@@ -762,7 +783,7 @@
+         'camera_display_qualification_tooling': camera_tooling,
+         'actual_component_source_qualification': qualified, 'lifecycle_contract': copy.deepcopy(manifest['lifecycle_contract']),
+         'actual_post_start_required_checks': ['main', 'storage', 'native', 'framework', 'applications', 'camera'],
+-        'candidate_counts': {'checksums': 43, 'payload': 30, 'overrides': 49, 'runtime_directories': 4},
++        'candidate_counts': {'checksums': 45, 'payload': 30, 'overrides': 49, 'runtime_directories': 4},
+         'final_readonly_inspection_result_location': str(proposal_root / 'stage-attempt/result.json'),
+         'read_only_inspection': None, 'final_inspection_is_required_before_apply': True,
+         'production_changes': False, 'runtime_qualified': False, 'whole_app_business_accepted': False}
+@@ -776,7 +797,7 @@
+         relative = payload_relative(role).removeprefix('deployment/')
+         io.need(relative not in {r for _, r in sums}, 'APPENDED_CHECKSUM_DUPLICATE')
+         sums.append((digests[relative], relative))
+-    io.need(len(sums) == len({r for _, r in sums}) == 43, 'EXACT_FINAL_43_CHECKSUM_ROWS')
++    io.need(len(sums) == len({r for _, r in sums}) == 45, 'EXACT_FINAL_45_CHECKSUM_ROWS')
+     output['deployment/SHA256SUMS'] = ''.join(sha + '  ' + rel + '\n' for sha, rel in sums).encode()
+     io.need(set(output) == set(BASE_PINS), 'EXACT_EIGHT_METADATA_TARGETS')
+     return {'metadata': output, 'payload_sources': {payload_relative(role): sources[role] for role in CHANGED_ROLES},
+--- a/stage_audio.py
++++ b/stage_audio.py
+@@ -34,9 +34,9 @@
+ ALL_TARGETS = NEW_TARGETS + COHORT_TARGETS
+ ENDPOINTS = {SOCKETS[0]: '/run/droidloom/audio/1000/audio.sock',
+              SOCKETS[1]: '/run/droidloom/audio/1000/audio-input.sock'}
+-FINAL_COUNTS = {'checksums_verified': 51, 'install_count': 38,
++FINAL_COUNTS = {'checksums_verified': 53, 'install_count': 38,
+                 'file_overrides': 50, 'runtime_directories': 4}
+-STAGE_COUNT = 28
++STAGE_COUNT = 27
+ 
+ 
+ def host_group_ready(need):
+@@ -511,7 +511,7 @@
+     verification.update(manifest_sha256=hashlib.sha256(output['deployment/manifest.json']).hexdigest(),
+         plan_sha256=manifest['transaction_plan']['sha256'], candidate_cell_sha256=cell_ref['sha256'],
+         qualified_tool_repair=tooling, actual_component_source_qualification=copy.deepcopy(built['source_qualification']),
+-        candidate_counts={'checksums': 51, 'payload': 38, 'overrides': 50, 'runtime_directories': 4},
++        candidate_counts={'checksums': 53, 'payload': 38, 'overrides': 50, 'runtime_directories': 4},
+         audio_lifecycle=lifecycle)
+     output['deployment/verification.json'] = io.encode(verification)
+     digests = {name.removeprefix('deployment/'): hashlib.sha256(raw).hexdigest()
+@@ -522,12 +522,12 @@
+         name = relative(target).removeprefix('deployment/')
+         io.need(name not in {n for _, n in sums}, 'NEW_AUDIO_CHECKSUM_DUPLICATE')
+         sums.append((sources[target]['sha256'], name))
+-    io.need(len(sums) == len({n for _, n in sums}) == 51, 'EXACT_51_SUMS_WITH_EIGHT_NEW_AUDIO_PAYLOADS')
++    io.need(len(sums) == len({n for _, n in sums}) == 53, 'EXACT_53_SUMS_WITH_EIGHT_NEW_AUDIO_PAYLOADS')
+     output['deployment/SHA256SUMS'] = ''.join(sha + '  ' + name + '\n' for sha, name in sums).encode()
+     built['final_sums'] = sums
+     io.need(len(manifest['payload']) == len(plan['install_operations']) == 38
+             and len(manifest['android_file_overrides']) == 50
+             and len(manifest['android_runtime_directories']) == 4, 'EXACT_AUDIO_EXTENDED_38_50_4_COMPOSITION')
+     io.need(set(output) == set(model.BASE_PINS) | set(BASE_PINS)
+-            and len(set(output) | set(built['payload_sources'])) == STAGE_COUNT, 'EXACT_28_CANDIDATE_WRITES')
++            and len(set(output) | set(built['payload_sources'])) == STAGE_COUNT, 'EXACT_27_CANDIDATE_WRITES')
+     return built
+--- a/stage_integrate.py
++++ b/stage_integrate.py
+@@ -118,8 +118,8 @@
+     model.audio.baseline(io, witness, model, base)
+     checks = runner(io, model).validate(base['values']['deployment/manifest.json'],
+                                         base['values']['deployment/transaction-plan.json'])
+-    io.need(checks == {'checksums_verified': 40, 'install_count': 27,
+-                      'file_overrides': 46, 'runtime_directories': 4}, 'ACTUAL_OLD_RUNNER_VALIDATION')
++    io.need(checks == {'checksums_verified': 43, 'install_count': 28,
++                      'file_overrides': 47, 'runtime_directories': 4}, 'ACTUAL_OLD_RUNNER_VALIDATION')
+     framework = model.framework(io, witness, known, HERE / 'framework-maintenance-gate.json')
+     camera = model.camera(io, witness, known)
+     return witness, known, base, framework, camera, checks

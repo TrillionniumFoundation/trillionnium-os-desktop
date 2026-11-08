@@ -67,6 +67,26 @@ jobs:
           python3 -O -m unittest discover \
             -s tests/workloads/android -p 'test_*.py' -v \
             2>&1 | tee "$RUNNER_TEMP/a08/unittest-optimized.log"
+      - name: Verify Native full build memory and host reserve contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/native-full-profile-8gib/tests/test_resource_profile.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/native-full-profile-controls.log"
+      - name: Verify completed Native release and Audio continuation contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/native-stage-release/tests/test_native_release.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/native-stage-release-controls.log"
+          python3 -B -m unittest discover -s compat/android/pocket4/audio-continuation-r1/tests -v \
+            2>&1 | tee "$RUNNER_TEMP/a08/audio-continuation-controls.log"
+      - name: Preserve the qualified Sensor candidate during composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/stage-existing-sensor/tests/test_existing_sensor.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/existing-sensor-controls.log"
       - name: Exercise owned Camera media through actual Linux descriptors
         shell: bash
         run: |
