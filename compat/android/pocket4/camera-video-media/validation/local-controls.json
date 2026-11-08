@@ -1,0 +1,157 @@
+{
+  "Android_actions": 0,
+  "Main_actions": 0,
+  "camera_video_verified": false,
+  "code_entrypoints_complete": false,
+  "earlier_actual_attempt_before_unknown_hold_fix": {
+    "default_python_import_failure": "AttributeError: fcntl.F_SEAL_WRITE unavailable; system /usr/bin/python3 exposes seals",
+    "errors": 11,
+    "failures": 0,
+    "observed_failure": "FileNotFoundError opening /proc/2/fd/<fd>; Python getpid had no matching proc directory",
+    "passed": false,
+    "previous_report_sha256": "c3e8647fe4baa620901c471edb59d57030f8b5886e488fb9d54c21880780b9bf",
+    "skipped": 0,
+    "source_snapshot": [
+      {
+        "bytes": 6956,
+        "path": "/workspace/scratch/347ef2dfe9ad/audio-runtime-independent-audit/camera-video-media-candidate/source/camera_audio_challenge.py",
+        "sha256": "30b8560cf4f43e77e051e4915492ed18fe3c78e8b2a67527f4e14c02643dcd4c"
+      },
+      {
+        "bytes": 15263,
+        "path": "/workspace/scratch/347ef2dfe9ad/audio-runtime-independent-audit/camera-video-media-candidate/source/camera_video_decode.py",
+        "sha256": "2a53d5f046c83ae9b698ebaf7783426fa8920695a57fb2aecc29a0cf6c6ebe83"
+      },
+      {
+        "bytes": 9300,
+        "path": "/workspace/scratch/347ef2dfe9ad/audio-runtime-independent-audit/camera-video-media-candidate/source/camera_video_media.py",
+        "sha256": "5ca96df91541c7a52f35cff5c36594d15e6a8c039dc4e66143a8cb3512b8063c"
+      },
+      {
+        "bytes": 21469,
+        "path": "/workspace/scratch/347ef2dfe9ad/audio-runtime-independent-audit/camera-video-media-candidate/source/camera_video_state.py",
+        "sha256": "5134fa1a20d0ccdca719fcd3b99fb054befe308ae3d7d51879dcdd7df7e07993"
+      }
+    ],
+    "successful_exact_parent_proc_decodes": 0,
+    "synthetic_fixture_commands": [
+      {
+        "argv": [
+          "/usr/bin/ffmpeg",
+          "-nostdin",
+          "-v",
+          "error",
+          "-f",
+          "lavfi",
+          "-i",
+          "color=c=blue:s=32x32:r=5:d=4",
+          "-f",
+          "s16le",
+          "-ar",
+          "48000",
+          "-ac",
+          "2",
+          "-i",
+          "/tmp/p4-camera-video-hostcontrol-yepkjdzs/synthetic-challenge.s16le",
+          "-t",
+          "4",
+          "-c:v",
+          "libx264",
+          "-preset",
+          "ultrafast",
+          "-threads",
+          "1",
+          "-pix_fmt",
+          "yuv420p",
+          "-c:a",
+          "aac",
+          "-b:a",
+          "128k",
+          "-movflags",
+          "+faststart",
+          "/tmp/p4-camera-video-hostcontrol-yepkjdzs/synthetic-owned.mp4"
+        ],
+        "inherited_fds": 0,
+        "local_synthetic_only": true,
+        "returncode": 0,
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "synthetic_fixture_generated": true,
+    "tests_run": 13
+  },
+  "expected_linux_test_count": 15,
+  "final_candidate": {
+    "AST_parses_passed": 5,
+    "Linux_kernel_controls_required": 11,
+    "Linux_kernel_controls_run": 0,
+    "environment": {
+      "Pocket4_tool_qualification": false,
+      "exact_proc_fd_directory": "/proc/5/fd",
+      "pid": 5,
+      "platform": "linux",
+      "python": "/usr/bin/python3",
+      "requirements_missing": [
+        "exact_getpid_proc_fd_directory"
+      ],
+      "tool_refs_apply_to_this_CI_runner_only": true,
+      "tools": [
+        {
+          "bytes": 342488,
+          "path": "/usr/bin/ffmpeg",
+          "sha256": "ed16af623947494a72e284b6eb8ff225f2da22b38b5d5069c2fd4b4ba3384e41"
+        },
+        {
+          "bytes": 191888,
+          "path": "/usr/bin/ffprobe",
+          "sha256": "272f6ebc634a63d9c8b4ca68e964119d980f25154e5aa2c35e5487da48e9a58f"
+        }
+      ]
+    },
+    "pure_control_names": [
+      "test_hold_seals_known_failure_and_poison_survives_missing_receipt",
+      "test_no_success_dictionary_api_and_unknown_decode_cannot_qualify",
+      "test_photo_session_is_rejected_before_io",
+      "test_probe_duplicate_json_is_rejected"
+    ],
+    "pure_negative_controls_passed": 4,
+    "skipped_as_success": 0,
+    "sources_and_controls": [
+      {
+        "bytes": 6956,
+        "path": "source/camera_audio_challenge.py",
+        "sha256": "30b8560cf4f43e77e051e4915492ed18fe3c78e8b2a67527f4e14c02643dcd4c"
+      },
+      {
+        "bytes": 19407,
+        "path": "source/camera_video_decode.py",
+        "sha256": "e32afb4b8b81865adecde1e12ae03590ab93d907cd9b06dbfe213c89e54c45a1"
+      },
+      {
+        "bytes": 9300,
+        "path": "source/camera_video_media.py",
+        "sha256": "5ca96df91541c7a52f35cff5c36594d15e6a8c039dc4e66143a8cb3512b8063c"
+      },
+      {
+        "bytes": 21878,
+        "path": "source/camera_video_state.py",
+        "sha256": "8433cf30cb94c6a393757f80a2e5a4d3799338fc348fbda9d5084e960d967192"
+      },
+      {
+        "bytes": 20442,
+        "path": "tests/test_camera_video_decode.py",
+        "sha256": "37251829ddad24606fe42c73c278f0619f533aca6603c1e5ff47450570de374b"
+      }
+    ]
+  },
+  "overall_passed": false,
+  "production_Session_instances": 0,
+  "real_audio_calls": 0,
+  "remaining_validation": "Ubuntu CI must run all 15 tests with zero failures, errors or skips; Mac integrity only",
+  "runtime_qualified": false,
+  "schema": "pocket4-camera-video-component-local-validation-v1",
+  "status": "Linux_kernel_gate_pending_environment_blocked"
+}
