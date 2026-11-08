@@ -10,6 +10,7 @@ import ast
 import copy
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -339,8 +340,12 @@ class SourceAndBudgetControls(unittest.TestCase):
         self.prepare()
         raw = self.source_plan()
         runner = self.wrapper.Supervisor(raw, self.root / 'output')
-        self.assertEqual(runner.operation_deadline - runner.started, 530)
-        self.assertEqual(runner.deadline - runner.started, 665)
+        # Deadline subtraction can lose a few representable float steps.
+        # Only that rounding is tolerated; the production second budgets stay exact.
+        self.assertTrue(math.isclose(runner.operation_deadline - runner.started, 530,
+                                     rel_tol=0, abs_tol=4 * math.ulp(runner.operation_deadline)))
+        self.assertTrue(math.isclose(runner.deadline - runner.started, 665,
+                                     rel_tol=0, abs_tol=4 * math.ulp(runner.deadline)))
         self.assertEqual(runner.record['budgets']['video_worker_cleanup_seconds'], 60)
         self.assertEqual(runner.record['budgets']['acoustic_cancellation_grace_seconds'], 90)
         # 20 READY + 510 acoustic + 90 cancel +15 release +5 retire +15
