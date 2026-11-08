@@ -24,6 +24,31 @@
       "sha256": "b0004c7e0db781a473a059af05c30a403469576e170dd68b403e943cacb21743"
     }
   },
+  "audio_junit309": {
+    "application_order": [
+      "source-prerequisites/base-source.patch",
+      "source-prerequisites/audio-prerequisite.patch",
+      "integrated-builder/audio-final.patch",
+      "integrated-builder/audio-junit309.patch"
+    ],
+    "exact_project_count": 309,
+    "full_audio_apex_build_pass": false,
+    "locally_observed_commit": "7775926d69db45b4fb4989d2fd81db5fda4c3b4d",
+    "locally_observed_tree": "fd5593f43118c010b52232f29ed326c3de2e2f4c",
+    "parent_commit": "6eb50f3e0a2184cb822d0704c6f53f261ebd2de4",
+    "patch": {
+      "bytes": 6796,
+      "sha256": "d69e1d1220e402c4c35edafc67d2bfeba90c7a89ac400dc403d241d8dacd4d7d"
+    },
+    "source_files": 409,
+    "source_lock_sha256": "5ee79f187a0c308e76160831867552f0328babb54682bc92ddc82ca74785e24c",
+    "source_manifest": {
+      "bytes": 76828,
+      "path": "audio-junit309-source-files.json",
+      "sha256": "37ec4cf810b1d1012e80902be502e3955a2e7e47e189d62ea8a7fec8053494a5"
+    },
+    "target_subset_tree": "74ac3f46c712db6d4867bfa9cf0d77a53606b0d1"
+  },
   "base_package": "compat/android/pocket4/closeout-20261107/build-source-repair-20261108",
   "combined_builder": {
     "actual_native_and_audio_locks_preserved": true,
@@ -96,6 +121,11 @@
       "all_source_bytes_and_modes_equal": true,
       "source_files": 409,
       "subset_tree": "660de60cfd4b57fd3b823dff7757e0a4f098df49"
+    },
+    "audio-junit309": {
+      "all_source_bytes_and_modes_equal": true,
+      "source_files": 409,
+      "subset_tree": "74ac3f46c712db6d4867bfa9cf0d77a53606b0d1"
     },
     "combined-builder": {
       "all_source_bytes_and_modes_equal": true,

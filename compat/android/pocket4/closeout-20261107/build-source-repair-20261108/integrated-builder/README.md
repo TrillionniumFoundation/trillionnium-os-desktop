@@ -2,7 +2,7 @@
 
 **Source reconstruction and focused Rust controls passed; full Android builds and deployment remain unqualified.** This directory publishes the exact retained Native 597-project input, the Audio 308-project candidate at `6eb50f3e0a2184cb822d0704c6f53f261ebd2de4`, and a separate combined builder with both source locks preserved. It does not replace either frozen input used for an existing full-build attempt.
 
-Native 597-project source materialization is still pending while its transport is recovered. The actual Audio full host-r1 build failed in Soong bootstrap because `icu4j-tests` depends on the undefined `junit-params` provider. No complete Audio APEX was produced. The next provider repair is not included here. Final deployment remains false, runtime qualification remains false, and original whole-application acceptance remains **0/45**. [Build observations](build-observations.json) retain the exact failed terminal and retirement hashes.
+Native 597-project source materialization is still pending while its transport is recovered. The actual Audio full host-r1 build failed in Soong bootstrap because `icu4j-tests` depends on the undefined `junit-params` provider. No complete Audio APEX was produced. The minimal 309-project repair below is now included with focused controls and normal tools passed; its full APEX build remains pending. Final deployment remains false, runtime qualification remains false, and original whole-application acceptance remains **0/45**. [Build observations](build-observations.json) retain the exact failed terminal and retirement hashes.
 
 ## Three independent reconstruction choices
 
@@ -41,3 +41,13 @@ Native strict pair, typed-provider and normal routes retain their original provi
 - Both normal release tools built from the combined source. All 64 recorded r3 commands exited zero; all 476 source files were unchanged before and after. The owned unit and children were retired. The run used one CPU, 1.5 GiB maximum memory and zero swap; peak memory was 900,829,184 bytes with no max/OOM event.
 
 The earlier pre-Cargo manifest-permission failure and the recipe failure remain recorded. These checks performed no AOSP materialization, Soong invocation, Android action or Main action. Full Native/ART and Audio APEX qualification, canonical deployment, a fresh runtime generation and all original application gates remain required. The repository A08 source-integrity gate checks source presence and syntax; it is separate from these Rust controls and from Android acceptance.
+
+## Audio 309: restore the original JUnitParams provider
+
+The actual Audio host-r1 attempt reached Soong but failed because retained `icu4j-tests` referenced `junit-params`, which the 308-project source lock omitted. [audio-junit309.patch](audio-junit309.patch) appends the original same-superproject project at commit `1a5f3f8b0c829e257386c56cfda5e5a442377282`, including its `src` and `lib` cones. The source, test modules and AssertJ jar remain original. All 308 preceding project records and the original ICU test module remain unchanged; missing-dependency enforcement stays strict.
+
+Apply this patch after the complete Frozen Audio 308 chain above. It changes three builder files, keeps the 320-project finite capacity, binds the exact 309-project lock and rejects missing, incomplete or substituted JUnitParams sources before Soong. The previous three reconstruction choices and their historical results remain intact.
+
+The candidate passed all 13 source-library tests plus the new original-provider regression and exact-lock regression. Both normal CLI tools built, and normal lock verification passed. The bounded run used one CPU, 1.5 GiB maximum memory and zero swap; peak memory was 976,457,728 bytes with no memory-max or OOM event. An independent Mac replay matched all 409 selected files and executable modes, including the three actual compiled source hashes and all 308 preserved project records. [Results and exact provenance](audio-junit309-results.json) and the [source inventory](audio-junit309-source-files.json) bind those claims.
+
+This candidate has not yet reconciled the materialized Audio source or produced a complete APEX. It must consume the actual Native owner retirement, reacquire the existing source/build locks, run normal previous verification, reconcile and final verification, then execute the matched full Audio controller. Full build, restoration, payload, deployment and runtime qualification remain pending.

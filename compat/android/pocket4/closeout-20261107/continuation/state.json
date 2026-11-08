@@ -2,9 +2,9 @@
   "all_blockers_closed": false,
   "artifact_policy": "Public repair source and compact hashed observations only. Private runtime identities, device/account data, raw private logs and user application data are excluded. Source checks do not establish runtime acceptance.",
   "build_observations": {
-    "bytes": 1542,
+    "bytes": 2016,
     "path": "build-source-repair-20261108/integrated-builder/build-observations.json",
-    "sha256": "f48007cef701c9c31fd667106f5da22c46160faf7ee7dfd9c67a5386834bc186"
+    "sha256": "0a5d55958e06e81a7f3a433f2da6d36c2b171dc09859ea3acc502d3497e54703"
   },
   "final_candidate_deployed": false,
   "last_observed_android_state": "Normally stopped; no deployment performed by this continuation.",
@@ -23,7 +23,7 @@
     "source_or_host_checks_count_as_whole_application_acceptance": false
   },
   "pending": {
-    "audio": "The published 308-project candidate has focused controls, but actual full host-r1 failed at icu4j-tests -> undefined junit-params. Complete the next exact provider repair and full APEX/payload/restoration gates; no APEX was produced by that attempt.",
+    "audio": "The 309-project original JUnitParams repair, normal tools and focused checks passed. After actual Native source-owner retirement, run normal 308 verification, 309 reconcile/final verification and the matched full Audio APEX/payload/restoration gates.",
     "camera_and_storage": "Preserve their prior source and qualification history; establish current installed behavior and required Camera2/UVC and Storage lifecycle evidence.",
     "cleanup": "Retire obsolete source/build/backup inputs only after final dependency and live-reference checks; preserve user data.",
     "final_deployment": "Compose and inspect the complete canonical cohort before using the reviewed installation transaction.",
@@ -32,19 +32,17 @@
     "runtime_and_applications": "Qualify one fresh generation and the original 45 whole applications; current accepted count remains zero."
   },
   "previous_public_observation": {
-    "bytes": 4783,
-    "path": "continuation/history/state-20261108-before-source-integration.json",
-    "recorded_utc": "2026-11-08 03:59:10 UTC",
-    "repository_commit": "555b2710dcf3a393b65efb2caf5e469ca4d98e1b",
-    "semantics": "Exact historical bytes retained; older failed/unknown outcomes and source qualification are not relabelled.",
-    "sha256": "d006356bcf4d5fadbdf5d95f6e6f2ec83a7b64770d53448e2cf3713c242d7e42",
-    "status": "BUILD_SOURCE_REPAIR_IN_PROGRESS_NOT_DEPLOYED"
+    "bytes": 7362,
+    "path": "continuation/history/state-20261108-before-junit309.json",
+    "repository_commit": "7afc2ec87233321d9700636ef944e01d2c8d784a",
+    "semantics": "Exact prior state preserved; historical failures and qualification scopes are unchanged.",
+    "sha256": "d12be21e2b32a6dff0f71844b2a9687456877b9e4b16e97519a6599121d14663"
   },
-  "publication_state": "FROZEN_NATIVE_AUDIO_AND_MERGED_SOURCE_BOUND_FULL_BUILDS_PENDING",
-  "recorded_utc": "2026-11-08 08:10:22 UTC",
+  "publication_state": "AUDIO_JUNIT309_SOURCE_AND_TOOLS_PASSED_FULL_BUILDS_PENDING",
+  "recorded_utc": "2026-11-08T08:31:53.883158+00:00",
   "resume_order": [
     "Use exact published chains and preserve each frozen input identity; the combined tool candidate does not inherit either old binary qualification.",
-    "Complete Native source transport/materialization and the next Audio junit-params provider repair, retaining the actual failed full-build outcomes.",
+    "Complete the active Native source materialization. After its actual retirement, run the exact Audio 308-to-309 normal source migration and full APEX build, then the full Native/ART build under serial resource admission.",
     "Complete admitted full Native/ART and Audio APEX builds, resource release and artifact qualification.",
     "Bind the complete canonical candidate and fresh baseline, inspect it, and execute the reviewed final deployment transaction.",
     "Complete fresh runtime and all original whole-application gates before final retirement of obsolete artifacts."
@@ -53,11 +51,29 @@
   "schema": "pocket4-android-continuation-v1",
   "scope": "Pocket4 local Droidloom Android",
   "source_package": {
-    "bytes": 6842,
+    "bytes": 7437,
     "path": "build-source-repair-20261108/manifest.json",
-    "sha256": "7bb926ff57bff97a9ead537942866e8a5dede271ea2b688f58bd56949db5d01f"
+    "sha256": "b0b3d34d29f5e85e881cf260facf9adde3db47d4f75b14fe5812034e4f887690"
   },
   "source_repairs": {
+    "audio_junit309": {
+      "complete_audio_APEX_build_qualified": false,
+      "exact_project_count": 309,
+      "independent_replay_passed": true,
+      "normal_tools_built": 2,
+      "parent_commit": "6eb50f3e0a2184cb822d0704c6f53f261ebd2de4",
+      "results": {
+        "bytes": 7377,
+        "path": "build-source-repair-20261108/integrated-builder/audio-junit309-results.json",
+        "sha256": "a4c672542b46501112597df201e5d0329731d7b10a00fdef065dfb4a5b244d4a"
+      },
+      "source_commit": "7775926d69db45b4fb4989d2fd81db5fda4c3b4d",
+      "source_library_tests": 13,
+      "source_lock_sha256": "5ee79f187a0c308e76160831867552f0328babb54682bc92ddc82ca74785e24c",
+      "source_tree": "fd5593f43118c010b52232f29ed326c3de2e2f4c",
+      "state": "NORMAL_TOOLS_READY_SOURCE_RECONCILE_AND_FULL_APEX_PENDING",
+      "updater_focused_tests": 2
+    },
     "audio_prerequisite_history": {
       "bytes": 1386,
       "complete_audio_APEX_build_qualified": false,
@@ -74,9 +90,9 @@
       "final_repair_published": true,
       "next_provider_repair_qualified": false,
       "source_chain": {
-        "bytes": 4322,
+        "bytes": 5537,
         "path": "build-source-repair-20261108/integrated-builder/source-chains.json",
-        "sha256": "1e10bf6a55a4df113accf2c36cd291685fb2f0bed00c8f50087c2af8468cc39e"
+        "sha256": "ea550089483fd56cf2a31da4871fd5d585fb887c10176a1dba2a8a3016a8b3b1"
       },
       "source_commit": "6eb50f3e0a2184cb822d0704c6f53f261ebd2de4",
       "source_tree": "8df6ddcdea8bad1ee4b964ac472930e009e04443",
@@ -97,9 +113,9 @@
       "recipe_tests": 6,
       "separate_from_frozen_full_build_inputs": true,
       "source_chain": {
-        "bytes": 4322,
+        "bytes": 5537,
         "path": "build-source-repair-20261108/integrated-builder/source-chains.json",
-        "sha256": "1e10bf6a55a4df113accf2c36cd291685fb2f0bed00c8f50087c2af8468cc39e"
+        "sha256": "ea550089483fd56cf2a31da4871fd5d585fb887c10176a1dba2a8a3016a8b3b1"
       },
       "source_files": 476,
       "source_library_tests": 29,
@@ -110,9 +126,9 @@
       "complete_native_ART_build_qualified": false,
       "exact_project_count": 597,
       "source_chain": {
-        "bytes": 4322,
+        "bytes": 5537,
         "path": "build-source-repair-20261108/integrated-builder/source-chains.json",
-        "sha256": "1e10bf6a55a4df113accf2c36cd291685fb2f0bed00c8f50087c2af8468cc39e"
+        "sha256": "ea550089483fd56cf2a31da4871fd5d585fb887c10176a1dba2a8a3016a8b3b1"
       },
       "state": "FROZEN_SOURCE_PUBLISHED_MATERIALIZATION_PENDING"
     },
