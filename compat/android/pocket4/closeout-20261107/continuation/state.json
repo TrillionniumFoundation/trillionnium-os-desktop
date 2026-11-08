@@ -161,11 +161,23 @@
     "state": "PRIOR_SUCCESS_RECONCILED_NOT_REPLAYED"
   },
   "camera_merged_source": {
+    "A08_conclusion": "success",
+    "A08_run_id": 42508471657,
+    "A08_source_commit": "1b622d1941fa9224c492c9f92c0ed82d9db5516a",
+    "actual_display_qualified": false,
     "canonical_preparation_display_state_controls": 38,
     "decoder_sha256": "7421cdd38bd45eff8c0697ce11b1372958a4a5f749c8097e3c0203ed5758056b",
-    "fresh_Pocket4_host_controls_passed": false,
+    "formal_current_preparation_created": true,
+    "fresh_Pocket4_host_controls_passed": true,
+    "fresh_decoder_host_controls": 8,
+    "fresh_owned_display_negative_controls": 4,
     "inventory_sha256": "28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00",
     "linux_decoder_controls": 11,
+    "observation": {
+      "bytes": 8997,
+      "path": "continuation/camera_video_current/host-controls/current_decoder/observation.json",
+      "sha256": "fa4e1e187ff0ff0222a187344c204ff7ca20a3527bb1dc40c02d9ce3de3e4b29"
+    },
     "portable59_linux_passed": true,
     "portable59_mac_passed": true,
     "portable_controls": 59,
@@ -174,7 +186,7 @@
     "runtime_qualified": false,
     "source_integrity_checked_files": 442,
     "source_integrity_required_files": 74,
-    "state": "MERGED_SOURCE_VERIFIED_LINUX_AND_MAC_AWAITING_FRESH_HOST_AND_CI"
+    "state": "SOURCE_AND_FRESH_CANONICAL_COMPONENT_CONTROLS_PASSED_LIVE_RUNTIME_PENDING"
   },
   "cleanup_app_experiments": {
     "all_deleted_paths_absent": true,
@@ -349,6 +361,22 @@
     "state": "FAILED_BUILD_RECONCILED_AND_RETIRED"
   },
   "next_full_build_resource_profile": {
+    "Audio_GOGC": 50,
+    "Audio_GOMAXPROCS": 2,
+    "Audio_GOMEMLIMIT": "5GiB",
+    "Audio_then_Native_serialized": true,
+    "build_memory_max_bytes": 25769803776,
+    "complete_build_fit_demonstrated": false,
+    "cpu_count": 8,
+    "fresh_MemAvailable_minimum_bytes": 31138512896,
+    "host": "desktop",
+    "host_reserve_bytes": 5368709120,
+    "normal_parallelism": 6,
+    "public_disk_reserve_bytes": 17179869184,
+    "single_build_output_budget_bytes": 66571993088,
+    "swap_max_bytes": 0
+  },
+  "next_full_build_resource_profile_previous_Pocket4": {
     "Go_memory_limit": "5GiB",
     "build_memory_max_bytes": 8589934592,
     "complete_build_fit_demonstrated": false,
@@ -362,13 +390,19 @@
     "swap_max_bytes": 0
   },
   "offload_preparation": {
+    "audio_source_transfer_complete": false,
+    "audio_source_transfer_job": "1a1bc7196b9-138b0-288",
     "copied_previous_runtime_evidence_qualifies_new_build": false,
     "destination_data_available_observed_bytes": 205116530688,
+    "files_per_batch_max": 8192,
     "full_build_started": false,
+    "native_source_transfer_complete": false,
+    "native_source_transfer_job": "1a1bc6ea7b1-138b0-26f",
     "new_host_build_generation_required": true,
+    "previous_unbatched_transfers_cancelled_and_retired": true,
     "production_data_or_signing_secrets_transferred": false,
     "source316_observed_bytes": 39471591424,
-    "state": "SOURCE_ONLY_WORKSPACE_PREPARATION"
+    "state": "BOUNDED_EXACT_FILE_BATCH_SOURCE_TRANSFERS_RUNNING"
   },
   "original_application_acceptance": {
     "accepted": 0,
@@ -383,12 +417,12 @@
     "source_or_host_checks_count_as_whole_application_acceptance": false
   },
   "pending": {
-    "audio": "Source316 is actually qualified. Actual r5 failed its inner 13 GiB fresh memory floor before the normal builder. Prepare an isolated source-only desktop generation, then qualify its own complete normal build, actual APEX and compiled bridge inputs. Do not transfer Pocket4 runtime authority to another host.",
-    "camera_and_storage": "Preserve their prior source and qualification history; establish current installed behavior and required Camera2/UVC and Storage lifecycle evidence.",
+    "audio": "Source316 is qualified. Exact source transfer to desktop is running; fresh whole-APEX and compiled-bridge full evidence remain required. No previous host runtime authority transfers.",
+    "camera_and_storage": "Current Camera source38, decoder8, owned display negative4 and formal preparation passed in the canonical location. Real Main/display/audio, Camera2/UVC, Camera recovery, Storage lifecycle and whole-app acceptance remain pending.",
     "cleanup": "The original inventory is now 729 removed / 78 retained. Migrate live references and retire obsolete roots, old payloads and experiments after replacement validation; preserve user images and current signing material.",
     "final_deployment": "Compose and inspect the complete canonical cohort before using the reviewed installation transaction.",
     "framework": "The ABI-qualified Sensor library is staged in the canonical candidate. Its actual fresh installed Binder identity/death behavior remains pending.",
-    "native": "Normal597 materialization and R11 source consumption are qualified. Exact 8 GiB full binding is prepared. The 1 GiB preflight hit memory.max without OOM; the separately bound 2 GiB preflight then refused insufficient host MemAvailable. Full remains unstarted, pending a fresh stable resource window or a separately qualified offload generation.",
+    "native": "Normal597 materialization and R11 source consumption are qualified. Exact source transfer to a separately qualified desktop generation is running; full normal engine and whole-ART build remain unstarted.",
     "release_currency": "Resolve the installed Android June security baseline against the current stable release/security target, and compare exact official device/channel app metadata. Public store dates alone cannot establish latest APK identity.",
     "runtime_and_applications": "Qualify one fresh generation and the original 45 whole applications; current accepted count remains zero."
   },
@@ -400,7 +434,7 @@
     "sha256": "d68089d9b2a868279e302980035490d67775309b8f6293cd8db7e889bb00ce89"
   },
   "publication_state": "SOURCE_MATERIALIZATIONS_QUALIFIED_FULL_ARTIFACTS_AND_RUNTIME_PENDING",
-  "recorded_utc": "2026-11-08T17:39:47.084856+00:00",
+  "recorded_utc": "2026-11-08T18:43:39Z",
   "resume_order": [
     "Audio316 full-only strict APEX with fresh original locks and 8 GiB cap plus 5 GiB host reserve",
     "Native597 normal strict full Native/ART after Audio retirement",

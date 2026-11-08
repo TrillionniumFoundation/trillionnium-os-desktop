@@ -21,7 +21,9 @@ EXPECTED_TESTS = 9
 STATE_PIN = (21072, '68c6369a068d822b0ea4e849cf2172d0180bbe69b3c576e7aa74ba2f6e7d66fc')
 OWNER_FIXTURE_PIN = (8070, '6231c471ec505ed11afb7c40fa2d7f0e4c05299a2d297a31981a4fa223097e51')
 OLD_STATE_PIN = (20889, '536291d92f09941771673232f12208154827ca3e7b1ea49d12b769cae9507aa2')
-OWNER_SEALED_CLIP_AST = '7ccc54fb39d968f6307e39bdcf241d1e7641bf5ea04d0de08c5dda143898e9fe'
+OWNER_SEALED_CLIP_LEGACY_AST = '7ccc54fb39d968f6307e39bdcf241d1e7641bf5ea04d0de08c5dda143898e9fe'
+OWNER_SEALED_CLIP_NORMALIZED_AST = '55df6764b50d50932fdc134fd63e9b0d44becafd6d47cd4b2cf879b103ad20eb'
+OWNER_DECODER_SOURCE_PIN = (15348, '2536849daa9913832bc8c33bf4de17292f0e8a471c571c11ca0b0ddfb3b11c8a')
 CASES = ('playback_then_restore_photo', 'restore_photo_then_playback', 'original_video_mode',
     'no_audio_playback_rejected', 'wrong_final_mode_rejected', 'unretired_host_rejected',
     'unclosed_task_rejected', 'unpreserved_state_rejected', 'unacknowledged_restore_rejected')
@@ -32,6 +34,39 @@ def pinned(path, expected):
     if (len(raw), hashlib.sha256(raw).hexdigest()) != expected:
         raise RuntimeError('EXACT_OWNER_STATE_OR_FIXTURE_PIN:' + str(path))
     return raw.decode('utf-8')
+
+
+def canonical_ast(value):
+    """Keep semantic fields, independent of ast.dump's versioned formatting.
+
+    CPython 3.12 adds empty type_params to functions/classes; 3.13 adds
+    default_value=None to type parameters. Their absence has the same meaning
+    on earlier interpreters. No other empty or optional fields are discarded.
+    """
+    if isinstance(value, ast.AST):
+        kind = type(value).__name__
+        fields = {}
+        for key, item in ast.iter_fields(value):
+            if (kind in ('FunctionDef', 'AsyncFunctionDef', 'ClassDef')
+                    and key == 'type_params' and type(item) is list and not item):
+                continue
+            if (kind in ('TypeVar', 'ParamSpec', 'TypeVarTuple')
+                    and key == 'default_value' and item is None):
+                continue
+            fields[key] = canonical_ast(item)
+        return {'node': kind, 'fields': fields}
+    if type(value) is list:
+        return [canonical_ast(item) for item in value]
+    if value is None or type(value) in (str, int, float, bool):
+        # Tag scalar types so bool/int and other equal JSON values cannot alias.
+        return {'scalar': type(value).__name__, 'value': value}
+    if type(value) is bytes:
+        return {'scalar': 'bytes', 'hex': value.hex()}
+    if type(value) is complex:
+        return {'scalar': 'complex', 'real': value.real, 'imag': value.imag}
+    if value is Ellipsis:
+        return {'scalar': 'ellipsis'}
+    raise TypeError('unsupported AST field type: ' + type(value).__name__)
 
 
 class OwnerRestorationControls(unittest.TestCase):
@@ -51,7 +86,7 @@ class OwnerRestorationControls(unittest.TestCase):
             raise RuntimeError('EXACT_NINE_OWNER_STATE_SCENARIOS')
         tree = ast.parse((ROOT / 'source/camera_decode.py').read_text(encoding='utf-8'))
         helpers = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'sealed_clip']
-        if len(helpers) != 1 or hashlib.sha256(ast.dump(helpers[0], include_attributes=False).encode()).hexdigest() != OWNER_SEALED_CLIP_AST:
+        if len(helpers) != 1 or hashlib.sha256(json.dumps(canonical_ast(helpers[0]), sort_keys=True, separators=(',', ':'), allow_nan=False).encode()).hexdigest() != OWNER_SEALED_CLIP_NORMALIZED_AST:
             raise RuntimeError('EXACT_OWNER_SEALED_CLIP_HELPER_AST')
 
     def case(self, name):

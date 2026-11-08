@@ -49,7 +49,7 @@ The [current Camera bundle](continuation/camera_video_current/README.md) replace
 
 The source preparation builder creates the existing formal packet and verifies all 32 held source/origin witnesses. The video display wrapper binds the actual two-level acoustic supervisor, business worker, display holder, exact URI, audio nonce, device identity and their complete terminal/release records. The holder budget is finite and matches this entry.
 
-The [validation summary](continuation/camera_video_current/review/validation-summary.json) records eight real decoder controls, nine state scenarios, eight preparation/entry controls, sixteen display contract controls, seven acoustic supervisor controls and four actual owned outer failure scenarios. All current source bytes match their tested inputs. The outer cases deliberately reject incomplete or wrong execution; they do not claim a successful real display or camera session. Final deployment, fresh installed identities/Main epoch, actual video/audio recording, full decoding, same-URI playback and whole Camera acceptance remain required.
+The [historical validation summary](continuation/camera_video_current/review/validation-summary.json) records the earlier source generation's controls. Its pins do not match the merged current decoder and its qualification does not transfer. The [current canonical host observation](continuation/camera_video_current/host-controls/current_decoder/observation.json) instead records 38 current source controls, eight current decoder host controls and four current owned display-wrapper negative cases, plus the actual formal preparation and source inspection. The outer cases deliberately reject incomplete or wrong execution; they do not claim a successful real display or camera session. Final deployment, fresh installed identities/Main epoch, actual video/audio recording, full decoding, same-URI playback and whole Camera acceptance remain required.
 
 ## Verified application experiment cleanup
 
@@ -77,5 +77,19 @@ fixes. The merged decoder is `7421cdd38bd45eff8c0697ce11b1372958a4a5f749c8097e3c
 The source contract keeps 59 portable capsule controls, 11 Linux decoder controls,
 and 38 canonical preparation, display, and state controls. CI checks that the
 canonical sources and tested capsule remain identical. Previous host receipts
-are historical; fresh Pocket4 UID 1000/reaper controls and live application
-acceptance remain separate requirements.
+are historical. Fresh Pocket4 Python 3.14.4 execution has now passed all 38
+canonical source controls, eight UID1000 decoder/reaper controls and four
+owned display-wrapper negative boundaries. It created and inspected the new
+formal preparation; both bounded units fully retired. The display protocol and
+business child in the four negative cases were fixtures, so real display,
+Main/audio/video and whole-app acceptance remain unqualified. The exact
+29 production modules were unchanged by these runs.
+
+Both current source trees are being copied to the isolated desktop data
+workspace in explicit nonrecursive batches of at most 8192 approved files,
+followed by file checksum/mode/mtime/symlink and normal CLI verification.
+The previous long unbatched transfers were explicitly cancelled and their
+owned processes retired before this continuation. Full builds have not yet
+started. The prepared desktop resource contract is 24 GiB, eight CPUs, swap
+disabled, a fresh 29 GiB host-memory floor, one 62 GiB output budget and a
+16 GiB free-disk reserve. Audio and Native full builds are serialized.

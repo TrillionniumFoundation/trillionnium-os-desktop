@@ -110,6 +110,43 @@ UID/GID 1000 in the scratch user namespace (`EINVAL`; only UID/GID 0 are mapped)
 It did verify rejection cleanup without changing the original input. It is not
 counted as a UID1000 decoder pass. That boundary requires the actual Pocket4 host.
 
+## Fresh canonical Pocket4 host controls
+
+The exact merged decoder now passed eight real host controls on Pocket4 in a
+bounded root-to-UID-1000 execution. These cover full synthetic video/audio
+decode and nonce checks, the two inherited descriptors and read-only UID1000
+input, all four seals, malformed input, actual timeout and bounded-output
+retirement, an adopted descendant, and a real reaper-finish fault that must
+keep UNKNOWN latched. No Main, Android, physical camera or audio device ran.
+
+The actual qualifier, pinned source packet, exact executed staging sources and
+compact result are in `host-controls/current_decoder/`. The formal canonical
+execution passed all 38 source controls on Pocket4 Python 3.14.4, created and
+inspected the formal preparation, and repeated these same eight decoder
+controls at the current canonical location. Repeating them adds no distinct
+coverage. Its 18,264-byte private decoder qualification has SHA256
+`16787707174712310782752387105a1f3de323b9df7b296fa7ce22271d83b5ac`.
+The 9,271-byte formal preparation has SHA256
+`a6c00462565e55035339457f40b6209d696b3879307c27c7f4d2e669688bb40c`.
+The owned unit ended successfully, all descriptors and child processes retired,
+and no memory, swap or task limit event occurred. This is fresh evidence for
+these decoder/capture components. Four current display-wrapper negative
+process controls also passed: missing terminal, worker exit seven, lost holder,
+and wrong physical-ready response. The actors, UID1000 credentials, pidfds,
+source packet and retirement were real; the display protocol, independent
+display observation and business child were explicitly fixtures. The
+55,240-byte result is pinned by
+`150d07b1cb87200dd43bda2932d6349fcb79fb44da92a7fecd861de52cfaf6e5`.
+Both bounded units are gone and their descriptors/children are retired. The
+remaining real display, supervisor, Main, audio, Camera recovery and whole-app
+gates are unchanged.
+
+The seal attack uses a distinct copy from the same production helper, keeping
+the production read-only input unchanged. The test's temporary writable copy
+exists only to exercise real sealed-write failures. It is never a decoder
+factory input. The previous unknown legacy dispatch remains separately
+recorded and receives no terminal or runtime credit from this successful job.
+
 ## Historical evidence and remaining work
 
 The unchanged earlier `provenance/decoder-host-result-r2.json`,
@@ -128,10 +165,19 @@ previous host journals that were never published are not falsely listed as
 present files. `review/merged-source-validation.json` is the current source-only
 summary. Old summaries remain explicitly historical.
 
-Before final acceptance the owner must resolve the prior unknown host dispatch,
-qualify the exact merged decoder and owned supervisor/display path, create a
-fresh current preparation and runtime plan, run the real capture/audio/decode/
+Before final acceptance the owner must maintain the separate disposition of
+the prior unknown experiment, qualify the owned supervisor/display path, create
+a fresh runtime plan consuming the current preparation, run the real capture/audio/decode/
 same-URI playback flow, review its visual behavior, and close the original app
 contracts. Obsolete live directories can retire only after their active
 references are replaced and their jobs/open references are freshly checked.
 Account data and the protected Android images are not cleanup inputs.
+
+The state test's semantic AST pin now uses typed recursive fields instead of
+version-dependent `ast.dump` text. It normalizes only absent empty
+`type_params` and absent type-parameter `default_value=None`; all other fields
+and scalar types remain pinned. The expected value was derived from the
+independently byte-verified original owner decoder. The actual first canonical
+attempt failed that old representation on Python 3.14 before any host unit;
+the new source test and fresh full preparation passed without production
+module changes. Historical failed attempts retain their original outcomes.
