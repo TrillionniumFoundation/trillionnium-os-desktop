@@ -9,3 +9,9 @@ These are source and host-tool results. Native 597-project source materializatio
 [Native attempt 12](continuation/native-attempt12-reconciliation.json) remains authoritatively FAILED and retired because Soong could not resolve `PermissionUtils`. Its cleanup observations do not establish successful build, continuous absence or deployment authorization.
 
 Previous states are retained byte-for-byte in [continuation history](continuation/history/). Earlier production-cohort, Storage, camera, cleanup and test files keep their original scope. Full Native/ART and Audio artifacts, installed Sensor Binder behavior, coherent deployment, fresh runtime checks and original application acceptance remain required before all blockers can be declared closed.
+
+## Verified application experiment cleanup
+
+The latest scoped cleanup accounted for all 807 candidate roots across 17 batches: 723 were actually removed, representing 5,150,584,832 allocated bytes (about 4.80 GiB), and 84 were retained for current dependencies. Deleted original and isolation paths were verified absent, retained identities and protected current state were unchanged, and the remaining reference reasons were rechecked. This byte count measures removed objects; it is not a filesystem-free-space measurement during concurrent builds.
+
+[The compact cleanup summary](cleanup/app-retirement-20261108-summary.json) records each original receipt hash and the final audit. Current source/provenance dependencies must be released and checked again after final deployment and qualification before the retained roots and remaining build/payload history are retired. Android deployment and original whole-application acceptance remain pending.

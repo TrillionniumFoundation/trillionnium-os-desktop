@@ -6,6 +6,22 @@
     "path": "build-source-repair-20261108/integrated-builder/build-observations.json",
     "sha256": "0a5d55958e06e81a7f3a433f2da6d36c2b171dc09859ea3acc502d3497e54703"
   },
+  "cleanup_app_experiments": {
+    "all_deleted_paths_absent": true,
+    "allocated_bytes_deleted": 5150584832,
+    "batches": 17,
+    "deleted_roots": 723,
+    "protected_identities_unchanged": true,
+    "remaining_retirement": "After final deployment and runtime/application qualification, release current dependencies and recheck references/use before retirement.",
+    "requested_roots": 807,
+    "results": {
+      "bytes": 6043,
+      "path": "cleanup/app-retirement-20261108-summary.json",
+      "sha256": "1a2f7ca8b5e97b0ec0e68371aba3299d5b6dbcf0535868a84b113227da1ff5e7"
+    },
+    "retained_roots": 84,
+    "state": "COMPLETED_WITH_RETAINED_CURRENT_DEPENDENCIES"
+  },
   "final_candidate_deployed": false,
   "last_observed_android_state": "Normally stopped; no deployment performed by this continuation.",
   "native_attempt12": {
@@ -25,7 +41,7 @@
   "pending": {
     "audio": "The 309-project original JUnitParams repair, normal tools and focused checks passed. After actual Native source-owner retirement, run normal 308 verification, 309 reconcile/final verification and the matched full Audio APEX/payload/restoration gates.",
     "camera_and_storage": "Preserve their prior source and qualification history; establish current installed behavior and required Camera2/UVC and Storage lifecycle evidence.",
-    "cleanup": "Retire obsolete source/build/backup inputs only after final dependency and live-reference checks; preserve user data.",
+    "cleanup": "723 obsolete application experiment roots have been removed and verified absent. 84 roots retain current source/provenance references; release and recheck them after final cohort deployment and qualification. Other final build/cache/payload retirement remains gated on real final validation.",
     "final_deployment": "Compose and inspect the complete canonical cohort before using the reviewed installation transaction.",
     "framework": "Complete installed Sensor Binder identity/death behavior in the fresh runtime generation; source/build checks alone do not qualify this gate.",
     "native": "Finish actual 597-project source materialization after transport recovery, then full engine/ART build, exact terminal/resource release and artifact qualification.",
@@ -39,7 +55,7 @@
     "sha256": "d12be21e2b32a6dff0f71844b2a9687456877b9e4b16e97519a6599121d14663"
   },
   "publication_state": "AUDIO_JUNIT309_SOURCE_AND_TOOLS_PASSED_FULL_BUILDS_PENDING",
-  "recorded_utc": "2026-11-08T08:31:53.883158+00:00",
+  "recorded_utc": "2026-11-08T09:14:25.370907+00:00",
   "resume_order": [
     "Use exact published chains and preserve each frozen input identity; the combined tool candidate does not inherit either old binary qualification.",
     "Complete the active Native source materialization. After its actual retirement, run the exact Audio 308-to-309 normal source migration and full APEX build, then the full Native/ART build under serial resource admission.",
