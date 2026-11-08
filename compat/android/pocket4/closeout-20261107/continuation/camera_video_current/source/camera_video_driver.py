@@ -35,6 +35,7 @@ class Driver:
         self.ids_before = self.row = self.decoded = self.decode_ref = self.original_mode = None
         self.before = self.before_gallery = self.sound_before = self.diagnostics_before = None
         self.started = self.run_completed = self.cleanup_verified = self.host_unknown = False
+        self.failure_audio_quiet_verified = False; self.failure_audio_quiet_ref = None
         self.initial_tasks = None; self.record_started_ns = self.record_start_ms = self.record_stop_ms = None
         self.provider_cycle_start = None; self.provider_cursor = None; self.audio_input = None
         session.driver = session.case = session.trial = self
@@ -599,6 +600,13 @@ class Driver:
         self.cleanup_verified = bool(self.owned is None and self.pending is None and self.close_pending is None
             and (self.recording is None or self.recording.pending is None) and not self.host_unknown
             and self.s.acoustic.pending is None)
+        if not self.run_completed:
+            try:
+                self.failure_audio_quiet_ref = self.s.audio.verify_failure_cleanup()
+                self.failure_audio_quiet_verified = True
+            except BaseException:
+                if self.s.audio.failure_cleanup_unknown: self.host_unknown = True
+                raise
 
     def close_local(self):
         if self.decoder is not None: self.decoder.close()

@@ -61,14 +61,16 @@ class CameraHostBinding(unittest.TestCase):
         expected_changes = {
             'source/app_common.py': (38256, '6003e96be02cd0c6328340865bbb2962d39967f2b823656af258ed5a48f598d0'),
             'source/camera_audio_binding.py': (18775, 'c8c0c123153a83a2397595d2efcf6ba3b40f60916362403348d1f6f6a57a4754'),
-            'source/camera_audio_runtime.py': (26272, 'b480c7e99cd44bd9ff79e7d95fb87e80f7634c843e8e9c77f3f38ea8ab9f8cee'),
+            'source/camera_audio_runtime.py': (30941, '281753695801a74ad65d589f1ba939bff3c64f6464056555a3582fc08a0a150b'),
             'source/camera_entry.py': (9811, '55607f576146c9adc8792fdeb510c1992512ac4d782ccd0efcb75415c81ac4f9'),
-            'source/camera_case.py': (7576, '19f015a8dcf836e6aa8160af9566abc04923b1fe9d5fad34bd98e89ec9d883d7'),
-            'source/camera_decode.py': (14597, '7a42785a9d5d16fbc4644d0db961acd965b42f79dc9a75b2f101d88ab51574a4'),
+            'source/camera_case.py': (8212, 'ff5f1bfc48617e42bb0d9c42bf9120995772d99449ffb8f515dcbca0981b59aa'),
+            'source/camera_decode.py': (16169, '7421cdd38bd45eff8c0697ce11b1372958a4a5f749c8097e3c0203ed5758056b'),
+            'source/camera_video_driver.py': (43149, '68d394e9edc8eb62083e91edc442430d02f5301d9289b4f70005e96625a63c80'),
             'source/camera_video_media.py': (9197, '58c5b6508fe23532fe4282c38446e75dfc25800ed6b063691da80bd431f74190'),
+            'source/camera_video_state.py': (21072, '68c6369a068d822b0ea4e849cf2172d0180bbe69b3c576e7aa74ba2f6e7d66fc'),
         }
         assert {row['path'] for row in rows if row['changed']} == set(expected_changes)
-        assert sum(not row['changed'] for row in rows) == 22
+        assert sum(not row['changed'] for row in rows) == 20
         for row in rows:
             actual = reference(ROOT / row['path'])
             assert (actual['bytes'], actual['sha256']) == (row['bytes'], row['sha256'])

@@ -164,6 +164,7 @@ class AudioRuntime:
         self.s = session; self.c = session.c; self.binding = session.components['camera_audio_binding.py']
         self.handles = {}; self.units = {}; self.host_intent = None; self.preflight_result = None
         self.hardware_before = None; self.windows = {}; self.samples = {}; self.closed = False
+        self.failure_cleanup_attempted = self.failure_cleanup_unknown = False
 
     def admit_host(self, label, argv, timeout):
         need(self.host_intent == (label, list(argv), timeout), 'ONLY_CURRENT_READONLY_AUDIO_HOST_QUERY')
@@ -367,6 +368,71 @@ class AudioRuntime:
             'started_monotonic_ns': start, 'finished_monotonic_ns': finish,
             'hardware_before': self.hardware_before, 'hardware_after': after,
             'settings_writes': 0, 'application_processes_signalled': 0, 'runtime_qualified': False})
+
+    def verify_failure_cleanup(self):
+        """One Android track sample after known task/host cleanup, never a window.
+
+        Incomplete admission, pending effects, host UNKNOWN and unfinished
+        acoustic actors admit no new query. Existing held transport/poison and
+        absolute cleanup deadline gates remain authoritative.
+        """
+        s = self.s; driver = s.driver
+        s.original_caller(['camera_video_driver.py'], {'finish'})
+        need(not self.closed and self.preflight_result is not None
+            and self.hardware_before is not None, 'COMPLETE_AUDIO_PREFLIGHT_BEFORE_FAILURE_QUIET')
+        need(s.phase_name == 'final_cleanup' and s.active_api is None
+            and s.ordinary_admission is None and s.ui_dispatch_admission is None,
+            'ONLY_CURRENT_FINAL_CLEANUP_AUDIO_SAMPLE')
+        need(driver is not None and driver.run_completed is False and driver.cleanup_verified is True
+            and driver.owned is driver.pending is driver.close_pending is None
+            and (driver.recording is None or driver.recording.pending is None)
+            and driver.host_unknown is False
+            and (driver.decoder is None or driver.decoder.unknown is False),
+            'KNOWN_TASK_AND_HOST_RETIREMENT_BEFORE_FAILURE_QUIET')
+        acoustic = s.acoustic; order = s.components['camera_audio_channel.py'].ORDER
+        need(not acoustic.closed and acoustic.pending is None
+            and tuple(acoustic.results) == order[:len(acoustic.results)]
+            and acoustic.sequence == len(acoustic.results) in (0, 3, 6),
+            'NO_PENDING_OR_UNFINISHED_ACOUSTIC_ACTOR_BEFORE_FAILURE_QUIET')
+        retired = {}
+        for role in ('emit', 'listen'):
+            if role + '_prepare' not in acoustic.results: continue
+            row = acoustic.results[role + '_finish']; ref = row['reference']
+            need(Path(ref['path']) == s.root / 'acoustic-supervisor' / (role + '-final.json'),
+                'ONLY_THIS_CASE_ACOUSTIC_RETIREMENT_RECORD')
+            need(s.c.parse(s.c.read_ref(ref)) == {k: v for k, v in row.items() if k != 'reference'}
+                and row['role'] == role and row['parent'] == acoustic.parent_ref
+                and row['phase'] == driver.result['actual_business_phase']
+                and row['leader_reaped'] is True and type(row['exit_code']) is int and row['exit_code'] == 0
+                and row['pipe_eof'] == {'stdout': True, 'stderr': True}
+                and all(v is True for v in row['pipe_eof'].values())
+                and row['closed']['stream_closed'] is True and row['closed']['nonce'] == s.active['audio_nonce']
+                and row['closed']['runtime_qualified'] is False and row['automatic_retry'] is False,
+                'ACTUAL_RETIRED_CURRENT_ACOUSTIC_ACTOR_BEFORE_FAILURE_QUIET')
+            retired[role] = ref
+        need(not self.failure_cleanup_attempted, 'ONCE_FAILURE_PATH_AUDIO_SAMPLE_NO_RETRY')
+        acoustic.verify(); s.guard()
+        need(time.monotonic() + 15 < s.deadline, 'ORIGINAL_CLEANUP_BUDGET_FOR_FAILURE_AUDIO_SAMPLE')
+        self.failure_cleanup_attempted = self.failure_cleanup_unknown = True
+        start = time.monotonic_ns()
+        raw = s.android(['/system/bin/dumpsys', 'media.audio_flinger'], 15)
+        finish = time.monotonic_ns(); self.failure_cleanup_unknown = False
+        need(type(raw) is bytes and 0 < len(raw) <= 1048576, 'BOUNDED_ACTUAL_AUDIOFLINGER_DUMP')
+        rawref = s.tx.write_new(s.evidence_root / 'audio-flinger-failure-cleanup.txt', raw)
+        parsed = self.binding.flinger(raw); quiet = self.binding.quiescent(parsed)
+        acoustic.verify(); s.guard()
+        return s.record('audio-failure-cleanup', {
+            'source_admission': self.preflight_result, 'phase': s.phase_ref,
+            'scope': s.flow.scope_ref, 'audio_after': rawref, 'android_tracks_after': quiet,
+            'started_monotonic_ns': start, 'finished_monotonic_ns': finish,
+            'owned_task_cleanup_verified': True, 'acoustic_retirement': retired,
+            'business_audio_windows_observed': dict(self.windows),
+            'failure_path_android_audio_quiet_verified': True,
+            'host_audio_quiescence_qualified': False, 'continuous_exclusivity_qualified': False,
+            'inactive_audio_session_preservation_qualified': False, 'audio_focus_preservation_qualified': False,
+            'actual_full_dumpsys_ABI_qualified': False,
+            'settings_writes': 0, 'application_processes_signalled': 0, 'automatic_retry': False,
+            'runtime_qualified': False, 'whole_app_business_accepted': False})
 
     def close(self):
         errors = []

@@ -17,11 +17,11 @@ import time
 import types
 
 FINAL = Path('/home/alex/work/pocket4-android-final')
-SUPPORT = FINAL / 'qualification/business-support-frozen-resume-20261107-r9'
+SUPPORT = FINAL / 'qualification/business-support-host-20261108-r1'
 SUPPORT_REF = {'path': str(SUPPORT / 'source-manifest.json'), 'bytes': 1002,
-               'sha256': '656101c6576a7749a55311750342749660944f0e67d143665bd03cc6c1eeb167'}
-CLOCK_SUPPORT_REF = {'path': str(FINAL / 'qualification/business-support-frozen-resume-20261107-r10/source-manifest.json'),
-                     'bytes': 1002, 'sha256': '60d756127dba7e124b8acf39af80330c7d8fc9c6956363a58b631f00b0576612'}
+               'sha256': '8cfa9cb05bb7e7768350dbe04acd4cd6421b9f4e8493746aad49b64c37969e70'}
+CLOCK_SUPPORT_REF = {'path': str(FINAL / 'qualification/business-support-host-clock-20261108-r1/source-manifest.json'),
+                     'bytes': 1002, 'sha256': '0e1ea6f0d3b02c47f240b1aa26ccccf1b05f82bef7edee65331de421965a53ce'}
 SCOPE_SHA = 'e2a9b509102806483c64c181034e59aded211f42e5f05fcfd85057cc25c9fb7a'
 GATES = {'path': '/home/alex/work/pocket4-cp13-canonical-app-gates-20261106-r12-01.json',
          'bytes': 24135, 'sha256': '441289f9c04b46f38e1dd6e19f23ec6e4c6729b6a6f814cab81c0ae6fbbb1e78'}

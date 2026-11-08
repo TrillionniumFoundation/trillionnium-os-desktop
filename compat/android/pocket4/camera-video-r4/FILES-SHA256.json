@@ -1,17 +1,26 @@
 {
+  "actual_nonroot_portable_controls_verified": false,
   "actual_pocket4_host_controls_verified": 0,
-  "changed_production_count": 7,
-  "file_count_including_inventory": 76,
+  "canonical_inventory_sha256": "28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00",
+  "canonical_source_controls_counted_separately": 38,
+  "canonical_source_count": 29,
+  "changed_production_count": 9,
+  "file_count_including_inventory": 94,
   "files": [
     {
-      "bytes": 12764,
+      "bytes": 9672,
       "path": "README.md",
-      "sha256": "68fc2e1c0be44f986affb4dc4a2a18e64fddbac3ed946418dc85828d90c01153"
+      "sha256": "671f1399fd1907f2fe0b3500a06cbfb2148efb05f893132a5d327264a5c043ad"
     },
     {
-      "bytes": 21085,
+      "bytes": 28060,
       "path": "camera-video-r4-integrated.patch",
-      "sha256": "cb0e5112a54eecddb93065c821c94b1cbf6cdb3ac157f6c24068b4657cff663a"
+      "sha256": "2176cf3de00240e786b088c3b3d1edb8b37e6f88920ff58706886e34cdaf44f3"
+    },
+    {
+      "bytes": 6259,
+      "path": "failure-path-android-quiet.patch",
+      "sha256": "ced84baccd33b86b3f60883c271c80fb769df24e3338a9c04ad0afa06697d9f3"
     },
     {
       "bytes": 827,
@@ -64,9 +73,29 @@
       "sha256": "d30514804dea4f084c4911e553ca2c25c35137017dd5dc2bdfdabf70c572a505"
     },
     {
+      "bytes": 16609,
+      "path": "origin-source-manifest.json",
+      "sha256": "143424cf8d0b36acc7b193ee1e9349fbf163f18322b4bae038fd227f87884b17"
+    },
+    {
       "bytes": 1974,
       "path": "provenance/audioflinger-fixed-writers.json",
       "sha256": "6ef54b6251aa2aa3768db10a6fe584a1b6a126f2ea6d93112b0247b0c7fdda2b"
+    },
+    {
+      "bytes": 2255,
+      "path": "provenance/failure-quiet-decoder-test-fixture.patch",
+      "sha256": "93bb490afcbaa3a591a123e74590812911d1e9a91311f5f7a1225dae0147bb51"
+    },
+    {
+      "bytes": 1223,
+      "path": "provenance/failure-quiet-host-pin-port.patch",
+      "sha256": "929350e3ecd788838a9cb29dc697f8bf07ad5768816c772ff2a467781213a047"
+    },
+    {
+      "bytes": 3404,
+      "path": "provenance/failure-quiet-inputs.json",
+      "sha256": "c33e0e0010a41012ed856387bf26fdc9a3b827c3da193d877792accd33506d13"
     },
     {
       "bytes": 2037,
@@ -82,6 +111,16 @@
       "bytes": 5564,
       "path": "provenance/integration-inputs.json",
       "sha256": "dbbb8067c96b71e4b26cb6ffed170ecc9a0289106690aacb194c7f7ecedafe2e"
+    },
+    {
+      "bytes": 2819,
+      "path": "provenance/owner-decoder-merge.patch",
+      "sha256": "7d3eb19535a0d4aac374b51c7666819e1cbc78357ae73e6ee2c6e271438f605e"
+    },
+    {
+      "bytes": 3033,
+      "path": "provenance/owner-merge-inputs.json",
+      "sha256": "3d34b38a7cbe9fe05d7134111c613a5cc25617e5faf37b4f8f12d605746b5a94"
     },
     {
       "bytes": 8185,
@@ -144,9 +183,9 @@
       "sha256": "237015b8d911c8c46ec413dacceb9f64f7e07456f27f58396110bcaa6cd1c412"
     },
     {
-      "bytes": 26272,
+      "bytes": 30941,
       "path": "source/camera_audio_runtime.py",
-      "sha256": "b480c7e99cd44bd9ff79e7d95fb87e80f7634c843e8e9c77f3f38ea8ab9f8cee"
+      "sha256": "281753695801a74ad65d589f1ba939bff3c64f6464056555a3582fc08a0a150b"
     },
     {
       "bytes": 35597,
@@ -159,14 +198,14 @@
       "sha256": "e994b1149e1da861923e806065c6bbf8134fc202cfd4b441783e7bc1c5df57c8"
     },
     {
-      "bytes": 7576,
+      "bytes": 8212,
       "path": "source/camera_case.py",
-      "sha256": "19f015a8dcf836e6aa8160af9566abc04923b1fe9d5fad34bd98e89ec9d883d7"
+      "sha256": "ff5f1bfc48617e42bb0d9c42bf9120995772d99449ffb8f515dcbca0981b59aa"
     },
     {
-      "bytes": 14597,
+      "bytes": 16169,
       "path": "source/camera_decode.py",
-      "sha256": "7a42785a9d5d16fbc4644d0db961acd965b42f79dc9a75b2f101d88ab51574a4"
+      "sha256": "7421cdd38bd45eff8c0697ce11b1372958a4a5f749c8097e3c0203ed5758056b"
     },
     {
       "bytes": 9811,
@@ -244,9 +283,9 @@
       "sha256": "c0f431942857047f5540dc9dc66d5f992aefb436b60bbb5e7417e0e1ac0b58c8"
     },
     {
-      "bytes": 42730,
+      "bytes": 43149,
       "path": "source/camera_video_driver.py",
-      "sha256": "742685725695fa72fb4d86e74a1d3799f75d85bd5c81972e5d2356bd057dd729"
+      "sha256": "68d394e9edc8eb62083e91edc442430d02f5301d9289b4f70005e96625a63c80"
     },
     {
       "bytes": 9197,
@@ -254,14 +293,14 @@
       "sha256": "58c5b6508fe23532fe4282c38446e75dfc25800ed6b063691da80bd431f74190"
     },
     {
-      "bytes": 20889,
+      "bytes": 21072,
       "path": "source/camera_video_state.py",
-      "sha256": "536291d92f09941771673232f12208154827ca3e7b1ea49d12b769cae9507aa2"
+      "sha256": "68c6369a068d822b0ea4e849cf2172d0180bbe69b3c576e7aa74ba2f6e7d66fc"
     },
     {
-      "bytes": 16609,
+      "bytes": 20323,
       "path": "source-manifest.json",
-      "sha256": "143424cf8d0b36acc7b193ee1e9349fbf163f18322b4bae038fd227f87884b17"
+      "sha256": "d80931f1926d9446a71aefd110986c06eb2e4b7062d09109ad69a1d55f4cf14b"
     },
     {
       "bytes": 12813,
@@ -334,6 +373,11 @@
       "sha256": "468e0fa093ec1c741547912b8fef41560e1ea9b1e124a76113ec97da7fe03420"
     },
     {
+      "bytes": 914,
+      "path": "tests/fixtures/original-ast-pins.json",
+      "sha256": "334ae0efd9f774c934c9c6486367eb42f75e629b353186d9b4b21969ec43997b"
+    },
+    {
       "bytes": 9807,
       "path": "tests/fixtures/original-camera_entry.py",
       "sha256": "ab929997fa08d5acda471cec6219fcbc2eb1edeed2a7b6c7bae189f7abb842a1"
@@ -349,14 +393,24 @@
       "sha256": "db921ee7ca03873ef10c4ac0e9cad6d47421b00cf2e0c4c2d12b8ddaee70071b"
     },
     {
-      "bytes": 17926,
+      "bytes": 19005,
       "path": "tests/test_camera_r4_decode.py",
-      "sha256": "4033987ec8ebb6bab42445920df33c98348cc2b05c3093e8caabffad0f9e6849"
+      "sha256": "7485732edd189aa3cdf5b783c969d6033d668db4b4f54a5bcff1bc6d5a5cc9ab"
     },
     {
-      "bytes": 17485,
+      "bytes": 30219,
+      "path": "tests/test_failure_cleanup.py",
+      "sha256": "08b1c77755e5b7634fa4b588da7a0114a1b4818e7a1db8603994b9d514970a67"
+    },
+    {
+      "bytes": 17728,
       "path": "tests/test_host_support_binding.py",
-      "sha256": "afa20729b1dd3d08348f20d413017eb9e4f5e40db7f1ef302c7fd9117395878f"
+      "sha256": "4151c33454c1f85181b54ac3b7f7829ff4ef70eb458de79fc2d964695bbaf407"
+    },
+    {
+      "bytes": 3593,
+      "path": "validation/canonical-source-guard.json",
+      "sha256": "1e38637f2a2db13f2ec44708ad86f662c693b672bb1db3a22bb95a9f69b5dee3"
     },
     {
       "bytes": 7675,
@@ -374,24 +428,68 @@
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
+      "bytes": 1739,
+      "path": "validation/local-sealed-input-observation.json",
+      "sha256": "5a19f59f02fa76ee9d94983e3770e2493681e9c7b9ea32a9cdb61dc8ae7cd2f4"
+    },
+    {
+      "bytes": 1116,
+      "path": "validation/nonroot-admission-environment.json",
+      "sha256": "30829a7f5fdfb9a5d29c302286c44d9e7ab0246d3ec91043f23c61507d8d9ddb"
+    },
+    {
+      "bytes": 541,
+      "path": "validation/portable59-nonroot.json",
+      "sha256": "4ffd04b3d36345202deaec96a338d1503be3b6002ea4af36ecf2240323471a0c"
+    },
+    {
+      "bytes": 44,
+      "path": "validation/portable59-nonroot.stderr",
+      "sha256": "69a94f21fe3e9c94ba16f3556a260952b7935f0d2aeee8d70adfe8777f197004"
+    },
+    {
       "bytes": 994,
       "path": "validation/runtime-prerequisites.json",
       "sha256": "54bbc507f534d4b5e1748f01ea3224e6e43390d891441cb1436f8a97d21b78a8"
+    },
+    {
+      "bytes": 7013,
+      "path": "validation/union-controls.json",
+      "sha256": "32884fa9043180c62536c530836b1412d919606872d9198c324f86b414446ecd"
+    },
+    {
+      "bytes": 12063,
+      "path": "validation/union-controls.stderr",
+      "sha256": "89f9ff63e8d097290f28140e64bc344d6d0980e429bde08ac93cc30c49a9187d"
+    },
+    {
+      "bytes": 6165,
+      "path": "validation/union-controls.stdout",
+      "sha256": "303b0065aa84e52544f9e2f8fd798fa531449f90280be2f0bfe8abb6f9b7565a"
+    },
+    {
+      "bytes": 18209,
+      "path": "validation/union-source-manifest-tested.json",
+      "sha256": "f5d95a38ad962e7e583baaf485d95d416987268c6a28478daa0d610e9410dfcf"
     }
   ],
   "final_freeze": false,
   "frozen_component_inputs_unchanged": true,
+  "historical_host_qualification_transferred": false,
   "local_controls": {
-    "combined": 52,
+    "combined": 70,
+    "failure_cleanup": 18,
     "linux_decoder": 11,
-    "passed": true,
-    "portable": 41
+    "portable": 59
   },
+  "local_controls_status": "70_current_union_source_component_controls_passed",
+  "owner_canonical_convergence_pending": false,
+  "prior_eight_control_dispatch_status": "unknown",
   "production_preparation_present": false,
   "production_source_count": 29,
   "runtime_qualified": false,
   "schema": "camera-r4-integrated-review-inventory-v2",
-  "scope": "frozen source publication snapshot; actual Pocket4 host controls pending after unknown dispatch",
+  "scope": "Exact test-source copy of the single canonical Camera source set; historical qualification evidence retained without transfer.",
   "source_publication_frozen": true,
-  "unchanged_original_r4_count": 22
+  "unchanged_original_r4_count": 20
 }

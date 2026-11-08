@@ -9,7 +9,7 @@ import re
 import stat
 import types
 
-COMMON_PIN = (38269, '468e0fa093ec1c741547912b8fef41560e1ea9b1e124a76113ec97da7fe03420')
+COMMON_PIN = (38256, '6003e96be02cd0c6328340865bbb2962d39967f2b823656af258ed5a48f598d0')
 SOURCE_NAMES = {'app_common.py', 'app_flow.py', 'app_runtime.py', 'camera_audio_binding.py',
     'camera_audio_challenge.py', 'camera_audio_channel.py', 'camera_audio_runtime.py',
     'camera_audio_supervisor.py', 'camera_base_session.py', 'camera_case.py', 'camera_decode.py',
@@ -57,7 +57,7 @@ def bootstrap(args):
             raise RuntimeError('FROZEN_VIDEO_COMPONENT_CHANGED:' + name)
         sources[name] = data
     if (refs['app_common.py']['bytes'], refs['app_common.py']['sha256']) != COMMON_PIN:
-        raise RuntimeError('EXACT_CURRENT_R9_COMMON_LIBRARY')
+        raise RuntimeError('EXACT_CURRENT_HOST_COMMON_LIBRARY')
     if read(Path(__file__).resolve(), 262144) != sources['camera_entry.py']:
         raise RuntimeError('ACTUAL_VIDEO_ENTRY_NOT_THE_REVIEWED_SOURCE')
     def load(name):
@@ -99,7 +99,7 @@ def main():
         profiles = planner.named(c, packet, 'camera_profiles.py')
         profile = {'camera': profiles.CAMERA, 'player': profiles.PLAYER, 'native-helper': profiles.HELPER}[args.role]
         c.need(set(request) == {'baseline', 'qualification'}
-            and c.parse(c.read_ref(request['qualification']))['source_manifest'] == c.SUPPORT_REF, 'EXACT_CURRENT_R9_MAIN_BASELINE')
+            and c.parse(c.read_ref(request['qualification']))['source_manifest'] == c.SUPPORT_REF, 'EXACT_CURRENT_HOST_MAIN_BASELINE')
         entry = next(r for r in packet['files'] if Path(r['path']).name == 'camera_entry.py')
         result = c.collect_identity(request, args.output, profile, entry)
     elif args.mode == 'plan':

@@ -1,364 +1,33 @@
 {
-  "schema": "pocket4-camera-video-r4-integrated-source-candidate-v1",
-  "status": "reviewable_local_integrated_source_controls_passed",
-  "source_admission": true,
-  "code_entrypoints_complete": false,
-  "production_preparation_present": false,
-  "origin_manifest": {
-    "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/manifest.json",
-    "bytes": 8308,
-    "sha256": "963b8724906da54e70147b3a3268dd29640a85b45b947274fda7d5e61a55c5c4"
+  "Android_UI_actions": 0,
+  "Main_actions": 0,
+  "actual_Pocket4_source_inspection_observed": false,
+  "actual_audio_stream_actions": 0,
+  "actual_full_dumpsys_ABI_qualified": false,
+  "actual_host_decoder_controls_included": false,
+  "actual_nonroot_portable_controls_verified": false,
+  "actual_reaper_qualified": false,
+  "audio_focus_preservation_qualified": false,
+  "camera_recovery_preparation_pending": true,
+  "canonical_inventory": {
+    "bytes": 5173,
+    "path": "compat/android/pocket4/closeout-20261107/continuation/camera_video_current/reviewed-source-inventory.json",
+    "sha256": "28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00"
   },
-  "production_files": [
-    {
-      "path": "source/app_common.py",
-      "bytes": 38256,
-      "sha256": "6003e96be02cd0c6328340865bbb2962d39967f2b823656af258ed5a48f598d0",
-      "original": {
-        "bytes": 38269,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/app_common.py",
-        "sha256": "468e0fa093ec1c741547912b8fef41560e1ea9b1e124a76113ec97da7fe03420"
-      },
-      "changed": true,
-      "component": "host-support"
-    },
-    {
-      "path": "source/app_flow.py",
-      "bytes": 14631,
-      "sha256": "926793aabf5610fc32f6b94bd772c660c7e24bc992641f8b2ca4ae257bfa59bb",
-      "original": {
-        "bytes": 14631,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/app_flow.py",
-        "sha256": "926793aabf5610fc32f6b94bd772c660c7e24bc992641f8b2ca4ae257bfa59bb"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/app_runtime.py",
-      "bytes": 20904,
-      "sha256": "095578d7d998019cdf20173cc803546dfdaff52245471d5ba3a766d7cd88a0ef",
-      "original": {
-        "bytes": 20904,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/app_runtime.py",
-        "sha256": "095578d7d998019cdf20173cc803546dfdaff52245471d5ba3a766d7cd88a0ef"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_audio_binding.py",
-      "bytes": 18775,
-      "sha256": "c8c0c123153a83a2397595d2efcf6ba3b40f60916362403348d1f6f6a57a4754",
-      "original": {
-        "bytes": 16109,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_audio_binding.py",
-        "sha256": "865c1dcef9559f69062b0430e585eb85cc8131396a614dd51c709f5d8ef968dd"
-      },
-      "changed": true,
-      "component": "android-active-track-admission"
-    },
-    {
-      "path": "source/camera_audio_challenge.py",
-      "bytes": 6956,
-      "sha256": "30b8560cf4f43e77e051e4915492ed18fe3c78e8b2a67527f4e14c02643dcd4c",
-      "original": {
-        "bytes": 6956,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_audio_challenge.py",
-        "sha256": "30b8560cf4f43e77e051e4915492ed18fe3c78e8b2a67527f4e14c02643dcd4c"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_audio_channel.py",
-      "bytes": 9779,
-      "sha256": "237015b8d911c8c46ec413dacceb9f64f7e07456f27f58396110bcaa6cd1c412",
-      "original": {
-        "bytes": 9779,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_audio_channel.py",
-        "sha256": "237015b8d911c8c46ec413dacceb9f64f7e07456f27f58396110bcaa6cd1c412"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_audio_runtime.py",
-      "bytes": 26272,
-      "sha256": "b480c7e99cd44bd9ff79e7d95fb87e80f7634c843e8e9c77f3f38ea8ab9f8cee",
-      "original": {
-        "bytes": 25408,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_audio_runtime.py",
-        "sha256": "00e4643c544b6d6771772b8830f84f865282013379941e1da83e52df08fe59f9"
-      },
-      "changed": true,
-      "component": "android-active-track-admission"
-    },
-    {
-      "path": "source/camera_audio_supervisor.py",
-      "bytes": 35597,
-      "sha256": "d67a3ce70aae90bb6dfee44d77605072628a4e48e6d3574d38464b76b1f4e718",
-      "original": {
-        "bytes": 35597,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_audio_supervisor.py",
-        "sha256": "d67a3ce70aae90bb6dfee44d77605072628a4e48e6d3574d38464b76b1f4e718"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_base_session.py",
-      "bytes": 30596,
-      "sha256": "e994b1149e1da861923e806065c6bbf8134fc202cfd4b441783e7bc1c5df57c8",
-      "original": {
-        "bytes": 30596,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_base_session.py",
-        "sha256": "e994b1149e1da861923e806065c6bbf8134fc202cfd4b441783e7bc1c5df57c8"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_case.py",
-      "bytes": 7576,
-      "sha256": "19f015a8dcf836e6aa8160af9566abc04923b1fe9d5fad34bd98e89ec9d883d7",
-      "original": {
-        "bytes": 7481,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_case.py",
-        "sha256": "45006edc9d5edb1da84e0253f8a8b2d606bfbd19f68c0c07dd7fbe0a4188af07"
-      },
-      "changed": true,
-      "component": "decoder"
-    },
-    {
-      "path": "source/camera_decode.py",
-      "bytes": 14597,
-      "sha256": "7a42785a9d5d16fbc4644d0db961acd965b42f79dc9a75b2f101d88ab51574a4",
-      "original": {
-        "bytes": 14138,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_decode.py",
-        "sha256": "22face5af8d95709111008f837ac8ba9e6e2520971c340e62da62939658f1e10"
-      },
-      "changed": true,
-      "component": "decoder"
-    },
-    {
-      "path": "source/camera_entry.py",
-      "bytes": 9811,
-      "sha256": "55607f576146c9adc8792fdeb510c1992512ac4d782ccd0efcb75415c81ac4f9",
-      "original": {
-        "bytes": 9807,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_entry.py",
-        "sha256": "ab929997fa08d5acda471cec6219fcbc2eb1edeed2a7b6c7bae189f7abb842a1"
-      },
-      "changed": true,
-      "component": "host-support"
-    },
-    {
-      "path": "source/camera_flow.py",
-      "bytes": 4297,
-      "sha256": "7c25c21ac4dcadbf41628b75102f6022c5af6638c6876e163830a35cd62b492d",
-      "original": {
-        "bytes": 4297,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_flow.py",
-        "sha256": "7c25c21ac4dcadbf41628b75102f6022c5af6638c6876e163830a35cd62b492d"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_guard.py",
-      "bytes": 2052,
-      "sha256": "dff943810d872f32accb03f21437d626b7a1b6c1b5baca8632ac68ab6feb6093",
-      "original": {
-        "bytes": 2052,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_guard.py",
-        "sha256": "dff943810d872f32accb03f21437d626b7a1b6c1b5baca8632ac68ab6feb6093"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_observations.py",
-      "bytes": 8767,
-      "sha256": "9da8edd2b219d8cc26ae36d50c7c61c7ff99c1f23cc7918d59744585cf8cf9a5",
-      "original": {
-        "bytes": 8767,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_observations.py",
-        "sha256": "9da8edd2b219d8cc26ae36d50c7c61c7ff99c1f23cc7918d59744585cf8cf9a5"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_owner_core.py",
-      "bytes": 32444,
-      "sha256": "59703ed32d41d5b08fa129a29e77ba2bfc06aac3e16b42714caeb6e5213271b2",
-      "original": {
-        "bytes": 32444,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_owner_core.py",
-        "sha256": "59703ed32d41d5b08fa129a29e77ba2bfc06aac3e16b42714caeb6e5213271b2"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_photo_model.py",
-      "bytes": 12683,
-      "sha256": "eca8a6a3fb1b74546b849f36d790630850ddf8d447906011f5a6777731a9abb1",
-      "original": {
-        "bytes": 12683,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_photo_model.py",
-        "sha256": "eca8a6a3fb1b74546b849f36d790630850ddf8d447906011f5a6777731a9abb1"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_plan.py",
-      "bytes": 11910,
-      "sha256": "9b921ec750192aa9c3ab744326354cd2b8f839d0b633502294da561878d04646",
-      "original": {
-        "bytes": 11910,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_plan.py",
-        "sha256": "9b921ec750192aa9c3ab744326354cd2b8f839d0b633502294da561878d04646"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_player_binding.py",
-      "bytes": 6560,
-      "sha256": "64e3dda9e851df2950c9b929e1d8a70a7cf3caba21d6ba29d9e7a44520e831c4",
-      "original": {
-        "bytes": 6560,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_player_binding.py",
-        "sha256": "64e3dda9e851df2950c9b929e1d8a70a7cf3caba21d6ba29d9e7a44520e831c4"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_policy.py",
-      "bytes": 7863,
-      "sha256": "72f73574e5a2d6b93a3bc40cdce29d7d031d065a5d608c250e0776e58d50472b",
-      "original": {
-        "bytes": 7863,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_policy.py",
-        "sha256": "72f73574e5a2d6b93a3bc40cdce29d7d031d065a5d608c250e0776e58d50472b"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_profiles.py",
-      "bytes": 3048,
-      "sha256": "ab27644c8f5a38374d98d5081b5352158d1a52fd41d896333f31e3b82c423331",
-      "original": {
-        "bytes": 3048,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_profiles.py",
-        "sha256": "ab27644c8f5a38374d98d5081b5352158d1a52fd41d896333f31e3b82c423331"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_runtime.py",
-      "bytes": 6528,
-      "sha256": "70b98eb62cf08069cd1630293dc3a4847aaf1c9834dcfea447f9827e2dd6352e",
-      "original": {
-        "bytes": 6528,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_runtime.py",
-        "sha256": "70b98eb62cf08069cd1630293dc3a4847aaf1c9834dcfea447f9827e2dd6352e"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_session.py",
-      "bytes": 19959,
-      "sha256": "b414f48f247df52bb8f24921ac938838fe7f2e6a7ab74ee157efffff0ede3e81",
-      "original": {
-        "bytes": 19959,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_session.py",
-        "sha256": "b414f48f247df52bb8f24921ac938838fe7f2e6a7ab74ee157efffff0ede3e81"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_sound_preservation.py",
-      "bytes": 1663,
-      "sha256": "2f22f8c2d1cda3e466e5c06776bee65246adef3e31bca0370eb78a443de3796c",
-      "original": {
-        "bytes": 1663,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_sound_preservation.py",
-        "sha256": "2f22f8c2d1cda3e466e5c06776bee65246adef3e31bca0370eb78a443de3796c"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_transport.py",
-      "bytes": 5072,
-      "sha256": "31ab63c91aef5b9db901cd92d16d35bbdebe7463e5d4d9a4ad52cbccad66e207",
-      "original": {
-        "bytes": 5072,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_transport.py",
-        "sha256": "31ab63c91aef5b9db901cd92d16d35bbdebe7463e5d4d9a4ad52cbccad66e207"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_ui.py",
-      "bytes": 11407,
-      "sha256": "c0f431942857047f5540dc9dc66d5f992aefb436b60bbb5e7417e0e1ac0b58c8",
-      "original": {
-        "bytes": 11407,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_ui.py",
-        "sha256": "c0f431942857047f5540dc9dc66d5f992aefb436b60bbb5e7417e0e1ac0b58c8"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_video_driver.py",
-      "bytes": 42730,
-      "sha256": "742685725695fa72fb4d86e74a1d3799f75d85bd5c81972e5d2356bd057dd729",
-      "original": {
-        "bytes": 42730,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_video_driver.py",
-        "sha256": "742685725695fa72fb4d86e74a1d3799f75d85bd5c81972e5d2356bd057dd729"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    },
-    {
-      "path": "source/camera_video_media.py",
-      "bytes": 9197,
-      "sha256": "58c5b6508fe23532fe4282c38446e75dfc25800ed6b063691da80bd431f74190",
-      "original": {
-        "bytes": 8843,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_video_media.py",
-        "sha256": "f8672df6e457674d1fbc7296cdd9266ba2ae118840edd4b26c0a1f1816501e21"
-      },
-      "changed": true,
-      "component": "decoder"
-    },
-    {
-      "path": "source/camera_video_state.py",
-      "bytes": 20889,
-      "sha256": "536291d92f09941771673232f12208154827ca3e7b1ea49d12b769cae9507aa2",
-      "original": {
-        "bytes": 20889,
-        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_video_state.py",
-        "sha256": "536291d92f09941771673232f12208154827ca3e7b1ea49d12b769cae9507aa2"
-      },
-      "changed": false,
-      "component": "owner-r4"
-    }
-  ],
+  "canonical_source_control_count": 38,
+  "canonical_source_control_result": {
+    "bytes": 15042,
+    "path": "compat/android/pocket4/closeout-20261107/continuation/camera_video_current/review/merged-source-controls.json",
+    "sha256": "504d0bc586b13ec15664d82fb8876df19ce964be260ec162e4bb8f704113c374"
+  },
+  "canonical_source_equality_control_count": 6,
+  "canonical_source_equality_controls_completed": true,
+  "canonical_source_equality_result": {
+    "bytes": 3593,
+    "path": "validation/canonical-source-guard.json",
+    "sha256": "1e38637f2a2db13f2ec44708ad86f662c693b672bb1db3a22bb95a9f69b5dee3"
+  },
+  "canonical_source_root": "compat/android/pocket4/closeout-20261107/continuation/camera_video_current",
   "changed_files": [
     "source/app_common.py",
     "source/camera_audio_binding.py",
@@ -366,37 +35,435 @@
     "source/camera_case.py",
     "source/camera_decode.py",
     "source/camera_entry.py",
-    "source/camera_video_media.py"
+    "source/camera_video_driver.py",
+    "source/camera_video_media.py",
+    "source/camera_video_state.py"
   ],
-  "unchanged_production_count": 22,
-  "component_host_controls_completed": true,
-  "component_control_count": 52,
-  "actual_reaper_qualified": false,
-  "production_uid1000_decode_qualified": false,
-  "device_execution_authorized": false,
-  "Main_actions": 0,
-  "Android_UI_actions": 0,
-  "actual_audio_stream_actions": 0,
-  "runtime_qualified": false,
-  "whole_app_business_accepted": false,
-  "camera_recovery_preparation_pending": true,
-  "display_lease_outer_pending": true,
-  "quiescence_candidate_integrated": true,
-  "final_freeze": false,
-  "source_inspection_entry_complete": true,
-  "portable_control_count": 41,
-  "linux_decoder_control_count": 11,
-  "control_modules": {
-    "test_host_support_binding": 10,
-    "test_camera_audio_quiescence": 31,
-    "test_camera_r4_decode": 11
-  },
-  "host_audio_quiescence_qualified": false,
+  "code_entrypoints_complete": false,
+  "component_control_count": 70,
+  "component_control_scope": "70 actual local source/component controls: 59 portable suites run locally as UID0 and 11 Linux decoder component controls. Separate canonical suite contains 11 preparation, 18 display-contract and 9 state controls; state9 is not duplicated in the capsule count.",
+  "component_host_controls_completed": false,
+  "component_source_controls_completed": true,
   "continuous_exclusivity_qualified": false,
+  "control_modules": {
+    "test_camera_audio_quiescence": 31,
+    "test_camera_r4_decode": 11,
+    "test_failure_cleanup": 18,
+    "test_host_support_binding": 10
+  },
+  "device_execution_authorized": false,
+  "display_lease_outer_pending": true,
+  "failure_path_android_audio_quiet_runtime_qualified": false,
+  "failure_path_android_audio_quiet_source_candidate_integrated": true,
+  "failure_path_android_audio_quiet_source_controls_completed": true,
   "failure_path_audio_quiescence_qualified": false,
-  "actual_full_dumpsys_ABI_qualified": false,
+  "failure_quiet_baseline_manifest": {
+    "bytes": 16609,
+    "path": "origin-source-manifest.json",
+    "sha256": "143424cf8d0b36acc7b193ee1e9349fbf163f18322b4bae038fd227f87884b17"
+  },
+  "final_freeze": false,
+  "historical_host_qualification_transferred": false,
+  "host_audio_quiescence_qualified": false,
   "inactive_audio_session_preservation_qualified": false,
-  "audio_focus_preservation_qualified": false,
-  "component_control_scope": "52 local source/component controls: 41 portable and 11 Linux decoder; not actual Pocket4 host or device qualification",
-  "actual_host_decoder_controls_included": false
+  "known_new_owner_commit": "f9c506431b389c941fbb05f5875166fcd8a7b763",
+  "linux_decoder_control_count": 11,
+  "local_control_result": {
+    "bytes": 7013,
+    "path": "validation/union-controls.json",
+    "sha256": "32884fa9043180c62536c530836b1412d919606872d9198c324f86b414446ecd"
+  },
+  "local_control_tested_manifest": {
+    "bytes": 18209,
+    "path": "validation/union-source-manifest-tested.json",
+    "sha256": "f5d95a38ad962e7e583baaf485d95d416987268c6a28478daa0d610e9410dfcf"
+  },
+  "local_inspect_source_cli_completed": true,
+  "local_inspect_source_cli_scope": "Actual inspect-source CLI with inert local preparation; no Pocket4 baseline or runtime admission.",
+  "local_linux_decoder_component_controls_completed": true,
+  "native_Mac_controls_verified": false,
+  "origin_manifest": {
+    "bytes": 8308,
+    "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/manifest.json",
+    "sha256": "963b8724906da54e70147b3a3268dd29640a85b45b947274fda7d5e61a55c5c4"
+  },
+  "owner_canonical_convergence_pending": false,
+  "owner_sealed_clip_AST_identical": true,
+  "owner_state_byte_identical": true,
+  "portable_ast_comparison": {
+    "baseline_source_sha256_verified": true,
+    "historical_ast_dump_hashes_retained": true,
+    "new_control_execution_pending": true,
+    "production_sources_changed": false,
+    "representation": "typed recursive AST fields; normalize only absent empty type_params and type-parameter default_value=None"
+  },
+  "portable_control_count": 59,
+  "preceding_capsule_commit": "a355e81a753cdc1aed198424d87d0a8b6e4b2ebc",
+  "prior_eight_control_admission_state": "not_run",
+  "prior_eight_control_dispatch_status": "unknown",
+  "prior_eight_control_source_binding_is_historical": true,
+  "prior_eight_controls_verified": 0,
+  "production_files": [
+    {
+      "bytes": 38256,
+      "changed": true,
+      "component": "host-support",
+      "original": {
+        "bytes": 38269,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/app_common.py",
+        "sha256": "468e0fa093ec1c741547912b8fef41560e1ea9b1e124a76113ec97da7fe03420"
+      },
+      "path": "source/app_common.py",
+      "sha256": "6003e96be02cd0c6328340865bbb2962d39967f2b823656af258ed5a48f598d0"
+    },
+    {
+      "bytes": 14631,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 14631,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/app_flow.py",
+        "sha256": "926793aabf5610fc32f6b94bd772c660c7e24bc992641f8b2ca4ae257bfa59bb"
+      },
+      "path": "source/app_flow.py",
+      "sha256": "926793aabf5610fc32f6b94bd772c660c7e24bc992641f8b2ca4ae257bfa59bb"
+    },
+    {
+      "bytes": 20904,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 20904,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/app_runtime.py",
+        "sha256": "095578d7d998019cdf20173cc803546dfdaff52245471d5ba3a766d7cd88a0ef"
+      },
+      "path": "source/app_runtime.py",
+      "sha256": "095578d7d998019cdf20173cc803546dfdaff52245471d5ba3a766d7cd88a0ef"
+    },
+    {
+      "bytes": 18775,
+      "changed": true,
+      "component": "android-active-track-admission",
+      "original": {
+        "bytes": 16109,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_audio_binding.py",
+        "sha256": "865c1dcef9559f69062b0430e585eb85cc8131396a614dd51c709f5d8ef968dd"
+      },
+      "path": "source/camera_audio_binding.py",
+      "sha256": "c8c0c123153a83a2397595d2efcf6ba3b40f60916362403348d1f6f6a57a4754"
+    },
+    {
+      "bytes": 6956,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 6956,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_audio_challenge.py",
+        "sha256": "30b8560cf4f43e77e051e4915492ed18fe3c78e8b2a67527f4e14c02643dcd4c"
+      },
+      "path": "source/camera_audio_challenge.py",
+      "sha256": "30b8560cf4f43e77e051e4915492ed18fe3c78e8b2a67527f4e14c02643dcd4c"
+    },
+    {
+      "bytes": 9779,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 9779,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_audio_channel.py",
+        "sha256": "237015b8d911c8c46ec413dacceb9f64f7e07456f27f58396110bcaa6cd1c412"
+      },
+      "path": "source/camera_audio_channel.py",
+      "sha256": "237015b8d911c8c46ec413dacceb9f64f7e07456f27f58396110bcaa6cd1c412"
+    },
+    {
+      "bytes": 30941,
+      "changed": true,
+      "component": "android-active-track-admission; failure-path Android audio quiet",
+      "original": {
+        "bytes": 25408,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_audio_runtime.py",
+        "sha256": "00e4643c544b6d6771772b8830f84f865282013379941e1da83e52df08fe59f9"
+      },
+      "path": "source/camera_audio_runtime.py",
+      "sha256": "281753695801a74ad65d589f1ba939bff3c64f6464056555a3582fc08a0a150b"
+    },
+    {
+      "bytes": 35597,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 35597,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_audio_supervisor.py",
+        "sha256": "d67a3ce70aae90bb6dfee44d77605072628a4e48e6d3574d38464b76b1f4e718"
+      },
+      "path": "source/camera_audio_supervisor.py",
+      "sha256": "d67a3ce70aae90bb6dfee44d77605072628a4e48e6d3574d38464b76b1f4e718"
+    },
+    {
+      "bytes": 30596,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 30596,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_base_session.py",
+        "sha256": "e994b1149e1da861923e806065c6bbf8134fc202cfd4b441783e7bc1c5df57c8"
+      },
+      "path": "source/camera_base_session.py",
+      "sha256": "e994b1149e1da861923e806065c6bbf8134fc202cfd4b441783e7bc1c5df57c8"
+    },
+    {
+      "bytes": 8212,
+      "changed": true,
+      "component": "decoder; failure-path Android audio quiet",
+      "original": {
+        "bytes": 7481,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_case.py",
+        "sha256": "45006edc9d5edb1da84e0253f8a8b2d606bfbd19f68c0c07dd7fbe0a4188af07"
+      },
+      "path": "source/camera_case.py",
+      "sha256": "ff5f1bfc48617e42bb0d9c42bf9120995772d99449ffb8f515dcbca0981b59aa"
+    },
+    {
+      "bytes": 16169,
+      "changed": true,
+      "component": "owner-readonly-input-and-retirement",
+      "original": {
+        "bytes": 14138,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_decode.py",
+        "sha256": "22face5af8d95709111008f837ac8ba9e6e2520971c340e62da62939658f1e10"
+      },
+      "path": "source/camera_decode.py",
+      "sha256": "7421cdd38bd45eff8c0697ce11b1372958a4a5f749c8097e3c0203ed5758056b"
+    },
+    {
+      "bytes": 9811,
+      "changed": true,
+      "component": "host-support",
+      "original": {
+        "bytes": 9807,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_entry.py",
+        "sha256": "ab929997fa08d5acda471cec6219fcbc2eb1edeed2a7b6c7bae189f7abb842a1"
+      },
+      "path": "source/camera_entry.py",
+      "sha256": "55607f576146c9adc8792fdeb510c1992512ac4d782ccd0efcb75415c81ac4f9"
+    },
+    {
+      "bytes": 4297,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 4297,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_flow.py",
+        "sha256": "7c25c21ac4dcadbf41628b75102f6022c5af6638c6876e163830a35cd62b492d"
+      },
+      "path": "source/camera_flow.py",
+      "sha256": "7c25c21ac4dcadbf41628b75102f6022c5af6638c6876e163830a35cd62b492d"
+    },
+    {
+      "bytes": 2052,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 2052,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_guard.py",
+        "sha256": "dff943810d872f32accb03f21437d626b7a1b6c1b5baca8632ac68ab6feb6093"
+      },
+      "path": "source/camera_guard.py",
+      "sha256": "dff943810d872f32accb03f21437d626b7a1b6c1b5baca8632ac68ab6feb6093"
+    },
+    {
+      "bytes": 8767,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 8767,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_observations.py",
+        "sha256": "9da8edd2b219d8cc26ae36d50c7c61c7ff99c1f23cc7918d59744585cf8cf9a5"
+      },
+      "path": "source/camera_observations.py",
+      "sha256": "9da8edd2b219d8cc26ae36d50c7c61c7ff99c1f23cc7918d59744585cf8cf9a5"
+    },
+    {
+      "bytes": 32444,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 32444,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_owner_core.py",
+        "sha256": "59703ed32d41d5b08fa129a29e77ba2bfc06aac3e16b42714caeb6e5213271b2"
+      },
+      "path": "source/camera_owner_core.py",
+      "sha256": "59703ed32d41d5b08fa129a29e77ba2bfc06aac3e16b42714caeb6e5213271b2"
+    },
+    {
+      "bytes": 12683,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 12683,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_photo_model.py",
+        "sha256": "eca8a6a3fb1b74546b849f36d790630850ddf8d447906011f5a6777731a9abb1"
+      },
+      "path": "source/camera_photo_model.py",
+      "sha256": "eca8a6a3fb1b74546b849f36d790630850ddf8d447906011f5a6777731a9abb1"
+    },
+    {
+      "bytes": 11910,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 11910,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_plan.py",
+        "sha256": "9b921ec750192aa9c3ab744326354cd2b8f839d0b633502294da561878d04646"
+      },
+      "path": "source/camera_plan.py",
+      "sha256": "9b921ec750192aa9c3ab744326354cd2b8f839d0b633502294da561878d04646"
+    },
+    {
+      "bytes": 6560,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 6560,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_player_binding.py",
+        "sha256": "64e3dda9e851df2950c9b929e1d8a70a7cf3caba21d6ba29d9e7a44520e831c4"
+      },
+      "path": "source/camera_player_binding.py",
+      "sha256": "64e3dda9e851df2950c9b929e1d8a70a7cf3caba21d6ba29d9e7a44520e831c4"
+    },
+    {
+      "bytes": 7863,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 7863,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_policy.py",
+        "sha256": "72f73574e5a2d6b93a3bc40cdce29d7d031d065a5d608c250e0776e58d50472b"
+      },
+      "path": "source/camera_policy.py",
+      "sha256": "72f73574e5a2d6b93a3bc40cdce29d7d031d065a5d608c250e0776e58d50472b"
+    },
+    {
+      "bytes": 3048,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 3048,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_profiles.py",
+        "sha256": "ab27644c8f5a38374d98d5081b5352158d1a52fd41d896333f31e3b82c423331"
+      },
+      "path": "source/camera_profiles.py",
+      "sha256": "ab27644c8f5a38374d98d5081b5352158d1a52fd41d896333f31e3b82c423331"
+    },
+    {
+      "bytes": 6528,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 6528,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_runtime.py",
+        "sha256": "70b98eb62cf08069cd1630293dc3a4847aaf1c9834dcfea447f9827e2dd6352e"
+      },
+      "path": "source/camera_runtime.py",
+      "sha256": "70b98eb62cf08069cd1630293dc3a4847aaf1c9834dcfea447f9827e2dd6352e"
+    },
+    {
+      "bytes": 19959,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 19959,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_session.py",
+        "sha256": "b414f48f247df52bb8f24921ac938838fe7f2e6a7ab74ee157efffff0ede3e81"
+      },
+      "path": "source/camera_session.py",
+      "sha256": "b414f48f247df52bb8f24921ac938838fe7f2e6a7ab74ee157efffff0ede3e81"
+    },
+    {
+      "bytes": 1663,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 1663,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_sound_preservation.py",
+        "sha256": "2f22f8c2d1cda3e466e5c06776bee65246adef3e31bca0370eb78a443de3796c"
+      },
+      "path": "source/camera_sound_preservation.py",
+      "sha256": "2f22f8c2d1cda3e466e5c06776bee65246adef3e31bca0370eb78a443de3796c"
+    },
+    {
+      "bytes": 5072,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 5072,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_transport.py",
+        "sha256": "31ab63c91aef5b9db901cd92d16d35bbdebe7463e5d4d9a4ad52cbccad66e207"
+      },
+      "path": "source/camera_transport.py",
+      "sha256": "31ab63c91aef5b9db901cd92d16d35bbdebe7463e5d4d9a4ad52cbccad66e207"
+    },
+    {
+      "bytes": 11407,
+      "changed": false,
+      "component": "owner-r4",
+      "original": {
+        "bytes": 11407,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_ui.py",
+        "sha256": "c0f431942857047f5540dc9dc66d5f992aefb436b60bbb5e7417e0e1ac0b58c8"
+      },
+      "path": "source/camera_ui.py",
+      "sha256": "c0f431942857047f5540dc9dc66d5f992aefb436b60bbb5e7417e0e1ac0b58c8"
+    },
+    {
+      "bytes": 43149,
+      "changed": true,
+      "component": "owner-r4; failure-path Android audio quiet",
+      "original": {
+        "bytes": 42730,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_video_driver.py",
+        "sha256": "742685725695fa72fb4d86e74a1d3799f75d85bd5c81972e5d2356bd057dd729"
+      },
+      "path": "source/camera_video_driver.py",
+      "sha256": "68d394e9edc8eb62083e91edc442430d02f5301d9289b4f70005e96625a63c80"
+    },
+    {
+      "bytes": 9197,
+      "changed": true,
+      "component": "decoder",
+      "original": {
+        "bytes": 8843,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_video_media.py",
+        "sha256": "f8672df6e457674d1fbc7296cdd9266ba2ae118840edd4b26c0a1f1816501e21"
+      },
+      "path": "source/camera_video_media.py",
+      "sha256": "58c5b6508fe23532fe4282c38446e75dfc25800ed6b063691da80bd431f74190"
+    },
+    {
+      "bytes": 21072,
+      "changed": true,
+      "component": "owner-playback-restore-order",
+      "original": {
+        "bytes": 20889,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/source/camera_video_state.py",
+        "sha256": "536291d92f09941771673232f12208154827ca3e7b1ea49d12b769cae9507aa2"
+      },
+      "path": "source/camera_video_state.py",
+      "sha256": "68c6369a068d822b0ea4e849cf2172d0180bbe69b3c576e7aa74ba2f6e7d66fc"
+    }
+  ],
+  "production_preparation_present": false,
+  "production_uid1000_decode_qualified": false,
+  "quiescence_candidate_integrated": true,
+  "runtime_qualified": false,
+  "schema": "pocket4-camera-video-r4-integrated-source-candidate-v1",
+  "source_admission": false,
+  "source_inspection_entry_complete": false,
+  "source_production_copy_role": "Exact test input copy of the single canonical Camera source set; not another current runtime.",
+  "source_publication_base_commit": "f9c506431b389c941fbb05f5875166fcd8a7b763",
+  "source_publication_ready": true,
+  "status": "canonical_union_source_controls_passed_runtime_unqualified",
+  "unchanged_production_count": 20,
+  "whole_app_business_accepted": false
 }

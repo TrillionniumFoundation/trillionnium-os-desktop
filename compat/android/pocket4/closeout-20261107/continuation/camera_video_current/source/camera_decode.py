@@ -117,6 +117,8 @@ class Decoder:
                 'bytes': self.ref['bytes'], 'sha256': self.ref['sha256'],
                 'metadata': self.input_metadata, 'seals': INPUT_SEALS, 'read_only': True,
                 'original_owner_and_mode_unchanged': True, 'original_fd_inherited': False}
+            self.c.need(identity(os.fstat(self.fd)) == self.metadata == identity(self.path.lstat()),
+                'OWNED_VIDEO_CHANGED_DURING_PRIVATE_COPY')
             self.capture = self.c.module(CAPTURE, 'camera_decoder_unchanged_bounded_capture')
         except BaseException:
             self.close(); raise
@@ -131,8 +133,8 @@ class Decoder:
     def verify_input(self):
         self.c.need(self.input_fd is not None and identity(os.fstat(self.input_fd)) == self.input_metadata
             and fcntl.fcntl(self.input_fd, fcntl.F_GET_SEALS) == INPUT_SEALS
-            and fcntl.fcntl(self.input_fd, fcntl.F_GETFL) & os.O_ACCMODE == os.O_RDONLY,
-            'SAME_SEALED_READ_ONLY_INPUT_FOR_ALL_THREE_DECODES')
+            and fcntl.fcntl(self.input_fd, fcntl.F_GETFL) & os.O_ACCMODE == os.O_RDONLY
+            and not os.get_inheritable(self.input_fd), 'SAME_SEALED_READ_ONLY_INPUT_FOR_ALL_THREE_DECODES')
 
     def call(self, kind):
         c, s = self.c, self.s
@@ -160,7 +162,9 @@ class Decoder:
             result.update(decoder=decoder, decoder_metadata=executable_metadata,
                 execution_deadline_monotonic=deadline, observation_deadline_monotonic=deadline + 8,
                 phase_deadline_monotonic=s.deadline, output_bound_per_stream=bound,
-                inherited_fds={'owned_clip': self.input_fd, 'held_decoder': executable})
+                inherited_fds={'owned_clip': self.input_fd, 'held_decoder': executable},
+                original_held_clip_metadata=self.metadata, sealed_owned_clip_metadata=self.input_metadata,
+                sealed_owned_clip_seals=INPUT_SEALS)
             s.record('decode-' + kind + '-intent', result)
             c.need(time.monotonic() < deadline, 'NO_DECODER_DISPATCH_AFTER_PHASE_DEADLINE')
             reaper = self.capture.OwnChildReaper(protected_pids=tuple(s.baseline.protected_pids))
@@ -180,6 +184,9 @@ class Decoder:
                     pass_fds=(self.input_fd, executable), start_new_session=True,
                     env={'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'HOME': '/home/alex'},
                     user=DECODER_UID, group=DECODER_GID, extra_groups=(), preexec_fn=child_limits)
+            # A dispatch may lose its reply. Keep that uncertainty before the
+            # actual boundary; a later evidence-write error cannot erase it.
+            self.unknown = True
             record, out, err, error = self.capture.invoke_owned(reaper, factory, b'', deadline, deadline + 8,
                 output_bound=bound, cleanup_enter=cancel.enter_retirement, retirement_grace=5)
             if error is not None: remember('actual_owned_decoder', error)
@@ -197,18 +204,24 @@ class Decoder:
             except BaseException as error: finish_error = finish_error or error; remember('decode_executable_close', error)
         subreaper = {} if reaper is None else copy.deepcopy(reaper.record)
         retired = self.commands.retirement_complete(record, subreaper, finish_error)
+        self.unknown = not retired or type(out) is not bytes or type(err) is not bytes
         result.update(lifecycle=record, subreaper=subreaper, host_retirement_proved=retired,
             cancellation={'signals': cancel.signals, 'count': cancel.count},
             returncode=record.get('returncode'), timed_out=record.get('timed_out', False))
-        for name, raw in (('stdout', out), ('stderr', err)):
-            if type(raw) is bytes:
-                result[name] = {'bytes': len(raw), 'sha256': c.sha(raw), 'persisted': False}
-                if kind != 'audio': result[name]['reference'] = c.write_new(s.evidence_root / ('decode-' + kind + '.' + name), raw)
-        try: self.verify()
-        except BaseException as error: remember('decode_post_guard', error)
-        ref = s.record('decode-' + kind + '-result', result); self.done[kind] = {'result': result, 'reference': ref}
-        if not retired or type(out) is not bytes or type(err) is not bytes:
-            self.unknown = True
+        try:
+            for name, raw in (('stdout', out), ('stderr', err)):
+                if type(raw) is bytes:
+                    result[name] = {'bytes': len(raw), 'sha256': c.sha(raw), 'persisted': False}
+                    if kind != 'audio': result[name]['reference'] = c.write_new(s.evidence_root / ('decode-' + kind + '.' + name), raw)
+            try: self.verify()
+            except BaseException as error: remember('decode_post_guard', error)
+            ref = s.record('decode-' + kind + '-result', result); self.done[kind] = {'result': result, 'reference': ref}
+        except BaseException as error:
+            if first is not None and error is not first:
+                first.add_note('DECODER_EVIDENCE_FAILURE:' + repr(error))
+                raise first from error
+            raise
+        if self.unknown:
             raise DecodeOutcomeUnknown('OWNED_DECODER_RETIREMENT_OR_OUTPUT_UNKNOWN') from first
         c.need(first is None and not result['errors'] and not cancel.signals and record['returncode'] == 0
             and not record['timed_out'] and err == b'' and record['descendants'] == [],

@@ -186,6 +186,37 @@ class PreparationEntryControls(unittest.TestCase):
             self.prepare(source)
         self.assertFalse((self.root / 'prepared').exists())
 
+    def test_merged_provenance_never_transfers_previous_host_or_byte_qualification(self):
+        self.prepare()
+        value = json.loads((self.root / 'prepared/source-provenance.json').read_bytes())
+        self.assertFalse(value['exact_source_bytes_match_previously_tested_candidate'])
+        self.assertFalse(value['prior_host_qualification_transferred'])
+        self.assertFalse(value['old_runtime_authority_transferred'])
+        self.assertFalse(value['runtime_qualified'])
+        self.assertEqual(value['current_host_qualification'], 'pending_for_exact_merged_source_bytes')
+        self.assertEqual(value['source_merge_parents'], {
+            'canonical_source_commit': 'f9c506431b389c941fbb05f5875166fcd8a7b763',
+            'r4_source_controls_commit': 'a355e81a753cdc1aed198424d87d0a8b6e4b2ebc'})
+        self.assertNotEqual(value['source_inventory_sha256'], value['previous_canonical_inventory_sha256'])
+        self.assertEqual(value['source_inventory_sha256'], self.packet['source_inventory_sha256'])
+
+    def test_previous_canonical_inventory_cannot_admit_a_new_preparation(self):
+        old = '2444a7f3dcbeace9a3a9c5b86d2fc815a59ae965b626ddb80ba99b6f4d13520f'
+        with self.assertRaisesRegex(RuntimeError, 'EXACT_REVIEWED_29_MODULE_INVENTORY_REQUIRED'):
+            BUILDER.prepare(ROOT / 'source', ROOT / 'reviewed-source-inventory.json',
+                            old, self.root / 'prepared')
+        self.assertFalse((self.root / 'prepared').exists())
+
+    def test_previous_canonical_decoder_cannot_replace_merged_task_source(self):
+        self.prepare()
+        value = self.tasks()
+        task = copy.deepcopy(self.task_values['camera'])
+        row = next(r for r in task['files'] if Path(r['path']).name == 'camera_decode.py')
+        row.update(bytes=15348, sha256='2536849daa9913832bc8c33bf4de17292f0e8a471c571c11ca0b0ddfb3b11c8a')
+        self.replace_task(value, 'camera', task)
+        with self.assertRaisesRegex(RuntimeError, 'EXTERNAL_PREPARATION_MUST_MATCH_EVERY_TASK_BYTE_AND_ROLE:camera'):
+            self.planner.source_packet(self.common, value, self.packet)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

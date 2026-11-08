@@ -88,7 +88,15 @@ def video_row(content_rows, raw, identity, *, earliest_ms, latest_ms):
 
 def parse_probe(raw, row):
     need(type(raw) is bytes and 0 < len(raw) <= 1048576, 'BOUNDED_OWNED_CLIP_PROBE')
-    result = json.loads(raw)
+    def pairs(values):
+        result = {}
+        for key, value in values:
+            need(key not in result, 'DUPLICATE_PROBE_JSON_FIELD')
+            result[key] = value
+        return result
+    def nonfinite(_):
+        raise RuntimeError('NONFINITE_PROBE_JSON_NUMBER')
+    result = json.loads(raw, object_pairs_hook=pairs, parse_constant=nonfinite)
     streams = result.get('streams'); fmt = result.get('format')
     need(type(streams) is list and len(streams) == 2 and type(fmt) is dict,
          'ONE_VIDEO_AND_ONE_AUDIO_STREAM_REQUIRED')
@@ -145,9 +153,9 @@ def decoder_argv(kind, held_path):
          'DECODER_MUST_READ_THE_SAME_HELD_OWNED_DESCRIPTOR')
     if kind == 'probe':
         return ['/usr/bin/ffprobe', '-v', 'error', '-count_frames', '-show_streams', '-show_format',
-                '-of', 'json', '-protocol_whitelist', 'file,pipe', '-i', held_path]
+                '-of', 'json', '-protocol_whitelist', 'file,pipe', '-f', 'mov', '-i', held_path]
     common = ['/usr/bin/ffmpeg', '-nostdin', '-v', 'error', '-xerror', '-err_detect', 'explode',
-              '-threads', '1', '-protocol_whitelist', 'file,pipe', '-i', held_path]
+              '-threads', '1', '-protocol_whitelist', 'file,pipe', '-f', 'mov', '-i', held_path]
     if kind == 'video':
         return common + ['-map', '0:v:0', '-an', '-vsync', '0', '-f', 'framemd5', 'pipe:1']
     if kind == 'audio':

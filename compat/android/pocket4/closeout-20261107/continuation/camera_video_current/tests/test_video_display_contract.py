@@ -19,7 +19,7 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-WRAPPER_SHA256 = 'c971b2a1e86e789099ed29942b9e3c5e0eb1d9aa07d8f093fc5b1908e7a4e384'
+WRAPPER_SHA256 = 'b0d40754761f53c30f5d8074cb7dec4974c814e35862800d2409dd39da8040d5'
 SYNTHETIC_ONLY = 'TEST RECEIPTS ONLY; NO ACTUAL CAMERA/AUDIO/DISPLAY SUCCESS'
 
 
@@ -305,6 +305,33 @@ class SourceAndBudgetControls(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'SHA differs'):
             another.configure_video_preparation(self.preparation['path'], '0' * 64)
         self.assertIsNone(another.VIDEO_CONTEXT)
+
+    def test_previous_inventory_is_rejected_before_loading_any_entry(self):
+        self.prepare()
+        packet = copy.deepcopy(self.packet)
+        packet['source_inventory_sha256'] = '2444a7f3dcbeace9a3a9c5b86d2fc815a59ae965b626ddb80ba99b6f4d13520f'
+        path = self.root / 'old-inventory.json'
+        raw = self.common.canonical(packet)
+        path.write_bytes(raw)
+        consumer = load(ROOT / 'display/video_display_wrapper.py', 'old_inventory_consumer')
+        with self.assertRaisesRegex(RuntimeError, 'exact reviewed current video preparation required'):
+            consumer.configure_video_preparation(path, hashlib.sha256(raw).hexdigest())
+        self.assertIsNone(consumer.VIDEO_CONTEXT)
+        self.assertIsNone(consumer.PREPARATION_REF)
+
+    def test_previous_entry_pin_is_rejected_with_current_inventory(self):
+        self.prepare()
+        packet = copy.deepcopy(self.packet)
+        entry = next(r for r in packet['files'] if Path(r['path']).name == 'camera_entry.py')
+        entry.update(bytes=9807, sha256='ab929997fa08d5acda471cec6219fcbc2eb1edeed2a7b6c7bae189f7abb842a1')
+        path = self.root / 'old-entry.json'
+        raw = self.common.canonical(packet)
+        path.write_bytes(raw)
+        consumer = load(ROOT / 'display/video_display_wrapper.py', 'old_entry_consumer')
+        with self.assertRaisesRegex(RuntimeError, 'exact current video entry required'):
+            consumer.configure_video_preparation(path, hashlib.sha256(raw).hexdigest())
+        self.assertIsNone(consumer.VIDEO_CONTEXT)
+        self.assertIsNone(consumer.PREPARATION_REF)
 
     @unittest.skipUnless(os.getuid() == os.geteuid() == os.getgid() == os.getegid() == 0,
                          'actual constructor intentionally requires root, never simulated')

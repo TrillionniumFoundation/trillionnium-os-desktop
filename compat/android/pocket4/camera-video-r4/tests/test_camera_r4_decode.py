@@ -5,6 +5,8 @@ business_commands retirement predicate. Their decoder object starts at that
 boundary; this does not exercise live Session admission or qualify a reaper.
 Synthetic tests execute the runner's real ffprobe/ffmpeg through two inherited
 FDs. They do not claim Pocket4 binary identity, UID 1000 or hardware acceptance.
+Retirement fixtures use a sealed read-only input owned by the current test UID;
+they enter at Decoder.call and do not certify the production sealed_clip UID.
 """
 import argparse
 import copy
@@ -82,7 +84,7 @@ class RetirementControls(unittest.TestCase):
 
     def tearDown(self):
         for item in self.decoders:
-            fds = [item.decode_fd, item.fd]; item.close()
+            fds = [item.input_fd, item.fd]; item.close()
             for fd in fds:
                 if fd is not None:
                     with self.assertRaises(OSError) as caught: os.fstat(fd)
@@ -99,11 +101,19 @@ class RetirementControls(unittest.TestCase):
         d.fd = os.open(d.path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
         d.metadata = decode.identity(os.fstat(d.fd))
         d.ref = {'path': str(d.path), 'bytes': len(raw), 'sha256': c.sha(raw)}
-        d.decode_fd = os.memfd_create('p4-r4-retirement-control', os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
-        self.assertEqual(os.write(d.decode_fd, raw), len(raw)); os.fchmod(d.decode_fd, 0o444)
-        d.seals = fcntl.F_SEAL_WRITE | fcntl.F_SEAL_GROW | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_SEAL
-        fcntl.fcntl(d.decode_fd, fcntl.F_ADD_SEALS, d.seals)
-        d.decode_metadata = decode.identity(os.fstat(d.decode_fd))
+        writer = os.memfd_create('p4-r4-retirement-control', os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
+        try:
+            self.assertEqual(os.write(writer, raw), len(raw)); os.fchmod(writer, 0o400)
+            fcntl.fcntl(writer, fcntl.F_ADD_SEALS, decode.INPUT_SEALS)
+            d.input_fd = os.open('/proc/self/fd/' + str(writer), os.O_RDONLY | os.O_CLOEXEC)
+        finally:
+            os.close(writer)
+        d.input_metadata = decode.identity(os.fstat(d.input_fd))
+        d.input_ref = {'kind': 'sealed-memfd', 'source': d.ref, 'bytes': len(raw),
+            'sha256': c.sha(raw), 'metadata': d.input_metadata, 'seals': decode.INPUT_SEALS,
+            'read_only': True, 'fixture_test_uid_only': True, 'production_uid1000_qualified': False}
+        self.assertEqual(fcntl.fcntl(d.input_fd, fcntl.F_GETFL) & os.O_ACCMODE, os.O_RDONLY)
+        self.assertFalse(os.get_inheritable(d.input_fd))
         d.closed = d.unknown = False; d.done = {}; d.c = c; d.media = media; d.commands = commands
         self.decoders.append(d); calls = {'guards': 0, 'dispatch': 0, 'unknown_at_dispatch': None}
 
@@ -197,12 +207,14 @@ class RetirementControls(unittest.TestCase):
             def close(self): pass
 
         class Session(Context):
+            audio = types.SimpleNamespace(failure_cleanup_attempted=False, failure_cleanup_unknown=False)
             def begin_cleanup(self, ref): return {'fixture': 'cleanup-phase'}
 
         class Driver:
             def __init__(self, session, result):
                 self.decoder = types.SimpleNamespace(unknown=True)
                 self.host_unknown = self.run_completed = self.cleanup_verified = False
+                self.failure_audio_quiet_verified = False; self.failure_audio_quiet_ref = None
                 self.pending = self.close_pending = self.owned = self.recording = None
                 self.launches = []; self.closes = []
             def run(self): raise InjectedFailure('INJECTED_DIAGNOSTIC_ERROR_AFTER_UNKNOWN')
@@ -232,6 +244,9 @@ class RetirementControls(unittest.TestCase):
         self.assertEqual(result['error']['message'], 'INJECTED_DIAGNOSTIC_ERROR_AFTER_UNKNOWN')
         self.assertIs(result['case_business_success_verified'], False)
         self.assertIs(result['whole_app_business_accepted'], False)
+        self.assertIs(result['failure_path_android_audio_quiet_verified'], False)
+        self.assertIs(result['failure_path_android_audio_quiet_attempted'], False)
+        self.assertIsNone(result['failure_path_android_audio_quiet_evidence'])
 
 
 def run(argv, *, pass_fds=(), executable=None, expect_success=True):

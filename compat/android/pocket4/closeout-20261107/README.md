@@ -68,3 +68,14 @@ A read-only registry audit found all 45 original package registrations (37 data 
 The installed build identifies Android 17 / API 37, `CP2A.260605.016`, with the June 2026 security patch level. The [official AOSP build table](https://source.android.com/docs/setup/reference/build-numbers) maps it to the initial stable Android 17 release; the [newer stable QPR1 GSI](https://developer.android.com/topic/generic-system-image/releases) and [November security bulletin](https://source.android.com/docs/security/bulletin/2026/2026-11-01) require a separate release/security assessment. The currently frozen Native and Audio source inputs must not drift during their full builds. A new base or security cohort requires new pinned inputs, complete build/deployment and fresh acceptance. Official store update dates alone do not establish that an installed commercial APK is the current device/channel variant.
 
 The original acceptance denominator remains 45. The planned final production set has 41 applications after retiring four QA/demo applications, with the actual WebView provider retained separately. An installed local test-signature commercial package also requires a normal migration to an official release; changing certificate records or deleting user data is not an accepted upgrade path.
+
+## Current Camera source convergence (2026-11-08)
+
+The Camera capsule and canonical preparation now share all 29 exact production
+modules, including the owner sealed-input/state fixes and the failure cleanup
+fixes. The merged decoder is `7421cdd38bd45eff8c0697ce11b1372958a4a5f749c8097e3c0203ed5758056b`.
+The source contract keeps 59 portable capsule controls, 11 Linux decoder controls,
+and 38 canonical preparation, display, and state controls. CI checks that the
+canonical sources and tested capsule remain identical. Previous host receipts
+are historical; fresh Pocket4 UID 1000/reaper controls and live application
+acceptance remain separate requirements.

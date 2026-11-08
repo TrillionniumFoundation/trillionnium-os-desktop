@@ -324,7 +324,9 @@ class Recording:
         self.state = 'PLAYBACK_VERIFIED'
 
     def terminal(self, *, final_mode, task_closed, preserved_state, host_retired):
-        restored = (self.state == 'PLAYBACK_VERIFIED' and
+        # Restoring Photo after verified playback moves the state to MODE_RESTORED.
+        # The audio/playback receipts below still gate success in either order.
+        restored = (self.state in ('PLAYBACK_VERIFIED', 'MODE_RESTORED') and
                     (self.initial_mode == '1' or self.initial_mode == '0' and self.mode_restored))
         complete = bool(restored and final_mode == self.initial_mode and task_closed is True
             and preserved_state is True and host_retired is True and self.pending is None

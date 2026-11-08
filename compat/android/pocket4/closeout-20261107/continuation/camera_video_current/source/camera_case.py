@@ -28,6 +28,10 @@ def execute(c, base_ref, components, acoustic):
         'started_utc': stamp(), 'case_business_success_verified': False, 'runtime_qualified': False,
         'whole_app_business_accepted': False, 'camera_recovery_qualified': False,
         'common_six_gates_complete': False, 'automatic_retry': False, 'secondary_errors': [],
+        'failure_path_android_audio_quiet_verified': False,
+        'failure_path_android_audio_quiet_attempted': False,
+        'failure_path_android_audio_quiet_outcome_unknown': False,
+        'failure_path_android_audio_quiet_evidence': None,
         'acoustic_results': {}, 'acoustic_channel_closed': False}
     session = driver = lock = witness = None; first = None; retiring = False; signals = []
     def cancelled(number, frame):
@@ -55,7 +59,9 @@ def execute(c, base_ref, components, acoustic):
         try:
             driver.run()
         except BaseException as error:
-            if isinstance(error, components['camera_decode.py'].DecodeOutcomeUnknown): driver.host_unknown = True
+            if (isinstance(error, components['camera_decode.py'].DecodeOutcomeUnknown)
+                    or driver.decoder is not None and driver.decoder.unknown):
+                driver.host_unknown = True
             remember('current_camera_video_business', error)
         finally:
             retiring = True
@@ -96,7 +102,11 @@ def execute(c, base_ref, components, acoustic):
                 pending_business_action=driver.pending, pending_owned_task_remove=driver.close_pending,
                 owned_task_remaining=driver.owned,
                 recording_pending=None if driver.recording is None else driver.recording.pending,
-                owned_task_cleanup_verified=driver.cleanup_verified)
+                owned_task_cleanup_verified=driver.cleanup_verified,
+                failure_path_android_audio_quiet_verified=driver.failure_audio_quiet_verified,
+                failure_path_android_audio_quiet_attempted=session.audio.failure_cleanup_attempted,
+                failure_path_android_audio_quiet_outcome_unknown=session.audio.failure_cleanup_unknown,
+                failure_path_android_audio_quiet_evidence=driver.failure_audio_quiet_ref)
         success = bool(driver is not None and driver.run_completed and driver.cleanup_verified
             and first is None and not signals and not pending_signals and not result['secondary_errors'] and not unknown
             and all(result.get(k) is True for k in ('current_Main_APIs_closed', 'whole_case_OFD_closed',

@@ -78,6 +78,8 @@ REQUIRED_FILES = (
     "tests/workloads/android/test_seccomp_guest_contract.py",
     "compat/android/pocket4/camera-video-media/tests/test_camera_video_decode.py",
     "compat/android/pocket4/camera-video-r4/tests/test_camera_r4_decode.py",
+    "compat/android/pocket4/camera-video-r4/tests/test_failure_cleanup.py",
+    "compat/android/pocket4/closeout-20261107/continuation/camera_video_current/tests/run_current_source_controls.py",
     "compat/android/pocket4/native-full-profile-8gib/tests/test_resource_profile.py",
     "compat/android/pocket4/native-stage-release/tests/test_native_release.py",
     "compat/android/pocket4/stage-existing-sensor/tests/test_existing_sensor.py",

@@ -1,220 +1,155 @@
-# Camera r4 source repair
+# Camera r4 source controls for the single current Camera implementation
 
-This source publication snapshot contains all 29 production sources: exactly seven
-changes from the owner r4 source manifest, with 22 original files preserved byte
-for byte. It composes the frozen current-host migration, r4 decoder corrections,
-and independently reviewed Android active-track admission overlay. None of the
-three frozen input packages or Pocket4 owner/canonical files was modified.
-This package remains reviewable; it is not a final freeze or production device
-preparation.
+The current Camera implementation is
+`compat/android/pocket4/closeout-20261107/continuation/camera_video_current`.
+This capsule retains its exact 29 production source files as test inputs,
+together with source provenance and historical qualification evidence. It is
+not a second runtime installation. The portable wrapper requires all 29 names,
+byte lengths and SHA256 values to match the canonical source directory and its
+fixed reviewed inventory before it imports any test module.
 
-## Source admission and qualification boundaries
+The publication base is commit
+`f9c506431b389c941fbb05f5875166fcd8a7b763`. The merged source includes the
+current owner's sealed UID/GID 1000 input and playback/restore ordering fixes,
+the earlier host-support and retirement fixes, and failure-path Android audio
+quiet verification. No historical host result is transferred to these merged
+bytes. Production admission, actual Pocket4 reaper/UID1000 decoding, runtime
+qualification and whole-app business acceptance remain false.
 
-The exact 29-source set and the local source-inspection branch passed the
-combined local controls. The metadata therefore records:
+## Production changes and preserved boundaries
 
-- `source_admission=true` and `source_inspection_entry_complete=true`.
-- `code_entrypoints_complete=false` and `production_preparation_present=false`.
-- `runtime_qualified=false`, `whole_app_business_accepted=false`, and
-  `device_execution_authorized=false`.
-- Actual production reaper and production UID 1000 decoder qualification false.
-- Full host PipeWire quiescence, continuous exclusivity, failure-path final
-  audio quiescence, inactive-session/audio-focus preservation, and complete
-  actual dumpsys ABI qualification false.
+Relative to the original owner r4 source inventory, nine files change and 20
+are byte-identical. `source-manifest.json` records every current and original
+reference. The exact changed names are:
 
-The source-inspection tests build temporary local packets with explicitly
-synthetic provenance. A synthetic packet's required source-branch flag does
-not complete the real Camera entry, recovery preparation, display lease, or
-runtime qualification. No production `preparation.json` is included. Fresh
-fixed host support, the actual Audio APEX cohort, Main/display leases, real
-Camera recording, acoustic challenge, same-URI physical playback, and complete
-runtime cleanup still require separately qualified owner work.
+| Source | Change |
+| --- | --- |
+| `app_common.py`, `camera_entry.py` | Current host-support binding and exact qualification comparison |
+| `camera_audio_binding.py` | Current Android AudioFlinger track/session attribution and strict quiet projection |
+| `camera_audio_runtime.py` | Existing success-window checks plus one bounded failure-cleanup Android quiet query |
+| `camera_case.py` | Preserve the original business error and expose the separate failure-cleanup result |
+| `camera_decode.py` | Merge owner sealed read-only input/deadline checks with UNKNOWN, retirement and first-error preservation |
+| `camera_video_driver.py` | Invoke the failure-cleanup verifier only after the original known-retirement prerequisites |
+| `camera_video_media.py` | Force MOV parsing and complete bounded video/audio decoding |
+| `camera_video_state.py` | Accept both valid playback/Photo-restore orders while preserving all final state and retirement gates |
 
-## Exact production delta
+The merged decoder is 16169 bytes with SHA256
+`7421cdd38bd45eff8c0697ce11b1372958a4a5f749c8097e3c0203ed5758056b`.
+The state file is the owner's exact 21072-byte source with SHA256
+`68c6369a068d822b0ea4e849cf2172d0180bbe69b3c576e7aa74ba2f6e7d66fc`.
+The owner's sealed-clip helper AST is preserved. It creates a sealed input
+owned by UID/GID 1000, sets mode 0400, reopens it read-only, requires all four
+seals and bounds both copying and writing by the current deadline. The merged
+call path also verifies the held original and latches UNKNOWN before capture
+can dispatch. Only strict actual retirement and acquired byte outputs can
+clear that latch. A later evidence-write exception cannot replace an earlier
+capture or post-guard exception.
 
-The original owner manifest is
-`/home/alex/work/pocket4-android-final/qualification/camera-video-recovery-current-draft-20261108-r4/manifest.json`,
-8308 bytes, SHA-256
-`963b8724906da54e70147b3a3268dd29640a85b45b947274fda7d5e61a55c5c4`.
-Every production row in `source-manifest.json` includes the original reference,
-new length/SHA, change status, and component attribution.
+Failure cleanup has a narrower claim than successful video acceptance. It
+requires the complete preflight, final-cleanup phase, no pending business
+effect or unknown host/decoder result, known task cleanup and exact completed
+acoustic actor prefixes. Each completed acoustic actor must retain its
+original finish receipt, nonce, parent/phase identity, EOF and retirement
+proof. The additional query uses the existing typed Session/Flow/Policy path;
+raw output is saved before parsing and quiet verification. It observes one
+Android AudioFlinger cleanup sample. It does not supply the two successful
+business windows or prove host/PipeWire quiet, continuous exclusivity,
+inactive-session preservation or audio-focus preservation.
 
-| Changed production file | Bytes | SHA-256 |
+## Actual source-control results
+
+The current merged capsule was exercised by a new local 70-control run,
+with zero failures, errors or skips and unchanged source/test inputs:
+
+| Family | Count | Execution scope |
 | --- | ---: | --- |
-| `source/app_common.py` | 38256 | `6003e96be02cd0c6328340865bbb2962d39967f2b823656af258ed5a48f598d0` |
-| `source/camera_audio_binding.py` | 18775 | `c8c0c123153a83a2397595d2efcf6ba3b40f60916362403348d1f6f6a57a4754` |
-| `source/camera_audio_runtime.py` | 26272 | `b480c7e99cd44bd9ff79e7d95fb87e80f7634c843e8e9c77f3f38ea8ab9f8cee` |
-| `source/camera_case.py` | 7576 | `19f015a8dcf836e6aa8160af9566abc04923b1fe9d5fad34bd98e89ec9d883d7` |
-| `source/camera_decode.py` | 14597 | `7a42785a9d5d16fbc4644d0db961acd965b42f79dc9a75b2f101d88ab51574a4` |
-| `source/camera_entry.py` | 9811 | `55607f576146c9adc8792fdeb510c1992512ac4d782ccd0efcb75415c81ac4f9` |
-| `source/camera_video_media.py` | 9197 | `58c5b6508fe23532fe4282c38446e75dfc25800ed6b063691da80bd431f74190` |
+| Host-support binding | 10 | Actual source dispatch and inspect-source CLI; inert baseline/collector inputs |
+| Android audio projection and quiescence | 31 | Actual parsing and admission methods with fixed text/transport fixtures |
+| Failure-path Android quiet cleanup | 18 | Actual Session/Flow/Policy/Driver/Case methods ending at fixture transport |
+| Linux decoder component controls | 11 | Retirement fault fixtures plus actual sealed memfd and local synthetic ffprobe/ffmpeg controls |
 
-The common/entry pair fixes the host-support binding and entry pin while
-retaining strict qualification/cohort comparisons. Decoder/case changes latch
-UNKNOWN before dispatch, clear it only after proven retirement and complete
-outputs, preserve the primary error across evidence-write failures, and carry
-UNKNOWN into case cleanup. Media parsing rejects duplicate/non-finite JSON;
-probe and decode use the MOV demuxer for the held clip.
+`validation/union-controls.json`, its stdout/stderr and
+`validation/union-source-manifest-tested.json` retain that run's exact inputs
+and result. The subsequent manifest edits describe those results; they do not
+change the tested production files or tests. The older
+`validation/integrated-controls.*` records still describe the earlier
+52-control snapshot and are not used as evidence for the merged source.
 
-The active-track overlay requires a nonempty, complete recognized current
-AudioFlinger thread set with exact table counts. It rejects unsupported/unknown
-thread kinds, malformed current framing, orphan effects, and inconsistent
-active lists. Before and after the successful business path, every parsed
-Android input/output track must be inactive. Each recording/playback sample
-must have exactly one globally active track, matching the expected UID/PID and
-direction, before held-process adoption. Existing process-generation, source,
-route, mute, frame-progress, and HAL/helper protocol checks remain.
+The portable wrapper explicitly loads 59 controls. The separate Linux decoder
+step still requires exactly 11 controls. The canonical source-control runner
+executes a separate 38: 11 preparation, 18 display-contract and nine state
+controls. Its exact report is in canonical
+`review/merged-source-controls.json`. The state controls are counted only
+there. They include both valid operation orders and strict missing, foreign,
+unretired and unacknowledged state rejection. These source controls do not
+open Main, Android, physical audio devices or a live business Session.
 
-The 22 unchanged sources include the planner, typed Session, policy, driver,
-supervisor, transport, sound preservation, and app profiles. The original
-Camera/Player/Camera flow, task ownership, current nonce, source chain,
-420/60/510-second budgets, nine-action UI cap, and cleanup gates are preserved.
-`camera-video-r4-integrated.patch` is the complete seven-file production delta.
+The call-boundary decoder fixtures use a real read-only sealed memfd owned by
+the current test UID and injected retirement responses. They do not exercise
+the production UID1000 constructor or original reaper. Two media controls run
+actual local ffprobe/ffmpeg on temporary synthetic content. That is a local
+Linux component result, not a Pocket4 binary or camera qualification.
 
-## Raw observations and the limits of the new gate
+## Environment refusals and historical host evidence
 
-Bounded raw dumps are saved in the private case evidence directory before
-parsing/admission: `audio-flinger-before.txt`, the four
-`record-first`, `record-second`, `playback-first`, `playback-second` samples
-with `-flinger.txt`, and `audio-flinger-after.txt`. Rejected samples retain
-those bytes; an admission JSON receipt is written only after successful checks.
+A real nonroot attempt stopped at `setpriv` with exit 127 before Python or any
+of the 59 tests started. The namespace maps only UID/GID 0 and denies
+setgroups. The original refusal and the explicit mapping observation are kept
+in `validation/portable59-nonroot.*` and
+`validation/nonroot-admission-environment.json`. No actual nonroot or native
+Mac success is claimed. The final 70-control source run used the current local
+UID 0; UID-dependent entry conditions in source fixtures are explicitly local
+mock boundaries.
 
-`verify_final()` runs on the successful business path after task/provider
-closure. The existing failure-only `Driver.finish()` does not collect another
-all-UID quiet dump. An earlier failure cannot report business success, but
-`owned_task_cleanup_verified` is not proof of audio quiescence after a failed
-run. This separate gate remains false.
+An unmocked call to the merged sealed-input helper separately refused
+`fchown(1000,1000)` with errno 22 in this namespace. Its record,
+`validation/local-sealed-input-observation.json`, confirms that original file
+bytes/metadata were unchanged and helper descriptors were closed. Recording
+that refusal is not a passing UID1000 control and is not included in the 70.
 
-AudioFlinger dumps its thread tables sequentially. The observation is not one
-atomic snapshot of all track activity, and does not reserve audio or prove
-exclusivity between observations. It covers parsed Android active tracks, not
-all PipeWire clients, inactive sessions, or audio-focus state. Unrecognized
-current top-level output is deliberately rejected rather than counted as idle.
+Zero actual controls are verified for the original eight-control Pocket4
+qualification preparation; all eight retain `not_run` in that preparation's
+admission state. Its original dispatch remains unknown. The frozen runner,
+source packet, stager and public observation under `host-controls/` retain
+their original bytes and historical source binding. In particular, their old
+decoder pin is not relabeled as the merged decoder. The reconcile observation
+that the root was absent and the unit was not found does not prove that the
+original dispatch never executed or that cancellation succeeded.
 
-## Fixed C++ basis and projection fixtures
+Canonical historical decoder/display receipts likewise retain their original
+scope. The new canonical producer and display consumer bind the current
+inventory and entry and explicitly refuse to inherit old host qualification.
+Fresh source-bound preparation and actual owned execution are still required
+before any device or business acceptance.
 
-The writer basis is `platform/frameworks/av` commit
-`475269ec44acec82792be6b01fb8e16357d4d2c8`. Exact references and source URLs for
-`services/audioflinger/Threads.cpp`, `Tracks.cpp`, and `AudioFlinger.cpp` are in
-`provenance/audioflinger-fixed-writers.json`; all three local source lengths and
-digests were checked during integration. The source establishes the current
-thread section, table counts/rows, local-log boundary, and separate historical
-thread prefix.
+## Source integrity and use
 
-The eleven `.txt` fixtures are minimal text projections of these writers,
-with exact hashes and omissions in `tests/fixtures/origin.json`. They are not
-captured full dumpsys output. External SimpleLog/getLogHeader formatting and
-opaque HAL/FastCapture/effect/scheduler bodies are not completely fixed by the
-three C++ files. Passing these controls does not qualify the complete actual
-dumpsys ABI or physical audio. The independent peer review and the unchanged
-component handoff preserve these boundaries under `provenance/`.
+`FILES-SHA256.json` inventories every capsule file. The portable wrapper pins
+that inventory, checks the complete file/directory set and every text digest,
+then requires the canonical inventory and source bytes to match. Integrity
+and count gates use explicit exceptions and remain active under Python `-O`.
+Six additional source-integrity controls passed: the actual complete pair,
+rejection of the old canonical inventory, a same-length source byte change,
+a missing file, an extra file and a divergent capsule source pin. Their report
+is `validation/canonical-source-guard.json`; these are separate from the 70
+component controls. Reviewed patches use zero-context unified diff format so
+blank context markers do not introduce trailing whitespace. Frozen input
+packages and all production/test bytes remain unchanged by that formatting.
+The workflow preserves the existing Linux decoder step and adds the exact
+canonical 38-control source step. `sudo` in the latter supports real temporary
+root-owned preparation construction; it grants no Main or Android action.
 
-## Tests and exact preservation
+The original published manifest remains byte-identical at
+`origin-source-manifest.json`. The failure-quiet suite explicitly requires
+five changes relative to that a355 snapshot and pins the new decoder/state.
+The host-binding suite separately requires nine changes and 20 unchanged
+files relative to original owner r4. The two comparisons describe different
+baselines and are both deliberate. `provenance/owner-merge-inputs.json`, the
+owner decoder patch and the complete r4 patch record their source lineage.
 
-The combined run contains exactly **52 tests**:
-
-| Layer | Module/classes | Count | Actual scope |
-| --- | --- | ---: | --- |
-| Portable host/source | `test_host_support_binding.CameraHostBinding` | 10 | Exact host binding, qualification/cohort rejection, source pins, AST preservation, inert real local source-inspection CLI |
-| Portable active-track admission | `test_camera_audio_quiescence.RawAdmission` and `RuntimeAdmission` | 31 | Minimal raw writer projections and real parser/admission methods with a fake Session |
-| Linux decoder | `test_camera_r4_decode` | 11 | Eight capture-boundary fault controls and three media controls, including actual local two-FD synthetic MOV probe/video/PCM |
-
-The ten host controls now explicitly fix all seven changed lengths/SHAs,
-validate all 29 production rows, and require exactly 22 rows to retain their
-original r4 bytes. No permissive exception set replaces the exact pins. The
-cumulative test port is in `provenance/host-support-test-port.patch`.
-
-The 31-test quiescence module and its 12 fixture files are byte-identical to the
-frozen overlay. Its prior standalone 31/31 receipt is retained as
-`provenance/quiescence-component-controls.json` and is not counted again as an
-extra run. The 11-test decoder module and business_commands fixture are also
-byte-identical to the frozen decoder component. No candidate source, test, or
-fixture changed during the new combined run.
-
-The independent actual Pocket4 decoder host controls being prepared elsewhere
-are not included in 52, and do not gain qualification from this result. The
-prior separate Camera r2 15-test workflow and four out-of-package UNKNOWN
-probes are also not part of this count.
-
-## Actual local combined validation
-
-From this directory on Linux with native Python memfd/seal support and
-`/usr/bin/ffmpeg` plus `/usr/bin/ffprobe` installed:
-
-```sh
-/usr/bin/python3 -I -B -m unittest discover -s tests -p 'test_*.py' -v
-```
-
-This command was executed once for the seven-source revision in the local Linux
-workspace: **52 tests, zero failures, errors, skips, expected failures or
-unexpected successes; exit 0**. The native interpreter was Python 3.12.3,
-`/usr/bin/python3` resolving to `/usr/bin/python3.12`, with real memfd support
-and all six Linux seal constants. No constants were fabricated, no controls
-were skipped, and this is not a Pocket4 result.
-
-`validation/integrated-controls.json` records the actual command, 10/31/11
-module counts, output hashes, test/fixture/source pins, and unchanged production
-table. `validation/runtime-prerequisites.json` pins the actual interpreter and
-ffmpeg/ffprobe tools. Only result metadata was finalized after the run; the
-production table, all test sources, and all fixtures remained unchanged.
-
-## Repository test integration
-
-The repository wrapper and required-file registration are included in this change.
-Actual native Mac and Git CI results are recorded separately after execution:
-
-1. The portable required wrapper must load only the host module/class (10) and
-   the quiescence module's two test classes (31), requiring exactly **41** tests.
-   Do not import the Linux decoder module in this portable wrapper.
-2. The Linux workflow runs the unchanged decoder entry after installing its real
-   prerequisites, and checks exactly **11** tests with zero failures/errors/skips
-   and `passed=true`:
-
-   ```sh
-   /usr/bin/python3 -I -B tests/test_camera_r4_decode.py --report /tmp/camera-r4-decoder-controls.json
-   ```
-
-The report destination must be new. The standalone quiescence entry also uses
-exclusive report creation if a separate 31-test execution is needed. Default
-portable discovery must not fail or falsely claim decoder qualification on a
-platform without Linux memfd/sealing. Required-file registration should include
-all three test modules and their fixture dependencies so deletion cannot
-silently reduce the executed suite. This package itself makes no Mac or Git CI
-success claim.
-
-## Inventory and provenance
-
-`provenance/integration-inputs.json` binds all three frozen components. The
-quiescence manifest, original 31-test receipt, fixed C++ references, and compact
-peer-review findings are included. `FILES-SHA256.json` lists every package file
-except itself and records 29 production files, seven changes, and 22 retained
-original files. It freezes this source publication snapshot. The complete production entry
-and device preparation remain unqualified.
-
-The package contains UTF-8 source, code-only fixtures, patches, source
-references, and compact validation. It contains no APK, binary, media capture,
-screenshot, application data, or runtime image.
-
-## Pocket4 host-control dispatch remains unknown
-
-`host-controls/qualifier/` retains the exact five-file actual-host qualifier.
-It uses the frozen production decoder and real owned process capture, with
-eight distinct controls, a one-CPU / 512 MiB / zero-swap budget, and a separate
-systemd deadline. The reviewed stager and manager-readback review are retained.
-The qualifier's source inspection passed; it does not supply eight host passes.
-
-The attempted Pocket4 dispatch returned `launch_unknown`. An identical request
-with the same idempotency key returned the original job with
-`status_unavailable`; the formal cancellation remained `cancel_unknown`. A
-separate completed read-only observation found no staging root and no inner
-unit at that observation point. This does not supply an authoritative terminal
-for the original job, prove that a delayed dispatch cannot occur, or qualify
-any control. The public observation records **zero verified host controls**,
-with all eight still `not_run` in the preparation's admission state.
-
-Do not execute the archived stager as a fresh-key retry, delete/recreate its
-exclusive root, or convert the absent unit's default result into a passing
-run. Reconcile the original action through supported process control before
-admitting another execution. The original dispatch/cancellation uncertainty
-is preserved. Production reaper, UID-1000 decode, live Session, physical audio,
-whole application and Android runtime qualification all remain false.
+This is a source publication and test-evidence capsule. Full Camera video
+entry admission, physical input/output and same-owned-URI playback, current
+display lease, recovery, complete full dumpsys ABI and whole-app business
+acceptance remain pending. No success dictionary, missing-dependency bypass,
+stub, relaxed retirement gate or removed negative control supplies those
+results.

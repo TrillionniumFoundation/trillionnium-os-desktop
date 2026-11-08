@@ -1,9 +1,11 @@
-"""Require the complete Camera r4 capsule and run only 41 portable controls.
+"""Require one current Camera source set and run 59 portable capsule controls.
 
-The inventory digest and every capsule byte are checked before either portable
+The inventory digest and every capsule byte are checked before any portable
 module is imported. All integrity and count gates use explicit exceptions, so
 they also run under python -O. Linux decoder tests are checked as source inputs
-but are executed only by the separate Linux CI step.
+but are executed only by the separate Linux CI step. Canonical production
+sources and their pinned inventory must match all 29 capsule test inputs.
+Historical host receipts confer no qualification on the current source set.
 """
 import hashlib
 import importlib.util
@@ -19,16 +21,22 @@ import unittest
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[3]
 CAPSULE = ROOT / "compat/android/pocket4/camera-video-r4"
+CANONICAL = ROOT / "compat/android/pocket4/closeout-20261107/continuation/camera_video_current"
+CANONICAL_INVENTORY_NAME = "reviewed-source-inventory.json"
+CANONICAL_INVENTORY_BYTES = 5173
+CANONICAL_INVENTORY_SHA256 = "28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00"
 INVENTORY_NAME = "FILES-SHA256.json"
-INVENTORY_BYTES = 13259
-INVENTORY_SHA256 = "dc6e749ea524c046ce28791e3a9f7ec5a3847b67881f8bced1905362d981a384"
-EXPECTED_FILES = 76
-EXPECTED_TESTS = 41
+INVENTORY_BYTES = 16863
+INVENTORY_SHA256 = "0ea3a43d70b394b14878c3b808bfe1d95d94eac8dfef4ecfcaad187e2cf2b2a7"
+EXPECTED_FILES = 94
+EXPECTED_TESTS = 59
 PORTABLE_MODULES = (
     ("tests/test_host_support_binding.py", "pocket4_camera_r4_host_controls", 10,
      (("CameraHostBinding", 10),)),
     ("tests/test_camera_audio_quiescence.py", "pocket4_camera_r4_quiescence_controls", 31,
      (("RawAdmission", 23), ("RuntimeAdmission", 8))),
+    ("tests/test_failure_cleanup.py", "pocket4_camera_r4_failure_quiet_controls", 18,
+     (("FailureCleanupControls", 18),)),
 )
 
 
@@ -70,7 +78,70 @@ def read_exact_text(path, expected_bytes, expected_sha256):
     return text
 
 
-def verify_capsule(capsule=CAPSULE):
+def verify_canonical_sources(capsule_inventory, canonical=CANONICAL):
+    """Keep the capsule's test inputs identical to the sole current source set."""
+    canonical = Path(canonical)
+    need(canonical.is_absolute() and canonical.resolve(strict=True) == canonical
+         and stat.S_ISDIR(canonical.lstat().st_mode),
+         "CAMERA_CANONICAL_EXACT_DIRECTORY_REQUIRED")
+    inventory_text = read_exact_text(canonical / CANONICAL_INVENTORY_NAME,
+                                     CANONICAL_INVENTORY_BYTES,
+                                     CANONICAL_INVENTORY_SHA256)
+    inventory = json.loads(inventory_text, object_pairs_hook=unique_object)
+    need(type(inventory) is dict
+         and inventory.get("schema") == "pocket4-reviewed-camera-video-source-inventory-v1"
+         and type(inventory.get("source_count")) is int
+         and inventory["source_count"] == 29
+         and type(inventory.get("files")) is list and len(inventory["files"]) == 29
+         and inventory.get("Android_execution_authorized_by_publication") is False
+         and inventory.get("whole_app_business_accepted") is False,
+         "CAMERA_CANONICAL_EXACT_SOURCE_INVENTORY_REQUIRED")
+    capsule_sources = {}
+    for row in capsule_inventory["files"]:
+        relative = PurePosixPath(row["path"])
+        if relative.parts[0] != "source":
+            continue
+        need(len(relative.parts) == 2 and relative.suffix == ".py"
+             and relative.name not in capsule_sources,
+             "CAMERA_CAPSULE_EXACT_PRODUCTION_SOURCE_NAME_REQUIRED")
+        capsule_sources[relative.name] = {"bytes": row["bytes"], "sha256": row["sha256"]}
+    need(len(capsule_sources) == 29, "CAMERA_CAPSULE_EXACT_29_PRODUCTION_SOURCES_REQUIRED")
+    canonical_sources = {}
+    for row in inventory["files"]:
+        need(type(row) is dict and set(row) == {"name", "bytes", "sha256"},
+             "CAMERA_CANONICAL_EXACT_SOURCE_ROW_REQUIRED")
+        name = row["name"]
+        need(type(name) is str and name and "\\" not in name
+             and PurePosixPath(name).parts == (name,) and name.endswith(".py")
+             and name not in canonical_sources
+             and type(row["bytes"]) is int and row["bytes"] > 0
+             and type(row["sha256"]) is str and re.fullmatch(r"[0-9a-f]{64}", row["sha256"]),
+             "CAMERA_CANONICAL_EXACT_SOURCE_NAME_AND_PIN_REQUIRED")
+        canonical_sources[name] = {"bytes": row["bytes"], "sha256": row["sha256"]}
+    need(canonical_sources == capsule_sources,
+         "CAMERA_CANONICAL_AND_CAPSULE_PRODUCTION_PINS_MUST_MATCH")
+    for field, name in (("common_sha256", "app_common.py"),
+                        ("decoder_sha256", "camera_decode.py"),
+                        ("state_sha256", "camera_video_state.py")):
+        need(inventory.get(field) == capsule_sources[name]["sha256"],
+             "CAMERA_CANONICAL_SUMMARY_PIN_MUST_MATCH:" + field)
+    source = canonical / "source"
+    need(source.resolve(strict=True) == source and stat.S_ISDIR(source.lstat().st_mode),
+         "CAMERA_CANONICAL_EXACT_SOURCE_DIRECTORY_REQUIRED")
+    observed = set()
+    for path in source.iterdir():
+        need(stat.S_ISREG(path.lstat().st_mode),
+             "CAMERA_CANONICAL_NONREGULAR_SOURCE_REFUSED:" + path.name)
+        observed.add(path.name)
+    need(observed == set(capsule_sources), "CAMERA_CANONICAL_EXACT_SOURCE_FILE_SET_REQUIRED")
+    for name, ref in sorted(capsule_sources.items()):
+        read_exact_text(source / name, ref["bytes"], ref["sha256"])
+    return {"source_count": 29, "canonical_inventory_sha256": CANONICAL_INVENTORY_SHA256,
+            "capsule_source_bytes_identical": True, "runtime_qualified": False,
+            "historical_host_qualification_transferred": False}
+
+
+def verify_capsule(capsule=CAPSULE, canonical=CANONICAL):
     capsule = Path(capsule)
     need(capsule.is_absolute() and capsule.resolve() == capsule
          and stat.S_ISDIR(capsule.lstat().st_mode),
@@ -117,7 +188,9 @@ def verify_capsule(capsule=CAPSULE):
          "CAMERA_R4_EXACT_FILE_SET_REQUIRED")
     for row in inventory["files"]:
         read_exact_text(capsule / row["path"], row["bytes"], row["sha256"])
+    current_sources = verify_canonical_sources(inventory, canonical)
     return {"files_verified": len(expected), "inventory_sha256": INVENTORY_SHA256,
+            "canonical_source_check": current_sources,
             "portable_tests": EXPECTED_TESTS, "runtime_qualified": False}
 
 

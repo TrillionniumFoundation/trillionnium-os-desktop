@@ -1,0 +1,101 @@
+{
+  "Android_actions": 0,
+  "Main_actions": 0,
+  "controls": [
+    {
+      "name": "complete_capsule_and_canonical_exact29",
+      "observed": {
+        "canonical_source_check": {
+          "canonical_inventory_sha256": "28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00",
+          "capsule_source_bytes_identical": true,
+          "historical_host_qualification_transferred": false,
+          "runtime_qualified": false,
+          "source_count": 29
+        },
+        "files_verified": 93,
+        "inventory_sha256": "3d6e5c8f3414c96378dd1dfda76cd53a44ed86ce35b6bb42036955105ed64abf",
+        "portable_tests": 59,
+        "runtime_qualified": false
+      },
+      "passed": true,
+      "scope": "Actual publication files"
+    },
+    {
+      "expected_error": "CAMERA_R4_FILE_SIZE_CHANGED",
+      "name": "old_f9_inventory_cannot_bind_union",
+      "passed": true,
+      "scope": "Only an isolated temporary copy or negative in-memory pin fixture"
+    },
+    {
+      "expected_error": "CAMERA_R4_FILE_DIGEST_CHANGED",
+      "name": "same_length_source_byte_change_refused",
+      "passed": true,
+      "scope": "Only an isolated temporary copy or negative in-memory pin fixture"
+    },
+    {
+      "expected_error": "CAMERA_CANONICAL_EXACT_SOURCE_FILE_SET_REQUIRED",
+      "name": "missing_canonical_source_refused",
+      "passed": true,
+      "scope": "Only an isolated temporary copy or negative in-memory pin fixture"
+    },
+    {
+      "expected_error": "CAMERA_CANONICAL_EXACT_SOURCE_FILE_SET_REQUIRED",
+      "name": "extra_canonical_source_refused",
+      "passed": true,
+      "scope": "Only an isolated temporary copy or negative in-memory pin fixture"
+    },
+    {
+      "expected_error": "CAMERA_CANONICAL_AND_CAPSULE_PRODUCTION_PINS_MUST_MATCH",
+      "name": "divergent_capsule_production_pin_refused",
+      "passed": true,
+      "scope": "Only an isolated temporary copy or negative in-memory pin fixture"
+    }
+  ],
+  "controls_executed": 6,
+  "errors": 0,
+  "failures": 0,
+  "historical_host_qualification_transferred": false,
+  "inputs_after": {
+    "canonical_inventory": {
+      "bytes": 5173,
+      "sha256": "28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00"
+    },
+    "capsule_inventory": {
+      "bytes": 16691,
+      "sha256": "3d6e5c8f3414c96378dd1dfda76cd53a44ed86ce35b6bb42036955105ed64abf"
+    },
+    "wrapper": {
+      "bytes": 11443,
+      "sha256": "35ce4dcd469e192d77e490722d7e89fb31d2c1a1bf82dc3bebd6799187a470d9"
+    }
+  },
+  "inputs_before": {
+    "canonical_inventory": {
+      "bytes": 5173,
+      "sha256": "28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00"
+    },
+    "capsule_inventory": {
+      "bytes": 16691,
+      "sha256": "3d6e5c8f3414c96378dd1dfda76cd53a44ed86ce35b6bb42036955105ed64abf"
+    },
+    "wrapper": {
+      "bytes": 11443,
+      "sha256": "35ce4dcd469e192d77e490722d7e89fb31d2c1a1bf82dc3bebd6799187a470d9"
+    }
+  },
+  "inputs_unchanged": true,
+  "passed": true,
+  "qualification_controls_executed": 0,
+  "reason_for_exclusion": "Including this result in the final capsule changes its inventory digest and count; no guard or test-loading code is exempted.",
+  "runtime_qualified": false,
+  "schema": "camera-r4-canonical-source-equality-controls-v1",
+  "semantic_pin_excludes_only_capsule_inventory_constants": [
+    "EXPECTED_FILES",
+    "INVENTORY_BYTES",
+    "INVENTORY_SHA256"
+  ],
+  "skips": 0,
+  "temporary_corruptions_removed": true,
+  "whole_app_business_accepted": false,
+  "wrapper_semantics_sha256": "31a141eb1f54480c69f7322cbc789c456d9b4bb40b1388e200815c614a75bfc5"
+}

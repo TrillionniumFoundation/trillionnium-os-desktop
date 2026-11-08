@@ -68,8 +68,8 @@ def main():
     result = assignment(result, 'SOURCES', sources)
     globals_text = """
 VIDEO_CONTEXT = None
-VIDEO_INVENTORY_SHA256 = '2444a7f3dcbeace9a3a9c5b86d2fc815a59ae965b626ddb80ba99b6f4d13520f'
-VIDEO_ENTRY_PIN = (9807, 'ab929997fa08d5acda471cec6219fcbc2eb1edeed2a7b6c7bae189f7abb842a1')
+VIDEO_INVENTORY_SHA256 = '28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00'
+VIDEO_ENTRY_PIN = (9811, '55607f576146c9adc8792fdeb510c1992512ac4d782ccd0efcb75415c81ac4f9')
 """
     result = result.replace('\nMAX_PACKET = 65536', globals_text + '\nMAX_PACKET = 65536', 1)
     for old, new in [('__init__', 'supervisor_init'), ('launch_camera', 'launch_camera'),

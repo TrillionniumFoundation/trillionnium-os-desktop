@@ -1,8 +1,9 @@
-"""Full decoding of the one newly owned clip through two held read-only FDs.
+"""Full decoding of one owned clip through a sealed, identical private copy.
 
 The unchanged bounded capture and OwnChildReaper own each real decoder child.
-Only the exact clip FD and the currently held fixed decoder executable are
-inherited. Raw decoded microphone PCM stays in memory; it is never published.
+Only the read-only sealed clip FD and the held fixed decoder executable are
+inherited. The root-only evidence file retains its owner and mode. Raw decoded
+microphone PCM stays in memory; it is never published.
 No Android operation, arbitrary command or additional media path is exposed.
 """
 import copy
@@ -20,6 +21,8 @@ import time
 CAPTURE = {'path': '/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py',
     'bytes': 14933, 'sha256': 'bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3'}
 COMMAND_LIMIT = 35
+DECODER_UID = DECODER_GID = 1000
+INPUT_SEALS = fcntl.F_SEAL_WRITE | fcntl.F_SEAL_GROW | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_SEAL
 
 class DecodeOutcomeUnknown(RuntimeError):
     pass
@@ -54,11 +57,51 @@ def close_fds(descriptors):
     finally: signal.pthread_sigmask(signal.SIG_SETMASK, old)
     if first is not None: raise first
 
+def sealed_clip(c, source_fd, expected, deadline):
+    """Copy exactly the held source into a sealed, decoder-readable memfd.
+
+    Inheriting a root:0400 FD permits reads on that FD, but ffmpeg reopens its
+    /proc/self/fd input and Linux checks the inode permissions again. A private
+    anonymous copy permits that reopen after dropping privileges without
+    granting access to the original evidence file or creating a readable path.
+    """
+    writer = reader = None
+    try:
+        writer = os.memfd_create('camera-owned-video', os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
+        total = 0; digest = hashlib.sha256()
+        while total < expected['bytes']:
+            c.need(time.monotonic() < deadline, 'NO_SEALED_CLIP_COPY_AFTER_PHASE_DEADLINE')
+            block = os.pread(source_fd, min(65536, expected['bytes'] - total), total)
+            c.need(block, 'HELD_OWNED_CLIP_SHORT_READ_DURING_SEAL')
+            digest.update(block); offset = 0
+            while offset < len(block):
+                c.need(time.monotonic() < deadline, 'NO_SEALED_CLIP_WRITE_AFTER_PHASE_DEADLINE')
+                written = os.write(writer, block[offset:])
+                c.need(written > 0, 'SEALED_CLIP_SHORT_WRITE'); offset += written
+            total += len(block)
+        c.need(os.pread(source_fd, 1, total) == b'' and digest.hexdigest() == expected['sha256']
+            and os.fstat(writer).st_size == expected['bytes'], 'SEALED_CLIP_MUST_MATCH_HELD_OWNED_BYTES')
+        os.fchown(writer, DECODER_UID, DECODER_GID); os.fchmod(writer, 0o400)
+        fcntl.fcntl(writer, fcntl.F_ADD_SEALS, INPUT_SEALS)
+        reader = os.open('/proc/self/fd/' + str(writer), os.O_RDONLY | os.O_CLOEXEC)
+        closing, writer = writer, None; close_fds([closing])
+        info = os.fstat(reader)
+        c.need(stat.S_ISREG(info.st_mode) and info.st_nlink == 0
+            and (info.st_uid, info.st_gid, stat.S_IMODE(info.st_mode)) == (DECODER_UID, DECODER_GID, 0o400)
+            and info.st_size == total and fcntl.fcntl(reader, fcntl.F_GET_SEALS) == INPUT_SEALS
+            and fcntl.fcntl(reader, fcntl.F_GETFL) & os.O_ACCMODE == os.O_RDONLY,
+            'EXACT_SEALED_READ_ONLY_DECODER_INPUT')
+        return reader, identity(info)
+    except BaseException as error:
+        try: close_fds([reader, writer])
+        except BaseException as cleanup: error.add_note('SEALED_CLIP_CLEANUP:' + str(cleanup))
+        raise
+
 class Decoder:
     def __init__(self, session, clip_ref, row):
         self.s, self.c, self.row = session, session.c, copy.deepcopy(row)
         self.media = session.components['camera_video_media.py']; self.commands = session.flow.modules['business_commands.py']
-        self.fd = self.decode_fd = None; self.closed = False; self.done = {}; self.unknown = False
+        self.fd = self.input_fd = None; self.closed = False; self.done = {}; self.unknown = False
         root = Path(session.active['case_root']) / 'evidence'
         self.c.need(clip_ref['path'] == str(root / 'owned-camera-video.mp4')
             and row['uri'] == session.owned_video['uri'] and row['is_pending'] == 0
@@ -68,31 +111,14 @@ class Decoder:
         try:
             self.fd = os.open(self.path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
             _, self.metadata = file_ref(self.c, self.fd, self.path, self.media.MAX_CLIP_BYTES, expected=self.ref)
-            # A dropped-UID decoder reopens its /proc/self/fd path. A root
-            # private file does not become readable merely by inheriting its
-            # descriptor. Keep that original FD unchanged and expose only a
-            # sealed, descriptor-only copy, readable by this owned decoder.
-            self.decode_fd = os.memfd_create('p4-owned-camera-decode', os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
-            copied = 0; digest = hashlib.sha256()
-            while copied < self.ref['bytes']:
-                data = os.pread(self.fd, min(65536, self.ref['bytes'] - copied), copied)
-                self.c.need(data, 'OWNED_VIDEO_COPY_SHORT_READ'); digest.update(data)
-                offset = 0
-                while offset < len(data):
-                    count = os.write(self.decode_fd, data[offset:]); self.c.need(count > 0, 'OWNED_VIDEO_MEMFD_NO_PROGRESS')
-                    offset += count
-                copied += len(data)
-            self.c.need(copied == self.ref['bytes'] and digest.hexdigest() == self.ref['sha256']
-                and os.pread(self.fd, 1, copied) == b''
-                and identity(os.fstat(self.fd)) == self.metadata == identity(self.path.lstat()),
+            self.input_fd, self.input_metadata = sealed_clip(self.c, self.fd, self.ref,
+                min(time.monotonic() + COMMAND_LIMIT, session.deadline))
+            self.input_ref = {'kind': 'sealed-memfd', 'source': self.ref,
+                'bytes': self.ref['bytes'], 'sha256': self.ref['sha256'],
+                'metadata': self.input_metadata, 'seals': INPUT_SEALS, 'read_only': True,
+                'original_owner_and_mode_unchanged': True, 'original_fd_inherited': False}
+            self.c.need(identity(os.fstat(self.fd)) == self.metadata == identity(self.path.lstat()),
                 'OWNED_VIDEO_CHANGED_DURING_PRIVATE_COPY')
-            os.fchmod(self.decode_fd, 0o444)
-            self.seals = fcntl.F_SEAL_WRITE | fcntl.F_SEAL_GROW | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_SEAL
-            fcntl.fcntl(self.decode_fd, fcntl.F_ADD_SEALS, self.seals)
-            self.decode_metadata = identity(os.fstat(self.decode_fd))
-            self.c.need(os.fstat(self.decode_fd).st_size == copied
-                and fcntl.fcntl(self.decode_fd, fcntl.F_GET_SEALS) == self.seals,
-                'EXACT_IMMUTABLE_OWNED_VIDEO_DESCRIPTOR')
             self.capture = self.c.module(CAPTURE, 'camera_decoder_unchanged_bounded_capture')
         except BaseException:
             self.close(); raise
@@ -101,21 +127,26 @@ class Decoder:
         self.c.need(not self.closed and self.fd is not None
             and identity(os.fstat(self.fd)) == self.metadata == identity(self.path.lstat()),
             'SAME_HELD_OWNED_VIDEO_FOR_ALL_THREE_DECODES')
-        self.c.need(self.decode_fd is not None and identity(os.fstat(self.decode_fd)) == self.decode_metadata
-            and fcntl.fcntl(self.decode_fd, fcntl.F_GET_SEALS) == self.seals
-            and not os.get_inheritable(self.decode_fd), 'SAME_SEALED_VIDEO_DESCRIPTOR_FOR_ALL_DECODERS')
+        self.verify_input()
         self.s.guard()
+
+    def verify_input(self):
+        self.c.need(self.input_fd is not None and identity(os.fstat(self.input_fd)) == self.input_metadata
+            and fcntl.fcntl(self.input_fd, fcntl.F_GET_SEALS) == INPUT_SEALS
+            and fcntl.fcntl(self.input_fd, fcntl.F_GETFL) & os.O_ACCMODE == os.O_RDONLY
+            and not os.get_inheritable(self.input_fd), 'SAME_SEALED_READ_ONLY_INPUT_FOR_ALL_THREE_DECODES')
 
     def call(self, kind):
         c, s = self.c, self.s
         c.need(kind in ('probe', 'video', 'audio') and kind not in self.done
             and not self.unknown and s.phase_name == 'business', 'ONCE_FIXED_FULL_CLIP_DECODE')
         self.verify(); self.done[kind] = {'attempted': True, 'automatic_retry': False}
-        argv = self.media.decoder_argv(kind, '/proc/self/fd/' + str(self.decode_fd))
+        argv = self.media.decoder_argv(kind, '/proc/self/fd/' + str(self.input_fd))
         executable = None; reaper = None; first = finish_error = None; began = False
         out = err = None; record = {}; cancel = self.commands.Cancellation()
         result = {'schema': 'pocket4-current-camera-owned-decode-command-v1', 'kind': kind,
-            'argv': argv, 'clip': self.ref, 'scope': s.flow.scope_ref, 'phase': s.phase_ref,
+            'argv': argv, 'clip': self.ref, 'sealed_input': self.input_ref,
+            'scope': s.flow.scope_ref, 'phase': s.phase_ref,
             'capture': CAPTURE, 'errors': [], 'automatic_retry': False, 'raw_audio_persisted': False}
         def remember(stage, error):
             nonlocal first
@@ -131,9 +162,9 @@ class Decoder:
             result.update(decoder=decoder, decoder_metadata=executable_metadata,
                 execution_deadline_monotonic=deadline, observation_deadline_monotonic=deadline + 8,
                 phase_deadline_monotonic=s.deadline, output_bound_per_stream=bound,
-                inherited_fds={'sealed_owned_clip': self.decode_fd, 'held_decoder': executable},
-                original_held_clip_metadata=self.metadata, sealed_owned_clip_metadata=self.decode_metadata,
-                sealed_owned_clip_seals=self.seals)
+                inherited_fds={'owned_clip': self.input_fd, 'held_decoder': executable},
+                original_held_clip_metadata=self.metadata, sealed_owned_clip_metadata=self.input_metadata,
+                sealed_owned_clip_seals=INPUT_SEALS)
             s.record('decode-' + kind + '-intent', result)
             c.need(time.monotonic() < deadline, 'NO_DECODER_DISPATCH_AFTER_PHASE_DEADLINE')
             reaper = self.capture.OwnChildReaper(protected_pids=tuple(s.baseline.protected_pids))
@@ -141,19 +172,18 @@ class Decoder:
             def factory(input_fd, output_fd, error_fd, output_bound):
                 c.need(time.monotonic() < min(deadline, s.deadline), 'NO_DECODER_FACTORY_AFTER_CURRENT_DEADLINE')
                 c.need(identity(os.fstat(self.fd)) == self.metadata == identity(self.path.lstat())
-                    and identity(os.fstat(self.decode_fd)) == self.decode_metadata
-                    and fcntl.fcntl(self.decode_fd, fcntl.F_GET_SEALS) == self.seals
                     and identity(os.fstat(executable)) == executable_metadata == identity(Path(argv[0]).lstat()),
                     'DECODER_OR_CLIP_CHANGED_AT_ACTUAL_FACTORY')
+                self.verify_input()
                 def child_limits():
                     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
                     lib = ctypes.CDLL(None, use_errno=True)
                     if lib.prctl(38, 1, 0, 0, 0) != 0: raise OSError(ctypes.get_errno(), 'PR_SET_NO_NEW_PRIVS')
                 return subprocess.Popen(argv, executable='/proc/self/fd/' + str(executable),
                     stdin=input_fd, stdout=output_fd, stderr=error_fd, close_fds=True,
-                    pass_fds=(self.decode_fd, executable), start_new_session=True,
+                    pass_fds=(self.input_fd, executable), start_new_session=True,
                     env={'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'HOME': '/home/alex'},
-                    user=1000, group=1000, extra_groups=(), preexec_fn=child_limits)
+                    user=DECODER_UID, group=DECODER_GID, extra_groups=(), preexec_fn=child_limits)
             # A dispatch may lose its reply. Keep that uncertainty before the
             # actual boundary; a later evidence-write error cannot erase it.
             self.unknown = True
@@ -221,5 +251,6 @@ class Decoder:
         del pcm; ref = s.record('full-owned-video-decode', value); self.verify(); return value, ref
 
     def close(self):
-        fds = [self.decode_fd, self.fd]; self.decode_fd = self.fd = None
-        self.closed = True; close_fds(fds)
+        fd, self.fd = self.fd, None
+        input_fd, self.input_fd = self.input_fd, None
+        self.closed = True; close_fds([input_fd, fd])

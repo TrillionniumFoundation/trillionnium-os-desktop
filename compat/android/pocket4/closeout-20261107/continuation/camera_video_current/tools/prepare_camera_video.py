@@ -14,7 +14,7 @@ import re
 import stat
 import types
 
-INVENTORY_SHA256 = '2444a7f3dcbeace9a3a9c5b86d2fc815a59ae965b626ddb80ba99b6f4d13520f'
+INVENTORY_SHA256 = '28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00'
 TESTED_ARCHIVE_SHA256 = '318bddb268df84955a2e4ce79b8c363066813d22e01a068f4ece7deb7299a434'
 R4_MANIFEST_SHA256 = '963b8724906da54e70147b3a3268dd29640a85b45b947274fda7d5e61a55c5c4'
 R4_PUBLICATION_SHA256 = '81083b43e21cdf0cf09167ba3ee3038af5e23b847579c73200aa685f05187a68'
@@ -176,7 +176,14 @@ def prepare(source, inventory, expected_sha256, output):
             'source_inventory_sha256': expected_sha256, 'module_count': 29,
             'r4_manifest_sha256': R4_MANIFEST_SHA256, 'r4_publication_sha256': R4_PUBLICATION_SHA256,
             'previously_tested_archive_sha256': TESTED_ARCHIVE_SHA256,
-            'exact_source_bytes_match_previously_tested_candidate': True,
+            'exact_source_bytes_match_previously_tested_candidate': False,
+            'source_merge_parents': {
+                'canonical_source_commit': 'f9c506431b389c941fbb05f5875166fcd8a7b763',
+                'r4_source_controls_commit': 'a355e81a753cdc1aed198424d87d0a8b6e4b2ebc'},
+            'previous_canonical_inventory_sha256':
+                '2444a7f3dcbeace9a3a9c5b86d2fc815a59ae965b626ddb80ba99b6f4d13520f',
+            'prior_host_qualification_transferred': False,
+            'current_host_qualification': 'pending_for_exact_merged_source_bytes',
             'historical_locations_are_documentary_only': True, 'old_runtime_authority_transferred': False,
             'inputs': [{'original_path': str(path), 'identity': ident} for _, path, ident in held.rows],
             'runtime_qualified': False, 'whole_app_business_accepted': False}

@@ -86,22 +86,48 @@ def flinger(raw):
     text = raw.decode('utf-8', 'strict')
     need('Permission Denial' not in text and 'Thread may be deadlocked' not in text
         and 'AudioFlinger may be deadlocked' not in text, 'LIVE_COMPLETE_AUDIO_DUMP_REQUIRED')
-    need(text.count(' ## BEGIN thread dump ') == 1 and text.count(' ## BEGIN setParameters dump ') == 1,
+    begin, end = '\n ## BEGIN thread dump \n', '\n ## BEGIN setParameters dump \n'
+    need(text.count(' ## BEGIN thread dump ') == text.count(begin) == 1
+        and text.count(' ## BEGIN setParameters dump ') == text.count(end) == 1
+        and text.index(begin) < text.index(end),
          'LOCKED_AUDIOFLINGER_CURRENT_THREAD_SECTION')
-    body = text.split(' ## BEGIN thread dump ', 1)[1].split(' ## BEGIN setParameters dump ', 1)[0]
-    # ThreadLog is historical. It must never supply a current PID/UID row.
-    body = body.split('Historical Thread Log ', 1)[0]
-    headers = list(THREAD.finditer(body)); need(len(headers) <= 64, 'BOUNDED_AUDIO_THREADS')
+    body = text.split(begin, 1)[1].split(end, 1)[0]
+    # AudioFlinger::dump emits every current thread via ThreadBase::dump,
+    # before ThreadLog. Historical thread lines use the separate "- " prefix
+    # in AudioFlinger::dumpToThreadLog_l; they cannot supply current rows.
+    history = re.search(r'^Historical Thread Log ', body, re.M)
+    if 'Historical Thread Log ' in body:
+        need(history is not None and body.index('Historical Thread Log ') == history.start(),
+             'UNRECOGNIZED_HISTORICAL_AUDIO_THREAD_BOUNDARY')
+        need(not re.search(r'^(?:Input|Output) thread\b', body[history.start():], re.M),
+             'CURRENT_AUDIO_THREAD_AFTER_HISTORICAL_BOUNDARY')
+        body = body[:history.start()]
+    headers = list(THREAD.finditer(body))
+    # Zero matches are not evidence of idle audio. Every nonempty current
+    # top-level line must be a complete pinned ThreadBase header. Opaque HAL,
+    # effect or scheduler text at column zero is unsupported and is refused;
+    # no unknown thread grammar can be skipped as an empty track table.
+    need(1 <= len(headers) <= 64, 'COMPLETE_NONEMPTY_CURRENT_AUDIO_THREAD_SET')
+    need(not body[:headers[0].start()].strip()
+        and all(THREAD.fullmatch(line) for line in body.split('\n')
+                if line and not line[0].isspace())
+        and not re.search(r'^[ \t]+(?:Input|Output) thread\b', body, re.M),
+         'UNRECOGNIZED_CURRENT_AUDIO_THREAD_FRAMING')
+    need('  Orphan Effect Chains\n' not in body, 'UNQUALIFIED_ORPHAN_AUDIO_EFFECT_CHAINS')
     result = []
     for index, header in enumerate(headers):
         segment = body[header.end():headers[index + 1].start() if index + 1 < len(headers) else len(body)]
-        need(segment.count('  Local log:') == 1, 'EXACT_CURRENT_THREAD_END')
-        current = segment.split('  Local log:', 1)[0]
+        endings = list(re.finditer(r'^  Local log:\n', segment, re.M))
+        need(len(endings) == 1, 'EXACT_CURRENT_THREAD_END')
+        current = segment[:endings[0].start()]
         direction, pointer, name, tid, _, kind = header.groups()
-        # Mmap has a separate format and is explicitly not silently treated as
-        # a regular track. Any owned UID there is refused, not ignored as idle.
-        need(kind in ('MIXER', 'DIRECT', 'DUPLICATING', 'RECORD', 'DIRECT_RECORD',
-                      'OFFLOAD', 'SPATIALIZER'), 'UNQUALIFIED_AUDIO_THREAD_TYPE:' + kind)
+        # Mmap has a separate table. Refuse it (and every other unsupported
+        # kind) for every UID, even when its own table reports zero tracks.
+        kinds = ('RECORD', 'DIRECT_RECORD') if direction == 'Input' else (
+            'MIXER', 'DIRECT', 'DUPLICATING', 'OFFLOAD', 'SPATIALIZER')
+        need(kind in kinds, 'UNQUALIFIED_AUDIO_THREAD_TYPE:' + kind)
+        need('The following tracks are in the active list but not in the track list' not in current,
+             'INCONSISTENT_CURRENT_ACTIVE_TRACK_LIST')
         io = int(one(r'^  I/O handle: ([0-9]+)$', current))
         standby = one(r'^  Standby: (yes|no)$', current) == 'yes'
         count = re.findall(r'^  ([0-9]+) Tracks(?: of which ([0-9]+) are active)?$', current, re.M)
@@ -124,15 +150,37 @@ def flinger(raw):
         result.append(row)
     need(len({row['io_handle'] for row in result}) == len(result), 'UNIQUE_CURRENT_IO_HANDLES')
     return {'raw_sha256': hashlib.sha256(raw).hexdigest(), 'bytes': len(raw),
-        'framework_commit': FRAMEWORK_COMMIT, 'threads': result, 'runtime_qualified': False}
+        'framework_commit': FRAMEWORK_COMMIT, 'current_thread_headers': len(headers),
+        'historical_thread_log_excluded': history is not None,
+        'threads': result, 'runtime_qualified': False}
+
+
+def active_tracks(value):
+    need(value['framework_commit'] == FRAMEWORK_COMMIT
+        and 1 <= len(value['threads']) == value['current_thread_headers'] <= 64,
+         'PINNED_NONEMPTY_CURRENT_AUDIO_TABLES_REQUIRED')
+    return [(thread, track) for thread in value['threads']
+            for track in thread['tracks'] if track['active']]
+
+
+def quiescent(value):
+    need(not active_tracks(value), 'UNEXPECTED_ACTIVE_ANDROID_AUDIO_TRACK')
+    # This receipt is scoped to current Android track tables at one sample.
+    # It does not prove host PipeWire quiescence or exclusivity between samples.
+    return {'scope': 'android-audioflinger-current-track-tables-all-uids',
+        'framework_commit': FRAMEWORK_COMMIT, 'raw_sha256': value['raw_sha256'],
+        'observed_threads': value['current_thread_headers'], 'active_track_count': 0,
+        'host_audio_quiescence_qualified': False, 'continuous_exclusivity_qualified': False,
+        'runtime_qualified': False}
 
 
 def owned_track(value, *, direction, uid, pid):
     need(direction in ('Input', 'Output') and type(uid) is type(pid) is int and pid > 0,
          'CURRENT_APPLICATION_PID_UID_REQUIRED')
-    rows = [(thread, track) for thread in value['threads'] if thread['direction'] == direction
-            for track in thread['tracks'] if track['active'] and track['uid'] == uid]
-    need(len(rows) == 1 and rows[0][1]['pid'] == pid, 'ONE_CURRENT_APP_ATTRIBUTED_ACTIVE_AUDIO_TRACK')
+    rows = active_tracks(value)
+    need(len(rows) == 1 and rows[0][0]['direction'] == direction
+        and rows[0][1]['uid'] == uid and rows[0][1]['pid'] == pid,
+         'ONE_EXCLUSIVE_CURRENT_APP_ATTRIBUTED_ACTIVE_AUDIO_TRACK')
     thread, track = rows[0]
     need(thread['standby'] is False and track['session'] > 0 and track['port'] > 0
         and track['buffer_frames'] > 0 and 8000 <= track['sample_rate'] <= 192000,

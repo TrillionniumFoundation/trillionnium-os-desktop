@@ -1,135 +1,150 @@
-"""Regression coverage for both permitted Camera video restoration orders.
+"""Nine portable controls for the exact f9 public Camera recording state machine.
 
-All inputs are synthetic public-API observations. These tests do not execute
-Android, media decoding, physical audio, or whole-application qualification.
+The owner fixture is retained byte-for-byte. All observations are synthetic
+public-API values; no Main, Android, process, media or physical audio is used.
+The old source is reconstructed and pinned only to demonstrate the regression.
 """
-from pathlib import Path
+import argparse
+import ast
 import copy
 import hashlib
+import json
+from pathlib import Path
+import sys
+import time
+import types
 import unittest
+from unittest import mock
 
-source=Path(__file__).parent.parent / 'source' / 'camera_video_state.py'
+ROOT = Path(__file__).resolve().parents[1]
+EXPECTED_TESTS = 9
+STATE_PIN = (21072, '68c6369a068d822b0ea4e849cf2172d0180bbe69b3c576e7aa74ba2f6e7d66fc')
+OWNER_FIXTURE_PIN = (8070, '6231c471ec505ed11afb7c40fa2d7f0e4c05299a2d297a31981a4fa223097e51')
+OLD_STATE_PIN = (20889, '536291d92f09941771673232f12208154827ca3e7b1ea49d12b769cae9507aa2')
+OWNER_SEALED_CLIP_AST = '7ccc54fb39d968f6307e39bdcf241d1e7641bf5ea04d0de08c5dda143898e9fe'
+CASES = ('playback_then_restore_photo', 'restore_photo_then_playback', 'original_video_mode',
+    'no_audio_playback_rejected', 'wrong_final_mode_rejected', 'unretired_host_rejected',
+    'unclosed_task_rejected', 'unpreserved_state_rejected', 'unacknowledged_restore_rejected')
 
-def namespace(text):
-    result={'__name__':'camera_video_state_unit','__file__':str(source)}
-    exec(compile(text,str(source),'exec'),result)
-    return result
-def run_cases(text):
-    m=namespace(text); result={}
-    def make_ref(label):
-        return {'path':'/synthetic-regression/'+label,'bytes':1,'sha256':hashlib.sha256(label.encode()).hexdigest()}
-    class Fixture:
-        def __init__(self,initial='0'):
-            self.now=1_000_000_000
-            self.sequence=0; self.mode=initial
-            self.scope,self.phase=make_ref('scope'),make_ref('phase')
-            self.epoch='e'*64; self.nonce='1234567890abcdef'
-            self.focus={'verified':True,'package':m['PACKAGE'],'task':42,'user':0,
-                'activity':'com.android.camera.CameraActivity','focused_activity':'com.android.camera.CameraActivity',
-                'window_token':'abc'}
-            self.record=m['Recording'](nonce=self.nonce,scope=self.scope,phase=self.phase,
-                epoch_sha256=self.epoch,task=42,emit=self.emit)
-            self.observe(initial)
-        def emit(self,event,value):
-            self.sequence+=1
-            return make_ref(str(self.sequence)+'-'+event)
-        def node(self,ident=None,desc=None,text=None,clickable=True):
-            n={'package':m['PACKAGE'],'visible':True,'enabled':True,'clickable':clickable,
-               'window_id':7,'bounds_array':[1,1,20,20]}
-            if ident:n['resource-id']=ident
-            if desc:n['content-desc']=desc
-            if text is not None:n['text']=text
-            return n
-        def observe(self,mode,seconds=None,menu=None,advance=100_000_000):
-            self.now+=advance; self.mode=mode
-            nodes=[self.node(ident=m['SHUTTER']),self.node(ident=m['MODE_TOGGLE'])]
-            if menu:nodes.append(self.node(desc=menu))
-            if seconds is not None:
-                nodes.append(self.node(ident=m['TIMER'],text='00:'+str(seconds).zfill(2),clickable=False))
-            self.native={'ok':True,'outcome_unknown':False,'accessibility_mode_restoration_verified':True,
-                'nodes':nodes,'window_context':{'snapshot_complete':True,'truncated':False,'display_id':0,
-                'selected_window':{'window_id':7,'display_id':0,'active':True,
-                'focused':True,'type':1,'root':{'package':m['PACKAGE']}}}}
-            self.record.observe(value=self.native,focus_value=self.focus,mode=mode,
-                monotonic_ns=self.now,observation_ref=make_ref('observation-'+str(self.now)))
-        def click(self,action,ident=None,desc=None,ack=True):
-            control=m['one_control'](self.native,ident=ident,description=desc)
-            request={'op':'click','package':m['PACKAGE'],'display':0,'method':'accessibility',
-                'selector':control['selector']}
-            self.now+=100_000_000
-            self.record.claim(action=action,request=request,control=control,
-                focus_value=self.focus,monotonic_ns=self.now)
-            if not ack:return
-            native_request=dict(request);native_request['expected_package']=native_request.pop('package')
-            fields={}
-            if ident:fields['resource-id']=ident
-            if desc:fields['content-desc']=desc
-            reply={'ok':True,'performed':'click','outcome_unknown':False,'automatic_retry':False,
-                'accessibility_mode_restoration_verified':True,'target':fields,'actual_target':fields}
-            self.now+=100_000_000
-            self.record.native_return(request=native_request,reply=reply,monotonic_ns=self.now,
-                boundary_ref=make_ref('native-'+action))
-            self.record.dispatch_return({'ok':True,'outcome_unknown':False})
-        def saved(self):
-            if self.mode=='0':
-                self.click('mode_menu',ident=m['MODE_TOGGLE'])
-                self.observe('0',menu=m['VIDEO_DESCRIPTION'])
-                self.click('select_video',desc=m['VIDEO_DESCRIPTION']);self.observe('1')
-            self.click('start',ident=m['SHUTTER']);self.observe('1',seconds=0)
-            self.observe('1',seconds=2,advance=2_000_000_000)
-            self.click('stop',ident=m['SHUTTER']);self.observe('1')
-            self.row={'is_pending':0,'owner_package_name':m['PACKAGE'],'file_sha256':'f'*64,
-                '_size':16000,'uri':'content://media/external_primary/video/media/999'}
-            decode={'full_video_decode':True,'full_audio_decode':True,'file_sha256':'f'*64,
-                'file_bytes':16000,'uri':self.row['uri'],'nonce':self.nonce}
-            self.record.saved(self.row,make_ref('row'),decode,make_ref('decode'))
-        def playback(self):
-            common={'nonce':self.nonce,'epoch_sha256':self.epoch,'uri':self.row['uri'],
-                'file_sha256':'f'*64,'scope':self.scope,'phase':self.phase,'outcome_unknown':False}
-            audio={**common,'decoded_own_audio_nonce_match':True,'CAMCORDER_uid':10062,
-                'actual_HAL_input_session_bound':True,'actual_physical_source_bound':True,
-                'baseline_negative_passed':True,'decoy_negative_passed':True}
-            playback={**common,'actual_owned_uri_intent':True,'actual_video_decoder_outputs_advanced':True,
-                'two_current_foreground_pixel_observations':True,'physical_presented_frame_claim':False,
-                'actual_Android_output_session_bound':True,'physical_playback_nonce_match':True,
-                'owned_player_closed':True,'foreign_tasks_unchanged':True}
-            self.record.audio_and_playback(audio_ref=make_ref('audio'),audio=audio,
-                playback_ref=make_ref('playback'),playback=playback)
-        def restore(self):
-            self.click('restore_menu',ident=m['MODE_TOGGLE'])
-            self.observe('1',menu=m['PHOTO_DESCRIPTION'])
-            self.click('restore_photo',desc=m['PHOTO_DESCRIPTION']);self.observe('0')
-        def terminal(self,**changes):
-            args={'final_mode':self.mode,'task_closed':True,'preserved_state':True,'host_retired':True}
-            args.update(changes)
-            return self.record.terminal(**args)
-    f=Fixture();f.saved();f.playback();f.restore()
-    t=f.terminal()
-    result['playback_then_restore_photo']={'passed':t['camera_video_verified'] is True,
-        'observed_state':f.record.state,'observed_terminal':t['state']}
-    f=Fixture();f.saved();f.restore();f.playback()
-    result['restore_photo_then_playback']={'passed':f.terminal()['camera_video_verified'] is True}
-    f=Fixture('1');f.saved();f.playback()
-    result['original_video_mode']={'passed':f.terminal()['camera_video_verified'] is True}
-    f=Fixture();f.saved();f.restore()
-    result['no_audio_playback_rejected']={'passed':f.terminal()['camera_video_verified'] is False}
-    f=Fixture();f.saved();f.playback();f.restore()
-    for key,changes in [('wrong_final_mode_rejected',{'final_mode':'1'}),
-        ('unretired_host_rejected',{'host_retired':False}),
-        ('unclosed_task_rejected',{'task_closed':False}),
-        ('unpreserved_state_rejected',{'preserved_state':False})]:
-        result[key]={'passed':f.terminal(**changes)['camera_video_verified'] is False}
-    f=Fixture();f.saved();f.playback();f.click('restore_menu',ident=m['MODE_TOGGLE'],ack=False)
-    t=f.terminal()
-    result['unacknowledged_restore_rejected']={'passed':t['camera_video_verified'] is False and t['outcome_unknown'] is True}
-    return result
 
-class CameraVideoRestorationOrderTests(unittest.TestCase):
-    def test_public_api_ordering_and_refusals(self):
-        for name,result in run_cases(source.read_text()).items():
-            with self.subTest(case=name):
-                self.assertTrue(result['passed'], result)
+def pinned(path, expected):
+    raw = path.read_bytes()
+    if (len(raw), hashlib.sha256(raw).hexdigest()) != expected:
+        raise RuntimeError('EXACT_OWNER_STATE_OR_FIXTURE_PIN:' + str(path))
+    return raw.decode('utf-8')
+
+
+class OwnerRestorationControls(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.text = pinned(ROOT / 'source/camera_video_state.py', STATE_PIN)
+        fixture_path = ROOT / 'tests/fixtures/owner_camera_video_state_fixture.py'
+        fixture_text = pinned(fixture_path, OWNER_FIXTURE_PIN)
+        cls.fixture = types.ModuleType('camera_owner_f9_public_api_fixture')
+        cls.fixture.__file__ = str(fixture_path)
+        exec(compile(fixture_text, str(fixture_path), 'exec'), cls.fixture.__dict__)
+        # Preserve the fixture bytes while giving its new location the actual
+        # production-source filename used for compile diagnostics.
+        cls.fixture.source = ROOT / 'source/camera_video_state.py'
+        cls.cases = cls.fixture.run_cases(cls.text)
+        if set(cls.cases) != set(CASES):
+            raise RuntimeError('EXACT_NINE_OWNER_STATE_SCENARIOS')
+        tree = ast.parse((ROOT / 'source/camera_decode.py').read_text(encoding='utf-8'))
+        helpers = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'sealed_clip']
+        if len(helpers) != 1 or hashlib.sha256(ast.dump(helpers[0], include_attributes=False).encode()).hexdigest() != OWNER_SEALED_CLIP_AST:
+            raise RuntimeError('EXACT_OWNER_SEALED_CLIP_HELPER_AST')
+
+    def case(self, name):
+        self.assertIs(self.cases[name]['passed'], True, self.cases[name])
+
+    def test_playback_then_restore_photo(self):
+        self.case('playback_then_restore_photo')
+        new = ("        # Restoring Photo after verified playback moves the state to MODE_RESTORED.\n"
+               "        # The audio/playback receipts below still gate success in either order.\n"
+               "        restored = (self.state in ('PLAYBACK_VERIFIED', 'MODE_RESTORED') and\n")
+        old = "        restored = (self.state == 'PLAYBACK_VERIFIED' and\n"
+        self.assertEqual(self.text.count(new), 1)
+        prior = self.text.replace(new, old)
+        self.assertEqual((len(prior.encode()), hashlib.sha256(prior.encode()).hexdigest()), OLD_STATE_PIN)
+        old_cases = self.fixture.run_cases(prior)
+        self.assertEqual({name for name, value in old_cases.items() if value['passed'] is not True},
+                         {'playback_then_restore_photo'})
+        self.assertEqual(self.cases['playback_then_restore_photo']['observed_state'], 'MODE_RESTORED')
+
+    def test_restore_photo_then_playback(self):
+        self.case('restore_photo_then_playback')
+
+    def test_original_video_mode(self):
+        self.case('original_video_mode')
+
+    def test_no_audio_playback_rejected(self):
+        self.case('no_audio_playback_rejected')
+        shared = {'nonce': '0' * 16, 'epoch_sha256': '0' * 64,
+            'uri': 'content://media/external_primary/video/media/1000', 'file_sha256': '0' * 64,
+            'scope': {}, 'phase': {}, 'outcome_unknown': True}
+        cases = [(side, field, value, 'AUDIO_PLAYBACK_MUST_BE_THIS_FRESH_RECORDING')
+            for side in ('audio', 'playback') for field, value in shared.items()]
+        cases += [('audio', field, value, 'NONZERO_PCM_OR_OLD_HOST_CHALLENGE_IS_NOT_CAMERA_AUDIO')
+            for field, value in {'decoded_own_audio_nonce_match': False, 'CAMCORDER_uid': 1000,
+                'actual_HAL_input_session_bound': False, 'actual_physical_source_bound': False,
+                'baseline_negative_passed': False, 'decoy_negative_passed': False}.items()]
+        cases += [('playback', field, value, 'SAME_OWNED_URI_VIDEO_AND_PHYSICAL_PLAYBACK_REQUIRED')
+            for field, value in {'actual_owned_uri_intent': False, 'actual_video_decoder_outputs_advanced': False,
+                'two_current_foreground_pixel_observations': False, 'physical_presented_frame_claim': True,
+                'actual_Android_output_session_bound': False, 'physical_playback_nonce_match': False,
+                'owned_player_closed': False, 'foreign_tasks_unchanged': False}.items()]
+        for side, field, wrong, why in cases:
+            with self.subTest(side=side, field=field):
+                namespace = self.fixture.namespace(self.text)
+                original = namespace['Recording'].audio_and_playback
+
+                def corrupt(recording, **kwargs):
+                    changed = copy.deepcopy(kwargs)
+                    changed[side][field] = wrong
+                    return original(recording, **changed)
+
+                namespace['Recording'].audio_and_playback = corrupt
+                with mock.patch.object(self.fixture, 'namespace', return_value=namespace):
+                    with self.assertRaisesRegex(namespace['Refusal'], '^' + why + '$'):
+                        self.fixture.run_cases(self.text)
+
+    def test_wrong_final_mode_rejected(self):
+        self.case('wrong_final_mode_rejected')
+
+    def test_unretired_host_rejected(self):
+        self.case('unretired_host_rejected')
+
+    def test_unclosed_task_rejected(self):
+        self.case('unclosed_task_rejected')
+
+    def test_unpreserved_state_rejected(self):
+        self.case('unpreserved_state_rejected')
+
+    def test_unacknowledged_restore_rejected(self):
+        self.case('unacknowledged_restore_rejected')
 
 
 if __name__ == '__main__':
-    unittest.main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--report', type=Path, required=True)
+    args = parser.parse_args()
+    start = time.monotonic()
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(OwnerRestorationControls)
+    if suite.countTestCases() != EXPECTED_TESTS:
+        raise RuntimeError('EXACT_NINE_STATE_CONTROLS')
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    passed = result.wasSuccessful() and result.testsRun == EXPECTED_TESTS and not result.skipped
+    report = {'schema': 'pocket4-camera-f9-state-source-controls-v1', 'tests': result.testsRun,
+        'failures': len(result.failures), 'errors': len(result.errors), 'skips': len(result.skipped),
+        'passed': passed,
+        'elapsed_seconds': time.monotonic() - start, 'executable': sys.executable, 'python': sys.version,
+        'owner_fixture_byte_identical': passed, 'owner_state_byte_identical': passed,
+        'owner_sealed_clip_ast_identical': passed, 'old_state_regression_reproduced': passed,
+        'declared_binding_negative_subcases': 28, 'Main_actions': 0, 'Android_actions': 0,
+        'subprocess_actions': 0, 'physical_audio_actions': 0, 'runtime_qualified': False,
+        'actual_uid1000_sealed_input_qualified': False,
+        'scope': 'synthetic observations through the exact owner public state API and retained owner fixture'}
+    with args.report.open('x', encoding='utf-8') as out:
+        out.write(json.dumps(report, sort_keys=True, indent=2) + '\n')
+    print(json.dumps(report, sort_keys=True))
+    raise SystemExit(0 if report['passed'] else 1)
