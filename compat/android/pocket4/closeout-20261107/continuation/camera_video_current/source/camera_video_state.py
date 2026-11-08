@@ -64,8 +64,11 @@ def native_nodes(value):
         and native.get('accessibility_mode_restoration_verified') is True
         and native.get('outcome_unknown') is not True and type(native.get('nodes')) is list,
         'ACTUAL_RESTORED_NATIVE_CAMERA_TREE_REQUIRED')
-    window = native.get('window_context', {}).get('selected_window')
+    context = native.get('window_context', {})
+    window = context.get('selected_window')
     need(type(window) is dict and type(window.get('window_id')) is int
+        and context.get('snapshot_complete') is True and context.get('truncated') is False
+        and context.get('display_id') == 0 and window.get('active') is True
         and window.get('display_id') == 0 and window.get('focused') is True
         and window.get('type') == 1 and window.get('root', {}).get('package') == PACKAGE,
         'ONE_FOCUSED_NATIVE_CAMERA_APPLICATION_WINDOW')
@@ -83,7 +86,7 @@ def one_control(value, *, ident=None, description=None):
     need(len(matches) == 1, 'ONE_ACTUAL_CAMERA_CONTROL_REQUIRED')
     node = matches[0]
     need(node.get('window_id') == window['window_id'], 'CAMERA_NODE_NOT_CURRENT_NATIVE_WINDOW')
-    bounds = node.get('bounds')
+    bounds = node.get('bounds_array')
     need(type(bounds) is list and len(bounds) == 4 and all(type(x) is int for x in bounds)
         and bounds[0] >= 0 and bounds[1] >= 0 and bounds[0] < bounds[2] <= 8192
         and bounds[1] < bounds[3] <= 8192, 'BOUNDED_ACTUAL_CAMERA_CONTROL')
@@ -309,7 +312,9 @@ class Recording:
             and audio.get('actual_physical_source_bound') is True
             and audio.get('baseline_negative_passed') is True and audio.get('decoy_negative_passed') is True,
             'NONZERO_PCM_OR_OLD_HOST_CHALLENGE_IS_NOT_CAMERA_AUDIO')
-        need(playback.get('actual_owned_uri_intent') is True and playback.get('actual_video_frames_advanced') is True
+        need(playback.get('actual_owned_uri_intent') is True and playback.get('actual_video_decoder_outputs_advanced') is True
+            and playback.get('two_current_foreground_pixel_observations') is True
+            and playback.get('physical_presented_frame_claim') is False
             and playback.get('actual_Android_output_session_bound') is True
             and playback.get('physical_playback_nonce_match') is True
             and playback.get('owned_player_closed') is True and playback.get('foreign_tasks_unchanged') is True,

@@ -2,8 +2,8 @@
   "all_blockers_closed": false,
   "files": {
     "README.md": {
-      "bytes": 6852,
-      "sha256": "2b58c8083c83debdd5c352c77552adc8f7fedf619839e07a03bfe96e5c80d057"
+      "bytes": 8125,
+      "sha256": "bb8cc100493670c374fc3244690639c60a9f945a4ec7c4cc663a10e1c36c6b23"
     },
     "build-source-repair-20261108/README.md": {
       "bytes": 5419,
@@ -273,9 +273,17 @@
       "bytes": 9465,
       "sha256": "e8645fb7aaebb332fca1bf04a639e9a505742f62dd73928c3ab64c5512288d31"
     },
+    "cleanup/obsolete-output-retirement-summary.json": {
+      "bytes": 4184,
+      "sha256": "c3a1ca3f2241dd0e7318909a75d29bdee851885f4d0afb46fcb492e4560ab7d9"
+    },
     "cleanup/obsolete-transport-retirement-summary.json": {
       "bytes": 1691,
       "sha256": "5d188d1980e502ac57a38d3aa6bf55f341918c6d9dce39222b1909e660ca6567"
+    },
+    "continuation/audio316-independent-validation.json": {
+      "bytes": 8189,
+      "sha256": "a0c5f21f23002e328b12baad4f2a6ac31e8bcc70329a00caaa5ccae50eb13e65"
     },
     "continuation/build-observations-20261108-native-audio-sensor.json": {
       "bytes": 5217,
@@ -289,10 +297,6 @@
       "bytes": 6293,
       "sha256": "7d509ade24d801cbb329ea06f8cfff4bcfa4c53ed9a4bdb832bf87dba9a1ea78"
     },
-    "continuation/camera-video-state-repair.json": {
-      "bytes": 1069,
-      "sha256": "4875bed3dd60eb40144d179fbb124090cff193f84b1ce6e363209bce792111b5"
-    },
     "continuation/camera_runtime_qualify.py": {
       "bytes": 32895,
       "sha256": "9357eafe31d557ee30a0e23cb89bdaeb12c851034f8a08ffed1841c5c8141503"
@@ -301,13 +305,265 @@
       "bytes": 10414,
       "sha256": "6b1c2ca3a6f06ba4a6b1792eec1354f77760e42d9e3afbbea36b850ed767431a"
     },
-    "continuation/camera_video_state.py": {
-      "bytes": 20714,
-      "sha256": "7e46228cd3a9990be646810f6ecbff32d633d7a5c154d1e2fa8ef8902eb37256"
+    "continuation/camera_video_current/README.md": {
+      "bytes": 8878,
+      "sha256": "5cec2e989562b948e1eb700e0bbbc275f9e683e19ce43141b7b07a41146080d2"
     },
-    "continuation/camera_video_state_test.py": {
-      "bytes": 7845,
-      "sha256": "8c3714e0a18fff086cb7d04d6d175c07a37dd33311cab10b14c9711b82dfe571"
+    "continuation/camera_video_current/display/display_holder.py": {
+      "bytes": 7718,
+      "sha256": "3268c20caa9523525e3db90d9fd9b56d703cacfc58fbc43187b127dd87f51c11"
+    },
+    "continuation/camera_video_current/display/display_lease.py": {
+      "bytes": 12505,
+      "sha256": "81f34cdbc75a2cf4e092a961fe4dce5d23522842c0ec54cdcff4fc9c99e4dbfd"
+    },
+    "continuation/camera_video_current/display/video_display_wrapper.py": {
+      "bytes": 44149,
+      "sha256": "c971b2a1e86e789099ed29942b9e3c5e0eb1d9aa07d8f093fc5b1908e7a4e384"
+    },
+    "continuation/camera_video_current/provenance/decoder-host-result-r2.json": {
+      "bytes": 5722,
+      "sha256": "71ed7952b27cdcd63886d3bd4cb1d53e79151ef4253dc9e2177a3aa290e8d7c9"
+    },
+    "continuation/camera_video_current/provenance/display_holder.py": {
+      "bytes": 7718,
+      "sha256": "68fef3e0a46ab2f1b5d783ab5640add6d2f6625c9655a803efb25409ad79917f"
+    },
+    "continuation/camera_video_current/provenance/photo_display_wrapper.py": {
+      "bytes": 35080,
+      "sha256": "2a062fdc1e93bb8ca494bc2b2ade1196efb48527399b0843886920e06a8674e9"
+    },
+    "continuation/camera_video_current/provenance/state-combined-result.json": {
+      "bytes": 847,
+      "sha256": "1392b6c4bd5d4767b3a6044af7b1e70b19c0e195b4d433aa6dc0df5adabfb793"
+    },
+    "continuation/camera_video_current/publish-source-manifest.json": {
+      "bytes": 8671,
+      "sha256": "874b079914b93de249ebed9b3f5b802c345294bf0eec6a7ac8d7e131829f98fd"
+    },
+    "continuation/camera_video_current/review/canonical-adoption-summary.json": {
+      "bytes": 1506,
+      "sha256": "e4c4f1d485c9353e221c35bda11b21a454ededf1d4ecd3072810c8a83604be5b"
+    },
+    "continuation/camera_video_current/review/final-owned-source-binding.json": {
+      "bytes": 6220,
+      "sha256": "4d4d74aa8c127ed736465e69e97ef4016a83a54a9f8c7684b815ff68ddf3e192"
+    },
+    "continuation/camera_video_current/review/preparation-controls-result.json": {
+      "bytes": 1408,
+      "sha256": "fbefc9091869739905c7ac275251395e34099293f9dc37fe2e3bc3835d03e117"
+    },
+    "continuation/camera_video_current/review/r4-byte-equivalence.json": {
+      "bytes": 12706,
+      "sha256": "ab12365efe844a9ee7fd22ce20dba8eb2a5c6217fb183789e976944425953704"
+    },
+    "continuation/camera_video_current/review/r4-incremental.diff": {
+      "bytes": 13240,
+      "sha256": "500cd0422686a46d148affdde521c3edcbc498d9f4f7a4968d46eea1842f9c90"
+    },
+    "continuation/camera_video_current/review/supervisor-host-terminal.json": {
+      "bytes": 730,
+      "sha256": "fa2ec44ef182aaebb98913d3b574054dba6ef7000fb11816ba8e49db8017981d"
+    },
+    "continuation/camera_video_current/review/validation-summary.json": {
+      "bytes": 6546,
+      "sha256": "1039186b19f22d6bafc656c99299bbdd568bc2f26a3b93353b348406ec5e5367"
+    },
+    "continuation/camera_video_current/review/video-display-contract-controls-attempt-02.json": {
+      "bytes": 903,
+      "sha256": "3413b6632a684c9ba771fb3a4485e1ab5a690b406ec2829807c1f415b5f04249"
+    },
+    "continuation/camera_video_current/review/video-display-independent-static-review-native.json": {
+      "bytes": 2392,
+      "sha256": "5f32f9fe1e28e963887486af7255e689c599d9668484d7d8c6d3729b149d8393"
+    },
+    "continuation/camera_video_current/review/video-display-owned-terminal.json": {
+      "bytes": 730,
+      "sha256": "ea1d58cf78f0dd87afd9bf50c98a2a3b9a417c8d2db95c2473ea5927a3f22bd9"
+    },
+    "continuation/camera_video_current/review/video-display-source-adaptation.json": {
+      "bytes": 1493,
+      "sha256": "07c3db6d57198fcce89021c0a8f12e38050e8f418b95dd146dde3a63420a6603"
+    },
+    "continuation/camera_video_current/reviewed-source-inventory.json": {
+      "bytes": 4940,
+      "sha256": "2444a7f3dcbeace9a3a9c5b86d2fc815a59ae965b626ddb80ba99b6f4d13520f"
+    },
+    "continuation/camera_video_current/source-bundle-index.json": {
+      "bytes": 13382,
+      "sha256": "a93bce28380f866efa48210e5927630d66f9a084c514854fb8df74116cd0d8d2"
+    },
+    "continuation/camera_video_current/source/app_common.py": {
+      "bytes": 38269,
+      "sha256": "468e0fa093ec1c741547912b8fef41560e1ea9b1e124a76113ec97da7fe03420"
+    },
+    "continuation/camera_video_current/source/app_flow.py": {
+      "bytes": 14631,
+      "sha256": "926793aabf5610fc32f6b94bd772c660c7e24bc992641f8b2ca4ae257bfa59bb"
+    },
+    "continuation/camera_video_current/source/app_runtime.py": {
+      "bytes": 20904,
+      "sha256": "095578d7d998019cdf20173cc803546dfdaff52245471d5ba3a766d7cd88a0ef"
+    },
+    "continuation/camera_video_current/source/camera_audio_binding.py": {
+      "bytes": 16109,
+      "sha256": "865c1dcef9559f69062b0430e585eb85cc8131396a614dd51c709f5d8ef968dd"
+    },
+    "continuation/camera_video_current/source/camera_audio_challenge.py": {
+      "bytes": 6956,
+      "sha256": "30b8560cf4f43e77e051e4915492ed18fe3c78e8b2a67527f4e14c02643dcd4c"
+    },
+    "continuation/camera_video_current/source/camera_audio_channel.py": {
+      "bytes": 9779,
+      "sha256": "237015b8d911c8c46ec413dacceb9f64f7e07456f27f58396110bcaa6cd1c412"
+    },
+    "continuation/camera_video_current/source/camera_audio_runtime.py": {
+      "bytes": 25408,
+      "sha256": "00e4643c544b6d6771772b8830f84f865282013379941e1da83e52df08fe59f9"
+    },
+    "continuation/camera_video_current/source/camera_audio_supervisor.py": {
+      "bytes": 35597,
+      "sha256": "d67a3ce70aae90bb6dfee44d77605072628a4e48e6d3574d38464b76b1f4e718"
+    },
+    "continuation/camera_video_current/source/camera_base_session.py": {
+      "bytes": 30596,
+      "sha256": "e994b1149e1da861923e806065c6bbf8134fc202cfd4b441783e7bc1c5df57c8"
+    },
+    "continuation/camera_video_current/source/camera_case.py": {
+      "bytes": 7481,
+      "sha256": "45006edc9d5edb1da84e0253f8a8b2d606bfbd19f68c0c07dd7fbe0a4188af07"
+    },
+    "continuation/camera_video_current/source/camera_decode.py": {
+      "bytes": 15348,
+      "sha256": "2536849daa9913832bc8c33bf4de17292f0e8a471c571c11ca0b0ddfb3b11c8a"
+    },
+    "continuation/camera_video_current/source/camera_entry.py": {
+      "bytes": 9807,
+      "sha256": "ab929997fa08d5acda471cec6219fcbc2eb1edeed2a7b6c7bae189f7abb842a1"
+    },
+    "continuation/camera_video_current/source/camera_flow.py": {
+      "bytes": 4297,
+      "sha256": "7c25c21ac4dcadbf41628b75102f6022c5af6638c6876e163830a35cd62b492d"
+    },
+    "continuation/camera_video_current/source/camera_guard.py": {
+      "bytes": 2052,
+      "sha256": "dff943810d872f32accb03f21437d626b7a1b6c1b5baca8632ac68ab6feb6093"
+    },
+    "continuation/camera_video_current/source/camera_observations.py": {
+      "bytes": 8767,
+      "sha256": "9da8edd2b219d8cc26ae36d50c7c61c7ff99c1f23cc7918d59744585cf8cf9a5"
+    },
+    "continuation/camera_video_current/source/camera_owner_core.py": {
+      "bytes": 32444,
+      "sha256": "59703ed32d41d5b08fa129a29e77ba2bfc06aac3e16b42714caeb6e5213271b2"
+    },
+    "continuation/camera_video_current/source/camera_photo_model.py": {
+      "bytes": 12683,
+      "sha256": "eca8a6a3fb1b74546b849f36d790630850ddf8d447906011f5a6777731a9abb1"
+    },
+    "continuation/camera_video_current/source/camera_plan.py": {
+      "bytes": 11910,
+      "sha256": "9b921ec750192aa9c3ab744326354cd2b8f839d0b633502294da561878d04646"
+    },
+    "continuation/camera_video_current/source/camera_player_binding.py": {
+      "bytes": 6560,
+      "sha256": "64e3dda9e851df2950c9b929e1d8a70a7cf3caba21d6ba29d9e7a44520e831c4"
+    },
+    "continuation/camera_video_current/source/camera_policy.py": {
+      "bytes": 7863,
+      "sha256": "72f73574e5a2d6b93a3bc40cdce29d7d031d065a5d608c250e0776e58d50472b"
+    },
+    "continuation/camera_video_current/source/camera_profiles.py": {
+      "bytes": 3048,
+      "sha256": "ab27644c8f5a38374d98d5081b5352158d1a52fd41d896333f31e3b82c423331"
+    },
+    "continuation/camera_video_current/source/camera_runtime.py": {
+      "bytes": 6528,
+      "sha256": "70b98eb62cf08069cd1630293dc3a4847aaf1c9834dcfea447f9827e2dd6352e"
+    },
+    "continuation/camera_video_current/source/camera_session.py": {
+      "bytes": 19959,
+      "sha256": "b414f48f247df52bb8f24921ac938838fe7f2e6a7ab74ee157efffff0ede3e81"
+    },
+    "continuation/camera_video_current/source/camera_sound_preservation.py": {
+      "bytes": 1663,
+      "sha256": "2f22f8c2d1cda3e466e5c06776bee65246adef3e31bca0370eb78a443de3796c"
+    },
+    "continuation/camera_video_current/source/camera_transport.py": {
+      "bytes": 5072,
+      "sha256": "31ab63c91aef5b9db901cd92d16d35bbdebe7463e5d4d9a4ad52cbccad66e207"
+    },
+    "continuation/camera_video_current/source/camera_ui.py": {
+      "bytes": 11407,
+      "sha256": "c0f431942857047f5540dc9dc66d5f992aefb436b60bbb5e7417e0e1ac0b58c8"
+    },
+    "continuation/camera_video_current/source/camera_video_driver.py": {
+      "bytes": 42730,
+      "sha256": "742685725695fa72fb4d86e74a1d3799f75d85bd5c81972e5d2356bd057dd729"
+    },
+    "continuation/camera_video_current/source/camera_video_media.py": {
+      "bytes": 8843,
+      "sha256": "f8672df6e457674d1fbc7296cdd9266ba2ae118840edd4b26c0a1f1816501e21"
+    },
+    "continuation/camera_video_current/source/camera_video_state.py": {
+      "bytes": 21072,
+      "sha256": "68c6369a068d822b0ea4e849cf2172d0180bbe69b3c576e7aa74ba2f6e7d66fc"
+    },
+    "continuation/camera_video_current/tests/camera_video_state_test.py": {
+      "bytes": 8070,
+      "sha256": "6231c471ec505ed11afb7c40fa2d7f0e4c05299a2d297a31981a4fa223097e51"
+    },
+    "continuation/camera_video_current/tests/decoder_host_controls.py": {
+      "bytes": 16571,
+      "sha256": "5302642829bfd61d0b4deacc1dac66661463bc1121fe05779a7eb12a0facf7ed"
+    },
+    "continuation/camera_video_current/tests/existing_supervisor/README.md": {
+      "bytes": 1519,
+      "sha256": "f5c1267de83c348d799856a9b4c5cec077926c8866b18b5f0da63aaae01ef84d"
+    },
+    "continuation/camera_video_current/tests/existing_supervisor/camera_supervisor_controls.py": {
+      "bytes": 23590,
+      "sha256": "0e61bd28d371cfab32f93b6958e8690e8e551ddcb1b17d0bd6daedfa94ddd4f9"
+    },
+    "continuation/camera_video_current/tests/existing_supervisor/run_camera_supervisor_controls.py": {
+      "bytes": 7296,
+      "sha256": "fcb868584c703657c5c854099f9e7564f0ffe6541f11917c83fd90fa68c317b5"
+    },
+    "continuation/camera_video_current/tests/fixtures/decoder-before-fix/camera_decode.py": {
+      "bytes": 11665,
+      "sha256": "0983471decc4bd7146d30c06ad700b539bd607fef79f7c187d880fee436e652d"
+    },
+    "continuation/camera_video_current/tests/fixtures/supervisor-before-fix.py": {
+      "bytes": 34908,
+      "sha256": "afecd93caa3c3d5c47f77ad6e4e1e286ce8631014fc457409df7feaa7388f875"
+    },
+    "continuation/camera_video_current/tests/run_video_display_owned_controls.py": {
+      "bytes": 16781,
+      "sha256": "d939845eef7c53f7ca0afbb021a0ed5c4105b6a655a45288b593c17dd9a720fe"
+    },
+    "continuation/camera_video_current/tests/test_preparation_entry.py": {
+      "bytes": 9605,
+      "sha256": "0a27e10391a4f8ea38ebe7aea12ba1ff5b6b3e557c6fc9e76968b33ac0b137b6"
+    },
+    "continuation/camera_video_current/tests/test_video_display_contract.py": {
+      "bytes": 25910,
+      "sha256": "a75df0ef6bba0688f3a958ce4db3fd215ab06fe95d46b55e68d4e22f49711df5"
+    },
+    "continuation/camera_video_current/tools/adapt_video_display.py": {
+      "bytes": 9047,
+      "sha256": "d02df8e94624ebe4b006c0636d0d50b7edb1e0f38507a491fe797989add09d6c"
+    },
+    "continuation/camera_video_current/tools/prepare_camera_video.py": {
+      "bytes": 10432,
+      "sha256": "4d9e119844778cb4f993e7605812b4ec0bb6d02ced68e60d387f00d484eef740"
+    },
+    "continuation/camera_video_current/tools/video_display_contract.py": {
+      "bytes": 19823,
+      "sha256": "ba18a334a6ba2f6a2bbd5e4844ccdcea9821cf351178f6a0f3a0580685a5eaf5"
+    },
+    "continuation/camera_video_current/upgrade-map.json": {
+      "bytes": 1461,
+      "sha256": "b7b7943e8df4739e08331e195ac1f099376ea6cc93ab1d2f39566149d4abc6a4"
     },
     "continuation/history/state-20261107-093339.json": {
       "bytes": 8046,
@@ -329,6 +585,22 @@
       "bytes": 1943,
       "sha256": "6182a47a6645051e2bb5d13c025197baac27ecf8084dbac25cabe6eec6ffafa6"
     },
+    "continuation/native-transport/actual-curl56-diagnostic-control.json": {
+      "bytes": 1346,
+      "sha256": "d7cade5ff53a0fbafa35ece69e21e9e4cdc5583e59df0c2ecf604e8c9cb886ec"
+    },
+    "continuation/native-transport/check_r2_transport_gate_v2.py": {
+      "bytes": 12551,
+      "sha256": "11aa32533c8c7c2add7bf412aabc8a92a7906cbb2bce3d8960ce11830002b204"
+    },
+    "continuation/native-transport/native-transport-review.json": {
+      "bytes": 3177,
+      "sha256": "296a2be55169df39292bde3129e19952f60ac321dccf4728e905fe486fdb2dad"
+    },
+    "continuation/native-transport/r2_transport_gate_v2.py": {
+      "bytes": 18149,
+      "sha256": "04c0fda522b486ee5bcf9823f440384622b6c17b0fdd01a0b9f5a0165f0a4981"
+    },
     "continuation/native_verify_actual_base_art.py": {
       "bytes": 8675,
       "sha256": "7a827212276c6bbb7123cfa2a18ff40a35a3e6f240ecf6a84bd6b11638d0ff11"
@@ -336,6 +608,10 @@
     "continuation/read_consumer_storage_packet.py": {
       "bytes": 1993,
       "sha256": "933030df7b7e4705be0a5da8b9ea5c50f6be5b917f66439c15cde4b8c3f2bd9b"
+    },
+    "continuation/runtime-blocker-review.json": {
+      "bytes": 4529,
+      "sha256": "f943d2b306c9473cc6e5f7fb55928c28a80af4a4aa2488f255a79ca0878945ae"
     },
     "continuation/state.json": {
       "bytes": 18228,

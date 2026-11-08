@@ -1,0 +1,24 @@
+{
+  "canonical_git_root": "compat/android/pocket4/closeout-20261107/continuation/camera_video_current",
+  "canonical_host_adoption": "create-only new directory using tools/prepare_camera_video.py; actual preparation SHA is computed on that host",
+  "do_not_leave_r2_implementation_active": true,
+  "legacy_flat_r2_paths": [
+    {
+      "current_bundle_file": "source/camera_video_state.py",
+      "current_sha256": "68c6369a068d822b0ea4e849cf2172d0180bbe69b3c576e7aa74ba2f6e7d66fc",
+      "expected_old_sha256": "7e46228cd3a9990be646810f6ecbff32d633d7a5c154d1e2fa8ef8902eb37256",
+      "old_path": "compat/android/pocket4/closeout-20261107/continuation/camera_video_state.py"
+    },
+    {
+      "current_bundle_file": "tests/camera_video_state_test.py",
+      "current_sha256": "6231c471ec505ed11afb7c40fa2d7f0e4c05299a2d297a31981a4fa223097e51",
+      "expected_old_sha256": "8c3714e0a18fff086cb7d04d6d175c07a37dd33311cab10b14c9711b82dfe571",
+      "old_path": "compat/android/pocket4/closeout-20261107/continuation/camera_video_state_test.py"
+    }
+  ],
+  "retire_legacy_paths_after_reference_check": true,
+  "runtime_inputs": "pending; do not copy an old plan or fill an invented epoch/identity",
+  "schema": "pocket4-camera-source-upgrade-map-v1",
+  "shared_r3_r4_current_modified": false,
+  "test_layout_note": "Current test resolves ../source/camera_video_state.py; publish the complete folder layout, not only the test file beside the old flat module."
+}

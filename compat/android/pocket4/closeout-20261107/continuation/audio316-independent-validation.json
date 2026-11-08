@@ -1,0 +1,228 @@
+{
+  "schema": "audio316-independent-validation-v1",
+  "created_ns": 1794137672282207206,
+  "source_commit": "3b4199c0af6e430a852131a71f87aa65aef8f813",
+  "source_path": "/home/alex/work/pocket4-audio-cts-closure-child-20261108-1794137182/source",
+  "old_lock_sha256": "ac2f7fa3d7e53be1b0e69f486876f8ad229dcc64686af208251bd4aee2424ae4",
+  "new_lock_sha256": "c104640627a1beb35b25423656e751a4b56ac17287505c0ee2efeeb7d0419560",
+  "previous_projects": 309,
+  "current_projects": 316,
+  "added_projects": [
+    {
+      "commit": "eae519aaa6980b2a34ec07141bb19de3f6ddf69e",
+      "name": "platform/external/deqp",
+      "path": "external/deqp",
+      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+      "sparse_paths": [
+        "android/cts/main",
+        "android/openglcts/AndroidManifest.xml",
+        "android/openglcts/src",
+        "android/package",
+        "data",
+        "execserver",
+        "executor",
+        "external",
+        "framework",
+        "modules",
+        "android/cts/runner",
+        "android/cts/angle"
+      ]
+    },
+    {
+      "commit": "d425c460bde47239483e36ccbec5674cf39eb431",
+      "name": "platform/external/deqp-deps/SPIRV-Headers",
+      "path": "external/deqp-deps/SPIRV-Headers",
+      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+      "sparse_paths": [
+        "include"
+      ]
+    },
+    {
+      "commit": "4e0aa7940f17b47e67f7be80442d526b4fc54142",
+      "name": "platform/external/deqp-deps/SPIRV-Tools",
+      "path": "external/deqp-deps/SPIRV-Tools",
+      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+      "sparse_paths": [
+        "include",
+        "source",
+        "test",
+        "tools",
+        "utils"
+      ]
+    },
+    {
+      "commit": "e2217d1616b410dc65f72d0cdd0b73f0b72a860d",
+      "name": "platform/external/deqp-deps/amber",
+      "path": "external/deqp-deps/amber",
+      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+      "sparse_paths": [
+        "android_sample",
+        "include",
+        "samples/config_helper.h",
+        "samples/config_helper_dawn.h",
+        "samples/config_helper_vulkan.h",
+        "samples/log.h",
+        "samples/png.h",
+        "samples/ppm.h",
+        "samples/timestamp.h",
+        "src",
+        "tools"
+      ]
+    },
+    {
+      "commit": "14422bdc57fb93221192a0c542dde144980dfb69",
+      "name": "platform/external/deqp-deps/glslang",
+      "path": "external/deqp-deps/glslang",
+      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+      "sparse_paths": [
+        "SPIRV",
+        "StandAlone",
+        "Test",
+        "glslang",
+        "gtests"
+      ]
+    },
+    {
+      "commit": "06a9728c3609f856e87db38a6602196cec3ab727",
+      "name": "platform/external/easymock",
+      "path": "external/easymock",
+      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+      "sparse_paths": [
+        "src"
+      ]
+    },
+    {
+      "path": "tools/deviceinfra/prebuilts",
+      "name": "platform/tools/deviceinfra/prebuilts",
+      "commit": "bb2d5f519bd0bf57641d74f40c12bab281423781",
+      "purpose": "Same-superproject original ATS prebuilt providers required by the retained CTS suite dependency mutator",
+      "sparse_paths": [
+        "Android.bp",
+        "ats_console_deploy.jar",
+        "ats_olc_server_local_mode_deploy.jar",
+        "ats_olc_server_deploy.jar"
+      ]
+    }
+  ],
+  "sparse_extensions": [
+    {
+      "path": "cts",
+      "added_sparse_paths": [
+        "libs/shim",
+        "libs/install",
+        "hostsidetests/stagedinstall",
+        "hostsidetests/appsecurity/test-apps/PrivilegedUpdateApp",
+        "tools/cts-tradefed",
+        "libs/runner",
+        "tests/core/runner-axt",
+        "libs/vogar-expect"
+      ]
+    },
+    {
+      "path": "external/e2fsprogs",
+      "added_sparse_paths": [
+        "debugfs",
+        "lib",
+        "misc",
+        "e2fsck"
+      ]
+    },
+    {
+      "path": "platform_testing",
+      "added_sparse_paths": [
+        "scripts"
+      ]
+    },
+    {
+      "path": "prebuilts/sdk",
+      "added_sparse_paths": [
+        "35/public/android.jar",
+        "35/public/framework.aidl",
+        "35/public/core-for-system-modules.jar"
+      ]
+    }
+  ],
+  "actual_old_lock_monotonic_extension": true,
+  "migration_errors": [],
+  "source_tests": {
+    "passed": 15,
+    "failed": 0,
+    "ignored": 0,
+    "native_job": "1a1baea888c-12894-1e4f",
+    "result": "rust-tests-result.json"
+  },
+  "update_tests": {
+    "passed": 198,
+    "failed": 0,
+    "ignored": 1,
+    "ignored_reason": "existing published_source_pin_fetches_and_verifies requires network",
+    "native_job": "1a1baecb7d2-12894-1e5f",
+    "result": "update-binary-tests-result.json"
+  },
+  "production_actions": 0,
+  "materialization_actions": 0,
+  "android_acceptance": false,
+  "live_materialization_read": {
+    "locked_read": true,
+    "path": "/home/alex/work/pocket4-audio-source-build-20261108-r1/work/aosp-source/.droidloom-source-manifest.json",
+    "sha256": "b7c42d4574d048bce42a0994856121e38355f16e0b96884785686e37b7c7ae03",
+    "project_count": 309,
+    "metadata": {
+      "schema_version": 1,
+      "source_lock_sha256": "ac2f7fa3d7e53be1b0e69f486876f8ad229dcc64686af208251bd4aee2424ae4"
+    },
+    "superproject_commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+    "plan_sha256": "5c94acb859d64797f336f9ace814895b6b75e8e0c041e9edffc2dfe6db479598",
+    "actual_manifest_matches_previous_locked_projects": true,
+    "comparison_errors": []
+  },
+  "active_audio_processes": [],
+  "active_process_observed_ns": 1794137771794060284,
+  "process_visibility": "root_readonly_proc_snapshot",
+  "existing_exact_normal_tools": {
+    "native_job": "1a1bae73e0b-12894-1e33",
+    "native_status": "succeeded",
+    "exit_code": 0,
+    "controls_result": {
+      "path": "/home/alex/work/pocket4-audio-builder-api35-cts-provider-host-20261108-r1/controls/result.json",
+      "sha256": "a873f6f60f0f6599167eade34bcb44dc9828309a96b5d14ce4c981c4c43ef3e5"
+    },
+    "source_commit": "3b4199c0af6e430a852131a71f87aa65aef8f813",
+    "source_tree": "5ccefae63418a1efdd6bb716b63a77deb80601c0",
+    "tools": [
+      {
+        "name": "droidloom-source",
+        "path": "/home/alex/work/pocket4-audio-builder-api35-cts-provider-host-20261108-r1/bin/droidloom-source",
+        "bytes": 19272984,
+        "sha256": "31c1526cd454620be7142b9294f3262439c11c2891d7931c2be87f59010b5bc1",
+        "expected_receipt_matches": true
+      },
+      {
+        "name": "droidloom-update",
+        "path": "/home/alex/work/pocket4-audio-builder-api35-cts-provider-host-20261108-r1/bin/droidloom-update",
+        "bytes": 32204872,
+        "sha256": "c4b3487bdf6ce27705881071d8466add5a4d28a82eccab846c655b0751d35932",
+        "expected_receipt_matches": true
+      }
+    ],
+    "source_controls_passed": 4,
+    "updater_controls_passed": 5,
+    "retired": true,
+    "compiler_memory_peak_bytes": 789499904
+  },
+  "next_step": "Root coordinates actual Native retirement and shared heavy resource admission; then existing exact316 source controller normal verify/reconcile/verify, followed by full strict Audio APEX build. No materialize/build started by independent verifier.",
+  "prepared_controllers": {
+    "reconcile_audio_api35_cts.py.prepared": {
+      "path": "/home/alex/work/pocket4-audio-builder-api35-cts-provider-host-20261108-r1/continuation/reconcile_audio_api35_cts.py.prepared",
+      "bytes": 27306,
+      "sha256": "867555cc4ecac1e8a2cbe386614700b7782f6049c71f95aa28333919da9b7b23",
+      "executed_by_independent_verifier": false
+    },
+    "build_audio_api35_cts.py.prepared": {
+      "path": "/home/alex/work/pocket4-audio-builder-api35-cts-provider-host-20261108-r1/continuation/build_audio_api35_cts.py.prepared",
+      "bytes": 50936,
+      "sha256": "d769d15a4d7f502c5929a222c54ad5a6f31096f0b33de894208638024a8b60a4",
+      "executed_by_independent_verifier": false
+    }
+  }
+}

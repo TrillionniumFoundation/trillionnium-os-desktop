@@ -1,0 +1,131 @@
+{
+  "elapsed_seconds": 0.7663660219404846,
+  "result": {
+    "Android_UI_actions": 0,
+    "Main_actions": 0,
+    "camera_actions": 0,
+    "candidate_decoder": {
+      "bytes": 15348,
+      "path": "/home/alex/work/pocket4-camera-decoder-child-20261108-1794138558/candidate/source/camera_decode.py",
+      "sha256": "2536849daa9913832bc8c33bf4de17292f0e8a471c571c11ca0b0ddfb3b11c8a"
+    },
+    "capture": {
+      "bytes": 14933,
+      "path": "/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py",
+      "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+    },
+    "cases": {
+      "test_changed_source_after_seal_is_rejected": {
+        "rejected_before_child_dispatch": true
+      },
+      "test_corrupt_clip_fails_cleanly_without_retry": {
+        "corrupt_input_rejected": true,
+        "host_retired": true,
+        "no_retry": true,
+        "result": {
+          "bytes": 7372,
+          "path": "/home/alex/work/pocket4-camera-decoder-child-20261108-1794138558/candidate/host-controls-r2/test_corrupt_clip_fails_cleanly_without_retry/evidence/002-decode-probe-result.json",
+          "sha256": "27e5d85126877dbbb78741df573ac075e9c4afe9648e897efbde8da54769d386"
+        }
+      },
+      "test_expired_copy_deadline_closes_both_fds": {
+        "expired_phase_rejected": true,
+        "no_fd_leak": true
+      },
+      "test_full_decode_same_bytes_sealed_and_no_fd_leak": {
+        "all_three_command_results": [
+          {
+            "bytes": 7152,
+            "path": "/home/alex/work/pocket4-camera-decoder-child-20261108-1794138558/candidate/host-controls-r2/test_full_decode_same_bytes_sealed_and_no_fd_leak/evidence/002-decode-probe-result.json",
+            "sha256": "f8de488aa464dc21ac017b62773f3d72bfdc86f81cca5e65bb9f3702168569ea"
+          },
+          {
+            "bytes": 7254,
+            "path": "/home/alex/work/pocket4-camera-decoder-child-20261108-1794138558/candidate/host-controls-r2/test_full_decode_same_bytes_sealed_and_no_fd_leak/evidence/004-decode-video-result.json",
+            "sha256": "6063649cad16110697d69c158053a55e324a4dd60f7b29b0b4487405cd349607"
+          },
+          {
+            "bytes": 6679,
+            "path": "/home/alex/work/pocket4-camera-decoder-child-20261108-1794138558/candidate/host-controls-r2/test_full_decode_same_bytes_sealed_and_no_fd_leak/evidence/006-decode-audio-result.json",
+            "sha256": "2bc571164f3923643a469db68b9e0a1fa5e6c014e441ca3becac89fd8f74cfc7"
+          }
+        ],
+        "all_three_real_children_retired": true,
+        "canonical_identity_and_sha256_unchanged": true,
+        "full_decode": {
+          "bytes": 13457,
+          "path": "/home/alex/work/pocket4-camera-decoder-child-20261108-1794138558/candidate/host-controls-r2/test_full_decode_same_bytes_sealed_and_no_fd_leak/evidence/007-full-owned-video-decode.json",
+          "sha256": "b282238589cfd11a38394054b57b7050a1ab6c36c038b2c60ffd1e21c7443285"
+        },
+        "identical_sealed_bytes": true,
+        "observed_reader": {
+          "bytes": 33912,
+          "fds": {
+            "0": "/dev/null",
+            "1": "pipe:[3500872595]",
+            "2": "pipe:[3500872596]",
+            "6": "/memfd:camera-owned-video (deleted)"
+          },
+          "gid": 1000,
+          "sha256": "10d5b4e6996a073a61d9714a52543ed9b98cc382a682ca7d939f160f56f3006d",
+          "uid": 1000
+        },
+        "sealed_attack_fixture_distinct_from_decode_input": true,
+        "sealed_write_grow_shrink_reseal_rejected": true
+      },
+      "test_original_root0400_probe_fails_with_eacces": {
+        "host_retired": true,
+        "permission_denied_observed": true,
+        "result": {
+          "bytes": 6526,
+          "path": "/home/alex/work/pocket4-camera-decoder-child-20261108-1794138558/candidate/host-controls-r2/test_original_root0400_probe_fails_with_eacces/evidence/002-decode-probe-result.json",
+          "sha256": "d674eb9cbca38dc4bd3255c09262055d33afa7577be65d6ff969b42ffc624e43"
+        },
+        "returncode": 1
+      },
+      "test_sealed_copy_hash_guard_cleans_partial_memfd": {
+        "copy_hash_mismatch_rejected": true,
+        "no_fd_leak": true
+      },
+      "test_source_hash_mismatch_closes_constructor_fds": {
+        "no_fd_leak": true,
+        "rejected_before_child_dispatch": true
+      },
+      "test_wrong_nonce_cannot_qualify_decoded_audio": {
+        "all_three_real_children_retired": true,
+        "success_receipt_absent": true,
+        "wrong_current_nonce_rejected": true
+      }
+    },
+    "commands": {
+      "bytes": 12813,
+      "path": "/home/alex/work/pocket4-android-final/qualification/business-support-frozen-resume-20261107-r9/business_commands.py",
+      "sha256": "cfe92077ebb75db4f7f0fd577fcd7e6d664afd9338128a05435512549ceeb1f3"
+    },
+    "errors": 0,
+    "failures": 0,
+    "finished_unix_ns": 1794140500777741884,
+    "fixture": {
+      "Android_MediaStore_row": false,
+      "bytes": 33912,
+      "duration_ms": 4000,
+      "microphone_recording": false,
+      "sha256": "10d5b4e6996a073a61d9714a52543ed9b98cc382a682ca7d939f160f56f3006d",
+      "source": "locally generated lavfi video and finite synthetic nonce waveform"
+    },
+    "original_decoder": {
+      "bytes": 11665,
+      "path": "/home/alex/work/pocket4-camera-decoder-child-20261108-1794138558/r3/source/camera_decode.py",
+      "sha256": "0983471decc4bd7146d30c06ad700b539bd607fef79f7c187d880fee436e652d"
+    },
+    "passed": true,
+    "physical_audio_stream_actions": 0,
+    "runtime_qualified": false,
+    "scope": "synthetic-media-source-host-controls-only",
+    "skipped": 0,
+    "tests_run": 8,
+    "whole_app_business_accepted": false
+  },
+  "returncode": 0,
+  "runtime_qualified": false
+}

@@ -8,7 +8,7 @@ import copy
 import hashlib
 import unittest
 
-source=Path(__file__).with_name('camera_video_state.py')
+source=Path(__file__).parent.parent / 'source' / 'camera_video_state.py'
 
 def namespace(text):
     result={'__name__':'camera_video_state_unit','__file__':str(source)}
@@ -35,7 +35,7 @@ def run_cases(text):
             return make_ref(str(self.sequence)+'-'+event)
         def node(self,ident=None,desc=None,text=None,clickable=True):
             n={'package':m['PACKAGE'],'visible':True,'enabled':True,'clickable':clickable,
-               'window_id':7,'bounds':[1,1,20,20]}
+               'window_id':7,'bounds_array':[1,1,20,20]}
             if ident:n['resource-id']=ident
             if desc:n['content-desc']=desc
             if text is not None:n['text']=text
@@ -47,7 +47,8 @@ def run_cases(text):
             if seconds is not None:
                 nodes.append(self.node(ident=m['TIMER'],text='00:'+str(seconds).zfill(2),clickable=False))
             self.native={'ok':True,'outcome_unknown':False,'accessibility_mode_restoration_verified':True,
-                'nodes':nodes,'window_context':{'selected_window':{'window_id':7,'display_id':0,
+                'nodes':nodes,'window_context':{'snapshot_complete':True,'truncated':False,'display_id':0,
+                'selected_window':{'window_id':7,'display_id':0,'active':True,
                 'focused':True,'type':1,'root':{'package':m['PACKAGE']}}}}
             self.record.observe(value=self.native,focus_value=self.focus,mode=mode,
                 monotonic_ns=self.now,observation_ref=make_ref('observation-'+str(self.now)))
@@ -88,7 +89,8 @@ def run_cases(text):
             audio={**common,'decoded_own_audio_nonce_match':True,'CAMCORDER_uid':10062,
                 'actual_HAL_input_session_bound':True,'actual_physical_source_bound':True,
                 'baseline_negative_passed':True,'decoy_negative_passed':True}
-            playback={**common,'actual_owned_uri_intent':True,'actual_video_frames_advanced':True,
+            playback={**common,'actual_owned_uri_intent':True,'actual_video_decoder_outputs_advanced':True,
+                'two_current_foreground_pixel_observations':True,'physical_presented_frame_claim':False,
                 'actual_Android_output_session_bound':True,'physical_playback_nonce_match':True,
                 'owned_player_closed':True,'foreign_tasks_unchanged':True}
             self.record.audio_and_playback(audio_ref=make_ref('audio'),audio=audio,
