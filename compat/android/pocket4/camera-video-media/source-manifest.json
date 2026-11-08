@@ -1,18 +1,18 @@
 {
   "camera_video_verified": false,
-  "candidate": "camera-video-owned-clip-decode-20261108-r1",
+  "candidate": "camera-video-owned-clip-decode-20261108-r2",
   "code_component_implemented": "owned video sealed copy and actual bounded full host decode",
   "code_entrypoints_complete": false,
   "files": [
     {
-      "bytes": 5778,
+      "bytes": 7089,
       "path": "README.md",
-      "sha256": "184543abc35a70c41ad05f0a9b80554eb7a1a33b252385473c34630ac5247d23"
+      "sha256": "2c9f9e2f6076f9d5f7606c1a8e639370cb75be1ba5c53e1988e847620d360e84"
     },
     {
-      "bytes": 4978,
+      "bytes": 5419,
       "path": "origins.json",
-      "sha256": "8e76690e7a76112dd533f747b7d3b2a9f887c81487c7339a3230b4e2a0a36a89"
+      "sha256": "6344b76a982ad3f70a32f2e4957fa8c3bfb4fd24191d145b760597ff1cb09fe7"
     },
     {
       "bytes": 6956,
@@ -35,14 +35,14 @@
       "sha256": "8433cf30cb94c6a393757f80a2e5a4d3799338fc348fbda9d5084e960d967192"
     },
     {
-      "bytes": 20442,
+      "bytes": 22786,
       "path": "tests/test_camera_video_decode.py",
-      "sha256": "37251829ddad24606fe42c73c278f0619f533aca6603c1e5ff47450570de374b"
+      "sha256": "530043ed8f00da2ea4dbd25649e007cc3a5abbaa1fc1f780fe8377389bfcd25c"
     },
     {
-      "bytes": 5483,
+      "bytes": 7773,
       "path": "validation/local-controls.json",
-      "sha256": "110cd7b46b4f9eac6bc82e1f128f2cf8f4a812b1e7fc766fd1f4ac7b9ca4e45f"
+      "sha256": "b5903c1588c21df0712c81db5e73fee4f510a3799f6f81d0a554c33b608d7d97"
     }
   ],
   "host_controls_completed": false,
@@ -55,6 +55,7 @@
     "Whole-case runtime qualification and owned cleanup"
   ],
   "linux_control_count_required": 15,
+  "production_sources_changed_from_r1": false,
   "published_text_files": [
     "README.md",
     "origins.json",
@@ -66,9 +67,14 @@
     "tests/test_camera_video_decode.py",
     "validation/local-controls.json"
   ],
+  "revision_parent": {
+    "bytes": 2644,
+    "path": "/workspace/scratch/347ef2dfe9ad/audio-runtime-independent-audit/camera-video-media-candidate/source-manifest.json",
+    "sha256": "da86de36e5fb5a90ecc02a6ef48eb5bba783c12813fae2d6d042d554debede83"
+  },
   "runtime_qualified": false,
   "schema": "pocket4-camera-video-component-source-manifest-v1",
   "self_reference": "This manifest is included in published_text_files; its hash is reported separately to avoid a recursive self hash.",
-  "status": "frozen_source_pending_Linux_CI",
+  "status": "frozen_source_pending_Linux_CI_rerun",
   "whole_app_business_accepted": false
 }

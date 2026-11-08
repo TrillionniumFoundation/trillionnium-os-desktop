@@ -5,6 +5,30 @@ This candidate implements the missing held-clip/full-decoder component from
 Camera video or recovery gate. `code_entrypoints_complete`,
 `runtime_qualified`, and `camera_video_verified` remain false.
 
+## r2: precise sealed-write negative control
+
+Ubuntu CI run `42476447626`, job `128718754655`, commit
+`5c5ea2665df03ab992ce62cc923eba9846a8d6ae` actually ran all 15 r1 controls.
+Fourteen passed, including complete probe/video/PCM/nonce decoding and the
+real delayed-child UNKNOWN control. The seals negative control failed at
+its final strict identity verification.
+
+A real local memfd experiment confirmed the cause: denied `write`/`pwrite`
+returned `EPERM` while changing `st_mtime_ns` and `st_ctime_ns`; size, complete
+content SHA-256 and all four seals remained unchanged. Denied shrink/grow
+left metadata unchanged in that experiment. Production correctly rejected
+the changed complete identity.
+
+r2 changes only that test and its documentation/evidence. All four
+production source files retain their r1 hashes. After every denied
+operation the test checks the exact errno, content hash/size, all seals,
+read-only mode, non-inheritance, FD/path identity and original source.
+Only actual mtime/ctime changes are allowed in this negative experiment.
+The original identity is never rebased: if it changed, `verify()` must
+raise exactly `SAME_READONLY_SEALED_VIDEO_AND_HELD_ORIGINAL`; otherwise it
+must succeed. A generic exception cannot pass. The actual Ubuntu rerun of
+all 15 r2 controls remains required.
+
 ## Source change
 
 `source/camera_video_decode.py` opens only the current typed-policy-owned video

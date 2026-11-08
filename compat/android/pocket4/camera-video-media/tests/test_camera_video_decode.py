@@ -141,21 +141,56 @@ class DecoderHostControls(unittest.TestCase):
 
     def test_all_seals_and_readonly_view_reject_writes_and_resizes(self):
         with self.clip() as clip:
-            self.assertEqual(fcntl.fcntl(clip.fd, fcntl.F_GET_SEALS), decode.SEALS)
-            with self.assertRaises(OSError):
-                os.write(clip.fd, b'x')
+            original = dict(clip.memfd_identity)
+
+            def assert_sealed_content_and_guard():
+                current = decode.identity(os.fstat(clip.fd))
+                changed = {key for key in original if current[key] != original[key]}
+                # Linux can update these timestamps before a sealed write is
+                # rejected. No other metadata/content change is acceptable.
+                self.assertLessEqual(changed, {'st_mtime_ns', 'st_ctime_ns'})
+                self.assertEqual(current, decode.identity(os.stat(clip.path)))
+                self.assertEqual(clip.memfd_identity, original)  # Never rebase production identity.
+                self.assertEqual(os.readlink(clip.path), clip.label)
+                self.assertEqual(fcntl.fcntl(clip.fd, fcntl.F_GET_SEALS), decode.SEALS)
+                self.assertEqual(fcntl.fcntl(clip.fd, fcntl.F_GETFL) & os.O_ACCMODE, os.O_RDONLY)
+                self.assertFalse(os.get_inheritable(clip.fd))
+                raw = os.pread(clip.fd, clip.bytes + 1, 0)
+                self.assertEqual(len(raw), clip.bytes)
+                self.assertEqual(hashlib.sha256(raw).hexdigest(), clip.sha256)
+                self.assertEqual(decode.identity(os.fstat(clip.source_fd)), clip.source_identity)
+                clip.verify_named_source()
+                self.assertLess(time.monotonic(), clip.deadline)
+                if changed:
+                    with self.assertRaisesRegex(RuntimeError, '^SAME_READONLY_SEALED_VIDEO_AND_HELD_ORIGINAL$'):
+                        clip.verify()
+                else:
+                    clip.verify()
+                return current, sorted(changed)
+
+            def denied(name, operation, expected_errno):
+                before = decode.identity(os.fstat(clip.fd))
+                with self.assertRaises(OSError) as raised:
+                    operation()
+                self.assertEqual(raised.exception.errno, expected_errno)
+                after, changed = assert_sealed_content_and_guard()
+                RUNS.append({'kind': 'sealed_memfd_denied_operation', 'operation': name,
+                    'errno': raised.exception.errno, 'before': before, 'after': after,
+                    'metadata_changed_since_original': changed, 'unchanged_bytes': clip.bytes,
+                    'unchanged_sha256': clip.sha256, 'seals': decode.SEALS,
+                    'strict_guard_rejected_changed_identity': bool(changed), 'local_synthetic_only': True})
+
+            assert_sealed_content_and_guard()
+            denied('write_readonly', lambda: os.write(clip.fd, b'x'), errno.EBADF)
             writable_view = os.open(clip.path, os.O_RDWR | os.O_CLOEXEC)
             try:
-                for size in [clip.bytes - 1, clip.bytes + 1]:
-                    with self.assertRaises(OSError) as raised:
-                        os.ftruncate(writable_view, size)
-                    self.assertEqual(raised.exception.errno, errno.EPERM)
-                with self.assertRaises(OSError) as raised:
-                    os.write(writable_view, b'x')
-                self.assertEqual(raised.exception.errno, errno.EPERM)
+                denied('shrink_sealed', lambda: os.ftruncate(writable_view, clip.bytes - 1), errno.EPERM)
+                denied('grow_sealed', lambda: os.ftruncate(writable_view, clip.bytes + 1), errno.EPERM)
+                denied('write_sealed', lambda: os.write(writable_view, b'x'), errno.EPERM)
             finally:
                 os.close(writable_view)
-            clip.verify()
+            assert_sealed_content_and_guard()
+        self.assertTrue(clip.closed)
 
     def test_foreign_pid_and_self_route_cannot_replace_production_path(self):
         with self.clip() as clip:
