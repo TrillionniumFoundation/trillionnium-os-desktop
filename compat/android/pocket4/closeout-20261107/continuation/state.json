@@ -1,4 +1,20 @@
 {
+  "QPR1_actual_empty_data_boot": {
+    "Android_boot_completed": false,
+    "actual_daemon_and_cell_start_attempted": true,
+    "concrete_blocker": "installed unshare rejects --forward-signals",
+    "official_system_and_current_vendor_independent_copies": true,
+    "original_user_data_metadata_unchanged": true,
+    "original_user_data_used": false,
+    "outer_private_cgroup_namespace_measured": true,
+    "owned_processes_network_mounts_loops_cgroup_and_runtime_retired": true,
+    "production_isolation_qualified": false,
+    "result": {
+      "bytes": 59325,
+      "sha256": "e8081e7c1d18dd72a16151ee8b1a671a24b5140c8c6f12242bc2b130ea57d1d9"
+    },
+    "runtime_qualified": false
+  },
   "actual_audio_source": {
     "full_APEX_qualified": false,
     "materialized_manifest": {
@@ -161,6 +177,16 @@
     "source_migration_qualified": true,
     "target_projects": 316
   },
+  "audio_compiler_evidence": {
+    "Audio_artifact_qualification_granted": false,
+    "actual_Ninja_commands_passed": 3,
+    "actual_changed_command_or_response_rejections": 4,
+    "actual_pinned_Ninja_fixtures": 2,
+    "bytes": 646,
+    "path": "../audio-ninja-evidence-r1/FILES.json",
+    "portable_controls": 12,
+    "sha256": "9d941c44655836ae07e13e382d80be2565909e57d8f17ef8e52d1067a3830d1c"
+  },
   "build_observations": {
     "bytes": 6682,
     "path": "continuation/build-observations-20261108-native597-audio316.json",
@@ -222,25 +248,31 @@
   },
   "cleanup_app_experiments": {
     "all_deleted_paths_absent": true,
-    "allocated_bytes_deleted": 5150584832,
-    "batches": 17,
+    "allocated_bytes_deleted": 5330837504,
+    "batches": 18,
     "current_retirement_summary": {
-      "bytes": 4184,
-      "path": "cleanup/obsolete-output-retirement-summary.json",
-      "sha256": "c3a1ca3f2241dd0e7318909a75d29bdee851885f4d0afb46fcb492e4560ab7d9"
+      "allocated_bytes_deleted": 180252672,
+      "bytes": 9421,
+      "current_inputs_unchanged": 294,
+      "files_deleted": 17400,
+      "fresh_mount_namespaces_checked": 27,
+      "fresh_processes_checked": 682,
+      "protected_data_unchanged": true,
+      "roots_deleted": 34,
+      "sha256": "c59e92a3728d691de9dae2fe07c00c9681640c140441c06eaaee93f56c473126"
     },
-    "deleted_roots": 729,
+    "deleted_roots": 763,
     "original_retirement_deleted_roots": 723,
     "original_retirement_retained_roots": 84,
     "protected_identities_unchanged": true,
-    "remaining_retirement": "After final deployment and runtime/application qualification, release current dependencies and recheck references/use before retirement.",
+    "remaining_retirement": "44 roots: 35 actual current qualification inputs, 5 minimal patch inputs to migrate, 3 owner/fixture proof roots to compact, and 1 unique QA signing root while its package remains installed. Rebind current consumers before retirement.",
     "requested_roots": 807,
     "results": {
       "bytes": 6043,
       "path": "cleanup/app-retirement-20261108-summary.json",
       "sha256": "1a2f7ca8b5e97b0ec0e68371aba3299d5b6dbcf0535868a84b113227da1ff5e7"
     },
-    "retained_roots": 78,
+    "retained_roots": 44,
     "state": "COMPLETED_WITH_RETAINED_CURRENT_DEPENDENCIES"
   },
   "current_source_controls": {
@@ -417,15 +449,19 @@
     "Audio_GOMAXPROCS": 2,
     "Audio_GOMEMLIMIT": "5GiB",
     "Audio_then_Native_serialized": true,
+    "Native_unstarted_frozen_disk_admission_bytes": 83751862272,
+    "Native_unstarted_frozen_output_budget_bytes": 66571993088,
     "build_memory_max_bytes": 25769803776,
     "complete_build_fit_demonstrated": false,
     "cpu_count": 8,
+    "current_generation": "Audio r4",
     "fresh_MemAvailable_minimum_bytes": 31138512896,
+    "fresh_disk_admission_bytes": 68719476736,
     "host": "desktop",
     "host_reserve_bytes": 5368709120,
     "normal_parallelism": 6,
     "public_disk_reserve_bytes": 17179869184,
-    "single_build_output_budget_bytes": 66571993088,
+    "single_build_output_budget_bytes": 51539607552,
     "swap_max_bytes": 0
   },
   "next_full_build_resource_profile_previous_Pocket4": {
@@ -445,8 +481,13 @@
     "Audio316_complete_copy_and_normal_source_verification_passed": true,
     "Audio_normal_full_driver_reached": true,
     "Audio_normal_full_request_jobs": 6,
+    "Native597_all_103_checksum_batches_and_normal_source_verification_passed": true,
     "Native597_all_103_copy_batches_completed": true,
-    "Native597_checksum_and_normal_verification_continuation_required": true,
+    "Native597_checksum_and_normal_verification_continuation_required": false,
+    "Native597_source_result": {
+      "bytes": 1848083,
+      "sha256": "88f20cd4e5172ff783a39a08dbc2a8d822d87179bed763c3f5f596e8cc255c48"
+    },
     "TMPDIR_and_GOTMPDIR_inside_owned_data_work_budget": true,
     "actual_Go_GOMAXPROCS": 2,
     "actual_Go_GOMEMLIMIT_bytes": 5368709120,
@@ -456,13 +497,35 @@
     "first_full_failure": {
       "driver_started": true,
       "frozen_failed_generation_not_modified": true,
-      "independent_final_unit_and_source_reconciliation_required": true,
+      "independent_final_unit_and_source_reconciliation_passed": true,
+      "independent_final_unit_and_source_reconciliation_required": false,
+      "independent_reconciliation_result": {
+        "bytes": 23015,
+        "sha256": "180a31cfd772c0a908fb43284bf5bb4b63a23d0ed99317c1bc722ca328f977d5"
+      },
       "normal_driver_owned_retirement_complete": true,
       "normal_driver_returncode": -9,
       "normal_lock_after_exit_code": 0,
       "normal_source_recovery_exit_code": 0,
       "outer_log_incomplete_terminal_not_accepted_as_clean_success": true,
       "reason": "observer compared mutable argv with process generation during the exec window"
+    },
+    "later_disk_admission_failure": {
+      "before_inner_or_Soong_start": true,
+      "complete_terminal_preserved": true,
+      "owned_unit_retired": true,
+      "reason": "shared data disk had less than 62 GiB output plus 16 GiB reserve"
+    },
+    "new_explicit_Audio_resource_generation": {
+      "budget_known_sufficient": false,
+      "complete_compiled_APEX_qualified": false,
+      "fresh_admission_bytes": 68719476736,
+      "normal_full_driver_started": true,
+      "original_failed_generations_not_modified": true,
+      "outer_and_inner_fresh_admission_passed": true,
+      "own_work_output_max_bytes": 51539607552,
+      "public_disk_floor_bytes": 17179869184,
+      "runtime_qualified": false
     },
     "process_command_repair": {
       "actual_Linux_controls_passed": 10,
@@ -514,7 +577,7 @@
     "total_registered_packages_observed": 208
   },
   "pending": {
-    "audio": "Desktop source316 copy and normal verification passed; the actual full driver exposed a process-command observation race. Preserve its failure and complete recovery, then use a new source-bound generation. Whole vendor Audio APEX and QPR1 compatibility remain unqualified.",
+    "audio": "The independent failed-generation recovery and all source checks passed. A new explicit 48 GiB owned-output generation passed both fresh admissions and started the normal full driver. Its complete vendor Audio APEX, QPR1 ELF closure and runtime remain unqualified.",
     "camera_and_storage": "Current Camera source38, decoder8, owned display negative4 and formal preparation passed in the canonical location. Real Main/display/audio, Camera2/UVC, Camera recovery, Storage lifecycle and whole-app acceptance remain pending.",
     "cleanup": "The original inventory is now 729 removed / 78 retained. Migrate live references and retire obsolete roots, old payloads and experiments after replacement validation; preserve user images and current signing material.",
     "final_deployment": "Compose and inspect the complete canonical cohort before using the reviewed installation transaction.",
@@ -522,7 +585,7 @@
     "native": "Normal597 materialization and R11 source consumption passed. All desktop copy batches finished; source-only checksum and normal verification continuation is active. Full engine/ART artifacts and QPR1-compatible native bridge remain unqualified.",
     "production_isolation": "The development runner has not qualified production UID mapping or seccomp. A successful isolated empty-data boot probe cannot close this gate.",
     "release_currency": "The verified official QPR1 GSI is on Pocket4 and the actual host layout passed. Preserve official QPR1 ART, bionic, APEX and framework components while qualifying necessary compatibility changes. September SPL does not imply November coverage. Official app delivery and data-preserving signature migration remain pending.",
-    "runtime_and_applications": "Create a fresh coherent runtime and accept the final selected production applications; historical original45 acceptance remains zero. The planned set is 42 if the prepared official Firefox replacement is installed."
+    "runtime_and_applications": "Repair the actual installed-unshare signal-forwarding incompatibility, then complete coherent QPR1 boot, production isolation and final selected 42-app acceptance. Historical original45 and current final42 acceptance remain zero."
   },
   "previous_public_observation": {
     "bytes": 28107,
@@ -531,16 +594,18 @@
   },
   "production_isolation_gate": {
     "development_UID_map_and_seccomp_qualified": false,
-    "layout_patch_does_not_implement_production_hardening": true
+    "development_cgroup_namespace_argument_missing": true,
+    "layout_patch_does_not_implement_production_hardening": true,
+    "probe_outer_cgroup_namespace_does_not_qualify_production_runner": true
   },
-  "publication_state": "HOST_GSI_LAYOUT_AND_SOURCE_OFFLOAD_CONTROLS",
-  "recorded_utc": "2026-11-08T20:08:00Z",
+  "publication_state": "ACTUAL_BOOT_BLOCKER_AND_AUDIO_COMPILER_EVIDENCE",
+  "recorded_utc": "2026-11-08T20:43:00Z",
   "resume_order": [
-    "Audio316 full-only strict APEX with fresh original locks and 8 GiB cap plus 5 GiB host reserve",
-    "Native597 normal strict full Native/ART after Audio retirement",
-    "Complete payload consumers and coherent canonical deployment, fresh host generation and original 45-application acceptance",
-    "Resolve current Android/security and official application release identities; rebuild and requalify changed cohort",
-    "Retire superseded versions and experiment artifacts after reference migration and actual replacement validation"
+    "Complete the actual serialized strict Audio full with 48 GiB owned output, 16 GiB public disk floor and unchanged source/retirement gates.",
+    "Repair and actually verify owned namespace signal forwarding and cgroup isolation against installed host tools, then continue the empty-data QPR1 boot.",
+    "Run Native strict full only after Audio owned retirement and a fresh explicit resource admission; do not relabel its CP2A target as QPR1.",
+    "Qualify coherent QPR1 payload ABI, production UID/seccomp/cgroup execution, Denial/Main, audio/video and all final selected 42 applications.",
+    "Finish official latest-APK delivery and data-preserving signer migration, then retire only superseded task artifacts and QA packages after fresh dependency checks."
   ],
   "runtime_qualified": false,
   "schema": "pocket4-android-continuation-v1",
@@ -726,5 +791,5 @@
     "production_actions_performed_by_this_continuation": false,
     "ready_for_apply": false
   },
-  "status": "QPR1_HOST_LAYOUT_VERIFIED_FULL_ARTIFACTS_AND_RUNTIME_PENDING"
+  "status": "QPR1_UNSHARE_COMPATIBILITY_REPAIR_AND_SERIAL_AUDIO_FULL_IN_PROGRESS"
 }

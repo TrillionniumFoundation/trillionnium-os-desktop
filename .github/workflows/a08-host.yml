@@ -115,6 +115,31 @@ jobs:
           if result.testsRun != 10 or result.skipped or not result.wasSuccessful():
               raise SystemExit('All ten process command witness controls must actually execute on Linux')
           PYCOMMAND
+      - name: Verify Audio compiler and Ninja evidence guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PYAUDIO' 2>&1 | tee "$RUNNER_TEMP/a08/audio-ninja-evidence.log"
+          import hashlib
+          import importlib.util
+          import json
+          from pathlib import Path
+          import sys
+          import unittest
+          directory = Path('compat/android/pocket4/audio-ninja-evidence-r1').resolve()
+          manifest = json.loads((directory / 'FILES.json').read_bytes())
+          for name, expected in manifest['files'].items():
+              raw = (directory / name).read_bytes()
+              if {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()} != expected:
+                  raise SystemExit('Audio evidence source pin differs: ' + name)
+          sys.path.insert(0, str(directory))
+          spec = importlib.util.spec_from_file_location('audio_ninja_controls', directory / 'test_ninja_audio_proof.py')
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(module))
+          if result.testsRun != 12 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('All twelve Audio compiler evidence controls must execute')
+          PYAUDIO
       - name: Preserve the qualified Sensor candidate during composition
         shell: bash
         run: |

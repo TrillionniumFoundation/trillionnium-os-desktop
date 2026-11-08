@@ -1,6 +1,6 @@
 # Pocket4 Android closeout continuation
 
-Current state: **`QPR1_HOST_LAYOUT_VERIFIED_FULL_ARTIFACTS_AND_RUNTIME_PENDING`**. Native597 and Audio316 have actual successful normal source materialization records. The ABI-qualified Sensor library is staged in the canonical candidate. Full Native/ART and Audio artifacts, final deployment, fresh runtime checks and original whole-application acceptance remain pending; applications remain **0/45**.
+Current state: **`QPR1_UNSHARE_COMPATIBILITY_REPAIR_AND_SERIAL_AUDIO_FULL_IN_PROGRESS`**. Native597 and Audio316 have actual successful normal source materialization records. The ABI-qualified Sensor library is staged in the canonical candidate. Full Native/ART and Audio artifacts, final deployment, fresh runtime checks and original whole-application acceptance remain pending; applications remain **0/45**.
 
 The [current state](continuation/state.json) and [latest execution reconciliation](continuation/build-observations-20261108-native597-audio316.json) distinguish actual completed work, preserved failures and remaining gates. The [earlier build observations](continuation/build-observations-20261108-native-tls-audio316.json) retain their original observation time. The [source repair package](build-source-repair-20261108/README.md) contains independently reconstructable frozen Native, current Audio316, historical Audio and separate combined-builder source chains.
 
@@ -57,7 +57,7 @@ The original 807-root retirement removed 723 roots and retained 84 for current r
 
 The [additional verified retirement](cleanup/obsolete-output-retirement-summary.json) removed five old Gallery output directories and one Clock preparation directory from those 84, leaving **729 removed / 78 retained** in that original inventory. It also removed eight obsolete transport files and the later independent Audio validation clone. These additional operations removed **379,023,360 allocated bytes** across eight files and seven directories. The clone's 436 tracked source files, all reachable commits and current Git controls remain at the retained source repository; its compact validation summary was adopted before deletion.
 
-Every removal used the exact reviewed member inventory, fresh process/mount/Git/reference checks before and after isolation, and a recorded physical absence check. Production entrypoints, the current cell and user-data identities were unchanged. Allocated bytes describe removed objects, not a concurrent-build free-space measurement. The remaining 78 original dependency roots and other old build/payload artifacts still require current-reference migration and final deployment/qualification before retirement. Cleanup and whole-application acceptance are not complete.
+Every removal used the exact reviewed member inventory, fresh process/mount/Git/reference checks before and after isolation, and a recorded physical absence check. Production entrypoints, the current cell and user-data identities were unchanged. Allocated bytes describe removed objects, not a concurrent-build free-space measurement. A later exact-reference pass deleted another 34 unreferenced old roots containing 17,400 files and 180,252,672 allocated bytes. It rechecked 682 processes, 27 mount namespaces and 294 current inputs; original account data and current inputs remained unchanged. The original inventory now has **763 removed / 44 retained**. Those 44 remaining roots contain actual current qualification inputs, minimal patches to migrate, owner/fixture proofs to compact, or the unique signer for a still-installed QA package. Cleanup and whole-application acceptance are not complete.
 
 The separately executed Camera child retirement was also reconciled against its actual successful host job and result: both reviewed child trees are absent, 10,301,440 allocated bytes were removed, and canonical/external source identities are unchanged. This is a confirmed prior operation, not a new deletion or an additional reduction in the original 807-root inventory.
 
@@ -89,8 +89,8 @@ Audio316 completed the exact desktop source copy, checksum verification,
 normal lock and materialized-source verification, and original-source checks.
 The file-only copy had omitted empty Git refs containers; their restoration
 required the original empty-directory witnesses and changed no source file,
-object, ref, or locked manifest. Native597 completed all 103 copy batches and
-continues with complete checksum and normal source verification.
+object, ref, or locked manifest. Native597 also completed all 103 copy and
+checksum batches, normal source verification, and original-source checks.
 
 A desktop Audio generation reached its actual normal full driver with six
 requested jobs and the pinned Go 1.25.4 toolchain. The actual Go process saw
@@ -98,7 +98,13 @@ eight CPUs, GOMAXPROCS=2 and a 5 GiB Go memory limit. Build temporary paths
 are explicit owned directories on the data volume. This is build execution,
 not complete-APEX or runtime qualification. Audio and Native full builds
 remain serialized within 24 GiB, eight CPUs, zero swap, a fresh 29 GiB memory
-floor, one 62 GiB work/output budget and a 16 GiB free-disk reserve.
+floor and a 16 GiB free-disk reserve. The 62 GiB output admission later
+failed before another inner build started. A new explicit Audio generation
+limits its own work/output to 48 GiB, requires 64 GiB total free space, and
+keeps the 16 GiB public floor. Both fresh admissions passed and the normal
+full driver started. That smaller output budget is not proven sufficient;
+exceeding it must retire only the owned build. The Native request remains
+unstarted under its separate frozen admission.
 
 The portable source repairs are preserved in the
 [exact batch partitioner](../source-transfer-batches-r1/README.md),
@@ -111,8 +117,9 @@ The first actual full driver exposed a further observer defect: its earliest
 `/proc` command line was empty during exec, while its PID, start time,
 executable and cgroup stayed the same. The frozen generation incorrectly
 treated the later complete argv as a new process. It failed and its normal
-driver was retired; source recovery and lock checks passed, with independent
-final retirement still required. Its incomplete outer cancellation log is
+driver was retired; source recovery and lock checks passed. The later
+independent check confirmed owned unit/cgroup/projection retirement, free
+original locks, and complete original source and materialized-input recovery. Its incomplete outer cancellation log is
 not accepted as a clean success. The [command witness repair](../process-command-witness-r1/README.md)
 separates stable ownership from mutable command observations while still
 requiring the exact executed argv and a held, SHA-pinned executable inode.
@@ -161,3 +168,24 @@ QPR1 framework and native compatibility still require their own ABI and
 runtime gates. The existing development runner's production UID mapping and
 seccomp limitations are also outside the completed layout change. No old
 CP2A full-build result may be relabelled as QPR1 production qualification.
+
+## Actual startup and compiler evidence follow-up
+
+An isolated empty-data QPR1 attempt used the actual qualified daemon and client,
+independent copies of the official system and current vendor images, a measured
+outer private cgroup namespace, and bounded CPU/memory/runtime limits. It reached
+the normal cell start, where the installed host `unshare` rejected
+`--forward-signals`. Android did not complete boot. Normal stop and independently
+checked recovery retired the exact processes, network, mounts, loops, cgroup,
+runtime and sockets. Original account-data metadata was unchanged. The signal
+contract must be repaired and tested against the installed tool before another
+boot; removing an unsupported flag alone is not a shutdown qualification.
+
+The [Audio compiler evidence guards](../audio-ninja-evidence-r1/README.md) now
+retain twelve portable counterexamples in CI. Actual tests against the pinned
+Ninja also verified plain and retained-response command hashes and nanosecond
+output mtimes. These bind original source, compiler arguments, dependencies,
+successful log entries and linked objects. They do not claim that the full
+Audio APEX or QPR1 runtime has passed. The prior failed Audio generation was
+separately retired and its original source verified without rewriting its
+incomplete H terminal or accepting its recovery as a successful full build.
