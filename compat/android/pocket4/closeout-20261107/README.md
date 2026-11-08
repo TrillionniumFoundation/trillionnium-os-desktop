@@ -1,6 +1,6 @@
 # Pocket4 Android closeout continuation
 
-Current state: **`QPR1_UNSHARE_COMPATIBILITY_REPAIR_AND_SERIAL_AUDIO_FULL_IN_PROGRESS`**. Native597 and Audio316 have actual successful normal source materialization records. The ABI-qualified Sensor library is staged in the canonical candidate. Full Native/ART and Audio artifacts, final deployment, fresh runtime checks and original whole-application acceptance remain pending; applications remain **0/45**.
+Current state: **`QPR1_INIT_REACHED_MODERN_VENDOR_ADAPTATION_AND_FULL_BUILDS_PENDING`**. Native597 and Audio316 have actual successful normal source materialization records. The ABI-qualified Sensor library is staged in the canonical candidate. Full Native/ART and Audio artifacts, final deployment, fresh runtime checks and original whole-application acceptance remain pending; applications remain **0/45**.
 
 The [current state](continuation/state.json) and [latest execution reconciliation](continuation/build-observations-20261108-native597-audio316.json) distinguish actual completed work, preserved failures and remaining gates. The [earlier build observations](continuation/build-observations-20261108-native-tls-audio316.json) retain their original observation time. The [source repair package](build-source-repair-20261108/README.md) contains independently reconstructable frozen Native, current Audio316, historical Audio and separate combined-builder source chains.
 
@@ -169,7 +169,7 @@ runtime gates. The existing development runner's production UID mapping and
 seccomp limitations are also outside the completed layout change. No old
 CP2A full-build result may be relabelled as QPR1 production qualification.
 
-## Actual startup and compiler evidence follow-up
+## Earlier startup failure and compiler evidence
 
 An isolated empty-data QPR1 attempt used the actual qualified daemon and client,
 independent copies of the official system and current vendor images, a measured
@@ -189,3 +189,37 @@ successful log entries and linked objects. They do not claim that the full
 Audio APEX or QPR1 runtime has passed. The prior failed Audio generation was
 separately retired and its original source verified without rewriting its
 incomplete H terminal or accepting its recovery as a successful full build.
+
+## Actual namespace repair and QPR1 init
+
+The [owned namespace repair](../host-namespace-ownership/README.md) removes the
+unsupported host option, uses the held init pidfd for normal TERM, protects both
+fork/exec windows with parent-death KILL, and creates the missing private cgroup
+namespace. The normal library run passed 127 tests with nine explicit environment,
+control or fixture entries ignored. All three separately selected root controls
+then ran and passed without skips. The normal release build succeeded.
+
+The next actual probe used the new daemon, supervisor and client. It entered
+Android init second stage and returned official CP3A / SDK 37.1 properties; six
+private namespaces were measured without an outer cgroup wrapper. Boot then
+selected the official no-VNDK reboot action. The vendor's modern API metadata and
+the GSI's LLNDK API both read 202604, while Android 15+ vendors omit the legacy
+VNDK property. A scoped source adaptation is being qualified. A subsequent attempt
+was rejected before Android entry because the proposed new script parent directory
+did not exist; the correction uses the existing vendor configuration directory.
+Both attempts retired their owned resources and preserved original user data.
+
+The Audio r4 full also completed as a failed build: Soong could not find two CTS
+defaults modules. No OOM occurred; source restoration and all retirement checks
+passed. Actual GC traces exposed Blueprint resetting requested Go parallelism
+from 2 to 8. The new source work adds the real same-commit provider cone and fixes
+that reset. The next, separately frozen full permits at most 36 GiB owned output
+and preserves the 16 GiB shared free-space floor. This budget is not claimed to
+be sufficient until the complete artifact build succeeds.
+
+The completed AI395 transfer duplicate was also retired after canonical archive
+and system hashes were rechecked and its five small transport receipts adopted:
+six files and 1,237,524,480 allocated bytes. This is separate from the original
+807-root inventory, which remains 763 removed / 44 retained at this snapshot.
+Final42 runtime acceptance, coherent deployment and production isolation remain
+open; no source or early-init result grants them.

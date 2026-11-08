@@ -1,6 +1,60 @@
 {
   "QPR1_actual_empty_data_boot": {
     "Android_boot_completed": false,
+    "actual_child_private_namespaces": {
+      "cgroup": true,
+      "ipc": true,
+      "mnt": true,
+      "net": true,
+      "pid": true,
+      "uts": true
+    },
+    "actual_property_command_exit": 0,
+    "all_observed_owned_processes_retired": true,
+    "first_trigger": "official init.vndk-nodef.rc early-init requests reboot,bootloader because vendor VNDK property is undefined",
+    "generation": "r3",
+    "image_loops_retired": true,
+    "init_second_stage_observed": true,
+    "normal_daemon_stop_succeeded": true,
+    "normal_stop_succeeded": true,
+    "only_disposable_probe_data_changed": true,
+    "outer_cgroup_wrapper_used": false,
+    "properties": {
+      "ro.build.id": "CP3A.260905.010",
+      "ro.build.version.incremental": "16176746",
+      "ro.build.version.sdk": "37",
+      "ro.build.version.sdk_full": "37.1",
+      "ro.build.version.security_patch": "2026-09-05",
+      "ro.dalvik.vm.native.bridge": "0"
+    },
+    "protected_original_user_data_unchanged": true,
+    "real_daemon_and_client_used": true,
+    "result": {
+      "bytes": 352229,
+      "sha256": "03ffb8cbcb9b258a301fa434518f4240ca185b08669a71a99e8a987634a4d1ff"
+    },
+    "runtime_and_socket_directories_absent": true,
+    "runtime_qualified": false,
+    "servicemanager_ready_property_write_failed_in_kernel_window": true,
+    "state": "BOOT_ATTEMPT_DID_NOT_COMPLETE",
+    "subsequent_shutdown_wait": "vdc volume abort_fuse waits for service-manager readiness"
+  },
+  "QPR1_later_guard_projection_attempt": {
+    "Android_boot_completed": false,
+    "concrete_blocker": "new Android override requires an existing parent: the proposed /vendor/etc/droidloom directory does not exist",
+    "disposable_data_content_unchanged": true,
+    "existing_parent_correction_in_progress": true,
+    "generation": "r4",
+    "guard_executed": false,
+    "owned_resources_retired": true,
+    "protected_original_data_unchanged": true,
+    "result": {
+      "bytes": 72598,
+      "sha256": "cde7c557b797939fa4453e616cf2ff78fb91b1fdcc3c0d66646b86e95c274ba7"
+    }
+  },
+  "QPR1_previous_unshare_failure": {
+    "Android_boot_completed": false,
     "actual_daemon_and_cell_start_attempted": true,
     "concrete_blocker": "installed unshare rejects --forward-signals",
     "official_system_and_current_vendor_independent_copies": true,
@@ -275,6 +329,17 @@
     "retained_roots": 44,
     "state": "COMPLETED_WITH_RETAINED_CURRENT_DEPENDENCIES"
   },
+  "cleanup_completed_AI395_transfer": {
+    "allocated_bytes_removed": 1237524480,
+    "canonical_archive_and_system_hashes_verified_before_retirement": true,
+    "duplicate_files_removed": 6,
+    "original807_inventory_unchanged": true,
+    "result": {
+      "bytes": 4131,
+      "sha256": "41059164f9a5646120bee5199ec8fcaf8fecbfcccd70f941bb66de96b986aa1d"
+    },
+    "transport_receipts_adopted": true
+  },
   "current_source_controls": {
     "audio_continuation": 24,
     "native_full_resource_profile": 26,
@@ -306,6 +371,18 @@
     "release_binaries_built": 4,
     "runtime_qualified": false,
     "sha256": "b39070304764e687192652a08ea5a2971fcf3db490fab0f0726acd0698675652"
+  },
+  "host_namespace_ownership": {
+    "actual_root_controls_ignored": 0,
+    "actual_root_controls_passed": 3,
+    "bytes": 527,
+    "normal_library_tests_ignored": 9,
+    "normal_library_tests_passed": 127,
+    "normal_release_build_succeeded": true,
+    "path": "../host-namespace-ownership/FILES.json",
+    "runtime_qualified": false,
+    "sha256": "39f4010957877d183e505a38163cf961b4d15e138a73daf2e74f7a49a85325df",
+    "source_commit": "ecf986b7afe7a2c24e537e765ee600c0256b2096"
   },
   "last_observed_android_state": "Normally stopped; no deployment performed by this continuation.",
   "native_actual_observation": {
@@ -454,14 +531,16 @@
     "build_memory_max_bytes": 25769803776,
     "complete_build_fit_demonstrated": false,
     "cpu_count": 8,
-    "current_generation": "Audio r4",
+    "current_generation": "Audio r5 pending new source verification and frozen request",
     "fresh_MemAvailable_minimum_bytes": 31138512896,
-    "fresh_disk_admission_bytes": 68719476736,
+    "fresh_disk_admission_bytes": 55834574848,
     "host": "desktop",
     "host_reserve_bytes": 5368709120,
     "normal_parallelism": 6,
+    "output_budget_known_sufficient": false,
     "public_disk_reserve_bytes": 17179869184,
-    "single_build_output_budget_bytes": 51539607552,
+    "shared_disk_floor_bytes": 17179869184,
+    "single_build_output_budget_bytes": 38654705664,
     "swap_max_bytes": 0
   },
   "next_full_build_resource_profile_previous_Pocket4": {
@@ -517,15 +596,33 @@
       "reason": "shared data disk had less than 62 GiB output plus 16 GiB reserve"
     },
     "new_explicit_Audio_resource_generation": {
+      "OOM_events": 0,
+      "OOM_kill_events": 0,
+      "actual_GC_trace_later_P": 8,
+      "actual_Soong_environment_GOMAXPROCS_requested": 2,
       "budget_known_sufficient": false,
       "complete_compiled_APEX_qualified": false,
+      "complete_terminal_preserved": true,
       "fresh_admission_bytes": 68719476736,
+      "full_lifetime_GOMAXPROCS2_qualified": false,
+      "inner_result": {
+        "bytes": 54285,
+        "sha256": "7afe094c0b5f192320ed22b7264109e02dbbbf1690110c2cf40b8f06862f01ed"
+      },
+      "missing_modules": [
+        "profile_defaults",
+        "dm_defaults"
+      ],
       "normal_full_driver_started": true,
+      "normal_source_after_verified": true,
       "original_failed_generations_not_modified": true,
       "outer_and_inner_fresh_admission_passed": true,
       "own_work_output_max_bytes": 51539607552,
+      "owned_retirement_complete": true,
       "public_disk_floor_bytes": 17179869184,
-      "runtime_qualified": false
+      "runtime_qualified": false,
+      "source_projection_restored": true,
+      "state": "FAILED_SOURCE_PROVIDER_CLOSURE"
     },
     "process_command_repair": {
       "actual_Linux_controls_passed": 10,
@@ -577,7 +674,7 @@
     "total_registered_packages_observed": 208
   },
   "pending": {
-    "audio": "The independent failed-generation recovery and all source checks passed. A new explicit 48 GiB owned-output generation passed both fresh admissions and started the normal full driver. Its complete vendor Audio APEX, QPR1 ELF closure and runtime remain unqualified.",
+    "audio": "The actual r4 full reached Soong graph generation and failed on two real CTS defaults providers. It retired completely and its source was verified afterwards. A new source generation adds the same-commit CTS compilation cone and repairs Blueprint resetting Go parallelism from the requested 2 to 8. The next full is limited to 36 GiB owned output with an unchanged 16 GiB public floor. Artifact and runtime qualification remain pending.",
     "camera_and_storage": "Current Camera source38, decoder8, owned display negative4 and formal preparation passed in the canonical location. Real Main/display/audio, Camera2/UVC, Camera recovery, Storage lifecycle and whole-app acceptance remain pending.",
     "cleanup": "The original inventory is now 729 removed / 78 retained. Migrate live references and retire obsolete roots, old payloads and experiments after replacement validation; preserve user images and current signing material.",
     "final_deployment": "Compose and inspect the complete canonical cohort before using the reviewed installation transaction.",
@@ -585,7 +682,7 @@
     "native": "Normal597 materialization and R11 source consumption passed. All desktop copy batches finished; source-only checksum and normal verification continuation is active. Full engine/ART artifacts and QPR1-compatible native bridge remain unqualified.",
     "production_isolation": "The development runner has not qualified production UID mapping or seccomp. A successful isolated empty-data boot probe cannot close this gate.",
     "release_currency": "The verified official QPR1 GSI is on Pocket4 and the actual host layout passed. Preserve official QPR1 ART, bionic, APEX and framework components while qualifying necessary compatibility changes. September SPL does not imply November coverage. Official app delivery and data-preserving signature migration remain pending.",
-    "runtime_and_applications": "Repair the actual installed-unshare signal-forwarding incompatibility, then complete coherent QPR1 boot, production isolation and final selected 42-app acceptance. Historical original45 and current final42 acceptance remain zero."
+    "runtime_and_applications": "The host namespace option and owned shutdown defects are fixed and actually tested. QPR1 reached init second stage but selected the obsolete no-VNDK reboot action despite modern vendor/LLNDK API 202604. Qualify the scoped modern metadata admission, correct guest directory permissions if confirmed, and complete coherent Android/Main and final42 application acceptance. Production UID mapping and seccomp remain pending."
   },
   "previous_public_observation": {
     "bytes": 28107,
@@ -593,19 +690,23 @@
     "sha256": "4ca9eb963eb9bd3c3930466f973386f000cffb4fa72260310fc424592774564a"
   },
   "production_isolation_gate": {
+    "actual_QPR1_probe_without_outer_cgroup_wrapper": true,
+    "actual_development_child_six_private_namespaces_measured": true,
     "development_UID_map_and_seccomp_qualified": false,
-    "development_cgroup_namespace_argument_missing": true,
+    "development_cgroup_namespace_argument_missing": false,
+    "guest_directory_permissions_under_private_host_umask_under_investigation": true,
+    "installed_unshare_option_and_owned_shutdown_defects_fixed": true,
     "layout_patch_does_not_implement_production_hardening": true,
     "probe_outer_cgroup_namespace_does_not_qualify_production_runner": true
   },
-  "publication_state": "ACTUAL_BOOT_BLOCKER_AND_AUDIO_COMPILER_EVIDENCE",
-  "recorded_utc": "2026-11-08T20:43:00Z",
+  "publication_state": "HOST_NAMESPACE_OWNERSHIP_AND_ACTUAL_QPR1_INIT",
+  "recorded_utc": "2026-11-08T21:42:00Z",
   "resume_order": [
-    "Complete the actual serialized strict Audio full with 48 GiB owned output, 16 GiB public disk floor and unchanged source/retirement gates.",
-    "Repair and actually verify owned namespace signal forwarding and cgroup isolation against installed host tools, then continue the empty-data QPR1 boot.",
-    "Run Native strict full only after Audio owned retirement and a fresh explicit resource admission; do not relabel its CP2A target as QPR1.",
-    "Qualify coherent QPR1 payload ABI, production UID/seccomp/cgroup execution, Denial/Main, audio/video and all final selected 42 applications.",
-    "Finish official latest-APK delivery and data-preserving signer migration, then retire only superseded task artifacts and QA packages after fresh dependency checks."
+    "Finish the new normal Audio source reconciliation, then freeze and run the strict serial full under its explicit 36+16 GiB disk contract.",
+    "Finish the actual QPR1 modern-vendor admission and guest runtime diagnosis with exact new generation inputs and owned retirement.",
+    "Run Native full only after Audio retirement and fresh frozen-profile admission; CP2A outputs cannot automatically qualify QPR1.",
+    "Qualify coherent QPR1 payload ABI, production isolation, Denial/Main, audio/video and final selected42 application workflows.",
+    "Complete official latest-APK delivery and data-preserving signer migration; retire superseded task artifacts after fresh dependency checks."
   ],
   "runtime_qualified": false,
   "schema": "pocket4-android-continuation-v1",
@@ -791,5 +892,5 @@
     "production_actions_performed_by_this_continuation": false,
     "ready_for_apply": false
   },
-  "status": "QPR1_UNSHARE_COMPATIBILITY_REPAIR_AND_SERIAL_AUDIO_FULL_IN_PROGRESS"
+  "status": "QPR1_INIT_REACHED_MODERN_VENDOR_ADAPTATION_AND_FULL_BUILDS_PENDING"
 }

@@ -115,6 +115,26 @@ jobs:
           if result.testsRun != 10 or result.skipped or not result.wasSuccessful():
               raise SystemExit('All ten process command witness controls must actually execute on Linux')
           PYCOMMAND
+      - name: Verify Linux host runtime source capsules
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYHOST' 2>&1 | tee "$RUNNER_TEMP/a08/host-runtime-capsules.log"
+          import hashlib
+          import json
+          from pathlib import Path
+          for name in ('host-gsi-layout', 'host-namespace-ownership'):
+              directory = Path('compat/android/pocket4') / name
+              manifest = json.loads((directory / 'FILES.json').read_bytes())
+              for leaf, expected in manifest['files'].items():
+                  path = directory / leaf
+                  if path.is_symlink() or path.resolve().parent != directory.resolve():
+                      raise SystemExit('Host capsule path is not a direct regular input')
+                  raw = path.read_bytes()
+                  if {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()} != expected:
+                      raise SystemExit('Host capsule source pin differs: ' + str(path))
+              print(name + ': exact source capsule pins verified; Android runtime not executed by this step')
+          PYHOST
       - name: Verify Audio compiler and Ninja evidence guards
         shell: bash
         run: |

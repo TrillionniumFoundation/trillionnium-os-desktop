@@ -91,6 +91,8 @@ REQUIRED_FILES = (
     "compat/android/pocket4/apk-content-identity/verify_apk.py",
     "compat/android/pocket4/apk-content-identity/axml_metadata.py",
     "compat/android/pocket4/apk-content-identity/controls.py",
+    "compat/android/pocket4/host-namespace-ownership/README.md",
+    "compat/android/pocket4/host-namespace-ownership/host-namespace-ownership.patch",
     "compat/android/pocket4/host-gsi-layout/README.md",
     "compat/android/pocket4/host-gsi-layout/host-gsi-layout.patch",
     "compat/android/pocket4/audio-ninja-evidence-r1/ninja_audio_proof.py",
