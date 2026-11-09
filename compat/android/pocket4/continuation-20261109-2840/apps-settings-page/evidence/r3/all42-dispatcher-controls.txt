@@ -1,0 +1,66 @@
+   Compiling droidloom-supervisor v0.1.0 (/home/alex/work/pocket4-app-release-check-20261109-2840-r1/runtime/droidloom-supervisor)
+   Compiling droidloom-applications v0.1.0 (/home/alex/work/pocket4-app-release-check-20261109-2840-r1/runtime/droidloom-applications)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.61s
+     Running unittests src/lib.rs (target/debug/deps/droidloom_applications-fd010768d0530c53)
+
+running 42 tests
+test release::tests::blocked_unsupported_failed_and_missing_are_never_passes ... ok
+test release::tests::complete_42_is_only_evidence_completeness_and_13_is_incomplete ... ok
+test release::tests::duplicates_and_extras_cannot_pad_coverage ... ok
+test release::tests::empty_stderr_can_support_but_cannot_replace_a_runtime_receipt ... ok
+test release::tests::exact_version_split_signer_uid_and_engine_are_required ... ok
+test release::tests::expected_manifest_count_current_main_and_common_gates_are_external_pins ... ok
+test release::tests::missing_corrupt_or_unpinned_evidence_is_incomplete ... ok
+test release::tests::old_main_boot_epoch_and_cohort_cannot_transfer_acceptance ... ok
+test release::tests::split_identity_order_does_not_change_meaning ... ok
+test release::tests::understated_evidence_size_is_rejected_before_reading_payload ... ok
+test runtime_fence::tests::changed_generation_is_sticky_even_if_a_later_reply_repeats_old_values ... ok
+test runtime_fence::tests::every_physical_generation_field_is_required_before_the_first_operation ... ok
+test runtime_fence::tests::failed_recheck_withholds_previous_observations_from_current_results ... ok
+test runtime_fence::tests::matching_observation_preserves_its_actual_development_lifecycle ... ok
+test runtime_fence::tests::transport_failure_closes_the_fence_without_a_retry_or_freshness_claim ... ok
+test runtime_fence::tests::unavailable_precondition_never_allows_an_application_operation ... ok
+test runtime_plan::tests::all_42_rows_survive_missing_runtime_without_any_invocation ... ok
+test runtime_plan::tests::changed_runtime_after_package_failure_stops_later_applications ... ok
+test runtime_plan::tests::complete_looking_settings_json_cannot_grant_partial_or_release_gates ... ok
+test runtime_plan::tests::full_apk_set_and_dynamic_uid_are_preserved ... ok
+test runtime_plan::tests::late_generation_change_withholds_earlier_partial_credit_but_keeps_evidence ... ok
+test runtime_plan::tests::mismatching_runtime_preflight_prevents_the_first_package_request ... ok
+test runtime_plan::tests::missing_delivery_or_unrequested_execution_is_blocked ... ok
+test runtime_plan::tests::omitted_settings_opt_in_preserves_42_rows_and_never_calls_the_page_entry ... ok
+test runtime_plan::tests::one_real_entry_route_does_not_promote_41_unsupported_profiles ... ok
+test runtime_plan::tests::package_specific_failure_rechecks_runtime_and_preserves_other_rows ... ok
+test runtime_plan::tests::reduced_duplicate_selection_and_incomplete_firefox_contract_are_rejected ... ok
+test runtime_plan::tests::retained_or_contradictory_settings_receipts_stop_remaining_mutations ... ok
+test runtime_plan::tests::settings_entry_error_stops_all_later_mutations_without_read_only_reauthorization ... ok
+test runtime_plan::tests::settings_entry_needs_runtime_and_matching_complete_installed_source ... ok
+test runtime_plan::tests::settings_opt_in_requires_selected_user_zero_and_existing_complete_profile ... ok
+test runtime_plan::tests::stale_main_or_changed_source_never_opens_browser ... ok
+test runtime_plan::tests::transport_failure_stops_remaining_requests_without_retrying ... ok
+test tests::desktop_entry_uses_only_launch_and_escapes_labels ... ok
+test tests::empty_query_preserves_the_previous_catalog ... ok
+test tests::icon_transport_base64_is_strict ... ok
+test tests::package_removal_rejects_catalog_path_traversal_before_deleting_anything ... ok
+test tests::package_removal_uses_the_catalog_and_retains_unrelated_desktop_files ... ok
+test tests::reconciliation_is_atomic_idempotent_and_removes_stale_entries ... ok
+test tests::reconciliation_migrates_only_managed_legacy_entries ... ok
+test tests::reconciliation_preserves_validated_launch_resolution ... ok
+test tests::xdg_paths_never_accept_relative_overrides ... ok
+
+test result: ok. 42 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running unittests src/main.rs (target/debug/deps/droidloom_applications-141ff820ad250d85)
+
+running 3 tests
+test cli_tests::installed_identity_inspection_allows_only_its_own_socket_and_user ... ok
+test cli_tests::release_check_requires_external_pins_and_excludes_catalog_mutation ... ok
+test cli_tests::runtime_plan_requires_complete_pins_and_excludes_other_actions ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests droidloom_applications
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -932,6 +932,101 @@ jobs:
           "$evidence/verify-current-source" result "$capsule/r12-provider-closure" "$legacy" "$work" \
             "$evidence/tests.log" "$evidence/rustc-version.txt" | tee "$evidence/result.json"
 
+      - name: Verify Settings admission and pending consumer boundaries
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PYTHONDONTWRITEBYTECODE=1 CARGO_TERM_COLOR=never
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/continuation-20261109-2840/apps-settings-page"
+          work="$RUNNER_TEMP/a08-2840-settings-page"
+          evidence="$RUNNER_TEMP/a08/settings-page"
+          mkdir "$work" "$evidence"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/../apps-settings-page-verify-source.rs" -o "$work/source-replay"
+          "$work/source-replay" "$capsule" replay "$capsule/preimage" "$work/source" \
+            | tee "$evidence/source-replay.json"
+          "$work/source-replay" "$capsule" check-after "$capsule/source" \
+            | tee "$evidence/delivered-source.json"
+          mkdir -p "$work/consumer/consumers"
+          for leaf in android-app android-digitalis-observe-helper; do
+            cp "$capsule/consumer/preimage/$leaf" "$work/consumer/consumers/$leaf"
+          done
+          git -C "$work/consumer" apply --check "$capsule/consumer/pending-marker.patch"
+          git -C "$work/consumer" apply "$capsule/consumer/pending-marker.patch"
+          for leaf in android-app android-digitalis-observe-helper; do
+            cmp "$work/consumer/consumers/$leaf" "$capsule/consumer/source/$leaf"
+          done
+          python3 -I -B - "$capsule" <<'PY2840SETTINGSINPUT'
+          import hashlib, json, sys, tomllib
+          from pathlib import Path
+          capsule = Path(sys.argv[1])
+          proof = json.loads((capsule / 'evidence/r3/HARNESS.json').read_bytes())
+          for item in proof['source_files']:
+              path = capsule / item['path']
+              raw = path.read_bytes()
+              if len(raw) != item['bytes'] or hashlib.sha256(raw).hexdigest() != item['sha256']:
+                  raise SystemExit('Same-source harness input differs: ' + item['path'])
+          raw = (capsule / 'harness/Cargo.lock').read_bytes()
+          if len(raw) != 8456 or hashlib.sha256(raw).hexdigest() != '09b1618ccdaff1511d938536ce54fb119df215be57663aa45cc28e9acdbc9fe6':
+              raise SystemExit('Settings lock differs')
+          source = (capsule / 'reference/source-workspace-Cargo.lock').read_bytes()
+          if hashlib.sha256(source).hexdigest() != 'ca5300907a8e609ac0340d016ecfe7b4292bf45fe5ab3cbe8dd0c013f12a2285':
+              raise SystemExit('Original workspace dependency source differs')
+          def external(data):
+              return {(p['name'], p['version'], p['source'], p['checksum'])
+                      for p in tomllib.loads(data.decode())['package'] if 'source' in p}
+          selected, original = external(raw), external(source)
+          if len(selected) != 34 or not selected.issubset(original):
+              raise SystemExit('Every external package must match the original complete lock')
+          print('All 34 external package tuples and 12 compiled harness source inputs match')
+          PY2840SETTINGSINPUT
+          cp "$capsule/harness/Cargo.lock" "$evidence/Cargo.lock.before"
+          CARGO_TARGET_DIR="$work/target" rustup run 1.93.0 cargo test --locked -j 1 \
+            --manifest-path "$capsule/harness/Cargo.toml" -p pocket4-settings-admission-tests \
+            --lib application_settings -- --test-threads=1 \
+            2>&1 | tee "$evidence/settings-tests.log"
+          CARGO_TARGET_DIR="$work/target" rustup run 1.93.0 cargo test --locked -j 1 \
+            --manifest-path "$capsule/harness/Cargo.toml" -p droidloom-task-launcher \
+            -- --test-threads=1 2>&1 | tee "$evidence/launcher-tests.log"
+          python3 -I -B "$capsule/consumer/test_pending_marker.py" \
+            2>&1 | tee "$evidence/consumer-tests.log"
+          cmp "$capsule/harness/Cargo.lock" "$evidence/Cargo.lock.before"
+          python3 -I -B - "$capsule" "$evidence" <<'PY2840SETTINGSRESULT'
+          import collections, json, re, sys
+          from pathlib import Path
+          capsule, evidence = map(Path, sys.argv[1:])
+          digest = '972500d13d451ce5d07a23fbfbd8cd9e113726029e59b81fd715ad64b4353d0c'
+          for leaf, mode in [('source-replay.json', 'replay'), ('delivered-source.json', 'check-after')]:
+              expected = {'scope': '8 declared source files', 'mode': mode,
+                          'verified_files': 8, 'patch_sha256': digest, 'runtime_qualified': False}
+              if json.loads((evidence / leaf).read_bytes()) != expected:
+                  raise SystemExit('Exact Settings source replay differs: ' + leaf)
+          for observed, original, count, summaries in [
+              ('settings-tests.log', 'samefile-settings-controls.txt', 23,
+               ['test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out;']),
+              ('launcher-tests.log', 'samefile-launcher-controls.txt', 35,
+               ['test result: ok. 30 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;',
+                'test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;'])]:
+              text = (evidence / observed).read_text()
+              reference = (capsule / 'evidence/r3' / original).read_text()
+              names = lambda value: collections.Counter(re.findall(r'^test (\S+) \.\.\. ok$', value, re.M))
+              if names(text) != names(reference) or sum(names(text).values()) != count:
+                  raise SystemExit('Exact original test names must execute: ' + observed)
+              if any(text.count(summary) != 1 for summary in summaries):
+                  raise SystemExit('No failed, ignored or omitted control accepted: ' + observed)
+          consumer = (evidence / 'consumer-tests.log').read_text()
+          original_consumer = (capsule / 'evidence/r2/consumer-pending-admission.txt').read_text()
+          consumer_names = lambda value: collections.Counter(re.findall(r'^(test_\S+) .* \.\.\. ok$', value, re.M))
+          if consumer_names(consumer) != consumer_names(original_consumer) \
+                  or sum(consumer_names(consumer).values()) != 6 \
+                  or not re.search(r'^Ran 6 tests in ', consumer, re.M) \
+                  or not re.search(r'^OK$', consumer, re.M):
+              raise SystemExit('All six original consumer controls must pass')
+          print('Eight-file Settings and two-consumer patches replayed; exact 23+35+6 source controls passed; actual Settings authority and Android runtime remain blocked')
+          PY2840SETTINGSRESULT
+
+
       - name: Replay exact production cell foundation source
         shell: bash
         run: |

@@ -1,0 +1,132 @@
+{
+  "accepted_scope": [
+    "public native Settings entry always rejects before Android commands",
+    "production supervisor differential/cleanup implementation is cfg(test) only",
+    "9 mutating daemon request variants pass persistent marker admission; future non-allowlisted variants default to mutation",
+    "2 staged consumer sources check marker before arun/ui/dispatch under existing shared flock without re-locking",
+    "any marker inode or directory/owner uncertainty blocks without clearing marker"
+  ],
+  "android_ui_invocations": 0,
+  "consumer_binding": {
+    "bytes": 1003,
+    "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/consumer_patch/source-binding.json",
+    "sha256": "3fbd08cc21d599870e1c44693347b3fd4f91a35f81cc293c9a25e760c2ebf89a"
+  },
+  "consumer_patch": {
+    "bytes": 5122,
+    "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/consumer_patch/pending-marker.patch",
+    "sha256": "2708b1e40b837fc832e830e754fda4e095ae9d5fa2f355547a0633a66967a371"
+  },
+  "consumer_pins": [
+    {
+      "bytes": 36404,
+      "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/consumer_patch/preimage/android-digitalis-observe-helper",
+      "sha256": "76e9875d141f69976cbbafe469aa13439cf99c3214bc479a0c80cda740c8dcfa"
+    },
+    {
+      "bytes": 37654,
+      "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/consumer_patch/source/android-digitalis-observe-helper",
+      "sha256": "3939d41c65b34c2cf190bbfaa4c279b0b697b54ba0cef77d39b1cf99000af5b5"
+    },
+    {
+      "bytes": 37467,
+      "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/consumer_patch/preimage/android-app",
+      "sha256": "4823c1a6d2434a9d102b2b6dbc369dd0cf192e7fc0a31384a68dddb370d0a340"
+    },
+    {
+      "bytes": 38717,
+      "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/consumer_patch/source/android-app",
+      "sha256": "3f7a926cc2f66f29f0a29e0dd99c7e9e2d4b4df731ad62d8c16d2bb51445f7fa"
+    }
+  ],
+  "controls_receipt": {
+    "bytes": 5002,
+    "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/corrective-controls-receipt.json",
+    "sha256": "2112c9ffe125f47f93ea34510b7433f69e9b62ff83c3ac4723a0c8007c5b9a1d"
+  },
+  "controls_terminal": {
+    "bytes": 734,
+    "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/corrective-controls-terminal.json",
+    "sha256": "1f668b6ed022f2a5b17b1c505b12bce4c3da0775edc4f1150050210b2128c1d5"
+  },
+  "correction_patch": {
+    "bytes": 60399,
+    "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/correction-from-first-tested-draft.patch",
+    "sha256": "5e1914832c679a2ea1a03fa5e8d7800397f1f99051617387a20be551abbaf59e"
+  },
+  "findings": [
+    {
+      "code_path": [
+        "control.rs:612 LiveApplicationProbe::new",
+        "control.rs:1421 android_boot_snapshot",
+        "control.rs:1402 android_properties",
+        "control.rs:1536-1555 timeout/nsenter /system/bin/getprop",
+        "control.rs:614 application_settings::observe"
+      ],
+      "fix": "Perform only request shape/host authority checks, then reject before constructing LiveApplicationProbe.",
+      "id": "settings-pre-blocker-android-probe",
+      "impact": "No UI mutation is demonstrated, but a real Android command executes before the promised unconditional missing-authority rejection."
+    },
+    {
+      "code_path": [
+        "runtime_plan.rs:256-257 false+Some response mapped to Ok(observed)",
+        "SettingsObservation::completed_partial always false",
+        "runtime_plan.rs:600-611 incomplete+retained=false performs only read-only runtime recheck",
+        "runtime_plan.rs:418-488 next Firefox row can invoke browser"
+      ],
+      "fix": "Invalidate the selection fence for every incomplete Settings response, retaining evidence but never reauthorizing from action_scope_retained=false or a read-only epoch.",
+      "id": "settings-false-structured-response-reauthorizes-next-mutation",
+      "impact": "The current new daemon emits no Some observation, so this is a mixed/contradictory response boundary, not a bypass of its unconditional gate. Existing synthetic complete-looking receipt can permit a later mutation while the Settings RPC reports ok=false."
+    }
+  ],
+  "observed_utc": "2026-11-09T18:39:39.655284+00:00",
+  "production_ready": false,
+  "review_only": true,
+  "reviewer_tests_executed": 0,
+  "runtime_qualified": false,
+  "schema": "pocket4-settings-second-review-before-successor-v1",
+  "source_pins": [
+    {
+      "bytes": 89589,
+      "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/source/runtime/droidloom-supervisor/src/control.rs",
+      "sha256": "589f6ef05c1ea593fdff9aa3b4792ba8ed8acc5a760004b9e9d980cecbedddf4"
+    },
+    {
+      "bytes": 18130,
+      "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/source/runtime/droidloom-supervisor/src/application_settings.rs",
+      "sha256": "0a2d63bd7a29d22edb511c6606219089dfd0178da35937da1bea81f34a3311ce"
+    },
+    {
+      "bytes": 24454,
+      "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/source/runtime/droidloom-supervisor/src/application_settings_protocol.rs",
+      "sha256": "d9462c9df927f0d4928276f4a4880aa8d39dbca60fb9f20fef8f808c0d25635d"
+    },
+    {
+      "bytes": 10964,
+      "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/source/runtime/droidloom-supervisor/src/application_action_scope.rs",
+      "sha256": "4984cdebfc3dd0bdd3b1101ca40430bd6f9239b218a1d03680829f5fab5b0c0c"
+    },
+    {
+      "bytes": 19199,
+      "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/source/runtime/droidloom-supervisor/src/application_settings_tests.rs",
+      "sha256": "859472f5c799ebd7745e77ced1ea7cc8979eac5e00e203a799ee12975ef6940d"
+    },
+    {
+      "bytes": 76612,
+      "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/source/android/framework/droidloom-task-launcher/src/lib.rs",
+      "sha256": "5ba1b119f5898fb9d562f8ffdfc6092736d432b29a13a587d6a7b7616a4c3010"
+    },
+    {
+      "bytes": 12354,
+      "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/source/android/framework/droidloom-task-launcher/src/main.rs",
+      "sha256": "d875eaf699c5716abb986912c66fc918df9adf60730afaeff3acf8ed99bb6325"
+    },
+    {
+      "bytes": 47512,
+      "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/source/runtime/droidloom-applications/src/runtime_plan.rs",
+      "sha256": "818155e5d3ad450f5da584df60e07e216cb17ddfbbf3f0015e9bad0208bc0396"
+    }
+  ],
+  "state": "TWO_NARROW_CORRECTIONS_REQUESTED",
+  "successor_review_pending": true
+}

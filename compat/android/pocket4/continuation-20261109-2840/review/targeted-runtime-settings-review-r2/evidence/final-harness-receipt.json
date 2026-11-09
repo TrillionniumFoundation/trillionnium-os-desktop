@@ -1,0 +1,159 @@
+{
+  "schema": 1,
+  "uid": 1000,
+  "affinity": [
+    2
+  ],
+  "source_files": [
+    {
+      "path": "source/android/framework/droidloom-task-launcher/src/lib.rs",
+      "bytes": 76612,
+      "sha256": "5ba1b119f5898fb9d562f8ffdfc6092736d432b29a13a587d6a7b7616a4c3010"
+    },
+    {
+      "path": "source/android/framework/droidloom-task-launcher/src/main.rs",
+      "bytes": 12354,
+      "sha256": "d875eaf699c5716abb986912c66fc918df9adf60730afaeff3acf8ed99bb6325"
+    },
+    {
+      "path": "source/android/framework/droidloom-task-launcher/src/policy.rs",
+      "bytes": 10624,
+      "sha256": "bc1d6832cbac2741fa2e279d1fa1aacf8ced94dba712b48c283b686b935c2d29"
+    },
+    {
+      "path": "source/graphics/droidloom-denial-ipc/src/lib.rs",
+      "bytes": 42737,
+      "sha256": "7724a0778185bfec08c8e2fe23a3168a757a62413ac5403e369a747c59b26a8f"
+    },
+    {
+      "path": "source/graphics/droidloom-denial-protocol/src/lib.rs",
+      "bytes": 97476,
+      "sha256": "abac4785ca16eccd330da0f5d928e5a6a1a11d9f5ac4306bc7c63121c4a84a27"
+    },
+    {
+      "path": "source/graphics/droidloom-task-control/src/lib.rs",
+      "bytes": 24083,
+      "sha256": "03cb2bb4b13a78adadf173ffae4fd8e3c29a471fd439c7838e44345bd494fd01"
+    },
+    {
+      "path": "source/graphics/droidloom-transport/src/lib.rs",
+      "bytes": 18363,
+      "sha256": "8b5d46672e508d7d97ab5f00d03d32764818588d7f388c4916c904e4dc1ba64e"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/application_action_scope.rs",
+      "bytes": 10964,
+      "sha256": "4984cdebfc3dd0bdd3b1101ca40430bd6f9239b218a1d03680829f5fab5b0c0c"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/application_probe.rs",
+      "bytes": 17853,
+      "sha256": "e97ca6b0856da1e394cbe227b42d21047a1c8a0a7cc66c1e3a9143988da60000"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/application_settings.rs",
+      "bytes": 18069,
+      "sha256": "3381d1c6a635899d77b34794d838996d6eb18fffeeece71c57dbbe75b1a3be11"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/application_settings_protocol.rs",
+      "bytes": 24454,
+      "sha256": "d9462c9df927f0d4928276f4a4880aa8d39dbca60fb9f20fef8f808c0d25635d"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/application_settings_tests.rs",
+      "bytes": 19214,
+      "sha256": "7153ca66acc6622fbe949495ff218aba396688a49a1438537fd52ad27ae29c39"
+    }
+  ],
+  "tests": [
+    {
+      "name": "samefile-settings-controls",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "--manifest-path",
+        "/home/alex/work/pocket4-settings-ci-harness-20261109-2840-r1/harness/Cargo.toml",
+        "-p",
+        "pocket4-settings-admission-tests",
+        "--lib",
+        "application_settings",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "seconds": 1.622973,
+      "bytes": 4427,
+      "sha256": "19d52235565e7d0216f4d3870ae579145a84b09a92fe7d98a3eb1f8a2df73b37",
+      "cold_marker_observed": false
+    },
+    {
+      "name": "samefile-launcher-controls",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "--manifest-path",
+        "/home/alex/work/pocket4-settings-ci-harness-20261109-2840-r1/harness/Cargo.toml",
+        "-p",
+        "droidloom-task-launcher",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "seconds": 5.867137,
+      "bytes": 4417,
+      "sha256": "a4d37e8172a4a3c4c9de4e5e8bc0d12a85551dfaa751558259fc09fd97280d50",
+      "cold_marker_observed": false
+    }
+  ],
+  "external_dependencies_exact_original": true,
+  "external_dependency_count": 34,
+  "lock_bytes": 8456,
+  "lock_sha256": "09b1618ccdaff1511d938536ce54fb119df215be57663aa45cc28e9acdbc9fe6",
+  "initial_unseeded_external_differences": [
+    [
+      "bitflags",
+      "2.13.2",
+      "registry+https://github.com/rust-lang/crates.io-index",
+      "3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06"
+    ],
+    [
+      "cfg-if",
+      "1.0.5",
+      "registry+https://github.com/rust-lang/crates.io-index",
+      "4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600"
+    ],
+    [
+      "rustix",
+      "1.1.5",
+      "registry+https://github.com/rust-lang/crates.io-index",
+      "891efababe418670775f199f0d233d84843c227a0949a883ce15b37c78d6629d"
+    ],
+    [
+      "syn",
+      "3.0.9",
+      "registry+https://github.com/rust-lang/crates.io-index",
+      "d78c8dee4c7bf0e14673097256fed6142ce9d3b85a408189d07482442145823b"
+    ],
+    [
+      "unicode-ident",
+      "1.0.27",
+      "registry+https://github.com/rust-lang/crates.io-index",
+      "a2c754d6c33795a1c324727428e5a7dedb5b06195f9890bdbcba760d3e246563"
+    ]
+  ],
+  "initial_unseeded_lock_accepted": false,
+  "seeded_from_complete_source_lock_sha256": "ca5300907a8e609ac0340d016ecfe7b4292bf45fe5ab3cbe8dd0c013f12a2285",
+  "runtime_qualified": false,
+  "production_ready": false,
+  "android_invocations": 0,
+  "coverage": "Existing 23 Settings +35 native controls compiled from identical source files; subset of final workspace coverage, not additional acceptance."
+}

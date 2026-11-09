@@ -1,0 +1,1146 @@
+{
+  "Android_boot_completed": false,
+  "additional_runtime_inputs": [
+    {
+      "bytes": 35077,
+      "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/include/dwarf.h",
+      "sha256": "e9f2664de4cbb6de5baf7f4216c39f748a9d0517e1a8a5d56cda63ec2a504f01"
+    },
+    {
+      "bytes": 47932,
+      "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/include/elfutils/libdw.h",
+      "sha256": "c9d2b6703bb6e782e9a871cd6e5c19f85bde0ed02da542c0b338517a4ab0a2cd"
+    },
+    {
+      "bytes": 807440,
+      "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/lib/x86_64-linux-gnu/libdw-0.194.so",
+      "sha256": "90800ff93118a11d544273bc31a629587395f0d51d98465beb9cab67d85e183a"
+    },
+    {
+      "bytes": 901712,
+      "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/gawk",
+      "sha256": "a695aa25fdd3f207ece8b3628514c6506c45216ce5486f63d293a83e12dc9798"
+    }
+  ],
+  "additional_runtime_inputs_unchanged": true,
+  "admission": {
+    "CPU_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "actual_limits": {
+      "cpu.max": "800000 100000",
+      "memory.current": "9916416",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "25769803776",
+      "memory.peak": "38023168",
+      "memory.swap.current": "0",
+      "memory.swap.max": "0",
+      "pids.max": "512"
+    },
+    "free_disk_bytes": 638291881984,
+    "host_MemAvailable_bytes": 101766422528,
+    "initial_task_allocation_bytes": 39123210240
+  },
+  "all_command_children_retired": true,
+  "allocation_observations": {
+    "bytes": 2857,
+    "identity": [
+      66306,
+      62038378,
+      33152,
+      1000,
+      1000,
+      1,
+      2857,
+      1794185912012605062,
+      1794185912012605062
+    ],
+    "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/allocation-observations.jsonl",
+    "sha256": "4c2553ea97243c1f7361f74a86820c34098ce094be696a986ac48fdaa87201f2"
+  },
+  "build_environment": {
+    "BINDGEN": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/bindgen",
+    "CLANG": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/clang-21",
+    "HOSTCFLAGS": "-O2 -Wall -Wmissing-prototypes -Wstrict-prototypes -I/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/include",
+    "HOSTLDFLAGS": "-L/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/lib/x86_64-linux-gnu",
+    "HOSTRUSTC": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+    "KBUILD_BUILD_HOST": "isolated-kernel-build",
+    "KBUILD_BUILD_TIMESTAMP": "2026-11-08 00:00:00 UTC",
+    "KBUILD_BUILD_USER": "pocket4",
+    "KBUILD_BUILD_VERSION": "1",
+    "LANG": "C.UTF-8",
+    "LD_LIBRARY_PATH": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/lib/x86_64-linux-gnu",
+    "LIBCLANG_PATH": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/lib/llvm-21/lib",
+    "PAHOLE": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/pahole",
+    "PATH": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "PKG_CONFIG_PATH": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/lib/x86_64-linux-gnu/pkgconfig",
+    "PKG_CONFIG_SYSROOT_DIR": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root",
+    "RUSTC": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+    "RUST_LIB_SRC": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/src/rustc-1.93.1/library",
+    "TMPDIR": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/tmp"
+  },
+  "build_steps_complete": true,
+  "commands": [
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1211615.795725684,
+        "elapsed_seconds": 0.0001381749752908945,
+        "leader_pid": 1089588,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/make",
+        "-C",
+        "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0",
+        "O=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/out",
+        "-j8",
+        "RUSTC=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+        "HOSTRUSTC=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+        "BINDGEN=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/bindgen",
+        "CLANG=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/clang-21",
+        "PAHOLE=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/pahole",
+        "HOSTCFLAGS=-O2 -Wall -Wmissing-prototypes -Wstrict-prototypes -I/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/include",
+        "HOSTLDFLAGS=-L/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/lib/x86_64-linux-gnu",
+        "scripts"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/make",
+          "-C",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0",
+          "O=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/out",
+          "-j8",
+          "RUSTC=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+          "HOSTRUSTC=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+          "BINDGEN=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/bindgen",
+          "CLANG=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/clang-21",
+          "PAHOLE=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/pahole",
+          "HOSTCFLAGS=-O2 -Wall -Wmissing-prototypes -Wstrict-prototypes -I/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/include",
+          "HOSTLDFLAGS=-L/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/lib/x86_64-linux-gnu",
+          "scripts"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-kernel-binder-full-20261109-8b88-r7.service\n",
+        "exe": "/usr/bin/make",
+        "pid": 1089588,
+        "start_ticks": 121161048
+      },
+      "errors": [],
+      "finished_ns": 1794185849142544401,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00010437588207423687,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1089588,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "normal-required-host-scripts",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1089588,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1089504,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794185848829205193,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          62038380,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794185848828865869,
+          1794185848828865869
+        ],
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/commands/normal-required-host-scripts.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 454,
+        "identity": [
+          66306,
+          62038379,
+          33152,
+          1000,
+          1000,
+          1,
+          454,
+          1794185849138854777,
+          1794185849138854777
+        ],
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/commands/normal-required-host-scripts.stdout",
+        "sha256": "fba8f41100be0cfd410139fda834e3d956d28b4eec5cffd8e22de0dcee1964bc"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1211632.564376879,
+        "elapsed_seconds": 0.00015974394045770168,
+        "leader_pid": 1089832,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/make",
+        "-C",
+        "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0",
+        "O=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/out",
+        "-j8",
+        "RUSTC=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+        "HOSTRUSTC=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+        "BINDGEN=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/bindgen",
+        "CLANG=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/clang-21",
+        "PAHOLE=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/pahole",
+        "HOSTCFLAGS=-O2 -Wall -Wmissing-prototypes -Wstrict-prototypes -I/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/include",
+        "HOSTLDFLAGS=-L/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/lib/x86_64-linux-gnu",
+        "bzImage",
+        "modules"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/make",
+          "-C",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0",
+          "O=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/out",
+          "-j8",
+          "RUSTC=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+          "HOSTRUSTC=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+          "BINDGEN=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/bindgen",
+          "CLANG=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/clang-21",
+          "PAHOLE=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/pahole",
+          "HOSTCFLAGS=-O2 -Wall -Wmissing-prototypes -Wstrict-prototypes -I/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/include",
+          "HOSTLDFLAGS=-L/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/lib/x86_64-linux-gnu",
+          "bzImage",
+          "modules"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-kernel-binder-full-20261109-8b88-r7.service\n",
+        "exe": "/usr/bin/make",
+        "pid": 1089832,
+        "start_ticks": 121161079
+      },
+      "errors": [],
+      "finished_ns": 1794185865920504818,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00010080612264573574,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1089832,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "normal-bzImage-and-all-modules",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1089832,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1089504,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794185849143327053,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          62038383,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794185849142854634,
+          1794185849142854634
+        ],
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/commands/normal-bzImage-and-all-modules.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 756,
+        "identity": [
+          66306,
+          62038382,
+          33152,
+          1000,
+          1000,
+          1,
+          756,
+          1794185865907254781,
+          1794185865907254781
+        ],
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/commands/normal-bzImage-and-all-modules.stdout",
+        "sha256": "0ec75d79068db2df167143adf635b468acac6d9d1112cefb9072960f9017d6c2"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1211642.180515061,
+        "elapsed_seconds": 0.00018163304775953293,
+        "leader_pid": 1093270,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/make",
+        "-C",
+        "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0",
+        "O=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/out",
+        "-j8",
+        "RUSTC=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+        "HOSTRUSTC=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+        "BINDGEN=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/bindgen",
+        "CLANG=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/clang-21",
+        "PAHOLE=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/pahole",
+        "HOSTCFLAGS=-O2 -Wall -Wmissing-prototypes -Wstrict-prototypes -I/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/include",
+        "HOSTLDFLAGS=-L/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/lib/x86_64-linux-gnu",
+        "INSTALL_MOD_PATH=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/installed-modules-r7",
+        "INSTALL_MOD_STRIP=1",
+        "modules_install"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/make",
+          "-C",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0",
+          "O=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/out",
+          "-j8",
+          "RUSTC=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+          "HOSTRUSTC=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+          "BINDGEN=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/bindgen",
+          "CLANG=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/clang-21",
+          "PAHOLE=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/pahole",
+          "HOSTCFLAGS=-O2 -Wall -Wmissing-prototypes -Wstrict-prototypes -I/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/include",
+          "HOSTLDFLAGS=-L/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/lib/x86_64-linux-gnu",
+          "INSTALL_MOD_PATH=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/installed-modules-r7",
+          "INSTALL_MOD_STRIP=1",
+          "modules_install"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-kernel-binder-full-20261109-8b88-r7.service\n",
+        "exe": "/usr/bin/make",
+        "pid": 1093270,
+        "start_ticks": 121162757
+      },
+      "errors": [],
+      "finished_ns": 1794185875538036601,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0001218658871948719,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1093270,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "normal-private-modules-install",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1093270,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1089504,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794185865921466735,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          62038386,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794185865920254316,
+          1794185865920254316
+        ],
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/commands/normal-private-modules-install.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 3435333,
+        "identity": [
+          66306,
+          62038385,
+          33152,
+          1000,
+          1000,
+          1,
+          3435333,
+          1794185875523910683,
+          1794185875523910683
+        ],
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/commands/normal-private-modules-install.stdout",
+        "sha256": "ee812c6d37c95e24170721d9526a5b67147ae7d47fd316f749e231315a236b31"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1211677.683574667,
+        "elapsed_seconds": 0.000141264870762825,
+        "leader_pid": 1129334,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/control/normal_module_signing_r7.py",
+        "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/installed-unsigned-module-manifest.json",
+        "3306738",
+        "1155a06dec86288cb13245dba273e8aa36edc786c6129878b47b6ac7d8667202"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/python3",
+          "-I",
+          "-B",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/control/normal_module_signing_r7.py",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/installed-unsigned-module-manifest.json",
+          "3306738",
+          "1155a06dec86288cb13245dba273e8aa36edc786c6129878b47b6ac7d8667202"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-kernel-binder-full-20261109-8b88-r7.service\n",
+        "exe": "/usr/bin/python3.14",
+        "pid": 1129334,
+        "start_ticks": 121163777
+      },
+      "errors": [],
+      "finished_ns": 1794185911028881066,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00014853407628834248,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1129334,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "normal-sign-all-installed-modules",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1129334,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1089504,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794185876116937803,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          62038390,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794185876115889502,
+          1794185876115889502
+        ],
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/commands/normal-sign-all-installed-modules.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 6509,
+        "identity": [
+          66306,
+          62038389,
+          33152,
+          1000,
+          1000,
+          1,
+          6509,
+          1794185911017640664,
+          1794185911017640664
+        ],
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/commands/normal-sign-all-installed-modules.stdout",
+        "sha256": "11765b277aabc2680a4d62e8378895929108a7cc99bd12386405a9371b8a71e3"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1211678.142735434,
+        "elapsed_seconds": 3.0289171263575554e-05,
+        "leader_pid": 1136693,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/sbin/modinfo",
+        "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/installed-modules-r7/lib/modules/7.0.14-p4cred1/kernel/drivers/android/binder_linux.ko"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/sbin/modinfo",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/installed-modules-r7/lib/modules/7.0.14-p4cred1/kernel/drivers/android/binder_linux.ko"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-kernel-binder-full-20261109-8b88-r7.service\n",
+        "exe": "/usr/bin/kmod",
+        "pid": 1136693,
+        "start_ticks": 121167314
+      },
+      "errors": [],
+      "finished_ns": 1794185911487698435,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 6.528804078698158e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1136693,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "installed-binder-modinfo",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1136693,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1089504,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794185911484879424,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          62038395,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794185911483623990,
+          1794185911483623990
+        ],
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/commands/installed-binder-modinfo.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 2361,
+        "identity": [
+          66306,
+          62038394,
+          33152,
+          1000,
+          1000,
+          1,
+          2361,
+          1794185911485623918,
+          1794185911485623918
+        ],
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/commands/installed-binder-modinfo.stdout",
+        "sha256": "dcb41d2e57e9396a7d04fb72a64fa1f4b363180fec33f41e4a17859ef1bac173"
+      }
+    }
+  ],
+  "config_bytes_unchanged": true,
+  "configuration": {
+    "bytes": 34413,
+    "identity": [
+      66306,
+      61250654,
+      33024,
+      1000,
+      1000,
+      1,
+      34413,
+      1794179825183417654,
+      1794179825183417654
+    ],
+    "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/configuration-r3/result.json",
+    "sha256": "f96e920d94ae8b3153c61a1bf4b404a266dc9a8cc55e541c74c5ddc991a07ddc"
+  },
+  "effective_config": {
+    "bytes": 308667,
+    "identity": [
+      66306,
+      61250649,
+      33152,
+      1000,
+      1000,
+      1,
+      308667,
+      1794179825071505651,
+      1794179825073171494
+    ],
+    "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/out/.config",
+    "sha256": "5dbd13a0eb91ecc3decd8456bc7387650d8996984c05c8bec9c6e56716d96966"
+  },
+  "errors": [],
+  "final_allocated_bytes": 39868706816,
+  "final_resource_limits": {
+    "cpu.max": "800000 100000",
+    "memory.current": "1065656320",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "25769803776",
+    "memory.peak": "2138951680",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "pids.max": "512"
+  },
+  "final_resources_verified": true,
+  "finished_ns": 1794185912033067684,
+  "host_kernel_installs": 0,
+  "host_module_loads": 0,
+  "host_packages_installed": 0,
+  "host_reboots": 0,
+  "installed_module_manifest": {
+    "bytes": 3306974,
+    "identity": [
+      66306,
+      62038393,
+      33024,
+      1000,
+      1000,
+      1,
+      3306974,
+      1794185911467624563,
+      1794185911467624563
+    ],
+    "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/installed-module-manifest.json",
+    "sha256": "a726574f07ec1684989b0147b2de405ca294dd460f4c71322783af4ad6a0d71f"
+  },
+  "kernel_VM_qualified": false,
+  "kernel_release": "7.0.14-p4cred1",
+  "module_signing_private_key_preserved": {
+    "identity": [
+      66306,
+      61251061,
+      33152,
+      1000,
+      1000,
+      1,
+      5122,
+      1794181086489609445,
+      1794181086489609445
+    ],
+    "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/out/certs/signing_key.pem",
+    "private_key_contents_read": false
+  },
+  "normal_make_argv_prefix": [
+    "/usr/bin/make",
+    "-C",
+    "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0",
+    "O=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/out",
+    "-j8",
+    "RUSTC=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+    "HOSTRUSTC=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/rustc-1.93",
+    "BINDGEN=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/bindgen",
+    "CLANG=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/clang-21",
+    "PAHOLE=/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/pahole",
+    "HOSTCFLAGS=-O2 -Wall -Wmissing-prototypes -Wstrict-prototypes -I/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/include",
+    "HOSTLDFLAGS=-L/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/lib/x86_64-linux-gnu"
+  ],
+  "normal_module_signing": {
+    "all_children_waited": true,
+    "all_payloads_preserved": true,
+    "compiled_public_certificate": {
+      "bytes": 1324,
+      "identity": [
+        66306,
+        61251084,
+        33152,
+        1000,
+        1000,
+        1,
+        1324,
+        1794181086536501970,
+        1794181086536501970
+      ],
+      "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/out/certs/signing_key.x509",
+      "sha256": "4425280c8f5c064d65e86ed9f41a9e1028c53f95b75d57788ae371f32943cc28"
+    },
+    "cryptographic_verification_still_required": true,
+    "helper": {
+      "bytes": 8369,
+      "identity": [
+        66306,
+        60858502,
+        33152,
+        1000,
+        1000,
+        1,
+        8369,
+        1794185847871089797,
+        1794185847871089797
+      ],
+      "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/control/normal_module_signing_r7.py",
+      "sha256": "86364b38b73a9fd58e55841cf45264a6c9b784fe0d23b5d91a3e11d5108a10d4"
+    },
+    "module_count": 6901,
+    "result": {
+      "bytes": 8589070,
+      "identity": [
+        66306,
+        62038391,
+        33024,
+        1000,
+        1000,
+        1,
+        8589070,
+        1794185910996641415,
+        1794185910996641415
+      ],
+      "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/normal-module-signing.json",
+      "sha256": "1d5f54ecf2f70db943cad2764dcd47bd7341cfe384256b4edb23004b31d6d632"
+    },
+    "unsigned_inventory": {
+      "bytes": 3306738,
+      "identity": [
+        66306,
+        62038388,
+        33024,
+        1000,
+        1000,
+        1,
+        3306738,
+        1794185876101890003,
+        1794185876101890003
+      ],
+      "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/installed-unsigned-module-manifest.json",
+      "sha256": "1155a06dec86288cb13245dba273e8aa36edc786c6129878b47b6ac7d8667202"
+    }
+  },
+  "patched_lsm": {
+    "bytes": 85651,
+    "identity": [
+      66306,
+      66354318,
+      33152,
+      1000,
+      1000,
+      1,
+      85651,
+      1794178568701621436,
+      1794178568701621436
+    ],
+    "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0/security/apparmor/lsm.c",
+    "sha256": "f32aa157c71d196cd516228db06236959242500b028153095c85da429fb32daf"
+  },
+  "patched_lsm_unchanged": true,
+  "predecessor_failed_full": {
+    "bytes": 31795,
+    "identity": [
+      66306,
+      84838313,
+      33024,
+      1000,
+      1000,
+      1,
+      31795,
+      1794184932115662244,
+      1794184932115662244
+    ],
+    "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r6/result.json",
+    "sha256": "cc4f7bb1941530c0efcdc3197e5a4cdc64d2838b8116478ccd632a5dd4c929db"
+  },
+  "private_DWARF_dependency_completion": {
+    "bytes": 4468,
+    "identity": [
+      66306,
+      61250875,
+      33152,
+      1000,
+      1000,
+      1,
+      4468,
+      1794180849158359004,
+      1794180849158359004
+    ],
+    "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/private-libdw-r4.json",
+    "sha256": "3549a01ffa0eeae06b87f9964be789cd24ab24f14e16ec901ccdf0151d18f71e"
+  },
+  "private_GAWK_dependency_completion": {
+    "bytes": 4026,
+    "identity": [
+      66306,
+      61252537,
+      33152,
+      1000,
+      1000,
+      1,
+      4026,
+      1794182960192857349,
+      1794182960192857349
+    ],
+    "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/private-gawk-r5.json",
+    "sha256": "72e94e67860cc7b83788d0c6edfe5f8ccf16be7006926a1b398a8c94fa88b8a3"
+  },
+  "progress_samples": [
+    {
+      "allocated_task_bytes": 39123214336,
+      "at_ns": 1794185848829024960,
+      "elapsed_seconds": 0.46631624503061175,
+      "host_MemAvailable_bytes": 101658759168,
+      "memory": {
+        "cpu.max": "800000 100000",
+        "memory.current": "9961472",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.max": "25769803776",
+        "memory.peak": "38023168",
+        "memory.swap.current": "0",
+        "memory.swap.max": "0",
+        "pids.max": "512"
+      },
+      "physical_free_bytes": 638291877888
+    },
+    {
+      "allocated_task_bytes": 39123214336,
+      "at_ns": 1794185858695750913,
+      "elapsed_seconds": 10.790049481904134,
+      "host_MemAvailable_bytes": 99747684352,
+      "memory": {
+        "cpu.max": "800000 100000",
+        "memory.current": "296685568",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.max": "25769803776",
+        "memory.peak": "834752512",
+        "memory.swap.current": "0",
+        "memory.swap.max": "0",
+        "pids.max": "512"
+      },
+      "physical_free_bytes": 638430068736
+    },
+    {
+      "allocated_task_bytes": 39123214336,
+      "at_ns": 1794185868935895724,
+      "elapsed_seconds": 21.03031300799921,
+      "host_MemAvailable_bytes": 99414274048,
+      "memory": {
+        "cpu.max": "800000 100000",
+        "memory.current": "382242816",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.max": "25769803776",
+        "memory.peak": "2138951680",
+        "memory.swap.current": "0",
+        "memory.swap.max": "0",
+        "pids.max": "512"
+      },
+      "physical_free_bytes": 638297845760
+    },
+    {
+      "allocated_task_bytes": 39823773696,
+      "at_ns": 1794185879609421686,
+      "elapsed_seconds": 31.70397108490579,
+      "host_MemAvailable_bytes": 101264904192,
+      "memory": {
+        "cpu.max": "800000 100000",
+        "memory.current": "999579648",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.max": "25769803776",
+        "memory.peak": "2138951680",
+        "memory.swap.current": "0",
+        "memory.swap.max": "0",
+        "pids.max": "512"
+      },
+      "physical_free_bytes": 637727117312
+    },
+    {
+      "allocated_task_bytes": 39823773696,
+      "at_ns": 1794185889652584212,
+      "elapsed_seconds": 41.747000665869564,
+      "host_MemAvailable_bytes": 100980776960,
+      "memory": {
+        "cpu.max": "800000 100000",
+        "memory.current": "1009278976",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.max": "25769803776",
+        "memory.peak": "2138951680",
+        "memory.swap.current": "0",
+        "memory.swap.max": "0",
+        "pids.max": "512"
+      },
+      "physical_free_bytes": 637714903040
+    },
+    {
+      "allocated_task_bytes": 39823773696,
+      "at_ns": 1794185899696601988,
+      "elapsed_seconds": 51.79100705287419,
+      "host_MemAvailable_bytes": 98968600576,
+      "memory": {
+        "cpu.max": "800000 100000",
+        "memory.current": "1016737792",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.max": "25769803776",
+        "memory.peak": "2138951680",
+        "memory.swap.current": "0",
+        "memory.swap.max": "0",
+        "pids.max": "512"
+      },
+      "physical_free_bytes": 637714911232
+    },
+    {
+      "allocated_task_bytes": 39828135936,
+      "at_ns": 1794185909704127255,
+      "elapsed_seconds": 61.79854445904493,
+      "host_MemAvailable_bytes": 101763747840,
+      "memory": {
+        "cpu.max": "800000 100000",
+        "memory.current": "1026420736",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.max": "25769803776",
+        "memory.peak": "2138951680",
+        "memory.swap.current": "0",
+        "memory.swap.max": "0",
+        "pids.max": "512"
+      },
+      "physical_free_bytes": 637625454592
+    }
+  ],
+  "runtime_qualified": false,
+  "schema": "pocket4-normal-complete-kernel-build-v1",
+  "source_and_retirement_contract_verified": true,
+  "started_ns": 1794185847905268577,
+  "state": "NORMAL_COMPLETE_KERNEL_AND_MODULES_BUILT_VM_PENDING",
+  "tool_inputs": [
+    {
+      "file": {
+        "bytes": 14504,
+        "identity": [
+          66306,
+          66736128,
+          33261,
+          1000,
+          1000,
+          1,
+          14504,
+          1775517209000000000,
+          1794178570040904737
+        ],
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/lib/rust-1.93/bin/rustc",
+        "sha256": "8e509606d3aa8a69e7dd2c935c78a0c7a8803148cc80e8936812630b1b115ab0"
+      },
+      "tool": "RUSTC"
+    },
+    {
+      "file": {
+        "bytes": 14504,
+        "identity": [
+          66306,
+          66736128,
+          33261,
+          1000,
+          1000,
+          1,
+          14504,
+          1775517209000000000,
+          1794178570040904737
+        ],
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/lib/rust-1.93/bin/rustc",
+        "sha256": "8e509606d3aa8a69e7dd2c935c78a0c7a8803148cc80e8936812630b1b115ab0"
+      },
+      "tool": "HOSTRUSTC"
+    },
+    {
+      "file": {
+        "bytes": 7939016,
+        "identity": [
+          66306,
+          61381611,
+          33261,
+          1000,
+          1000,
+          1,
+          7939016,
+          1757096717000000000,
+          1794178568950944244
+        ],
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/bindgen",
+        "sha256": "6caad9ff3f9d5334fedbe35def3ba9d21928f699bf1e3148869c8e205cf59e1e"
+      },
+      "tool": "BINDGEN"
+    },
+    {
+      "file": {
+        "bytes": 137584,
+        "identity": [
+          66306,
+          66611265,
+          33261,
+          1000,
+          1000,
+          1,
+          137584,
+          1773841930000000000,
+          1794178568961943845
+        ],
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/lib/llvm-21/bin/clang",
+        "sha256": "412bbe8c60571a1eb06f48fde89635033621caeb01a9b4ee76d46711bae8e932"
+      },
+      "tool": "CLANG"
+    },
+    {
+      "file": {
+        "bytes": 68928,
+        "identity": [
+          66306,
+          61381730,
+          33261,
+          1000,
+          1000,
+          1,
+          68928,
+          1773601045000000000,
+          1794178569347929855
+        ],
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root/usr/bin/pahole",
+        "sha256": "8641cad0cda54800debbf800a29b34309bc857f1450d84195ff83e23ec7ec1ca"
+      },
+      "tool": "PAHOLE"
+    },
+    {
+      "file": {
+        "bytes": 1305304,
+        "identity": [
+          66306,
+          82182332,
+          33261,
+          0,
+          0,
+          1,
+          1305304,
+          1774174097000000000,
+          1791034440131878913
+        ],
+        "path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+        "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88"
+      },
+      "tool": "CC"
+    }
+  ],
+  "tools_unchanged": true,
+  "validation_artifacts": {
+    "bytes": 5088,
+    "identity": [
+      66306,
+      68198779,
+      33024,
+      1000,
+      1000,
+      1,
+      5088,
+      1794185911552621521,
+      1794185911552621521
+    ],
+    "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/artifacts/patched-r7/manifest.json",
+    "sha256": "2904da4c2b76fb45253d9763b15dca7ed5bcbad049432717872178b91a1e51a9"
+  }
+}

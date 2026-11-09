@@ -1,0 +1,105 @@
+{
+  "Android_starts": 0,
+  "CURRENT_changed": false,
+  "builds_run": 0,
+  "dead_child_dumpability_observed": false,
+  "dead_child_oom_inode_stat_observed": false,
+  "full_source_archive_reread": false,
+  "global_DAC_MAC_changed": false,
+  "initial_failed_scan_preserved": true,
+  "jobs": [
+    {
+      "exit_code": 1,
+      "host": "ai395",
+      "job_id": "1a1c19b289d-e62c-d9",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "failed",
+      "terminal": "receipts/1a1c19b289d-e62c-d9.terminal-original.json"
+    },
+    {
+      "exit_code": 0,
+      "host": "pocket4",
+      "job_id": "1a1c19ba836-e62c-db",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal": "receipts/1a1c19ba836-e62c-db.terminal-original.json"
+    },
+    {
+      "exit_code": 0,
+      "host": "ai395",
+      "job_id": "1a1c19c8259-e62c-dc",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal": "receipts/1a1c19c8259-e62c-dc.terminal-original.json"
+    },
+    {
+      "exit_code": 0,
+      "host": "pocket4",
+      "job_id": "1a1c19defeb-e62c-e0",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal": "receipts/1a1c19defeb-e62c-e0.terminal-original.json"
+    },
+    {
+      "exit_code": 0,
+      "host": "ai395",
+      "job_id": "1a1c19e34bc-e62c-e1",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal": "receipts/1a1c19e34bc-e62c-e1.terminal-original.json"
+    },
+    {
+      "exit_code": 0,
+      "host": "ai395",
+      "job_id": "1a1c19fa384-e62c-e3",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal": "receipts/1a1c19fa384-e62c-e3.terminal-original.json"
+    },
+    {
+      "exit_code": 0,
+      "host": "ai395",
+      "job_id": "1a1c1a05354-e62c-e4",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal": "receipts/1a1c1a05354-e62c-e4.terminal-original.json"
+    }
+  ],
+  "kernel_build_receipt_chain_validated": true,
+  "kernel_release_observed": "7.0.14-p4cred1",
+  "kernel_source_revision": "f53b359683af7918c5436499948763cb726d5082",
+  "kernel_source_revision_authority": "original build input receipt, not a fresh Git HEAD claim",
+  "kernel_source_tag": "Ubuntu-7.0.0-43.43",
+  "kernel_source_tree": "ai395:/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0",
+  "oom_write_qualified": false,
+  "owner_next_steps": [
+    "Diagnostic-only authenticated PR_GET_DUMPABLE and no-follow held inode stat; retain original single-open errno and failed qualification",
+    "Preserve final post-exec OOM write obligation, lifecycle/credentials/LSM/deadline/retirement gates",
+    "Validate actual Android oom_score_adj range independently; no ancestor CAP_SYS_RESOURCE grant assumed"
+  ],
+  "owner_source_changed": false,
+  "parent_raw_failure_collection": {
+    "bytes": 74770,
+    "path": "r6-review/proc-response-r14-failure-original.json",
+    "sha256": "b2627b0b856cebb0fd06866a27651254405048adf5149292ce014dc64d841284"
+  },
+  "private_controls_run": 0,
+  "production_ready": false,
+  "review": "REVIEW.md",
+  "running_kernel_build_id_reread": false,
+  "runtime_qualified": false,
+  "schema": "pocket4-writable-proc-readonly-causal-audit-v1",
+  "scope": "C14 private r3 stage4 line472 errno13; no runtime control performed",
+  "self_comm_substitute_adopted": false,
+  "source_causality_is_not_direct_dead_child_observation": true,
+  "source_supported_root_cause": "pre-exec inherited mm user namespace + non-user-dumpable proc inode ownership, mapped credentials DAC mismatch",
+  "writable_proc_qualified": false,
+  "xattr_control_qualified": false
+}

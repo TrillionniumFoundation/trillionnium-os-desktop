@@ -1,0 +1,113 @@
+{
+  "adopted_normal_exit": {
+    "children": [
+      {
+        "observed_code": 1,
+        "observed_status": 255,
+        "pid": 2264316,
+        "pidfd_closed": true,
+        "reaped": true,
+        "wait_status": 65280
+      }
+    ],
+    "complete": true,
+    "deadline": 1328753.31729976,
+    "elapsed_seconds": 0.00048224511556327343,
+    "leader_pid": 2218872,
+    "leader_reaped_here": false,
+    "remaining_adopted_children": [],
+    "signals_sent": 0
+  },
+  "argv": [
+    "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/sdk33-zygote-r1/droidloom-update",
+    "--source",
+    "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-sdk33-zygote-r1",
+    "-j6",
+    "audio-apex-build",
+    "--work",
+    "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work"
+  ],
+  "driver": {
+    "argv": [],
+    "cgroup": "0::/system.slice/p4-audio-source430-original-sdk33-zygote-full-desktop-20261109-8b88-r13.service\n",
+    "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/sdk33-zygote-r1/droidloom-update",
+    "pid": 2218872,
+    "start_ticks": 132790473
+  },
+  "errors": [
+    {
+      "message": "adopted child exited unsuccessfully",
+      "stage": "execution",
+      "type": "ChildProcessError"
+    }
+  ],
+  "finished_ns": 1794251082333187849,
+  "lifecycle": {
+    "child_reaped": true,
+    "cleanup_elapsed_seconds": 0.0004112489987164736,
+    "descendants": [],
+    "group_signal_unneeded_exited_only_child": true,
+    "leader_alive_before_group_cleanup": false,
+    "leader_observed_before_reap": {
+      "code": 1,
+      "pid": 2218872,
+      "status": 1
+    },
+    "leader_unreaped_before_group_cleanup": true,
+    "owned_tree_cleanup_complete": true,
+    "pidfd_closed": true,
+    "remaining_owned_children": [],
+    "returncode": 1
+  },
+  "name": "normal-full-audio-apex",
+  "observed_before_reap": {
+    "code": 1,
+    "pid": 2218872,
+    "status": 1
+  },
+  "owned_retirement_complete": true,
+  "reaper": {
+    "begin_passed": true,
+    "cleanup_deadline_supplied_by_caller": true,
+    "final_children_empty": true,
+    "max_adopted_per_command": 128,
+    "original_subreaper_flag": 0,
+    "pid": 2206774,
+    "protected_pid_count": 0,
+    "restored": true,
+    "signals_only_to_kernel_proven_owned_children": true
+  },
+  "started_ns": 1794250238746356443,
+  "stderr": {
+    "bytes": 529665,
+    "identity": [
+      2067,
+      3038989,
+      33188,
+      1000,
+      1000,
+      1,
+      529665,
+      1794251082320609154,
+      1794251082320609154
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r13/commands/normal-full-audio-apex.stderr",
+    "sha256": "79f8b03872da4a791353e6bfad7b1d258cc6c5e38e3bd74c940fcb23451f7307"
+  },
+  "stdout": {
+    "bytes": 67592,
+    "identity": [
+      2067,
+      3038988,
+      33188,
+      1000,
+      1000,
+      1,
+      67592,
+      1794251082191612733,
+      1794251082191612733
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r13/commands/normal-full-audio-apex.stdout",
+    "sha256": "8d4ac091d2706d39f4f351e67aa372e27ed631af7de9cc6bd5d01bd70eadd5e9"
+  }
+}
