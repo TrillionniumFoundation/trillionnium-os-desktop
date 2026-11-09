@@ -1,0 +1,73 @@
+diff --git a/runtime/droidloom-supervisor/src/production_namespace_binder_child.rs b/runtime/droidloom-supervisor/src/production_namespace_binder_child.rs
+--- a/runtime/droidloom-supervisor/src/production_namespace_binder_child.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_binder_child.rs
+@@ -374,10 +374,13 @@
+         )
+     };
+     let directory = unsafe { meta(fd, nonce) };
+-    // The kernel's simple filesystem initializes these ordinary inodes with
+-    // GLOBAL_ROOT IDs, which can appear as overflow IDs inside this userns.
+-    // Device/control ownership is separately required to be mapped guest root.
+-    if directory.st_dev != root.st_dev || directory.st_mode != (libc::S_IFDIR | 0o755) {
++    // inode_init_always_gfp initializes ordinary inode IDs through s_user_ns.
++    // The held Binder root and features must therefore belong to guest root.
++    if directory.st_dev != root.st_dev
++        || directory.st_mode != (libc::S_IFDIR | 0o755)
++        || directory.st_uid != 0
++        || directory.st_gid != 0
++    {
+         unsafe { protocol_failure(nonce) }
+     }
+     unsafe {
+@@ -403,6 +406,8 @@
+         if before.st_dev != root.st_dev
+             || before.st_mode != (libc::S_IFREG | 0o444)
+             || before.st_nlink != 1
++            || before.st_uid != 0
++            || before.st_gid != 0
+         {
+             unsafe { protocol_failure(nonce) }
+         }
+@@ -591,6 +596,8 @@
+         let binder_root = meta(binder, nonce);
+         if binder_root.st_mode != (libc::S_IFDIR | 0o755)
+             || binder_root.st_ino != 1
++            || binder_root.st_uid != 0
++            || binder_root.st_gid != 0
+             || [root_dev, dev_dev, proc_dev].contains(&binder_root.st_dev)
+         {
+             protocol_failure(nonce);
+diff --git a/runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs b/runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs
+--- a/runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs
+@@ -127,6 +127,8 @@
+         let meta = binder.metadata()?;
+         if meta.mode() != (libc::S_IFDIR | 0o755)
+             || meta.ino() != 1
++            || meta.uid() != self.uids.start
++            || meta.gid() != self.gids.start
+             || [
+                 root.metadata()?.dev(),
+                 dev_node.device,
+@@ -226,7 +228,11 @@
+ 
+         let features = root_subdirectory(&binder, c"features")?;
+         let fm = features.metadata()?;
+-        if fm.dev() != root_node.device || fm.mode() != (libc::S_IFDIR | 0o755) {
++        if fm.dev() != root_node.device
++            || fm.mode() != (libc::S_IFDIR | 0o755)
++            || fm.uid() != self.uids.start
++            || fm.gid() != self.gids.start
++        {
+             return Err(NamespaceError::Rejected(
+                 "private Binder feature directory differs",
+             ));
+@@ -264,6 +270,8 @@
+             if before.dev() != root_node.device
+                 || before.mode() != (libc::S_IFREG | 0o444)
+                 || before.nlink() != 1
++                || before.uid() != self.uids.start
++                || before.gid() != self.gids.start
+                 || count != 2
+                 || &bytes[..2] != b"1\n"
+                 || file.read(&mut bytes)? != 0

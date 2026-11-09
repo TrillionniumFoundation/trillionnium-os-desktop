@@ -1,0 +1,336 @@
+{
+  "schema": "pocket4-official-route-bounded-get-discovery-v1",
+  "completed_utc": "2026-11-09T16:53:39.026827+00:00",
+  "observations": [
+    {
+      "name": "pdd-page",
+      "url": "https://www.yangkeduo.com/home/download/",
+      "observed_utc": "2026-11-09T16:53:23.492409+00:00",
+      "method": "GET",
+      "request_headers": {
+        "User-Agent": "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36"
+      },
+      "status": 200,
+      "effective_url": "https://www.yangkeduo.com/home/download/",
+      "headers": {
+        "date": "Mon, 09 Nov 2026 16:53:24 GMT",
+        "content-type": "text/html; charset=utf-8",
+        "content-length": "18499",
+        "last-modified": "Mon, 09 Nov 2026 14:53:19 GMT",
+        "etag": "\"6af1de5f-4843\"",
+        "accept-ranges": "bytes"
+      },
+      "redirects": [],
+      "truncated": false,
+      "body": {
+        "path": "/home/alex/work/pocket4-official-route-followup-20261109-2840-r1/pdd-page.body",
+        "bytes": 18499,
+        "sha256": "95b9ea63bd414b1f52744b0418e6884ad754b05c15d4552331c0d9660bca7d85"
+      },
+      "body_prefix_hex": "3c21444f43545950452068746d6c3e3c68746d6c206c616e673d227a682d434e",
+      "apk_or_route_literals": [],
+      "script_srcs": [
+        "//cdn.pinduoduo.com/home/_next/static/LR2PUsEFtab8qiLydh3Md/pages/_app.js",
+        "//cdn.pinduoduo.com/home/_next/static/LR2PUsEFtab8qiLydh3Md/pages/_error.js",
+        "//cdn.pinduoduo.com/home/_next/static/LR2PUsEFtab8qiLydh3Md/pages/download.js",
+        "//cdn.pinduoduo.com/home/_next/static/chunks/commons.58fc283afe2ab1dfce13.js",
+        "//cdn.pinduoduo.com/home/_next/static/chunks/styles.b22a86427f4816157cd7.js",
+        "//cdn.pinduoduo.com/home/_next/static/runtime/main-828246d811b84ba9295d.js",
+        "//cdn.pinduoduo.com/home/_next/static/runtime/webpack-89179faa512dd01fbb62.js"
+      ],
+      "source_contexts": [
+        {
+          "needle": "android",
+          "text": "<div class=\"ico-group\"><div class=\"platform\"><img src=\"//cdn.pinduoduo.com/upload/home/img/download/Android.png\" class=\"ico\" alt=\"android\"/><div class=\"cover\" style=\"display:none\"></div><p>Android</p><img src=\"//cdn.pinduoduo.com/upload/home/img/download/pdd_download_cursor.png\" class=\"cursor\" alt=\"cursor\"/></div><div class=\"platform\"><img src=\""
+        },
+        {
+          "needle": "android",
+          "text": "ass=\"platform\"><img src=\"//cdn.pinduoduo.com/upload/home/img/download/Android.png\" class=\"ico\" alt=\"android\"/><div class=\"cover\" style=\"display:none\"></div><p>Android</p><img src=\"//cdn.pinduoduo.com/upload/home/img/download/pdd_download_cursor.png\" class=\"cursor\" alt=\"cursor\"/></div><div class=\"platform\"><img src=\"//cdn.pinduoduo.com/upload/hom"
+        },
+        {
+          "needle": "android",
+          "text": "g/download/Android.png\" class=\"ico\" alt=\"android\"/><div class=\"cover\" style=\"display:none\"></div><p>Android</p><img src=\"//cdn.pinduoduo.com/upload/home/img/download/pdd_download_cursor.png\" class=\"cursor\" alt=\"cursor\"/></div><div class=\"platform\"><img src=\"//cdn.pinduoduo.com/upload/home/img/download/iPhone.png\" class=\"ico\" alt=\"iPhone\"/><div c"
+        },
+        {
+          "needle": "android",
+          "text": "ass=\"cursor\" alt=\"cursor\" style=\"display:none\"/></div></div><div class=\"bottom\"><div class=\"wrapper android movein\"><div class=\"arch-btns\"><div class=\"arch-btn arch-64\"><span class=\"arch-icon\">↓</span><span class=\"arch-text\"><b>下载64位安装包</b><em>适合大部分手机设备</em></span></div><div class=\"arch-btn arch-32\"><span class=\"arch-icon\">↓</span><span class=\"a"
+        }
+      ]
+    },
+    {
+      "name": "pdd-route-get",
+      "url": "https://home-api.pinduoduo.com/homesite/download-app-v2?rs=0&arch=arm64",
+      "observed_utc": "2026-11-09T16:53:25.355395+00:00",
+      "method": "GET",
+      "request_headers": {
+        "User-Agent": "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36",
+        "Range": "bytes=0-65535"
+      },
+      "status": 206,
+      "effective_url": "https://sep.pddpic.com/volantis-open-ep/mobile-CI-tag/ep-path/2026-11-03/1479984c21f48ccaa8756af217ba8371.apk?k=89ae8c71662b330af05d5d96755d780b&t=1794243208",
+      "headers": {
+        "last-modified": "Tue, 03 Nov 2026 02:58:32 GMT",
+        "etag": "\"1479984c21f48ccaa8756af217ba8371\"",
+        "content-type": "application/vnd.android.package-archive",
+        "content-range": "bytes 0-65535/32690199",
+        "content-length": "65536",
+        "date": "Mon, 09 Nov 2026 16:53:29 GMT"
+      },
+      "redirects": [
+        {
+          "status": 302,
+          "from": "https://home-api.pinduoduo.com/homesite/download-app-v2?rs=0&arch=arm64",
+          "location": "https://api.pinduoduo.com/api/app/channel/pinduoduoglobal_os_main_baidu_seo/arm64"
+        },
+        {
+          "status": 302,
+          "from": "https://api.pinduoduo.com/api/app/channel/pinduoduoglobal_os_main_baidu_seo/arm64",
+          "location": "https://sep.pddpic.com/volantis-open-ep/mobile-CI-tag/ep-path/2026-11-03/1479984c21f48ccaa8756af217ba8371.apk?k=89ae8c71662b330af05d5d96755d780b&t=1794243208"
+        }
+      ],
+      "truncated": false,
+      "body": {
+        "path": "/home/alex/work/pocket4-official-route-followup-20261109-2840-r1/pdd-route-get.body",
+        "bytes": 65536,
+        "sha256": "6fe40a5a1b1e36b33f61b6ded80d7fffa20c11641d4c3cfa04ee44b39ad822fb"
+      },
+      "body_prefix_hex": "504b030400000000000021082102000000000000000000000000000062000000"
+    },
+    {
+      "name": "douyin-short-get",
+      "url": "https://ugapk.com/mGFG",
+      "observed_utc": "2026-11-09T16:53:30.343981+00:00",
+      "method": "GET",
+      "request_headers": {
+        "User-Agent": "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36",
+        "Range": "bytes=0-65535"
+      },
+      "status": 206,
+      "effective_url": "https://lf9-apk.ugapk.cn/package/apk/aweme/5072_410001/aweme_douyinweb1_64_v5072_410001_9594_1793703380.apk?v=1793703399",
+      "headers": {
+        "date": "Mon, 09 Nov 2026 16:53:34 GMT",
+        "content-type": "application/vnd.android.package-archive",
+        "content-length": "65536",
+        "accept-ranges": "bytes",
+        "last-modified": "Tue, 03 Nov 2026 10:56:29 GMT",
+        "content-range": "bytes 0-65535/364363658"
+      },
+      "redirects": [
+        {
+          "status": 302,
+          "from": "https://ugapk.com/mGFG",
+          "location": "https://lf9-apk.ugapk.cn/package/apk/aweme/5072_410001/aweme_douyinweb1_64_v5072_410001_9594_1793703380.apk?v=1793703399"
+        }
+      ],
+      "truncated": false,
+      "body": {
+        "path": "/home/alex/work/pocket4-official-route-followup-20261109-2840-r1/douyin-short-get.body",
+        "bytes": 65536,
+        "sha256": "a29243f960f64aad225bfe570702712e5fe6db3657adb7f3d5d311e513d34454"
+      },
+      "body_prefix_hex": "504b03041403000008003db3625d5d17637bfe240100b8ab0b0013000000416e"
+    },
+    {
+      "name": "douyin-page",
+      "url": "https://www.douyin.com/downloadpage/app",
+      "observed_utc": "2026-11-09T16:53:35.479255+00:00",
+      "method": "GET",
+      "request_headers": {
+        "User-Agent": "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36"
+      },
+      "status": 200,
+      "effective_url": "https://www.douyin.com/downloadpage/app",
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "date": "Mon, 09 Nov 2026 16:53:36 GMT"
+      },
+      "redirects": [],
+      "truncated": false,
+      "body": {
+        "path": "/home/alex/work/pocket4-official-route-followup-20261109-2840-r1/douyin-page.body",
+        "bytes": 821443,
+        "sha256": "0f6b58b264195f1e27cfbf4e457a99b62e20b5022b58539bafd28d020a5b91ac"
+      },
+      "body_prefix_hex": "3c21444f43545950452068746d6c3e3c68746d6c2069732d6d6f62696c653d22",
+      "apk_or_route_literals": [
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/android-32.2.6/douyin.apk",
+        "https://p-pc-weboff.byteimg.com/tos-cn-i-9r5gewecjs/TV_xianshiguang1_bestv_v3.9.4_11d9d22.apk"
+      ],
+      "script_srcs": [
+        "https://lf-c-flwb.bytetos.com/obj/rc-client-security/c-webmssdk/1.0.0.20/webmssdk.es5.js",
+        "https://lf-c-flwb.bytetos.com/obj/rc-client-security/web/glue/1.0.0.64-fix.01/sdk-glue.js",
+        "https://lf-cdn-tos.bytescm.com/obj/static/filter-xss/filter-xss-lastest.umd.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/11201.4c887a6a.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/11939.89df0289.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/12664.26997311.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/12673.e2137b9e.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/14615.6ca18af4.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/14761.b11ea27a.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/15347.ee40c89f.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/15414.a7658c09.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/15445.22d2553c.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/20128.eea7bcdf.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/22645.5f87daa3.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/23904.d8602622.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/26447.8d8b8505.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/26789.8573e9f1.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/27852.bf3ff875.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/29143.70907c3a.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/29518.d57965a8.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/31847.74ed25bc.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/32458.e753805f.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/33281.a8f451c1.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/33687.e77be055.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/3428.ead24e57.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/36390.d9c6a7ff.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/36438.df2f7780.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/3673.0fdf19f5.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/39377.56ac5270.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/40747.92677d55.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/41135.d1c68a95.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/42824.307a0198.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/48546.f760679c.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/52294.507cbc4d.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/52829.38882acc.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/54976.f77dafc5.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/55255.331f1376.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/56842.5d69d335.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/59745.a3ef0b28.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/60103.59e9bb5f.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/60365.00a1e9ac.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/61240.29925b27.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/65274.bc883bd1.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/65276.66405298.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/65675.26e724f1.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/68391.ee1bf8ea.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/6974.84895e36.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/71449.c8ae6b1e.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/73134.77e3ca74.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/74181.9a281185.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/7446.f7779903.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/77002.4f64b00f.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/77392.e7de8652.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/78190.89d681c9.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/78350.a387514d.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/79433.3770703f.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/81850.7f4e3e61.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/86238.21676d22.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/86347.e6719398.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/91170.7b791fd5.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/95025.011665a3.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/97091.1a3743ab.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/98605.32d1d277.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/99494.4c3045dd.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/99932.1b2ec62a.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/async/routes-Downloadpage-pageInfo-route.86dddf14.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/client-entry~0.8218db17.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/client-entry~4.152765e3.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/client-entry~5.1266d11a.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/client-entry~5b58af49.6c8362ae.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/client-entry~6.a3e3282a.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/client-entry~63949b7a.7dc45005.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/client-entry~7.d8785f89.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/client-entry~a50c488a.4e796e96.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/framework.78673791.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/libs/pre-build-xgplayer.3614409a.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/lottie.bf6deed1.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/player-0.226966a4.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/player-1.8e31fbb9.js",
+        "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/player-10.b32e1ea4.js"
+      ],
+      "source_contexts": [
+        {
+          "needle": "ugapk",
+          "text": "22m.cooco.net.cn%22%2C%22www.zquan.cc%22%2C%22tp-pay.snssdk.com%22%2C%22luna.58.com%22%2C%22lf9-apk.ugapk.cn%22%2C%22www.xfpyfj.cn%22%2C%22ladf.pp8.com%22%2C%22tpc.googlesyndication.com%22%2C%22data2.pinpai8.cn%22%2C%22static.udache.com%22%2C%22jzmbti.com%22%2C%22m.ruiwen.com%22%2C%22kefu.bytedance.com%22%2C%22www.google.com%22%2C%22tousu.sina"
+        },
+        {
+          "needle": "ugapk",
+          "text": "wnum.game.uc.cn%22%2C%22yiye.poryf.com%22%2C%22doapi.prxxff.com%22%2C%22huohuo1.huamuwo.com%22%2C%22ugapk.com%22%2C%22m.hqwx.com%22%2C%22wedu.yipinpai.com%22%2C%22jump.taobao.com%22%2C%22api.toutiaoapi.com%22%2C%22dx.downxia.com%22%2C%22m.gmw.cn%22%2C%22xinmeixi.tos-cn-guangzhou.volces.com%22%2C%22wc.izstz.com%22%2C%22pg-chatn4.bjmantis.net%22"
+        },
+        {
+          "needle": "ugapk",
+          "text": "imiduanju.com\\\",\\\"m.cooco.net.cn\\\",\\\"www.zquan.cc\\\",\\\"tp-pay.snssdk.com\\\",\\\"luna.58.com\\\",\\\"lf9-apk.ugapk.cn\\\",\\\"www.xfpyfj.cn\\\",\\\"ladf.pp8.com\\\",\\\"tpc.googlesyndication.com\\\",\\\"data2.pinpai8.cn\\\",\\\"static.udache.com\\\",\\\"jzmbti.com\\\",\\\"m.ruiwen.com\\\",\\\"kefu.bytedance.com\\\",\\\"www.google.com\\\",\\\"tousu.sina.cn\\\",\\\"qb.snnya.com\\\",\\\"wap.gamersky.co"
+        },
+        {
+          "needle": "ugapk",
+          "text": "jobui.com\\\",\\\"downum.game.uc.cn\\\",\\\"yiye.poryf.com\\\",\\\"doapi.prxxff.com\\\",\\\"huohuo1.huamuwo.com\\\",\\\"ugapk.com\\\",\\\"m.hqwx.com\\\",\\\"wedu.yipinpai.com\\\",\\\"jump.taobao.com\\\",\\\"api.toutiaoapi.com\\\",\\\"dx.downxia.com\\\",\\\"m.gmw.cn\\\",\\\"xinmeixi.tos-cn-guangzhou.volces.com\\\",\\\"wc.izstz.com\\\",\\\"pg-chatn4.bjmantis.net\\\",\\\"ecare.unicef.cn\\\",\\\"ugame.9game.cn"
+        },
+        {
+          "needle": "ugapk",
+          "text": "22m.cooco.net.cn%22%2C%22www.zquan.cc%22%2C%22tp-pay.snssdk.com%22%2C%22luna.58.com%22%2C%22lf9-apk.ugapk.cn%22%2C%22www.xfpyfj.cn%22%2C%22ladf.pp8.com%22%2C%22tpc.googlesyndication.com%22%2C%22data2.pinpai8.cn%22%2C%22static.udache.com%22%2C%22jzmbti.com%22%2C%22m.ruiwen.com%22%2C%22kefu.bytedance.com%22%2C%22www.google.com%22%2C%22tousu.sina"
+        },
+        {
+          "needle": "ugapk",
+          "text": "wnum.game.uc.cn%22%2C%22yiye.poryf.com%22%2C%22doapi.prxxff.com%22%2C%22huohuo1.huamuwo.com%22%2C%22ugapk.com%22%2C%22m.hqwx.com%22%2C%22wedu.yipinpai.com%22%2C%22jump.taobao.com%22%2C%22api.toutiaoapi.com%22%2C%22dx.downxia.com%22%2C%22m.gmw.cn%22%2C%22xinmeixi.tos-cn-guangzhou.volces.com%22%2C%22wc.izstz.com%22%2C%22pg-chatn4.bjmantis.net%22"
+        },
+        {
+          "needle": "android",
+          "text": "test(e) && !/feige/i.test(e);\n}\nfunction isMobile(e) {\n    let t = navigator.userAgent;\n    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(t) || isiPad(e);\n}\nlet isAPad = (e)=>{\n    var t, i;\n    if ((null == e ? void 0 : null === (t = e.userAgent) || void 0 === t ? void 0 : t.isMobile) && (null == e ? void 0 : null"
+        },
+        {
+          "needle": "android",
+          "text": " 0 : t.isMobile) && (null == e ? void 0 : null === (i = e.userAgent) || void 0 === i ? void 0 : i.isAndroid)) {\n        let t = Number(e.cookies.get(\"dy_swidth\")) || 0;\n        let i = Number(e.cookies.get(\"dy_sheight\")) || 0;\n        console.log(\"###redirect width\", t, i);\n        if (t > 500 && i > 500) return true;\n    }\n    {\n        let e ="
+        },
+        {
+          "needle": "android",
+          "text": " (t > 500 && i > 500) return true;\n    }\n    {\n        let e = navigator.userAgent;\n        return /android/i.test(e) && window.screen.height > 500 && window.screen.width > 500;\n    }\n};\nfunction isiPad(e) {\n    let t = navigator.userAgent;\n    let i = 0;\n    let o = 0;\n    i = window.screen.height;\n    o = window.screen.width;\n    if (/\\(iPad.*"
+        },
+        {
+          "needle": "android",
+          "text": "22Chrome%22%2C%22browser_version%22%3A%22120.0%22%7D%7D%2C%22ua%22%3A%22Mozilla%2F5.0%20(Linux%3B%20Android%2012)%20AppleWebKit%2F537.36%20Chrome%2F120.0%20Mobile%20Safari%2F537.36%22%2C%22isClient%22%3Afalse%2C%22osInfo%22%3A%7B%22os%22%3A%22Linux%22%2C%22version%22%3A%22%22%2C%22isMas%22%3Afalse%7D%2C%22isSpider%22%3Afalse%2C%22pathname%22%3A%"
+        },
+        {
+          "needle": "android",
+          "text": "3A%22https%3A%2F%2Flf-douyin-pc-web.douyinstatic.com%2Fobj%2Fdouyin-pc-web%2Fios0119new.png%22%2C%22android%22%3A%22https%3A%2F%2Flf-douyin-pc-web.douyinstatic.com%2Fobj%2Fdouyin-pc-web%2Fandroid-32.2.6%2Fdouyin.apk%22%7D%2C%22macApk%22%3A%22https%3A%2F%2Flf-douyin-pc-web.douyinstatic.com%2Fobj%2Fdouyin-pc-web%2Fdouyin-pc-client%2F70441455852170"
+        },
+        {
+          "needle": "android",
+          "text": "png%22%2C%22android%22%3A%22https%3A%2F%2Flf-douyin-pc-web.douyinstatic.com%2Fobj%2Fdouyin-pc-web%2Fandroid-32.2.6%2Fdouyin.apk%22%7D%2C%22macApk%22%3A%22https%3A%2F%2Flf-douyin-pc-web.douyinstatic.com%2Fobj%2Fdouyin-pc-web%2Fdouyin-pc-client%2F7044145585217083655%2Freleases%2F495279540%2F8.7.0%2Fdarwin-universal%2Fdouyin-v8.7.0-darwin-universal"
+        },
+        {
+          "needle": "android",
+          "text": "com%2Fobj%2Feden-cn%2Fild_jw_upfbvk_lm%2FljhwZthlaukjlkulzlp%2Fdownload%2Fdouyin_qrcode.png%22%2C%22androidApk%22%3A%22https%3A%2F%2Fd.toutiao.com%2FmGFG%3Fapk%3D1%22%7D%2C%22ecom%22%3A%7B%22show_buynow%22%3A1%7D%2C%22enable_backend_abtest%22%3A%7B%22enable%22%3A1%7D%2C%22enable_recommend_cache%22%3A%7B%22enable%22%3Atrue%7D%2C%22fan_index_info%"
+        },
+        {
+          "needle": "android",
+          "text": "roundImg%22%3A%22http%3A%2F%2Fp-pc-weboff.byteimg.com%2Ftos-cn-i-9r5gewecjs%2FjxModalBg.png%22%2C%22androidQrCode%22%3A%22http%3A%2F%2Fp-pc-weboff.byteimg.com%2Ftos-cn-i-9r5gewecjs%2FandroidQrcodeV3.png%22%2C%22iosQrCode%22%3A%22http%3A%2F%2Fp-pc-weboff.byteimg.com%2Ftos-cn-i-9r5gewecjs%2FiosQrcodeV3.png%22%2C%22askAiAndroidQrCode%22%3A%22https%"
+        },
+        {
+          "needle": "downloadUrl",
+          "text": "ownloadHash%22%3A%22aa2971038b5bbd525775f642201b4e4d%22%2C%22macDownloadSize%22%3A191240780%2C%22macDownloadUrl%22%3A%22https%3A%2F%2Flf3-cdn-tos.bytegoofy.com%2Fobj%2Fdouyin-pc-client%2F7044145585217083655%2Freleases%2F11390835%2F3.2.0%2Fdarwin-universal%2Fdouyin-v3.2.0-darwin-universal.dmg%22%2C%22macVersion%22%3A%5B%5D%2C%22winDownloadHash%22%3A%"
+        },
+        {
+          "needle": "downloadUrl",
+          "text": "nDownloadHash%22%3A%22c9f648b4232628240da0928245642cbe%22%2C%22winDownloadSize%22%3A3119784%2C%22winDownloadUrl%22%3A%22https%3A%2F%2Flf3-cdn-tos.bytegoofy.com%2Fobj%2Fdouyin-pc-client%2F7044145585217083655%2Freleases%2F11390835%2F3.2.0%2Fwin32-ia32%2Fdouyin-downloader-v3.2.0-win32-ia32-default.exe%22%2C%22winVersion%22%3A%5B%221.0.6%22%2C%221.0.8%2"
+        },
+        {
+          "needle": "downloadUrl",
+          "text": "nfig\\\":{\\\"macDownloadHash\\\":\\\"aa2971038b5bbd525775f642201b4e4d\\\",\\\"macDownloadSize\\\":191240780,\\\"macDownloadUrl\\\":\\\"https://lf3-cdn-tos.bytegoofy.com/obj/douyin-pc-client/7044145585217083655/releases/11390835/3.2.0/darwin-universal/douyin-v3.2.0-darwin-universal.dmg\\\",\\\"macVersion\\\":[],\\\"winDownloadHash\\\":\\\"c9f648b4232628240da0928245642cbe\\\",\\\"winDo"
+        },
+        {
+          "needle": "downloadUrl",
+          "text": "sion\\\":[],\\\"winDownloadHash\\\":\\\"c9f648b4232628240da0928245642cbe\\\",\\\"winDownloadSize\\\":3119784,\\\"winDownloadUrl\\\":\\\"https://lf3-cdn-tos.bytegoofy.com/obj/douyin-pc-client/7044145585217083655/releases/11390835/3.2.0/win32-ia32/douyin-downloader-v3.2.0-win32-ia32-default.exe\\\",\\\"winVersion\\\":[\\\"1.0.6\\\",\\\"1.0.8\\\",\\\"1.0.9\\\",\\\"1.1.0\\\",\\\"1.1.1\\\",\\\"1.1.2\\\""
+        },
+        {
+          "needle": "downloadUrl",
+          "text": "nfig\\\":{\\\"macDownloadHash\\\":\\\"aa2971038b5bbd525775f642201b4e4d\\\",\\\"macDownloadSize\\\":191240780,\\\"macDownloadUrl\\\":\\\"https://lf3-cdn-tos.bytegoofy.com/obj/douyin-pc-client/7044145585217083655/releases/11390835/3.2.0/darwin-universal/douyin-v3.2.0-darwin-universal.dmg\\\",\\\"macVersion\\\":[],\\\"winDownloadHash\\\":\\\"c9f648b4232628240da0928245642cbe\\\",\\\"winDo"
+        },
+        {
+          "needle": "downloadUrl",
+          "text": "sion\\\":[],\\\"winDownloadHash\\\":\\\"c9f648b4232628240da0928245642cbe\\\",\\\"winDownloadSize\\\":3119784,\\\"winDownloadUrl\\\":\\\"https://lf3-cdn-tos.bytegoofy.com/obj/douyin-pc-client/7044145585217083655/releases/11390835/3.2.0/win32-ia32/douyin-downloader-v3.2.0-win32-ia32-default.exe\\\",\\\"winVersion\\\":[\\\"1.0.6\\\",\\\"1.0.8\\\",\\\"1.0.9\\\",\\\"1.1.0\\\",\\\"1.1.1\\\",\\\"1.1.2\\\""
+        },
+        {
+          "needle": "downloadUrl",
+          "text": "ownloadHash%22%3A%22aa2971038b5bbd525775f642201b4e4d%22%2C%22macDownloadSize%22%3A191240780%2C%22macDownloadUrl%22%3A%22https%3A%2F%2Flf3-cdn-tos.bytegoofy.com%2Fobj%2Fdouyin-pc-client%2F7044145585217083655%2Freleases%2F11390835%2F3.2.0%2Fdarwin-universal%2Fdouyin-v3.2.0-darwin-universal.dmg%22%2C%22macVersion%22%3A%5B%5D%2C%22winDownloadHash%22%3A%"
+        },
+        {
+          "needle": "downloadUrl",
+          "text": "nDownloadHash%22%3A%22c9f648b4232628240da0928245642cbe%22%2C%22winDownloadSize%22%3A3119784%2C%22winDownloadUrl%22%3A%22https%3A%2F%2Flf3-cdn-tos.bytegoofy.com%2Fobj%2Fdouyin-pc-client%2F7044145585217083655%2Freleases%2F11390835%2F3.2.0%2Fwin32-ia32%2Fdouyin-downloader-v3.2.0-win32-ia32-default.exe%22%2C%22winVersion%22%3A%5B%221.0.6%22%2C%221.0.8%2"
+        }
+      ]
+    }
+  ],
+  "APK_complete_download": false,
+  "runtime_qualified": false,
+  "production_ready": false
+}

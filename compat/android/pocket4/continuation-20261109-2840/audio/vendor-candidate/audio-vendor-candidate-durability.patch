@@ -1,0 +1,65 @@
+diff --git a/tools/droidloom-update/README.md b/tools/droidloom-update/README.md
+index 146ecaa..44f26f5 100644
+--- a/tools/droidloom-update/README.md
++++ b/tools/droidloom-update/README.md
+@@ -127,8 +127,15 @@ The destination parent must be a real caller-owned directory without group or
+ other write access. Every ancestor is opened without following symlinks;
+ retained directory descriptors anchor exclusive creation and are checked again
+ before and after publication. An existing destination is never reused. Failed
+-staging can leave a partial private directory without a successful receipt;
+-inspect that attempt before choosing another new destination.
++staging can leave a partial private directory, including a manifest written
++before a final synchronization or identity check failed. Consume a candidate
++only after the command exits successfully; inspect a failed attempt before
++choosing another new destination.
++
++The staged files are synchronized again after their final permissions are set.
++New directories are synchronized from deepest child through the stage root,
++then the existing parent. Final descriptor and pathname identity checks precede
++successful return.
+ 
+ Inputs require the complete 430-project normal full-build terminal, exact
+ success and retirement fields, the recorded normal command, and the output
+diff --git a/tools/droidloom-update/src/audio_vendor_candidate.rs b/tools/droidloom-update/src/audio_vendor_candidate.rs
+index 41bb70b..d97f158 100644
+--- a/tools/droidloom-update/src/audio_vendor_candidate.rs
++++ b/tools/droidloom-update/src/audio_vendor_candidate.rs
+@@ -510,6 +510,7 @@ fn stage_inner(
+         "source APEX changed during copy",
+     )?;
+     output.set_permissions(Permissions::from_mode(0o400))?;
++    output.sync_all()?;
+     let target_identity = file_identity(&output.metadata()?)?;
+     output.seek(SeekFrom::Start(0))?;
+     let mut readback = Sha256::new();
+@@ -567,6 +568,7 @@ fn stage_inner(
+     manifest.write_all(b"\n")?;
+     manifest.sync_all()?;
+     manifest.set_permissions(Permissions::from_mode(0o400))?;
++    manifest.sync_all()?;
+     let manifest_identity = file_identity(&manifest.metadata()?)?;
+     chain.verify()?;
+     need(
+@@ -574,8 +576,21 @@ fn stage_inner(
+             == manifest_identity,
+         "candidate manifest pathname replaced",
+     )?;
+-    chain.0[stage_dir].file.sync_all()?;
++    // Persist each newly created directory entry before its containing entry.
++    for held in chain.0[stage_dir..].iter().rev() {
++        held.file.sync_all()?;
++    }
+     chain.0[parent].file.sync_all()?;
++    chain.verify()?;
++    need(
++        file_identity(&output.metadata()?)? == target_identity
++            && named_identity(&stat_at(chain.fd(artifact_dir), OsStr::new(&target_name))?)?
++                == target_identity
++            && file_identity(&manifest.metadata()?)? == manifest_identity
++            && named_identity(&stat_at(chain.fd(stage_dir), OsStr::new("CANDIDATE.json"))?)?
++                == manifest_identity,
++        "staged files changed during durable publication",
++    )?;
+     Ok(report)
+ }
+ 

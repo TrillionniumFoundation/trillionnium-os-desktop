@@ -50,12 +50,11 @@ The proposed five Firefox browser gates and six common gates are included under 
 
 ## CI and remaining work
 
-A08 verifies the complete capsule inventory, replays the NSS, proc directory-access, Audio recovery-test and Native provider patches against their exact preimages, runs the ordinary-UID proc access regression, compiles the Binder probe and runs its device-free ABI self-check, and executes the ten original checker regressions plus the 22 same-source application probe/transport/checker controls with the pinned Rust toolchain. The full-crate Audio and Native test logs record their actual build-host executions. CI leaves Android runtime and production qualification unchanged.
+The actual A08 run 42656749197 on bed3989aca9d8ca7344eb50cd0ccb25c6799ab3e completed successfully at 2026-11-09T16:41:00Z with all 32 steps. Its original job log confirms 29 passing current application-generation controls with two explicit privileged controls ignored, ten release-evidence controls, all four source replays, the ordinary-UID proc-access regression and all 26 Audio source-library regressions. The older A08 results and source generations retained below are historical observations, not additional current application acceptances.
 
-The execution channel recovered for the recorded source and normal-host work, then timed out again during later status reads. Original operations were not replayed. The active owner's Native601 strict full r11 subsequently failed on original platform-tools providers etc1tool and hprof-conv; its original failure, source restoration and owned retirement are preserved. Audio's original SDK reconciliation completed successfully and its independent 55-blob and physical-retirement checks passed. The source-library history correction is separately published in a291c1fbef3aa0b381109aec9af5dad0112dab09. Complete Native/Audio artifacts, production namespace qualification, Android boot, all 42 application acceptances and final obsolete-artifact retirement remain pending. The active coordinator's CURRENT and original Android data were not changed by this continuation.
+The earlier A08 run 42640649729 on c5b5319 was cancelled at the 15-minute job limit while downloading JDK packages, before repair tests executed. Tool preparation now verifies and reuses the runner-provided Java 17 JDK/JNI headers and existing compiler/media tools, installing only missing components. The same JNI/media tests, source inventories and job deadline remain required.
 
-
-The earlier A08 run 42640649729 on c5b5319 was cancelled at the 15-minute job limit while downloading JDK packages, before the repair test steps executed. Tool preparation now verifies and reuses the runner-provided Java 17 JDK/JNI headers and existing compiler/media tools, installing only missing components without recommended packages. The same actual JNI/media tests, source inventories and job deadline remain required.
+Complete Native/Audio output qualification, same-QPR1 compatibility, ProductionCell integration, writable init proc and actual Android boot still gate final application acceptance. A current runtime generation must then pass all 42 applications' actual common and business checks. Source or host CI does not grant that credit. The foreground owner retains the canonical CURRENT and original Android data; this continuation does not modify them.
 
 ## Application runtime generation successor
 
@@ -64,3 +63,27 @@ The immutable R3 source commit deacfc207c99a74a8aac056b086dc1b8f7e8f0c2 extends 
 The real workspace passed 14 supervisor, 36 application library and three CLI tests. The same-source harness passed 29 tests with two explicitly privileged controls ignored; those counts overlap the workspace tests. A real Unix-socket negative control made exactly one runtime observation, zero package calls and returned all 42 rows blocked. All three original source/test/negative-control jobs were independently reread as succeeded with exit 0 and complete durable output. The patch was independently applied to the exact R2 parent and reproduced all 14 copied source files. Source, tests, receipts and the current production/selected-leaf integration audit are frozen under apps-runtime-fence. The A08 entry now executes this successor harness; R2 evidence remains historical.
 
 The actual d6960d6 A08 run 42648494252 completed successfully with all 32 steps, including four exact source-patch replays, the ordinary-UID proc access regression, the R2 22-test module harness, the ten-test evidence checker and the full 26-test Audio source suite. The exact Audio and Native Rust replay verifiers also compiled and replayed successfully as UID 1000 on Pocket4. These are source and host controls; selected Android application acceptance remains 0/42.
+
+## Exact C11 Binder review fixes
+
+`binder/c11-review` preserves the original C11 preimages and two independent patches: deadline acceptance checks and mapped ownership of Binder root/features inodes. Both patches together compiled from a fresh target and passed 11 distinct ordinary tests in 13 executions; the private control remained explicitly ignored. The initial zero-test attempt is retained as rejected evidence. The exact remote capsule is `/home/alex/work/pocket4-production-binder-stage-20261109-2840-r1/c11-review-capsule-r1`.
+
+The three-file combined patch is only the concatenation of the two disjoint patches. The Rust verifier beside the capsule checks exact preimages, creates a new private replay tree, applies that combined patch and requires the three exact postimages. The agent's frozen 36-file capsule remains unchanged. The active owner's private Binder result must retain its actual source-generation binding; ordinary review tests cannot transfer private-control credit to a successor.
+
+## Vendor-only Audio candidate staging
+
+`audio/vendor-candidate` contains the final Rust updater source at 207cb626934534e0c4600312d1afa8552c835df1. Its command consumes a pinned successful normal full-build terminal and stages only the complete vendor Audio APEX. It leaves official ART, runtime/bionic, framework and Connectivity outside this staging operation. All six signing, compatibility and runtime qualifications remain false in the candidate manifest.
+
+The actual updater passed 21 controls, built normally and rejected the real SDK-source-only receipt without creating a candidate. The final follow-up synchronizes both files after their final permissions, every new directory from the deepest directory outward, and the existing parent. The portable harness compiles the exact three final source/test files after byte-for-byte comparison and passed the same 21 controls; these counts overlap. Seven changed source files and four original preimages replay exactly. The new CI step repeats the exact source replay and those portable controls. No real Audio APEX was built or deployed by this staging-source work.
+
+## Current public application input refresh
+
+`apps/current-input-refresh` contains two complete new publisher artifacts' exact metadata and verification evidence. Beike remains 3.06.71 / 3067100 with the same signer, but its whole-file digest is now 6984af4bbeda2818ad0a35183dd59af798eceebb9e441ef869b32dcc5095f728. Air China is now 7.53.3 / 75303 with digest f16f429b21c3402b362f5d3058476dfd97c29986f688e95e0d5294368d104fab and the same signer; its official page's older 7.53.2 text is not used as the APK version.
+
+Both complete APKs passed fresh aapt and apksigner verification and are held read-only for foreground-owner custody. They are not installed or selected. Separate bounded GET checks resolved the Pinduoduo and Douyin HEAD differences to their previously selected official objects, without claiming new whole-file hashes. None of these observations increments the 0/42 current-runtime acceptance count.
+
+## Verified retirement of owned obsolete probes
+
+After immutable source/evidence publication at bed3989, three owned, superseded executables were removed: the Audio and Native source-replay probes and the ordinary proc-access probe. Exact file hashes and identities, process/mount references, inactive units and CURRENT path references were checked before removal. The deletion held the original coordination lock, preserved canonical CURRENT, synchronized containing directories and checked physical absence. A subsequent independent job again observed all three absent. The exact intent, result and readback are in `cleanup/owned-probe-retirement-r1`.
+
+This retirement removed 12,579,512 bytes. It does not represent final old-generation cleanup. Active builds, selected inputs, original user data and unresolved signers remain protected until their replacement and consumers are verified.

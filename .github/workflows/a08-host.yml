@@ -284,7 +284,7 @@ jobs:
           import stat
           import sys
           import unittest
-          capsules = {'native597-original-llvm-plugin-cones-r1': ('75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c', 12), 'audio-canonical-custody-r1': ('42ead27bc89d5d866eddfd951e0dbfb91af1ff1c4e2843946fe4eee34925f1d5', 3), 'apparmor-binder-retained-credential-r1': ('243e3355ecfa6f96af8839ffa10854c796a3b22e03a5d924c778fb47aa83f4b9', 6), 'production-identity-reservation-r1': ('eee9cec9ecbd9b71cdda9df13bb0446124001a5826932709561126896881ffea', 3), 'native600-original-provider-closure-r1': ('d40f8629af9741d8bc4dc09bb89389fe2b1c7348e3ea02d72b01dca1908c6cc6', 18), 'audio425-original-provider-closure-r1': ('257bc3f071fd09c6b908ef80fdf0fe50617259c33b9083b0d66da6e270a6a450', 23), 'native600-rkpd-apex-r1': ('f33f622023fb328ea88c79a2fb29f7f7a9c1c3427af0a31b53bbdfc8c9fc4889', 9), 'native600-bcc-compat-r1': ('aadd86a9ec1528cdae294926ca86946d3337096ac1e27e476fda95e9cf1afc19', 4), 'audio430-ondeviceintelligence-api-r1': ('a61d8835adbf08d2d63847a428a8f928c0481f8ee1458d0a488308111153ae37', 5), 'namespace-lifetime-r5-review-r1': ('f4e068208cf7e2f99e19beca10b54fd1bef466c5b2e2949dbbd7a67857ccd4bd', 8), 'native601-dexdeps-pyee-r1': ('35c3d845f07e56a1149e761cc44ee205827c32141d081570ae0f3b71caff36f4', 5), 'audio425-connectivity-projection-preimage-r1': ('3cbd3fa6665daec40aae21b6c225ae99df8aa5f02450bf656a795fec03f72397', 9), 'audio430-pasit-original-provider-closure-r1': ('147bbe6cb367a1272b8c1528a64fc1b675c313a7d38d5b4060bb42befe2a7297', 25), 'audio430-original-released-api-inputs-r1': ('f8c6a07d08c56d2793b8ed2a6c220dbcfbf03c48b3670a20fd4b81fb3307e8e1', 11), 'native601-original-provider-chain-r1': ('2650d520dec6680b88ab406d3f21b19d2b908ce66de076640e0bd1c01ca539a7', 23), 'continuation-20261109-2840': ('0bf8f849a8b8d85141b26bbd35b2119b76493c2a2fd5e1350de0ee51051556de', 142), 'audio430-released-sdk-source-tests-r1': ('5eecc25bf858a9bb7c9edcfa96b649939613d328164fe293ebfeaa1e51143808', 23)}
+          capsules = {'native597-original-llvm-plugin-cones-r1': ('75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c', 12), 'audio-canonical-custody-r1': ('42ead27bc89d5d866eddfd951e0dbfb91af1ff1c4e2843946fe4eee34925f1d5', 3), 'apparmor-binder-retained-credential-r1': ('243e3355ecfa6f96af8839ffa10854c796a3b22e03a5d924c778fb47aa83f4b9', 6), 'production-identity-reservation-r1': ('eee9cec9ecbd9b71cdda9df13bb0446124001a5826932709561126896881ffea', 3), 'native600-original-provider-closure-r1': ('d40f8629af9741d8bc4dc09bb89389fe2b1c7348e3ea02d72b01dca1908c6cc6', 18), 'audio425-original-provider-closure-r1': ('257bc3f071fd09c6b908ef80fdf0fe50617259c33b9083b0d66da6e270a6a450', 23), 'native600-rkpd-apex-r1': ('f33f622023fb328ea88c79a2fb29f7f7a9c1c3427af0a31b53bbdfc8c9fc4889', 9), 'native600-bcc-compat-r1': ('aadd86a9ec1528cdae294926ca86946d3337096ac1e27e476fda95e9cf1afc19', 4), 'audio430-ondeviceintelligence-api-r1': ('a61d8835adbf08d2d63847a428a8f928c0481f8ee1458d0a488308111153ae37', 5), 'namespace-lifetime-r5-review-r1': ('f4e068208cf7e2f99e19beca10b54fd1bef466c5b2e2949dbbd7a67857ccd4bd', 8), 'native601-dexdeps-pyee-r1': ('35c3d845f07e56a1149e761cc44ee205827c32141d081570ae0f3b71caff36f4', 5), 'audio425-connectivity-projection-preimage-r1': ('3cbd3fa6665daec40aae21b6c225ae99df8aa5f02450bf656a795fec03f72397', 9), 'audio430-pasit-original-provider-closure-r1': ('147bbe6cb367a1272b8c1528a64fc1b675c313a7d38d5b4060bb42befe2a7297', 25), 'audio430-original-released-api-inputs-r1': ('f8c6a07d08c56d2793b8ed2a6c220dbcfbf03c48b3670a20fd4b81fb3307e8e1', 11), 'native601-original-provider-chain-r1': ('2650d520dec6680b88ab406d3f21b19d2b908ce66de076640e0bd1c01ca539a7', 23), 'continuation-20261109-2840': ('65b16463ae7a42ea83ac2ff20a0d29cbaa393103837b474f89612550c16c1fbc', 267), 'audio430-released-sdk-source-tests-r1': ('5eecc25bf858a9bb7c9edcfa96b649939613d328164fe293ebfeaa1e51143808', 23)}
           for name, (digest, count) in capsules.items():
               directory = Path('compat/android/pocket4', name).resolve(strict=True)
               raw = (directory / 'FILES.json').read_bytes()
@@ -821,6 +821,45 @@ jobs:
               raise SystemExit('Actual ordinary-UID proc access regression differs')
           print('NSS/proc/Audio/Native source replay, ordinary-UID proc access, Binder ABI, ten evidence and 29 application generation module controls passed; Android runtime remains a separate gate')
           PY2840
+      - name: Verify C11 Binder fixes and vendor-only Audio staging
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule=compat/android/pocket4/continuation-20261109-2840
+          work="$RUNNER_TEMP/a08-2840-candidate-controls"
+          mkdir "$work"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/binder/c11-verify-source.rs" -o "$work/binder-c11-replay"
+          "$work/binder-c11-replay" "$capsule/binder" replay \
+            "$capsule/binder/c11-review/preimage" "$work/binder-c11-source" \
+            | tee "$RUNNER_TEMP/a08/2840-binder-c11-source-replay.json"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/audio/vendor-candidate-verify-source.rs" -o "$work/audio-vendor-replay"
+          "$work/audio-vendor-replay" "$capsule/audio" replay \
+            "$capsule/audio/vendor-candidate/preimage" "$work/audio-vendor-source" \
+            | tee "$RUNNER_TEMP/a08/2840-audio-vendor-source-replay.json"
+          CARGO_TARGET_DIR="$work/audio-vendor-target" rustup run 1.93.0 cargo test --locked \
+            --manifest-path "$capsule/audio/vendor-candidate/harness/Cargo.toml" -j 1 -- --test-threads=1 \
+            2>&1 | tee "$RUNNER_TEMP/a08/2840-audio-vendor-tests.log"
+          python3 -I -B - "$RUNNER_TEMP/a08" <<'PY2840VENDOR'
+          import json
+          from pathlib import Path
+          import sys
+          evidence = Path(sys.argv[1])
+          for leaf, count, digest in [
+              ('2840-binder-c11-source-replay.json', 3, 'c45a3e749fdb91c4835cc91b5ae15c99cb09f890faf80287d7d74582dbb45c67'),
+              ('2840-audio-vendor-source-replay.json', 7, 'd0eaf319d488b8daaae33d813a6256b7896d6e9cefb8eca6c9f52f96ca767037')]:
+              result = json.loads((evidence / leaf).read_text())
+              expected = {'scope': str(count) + ' declared source files', 'mode': 'replay',
+                          'verified_files': count, 'patch_sha256': digest, 'runtime_qualified': False}
+              if result != expected:
+                  raise SystemExit('Exact candidate source replay differs: ' + leaf)
+          summary = 'test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;'
+          if (evidence / '2840-audio-vendor-tests.log').read_text().count(summary) != 1:
+              raise SystemExit('All 21 exact-source Audio candidate controls must execute')
+          print('C11 and Audio candidate source replay and 21 Audio controls passed; signing, private Binder and Android runtime retain separate source-bound qualifications')
+          PY2840VENDOR
       - name: Execute all 26 Audio source-library regressions
         timeout-minutes: 5
         shell: bash

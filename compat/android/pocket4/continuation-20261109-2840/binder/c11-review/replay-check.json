@@ -1,0 +1,29 @@
+{
+  "schema": "c11-two-patch-exact-replay-v1",
+  "checks": [
+    {
+      "order": [
+        "deadline.patch",
+        "mapped-ownership.patch"
+      ],
+      "all_postimages_exact": true,
+      "postimages": {
+        "runtime/droidloom-supervisor/src/production_namespace_binder_ipc_child.rs": "b2e91a38012c533da580e0506ae7fd088c8eeca8552308df4e159ca0bb1ecf99",
+        "runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs": "ad7b9aa3b7a2ba81c35dd0a4cd66ca80e3e4a4f202a0b5584f9eb6b7607aef71",
+        "runtime/droidloom-supervisor/src/production_namespace_binder_child.rs": "963907d9c0d0351d2d786ec86863f67483b17475b9cc1d6132d308a31f0bd3bc"
+      }
+    },
+    {
+      "order": [
+        "mapped-ownership.patch",
+        "deadline.patch"
+      ],
+      "all_postimages_exact": true,
+      "postimages": {
+        "runtime/droidloom-supervisor/src/production_namespace_binder_ipc_child.rs": "b2e91a38012c533da580e0506ae7fd088c8eeca8552308df4e159ca0bb1ecf99",
+        "runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs": "ad7b9aa3b7a2ba81c35dd0a4cd66ca80e3e4a4f202a0b5584f9eb6b7607aef71",
+        "runtime/droidloom-supervisor/src/production_namespace_binder_child.rs": "963907d9c0d0351d2d786ec86863f67483b17475b9cc1d6132d308a31f0bd3bc"
+      }
+    }
+  ]
+}
