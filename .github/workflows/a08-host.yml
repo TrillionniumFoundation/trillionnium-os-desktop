@@ -261,7 +261,7 @@ jobs:
           import stat
           import sys
           import unittest
-          capsules = {'native597-original-llvm-plugin-cones-r1': ('75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c', 12), 'audio-canonical-custody-r1': ('42ead27bc89d5d866eddfd951e0dbfb91af1ff1c4e2843946fe4eee34925f1d5', 3), 'apparmor-binder-retained-credential-r1': ('243e3355ecfa6f96af8839ffa10854c796a3b22e03a5d924c778fb47aa83f4b9', 6), 'production-identity-reservation-r1': ('eee9cec9ecbd9b71cdda9df13bb0446124001a5826932709561126896881ffea', 3), 'native600-original-provider-closure-r1': ('d40f8629af9741d8bc4dc09bb89389fe2b1c7348e3ea02d72b01dca1908c6cc6', 18), 'audio425-original-provider-closure-r1': ('257bc3f071fd09c6b908ef80fdf0fe50617259c33b9083b0d66da6e270a6a450', 23), 'native600-rkpd-apex-r1': ('f33f622023fb328ea88c79a2fb29f7f7a9c1c3427af0a31b53bbdfc8c9fc4889', 9)}
+          capsules = {'native597-original-llvm-plugin-cones-r1': ('75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c', 12), 'audio-canonical-custody-r1': ('42ead27bc89d5d866eddfd951e0dbfb91af1ff1c4e2843946fe4eee34925f1d5', 3), 'apparmor-binder-retained-credential-r1': ('243e3355ecfa6f96af8839ffa10854c796a3b22e03a5d924c778fb47aa83f4b9', 6), 'production-identity-reservation-r1': ('eee9cec9ecbd9b71cdda9df13bb0446124001a5826932709561126896881ffea', 3), 'native600-original-provider-closure-r1': ('d40f8629af9741d8bc4dc09bb89389fe2b1c7348e3ea02d72b01dca1908c6cc6', 18), 'audio425-original-provider-closure-r1': ('257bc3f071fd09c6b908ef80fdf0fe50617259c33b9083b0d66da6e270a6a450', 23), 'native600-rkpd-apex-r1': ('f33f622023fb328ea88c79a2fb29f7f7a9c1c3427af0a31b53bbdfc8c9fc4889', 9), 'native600-bcc-compat-r1': ('72f29d92b7cf2c07384984e0fd9fd46a5aed19841d9651870b94eb323996d2be', 3)}
           for name, (digest, count) in capsules.items():
               directory = Path('compat/android/pocket4', name).resolve(strict=True)
               raw = (directory / 'FILES.json').read_bytes()
@@ -299,7 +299,7 @@ jobs:
           result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(module))
           if result.testsRun != 19 or result.skipped or not result.wasSuccessful():
               raise SystemExit('All nineteen canonical Audio custody controls must execute')
-          print('7 exact source capsules and 19 custody controls passed; Android runtime remains a separate gate')
+          print(str(len(capsules)) + ' exact source capsules and 19 custody controls passed; Android runtime remains a separate gate')
           PYCURRENTCAPSULES
       - name: Verify supervisor inputs, Native observations and cleanup visibility
         shell: bash
