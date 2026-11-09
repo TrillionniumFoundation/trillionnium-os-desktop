@@ -1,73 +1,127 @@
 {
-  "actual_linux_control": {
-    "control": "actual Linux procfs with self-held FD and mmap",
-    "coverage_errors_retained": 55,
-    "deletion_authorized": false,
-    "processes": 24,
-    "self_fd_hits": 2,
-    "self_maps_hits": 1,
-    "tasks": 58,
-    "visibility": "UNKNOWN"
+  "authoritative_terminal": {
+    "at_unix_ms": 1794201518391,
+    "cancelled": false,
+    "exit_code": 0,
+    "job_id": "1a1bebe1f85-5e21-252",
+    "launch_nonce": "74a2fbb415f8fc16815f3be79949ec73",
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
   },
-  "command": "python3 -B -m unittest -v test_verify_current_inputs.py test_reference_observer.py",
-  "errors": 0,
-  "failures": 0,
-  "observed_utc": "2026-11-09T04:46:17.403253+00:00",
-  "passed": [
-    "test_verify_current_inputs.CurrentInputsTests.test_changed_input_after_hash_is_detected_at_final_identity_check",
-    "test_verify_current_inputs.CurrentInputsTests.test_changed_source_is_unknown_even_when_manifest_self_consistent",
-    "test_verify_current_inputs.CurrentInputsTests.test_current_selector_manifest_conflict",
-    "test_verify_current_inputs.CurrentInputsTests.test_duplicate_json_key_rejected",
-    "test_verify_current_inputs.CurrentInputsTests.test_duplicate_manifest_path_rejected",
-    "test_verify_current_inputs.CurrentInputsTests.test_hardlink_rejected",
-    "test_verify_current_inputs.CurrentInputsTests.test_new_current_generation_during_readback_rejected",
-    "test_verify_current_inputs.CurrentInputsTests.test_real_schema_721_files_and_13_preparations_readonly",
-    "test_verify_current_inputs.CurrentInputsTests.test_secret_material_rejected_before_open",
-    "test_verify_current_inputs.CurrentInputsTests.test_symlink_parent_rejected",
-    "test_verify_current_inputs.CurrentInputsTests.test_union_byte_limit",
-    "test_verify_current_inputs.CurrentInputsTests.test_wrong_count_and_path_traversal_rejected",
-    "test_reference_observer.RealLinuxObservationTests.test_real_self_open_fd_and_mmap_are_detected",
-    "test_reference_observer.ReferenceObserverTests.test_ambiguous_overmount_at_same_point_is_unknown",
-    "test_reference_observer.ReferenceObserverTests.test_complete_unreferenced_fixture_is_observed",
-    "test_reference_observer.ReferenceObserverTests.test_escaped_parent_bind_source_resolves",
-    "test_reference_observer.ReferenceObserverTests.test_exact_roots_only_and_bounds",
-    "test_reference_observer.ReferenceObserverTests.test_fd_added_or_removed_during_scan_is_unknown",
-    "test_reference_observer.ReferenceObserverTests.test_fd_alias_is_detected_by_device_inode",
-    "test_reference_observer.ReferenceObserverTests.test_live_namespace_free_thread_is_unknown",
-    "test_reference_observer.ReferenceObserverTests.test_malformed_maps_is_unknown",
-    "test_reference_observer.ReferenceObserverTests.test_maps_alias_is_detected_by_device_inode_original_misses",
-    "test_reference_observer.ReferenceObserverTests.test_missing_live_task_cwd_is_unknown",
-    "test_reference_observer.ReferenceObserverTests.test_mount_source_is_target_descendant",
-    "test_reference_observer.ReferenceObserverTests.test_mounted_descendant_inventory_is_unknown",
-    "test_reference_observer.ReferenceObserverTests.test_new_thread_during_scan_is_unknown",
-    "test_reference_observer.ReferenceObserverTests.test_no_open_file_bodies_or_mutation_calls",
-    "test_reference_observer.ReferenceObserverTests.test_only_nonleader_task_fd_is_detected_original_misses",
-    "test_reference_observer.ReferenceObserverTests.test_only_verified_empty_single_leader_zombie_may_be_skipped",
-    "test_reference_observer.ReferenceObserverTests.test_parent_bind_alias_in_nonleader_namespace_is_detected",
-    "test_reference_observer.ReferenceObserverTests.test_partial_zombie_view_has_no_general_missing_link_exemption",
-    "test_reference_observer.ReferenceObserverTests.test_permission_denied_maps_is_unknown",
-    "test_reference_observer.ReferenceObserverTests.test_special_node_inventory_is_unknown",
-    "test_reference_observer.ReferenceObserverTests.test_symlink_ancestor_is_unknown",
-    "test_reference_observer.ReferenceObserverTests.test_target_changes_during_scan_is_unknown",
-    "test_reference_observer.ReferenceObserverTests.test_thread_namespace_change_is_unknown",
-    "test_reference_observer.ReferenceObserverTests.test_tid_reuse_is_unknown",
-    "test_reference_observer.ReferenceObserverTests.test_time_budget_is_unknown",
-    "test_reference_observer.ReferenceObserverTests.test_zombie_identity_changes_is_unknown",
-    "test_reference_observer.ReferenceObserverTests.test_zombie_with_descriptor_or_cmdline_is_unknown"
+  "cpu_affinity": [
+    0
   ],
-  "proc_fixture_namespace_cases": true,
-  "remote_tests_or_mutations": 0,
-  "schema": "pocket4-current-inputs-and-observer-tests-v1",
-  "skips": 0,
-  "source_pins": {
-    "fixtures/executor-baseline.py": "22e7e85962c52a5cf44759dd99610d16293a0f8573ee68b8b9da4c89b1c7911a",
-    "reference_observer.patch": "7c4d6f853a59fc99c3852e67553c8cc4bfb0794636c87c44ffbf80102c751a2f",
-    "reference_observer.py": "fd0984a8bd9a4050029c5e0e6e8c3ed472151d5dfd7daddf2ae6fbae0ee5850e",
-    "test_reference_observer.py": "4af8ea565ea68b88c5fa57ba79366433f563ef08b2aa556c0e7e6b1e1ffeb8b7",
-    "test_verify_current_inputs.py": "bb90bd9cc0d1656b1307e99c73e891bfb448197011676438f98ef77f4c7110b9",
-    "verify_current_inputs.py": "2b4791a277dfbacc24ccc0fac93582657cb89ad2a3d16eea73f9e29706d155f9",
-    "verify_reference_patch.py": "679f593ccb9123c541b6611f1e581c7d7b5da31e9dc15628911fd4926672a838"
+  "deletion_admission": false,
+  "deletions": 0,
+  "effective_uid": 1000,
+  "host": "pocket4",
+  "live_helper_patch_applied": false,
+  "note": "The actual Linux control deliberately retains unrelated permission/churn UNKNOWN results; passing regression controls do not authorize target deletion or prove whole-host visibility.",
+  "original_receipt": {
+    "bytes": 2972,
+    "path": "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/reference-observer-nsfs-r2/result.json",
+    "sha256": "1247efe38dc6f0e3c8d651266cbba1069458c9ba936ae1ad04344bf8f7a81c10"
   },
+  "proc_fixture_namespace_cases": true,
+  "qualification": "POCKET4_SOURCE_CONTROLS_46_NORMAL_46_OPTIMIZED",
+  "runs": [
+    {
+      "exit_code": 0,
+      "mode": "normal",
+      "result": {
+        "actual_linux_control": {
+          "control": "actual Linux procfs with self-held FD and mmap",
+          "coverage_errors_retained": 512,
+          "deletion_authorized": false,
+          "processes": 680,
+          "self_fd_hits": 2,
+          "self_maps_hits": 1,
+          "tasks": 3530,
+          "visibility": "UNKNOWN"
+        },
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 46,
+        "unexpected_successes": 0
+      },
+      "stderr": {
+        "bytes": 6769,
+        "sha256": "08a18945417502db781ad96abb980c88067435106d9c084a1762e22eb934fff6"
+      },
+      "stdout": {
+        "bytes": 331,
+        "sha256": "b7cff788912bb456c3b3c052bb16826d036522c67654cfdf0b1d92a3874eee01"
+      }
+    },
+    {
+      "exit_code": 0,
+      "mode": "optimized",
+      "result": {
+        "actual_linux_control": {
+          "control": "actual Linux procfs with self-held FD and mmap",
+          "coverage_errors_retained": 512,
+          "deletion_authorized": false,
+          "processes": 682,
+          "self_fd_hits": 2,
+          "self_maps_hits": 1,
+          "tasks": 3490,
+          "visibility": "UNKNOWN"
+        },
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 46,
+        "unexpected_successes": 0
+      },
+      "stderr": {
+        "bytes": 6769,
+        "sha256": "b0333537438151c4baf57ed0a3491f7e29025406e0755028214364a001bde554"
+      },
+      "stdout": {
+        "bytes": 331,
+        "sha256": "4be21209144fd27391cb45fec6b72354a7507f1b5f1875f81c2f66b7d5436e66"
+      }
+    }
+  ],
+  "schema": "pocket4-current-inputs-and-observer-tests-v1",
+  "source_pins": [
+    {
+      "bytes": 21497,
+      "path": "reference_observer.py",
+      "sha256": "8679a251befd1f45ff6fcac3051552a986fb1574350a3a4b73118a2ef148c795"
+    },
+    {
+      "bytes": 20567,
+      "path": "test_reference_observer.py",
+      "sha256": "9063132ac66e529497dc3540982543b42892381ab1b65f34ef1cf8fcd279f3f4"
+    },
+    {
+      "bytes": 10794,
+      "path": "verify_current_inputs.py",
+      "sha256": "2b4791a277dfbacc24ccc0fac93582657cb89ad2a3d16eea73f9e29706d155f9"
+    },
+    {
+      "bytes": 6585,
+      "path": "test_verify_current_inputs.py",
+      "sha256": "bb90bd9cc0d1656b1307e99c73e891bfb448197011676438f98ef77f4c7110b9"
+    },
+    {
+      "bytes": 2870,
+      "path": "fixtures/observed_live_references.py",
+      "sha256": "a71ddc98027d5ec112144d70d18d8e76affd1ebc9df677f6047682b77e72da19"
+    },
+    {
+      "bytes": 20482,
+      "path": "fixtures/executor-baseline.py",
+      "sha256": "22e7e85962c52a5cf44759dd99610d16293a0f8573ee68b8b9da4c89b1c7911a"
+    }
+  ],
+  "stage": "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/reference-observer-nsfs-r2",
   "successful": true,
-  "tests_run": 40
+  "tests_per_mode": 46
 }

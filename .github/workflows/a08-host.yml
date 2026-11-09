@@ -313,7 +313,7 @@ jobs:
           import stat
           import subprocess
           import sys
-          capsules = [('production-identity-input-validation-r1', 'FILES.json', '51eab0a53fac05513969df8a50796a6f141d6826758f05b0ff316a7194ce0285', 8), ('native600-allocation-observation-r1', 'manifest.json', 'e0b80c1c3baa9726e1f8739fc46f85cf944dff7a458b1e5c9703b4707b2a9118', 14), ('cleanup-current-inputs-r1', 'FILES.json', '2751254549d15a8cfdb25f4dcd0fdd8e55593a9b11d6345ecd0fac09ac99ab99', 14)]
+          capsules = [('production-identity-input-validation-r1', 'FILES.json', '51eab0a53fac05513969df8a50796a6f141d6826758f05b0ff316a7194ce0285', 8), ('native600-allocation-observation-r1', 'manifest.json', 'e0b80c1c3baa9726e1f8739fc46f85cf944dff7a458b1e5c9703b4707b2a9118', 14), ('cleanup-current-inputs-r1', 'FILES.json', '7b2cee4b3fe8dca5f2b508302279d73337d034efb0e37b08a93cd4816e45e578', 15)]
           for name, manifest_leaf, expected_sha, expected_count in capsules:
               directory = Path('compat/android/pocket4', name).resolve(strict=True)
               raw = (directory / manifest_leaf).read_bytes()
@@ -377,7 +377,7 @@ jobs:
           """
           for optimization in ([], ['-O']):
               run([sys.executable, '-I', '-B', *optimization, '-', str(base / 'cleanup-current-inputs-r1'),
-                   json.dumps(['test_verify_current_inputs.py', 'test_reference_observer.py']), '40'], input=controls)
+                   json.dumps(['test_verify_current_inputs.py', 'test_reference_observer.py']), '46'], input=controls)
           run([sys.executable, '-I', '-B', '-O', '-', str(base / 'native600-allocation-observation-r1'),
                json.dumps(['test_verifier_smoke.py']), '2'], input=controls)
           print('Source replay and isolated controls passed; this step does not run Rust, Android, or application acceptance')

@@ -53,6 +53,7 @@ class ProcFixture:
         self.dev = self.target.stat().st_dev
         self.mounts = self.mount('/', '/')
         (self.proc / 'self').mkdir()
+        (self.proc / 'self' / 'root').symlink_to('/')
         (self.proc / 'self' / 'mountinfo').write_text(self.mounts)
         self.process = self.proc / str(self.pid)
         self.process.mkdir()
@@ -328,6 +329,73 @@ class ReferenceObserverTests(unittest.TestCase):
     def test_time_budget_is_unknown(self):
         with patch('time.monotonic', side_effect=[0, 46]):
             self.unknown(self.f.observe(), 'time_bound')
+
+
+    def test_observed_nsfs_mount_namespace_objects_are_accepted(self):
+        # Six actual Pocket4 namespace-object roots, with neutralized names.
+        roots = [4026533156, 4026533157, 4026533056,
+                 4026534726, 4026533223, 4026533044]
+        observed = ''.join(
+            f'{100 + i} 1 0:5 mnt:[{inode}] /namespace-object-{i} rw - nsfs nsfs rw\n'
+            for i, inode in enumerate(roots))
+        for path in (self.f.proc / 'self', self.f.leader):
+            (path / 'mountinfo').write_text(self.f.mounts + observed)
+        for i, inode in enumerate(roots):
+            self.f.add_task(tid=self.f.other_tid + i, namespace=f'mnt:[{inode}]')
+        result = self.f.observe()
+        self.clear(result)
+        self.assertEqual('OBSERVED', result['visibility'])
+        self.assertEqual(7, result['tasks'])
+        self.assertEqual(6, result['covered_opaque_mount_namespace_count'])
+        self.assertEqual(0, result['uncovered_mount_namespace_count'])
+
+    def test_opaque_nsfs_mountpoint_still_vetoes_target(self):
+        point = escaped(self.f.target / 'namespace-object')
+        raw = self.f.mounts + f'100 1 0:5 mnt:[4026533156] {point} rw - nsfs nsfs rw\n'
+        (self.f.leader / 'mountinfo').write_text(raw)
+        result = self.f.observe()
+        self.unknown(result, 'persistent_mount_namespace_unobserved')
+        self.assertTrue(any(h['kind'] == 'mount_at_or_below_target'
+                            for h in result['mount_hits']))
+
+    def test_opaque_nsfs_target_mount_is_unknown(self):
+        point = escaped(self.f.target)
+        raw = self.f.mounts + f'100 1 0:5 mnt:[4026533156] {point} rw - nsfs nsfs rw\n'
+        (self.f.proc / 'self' / 'mountinfo').write_text(raw)
+        self.unknown(self.f.observe(), 'opaque_target_mount')
+
+    def test_persistent_nsfs_namespace_without_task_view_is_unknown(self):
+        raw = self.f.mounts + '100 1 0:5 mnt:[4026533156] /opaque rw - nsfs nsfs rw\n'
+        (self.f.proc / 'self' / 'mountinfo').write_text(raw)
+        result = self.f.observe()
+        self.unknown(result, 'persistent_mount_namespace_unobserved')
+        self.assertEqual(['mnt:[4026533156]'], result['uncovered_mount_namespaces'])
+
+    def test_chroot_task_view_does_not_cover_persistent_namespace(self):
+        raw = self.f.mounts + '100 1 0:5 mnt:[4026533156] /opaque rw - nsfs nsfs rw\n'
+        (self.f.proc / 'self' / 'mountinfo').write_text(raw)
+        task = self.f.add_task(namespace='mnt:[4026533156]')
+        (task / 'root').unlink()
+        (task / 'root').symlink_to(self.f.outside)
+        result = self.f.observe()
+        self.unknown(result, 'persistent_mount_namespace_unobserved')
+        self.assertEqual(0, result['covered_opaque_mount_namespace_count'])
+
+    def test_unknown_non_absolute_mount_formats_remain_unknown(self):
+        cases = [
+            ('ext4', 'mnt:[4026533156]', '/opaque'),
+            ('nsfs', 'net:[4026533156]', '/opaque'),
+            ('nsfs', 'mnt:[0]', '/opaque'),
+            ('nsfs', 'mnt:[-1]', '/opaque'),
+            ('nsfs', 'mnt:[4026533156]/child', '/opaque'),
+            ('nsfs', 'unknown', '/opaque'),
+            ('nsfs', 'mnt:[4026533156]', 'relative-point'),
+        ]
+        for filesystem_type, source, point in cases:
+            with self.subTest(filesystem_type=filesystem_type, source=source, point=point):
+                raw = self.f.mounts + f'100 1 0:5 {source} {point} rw - {filesystem_type} fixture rw\n'
+                (self.f.proc / 'self' / 'mountinfo').write_text(raw)
+                self.unknown(self.f.observe(), 'invalid_mount_path')
 
     def test_no_open_file_bodies_or_mutation_calls(self):
         real_open = Path.open

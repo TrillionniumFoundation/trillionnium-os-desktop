@@ -93,8 +93,13 @@ From this directory:
 python3 -B -m unittest -v test_verify_current_inputs.py test_reference_observer.py
 ```
 
-`test-results.json` records **40 passing tests**: 12 actual-schema input
-verifier controls and 28 observer controls. The observer tests demonstrate
+`test-results.json` binds the exact source pins to real Pocket4 runs of **46
+controls (12 input + 34 observer)** in both ordinary and `-O` modes. Both runs
+completed with zero failures, errors, skips or unexpected successes; the durable
+job's terminal status and original receipt hash are retained. The integration
+control found two self-held FD references and one mmap reference in each mode.
+It ran as UID 1000: unrelated visibility errors remained `UNKNOWN` (512 retained
+per mode), and no deletion admission or live helper change was made. The observer tests demonstrate
 original misses and corrected detections for a non-leader FD, FD/map inode
 aliases and a parent bind exposed in another task's namespace. They also
 cover escaped mount paths, ambiguous overmounts, strict zombie handling,
@@ -138,3 +143,27 @@ raw app-directory deletion or lease bypass is proposed.
 `FILES.json` is the complete publication whitelist, excluding only itself.
 No process prototype, downloaded image/registry, private material, full app
 roster or unrelated workspace artifact belongs to this capsule.
+
+## Namespace-object mount follow-up
+
+A real Pocket4 read found six nsfs mounts whose roots are kernel namespace
+object labels of the form `mnt:[positive integer]`, with absolute mountpoints.
+The previous observer correctly returned `UNKNOWN` on that unhandled format.
+`namespace-format-observation.json` binds the narrowly projected observation;
+it contains no mount options, source fields or unrelated application names.
+Only that exact nsfs format is represented as an opaque root. Its mountpoint
+still vetoes a target, a target on an opaque mount is `UNKNOWN`, and opaque roots
+never participate in filesystem ancestor-alias translation. Other non-absolute
+root formats remain `UNKNOWN`. No live helper or deletion policy is changed.
+
+A persistent namespace label is also tracked as a coverage obligation. Only a
+finally reverified task view whose root is `/` at the observer's pinned root
+identity can cover it. A missing task, a chroot-only view, or changed namespace,
+mountinfo or root leaves that namespace `UNKNOWN`; recognizing its label alone
+cannot admit cleanup. Coverage counts and bounded uncovered namespace identities
+are reported without retaining mount options or file contents.
+
+A complete namespace root on a different filesystem is also conservatively
+uncovered by this version. A passing source-control run does not establish
+whole-host coverage. Any future full-root witness support requires separate
+review; this capsule accepts no supplied coverage dictionary or override.

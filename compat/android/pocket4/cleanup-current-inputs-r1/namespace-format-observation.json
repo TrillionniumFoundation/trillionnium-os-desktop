@@ -1,0 +1,44 @@
+{
+  "current_expected_control_count": 46,
+  "followup_Linux_controls": "POCKET4_46_NORMAL_46_OPTIMIZED_PASSED",
+  "followup_policy": {
+    "absolute_mountpoint_required": true,
+    "accepted_opaque_root_regex": "mnt:\\[[1-9][0-9]*\\]",
+    "all_other_non_absolute_roots": "UNKNOWN",
+    "coverage_witness": "final reverified task namespace/mountinfo/root identity with root '/' at observer root identity",
+    "deletion_authorized": false,
+    "different_namespace_root_identity": "UNKNOWN",
+    "mountpoint_veto_preserved": true,
+    "opaque_ancestor_translation": false,
+    "opaque_target_mount": "UNKNOWN",
+    "persistent_namespace_coverage_required": true,
+    "required_filesystem_type": "nsfs",
+    "uncovered_or_chroot_only_namespace": "UNKNOWN"
+  },
+  "host": "pocket4",
+  "kernel_format_reference": "https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git/+/refs/tags/v6.6/fs/nsfs.c",
+  "matching_record_count": 6,
+  "mount_options_or_source_fields_retained": false,
+  "mountinfo": {
+    "bytes": 6273,
+    "sha256": "ff3ae14cd12563ad290a0fbb20e6abc826481c502d5c3f382b9948180b1b4d56"
+  },
+  "mountpoint_format": "/run/snapd/ns/<name>.mnt",
+  "observed_device": "0:5",
+  "observed_filesystem_type": "nsfs",
+  "observed_utc": "2026-11-09T04:56:58.276746+00:00",
+  "previous_observer": {
+    "host_preflight_result": "UNKNOWN invalid_mount_path before target/process enumeration; no deletion",
+    "module_sha256": "fd0984a8bd9a4050029c5e0e6e8c3ed472151d5dfd7daddf2ae6fbae0ee5850e"
+  },
+  "readback": {
+    "exit_code": 0,
+    "output_complete": true,
+    "session_id": "dpty-18e647974deca6f0-5e21-5d"
+  },
+  "root_format": "mnt:[positive decimal inode]",
+  "schema": "pocket4-nsfs-mount-format-observation-v1",
+  "source_control_pass_is_deletion_admission": false,
+  "test_receipt": "test-results.json",
+  "unrelated_application_names_retained": false
+}

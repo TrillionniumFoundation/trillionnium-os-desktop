@@ -29,6 +29,7 @@ def live_references(roots):
     hit_keys, mount_keys, error_keys = set(), set(), set()
     namespaces, mount_views, snapshots, identities = set(), {}, {}, {}
     bindings = {}
+    opaque_namespaces, covered_namespace_views = set(), set()
     counts = {'processes': 0, 'tasks': 0, 'entries': 0, 'fds': 0, 'empty_zombies': 0}
     started = time.monotonic()
     proc = Path('/proc')
@@ -115,10 +116,24 @@ def live_references(roots):
             if not re.fullmatch(r'[0-9]+:[0-9]+', fields[2]):
                 raise Incomplete('invalid_mount_device')
             dev = tuple(int(x) for x in fields[2].split(':'))
+            separator = fields.index('-')
+            if len(fields) <= separator + 3:
+                raise Incomplete('invalid_mountinfo')
+            filesystem_type = fields[separator + 1]
             source, point = unescape(fields[3]), unescape(fields[4])
-            if not source.startswith('/') or not point.startswith('/'):
+            if not point.startswith('/'):
                 raise Incomplete('invalid_mount_path')
-            table.append((dev, posixpath.normpath(source), posixpath.normpath(point)))
+            if not source.startswith('/'):
+                # Pocket4 exposes persistent mount namespaces through nsfs.
+                # Their kernel object labels are not filesystem tree paths.
+                if filesystem_type != 'nsfs' or not re.fullmatch(r'mnt:\[[1-9][0-9]*\]', source):
+                    raise Incomplete('invalid_mount_path')
+                opaque_namespaces.add(source)
+                if len(opaque_namespaces) > MAX_TASKS:
+                    raise Incomplete('namespace_reference_bound')
+                source = None
+            table.append((dev, posixpath.normpath(source) if source is not None else None,
+                          posixpath.normpath(point)))
         if not table:
             raise Incomplete('empty_mountinfo')
         return table
@@ -143,6 +158,8 @@ def live_references(roots):
             if len(deepest) != 1:
                 raise Incomplete('ambiguous_target_mount')
             dev, source, point = deepest[0]
+            if source is None:
+                raise Incomplete('opaque_target_mount')
             if dev != (os.major(initial.st_dev), os.minor(initial.st_dev)):
                 raise Incomplete('target_mount_device_mismatch')
             internal = posixpath.normpath(posixpath.join(source, posixpath.relpath(root, point)))
@@ -231,6 +248,10 @@ def live_references(roots):
                 kind = None
                 if beneath(point, root):
                     kind = 'mount_at_or_below_target'
+                elif source is None:
+                    # Keep the mountpoint veto above; opaque namespace objects
+                    # cannot be translated as ancestor filesystem paths.
+                    continue
                 elif dev == target_dev and beneath(source, internal):
                     kind = 'mount_source_inside_target'
                 elif dev == target_dev and beneath(internal, source):
@@ -253,6 +274,13 @@ def live_references(roots):
         if any(not isinstance(r, str) or r == '/' or not r.startswith('/') or
                posixpath.normpath(r) != r or '//' in r or '\x00' in r for r in roots):
             raise Incomplete('invalid_exact_root')
+        host_root_path = proc / 'self' / 'root'
+        host_root = os.stat(host_root_path)
+        host_root_identity = (host_root.st_dev, host_root.st_ino)
+        observer_root = os.stat('/')
+        if (os.readlink(host_root_path) != '/' or
+                host_root_identity != (observer_root.st_dev, observer_root.st_ino)):
+            raise Incomplete('observer_root_view_unknown')
         host_mounts = read(proc / 'self' / 'mountinfo')
         table = mount_table(host_mounts)
         for root in roots:
@@ -302,6 +330,7 @@ def live_references(roots):
                         for kind in ('cwd', 'exe'):
                             inspect_link(task / kind, pid, tid, kind, inactive)
                         root_identity = inspect_link(task / 'root', pid, tid, 'root', inactive)
+                        root_displayed = os.readlink(task / 'root') if root_identity is not None else None
                         fds = names(task / 'fd', MAX_FDS)
                         counts['fds'] += len(fds)
                         if counts['fds'] > MAX_FDS:
@@ -331,12 +360,13 @@ def live_references(roots):
                         view = (ns, root_identity)
                         if view in mount_views and mount_views[view][1] != raw:
                             raise Incomplete('mount_view_changed')
-                        mount_views[view] = (task, raw, identity[0])
+                        mount_views[view] = (task, raw, identity[0], root_displayed)
                         if names(task / 'fd', MAX_FDS) != fds:
                             error('task_fd_set_changed', pid, tid)
                         if root_identity is not None:
                             current_root = os.stat(task / 'root')
-                            if (current_root.st_dev, current_root.st_ino) != root_identity:
+                            if ((current_root.st_dev, current_root.st_ino) != root_identity or
+                                    os.readlink(task / 'root') != root_displayed):
                                 error('task_root_changed', pid, tid)
                         if os.readlink(task / 'ns' / 'mnt') != ns or task_identity(task)[0] != identity[0]:
                             raise Incomplete('task_identity_or_namespace_changed')
@@ -348,17 +378,29 @@ def live_references(roots):
                 error(str(exc) if isinstance(exc, Incomplete) else type(exc).__name__, pid)
         if names(proc, MAX_TASKS) != pids:
             error('process_set_changed')
-        for (ns, root_identity), (task, raw, start) in mount_views.items():
+        for (ns, root_identity), (task, raw, start, root_displayed) in mount_views.items():
             bound()
+            verified = True
             if (task_identity(task)[0] != start or os.readlink(task / 'ns' / 'mnt') != ns or
                     read(task / 'mountinfo') != raw):
                 error('mount_view_changed_after_scan')
+                verified = False
             if root_identity is not None:
                 current_root = os.stat(task / 'root')
-                if (current_root.st_dev, current_root.st_ino) != root_identity:
+                if ((current_root.st_dev, current_root.st_ino) != root_identity or
+                        os.readlink(task / 'root') != root_displayed):
                     error('mount_view_root_changed_after_scan')
+                    verified = False
+            # A stable chroot view can find references but cannot establish
+            # coverage of a persistent namespace outside that task's root.
+            if verified and root_identity == host_root_identity and root_displayed == '/':
+                covered_namespace_views.add(ns)
         if read(proc / 'self' / 'mountinfo') != host_mounts:
             error('host_mount_view_changed')
+        current_host_root = os.stat(host_root_path)
+        if ((current_host_root.st_dev, current_host_root.st_ino) != host_root_identity or
+                os.readlink(host_root_path) != '/'):
+            error('observer_root_changed')
         for path, expected in snapshots.items():
             bound()
             fd = secure_open(path)
@@ -369,10 +411,17 @@ def live_references(roots):
                 os.close(fd)
     except (OSError, ValueError, TypeError, Incomplete) as exc:
         error(str(exc) if isinstance(exc, Incomplete) else type(exc).__name__)
+    uncovered_namespaces = opaque_namespaces - covered_namespace_views
+    if uncovered_namespaces:
+        error('persistent_mount_namespace_unobserved')
     return {'observed_utc': now(), 'processes': counts['processes'],
             'tasks': counts['tasks'], 'target_entries': counts['entries'],
             'verified_empty_zombies': counts['empty_zombies'],
             'mount_namespaces': len(namespaces),
+            'opaque_mount_namespace_count': len(opaque_namespaces),
+            'covered_opaque_mount_namespace_count': len(opaque_namespaces & covered_namespace_views),
+            'uncovered_mount_namespace_count': len(uncovered_namespaces),
+            'uncovered_mount_namespaces': sorted(uncovered_namespaces)[:128],
             'process_or_owner_hits': hits, 'mount_hits': mounts, 'coverage_errors': errors,
             'visibility': 'UNKNOWN' if errors else 'OBSERVED',
             'command_line_contents_retained': False, 'open_file_contents_read': False,

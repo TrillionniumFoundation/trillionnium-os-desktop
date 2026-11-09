@@ -67,7 +67,34 @@
     "path": "/home/alex/work/pocket4-documents-flow-20261105-r12-tools-02/NEVER_EXECUTE_OR_REUSE.json",
     "sha256": "6a98cf8d82ead8506afeb1ff831d1e9fd99d1c8e112f5f750c828125dc6debe1"
   },
+  "mutation_counter_scope": "Top-level remote mutation counters describe initial source/evidence collection only; isolated test artifacts are recorded in nsfs_followup and test-results.json.",
   "note": "PTY reads already observed exited/0/output_complete. Later close acknowledgments returned already_exited and are not independently used as termination evidence. Original fence owner closure remains UNKNOWN.",
+  "nsfs_followup": {
+    "deletion_admission": false,
+    "expected_controls": 46,
+    "isolated_test_artifacts_created": true,
+    "live_deletions": 0,
+    "live_helper_patch_applied": false,
+    "observation": "namespace-format-observation.json",
+    "persistent_namespace_coverage_required": true,
+    "previous_observer_module_sha256": "fd0984a8bd9a4050029c5e0e6e8c3ed472151d5dfd7daddf2ae6fbae0ee5850e",
+    "previous_public_commit": "a9d03be75dd8d6e30c67fc053f1b7ec1800ecad6",
+    "qualification": "POCKET4_SOURCE_CONTROLS_46_NORMAL_46_OPTIMIZED",
+    "scope": "exact observed nsfs root parsing, opaque mount vetoes and persistent-namespace coverage only; exact targets and deletion policy unchanged",
+    "source_pins": [
+      {
+        "bytes": 21497,
+        "path": "reference_observer.py",
+        "sha256": "8679a251befd1f45ff6fcac3051552a986fb1574350a3a4b73118a2ef148c795"
+      },
+      {
+        "bytes": 20567,
+        "path": "test_reference_observer.py",
+        "sha256": "9063132ac66e529497dc3540982543b42892381ab1b65f34ef1cf8fcd279f3f4"
+      }
+    ],
+    "test_receipt": "test-results.json"
+  },
   "observed_public_commit": "265248170ce2e18e13c090246f97f3e3d80c637b",
   "observer_patch": {
     "baseline_fixture": "fixtures/executor-baseline.py",
