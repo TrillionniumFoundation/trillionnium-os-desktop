@@ -301,6 +301,87 @@ jobs:
               raise SystemExit('All nineteen canonical Audio custody controls must execute')
           print('3 exact source capsules and 19 custody controls passed; Android runtime remains a separate gate')
           PYCURRENTCAPSULES
+      - name: Verify supervisor inputs, Native observations and cleanup visibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYREVIEW' 2>&1 | tee "$RUNNER_TEMP/a08/independent-review-controls.log"
+          import hashlib
+          import importlib.util
+          import json
+          from pathlib import Path, PurePosixPath
+          import stat
+          import subprocess
+          import sys
+          capsules = [('production-identity-input-validation-r1', 'FILES.json', '51eab0a53fac05513969df8a50796a6f141d6826758f05b0ff316a7194ce0285', 8), ('native600-allocation-observation-r1', 'manifest.json', 'e0b80c1c3baa9726e1f8739fc46f85cf944dff7a458b1e5c9703b4707b2a9118', 14), ('cleanup-current-inputs-r1', 'FILES.json', '2751254549d15a8cfdb25f4dcd0fdd8e55593a9b11d6345ecd0fac09ac99ab99', 14)]
+          for name, manifest_leaf, expected_sha, expected_count in capsules:
+              directory = Path('compat/android/pocket4', name).resolve(strict=True)
+              raw = (directory / manifest_leaf).read_bytes()
+              if hashlib.sha256(raw).hexdigest() != expected_sha:
+                  raise SystemExit('Frozen review manifest differs: ' + name)
+              manifest = json.loads(raw)
+              rows = manifest['files']
+              members = ({row['path']: {'bytes': row['bytes'], 'sha256': row['sha256']} for row in rows}
+                         if type(rows) is list else rows)
+              if type(members) is not dict or len(rows) != len(members) or len(members) != expected_count:
+                  raise SystemExit('Exact review source inventory required: ' + name)
+              actual = set()
+              for path in directory.rglob('*'):
+                  info = path.lstat()
+                  if stat.S_ISDIR(info.st_mode):
+                      continue
+                  if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+                      raise SystemExit('Invalid review member type: ' + str(path))
+                  actual.add(path.relative_to(directory).as_posix())
+              if actual != set(members) | {manifest_leaf}:
+                  raise SystemExit('Unexpected review source member: ' + name)
+              for leaf, expected in members.items():
+                  relative = PurePosixPath(leaf)
+                  path = directory / leaf
+                  if relative.is_absolute() or '..' in relative.parts or str(relative) != leaf or not path.resolve(strict=True).is_relative_to(directory):
+                      raise SystemExit('Review source escaped its capsule: ' + leaf)
+                  data = path.read_bytes()
+                  if {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()} != expected:
+                      raise SystemExit('Review source pin differs: ' + leaf)
+              print(name + ': exact source capsule verified', flush=True)
+
+          def run(arguments, *, input=None):
+              subprocess.run(arguments, input=input, text=True, check=True, timeout=120)
+
+          base = Path('compat/android/pocket4').resolve()
+          run([sys.executable, '-I', '-B', str(base / 'production-identity-input-validation-r1/verify_source_chain.py'), '--repo-root', '.'])
+          run([sys.executable, '-I', '-B', str(base / 'cleanup-current-inputs-r1/verify_reference_patch.py')])
+          for optimization in ([], ['-O']):
+              run([sys.executable, '-I', '-B', *optimization, str(base / 'native600-allocation-observation-r1/verify.py')])
+
+          controls = """
+          import importlib.util
+          import json
+          from pathlib import Path
+          import sys
+          import unittest
+          directory = Path(sys.argv[1]).resolve()
+          names = json.loads(sys.argv[2])
+          expected = int(sys.argv[3])
+          sys.path.insert(0, str(directory))
+          suite = unittest.TestSuite()
+          for index, name in enumerate(names):
+              spec = importlib.util.spec_from_file_location('review_control_' + str(index), directory / name)
+              module = importlib.util.module_from_spec(spec)
+              sys.modules[spec.name] = module
+              spec.loader.exec_module(module)
+              suite.addTests(unittest.defaultTestLoader.loadTestsFromModule(module))
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          if result.testsRun != expected or result.skipped or not result.wasSuccessful():
+              raise SystemExit('Every exact review control must execute successfully')
+          """
+          for optimization in ([], ['-O']):
+              run([sys.executable, '-I', '-B', *optimization, '-', str(base / 'cleanup-current-inputs-r1'),
+                   json.dumps(['test_verify_current_inputs.py', 'test_reference_observer.py']), '40'], input=controls)
+          run([sys.executable, '-I', '-B', '-O', '-', str(base / 'native600-allocation-observation-r1'),
+               json.dumps(['test_verifier_smoke.py']), '2'], input=controls)
+          print('Source replay and isolated controls passed; this step does not run Rust, Android, or application acceptance')
+          PYREVIEW
       - name: Verify Audio compiler and Ninja evidence guards
         shell: bash
         run: |
@@ -410,3 +491,4 @@ jobs:
           name: a08-source-and-host-evidence
           if-no-files-found: warn
           path: ${{ runner.temp }}/a08/
+

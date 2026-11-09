@@ -1,0 +1,141 @@
+{
+  "Android_commands": 0,
+  "CURRENT": {
+    "bytes": 185914,
+    "foreground_owner": {
+      "active_until_utc": "2026-11-09T05:45:37.696670+00:00",
+      "name": "foreground-root-8b88e19ff7ab",
+      "scope": "Finish actual QPR1 empty-data boot and coherent runtime repairs; serialize actual full builds with owned limits; complete latest-app acceptance and evidence-bound obsolete artifact retirement."
+    },
+    "recorded_utc": "2026-11-09T03:45:37.696670+00:00",
+    "sha256": "bdab761e2b1674f53f036c4d0f6b4855b4e73db752246667cc2c49a629a5eaa3",
+    "state": "805_OLD_ROOTS_41_STAGING_TARGETS_19_KERNEL_TEST_PAYLOAD_TARGETS_RETIRED_NATIVE_AUDIO_AND_HOST_RUNTIME_PENDING"
+  },
+  "CURRENT_unchanged_during_read": true,
+  "amazon_qa": {
+    "app_data_metadata": {
+      "android_user": 0,
+      "ce_cache_entry_count": 0,
+      "ce_code_cache_entry_count": 0,
+      "ce_directory_exists": true,
+      "ce_regular_file_bytes": 1104,
+      "ce_regular_file_count": 2,
+      "de_cache_entry_count": 0,
+      "de_code_cache_entry_count": 0,
+      "de_directory_exists": true,
+      "external_data_directory_observed": false,
+      "external_obb_directory_observed": false,
+      "file_names_or_contents_retained": false,
+      "other_android_users_exhaustively_verified": false
+    },
+    "app_id": 10154,
+    "canonical_registry_snapshot": {
+      "bytes": 167540,
+      "path": "/home/alex/work/pocket4-android-final/qualification/apps-content-bound-20261108-8b88-r1/cleanup_work/all208-installed-cleanup-metadata.json",
+      "sha256": "47acc8637504e497e3c66cc388079942b82814be19788541875d178256c3d96c"
+    },
+    "current_pinned_input_bytes": 20619335,
+    "current_pinned_input_direct_identity_reference_count": 0,
+    "current_pinned_inputs_scanned": 723,
+    "current_registry": {
+      "bytes": 378050,
+      "debugfs_rc": 0,
+      "format_magic": "41425800",
+      "path_inside_image": "/system/packages.xml",
+      "read_only_no_w_flag": true,
+      "sha256": "28238f058bcb59a2c2bd15ecb308421b6e7882b785b0bdb282ab91d916725310"
+    },
+    "current_registry_matches_canonical_snapshot": true,
+    "direct_reference_absence_proves_runtime_independence": false,
+    "image_identity": {
+      "st_ctime_ns": 1794030280963569700,
+      "st_dev": 66306,
+      "st_ino": 111810948,
+      "st_mtime_ns": 1794030280963569700,
+      "st_size": 34359738368
+    },
+    "image_metadata_stable": true,
+    "installed_droidloomctl_has_uninstall_command": false,
+    "keep_data_option_releases_signer": false,
+    "package": "org.droidloom.qa.amazon.r3",
+    "planned_android_argv": [
+      "/system/bin/cmd",
+      "package",
+      "uninstall",
+      "--user",
+      "0",
+      "--versionCode",
+      "1",
+      "org.droidloom.qa.amazon.r3"
+    ],
+    "platform_source_urls": [
+      "https://android.googlesource.com/platform/frameworks/base/+/2874338/services/core/java/com/android/server/pm/PackageManagerShellCommand.java",
+      "https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/services/core/java/com/android/server/pm/RemovePackageHelper.java"
+    ],
+    "production_cohort": false,
+    "reason_keep_data_not_sufficient": "AOSP retains PackageSetting when DELETE_KEEP_DATA is set; preserving data does not close the signing consumer.",
+    "registry_observed_utc": "2026-11-09T04:37:10.092222+00:00",
+    "required_after_execution": [
+      "Require PackageManager success and exact package absent from installed and uninstalled/retained-data listings across all users.",
+      "Require no remaining package-setting, codePath, appId/shared-user, signer-certificate or current manifest consumers; preserve unrelated apps and user data.",
+      "Only then create a newly reviewed exact-path signing-root retirement record and perform normal cleanup under the owner; never edit packages.xml or remove app directories directly."
+    ],
+    "required_before_execution": [
+      "Active coordinator must serialize the change within its deployment lease; do not start an independent Android runtime.",
+      "Bind the ready runtime to the original profile/image and verify actual PackageManager help supports the exact planned arguments.",
+      "Re-read package/version/signing certificate/appId/codePath; require exact package and version 1 and no shared UID or certificate consumer.",
+      "Enumerate all Android users and package data; establish that the two remaining CE files are disposable owned QA evidence with required canonical custody. Filename or size alone is not sufficient.",
+      "Confirm the current acceptance plan has retired this QA helper; 0 direct references among 723 pinned files is supporting evidence only."
+    ],
+    "retirement_state": "PLAN_ONLY_WAIT_FOR_ACTIVE_OWNER_AND_READY_ORIGINAL_PROFILE",
+    "root": "/home/alex/work/pocket4-owned-amazon-qa-r3-build-02",
+    "same_signing_certificate_package_count": 1,
+    "same_uid_package_count": 1,
+    "shared_uid_record_count": 0,
+    "signer_certificate_sha256": "801ad669c2075067b58ee7d277531e9eed7cd612a74f404a722c061cac66bf6d",
+    "test_only": true,
+    "user0_restrictions": {
+      "bytes": 34847,
+      "sha256": "4e99aad0887df0c42041d1aef02791a6e86ea41959f2384646296ea941f659af"
+    },
+    "version": 1
+  },
+  "app_data_body_reads": 0,
+  "deletion_authorized": false,
+  "execution_evidence": [
+    {
+      "exit_code": 0,
+      "output_complete": true,
+      "purpose": "fresh original-image registry content hash, actual CLI help, current pinned input identity reference scan",
+      "session_id": "dpty-18e64682aa34b4b8-5e21-4b"
+    },
+    {
+      "exit_code": 0,
+      "output_complete": true,
+      "purpose": "same UID and scoped app-data directory metadata",
+      "session_id": "dpty-18e6469f1e484b00-5e21-52"
+    },
+    {
+      "exit_code": 0,
+      "output_complete": true,
+      "purpose": "bounded QA child-directory counts, fresh user-0 restrictions pin and fence readback",
+      "session_id": "dpty-18e646ae5c25b048-5e21-53"
+    }
+  ],
+  "fence": {
+    "canonical_backup_previously_observed": true,
+    "classification": "RETAIN: absence of H job directory/systemd unit is not original-owner terminal evidence",
+    "guard_bytes": 661,
+    "guard_sha256": "6a98cf8d82ead8506afeb1ff831d1e9fd99d1c8e112f5f750c828125dc6debe1",
+    "original_job_id": "1a1ab190ab3-fc05-4a51",
+    "original_key": "pocket4-documents-saf-flow-r12-02",
+    "original_termination_confirmed": false,
+    "path": "/home/alex/work/pocket4-documents-flow-20261105-r12-tools-02",
+    "positive_original_owner_terminal_evidence_observed": false
+  },
+  "observed_utc": "2026-11-09T04:40:17.721108+00:00",
+  "private_key_or_password_body_reads": 0,
+  "remote_deletions": 0,
+  "remote_file_writes": 0,
+  "schema": "pocket4-two-retained-root-review-v1"
+}

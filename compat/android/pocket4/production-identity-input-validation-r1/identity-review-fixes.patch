@@ -1,0 +1,307 @@
+diff --git a/runtime/droidloom-supervisor/src/lib.rs b/runtime/droidloom-supervisor/src/lib.rs
+--- a/runtime/droidloom-supervisor/src/lib.rs
++++ b/runtime/droidloom-supervisor/src/lib.rs
+@@ -223,9 +223,13 @@
+             }
+             if range
+                 .end_exclusive()
+-                .is_none_or(|end| end > u64::from(u32::MAX) + 1)
++                // Linux leaves uid_t/gid_t(-1) unmapped. The exclusive end
++                // may equal u32::MAX, but the range must never include it.
++                .is_none_or(|end| end > u64::from(u32::MAX))
+             {
+-                problems.push(format!("{name} overflows the 32-bit ID space"));
++                problems.push(format!(
++                    "{name} includes the reserved unmapped ID or overflows the 32-bit ID space"
++                ));
+             }
+         }
+ 
+@@ -876,6 +880,40 @@
+     }
+ 
+     #[test]
++    fn spec_rejects_reserved_subordinate_ids_before_backend_mutation() {
++        for invalid_gid in [false, true] {
++            let mut invalid = spec();
++            let range = IdRange {
++                start: u32::MAX - 99_999,
++                count: 100_000,
++            };
++            if invalid_gid {
++                invalid.subordinate_gids = range;
++            } else {
++                invalid.subordinate_uids = range;
++            }
++            let mut supervisor = Supervisor::new(FakeBackend::default());
++            assert!(matches!(
++                supervisor.start(invalid),
++                Err(StartError::InvalidSpec(_))
++            ));
++            assert!(supervisor.backend().events.is_empty());
++        }
++    }
++
++    #[test]
++    fn spec_accepts_the_highest_kernel_mappable_subordinate_ids() {
++        let mut valid = spec();
++        let range = IdRange {
++            start: u32::MAX - 100_000,
++            count: 100_000,
++        };
++        valid.subordinate_uids = range;
++        valid.subordinate_gids = range;
++        assert!(valid.validate().is_ok());
++    }
++
++    #[test]
+     fn spec_rejects_unsafe_or_duplicate_android_file_overrides() {
+         let mut invalid = spec();
+         invalid.android_file_overrides = vec![
+diff --git a/runtime/droidloom-supervisor/src/production_identity.rs b/runtime/droidloom-supervisor/src/production_identity.rs
+--- a/runtime/droidloom-supervisor/src/production_identity.rs
++++ b/runtime/droidloom-supervisor/src/production_identity.rs
+@@ -827,11 +827,13 @@
+     // SAFETY: a valid held directory FD and terminated single-component name;
+     // O_NOFOLLOW refuses to follow final symlinks. O_PATH callers also check
+     // the held inode type or compare it with their admitted regular inode.
++    // O_NONBLOCK prevents a FIFO replacement from hanging before fstat can
++    // reject its type. It does not change ordinary file or directory I/O.
+     let fd = unsafe {
+         libc::openat(
+             parent.as_raw_fd(),
+             name.as_ptr(),
+-            flags | libc::O_CLOEXEC | libc::O_NOFOLLOW,
++            flags | libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK,
+             mode,
+         )
+     };
+@@ -1139,6 +1141,56 @@
+         fs::set_permissions(&f.paths.subuid, fs::Permissions::from_mode(0o666)).unwrap();
+         assert!(f.authority().is_err());
+     }
++
++    #[test]
++    fn fifo_authority_is_rejected_without_waiting_for_a_writer() {
++        let f = Fixture::new();
++        fs::remove_file(&f.paths.subuid).unwrap();
++        let fifo_name = CString::new(f.paths.subuid.as_os_str().as_encoded_bytes()).unwrap();
++        // SAFETY: a terminated path inside this exclusively owned fixture.
++        assert_eq!(unsafe { libc::mkfifo(fifo_name.as_ptr(), 0o600) }, 0);
++        let paths = f.paths.clone();
++        let (sender, receiver) = std::sync::mpsc::sync_channel(1);
++        let worker = std::thread::spawn(move || {
++            let result = IdentityAuthority::read_paths(
++                1000,
++                IdRange {
++                    start: 200_000,
++                    count: 100_000,
++                },
++                IdRange {
++                    start: 200_000,
++                    count: 100_000,
++                },
++                paths,
++            );
++            sender.send(result).unwrap();
++        });
++        let observed = receiver.recv_timeout(std::time::Duration::from_secs(1));
++        match observed {
++            Ok(result) => {
++                worker.join().unwrap();
++                assert!(matches!(result, Err(IdentityError::UnsafeCustody(_))));
++            }
++            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
++                // Release a regressed blocking open before joining, so a
++                // failure does not leave a thread or fixture behind.
++                let writer = OpenOptions::new()
++                    .write(true)
++                    .custom_flags(libc::O_NONBLOCK)
++                    .open(&f.paths.subuid)
++                    .unwrap();
++                worker.join().unwrap();
++                drop(writer);
++                panic!("identity authority waited for a FIFO writer");
++            }
++            Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
++                worker.join().unwrap();
++                panic!("identity authority reader exited without a result");
++            }
++        }
++        assert!(!f.root.path().join("registry").exists());
++    }
+     #[test]
+     fn stale_authority_fails_before_any_registry_write() {
+         let f = Fixture::new();
+diff --git a/runtime/droidloom-supervisor/src/main.rs b/runtime/droidloom-supervisor/src/main.rs
+--- a/runtime/droidloom-supervisor/src/main.rs
++++ b/runtime/droidloom-supervisor/src/main.rs
+@@ -3,6 +3,8 @@
+ #![forbid(unsafe_code)]
+ 
+ use std::fs;
++use std::io::Read;
++use std::os::unix::fs::OpenOptionsExt;
+ use std::path::PathBuf;
+ 
+ use clap::{Parser, Subcommand};
+@@ -111,7 +113,16 @@
+ }
+ 
+ fn load_spec(path: &PathBuf) -> Result<CellSpec, Box<dyn std::error::Error>> {
+-    let metadata = fs::metadata(path)?;
++    // Keep ordinary symlink paths compatible, but inspect and read the same
++    // opened inode. Nonblocking open lets us reject a FIFO without a writer.
++    let file = fs::OpenOptions::new()
++        .read(true)
++        .custom_flags(libc::O_NONBLOCK)
++        .open(path)?;
++    let metadata = file.metadata()?;
++    if !metadata.is_file() {
++        return Err("cell specification must be a regular file".into());
++    }
+     if metadata.len() > MAX_SPEC_BYTES {
+         return Err(format!(
+             "cell specification is {} bytes; maximum is {MAX_SPEC_BYTES}",
+@@ -119,5 +130,139 @@
+         )
+         .into());
+     }
+-    Ok(serde_json::from_slice(&fs::read(path)?)?)
+-}
++    read_spec(file)
++}
++
++fn read_spec(reader: impl Read) -> Result<CellSpec, Box<dyn std::error::Error>> {
++    // Metadata is only an early rejection: a regular file can grow after
++    // fstat. Read at most one byte beyond the accepted size to detect that.
++    let mut bytes = Vec::new();
++    reader.take(MAX_SPEC_BYTES + 1).read_to_end(&mut bytes)?;
++    if bytes.len() as u64 > MAX_SPEC_BYTES {
++        return Err(format!("cell specification exceeds maximum of {MAX_SPEC_BYTES} bytes").into());
++    }
++    Ok(serde_json::from_slice(&bytes)?)
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use std::os::unix::fs::symlink;
++
++    fn spec_bytes() -> Vec<u8> {
++        serde_json::to_vec(&serde_json::json!({
++            "host_uid": 1000,
++            "subordinate_uids": {"start": 200_000, "count": 100_000},
++            "subordinate_gids": {"start": 200_000, "count": 100_000},
++            "image_dir": "/usr/lib/droidloom/images/base",
++            "vendor_image": "/usr/lib/droidloom/images/vendor.img",
++            "data_dir": "/var/lib/droidloom/cells/u1000",
++            "runtime_dir": "/run/droidloom/cells/u1000",
++            "render_node": "/dev/dri/renderD128",
++            "denial_socket": "/run/user/1000/denial/native-bridge.sock"
++        }))
++        .unwrap()
++    }
++
++    #[test]
++    fn spec_reads_exact_limit_regular_file_and_ordinary_symlink() {
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join("cell.json");
++        let mut bytes = spec_bytes();
++        bytes.resize(MAX_SPEC_BYTES as usize, b' ');
++        fs::write(&path, &bytes).unwrap();
++        let loaded = load_spec(&path).unwrap();
++        loaded.validate().unwrap();
++        let link = root.path().join("current.json");
++        symlink(&path, &link).unwrap();
++        assert_eq!(load_spec(&link).unwrap(), loaded);
++    }
++
++    #[test]
++    fn spec_rejects_oversized_regular_file() {
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join("cell.json");
++        let mut bytes = spec_bytes();
++        bytes.resize(MAX_SPEC_BYTES as usize + 1, b' ');
++        fs::write(&path, &bytes).unwrap();
++        assert!(
++            load_spec(&path)
++                .unwrap_err()
++                .to_string()
++                .contains("maximum")
++        );
++    }
++
++    #[test]
++    fn spec_reader_bounds_unending_input() {
++        struct Unending {
++            bytes_read: u64,
++        }
++        impl Read for Unending {
++            fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
++                // Fail the regression deterministically instead of exhausting
++                // memory if the production reader loses its hard limit.
++                assert!(self.bytes_read + buffer.len() as u64 <= MAX_SPEC_BYTES + 1);
++                buffer.fill(b' ');
++                self.bytes_read += buffer.len() as u64;
++                Ok(buffer.len())
++            }
++        }
++        let mut reader = Unending { bytes_read: 0 };
++        let error = read_spec(&mut reader).unwrap_err();
++        assert!(error.to_string().contains("maximum"));
++        assert_eq!(reader.bytes_read, MAX_SPEC_BYTES + 1);
++    }
++
++    #[test]
++    fn spec_rejects_directory() {
++        let root = tempfile::tempdir().unwrap();
++        assert!(
++            load_spec(&root.path().to_path_buf())
++                .unwrap_err()
++                .to_string()
++                .contains("regular file")
++        );
++    }
++
++    #[test]
++    fn spec_fifo_is_rejected_without_waiting_for_a_writer() {
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join("cell.fifo");
++        assert!(
++            std::process::Command::new("mkfifo")
++                .arg(&path)
++                .status()
++                .unwrap()
++                .success()
++        );
++        let reader_path = path.clone();
++        let (sender, receiver) = std::sync::mpsc::sync_channel(1);
++        let worker = std::thread::spawn(move || {
++            let result = load_spec(&reader_path).map_err(|error| error.to_string());
++            sender.send(result).unwrap();
++        });
++        match receiver.recv_timeout(std::time::Duration::from_secs(1)) {
++            Ok(result) => {
++                worker.join().unwrap();
++                assert!(result.unwrap_err().contains("regular file"));
++            }
++            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
++                // A regressed blocking open must be released before joining.
++                // Closing the writer also gives an unbounded old reader EOF.
++                let writer = fs::OpenOptions::new()
++                    .write(true)
++                    .custom_flags(libc::O_NONBLOCK)
++                    .open(&path)
++                    .unwrap();
++                drop(writer);
++                worker.join().unwrap();
++                panic!("cell specification waited for a FIFO writer");
++            }
++            Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
++                worker.join().unwrap();
++                panic!("cell specification reader exited without a result");
++            }
++        }
++    }
++}

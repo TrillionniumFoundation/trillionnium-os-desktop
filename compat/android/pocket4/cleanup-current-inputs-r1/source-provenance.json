@@ -1,0 +1,120 @@
+{
+  "actual_sources": [
+    {
+      "bytes": 20839,
+      "path": "/home/alex/work/pocket4-android-final/cleanup/application-staging-retirement-20261109-8b88-r2/executor.py",
+      "scope": "read only; no executor invocation",
+      "sha256": "308e6789dd5b1eb0d499fc9d644c89606f5879e925ca09813bab267888fd2100"
+    },
+    {
+      "bytes": 20482,
+      "path": "/home/alex/work/pocket4-android-final/cleanup/apps-old-root-retirement-20261108-8b88-r1/executor.py",
+      "scope": "full public helper read; AST replacement scope verification; no source execution",
+      "sha256": "22e7e85962c52a5cf44759dd99610d16293a0f8573ee68b8b9da4c89b1c7911a"
+    },
+    {
+      "bytes": 21985,
+      "path": "/home/alex/work/pocket4-android-final/qualification/gallery-qpr1-current-inputs-20261108-8b88-r1/source/finalize_current_selection.py",
+      "scope": "AST-extracted public and read",
+      "sha256": "15d8ad4f8d07b7e4132efaa8781793c9f41a12741f8a548e24c73b15efcd603b"
+    },
+    {
+      "bytes": 3906,
+      "path": "/home/alex/work/pocket4-android-final/cleanup/historical-owned-fixture-retirement-20261109-8b88-r2/retirement_tree_fd.py",
+      "scope": "read only; no removal function invocation",
+      "sha256": "28a5b92a89c19e920fe842444d486884947514af79960ea5f8a3d4d0c94d8da2"
+    },
+    {
+      "bytes": 27693,
+      "path": "/home/alex/work/pocket4-android-final/cleanup/kernel-disposable-payload-retirement-20261109-8b88-r3/executor.py",
+      "scope": "read-only binding inspection; imports the same apps-old-root helper",
+      "sha256": "3085c853edbf992e1ae482d7e34ba319d61947799109757956de30f07452efb5"
+    }
+  ],
+  "fence": {
+    "bytes": 661,
+    "json": {
+      "android_actions": 0,
+      "fence_identity": {
+        "dev": 66306,
+        "ino": 36485054,
+        "mode": 16832,
+        "uid": 0
+      },
+      "fence_path": "/home/alex/work/pocket4-documents-flow-20261105-r12-tools-02",
+      "job_id": "1a1ab190ab3-fc05-4a51",
+      "must_never_remove_or_reuse": true,
+      "observed_utc": "2026-11-05T09:53:00.670577+00:00",
+      "original_key": "pocket4-documents-saf-flow-r12-02",
+      "original_request_sha256": "41aaa47e172c847e2171a400d8bf531181f89f28531c48795a3fcda6de2b9d11",
+      "original_stage_sha256": "920a0f887140602d8176ebd96e88601257d61d94310a8ea8a541a04d6a9587d0",
+      "original_termination_confirmed": false,
+      "state": "OLD_STAGE_ENTRY_FENCED"
+    },
+    "keys": [
+      "android_actions",
+      "fence_identity",
+      "fence_path",
+      "job_id",
+      "must_never_remove_or_reuse",
+      "observed_utc",
+      "original_key",
+      "original_request_sha256",
+      "original_stage_sha256",
+      "original_termination_confirmed",
+      "state"
+    ],
+    "path": "/home/alex/work/pocket4-documents-flow-20261105-r12-tools-02/NEVER_EXECUTE_OR_REUSE.json",
+    "sha256": "6a98cf8d82ead8506afeb1ff831d1e9fd99d1c8e112f5f750c828125dc6debe1"
+  },
+  "note": "PTY reads already observed exited/0/output_complete. Later close acknowledgments returned already_exited and are not independently used as termination evidence. Original fence owner closure remains UNKNOWN.",
+  "observed_public_commit": "265248170ce2e18e13c090246f97f3e3d80c637b",
+  "observer_patch": {
+    "baseline_fixture": "fixtures/executor-baseline.py",
+    "baseline_fixture_policy": "Parse and patch-check only; never import or execute the historical retirement executor.",
+    "baseline_sha256": "22e7e85962c52a5cf44759dd99610d16293a0f8573ee68b8b9da4c89b1c7911a",
+    "live_patch_applied": false,
+    "module": "reference_observer.py",
+    "patch": "reference_observer.patch",
+    "scope": "only live_references function; every target, dependency and deletion guard outside that function unchanged",
+    "scope_receipt": "reference-patch-scope.json"
+  },
+  "private_key_or_password_body_reads": 0,
+  "remote_deletions": 0,
+  "remote_evidence": [
+    {
+      "exit_code": 0,
+      "output_complete": true,
+      "purpose": "fence, compact historical fixture review and manifest schema",
+      "session_id": "dpty-18e644c7fef97f90-5e21-25"
+    },
+    {
+      "exit_code": 0,
+      "output_complete": true,
+      "purpose": "staging executor source, exact original job references and systemd unit state",
+      "session_id": "dpty-18e644e50dfd3d48-5e21-2a"
+    },
+    {
+      "exit_code": 0,
+      "output_complete": true,
+      "purpose": "actual 721 retained plus13 preparation readback",
+      "session_id": "dpty-18e64508b89a53d0-5e21-2e"
+    },
+    {
+      "exit_code": 0,
+      "output_complete": true,
+      "purpose": "pinned helper function extraction without source execution",
+      "session_id": "dpty-18e64510b0f2c9c0-5e21-2f"
+    },
+    {
+      "exit_code": 0,
+      "output_complete": true,
+      "purpose": "fresh helper full-source read and unchanged baseline/staging/kernel executor hashes",
+      "session_id": "dpty-18e645b77bb7d410-5e21-3f"
+    }
+  ],
+  "remote_file_writes": 0,
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "schema": "pocket4-current-inputs-observer-source-provenance-v2",
+  "source_or_original_owner_migrations": 0
+}

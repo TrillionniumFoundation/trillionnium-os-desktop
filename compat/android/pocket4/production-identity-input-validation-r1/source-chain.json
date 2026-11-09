@@ -1,0 +1,67 @@
+{
+  "schema": "pocket4-identity-input-source-chain-v1",
+  "upstream_snapshot_commit": "500dd3af851aaadb95537b68129b8bd889504951",
+  "actual_identity_source_commit": "098a58c107977c0be24e4b8311c77af1d786c9ad",
+  "scope": "Declared source subset; exact three-file host preimage/postimage, not a full Git commit reconstruction",
+  "chain": [
+    {
+      "path": "compat/android/pocket4/closeout-20261107/build-source-repair-20261108/source-prerequisites/base-source.patch",
+      "bytes": 3814733,
+      "sha256": "40ad41624358deb27ce67ea61d557e5ae5f672c19e2b0e805679caa71cf0c2aa"
+    },
+    {
+      "path": "compat/android/pocket4/closeout-20261107/build-source-repair-20261108/source-prerequisites/audio-prerequisite.patch",
+      "bytes": 463169,
+      "sha256": "af0e4e87db09b39407fb6689cff451fe7dbe3a6a91f3661148f38c76e1fe10d0"
+    },
+    {
+      "path": "compat/android/pocket4/host-gsi-layout/host-gsi-layout.patch",
+      "bytes": 34625,
+      "sha256": "45a74ac90ee9d8e7d7e3121a574d28784f0b45f38b99d664baa3ced88f7e438e"
+    },
+    {
+      "path": "compat/android/pocket4/host-namespace-ownership/host-namespace-ownership.patch",
+      "bytes": 34078,
+      "sha256": "ade46683b080cde555c018e596f6a6e2b02db30beb40285a66bf2c2ecd8e3bc5"
+    },
+    {
+      "path": "compat/android/pocket4/host-guest-directory-umask-r1/host-guest-directory-modes.patch",
+      "bytes": 42332,
+      "sha256": "5cdf41bd21a0380c4bb5547f521222c0d2178d35a464f9fec022e028f504a413"
+    },
+    {
+      "path": "compat/android/pocket4/production-identity-input-validation-r1/production-identity-reservation.patch",
+      "bytes": 50930,
+      "sha256": "ad5bb1455ec34ebeeea415313f69fd50b4595ada36b87751bbe2ca741a0a76e0",
+      "checkpoint": "before-review"
+    },
+    {
+      "path": "compat/android/pocket4/production-identity-input-validation-r1/identity-review-fixes.patch",
+      "bytes": 11935,
+      "sha256": "8004fda4ea36ccd5b12af30d8e21e7271602b534374b0442cd76dc502efdc359"
+    }
+  ],
+  "files": [
+    {
+      "path": "runtime/droidloom-supervisor/src/lib.rs",
+      "before_bytes": 35813,
+      "before_sha256": "2ffbdfabad12878deb12f069f509fdd654058ad7deeac60eae77926dee18c5a4",
+      "after_bytes": 37128,
+      "after_sha256": "84962a3a99c976614dece3c24f62dae8d0e9b20634eabca0341282e695f03e86"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_identity.rs",
+      "before_bytes": 45448,
+      "before_sha256": "65d452fee1130abfb95201cfe0a92542f5b9bf2072f16a4c8807956552e07818",
+      "after_bytes": 47700,
+      "after_sha256": "6ec6007062b0014b9328d81be6a815ffb0fd61580f7518b0a6b9ac9991fdcc78"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/main.rs",
+      "before_bytes": 3837,
+      "before_sha256": "9767d6cdacb7fe673c6e95048c7e680995151dc39dad8aaee403114108bf7981",
+      "after_bytes": 9313,
+      "after_sha256": "99e7bdec92c1232e5059d7fb492b0ffc51e6631b437992bbdee29674f4a4e5aa"
+    }
+  ]
+}
