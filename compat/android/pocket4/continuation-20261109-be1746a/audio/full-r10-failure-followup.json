@@ -1,0 +1,105 @@
+{
+  "schema": "pocket4-audio-r10-failure-followup-v1",
+  "observed_utc": "2026-11-09T10:02:52.894087+00:00",
+  "prior_running_observation": {
+    "path": "/workspace/scratch/be1746a9586f/audio-r10-live-observation.json",
+    "bytes": 42017,
+    "sha256": "03b6cd00ba0dd74197a17a93d1cf6182d2ddf662423e206911a22916fce53800"
+  },
+  "host": "desktop",
+  "root": "/data/pocket4-audio-source316-offload-20261108-8b88-r1",
+  "job_id": "1a1bfb491a7-5e21-67c",
+  "unit": "p4-audio-source430-pasit-full-desktop-20261109-8b88-r10-r2.service",
+  "state": "NORMAL_FULL_COMMAND_FAILED_OWNER_RETIREMENT_PENDING",
+  "normal_build_driver": {
+    "pid": 230277,
+    "observed_exited": true,
+    "command_exit_status_reported_by_stderr": 1
+  },
+  "owner_controller": {
+    "pid": 183198,
+    "observed_active": true,
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "note": "Owner controller/unit still active. Full H job terminal and complete source/restoration/retirement gates are not asserted."
+  },
+  "terminal_files": {
+    "control/full-desktop-r10-r2/outer-terminal.json": {
+      "exists": false
+    },
+    "qualification/full-desktop-r10-r2/terminal.json": {
+      "exists": false
+    },
+    "qualification/full-desktop-r10-r2/RESULT.json": {
+      "exists": false
+    }
+  },
+  "actual_source_errors": [
+    {
+      "consumer": "service-ondeviceintelligence",
+      "blueprint": "packages/modules/NeuralNetworks/service/Android.bp",
+      "line": 72,
+      "column": 1,
+      "undefined_module": "service-ondeviceintelligence.api.combined.system-server.latest"
+    },
+    {
+      "consumer": "service-ondeviceintelligence",
+      "blueprint": "packages/modules/NeuralNetworks/service/Android.bp",
+      "line": 72,
+      "column": 1,
+      "undefined_module": "service-ondeviceintelligence-removed.api.combined.system-server.latest"
+    }
+  ],
+  "normal_full_logs": [
+    {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2/commands/normal-full-audio-apex.stdout",
+      "observed_total_bytes": 67191,
+      "sampled_tail_bytes": 12288,
+      "sampled_tail_sha256": "4042ddc331e93443d63a2799d832fcdf95975fc05005114dc8dd0908d1eaa391",
+      "binding_scope": "The sampled final bytes are SHA-bound; this early frozen receipt does not assert a complete-file SHA."
+    },
+    {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2/commands/normal-full-audio-apex.stderr",
+      "observed_total_bytes": 528065,
+      "sampled_tail_bytes": 12288,
+      "sampled_tail_sha256": "b6ebdc23b7fd67d06c6b239836cb0074e7e1fedadf67a754ceab83ef0acc3525",
+      "binding_scope": "The sampled final bytes are SHA-bound; this early frozen receipt does not assert a complete-file SHA."
+    }
+  ],
+  "error_excerpts": [
+    "error: packages/modules/NeuralNetworks/service/Android.bp:72:1: \"service-ondeviceintelligence\" depends on undefined module \"service-ondeviceintelligence.api.combined.system-server.latest\".",
+    "error: packages/modules/NeuralNetworks/service/Android.bp:72:1: \"service-ondeviceintelligence\" depends on undefined module \"service-ondeviceintelligence-removed.api.combined.system-server.latest\".",
+    "05:01:10 soong bootstrap failed with: exit status 1"
+  ],
+  "resource_observation": {
+    "memory_peak_bytes": 4043370496,
+    "memory_current_bytes": 2345619456,
+    "memory_max_bytes": 25769803776,
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+    "memory_swap_current_bytes": 0,
+    "sample_is_not_final_resource_qualification": true
+  },
+  "source_lock": {
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-pasit-original-r1/android/manifest/audio-bridge-source-lock.json",
+    "bytes": 237862,
+    "sha256": "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a",
+    "same_inode_and_metadata": true
+  },
+  "source_lock_unchanged": true,
+  "current_inputs_mutated": false,
+  "new_full_builds_started": 0,
+  "build_success": false,
+  "full_qualified": false,
+  "artifact_qualified": false,
+  "runtime_qualified": false,
+  "production_ready": false,
+  "next_action": "Existing owner must complete restoration and retirement. Independently audit original NeuralNetworks system-server latest/removed API generated-provider inputs, first checking whether owner is already preparing that repair. Never replay old r10 or alter the recovering input tree."
+}

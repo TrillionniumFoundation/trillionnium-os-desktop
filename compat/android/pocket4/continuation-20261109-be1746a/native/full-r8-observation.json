@@ -1,0 +1,158 @@
+{
+  "schema": "pocket4-native600-r8-failed-restored-observation-v1",
+  "recorded_utc": "2026-11-09 09:55:15 UTC",
+  "outer_sampled_utc": "2026-11-09T09:48:45Z",
+  "build_host": "ai395",
+  "outer_job_id": "1a1bfa96ee5-5e21-63d",
+  "outer_H_status": {
+    "at_unix_ms": 1794217629390,
+    "audit_recorded": true,
+    "automatic_retry": false,
+    "cancelled": false,
+    "exit_code": 1,
+    "job_id": "1a1bfa96ee5-5e21-63d",
+    "launch_nonce": "342e95705cffe7b3cb52dbfbf104a4a9",
+    "log_bytes": {
+      "stderr": {
+        "seen": 367,
+        "stored": 367
+      },
+      "stdout": {
+        "seen": 1974,
+        "stored": 1974
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_synced": {
+      "stderr": true,
+      "stdout": true
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "output_durable": true,
+    "state": "failed",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
+  },
+  "inner_unit": "p4-native-source600-full-ai395-20261109-8b88-r8.service",
+  "outer_terminal": {
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full-ai395-r8/outer-terminal.json",
+    "bytes": 13306,
+    "sha256": "3cd5e5ef39bb9289c7d7943625a27ed8cb0ca524f74eb1eda2522b2dd12e4158"
+  },
+  "inner_terminal": {
+    "bytes": 62230,
+    "identity": [
+      66306,
+      88085365,
+      33024,
+      1000,
+      1000,
+      1,
+      62230,
+      1794217546363544800,
+      1794217546363544800
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r8/terminal.json",
+    "sha256": "95bad93f7a148ed8bed4fb6be83f5e4ad3892a893a589f6bd8d6d9c30ba40a68"
+  },
+  "normal_build_stdout": {
+    "bytes": 62159,
+    "identity": [
+      66306,
+      88085182,
+      33188,
+      1000,
+      1000,
+      1,
+      62159,
+      1794217461152613400,
+      1794217461152613400
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r8/commands/normal-full-native-engine-ART-pair.stdout",
+    "sha256": "364c3f64cefeedacbcc2f0199f4fc132dddf6a23d64f684d79821e02b1085188"
+  },
+  "normal_build_stderr": {
+    "bytes": 531584,
+    "identity": [
+      66306,
+      88085183,
+      33188,
+      1000,
+      1000,
+      1,
+      531584,
+      1794217461182612500,
+      1794217461182612500
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r8/commands/normal-full-native-engine-ART-pair.stderr",
+    "sha256": "1d1da9a68c7cf1a42734d89efae054d88f4b31cd9e346f4e89afe95c9ba29212"
+  },
+  "first_actual_error": {
+    "stream": "stdout",
+    "line": 361,
+    "message": "error: development/build/Android.bp:119:1: \"deprecated-renderscript-tools\" depends on undefined module \"bcc_compat\".",
+    "stage": "Soong Android.bp graph generation",
+    "normal_driver_returncode": 1
+  },
+  "source": {
+    "recipe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-tradefed-r1",
+    "commit": "fa3fa7496d9dd79a02bcd1445b1c49888aa493c4",
+    "tree": "95b5934af46dc560be0559d0b5b9edccc6133867",
+    "source_lock_sha256": "02fd330466357ecf744d85f27d23b03fabde46f31fae3ef69a5f6634e66e8837",
+    "source_projects": 600,
+    "strict_targets": [
+      "libberberis_arm64",
+      "com.android.art"
+    ],
+    "ALLOW_MISSING_DEPENDENCIES": false
+  },
+  "resource_events_delta": {
+    "high": 0,
+    "low": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_group_kill": 0,
+    "oom_kill": 0,
+    "sock_throttled": 0
+  },
+  "resource_gate_passed": true,
+  "input_after_qualified": true,
+  "source_projection_restored": true,
+  "owned_retirement_complete": true,
+  "outer_owned_unit_retired": true,
+  "outer_source_projection_absent_after": true,
+  "work_locks_observed_free_after": true,
+  "fallback_recovery": {
+    "bytes": 18069,
+    "identity": [
+      66306,
+      88085397,
+      33024,
+      1000,
+      1000,
+      1,
+      18069,
+      1794217629350152200,
+      1794217629350152200
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r8-fallback/result.json",
+    "sha256": "0e98308d548f6de62d922f00cec053f2efeedf05e4944daed44e76f26c01c30a"
+  },
+  "build_success": false,
+  "complete_engine_ART_pair_qualified": false,
+  "runtime_qualified": false,
+  "production_ready": false,
+  "bcc_provider_repair_included": false,
+  "observer_started_builds": 0,
+  "observer_modified_shared_source": false,
+  "observer_modified_CURRENT": false,
+  "next_scope": "Inspect original bcc_compat provider closure and prepare a separately qualified isolated delta. No successor full build is authorized by this observation."
+}
