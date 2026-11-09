@@ -313,7 +313,7 @@ jobs:
           import stat
           import subprocess
           import sys
-          capsules = [('production-identity-input-validation-r1', 'FILES.json', '51eab0a53fac05513969df8a50796a6f141d6826758f05b0ff316a7194ce0285', 8), ('native600-allocation-observation-r1', 'manifest.json', 'e0b80c1c3baa9726e1f8739fc46f85cf944dff7a458b1e5c9703b4707b2a9118', 14), ('cleanup-current-inputs-r1', 'FILES.json', '7b2cee4b3fe8dca5f2b508302279d73337d034efb0e37b08a93cd4816e45e578', 15)]
+          capsules = [('production-identity-input-validation-r1', 'FILES.json', '473a68243cb0641c1c96d4b34de2f6a29936826f12a29890bbc6a903ef366853', 8), ('native600-allocation-observation-r1', 'manifest.json', 'e0b80c1c3baa9726e1f8739fc46f85cf944dff7a458b1e5c9703b4707b2a9118', 14), ('cleanup-current-inputs-r1', 'FILES.json', '20587c6e0d3451712fa6b2d4f67ea7008648d1d1c78e553bbb89cb0ffb4b194b', 17)]
           for name, manifest_leaf, expected_sha, expected_count in capsules:
               directory = Path('compat/android/pocket4', name).resolve(strict=True)
               raw = (directory / manifest_leaf).read_bytes()
@@ -351,6 +351,7 @@ jobs:
           base = Path('compat/android/pocket4').resolve()
           run([sys.executable, '-I', '-B', str(base / 'production-identity-input-validation-r1/verify_source_chain.py'), '--repo-root', '.'])
           run([sys.executable, '-I', '-B', str(base / 'cleanup-current-inputs-r1/verify_reference_patch.py')])
+          run([sys.executable, '-I', '-B', '-O', str(base / 'cleanup-current-inputs-r1/verify_reference_patch.py')])
           for optimization in ([], ['-O']):
               run([sys.executable, '-I', '-B', *optimization, str(base / 'native600-allocation-observation-r1/verify.py')])
 
@@ -377,7 +378,7 @@ jobs:
           """
           for optimization in ([], ['-O']):
               run([sys.executable, '-I', '-B', *optimization, '-', str(base / 'cleanup-current-inputs-r1'),
-                   json.dumps(['test_verify_current_inputs.py', 'test_reference_observer.py']), '46'], input=controls)
+                   json.dumps(['test_verify_current_inputs.py', 'test_reference_observer.py']), '54'], input=controls)
           run([sys.executable, '-I', '-B', '-O', '-', str(base / 'native600-allocation-observation-r1'),
                json.dumps(['test_verifier_smoke.py']), '2'], input=controls)
           print('Source replay and isolated controls passed; this step does not run Rust, Android, or application acceptance')
@@ -432,6 +433,43 @@ jobs:
               raise SystemExit('All 17 Audio425 Linux controls must execute')
           print('17 Audio allocation controls passed; complete APEX and runtime remain unqualified')
           PYAUDIO425
+      - name: Verify actual cleanup references in private Linux namespaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          fixture_base="$RUNNER_TEMP/a08/cleanup-alias-fixtures"
+          mkdir "$fixture_base"
+          sudo -n env NAMESPACE_FIXTURE_DIR="$fixture_base" /usr/bin/python3 -I -B \
+            compat/android/pocket4/cleanup-current-inputs-r1/verify_isolated_alias_views.py \
+            compat/android/pocket4/cleanup-current-inputs-r1/reference_observer.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/cleanup-alias-normal.json"
+          sudo -n env NAMESPACE_FIXTURE_DIR="$fixture_base" /usr/bin/python3 -I -B -O \
+            compat/android/pocket4/cleanup-current-inputs-r1/verify_isolated_alias_views.py \
+            compat/android/pocket4/cleanup-current-inputs-r1/reference_observer.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/cleanup-alias-optimized.json"
+          python3 -I -B - "$RUNNER_TEMP/a08" <<'PYALIASES'
+          import hashlib
+          import json
+          from pathlib import Path
+          import sys
+          source = Path('compat/android/pocket4/cleanup-current-inputs-r1/reference_observer.py').read_bytes()
+          for mode, optimized in (('normal', 0), ('optimized', 1)):
+              report = json.loads((Path(sys.argv[1]) / ('cleanup-alias-' + mode + '.json')).read_bytes())
+              expected = {'schema': 'pocket4-isolated-alias-controls-v1', 'status': 'PASS',
+                          'controls': 10, 'optimized': optimized, 'outer_exit_code': 0,
+                          'outer_reaped': True, 'pid1_exit_code': 0, 'pid1_reaped_by_outer': True,
+                          'host_namespace_unchanged': True, 'host_mountinfo_unchanged': True,
+                          'private_pid_namespace': True, 'private_mount_propagation': True,
+                          'all_fixture_paths_retired_after_namespace_exit': True,
+                          'deletion_authorized': False, 'source_sha256': hashlib.sha256(source).hexdigest()}
+              for key, value in expected.items():
+                  if type(report.get(key)) is not type(value) or report[key] != value:
+                      raise SystemExit('Actual private namespace control failed: ' + mode + ':' + key)
+              if type(report.get('rows')) is not list or len(report['rows']) != 10:
+                  raise SystemExit('Exact private namespace control inventory required')
+          print('10 private namespace controls passed in both modes; no host cleanup or Android acceptance granted')
+          PYALIASES
+          rmdir "$fixture_base"
       - name: Verify Audio compiler and Ninja evidence guards
         shell: bash
         run: |

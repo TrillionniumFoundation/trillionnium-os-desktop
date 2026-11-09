@@ -1,7 +1,136 @@
 diff --git a/runtime/droidloom-supervisor/src/lib.rs b/runtime/droidloom-supervisor/src/lib.rs
 --- a/runtime/droidloom-supervisor/src/lib.rs
 +++ b/runtime/droidloom-supervisor/src/lib.rs
-@@ -223,9 +223,13 @@
+@@ -7,15 +7,16 @@
+ #![deny(unsafe_op_in_unsafe_fn)]
+ 
+ pub mod control;
++mod cpu_placement;
+ pub mod development;
+ mod development_network;
+-mod cpu_placement;
+ pub mod gapps;
+ mod image_layout;
+ pub mod linux_plan;
++mod package_cache;
+ #[cfg(target_os = "linux")]
+ pub mod production_identity;
+-mod package_cache;
++pub mod sealed_spec;
+ 
+ pub use image_layout::AndroidImageLayout;
+ 
+@@ -26,6 +27,109 @@
+ use droidloom_contracts::MIN_SUBORDINATE_IDS;
+ use serde::{Deserialize, Serialize};
+ use thiserror::Error;
++
++/// Maximum bytes accepted for a cell specification, including JSON whitespace.
++pub const MAX_CELL_SPEC_BYTES: u64 = 1024 * 1024;
++
++/// A bounded specification read failed before any runtime activation.
++#[derive(Debug, Error)]
++pub enum CellSpecReadError {
++    /// A file operation failed.
++    #[error(transparent)]
++    Io(#[from] std::io::Error),
++    /// The input did not meet the regular-file, size, or stability contract.
++    #[error("{0}")]
++    Invalid(String),
++    /// The input was not a compatible JSON cell specification.
++    #[error(transparent)]
++    Json(#[from] serde_json::Error),
++}
++
++/// Read bounded JSON from an already selected stream.
++///
++/// This only decodes a CellSpec. File custody, peer authorization, and semantic
++/// validation remain the caller's responsibilities.
++pub fn read_cell_spec(reader: impl std::io::Read) -> Result<CellSpec, CellSpecReadError> {
++    use std::io::Read;
++    let mut bytes = Vec::new();
++    reader
++        .take(MAX_CELL_SPEC_BYTES + 1)
++        .read_to_end(&mut bytes)?;
++    if bytes.len() as u64 > MAX_CELL_SPEC_BYTES {
++        return Err(CellSpecReadError::Invalid(format!(
++            "cell specification exceeds maximum of {MAX_CELL_SPEC_BYTES} bytes"
++        )));
++    }
++    Ok(serde_json::from_slice(&bytes)?)
++}
++
++/// Open and read one regular, bounded, stable specification inode.
++///
++/// Ordinary symlink paths remain accepted. Daemon requests add their existing
++/// trusted-directory and root-ownership policy to the same held descriptor.
++pub fn load_cell_spec(path: &Path) -> Result<CellSpec, CellSpecReadError> {
++    OpenedCellSpec::open(path, false)?.read()
++}
++
++pub(crate) struct OpenedCellSpec {
++    file: std::fs::File,
++    metadata: std::fs::Metadata,
++}
++
++impl OpenedCellSpec {
++    pub(crate) fn open(path: &Path, no_follow: bool) -> Result<Self, CellSpecReadError> {
++        use std::os::unix::fs::OpenOptionsExt;
++        let file = std::fs::OpenOptions::new()
++            .read(true)
++            .custom_flags(libc::O_NONBLOCK | if no_follow { libc::O_NOFOLLOW } else { 0 })
++            .open(path)?;
++        let metadata = file.metadata()?;
++        if !metadata.is_file() {
++            return Err(CellSpecReadError::Invalid(
++                "cell specification must be a regular file".into(),
++            ));
++        }
++        if metadata.len() > MAX_CELL_SPEC_BYTES {
++            return Err(CellSpecReadError::Invalid(format!(
++                "cell specification is {} bytes; maximum is {MAX_CELL_SPEC_BYTES}",
++                metadata.len()
++            )));
++        }
++        Ok(Self { file, metadata })
++    }
++
++    pub(crate) fn metadata(&self) -> &std::fs::Metadata {
++        &self.metadata
++    }
++
++    pub(crate) fn read(mut self) -> Result<CellSpec, CellSpecReadError> {
++        if !same_spec_metadata(&self.metadata, &self.file.metadata()?) {
++            return Err(CellSpecReadError::Invalid(
++                "cell specification changed after it was opened".into(),
++            ));
++        }
++        let spec = read_cell_spec(&mut self.file)?;
++        if !same_spec_metadata(&self.metadata, &self.file.metadata()?) {
++            return Err(CellSpecReadError::Invalid(
++                "cell specification changed while it was read".into(),
++            ));
++        }
++        Ok(spec)
++    }
++}
++
++fn same_spec_metadata(left: &std::fs::Metadata, right: &std::fs::Metadata) -> bool {
++    use std::os::unix::fs::MetadataExt;
++    left.dev() == right.dev()
++        && left.ino() == right.ino()
++        && left.mode() == right.mode()
++        && left.uid() == right.uid()
++        && left.gid() == right.gid()
++        && left.nlink() == right.nlink()
++        && left.len() == right.len()
++        && (left.mtime(), left.mtime_nsec()) == (right.mtime(), right.mtime_nsec())
++        && (left.ctime(), left.ctime_nsec()) == (right.ctime(), right.ctime_nsec())
++}
+ 
+ /// Stable identifier for the single Android cell owned by a host user.
+ #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+@@ -223,9 +327,13 @@
              }
              if range
                  .end_exclusive()
@@ -17,7 +146,84 @@ diff --git a/runtime/droidloom-supervisor/src/lib.rs b/runtime/droidloom-supervi
              }
          }
  
-@@ -876,6 +880,40 @@
+@@ -729,8 +837,15 @@
+         let gsi: CellSpec = serde_json::from_value(json.clone()).unwrap();
+         assert_eq!(gsi.image_layout, AndroidImageLayout::GsiSystemAsRoot);
+         assert!(gsi.validate().is_ok());
+-        assert_eq!(serde_json::to_value(&gsi).unwrap()["image_layout"], "gsi_system_as_root");
+-        for invalid in [serde_json::json!("auto"), serde_json::json!(true), serde_json::Value::Null] {
++        assert_eq!(
++            serde_json::to_value(&gsi).unwrap()["image_layout"],
++            "gsi_system_as_root"
++        );
++        for invalid in [
++            serde_json::json!("auto"),
++            serde_json::json!(true),
++            serde_json::Value::Null,
++        ] {
+             json["image_layout"] = invalid;
+             assert!(serde_json::from_value::<CellSpec>(json.clone()).is_err());
+         }
+@@ -741,13 +856,29 @@
+         let mut cell = spec();
+         cell.image_layout = AndroidImageLayout::GsiSystemAsRoot;
+         cell.gapps_dir = Some("/usr/lib/droidloom/addons/gapps".into());
+-        assert!(cell.validate().unwrap_err().to_string().contains("split GApps"));
++        assert!(
++            cell.validate()
++                .unwrap_err()
++                .to_string()
++                .contains("split GApps")
++        );
+         cell.gapps_dir = None;
+         cell.android_file_overrides = vec![
+-            AndroidFileOverride { source: "/usr/lib/droidloom/a.apk".into(), target: "/product/app/A/A.apk".into() },
+-            AndroidFileOverride { source: "/usr/lib/droidloom/b.apk".into(), target: "/system/product/app/A/A.apk".into() },
++            AndroidFileOverride {
++                source: "/usr/lib/droidloom/a.apk".into(),
++                target: "/product/app/A/A.apk".into(),
++            },
++            AndroidFileOverride {
++                source: "/usr/lib/droidloom/b.apk".into(),
++                target: "/system/product/app/A/A.apk".into(),
++            },
+         ];
+-        assert!(cell.validate().unwrap_err().to_string().contains("duplicates"));
++        assert!(
++            cell.validate()
++                .unwrap_err()
++                .to_string()
++                .contains("duplicates")
++        );
+         cell.image_layout = AndroidImageLayout::SplitPartitions;
+         assert!(cell.validate().is_ok());
+     }
+@@ -762,8 +893,10 @@
+         assert!(decoded.graphics_backend.auxiliary_devices().is_empty());
+         json["graphics_backend"] = serde_json::json!("kgsl_dma_heap");
+         let decoded: CellSpec = serde_json::from_value(json.clone()).unwrap();
+-        assert_eq!(decoded.graphics_backend.auxiliary_devices(),
+-                   &["/dev/kgsl-3d0", "/dev/dma_heap/system"]);
++        assert_eq!(
++            decoded.graphics_backend.auxiliary_devices(),
++            &["/dev/kgsl-3d0", "/dev/dma_heap/system"]
++        );
+         json["graphics_backend"] = serde_json::json!("/dev/dri/card0");
+         assert!(serde_json::from_value::<CellSpec>(json).is_err());
+     }
+@@ -774,7 +907,10 @@
+         json["graphics_backend"] = serde_json::json!("drm_media_dma_heap");
+         let decoded: CellSpec = serde_json::from_value(json.clone()).unwrap();
+         assert_eq!(decoded.graphics_backend, GraphicsBackend::DrmMediaDmaHeap);
+-        assert_eq!(decoded.graphics_backend.auxiliary_devices(), &["/dev/dma_heap/system"]);
++        assert_eq!(
++            decoded.graphics_backend.auxiliary_devices(),
++            &["/dev/dma_heap/system"]
++        );
+         assert_eq!(decoded.graphics_backend.auxiliary_device_mode(), 0o444);
+         assert_eq!(serde_json::to_value(&decoded).unwrap(), json);
+         assert!(decoded.validate().is_ok());
+@@ -876,6 +1012,40 @@
      }
  
      #[test]
@@ -58,135 +264,135 @@ diff --git a/runtime/droidloom-supervisor/src/lib.rs b/runtime/droidloom-supervi
      fn spec_rejects_unsafe_or_duplicate_android_file_overrides() {
          let mut invalid = spec();
          invalid.android_file_overrides = vec![
-diff --git a/runtime/droidloom-supervisor/src/production_identity.rs b/runtime/droidloom-supervisor/src/production_identity.rs
---- a/runtime/droidloom-supervisor/src/production_identity.rs
-+++ b/runtime/droidloom-supervisor/src/production_identity.rs
-@@ -827,11 +827,13 @@
-     // SAFETY: a valid held directory FD and terminated single-component name;
-     // O_NOFOLLOW refuses to follow final symlinks. O_PATH callers also check
-     // the held inode type or compare it with their admitted regular inode.
-+    // O_NONBLOCK prevents a FIFO replacement from hanging before fstat can
-+    // reject its type. It does not change ordinary file or directory I/O.
-     let fd = unsafe {
-         libc::openat(
-             parent.as_raw_fd(),
-             name.as_ptr(),
--            flags | libc::O_CLOEXEC | libc::O_NOFOLLOW,
-+            flags | libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK,
-             mode,
-         )
-     };
-@@ -1139,6 +1141,56 @@
-         fs::set_permissions(&f.paths.subuid, fs::Permissions::from_mode(0o666)).unwrap();
-         assert!(f.authority().is_err());
-     }
-+
-+    #[test]
-+    fn fifo_authority_is_rejected_without_waiting_for_a_writer() {
-+        let f = Fixture::new();
-+        fs::remove_file(&f.paths.subuid).unwrap();
-+        let fifo_name = CString::new(f.paths.subuid.as_os_str().as_encoded_bytes()).unwrap();
-+        // SAFETY: a terminated path inside this exclusively owned fixture.
-+        assert_eq!(unsafe { libc::mkfifo(fifo_name.as_ptr(), 0o600) }, 0);
-+        let paths = f.paths.clone();
-+        let (sender, receiver) = std::sync::mpsc::sync_channel(1);
-+        let worker = std::thread::spawn(move || {
-+            let result = IdentityAuthority::read_paths(
-+                1000,
-+                IdRange {
-+                    start: 200_000,
-+                    count: 100_000,
-+                },
-+                IdRange {
-+                    start: 200_000,
-+                    count: 100_000,
-+                },
-+                paths,
-+            );
-+            sender.send(result).unwrap();
-+        });
-+        let observed = receiver.recv_timeout(std::time::Duration::from_secs(1));
-+        match observed {
-+            Ok(result) => {
-+                worker.join().unwrap();
-+                assert!(matches!(result, Err(IdentityError::UnsafeCustody(_))));
-+            }
-+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
-+                // Release a regressed blocking open before joining, so a
-+                // failure does not leave a thread or fixture behind.
-+                let writer = OpenOptions::new()
-+                    .write(true)
-+                    .custom_flags(libc::O_NONBLOCK)
-+                    .open(&f.paths.subuid)
-+                    .unwrap();
-+                worker.join().unwrap();
-+                drop(writer);
-+                panic!("identity authority waited for a FIFO writer");
-+            }
-+            Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
-+                worker.join().unwrap();
-+                panic!("identity authority reader exited without a result");
-+            }
-+        }
-+        assert!(!f.root.path().join("registry").exists());
-+    }
-     #[test]
-     fn stale_authority_fails_before_any_registry_write() {
-         let f = Fixture::new();
 diff --git a/runtime/droidloom-supervisor/src/main.rs b/runtime/droidloom-supervisor/src/main.rs
 --- a/runtime/droidloom-supervisor/src/main.rs
 +++ b/runtime/droidloom-supervisor/src/main.rs
-@@ -3,6 +3,8 @@
- #![forbid(unsafe_code)]
+@@ -1,8 +1,13 @@
+ //! Auditable Droidloom supervisor planning CLI.
  
+-#![forbid(unsafe_code)]
+-
++#![deny(unsafe_op_in_unsafe_fn)]
++
++#[cfg(test)]
  use std::fs;
++#[cfg(test)]
 +use std::io::Read;
++#[cfg(test)]
 +use std::os::unix::fs::OpenOptionsExt;
  use std::path::PathBuf;
  
  use clap::{Parser, Subcommand};
-@@ -111,7 +113,16 @@
+@@ -15,7 +20,8 @@
+ #[cfg(target_os = "linux")]
+ use droidloom_supervisor::production_identity::IdentityAuthority;
+ 
+-const MAX_SPEC_BYTES: u64 = 1024 * 1024;
++#[cfg(test)]
++const MAX_SPEC_BYTES: u64 = droidloom_supervisor::MAX_CELL_SPEC_BYTES;
+ 
+ #[derive(Debug, Parser)]
+ #[command(name = "droidloom-supervisor", version, about)]
+@@ -57,12 +63,19 @@
+         #[arg(long)]
+         spec: PathBuf,
+     },
+-    /// Private namespace re-entry used only by `development-run`.
++    /// Private root namespace re-entry used by the development launcher.
+     #[command(hide = true)]
+     DevelopmentEnter {
+-        /// Cell specification JSON.
+-        #[arg(long)]
+-        spec: PathBuf,
++        /// Explicit root-only legacy specification path.
++        #[arg(
++            long,
++            required_unless_present = "sealed_spec",
++            conflicts_with = "sealed_spec"
++        )]
++        spec: Option<PathBuf>,
++        /// Versioned immutable descriptor binding supplied by the parent.
++        #[arg(long, required_unless_present = "spec", conflicts_with = "spec")]
++        sealed_spec: Option<String>,
+     },
+ }
+ 
+@@ -102,8 +115,24 @@
+             let cell = load_spec(&spec)?;
+             run_development_cell(&spec, &cell)?;
+         }
+-        Command::DevelopmentEnter { spec } => {
+-            let spec = load_spec(&spec)?;
++        Command::DevelopmentEnter { spec, sealed_spec } => {
++            let spec = match (spec, sealed_spec) {
++                (Some(path), None) => {
++                    // SAFETY: this is a read-only credential query. The legacy
++                    // pathname entry is available only to explicit root callers.
++                    if unsafe { libc::geteuid() } != 0 {
++                        return Err("development boot must be run as root".into());
++                    }
++                    load_spec(&path)?
++                }
++                (None, Some(binding)) => {
++                    // SAFETY: this private CLI is a freshly exec'd bootstrap.
++                    // Its inherited descriptor is not owned by a Rust File;
++                    // the root-only receiver validates and consumes that slot.
++                    unsafe { droidloom_supervisor::sealed_spec::consume_inherited_spec(&binding)? }
++                }
++                _ => return Err("exactly one private-entry specification is required".into()),
++            };
+             enter_development_cell(&spec)?;
+         }
+     }
+@@ -111,13 +140,156 @@
  }
  
  fn load_spec(path: &PathBuf) -> Result<CellSpec, Box<dyn std::error::Error>> {
 -    let metadata = fs::metadata(path)?;
-+    // Keep ordinary symlink paths compatible, but inspect and read the same
-+    // opened inode. Nonblocking open lets us reject a FIFO without a writer.
-+    let file = fs::OpenOptions::new()
-+        .read(true)
-+        .custom_flags(libc::O_NONBLOCK)
-+        .open(path)?;
-+    let metadata = file.metadata()?;
-+    if !metadata.is_file() {
-+        return Err("cell specification must be a regular file".into());
-+    }
-     if metadata.len() > MAX_SPEC_BYTES {
-         return Err(format!(
-             "cell specification is {} bytes; maximum is {MAX_SPEC_BYTES}",
-@@ -119,5 +130,139 @@
-         )
-         .into());
-     }
+-    if metadata.len() > MAX_SPEC_BYTES {
+-        return Err(format!(
+-            "cell specification is {} bytes; maximum is {MAX_SPEC_BYTES}",
+-            metadata.len()
+-        )
+-        .into());
+-    }
 -    Ok(serde_json::from_slice(&fs::read(path)?)?)
 -}
-+    read_spec(file)
++    Ok(droidloom_supervisor::load_cell_spec(path)?)
 +}
 +
++#[cfg(test)]
 +fn read_spec(reader: impl Read) -> Result<CellSpec, Box<dyn std::error::Error>> {
-+    // Metadata is only an early rejection: a regular file can grow after
-+    // fstat. Read at most one byte beyond the accepted size to detect that.
-+    let mut bytes = Vec::new();
-+    reader.take(MAX_SPEC_BYTES + 1).read_to_end(&mut bytes)?;
-+    if bytes.len() as u64 > MAX_SPEC_BYTES {
-+        return Err(format!("cell specification exceeds maximum of {MAX_SPEC_BYTES} bytes").into());
-+    }
-+    Ok(serde_json::from_slice(&bytes)?)
++    Ok(droidloom_supervisor::read_cell_spec(reader)?)
 +}
 +
 +#[cfg(test)]
 +mod tests {
 +    use super::*;
 +    use std::os::unix::fs::symlink;
++
++    #[test]
++    fn private_entry_requires_exactly_one_specification_protocol() {
++        for arguments in [
++            vec!["supervisor", "development-enter"],
++            vec![
++                "supervisor",
++                "development-enter",
++                "--spec",
++                "/a",
++                "--sealed-spec",
++                "{}",
++            ],
++        ] {
++            assert!(Cli::try_parse_from(arguments).is_err());
++        }
++        for arguments in [
++            vec!["supervisor", "development-enter", "--spec", "/a"],
++            vec!["supervisor", "development-enter", "--sealed-spec", "{}"],
++        ] {
++            assert!(Cli::try_parse_from(arguments).is_ok());
++        }
++    }
 +
 +    fn spec_bytes() -> Vec<u8> {
 +        serde_json::to_vec(&serde_json::json!({
@@ -304,4 +510,1467 @@ diff --git a/runtime/droidloom-supervisor/src/main.rs b/runtime/droidloom-superv
 +            }
 +        }
 +    }
++}
+diff --git a/runtime/droidloom-supervisor/src/production_identity.rs b/runtime/droidloom-supervisor/src/production_identity.rs
+--- a/runtime/droidloom-supervisor/src/production_identity.rs
++++ b/runtime/droidloom-supervisor/src/production_identity.rs
+@@ -827,11 +827,13 @@
+     // SAFETY: a valid held directory FD and terminated single-component name;
+     // O_NOFOLLOW refuses to follow final symlinks. O_PATH callers also check
+     // the held inode type or compare it with their admitted regular inode.
++    // O_NONBLOCK prevents a FIFO replacement from hanging before fstat can
++    // reject its type. It does not change ordinary file or directory I/O.
+     let fd = unsafe {
+         libc::openat(
+             parent.as_raw_fd(),
+             name.as_ptr(),
+-            flags | libc::O_CLOEXEC | libc::O_NOFOLLOW,
++            flags | libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK,
+             mode,
+         )
+     };
+@@ -1204,6 +1206,55 @@
+         assert!(f.authority().is_err());
+     }
+     #[test]
++    fn fifo_authority_is_rejected_without_waiting_for_a_writer() {
++        let f = Fixture::new();
++        fs::remove_file(&f.paths.subuid).unwrap();
++        let fifo_name = CString::new(f.paths.subuid.as_os_str().as_encoded_bytes()).unwrap();
++        // SAFETY: a terminated path inside this exclusively owned fixture.
++        assert_eq!(unsafe { libc::mkfifo(fifo_name.as_ptr(), 0o600) }, 0);
++        let paths = f.paths.clone();
++        let (sender, receiver) = std::sync::mpsc::sync_channel(1);
++        let worker = std::thread::spawn(move || {
++            let result = IdentityAuthority::read_paths(
++                1000,
++                IdRange {
++                    start: 200_000,
++                    count: 100_000,
++                },
++                IdRange {
++                    start: 200_000,
++                    count: 100_000,
++                },
++                paths,
++            );
++            sender.send(result).unwrap();
++        });
++        let observed = receiver.recv_timeout(std::time::Duration::from_secs(1));
++        match observed {
++            Ok(result) => {
++                worker.join().unwrap();
++                assert!(matches!(result, Err(IdentityError::UnsafeCustody(_))));
++            }
++            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
++                // Release a regressed blocking open before joining, so a
++                // failure does not leave a thread or fixture behind.
++                let writer = OpenOptions::new()
++                    .write(true)
++                    .custom_flags(libc::O_NONBLOCK)
++                    .open(&f.paths.subuid)
++                    .unwrap();
++                worker.join().unwrap();
++                drop(writer);
++                panic!("identity authority waited for a FIFO writer");
++            }
++            Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
++                worker.join().unwrap();
++                panic!("identity authority reader exited without a result");
++            }
++        }
++        assert!(!f.root.path().join("registry").exists());
++    }
++    #[test]
+     fn stale_authority_fails_before_any_registry_write() {
+         let f = Fixture::new();
+         let authority = f.authority().unwrap();
+diff --git a/runtime/droidloom-supervisor/src/control.rs b/runtime/droidloom-supervisor/src/control.rs
+--- a/runtime/droidloom-supervisor/src/control.rs
++++ b/runtime/droidloom-supervisor/src/control.rs
+@@ -47,7 +47,6 @@
+ 
+ const MAX_MESSAGE_BYTES: u64 = 64 * 1024;
+ const MAX_RESPONSE_BYTES: u64 = 4 * 1024 * 1024;
+-const MAX_SPEC_BYTES: u64 = 1024 * 1024;
+ const ACCEPT_POLL: Duration = Duration::from_millis(50);
+ const CLIENT_TIMEOUT: Duration = Duration::from_secs(2);
+ const ANDROID_READY_TIMEOUT: Duration = Duration::from_secs(120);
+@@ -1014,21 +1013,109 @@
+     Ok(credentials.uid)
+ }
+ 
+-fn load_spec(path: &Path) -> Result<CellSpec, ControlError> {
+-    let metadata =
+-        fs::metadata(path).map_err(|source| io_error("stat cell specification", source))?;
+-    if metadata.len() > MAX_SPEC_BYTES {
++fn spec_read_error(error: crate::CellSpecReadError) -> ControlError {
++    match error {
++        crate::CellSpecReadError::Io(source) => io_error("read cell specification", source),
++        crate::CellSpecReadError::Invalid(message) => ControlError::Invalid(message),
++        crate::CellSpecReadError::Json(source) => ControlError::Protocol(source),
++    }
++}
++
++fn open_spec_directory(path: &Path) -> Result<fs::File, ControlError> {
++    use std::os::unix::fs::OpenOptionsExt;
++    fs::OpenOptions::new()
++        .read(true)
++        .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_NONBLOCK)
++        .open(path)
++        .map_err(|source| io_error("open trusted specification directory", source))
++}
++
++fn directory_child_path(parent: &fs::File, name: &std::ffi::OsStr) -> PathBuf {
++    // The live File owns this descriptor throughout the open below. Only a
++    // single normal component is appended to the kernel's own procfd link.
++    Path::new("/proc/self/fd")
++        .join(parent.as_raw_fd().to_string())
++        .join(name)
++}
++
++fn open_absolute_spec_directory(path: &Path) -> Result<fs::File, ControlError> {
++    if !path.is_absolute() {
++        return Err(ControlError::Invalid(
++            "absolute trusted directory required".into(),
++        ));
++    }
++    let mut held = open_spec_directory(Path::new("/"))?;
++    for part in path.components() {
++        match part {
++            std::path::Component::RootDir => {}
++            std::path::Component::Normal(name) => {
++                held = open_spec_directory(&directory_child_path(&held, name))?;
++            }
++            _ => {
++                return Err(ControlError::Invalid(
++                    "non-canonical trusted directory".into(),
++                ));
++            }
++        }
++    }
++    Ok(held)
++}
++
++fn open_authorized_spec(
++    peer_uid: u32,
++    path: &Path,
++    spec_directory: &Path,
++) -> Result<crate::OpenedCellSpec, ControlError> {
++    if peer_uid == 0 {
++        return crate::OpenedCellSpec::open(path, false).map_err(spec_read_error);
++    }
++    use std::os::unix::ffi::OsStrExt;
++    if path.as_os_str().as_bytes().ends_with(b"/") {
++        return Err(ControlError::Invalid(
++            "a specification file is required".into(),
++        ));
++    }
++    let leaf = path
++        .file_name()
++        .ok_or_else(|| ControlError::Invalid("a specification file is required".into()))?;
++    let parent = path
++        .parent()
++        .filter(|value| !value.as_os_str().is_empty())
++        .unwrap_or(Path::new("."));
++    let canonical_parent = fs::canonicalize(parent)
++        .map_err(|source| io_error("resolve specification parent", source))?;
++    let canonical_directory = fs::canonicalize(spec_directory)
++        .map_err(|source| io_error("resolve trusted specification directory", source))?;
++    let relative = canonical_parent
++        .strip_prefix(&canonical_directory)
++        .map_err(|_| {
++            ControlError::Invalid(format!(
++                "non-root clients may use only root-owned, non-writable specifications below {}",
++                spec_directory.display()
++            ))
++        })?;
++    // Open the admitted directory once, then walk only relative held-directory
++    // descendants. Parent symlink aliases accepted by canonicalize retain their
++    // normal semantics; replacement symlinks after that point are refused.
++    let mut held = open_absolute_spec_directory(&canonical_directory)?;
++    for part in relative.components() {
++        let std::path::Component::Normal(name) = part else {
++            return Err(ControlError::Invalid(
++                "non-canonical specification parent".into(),
++            ));
++        };
++        held = open_spec_directory(&directory_child_path(&held, name))?;
++    }
++    let opened = crate::OpenedCellSpec::open(&directory_child_path(&held, leaf), true)
++        .map_err(spec_read_error)?;
++    let metadata = opened.metadata();
++    if metadata.uid() != 0 || metadata.mode() & 0o022 != 0 {
+         return Err(ControlError::Invalid(format!(
+-            "cell specification is {} bytes; maximum is {MAX_SPEC_BYTES}",
+-            metadata.len()
++            "non-root clients may use only root-owned, non-writable specifications below {}",
++            spec_directory.display()
+         )));
+     }
+-    let spec: CellSpec = serde_json::from_slice(
+-        &fs::read(path).map_err(|source| io_error("read cell specification", source))?,
+-    )?;
+-    spec.validate()
+-        .map_err(|error| ControlError::Invalid(error.to_string()))?;
+-    Ok(spec)
++    Ok(opened)
+ }
+ 
+ fn load_authorized_spec(
+@@ -1036,25 +1123,22 @@
+     path: &Path,
+     spec_directory: &Path,
+ ) -> Result<CellSpec, ControlError> {
+-    if peer_uid != 0 {
+-        let metadata = fs::symlink_metadata(path)
+-            .map_err(|source| io_error("inspect cell specification", source))?;
+-        let canonical = fs::canonicalize(path)
+-            .map_err(|source| io_error("resolve cell specification", source))?;
+-        let canonical_directory = fs::canonicalize(spec_directory)
+-            .map_err(|source| io_error("resolve trusted specification directory", source))?;
+-        if !metadata.file_type().is_file()
+-            || metadata.uid() != 0
+-            || metadata.mode() & 0o022 != 0
+-            || !canonical.starts_with(&canonical_directory)
+-        {
+-            return Err(ControlError::Invalid(format!(
+-                "non-root clients may use only root-owned, non-writable specifications below {}",
+-                spec_directory.display()
+-            )));
+-        }
+-    }
+-    let spec = load_spec(path)?;
++    load_authorized_spec_after_open(peer_uid, path, spec_directory, || {})
++}
++
++fn load_authorized_spec_after_open(
++    peer_uid: u32,
++    path: &Path,
++    spec_directory: &Path,
++    after_open: impl FnOnce(),
++) -> Result<CellSpec, ControlError> {
++    let opened = open_authorized_spec(peer_uid, path, spec_directory)?;
++    // The no-op production callback is a deterministic race boundary for
++    // tests: replacing the path here must never substitute the held inode.
++    after_open();
++    let spec = opened.read().map_err(spec_read_error)?;
++    spec.validate()
++        .map_err(|error| ControlError::Invalid(error.to_string()))?;
+     authorize_spec(peer_uid, &spec)?;
+     Ok(spec)
+ }
+@@ -1557,6 +1641,157 @@
+ mod tests {
+     use super::*;
+     use std::sync::Arc;
++
++    fn loader_spec() -> CellSpec {
++        serde_json::from_value(serde_json::json!({
++            "host_uid": 1000,
++            "subordinate_uids": {"start": 200000, "count": 100000},
++            "subordinate_gids": {"start": 300000, "count": 100000},
++            "image_dir": "/usr/lib/droidloom/images/base",
++            "vendor_image": "/usr/lib/droidloom/images/vendor.img",
++            "data_dir": "/var/lib/droidloom/cells/u1000",
++            "runtime_dir": "/run/droidloom/cells/u1000",
++            "render_node": "/dev/dri/renderD128",
++            "denial_socket": "/run/user/1000/denial/native-bridge.sock"
++        }))
++        .unwrap()
++    }
++
++    fn write_loader_spec(path: &Path, spec: &CellSpec) {
++        fs::write(path, serde_json::to_vec(spec).unwrap()).unwrap();
++        fs::set_permissions(path, fs::Permissions::from_mode(0o644)).unwrap();
++    }
++
++    #[test]
++    fn daemon_loader_rejects_oversize_and_non_regular_inputs() {
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join("oversize.json");
++        let mut bytes = serde_json::to_vec(&loader_spec()).unwrap();
++        bytes.resize(crate::MAX_CELL_SPEC_BYTES as usize + 1, b' ');
++        fs::write(&path, bytes).unwrap();
++        assert!(
++            load_authorized_spec(0, &path, root.path())
++                .unwrap_err()
++                .to_string()
++                .contains("maximum")
++        );
++        assert!(
++            load_authorized_spec(0, root.path(), root.path())
++                .unwrap_err()
++                .to_string()
++                .contains("regular file")
++        );
++    }
++
++    #[test]
++    fn daemon_loader_fifo_does_not_wait_for_a_writer() {
++        use std::os::unix::fs::OpenOptionsExt;
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join("cell.fifo");
++        assert!(
++            std::process::Command::new("mkfifo")
++                .arg(&path)
++                .status()
++                .unwrap()
++                .success()
++        );
++        let selected = path.clone();
++        let directory = root.path().to_owned();
++        let (sender, receiver) = std::sync::mpsc::sync_channel(1);
++        let worker = std::thread::spawn(move || {
++            sender
++                .send(load_authorized_spec(0, &selected, &directory).map_err(|e| e.to_string()))
++                .unwrap();
++        });
++        match receiver.recv_timeout(Duration::from_secs(1)) {
++            Ok(result) => {
++                worker.join().unwrap();
++                assert!(result.unwrap_err().contains("regular file"));
++            }
++            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
++                let writer = fs::OpenOptions::new()
++                    .write(true)
++                    .custom_flags(libc::O_NONBLOCK)
++                    .open(&path)
++                    .unwrap();
++                drop(writer);
++                worker.join().unwrap();
++                panic!("daemon specification open waited for a FIFO writer");
++            }
++            Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
++                worker.join().unwrap();
++                panic!("daemon specification worker exited without a result");
++            }
++        }
++    }
++
++    #[test]
++    fn held_spec_rejects_in_place_mutation_before_read() {
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join("cell.json");
++        write_loader_spec(&path, &loader_spec());
++        let opened = crate::OpenedCellSpec::open(&path, false).unwrap();
++        fs::write(&path, b"{}").unwrap();
++        assert!(opened.read().unwrap_err().to_string().contains("changed"));
++    }
++
++    #[test]
++    #[ignore = "requires actual root-owned fixtures; no Android activation"]
++    fn daemon_root_custody_reads_authorized_inode_after_parent_replacement() {
++        assert_eq!(unsafe { libc::geteuid() }, 0);
++        let root = tempfile::tempdir().unwrap();
++        let trusted = root.path().join("trusted");
++        let selected = trusted.join("cells");
++        let outside = root.path().join("outside");
++        fs::create_dir_all(&selected).unwrap();
++        fs::create_dir(&outside).unwrap();
++        let path = selected.join("cell.json");
++        let expected = loader_spec();
++        write_loader_spec(&path, &expected);
++        assert_eq!(fs::metadata(&path).unwrap().uid(), 0);
++        let mut replacement = expected.clone();
++        replacement.render_node = "/dev/dri/renderD129".into();
++        write_loader_spec(&outside.join("cell.json"), &replacement);
++        let result = load_authorized_spec_after_open(1000, &path, &trusted, || {
++            fs::rename(&selected, trusted.join("held-parent")).unwrap();
++            std::os::unix::fs::symlink(&outside, &selected).unwrap();
++        })
++        .unwrap();
++        assert_eq!(result, expected);
++    }
++
++    #[test]
++    #[ignore = "requires actual root-owned fixtures; no Android activation"]
++    fn daemon_root_custody_preserves_directory_aliases_and_rejects_untrusted_inputs() {
++        assert_eq!(unsafe { libc::geteuid() }, 0);
++        let root = tempfile::tempdir().unwrap();
++        let trusted = root.path().join("trusted");
++        let child = trusted.join("cells");
++        fs::create_dir_all(&child).unwrap();
++        let path = child.join("cell.json");
++        let expected = loader_spec();
++        write_loader_spec(&path, &expected);
++        let alias = root.path().join("directory-alias");
++        std::os::unix::fs::symlink(&child, &alias).unwrap();
++        assert_eq!(
++            load_authorized_spec(1000, &alias.join("cell.json"), &trusted).unwrap(),
++            expected
++        );
++        let leaf_alias = child.join("leaf-alias.json");
++        std::os::unix::fs::symlink(&path, &leaf_alias).unwrap();
++        assert!(load_authorized_spec(1000, &leaf_alias, &trusted).is_err());
++        assert!(load_authorized_spec(1001, &path, &trusted).is_err());
++        fs::set_permissions(&path, fs::Permissions::from_mode(0o666)).unwrap();
++        assert!(load_authorized_spec(1000, &path, &trusted).is_err());
++        fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
++        let outside = root.path().join("outside.json");
++        write_loader_spec(&outside, &expected);
++        assert!(load_authorized_spec(1000, &outside, &trusted).is_err());
++        let file = fs::File::open(&path).unwrap();
++        assert_eq!(unsafe { libc::fchown(file.as_raw_fd(), 1000, 1000) }, 0);
++        assert_eq!(file.metadata().unwrap().uid(), 1000);
++        assert!(load_authorized_spec(1000, &path, &trusted).is_err());
++    }
+ 
+     #[test]
+     fn install_transport_delivers_open_file_and_preserves_android_failure() {
+diff --git a/runtime/droidloom-supervisor/src/development.rs b/runtime/droidloom-supervisor/src/development.rs
+--- a/runtime/droidloom-supervisor/src/development.rs
++++ b/runtime/droidloom-supervisor/src/development.rs
+@@ -25,6 +25,7 @@
+ use thiserror::Error;
+ 
+ use crate::development_network::DevelopmentNetwork;
++use crate::sealed_spec::SealedCellSpec;
+ use crate::{AndroidFileOverride, AndroidImageLayout, CellSpec, SpecError};
+ 
+ #[path = "development_overrides.rs"]
+@@ -469,7 +470,7 @@
+ /// Start a development cell and return its exact lifecycle handle.
+ ///
+ /// `entry_executable` must expose the supervisor's private
+-/// `development-enter --spec ...` command. Separating it from the caller lets
++/// `development-enter --sealed-spec ...` command. Separating it from the caller lets
+ /// `droidloomd` own the cell while keeping namespace entry in the small
+ /// supervisor executable.
+ ///
+@@ -477,11 +478,18 @@
+ ///
+ /// Fails on invalid inputs or any host setup/spawn operation.
+ pub fn start_development_cell(
+-    spec_path: &Path,
++    _spec_path: &Path,
+     spec: &CellSpec,
+     entry_executable: &Path,
+ ) -> Result<DevelopmentCell, DevelopmentError> {
+     validate_development_inputs(spec)?;
++    // Freeze the already admitted value before any host setup. The launcher
++    // never hands the original, replaceable pathname to a second reader.
++    let sealed = SealedCellSpec::new(spec)
++        .map_err(|error| DevelopmentError::InvalidInput(error.to_string()))?;
++    let binding = sealed
++        .argument()
++        .map_err(|error| DevelopmentError::InvalidInput(error.to_string()))?;
+     prepare_host_directories(spec)?;
+     let mut network = match DevelopmentNetwork::create(spec) {
+         Ok(network) => network,
+@@ -491,7 +499,9 @@
+         }
+     };
+     let child_result =
+-        development_namespace_command(network.namespace(), spec_path, entry_executable).spawn();
++        development_namespace_command(network.namespace(), &sealed, &binding, entry_executable)
++            .spawn();
++    drop(sealed);
+     match child_result {
+         Ok(mut child) => {
+             let init = match OwnedNamespaceChild::capture(&mut child, Duration::from_secs(5)) {
+@@ -530,7 +540,8 @@
+ 
+ fn development_namespace_command(
+     namespace: &str,
+-    spec_path: &Path,
++    sealed: &SealedCellSpec,
++    binding: &str,
+     entry_executable: &Path,
+ ) -> Command {
+     let mut command = droidloom_cpu_placement::command("ip");
+@@ -540,14 +551,15 @@
+         .args([
+             entry_executable.as_os_str(),
+             OsStr::new("development-enter"),
+-            OsStr::new("--spec"),
+-            spec_path.as_os_str(),
++            OsStr::new("--sealed-spec"),
++            OsStr::new(binding),
+         ]);
+     arm_development_parent_death(&mut command);
++    sealed.arm_child_inheritance(&mut command);
+     command
+ }
+ 
+-fn arm_development_parent_death(command: &mut Command) {
++pub(crate) fn arm_development_parent_death(command: &mut Command) {
+     let parent_pid = unsafe { libc::getpid() };
+     // Unexpected daemon death must not send a signal that unshare ignores.
+     // Normal stop uses the held init pidfd; this KILL guard is armed before
+@@ -2567,9 +2579,15 @@
+ 
+     #[test]
+     fn namespace_owner_argv_supports_installed_unshare_and_private_cgroup() {
++        let directory = tempfile::tempdir().unwrap();
++        let (mut spec, _listener) = inspect_fixture(directory.path());
++        spec.render_node = "/dev/dri/renderD128".into();
++        let sealed = SealedCellSpec::new(&spec).unwrap();
++        let binding = sealed.argument().unwrap();
+         let command = development_namespace_command(
+             "droidloom-test-net",
+-            Path::new("/owned-test/cell.json"),
++            &sealed,
++            &binding,
+             Path::new("/owned-test/droidloom-supervisor"),
+         );
+         let prefix = droidloom_cpu_placement::command("ip");
+@@ -2592,8 +2610,8 @@
+                 "--propagation=private",
+                 "/owned-test/droidloom-supervisor",
+                 "development-enter",
+-                "--spec",
+-                "/owned-test/cell.json",
++                "--sealed-spec",
++                &binding,
+             ]
+             .into_iter()
+             .map(std::ffi::OsString::from),
+@@ -2993,4 +3011,195 @@
+             );
+         }
+     }
+-}
++    struct OwnedSealedNamespace {
++        child: Child,
++        init: Option<OwnedNamespaceChild>,
++    }
++
++    impl Drop for OwnedSealedNamespace {
++        fn drop(&mut self) {
++            let _ = self.child.kill();
++            let _ = self.child.wait();
++            if let Some(init) = &self.init {
++                let _ = init.retire_after_owner_reaped();
++            }
++        }
++    }
++
++    fn finish_sealed_namespace(owned: &mut OwnedSealedNamespace) -> ExitStatus {
++        let deadline = Instant::now() + Duration::from_secs(5);
++        loop {
++            if let Some(status) = owned.child.try_wait().unwrap() {
++                owned
++                    .init
++                    .as_ref()
++                    .unwrap()
++                    .retire_after_owner_reaped()
++                    .unwrap();
++                return status;
++            }
++            assert!(
++                Instant::now() < deadline,
++                "owned namespace child did not retire"
++            );
++            thread::sleep(Duration::from_millis(5));
++        }
++    }
++
++    #[test]
++    #[ignore = "private PID1 entry for the sealed wrapper compatibility control"]
++    fn sealed_wrapper_namespace_fixture() {
++        use std::io::Write;
++        use std::process::Stdio;
++        assert_eq!(unsafe { libc::geteuid() }, 0);
++        assert_eq!(unsafe { libc::getpid() }, 1);
++        assert_ne!(
++            fs::read_link("/proc/self/ns/mnt").unwrap(),
++            PathBuf::from(std::env::var_os("DROIDLOOM_SEALED_PARENT_MNT").unwrap())
++        );
++        let directory = PathBuf::from(std::env::var_os("DROIDLOOM_SEALED_WRAPPER_DIR").unwrap());
++        let probe = PathBuf::from(std::env::var_os("DROIDLOOM_SEALED_WRAPPER_PROBE").unwrap());
++        let mut release = [0u8; 1];
++        std::io::stdin().read_exact(&mut release).unwrap();
++        assert_eq!(release, [b'x']);
++        let netns = directory.join("netns");
++        fs::create_dir(&netns).unwrap();
++        let target = fs::symlink_metadata("/run/netns").unwrap();
++        assert!(target.is_dir() && !target.file_type().is_symlink());
++        // The outer unshare already made all propagation private. This bind
++        // gives iproute2 an exclusively owned named-namespace registry.
++        assert!(
++            Command::new("mount")
++                .arg("--bind")
++                .arg(&netns)
++                .arg("/run/netns")
++                .status()
++                .unwrap()
++                .success()
++        );
++        let name = "droidloom-sealed-fixture";
++        assert!(
++            Command::new("ip")
++                .args(["netns", "add", name])
++                .status()
++                .unwrap()
++                .success()
++        );
++        let (mut spec, _listener) = inspect_fixture(&directory.join("inputs"));
++        spec.render_node = "/dev/dri/renderD128".into();
++        let source_path = directory.join("selected.json");
++        fs::write(&source_path, serde_json::to_vec(&spec).unwrap()).unwrap();
++        let sealed = SealedCellSpec::new(&crate::load_cell_spec(&source_path).unwrap()).unwrap();
++        let binding = sealed.argument().unwrap();
++        let value: serde_json::Value = serde_json::from_str(&binding).unwrap();
++        let descriptor = value["fd"].as_i64().unwrap();
++        spec.render_node = "/dev/dri/renderD129".into();
++        fs::write(&source_path, serde_json::to_vec(&spec).unwrap()).unwrap();
++        let proof = directory.join("entry-proof");
++        // Use the actual production command constructor, including its
++        // affinity, PDEATHSIG and child-only sealed-FD hooks.
++        let mut command = development_namespace_command(name, &sealed, &binding, &probe);
++        command
++            .env("DROIDLOOM_SEALED_PROBE_FD", descriptor.to_string())
++            .env("DROIDLOOM_SEALED_PROBE_PROOF", &proof)
++            .stdin(Stdio::piped());
++        let child = command.spawn().unwrap();
++        let mut owned = OwnedSealedNamespace { child, init: None };
++        owned.init =
++            Some(OwnedNamespaceChild::capture(&mut owned.child, Duration::from_secs(3)).unwrap());
++        let deadline = Instant::now() + Duration::from_secs(3);
++        while !proof.exists() {
++            assert!(
++                owned.child.try_wait().unwrap().is_none(),
++                "sealed probe exited before proof"
++            );
++            assert!(Instant::now() < deadline, "sealed probe proof timed out");
++            thread::sleep(Duration::from_millis(5));
++        }
++        assert_eq!(
++            fs::read(&proof).unwrap(),
++            b"SEALED_WRAPPER_CONSUMED;original_renderD128;original_fd_closed\n"
++        );
++        owned.child.stdin.as_mut().unwrap().write_all(b"x").unwrap();
++        assert!(finish_sealed_namespace(&mut owned).success());
++        // The parent-side slot stayed private while ip and unshare inherited
++        // their child-side copy.
++        let parent_flags = unsafe { libc::fcntl(descriptor as i32, libc::F_GETFD) };
++        assert!(parent_flags >= 0 && parent_flags & libc::FD_CLOEXEC != 0);
++        assert!(
++            Command::new("ip")
++                .args(["netns", "delete", name])
++                .status()
++                .unwrap()
++                .success()
++        );
++        assert!(fs::read_dir(&netns).unwrap().next().is_none());
++        assert!(
++            Command::new("umount")
++                .arg("/run/netns")
++                .status()
++                .unwrap()
++                .success()
++        );
++        fs::write(
++            directory.join("wrapper-retired"),
++            b"owned_wrapper_reaped;owned_init_pidfd_exited;private_netns_removed\n",
++        )
++        .unwrap();
++    }
++
++    #[test]
++    #[ignore = "requires root and owned private namespaces; consumes input without Android"]
++    fn sealed_root_real_namespace_wrapper_chain_consumes_and_retires() {
++        use std::io::Write;
++        use std::process::Stdio;
++        assert_eq!(unsafe { libc::geteuid() }, 0);
++        let probe = PathBuf::from(
++            std::env::var_os("DROIDLOOM_SEALED_WRAPPER_PROBE")
++                .expect("compile the pinned sealed-entry-probe.rs fixture first"),
++        );
++        assert!(probe.is_file());
++        let directory = tempfile::tempdir().unwrap();
++        let names = ["mnt", "net", "pid", "ipc", "uts", "cgroup"];
++        let before: Vec<_> = names
++            .iter()
++            .map(|name| fs::read_link(format!("/proc/self/ns/{name}")).unwrap())
++            .collect();
++        let mut command = Command::new("unshare");
++        command
++            .args(DEVELOPMENT_UNSHARE_ARGUMENTS)
++            .arg("--net")
++            .arg(std::env::current_exe().unwrap())
++            .args([
++                "--exact",
++                "development::tests::sealed_wrapper_namespace_fixture",
++                "--ignored",
++                "--nocapture",
++                "--test-threads=1",
++            ])
++            .env("DROIDLOOM_SEALED_WRAPPER_DIR", directory.path())
++            .env("DROIDLOOM_SEALED_WRAPPER_PROBE", &probe)
++            .env("DROIDLOOM_SEALED_PARENT_MNT", &before[0])
++            .stdin(Stdio::piped());
++        arm_development_parent_death(&mut command);
++        let child = command.spawn().unwrap();
++        let mut owned = OwnedSealedNamespace { child, init: None };
++        owned.init =
++            Some(OwnedNamespaceChild::capture(&mut owned.child, Duration::from_secs(3)).unwrap());
++        owned.child.stdin.as_mut().unwrap().write_all(b"x").unwrap();
++        assert!(finish_sealed_namespace(&mut owned).success());
++        assert_eq!(
++            fs::read(directory.path().join("wrapper-retired")).unwrap(),
++            b"owned_wrapper_reaped;owned_init_pidfd_exited;private_netns_removed\n"
++        );
++        for (name, expected) in names.iter().zip(before) {
++            assert_eq!(
++                fs::read_link(format!("/proc/self/ns/{name}")).unwrap(),
++                expected
++            );
++        }
++        println!(
++            "sealed wrapper: actual ip -> unshare -> entry consumed; both owned owners reaped and init pidfds exited; parent namespaces unchanged; Android not started"
++        );
++    }
++}
+diff --git a/runtime/droidloom-supervisor/src/sealed_spec.rs b/runtime/droidloom-supervisor/src/sealed_spec.rs
+new file mode 100644
+--- /dev/null
++++ b/runtime/droidloom-supervisor/src/sealed_spec.rs
+@@ -0,0 +1,656 @@
++//! Immutable configuration handoff for the private development namespace entry.
++//!
++//! This protocol freezes an already authorized CellSpec. It creates no Android
++//! namespace, ID mapping, mount, account, or production runtime authority.
++
++use std::fs::{File, Permissions};
++use std::io::{self, Write};
++use std::os::fd::{AsRawFd, FromRawFd, RawFd};
++use std::os::unix::fs::{FileExt, MetadataExt, PermissionsExt};
++use std::os::unix::process::CommandExt;
++use std::process::Command;
++
++use serde::{Deserialize, Serialize};
++use sha2::{Digest, Sha256};
++
++use crate::{CellSpec, CellSpecReadError, MAX_CELL_SPEC_BYTES};
++
++const REQUIRED_SEALS: i32 =
++    libc::F_SEAL_WRITE | libc::F_SEAL_GROW | libc::F_SEAL_SHRINK | libc::F_SEAL_SEAL;
++const MAX_BINDING_BYTES: usize = 1024;
++
++#[derive(Debug, Clone, Serialize, Deserialize)]
++#[serde(deny_unknown_fields)]
++struct Binding {
++    version: u32,
++    fd: RawFd,
++    device: u64,
++    inode: u64,
++    bytes: u64,
++    sha256: String,
++}
++
++/// Own the only parent-side handle until the namespace launcher has spawned.
++pub(crate) struct SealedCellSpec {
++    file: File,
++    binding: Binding,
++}
++
++fn invalid(message: impl Into<String>) -> CellSpecReadError {
++    CellSpecReadError::Invalid(message.into())
++}
++
++fn fd_value(fd: RawFd, operation: i32) -> io::Result<i32> {
++    // SAFETY: fcntl queries operate on a numeric descriptor, return errors for
++    // invalid descriptors, and do not take a variadic pointer argument.
++    let value = unsafe { libc::fcntl(fd, operation) };
++    if value < 0 {
++        Err(io::Error::last_os_error())
++    } else {
++        Ok(value)
++    }
++}
++
++impl SealedCellSpec {
++    pub(crate) fn new(spec: &CellSpec) -> Result<Self, CellSpecReadError> {
++        spec.validate()
++            .map_err(|error| invalid(error.to_string()))?;
++        let bytes = serde_json::to_vec(spec)?;
++        if bytes.len() as u64 > MAX_CELL_SPEC_BYTES {
++            return Err(invalid("serialized cell specification exceeds maximum"));
++        }
++        // SAFETY: the C string is static and terminated. These flags create a
++        // new anonymous file with CLOEXEC and explicit seal support.
++        let fd = unsafe {
++            libc::memfd_create(
++                c"droidloom-cell-spec-v1".as_ptr(),
++                libc::MFD_CLOEXEC | libc::MFD_ALLOW_SEALING,
++            )
++        };
++        if fd < 0 {
++            return Err(io::Error::last_os_error().into());
++        }
++        // SAFETY: successful memfd_create returns a new owned descriptor.
++        let mut file = unsafe { File::from_raw_fd(fd) };
++        if file.as_raw_fd() < 3 {
++            // Reserve a non-stdio slot without ever making the parent inheritable.
++            // SAFETY: F_DUPFD_CLOEXEC duplicates this live file into a fresh slot.
++            let duplicate = unsafe { libc::fcntl(file.as_raw_fd(), libc::F_DUPFD_CLOEXEC, 3) };
++            if duplicate < 0 {
++                return Err(io::Error::last_os_error().into());
++            }
++            // SAFETY: the successful duplication returned a fresh descriptor.
++            file = unsafe { File::from_raw_fd(duplicate) };
++        }
++        file.set_permissions(Permissions::from_mode(0o600))?;
++        file.write_all(&bytes)?;
++        // SAFETY: F_ADD_SEALS takes an integer bitmask, not a pointer. WRITE
++        // must succeed; FUTURE_WRITE is not accepted as an equivalent.
++        if unsafe { libc::fcntl(file.as_raw_fd(), libc::F_ADD_SEALS, REQUIRED_SEALS) } < 0 {
++            return Err(io::Error::last_os_error().into());
++        }
++        if fd_value(file.as_raw_fd(), libc::F_GET_SEALS)? & REQUIRED_SEALS != REQUIRED_SEALS
++            || fd_value(file.as_raw_fd(), libc::F_GETFD)? & libc::FD_CLOEXEC == 0
++        {
++            return Err(invalid("sealed specification flags were not installed"));
++        }
++        let metadata = file.metadata()?;
++        let binding = Binding {
++            version: 1,
++            fd: file.as_raw_fd(),
++            device: metadata.dev(),
++            inode: metadata.ino(),
++            bytes: bytes.len() as u64,
++            sha256: format!("{:x}", Sha256::digest(&bytes)),
++        };
++        Ok(Self { file, binding })
++    }
++
++    pub(crate) fn argument(&self) -> Result<String, CellSpecReadError> {
++        Ok(serde_json::to_string(&self.binding)?)
++    }
++
++    pub(crate) fn arm_child_inheritance(&self, command: &mut Command) {
++        let fd = self.file.as_raw_fd();
++        let device = self.binding.device;
++        let inode = self.binding.inode;
++        let bytes = self.binding.bytes;
++        // SAFETY: this hook runs after fork and only makes async-signal-safe
++        // fcntl/fstat calls using stack values. The caller retains this File
++        // through spawn. pre_exec appends to existing ownership/PDEATHSIG hooks.
++        unsafe {
++            command.pre_exec(move || {
++                let flags = libc::fcntl(fd, libc::F_GETFD);
++                let seals = libc::fcntl(fd, libc::F_GET_SEALS);
++                let mut metadata = std::mem::MaybeUninit::<libc::stat>::uninit();
++                if flags < 0
++                    || flags & libc::FD_CLOEXEC == 0
++                    || seals < 0
++                    || seals & REQUIRED_SEALS != REQUIRED_SEALS
++                    || libc::fstat(fd, metadata.as_mut_ptr()) != 0
++                {
++                    return Err(io::Error::from_raw_os_error(libc::EINVAL));
++                }
++                let metadata = metadata.assume_init();
++                if metadata.st_dev != device
++                    || metadata.st_ino != inode
++                    || metadata.st_size < 0
++                    || metadata.st_size as u64 != bytes
++                {
++                    return Err(io::Error::from_raw_os_error(libc::EINVAL));
++                }
++                // This is the child's private descriptor table. The parent
++                // retains CLOEXEC throughout this operation.
++                if libc::fcntl(fd, libc::F_SETFD, flags & !libc::FD_CLOEXEC) < 0 {
++                    return Err(io::Error::last_os_error());
++                }
++                Ok(())
++            });
++        }
++    }
++}
++
++/// Consume the sealed descriptor inherited by the root-only private entry.
++///
++/// This is a process-bootstrap operation for development-enter. Successful
++/// consumption closes the descriptor named by the binding before Android init
++/// or its construction helpers can inherit it. The token does not itself grant
++/// authority: the receiving process must already have effective UID zero.
++///
++/// # Safety
++///
++/// The original inherited slot must be exclusively transferred to this
++/// bootstrap: it has no Rust owner and no other thread or handler may close,
++/// replace, or adopt that slot until this call finishes.
++/// On success ownership of that slot is consumed; on error it is unchanged.
++pub unsafe fn consume_inherited_spec(encoded: &str) -> Result<CellSpec, CellSpecReadError> {
++    // SAFETY: geteuid is a read-only, argument-free credential query.
++    if unsafe { libc::geteuid() } != 0 {
++        return Err(invalid(
++            "sealed cell specifications require a root namespace entry",
++        ));
++    }
++    if encoded.len() > MAX_BINDING_BYTES {
++        return Err(invalid("sealed specification binding exceeds maximum"));
++    }
++    let binding: Binding = serde_json::from_str(encoded)?;
++    if binding.version != 1
++        || binding.fd < 3
++        || binding.bytes == 0
++        || binding.bytes > MAX_CELL_SPEC_BYTES
++        || binding.sha256.len() != 64
++        || !binding
++            .sha256
++            .bytes()
++            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
++    {
++        return Err(invalid("invalid sealed specification binding"));
++    }
++    if fd_value(binding.fd, libc::F_GETFD)? & libc::FD_CLOEXEC != 0 {
++        return Err(invalid(
++            "sealed specification descriptor was not inherited for exec",
++        ));
++    }
++    // SAFETY: duplication creates an independent owned CLOEXEC descriptor.
++    // Failure does not close or change the caller-selected original.
++    let duplicate = unsafe { libc::fcntl(binding.fd, libc::F_DUPFD_CLOEXEC, 3) };
++    if duplicate < 0 {
++        return Err(io::Error::last_os_error().into());
++    }
++    // SAFETY: successful fcntl returned a new owned descriptor.
++    let file = unsafe { File::from_raw_fd(duplicate) };
++    let before = file.metadata()?;
++    if !before.is_file()
++        || before.uid() != 0
++        || before.mode() & 0o7777 != 0o600
++        || (before.dev(), before.ino(), before.len())
++            != (binding.device, binding.inode, binding.bytes)
++        || fd_value(file.as_raw_fd(), libc::F_GET_SEALS)? & REQUIRED_SEALS != REQUIRED_SEALS
++        || fd_value(file.as_raw_fd(), libc::F_GETFD)? & libc::FD_CLOEXEC == 0
++    {
++        return Err(invalid(
++            "inherited specification descriptor identity or seals differ",
++        ));
++    }
++    // pread never consumes the offset shared with the parent/launcher. All
++    // buffers and offsets are bounded even if the declared length is hostile.
++    let mut bytes = Vec::with_capacity(binding.bytes as usize + 1);
++    let mut buffer = [0u8; 8192];
++    loop {
++        let remaining = binding.bytes as usize + 1 - bytes.len();
++        if remaining == 0 {
++            break;
++        }
++        let width = remaining.min(buffer.len());
++        let count = file.read_at(&mut buffer[..width], bytes.len() as u64)?;
++        if count == 0 {
++            break;
++        }
++        bytes.extend_from_slice(&buffer[..count]);
++    }
++    if bytes.len() as u64 != binding.bytes
++        || format!("{:x}", Sha256::digest(&bytes)) != binding.sha256
++        || !crate::same_spec_metadata(&before, &file.metadata()?)
++    {
++        return Err(invalid(
++            "inherited specification content differs from its binding",
++        ));
++    }
++    let spec = crate::read_cell_spec(bytes.as_slice())?;
++    spec.validate()
++        .map_err(|error| invalid(error.to_string()))?;
++    // Recheck the named inherited slot before consuming it. This bootstrap
++    // receiver exclusively owns this slot; the separately owned duplicate remains live.
++    // SAFETY: fstat writes one initialized stat object for the original FD.
++    let mut original = std::mem::MaybeUninit::<libc::stat>::uninit();
++    if unsafe { libc::fstat(binding.fd, original.as_mut_ptr()) } != 0 {
++        return Err(io::Error::last_os_error().into());
++    }
++    // SAFETY: successful fstat initialized the complete object.
++    let original = unsafe { original.assume_init() };
++    if original.st_dev != before.dev() || original.st_ino != before.ino() {
++        return Err(invalid(
++            "inherited specification slot changed before consumption",
++        ));
++    }
++    // SAFETY: this private-entry protocol transfers ownership of the verified
++    // inherited slot to the bootstrap receiver. No Rust File owns that slot in
++    // this freshly exec'd process. Its duplicate is separately owned above.
++    drop(unsafe { File::from_raw_fd(binding.fd) });
++    Ok(spec)
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use std::io::{BufRead, BufReader, Read};
++    use std::os::unix::process::ExitStatusExt;
++    use std::process::{Child, Output, Stdio};
++    use std::time::{Duration, Instant};
++
++    fn spec() -> CellSpec {
++        serde_json::from_value(serde_json::json!({
++            "host_uid": 1000,
++            "subordinate_uids": {"start": 200000, "count": 100000},
++            "subordinate_gids": {"start": 300000, "count": 100000},
++            "image_dir": "/usr/lib/droidloom/images/base",
++            "vendor_image": "/usr/lib/droidloom/images/vendor.img",
++            "data_dir": "/var/lib/droidloom/cells/u1000",
++            "runtime_dir": "/run/droidloom/cells/u1000",
++            "render_node": "/dev/dri/renderD128",
++            "denial_socket": "/run/user/1000/denial/native-bridge.sock"
++        }))
++        .unwrap()
++    }
++
++    fn child_command(binding: &str, mode: &str) -> Command {
++        let mut command = Command::new(std::env::current_exe().unwrap());
++        command.args([
++            "--exact",
++            "sealed_spec::tests::inherited_child_probe",
++            "--ignored",
++            "--nocapture",
++            "--test-threads=1",
++        ]);
++        command.env("DROIDLOOM_SEALED_TEST_BINDING", binding);
++        command.env("DROIDLOOM_SEALED_TEST_MODE", mode);
++        command
++            .stdin(Stdio::piped())
++            .stdout(Stdio::piped())
++            .stderr(Stdio::piped());
++        crate::development::arm_development_parent_death(&mut command);
++        command
++    }
++
++    fn arm_checked_inheritance(sealed: &SealedCellSpec, command: &mut Command) {
++        sealed.arm_child_inheritance(command);
++        let fd = sealed.file.as_raw_fd();
++        // SAFETY: the appended hook only queries kernel state. It also proves
++        // that the preceding ownership and FD hooks both remain installed.
++        unsafe {
++            command.pre_exec(move || {
++                let mut signal: libc::c_int = 0;
++                if libc::prctl(libc::PR_GET_PDEATHSIG, &mut signal as *mut libc::c_int) != 0
++                    || signal != libc::SIGKILL
++                    || libc::fcntl(fd, libc::F_GETFD) & libc::FD_CLOEXEC != 0
++                {
++                    return Err(io::Error::from_raw_os_error(libc::EINVAL));
++                }
++                Ok(())
++            });
++        }
++    }
++
++    fn wait_bounded(child: &mut Child) -> std::process::ExitStatus {
++        let deadline = Instant::now() + Duration::from_secs(3);
++        loop {
++            if let Some(status) = child.try_wait().unwrap() {
++                return status;
++            }
++            if Instant::now() >= deadline {
++                let kill = child.kill();
++                let reap = child.wait();
++                panic!("owned child exceeded deadline; kill={kill:?}; reap={reap:?}");
++            }
++            std::thread::sleep(Duration::from_millis(5));
++        }
++    }
++
++    struct ReapChild(Option<Child>);
++
++    impl Drop for ReapChild {
++        fn drop(&mut self) {
++            if let Some(child) = self.0.as_mut() {
++                let _ = child.kill();
++                let _ = child.wait();
++            }
++        }
++    }
++
++    fn output_bounded(child: Child) -> Output {
++        let mut owned = ReapChild(Some(child));
++        let child = owned.0.as_mut().unwrap();
++        let status = wait_bounded(child);
++        let mut stdout = Vec::new();
++        let mut stderr = Vec::new();
++        child
++            .stdout
++            .take()
++            .unwrap()
++            .read_to_end(&mut stdout)
++            .unwrap();
++        child
++            .stderr
++            .take()
++            .unwrap()
++            .read_to_end(&mut stderr)
++            .unwrap();
++        Output {
++            status,
++            stdout,
++            stderr,
++        }
++    }
++
++    fn run_child(sealed: &SealedCellSpec, binding: &str, mode: &str) -> Output {
++        let mut command = child_command(binding, mode);
++        arm_checked_inheritance(sealed, &mut command);
++        output_bounded(command.spawn().unwrap())
++    }
++
++    #[test]
++    fn actual_memfd_has_write_seals_and_parent_cloexec() {
++        let sealed = SealedCellSpec::new(&spec()).unwrap();
++        let fd = sealed.file.as_raw_fd();
++        assert_eq!(
++            fd_value(fd, libc::F_GET_SEALS).unwrap() & REQUIRED_SEALS,
++            REQUIRED_SEALS
++        );
++        assert_ne!(fd_value(fd, libc::F_GETFD).unwrap() & libc::FD_CLOEXEC, 0);
++        assert_eq!(
++            sealed.file.write_at(b"x", 0).unwrap_err().raw_os_error(),
++            Some(libc::EPERM)
++        );
++        assert_eq!(
++            sealed
++                .file
++                .set_len(sealed.binding.bytes + 1)
++                .unwrap_err()
++                .raw_os_error(),
++            Some(libc::EPERM)
++        );
++        assert_eq!(
++            sealed.file.set_len(0).unwrap_err().raw_os_error(),
++            Some(libc::EPERM)
++        );
++        assert_eq!(sealed.file.metadata().unwrap().len(), sealed.binding.bytes);
++    }
++
++    #[test]
++    fn invalid_spec_is_rejected_before_memfd_creation() {
++        let before = std::fs::read_dir("/proc/self/fd").unwrap().count();
++        let mut invalid = spec();
++        invalid.subordinate_uids.start = u32::MAX;
++        assert!(SealedCellSpec::new(&invalid).is_err());
++        let after = std::fs::read_dir("/proc/self/fd").unwrap().count();
++        assert_eq!(before, after);
++    }
++
++    #[test]
++    fn actual_non_root_receiver_rejects_before_descriptor_access() {
++        assert_ne!(
++            unsafe { libc::geteuid() },
++            0,
++            "run this control as a real non-root user"
++        );
++        let sealed = SealedCellSpec::new(&spec()).unwrap();
++        let output = run_child(&sealed, &sealed.argument().unwrap(), "reject-nonroot");
++        assert!(output.status.success(), "{output:?}");
++        assert!(String::from_utf8_lossy(&output.stdout).contains("SEALED_NONROOT_REJECTED"));
++        assert!(sealed.file.metadata().is_ok());
++        assert_ne!(
++            fd_value(sealed.file.as_raw_fd(), libc::F_GETFD).unwrap() & libc::FD_CLOEXEC,
++            0
++        );
++    }
++
++    #[test]
++    fn released_parent_descriptor_cannot_be_inherited() {
++        let sealed = SealedCellSpec::new(&spec()).unwrap();
++        let mut command = Command::new("/bin/true");
++        sealed.arm_child_inheritance(&mut command);
++        drop(sealed);
++        assert!(
++            command.spawn().is_err(),
++            "closed/reused slot must fail before exec"
++        );
++    }
++
++    #[test]
++    #[ignore = "private exec child; invoked only by the bounded parent controls"]
++    fn inherited_child_probe() {
++        let binding = std::env::var("DROIDLOOM_SEALED_TEST_BINDING").unwrap();
++        let mode = std::env::var("DROIDLOOM_SEALED_TEST_MODE").unwrap();
++        let raw: Binding = serde_json::from_str(&binding).unwrap();
++        if mode == "reject-nonroot" {
++            assert_ne!(
++                unsafe { libc::geteuid() },
++                0,
++                "non-root control must use real non-root"
++            );
++        } else {
++            assert_eq!(
++                unsafe { libc::geteuid() },
++                0,
++                "root receiver control must use real root"
++            );
++        }
++        // SAFETY: this probe is a fresh executable. Its selected inherited
++        // slot has no Rust owner, matching the private-entry contract.
++        let result = unsafe { consume_inherited_spec(&binding) };
++        if mode == "reject-nonroot" {
++            assert!(
++                result
++                    .unwrap_err()
++                    .to_string()
++                    .contains("root namespace entry")
++            );
++            println!("SEALED_NONROOT_REJECTED");
++            return;
++        }
++        if mode == "reject" {
++            assert!(result.is_err(), "untrusted descriptor/binding was accepted");
++            println!("SEALED_REJECTED");
++            return;
++        }
++        let actual = result.unwrap();
++        assert_eq!(
++            actual,
++            spec(),
++            "path replacement or inherited offset changed the admitted bytes"
++        );
++        assert_eq!(
++            fd_value(raw.fd, libc::F_GETFD).unwrap_err().raw_os_error(),
++            Some(libc::EBADF)
++        );
++        println!("SEALED_CONSUMED");
++        io::stdout().flush().unwrap();
++        if mode == "exit-23" {
++            std::process::exit(23);
++        }
++        if mode == "wait" {
++            let mut byte = [0u8; 1];
++            let _ = io::stdin().read_exact(&mut byte);
++        }
++    }
++
++    #[test]
++    #[ignore = "requires actual root; only owned memfd and ordinary child processes"]
++    fn sealed_root_exec_uses_immutable_bytes_and_closes_child_fd() {
++        assert_eq!(unsafe { libc::geteuid() }, 0);
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join("cell.json");
++        std::fs::write(&path, serde_json::to_vec(&spec()).unwrap()).unwrap();
++        let admitted = crate::load_cell_spec(&path).unwrap();
++        let sealed = SealedCellSpec::new(&admitted).unwrap();
++        // Replace the original name after admission. Child startup must not
++        // reopen it, and pread must ignore the parent's EOF file offset.
++        let mut replacement = spec();
++        replacement.render_node = "/dev/dri/renderD129".into();
++        std::fs::write(&path, serde_json::to_vec(&replacement).unwrap()).unwrap();
++        let output = run_child(&sealed, &sealed.argument().unwrap(), "accept");
++        assert!(output.status.success(), "{output:?}");
++        assert!(String::from_utf8_lossy(&output.stdout).contains("SEALED_CONSUMED"));
++        assert_eq!(sealed.file.metadata().unwrap().uid(), 0);
++        assert_ne!(
++            fd_value(sealed.file.as_raw_fd(), libc::F_GETFD).unwrap() & libc::FD_CLOEXEC,
++            0
++        );
++        // Ordinary exec in the parent never receives this descriptor.
++        let mut command = child_command(&sealed.argument().unwrap(), "reject");
++        assert!(output_bounded(command.spawn().unwrap()).status.success());
++    }
++
++    #[test]
++    #[ignore = "requires actual root; rejects only test-owned descriptors"]
++    fn sealed_root_rejects_wrong_binding_unsealed_and_non_root_owned_files() {
++        assert_eq!(unsafe { libc::geteuid() }, 0);
++        let sealed = SealedCellSpec::new(&spec()).unwrap();
++        for kind in ["inode", "digest", "length", "version", "stdio"] {
++            let mut binding = sealed.binding.clone();
++            match kind {
++                "inode" => binding.inode ^= 1,
++                "digest" => binding.sha256 = "0".repeat(64),
++                "length" => binding.bytes += 1,
++                "version" => binding.version = 2,
++                "stdio" => binding.fd = 0,
++                _ => unreachable!(),
++            }
++            let output = run_child(&sealed, &serde_json::to_string(&binding).unwrap(), "reject");
++            assert!(output.status.success(), "{kind}: {output:?}");
++        }
++        // Root can create this negative fixture, but the receiver must see
++        // its actual non-root ownership rather than a test-injected UID.
++        let non_root = SealedCellSpec::new(&spec()).unwrap();
++        assert_eq!(
++            unsafe { libc::fchown(non_root.file.as_raw_fd(), 1000, 1000) },
++            0
++        );
++        assert_eq!(non_root.file.metadata().unwrap().uid(), 1000);
++        let output = run_child(&non_root, &non_root.argument().unwrap(), "reject");
++        assert!(output.status.success(), "{output:?}");
++
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join("ordinary.json");
++        std::fs::write(&path, serde_json::to_vec(&spec()).unwrap()).unwrap();
++        let file = File::open(&path).unwrap();
++        let metadata = file.metadata().unwrap();
++        let binding = Binding {
++            version: 1,
++            fd: file.as_raw_fd(),
++            device: metadata.dev(),
++            inode: metadata.ino(),
++            bytes: metadata.len(),
++            sha256: format!("{:x}", Sha256::digest(std::fs::read(&path).unwrap())),
++        };
++        let mut command = child_command(&serde_json::to_string(&binding).unwrap(), "reject");
++        let fd = file.as_raw_fd();
++        // SAFETY: negative control deliberately inherits only this owned file.
++        unsafe {
++            command.pre_exec(move || {
++                if libc::fcntl(fd, libc::F_SETFD, 0) < 0 {
++                    return Err(io::Error::last_os_error());
++                }
++                Ok(())
++            });
++        }
++        let output = output_bounded(command.spawn().unwrap());
++        assert!(output.status.success(), "{output:?}");
++        assert!(file.metadata().is_ok());
++    }
++
++    #[test]
++    #[ignore = "requires actual root; reaps its owned abnormal child"]
++    fn sealed_root_abnormal_child_exit_keeps_parent_descriptor_private() {
++        assert_eq!(unsafe { libc::geteuid() }, 0);
++        let sealed = SealedCellSpec::new(&spec()).unwrap();
++        let output = run_child(&sealed, &sealed.argument().unwrap(), "exit-23");
++        assert_eq!(output.status.code(), Some(23));
++        assert!(String::from_utf8_lossy(&output.stdout).contains("SEALED_CONSUMED"));
++        assert_ne!(
++            fd_value(sealed.file.as_raw_fd(), libc::F_GETFD).unwrap() & libc::FD_CLOEXEC,
++            0
++        );
++        assert!(sealed.file.metadata().is_ok());
++    }
++
++    #[test]
++    #[ignore = "requires actual root; checks actual creator death and reaps its child"]
++    fn sealed_root_creator_death_kills_and_reaps_inherited_child() {
++        assert_eq!(unsafe { libc::geteuid() }, 0);
++        let worker = std::thread::spawn(|| {
++            let sealed = SealedCellSpec::new(&spec()).unwrap();
++            let mut command = child_command(&sealed.argument().unwrap(), "wait");
++            arm_checked_inheritance(&sealed, &mut command);
++            let mut owned = ReapChild(Some(command.spawn().unwrap()));
++            let child = owned.0.as_mut().unwrap();
++            let stdout = child.stdout.take().unwrap();
++            let mut reader = BufReader::new(stdout);
++            let deadline = Instant::now() + Duration::from_secs(3);
++            loop {
++                let mut descriptor = libc::pollfd {
++                    fd: reader.get_ref().as_raw_fd(),
++                    events: libc::POLLIN,
++                    revents: 0,
++                };
++                let ready = if reader.buffer().is_empty() {
++                    unsafe { libc::poll(&mut descriptor, 1, 100) }
++                } else {
++                    1
++                };
++                if ready > 0 {
++                    let mut line = String::new();
++                    if reader.read_line(&mut line).unwrap() == 0 {
++                        let status = wait_bounded(child);
++                        panic!("child exited before ready: {status}");
++                    }
++                    if line.contains("SEALED_CONSUMED") {
++                        break;
++                    }
++                }
++                if Instant::now() >= deadline {
++                    let kill = child.kill();
++                    let reap = child.wait();
++                    panic!("child did not become ready: kill={kill:?}; reap={reap:?}");
++                }
++            }
++            // Linux ties PDEATHSIG to the creating thread. Returning this
++            // exact Child to the joining test lets that thread disappear while
++            // the test still owns and positively reaps the resulting process.
++            owned.0.take().unwrap()
++        });
++        let mut child = worker.join().unwrap();
++        let status = wait_bounded(&mut child);
++        assert_eq!(status.signal(), Some(libc::SIGKILL));
++    }
++}
+diff --git a/docs/contracts/runtime-layout-v1.md b/docs/contracts/runtime-layout-v1.md
+--- a/docs/contracts/runtime-layout-v1.md
++++ b/docs/contracts/runtime-layout-v1.md
+@@ -17,6 +17,41 @@
+ missing-input errors are failures; successful inspection does not prove boot,
+ complete filesystem integrity or isolation. `development-validate`,
+ `development-run`, and the private namespace entry still require root.
++
++## Specification admission and immutable development handoff
++
++CLI and daemon readers open one specification descriptor with O_NONBLOCK,
++require a regular file by fstat, and read at most 1 MiB plus one rejection byte.
++Metadata and byte limits are both checked; the reader also rejects a file whose
++ownership, mode, size or modification metadata changes while held. Ordinary
++CLI symlinks remain supported. This does not promise a deadline for stalled
++remote filesystems or freeze the images named by the specification.
++
++Non-root daemon peers retain the root-owned, non-group/other-writable file
++policy inside the configured specification directory. The daemon walks held
++directory descriptors without following replacement components and checks the
++same file descriptor it reads. A canonical parent-directory alias is accepted;
++a symlink specification leaf is refused. Peer-UID authorization and CellSpec
++validation still precede activation.
++
++The development parent serializes the admitted CellSpec into a CLOEXEC memfd
++and installs F_SEAL_WRITE, F_SEAL_GROW, F_SEAL_SHRINK and F_SEAL_SEAL before host
++setup. The private entry accepts --sealed-spec with a version-1 JSON binding:
++fd number, device, inode, exact byte length and SHA-256. Only the spawned child's
++pre-exec descriptor table becomes inheritable; the multithreaded daemon keeps
++CLOEXEC set. This hook appends to the existing parent-death/ownership hooks.
++
++A real root entry verifies the inherited descriptor, owner, mode, all seals,
++length and digest, uses bounded pread independent of the inherited file offset,
++and closes the original inherited slot after successful consumption. Its
++temporary duplicate is CLOEXEC and closes before Android construction. The
++binding grants no authority to a non-root process. An explicit root caller may
++still use the private --spec pathname form, while daemon and development-run
++always use the sealed protocol. A launcher that closes or substitutes the
++descriptor fails closed.
++
++These input and handoff guarantees do not implement production UID/GID mapping,
++seccomp, resource isolation or Android/application runtime qualification.
+ 
+ ## Intended production identity
+ 
+diff --git a/runtime/droidloom-supervisor/tests/fixtures/sealed-entry-probe.rs b/runtime/droidloom-supervisor/tests/fixtures/sealed-entry-probe.rs
+new file mode 100644
+--- /dev/null
++++ b/runtime/droidloom-supervisor/tests/fixtures/sealed-entry-probe.rs
+@@ -0,0 +1,40 @@
++//! Explicit qualification probe: consumes sealed input, never enters Android.
++//! Compile against the exact reviewed droidloom-supervisor rlib with Rust 1.93.
++#![deny(unsafe_op_in_unsafe_fn)]
++
++use std::io::{Read, Write};
++use std::path::PathBuf;
++
++fn main() -> Result<(), Box<dyn std::error::Error>> {
++    let arguments: Vec<_> = std::env::args().collect();
++    if arguments.len() != 4
++        || arguments[1] != "development-enter"
++        || arguments[2] != "--sealed-spec"
++    {
++        return Err("private sealed probe arguments required".into());
++    }
++    let fd: i32 = std::env::var("DROIDLOOM_SEALED_PROBE_FD")?.parse()?;
++    // SAFETY: this fresh executable has never adopted the inherited raw slot
++    // into a Rust owner. No other thread or handler can close or replace it.
++    let spec = unsafe { droidloom_supervisor::sealed_spec::consume_inherited_spec(&arguments[3])? };
++    if spec.render_node != PathBuf::from("/dev/dri/renderD128") {
++        return Err("the original admitted configuration was substituted".into());
++    }
++    match std::fs::symlink_metadata(format!("/proc/self/fd/{fd}")) {
++        Err(error) if error.raw_os_error() == Some(2) => {}
++        _ => return Err("the original inherited descriptor was not consumed".into()),
++    }
++    let proof = std::env::var_os("DROIDLOOM_SEALED_PROBE_PROOF").ok_or("proof path required")?;
++    std::fs::write(
++        proof,
++        b"SEALED_WRAPPER_CONSUMED;original_renderD128;original_fd_closed\n",
++    )?;
++    std::io::stdout().write_all(b"SEALED_WRAPPER_CONSUMED\n")?;
++    std::io::stdout().flush()?;
++    let mut release = [0u8; 1];
++    std::io::stdin().read_exact(&mut release)?;
++    if release != [b'x'] {
++        return Err("parent release marker differs".into());
++    }
++    Ok(())
 +}

@@ -1,8 +1,8 @@
 {
-  "schema": "pocket4-identity-input-source-chain-v1",
+  "schema": "pocket4-identity-input-source-chain-v2",
   "upstream_snapshot_commit": "500dd3af851aaadb95537b68129b8bd889504951",
-  "actual_identity_source_commit": "098a58c107977c0be24e4b8311c77af1d786c9ad",
-  "scope": "Declared source subset; exact three-file host preimage/postimage, not a full Git commit reconstruction",
+  "actual_identity_source_commit": "b4dc3b49ce29e706efca0ba5a7c775864d9b54b8",
+  "scope": "Declared source subset; exact six existing-file host preimages, two absent preimages, and eight final files; not a full Git commit reconstruction",
   "chain": [
     {
       "path": "compat/android/pocket4/closeout-20261107/build-source-repair-20261108/source-prerequisites/base-source.patch",
@@ -31,37 +31,70 @@
     },
     {
       "path": "compat/android/pocket4/production-identity-input-validation-r1/production-identity-reservation.patch",
-      "bytes": 50930,
-      "sha256": "ad5bb1455ec34ebeeea415313f69fd50b4595ada36b87751bbe2ca741a0a76e0",
+      "bytes": 53837,
+      "sha256": "4bf034b88b94fd1be3c1e11732765efc655f1f4d2c8a008b426681bcb4453be8",
       "checkpoint": "before-review"
     },
     {
       "path": "compat/android/pocket4/production-identity-input-validation-r1/identity-review-fixes.patch",
-      "bytes": 11935,
-      "sha256": "8004fda4ea36ccd5b12af30d8e21e7271602b534374b0442cd76dc502efdc359"
+      "bytes": 81576,
+      "sha256": "87291657b2dc5104594ceac28ee50ee95488874b3bf8d5d6419ce6ad46531364"
     }
   ],
   "files": [
     {
       "path": "runtime/droidloom-supervisor/src/lib.rs",
+      "after_bytes": 41328,
+      "after_sha256": "10b0220e22b7f26731e72cbabb0f491b71794b5ca99b9435499c49253d4f5184",
       "before_bytes": 35813,
-      "before_sha256": "2ffbdfabad12878deb12f069f509fdd654058ad7deeac60eae77926dee18c5a4",
-      "after_bytes": 37128,
-      "after_sha256": "84962a3a99c976614dece3c24f62dae8d0e9b20634eabca0341282e695f03e86"
-    },
-    {
-      "path": "runtime/droidloom-supervisor/src/production_identity.rs",
-      "before_bytes": 45448,
-      "before_sha256": "65d452fee1130abfb95201cfe0a92542f5b9bf2072f16a4c8807956552e07818",
-      "after_bytes": 47700,
-      "after_sha256": "6ec6007062b0014b9328d81be6a815ffb0fd61580f7518b0a6b9ac9991fdcc78"
+      "before_sha256": "2ffbdfabad12878deb12f069f509fdd654058ad7deeac60eae77926dee18c5a4"
     },
     {
       "path": "runtime/droidloom-supervisor/src/main.rs",
+      "after_bytes": 10449,
+      "after_sha256": "aae7d4d208da37eaa87a5f64c70c6dc510940c8f34543cee4ccfec9b525ecc0e",
       "before_bytes": 3837,
-      "before_sha256": "9767d6cdacb7fe673c6e95048c7e680995151dc39dad8aaee403114108bf7981",
-      "after_bytes": 9313,
-      "after_sha256": "99e7bdec92c1232e5059d7fb492b0ffc51e6631b437992bbdee29674f4a4e5aa"
+      "before_sha256": "9767d6cdacb7fe673c6e95048c7e680995151dc39dad8aaee403114108bf7981"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_identity.rs",
+      "after_bytes": 50542,
+      "after_sha256": "11f8529b42bc7fd300e6eccdb87299f06e39b54da11a6daa325cf100a3995c67",
+      "before_bytes": 48291,
+      "before_sha256": "2e9e21cc0c7d4aa60c7c43d310761006642876e33e93d14ec6eb3afad303aabb"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/control.rs",
+      "after_bytes": 81360,
+      "after_sha256": "46279b7c0b382f64d03f73e576e774152f39725aeb240050669db7cea9b2e90f",
+      "before_bytes": 71588,
+      "before_sha256": "50d7bc3abd94f83233ef7d461f93cb714f843cacb3fd5c0e929d06671a95f89b"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/development.rs",
+      "after_bytes": 124640,
+      "after_sha256": "2ef2429a74fa8c66c0f78c11056503c3ed50ce254b0345a9f8a716d6bf136ce2",
+      "before_bytes": 115701,
+      "before_sha256": "7745991017baaf8bd2e1ba6a5500465a9732c4b8356bd4edd6257a09d3ba2d95"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/sealed_spec.rs",
+      "after_bytes": 26610,
+      "after_sha256": "d3b95b594748488c1c3648e9fbae8f945003ca665e257cab86363c852aeaf842",
+      "before_absent": true
+    },
+    {
+      "path": "docs/contracts/runtime-layout-v1.md",
+      "after_bytes": 16243,
+      "after_sha256": "50c5472d1efe3f309d426ea01fdb6937cafdb59be18522ef032a8e14ab725c5d",
+      "before_bytes": 14111,
+      "before_sha256": "f737014cf45be70b7a2089f37c189d2540bfcd9f9c19a2086677f8f6b39c5ce9"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/tests/fixtures/sealed-entry-probe.rs",
+      "after_bytes": 1759,
+      "after_sha256": "933569f16f7b871436ef57eb8134a335aeb12a0710eb1f4776345698859c879e",
+      "before_absent": true
     }
   ]
 }

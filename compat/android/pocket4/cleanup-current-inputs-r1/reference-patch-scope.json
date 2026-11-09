@@ -1,23 +1,51 @@
 {
-  "Linux_regression_receipt": "test-results.json",
-  "Linux_regression_status": "POCKET4_46_NORMAL_46_OPTIMIZED_PASSED",
+  "Linux_regression_status": "PASSED_54_ORDINARY_UID_29_HOST_10_PRIVATE_NORMAL_AND_OPTIMIZED",
+  "alias_path_binding": "anchored O_PATH nofollow component traversal; target metadata and mount ID; parent mount ancestry",
   "all_code_outside_live_references_unchanged": true,
   "baseline_fixture": "fixtures/executor-baseline.py",
   "baseline_sha256": "22e7e85962c52a5cf44759dd99610d16293a0f8573ee68b8b9da4c89b1c7911a",
   "deletion_authorized": false,
-  "isolated_temporary_copy_application": {
-    "exit_code": 0,
-    "live_patch_applied": false,
-    "result_sha256": "72b335c82780f67cd4e24890d772c2317e68090c37a76775b5c1a9d2092d9336",
-    "source_executed": false
-  },
-  "nsfs_followup_source_parse_verified": true,
-  "patch_applied": false,
-  "persistent_namespace_coverage_required": true,
+  "embedded_collector_factory_sha256": "d4ef8d2a262308b2ef96bbad453bac9981c6206c8379590884584e4a0f51d355",
+  "historical_helper_source_executed": false,
+  "isolated_temporary_copy_patch_applied": true,
+  "live_helper_patch_applied": false,
+  "owned_child_terminal_reporting": true,
   "prefix_sha256": "92f1f073aa2b0ca38bbc0046cac62e6af3c9a8cdeaf42b2d53808df2c7401c01",
-  "revised_helper_bytes": 38977,
-  "revised_helper_sha256": "72b335c82780f67cd4e24890d772c2317e68090c37a76775b5c1a9d2092d9336",
-  "source_executed": false,
+  "qualification": "test-results.json",
+  "qualification_receipt": {
+    "bytes": 25432,
+    "sha256": "88692d9ef6f5c86de95d12453d0e7a84b830aa1fb4e1ba03d8d8adbe38604847"
+  },
+  "revised_helper_bytes": 80261,
+  "revised_helper_sha256": "0326ccf36802e5e7cf042c4850a12caea60d7a34d69b40d1b8f9bb7c2e1b92a2",
+  "schema": "pocket4-single-function-patch-scope-v2",
+  "scope_cli_runs": [
+    {
+      "exit_code": 0,
+      "mode": "normal",
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 534,
+        "sha256": "660c11496e4ed2fbe334059032309833b76333c501e7a6142b81020c879748ae"
+      }
+    },
+    {
+      "exit_code": 0,
+      "mode": "optimized",
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 534,
+        "sha256": "660c11496e4ed2fbe334059032309833b76333c501e7a6142b81020c879748ae"
+      }
+    }
+  ],
   "suffix_sha256": "763f19ca0129817c53c1a5cf46690f76e459461b187a19465290a3683d9345b2",
+  "temporary_copy_removed": true,
   "verification_command": "python3 -I -B verify_reference_patch.py"
 }

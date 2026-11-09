@@ -19,7 +19,15 @@ def digest(path):
 def verify_files(work, files, phase):
     verified = {}
     for item in files:
-        path = work / item["path"]
+        relative = Path(item["path"])
+        if relative.is_absolute() or ".." in relative.parts:
+            raise ValueError("invalid source path: " + item["path"])
+        path = work / relative
+        if item.get(phase + "_absent") is True:
+            if path.exists() or path.is_symlink():
+                raise ValueError("source must be absent: " + item["path"])
+            verified[item["path"]] = {"absent": True}
+            continue
         if path.is_symlink() or not path.is_file():
             raise ValueError("source must be a regular file: " + item["path"])
         actual = digest(path)
@@ -68,7 +76,7 @@ def main():
         if before is None:
             raise ValueError("missing identity source preimage checkpoint")
         after = verify_files(work, manifest["files"], "after")
-    print(json.dumps({"schema": "pocket4-identity-source-replay-result-v1",
+    print(json.dumps({"schema": "pocket4-identity-source-replay-result-v2",
                       "status": "SOURCE_CHAIN_VERIFIED", "patches": len(patches),
                       "before": before, "after": after,
                       "rust_tests_executed": False, "runtime_qualified": False,

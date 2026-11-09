@@ -5,8 +5,10 @@ create actual kernel namespaces. No test imports or invokes a delete executor.
 """
 import ast
 import importlib.util
+import io
 import mmap
 import os
+import re
 from pathlib import Path
 import sys
 import tempfile
@@ -16,6 +18,14 @@ from unittest.mock import patch
 import reference_observer as revised
 
 REAL_OBSERVATION = {}
+HOST_NAMESPACE = os.readlink('/proc/self/ns/mnt')
+root_descriptor = os.open('/', os.O_PATH | os.O_DIRECTORY)
+try:
+    ROOT_MOUNT_ID = int(next(line.split(':', 1)[1] for line in
+        Path('/proc/self/fdinfo', str(root_descriptor)).read_text().splitlines()
+        if line.startswith('mnt_id:')))
+finally:
+    os.close(root_descriptor)
 
 
 def old_observer():
@@ -61,11 +71,12 @@ class ProcFixture:
         self.populate(self.process, self.pid)
         self.leader = self.add_task(self.pid)
 
-    def mount(self, source, point, mount_id=10):
+    def mount(self, source, point, mount_id=None):
+        mount_id = ROOT_MOUNT_ID if mount_id is None else mount_id
         dev = f'{os.major(self.dev)}:{os.minor(self.dev)}'
-        return f'{mount_id} 1 {dev} {escaped(source)} {escaped(point)} rw - ext4 /dev/fixture rw\n'
+        return f'{mount_id} {ROOT_MOUNT_ID} {dev} {escaped(source)} {escaped(point)} rw - ext4 /dev/fixture rw\n'
 
-    def populate(self, task, tid, namespace='mnt:[1]', mounts=None):
+    def populate(self, task, tid, namespace=HOST_NAMESPACE, mounts=None):
         (task / 'stat').write_text(stat_line(tid))
         (task / 'maps').write_text('')
         (task / 'cmdline').write_bytes(b'fixture\x00')
@@ -77,7 +88,7 @@ class ProcFixture:
         (task / 'exe').symlink_to(sys.executable)
         (task / 'root').symlink_to('/')
 
-    def add_task(self, tid=None, namespace='mnt:[1]', mounts=None):
+    def add_task(self, tid=None, namespace=HOST_NAMESPACE, mounts=None):
         tid = self.other_tid if tid is None else tid
         path = self.process / 'task' / str(tid)
         path.mkdir()
@@ -90,9 +101,64 @@ class ProcFixture:
         return f'1000-2000 r--p 00000000 {dev} {s.st_ino} {path or "/alternate/payload.bin"}\n'
 
     def observe(self, module=revised, roots=None):
+        # Model virtual mount traversal with O_PATH descriptors that still
+        # refer to real fixture inodes, and matching virtual fdinfo mount IDs.
+        # Actual namespace/mount syscalls have separate integration controls.
+        real_open, real_close, real_dup, real_path_open = os.open, os.close, os.dup, Path.open
+        descriptors = {}
         def mapped(value):
             return self.proc if str(value) == '/proc' else Path(value)
-        with patch.object(module, 'Path', mapped):
+        def mount_rows(task):
+            with real_path_open(task / 'mountinfo', 'r') as stream:
+                rows = []
+                for line in stream:
+                    fields = line.split()
+                    if len(fields) >= 6:
+                        decode = lambda v: re.sub(r'\\([0-7]{3})', lambda m: chr(int(m[1], 8)), v)
+                        rows.append((int(fields[0]), decode(fields[3]), decode(fields[4])))
+                return rows
+        def opened(path, flags, mode=0o777, *, dir_fd=None):
+            p = Path(path)
+            if dir_fd is None and p.name == 'root' and self.proc in p.parents:
+                fd = real_open(path, flags, mode)
+                descriptors[fd] = (mount_rows(p.parent), '/', ROOT_MOUNT_ID)
+                return fd
+            if dir_fd in descriptors:
+                rows, parent, mount_id = descriptors[dir_fd]
+                virtual = str(Path(parent) / str(path))
+                entries = [(mid, source) for mid, source, point in rows
+                           if point == virtual and source.startswith('/')]
+                if entries:
+                    mount_id, source = entries[-1]
+                    source = getattr(self, 'vfs_overrides', {}).get(virtual, source)
+                    fd = real_open(source, flags, mode)
+                else:
+                    fd = real_open(path, flags, mode, dir_fd=dir_fd)
+                descriptors[fd] = (rows, virtual, mount_id)
+                return fd
+            return real_open(path, flags, mode, dir_fd=dir_fd)
+        def duplicated(fd):
+            new = real_dup(fd)
+            if fd in descriptors:
+                descriptors[new] = descriptors[fd]
+            return new
+        def closed(fd):
+            descriptors.pop(fd, None)
+            return real_close(fd)
+        def path_opened(path, *args, **kwargs):
+            if path.parent == Path('/proc/self/fdinfo') and path.name.isdigit():
+                fd = int(path.name)
+                if fd in descriptors:
+                    mode = args[0] if args else kwargs.get('mode', 'r')
+                    with real_path_open(path, 'rb') as stream:
+                        raw = stream.read()
+                    mid = str(descriptors[fd][2]).encode()
+                    raw = re.sub(rb'(?m)^mnt_id:\s*[0-9]+', b'mnt_id:\t' + mid, raw)
+                    return io.BytesIO(raw) if 'b' in mode else io.StringIO(raw.decode())
+            return real_path_open(path, *args, **kwargs)
+        with patch.object(module, 'Path', mapped), patch.object(os, 'open', opened), \
+                patch.object(os, 'dup', duplicated), patch.object(os, 'close', closed), \
+                patch.object(Path, 'open', path_opened):
             return module.live_references([str(self.target)] if roots is None else roots)
 
 
@@ -147,15 +213,13 @@ class ReferenceObserverTests(unittest.TestCase):
         self.assertEqual([], result['coverage_errors'])
         self.assertTrue(any(h['kind'] == 'maps' for h in result['process_or_owner_hits']))
 
-    def test_parent_bind_alias_in_nonleader_namespace_is_detected(self):
+    def test_parent_bind_alias_without_reference_is_not_busy(self):
         view = self.f.mounts + self.f.mount(self.f.target.parent, '/bind-alias', 11)
-        self.f.add_task(namespace='mnt:[2]', mounts=view)
+        (self.f.leader / 'mountinfo').write_text(view)
         self.clear(self.f.observe(old_observer()))
         result = self.f.observe()
-        self.assertEqual([], result['coverage_errors'])
-        self.assertEqual(2, result['mount_namespaces'])
-        self.assertTrue(any(h['kind'] == 'ancestor_mount_alias' and
-                            h['tid'] == self.f.other_tid for h in result['mount_hits']))
+        self.clear(result)
+        self.assertEqual(1, result['ancestor_alias_count'])
 
     def test_escaped_parent_bind_source_resolves(self):
         parent = self.f.base / 'space parent'
@@ -166,7 +230,83 @@ class ReferenceObserverTests(unittest.TestCase):
         (self.f.leader / 'mountinfo').write_text(view)
         result = self.f.observe(roots=[str(target)])
         self.assertEqual([], result['coverage_errors'])
-        self.assertTrue(any(h['kind'] == 'ancestor_mount_alias' for h in result['mount_hits']))
+        self.assertEqual([], result['mount_hits'])
+        self.assertEqual(1, result['ancestor_alias_count'])
+
+    def test_alias_argument_is_owner_reference(self):
+        view = self.f.mounts + self.f.mount(self.f.target.parent, '/renamed-parent', 11)
+        (self.f.leader / 'mountinfo').write_text(view)
+        for value in (b'/renamed-parent/target/payload.bin',
+                      b'--input=/renamed-parent/target/payload.bin',
+                      b'/renamed-parent/irrelevant/../target/payload.bin'):
+            with self.subTest(value=value):
+                (self.f.leader / 'cmdline').write_bytes(b'fixture\0' + value + b'\0')
+                result = self.f.observe()
+                self.assertEqual([], result['coverage_errors'])
+                self.assertEqual([], result['mount_hits'])
+                self.assertTrue(any(h['kind'] == 'owner_argument_reference'
+                                    for h in result['process_or_owner_hits']))
+
+    def test_alias_deleted_maps_path_without_inventory_inode_is_busy(self):
+        view = self.f.mounts + self.f.mount(self.f.target.parent, '/renamed-parent', 11)
+        (self.f.leader / 'mountinfo').write_text(view)
+        (self.f.leader / 'maps').write_text(
+            '1000-2000 r--p 00000000 00:00 0 /renamed-parent/target/old-file (deleted)\n')
+        result = self.f.observe()
+        self.assertEqual([], result['coverage_errors'])
+        self.assertTrue(any(h['kind'] == 'maps' for h in result['process_or_owner_hits']))
+
+    def test_mountpoint_below_alias_is_busy(self):
+        view = (self.f.mounts + self.f.mount(self.f.target.parent, '/renamed-parent', 11) +
+                self.f.mount(self.f.outside, '/renamed-parent/target/nested', 12))
+        (self.f.leader / 'mountinfo').write_text(view)
+        result = self.f.observe()
+        self.assertEqual([], result['coverage_errors'])
+        self.assertTrue(any(h['kind'] == 'mount_at_or_below_target'
+                            for h in result['mount_hits']))
+
+    def test_shadowed_and_stacked_aliases_are_unknown(self):
+        base = self.f.mounts + self.f.mount(self.f.target.parent, '/renamed-parent', 11)
+        cases = [
+            (self.f.mount(self.f.outside, '/renamed-parent', 12), 'ambiguous_alias_mount'),
+            (self.f.mount(self.f.outside, '/renamed-parent/target', 12), 'shadowed_alias_mount'),
+        ]
+        for extra, code in cases:
+            with self.subTest(code=code):
+                (self.f.leader / 'mountinfo').write_text(base + extra)
+                self.unknown(self.f.observe(), code)
+
+    def test_foreign_namespace_hostroot_chroot_cannot_claim_coverage(self):
+        self.f.add_task(namespace='mnt:[22222222]')
+        result = self.f.observe()
+        self.unknown(result, 'persistent_mount_namespace_unobserved')
+        self.assertIn('mnt:[22222222]', result['uncovered_mount_namespaces'])
+        self.assertEqual(0, result['verified_namespace_witnesses'])
+
+    def test_namespace_descriptor_is_typed_and_counted_without_bind(self):
+        (self.f.leader / 'fd' / '7').symlink_to('/proc/self/ns/mnt')
+        result = self.f.observe()
+        self.clear(result)
+        self.assertEqual(1, result['namespace_fd_count'])
+        self.assertEqual(0, result['uncovered_mount_namespace_count'])
+
+    def test_alias_kernel_walk_wrong_inode_is_unknown(self):
+        view = self.f.mounts + self.f.mount(self.f.target.parent, '/renamed-parent', 11)
+        (self.f.leader / 'mountinfo').write_text(view)
+        wrong = self.f.outside / 'target'
+        wrong.mkdir()
+        self.f.vfs_overrides = {'/renamed-parent': str(self.f.outside)}
+        self.unknown(self.f.observe(), 'alias_target_identity_mismatch')
+
+    def test_alias_indices_are_cached_only_for_identical_task_views(self):
+        view = self.f.mounts + self.f.mount(self.f.target.parent, '/renamed-parent', 11)
+        (self.f.leader / 'mountinfo').write_text(view)
+        self.f.add_task(mounts=view)
+        result = self.f.observe()
+        self.clear(result)
+        self.assertEqual(1, result['ancestor_alias_count'])
+        (self.f.process / 'task' / str(self.f.other_tid) / 'mountinfo').write_text(self.f.mounts)
+        self.unknown(self.f.observe(), 'mount_view_changed')
 
     def test_mount_source_is_target_descendant(self):
         view = self.f.mounts + self.f.mount(self.f.file, '/alias-file', 11)
@@ -343,11 +483,12 @@ class ReferenceObserverTests(unittest.TestCase):
         for i, inode in enumerate(roots):
             self.f.add_task(tid=self.f.other_tid + i, namespace=f'mnt:[{inode}]')
         result = self.f.observe()
-        self.clear(result)
-        self.assertEqual('OBSERVED', result['visibility'])
+        # A foreign task with the host-root inode is not a native-root witness.
+        self.unknown(result, 'persistent_mount_namespace_unobserved')
         self.assertEqual(7, result['tasks'])
-        self.assertEqual(6, result['covered_opaque_mount_namespace_count'])
-        self.assertEqual(0, result['uncovered_mount_namespace_count'])
+        self.assertEqual(0, result['covered_opaque_mount_namespace_count'])
+        self.assertEqual(6, result['uncovered_mount_namespace_count'])
+        self.assertNotIn('invalid_mount_path', [e['error'] for e in result['coverage_errors']])
 
     def test_opaque_nsfs_mountpoint_still_vetoes_target(self):
         point = escaped(self.f.target / 'namespace-object')
@@ -435,6 +576,8 @@ class RealLinuxObservationTests(unittest.TestCase):
                 'processes': result['processes'], 'tasks': result['tasks'],
                 'coverage_errors_retained': len(result['coverage_errors']),
                 'visibility': result['visibility'], 'deletion_authorized': False,
+                'namespace_child_lifecycle': result['namespace_child_lifecycle'],
+                'existing_host_mount_namespace_unchanged': result['existing_host_mount_namespace_unchanged'],
             })
             # Other processes may be unreadable or change in this shared runner;
             # their UNKNOWN is retained, never suppressed to obtain a green run.

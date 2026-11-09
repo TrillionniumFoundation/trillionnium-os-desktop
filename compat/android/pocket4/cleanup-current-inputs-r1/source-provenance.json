@@ -31,6 +31,48 @@
       "sha256": "3085c853edbf992e1ae482d7e34ba319d61947799109757956de30f07452efb5"
     }
   ],
+  "alias_and_namespace_followup": {
+    "Android_actions": 0,
+    "app_actions": 0,
+    "base_commit": "14a6ab25f378d7255f2d2a195c045a54df1940dc",
+    "current_input_readback_generation": "historical 2026-11-09T04:10:06Z; no new CURRENT assertion",
+    "deletion_authorized": false,
+    "existing_host_mount_namespace_unchanged": true,
+    "factory_sha256": "d4ef8d2a262308b2ef96bbad453bac9981c6206c8379590884584e4a0f51d355",
+    "live_helper_patch_applied": false,
+    "owned_child_terminal_records": "test-results.json",
+    "owned_test_children_and_fixtures_created": true,
+    "private_fixture_paths_retired": true,
+    "production_artifact_deletions": 0,
+    "qualification": "PASSED_54_ORDINARY_UID_29_HOST_10_PRIVATE_NORMAL_AND_OPTIMIZED",
+    "source_pins": [
+      {
+        "bytes": 62781,
+        "path": "reference_observer.py",
+        "sha256": "311a943a3b3f2845c69ae1750eadb2e72b7058cac86c5c9ae39f18debc107aa5"
+      },
+      {
+        "bytes": 28336,
+        "path": "test_reference_observer.py",
+        "sha256": "d426fdf3f960843adec9ef9cf2adec90ce4c0e5d6eb13d59d820f35688602733"
+      },
+      {
+        "bytes": 13664,
+        "path": "verify_isolated_alias_views.py",
+        "sha256": "a681271d92327fe2a09e23883a0cb2aac120a2cc22c55fe1194aa48997be9b39"
+      },
+      {
+        "bytes": 12193,
+        "path": "verify_namespace_collector.py",
+        "sha256": "d0e95443ba1f3b8fd2216fc58915287d51f878968427b488edcbfb84fc1e3540"
+      }
+    ],
+    "test_receipt": {
+      "bytes": 25432,
+      "path": "test-results.json",
+      "sha256": "88692d9ef6f5c86de95d12453d0e7a84b830aa1fb4e1ba03d8d8adbe38604847"
+    }
+  },
   "fence": {
     "bytes": 661,
     "json": {
@@ -67,9 +109,25 @@
     "path": "/home/alex/work/pocket4-documents-flow-20261105-r12-tools-02/NEVER_EXECUTE_OR_REUSE.json",
     "sha256": "6a98cf8d82ead8506afeb1ff831d1e9fd99d1c8e112f5f750c828125dc6debe1"
   },
-  "mutation_counter_scope": "Top-level remote mutation counters describe initial source/evidence collection only; isolated test artifacts are recorded in nsfs_followup and test-results.json.",
+  "initial_read_only_collection": {
+    "private_key_or_password_body_reads": 0,
+    "remote_deletions": 0,
+    "remote_file_writes": 0,
+    "source_or_original_owner_migrations": 0
+  },
   "note": "PTY reads already observed exited/0/output_complete. Later close acknowledgments returned already_exited and are not independently used as termination evidence. Original fence owner closure remains UNKNOWN.",
-  "nsfs_followup": {
+  "observed_public_commit": "265248170ce2e18e13c090246f97f3e3d80c637b",
+  "observer_patch": {
+    "baseline_fixture": "fixtures/executor-baseline.py",
+    "baseline_fixture_policy": "Parse and patch-check only; never import or execute the historical retirement executor.",
+    "baseline_sha256": "22e7e85962c52a5cf44759dd99610d16293a0f8573ee68b8b9da4c89b1c7911a",
+    "live_patch_applied": false,
+    "module": "reference_observer.py",
+    "patch": "reference_observer.patch",
+    "scope": "only live_references function; every target, dependency and deletion guard outside that function unchanged",
+    "scope_receipt": "reference-patch-scope.json"
+  },
+  "previous_namespace_qualification": {
     "deletion_admission": false,
     "expected_controls": 46,
     "isolated_test_artifacts_created": true,
@@ -80,6 +138,8 @@
     "previous_observer_module_sha256": "fd0984a8bd9a4050029c5e0e6e8c3ed472151d5dfd7daddf2ae6fbae0ee5850e",
     "previous_public_commit": "a9d03be75dd8d6e30c67fc053f1b7ec1800ecad6",
     "qualification": "POCKET4_SOURCE_CONTROLS_46_NORMAL_46_OPTIMIZED",
+    "qualification_commit": "14a6ab25f378d7255f2d2a195c045a54df1940dc",
+    "qualification_receipt_at_commit": "compat/android/pocket4/cleanup-current-inputs-r1/test-results.json",
     "scope": "exact observed nsfs root parsing, opaque mount vetoes and persistent-namespace coverage only; exact targets and deletion policy unchanged",
     "source_pins": [
       {
@@ -92,22 +152,8 @@
         "path": "test_reference_observer.py",
         "sha256": "9063132ac66e529497dc3540982543b42892381ab1b65f34ef1cf8fcd279f3f4"
       }
-    ],
-    "test_receipt": "test-results.json"
+    ]
   },
-  "observed_public_commit": "265248170ce2e18e13c090246f97f3e3d80c637b",
-  "observer_patch": {
-    "baseline_fixture": "fixtures/executor-baseline.py",
-    "baseline_fixture_policy": "Parse and patch-check only; never import or execute the historical retirement executor.",
-    "baseline_sha256": "22e7e85962c52a5cf44759dd99610d16293a0f8573ee68b8b9da4c89b1c7911a",
-    "live_patch_applied": false,
-    "module": "reference_observer.py",
-    "patch": "reference_observer.patch",
-    "scope": "only live_references function; every target, dependency and deletion guard outside that function unchanged",
-    "scope_receipt": "reference-patch-scope.json"
-  },
-  "private_key_or_password_body_reads": 0,
-  "remote_deletions": 0,
   "remote_evidence": [
     {
       "exit_code": 0,
@@ -140,8 +186,6 @@
       "session_id": "dpty-18e645b77bb7d410-5e21-3f"
     }
   ],
-  "remote_file_writes": 0,
   "repository": "TrillionniumFoundation/trillionnium-os-desktop",
-  "schema": "pocket4-current-inputs-observer-source-provenance-v2",
-  "source_or_original_owner_migrations": 0
+  "schema": "pocket4-current-inputs-observer-source-provenance-v3"
 }

@@ -1,12 +1,15 @@
 {
+  "Android_actions": 0,
   "actual_host_readback": "live_721_readback.json",
+  "app_actions": 0,
   "deletion_authorized": false,
-  "file_count": 15,
+  "existing_host_mount_namespace_unchanged": true,
+  "file_count": 17,
   "files": [
     {
-      "bytes": 9656,
+      "bytes": 10309,
       "path": "README.md",
-      "sha256": "a1e2e5c6c0dbfb7ff03b3f484d37cd21ae4babfc6e9ab20dc69f057dea6f5427"
+      "sha256": "82276ac4f91136ffbd9fedd48fb8c2f8b3bfad47152dd761dbc808c22215eccf"
     },
     {
       "bytes": 20482,
@@ -24,24 +27,24 @@
       "sha256": "1a539217ee769a8e3c59ed55dedd6d8a5ab4d2fe09810bedcd98562972bd1c38"
     },
     {
-      "bytes": 1883,
+      "bytes": 2635,
       "path": "namespace-format-observation.json",
-      "sha256": "840a4ecdf8fb2bb0673cde82adaeeb117b701f8932ae679803b3a4601e7e9b68"
+      "sha256": "7b5d0920e7a7f55849e27acbdec0b5fbb4e10eabe8f00f2fac3b9c29be843c3d"
     },
     {
-      "bytes": 1095,
+      "bytes": 2046,
       "path": "reference-patch-scope.json",
-      "sha256": "fbd111e931bec2c0bff28ed80e0f6af3a1164ea6615a82b524f9e7f6f072f789"
+      "sha256": "8abc6eec595e13825747fb6a4d801977306b6ae95a92259ad696bfb75851c31e"
     },
     {
-      "bytes": 24228,
+      "bytes": 66274,
       "path": "reference_observer.patch",
-      "sha256": "7889bfbb373b981860ada1af631910cc2589fea2966815dbaed58c35558fea3b"
+      "sha256": "d599b32ab9a4504cb958aa14c45270f1a2da1c08931e16329cbf0a8cda1960cc"
     },
     {
-      "bytes": 21497,
+      "bytes": 62781,
       "path": "reference_observer.py",
-      "sha256": "8679a251befd1f45ff6fcac3051552a986fb1574350a3a4b73118a2ef148c795"
+      "sha256": "311a943a3b3f2845c69ae1750eadb2e72b7058cac86c5c9ae39f18debc107aa5"
     },
     {
       "bytes": 6745,
@@ -49,19 +52,19 @@
       "sha256": "00a50aa06ffe8e7601cb6c7e8a07af4452b5d8036b6f0bfb6ca6fdfd641002b2"
     },
     {
-      "bytes": 6394,
+      "bytes": 8045,
       "path": "source-provenance.json",
-      "sha256": "eaaa4b6a39c160e8fea0fc2fcd5e3140e1978034faf509d793a9fbab0a69e1ef"
+      "sha256": "4e05f8a838dec1e1ef5036273fe387ccf21113940349c833d69da7ab6ef6d4c3"
     },
     {
-      "bytes": 4005,
+      "bytes": 25432,
       "path": "test-results.json",
-      "sha256": "bb90c65292ad8b38d5a24497525b8ebbc93dff6e4cb203cceb442f2faf412571"
+      "sha256": "88692d9ef6f5c86de95d12453d0e7a84b830aa1fb4e1ba03d8d8adbe38604847"
     },
     {
-      "bytes": 20567,
+      "bytes": 28336,
       "path": "test_reference_observer.py",
-      "sha256": "9063132ac66e529497dc3540982543b42892381ab1b65f34ef1cf8fcd279f3f4"
+      "sha256": "d426fdf3f960843adec9ef9cf2adec90ce4c0e5d6eb13d59d820f35688602733"
     },
     {
       "bytes": 6585,
@@ -74,16 +77,35 @@
       "sha256": "2b4791a277dfbacc24ccc0fac93582657cb89ad2a3d16eea73f9e29706d155f9"
     },
     {
+      "bytes": 13664,
+      "path": "verify_isolated_alias_views.py",
+      "sha256": "a681271d92327fe2a09e23883a0cb2aac120a2cc22c55fe1194aa48997be9b39"
+    },
+    {
+      "bytes": 12193,
+      "path": "verify_namespace_collector.py",
+      "sha256": "d0e95443ba1f3b8fd2216fc58915287d51f878968427b488edcbfb84fc1e3540"
+    },
+    {
       "bytes": 3267,
       "path": "verify_reference_patch.py",
       "sha256": "679f593ccb9123c541b6611f1e581c7d7b5da31e9dc15628911fd4926672a838"
     }
   ],
+  "historical_current_input_readback": "2026-11-09T04:10:06Z",
+  "live_helper_patch_applied": false,
   "manifest_self_excluded": true,
+  "owned_test_children_and_fixtures_created": true,
   "patch_scope": "reference-patch-scope.json",
+  "production_artifact_deletions": 0,
   "publication_path": "compat/android/pocket4/cleanup-current-inputs-r1",
-  "remote_mutation_performed": false,
+  "qualification_groups_per_mode": {
+    "existing_host_namespaces": 29,
+    "ordinary_uid": 54,
+    "private_namespace_integration": 10
+  },
   "runtime_acceptance_claimed": false,
-  "schema": "pocket4-current-inputs-observer-capsule-files-v2",
-  "tests": "test-results.json"
+  "schema": "pocket4-current-inputs-observer-capsule-files-v3",
+  "tests": "test-results.json",
+  "total_files_including_manifest": 18
 }

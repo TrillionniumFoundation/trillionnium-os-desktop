@@ -1,114 +1,874 @@
 {
-  "authoritative_terminal": {
-    "at_unix_ms": 1794201518391,
-    "cancelled": false,
-    "exit_code": 0,
-    "job_id": "1a1bebe1f85-5e21-252",
-    "launch_nonce": "74a2fbb415f8fc16815f3be79949ec73",
-    "output_complete": true,
-    "output_durable": true,
-    "state": "succeeded",
-    "terminal_publication_confirmed": true,
-    "terminal_publication_protocol": 1,
-    "timed_out": false
+  "embedded_collector_factory": {
+    "bytes": 21812,
+    "sha256": "d4ef8d2a262308b2ef96bbad453bac9981c6206c8379590884584e4a0f51d355"
   },
-  "cpu_affinity": [
-    0
-  ],
-  "deletion_admission": false,
-  "deletions": 0,
-  "effective_uid": 1000,
+  "existing_host_namespaces": {
+    "checks": [
+      "host_native_root_real_setns",
+      "pdeathsig_configuration_read_back",
+      "duplicate_fd_reuses_owned_witness",
+      "wrong_expected_namespace",
+      "wrong_namespace_type",
+      "json_cannot_forge_witness",
+      "unregistered_object_cannot_forge_witness",
+      "wrong_owned_pid",
+      "wrong_starttime",
+      "wrong_scanner_namespace",
+      "wrong_scanner_root",
+      "wrong_root_display",
+      "changed_mount_view",
+      "missing_namespace_coverage",
+      "deadline_reserve_enforced",
+      "deadline_over_45_rejected",
+      "actual_persistent_namespace_views",
+      "fd_only_namespace_without_live_task_or_bind",
+      "complete_requested_coverage",
+      "normal_children_reaped_and_close_idempotent",
+      "retired_witness_rejected",
+      "child_exit_rejected",
+      "nonzero_retirement_rejected",
+      "partial_pipe_allocation_rejected",
+      "fork_failure_rejected",
+      "pidfd_failure_after_fork_rejected",
+      "setns_syscall_failure_rejected",
+      "parent_death_signal_or_control_eof_retires_owned_orphan",
+      "parent_namespace_and_mounts_unchanged"
+    ],
+    "ci_portable": false,
+    "expected_controls_per_mode": 29,
+    "expected_persistent_namespace_count": 6,
+    "host_mountinfo_sha256": "ff3ae14cd12563ad290a0fbb20e6abc826481c502d5c3f382b9948180b1b4d56",
+    "host_namespace": [
+      5,
+      4026531832
+    ],
+    "negative_control_note": "Deliberate child death and setup faults produce nonzero exits and must be rejected by production close; all owned children were reaped.",
+    "persistent_views": [
+      {
+        "mountinfo_bytes": 273661,
+        "mountinfo_sha256": "542922a05e59fad3e1b783b9f7a790d7f2d7c2b752c6f9a3633b12820078eba3",
+        "namespace": [
+          5,
+          4026533156
+        ],
+        "root_displayed": "/",
+        "root_identity": [
+          71,
+          1
+        ],
+        "root_mnt_id": 1157
+      },
+      {
+        "mountinfo_bytes": 282558,
+        "mountinfo_sha256": "7f6bb9401cce5c7162f86141068ecb82fae1c8ff1ebc2dcf5343ba680c6930a9",
+        "namespace": [
+          5,
+          4026533157
+        ],
+        "root_displayed": "/",
+        "root_identity": [
+          72,
+          1
+        ],
+        "root_mnt_id": 1158
+      },
+      {
+        "mountinfo_bytes": 276227,
+        "mountinfo_sha256": "dc3b2836beaae7c9ad12aeb6e15c4190271c26e4587eab6bdf4ff84ad398c60c",
+        "namespace": [
+          5,
+          4026533056
+        ],
+        "root_displayed": "/",
+        "root_identity": [
+          1048788,
+          1
+        ],
+        "root_mnt_id": 27558
+      },
+      {
+        "mountinfo_bytes": 270374,
+        "mountinfo_sha256": "dea42d252452067c2b36a813731cfd2db4ef6a9ea434965ba65f498713813dc7",
+        "namespace": [
+          5,
+          4026534726
+        ],
+        "root_displayed": "/",
+        "root_identity": [
+          2097307,
+          1
+        ],
+        "root_mnt_id": 41123
+      },
+      {
+        "mountinfo_bytes": 37529,
+        "mountinfo_sha256": "a1e1c98c99c4956f895e97c30a54717edc2760ef7ff3cfbac5734b387153f4e6",
+        "namespace": [
+          5,
+          4026533223
+        ],
+        "root_displayed": "/",
+        "root_identity": [
+          57,
+          1
+        ],
+        "root_mnt_id": 6012
+      },
+      {
+        "mountinfo_bytes": 84119,
+        "mountinfo_sha256": "53a4180e19f6e3f5322b97f6dadbdf64eafbe15f3fa7c36debfd0b72c5abe408",
+        "namespace": [
+          5,
+          4026533044
+        ],
+        "root_displayed": "/",
+        "root_identity": [
+          90,
+          1
+        ],
+        "root_mnt_id": 3849
+      }
+    ],
+    "privilege": "root with namespace capability; inspected existing Pocket4 namespace objects",
+    "runs": [
+      {
+        "controls": 29,
+        "elapsed_seconds": 1.933841,
+        "exit_code": 0,
+        "mode": "normal",
+        "no_mount_operations": true,
+        "optimized": 0,
+        "owned_child_terminals": [
+          {
+            "exit_code": 0,
+            "pid": 3751244,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026531832
+            ],
+            "pid": 3750370,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026533156
+            ],
+            "pid": 3750371,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026533157
+            ],
+            "pid": 3750491,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026533056
+            ],
+            "pid": 3750717,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026534726
+            ],
+            "pid": 3750913,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026533223
+            ],
+            "pid": 3751064,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026533044
+            ],
+            "pid": 3751145,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026533046
+            ],
+            "pid": 3751264,
+            "reaped": true
+          },
+          {
+            "exit_code": -9,
+            "namespace": [
+              5,
+              4026531832
+            ],
+            "pid": 3751456,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026531832
+            ],
+            "pid": 3751457,
+            "reaped": true
+          },
+          {
+            "exit_code": 126,
+            "namespace": [
+              5,
+              4026531832
+            ],
+            "pid": 3751458,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "pid": 3751459,
+            "reaped": true
+          },
+          {
+            "exit_code": -9,
+            "pid": 3751460,
+            "reaped": true
+          }
+        ],
+        "owned_children_created": 14,
+        "owned_children_reaped": 14,
+        "parent_death_child_exit": -9,
+        "status": "PASS",
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 3953,
+          "sha256": "0fbfc33781e3b4d4a7e5193a5a55c30da2a17f1d349534de6b9afa9c052a077b"
+        }
+      },
+      {
+        "controls": 29,
+        "elapsed_seconds": 1.824858,
+        "exit_code": 0,
+        "mode": "optimized",
+        "no_mount_operations": true,
+        "optimized": 1,
+        "owned_child_terminals": [
+          {
+            "exit_code": 0,
+            "pid": 3752591,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026531832
+            ],
+            "pid": 3751831,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026533156
+            ],
+            "pid": 3751857,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026533157
+            ],
+            "pid": 3751962,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026533056
+            ],
+            "pid": 3752086,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026534726
+            ],
+            "pid": 3752341,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026533223
+            ],
+            "pid": 3752472,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026533044
+            ],
+            "pid": 3752495,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026533046
+            ],
+            "pid": 3752593,
+            "reaped": true
+          },
+          {
+            "exit_code": -9,
+            "namespace": [
+              5,
+              4026531832
+            ],
+            "pid": 3752757,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "namespace": [
+              5,
+              4026531832
+            ],
+            "pid": 3752782,
+            "reaped": true
+          },
+          {
+            "exit_code": 126,
+            "namespace": [
+              5,
+              4026531832
+            ],
+            "pid": 3752783,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "pid": 3752784,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "pid": 3752785,
+            "reaped": true
+          }
+        ],
+        "owned_children_created": 14,
+        "owned_children_reaped": 14,
+        "parent_death_child_exit": 0,
+        "status": "PASS",
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 3951,
+          "sha256": "daa4c16ae6ab50862e70c751856d74b7d5f8bbc058a69a68c0cddeaf08158976"
+        }
+      }
+    ]
+  },
   "host": "pocket4",
-  "live_helper_patch_applied": false,
-  "note": "The actual Linux control deliberately retains unrelated permission/churn UNKNOWN results; passing regression controls do not authorize target deletion or prove whole-host visibility.",
-  "original_receipt": {
-    "bytes": 2972,
-    "path": "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/reference-observer-nsfs-r2/result.json",
-    "sha256": "1247efe38dc6f0e3c8d651266cbba1069458c9ba936ae1ad04344bf8f7a81c10"
-  },
-  "proc_fixture_namespace_cases": true,
-  "qualification": "POCKET4_SOURCE_CONTROLS_46_NORMAL_46_OPTIMIZED",
-  "runs": [
-    {
+  "ordinary_uid": {
+    "ci_portable": true,
+    "durable_process": {
+      "at_unix_ms": 1794205129147,
+      "audit_recorded": true,
+      "automatic_retry": false,
+      "cancelled": false,
       "exit_code": 0,
-      "mode": "normal",
-      "result": {
-        "actual_linux_control": {
-          "control": "actual Linux procfs with self-held FD and mmap",
-          "coverage_errors_retained": 512,
-          "deletion_authorized": false,
-          "processes": 680,
-          "self_fd_hits": 2,
-          "self_maps_hits": 1,
-          "tasks": 3530,
-          "visibility": "UNKNOWN"
+      "job_id": "1a1bef539e5-5e21-332",
+      "launch_nonce": "9a8ad5c275cbe44209460a0af854fab5",
+      "log_bytes": {
+        "stderr": {
+          "seen": 0,
+          "stored": 0
         },
-        "errors": 0,
-        "failures": 0,
-        "skipped": 0,
-        "tests": 46,
-        "unexpected_successes": 0
+        "stdout": {
+          "seen": 4320,
+          "stored": 4320
+        }
       },
-      "stderr": {
-        "bytes": 6769,
-        "sha256": "08a18945417502db781ad96abb980c88067435106d9c084a1762e22eb934fff6"
+      "log_errors": {
+        "stderr": null,
+        "stdout": null
       },
-      "stdout": {
-        "bytes": 331,
-        "sha256": "b7cff788912bb456c3b3c052bb16826d036522c67654cfdf0b1d92a3874eee01"
-      }
+      "log_synced": {
+        "stderr": true,
+        "stdout": true
+      },
+      "log_truncated": {
+        "stderr": false,
+        "stdout": false
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "terminal_publication_protocol": 1,
+      "timed_out": false
     },
-    {
-      "exit_code": 0,
-      "mode": "optimized",
-      "result": {
-        "actual_linux_control": {
-          "control": "actual Linux procfs with self-held FD and mmap",
-          "coverage_errors_retained": 512,
-          "deletion_authorized": false,
-          "processes": 682,
-          "self_fd_hits": 2,
-          "self_maps_hits": 1,
-          "tasks": 3490,
-          "visibility": "UNKNOWN"
+    "effective_uid": 1000,
+    "expected_controls_per_mode": 54,
+    "original_receipt": {
+      "bytes": 3675,
+      "sha256": "b3bde5ffc23543ff0e79cca865fcef6969e19708655dcf1cf9b691098d245a72"
+    },
+    "privilege": "ordinary Linux UID",
+    "runs": [
+      {
+        "exit_code": 0,
+        "mode": "normal",
+        "result": {
+          "actual_linux_control": {
+            "control": "actual Linux procfs with self-held FD and mmap",
+            "coverage_errors_retained": 512,
+            "deletion_authorized": false,
+            "existing_host_mount_namespace_unchanged": true,
+            "namespace_child_lifecycle": {
+              "close_succeeded": true,
+              "created": 0,
+              "nonzero_exits": 0,
+              "reaped": 0,
+              "retirement_records": 0
+            },
+            "processes": 681,
+            "self_fd_hits": 2,
+            "self_maps_hits": 1,
+            "tasks": 3476,
+            "visibility": "UNKNOWN"
+          },
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 54,
+          "unexpected_successes": 0
         },
-        "errors": 0,
-        "failures": 0,
-        "skipped": 0,
-        "tests": 46,
-        "unexpected_successes": 0
+        "stderr": {
+          "bytes": 8025,
+          "sha256": "c974a4b11e8e41e9d7f970374ae38c31ffbfb7dd9bdf82fff77944660064420d"
+        },
+        "stdout": {
+          "bytes": 508,
+          "sha256": "af4b14ee5604028569c2520e11465957eebf8d6c3d125a265e9552e1d958ae6f"
+        }
       },
-      "stderr": {
-        "bytes": 6769,
-        "sha256": "b0333537438151c4baf57ed0a3491f7e29025406e0755028214364a001bde554"
-      },
-      "stdout": {
-        "bytes": 331,
-        "sha256": "4be21209144fd27391cb45fec6b72354a7507f1b5f1875f81c2f66b7d5436e66"
+      {
+        "exit_code": 0,
+        "mode": "optimized",
+        "result": {
+          "actual_linux_control": {
+            "control": "actual Linux procfs with self-held FD and mmap",
+            "coverage_errors_retained": 512,
+            "deletion_authorized": false,
+            "existing_host_mount_namespace_unchanged": true,
+            "namespace_child_lifecycle": {
+              "close_succeeded": true,
+              "created": 0,
+              "nonzero_exits": 0,
+              "reaped": 0,
+              "retirement_records": 0
+            },
+            "processes": 680,
+            "self_fd_hits": 2,
+            "self_maps_hits": 1,
+            "tasks": 3476,
+            "visibility": "UNKNOWN"
+          },
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 54,
+          "unexpected_successes": 0
+        },
+        "stderr": {
+          "bytes": 8025,
+          "sha256": "818be35cb47cf0f5119ed82ecd1573d7ca8ee755e0094eb782d13b2de2658945"
+        },
+        "stdout": {
+          "bytes": 508,
+          "sha256": "0fbf32eef7cd69c063392a40310bb120083d15679c5886e9e4b381961b241748"
+        }
       }
-    }
-  ],
-  "schema": "pocket4-current-inputs-and-observer-tests-v1",
+    ]
+  },
+  "private_namespace_integration": {
+    "ci_portable": true,
+    "existing_host_namespace_dependencies": false,
+    "expected_controls_per_mode": 10,
+    "host_mountinfo_sha256": "ff3ae14cd12563ad290a0fbb20e6abc826481c502d5c3f382b9948180b1b4d56",
+    "privilege": "root with namespace capability; owned isolated PID/mount namespaces and existing owned fixture base",
+    "runs": [
+      {
+        "all_case_collector_close_succeeded": true,
+        "all_fixture_paths_retired_after_namespace_exit": true,
+        "cases": [
+          {
+            "case": "ancestor_alias_only",
+            "coverage_error_count": 0,
+            "mount_hits": 0,
+            "process_hits": 0,
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "actual_fd_via_alias",
+            "coverage_error_count": 0,
+            "mount_hits": 0,
+            "process_hits": 1,
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "actual_mmap_via_alias",
+            "coverage_error_count": 0,
+            "mount_hits": 0,
+            "process_hits": 2,
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "actual_cwd_via_alias",
+            "coverage_error_count": 0,
+            "mount_hits": 0,
+            "process_hits": 1,
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "argv_only_alias_path",
+            "coverage_error_count": 0,
+            "mount_hits": 0,
+            "process_hits": 1,
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "mountpoint_inside_target_via_alias",
+            "coverage_error_count": 0,
+            "mount_hits": 1,
+            "process_hits": 0,
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "target_subtree_as_bind_source",
+            "coverage_error_count": 0,
+            "mount_hits": 1,
+            "process_hits": 0,
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "shadowed_alias_wrong_inode",
+            "coverage_error_count": 2,
+            "coverage_errors": [
+              {
+                "error": "shadowed_alias_mount",
+                "pid": 1,
+                "tid": 1
+              },
+              {
+                "error": "persistent_mount_namespace_unobserved"
+              }
+            ],
+            "mount_hits": 0,
+            "process_hits": 0,
+            "visibility": "UNKNOWN"
+          },
+          {
+            "case": "fd_only_namespace_discovery_and_coverage",
+            "coverage_error_count": 0,
+            "exact_fd_only_namespace_witness_reaped": true,
+            "mount_hits": 0,
+            "namespace_child_lifecycle": {
+              "close_succeeded": true,
+              "created": 1,
+              "nonzero_exits": 0,
+              "reaped": 1,
+              "retirement_records": 1
+            },
+            "namespace_child_terminals": [
+              {
+                "exit_code": 0,
+                "namespace": [
+                  5,
+                  4026533069
+                ],
+                "pid": 4,
+                "reaped": true
+              }
+            ],
+            "namespace_fd_count": 1,
+            "process_hits": 0,
+            "retained_namespace_identity": [
+              5,
+              4026533069
+            ],
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "restored_alias_only_after_all_negative_controls",
+            "coverage_error_count": 0,
+            "mount_hits": 0,
+            "process_hits": 0,
+            "visibility": "OBSERVED"
+          }
+        ],
+        "controls": 10,
+        "elapsed_seconds": 0.457678,
+        "exit_code": 0,
+        "host_mountinfo_unchanged": true,
+        "host_namespace_unchanged": true,
+        "mode": "normal",
+        "observer_collector_children_created": 1,
+        "observer_collector_children_reaped": 1,
+        "opaque_mount_namespace_count": 0,
+        "optimized": 0,
+        "outer_exit_code": 0,
+        "outer_pid": 3751536,
+        "outer_reaped": true,
+        "owned_fixture_child_terminals": [
+          {
+            "exit_code": 0,
+            "pid": 2,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "pid": 3,
+            "reaped": true
+          }
+        ],
+        "pid1_exit_code": 0,
+        "pid1_reaped_by_outer": true,
+        "private_mount_propagation": true,
+        "private_pid_namespace": true,
+        "status": "PASS",
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 5932,
+          "sha256": "a807f848c12bb65be794593655df3ea80de02e6975ecd20b3e9de0e785b0fdb0"
+        }
+      },
+      {
+        "all_case_collector_close_succeeded": true,
+        "all_fixture_paths_retired_after_namespace_exit": true,
+        "cases": [
+          {
+            "case": "ancestor_alias_only",
+            "coverage_error_count": 0,
+            "mount_hits": 0,
+            "process_hits": 0,
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "actual_fd_via_alias",
+            "coverage_error_count": 0,
+            "mount_hits": 0,
+            "process_hits": 1,
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "actual_mmap_via_alias",
+            "coverage_error_count": 0,
+            "mount_hits": 0,
+            "process_hits": 2,
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "actual_cwd_via_alias",
+            "coverage_error_count": 0,
+            "mount_hits": 0,
+            "process_hits": 1,
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "argv_only_alias_path",
+            "coverage_error_count": 0,
+            "mount_hits": 0,
+            "process_hits": 1,
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "mountpoint_inside_target_via_alias",
+            "coverage_error_count": 0,
+            "mount_hits": 1,
+            "process_hits": 0,
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "target_subtree_as_bind_source",
+            "coverage_error_count": 0,
+            "mount_hits": 1,
+            "process_hits": 0,
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "shadowed_alias_wrong_inode",
+            "coverage_error_count": 2,
+            "coverage_errors": [
+              {
+                "error": "shadowed_alias_mount",
+                "pid": 1,
+                "tid": 1
+              },
+              {
+                "error": "persistent_mount_namespace_unobserved"
+              }
+            ],
+            "mount_hits": 0,
+            "process_hits": 0,
+            "visibility": "UNKNOWN"
+          },
+          {
+            "case": "fd_only_namespace_discovery_and_coverage",
+            "coverage_error_count": 0,
+            "exact_fd_only_namespace_witness_reaped": true,
+            "mount_hits": 0,
+            "namespace_child_lifecycle": {
+              "close_succeeded": true,
+              "created": 1,
+              "nonzero_exits": 0,
+              "reaped": 1,
+              "retirement_records": 1
+            },
+            "namespace_child_terminals": [
+              {
+                "exit_code": 0,
+                "namespace": [
+                  5,
+                  4026533069
+                ],
+                "pid": 4,
+                "reaped": true
+              }
+            ],
+            "namespace_fd_count": 1,
+            "process_hits": 0,
+            "retained_namespace_identity": [
+              5,
+              4026533069
+            ],
+            "visibility": "OBSERVED"
+          },
+          {
+            "case": "restored_alias_only_after_all_negative_controls",
+            "coverage_error_count": 0,
+            "mount_hits": 0,
+            "process_hits": 0,
+            "visibility": "OBSERVED"
+          }
+        ],
+        "controls": 10,
+        "elapsed_seconds": 0.646621,
+        "exit_code": 0,
+        "host_mountinfo_unchanged": true,
+        "host_namespace_unchanged": true,
+        "mode": "optimized",
+        "observer_collector_children_created": 1,
+        "observer_collector_children_reaped": 1,
+        "opaque_mount_namespace_count": 0,
+        "optimized": 1,
+        "outer_exit_code": 0,
+        "outer_pid": 3753173,
+        "outer_reaped": true,
+        "owned_fixture_child_terminals": [
+          {
+            "exit_code": 0,
+            "pid": 2,
+            "reaped": true
+          },
+          {
+            "exit_code": 0,
+            "pid": 3,
+            "reaped": true
+          }
+        ],
+        "pid1_exit_code": 0,
+        "pid1_reaped_by_outer": true,
+        "private_mount_propagation": true,
+        "private_pid_namespace": true,
+        "status": "PASS",
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 5932,
+          "sha256": "0d502c45a2347b6a5abea9f1a61cc178c1f7b49da8849f41964ec03a0c7264ea"
+        }
+      }
+    ]
+  },
+  "privileged_terminal": {
+    "boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1",
+    "bytes_seen": 2458,
+    "bytes_stored": 2458,
+    "capture_error": null,
+    "created_unix_ms": 1794205573748,
+    "exit_code": 0,
+    "original_verification": {
+      "bytes": 3287,
+      "sha256": "82e46fde4a48460242fb6f6f39ea78ca62e1cd04dc45fa7fbdf91e63b2ab33ec"
+    },
+    "output_complete": true,
+    "session_id": "dpty-18e64c7645f20470-5e21-9e",
+    "state": "exited",
+    "stdout_sha256": "b495880499cde00c7a99f379532b8c397f62b0a46d645ac6d009751ec350ed95"
+  },
+  "schema": "pocket4-cleanup-reference-qualification-v2",
+  "scope": {
+    "Android_actions": 0,
+    "app_actions": 0,
+    "current_inputs_reverified": false,
+    "deletion_authorized": false,
+    "existing_host_mount_namespace_unchanged": true,
+    "historical_current_input_readback": "live_721_readback.json at 2026-11-09T04:10:06Z",
+    "live_helper_patch_applied": false,
+    "ordinary_uid_visibility": "UNKNOWN retained; not whole-host admission",
+    "owned_test_children_and_fixtures_created": true,
+    "production_artifact_deletions": 0
+  },
   "source_pins": [
     {
-      "bytes": 21497,
-      "path": "reference_observer.py",
-      "sha256": "8679a251befd1f45ff6fcac3051552a986fb1574350a3a4b73118a2ef148c795"
-    },
-    {
-      "bytes": 20567,
-      "path": "test_reference_observer.py",
-      "sha256": "9063132ac66e529497dc3540982543b42892381ab1b65f34ef1cf8fcd279f3f4"
-    },
-    {
-      "bytes": 10794,
-      "path": "verify_current_inputs.py",
-      "sha256": "2b4791a277dfbacc24ccc0fac93582657cb89ad2a3d16eea73f9e29706d155f9"
-    },
-    {
-      "bytes": 6585,
-      "path": "test_verify_current_inputs.py",
-      "sha256": "bb90bd9cc0d1656b1307e99c73e891bfb448197011676438f98ef77f4c7110b9"
+      "bytes": 20482,
+      "path": "fixtures/executor-baseline.py",
+      "sha256": "22e7e85962c52a5cf44759dd99610d16293a0f8573ee68b8b9da4c89b1c7911a"
     },
     {
       "bytes": 2870,
@@ -116,12 +876,35 @@
       "sha256": "a71ddc98027d5ec112144d70d18d8e76affd1ebc9df677f6047682b77e72da19"
     },
     {
-      "bytes": 20482,
-      "path": "fixtures/executor-baseline.py",
-      "sha256": "22e7e85962c52a5cf44759dd99610d16293a0f8573ee68b8b9da4c89b1c7911a"
+      "bytes": 62781,
+      "path": "reference_observer.py",
+      "sha256": "311a943a3b3f2845c69ae1750eadb2e72b7058cac86c5c9ae39f18debc107aa5"
+    },
+    {
+      "bytes": 28336,
+      "path": "test_reference_observer.py",
+      "sha256": "d426fdf3f960843adec9ef9cf2adec90ce4c0e5d6eb13d59d820f35688602733"
+    },
+    {
+      "bytes": 6585,
+      "path": "test_verify_current_inputs.py",
+      "sha256": "bb90bd9cc0d1656b1307e99c73e891bfb448197011676438f98ef77f4c7110b9"
+    },
+    {
+      "bytes": 10794,
+      "path": "verify_current_inputs.py",
+      "sha256": "2b4791a277dfbacc24ccc0fac93582657cb89ad2a3d16eea73f9e29706d155f9"
+    },
+    {
+      "bytes": 13664,
+      "path": "verify_isolated_alias_views.py",
+      "sha256": "a681271d92327fe2a09e23883a0cb2aac120a2cc22c55fe1194aa48997be9b39"
+    },
+    {
+      "bytes": 12193,
+      "path": "verify_namespace_collector.py",
+      "sha256": "d0e95443ba1f3b8fd2216fc58915287d51f878968427b488edcbfb84fc1e3540"
     }
   ],
-  "stage": "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/reference-observer-nsfs-r2",
-  "successful": true,
-  "tests_per_mode": 46
+  "status": "PASSED_SOURCE_AND_OWNED_FIXTURE_CONTROLS"
 }

@@ -100,10 +100,10 @@ index 8fbde42..b0d39b8 100644
              let plan = build_linux_plan(&spec)?;
 diff --git a/runtime/droidloom-supervisor/src/production_identity.rs b/runtime/droidloom-supervisor/src/production_identity.rs
 new file mode 100644
-index 0000000..bb89d7c
+index 0000000..ee631cb
 --- /dev/null
 +++ b/runtime/droidloom-supervisor/src/production_identity.rs
-@@ -0,0 +1,1250 @@
+@@ -0,0 +1,1314 @@
 +//! Configured subordinate-ID authority and durable, non-reclaiming reservations.
 +//!
 +//! This is a prerequisite for the production namespace broker. It does not
@@ -421,9 +421,9 @@ index 0000000..bb89d7c
 +    let found = found.ok_or_else(|| {
 +        IdentityError::Unauthorized(format!("dedicated account {name} is missing"))
 +    })?;
-+    if host_uid == 0
-+        || found.uid == 0
-+        || found.gid == 0
++    if matches!(host_uid, 0 | u32::MAX)
++        || matches!(found.uid, 0 | u32::MAX)
++        || matches!(found.gid, 0 | u32::MAX)
 +        || found.uid == host_uid
 +        || ids.get(&found.uid) != Some(&1)
 +        || primary_groups.get(&found.gid) != Some(&1)
@@ -870,9 +870,9 @@ index 0000000..bb89d7c
 +        if self.schema != 1
 +            || filename != format!("u{}.json", self.request.host_uid)
 +            || self.request.principal.name != format!("droidloom-cell-u{}", self.request.host_uid)
-+            || self.request.host_uid == 0
-+            || self.request.principal.uid == 0
-+            || self.request.principal.gid == 0
++            || matches!(self.request.host_uid, 0 | u32::MAX)
++            || matches!(self.request.principal.uid, 0 | u32::MAX)
++            || matches!(self.request.principal.gid, 0 | u32::MAX)
 +            || self.cohort_sha256.len() != 64
 +            || !self
 +                .cohort_sha256
@@ -1169,6 +1169,70 @@ index 0000000..bb89d7c
 +        )
 +        .unwrap();
 +        assert!(matches!(f.authority(), Err(IdentityError::Unauthorized(_))));
++    }
++    #[test]
++    fn sentinel_host_and_service_ids_are_not_configured_authority() {
++        for (host_uid, uid, gid) in [
++            (u32::MAX, 997, 997),
++            (1000, u32::MAX, 997),
++            (1000, 997, u32::MAX),
++        ] {
++            let f = Fixture::new();
++            let name = format!("droidloom-cell-u{host_uid}");
++            fs::write(&f.paths.passwd, format!("alex:x:1000:1000::/home/alex:/bin/bash\n{name}:x:{uid}:{gid}::/nonexistent:/usr/sbin/nologin\n")).unwrap();
++            fs::write(&f.paths.group, format!("alex:x:1000:\n{name}:x:{gid}:\n")).unwrap();
++            fs::write(&f.paths.subuid, format!("{name}:200000:100000\n")).unwrap();
++            fs::write(&f.paths.subgid, format!("{name}:200000:100000\n")).unwrap();
++            assert!(matches!(
++                IdentityAuthority::read_paths(
++                    host_uid,
++                    IdRange {
++                        start: 200000,
++                        count: 100000
++                    },
++                    IdRange {
++                        start: 200000,
++                        count: 100000
++                    },
++                    f.paths.clone()
++                ),
++                Err(IdentityError::Unauthorized(_))
++            ));
++            assert!(!f.root.path().join("registry").exists());
++        }
++    }
++    #[test]
++    fn persisted_sentinel_owner_records_are_rejected_and_preserved() {
++        for field in 0..3 {
++            let f = Fixture::new();
++            let authority = f.authority().unwrap();
++            drop(f.reserve(&authority, &cohort()).unwrap());
++            let original = f.root.path().join("registry/u1000.json");
++            let mut record: Reservation =
++                serde_json::from_slice(&fs::read(&original).unwrap()).unwrap();
++            match field {
++                0 => {
++                    record.request.host_uid = u32::MAX;
++                    record.request.principal.name = format!("droidloom-cell-u{}", u32::MAX);
++                }
++                1 => record.request.principal.uid = u32::MAX,
++                _ => record.request.principal.gid = u32::MAX,
++            }
++            let destination = f
++                .root
++                .path()
++                .join(format!("registry/u{}.json", record.request.host_uid));
++            if destination != original {
++                fs::rename(&original, &destination).unwrap();
++            }
++            let raw = serde_json::to_vec(&record).unwrap();
++            fs::write(&destination, &raw).unwrap();
++            assert!(matches!(
++                f.reserve(&authority, &cohort()),
++                Err(IdentityError::Record(_))
++            ));
++            assert_eq!(fs::read(destination).unwrap(), raw);
++        }
 +    }
 +    #[test]
 +    fn overlapping_or_duplicate_grants_rejected() {
