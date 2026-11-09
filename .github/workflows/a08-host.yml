@@ -632,7 +632,7 @@ jobs:
           import sys
           root = Path(sys.argv[1])
           raw = (root / 'FILES.json').read_bytes()
-          if hashlib.sha256(raw).hexdigest() != 'b90ab39eda5ccf33189d5962e3d853b96803f0fc8439a5b76890e5f7b983ec6c':
+          if hashlib.sha256(raw).hexdigest() != '553531f9975b45a09ecf1dc9a129f03861df0de41dcff987fa84c0e4655a1887':
               raise SystemExit('Continuation inventory pin differs')
           manifest = json.loads(raw)
           for row in manifest['files']:
