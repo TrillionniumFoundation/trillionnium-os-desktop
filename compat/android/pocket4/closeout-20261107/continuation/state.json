@@ -143,6 +143,8 @@
     },
     "host_LSM_changes": 0,
     "host_kernel_installs": 1,
+    "host_observation_scope": "Kernel build, VM and installation observations recorded before the current candidate hardware boot. The zero reboot count and host38 description refer to that snapshot.",
+    "host_observation_superseded_by": "current_linux_host",
     "host_reboots": 0,
     "normal_configuration_qualified": true,
     "normal_configuration_result": {
@@ -229,6 +231,7 @@
       "verified_modules": 6901
     },
     "normal_required_host_scripts_passed": true,
+    "observation_is_historical": true,
     "official_source_commit": "f53b359683af7918c5436499948763cb726d5082",
     "official_source_version": "Ubuntu-7.0.0-43.43",
     "offline_preparation": {
@@ -415,7 +418,7 @@
       "sha256": "85e923e977cbcb91997fc48c482ea35c5507d9f675383dee120b0d40d3f8ea37"
     },
     "source_tree": "5ccefae63418a1efdd6bb716b63a77deb80601c0",
-    "superseded_by": "audio425_current"
+    "superseded_by": "audio430_current"
   },
   "actual_audio_source_previous_309": {
     "materialized_manifest": {
@@ -612,7 +615,7 @@
     "runtime_qualified": false,
     "source_memory_max_bytes": 6442450944,
     "source_migration_qualified": true,
-    "superseded_by": "audio425_current",
+    "superseded_by": "audio430_current",
     "target_projects": 316
   },
   "audio430_current": {
@@ -948,6 +951,17 @@
     "source_integrity_checked": 424,
     "total": 84
   },
+  "execution_channel_observation": {
+    "Android_runtime_qualification_granted": false,
+    "device_side_reconciliation_pending": true,
+    "local_execution_environment_unavailable": true,
+    "readonly_host_list_and_typed_background_request_unavailable": true,
+    "recorded_utc": "2026-11-09T13:49:47+00:00",
+    "reported_error": "MCP -32603 Internal error",
+    "root_Audio_canonical_publication_outcome": "UNKNOWN_AFTER_TRANSPORT_ERROR",
+    "state": "UNAVAILABLE",
+    "unknown_operations_replayed": false
+  },
   "final_candidate_deployed": false,
   "final_selected_production_acceptance": {
     "Firefox_prepared_not_installed": true,
@@ -1001,6 +1015,8 @@
       "bytes": 1509652,
       "sha256": "b142a94e0a13e8359593aee96941653b81f83c7122c457d8067d7057bee0a3de"
     },
+    "observation_is_historical": true,
+    "observation_scope": "Pre-reboot installation and fallback snapshot; original receipt values are preserved.",
     "old_menu_bytes_preserved_except_two_candidate_entries": true,
     "one_shot_does_not_reset_a_hung_host": true,
     "one_shot_execution_ready": false,
@@ -1033,6 +1049,7 @@
       "bytes": 3571,
       "sha256": "838479c964a46b14e3d21f786d654611552dea1594a315997b083bf561d3d2b2"
     },
+    "superseded_by": "current_linux_host",
     "unchanged_grub_environment": {
       "bytes": 1024,
       "sha256": "0e8344eff0b558d225092d5ccc2aef2247f81e3d829e2edfe48eb04a19fdbc11"
@@ -1359,7 +1376,7 @@
     },
     "published_source_projects": 597,
     "runtime_qualified": false,
-    "superseded_by": "native600_current",
+    "superseded_by": "native601_current",
     "target_projects": 597
   },
   "native_attempt12": {
@@ -1609,6 +1626,10 @@
       "swap_bytes": 0
     },
     "complete_compiled_APEX_qualified": false,
+    "current_observation_sections": [
+      "native601_current",
+      "audio430_current"
+    ],
     "first_full_failure": {
       "driver_started": true,
       "frozen_failed_generation_not_modified": true,
@@ -1880,6 +1901,8 @@
       "source_projection_restored": true,
       "state": "FAILED_SOURCE_PROVIDER_CLOSURE"
     },
+    "observation_is_historical": true,
+    "observation_scope": "Earlier Native597/600 and Audio316/425 migration and failed-generation records; original receipt values are preserved.",
     "process_command_repair": {
       "actual_Linux_controls_passed": 10,
       "actual_Linux_controls_skipped": 0,
@@ -1900,6 +1923,10 @@
     "audio_source_transfer_complete": true,
     "audio_source_transfer_job": "1a1bc96e6a7-138b0-370",
     "copied_previous_runtime_evidence_qualifies_new_build": false,
+    "current_observation_sections": [
+      "native601_current",
+      "audio430_current"
+    ],
     "destination_data_available_observed_bytes": 86224359424,
     "files_per_batch_max": 8192,
     "full_artifacts_qualified": false,
@@ -1908,6 +1935,8 @@
     "native_source_transfer_complete": false,
     "native_source_transfer_job": "1a1bc6ea7b1-138b0-26f",
     "new_host_build_generation_required": true,
+    "observation_is_historical": true,
+    "observation_scope": "Earlier offload preparation and submission snapshot; current Native601 and Audio430 states are recorded separately.",
     "previous_unbatched_transfers_cancelled_and_retired": true,
     "production_data_or_signing_secrets_transferred": false,
     "source316_observed_bytes": 39471591424,
@@ -1974,6 +2003,11 @@
       "bytes": 95594,
       "sha256": "e55e02a7cb4d90bb0d1dea218c0eab693fcf9c0ce99e8a3317e3601aff1d1c6e"
     }
+  },
+  "previous_published_current_snapshot": {
+    "bytes": 105261,
+    "commit": "15e0014702fcaa57c55774717b41f881c2771e05",
+    "sha256": "2473aed751599aa1594d1e1321ba98a5fc72dd1cf098c5759821448ca920dc34"
   },
   "previous_source_generations": {
     "audio425_current": {
@@ -2269,21 +2303,44 @@
     "runtime_qualified": false
   },
   "publication_integration": {
+    "CI_credit_bound_to_explicit_commit_only": true,
     "all_upstream_workflow_steps_preserved": 25,
     "base_commit": "a712a96be386144591b7dd3ae80df9c6583f728d",
     "local_operator_Git_operation_completion": "UNOBSERVED_DURING_EXECUTION_CHANNEL_OUTAGE",
     "local_operator_Git_operation_never_started_claimed": false,
-    "new_head_CI_pass_claimed": false,
     "new_workflow_steps": 1,
     "original_Local_operator_request_included_remote_push": false,
     "publication_method": "GitHub Git tree and commit with expected-parent fast-forward ref update",
+    "source_checkpoint_CI": {
+      "Android_runtime_qualified": false,
+      "Audio_source_controls": 14,
+      "Audio_source_controls_skipped": 0,
+      "Native_exact_patch_stages": 4,
+      "all_workflow_steps_successful": true,
+      "commit": "15e0014702fcaa57c55774717b41f881c2771e05",
+      "job_id": 129196284631,
+      "required_source_files": 263,
+      "run_id": 42627886961,
+      "source_checks": 868,
+      "state": "success",
+      "workflow_steps_completed": 30
+    },
+    "source_checkpoint_full_readback": {
+      "added": 72,
+      "all_SHA256_verified": true,
+      "bytes": 2686263,
+      "files": 75,
+      "modified": 3,
+      "removed": 0,
+      "upstream_commits_preserved": 12
+    },
     "upstream_A08_job": 129150695106,
     "upstream_A08_passed": true,
     "upstream_A08_run": 42614442327,
     "upstream_commits_preserved": 12
   },
   "publication_state": "LATEST_NATIVE_AND_AUDIO_SOURCE_CHAIN_WITH_ACTUAL_UNCLOSED_RUNTIME_GATES",
-  "recorded_utc": "2026-11-09T13:38:54+00:00",
+  "recorded_utc": "2026-11-09T13:49:47+00:00",
   "resume_order": [
     "Repair the private proc failure and qualify the real owned proc/devpts/Binder stages; retain original account data and exact identity custody.",
     "Complete strict Native and Audio source closures and independent full builds, then whole-artifact and QPR1 ABI verification.",
