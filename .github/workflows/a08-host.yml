@@ -284,7 +284,7 @@ jobs:
           import stat
           import sys
           import unittest
-          capsules = {'native597-original-llvm-plugin-cones-r1': ('75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c', 12), 'audio-canonical-custody-r1': ('42ead27bc89d5d866eddfd951e0dbfb91af1ff1c4e2843946fe4eee34925f1d5', 3), 'apparmor-binder-retained-credential-r1': ('243e3355ecfa6f96af8839ffa10854c796a3b22e03a5d924c778fb47aa83f4b9', 6), 'production-identity-reservation-r1': ('eee9cec9ecbd9b71cdda9df13bb0446124001a5826932709561126896881ffea', 3), 'native600-original-provider-closure-r1': ('d40f8629af9741d8bc4dc09bb89389fe2b1c7348e3ea02d72b01dca1908c6cc6', 18), 'audio425-original-provider-closure-r1': ('257bc3f071fd09c6b908ef80fdf0fe50617259c33b9083b0d66da6e270a6a450', 23), 'native600-rkpd-apex-r1': ('f33f622023fb328ea88c79a2fb29f7f7a9c1c3427af0a31b53bbdfc8c9fc4889', 9), 'native600-bcc-compat-r1': ('aadd86a9ec1528cdae294926ca86946d3337096ac1e27e476fda95e9cf1afc19', 4), 'audio430-ondeviceintelligence-api-r1': ('a61d8835adbf08d2d63847a428a8f928c0481f8ee1458d0a488308111153ae37', 5), 'namespace-lifetime-r5-review-r1': ('f4e068208cf7e2f99e19beca10b54fd1bef466c5b2e2949dbbd7a67857ccd4bd', 8), 'native601-dexdeps-pyee-r1': ('35c3d845f07e56a1149e761cc44ee205827c32141d081570ae0f3b71caff36f4', 5), 'audio425-connectivity-projection-preimage-r1': ('3cbd3fa6665daec40aae21b6c225ae99df8aa5f02450bf656a795fec03f72397', 9), 'audio430-pasit-original-provider-closure-r1': ('147bbe6cb367a1272b8c1528a64fc1b675c313a7d38d5b4060bb42befe2a7297', 25), 'audio430-original-released-api-inputs-r1': ('f8c6a07d08c56d2793b8ed2a6c220dbcfbf03c48b3670a20fd4b81fb3307e8e1', 11), 'native601-original-provider-chain-r1': ('2650d520dec6680b88ab406d3f21b19d2b908ce66de076640e0bd1c01ca539a7', 23), 'continuation-20261109-2840': ('0b462d7f0ba3af9e02f82dde2fe2a8f5f1e97df9c52a880ca8627ac9c062fbee', 733), 'audio430-released-sdk-source-tests-r1': ('5eecc25bf858a9bb7c9edcfa96b649939613d328164fe293ebfeaa1e51143808', 23), 'production-cell-foundations-r1': ('a802fc59cf19128b128042cc5d428262a18144b8b596b8e1bf317ec60ce500b5', 13)}
+          capsules = {'native597-original-llvm-plugin-cones-r1': ('75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c', 12), 'audio-canonical-custody-r1': ('42ead27bc89d5d866eddfd951e0dbfb91af1ff1c4e2843946fe4eee34925f1d5', 3), 'apparmor-binder-retained-credential-r1': ('243e3355ecfa6f96af8839ffa10854c796a3b22e03a5d924c778fb47aa83f4b9', 6), 'production-identity-reservation-r1': ('eee9cec9ecbd9b71cdda9df13bb0446124001a5826932709561126896881ffea', 3), 'native600-original-provider-closure-r1': ('d40f8629af9741d8bc4dc09bb89389fe2b1c7348e3ea02d72b01dca1908c6cc6', 18), 'audio425-original-provider-closure-r1': ('257bc3f071fd09c6b908ef80fdf0fe50617259c33b9083b0d66da6e270a6a450', 23), 'native600-rkpd-apex-r1': ('f33f622023fb328ea88c79a2fb29f7f7a9c1c3427af0a31b53bbdfc8c9fc4889', 9), 'native600-bcc-compat-r1': ('aadd86a9ec1528cdae294926ca86946d3337096ac1e27e476fda95e9cf1afc19', 4), 'audio430-ondeviceintelligence-api-r1': ('a61d8835adbf08d2d63847a428a8f928c0481f8ee1458d0a488308111153ae37', 5), 'namespace-lifetime-r5-review-r1': ('f4e068208cf7e2f99e19beca10b54fd1bef466c5b2e2949dbbd7a67857ccd4bd', 8), 'native601-dexdeps-pyee-r1': ('35c3d845f07e56a1149e761cc44ee205827c32141d081570ae0f3b71caff36f4', 5), 'audio425-connectivity-projection-preimage-r1': ('3cbd3fa6665daec40aae21b6c225ae99df8aa5f02450bf656a795fec03f72397', 9), 'audio430-pasit-original-provider-closure-r1': ('147bbe6cb367a1272b8c1528a64fc1b675c313a7d38d5b4060bb42befe2a7297', 25), 'audio430-original-released-api-inputs-r1': ('f8c6a07d08c56d2793b8ed2a6c220dbcfbf03c48b3670a20fd4b81fb3307e8e1', 11), 'native601-original-provider-chain-r1': ('2650d520dec6680b88ab406d3f21b19d2b908ce66de076640e0bd1c01ca539a7', 23), 'continuation-20261109-2840': ('0b462d7f0ba3af9e02f82dde2fe2a8f5f1e97df9c52a880ca8627ac9c062fbee', 733), 'audio430-released-sdk-source-tests-r1': ('5eecc25bf858a9bb7c9edcfa96b649939613d328164fe293ebfeaa1e51143808', 23), 'production-cell-foundations-r1': ('a802fc59cf19128b128042cc5d428262a18144b8b596b8e1bf317ec60ce500b5', 13), 'continuation-20261109-e3df': ('23e4013aba6870a4826ca9c4beb498051123ffbcb02d43a68bfc88795f75b73a', 75)}
           for name, (digest, count) in capsules.items():
               directory = Path('compat/android/pocket4', name).resolve(strict=True)
               raw = (directory / 'FILES.json').read_bytes()
@@ -1033,6 +1033,62 @@ jobs:
           set -euo pipefail
           python3 -I -B compat/android/pocket4/production-cell-foundations-r1/verify_source_replay.py \
             --out "$RUNNER_TEMP/a08/cell-foundation-source-replay.json"
+
+      - name: Replay and execute current Pocket4 source corrections
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CARGO_TERM_COLOR=never
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/continuation-20261109-e3df"
+          work="$RUNNER_TEMP/a08-e3df"
+          evidence="$RUNNER_TEMP/a08/e3df"
+          mkdir -p "$work" "$evidence"
+          export CARGO_TARGET_DIR="$work/target"
+          rustup run 1.93.0 rustc --version | tee "$evidence/rustc-version.txt"
+          python3 -I -B - "$capsule" "$GITHUB_WORKSPACE" <<'PYE3DFLOCKS'
+          import hashlib, json, sys, tomllib
+          from pathlib import Path
+          capsule, repo = map(Path, sys.argv[1:])
+          reference = repo / 'compat/android/pocket4/continuation-20261109-2840/apps-settings-page/reference/source-workspace-Cargo.lock'
+          source = reference.read_bytes()
+          if len(source) != 51845 or hashlib.sha256(source).hexdigest() != 'ca5300907a8e609ac0340d016ecfe7b4292bf45fe5ab3cbe8dd0c013f12a2285':
+              raise SystemExit('Original workspace lock differs')
+          def external(raw):
+              return {(p['name'], p['version'], p['source'], p['checksum'])
+                      for p in tomllib.loads(raw.decode())['package'] if 'source' in p}
+          original = external(source)
+          records = []
+          for name, count, sha in [
+              ('Cargo.lock', 34, 'c90d04adf019e7b7842fb368de9ad230a197447f406a8fdf1ea14dc5963d225e'),
+              ('control-deadline/Cargo.lock', 51, '3e91a62c8d75684c9def026a2ac25f923f405e33aff84469ab3b098a7e23c32a')]:
+              raw = (capsule / name).read_bytes()
+              selected = external(raw)
+              if hashlib.sha256(raw).hexdigest() != sha or len(selected) != count or not selected.issubset(original):
+                  raise SystemExit('Every compiled external package must match the original lock: ' + name)
+              records.append({'lock': name, 'original_external_package_tuples': count, 'sha256': sha})
+          print(json.dumps({'schema': 'pocket4-e3df-locked-dependencies-v1', 'locks': records, 'runtime_qualified': False}, sort_keys=True))
+          PYE3DFLOCKS
+          cp "$capsule/Cargo.lock" "$evidence/shared-Cargo.lock.before"
+          cp "$capsule/control-deadline/Cargo.lock" "$evidence/control-Cargo.lock.before"
+          rustup run 1.93.0 cargo build --locked -j 1 \
+            --manifest-path "$capsule/Cargo.toml" -p pocket4-continuation-qualification
+          qualify="$CARGO_TARGET_DIR/debug/pocket4-continuation-qualification"
+          "$qualify" replay "$GITHUB_WORKSPACE" "$capsule" "$work/replayed" \
+            | tee "$evidence/source-replay.json"
+          "$qualify" applications "$capsule" | tee "$evidence/application-contracts.json"
+          rustup run 1.93.0 cargo test --locked -j 1 \
+            --manifest-path "$capsule/Cargo.toml" -p pocket4-readiness-regressions --lib \
+            -- --test-threads=1 --color never 2>&1 | tee "$evidence/readiness-tests.log"
+          rustup run 1.93.0 cargo test --locked -j 1 \
+            --manifest-path "$capsule/control-deadline/Cargo.toml" -p droidloom-supervisor \
+            --lib control::request_deadline_tests -- --test-threads=1 --color never \
+            2>&1 | tee "$evidence/control-deadline-tests.log"
+          "$qualify" tests "$capsule" "$evidence/readiness-tests.log" "$evidence/control-deadline-tests.log" \
+            | tee "$evidence/executed-source-tests.json"
+          cmp "$capsule/Cargo.lock" "$evidence/shared-Cargo.lock.before"
+          cmp "$capsule/control-deadline/Cargo.lock" "$evidence/control-Cargo.lock.before"
+          "$qualify" inventory "$capsule" | tee "$evidence/retained-inputs-after.json"
 
       - name: Preserve host evidence without implying Android guest success
         if: always()
