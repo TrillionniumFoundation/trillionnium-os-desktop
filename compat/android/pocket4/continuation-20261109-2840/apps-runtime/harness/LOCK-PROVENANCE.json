@@ -1,0 +1,19 @@
+{
+  "source_lock": "published apps_release_check/harness/Cargo.lock",
+  "source_lock_sha256": "f41403b9239dda8ad696348f6deb9ded290d7e6a01c7a011e2e2420c9401ee9d",
+  "lock_sha256": "94d5485165fa970400ddbcca6ac38d63e46e14c4ca1aea7054d6d18a5706f625",
+  "registry_packages_unchanged": 33,
+  "checksums_invented": 0,
+  "changes": "Only root package name/dependency edges and two local same-source adapter packages; all 33 external package records are byte-equivalent as parsed TOML.",
+  "same_source_modules": [
+    "application_probe.rs",
+    "application_command.rs",
+    "application_command_tests.rs",
+    "release.rs",
+    "development_process.rs",
+    "droidloom-cpu-placement/src/lib.rs",
+    "droidloom-cpu-placement/src/linux.rs"
+  ],
+  "adapters": "PIDFD functions have two pass-through visibility adapters; actual implementation is loaded by #[path], compiled as a dependency without unrelated DevelopmentCell tests. CPU-placement uses the actual source via [lib] path.",
+  "android_runtime_credit": 0
+}

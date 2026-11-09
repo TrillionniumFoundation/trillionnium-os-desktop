@@ -1,0 +1,178 @@
+{
+  "schema": 1,
+  "frozen": true,
+  "source_commit": "4e16058cc0f6de83fabae68736dad7eb91edbc47",
+  "patch_reverse_check": true,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "runtime_accepted_apps": 0,
+  "selected_apps": 42,
+  "harness_job_terminal_readback": "pending/unobserved; actual 22-pass stdout retained; no replay",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 7083,
+      "sha256": "470651c9f01fd28b7f6781cd26ed020dd4c5d4d4636575adc8c66cf7791fecba"
+    },
+    {
+      "path": "application-runtime.patch",
+      "bytes": 126116,
+      "sha256": "189ed298dd152ee93db66c2a655872cc863403c4d6309a5c04a61d40c51c24ad"
+    },
+    {
+      "path": "firefox-schema-integration/app-release-gates.json",
+      "bytes": 27878,
+      "sha256": "0b21f963898308b082f3808dd48165c1397badd1fa8a753c3a766e135b3cb3c8"
+    },
+    {
+      "path": "firefox-schema-integration/integration-receipt.json",
+      "bytes": 2371,
+      "sha256": "9066294726bb31eab0a7b6a4d0c7a8d36d6bcff2d44c2c35d3a3aef63e577597"
+    },
+    {
+      "path": "firefox-schema-integration/matrix-contract.patch.json",
+      "bytes": 4683,
+      "sha256": "c1cf8a1e89ba2d02c4cda20e8b12d7a742816a4a31d6dd87e9587c2806df65fb"
+    },
+    {
+      "path": "firefox-schema-integration/registry-contract.patch.json",
+      "bytes": 3858,
+      "sha256": "4e02e21ba8bb7c67c098a53eb476992567d101d1879df57bd8fdf8b85a2474b3"
+    },
+    {
+      "path": "harness/Cargo.lock",
+      "bytes": 7782,
+      "sha256": "94d5485165fa970400ddbcca6ac38d63e46e14c4ca1aea7054d6d18a5706f625"
+    },
+    {
+      "path": "harness/Cargo.toml",
+      "bytes": 507,
+      "sha256": "5d93ba2a526b772f63b389f04762cd1d2eb3f69d96c84555f8a9020b2fd2185e"
+    },
+    {
+      "path": "harness/LOCK-PROVENANCE.json",
+      "bytes": 1009,
+      "sha256": "f7557fd7264e19f613776746d384492ca10adb276155b8f06712d685a57e8ef7"
+    },
+    {
+      "path": "harness/cpu-placement/Cargo.toml",
+      "bytes": 200,
+      "sha256": "746c3e996f0702dce121d6aff47778c0b95bbf84279310e5afc624bd7cd29793"
+    },
+    {
+      "path": "harness/process-fd/Cargo.toml",
+      "bytes": 123,
+      "sha256": "756a5617d7f9faea4c6ba9a22020e14e9c4294355f51c97b260c69c1b0d689ce"
+    },
+    {
+      "path": "harness/process-fd/src/lib.rs",
+      "bytes": 529,
+      "sha256": "9794bc5f3f9dbbc0ec64889b32e15892b7aca154c46d1fa5ecab92e8c755fc40"
+    },
+    {
+      "path": "harness/src/lib.rs",
+      "bytes": 551,
+      "sha256": "21353469a0ad5918a39d318badcc7718d2c1c329c9e34fd8ad981be8fb96e7ff"
+    },
+    {
+      "path": "source/runtime/droidloom-applications/src/lib.rs",
+      "bytes": 34487,
+      "sha256": "6b427a4c6b1911fc26ee46aba219c4753c1b6bb91a0be2fa547a740dfa20ddb9"
+    },
+    {
+      "path": "source/runtime/droidloom-applications/src/main.rs",
+      "bytes": 9193,
+      "sha256": "7d52e9abb404a7eb729afb7a7e21ddafd4e3336b456844d592575d5c4df7b060"
+    },
+    {
+      "path": "source/runtime/droidloom-applications/src/release.rs",
+      "bytes": 22695,
+      "sha256": "97b6075fbcbd8d9bc59e98356313ffa43ad16909aac5946132395f108454e45c"
+    },
+    {
+      "path": "source/runtime/droidloom-applications/src/runtime_plan.rs",
+      "bytes": 23473,
+      "sha256": "d3f91564d43880d8ce2b98ac78c612744f901c65f4ef1d1c8d54c95d129a18b3"
+    },
+    {
+      "path": "source/runtime/droidloom-cpu-placement/src/lib.rs",
+      "bytes": 1956,
+      "sha256": "b711e37a7245dc0d817e69d6589263b864cfd7ea43f2428c6d590c7e47863ab0"
+    },
+    {
+      "path": "source/runtime/droidloom-cpu-placement/src/linux.rs",
+      "bytes": 11370,
+      "sha256": "addc956fcae5d493cdf9bf55bd82ea79119caffb58bd8bc1fee44e17069357f8"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/application_command.rs",
+      "bytes": 21082,
+      "sha256": "a72fc7da7b5d0eb2c1a7f7ffdc37db03998bc9be0c649474e8e73b7c8a0f998b"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/application_command_tests.rs",
+      "bytes": 9404,
+      "sha256": "cb5cfa45f1301ec8aa2018a8b8dd102e80fd09ce71eb2cd3533e2cf8610db746"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/application_probe.rs",
+      "bytes": 16202,
+      "sha256": "8df245c3dfc6324d18587d694c442f8148b8360ed2e5e4d551a152b682b5847a"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/control.rs",
+      "bytes": 78677,
+      "sha256": "12080b71e45b6e72ac9b53cf65ca94703e774f688b998addfac478e2185e7436"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/development.rs",
+      "bytes": 115712,
+      "sha256": "b9b874e2ecba44d02a96d1ed71af248fa8c36fd6d0a2452adcae9d103cd4ae21"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/development_process.rs",
+      "bytes": 7465,
+      "sha256": "ed34622d083249875dea28ab9327a980da14e5ee81ddd49a76fb7d537ec68864"
+    },
+    {
+      "path": "source/tools/README.md",
+      "bytes": 12468,
+      "sha256": "a26c03abfc0d15f2c029525c55056bd87d040d6d9cabe3dcfe501bade672da68"
+    },
+    {
+      "path": "source-publication.json",
+      "bytes": 2880,
+      "sha256": "1fc412cf4eb7634fc58afcd19f241972fb6c2118c39ed3f18b67d9ea566b6af4"
+    },
+    {
+      "path": "verification/cli-build.json",
+      "bytes": 816,
+      "sha256": "3799acb1e8fb7cb70ab6a0cdd5818ce52eae7f7e616516e3685bce182440b615"
+    },
+    {
+      "path": "verification/cli-missing-socket-control.json",
+      "bytes": 1578,
+      "sha256": "0b7710226693b522b1d6a75aeedd9cecffa4fcdd4342d7de516bc15441dc2ca1"
+    },
+    {
+      "path": "verification/host-controls.json",
+      "bytes": 1276,
+      "sha256": "2e88d35c3420d32e56b7f1b81c3e104189fd1dde036c10f4a1a591e912291314"
+    },
+    {
+      "path": "verification/normal-tests.json",
+      "bytes": 6288,
+      "sha256": "ef83917f20e0712872bac1a26a41df34f105c1af553c6dd8918140dcf8a17b6b"
+    },
+    {
+      "path": "verification/samefile-ci-harness.json",
+      "bytes": 5953,
+      "sha256": "83c919171d0fa757c72dc828e5df5b1848f7bb3e745309e0edc8fc035a47183f"
+    },
+    {
+      "path": "verification/source-commit-job.json",
+      "bytes": 849,
+      "sha256": "98eb32568e41b363a99b36ea601cfa8364078987fb83fdbded12ed99ae9fe854"
+    }
+  ]
+}

@@ -1,0 +1,424 @@
+{
+  "schema": "pocket4-native601-platform-tools-provider-fix-v1",
+  "state": "ORIGINAL_PROVIDER_RECIPE_AND_NORMAL_TOOLS_TESTED_FULL_PENDING",
+  "observed_utc": "2026-11-09T15:13:43Z",
+  "full_build_started_by_this_generation": false,
+  "source_materialization_started": false,
+  "complete_engine_ART_pair_qualified": false,
+  "latest_QPR1_cohort_qualified": false,
+  "runtime_qualified": false,
+  "production_ready": false,
+  "base_recipe": {
+    "commit": "f7e89c652141a1dcf2ca5edee04b0ea69de46863",
+    "source_lock_bytes": 354822,
+    "source_lock_sha256": "9375d2850e830e6213556ab87693fb54df456096f5c455c87afb76d681436ed2"
+  },
+  "recipe": {
+    "host": "ai395",
+    "path": "/home/qq/work/pocket4-native601-platform-tools-20261109-2840-r1/source",
+    "branch": "fix/pocket4-native601-platform-tools-20261109-2840",
+    "commit": "92c6194201f93ec10b3e5127b0fbdb4a971266d1",
+    "tree": "05db43f3da357cf83845faf8e0814ca1ba0aebd5",
+    "clean": true,
+    "fsck_full_strict_passed": true,
+    "files": [
+      {
+        "path": "/home/qq/work/pocket4-native601-platform-tools-20261109-2840-r1/source/android/native-generation-pair/source-lock.json",
+        "bytes": 354876,
+        "sha256": "34aa4c635fd8700c641641c5dbdf4ded4cd6a94b0a3ad369232fe1f287b691f0"
+      },
+      {
+        "path": "/home/qq/work/pocket4-native601-platform-tools-20261109-2840-r1/source/tools/droidloom-source/src/lib.rs",
+        "bytes": 53693,
+        "sha256": "ac8b5a099bbcaf09e1a3a917eea5e8467b0b6df1bf42c7ff6e556e9da5d92403"
+      },
+      {
+        "path": "/home/qq/work/pocket4-native601-platform-tools-20261109-2840-r1/source/tools/droidloom-update/src/native_generation_pair_build.rs",
+        "bytes": 437020,
+        "sha256": "56ca44fea98f5fdade326fbeff58e6729979e5873747dc95ca1db52a24aec175"
+      }
+    ]
+  },
+  "patch": {
+    "path": "platform-tools-original-provider.patch",
+    "bytes": 7439,
+    "sha256": "562fe342fe3dc53409ec891af27af2e6267ae8110679fdaa747b03aeab2e1dd1"
+  },
+  "original_inputs": {
+    "project_count": 601,
+    "all_existing_projects_and_revisions_preserved": true,
+    "added_cones": [
+      {
+        "project": "dalvik",
+        "cone": "tools/hprof-conv"
+      },
+      {
+        "project": "development",
+        "cone": "tools/etc1tool"
+      }
+    ],
+    "original_files": [
+      {
+        "project": "development",
+        "revision": "4dafd114fab3c3d9543a5aff0ad097f479915176",
+        "path": "tools/etc1tool/Android.bp",
+        "bytes": 462,
+        "sha256": "a19ad99745b88cb0e8334c21cbcc1b8688153b511d98e2f47d284573e9888780",
+        "git_blob_sha1": "35383da9d26f308d565e08f364b6ea04e7040ba4",
+        "tree_blob_match": true,
+        "official_url": "https://android.googlesource.com/platform/development/+/4dafd114fab3c3d9543a5aff0ad097f479915176/tools/etc1tool/Android.bp"
+      },
+      {
+        "project": "dalvik",
+        "revision": "5013071e756f89aa2cea97b437af12aacb8d4485",
+        "path": "tools/hprof-conv/Android.bp",
+        "bytes": 1117,
+        "sha256": "269a6745e536a5370fa2b509623a003e1f6b194a681b6364f1189a86560fc0fb",
+        "git_blob_sha1": "ca5343e071056b1e6ba514ca650b55575ace9ce6",
+        "tree_blob_match": true,
+        "official_url": "https://android.googlesource.com/platform/dalvik/+/5013071e756f89aa2cea97b437af12aacb8d4485/tools/hprof-conv/Android.bp"
+      },
+      {
+        "project": "development",
+        "revision": "4dafd114fab3c3d9543a5aff0ad097f479915176",
+        "path": "tools/etc1tool/etc1tool.cpp",
+        "bytes": 17043,
+        "sha256": "5de3378cc139d3cc5adbff76b3b0dbf03533b69ee0085c332caff0c10ace1e28",
+        "git_blob_sha1": "868c444ed9dcb8ab1876fda569bf4b390784d035",
+        "tree_blob_match": true,
+        "official_url": "https://android.googlesource.com/platform/development/+/4dafd114fab3c3d9543a5aff0ad097f479915176/tools/etc1tool/etc1tool.cpp",
+        "includes": [
+          "#include <errno.h>",
+          "#include <stdarg.h>",
+          "#include <stdio.h>",
+          "#include <stdlib.h>",
+          "#include <string.h>",
+          "#include <png.h>",
+          "#include <ETC1/etc1.h>"
+        ]
+      },
+      {
+        "project": "dalvik",
+        "revision": "5013071e756f89aa2cea97b437af12aacb8d4485",
+        "path": "tools/hprof-conv/HprofConv.c",
+        "bytes": 20328,
+        "sha256": "e9a2281ccb04887b3e1c25f0f3a2bb04d735ec96abd61ec4ee6007161dc0c6c8",
+        "git_blob_sha1": "ff49428afbd438811ceb898350eb4457b560b25a",
+        "tree_blob_match": true,
+        "official_url": "https://android.googlesource.com/platform/dalvik/+/5013071e756f89aa2cea97b437af12aacb8d4485/tools/hprof-conv/HprofConv.c",
+        "includes": [
+          "#include <stdio.h>",
+          "#include <string.h>",
+          "#include <stdlib.h>",
+          "#include <stdint.h>",
+          "#include <errno.h>",
+          "#include <assert.h>",
+          "#include <unistd.h>"
+        ]
+      }
+    ],
+    "total_added_original_bytes": 38950,
+    "original_consumers_modified": false,
+    "missing_dependency_policy_relaxed": false,
+    "original_consumer": {
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/development/build/Android.bp",
+      "bytes": 15422,
+      "sha256": "7ddfd0a4b3df0d09e6e57a69c659971ea243fcbaf6bf8e68732edf75699e3045"
+    }
+  },
+  "direct_provider_audit": {
+    "scope": "platform-tools deps, target.windows deps, srcs, etc1tool static_libs and dalvik license; declarations are not build qualification",
+    "existing": [
+      {
+        "bytes": 397,
+        "line": 8,
+        "module": "dalvik_license",
+        "path": "dalvik/Android.bp",
+        "sha256": "f7b9402fa49017530daffcf9988d0ceca373882fad92325aaa7388b51ad5a9d2"
+      },
+      {
+        "bytes": 27549,
+        "line": 531,
+        "module": "adb",
+        "path": "packages/modules/adb/Android.bp",
+        "sha256": "485922ab5a3742db71c9da7819b2b87821acdbc56c423f0feb244b3d21315be7"
+      },
+      {
+        "bytes": 10234,
+        "line": 334,
+        "module": "fastboot",
+        "path": "system/core/fastboot/Android.bp",
+        "sha256": "74080a2f1ed2386c87db93d194bf7bef2cf53f90ade85f8ead157b07af04799c"
+      },
+      {
+        "bytes": 9489,
+        "line": 190,
+        "module": "make_f2fs",
+        "path": "external/f2fs-tools/Android.bp",
+        "sha256": "ad9c356b284fd10a4d6700e721aeb77c831495d9efaa6ab33572455d16a3902b"
+      },
+      {
+        "bytes": 9489,
+        "line": 216,
+        "module": "make_f2fs_casefold",
+        "path": "external/f2fs-tools/Android.bp",
+        "sha256": "ad9c356b284fd10a4d6700e721aeb77c831495d9efaa6ab33572455d16a3902b"
+      },
+      {
+        "bytes": 7959,
+        "line": 86,
+        "module": "mke2fs",
+        "path": "external/e2fsprogs/misc/Android.bp",
+        "sha256": "f6f68cf81772cbb3df72c6bfa3602f397e465f7fa063048c92d0c782c14828ee"
+      },
+      {
+        "bytes": 9802,
+        "line": 281,
+        "module": "sqlite3",
+        "path": "external/sqlite/dist/Android.bp",
+        "sha256": "ff48d079e0dfe81d13b48f08f956c501cb393e8880ca4958d1dddce87a312832"
+      },
+      {
+        "bytes": 7632,
+        "line": 12,
+        "module": "libETC1",
+        "path": "frameworks/native/opengl/libs/Android.bp",
+        "sha256": "e3e1d1bbe10633c1badc59e1ee1e75409972ae9c9cca9bc5fb9948c07ed238ed"
+      },
+      {
+        "bytes": 3032,
+        "line": 41,
+        "module": "libexpat",
+        "path": "external/expat/Android.bp",
+        "sha256": "097a3405a682115daa5291faa93b81e0a6e306b138356b5837ddf30d41790c82"
+      },
+      {
+        "bytes": 4344,
+        "line": 97,
+        "module": "libpng",
+        "path": "external/libpng/Android.bp",
+        "sha256": "d8c18a4d178b7223d820d0d186b548a7f006462f86cc98625299245e954aad10"
+      },
+      {
+        "bytes": 10842,
+        "line": 189,
+        "module": "libz",
+        "path": "external/zlib/Android.bp",
+        "sha256": "b0ab8994edaf0222b326a142959f312dbaf0be6129eddaece1d9a92c418c6ab7"
+      },
+      {
+        "bytes": 10842,
+        "line": 356,
+        "module": "libz",
+        "path": "external/zlib/Android.bp",
+        "sha256": "b0ab8994edaf0222b326a142959f312dbaf0be6129eddaece1d9a92c418c6ab7"
+      },
+      {
+        "bytes": 3547,
+        "line": 70,
+        "module": "libwinpthread-1",
+        "path": "prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8/Android.bp",
+        "sha256": "5e37a571a4457eb1f4e6763f98357ac78f06b88c9c584b59bbb5a3eb7e324961"
+      },
+      {
+        "bytes": 2277,
+        "line": 94,
+        "module": "mke2fs_conf",
+        "path": "system/extras/ext4_utils/Android.bp",
+        "sha256": "1f41dcab39075fffe579cfd90f160313fff7f2078ef0b3c451772c2249b82f6c"
+      },
+      {
+        "bytes": 669,
+        "line": 20,
+        "module": "AdbWinApi",
+        "path": "development/host/windows/Android.bp",
+        "sha256": "af467a764c15b2d7755db52a179952012a864bff6d883f10cfd6a42ec4abc036"
+      },
+      {
+        "bytes": 669,
+        "line": 29,
+        "module": "AdbWinUsbApi",
+        "path": "development/host/windows/Android.bp",
+        "sha256": "af467a764c15b2d7755db52a179952012a864bff6d883f10cfd6a42ec4abc036"
+      },
+      {
+        "bytes": 3757,
+        "line": 27,
+        "module": "platform_tools_properties",
+        "path": "development/sdk/Android.bp",
+        "sha256": "3eef3260ec7fc25d15a1172cb8e97c5a63a67baa9813319ec5e5eda3bffeb5c9"
+      }
+    ],
+    "source_tree_blueprints_scanned": 9797,
+    "remaining_declared_provider_names_not_found_after_two_cones": []
+  },
+  "normal_validation": {
+    "tests": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-j",
+        "2",
+        "-p",
+        "droidloom-update",
+        "native_generation_pair_build::tests",
+        "--",
+        "--test-threads=2"
+      ],
+      "session_id": "dpty-80d19124a921656b1b4d1baf369a6a7ad5a49b39fdda23c7c631339be768bb07",
+      "unit": "p4-native601-platform-tools-tests-20261109-2840-r1.service",
+      "exit_code": 0,
+      "passed": 21,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 233,
+      "log": {
+        "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-80d19124a921656b1b4d1baf369a6a7ad5a49b39fdda23c7c631339be768bb07/output.log",
+        "bytes": 24500,
+        "sha256": "0444a1e6a00737c891a899b8afa86a344fde4b88c5541600974ece995729d541"
+      },
+      "output_complete": true,
+      "new_cases": [
+        "ordinary_pair_platform_tools_rejects_the_actual_failed_r11_lock",
+        "ordinary_pair_platform_tools_requires_complete_original_provider_cones"
+      ]
+    },
+    "build": {
+      "command": [
+        "cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-j",
+        "2",
+        "-p",
+        "droidloom-update",
+        "-p",
+        "droidloom-source"
+      ],
+      "session_id": "dpty-220a659f14a5fecdd8651e4f4006dd36ed3ac11e8567148ec034f7f743173f21",
+      "unit": "p4-native601-platform-tools-build-20261109-2840-r1.service",
+      "exit_code": 0,
+      "output_complete": true,
+      "log": {
+        "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-220a659f14a5fecdd8651e4f4006dd36ed3ac11e8567148ec034f7f743173f21/output.log",
+        "bytes": 207,
+        "sha256": "20cf3f7e24985fafacc8a1ac439dfa8ea428f6767fb436d0c54f08acc09f5dd4"
+      }
+    },
+    "verify_lock": {
+      "command": [
+        "/home/qq/work/pocket4-native601-platform-tools-20261109-2840-r1/target/debug/droidloom-source",
+        "verify-lock",
+        "--lock",
+        "/home/qq/work/pocket4-native601-platform-tools-20261109-2840-r1/source/android/native-generation-pair/source-lock.json"
+      ],
+      "session_id": "dpty-7f6748a4260725800afd769e57c98c2861dcec130d151248624f8c155fc4eb0f",
+      "exit_code": 0,
+      "projects": 601,
+      "root_links": 8,
+      "output_complete": true,
+      "log": {
+        "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-7f6748a4260725800afd769e57c98c2861dcec130d151248624f8c155fc4eb0f/output.log",
+        "bytes": 108,
+        "sha256": "b2ca6f7c43cc84dfa361d0c5e1974e4be315f33fa1f76485c918e86a913ea006"
+      }
+    },
+    "source_and_update_binaries": [
+      {
+        "path": "/home/qq/work/pocket4-native601-platform-tools-20261109-2840-r1/target/debug/droidloom-source",
+        "bytes": 20380960,
+        "sha256": "c9ff48058951b5236f1b9cba4625944214bb8120111ee3c8eef287283a8e23fc"
+      },
+      {
+        "path": "/home/qq/work/pocket4-native601-platform-tools-20261109-2840-r1/target/debug/droidloom-update",
+        "bytes": 35503256,
+        "sha256": "a449cb447bfec002a3fd5eb5afd8771a0b8bfa12bf98a03737dc51fbdb765948"
+      }
+    ],
+    "resource_profile": {
+      "memory_max_bytes": 4294967296,
+      "cpu_quota_percent": 200,
+      "allowed_cpus": [
+        8,
+        9
+      ],
+      "swap_max_bytes": 0,
+      "runtime_max_seconds": 600
+    },
+    "external_unit_retirement": [
+      {
+        "properties": "LoadState=not-found\nActiveState=inactive\nSubState=dead\nMainPID=0\nResult=success\nExecMainStatus=0\nControlGroup=\n",
+        "rc": 0,
+        "stderr": "",
+        "unit": "p4-native601-platform-recipe-copy-20261109-2840-r1.service"
+      },
+      {
+        "properties": "LoadState=not-found\nActiveState=inactive\nSubState=dead\nMainPID=0\nResult=success\nExecMainStatus=0\nControlGroup=\n",
+        "rc": 0,
+        "stderr": "",
+        "unit": "p4-native601-platform-tools-tests-20261109-2840-r1.service"
+      },
+      {
+        "properties": "LoadState=not-found\nActiveState=inactive\nSubState=dead\nMainPID=0\nResult=success\nExecMainStatus=0\nControlGroup=\n",
+        "rc": 0,
+        "stderr": "",
+        "unit": "p4-native601-platform-tools-build-20261109-2840-r1.service"
+      }
+    ]
+  },
+  "predecessor_full": {
+    "host": "ai395",
+    "job_id": "1a1c0c01a05-11c5a-54",
+    "unit": "p4-native-source601-full-ai395-20261109-8b88-r11.service",
+    "state": "FAILED_RETIRED",
+    "exit_code": 1,
+    "output_complete": true,
+    "output_durable": true,
+    "finished_utc": "2026-11-09T14:51:10.899Z",
+    "missing_original_providers": [
+      "etc1tool",
+      "hprof-conv"
+    ],
+    "inner_terminal": {
+      "bytes": 64913,
+      "sha256": "7626dc35a4db5b19090b107faa37beaa9c16b56d341c4ff3cabfef990afc77c7"
+    },
+    "outer_terminal": {
+      "bytes": 13331,
+      "sha256": "7b0693ae761b405adc61c8ccd73e96c88ffa700044ce28e7bc3fe7d9377f5e48"
+    },
+    "owned_retirement_complete": true,
+    "owned_unit_retired": true,
+    "input_after_qualified": true,
+    "source_projection_restored": true,
+    "full_build_success": false,
+    "unchanged_frozen_controller_published_projects_field": 600
+  },
+  "scope": {
+    "targets": [
+      "libberberis_arm64",
+      "com.android.art"
+    ],
+    "superproject_commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+    "superproject_ref": "refs/heads/android-17.0.0_r1",
+    "build_make_commit": "5ce6f787337d0223710bf7d4a16dbe6d2a35f777",
+    "build_id": "CP2A.260605.016",
+    "build_id_file": {
+      "bytes": 822,
+      "sha256": "35097652a75fd45c7a7c4e7501b66ae168c27480eafff1254135b72c4e016375"
+    },
+    "selected_QPR1_same_cohort_or_ABI_proof": false
+  },
+  "remaining_required": [
+    "Coordinate with the original foreground owner before shared source reconciliation.",
+    "Materialize the new exact source lock through the normal reconciler under the existing original three locks; verify four original file hashes and the new manifest.",
+    "Run a fresh complete strict engine/ART full build with actual source/process/resource/retirement/artifact receipts.",
+    "Resolve official QPR1 cohort/ABI and runtime qualification separately; this same-revision provider repair gives no QPR1 or runtime credit."
+  ],
+  "shared_current_modified": false,
+  "owner_source_modified": false,
+  "original_shared_locks_modified": false
+}
