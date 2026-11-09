@@ -1,21 +1,24 @@
 # Pocket4 Android closeout continuation
 
-Current state: **`KERNEL_OFFLINE_BOOT_QUALIFIED_NATIVE_AUDIO_GRAPH_REPAIR_FINAL42_RUNTIME_PENDING`**.
+Current state: **`KERNEL_PAYLOAD_MENU_INSTALLED_OLD_ANDROID_MASKED_NATIVE_AUDIO_REPAIR_FINAL42_RUNTIME_PENDING`**.
 
-Pocket4 is the Linux host running Droidloom Android. The repaired kernel, all
-core module signatures, four real Binder credential controls, hardware deployment
-inputs and the normal NVMe/ext4 startup chain have passed their scoped checks.
-Native and Audio still have failed complete builds. The new kernel has not been
-installed on the host, the selected Android cohort has not completed runtime
-acceptance, and the selected applications remain **0/42 accepted**. The original
-45-application inventory remains a separate historical denominator.
+Pocket4 is the Linux host running Droidloom Android. The repaired
+`7.0.14-p4cred1` kernel, its signed module tree and normal GRUB entries are
+now physically installed. The host is still running `7.0.0-38-generic`;
+that release remains the default, and no one-shot boot has been selected.
+Both old Droidloom autostart entrances are persistently masked and independently
+verified. Original Android data remains closed and unchanged.
 
-The [current state](continuation/state.json) contains exact receipt hashes and
-preserves the earlier observations. **Production ready, runtime qualified,
-final candidate deployed and all blockers closed remain false.** Existing Git
-history and [continuation history](continuation/history/) retain earlier source
-and failure records. No copied evidence or successful CI run transfers device
-runtime qualification.
+Native600 and Audio425 source repairs have advanced through normal verification,
+but neither has qualified complete production artifacts. The selected Android
+cohort and applications remain **0/42 accepted**. **Production ready, runtime
+qualified, final candidate deployed and all blockers closed remain false.**
+
+The [current state](continuation/state.json) records exact receipt hashes.
+[The prior state](continuation/history/state-before-kernel-stage-20261109.json)
+is preserved byte-for-byte. Other historical observations retain their original
+scope. Source checks, off-device builds, copied evidence and CI do not establish
+device runtime acceptance.
 
 ## Qualified kernel and normal startup inputs
 
@@ -90,65 +93,120 @@ log. The actual QEMU process ran as UID 1000 with no capabilities, a 2 GiB cgrou
 limit, two CPUs, no network and no host disk passthrough. It exited; the temporary
 overlay disappeared; the base disk and candidate bytes remained unchanged.
 
-This closes the offline startup-input gate. Host installation, a coordinated
-restart, host hardware operation and Android startup remain outstanding.
+This closes the offline startup-input gate. The subsequent host installation
+has now completed, as described below; hardware operation under the candidate
+and Android startup remain outstanding.
 
-## Native597: source repair passed, complete artifacts still failed
+### Actual host installation and guarded startup
 
-The [original LLVM/Clang plugin repair](../native597-original-llvm-plugin-cones-r1/README.md)
-adds each locked project's complete `soong` cone. It preserves all 597 project
-commits, eight root links and every other selection. The eight upstream plugin
-files are included with their exact Git and SHA-256 identities.
+The transaction installed 6,918 module-tree files and five boot payloads.
+A normal, restricted GRUB preview preserved the complete old menu bytes except
+for two new candidate entries. The original fallback remains the default.
+Normal `grub-script-check` passed before and after the menu commit.
+An independent post-commit observer rechecked the complete candidate inventory,
+the original boot files and the exact committed menu.
 
-The normal Rust tool build completed all 23 owned commands. The independent
-build-host import completed all 15 commands and actual loader checks. Normal
-source verification, reconciliation and verification completed all five commands,
-with only the two approved cone additions in the resulting manifest. The 43
-actual Linux lifecycle and resource controls passed. These are source/tool
-qualifications.
+Two earlier previews remain failed records. The first could not traverse the
+original home directory after dropping capabilities; the correction provided
+only explicit private mounts. The second omitted a 66-byte locale block; the
+unchanged old-menu validator rejected it. The final preview used the normal
+locale setting and preserved that block. No generated menu was hand-edited and
+the validator was not weakened.
 
-The latest complete attempt, **r3**, reached normal Soong step **280/280** and
-accepted the LLVM/Clang module registrations. It then failed because
-`com.android.devicelock-systemserverclasspath-fragment` references the missing
-`service-devicelock` provider. The attempt also failed its original resource
-acceptance: its measured peak was **25,769,807,872 bytes**, 4,096 bytes above the
-configured 24 GiB maximum, with zero OOM and swap. The failed result is unchanged.
-The original kernel accounting mechanisms can temporarily exceed a memory
-maximum, but no particular force-charge path was traced in this attempt.
+The old system daemon and user presenter units are both masked through normal
+systemd commands. Their vendor files, drop-ins and enable links remain intact.
+Independent checks confirmed both owned masks, inactive units, unchanged
+original data metadata, no data-image descriptors or loop consumers, and
+unchanged existing voice and camera services. The masks must remain in place
+through the guarded restart so that the old runtime cannot reopen original data.
 
-Source restoration, five normal fallback checks, all process retirement and the
-original lock checks completed. The next generation is being prepared from
-Native's own actual discovery and source projection, with a 22 GiB early-reclaim
-threshold and the unchanged 24 GiB maximum, peak, OOM and swap gates. It will
-require a new normal complete build and artifact qualification.
+Owned kernel and mask rollback requests are prepared. Neither has run.
+The kernel rollback must first return to the preserved fallback if the
+candidate is running. A one-shot GRUB choice does not reset a hung host.
+Actual recovery access and the interruption of four running voice services
+still require coordination. Existing service definitions and linger settings
+have been inspected, but post-reboot recovery has not yet been observed.
 
-## Audio321: source closure passed, complete APEX still failed
+## Native600: source qualified, complete r6 failed and retired
 
-The [CTS/STSs recursive closure](../audio-cts-sts-recursive-closure-r1/README.md)
-and [normal source-plan serialization correction](../audio-source-plan-serialization-r1/README.md)
-qualified the **321-project** source through seven normal commands. All prior
-project commits were preserved. The serialization correction handles the
-normal omitted-empty source selection, with 12 portable controls.
+The [original provider closure](../native600-original-provider-closure-r1/README.md)
+preserves the original 597 commits and adds the actual missing provider projects.
+The [RKPD follow-up](../native600-rkpd-apex-r1/README.md) then selects the
+complete six-file `apex` cone from the already locked RKPD commit.
+It adds no placeholder module and does not enable missing dependencies.
+The normal tool build, independent import, source verification and reconciliation
+all completed. The RKPD source phase ran eight normal commands and retired
+all owned children and locks.
 
-The latest complete attempt, **r7**, reached normal Soong step **276/276**. The
-previous CTS/STSs provider errors did not recur. It failed when `libtflite_kernels`
-referenced the absent `gemmlowp_headers`. Its normal source-after, restoration,
-work-budget and resource gates passed. Peak memory was **6,855,122,944 bytes**,
-with zero OOM and swap. The build and its owning processes retired.
+The latest completed full build, **r6**, reached normal Soong **280/280**.
+The RKPD failure did not recur. Soong then rejected two unresolved names:
+`signature-common-javalib` from the CTS signature consumer and
+`trendy_team_desktop_display` from the Cuttlefish vkms package metadata.
+Their original sources and metadata are being repaired in a separate generation.
 
-The complete failed attempt has **102 canonical files / 20,820,363 bytes** of
-verified custody. Its original failure remains a failure. The separate
-[canonical Audio consumer](../audio-canonical-custody-r1/README.md) checks exact
-local copies against the original raw terminal, result time, argv, nonce and
-full-artifact evidence. Its 19 portable controls reject changed bytes, forged
-ownership, incomplete terminals and transferred host/runtime credit. It does not
-create or qualify an APEX.
+The failed build is fully retired. Normal source-after verification, projection
+restoration, complete owned-allocation observation and all lock checks passed.
+Peak memory was **7,878,389,760 bytes** under MemoryHigh 22 GiB and MemoryMax
+24 GiB; high, max, OOM and swap counters were zero. These resource results do
+not change the failed build outcome. Earlier r3, r4 and r5 failures remain
+historical records with their own causes and receipts.
 
-Audio and Native now use independent actual graph inputs to collect real missing
-providers and projection omissions before another normal build. Generated SDK,
-AIDL/HIDL, namespace and conditional dependencies must be interpreted using the
-original build rules. A source graph audit is not a substitute for the real
-Soong build, complete artifacts, signing, ABI and QPR1 runtime compatibility.
+The frozen Native600 controls executed **67/67 on Linux** with no skips.
+The current RKPD consumer executed **12/12 on Linux**. On the publication Mac,
+the former ran 54 controls and explicitly skipped 13 Linux-only controls; the
+latter ran all 12. No macOS result is presented as Linux lifecycle acceptance.
+The complete engine/ART pair and its compatibility with the selected QPR1
+cohort remain unqualified.
+
+## Audio425: source and RKPD qualified, complete APEX pending
+
+The [Audio425 source capsule](../audio425-original-provider-closure-r1/CAPSULE.md)
+preserves the previous 321 project commits, adds 104 original projects and
+expands 28 existing selections. Normal source reconciliation and verification
+completed all **16 commands**, checking **425 projects and 1,518 original
+Android.bp files** without external alternates. All owned processes and locks
+retired.
+
+This source-only run used a configured 4 GiB limit, recorded a peak of
+**4,299,010,048 bytes** and **25,336 memory.max events**, with zero OOM and swap.
+Its frozen source acceptance checks did not require a zero max-event count or
+a peak below the configured cap. It passed those original source gates.
+The full-build contract still requires its own strict peak, OOM, swap and
+work-budget checks.
+
+A separately qualified follow-up added the complete six-file RKPD APEX cone
+from the same pinned project commit. All **17 normal commands** completed,
+with **425 projects and 1,519 original Android.bp files**. Its own peak was
+**1,661,616,128 bytes**, with zero max events, OOM and swap. These are separate
+source observations; neither is a complete APEX or compiled-bridge result.
+
+The next complete generation uses explicit MemoryHigh 22 GiB, the unchanged
+24 GiB maximum, eight CPUs, six requested build jobs, Go parallelism two and
+a 5 GiB Go budget. It requires fresh actual admission and full lifetime
+measurements. The earlier APEX attempt, r7, failed on
+`gemmlowp_headers` and remains failed. Its 102-file, 20,820,363-byte
+canonical custody is retained until its replacement and consumers close.
+
+The subsequent complete attempt, **r8**, failed before Soong. Its retained
+original-provider guard compared the Connectivity service blueprint with its
+original hash after two existing normal patches had already changed that file.
+The failed result, exact patch chain and required preimage/postimage correction
+are preserved separately. Source-after verification, restoration, all owned
+processes and locks completed. Its peak was **497,692,672 bytes**, with zero high,
+max, OOM and swap events. No Soong execution or complete APEX is claimed.
+
+The allocation observer ran **17/17 actual Linux controls**. The Mac runner
+reports 17 unsupported-platform skips and zero passes. Linux CI requires all
+17 controls to execute. The
+[canonical Audio importer](../audio-canonical-custody-r1/README.md) binds exact
+local copies to complete original build, qualifier and terminal evidence;
+its controls do not create or qualify an APEX.
+
+The newly frozen capsules retain the observations at their individual creation
+times. Later source completions and build failures are recorded in the common
+current state without rewriting those sealed snapshots. Generated SDK,
+AIDL/HIDL, namespace and conditional dependencies remain subject to the actual
+normal build rules and final artifacts.
 
 ## Android cohort and production isolation
 
@@ -164,13 +222,23 @@ The earlier empty-data Android probe failed on the Binder credential path and
 fully retired. The new kernel's isolated success does not retroactively turn
 that Android attempt into a successful boot.
 
-The existing development runner has not qualified production UID mapping or
-seccomp, and the production backend remains incomplete. A fresh read-only audit
-found **65,536 allocated subordinate IDs** against a required **100,000**, with
-the existing range already used by two unrelated active namespaces. No ranges
-were extended, no global account mappings changed and no unrelated containers
-were stopped. A nonconflicting allocation and an implemented, tested production
-backend are required before release.
+The production backend, mapping and seccomp remain unqualified. The existing
+65,536-ID subordinate allocation is smaller than the required 100,000 IDs and
+is already used by unrelated active namespaces. No ranges, accounts, registry
+or host policies have been changed.
+
+The [production identity source](../production-identity-reservation-r1/README.md)
+now passes 19 focused tests and ten normal tool commands. It keeps authority
+inside a nonserializable lease, checks a distinct account and private group,
+rejects aliases and overlapping grants, and holds root-anchored reservation
+locks. An actual sealed normal binary refused the missing dedicated account
+before creating any registry or map.
+
+Successful enumeration alone does not establish a complete NSS inventory.
+Complete provider and live-occupancy admission, a real owned namespace broker,
+mount/APEX and data mapping, IPC, seccomp and daemon integration still require
+implementation and actual qualification. Source identity checks do not grant
+permission to reuse another workload's ranges or write an arbitrary PID's map.
 
 ## Applications, current preparations and user data
 
@@ -223,24 +291,39 @@ removed after full input migration, source verification and ownership checks:
 observed free-space increase was 79,477,571,584 bytes. This separate retirement
 is not added to the original 807-root denominator.
 
-Later staging and failed generations are being checked against complete current
-references before removal. The final goal remains one accepted Android cohort
-and the required latest applications, with obsolete binaries, staging trees and
-experiments removed after their active consumers and replacement gates close.
+Two later cleanup transactions also completed. Application staging retirement
+removed **41 targets / 117 nodes**: 36 obsolete staging files and five failed
+roots. Independent full-hash verification preserved the union of **743 current
+files**: 721 selected application inputs and 22 current Camera files.
+
+Kernel temporary-payload retirement removed **19 targets / 4,574 nodes**,
+accounting for **843,276,288 allocated bytes**. The signed candidate, current
+application inputs and original data metadata were independently checked.
+These separate transactions are not added to the original 807-root denominator.
+
+Registered QA packages, the two retained original roots, later repair
+generations and obsolete Android payloads still require final consumer closure
+and physical removal. Required current signing material and user data remain
+protected. The intended result is one accepted Android cohort and the required
+current applications, with obsolete versions and experiments retired.
 
 ## Next execution gates
 
-1. Complete the actual Native and Audio source repairs and obtain normal full
-   builds, complete artifact/signature evidence and coherent QPR1 ABI results.
-2. Finish the concrete kernel installation and rollback transaction, coordinate
-   the disruptive host restart, and verify real host hardware and Android boot.
-3. Implement and qualify production identity mapping, namespace ownership and
-   seccomp without overlapping unrelated workloads.
-4. Complete the selected application's real acceptance flows, official current
-   delivery and supported signer/data migrations.
-5. Retire superseded Android, QA apps, staging and experiments using fresh
-   ownership, reference and physical absence checks.
+1. Finish the actual Native source and metadata repairs and obtain normal full
+   Native and Audio builds, complete artifact/signature evidence and coherent
+   QPR1 ABI results.
+2. Complete the reviewed one-shot selection and recovery decision, coordinate
+   the disruptive restart, and verify the candidate on real host hardware.
+   Preserve the old Android masks and original data throughout.
+3. Implement and qualify production identity admission, owned namespace mapping,
+   mount/APEX/data boundaries, IPC and seccomp without overlapping other workloads.
+4. Verify actual Android startup, audio/video, storage and all 42 selected
+   application flows. Complete official current app delivery and supported
+   signer/data migration using authorized endpoints.
+5. Remove superseded Android, QA apps, staging and experiment outputs after
+   verifying their exact owners, current references and physical absence.
 
-The A08 workflow checks the frozen source manifests and actual portable
-controls. Its source and host results remain distinct from complete Android
-builds, deployment and application runtime acceptance.
+The A08 workflow retains the three independent identity, allocation and cleanup
+review capsules alongside the seven current frozen source capsules. It runs the
+new Linux controls in separate interpreters. This publication records repair and
+verification progress; it grants no production or application runtime pass.

@@ -261,7 +261,7 @@ jobs:
           import stat
           import sys
           import unittest
-          capsules = {'native597-original-llvm-plugin-cones-r1': ('75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c', 12), 'audio-canonical-custody-r1': ('42ead27bc89d5d866eddfd951e0dbfb91af1ff1c4e2843946fe4eee34925f1d5', 3), 'apparmor-binder-retained-credential-r1': ('243e3355ecfa6f96af8839ffa10854c796a3b22e03a5d924c778fb47aa83f4b9', 6)}
+          capsules = {'native597-original-llvm-plugin-cones-r1': ('75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c', 12), 'audio-canonical-custody-r1': ('42ead27bc89d5d866eddfd951e0dbfb91af1ff1c4e2843946fe4eee34925f1d5', 3), 'apparmor-binder-retained-credential-r1': ('243e3355ecfa6f96af8839ffa10854c796a3b22e03a5d924c778fb47aa83f4b9', 6), 'production-identity-reservation-r1': ('eee9cec9ecbd9b71cdda9df13bb0446124001a5826932709561126896881ffea', 3), 'native600-original-provider-closure-r1': ('d40f8629af9741d8bc4dc09bb89389fe2b1c7348e3ea02d72b01dca1908c6cc6', 18), 'audio425-original-provider-closure-r1': ('257bc3f071fd09c6b908ef80fdf0fe50617259c33b9083b0d66da6e270a6a450', 23), 'native600-rkpd-apex-r1': ('f33f622023fb328ea88c79a2fb29f7f7a9c1c3427af0a31b53bbdfc8c9fc4889', 9)}
           for name, (digest, count) in capsules.items():
               directory = Path('compat/android/pocket4', name).resolve(strict=True)
               raw = (directory / 'FILES.json').read_bytes()
@@ -299,7 +299,7 @@ jobs:
           result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(module))
           if result.testsRun != 19 or result.skipped or not result.wasSuccessful():
               raise SystemExit('All nineteen canonical Audio custody controls must execute')
-          print('3 exact source capsules and 19 custody controls passed; Android runtime remains a separate gate')
+          print('7 exact source capsules and 19 custody controls passed; Android runtime remains a separate gate')
           PYCURRENTCAPSULES
       - name: Verify supervisor inputs, Native observations and cleanup visibility
         shell: bash
@@ -382,6 +382,56 @@ jobs:
                json.dumps(['test_verifier_smoke.py']), '2'], input=controls)
           print('Source replay and isolated controls passed; this step does not run Rust, Android, or application acceptance')
           PYREVIEW
+      - name: Verify Native600 RKPD source consumer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYRKPD600' 2>&1 | tee "$RUNNER_TEMP/a08/native600-rkpd-controls.log"
+          from pathlib import Path
+          import sys
+          import unittest
+          directory = Path('compat/android/pocket4/native600-rkpd-apex-r1/controls').resolve()
+          sys.path.insert(0, str(directory))
+          suite = unittest.defaultTestLoader.discover(str(directory), pattern='test_*.py')
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          if result.testsRun != 12 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('All twelve current RKPD source controls must execute')
+          print('12 RKPD source controls passed; complete artifacts and runtime remain unqualified')
+          PYRKPD600
+      - name: Verify Native600 complete build ownership controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYNATIVE600' 2>&1 | tee "$RUNNER_TEMP/a08/native600-controls.log"
+          from pathlib import Path
+          import sys
+          import unittest
+          directory = Path('compat/android/pocket4/native600-original-provider-closure-r1/controls').resolve()
+          sys.path.insert(0, str(directory))
+          suite = unittest.defaultTestLoader.discover(str(directory), pattern='test_*.py')
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          if result.testsRun != 67 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('All 67 Native600 Linux controls must execute')
+          print('67 Native600 source controls passed; complete artifacts and runtime remain unqualified')
+          PYNATIVE600
+      - name: Verify Audio425 complete allocation controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/audio425-original-provider-closure-r1/allocation-observer/run_portable_tests.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/audio425-allocation-controls.log"
+          python3 -I -B - "$RUNNER_TEMP/a08/audio425-allocation-controls.log" <<'PYAUDIO425'
+          import json
+          from pathlib import Path
+          import sys
+          records = [json.loads(line) for line in Path(sys.argv[1]).read_text().splitlines() if line.startswith('{')]
+          if len(records) != 1:
+              raise SystemExit('One complete Audio allocation result is required')
+          report = records[0]
+          if not report.get('supported') or report.get('run') != 17 or report.get('passed') != 17 or report.get('skipped') != 0 or report.get('failures') != 0 or report.get('errors') != 0:
+              raise SystemExit('All 17 Audio425 Linux controls must execute')
+          print('17 Audio allocation controls passed; complete APEX and runtime remain unqualified')
+          PYAUDIO425
       - name: Verify Audio compiler and Ninja evidence guards
         shell: bash
         run: |

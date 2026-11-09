@@ -97,6 +97,7 @@
   },
   "QPR1_kernel_followup": {
     "Android_boot_completed": false,
+    "actual_host_installation": "host_kernel_installation",
     "all_6901_core_module_CMS_verified": true,
     "all_original_configuration_features_preserved": true,
     "baseline_cases": 4,
@@ -141,7 +142,7 @@
       "normal_module_to_builtin_transition": 1
     },
     "host_LSM_changes": 0,
-    "host_kernel_installs": 0,
+    "host_kernel_installs": 1,
     "host_reboots": 0,
     "normal_configuration_qualified": true,
     "normal_configuration_result": {
@@ -189,7 +190,7 @@
       },
       "swap_bytes": 0
     },
-    "normal_full_state_at_last_observation": "r7 full build, all core module signatures and four real retained-credential Binder VM controls passed; exact normal initramfs also booted through NVMe/ext4/fsck; host not installed",
+    "normal_full_state_at_last_observation": "Qualified signed kernel and normal initramfs installed; exact GRUB menu independently committed with fallback38 unchanged. Running host remains38; no one-shot selection or reboot.",
     "normal_initramfs_NVMe_ext4_VM": {
       "Android_boot_qualified": false,
       "QEMU_retired": true,
@@ -404,6 +405,7 @@
     },
     "normal_commands_completed": 4,
     "normal_migration_state": "SUCCEEDED",
+    "observation_is_historical": true,
     "projects": 316,
     "source_commit": "3b4199c0af6e430a852131a71f87aa65aef8f813",
     "source_lock_sha256": "c104640627a1beb35b25423656e751a4b56ac17287505c0ee2efeeb7d0419560",
@@ -412,7 +414,8 @@
       "bytes": 25639,
       "sha256": "85e923e977cbcb91997fc48c482ea35c5507d9f675383dee120b0d40d3f8ea37"
     },
-    "source_tree": "5ccefae63418a1efdd6bb716b63a77deb80601c0"
+    "source_tree": "5ccefae63418a1efdd6bb716b63a77deb80601c0",
+    "superseded_by": "audio425_current"
   },
   "actual_audio_source_previous_309": {
     "materialized_manifest": {
@@ -479,6 +482,27 @@
       "sha256": "a60ef0dd5ea3abd804f38fd383b6687f2183abc3f0ed166e5ccc37c9a98b3263"
     },
     "whole_app_acceptance_granted": false
+  },
+  "application_staging_retirement": {
+    "Final42_acceptance_added": 0,
+    "actual_nodes_removed": 117,
+    "actual_targets_removed": 41,
+    "added_to_original807_denominator": false,
+    "current_Camera_files": 22,
+    "current_files_union_verified": 743,
+    "current_retained_files": 721,
+    "failed_roots": 5,
+    "independent": {
+      "bytes": 6747,
+      "sha256": "fb7a9b797dc3e04d34c6a5caadcbf887ce031b1959c6b473dbd9c0961af77770"
+    },
+    "individual_staging_files": 36,
+    "original_data_metadata_unchanged": true,
+    "result": {
+      "bytes": 27682,
+      "sha256": "2e95cd64a3172e6331c2a1253057bae6fff682477ae6c5333c48dd14e746ce80"
+    },
+    "selected_preparations": 13
   },
   "artifact_policy": "Public repair source and compact hashed observations only. Private runtime identities, device/account data, raw private logs and user application data are excluded. Source checks do not establish runtime acceptance.",
   "audio316_actual_observation": {
@@ -574,6 +598,7 @@
     "new_lock_sha256": "c104640627a1beb35b25423656e751a4b56ac17287505c0ee2efeeb7d0419560",
     "normal_cli_profile": "dev",
     "normal_cli_tools_built": 2,
+    "observation_is_historical": true,
     "public_source": {
       "actual309_base_commit": "2884a01f853caa94f7b66c7e945b0e2818f8ca74",
       "files": 431,
@@ -587,7 +612,133 @@
     "runtime_qualified": false,
     "source_memory_max_bytes": 6442450944,
     "source_migration_qualified": true,
+    "superseded_by": "audio425_current",
     "target_projects": 316
+  },
+  "audio425_current": {
+    "added_projects": 104,
+    "allocation_controls_actual_Linux": {
+      "passed": 17,
+      "result": {
+        "bytes": 7323,
+        "sha256": "014f62f4515dab35a2dadf4d57eaf5ed23bbba615dff81a013b6b16f5618aebd"
+      },
+      "skipped": 0
+    },
+    "compiled_bridge_qualified": false,
+    "complete_APEX_qualified": false,
+    "expanded_existing_projects": 28,
+    "full_r8": {
+      "OOM_events": 0,
+      "actual_Go_probe_is_not_Soong_lifetime_evidence": true,
+      "actual_Soong_processes_observed": 0,
+      "actual_memory_peak_bytes": 497692672,
+      "all_locks_free": true,
+      "all_owned_resources_retired": true,
+      "failure": "audio retained original graph provider changed: packages/modules/Connectivity/service/Android.bp",
+      "fallback": {
+        "bytes": 17763,
+        "sha256": "3218008de93db0bb564ac2667e3611ee3d52571ac5f97cbec5cb3527a2bdf154"
+      },
+      "inner": {
+        "bytes": 53477,
+        "sha256": "f44fc211cc1ec50fb05d1f39d320b401bf5a9652f9b4411e8d6e72472ea8886c"
+      },
+      "input_after_qualified": true,
+      "memory_high_events": 0,
+      "memory_max_events": 0,
+      "normal_full_driver_started": true,
+      "normal_full_return_code": 1,
+      "outer": {
+        "bytes": 9666,
+        "sha256": "9e80a64c61fc4155fe01e6b48edfdb73578b4c73854c5384e3e98377efc8138d"
+      },
+      "raw_outer_state": "FAILED_RETIRED_OR_REQUIRES_RECOVERY",
+      "resource_gate_passed": true,
+      "source_projection_restored": true,
+      "state": "FAILED_RETIRED",
+      "swap_bytes": 0
+    },
+    "latest_QPR1_ABI_qualified": false,
+    "next_full_profile": {
+      "cpu_count": 8,
+      "go_gc_percent": 50,
+      "go_max_procs": 2,
+      "go_memory_limit_bytes": 5368709120,
+      "jobs": 6,
+      "memory_high_bytes": 23622320128,
+      "memory_max_bytes": 25769803776,
+      "owned_work_budget_bytes": 38654705664,
+      "qualification_transferred_from_source": false,
+      "shared_disk_reserve_bytes": 17179869184,
+      "strict_peak_at_or_below_max": true
+    },
+    "original425_recipe_commit": "969e8cf470a470cb2cb86d2a1d5797b352ab5a8f",
+    "original425_source": {
+      "OOM_events": 0,
+      "all_children_retired": true,
+      "all_commands_exit_zero": true,
+      "all_locks_free": true,
+      "materialized_manifest": {
+        "bytes": 261674,
+        "sha256": "553b2e4a78778368e45072b5fec1359e16dedf7ff160bec7a8d8b57d13989353"
+      },
+      "memory_max_bytes": 4294967296,
+      "memory_max_events": 25336,
+      "normal_commands": 16,
+      "observed_memory_peak_bytes": 4299010048,
+      "original_Android_bp_files": 1518,
+      "outer": {
+        "bytes": 5044,
+        "sha256": "8daff67e953285a7c49f67e47aa31b39ab447a2599503cf4d860e375acbd2d6b"
+      },
+      "result": {
+        "bytes": 844945,
+        "sha256": "ee4a80e22636bff6f2d697e2eff0551291003945757671945bb211cd7ea4e554"
+      },
+      "source_gate_definition": "The frozen source-only gate requires the configured 4 GiB cap, zero OOM and swap, CPU and disk admission; it does not require zero memory.max events or peak <= cap. This does not alter the strict full-build peak gate.",
+      "source_gate_passed": true,
+      "swap_bytes": 0
+    },
+    "original425_source_lock": {
+      "bytes": 235863,
+      "sha256": "5bacc225ebb2cf9f793b5c439205a4d27ec43144c04cae8e16e5197b300e57b7"
+    },
+    "original_321_commits_preserved": true,
+    "rkpd_source": {
+      "OOM_events": 0,
+      "all_children_retired": true,
+      "all_commands_exit_zero": true,
+      "all_locks_free": true,
+      "materialized_manifest": {
+        "bytes": 261692,
+        "sha256": "62d52bea3c5230d8add2484d9e72ffcff8c279f8ac256eeb63320609630b75ad"
+      },
+      "memory_max_bytes": 4294967296,
+      "memory_max_events": 0,
+      "normal_commands": 17,
+      "observed_memory_peak_bytes": 1661616128,
+      "original_Android_bp_files": 1519,
+      "outer": {
+        "bytes": 5015,
+        "sha256": "65620bcb1e4ea228da04aaaa2f0b34f14ec482e036383b0d9b9cd712f8b5eeee"
+      },
+      "recipe_commit": "47e1f50438cb3ec0debee674965d310e25ab7569",
+      "recipe_tree": "9f636724fd9485d9507e2873ff3035ab19ecc7e6",
+      "result": {
+        "bytes": 836612,
+        "sha256": "5bf8b5ef2732f39c1fdb63dddf4c034cfb07e98e0bf5ec59144e811ed7b15d52"
+      },
+      "same_commit_complete_added_cone_files": 6,
+      "source_lock": {
+        "bytes": 235879,
+        "sha256": "1dd0671551fb3c07cac4bb9b587346421321a6e4809494299f7b6daa4c49371c"
+      },
+      "swap_bytes": 0
+    },
+    "runtime_qualified": false,
+    "source_projects": 425,
+    "state": "SOURCE425_AND_RKPD_QUALIFIED_FULL_R8_FAILED_BEFORE_SOONG_RETIRED"
   },
   "audio_compiler_evidence": {
     "Audio_artifact_qualification_granted": false,
@@ -768,6 +919,44 @@
     "unrelated_offload_cleanup_added_to_count": false
   },
   "current_source_controls": {
+    "CI_requires_Linux_zero_skips": true,
+    "Linux_results_remain_separate": true,
+    "additional_Mac_receipt": {
+      "bytes": 3952,
+      "sha256": "466d31fa2d51f28b177e8feb671eef54d25acbccebdd9c1aae42af59e5998aac"
+    },
+    "audio_allocation_Mac": {
+      "passed": 0,
+      "skipped": 17,
+      "supported": false
+    },
+    "native600_Mac": {
+      "errors": 0,
+      "failures": 0,
+      "passed": 54,
+      "result": {
+        "bytes": 3463,
+        "sha256": "b3373edad9cdaf077d1e1faecf4bdf69c86d267e4d870ddf07755fad80323c15"
+      },
+      "run": 67,
+      "skipped": 13
+    },
+    "normal_source_integrity_verification_required": true,
+    "pre_rebase_source_integrity_checked": 611,
+    "publication_python": "3.9.6",
+    "required_source_inputs": 191,
+    "retained_review_controls_require_same_head_CI": true,
+    "rkpd_Mac": {
+      "errors": 0,
+      "failures": 0,
+      "passed": 12,
+      "run": 12,
+      "skipped": 0
+    },
+    "runtime_or_app_acceptance_claimed": false,
+    "source_inventory_count": 641
+  },
+  "current_source_controls_previous": {
     "audio_continuation": 24,
     "native_full_resource_profile": 26,
     "native_release_consumer": 29,
@@ -799,6 +988,76 @@
     "runtime_qualified": false,
     "sha256": "b39070304764e687192652a08ea5a2971fcf3db490fab0f0726acd0698675652"
   },
+  "host_kernel_installation": {
+    "Android_boot_qualified": false,
+    "boot_payload_files": 5,
+    "boot_selection_writes": 0,
+    "candidate_payload_physically_installed": true,
+    "candidate_release": "7.0.14-p4cred1",
+    "commit": {
+      "bytes": 2103,
+      "sha256": "73f0084e62ace69a4f10f4d033312741775e4b9c671290586998288cbe35c197"
+    },
+    "commit_independent": {
+      "bytes": 1515132,
+      "sha256": "768180e03c9fe8c3f234a17a38e6409f02a4a9315cb9a83761cba0d9dd674721"
+    },
+    "committed_menu": {
+      "bytes": 13676,
+      "sha256": "fd2bda0191c19a9da4a2623c60d53cfa9d24da9b7253abf6c8ceaea711ca0b4a"
+    },
+    "default_release_preserved": "7.0.0-38-generic",
+    "hardware_runtime_qualified": false,
+    "host_reboots": 0,
+    "module_tree_files": 6918,
+    "next_entry_empty": true,
+    "normal_GRUB_menu_committed": true,
+    "normal_preview": {
+      "bytes": 13573,
+      "sha256": "17f07fa0ba9d35d60cf77e423a4abed217931152a031734bae37c20c7ada5488"
+    },
+    "normal_preview_independent": {
+      "bytes": 1509652,
+      "sha256": "b142a94e0a13e8359593aee96941653b81f83c7122c457d8067d7057bee0a3de"
+    },
+    "old_menu_bytes_preserved_except_two_candidate_entries": true,
+    "one_shot_does_not_reset_a_hung_host": true,
+    "one_shot_execution_ready": false,
+    "one_shot_recovery_inputs": {
+      "bytes": 9135,
+      "sha256": "5f34555ef59ad005355e4ea55e4edd08c2b654712051935846acdedfa7464a3e"
+    },
+    "owned_kernel_rollback_executed": false,
+    "owned_kernel_rollback_prepared": true,
+    "post_boot_voice_recovery_observed": false,
+    "preview_failures_preserved": [
+      {
+        "reason": "Capability-free preview could not traverse the original home directory; no host permission changes.",
+        "result": {
+          "bytes": 5559,
+          "sha256": "cf0131de35266618c197a6afa229accb237184830f905f33d10a55252506e6dd"
+        }
+      },
+      {
+        "reason": "Normal preview omitted the original locale block. Strict old-menu byte preservation rejected it.",
+        "result": {
+          "bytes": 12233,
+          "sha256": "a26a4b62b01e750bf705b6d286f6fc3266101a4fb2660407e769b63639b6ec2c"
+        }
+      }
+    ],
+    "running_release": "7.0.0-38-generic",
+    "signed_modules": 6902,
+    "stage": {
+      "bytes": 3571,
+      "sha256": "838479c964a46b14e3d21f786d654611552dea1594a315997b083bf561d3d2b2"
+    },
+    "unchanged_grub_environment": {
+      "bytes": 1024,
+      "sha256": "0e8344eff0b558d225092d5ccc2aef2247f81e3d829e2edfe48eb04a19fdbc11"
+    },
+    "unrelated_voice_services_currently_running": 4
+  },
   "host_namespace_ownership": {
     "actual_root_controls_ignored": 0,
     "actual_root_controls_passed": 3,
@@ -811,7 +1070,49 @@
     "sha256": "39f4010957877d183e505a38163cf961b4d15e138a73daf2e74f7a49a85325df",
     "source_commit": "ecf986b7afe7a2c24e537e765ee600c0256b2096"
   },
-  "last_observed_android_state": "Normally stopped; no deployment performed by this continuation.",
+  "inherited_independent_source_review": {
+    "capsules": {
+      "cleanup-current-inputs-r1": {
+        "bytes": 2854,
+        "manifest": "FILES.json",
+        "members": 15,
+        "sha256": "7b2cee4b3fe8dca5f2b508302279d73337d034efb0e37b08a93cd4816e45e578"
+      },
+      "native600-allocation-observation-r1": {
+        "bytes": 2719,
+        "manifest": "manifest.json",
+        "members": 14,
+        "sha256": "e0b80c1c3baa9726e1f8739fc46f85cf944dff7a458b1e5c9703b4707b2a9118"
+      },
+      "production-identity-input-validation-r1": {
+        "bytes": 1339,
+        "manifest": "FILES.json",
+        "members": 8,
+        "sha256": "51eab0a53fac05513969df8a50796a6f141d6826758f05b0ff316a7194ce0285"
+      }
+    },
+    "live_policy_or_cleanup_admission_transferred": false,
+    "normal_history_commits_preserved": 2,
+    "original_base": "265248170ce2e18e13c090246f97f3e3d80c637b",
+    "upstream_head": "14a6ab25f378d7255f2d2a195c045a54df1940dc"
+  },
+  "kernel_disposable_payload_retirement": {
+    "actual_nodes_removed": 4574,
+    "actual_targets_removed": 19,
+    "added_to_original807_denominator": false,
+    "allocated_bytes_removed": 843276288,
+    "independent": {
+      "bytes": 4451,
+      "sha256": "ef96365579f1eb6cab60e5808147fd630da2ce772d9cc9b9fe71f4feb4f2bd31"
+    },
+    "original_data_metadata_unchanged": true,
+    "protected_candidate_and_application_files_verified": true,
+    "result": {
+      "bytes": 5315,
+      "sha256": "e7058d03ecb0fea88b467ec4e362a14fc737367d28eead3caed7b380e52645de"
+    }
+  },
+  "last_observed_android_state": "Stopped. Both old automatic startup entrances are persistently masked; original user images remain closed. No new Android deployment or successful QPR1 runtime acceptance.",
   "latest_stable_GSI_channel_observation": {
     "CTS_approved_or_November_security_coverage_claimed": false,
     "November_security_qualification_claimed": false,
@@ -832,6 +1133,93 @@
     "selected_build": "CP3A.260905.010",
     "selected_build_number": 16176746,
     "selected_stable_release": "Android 17 QPR1"
+  },
+  "native600_current": {
+    "complete_engine_ART_pair_qualified": false,
+    "full_r5": {
+      "first_undefined_module": "com.android.rkpd",
+      "inner": {
+        "bytes": 62694,
+        "sha256": "fb968dc22834404f6243d5891d2e92bc386ac3d3694945bfa4ff108a5a5798fa"
+      },
+      "outer": {
+        "bytes": 13301,
+        "sha256": "78593abdf502e093c3b08b8737cf3c9ba607bf392956d760cfe36bb49d45ae42"
+      },
+      "state": "FAILED_RETIRED"
+    },
+    "full_r6": {
+      "OOM_events": 0,
+      "actual_memory_peak_bytes": 7878389760,
+      "actual_owned_work_growth_bytes": 1329426432,
+      "all_locks_free": true,
+      "all_owned_resources_retired": true,
+      "fallback": {
+        "bytes": 18031,
+        "sha256": "f9669af2d191cb0c7cb869e3b13e16ce55c91809f1faaa471c062d08fd2230b1"
+      },
+      "first_undefined_modules": [
+        "signature-common-javalib",
+        "trendy_team_desktop_display"
+      ],
+      "inner": {
+        "bytes": 63432,
+        "sha256": "61e9e124dfbd1767aec29a266de66619e3c0b8394bf0acb83e43550c72a0a2bd"
+      },
+      "memory_high_bytes": 23622320128,
+      "memory_high_events": 0,
+      "memory_max_bytes": 25769803776,
+      "memory_max_events": 0,
+      "normal_Soong_step": "280/280",
+      "normal_source_before_after_verified": true,
+      "outer": {
+        "bytes": 13290,
+        "sha256": "51a9175647dd55c155dd42a10ab6217ac6d8c20270385df814d587e3ec239871"
+      },
+      "projection_restored": true,
+      "raw_outer_state": "FAILED_RETIRED_OR_REQUIRES_RECOVERY",
+      "resource_gate_passed": true,
+      "rkpd_failure_did_not_recur": true,
+      "state": "FAILED_RETIRED",
+      "strict_allow_missing_dependencies": false,
+      "swap_bytes": 0
+    },
+    "latest_QPR1_ABI_qualified": false,
+    "original600_lock": {
+      "bytes": 354218,
+      "sha256": "600dc00660af69b4b8eeb497fac8f2a83f0d8b24ad3d02c2774a4df96f5ec8cf"
+    },
+    "original600_source_result": {
+      "bytes": 176535,
+      "sha256": "7b9becf66886ff7919ebce0ac59c76c3dab1068fec7ba8ac2f43f7245730d269"
+    },
+    "original_597_commits_preserved": true,
+    "rkpd_manifest": {
+      "bytes": 392955,
+      "sha256": "2dd4df1434a8f45d8648270a4fc5a334a9f88c8f578861d4d90736ca407c6172"
+    },
+    "rkpd_normal_source_commands": 8,
+    "rkpd_original_files": 6,
+    "rkpd_recipe_commit": "c90b25bdc326cd35dc77698c83a4cf3671d73f47",
+    "rkpd_recipe_tree": "65180728507f82ad58b48d7099c8ac702684cd95",
+    "rkpd_source_and_tools_all_retired": true,
+    "rkpd_source_lock": {
+      "bytes": 354234,
+      "sha256": "09a020b99c5f9f1876c69450d01ac99907cd6dda97cb4f69601f70151ea43d2b"
+    },
+    "rkpd_source_result": {
+      "bytes": 44387,
+      "sha256": "d7b2b41ee597aa2afb9c6f23249dc3d463e3570552b1857149afc9d5830034d1"
+    },
+    "runtime_qualified": false,
+    "source_controls_actual_Linux": {
+      "native600": 67,
+      "rkpd_consumer": 12,
+      "rkpd_skipped": 0,
+      "skipped": 0
+    },
+    "source_projects": 600,
+    "state": "SOURCE600_PLUS_RKPD_QUALIFIED_FULL_R6_FAILED_RETIRED"
   },
   "native_actual_observation": {
     "R11_source_consumer": {
@@ -897,6 +1285,7 @@
     "full_native_ART_qualified": false,
     "normal_full_entry_requirement": "Consume the actual R8 source and R11 qualification, then run the original normal strict builder. A separate source-only physical-discovery producer is not a prerequisite; the full graph remains unqualified until real execution.",
     "normal_materialization_qualified": true,
+    "observation_is_historical": true,
     "physical_fixedpoint_qualified": false,
     "previous_curl56_failure": {
       "adopted_children_reaped": 60,
@@ -958,6 +1347,7 @@
     },
     "published_source_projects": 597,
     "runtime_qualified": false,
+    "superseded_by": "native600_current",
     "target_projects": 597
   },
   "native_attempt12": {
@@ -1511,6 +1901,33 @@
     "source316_observed_bytes": 39471591424,
     "state": "AUDIO_SOURCE_VERIFIED_NATIVE_FINALIZATION_AND_FULL_BUILD_CONTINUATIONS_PENDING"
   },
+  "old_Android_autostart_suppression": {
+    "apply": {
+      "bytes": 2621,
+      "sha256": "480b39be71a4affbd08463cac7352d9821c7567e5a733185f98ac3afb90f79c7"
+    },
+    "both_managers_masked_and_inactive": true,
+    "failed_observer_preserved": "The first independent observer expected a resolved /dev/null FragmentPath. The corrected observer requires the actual exact mask path, independently verifies its symlink inode and /dev/null target, and checks the masked manager state.",
+    "independent": {
+      "bytes": 21331,
+      "sha256": "7a68e033d6103c80a9816905dab5f51b055cbe10f746e9975a89c0e3428cf69a"
+    },
+    "masked_units": [
+      "system:droidloomd.service",
+      "user:droidloom.service"
+    ],
+    "original_unit_files_and_enable_links_unchanged": true,
+    "original_user_image_metadata_unchanged": true,
+    "original_user_images_opened_or_mounted": false,
+    "owned_mask_rollback_executed": false,
+    "owned_mask_rollback_prepared": true,
+    "source": {
+      "bytes": 16515,
+      "sha256": "c4559fc9c9c58e83c7110d94cdfa6a652a8eb9f54abc87eaca8de57b06a53205"
+    },
+    "state": "TWO_PERSISTENT_OLD_ANDROID_MASKS_INDEPENDENTLY_VERIFIED",
+    "voice_and_camera_services_preserved": true
+  },
   "original_application_acceptance": {
     "accepted": 0,
     "actual_WebView_provider_retained_separately": true,
@@ -1528,27 +1945,61 @@
     "total_registered_packages_observed": 208
   },
   "pending": {
-    "audio": "Audio321 source qualified; r7 full failed on gemmlowp_headers and retired. Close real provider and projection dependencies across the actual graph, then run and qualify a new whole APEX.",
+    "audio": "Audio425 and the same-commit RKPD cone are qualified. Actual r8 failed before Soong because the retained original Connectivity provider guard ran after legitimate source patches. Source-after, restoration, resources and retirement passed. Bind original preimages and the exact normal patch chain, then require a new normal complete APEX, artifact and QPR1 ABI qualification.",
     "camera_and_storage": "Current Camera source38, decoder8, owned display negative4 and formal preparation passed in the canonical location. Real Main/display/audio, Camera2/UVC, Camera recovery, Storage lifecycle and whole-app acceptance remain pending.",
-    "cleanup": "Original807 inventory is 805 removed / 2 retained. Resolve the original-owner fence and the still-registered QA signer. Classify later staging and failed generations by current references before deletion.",
-    "final_deployment": "Finish the reviewed host installation/rollback plan, coherent QPR1 payloads and production isolation before deployment and fresh application acceptance.",
+    "cleanup": "Original807 inventory remains805 removed/2 retained. Separate app staging41 targets/117 nodes and kernel temporary19 targets/4574 nodes were removed and independently verified. Retire registered QA apps, retained signer/fence and later repair generations only after exact consumer closure.",
+    "final_deployment": "Signed host payload and normal menu are installed, fallback38 remains default, no one-shot is selected. Complete actual recovery/consumer decision and guarded reboot, real hardware and coherent QPR1 artifacts, production isolation and application acceptance.",
     "framework": "The ABI-qualified Sensor library is staged in the canonical candidate. Its actual fresh installed Binder identity/death behavior remains pending.",
-    "native": "Native597 original LLVM/Clang plugin source qualified; r3 full failed on service-devicelock and its strict peak gate. Close the actual complete source graph and use bounded early reclaim before a new full engine/ART attempt.",
-    "production_isolation": "The production backend, UID mapping and seccomp remain unqualified. Actual subordinate ID capacity is insufficient and overlaps two unrelated active namespaces; do not reuse or enlarge the occupied range without a verified allocation.",
+    "native": "Native600 plus same-commit RKPD source is qualified. Actual r6 full failed on signature-common-javalib and trendy_team_desktop_display, restored and retired. Repair actual original providers/metadata, then require a new complete strict engine/ART build and QPR1 ABI acceptance.",
+    "production_isolation": "Identity source19 and actual missing-account refusal passed. Complete NSS/live occupancy admission, real owned namespace mappings, mounts/APEX/data, IPC, seccomp and daemon integration remain unqualified; no host account or subordinate range was changed.",
     "release_currency": "The verified official QPR1 GSI is on Pocket4 and the actual host layout passed. Preserve official QPR1 ART, bionic, APEX and framework components while qualifying necessary compatibility changes. September SPL does not imply November coverage. Official app delivery and data-preserving signature migration remain pending.",
-    "runtime_and_applications": "Complete signed kernel, real retained-credential Binder VM, hardware deployment inputs and normal NVMe/ext4 initramfs boot passed. Host kernel deployment and Android boot remain pending; final42 actual runtime acceptance remains 0."
+    "runtime_and_applications": "New kernel is installed but not running; old Android autostart is masked. Real host boot, hardware, Android startup and all42 selected application flows remain pending; actual accepted count remains0."
   },
   "previous_public_observation": {
-    "bytes": 28107,
-    "path": "continuation/history/state-before-qpr1-host-20261108.json",
-    "sha256": "4ca9eb963eb9bd3c3930466f973386f000cffb4fa72260310fc424592774564a"
+    "bytes": 77428,
+    "commit": "265248170ce2e18e13c090246f97f3e3d80c637b",
+    "immutable": true,
+    "path": "continuation/history/state-before-kernel-stage-20261109.json",
+    "sha256": "224febfccccdc2d0f3ad8ea31da6c4d940d198fce4acee0f1eda50a37c1cabb8"
+  },
+  "production_identity_reservation_source": {
+    "ID_map_authority_serialized_as_JSON": false,
+    "actual_readonly_refusal": {
+      "bytes": 5104,
+      "sha256": "4b01ed36bce8c549acffb6cdae5804c76299f8c5f7fc739ba8cfbc084a2b4ae5"
+    },
+    "actual_refusal_reason": "The dedicated cell account is absent; the sealed normal binary refused before any registry or map creation.",
+    "complete_NSS_inventory_qualified": false,
+    "host_accounts_created": 0,
+    "live_occupancy_admission_qualified": false,
+    "namespace_maps_written": 0,
+    "normal_commands": 10,
+    "normal_commands_exit_zero": true,
+    "normal_source_result": {
+      "bytes": 10971,
+      "sha256": "1a94cfea6c5761a2c8a623fa4ffcbd41029e2055ab97fa937ddc83b7e8630b8d"
+    },
+    "normal_tests": 19,
+    "patch": {
+      "bytes": 53837,
+      "sha256": "4bf034b88b94fd1be3c1e11732765efc655f1f4d2c8a008b426681bcb4453be8"
+    },
+    "production_backend_qualified": false,
+    "production_runtime_qualified": false,
+    "registries_created": 0,
+    "source_commit": "b4dc3b49ce29e706efca0ba5a7c775864d9b54b8",
+    "source_tree": "9e4bdba177ba081789f45a97163a8f113b5c712b",
+    "state": "NORMAL_IDENTITY_SOURCE_QUALIFIED_ACTUAL_HOST_ADMISSION_AND_NAMESPACE_BROKER_PENDING",
+    "subordinate_ID_changes": 0
   },
   "production_isolation_gate": {
     "actual_QPR1_probe_without_outer_cgroup_wrapper": true,
     "actual_development_child_six_private_namespaces_measured": true,
-    "actual_host_kernel_deployment_pending": true,
+    "actual_host_kernel_deployment_pending": false,
     "actual_new_host_QPR1_boot_not_granted_by_source_controls": true,
+    "actual_new_kernel_boot_pending": true,
     "actual_subordinate_ID_capacity": 65536,
+    "complete_NSS_and_live_occupancy_admission_qualified": false,
     "development_UID_map_and_seccomp_qualified": false,
     "development_cgroup_namespace_argument_missing": false,
     "existing_active_namespace_overlap_observed": true,
@@ -1562,18 +2013,19 @@
     "probe_outer_cgroup_namespace_does_not_qualify_production_runner": true,
     "production_UID_mapping_and_seccomp_qualified": false,
     "production_backend_implemented": false,
+    "production_identity_source_qualified": true,
     "subordinate_ID_capacity_required": 100000,
     "unrelated_containers_stopped": 0
   },
   "production_ready": false,
-  "publication_state": "SOURCE_AND_OFFLINE_QUALIFICATION_EVIDENCE_WITHOUT_PRODUCTION_RELEASE",
-  "recorded_utc": "2026-11-09T02:31:53.825117+00:00",
+  "publication_state": "SOURCE_REPAIRS_AND_ACTUAL_KERNEL_INSTALLATION_WITHOUT_ANDROID_PRODUCTION_RELEASE",
+  "recorded_utc": "2026-11-09T06:44:45.113542+00:00",
   "resume_order": [
-    "Complete actual Native and Audio source graphs on their independent build hosts; preserve real failures and execute new normal full builds under fresh admission.",
-    "Finish the concrete host kernel installation and rollback transaction using the signed candidate, passed normal initramfs and hardware input evidence; coordinate disruptive host restart with existing consumers.",
-    "Implement and qualify the production namespace/UID/seccomp backend with nonconflicting identity allocation and original-data protection.",
-    "Qualify coherent QPR1 payload ABI, actual Android startup, Denial/Main, audio/video and the selected42 application workflows.",
-    "Complete official current-APK delivery and data-preserving signer migration; physically retire superseded Android, apps and experiment artifacts only after their consumers are closed."
+    "Repair the actual Native source/metadata errors and complete independent normal Native and Audio builds, complete artifacts and QPR1 ABI validation.",
+    "Complete reviewed one-shot selection/recovery and existing-consumer coordination; boot the installed candidate with both old Android masks preserved and verify actual host hardware.",
+    "Implement and qualify complete host identity admission and the owned namespace/mount/APEX/data/IPC/seccomp production backend without overlapping unrelated workloads.",
+    "Verify actual QPR1 Android startup and all42 selected application flows; complete official current delivery and supported signer/data migration with authorized endpoints.",
+    "Retire obsolete Android, QA apps, old staging and experiments after verifying their exact owners, references and physical absence."
   ],
   "retired_duplicate_Native_desktop_source": {
     "actual_observed_free_space_increase_bytes": 79477571584,
@@ -1593,7 +2045,7 @@
   },
   "runtime_qualified": false,
   "schema": "pocket4-android-continuation-v1",
-  "scope": "Pocket4 local Droidloom Android",
+  "scope": "Verified kernel installation and persistent old Android masks; Native r6 failed and retired; Audio425 plus RKPD source qualified. Later work requires its own receipt.",
   "selected_application_preparation_inputs": {
     "actual_Gallery_current_source_files": 59,
     "actual_Gallery_host_controls": 61,
@@ -1630,6 +2082,7 @@
     },
     "state": "ABI_QUALIFIED_CANONICAL_PAYLOAD_STAGED_RUNTIME_PENDING"
   },
+  "source_capsule_snapshot_policy": "Frozen capsules retain their creation-time states; current build/source observations are recorded separately and never inherited as runtime credit.",
   "source_correction_capsules": {
     "apparmor-binder-retained-credential-r1": {
       "bytes": 813,
@@ -1655,6 +2108,10 @@
       "bytes": 534,
       "sha256": "987afa7a4457082e8d0a295f36dd5a7ba35bac19fe9a9dffb1a4842b818945ac"
     },
+    "audio425-original-provider-closure-r1": {
+      "bytes": 3739,
+      "sha256": "257bc3f071fd09c6b908ef80fdf0fe50617259c33b9083b0d66da6e270a6a450"
+    },
     "host-guest-directory-umask-r1": {
       "bytes": 528,
       "sha256": "480b4ebe2786cf617fbd780de738d7eb3275938e69167e0e8889b078b32a2314"
@@ -1667,9 +2124,21 @@
       "bytes": 1736,
       "sha256": "75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c"
     },
+    "native600-original-provider-closure-r1": {
+      "bytes": 2771,
+      "sha256": "d40f8629af9741d8bc4dc09bb89389fe2b1c7348e3ea02d72b01dca1908c6cc6"
+    },
+    "native600-rkpd-apex-r1": {
+      "bytes": 1361,
+      "sha256": "f33f622023fb328ea88c79a2fb29f7f7a9c1c3427af0a31b53bbdfc8c9fc4889"
+    },
     "process-start-observation-r1": {
       "bytes": 671,
       "sha256": "a57aa91df98f2d4e3da6991b87e8a1abf55e932f6e75b82cd87329ced6fb6f57"
+    },
+    "production-identity-reservation-r1": {
+      "bytes": 568,
+      "sha256": "eee9cec9ecbd9b71cdda9df13bb0446124001a5826932709561126896881ffea"
     },
     "qpr1-modern-vendor-admission": {
       "bytes": 821,
@@ -1845,7 +2314,8 @@
       "audio"
     ],
     "production_actions_performed_by_this_continuation": false,
-    "ready_for_apply": false
+    "ready_for_apply": false,
+    "scope": "Android production stage only; actual host kernel and old-startup changes are recorded separately."
   },
-  "status": "KERNEL_OFFLINE_BOOT_QUALIFIED_NATIVE_AUDIO_GRAPH_REPAIR_FINAL42_RUNTIME_PENDING"
+  "status": "KERNEL_PAYLOAD_MENU_INSTALLED_OLD_ANDROID_MASKED_NATIVE_AUDIO_REPAIR_FINAL42_RUNTIME_PENDING"
 }
