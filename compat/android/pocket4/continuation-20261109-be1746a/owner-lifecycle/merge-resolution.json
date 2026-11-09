@@ -1,0 +1,24 @@
+{
+  "schema": "pocket4-owner-lifecycle-r2-resolution-v1",
+  "created_utc": "2026-11-09T10:47:38.209117+00:00",
+  "merges": [
+    {
+      "path": "runtime/droidloom-supervisor/src/production_namespace.rs",
+      "git_merge_returncode_before_resolution": 0,
+      "preimage_sha256": "5c3cc336fe7d35ce3be213e2494c2d2217b03c060ab1cd619aba54ea3d3bf782"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_namespace_child.rs",
+      "git_merge_returncode_before_resolution": 1,
+      "preimage_sha256": "7a4031347cf57fa6982c0643c21a98d4836df60a0051b8ba0f7670ce8a41f0f0"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+      "git_merge_returncode_before_resolution": 0,
+      "preimage_sha256": "b279fc6e16ac685de6f9bb6635434b22e8ecc3d2f41bca0adb47266d1e705763"
+    }
+  ],
+  "conflicts_resolved": 1,
+  "resolution": "Preserve owner DeviceRootControl=8, TreeWrongReady=6, EmptyRootControl=7 and all private_dev phases/modules. Renumber lifecycle-only test modes9/10/11. Production lifecycle logic and syscall contract remain byte-equivalent to qualified r1 apart from preserving independent owner additions.",
+  "shared_owner_mutations": 0
+}

@@ -632,7 +632,7 @@ jobs:
           import sys
           root = Path(sys.argv[1])
           raw = (root / 'FILES.json').read_bytes()
-          if hashlib.sha256(raw).hexdigest() != '553531f9975b45a09ecf1dc9a129f03861df0de41dcff987fa84c0e4655a1887':
+          if hashlib.sha256(raw).hexdigest() != '822fe55bae324b1649bb9e1f87d32f8ec6fd55d51d92e1b37a650c80a22c3a7c':
               raise SystemExit('Continuation inventory pin differs')
           manifest = json.loads(raw)
           for row in manifest['files']:
@@ -646,7 +646,7 @@ jobs:
           python3 -I -B "$capsule/verify.py" --out "$RUNNER_TEMP/a08/continuation-inputs.json"
           work="$RUNNER_TEMP/a08-continuation-controls"
           mkdir "$work"
-          trap 'rm -f "$work/defaults-tests" "$work/defaults-cli"' EXIT
+          trap 'rm -f "$work/defaults-tests" "$work/defaults-cli" "$work/owner-lifecycle-verify"' EXIT
           rustup run 1.93.0 rustc --edition=2024 --test -C codegen-units=1 \
             "$capsule/audio/src/bin/droidloom-blueprint-defaults.rs" -o "$work/defaults-tests"
           "$work/defaults-tests" --test-threads=1 2>&1 | tee "$RUNNER_TEMP/a08/continuation-audio-tests.log"
@@ -684,6 +684,18 @@ jobs:
           (evidence / 'continuation-audio-cli.json').write_text(json.dumps(reports, indent=2) + '\n')
           print('7 Rust controls and 2 real CLI cases passed; Soong graph, artifacts and runtime remain unqualified')
           PYCONTINUATIONCLI
+          rustup run 1.93.0 rustc --edition=2024 -C codegen-units=1 \
+            "$capsule/owner-lifecycle/verify-source.rs" -o "$work/owner-lifecycle-verify"
+          "$work/owner-lifecycle-verify" "$capsule/owner-lifecycle" check-before \
+            "$capsule/owner-lifecycle/preimages" | tee "$RUNNER_TEMP/a08/owner-lifecycle-before.json"
+          "$work/owner-lifecycle-verify" "$capsule/owner-lifecycle" replay \
+            "$capsule/owner-lifecycle/preimages" "$work/owner-lifecycle-replay" \
+            | tee "$RUNNER_TEMP/a08/owner-lifecycle-replay.json"
+          "$work/owner-lifecycle-verify" "$capsule/owner-lifecycle" check-after \
+            "$work/owner-lifecycle-replay" | tee "$RUNNER_TEMP/a08/owner-lifecycle-after.json"
+          python3 -I -B "$capsule/audio/replay-api-inputs.py" \
+            --capsule "$capsule/audio/api-inputs" --output "$work/audio-api-replay" \
+            --report "$RUNNER_TEMP/a08/audio-api-replay.json"
       - name: Preserve host evidence without implying Android guest success
         if: always()
         uses: actions/upload-artifact@v4

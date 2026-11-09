@@ -1,0 +1,190 @@
+{
+  "schema": "pocket4-owner-adoption-observation-v1",
+  "observed_window_utc": {
+    "start": "2026-11-09T10:38:41.849105+00:00",
+    "end": "2026-11-09T10:42:12.260061+00:00"
+  },
+  "scope": "Existing exact files and service status only; no fixture, build, shared source/CURRENT mutation or Android start.",
+  "CURRENT": {
+    "path": "/home/alex/work/pocket4-android-final/CONTINUATION_CURRENT.json",
+    "bytes": 245921,
+    "sha256": "427222d163951b942ea20798b2e567ae480dc48a1e42d6e955ed7867cfb316d9"
+  },
+  "current_content_mtime_utc": "2026-11-09T10:28:45.835593+00:00",
+  "foreground_owner": {
+    "active_until_utc": "2026-11-09T12:28:45.833651+00:00",
+    "name": "foreground-root-8b88e19ff7ab",
+    "scope": "Finish actual QPR1 empty-data boot and coherent runtime repairs; serialize actual full builds with owned limits; complete latest-app acceptance and evidence-bound obsolete artifact retirement."
+  },
+  "host": {
+    "kernel": "7.0.14-p4cred1",
+    "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+    "droidloomd_unit": {
+      "returncode": 0,
+      "stdout": "LoadState=masked\nActiveState=inactive\nSubState=dead\nMainPID=0\nResult=success\nExecMainStartTimestamp=\nControlGroup=\n",
+      "stderr": ""
+    }
+  },
+  "runtime": {
+    "production_ready": false,
+    "runtime_qualified": false,
+    "all_blockers_closed": false,
+    "final42_passed": 0,
+    "latest_boot_result_in_checked_cohort": {
+      "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/boot-probe-r1/qualification/actual-boot-r7",
+      "result_exists": true,
+      "result_mtime_utc": "2026-11-08T22:16:35.428136+00:00",
+      "result_sha256": "43f0cc8a077f1a8a96d3b2c16336abeedac7e7ca28d19fd59857aa59e341e484"
+    }
+  },
+  "NSS_owned_probe": {
+    "receipt": {
+      "path": "/home/alex/work/pocket4-android-final/qualification/production-host-nss-owned-probe-20261109-8b88-r2/result.json",
+      "bytes": 11192,
+      "sha256": "e43dd0b49efe72a9575fdb8c634ce3ed05a7843c5d147cb30117ea2318960ac8"
+    },
+    "passed": true,
+    "returncode": 0,
+    "workers_exited_and_reaped": 2,
+    "observation_only": true,
+    "authority_issued": false,
+    "lease_or_grant_created": false,
+    "namespaces_or_maps_created": false,
+    "unit_terminal": {
+      "ActiveState": "inactive",
+      "ControlGroup": "",
+      "ExecMainCode": "0",
+      "ExecMainStatus": "0",
+      "InvocationID": "",
+      "LoadState": "not-found",
+      "MainPID": "0",
+      "Result": "success",
+      "SubState": "dead"
+    },
+    "production_admission": false,
+    "Android_starts": 0
+  },
+  "private_empty_base": {
+    "receipt": {
+      "path": "/home/alex/work/pocket4-android-final/qualification/production-empty-base-private-controls-20261109-8b88-r1/result.json",
+      "bytes": 10722,
+      "sha256": "093f4561572be94baa23b4812b3736e8544213b9bd5fe213fa49a2e62e721616"
+    },
+    "stdout": {
+      "path": "/home/alex/work/pocket4-android-final/qualification/production-empty-base-private-controls-20261109-8b88-r1/normal.stdout",
+      "bytes": 761,
+      "sha256": "cae55a2fb7b8df32e80862a0366535ee9bfcaf0897b989a4bf105c0220587b87"
+    },
+    "passed": true,
+    "returncode": 0,
+    "actual_tests_passed": 1,
+    "actual_tests_failed": 0,
+    "tests_filtered_out": 229,
+    "scope": "Actual readonly ext4/IDMAP descriptors, private tmpfs data/metadata, pivot, fd3-only, bad nonce/non-mount descriptor negatives, exact init/namespace FD/loop/keeper retirement.",
+    "unit_terminal": {
+      "ActiveState": "inactive",
+      "ControlGroup": "",
+      "ExecMainCode": "0",
+      "ExecMainStatus": "0",
+      "InvocationID": "",
+      "LoadState": "not-found",
+      "MainPID": "0",
+      "Result": "success",
+      "SubState": "dead"
+    },
+    "production_admission": false,
+    "Android_starts": 0
+  },
+  "current_owner_device_generation": {
+    "normal_result": {
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/normal-production-private-dev-r1/result.json",
+      "bytes": 30757,
+      "sha256": "c245d612fa35fbafa453785ff2a3fc4474226c82b1b008b64195a42a876d5c23"
+    },
+    "outer_result": {
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/production-private-dev-normal-launch-r1/result.json",
+      "bytes": 3839,
+      "sha256": "46aa0ab1adf7e14fd468658140efb4100552f96303a6538ff92992a75210cf2a"
+    },
+    "source_closure": {
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/production-devices-consumer-source-final-r1/result.json",
+      "bytes": 6673,
+      "sha256": "ea4ef966d0471c4f11b8f106ac49ea39ae9bb2d39b1376ac74708ca10385fa83"
+    },
+    "ordinary_tests_passed": 87,
+    "ordinary_tests_failed": 0,
+    "tests_filtered_out": 150,
+    "normal_binaries_built": 2,
+    "negative_cli_controls_passed": 8,
+    "root_private_device_controls_executed": 0,
+    "Android_starts": 0
+  },
+  "owner_three_files": [
+    {
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace.rs",
+      "bytes": 45040,
+      "sha256": "5c3cc336fe7d35ce3be213e2494c2d2217b03c060ab1cd619aba54ea3d3bf782",
+      "mtime_utc": "2026-11-09T10:25:58.788926+00:00",
+      "PIDFD_THREAD_occurrences": 0,
+      "SignalMaskRestore_occurrences": 0,
+      "creator_exit_barrier_occurrences": 0,
+      "Drop_for_SignalMask": false
+    },
+    {
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace_child.rs",
+      "bytes": 25986,
+      "sha256": "7a4031347cf57fa6982c0643c21a98d4836df60a0051b8ba0f7670ce8a41f0f0",
+      "mtime_utc": "2026-11-09T10:25:58.780926+00:00",
+      "PIDFD_THREAD_occurrences": 0,
+      "SignalMaskRestore_occurrences": 0,
+      "creator_exit_barrier_occurrences": 0,
+      "Drop_for_SignalMask": true
+    },
+    {
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+      "bytes": 14458,
+      "sha256": "b279fc6e16ac685de6f9bb6635434b22e8ecc3d2f41bca0adb47266d1e705763",
+      "mtime_utc": "2026-11-09T07:00:45.436773+00:00",
+      "PIDFD_THREAD_occurrences": 0,
+      "SignalMaskRestore_occurrences": 0,
+      "creator_exit_barrier_occurrences": 0,
+      "Drop_for_SignalMask": false
+    }
+  ],
+  "exact_deltas_from_r1_capsule_preimages": [
+    {
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace.rs",
+      "sha256": "5c3cc336fe7d35ce3be213e2494c2d2217b03c060ab1cd619aba54ea3d3bf782",
+      "diff_from_frozen_preimage": "--- frozen/runtime/droidloom-supervisor/src/production_namespace.rs\n+++ current/runtime/droidloom-supervisor/src/production_namespace.rs\n@@ -60,6 +60,9 @@\n     /// A verified mount resource failed preparation or explicit retirement.\n     #[error(\"owned base mount operation failed: {0}\")]\n     MountResource(String),\n+    /// A private device resource failed preparation or explicit retirement.\n+    #[error(\"owned private device operation failed: {0}\")]\n+    DeviceResource(String),\n     /// A held child or its protocol does not satisfy the construction contract.\n     #[error(\"owned namespace rejected: {0}\")]\n     Rejected(&'static str),\n",
+      "parent_death_block": null
+    },
+    {
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace_child.rs",
+      "sha256": "7a4031347cf57fa6982c0643c21a98d4836df60a0051b8ba0f7670ce8a41f0f0",
+      "diff_from_frozen_preimage": "--- frozen/runtime/droidloom-supervisor/src/production_namespace_child.rs\n+++ current/runtime/droidloom-supervisor/src/production_namespace_child.rs\n@@ -14,6 +14,8 @@\n \n #[path = \"production_namespace_mount_child.rs\"]\n mod empty_root;\n+#[path = \"production_namespace_device_child.rs\"]\n+mod private_dev;\n \n #[derive(Clone, Copy)]\n #[repr(u32)]\n@@ -29,6 +31,12 @@\n     TreeReady = 15,\n     MountEmptyBase = 16,\n     EmptyRootReady = 17,\n+    MountPrivateDev = 20,\n+    PrivateDevReady = 21,\n+    #[cfg(test)]\n+    ProbePrivateDev = 22,\n+    #[cfg(test)]\n+    PrivateDevChecked = 23,\n     #[cfg(test)]\n     ProbeEmptyRoot = 18,\n     #[cfg(test)]\n@@ -64,6 +72,8 @@\n     TreeWrongReady = 6,\n     #[cfg(test)]\n     EmptyRootControl = 7,\n+    #[cfg(test)]\n+    DeviceRootControl = 8,\n }\n \n #[derive(Clone, Copy)]\n",
+      "parent_death_block": "unsafe fn parent_death(parent_pid: u32, nonce: [u8; 16], pid: u32) {\n    if unsafe {\n        libc::syscall(\n            libc::SYS_prctl,\n            libc::PR_SET_PDEATHSIG,\n            libc::SIGKILL,\n            0,\n            0,\n            0,\n        )\n    } != 0\n    {\n        unsafe {\n            fail(nonce, pid);\n        }\n    }\n    if unsafe { libc::syscall(libc::SYS_getppid) } != libc::c_long::from(parent_pid) {\n        unsafe {\n            finish(125);\n        }\n    }\n}\n\nunsafe fn child_main(fd: RawFd, parent_pid: u32, nonce: [u8; 16], _mode: Mode) -> ! {\n    unsafe {\n        // Only the private control FD survives. Inherited reservation/data/\n        // service descriptors cannot leak into the parked namespace child.\n        if fd != CHILD_FD"
+    },
+    {
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+      "sha256": "b279fc6e16ac685de6f9bb6635434b22e8ecc3d2f41bca0adb47266d1e705763",
+      "diff_from_frozen_preimage": "",
+      "parent_death_block": null
+    }
+  ],
+  "keeper_lifecycle_adopted": false,
+  "adoption_analysis": {
+    "namespace": "Adds DeviceResource(String) only; independent of lifecycle changes.",
+    "child": "Adds private_dev module, phases20–23 and DeviceRootControl=8. Preserve all additions.",
+    "tests": "Exact original r1 capsule preimage unchanged.",
+    "specific_collision": "DeviceRootControl=8 conflicts with r1 capsule SignalRestoreFailure=8. Preserve owner8; reassign lifecycle test modes to9/10/11 in a new isolated revision.",
+    "production_logic_overlap": "None in the observed three-file deltas; production lifecycle bodies are unchanged by the new device additions.",
+    "sealed_r1_capsule_unchanged": true,
+    "new_r2_requires_exact_full_source_freeze_and_fresh_qualification": true
+  },
+  "app_gate_cache": {
+    "final42_passed": 0,
+    "application_current_source_Witness_closure_pending": true,
+    "application_remaining_source_closures_and_actual_Main_runtime_pending": true,
+    "actual_ARM_apps_Denial_Main_audio_video_acceptance_pending": true
+  }
+}

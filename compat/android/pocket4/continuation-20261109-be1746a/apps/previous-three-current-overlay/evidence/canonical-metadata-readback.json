@@ -1,0 +1,448 @@
+{
+  "observed_utc": "2026-11-09T10:48:12.953535+00:00",
+  "files": [
+    {
+      "path": "/home/alex/work/pocket4-android-final/qualification/apps-content-bound-20261108-8b88-r1/update_inputs/final-selected42-production-candidates.json",
+      "bytes": 134742,
+      "sha256": "73b7578fe2376f700edd68184ed6e16182bf4b58d3b5c75554a5c597f5f3a603",
+      "top_keys": [
+        "schema",
+        "observed_utc",
+        "historical_original45",
+        "selected_original_production_apps",
+        "new_related_production_browser",
+        "final_selected_denominator",
+        "new_runtime_accepted_count",
+        "new_runtime_acceptance_starts_from_zero",
+        "selected_candidates",
+        "original45_experimental_packages_retired_from_final_selection",
+        "retained_dependencies_outside_selected42",
+        "remaining_OS_dependencies",
+        "package_retirement_manifest",
+        "actions_v2_retained_as_current_controller_dependency",
+        "scope",
+        "production_ready",
+        "installed_or_uninstalled_by_this_manifest"
+      ],
+      "matching_rows": [
+        {
+          "json_path": "/selected_candidates/21",
+          "row": {
+            "package": "com.lianjia.beike",
+            "display_name": "Beike",
+            "kind": "third_party",
+            "purpose": "房源查询和详情浏览",
+            "primary_flow": "位置和筛选条件 → 匹配房源 → 图片、地址、价格与详情 → 返回、重开及正常登录入口",
+            "profile": "housing",
+            "business_gate_definitions": {
+              "housing.details": "Open a matching listing and verify image, address, price and detail data.",
+              "housing.navigation": "Verify return/reopen and legitimate authenticated routes; a blank login router is a failure.",
+              "housing.query": "Enter location/filters and verify matching populated listings."
+            },
+            "prerequisites": [],
+            "common_gate_ids": [
+              "identity",
+              "lifecycle",
+              "stability",
+              "data_permissions",
+              "release_scope",
+              "ui_observation"
+            ],
+            "historical_original45_member": true,
+            "latest_source_status": "official_latest_unknown",
+            "official_sources": [
+              {
+                "url": "https://m.ke.com/client/",
+                "source_kind": "publisher_download_page",
+                "source_ref": "turn20view0",
+                "observed_version_name": null,
+                "observed_updated_date": null
+              }
+            ],
+            "new_runtime_acceptance": {
+              "state": "NOT_RUN",
+              "accepted": false,
+              "evidence": [],
+              "cohort": null
+            },
+            "current_installed_identity": {
+              "basis": "content-bound actual APKs and registry",
+              "version_code": 3067100,
+              "uid": 10143,
+              "signers": [
+                "0b66624117621bb9bc3e7d12a1fe5436794cf8999b0253d9ff9bec71e0932178"
+              ],
+              "APKs": [
+                {
+                  "apk_filename": "base.apk",
+                  "sha256": "c7985ed41b91c782af8acb04b1868419cca8bc1fc52862bf6c89fa86b65c81fb",
+                  "bytes": 228933721,
+                  "version_name": "3.06.71",
+                  "version_code": 3067100,
+                  "native_abis": [
+                    "arm64-v8a"
+                  ],
+                  "split_name": null
+                }
+              ]
+            }
+          }
+        },
+        {
+          "json_path": "/selected_candidates/31",
+          "row": {
+            "package": "com.tencent.mm",
+            "display_name": "WeChat",
+            "kind": "third_party",
+            "purpose": "消息界面和会话草稿",
+            "primary_flow": "接收方解析及自有草稿准确输入 → 会话界面与返回重开；实际发送、接收和送达检查须有明确授权的测试接收方",
+            "profile": "messaging",
+            "business_gate_definitions": {
+              "messaging.compose": "Verify recipient resolution and exact draft composition with owned test data.",
+              "messaging.delivery": "Prove send/receive and delivery semantics only with an explicitly authorized test recipient/service.",
+              "messaging.persist": "Reopen the owned conversation and verify content/state; preserve existing messages."
+            },
+            "prerequisites": [
+              "No outbound message or call until an explicit authorized test recipient/endpoint is available."
+            ],
+            "common_gate_ids": [
+              "identity",
+              "lifecycle",
+              "stability",
+              "data_permissions",
+              "release_scope",
+              "ui_observation"
+            ],
+            "historical_original45_member": true,
+            "latest_source_status": "official_latest_unknown",
+            "official_sources": [
+              {
+                "url": "https://play.google.com/store/apps/details?id=com.tencent.mm&hl=en_US",
+                "source_kind": "official_google_play_listing",
+                "source_ref": "turn2view1",
+                "locale": "en_US",
+                "country": "unspecified",
+                "observed_updated_date": "2026-10-22"
+              }
+            ],
+            "new_runtime_acceptance": {
+              "state": "NOT_RUN",
+              "accepted": false,
+              "evidence": [],
+              "cohort": null
+            },
+            "current_installed_identity": {
+              "basis": "content-bound actual APKs and registry",
+              "version_code": 3220,
+              "uid": 10114,
+              "signers": [
+                "0fe4ff85c215918396dadc7cd8ce6963339af33d37751a56e54c7206b63a3c7c"
+              ],
+              "APKs": [
+                {
+                  "apk_filename": "base.apk",
+                  "sha256": "9d9b6c516e8e07e437c81485fde21fe13ce4f61b37d19e793fff40c71be39c0e",
+                  "bytes": 286319384,
+                  "version_name": "8.0.80",
+                  "version_code": 3220,
+                  "native_abis": [
+                    "arm64-v8a"
+                  ],
+                  "split_name": null
+                }
+              ]
+            }
+          }
+        },
+        {
+          "json_path": "/selected_candidates/34",
+          "row": {
+            "package": "com.xunmeng.pinduoduo",
+            "display_name": "Pinduoduo",
+            "kind": "third_party",
+            "purpose": "商品搜索和购物账户管理",
+            "primary_flow": "输入商品查询 → 搜索及筛选 → 商品、规格、图片、价格和库存 → 返回并重开；授权账户购物车与订单查看另验",
+            "profile": "retail",
+            "business_gate_definitions": {
+              "retail.account": "Qualify supported account/cart/order-management paths with an authorized test account; paid submission needs a separate approved test.",
+              "retail.detail": "Match selected product, variant, image, price and availability.",
+              "retail.navigation": "Verify filters, back navigation and reopen state; render detail without blank/pale corruption.",
+              "retail.search": "Enter a product query; verify matching populated search results."
+            },
+            "prerequisites": [
+              "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+            ],
+            "common_gate_ids": [
+              "identity",
+              "lifecycle",
+              "stability",
+              "data_permissions",
+              "release_scope",
+              "ui_observation"
+            ],
+            "historical_original45_member": true,
+            "latest_source_status": "official_latest_unknown",
+            "official_sources": [
+              {
+                "url": "https://www.yangkeduo.com/home/download/",
+                "source_kind": "publisher_download_page",
+                "source_ref": "turn18view3",
+                "observed_version_name": null,
+                "observed_updated_date": null
+              }
+            ],
+            "new_runtime_acceptance": {
+              "state": "NOT_RUN",
+              "accepted": false,
+              "evidence": [],
+              "cohort": null
+            },
+            "current_installed_identity": {
+              "basis": "content-bound actual APKs and registry",
+              "version_code": 83000,
+              "uid": 10142,
+              "signers": [
+                "dd3923e78df33f08b0fb4a533ab1e860425ca7f6777fbe14f85a6cf5687143d6"
+              ],
+              "APKs": [
+                {
+                  "apk_filename": "base.apk",
+                  "sha256": "3dbdcf5dcc94086dc0bc7d7f378fe1e328d9f32f30b82853fc8f440759d04ad4",
+                  "bytes": 32690199,
+                  "version_name": "8.30.0",
+                  "version_code": 83000,
+                  "native_abis": [
+                    "arm64-v8a"
+                  ],
+                  "split_name": null
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/home/alex/work/pocket4-android-final/qualification/apps-content-bound-20261108-8b88-r1/update_inputs/official-source-mapping-final.json",
+      "bytes": 126268,
+      "sha256": "3b95cfdbf6dee97e2bb3615cd998f73b66cf5a30db4783a48c4d8689ec4399a1",
+      "top_keys": [
+        "schema",
+        "observed_utc",
+        "scope",
+        "historical_app_denominator",
+        "actual_body_audit",
+        "current_project_latest_meaning",
+        "upstream_latest_meaning",
+        "status_counts",
+        "commercial_status_counts",
+        "packages",
+        "required_dependencies_outside45",
+        "historical_whole_app_runtime_acceptance",
+        "android_update_input_catalog",
+        "official_play_authentication_evidence",
+        "source_mutations",
+        "installs",
+        "uninstalls",
+        "production_ready"
+      ],
+      "matching_rows": [
+        {
+          "json_path": "/packages/22",
+          "row": {
+            "package": "com.lianjia.beike",
+            "display_name": "Beike",
+            "kind": "third_party",
+            "official_sources": [
+              {
+                "url": "https://m.ke.com/client/",
+                "source_kind": "publisher_download_page",
+                "source_ref": "turn20view0",
+                "observed_version_name": null,
+                "observed_updated_date": null
+              }
+            ],
+            "latest_status": "official_latest_unknown",
+            "notes": [
+              "No unambiguous newer official delivery version/code/body was obtained. This row is unknown, not an asserted latest pass."
+            ],
+            "runtime_accepted": false,
+            "installed": {
+              "basis": "actual_readonly_extracted_APK_bodies",
+              "observed_utc": "2026-11-08T17:51:59.403294+00:00",
+              "version_name": "3.06.71",
+              "version_code": 3067100,
+              "long_version_code": 3067100,
+              "base_sha256": "c7985ed41b91c782af8acb04b1868419cca8bc1fc52862bf6c89fa86b65c81fb",
+              "signer_certificate_sha256": [
+                "0b66624117621bb9bc3e7d12a1fe5436794cf8999b0253d9ff9bec71e0932178"
+              ],
+              "native_abis": [
+                "arm64-v8a"
+              ],
+              "split_names": [],
+              "APK_count": 1,
+              "all_signatures_verified": true,
+              "all_registry_identities_match": true,
+              "artifacts": [
+                {
+                  "apk_filename": "base.apk",
+                  "bytes": 228933721,
+                  "sha256": "c7985ed41b91c782af8acb04b1868419cca8bc1fc52862bf6c89fa86b65c81fb",
+                  "split_name": null,
+                  "version_name": "3.06.71",
+                  "long_version_code": 3067100,
+                  "native_abis": [
+                    "arm64-v8a"
+                  ],
+                  "signer_certificate_sha256": [
+                    "0b66624117621bb9bc3e7d12a1fe5436794cf8999b0253d9ff9bec71e0932178"
+                  ]
+                }
+              ]
+            },
+            "official_observation": {
+              "version_name": null,
+              "version_code": null,
+              "binary_sha256": null,
+              "signer_certificate_sha256": null
+            },
+            "next_action": "Use the publisher's current normal update/delivery channel on the final runtime and verify package/code/signature/ABI/splits before admitting an update.",
+            "runtime_contract_source": "/workspace/scratch/b902fa633fca/contracts45_actual/original45-call-contracts.json"
+          }
+        },
+        {
+          "json_path": "/packages/32",
+          "row": {
+            "package": "com.tencent.mm",
+            "display_name": "WeChat",
+            "kind": "third_party",
+            "official_sources": [
+              {
+                "url": "https://play.google.com/store/apps/details?id=com.tencent.mm&hl=en_US",
+                "source_kind": "official_google_play_listing",
+                "source_ref": "turn2view1",
+                "locale": "en_US",
+                "country": "unspecified",
+                "observed_updated_date": "2026-10-22"
+              }
+            ],
+            "latest_status": "official_latest_unknown",
+            "notes": [
+              "No unambiguous newer official delivery version/code/body was obtained. This row is unknown, not an asserted latest pass."
+            ],
+            "runtime_accepted": false,
+            "installed": {
+              "basis": "actual_readonly_extracted_APK_bodies",
+              "observed_utc": "2026-11-08T17:53:17.814624+00:00",
+              "version_name": "8.0.80",
+              "version_code": 3220,
+              "long_version_code": 3220,
+              "base_sha256": "9d9b6c516e8e07e437c81485fde21fe13ce4f61b37d19e793fff40c71be39c0e",
+              "signer_certificate_sha256": [
+                "0fe4ff85c215918396dadc7cd8ce6963339af33d37751a56e54c7206b63a3c7c"
+              ],
+              "native_abis": [
+                "arm64-v8a"
+              ],
+              "split_names": [],
+              "APK_count": 1,
+              "all_signatures_verified": true,
+              "all_registry_identities_match": true,
+              "artifacts": [
+                {
+                  "apk_filename": "base.apk",
+                  "bytes": 286319384,
+                  "sha256": "9d9b6c516e8e07e437c81485fde21fe13ce4f61b37d19e793fff40c71be39c0e",
+                  "split_name": null,
+                  "version_name": "8.0.80",
+                  "long_version_code": 3220,
+                  "native_abis": [
+                    "arm64-v8a"
+                  ],
+                  "signer_certificate_sha256": [
+                    "0fe4ff85c215918396dadc7cd8ce6963339af33d37751a56e54c7206b63a3c7c"
+                  ]
+                }
+              ]
+            },
+            "official_observation": {
+              "version_name": null,
+              "version_code": null,
+              "binary_sha256": null,
+              "signer_certificate_sha256": null,
+              "updated_date": "Oct 21, 2026",
+              "source_url": "https://play.google.com/store/apps/details?id=com.tencent.mm&hl=en_US"
+            },
+            "next_action": "Use the publisher's current normal update/delivery channel on the final runtime and verify package/code/signature/ABI/splits before admitting an update.",
+            "runtime_contract_source": "/workspace/scratch/b902fa633fca/contracts45_actual/original45-call-contracts.json"
+          }
+        },
+        {
+          "json_path": "/packages/35",
+          "row": {
+            "package": "com.xunmeng.pinduoduo",
+            "display_name": "Pinduoduo",
+            "kind": "third_party",
+            "official_sources": [
+              {
+                "url": "https://www.yangkeduo.com/home/download/",
+                "source_kind": "publisher_download_page",
+                "source_ref": "turn18view3",
+                "observed_version_name": null,
+                "observed_updated_date": null
+              }
+            ],
+            "latest_status": "official_latest_unknown",
+            "notes": [
+              "No unambiguous newer official delivery version/code/body was obtained. This row is unknown, not an asserted latest pass."
+            ],
+            "runtime_accepted": false,
+            "installed": {
+              "basis": "actual_readonly_extracted_APK_bodies",
+              "observed_utc": "2026-11-08T17:53:39.858683+00:00",
+              "version_name": "8.30.0",
+              "version_code": 83000,
+              "long_version_code": 83000,
+              "base_sha256": "3dbdcf5dcc94086dc0bc7d7f378fe1e328d9f32f30b82853fc8f440759d04ad4",
+              "signer_certificate_sha256": [
+                "dd3923e78df33f08b0fb4a533ab1e860425ca7f6777fbe14f85a6cf5687143d6"
+              ],
+              "native_abis": [
+                "arm64-v8a"
+              ],
+              "split_names": [],
+              "APK_count": 1,
+              "all_signatures_verified": true,
+              "all_registry_identities_match": true,
+              "artifacts": [
+                {
+                  "apk_filename": "base.apk",
+                  "bytes": 32690199,
+                  "sha256": "3dbdcf5dcc94086dc0bc7d7f378fe1e328d9f32f30b82853fc8f440759d04ad4",
+                  "split_name": null,
+                  "version_name": "8.30.0",
+                  "long_version_code": 83000,
+                  "native_abis": [
+                    "arm64-v8a"
+                  ],
+                  "signer_certificate_sha256": [
+                    "dd3923e78df33f08b0fb4a533ab1e860425ca7f6777fbe14f85a6cf5687143d6"
+                  ]
+                }
+              ]
+            },
+            "official_observation": {
+              "version_name": null,
+              "version_code": null,
+              "binary_sha256": null,
+              "signer_certificate_sha256": null
+            },
+            "next_action": "Use the publisher's current normal update/delivery channel on the final runtime and verify package/code/signature/ABI/splits before admitting an update.",
+            "runtime_contract_source": "/workspace/scratch/b902fa633fca/contracts45_actual/original45-call-contracts.json"
+          }
+        }
+      ]
+    }
+  ]
+}

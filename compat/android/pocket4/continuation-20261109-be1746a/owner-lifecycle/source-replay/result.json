@@ -1,0 +1,126 @@
+{
+  "schema": "pocket4-owner-lifecycle-r2-source-replay-v1",
+  "started_utc": "2026-11-09T10:52:57.506710+00:00",
+  "scope": "Three exact declared pre/post source hashes and minimal patch replay only",
+  "commands": [
+    {
+      "name": "rustc-version",
+      "argv": [
+        "/home/alex/.cargo/bin/rustc",
+        "--version"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.018136794000383816,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/source-replay-r1/rustc-version.stdout",
+        "bytes": 36,
+        "sha256": "a2d88be55921309c5e126c58ad4a9040d034419589b58684cb44dfd13e14f66e"
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/source-replay-r1/rustc-version.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "compile-verifier",
+      "argv": [
+        "/home/alex/.cargo/bin/rustc",
+        "--edition=2024",
+        "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/capsule/verify-source.rs",
+        "-o",
+        "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/source-replay-r1/verify-source"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.10437091400126519,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/source-replay-r1/compile-verifier.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/source-replay-r1/compile-verifier.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "check-before",
+      "argv": [
+        "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/source-replay-r1/verify-source",
+        "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/capsule",
+        "check-before",
+        "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/capsule/preimages"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.005647109001074568,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/source-replay-r1/check-before.stdout",
+        "bytes": 185,
+        "sha256": "b2f90d135dc05c9d6e5be1f8a75e56f2c377bc3c3b6f7fb7121f3c03b4e86ea7"
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/source-replay-r1/check-before.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "replay",
+      "argv": [
+        "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/source-replay-r1/verify-source",
+        "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/capsule",
+        "replay",
+        "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/capsule/preimages",
+        "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/replayed-source-r1"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.0115836169989052,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/source-replay-r1/replay.stdout",
+        "bytes": 179,
+        "sha256": "7d909dae692893542b76fb2e82441f947cfd9d40fec59714ac186e77fe3d95da"
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/source-replay-r1/replay.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "check-after",
+      "argv": [
+        "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/source-replay-r1/verify-source",
+        "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/capsule",
+        "check-after",
+        "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.005404568000813015,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/source-replay-r1/check-after.stdout",
+        "bytes": 184,
+        "sha256": "ca9ddd72ca8bfc0db4a8d6ea56bd89f49b5393cba92605fdf49899002f20d39f"
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/source-replay-r1/check-after.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "passed": true,
+  "runtime_qualified": false,
+  "production_ready": false,
+  "verifier_source": {
+    "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/capsule/verify-source.rs",
+    "bytes": 6221,
+    "sha256": "02b0444e0435a2296eba098ec1ec2cd315d9e4b3a813bd2c1f7a95e3d790426d"
+  },
+  "verifier_binary": {
+    "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/source-replay-r1/verify-source",
+    "bytes": 4083752,
+    "sha256": "a0b5a99129543eb4dd3462c0127d98d71ab3a1eb6830472b2152f0ed2733da3d"
+  },
+  "finished_utc": "2026-11-09T10:52:57.654736+00:00"
+}

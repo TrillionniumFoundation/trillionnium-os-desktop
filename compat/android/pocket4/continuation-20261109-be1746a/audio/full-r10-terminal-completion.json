@@ -1,0 +1,217 @@
+{
+  "actual_first_source_error": {
+    "consumer": "service-ondeviceintelligence",
+    "consumer_file": "packages/modules/NeuralNetworks/service/Android.bp",
+    "consumer_line": 72,
+    "full_log_observation": {
+      "files": [
+        {
+          "bytes": 67191,
+          "error_lines": [
+            {
+              "line": 317,
+              "text": "FAILED: /data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong/build.droidloom_x86_64.ninja"
+            },
+            {
+              "line": 357,
+              "text": "error: packages/modules/NeuralNetworks/service/Android.bp:72:1: \"service-ondeviceintelligence\" depends on undefined module \"service-ondeviceintelligence.api.combined.system-server.latest\"."
+            },
+            {
+              "line": 359,
+              "text": "error: packages/modules/NeuralNetworks/service/Android.bp:72:1: \"service-ondeviceintelligence\" depends on undefined module \"service-ondeviceintelligence-removed.api.combined.system-server.latest\"."
+            },
+            {
+              "line": 362,
+              "text": "05:01:10 soong bootstrap failed with: exit status 1"
+            }
+          ],
+          "last_lines": [
+            "Or did you mean [\"DeviceLockControllerDebug__droidloom_x86_64__auto_generated_rro_product\" \"DeviceLockControllerDebug__droidloom_x86_64__auto_generated_rro_vendor\"]?",
+            "ninja: build stopped: subcommand failed.",
+            "05:01:10 soong bootstrap failed with: exit status 1"
+          ],
+          "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2/commands/normal-full-audio-apex.stdout",
+          "same_inode_and_metadata": true,
+          "sha256": "229757460555e88220958f1568b768fbe4f7556a1c049aaadbd008832b060c24"
+        },
+        {
+          "bytes": 528065,
+          "error_lines": [
+            {
+              "line": 4194,
+              "text": "Droidloom update failed: command failed (exit status: 1): cd \"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source\" && ALLOW_MISSING_DEPENDENCIES=\"false\" CCACHE_DIR=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/ccache\" CCACHE_TEMPDIR=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/ccache-tmp\" JAVA_HOME=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/jdk/jdk21/linux-x86\" ORIGINAL_PWD=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source\" OUT_DIR=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out\" PATH=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/mesa-tools/src/compiler/clc:/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/mesa-tools/src/compiler/spirv:/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/pasit-original-r1:/usr/bin:/bin:/usr/sbin:/sbin\" SOONG_INCREMENTAL_ANALYSIS=\"false\" SOONG_NINJA=\"ninja\" TARGET_BUILD_VARIANT=\"userdebug\" TARGET_PRODUCT=\"droidloom_x86_64\" TARGET_RELEASE=\"cp2a\" TOP=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source\" \"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong_ui\" \"--make-mode\" \"-j6\" \"com.android.hardware.audio.droidloom\""
+            }
+          ],
+          "last_lines": [
+            "DROIDLOOM_GO_BUDGET phase=leave pid=381674 gomaxprocs=2 gomemlimit_bytes=5368709120 gogc_percent=50",
+            "gc 59 @8.385s 14%: 0.054+25+0.014 ms clock, 0.10+6.2/13/3.2+0.029 ms cpu, 45->49->47 MB, 50 MB goal, 0 MB stacks, 0 MB globals, 2 P",
+            "Droidloom update failed: command failed (exit status: 1): cd \"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source\" && ALLOW_MISSING_DEPENDENCIES=\"false\" CCACHE_DIR=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/ccache\" CCACHE_TEMPDIR=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/ccache-tmp\" JAVA_HOME=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/jdk/jdk21/linux-x86\" ORIGINAL_PWD=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source\" OUT_DIR=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out\" PATH=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/mesa-tools/src/compiler/clc:/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/mesa-tools/src/compiler/spirv:/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/pasit-original-r1:/usr/bin:/bin:/usr/sbin:/sbin\" SOONG_INCREMENTAL_ANALYSIS=\"false\" SOONG_NINJA=\"ninja\" TARGET_BUILD_VARIANT=\"userdebug\" TARGET_PRODUCT=\"droidloom_x86_64\" TARGET_RELEASE=\"cp2a\" TOP=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source\" \"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong_ui\" \"--make-mode\" \"-j6\" \"com.android.hardware.audio.droidloom\""
+          ],
+          "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2/commands/normal-full-audio-apex.stderr",
+          "same_inode_and_metadata": true,
+          "sha256": "c003c585cef67b4c858cd4217a3c19e8dbdfefd44d2783058db7043312a07b12"
+        }
+      ],
+      "full_builds_started": 0,
+      "mutations": 0,
+      "observed_utc": "2026-11-09T10:06:11.354101+00:00"
+    },
+    "missing_generated_providers": [
+      "service-ondeviceintelligence.api.combined.system-server.latest",
+      "service-ondeviceintelligence-removed.api.combined.system-server.latest"
+    ]
+  },
+  "assembled_utc": "2026-11-09T10:46:03.442727+00:00",
+  "do_not_execute": [
+    "control/full-desktop-r10/start-full.json",
+    "control/full-desktop-r10-r2/start-full.json"
+  ],
+  "full_builds_started": 0,
+  "full_qualified": false,
+  "historical_observation_only": true,
+  "host": "desktop",
+  "job_id": "1a1bfb491a7-5e21-67c",
+  "job_terminal": {
+    "at_unix_ms": 1794218788128,
+    "audit_recorded": true,
+    "automatic_retry": false,
+    "cancelled": false,
+    "exit_code": 1,
+    "job_id": "1a1bfb491a7-5e21-67c",
+    "launch_nonce": "9a365664df0d76666c47bb2b4c58bd6c",
+    "log_bytes": {
+      "stderr": {
+        "seen": 321,
+        "stored": 321
+      },
+      "stdout": {
+        "seen": 1909,
+        "stored": 1909
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_synced": {
+      "stderr": true,
+      "stdout": true
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "output_durable": true,
+    "state": "failed",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
+  },
+  "normal_command_exit": 1,
+  "owned_work_budget_passed": true,
+  "owner_source_mutations": 0,
+  "prior_immutable_observations": [
+    {
+      "bytes": 42017,
+      "path": "/workspace/scratch/be1746a9586f/audio-r10-live-observation.json",
+      "sha256": "03b6cd00ba0dd74197a17a93d1cf6182d2ddf662423e206911a22916fce53800"
+    },
+    {
+      "bytes": 4506,
+      "path": "/workspace/scratch/be1746a9586f/r10-failure-followup.json",
+      "sha256": "d49dc8c6be9abbb45ba6afc4cc16878cc0fb9d498dc73d49f173703fc1ddc0a4"
+    }
+  ],
+  "production_ready": false,
+  "raw_record_refs": [
+    {
+      "bytes": 56321,
+      "path": "evidence/r10-r2/inner-terminal.json",
+      "sha256": "692fa87ffcc47f8bb00a8ecbb70c0a7940e7b9443078cacef80a6bc60e474564"
+    },
+    {
+      "bytes": 9717,
+      "path": "evidence/r10-r2/outer-terminal.json",
+      "sha256": "2287a6c3b77993a2b1898789035cc273dfc3df305eb006359adbf039651c22e3"
+    },
+    {
+      "bytes": 17830,
+      "path": "evidence/r10-r2/fallback-result.json",
+      "sha256": "d9d073ddce34c5483872ee352ac2baf2408c06af058ce64d9ac139d5447a2de4"
+    },
+    {
+      "bytes": 732,
+      "path": "evidence/r10-r2/job-terminal.json",
+      "sha256": "007890e2b5af3f6eb3c2d65e41f80650ba8eda80b2e3be3462033842616173f5"
+    }
+  ],
+  "resource_gate_passed": true,
+  "retirement": {
+    "allocation_observer_retired": true,
+    "fallback_does_not_upgrade_failed_build": true,
+    "inner_state": "FAILED",
+    "input_after_qualified": true,
+    "launcher_child_reaped": true,
+    "normal_work_locks_after": [
+      {
+        "content": "230277\n",
+        "identity": [
+          2067,
+          1883370,
+          33152,
+          1000,
+          1000,
+          1,
+          7,
+          1794217822997318374,
+          1794217822997318374
+        ],
+        "observed_free": true,
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/package-build.lock"
+      },
+      {
+        "content": "230277\n",
+        "identity": [
+          2067,
+          1883371,
+          33152,
+          1000,
+          1000,
+          1,
+          7,
+          1794217822997318374,
+          1794217822997318374
+        ],
+        "observed_free": true,
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source-update.lock"
+      }
+    ],
+    "outer_errors": [],
+    "outer_state_as_recorded": "FAILED_RETIRED_OR_REQUIRES_RECOVERY",
+    "owned_retirement_complete": true,
+    "owned_unit_retired": true,
+    "source_projection_absent_after": true,
+    "source_projection_restored": true,
+    "unit_after": {
+      "ActiveState": "inactive",
+      "ControlGroup": "",
+      "Description": "p4-audio-source430-pasit-full-desktop-20261109-8b88-r10-r2.service",
+      "ExecMainPID": "0",
+      "ExecMainStatus": "0",
+      "InvocationID": "",
+      "KillMode": "control-group",
+      "LoadState": "not-found",
+      "Result": "success",
+      "RuntimeMaxUSec": "infinity",
+      "SubState": "dead",
+      "TimeoutStopUSec": "1min 30s",
+      "User": ""
+    }
+  },
+  "runtime_qualified": false,
+  "schema": "audio-r10-r2-terminal-completion-v1",
+  "state": "FAILED_SOURCE_DEPENDENCY_RETIRED",
+  "terminal_recorded_utc": "2026-11-09T10:06:28.128000+00:00",
+  "unit": "p4-audio-source430-pasit-full-desktop-20261109-8b88-r10-r2.service"
+}

@@ -1,0 +1,317 @@
+{
+  "actual_helper_tests": {
+    "all_16_log_streams_hash_verified": true,
+    "audio_tests_passed": 45,
+    "audio_unit_tests_filtered_out": 174,
+    "new_regression_passed": 1,
+    "normal_tools_built": 2,
+    "normal_verify_lock_projects": 430,
+    "normal_verify_lock_root_links": 8,
+    "reviewer_reran_tests": false,
+    "source_library_passed": 24,
+    "terminal": {
+      "exit_code": 0,
+      "job_id": "1a1bfe03d9e-5e21-792",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "timed_out": false
+    },
+    "test_result_sha256": "479c2e0fe2bac834d29042a9ae360cfbfcfff57978c8f567d256300e203ebcda"
+  },
+  "bcc_handoff": {
+    "adoption_reference": {
+      "bytes": 2576,
+      "path": "/workspace/scratch/be1746a9586f/native-bcc-adoption-addendum.json",
+      "sha256": "5ef388493a2f542e32e25369a40b721fb46af8cf7b0bbb15e84ba9f9800caca2"
+    },
+    "ancestor_original_input": "tools/Android.bp",
+    "base_commit": "fa3fa7496d9dd79a02bcd1445b1c49888aa493c4",
+    "basis": "Parent-confirmed later owner candidate plus Audio agent confirmation; exact chronological reference is native-bcc-adoption-addendum.json",
+    "candidate_commit_prefix": "68a334c9",
+    "project": "frameworks/compile/libbcc",
+    "project_commit": "943016fade3dbbb725c363d0dc60a6e962bd88e5",
+    "source_reconciliation_performed": false,
+    "sparse_paths": [
+      "tools/bcc_compat"
+    ]
+  },
+  "checks": [
+    {
+      "detail": "Three complete preimages match both candidates. Exact git apply --check and reconstruction in separate review fixtures reproduced all six helper and nine owner postimage hashes. No implementation change was made to either capsule.",
+      "id": "exact_common_base_and_postimages",
+      "status": "PASS"
+    },
+    {
+      "detail": "Helper lock adds exactly the four API36 public/system-server current/removed paths. Every other parsed lock field, all 430 project commits and existing source selections remain identical. All four use original SDK commit 0f07e8d60ab0aba46129e427101f96ba459a95c1; the original 25-byte fixture independently hashes to blob d802177e249b3f97128699222e65c35e57ba7540.",
+      "id": "four_original_inputs_only",
+      "status": "PASS"
+    },
+    {
+      "detail": "Both helper history reconstructions remove each of the four exact later additions once and assert the untouched historical PASIT430 hash before deriving the old425 snapshot. Independent byte reconstruction reproduced both historical hashes; no historical identity was rewritten.",
+      "id": "historical_identity_preserved",
+      "status": "PASS"
+    },
+    {
+      "detail": "The helper source-library production prefix is byte-identical. Its update-driver production prefix is byte-identical after normalizing only the exact current lock hash. No graph handling, dependency mode, source verification, project count/capacity or missing-dependency acceptance was loosened.",
+      "id": "strict_source_and_graph_preserved",
+      "status": "PASS"
+    },
+    {
+      "detail": "All sixteen stdout/stderr stream hashes match the eight recorded commands; all commands exit zero, leaders reaped, no timeout. Existing outputs report source24 plus new regression1, Audio45, two normal tools and verify-lock430/8. Reviewer did not rerun tests/builds.",
+      "id": "actual_normal_receipts",
+      "status": "PASS"
+    },
+    {
+      "detail": "The later published owner candidate is the preferred adoption base. Its two system-server inputs address the observed missing combined modules and its added original metadata/API verification must be retained. The helper patch is an alternate old-base candidate and must not overwrite or be blindly applied to that successor.",
+      "id": "owner_adoption_boundary",
+      "status": "PASS_WITH_EXPLICIT_SUCCESSOR_ADOPTION"
+    },
+    {
+      "detail": "Audio agent confirmed the current BCC delta is only tools/bcc_compat at original libbcc commit943016fade3dbbb725c363d0dc60a6e962bd88e5. The ancestor tools/Android.bp must be verified as an original materialized input during normal reconciliation. The older broad tools suggestion is superseded; no source reconciliation or full-build qualification is granted here.",
+      "id": "bcc_same_generation_handoff",
+      "status": "ALIGNED_WITH_LATEST_OWNER_CONTRACT"
+    }
+  ],
+  "exact_reconstruction": {
+    "files": [
+      {
+        "bytes": 238124,
+        "generation": "helper",
+        "path": "android/manifest/audio-bridge-source-lock.json",
+        "sha256": "46084ee55d24ee0178d09fb886886e07e8897949ea6300a30860b99f0a89c84f"
+      },
+      {
+        "bytes": 104375,
+        "generation": "helper",
+        "path": "tools/droidloom-source/src/lib.rs",
+        "sha256": "6e8d83710a8e32f07c54cd2eda110ee04b2f173c12ee922b0aa569b9be656b83"
+      },
+      {
+        "bytes": 417302,
+        "generation": "helper",
+        "path": "tools/droidloom-update/src/android.rs",
+        "sha256": "bf1153e11be340674d470d7fbd03516f8dd73b34d923770bef853cc9b0c0eb5c"
+      },
+      {
+        "bytes": 2479,
+        "generation": "helper",
+        "path": "tools/droidloom-source/tests/audio_ondeviceintelligence_api36.rs",
+        "sha256": "5dcce89aae288f9a92cb9620c997930c32fbf4fecee95dc1e8a66e55fffe2ab6"
+      },
+      {
+        "bytes": 3382,
+        "generation": "helper",
+        "path": "tools/droidloom-source/tests/fixtures/ondeviceintelligence-api36/provider-inputs.json",
+        "sha256": "56b4991b25ffe6bcaed072d52cc1621b65c68c9151b64cd00d7ed7a35268c18b"
+      },
+      {
+        "bytes": 25,
+        "generation": "helper",
+        "path": "tools/droidloom-source/tests/fixtures/ondeviceintelligence-api36/signature-format-2.0.txt",
+        "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552"
+      },
+      {
+        "bytes": 238000,
+        "generation": "owner",
+        "path": "android/manifest/audio-bridge-source-lock.json",
+        "sha256": "ddc03004f4c73f25c9682f19a829dac18312d4b8220e143266714aada61ee739"
+      },
+      {
+        "bytes": 105744,
+        "generation": "owner",
+        "path": "tools/droidloom-source/src/lib.rs",
+        "sha256": "1ba3e38fafd29c9235a6e953856a3a443b75badf64b6af392f2a32ee38b9ebff"
+      },
+      {
+        "bytes": 426923,
+        "generation": "owner",
+        "path": "tools/droidloom-update/src/android.rs",
+        "sha256": "1a4cb6f6d4026d84ed5b45ca3daecf5acc102a4e52630929ca823e3fe0c2d3c3"
+      },
+      {
+        "bytes": 16590,
+        "generation": "owner",
+        "path": "tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/build__soong__java__prebuilt_apis.go",
+        "sha256": "ac992ca42c67498bd1b3f5e54627f541e6ffa71de95135bd7bac511a2427272c"
+      },
+      {
+        "bytes": 2758,
+        "generation": "owner",
+        "path": "tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/packages__modules__NeuralNetworks__service__Android.bp",
+        "sha256": "50b264a5e8650135ce4893a47952a40f382ee129a93d6cfc96152dd350f87a18"
+      },
+      {
+        "bytes": 25,
+        "generation": "owner",
+        "path": "tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__36__system-server__api__service-ondeviceintelligence-removed.txt",
+        "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552"
+      },
+      {
+        "bytes": 25,
+        "generation": "owner",
+        "path": "tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__36__system-server__api__service-ondeviceintelligence.txt",
+        "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552"
+      },
+      {
+        "bytes": 6333,
+        "generation": "owner",
+        "path": "tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__Android.bp",
+        "sha256": "78d50e1dd41ad06e0c716faee8e8f3ddd823f3d482c3f484466e846953f735e0"
+      },
+      {
+        "bytes": 2092,
+        "generation": "owner",
+        "path": "tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/provenance.json",
+        "sha256": "fa33d6a867178cf65bbae130ea8ef82ae034adc004b41a01c8948f96952f1d22"
+      }
+    ],
+    "helper_postimages_verified": 6,
+    "owner_postimages_verified": 9,
+    "shared_three_preimages_match_both_candidates": true
+  },
+  "findings": [],
+  "historical_identities": {
+    "both_preserved_byte_exact": true,
+    "pasit430": "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a",
+    "pre_pasit425": "1dd0671551fb3c07cac4bb9b587346421321a6e4809494299f7b6daa4c49371c"
+  },
+  "lock_scope": {
+    "helper": {
+      "added_sdk_paths": [
+        "36/public/api/service-ondeviceintelligence-removed.txt",
+        "36/public/api/service-ondeviceintelligence.txt",
+        "36/system-server/api/service-ondeviceintelligence-removed.txt",
+        "36/system-server/api/service-ondeviceintelligence.txt"
+      ],
+      "all_other_lock_fields_unchanged": true,
+      "all_project_commits_unchanged": true,
+      "projects": 430,
+      "removed_sdk_paths": []
+    },
+    "owner": {
+      "added_sdk_paths": [
+        "36/system-server/api/service-ondeviceintelligence.txt",
+        "36/system-server/api/service-ondeviceintelligence-removed.txt"
+      ],
+      "all_other_lock_fields_unchanged": true,
+      "all_project_commits_unchanged": true,
+      "projects": 430,
+      "removed_sdk_paths": []
+    }
+  },
+  "original_fixture_identity": {
+    "bytes": 25,
+    "git_blob": "d802177e249b3f97128699222e65c35e57ba7540",
+    "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552"
+  },
+  "owner_adoption_update": {
+    "base_commit": "a0e5114a1728e5ac5a96cdffbf68a84958218765",
+    "capsule": "compat/android/pocket4/audio430-ondeviceintelligence-api-r1",
+    "chronology": "Both patches share exact a0e5114a preimages. The owner independently published a newer qualified two-system-server-input candidate with additional original-provider validation. The helper evidence remains a verified alternate four-input source result; it is not an overlay that replaces the newer owner implementation.",
+    "generator_evidence": {
+      "consequence": "Absent public-scope tracking does not by itself prevent the observed system-server combined modules from being created. The two additional public inputs preserve complete original public tracking data; they are not two further demonstrated undefined-module blockers.",
+      "fixture_path": "tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/build__soong__java__prebuilt_apis.go",
+      "function_behavior": "The combined module loop iterates existing latest keys and appends an ancestor-scope provider only if latest[<module>.<scope>] exists, then creates the combined module.",
+      "sha256": "ac992ca42c67498bd1b3f5e54627f541e6ffa71de95135bd7bac511a2427272c"
+    },
+    "owner_reported_tests": {
+      "source_audio_passed": 11,
+      "update_audio_passed": 52
+    },
+    "possible_followup_delta": {
+      "apply_only_to_owner_candidate": true,
+      "extra_original_paths": [
+        "36/public/api/service-ondeviceintelligence-removed.txt",
+        "36/public/api/service-ondeviceintelligence.txt"
+      ],
+      "fresh_current_lock_hash_required": true,
+      "implemented_or_qualified_by_this_review": false,
+      "retain_owner_validation_and_test_additions": true,
+      "reuse_helper_46084_lock_hash_without_reconstruction": false,
+      "stage_historical_rewind": "If public inputs are later adopted, rewind that precise delta first to the owner ddc03004 generation, then preserve the owner rewind to PASIT43078cc10ee and pre-PASIT4251dd06715."
+    },
+    "preferred_candidate_commit": "0342210a3bd82bf46067a1dbaf740e16f291a38a",
+    "preferred_candidate_tree": "131d5c9d4757dbc94a3b30453cf662e974fbfbba",
+    "preferred_current_lock_sha256": "ddc03004f4c73f25c9682f19a829dac18312d4b8220e143266714aada61ee739",
+    "preserve_owner_guards": [
+      "validate_audio_ondeviceintelligence_original_providers and all five original SDK declaration/generator/consumer/current/removed byte+hash checks",
+      "Its call after verify_materialized and before build projection",
+      "Same-commit selected source metadata/API path checks",
+      "Historical PASIT430/425 reconstruction and current lock pin checks",
+      "Negative missing/drift/link/repin tests"
+    ],
+    "publication_commit_reported_by_parent": "0d4ac0c18158ad2aa9e1f48195f3cfe9703d5646"
+  },
+  "pins": {
+    "helper_actual_result": {
+      "bytes": 13757,
+      "path": "/workspace/scratch/be1746a9586f/audio-api-helper/evidence/test-result-r2.json",
+      "sha256": "479c2e0fe2bac834d29042a9ae360cfbfcfff57978c8f567d256300e203ebcda"
+    },
+    "helper_patch": {
+      "bytes": 11981,
+      "path": "/workspace/scratch/be1746a9586f/audio-api-helper/audio-ondeviceintelligence-api36-r2.patch",
+      "sha256": "a5b7d0ef563d7f90c51d92bd9fed44589e7cc4dbf4122ad1bdd97c59c30f7a96"
+    },
+    "helper_patch_ready": {
+      "bytes": 2623,
+      "path": "/workspace/scratch/be1746a9586f/audio-api-helper/patch-ready-r2.json",
+      "sha256": "ef60f21ed1ad8197703667ae1ed9dd880990636c1793ba3cf54d13da19936c5b"
+    },
+    "helper_terminal": {
+      "bytes": 733,
+      "path": "/workspace/scratch/be1746a9586f/audio-api-helper/evidence/green-job-terminal.json",
+      "sha256": "89a2e2e5a7c8f2c4a29e24c86cc2501a459dac2aba51b6c554550b75d5ebff24"
+    },
+    "owner_patch": {
+      "bytes": 52713,
+      "path": "/workspace/scratch/be1746a9586f/owner-audio-api-publication/fix.patch",
+      "sha256": "85b803f6319e4f4d1214bf2192c8c5172c8e1734d321db960aa90a8954ea983a"
+    },
+    "owner_preimages": {
+      "bytes": 3148,
+      "path": "/workspace/scratch/be1746a9586f/owner-audio-api-publication/preimage.json",
+      "sha256": "2aee137a18214bacf74fda4631bab570e743679d44104d98f1068b8ce547e6a0"
+    },
+    "owner_qualification": {
+      "bytes": 9793,
+      "path": "/workspace/scratch/be1746a9586f/owner-audio-api-publication/qualification.json",
+      "sha256": "37a25cdb2e4507d52787dcff46bad091d32e6e5e0ea5902156c270c4b53b16a1"
+    },
+    "preimage_packet": {
+      "bytes": 148644,
+      "path": "/workspace/scratch/be1746a9586f/audio-api-helper/evidence/preimages.json.gz",
+      "sha256": "5fb855eac8ffdf01a3b9879d3e7a964093dd7b353909326e22f123180ceddd18"
+    }
+  },
+  "production_prefix_proof": [
+    {
+      "file": "tools/droidloom-source/src/lib.rs",
+      "normalized_production_bytes": 32253,
+      "normalized_production_sha256": "35edb3fb10e8ba6f5b0a28fb6a8b9074f9e9152652462c57a52337592f91b30a",
+      "production_unchanged_except_current_lock_pin": true
+    },
+    {
+      "file": "tools/droidloom-update/src/android.rs",
+      "normalized_production_bytes": 182349,
+      "normalized_production_sha256": "ed7e62fc7f221409e01c0a259ca85061cc0f4d903d8ecd0a333c862ed2d3aaad",
+      "production_unchanged_except_current_lock_pin": true
+    }
+  ],
+  "qualification_limits": {
+    "CURRENT_writes": 0,
+    "full_Audio_APEX_qualified": false,
+    "full_builds_started": 0,
+    "materialized_AOSP_source_qualified_by_review": false,
+    "new_tests_or_builds_started": 0,
+    "production_ready": false,
+    "runtime_qualified": false,
+    "shared_source_writes": 0
+  },
+  "result": "NO_CODE_BLOCKERS_ON_FROZEN_BASE_OWNER_SUCCESSOR_REQUIRED_FOR_ADOPTION",
+  "reviewed_utc": "2026-11-09T10:45:14.162995+00:00",
+  "reviewer": "android_state_audit",
+  "schema": "pocket4.audio-api-independent-review.v1",
+  "scope": "Exact frozen SDK tracking-input patch, complete shared preimages, postimages, original fixtures and existing normal receipts; no new tests/builds or expanded source scan."
+}

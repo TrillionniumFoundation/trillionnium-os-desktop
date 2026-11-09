@@ -1,0 +1,350 @@
+{
+  "android_full_builds_started": 0,
+  "baseline_red_receipt": {
+    "bytes": 7452,
+    "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/test-result.json",
+    "sha256": "b56b9939f563423e310a5bd9a5c0ee1095dec8fa9f5fbe6ecc57f1cc05ba37cc"
+  },
+  "baseline_regression_reproduced": true,
+  "budget_after": {
+    "affinity": [
+      22
+    ],
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1bfe03d9e-5e21-792.service",
+    "cpu.max": "100000 100000",
+    "memory.current": "571551744",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "4294967296",
+    "memory.peak": "794791936",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0"
+  },
+  "budget_before": {
+    "affinity": [
+      22
+    ],
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1bfe03d9e-5e21-792.service",
+    "cpu.max": "100000 100000",
+    "memory.current": "19619840",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "4294967296",
+    "memory.peak": "20643840",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0"
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/git",
+        "apply",
+        "--check",
+        "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/audio-ondeviceintelligence-api36-r2.patch"
+      ],
+      "elapsed_seconds": 0.004890694999630796,
+      "exit": 0,
+      "leader_reaped": true,
+      "name": "patch-apply-check",
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/patch-apply-check.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/patch-apply-check.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "apply",
+        "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/audio-ondeviceintelligence-api36-r2.patch"
+      ],
+      "elapsed_seconds": 0.004913917999147088,
+      "exit": 0,
+      "leader_reaped": true,
+      "name": "patch-apply-exact",
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/patch-apply-exact.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/patch-apply-exact.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "-vV"
+      ],
+      "elapsed_seconds": 0.016360334999262705,
+      "exit": 0,
+      "leader_reaped": true,
+      "name": "rustc-version",
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/rustc-version.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 196,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/rustc-version.stdout",
+        "sha256": "83e4eefd5e010a92d9f63328bf8219e23fe5e4cf5e5d17ce53d0263cfa4218a6"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "--version"
+      ],
+      "elapsed_seconds": 0.004049102999488241,
+      "exit": 0,
+      "leader_reaped": true,
+      "name": "cargo-version",
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/cargo-version.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 36,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/cargo-version.stdout",
+        "sha256": "49f46ff5ffe434e6c1c66388a9230ac33bbe3dbd9175314e9ffc9aa7c418d329"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j1",
+        "-p",
+        "droidloom-source"
+      ],
+      "elapsed_seconds": 2.131665783999779,
+      "exit": 0,
+      "leader_reaped": true,
+      "name": "normal-source-tests-green",
+      "stderr": {
+        "bytes": 736,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/normal-source-tests-green.stderr",
+        "sha256": "f84e84f1e66cd605a4bec6182d94a6b201df2d44bdf167b13bab198355dd9c8e"
+      },
+      "stdout": {
+        "bytes": 2403,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/normal-source-tests-green.stdout",
+        "sha256": "4f66f12ea1eea04a24e2087cf5ec7584d660b4e4c24690f7df315525d7c476ad"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j1",
+        "-p",
+        "droidloom-update",
+        "android::tests::audio_"
+      ],
+      "elapsed_seconds": 14.166372830999535,
+      "exit": 0,
+      "leader_reaped": true,
+      "name": "normal-audio-tests-green",
+      "stderr": {
+        "bytes": 1745,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/normal-audio-tests-green.stderr",
+        "sha256": "3274c61c37197ca1e78a4c37817b0d736858cf2d3fc7ca4ce5087c8a23374334"
+      },
+      "stdout": {
+        "bytes": 4627,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/normal-audio-tests-green.stdout",
+        "sha256": "39ee6d840b0ef12f2ae08be8dcc30a11a65ac809b2a068d1878072420151412a"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j1",
+        "-p",
+        "droidloom-source",
+        "-p",
+        "droidloom-update"
+      ],
+      "elapsed_seconds": 0.4676317189987458,
+      "exit": 0,
+      "leader_reaped": true,
+      "name": "compile-normal-tools",
+      "stderr": {
+        "bytes": 202,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/compile-normal-tools.stderr",
+        "sha256": "3170d04279fc10781cdeea8499279b4e55f105bfab465c15ad694aba3d251626"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/compile-normal-tools.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/cargo-target/debug/droidloom-source",
+        "verify-lock",
+        "--lock",
+        "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/source/android/manifest/audio-bridge-source-lock.json"
+      ],
+      "elapsed_seconds": 0.01773774899993441,
+      "exit": 0,
+      "leader_reaped": true,
+      "name": "normal-lock-verify",
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/normal-lock-verify.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 107,
+        "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/commands-r2/normal-lock-verify.stdout",
+        "sha256": "4f03f51ecad117e7ea1e8b5aeaa1552f13c1b91a698d8b961e4c4bf092690d57"
+      },
+      "timed_out": false
+    }
+  ],
+  "elapsed_seconds": 16.881610140000703,
+  "finished_utc": "2026-11-09T10:35:47.891435+00:00",
+  "full_qualified": false,
+  "historical_425_sha256_unchanged": "1dd0671551fb3c07cac4bb9b587346421321a6e4809494299f7b6daa4c49371c",
+  "historical_pasit_430_sha256_unchanged": "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a",
+  "history_rewind_exact_paths": [
+    "36/public/api/service-ondeviceintelligence-removed.txt",
+    "36/public/api/service-ondeviceintelligence.txt",
+    "36/system-server/api/service-ondeviceintelligence-removed.txt",
+    "36/system-server/api/service-ondeviceintelligence.txt"
+  ],
+  "memavailable_before_bytes": 19217649664,
+  "network_fetches": 0,
+  "normal_tools": [
+    {
+      "bytes": 19289608,
+      "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/cargo-target/debug/droidloom-source",
+      "sha256": "841b4199b9ad56ed408f823a17c9d7cbdc80838d312bf6a8a98ed118d834bb4a"
+    },
+    {
+      "bytes": 32347552,
+      "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/cargo-target/debug/droidloom-update",
+      "sha256": "92a630c2700192876d7717448c52d572834e07f365e94498e6926ce279fa861e"
+    }
+  ],
+  "origin_lock_unchanged": true,
+  "origin_preimages_unchanged": true,
+  "own_swap_limit_update": {
+    "argv": [
+      "systemctl",
+      "--user",
+      "set-property",
+      "--runtime",
+      "hepta-runtime-job-1a1bfe03d9e-5e21-792.service",
+      "MemorySwapMax=0"
+    ],
+    "exit": 0,
+    "stderr": ""
+  },
+  "owner_source_mutations": 0,
+  "patch": {
+    "bytes": 11981,
+    "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/evidence/audio-ondeviceintelligence-api36-r2.patch",
+    "sha256": "a5b7d0ef563d7f90c51d92bd9fed44589e7cc4dbf4122ad1bdd97c59c30f7a96"
+  },
+  "patch_applied_postimages_exact": true,
+  "preimages": [
+    {
+      "bytes": 237862,
+      "relative": "android/manifest/audio-bridge-source-lock.json",
+      "sha256": "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a"
+    },
+    {
+      "bytes": 103552,
+      "relative": "tools/droidloom-source/src/lib.rs",
+      "sha256": "f140abb630f10978e4894e6aa8877e66db82e660e4ce3d98f4ed8beed13ee820"
+    },
+    {
+      "bytes": 416490,
+      "relative": "tools/droidloom-update/src/android.rs",
+      "sha256": "5af4e761bb69937e77e08aadc5626e3fe2f002b7b30b6465c18e34a91eb8eaee"
+    }
+  ],
+  "production_ready": false,
+  "root": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1",
+  "runtime_qualified": false,
+  "schema": "audio-ondevice-api-helper-red-green-v2",
+  "shared_cache_mutations": 0,
+  "source_delta": {
+    "added_exact_paths": [
+      "36/public/api/service-ondeviceintelligence-removed.txt",
+      "36/public/api/service-ondeviceintelligence.txt",
+      "36/system-server/api/service-ondeviceintelligence-removed.txt",
+      "36/system-server/api/service-ondeviceintelligence.txt"
+    ],
+    "all_other_json_fields_unchanged": true,
+    "new_lock": {
+      "bytes": 238124,
+      "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/source/android/manifest/audio-bridge-source-lock.json",
+      "sha256": "46084ee55d24ee0178d09fb886886e07e8897949ea6300a30860b99f0a89c84f"
+    },
+    "old_lock_sha256": "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a",
+    "project_count_unchanged": 430,
+    "sdk_commit_unchanged": "0f07e8d60ab0aba46129e427101f96ba459a95c1",
+    "sdk_sparse_paths_after": 68,
+    "sdk_sparse_paths_before": 64
+  },
+  "source_origin_commit": "a0e5114a1728e5ac5a96cdffbf68a84958218765",
+  "started_utc": "2026-11-09T10:35:31.009847+00:00",
+  "state": "API_SOURCE_INPUT_PATCH_RED_GREEN_NORMAL_TESTS_PASSED",
+  "updated_files": [
+    {
+      "bytes": 238124,
+      "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/source/android/manifest/audio-bridge-source-lock.json",
+      "sha256": "46084ee55d24ee0178d09fb886886e07e8897949ea6300a30860b99f0a89c84f"
+    },
+    {
+      "bytes": 104375,
+      "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/source/tools/droidloom-source/src/lib.rs",
+      "sha256": "6e8d83710a8e32f07c54cd2eda110ee04b2f173c12ee922b0aa569b9be656b83"
+    },
+    {
+      "bytes": 417302,
+      "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/source/tools/droidloom-update/src/android.rs",
+      "sha256": "bf1153e11be340674d470d7fbd03516f8dd73b34d923770bef853cc9b0c0eb5c"
+    },
+    {
+      "bytes": 2479,
+      "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/source/tools/droidloom-source/tests/audio_ondeviceintelligence_api36.rs",
+      "sha256": "5dcce89aae288f9a92cb9620c997930c32fbf4fecee95dc1e8a66e55fffe2ab6"
+    },
+    {
+      "bytes": 3382,
+      "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/source/tools/droidloom-source/tests/fixtures/ondeviceintelligence-api36/provider-inputs.json",
+      "sha256": "56b4991b25ffe6bcaed072d52cc1621b65c68c9151b64cd00d7ed7a35268c18b"
+    },
+    {
+      "bytes": 25,
+      "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/source/tools/droidloom-source/tests/fixtures/ondeviceintelligence-api36/signature-format-2.0.txt",
+      "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552"
+    }
+  ]
+}

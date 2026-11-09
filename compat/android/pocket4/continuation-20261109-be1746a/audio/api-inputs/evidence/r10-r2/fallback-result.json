@@ -1,0 +1,573 @@
+{
+  "commands": [
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1296314.891864697,
+        "elapsed_seconds": 0.00016470812261104584,
+        "leader_pid": 398010,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/pasit-original-r1/droidloom-source",
+        "verify-lock",
+        "--lock",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-pasit-original-r1/android/manifest/audio-bridge-source-lock.json"
+      ],
+      "driver": {
+        "argv": [
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/pasit-original-r1/droidloom-source",
+          "verify-lock",
+          "--lock",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-pasit-original-r1/android/manifest/audio-bridge-source-lock.json"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1bfb491a7-5e21-67c.service\n",
+        "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/pasit-original-r1/droidloom-source",
+        "pid": 398010,
+        "start_ticks": 129630986
+      },
+      "errors": [],
+      "finished_ns": 1794218643901643681,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00016283197328448296,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 398010,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "normal-lock-fallback",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 398010,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 183191,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794218643873943354,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          2930279,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794218643872727961,
+          1794218643872727961
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2-fallback/commands/normal-lock-fallback.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 107,
+        "identity": [
+          2067,
+          2930278,
+          33152,
+          1000,
+          1000,
+          1,
+          107,
+          1794218643897727430,
+          1794218643897727430
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2-fallback/commands/normal-lock-fallback.stdout",
+        "sha256": "4f03f51ecad117e7ea1e8b5aeaa1552f13c1b91a698d8b961e4c4bf092690d57"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1296458.774373237,
+        "elapsed_seconds": 0.00025574187748134136,
+        "leader_pid": 398011,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/pasit-original-r1/droidloom-source",
+        "verify-materialized",
+        "--lock",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-pasit-original-r1/android/manifest/audio-bridge-source-lock.json",
+        "--output",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source"
+      ],
+      "driver": {
+        "argv": [
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/pasit-original-r1/droidloom-source",
+          "verify-materialized",
+          "--lock",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-pasit-original-r1/android/manifest/audio-bridge-source-lock.json",
+          "--output",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1bfb491a7-5e21-67c.service\n",
+        "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/pasit-original-r1/droidloom-source",
+        "pid": 398011,
+        "start_ticks": 129630989
+      },
+      "errors": [],
+      "finished_ns": 1794218787796804782,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0003012500237673521,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 398011,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "normal-materialized-fallback",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 398011,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 183191,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794218643903605086,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          2930282,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794218643902727323,
+          1794218643902727323
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2-fallback/commands/normal-materialized-fallback.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 108,
+        "identity": [
+          2067,
+          2930281,
+          33152,
+          1000,
+          1000,
+          1,
+          108,
+          1794218787780494465,
+          1794218787780494465
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2-fallback/commands/normal-materialized-fallback.stdout",
+        "sha256": "692d91d64d57b8f7f25a1259ffafa52e5a9c285456ae94f1e751e8eb4ac33edc"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1296458.800982866,
+        "elapsed_seconds": 0.00029698992148041725,
+        "leader_pid": 404171,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "rev-parse",
+          "HEAD"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1bfb491a7-5e21-67c.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 404171,
+        "start_ticks": 129645379
+      },
+      "errors": [],
+      "finished_ns": 1794218787811076156,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0002714840229600668,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 404171,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-head-fallback",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 404171,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 183191,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794218787805024600,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          2930285,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794218787804493899,
+          1794218787804493899
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2-fallback/commands/recipe-head-fallback.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          2930284,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794218787807493829,
+          1794218787807493829
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2-fallback/commands/recipe-head-fallback.stdout",
+        "sha256": "15c50179cea5863e3be5530f6460d53db8dc81f147199644858d04366d945928"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1296458.809248696,
+        "elapsed_seconds": 0.00027540000155568123,
+        "leader_pid": 404172,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "rev-parse",
+          "HEAD^{tree}"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1bfb491a7-5e21-67c.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 404172,
+        "start_ticks": 129645380
+      },
+      "errors": [],
+      "finished_ns": 1794218787819207318,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00025778915733098984,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 404172,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-tree-fallback",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 404172,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 183191,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794218787813680967,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          2930288,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794218787813493687,
+          1794218787813493687
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2-fallback/commands/recipe-tree-fallback.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          2930287,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794218787815493640,
+          1794218787815493640
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2-fallback/commands/recipe-tree-fallback.stdout",
+        "sha256": "4614422795b4ac86ae526cdaf300b52d2ff36ece2784e018aef0620ad784e29a"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1296458.88782248,
+        "elapsed_seconds": 0.0003802829887717962,
+        "leader_pid": 404173,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "status",
+        "--porcelain=v1"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "status",
+          "--porcelain=v1"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1bfb491a7-5e21-67c.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 404173,
+        "start_ticks": 129645381
+      },
+      "errors": [],
+      "finished_ns": 1794218787899982503,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00030422513373196125,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 404173,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-clean-fallback",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 404173,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 183191,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794218787821847462,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          2930291,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794218787821493499,
+          1794218787821493499
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2-fallback/commands/recipe-clean-fallback.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          2930290,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794218787821493499,
+          1794218787821493499
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2-fallback/commands/recipe-clean-fallback.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "does_not_upgrade_failed_build": true,
+  "full_builds_started": 0,
+  "outer_job_id": "1a1bfb491a7-5e21-67c",
+  "owned_unit_retired": true,
+  "schema": "fresh-desktop-normal-recovery-after-owned-unit-retirement-v1",
+  "shared_serial_lock": {
+    "held_exclusive": true,
+    "identity": [
+      2067,
+      48352,
+      33152,
+      1000,
+      1000,
+      1,
+      0,
+      1794167144514000698,
+      1794167144514000698
+    ],
+    "path": "/data/pocket4-production-build-20261108-8b88.serial.lock"
+  },
+  "source_after": {
+    "bytes": 263945,
+    "identity": [
+      2067,
+      1883605,
+      33152,
+      1000,
+      1000,
+      1,
+      263945,
+      1794218130001264706,
+      1794218130478249114
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+    "sha256": "a7add5b00da39e4e18587399a3b26ecbaf3983f6cad93aea47061c3117ac805a"
+  },
+  "source_projection_restored": true,
+  "work_locks_after": [
+    {
+      "content": "230277\n",
+      "identity": [
+        2067,
+        1883370,
+        33152,
+        1000,
+        1000,
+        1,
+        7,
+        1794217822997318374,
+        1794217822997318374
+      ],
+      "observed_free": true,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/package-build.lock"
+    },
+    {
+      "content": "230277\n",
+      "identity": [
+        2067,
+        1883371,
+        33152,
+        1000,
+        1000,
+        1,
+        7,
+        1794217822997318374,
+        1794217822997318374
+      ],
+      "observed_free": true,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source-update.lock"
+    }
+  ]
+}
