@@ -305,6 +305,20 @@ REQUIRED_FILES = (
     "compat/android/pocket4/audio430-released-sdk-source-tests-r1/provenance/broker-harness-Cargo.toml",
     "compat/android/pocket4/audio430-released-sdk-source-tests-r1/provenance/normal-source-Cargo.toml",
     "compat/android/pocket4/audio430-released-sdk-source-tests-r1/verify_ci.py",
+    "compat/android/pocket4/production-cell-foundations-r1/FILES.json",
+    "compat/android/pocket4/production-cell-foundations-r1/QUALIFICATION.json",
+    "compat/android/pocket4/production-cell-foundations-r1/README.md",
+    "compat/android/pocket4/production-cell-foundations-r1/SOURCE-ORIGINS.json",
+    "compat/android/pocket4/production-cell-foundations-r1/foundation.patch",
+    "compat/android/pocket4/production-cell-foundations-r1/preimages/runtime/droidloom-supervisor/src/lib.rs",
+    "compat/android/pocket4/production-cell-foundations-r1/preimages/runtime/droidloom-supervisor/src/production_mounts.rs",
+    "compat/android/pocket4/production-cell-foundations-r1/source/runtime/droidloom-supervisor/src/lib.rs",
+    "compat/android/pocket4/production-cell-foundations-r1/source/runtime/droidloom-supervisor/src/production_mounts.rs",
+    "compat/android/pocket4/production-cell-foundations-r1/source/runtime/droidloom-supervisor/src/production_readiness.rs",
+    "compat/android/pocket4/production-cell-foundations-r1/source/runtime/droidloom-supervisor/src/production_runtime_assets.rs",
+    "compat/android/pocket4/production-cell-foundations-r1/source/runtime/droidloom-supervisor/src/production_runtime_seccomp.rs",
+    "compat/android/pocket4/production-cell-foundations-r1/source/runtime/droidloom-supervisor/src/production_selection.rs",
+    "compat/android/pocket4/production-cell-foundations-r1/verify_source_replay.py",
 )
 EXECUTABLE_FILES = (
     "support/android/build_asterinas_abi.sh",
@@ -396,3 +410,4 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
