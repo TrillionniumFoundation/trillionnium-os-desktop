@@ -2,9 +2,11 @@
 
 This candidate runs the complete `droidloom-source` library test module against the
 published 32-path SDK extension and the followup that repairs its historical-lock
-tests. It preserves the production library bytes. No Rust command, new normal
-tool build, AOSP synchronization, Soong build, or Android runtime has executed for
-this candidate yet.
+tests. It preserves the production library bytes. A08 run 42634531755 at commit
+`a291c1fbef3aa0b381109aec9af5dad0112dab09` executed all 26 tests successfully,
+with no ignored or filtered test. The exact Cargo-resolved dependency lock from
+that actual run is now frozen for subsequent `cargo test --locked` executions.
+This qualification covers this 32-path source-library capsule only.
 
 ## Why the followup is required
 
@@ -44,10 +46,9 @@ or edited.
 
 ## First actual CI execution
 
-`A08-FIRST-RUN.yml` is a proposed step for the existing A08 Linux job, after its
-already configured Rust 1.93.0 installation. It does not modify that workflow or
-the existing applications harness. Root must add the capsule to the existing
-source-integrity registration before publishing the step.
+`A08-FIRST-RUN.yml` records the original bootstrap recipe used by the A08 Linux
+job with Rust 1.93.0. The live workflow now uses the resolved lock described below.
+The existing applications harness and parallel continuation controls are preserved.
 
 The helper first validates every input SHA, replays both patches against complete
 preimages, checks the unchanged production prefix and exact 26-test inventory,
@@ -65,15 +66,23 @@ Three tests create and use temporary local Git repositories; they need normal Gi
 a Unix filesystem with symlinks, and writable temporary storage. They do not need
 AOSP network fetches, root, Android devices, or any production source tree.
 
-## Freeze the first real lock
+## Frozen actual dependency lock
 
-After a successful first run, root should retrieve the actual artifact lock,
-verify its bytes/SHA against `result.json`, add those unchanged bytes as
-`harness/Cargo.lock`, and refresh the capsule and source-integrity manifests.
-The subsequent step must change preparation to `--mode locked --lock-file
-"$capsule/harness/Cargo.lock"` and remove `cargo generate-lockfile`. It retains
-the copy-before-test, `--locked`, complete-test, and post-test comparison steps.
-The helper does not silently choose bootstrap when a frozen lock is missing.
+The successful first run's `a08-source-and-host-evidence` artifact (ID 13683954501)
+was downloaded and verified against its published ZIP SHA256
+`fed2e7d43cbebf6707c84472da9584adf13fcba900b73149e8e1d8978251fa6d`.
+Its unchanged 8043-byte `Cargo.lock` is retained as `harness/Cargo.lock`, SHA256
+`a20b2cd585658108f98a28a6d925c7cf3ecb3cb30c18f68c163e1035bcae5fbc`.
+The original result is copied unchanged to
+`provenance/actual-a291-source-tests-result.json`; it binds the actual lock,
+complete test log, 26 executed names and original capsule manifest.
+
+The live A08 step now prepares with `--mode locked --lock-file
+"$capsule/harness/Cargo.lock"` and runs no `cargo generate-lockfile` command.
+It retains the copy-before-test, `--locked`, complete-test and post-test comparison
+requirements. Missing or changed frozen inputs fail before compilation.
+
+Actual run: https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/42634531755
 
 This standalone run covers the actual lock-history regression and the complete
 source library controls. It does not qualify the normal recipe executables,

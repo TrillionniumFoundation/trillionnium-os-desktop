@@ -284,6 +284,8 @@ REQUIRED_FILES = (
     "compat/android/pocket4/audio430-released-sdk-source-tests-r1/A08-FIRST-RUN.yml",
     "compat/android/pocket4/audio430-released-sdk-source-tests-r1/EXPECTED-TESTS.json",
     "compat/android/pocket4/audio430-released-sdk-source-tests-r1/FILES.json",
+    "compat/android/pocket4/audio430-released-sdk-source-tests-r1/harness/Cargo.lock",
+    "compat/android/pocket4/audio430-released-sdk-source-tests-r1/provenance/actual-a291-source-tests-result.json",
     "compat/android/pocket4/audio430-released-sdk-source-tests-r1/README.md",
     "compat/android/pocket4/audio430-released-sdk-source-tests-r1/REVIEW.json",
     "compat/android/pocket4/audio430-released-sdk-source-tests-r1/SDK-INPUTS.json",
