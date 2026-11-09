@@ -1,0 +1,89 @@
+{
+  "schema": "pocket4-audio-defaults-independent-preflight-v1",
+  "started_at": "2026-11-09T08:29:36.512454+00:00",
+  "root": "/data/pocket4-audio-defaults-preflight-20261109-be1746a-r1",
+  "shared_source_writes": 0,
+  "full_builds": 0,
+  "inputs": {
+    "tools/droidloom-source/src/bin/droidloom-blueprint-defaults.rs": {
+      "sha256": "3e2388d1245821aae856e6710a96206b3d938b5861a8e5776f30fd31891fc20c",
+      "bytes": 14583
+    },
+    "tools/droidloom-source/tests/fixtures/blueprint-defaults/r9-pasit-consumer.bp": {
+      "sha256": "bf1647bf57fab65f5ff2fa7a82b434bb909880f1e258edebf163f8dea48672f0",
+      "bytes": 1257
+    },
+    "tools/droidloom-source/tests/fixtures/blueprint-defaults/r9-pasit-provider.bp": {
+      "sha256": "01b4a9495646aa94358153832915925f15c3b35752013e9810c7b2bed4d045e2",
+      "bytes": 1107
+    }
+  },
+  "cpu_affinity": [
+    47
+  ],
+  "rustc": {
+    "argv": [
+      "/home/qian-qi/.cargo/bin/rustc",
+      "--version"
+    ],
+    "returncode": 0,
+    "stdout": "rustc 1.95.0 (59807616e 2026-04-14)\n",
+    "stderr": "",
+    "child_reaped": true
+  },
+  "compile_tests": {
+    "argv": [
+      "/home/qian-qi/.cargo/bin/rustc",
+      "--edition=2024",
+      "--test",
+      "-C",
+      "codegen-units=1",
+      "/data/pocket4-audio-defaults-preflight-20261109-be1746a-r1/tools/droidloom-source/src/bin/droidloom-blueprint-defaults.rs",
+      "-o",
+      "/data/pocket4-audio-defaults-preflight-20261109-be1746a-r1/preflight-tests"
+    ],
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "child_reaped": true
+  },
+  "tests": {
+    "argv": [
+      "/data/pocket4-audio-defaults-preflight-20261109-be1746a-r1/preflight-tests",
+      "--test-threads=1"
+    ],
+    "returncode": 0,
+    "stdout": "\nrunning 7 tests\ntest tests::actual_original_pasit_provider_resolves_the_r9_literal_edge ... ok\ntest tests::actual_r9_unrelated_discovered_module_is_still_checked ... ok\ntest tests::comments_and_strings_do_not_supply_a_provider ... ok\ntest tests::defaults_outside_selected_target_and_transitive_defaults_are_inspected ... ok\ntest tests::empty_and_trailing_comma_lists_and_nested_maps_are_parsed ... ok\ntest tests::malformed_input_is_never_a_clean_result ... ok\ntest tests::nonliteral_defaults_are_explicitly_unresolved ... ok\n\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+    "stderr": "",
+    "child_reaped": true
+  },
+  "compile_binary": {
+    "argv": [
+      "/home/qian-qi/.cargo/bin/rustc",
+      "--edition=2024",
+      "-C",
+      "codegen-units=1",
+      "/data/pocket4-audio-defaults-preflight-20261109-be1746a-r1/tools/droidloom-source/src/bin/droidloom-blueprint-defaults.rs",
+      "-o",
+      "/data/pocket4-audio-defaults-preflight-20261109-be1746a-r1/droidloom-blueprint-defaults"
+    ],
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "child_reaped": true
+  },
+  "discovery_list": {
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/.module_paths/Android.bp.list",
+    "sha256": "ed3590368c9dbe2cf79bb7f0456678b9965383e302166bc3249e71ba97ba7a2b",
+    "bytes": 514268,
+    "count": 8584,
+    "first_lines": [
+      "Android.bp",
+      "art/Android.bp",
+      "art/adbconnection/Android.bp",
+      "art/artd/Android.bp",
+      "art/artd/binder/Android.bp"
+    ]
+  },
+  "finished_at": "2026-11-09T08:29:37.503211+00:00"
+}

@@ -620,6 +620,70 @@ jobs:
           print(json.dumps({"Camera_current_source_tests": 38, "passed": True,
                             "runtime_qualified": False, "historical_host_qualification_transferred": False}, sort_keys=True))
           PYCURRENT
+      - name: Verify continuation inputs and literal defaults regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule=compat/android/pocket4/continuation-20261109-be1746a
+          python3 -I -B - "$capsule" <<'PYCONTINUATIONPINS'
+          import hashlib
+          import json
+          from pathlib import Path, PurePosixPath
+          import sys
+          root = Path(sys.argv[1])
+          raw = (root / 'FILES.json').read_bytes()
+          if hashlib.sha256(raw).hexdigest() != 'b90ab39eda5ccf33189d5962e3d853b96803f0fc8439a5b76890e5f7b983ec6c':
+              raise SystemExit('Continuation inventory pin differs')
+          manifest = json.loads(raw)
+          for row in manifest['files']:
+              relative = PurePosixPath(row['path'])
+              if relative.is_absolute() or '..' in relative.parts:
+                  raise SystemExit('Invalid inventory path')
+              data = (root / row['path']).read_bytes()
+              if len(data) != row['bytes'] or hashlib.sha256(data).hexdigest() != row['sha256']:
+                  raise SystemExit('Continuation member differs: ' + row['path'])
+          PYCONTINUATIONPINS
+          python3 -I -B "$capsule/verify.py" --out "$RUNNER_TEMP/a08/continuation-inputs.json"
+          work="$RUNNER_TEMP/a08-continuation-controls"
+          mkdir "$work"
+          trap 'rm -f "$work/defaults-tests" "$work/defaults-cli"' EXIT
+          rustup run 1.93.0 rustc --edition=2024 --test -C codegen-units=1 \
+            "$capsule/audio/src/bin/droidloom-blueprint-defaults.rs" -o "$work/defaults-tests"
+          "$work/defaults-tests" --test-threads=1 2>&1 | tee "$RUNNER_TEMP/a08/continuation-audio-tests.log"
+          rustup run 1.93.0 rustc --edition=2024 -C codegen-units=1 \
+            "$capsule/audio/src/bin/droidloom-blueprint-defaults.rs" -o "$work/defaults-cli"
+          python3 -I -B - "$capsule" "$work" "$RUNNER_TEMP/a08" <<'PYCONTINUATIONCLI'
+          import json
+          from pathlib import Path
+          import subprocess
+          import sys
+          root, work, evidence = map(Path, sys.argv[1:])
+          marker = 'test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;'
+          if (evidence / 'continuation-audio-tests.log').read_text().count(marker) != 1:
+              raise SystemExit('All seven literal defaults controls must execute')
+          fixture = root / 'audio/tests/fixtures/blueprint-defaults'
+          cases = [('missing', ['r9-pasit-consumer.bp'], 2, 1),
+                   ('present', ['r9-pasit-consumer.bp', 'r9-pasit-provider.bp'], 0, 0)]
+          reports = []
+          for name, inputs, expected_code, missing_count in cases:
+              listing = work / (name + '.list')
+              listing.write_text('\n'.join(inputs) + '\n')
+              result = subprocess.run([str(work / 'defaults-cli'), str(fixture), str(listing)],
+                                      text=True, capture_output=True, timeout=15, check=False)
+              if result.returncode != expected_code or result.stderr:
+                  raise SystemExit('Literal defaults CLI failed: ' + name)
+              report = json.loads(result.stdout)
+              missing = report.get('missing_default_candidates')
+              if report.get('graph_qualified') is not False or report.get('unsupported') != []:
+                  raise SystemExit('CLI overstated coverage or could not parse the exact fixtures')
+              if len(missing) != missing_count:
+                  raise SystemExit('Literal defaults candidate count differs: ' + name)
+              if missing_count and (missing[0]['module'], missing[0]['defaults']) != ('DesktopTestLibTestsMobly', 'PASIT-defaults'):
+                  raise SystemExit('The actual r9 missing edge was not recovered')
+              reports.append({'case': name, 'returncode': result.returncode, 'report': report})
+          (evidence / 'continuation-audio-cli.json').write_text(json.dumps(reports, indent=2) + '\n')
+          print('7 Rust controls and 2 real CLI cases passed; Soong graph, artifacts and runtime remain unqualified')
+          PYCONTINUATIONCLI
       - name: Preserve host evidence without implying Android guest success
         if: always()
         uses: actions/upload-artifact@v4

@@ -1,0 +1,5108 @@
+{
+  "schema": "pocket4-r9-discovery-literal-defaults-observation-v1",
+  "started_at": "2026-11-09T08:30:58.843542+00:00",
+  "scope": "restored original Blueprints restricted to preserved r9 discovery list; not the live projected Soong graph",
+  "shared_source_writes": 0,
+  "full_builds": 0,
+  "graph_qualified": false,
+  "source_manifest_before": "62d52bea3c5230d8add2484d9e72ffcff8c279f8ac256eeb63320609630b75ad",
+  "discovery_sha256": "ed3590368c9dbe2cf79bb7f0456678b9965383e302166bc3249e71ba97ba7a2b",
+  "input_count": 8584,
+  "input_manifest_sha256": "7c564d6106b67bf3170db4df8acf701cab9f59a7df9dc0165e5936274de086d8",
+  "cpu_affinity": [
+    47
+  ],
+  "command": {
+    "argv": [
+      "/data/pocket4-audio-defaults-preflight-20261109-be1746a-r1/droidloom-blueprint-defaults",
+      "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source",
+      "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/.module_paths/Android.bp.list"
+    ],
+    "returncode": 2,
+    "child_reaped": true,
+    "stdout_sha256": "314cc1a3029c048d767b42f638c0e033bdbc7dd9caa130dbfcc0a4514963a8de",
+    "stderr": ""
+  },
+  "source_manifest_after": "62d52bea3c5230d8add2484d9e72ffcff8c279f8ac256eeb63320609630b75ad",
+  "source_projection_absent_after": true,
+  "changed_inputs": [],
+  "all_input_hashes_unchanged": true,
+  "manifest_unchanged": true,
+  "discovery_unchanged": true,
+  "summary": {
+    "schema": "droidloom-blueprint-literal-defaults-audit-v1",
+    "graph_qualified": false,
+    "coverage": "all listed modules; literal direct defaults only; no Soong namespace, variant or load-hook resolution",
+    "files": 8584,
+    "modules": 38043,
+    "literal_defaults_edges": 12053,
+    "duplicate_literal_names": 89
+  },
+  "missing_default_candidates": [
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "bcm_object_defaults",
+      "defaults": "libcrypto_bcm_sources",
+      "line": 131
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "libcrypto",
+      "defaults": "libcrypto_sources",
+      "line": 253
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "libcrypto_for_testing",
+      "defaults": "libcrypto_sources",
+      "line": 311
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "libcrypto_static",
+      "defaults": "libcrypto_bcm_sources",
+      "line": 394
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "libcrypto_static",
+      "defaults": "libcrypto_sources",
+      "line": 394
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "libcrypto_baremetal",
+      "defaults": "libcrypto_bcm_sources",
+      "line": 406
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "libcrypto_baremetal",
+      "defaults": "libcrypto_sources",
+      "line": 406
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "libcrypto_fuzz_unsafe",
+      "defaults": "libcrypto_bcm_sources",
+      "line": 445
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "libcrypto_fuzz_unsafe",
+      "defaults": "libcrypto_sources",
+      "line": 445
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "libssl",
+      "defaults": "libssl_sources",
+      "line": 468
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "libssl_baremetal",
+      "defaults": "libssl_sources",
+      "line": 499
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "libssl_static",
+      "defaults": "libssl_sources",
+      "line": 509
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "libssl_fuzz_unsafe",
+      "defaults": "libssl_sources",
+      "line": 522
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "bssl",
+      "defaults": "bssl_sources",
+      "line": 537
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "boringssl_test_support",
+      "defaults": "boringssl_test_support_sources",
+      "line": 626
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "boringssl_crypto_test",
+      "defaults": "boringssl_crypto_test_sources",
+      "line": 654
+    },
+    {
+      "file": "external/boringssl/Android.bp",
+      "module": "boringssl_ssl_test",
+      "defaults": "boringssl_ssl_test_sources",
+      "line": 692
+    },
+    {
+      "file": "external/conscrypt/Android.bp",
+      "module": "libcore-exported-aconfig-flags-lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 227
+    },
+    {
+      "file": "external/conscrypt/Android.bp",
+      "module": "conscrypt-exported-networksecurity-aconfig-flags-lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 275
+    },
+    {
+      "file": "external/cronet/android/flags/Android.bp",
+      "module": "com.android.net.http.flags-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 35
+    },
+    {
+      "file": "external/cronet/android/flags/Android.bp",
+      "module": "com.android.net.http.flags-aconfig-exported-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 64
+    },
+    {
+      "file": "external/cronet/stable/Android.bp",
+      "module": "stable_cronet_base_base_java_test_support__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 21552
+    },
+    {
+      "file": "external/cronet/stable/Android.bp",
+      "module": "stable_cronet_net_android_dummy_spnego_authenticator_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 55436
+    },
+    {
+      "file": "external/cronet/stable/Android.bp",
+      "module": "stable_cronet_net_android_net_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 55936
+    },
+    {
+      "file": "external/cronet/stable/Android.bp",
+      "module": "stable_cronet_net_android_net_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 56033
+    },
+    {
+      "file": "external/cronet/stable/Android.bp",
+      "module": "stable_cronet_net_android_net_java_test_support__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 56145
+    },
+    {
+      "file": "external/cronet/stable/Android.bp",
+      "module": "stable_cronet_net_android_net_test_support_provider_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 56415
+    },
+    {
+      "file": "external/cronet/stable/Android.bp",
+      "module": "stable_cronet_third_party_android_deps_protobuf_lite_runtime_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 59871
+    },
+    {
+      "file": "external/cronet/stable/Android.bp",
+      "module": "stable_cronet_third_party_android_deps_protobuf_lite_runtime_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 59921
+    },
+    {
+      "file": "external/cronet/stable/Android.bp",
+      "module": "stable_cronet_third_party_android_deps_protobuf_lite_runtime_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 59967
+    },
+    {
+      "file": "external/cronet/stable/Android.bp",
+      "module": "stable_cronet_third_party_android_deps_protobuf_lite_runtime_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 59982
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_activity_state_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 711
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_activity_state_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 730
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_activity_state_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 750
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_activity_state_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 771
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_android_runtime_jni_headers_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 790
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_android_runtime_jni_headers_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 808
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_android_runtime_jni_headers_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 823
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_android_runtime_jni_headers_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 835
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_cached_flags_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4070
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_cached_flags_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4088
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4192
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4244
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4305
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4415
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_java_test_support__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4489
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_java_url_utils_for_test__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4515
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_java_url_utils_for_test__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4536
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_jni_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4608
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_jni_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4630
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_jni_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4648
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_jni_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4669
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_minimal_jni_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4693
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_minimal_jni_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4714
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_minimal_jni_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4732
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_minimal_jni_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4752
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_shared_preferences_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4776
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_shared_preferences_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4802
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_shared_preferences_jni_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4873
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_shared_preferences_jni_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4891
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_switches_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6005
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_switches_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6024
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_switches_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6042
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_base_switches_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6060
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_build_info_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 7074
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_build_info_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 7100
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_build_info_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 7126
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_build_info_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 7176
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_bundle_utils_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8641
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_bundle_utils_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8666
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_bundle_utils_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8685
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_bundle_utils_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8726
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_callback_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8769
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_callback_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8790
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_callback_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8813
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_callback_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8843
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_callback_jni_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8870
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_callback_jni_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8890
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_callback_jni_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8908
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_callback_jni_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8927
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_clang_profiler_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10042
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_clang_profiler_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10062
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_clang_profiler_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10080
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_clang_profiler_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10101
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_command_line_init_utils_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10127
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_command_line_init_utils_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10150
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_command_line_init_utils_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10168
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_command_line_init_utils_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10215
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_command_line_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10267
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_command_line_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10290
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_command_line_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10308
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_command_line_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10334
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_command_line_jni_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10362
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_command_line_jni_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10382
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_command_line_jni_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10400
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_command_line_jni_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10419
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_features_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10489
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_features_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10511
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_features_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10542
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_features_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10598
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_file_provider_utils_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10642
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_file_provider_utils_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10661
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_file_provider_utils_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10679
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_file_provider_utils_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10697
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_file_utils_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10719
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_file_utils_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10741
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_file_utils_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10760
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_file_utils_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10785
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_jni_android_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 11550
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_jni_android_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 11572
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_jni_android_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 11591
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_jni_android_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 11632
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_jni_utils_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 11676
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_jni_utils_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 11698
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_jni_utils_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 11716
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_jni_utils_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 11757
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_library_loader_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 11811
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_library_loader_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 11842
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_library_loader_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 11871
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_library_loader_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 11924
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_library_loader_jni_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 11968
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_library_loader_jni_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 11988
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_library_loader_jni_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12006
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_library_loader_jni_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12025
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_lifetime_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12046
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_lifetime_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12066
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_lifetime_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12086
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_lifetime_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12127
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_log_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12167
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_log_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12186
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_log_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12205
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_log_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12225
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_memory_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12253
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_memory_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12280
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_memory_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12307
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_memory_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12363
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_metrics_ScopedSysTraceEvent_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12411
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_metrics_ScopedSysTraceEvent_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12430
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_metrics_ScopedSysTraceEvent_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12448
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_metrics_ScopedSysTraceEvent_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12466
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_metrics_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12491
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_metrics_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12516
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_metrics_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12547
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_metrics_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12590
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_metrics_jni_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12622
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_metrics_jni_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12642
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_metrics_jni_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12660
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_metrics_jni_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12679
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_path_utils_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12703
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_path_utils_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12726
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_path_utils_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12745
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_path_utils_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12785
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_pii_elider_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12826
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_pii_elider_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12846
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_pii_elider_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12864
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_pii_elider_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12903
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_promise_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12945
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_promise_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12966
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_promise_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 12984
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_promise_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 13023
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_resetters_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 13119
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_resetters_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 13138
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_resetters_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 13156
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_resetters_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 13176
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_screen_off_broadcast_receiver_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 14328
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_screen_off_broadcast_receiver_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 14348
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_screen_off_broadcast_receiver_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 14366
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_screen_off_broadcast_receiver_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 14405
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_stream_util_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 15530
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_stream_util_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 15549
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_stream_util_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 15567
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_stream_util_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 15585
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_supplier_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 15610
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_supplier_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 15635
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_supplier_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 15671
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_supplier_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 15731
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_sys_utils_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 15780
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_sys_utils_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 15805
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_sys_utils_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 15825
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_sys_utils_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 15866
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_tasks_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 15916
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_tasks_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 15945
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_tasks_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 15988
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_tasks_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16051
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_tasks_jni_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16091
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_tasks_jni_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16111
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_tasks_jni_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16129
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_tasks_jni_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16148
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_tasks_minimal_jni_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16169
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_tasks_minimal_jni_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16189
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_tasks_minimal_jni_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16207
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_tasks_minimal_jni_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16226
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_time_utils_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16246
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_time_utils_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16265
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_time_utils_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16283
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_time_utils_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16301
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_unowned_user_data_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16322
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_unowned_user_data_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16343
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_unowned_user_data_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16363
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_unowned_user_data_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16405
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_wrapped_class_loader_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16446
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_wrapped_class_loader_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16465
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_wrapped_class_loader_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16483
+    },
+    {
+      "file": "external/cronet/stable/base/Android.bp",
+      "module": "stable_cronet_base_wrapped_class_loader_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 16501
+    },
+    {
+      "file": "external/cronet/stable/base/version_info/android/Android.bp",
+      "module": "stable_cronet_base_version_info_android_channel_enum_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 31
+    },
+    {
+      "file": "external/cronet/stable/base/version_info/android/Android.bp",
+      "module": "stable_cronet_base_version_info_android_channel_enum_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 50
+    },
+    {
+      "file": "external/cronet/stable/base/version_info/android/Android.bp",
+      "module": "stable_cronet_base_version_info_android_channel_enum_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 68
+    },
+    {
+      "file": "external/cronet/stable/base/version_info/android/Android.bp",
+      "module": "stable_cronet_base_version_info_android_channel_enum_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 87
+    },
+    {
+      "file": "external/cronet/stable/base/version_info/android/Android.bp",
+      "module": "stable_cronet_base_version_info_android_version_constants_bridge_jni_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 108
+    },
+    {
+      "file": "external/cronet/stable/base/version_info/android/Android.bp",
+      "module": "stable_cronet_base_version_info_android_version_constants_bridge_jni_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 128
+    },
+    {
+      "file": "external/cronet/stable/base/version_info/android/Android.bp",
+      "module": "stable_cronet_base_version_info_android_version_constants_bridge_jni_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 146
+    },
+    {
+      "file": "external/cronet/stable/base/version_info/android/Android.bp",
+      "module": "stable_cronet_base_version_info_android_version_constants_bridge_jni_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 165
+    },
+    {
+      "file": "external/cronet/stable/base/version_info/android/Android.bp",
+      "module": "stable_cronet_base_version_info_android_version_constants_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 189
+    },
+    {
+      "file": "external/cronet/stable/base/version_info/android/Android.bp",
+      "module": "stable_cronet_base_version_info_android_version_constants_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 212
+    },
+    {
+      "file": "external/cronet/stable/base/version_info/android/Android.bp",
+      "module": "stable_cronet_base_version_info_android_version_constants_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 232
+    },
+    {
+      "file": "external/cronet/stable/base/version_info/android/Android.bp",
+      "module": "stable_cronet_base_version_info_android_version_constants_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 260
+    },
+    {
+      "file": "external/cronet/stable/build/android/Android.bp",
+      "module": "stable_cronet_build_android_build_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 30
+    },
+    {
+      "file": "external/cronet/stable/build/android/Android.bp",
+      "module": "stable_cronet_build_android_build_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 48
+    },
+    {
+      "file": "external/cronet/stable/build/android/Android.bp",
+      "module": "stable_cronet_build_android_build_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 89
+    },
+    {
+      "file": "external/cronet/stable/build/android/Android.bp",
+      "module": "stable_cronet_build_android_build_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 127
+    },
+    {
+      "file": "external/cronet/stable/build/android/gtest_apk/Android.bp",
+      "module": "stable_cronet_build_android_gtest_apk_native_test_instrumentation_test_runner_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 56
+    },
+    {
+      "file": "external/cronet/stable/build/android/gtest_apk/Android.bp",
+      "module": "stable_cronet_build_android_gtest_apk_native_test_instrumentation_test_runner_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 79
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/Android.bp",
+      "module": "stable_cronet_components_cronet_request_context_config_java_proto",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4718
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/Android.bp",
+      "module": "stable_cronet_components_cronet_request_context_config_java_proto__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4737
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/Android.bp",
+      "module": "stable_cronet_components_cronet_request_context_config_java_proto__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4755
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/Android.bp",
+      "module": "stable_cronet_components_cronet_request_context_config_java_proto__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 4774
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_base_feature_overrides_java_proto",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 31
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_base_feature_overrides_java_proto__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 50
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_base_feature_overrides_java_proto__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 68
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_base_feature_overrides_java_proto__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 87
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_all_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 3374
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_all_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 3389
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_android_os_system_properties_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 3477
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_android_os_system_properties_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 3496
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_android_os_system_properties_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 3514
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_android_os_system_properties_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 3533
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_api_helpers_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 3554
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_api_helpers_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 3584
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_api_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 3617
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_api_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 3640
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_api_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 3686
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_api_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 3742
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_build_config_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 5939
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_build_config_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 5959
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_build_config_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 5978
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_build_config_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 5996
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_common_javatests__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6022
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_common_javatests__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6056
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_impl_common_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6165
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_impl_common_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6190
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_impl_common_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6230
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_impl_common_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6286
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_impl_java_util_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6324
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_impl_java_util_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6343
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_impl_native_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6396
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_impl_native_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6433
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_impl_native_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6473
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_impl_native_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6579
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_impl_platform_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6671
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_impl_platform_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6696
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_javatests__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6767
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_javatests__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6867
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_jni_registration_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6972
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_jni_registration_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 6992
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_jni_registration_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 7011
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_jni_registration_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 7029
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_shared_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 7053
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_shared_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 7077
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_shared_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 7109
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_shared_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 7148
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_stats_log_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8734
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_stats_log_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8753
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_stats_log_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8771
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_stats_log_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8790
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_test_apk_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8817
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_test_apk_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 8851
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_tests_jni_registration_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 9813
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_tests_jni_registration_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 9832
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_urlconnection_impl_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 9853
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_urlconnection_impl_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 9874
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_urlconnection_impl_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 9900
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_cronet_urlconnection_impl_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 9937
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_flags_java_proto",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 9967
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_flags_java_proto__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 9986
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_flags_java_proto__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10004
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_flags_java_proto__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10023
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_httpengine_native_provider_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10048
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_httpengine_native_provider_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10072
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_httpengine_native_provider_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10111
+    },
+    {
+      "file": "external/cronet/stable/components/cronet/android/Android.bp",
+      "module": "stable_cronet_components_cronet_android_httpengine_native_provider_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 10167
+    },
+    {
+      "file": "external/cronet/stable/net/android/Android.bp",
+      "module": "stable_cronet_net_android_dummy_spnego_authenticator_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 35
+    },
+    {
+      "file": "external/cronet/stable/net/android/Android.bp",
+      "module": "stable_cronet_net_android_embedded_test_server_aidl_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 71
+    },
+    {
+      "file": "external/cronet/stable/net/android/Android.bp",
+      "module": "stable_cronet_net_android_embedded_test_server_aidl_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 89
+    },
+    {
+      "file": "external/cronet/stable/net/android/Android.bp",
+      "module": "stable_cronet_net_android_net_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 111
+    },
+    {
+      "file": "external/cronet/stable/net/android/Android.bp",
+      "module": "stable_cronet_net_android_net_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 133
+    },
+    {
+      "file": "external/cronet/stable/net/android/Android.bp",
+      "module": "stable_cronet_net_android_net_java_test_support__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 158
+    },
+    {
+      "file": "external/cronet/stable/net/android/Android.bp",
+      "module": "stable_cronet_net_android_net_test_support_provider_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 182
+    },
+    {
+      "file": "external/cronet/stable/net/android/Android.bp",
+      "module": "stable_cronet_net_android_net_tests_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 207
+    },
+    {
+      "file": "external/cronet/stable/net/android/Android.bp",
+      "module": "stable_cronet_net_android_net_tests_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 243
+    },
+    {
+      "file": "external/cronet/stable/net/android/Android.bp",
+      "module": "stable_cronet_net_android_net_thread_stats_uid_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 326
+    },
+    {
+      "file": "external/cronet/stable/net/android/Android.bp",
+      "module": "stable_cronet_net_android_net_thread_stats_uid_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 345
+    },
+    {
+      "file": "external/cronet/stable/net/android/Android.bp",
+      "module": "stable_cronet_net_android_net_thread_stats_uid_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 363
+    },
+    {
+      "file": "external/cronet/stable/net/android/Android.bp",
+      "module": "stable_cronet_net_android_net_thread_stats_uid_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 381
+    },
+    {
+      "file": "external/cronet/stable/net/log/Android.bp",
+      "module": "stable_cronet_net_log_net_log_capture_mode_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 31
+    },
+    {
+      "file": "external/cronet/stable/net/log/Android.bp",
+      "module": "stable_cronet_net_log_net_log_capture_mode_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 50
+    },
+    {
+      "file": "external/cronet/stable/net/log/Android.bp",
+      "module": "stable_cronet_net_log_net_log_capture_mode_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 68
+    },
+    {
+      "file": "external/cronet/stable/net/log/Android.bp",
+      "module": "stable_cronet_net_log_net_log_capture_mode_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 87
+    },
+    {
+      "file": "external/cronet/stable/testing/android/instrumentation/Android.bp",
+      "module": "stable_cronet_testing_android_instrumentation_test_runner_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 32
+    },
+    {
+      "file": "external/cronet/stable/testing/android/instrumentation/Android.bp",
+      "module": "stable_cronet_testing_android_instrumentation_test_runner_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 54
+    },
+    {
+      "file": "external/cronet/stable/testing/android/instrumentation/Android.bp",
+      "module": "stable_cronet_testing_android_instrumentation_test_runner_permissions_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 75
+    },
+    {
+      "file": "external/cronet/stable/testing/android/instrumentation/Android.bp",
+      "module": "stable_cronet_testing_android_instrumentation_test_runner_permissions_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 90
+    },
+    {
+      "file": "external/cronet/stable/testing/android/native_test/Android.bp",
+      "module": "stable_cronet_testing_android_native_test_native_main_runner_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 32
+    },
+    {
+      "file": "external/cronet/stable/testing/android/native_test/Android.bp",
+      "module": "stable_cronet_testing_android_native_test_native_main_runner_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 51
+    },
+    {
+      "file": "external/cronet/stable/testing/android/native_test/Android.bp",
+      "module": "stable_cronet_testing_android_native_test_native_test_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 79
+    },
+    {
+      "file": "external/cronet/stable/testing/android/native_test/Android.bp",
+      "module": "stable_cronet_testing_android_native_test_native_test_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 103
+    },
+    {
+      "file": "external/cronet/stable/testing/android/reporter/Android.bp",
+      "module": "stable_cronet_testing_android_reporter_reporter_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 33
+    },
+    {
+      "file": "external/cronet/stable/testing/android/reporter/Android.bp",
+      "module": "stable_cronet_testing_android_reporter_reporter_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 51
+    },
+    {
+      "file": "external/cronet/stable/third_party/boringssl/Android.bp",
+      "module": "stable_cronet_bcm_object",
+      "defaults": "stable_cronet_libcrypto_bcm_sources",
+      "line": 78
+    },
+    {
+      "file": "external/cronet/stable/third_party/boringssl/Android.bp",
+      "module": "stable_cronet_libcrypto_shared_library_defaults",
+      "defaults": "stable_cronet_libcrypto_sources",
+      "line": 133
+    },
+    {
+      "file": "external/cronet/stable/third_party/boringssl/Android.bp",
+      "module": "stable_cronet_ssl_and_pki",
+      "defaults": "stable_cronet_libssl_sources",
+      "line": 177
+    },
+    {
+      "file": "external/cronet/stable/third_party/boringssl/Android.bp",
+      "module": "stable_cronet_ssl_and_pki",
+      "defaults": "stable_cronet_libpki_sources",
+      "line": 177
+    },
+    {
+      "file": "external/cronet/stable/third_party/jni_zero/Android.bp",
+      "module": "stable_cronet_third_party_jni_zero_gendeps_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 44
+    },
+    {
+      "file": "external/cronet/stable/third_party/jni_zero/Android.bp",
+      "module": "stable_cronet_third_party_jni_zero_gendeps_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 62
+    },
+    {
+      "file": "external/cronet/stable/third_party/jni_zero/Android.bp",
+      "module": "stable_cronet_third_party_jni_zero_gendeps_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 84
+    },
+    {
+      "file": "external/cronet/stable/third_party/jni_zero/Android.bp",
+      "module": "stable_cronet_third_party_jni_zero_gendeps_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 103
+    },
+    {
+      "file": "external/cronet/stable/third_party/jni_zero/Android.bp",
+      "module": "stable_cronet_third_party_jni_zero_generate_jni_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 119
+    },
+    {
+      "file": "external/cronet/stable/third_party/jni_zero/Android.bp",
+      "module": "stable_cronet_third_party_jni_zero_generate_jni_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 138
+    },
+    {
+      "file": "external/cronet/stable/third_party/jni_zero/Android.bp",
+      "module": "stable_cronet_third_party_jni_zero_generate_jni_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 156
+    },
+    {
+      "file": "external/cronet/stable/third_party/jni_zero/Android.bp",
+      "module": "stable_cronet_third_party_jni_zero_generate_jni_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 174
+    },
+    {
+      "file": "external/cronet/stable/third_party/jni_zero/Android.bp",
+      "module": "stable_cronet_third_party_jni_zero_jni_zero_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 1138
+    },
+    {
+      "file": "external/cronet/stable/third_party/jni_zero/Android.bp",
+      "module": "stable_cronet_third_party_jni_zero_jni_zero_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 1158
+    },
+    {
+      "file": "external/cronet/stable/third_party/jni_zero/Android.bp",
+      "module": "stable_cronet_third_party_jni_zero_jni_zero_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 1191
+    },
+    {
+      "file": "external/cronet/stable/third_party/jni_zero/Android.bp",
+      "module": "stable_cronet_third_party_jni_zero_jni_zero_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 1225
+    },
+    {
+      "file": "external/cronet/stable/third_party/netty4/Android.bp",
+      "module": "stable_cronet_third_party_netty4_netty_all_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 44
+    },
+    {
+      "file": "external/cronet/stable/third_party/netty4/Android.bp",
+      "module": "stable_cronet_third_party_netty4_netty_all_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 60
+    },
+    {
+      "file": "external/cronet/stable/third_party/protobuf/Android.bp",
+      "module": "stable_cronet_third_party_protobuf_proto_runtime_lite_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 44
+    },
+    {
+      "file": "external/cronet/stable/third_party/protobuf/Android.bp",
+      "module": "stable_cronet_third_party_protobuf_proto_runtime_lite_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 62
+    },
+    {
+      "file": "external/cronet/stable/url/Android.bp",
+      "module": "stable_cronet_url_url_java",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 1508
+    },
+    {
+      "file": "external/cronet/stable/url/Android.bp",
+      "module": "stable_cronet_url_url_java__testing",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 1528
+    },
+    {
+      "file": "external/cronet/stable/url/Android.bp",
+      "module": "stable_cronet_url_url_java__testing__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 1547
+    },
+    {
+      "file": "external/cronet/stable/url/Android.bp",
+      "module": "stable_cronet_url_url_java__unfiltered",
+      "defaults": "stable_cronet_java_framework_defaults",
+      "line": 1569
+    },
+    {
+      "file": "external/cronet/tot/Android.bp",
+      "module": "tot_cronet_base_base_java_test_support__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 21616
+    },
+    {
+      "file": "external/cronet/tot/Android.bp",
+      "module": "tot_cronet_net_android_dummy_spnego_authenticator_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 56966
+    },
+    {
+      "file": "external/cronet/tot/Android.bp",
+      "module": "tot_cronet_net_android_net_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 57473
+    },
+    {
+      "file": "external/cronet/tot/Android.bp",
+      "module": "tot_cronet_net_android_net_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 57575
+    },
+    {
+      "file": "external/cronet/tot/Android.bp",
+      "module": "tot_cronet_net_android_net_java_test_support__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 57691
+    },
+    {
+      "file": "external/cronet/tot/Android.bp",
+      "module": "tot_cronet_net_android_net_test_support_provider_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 57967
+    },
+    {
+      "file": "external/cronet/tot/Android.bp",
+      "module": "tot_cronet_third_party_android_deps_protobuf_lite_runtime_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 61459
+    },
+    {
+      "file": "external/cronet/tot/Android.bp",
+      "module": "tot_cronet_third_party_android_deps_protobuf_lite_runtime_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 61509
+    },
+    {
+      "file": "external/cronet/tot/Android.bp",
+      "module": "tot_cronet_third_party_android_deps_protobuf_lite_runtime_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 61555
+    },
+    {
+      "file": "external/cronet/tot/Android.bp",
+      "module": "tot_cronet_third_party_android_deps_protobuf_lite_runtime_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 61570
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_activity_state_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 31
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_activity_state_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 50
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_activity_state_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 70
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_activity_state_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 91
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_cached_flags_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3381
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_cached_flags_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3399
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3509
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3563
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3612
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3714
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_java_test_support__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3792
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_java_url_utils_for_test__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3818
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_java_url_utils_for_test__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3839
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_jni_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3913
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_jni_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3933
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_jni_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3951
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_jni_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3970
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_shared_preferences_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3993
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_shared_preferences_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 4019
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_shared_preferences_jni_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 4094
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_shared_preferences_jni_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 4112
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_switches_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 5260
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_switches_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 5279
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_switches_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 5297
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_base_switches_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 5315
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_build_info_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6359
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_build_info_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6385
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_build_info_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6411
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_build_info_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6461
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_bundle_utils_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 7968
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_bundle_utils_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 7993
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_bundle_utils_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 8012
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_bundle_utils_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 8053
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_callback_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 8096
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_callback_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 8117
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_callback_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 8140
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_callback_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 8170
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_callback_jni_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 8197
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_callback_jni_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 8217
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_callback_jni_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 8235
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_callback_jni_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 8254
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_clang_profiler_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9403
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_clang_profiler_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9423
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_clang_profiler_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9441
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_clang_profiler_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9462
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_command_line_init_utils_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9488
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_command_line_init_utils_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9511
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_command_line_init_utils_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9529
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_command_line_init_utils_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9576
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_command_line_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9628
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_command_line_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9651
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_command_line_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9669
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_command_line_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9695
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_command_line_jni_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9723
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_command_line_jni_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9743
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_command_line_jni_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9761
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_command_line_jni_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9780
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_features_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9850
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_features_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9872
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_features_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9903
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_features_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9959
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_file_provider_utils_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10003
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_file_provider_utils_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10022
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_file_provider_utils_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10040
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_file_provider_utils_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10058
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_file_utils_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10080
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_file_utils_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10102
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_file_utils_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10121
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_file_utils_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10146
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_java_exception_reporter_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10934
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_java_exception_reporter_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10958
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_java_exception_reporter_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10976
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_java_exception_reporter_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11018
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_java_exception_reporter_jni_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11062
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_java_exception_reporter_jni_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11082
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_java_exception_reporter_jni_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11100
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_java_exception_reporter_jni_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11119
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_android_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11142
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_android_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11164
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_android_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11183
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_android_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11224
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_callback_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11269
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_callback_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11292
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_callback_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11317
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_callback_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11365
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_callback_jni_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11408
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_callback_jni_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11428
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_callback_jni_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11446
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_callback_jni_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11465
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_utils_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11488
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_utils_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11510
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_utils_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11529
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_jni_utils_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11571
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_library_loader_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11625
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_library_loader_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11656
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_library_loader_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11685
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_library_loader_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11738
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_library_loader_jni_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11782
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_library_loader_jni_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11802
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_library_loader_jni_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11820
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_library_loader_jni_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11839
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_lifetime_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11860
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_lifetime_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11880
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_lifetime_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11900
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_lifetime_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11941
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_log_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 11981
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_log_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12000
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_log_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12019
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_log_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12039
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_memory_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12067
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_memory_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12094
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_memory_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12121
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_memory_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12177
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_metrics_ScopedSysTraceEvent_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12225
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_metrics_ScopedSysTraceEvent_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12244
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_metrics_ScopedSysTraceEvent_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12262
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_metrics_ScopedSysTraceEvent_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12280
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_metrics_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12305
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_metrics_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12330
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_metrics_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12361
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_metrics_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12404
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_metrics_jni_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12436
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_metrics_jni_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12456
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_metrics_jni_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12474
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_metrics_jni_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12493
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_path_utils_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12517
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_path_utils_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12540
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_path_utils_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12559
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_path_utils_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12599
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_pii_elider_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12640
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_pii_elider_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12660
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_pii_elider_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12678
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_pii_elider_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12717
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_promise_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12759
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_promise_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12780
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_promise_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12798
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_promise_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12837
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_resetters_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12933
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_resetters_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12952
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_resetters_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12970
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_resetters_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 12990
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_screen_off_broadcast_receiver_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 13012
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_screen_off_broadcast_receiver_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 13032
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_screen_off_broadcast_receiver_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 13050
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_screen_off_broadcast_receiver_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 13089
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_stream_util_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14248
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_stream_util_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14267
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_stream_util_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14285
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_stream_util_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14303
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_supplier_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14328
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_supplier_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14353
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_supplier_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14389
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_supplier_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14449
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_sys_utils_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14498
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_sys_utils_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14523
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_sys_utils_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14543
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_sys_utils_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14584
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_tasks_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14634
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_tasks_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14663
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_tasks_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14706
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_tasks_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14769
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_tasks_jni_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14809
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_tasks_jni_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14829
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_tasks_jni_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14847
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_tasks_jni_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14866
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_tasks_minimal_jni_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14887
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_tasks_minimal_jni_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14907
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_tasks_minimal_jni_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14925
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_tasks_minimal_jni_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14944
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_time_utils_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14964
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_time_utils_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 14983
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_time_utils_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15001
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_time_utils_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15019
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_token_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15040
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_token_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15061
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_token_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15081
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_token_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15107
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_token_jni_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15133
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_token_jni_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15153
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_token_jni_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15171
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_token_jni_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15190
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_unowned_user_data_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15212
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_unowned_user_data_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15233
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_unowned_user_data_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15253
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_unowned_user_data_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15295
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_wrapped_class_loader_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15336
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_wrapped_class_loader_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15355
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_wrapped_class_loader_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15373
+    },
+    {
+      "file": "external/cronet/tot/base/Android.bp",
+      "module": "tot_cronet_base_wrapped_class_loader_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 15391
+    },
+    {
+      "file": "external/cronet/tot/base/version_info/android/Android.bp",
+      "module": "tot_cronet_base_version_info_android_channel_enum_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 31
+    },
+    {
+      "file": "external/cronet/tot/base/version_info/android/Android.bp",
+      "module": "tot_cronet_base_version_info_android_channel_enum_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 50
+    },
+    {
+      "file": "external/cronet/tot/base/version_info/android/Android.bp",
+      "module": "tot_cronet_base_version_info_android_channel_enum_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 68
+    },
+    {
+      "file": "external/cronet/tot/base/version_info/android/Android.bp",
+      "module": "tot_cronet_base_version_info_android_channel_enum_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 87
+    },
+    {
+      "file": "external/cronet/tot/base/version_info/android/Android.bp",
+      "module": "tot_cronet_base_version_info_android_version_constants_bridge_jni_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 108
+    },
+    {
+      "file": "external/cronet/tot/base/version_info/android/Android.bp",
+      "module": "tot_cronet_base_version_info_android_version_constants_bridge_jni_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 128
+    },
+    {
+      "file": "external/cronet/tot/base/version_info/android/Android.bp",
+      "module": "tot_cronet_base_version_info_android_version_constants_bridge_jni_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 146
+    },
+    {
+      "file": "external/cronet/tot/base/version_info/android/Android.bp",
+      "module": "tot_cronet_base_version_info_android_version_constants_bridge_jni_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 165
+    },
+    {
+      "file": "external/cronet/tot/base/version_info/android/Android.bp",
+      "module": "tot_cronet_base_version_info_android_version_constants_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 189
+    },
+    {
+      "file": "external/cronet/tot/base/version_info/android/Android.bp",
+      "module": "tot_cronet_base_version_info_android_version_constants_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 212
+    },
+    {
+      "file": "external/cronet/tot/base/version_info/android/Android.bp",
+      "module": "tot_cronet_base_version_info_android_version_constants_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 232
+    },
+    {
+      "file": "external/cronet/tot/base/version_info/android/Android.bp",
+      "module": "tot_cronet_base_version_info_android_version_constants_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 260
+    },
+    {
+      "file": "external/cronet/tot/build/android/Android.bp",
+      "module": "tot_cronet_build_android_build_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 30
+    },
+    {
+      "file": "external/cronet/tot/build/android/Android.bp",
+      "module": "tot_cronet_build_android_build_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 48
+    },
+    {
+      "file": "external/cronet/tot/build/android/Android.bp",
+      "module": "tot_cronet_build_android_build_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 89
+    },
+    {
+      "file": "external/cronet/tot/build/android/Android.bp",
+      "module": "tot_cronet_build_android_build_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 127
+    },
+    {
+      "file": "external/cronet/tot/build/android/gtest_apk/Android.bp",
+      "module": "tot_cronet_build_android_gtest_apk_native_test_instrumentation_test_runner_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 56
+    },
+    {
+      "file": "external/cronet/tot/build/android/gtest_apk/Android.bp",
+      "module": "tot_cronet_build_android_gtest_apk_native_test_instrumentation_test_runner_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 79
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/Android.bp",
+      "module": "tot_cronet_components_cronet_request_context_config_java_proto",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 4853
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/Android.bp",
+      "module": "tot_cronet_components_cronet_request_context_config_java_proto__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 4872
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/Android.bp",
+      "module": "tot_cronet_components_cronet_request_context_config_java_proto__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 4890
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/Android.bp",
+      "module": "tot_cronet_components_cronet_request_context_config_java_proto__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 4909
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_base_feature_overrides_java_proto",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 31
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_base_feature_overrides_java_proto__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 50
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_base_feature_overrides_java_proto__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 68
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_base_feature_overrides_java_proto__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 87
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_all_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3455
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_all_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3470
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_android_os_system_properties_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3563
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_android_os_system_properties_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3582
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_android_os_system_properties_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3600
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_android_os_system_properties_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3619
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_api_helpers_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3640
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_api_helpers_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3670
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_api_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3703
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_api_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3726
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_api_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3772
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_api_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 3828
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_build_config_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6088
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_build_config_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6108
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_build_config_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6127
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_build_config_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6145
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_common_javatests__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6171
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_common_javatests__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6205
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_impl_common_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6320
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_impl_common_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6346
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_impl_common_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6386
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_impl_common_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6444
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_impl_java_util_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6484
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_impl_java_util_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6503
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_impl_native_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6568
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_impl_native_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6615
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_impl_native_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6655
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_impl_native_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6766
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_impl_platform_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6864
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_impl_platform_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6889
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_javatests__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 6961
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_javatests__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 7063
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_jni_registration_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 7173
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_jni_registration_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 7193
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_jni_registration_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 7212
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_jni_registration_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 7230
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_shared_api_dependencies_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 7255
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_shared_api_dependencies_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 7280
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_shared_api_dependencies_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 7312
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_shared_api_dependencies_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 7352
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_shared_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 7380
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_shared_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 7400
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_shared_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 7415
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_shared_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 7442
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_stats_log_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9075
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_stats_log_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9094
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_stats_log_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9112
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_stats_log_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9131
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_test_apk_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9158
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_test_apk_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 9192
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_tests_jni_registration_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10176
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_tests_jni_registration_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10195
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_urlconnection_impl_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10217
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_urlconnection_impl_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10239
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_urlconnection_impl_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10265
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_cronet_urlconnection_impl_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10302
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_flags_java_proto",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10332
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_flags_java_proto__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10351
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_flags_java_proto__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10369
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_flags_java_proto__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10388
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_httpengine_native_provider_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10414
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_httpengine_native_provider_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10439
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_httpengine_native_provider_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10478
+    },
+    {
+      "file": "external/cronet/tot/components/cronet/android/Android.bp",
+      "module": "tot_cronet_components_cronet_android_httpengine_native_provider_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 10536
+    },
+    {
+      "file": "external/cronet/tot/net/android/Android.bp",
+      "module": "tot_cronet_net_android_dummy_spnego_authenticator_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 35
+    },
+    {
+      "file": "external/cronet/tot/net/android/Android.bp",
+      "module": "tot_cronet_net_android_embedded_test_server_aidl_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 71
+    },
+    {
+      "file": "external/cronet/tot/net/android/Android.bp",
+      "module": "tot_cronet_net_android_embedded_test_server_aidl_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 89
+    },
+    {
+      "file": "external/cronet/tot/net/android/Android.bp",
+      "module": "tot_cronet_net_android_net_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 111
+    },
+    {
+      "file": "external/cronet/tot/net/android/Android.bp",
+      "module": "tot_cronet_net_android_net_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 133
+    },
+    {
+      "file": "external/cronet/tot/net/android/Android.bp",
+      "module": "tot_cronet_net_android_net_java_test_support__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 158
+    },
+    {
+      "file": "external/cronet/tot/net/android/Android.bp",
+      "module": "tot_cronet_net_android_net_test_support_provider_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 182
+    },
+    {
+      "file": "external/cronet/tot/net/android/Android.bp",
+      "module": "tot_cronet_net_android_net_tests_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 207
+    },
+    {
+      "file": "external/cronet/tot/net/android/Android.bp",
+      "module": "tot_cronet_net_android_net_tests_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 243
+    },
+    {
+      "file": "external/cronet/tot/net/android/Android.bp",
+      "module": "tot_cronet_net_android_net_thread_stats_uid_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 330
+    },
+    {
+      "file": "external/cronet/tot/net/android/Android.bp",
+      "module": "tot_cronet_net_android_net_thread_stats_uid_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 349
+    },
+    {
+      "file": "external/cronet/tot/net/android/Android.bp",
+      "module": "tot_cronet_net_android_net_thread_stats_uid_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 367
+    },
+    {
+      "file": "external/cronet/tot/net/android/Android.bp",
+      "module": "tot_cronet_net_android_net_thread_stats_uid_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 385
+    },
+    {
+      "file": "external/cronet/tot/net/log/Android.bp",
+      "module": "tot_cronet_net_log_net_log_capture_mode_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 31
+    },
+    {
+      "file": "external/cronet/tot/net/log/Android.bp",
+      "module": "tot_cronet_net_log_net_log_capture_mode_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 50
+    },
+    {
+      "file": "external/cronet/tot/net/log/Android.bp",
+      "module": "tot_cronet_net_log_net_log_capture_mode_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 68
+    },
+    {
+      "file": "external/cronet/tot/net/log/Android.bp",
+      "module": "tot_cronet_net_log_net_log_capture_mode_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 87
+    },
+    {
+      "file": "external/cronet/tot/testing/android/instrumentation/Android.bp",
+      "module": "tot_cronet_testing_android_instrumentation_test_runner_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 32
+    },
+    {
+      "file": "external/cronet/tot/testing/android/instrumentation/Android.bp",
+      "module": "tot_cronet_testing_android_instrumentation_test_runner_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 54
+    },
+    {
+      "file": "external/cronet/tot/testing/android/instrumentation/Android.bp",
+      "module": "tot_cronet_testing_android_instrumentation_test_runner_permissions_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 75
+    },
+    {
+      "file": "external/cronet/tot/testing/android/instrumentation/Android.bp",
+      "module": "tot_cronet_testing_android_instrumentation_test_runner_permissions_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 90
+    },
+    {
+      "file": "external/cronet/tot/testing/android/native_test/Android.bp",
+      "module": "tot_cronet_testing_android_native_test_native_main_runner_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 32
+    },
+    {
+      "file": "external/cronet/tot/testing/android/native_test/Android.bp",
+      "module": "tot_cronet_testing_android_native_test_native_main_runner_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 51
+    },
+    {
+      "file": "external/cronet/tot/testing/android/native_test/Android.bp",
+      "module": "tot_cronet_testing_android_native_test_native_test_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 79
+    },
+    {
+      "file": "external/cronet/tot/testing/android/native_test/Android.bp",
+      "module": "tot_cronet_testing_android_native_test_native_test_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 103
+    },
+    {
+      "file": "external/cronet/tot/testing/android/reporter/Android.bp",
+      "module": "tot_cronet_testing_android_reporter_reporter_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 33
+    },
+    {
+      "file": "external/cronet/tot/testing/android/reporter/Android.bp",
+      "module": "tot_cronet_testing_android_reporter_reporter_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 51
+    },
+    {
+      "file": "external/cronet/tot/third_party/boringssl/Android.bp",
+      "module": "tot_cronet_bcm_object",
+      "defaults": "tot_cronet_libcrypto_bcm_sources",
+      "line": 78
+    },
+    {
+      "file": "external/cronet/tot/third_party/boringssl/Android.bp",
+      "module": "tot_cronet_libcrypto_shared_library_defaults",
+      "defaults": "tot_cronet_libcrypto_sources",
+      "line": 133
+    },
+    {
+      "file": "external/cronet/tot/third_party/boringssl/Android.bp",
+      "module": "tot_cronet_ssl_and_pki",
+      "defaults": "tot_cronet_libssl_sources",
+      "line": 177
+    },
+    {
+      "file": "external/cronet/tot/third_party/boringssl/Android.bp",
+      "module": "tot_cronet_ssl_and_pki",
+      "defaults": "tot_cronet_libpki_sources",
+      "line": 177
+    },
+    {
+      "file": "external/cronet/tot/third_party/jni_zero/Android.bp",
+      "module": "tot_cronet_third_party_jni_zero_gendeps_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 44
+    },
+    {
+      "file": "external/cronet/tot/third_party/jni_zero/Android.bp",
+      "module": "tot_cronet_third_party_jni_zero_gendeps_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 62
+    },
+    {
+      "file": "external/cronet/tot/third_party/jni_zero/Android.bp",
+      "module": "tot_cronet_third_party_jni_zero_gendeps_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 84
+    },
+    {
+      "file": "external/cronet/tot/third_party/jni_zero/Android.bp",
+      "module": "tot_cronet_third_party_jni_zero_gendeps_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 103
+    },
+    {
+      "file": "external/cronet/tot/third_party/jni_zero/Android.bp",
+      "module": "tot_cronet_third_party_jni_zero_generate_jni_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 119
+    },
+    {
+      "file": "external/cronet/tot/third_party/jni_zero/Android.bp",
+      "module": "tot_cronet_third_party_jni_zero_generate_jni_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 138
+    },
+    {
+      "file": "external/cronet/tot/third_party/jni_zero/Android.bp",
+      "module": "tot_cronet_third_party_jni_zero_generate_jni_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 156
+    },
+    {
+      "file": "external/cronet/tot/third_party/jni_zero/Android.bp",
+      "module": "tot_cronet_third_party_jni_zero_generate_jni_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 174
+    },
+    {
+      "file": "external/cronet/tot/third_party/jni_zero/Android.bp",
+      "module": "tot_cronet_third_party_jni_zero_jni_zero_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 1168
+    },
+    {
+      "file": "external/cronet/tot/third_party/jni_zero/Android.bp",
+      "module": "tot_cronet_third_party_jni_zero_jni_zero_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 1188
+    },
+    {
+      "file": "external/cronet/tot/third_party/jni_zero/Android.bp",
+      "module": "tot_cronet_third_party_jni_zero_jni_zero_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 1221
+    },
+    {
+      "file": "external/cronet/tot/third_party/jni_zero/Android.bp",
+      "module": "tot_cronet_third_party_jni_zero_jni_zero_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 1255
+    },
+    {
+      "file": "external/cronet/tot/third_party/netty4/Android.bp",
+      "module": "tot_cronet_third_party_netty4_netty_all_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 44
+    },
+    {
+      "file": "external/cronet/tot/third_party/netty4/Android.bp",
+      "module": "tot_cronet_third_party_netty4_netty_all_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 60
+    },
+    {
+      "file": "external/cronet/tot/third_party/protobuf/Android.bp",
+      "module": "tot_cronet_third_party_protobuf_proto_runtime_lite_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 44
+    },
+    {
+      "file": "external/cronet/tot/third_party/protobuf/Android.bp",
+      "module": "tot_cronet_third_party_protobuf_proto_runtime_lite_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 62
+    },
+    {
+      "file": "external/cronet/tot/url/Android.bp",
+      "module": "tot_cronet_url_url_java",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 1550
+    },
+    {
+      "file": "external/cronet/tot/url/Android.bp",
+      "module": "tot_cronet_url_url_java__testing",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 1570
+    },
+    {
+      "file": "external/cronet/tot/url/Android.bp",
+      "module": "tot_cronet_url_url_java__testing__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 1589
+    },
+    {
+      "file": "external/cronet/tot/url/Android.bp",
+      "module": "tot_cronet_url_url_java__unfiltered",
+      "defaults": "tot_cronet_java_framework_defaults",
+      "line": 1611
+    },
+    {
+      "file": "external/deqp/Android.bp",
+      "module": "libdeqp_defaults",
+      "defaults": "libdeqp_gen",
+      "line": 149
+    },
+    {
+      "file": "external/deqp/Android.bp",
+      "module": "khronoscts_default",
+      "defaults": "khronosctscompilationflag_default",
+      "line": 335
+    },
+    {
+      "file": "external/libdrm/Android.bp",
+      "module": "libdrm",
+      "defaults": "libdrm_sources",
+      "line": 101
+    },
+    {
+      "file": "external/libdrm/amdgpu/Android.bp",
+      "module": "libdrm_amdgpu",
+      "defaults": "libdrm_amdgpu_sources",
+      "line": 19
+    },
+    {
+      "file": "external/scrypt/Android.bp",
+      "module": "libscrypt_static",
+      "defaults": "libscrypt_sources",
+      "line": 51
+    },
+    {
+      "file": "frameworks/av/media/aconfig/Android.bp",
+      "module": "aconfig_mediacodec_flags_java_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 13
+    },
+    {
+      "file": "frameworks/av/media/aconfig/Android.bp",
+      "module": "android.media.codec-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 39
+    },
+    {
+      "file": "frameworks/av/media/aconfig/Android.bp",
+      "module": "android.media.swcodec.flags-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 65
+    },
+    {
+      "file": "frameworks/av/media/aconfig/Android.bp",
+      "module": "android.media.mediarecorder-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 90
+    },
+    {
+      "file": "frameworks/av/media/aconfig/Android.bp",
+      "module": "android.media.reliability-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 112
+    },
+    {
+      "file": "frameworks/av/media/audio/aconfig/Android.bp",
+      "module": "android.media.audio-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 153
+    },
+    {
+      "file": "frameworks/av/media/audio/aconfig/Android.bp",
+      "module": "android.media.audio-aconfig-exported-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 159
+    },
+    {
+      "file": "frameworks/av/media/audio/aconfig/Android.bp",
+      "module": "android.media.audiopolicy-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 177
+    },
+    {
+      "file": "frameworks/av/media/audio/aconfig/Android.bp",
+      "module": "android.media.midi-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 188
+    },
+    {
+      "file": "frameworks/av/media/audio/aconfig/Android.bp",
+      "module": "android.media.soundtrigger-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 194
+    },
+    {
+      "file": "frameworks/av/media/module/extractors/Android.bp",
+      "module": "android.media.extractor.flags-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 87
+    },
+    {
+      "file": "frameworks/base/Android.bp",
+      "module": "framework-minus-apex-defaults",
+      "defaults": "framework-minus-apex-aconfig-libraries",
+      "line": 272
+    },
+    {
+      "file": "frameworks/base/android-sdk-flags/Android.bp",
+      "module": "android.sdk.flags-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 29
+    },
+    {
+      "file": "frameworks/base/android-sdk-flags/Android.bp",
+      "module": "android.sdk.flags-aconfig-java-host",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 36
+    },
+    {
+      "file": "frameworks/base/core/java/android/app/contentsafety/flags/Android.bp",
+      "module": "android.app.contentsafety-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 12
+    },
+    {
+      "file": "frameworks/base/services/core/java/com/android/server/display/feature/Android.bp",
+      "module": "display_flags_lib_host",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 15
+    },
+    {
+      "file": "frameworks/base/services/core/java/com/android/server/power/hint/Android.bp",
+      "module": "power_hint_flags_lib_host",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 28
+    },
+    {
+      "file": "frameworks/base/services/core/java/com/android/server/stats/Android.bp",
+      "module": "stats_flags_lib_host",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 19
+    },
+    {
+      "file": "frameworks/base/tools/processors/property_cache/Android.bp",
+      "module": "android.multiuser.flags-aconfig-java-host",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 35
+    },
+    {
+      "file": "frameworks/libs/binary_translation/android_api/libc/Android.bp",
+      "module": "libberberis_proxy_libc",
+      "defaults": "//frameworks/libs/native_bridge_support/android_api/libc:native_bridge_proxy_libc_defaults",
+      "line": 38
+    },
+    {
+      "file": "frameworks/native/vulkan/libvulkan/Android.bp",
+      "module": "libvulkan_flags_java_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 49
+    },
+    {
+      "file": "frameworks/opt/telephony/flags/Android.bp",
+      "module": "com.android.internal.telephony.flags.telephony-flags-aconfig-java-export",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 49
+    },
+    {
+      "file": "libcore/ojluni/src/test/Android.bp",
+      "module": "core-ojtests",
+      "defaults": "libcore_java_defaults",
+      "line": 35
+    },
+    {
+      "file": "libcore/ojluni/src/test/Android.bp",
+      "module": "core-ojtests-public",
+      "defaults": "libcore_java_defaults",
+      "line": 123
+    },
+    {
+      "file": "packages/apps/EyeDropper/Android.bp",
+      "module": "com.android.eyedropper.flags-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 68
+    },
+    {
+      "file": "packages/modules/AdServices/adservices/flags/Android.bp",
+      "module": "adservices_flags_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 25
+    },
+    {
+      "file": "packages/modules/AdServices/sdksandbox/flags/Android.bp",
+      "module": "sdk_sandbox_exported_flags_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 30
+    },
+    {
+      "file": "packages/modules/AdServices/sdksandbox/flags/Android.bp",
+      "module": "sdk_sandbox_flags_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 41
+    },
+    {
+      "file": "packages/modules/AdServices/sdksandbox/flags/Android.bp",
+      "module": "sdk_sandbox_app_flags_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 66
+    },
+    {
+      "file": "packages/modules/AppSearch/flags/Android.bp",
+      "module": "appsearch_flags_java_exported_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 26
+    },
+    {
+      "file": "packages/modules/AppSearch/flags/Android.bp",
+      "module": "appsearch_flags_java_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 42
+    },
+    {
+      "file": "packages/modules/Bluetooth/flags/Android.bp",
+      "module": "bluetooth_exported_flags_java_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 84
+    },
+    {
+      "file": "packages/modules/Connectivity/Vcn/flags/Android.bp",
+      "module": "android.net.vcn.flags-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 36
+    },
+    {
+      "file": "packages/modules/Connectivity/common/Android.bp",
+      "module": "com.android.tethering.beta.test.flags-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 33
+    },
+    {
+      "file": "packages/modules/Connectivity/common/Android.bp",
+      "module": "com.android.tethering.mainline.beta.flags-aconfig-java-deprecated",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 48
+    },
+    {
+      "file": "packages/modules/Connectivity/common/Android.bp",
+      "module": "com.android.tethering.flags-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 82
+    },
+    {
+      "file": "packages/modules/Connectivity/common/Android.bp",
+      "module": "com.android.net.flags-aconfig-java-deprecated",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 99
+    },
+    {
+      "file": "packages/modules/Connectivity/common/Android.bp",
+      "module": "com.android.net.flags-aconfig-java-export-deprecated",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 112
+    },
+    {
+      "file": "packages/modules/Connectivity/common/Android.bp",
+      "module": "com.android.net.thread.flags-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 129
+    },
+    {
+      "file": "packages/modules/Connectivity/common/Android.bp",
+      "module": "com.android.nearby.flags-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 152
+    },
+    {
+      "file": "packages/modules/Connectivity/common/Android.bp",
+      "module": "networksecurity_flags_java_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 169
+    },
+    {
+      "file": "packages/modules/Connectivity/nearby/flags/Android.bp",
+      "module": "com.android.bettertogether.d2d_connectivity_aconfig_exported",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 65
+    },
+    {
+      "file": "packages/modules/DeviceLock/flags/Android.bp",
+      "module": "devicelock-aconfig-flags-lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 36
+    },
+    {
+      "file": "packages/modules/DeviceLock/flags/Android.bp",
+      "module": "devicelock-exported-aconfig-flags-lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 50
+    },
+    {
+      "file": "packages/modules/HealthFitness/flags/Android.bp",
+      "module": "healthfitness-aconfig-flags-lib-host",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 56
+    },
+    {
+      "file": "packages/modules/HealthFitness/flags/Android.bp",
+      "module": "healthfitness-aconfig-flags-lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 70
+    },
+    {
+      "file": "packages/modules/IPsec/flags/Android.bp",
+      "module": "ipsec_aconfig_flags_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 31
+    },
+    {
+      "file": "packages/modules/Media/flags/Android.bp",
+      "module": "media_mainline_flags_java_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 42
+    },
+    {
+      "file": "packages/modules/Media/flags/Android.bp",
+      "module": "com.android.media.metrics.flags-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 60
+    },
+    {
+      "file": "packages/modules/NetworkStack/Android.bp",
+      "module": "com.android.networkstack.mainline.beta.flags-aconfig-java-deprecated",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 364
+    },
+    {
+      "file": "packages/modules/NetworkStack/Android.bp",
+      "module": "com.android.networkstack.flags-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 378
+    },
+    {
+      "file": "packages/modules/NeuralNetworks/flags/Android.bp",
+      "module": "android.app.ondeviceintelligence-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 33
+    },
+    {
+      "file": "packages/modules/Nfc/flags/Android.bp",
+      "module": "com.android.nfc.module.flags-aconfig-exported-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 37
+    },
+    {
+      "file": "packages/modules/Nfc/flags/Android.bp",
+      "module": "com.android.nfc.module.flags-aconfig-non-exported-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 80
+    },
+    {
+      "file": "packages/modules/NpuManager/flags/Android.bp",
+      "module": "npumanager_aconfig_flags_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 32
+    },
+    {
+      "file": "packages/modules/OnDevicePersonalization/flags/Android.bp",
+      "module": "ondevicepersonalization_flags_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 25
+    },
+    {
+      "file": "packages/modules/Permission/flags/Android.bp",
+      "module": "com.android.permission.flags-aconfig-java-export",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 33
+    },
+    {
+      "file": "packages/modules/Profiling/anomaly-detector/flags/Android.bp",
+      "module": "anomaly-detector-aconfig-flags-lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 36
+    },
+    {
+      "file": "packages/modules/Profiling/anomaly-detector/flags/Android.bp",
+      "module": "anomaly-detector-exported-aconfig-flags-lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 50
+    },
+    {
+      "file": "packages/modules/Profiling/flags/Android.bp",
+      "module": "profiling_flags_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 34
+    },
+    {
+      "file": "packages/modules/Profiling/flags/Android.bp",
+      "module": "profiling_flags_not_exported_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 48
+    },
+    {
+      "file": "packages/modules/StatsD/flags/Android.bp",
+      "module": "statsd_flags_java_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 48
+    },
+    {
+      "file": "packages/modules/Telephony/flags/Android.bp",
+      "module": "telephony_aconfig_flags_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 31
+    },
+    {
+      "file": "packages/modules/Telephony/telecom/flags/Android.bp",
+      "module": "telecom_module_bugfix_flags-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 42
+    },
+    {
+      "file": "packages/modules/Telephony/telecom/flags/Android.bp",
+      "module": "telecom_module_flags-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 53
+    },
+    {
+      "file": "packages/modules/Telephony/telecom/flags/Android.bp",
+      "module": "telecom_module_flags-export-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 65
+    },
+    {
+      "file": "packages/modules/UprobeStats/flags/Android.bp",
+      "module": "uprobestats_mainline_flags_java_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 57
+    },
+    {
+      "file": "packages/modules/Uwb/flags/Android.bp",
+      "module": "uwb_aconfig_flags_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 32
+    },
+    {
+      "file": "packages/modules/Uwb/ranging/flags/Android.bp",
+      "module": "ranging_aconfig_flags_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 43
+    },
+    {
+      "file": "packages/modules/Uwb/ranging/flags/Android.bp",
+      "module": "com.android.ranging.flags.ranging-aconfig-java-export",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 58
+    },
+    {
+      "file": "packages/modules/WebApp/flags/Android.bp",
+      "module": "com.android.webapp.flags-aconfig-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 30
+    },
+    {
+      "file": "packages/modules/WebApp/flags/Android.bp",
+      "module": "com.android.webapp.flags-aconfig-exported-java",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 43
+    },
+    {
+      "file": "packages/modules/Wifi/flags/Android.bp",
+      "module": "wifi_aconfig_flags_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 33
+    },
+    {
+      "file": "packages/providers/MediaProvider/Android.bp",
+      "module": "mediaprovider_exported_aconfig_flag_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 213
+    },
+    {
+      "file": "packages/providers/MediaProvider/pdf/framework/Android.bp",
+      "module": "pdf_viewer_flags_java_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 92
+    },
+    {
+      "file": "packages/providers/MediaProvider/pdf/framework/Android.bp",
+      "module": "pdf_viewer_flags_readonly_java_lib",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 115
+    },
+    {
+      "file": "platform_testing/libraries/desktop-test-lib/tests/mobly/Android.bp",
+      "module": "DesktopTestLibTestsMobly",
+      "defaults": "PASIT-defaults",
+      "line": 21
+    },
+    {
+      "file": "system/chre/host/hal_generic/Android.bp",
+      "module": "chre_aidl_hal_generic_defaults",
+      "defaults": "//system/chre:contexthub_hal_defaults",
+      "line": 53
+    },
+    {
+      "file": "system/chre/host/hal_generic/Android.bp",
+      "module": "chre_aidl_hal_generic_defaults",
+      "defaults": "//system/chre:pw_rpc_cflags_chre",
+      "line": 53
+    },
+    {
+      "file": "system/chre/host/hal_generic/Android.bp",
+      "module": "chre_aidl_hal_generic_defaults",
+      "defaults": "//system/chre:pw_rpc_nanopb_lib_dependencies",
+      "line": 53
+    },
+    {
+      "file": "system/security/keystore2/Android.bp",
+      "module": "keystore2_flags_java-framework",
+      "defaults": "framework-minus-apex-aconfig-java-defaults",
+      "line": 190
+    }
+  ],
+  "unsupported_count": 4,
+  "unsupported_first20": [
+    {
+      "file": "packages/modules/AdServices/adservices/tests/perf/Android.bp",
+      "reason": "unsupported string escape at line 84"
+    },
+    {
+      "file": "platform_testing/libraries/health/runners/longevity/platform/samples/Android.bp",
+      "reason": "unsupported string escape at line 45"
+    },
+    {
+      "file": "platform_testing/libraries/health/runners/longevity/platform/tests/Android.bp",
+      "reason": "unsupported string escape at line 45"
+    },
+    {
+      "file": "platform_testing/tests/health/scenarios/tests/Android.bp",
+      "reason": "unsupported string escape at line 45"
+    }
+  ],
+  "candidate_input_bindings": [
+    {
+      "path": "external/boringssl/Android.bp",
+      "bytes": 26559,
+      "sha256": "c0cd7dc7044f4d9326e5ca0bea26318a1bf5c33907c9ac365ed3067d49476958"
+    },
+    {
+      "path": "external/conscrypt/Android.bp",
+      "bytes": 32150,
+      "sha256": "81f11d21679ec36c4e5897574987e10b334ee26afdb654c5d68f0f385f3634e7"
+    },
+    {
+      "path": "external/cronet/android/flags/Android.bp",
+      "bytes": 2793,
+      "sha256": "d7755965432890e0c6ec9f9d9e3b1a2b48d63c9190ee2a0fe025bab2fcb78e3b"
+    },
+    {
+      "path": "external/cronet/stable/Android.bp",
+      "bytes": 3486447,
+      "sha256": "aa2e4f8e48b000875a7d607b0f00012578e9e3d2750583d3d61f72beae51f9fb"
+    },
+    {
+      "path": "external/cronet/stable/base/Android.bp",
+      "bytes": 676308,
+      "sha256": "7a5811120c6bd8c694f99eb86cdb465b031de850e12f20ab1379a6a20f5a0c84"
+    },
+    {
+      "path": "external/cronet/stable/base/version_info/android/Android.bp",
+      "bytes": 9749,
+      "sha256": "407d603b3ff6857b530712caa3b1b72a251e582c205aaee422ee4b30c837d1da"
+    },
+    {
+      "path": "external/cronet/stable/build/android/Android.bp",
+      "bytes": 5618,
+      "sha256": "408c44fa3fd698a803bfe62ef0b58652ae2b5712059381bb9f50095406b664b7"
+    },
+    {
+      "path": "external/cronet/stable/build/android/gtest_apk/Android.bp",
+      "bytes": 3067,
+      "sha256": "5d1145e67d8d0b7a382a04cb6ca929ccf25fe54c54d883752e1826911b44279b"
+    },
+    {
+      "path": "external/cronet/stable/components/cronet/Android.bp",
+      "bytes": 258869,
+      "sha256": "cdb44833f6b90ef5ec09a251fcd4e2eabb5baec21e301a95fc2e821f9d6ff267"
+    },
+    {
+      "path": "external/cronet/stable/components/cronet/android/Android.bp",
+      "bytes": 499042,
+      "sha256": "d821208d84d81ebcb6d0794f3b68d71696cfedf428765c26ddb992f62cef7a49"
+    },
+    {
+      "path": "external/cronet/stable/net/android/Android.bp",
+      "bytes": 15150,
+      "sha256": "988ba792f100eef09f2ca02fc77dbef8ac551acad3e2dfb0afec45694396d4e3"
+    },
+    {
+      "path": "external/cronet/stable/net/log/Android.bp",
+      "bytes": 2873,
+      "sha256": "ab97dabd51ab307b94ada9e7ecd15ede8fd7ccb5055da4ddbc71c8b7df293f8d"
+    },
+    {
+      "path": "external/cronet/stable/testing/android/instrumentation/Android.bp",
+      "bytes": 3194,
+      "sha256": "79a4cbac357928e96ab26796f8f847cf12373b1f1c89308e5871af5e6d7c55a7"
+    },
+    {
+      "path": "external/cronet/stable/testing/android/native_test/Android.bp",
+      "bytes": 80791,
+      "sha256": "43e6da5b0c6bf7cb06c8e299ee91cfe20e2dc88f9537715c3c25903015eb4cba"
+    },
+    {
+      "path": "external/cronet/stable/testing/android/reporter/Android.bp",
+      "bytes": 2227,
+      "sha256": "d9e3d441b60dabd2c70eae9b2300786992d0d97469610c6b60f9657a8ffc39b8"
+    },
+    {
+      "path": "external/cronet/stable/third_party/boringssl/Android.bp",
+      "bytes": 6588,
+      "sha256": "f0227497fa470d19988aef4c5bc33d670e85c27a91e4a5820cb1d1443c9c3442"
+    },
+    {
+      "path": "external/cronet/stable/third_party/jni_zero/Android.bp",
+      "bytes": 46838,
+      "sha256": "259bd398831794d369d27969f72267eb294796eee4db1beaf241cccc33f20858"
+    },
+    {
+      "path": "external/cronet/stable/third_party/netty4/Android.bp",
+      "bytes": 2011,
+      "sha256": "99408b53cd2d0ab6a36f38a9bbb463536128c7f750a5e4108dc59418fbe1aa01"
+    },
+    {
+      "path": "external/cronet/stable/third_party/protobuf/Android.bp",
+      "bytes": 287008,
+      "sha256": "c900d5a2a7044e0e91bca1ce97c508ceb3f4143c25c2c3d6bf637399994852f7"
+    },
+    {
+      "path": "external/cronet/stable/url/Android.bp",
+      "bytes": 71846,
+      "sha256": "36605dcf1590ec9b8cd65fd3fd5f733fbc6d6d1dffd8a578835ee2867ea461d6"
+    },
+    {
+      "path": "external/cronet/tot/Android.bp",
+      "bytes": 3542591,
+      "sha256": "19d32b69064c35a59732d8cbb8796c882fbb13e8a7d6b7724efa5e9350446d8d"
+    },
+    {
+      "path": "external/cronet/tot/base/Android.bp",
+      "bytes": 626768,
+      "sha256": "565157a5f5216635acb36b0223d021fbe2f8f7a64f3fedff03025bbd94570fe4"
+    },
+    {
+      "path": "external/cronet/tot/base/version_info/android/Android.bp",
+      "bytes": 9533,
+      "sha256": "d4a08827d87a86a85eaadc44ecb34341804937e9b27b6295b4d6c470031b69d0"
+    },
+    {
+      "path": "external/cronet/tot/build/android/Android.bp",
+      "bytes": 5576,
+      "sha256": "16ea377b05305b6fe92dafc9fcbcac9f1e32b12ce3da9f285fb8c0dfb3ce97c3"
+    },
+    {
+      "path": "external/cronet/tot/build/android/gtest_apk/Android.bp",
+      "bytes": 3031,
+      "sha256": "a08a4bdac7e3a22feea375b02db8e540bc8fe061a60c054d7634ce289ae76e2b"
+    },
+    {
+      "path": "external/cronet/tot/components/cronet/Android.bp",
+      "bytes": 261494,
+      "sha256": "5eee0e4b658651c3667421232cfbce8789a73c101cfee79c47b5eb6fcc3687db"
+    },
+    {
+      "path": "external/cronet/tot/components/cronet/android/Android.bp",
+      "bytes": 507009,
+      "sha256": "f53e2d2c1c9f233fe189fd3326ff55a4190ce760c2bb6b6d19dfb54b08fe4f53"
+    },
+    {
+      "path": "external/cronet/tot/net/android/Android.bp",
+      "bytes": 15004,
+      "sha256": "1553b8bda3bd3fb1ab8bc145db80a63a542afb4fe5960431031ca5b015efbb7e"
+    },
+    {
+      "path": "external/cronet/tot/net/log/Android.bp",
+      "bytes": 2825,
+      "sha256": "673b79e28efa5560154cf19b3283f6002a9abaefc19ea36284c4c770c9788def"
+    },
+    {
+      "path": "external/cronet/tot/testing/android/instrumentation/Android.bp",
+      "bytes": 3152,
+      "sha256": "ced203025f335ef859b7518f5c5aa5b9ed19c13b47e92dabafd47fbd52c57d0f"
+    },
+    {
+      "path": "external/cronet/tot/testing/android/native_test/Android.bp",
+      "bytes": 81120,
+      "sha256": "df798ef4b724b697f31116e3edd01068e5be33d8c825d6a572624b58e1f20def"
+    },
+    {
+      "path": "external/cronet/tot/testing/android/reporter/Android.bp",
+      "bytes": 2194,
+      "sha256": "a259d4b72c7799321a6814c8162a9b28078fbec70fd339feae153f3f9d123029"
+    },
+    {
+      "path": "external/cronet/tot/third_party/boringssl/Android.bp",
+      "bytes": 6504,
+      "sha256": "d2ef2e171c701c7c7b955e9520bb506f500b8433ba37b6cd0e67a45024c67e96"
+    },
+    {
+      "path": "external/cronet/tot/third_party/jni_zero/Android.bp",
+      "bytes": 47874,
+      "sha256": "2ef29aeee5ac2d9a86bcd01057115771ef41035c215cdf5bba4767c6e16fec0a"
+    },
+    {
+      "path": "external/cronet/tot/third_party/netty4/Android.bp",
+      "bytes": 1990,
+      "sha256": "6842cf9b4e6a8e121cea972d97fb3483b6c1e9f2c3dc0a4bc7d233a57469fc2d"
+    },
+    {
+      "path": "external/cronet/tot/third_party/protobuf/Android.bp",
+      "bytes": 291684,
+      "sha256": "0f9b7851f5267daf0526a541d5a10ffe7af82fe6ce9703e91ed90a7dc8717774"
+    },
+    {
+      "path": "external/cronet/tot/url/Android.bp",
+      "bytes": 72090,
+      "sha256": "cfe0286b6ec75157560e982f13a427ff385f979e501e06e0b338fe3875619b80"
+    },
+    {
+      "path": "external/deqp/Android.bp",
+      "bytes": 10831,
+      "sha256": "b30ff8e5e19b5be1482c0f3fa254d9f87d090dd602ed5652d912f29c27a60c3f"
+    },
+    {
+      "path": "external/libdrm/Android.bp",
+      "bytes": 5028,
+      "sha256": "981b8100722259d9e952b6936a5b5a05ba57593151ebdf3de29eb870e5d2e423"
+    },
+    {
+      "path": "external/libdrm/amdgpu/Android.bp",
+      "bytes": 626,
+      "sha256": "f3a90372b71aa1fdabc764dcab75fc5f8cd0c30a7abab8c22865813525c315c0"
+    },
+    {
+      "path": "external/scrypt/Android.bp",
+      "bytes": 2176,
+      "sha256": "3c07626a57247af2627dc5e6f34a7fa7009e9aa274f9e1ac66ac92241de4c126"
+    },
+    {
+      "path": "frameworks/av/media/aconfig/Android.bp",
+      "bytes": 3360,
+      "sha256": "0b50e227ff848879542737576d66e077be3872a50c5f8a56a62e93f077a70a8d"
+    },
+    {
+      "path": "frameworks/av/media/audio/aconfig/Android.bp",
+      "bytes": 6250,
+      "sha256": "f4271f969a1394bfb76067dc168a9096ca068a6002fe2ec594c9ac0b2d671bd4"
+    },
+    {
+      "path": "frameworks/av/media/module/extractors/Android.bp",
+      "bytes": 2658,
+      "sha256": "373cd06a9daf95467a152103163242c7a2e25637a01178edaee8e22ae77d15cd"
+    },
+    {
+      "path": "frameworks/base/Android.bp",
+      "bytes": 28696,
+      "sha256": "9039665725aa013a88f222430e33a1a3e662e23ec87090f253592ee28ec2f545"
+    },
+    {
+      "path": "frameworks/base/android-sdk-flags/Android.bp",
+      "bytes": 1240,
+      "sha256": "7360f3d150f9de417d21ada51cca35e1dcf83824bd8dd4b4485c61b64dd8f920"
+    },
+    {
+      "path": "frameworks/base/core/java/android/app/contentsafety/flags/Android.bp",
+      "bytes": 402,
+      "sha256": "62c802fa7b7433c679c50510416b68459d9e358c44d16a272365b75d35ac383d"
+    },
+    {
+      "path": "frameworks/base/services/core/java/com/android/server/display/feature/Android.bp",
+      "bytes": 389,
+      "sha256": "476a0c168b6103493342987bffb95e2323bc4caa0cc9060d0c914274a4c4d881"
+    },
+    {
+      "path": "frameworks/base/services/core/java/com/android/server/power/hint/Android.bp",
+      "bytes": 628,
+      "sha256": "501a1a314b1a022df9154dab1c506c9937b0e5deadbe034397cbed263cc0a07d"
+    },
+    {
+      "path": "frameworks/base/services/core/java/com/android/server/stats/Android.bp",
+      "bytes": 451,
+      "sha256": "afa9ccc64d79dec4ee083b6480a8802b2b9e5d09d4085f747bb7623a281f000c"
+    },
+    {
+      "path": "frameworks/base/tools/processors/property_cache/Android.bp",
+      "bytes": 1696,
+      "sha256": "1a3fee07fb499e96c6d5dfa5eb8f0c75be79fe1cdad947979f4b17183fb8ec89"
+    },
+    {
+      "path": "frameworks/libs/binary_translation/android_api/libc/Android.bp",
+      "bytes": 1629,
+      "sha256": "6e2a7e3e9ec33ac98a3d36fba4e9249d796c4b4324646107d3d68f3341b0651b"
+    },
+    {
+      "path": "frameworks/native/vulkan/libvulkan/Android.bp",
+      "bytes": 4316,
+      "sha256": "97ac3465c5a87e60323b852804738b2460234637c0fe13454e3b9df2cd561c41"
+    },
+    {
+      "path": "frameworks/opt/telephony/flags/Android.bp",
+      "bytes": 1557,
+      "sha256": "93036f3c40efd94faf6bcc899032356ce9af6d686709cd6ef1a05be6bb86919e"
+    },
+    {
+      "path": "libcore/ojluni/src/test/Android.bp",
+      "bytes": 6072,
+      "sha256": "6dc71f77e109c9c054edad9f498cc54c7745feffdf30bf1b1e0c4488b0a35fb6"
+    },
+    {
+      "path": "packages/apps/EyeDropper/Android.bp",
+      "bytes": 2204,
+      "sha256": "9ec427f67a6a645a847436f39ff26a7c15fa1f97fbe7f5e04a4c95b4fd9e3816"
+    },
+    {
+      "path": "packages/modules/AdServices/adservices/flags/Android.bp",
+      "bytes": 1388,
+      "sha256": "674f3c442ee9e62e89eea76bf1b9c32ae5b2dba2a85c5b264a6e96e9139152be"
+    },
+    {
+      "path": "packages/modules/AdServices/sdksandbox/flags/Android.bp",
+      "bytes": 2239,
+      "sha256": "a7596087c1c55982a4815838e5f1ae20342f9896fa82079d2554f6dbe0f5d0e5"
+    },
+    {
+      "path": "packages/modules/AppSearch/flags/Android.bp",
+      "bytes": 1376,
+      "sha256": "d369d02ed9776cc31d803922b46144eb0d644ebeade4544ed88b2877a88e574d"
+    },
+    {
+      "path": "packages/modules/Bluetooth/flags/Android.bp",
+      "bytes": 3826,
+      "sha256": "c972ecf994197be555a353f703dcf5e06aeae3e544392faf9641636f410bd067"
+    },
+    {
+      "path": "packages/modules/Connectivity/Vcn/flags/Android.bp",
+      "bytes": 1220,
+      "sha256": "1d582b8325bf5888775e91f288f6ed6442a20193e623821d9036293bc0de82ef"
+    },
+    {
+      "path": "packages/modules/Connectivity/common/Android.bp",
+      "bytes": 6899,
+      "sha256": "fca93a79f379d185e9d5390e3a08669aa8b0ac2f6da1656f58d96b8a5181fa9e"
+    },
+    {
+      "path": "packages/modules/Connectivity/nearby/flags/Android.bp",
+      "bytes": 2199,
+      "sha256": "f768908165b5f7d7ca00fef55db4b9f4e7d7a15ab3ea525ffa13189abbd919a2"
+    },
+    {
+      "path": "packages/modules/DeviceLock/flags/Android.bp",
+      "bytes": 1702,
+      "sha256": "1f22a803962f84b67f0fba457b8b53e47280bc7ec14af312fbb9dd8a75e7049c"
+    },
+    {
+      "path": "packages/modules/HealthFitness/flags/Android.bp",
+      "bytes": 2707,
+      "sha256": "375d397477c3d3068d9cb535e522a12a841f9fcfaf8417cda9d445b2f7d12ef5"
+    },
+    {
+      "path": "packages/modules/IPsec/flags/Android.bp",
+      "bytes": 1118,
+      "sha256": "b53b09506eeb5390ebc95bc46a0d5cb72f4e121757be0684b73f83362c50dc1c"
+    },
+    {
+      "path": "packages/modules/Media/flags/Android.bp",
+      "bytes": 1901,
+      "sha256": "11896b3264a77305288ee652ae82f4a1065ae5c755aae4bce807be40800621df"
+    },
+    {
+      "path": "packages/modules/NetworkStack/Android.bp",
+      "bytes": 11671,
+      "sha256": "8eebb8c42ce09f520743ca2fd913471be1c8d9a178fe3256ba365f29c0b76d14"
+    },
+    {
+      "path": "packages/modules/NeuralNetworks/flags/Android.bp",
+      "bytes": 1288,
+      "sha256": "869fe9a3ae5f831baa1e9f13b19035eec7a1a7e8a6d5fdd97d11a011a8932c93"
+    },
+    {
+      "path": "packages/modules/Nfc/flags/Android.bp",
+      "bytes": 2755,
+      "sha256": "d8bb4fe4cd45083cd5882c2e74da7af5ff707b319174b460897a32239d9aeafc"
+    },
+    {
+      "path": "packages/modules/NpuManager/flags/Android.bp",
+      "bytes": 1604,
+      "sha256": "9938ed6e3d397df9933621bceb3d9b63c670c526df1052bb2b9600e1e57db20b"
+    },
+    {
+      "path": "packages/modules/OnDevicePersonalization/flags/Android.bp",
+      "bytes": 1250,
+      "sha256": "da6c32f35f0b3ebe8e2b99ea736e875efe6dd7b72a91c1bef44120326c1ec5e0"
+    },
+    {
+      "path": "packages/modules/Permission/flags/Android.bp",
+      "bytes": 2079,
+      "sha256": "5735cc3fb0c6268aaf7f36e42b3d68e8eca3e571658a68f20bca66932040ed59"
+    },
+    {
+      "path": "packages/modules/Profiling/anomaly-detector/flags/Android.bp",
+      "bytes": 1802,
+      "sha256": "75a8c008bbc2f96885756b6babd1c73c16170654dfb6233bf8906365d0fc93b3"
+    },
+    {
+      "path": "packages/modules/Profiling/flags/Android.bp",
+      "bytes": 1627,
+      "sha256": "a2c8fc77ad49fadca1a7bf7528873a1e2892b4b3f266550794805a8de3d0abc4"
+    },
+    {
+      "path": "packages/modules/StatsD/flags/Android.bp",
+      "bytes": 1820,
+      "sha256": "1c5d29d30f0c106f66d949cdf2eb60d116a369d3dd16046fc99034322141de30"
+    },
+    {
+      "path": "packages/modules/Telephony/flags/Android.bp",
+      "bytes": 1288,
+      "sha256": "a3d0bebec4f932b99d5c4c4c8c492afd54d86e45cc9479d2ab95c91e6878e741"
+    },
+    {
+      "path": "packages/modules/Telephony/telecom/flags/Android.bp",
+      "bytes": 2229,
+      "sha256": "31ea531d673af410b9794808bce4bd3b8f7c574e88ac58c262e14610d804f930"
+    },
+    {
+      "path": "packages/modules/UprobeStats/flags/Android.bp",
+      "bytes": 2412,
+      "sha256": "9bb453360a8485901b8f2bec387c2552c7696bd4613a973ba4f954166d31f942"
+    },
+    {
+      "path": "packages/modules/Uwb/flags/Android.bp",
+      "bytes": 2484,
+      "sha256": "b558fb8a1388c14d1835ad128b31eb4aef8a0a5f9ceecb237d2fb2ef2885d1d4"
+    },
+    {
+      "path": "packages/modules/Uwb/ranging/flags/Android.bp",
+      "bytes": 2072,
+      "sha256": "8509dead0d68f7723e7035dfb1c996e6d0db0478e58d443536285860b4542434"
+    },
+    {
+      "path": "packages/modules/WebApp/flags/Android.bp",
+      "bytes": 1774,
+      "sha256": "11383e477ffed843ef7cc9679478cd46c68da52e769a854aadffddc1e508af60"
+    },
+    {
+      "path": "packages/modules/Wifi/flags/Android.bp",
+      "bytes": 2052,
+      "sha256": "25fdf758f55e24b094332a4e2b30a46b48dc1cf8824a4a7d41d663cb0bac89e6"
+    },
+    {
+      "path": "packages/providers/MediaProvider/Android.bp",
+      "bytes": 6413,
+      "sha256": "3583b3d6f21f5b043ddb13b7f58789048b21862b0f10918b7ed6231ed7a18715"
+    },
+    {
+      "path": "packages/providers/MediaProvider/pdf/framework/Android.bp",
+      "bytes": 4020,
+      "sha256": "5d5a5f54dd0b6db81a8ab8c261ba57b8c789b6b6bfadd2793c319d3ae1abdc49"
+    },
+    {
+      "path": "platform_testing/libraries/desktop-test-lib/tests/mobly/Android.bp",
+      "bytes": 1257,
+      "sha256": "bf1647bf57fab65f5ff2fa7a82b434bb909880f1e258edebf163f8dea48672f0"
+    },
+    {
+      "path": "system/chre/host/hal_generic/Android.bp",
+      "bytes": 2454,
+      "sha256": "4d5d0dd4b4838b55d24b0a94a950ab5ff8b4831884dda0ab8116ef593bdddb87"
+    },
+    {
+      "path": "system/security/keystore2/Android.bp",
+      "bytes": 5817,
+      "sha256": "f401cc506a32d908b47fbcc788f0f968f5d032371eed71fdf120408e7c4374e7"
+    }
+  ],
+  "consumer_source_commit": "6abefd291d50dee240ed2b22572d273175f070da",
+  "finished_at": "2026-11-09T08:31:05.323155+00:00"
+}
