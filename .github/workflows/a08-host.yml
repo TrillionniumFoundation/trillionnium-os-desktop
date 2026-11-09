@@ -261,7 +261,7 @@ jobs:
           import stat
           import sys
           import unittest
-          capsules = {'native597-original-llvm-plugin-cones-r1': ('75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c', 12), 'audio-canonical-custody-r1': ('42ead27bc89d5d866eddfd951e0dbfb91af1ff1c4e2843946fe4eee34925f1d5', 3), 'apparmor-binder-retained-credential-r1': ('243e3355ecfa6f96af8839ffa10854c796a3b22e03a5d924c778fb47aa83f4b9', 6), 'production-identity-reservation-r1': ('eee9cec9ecbd9b71cdda9df13bb0446124001a5826932709561126896881ffea', 3), 'native600-original-provider-closure-r1': ('d40f8629af9741d8bc4dc09bb89389fe2b1c7348e3ea02d72b01dca1908c6cc6', 18), 'audio425-original-provider-closure-r1': ('257bc3f071fd09c6b908ef80fdf0fe50617259c33b9083b0d66da6e270a6a450', 23), 'native600-rkpd-apex-r1': ('f33f622023fb328ea88c79a2fb29f7f7a9c1c3427af0a31b53bbdfc8c9fc4889', 9), 'native600-bcc-compat-r1': ('72f29d92b7cf2c07384984e0fd9fd46a5aed19841d9651870b94eb323996d2be', 3), 'audio430-ondeviceintelligence-api-r1': ('51914ae87ed371c6a5c4f8336e93db5e8eaa77233d426f703ffac20ddc725985', 4), 'namespace-lifetime-r5-review-r1': ('f4e068208cf7e2f99e19beca10b54fd1bef466c5b2e2949dbbd7a67857ccd4bd', 8)}
+          capsules = {'native597-original-llvm-plugin-cones-r1': ('75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c', 12), 'audio-canonical-custody-r1': ('42ead27bc89d5d866eddfd951e0dbfb91af1ff1c4e2843946fe4eee34925f1d5', 3), 'apparmor-binder-retained-credential-r1': ('243e3355ecfa6f96af8839ffa10854c796a3b22e03a5d924c778fb47aa83f4b9', 6), 'production-identity-reservation-r1': ('eee9cec9ecbd9b71cdda9df13bb0446124001a5826932709561126896881ffea', 3), 'native600-original-provider-closure-r1': ('d40f8629af9741d8bc4dc09bb89389fe2b1c7348e3ea02d72b01dca1908c6cc6', 18), 'audio425-original-provider-closure-r1': ('257bc3f071fd09c6b908ef80fdf0fe50617259c33b9083b0d66da6e270a6a450', 23), 'native600-rkpd-apex-r1': ('f33f622023fb328ea88c79a2fb29f7f7a9c1c3427af0a31b53bbdfc8c9fc4889', 9), 'native600-bcc-compat-r1': ('aadd86a9ec1528cdae294926ca86946d3337096ac1e27e476fda95e9cf1afc19', 4), 'audio430-ondeviceintelligence-api-r1': ('a61d8835adbf08d2d63847a428a8f928c0481f8ee1458d0a488308111153ae37', 5), 'namespace-lifetime-r5-review-r1': ('f4e068208cf7e2f99e19beca10b54fd1bef466c5b2e2949dbbd7a67857ccd4bd', 8)}
           for name, (digest, count) in capsules.items():
               directory = Path('compat/android/pocket4', name).resolve(strict=True)
               raw = (directory / 'FILES.json').read_bytes()
@@ -313,7 +313,7 @@ jobs:
           import stat
           import subprocess
           import sys
-          capsules = [('production-identity-input-validation-r1', 'FILES.json', '473a68243cb0641c1c96d4b34de2f6a29936826f12a29890bbc6a903ef366853', 8), ('native600-allocation-observation-r1', 'manifest.json', 'e0b80c1c3baa9726e1f8739fc46f85cf944dff7a458b1e5c9703b4707b2a9118', 14), ('cleanup-current-inputs-r1', 'FILES.json', '75c4f28f2f0d821bfd7d29b58e498099b85ac6e358ab68226991f816fc1d4a10', 18), ('production-userns-audit-r1', 'FILES.json', 'a1deacfd0bb40fec96a22b24391abb29b7eb97dc2a76799a181c679b27e55720', 8), ('private-control-driver-guards-r1', 'FILES.json', '1cc941b09d767383099f4a3aaedf0ad7351d8d28adf9447b445acae6ad7ecf88', 6), ('official-app-source-reconciliation-r1', 'FILES.json', '4a10a8aa354c3623c9dfb951c67df8c247a2c036183683674216c0f8017e06fc', 2), ('native600-tradefed-provider-closure-r1', 'FILES.json', 'deb7afe31bbdddd7bc0f48ec6b89750b230ea9845a0e143389e45dc20d12487f', 7), ('production-namespace-broker-r2-review-r1', 'manifest.json', 'db582edf37491bf5b64284339c3e2b2bb3ec3418f69af59259008967ccd4f4eb', 22)]
+          capsules = [('production-identity-input-validation-r1', 'FILES.json', '473a68243cb0641c1c96d4b34de2f6a29936826f12a29890bbc6a903ef366853', 8), ('native600-allocation-observation-r1', 'manifest.json', 'e0b80c1c3baa9726e1f8739fc46f85cf944dff7a458b1e5c9703b4707b2a9118', 14), ('cleanup-current-inputs-r1', 'FILES.json', 'ee1edc476746ae9b42b723b942358fc123ca670b28485e8200cfb864b508d297', 19), ('production-userns-audit-r1', 'FILES.json', 'a1deacfd0bb40fec96a22b24391abb29b7eb97dc2a76799a181c679b27e55720', 8), ('private-control-driver-guards-r1', 'FILES.json', '1cc941b09d767383099f4a3aaedf0ad7351d8d28adf9447b445acae6ad7ecf88', 6), ('official-app-source-reconciliation-r1', 'FILES.json', 'd4614c991e32f299f09343e45964e4f5b2d2ab516e448fcadad5143b34bf4d02', 2), ('native600-tradefed-provider-closure-r1', 'FILES.json', 'deb7afe31bbdddd7bc0f48ec6b89750b230ea9845a0e143389e45dc20d12487f', 7), ('production-namespace-broker-r2-review-r1', 'manifest.json', 'db582edf37491bf5b64284339c3e2b2bb3ec3418f69af59259008967ccd4f4eb', 22)]
           for name, manifest_leaf, expected_sha, expected_count in capsules:
               directory = Path('compat/android/pocket4', name).resolve(strict=True)
               raw = (directory / manifest_leaf).read_bytes()
@@ -379,7 +379,7 @@ jobs:
           """
           for optimization in ([], ['-O']):
               run([sys.executable, '-I', '-B', *optimization, '-', str(base / 'cleanup-current-inputs-r1'),
-                   json.dumps(['test_verify_current_inputs.py', 'test_reference_observer.py']), '59'], input=controls)
+                   json.dumps(['test_verify_current_inputs.py', 'test_reference_observer.py', 'test_empty_task_views.py']), '83'], input=controls)
           run([sys.executable, '-I', '-B', '-O', '-', str(base / 'native600-allocation-observation-r1'),
                json.dumps(['test_verifier_smoke.py']), '2'], input=controls)
           print('Source replay and isolated controls passed; this step does not run Rust, Android, or application acceptance')
@@ -457,7 +457,7 @@ jobs:
           for mode, optimized in (('normal', 0), ('optimized', 1)):
               report = json.loads((Path(sys.argv[1]) / ('cleanup-alias-' + mode + '.json')).read_bytes())
               expected = {'schema': 'pocket4-isolated-alias-controls-v1', 'status': 'PASS',
-                          'controls': 15, 'optimized': optimized, 'outer_exit_code': 0,
+                          'controls': 20, 'optimized': optimized, 'outer_exit_code': 0,
                           'outer_reaped': True, 'pid1_exit_code': 0, 'pid1_reaped_by_outer': True,
                           'host_namespace_unchanged': True, 'host_mountinfo_unchanged': True,
                           'private_pid_namespace': True, 'private_mount_propagation': True,
@@ -466,9 +466,9 @@ jobs:
               for key, value in expected.items():
                   if type(report.get(key)) is not type(value) or report[key] != value:
                       raise SystemExit('Actual private namespace control failed: ' + mode + ':' + key)
-              if type(report.get('rows')) is not list or len(report['rows']) != 15:
+              if type(report.get('rows')) is not list or len(report['rows']) != 20:
                   raise SystemExit('Exact private namespace control inventory required')
-          print('15 private namespace controls passed in both modes; no host cleanup or Android acceptance granted')
+          print('20 private namespace controls passed in both modes; no host cleanup or Android acceptance granted')
           PYALIASES
           rmdir "$fixture_base"
       - name: Verify existing namespace audit without production admission

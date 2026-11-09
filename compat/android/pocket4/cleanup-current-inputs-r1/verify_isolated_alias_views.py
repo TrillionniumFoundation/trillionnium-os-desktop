@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Real Linux alias controls in a private mount/PID namespace; no live mounts changed.
+"""Real Linux alias/chroot controls in private mount/PID namespaces.
 
 Usage: NAMESPACE_FIXTURE_DIR=<owned-stage> python3 -I -B this.py observer.py
 The caller must run as root. The observer source is AST-loaded without executing
@@ -124,6 +124,105 @@ def inner(root):
                                        "covering_identity":list(after_identity)}
             if reference_kind is not None:rows[-1]["required_reference_kind"]=reference_kind
         finally:unmount(alias)
+    def empty_chroot(name,kind):
+        # Configure through a pipe, so a literal host target in argv cannot
+        # accidentally satisfy the FD/maps/cwd control. The argv-only case
+        # deliberately carries just its task-root-relative path.
+        jail=parent if kind=="argv" else root/"empty-jail"
+        jail.mkdir(exist_ok=True)
+        config_read,config_write=os.pipe2(os.O_CLOEXEC)
+        ready_read,ready_write=os.pipe2(os.O_CLOEXEC)
+        control_read,control_write=os.pipe2(os.O_CLOEXEC)
+        code="""import ctypes,json,mmap,os,signal,sys
+libc=ctypes.CDLL(None,use_errno=True)
+if libc.prctl(1,signal.SIGKILL,0,0,0)!=0 or os.getppid()!=int(sys.argv[4]):raise RuntimeError('child_parent')
+raw=bytearray()
+while True:
+    part=os.read(int(sys.argv[1]),8193-len(raw))
+    if not part:break
+    raw.extend(part)
+    if len(raw)>8192:raise RuntimeError('child_config_bound')
+os.close(int(sys.argv[1]))
+cfg=json.loads(raw);held=None;mapped=None
+if cfg['kind'] in ('fd','maps'):
+    held=os.open(cfg['file'],os.O_RDONLY|os.O_CLOEXEC)
+    if cfg['kind']=='maps':
+        mapped=mmap.mmap(held,0,access=mmap.ACCESS_READ);os.close(held);held=None
+if cfg['kind']=='cwd':os.chdir(cfg['target'])
+os.chroot(cfg['jail'])
+if cfg['kind']!='cwd':os.chdir('/')
+os.write(int(sys.argv[2]),b'R')
+if os.read(int(sys.argv[3]),1)!=b'X':raise RuntimeError('child_release')
+if mapped is not None:mapped.close()
+if held is not None:os.close(held)
+"""
+        arguments=[sys.executable,"-I","-B","-c",code,str(config_read),str(ready_write),
+                   str(control_read),str(os.getpid())]
+        if kind=="argv":arguments.append("/target/payload")
+        process=None
+        try:
+            process=subprocess.Popen(arguments,pass_fds=(config_read,ready_write,control_read),
+                cwd="/",stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
+            for fd in (config_read,ready_write,control_read):os.close(fd)
+            config_read=ready_write=control_read=None
+            config=json.dumps({"kind":kind,"jail":str(jail),"target":str(target),
+                               "file":str(target/"payload")}).encode()
+            need(len(config)<4096 and os.write(config_write,config)==len(config),"chroot_config_write")
+            os.close(config_write);config_write=None
+            need(select.select([ready_read],[],[],3)[0] and os.read(ready_read,1)==b"R",
+                 name+"_child_ready")
+            os.close(ready_read);ready_read=None
+            task=Path("/proc",str(process.pid))
+            raw_before=(task/"mountinfo").read_bytes()
+            need(raw_before==b"",name+"_fixture_mountinfo_not_empty")
+            before=(task/"stat").read_bytes()
+            start_before=int(before[before.rfind(b")")+2:].split()[19])
+            rootfd=os.open(task/"root",os.O_PATH|os.O_DIRECTORY|os.O_CLOEXEC)
+            try:
+                rootstat=os.fstat(rootfd)
+                rootinfo=Path("/proc/self/fdinfo",str(rootfd)).read_bytes()
+                mountids=[line.split(b":",1)[1].strip() for line in rootinfo.splitlines()
+                          if line.startswith(b"mnt_id:")]
+                need(len(mountids)==1 and mountids[0].isdigit(),"chroot_fixture_root_mount_id")
+                rootidentity=[rootstat.st_dev,rootstat.st_ino]
+                rootmnt=int(mountids[0])
+            finally:os.close(rootfd)
+            jailmnt,jailidentity=path_mount_identity(jail)
+            need(rootidentity==list(jailidentity) and rootmnt==jailmnt,
+                 name+"_fixture_root_binding")
+            result=run(name,"clear" if kind=="clear" else "reference")
+            need(result.get("empty_task_mount_views")==1 and
+                 result.get("verified_empty_task_mount_views")==1,name+"_empty_branch_not_proved")
+            required={"fd":"fd","maps":"maps","cwd":"cwd","argv":"owner_argument_reference"}.get(kind)
+            if required:
+                need(any(hit.get("kind")==required and hit.get("pid")==process.pid
+                         for hit in result["process_or_owner_hits"]),name+"_specific_reference_not_vetoed")
+            terminals=result.get("namespace_child_terminals",[])
+            need(len(terminals)==1 and all(row.get("reaped") is True and row.get("exit_code")==0
+                                          for row in terminals),name+"_native_witness_not_retired")
+            after=(task/"stat").read_bytes()
+            need(int(after[after.rfind(b")")+2:].split()[19])==start_before and
+                 (task/"mountinfo").read_bytes()==b"",name+"_fixture_identity_changed")
+            rows[-1]["empty_task_fixture"]={"pid":process.pid,"starttime":start_before,
+                "mountinfo_bytes":0,"root_identity":rootidentity,"root_mnt_id":rootmnt,
+                "required_reference_kind":required,"native_witness_reaped":True}
+        finally:
+            for fd in (config_read,config_write,ready_read,ready_write,control_read):
+                if fd is not None:os.close(fd)
+            terminal_error=None
+            if process is not None:
+                try:os.write(control_write,b"X")
+                except BrokenPipeError:pass
+                os.close(control_write);control_write=None
+                try:status=process.wait(timeout=3)
+                except subprocess.TimeoutExpired:process.kill();status=process.wait(timeout=3)
+                stderr=process.stderr.read(8193)
+                process.stderr.close()
+                child_rows.append({"pid":process.pid,"exit_code":status,"reaped":True,
+                                   "case":name,"stderr_bytes":len(stderr)})
+                if status!=0 or stderr:terminal_error=name+"_child_terminal:"+repr(stderr[:4096])
+            if control_write is not None:os.close(control_write)
+            if terminal_error is not None:raise RuntimeError(terminal_error)
     try:
         run("ancestor_alias_only","clear")
         masked_alias("strict_ancestor_mask_without_references","clear")
@@ -194,6 +293,12 @@ def inner(root):
             child_rows.append({"pid":process.pid,"exit_code":code,"reaped":True})
             need(code==0,"argv_child_terminal")
             if ready_read is not None:os.close(ready_read)
+        for name,kind in (("empty_chroot_without_references","clear"),
+                          ("empty_chroot_with_preexisting_fd","fd"),
+                          ("empty_chroot_with_preexisting_mmap","maps"),
+                          ("empty_chroot_with_outside_cwd","cwd"),
+                          ("empty_chroot_with_projected_argv","argv")):
+            empty_chroot(name,kind)
         mount(outside,alias_target/"mounted",None,4096)
         try:run("mountpoint_inside_target_via_alias","mount")
         finally:unmount(alias_target/"mounted")
@@ -238,7 +343,7 @@ def inner(root):
             rows[-1]["exact_fd_only_namespace_witness_reaped"]=True
         finally:os.close(nsfd)
         run("restored_alias_only_after_all_negative_controls","clear")
-        need(len(rows)==15,"exact_fifteen_controls_required")
+        need(len(rows)==20,"exact_twenty_controls_required")
     finally:
         os.chdir("/")
         unmount(alias)

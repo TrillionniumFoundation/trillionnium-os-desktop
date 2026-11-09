@@ -5,12 +5,91 @@ observer and the current-input verifier. The replacement has **not been
 applied to the live cleanup helper**. Source qualification does not authorize
 deletion or establish Android/app production readiness.
 
-The current source passed **59 controls in both normal and -O modes on Cloud
-Linux (UID 0)** and **15 real private-namespace controls in both modes on
-Pocket4**. The Pocket4 runs used kernel 7.0.14-p4cred1 and boot
-97d9600f-e081-465c-9e6e-62651e09806b. Current receipts, the retained failed first
-private attempt, and historical qualification references are distinguished in
-[test-results.json](test-results.json).
+This isolated revision passed **83 controls in both normal and -O modes on
+Cloud Linux (UID 0)**: all 59 existing controls plus 24 focused empty-view and
+representative-selection controls. The new proof controls use an explicit
+test-only collector model. They do not establish real namespace or child
+lifecycle qualification. The **20-case real private fixture also passed normal and -O on
+Pocket4**, using kernel 7.0.14-p4cred1 and boot
+97d9600f-e081-465c-9e6e-62651e09806b. Both modes bind the exact source before
+and after execution and have positive complete H terminal evidence.
+
+The prior published 13ad observer passed 59 Cloud controls and 15 real private
+controls in both modes on Pocket4 kernel 7.0.14-p4cred1, boot
+97d9600f-e081-465c-9e6e-62651e09806b. Its complete prior qualification, the failed
+90a6 fixture attempt and older source evidence remain in
+[test-results.json](test-results.json); none is relabelled as this revision's
+host qualification.
+
+## Separately retired review copies
+
+Three exact owned Cloud source-copy roots were removed after published source
+custody and peer release: 18 files, 289,339 logical bytes, then independent
+absence readback. `remaining-roots-readback.json` preserves that narrow receipt
+and its explicit `process_coverage_passed=false`. This recoverable review-copy
+cleanup is separate from Pocket4 whole-root admission; no Pocket4 runtime,
+Android image or application was deleted by this operation.
+
+## Latest real host observation
+
+The exact 50ea source completed a separate read-only scan at 10:44:22 UTC.
+It found no process/owner or mount hits, but the result remained **UNKNOWN**:
+one task/leader set changed, three processes disappeared, and the process set
+changed. These existing vetoes prevented collector creation, leaving the empty
+task view and namespace coverage unresolved. All zero created collectors were
+closed; no deletion, Android action or CURRENT write occurred. The positive
+durable process terminal was exit 0 with complete 2,327-byte output; process
+success is not deletion admission. The exact diagnostic source, original
+transport and result are appended to `mount-layer-observation.json`.
+
+## Successful empty task mountinfo needs a complete view
+
+The f091 whole-host preflight at 09:32:56 UTC correctly returned UNKNOWN and
+deleted nothing. It found no process/owner or mount hits, but retained one
+empty mountinfo, two FD-set changes, process-set change, two FileNotFound
+errors and incomplete namespace coverage. Existing errors prevented collector
+creation; the 26 uncovered namespaces were not individually proved impossible
+to observe. The earlier shadow/stack errors did not recur in that run.
+
+A separate 09:42:59 UTC diagnostic read only three named task views. It found
+PID 1686 to be a stable ordinary avahi-daemon task with a restricted root and
+two successful zero-byte mountinfo reads. The other two sampled threads had
+stable FD number sets during that fixed 0.2-second pair. The preflight did not
+record their starttimes: these later numeric-PID observations cannot establish
+continuity with the original scan, disprove its FD churn, or recover any
+missing task terminal. Exact evidence, positive H terminal identities and the
+upstream Linux semantic reference are appended to
+[mount-layer-observation.json](mount-layer-observation.json).
+
+Only a successful exact empty task view enters the new pending-proof branch.
+The first process pass still scans root/cwd/exe/FD/maps/argv, counts descriptors
+once, and records the task/root/namespace and FD-number plus per-slot
+device/inode baseline. It neither holds traversal FDs across the observer's
+own census nor creates collector children early. Existing errors remain vetoes.
+
+After the original process-set check, an owned native-root witness is required,
+including when the empty task shares the observer's namespace. The task's root
+display path is reopened from that witness root one directory component at a
+time with O_PATH and NOFOLLOW. Actual mount IDs, devices, ancestry transitions
+and the final device/inode/mount ID must agree with the separately held task
+root. Noncanonical, deleted, symlink, missing or otherwise unexplained routes
+remain UNKNOWN. A supposedly empty view containing a native mountpoint under
+the proved root also remains UNKNOWN.
+
+All native potential aliases stay in the reference index. Only verified
+component-relative projections are added for the task root, and every
+reference kind is scanned again with the original FD baseline. FD-set or
+per-slot device/inode changes, changed task/root/namespace/raw view, unproved
+FD-only or newly discovered namespaces, and collector failure remain UNKNOWN.
+All owned children are positively retired before comparison with the original
+process set. The collector factory is unchanged byte for byte.
+
+For ordinary views, the first task that completes all existing checks becomes
+the representative. Later tasks still undergo all checks and raw-view
+comparison. The first representative is revalidated at the original final
+points; losing it is UNKNOWN, with no replacement fallback. This removes an
+unnecessary dependency on the last task, but does not clear previous errors
+or lock out future writers or same-identity ABA changes.
 
 ## Why mount-layer selection changed
 
@@ -28,8 +107,8 @@ reproduced by bounded, stable reads:
 [mount-layer-observation.json](mount-layer-observation.json) binds the exact
 diagnostic, terminal, source pin and prior UNKNOWN preflight. These two views
 do not reclassify the other reported processes. Real FD/process churn and
-uncovered namespace evidence from that preflight remain unresolved. No new
-whole-host deletion gate is claimed here.
+uncovered namespace evidence from that preflight remain unresolved. Those earlier reads did not establish a
+whole-host deletion gate; the later f091 preflight above also refused.
 
 ## Reference, mount and failure semantics
 
@@ -77,8 +156,9 @@ No caller-provided dictionary, receipt or arbitrary PID supplies coverage.
 Unknown or inaccessible namespace handles, unobserved nested namespaces,
 changing witnesses, timeouts and incomplete retirement remain UNKNOWN.
 The embedded collector factory is byte-identical to the previously qualified
-factory; the real private controls independently exercise its FD-only
-namespace discovery and retirement on the new boot.
+factory. The historical real private controls exercised its FD-only
+namespace discovery and retirement. This revision's new real private
+cases also passed with the same unmodified factory.
 
 Opaque nsfs mnt:[positive inode] roots retain their mountpoint veto and are
 never used as filesystem ancestor paths. Other non-absolute root formats
@@ -88,8 +168,9 @@ remain UNKNOWN. The earlier format evidence remains in
 Observation bounds remain 128 exact targets, 100,000 target entries,
 20,000 tasks, 500,000 descriptors, bounded reads/hits, and a shared 45-second
 budget. Collector child/read bounds and retirement requirements are unchanged.
-The current observer source is 66,232 bytes. A caller's former 65,536-byte
-source-file loader must separately admit this exact source size and SHA;
+The current observer source is 76,800 bytes. A caller's prior source-file limit
+(66,232 bytes for 13ad; 65,536 in older loaders) must separately admit this
+exact source size and SHA;
 that adjustment does not enlarge the observer's scan bounds. Source custody
 still requires a single-link regular file and stable, verified bytes.
 
@@ -99,23 +180,23 @@ This remains a snapshot, not a lock against future references or writers.
 
 | Group | Entry | Required environment | Current controls per mode |
 | --- | --- | --- | ---: |
-| Input/reference regression | The two unittest modules below | Linux; no namespace privilege required | 59 |
-| Complete scanner and owned fixtures | verify_isolated_alias_views.py | Root with private mount/PID namespace capability | 15 |
+| Input/reference regression | The three unittest modules below | Linux; no namespace privilege required | 83, passed |
+| Complete scanner and owned fixtures | verify_isolated_alias_views.py | Root with private mount/PID namespace capability | 20, passed |
 | Exact replacement scope | verify_reference_patch.py | Python; parse/compile only | One scope verification |
 
 Run the source controls from this directory:
 
 ~~~sh
-python3 -B -m unittest -v test_verify_current_inputs.py test_reference_observer.py
-python3 -B -O -m unittest -v test_verify_current_inputs.py test_reference_observer.py
+python3 -B -m unittest -v test_verify_current_inputs.py test_reference_observer.py test_empty_task_views.py
+python3 -B -O -m unittest -v test_verify_current_inputs.py test_reference_observer.py test_empty_task_views.py
 ~~~
 
 The current recorded runs used Cloud UID 0; they are not a new Pocket4
-ordinary-UID observation. Both actual runs completed 59 tests with zero
+ordinary-UID observation. Both actual Cloud runs completed 83 tests with zero
 failures/errors/skips. The real Linux self-FD/mmap test must find its held
 references; unrelated host visibility failures remain UNKNOWN.
 
-The 15 private controls retain the original ten cases and add a masked
+The historical 15 private controls retain the original ten cases and add a masked
 ancestor route, a kernel-selected samepoint stack, and references held before
 masking through an FD, mmap and owner argument. Their specific reference kinds
 and process/FD identities must be found. Visible-alias cwd has a real control;
@@ -123,14 +204,24 @@ masked cwd has a unit regression and shared code-path review, not a separate
 claimed real private control. Wrong final inode remains UNKNOWN. Target-source
 and target-mountpoint negatives remain vetoes.
 
-One initial private run failed because an argv fixture closed its ready FD
+One historical initial private run failed because an argv fixture closed its ready FD
 after signaling readiness. The observer correctly reported an FD-set change
 and UNKNOWN, while also finding the argument reference. Only the two fixture
 handshakes changed: their ready FDs now remain open until controlled exit.
 The failed terminal and both subsequent successful modes are preserved
 separately; the observer's FD-change gate was not relaxed.
 
-Use an empty owned fixture base:
+The current fixture retains all 15 cases and adds five real chroot cases:
+no references, an FD or mmap held before chroot, cwd outside the jail, and a
+task-root-relative argv. Configuration travels over a pipe to avoid embedding
+the host target in argv. Each new case first proves actual empty mountinfo and
+the jail's exact root device/inode/mount ID, then requires the precise child PID
+and reference kind or a clear result. All five passed in both actual Pocket4 modes. The no-reference case
+was OBSERVED with no hits; the FD, maps, cwd and argv cases were OBSERVED
+with the required specific reference veto. The real wrong-inode case remains
+UNKNOWN, as intended.
+
+To reproduce in an authorized private test environment, use an empty owned fixture base:
 
 ~~~sh
 sudo -n env NAMESPACE_FIXTURE_DIR=/absolute/owned/fixture-base python3 -I -B verify_isolated_alias_views.py /absolute/capsule/reference_observer.py
@@ -139,9 +230,14 @@ sudo -n env NAMESPACE_FIXTURE_DIR=/absolute/owned/fixture-base python3 -I -B -O 
 
 The fixture creates private mount/PID namespaces and a private procfs, verifies
 the unchanged parent namespace/mountinfo, waits for its own children, and
-removes its temporary directory before success. Each current mode reaped
+removes its temporary directory before success. Each historical f091 mode reaped
 three fixture children, one FD-only namespace collector, its private PID 1 and
-the outer fixture process with successful terminal evidence. An unsupported
+the outer fixture process with successful terminal evidence. Each current 20-case mode
+positively reaped eight fixture children and six collector children, plus
+the outer process and private PID 1. Parent namespace and mountinfo were
+unchanged and fixture paths were removed. Both runs used one logical CPU,
+nice 19 and RLIMIT_AS 3 GiB; the 43-second fixture deadline was unchanged.
+This is not a cgroup MemoryMax measurement or a whole-host reference gate. An unsupported
 operation must fail; A08 must not silently skip a control.
 
 The historical 54/29/10 qualification belongs to the source at commit
@@ -171,7 +267,10 @@ python3 -I -B verify_reference_patch.py
 python3 -I -B -O verify_reference_patch.py
 ~~~
 
-Both current scope runs passed. No live helper patch was applied.
+Both current scope runs passed. Against unchanged 13ad, two focused new
+controls fail for the expected empty_mountinfo and last-representative
+FileNotFound reasons; the same controls pass on this revision. No live helper
+patch was applied.
 
 ## Historical selected inputs and retained roots
 
@@ -206,3 +305,20 @@ It contains necessary source, baseline fixtures and compact evidence. Current
 source replaces its prior version in this directory; Git retains the historical
 versions. One-off diagnostic scripts, prototype scanners, raw app data and
 private signing material are not current deliverables.
+
+## Historical unknown setup source fixture
+
+`remaining-roots-readback.json` now retains the exact 47,639-byte historical CB
+setup request as a hash-bound gzip/base64 source fixture, together with its
+existing `outcome_unknown` invocation identity. This inert record permits byte
+reconstruction after the obsolete Cloud broker workspace is retired; **do not
+execute it**. Static inspection of the outer script and all six embedded source
+files, including independent peer review, found no runtime secrets or captured
+user-data bodies. The synthetic NSS unit fixtures use `x` password placeholders.
+
+The original command could write, chmod and chown its own Pocket4 review stage.
+Its positive terminal state has never been established; later stage absence is
+not a terminal receipt. This addition preserves that uncertainty, adds no
+execution result, and changes neither the observer nor any Pocket4 deletion
+gate. The separate ai395 unknown requests also remain unknown; their missing
+original programs have not been audited by inference from compact metadata.

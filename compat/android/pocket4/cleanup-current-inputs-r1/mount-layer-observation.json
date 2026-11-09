@@ -1,1 +1,1254 @@
-{"bounded_diagnostic":{"observation":{"boot_id":"97d9600f-e081-465c-9e6e-62651e09806b","delete":false,"elapsed_ms":3.095,"forked_children":0,"kernel":"7.0.14-p4cred1","observer_run":false,"owned_fds_closed":true,"schema":"pocket4-alias-two-view-diagnostic-v1","source_sha256":"311a943a3b3f2845c69ae1750eadb2e72b7058cac86c5c9ae39f18debc107aa5","target":"/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/v8-150.4.0","target_dev_inode":[66306,57023549],"views":[{"candidate":{"dev":"259:2","fstype":"ext4","id":121,"parent":97,"point":"/","root":"/"},"exposed":"/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/v8-150.4.0","historical_error":"shadowed_alias_mount","lexical_selected":[{"dev":"0:28","fstype":"tmpfs","id":196,"parent":121,"point":"/home","root":"/systemd/inaccessible/dir"}],"mountinfo_bytes":8622,"mountinfo_sha256":"bf39a1c044951f424c65822fd5f414469bedb365a20446ee3c40609b14de24d8","namespace":[5,4026532570],"pid":491,"relevant_mounts":[{"dev":"259:2","fstype":"ext4","id":121,"parent":97,"point":"/","root":"/"},{"dev":"0:28","fstype":"tmpfs","id":196,"parent":121,"point":"/home","root":"/systemd/inaccessible/dir"}],"reproduced_error":"shadowed_alias_mount","root":{"dev":66306,"inode":2,"mode":16877,"mount_id":121},"rows":68,"stable":true,"starttime":446,"tid":491,"walk":[{"dev":66306,"inode":2,"mode":16877,"mount_id":121,"prefix":"/"},{"dev":28,"inode":1261,"mode":16384,"mount_id":196,"prefix":"/home"},{"errno":2,"prefix":"/home/alex"}]},{"candidate":{"dev":"259:2","fstype":"ext4","id":437,"parent":1133,"point":"/var/lib/snapd/hostfs","root":"/"},"exposed":"/var/lib/snapd/hostfs/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/v8-150.4.0","historical_error":"ambiguous_alias_mount","lexical_selected":[{"dev":"259:2","fstype":"ext4","id":437,"parent":1133,"point":"/var/lib/snapd/hostfs","root":"/"},{"dev":"259:2","fstype":"ext4","id":1133,"parent":1092,"point":"/var/lib/snapd/hostfs","root":"/var/lib/snapd/hostfs"}],"mountinfo_bytes":36572,"mountinfo_sha256":"4b1cc3d485136a06a104a17bfec204e264c62a8732deeaee2a59c2874a8033f4","namespace":[5,4026533103],"pid":2630,"relevant_mounts":[{"dev":"259:2","fstype":"ext4","id":437,"parent":1133,"point":"/var/lib/snapd/hostfs","root":"/"},{"dev":"0:68","fstype":"tmpfs","id":1060,"parent":428,"point":"/","root":"/"},{"dev":"7:5","fstype":"squashfs","id":1067,"parent":1060,"point":"/var","root":"/var"},{"dev":"259:2","fstype":"ext4","id":1092,"parent":1067,"point":"/var/lib/snapd","root":"/var/lib/snapd"},{"dev":"259:2","fstype":"ext4","id":1133,"parent":1092,"point":"/var/lib/snapd/hostfs","root":"/var/lib/snapd/hostfs"}],"reproduced_error":"ambiguous_alias_mount","root":{"dev":68,"inode":1,"mode":16877,"mount_id":1060},"rows":364,"stable":true,"starttime":663,"tid":2630,"walk":[{"dev":68,"inode":1,"mode":16877,"mount_id":1060,"prefix":"/"},{"dev":1797,"inode":6711,"mode":16877,"mount_id":1067,"prefix":"/var"},{"dev":1797,"inode":6723,"mode":16877,"mount_id":1067,"prefix":"/var/lib"},{"dev":66306,"inode":110231752,"mode":16877,"mount_id":1092,"prefix":"/var/lib/snapd"},{"dev":66306,"inode":2,"mode":16877,"mount_id":437,"prefix":"/var/lib/snapd/hostfs"},{"dev":66306,"inode":31326209,"mode":16877,"mount_id":437,"prefix":"/var/lib/snapd/hostfs/home"},{"dev":66306,"inode":31326210,"mode":16872,"mount_id":437,"prefix":"/var/lib/snapd/hostfs/home/alex"},{"dev":66306,"inode":31328138,"mode":16893,"mount_id":437,"prefix":"/var/lib/snapd/hostfs/home/alex/work"},{"dev":66306,"inode":46949840,"mode":16832,"mount_id":437,"prefix":"/var/lib/snapd/hostfs/home/alex/work/pocket4-identity-review-20261109-493ac-r1"},{"dev":66306,"inode":47747146,"mode":16832,"mount_id":437,"prefix":"/var/lib/snapd/hostfs/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home"},{"dev":66306,"inode":47747149,"mode":16893,"mount_id":437,"prefix":"/var/lib/snapd/hostfs/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home/registry"},{"dev":66306,"inode":47747150,"mode":16832,"mount_id":437,"prefix":"/var/lib/snapd/hostfs/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home/registry/src"},{"dev":66306,"inode":47747151,"mode":16893,"mount_id":437,"prefix":"/var/lib/snapd/hostfs/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f"},{"dev":66306,"inode":57023549,"mode":16832,"mount_id":437,"prefix":"/var/lib/snapd/hostfs/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/v8-150.4.0"}]}]},"pty_output":{"bytes":4691,"output_complete":true,"sha256":"1e834b335f94979c3e0625e94c7bc13803645948025d292016895c55c1e89ed9","text_is_lossy":false},"script_sha256":"988b81d056c53a113e2c7dcd03208de6e0d01dfe8b470e0b069fd4bf84caf434","terminal":{"boot":"97d9600f-e081-465c-9e6e-62651e09806b","bytes_seen":4691,"bytes_stored":4691,"capture_error":null,"closed":false,"created_unix_ms":1794213936720,"exit_code":0,"output_complete":true,"owner_pid":97312,"pid":97317,"session_id":"dpty-a0b72b1973136d8b875fb00dc8d481f2aa60e702eb9fcf570e00ed0462d94e9d","state":"exited"}},"current_observer_sha256":"13adbd85f67275549c75724c88d2f14294751d497ffffc72b3d6310a667b4ba2","interpretation":{"actual_process_fd_churn_waived":false,"coverage_waived":false,"deletion_authorized":false,"fresh_whole_host_gate_after_patch_run":false,"note":"The two stable actual views prove an ancestor mask followed by ENOENT and a same-point stack whose actual FD selects the target layer. They do not clear the earlier whole-host gate.","other_reported_views_reclassified":false,"proven_representative_patterns":2},"preflight":{"collector_created":0,"coverage_error_counts":{"FileNotFoundError":6,"ambiguous_alias_mount":18,"empty_mountinfo":1,"persistent_mount_namespace_unobserved":1,"process_set_changed":1,"shadowed_alias_mount":43,"task_fd_set_changed":2},"deletion_performed":false,"mount_hits":[],"observed_utc":"2026-11-09T08:32:05.479162+00:00","process_or_owner_hits":[],"processes":541,"receipt_sha256":"3254dfac847b4c9ec1dbe6536ce999d232de70c22ced3fc501c86a8285994c06","required_mount_namespaces":26,"target_entries":60163,"target_roots":54,"tasks":1442,"terminal":{"at_unix_ms":1794213125697,"audit_recorded":true,"automatic_retry":false,"cancelled":false,"exit_code":1,"job_id":"1a1bf6f79d3-5e21-51a","launch_nonce":"859fc010e34b9fd13d94ce9666047dee","log_bytes":{"stderr":{"seen":251,"stored":251},"stdout":{"seen":6250,"stored":6250}},"log_errors":{"stderr":null,"stdout":null},"log_synced":{"stderr":true,"stdout":true},"log_truncated":{"stderr":false,"stdout":false},"output_complete":true,"output_durable":true,"state":"failed","terminal_publication_confirmed":true,"terminal_publication_protocol":1,"timed_out":false},"uncovered_mount_namespaces":25,"visibility":"UNKNOWN"},"prior_observer_sha256":"311a943a3b3f2845c69ae1750eadb2e72b7058cac86c5c9ae39f18debc107aa5","prior_published_commit":"208d2dca4dccb622869916b9a7381decdddc0dce","schema":"pocket4-mounted-path-layer-observation-v1"}
+{
+  "bounded_diagnostic": {
+    "observation": {
+      "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+      "delete": false,
+      "elapsed_ms": 3.095,
+      "forked_children": 0,
+      "kernel": "7.0.14-p4cred1",
+      "observer_run": false,
+      "owned_fds_closed": true,
+      "schema": "pocket4-alias-two-view-diagnostic-v1",
+      "source_sha256": "311a943a3b3f2845c69ae1750eadb2e72b7058cac86c5c9ae39f18debc107aa5",
+      "target": "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/v8-150.4.0",
+      "target_dev_inode": [
+        66306,
+        57023549
+      ],
+      "views": [
+        {
+          "candidate": {
+            "dev": "259:2",
+            "fstype": "ext4",
+            "id": 121,
+            "parent": 97,
+            "point": "/",
+            "root": "/"
+          },
+          "exposed": "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/v8-150.4.0",
+          "historical_error": "shadowed_alias_mount",
+          "lexical_selected": [
+            {
+              "dev": "0:28",
+              "fstype": "tmpfs",
+              "id": 196,
+              "parent": 121,
+              "point": "/home",
+              "root": "/systemd/inaccessible/dir"
+            }
+          ],
+          "mountinfo_bytes": 8622,
+          "mountinfo_sha256": "bf39a1c044951f424c65822fd5f414469bedb365a20446ee3c40609b14de24d8",
+          "namespace": [
+            5,
+            4026532570
+          ],
+          "pid": 491,
+          "relevant_mounts": [
+            {
+              "dev": "259:2",
+              "fstype": "ext4",
+              "id": 121,
+              "parent": 97,
+              "point": "/",
+              "root": "/"
+            },
+            {
+              "dev": "0:28",
+              "fstype": "tmpfs",
+              "id": 196,
+              "parent": 121,
+              "point": "/home",
+              "root": "/systemd/inaccessible/dir"
+            }
+          ],
+          "reproduced_error": "shadowed_alias_mount",
+          "root": {
+            "dev": 66306,
+            "inode": 2,
+            "mode": 16877,
+            "mount_id": 121
+          },
+          "rows": 68,
+          "stable": true,
+          "starttime": 446,
+          "tid": 491,
+          "walk": [
+            {
+              "dev": 66306,
+              "inode": 2,
+              "mode": 16877,
+              "mount_id": 121,
+              "prefix": "/"
+            },
+            {
+              "dev": 28,
+              "inode": 1261,
+              "mode": 16384,
+              "mount_id": 196,
+              "prefix": "/home"
+            },
+            {
+              "errno": 2,
+              "prefix": "/home/alex"
+            }
+          ]
+        },
+        {
+          "candidate": {
+            "dev": "259:2",
+            "fstype": "ext4",
+            "id": 437,
+            "parent": 1133,
+            "point": "/var/lib/snapd/hostfs",
+            "root": "/"
+          },
+          "exposed": "/var/lib/snapd/hostfs/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/v8-150.4.0",
+          "historical_error": "ambiguous_alias_mount",
+          "lexical_selected": [
+            {
+              "dev": "259:2",
+              "fstype": "ext4",
+              "id": 437,
+              "parent": 1133,
+              "point": "/var/lib/snapd/hostfs",
+              "root": "/"
+            },
+            {
+              "dev": "259:2",
+              "fstype": "ext4",
+              "id": 1133,
+              "parent": 1092,
+              "point": "/var/lib/snapd/hostfs",
+              "root": "/var/lib/snapd/hostfs"
+            }
+          ],
+          "mountinfo_bytes": 36572,
+          "mountinfo_sha256": "4b1cc3d485136a06a104a17bfec204e264c62a8732deeaee2a59c2874a8033f4",
+          "namespace": [
+            5,
+            4026533103
+          ],
+          "pid": 2630,
+          "relevant_mounts": [
+            {
+              "dev": "259:2",
+              "fstype": "ext4",
+              "id": 437,
+              "parent": 1133,
+              "point": "/var/lib/snapd/hostfs",
+              "root": "/"
+            },
+            {
+              "dev": "0:68",
+              "fstype": "tmpfs",
+              "id": 1060,
+              "parent": 428,
+              "point": "/",
+              "root": "/"
+            },
+            {
+              "dev": "7:5",
+              "fstype": "squashfs",
+              "id": 1067,
+              "parent": 1060,
+              "point": "/var",
+              "root": "/var"
+            },
+            {
+              "dev": "259:2",
+              "fstype": "ext4",
+              "id": 1092,
+              "parent": 1067,
+              "point": "/var/lib/snapd",
+              "root": "/var/lib/snapd"
+            },
+            {
+              "dev": "259:2",
+              "fstype": "ext4",
+              "id": 1133,
+              "parent": 1092,
+              "point": "/var/lib/snapd/hostfs",
+              "root": "/var/lib/snapd/hostfs"
+            }
+          ],
+          "reproduced_error": "ambiguous_alias_mount",
+          "root": {
+            "dev": 68,
+            "inode": 1,
+            "mode": 16877,
+            "mount_id": 1060
+          },
+          "rows": 364,
+          "stable": true,
+          "starttime": 663,
+          "tid": 2630,
+          "walk": [
+            {
+              "dev": 68,
+              "inode": 1,
+              "mode": 16877,
+              "mount_id": 1060,
+              "prefix": "/"
+            },
+            {
+              "dev": 1797,
+              "inode": 6711,
+              "mode": 16877,
+              "mount_id": 1067,
+              "prefix": "/var"
+            },
+            {
+              "dev": 1797,
+              "inode": 6723,
+              "mode": 16877,
+              "mount_id": 1067,
+              "prefix": "/var/lib"
+            },
+            {
+              "dev": 66306,
+              "inode": 110231752,
+              "mode": 16877,
+              "mount_id": 1092,
+              "prefix": "/var/lib/snapd"
+            },
+            {
+              "dev": 66306,
+              "inode": 2,
+              "mode": 16877,
+              "mount_id": 437,
+              "prefix": "/var/lib/snapd/hostfs"
+            },
+            {
+              "dev": 66306,
+              "inode": 31326209,
+              "mode": 16877,
+              "mount_id": 437,
+              "prefix": "/var/lib/snapd/hostfs/home"
+            },
+            {
+              "dev": 66306,
+              "inode": 31326210,
+              "mode": 16872,
+              "mount_id": 437,
+              "prefix": "/var/lib/snapd/hostfs/home/alex"
+            },
+            {
+              "dev": 66306,
+              "inode": 31328138,
+              "mode": 16893,
+              "mount_id": 437,
+              "prefix": "/var/lib/snapd/hostfs/home/alex/work"
+            },
+            {
+              "dev": 66306,
+              "inode": 46949840,
+              "mode": 16832,
+              "mount_id": 437,
+              "prefix": "/var/lib/snapd/hostfs/home/alex/work/pocket4-identity-review-20261109-493ac-r1"
+            },
+            {
+              "dev": 66306,
+              "inode": 47747146,
+              "mode": 16832,
+              "mount_id": 437,
+              "prefix": "/var/lib/snapd/hostfs/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home"
+            },
+            {
+              "dev": 66306,
+              "inode": 47747149,
+              "mode": 16893,
+              "mount_id": 437,
+              "prefix": "/var/lib/snapd/hostfs/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home/registry"
+            },
+            {
+              "dev": 66306,
+              "inode": 47747150,
+              "mode": 16832,
+              "mount_id": 437,
+              "prefix": "/var/lib/snapd/hostfs/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home/registry/src"
+            },
+            {
+              "dev": 66306,
+              "inode": 47747151,
+              "mode": 16893,
+              "mount_id": 437,
+              "prefix": "/var/lib/snapd/hostfs/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f"
+            },
+            {
+              "dev": 66306,
+              "inode": 57023549,
+              "mode": 16832,
+              "mount_id": 437,
+              "prefix": "/var/lib/snapd/hostfs/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/v8-150.4.0"
+            }
+          ]
+        }
+      ]
+    },
+    "pty_output": {
+      "bytes": 4691,
+      "output_complete": true,
+      "sha256": "1e834b335f94979c3e0625e94c7bc13803645948025d292016895c55c1e89ed9",
+      "text_is_lossy": false
+    },
+    "script_sha256": "988b81d056c53a113e2c7dcd03208de6e0d01dfe8b470e0b069fd4bf84caf434",
+    "terminal": {
+      "boot": "97d9600f-e081-465c-9e6e-62651e09806b",
+      "bytes_seen": 4691,
+      "bytes_stored": 4691,
+      "capture_error": null,
+      "closed": false,
+      "created_unix_ms": 1794213936720,
+      "exit_code": 0,
+      "output_complete": true,
+      "owner_pid": 97312,
+      "pid": 97317,
+      "session_id": "dpty-a0b72b1973136d8b875fb00dc8d481f2aa60e702eb9fcf570e00ed0462d94e9d",
+      "state": "exited"
+    }
+  },
+  "current_observer_sha256": "13adbd85f67275549c75724c88d2f14294751d497ffffc72b3d6310a667b4ba2",
+  "empty_task_view_followup": {
+    "base_commit": "f0916652ca95578c0ed85f660768cf4687fb91ce",
+    "base_observer": {
+      "bytes": 66232,
+      "sha256": "13adbd85f67275549c75724c88d2f14294751d497ffffc72b3d6310a667b4ba2"
+    },
+    "bounded_three_task_diagnostic": {
+      "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+      "close_acknowledgement_is_not_terminal_proof": true,
+      "deletions": 0,
+      "elapsed_seconds": 0.2034096609995686,
+      "filesystem_writes": 0,
+      "findings": {
+        "current_1686": {
+          "PF_KTHREAD": false,
+          "comm": "avahi-daemon",
+          "conclusion": "Current stable ordinary userspace task has a restricted root and a successful zero-byte mountinfo view; no observed permission error, zombie state, or kernel-thread state. Upstream show_mountinfo filters mount records outside the target task root, so a valid restricted view can be empty. Rejecting every empty task view is a concrete visibility-model limitation; no cleanup admission follows.",
+          "effective_caps": "0000000000000000",
+          "fd_number_count": 15,
+          "fd_number_set_changed": false,
+          "gid": 111,
+          "mnt_namespace": 4026531832,
+          "mountinfo_both_reads_bytes": 0,
+          "root_inode": 76546069,
+          "root_link_is_slash": false,
+          "root_mount_id": 33,
+          "starttime_ticks": 595,
+          "state": "S",
+          "threads": 1,
+          "uid": 108
+        },
+        "current_1770_tasks": {
+          "comm": "tokio-rt-worker",
+          "conclusion": "The fixed 0.2-second pair was stable. This cannot disprove the original FD-set change or establish a comparison bug, and must not replace the old UNKNOWN.",
+          "fd_number_count_each": 651,
+          "fd_number_set_changed_in_this_pair": false,
+          "mnt_namespace": 4026531832,
+          "mountinfo_bytes": 5797,
+          "mountinfo_lines": 51,
+          "mountinfo_sha256": "a93876a59824461d0ea7b7f678873137a9a6825d6c1ca70588a2ed335f9a32b2",
+          "root_inode": 2,
+          "root_link_is_slash": true,
+          "root_mount_id": 33,
+          "starttime_ticks_each": 606,
+          "state": "S",
+          "threads": 73,
+          "tids": [
+            1896,
+            1897
+          ],
+          "uid": 0
+        },
+        "future_repair_boundary": "An empty restricted task mountinfo cannot itself prove namespace coverage or absence of references. A reviewed correction would need a bound complete view and verified task-root translation while still inspecting FD/cwd/exe/root/maps/owner references; no simple empty-view skip is justified. No policy or gate changed here.",
+        "historical_identity_continuity_proven": false,
+        "original_receipt_has_starttime": false
+      },
+      "foreign_process_signals_or_freezes": 0,
+      "gate_retried": false,
+      "kernel": "7.0.14-p4cred1",
+      "kernel_primary_semantics": {
+        "bytes": 7957,
+        "functions": {
+          "mounts_open_common": 234,
+          "show_mountinfo": 135
+        },
+        "git_blob_sha1": "5c555db68aa2129576aa7c545b7b0294b87e1e5e",
+        "path": "fs/proc_namespace.c",
+        "ref": "v7.0",
+        "repository": "torvalds/linux",
+        "scope": "upstream primary semantic reference, not a claim that the deployed 7.0.14-p4cred1 file was independently hashed",
+        "sha256": "fd82c0db52055ae807ee0b46c7c9bc5d47a9239805eb8ca5c47d2ba81d695776",
+        "url": "https://github.com/torvalds/linux/blob/v7.0/fs/proc_namespace.c"
+      },
+      "namespace_changes": 0,
+      "receipt": {
+        "bytes": 25509,
+        "sha256": "d7881a90439b4d2847993a71043804ee5f94f7c1e32e4bbd7a6912dd77c057d7"
+      },
+      "script": {
+        "bytes": 9863,
+        "sha256": "45ee3729a661b47ec94b2ac522bc2eb723e42b0e88a106d5275daf17fe627534"
+      },
+      "session_id": "dpty-754b611f49aa84ec6d9d6506505264e3d382d298a69b590fedabef33d2f169f8",
+      "started_utc": "2026-11-09T09:42:59.865282+00:00",
+      "task_pairs": [
+        {
+          "current_observation_identity_stable": true,
+          "fd_number_set_changed_in_this_pair": false,
+          "held_proc_directory": {
+            "dev": 26,
+            "gid": 111,
+            "ino": 3932,
+            "mode": 16749,
+            "nlink": 7,
+            "uid": 108
+          },
+          "historical_starttime_available": false,
+          "mountinfo_bytes_equal_in_this_pair": true,
+          "observations": {
+            "after": {
+              "comm": "avahi-daemon",
+              "fd_numbers": {
+                "count": 15,
+                "number_set_sha256": "d564b25032ab7c3526d2f5fbcd17c45b43c4c86013bdd8ed3ee7a42e3884b56b"
+              },
+              "mountinfo": {
+                "bytes": 0,
+                "lines": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "namespaces": {
+                "mnt": {
+                  "label": "mnt:[4026531832]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531832,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                },
+                "pid": {
+                  "label": "pid:[4026531836]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531836,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                },
+                "user": {
+                  "label": "user:[4026531837]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531837,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                }
+              },
+              "root": {
+                "link_is_slash": false,
+                "link_sha256": "ebf939c26bc4902017f2a4885106c8a42d3f5957c4f971286472aae740baebe1",
+                "metadata": {
+                  "dev": 66306,
+                  "gid": 0,
+                  "ino": 76546069,
+                  "mode": 16877,
+                  "nlink": 3,
+                  "uid": 0
+                },
+                "mount_id": 33,
+                "stable_during_read": true
+              },
+              "stat_after": {
+                "PF_KTHREAD_bit_set": false,
+                "flags": 4194560,
+                "num_threads": 1,
+                "ppid": 1,
+                "raw_bytes": 311,
+                "raw_sha256": "c0f3058b22af2dc9618fff0b002b2e1458eec4ec9d4080a8bde15add90c38d7e",
+                "starttime_ticks": 595,
+                "state": "S",
+                "tid": 1686
+              },
+              "stat_before": {
+                "PF_KTHREAD_bit_set": false,
+                "flags": 4194560,
+                "num_threads": 1,
+                "ppid": 1,
+                "raw_bytes": 311,
+                "raw_sha256": "c0f3058b22af2dc9618fff0b002b2e1458eec4ec9d4080a8bde15add90c38d7e",
+                "starttime_ticks": 595,
+                "state": "S",
+                "tid": 1686
+              },
+              "status": {
+                "CapAmb": "0000000000000000",
+                "CapBnd": "000001ffffffffff",
+                "CapEff": "0000000000000000",
+                "CapInh": "0000000000000000",
+                "CapPrm": "0000000000000000",
+                "Gid": "111\t111\t111\t111",
+                "NSpid": "1686",
+                "State": "S (sleeping)",
+                "Threads": "1",
+                "Uid": "108\t108\t108\t108"
+              }
+            },
+            "before": {
+              "comm": "avahi-daemon",
+              "fd_numbers": {
+                "count": 15,
+                "number_set_sha256": "d564b25032ab7c3526d2f5fbcd17c45b43c4c86013bdd8ed3ee7a42e3884b56b"
+              },
+              "mountinfo": {
+                "bytes": 0,
+                "lines": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "namespaces": {
+                "mnt": {
+                  "label": "mnt:[4026531832]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531832,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                },
+                "pid": {
+                  "label": "pid:[4026531836]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531836,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                },
+                "user": {
+                  "label": "user:[4026531837]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531837,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                }
+              },
+              "root": {
+                "link_is_slash": false,
+                "link_sha256": "ebf939c26bc4902017f2a4885106c8a42d3f5957c4f971286472aae740baebe1",
+                "metadata": {
+                  "dev": 66306,
+                  "gid": 0,
+                  "ino": 76546069,
+                  "mode": 16877,
+                  "nlink": 3,
+                  "uid": 0
+                },
+                "mount_id": 33,
+                "stable_during_read": true
+              },
+              "stat_after": {
+                "PF_KTHREAD_bit_set": false,
+                "flags": 4194560,
+                "num_threads": 1,
+                "ppid": 1,
+                "raw_bytes": 311,
+                "raw_sha256": "c0f3058b22af2dc9618fff0b002b2e1458eec4ec9d4080a8bde15add90c38d7e",
+                "starttime_ticks": 595,
+                "state": "S",
+                "tid": 1686
+              },
+              "stat_before": {
+                "PF_KTHREAD_bit_set": false,
+                "flags": 4194560,
+                "num_threads": 1,
+                "ppid": 1,
+                "raw_bytes": 311,
+                "raw_sha256": "c0f3058b22af2dc9618fff0b002b2e1458eec4ec9d4080a8bde15add90c38d7e",
+                "starttime_ticks": 595,
+                "state": "S",
+                "tid": 1686
+              },
+              "status": {
+                "CapAmb": "0000000000000000",
+                "CapBnd": "000001ffffffffff",
+                "CapEff": "0000000000000000",
+                "CapInh": "0000000000000000",
+                "CapPrm": "0000000000000000",
+                "Gid": "111\t111\t111\t111",
+                "NSpid": "1686",
+                "State": "S (sleeping)",
+                "Threads": "1",
+                "Uid": "108\t108\t108\t108"
+              }
+            }
+          },
+          "pid": 1686,
+          "same_as_original_preflight_identity_proven": false,
+          "tid": 1686
+        },
+        {
+          "current_observation_identity_stable": true,
+          "fd_number_set_changed_in_this_pair": false,
+          "held_proc_directory": {
+            "dev": 26,
+            "gid": 0,
+            "ino": 39114,
+            "mode": 16749,
+            "nlink": 7,
+            "uid": 0
+          },
+          "historical_starttime_available": false,
+          "mountinfo_bytes_equal_in_this_pair": true,
+          "observations": {
+            "after": {
+              "comm": "tokio-rt-worker",
+              "fd_numbers": {
+                "count": 651,
+                "number_set_sha256": "0a0d57ecbb64ec789dfc1d93edf3f5c676cba9378c748970ccc56072ff229b9b"
+              },
+              "mountinfo": {
+                "bytes": 5797,
+                "lines": 51,
+                "sha256": "a93876a59824461d0ea7b7f678873137a9a6825d6c1ca70588a2ed335f9a32b2"
+              },
+              "namespaces": {
+                "mnt": {
+                  "label": "mnt:[4026531832]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531832,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                },
+                "pid": {
+                  "label": "pid:[4026531836]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531836,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                },
+                "user": {
+                  "label": "user:[4026531837]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531837,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                }
+              },
+              "root": {
+                "link_is_slash": true,
+                "link_sha256": "8a5edab282632443219e051e4ade2d1d5bbc671c781051bf1437897cbdfea0f1",
+                "metadata": {
+                  "dev": 66306,
+                  "gid": 0,
+                  "ino": 2,
+                  "mode": 16877,
+                  "nlink": 21,
+                  "uid": 0
+                },
+                "mount_id": 33,
+                "stable_during_read": true
+              },
+              "stat_after": {
+                "PF_KTHREAD_bit_set": false,
+                "flags": 4194368,
+                "num_threads": 73,
+                "ppid": 1,
+                "raw_bytes": 323,
+                "raw_sha256": "28535943f8a3d50c138f2c074a4cf786333e72ab0aa53e70891bed4aea128210",
+                "starttime_ticks": 606,
+                "state": "S",
+                "tid": 1896
+              },
+              "stat_before": {
+                "PF_KTHREAD_bit_set": false,
+                "flags": 4194368,
+                "num_threads": 73,
+                "ppid": 1,
+                "raw_bytes": 323,
+                "raw_sha256": "28535943f8a3d50c138f2c074a4cf786333e72ab0aa53e70891bed4aea128210",
+                "starttime_ticks": 606,
+                "state": "S",
+                "tid": 1896
+              },
+              "status": {
+                "CapAmb": "0000000000000000",
+                "CapBnd": "00000000000834c2",
+                "CapEff": "00000000000834c2",
+                "CapInh": "00000000000834c2",
+                "CapPrm": "00000000000834c2",
+                "Gid": "0\t0\t0\t0",
+                "NSpid": "1896",
+                "State": "S (sleeping)",
+                "Threads": "73",
+                "Uid": "0\t0\t0\t0"
+              }
+            },
+            "before": {
+              "comm": "tokio-rt-worker",
+              "fd_numbers": {
+                "count": 651,
+                "number_set_sha256": "0a0d57ecbb64ec789dfc1d93edf3f5c676cba9378c748970ccc56072ff229b9b"
+              },
+              "mountinfo": {
+                "bytes": 5797,
+                "lines": 51,
+                "sha256": "a93876a59824461d0ea7b7f678873137a9a6825d6c1ca70588a2ed335f9a32b2"
+              },
+              "namespaces": {
+                "mnt": {
+                  "label": "mnt:[4026531832]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531832,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                },
+                "pid": {
+                  "label": "pid:[4026531836]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531836,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                },
+                "user": {
+                  "label": "user:[4026531837]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531837,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                }
+              },
+              "root": {
+                "link_is_slash": true,
+                "link_sha256": "8a5edab282632443219e051e4ade2d1d5bbc671c781051bf1437897cbdfea0f1",
+                "metadata": {
+                  "dev": 66306,
+                  "gid": 0,
+                  "ino": 2,
+                  "mode": 16877,
+                  "nlink": 21,
+                  "uid": 0
+                },
+                "mount_id": 33,
+                "stable_during_read": true
+              },
+              "stat_after": {
+                "PF_KTHREAD_bit_set": false,
+                "flags": 4194368,
+                "num_threads": 73,
+                "ppid": 1,
+                "raw_bytes": 323,
+                "raw_sha256": "28535943f8a3d50c138f2c074a4cf786333e72ab0aa53e70891bed4aea128210",
+                "starttime_ticks": 606,
+                "state": "S",
+                "tid": 1896
+              },
+              "stat_before": {
+                "PF_KTHREAD_bit_set": false,
+                "flags": 4194368,
+                "num_threads": 73,
+                "ppid": 1,
+                "raw_bytes": 323,
+                "raw_sha256": "28535943f8a3d50c138f2c074a4cf786333e72ab0aa53e70891bed4aea128210",
+                "starttime_ticks": 606,
+                "state": "S",
+                "tid": 1896
+              },
+              "status": {
+                "CapAmb": "0000000000000000",
+                "CapBnd": "00000000000834c2",
+                "CapEff": "00000000000834c2",
+                "CapInh": "00000000000834c2",
+                "CapPrm": "00000000000834c2",
+                "Gid": "0\t0\t0\t0",
+                "NSpid": "1896",
+                "State": "S (sleeping)",
+                "Threads": "73",
+                "Uid": "0\t0\t0\t0"
+              }
+            }
+          },
+          "pid": 1770,
+          "same_as_original_preflight_identity_proven": false,
+          "tid": 1896
+        },
+        {
+          "current_observation_identity_stable": true,
+          "fd_number_set_changed_in_this_pair": false,
+          "held_proc_directory": {
+            "dev": 26,
+            "gid": 0,
+            "ino": 39115,
+            "mode": 16749,
+            "nlink": 7,
+            "uid": 0
+          },
+          "historical_starttime_available": false,
+          "mountinfo_bytes_equal_in_this_pair": true,
+          "observations": {
+            "after": {
+              "comm": "tokio-rt-worker",
+              "fd_numbers": {
+                "count": 651,
+                "number_set_sha256": "0a0d57ecbb64ec789dfc1d93edf3f5c676cba9378c748970ccc56072ff229b9b"
+              },
+              "mountinfo": {
+                "bytes": 5797,
+                "lines": 51,
+                "sha256": "a93876a59824461d0ea7b7f678873137a9a6825d6c1ca70588a2ed335f9a32b2"
+              },
+              "namespaces": {
+                "mnt": {
+                  "label": "mnt:[4026531832]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531832,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                },
+                "pid": {
+                  "label": "pid:[4026531836]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531836,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                },
+                "user": {
+                  "label": "user:[4026531837]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531837,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                }
+              },
+              "root": {
+                "link_is_slash": true,
+                "link_sha256": "8a5edab282632443219e051e4ade2d1d5bbc671c781051bf1437897cbdfea0f1",
+                "metadata": {
+                  "dev": 66306,
+                  "gid": 0,
+                  "ino": 2,
+                  "mode": 16877,
+                  "nlink": 21,
+                  "uid": 0
+                },
+                "mount_id": 33,
+                "stable_during_read": true
+              },
+              "stat_after": {
+                "PF_KTHREAD_bit_set": false,
+                "flags": 4194368,
+                "num_threads": 73,
+                "ppid": 1,
+                "raw_bytes": 322,
+                "raw_sha256": "4186737773ff33229accfba0bca44b3d1bdb1d5dd33f48d7a379dde29439dc61",
+                "starttime_ticks": 606,
+                "state": "S",
+                "tid": 1897
+              },
+              "stat_before": {
+                "PF_KTHREAD_bit_set": false,
+                "flags": 4194368,
+                "num_threads": 73,
+                "ppid": 1,
+                "raw_bytes": 322,
+                "raw_sha256": "4186737773ff33229accfba0bca44b3d1bdb1d5dd33f48d7a379dde29439dc61",
+                "starttime_ticks": 606,
+                "state": "S",
+                "tid": 1897
+              },
+              "status": {
+                "CapAmb": "0000000000000000",
+                "CapBnd": "00000000000834c2",
+                "CapEff": "00000000000834c2",
+                "CapInh": "00000000000834c2",
+                "CapPrm": "00000000000834c2",
+                "Gid": "0\t0\t0\t0",
+                "NSpid": "1897",
+                "State": "S (sleeping)",
+                "Threads": "73",
+                "Uid": "0\t0\t0\t0"
+              }
+            },
+            "before": {
+              "comm": "tokio-rt-worker",
+              "fd_numbers": {
+                "count": 651,
+                "number_set_sha256": "0a0d57ecbb64ec789dfc1d93edf3f5c676cba9378c748970ccc56072ff229b9b"
+              },
+              "mountinfo": {
+                "bytes": 5797,
+                "lines": 51,
+                "sha256": "a93876a59824461d0ea7b7f678873137a9a6825d6c1ca70588a2ed335f9a32b2"
+              },
+              "namespaces": {
+                "mnt": {
+                  "label": "mnt:[4026531832]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531832,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                },
+                "pid": {
+                  "label": "pid:[4026531836]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531836,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                },
+                "user": {
+                  "label": "user:[4026531837]",
+                  "metadata": {
+                    "dev": 5,
+                    "gid": 0,
+                    "ino": 4026531837,
+                    "mode": 33060,
+                    "nlink": 1,
+                    "uid": 0
+                  }
+                }
+              },
+              "root": {
+                "link_is_slash": true,
+                "link_sha256": "8a5edab282632443219e051e4ade2d1d5bbc671c781051bf1437897cbdfea0f1",
+                "metadata": {
+                  "dev": 66306,
+                  "gid": 0,
+                  "ino": 2,
+                  "mode": 16877,
+                  "nlink": 21,
+                  "uid": 0
+                },
+                "mount_id": 33,
+                "stable_during_read": true
+              },
+              "stat_after": {
+                "PF_KTHREAD_bit_set": false,
+                "flags": 4194368,
+                "num_threads": 73,
+                "ppid": 1,
+                "raw_bytes": 322,
+                "raw_sha256": "4186737773ff33229accfba0bca44b3d1bdb1d5dd33f48d7a379dde29439dc61",
+                "starttime_ticks": 606,
+                "state": "S",
+                "tid": 1897
+              },
+              "stat_before": {
+                "PF_KTHREAD_bit_set": false,
+                "flags": 4194368,
+                "num_threads": 73,
+                "ppid": 1,
+                "raw_bytes": 322,
+                "raw_sha256": "4186737773ff33229accfba0bca44b3d1bdb1d5dd33f48d7a379dde29439dc61",
+                "starttime_ticks": 606,
+                "state": "S",
+                "tid": 1897
+              },
+              "status": {
+                "CapAmb": "0000000000000000",
+                "CapBnd": "00000000000834c2",
+                "CapEff": "00000000000834c2",
+                "CapInh": "00000000000834c2",
+                "CapPrm": "00000000000834c2",
+                "Gid": "0\t0\t0\t0",
+                "NSpid": "1897",
+                "State": "S (sleeping)",
+                "Threads": "73",
+                "Uid": "0\t0\t0\t0"
+              }
+            }
+          },
+          "pid": 1770,
+          "same_as_original_preflight_identity_proven": false,
+          "tid": 1897
+        }
+      ],
+      "terminal": {
+        "boot": "97d9600f-e081-465c-9e6e-62651e09806b",
+        "bytes_seen": 12471,
+        "bytes_stored": 12471,
+        "capture_error": null,
+        "closed": false,
+        "created_unix_ms": 1794217379840,
+        "exit_code": 0,
+        "output_complete": true,
+        "owner_pid": 216561,
+        "pid": 216562,
+        "state": "exited"
+      },
+      "terminal_evidence_basis": "Positive pty_read exited/0/complete status, not the later already_exited close acknowledgement.",
+      "whole_host_scan": false
+    },
+    "candidate_observer": {
+      "bytes": 76800,
+      "sha256": "50ea94900d2b825d79016b7febc38ae5b866606aea32bcf2accf51444059f27d"
+    },
+    "interpretation": {
+      "candidate_host_gate_run": false,
+      "deletion_authorized": false,
+      "old_FileNotFound_errors_cleared": false,
+      "old_numeric_PID_identity_or_terminal_backfilled": false,
+      "original_FD_and_process_churn_still_unresolved": true,
+      "successful_empty_restricted_view_is_not_an_exemption": true
+    },
+    "preflight": {
+      "apply_invoked": false,
+      "collector_not_started_because_preexisting_errors": true,
+      "coverage_error_counts": {
+        "FileNotFoundError": 2,
+        "empty_mountinfo": 1,
+        "persistent_mount_namespace_unobserved": 1,
+        "process_set_changed": 1,
+        "task_fd_set_changed": 2
+      },
+      "deletions": 0,
+      "exit_code": 1,
+      "input_phase1_roots": 54,
+      "job_id": "1a1bfa72a6e-5e21-634",
+      "launch_nonce": "7505e30e563745c88ce83cd438a0b61a",
+      "mount_hits": [],
+      "namespace_child_lifecycle": {
+        "close_succeeded": true,
+        "created": 0,
+        "nonzero_exits": 0,
+        "reaped": 0,
+        "retirement_records": 0
+      },
+      "observed_utc": "2026-11-09T09:32:56.427786+00:00",
+      "original_starttimes_recorded_for_reported_tasks": false,
+      "output_complete": true,
+      "output_durable": true,
+      "phase_two_invoked": false,
+      "process_or_owner_hits": [],
+      "processes": 535,
+      "receipt": {
+        "bytes": 8458,
+        "sha256": "7c0c3a9a4522d73bde257ab31edfe518c73745d9c8f8fbce94798c40d6d3cf69"
+      },
+      "required_mount_namespaces": 27,
+      "state": "failed",
+      "target_entries": 60163,
+      "tasks": 1464,
+      "timed_out": false,
+      "uncovered_mount_namespaces": 26,
+      "uncovered_namespace_count_is_not_proof_of_intrinsic_unobservability": true,
+      "verified_shadowed_alias_path_count": 810,
+      "visibility": "UNKNOWN",
+      "visible_alias_path_count": 486
+    }
+  },
+  "interpretation": {
+    "actual_process_fd_churn_waived": false,
+    "coverage_waived": false,
+    "deletion_authorized": false,
+    "fresh_whole_host_gate_after_patch_run": false,
+    "note": "The two stable actual views prove an ancestor mask followed by ENOENT and a same-point stack whose actual FD selects the target layer. They do not clear the earlier whole-host gate.",
+    "other_reported_views_reclassified": false,
+    "proven_representative_patterns": 2
+  },
+  "preflight": {
+    "collector_created": 0,
+    "coverage_error_counts": {
+      "FileNotFoundError": 6,
+      "ambiguous_alias_mount": 18,
+      "empty_mountinfo": 1,
+      "persistent_mount_namespace_unobserved": 1,
+      "process_set_changed": 1,
+      "shadowed_alias_mount": 43,
+      "task_fd_set_changed": 2
+    },
+    "deletion_performed": false,
+    "mount_hits": [],
+    "observed_utc": "2026-11-09T08:32:05.479162+00:00",
+    "process_or_owner_hits": [],
+    "processes": 541,
+    "receipt_sha256": "3254dfac847b4c9ec1dbe6536ce999d232de70c22ced3fc501c86a8285994c06",
+    "required_mount_namespaces": 26,
+    "target_entries": 60163,
+    "target_roots": 54,
+    "tasks": 1442,
+    "terminal": {
+      "at_unix_ms": 1794213125697,
+      "audit_recorded": true,
+      "automatic_retry": false,
+      "cancelled": false,
+      "exit_code": 1,
+      "job_id": "1a1bf6f79d3-5e21-51a",
+      "launch_nonce": "859fc010e34b9fd13d94ce9666047dee",
+      "log_bytes": {
+        "stderr": {
+          "seen": 251,
+          "stored": 251
+        },
+        "stdout": {
+          "seen": 6250,
+          "stored": 6250
+        }
+      },
+      "log_errors": {
+        "stderr": null,
+        "stdout": null
+      },
+      "log_synced": {
+        "stderr": true,
+        "stdout": true
+      },
+      "log_truncated": {
+        "stderr": false,
+        "stdout": false
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "failed",
+      "terminal_publication_confirmed": true,
+      "terminal_publication_protocol": 1,
+      "timed_out": false
+    },
+    "uncovered_mount_namespaces": 25,
+    "visibility": "UNKNOWN"
+  },
+  "prior_observer_sha256": "311a943a3b3f2845c69ae1750eadb2e72b7058cac86c5c9ae39f18debc107aa5",
+  "prior_published_commit": "208d2dca4dccb622869916b9a7381decdddc0dce",
+  "schema": "pocket4-mounted-path-layer-observation-v1",
+  "empty_view_revision_whole_host_readonly_diagnostic": {
+    "receipt": {
+      "source_code": "import os,stat,hashlib,json,time,resource\nROOT=\"/home/alex/work/pocket4-identity-review-20261109-493ac-r1\"\nSTAGE=\"qualification/reference-observer-empty-task-20261109-493ac-r1\"\ndef need(ok,message):\n if not ok:raise RuntimeError(message)\ndef directory(path):\n fd=os.open(\"/\",os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC)\n try:\n  for c in path.split(\"/\")[1:]:\n   need(c not in (\"\", \".\", \"..\"),\"noncanonical path\")\n   child=os.open(c,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=fd)\n   os.close(fd);fd=child\n  return fd\n except BaseException:\n  os.close(fd);raise\nneed(os.geteuid()==0,\"root proc visibility required\")\nneed(os.getcwd()==\"/home/alex/work\",\"cwd outside reviewed root\")\ncpus=sorted(os.sched_getaffinity(0));need(len(cpus)>=3,\"leave two CPUs\");os.sched_setaffinity(0,{cpus[0]})\nresource.setrlimit(resource.RLIMIT_AS,(3221225472,3221225472))\nfd=directory(ROOT)\ntry:\n s=os.fstat(fd);need((s.st_dev,s.st_ino,s.st_uid,s.st_gid,stat.S_IMODE(s.st_mode))==(66306,46949840,1000,1000,448),\"root identity\")\nfinally:os.close(fd)\nfd=directory(ROOT+\"/\"+STAGE)\ntry:\n s=os.fstat(fd);need((s.st_dev,s.st_ino,s.st_uid,s.st_gid,stat.S_IMODE(s.st_mode))==(66306,51018019,1000,1000,448),\"qualified stage identity\")\n f=os.open(\"reference_observer.py\",os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK|os.O_CLOEXEC,dir_fd=fd)\nfinally:os.close(fd)\ntry:\n s=os.fstat(f);need(stat.S_ISREG(s.st_mode) and (s.st_dev,s.st_ino,s.st_uid,s.st_gid,s.st_nlink,s.st_size)==(66306,51018020,1000,1000,1,76800),\"qualified source identity\")\n raw=b\"\"\n while len(raw)<=76800:\n  b=os.read(f,min(65536,76801-len(raw)))\n  if not b:break\n  raw+=b\n t=os.fstat(f);need((s.st_dev,s.st_ino,s.st_size,s.st_mtime_ns,s.st_ctime_ns)==(t.st_dev,t.st_ino,t.st_size,t.st_mtime_ns,t.st_ctime_ns),\"source changed\")\n need(len(raw)==76800 and hashlib.sha256(raw).hexdigest()==\"50ea94900d2b825d79016b7febc38ae5b866606aea32bcf2accf51444059f27d\",\"source pin\")\nfinally:os.close(f)\nns={\"__name__\":\"pinned_readonly_observer\"};exec(compile(raw,\"<qualified-readonly-observer>\",\"exec\"),ns)\nrelatives=['cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/v8-150.4.0', 'cargo-home/registry/index', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/openssl-src-300.6.1+3.6.3', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/aws-lc-sys-0.46.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/aws-lc-sys-0.45.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/aws-lc-fips-sys-0.14.3', 'cargo-home/registry/cache', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/web-sys-0.3.106', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.58.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-x86_64-pc-windows-gnu-0.4.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-i686-pc-windows-gnu-0.4.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.62.2', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/wit-component-0.244.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/noyalib-0.0.58', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/aws-sigv4-1.3.7', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/aws-sigv4-1.6.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/vcpkg-0.2.15', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/starlark-0.14.2', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.191', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/tokio-1.53.3', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/wit-parser-0.244.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/tokio-1.53.1', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.188', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde-saphyr-1.3.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/windows-sys-0.48.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/rama-http-types-0.3.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.184', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.186', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/rama-http-types-0.3.0-alpha.4', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/windows-sys-0.60.2', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/windows-sys-0.61.2', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/windows-sys-0.59.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/linux-raw-sys-0.12.1', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/windows-sys-0.52.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/winsafe-0.0.19', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-ui-kit-0.3.2', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/ring-0.17.14', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/rama-http-0.3.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/zerocopy-0.8.63', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-0.3.9', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/rustix-1.1.4', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/rustix-1.1.5', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/rustix-0.38.44', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/linux-raw-sys-0.9.4', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/linux-raw-sys-0.4.15', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/zerocopy-0.8.37', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/libdbus-sys-0.2.7', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/ruma-client-api-0.25.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/ruma-client-api-0.24.0', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/starlark_syntax-0.14.2', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/pxfm-0.1.27', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/pxfm-0.1.30', 'cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/schemars-1.2.1']\npaths=[ROOT+\"/\"+x for x in relatives]\nprint(json.dumps({\"schema\":\"pocket4-owned-cache-readonly-reference-diagnostic-v1\",\"source_published\":False,\"source_sha256\":hashlib.sha256(raw).hexdigest(),\"root_identity\":[66306,46949840],\"reviewed_root_count\":len(paths),\"deletion_actions\":0,\"Android_actions\":0,\"CURRENT_writes\":0}),flush=True)\nresult=ns[\"live_references\"](paths)\nprint(json.dumps({\"live_reference_observation\":result,\"diagnostic_only\":True,\"deletion_actions\":0,\"not_a_deletion_admission\":True},sort_keys=True),flush=True)\n",
+      "input": {
+        "path": "/tmp/p4-retirement-review-493ac/readonly-empty-view-diagnostic.py",
+        "bytes": 6677,
+        "sha256": "17f117ecdebcb147e7a0358ca3b1c3fd0b5657fa9ae92aac87c23329cb57d293"
+      },
+      "start": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\n  \"audit_recorded\": true,\n  \"job\": {\n    \"args\": [\n      \"-n\",\n      \"/usr/bin/python3\",\n      \"-I\",\n      \"-B\",\n      \"-\"\n    ],\n    \"created_unix_ms\": 1794221041538,\n    \"cwd\": \"/home/alex/work\",\n    \"env_keys\": [],\n    \"executable\": \"/usr/bin/sudo\",\n    \"execution_mode\": \"operator\",\n    \"host\": \"pocket4\",\n    \"id\": \"1a1bfe86782-5e21-7c2\",\n    \"idempotency_key\": \"p4-own-cache-empty-view-readonly-observation-493ac-r1\",\n    \"launch_error\": null,\n    \"launch_state\": \"launched\",\n    \"remote_job_dir\": \"/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1bfe86782-5e21-7c2\",\n    \"request_digest\": \"d868ff151d6b604a6fe979c86e6e9b35151e34adacd9008d85e0e4d6cb6b600a\",\n    \"request_fingerprint\": 15593994175923314762,\n    \"ssh_target\": \"hepta-pocket4\",\n    \"system_jobctl\": false,\n    \"unit\": \"hepta-runtime-job-1a1bfe86782-5e21-7c2\"\n  },\n  \"launch\": {\n    \"backend\": \"systemd\",\n    \"launcher_pid\": null,\n    \"ok\": true,\n    \"unit\": \"hepta-runtime-job-1a1bfe86782-5e21-7c2\"\n  },\n  \"local_record_pending\": false,\n  \"reused\": false\n}"
+          }
+        ],
+        "structuredContent": null,
+        "isError": false
+      },
+      "status": {
+        "at_unix_ms": 1794221062744,
+        "audit_recorded": true,
+        "automatic_retry": false,
+        "cancelled": false,
+        "exit_code": 0,
+        "job_id": "1a1bfe86782-5e21-7c2",
+        "launch_nonce": "588db776cd6b83ee9e24566d8926a975",
+        "log_bytes": {
+          "stderr": {
+            "seen": 0,
+            "stored": 0
+          },
+          "stdout": {
+            "seen": 2327,
+            "stored": 2327
+          }
+        },
+        "log_errors": {
+          "stderr": null,
+          "stdout": null
+        },
+        "log_synced": {
+          "stderr": true,
+          "stdout": true
+        },
+        "log_truncated": {
+          "stderr": false,
+          "stdout": false
+        },
+        "output_complete": true,
+        "output_durable": true,
+        "state": "succeeded",
+        "terminal_publication_confirmed": true,
+        "terminal_publication_protocol": 1,
+        "timed_out": false
+      },
+      "read": {
+        "audit_recorded": true,
+        "job_id": "1a1bfe86782-5e21-7c2",
+        "stderr": {
+          "bytes_hex": "",
+          "eof": true,
+          "next_offset": 0,
+          "offset": 0,
+          "size": 0,
+          "text": ""
+        },
+        "stdout": {
+          "bytes_hex": "7b22736368656d61223a2022706f636b6574342d6f776e65642d63616368652d726561646f6e6c792d7265666572656e63652d646961676e6f737469632d7631222c2022736f757263655f7075626c6973686564223a2066616c73652c2022736f757263655f736861323536223a202235306561393439303064326238323564373930313662376665626333386165356238363636303661656133326263663261636366353134343430353966323764222c2022726f6f745f6964656e74697479223a205b36363330362c2034363934393834305d2c202272657669657765645f726f6f745f636f756e74223a2035342c202264656c6574696f6e5f616374696f6e73223a20302c2022416e64726f69645f616374696f6e73223a20302c202243555252454e545f777269746573223a20307d0a7b2264656c6574696f6e5f616374696f6e73223a20302c2022646961676e6f737469635f6f6e6c79223a20747275652c20226c6976655f7265666572656e63655f6f62736572766174696f6e223a207b22416e64726f69645f616374696f6e73223a20302c2022616e636573746f725f616c6961735f636f756e74223a203130382c20226170705f616374696f6e73223a20302c2022636f6d6d616e645f6c696e655f636f6e74656e74735f72657461696e6564223a2066616c73652c2022636f7665726167655f6572726f7273223a205b7b226572726f72223a20227461736b5f7365745f6f725f6c65616465725f6368616e676564222c2022706964223a20383033357d2c207b226572726f72223a202246696c654e6f74466f756e644572726f72222c2022706964223a203239333633337d2c207b226572726f72223a202246696c654e6f74466f756e644572726f72222c2022706964223a203336323232377d2c207b226572726f72223a202246696c654e6f74466f756e644572726f72222c2022706964223a203338313335367d2c207b226572726f72223a202270726f636573735f7365745f6368616e676564227d2c207b226572726f72223a2022656d7074795f7461736b5f6d6f756e745f766965775f756e7265736f6c766564222c2022706964223a20313638362c2022746964223a20313638367d2c207b226572726f72223a202270657273697374656e745f6d6f756e745f6e616d6573706163655f756e6f62736572766564227d5d2c2022636f76657265645f6f70617175655f6d6f756e745f6e616d6573706163655f636f756e74223a20302c202264656c6574696f6e5f617574686f72697a6564223a2066616c73652c2022656d7074795f7461736b5f6d6f756e745f7669657773223a20312c20226578697374696e675f686f73745f6d6f756e745f6e616d6573706163655f756e6368616e676564223a20747275652c20226d6f756e745f68697473223a205b5d2c20226d6f756e745f6e616d65737061636573223a2032352c20226e616d6573706163655f6368696c645f6c6966656379636c65223a207b22636c6f73655f737563636565646564223a20747275652c202263726561746564223a20302c20226e6f6e7a65726f5f6578697473223a20302c2022726561706564223a20302c20227265746972656d656e745f7265636f726473223a20307d2c20226e616d6573706163655f6368696c645f7465726d696e616c73223a205b5d2c20226e616d6573706163655f66645f636f756e74223a20312c20226f627365727665645f757463223a2022323032362d31312d30395431303a34343a32322e3636303136382b30303a3030222c20226f70617175655f6d6f756e745f6e616d6573706163655f636f756e74223a20332c20226f70656e5f66696c655f636f6e74656e74735f72656164223a2066616c73652c202270726f636573735f6f725f6f776e65725f68697473223a205b5d2c202270726f636573736573223a203533342c202272657175697265645f6d6f756e745f6e616d6573706163655f636f756e74223a2032372c20227461726765745f656e7472696573223a2036303136332c20227461736b73223a20313435372c2022756e636f76657265645f6d6f756e745f6e616d6573706163655f636f756e74223a2032362c2022756e636f76657265645f6d6f756e745f6e616d65737061636573223a205b226d6e743a5b343032363533313836305d222c20226d6e743a5b343032363533323536395d222c20226d6e743a5b343032363533323537305d222c20226d6e743a5b343032363533323537315d222c20226d6e743a5b343032363533323537325d222c20226d6e743a5b343032363533323833375d222c20226d6e743a5b343032363533323837315d222c20226d6e743a5b343032363533323837365d222c20226d6e743a5b343032363533323837375d222c20226d6e743a5b343032363533323838305d222c20226d6e743a5b343032363533323838385d222c20226d6e743a5b343032363533323932355d222c20226d6e743a5b343032363533333033355d222c20226d6e743a5b343032363533333033365d222c20226d6e743a5b343032363533333034345d222c20226d6e743a5b343032363533333039375d222c20226d6e743a5b343032363533333130335d222c20226d6e743a5b343032363533333135365d222c20226d6e743a5b343032363533333135395d222c20226d6e743a5b343032363533333136305d222c20226d6e743a5b343032363533333136365d222c20226d6e743a5b343032363533333232325d222c20226d6e743a5b343032363533333234395d222c20226d6e743a5b343032363533333336375d222c20226d6e743a5b343032363533333337325d222c20226d6e743a5b343032363533333337355d225d2c202276657269666965645f656d7074795f7461736b5f6d6f756e745f7669657773223a20302c202276657269666965645f656d7074795f7a6f6d62696573223a20302c202276657269666965645f6e616d6573706163655f7769746e6573736573223a20302c202276657269666965645f736861646f7765645f616c6961735f706174685f636f756e74223a203831302c20227669736962696c697479223a2022554e4b4e4f574e222c202276697369626c655f616c6961735f706174685f636f756e74223a203438367d2c20226e6f745f615f64656c6574696f6e5f61646d697373696f6e223a20747275657d0a",
+          "eof": true,
+          "next_offset": 2327,
+          "offset": 0,
+          "size": 2327,
+          "text": "{\"schema\": \"pocket4-owned-cache-readonly-reference-diagnostic-v1\", \"source_published\": false, \"source_sha256\": \"50ea94900d2b825d79016b7febc38ae5b866606aea32bcf2accf51444059f27d\", \"root_identity\": [66306, 46949840], \"reviewed_root_count\": 54, \"deletion_actions\": 0, \"Android_actions\": 0, \"CURRENT_writes\": 0}\n{\"deletion_actions\": 0, \"diagnostic_only\": true, \"live_reference_observation\": {\"Android_actions\": 0, \"ancestor_alias_count\": 108, \"app_actions\": 0, \"command_line_contents_retained\": false, \"coverage_errors\": [{\"error\": \"task_set_or_leader_changed\", \"pid\": 8035}, {\"error\": \"FileNotFoundError\", \"pid\": 293633}, {\"error\": \"FileNotFoundError\", \"pid\": 362227}, {\"error\": \"FileNotFoundError\", \"pid\": 381356}, {\"error\": \"process_set_changed\"}, {\"error\": \"empty_task_mount_view_unresolved\", \"pid\": 1686, \"tid\": 1686}, {\"error\": \"persistent_mount_namespace_unobserved\"}], \"covered_opaque_mount_namespace_count\": 0, \"deletion_authorized\": false, \"empty_task_mount_views\": 1, \"existing_host_mount_namespace_unchanged\": true, \"mount_hits\": [], \"mount_namespaces\": 25, \"namespace_child_lifecycle\": {\"close_succeeded\": true, \"created\": 0, \"nonzero_exits\": 0, \"reaped\": 0, \"retirement_records\": 0}, \"namespace_child_terminals\": [], \"namespace_fd_count\": 1, \"observed_utc\": \"2026-11-09T10:44:22.660168+00:00\", \"opaque_mount_namespace_count\": 3, \"open_file_contents_read\": false, \"process_or_owner_hits\": [], \"processes\": 534, \"required_mount_namespace_count\": 27, \"target_entries\": 60163, \"tasks\": 1457, \"uncovered_mount_namespace_count\": 26, \"uncovered_mount_namespaces\": [\"mnt:[4026531860]\", \"mnt:[4026532569]\", \"mnt:[4026532570]\", \"mnt:[4026532571]\", \"mnt:[4026532572]\", \"mnt:[4026532837]\", \"mnt:[4026532871]\", \"mnt:[4026532876]\", \"mnt:[4026532877]\", \"mnt:[4026532880]\", \"mnt:[4026532888]\", \"mnt:[4026532925]\", \"mnt:[4026533035]\", \"mnt:[4026533036]\", \"mnt:[4026533044]\", \"mnt:[4026533097]\", \"mnt:[4026533103]\", \"mnt:[4026533156]\", \"mnt:[4026533159]\", \"mnt:[4026533160]\", \"mnt:[4026533166]\", \"mnt:[4026533222]\", \"mnt:[4026533249]\", \"mnt:[4026533367]\", \"mnt:[4026533372]\", \"mnt:[4026533375]\"], \"verified_empty_task_mount_views\": 0, \"verified_empty_zombies\": 0, \"verified_namespace_witnesses\": 0, \"verified_shadowed_alias_path_count\": 810, \"visibility\": \"UNKNOWN\", \"visible_alias_path_count\": 486}, \"not_a_deletion_admission\": true}\n"
+        }
+      }
+    },
+    "source_receipt_bytes": 16701,
+    "source_receipt_sha256": "1a4a1be4421db0b4ba5028b94c5e94e31afacb231b432ec503b23e40f66c2877",
+    "stdout_sha256": "7858578e81fd6a92bd1c1e61e21c1ae0c17157a56670788bd2df320e3e8f61dd",
+    "qualified_source_sha256": "50ea94900d2b825d79016b7febc38ae5b866606aea32bcf2accf51444059f27d",
+    "interpretation": "Read-only observation was UNKNOWN due to task/process changes and vanished processes; earlier errors prevented namespace collector creation. The unresolved empty task and uncovered namespaces do not independently prove collector failure. No deletion occurred or was authorized. This invocation did not claim published source custody."
+  }
+}

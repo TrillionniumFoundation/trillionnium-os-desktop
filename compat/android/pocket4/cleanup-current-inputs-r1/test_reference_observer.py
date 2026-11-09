@@ -122,7 +122,8 @@ class ProcFixture:
             p = Path(path)
             if dir_fd is None and p.name == 'root' and self.proc in p.parents:
                 fd = real_open(path, flags, mode)
-                descriptors[fd] = (mount_rows(p.parent), '/', ROOT_MOUNT_ID)
+                descriptors[fd] = (mount_rows(p.parent), '/',
+                    getattr(self, 'vfs_task_root_mount_ids', {}).get(str(p.parent), ROOT_MOUNT_ID))
                 return fd
             if dir_fd in descriptors:
                 rows, parent, mount_id = descriptors[dir_fd]

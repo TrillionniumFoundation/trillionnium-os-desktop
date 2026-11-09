@@ -34,6 +34,7 @@ def live_references(roots):
     namespace_fd_labels, alias_keys = set(), set()
     visible_alias_paths, shadowed_alias_paths = set(), set()
     namespace_candidates, namespace_handles, namespace_mount_paths, namespace_task_paths = {}, {}, {}, {}
+    empty_task_views, resolved_empty_task_views, empty_task_processes = [], set(), {}
     namespace_pool = None
     namespace_file_device = None
     counts_namespace_witnesses = 0
@@ -938,6 +939,165 @@ def live_references(roots):
                         mounts.append({'pid': pid, 'tid': tid, 'namespace': ns,
                                        'root': root, 'kind': kind})
 
+    def scan_task_references(task, pid, tid, start, ns, inactive, aliases,
+                             previous_fds=None, previous_fd_identities=None):
+        # The first pass always scans real references, including empty-view
+        # tasks. A later proof pass adds root-relative aliases without replacing
+        # its FD baseline, charging the census twice, or omitting any ref kind.
+        inspect_link(task / 'root', pid, tid, 'root', inactive, aliases=aliases)
+        for kind in ('cwd', 'exe'):
+            inspect_link(task / kind, pid, tid, kind, inactive, aliases=aliases)
+        fds = names(task / 'fd', MAX_FDS)
+        if previous_fds is None:
+            counts['fds'] += len(fds)
+            if counts['fds'] > MAX_FDS:
+                raise Incomplete('fd_bound')
+        elif fds != previous_fds:
+            raise Incomplete('task_fd_set_changed')
+        fd_identities = {}
+        for descriptor in sorted(fds, key=int):
+            fd_identities[descriptor] = inspect_link(
+                task / 'fd' / descriptor, pid, tid, 'fd', True, descriptor,
+                aliases, (task, start, ns))
+        if previous_fd_identities is not None and fd_identities != previous_fd_identities:
+            raise Incomplete('task_fd_identity_changed')
+        for line in read(task / 'maps').decode('utf-8', 'surrogateescape').splitlines():
+            bound()
+            fields = line.split(None, 5)
+            if len(fields) < 5 or not re.fullmatch(r'[0-9a-fA-F]+:[0-9a-fA-F]+', fields[3]):
+                raise Incomplete('invalid_maps')
+            major, minor = (int(x, 16) for x in fields[3].split(':'))
+            inode = int(fields[4])
+            owners = identities.get((os.makedev(major, minor), inode), set()) if inode else set()
+            if len(fields) == 6:
+                owners = owners | lexical_owner(unescape(fields[5]), aliases)
+            hit(pid, tid, 'maps', owners)
+        args = read(task / 'cmdline', 1024 * 1024)
+        owner_tokens = {(root, os.fsencode(root)) for root in roots}
+        owner_tokens.update((root, os.fsencode(exposed)) for root, exposed, _ in aliases)
+        for root, token in owner_tokens:
+            if token in args:
+                hit(pid, tid, 'owner_argument_reference', {root})
+        for argument in args.split(b'\0'):
+            value = argument.split(b'=', 1)[-1]
+            if value.startswith(b'/'):
+                hit(pid, tid, 'owner_argument_reference',
+                    lexical_owner(os.fsdecode(value), aliases))
+        return fds, fd_identities
+
+    def verify_empty_task(record, check_fds=True):
+        task = record['task']
+        current_namespace = os.stat(task / 'ns' / 'mnt')
+        current_root = os.stat(task / 'root')
+        if (task_identity(task)[0] != record['start'] or
+                os.readlink(task / 'ns' / 'mnt') != record['ns'] or
+                (current_namespace.st_dev, current_namespace.st_ino) != record['namespace_identity'] or
+                (current_root.st_dev, current_root.st_ino) != record['root_identity'] or
+                os.readlink(task / 'root') != record['root_displayed'] or
+                root_mount_id(task, record['root_identity']) != record['root_mount'] or
+                read(task / 'mountinfo') != b''):
+            raise Incomplete('empty_task_view_changed')
+        if check_fds and names(task / 'fd', MAX_FDS) != record['fds']:
+            raise Incomplete('task_fd_set_changed')
+        if check_fds:
+            for descriptor, expected in record['fd_identities'].items():
+                bound()
+                actual = os.stat(task / 'fd' / descriptor)
+                if expected is None or (actual.st_dev, actual.st_ino) != expected:
+                    raise Incomplete('task_fd_identity_changed')
+
+    def projected_empty_task_aliases(record, witness, table, native_aliases, pool):
+        # A path displayed relative to another process root is only a candidate
+        # route. Reopen it from the owned native-root witness and bind every
+        # actual kernel mount before accepting a task-relative projection.
+        verify_empty_task(record)
+        pool.verify(witness)
+        displayed = record['root_displayed']
+        if (not isinstance(displayed, str) or not displayed.startswith('/') or
+                posixpath.normpath(displayed) != displayed or '//' in displayed or
+                '\x00' in displayed or displayed.endswith(' (deleted)')):
+            raise Incomplete('empty_task_root_path_unknown')
+        if any(beneath(mount['point'], displayed) for mount in table):
+            raise Incomplete('empty_task_view_contains_mountpoint')
+        task = record['task']
+        witness_task = proc / str(witness.pid) / 'task' / str(witness.pid)
+        anchor = held_root = descriptor = None
+        try:
+            anchor = os.open(witness_task / 'root', os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC)
+            actual = os.fstat(anchor)
+            if ((actual.st_dev, actual.st_ino) != tuple(witness.root_identity) or
+                    fd_mount_id(anchor) != witness.root_mnt_id):
+                raise Incomplete('namespace_witness_root_changed')
+            held_root = os.open(task / 'root', os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC)
+            actual = os.fstat(held_root)
+            if ((actual.st_dev, actual.st_ino) != record['root_identity'] or
+                    fd_mount_id(held_root) != record['root_mount']):
+                raise Incomplete('empty_task_root_changed')
+            indexed = {mount['id']: mount for mount in table}
+            descriptor = os.dup(anchor)
+            selected, chain, _ = bound_mount(descriptor, '/', indexed, witness.root_mnt_id)
+            prefix = ''
+            for part in displayed.split('/')[1:]:
+                bound()
+                prefix += '/' + part
+                child = os.open(part, os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                                dir_fd=descriptor)
+                previous = selected['id']
+                os.close(descriptor)
+                descriptor = child
+                selected, chain, _ = bound_mount(descriptor, prefix, indexed, witness.root_mnt_id)
+                if previous not in chain or any(indexed[mid]['point'] != prefix
+                                                for mid in chain[:chain.index(previous)]):
+                    raise Incomplete('empty_task_root_mount_transition_unknown')
+            final = os.fstat(descriptor)
+            if ((final.st_dev, final.st_ino) != record['root_identity'] or
+                    fd_mount_id(descriptor) != record['root_mount']):
+                raise Incomplete('empty_task_root_binding_mismatch')
+            verify_empty_task(record)
+            pool.verify(witness)
+        finally:
+            for handle in (descriptor, held_root, anchor):
+                if handle is not None:
+                    os.close(handle)
+        aliases = set(native_aliases)
+        for root, exposed, mount_id in native_aliases:
+            if beneath(exposed, displayed):
+                relative = posixpath.relpath(exposed, displayed)
+                projected = '/' if relative == '.' else '/' + relative
+                key = (root, projected, mount_id)
+                aliases.add(key)
+                alias_keys.add((record['ns'], *key))
+                if len(alias_keys) > 10000:
+                    raise Incomplete('mount_alias_bound')
+        return tuple(sorted(aliases))
+
+    def pin_namespace_candidates():
+        # Reference scans may discover an additional FD-only namespace while
+        # proving a deferred view. Pin and revalidate every origin each time;
+        # no late descriptor can silently escape the required coverage set.
+        for expected, origin in namespace_candidates.items():
+            bound()
+            verify_namespace_origin(origin, expected)
+            label = capture_namespace(origin[0], expected)
+            verify_namespace_origin(origin, expected)
+            if label is not None:
+                namespace_fd_labels.add(label)
+
+    def pin_namespace_label(ns):
+        if ns in namespace_handles:
+            return
+        if ns in namespace_mount_paths:
+            path, dev = namespace_mount_paths[ns][0]
+            capture_namespace(path, (dev, int(ns[5:-1])), ns)
+        elif ns in namespace_task_paths:
+            task, start = namespace_task_paths[ns]
+            if task_identity(task)[0] != start or os.readlink(task / 'ns' / 'mnt') != ns:
+                raise Incomplete('namespace_task_origin_changed')
+            capture_namespace(task / 'ns' / 'mnt',
+                              (namespace_file_device, int(ns[5:-1])), ns)
+            if task_identity(task)[0] != start or os.readlink(task / 'ns' / 'mnt') != ns:
+                raise Incomplete('namespace_task_origin_changed')
+
     def capture_namespace(path, expected, expected_label=None):
         # O_PATH pins the object before a readable namespace handle is opened;
         # a swapped /proc FD must never turn into an open of a device or FIFO.
@@ -1042,6 +1202,7 @@ def live_references(roots):
                         raise Incomplete('task_bound')
                     tid, task = int(tname), process / 'task' / tname
                     try:
+                        task_error_count = len(errors)
                         identity = task_identity(task)
                         # A verified single-thread Z/X task cannot acquire new
                         # references. Missing namespace alone never proves this.
@@ -1074,7 +1235,23 @@ def live_references(roots):
                         raw = read(task / 'mountinfo')
                         namespaces.add(ns)
                         view = (ns, root_identity, root_mount)
-                        if view in mount_views:
+                        empty_record = None
+                        if raw == b'':
+                            if root_identity is None or root_mount is None:
+                                raise Incomplete('empty_task_root_unknown')
+                            actual_ns = os.stat(task / 'ns' / 'mnt')
+                            expected_ns = (namespace_file_device, int(ns[5:-1]))
+                            if (actual_ns.st_dev, actual_ns.st_ino) != expected_ns:
+                                raise Incomplete('empty_task_namespace_identity_unknown')
+                            empty_record = {'task': task, 'pid': pid, 'tid': tid,
+                                'start': identity[0], 'ns': ns, 'namespace_identity': expected_ns,
+                                'root_identity': root_identity, 'root_mount': root_mount,
+                                'root_displayed': root_displayed, 'inactive': inactive}
+                            # No root/ns FD or child survives this first pass.
+                            # Root-relative aliases require a later owned native
+                            # witness, but real references are scanned now too.
+                            aliases = ()
+                        elif view in mount_views:
                             if mount_views[view][1] != raw:
                                 raise Incomplete('mount_view_changed')
                             aliases = mount_views[view][4]
@@ -1084,41 +1261,8 @@ def live_references(roots):
                                 validate_root_mount(task_table, root_mount, root_identity)
                             aliases = mount_aliases(task_table, ns, task, root_identity, root_mount, raw)
                             check_mounts(task_table, aliases, pid, tid, ns)
-                        mount_views[view] = (task, raw, identity[0], root_displayed, aliases)
-                        inspect_link(task / 'root', pid, tid, 'root', inactive, aliases=aliases)
-                        for kind in ('cwd', 'exe'):
-                            inspect_link(task / kind, pid, tid, kind, inactive, aliases=aliases)
-                        fds = names(task / 'fd', MAX_FDS)
-                        counts['fds'] += len(fds)
-                        if counts['fds'] > MAX_FDS:
-                            raise Incomplete('fd_bound')
-                        for descriptor in sorted(fds, key=int):
-                            # A closed descriptor may vanish after enumeration.
-                            # An occupied slot changing while read is UNKNOWN.
-                            inspect_link(task / 'fd' / descriptor, pid, tid, 'fd', True, descriptor,
-                                         aliases, (task, identity[0], ns))
-                        for line in read(task / 'maps').decode('utf-8', 'surrogateescape').splitlines():
-                            bound()
-                            fields = line.split(None, 5)
-                            if len(fields) < 5 or not re.fullmatch(r'[0-9a-fA-F]+:[0-9a-fA-F]+', fields[3]):
-                                raise Incomplete('invalid_maps')
-                            major, minor = (int(x, 16) for x in fields[3].split(':'))
-                            inode = int(fields[4])
-                            owners = identities.get((os.makedev(major, minor), inode), set()) if inode else set()
-                            if len(fields) == 6:
-                                owners = owners | lexical_owner(unescape(fields[5]), aliases)
-                            hit(pid, tid, 'maps', owners)
-                        args = read(task / 'cmdline', 1024 * 1024)
-                        owner_tokens = {(root, os.fsencode(root)) for root in roots}
-                        owner_tokens.update((root, os.fsencode(exposed)) for root, exposed, _ in aliases)
-                        for root, token in owner_tokens:
-                            if token in args:
-                                hit(pid, tid, 'owner_argument_reference', {root})
-                        for argument in args.split(b'\0'):
-                            value = argument.split(b'=', 1)[-1]
-                            if value.startswith(b'/'):
-                                hit(pid, tid, 'owner_argument_reference',
-                                    lexical_owner(os.fsdecode(value), aliases))
+                        fds, fd_identities = scan_task_references(
+                            task, pid, tid, identity[0], ns, inactive, aliases)
                         if read(task / 'mountinfo') != raw:
                             raise Incomplete('mount_view_changed')
                         if names(task / 'fd', MAX_FDS) != fds:
@@ -1131,6 +1275,19 @@ def live_references(roots):
                                 error('task_root_changed', pid, tid)
                         if os.readlink(task / 'ns' / 'mnt') != ns or task_identity(task)[0] != identity[0]:
                             raise Incomplete('task_identity_or_namespace_changed')
+                        if len(errors) == task_error_count:
+                            if empty_record is not None:
+                                empty_record['fds'] = fds
+                                empty_record['fd_identities'] = fd_identities
+                                verify_empty_task(empty_record)
+                                empty_task_views.append(empty_record)
+                                empty_task_processes.setdefault(pid, (process, leader[0], tids))
+                            else:
+                                # Keep the first fully checked representative.
+                                # Later tasks still undergo every reference and
+                                # stability check; loss of this one is UNKNOWN.
+                                mount_views.setdefault(view,
+                                    (task, raw, identity[0], root_displayed, aliases))
                     except (OSError, ValueError, Incomplete) as exc:
                         error(str(exc) if isinstance(exc, Incomplete) else type(exc).__name__, pid, tid)
                 if names(process / 'task', MAX_TASKS) != tids or task_identity(process)[0] != leader[0]:
@@ -1158,62 +1315,78 @@ def live_references(roots):
             if (verified and ns == host_namespace and root_identity == host_root_identity and
                     root_mount == host_root_mount and root_displayed == '/'):
                 covered_namespace_views.add(ns)
-        for expected, origin in namespace_candidates.items():
-            bound()
-            verify_namespace_origin(origin, expected)
-            label = capture_namespace(origin[0], expected)
-            verify_namespace_origin(origin, expected)
-            if label is not None:
-                namespace_fd_labels.add(label)
-
+        pin_namespace_candidates()
         required_namespaces = namespaces | opaque_namespaces | namespace_fd_labels
         missing = required_namespaces - covered_namespace_views
-        if missing and not errors:
-            for ns in sorted(missing):
-                if ns not in namespace_handles and ns in namespace_mount_paths:
-                    path, dev = namespace_mount_paths[ns][0]
-                    inode = int(ns[5:-1])
-                    capture_namespace(path, (dev, inode), ns)
-                elif ns not in namespace_handles and ns in namespace_task_paths:
-                    task, start = namespace_task_paths[ns]
-                    if task_identity(task)[0] != start or os.readlink(task / 'ns' / 'mnt') != ns:
-                        raise Incomplete('namespace_task_origin_changed')
-                    capture_namespace(task / 'ns' / 'mnt',
-                                      (namespace_file_device, int(ns[5:-1])), ns)
-                    if task_identity(task)[0] != start or os.readlink(task / 'ns' / 'mnt') != ns:
-                        raise Incomplete('namespace_task_origin_changed')
+        proof_namespaces = {record['ns'] for record in empty_task_views}
+        if (missing or proof_namespaces) and not errors:
+            for record in empty_task_views:
+                verify_empty_task(record)
+                capture_namespace(record['task'] / 'ns' / 'mnt',
+                                  record['namespace_identity'], record['ns'])
+                verify_empty_task(record)
             # Factory is embedded in this function; only held kernel handles
-            # may create witnesses. No receipt/dict can add coverage.
+            # may create witnesses. It is created only after the original full
+            # process pass and process-set check. Even a host-namespace empty
+            # task needs an owned native-root witness for root projection.
             namespace_pool = make_namespace_view_collector(started + MAX_SECONDS,
                                                           max_read=MAX_READ, max_children=32)
             try:
-                for ns in sorted(missing):
-                    bound()
-                    if ns not in namespace_handles:
-                        continue
-                    handle, expected = namespace_handles[ns]
-                    witness = namespace_pool.acquire(handle, expected=expected)
-                    task = proc / str(witness.pid) / 'task' / str(witness.pid)
-                    actual_root = os.stat(task / 'root')
-                    root_identity = (actual_root.st_dev, actual_root.st_ino)
-                    root_displayed = os.readlink(task / 'root')
-                    raw = read(task / 'mountinfo')
-                    if root_mount_id(task, root_identity) != witness.root_mnt_id:
-                        raise Incomplete('namespace_witness_root_mount_changed')
-                    actual_ns = os.stat(task / 'ns' / 'mnt')
-                    if os.readlink(task / 'ns' / 'mnt') != ns:
-                        raise Incomplete('namespace_witness_namespace_changed')
-                    if not namespace_pool.matches(witness, witness.pid,
-                            task_identity(task)[0], (actual_ns.st_dev, actual_ns.st_ino),
-                            root_identity, root_displayed, raw):
-                        raise Incomplete('namespace_witness_mismatch')
-                    witness_table = mount_table(raw)
-                    aliases = mount_aliases(witness_table, ns, task, root_identity, witness.root_mnt_id, raw)
-                    check_mounts(witness_table, aliases, witness.pid, witness.pid, ns)
-                    if not namespace_pool.verify(witness):
-                        raise Incomplete('namespace_witness_lost')
-                    covered_namespace_views.add(ns)
-                    counts_namespace_witnesses += 1
+                attempted = set()
+                while not errors:
+                    # A proof scan or a native view may reveal another FD-only
+                    # or persistent namespace. Close this bounded set, rather
+                    # than freezing the pre-proof list and omitting it.
+                    required_namespaces = namespaces | opaque_namespaces | namespace_fd_labels
+                    needed = ((required_namespaces - covered_namespace_views) |
+                              proof_namespaces) - attempted
+                    if not needed:
+                        break
+                    for ns in sorted(needed):
+                        bound()
+                        attempted.add(ns)
+                        pin_namespace_label(ns)
+                        if ns not in namespace_handles:
+                            continue
+                        handle, expected = namespace_handles[ns]
+                        witness = namespace_pool.acquire(handle, expected=expected)
+                        task = proc / str(witness.pid) / 'task' / str(witness.pid)
+                        actual_root = os.stat(task / 'root')
+                        root_identity = (actual_root.st_dev, actual_root.st_ino)
+                        root_displayed = os.readlink(task / 'root')
+                        raw = read(task / 'mountinfo')
+                        if root_mount_id(task, root_identity) != witness.root_mnt_id:
+                            raise Incomplete('namespace_witness_root_mount_changed')
+                        actual_ns = os.stat(task / 'ns' / 'mnt')
+                        if os.readlink(task / 'ns' / 'mnt') != ns:
+                            raise Incomplete('namespace_witness_namespace_changed')
+                        if not namespace_pool.matches(witness, witness.pid,
+                                task_identity(task)[0], (actual_ns.st_dev, actual_ns.st_ino),
+                                root_identity, root_displayed, raw):
+                            raise Incomplete('namespace_witness_mismatch')
+                        witness_table = mount_table(raw)
+                        validate_root_mount(witness_table, witness.root_mnt_id, root_identity)
+                        aliases = mount_aliases(witness_table, ns, task, root_identity, witness.root_mnt_id, raw)
+                        check_mounts(witness_table, aliases, witness.pid, witness.pid, ns)
+                        for index, record in enumerate(empty_task_views):
+                            if record['ns'] != ns:
+                                continue
+                            if tuple(witness.namespace) != record['namespace_identity']:
+                                raise Incomplete('empty_task_witness_namespace_mismatch')
+                            before_errors = len(errors)
+                            projected = projected_empty_task_aliases(
+                                record, witness, witness_table, aliases, namespace_pool)
+                            scan_task_references(record['task'], record['pid'], record['tid'],
+                                record['start'], ns, record['inactive'], projected,
+                                record['fds'], record['fd_identities'])
+                            verify_empty_task(record)
+                            if len(errors) == before_errors:
+                                resolved_empty_task_views.add(index)
+                        if not namespace_pool.verify(witness):
+                            raise Incomplete('namespace_witness_lost')
+                        covered_namespace_views.add(ns)
+                        counts_namespace_witnesses += 1
+                    pin_namespace_candidates()
             finally:
                 closing, namespace_pool = namespace_pool, None
                 close_namespace_pool(closing)
@@ -1231,6 +1404,11 @@ def live_references(roots):
                     raise Incomplete('mount_view_changed_after_namespace_views')
             for expected, origin in namespace_candidates.items():
                 verify_namespace_origin(origin, expected)
+            for record in empty_task_views:
+                verify_empty_task(record)
+            for pid, (process, start, tids) in empty_task_processes.items():
+                if names(process / 'task', MAX_TASKS) != tids or task_identity(process)[0] != start:
+                    error('task_set_or_leader_changed', pid)
 
         if read(proc / 'self' / 'mountinfo') != host_mounts:
             existing_host_namespace_unchanged = False
@@ -1267,11 +1445,16 @@ def live_references(roots):
                 error('namespace_handle_close_failed')
     required_namespaces = namespaces | opaque_namespaces | namespace_fd_labels
     uncovered_namespaces = required_namespaces - covered_namespace_views
+    for index, record in enumerate(empty_task_views):
+        if index not in resolved_empty_task_views:
+            error('empty_task_mount_view_unresolved', record['pid'], record['tid'])
     if uncovered_namespaces:
         error('persistent_mount_namespace_unobserved')
     return {'observed_utc': now(), 'processes': counts['processes'],
             'tasks': counts['tasks'], 'target_entries': counts['entries'],
             'verified_empty_zombies': counts['empty_zombies'],
+            'empty_task_mount_views': len(empty_task_views),
+            'verified_empty_task_mount_views': len(resolved_empty_task_views),
             'mount_namespaces': len(namespaces),
             'ancestor_alias_count': len(alias_keys),
             'visible_alias_path_count': len(visible_alias_paths),
