@@ -1,6 +1,6 @@
 # Pocket4 Android closeout continuation
 
-Current state: **`QPR1_BINDER_KERNEL_REPAIR_AUDIO_FULL_R6_FINAL42_RUNTIME_PENDING`**. Native597 and Audio316 have actual successful normal source materialization records. The ABI-qualified Sensor library is staged in the canonical candidate. Full Native/ART and Audio artifacts, final deployment, fresh runtime checks and original whole-application acceptance remain pending; applications remain **0/45**.
+Current state: **`QPR1_KERNEL_BUILD_AUDIO_CTS_REPAIR_NATIVE597_MIGRATION_FINAL42_RUNTIME_PENDING`**. Native597 and Audio316 have actual successful normal source materialization records. The ABI-qualified Sensor library is staged in the canonical candidate. Full Native/ART and Audio artifacts, final deployment, fresh runtime checks and original whole-application acceptance remain pending; applications remain **0/45**.
 
 The [current state](continuation/state.json) and [latest execution reconciliation](continuation/build-observations-20261108-native597-audio316.json) distinguish actual completed work, preserved failures and remaining gates. The [earlier build observations](continuation/build-observations-20261108-native-tls-audio316.json) retain their original observation time. The [source repair package](build-source-repair-20261108/README.md) contains independently reconstructable frozen Native, current Audio316, historical Audio and separate combined-builder source chains.
 
@@ -254,7 +254,8 @@ runtime acceptance. Their five old patch roots were retired after exact
 canonical source adoption: 7,307 files and 112,766,976 allocated bytes.
 Another nine input roots were retired after normal read-only controls and
 selection of the complete 13-preparation manifest; 525 current source inputs
-remained unchanged. The original807 inventory is now 777 removed / 30 retained.
+remained unchanged. That earlier cleanup checkpoint recorded 777 removed / 30
+retained; the current inventory below records 787 removed / 20 retained.
 The remaining real source/evidence references are being migrated before cleanup;
 original account data and the still-required signing material remain intact.
 
@@ -274,9 +275,11 @@ and retired all owned resources. Its 102 evidence files were adopted and
 independently read back. The real Error Prone provider is now preserved in
 Audio; the exact Jimfs source increases the lock from 316 to 317 projects.
 Seventeen source tests and 30 Audio tests passed, followed by all ten normal
-source reconciliation/verification commands. The unique r6 full has started
-with the unchanged 24 GiB / 8 CPU / 36 GiB owned-output and 16 GiB free-space
-floor. A successful complete APEX and Android runtime remain separate gates.
+source reconciliation/verification commands. The subsequent r6 full failed on real CTS/STSs providers while preserving
+its 24 GiB / 8 CPU / 36 GiB owned-output and 16 GiB free-space floor. It passed
+normal source-after verification and retired completely. Its 101 canonical
+evidence files were independently read back. A recursive real provider/source
+repair is in progress; complete APEX and Android runtime remain separate gates.
 
 The earlier shallow application-input checks did not prove the recursive
 EvidenceWitness graph. An actual IHG source branch exposed historical host
@@ -287,5 +290,43 @@ source-subtree, wrong-pin and required-input controls passed, along with
 seven other normal source inspections. The complete 13-preparation selector
 is now selected and 392 retained files were independently verified. These
 checks perform no Main or Android actions and grant zero final42 acceptance.
-The published cleanup snapshot remains 777 removed / 30 retained; later
-deletions require fresh owner, mount and unique-material evidence.
+The actual cleanup snapshot is now 787 removed / 20 retained, after ten
+additional source roots passed fresh owner, mount, exact-input and unique-material
+checks. Further deletions remain dependent on complete current source closure.
+
+## Native normal Go budget and kernel continuation
+
+The ordinary Native pair producer now preserves its explicit Go scheduler,
+memory and GC budget in the actual analyzer environment and records entry/exit
+metrics. The normal Rust tool build completed all 24 commands, preserving the
+597-project lock. The independent build-host import passed all 15 commands and
+actual loader checks; 38 real Linux controls passed with zero skips. Eight
+portable metric-consumer controls accompany the source capsule. These results
+grant no compiled engine/ART, QPR1 or Android runtime qualification. All 103 source batches and checksum verification completed; all 233
+normal transfer and validation commands passed on the new host, with complete
+owned retirement and unchanged origin inputs. The independent new Go-budget
+recipe is undergoing its final normal source preparation before the first full
+attempt. This source-only job recorded cache-limit events and a roughly 2 MiB
+transient peak above its 4 GiB setting; its existing contract rejects OOM and
+swap, both of which remained zero. The complete-build resource contract is
+unchanged.
+
+Four real diskless VM cases reproduced the Binder defect in official Ubuntu43:
+plain Binder IPC succeeded while all security-context requests failed with
+EINVAL. The tests also exercised retained file credentials across an AppArmor
+profile change, UID drop and actual denied file access. The fixed kernel's
+normal configuration preserves every original feature, and required host tools
+have built successfully. The r3 complete build reached kernel linking, then
+failed because its unchanged built-in module range generator required GNU awk.
+All commands and the owning unit retired, with unchanged sources and zero OOM
+or swap. The exact GNU awk package was privately extracted and its real loader
+and required features passed; no host package was installed. A normal r4 build
+is now continuing under the same limits. Positive fixed-kernel VM controls,
+host deployment and Android boot remain unpassed.
+
+The official GSI channel was checked again on 8 November: QPR1 remains the
+latest listed stable channel, while QPR2/QPR3 are beta channels. The selected
+CP3A.260905.010 image still has September security metadata. No November
+security or certified-device qualification is asserted. The current Gallery
+host adapter verifies the actual 2,144-class candidate and passed 14 exact
+host-leaf controls, with no old-root opens and no Main or Android actions.

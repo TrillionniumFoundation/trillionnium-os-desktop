@@ -172,6 +172,39 @@ jobs:
               sys.path.pop(0)
           print('21 source/admission controls passed; Android runtime is a separate gate')
           PYCLOSURE
+      - name: Verify Native normal Go budget source and controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYNATIVE' 2>&1 | tee "$RUNNER_TEMP/a08/native-go-budget-controls.log"
+          import hashlib
+          import importlib.util
+          import json
+          from pathlib import Path, PurePosixPath
+          import stat
+          import unittest
+          directory = Path('compat/android/pocket4/native597-explicit-go-budget-r1').resolve()
+          manifest = json.loads((directory / 'FILES.json').read_bytes())
+          for name, expected in manifest.items():
+              relative = PurePosixPath(name)
+              if relative.is_absolute() or '..' in relative.parts or str(relative) != name:
+                  raise SystemExit('Native source path is not canonical')
+              path = directory / name
+              if path.is_symlink() or not path.resolve().is_relative_to(directory):
+                  raise SystemExit('Native source path escaped its capsule')
+              if not stat.S_ISREG(path.lstat().st_mode) or path.lstat().st_nlink != 1:
+                  raise SystemExit('Native source file type differs')
+              raw = path.read_bytes()
+              if {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()} != expected:
+                  raise SystemExit('Native source capsule hash differs: ' + name)
+          spec = importlib.util.spec_from_file_location('native_budget_controls', directory / 'tests/test_go_runtime_budget.py')
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(module))
+          if result.testsRun != 8 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('All eight actual Native metric-consumer controls must execute')
+          print('8 Native metric-consumer controls passed; Android pair and runtime remain separate gates')
+          PYNATIVE
       - name: Verify Audio compiler and Ninja evidence guards
         shell: bash
         run: |
