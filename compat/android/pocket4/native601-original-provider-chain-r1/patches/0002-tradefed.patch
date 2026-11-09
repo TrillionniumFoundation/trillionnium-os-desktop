@@ -1,0 +1,195 @@
+--- a/android/native-generation-pair/source-lock.json
++++ b/android/native-generation-pair/source-lock.json
+@@ -405,7 +405,9 @@
+         "tests/tests/telecom2",
+         "tests/tests/telecom3",
+         "tools/cts-dynamic-config",
+-        "tests/signature/lib/common"
++        "tests/signature/lib/common",
++        "tools/cts-tradefed",
++        "tools/cts-v-host"
+       ]
+     },
+     {
+@@ -5028,7 +5030,8 @@
+         "java/test/settings",
+         "java/test/stress",
+         "java/test/utils",
+-        "java/utils/pigweed"
++        "java/utils/pigweed",
++        "java/test/chdts"
+       ]
+     },
+     {
+@@ -5803,7 +5806,8 @@
+         "executor",
+         "external",
+         "framework",
+-        "modules"
++        "modules",
++        "android/cts"
+       ]
+     },
+     {
+@@ -9666,7 +9670,8 @@
+       "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+       "sparse_paths": [
+         "libvtswidevine",
+-        "vts_hal_hidl_target"
++        "vts_hal_hidl_target",
++        "tools/vts-core-tradefed"
+       ]
+     },
+     {
+--- a/tools/droidloom-update/src/native_generation_pair_build.rs
++++ b/tools/droidloom-update/src/native_generation_pair_build.rs
+@@ -20,9 +20,9 @@
+ const ENGINE_BP_BYTES: usize = 25403;
+ const BASE_SOURCE_LOCK_SHA: &str = "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d";
+ const PAIR_SOURCE_LOCK: &str = "android/native-generation-pair/source-lock.json";
+-const SOURCE_LOCK_BYTES: usize = 354272;
+-const SOURCE_LOCK_SHA: &str = "fb05fce28e2541cc1c791350ede62d36579ac459922b6f394680930cba9f6d9d";
+-// Exact original additions from frozen manifest SHA-256 fb05fce28e2541cc1c791350ede62d36579ac459922b6f394680930cba9f6d9d.
++const SOURCE_LOCK_BYTES: usize = 354415;
++const SOURCE_LOCK_SHA: &str = "02fd330466357ecf744d85f27d23b03fabde46f31fae3ef69a5f6634e66e8837";
++// Exact original additions from frozen manifest SHA-256 02fd330466357ecf744d85f27d23b03fabde46f31fae3ef69a5f6634e66e8837.
+ // Closure qualification remains separate from this source attestation.
+ const PAIR_ADDITIONS_JSON: &str = r#"[
+   {
+@@ -647,7 +647,8 @@
+       "java/test/settings",
+       "java/test/stress",
+       "java/test/utils",
+-      "java/utils/pigweed"
++      "java/utils/pigweed",
++      "java/test/chdts"
+     ]
+   },
+   {
+@@ -1422,7 +1423,8 @@
+       "executor",
+       "external",
+       "framework",
+-      "modules"
++      "modules",
++      "android/cts"
+     ]
+   },
+   {
+@@ -5285,7 +5287,8 @@
+     "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+     "sparse_paths": [
+       "libvtswidevine",
+-      "vts_hal_hidl_target"
++      "vts_hal_hidl_target",
++      "tools/vts-core-tradefed"
+     ]
+   },
+   {
+@@ -7443,6 +7446,8 @@
+         ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom3"),
+         ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tools/cts-dynamic-config"),
+         ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/signature/lib/common"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tools/cts-tradefed"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tools/cts-v-host"),
+         ("packages/modules/Bluetooth", "c77db469de80f86660bc053bec4dee0c5d4b947c", "apex/permissions"),
+         ("packages/modules/Bluetooth", "c77db469de80f86660bc053bec4dee0c5d4b947c", "framework/tests/util"),
+         ("packages/modules/Bluetooth", "c77db469de80f86660bc053bec4dee0c5d4b947c", "tests/pandora/android_server"),
+@@ -7875,6 +7880,7 @@
+         validate_source_extension(&base, &good).unwrap();
+         assert_eq!(good["projects"].as_array().unwrap().len(), 600);
+         let mut actual_failed_r3 = good.clone();
++        remove_later_tradefed_cones(&mut actual_failed_r3);
+         // Reconstruct historical bytes before the later complete signature provider selection.
+         let cts = actual_failed_r3["projects"].as_array_mut().unwrap().iter_mut()
+             .find(|p| p["path"] == "cts").unwrap();
+@@ -8048,6 +8054,73 @@
+         assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
+     }
+ 
++
++    // Keep each earlier failed lock's bytes exact after the r7 finite Tradefed
++    // input extension. This helper is only historical test reconstruction.
++    fn remove_later_tradefed_cones(value: &mut Value) {
++        for (path, cone) in [
++            ("cts", "tools/cts-tradefed"),
++            ("cts", "tools/cts-v-host"),
++            ("system/chre", "java/test/chdts"),
++            ("test/vts", "tools/vts-core-tradefed"),
++            ("external/deqp", "android/cts"),
++        ] {
++            let project = value["projects"].as_array_mut().unwrap().iter_mut()
++                .find(|p| p["path"] == path).unwrap();
++            let paths = project["sparse_paths"].as_array_mut().unwrap();
++            assert_eq!(paths.iter().filter(|p| *p == cone).count(), 1);
++            paths.retain(|p| p != cone);
++        }
++    }
++
++    #[test]
++    fn ordinary_pair_tradefed_providers_require_original_recursive_cones() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        assert_eq!(good["projects"].as_array().unwrap().len(), 600);
++        let mut actual_failed_r7 = good.clone();
++        remove_later_tradefed_cones(&mut actual_failed_r7);
++        let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r7).unwrap());
++        assert_eq!(digest(failed_raw.as_bytes()), "fb05fce28e2541cc1c791350ede62d36579ac459922b6f394680930cba9f6d9d");
++        let generic: droidloom_source::SparseSourceLock =
++            serde_json::from_value(actual_failed_r7.clone()).unwrap();
++        assert!(droidloom_source::build_plan(&generic).is_ok());
++        assert!(validate_source_extension(&base, &actual_failed_r7).is_err());
++        for (path, commit, cone) in [
++            ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tools/cts-tradefed"),
++            ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tools/cts-v-host"),
++            ("system/chre", "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4", "java/test/chdts"),
++            ("test/vts", "886725543e4078f87fc87aabb90b1871c7536b03", "tools/vts-core-tradefed"),
++            ("external/deqp", "eae519aaa6980b2a34ec07141bb19de3f6ddf69e", "android/cts"),
++        ] {
++            let index = good["projects"].as_array().unwrap().iter()
++                .position(|p| p["path"] == path).unwrap();
++            assert_eq!(good["projects"][index]["commit"], commit);
++            assert_eq!(good["projects"][index]["sparse_paths"].as_array().unwrap()
++                .iter().filter(|p| *p == cone).count(), 1);
++            // A lone BP still omits Java implementations, wrappers, resources,
++            // suite tests and the retained Deqp runner dependency.
++            for suffix in ["Android.bp", "src"] {
++                let mut partial = good.clone();
++                let paths = partial["projects"][index]["sparse_paths"].as_array_mut().unwrap();
++                paths.retain(|p| p != cone);
++                paths.push(json!(format!("{cone}/{suffix}")));
++                assert!(validate_source_extension(&base, &partial).is_err());
++            }
++            let mut wrong_commit = good.clone();
++            wrong_commit["projects"][index]["commit"] = json!("0000000000000000000000000000000000000000");
++            assert!(validate_source_extension(&base, &wrong_commit).is_err());
++        }
++        let mut widened = good;
++        let cts = widened["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "cts").unwrap();
++        cts["sparse_paths"].as_array_mut().unwrap().push(json!("tools"));
++        assert!(validate_source_extension(&base, &widened).is_err());
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
+     #[test]
+     fn ordinary_pair_signature_common_requires_complete_original_input() {
+         let base: Value = serde_json::from_slice(include_bytes!(
+@@ -8061,6 +8134,7 @@
+         assert_eq!(good["projects"][index]["sparse_paths"].as_array().unwrap().iter()
+             .filter(|p| p.as_str() == Some("tests/signature/lib/common")).count(), 1);
+         let mut actual_failed_r6 = good.clone();
++        remove_later_tradefed_cones(&mut actual_failed_r6);
+         actual_failed_r6["projects"][index]["sparse_paths"].as_array_mut().unwrap()
+             .retain(|p| p != "tests/signature/lib/common");
+         let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r6).unwrap());
+@@ -8096,6 +8170,7 @@
+         assert_eq!(good["projects"][index]["sparse_paths"].as_array().unwrap().iter()
+             .filter(|p| p.as_str() == Some("apex")).count(), 1);
+         let mut actual_failed_r5 = good.clone();
++        remove_later_tradefed_cones(&mut actual_failed_r5);
+         // Reconstruct historical bytes before the later complete signature provider selection.
+         let cts = actual_failed_r5["projects"].as_array_mut().unwrap().iter_mut()
+             .find(|p| p["path"] == "cts").unwrap();
