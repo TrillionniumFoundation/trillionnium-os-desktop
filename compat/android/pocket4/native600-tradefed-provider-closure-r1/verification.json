@@ -1,0 +1,392 @@
+{
+  "full_build_qualified": false,
+  "known_new_blob_sizes": {
+    "bytes": 41251,
+    "observed_files": 10,
+    "total_65_file_byte_size": null,
+    "unknown_files": 55
+  },
+  "materialization_qualified": false,
+  "native_r7_failure": {
+    "exit_code": 1,
+    "host": "ai395",
+    "job_id": "1a1bf1af8e1-5e21-3d6",
+    "output_complete": true,
+    "output_durable": true,
+    "reported_missing_modules": [
+      "vts-tradefed",
+      "cts-tradefed-tests",
+      "cts-v-host-tradefed-tests",
+      "chdts-tradefed-tests"
+    ],
+    "source": "root independent actual job observation",
+    "state": "failed",
+    "stdout_bytes": 62607,
+    "stdout_sha256": "5c860bcfaacc252d1ee28ac895fe088faaa09471b3eb0ae7c08fab26fbd448cc"
+  },
+  "offline_replay": {
+    "full_builds_started": 0,
+    "negative_controls": [
+      {
+        "actual_exit_code": 1,
+        "case": "same-length-wrong-base-before-patch-application",
+        "expected_exit_nonzero": true,
+        "input_unchanged": true,
+        "reason": "SHA mismatch",
+        "stderr_sha256": "0159ae033d0b261903b7431330e33e5cacda109676c36681d6ee9f9970dbc74e",
+        "stdout_bytes": 0
+      }
+    ],
+    "production_ready": false,
+    "python_version": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "runs": [
+      {
+        "added_sparse_paths": 9,
+        "changed_projects": [
+          "cts",
+          "system/chre",
+          "external/deqp",
+          "test/vts"
+        ],
+        "exit_code": 0,
+        "full_builds_started": 0,
+        "materialized_provider_files_verified": false,
+        "mode": "ordinary",
+        "network_used": false,
+        "passed": true,
+        "policies_and_other_inputs_unchanged": true,
+        "project_commits_unchanged": true,
+        "runtime_qualified": false,
+        "rust_tests_run": false,
+        "schema": "pocket4-native600-tradefed-source-proof-v1",
+        "stages": [
+          {
+            "apply_check_exit": 0,
+            "apply_exit": 0,
+            "patch": "owner-signature-team-prerequisite.patch",
+            "result_bytes": 354272,
+            "result_sha256": "fb05fce28e2541cc1c791350ede62d36579ac459922b6f394680930cba9f6d9d"
+          },
+          {
+            "apply_check_exit": 0,
+            "apply_exit": 0,
+            "patch": "native-provider-sparse-closure.patch",
+            "result_bytes": 354573,
+            "result_sha256": "881bf0ef909da06da09fe976c84c4efc1e1eebc6182fd3792f236b5eec4cbdcd"
+          }
+        ],
+        "temporary_directory_retired": true,
+        "unchanged_projects": 596
+      },
+      {
+        "added_sparse_paths": 9,
+        "changed_projects": [
+          "cts",
+          "system/chre",
+          "external/deqp",
+          "test/vts"
+        ],
+        "exit_code": 0,
+        "full_builds_started": 0,
+        "materialized_provider_files_verified": false,
+        "mode": "optimized",
+        "network_used": false,
+        "passed": true,
+        "policies_and_other_inputs_unchanged": true,
+        "project_commits_unchanged": true,
+        "runtime_qualified": false,
+        "rust_tests_run": false,
+        "schema": "pocket4-native600-tradefed-source-proof-v1",
+        "stages": [
+          {
+            "apply_check_exit": 0,
+            "apply_exit": 0,
+            "patch": "owner-signature-team-prerequisite.patch",
+            "result_bytes": 354272,
+            "result_sha256": "fb05fce28e2541cc1c791350ede62d36579ac459922b6f394680930cba9f6d9d"
+          },
+          {
+            "apply_check_exit": 0,
+            "apply_exit": 0,
+            "patch": "native-provider-sparse-closure.patch",
+            "result_bytes": 354573,
+            "result_sha256": "881bf0ef909da06da09fe976c84c4efc1e1eebc6182fd3792f236b5eec4cbdcd"
+          }
+        ],
+        "temporary_directory_retired": true,
+        "unchanged_projects": 596
+      }
+    ],
+    "runtime_qualified": false,
+    "schema": "pocket4-native600-tradefed-offline-replay-v1",
+    "source_materialization_run": false
+  },
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "pocket4-native600-tradefed-provider-verification-v1",
+  "source_observations": {
+    "full_builds_started": 0,
+    "known_executions": [
+      {
+        "host": "ai395",
+        "output_complete": true,
+        "purpose": "source_pointer_read",
+        "session_id": "dpty-9aca251c743909ae3803ae5a03832cc643fa05626d03af0aa06fd56a3accdb8f",
+        "source_store": "p4NativeProviderSourcePointersPtyRead",
+        "status": {
+          "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+          "bytes_seen": 15362,
+          "bytes_stored": 15362,
+          "capture_error": null,
+          "closed": false,
+          "created_unix_ms": 1794210801821,
+          "exit_code": 0,
+          "output_complete": true,
+          "owner_pid": 2528061,
+          "pid": 2528062,
+          "state": "exited"
+        }
+      },
+      {
+        "host": "ai395",
+        "output_complete": true,
+        "purpose": "git_location_read",
+        "session_id": "dpty-63cd4317109e6c21b2aeba45bf2c2a42cf60be1b974762a2d1ede79757f299cf",
+        "source_store": "p4NativeGitLocationRead",
+        "status": {
+          "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+          "bytes_seen": 4359,
+          "bytes_stored": 4359,
+          "capture_error": null,
+          "closed": false,
+          "created_unix_ms": 1794210848459,
+          "exit_code": 0,
+          "output_complete": true,
+          "owner_pid": 2528278,
+          "pid": 2528279,
+          "state": "exited"
+        }
+      },
+      {
+        "host": "ai395",
+        "output_complete": true,
+        "purpose": "initial_object_size_refusal",
+        "session_id": "dpty-dfa4b949c496f658f34ebf426dd134d8a16093ddd2b33b8c125819afb5a0d798",
+        "source_store": "p4NativeProviderObjectsRead0",
+        "status": {
+          "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+          "bytes_seen": 425,
+          "bytes_stored": 425,
+          "capture_error": null,
+          "closed": false,
+          "created_unix_ms": 1794210930355,
+          "exit_code": 1,
+          "output_complete": true,
+          "owner_pid": 2528906,
+          "pid": 2528907,
+          "state": "exited"
+        }
+      },
+      {
+        "host": "ai395",
+        "output_complete": true,
+        "purpose": "original_tree_and_definition_read",
+        "session_id": "dpty-b720a05e9cafae4aeaad6a52b39fadab2faee45672fab7ec145b6a72fd1b9fb1",
+        "source_store": "p4NativeProviderObjectsRead2Page1",
+        "status": {
+          "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+          "bytes_seen": 23242,
+          "bytes_stored": 23242,
+          "capture_error": null,
+          "closed": false,
+          "created_unix_ms": 1794211169079,
+          "exit_code": 0,
+          "output_complete": true,
+          "owner_pid": 2531448,
+          "pid": 2531449,
+          "state": "exited"
+        }
+      },
+      {
+        "host": "ai395",
+        "output_complete": true,
+        "purpose": "source_dependency_closure_read",
+        "session_id": "dpty-2864269ee5353c028b493f15e872fcece7757032bf102de41be5ec546f016422",
+        "source_store": "p4NativeProviderClosureRead1",
+        "status": {
+          "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+          "bytes_seen": 15113,
+          "bytes_stored": 15113,
+          "capture_error": null,
+          "closed": false,
+          "created_unix_ms": 1794211574431,
+          "exit_code": 0,
+          "output_complete": true,
+          "owner_pid": 2535623,
+          "pid": 2535624,
+          "state": "exited"
+        }
+      },
+      {
+        "host": "ai395",
+        "output_complete": true,
+        "purpose": "dependency_projection_output_bound_refusal",
+        "session_id": "dpty-feb7aab8909d06667369ea897fdec6fd74e95d62bd811220d42be550f5736d9a",
+        "source_store": "p4NativeProviderDependencyRead0",
+        "status": {
+          "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+          "bytes_seen": 292,
+          "bytes_stored": 292,
+          "capture_error": null,
+          "closed": false,
+          "created_unix_ms": 1794211643963,
+          "exit_code": 1,
+          "output_complete": true,
+          "owner_pid": 2537013,
+          "pid": 2537014,
+          "state": "exited"
+        }
+      },
+      {
+        "host": "ai395",
+        "output_complete": true,
+        "purpose": "direct_dependency_exact_read",
+        "session_id": "dpty-4ce7bb89284eba12fc0c617541e818331c8c1268d9482781f94e17cae0d2c866",
+        "source_store": "p4NativeProviderDependencyRead2Page0",
+        "status": {
+          "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+          "bytes_seen": 4284,
+          "bytes_stored": 4284,
+          "capture_error": null,
+          "closed": false,
+          "created_unix_ms": 1794211705709,
+          "exit_code": 0,
+          "output_complete": true,
+          "owner_pid": 2537961,
+          "pid": 2537962,
+          "state": "exited"
+        }
+      },
+      {
+        "host": "ai395",
+        "output_complete": true,
+        "purpose": "deqp_parent_exact_read",
+        "session_id": "dpty-18b34130059b19af9d45a3c74872452c16b9cd2cf847e3aedecf44c30a3b8ded",
+        "source_store": "p4NativeDeqpParentRead",
+        "status": {
+          "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+          "bytes_seen": 3423,
+          "bytes_stored": 3423,
+          "capture_error": null,
+          "closed": false,
+          "created_unix_ms": 1794211744696,
+          "exit_code": 0,
+          "output_complete": true,
+          "owner_pid": 2538343,
+          "pid": 2538344,
+          "state": "exited"
+        }
+      }
+    ],
+    "latest_owner_source_lock_binary_read": {
+      "bytes": 354272,
+      "chunks": [
+        {
+          "chunk_sha256": "79b8e09dfe6285caa200de9c7dd9721084202028a417c79d7746557f29a3c4e8",
+          "eof": false,
+          "next_offset": 65536,
+          "offset": 0,
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-signature-team-r1/android/native-generation-pair/source-lock.json",
+          "size": 354272,
+          "version": "66306:84563742:354272:1794206098433049923:1794206515826109146"
+        },
+        {
+          "chunk_sha256": "4882ccf7c11c36898d51bd8397e7a4addc64b4a03e12aab3bf23f9c855cd27cd",
+          "eof": false,
+          "next_offset": 131072,
+          "offset": 65536,
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-signature-team-r1/android/native-generation-pair/source-lock.json",
+          "size": 354272,
+          "version": "66306:84563742:354272:1794206098433049923:1794206515826109146"
+        },
+        {
+          "chunk_sha256": "a3bc577b53eb931c2f5b122f312ae1c40ce79d570d79ae46b01d5b0dd09a0644",
+          "eof": false,
+          "next_offset": 196608,
+          "offset": 131072,
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-signature-team-r1/android/native-generation-pair/source-lock.json",
+          "size": 354272,
+          "version": "66306:84563742:354272:1794206098433049923:1794206515826109146"
+        },
+        {
+          "chunk_sha256": "f7064fe6c4e208231446f26585fbce676e527e44a8e0cfc36b501b99fc2fc183",
+          "eof": false,
+          "next_offset": 262144,
+          "offset": 196608,
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-signature-team-r1/android/native-generation-pair/source-lock.json",
+          "size": 354272,
+          "version": "66306:84563742:354272:1794206098433049923:1794206515826109146"
+        },
+        {
+          "chunk_sha256": "b193ec82c87044d1cefc8581d06c9741be3c56bab6b884f466f038a63d67f61d",
+          "eof": false,
+          "next_offset": 327680,
+          "offset": 262144,
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-signature-team-r1/android/native-generation-pair/source-lock.json",
+          "size": 354272,
+          "version": "66306:84563742:354272:1794206098433049923:1794206515826109146"
+        },
+        {
+          "chunk_sha256": "599b5de51ff83e925553c205dc2e0106d74e298693dea32281922660ba65e00c",
+          "eof": true,
+          "next_offset": 354272,
+          "offset": 327680,
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-signature-team-r1/android/native-generation-pair/source-lock.json",
+          "size": 354272,
+          "version": "66306:84563742:354272:1794206098433049923:1794206515826109146"
+        }
+      ],
+      "full_sha_checked_locally": true,
+      "host": "ai395",
+      "pinned_version": "66306:84563742:354272:1794206098433049923:1794206515826109146",
+      "sha256": "fb05fce28e2541cc1c791350ede62d36579ac459922b6f394680930cba9f6d9d"
+    },
+    "owner_source_writes": 0,
+    "schema": "pocket4-native600-tradefed-readonly-observations-v1",
+    "source_tree_manifest": {
+      "bytes": 392995,
+      "held_fd_named_identity_and_after_read_hash_checked": true,
+      "sha256": "3f875c5587b6f7838d2ac40eae3bf072e9a0b68f007d471b34cfabba2ed9bb2c"
+    },
+    "unresolved_executions": [
+      {
+        "declared_command_timeout_alarm_seconds": 48,
+        "exact_output_log_read": "FileNotFoundError; absence is not terminal proof",
+        "exit_code": null,
+        "host": "ai395",
+        "output_complete": false,
+        "purpose": "read_only_original_blob_sizes",
+        "same_key_reconcile_reused": true,
+        "session_id": "dpty-77cbd4caf4e803d69f2cb54983e73b90344365a0bb1121263f516990f1f7a71a",
+        "start_acknowledgement": false,
+        "state": "launch_unknown",
+        "target_scope": "ai395 original pinned Git metadata and official HTTPS bytes in memory; no Pocket4 own-root references",
+        "terminal_proven": false,
+        "writes_intended": 0
+      },
+      {
+        "declared_command_timeout_alarm_seconds": 12,
+        "exit_code": null,
+        "host": "ai395",
+        "output_complete": false,
+        "purpose": "read_only_exact_terminal_metadata",
+        "session_id": "dpty-0e77a025451edeaeb9e5f565759f52663af88985386edcb350832b9707b397e5",
+        "start_acknowledgement": false,
+        "state": "launch_unknown",
+        "target_scope": "exact previous ai395 terminal metadata directory only; no Pocket4 own-root references",
+        "terminal_proven": false,
+        "writes_intended": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,45 @@
+
+running 40 tests
+test production_identity::tests::authority_aliases_and_writable_files_are_rejected ... ok
+test production_identity::tests::broker_revalidation_rejects_changed_authority ... ok
+test production_identity::tests::broker_revalidation_rejects_record_body_change ... ok
+test production_identity::tests::broker_revalidation_rejects_replaced_lock_inode ... ok
+test production_identity::tests::broker_revalidation_rejects_replaced_registry_directory ... ok
+test production_identity::tests::broker_revalidation_rejects_same_bytes_replaced_record ... ok
+test production_identity::tests::dedicated_group_with_an_explicit_member_is_rejected ... ok
+test production_identity::tests::dedicated_primary_group_shared_by_another_account_is_rejected ... ok
+test production_identity::tests::duplicate_dedicated_group_name_is_rejected ... ok
+test production_identity::tests::exact_name_and_numeric_grants_are_valid_but_never_runtime_authority ... ok
+test production_identity::tests::fifo_authority_is_rejected_without_waiting_for_a_writer ... ok
+test production_identity::tests::inactive_other_cell_reservation_still_blocks_overlapping_ids ... ok
+test production_identity::tests::interrupted_record_is_preserved_and_cannot_be_reclaimed ... ok
+test production_identity::tests::lease_symlink_cannot_touch_an_external_file ... ok
+test production_identity::tests::live_lease_blocks_reentry_and_drop_preserves_the_reservation ... ok
+test production_identity::tests::local_accounts_and_groups_inside_the_range_are_rejected ... ok
+test production_identity::tests::malformed_overflow_and_reserved_ids_are_rejected ... ok
+test production_identity::tests::missing_dedicated_account_is_not_replaced_by_desktop_authority ... ok
+test production_identity::tests::old_reservation_is_never_overwritten_for_an_upgrade ... ok
+test production_identity::tests::overlapping_or_duplicate_grants_rejected ... ok
+test production_identity::tests::persisted_sentinel_owner_records_are_rejected_and_preserved ... ok
+test production_identity::tests::registry_symlink_does_not_redirect_reservation_writes ... ok
+test production_identity::tests::sentinel_host_and_service_ids_are_not_configured_authority ... ok
+test production_identity::tests::short_grant_rejected_without_creating_a_registry ... ok
+test production_identity::tests::stale_authority_fails_before_any_registry_write ... ok
+test production_namespace::tests::actual_clone_pidfd_proc_binding_fd_scrub_and_lease_lifetime ... ok
+test production_namespace::tests::actual_proc_thread_view_binds_to_current_pid_namespace ... ok
+test production_namespace::tests::complete_map_readback_rejects_extra_ranges_signs_and_truncation ... ok
+test production_namespace::tests::creator_thread_death_before_initial_arm_is_rejected_and_reaped ... ok
+test production_namespace::tests::creator_thread_death_before_rearm_is_rejected_and_reaped ... ok
+test production_namespace::tests::early_exit_and_wrong_nonce_are_reaped_without_external_adoption ... ok
+test production_namespace::tests::missing_ready_has_deadline_and_pidfd_only_forced_cleanup ... ok
+test production_namespace::tests::privileged_private_userns_mapping_controls ... ignored, requires separately approved root private-userns syscall controls
+test production_namespace::tests::privileged_proc_pid_namespace_view_controls ... ignored, requires separately approved private PID/mount namespace controls
+test production_namespace::tests::proc_pid_view_requires_exact_single_namespace_ids ... ok
+test production_namespace::tests::public_entry_requires_complete_admission_without_spawning ... ok
+test production_namespace::tests::rejected_foreign_pid_never_receives_map_writes_or_signal ... ok
+test production_namespace::tests::signal_restore_error_is_reported_after_owned_child_retirement ... ok
+test production_namespace::tests::stale_reservation_rejected_before_map_and_owned_child_retires ... ok
+test production_namespace::tests::unexpected_received_fd_is_rejected_and_closed ... ok
+
+test result: ok. 38 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 2.14s
+

@@ -313,7 +313,7 @@ jobs:
           import stat
           import subprocess
           import sys
-          capsules = [('production-identity-input-validation-r1', 'FILES.json', '473a68243cb0641c1c96d4b34de2f6a29936826f12a29890bbc6a903ef366853', 8), ('native600-allocation-observation-r1', 'manifest.json', 'e0b80c1c3baa9726e1f8739fc46f85cf944dff7a458b1e5c9703b4707b2a9118', 14), ('cleanup-current-inputs-r1', 'FILES.json', '20587c6e0d3451712fa6b2d4f67ea7008648d1d1c78e553bbb89cb0ffb4b194b', 17)]
+          capsules = [('production-identity-input-validation-r1', 'FILES.json', '473a68243cb0641c1c96d4b34de2f6a29936826f12a29890bbc6a903ef366853', 8), ('native600-allocation-observation-r1', 'manifest.json', 'e0b80c1c3baa9726e1f8739fc46f85cf944dff7a458b1e5c9703b4707b2a9118', 14), ('cleanup-current-inputs-r1', 'FILES.json', '20587c6e0d3451712fa6b2d4f67ea7008648d1d1c78e553bbb89cb0ffb4b194b', 17), ('production-userns-audit-r1', 'FILES.json', 'a1deacfd0bb40fec96a22b24391abb29b7eb97dc2a76799a181c679b27e55720', 8), ('private-control-driver-guards-r1', 'FILES.json', '1cc941b09d767383099f4a3aaedf0ad7351d8d28adf9447b445acae6ad7ecf88', 6), ('official-app-source-reconciliation-r1', 'FILES.json', '4a10a8aa354c3623c9dfb951c67df8c247a2c036183683674216c0f8017e06fc', 2), ('native600-tradefed-provider-closure-r1', 'FILES.json', 'deb7afe31bbdddd7bc0f48ec6b89750b230ea9845a0e143389e45dc20d12487f', 7), ('production-namespace-broker-r2-review-r1', 'manifest.json', 'a812554f12216680d5b4106b4dac10caa300b4bf1f86871b7e36cca336ce0241', 21)]
           for name, manifest_leaf, expected_sha, expected_count in capsules:
               directory = Path('compat/android/pocket4', name).resolve(strict=True)
               raw = (directory / manifest_leaf).read_bytes()
@@ -354,6 +354,7 @@ jobs:
           run([sys.executable, '-I', '-B', '-O', str(base / 'cleanup-current-inputs-r1/verify_reference_patch.py')])
           for optimization in ([], ['-O']):
               run([sys.executable, '-I', '-B', *optimization, str(base / 'native600-allocation-observation-r1/verify.py')])
+              run([sys.executable, '-I', '-B', *optimization, str(base / 'native600-tradefed-provider-closure-r1/verify_source_delta.py'), '--repo-root', '.'])
 
           controls = """
           import importlib.util
@@ -470,6 +471,53 @@ jobs:
           print('10 private namespace controls passed in both modes; no host cleanup or Android acceptance granted')
           PYALIASES
           rmdir "$fixture_base"
+      - name: Verify existing namespace audit without production admission
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal
+          CARGO_TARGET_DIR="$RUNNER_TEMP/a08-userns-audit-target" cargo +1.93.0 test \
+            --manifest-path compat/android/pocket4/production-userns-audit-r1/Cargo.toml \
+            --locked -j 1 -- --test-threads=1 \
+            2>&1 | tee "$RUNNER_TEMP/a08/userns-audit-controls.log"
+          python3 -I -B - "$RUNNER_TEMP/a08/userns-audit-controls.log" <<'PYAUDITGUARD'
+          from pathlib import Path
+          import sys
+          text = Path(sys.argv[1]).read_text()
+          marker = 'test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;'
+          if text.count(marker) != 1:
+              raise SystemExit('All 11 namespace audit controls must execute successfully')
+          print('11 namespace audit controls passed; inactive coverage and production admission remain separate')
+          PYAUDITGUARD
+      - name: Verify private control qualification in both Python modes
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo -n /usr/bin/python3 -I -B \
+            compat/android/pocket4/private-control-driver-guards-r1/test_private_control_driver_guards.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/private-driver-normal.log"
+          sudo -n /usr/bin/python3 -I -B -O \
+            compat/android/pocket4/private-control-driver-guards-r1/test_private_control_driver_guards.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/private-driver-optimized.log"
+          python3 -I -B - "$RUNNER_TEMP/a08" <<'PYDRIVERGUARD'
+          import json
+          from pathlib import Path
+          import sys
+          for mode, optimization in (('normal', 0), ('optimized', 1)):
+              text = (Path(sys.argv[1]) / ('private-driver-' + mode + '.log')).read_text()
+              rows = [json.loads(line) for line in text.splitlines() if line.startswith('{')]
+              if len(rows) != 1:
+                  raise SystemExit('One complete private driver fixture report required')
+              expected = {'tests_run': 33, 'failures': 0, 'errors': 0, 'optimization': optimization,
+                          'fixture_only': True, 'privileged_control_executed': False,
+                          'production_admission': False, 'android_actions': 0,
+                          'nonroot_stat_is_synthetic': True,
+                          'original_optimized_false_qualification_fixtures': 5}
+              for key, value in expected.items():
+                  if type(rows[0].get(key)) is not type(value) or rows[0][key] != value:
+                      raise SystemExit('Private driver fixture result differs: ' + mode + ':' + key)
+          print('33 offline verifier controls passed in each mode; no actual private syscall control was executed')
+          PYDRIVERGUARD
       - name: Verify Audio compiler and Ninja evidence guards
         shell: bash
         run: |

@@ -1,0 +1,91 @@
+{
+  "argv": [
+    "/usr/bin/systemd-run",
+    "--user",
+    "--wait",
+    "--collect",
+    "--pipe",
+    "--unit=pocket4-owner-broker-r2-build-release-493ac",
+    "--property=CPUQuota=100%",
+    "--property=MemoryMax=3221225472",
+    "--property=MemorySwapMax=0",
+    "--property=Nice=19",
+    "--property=TasksMax=96",
+    "--property=RuntimeMaxSec=240",
+    "--property=TimeoutStopSec=2",
+    "--working-directory=/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/owner-broker-r2-review-r1/harness",
+    "--setenv=PATH=/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin:/usr/bin:/bin",
+    "--setenv=CARGO_HOME=/home/alex/work/pocket4-identity-review-20261109-493ac-r1/cargo-home",
+    "--setenv=CARGO_TARGET_DIR=/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/owner-broker-r2-review-r1/target",
+    "--setenv=TMPDIR=/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/owner-broker-r2-review-r1/tmp",
+    "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "test",
+    "--release",
+    "--offline",
+    "--locked",
+    "-j1",
+    "--test",
+    "owner_broker_review",
+    "--no-run",
+    "--message-format",
+    "json"
+  ],
+  "artifacts": [
+    {
+      "bytes": 1747976,
+      "path": "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/owner-broker-r2-review-r1/target/release/deps/owner_broker_review-98d21bd88e3f798a",
+      "profile": {
+        "debug_assertions": false,
+        "debuginfo": 0,
+        "opt_level": "3",
+        "overflow_checks": false,
+        "test": true
+      },
+      "sha256": "78dfb2058909795cc4588c5cdde5cf8dd022be0a52a7c951df23573423a43187"
+    }
+  ],
+  "diagnostics": [
+    {
+      "level": "warning",
+      "message": "methods `broker_principal` and `broker_cohort` are never used",
+      "rendered": "warning: methods `broker_principal` and `broker_cohort` are never used\n   --> production_identity.rs:849:19\n    |\n839 | impl IdentityLease {\n    | ------------------ methods in this implementation\n...\n849 |     pub(crate) fn broker_principal(&self) -> (&str, u32, u32) {\n    |                   ^^^^^^^^^^^^^^^^\n...\n854 |     pub(crate) fn broker_cohort(&self) -> &str {\n    |                   ^^^^^^^^^^^^^\n    |\n    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\n"
+    }
+  ],
+  "elapsed_seconds": 41.600455754999984,
+  "namespace_children": 0,
+  "owner_source_edited": false,
+  "registry_pins_preserved": true,
+  "returncode": 0,
+  "schema": 1,
+  "sourcepins": {
+    "Cargo.lock": {
+      "bytes": 12345,
+      "sha256": "ab7049db44479f692e994b795f6fc73efc92d0146b7fb5b6072c82b42d9c85da"
+    },
+    "Cargo.toml": {
+      "bytes": 567,
+      "sha256": "8c5591bc48959e3ab20faa5318bee9c17da92f76a3fe0e4f0e6b48131e886511"
+    },
+    "production_identity.rs": {
+      "bytes": 56537,
+      "sha256": "44822e3982ae7645c057e3622e8c2c68da64e6c820e569dfd62d5c30f3f07fb8"
+    },
+    "production_namespace.rs": {
+      "bytes": 43153,
+      "sha256": "32bc2e34986246afda38370795f1c56d567cc6c2646762ef38fd7a601733b6e3"
+    },
+    "production_namespace_child.rs": {
+      "bytes": 19781,
+      "sha256": "5c3d143be5a58f8986ea0dd4b2c8b4f0f586e8bc65da0069ababcbca2561a2aa"
+    },
+    "production_namespace_tests.rs": {
+      "bytes": 24305,
+      "sha256": "478a6f4e92b166fe6f29984278c3f3c0dfad9baed21d9c779928d5dfbc1c033f"
+    },
+    "review.rs": {
+      "bytes": 181,
+      "sha256": "73a0b94201a893e67c7a0c021649d911776f30283eb90a10cf38397f4e8cc2b5"
+    }
+  },
+  "unit_status": "LoadState=not-found\nActiveState=inactive\nSubState=dead\nMainPID=0\nControlGroup=\n"
+}
