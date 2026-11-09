@@ -1,0 +1,112 @@
+--- a/android/native-generation-pair/source-lock.json
++++ b/android/native-generation-pair/source-lock.json
+@@ -5573,7 +5573,8 @@
+         "test/VFS",
+         "tools",
+         "unittests",
+-        "utils"
++        "utils",
++        "soong"
+       ]
+     },
+     {
+@@ -7033,7 +7034,8 @@
+         "tools",
+         "unittests",
+         "utils/TableGen",
+-        "utils/unittest"
++        "utils/unittest",
++        "soong"
+       ]
+     },
+     {
+--- a/tools/droidloom-update/src/native_generation_pair_build.rs
++++ b/tools/droidloom-update/src/native_generation_pair_build.rs
+@@ -20,9 +20,9 @@
+ const ENGINE_BP_BYTES: usize = 25403;
+ const BASE_SOURCE_LOCK_SHA: &str = "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d";
+ const PAIR_SOURCE_LOCK: &str = "android/native-generation-pair/source-lock.json";
+-const SOURCE_LOCK_BYTES: usize = 348102;
+-const SOURCE_LOCK_SHA: &str = "2b699174977614e080cf99a991f3e648774b24581c4ecdc29f1bd53b7b01ef23";
+-// Exact original additions from frozen manifest SHA-256 2b699174977614e080cf99a991f3e648774b24581c4ecdc29f1bd53b7b01ef23.
++const SOURCE_LOCK_BYTES: usize = 348136;
++const SOURCE_LOCK_SHA: &str = "b1fb40b9de4e2ab35407022862706b9d0a7e580a59e607b27bc9d99ec0a67fbb";
++// Exact original additions from frozen manifest SHA-256 b1fb40b9de4e2ab35407022862706b9d0a7e580a59e607b27bc9d99ec0a67fbb.
+ // Closure qualification remains separate from this source attestation.
+ const PAIR_ADDITIONS_JSON: &str = r#"[
+   {
+@@ -1251,7 +1251,8 @@
+       "test/VFS",
+       "tools",
+       "unittests",
+-      "utils"
++      "utils",
++      "soong"
+     ]
+   },
+   {
+@@ -2711,7 +2712,8 @@
+       "tools",
+       "unittests",
+       "utils/TableGen",
+-      "utils/unittest"
++      "utils/unittest",
++      "soong"
+     ]
+   },
+   {
+@@ -7600,6 +7602,54 @@
+         assert_eq!(base["status"], extended["status"]);
+     }
+     #[test]
++    fn ordinary_pair_llvm_plugins_require_complete_original_cones() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        let mut previous_without_plugins = good.clone();
++        for (path, commit) in [
++            ("external/llvm", "429d6c6097aea3326e49fc8e87cc7658b750c5d7"),
++            ("external/clang", "bdc4d062dc4550869e0825da19fe8fa720db860a"),
++        ] {
++            let project = good["projects"].as_array().unwrap().iter()
++                .find(|p| p["path"] == path).unwrap();
++            assert_eq!(project["commit"], commit);
++            assert_eq!(project["sparse_paths"].as_array().unwrap().iter()
++                .filter(|p| *p == "soong").count(), 1);
++            // A Blueprint-only selection still omits the Go registration
++            // sources and must not reproduce the observed full-build failure.
++            let one_go_file = if path == "external/llvm" { "soong/llvm.go" } else { "soong/clang.go" };
++            for replacement in [None, Some("soong/Android.bp"), Some(one_go_file)] {
++                let mut incomplete = good.clone();
++                let p = incomplete["projects"].as_array_mut().unwrap().iter_mut()
++                    .find(|p| p["path"] == path).unwrap();
++                let paths = p["sparse_paths"].as_array_mut().unwrap();
++                paths.retain(|value| value != "soong");
++                if let Some(value) = replacement { paths.push(json!(value)); }
++                assert!(validate_source_extension(&base, &incomplete).is_err(),
++                    "the complete original plugin cone is required: {path}");
++            }
++            let mut wrong_revision = good.clone();
++            let p = wrong_revision["projects"].as_array_mut().unwrap().iter_mut()
++                .find(|p| p["path"] == path).unwrap();
++            p["commit"] = json!("0000000000000000000000000000000000000000");
++            assert!(validate_source_extension(&base, &wrong_revision).is_err());
++            let p = previous_without_plugins["projects"].as_array_mut().unwrap().iter_mut()
++                .find(|p| p["path"] == path).unwrap();
++            p["sparse_paths"].as_array_mut().unwrap().retain(|value| value != "soong");
++        }
++        // Generic materialization can accept the old incomplete selection;
++        // this complete-pair route must reject that exact omission.
++        let generic: droidloom_source::SparseSourceLock =
++            serde_json::from_value(previous_without_plugins.clone()).unwrap();
++        assert!(droidloom_source::build_plan(&generic).is_ok());
++        assert!(validate_source_extension(&base, &previous_without_plugins).is_err());
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
++    #[test]
+     fn ordinary_pair_source_extension_rejects_revision_policy_and_path_drift() {
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
