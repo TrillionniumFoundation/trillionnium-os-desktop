@@ -284,7 +284,7 @@ jobs:
           import stat
           import sys
           import unittest
-          capsules = {'native597-original-llvm-plugin-cones-r1': ('75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c', 12), 'audio-canonical-custody-r1': ('42ead27bc89d5d866eddfd951e0dbfb91af1ff1c4e2843946fe4eee34925f1d5', 3), 'apparmor-binder-retained-credential-r1': ('243e3355ecfa6f96af8839ffa10854c796a3b22e03a5d924c778fb47aa83f4b9', 6), 'production-identity-reservation-r1': ('eee9cec9ecbd9b71cdda9df13bb0446124001a5826932709561126896881ffea', 3), 'native600-original-provider-closure-r1': ('d40f8629af9741d8bc4dc09bb89389fe2b1c7348e3ea02d72b01dca1908c6cc6', 18), 'audio425-original-provider-closure-r1': ('257bc3f071fd09c6b908ef80fdf0fe50617259c33b9083b0d66da6e270a6a450', 23), 'native600-rkpd-apex-r1': ('f33f622023fb328ea88c79a2fb29f7f7a9c1c3427af0a31b53bbdfc8c9fc4889', 9), 'native600-bcc-compat-r1': ('aadd86a9ec1528cdae294926ca86946d3337096ac1e27e476fda95e9cf1afc19', 4), 'audio430-ondeviceintelligence-api-r1': ('a61d8835adbf08d2d63847a428a8f928c0481f8ee1458d0a488308111153ae37', 5), 'namespace-lifetime-r5-review-r1': ('f4e068208cf7e2f99e19beca10b54fd1bef466c5b2e2949dbbd7a67857ccd4bd', 8), 'native601-dexdeps-pyee-r1': ('35c3d845f07e56a1149e761cc44ee205827c32141d081570ae0f3b71caff36f4', 5), 'audio425-connectivity-projection-preimage-r1': ('3cbd3fa6665daec40aae21b6c225ae99df8aa5f02450bf656a795fec03f72397', 9), 'audio430-pasit-original-provider-closure-r1': ('147bbe6cb367a1272b8c1528a64fc1b675c313a7d38d5b4060bb42befe2a7297', 25), 'audio430-original-released-api-inputs-r1': ('f8c6a07d08c56d2793b8ed2a6c220dbcfbf03c48b3670a20fd4b81fb3307e8e1', 11), 'native601-original-provider-chain-r1': ('2650d520dec6680b88ab406d3f21b19d2b908ce66de076640e0bd1c01ca539a7', 23), 'continuation-20261109-2840': ('65b16463ae7a42ea83ac2ff20a0d29cbaa393103837b474f89612550c16c1fbc', 267), 'audio430-released-sdk-source-tests-r1': ('5eecc25bf858a9bb7c9edcfa96b649939613d328164fe293ebfeaa1e51143808', 23), 'production-cell-foundations-r1': ('a802fc59cf19128b128042cc5d428262a18144b8b596b8e1bf317ec60ce500b5', 13)}
+          capsules = {'native597-original-llvm-plugin-cones-r1': ('75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c', 12), 'audio-canonical-custody-r1': ('42ead27bc89d5d866eddfd951e0dbfb91af1ff1c4e2843946fe4eee34925f1d5', 3), 'apparmor-binder-retained-credential-r1': ('243e3355ecfa6f96af8839ffa10854c796a3b22e03a5d924c778fb47aa83f4b9', 6), 'production-identity-reservation-r1': ('eee9cec9ecbd9b71cdda9df13bb0446124001a5826932709561126896881ffea', 3), 'native600-original-provider-closure-r1': ('d40f8629af9741d8bc4dc09bb89389fe2b1c7348e3ea02d72b01dca1908c6cc6', 18), 'audio425-original-provider-closure-r1': ('257bc3f071fd09c6b908ef80fdf0fe50617259c33b9083b0d66da6e270a6a450', 23), 'native600-rkpd-apex-r1': ('f33f622023fb328ea88c79a2fb29f7f7a9c1c3427af0a31b53bbdfc8c9fc4889', 9), 'native600-bcc-compat-r1': ('aadd86a9ec1528cdae294926ca86946d3337096ac1e27e476fda95e9cf1afc19', 4), 'audio430-ondeviceintelligence-api-r1': ('a61d8835adbf08d2d63847a428a8f928c0481f8ee1458d0a488308111153ae37', 5), 'namespace-lifetime-r5-review-r1': ('f4e068208cf7e2f99e19beca10b54fd1bef466c5b2e2949dbbd7a67857ccd4bd', 8), 'native601-dexdeps-pyee-r1': ('35c3d845f07e56a1149e761cc44ee205827c32141d081570ae0f3b71caff36f4', 5), 'audio425-connectivity-projection-preimage-r1': ('3cbd3fa6665daec40aae21b6c225ae99df8aa5f02450bf656a795fec03f72397', 9), 'audio430-pasit-original-provider-closure-r1': ('147bbe6cb367a1272b8c1528a64fc1b675c313a7d38d5b4060bb42befe2a7297', 25), 'audio430-original-released-api-inputs-r1': ('f8c6a07d08c56d2793b8ed2a6c220dbcfbf03c48b3670a20fd4b81fb3307e8e1', 11), 'native601-original-provider-chain-r1': ('2650d520dec6680b88ab406d3f21b19d2b908ce66de076640e0bd1c01ca539a7', 23), 'continuation-20261109-2840': ('aa79f6975f02ab0a8ea10080f40edf4d8d4d60f6afe2e11bc4fc67501e30d363', 417), 'audio430-released-sdk-source-tests-r1': ('5eecc25bf858a9bb7c9edcfa96b649939613d328164fe293ebfeaa1e51143808', 23), 'production-cell-foundations-r1': ('a802fc59cf19128b128042cc5d428262a18144b8b596b8e1bf317ec60ce500b5', 13)}
           for name, (digest, count) in capsules.items():
               directory = Path('compat/android/pocket4', name).resolve(strict=True)
               raw = (directory / 'FILES.json').read_bytes()
@@ -860,19 +860,67 @@ jobs:
               raise SystemExit('All 21 exact-source Audio candidate controls must execute')
           print('C11 and Audio candidate source replay and 21 Audio controls passed; signing, private Binder and Android runtime retain separate source-bound qualifications')
           PY2840VENDOR
-      - name: Execute all 26 Audio source-library regressions
+      - name: Verify R12 original providers and Android Java environment
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule=compat/android/pocket4/continuation-20261109-2840
+          work="$RUNNER_TEMP/a08-2840-r12-controls"
+          mkdir "$work"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/audio/r12-provider-verify-source.rs" -o "$work/audio-r12-replay"
+          "$work/audio-r12-replay" "$capsule/audio/r12-provider-closure" replay \
+            "$capsule/audio/r12-provider-closure/preimage" "$work/audio-r12-source" \
+            | tee "$RUNNER_TEMP/a08/2840-audio-r12-source-replay.json"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/native/r12-flags-verify-source.rs" -o "$work/native-r12-replay"
+          "$work/native-r12-replay" "$capsule/native/r12-flags-provider" replay \
+            "$capsule/native/r12-flags-provider/preimage" "$work/native-r12-source" \
+            | tee "$RUNNER_TEMP/a08/2840-native-r12-source-replay.json"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/apps-java-environment-verify-source.rs" -o "$work/java-env-replay"
+          "$work/java-env-replay" "$capsule/apps-java-environment" replay \
+            "$capsule/apps-runtime-fence/source" "$work/java-env-source" \
+            | tee "$RUNNER_TEMP/a08/2840-java-env-source-replay.json"
+          CARGO_TARGET_DIR="$work/java-env-target" rustup run 1.93.0 cargo test --locked \
+            --manifest-path "$capsule/apps-java-environment/harness/Cargo.toml" --lib -j 1 -- --test-threads=1 \
+            2>&1 | tee "$RUNNER_TEMP/a08/2840-java-environment-tests.log"
+          python3 -I -B - "$RUNNER_TEMP/a08" <<'PY2840R12'
+          import json
+          from pathlib import Path
+          import sys
+          evidence = Path(sys.argv[1])
+          for leaf, digest in [
+              ('2840-audio-r12-source-replay.json', '424d7f0c70adc13d9059c727c25abf323d020234c8db20459e0617d11d3f4160'),
+              ('2840-native-r12-source-replay.json', 'bdbb559e1d8b94ed0a296f936d8a0e902fd9af9b2825c0c12eaa24a67da277e6'),
+              ('2840-java-env-source-replay.json', 'aaaf3a6d301551867a073b665301b1ec71fc0773ddb398539ba2c843a7afd60f')]:
+              result = json.loads((evidence / leaf).read_text())
+              expected = {'scope': '3 declared source files', 'mode': 'replay',
+                          'verified_files': 3, 'patch_sha256': digest, 'runtime_qualified': False}
+              if result != expected:
+                  raise SystemExit('Exact source replay differs: ' + leaf)
+          summary = 'test result: ok. 14 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out;'
+          if (evidence / '2840-java-environment-tests.log').read_text().count(summary) != 1:
+              raise SystemExit('All 14 Android Java environment controls must execute; privileged controls remain explicit')
+          print('Original provider and Java environment source replay plus 14 same-source controls passed; no Android application acceptance granted')
+          PY2840R12
+      - name: Execute all 27 current Audio source-library regressions
         timeout-minutes: 5
         shell: bash
         run: |
           set -euo pipefail
           export PYTHONDONTWRITEBYTECODE=1 CARGO_TERM_COLOR=never
           export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0
-          capsule=compat/android/pocket4/audio430-released-sdk-source-tests-r1
-          work="$RUNNER_TEMP/a08-audio-source-sdk-tests-r1"
-          evidence="$RUNNER_TEMP/a08/audio-source-sdk-tests-r1"
+          capsule=compat/android/pocket4/continuation-20261109-2840/audio
+          legacy=compat/android/pocket4/audio430-released-sdk-source-tests-r1
+          work="$RUNNER_TEMP/a08-audio-source-r12-tests"
+          evidence="$RUNNER_TEMP/a08/audio-source-r12-tests"
           mkdir "$evidence"
-          python3 -I -B "$capsule/verify_ci.py" prepare --mode locked --lock-file "$capsule/harness/Cargo.lock" \
-            --work "$work" --report "$evidence/preparation.json"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/r12-source-ci.rs" -o "$evidence/verify-current-source"
+          "$evidence/verify-current-source" prepare "$capsule/r12-provider-closure" "$legacy" "$work" \
+            | tee "$evidence/preparation.json"
           rustup run 1.93.0 rustc --version > "$evidence/rustc-version.txt"
           rustup run 1.93.0 cargo --version > "$evidence/cargo-version.txt"
           git --version > "$evidence/git-version.txt"
@@ -881,10 +929,8 @@ jobs:
             --manifest-path "$work/Cargo.toml" --lib -j 1 -- --test-threads=1 \
             2>&1 | tee "$evidence/tests.log"
           cmp "$work/Cargo.lock" "$evidence/Cargo.lock"
-          python3 -I -B "$capsule/verify_ci.py" result \
-            --work "$work" --log "$evidence/tests.log" \
-            --resolved-lock "$evidence/Cargo.lock" \
-            --rustc-version "$evidence/rustc-version.txt" --report "$evidence/result.json"
+          "$evidence/verify-current-source" result "$capsule/r12-provider-closure" "$legacy" "$work" \
+            "$evidence/tests.log" "$evidence/rustc-version.txt" | tee "$evidence/result.json"
 
       - name: Replay exact production cell foundation source
         shell: bash
@@ -900,4 +946,3 @@ jobs:
           name: a08-source-and-host-evidence
           if-no-files-found: warn
           path: ${{ runner.temp }}/a08/
-

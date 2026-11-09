@@ -1,0 +1,19 @@
+{
+  "source_lock": "published apps-runtime-fence/harness/Cargo.lock",
+  "source_lock_sha256": "94d5485165fa970400ddbcca6ac38d63e46e14c4ca1aea7054d6d18a5706f625",
+  "lock_sha256": "c6f81b62dd213a6eaf2304ad92dfe762c15a962a763e8557e2242f5d772f831c",
+  "registry_packages_unchanged": 33,
+  "checksums_invented": 0,
+  "changes": "Only the root package name changes; all external records and local dependency edges remain identical.",
+  "same_source_modules": [
+    "runtime/droidloom-supervisor/src/application_command.rs",
+    "runtime/droidloom-supervisor/src/application_command_tests.rs",
+    "runtime/droidloom-supervisor/src/application_environment.rs",
+    "runtime/droidloom-supervisor/src/development_process.rs",
+    "runtime/droidloom-cpu-placement/src/lib.rs",
+    "runtime/droidloom-cpu-placement/src/linux.rs"
+  ],
+  "adapters": "The same production PIDFD functions use the existing two pass-through visibility adapters; CPU placement uses its actual source through [lib]. No Android/daemon/transport implementation is stubbed.",
+  "runtime_qualified": false,
+  "production_ready": false
+}

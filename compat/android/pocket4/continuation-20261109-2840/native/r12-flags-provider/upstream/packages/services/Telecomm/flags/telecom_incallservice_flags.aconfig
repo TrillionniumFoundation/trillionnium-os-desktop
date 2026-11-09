@@ -1,0 +1,32 @@
+package: "com.android.server.telecom.flags"
+container: "system"
+
+# OWNER=tjstuart TARGET=24Q4
+flag {
+  name: "do_not_send_call_to_null_ics"
+  namespace: "telecom"
+  description: "Only send calls to the InCallService if the binding is not null"
+  bug: "345473659"
+}
+
+# OWNER=arunrajms TARGET=26Q2
+flag {
+   name: "bulk_state_update_call"
+   namespace: "telecom"
+   description: "Improving Phone App KPI by optimizing the InCall updates to Bulk mode"
+   bug: "428702212"
+   metadata {
+        purpose: PURPOSE_FEATURE
+   }
+}
+
+# OWNER=huiwang TARGET=26Q1
+flag {
+  name: "notify_available_endpoints_on_ics_connected"
+  namespace: "telecom"
+  description: "Notify onAvailableCallEndpointsChanged on ICS connected"
+  bug: "448784549"
+  metadata {
+      purpose: PURPOSE_BUGFIX
+  }
+}

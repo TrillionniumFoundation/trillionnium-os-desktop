@@ -1,0 +1,3622 @@
+{
+  "Android.bp": {
+    "returncode": 0,
+    "stdout": "//\n// Copyright (C) 2025 The Android Open-Source Project\n//\n// Licensed under the Apache License, Version 2.0 (the \"License\");\n// you may not use this file except in compliance with the License.\n// You may obtain a copy of the License at\n//\n//      http://www.apache.org/licenses/LICENSE-2.0\n//\n// Unless required by applicable law or agreed to in writing, software\n// distributed under the License is distributed on an \"AS IS\" BASIS,\n// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n// See the License for the specific language governing permissions and\n// limitations under the License.\n\npackage {\n    default_applicable_licenses: [\"Android-Apache-2.0\"],\n}\n\nrust_defaults {\n    name: \"zygote_defaults\",\n    host_supported: true,\n    edition: \"2024\",\n}\n\nphony {\n    name: \"zygote_all\",\n    required: [\n        \"libmemmark\",\n        \"libzygote\",\n        \"libzygote_core\",\n        \"libzygote_sys\",\n        \"libzygote_messages\",\n        \"libzygote_test\",\n        \"zygote_core_unit_tests\",\n        \"zygote_cli\",\n        \"zygote_launch\",\n        \"zygote_messages_unit_tests\",\n        \"zygote_next\",\n        \"zygote_next_unit_tests\",\n        \"zygote_next_integration_test_fd_no_panic\",\n    ],\n}\n",
+    "stderr": ""
+  },
+  "zygote-sys/Android.bp": {
+    "returncode": 0,
+    "stdout": "//\n// Copyright (C) 2025 The Android Open-Source Project\n//\n// Licensed under the Apache License, Version 2.0 (the \"License\");\n// you may not use this file except in compliance with the License.\n// You may obtain a copy of the License at\n//\n//      http://www.apache.org/licenses/LICENSE-2.0\n//\n// Unless required by applicable law or agreed to in writing, software\n// distributed under the License is distributed on an \"AS IS\" BASIS,\n// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n// See the License for the specific language governing permissions and\n// limitations under the License.\n\npackage {\n    default_applicable_licenses: [\"Android-Apache-2.0\"],\n    default_team: \"trendy_team_system_performance\",\n}\n\nrust_library {\n    name: \"libzygote_sys\",\n    crate_name: \"zygote_sys\",\n    defaults: [\"zygote_defaults\"],\n    srcs: [\n        \"src/lib.rs\",\n    ],\n    rustlibs: [\n        \"libarrayvec\",\n        \"liblibc\",\n        \"librand\",\n        \"libstatic_assertions\",\n        \"libthiserror\",\n        \"libzerocopy\",\n    ],\n    target: {\n        android: {\n            rustlibs: [\n                \"libprocessgroup_rust\",\n                \"libselinux_bindgen\",\n            ],\n            shared_libs: [\n                \"libdl_android\",\n                \"libprocessgroup\",\n                \"libselinux\",\n            ],\n        },\n    },\n}\n",
+    "stderr": ""
+  },
+  "zygote-proc-macros/Android.bp": {
+    "returncode": 0,
+    "stdout": "//\n// Copyright (C) 2025 The Android Open-Source Project\n//\n// Licensed under the Apache License, Version 2.0 (the \"License\");\n// you may not use this file except in compliance with the License.\n// You may obtain a copy of the License at\n//\n//      http://www.apache.org/licenses/LICENSE-2.0\n//\n// Unless required by applicable law or agreed to in writing, software\n// distributed under the License is distributed on an \"AS IS\" BASIS,\n// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n// See the License for the specific language governing permissions and\n// limitations under the License.\n\npackage {\n    default_applicable_licenses: [\"Android-Apache-2.0\"],\n    default_team: \"trendy_team_system_performance\",\n}\n\nrust_proc_macro {\n    name: \"libzygote_proc_macros\",\n    crate_name: \"zygote_proc_macros\",\n    cargo_env_compat: true,\n    defaults: [\"zygote_defaults\"],\n    crate_root: \"src/lib.rs\",\n    rustlibs: [\n        \"libheck\",\n        \"libproc_macro2\",\n        \"libquote\",\n        \"libsyn\",\n    ],\n}\n",
+    "stderr": ""
+  },
+  "zygote-messages/Android.bp": {
+    "returncode": 0,
+    "stdout": "//\n// Copyright (C) 2025 The Android Open-Source Project\n//\n// Licensed under the Apache License, Version 2.0 (the \"License\");\n// you may not use this file except in compliance with the License.\n// You may obtain a copy of the License at\n//\n//      http://www.apache.org/licenses/LICENSE-2.0\n//\n// Unless required by applicable law or agreed to in writing, software\n// distributed under the License is distributed on an \"AS IS\" BASIS,\n// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n// See the License for the specific language governing permissions and\n// limitations under the License.\n\npackage {\n    default_applicable_licenses: [\"Android-Apache-2.0\"],\n    default_team: \"trendy_team_system_performance\",\n}\n\ngenrule {\n    name: \"libzygote_messages_schemas-rust\",\n    tools: [\"flatc\"],\n    cmd: \"$(location flatc) --rust --filename-suffix '' -o $$(dirname $(out)) $(in)\",\n    srcs: [\n        \"schemas/messages.fbs\",\n    ],\n    out: [\n        \"src/messages.rs\",\n    ],\n}\n\ngenrule {\n    name: \"libzygote_messages_schemas-cpp\",\n    tools: [\"flatc\"],\n    cmd: \"mkdir -p $(genDir)/libzygote_messages_schemas && $(location flatc) --cpp --filename-suffix '' -o $(genDir)/libzygote_messages_schemas $(in)\",\n    srcs: [\n        \"schemas/messages.fbs\",\n    ],\n    out: [\n        \"libzygote_messages_schemas/messages.h\",\n    ],\n    export_include_dirs: [\n        \".\",\n    ],\n}\n\ncc_library_headers {\n    name: \"libzygote_messages_schema_headers\",\n    host_supported: true,\n    generated_headers: [\"libzygote_messages_schemas-cpp\"],\n    export_generated_headers: [\"libzygote_messages_schemas-cpp\"],\n    header_libs: [\n        \"flatbuffer_headers\",\n    ],\n}\n\nrust_defaults {\n    name: \"libzygote_messages_defaults\",\n    defaults: [\"zygote_defaults\"],\n    srcs: [\n        \"src/lib.rs\",\n        \":libzygote_messages_schemas-rust\",\n    ],\n    rustlibs: [\n        \"libarrayvec\",\n        \"libbitflags\",\n        \"libcap_rust\",\n        \"libclap\",\n        \"libflatbuffers\",\n        \"libitertools\",\n        \"liblibc\",\n        \"libtracing\",\n        \"libthiserror\",\n        \"libzygote_sys\",\n    ],\n    proc_macros: [\"libzygote_proc_macros\"],\n    target: {\n        android: {\n            features: [\n                \"android-native\",\n            ],\n        },\n        host: {\n            features: [\n                \"libapp\",\n            ],\n        },\n    },\n}\n\nrust_library {\n    name: \"libzygote_messages\",\n    crate_name: \"zygote_messages\",\n    defaults: [\"libzygote_messages_defaults\"],\n}\n\nrust_library {\n    name: \"libzygote_messages_test\",\n    crate_name: \"zygote_messages\",\n    defaults: [\"libzygote_messages_defaults\"],\n    features: [\n        \"mock\",\n        \"test\",\n    ],\n}\n\n//\n// Tests\n//\n\nrust_test_host {\n    name: \"zygote_messages_unit_tests\",\n    team: \"trendy_team_system_performance\",\n    defaults: [\"libzygote_messages_defaults\"],\n    rustlibs: [\n        \"libzygote_messages_test\",\n    ],\n}\n",
+    "stderr": ""
+  },
+  "fixed_sdk_audit": {
+    "rg_returncode": 0,
+    "rg_stderr": "",
+    "matched_lines": 3187,
+    "counts": {
+      "sdk_version:1": 2,
+      "sdk_version:14": 6,
+      "sdk_version:15": 13,
+      "sdk_version:16": 13,
+      "sdk_version:17": 2,
+      "sdk_version:18": 1,
+      "sdk_version:19": 5,
+      "sdk_version:21": 2,
+      "sdk_version:22": 1,
+      "sdk_version:23": 11,
+      "sdk_version:24": 13,
+      "sdk_version:25": 3,
+      "sdk_version:26": 5,
+      "sdk_version:27": 2,
+      "sdk_version:28": 6,
+      "sdk_version:29": 36,
+      "sdk_version:30": 20,
+      "sdk_version:31": 79,
+      "sdk_version:32": 1,
+      "sdk_version:33": 7,
+      "sdk_version:34": 329,
+      "sdk_version:35": 7,
+      "sdk_version:36": 1,
+      "sdk_version:37": 2,
+      "sdk_version:4": 2,
+      "sdk_version:7": 1,
+      "sdk_version:8": 11,
+      "sdk_version:9": 27,
+      "sdk_version:core_current": 150,
+      "sdk_version:core_platform": 56,
+      "sdk_version:current": 1165,
+      "sdk_version:minimum": 28,
+      "sdk_version:module_Tiramisu": 3,
+      "sdk_version:module_current": 325,
+      "sdk_version:none": 61,
+      "sdk_version:system_29": 1,
+      "sdk_version:system_31": 3,
+      "sdk_version:system_35": 1,
+      "sdk_version:system_UpsideDownCake": 2,
+      "sdk_version:system_current": 206,
+      "sdk_version:system_server_current": 49,
+      "sdk_version:test_current": 448,
+      "system_modules:art-module-intra-core-api-stubs-bootstrap-system-modules": 2,
+      "system_modules:art-module-intra-core-api-stubs-system-modules": 9,
+      "system_modules:art-module-lib-api-stubs-system-modules": 3,
+      "system_modules:art-module-public-api-stubs-system-modules": 3,
+      "system_modules:core-all-system-modules": 30,
+      "system_modules:none": 17
+    },
+    "fixed_refs": {
+      "sdk_version:1": [
+        {
+          "path": "bionic/libc/Android.bp",
+          "line": 1887,
+          "text": "sdk_version: \"1\","
+        },
+        {
+          "path": "bionic/libc/Android.bp",
+          "line": 1930,
+          "text": "sdk_version: \"1\","
+        }
+      ],
+      "sdk_version:14": [
+        {
+          "path": "tools/tradefederation/core/util_apps/AccountUtil/tests/Android.bp",
+          "line": 35,
+          "text": "sdk_version: \"14\","
+        },
+        {
+          "path": "tools/tradefederation/core/util_apps/AccountUtil/Android.bp",
+          "line": 29,
+          "text": "sdk_version: \"14\","
+        },
+        {
+          "path": "tools/tradefederation/core/util_apps/AccountUtil/Android.bp",
+          "line": 40,
+          "text": "sdk_version: \"14\","
+        },
+        {
+          "path": "external/libutf/Android.bp",
+          "line": 69,
+          "text": "sdk_version: \"14\","
+        },
+        {
+          "path": "external/libogg/Android.bp",
+          "line": 54,
+          "text": "sdk_version: \"14\","
+        },
+        {
+          "path": "frameworks/base/tests/Camera2Tests/SmartCamera/SimpleCamera/jni/Android.bp",
+          "line": 27,
+          "text": "sdk_version: \"14\","
+        }
+      ],
+      "sdk_version:15": [
+        {
+          "path": "prebuilts/misc/common/android-support-test/Android.bp",
+          "line": 29,
+          "text": "sdk_version: \"15\","
+        },
+        {
+          "path": "prebuilts/misc/common/android-support-test/Android.bp",
+          "line": 57,
+          "text": "sdk_version: \"15\","
+        },
+        {
+          "path": "prebuilts/misc/common/android-support-test/Android.bp",
+          "line": 64,
+          "text": "sdk_version: \"15\","
+        },
+        {
+          "path": "prebuilts/misc/common/android-support-test/Android.bp",
+          "line": 71,
+          "text": "sdk_version: \"15\","
+        },
+        {
+          "path": "prebuilts/misc/common/android-support-test/Android.bp",
+          "line": 78,
+          "text": "sdk_version: \"15\","
+        },
+        {
+          "path": "prebuilts/misc/common/android-support-test/Android.bp",
+          "line": 97,
+          "text": "sdk_version: \"15\","
+        },
+        {
+          "path": "prebuilts/misc/common/android-support-test/Android.bp",
+          "line": 104,
+          "text": "sdk_version: \"15\","
+        },
+        {
+          "path": "prebuilts/misc/common/android-support-test/Android.bp",
+          "line": 117,
+          "text": "sdk_version: \"15\","
+        },
+        {
+          "path": "prebuilts/misc/common/android-support-test/Android.bp",
+          "line": 125,
+          "text": "sdk_version: \"15\","
+        },
+        {
+          "path": "prebuilts/misc/common/android-support-test/Android.bp",
+          "line": 132,
+          "text": "sdk_version: \"15\","
+        },
+        {
+          "path": "prebuilts/misc/common/android-support-test/Android.bp",
+          "line": 144,
+          "text": "sdk_version: \"15\","
+        },
+        {
+          "path": "prebuilts/misc/common/android-support-test/Android.bp",
+          "line": 151,
+          "text": "sdk_version: \"15\","
+        },
+        {
+          "path": "prebuilts/misc/common/android-support-test/Android.bp",
+          "line": 163,
+          "text": "sdk_version: \"15\","
+        }
+      ],
+      "sdk_version:16": [
+        {
+          "path": "cts/libs/testserver/Android.bp",
+          "line": 41,
+          "text": "sdk_version: \"16\","
+        },
+        {
+          "path": "frameworks/base/core/tests/coretests/apks/install_jni_lib/Android.bp",
+          "line": 30,
+          "text": "sdk_version: \"16\","
+        },
+        {
+          "path": "frameworks/base/core/tests/hosttests/test-apps/MultiDexLegacyTestAppTests2/Android.bp",
+          "line": 30,
+          "text": "sdk_version: \"16\","
+        },
+        {
+          "path": "frameworks/base/core/tests/hosttests/test-apps/MultiDexLegacyTestAppTests2/Android.bp",
+          "line": 50,
+          "text": "sdk_version: \"16\","
+        },
+        {
+          "path": "frameworks/base/core/tests/hosttests/test-apps/MultiDexLegacyVersionedTestApp_v1/Android.bp",
+          "line": 24,
+          "text": "sdk_version: \"16\","
+        },
+        {
+          "path": "frameworks/base/core/tests/hosttests/test-apps/MultiDexLegacyTestServices/Android.bp",
+          "line": 24,
+          "text": "sdk_version: \"16\","
+        },
+        {
+          "path": "frameworks/base/core/tests/hosttests/test-apps/MultiDexLegacyTestAppTests/Android.bp",
+          "line": 27,
+          "text": "sdk_version: \"16\","
+        },
+        {
+          "path": "frameworks/base/core/tests/hosttests/test-apps/MultiDexLegacyTestServicesTests/Android.bp",
+          "line": 27,
+          "text": "sdk_version: \"16\","
+        },
+        {
+          "path": "frameworks/base/core/tests/hosttests/test-apps/MultiDexLegacyTestAppWithCorruptedDex/Android.bp",
+          "line": 24,
+          "text": "sdk_version: \"16\","
+        },
+        {
+          "path": "frameworks/base/core/tests/hosttests/test-apps/MultiDexLegacyVersionedTestApp_v3/Android.bp",
+          "line": 24,
+          "text": "sdk_version: \"16\","
+        },
+        {
+          "path": "frameworks/base/core/tests/hosttests/test-apps/MultiDexLegacyTestApp/Android.bp",
+          "line": 27,
+          "text": "sdk_version: \"16\","
+        },
+        {
+          "path": "frameworks/base/core/tests/hosttests/test-apps/MultiDexLegacyTestApp/Android.bp",
+          "line": 53,
+          "text": "sdk_version: \"16\","
+        },
+        {
+          "path": "frameworks/base/core/tests/hosttests/test-apps/MultiDexLegacyVersionedTestApp_v2/Android.bp",
+          "line": 24,
+          "text": "sdk_version: \"16\","
+        }
+      ],
+      "sdk_version:17": [
+        {
+          "path": "external/libjpeg-turbo/Android.bp",
+          "line": 308,
+          "text": "sdk_version: \"17\","
+        },
+        {
+          "path": "external/scrypt/Android.bp",
+          "line": 53,
+          "text": "sdk_version: \"17\","
+        }
+      ],
+      "sdk_version:18": [
+        {
+          "path": "prebuilts/misc/common/ub-uiautomator/Android.bp",
+          "line": 22,
+          "text": "sdk_version: \"18\","
+        }
+      ],
+      "sdk_version:19": [
+        {
+          "path": "development/samples/SampleSyncAdapter/Android.bp",
+          "line": 9,
+          "text": "sdk_version: \"19\","
+        },
+        {
+          "path": "libnativehelper/Android.bp",
+          "line": 221,
+          "text": "sdk_version: \"19\","
+        },
+        {
+          "path": "external/nanopb-c/Android.bp",
+          "line": 68,
+          "text": "sdk_version: \"19\","
+        },
+        {
+          "path": "frameworks/base/core/tests/hosttests/test-apps/MultiDexLegacyTestServicesTests2/Android.bp",
+          "line": 27,
+          "text": "sdk_version: \"19\","
+        },
+        {
+          "path": "frameworks/base/core/tests/hosttests/test-apps/MultiDexLegacyAndException/Android.bp",
+          "line": 31,
+          "text": "sdk_version: \"19\","
+        }
+      ],
+      "sdk_version:21": [
+        {
+          "path": "cts/hostsidetests/devicepolicy/app/SimplePreMApp/Android.bp",
+          "line": 25,
+          "text": "sdk_version: \"21\","
+        },
+        {
+          "path": "external/compiler-rt/Android.bp",
+          "line": 397,
+          "text": "sdk_version: \"21\","
+        }
+      ],
+      "sdk_version:22": [
+        {
+          "path": "packages/modules/Permission/PermissionController/tests/permissionui/PermissionUiUseLegacyBodySensorsPermissionTargetSdk22App/Android.bp",
+          "line": 33,
+          "text": "sdk_version: \"22\","
+        }
+      ],
+      "sdk_version:23": [
+        {
+          "path": "cts/tests/framework/base/windowmanager/test-apps/dndtargetappsdk23/Android.bp",
+          "line": 28,
+          "text": "sdk_version: \"23\","
+        },
+        {
+          "path": "packages/modules/Connectivity/tests/cts/net/appForApi23/Android.bp",
+          "line": 29,
+          "text": "sdk_version: \"23\","
+        },
+        {
+          "path": "cts/tests/framework/base/windowmanager/test-apps/appDeprecatedSdk/Android.bp",
+          "line": 30,
+          "text": "sdk_version: \"23\","
+        },
+        {
+          "path": "prebuilts/misc/common/android-support-test/Android.bp",
+          "line": 45,
+          "text": "sdk_version: \"23\","
+        },
+        {
+          "path": "prebuilts/sdk/renderscript/Android.bp",
+          "line": 32,
+          "text": "sdk_version: \"23\","
+        },
+        {
+          "path": "prebuilts/sdk/renderscript/Android.bp",
+          "line": 52,
+          "text": "sdk_version: \"23\","
+        },
+        {
+          "path": "prebuilts/sdk/renderscript/Android.bp",
+          "line": 72,
+          "text": "sdk_version: \"23\","
+        },
+        {
+          "path": "prebuilts/sdk/renderscript/Android.bp",
+          "line": 95,
+          "text": "sdk_version: \"23\","
+        },
+        {
+          "path": "prebuilts/sdk/renderscript/Android.bp",
+          "line": 104,
+          "text": "sdk_version: \"23\","
+        },
+        {
+          "path": "external/sqlite/dist/Android.bp",
+          "line": 232,
+          "text": "sdk_version: \"23\","
+        },
+        {
+          "path": "frameworks/ex/common/tests/Android.bp",
+          "line": 24,
+          "text": "sdk_version: \"23\","
+        }
+      ],
+      "sdk_version:24": [
+        {
+          "path": "tools/tradefederation/core/util_apps/ContentProvider/main/Android.bp",
+          "line": 35,
+          "text": "sdk_version: \"24\","
+        },
+        {
+          "path": "external/vulkan-headers/Android.bp",
+          "line": 77,
+          "text": "sdk_version: \"24\","
+        },
+        {
+          "path": "frameworks/native/vulkan/vkprofiles/Android.bp",
+          "line": 66,
+          "text": "sdk_version: \"24\","
+        },
+        {
+          "path": "frameworks/native/vulkan/vkjson/Android.bp",
+          "line": 66,
+          "text": "sdk_version: \"24\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 133,
+          "text": "sdk_version: \"24\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 145,
+          "text": "sdk_version: \"24\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 155,
+          "text": "sdk_version: \"24\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 168,
+          "text": "sdk_version: \"24\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 176,
+          "text": "sdk_version: \"24\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 190,
+          "text": "sdk_version: \"24\","
+        },
+        {
+          "path": "platform_testing/libraries/health/runners/longevity/host/Android.bp",
+          "line": 31,
+          "text": "sdk_version: \"24\","
+        },
+        {
+          "path": "platform_testing/libraries/health/options/Android.bp",
+          "line": 21,
+          "text": "sdk_version: \"24\","
+        },
+        {
+          "path": "frameworks/base/packages/CtsShim/build/jni/Android.bp",
+          "line": 30,
+          "text": "sdk_version: \"24\","
+        }
+      ],
+      "sdk_version:25": [
+        {
+          "path": "cts/apps/CtsVerifierUSBCompanion/Android.bp",
+          "line": 29,
+          "text": "sdk_version: \"25\","
+        },
+        {
+          "path": "cts/tests/camera/api25test/Android.bp",
+          "line": 33,
+          "text": "sdk_version: \"25\","
+        },
+        {
+          "path": "cts/tests/framework/base/windowmanager/test-apps/alertwindowappsdk25/Android.bp",
+          "line": 35,
+          "text": "sdk_version: \"25\","
+        }
+      ],
+      "sdk_version:26": [
+        {
+          "path": "external/rust/android-crates-io/crates/zlib-rs/Android.bp",
+          "line": 44,
+          "text": "sdk_version: \"26\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/libz-rs-sys/Android.bp",
+          "line": 37,
+          "text": "sdk_version: \"26\","
+        },
+        {
+          "path": "external/expat/Android.bp",
+          "line": 47,
+          "text": "sdk_version: \"26\","
+        },
+        {
+          "path": "external/skia/Android.bp",
+          "line": 3460,
+          "text": "sdk_version: \"26\","
+        },
+        {
+          "path": "frameworks/base/startop/apps/test/Android.bp",
+          "line": 43,
+          "text": "sdk_version: \"26\","
+        }
+      ],
+      "sdk_version:27": [
+        {
+          "path": "cts/tests/framework/base/windowmanager/test-apps/app27/Android.bp",
+          "line": 30,
+          "text": "sdk_version: \"27\","
+        },
+        {
+          "path": "external/deqp/Android.bp",
+          "line": 125,
+          "text": "sdk_version: \"27\","
+        }
+      ],
+      "sdk_version:28": [
+        {
+          "path": "system/apex/apexd/Android.bp",
+          "line": 125,
+          "text": "sdk_version: \"28\","
+        },
+        {
+          "path": "system/hardware/interfaces/suspend/aidl/Android.bp",
+          "line": 14,
+          "text": "sdk_version: \"28\","
+        },
+        {
+          "path": "system/hardware/interfaces/suspend/aidl/Android.bp",
+          "line": 38,
+          "text": "sdk_version: \"28\","
+        },
+        {
+          "path": "cts/hostsidetests/appsecurity/test-apps/rro/OverlayAll/Android.bp",
+          "line": 37,
+          "text": "sdk_version: \"28\","
+        },
+        {
+          "path": "tools/metalava/Android.bp",
+          "line": 52,
+          "text": "sdk_version: \"28\","
+        },
+        {
+          "path": "packages/modules/Permission/PermissionController/tests/permissionui/PermissionUiUseStoragePermissionApp/Android.bp",
+          "line": 32,
+          "text": "sdk_version: \"28\","
+        }
+      ],
+      "sdk_version:29": [
+        {
+          "path": "cts/common/device-side/bedstead/activitycontext/Android.bp",
+          "line": 8,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "cts/common/device-side/device-info/jni/Android.bp",
+          "line": 39,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "system/tools/aidl/build/Android.bp",
+          "line": 139,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "system/media/audio_utils/Android.bp",
+          "line": 38,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "packages/modules/common/java/com/android/modules/annotation/Android.bp",
+          "line": 28,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "cts/tests/tests/media/common/Android.bp",
+          "line": 64,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "cts/tests/tests/media/common/Android.bp",
+          "line": 97,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "cts/tests/media/jni/Android.bp",
+          "line": 37,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "cts/tests/mediapc/jni/Android.bp",
+          "line": 39,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/tinystr/Android.bp",
+          "line": 42,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/icu_casemap/Android.bp",
+          "line": 47,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/icu_provider/Android.bp",
+          "line": 50,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/serde/Android.bp",
+          "line": 59,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/icu_casemap_data/Android.bp",
+          "line": 36,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/serde_core/Android.bp",
+          "line": 54,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/zerofrom/Android.bp",
+          "line": 41,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/stable_deref_trait/Android.bp",
+          "line": 40,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/zerotrie/Android.bp",
+          "line": 52,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/yoke/Android.bp",
+          "line": 47,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/unicode-bidi/Android.bp",
+          "line": 41,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/litemap/Android.bp",
+          "line": 45,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/writeable/Android.bp",
+          "line": 40,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/potential_utf/Android.bp",
+          "line": 47,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/icu_collections/Android.bp",
+          "line": 44,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/zerovec/Android.bp",
+          "line": 48,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/icu_locale_core/Android.bp",
+          "line": 47,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/icu_properties/Android.bp",
+          "line": 50,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/rust/android-crates-io/crates/icu_properties_data/Android.bp",
+          "line": 36,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "frameworks/native/libs/binder/ndk/Android.bp",
+          "line": 266,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/abseil-cpp/Android.bp",
+          "line": 24,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/protobuf/Android.bp",
+          "line": 111,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/protobuf/Android.bp",
+          "line": 154,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/protobuf/Android.bp",
+          "line": 277,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "external/protobuf/Android.bp",
+          "line": 432,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "frameworks/libs/modules-utils/build/Android.bp",
+          "line": 34,
+          "text": "sdk_version: \"29\","
+        },
+        {
+          "path": "frameworks/av/media/libmediametrics/Android.bp",
+          "line": 19,
+          "text": "sdk_version: \"29\","
+        }
+      ],
+      "sdk_version:30": [
+        {
+          "path": "cts/hostsidetests/appsecurity/test-apps/tinyapp/Android.bp",
+          "line": 64,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "cts/hostsidetests/appsecurity/test-apps/ReadExternalStorageApp/Android.bp",
+          "line": 25,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "cts/hostsidetests/appsecurity/test-apps/ExternalStorageApp/Android.bp",
+          "line": 25,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "system/tools/aidl/build/Android.bp",
+          "line": 161,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "development/samples/BusinessCard/Android.bp",
+          "line": 22,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "packages/modules/Permission/tests/cts/permission/AppThatDefinesPermissionWithInvalidGroup30/Android.bp",
+          "line": 24,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "cts/hostsidetests/appsecurity/test-apps/PermissionDeclareAppCompat/Android.bp",
+          "line": 24,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "packages/modules/Permission/tests/cts/permission/AppThatAlsoDefinesPermissionGroupADifferentCert30/Android.bp",
+          "line": 24,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "packages/modules/Permission/PermissionController/tests/permissionui/PermissionUiUseAdditionalPermissionApp/Android.bp",
+          "line": 32,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "packages/modules/Permission/PermissionController/tests/permissionui/PermissionUiReadCalendarPermissionApp/Android.bp",
+          "line": 33,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "packages/modules/Permission/PermissionController/tests/permissionui/PermissionUiUseTwoAdditionalPermissionsApp/Android.bp",
+          "line": 32,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "packages/modules/Permission/PermissionController/tests/permissionui/PermissionUiDefineAdditionalPermissionApp/Android.bp",
+          "line": 32,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "packages/modules/Permission/PermissionController/tests/permissionui/PermissionUiUseCameraPermissionApp/Android.bp",
+          "line": 34,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "packages/modules/Permission/PermissionController/tests/inprocess/AppThatUsesCameraPermission/Android.bp",
+          "line": 34,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "cts/tests/framework/base/windowmanager/test-apps/app30/Android.bp",
+          "line": 30,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "tools/tradefederation/core/util_apps/ContentProvider/androidTest/Android.bp",
+          "line": 33,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "tools/tradefederation/core/util_apps/TelephonyUtil/Android.bp",
+          "line": 32,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "prebuilts/rust-toolchain/linux-x86/Android.bp",
+          "line": 121,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "platform_testing/libraries/health/options/tests/Android.bp",
+          "line": 22,
+          "text": "sdk_version: \"30\","
+        },
+        {
+          "path": "frameworks/base/graphics/proto/Android.bp",
+          "line": 19,
+          "text": "sdk_version: \"30\","
+        }
+      ],
+      "sdk_version:31": [
+        {
+          "path": "system/apex/tests/testdata/maxsdk/com.android.apex.maxsdk.test/Android.bp",
+          "line": 48,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "system/apex/tests/testdata/maxsdk/com.android.apex.maxsdk.test/Android.bp",
+          "line": 57,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "system/apex/tests/testdata/maxsdk/com.android.apex.maxsdk.test/Android.bp",
+          "line": 66,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "system/apex/tests/testdata/apkinapex/com.android.apex.product.test/Android.bp",
+          "line": 42,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "system/apex/tests/testdata/apkinapex/com.android.apex.vendor.test/Android.bp",
+          "line": 42,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "system/apex/tests/testdata/apkinapex/com.android.apex.system.test/Android.bp",
+          "line": 42,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "system/apex/tests/testdata/apkinapex/com.android.apex.system_ext.test/Android.bp",
+          "line": 42,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "system/netd/Android.bp",
+          "line": 43,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "external/lottie/Android.bp",
+          "line": 80,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "system/tools/aidl/build/Android.bp",
+          "line": 182,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "system/tools/aidl/build/Android.bp",
+          "line": 241,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "packages/modules/NetworkStack/tests/unit/jni/Android.bp",
+          "line": 44,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "packages/modules/Connectivity/staticlibs/native/netjniutils/Android.bp",
+          "line": 35,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "packages/modules/Connectivity/bpf/syscall_wrappers/Android.bp",
+          "line": 31,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "external/exoplayer/Android.bp",
+          "line": 52,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "external/exoplayer/Android.bp",
+          "line": 91,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "external/exoplayer/Android.bp",
+          "line": 120,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 47,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 66,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 103,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 122,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 142,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 159,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 171,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 181,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 203,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 243,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 265,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 288,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 308,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 319,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 328,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 339,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 348,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 368,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 406,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 426,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 447,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 467,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 488,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 508,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 529,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 548,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 558,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 571,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 582,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 591,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 603,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 633,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 645,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 658,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 670,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 692,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 703,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "external/perfetto/test/cts/producer/Android.bp",
+          "line": 36,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "external/perfetto/test/cts/test_apps/Android.bp",
+          "line": 38,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "external/perfetto/test/cts/test_apps/Android.bp",
+          "line": 60,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "external/perfetto/test/cts/test_apps/Android.bp",
+          "line": 82,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "external/perfetto/test/cts/test_apps/Android.bp",
+          "line": 104,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/extras/material-design-x/Android.bp",
+          "line": 8,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/extras/material-design-x/Android.bp",
+          "line": 39,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx-legacy/Android.bp",
+          "line": 180,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx-legacy/Android.bp",
+          "line": 198,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx-legacy/Android.bp",
+          "line": 220,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx-legacy/Android.bp",
+          "line": 233,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/Android.bp",
+          "line": 19,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/Android.bp",
+          "line": 32,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/Android.bp",
+          "line": 45,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/Android.bp",
+          "line": 58,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/Android.bp",
+          "line": 71,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/Android.bp",
+          "line": 84,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/Android.bp",
+          "line": 97,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/Android.bp",
+          "line": 110,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/Android.bp",
+          "line": 123,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "frameworks/libs/systemui/compilelib/Android.bp",
+          "line": 47,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "art/libnativeloader/test/Android.bp",
+          "line": 71,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "art/libnativeloader/test/Android.bp",
+          "line": 79,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "art/libnativeloader/test/Android.bp",
+          "line": 88,
+          "text": "sdk_version: \"31\","
+        },
+        {
+          "path": "art/libnativeloader/test/Android.bp",
+          "line": 97,
+          "text": "sdk_version: \"31\","
+        }
+      ],
+      "sdk_version:32": [
+        {
+          "path": "system/tools/aidl/build/Android.bp",
+          "line": 203,
+          "text": "sdk_version: \"32\","
+        }
+      ],
+      "sdk_version:33": [
+        {
+          "path": "system/tools/aidl/build/Android.bp",
+          "line": 224,
+          "text": "sdk_version: \"33\","
+        },
+        {
+          "path": "external/apache-commons-io/Android.bp",
+          "line": 37,
+          "text": "sdk_version: \"33\","
+        },
+        {
+          "path": "external/apache-commons-lang/Android.bp",
+          "line": 38,
+          "text": "sdk_version: \"33\","
+        },
+        {
+          "path": "external/MPAndroidChart/Android.bp",
+          "line": 39,
+          "text": "sdk_version: \"33\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 713,
+          "text": "sdk_version: \"33\","
+        },
+        {
+          "path": "prebuilts/sdk/current/aaos-libs/Android.bp",
+          "line": 723,
+          "text": "sdk_version: \"33\","
+        },
+        {
+          "path": "frameworks/base/services/tests/PackageManagerServiceTests/host/test-apps/Apex/Android.bp",
+          "line": 37,
+          "text": "sdk_version: \"33\","
+        }
+      ],
+      "sdk_version:34": [
+        {
+          "path": "packages/modules/Permission/PermissionController/tests/permissionui/PermissionUiUseHealthConnectPermissionApp/Android.bp",
+          "line": 33,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "packages/modules/Permission/PermissionController/tests/permissionui/PermissionUiUseReadHeartRatePermissionApp/Android.bp",
+          "line": 33,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "packages/modules/Permission/PermissionController/tests/permissionui/PermissionUiUseLegacyBodySensorsPermissionApp/Android.bp",
+          "line": 33,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "packages/modules/Permission/PermissionController/tests/permissionui/PermissionUiInvalidUseHealthConnectPermissionApp/Android.bp",
+          "line": 33,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "libcore/luni/src/test/androidsdk34/Android.bp",
+          "line": 22,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/media2/media2-player/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/media2/media2-session/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/media2/media2-common/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/media2/media2-exoplayer/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/media2/media2-widget/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/window/window/1.6.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/window/window-core-android/1.6.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/window/window-java/1.6.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/window/extensions/core/core/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/window/extensions/core/core/1.1.0-alpha01/Android.bp",
+          "line": 34,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/window/extensions/extensions/1.6.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/window/extensions/extensions/1.6.0-alpha01/Android.bp",
+          "line": 36,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/startup/startup-runtime/1.2.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/leanback/leanback-preference/1.2.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/leanback/leanback/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/leanback/leanback-grid/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/camera-viewfinder/1.4.0-alpha08/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/viewfinder/viewfinder-compose/1.7.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/viewfinder/viewfinder-core/1.7.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/camera-compose/1.7.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/camera-common/1.7.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/camera-common-testing/1.7.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/camera-extensions/1.7.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/camera-camera2-pipe-testing/1.0.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/camera-lifecycle/1.7.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/camera-core/1.7.0-alpha02/Android.bp",
+          "line": 21,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/camera-camera2-pipe-integration/1.0.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/camera-viewfinder-compose/1.0.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/camera-camera2-pipe/1.7.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/camera-viewfinder-core/1.4.0-alpha08/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/camera-video/1.7.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/camera-camera2/1.7.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/camera/featurecombinationquery/featurecombinationquery/1.7.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/collection/collection-ktx/1.7.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/collection/collection-jvm/1.7.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/autofill/autofill/1.4.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/loader/loader/1.2.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/appsearch/appsearch/1.2.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/appsearch/appsearch-builtin-types/1.2.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/appsearch/appsearch-local-storage/1.2.0-alpha01/Android.bp",
+          "line": 21,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/appsearch/appsearch-platform-storage/1.2.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/appsearch/appsearch-external-protobuf/1.2.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/room/room-migration-jvm/2.8.4/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/room/room-paging-guava/2.8.4/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/room/room-guava/2.8.4/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/room/room-testing-android/2.8.4/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/room/room-ktx/2.8.4/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/room/room-paging-android/2.8.4/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/room/room-runtime-android/2.8.4/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/room/room-common-jvm/2.8.4/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/ink/ink-rendering-android/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/ink/ink-geometry-android/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/ink/ink-brush-android/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/ink/ink-strokes-android/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/ink/ink-authoring-android/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/ink/ink-nativeloader-android/1.1.0-alpha01/Android.bp",
+          "line": 21,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/ink/ink-storage-android/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/ink/ink-authoring-compose-android/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/webgpu/webgpu/1.0.0-alpha04/Android.bp",
+          "line": 21,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/webkit/webkit/1.12.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/test/uiautomator/uiautomator/2.4.0-beta02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/test/uiautomator/uiautomator-shell-android/2.4.0-beta02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/emoji2/emoji2-bundled/1.6.0/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/emoji2/emoji2/1.6.0/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/emoji2/emoji2-views-helper/1.6.0/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/concurrent/concurrent-futures/1.3.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/concurrent/concurrent-futures-ktx/1.3.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/versionedparcelable/versionedparcelable/1.2.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/cursoradapter/cursoradapter/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/coordinatorlayout/coordinatorlayout/1.3.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/wear-phone-interactions/1.1.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/wear/1.4.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/tiles/tiles/1.7.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/tiles/tiles-proto/1.7.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/compose/compose-foundation/1.7.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/compose/compose-material/1.7.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/compose/compose-material3/1.7.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/compose/compose-navigation/1.7.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/compose/compose-material-core/1.7.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/watchface/watchface-data/1.3.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/watchface/watchface-editor-guava/1.3.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/watchface/watchface-guava/1.3.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/watchface/watchface-editor/1.3.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/watchface/watchface-complications-data-source-ktx/1.3.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/watchface/watchface-complications-data/1.3.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/watchface/watchface/1.3.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/watchface/watchface-client-guava/1.3.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/watchface/watchface-complications/1.3.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/watchface/watchface-style/1.3.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/watchface/watchface-complications-rendering/1.3.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/watchface/watchface-client/1.3.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/watchface/watchface-complications-data-source/1.3.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/protolayout/protolayout-proto/1.5.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/protolayout/protolayout-external-protobuf/1.5.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/protolayout/protolayout-expression-pipeline/1.5.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/protolayout/protolayout-material-core/1.5.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/protolayout/protolayout-material3/1.5.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/protolayout/protolayout/1.5.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/protolayout/protolayout-expression/1.5.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/wear/wear-ongoing/1.1.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/dynamicanimation/dynamicanimation/1.1.0/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/navigation3/navigation3-runtime-android/1.2.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/navigation3/navigation3-ui-android/1.2.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/hilt/hilt-navigation-fragment/1.4.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/hilt/hilt-common/1.4.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/hilt/hilt-lifecycle-viewmodel/1.4.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/hilt/hilt-navigation-compose/1.4.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/hilt/hilt-navigation/1.4.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/hilt/hilt-work/1.4.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/hilt/hilt-lifecycle-viewmodel-compose/1.4.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/recyclerview/recyclerview/1.5.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/recyclerview/recyclerview-selection/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/datastore/datastore-android/1.3.0-alpha08/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/transition/transition/1.7.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/datastore/datastore-preferences-external-protobuf/1.3.0-alpha08/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/transition/transition-ktx/1.7.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/datastore/datastore-preferences-rxjava2/1.3.0-alpha08/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/annotation/annotation-experimental/1.6.0/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/datastore/datastore-rxjava2/1.3.0-alpha08/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/annotation/annotation-jvm/1.10.0/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/datastore/datastore-guava/1.3.0-alpha08/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/mediarouter/mediarouter/1.5.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/datastore/datastore-preferences-android/1.3.0-alpha08/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/datastore/datastore-core-okio-jvm/1.3.0-alpha08/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/privacysandbox/ads/ads-adservices/1.1.0-beta13/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/datastore/datastore-core-android/1.3.0-alpha08/Android.bp",
+          "line": 21,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/privacysandbox/ads/ads-adservices-java/1.1.0-beta13/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/datastore/datastore-preferences-proto/1.3.0-alpha08/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/privacysandbox/sdkruntime/sdkruntime-client/1.0.0-alpha19/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/datastore/datastore-preferences-core-android/1.3.0-alpha08/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/privacysandbox/sdkruntime/sdkruntime-core/1.0.0-alpha19/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/vectordrawable/vectordrawable-animated/1.2.0/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/privacysandbox/ui/ui-client/1.0.0-alpha17/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/vectordrawable/vectordrawable/1.2.0/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/privacysandbox/ui/ui-provider/1.0.0-alpha17/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/interpolator/interpolator/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/privacysandbox/ui/ui-core/1.0.0-alpha17/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/swiperefreshlayout/swiperefreshlayout/1.2.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/activity/activity-compose/1.14.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/activity/activity-ktx/1.14.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/activity/activity/1.14.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/tvprovider/tvprovider/1.1.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/viewpager2/viewpager2/1.2.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/glance/glance-testing/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/appcompat/appcompat-resources/1.8.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/appcompat/appcompat/1.8.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/glance/glance-appwidget-testing/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/slice/slice-view/1.1.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/glance/wear/wear-core/1.0.0-alpha06/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/slice/slice-core/1.1.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/glance/glance-appwidget-preview/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/slice/slice-builders/1.1.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/glance/glance/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/cardview/cardview/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/glance/glance-appwidget/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/glance/glance-appwidget-external-protobuf/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/glance/glance-template/1.0.0-alpha06/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/glance/glance-appwidget-samples/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/glance/glance-appwidget-testing-samples/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/glance/glance-wear-tiles/1.0.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/glance/glance-preview/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/glance/glance-appwidget-proto/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/glance/glance-material3/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/glance/glance-material/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/remotecallback/remotecallback/1.0.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/constraintlayout/constraintlayout-compose-android/1.2.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/constraintlayout/constraintlayout-core/1.2.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/constraintlayout/constraintlayout/2.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/customview/customview/1.2.0-beta01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/customview/customview-poolingcontainer/1.1.0-beta01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/fragment/fragment-testing/1.9.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/fragment/fragment-testing-manifest/1.9.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/fragment/fragment/1.9.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/fragment/fragment-ktx/1.9.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/sqlite/sqlite-android/2.7.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/sqlite/sqlite-framework-android/2.7.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/navigationevent/navigationevent-android/1.1.0-beta01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/navigationevent/navigationevent-compose-android/1.1.0-beta01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/slidingpanelayout/slidingpanelayout/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/graphics/graphics-core/1.1.0-beta01/Android.bp",
+          "line": 21,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/graphics/graphics-shapes-android/1.1.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/graphics/graphics-path/1.1.0-rc01/Android.bp",
+          "line": 21,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/emoji/emoji/1.2.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/emoji/emoji-appcompat/1.2.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/emoji/emoji-bundled/1.2.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/navigation/navigation-runtime-android/2.10.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/navigation/navigation-compose-android/2.10.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/navigation/navigation-fragment-ktx/2.10.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/navigation/navigation-common-ktx/2.10.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/navigation/navigation-fragment/2.10.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/navigation/navigation-testing-android/2.10.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/navigation/navigation-common-android/2.10.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/navigation/navigation-ui/2.10.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/navigation/navigation-runtime-ktx/2.10.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/navigation/navigation-ui-ktx/2.10.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/recommendation/recommendation/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/car/app/app-testing/1.4.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/car/app/app-automotive/1.8.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/car/app/app/1.8.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/benchmark/benchmark-common/1.5.0-alpha05/Android.bp",
+          "line": 21,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/benchmark/benchmark-macro/1.5.0-alpha05/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/benchmark/benchmark-traceprocessor-android/1.5.0-alpha05/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/benchmark/benchmark-macro-junit4/1.5.0-alpha05/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/benchmark/benchmark-junit4/1.5.0-alpha05/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/browser/browser/1.10.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/runtime/runtime-tracing/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/runtime/runtime-annotation-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/runtime/runtime-livedata/1.4.0-beta01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/runtime/runtime-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/runtime/runtime-saveable-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/runtime/runtime-retain-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/material3/adaptive/adaptive-android/1.3.0-alpha09/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/material3/adaptive/adaptive-navigation-android/1.3.0-alpha09/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/material3/adaptive/adaptive-layout-android/1.3.0-alpha09/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/material3/adaptive/adaptive-navigation3-android/1.3.0-alpha09/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/material3/material3-window-size-class-android/1.5.0-alpha16/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/material3/material3-android/1.5.0-alpha16/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/ui/ui-text-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/ui/ui-test-manifest/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/ui/ui-graphics-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/ui/ui-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/ui/ui-geometry-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/ui/ui-test-junit4-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/ui/ui-test-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/ui/ui-util-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/ui/ui-tooling-preview-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/ui/ui-unit-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/ui/ui-tooling-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/ui/ui-tooling-data-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/animation/animation-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/animation/animation-graphics-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/animation/animation-core-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/material/material-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/material/material-icons-core-android/1.7.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/material/material-icons-extended-android/1.7.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/material/material-ripple-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/remote/remote-creation-compose/1.0.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/remote/remote-core/1.0.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/remote/remote-player-compose/1.0.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/remote/remote-frontend/1.0.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/remote/remote-player-core/1.0.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/remote/remote-creation-android/1.0.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/remote/remote-player-view/1.0.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/remote/remote-creation-core/1.0.0-alpha07/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/remote/remote-foundation/1.0.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/foundation/foundation-layout-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/compose/foundation/foundation-android/1.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/javascriptengine/javascriptengine/1.1.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/input/input-motionprediction/1.0.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/percentlayout/percentlayout/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/credentials/credentials/1.7.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/preference/preference/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/biometric/biometric-ktx/1.4.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/biometric/biometric/1.4.0-alpha06/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/gridlayout/gridlayout/1.1.0-beta02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/viewpager/viewpager/1.1.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/media/media/1.7.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/appfunctions/appfunctions-testing/1.0.0-alpha08/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/appfunctions/appfunctions/1.0.0-alpha08/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/appfunctions/appfunctions-service/1.0.0-alpha08/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/work/work-testing/2.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/work/work-runtime-ktx/2.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/work/work-multiprocess/2.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/work/work-runtime/2.12.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/heifwriter/heifwriter/1.2.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/profileinstaller/profileinstaller/1.5.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/palette/palette/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/resourceinspection/resourceinspection-annotation/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/health/health-services-client/1.1.0-beta01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/health/health-services-client-external-protobuf/1.1.0-beta01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/health/health-services-client-proto/1.1.0-beta01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/core/core-backported-fixes/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/core/core-telecom/1.1.0-alpha04/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/core/core-pip/1.0.0-beta01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/core/core-remoteviews/1.1.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/core/core-viewtree/1.1.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/core/core-ktx/1.20.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/core/core/1.20.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/core/core-animation-testing/1.0.0/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/core/core-animation/1.0.0/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/exifinterface/exifinterface/1.4.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/inspection/inspection/1.0.0/Android.bp",
+          "line": 21,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/paging/paging-common-ktx/3.5.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/paging/paging-compose-android/3.5.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/paging/paging-common-android/3.5.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/paging/paging-guava/3.5.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/paging/paging-runtime/3.5.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-runtime-android/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-runtime-compose-android/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-common-java8/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-process/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-runtime-ktx-android/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-viewmodel-android/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-livedata-ktx/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-runtime-testing-android/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-viewmodel-ktx/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-viewmodel-savedstate-android/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-livedata-core/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-livedata-core-ktx/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-livedata/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-common-jvm/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-viewmodel-compose-android/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/lifecycle/lifecycle-service/2.11.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/tracing/tracing-perfetto-handshake/1.0.1/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/tracing/tracing-perfetto/1.0.1/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/tracing/tracing-driver-android/1.0.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/tracing/tracing-ktx/2.0.0-alpha04/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/tracing/tracing-driver-wire-android/1.0.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/tracing/tracing-perfetto-binary/1.0.1/Android.bp",
+          "line": 21,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/tracing/tracing-android/2.0.0-alpha04/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/tracing/tracing-wire-android/2.0.0-alpha04/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/textclassifier/textclassifier/1.0.0-alpha03/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/print/print/1.1.0-beta01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/asynclayoutinflater/asynclayoutinflater/1.1.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/drawerlayout/drawerlayout/1.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/savedstate/savedstate-compose-android/1.5.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/savedstate/savedstate-android/1.5.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/savedstate/savedstate-ktx/1.5.0-alpha02/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/arch/core/core-runtime/2.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/arch/core/core-common/2.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/arch/core/core-testing/2.3.0-alpha01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "prebuilts/sdk/current/androidx/m2repository/androidx/documentfile/documentfile/1.1.0-rc01/Android.bp",
+          "line": 20,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "platform_testing/libraries/runner/Android.bp",
+          "line": 23,
+          "text": "sdk_version: \"34\","
+        },
+        {
+          "path": "platform_testing/libraries/runner/Android.bp",
+          "line": 73,
+          "text": "sdk_version: \"34\","
+        }
+      ],
+      "sdk_version:35": [
+        {
+          "path": "external/perfetto/Android.bp",
+          "line": 3285,
+          "text": "sdk_version: \"35\","
+        },
+        {
+          "path": "external/perfetto/Android.bp",
+          "line": 3300,
+          "text": "sdk_version: \"35\","
+        },
+        {
+          "path": "external/perfetto/Android.bp",
+          "line": 13435,
+          "text": "sdk_version: \"35\","
+        },
+        {
+          "path": "external/perfetto/Android.bp",
+          "line": 13831,
+          "text": "sdk_version: \"35\","
+        },
+        {
+          "path": "external/perfetto/Android.bp",
+          "line": 13848,
+          "text": "sdk_version: \"35\","
+        },
+        {
+          "path": "external/perfetto/Android.bp",
+          "line": 18805,
+          "text": "sdk_version: \"35\","
+        },
+        {
+          "path": "external/perfetto/Android.bp",
+          "line": 19092,
+          "text": "sdk_version: \"35\","
+        }
+      ],
+      "sdk_version:36": [
+        {
+          "path": "packages/modules/Virtualization/libs/libcompos_common/external/test/Android.bp",
+          "line": 5,
+          "text": "sdk_version: \"36\","
+        }
+      ],
+      "sdk_version:37": [
+        {
+          "path": "vendor/droidloom/Android.bp",
+          "line": 17,
+          "text": "sdk_version: \"37\","
+        },
+        {
+          "path": "vendor/droidloom/Android.bp",
+          "line": 31,
+          "text": "sdk_version: \"37\","
+        }
+      ],
+      "sdk_version:4": [
+        {
+          "path": "cts/tests/inputmethod/legacyimeclienttestlib/Android.bp",
+          "line": 25,
+          "text": "sdk_version: \"4\","
+        },
+        {
+          "path": "tools/tradefederation/core/javatests/test-apps/TradeFedTestApp/Android.bp",
+          "line": 22,
+          "text": "sdk_version: \"4\","
+        }
+      ],
+      "sdk_version:7": [
+        {
+          "path": "frameworks/native/opengl/tests/gl_perfapp/Android.bp",
+          "line": 19,
+          "text": "sdk_version: \"7\","
+        }
+      ],
+      "sdk_version:8": [
+        {
+          "path": "development/samples/XmlAdapters/Android.bp",
+          "line": 12,
+          "text": "sdk_version: \"8\","
+        },
+        {
+          "path": "development/samples/WiktionarySimple/Android.bp",
+          "line": 9,
+          "text": "sdk_version: \"8\","
+        },
+        {
+          "path": "development/samples/Wiktionary/Android.bp",
+          "line": 9,
+          "text": "sdk_version: \"8\","
+        },
+        {
+          "path": "tools/tradefederation/core/javatests/test-apps/UITestApp/Android.bp",
+          "line": 22,
+          "text": "sdk_version: \"8\","
+        },
+        {
+          "path": "external/protobuf/Android.bp",
+          "line": 801,
+          "text": "sdk_version: \"8\","
+        },
+        {
+          "path": "external/protobuf/Android.bp",
+          "line": 1658,
+          "text": "sdk_version: \"8\","
+        },
+        {
+          "path": "frameworks/native/opengl/tests/testLatency/Android.bp",
+          "line": 15,
+          "text": "sdk_version: \"8\","
+        },
+        {
+          "path": "frameworks/native/opengl/tests/testViewport/Android.bp",
+          "line": 17,
+          "text": "sdk_version: \"8\","
+        },
+        {
+          "path": "frameworks/ex/common/Android.bp",
+          "line": 24,
+          "text": "sdk_version: \"8\","
+        },
+        {
+          "path": "frameworks/base/tests/SmokeTest/tests/Android.bp",
+          "line": 18,
+          "text": "sdk_version: \"8\","
+        },
+        {
+          "path": "frameworks/base/tests/SmokeTest/Android.bp",
+          "line": 14,
+          "text": "sdk_version: \"8\","
+        }
+      ],
+      "sdk_version:9": [
+        {
+          "path": "external/jsoncpp/Android.bp",
+          "line": 88,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/lzma/Android.bp",
+          "line": 28,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/conscrypt/Android.bp",
+          "line": 133,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/conscrypt/Android.bp",
+          "line": 833,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "packages/modules/StatsD/statsd/Android.bp",
+          "line": 548,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/boringssl/Android.bp",
+          "line": 73,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/giflib/Android.bp",
+          "line": 23,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/eigen/blas/Android.bp",
+          "line": 78,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/libphonenumber/Android.bp",
+          "line": 114,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/libphonenumber/Android.bp",
+          "line": 123,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/cblas/Android.bp",
+          "line": 208,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/jacoco/Android.bp",
+          "line": 108,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/gemmlowp/eight_bit_int_gemm/Android.bp",
+          "line": 53,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/webp/Android.bp",
+          "line": 49,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/webp/Android.bp",
+          "line": 91,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/protobuf/Android.bp",
+          "line": 770,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/googletest/googlemock/Android.bp",
+          "line": 45,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/googletest/googletest/test/Android.bp",
+          "line": 55,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/googletest/googletest/Android.bp",
+          "line": 50,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/googletest/googletest/Android.bp",
+          "line": 58,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/easymock/Android.bp",
+          "line": 44,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "external/easymock/Android.bp",
+          "line": 50,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "frameworks/rs/cpp/Android.bp",
+          "line": 24,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "frameworks/rs/cpp/Android.bp",
+          "line": 105,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "frameworks/rs/Android.bp",
+          "line": 8,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "frameworks/base/proto/Android.bp",
+          "line": 17,
+          "text": "sdk_version: \"9\","
+        },
+        {
+          "path": "build/make/tools/releasetools/Android.bp",
+          "line": 141,
+          "text": "sdk_version: \"9\","
+        }
+      ],
+      "sdk_version:minimum": [
+        {
+          "path": "system/logging/liblog/Android.bp",
+          "line": 64,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "external/zlib/Android.bp",
+          "line": 299,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "external/libpng/Android.bp",
+          "line": 130,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "bionic/libc/Android.bp",
+          "line": 696,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "bionic/libc/Android.bp",
+          "line": 2189,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "bionic/libc/Android.bp",
+          "line": 2200,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "libnativehelper/Android.bp",
+          "line": 66,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "libnativehelper/Android.bp",
+          "line": 81,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "libnativehelper/Android.bp",
+          "line": 96,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "external/wuffs-mirror-release-c/Android.bp",
+          "line": 31,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "external/compiler-rt/Android.bp",
+          "line": 66,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 42,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 50,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 81,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 98,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 202,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 233,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 267,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 278,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 294,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 357,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 398,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 471,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/clang/host/linux-x86/Android.bp",
+          "line": 566,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/ndk/Android.bp",
+          "line": 38,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/ndk/Android.bp",
+          "line": 49,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "prebuilts/ndk/Android.bp",
+          "line": 56,
+          "text": "sdk_version: \"minimum\","
+        },
+        {
+          "path": "art/odrefresh/Android.bp",
+          "line": 89,
+          "text": "sdk_version: \"minimum\","
+        }
+      ],
+      "sdk_version:module_Tiramisu": [
+        {
+          "path": "packages/modules/OnDevicePersonalization/framework/Android.bp",
+          "line": 104,
+          "text": "sdk_version: \"module_Tiramisu\","
+        },
+        {
+          "path": "hardware/interfaces/uwb/aidl/Android.bp",
+          "line": 22,
+          "text": "sdk_version: \"module_Tiramisu\","
+        },
+        {
+          "path": "hardware/interfaces/uwb/aidl/Android.bp",
+          "line": 63,
+          "text": "sdk_version: \"module_Tiramisu\","
+        }
+      ],
+      "sdk_version:system_29": [
+        {
+          "path": "frameworks/proto_logging/stats/message/connectivity/Android.bp",
+          "line": 28,
+          "text": "sdk_version: \"system_29\","
+        }
+      ],
+      "sdk_version:system_31": [
+        {
+          "path": "packages/modules/Uwb/service/fusion_lib/Android.bp",
+          "line": 25,
+          "text": "sdk_version: \"system_31\","
+        },
+        {
+          "path": "packages/modules/Uwb/service/support_lib/Android.bp",
+          "line": 23,
+          "text": "sdk_version: \"system_31\","
+        },
+        {
+          "path": "art/libnativeloader/test/Android.bp",
+          "line": 104,
+          "text": "sdk_version: \"system_31\","
+        }
+      ],
+      "sdk_version:system_35": [
+        {
+          "path": "frameworks/libs/service_entitlement/Android.bp",
+          "line": 28,
+          "text": "sdk_version: \"system_35\","
+        }
+      ],
+      "sdk_version:system_UpsideDownCake": [
+        {
+          "path": "packages/modules/Uwb/androidx_backend/Android.bp",
+          "line": 59,
+          "text": "sdk_version: \"system_UpsideDownCake\","
+        },
+        {
+          "path": "packages/modules/Uwb/androidx_backend/Android.bp",
+          "line": 91,
+          "text": "sdk_version: \"system_UpsideDownCake\","
+        }
+      ],
+      "system_modules:art-module-intra-core-api-stubs-bootstrap-system-modules": [
+        {
+          "path": "libcore/mmodules/intracoreapi/Android.bp",
+          "line": 146,
+          "text": "system_modules: \"art-module-intra-core-api-stubs-bootstrap-system-modules\","
+        },
+        {
+          "path": "libcore/toolchainapi/Android.bp",
+          "line": 72,
+          "text": "system_modules: \"art-module-intra-core-api-stubs-bootstrap-system-modules\","
+        }
+      ],
+      "system_modules:art-module-intra-core-api-stubs-system-modules": [
+        {
+          "path": "external/conscrypt/Android.bp",
+          "line": 383,
+          "text": "system_modules: \"art-module-intra-core-api-stubs-system-modules\","
+        },
+        {
+          "path": "external/conscrypt/Android.bp",
+          "line": 629,
+          "text": "system_modules: \"art-module-intra-core-api-stubs-system-modules\","
+        },
+        {
+          "path": "external/conscrypt/Android.bp",
+          "line": 922,
+          "text": "system_modules: \"art-module-intra-core-api-stubs-system-modules\","
+        },
+        {
+          "path": "external/conscrypt/Android.bp",
+          "line": 1008,
+          "text": "system_modules: \"art-module-intra-core-api-stubs-system-modules\","
+        },
+        {
+          "path": "external/icu/android_icu4j/Android.bp",
+          "line": 166,
+          "text": "system_modules: \"art-module-intra-core-api-stubs-system-modules\","
+        },
+        {
+          "path": "external/icu/android_icu4j/Android.bp",
+          "line": 297,
+          "text": "system_modules: \"art-module-intra-core-api-stubs-system-modules\","
+        },
+        {
+          "path": "external/icu/android_icu4j/Android.bp",
+          "line": 530,
+          "text": "system_modules: \"art-module-intra-core-api-stubs-system-modules\","
+        },
+        {
+          "path": "external/bouncycastle/Android.bp",
+          "line": 116,
+          "text": "system_modules: \"art-module-intra-core-api-stubs-system-modules\","
+        },
+        {
+          "path": "external/bouncycastle/Android.bp",
+          "line": 134,
+          "text": "system_modules: \"art-module-intra-core-api-stubs-system-modules\","
+        }
+      ],
+      "system_modules:art-module-lib-api-stubs-system-modules": [
+        {
+          "path": "external/conscrypt/Android.bp",
+          "line": 494,
+          "text": "system_modules: \"art-module-lib-api-stubs-system-modules\","
+        },
+        {
+          "path": "external/icu/android_icu4j/Android.bp",
+          "line": 439,
+          "text": "system_modules: \"art-module-lib-api-stubs-system-modules\","
+        },
+        {
+          "path": "external/icu/android_icu4j/Android.bp",
+          "line": 482,
+          "text": "system_modules: \"art-module-lib-api-stubs-system-modules\","
+        }
+      ],
+      "system_modules:art-module-public-api-stubs-system-modules": [
+        {
+          "path": "external/conscrypt/Android.bp",
+          "line": 566,
+          "text": "system_modules: \"art-module-public-api-stubs-system-modules\","
+        },
+        {
+          "path": "external/icu/android_icu4j/Android.bp",
+          "line": 115,
+          "text": "system_modules: \"art-module-public-api-stubs-system-modules\","
+        },
+        {
+          "path": "external/icu/android_icu4j/Android.bp",
+          "line": 251,
+          "text": "system_modules: \"art-module-public-api-stubs-system-modules\","
+        }
+      ],
+      "system_modules:core-all-system-modules": [
+        {
+          "path": "external/apache-xml/Android.bp",
+          "line": 93,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "external/apache-xml/Android.bp",
+          "line": 150,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "packages/modules/Virtualization/libs/framework-virtualization/Android.bp",
+          "line": 78,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "external/okhttp/Android.bp",
+          "line": 77,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "external/okhttp/Android.bp",
+          "line": 131,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "external/okhttp/Android.bp",
+          "line": 252,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "external/icu/Android.bp",
+          "line": 120,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "tools/platform-compat/java/android/compat/annotation/Android.bp",
+          "line": 80,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "external/conscrypt/Android.bp",
+          "line": 208,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "external/conscrypt/Android.bp",
+          "line": 229,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "external/conscrypt/Android.bp",
+          "line": 258,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "libcore/ojluni/src/test/Android.bp",
+          "line": 54,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "libcore/ojluni/src/test/Android.bp",
+          "line": 152,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "libcore/luni/src/test/java9compatibility/Android.bp",
+          "line": 35,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "libcore/luni/src/test/java11language/Android.bp",
+          "line": 36,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "libcore/luni/src/test/java11language/Android.bp",
+          "line": 77,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "libcore/luni/src/test/java21language/Android.bp",
+          "line": 36,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "libcore/luni/src/test/java21language/Android.bp",
+          "line": 77,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "libcore/luni/src/test/java9language/Android.bp",
+          "line": 36,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "libcore/luni/src/test/java9language/Android.bp",
+          "line": 77,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "libcore/luni/src/test/java17language/Android.bp",
+          "line": 36,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "libcore/luni/src/test/java17language/Android.bp",
+          "line": 77,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "libcore/benchmarks/Android.bp",
+          "line": 31,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "libcore/benchmarks/Android.bp",
+          "line": 68,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "frameworks/libs/modules-utils/java/Android.bp",
+          "line": 98,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "art/build/flags/Android.bp",
+          "line": 82,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "art/build/flags/Android.bp",
+          "line": 102,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "art/test/Android.bp",
+          "line": 546,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "build/make/tools/aconfig/fake_device_config/Android.bp",
+          "line": 25,
+          "text": "system_modules: \"core-all-system-modules\","
+        },
+        {
+          "path": "build/make/tools/aconfig/fake_device_config/Android.bp",
+          "line": 47,
+          "text": "system_modules: \"core-all-system-modules\","
+        }
+      ]
+    }
+  }
+}

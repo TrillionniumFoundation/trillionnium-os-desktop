@@ -2,6 +2,12 @@
 
 This source publication addresses observed host and source defects and records their actual verification. Whole Android and application production qualification remains open.
 
+## Current continuation state
+
+Both actual strict r12 full builds failed and retired. The exact missing-input repairs are now available as independently committed, normally tested source: Audio `b555f4538547a2dffa3349e914e489858ef3d3d0`, Native `c0522b7877485d786b58b67b02e8297e41d53c8c`, and the separate Android Java environment successor `7113c8fe36fc34b6350cb61478bf2082bb211d2e`. Their complete patches, preimages and postimages replay exactly. Shared source reconciliation, the next strict full builds, actual Android startup and all 42 application acceptances remain pending.
+
+The foreground owner's `caed30a83c3af70bf7a769968e6365b46d99d26c` publication adds the ordinary ProductionCell foundations. This continuation preserves those source and CI changes. It does not claim that the foundation is integrated into a running production cell. The canonical foreground-owner state and original user images are untouched.
+
 ## NSS process-exit regression
 
 The same root-sealed diagnostic executable returned 0, 1, and 0 in three consecutive owned observations. The failure occurred after a process was enumerated under /proc and exited before its directory was opened.
@@ -50,7 +56,7 @@ The proposed five Firefox browser gates and six common gates are included under 
 
 ## CI and remaining work
 
-The actual A08 run 42656749197 on bed3989aca9d8ca7344eb50cd0ccb25c6799ab3e completed successfully at 2026-11-09T16:41:00Z with all 32 steps. Its original job log confirms 29 passing current application-generation controls with two explicit privileged controls ignored, ten release-evidence controls, all four source replays, the ordinary-UID proc-access regression and all 26 Audio source-library regressions. The older A08 results and source generations retained below are historical observations, not additional current application acceptances.
+The actual A08 run 42662100482 on 11c32359708244886c29064eeb36a46ccc5f75ee completed successfully with all 33 steps. Its complete original job log confirms the exact three-file C11 and seven-file vendor Audio source replays, 21 vendor candidate controls, 29 application-generation controls with two explicit privileged controls ignored, and the then-current 26 Audio source-library tests. The preceding bed3989 run 42656749197 also passed all 32 steps. This successor changes the Audio source test step to the exact new 27-test library and adds the Audio/Native r12 and Java environment source replays plus the 14-test Java environment harness. Those new CI executions are pending at publication preparation; remote normal results are described separately below.
 
 The earlier A08 run 42640649729 on c5b5319 was cancelled at the 15-minute job limit while downloading JDK packages, before repair tests executed. Tool preparation now verifies and reuses the runner-provided Java 17 JDK/JNI headers and existing compiler/media tools, installing only missing components. The same JNI/media tests, source inventories and job deadline remain required.
 
@@ -87,3 +93,27 @@ Both complete APKs passed fresh aapt and apksigner verification and are held rea
 After immutable source/evidence publication at bed3989, three owned, superseded executables were removed: the Audio and Native source-replay probes and the ordinary proc-access probe. Exact file hashes and identities, process/mount references, inactive units and CURRENT path references were checked before removal. The deletion held the original coordination lock, preserved canonical CURRENT, synchronized containing directories and checked physical absence. A subsequent independent job again observed all three absent. The exact intent, result and readback are in `cleanup/owned-probe-retirement-r1`.
 
 This retirement removed 12,579,512 bytes. It does not represent final old-generation cleanup. Active builds, selected inputs, original user data and unresolved signers remain protected until their replacement and consumers are verified.
+
+## R12 original input closures
+
+The Audio r12 failure exposed missing SDK33 module-lib and original zygote Rust providers. `audio/r12-provider-closure` preserves the exact actual failed full-build receipts and output, then selects only four additional paths at the existing revisions: SDK33 `module-lib/android.jar`, `module-lib/core-for-system-modules.jar`, `zygote-sys` and `zygote-proc-macros`. All 430 project revisions and original SDK consumers remain unchanged. The complete normal source library passed 27 tests, the Audio updater passed 55, both normal tools built and the source CLI verified 430 projects with eight root links. There were no failing or ignored tests in those two groups. These source and normal-tool results do not qualify a full APEX.
+
+The two complete official SDK JARs were subsequently obtained from the exact fixed Gitiles commit into an isolated input directory. Their full-file SHA256 and Git blob identities matched, and every one of their 13,961 and 1,869 ZIP entries passed a complete CRC read. All eight original Rust files in the newly selected zygote directories were also read and matched against the fixed original Git tree; no extra module-path or include input was found. The two follow-up raw receipts are beside the frozen capsule as `audio/r12-original-sdk33-jars.json` and `audio/r12-original-zygote-rust-inputs.json`. The root independently read those complete receipts and terminal states; it did not claim a separate rehash of the 65,516,972 JAR bytes or shared-source materialization.
+
+`native/r12-flags-provider` adds the complete original Telecom and update-engine `flags` directories while keeping all 601 revisions and both strict full targets unchanged. The update-engine dependency on `fake_device_config` is already covered by the full frozen `build/make` selection. All 28 provider files plus two project-root Blueprint context files match their exact recorded Git blob identities. The root independently recalculated all 30 full-file hashes and replayed the three-file source patch.
+
+The Native repair passed 35 distinct ordinary tests: 22 module controls, 11 existing Android pair controls and two source-plan controls. Both normal tools built and the source CLI verified 601 projects with eight root links. The original controller's 33-versus-22 count assertion remains a failed controller receipt; the actual 33 passing test names and full output were independently checked. The continuation ran only the two remaining tests and the build/CLI commands. It did not rerun or relabel the failed controller. Both ordinary units and cgroups were independently verified retired.
+
+The exact Audio and Native Rust replay verifiers are beside their frozen capsules. The updated Audio CI helper copies the new complete library and lock together with the previously published, independently pinned historical fixture, Cargo manifest and dependency lock. It checks all five inputs before and after real Cargo execution and requires all 27 exact test names, with no filtering or ignoring. The historical 26-test capsule remains unchanged as source provenance; its result is not attributed to the new library.
+
+## Android Java operation environment
+
+`apps-java-environment` carries the exact successor to the R3 application command entry. Explicit `am instrument` and `app_process` operations now obtain a bounded allowlist of Android framework environment variables from the already held framework process and proc directory. Required classpaths and Android roots must be present and canonical. Duplicate, empty, traversal and oversized values are rejected. Unrelated host, loader and private variables are discarded. The framework identity and selected environment are revalidated after the operation, within the existing absolute deadline.
+
+The change passed 14 ordinary workspace tests and the same 14 tests in the same-source harness; those are overlapping executions, not 28 distinct tests. Nine controls are new, including parser rejection, a real owned host child environment/PIDFD exit case and an expired operation that never executes. Two privileged cgroup/namespace controls remain explicitly ignored for this successor. The exact three changed source files replay from the published R3 preimages, and the three unchanged real CPU/PIDFD dependency files remain byte-identical. This source is not deployed, adds no ProductionCell adapter and grants no actual Settings or other application acceptance.
+
+## Actual retirement of six obsolete Binder roots
+
+After immutable publication and full readback of 11c323, six exact superseded Binder source/target/sealed-executable roots were deleted. The removal checked exact integer file identities, every selected content hash, hard links, Cargo locks, live processes and mapped files, mounts, loaded units and canonical-state references. It retained the combined C11 source, frozen review capsule, foreground-owner source and all original evidence. All 30 protected file hashes and canonical-state bytes remained unchanged.
+
+The actual deletion removed 3,514 file names containing 1,410,490,310 logical bytes. A separate durable job subsequently observed all six paths physically absent, no remaining live references and no temporary cleanup lock. Both original raw receipts and actual H terminal states are under `cleanup/obsolete-binder-roots-r1`. This is additional to the previously recorded 12,579,512-byte three-probe retirement. These precisely scoped removals do not represent final obsolete-generation cleanup.

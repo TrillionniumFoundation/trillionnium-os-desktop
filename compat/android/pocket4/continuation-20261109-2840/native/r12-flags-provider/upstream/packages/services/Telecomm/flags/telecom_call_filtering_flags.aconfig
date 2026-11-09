@@ -1,0 +1,10 @@
+package: "com.android.server.telecom.flags"
+container: "system"
+
+# OWNER=breadley TARGET=25Q4
+flag {
+  name: "synchronize_conn_state"
+  namespace: "telecom"
+  description: "Locks access to the ServiceConnection to ensure consistency of state across threads"
+  bug: "409122082"
+}

@@ -1,0 +1,167 @@
+{
+  "schema": "native601-flags-normal-tests-v1",
+  "started_ns": 1794245690774995001,
+  "source": "/home/qq/work/pocket4-native601-flags-20261109-2840-r1/source",
+  "source_pins": [
+    {
+      "path": "android/native-generation-pair/source-lock.json",
+      "bytes": 354910,
+      "sha256": "74372a62836ec16c30a6f24c6e13725831f90e13f2bbc4c9f9f56c74895b163d"
+    },
+    {
+      "path": "tools/droidloom-source/src/lib.rs",
+      "bytes": 53705,
+      "sha256": "bbc798d61589bf1cc25d95728749b9dc6b65041b9c0ad94b96bc071367c7c162"
+    },
+    {
+      "path": "tools/droidloom-update/src/native_generation_pair_build.rs",
+      "bytes": 442011,
+      "sha256": "c4ef8e67b1254e85f7e13ad6132d7910dd1a65b57105727cf16c1b7ca0656ed4"
+    }
+  ],
+  "commands": [
+    {
+      "name": "source-bound-test",
+      "argv": [
+        "/home/qq/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-source",
+        "--lib",
+        "tests::project_bound_admits_superproject_gitlink_extensions_but_not_unbounded_sync",
+        "--",
+        "--exact"
+      ],
+      "exit_code": 0,
+      "elapsed_ns": 1769841121,
+      "stdout": {
+        "path": "/home/qq/work/pocket4-native601-flags-20261109-2840-r1/qualification/normal-r3/source-bound-test.stdout",
+        "bytes": 208,
+        "sha256": "9004b48dfc87ca96d6681f838b144568e08642bf4b84b4c00958b88e0da08418"
+      },
+      "stderr": {
+        "path": "/home/qq/work/pocket4-native601-flags-20261109-2840-r1/qualification/normal-r3/source-bound-test.stderr",
+        "bytes": 427,
+        "sha256": "bb027072bf691ce98d6a3d843112e2bd1d05de69a545cf9683d81d3f42d20dae"
+      },
+      "test_counts": [
+        [
+          "1",
+          "0",
+          "0"
+        ]
+      ]
+    },
+    {
+      "name": "source-path-test",
+      "argv": [
+        "/home/qq/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-source",
+        "--lib",
+        "tests::bounded_native_source_plan_keeps_duplicate_and_escape_rejections",
+        "--",
+        "--exact"
+      ],
+      "exit_code": 0,
+      "elapsed_ns": 114821120,
+      "stdout": {
+        "path": "/home/qq/work/pocket4-native601-flags-20261109-2840-r1/qualification/normal-r3/source-path-test.stdout",
+        "bytes": 197,
+        "sha256": "ef9979f9f80195847baab197ea81257c6344bac33beef1c25cfbd3dd2087ef25"
+      },
+      "stderr": {
+        "path": "/home/qq/work/pocket4-native601-flags-20261109-2840-r1/qualification/normal-r3/source-path-test.stderr",
+        "bytes": 216,
+        "sha256": "0b359584886839673ff0e5831075be149d2769e69d2376ef49996c617a520419"
+      },
+      "test_counts": [
+        [
+          "1",
+          "0",
+          "0"
+        ]
+      ]
+    },
+    {
+      "name": "normal-tools-build",
+      "argv": [
+        "/home/qq/.cargo/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-source",
+        "-p",
+        "droidloom-update"
+      ],
+      "exit_code": 0,
+      "elapsed_ns": 2551207713,
+      "stdout": {
+        "path": "/home/qq/work/pocket4-native601-flags-20261109-2840-r1/qualification/normal-r3/normal-tools-build.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "/home/qq/work/pocket4-native601-flags-20261109-2840-r1/qualification/normal-r3/normal-tools-build.stderr",
+        "bytes": 320,
+        "sha256": "5f662b4e326debdd7a1bd8e02f2bd0400c622a31a0f782eb85582c65d8ce43d9"
+      }
+    },
+    {
+      "name": "source-verify-cli",
+      "argv": [
+        "/home/qq/work/pocket4-native601-flags-20261109-2840-r1/target/debug/droidloom-source",
+        "verify-lock",
+        "--lock",
+        "/home/qq/work/pocket4-native601-flags-20261109-2840-r1/source/android/native-generation-pair/source-lock.json"
+      ],
+      "exit_code": 0,
+      "elapsed_ns": 64100178,
+      "stdout": {
+        "path": "/home/qq/work/pocket4-native601-flags-20261109-2840-r1/qualification/normal-r3/source-verify-cli.stdout",
+        "bytes": 107,
+        "sha256": "1a91585efe6b903222b35738135ec409b807e40fc996eeb013add6fb0ebbd241"
+      },
+      "stderr": {
+        "path": "/home/qq/work/pocket4-native601-flags-20261109-2840-r1/qualification/normal-r3/source-verify-cli.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "full_build_started": false,
+  "source_materialization_started": false,
+  "runtime_qualified": false,
+  "production_ready": false,
+  "source_pins_after": [
+    {
+      "path": "android/native-generation-pair/source-lock.json",
+      "bytes": 354910,
+      "sha256": "74372a62836ec16c30a6f24c6e13725831f90e13f2bbc4c9f9f56c74895b163d"
+    },
+    {
+      "path": "tools/droidloom-source/src/lib.rs",
+      "bytes": 53705,
+      "sha256": "bbc798d61589bf1cc25d95728749b9dc6b65041b9c0ad94b96bc071367c7c162"
+    },
+    {
+      "path": "tools/droidloom-update/src/native_generation_pair_build.rs",
+      "bytes": 442011,
+      "sha256": "c4ef8e67b1254e85f7e13ad6132d7910dd1a65b57105727cf16c1b7ca0656ed4"
+    }
+  ],
+  "state": "NORMAL_TESTS_AND_TOOLS_PASS",
+  "finished_ns": 1794245695277126413
+}
