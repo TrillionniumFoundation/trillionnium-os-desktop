@@ -261,7 +261,7 @@ jobs:
           import stat
           import sys
           import unittest
-          capsules = {'native597-original-llvm-plugin-cones-r1': ('75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c', 12), 'audio-canonical-custody-r1': ('42ead27bc89d5d866eddfd951e0dbfb91af1ff1c4e2843946fe4eee34925f1d5', 3), 'apparmor-binder-retained-credential-r1': ('243e3355ecfa6f96af8839ffa10854c796a3b22e03a5d924c778fb47aa83f4b9', 6), 'production-identity-reservation-r1': ('eee9cec9ecbd9b71cdda9df13bb0446124001a5826932709561126896881ffea', 3), 'native600-original-provider-closure-r1': ('d40f8629af9741d8bc4dc09bb89389fe2b1c7348e3ea02d72b01dca1908c6cc6', 18), 'audio425-original-provider-closure-r1': ('257bc3f071fd09c6b908ef80fdf0fe50617259c33b9083b0d66da6e270a6a450', 23), 'native600-rkpd-apex-r1': ('f33f622023fb328ea88c79a2fb29f7f7a9c1c3427af0a31b53bbdfc8c9fc4889', 9), 'native600-bcc-compat-r1': ('aadd86a9ec1528cdae294926ca86946d3337096ac1e27e476fda95e9cf1afc19', 4), 'audio430-ondeviceintelligence-api-r1': ('a61d8835adbf08d2d63847a428a8f928c0481f8ee1458d0a488308111153ae37', 5), 'namespace-lifetime-r5-review-r1': ('f4e068208cf7e2f99e19beca10b54fd1bef466c5b2e2949dbbd7a67857ccd4bd', 8), 'native601-dexdeps-pyee-r1': ('35c3d845f07e56a1149e761cc44ee205827c32141d081570ae0f3b71caff36f4', 5), 'audio425-connectivity-projection-preimage-r1': ('3cbd3fa6665daec40aae21b6c225ae99df8aa5f02450bf656a795fec03f72397', 9), 'audio430-pasit-original-provider-closure-r1': ('147bbe6cb367a1272b8c1528a64fc1b675c313a7d38d5b4060bb42befe2a7297', 25), 'audio430-original-released-api-inputs-r1': ('f8c6a07d08c56d2793b8ed2a6c220dbcfbf03c48b3670a20fd4b81fb3307e8e1', 11), 'native601-original-provider-chain-r1': ('2650d520dec6680b88ab406d3f21b19d2b908ce66de076640e0bd1c01ca539a7', 23)}
+          capsules = {'native597-original-llvm-plugin-cones-r1': ('75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c', 12), 'audio-canonical-custody-r1': ('42ead27bc89d5d866eddfd951e0dbfb91af1ff1c4e2843946fe4eee34925f1d5', 3), 'apparmor-binder-retained-credential-r1': ('243e3355ecfa6f96af8839ffa10854c796a3b22e03a5d924c778fb47aa83f4b9', 6), 'production-identity-reservation-r1': ('eee9cec9ecbd9b71cdda9df13bb0446124001a5826932709561126896881ffea', 3), 'native600-original-provider-closure-r1': ('d40f8629af9741d8bc4dc09bb89389fe2b1c7348e3ea02d72b01dca1908c6cc6', 18), 'audio425-original-provider-closure-r1': ('257bc3f071fd09c6b908ef80fdf0fe50617259c33b9083b0d66da6e270a6a450', 23), 'native600-rkpd-apex-r1': ('f33f622023fb328ea88c79a2fb29f7f7a9c1c3427af0a31b53bbdfc8c9fc4889', 9), 'native600-bcc-compat-r1': ('aadd86a9ec1528cdae294926ca86946d3337096ac1e27e476fda95e9cf1afc19', 4), 'audio430-ondeviceintelligence-api-r1': ('a61d8835adbf08d2d63847a428a8f928c0481f8ee1458d0a488308111153ae37', 5), 'namespace-lifetime-r5-review-r1': ('f4e068208cf7e2f99e19beca10b54fd1bef466c5b2e2949dbbd7a67857ccd4bd', 8), 'native601-dexdeps-pyee-r1': ('35c3d845f07e56a1149e761cc44ee205827c32141d081570ae0f3b71caff36f4', 5), 'audio425-connectivity-projection-preimage-r1': ('3cbd3fa6665daec40aae21b6c225ae99df8aa5f02450bf656a795fec03f72397', 9), 'audio430-pasit-original-provider-closure-r1': ('147bbe6cb367a1272b8c1528a64fc1b675c313a7d38d5b4060bb42befe2a7297', 25), 'audio430-original-released-api-inputs-r1': ('f8c6a07d08c56d2793b8ed2a6c220dbcfbf03c48b3670a20fd4b81fb3307e8e1', 11), 'native601-original-provider-chain-r1': ('2650d520dec6680b88ab406d3f21b19d2b908ce66de076640e0bd1c01ca539a7', 23), 'continuation-20261109-2840': ('c3c36651371289bee25b6a1a5f6a159e7cd521bd1d2ff56b2db3695f05e0e20f', 26)}
           for name, (digest, count) in capsules.items():
               directory = Path('compat/android/pocket4', name).resolve(strict=True)
               raw = (directory / 'FILES.json').read_bytes()
@@ -729,6 +729,40 @@ jobs:
           python3 -I -B "$capsule/audio/replay-api-inputs.py" \
             --capsule "$capsule/audio/api-inputs" --output "$work/audio-api-replay" \
             --report "$RUNNER_TEMP/a08/audio-api-replay.json"
+      - name: Verify bounded NSS retries and application evidence coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule=compat/android/pocket4/continuation-20261109-2840
+          work="$RUNNER_TEMP/a08-2840-controls"
+          mkdir "$work"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/nss/verify-source.rs" -o "$work/nss-replay"
+          "$work/nss-replay" "$capsule/nss" replay \
+            "$capsule/nss/preimage" "$work/nss-source" \
+            | tee "$RUNNER_TEMP/a08/2840-nss-source-replay.json"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/binder/host-smoke.rs" -o "$work/binder-self-check"
+          "$work/binder-self-check" --self-check \
+            | tee "$RUNNER_TEMP/a08/2840-binder-self-check.json"
+          git apply --numstat "$capsule/audio/fix.patch" \
+            | tee "$RUNNER_TEMP/a08/2840-audio-patch-files.txt"
+          CARGO_TARGET_DIR="$work/app-target" rustup run 1.93.0 cargo test --locked \
+            --manifest-path "$capsule/apps/harness/Cargo.toml" -j 1 -- --test-threads=1 \
+            2>&1 | tee "$RUNNER_TEMP/a08/2840-app-release-tests.log"
+          python3 -I -B - "$RUNNER_TEMP/a08" <<'PY2840'
+          import json
+          from pathlib import Path
+          import sys
+          evidence = Path(sys.argv[1])
+          expected = 'test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;'
+          if (evidence / '2840-app-release-tests.log').read_text().count(expected) != 1:
+              raise SystemExit('All ten application evidence controls must execute')
+          binder = json.loads((evidence / '2840-binder-self-check.json').read_text())
+          if binder != {'abi_checked': True, 'truncated_wire_rejected': True, 'device_actions': 0}:
+              raise SystemExit('Binder ABI self-check differs or performed device actions')
+          print('NSS source replay, Binder ABI check and ten app evidence controls passed; Android runtime remains a separate gate')
+          PY2840
       - name: Preserve host evidence without implying Android guest success
         if: always()
         uses: actions/upload-artifact@v4

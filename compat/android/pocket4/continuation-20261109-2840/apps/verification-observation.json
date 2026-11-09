@@ -1,0 +1,113 @@
+{
+  "schema": "pocket4-app-release-check-local-handoff-v1",
+  "scope": "Git-backed source reconstruction and observed tool receipts; no runtime acceptance",
+  "remote_root": "/home/alex/work/pocket4-app-release-check-20261109-2840-r1",
+  "branch": "fix/pocket4-app-release-evidence-20261109-2840",
+  "base_commit": "b4dc3b49ce29e706efca0ba5a7c775864d9b54b8",
+  "source_reconstruction": {
+    "basis": "Complete pre-rustfmt source held in tool-call context plus every applied semantic edit; original main and README reconstructed from complete h_view outputs",
+    "remote_final_bytes_recovered": false,
+    "remote_formatted_source_sha256_not_claimed": true,
+    "publication_requires_format_and_review": true
+  },
+  "verified_test_observation": {
+    "host": "pocket4",
+    "job_id": "1a1c07ad74c-5e21-a87",
+    "state": "succeeded",
+    "exit_code": 0,
+    "output_complete": true,
+    "output_durable": true,
+    "timed_out": false,
+    "library_tests": 18,
+    "cli_parser_tests": 1,
+    "failed": 0,
+    "ignored": 0,
+    "commands": [
+      "cargo fmt --package droidloom-applications",
+      "cargo test --locked --offline -j1 -p droidloom-applications",
+      "git diff --check"
+    ],
+    "resources": {
+      "cpu": 2,
+      "memory_max_bytes": 2147483648,
+      "cpu_quota_percent": 100
+    },
+    "source_note": "Subsequent final job restores only unrelated lib.rs formatting, repeats these tests, builds and exercises real CLI with synthetic fixtures, then commits; its final receipt remains unread."
+  },
+  "unknown_final_operation": {
+    "host": "pocket4",
+    "job_id": "1a1c07d2df5-5e21-a97",
+    "idempotency_key": "p4-apps-2840-release-check-final-commit-r1",
+    "last_observed": "launch_state=launched",
+    "terminal_state": "UNKNOWN",
+    "commit_head": "UNKNOWN",
+    "do_not_replay_mutation": true,
+    "read_when_available": [
+      "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1c07d2df5-5e21-a97/exit.json",
+      "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1c07d2df5-5e21-a97/stdout.log",
+      "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1c07d2df5-5e21-a97/stderr.log"
+    ],
+    "blocking_error": "h process_status/read/view all returned MCP -32603 Internal error"
+  },
+  "runtime_acceptances_added": 0,
+  "Android_operations": 0,
+  "CURRENT_writes": 0,
+  "remaining_app_delivery": {
+    "authenticated_play_missing": [
+      "Amazon",
+      "Best Buy",
+      "National",
+      "TextNow",
+      "Hertz",
+      "Hilton",
+      "IHG",
+      "Marriott",
+      "TextFree",
+      "United",
+      "StreetEasy",
+      "ANA"
+    ],
+    "metadata_only": [
+      "Hyatt"
+    ],
+    "official_binary_unresolved": [
+      "Uber"
+    ],
+    "older_public_channel_do_not_downgrade": [
+      "Ctrip",
+      "Zhubajie"
+    ],
+    "signer_migration": [
+      "Meituan Takeout"
+    ]
+  },
+  "cleanup": {
+    "original807_removed": 805,
+    "retained": 2,
+    "retained_reasons": [
+      "minimal historical owner fence",
+      "registered Amazon QA signing material"
+    ],
+    "additional_deletions_by_this_agent": 0
+  },
+  "post_observation_review_fix": {
+    "observed_by": [
+      "apps_cleanup",
+      "audio_closeout",
+      "native_closeout"
+    ],
+    "issue": "Evidence read budget used declared size, but each read allowed 64 MiB; deliberately understated size could exceed aggregate I/O budget before being rejected.",
+    "fix": "Use declared evidence.bytes as read_frozen limit after checking it does not exceed EVIDENCE_LIMIT; metadata rejects oversized files before payload reads.",
+    "regression_test": "understated_evidence_size_is_rejected_before_reading_payload",
+    "module_tests_now_expected": 10,
+    "full_application_tests_now_expected": 20,
+    "new_source_compiled_or_tests_executed": false,
+    "old_19_test_observation_does_not_cover_this_change": true,
+    "report_invariants": {
+      "production_ready": false,
+      "runtime_qualified": false,
+      "tests_executed_by_checker": 0
+    },
+    "normalization_doc": "base.apk is a normalized role label, not source filename; installed baseCodePath establishes role."
+  }
+}

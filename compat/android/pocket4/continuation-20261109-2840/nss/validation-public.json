@@ -1,0 +1,87 @@
+{
+  "schema": "pocket4-nss-proc-churn-public-validation-v1",
+  "source_preimage_sha256": "4e1b01ee58cdd3a431cd5860ffe768423ff709204e665f1b82641e2a00babbb1",
+  "source_postimage_sha256": "f6bab120181162c2841e2d9c5ca3cb145a199b96bd8c3cab44fed6d60118d550",
+  "patch_sha256": "9c023b6bf2d830791971254e1d6e73c605a8b11e2e4cf79c7b7b0540b1f89484",
+  "normal_tests": {
+    "passed": 41,
+    "failed": 0,
+    "ignored": 0,
+    "new_regression_cases": 4,
+    "returncode": 0
+  },
+  "old_sealed_binary_real_returncodes": [
+    0,
+    1,
+    0
+  ],
+  "old_failure_site": "SSSD /proc leader vanished between directory enumeration and open",
+  "old_binary_sha256": "d3d9fb8f343080eae4b383abe3d663e57c976ab0d0674b72b910404cb1605463",
+  "fixed_binary_sha256": "a850f15ee6e2853d55970193d51d3ce2629f3a41980e0f2415ef45574e6e2b01",
+  "fixed_binary_mode": "0555",
+  "samples": [
+    {
+      "sample": 1,
+      "started_utc": "2026-11-09T13:26:01.676491+00:00",
+      "elapsed_seconds": 1.369,
+      "returncode": 0,
+      "stdout_bytes": 8320,
+      "stdout_sha256": "21c1863dc3ab5b385e52447395b67c8d48e43dcad5e279950f0d05a27803c27d",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unit_retired": true
+    },
+    {
+      "sample": 2,
+      "started_utc": "2026-11-09T13:26:03.051019+00:00",
+      "elapsed_seconds": 1.445,
+      "returncode": 0,
+      "stdout_bytes": 8320,
+      "stdout_sha256": "86e716882c72446852339add6534adaf65d46e83d7c3f9e9be43eeb5ac526eb3",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unit_retired": true
+    },
+    {
+      "sample": 3,
+      "started_utc": "2026-11-09T13:26:04.501020+00:00",
+      "elapsed_seconds": 1.86,
+      "returncode": 0,
+      "stdout_bytes": 8320,
+      "stdout_sha256": "53036af342412e09b1fd6e6914e6a0e8d5edc37d28438b773fea298015512575",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unit_retired": true
+    },
+    {
+      "sample": 4,
+      "started_utc": "2026-11-09T13:26:06.366923+00:00",
+      "elapsed_seconds": 1.278,
+      "returncode": 0,
+      "stdout_bytes": 8320,
+      "stdout_sha256": "b10deeaa6874d11c06b47da8cf6ef90aec2b4d551683ab956fb0d9ab18ed1e96",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unit_retired": true
+    },
+    {
+      "sample": 5,
+      "started_utc": "2026-11-09T13:26:07.651234+00:00",
+      "elapsed_seconds": 1.235,
+      "returncode": 0,
+      "stdout_bytes": 8320,
+      "stdout_sha256": "3b7eff88d9abe0a130e1ad98b6754ef06d57b849da71a27f3ad9ccc769346ffa",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unit_retired": true
+    }
+  ],
+  "all_five_actual_samples_passed": true,
+  "initial_validation_setup_rejected_mode_0500": true,
+  "production_host_admission_qualified": false,
+  "android_starts": 0,
+  "production_ready": false,
+  "original_source_modified": false,
+  "canonical_current_modified": false,
+  "meaning": "The process-exit regression is repaired and five real owned NSS observations passed. Production authority, actual Android boot and application acceptance require separate qualification."
+}
