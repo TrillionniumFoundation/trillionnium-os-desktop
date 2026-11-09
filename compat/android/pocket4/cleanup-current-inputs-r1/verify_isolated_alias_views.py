@@ -62,7 +62,7 @@ def inner(root):
     alias_target=alias/"target";rows=[];child_rows=[]
     def run(name,expect):
         result=observe([str(target)])
-        fields={key:result.get(key) for key in ("visibility","namespace_fd_count","opaque_mount_namespace_count","covered_opaque_mount_namespace_count","uncovered_mount_namespace_count")}
+        fields={key:result.get(key) for key in ("visibility","namespace_fd_count","opaque_mount_namespace_count","covered_opaque_mount_namespace_count","uncovered_mount_namespace_count","visible_alias_path_count","verified_shadowed_alias_path_count")}
         fields.update({"case":name,"process_hits":len(result["process_or_owner_hits"]),
                        "mount_hits":len(result["mount_hits"]),
                        "coverage_errors":result["coverage_errors"][:16],
@@ -82,8 +82,93 @@ def inner(root):
         else:raise RuntimeError("fixture_expectation")
         rows.append(fields)
         return result
+    def path_mount_identity(path):
+        handle=os.open(path,os.O_PATH|os.O_NOFOLLOW|os.O_CLOEXEC)
+        try:
+            info=os.fstat(handle)
+            raw=Path("/proc/self/fdinfo",str(handle)).read_bytes()
+            values=[line.split(b":",1)[1].strip() for line in raw.splitlines() if line.startswith(b"mnt_id:")]
+            need(len(values)==1 and values[0].isdigit() and int(values[0])>0,"fixture_mount_id_unknown")
+            return int(values[0]),(info.st_dev,info.st_ino)
+        finally:os.close(handle)
+    def mount_rows_at(path):
+        point=os.fsencode(path);found=[]
+        for line in Path("/proc/self/mountinfo").read_bytes().splitlines():
+            fields=line.split(b" - ",1)[0].split()
+            need(len(fields)>=6,"fixture_mountinfo_shape")
+            value=fields[4]
+            for encoded,decoded in ((b"\\040",b" "),(b"\\011",b"\t"),(b"\\012",b"\n"),(b"\\134",b"\\")):
+                value=value.replace(encoded,decoded)
+            if value==point:
+                found.append({"mount_id":int(fields[0]),"parent_id":int(fields[1])})
+        return found
+    def masked_alias(name,expect,reference_kind=None,reference_pid=1,descriptor=None):
+        before_id,before_identity=path_mount_identity(alias)
+        need(before_identity==path_mount_identity(parent)[1],"mask_preimage_is_not_parent_bind")
+        mount(outside,alias,None,4096)
+        try:
+            after_id,after_identity=path_mount_identity(alias)
+            need(after_id!=before_id and after_identity==path_mount_identity(outside)[1],"mask_mount_not_observed")
+            try:os.stat(alias_target,follow_symlinks=False)
+            except FileNotFoundError:pass
+            else:raise RuntimeError("masked_target_should_be_missing_below_strict_ancestor")
+            result=run(name,expect)
+            count=result.get("verified_shadowed_alias_path_count")
+            need(type(count) is int and count>=1,name+"_shadow_branch_not_observed")
+            if reference_kind is not None:
+                need(any(hit.get("kind")==reference_kind and hit.get("pid")==reference_pid
+                         and (descriptor is None or hit.get("fd")==str(descriptor))
+                         for hit in result["process_or_owner_hits"]),name+"_specific_reference_not_vetoed")
+            rows[-1]["fixture_mask"]={"strict_ancestor_overmount":True,"target_lookup_errno":"ENOENT",
+                                       "before_mount_id":before_id,"after_mount_id":after_id,
+                                       "covering_identity":list(after_identity)}
+            if reference_kind is not None:rows[-1]["required_reference_kind"]=reference_kind
+        finally:unmount(alias)
     try:
         run("ancestor_alias_only","clear")
+        masked_alias("strict_ancestor_mask_without_references","clear")
+        lower_id,_=path_mount_identity(alias)
+        mount(parent,alias,None,4096)
+        try:
+            upper_id,_=path_mount_identity(alias)
+            samepoint=mount_rows_at(alias)
+            selected=[row for row in samepoint if row["mount_id"]==upper_id]
+            need(upper_id!=lower_id and len(samepoint)>=2 and len(selected)==1
+                 and selected[0]["parent_id"]==lower_id,"samepoint_stack_not_exactly_bound")
+            target_mnt,target_identity=path_mount_identity(alias_target)
+            need(target_mnt==upper_id and target_identity==path_mount_identity(target)[1],"samepoint_top_target_not_bound")
+            result=run("samepoint_stack_visible_top_layer","clear")
+            count=result.get("visible_alias_path_count")
+            need(type(count) is int and count>=1,"samepoint_visible_alias_not_observed")
+            rows[-1]["fixture_stack"]={"lower_mount_id":lower_id,"selected_mount_id":upper_id,
+                                        "target_mount_id":target_mnt,"target_identity":list(target_identity),
+                                        "samepoint_rows":samepoint}
+        finally:unmount(alias)
+        fd=os.open(alias_target/"payload",os.O_RDONLY|os.O_CLOEXEC)
+        try:
+            need(os.readlink("/proc/self/fd/"+str(fd))==str(alias_target/"payload"),"masked_fd_alias_display")
+            masked_alias("strict_ancestor_mask_with_held_fd","reference","fd",descriptor=fd)
+        finally:os.close(fd)
+        fd=os.open(alias_target/"payload",os.O_RDONLY|os.O_CLOEXEC)
+        mapped=mmap.mmap(fd,0,access=mmap.ACCESS_READ);os.close(fd)
+        try:masked_alias("strict_ancestor_mask_with_mmap","reference","maps")
+        finally:mapped.close()
+        ready_read,ready_write=os.pipe2(os.O_CLOEXEC);ctl_read,ctl_write=os.pipe2(os.O_CLOEXEC)
+        code="import os,sys;os.write(int(sys.argv[1]),b'R');os.read(int(sys.argv[2]),1)"
+        process=subprocess.Popen([sys.executable,"-I","-B","-c",code,str(ready_write),str(ctl_read),str(alias_target/"payload")],pass_fds=(ready_write,ctl_read),cwd="/",stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        os.close(ready_write);os.close(ctl_read)
+        try:
+            need(select.select([ready_read],[],[],3)[0] and os.read(ready_read,1)==b"R","masked_argv_child_ready")
+            os.close(ready_read);ready_read=None
+            need(os.fsencode(alias_target/"payload") in Path("/proc",str(process.pid),"cmdline").read_bytes().split(b"\0"),"masked_argv_exact_argument_absent")
+            masked_alias("strict_ancestor_mask_with_argv_only","reference","owner_argument_reference",process.pid)
+        finally:
+            os.write(ctl_write,b"X");os.close(ctl_write)
+            try:code=process.wait(timeout=3)
+            except subprocess.TimeoutExpired:process.kill();code=process.wait(timeout=3)
+            child_rows.append({"pid":process.pid,"exit_code":code,"reaped":True})
+            need(code==0,"masked_argv_child_terminal")
+            if ready_read is not None:os.close(ready_read)
         fd=os.open(alias_target/"payload",os.O_RDONLY|os.O_CLOEXEC)
         try:run("actual_fd_via_alias","reference")
         finally:os.close(fd)
@@ -95,7 +180,7 @@ def inner(root):
         try:run("actual_cwd_via_alias","reference")
         finally:os.chdir("/")
         ready_read,ready_write=os.pipe2(os.O_CLOEXEC);ctl_read,ctl_write=os.pipe2(os.O_CLOEXEC)
-        code="import os,sys;os.write(int(sys.argv[1]),b'R');os.close(int(sys.argv[1]));os.read(int(sys.argv[2]),1)"
+        code="import os,sys;os.write(int(sys.argv[1]),b'R');os.read(int(sys.argv[2]),1)"
         process=subprocess.Popen([sys.executable,"-I","-B","-c",code,str(ready_write),str(ctl_read),str(alias_target/"payload")],pass_fds=(ready_write,ctl_read),cwd="/",stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         os.close(ready_write);os.close(ctl_read)
         try:
@@ -153,6 +238,7 @@ def inner(root):
             rows[-1]["exact_fd_only_namespace_witness_reaped"]=True
         finally:os.close(nsfd)
         run("restored_alias_only_after_all_negative_controls","clear")
+        need(len(rows)==15,"exact_fifteen_controls_required")
     finally:
         os.chdir("/")
         unmount(alias)

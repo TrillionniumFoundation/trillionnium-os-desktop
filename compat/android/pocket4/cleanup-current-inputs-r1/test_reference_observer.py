@@ -71,10 +71,11 @@ class ProcFixture:
         self.populate(self.process, self.pid)
         self.leader = self.add_task(self.pid)
 
-    def mount(self, source, point, mount_id=None):
+    def mount(self, source, point, mount_id=None, parent_id=None):
         mount_id = ROOT_MOUNT_ID if mount_id is None else mount_id
+        parent_id = ROOT_MOUNT_ID if parent_id is None else parent_id
         dev = f'{os.major(self.dev)}:{os.minor(self.dev)}'
-        return f'{mount_id} {ROOT_MOUNT_ID} {dev} {escaped(source)} {escaped(point)} rw - ext4 /dev/fixture rw\n'
+        return f'{mount_id} {parent_id} {dev} {escaped(source)} {escaped(point)} rw - ext4 /dev/fixture rw\n'
 
     def populate(self, task, tid, namespace=HOST_NAMESPACE, mounts=None):
         (task / 'stat').write_text(stat_line(tid))
@@ -129,7 +130,9 @@ class ProcFixture:
                 entries = [(mid, source) for mid, source, point in rows
                            if point == virtual and source.startswith('/')]
                 if entries:
-                    mount_id, source = entries[-1]
+                    selected = getattr(self, 'vfs_mount_ids', {}).get(virtual)
+                    mount_id, source = (next(entry for entry in entries if entry[0] == selected)
+                                        if selected is not None else entries[-1])
                     source = getattr(self, 'vfs_overrides', {}).get(virtual, source)
                     fd = real_open(source, flags, mode)
                 else:
@@ -152,7 +155,9 @@ class ProcFixture:
                     mode = args[0] if args else kwargs.get('mode', 'r')
                     with real_path_open(path, 'rb') as stream:
                         raw = stream.read()
-                    mid = str(descriptors[fd][2]).encode()
+                    virtual = descriptors[fd][1]
+                    mid = str(getattr(self, 'vfs_reported_mount_ids', {}).get(
+                        virtual, descriptors[fd][2])).encode()
                     raw = re.sub(rb'(?m)^mnt_id:\s*[0-9]+', b'mnt_id:\t' + mid, raw)
                     return io.BytesIO(raw) if 'b' in mode else io.StringIO(raw.decode())
             return real_path_open(path, *args, **kwargs)
@@ -265,16 +270,68 @@ class ReferenceObserverTests(unittest.TestCase):
         self.assertTrue(any(h['kind'] == 'mount_at_or_below_target'
                             for h in result['mount_hits']))
 
-    def test_shadowed_and_stacked_aliases_are_unknown(self):
+    def test_unproved_shadow_or_disconnected_transition_is_unknown(self):
         base = self.f.mounts + self.f.mount(self.f.target.parent, '/renamed-parent', 11)
         cases = [
-            (self.f.mount(self.f.outside, '/renamed-parent', 12), 'ambiguous_alias_mount'),
-            (self.f.mount(self.f.outside, '/renamed-parent/target', 12), 'shadowed_alias_mount'),
+            (self.f.mount(self.f.outside, '/renamed-parent', 12), 'alias_missing_without_verified_cover'),
+            (self.f.mount(self.f.outside, '/renamed-parent/target', 12), 'alias_mount_transition_unknown'),
         ]
         for extra, code in cases:
             with self.subTest(code=code):
                 (self.f.leader / 'mountinfo').write_text(base + extra)
                 self.unknown(self.f.observe(), code)
+
+    def test_same_point_alias_uses_kernel_layer_not_row_order(self):
+        # The actual top layer is the first row, whose parent is the lower
+        # same-point layer. Mountinfo order is deliberately not lookup order.
+        view = (self.f.mounts +
+                self.f.mount(self.f.target.parent, '/renamed-parent', 11, 12) +
+                self.f.mount(self.f.outside, '/renamed-parent', 12))
+        self.f.vfs_mount_ids = {'/renamed-parent': 11}
+        (self.f.leader / 'mountinfo').write_text(view)
+        result = self.f.observe()
+        self.clear(result)
+        self.assertEqual(0, result['verified_shadowed_alias_path_count'])
+        self.assertEqual(2, result['visible_alias_path_count'])
+
+    def masked_parent_view(self):
+        return (self.f.mounts + self.f.mount(self.f.target.parent, '/renamed-parent', 11) +
+                self.f.mount(self.f.outside, '/renamed-parent', 12, 11))
+
+    def test_verified_ancestor_mask_missing_route_is_observed(self):
+        (self.f.leader / 'mountinfo').write_text(self.masked_parent_view())
+        result = self.f.observe()
+        self.clear(result)
+        self.assertEqual(1, result['verified_shadowed_alias_path_count'])
+        self.assertEqual(1, result['ancestor_alias_count'])
+
+    def test_hidden_alias_retains_inode_and_lexical_references(self):
+        (self.f.leader / 'mountinfo').write_text(self.masked_parent_view())
+        (self.f.leader / 'fd' / '8').symlink_to(self.f.file)
+        (self.f.leader / 'cwd').unlink()
+        (self.f.leader / 'cwd').symlink_to(self.f.target)
+        (self.f.leader / 'maps').write_text(self.f.mapping('/renamed-parent/target/payload.bin') +
+            '3000-4000 r--p 00000000 00:00 0 /renamed-parent/target/removed (deleted)\n')
+        (self.f.leader / 'cmdline').write_bytes(b'fixture\0--input=/renamed-parent/target/payload.bin\0')
+        result = self.f.observe()
+        self.assertEqual([], result['coverage_errors'])
+        self.assertEqual([], result['mount_hits'])
+        self.assertEqual(1, result['verified_shadowed_alias_path_count'])
+        kinds = {h['kind'] for h in result['process_or_owner_hits']}
+        self.assertTrue({'fd', 'cwd', 'maps', 'owner_argument_reference'} <= kinds)
+        self.assertFalse(result['deletion_authorized'])
+
+    def test_missing_on_expected_alias_mount_is_unknown(self):
+        view = self.f.mounts + self.f.mount(self.f.target.parent, '/renamed-parent', 11)
+        (self.f.leader / 'mountinfo').write_text(view)
+        self.f.vfs_overrides = {'/renamed-parent': str(self.f.outside)}
+        self.unknown(self.f.observe(), 'alias_missing_without_verified_cover')
+
+    def test_kernel_mount_id_absent_from_snapshot_is_unknown(self):
+        view = self.f.mounts + self.f.mount(self.f.target.parent, '/renamed-parent', 11)
+        (self.f.leader / 'mountinfo').write_text(view)
+        self.f.vfs_reported_mount_ids = {'/renamed-parent': 987654321}
+        self.unknown(self.f.observe(), 'bound_mount_id_unknown')
 
     def test_foreign_namespace_hostroot_chroot_cannot_claim_coverage(self):
         self.f.add_task(namespace='mnt:[22222222]')
@@ -319,10 +376,12 @@ class ReferenceObserverTests(unittest.TestCase):
             self.f.mounts + self.f.mount('/', self.f.file, 11))
         self.unknown(self.f.observe(), 'mounted_target_descendant')
 
-    def test_ambiguous_overmount_at_same_point_is_unknown(self):
+    def test_inventory_uses_kernel_mount_id_over_hidden_longest_path(self):
         (self.f.proc / 'self' / 'mountinfo').write_text(
-            self.f.mounts + self.f.mount('/different-source', '/', 11))
-        self.unknown(self.f.observe(), 'ambiguous_target_mount')
+            self.f.mounts + self.f.mount('/different-source', self.f.target.parent, 11))
+        # The actual held target FD still reports ROOT_MOUNT_ID. Deriving
+        # internal from the longer hidden row would point at the wrong source.
+        self.clear(self.f.observe())
 
     def test_only_verified_empty_single_leader_zombie_may_be_skipped(self):
         for path in (self.f.process, self.f.leader):
@@ -503,7 +562,7 @@ class ReferenceObserverTests(unittest.TestCase):
         point = escaped(self.f.target)
         raw = self.f.mounts + f'100 1 0:5 mnt:[4026533156] {point} rw - nsfs nsfs rw\n'
         (self.f.proc / 'self' / 'mountinfo').write_text(raw)
-        self.unknown(self.f.observe(), 'opaque_target_mount')
+        self.unknown(self.f.observe(), 'mounted_target_root')
 
     def test_persistent_nsfs_namespace_without_task_view_is_unknown(self):
         raw = self.f.mounts + '100 1 0:5 mnt:[4026533156] /opaque rw - nsfs nsfs rw\n'

@@ -1,6 +1,6 @@
 --- a/cleanup/apps-old-root-retirement-20261108-8b88-r1/executor.py
 +++ b/cleanup/apps-old-root-retirement-20261108-8b88-r1/executor.py
-@@ -147,58 +147,1228 @@
+@@ -147,58 +147,1284 @@
  
  
  def live_references(roots):
@@ -33,6 +33,7 @@
 +    bindings = {}
 +    opaque_namespaces, covered_namespace_views = set(), set()
 +    namespace_fd_labels, alias_keys = set(), set()
++    visible_alias_paths, shadowed_alias_paths = set(), set()
 +    namespace_candidates, namespace_handles, namespace_mount_paths, namespace_task_paths = {}, {}, {}, {}
 +    namespace_pool = None
 +    namespace_file_device = None
@@ -693,15 +694,35 @@
 +            raise Incomplete('empty_mountinfo')
 +        return table
 +
-+    def deepest_mount(path, table, error_code):
-+        candidates = [m for m in table if beneath(path, m['point'])]
-+        if not candidates:
-+            raise Incomplete(error_code)
-+        longest = max(len(m['point']) for m in candidates)
-+        deepest = [m for m in candidates if len(m['point']) == longest]
-+        if len(deepest) != 1:
-+            raise Incomplete(error_code)
-+        return deepest[0]
++    def mount_chain(indexed, mount_id, root_mount):
++        # A pathname alone cannot choose among stacked or hidden mount rows.
++        # The kernel-selected mount must have a complete chain to this root FD.
++        chain, visited = [], set()
++        cursor = mount_id
++        while True:
++            bound()
++            if cursor not in indexed or cursor in visited or len(visited) >= 128:
++                raise Incomplete('mount_ancestry_unknown')
++            visited.add(cursor)
++            chain.append(cursor)
++            if cursor == root_mount:
++                return tuple(chain)
++            child = indexed[cursor]
++            parent = indexed.get(child['parent'])
++            if parent is None or not beneath(child['point'], parent['point']):
++                raise Incomplete('mount_ancestry_unknown')
++            cursor = parent['id']
++
++    def bound_mount(handle, path, indexed, root_mount):
++        selected = indexed.get(fd_mount_id(handle))
++        if selected is None:
++            raise Incomplete('bound_mount_id_unknown')
++        actual = os.fstat(handle)
++        if selected['dev'] != (os.major(actual.st_dev), os.minor(actual.st_dev)):
++            raise Incomplete('bound_mount_device_mismatch')
++        if not beneath(path, selected['point']):
++            raise Incomplete('bound_mount_path_mismatch')
++        return selected, mount_chain(indexed, selected['id'], root_mount), actual
 +
 +    def validate_root_mount(table, mount_id, root_identity):
 +        found = [m for m in table if m['id'] == mount_id]
@@ -721,7 +742,10 @@
 +        fd = secure_open(root)
 +        try:
 +            initial = os.fstat(fd)
-+            mount = deepest_mount(root, table, 'ambiguous_target_mount')
++            mount, _, bound_identity = bound_mount(
++                fd, root, {m['id']: m for m in table}, host_root_mount)
++            if metadata(bound_identity) != metadata(initial):
++                raise Incomplete('target_changed_during_inventory')
 +            dev, source, point = mount['dev'], mount['mount_root'], mount['point']
 +            if source is None:
 +                raise Incomplete('opaque_target_mount')
@@ -835,7 +859,7 @@
 +        hit(pid, tid, kind, owners, descriptor)
 +        return before.st_dev, before.st_ino
 +
-+    def mount_aliases(table, ns, task, root_identity, root_mount):
++    def mount_aliases(table, ns, task, root_identity, root_mount, raw):
 +        aliases = set()
 +        anchor = os.open(task / 'root', os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC)
 +        try:
@@ -844,6 +868,7 @@
 +                    fd_mount_id(anchor) != root_mount):
 +                raise Incomplete('alias_view_root_changed')
 +            indexed = {m['id']: m for m in table}
++            candidates = {}
 +            for mount in table:
 +                bound()
 +                source, point, dev = mount['mount_root'], mount['point'], mount['dev']
@@ -853,45 +878,74 @@
 +                    if dev != target_dev or not beneath(internal, source):
 +                        continue
 +                    exposed = posixpath.normpath(posixpath.join(point, posixpath.relpath(internal, source)))
-+                    selected = deepest_mount(exposed, table, 'ambiguous_alias_mount')
-+                    resolved = (posixpath.normpath(posixpath.join(selected['mount_root'],
-+                                posixpath.relpath(exposed, selected['point'])))
-+                                if selected['mount_root'] is not None else None)
-+                    if selected['dev'] != target_dev or resolved != internal:
-+                        raise Incomplete('shadowed_alias_mount')
-+                    cursor, visited = selected['id'], set()
-+                    while cursor != root_mount:
-+                        if cursor in visited or cursor not in indexed or len(visited) >= 128:
-+                            raise Incomplete('alias_mount_ancestry_unknown')
-+                        visited.add(cursor)
-+                        cursor = indexed[cursor]['parent']
-+                    key = (root, exposed, selected['id'])
-+                    if key in aliases:
-+                        continue
-+                    descriptor = os.dup(anchor)
-+                    try:
-+                        parts = exposed.split('/')[1:]
-+                        for i, part in enumerate(parts):
-+                            bound()
-+                            flags = os.O_PATH | os.O_NOFOLLOW | os.O_CLOEXEC
-+                            if i != len(parts) - 1:
-+                                flags |= os.O_DIRECTORY
-+                            child = os.open(part, flags, dir_fd=descriptor)
-+                            os.close(descriptor)
-+                            descriptor = child
-+                        final = os.fstat(descriptor)
-+                        if metadata(final) != snapshots[root]:
-+                            raise Incomplete('alias_target_identity_mismatch')
-+                        if fd_mount_id(descriptor) != selected['id']:
-+                            raise Incomplete('alias_target_mount_mismatch')
-+                    finally:
-+                        os.close(descriptor)
++                    key = (root, exposed, mount['id'])
 +                    aliases.add(key)
++                    candidates.setdefault((root, exposed), set()).add(mount['id'])
 +                    if exposed != root:
 +                        alias_keys.add((ns, *key))
 +                        if len(alias_keys) > 10000:
 +                            raise Incomplete('mount_alias_bound')
-+            if fd_mount_id(anchor) != root_mount:
++            # Keep every potential alias for references and mountpoint pins,
++            # including paths currently hidden from ordinary pathname lookup.
++            # A held FD/mapping or argv can still refer to the hidden tree.
++            for (root, exposed), source_ids in candidates.items():
++                target_dev, internal = bindings[root]
++                descriptor = os.dup(anchor)
++                shadowed = False
++                try:
++                    selected, chain, _ = bound_mount(descriptor, '/', indexed, root_mount)
++                    prefix = ''
++                    parts = exposed.split('/')[1:]
++                    for i, part in enumerate(parts):
++                        bound()
++                        prefix += '/' + part
++                        flags = os.O_PATH | os.O_NOFOLLOW | os.O_CLOEXEC
++                        if i != len(parts) - 1:
++                            flags |= os.O_DIRECTORY
++                        try:
++                            child = os.open(part, flags, dir_fd=descriptor)
++                        except FileNotFoundError:
++                            # Only an actually crossed, recorded overlay at a
++                            # strict ancestor can explain this missing route.
++                            # Missing on its expected mount is still UNKNOWN.
++                            resolved = (posixpath.normpath(posixpath.join(
++                                selected['mount_root'], posixpath.relpath(exposed, selected['point'])))
++                                if selected['mount_root'] is not None else None)
++                            shadowed = (selected['mount_root'] is not None and
++                                selected['point'] != exposed and beneath(exposed, selected['point']) and
++                                (selected['dev'] != target_dev or resolved != internal) and
++                                any(source_id != selected['id'] and source_id in chain and
++                                    beneath(selected['point'], indexed[source_id]['point'])
++                                    for source_id in source_ids))
++                            if not shadowed:
++                                raise Incomplete('alias_missing_without_verified_cover')
++                            break
++                        previous = selected['id']
++                        os.close(descriptor)
++                        descriptor = child
++                        selected, chain, _ = bound_mount(descriptor, prefix, indexed, root_mount)
++                        if previous not in chain:
++                            raise Incomplete('alias_mount_transition_unknown')
++                        for crossed in chain[:chain.index(previous)]:
++                            if indexed[crossed]['point'] != prefix:
++                                raise Incomplete('alias_mount_transition_unknown')
++                    if shadowed:
++                        shadowed_alias_paths.add((ns, root, exposed))
++                    else:
++                        final = os.fstat(descriptor)
++                        if metadata(final) != snapshots[root]:
++                            raise Incomplete('alias_target_identity_mismatch')
++                        resolved = (posixpath.normpath(posixpath.join(
++                            selected['mount_root'], posixpath.relpath(exposed, selected['point'])))
++                            if selected['mount_root'] is not None else None)
++                        if selected['dev'] != target_dev or resolved != internal:
++                            raise Incomplete('alias_target_mount_mismatch')
++                        visible_alias_paths.add((ns, root, exposed))
++                finally:
++                    os.close(descriptor)
++            final_root = os.fstat(anchor)
++            if ((final_root.st_dev, final_root.st_ino) != root_identity or
++                    fd_mount_id(anchor) != root_mount or read(task / 'mountinfo') != raw):
 +                raise Incomplete('alias_view_root_changed')
 +        finally:
 +            # Every temporary root/target descriptor closes before the FD census.
@@ -1064,7 +1118,7 @@
 +                            task_table = mount_table(raw)
 +                            if root_identity is not None:
 +                                validate_root_mount(task_table, root_mount, root_identity)
-+                            aliases = mount_aliases(task_table, ns, task, root_identity, root_mount)
++                            aliases = mount_aliases(task_table, ns, task, root_identity, root_mount, raw)
 +                            check_mounts(task_table, aliases, pid, tid, ns)
 +                        mount_views[view] = (task, raw, identity[0], root_displayed, aliases)
 +                        inspect_link(task / 'root', pid, tid, 'root', inactive, aliases=aliases)
@@ -1190,7 +1244,7 @@
 +                            root_identity, root_displayed, raw):
 +                        raise Incomplete('namespace_witness_mismatch')
 +                    witness_table = mount_table(raw)
-+                    aliases = mount_aliases(witness_table, ns, task, root_identity, witness.root_mnt_id)
++                    aliases = mount_aliases(witness_table, ns, task, root_identity, witness.root_mnt_id, raw)
 +                    check_mounts(witness_table, aliases, witness.pid, witness.pid, ns)
 +                    if not namespace_pool.verify(witness):
 +                        raise Incomplete('namespace_witness_lost')
@@ -1256,6 +1310,8 @@
 +            'verified_empty_zombies': counts['empty_zombies'],
 +            'mount_namespaces': len(namespaces),
 +            'ancestor_alias_count': len(alias_keys),
++            'visible_alias_path_count': len(visible_alias_paths),
++            'verified_shadowed_alias_path_count': len(shadowed_alias_paths),
 +            'namespace_fd_count': len(namespace_fd_labels),
 +            'verified_namespace_witnesses': counts_namespace_witnesses,
 +            'namespace_child_lifecycle': namespace_child_lifecycle,

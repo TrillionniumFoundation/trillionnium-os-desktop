@@ -58,6 +58,16 @@ Verify all preimage hashes before applying the patch to the corresponding runtim
 
 Do not replay the owner's old private driver constants or treat these receipts as a new generation's qualification. A changed owner preimage, kernel/boot, custody manifest, binary, namespace policy or test source requires fresh verification at that boundary.
 
+## Separate effective-capability observation
+
+A later read-only review of the owner's existing failure records found the same result in the service main thread and worker: both `capget` and proc status reported effective/permitted capabilities `0x280064`, while the bounding set was `0x2800e4`. The missing `0x80` is CAP_SETUID; CAP_SETGID remains present. The observed parent had full `0x1ffffffffff` sets. This localizes the capability loss between that parent and the actual service payload, but does not identify the systemd, exec, LSM or kernel layer responsible.
+
+The r2 constructor correctly rejected the payload at `require_privileged_initial_parent`, before sending `Enter`. These records therefore do not establish a failed mapping or unshare syscall. Adding the already-present bounding entry or weakening the check is not a supported repair. The process reported NoNewPrivileges=1 and the restricted bounding set; the post-exit properties claiming NoNewPrivileges=no and a full bound lacked LoadState/InvocationID and conflict with both the intent and actual process observations. They cannot certify the executed unit configuration.
+
+`verification/effective-capability-review.json` binds the nine original inputs and three completed read-only requests. This documentation revision changes none of the three Rust patches or previously tested source bytes, performs no new test or host mutation, and leaves production admission closed.
+
+This is a historical r2 observation, not the latest private-control status. The subsequent published continuation at commit `45088e521853a5d62755544c1cdf975bddafc1d6` records an owner private r3 success in [`observation.json`](../continuation-20261109-be1746a/observation.json), and a separate integrated private control using `AmbientCapabilities=CAP_SETUID` in its [broker qualification](../continuation-20261109-be1746a/broker/README.md). Those later results were not executed by this review and do not identify the earlier capability-loss layer. They grant no production HostAdmission token or Android/application acceptance. Neither this older failure record nor the stale CURRENT24 pending label should replace those newer, narrowly scoped receipts.
+
 ## Limits and retirement
 
 The public host admission gate stays closed. Complete effective NSS, active/inactive namespace history and future runtime construction are separate requirements. A successful active-only namespace census does not itself establish complete production admission.

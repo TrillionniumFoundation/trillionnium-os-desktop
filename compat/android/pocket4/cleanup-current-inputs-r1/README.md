@@ -1,189 +1,208 @@
 # Pocket4 current inputs and cleanup reference observation
 
-This capsule provides a current-input verifier and a source replacement for
-one cleanup observer function. The observer distinguishes a path alias from
-an actual consumer, checks references from every visible task, and obtains
-missing namespace views through children it creates and owns.
+This capsule contains the latest source for the bounded cleanup reference
+observer and the current-input verifier. The replacement has **not been
+applied to the live cleanup helper**. Source qualification does not authorize
+deletion or establish Android/app production readiness.
 
-The replacement has **not been applied to the live helper**. It does not
-authorize retirement, change Android packages or images, or bypass the active
-coordinator. Test fixtures and collector children are explicitly accounted for
-in the qualification receipts. On Pocket4, the exact published candidate passed
-**54 ordinary-UID controls, 29 existing-host namespace controls and 10 private
-namespace integration controls in both normal and `-O` modes**.
+The current source passed **59 controls in both normal and -O modes on Cloud
+Linux (UID 0)** and **15 real private-namespace controls in both modes on
+Pocket4**. The Pocket4 runs used kernel 7.0.14-p4cred1 and boot
+97d9600f-e081-465c-9e6e-62651e09806b. Current receipts, the retained failed first
+private attempt, and historical qualification references are distinguished in
+[test-results.json](test-results.json).
 
-## Historical selected-input readback
+## Why mount-layer selection changed
 
-At **2026-11-09 04:10:06 UTC**, the real selector's **13 preparations** and
-**721 retained records** were verified. Their union was **723 files /
-20,619,335 bytes**, because two selected preparation files were outside the
-retained list. Full SHA-256, size, single-link regular-file, no-symlink
-component traversal, held-descriptor identity and final named-path checks
-passed. The compact receipt is in [live_721_readback.json](live_721_readback.json).
+The earlier observer, SHA-256
+311a943a3b3f2845c69ae1750eadb2e72b7058cac86c5c9ae39f18debc107aa5,
+correctly refused an actual retirement preflight. Its 43 shadowed-alias and
+18 ambiguous-alias errors included two structural cases independently
+reproduced by bounded, stable reads:
 
-This is a historical observation. CURRENT has advanced since that readback;
-this capsule does not claim that the new CURRENT generation was reverified.
-A new cleanup attempt must reread the actual current generation:
+| Actual view | Evidence | Correct treatment |
+| --- | --- | --- |
+| An inaccessible tmpfs bound over /home | The held path FD selected mount 196; the next component was ENOENT. The covering mount was a strict ancestor of the target. | Recognize that this particular pathname route is hidden, while retaining the potential alias for reference checks. |
+| Two mount records at the same snap hostfs path | The actual held FD selected mount 437, whose parent was lower layer 1133. Traversal reached the exact target device/inode. | Select the kernel-reported layer and validate its parent chain. Mountinfo order and longest path strings are insufficient. |
 
-```sh
-python3 -I -B verify_current_inputs.py --current /home/alex/work/pocket4-android-final/CONTINUATION_CURRENT.json
-```
+[mount-layer-observation.json](mount-layer-observation.json) binds the exact
+diagnostic, terminal, source pin and prior UNKNOWN preflight. These two views
+do not reclassify the other reported processes. Real FD/process churn and
+uncovered namespace evidence from that preflight remain unresolved. No new
+whole-host deletion gate is claimed here.
 
-The verifier supports the actual current, selector and retained-manifest
-schemas, rejects conflicting generations or bindings, and fails closed on
-duplicate keys or paths, changed identities, symlinks, hardlinks, signing
-material and bounds. The 723-file union does not cover the executor's additional
-22 Camera inputs and is not the 42-app runtime acceptance result.
+## Reference, mount and failure semantics
 
-## Reference and mount semantics
+The target inventory and each component of an alias now bind the actual
+O_PATH descriptor's fdinfo mnt_id to one record in the stable mount view.
+Device, mountpoint and the complete parent chain must agree. Crossed layers
+must correspond to the component actually traversed. The final visible target
+must still match its inventoried metadata and filesystem-relative binding.
 
-The exact baseline helper is
-`cleanup/apps-old-root-retirement-20261108-8b88-r1/executor.py`,
-SHA-256 `22e7e85962c52a5cf44759dd99610d16293a0f8573ee68b8b9da4c89b1c7911a`.
-Its complete source is bundled only to reproduce scope verification.
+The narrowly permitted hidden-route case is an actual, recorded overlay at a
+strict ancestor, followed by ENOENT under that held directory. Its parent chain
+must include the original candidate route and its filesystem translation must
+differ from the target route. Missing paths without that proof, EACCES,
+unrecognized mount IDs, disconnected chains, different final target inodes and
+changing evidence remain UNKNOWN.
+
+**All potential aliases remain in the conservative reference index**, including
+hidden routes. The scanner still checks every visible TID's FD, cwd, exe, root,
+maps and owner arguments. Device/inode matching remains independent of pathname
+reachability. Deleted-path and owner-argument matching retain the hidden alias.
+It never skips the rest of a task just because an alias is hidden.
+
+All mount records, including hidden records, remain subject to target source
+and mountpoint checks. A mount at or below a target, or a bind whose source is
+inside the target, remains a veto. An ancestor alias alone is not a consumer.
+
+The caller's three veto lists remain process_or_owner_hits, mount_hits and
+coverage_errors. UNKNOWN is never admission. Alias indices are reused only
+for the same namespace, root identity/mount ID and identical mountinfo bytes;
+actual task identities, FD sets, mount views and target metadata are rechecked.
+Temporary traversal descriptors close before the task FD census. The narrow
+stable, empty, single-leader zombie rule is unchanged.
+
+## Namespace coverage and limits
+
+A foreign task's root inode does not establish a complete namespace view: it
+may be chrooted into a hostfs alias. The observer pins and types actual
+namespace FDs from task entries, nsfs mounts and task FD tables. Its embedded
+collector creates its own children, obtains their native namespace view and
+verifies PID identity, namespace, root FD/mount ID and repeated mountinfo while
+each child waits on a private control pipe. The scanner checks that witness
+again and requires positive child retirement.
+
+No caller-provided dictionary, receipt or arbitrary PID supplies coverage.
+Unknown or inaccessible namespace handles, unobserved nested namespaces,
+changing witnesses, timeouts and incomplete retirement remain UNKNOWN.
+The embedded collector factory is byte-identical to the previously qualified
+factory; the real private controls independently exercise its FD-only
+namespace discovery and retirement on the new boot.
+
+Opaque nsfs mnt:[positive inode] roots retain their mountpoint veto and are
+never used as filesystem ancestor paths. Other non-absolute root formats
+remain UNKNOWN. The earlier format evidence remains in
+[namespace-format-observation.json](namespace-format-observation.json).
+
+Observation bounds remain 128 exact targets, 100,000 target entries,
+20,000 tasks, 500,000 descriptors, bounded reads/hits, and a shared 45-second
+budget. Collector child/read bounds and retirement requirements are unchanged.
+The current observer source is 66,232 bytes. A caller's former 65,536-byte
+source-file loader must separately admit this exact source size and SHA;
+that adjustment does not enlarge the observer's scan bounds. Source custody
+still requires a single-link regular file and stable, verified bytes.
+
+This remains a snapshot, not a lock against future references or writers.
+
+## Reproduce the current qualification
+
+| Group | Entry | Required environment | Current controls per mode |
+| --- | --- | --- | ---: |
+| Input/reference regression | The two unittest modules below | Linux; no namespace privilege required | 59 |
+| Complete scanner and owned fixtures | verify_isolated_alias_views.py | Root with private mount/PID namespace capability | 15 |
+| Exact replacement scope | verify_reference_patch.py | Python; parse/compile only | One scope verification |
+
+Run the source controls from this directory:
+
+~~~sh
+python3 -B -m unittest -v test_verify_current_inputs.py test_reference_observer.py
+python3 -B -O -m unittest -v test_verify_current_inputs.py test_reference_observer.py
+~~~
+
+The current recorded runs used Cloud UID 0; they are not a new Pocket4
+ordinary-UID observation. Both actual runs completed 59 tests with zero
+failures/errors/skips. The real Linux self-FD/mmap test must find its held
+references; unrelated host visibility failures remain UNKNOWN.
+
+The 15 private controls retain the original ten cases and add a masked
+ancestor route, a kernel-selected samepoint stack, and references held before
+masking through an FD, mmap and owner argument. Their specific reference kinds
+and process/FD identities must be found. Visible-alias cwd has a real control;
+masked cwd has a unit regression and shared code-path review, not a separate
+claimed real private control. Wrong final inode remains UNKNOWN. Target-source
+and target-mountpoint negatives remain vetoes.
+
+One initial private run failed because an argv fixture closed its ready FD
+after signaling readiness. The observer correctly reported an FD-set change
+and UNKNOWN, while also finding the argument reference. Only the two fixture
+handshakes changed: their ready FDs now remain open until controlled exit.
+The failed terminal and both subsequent successful modes are preserved
+separately; the observer's FD-change gate was not relaxed.
+
+Use an empty owned fixture base:
+
+~~~sh
+sudo -n env NAMESPACE_FIXTURE_DIR=/absolute/owned/fixture-base python3 -I -B verify_isolated_alias_views.py /absolute/capsule/reference_observer.py
+sudo -n env NAMESPACE_FIXTURE_DIR=/absolute/owned/fixture-base python3 -I -B -O verify_isolated_alias_views.py /absolute/capsule/reference_observer.py
+~~~
+
+The fixture creates private mount/PID namespaces and a private procfs, verifies
+the unchanged parent namespace/mountinfo, waits for its own children, and
+removes its temporary directory before success. Each current mode reaped
+three fixture children, one FD-only namespace collector, its private PID 1 and
+the outer fixture process with successful terminal evidence. An unsupported
+operation must fail; A08 must not silently skip a control.
+
+The historical 54/29/10 qualification belongs to the source at commit
+208d2dca4dccb622869916b9a7381decdddc0dce. Its 29 existing-host controls used six
+then-observed Pocket4 namespace objects. The retained
+verify_namespace_collector.py is that host-specific entry, not ordinary CI
+or a newly repeated host qualification. The current factory's unchanged source
+pin and historical receipt are recorded without treating those old runs as
+new results.
+
+## Single-function integration boundary
+
+The exact historical helper is
+cleanup/apps-old-root-retirement-20261108-8b88-r1/executor.py,
+SHA-256 22e7e85962c52a5cf44759dd99610d16293a0f8573ee68b8b9da4c89b1c7911a.
+Its complete bundled source exists only for scope replay.
 **Never execute or import fixtures/executor-baseline.py.**
 
 [reference_observer.patch](reference_observer.patch) replaces only
-`live_references(roots)`. All code outside that function, including target
-selection, current-input checks, signing release, owner policy and deletion,
-remains byte-identical. The original caller's three veto lists remain
-`process_or_owner_hits`, `mount_hits` and `coverage_errors`.
+live_references(roots). Target selection, current dependencies, signing
+release, owner policy and deletion outside that function remain byte-identical.
+The scope verifier parses and compiles the replacement without executing or
+applying the historical executor:
 
-| Observation | Result |
-| --- | --- |
-| Strict ancestor bind exposing another path to a target | A verified path alias; no busy finding by itself |
-| FD, cwd, exe, root, mapping or owner argument referring to the target through an alias | Actual-reference veto |
-| Mount root or mount point at or below a target, including through a verified alias | Mount veto |
-| Unreadable, changing, ambiguous or incomplete evidence | UNKNOWN |
-
-Each alias is resolved from the corresponding task's held root descriptor with
-component-by-component O_PATH / O_NOFOLLOW traversal. The final target metadata,
-device/inode and mount ID must match the pinned target and mount view; the parent
-mount chain must reach that view's root. Temporary descriptors close before
-the task FD census. Alias indices and mount classification are cached only
-under the same namespace, root identity/mount ID and unchanged mountinfo bytes.
-Every task still has its actual identity, root and mountinfo checked.
-
-The observer includes non-leader TIDs and itself. Device/inode matching catches
-FD and map aliases; namespace-specific path matching also catches deleted-path
-and owner-argument references. FD sets, task/process sets, mount views and
-target metadata are rechecked. A narrowly verified empty single-leader zombie
-may be treated as having no references; missing namespace links alone do not
-qualify. Hardlink observation does not change the caller's hardlink policy.
-
-## Complete namespace views
-
-Only a task in the observer's own namespace with the same pinned root identity
-and mount ID can directly establish that view. A foreign task's matching root
-inode cannot prove completeness: it might be chrooted into a hostfs alias.
-
-The scanner fixes namespace objects using actual held FDs from host nsfs
-mounts, observed task namespace entries or namespace FDs in task descriptor
-tables. Namespace type and device/inode are checked. The embedded collector
-then forks its own children and calls setns directly; it does not mount,
-unmount or change the parent's namespace. Child identity, parentage, PID FD,
-namespace, root FD/mount ID, native root and repeated mountinfo are verified
-while the child waits on its private control pipe. The scanner checks those
-live facts again before using the view.
-
-External JSON, caller-supplied PIDs or dictionaries cannot establish coverage.
-Unknown nested namespaces, inaccessible handles, changed witnesses, timeouts
-or incomplete child retirement remain UNKNOWN. The result reports exact owned
-child terminal records and lifecycle counts. All collector children must be
-reaped with exit zero for successful production closure. The host qualification
-also deliberately kills children or forces setup errors to prove that nonzero
-retirement is rejected; those negative-control exits are recorded separately.
-
-The kernel's observed nsfs `mnt:[positive inode]` roots are treated as opaque
-objects. Their mountpoints still veto targets; opaque roots never participate
-in filesystem ancestor translation. Other non-absolute formats remain UNKNOWN.
-The historical format observation is pinned in
-[namespace-format-observation.json](namespace-format-observation.json).
-
-Bounds remain 128 exact targets, 100,000 target entries, 20,000 tasks,
-500,000 descriptors, bounded reads/hits and a shared 45-second budget.
-The collector additionally bounds children and aggregate mountinfo, reserving
-time for their retirement. This is a snapshot, not a future-writer lock.
-
-## Reproduce and distinguish qualification
-
-[test-results.json](test-results.json) separates three groups. Passing source
-controls is not deletion admission or app production acceptance.
-
-| Group | Entry | Privilege | Expected controls per mode |
-| --- | --- | --- | ---: |
-| Input/reference regression | Two unittest modules below | Ordinary Linux UID | 54 |
-| Existing Pocket4 namespace qualification | verify_namespace_collector.py | Root / namespace capability | 29 |
-| Complete scanner with owned private PID/mount fixtures | verify_isolated_alias_views.py | Root / namespace capability | 10 |
-
-Run ordinary controls from this directory, in both modes:
-
-```sh
-python3 -B -m unittest -v test_verify_current_inputs.py test_reference_observer.py
-python3 -B -O -m unittest -v test_verify_current_inputs.py test_reference_observer.py
-```
-
-A08 uses an isolated Python loader with this directory explicitly on its import
-path and requires the exact count, zero failures/errors and zero skips. The
-real FD/mmap control must detect its own held references. Unrelated shared-host
-visibility failures remain UNKNOWN; the ordinary-UID receipt is not a proof
-that every host process is readable.
-
-Scope replay is portable and does not execute the historical helper:
-
-```sh
+~~~sh
 python3 -I -B verify_reference_patch.py
 python3 -I -B -O verify_reference_patch.py
-```
+~~~
 
-The host qualification requires its observed count explicitly:
+Both current scope runs passed. No live helper patch was applied.
 
-```sh
-sudo -n python3 -I -B verify_namespace_collector.py --expected-persistent-count 6
-sudo -n python3 -I -B -O verify_namespace_collector.py --expected-persistent-count 6
-```
+## Historical selected inputs and retained roots
 
-Those 29 controls inspect the actual Pocket4 namespace objects and are not part
-of ordinary CI. Their receipt binds both modes, the exact embedded factory,
-six observed views, positive and negative ownership controls and child exits.
+At 2026-11-09 04:10:06 UTC, the real selector's 13 preparations and 721 retained
+records were independently verified. Their union was 723 files /
+20,619,335 bytes, including two preparation files outside the retained list.
+The historical receipt [live_721_readback.json](live_721_readback.json) binds its
+actual CURRENT generation. CURRENT has since advanced; that observation is not
+a fresh assertion about today's dependencies or the 42-app runtime result.
+It also excluded the executor's additional 22 Camera inputs.
 
-The private integration entry has no snap path, namespace-ID or six-namespace
-requirement. It creates its own private mount and PID namespaces, installs a
-private procfs, and checks alias-only success plus actual FD/mmap/cwd/argv,
-target-source mounts, alias mountpoints, a shadowed wrong-inode alias and an
-FD-only persistent namespace. It verifies the exact FD-only witness's terminal
-record and restores the alias-only control afterward. The existing parent
-namespace/mountinfo must remain unchanged and its owned fixture directory must
-be absent before success is reported.
+A new use must read and bind the actual current generation:
 
-Run it with a newly created, empty, owned fixture base, then remove that empty
-base after the script has retired its own temporary child directory:
+~~~sh
+python3 -I -B verify_current_inputs.py --current /home/alex/work/pocket4-android-final/CONTINUATION_CURRENT.json
+~~~
 
-```sh
-sudo -n env NAMESPACE_FIXTURE_DIR=/absolute/owned/fixture-base python3 -I -B verify_isolated_alias_views.py /absolute/capsule/reference_observer.py
-sudo -n env NAMESPACE_FIXTURE_DIR=/absolute/owned/fixture-base python3 -I -B -O verify_isolated_alias_views.py /absolute/capsule/reference_observer.py
-```
+The unchanged verifier understands the actual current/selector/retained schemas
+and rejects conflicting generations, duplicate keys/paths, changed identities,
+symlinks, hardlinks, signing material and bounds.
 
-A08 may run that explicit privileged private-fixture group after its source
-pins are checked. It must not substitute the Pocket4 host group or count an
-unsupported namespace operation as a skip.
+[remaining-roots-readback.json](remaining-roots-readback.json) is also historical.
+Canonical fence backups and a missing historical job/unit do not establish the
+original owner's positive terminal state. The 04:37 UTC original-image registry
+observation found org.droidloom.qa.amazon.r3 outside the production cohort but
+still using its signing lineage. Normal consumer retirement and fresh
+identity/data/signing checks are separate prerequisites; this capsule performs
+no such Android, app or signing-root action.
 
-## The final two historical retained roots
-
-[remaining-roots-readback.json](remaining-roots-readback.json) retains the
-independent read-only evidence. The original 661-byte fence remains bound to
-its original request; canonical backups and an absent historical job or unit
-do not supply positive owner-terminal evidence.
-
-The **2026-11-09 04:37 UTC** original-image registry observation found
-`org.droidloom.qa.amazon.r3`, version 1, app ID 10154, still consuming its
-signing lineage. It is outside the production cohort. The receipt contains
-only the necessary package/certificate/registry and data-count metadata.
-Normal PackageManager retirement, exact identity and all-user/data custody
-checks, and subsequent absence of every signing consumer must precede a
-separate signing-root retirement. The capsule performs none of those actions.
-
-[FILES.json](FILES.json) is the publication whitelist, excluding only itself.
-It retains necessary source, exact baseline fixtures and compact evidence;
-prototype scanners, app-data bodies, private material and full registries are
-excluded.
+[FILES.json](FILES.json) is the exact publication whitelist, excluding itself.
+It contains necessary source, baseline fixtures and compact evidence. Current
+source replaces its prior version in this directory; Git retains the historical
+versions. One-off diagnostic scripts, prototype scanners, raw app data and
+private signing material are not current deliverables.
