@@ -1,0 +1,3966 @@
+{
+  "schema_version": 1,
+  "selected_at": "2026-11-04",
+  "status": "seed_not_yet_build_proven",
+  "remote_base": "https://android.googlesource.com/",
+  "superproject": {
+    "name": "platform/superproject",
+    "ref": "refs/heads/android-17.0.0_r1",
+    "commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039"
+  },
+  "policy": {
+    "allow_unrestricted_repo_sync": false,
+    "require_exact_commits": true,
+    "add_dependencies_only_from_superproject": true,
+    "base_partitions_come_from_aosp_ci_artifact": true
+  },
+  "links": [
+    {
+      "source": "build/make/CleanSpec.mk",
+      "target": "build/CleanSpec.mk"
+    },
+    {
+      "source": "build/make/buildspec.mk.default",
+      "target": "build/buildspec.mk.default"
+    },
+    {
+      "source": "build/make/core",
+      "target": "build/core"
+    },
+    {
+      "source": "build/make/envsetup.sh",
+      "target": "build/envsetup.sh"
+    },
+    {
+      "source": "build/make/target",
+      "target": "build/target"
+    },
+    {
+      "source": "build/make/tools",
+      "target": "build/tools"
+    },
+    {
+      "source": "build/soong/root.bp",
+      "target": "Android.bp"
+    },
+    {
+      "source": "build/soong/bootstrap.bash",
+      "target": "bootstrap.bash"
+    }
+  ],
+  "projects": [
+    {
+      "path": "art",
+      "name": "platform/art",
+      "commit": "b753cf97923c3695338d21466fa14c57b480a59a",
+      "purpose": "Pinned DEX file support required by Android unwind-stack linkage"
+    },
+    {
+      "path": "bionic",
+      "name": "platform/bionic",
+      "commit": "06356e41c5ed7b12220b24c05ba4fdb873b126a7",
+      "purpose": "Bionic headers and target runtime linkage"
+    },
+    {
+      "path": "build/blueprint",
+      "name": "platform/build/blueprint",
+      "commit": "7f2058de8155b05ea3c3f8317d33bfe732cacf8b",
+      "purpose": "Soong build graph"
+    },
+    {
+      "path": "build/make",
+      "name": "platform/build",
+      "commit": "5ce6f787337d0223710bf7d4a16dbe6d2a35f777",
+      "purpose": "Android product and image rules"
+    },
+    {
+      "path": "build/release",
+      "name": "platform/build/release",
+      "commit": "c85f4aebe46714235599a9bd6430a0fe30c6e8d5",
+      "purpose": "Android 17 release configuration selected by lunch"
+    },
+    {
+      "path": "build/soong",
+      "name": "platform/build/soong",
+      "commit": "6722dd8833db7482df1a2543ca3fcf67ddf0f7b1",
+      "purpose": "Android module build frontend"
+    },
+    {
+      "path": "cts",
+      "name": "platform/cts",
+      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+      "purpose": "Pinned host JSON compatibility library required by the ProtoLog generator",
+      "sparse_paths": [
+        "Android.bp",
+        "common/device-side/nativetesthelper/Android.bp",
+        "common/device-side/nativetesthelper/jni",
+        "common/device-side/nativetesthelper/src",
+        "libs/json",
+        "common/device-side/util-axt",
+        "libs/shim",
+        "libs/install",
+        "hostsidetests/stagedinstall",
+        "hostsidetests/appsecurity/test-apps/PrivilegedUpdateApp",
+        "tools/cts-tradefed",
+        "libs/runner",
+        "tests/core/runner-axt",
+        "libs/vogar-expect",
+        "hostsidetests/compilation",
+        "hostsidetests/appcompat/host/lib",
+        "hostsidetests/appsecurity/certs",
+        "hostsidetests/appsecurity/res",
+        "hostsidetests/appsecurity/src",
+        "hostsidetests/appsecurity/test-apps/AppAccessData",
+        "hostsidetests/appsecurity/test-apps/AppDataIsolationTestApp",
+        "hostsidetests/appsecurity/test-apps/AppWithData",
+        "hostsidetests/appsecurity/test-apps/DeclarePermissionsWithSpacesApp",
+        "hostsidetests/appsecurity/test-apps/DeviceIdentifiers",
+        "hostsidetests/appsecurity/test-apps/DuplicatePermissionDeclareApp",
+        "hostsidetests/appsecurity/test-apps/DuplicatePermissionSameGroup",
+        "hostsidetests/appsecurity/test-apps/InstrumentationAppDiffCert",
+        "hostsidetests/appsecurity/test-apps/KeyRotationTest",
+        "hostsidetests/appsecurity/test-apps/KeyStoreManagerTest",
+        "hostsidetests/appsecurity/test-apps/ListeningPortsApp",
+        "hostsidetests/appsecurity/test-apps/MalformedDuplicatePermission",
+        "hostsidetests/appsecurity/test-apps/PackageInstallerPermissionRequestApp",
+        "hostsidetests/appsecurity/test-apps/PackageInstallerWhitelistApp",
+        "hostsidetests/appsecurity/test-apps/PermissionDeclareApp",
+        "hostsidetests/appsecurity/test-apps/PermissionDeclareAppCompat",
+        "hostsidetests/appsecurity/test-apps/ReadSettingsFieldsApp",
+        "hostsidetests/appsecurity/test-apps/RoleSecurityTestApp",
+        "hostsidetests/appsecurity/test-apps/SimpleAppInstall",
+        "hostsidetests/appsecurity/test-apps/SimpleAppInstallDiffCert",
+        "hostsidetests/appsecurity/test-apps/StatsdSecurityApp",
+        "hostsidetests/appsecurity/test-apps/TargetInstrumentationApp",
+        "hostsidetests/appsecurity/test-apps/UsePermissionDiffCert",
+        "hostsidetests/appsecurity/test-apps/UseProcessFailActivity",
+        "hostsidetests/appsecurity/test-apps/V32HybridSigningScheme",
+        "hostsidetests/appsecurity/test-apps/V3SigningSchemeRotation",
+        "hostsidetests/appsecurity/test-apps/keysets/malBadKey",
+        "hostsidetests/appsecurity/test-apps/keysets/malNoDef",
+        "hostsidetests/appsecurity/test-apps/keysets/malOneDef",
+        "hostsidetests/appsecurity/test-apps/keysets/permDef",
+        "hostsidetests/appsecurity/test-apps/keysets/permUse",
+        "hostsidetests/appsecurity/test-apps/keysets/testApp",
+        "hostsidetests/appsecurity/test-apps/keysets/uA",
+        "hostsidetests/appsecurity/test-apps/keysets/uAuB",
+        "hostsidetests/appsecurity/test-apps/keysets/uB",
+        "hostsidetests/appsecurity/test-apps/keysets/uBsharedUser",
+        "hostsidetests/appsecurity/test-apps/keysets/uEcA",
+        "hostsidetests/appsecurity/test-apps/keysets/uNone",
+        "hostsidetests/appsecurity/test-apps/tinyapp",
+        "hostsidetests/statsdatom/Android.bp",
+        "hostsidetests/statsdatom/apps/adpfapp",
+        "hostsidetests/statsdatom/apps/expressloghelperapp",
+        "hostsidetests/statsdatom/apps/statsdapp",
+        "hostsidetests/statsdatom/configs/AndroidTestTelecom.xml",
+        "hostsidetests/statsdatom/express/src",
+        "hostsidetests/statsdatom/lib/src",
+        "hostsidetests/statsdatom/statsd/src",
+        "hostsidetests/statsdatom/telecom/src",
+        "hostsidetests/utils",
+        "tests/tests/telecom",
+        "tests/tests/telecom-apps/ConnectionServiceVoipAppClone",
+        "tests/tests/telecom-apps/ConnectionServiceVoipAppMain",
+        "tests/tests/telecom-apps/ManagedConnectionService",
+        "tests/tests/telecom-apps/ManagedConnectionServiceClone",
+        "tests/tests/telecom-apps/TransactionalVoipAppClone",
+        "tests/tests/telecom-apps/TransactionalVoipAppMain",
+        "tests/tests/telecom-apps/Utils",
+        "tests/tests/telecom-cuj"
+      ]
+    },
+    {
+      "path": "external/FP16",
+      "name": "platform/external/FP16",
+      "commit": "e6ad60074cdb730af563c2d1553f472dc6115bf5",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "include",
+        "test"
+      ]
+    },
+    {
+      "path": "external/MPAndroidChart",
+      "name": "platform/external/MPAndroidChart",
+      "commit": "cdaa76f6e0cc1f4dc0e1174d8497f9694c794a32",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "external/OpenCSD",
+      "name": "platform/external/OpenCSD",
+      "commit": "d49531098e271b938a261077d69b9d8b485f53d9",
+      "purpose": "Original Android17 OpenCSD decoder library required by simpleperf"
+    },
+    {
+      "path": "external/TestParameterInjector",
+      "name": "platform/external/TestParameterInjector",
+      "commit": "39be45d7f8988b7b051e14644bc6c51fe856b8f2",
+      "purpose": "Actual TestParameterInjector provider required by real Robolectric libraries",
+      "sparse_paths": [
+        "junit4/src/main"
+      ]
+    },
+    {
+      "path": "external/XMP-Toolkit-SDK",
+      "name": "platform/external/XMP-Toolkit-SDK",
+      "commit": "45acb237cd13c19708f963247c732250cd43a4a5",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "XMPCore",
+        "XMPFiles",
+        "XMPFilesPlugins",
+        "public",
+        "source",
+        "third-party"
+      ]
+    },
+    {
+      "path": "external/abseil-cpp",
+      "name": "platform/external/abseil-cpp",
+      "commit": "474258796bcf112de75a1f89d022ba80b6d0b746",
+      "purpose": "Pinned Abseil defaults and libraries required by the Protobuf host tool"
+    },
+    {
+      "path": "external/antlr",
+      "name": "platform/external/antlr",
+      "commit": "16467b971bd3e2009fad32dd79016f2c7e421deb",
+      "purpose": "Original pinned ANTLR runtime provider required by the stock Doclava host tool"
+    },
+    {
+      "path": "external/apache-commons-compress",
+      "name": "platform/external/apache-commons-compress",
+      "commit": "65f18cb2abd2963bf5663e1f35d6aca08504f79d",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "external/apache-commons-math",
+      "name": "platform/external/apache-commons-math",
+      "commit": "5b1a8fb3a14fdd9516c27236b1b48637e0a25423",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "external/apache-xml",
+      "name": "platform/external/apache-xml",
+      "commit": "81c0feea7cb0987ae36811db43392c703576fb8f",
+      "purpose": "Original exact AOSP17 superproject gitlink for ART apache-xml bootclasspath",
+      "sparse_paths": [
+        "Android.bp",
+        "src"
+      ]
+    },
+    {
+      "path": "external/arm-optimized-routines",
+      "name": "platform/external/arm-optimized-routines",
+      "commit": "498b3de1a06e8cd87b2f9d49d1d8a23ebba5cc5a",
+      "purpose": "Pinned Bionic ARM optimized string and memory routine provider"
+    },
+    {
+      "path": "external/arm-trusted-firmware",
+      "name": "platform/external/arm-trusted-firmware",
+      "commit": "54fd6939e177f8ff529b10183254802c76df6d08",
+      "purpose": "Exact Android17 superproject Gitlink provider for arm_dt_bindings_headers consumed by PVMFW",
+      "sparse_paths": [
+        "Android.bp",
+        "LICENSE",
+        "include/dt-bindings"
+      ]
+    },
+    {
+      "path": "external/auto",
+      "name": "platform/external/auto",
+      "commit": "d97ec6e9cc1ad7f282cdc14bddcbe4dd64cc0d1c",
+      "purpose": "AutoValue Java processor and annotations required by the Truth library",
+      "sparse_paths": [
+        "Android.bp",
+        "android-annotation-stubs",
+        "common/src/main",
+        "service/annotations",
+        "service/annotations/src/main",
+        "service/processor",
+        "service/processor/src/main/java",
+        "value/src/main",
+        "factory/src/main"
+      ]
+    },
+    {
+      "path": "external/avb",
+      "name": "platform/external/avb",
+      "commit": "ba2dec4b035b0a3b61c5f8f8a74d86bcd450b1ee",
+      "purpose": "Pinned Android Verified Boot library required by init second stage"
+    },
+    {
+      "path": "external/bcc",
+      "name": "platform/external/bcc",
+      "commit": "79791945c2f1db4a6b2a1443524f3f5d19338609",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "src"
+      ]
+    },
+    {
+      "path": "external/boringssl",
+      "name": "platform/external/boringssl",
+      "commit": "0cd1f6a94b670e6b61af95a06e71e690ae8e3262",
+      "purpose": "Pinned host crypto library required by the HIDL generator"
+    },
+    {
+      "path": "external/bouncycastle",
+      "name": "platform/external/bouncycastle",
+      "commit": "c404048739e9a35cd51ad82906aadf910cca09dd",
+      "purpose": "Pinned Java crypto provider required by the host APK signing tool",
+      "sparse_paths": [
+        "Android.bp",
+        "src",
+        "bcpkix/src/main/java",
+        "bcprov/src/main/java",
+        "repackaged_platform/bcpkix/src/main/java",
+        "repackaged_platform/bcprov/src/main/java"
+      ]
+    },
+    {
+      "path": "external/brotli",
+      "name": "platform/external/brotli",
+      "commit": "a927860e79169483cd0ae4f8ad52937bd2c6d377",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "c",
+        "java"
+      ]
+    },
+    {
+      "path": "external/caliper",
+      "name": "platform/external/caliper",
+      "commit": "d7bb09dccd464969498584337b0e68a9347b4d40",
+      "purpose": "Original Caliper host providers required by retained STS utilities and their original sibling modules",
+      "sparse_paths": [
+        "caliper",
+        "examples",
+        "lib"
+      ]
+    },
+    {
+      "path": "external/cbor-java",
+      "name": "platform/external/cbor-java",
+      "commit": "48f4d31b8c1944862c63151515585973cbd91c36",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "external/compiler-rt",
+      "name": "platform/external/compiler-rt",
+      "commit": "a36a1bcac7ec7ac9be29d8b0b5e669d53f7886f7",
+      "purpose": "Original compiler-rt CFI blocklist required by selected libmediaplayerservice sanitizer flags",
+      "sparse_paths": [
+        "lib/cfi",
+        "lib/builtins/comparedf2.c",
+        "lib/builtins/mulodi4.c"
+      ]
+    },
+    {
+      "path": "external/conscrypt",
+      "name": "platform/external/conscrypt",
+      "commit": "fd1a430323b5ab9945a15fce6c4a824aeffff685",
+      "purpose": "Pinned TLS provider and JNI library required by the host APK signing tool"
+    },
+    {
+      "path": "external/cpu_features",
+      "name": "platform/external/cpu_features",
+      "commit": "76df2471cbea083fd15823ef051bbd85a7cddabb",
+      "purpose": "Exact original Android17 libcpu_features provider linked by ART runtime"
+    },
+    {
+      "path": "external/cronet",
+      "name": "platform/external/cronet",
+      "commit": "e184145f12ee023d07372bd6db33341b671cee27",
+      "purpose": "Pinned Cronet Tethering APEX defaults from Android17 original superproject",
+      "sparse_paths": [
+        "Android.bp",
+        "android/Android.bp",
+        "stable/components/cronet/android",
+        "android/flags",
+        "android/tools/classes_collector",
+        "tot",
+        "android/java/src/android/net/http/BidirectionalStream.java",
+        "android/java/src/android/net/http/BidirectionalStreamBuilderWrapper.java",
+        "android/java/src/android/net/http/BidirectionalStreamCallbackWrapper.java",
+        "android/java/src/android/net/http/BidirectionalStreamWrapper.java",
+        "android/java/src/android/net/http/CallbackException.java",
+        "android/java/src/android/net/http/CallbackExceptionWrapper.java",
+        "android/java/src/android/net/http/ConnectionMigrationOptions.java",
+        "android/java/src/android/net/http/CronetEngineWrapper.java",
+        "android/java/src/android/net/http/CronetExceptionTranslationUtils.java",
+        "android/java/src/android/net/http/CronetExceptionWrapper.java",
+        "android/java/src/android/net/http/DnsOptions.java",
+        "android/java/src/android/net/http/HeaderBlock.java",
+        "android/java/src/android/net/http/HeaderBlockImpl.java",
+        "android/java/src/android/net/http/HeaderBlockWrapper.java",
+        "android/java/src/android/net/http/HttpEngine.java",
+        "android/java/src/android/net/http/HttpEngineJavaClasses.java",
+        "android/java/src/android/net/http/HttpException.java",
+        "android/java/src/android/net/http/InlineExecutionProhibitedException.java",
+        "android/java/src/android/net/http/NetworkException.java",
+        "android/java/src/android/net/http/NetworkExceptionWrapper.java",
+        "android/java/src/android/net/http/Proxy.java",
+        "android/java/src/android/net/http/ProxyOptions.java",
+        "android/java/src/android/net/http/QuicException.java",
+        "android/java/src/android/net/http/QuicExceptionWrapper.java",
+        "android/java/src/android/net/http/QuicOptions.java",
+        "android/java/src/android/net/http/UploadDataProvider.java",
+        "android/java/src/android/net/http/UploadDataProviderWrapper.java",
+        "android/java/src/android/net/http/UploadDataSink.java",
+        "android/java/src/android/net/http/UploadDataSinkWrapper.java",
+        "android/java/src/android/net/http/UrlRequest.java",
+        "android/java/src/android/net/http/UrlRequestBuilderWrapper.java",
+        "android/java/src/android/net/http/UrlRequestCallbackWrapper.java",
+        "android/java/src/android/net/http/UrlRequestStatusListenerWrapper.java",
+        "android/java/src/android/net/http/UrlRequestWrapper.java",
+        "android/java/src/android/net/http/UrlResponseInfo.java",
+        "android/java/src/android/net/http/UrlResponseInfoWrapper.java",
+        "stable/build/Android.bp",
+        "stable/build/util/LASTCHANGE",
+        "stable/build/util/android_chrome_version.py",
+        "stable/build/util/version.py",
+        "stable/chrome/VERSION"
+      ]
+    },
+    {
+      "path": "external/dagger2",
+      "name": "platform/external/dagger2",
+      "commit": "57aa7c004b11466c0154144865e937b9a46a4688",
+      "purpose": "Exact original provider source consumed by the retained audio APEX target-closure consumers"
+    },
+    {
+      "commit": "eae519aaa6980b2a34ec07141bb19de3f6ddf69e",
+      "name": "platform/external/deqp",
+      "path": "external/deqp",
+      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+      "sparse_paths": [
+        "android/cts/main",
+        "android/openglcts/AndroidManifest.xml",
+        "android/openglcts/src",
+        "android/package",
+        "data",
+        "execserver",
+        "executor",
+        "external",
+        "framework",
+        "modules",
+        "android/cts/runner",
+        "android/cts/angle"
+      ]
+    },
+    {
+      "commit": "d425c460bde47239483e36ccbec5674cf39eb431",
+      "name": "platform/external/deqp-deps/SPIRV-Headers",
+      "path": "external/deqp-deps/SPIRV-Headers",
+      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+      "sparse_paths": [
+        "include"
+      ]
+    },
+    {
+      "commit": "4e0aa7940f17b47e67f7be80442d526b4fc54142",
+      "name": "platform/external/deqp-deps/SPIRV-Tools",
+      "path": "external/deqp-deps/SPIRV-Tools",
+      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+      "sparse_paths": [
+        "include",
+        "source",
+        "test",
+        "tools",
+        "utils"
+      ]
+    },
+    {
+      "commit": "e2217d1616b410dc65f72d0cdd0b73f0b72a860d",
+      "name": "platform/external/deqp-deps/amber",
+      "path": "external/deqp-deps/amber",
+      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+      "sparse_paths": [
+        "android_sample",
+        "include",
+        "samples/config_helper.h",
+        "samples/config_helper_dawn.h",
+        "samples/config_helper_vulkan.h",
+        "samples/log.h",
+        "samples/png.h",
+        "samples/ppm.h",
+        "samples/timestamp.h",
+        "src",
+        "tools"
+      ]
+    },
+    {
+      "commit": "14422bdc57fb93221192a0c542dde144980dfb69",
+      "name": "platform/external/deqp-deps/glslang",
+      "path": "external/deqp-deps/glslang",
+      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+      "sparse_paths": [
+        "SPIRV",
+        "StandAlone",
+        "Test",
+        "glslang",
+        "gtests"
+      ]
+    },
+    {
+      "path": "external/dexmaker",
+      "name": "platform/external/dexmaker",
+      "commit": "e476b06efb29b9a8e70a63ec23a3bb7f6208cfaa",
+      "purpose": "Exact original provider source consumed by the retained audio APEX target-closure consumers"
+    },
+    {
+      "path": "external/dlmalloc",
+      "name": "platform/external/dlmalloc",
+      "commit": "01a95ac67e502c00c9d546c3ccee2a00313f90ee",
+      "purpose": "ART original dlmalloc allocator"
+    },
+    {
+      "path": "external/dng_sdk",
+      "name": "platform/external/dng_sdk",
+      "commit": "ec47c0df8cf593f6a4c1708bf87100e70d433daa",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "source",
+        "ubsan-replacement"
+      ]
+    },
+    {
+      "path": "external/doclava",
+      "name": "platform/external/doclava",
+      "commit": "8ba62cbc49f438f38c5d108f0e80953096b43e25",
+      "purpose": "Original Doclava provider required by pinned apicheck host tool"
+    },
+    {
+      "path": "external/dtc",
+      "name": "platform/external/dtc",
+      "commit": "38031c62ca17368fa8a2358ce562782f63402d15",
+      "purpose": "Original Android17 Superproject gitlink supplying libfdt and libfdt_baremetal for AVF Rust bindgen"
+    },
+    {
+      "path": "external/e2fsprogs",
+      "name": "platform/external/e2fsprogs",
+      "commit": "3eb17241db7cd4408cc1bce9d25b602465ace8ff",
+      "purpose": "Official pinned libext2_uuid for fs_mgr libdm",
+      "sparse_paths": [
+        "Android.bp",
+        "lib/uuid",
+        "debugfs",
+        "lib",
+        "misc",
+        "e2fsck"
+      ]
+    },
+    {
+      "commit": "06a9728c3609f856e87db38a6602196cec3ab727",
+      "name": "platform/external/easymock",
+      "path": "external/easymock",
+      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+      "sparse_paths": [
+        "src"
+      ]
+    },
+    {
+      "path": "external/eigen",
+      "name": "platform/external/eigen",
+      "commit": "711c7cdce03a5e52d73f6f85bbe198324bfccc0b",
+      "purpose": "Official libeigen headers/provider needed by media libheadtracking"
+    },
+    {
+      "path": "external/elfutils",
+      "name": "platform/external/elfutils",
+      "commit": "219c3a368b121307f2e05593cee89b8591cc40b9",
+      "purpose": "Pinned ELF support library required by the Mesa Android target build",
+      "sparse_paths": [
+        "Android.bp",
+        "bionic-fixup",
+        "config.h",
+        "include",
+        "lib",
+        "libcpu",
+        "libelf",
+        "version.h"
+      ]
+    },
+    {
+      "path": "external/erofs-utils",
+      "name": "platform/external/erofs-utils",
+      "commit": "abbde14092ad3abd8908b864fa9b04685820577b",
+      "purpose": "Pinned host filesystem builder required to package the upstream audio APEX"
+    },
+    {
+      "path": "external/error_prone",
+      "name": "platform/external/error_prone",
+      "commit": "1667c79d1fe4211579c8210773961d65fc0d32a9",
+      "purpose": "Pinned Soong Error Prone plugin metadata required while analyzing Android virtualization compile defaults"
+    },
+    {
+      "path": "external/escapevelocity",
+      "name": "platform/external/escapevelocity",
+      "commit": "03b11f293548ad5fd65b5164b46aca08a96968f5",
+      "purpose": "Template interpreter statically used by AutoValue processor",
+      "sparse_paths": [
+        "Android.bp",
+        "src/main/java",
+        "src/main"
+      ]
+    },
+    {
+      "path": "external/expat",
+      "name": "platform/external/expat",
+      "commit": "9cc7a1ca765061a58e196f101fc601d23845c89a",
+      "purpose": "Official Expat XML runtime for libjavacore"
+    },
+    {
+      "path": "external/fdlibm",
+      "name": "platform/external/fdlibm",
+      "commit": "34840811850a2924f1fcc7eee23dde1193e39eb6",
+      "purpose": "AOSP17 pinned original libfdlibm needed by libcore NativeCode"
+    },
+    {
+      "path": "external/fft2d",
+      "name": "platform/external/fft2d",
+      "commit": "fa0ad63f8b666836f56a823de546390a6e4ff4b6",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "src"
+      ]
+    },
+    {
+      "path": "external/flac",
+      "name": "platform/external/flac",
+      "commit": "e638bb3ad98981fdc762c7c80666101ba7a21bfe",
+      "purpose": "Pinned original libFLAC provider required by media module codecs flac decoder"
+    },
+    {
+      "path": "external/flatbuffers",
+      "name": "platform/external/flatbuffers",
+      "commit": "a321165845235e5fa63a5455ee866f4a5008b7c6",
+      "purpose": "Exact original flatbuffer_headers provider required by Input / libinput_bindgen"
+    },
+    {
+      "path": "external/fmtlib",
+      "name": "platform/external/fmtlib",
+      "commit": "e3bef0ad2e9d4ea38ba3b4b2b59e0514f7025fed",
+      "purpose": "Pinned formatting library required by the AIDL compiler's libbase dependency"
+    },
+    {
+      "path": "external/freetype",
+      "name": "platform/external/freetype",
+      "commit": "358ad23f2a144ad0f43b0300a252f692a191de1b",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "builds",
+        "docs",
+        "include",
+        "src"
+      ]
+    },
+    {
+      "path": "external/gflags",
+      "name": "platform/external/gflags",
+      "commit": "9e187e1e29654d52867626553ce23096994c95c0",
+      "purpose": "Flag parser for the framework express stats catalog generator",
+      "sparse_paths": [
+        "Android.bp",
+        "android",
+        "src"
+      ]
+    },
+    {
+      "path": "external/giflib",
+      "name": "platform/external/giflib",
+      "commit": "9fc55623d7fec25b699eab680041798de98f5c86",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp"
+      ]
+    },
+    {
+      "path": "external/go-cmp",
+      "name": "platform/external/go-cmp",
+      "commit": "2f92873cfcd27cbe5efa168d8399038980aef6be",
+      "purpose": "Pinned Soong bootstrap Go workspace dependency"
+    },
+    {
+      "path": "external/golang-protobuf",
+      "name": "platform/external/golang-protobuf",
+      "commit": "fcb969a6e0df55f1460721e1b9c4f2c4d2b5a47f",
+      "purpose": "Pinned Soong bootstrap protobuf implementation"
+    },
+    {
+      "path": "external/google-benchmark",
+      "name": "platform/external/google-benchmark",
+      "commit": "c42745dfc2b140fde975369e41a097b0ccddc346",
+      "purpose": "Fixed AOSP17 superproject gitlink providing genuine libgoogle-benchmark for system/media original native benchmarks"
+    },
+    {
+      "path": "external/google-highway",
+      "name": "platform/external/google-highway",
+      "commit": "94b90ab8cb9df9b3719a64751ea2fcb62caa3391",
+      "purpose": "Pinned SIMD headers required by Android 17 Bionic portable string routines"
+    },
+    {
+      "path": "external/google-java-format",
+      "name": "platform/external/google-java-format",
+      "commit": "2c19037fdc89d385f66b702705610bec74f3b349",
+      "purpose": "Formatter API statically used by the framework Error Prone checker",
+      "sparse_paths": [
+        "Android.bp",
+        "LICENSE",
+        "android-annotation-stubs/src",
+        "core/src/main/java"
+      ]
+    },
+    {
+      "path": "external/googleapis",
+      "name": "platform/external/googleapis",
+      "commit": "53efb8a56baa3b802407e7c0d1050328aeb31671",
+      "purpose": "Original pinned Google field_behavior Java proto provider used by Tradefed resultdb-protos",
+      "sparse_paths": [
+        "Android.bp",
+        "google/api",
+        "google/rpc"
+      ]
+    },
+    {
+      "path": "external/googletest",
+      "name": "platform/external/googletest",
+      "commit": "9bcfc87429e9a9e02ccf2b8424b748f05c4842a5",
+      "purpose": "Pinned headers and host libraries required by the AIDL compiler"
+    },
+    {
+      "path": "external/gson",
+      "name": "platform/external/gson",
+      "commit": "31bf8505d546aa682b84f742aced9af1cf93eeb9",
+      "purpose": "Original pinned Gson provider required by the stock Java dependency-mapper tool"
+    },
+    {
+      "path": "external/guava",
+      "name": "platform/external/guava",
+      "commit": "f53eb3ca330b274507e184b4261e5284fd29b4b3",
+      "purpose": "Pinned Java utility library required by Android platform host tools"
+    },
+    {
+      "path": "external/guice",
+      "name": "platform/external/guice",
+      "commit": "183ae373d36f0367d2215e513be237edca4b5977",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "external/gwp_asan",
+      "name": "platform/external/gwp_asan",
+      "commit": "54826e96fc883088ac6cfc80240c094e671d6e24",
+      "purpose": "Pinned hardened allocator dependency of Bionic for the Composer AIDL Rust library"
+    },
+    {
+      "path": "external/hamcrest",
+      "name": "platform/external/hamcrest",
+      "commit": "9580841c6c1546d56fcb22ef41a9f560a5e9ba42",
+      "purpose": "Matcher classes referenced by JUnit used in the pinned Truth library",
+      "sparse_paths": [
+        "Android.bp",
+        "hamcrest-core/Android.bp",
+        "hamcrest-core/src/main/java",
+        "hamcrest-library/Android.bp",
+        "hamcrest-library/src/main/java"
+      ]
+    },
+    {
+      "path": "external/harfbuzz_ng",
+      "name": "platform/external/harfbuzz_ng",
+      "commit": "31e11a7283dce4ffc573fc8d249b3483988f8bde",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "perf",
+        "src",
+        "test",
+        "util"
+      ]
+    },
+    {
+      "path": "external/icu",
+      "name": "platform/external/icu",
+      "commit": "00c713278f65a4db343c388f0c4f8501f70387b9",
+      "purpose": "Pinned ICU host libraries required by SQLite during native stub generation",
+      "sparse_paths": [
+        "Android.bp",
+        "android_icu4c/Android.bp",
+        "android_icu4c/include",
+        "android_icu4j",
+        "icu4c/Android.bp",
+        "icu4c/source/Android.bp",
+        "icu4c/source/common",
+        "icu4c/source/i18n",
+        "icu4c/source/stubdata",
+        "libandroidicu",
+        "libandroidicuinit",
+        "libicu",
+        "icu4j/main"
+      ]
+    },
+    {
+      "path": "external/image_io",
+      "name": "platform/external/image_io",
+      "commit": "581886c43a33d47101cae26c447ed7be07a8b626",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "includes",
+        "src"
+      ]
+    },
+    {
+      "path": "external/jacoco",
+      "name": "platform/external/jacoco",
+      "commit": "b2918806063b27668501eb728168277a7fbc7944",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "external/jakarta.inject",
+      "name": "platform/external/jakarta.inject",
+      "commit": "75b5356ec832b8306d8706eb7fae46fef9cbb1d3",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers",
+      "sparse_paths": [
+        "src/main/java"
+      ]
+    },
+    {
+      "path": "external/java-diff-utils",
+      "name": "platform/external/java-diff-utils",
+      "commit": "5f49ae74dac240ea886d38ab09ac1d382e5fa8d0",
+      "purpose": "Java diff API statically used by the framework Error Prone checker",
+      "sparse_paths": [
+        "Android.bp",
+        "LICENSE",
+        "java-diff-utils/src/main/java"
+      ]
+    },
+    {
+      "path": "external/javaparser",
+      "name": "platform/external/javaparser",
+      "commit": "c65eac405e7a34754245921eb50b1ee3932cb0e2",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "external/javapoet",
+      "name": "platform/external/javapoet",
+      "commit": "8c6c067900f2e80bbb561652820b6f3f038b3892",
+      "purpose": "Pinned Java source generator required by Android's system-feature tool"
+    },
+    {
+      "path": "external/javassist",
+      "name": "platform/external/javassist",
+      "commit": "93591c6475187cb709e85228c0dcb0d007fead13",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "external/jazzer-api",
+      "name": "platform/external/jazzer-api",
+      "commit": "70ad0cedacf5ee3dfacaac8d693b711007b5cfc2",
+      "purpose": "Original Java fuzzer provider referenced by the pinned CTS JSON fuzzer"
+    },
+    {
+      "path": "external/jcommander",
+      "name": "platform/external/jcommander",
+      "commit": "92ee1ba50a02446768fde6a55404d4f75f93a6d7",
+      "purpose": "Original pinned JCommander provider required by stock backported-fix host tooling"
+    },
+    {
+      "path": "external/jemalloc_new",
+      "name": "platform/external/jemalloc_new",
+      "commit": "ea1b5aa6741805a9464a2ee9b5716bcd1516b56e",
+      "purpose": "Original superproject-pinned jemalloc5 allocator required by Bionic libc"
+    },
+    {
+      "path": "external/jimfs",
+      "name": "platform/external/jimfs",
+      "commit": "cd18acbf0036a7c6a3443e7e58b5091cacf327cf",
+      "purpose": "Original Jimfs library and annotation generator required by the retained Error Prone test helper in the complete Audio APEX graph",
+      "sparse_paths": [
+        "jimfs"
+      ]
+    },
+    {
+      "path": "external/jsilver",
+      "name": "platform/external/jsilver",
+      "commit": "754d8c4235def553d7d5d0a8a85ffb8dcb234001",
+      "purpose": "Original JSilver provider required by pinned apicheck host tool"
+    },
+    {
+      "path": "external/jsoncpp",
+      "name": "platform/external/jsoncpp",
+      "commit": "97cca484243e0dadc1da054e63823a5ce7478e54",
+      "purpose": "Pinned host JSON library required by the HIDL generator",
+      "sparse_paths": [
+        "Android.bp",
+        "include",
+        "src/lib_json"
+      ]
+    },
+    {
+      "path": "external/jspecify",
+      "name": "platform/external/jspecify",
+      "commit": "af61f8ce0b6851abd4fc230ab2c1861c16b4fe56",
+      "purpose": "Nullness annotations required by Truth",
+      "sparse_paths": [
+        "src/main"
+      ]
+    },
+    {
+      "path": "external/jsr305",
+      "name": "platform/external/jsr305",
+      "commit": "2b168afb93e04776c7e185c7fcb8b00137121725",
+      "purpose": "JSR-305 annotations used by framework Java compilation",
+      "sparse_paths": [
+        "ri/src/main/java"
+      ]
+    },
+    {
+      "path": "external/jsr330",
+      "name": "platform/external/jsr330",
+      "commit": "2360bfd8d364aa446599981df8cf83cdc5eafb34",
+      "purpose": "Injection annotations used by the framework Error Prone checker",
+      "sparse_paths": [
+        "src"
+      ]
+    },
+    {
+      "path": "external/junit",
+      "name": "platform/external/junit",
+      "commit": "03edf7d5a0d9c3fb8d4043d029dd3099e6f0f6b0",
+      "purpose": "JUnit classes referenced by the pinned Truth static library",
+      "sparse_paths": [
+        "Android.bp",
+        "src/main/java"
+      ]
+    },
+    {
+      "path": "external/junit-params",
+      "name": "platform/external/junit-params",
+      "commit": "1a5f3f8b0c829e257386c56cfda5e5a442377282",
+      "purpose": "Original JUnitParams provider, test sources and AssertJ jar required by retained ICU4J consumers in the strict full Audio APEX graph",
+      "sparse_paths": [
+        "lib",
+        "src"
+      ]
+    },
+    {
+      "path": "external/kotlin.metadata",
+      "name": "platform/external/kotlin.metadata",
+      "commit": "d707f76e54bfaa2c04e7fc6fd320e0738ba36eac",
+      "purpose": "Kotlin metadata parser used by the Android 17 Metalava compiler",
+      "sparse_paths": [
+        "org/jetbrains/kotlin/kotlin-metadata-jvm/2.2.0"
+      ]
+    },
+    {
+      "path": "external/kotlinc",
+      "name": "platform/external/kotlinc",
+      "commit": "200271076d3a9dc6b576497792a4a6fad78994fc",
+      "purpose": "Pinned Kotlin runtime required by the ProtoLog generator"
+    },
+    {
+      "path": "external/kotlinpoet",
+      "name": "platform/external/kotlinpoet",
+      "commit": "1f60e73215577a48f66542ec09456cdc7f12f3d1",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers",
+      "sparse_paths": [
+        "kotlinpoet/src/commonMain",
+        "interop/javapoet/src/main"
+      ]
+    },
+    {
+      "path": "external/kotlinx.atomicfu",
+      "name": "platform/external/kotlinx.atomicfu",
+      "commit": "867bc63054d694773bd0aef56eeb51296f2f6b03",
+      "purpose": "Exact Android 17 superproject atomicfu source required by the real coroutine provider"
+    },
+    {
+      "path": "external/kotlinx.coroutines",
+      "name": "platform/external/kotlinx.coroutines",
+      "commit": "16161f019a518241332c1cad686a3e9404c0d5cf",
+      "purpose": "Exact Android 17 superproject coroutine providers for real AndroidX and StructuredConcurrencyPerf dependencies"
+    },
+    {
+      "path": "external/kotlinx.metadata",
+      "name": "platform/external/kotlinx.metadata",
+      "commit": "b3c5df9e5590c600147c8df849e5ad7de3ceb2dd",
+      "purpose": "Kotlin metadata parser used by the AutoValue Java processor",
+      "sparse_paths": [
+        "Android.bp"
+      ]
+    },
+    {
+      "path": "external/kotlinx.serialization",
+      "name": "platform/external/kotlinx.serialization",
+      "commit": "6e219320253dcd5c0a6f19b2785f1d37bc8edcf0",
+      "purpose": "Exact Android 17 serialization implementation required by the real AndroidX savedstate and lifecycle libraries",
+      "sparse_paths": [
+        "core",
+        "formats/json",
+        "rules"
+      ]
+    },
+    {
+      "path": "external/ksp",
+      "name": "platform/external/ksp",
+      "commit": "aa08926470a7d3afc856a08b0f40057293b8f437",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers",
+      "sparse_paths": [
+        "com/google/devtools/ksp"
+      ]
+    },
+    {
+      "path": "external/libbpf",
+      "name": "platform/external/libbpf",
+      "commit": "9723b4de6459ab48b361aed3bae5df3c1bd20cb8",
+      "purpose": "Pinned BPF headers required by the Android memory-event programs",
+      "sparse_paths": [
+        "Android.bp",
+        "src",
+        "android/bpf_stub.c"
+      ]
+    },
+    {
+      "path": "external/libcap",
+      "name": "platform/external/libcap",
+      "commit": "9a2ead0b5a377a75849cb0656aa553b5452a7080",
+      "purpose": "Pinned Linux capability library required by Android init",
+      "sparse_paths": [
+        "Android.bp",
+        "libcap"
+      ]
+    },
+    {
+      "path": "external/libchrome",
+      "name": "platform/external/libchrome",
+      "commit": "0aba0dccfcd93d8303678a4beb61594f7582c73c",
+      "purpose": "Pinned Chromium base utilities required by Android snapshot initialization",
+      "sparse_paths": [
+        "Android.bp",
+        "NOTICE",
+        "base",
+        "build",
+        "crypto",
+        "device",
+        "device/bluetooth",
+        "ipc",
+        "libchrome_tools",
+        "libchrome_tools/include_generator.py",
+        "mojo",
+        "mojo/public/tools/bindings",
+        "soong",
+        "testing",
+        "third_party",
+        "third_party/ashmem",
+        "third_party/jinja2",
+        "third_party/markupsafe",
+        "third_party/modp_b64",
+        "third_party/ply",
+        "third_party/protobuf/src/google/protobuf",
+        "third_party/re2/src/re2",
+        "ui",
+        "ui/gfx"
+      ]
+    },
+    {
+      "path": "external/libchrome-gestures",
+      "name": "platform/external/libchrome-gestures",
+      "commit": "6c2310952338e9f094a1aeb6a83f7356ff5d6042",
+      "purpose": "Pinned gesture interpretation dependency required by Android InputFlinger"
+    },
+    {
+      "path": "external/libdrm",
+      "name": "platform/external/libdrm",
+      "commit": "12b44e2c3b5186a7e84a5f21830b077cb8587861",
+      "purpose": "DRM render-node and syncobj ABI",
+      "sparse_paths": [
+        "Android.bp",
+        "amdgpu",
+        "include/drm",
+        "android",
+        "rust"
+      ]
+    },
+    {
+      "path": "external/libevent",
+      "name": "platform/external/libevent",
+      "commit": "44754c0dfee5dc81723013498398034176e6d81e",
+      "purpose": "Pinned event library required by Android's Chromium base support library",
+      "sparse_paths": [
+        "Android.bp"
+      ]
+    },
+    {
+      "path": "external/libfuse",
+      "name": "platform/external/libfuse",
+      "commit": "47f83ca03e9ce8f8dc014605d059e3377ad2eafe",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "external/libgsm",
+      "name": "platform/external/libgsm",
+      "commit": "8ec969cea971fe25ff2d3933a5a9f8504f8e86c9",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "inc",
+        "src"
+      ]
+    },
+    {
+      "path": "external/libjpeg-turbo",
+      "name": "platform/external/libjpeg-turbo",
+      "commit": "a83d12ab3266dae9a9a0ab8f3c1799459d24ed96",
+      "purpose": "Original libjpeg source provider linked by selected libyuv in native media closure"
+    },
+    {
+      "path": "external/libjxl",
+      "name": "platform/external/libjxl",
+      "commit": "90930aa281c8655a54fffafb9d16714c74c650a5",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "gen",
+        "lib"
+      ]
+    },
+    {
+      "path": "external/libmonet",
+      "name": "platform/external/libmonet",
+      "commit": "f56ffa0d810eb127200cded0895c412a907dfa6d",
+      "purpose": "Exact original provider source consumed by the retained audio APEX target-closure consumers"
+    },
+    {
+      "path": "external/libogg",
+      "name": "platform/external/libogg",
+      "commit": "d47fa80bba2b28d555a429b32a972d9f26d1bd2f",
+      "purpose": "Original pinned native media dependency: libogg"
+    },
+    {
+      "path": "external/libphonenumber",
+      "name": "platform/external/libphonenumber",
+      "commit": "0b437881ecebeace98400b7c5d4874f5bff68692",
+      "purpose": "Pinned phone-number library required by the Android ext framework library"
+    },
+    {
+      "path": "external/libpng",
+      "name": "platform/external/libpng",
+      "commit": "f3997b4b299d808f122ab1d999556d57abf5540d",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "arm",
+        "contrib",
+        "intel"
+      ]
+    },
+    {
+      "path": "external/libtextclassifier",
+      "name": "platform/external/libtextclassifier",
+      "commit": "2973bcf11b21bcd40064f1751638d06cf6023e47",
+      "purpose": "Pinned text-classifier hash dependency required by Android InputFlinger"
+    },
+    {
+      "path": "external/libultrahdr",
+      "name": "platform/external/libultrahdr",
+      "commit": "4a5906659019f5b73b211759d0bfca0375fc6300",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "lib",
+        "adobe-hdr-gain-map-license"
+      ]
+    },
+    {
+      "path": "external/liburing",
+      "name": "platform/external/liburing",
+      "commit": "92f1e7127f05803171ee50c757b7e262767a10eb",
+      "purpose": "Original Android 17 fs_mgr libsnapshot dependency"
+    },
+    {
+      "path": "external/libxml2",
+      "name": "platform/external/libxml2",
+      "commit": "e57cff8da55134774646a521a797bb03d46babd8",
+      "purpose": "Pinned XML parser required by init's snapshot and storage libraries",
+      "sparse_paths": [
+        "Android.bp",
+        "fuzz/fuzz.c",
+        "fuzz/genSeed.c",
+        "include",
+        "test/VC",
+        "test/VCM",
+        "test/XInclude/docs",
+        "test/XInclude/ents",
+        "test/XInclude/without-reader",
+        "test/XPath",
+        "test/dtds",
+        "test/errors",
+        "test/errors10",
+        "test/namespaces",
+        "test/schemas",
+        "test/valid",
+        "test/xmlid"
+      ]
+    },
+    {
+      "path": "external/libyuv",
+      "name": "platform/external/libyuv",
+      "commit": "49130481509c59cdd486a05595fd809adafedf39",
+      "purpose": "Original pinned native media dependency: libyuv"
+    },
+    {
+      "path": "external/llvm-libc",
+      "name": "platform/external/llvm-libc",
+      "commit": "95e08d1d4ccefa41921bc00a369008f7618b7101",
+      "purpose": "Pinned Bionic bare-metal Rust libc target provider"
+    },
+    {
+      "path": "external/lottie",
+      "name": "platform/external/lottie",
+      "commit": "f21c8dba91039320eeb9d964d8272d9a22f38d72",
+      "purpose": "Exact original provider source consumed by the retained audio APEX target-closure consumers"
+    },
+    {
+      "path": "external/lz4",
+      "name": "platform/external/lz4",
+      "commit": "734e07032602e9a72fcc9701028b0aee45147fcd",
+      "purpose": "Original liblz4 for EROFS runtime"
+    },
+    {
+      "path": "external/lzma",
+      "name": "platform/external/lzma",
+      "commit": "ff4977aa409384e7622a53230323981a785e621d",
+      "purpose": "Exact AOSP17 ART libelffile ELF decompression dependency, genuine Soong liblzma provider"
+    },
+    {
+      "path": "external/mime-support",
+      "name": "platform/external/mime-support",
+      "commit": "9d71d482603aac054815958c9834ae1cd036f024",
+      "purpose": "Original Debian MIME tables required by the retained framework MIME source filegroups",
+      "sparse_paths": [
+        "mime.types",
+        "mime.types-alt"
+      ]
+    },
+    {
+      "path": "external/minigbm",
+      "name": "platform/external/minigbm",
+      "commit": "ce79bbee67b3e2ea7abb110e1415e9ceceaa6471",
+      "purpose": "GBM allocator and mapper reference",
+      "sparse_paths": [
+        "Android.bp",
+        "amdgpu.c",
+        "cros_gralloc/cros_gralloc_driver.cc",
+        "dma_heap.c",
+        "dri.c",
+        "drv.c",
+        "drv_helpers.h",
+        "external"
+      ]
+    },
+    {
+      "path": "external/mockito",
+      "name": "platform/external/mockito",
+      "commit": "39b32cedf78fc19d1f7d21bd796718333a5bf6be",
+      "purpose": "Original pinned Mockito host library and aliases consumed by the restored Tradefed harness test metadata"
+    },
+    {
+      "path": "external/mockito-kotlin",
+      "name": "platform/external/mockito-kotlin",
+      "commit": "709411a57d6b6d8aa7495d281e3f48b4f5f67796",
+      "purpose": "Exact original provider source consumed by the retained audio APEX target-closure consumers"
+    },
+    {
+      "path": "external/modp_b64",
+      "name": "platform/external/modp_b64",
+      "commit": "5dac538059455079c873d306d25e0c6c75ea3845",
+      "purpose": "Pinned base64 codec required by Android's Chromium base support library",
+      "sparse_paths": [
+        "Android.bp"
+      ]
+    },
+    {
+      "path": "external/moshi",
+      "name": "platform/external/moshi",
+      "commit": "c5142d8e6c754b8512938cc57818dd9bc22f7dfb",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "external/nanohttpd",
+      "name": "platform/external/nanohttpd",
+      "commit": "4711b67f075d8ed195ca46785b125dbea03982c3",
+      "purpose": "Exact original libnanohttpd and sibling providers required by retained upstream consumers",
+      "sparse_paths": []
+    },
+    {
+      "path": "external/nanopb-c",
+      "name": "platform/external/nanopb-c",
+      "commit": "11c0a81eb894486d883f0543b23d0cdab9f9d5ec",
+      "purpose": "Exact Android 17 original nanopb generator and C runtime required by the retained Pigweed RPC Blueprint siblings",
+      "sparse_paths": [
+        "Android.bp",
+        "generator"
+      ]
+    },
+    {
+      "path": "external/nist-sip",
+      "name": "platform/external/nist-sip",
+      "commit": "95f225c116d2ce3f099277bbdb2dad3afc7d9050",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "java",
+        "licenses"
+      ]
+    },
+    {
+      "path": "external/nullaway",
+      "name": "platform/external/nullaway",
+      "commit": "a26e0fdf6b94bde54d9095d6fd93036c9d8d322d",
+      "purpose": "Exact original provider source consumed by the retained audio APEX target-closure consumers"
+    },
+    {
+      "path": "external/objenesis",
+      "name": "platform/external/objenesis",
+      "commit": "26a2fb53712b58f59c7d42edf9ae6df1ab27d469",
+      "purpose": "Exact Android17 superproject external/objenesis Gitlink for official Maven Mockito host test module",
+      "sparse_paths": [
+        "Android.bp",
+        "main"
+      ]
+    },
+    {
+      "path": "external/oj-libjdwp",
+      "name": "platform/external/oj-libjdwp",
+      "commit": "ab81637dadc368957348561dbd1f45c0adf71fe7",
+      "purpose": "Exact Android 17 ART JDWP transport javavm_headers provider for pinned dt_fd_forward library"
+    },
+    {
+      "path": "external/okhttp",
+      "name": "platform/external/okhttp",
+      "commit": "7fec69d8a7874ed20e11a9211d04b9fca71dcd72",
+      "purpose": "HTTP Java sources referenced by core platform headers",
+      "sparse_paths": [
+        "Android.bp",
+        "okhttp/pom.xml",
+        "okhttp/src/main/java-templates/com/squareup/okhttp/internal/Version.java",
+        "repackaged/android/src/main/java",
+        "repackaged/okhttp-android-support/src/main/java",
+        "repackaged/okhttp-urlconnection/src/main/java",
+        "repackaged/okhttp/src/main/java",
+        "repackaged/okio/okio/src/main/java",
+        "src"
+      ]
+    },
+    {
+      "path": "external/okio",
+      "name": "platform/external/okio",
+      "commit": "57616eee95561a34a1ed65fffc4bcf5060c90c29",
+      "purpose": "AOSP17 superproject-pinned original okio-lib provider for okhttp",
+      "sparse_paths": [
+        "Android.bp",
+        "LICENSE.txt",
+        "okio/src/jvmMain",
+        "okio/src/commonMain",
+        "okio/src/zlibMain",
+        "okio/src/systemFileSystemMain"
+      ]
+    },
+    {
+      "path": "external/open-dice",
+      "name": "platform/external/open-dice",
+      "commit": "ffb1ac65de9b449e31fa8e13fa7f679982f020bd",
+      "purpose": "Original pinned Open-DICE library provider required by the existing AVF Rust bindings"
+    },
+    {
+      "path": "external/ot-br-posix",
+      "name": "platform/external/ot-br-posix",
+      "commit": "03168f06007263a05c2ae3d171a959f40dc6b178",
+      "purpose": "AOSP17 superproject-gitlink-pinned SELinux service fuzzer owner",
+      "sparse_paths": [
+        "Android.bp",
+        "src/android/otdaemon_fuzzer.cpp"
+      ]
+    },
+    {
+      "path": "external/ow2-asm",
+      "name": "platform/external/ow2-asm",
+      "commit": "e20c32fc7f8a49e712a907bcc827a6db074ea582",
+      "purpose": "Pinned Java bytecode library required by Android's JarJar packaging tool",
+      "sparse_paths": [
+        "Android.bp",
+        "asm/src/main",
+        "asm-analysis/src/main",
+        "asm-commons/src/main",
+        "asm-tree/src/main",
+        "asm-util/src/main"
+      ]
+    },
+    {
+      "path": "external/parameter-framework",
+      "name": "platform/external/parameter-framework",
+      "commit": "c7e796fc64ba556e515bd7135d850a87a477f9a8",
+      "purpose": "Original Android17 Parameter Framework python module providers for policy generator"
+    },
+    {
+      "path": "external/pcollections",
+      "name": "platform/external/pcollections",
+      "commit": "70927ace9a591d3692f8a531290889d64e2751fd",
+      "purpose": "Persistent collections used by the framework Error Prone checker",
+      "sparse_paths": [
+        "Android.bp",
+        "LICENSE",
+        "src/main/java"
+      ]
+    },
+    {
+      "path": "external/pcre",
+      "name": "platform/external/pcre",
+      "commit": "0198d28487954eb6dff5e2d086b3a635a4aa6e26",
+      "purpose": "Pinned regular-expression library required by host SELinux support"
+    },
+    {
+      "path": "external/pdfium",
+      "name": "platform/external/pdfium",
+      "commit": "aac15c2e18a72f66df14f08b93492fd0c493aa77",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "constants",
+        "core/fdrm",
+        "core/fpdfapi/cmaps",
+        "core/fpdfapi/edit",
+        "core/fpdfapi/font",
+        "core/fpdfapi/page",
+        "core/fpdfapi/parser",
+        "core/fpdfapi/render",
+        "core/fpdfdoc",
+        "core/fpdftext",
+        "core/fxcodec",
+        "core/fxcrt",
+        "core/fxge",
+        "fpdfsdk",
+        "fxjs",
+        "public",
+        "third_party"
+      ]
+    },
+    {
+      "path": "external/perfetto",
+      "name": "platform/external/perfetto",
+      "commit": "ece66975738007dd0978b911d8a2077e49b8f31e",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "include",
+        "protos",
+        "python",
+        "src",
+        "test",
+        "tools"
+      ]
+    },
+    {
+      "path": "external/piex",
+      "name": "platform/external/piex",
+      "commit": "c7c1d44ab9b98e9e51baf1e5d02f65ba03fbed28",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "src"
+      ]
+    },
+    {
+      "path": "external/pigweed",
+      "name": "platform/external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "pw_allocator",
+        "pw_assert",
+        "pw_assert_log",
+        "pw_base64",
+        "pw_build_android",
+        "pw_bytes",
+        "pw_chrono",
+        "pw_chrono_stl",
+        "pw_containers",
+        "pw_function",
+        "pw_log",
+        "pw_log_android",
+        "pw_log_tokenized",
+        "pw_memory",
+        "pw_metric",
+        "pw_numeric",
+        "pw_polyfill",
+        "pw_preprocessor",
+        "pw_result",
+        "pw_span",
+        "pw_status",
+        "pw_stream",
+        "pw_string",
+        "pw_sync",
+        "pw_sync_stl",
+        "pw_thread",
+        "pw_thread_stl",
+        "pw_tokenizer",
+        "pw_toolchain",
+        "pw_varint",
+        "third_party/Android.bp",
+        "third_party/fuchsia/repo/sdk/lib/fit/include",
+        "third_party/fuchsia/repo/sdk/lib/stdcompat/include",
+        "pw_elf",
+        "pw_protobuf",
+        "pw_protobuf_compiler",
+        "pw_rpc",
+        "pw_sync_baremetal"
+      ]
+    },
+    {
+      "path": "external/pogreb",
+      "name": "platform/external/pogreb",
+      "commit": "46b62444a3e31bf834331a78234deedee386ad88",
+      "purpose": "Pinned Soong Blueprint database dependency"
+    },
+    {
+      "path": "external/protobuf",
+      "name": "platform/external/protobuf",
+      "commit": "db06feae31e2a10ffc7ddaccd9e285ff7c13c0ab",
+      "purpose": "Pinned aprotoc host tool required by Android native stub generation",
+      "sparse_paths": [
+        "Android.bp",
+        "java/core/src/main",
+        "java/core/src/stubs",
+        "python/google/protobuf/internal/python_edition_defaults.py.template",
+        "src/google/protobuf",
+        "third_party/utf8_range",
+        "upb",
+        "upb_generator",
+        "rust/cpp_kernel",
+        "python/google",
+        "java/lite/proguard.pgcfg",
+        "javanano/src/device/main/java/com/google/protobuf/nano",
+        "javanano/src/main/java/com/google/protobuf/nano"
+      ]
+    },
+    {
+      "path": "external/python/six",
+      "name": "platform/external/python/six",
+      "commit": "d8b3ade33c59575efe12c2a009d7dcbdaa05ba4d",
+      "purpose": "Official py-six Python provider needed by protobuf host fsverity manifest generator"
+    },
+    {
+      "path": "external/python/typing_extensions",
+      "name": "platform/external/python/typing_extensions",
+      "commit": "8430d542d65e5607ece1e810e247b982384b32f9",
+      "purpose": "Original Android17 typing_extensions python library module"
+    },
+    {
+      "path": "external/rappor",
+      "name": "platform/external/rappor",
+      "commit": "2abb31345f6c95944768b5222a9a5ed3fc68cc00",
+      "purpose": "Pinned privacy-preserving metrics library required by the Android ext framework library"
+    },
+    {
+      "path": "external/regex-re2",
+      "name": "platform/external/regex-re2",
+      "commit": "1b18ee77492041f7f0a7063ad8e02b5694aa6683",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "re2",
+        "util"
+      ]
+    },
+    {
+      "path": "external/robolectric",
+      "name": "platform/external/robolectric",
+      "commit": "87aa52b08f0a6bc65f373e0f542a33d8cfb3cfc1",
+      "purpose": "Real Robolectric_all-target and its upstream implementation providers required by the parametric runner",
+      "sparse_paths": [
+        "soong",
+        "src/main/resources",
+        "annotations/src/main",
+        "junit/src/main",
+        "nativeruntime/src/main",
+        "pluginapi/src/main",
+        "resources/src/main",
+        "robolectric/src/main",
+        "sandbox/src/main",
+        "shadowapi/src/main",
+        "utils/src/main",
+        "utils/reflector/src/main",
+        "shadows/framework/src/main",
+        "shadows/httpclient/src/main",
+        "shadows/multidex/src/main",
+        "shadows/versioning/src/main",
+        "processor/src/main"
+      ]
+    },
+    {
+      "path": "external/rust/android-crates-io",
+      "name": "platform/external/rust/android-crates-io",
+      "commit": "1f5e95cd6e996995023c9c0f7df0f15a8a43269e",
+      "purpose": "Pinned serde and thiserror dependencies for Droidloom Rust vendor modules"
+    },
+    {
+      "path": "external/rust/beto-rust",
+      "name": "platform/external/rust/beto-rust",
+      "commit": "7e58deea80bb81100bf42c5530f5038c0c4966f9",
+      "purpose": "Exact original trust-token, ukey2 JNI and submerge Java providers consumed by retained framework services metadata"
+    },
+    {
+      "path": "external/rust/crabbyavif",
+      "name": "platform/external/rust/crabbyavif",
+      "commit": "c718caf5bc658d3f806a442666800781c66a5274",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "include",
+        "src",
+        "sys"
+      ]
+    },
+    {
+      "path": "external/rust/crates/openssl",
+      "name": "platform/external/rust/crates/openssl",
+      "commit": "4dcd52051b37d6319ad67daa6aa9174d94d1015c",
+      "purpose": "Pinned Rust OpenSSL wrapper required by the nonsecure KeyMint reference service"
+    },
+    {
+      "path": "external/rust/cxx",
+      "name": "platform/external/rust/cxx",
+      "commit": "41972f6ebbe9c21eeed3fdf5c1b0805f2c8b824c",
+      "purpose": "Pinned Rust-to-C++ bridge crate required by Android aconfig image tooling"
+    },
+    {
+      "path": "external/ruy",
+      "name": "platform/external/ruy",
+      "commit": "c165d6b0f1a1be9ddd2f904e8f87a4c1d9b38c43",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "ruy"
+      ]
+    },
+    {
+      "path": "external/scrypt",
+      "name": "platform/external/scrypt",
+      "commit": "958140511cebc42a79e9eec852a4f7dfa2bd2755",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "lib",
+        "sources.bp",
+        "tests"
+      ]
+    },
+    {
+      "path": "external/scudo",
+      "name": "platform/external/scudo",
+      "commit": "15715589eebe155c799ce6fe27005bc8775b86ad",
+      "purpose": "Exact original Scudo allocator library required by Android17 Bionic libc"
+    },
+    {
+      "path": "external/selinux",
+      "name": "platform/external/selinux",
+      "commit": "a8c5e74f85f869bf236a01ba24181b78f5e39a52",
+      "purpose": "Android policy build tools",
+      "sparse_paths": [
+        "Android.bp",
+        "checkpolicy",
+        "libselinux",
+        "libsepol",
+        "secilc"
+      ]
+    },
+    {
+      "path": "external/setupcompat",
+      "name": "platform/external/setupcompat",
+      "commit": "d4476639e7c7f9bda7bff68e810da2367b8626d2",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "external/setupdesign",
+      "name": "platform/external/setupdesign",
+      "commit": "79dbf5860322236cd02e74e2ca0855591d95195c",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "external/skia",
+      "name": "platform/external/skia",
+      "commit": "508606366e71a3daa933a4e08bc49b84e387ec18",
+      "purpose": "Pinned Skia RenderEngine backend required by the owned SurfaceFlinger build",
+      "sparse_paths": [
+        "Android.bp",
+        "DATA",
+        "android",
+        "bazel",
+        "bench",
+        "bin",
+        "build_overrides",
+        "client_utils",
+        "demos.skia.org",
+        "dm",
+        "docs",
+        "example",
+        "experimental",
+        "fuzz",
+        "gm",
+        "gn",
+        "include",
+        "infra",
+        "linux",
+        "mac",
+        "modules",
+        "platform_tools",
+        "relnotes",
+        "renderengine",
+        "resources",
+        "rust",
+        "site",
+        "skqp",
+        "specs",
+        "src",
+        "tests",
+        "third_party",
+        "toolchain",
+        "tools",
+        "vma_android",
+        "win"
+      ]
+    },
+    {
+      "path": "external/snakeyaml",
+      "name": "platform/external/snakeyaml",
+      "commit": "629862ff4a73e7656df0ae02ae0cd24fabf603ae",
+      "purpose": "Genuine SnakeYAML implementation and Android patches required by TestParameterInjector",
+      "sparse_paths": [
+        "src/main",
+        "src/patches/android"
+      ]
+    },
+    {
+      "path": "external/sonivox",
+      "name": "platform/external/sonivox",
+      "commit": "7d778d6a9a6861284cfce2397a55686ca314fba0",
+      "purpose": "Original Android17 Superproject exact immutable Gitlink; real libsonivoxwithoutjet provider for framework MIDI",
+      "sparse_paths": [
+        "Android.bp",
+        "arm-wt-22k"
+      ]
+    },
+    {
+      "path": "external/speex",
+      "name": "platform/external/speex",
+      "commit": "1a255c4507c278c58b7bae5979d51de6c4bfb8fd",
+      "purpose": "Original pinned native media dependency: libspeexresampler"
+    },
+    {
+      "path": "external/sqlite",
+      "name": "platform/external/sqlite",
+      "commit": "7961228217942c86f2b0bd2ae4115d00e157fc0b",
+      "purpose": "Pinned SQLite host library required by Android native stub generation"
+    },
+    {
+      "path": "external/starlark-go",
+      "name": "platform/external/starlark-go",
+      "commit": "4947cdc739c985f6d86941e22894f5cefe7c9e9a",
+      "purpose": "Pinned Soong bootstrap Starlark implementation"
+    },
+    {
+      "path": "external/tagsoup",
+      "name": "platform/external/tagsoup",
+      "commit": "2f796dab146419542a7d44da9035bb3853fd6361",
+      "purpose": "Pinned HTML parser required by the Android ext framework library"
+    },
+    {
+      "path": "external/tensorflow",
+      "name": "platform/external/tensorflow",
+      "commit": "d6bfb0bfab3e7565df0be176c3ebaa45ff9000ec",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "tensorflow",
+        "third_party"
+      ]
+    },
+    {
+      "path": "external/testng",
+      "name": "platform/external/testng",
+      "commit": "09146f4eadc469dcd62f494d5c963ab6d7ad112f",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "external/tink-java",
+      "name": "platform/external/tink-java",
+      "commit": "e73e85f387715b27ad2a2b4bf3683bb088e3fddb",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "external/tinyalsa",
+      "name": "platform/external/tinyalsa",
+      "commit": "b6d92da6ee7890ce6b5bd9069937283fcc48812a",
+      "purpose": "Original AOSP tinyalsa libtinyalsa needed by system media audio route"
+    },
+    {
+      "path": "external/tinyalsa_new",
+      "name": "platform/external/tinyalsa_new",
+      "commit": "faac725f32811c68eb40e2d5956eadc51dbb8a60",
+      "purpose": "Original AOSP tinyalsa_new libtinyalsav2 needed by system media audio route"
+    },
+    {
+      "path": "external/tinyxml2",
+      "name": "platform/external/tinyxml2",
+      "commit": "33ba115074c80a720826efffab1937d5b355c3b8",
+      "purpose": "Pinned XML parser required by host VINTF assembly"
+    },
+    {
+      "path": "external/truth",
+      "name": "platform/external/truth",
+      "commit": "376bc673f686d4eb0310813a938cb839147ad29b",
+      "purpose": "Tink Java static dependency declared by the pinned services LSKF library",
+      "sparse_paths": [
+        "Android.bp",
+        "core/src/main/java",
+        "extensions/java8/src/main/java",
+        "extensions/liteproto/src/main/java",
+        "extensions/proto/src/main/java"
+      ]
+    },
+    {
+      "path": "external/vixl",
+      "name": "platform/external/vixl",
+      "commit": "ce11d32c9cc395fd0fd961e30b1ab56e06fd30dc",
+      "purpose": "Original libvixl and libvixld for ART disassembler"
+    },
+    {
+      "path": "external/vulkan-headers",
+      "name": "platform/external/vulkan-headers",
+      "commit": "ee4343a1f27d9faca189b9ac2c064254e23ba2e2",
+      "purpose": "Pinned Vulkan API headers required by SurfaceFlinger RenderEngine",
+      "sparse_paths": [
+        "Android.bp",
+        "include",
+        "registry",
+        "LICENSES"
+      ]
+    },
+    {
+      "path": "external/webp",
+      "name": "platform/external/webp",
+      "commit": "e39d7f63945d02f6e2f8262f57e74a38172e72fd",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "sharpyuv",
+        "src"
+      ]
+    },
+    {
+      "path": "external/wpa_supplicant_8",
+      "name": "platform/external/wpa_supplicant_8",
+      "commit": "3396e8b8365817b3a24b78b534b04bb9dcea330a",
+      "purpose": "AOSP17 superproject-gitlink-pinned SELinux service fuzzer owner",
+      "sparse_paths": [
+        "wpa_supplicant/Android.bp",
+        "wpa_supplicant/aidl/mainline/fuzzers",
+        "wpa_supplicant/wpa_gui-qt4/icons/LICENSE"
+      ]
+    },
+    {
+      "path": "external/wuffs-mirror-release-c",
+      "name": "platform/external/wuffs-mirror-release-c",
+      "commit": "11c7df296d76dc00991111c1aebd9dfb48b8812e",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "release"
+      ]
+    },
+    {
+      "path": "external/xz-java",
+      "name": "platform/external/xz-java",
+      "commit": "c7be7f9413bfe9ccd270dd75c79c04ddef288550",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "external/zlib",
+      "name": "platform/external/zlib",
+      "commit": "8731e6760935ad5289fd64c37d28155a0fa289e3",
+      "purpose": "Pinned compression library required by host VINTF assembly"
+    },
+    {
+      "path": "external/zstd",
+      "name": "platform/external/zstd",
+      "commit": "3c0442c12d0f0b612a8869754a3fdf22bf16ef33",
+      "purpose": "Pinned compression library required by Mesa's Android mapper integration"
+    },
+    {
+      "path": "external/zxing",
+      "name": "platform/external/zxing",
+      "commit": "d89286b7d32c7860f796e95380b22e99618d00c1",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "frameworks/av",
+      "name": "platform/frameworks/av",
+      "commit": "475269ec44acec82792be6b01fb8e16357d4d2c8",
+      "purpose": "Upstream no-hardware audio service and standard policy configuration"
+    },
+    {
+      "path": "frameworks/base",
+      "name": "platform/frameworks/base",
+      "commit": "94b4c163b7dfe5ce3607f7bb8456f9573f7de57d",
+      "purpose": "Pinned framework inputs required by libbinder and Droidloom task-scoped input injection",
+      "sparse_paths": [
+        "Android.bp",
+        "api",
+        "cmds/incidentd",
+        "core/api/Android.bp",
+        "core/java/android/aiseal/IAiSealHostService.aidl",
+        "core/java/android/app/IActivityManagerStructured.aidl",
+        "core/java/android/app/INativeApplicationThread.aidl",
+        "core/java/android/app/IProcessObserver.aidl",
+        "core/java/android/app/IUidObserver.aidl",
+        "core/java/android/app/ProcessStateEnum.aidl",
+        "core/java/android/app/RunningAppProcessInfo.aidl",
+        "core/java/android/attention/InteractionState.aidl",
+        "core/java/android/companion/virtualnative/IVirtualDeviceManagerNative.aidl",
+        "core/java/android/debug/AdbTransportType.aidl",
+        "core/java/android/debug/FingerprintAndPairDevice.aidl",
+        "core/java/android/debug/IAdbCallback.aidl",
+        "core/java/android/debug/IAdbManager.aidl",
+        "core/java/android/debug/PairDevice.aidl",
+        "core/java/android/hardware/HardwareBuffer.aidl",
+        "core/java/android/hardware/hid/IHidManager.aidl",
+        "core/java/android/hardware/usb/IUsbAuthEventsListener.aidl",
+        "core/java/android/hardware/usb/IUsbAuthManager.aidl",
+        "core/java/android/hardware/usb/UsbAuthDeviceInfo.aidl",
+        "core/java/android/hardware/usb/UsbAuthorizationStatus.aidl",
+        "core/java/android/hardware/usb/UsbAuthorizationSystemState.aidl",
+        "core/java/android/os/CpuHeadroomParamsInternal.aidl",
+        "core/java/android/os/GpuHeadroomParamsInternal.aidl",
+        "core/java/android/os/IHintManager.aidl",
+        "core/java/android/os/IHintSession.aidl",
+        "core/java/android/os/IPermissionController.aidl",
+        "core/java/android/os/IProcessInfoService.aidl",
+        "core/java/android/os/IStatsBootstrapAtomService.aidl",
+        "core/java/android/os/SessionCreationConfig.aidl",
+        "core/java/android/os/StatsBootstrapAtom.aidl",
+        "core/java/android/os/StatsBootstrapAtomValue.aidl",
+        "core/java/android/os/instrumentation",
+        "core/java/android/os/logcat/ILogcatManagerService.aidl",
+        "core/java/android/security/rkp",
+        "core/java/com/android/internal/os/IDropBoxManagerService.aidl",
+        "core/java/com/android/internal/policy/IKeyguardService.aidl",
+        "core/java/com/android/internal/statusbar/IStatusBar.aidl",
+        "core/res/Android.bp",
+        "libs/WindowManager/Shell/Android.bp",
+        "libs/hwui/Android.bp",
+        "libs/hwui/api",
+        "native/android/Android.bp",
+        "native/android/aidl/android/content/pm",
+        "packages/SettingsLib",
+        "packages/SystemUI/Android.bp",
+        "services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
+        "services/core/java/com/android/server/display/feature",
+        "services/core/java/com/android/server/wm/DisplayContent.java",
+        "services/core/java/com/android/server/wm/InsetsPolicy.java",
+        "services/core/jni/Android.bp",
+        "tools/processors/devicepolicy/Android.bp",
+        "core/java/android/app/privatecompute",
+        "core/java/android/os/binder",
+        "native/android/aidl/com/android/internal/compat",
+        "native/android/include",
+        "native/android/aidl/android/content/res",
+        "media/java/android/media/flags",
+        "libs/content",
+        "media/java/android/media/quality",
+        "core/jni/include",
+        "media/aidl/android/media/audio",
+        "media/aidl",
+        "media/java/android/media/tv/flags",
+        ".prebuilt_info",
+        "android-sdk-flags",
+        "apct-tests",
+        "apex",
+        "bluetooth",
+        "boot",
+        "cmds",
+        "config",
+        "core",
+        "data",
+        "docs",
+        "drm",
+        "errorprone",
+        "graphics",
+        "identity",
+        "keystore",
+        "libs",
+        "location",
+        "media",
+        "mime",
+        "mms",
+        "native",
+        "nfc-extras",
+        "nfc-non-updatable",
+        "obex",
+        "omapi",
+        "opengl",
+        "packages",
+        "proto",
+        "ravenwood",
+        "ravenwood-framework-test-mapping",
+        "rs",
+        "samples",
+        "sax",
+        "services",
+        "startop",
+        "telecomm",
+        "telephony",
+        "test-base",
+        "test-junit",
+        "test-legacy",
+        "test-mock",
+        "test-runner",
+        "tests",
+        "tools",
+        "vendor",
+        "wifi"
+      ]
+    },
+    {
+      "path": "frameworks/ex",
+      "name": "platform/frameworks/ex",
+      "commit": "4080c2d3e5a6387e0d064ce5744d56fc6a7c9bb7",
+      "purpose": "Exact original android-ex-camera2 required by retained upstream providers",
+      "sparse_paths": [
+        "Android.bp",
+        "camera2/public"
+      ]
+    },
+    {
+      "path": "frameworks/hardware/interfaces",
+      "name": "platform/frameworks/hardware/interfaces",
+      "commit": "9de6d032a248523c22d0bd86e224d1762355c41e",
+      "purpose": "Framework Java AIDL interfaces for device state, altitude and vibrator services",
+      "sparse_paths": [
+        "devicestate/aidl",
+        "location/altitude/aidl",
+        "sensorservice/aidl",
+        "stats/aidl",
+        "vibrator/aidl",
+        "automotive/display/1.0",
+        "automotive/power/aidl"
+      ]
+    },
+    {
+      "path": "frameworks/libs/modules-utils",
+      "name": "platform/frameworks/libs/modules-utils",
+      "commit": "a11fa5c814cc3239217ce4d093bfc5c808f73785",
+      "purpose": "Pinned native SDK-level helper required by the Connectivity compatibility library",
+      "sparse_paths": [
+        "build",
+        "java"
+      ]
+    },
+    {
+      "path": "frameworks/libs/native_bridge_support",
+      "name": "platform/frameworks/libs/native_bridge_support",
+      "commit": "3d6ed1bcc2f0be54f92cf40458253647e8891176",
+      "purpose": "Android guest linker, ARM64 runtime stubs and native API forwarding for Digitalis"
+    },
+    {
+      "path": "frameworks/libs/service_entitlement",
+      "name": "platform/frameworks/libs/service_entitlement",
+      "commit": "c3c4a033756be7157925a288c9678f54b598d212",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "frameworks/libs/systemui",
+      "name": "platform/frameworks/libs/systemui",
+      "commit": "11e04f60f563aed48e4ec080bd7bde06bae1b2f3",
+      "purpose": "Exact Android 17 tracinglib-platform and genuine compilelib providers",
+      "sparse_paths": [
+        "tracinglib/core/src",
+        "compilelib/src-release",
+        "compilelib/src-debug",
+        "aconfig",
+        "ace/src/com/android/personalcontext/ace/visualizer",
+        "ace/src/com/android/personalcontext/ace/common",
+        "ace/src/com/android/personalcontext/ace/client",
+        "contextualeducationlib",
+        "displaylib",
+        "iconloaderlib",
+        "mechanics",
+        "msdllib",
+        "surfaceeffects/compose",
+        "viewcapturelib",
+        "monet",
+        "dynamiccolors",
+        "animationlib",
+        "surfaceeffects/core",
+        "surfaceeffects/view",
+        "usertypelib"
+      ]
+    },
+    {
+      "path": "frameworks/minikin",
+      "name": "platform/frameworks/minikin",
+      "commit": "915f1232cff2f38be1ed2273769c5ffd00928dff",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "app",
+        "include",
+        "libs",
+        "rust",
+        "tests"
+      ]
+    },
+    {
+      "path": "frameworks/native",
+      "name": "platform/frameworks/native",
+      "commit": "ae266dcb706d083868578cfedce381ef44488a07",
+      "purpose": "Binder, graphics, and SurfaceFlinger-facing headers",
+      "sparse_paths": [
+        "Android.bp",
+        "aidl/binder/android/os/PersistableBundle.aidl",
+        "cmds/installd/tests",
+        "cmds/servicemanager/Access.cpp",
+        "cmds/servicemanager/main.cpp",
+        "headers",
+        "include/android",
+        "libs/android_runtime_lazy",
+        "libs/arect",
+        "libs/binder/aidl",
+        "libs/binder/liblog_stub",
+        "libs/binder/ndk",
+        "libs/binder/rust/tests/parcel_fuzzer",
+        "libs/binder/tests",
+        "libs/binder/trusty/ndk",
+        "libs/fakeservicemanager",
+        "libs/gui/Android.bp",
+        "libs/gui/aidl",
+        "libs/gui/android",
+        "libs/input",
+        "libs/math",
+        "libs/permission",
+        "libs/renderengine/Android.bp",
+        "libs/sensor",
+        "libs/ui",
+        "services/batteryservice",
+        "services/gpuservice/feature_override",
+        "services/gpuservice/gpumem",
+        "services/gpuservice/gpustats",
+        "services/gpuservice/tests/fuzzers",
+        "services/gpuservice/tracing",
+        "services/hidservice",
+        "services/inputflinger/InputManager.cpp",
+        "services/inputflinger/InputManager.h",
+        "services/inputflinger/dispatcher/InjectionState.cpp",
+        "services/inputflinger/dispatcher/InjectionState.h",
+        "services/inputflinger/dispatcher/InputDispatcher.cpp",
+        "services/inputflinger/dispatcher/InputDispatcher.h",
+        "services/inputflinger/reader/EventHub.cpp",
+        "services/sensorservice/aidl/fuzzer",
+        "services/serialservice/Android.bp",
+        "services/surfaceflinger/Android.bp",
+        "services/surfaceflinger/BackgroundExecutor.cpp",
+        "services/surfaceflinger/CompositionEngine/include/compositionengine/CompositionRefreshArgs.h",
+        "services/surfaceflinger/CompositionEngine/include/compositionengine/impl/Output.h",
+        "services/surfaceflinger/CompositionEngine/src/HwcAsyncWorker.cpp",
+        "services/surfaceflinger/CompositionEngine/src/Output.cpp",
+        "services/surfaceflinger/DroidloomLayers.cpp",
+        "services/surfaceflinger/DroidloomLayers.h",
+        "services/surfaceflinger/DroidloomNativeWindow.cpp",
+        "services/surfaceflinger/DroidloomNativeWindow.h",
+        "services/surfaceflinger/Layer.cpp",
+        "services/surfaceflinger/PowerAdvisor",
+        "services/surfaceflinger/Scheduler/EventThread.cpp",
+        "services/surfaceflinger/ScreenCaptureOutput.cpp",
+        "services/surfaceflinger/ScreenCaptureOutput.h",
+        "services/surfaceflinger/ScreenCaptureRenderSurface.h",
+        "services/surfaceflinger/SurfaceFlinger.cpp",
+        "services/surfaceflinger/SurfaceFlinger.h",
+        "services/surfaceflinger/TimeStats",
+        "services/surfaceflinger/TransactionCallbackInvoker.cpp",
+        "services/surfaceflinger/common",
+        "services/surfaceflinger/layerproto",
+        "services/surfaceflinger/main_surfaceflinger.cpp",
+        "services/surfaceflinger/tests/unittests/TransactionCallbackInvoker_test.cpp",
+        "services/utils",
+        "vulkan/Android.bp",
+        "vulkan/include",
+        "vulkan/vkjson",
+        "vulkan/vkprofiles",
+        "libs/nativebase",
+        "libs/nativewindow/Android.bp",
+        "libs/nativewindow/AHardwareBuffer.cpp",
+        "libs/nativewindow/ANativeWindow.cpp",
+        "libs/nativewindow/libnativewindow.map.txt",
+        "libs/nativewindow/NOTICE",
+        "libs/nativewindow/include",
+        "libs/nativewindow/include-private",
+        "libs/gralloc/types/Android.bp",
+        "libs/gralloc/types/Gralloc4.cpp",
+        "libs/gralloc/types/include",
+        "libs/binder/include",
+        "libs/gui/include",
+        "services/powermanager",
+        "opengl/libs",
+        "opengl/include",
+        "libs/binder/observer",
+        "libs/binder/include_private",
+        "include/ftl",
+        "include/audiomanager",
+        "include/powermanager",
+        "libs/binder/include_activitymanager",
+        "libs/binder/include_batterystats",
+        "libs/binder/include_processinfo",
+        "libs/graphicsenv",
+        "libs/gui/sysprop",
+        "services/surfaceflinger/sysprop",
+        "libs/binderthreadstate",
+        "vulkan/libvulkan",
+        "aidl/gui",
+        "services/audiomanager",
+        "libs/gui/bufferqueue",
+        "libs/gui/view",
+        "libs/binder/rust",
+        "aidl",
+        "build",
+        "cmds",
+        "data",
+        "docs",
+        "include",
+        "include_sensor",
+        "libs",
+        "opengl",
+        "services",
+        "vulkan"
+      ]
+    },
+    {
+      "path": "frameworks/opt/net/ims",
+      "name": "platform/frameworks/opt/net/ims",
+      "commit": "314c843f3627f936c46c9e6d61cb30017bd71fd3",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "src"
+      ]
+    },
+    {
+      "path": "frameworks/opt/net/voip",
+      "name": "platform/frameworks/opt/net/voip",
+      "commit": "cf87c6f8a075fc7544a7e3bae57f992c1db243ff",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "src"
+      ]
+    },
+    {
+      "path": "frameworks/opt/net/wifi",
+      "name": "platform/frameworks/opt/net/wifi",
+      "commit": "12e5aa5f7224b05b6046613967c6d1de75aeaf26",
+      "purpose": "Exact original provider source consumed by the retained audio APEX target-closure consumers",
+      "sparse_paths": [
+        "libs/WifiTrackerLib"
+      ]
+    },
+    {
+      "path": "frameworks/opt/telephony",
+      "name": "platform/frameworks/opt/telephony",
+      "commit": "aef289516bea6118d88cd45c63742cd4abe2c596",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "flags",
+        "proto",
+        "src"
+      ]
+    },
+    {
+      "path": "frameworks/proto_logging",
+      "name": "platform/frameworks/proto_logging",
+      "commit": "a07b791ea1e2a4dae1c535c8423235fdc22aaf02",
+      "purpose": "Pinned stats logging generator required by the Connectivity native library"
+    },
+    {
+      "path": "hardware/interfaces",
+      "name": "platform/hardware/interfaces",
+      "commit": "0162af698935100a590b7359581ac8b1b80693e5",
+      "purpose": "Frozen Composer and allocator AIDL interfaces",
+      "sparse_paths": [
+        "Android.bp",
+        "apexkey",
+        "audio/aidl",
+        "audio/common/2.0",
+        "authsecret/1.0",
+        "authsecret/aidl",
+        "biometrics/common/aidl",
+        "biometrics/face/1.0",
+        "biometrics/face/aidl",
+        "biometrics/fingerprint/2.1",
+        "biometrics/fingerprint/2.2",
+        "biometrics/fingerprint/2.3",
+        "biometrics/fingerprint/aidl",
+        "bluetooth/audio/aidl/aidl_api",
+        "bluetooth/audio/aidl/android",
+        "bluetooth/audio/aidl/default",
+        "bluetooth/audio/flags",
+        "bluetooth/audio/utils",
+        "bluetooth/gatt/aidl",
+        "bluetooth/socket/aidl/aidl_api/android.hardware.bluetooth.socket",
+        "bluetooth/socket/aidl/android",
+        "bluetooth/socket/aidl/common",
+        "bluetooth/socket/aidl/default",
+        "boot",
+        "broadcastradio/2.0",
+        "broadcastradio/aidl",
+        "cas/1.0",
+        "cas/1.1",
+        "cas/1.2",
+        "cas/aidl",
+        "common/aidl",
+        "common/fmq/aidl",
+        "common/support",
+        "compatibility_matrices/build",
+        "compatibility_matrices/exclude",
+        "contexthub/1.0",
+        "contexthub/1.1",
+        "contexthub/1.2",
+        "contexthub/aidl",
+        "drm/aidl",
+        "drm/common/aidl",
+        "gnss/1.0",
+        "gnss/1.1",
+        "gnss/2.0",
+        "gnss/2.1",
+        "gnss/aidl",
+        "gnss/measurement_corrections/1.0",
+        "gnss/measurement_corrections/1.1",
+        "gnss/visibility_control/1.0",
+        "graphics/allocator/2.0",
+        "graphics/allocator/3.0",
+        "graphics/allocator/4.0",
+        "graphics/allocator/aidl",
+        "graphics/bufferqueue/1.0",
+        "graphics/bufferqueue/2.0",
+        "graphics/common/1.0",
+        "graphics/common/1.1",
+        "graphics/common/1.2",
+        "graphics/common/aidl",
+        "graphics/composer/2.1",
+        "graphics/composer/2.2",
+        "graphics/composer/2.3",
+        "graphics/composer/2.4",
+        "graphics/composer/aidl",
+        "graphics/mapper/2.0",
+        "graphics/mapper/2.1",
+        "graphics/mapper/3.0",
+        "graphics/mapper/4.0",
+        "graphics/mapper/stable-c",
+        "health",
+        "identity/aidl/Android.bp",
+        "identity/aidl/aidl_api/android.hardware.identity",
+        "identity/aidl/android",
+        "identity/support/Android.bp",
+        "input/common",
+        "input/processor",
+        "ir/aidl",
+        "keymaster/aidl",
+        "light/aidl",
+        "media",
+        "media/1.0",
+        "media/omx/1.0",
+        "motioncontext/aidl/default",
+        "oemlock/1.0",
+        "oemlock/aidl",
+        "power/1.0",
+        "power/1.1",
+        "power/1.2",
+        "power/1.3",
+        "power/aidl",
+        "power/stats/aidl",
+        "radio/1.0",
+        "radio/1.1",
+        "radio/1.2",
+        "radio/1.3",
+        "radio/1.4",
+        "radio/1.5",
+        "radio/1.6",
+        "radio/aidl",
+        "rebootescrow/aidl",
+        "security/authgraph/aidl",
+        "security/authgraph/default",
+        "security/keymint/aidl",
+        "security/keymint/support",
+        "security/rkp/aidl",
+        "security/secretkeeper/aidl",
+        "security/secretkeeper/default",
+        "security/secureclock/aidl",
+        "security/see/hwcrypto/default",
+        "security/sharedsecret/aidl",
+        "sensors/1.0",
+        "sensors/2.0",
+        "sensors/2.1",
+        "sensors/aidl",
+        "sensors/aidl/convert",
+        "sensors/common/convert",
+        "sensors/common/vts/utils",
+        "soundtrigger/2.0",
+        "soundtrigger/2.1",
+        "soundtrigger/2.2",
+        "soundtrigger/2.3",
+        "soundtrigger/aidl",
+        "tests",
+        "thermal/1.0",
+        "thermal/1.1",
+        "thermal/2.0",
+        "thermal/aidl",
+        "threadnetwork/aidl/default",
+        "tv/cec/1.0",
+        "tv/cec/1.1",
+        "tv/hdmi/cec/aidl",
+        "tv/hdmi/connection/aidl",
+        "tv/hdmi/earc/aidl",
+        "tv/input/1.0",
+        "tv/input/aidl",
+        "tv/mediaquality/aidl",
+        "tv/tuner/aidl",
+        "usb/1.0",
+        "usb/1.1",
+        "usb/1.2",
+        "usb/1.3",
+        "usb/aidl",
+        "usb/gadget/1.0",
+        "usb/gadget/1.1",
+        "usb/gadget/1.2",
+        "usb/gadget/aidl",
+        "vibrator/aidl",
+        "weaver/1.0",
+        "weaver/aidl",
+        ".clang-format",
+        ".gitignore",
+        "CleanSpec.mk",
+        "NOTICE",
+        "OWNERS",
+        "PREUPLOAD.cfg",
+        "TEST_MAPPING",
+        "atrace",
+        "audio",
+        "authsecret",
+        "automotive",
+        "biometrics",
+        "bluetooth",
+        "broadcastradio",
+        "camera",
+        "cas",
+        "common",
+        "compatibility_matrices",
+        "confirmationui",
+        "contexthub",
+        "current.txt",
+        "drm",
+        "dumpstate",
+        "fastboot",
+        "gatekeeper",
+        "gnss",
+        "graphics",
+        "identity",
+        "input",
+        "ir",
+        "keymaster",
+        "light",
+        "macsec",
+        "memtrack",
+        "motioncontext",
+        "neuralnetworks",
+        "nfc",
+        "npu",
+        "oemlock",
+        "power",
+        "radio",
+        "rebootescrow",
+        "renderscript",
+        "scripts",
+        "secure_element",
+        "security",
+        "sensors",
+        "soundtrigger",
+        "staging",
+        "tetheroffload",
+        "thermal",
+        "threadnetwork",
+        "tv",
+        "usb",
+        "uwb",
+        "vibrator",
+        "virtualization",
+        "weaver",
+        "wifi"
+      ]
+    },
+    {
+      "path": "hardware/libhardware",
+      "name": "platform/hardware/libhardware",
+      "commit": "97ee3e33ec5ba48c0eca8341ed377ac4497a0678",
+      "purpose": "Pinned native hardware headers required by the minigbm allocator",
+      "sparse_paths": [
+        "Android.bp",
+        "include",
+        "include_all",
+        "include_vendor"
+      ]
+    },
+    {
+      "path": "hardware/libhardware_legacy",
+      "name": "platform/hardware/libhardware_legacy",
+      "commit": "2a073cd42ec822914ed4e680e7b708485d3a172b",
+      "purpose": "Original superproject-pinned legacy power header required by selected libpowermanager; existing Soong CommonGlobalIncludes retains its original semantics",
+      "sparse_paths": [
+        "include"
+      ]
+    },
+    {
+      "path": "hardware/st/nfc",
+      "name": "platform/hardware/st/nfc",
+      "commit": "55055c3a3a9ba8d8664dbc3ff6eb49563d4875ca",
+      "purpose": "Pinned AOSP17 ST NFC AIDL HAL service fuzzer required by unchanged SELinux service binding check",
+      "sparse_paths": [
+        "Android.bp",
+        "aidl"
+      ]
+    },
+    {
+      "path": "kernel/configs",
+      "name": "kernel/configs",
+      "commit": "553fd8d034110b4a63834e676533f5cc4c5e0089",
+      "purpose": "Soong rule definitions referenced by hardware interface compatibility matrices"
+    },
+    {
+      "path": "libcore",
+      "name": "platform/libcore",
+      "commit": "4ebfb391ee0109d16abe6e2bc965724b940928c5",
+      "purpose": "Pinned core Java libraries and exported flags required by the Android services build"
+    },
+    {
+      "path": "libnativehelper",
+      "name": "platform/libnativehelper",
+      "commit": "5b63a7e308ca88c5c4a2a74dfda9c73ed17cfebb",
+      "purpose": "Pinned JNI headers required by the host Conscrypt signing library"
+    },
+    {
+      "path": "packages/apps/Launcher3",
+      "name": "platform/packages/apps/Launcher3",
+      "commit": "c612e6ece389f21c40f8cb9cd9a4b44239f00009",
+      "purpose": "Launcher flags referenced by WindowManager services; launcher application is not built",
+      "sparse_paths": [
+        "Android.bp",
+        "aconfig",
+        "shared",
+        "tests/tapl",
+        "tools/buildconfig.sh"
+      ]
+    },
+    {
+      "path": "packages/apps/Settings",
+      "name": "platform/packages/apps/Settings",
+      "commit": "213829fb67f5e070029e0513a088f31bc8f5c1ed",
+      "purpose": "Settings flag declarations referenced by services.core",
+      "sparse_paths": [
+        "Android.bp",
+        "aconfig"
+      ]
+    },
+    {
+      "path": "packages/apps/Traceur",
+      "name": "platform/packages/apps/Traceur",
+      "commit": "958957ee3011541f2622b93223abd38071147d3f",
+      "purpose": "Exact original provider source consumed by the retained audio APEX target-closure consumers"
+    },
+    {
+      "path": "packages/modules/Bluetooth",
+      "name": "platform/packages/modules/Bluetooth",
+      "commit": "c77db469de80f86660bc053bec4dee0c5d4b947c",
+      "purpose": "Pinned Bluetooth audio session library linked by the upstream core audio service",
+      "sparse_paths": [
+        "flags",
+        "framework/aidl-export",
+        "framework/api",
+        "system/audio_bluetooth_hw",
+        "system/build/Android.bp",
+        "system/test",
+        "android/app/aidl",
+        "common/Android.bp",
+        "common/bluetooth/constants",
+        "framework/java",
+        "service/aidl",
+        "tools/lint",
+        "framework/tests/util"
+      ]
+    },
+    {
+      "path": "packages/modules/CellBroadcastService",
+      "name": "platform/packages/modules/CellBroadcastService",
+      "commit": "d55c713a4867986bb8f0ae322207d6e8c35355a1",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "res",
+        "src",
+        "sysconfig"
+      ]
+    },
+    {
+      "path": "packages/modules/ConfigInfrastructure",
+      "name": "platform/packages/modules/ConfigInfrastructure",
+      "commit": "333bc8067efc529ef4d197fec2f4f2cae1ad2ece",
+      "purpose": "Configuration flags used by system-server services",
+      "sparse_paths": [
+        "aconfigd/Android.bp",
+        "aconfigd/proto"
+      ]
+    },
+    {
+      "path": "packages/modules/Connectivity",
+      "name": "platform/packages/modules/Connectivity",
+      "commit": "347fbd34b368d19f0d87e908ea101eed3601a731",
+      "purpose": "Pinned BPF client headers required by the Android memory-event client",
+      "sparse_paths": [
+        "Android.bp",
+        "Tethering/Android.bp",
+        "Tethering/apex/Android.bp",
+        "Tethering/common/TetheringLib",
+        "Vcn/flags",
+        "Vcn/framework-b",
+        "bpf",
+        "bpf/headers/include/bpf/BpfUtils.h",
+        "bpf/loader/Android.bp",
+        "bpf/loader/NetBpfLoad.cpp",
+        "bpf/netd/Android.bp",
+        "bpf/netd/BpfHandler.cpp",
+        "common",
+        "framework",
+        "framework-t",
+        "service",
+        "service/Android.bp",
+        "service/jni/com_android_server_connectivity_ClatCoordinator.cpp",
+        "service/jni/com_android_server_connectivity_LocalNetEventListener.cpp",
+        "staticlibs/device/com/android/net/module/util/IIpv4PrefixRequest.aidl",
+        "staticlibs/device/com/android/net/module/util/IRoutingCoordinator.aidl",
+        "staticlibs/native/bpfmapjni/com_android_net_module_util_Bpf.cpp",
+        "staticlibs/netd",
+        "tests",
+        "tools",
+        "nearby/framework/Android.bp",
+        "nearby/framework/java",
+        "thread/framework/Android.bp",
+        "thread/framework/java",
+        "staticlibs/client-libs",
+        "staticlibs/testutils",
+        "Tethering/apex/hiddenapi",
+        "staticlibs/device",
+        "staticlibs/framework"
+      ]
+    },
+    {
+      "path": "packages/modules/CrashRecovery",
+      "name": "platform/packages/modules/CrashRecovery",
+      "commit": "02451209cebd4648fd54ad3757f1a85ee9cd628b",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "flags",
+        "framework/Android.bp",
+        "framework/api",
+        "framework/java",
+        "service/Android.bp",
+        "service/api",
+        "service/java"
+      ]
+    },
+    {
+      "path": "packages/modules/DnsResolver",
+      "name": "platform/packages/modules/DnsResolver",
+      "commit": "0aeaf9d222ec761b9e0443a01c7a06590b9d1b4f",
+      "purpose": "Pinned Android DNS resolver service library linked by netd",
+      "sparse_paths": [
+        "Android.bp",
+        "aidl_api/dnsresolver_aidl_interface",
+        "binder",
+        "rust",
+        "tests/Android.bp",
+        "tests/fuzzer/resolv_service_fuzzer.cpp",
+        "include/dnsproxyd_protocol"
+      ]
+    },
+    {
+      "path": "packages/modules/Gki",
+      "name": "platform/packages/modules/Gki",
+      "commit": "968142477afa61c98b9f7a1b9f4cce2d1ed5ca91",
+      "purpose": "Pinned kernel-release parser required by host VINTF assembly",
+      "sparse_paths": [
+        "libkver"
+      ]
+    },
+    {
+      "path": "packages/modules/Media",
+      "name": "platform/packages/modules/Media",
+      "commit": "efe6c6621fe6a6faee106a1230b010c32cb30c35",
+      "purpose": "Media AIDL definitions referenced by framework headers",
+      "sparse_paths": [
+        "apex/framework",
+        "apex/service",
+        "mediametrics/media_metrics"
+      ]
+    },
+    {
+      "path": "packages/modules/NetworkStack",
+      "name": "platform/packages/modules/NetworkStack",
+      "commit": "928a826ae4887ce0e5d3c7209870e238cacbf548",
+      "purpose": "Pinned Android 17 NetworkStack test defaults from exact AOSP superproject Gitlink",
+      "sparse_paths": [
+        "tests/unit",
+        "common/networkstackclient"
+      ]
+    },
+    {
+      "path": "packages/modules/NeuralNetworks",
+      "name": "platform/packages/modules/NeuralNetworks",
+      "commit": "a44a9032ab9a8438c0e13aca765d6ee4edebba2c",
+      "purpose": "Exact Android 17 superproject NNAPI utility defaults and complete native type providers required by the existing hardware interface consumers",
+      "sparse_paths": [
+        "common/types/include",
+        "common/types/operations/include",
+        "common/types/operations/src",
+        "common/types/src",
+        "flags",
+        "framework"
+      ]
+    },
+    {
+      "path": "packages/modules/Nfc",
+      "name": "platform/packages/modules/Nfc",
+      "commit": "940212c440f57032a19cf0f90c7faa8eca48d546",
+      "purpose": "NFC flag declarations required for framework resource IDs",
+      "sparse_paths": [
+        "Android.bp",
+        "flags",
+        "framework/Android.bp",
+        "framework/api",
+        "framework/java"
+      ]
+    },
+    {
+      "path": "packages/modules/NpuManager",
+      "name": "platform/packages/modules/NpuManager",
+      "commit": "d194f8ada2cab31b8487fb3aaac6fd383fc7e07f",
+      "purpose": "Original libandroid NPU shim, Rust AIDL provider and original SDK siblings required by the retained native graph",
+      "sparse_paths": [
+        "flags",
+        "framework",
+        "ndk"
+      ]
+    },
+    {
+      "path": "packages/modules/Permission",
+      "name": "platform/packages/modules/Permission",
+      "commit": "1093eca7407576c72e51b1a88550ee0667a6e5dc",
+      "purpose": "Pinned Permission API source required for the framework dependency-installer role constant omitted by released SDK stubs",
+      "sparse_paths": [
+        "framework",
+        "framework-s",
+        "framework-s/Android.bp",
+        "service/Android.bp",
+        "service/api",
+        "flags"
+      ]
+    },
+    {
+      "path": "packages/modules/Profiling",
+      "name": "platform/packages/modules/Profiling",
+      "commit": "8b3abe8eebc0e97890977d9658038f4966aa7df6",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers",
+      "sparse_paths": [
+        "flags"
+      ]
+    },
+    {
+      "path": "packages/modules/StatsD",
+      "name": "platform/packages/modules/StatsD",
+      "commit": "8129a553528b0ef83e87e00c9f2604ed8afb2949",
+      "purpose": "Pinned stats socket library required by the Connectivity compatibility library"
+    },
+    {
+      "path": "packages/modules/Telephony",
+      "name": "platform/packages/modules/Telephony",
+      "commit": "d83f23a96fbe6d68942d8d7245dbd3db91e9c711",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers",
+      "sparse_paths": [
+        "framework",
+        "telecom/framework",
+        "telecom/flags",
+        "flags",
+        "libs/libphonenumber",
+        "tests/mcts/Android.bp",
+        "tests/mcts/AndroidTest.xml",
+        "tests/mcts/telecom-cuj"
+      ]
+    },
+    {
+      "path": "packages/modules/Uwb",
+      "name": "platform/packages/modules/Uwb",
+      "commit": "7c9e03046ff41cc28cf794cc2eda306fbc40279e",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "ranging/flags"
+      ]
+    },
+    {
+      "path": "packages/modules/Virtualization",
+      "name": "platform/packages/modules/Virtualization",
+      "commit": "22f1c9ee92b146e10c8f5e71338618f77ab1631e",
+      "purpose": "Pinned Android virtualization compile defaults referenced by init second stage"
+    },
+    {
+      "path": "packages/modules/Wifi",
+      "name": "platform/packages/modules/Wifi",
+      "commit": "67beff9acf0e91046d2a9a36a68cb06ef263d1f1",
+      "purpose": "Framework Wi-Fi annotations used by framework headers",
+      "sparse_paths": [
+        "framework/Android.bp",
+        "framework/api",
+        "flags",
+        "framework/aidl-export",
+        "framework/java"
+      ]
+    },
+    {
+      "path": "packages/modules/adb",
+      "name": "platform/packages/modules/adb",
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d",
+      "purpose": "Pinned original native libadbconnection_client and libapp_processes_protos_lite required by ART adbconnection",
+      "sparse_paths": [
+        "Android.bp",
+        "NOTICE",
+        "libs/adbconnection",
+        "proto"
+      ]
+    },
+    {
+      "path": "packages/modules/common",
+      "name": "platform/packages/modules/common",
+      "commit": "2c5d816b30e439bdfaf3a52a94e4ee8fbf6d739c",
+      "purpose": "Pinned framework-module API-scope defaults required by Conscrypt source modules",
+      "sparse_paths": [
+        "sdk",
+        "proguard",
+        "proto",
+        "tools/Android.bp",
+        "tools/gen_sdkinfo.py",
+        "tools/conv_classpaths_proto.py",
+        "tools/check_derive_classpath.py"
+      ]
+    },
+    {
+      "path": "packages/services/Car",
+      "name": "platform/packages/services/Car",
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "purpose": "Actual android.car and android.car.builtin.impl providers required by the upstream Robolectric host framework",
+      "sparse_paths": [
+        "aconfig",
+        "car-lib/src",
+        "car-lib/jni/large-parcelable/src",
+        "car-builtin-lib/src",
+        "car-builtin-lib/api",
+        "libs/car-internal-dep-lib/src",
+        "teams",
+        "cpp/vhal/client/include",
+        "cpp/vhal/client/src",
+        "cpp/car_binder_lib/largeParcelable/include",
+        "cpp/power/client"
+      ]
+    },
+    {
+      "path": "packages/services/CrossDeviceSync",
+      "name": "platform/packages/services/CrossDeviceSync",
+      "commit": "e11258b65bdf0091dfc440c2b2e2c782778688c3",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "packages/services/Telecomm",
+      "name": "platform/packages/services/Telecomm",
+      "commit": "2353977dc28ff88d3cdc1ec636fa9c3251d2ff86",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "packages/services/Telephony",
+      "name": "platform/packages/services/Telephony",
+      "commit": "4a3830d926a5a84a6f5f7aab8d27e245e7880a68",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "ecc/conversion_toolset_v1/proto"
+      ]
+    },
+    {
+      "path": "platform_testing",
+      "name": "platform/platform_testing",
+      "commit": "6abefd291d50dee240ed2b22572d273175f070da",
+      "purpose": "Android17 superproject-gitlink-pinned Rust rdroidtest provider",
+      "sparse_paths": [
+        "Android.bp",
+        "libraries/annotations",
+        "libraries/compatibility-common-util/Android.bp",
+        "libraries/compatibility-common-util/src",
+        "libraries/rdroidtest",
+        "libraries/tradefed-error-prone",
+        "libraries/motion/src",
+        "libraries/motion/compose/src",
+        "libraries/motion/compose/values/src",
+        "libraries/screenshot/src/main",
+        "libraries/screenshot/proto",
+        "libraries/uiautomator-helpers/src",
+        "libraries/runner/src/main/java",
+        "libraries/device-collectors/src/main/java",
+        "libraries/collectors-helper/adservices/src",
+        "libraries/collectors-helper/app/src",
+        "libraries/collectors-helper/generic/src",
+        "libraries/collectors-helper/jank/src",
+        "libraries/collectors-helper/lyric/src",
+        "libraries/collectors-helper/memory/src",
+        "libraries/collectors-helper/perfetto/src",
+        "libraries/collectors-helper/power/src",
+        "libraries/collectors-helper/simpleperf/src",
+        "libraries/collectors-helper/system/src",
+        "libraries/collectors-helper/utilities/src",
+        "libraries/junitxml/src",
+        "libraries/flag-helpers/junit",
+        "libraries/metrics-helper",
+        "libraries/screenshot/utils/compose",
+        "libraries/health/rules",
+        "libraries/app-helpers/interfaces",
+        "libraries/health/utils",
+        "libraries/notes-role-test-helper",
+        "libraries/system-helpers/package-helper",
+        "libraries/collectors-helper/statsd",
+        "libraries/uinput-device-test-helper",
+        "libraries/system-helpers/user-helper",
+        "libraries/flicker",
+        "libraries/device-collectors/src/main/platform-collectors",
+        "libraries/system-helpers/accessibility-helper",
+        "libraries/system-helpers/account-helper",
+        "libraries/system-helpers/activity-helper",
+        "libraries/app-helpers/core",
+        "libraries/system-helpers/commands-helper",
+        "libraries/system-helpers/connectivity-helper",
+        "libraries/system-helpers/device-helper",
+        "utils/dpad",
+        "libraries/launcher-helper",
+        "libraries/system-helpers/permission-helper",
+        "libraries/system-helpers/settings-helper",
+        "libraries/system-helpers/sysui-helper",
+        "libraries/app-helpers/spectatio/spectatio-util",
+        "libraries/systemui-tapl",
+        "libraries/systemui-helper",
+        "libraries/tapl-common",
+        "scripts",
+        "libraries/sts-common-util/host-side/Android.bp",
+        "libraries/sts-common-util/host-side/res",
+        "libraries/sts-common-util/host-side/src",
+        "libraries/sts-common-util/util/Android.bp",
+        "libraries/sts-common-util/util/src"
+      ]
+    },
+    {
+      "path": "prebuilts/bazel/common",
+      "name": "platform/prebuilts/bazel/common",
+      "commit": "e24e8ba7c6deed0e2e9c36ad6f255437acd98e0d",
+      "purpose": "Pinned Java resource processor used to build framework resource headers for services.jar",
+      "sparse_paths": [
+        "android_tools/android_tools/all_android_tools_deploy.jar"
+      ]
+    },
+    {
+      "path": "prebuilts/build-tools",
+      "name": "platform/prebuilts/build-tools",
+      "commit": "9b6c8c6a2f582a9d7817fd8275c8014959c60cc4",
+      "purpose": "Pinned Android host build tools"
+    },
+    {
+      "path": "prebuilts/clang/host/linux-x86",
+      "name": "platform/prebuilts/clang/host/linux-x86",
+      "commit": "29182889399818f97baa65ea238c80e8117981eb",
+      "purpose": "Pinned Android target compiler",
+      "sparse_paths": [
+        "Android.bp",
+        "clang-r584948b/lib/clang/22/include",
+        "clang-r584948b/lib/clang/22/lib/linux",
+        "soong",
+        "clang-r584948b"
+      ]
+    },
+    {
+      "path": "prebuilts/cmdline-tools",
+      "name": "platform/prebuilts/cmdline-tools",
+      "commit": "744a1b7a5649dfb8f51760f4c348c3f77fe5dbcd",
+      "purpose": "Original Android 17 superproject gitlink for genuine host lint_api and lint jars",
+      "sparse_paths": [
+        "Android.bp",
+        "tools/NOTICE.txt",
+        "tools/lib/lint",
+        "tools/lib/external/com/google/guava/guava/28.1-jre",
+        "tools/lib/external/lint-psi"
+      ]
+    },
+    {
+      "path": "prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8",
+      "name": "platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8",
+      "commit": "ae37c9849d97a20b97ff5ce93a5b171c6d5d02ab",
+      "purpose": "Original Android17 immutable superproject host GCC/glibc2.17 sysroot, headers and link objects required by selected ICU/AIDL/native host tools"
+    },
+    {
+      "path": "prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8",
+      "name": "platform/prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8",
+      "commit": "a6c64a6502e0a89ee8ad3e3f8be97223a69e5bd7",
+      "purpose": "Android17 immutable superproject Gitlink: original Windows-cross libwinpthread static provider",
+      "sparse_paths": [
+        "Android.bp",
+        "NOTICE",
+        "licenses",
+        "x86_64-w64-mingw32/lib/libwinpthread.a",
+        "x86_64-w64-mingw32/lib32/libwinpthread.a",
+        "x86_64-w64-mingw32/bin/libwinpthread-1.dll"
+      ]
+    },
+    {
+      "path": "prebuilts/go/linux-x86",
+      "name": "platform/prebuilts/go/linux-x86",
+      "commit": "05bc4bad6bdd9e5615c147c54e6f1a53bf04c375",
+      "purpose": "Soong host compiler"
+    },
+    {
+      "path": "prebuilts/gradle-plugin",
+      "name": "platform/prebuilts/gradle-plugin",
+      "commit": "4192576c02f73eeac2e705cd6604cd3079969605",
+      "purpose": "Pinned PSI/UAST dependencies needed to build the Android 17 Metalava compiler",
+      "sparse_paths": [
+        "Android.bp",
+        "com/android/tools/build/manifest-merger/32.0.0-beta03",
+        "com/android/tools/common/32.0.0-beta03",
+        "com/android/tools/external/com-intellij/intellij-core/31.10.0-alpha06",
+        "com/android/tools/external/com-intellij/intellij-core/32.0.0-beta03",
+        "com/android/tools/external/com-intellij/kotlin-compiler/32.0.0-beta03",
+        "com/android/tools/external/org-jetbrains/uast/32.0.0-beta03",
+        "com/android/tools/lint/lint-api/32.0.0-beta03",
+        "com/android/tools/lint/lint-checks/32.0.0-beta03",
+        "com/android/tools/lint/lint-gradle/32.0.0-beta03",
+        "com/android/tools/lint/lint-model/32.0.0-beta03",
+        "com/android/tools/lint/lint-typedef-remover/32.0.0-beta03",
+        "com/android/tools/lint/lint/32.0.0-beta03",
+        "com/android/tools/repository/32.0.0-beta03",
+        "com/android/tools/sdk-common/32.0.0-beta03",
+        "com/android/tools/sdklib/32.0.0-beta03"
+      ]
+    },
+    {
+      "path": "prebuilts/jdk/jdk21",
+      "name": "platform/prebuilts/jdk/jdk21",
+      "commit": "ef5bcc92586b839ae3dbacc154127092fa4002ec",
+      "purpose": "Android build JDK"
+    },
+    {
+      "path": "prebuilts/misc",
+      "name": "platform/prebuilts/misc",
+      "commit": "be7c3a630b5dc5eb3260035d77a81b2f322754f8",
+      "purpose": "Pinned commons-cli Java prebuilt required by the XSD compiler",
+      "sparse_paths": [
+        "common/commons-cli",
+        "common/json",
+        "common/kxml2",
+        "common/ub-uiautomator",
+        "common/robolectric-native-prebuilt",
+        "common/robolectric/android-all",
+        "common/androidx-test",
+        "darwin-x86/yasm/COPYING",
+        "darwin-x86_64/sdl2/include/SDL2/NOTICE",
+        "linux-x86/yasm/COPYING",
+        "common/androidx-media3",
+        "common/args4j"
+      ]
+    },
+    {
+      "path": "prebuilts/module_sdk/Connectivity",
+      "name": "platform/prebuilts/module_sdk/Connectivity",
+      "commit": "f8f4f7a0c524dbdcbf7ff350256dfbbf44c47cec",
+      "purpose": "Official AOSP17 superproject pinned SDK providing framework-connectivity-b",
+      "sparse_paths": [
+        "current"
+      ]
+    },
+    {
+      "path": "prebuilts/module_sdk/SdkExtensions",
+      "name": "platform/prebuilts/module_sdk/SdkExtensions",
+      "commit": "d678d8ab3fb3602f46f33801190df2abb4eaca39",
+      "purpose": "Exact Android 17 official SDK snapshot providing framework-sdkextensions stubs required by AndroidX core",
+      "sparse_paths": [
+        "current"
+      ]
+    },
+    {
+      "path": "prebuilts/r8",
+      "name": "platform/prebuilts/r8",
+      "commit": "65fe8f9f5c6769d35f91fe67b786b767a2db5249",
+      "purpose": "Exact original provider source consumed by the retained audio APEX target-closure consumers"
+    },
+    {
+      "path": "prebuilts/rust",
+      "name": "platform/prebuilts/rust",
+      "commit": "8e6eb737e844d18c50bfbee8f212f76755e04b24",
+      "purpose": "Android Rust crates"
+    },
+    {
+      "path": "prebuilts/rust-toolchain/linux-x86",
+      "name": "platform/prebuilts/rust-toolchain/linux-x86",
+      "commit": "fa2b1777b1f5c0471bb54ad4026feb1f6e94ea70",
+      "purpose": "Pinned Android Rust compiler",
+      "sparse_paths": [
+        "1.93.1/lib/rustlib/i686-unknown-linux-gnu/lib",
+        "1.93.1/lib/rustlib/x86_64-unknown-linux-gnu/lib",
+        "Android.bp",
+        "1.93.1"
+      ]
+    },
+    {
+      "path": "prebuilts/sdk",
+      "name": "platform/prebuilts/sdk",
+      "commit": "0f07e8d60ab0aba46129e427101f96ba459a95c1",
+      "purpose": "Pinned Android 17 released API tracking required by full vendor-image graph validation",
+      "sparse_paths": [
+        "28/public",
+        "29/public",
+        "29/system",
+        "30/public",
+        "31/public",
+        "34/public",
+        "34/system/android.jar",
+        "37.0/module-lib/api",
+        "37.0/public/api",
+        "37.0/system-server/api",
+        "37.0/system/api",
+        "37.0/test/api",
+        "8/public",
+        "9/public",
+        "Android.bp",
+        "current/androidx/Android.bp",
+        "current/androidx/m2repository/androidx/annotation/annotation-experimental/1.6.0",
+        "current/androidx/m2repository/androidx/annotation/annotation-jvm/1.10.0",
+        "current/androidx/m2repository/androidx/collection/collection-jvm/1.7.0-alpha01",
+        "current/androidx/m2repository/androidx/core/core-animation-testing/1.0.0",
+        "current/androidx/m2repository/androidx/core/core-animation/1.0.0",
+        "current/androidx/m2repository/androidx/core/core/1.20.0-alpha01",
+        "current/androidx/m2repository/androidx/leanback/leanback/1.3.0-alpha01",
+        "current/androidx/m2repository/androidx/transition/transition-ktx/1.7.0-rc01",
+        "current/androidx/m2repository/androidx/transition/transition/1.7.0-rc01",
+        "current/androidx/m2repository/androidx/webkit/webkit/1.12.0-alpha02",
+        "current/core",
+        "current/module-lib",
+        "current/public",
+        "current/system",
+        "current/system-server",
+        "extensions/19/module-lib",
+        "extensions/19/public",
+        "extensions/19/system",
+        "extensions/19/system-server",
+        "tools/Android.bp",
+        "tools/core-lambda-stubs.jar",
+        "update_prebuilts",
+        "current/androidx",
+        "18/public",
+        "current/multidex",
+        "current/test",
+        "current/support/v7/appcompat/res",
+        "current/support/manifests/android-support-v7-appcompat",
+        "current/extras/material-design-x",
+        "36/public/api/framework-ondeviceintelligence.txt",
+        "36/public/api/framework-ondeviceintelligence-removed.txt",
+        "36/system/api/framework-ondeviceintelligence.txt",
+        "36/system/api/framework-ondeviceintelligence-removed.txt",
+        "36/module-lib/api/framework-ondeviceintelligence.txt",
+        "36/module-lib/api/framework-ondeviceintelligence-removed.txt",
+        "current/androidx-legacy",
+        "current/extras/app-toolkit",
+        "35/public/android.jar",
+        "35/public/framework.aidl",
+        "35/public/core-for-system-modules.jar",
+        "tools/darwin/bin/aapt2",
+        "tools/linux/bin/aapt2",
+        "tools/windows/bin/aapt2.exe"
+      ]
+    },
+    {
+      "path": "prebuilts/siso",
+      "name": "platform/prebuilts/siso",
+      "commit": "41809b921e1888ff851d1094459b1a6875e7f155",
+      "purpose": "Pinned executor for the Soong build graph"
+    },
+    {
+      "path": "prebuilts/tools",
+      "name": "platform/prebuilts/tools",
+      "commit": "b157d1c3bff39161f34ccc44dffbe9568f3bece2",
+      "purpose": "Pinned Metalava fat jar required by focused platform Java API generation",
+      "sparse_paths": [
+        "common/m2/Android.bp",
+        "common/m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.0",
+        "common/m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.0",
+        "common/m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.0",
+        "common/m2/repository/com/fasterxml/jackson/dataformat/jackson-dataformat-xml/2.15.0",
+        "common/m2/repository/com/fasterxml/jackson/module/jackson-module-kotlin/2.15.0",
+        "common/m2/repository/com/fasterxml/woodstox/woodstox-core/6.5.1",
+        "common/m2/repository/com/github/ajalt/clikt/clikt-jvm/3.5.3",
+        "common/m2/repository/com/github/ben-manes/caffeine/caffeine/3.2.2",
+        "common/m2/repository/com/google/code/gson/gson/2.9.1",
+        "common/m2/repository/com/google/guava/guava/32.1.1-jre",
+        "common/m2/repository/com/google/turbine/turbine/0.14.0",
+        "common/m2/repository/javax/xml/bind/jaxb-api/2.2.12-b140109.1041",
+        "common/m2/repository/org/antlr",
+        "common/m2/repository/org/antlr/ST4/4.3.4",
+        "common/m2/repository/org/antlr/antlr-runtime/3.5.3",
+        "common/m2/repository/org/antlr/antlr4-runtime/4.13.1",
+        "common/m2/repository/org/antlr/antlr4/4.13.1",
+        "common/m2/repository/org/checkerframework/checker-qual/2.8.1",
+        "common/m2/repository/org/checkerframework/dataflow-errorprone/3.39.0",
+        "common/m2/repository/org/codehaus/woodstox/stax2-api/4.2.1",
+        "common/m2/repository/org/jetbrains/annotations/13.0",
+        "common/m2/repository/org/jetbrains/kotlin",
+        "common/m2/repository/org/jetbrains/kotlinx",
+        "common/m2/repository/org/jetbrains/trove4j/trove4j/20160824",
+        "common/m2/repository/org/ow2/asm/asm-tree/9.7.1",
+        "common/m2/repository/org/ow2/asm/asm/9.7.1",
+        "common/metalava",
+        "common/m2/repository/com/almworks/sqlite4java/libsqlite4java-linux-amd64/0.282",
+        "common/m2/repository/com/almworks/sqlite4java/libsqlite4java-linux-i386/0.282",
+        "common/m2/repository/com/almworks/sqlite4java/libsqlite4java-osx/0.282",
+        "common/m2/repository/com/almworks/sqlite4java/sqlite4java-win32-x64/0.282",
+        "common/m2/repository/com/almworks/sqlite4java/sqlite4java-win32-x86/0.282",
+        "common/m2/repository/com/almworks/sqlite4java/sqlite4java/0.282",
+        "common/m2/repository/com/android/support/test/monitor/1.0.2-alpha1",
+        "common/m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/2.0",
+        "common/m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/2.1",
+        "common/m2/repository/com/google/dagger/dagger-compiler/2.7",
+        "common/m2/repository/com/google/dagger/dagger-producers/2.7",
+        "common/m2/repository/com/google/dagger/dagger/2.7",
+        "common/m2/repository/com/google/devtools/ksp/symbol-processing-api/1.4.10-dev-experimental-20201110",
+        "common/m2/repository/com/google/guava/guava/23.0",
+        "common/m2/repository/com/google/guava/guava/listenablefuture/1.0",
+        "common/m2/repository/com/google/http-client/google-http-client-jackson2/1.28.0",
+        "common/m2/repository/com/google/inject/guice/3.0",
+        "common/m2/repository/com/google/j2objc/j2objc-annotations/1.1",
+        "common/m2/repository/com/google/testing/compile/compile-testing/0.19",
+        "common/m2/repository/com/intellij/core-analysis",
+        "common/m2/repository/com/sampullara/cli/1.1.2",
+        "common/m2/repository/com/squareup/kotlinpoet/1.8.0",
+        "common/m2/repository/com/squareup/okhttp/okhttp/2.7.4",
+        "common/m2/repository/com/squareup/okhttp4/okhttp/4.0.0",
+        "common/m2/repository/com/squareup/okio/okio/1.9.0",
+        "common/m2/repository/com/squareup/wire/wire-runtime-jvm/4.7.0",
+        "common/m2/repository/com/thoughtworks/xstream/xstream/1.4.8",
+        "common/m2/repository/commons-codec/commons-codec/1.10",
+        "common/m2/repository/commons-io/commons-io/2.4",
+        "common/m2/repository/io/grpc/grpc-all/1.0.3",
+        "common/m2/repository/io/grpc/grpc-context/1.0.3",
+        "common/m2/repository/io/grpc/grpc-core/1.0.3",
+        "common/m2/repository/io/grpc/grpc-netty-shaded/1.56.0",
+        "common/m2/repository/io/grpc/grpc-okhttp/1.0.3",
+        "common/m2/repository/io/grpc/grpc-protobuf-lite/1.0.3",
+        "common/m2/repository/io/grpc/grpc-stub/1.0.3",
+        "common/m2/repository/io/reactivex/rxjava2/rxjava/2.2.9",
+        "common/m2/repository/javax/annotation/javax.annotation-api/1.2",
+        "common/m2/repository/javax/annotation/javax.annotation-api/1.3.2",
+        "common/m2/repository/javax/inject/javax.inject/1",
+        "common/m2/repository/joda-time/joda-time/2.9.1",
+        "common/m2/repository/kotlinx/html/jvm/0.6.8",
+        "common/m2/repository/me/leolin/ShortcutBadger/1.1.13",
+        "common/m2/repository/net/bytebuddy/byte-buddy-agent/1.14.18",
+        "common/m2/repository/net/bytebuddy/byte-buddy/1.14.18",
+        "common/m2/repository/net/java/dev/jna/jna/3.4.0",
+        "common/m2/repository/net/sf/jopt-simple/jopt-simple/4.9",
+        "common/m2/repository/net/sf/trove4j/trove4j/1.1",
+        "common/m2/repository/org/apache/ant/ant/1.8.0",
+        "common/m2/repository/org/apache/commons/commons-lang3/3.4",
+        "common/m2/repository/org/apache/httpcomponents/httpclient/4.0.3",
+        "common/m2/repository/org/apache/httpcomponents/httpcore/4.0.1",
+        "common/m2/repository/org/apache/james/apache-mime4j-core/0.7.2",
+        "common/m2/repository/org/apache/james/apache-mime4j-dom/0.7.2",
+        "common/m2/repository/org/apache/maven/maven-ant-tasks/2.1.3",
+        "common/m2/repository/org/assertj/assertj-core/3.8.0",
+        "common/m2/repository/org/codehaus/mojo/animal-sniffer-annotations/1.14",
+        "common/m2/repository/org/jetbrains/intellij/deps/trove4j/1.0.20181211",
+        "common/m2/repository/org/jetbrains/markdown/0.1.41",
+        "common/m2/repository/org/jsoup/jsoup/1.8.3",
+        "common/m2/repository/org/mockito/mockito-core/4.8.1",
+        "common/m2/repository/org/mockito/mockito-core/5.14.2",
+        "common/m2/repository/org/mockito/mockito-inline/4.8.1",
+        "common/m2/repository/org/reactivestreams/reactive-streams/1.0.2",
+        "common/m2/repository/org/xerial/sqlite-jdbc/3.28.0",
+        "common/m2/repository/ru/yole/jkid"
+      ]
+    },
+    {
+      "path": "sdk",
+      "name": "platform/sdk",
+      "commit": "4d155d6c08932904384ba2f5198dcc984e32501b",
+      "purpose": "Exact Android 17 original android.annotation.SuppressLint provider required by the coroutine host implementation",
+      "sparse_paths": [
+        "annotations"
+      ]
+    },
+    {
+      "path": "system/apex",
+      "name": "platform/system/apex",
+      "commit": "ce2bb9f710183c864040401d859874b5723e44d8",
+      "purpose": "Pinned apex-info-list XSD generator input required by host VINTF assembly",
+      "sparse_paths": [
+        "Android.bp",
+        "apexd/aidl",
+        "apexd/apex-info-list-api",
+        "apexer",
+        "libs/libapexsupport",
+        "libs/libapexutil",
+        "proto",
+        "tools"
+      ]
+    },
+    {
+      "path": "system/bpf",
+      "name": "platform/system/bpf",
+      "commit": "d68a263039127dc709114802395e57537a02babf",
+      "purpose": "Pinned BPF headers required by the Android memory-event client",
+      "sparse_paths": [
+        "Android.bp",
+        "include",
+        "progs"
+      ]
+    },
+    {
+      "path": "system/bpfprogs",
+      "name": "platform/system/bpfprogs",
+      "commit": "60f086effe11d1afb248ff3c9a2a780b66a34506",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "system/chre",
+      "name": "platform/system/chre",
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "apps",
+        "chre_api",
+        "core",
+        "data_flow",
+        "external",
+        "host",
+        "pal",
+        "platform",
+        "test",
+        "util",
+        "variant"
+      ]
+    },
+    {
+      "path": "system/connectivity/wificond",
+      "name": "platform/system/connectivity/wificond",
+      "commit": "fefad78738af9d9753bb0acbafcf458691f8627c",
+      "purpose": "Wi-Fi control AIDL interfaces consumed by framework headers",
+      "sparse_paths": [
+        "Android.bp",
+        "aidl",
+        "fuzzers"
+      ]
+    },
+    {
+      "path": "system/core",
+      "name": "platform/system/core",
+      "commit": "545d2487e38192a2ce25040897ced877cf6b4f53",
+      "purpose": "init, properties, and Android core libraries"
+    },
+    {
+      "path": "system/extras",
+      "name": "platform/system/extras",
+      "commit": "1289e9b3f282909eec6e80414e14dcc207bda439",
+      "purpose": "Pinned ext4 image-builder configuration required by the Droidloom vendor partition",
+      "sparse_paths": [
+        "ext4_utils",
+        "libjsonpb/parse",
+        "libjsonpb/verify",
+        "simpleperf/scripts",
+        "simpleperf/testdata",
+        "profcollectd"
+      ]
+    },
+    {
+      "path": "system/fs/fs_mgr",
+      "name": "platform/system/fs/fs_mgr",
+      "commit": "157112fcbaa00b6e84c63146cfde249c56cd652c",
+      "purpose": "ART original fs_mgr libfstab static library"
+    },
+    {
+      "commit": "5b5e75b5bda9fccbc3132e9624cb25286babdaac",
+      "name": "platform/system/gatekeeper",
+      "path": "system/gatekeeper",
+      "purpose": "Same-superproject complete Gatekeeper Rust and header source required by the retained nonsecure Gatekeeper provider in the strict full Audio APEX graph",
+      "sparse_paths": [
+        "include",
+        "rust"
+      ]
+    },
+    {
+      "path": "system/gsid",
+      "name": "platform/system/gsid",
+      "commit": "35a92d40f529b605fad8ff622691e76901044cc8",
+      "purpose": "Original Android 17 libgsi_headers for fs_mgr libfstab",
+      "sparse_paths": [
+        "Android.bp",
+        "include",
+        "aidl/android/gsi/AvbPublicKey.aidl",
+        "aidl/android/gsi/GsiProgress.aidl",
+        "aidl/android/gsi/IGsiService.aidl",
+        "aidl/android/gsi/IGsiServiceCallback.aidl",
+        "aidl/android/gsi/IImageService.aidl",
+        "aidl/android/gsi/IProgressCallback.aidl",
+        "aidl/android/gsi/MappedImage.aidl"
+      ]
+    },
+    {
+      "path": "system/hardware/interfaces",
+      "name": "platform/system/hardware/interfaces",
+      "commit": "9c3469aa3d4aeec5b2bc8e8ae8fdb4437dab4edb",
+      "purpose": "Pinned stable media audio types required by the upstream no-hardware audio service",
+      "sparse_paths": [
+        "keystore2",
+        "media",
+        "net/netd",
+        "suspend/aidl",
+        "vold"
+      ]
+    },
+    {
+      "path": "system/incremental_delivery",
+      "name": "platform/system/incremental_delivery",
+      "commit": "6b853f9e5703a8c90648f82850a3a01d9763e619",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "incfs",
+        "libdataloader",
+        "sysprop"
+      ]
+    },
+    {
+      "path": "system/keymaster",
+      "name": "platform/system/keymaster",
+      "commit": "f9007833c668b90f0c0f9b78808788cb86275113",
+      "purpose": "superproject-pinned Android 17 KeyMint C++ implementation AIDL defaults"
+    },
+    {
+      "path": "system/keymint",
+      "name": "platform/system/keymint",
+      "commit": "cfeefc94bf8c4f19d19dca193d376a1fc05e8e3e",
+      "purpose": "Pinned Rust KeyMint reference implementation required by the development cell"
+    },
+    {
+      "path": "system/libartpalette",
+      "name": "platform/system/libartpalette",
+      "commit": "9d680186fa4f024111b271feedb5cd7156768902",
+      "purpose": "Exact original AOSP17 superproject gitlink providing libartpalette-system"
+    },
+    {
+      "path": "system/libbase",
+      "name": "platform/system/libbase",
+      "commit": "fef4173e19d97cd4b4fc09a06bccbf800d0d3937",
+      "purpose": "Android native base library"
+    },
+    {
+      "path": "system/libcppbor",
+      "name": "platform/system/libcppbor",
+      "commit": "2f12c70f4d829342814df74ab97412ad25735ef5",
+      "purpose": "Exact Android17 superproject-pinned C++ CBOR source required by original Keymaster libcppcose_rkp"
+    },
+    {
+      "path": "system/libfmq",
+      "name": "platform/system/libfmq",
+      "commit": "d525961b46fbebd138018a102e4ab983c9582045",
+      "purpose": "Pinned fast-message-queue base library required by the legacy Mapper compatibility interface"
+    },
+    {
+      "path": "system/libhidl",
+      "name": "platform/system/libhidl",
+      "commit": "061055fc4dad78e5d25a77d9217001794656f16b",
+      "purpose": "Pinned HIDL compatibility runtime required by the minigbm allocator"
+    },
+    {
+      "path": "system/libhwbinder",
+      "name": "platform/system/libhwbinder",
+      "commit": "2f5282448223b97c541181a5b94a05c2ac17ff17",
+      "purpose": "Pinned HIDL transport headers required by the HIDL generator",
+      "sparse_paths": [
+        "Android.bp",
+        "include"
+      ]
+    },
+    {
+      "path": "system/libprocinfo",
+      "name": "platform/system/libprocinfo",
+      "commit": "b58259e79c58deb1132e11d74ea90a2dc441d84f",
+      "purpose": "Pinned process-information helpers required by init second stage"
+    },
+    {
+      "path": "system/librustutils",
+      "name": "platform/system/librustutils",
+      "commit": "7fbb3e4aaf608e51eaa210cf6ba94df5cb782bbc",
+      "purpose": "Pinned no-std Rust allocation and panic providers required by Android init's Bionic linker"
+    },
+    {
+      "path": "system/libsysprop",
+      "name": "platform/system/libsysprop",
+      "commit": "feca0b466b9fa68a8e86a6e0b31579669e645f41",
+      "purpose": "Original PlatformProperties sysprop source provider selected by native media codec closure"
+    },
+    {
+      "path": "system/liburingutils",
+      "name": "platform/system/liburingutils",
+      "commit": "3d6286bdd07ec68ee6a411381e56c1aaa6e11247",
+      "purpose": "Original io_uring socket helpers required by the retained logd provider and its original sibling tests",
+      "sparse_paths": [
+        "include",
+        "src"
+      ]
+    },
+    {
+      "path": "system/libvintf",
+      "name": "platform/system/libvintf",
+      "commit": "df89ad736e14ac375f61d50fa543ae7cd746a140",
+      "purpose": "VINTF validation"
+    },
+    {
+      "path": "system/libziparchive",
+      "name": "platform/system/libziparchive",
+      "commit": "bdd41f9c99400f241363b035eb64ad3d5f063c82",
+      "purpose": "Pinned ZIP archive support required by the Android runtime linker"
+    },
+    {
+      "path": "system/linkerconfig",
+      "name": "platform/system/linkerconfig",
+      "commit": "f6b4bd983b909a907cf7e9fae8a6365d827638b6",
+      "purpose": "Original Android17 superproject-pinned linker configuration Soong owner",
+      "sparse_paths": [
+        "Android.bp"
+      ]
+    },
+    {
+      "path": "system/logging",
+      "name": "platform/system/logging",
+      "commit": "d35ba620451b28512f46ebb5421f783fd77968d5",
+      "purpose": "Android native logging",
+      "sparse_paths": [
+        "liblog",
+        "rust",
+        "logd/Android.bp",
+        "logd/CommandListener.cpp",
+        "logd/CompressionEngine.cpp",
+        "logd/LogAudit.cpp",
+        "logd/LogBufferElement.cpp",
+        "logd/LogBufferTest.cpp",
+        "logd/LogKlog.cpp",
+        "logd/LogListener.cpp",
+        "logd/LogPermissions.cpp",
+        "logd/LogReader.cpp",
+        "logd/LogReaderList.cpp",
+        "logd/LogReaderThread.cpp",
+        "logd/LogSize.cpp",
+        "logd/LogStatistics.cpp",
+        "logd/LogTags.cpp",
+        "logd/LogdLock.cpp",
+        "logd/LogdNativeService.cpp",
+        "logd/PkgIds.cpp",
+        "logd/PruneList.cpp",
+        "logd/ReplayMessages.cpp",
+        "logd/SerializedFlushToState.cpp",
+        "logd/SerializedFlushToStateTest.cpp",
+        "logd/SerializedLogBuffer.cpp",
+        "logd/SerializedLogBufferTest.cpp",
+        "logd/SerializedLogChunk.cpp",
+        "logd/SerializedLogChunkTest.cpp",
+        "logd/SimpleLogBuffer.cpp",
+        "logd/TrustyLog.cpp",
+        "logd/auditctl.cpp",
+        "logd/binder",
+        "logd/device_test_config.xml",
+        "logd/flags",
+        "logd/libaudit",
+        "logd/logd_test.cpp",
+        "logd/logtagd.rc",
+        "logd/main.cpp"
+      ]
+    },
+    {
+      "path": "system/media",
+      "name": "platform/system/media",
+      "commit": "440eb272fd3da0ca7bdae932e61e7fd9be1fd324",
+      "purpose": "Pinned stable audio common types required by the upstream no-hardware audio service"
+    },
+    {
+      "path": "system/memory/libdmabufheap",
+      "name": "platform/system/memory/libdmabufheap",
+      "commit": "09fe72b6ce0feead1b97c2859979b125f815d9b0",
+      "purpose": "Original Android17 superproject-pinned DMA-BUF heap allocator required by libminigbm_gralloc",
+      "sparse_paths": [
+        "Android.bp",
+        "BufferAllocator.cpp",
+        "BufferAllocatorWrapper.cpp",
+        "include"
+      ]
+    },
+    {
+      "path": "system/memory/libion",
+      "name": "platform/system/memory/libion",
+      "commit": "2f9196be89b3851049b565b6c338f707e50440ba",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "include",
+        "kernel-headers"
+      ]
+    },
+    {
+      "path": "system/memory/libmeminfo",
+      "name": "platform/system/memory/libmeminfo",
+      "commit": "d59c960b1fb93377bf68664918031ea5fe709f89",
+      "purpose": "Pinned memory-event client loaded during Android system-server startup",
+      "sparse_paths": [
+        "libdmabufinfo",
+        "libelfutils",
+        "sysmeminfo.cpp",
+        "libarchivestager"
+      ]
+    },
+    {
+      "path": "system/memory/libmemtrack",
+      "name": "platform/system/memory/libmemtrack",
+      "commit": "25ee95c80f9be933f4d0a2f399db1b98195f384d",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "Android.bp",
+        "include"
+      ]
+    },
+    {
+      "path": "system/memory/libmemunreachable",
+      "name": "platform/system/memory/libmemunreachable",
+      "commit": "c3dc0b2f3ce01b53388635a14b01ca7e7a7000cc",
+      "purpose": "Original source-built memory leak inspection dependency of libmediaplayerservice"
+    },
+    {
+      "path": "system/memory/mmd",
+      "name": "platform/system/memory/mmd",
+      "commit": "cf66bc31a4002e6f786da7c5a45e4088d19530ed",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers"
+    },
+    {
+      "path": "system/netd",
+      "name": "platform/system/netd",
+      "commit": "43c893c7f33de178d6edaf5be49aed0794b3a917",
+      "purpose": "Pinned native networking compile defaults required by the Connectivity compatibility library",
+      "sparse_paths": [
+        "binder",
+        "server/Controllers.cpp",
+        "server/RouteController.cpp",
+        "server/binder",
+        "client",
+        "include"
+      ]
+    },
+    {
+      "path": "system/security",
+      "name": "platform/system/security",
+      "commit": "cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb",
+      "purpose": "Pinned fs-verity digest metadata module required by vendor image releasetools",
+      "sparse_paths": [
+        "Android.bp",
+        "diced/open_dice",
+        "fsverity",
+        "hals/Android.bp",
+        "hals/derive",
+        "hals/wire",
+        "identity",
+        "keystore2/aconfig",
+        "keystore2/aidl",
+        "keystore2/src/fuzzers",
+        "prng_seeder"
+      ]
+    },
+    {
+      "path": "system/sepolicy",
+      "name": "platform/system/sepolicy",
+      "commit": "e066568e98d86db31a9346d30977f3632fa7073c",
+      "purpose": "Droidloom Android SELinux policy"
+    },
+    {
+      "path": "system/server_configurable_flags",
+      "name": "platform/system/server_configurable_flags",
+      "commit": "5069ba739faebf91ae72096577ae17e13061af72",
+      "purpose": "Pinned platform flag library required by Android audio utilities",
+      "sparse_paths": [
+        "Android.bp",
+        "libflags",
+        "aconfigd/Android.bp"
+      ]
+    },
+    {
+      "path": "system/testing/gtest_extras",
+      "name": "platform/system/testing/gtest_extras",
+      "commit": "19d4b13af4613002e7a80681acfa2c53f12271f2",
+      "purpose": "Original Android17 libgtest_isolated and libgtest_isolated_main test runners",
+      "sparse_paths": [
+        "gtest_isolated",
+        "gtestifier"
+      ]
+    },
+    {
+      "path": "system/timezone",
+      "name": "platform/system/timezone",
+      "commit": "cbd571efcf6b551ba83a31147ec7a06182f8ec31",
+      "purpose": "Real robolectric_tzdata generator and timezone inputs",
+      "sparse_paths": [
+        "output_data"
+      ]
+    },
+    {
+      "path": "system/tools/aidl",
+      "name": "platform/system/tools/aidl",
+      "commit": "9a94664f74536bf28010207fd1804b04c6435e2c",
+      "purpose": "Stable AIDL compiler and Rust backend"
+    },
+    {
+      "path": "system/tools/hidl",
+      "name": "platform/system/tools/hidl",
+      "commit": "5d0e05e6535fea94a674a359102bdd42944714f4",
+      "purpose": "HIDL package-root Soong rule referenced by hardware/interfaces metadata"
+    },
+    {
+      "path": "system/tools/sysprop",
+      "name": "platform/system/tools/sysprop",
+      "commit": "deead2d06508faeca98c236feea7e59bb4c43c8c",
+      "purpose": "Pinned host sysprop type checker required by vendor SELinux file-context validation"
+    },
+    {
+      "path": "system/tools/xsdc",
+      "name": "platform/system/tools/xsdc",
+      "commit": "f1f0c793dc404e716ac73beb1a8bef9cef97a40d",
+      "purpose": "XSD Soong rule referenced by VINTF and compatibility metadata"
+    },
+    {
+      "path": "system/unwinding",
+      "name": "platform/system/unwinding",
+      "commit": "31327c70da147fdc069598c4a5fd075aea8d3312",
+      "purpose": "Original AOSP libunwindstack needed by libutilscallstack and ART"
+    },
+    {
+      "path": "system/update_engine",
+      "name": "platform/system/update_engine",
+      "commit": "4591637f51644f5429f9e2fe589ab22b92f61842",
+      "purpose": "Pinned update-engine headers and metadata protos required by init second stage",
+      "sparse_paths": [
+        "Android.bp",
+        "fuzzers",
+        "liburing_cpp",
+        "binder_bindings/android/os/IUpdateEngine.aidl",
+        "binder_bindings/android/os/IUpdateEngineCallback.aidl",
+        "stable"
+      ]
+    },
+    {
+      "path": "system/usb",
+      "name": "platform/system/usb",
+      "commit": "4a587a2ffcf50a483ae93eab2221c0ba692c0b15",
+      "purpose": "USB accessory Java interface referenced by services.usb",
+      "sparse_paths": [
+        "aoa"
+      ]
+    },
+    {
+      "path": "system/vold",
+      "name": "platform/system/vold",
+      "commit": "6d20a0078c2bcaa2499dc5d032f337bfe1182d9e",
+      "purpose": "Pinned filesystem-encryption headers and library required by init second stage",
+      "sparse_paths": [
+        "Utils.cpp",
+        "tests",
+        "aconfig/flags.aconfig",
+        "binder/android/os/IVold.aidl",
+        "binder/android/os/IVoldListener.aidl",
+        "binder/android/os/IVoldMountCallback.aidl",
+        "binder/android/os/IVoldTaskListener.aidl"
+      ]
+    },
+    {
+      "path": "system/zygote",
+      "name": "platform/system/zygote",
+      "commit": "c24023080df0bdb5988c1e0c641d494574a97c40",
+      "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+      "sparse_paths": [
+        "zygote-messages"
+      ]
+    },
+    {
+      "path": "test/app_compat/csuite",
+      "name": "platform/test/app_compat/csuite",
+      "commit": "ae20a186e7635ca3eb6b134f9a25e65e874d9b4b",
+      "purpose": "AOSP17 superproject-pinned Soong csuite_test plugin required by original ART test registration",
+      "sparse_paths": [
+        "Android.bp",
+        "tools/csuite_test"
+      ]
+    },
+    {
+      "path": "test/robolectric-extensions",
+      "name": "platform/test/robolectric-extensions",
+      "commit": "94254a13a5969eec7a4742320cc3f91e141d5593",
+      "purpose": "Real AOSP Robolectric plugin implementation required by Robolectric_all",
+      "sparse_paths": [
+        "plugins/src/main/java",
+        "clearcut-junit-listener/src/main/java"
+      ]
+    },
+    {
+      "path": "test/suite_harness",
+      "name": "platform/test/suite_harness",
+      "commit": "37c7c43eeab409331d449e0c7899adf535894b0c",
+      "purpose": "Original compatibility-host-util and compatibility-tradefed test harness providers"
+    },
+    {
+      "path": "test/vts",
+      "name": "platform/test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "purpose": "Exact original transitive provider required by retained audio closure consumers",
+      "sparse_paths": [
+        "vts_hal_hidl_target"
+      ]
+    },
+    {
+      "path": "toolchain/pgo-profiles",
+      "name": "toolchain/pgo-profiles",
+      "commit": "44bae3346df2d8657cde54a5ee069067d607e689",
+      "purpose": "Pinned Soong AFDO profile configuration"
+    },
+    {
+      "path": "tools/apksig",
+      "name": "platform/tools/apksig",
+      "commit": "179f60df00d242f6bb22acf828b0884eac2d5f72",
+      "purpose": "Pinned APK signing library required by the vendor image packaging toolchain"
+    },
+    {
+      "path": "tools/asuite",
+      "name": "platform/tools/asuite",
+      "commit": "744998cb744c401a5daa77170039ab6337ed7adb",
+      "purpose": "Exact Android 17 proto implementation used by the mandatory Robolectric Clearcut JUnit listener",
+      "sparse_paths": [
+        "atest/proto"
+      ]
+    },
+    {
+      "path": "tools/deviceinfra/prebuilts",
+      "name": "platform/tools/deviceinfra/prebuilts",
+      "commit": "bb2d5f519bd0bf57641d74f40c12bab281423781",
+      "purpose": "Same-superproject original ATS prebuilt providers required by the retained CTS suite dependency mutator",
+      "sparse_paths": [
+        "Android.bp",
+        "ats_console_deploy.jar",
+        "ats_olc_server_local_mode_deploy.jar",
+        "ats_olc_server_deploy.jar"
+      ]
+    },
+    {
+      "path": "tools/dexter",
+      "name": "platform/tools/dexter",
+      "commit": "602760cb036bc9cfc9240939692603512e63fe4a",
+      "purpose": "Exact AOSP Android 17 release 1 dexter slicer_no_rtti JNI test library",
+      "sparse_paths": [
+        "Android.bp",
+        "slicer"
+      ]
+    },
+    {
+      "path": "tools/lint_checks",
+      "name": "platform/tools/lint_checks",
+      "commit": "d260e8254709bb2884c072dd595f63c9c8d22527",
+      "purpose": "AndroidGlobalLintChecker required by services Java build analysis",
+      "sparse_paths": [
+        "Android.bp",
+        "common",
+        "global",
+        "utils"
+      ]
+    },
+    {
+      "path": "tools/metalava",
+      "name": "platform/tools/metalava",
+      "commit": "e33bb96bcd3279859f4d824ba3d17a36b56c2f68",
+      "purpose": "Pinned stub annotations required by Android platform Java API libraries",
+      "sparse_paths": [
+        "Android.bp",
+        "stub-annotations",
+        "metalava-model/src/main",
+        "metalava-model-text/src/main",
+        "metalava-reporter/src/main",
+        "metalava-model-psi/src/main",
+        "metalava-model-source/src/main",
+        "metalava-model-turbine/src/main",
+        "metalava/src/main",
+        "antlr",
+        "manual"
+      ]
+    },
+    {
+      "path": "tools/platform-compat",
+      "name": "tools/platform-compat",
+      "commit": "19ce1c9d406cec9feaf76618e7d772113883d73f",
+      "purpose": "Compatibility annotations and processors required by framework Java sources",
+      "sparse_paths": [
+        "java/android/compat/annotation",
+        "java/android/processor/compat"
+      ]
+    },
+    {
+      "path": "tools/tradefederation/contrib",
+      "name": "platform/tools/tradefederation/contrib",
+      "commit": "c3ddf62492ebe457514987aa98184e1ed3312e1a",
+      "purpose": "Original shared Tradefed Error Prone default providers referenced by core and suite_harness"
+    },
+    {
+      "path": "tools/tradefederation/core",
+      "name": "platform/tools/tradefederation",
+      "commit": "2139853a80ff1058cb333efd5e9984d3e09a14ec",
+      "purpose": "Original Tradefed host-side test framework providers"
+    },
+    {
+      "path": "tools/tradefederation/prebuilts",
+      "name": "platform/tools/tradefederation/prebuilts",
+      "commit": "cff1e97158caa95de4919a38abf6f3ac10409f37",
+      "purpose": "Pinned original Tradefed prebuilt dependencies"
+    }
+  ]
+}

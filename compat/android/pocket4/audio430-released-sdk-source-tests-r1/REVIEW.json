@@ -1,0 +1,479 @@
+{
+  "actual_normal_preimages": {
+    "android/manifest/audio-bridge-source-lock.json": {
+      "bytes": 238124,
+      "git_blob": "c6569f4df1db6ca8257bed82fc17c9473ba2c969",
+      "path": "prior-offline-review/before/android/manifest/audio-bridge-source-lock.json",
+      "sha256": "45496b24c055fca9aa1f3fae7bd5c7c3c99cb46721150690645bf5d059159de2"
+    },
+    "tools/droidloom-source/src/lib.rs": {
+      "bytes": 106324,
+      "git_blob": "ec0bf47dcf2c1f6da8367d74d1f45f93842cb72a",
+      "path": "prior-offline-review/before/tools/droidloom-source/src/lib.rs",
+      "sha256": "f724bc3b5ff85cdb3412a606e0bce12ae13466203c3cf869dc0796171f58e1e9"
+    },
+    "tools/droidloom-update/src/android.rs": {
+      "bytes": 424755,
+      "git_blob": "5591c122f94a0364cbbe53374f0200643272c0ef",
+      "path": "prior-offline-review/before/tools/droidloom-update/src/android.rs",
+      "sha256": "aa2cfd7c2cf834f5ec18d956c5a340737e222a0483262c19060133a3976f191a"
+    }
+  },
+  "base_commit": "2cfafd4bf9a8c881ccb763629d7954a993e290f4",
+  "candidate_Rust_executed": false,
+  "complete_apex_qualified": false,
+  "documentation_append": {
+    "expected_preimage_bytes": 32597,
+    "expected_preimage_sha256": "d54ebabd0abc329f1653c186eb1896d541ff860d79dafdc8bf24b9adb571ddc5",
+    "full_preimage_independently_available": false,
+    "patch_scope": "19 added prose lines; production source paths independently applied"
+  },
+  "exact_applied_production_postimages": {
+    "android/manifest/audio-bridge-source-lock.json": {
+      "bytes": 239256,
+      "git_blob": "bf0be53badcd9bc79f089f1317421d6862c25822",
+      "path": "prior-offline-review/candidate/android/manifest/audio-bridge-source-lock.json",
+      "sha256": "aab71dbce304aba849ac592b5d9cdc2a339cf9208c47faca98f27350c462437d"
+    },
+    "tools/droidloom-update/src/android.rs": {
+      "bytes": 431600,
+      "git_blob": "55f9db5c432901695ce82e47546c7a57208d4a80",
+      "path": "prior-offline-review/candidate/tools/droidloom-update/src/android.rs",
+      "sha256": "4bd62c370b6d7d971a24c80d57771ec87072bc8db37b6396a46b6b477e72e99f"
+    }
+  },
+  "focused_test_scope": {
+    "actual_base_audio_prefix_test_declarations": 48,
+    "candidate_audio_prefix_test_declarations": 50,
+    "normal_droidloom_source_suite_qualified": false,
+    "provided_claim": {
+      "exit_code": 0,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 53
+    },
+    "raw_test_command_and_complete_output_provided": false,
+    "reported_53_not_transferred_to_repaired_source": true
+  },
+  "generator_review": {
+    "all_23_versions_actual_retained_consumer_necessity_independently_proven": false,
+    "all_55_input_shapes_closed": true,
+    "independently_known_retained_consumer_sdk_versions": [
+      "15",
+      "23"
+    ],
+    "pending": "Original completed r3 discovery audit is still unreadable; do not infer every original or conditional module from a filename list.",
+    "pinned_original_rules": [
+      {
+        "bytes": 14381,
+        "git_blob": "74352eca45ff61d053056414d83ccef5d7b686c9",
+        "path": "prior-offline-review/provided/sdk.go",
+        "sha256": "bf1affe9dfd5369ec490d302ce08a171a75a0c1d7e331bb5a2f0db893f6283af"
+      },
+      {
+        "bytes": 14292,
+        "git_blob": "c4cb4719f954eeb3f63be34d3f0292f782b7ac42",
+        "path": "prior-offline-review/provided/sdk_version.go",
+        "sha256": "06581ab5e3f8bc22efd07a526e7d8a8bf13de0d77076c1dd6fd67bc97843c4d7"
+      },
+      {
+        "bytes": 16590,
+        "git_blob": "c00f0bc0e560057da4b19d2edd00c58cd739299b",
+        "path": "prior-offline-review/provided/prebuilt_apis.go",
+        "sha256": "ac992ca42c67498bd1b3f5e54627f541e6ffa71de95135bd7bac511a2427272c"
+      }
+    ],
+    "requirements_by_version": [
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "4"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "7"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "8"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "9"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "15"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "16"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "18"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "19"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "21"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "22"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "23"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "24"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "25"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "26"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "27"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ]
+        },
+        "version": "28"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl"
+          ],
+          "system": [
+            "android.jar"
+          ]
+        },
+        "version": "29"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl",
+            "core-for-system-modules.jar"
+          ]
+        },
+        "version": "30"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl",
+            "core-for-system-modules.jar"
+          ],
+          "system": [
+            "android.jar"
+          ]
+        },
+        "version": "31"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl",
+            "core-for-system-modules.jar"
+          ]
+        },
+        "version": "33"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl",
+            "core-for-system-modules.jar"
+          ]
+        },
+        "version": "34"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl",
+            "core-for-system-modules.jar"
+          ],
+          "system": [
+            "android.jar"
+          ]
+        },
+        "version": "35"
+      },
+      {
+        "original_rule_input_shape_complete": true,
+        "scopes": {
+          "public": [
+            "android.jar",
+            "framework.aidl",
+            "core-for-system-modules.jar"
+          ]
+        },
+        "version": "37.0"
+      }
+    ]
+  },
+  "git_origin_review": {
+    "claimed_exact_blob_mapping_count": 55,
+    "format_and_scope_checked": true,
+    "independent_blob_bytes_verified": false,
+    "independent_same_commit_tree_membership_verified": false,
+    "reason": "Published qualification supplies OID claims, not tree/object bytes or pinned original Git command records. Normal materialization must verify the exact originals."
+  },
+  "local_copy_only": true,
+  "patch_commands": [
+    {
+      "argv": [
+        "/usr/bin/git",
+        "apply",
+        "--check",
+        "--include=android/manifest/audio-bridge-source-lock.json",
+        "--include=tools/droidloom-update/src/android.rs",
+        "prior-offline-review/provided/fix.patch"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "apply",
+        "--include=android/manifest/audio-bridge-source-lock.json",
+        "--include=tools/droidloom-update/src/android.rs",
+        "prior-offline-review/provided/fix.patch"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    }
+  ],
+  "provided_patch": {
+    "bytes": 12779,
+    "git_blob": "a7b671a78023bad2d98d13317f65bc0fac3c9422",
+    "path": "prior-offline-review/provided/fix.patch",
+    "sha256": "5b2d1127ecc999e3a3200dc43f668caabe615f5c126c06946e039103b0a5e100"
+  },
+  "provided_qualification": {
+    "bytes": 9288,
+    "git_blob": "ea26aa7a6d3b66a6965151aa4723c56f6b632c89",
+    "path": "prior-offline-review/provided/qualification.json",
+    "sha256": "d238356cfbc68ebf4e31422510023584e4d67ded15332ae12fc98906c17143d7"
+  },
+  "provided_source_commit": "557bff5c84eef7eea9af4533ac7391e3ae676d0f",
+  "provided_source_tree": "e01ff81d8206a3d5fa665f020ad24a7836cc11c9",
+  "remote_commands_started": 0,
+  "reproduced_required_gate_failures": [
+    {
+      "actual_sha256": "aab71dbce304aba849ac592b5d9cdc2a339cf9208c47faca98f27350c462437d",
+      "expected_sha256": "45496b24c055fca9aa1f3fae7bd5c7c3c99cb46721150690645bf5d059159de2",
+      "test": "audio_source_capacity_is_bound_to_the_exact_frozen_lock"
+    },
+    {
+      "actual_historical_sha256": "7d0ad041b2c5ea026fd82df8430d5dd57d153f22af1be9124d39f2ee16a46af8",
+      "expected_historical_sha256": "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a",
+      "helper": "audio_before_ondeviceintelligence_lock"
+    }
+  ],
+  "required_followup": {
+    "all_original_historical_tests_preserved": true,
+    "full_source": {
+      "bytes": 111500,
+      "git_blob": "8567596a17c8cd686745afb3af5bf19b2c05c2eb",
+      "path": "prior-offline-review/repaired/tools/droidloom-source/src/lib.rs",
+      "sha256": "d7335fa25bc77ab637b426d1da0eac7fc5f17016dccc4e292e65e2fbe3545488"
+    },
+    "normal_source_and_audio_suites_must_run": true,
+    "patch": {
+      "bytes": 7037,
+      "git_blob": "d15b94eae6bc30fcee28918e4a27175267286b55",
+      "path": "prior-offline-review/source-lib-history-followup.patch",
+      "sha256": "0c93ffaf1bd6fd9f53bbb8463351fadd32429e99d38169d3f13fe042beee25d0"
+    },
+    "production_logic_changed": false,
+    "source_count_bounds_changed": false
+  },
+  "runtime_qualified": false,
+  "schema": "audio-sdk2840-independent-offline-source-review-v1",
+  "source_delta": {
+    "added_inputs": [
+      "4/public/android.jar",
+      "4/public/framework.aidl",
+      "7/public/android.jar",
+      "7/public/framework.aidl",
+      "15/public/android.jar",
+      "15/public/framework.aidl",
+      "16/public/android.jar",
+      "16/public/framework.aidl",
+      "19/public/android.jar",
+      "19/public/framework.aidl",
+      "21/public/android.jar",
+      "21/public/framework.aidl",
+      "22/public/android.jar",
+      "22/public/framework.aidl",
+      "23/public/android.jar",
+      "23/public/framework.aidl",
+      "24/public/android.jar",
+      "24/public/framework.aidl",
+      "25/public/android.jar",
+      "25/public/framework.aidl",
+      "26/public/android.jar",
+      "26/public/framework.aidl",
+      "27/public/android.jar",
+      "27/public/framework.aidl",
+      "33/public/android.jar",
+      "33/public/framework.aidl",
+      "33/public/core-for-system-modules.jar",
+      "37.0/public/android.jar",
+      "37.0/public/framework.aidl",
+      "37.0/public/core-for-system-modules.jar",
+      "31/system/android.jar",
+      "35/system/android.jar"
+    ],
+    "changed_projects": [
+      "prebuilts/sdk"
+    ],
+    "existing_required_inputs": 23,
+    "maximum_sparse_paths": 355,
+    "new_lock": "aab71dbce304aba849ac592b5d9cdc2a339cf9208c47faca98f27350c462437d",
+    "old_lock": "45496b24c055fca9aa1f3fae7bd5c7c3c99cb46721150690645bf5d059159de2",
+    "original_r11_lock_exactly_reconstructed": true,
+    "projects": 430,
+    "required_input_count": 55,
+    "same_original_paths": true,
+    "same_project_commits": true,
+    "same_top_level_policy": true
+  },
+  "source_materialized": false,
+  "state": "REUSE_32_LEAF_CANDIDATE_WITH_REQUIRED_SOURCE_TEST_HISTORY_FOLLOWUP",
+  "supersedes_our_unfrozen_four_leaf_draft": true,
+  "transport_note": {
+    "all_substantive_review_results_preserved": true,
+    "changes": [
+      "Absolute scratch prefix replaced with a relative review-role label",
+      "Private focused-test session identifier omitted"
+    ],
+    "source_review": {
+      "bytes": 14755,
+      "sha256": "fe69910285efe1981c4283962598dca8b880f4879b62cb37e45b71004e7528f1"
+    }
+  }
+}
