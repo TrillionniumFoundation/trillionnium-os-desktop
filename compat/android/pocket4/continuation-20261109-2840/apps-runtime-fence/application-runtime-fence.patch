@@ -1,0 +1,859 @@
+diff --git a/runtime/droidloom-applications/src/lib.rs b/runtime/droidloom-applications/src/lib.rs
+index 841773d..29725ee 100644
+--- a/runtime/droidloom-applications/src/lib.rs
++++ b/runtime/droidloom-applications/src/lib.rs
+@@ -8,6 +8,7 @@
+ 
+ pub mod release;
+ pub mod runtime_plan;
++mod runtime_fence;
+ 
+ use std::collections::{BTreeMap, BTreeSet};
+ use std::ffi::OsString;
+diff --git a/runtime/droidloom-applications/src/runtime_fence.rs b/runtime/droidloom-applications/src/runtime_fence.rs
+new file mode 100644
+index 0000000..8538d8d
+--- /dev/null
++++ b/runtime/droidloom-applications/src/runtime_fence.rs
+@@ -0,0 +1,168 @@
++//! Sticky, read-only generation fencing for a complete application selection.
++//!
++//! This compares observation values. The daemon transport establishes kernel
++//! custody; this scheduling gate never issues production HostAdmission or app
++//! acceptance. Its state cannot be deserialized from a caller's JSON plan.
++
++use droidloom_supervisor::control::application_probe::{RuntimeEpoch, RuntimeObservation};
++
++pub(crate) struct RuntimeFence {
++    expected: RuntimeEpoch,
++    first: Option<RuntimeObservation>,
++    error: Option<String>,
++}
++
++impl RuntimeFence {
++    pub(crate) fn observe(
++        expected: &RuntimeEpoch,
++        actual: Result<RuntimeObservation, String>,
++    ) -> Self {
++        let mut fence = Self {
++            expected: expected.clone(),
++            first: None,
++            error: None,
++        };
++        match actual {
++            Ok(observation) if observation.epoch == *expected => fence.first = Some(observation),
++            Ok(_) => fence.invalidate(
++                "live runtime precondition differs from the independently pinned Main epoch".into(),
++            ),
++            Err(error) => {
++                fence.invalidate(format!("live runtime precondition unavailable: {error}"))
++            }
++        }
++        fence
++    }
++
++    pub(crate) fn ready_for_observation(&self) -> bool {
++        self.first.is_some() && self.error.is_none()
++    }
++
++    pub(crate) fn check_epoch(&mut self, epoch: &RuntimeEpoch) -> bool {
++        if self.ready_for_observation() && *epoch != self.expected {
++            self.invalidate(
++                "runtime generation changed during the selected application observation".into(),
++            );
++        }
++        self.ready_for_observation()
++    }
++
++    pub(crate) fn recheck(&mut self, actual: Result<RuntimeObservation, String>) {
++        if !self.ready_for_observation() {
++            return;
++        }
++        match actual {
++            Ok(observation) if self.first.as_ref() == Some(&observation) => {},
++            Ok(_) => self.invalidate("runtime generation or owning lifecycle changed after a failed application operation".into()),
++            Err(error) => self.invalidate(format!("runtime state became unavailable after a failed application operation: {error}")),
++        }
++    }
++
++    pub(crate) fn transport_failed(&mut self, reason: &str) {
++        self.invalidate(format!(
++            "runtime control transport failed; further application operations refused: {reason}"
++        ));
++    }
++
++    fn invalidate(&mut self, reason: String) {
++        if self.error.is_none() {
++            self.error = Some(reason);
++        }
++    }
++
++    pub(crate) fn reason(&self) -> Option<&str> {
++        self.error.as_deref()
++    }
++
++    pub(crate) fn first_observation(&self) -> Option<&RuntimeObservation> {
++        self.first.as_ref()
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use droidloom_supervisor::control::application_probe::RuntimeLifecycle;
++
++    fn observed() -> RuntimeObservation {
++        RuntimeObservation {
++            epoch: RuntimeEpoch {
++                boot_id: "unit-test-boot".into(),
++                cell_host_pid: 10,
++                framework_host_pid: 20,
++                framework_start_ticks: 30,
++            },
++            lifecycle: RuntimeLifecycle::Development,
++        }
++    }
++
++    #[test]
++    fn unavailable_precondition_never_allows_an_application_operation() {
++        let expected = observed();
++        let fence = RuntimeFence::observe(&expected.epoch, Err("not running".into()));
++        assert!(!fence.ready_for_observation());
++        assert!(fence.first_observation().is_none());
++        assert!(fence.reason().unwrap().contains("not running"));
++    }
++
++    #[test]
++    fn every_physical_generation_field_is_required_before_the_first_operation() {
++        let expected = observed();
++        for field in 0..4 {
++            let mut changed = expected.clone();
++            match field {
++                0 => changed.epoch.boot_id.push('x'),
++                1 => changed.epoch.cell_host_pid += 1,
++                2 => changed.epoch.framework_host_pid += 1,
++                _ => changed.epoch.framework_start_ticks += 1,
++            }
++            assert!(!RuntimeFence::observe(&expected.epoch, Ok(changed)).ready_for_observation());
++        }
++    }
++
++    #[test]
++    fn matching_observation_preserves_its_actual_development_lifecycle() {
++        let actual = observed();
++        let mut fence = RuntimeFence::observe(&actual.epoch, Ok(actual.clone()));
++        assert!(fence.ready_for_observation());
++        assert!(fence.check_epoch(&actual.epoch));
++        assert_eq!(fence.first_observation(), Some(&actual));
++        assert_eq!(
++            fence.first_observation().unwrap().lifecycle,
++            RuntimeLifecycle::Development
++        );
++    }
++
++    #[test]
++    fn changed_generation_is_sticky_even_if_a_later_reply_repeats_old_values() {
++        let actual = observed();
++        let mut fence = RuntimeFence::observe(&actual.epoch, Ok(actual.clone()));
++        let mut changed = actual.epoch.clone();
++        changed.framework_start_ticks += 1;
++        assert!(!fence.check_epoch(&changed));
++        fence.recheck(Ok(actual.clone()));
++        assert!(!fence.check_epoch(&actual.epoch));
++        assert!(fence.reason().unwrap().contains("generation changed"));
++    }
++
++    #[test]
++    fn failed_recheck_withholds_previous_observations_from_current_results() {
++        let actual = observed();
++        let mut fence = RuntimeFence::observe(&actual.epoch, Ok(actual.clone()));
++        fence.recheck(Err("framework no longer ready".into()));
++        assert!(!fence.ready_for_observation());
++        assert_eq!(fence.first_observation(), Some(&actual));
++        assert!(fence.reason().unwrap().contains("no longer ready"));
++    }
++
++    #[test]
++    fn transport_failure_closes_the_fence_without_a_retry_or_freshness_claim() {
++        let actual = observed();
++        let mut fence = RuntimeFence::observe(&actual.epoch, Ok(actual.clone()));
++        fence.transport_failed("socket response deadline");
++        let reason = fence.reason().unwrap().to_owned();
++        fence.recheck(Ok(actual));
++        assert!(!fence.ready_for_observation());
++        assert_eq!(fence.reason(), Some(reason.as_str()));
++    }
++}
+diff --git a/runtime/droidloom-applications/src/runtime_plan.rs b/runtime/droidloom-applications/src/runtime_plan.rs
+index e5df998..41d94e7 100644
+--- a/runtime/droidloom-applications/src/runtime_plan.rs
++++ b/runtime/droidloom-applications/src/runtime_plan.rs
+@@ -5,8 +5,9 @@
+ use std::collections::{BTreeMap, BTreeSet};
+ use std::path::{Path, PathBuf};
+ 
++use crate::runtime_fence::RuntimeFence;
+ use droidloom_supervisor::control::application_probe::{
+-    ApplicationInspection, RuntimeEpoch, validate_https_url,
++    ApplicationInspection, RuntimeEpoch, RuntimeObservation, validate_https_url,
+ };
+ use droidloom_supervisor::control::{self, ControlRequest};
+ use serde::{Deserialize, Serialize};
+@@ -124,17 +125,45 @@ pub struct RuntimeReport {
+     production_ready: bool,
+     automatic_retry: bool,
+     main_qualification_semantics_checked: bool,
++    runtime_preflight: Option<RuntimeObservation>,
++    observations_share_expected_epoch: bool,
++    runtime_failure: Option<String>,
+     meaning: &'static str,
+     applications: Vec<AppDispatch>,
+ }
+ 
++struct RuntimeFailure {
++    message: String,
++    transport: bool,
++}
++
++impl RuntimeFailure {
++    fn transport(message: impl Into<String>) -> Self {
++        Self {
++            message: message.into(),
++            transport: true,
++        }
++    }
++    fn application(message: impl Into<String>) -> Self {
++        Self {
++            message: message.into(),
++            transport: false,
++        }
++    }
++}
++
+ trait RuntimeClient {
+-    fn inspect(&mut self, package: &str, user: u32) -> Result<ApplicationInspection, String>;
++    fn observe_runtime(&mut self) -> Result<RuntimeObservation, String>;
++    fn inspect(
++        &mut self,
++        package: &str,
++        user: u32,
++    ) -> Result<ApplicationInspection, RuntimeFailure>;
+     fn browser(
+         &mut self,
+         expected: &ApplicationInspection,
+         url: &str,
+-    ) -> Result<(ApplicationInspection, String), String>;
++    ) -> Result<(ApplicationInspection, String), RuntimeFailure>;
+ }
+ 
+ struct SocketClient<'a> {
+@@ -142,7 +171,22 @@ struct SocketClient<'a> {
+ }
+ 
+ impl RuntimeClient for SocketClient<'_> {
+-    fn inspect(&mut self, package: &str, user: u32) -> Result<ApplicationInspection, String> {
++    fn observe_runtime(&mut self) -> Result<RuntimeObservation, String> {
++        let reply = control::request(self.socket, &ControlRequest::ObserveRuntime)
++            .map_err(|e| e.to_string())?;
++        if !reply.ok {
++            return Err(reply.message);
++        }
++        reply
++            .runtime_observation
++            .ok_or("Daemon returned no current runtime observation; update both tools".into())
++    }
++
++    fn inspect(
++        &mut self,
++        package: &str,
++        user: u32,
++    ) -> Result<ApplicationInspection, RuntimeFailure> {
+         let reply = control::request(
+             self.socket,
+             &ControlRequest::InspectApplication {
+@@ -150,19 +194,21 @@ impl RuntimeClient for SocketClient<'_> {
+                 user,
+             },
+         )
+-        .map_err(|e| e.to_string())?;
++        .map_err(|e| RuntimeFailure::transport(e.to_string()))?;
+         if !reply.ok {
+-            return Err(reply.message);
++            return Err(RuntimeFailure::application(reply.message));
+         }
+-        reply
+-            .inspection
+-            .ok_or("Daemon returned no current package inspection; update both tools".into())
++        reply.inspection.ok_or_else(|| {
++            RuntimeFailure::transport(
++                "Daemon returned no current package inspection; update both tools",
++            )
++        })
+     }
+     fn browser(
+         &mut self,
+         expected: &ApplicationInspection,
+         url: &str,
+-    ) -> Result<(ApplicationInspection, String), String> {
++    ) -> Result<(ApplicationInspection, String), RuntimeFailure> {
+         let reply = control::request(
+             self.socket,
+             &ControlRequest::OpenBrowser {
+@@ -170,17 +216,17 @@ impl RuntimeClient for SocketClient<'_> {
+                 url: url.into(),
+             },
+         )
+-        .map_err(|e| e.to_string())?;
++        .map_err(|e| RuntimeFailure::transport(e.to_string()))?;
+         if !reply.ok {
+-            return Err(reply.message);
++            return Err(RuntimeFailure::application(reply.message));
+         }
+         Ok((
+-            reply
+-                .inspection
+-                .ok_or("Browser response lacks post-invocation identity")?,
+-            reply
+-                .launch
+-                .ok_or("Browser response lacks actual activity output")?,
++            reply.inspection.ok_or_else(|| {
++                RuntimeFailure::transport("Browser response lacks post-invocation identity")
++            })?,
++            reply.launch.ok_or_else(|| {
++                RuntimeFailure::transport("Browser response lacks actual activity output")
++            })?,
+         ))
+     }
+ }
+@@ -309,6 +355,9 @@ fn dispatch(
+     client: &mut impl RuntimeClient,
+ ) -> RuntimeReport {
+     let mut applications = Vec::new();
++    // One real precondition check before the first package request. A missing
++    // or older daemon must not repeat the same 250-second wait for every app.
++    let mut fence = RuntimeFence::observe(&plan.expected_epoch, client.observe_runtime());
+     for app in &plan.applications {
+         let package = &gates.packages[&app.package];
+         let mut pending: Vec<_> = gates
+@@ -330,15 +379,29 @@ fn dispatch(
+             runtime_qualified: false,
+             production_ready: false,
+         };
++        if !fence.ready_for_observation() {
++            row.reason = fence
++                .reason()
++                .unwrap_or("runtime precondition unavailable")
++                .into();
++            applications.push(row);
++            continue;
++        }
+         match client.inspect(&app.package, plan.android_user) {
+             Err(error) => {
+-                row.reason = format!("runtime or installed-package precondition failed: {error}")
++                row.reason = format!(
++                    "runtime or installed-package precondition failed: {}",
++                    error.message
++                );
++                recheck_after_failure(&mut fence, client, &error);
+             }
+             Ok(actual) => {
+-                if actual.package != app.package
+-                    || actual.user != plan.android_user
+-                    || actual.epoch != plan.expected_epoch
+-                {
++                if !fence.check_epoch(&actual.epoch) {
++                    row.reason = fence
++                        .reason()
++                        .unwrap_or("runtime generation changed")
++                        .into();
++                } else if actual.package != app.package || actual.user != plan.android_user {
+                     row.reason = "current PM observation does not match the selected package/user and independently pinned live Main epoch".into();
+                 } else if app.expected_input.is_none() {
+                     row.reason = "current package observed, but reviewed current official source/split delivery is missing".into();
+@@ -359,13 +422,29 @@ fn dispatch(
+                         .expect("validated fixture")
+                         .url;
+                     match client.browser(&actual, url) {
+-                        Err(error) => row.reason = format!("browser flow invocation failed; inspect retained observations before any explicit retry: {error}"),
+-                        Ok((after, output)) if after == actual => {
+-                            row.status = "partial_observation";
+-                            row.reason = "actual implicit HTTPS activity invocation observed; rendered document/input/image, media, return/reopen, recovery and all common release gates remain pending".into();
+-                            row.invocation_output = Some(output);
++                        Err(error) => {
++                            row.reason = format!(
++                                "browser flow invocation failed; inspect retained observations before any explicit retry: {}",
++                                error.message
++                            );
++                            recheck_after_failure(&mut fence, client, &error);
++                        }
++                        Ok((after, output)) => {
++                            if !fence.check_epoch(&after.epoch) {
++                                row.reason = fence
++                                    .reason()
++                                    .unwrap_or("runtime generation changed after browser entry")
++                                    .into();
++                            } else if after == actual {
++                                row.status = "partial_observation";
++                                row.reason = "actual implicit HTTPS activity invocation observed; rendered document/input/image, media, return/reopen, recovery and all common release gates remain pending".into();
++                                row.invocation_output = Some(output);
++                            } else {
++                                row.reason =
++                                    "browser invocation returned a different installed identity"
++                                        .into();
++                            }
+                         }
+-                        Ok(_) => row.reason = "browser invocation returned a different installed identity or Main generation".into(),
+                     }
+                 }
+                 row.inspection = Some(actual);
+@@ -373,6 +452,15 @@ fn dispatch(
+         }
+         applications.push(row);
+     }
++    if let Some(reason) = fence.reason() {
++        for row in &mut applications {
++            row.status = "blocked";
++            row.reason = format!(
++                "selection runtime precondition invalidated: {reason}; retained observation detail: {}",
++                row.reason
++            );
++        }
++    }
+     RuntimeReport {
+         schema: 1,
+         selected_applications: applications.len(),
+@@ -393,18 +481,39 @@ fn dispatch(
+         production_ready: false,
+         automatic_retry: false,
+         main_qualification_semantics_checked: false,
++        runtime_preflight: fence.first_observation().cloned(),
++        observations_share_expected_epoch: fence.ready_for_observation(),
++        runtime_failure: fence.reason().map(str::to_owned),
+         meaning: "Live Package Manager/APK observations and actual bounded entry invocation only. All required gates remain pending; neither Main qualification nor whole-application production readiness is granted.",
+         applications,
+     }
+ }
+ 
++fn recheck_after_failure(
++    fence: &mut RuntimeFence,
++    client: &mut impl RuntimeClient,
++    error: &RuntimeFailure,
++) {
++    if error.transport {
++        // Never retry a failed socket operation, including an uncertain browser
++        // start. The next app must not inherit another full response deadline.
++        fence.transport_failed(&error.message);
++    } else {
++        // An absent package can be local to one row. Only a fresh read-only
++        // runtime check permits continuing; the failed operation is not rerun.
++        fence.recheck(client.observe_runtime());
++    }
++}
++
+ /// Query one actual installed identity, with daemon-enforced current-runtime admission.
+ pub fn inspect_package(
+     socket: &Path,
+     package: &str,
+     user: u32,
+ ) -> Result<ApplicationInspection, String> {
+-    SocketClient { socket }.inspect(package, user)
++    SocketClient { socket }
++        .inspect(package, user)
++        .map_err(|error| error.message)
+ }
+ 
+ /// Execute the selected plan without omitting unsupported or blocked applications.
+@@ -436,23 +545,41 @@ pub fn run_files(
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+-    use droidloom_supervisor::control::application_probe::InstalledApk;
++    use droidloom_supervisor::control::application_probe::{InstalledApk, RuntimeLifecycle};
+     struct Fake {
+         identities: BTreeMap<String, ApplicationInspection>,
+         opens: usize,
++        runtime: Result<RuntimeObservation, String>,
++        runtime_after_error: Option<Result<RuntimeObservation, String>>,
++        runtime_calls: usize,
++        inspections: usize,
++        transport_failure_at: Option<usize>,
+     }
+     impl RuntimeClient for Fake {
+-        fn inspect(&mut self, p: &str, _: u32) -> Result<ApplicationInspection, String> {
++        fn observe_runtime(&mut self) -> Result<RuntimeObservation, String> {
++            self.runtime_calls += 1;
++            if self.runtime_calls > 1 {
++                if let Some(observation) = &self.runtime_after_error {
++                    return observation.clone();
++                }
++            }
++            self.runtime.clone()
++        }
++        fn inspect(&mut self, p: &str, _: u32) -> Result<ApplicationInspection, RuntimeFailure> {
++            self.inspections += 1;
++            if self.transport_failure_at == Some(self.inspections) {
++                return Err(RuntimeFailure::transport("socket response deadline"));
++            }
+             self.identities
+                 .get(p)
+                 .cloned()
+-                .ok_or("not installed or boot unavailable".into())
++                .ok_or_else(|| RuntimeFailure::application("not installed"))
+         }
+         fn browser(
+             &mut self,
+             x: &ApplicationInspection,
+             _: &str,
+-        ) -> Result<(ApplicationInspection, String), String> {
++        ) -> Result<(ApplicationInspection, String), RuntimeFailure> {
+             self.opens += 1;
+             Ok((
+                 x.clone(),
+@@ -509,6 +636,14 @@ mod tests {
+         let mut client = Fake {
+             identities: BTreeMap::new(),
+             opens: 0,
++            runtime: Ok(RuntimeObservation {
++                epoch: epoch.clone(),
++                lifecycle: RuntimeLifecycle::Development,
++            }),
++            runtime_after_error: None,
++            runtime_calls: 0,
++            inspections: 0,
++            transport_failure_at: None,
+         };
+         let mut applications = Vec::new();
+         for n in 0..42 {
+@@ -573,12 +708,16 @@ mod tests {
+     fn all_42_rows_survive_missing_runtime_without_any_invocation() {
+         let (p, g, mut c) = fixture();
+         c.identities.clear();
++        c.runtime = Err("not running".into());
+         validate(&p, &g, 42).unwrap();
+         let r = dispatch(&p, &g, &mut c);
+         assert_eq!(r.selected_applications, 42);
+         assert_eq!(r.blocked_applications, 42);
+         assert_eq!(c.opens, 0);
+         assert_eq!(r.accepted_applications, 0);
++        assert_eq!(c.runtime_calls, 1);
++        assert_eq!(c.inspections, 0);
++        assert!(!r.observations_share_expected_epoch);
+     }
+     #[test]
+     fn one_real_entry_route_does_not_promote_41_unsupported_profiles() {
+@@ -588,6 +727,12 @@ mod tests {
+         assert_eq!(c.opens, 1);
+         assert_eq!(r.partial_browser_invocations, 1);
+         assert_eq!(r.unsupported_business_flows, 41);
++        assert_eq!(c.runtime_calls, 1);
++        assert_eq!(c.inspections, 42);
++        assert_eq!(
++            r.runtime_preflight.as_ref().unwrap().lifecycle,
++            RuntimeLifecycle::Development
++        );
+         assert!(!r.production_ready && !r.runtime_qualified);
+         assert_eq!(r.accepted_applications, 0);
+         assert!(
+@@ -604,8 +749,9 @@ mod tests {
+             .unwrap()
+             .epoch
+             .framework_start_ticks += 1;
+-        assert_eq!(dispatch(&p, &g, &mut c).blocked_applications, 1);
++        assert_eq!(dispatch(&p, &g, &mut c).blocked_applications, 42);
+         assert_eq!(c.opens, 0);
++        assert_eq!(c.inspections, 1);
+         let (p, g, mut c) = fixture();
+         c.identities.get_mut("org.mozilla.firefox").unwrap().apks[0].sha256 = "b".repeat(64);
+         assert_eq!(dispatch(&p, &g, &mut c).blocked_applications, 1);
+@@ -656,4 +802,76 @@ mod tests {
+         assert_eq!(dispatch(&p, &g, &mut c).blocked_applications, 1);
+         assert_eq!(c.opens, 0);
+     }
++
++    #[test]
++    fn mismatching_runtime_preflight_prevents_the_first_package_request() {
++        let (p, g, mut c) = fixture();
++        c.runtime.as_mut().unwrap().epoch.framework_start_ticks += 1;
++        let report = dispatch(&p, &g, &mut c);
++        assert_eq!(report.blocked_applications, 42);
++        assert_eq!(c.runtime_calls, 1);
++        assert_eq!(c.inspections, 0);
++        assert_eq!(c.opens, 0);
++    }
++
++    #[test]
++    fn transport_failure_stops_remaining_requests_without_retrying() {
++        let (p, g, mut c) = fixture();
++        c.transport_failure_at = Some(1);
++        let report = dispatch(&p, &g, &mut c);
++        assert_eq!(report.blocked_applications, 42);
++        assert_eq!(c.inspections, 1);
++        assert_eq!(c.runtime_calls, 1);
++        assert_eq!(c.opens, 0);
++        assert!(!report.automatic_retry && !report.observations_share_expected_epoch);
++        assert!(report.runtime_failure.unwrap().contains("transport failed"));
++    }
++
++    #[test]
++    fn package_specific_failure_rechecks_runtime_and_preserves_other_rows() {
++        let (p, g, mut c) = fixture();
++        c.identities.remove("org.example.app1");
++        let report = dispatch(&p, &g, &mut c);
++        assert_eq!(c.runtime_calls, 2);
++        assert_eq!(c.inspections, 42);
++        assert_eq!(report.blocked_applications, 1);
++        assert_eq!(report.partial_browser_invocations, 1);
++        assert_eq!(report.unsupported_business_flows, 40);
++        assert!(report.observations_share_expected_epoch);
++        assert_eq!(report.accepted_applications, 0);
++    }
++
++    #[test]
++    fn changed_runtime_after_package_failure_stops_later_applications() {
++        let (p, g, mut c) = fixture();
++        c.identities.remove("org.mozilla.firefox");
++        let mut changed = c.runtime.clone().unwrap();
++        changed.epoch.framework_start_ticks += 1;
++        c.runtime_after_error = Some(Ok(changed));
++        let report = dispatch(&p, &g, &mut c);
++        assert_eq!(c.runtime_calls, 2);
++        assert_eq!(c.inspections, 1);
++        assert_eq!(c.opens, 0);
++        assert_eq!(report.blocked_applications, 42);
++    }
++
++    #[test]
++    fn late_generation_change_withholds_earlier_partial_credit_but_keeps_evidence() {
++        let (p, g, mut c) = fixture();
++        c.identities
++            .get_mut("org.example.app1")
++            .unwrap()
++            .epoch
++            .framework_start_ticks += 1;
++        let report = dispatch(&p, &g, &mut c);
++        assert_eq!(c.inspections, 2);
++        assert_eq!(c.opens, 1);
++        assert_eq!(report.blocked_applications, 42);
++        assert_eq!(report.partial_browser_invocations, 0);
++        assert_eq!(report.unsupported_business_flows, 0);
++        assert!(report.applications[0].invocation_output.is_some());
++        assert!(report.applications[0].inspection.is_some());
++        assert!(!report.observations_share_expected_epoch);
++        assert_eq!(report.accepted_applications, 0);
++    }
+ }
+diff --git a/runtime/droidloom-supervisor/src/application_probe.rs b/runtime/droidloom-supervisor/src/application_probe.rs
+index 4d75cf0..f4454fa 100644
+--- a/runtime/droidloom-supervisor/src/application_probe.rs
++++ b/runtime/droidloom-supervisor/src/application_probe.rs
+@@ -19,6 +19,25 @@ pub struct RuntimeEpoch {
+     pub framework_start_ticks: u64,
+ }
+ 
++/// The actual lifecycle implementation holding the observed Android runtime.
++/// Production is deliberately absent until a production cell owner exists.
++#[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq)]
++#[serde(rename_all = "snake_case")]
++pub enum RuntimeLifecycle {
++    /// The existing daemon's owned DevelopmentCell implementation.
++    Development,
++}
++
++/// Read-only readiness/identity observation, never a HostAdmission token.
++#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
++#[serde(deny_unknown_fields)]
++pub struct RuntimeObservation {
++    /// Exact physical host/framework generation.
++    pub epoch: RuntimeEpoch,
++    /// Actual implementation which owns that cell; not a qualification label.
++    pub lifecycle: RuntimeLifecycle,
++}
++
+ /// A byte identity read from an APK path returned by Package Manager.
+ #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+ #[serde(deny_unknown_fields)]
+@@ -348,6 +367,27 @@ pub fn open_firefox(
+ 
+ #[cfg(test)]
+ mod tests {
++    #[test]
++    fn runtime_observation_names_only_the_actual_lifecycle_without_production_authority() {
++        let observed = super::RuntimeObservation {
++            epoch: super::RuntimeEpoch {
++                boot_id: "unit-test-boot".into(),
++                cell_host_pid: 10,
++                framework_host_pid: 20,
++                framework_start_ticks: 30,
++            },
++            lifecycle: super::RuntimeLifecycle::Development,
++        };
++        let mut encoded = serde_json::to_value(&observed).unwrap();
++        assert_eq!(encoded["lifecycle"], "development");
++        assert_eq!(
++            serde_json::from_value::<super::RuntimeObservation>(encoded.clone()).unwrap(),
++            observed
++        );
++        encoded["lifecycle"] = serde_json::json!("production");
++        assert!(serde_json::from_value::<super::RuntimeObservation>(encoded).is_err());
++    }
++
+     use super::*;
+     use std::collections::VecDeque;
+     #[derive(Clone)]
+diff --git a/runtime/droidloom-supervisor/src/control.rs b/runtime/droidloom-supervisor/src/control.rs
+index 9aa9b53..cf6f8d6 100644
+--- a/runtime/droidloom-supervisor/src/control.rs
++++ b/runtime/droidloom-supervisor/src/control.rs
+@@ -127,6 +127,8 @@ pub enum ControlRequest {
+         /// Android user identifier.
+         user: u32,
+     },
++    /// Observe the already-ready current runtime without starting or qualifying it.
++    ObserveRuntime,
+     /// Observe dynamic PM UID/version and installed APK byte identities.
+     InspectApplication {
+         /// Exact package to inspect.
+@@ -216,6 +218,9 @@ pub struct ControlResponse {
+     /// Current package observation; never a whole-application qualification.
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     pub inspection: Option<application_probe::ApplicationInspection>,
++    /// Read-only physical runtime/lifecycle observation, never production admission.
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub runtime_observation: Option<application_probe::RuntimeObservation>,
+ }
+ 
+ /// Daemon filesystem and executable configuration.
+@@ -335,6 +340,7 @@ impl Daemon {
+                 resolution.as_deref(),
+                 user,
+             ),
++            ControlRequest::ObserveRuntime => self.observe_runtime(peer_uid),
+             ControlRequest::InspectApplication { package, user } => {
+                 self.inspect_application(peer_uid, &package, user)
+             }
+@@ -385,6 +391,7 @@ impl Daemon {
+             application_icon: None,
+             diagnostics: None,
+             inspection: None,
++            runtime_observation: None,
+         })
+     }
+ 
+@@ -488,9 +495,25 @@ impl Daemon {
+             application_icon: None,
+             diagnostics: None,
+             inspection: None,
++            runtime_observation: None,
+         })
+     }
+ 
++    fn observe_runtime(&self, peer_uid: u32) -> Result<ControlResponse, ControlError> {
++        let active = self.require_active_cell(peer_uid, None)?;
++        let mut probe = LiveApplicationProbe::new(active)?;
++        let epoch =
++            application_probe::AndroidProbe::epoch(&mut probe).map_err(ControlError::Invalid)?;
++        let mut response = self.success("Current Android runtime observed; no production lifecycle admission or application qualification granted");
++        response.runtime_observation = Some(application_probe::RuntimeObservation {
++            epoch,
++            // ActiveCell actually owns DevelopmentCell. Do not rename this to
++            // production until a real production owner/borrow interface exists.
++            lifecycle: application_probe::RuntimeLifecycle::Development,
++        });
++        Ok(response)
++    }
++
+     fn inspect_application(
+         &self,
+         peer_uid: u32,
+@@ -556,6 +579,7 @@ impl Daemon {
+             application_icon: None,
+             diagnostics: None,
+             inspection: None,
++            runtime_observation: None,
+         })
+     }
+ 
+@@ -655,6 +679,7 @@ impl Daemon {
+             application_icon: Some(icon),
+             diagnostics: None,
+             inspection: None,
++            runtime_observation: None,
+         })
+     }
+ 
+@@ -684,6 +709,7 @@ impl Daemon {
+             application_icon: None,
+             diagnostics: None,
+             inspection: None,
++            runtime_observation: None,
+         })
+     }
+ 
+@@ -773,6 +799,7 @@ impl Daemon {
+             application_icon: None,
+             diagnostics: None,
+             inspection: None,
++            runtime_observation: None,
+         }
+     }
+ 
+@@ -1770,6 +1797,7 @@ mod tests {
+                         application_icon: None,
+                         diagnostics: None,
+                         inspection: None,
++                        runtime_observation: None,
+                     },
+                 )
+                 .unwrap();
+@@ -1833,6 +1861,7 @@ mod tests {
+                         application_icon: None,
+                         diagnostics: None,
+                         inspection: None,
++                        runtime_observation: None,
+                     },
+                 )
+                 .unwrap();
+@@ -2032,6 +2061,12 @@ mod tests {
+     }
+     #[test]
+     fn application_catalog_protocol_round_trip_is_explicit() {
++        let observed = serde_json::to_value(ControlRequest::ObserveRuntime).unwrap();
++        assert_eq!(observed["command"], "observe_runtime");
++        assert_eq!(
++            serde_json::from_value::<ControlRequest>(observed).unwrap(),
++            ControlRequest::ObserveRuntime
++        );
+         let request = ControlRequest::ApplicationIcon {
+             component: "org.mozilla.firefox/.App".into(),
+             user: 0,
+diff --git a/tools/README.md b/tools/README.md
+index 1963d80..d3e5021 100644
+--- a/tools/README.md
++++ b/tools/README.md
+@@ -149,6 +149,26 @@ references are checked before any IPC. The Main receipt's bytes are pinned;
+ its semantic qualification is not parsed or asserted by this entrypoint, as
+ the report's `main_qualification_semantics_checked=false` states.
+ 
++Before any package request, the runtime-plan entry performs one read-only
++`ObserveRuntime` request and compares its actual physical epoch with the
++independent plan pin. A missing, unready or incompatible daemon therefore
++blocks every selected row after one preflight instead of repeating a full
++socket deadline per application. A transport failure stops the remaining
++selection without retrying the operation. A package-specific failure permits
++continuing only after a fresh read-only runtime check confirms the same epoch
++and owning lifecycle. An observed generation change is sticky: subsequent
++apps are not called, and earlier partial observations become blocked while
++their diagnostic evidence is retained. No later reply can reopen that run.
++
++The report retains `runtime_preflight`, `observations_share_expected_epoch`,
++and `runtime_failure`. These fields describe observation scheduling. They do
++not issue a production HostAdmission token or validate a Main receipt. The
++current daemon really owns `DevelopmentCell`, so its lifecycle observation is
++explicitly `development`. This source has no production cell owner/borrow
++adapter; production namespace preparation or a caller-supplied PID cannot
++substitute for that missing lifecycle integration. The production/runtime
++qualification flags remain false even when the epoch check succeeds.
++
+ Every selected row is retained. Missing runtime, installed package, expected
+ source delivery or matching current epoch produces `blocked`. Other registered
+ profiles currently produce `unsupported` after identity admission; their
