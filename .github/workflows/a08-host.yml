@@ -76,6 +76,40 @@ jobs:
           test -x /usr/bin/ffprobe
           printf '%s\n' "$a08_jdk/bin" >> "$GITHUB_PATH"
           printf 'JAVA_HOME=%s\n' "$a08_jdk" >> "$GITHUB_ENV"
+      - name: Verify p4ctx3 capsule sources and compile probe (no fresh VM)
+        shell: bash
+        run: |
+          set -euo pipefail
+          p4ctx3_capsule="$GITHUB_WORKSPACE/compat/android/pocket4/kernel-context-provider-p4ctx3-r1"
+          python3 -I -B - "$p4ctx3_capsule" <<'P4CTX3PIN'
+          import hashlib
+          from pathlib import Path
+          import stat
+          import subprocess
+          import sys
+          inventory = Path(sys.argv[1]) / 'inventory.json'
+          metadata = inventory.lstat()
+          if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+              raise SystemExit('p4ctx3 inventory must be a single-link regular file')
+          data = inventory.read_bytes()
+          if len(data) != 8570 or hashlib.sha256(data).hexdigest() != 'c6ea1f1cf820deb09ccc1958e7dc74cd4b7e58e0a3c4ddbc652920178bd8b96a':
+              raise SystemExit('p4ctx3 fixed inventory differs')
+          patch = subprocess.run(['patch', '--version'], check=True, capture_output=True, text=True, timeout=10)
+          if not patch.stdout.startswith('GNU patch '):
+              raise SystemExit('p4ctx3 Linux source replay requires GNU patch')
+          print(patch.stdout.splitlines()[0])
+          P4CTX3PIN
+          python3 -I -B "$p4ctx3_capsule/verify.py" --compile-probe \
+            | tee "$RUNNER_TEMP/a08/kernel-context-provider-p4ctx3.json"
+          python3 -I -B - "$RUNNER_TEMP/a08/kernel-context-provider-p4ctx3.json" <<'P4CTX3SCOPE'
+          import json
+          from pathlib import Path
+          import sys
+          result = json.loads(Path(sys.argv[1]).read_bytes())
+          if result.get('passed') is not True or result.get('fresh_VM_runs') != 0 or result.get('production_acceptance') is not False or result.get('Android_started') is not False:
+              raise SystemExit('p4ctx3 CI source replay scope differs')
+          print('p4ctx3 CI: source replay and normal probe compilation; fresh_VM_runs=0; production_acceptance=false')
+          P4CTX3SCOPE
       - name: Run complete host gate and optimized regression
         shell: bash
         run: |

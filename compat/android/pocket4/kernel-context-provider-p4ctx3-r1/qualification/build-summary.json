@@ -1,0 +1,401 @@
+{
+  "full": {
+    "H": {
+      "at_unix_ms": 1794289467232,
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1c3e0196a-cf39-30",
+      "launch_nonce": "2a3e159cb30d5246977e1297c9c84bb4",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "timed_out": false
+    },
+    "artifacts": [
+      {
+        "bytes": 17138176,
+        "dev": 66306,
+        "inode": 56146830,
+        "path": "/home/qq/work/p4-kernel-p4ctx1-scm-8764-r3/out/arch/x86/boot/bzImage",
+        "sha256": "a91670a793380d629aaf82edffcdff11799e52cf26ff43db70030afe04d64d12"
+      },
+      {
+        "bytes": 3824864,
+        "dev": 66306,
+        "inode": 56297061,
+        "path": "/home/qq/work/p4-kernel-p4ctx1-scm-8764-r3/out/drivers/android/binder_linux.ko",
+        "sha256": "fd63dd95b1c0ac14e63b6513ae2ecf6b3ecf7f7e92ce5a69bf129b20e1e7249c"
+      },
+      {
+        "bytes": 506243456,
+        "dev": 66306,
+        "inode": 56145483,
+        "path": "/home/qq/work/p4-kernel-p4ctx1-scm-8764-r3/out/vmlinux",
+        "sha256": "b0eecbb15e7a4525859584541a76c206df618b33a39741dc8f910b19f4082396"
+      },
+      {
+        "bytes": 2387093,
+        "dev": 66306,
+        "inode": 56145459,
+        "path": "/home/qq/work/p4-kernel-p4ctx1-scm-8764-r3/out/Module.symvers",
+        "sha256": "ef747a84f7d01bfde5e8f6ca87102d5173b672aa2185c443a1332eb34683ce38"
+      },
+      {
+        "bytes": 226849,
+        "dev": 66306,
+        "inode": 56143567,
+        "path": "/home/qq/work/p4-kernel-p4ctx1-scm-8764-r3/out/modules.order",
+        "sha256": "8d51a6191be8ade3adb705f36b3834bf67e212b6f10e69f14197243d3f70da06"
+      },
+      {
+        "bytes": 14,
+        "dev": 66306,
+        "inode": 56122839,
+        "path": "/home/qq/work/p4-kernel-p4ctx1-scm-8764-r3/out/include/config/kernel.release",
+        "sha256": "35c6f6f0a78ad9c05210479f2dc5843772afc17fbba5ee98ea3c8a76ca7846fb"
+      }
+    ],
+    "commands": [
+      {
+        "child_reaped": true,
+        "exit_code": 0,
+        "name": "kernel-and-modules",
+        "pidfd_exit": true,
+        "seconds": 1817.4930682319682,
+        "timed_out": false
+      }
+    ],
+    "complete_modules": {
+      "all_modules_new_release": true,
+      "all_modules_unsigned": true,
+      "exact_modules_order_complete": true,
+      "inventory": {
+        "bytes": 3293716,
+        "dev": 66306,
+        "inode": 56153078,
+        "path": "/home/qq/work/p4-kernel-p4ctx1-scm-8764-r3/control/image/module-inventory.json",
+        "sha256": "35b99bdd979d29190db2aad8e66e73c0e4c07ce55d18dd090820d0501aaa0d82"
+      },
+      "kernel_release": "7.0.14-p4ctx3",
+      "module_count": 6901,
+      "modules_order": {
+        "bytes": 226849,
+        "identity": [
+          66306,
+          56143567,
+          33152,
+          1000,
+          1000,
+          1,
+          226849,
+          1794289043633356358,
+          1794289043633356358
+        ],
+        "path": "/home/qq/work/p4-kernel-p4ctx1-scm-8764-r3/out/modules.order",
+        "sha256": "8d51a6191be8ade3adb705f36b3834bf67e212b6f10e69f14197243d3f70da06"
+      }
+    },
+    "inputs_unchanged": true,
+    "passed": true,
+    "resources_before": {
+      "cpu.max": "600000 100000",
+      "memory.high": "23622320128",
+      "memory.max": "25769803776",
+      "memory.swap.max": "0",
+      "pids.max": "256"
+    },
+    "resources_final": {
+      "cpu.max": "600000 100000",
+      "memory.events": "low 0\nhigh 1334\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "25769803776",
+      "memory.peak": "23624790016",
+      "memory.swap.max": "0",
+      "pids.max": "256"
+    },
+    "result": {
+      "bytes": 14996,
+      "host": "ai395",
+      "path": "/home/qq/work/p4-kernel-p4ctx1-scm-8764-r3/control/image/result.json",
+      "sha256": "b38eb0a18281f13206348b48bdf2a3ea9d7d941d6cb2092c00195f7b6626fe30"
+    },
+    "whole_source_delta": [
+      "Documentation/userspace-api/p4-lsm-context.rst",
+      "include/linux/security.h",
+      "include/net/af_unix.h",
+      "include/net/scm.h",
+      "net/core/scm.c",
+      "net/ipv4/ip_sockglue.c",
+      "net/unix/af_unix.c",
+      "net/unix/af_unix.h",
+      "security/security.c"
+    ]
+  },
+  "normal_probe": {
+    "H": {
+      "at_unix_ms": 1794289027039,
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1c3f5ba12-cf39-87",
+      "launch_nonce": "552180ec7b0634590853b1f9e7b3fb8d",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "timed_out": false
+    },
+    "artifacts": [
+      {
+        "bytes": 903968,
+        "dev": 66306,
+        "inode": 57318615,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/context-probe-candidate",
+        "sha256": "e96120659e3ba20d2c0504cd8faa39e1374bd4d1f841792b1929252441a06bda"
+      },
+      {
+        "bytes": 903968,
+        "dev": 66306,
+        "inode": 57318811,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/context-probe-previous",
+        "sha256": "e0da18a2b2d54e29cd253c0d0c15da882c57d3c58af3343af565ff3c7c30e3b4"
+      },
+      {
+        "bytes": 903968,
+        "dev": 66306,
+        "inode": 57318833,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/context-probe-baseline",
+        "sha256": "419ed41f93764bcbb8f90e738bf85e126135c0913b5585416276a66049325904"
+      },
+      {
+        "bytes": 18008,
+        "dev": 66306,
+        "inode": 57318840,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/context-selinux.bin",
+        "sha256": "19bbb3a89b9895fa0055b320fc5e20d5d1c559ebb04c6c81c268fe2732d433ec"
+      },
+      {
+        "bytes": 13650,
+        "dev": 66306,
+        "inode": 57318844,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/context-apparmor.bin",
+        "sha256": "e855ef63544cfd87f48d2ddd4078a291fd0734b67d73f49fede7829a52a7a95c"
+      }
+    ],
+    "commands": [
+      {
+        "exit_code": 0,
+        "name": "compiler-version",
+        "pidfd_exit": true,
+        "seconds": 0.0015271699958248064
+      },
+      {
+        "exit_code": 0,
+        "name": "compile-candidate",
+        "pidfd_exit": true,
+        "seconds": 0.8651033040077891
+      },
+      {
+        "exit_code": 0,
+        "name": "elf-candidate",
+        "pidfd_exit": true,
+        "seconds": 0.003873211986501701
+      },
+      {
+        "exit_code": 64,
+        "name": "outside-vm-candidate",
+        "pidfd_exit": true,
+        "seconds": 0.0013917360047344118
+      },
+      {
+        "exit_code": 0,
+        "name": "compile-previous",
+        "pidfd_exit": true,
+        "seconds": 0.8657895559881581
+      },
+      {
+        "exit_code": 0,
+        "name": "elf-previous",
+        "pidfd_exit": true,
+        "seconds": 0.0017013650067383423
+      },
+      {
+        "exit_code": 64,
+        "name": "outside-vm-previous",
+        "pidfd_exit": true,
+        "seconds": 0.0013703059958061203
+      },
+      {
+        "exit_code": 0,
+        "name": "compile-baseline",
+        "pidfd_exit": true,
+        "seconds": 0.8652081489999546
+      },
+      {
+        "exit_code": 0,
+        "name": "elf-baseline",
+        "pidfd_exit": true,
+        "seconds": 0.0017602059961063787
+      },
+      {
+        "exit_code": 64,
+        "name": "outside-vm-baseline",
+        "pidfd_exit": true,
+        "seconds": 0.0013142610114300624
+      },
+      {
+        "exit_code": 0,
+        "name": "normal-selinux-policy",
+        "pidfd_exit": true,
+        "seconds": 0.06432722001045477
+      },
+      {
+        "exit_code": 0,
+        "name": "normal-apparmor-no-load",
+        "pidfd_exit": true,
+        "seconds": 0.007920200005173683
+      }
+    ],
+    "host_module_loads": 0,
+    "host_policy_loads": 0,
+    "inputs_unchanged": true,
+    "passed": true,
+    "resources_before": {
+      "cpu.max": "100000 100000",
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "pids.max": "32"
+    },
+    "resources_final": {
+      "cpu.max": "100000 100000",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "1073741824",
+      "memory.peak": "56209408",
+      "memory.swap.max": "0"
+    },
+    "result": {
+      "bytes": 21188,
+      "host": "pocket4",
+      "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/result.json",
+      "sha256": "0bde85c23e49afd99873923892c3d6404c9cfd0ab2fbc6e7c27ecfd1ddaeda39"
+    },
+    "source_packet": {
+      "bytes": 158854,
+      "sha256": "5de24cacc89838d5bbf2446a7b2f6d1bbe3ad3039dbca452788cae14e4fb4d9d"
+    },
+    "tool_and_source_inputs": [
+      {
+        "bytes": 9382,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/control/build_probe_r5.py",
+        "sha256": "5d691dcf66d5afb04e13cd17e9b828a35c7e21ad4380870b796c1ad5081e666c"
+      },
+      {
+        "bytes": 158854,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/control/build-inputs-r5.json",
+        "sha256": "5de24cacc89838d5bbf2446a7b2f6d1bbe3ad3039dbca452788cae14e4fb4d9d"
+      },
+      {
+        "bytes": 45303,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/context_probe.c",
+        "sha256": "92e95f43fff38f750f2ddc175e0ad8577c4d7b13c2c193b9ee5021adc5e372e4"
+      },
+      {
+        "bytes": 11935,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/context_binder.h",
+        "sha256": "2b069d1bb48ecc79c2e7e5b3cde5b50a109670b361605231f34f8153a75c9c83"
+      },
+      {
+        "bytes": 1840,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/context_credentials.h",
+        "sha256": "a37546e7084a527dca76fa7bb944a2fdd790e977ae15e529763d19df8c061a41"
+      },
+      {
+        "bytes": 17644,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/context_ip.h",
+        "sha256": "6ec2e2dc3072b2a60929338a44d25032021103218a6c0efb90a4aa0b8c0e7a59"
+      },
+      {
+        "bytes": 10593,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/context_stream.h",
+        "sha256": "546260035aa7ab48d746d4888d42d8949598a1bac7f4b86adbd6bb6b58f63a2c"
+      },
+      {
+        "bytes": 905,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/p4_lsm_context.h",
+        "sha256": "ed64c81e0c9e7883c331666ada1d10feff24574908fe52ec3d394b1918f9b2d7"
+      },
+      {
+        "bytes": 17227,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/include/linux/android/binder.h",
+        "sha256": "4e6e262ea59bfdb5100cacc8d1014fc65979c4087cd0890e45d6156bdd3271a5"
+      },
+      {
+        "bytes": 804,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/include/linux/android/binderfs.h",
+        "sha256": "7c467a4a4c8d9b7a0946f670d68899e9ed31ba6ec2e26cb52a16cf4afbda3351"
+      },
+      {
+        "bytes": 10586,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/vocabulary.cil",
+        "sha256": "b66bf45186d7bf801b645510504fca6cd33fe07daa6acef48fef9ac52890421e"
+      },
+      {
+        "bytes": 30696,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/context-diagnostic.cil",
+        "sha256": "148084d5e03e7aedc7be3d30b454c4f529295dcf8b41accc71a6ed1d21399b5b"
+      },
+      {
+        "bytes": 574,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/context-apparmor.profile",
+        "sha256": "bc6641395a73fa4193a6fb19666adf851119d56b288a5d5aa71c439d5253229a"
+      },
+      {
+        "bytes": 2438,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/diagnostic-policy-r4c-delta.json",
+        "sha256": "f41439e667fdaa3b7776f84edc2bd08b424bce0ff13d52d01b1a9a51fb522901"
+      },
+      {
+        "bytes": 1557,
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/build-r5/diagnostic-stream-r5-delta.json",
+        "sha256": "608f2c2daa2ed94500b4bb1f27fbee40791e83f8f3e92940a5f697a4b513fa1a"
+      },
+      {
+        "bytes": 10586,
+        "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/normal-selinux-storage-probe-r5/vocabulary.cil",
+        "sha256": "b66bf45186d7bf801b645510504fca6cd33fe07daa6acef48fef9ac52890421e"
+      },
+      {
+        "bytes": 10017,
+        "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/normal-selinux-storage-probe-r5/compiler-build-origin.json",
+        "sha256": "13ef6216dd8ba9392ee3854a3b787159baa3b49e04b8ff20f41cda92a1e9dd0f"
+      },
+      {
+        "bytes": 31240,
+        "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/selinux-storage-probe-normal-launch-r5/input-tools/secilc",
+        "sha256": "bcd13a3d2abcefc03a999448e191edf30cd2b19d192b9a70d42bca8f7219b190"
+      },
+      {
+        "bytes": 941928,
+        "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/selinux-storage-probe-normal-launch-r5/input-tools/libsepol.so.2",
+        "sha256": "0301e315bae5890d17b3160462c63fb00119b98456aebbae44745e6c1208b85c"
+      },
+      {
+        "bytes": 2205,
+        "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/normal-selinux-storage-probe-r5/apparmor.features",
+        "sha256": "e510bb8f6788b45e48de2f859a6f94a7b8416cbac5a1051814cfce925fa911bd"
+      },
+      {
+        "bytes": 1305304,
+        "path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+        "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88"
+      },
+      {
+        "bytes": 818312,
+        "path": "/usr/bin/x86_64-linux-gnu-readelf",
+        "sha256": "c857339616bbbfa5eba32733e22365048903fbaf6ed2126b897dd138bcb741fc"
+      },
+      {
+        "bytes": 648288,
+        "path": "/usr/sbin/apparmor_parser",
+        "sha256": "11e9595527b8bb5b775709e4626ec69dc682585760ec7c6d0b045e759f1c0df2"
+      }
+    ]
+  }
+}
