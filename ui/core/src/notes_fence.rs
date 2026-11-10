@@ -86,16 +86,21 @@ impl NotesFenceResponse {
             return Err(NotesProtocolError::Digest);
         }
         if let NotesFenceResult::Fenced {
-            original_operation_id, original_payload_sha256,
-            previous_revision, revision, text_sha256,
+            original_operation_id,
+            original_payload_sha256,
+            previous_revision,
+            revision,
+            text_sha256,
         } = &value.result
-            && (!valid_operation_id(original_operation_id)
+        {
+            if !valid_operation_id(original_operation_id)
                 || original_operation_id == &value.operation_id
                 || !lower_hex(original_payload_sha256, 64)
                 || previous_revision.checked_add(1) != Some(*revision)
-                || !lower_hex(text_sha256, 64))
-        {
-            return Err(NotesProtocolError::Receipt);
+                || !lower_hex(text_sha256, 64)
+            {
+                return Err(NotesProtocolError::Receipt);
+            }
         }
         Ok(value)
     }
