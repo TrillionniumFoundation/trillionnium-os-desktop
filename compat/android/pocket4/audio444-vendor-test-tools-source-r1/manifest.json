@@ -1,0 +1,708 @@
+{
+  "base": {
+    "commit": "1fcd1aa60d3144c1f7dfb166346d17ff24a35402",
+    "raw_commit": "tree a1936bfaa2f982a89b687538f9c33b23234faeab\nparent d018bfdb952dc141ac5bc3a4b097fe741750cf3d\nauthor Droidloom build continuation <build-continuation@localhost> 1794261525 -0800\ncommitter Droidloom build continuation <build-continuation@localhost> 1794261525 -0800\n\nAdd the fixed strict user vendor policy target on the exact Audio source profile\n",
+    "tree": "a1936bfaa2f982a89b687538f9c33b23234faeab"
+  },
+  "capsule_only_integration_preserves_native602_global_support": true,
+  "files": [
+    {
+      "mode": "100644",
+      "path": "android/manifest/audio-bridge-source-lock.json",
+      "post": {
+        "bytes": 244786,
+        "git_blob": "55bd899f2afe2e4206621ccdd0649a8e296a3e14",
+        "sha256": "4e2651d1d114d029910310d79216f089ddb1302ce035b26ba03633c8d9d14503"
+      },
+      "pre": {
+        "bytes": 239792,
+        "git_blob": "20db28820c1367e59f06dc9e4e15113f79ccb923",
+        "sha256": "c7abc5ee0abecf607338e2484761a67e01ac58d6c909a53d4498d9a67f74f4a3"
+      },
+      "status": "M"
+    },
+    {
+      "mode": "100644",
+      "path": "android/manifest/audio-test-tool-provider-origins.json",
+      "post": {
+        "bytes": 13245,
+        "git_blob": "53fd351ab71e4da365a9864920dafe9d35a7ae3d",
+        "sha256": "9dd6eeb0dc402134d42557ba8a7e0a661d0eac51a049a8c37aa91b9dd050f111"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "docs/BUILDING.md",
+      "post": {
+        "bytes": 34909,
+        "git_blob": "a1afb47e5f9a95b2f3be07250bd4c7cb7b0266f8",
+        "sha256": "30cab46a18551b09a3d8d2aa0aa963a7c16ab39583deb3506842ab35c948b3ee"
+      },
+      "pre": {
+        "bytes": 33601,
+        "git_blob": "c5b1bd8092f2726bc82a837100102de4a0329cbd",
+        "sha256": "c5830f383d89efa1ee1da488a3f81a829241ac093f268472322d41bf96a6995a"
+      },
+      "status": "M"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-source/src/lib.rs",
+      "post": {
+        "bytes": 119423,
+        "git_blob": "39ef2d57bb0980d2cb1f13c62dfe6f3103247370",
+        "sha256": "4289427597bd61c1d29a933e019b38e88e789782a8a0673556538bfded6abae3"
+      },
+      "pre": {
+        "bytes": 117259,
+        "git_blob": "d487b05b0f67410078340980a8c9d36ce71ddc99",
+        "sha256": "6c24f1527184eed744e48e58d835486257c5e7b888df7965aba053b4ba1f65e5"
+      },
+      "status": "M"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-source/tests/fixtures/audio-source431-before-vendor-test-tools.json",
+      "post": {
+        "bytes": 239792,
+        "git_blob": "20db28820c1367e59f06dc9e4e15113f79ccb923",
+        "sha256": "c7abc5ee0abecf607338e2484761a67e01ac58d6c909a53d4498d9a67f74f4a3"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/src/android.rs",
+      "post": {
+        "bytes": 488051,
+        "git_blob": "3a842f4baf837f5cd4789d3b2200248f5822d54a",
+        "sha256": "91145b3bac062c82bee890b228871ded3a17f8fe452f3ac4a22a3711ac22e159"
+      },
+      "pre": {
+        "bytes": 469552,
+        "git_blob": "d5e202d749cf1ce30f8f8b25336f5ae63008c5dc",
+        "sha256": "b889135bd4476d6f29abfe1b4d0b96f4f55da8e9cca60ddd5048dcf36f1fe226"
+      },
+      "status": "M"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/dalvik/Android.bp",
+      "post": {
+        "bytes": 397,
+        "git_blob": "72c293855de9a0d21f67e72d539739d71866c78a",
+        "sha256": "f7b9402fa49017530daffcf9988d0ceca373882fad92325aaa7388b51ad5a9d2"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/dalvik/tools/dexdeps/Android.bp",
+      "post": {
+        "bytes": 1083,
+        "git_blob": "3d914bf7ec115432db1ab632d51e4906b6816702",
+        "sha256": "cc8dce9ef5443652d09c3f11c459bd7b21b4eea2caa7855378cc814afd0900bf"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/absl-py/Android.bp",
+      "post": {
+        "bytes": 1045,
+        "git_blob": "8d299378db6694f9e356e69b7db9069ae3d23fc5",
+        "sha256": "c6f20cd28b53137cb6c6639f01ebc22e098f7a156483ebf8408cc3bdc0445014"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/cachetools/Android.bp",
+      "post": {
+        "bytes": 992,
+        "git_blob": "8fd6a837139859178aa4e1cf3e717afddad432b4",
+        "sha256": "306e8188f17b0781496816a018307b549c13d57271e0f102aec41e25cfef9277"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/cachetools/src/Android.bp",
+      "post": {
+        "bytes": 814,
+        "git_blob": "04a015f010f3b65a082d96d1966ac5ac78e59515",
+        "sha256": "c873763d666b64f0344e017ee580595fb0eb8eb02de0e63c70827c443c033879"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/google-api-python-client/Android.bp",
+      "post": {
+        "bytes": 2207,
+        "git_blob": "bd78fad6ecc1baa3c878869607c90fec50df27f8",
+        "sha256": "0e4d4b22a368c48994797102ce19c37516c893c10644adcda92ea295ba073bc8"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/google-auth-library-python/Android.bp",
+      "post": {
+        "bytes": 1327,
+        "git_blob": "b5de6060e101d09b47a609aca11e069321cbcb55",
+        "sha256": "ce8e59e8652c27f97e9d8fef7c11d1a373c5f85ce5ca881069bea12cf4fdd26b"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/httplib2/Android.bp",
+      "post": {
+        "bytes": 2479,
+        "git_blob": "4cb6d728d8f523a6904bc7ad1d1cf06e64334340",
+        "sha256": "aa348e8e1ce63899a1bf344f5d0b4ecbfe140894381bc1ee11d0dbad5b644c8f"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/oauth2client/Android.bp",
+      "post": {
+        "bytes": 1010,
+        "git_blob": "ab967f8a39963bbbffe1703448c11fa57491f07b",
+        "sha256": "b6afdaa29170260505790633553d1b3199d5db174dda3ac96b9fe85e4305db39"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/oauth2client/oauth2client/Android.bp",
+      "post": {
+        "bytes": 1301,
+        "git_blob": "8fed228e44b3648ca1255264ce15f473c63e81a1",
+        "sha256": "34fab3eee6cf54e57440c89dc063d2310e6b26c41ca03acb561d00f076e360c0"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/pyasn1-modules/Android.bp",
+      "post": {
+        "bytes": 1011,
+        "git_blob": "0b72a118887bb9006b56cbb7d3b3cfc8d4ef3dd4",
+        "sha256": "6b8b7f35696b65daf204bb7df81a8a588317e8df19dfd43002879918ee0dc159"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/pyasn1-modules/pyasn1_modules/Android.bp",
+      "post": {
+        "bytes": 1154,
+        "git_blob": "220ab69e3c1bb1b7df1051ea8b2a888ad7d1ea69",
+        "sha256": "193c203c70fad21899d8984522dfe85350c709b5628f5bcebfda6e2c7295eeae"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/pyasn1/Android.bp",
+      "post": {
+        "bytes": 1004,
+        "git_blob": "00d806bd33eda24a33f5a52ade2b18cc6da0cc3d",
+        "sha256": "a90b962dfccb85871b953c7351d898af180e170d408d14c080b4f252b9f24ee2"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/pyasn1/pyasn1/Android.bp",
+      "post": {
+        "bytes": 1265,
+        "git_blob": "65b50a53688669a4e5f17ede036dd5ad608f53a2",
+        "sha256": "e6c4e49f554edf8cd8e0e613c84fa258d4691a4ce71be17c0a1d19733becada5"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/python-api-core/Android.bp",
+      "post": {
+        "bytes": 1321,
+        "git_blob": "6c3c2bb36769ac33f008642b60d9e1519fa3a47f",
+        "sha256": "feaab5b32ff8e2d8b94f3e2c9a25bd74eb54cfa7dc9176c79a25009e609d7084"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/rsa/Android.bp",
+      "post": {
+        "bytes": 992,
+        "git_blob": "74afc3fc4dc4bc1337d0248e0da505070f1b4eae",
+        "sha256": "9c9d9890258837bba57bdd8a480177f531994a67f66604b1f039b991604b4dbd"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/rsa/rsa/Android.bp",
+      "post": {
+        "bytes": 1117,
+        "git_blob": "709336e2e1052977ec5d2468838e6a8d2792fb30",
+        "sha256": "dfa5ef469aab81bf3bcda6b46c0ad6d07b3637652e90b02adf45c47bb591335b"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/uritemplates/Android.bp",
+      "post": {
+        "bytes": 1304,
+        "git_blob": "9d4bf6d7e5c434164e453592d215f5010ce0aef4",
+        "sha256": "70a43368834d111e5d69feca3befb7776c2b633bb65b84cbb3b3add4d26b9589"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/python/uritemplates/uritemplate/Android.bp",
+      "post": {
+        "bytes": 1111,
+        "git_blob": "f878d8676c3c6153a442c4c11c7811cc93dfbaf4",
+        "sha256": "9aadaa186800f26e78ac49ce9930fde768c6502face003fa719dc9c6a330fe18"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/external/scapy/Android.bp",
+      "post": {
+        "bytes": 1302,
+        "git_blob": "d15722843e9a75d3a490f69841de804d00629140",
+        "sha256": "116fe925311c6568aab026a7e8eca453bb9830f1d07f8aee7d4ce2c839ad1c44"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/asuite/Android.bp",
+      "post": {
+        "bytes": 1960,
+        "git_blob": "9394be4186e63b8621c9b72c8fa40da561743e43",
+        "sha256": "04118667724a0433770f8d913207c510b5103a41d44600da62c337434ed2c5ae"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/asuite/atest/Android.bp",
+      "post": {
+        "bytes": 4006,
+        "git_blob": "f21611860ce4920428cca438acf0725be97b5107",
+        "sha256": "c38865f4312919d6452897db8e2e9341919ccb659c7a537ae20690a866e891e1"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/asuite/atest/asuite_lib_test/Android.bp",
+      "post": {
+        "bytes": 1273,
+        "git_blob": "633d9a9d36781adaf99d7d43694074287c6a7f49",
+        "sha256": "be125e24659129d2cb7b0245c34460e7d9b7f982a55f6c17aa6ce7eb1dcbde0e"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/asuite/atest/coverage/Android.bp",
+      "post": {
+        "bytes": 379,
+        "git_blob": "0e6c8f1d0f0031070b3f60ea03ea5dc61133db15",
+        "sha256": "a356301928e786a091235572f5dc6978b77fd70b9eed10192d2fd08bbf16e26f"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/asuite/atest/integration_tests/Android.bp",
+      "post": {
+        "bytes": 4243,
+        "git_blob": "c9f856ac4cdf5a3cdae087056c6bd85c7a38b66b",
+        "sha256": "8a0d5c242ddcc8deb2302cfaf6412bf7c10fd63fc1510ceecd44feeeaab21f01"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/asuite/atest/integration_tests/device_android_test/Android.bp",
+      "post": {
+        "bytes": 1360,
+        "git_blob": "e14de1650a3620893d567bc8dbdd54388d9f79d4",
+        "sha256": "98df10d5baacf237a0da1eaee8d58e0eae65c66e139ef0093c98c8305378ec25"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/asuite/atest/integration_tests/device_cc_test/Android.bp",
+      "post": {
+        "bytes": 894,
+        "git_blob": "02d82e8629bc46473cb28c29da13fe1dd07fd57b",
+        "sha256": "fe3001f67ca6ac2573280a2e6aeb2449116f01266400a34b14de7679fd313832"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/asuite/atest/integration_tests/deviceless_cc_test/Android.bp",
+      "post": {
+        "bytes": 803,
+        "git_blob": "63b04ee70df917e69ab31b4f86330118ee67df87",
+        "sha256": "d834c16f6ae480ba4f57aa4c54c86b5decf756265f9151e716e10425435e4ff5"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/asuite/atest/integration_tests/deviceless_cc_test_host/Android.bp",
+      "post": {
+        "bytes": 813,
+        "git_blob": "8856cdac6ac09ca888ade2b5347fcf7bc588c36c",
+        "sha256": "2cad241fa005ee164c194df1d46849b611fcf9ea9fdb5cfcbe116cb91afce5f0"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/asuite/atest/integration_tests/deviceless_java_test_host/Android.bp",
+      "post": {
+        "bytes": 895,
+        "git_blob": "e58d541c00e22b90eb45c0cd26f8ae6199f32151",
+        "sha256": "21c4dd61c0b0d54eb307386b1452988c1820a73f9b15c6c2079b15e123b84584"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/asuite/atest/integration_tests/deviceless_python_test_host/Android.bp",
+      "post": {
+        "bytes": 845,
+        "git_blob": "42614e1acdd045d4ee6f9834bcbbc0c190cb4505",
+        "sha256": "83de8bf2e4bfd6164ce9539918402252ffc84261556123ba435fcf8a64475849"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/asuite/atest/integration_tests/deviceless_python_test_host_multiclass/Android.bp",
+      "post": {
+        "bytes": 342,
+        "git_blob": "2fefb13cc7782c89e565b482855776f58e27983a",
+        "sha256": "6da15ee0704ec1d7ad83b26ee97d8343cad005b7493ca0392035c07124601527"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/asuite/atest/java/Android.bp",
+      "post": {
+        "bytes": 1270,
+        "git_blob": "06026db50aa275011216e55fa99e986c7fd1d0c7",
+        "sha256": "38cfd994929ae5ad354f0e0ab9d7bf3c954ebad4f49cd985f34920e44c8cfdb8"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/asuite/atest/logstorage/httplib2/Android.bp",
+      "post": {
+        "bytes": 1472,
+        "git_blob": "b028f935b5aaaee96189f58081ef64e28a5e151d",
+        "sha256": "6736f0ddd353a82abf7623001a921255145815044b943125fd61ebca1a760575"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/test/mobly_extensions/Android.bp",
+      "post": {
+        "bytes": 1865,
+        "git_blob": "0187888360ff251c235ee0741008752bcc2b2874",
+        "sha256": "c11e7f8cdb31646042b5ebb8e325ad74de87eabb86a6eb0014e4f84713a4f3bc"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/test/mobly_extensions/mobly_sponge_converter/Android.bp",
+      "post": {
+        "bytes": 1551,
+        "git_blob": "d52dda49d16ade98b7156e22b3c37db471ba2c57",
+        "sha256": "f013df6b3e00c0ff5dddf96548018f42caef08f65c452dd360ad6466fc58e69e"
+      },
+      "pre": null,
+      "status": "A"
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-test-tool-providers/tools/test/mobly_extensions/resultdb_uploader/Android.bp",
+      "post": {
+        "bytes": 1161,
+        "git_blob": "d49e01733d54130f76b963b2763904c2eca4fbb6",
+        "sha256": "edffabaa4dc8ee0ca58e17fb6a90a0c09526bb77d0f42aaa1dc84f0f25ee646f"
+      },
+      "pre": null,
+      "status": "A"
+    }
+  ],
+  "head": {
+    "commit": "5f8097c23b8ff8dad107f3df2db5a219ff0b6b27",
+    "raw_commit": "tree 5d6fa7d51133efb5e91a5b1734de6aa597f1949e\nparent 1fcd1aa60d3144c1f7dfb166346d17ff24a35402\nauthor Tomasrgbsf <tomasbraynt@gmail.com> 1794275071 -0500\ncommitter Tomasrgbsf <tomasbraynt@gmail.com> 1794275071 -0500\n\nbuild(audio): preserve original vendor test tool closure\n",
+    "tree": "5d6fa7d51133efb5e91a5b1734de6aa597f1949e"
+  },
+  "patch": {
+    "bytes": 371597,
+    "path": "source444.patch",
+    "sha256": "91316f77fab3a29f5f356c9a1b0088df280e4698478882ca7b8a1e2cf8f5e0c9"
+  },
+  "replay_contract": {
+    "added_files": 39,
+    "changed_files": 43,
+    "current_public_repository_sources_modified": false,
+    "do_not_apply_audio_only_max448_to_global_native602_tools": true,
+    "supplied_preimages": 4,
+    "verified_scope": "all changed preimage/postimage blobs; complete repository root tree is not reconstructed"
+  },
+  "schema": "pocket4-audio444-exact-base-source-capsule-v1",
+  "scope": "isolated Droidloom Audio recipe; not the public aggregate repository root",
+  "source_profile": {
+    "added_projects": [
+      {
+        "commit": "0bd198a006d34d3d0a49eebd6c9edbfc0476c973",
+        "name": "platform/external/python/absl-py",
+        "path": "external/python/absl-py",
+        "purpose": "Pinned original test-tool provider and complete Python dependencies required by the retained strict Audio and vendor policy graph",
+        "sparse_paths": [
+          "absl"
+        ]
+      },
+      {
+        "commit": "825c73720a094ed76d5416e44bd387f6f4dd67fd",
+        "name": "platform/external/scapy",
+        "path": "external/scapy",
+        "purpose": "Pinned original test-tool provider and complete Python dependencies required by the retained strict Audio and vendor policy graph",
+        "sparse_paths": [
+          "scapy"
+        ]
+      },
+      {
+        "commit": "9bb5d18c9e8dcc25f8be6359e2dcffba23851acb",
+        "name": "platform/external/python/google-api-python-client",
+        "path": "external/python/google-api-python-client",
+        "purpose": "Pinned original test-tool provider and complete Python dependencies required by the retained strict Audio and vendor policy graph",
+        "sparse_paths": [
+          "apiclient",
+          "googleapiclient"
+        ]
+      },
+      {
+        "commit": "7055ce09e3ed196a6da5365a86317046473a3374",
+        "name": "platform/external/python/oauth2client",
+        "path": "external/python/oauth2client",
+        "purpose": "Pinned original test-tool provider and complete Python dependencies required by the retained strict Audio and vendor policy graph",
+        "sparse_paths": [
+          "oauth2client"
+        ]
+      },
+      {
+        "commit": "d9d5963848fc2f3e6abf5c115166ebecdcd69484",
+        "name": "platform/external/python/httplib2",
+        "path": "external/python/httplib2",
+        "purpose": "Pinned original test-tool provider and complete Python dependencies required by the retained strict Audio and vendor policy graph",
+        "sparse_paths": [
+          "python3"
+        ]
+      },
+      {
+        "commit": "fc6621351d8d17286870813678c96bf81555c1ad",
+        "name": "platform/tools/test/mobly_extensions",
+        "path": "tools/test/mobly_extensions",
+        "purpose": "Pinned original test-tool provider and complete Python dependencies required by the retained strict Audio and vendor policy graph",
+        "sparse_paths": [
+          "coverage",
+          "mobly_sponge_converter",
+          "resultdb_uploader",
+          "tools"
+        ]
+      },
+      {
+        "commit": "3936369be2a971ef0b37742e8f9cf93cd10bcc41",
+        "name": "platform/external/python/uritemplates",
+        "path": "external/python/uritemplates",
+        "purpose": "Pinned original test-tool provider and complete Python dependencies required by the retained strict Audio and vendor policy graph",
+        "sparse_paths": [
+          "uritemplate"
+        ]
+      },
+      {
+        "commit": "57ebd58f04b400e908b44ff532db2c2cfc366e3a",
+        "name": "platform/external/python/python-api-core",
+        "path": "external/python/python-api-core",
+        "purpose": "Pinned original test-tool provider and complete Python dependencies required by the retained strict Audio and vendor policy graph",
+        "sparse_paths": [
+          "google"
+        ]
+      },
+      {
+        "commit": "46e96844758592ebba0935bbc7757a4d460b9920",
+        "name": "platform/external/python/google-auth-library-python",
+        "path": "external/python/google-auth-library-python",
+        "purpose": "Pinned original test-tool provider and complete Python dependencies required by the retained strict Audio and vendor policy graph",
+        "sparse_paths": [
+          "google"
+        ]
+      },
+      {
+        "commit": "e7fc0ce906fa64166504aba2bd2b5ef96087f96d",
+        "name": "platform/external/python/cachetools",
+        "path": "external/python/cachetools",
+        "purpose": "Pinned original test-tool provider and complete Python dependencies required by the retained strict Audio and vendor policy graph",
+        "sparse_paths": [
+          "src"
+        ]
+      },
+      {
+        "commit": "b7be4df622ff5b8902da876cc39a379e569406ef",
+        "name": "platform/external/python/rsa",
+        "path": "external/python/rsa",
+        "purpose": "Pinned original test-tool provider and complete Python dependencies required by the retained strict Audio and vendor policy graph",
+        "sparse_paths": [
+          "rsa"
+        ]
+      },
+      {
+        "commit": "0071cbf57b52336b8261f3903612a2d4d81669af",
+        "name": "platform/external/python/pyasn1",
+        "path": "external/python/pyasn1",
+        "purpose": "Pinned original test-tool provider and complete Python dependencies required by the retained strict Audio and vendor policy graph",
+        "sparse_paths": [
+          "pyasn1"
+        ]
+      },
+      {
+        "commit": "98f5febb5f61c53f8d3831eafdbe0ec23cb97e32",
+        "name": "platform/external/python/pyasn1-modules",
+        "path": "external/python/pyasn1-modules",
+        "purpose": "Pinned original test-tool provider and complete Python dependencies required by the retained strict Audio and vendor policy graph",
+        "sparse_paths": [
+          "pyasn1_modules"
+        ]
+      }
+    ],
+    "after_projects": 444,
+    "audio_only_recipe_max_projects": 448,
+    "before_projects": 431,
+    "expanded_existing_projects": [
+      {
+        "after": {
+          "commit": "5013071e756f89aa2cea97b437af12aacb8d4485",
+          "name": "platform/dalvik",
+          "path": "dalvik",
+          "purpose": "Pinned original provider and physical source inputs for the retained strict full Audio APEX graph",
+          "sparse_paths": [
+            "dx/Android.bp",
+            "dx/NOTICE",
+            "dx/etc",
+            "dx/src",
+            "dx",
+            "tools/dexdeps"
+          ]
+        },
+        "before": {
+          "commit": "5013071e756f89aa2cea97b437af12aacb8d4485",
+          "name": "platform/dalvik",
+          "path": "dalvik",
+          "purpose": "Pinned original provider and physical source inputs for the retained strict full Audio APEX graph",
+          "sparse_paths": [
+            "dx/Android.bp",
+            "dx/NOTICE",
+            "dx/etc",
+            "dx/src",
+            "dx"
+          ]
+        },
+        "path": "dalvik"
+      },
+      {
+        "after": {
+          "commit": "744998cb744c401a5daa77170039ab6337ed7adb",
+          "name": "platform/tools/asuite",
+          "path": "tools/asuite",
+          "purpose": "Exact Android 17 proto implementation used by the mandatory Robolectric Clearcut JUnit listener",
+          "sparse_paths": [
+            "atest/proto",
+            "atest"
+          ]
+        },
+        "before": {
+          "commit": "744998cb744c401a5daa77170039ab6337ed7adb",
+          "name": "platform/tools/asuite",
+          "path": "tools/asuite",
+          "purpose": "Exact Android 17 proto implementation used by the mandatory Robolectric Clearcut JUnit listener",
+          "sparse_paths": [
+            "atest/proto"
+          ]
+        },
+        "path": "tools/asuite"
+      }
+    ],
+    "new_lock_sha256": "4e2651d1d114d029910310d79216f089ddb1302ce035b26ba03633c8d9d14503",
+    "old_lock_sha256": "c7abc5ee0abecf607338e2484761a67e01ac58d6c909a53d4498d9a67f74f4a3",
+    "superproject": {
+      "commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+      "name": "platform/superproject",
+      "ref": "refs/heads/android-17.0.0_r1"
+    }
+  }
+}

@@ -932,6 +932,68 @@ jobs:
           "$evidence/verify-current-source" result "$capsule/r12-provider-closure" "$legacy" "$work" \
             "$evidence/tests.log" "$evidence/rustc-version.txt" | tee "$evidence/result.json"
 
+      - name: Replay exact Audio444 vendor test tool source closure
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/audio444-vendor-test-tools-source-r1"
+          work="$RUNNER_TEMP/a08-audio444-source-replay"
+          printf '%s  %s\n' '2cb7fde1b20d611c6f4842dc91035992f5466ec70244401b54905b50117d55cd' "$capsule/FILES.sha256" | sha256sum --quiet -c -
+          (cd "$capsule" && sha256sum --quiet -c FILES.sha256)
+          mkdir "$work"
+          cp -R "$capsule/preimages/." "$work/"
+          (
+              cd "$work"
+              sha256sum --quiet -c "$capsule/preimages.sha256"
+              git -c core.hooksPath=/dev/null init --quiet --template=
+              git -c core.hooksPath=/dev/null apply --check "$capsule/source444.patch"
+              git -c core.hooksPath=/dev/null apply "$capsule/source444.patch"
+              sha256sum --quiet -c "$capsule/postimages.sha256"
+          )
+          python3 -I -B - "$capsule" "$work" "$RUNNER_TEMP/a08/audio444-source-replay.json" <<'PYAUDIO444'
+          import hashlib, json, pathlib, sys
+          capsule, work, report_path = map(pathlib.Path, sys.argv[1:])
+          manifest = json.loads((capsule / "manifest.json").read_bytes())
+          rows = manifest["files"]
+          if len(rows) != 43 or sum(row["pre"] is not None for row in rows) != 4:
+              raise SystemExit("Audio444 changed-source inventory differs")
+          def verify(data, expected, kind="blob"):
+              header = (kind + " " + str(len(data)) + "\0").encode()
+              if (len(data) != expected["bytes"] or
+                  hashlib.sha256(data).hexdigest() != expected["sha256"] or
+                  hashlib.sha1(header + data).hexdigest() != expected["git_blob"]):
+                  raise SystemExit("Audio444 source bytes or Git blob identity differ")
+          for row in rows:
+              path = pathlib.PurePosixPath(row["path"])
+              if path.is_absolute() or ".." in path.parts or row["mode"] != "100644":
+                  raise SystemExit("Audio444 source path or mode differs")
+              if row["pre"] is not None:
+                  verify((capsule / "preimages" / path).read_bytes(), row["pre"])
+              verify((work / path).read_bytes(), row["post"])
+          actual = {str(path.relative_to(work)) for path in work.rglob("*")
+                    if path.is_file() and ".git" not in path.relative_to(work).parts}
+          if actual != {row["path"] for row in rows}:
+              raise SystemExit("Audio444 replay changed the expected file set")
+          for key in ("base", "head"):
+              raw = manifest[key]["raw_commit"].encode()
+              digest = hashlib.sha1(("commit " + str(len(raw)) + "\0").encode() + raw).hexdigest()
+              if digest != manifest[key]["commit"]:
+                  raise SystemExit("Audio444 original commit identity differs")
+          profile = manifest["source_profile"]
+          if (profile["before_projects"], profile["after_projects"]) != (431, 444):
+              raise SystemExit("Audio444 source generation differs")
+          result = {"schema": "pocket4-audio444-current-CI-source-replay-v1",
+                    "state": "PASSED", "verified_preimages": 4, "verified_postimages": 43,
+                    "patch_sha256": manifest["patch"]["sha256"],
+                    "base": manifest["base"]["commit"], "head": manifest["head"]["commit"],
+                    "full_repository_root_tree_reconstructed": False,
+                    "historical_Rust_tests_rerun": False, "Android_starts": 0,
+                    "runtime_qualified": False}
+          report_path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+          print(json.dumps(result, sort_keys=True))
+          PYAUDIO444
+
       - name: Verify Settings admission and pending consumer boundaries
         timeout-minutes: 5
         shell: bash
