@@ -8,6 +8,10 @@
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
+#[path = "notes_fence.rs"]
+mod fence;
+pub use fence::{NotesFence, NotesFenceAction, NotesFenceResponse, NotesFenceResult, NOTES_FENCE_TOPIC};
+
 pub const NOTES_SCHEMA_VERSION: u16 = 1;
 pub const NOTES_TOPIC: &str = "trill.notes.replace.v1";
 pub const MAX_NOTES_TEXT_BYTES: usize = 4096;
@@ -265,6 +269,8 @@ pub struct NotesDocument {
     revision: u64,
     last_applied: Option<NotesResponse>,
     last_retired: Option<crate::notes_recovery::NotesAcknowledge>,
+    last_fence: Option<NotesFenceResponse>,
+    fence_checkpoint: bool,
 }
 
 impl NotesDocument {
@@ -276,6 +282,8 @@ impl NotesDocument {
             revision: 0,
             last_applied: None,
             last_retired: None,
+            last_fence: None,
+            fence_checkpoint: false,
         })
     }
 
@@ -337,7 +345,7 @@ impl NotesDocument {
         if request.expected_revision != self.revision {
             return Ok(refusal(NotesNotAppliedReason::RevisionConflict));
         }
-        if self.last_applied.is_some() {
+        if self.last_applied.is_some() || self.last_fence.is_some() {
             return Ok(refusal(NotesNotAppliedReason::ReceiptPending));
         }
         let Some(revision) = self.revision.checked_add(1) else {
@@ -358,6 +366,9 @@ impl NotesDocument {
     /// deliberately has no fallback to apply_exact, so replace_note cannot
     /// mutate the document even if sent by a misbehaving peer.
     pub fn recovery_exact(&mut self, raw: &[u8]) -> Result<Vec<u8>, NotesProtocolError> {
+        if let Some(response) = self.observe_fence_exact(raw) {
+            return response;
+        }
         use crate::notes_recovery::{NotesRead, NotesReadAction};
         if let Ok(query) = NotesRead::parse_exact(raw) {
             if query.target != self.target {
@@ -371,7 +382,7 @@ impl NotesDocument {
                     "request_id": query.request_id,
                     "revision": self.revision,
                     "text_sha256": sha256_hex(self.text.as_bytes()),
-                    "receipt_pending": self.last_applied.is_some(),
+                    "receipt_pending": self.last_applied.is_some() || self.last_fence.is_some(),
                 }),
                 // A new application incarnation does not discover or adopt
                 // another incarnation's receipt from directory names. Its
@@ -409,6 +420,18 @@ impl NotesDocument {
             ) && sha256_hex(&receipt_bytes) == acknowledgement.receipt_sha256
             {
                 self.last_applied = None;
+                self.last_retired = Some(acknowledgement.clone());
+                NotesRetirementStatus::Released
+            } else {
+                NotesRetirementStatus::Unknown
+            }
+        } else if let Some(receipt) = &self.last_fence {
+            let bytes = serde_json::to_vec(receipt).map_err(|_| NotesProtocolError::Receipt)?;
+            if receipt.operation_id == acknowledgement.operation_id
+                && receipt.payload_sha256 == acknowledgement.payload_sha256
+                && sha256_hex(&bytes) == acknowledgement.receipt_sha256
+            {
+                self.last_fence = None;
                 self.last_retired = Some(acknowledgement.clone());
                 NotesRetirementStatus::Released
             } else {
@@ -630,3 +653,4 @@ mod recovery_tests;
 
 #[path = "notes_checkpoint.rs"]
 mod checkpoint;
+

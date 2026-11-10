@@ -79,10 +79,18 @@ impl Document {
             (Self::Memory(value), true) => value.recovery_exact(&pending.bytes).ok(),
             (Self::Durable(value), true) => value.recovery_exact(&pending.bytes).ok(),
             (Self::Memory(value), false) => {
-                serde_json::to_vec(&value.apply_exact(&pending.bytes).ok()?).ok()
+                if trill_ui_core::notes::NotesFence::parse_exact(&pending.bytes).is_ok() {
+                    serde_json::to_vec(&value.fence_exact(&pending.bytes).ok()?).ok()
+                } else {
+                    serde_json::to_vec(&value.apply_exact(&pending.bytes).ok()?).ok()
+                }
             }
             (Self::Durable(value), false) => {
-                serde_json::to_vec(&value.apply_exact(&pending.bytes).ok()?).ok()
+                if trill_ui_core::notes::NotesFence::parse_exact(&pending.bytes).is_ok() {
+                    serde_json::to_vec(&value.fence_exact(&pending.bytes).ok()?).ok()
+                } else {
+                    serde_json::to_vec(&value.apply_exact(&pending.bytes).ok()?).ok()
+                }
             }
         }
     }
@@ -229,3 +237,4 @@ fn run(
 #[cfg(test)]
 #[path = "notes_worker_tests.rs"]
 mod tests;
+
