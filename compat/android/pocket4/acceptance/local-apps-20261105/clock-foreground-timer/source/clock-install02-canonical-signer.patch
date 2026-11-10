@@ -1,0 +1,52 @@
+--- clock_install01.py
++++ clock_install02.py
+@@ -5,7 +5,7 @@
+ import argparse, hashlib, io, json, os, re, stat, time, types, zipfile
+ 
+ ROOT = Path('/home/alex/work/pocket4-clock-foreground-timer-20261105-r12-01')
+-RUN = ROOT / 'install-01'
++RUN = ROOT / 'install-02'
+ CLOCK = Path('/home/alex/work/pocket4-clock-session-tools-20261105-r12-01')
+ CANDIDATE = ROOT / 'build/DeskClock-pocket4-foreground-timer.apk'
+ OLD_SHA = 'ded49b00e5045bdd184c2a4f09b1b8650ce8f708134ac9f0f8c4cf0594bb0fae'
+@@ -183,6 +183,18 @@
+             '8b7f0094b816a758d86599ba9c19866314dbb37cf78f57187a8602c2f3e3b77b', 'CLOCK_PAYLOAD_CHANGE_EXCEEDS_REVIEW')
+ 
+ 
++def verify_signature(session,tx,path,label):
++    signer = Path('/usr/bin/apksigner').resolve(strict=True)
++    pin = '52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f'
++    tx.read_regular(signer,pin)
++    value = session.run_host(label,[str(signer),'verify','--verbose','--print-certs',str(path)],25)
++    require(value['rc'] == 0 and value['joined'] and not value['timed_out'], 'APK_SIGNATURE_FAILED')
++    text = value['stdout'].decode('utf-8','strict')
++    require(re.findall(r'^Signer #\d+ certificate SHA-256 digest: (\w+)$',text,re.M) == [tx.CERT_SHA]
++        and 'Verified using v3 scheme (APK Signature Scheme v3): true' in text, 'APK_SIGNER_OR_V3_DIFFERS')
++    tx.read_regular(signer,pin)
++
++
+ def update():
+     model,tx,timers = modules()
+     with tx.ui_lock():
+@@ -210,9 +222,8 @@
+                 verify_payload(original,candidate)
+                 backup,staged = RUN/'DeskClock-original-before.apk',RUN/'DeskClock-candidate.apk'
+                 tx.write_new(backup,original,alex_readable=True);tx.write_new(staged,candidate,alex_readable=True)
+-                tx.read_regular('/usr/bin/apksigner','52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f')
+-                tx.verify_signature(session,backup,'clock-original-signature')
+-                tx.verify_signature(session,staged,'clock-candidate-signature')
++                verify_signature(session,tx,backup,'clock-original-signature')
++                verify_signature(session,tx,staged,'clock-candidate-signature')
+                 tx.write_new(RUN/'before.json',before)
+                 result['state'] = 'INSTALL_DISPATCHED'
+                 call = tx.install_once(session,staged,NEW_SHA,'clock-install')
+@@ -270,8 +281,7 @@
+                 # Preserve the CURRENT preferences byte-for-byte across rollback.
+                 require(preserved(original,current,include_preferences=False,include_tasks=False),
+                         'ROLLBACK_IDENTITY_OR_PROTECTED_STATE_CHANGED')
+-                tx.read_regular('/usr/bin/apksigner','52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f')
+-                tx.verify_signature(session,backup,'clock-rollback-signature')
++                verify_signature(session,tx,backup,'clock-rollback-signature')
+                 result['state'] = 'ROLLBACK_DISPATCHED'
+                 call = tx.install_once(session,backup,OLD_SHA,'clock-rollback')
+                 result['rollback_response_verified'] = tx.verified_response(call)

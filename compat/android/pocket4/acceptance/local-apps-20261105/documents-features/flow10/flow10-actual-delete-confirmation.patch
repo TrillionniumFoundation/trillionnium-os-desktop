@@ -1,0 +1,69 @@
+--- revision09/run_features01.py
++++ revision10/run_features01.py
+@@ -4,8 +4,8 @@
+ from datetime import datetime,timezone
+ import argparse,hashlib,json,os,re,signal,time,types
+ 
+-ROOT=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-09')
+-TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-09')
++ROOT=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-10')
++TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-10')
+ TRANSPORT=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ TRANSPORT_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+ PINS={'features_ui.py': 'edaf39c50d6ff85748fef1b287bf3875fd51321a0a2a837ff6f30e59a8cd4417', 'package_fixture.py': '596dfb03273f2810cf9f98871668042bb62f85807d6cdad9a113b87003b8d932', 'owned_tree.py': 'e4b19adc1e47719413bfae5656bac8b04f5624c779ee7118b490327e2776a445', 'runtime_evidence.py': 'a8aa502e397187d0460c18efa1da09f46bafce9f019b1048046bfce8d2468c65', 'bounded_diagnostics.py': 'd3ab104ff92a942de1d45855ec3c8d44b742373ce67087e67773d15b46abf064'}
+@@ -418,6 +418,34 @@
+             'source':SOURCE,'destination':'' if move else COPIES,'layout':proof,'operation_replayed':False})
+         return self.completed_operation_observation(obs,SOURCE,set() if move else {ALPHA,BETA},label)
+ 
++    def delete_confirmation(self,obs,count):
++        # Real flow09 is an Appcompat confirmation with a framework OK button.
++        # Bind title, exact plural count/message, panel and one window together;
++        # an arbitrary OK button is never a deletion confirmation.
++        need((obs['focus']['package'],obs['focus']['activity'])==FILES and count in (2,4),
++            'OWNED_FILES_DELETE_DIALOG_SCOPE')
++        def exact(rid,klass,text):
++            return self.ui.one(obs,lambda n:n.get('package')==DOCS and n.get('resource-id')==rid
++                and n.get('class')==klass and n.get('text')==text and n.get('visible') is True
++                and n.get('enabled') is True and n.get('editable') is False,
++                'EXACT_DELETE_DIALOG_CONTROL:'+rid)
++        title=exact(DOCS+':id/alertTitle','android.widget.TextView','Delete forever?')
++        message=exact('android:id/message','android.widget.TextView',
++            str(count)+' items will be deleted forever. This can’t be undone.')
++        button=exact('android:id/button1','android.widget.Button','OK')
++        cancel=exact('android:id/button2','android.widget.Button','CANCEL')
++        panel=self.ui.one(obs,lambda n:n.get('package')==DOCS
++            and n.get('resource-id')==DOCS+':id/buttonPanel' and n.get('visible') is True
++            and n.get('enabled') is True,'ONE_ACTUAL_DELETE_BUTTON_PANEL')
++        need(len({n.get('window_id') for n in (title,message,button,cancel,panel)})==1
++            and type(button.get('window_id')) is int
++            and button.get('clickable') is True and cancel.get('clickable') is True
++            and 16 in button.get('supported_actions',[]) and 16 in cancel.get('supported_actions',[])
++            and contains(panel.get('bounds_array'),button.get('bounds_array'))
++            and contains(panel.get('bounds_array'),cancel.get('bounds_array')),
++            'DELETE_DIALOG_WINDOW_OR_BUTTON_SCOPE_CHANGED')
++        return button
++
+     def delete_entries(self,obs,relative,names,gate,label):
+         obs=self.select(obs,relative,set(names),label)
+         bar=self.ui.one(obs,lambda n:n.get('resource-id')==DOCS+':id/action_mode_bar','DELETE_ACTION_MODE_BAR')
+@@ -431,16 +459,10 @@
+             'UI_DIRECTORY_DELETE_ONLY_WHEN_KNOWN_EMPTY')
+         self.begin_operation(label,expected);self.ui.input(obs,label+'-request',delete)
+         obs=self.ui.observe(label+'-dialog-or-result',[FILES])
+-        positive=[n for n in obs['nodes'] if n.get('resource-id')=='android:id/button1'
+-            and n.get('class')=='android.widget.Button' and n.get('enabled') is True
+-            and str(n.get('text','')).strip().casefold() in ('delete','delete forever')]
+-        if positive:
+-            need(len(positive)==1,'DELETE_DIALOG_POSITIVE_AMBIGUOUS')
+-            self.tree.expect(self.tree.expected,label+'-before-confirm')
+-            messages=[str(n.get('text','')) for n in obs['nodes'] if n.get('resource-id') in ('android:id/alertTitle','android:id/message')]
+-            need(messages and any(re.search(r'\bdelete\b',x,re.I) for x in messages),'ACTUAL_DELETE_DIALOG_REQUIRED')
+-            self.dialog_confirm(obs,label+'-confirm',None,{'delete','delete forever'})
+-            obs=self.ui.observe(label+'-after-confirm',[FILES])
++        confirm=self.delete_confirmation(obs,len(names))
++        self.tree.expect(self.tree.expected,label+'-before-confirm')
++        self.ui.input(obs,label+'-confirm',confirm)
++        obs=self.ui.observe(label+'-after-confirm',[FILES])
+         proof=self.layout_result(expected,label);self.location(obs,relative)
+         self.gate(gate,{'deleted_entries':sorted(removed),'physical_absence_and_remaining_hashes':proof,
+             'all_selected_entries_preverified_owned':True,'host_unlink_used_for_gate':False})

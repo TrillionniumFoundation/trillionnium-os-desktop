@@ -1,0 +1,25 @@
+{
+  "device_or_RPC_calls": 0,
+  "files_modified_other_than_this_peer": 0,
+  "limitations": [
+    "Static source peer only; does not replace actual expiry, notification, UI cleanup, or scheduler evidence.",
+    "No synthetic host notification invocation and no desktop-popup or physical-audio credit."
+  ],
+  "new_test_gate_added": false,
+  "review": "No new definite execution, ownership, or unknown-result blocker found in the current source.",
+  "schema": "clock-expiry06-docs-local-peer-v1",
+  "scope": [
+    "One UI-created 60s timer under actual 433ff identity; original protected alarm/sound state retained.",
+    "Native Stop input/effect intent precedes dispatch; ACK is not reset proof; same-ID state4 and exact duration/readback clear the business effect.",
+    "Only frozen helper ControlError with explicit known preinput error/restoration/no-unknown/no-retry can clear the native no-effect boundary; stop_dispatched prohibits replay.",
+    "Actual optional ExpiredTimersActivity is adopted only as sole new task for the sole claimed expired timer; its reset self-finish is recorded separately from two normal owned main-task removes.",
+    "Absolute 45-second cleanup budget is shared across cleanup/finally; any input/effect/close pending blocks further input and remove.",
+    "Running cleanup Pause permits negative remaining only inside actual prior-start/remaining and before/after uptime bounds; no blanket clamping.",
+    "Success is assigned only after both context exits, task restoration, empty timers, unchanged identity/Main, and no pending; outer exception downgrades success."
+  ],
+  "source": {
+    "bytes": 34300,
+    "path": "clock-flow08/timer-expiry06/timer_expiry06.py",
+    "sha256": "fba956b1b2a681d5181b60ab5fccad55964a46029b89970ad1c9ad646a0776fc"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "baseline": {
+    "closure_sha256": "0fc09f9cbeaba50f128aaefc47bd2725a5bf4381ffb9f52452c7ad947c07f710",
+    "reconciliation_sha256": "dbf9b5d74fa4c58fc3e1a3126fb3bc82ce7632a71febba9febb176333970ed69",
+    "result_sha256": "1138ea24880808e639112691c5e224497705a82b289aa646d1687c0117583292"
+  },
+  "completion_boundary": "Execute candidate once only after pinned original output has exact Verified class plus its exact ImmutableVolumeInfo method, original OAT/VDEX and closure hashes; fresh dependencies must exactly match the original. Match command flags after normalizing only FD numbers/output label. New target must match exact Verified grammar; unknown/access-check-only statuses fail. Preserve original exit2 and image-inference warning. Cache metadata reports persistent delta only, without attribution or retrospective claims; verification is isolated target verification, not deployed framework/runtime lifecycle validation.",
+  "execute_requires_root_source_review": true,
+  "expected_outputs": [
+    "intent.json",
+    "result.json",
+    "before.json/after.json private dependency snapshots",
+    "cache-before.json/cache-after.json private metadata for two fixed cache candidates; existence measured, not assumed",
+    "candidate/{candidate.jar,candidate.odex,candidate.vdex,marker}",
+    "candidate-compiler.stdout/stderr",
+    "candidate-target-dump.stdout/stderr (complete)",
+    "candidate-target.txt (exact class block)",
+    "candidate-compiler-log.stdout/stderr (warning retained)",
+    "journal private per-command receipts"
+  ],
+  "idempotency_key": "pocket4-art-candidate22-20261105-r12",
+  "local_checks": [
+    "AST parsed",
+    "default INERT invocation",
+    "8 regression cases using retained real baseline target output, including old noisy-row failure and negative exact-status/ownership/flags cases"
+  ],
+  "original_reexecuted": false,
+  "outer_shell_timeout_seconds": 270,
+  "python_stage_subprocess_timeout_seconds": 255,
+  "resource_evidence": "The runner records memory.peak and memory.events from its exact owned systemd unit before exit; no Main cgroup changes.",
+  "reviewed_plan18_sha256": "0384449c471be115126ab04b65fb4786f2055dd57584f82c5eda21959bd981f6",
+  "runner": {
+    "bytes": 27227,
+    "file": "verify_candidate22.py",
+    "sha256": "e5de57780be072ced10a5beba049fe89e89e381d6a66a974a8f298ef34cf2742"
+  },
+  "stage_rule": "Create-only frozen root:alex0440 source; require art-candidate22 absent; do not modify ART20 or review21 outputs.",
+  "state": "CANDIDATE_ONLY_PREPARED_NOT_EXECUTED",
+  "unit_argv": [
+    "/usr/bin/systemd-run",
+    "--wait",
+    "--pipe",
+    "--quiet",
+    "--collect",
+    "--unit=pocket4-art-candidate22-r12",
+    "--property=User=root",
+    "--property=MemoryMax=2G",
+    "--property=MemorySwapMax=0",
+    "--property=AllowedCPUs=20,21",
+    "--property=CPUQuota=200%",
+    "--property=TasksMax=64",
+    "--property=RuntimeMaxSec=240",
+    "--property=TimeoutStopSec=5",
+    "--property=KillMode=control-group",
+    "--property=NoNewPrivileges=yes",
+    "--property=UMask=0077",
+    "--property=LimitCORE=0",
+    "--property=LimitFSIZE=268435456",
+    "/usr/bin/python3",
+    "-I",
+    "/home/alex/work/pocket4-storage-session-candidate-20261105-r12/verify_candidate22.py",
+    "--execute"
+  ],
+  "write_boundary": "No installation/volume/service/UI mutation requested. Root-owned readonly phase inputs/directories; only own OAT/VDEX writable descriptors. Actual boot/ART/BCP/input snapshots must match before/after. All transient runtime writes are not traced; two fixed cache-root metadata observations add persistent-delta evidence only."
+}

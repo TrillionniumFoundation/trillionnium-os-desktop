@@ -1,0 +1,92 @@
+--- revision08/build08.py
++++ revision09/build09.py
+@@ -4,7 +4,10 @@
+ import argparse, datetime, gzip, hashlib, json, os, re, signal, subprocess, time, types, zipfile
+ 
+ HERE=Path(__file__).resolve().parent
+-OUT=Path('/home/alex/work/pocket4-calendar-repair-build-20261105-r12-08')
++OUT=Path('/home/alex/work/pocket4-calendar-repair-build-20261105-r12-09')
++PREVIOUS=Path('/home/alex/work/pocket4-calendar-repair-build-20261105-r12-08')
++PREVIOUS_APK_SHA='95633138efb7209631638eef05ad54021b647740a6278d7de8976bb499f6b935'
++PREVIOUS_RESULT_SHA='ba572f71849781d142a9bcc80fe54325e6169d0425d7fbc7b41909e5b890e617'
+ CAPTURE=Path('/home/alex/work/pocket4-calendar-code-readonly-20261105-r12-01/com.android.calendar')
+ PREIMAGE=Path('/home/alex/work/pocket4-calendar-repair-preimage-20261105-r12-03')
+ PREIMAGE_SHA='1b86909e5954f735ed16796d0ea044e374807dc37457cab0029186d9ab7f253e'
+@@ -53,7 +56,7 @@
+             'source_manifest_sha256':source_sha,'started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+             'android_commands':0,'ui_inputs':0,'package_mutations':0,'provider_mutations':0,
+             'installed':False,'art_runtime_verified':False,'whole_app_production_ready':False}
+-    deadline=time.monotonic()+200;cg=None;deps={};toolpins={}
++    deadline=time.monotonic()+200;cg=None;deps={};toolpins={};previous_inputs={}
+     def run(label,argv,timeout=65):
+         budget=min(timeout,deadline-time.monotonic());require(budget>0,'BUILD_DEADLINE')
+         row={'label':label,'argv':argv,'rc':None,'joined':False,'timed_out':False};result['commands'].append(row)
+@@ -90,6 +93,16 @@
+         helper=module(SOURCE_HELPER,SOURCE_HELPER_SHA,'calendar_build_source_helper')
+         patch=module(HERE/'patch_original.py',sources['patch_original.py']['sha256'],'calendar_build_patch')
+         ir=module(HERE/'smali_equivalence.py',sources['smali_equivalence.py']['sha256'],'calendar_build_ir')
++        require(digest(PREVIOUS/'result.json')==PREVIOUS_RESULT_SHA,'PREVIOUS_BUILD_RECEIPT_CHANGED')
++        previous=json.loads((PREVIOUS/'result.json').read_text())
++        require(previous['state']=='BUILT_SIGNED_NOT_INSTALLED' and previous['signed_apk']['sha256']==PREVIOUS_APK_SHA,
++            'PREVIOUS_BUILD_NOT_VERIFIED')
++        for name,expected_pin in [('result.json',PREVIOUS_RESULT_SHA),('Calendar-pocket4-functional.apk',PREVIOUS_APK_SHA),
++            ('class-ir-proof.json',previous['semantic_proof']['proof']['sha256'])]:
++            previous_inputs[name]=pin(PREVIOUS/name)
++            require(previous_inputs[name]['sha256']==expected_pin,'PREVIOUS_ARTIFACT_CHANGED:'+name)
++        previous_ir={x['class']:x['candidate_ir_sha256'] for x in json.loads((PREVIOUS/'class-ir-proof.json').read_text())}
++        result['previous08_inputs_before']=previous_inputs
+         expected=json.loads((HERE/'dependencies.json').read_text())
+         for name,row in expected.items():
+             deps[name]=pin(row['declared_path']);require(deps[name]['sha256']==row['sha256'],'SDK_TOOL_CHANGED:'+name)
+@@ -130,11 +143,17 @@
+             '--output',str(OUT/'roundtrip'),str(OUT/'patched.dex')])
+         rows=json.loads((PREIMAGE/'result.json').read_text())['class_manifest'];semantic=[]
+         expected_methods={(x['class'],x['method']) for x in patch_result['changes'] if 'method' in x}
+-        observed_methods=set();method_count=0
++        observed_methods=set();method_count=0;changes_from08=[]
+         for row in rows:
+             name=row['path'];old=ir.class_ir((PREIMAGE/'original-smali'/name).read_text())
+             candidate=ir.class_ir((OUT/'candidate-smali'/name).read_text());roundtrip=ir.class_ir((OUT/'roundtrip'/name).read_text())
+             require(candidate==roundtrip,'ROUNDTRIP_IR_DIFF:'+name)
++            former=ir.class_ir((PREVIOUS/'candidate-smali'/name).read_text())
++            require(ir.ir_sha256(former)==previous_ir[name],'PREVIOUS_SMALI_DIFFERS_FROM_VERIFIED_IR:'+name)
++            require(former['header']==candidate['header'] and set(former['methods'])==set(candidate['methods']),
++                'CLASS_STRUCTURE_CHANGED_FROM08:'+name)
++            for signature,body in former['methods'].items():
++                if body!=candidate['methods'][signature]:changes_from08.append([name,signature.split()[-1]])
+             require(set(old['methods'])==set(candidate['methods']),'ORIGINAL_METHOD_SET_CHANGED:'+name)
+             expected_header=[x.replace('.super Landroid/app/Activity;','.super Lcom/android/calendar/event/EditEventActivity;')
+                 if name=='com/android/calendar/EventInfoActivity.smali' else x for x in old['header']]
+@@ -145,6 +164,8 @@
+             semantic.append({'class':name,'original_ir_sha256':ir.ir_sha256(old),
+                 'candidate_ir_sha256':ir.ir_sha256(candidate),'roundtrip_equal':True})
+         require(observed_methods==expected_methods,'TARGET_METHOD_DIFF_SET')
++        require(changes_from08==[['com/android/calendar/AllInOneActivity.smali','onOptionsItemSelected(Landroid/view/MenuItem;)Z']],
++            'ONLY_MENU_NULL_LONG_JOIN_MAY_DIFFER_FROM08')
+         write(OUT/'class-ir-proof.json',semantic)
+         result['semantic_proof']={'classes':445,'methods':method_count,'only_expected_methods_changed':True,
+             'changed_methods':len(observed_methods),'roundtrip_equal_all_classes':True,
+@@ -186,6 +207,15 @@
+                 if row['name']=='classes.dex':continue
+                 raw=built.read(row['name']);require(len(raw)==row['bytes'] and sha(raw)==row['sha256'],'NON_TARGET_ZIP_PAYLOAD_CHANGED:'+row['name'])
+             require(built.read('classes.dex')==(OUT/'patched.dex').read_bytes() and built.read('classes2.dex')==(dexdir/'classes.dex').read_bytes(),'DEX_PAYLOAD_CHANGED')
++            with zipfile.ZipFile(PREVIOUS/'Calendar-pocket4-functional.apk') as former:
++                previous_names={n for n in former.namelist() if not signature_entry(n)}
++                require(previous_names=={n for n in names if not signature_entry(n)},'PAYLOAD_SET_CHANGED_FROM08')
++                for name in sorted(previous_names-{'classes.dex'}):
++                    require(built.read(name)==former.read(name),'NON_TARGET_PAYLOAD_CHANGED_FROM08:'+name)
++                result['against_previous08']={'apk_sha256':PREVIOUS_APK_SHA,'changed_methods':changes_from08,
++                    'classes_compared':len(previous_ir),'methods_compared':method_count,
++                    'all_other_methods_IR_equal':True,'classes2_dex_byte_equal':True,
++                    'all_other_non_signature_payloads_byte_equal':True,'compared_non_signature_payloads':len(previous_names)}
+         result['payload_proof']={'original_payloads':len(payload),'all_non_dex_payloads_byte_equal':True,
+             'manifest_resources_permissions_unchanged':True,'only_replaced_payload':'classes.dex','only_added_payload':'classes2.dex'}
+         write(OUT/'original-payload-manifest.json',payload)
+@@ -202,6 +232,7 @@
+             require(after==deps and tafter==toolpins,'TOOLS_CHANGED_AFTER_BUILD')
+             for name,row in sources.items():require(digest(HERE/name)==row['sha256'],'SOURCE_CHANGED_AFTER:'+name)
+             require(digest(CAPTURE/'base.apk')==APK_SHA and digest(CAPTURE/'classes.dex')==DEX_SHA,'PARENT_CHANGED_AFTER')
++            require({name:pin(PREVIOUS/name) for name in previous_inputs}==previous_inputs,'PREVIOUS08_INPUT_CHANGED_AFTER')
+             result['input_postcheck_passed']=True
+         except BaseException as exc:
+             result['state']='FAILED';result['postcheck_error']=type(exc).__name__+':'+str(exc)

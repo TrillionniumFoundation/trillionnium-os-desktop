@@ -1,0 +1,11 @@
+# Pocket4 Probe QA fixture — complete declared App acceptance
+
+The exact installed `local.pocket4.fixture` APK is accepted for its complete declared QA fixture contract on the current Linux/DroidLoom Android 17 epoch. Root accepted all nine unchanged gates after independent feature and actual process/runtime reviews. This is one QA fixture in the fixed 45-App denominator; other Apps retain their own outstanding requirements.
+
+The actual run completed on 2026-11-05 at 23:55:23 UTC. It exercised nine positive controls and one genuine ambiguous-selector refusal, using three distinct owned tasks and two separate normal reopens. Every owned task closed back to baseline task851. Both model stores and permissions remained unchanged, with no account, network or Provider operation in the complete five-class App contract.
+
+The predeclared repeat/resource budget measured118.238 seconds of live observation across three process generations.255 saved samples and six selected stable mapping captures bind the actual x86_64 app_process64/ART runtime and381 identical whole-hashed filesystem ELF objects. Twenty consecutive retained diagnostic intervals contained no new exact-UID crash/ANR or unexplained exit; all three new exits were exact owned normal task removals.
+
+`WHOLE_QA_RELEASE_REVIEW.json` is the separate final release decision. The original controller result remains `whole_app_production_ready:false` and the automatic complete-mapping counter remains0. The two unresolved name candidates were independently classified as read-only non-executable property/idmap mappings. JIT/kernel mappings have observed names, permissions and boundaries only; no process-memory contents were read and no system-wide emulator exclusion or Asterinas qualification is claimed.
+
+All23 exported control records are reproduced byte for byte with their original hashes. The larger saved export stays bound by its full hash and durable job receipt; the public bundle contains the complete ELF inventory and independent runtime/diagnostic interpretation instead of duplicating raw process maps. Original UI01 parser and UI02 hint failures are retained and reconciled. This bounded QA acceptance does not imply long-duration leak/stress testing, IME composition, or capabilities absent from the fixture contract.

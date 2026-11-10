@@ -1,0 +1,193 @@
+{
+  "schema": "pocket4-camera-checked-disconnect-host-v1",
+  "scope": "Complete manager on host test bindings; not Android camera or APK qualification.",
+  "production_ready": false,
+  "source_lock_sha256": "5dec205e25149b60b66d794ffecddc1aec46c21272bbbb0cd31cb2ee573712af",
+  "java": {
+    "path": "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+    "sha256": "4976918b29ece3fe634bdbcf1377676e42af429b5311ba234f6f95039117d4d4",
+    "modules_sha256": "499337b57cd61a672db7e1b35a3946bfb99508187367dc886c2bcbf28c65bf3a"
+  },
+  "compiler": {
+    "mode": "installed jdk.compiler module"
+  },
+  "versions": {
+    "java": {
+      "argv": [
+        "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+        "-version"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "openjdk version \"17.0.20\" 2026-07-21\nOpenJDK Runtime Environment (build 17.0.20+8-1-24.04-Ubuntu)\nOpenJDK 64-Bit Server VM (build 17.0.20+8-1-24.04-Ubuntu, mixed mode, sharing)\n"
+    },
+    "compiler": {
+      "argv": [
+        "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+        "-XX:ActiveProcessorCount=2",
+        "-Xmx256m",
+        "-m",
+        "jdk.compiler/com.sun.tools.javac.Main",
+        "-version"
+      ],
+      "exit_code": 0,
+      "stdout": "javac 17.0.20\n",
+      "stderr": ""
+    }
+  },
+  "original_cases": 15,
+  "new_cases": 11,
+  "arms": {
+    "release07_preimage": {
+      "source_sha256": "2b112a02eadd4c2db0a642c3263207cfc55ad9930e1a4399c06c219c480e2bca",
+      "compile": {
+        "argv": [
+          "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+          "-XX:ActiveProcessorCount=2",
+          "-Xmx256m",
+          "-m",
+          "jdk.compiler/com.sun.tools.javac.Main",
+          "-encoding",
+          "UTF-8",
+          "-source",
+          "8",
+          "-target",
+          "8",
+          "-d",
+          "/tmp/camera-disconnect-controls-ek0o28aj/release07_preimage",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/HotplugRegression.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/android/annotation/TargetApi.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/checked-disconnect/tests/bindings/android/hardware/camera2/CameraAccessException.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/android/hardware/camera2/CameraCharacteristics.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/checked-disconnect/tests/bindings/android/hardware/camera2/CameraManager.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/android/os/Build.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/android/os/Handler.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/debug/Log.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/device/CameraId.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/one/OneCamera.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/one/OneCameraAccessException.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/one/OneCameraCharacteristics.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/one/OneCameraManager.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/one/v2/OneCameraCharacteristicsImpl.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/util/AndroidServices.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/util/ApiHelper.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/google/common/base/Optional.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/javax/annotation/Nonnull.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/checked-disconnect/tests/bindings/CheckedDisconnectRegression.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/source/packages/apps/Camera2/src/com/android/camera/one/v2/Camera2OneCameraManagerImpl.java"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "warning: [options] bootstrap class path not set in conjunction with -source 8\n1 warning\n"
+      },
+      "verified": true,
+      "host_manager_class_sha256": "90cca6d244cd2370aba8a529b115c4d04f1b6267bf4c5a04737714331ce6b020",
+      "host_manager_class_is_not_an_android_release": true,
+      "original_regression": {
+        "argv": [
+          "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+          "-XX:ActiveProcessorCount=2",
+          "-Xmx256m",
+          "-cp",
+          "/tmp/camera-disconnect-controls-ek0o28aj/release07_preimage",
+          "HotplugRegression"
+        ],
+        "exit_code": 0,
+        "stdout": "PASS healthy characteristics and selected facing\nPASS enumerated device disappears before characteristics\nPASS enumeration race preserves remaining connected device\nPASS cached device removal selects replacement\nPASS camera service checked failure retains cause\nPASS unrelated runtime failure is not swallowed\nPASS missing lens facing skipped\nPASS null device list is unavailable\nPASS null ID entry skipped\nPASS null selected device becomes checked failure\nPASS null characteristics becomes checked failure\nPASS availability event invalidates same ID facing cache\nPASS cached ID list failure reports unavailable\nPASS external camera fallback retained\nPASS callback registration and teardown retained\nTOTAL_PASS=15\n",
+        "stderr": ""
+      },
+      "checked_disconnect_regression": {
+        "argv": [
+          "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+          "-XX:ActiveProcessorCount=2",
+          "-Xmx256m",
+          "-cp",
+          "/tmp/camera-disconnect-controls-ek0o28aj/release07_preimage",
+          "CheckedDisconnectRegression"
+        ],
+        "exit_code": 1,
+        "stdout": "FAIL checked disconnect retains following back camera: connected camera following a checked disconnect was not selected\nFAIL checked disconnect retains following front camera: connected camera following a checked disconnect was not selected\nFAIL checked disconnect retains external fallback: connected external fallback was not selected\nPASS all checked disconnects terminate within existing passes\nPASS list service disconnect does not query metadata\nPASS camera disabled preserves failure behavior\nPASS camera error preserves failure behavior\nPASS camera in use preserves failure behavior\nPASS maximum cameras preserves failure behavior\nPASS direct selected disconnect retains checked cause\nPASS enumeration security exception is not swallowed\nTOTAL_PASS=8 TOTAL_FAIL=3\n",
+        "stderr": ""
+      },
+      "original15_verified": true,
+      "checked11_verified": true
+    },
+    "checked_disconnect_candidate": {
+      "source_sha256": "0f35f1675d8977aed5b80141b380bd29bf995c8c48db73d688eff46b879c39ad",
+      "compile": {
+        "argv": [
+          "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+          "-XX:ActiveProcessorCount=2",
+          "-Xmx256m",
+          "-m",
+          "jdk.compiler/com.sun.tools.javac.Main",
+          "-encoding",
+          "UTF-8",
+          "-source",
+          "8",
+          "-target",
+          "8",
+          "-d",
+          "/tmp/camera-disconnect-controls-ek0o28aj/checked_disconnect_candidate",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/HotplugRegression.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/android/annotation/TargetApi.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/checked-disconnect/tests/bindings/android/hardware/camera2/CameraAccessException.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/android/hardware/camera2/CameraCharacteristics.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/checked-disconnect/tests/bindings/android/hardware/camera2/CameraManager.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/android/os/Build.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/android/os/Handler.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/debug/Log.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/device/CameraId.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/one/OneCamera.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/one/OneCameraAccessException.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/one/OneCameraCharacteristics.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/one/OneCameraManager.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/one/v2/OneCameraCharacteristicsImpl.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/util/AndroidServices.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/android/camera/util/ApiHelper.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/com/google/common/base/Optional.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/tests/bindings/javax/annotation/Nonnull.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/checked-disconnect/tests/bindings/CheckedDisconnectRegression.java",
+          "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/checked-disconnect/source/packages/apps/Camera2/src/com/android/camera/one/v2/Camera2OneCameraManagerImpl.java"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "warning: [options] bootstrap class path not set in conjunction with -source 8\n1 warning\n"
+      },
+      "verified": true,
+      "host_manager_class_sha256": "67604bc4a0790ff1b079695f64f59f341a749d71cc506f6f71d630f5a84a7a8b",
+      "host_manager_class_is_not_an_android_release": true,
+      "original_regression": {
+        "argv": [
+          "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+          "-XX:ActiveProcessorCount=2",
+          "-Xmx256m",
+          "-cp",
+          "/tmp/camera-disconnect-controls-ek0o28aj/checked_disconnect_candidate",
+          "HotplugRegression"
+        ],
+        "exit_code": 0,
+        "stdout": "PASS healthy characteristics and selected facing\nPASS enumerated device disappears before characteristics\nPASS enumeration race preserves remaining connected device\nPASS cached device removal selects replacement\nPASS camera service checked failure retains cause\nPASS unrelated runtime failure is not swallowed\nPASS missing lens facing skipped\nPASS null device list is unavailable\nPASS null ID entry skipped\nPASS null selected device becomes checked failure\nPASS null characteristics becomes checked failure\nPASS availability event invalidates same ID facing cache\nPASS cached ID list failure reports unavailable\nPASS external camera fallback retained\nPASS callback registration and teardown retained\nTOTAL_PASS=15\n",
+        "stderr": ""
+      },
+      "checked_disconnect_regression": {
+        "argv": [
+          "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+          "-XX:ActiveProcessorCount=2",
+          "-Xmx256m",
+          "-cp",
+          "/tmp/camera-disconnect-controls-ek0o28aj/checked_disconnect_candidate",
+          "CheckedDisconnectRegression"
+        ],
+        "exit_code": 0,
+        "stdout": "PASS checked disconnect retains following back camera\nPASS checked disconnect retains following front camera\nPASS checked disconnect retains external fallback\nPASS all checked disconnects terminate within existing passes\nPASS list service disconnect does not query metadata\nPASS camera disabled preserves failure behavior\nPASS camera error preserves failure behavior\nPASS camera in use preserves failure behavior\nPASS maximum cameras preserves failure behavior\nPASS direct selected disconnect retains checked cause\nPASS enumeration security exception is not swallowed\nTOTAL_PASS=11 TOTAL_FAIL=0\n",
+        "stderr": ""
+      },
+      "original15_verified": true,
+      "checked11_verified": true
+    }
+  },
+  "inputs_unchanged": true,
+  "test_runner_sha256": "6ed11e249ba119b339791746afdf09d65ce4023ff43a136565b660e111815e7d",
+  "success": true
+}

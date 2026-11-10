@@ -1,0 +1,29 @@
+--- probe_ui01.py
++++ probe_ui02.py
+@@ -5,7 +5,7 @@
+ import argparse, hashlib, json, re, signal, time, types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-qa-probe-ui-20261105-r12-01')
++ROOT = Path('/home/alex/work/pocket4-qa-probe-ui-20261105-r12-02')
+ CONTACT = Path('/home/alex/work/pocket4-contacts-session-tools-20261105-r12-01')
+ PACKAGE = 'local.pocket4.fixture'
+ COMPONENT = PACKAGE + '/.ProbeActivity'
+@@ -50,7 +50,7 @@
+         values = re.findall(pattern, active, re.M)
+         need(len(values) == 1, 'PACKAGE_IDENTITY_FIELD_UNKNOWN')
+         return values[0]
+-    value = {'uid': int(one(r'^    userId=(\d+)$')),
++    value = {'uid': int(one(r'^    appId=(\d+)$')),
+         'version': int(one(r'^    versionCode=(\d+)\b')),
+         'data_dir': one(r'^      dataDir=(.*)$'),
+         'first_install_time': one(r'^      firstInstallTime=(.*)$'),
+@@ -209,7 +209,7 @@
+             finished_utc=datetime.now(timezone.utc).isoformat())
+         if ROOT.is_dir():
+             tx.write_new(ROOT / 'result.json', result)
+-        tx.write_new(HERE / 'probe-ui01-result.json', result, alex_readable=True)
++        tx.write_new(HERE / 'probe-ui02-result.json', result, alex_readable=True)
+         print(json.dumps({key: result.get(key) for key in ('state','error','terminal_error',
+             'ui_actions','pending_effect','owned_tasks','closed_tasks')}))
+     return 0 if result['ui_business_and_diagnostics_verified'] else 1

@@ -1,0 +1,136 @@
+{
+  "all_guard_and_other_logic_AST_unchanged": true,
+  "app_actions_allowed_by_this_preparation": false,
+  "configuration_evidence_sha256": "da54529e07d1434082773c387ef2b0333345f3d1f4fca81c75043705b8ddaa7c",
+  "configured_source_pins": [
+    {
+      "bytes": 291,
+      "path": "/usr/lib/systemd/system/droidloomd.service",
+      "sha256": "3dc60679d7d65c2fb051a75733ea0cab888e501f280ff37afcf20d5167305d2d"
+    },
+    {
+      "bytes": 115,
+      "path": "/etc/systemd/system/droidloomd.service.d/10-ubuntu-unshare-compat.conf",
+      "sha256": "0774a57ca16ad6952ccf422b96af6b6e17898fde922b97081453da47035f7c0e"
+    },
+    {
+      "bytes": 160,
+      "path": "/etc/systemd/system.control/droidloomd.service.d/50-AllowedCPUs.conf",
+      "sha256": "d0dd31a01ec90d2b69722caab2c68bc76960bd922c66b2a4ce80031750fbf405"
+    },
+    {
+      "bytes": 146,
+      "path": "/etc/systemd/system.control/droidloomd.service.d/50-TasksMax.conf",
+      "sha256": "efc86c948c22294919c23c43fa11382b6e0c13d96883239e7d79a24c027d0f63"
+    },
+    {
+      "bytes": 132,
+      "path": "/etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf",
+      "sha256": "1ddafeb233beabb556bdc9f1cbd3a1af78d00a0489675facad2d02493ba431a7"
+    }
+  ],
+  "exports": [
+    {
+      "bytes": 63675,
+      "path": "/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/activation-before-original.json",
+      "sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615"
+    },
+    {
+      "bytes": 63674,
+      "path": "/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/activation-after-01.json",
+      "sha256": "91c7a4a911a7bcf908726750f55f3fda66f40263ddf3fac457473e0a6c780435"
+    },
+    {
+      "bytes": 29085,
+      "path": "/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/camera_transaction.py",
+      "sha256": "e65a47bea8b3800d0b1a89247bd8c356dd291523c2d248d401d05d1d3b55fb83"
+    },
+    {
+      "bytes": 22691,
+      "path": "/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/references/held_runtime_r5.py",
+      "sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4"
+    },
+    {
+      "bytes": 9882,
+      "path": "/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/configuration-proof-original.json",
+      "sha256": "da54529e07d1434082773c387ef2b0333345f3d1f4fca81c75043705b8ddaa7c"
+    },
+    {
+      "bytes": 969,
+      "path": "/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/transaction-change.patch",
+      "sha256": "3f9ed215e9e18249f56b317027b2091c427335a3fecfb51abe91b3cd5f21a68b"
+    }
+  ],
+  "finished_utc": "2026-11-05T16:03:40.006015+00:00",
+  "guard_before_after_limits": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "6144"
+  },
+  "limitations": [
+    "The conflicting 50/90 TasksMax configuration is retained, not repaired.",
+    "This binds the observed effective6144 budget; it does not restore12288.",
+    "No App gate, complete runtime release, or stability qualification is granted."
+  ],
+  "new_activation": {
+    "bytes": 63674,
+    "path": "/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/activation-after-01.json",
+    "sha256": "91c7a4a911a7bcf908726750f55f3fda66f40263ddf3fac457473e0a6c780435"
+  },
+  "new_guard": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  },
+  "new_transaction": {
+    "bytes": 29085,
+    "path": "/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/camera_transaction.py",
+    "sha256": "e65a47bea8b3800d0b1a89247bd8c356dd291523c2d248d401d05d1d3b55fb83"
+  },
+  "only_activation_semantic_change": {
+    "from": "12288",
+    "path": "limits.pids.max",
+    "to": "6144"
+  },
+  "only_transaction_AST_changes": [
+    "ACTIVATION",
+    "ACTIVATION_SHA"
+  ],
+  "original_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+  "original_files_unchanged": true,
+  "original_guard_still_rejects_changed_limit": true,
+  "original_transaction_sha256": "b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470",
+  "read_only_systemd_properties": {
+    "ActiveEnterTimestampMonotonic": "807969951230",
+    "CPUQuotaPerSecUSec": "2s",
+    "ControlGroup": "/system.slice/droidloomd.service",
+    "DropInPaths": "/etc/systemd/system/droidloomd.service.d/10-ubuntu-unshare-compat.conf /etc/systemd/system.control/droidloomd.service.d/50-AllowedCPUs.conf /etc/systemd/system.control/droidloomd.service.d/50-TasksMax.conf /etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf",
+    "EffectiveTasksMax": "6144",
+    "ExecMainPID": "3588022",
+    "FragmentPath": "/usr/lib/systemd/system/droidloomd.service",
+    "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+    "MemoryHigh": "5368709120",
+    "MemoryMax": "6442450944",
+    "MemorySwapMax": "infinity",
+    "NeedDaemonReload": "no",
+    "TasksAccounting": "yes",
+    "TasksMax": "6144"
+  },
+  "schema": "pocket4-strict-configured-resource-profile/v1",
+  "scope": {
+    "android_commands": 0,
+    "cgroup_writes": 0,
+    "fresh_main_selection": false,
+    "namespace_entries": 0,
+    "package_actions": 0,
+    "service_reloads_or_restarts": 0,
+    "signals_to_existing_processes": 0,
+    "system_configuration_writes": 0,
+    "ui_actions": 0
+  },
+  "started_utc": "2026-11-05T16:03:39.816833+00:00",
+  "state": "HOST_PROFILE_PREPARED_AND_READ_ONLY_GUARDS_VERIFIED"
+}

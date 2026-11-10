@@ -1,0 +1,73 @@
+{
+  "Android_business_qualified": false,
+  "against_previous10": {
+    "all_other_methods_IR_equal": true,
+    "all_other_non_signature_payloads_byte_equal": true,
+    "apk_sha256": "7872aa56b6aa35f4509a27a2c3c0ebb8743da7096136155e425f5b1e4499ae8e",
+    "changed_methods": [],
+    "classes2_dex_byte_equal": false,
+    "classes2_preserved_except_reviewed_receipt_path": true,
+    "classes_compared": 445,
+    "classes_dex_byte_equal": true,
+    "compared_non_signature_payloads": 664,
+    "methods_compared": 2327
+  },
+  "alignment_16k_verified": true,
+  "certificate_sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+  "finished_utc": "2026-11-05T18:55:06.193315+00:00",
+  "host_tests": {
+    "AlertIdentityTest": "AlertIdentityTest: 9 checks passed\n",
+    "EventDraftTest": "EventDraftTest: 22 checks passed\n",
+    "EventReferenceTest": "EventReferenceTest: 17 checks passed\n",
+    "ProviderReceiptTest": "ProviderReceiptTest: 37 checks passed\n",
+    "SnoozeStateTest": "SnoozeStateTest: 31 checks passed\n"
+  },
+  "isolated_ART_verification": {
+    "context": "PCL[] isolated artifact; not App lifecycle/business acceptance",
+    "exact_new_or_modified_classes_Verified": 66,
+    "receipt": {
+      "bytes": 41917,
+      "sha256": "85c0a4746e04f07e22e7a7550b5d1048ef3f418635365497dba045baeb796065"
+    }
+  },
+  "restored_code_proof": {
+    "actual_method_changes": {
+      "com/android/calendar/event/EventEditorStore.smali": {
+        "added_methods": [],
+        "changed_methods": [
+          "createLocalCalendar(Ljava/lang/String;)J"
+        ]
+      },
+      "com/android/calendar/event/ProviderReceipt.smali": {
+        "added_methods": [
+          "calendarId(Ljava/lang/String;Ljava/lang/String;)J"
+        ],
+        "changed_methods": []
+      }
+    },
+    "changed_classes": [
+      "com/android/calendar/event/EventEditorStore.smali",
+      "com/android/calendar/event/ProviderReceipt.smali"
+    ],
+    "classes_compared": 60,
+    "original_generic_receipt_validator_IR_unchanged": true,
+    "proof": {
+      "bytes": 17998,
+      "path": "/home/alex/work/pocket4-calendar-repair-build-20261105-r12-11/restored-class-ir-proof.json",
+      "sha256": "0de14455372b7273f9c6d91c7a9799deb67bffba56a12ffe15be1ccc87c1568e"
+    },
+    "unchanged_classes": 58
+  },
+  "signature_v3_verified": true,
+  "signed_apk": {
+    "bytes": 2635213,
+    "path": "/home/alex/work/pocket4-calendar-repair-build-20261105-r12-11/Calendar-pocket4-functional.apk",
+    "sha256": "00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f"
+  },
+  "source_result": {
+    "bytes": 43703,
+    "sha256": "ec9ce6f9c8e31d021992d59d86ce4319743496debff50e24ef7da8be544c96e9"
+  },
+  "started_utc": "2026-11-05T18:54:48.647392+00:00",
+  "state": "BUILT_SIGNED_NOT_INSTALLED"
+}

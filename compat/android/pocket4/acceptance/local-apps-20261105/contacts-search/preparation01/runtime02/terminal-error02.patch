@@ -1,0 +1,21 @@
+--- runtime01/capture_runtime01.py
++++ runtime02/capture_runtime02.py
+@@ -3,8 +3,8 @@
+ from pathlib import Path
+ import argparse,datetime,gzip,hashlib,json,os,stat,time,types
+ 
+-TOOLS=Path('/home/alex/work/pocket4-contacts-runtime-tools-20261105-r12-01')
+-ROOT=Path('/home/alex/work/pocket4-contacts-runtime-evidence-20261105-r12-01')
++TOOLS=Path('/home/alex/work/pocket4-contacts-runtime-tools-20261105-r12-02')
++ROOT=Path('/home/alex/work/pocket4-contacts-runtime-evidence-20261105-r12-02')
+ TX=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ TX_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+ ACTIVATION_SHA='7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
+@@ -86,6 +86,7 @@
+             result['guard_after']=session.guard();need(result['guard_before']==result['guard_after'],'MAIN_CHANGED')
+             result['state']='BOUNDED_CONTACTS_RUNTIME_OBSERVATIONS_CAPTURED_REVIEW_REQUIRED'
+     except BaseException as error:
++        result['state']='FAILED'
+         result['error']=type(error).__name__+':'+str(error)
+     result['finished_utc']=stamp()
+     tx.write_new(ROOT/'result.json',result,alex_readable=True)

@@ -1,0 +1,91 @@
+{
+  "apk_sha256": "347c376f07a4365fa3828ddf9f011994fe527a53fd2f5bd059997ffd3904d46e",
+  "app_gate_wording_unchanged": true,
+  "final_UI_owner": "Root after formal clean handoff",
+  "fresh_Gallery04_prepared_separately": true,
+  "fresh_Gallery04_staged_or_executed": false,
+  "matrix_or_registry_written": false,
+  "new_UI_delete_credit": false,
+  "new_business_gate_credit": false,
+  "new_rotation_credit": false,
+  "original_failed_unknown_receipts_not_rewritten": true,
+  "package": "com.android.gallery3d",
+  "prior_qualified_Gallery_scopes_unchanged": true,
+  "schema": "gallery03-through-cleanup-r2-scoped-history-v1",
+  "scoped_gate_results": {},
+  "state": "FAILED_BUSINESS_TRIAL_WITH_SUBSEQUENT_EXACT_CLEANUP_VERIFIED",
+  "timeline": [
+    {
+      "error": "RuntimeError:EXACT_TOP_GALLERY_ACTIVITY_RECORD_REQUIRED",
+      "exit_code": 1,
+      "finished_utc": "2026-11-05T22:49:41.370943+00:00",
+      "job_id": "1a1ade71a3a-fc05-5b7c",
+      "normal_closed_tasks": [],
+      "original_client_pending": "open-owned-album-1",
+      "original_native_pending": {
+        "open-owned-album-1": {
+          "input_acknowledged": true,
+          "kind": "tap",
+          "post_capture_outcome_unknown": true
+        }
+      },
+      "result_bytes": 16001,
+      "result_sha256": "41a2a9c45ab1e04fc70774f711384b701b7e495b8a46011f97cd18f0c0f0fb66",
+      "rotation_input_calls": 0,
+      "stage": "Gallery03 owned album trial",
+      "started_utc": "2026-11-05T22:49:32.996425+00:00",
+      "terminal": "failed",
+      "ui_actions": 2
+    },
+    {
+      "exit_code": 0,
+      "job_id": "1a1adf0d65f-fc05-5be8",
+      "proof": "Actual two-space Hist header; same owned task/caller/album; original Open not replayed.",
+      "result_bytes": 268926,
+      "result_sha256": "027d94508fbd039b6e3b95481428774ec433a3f7276d1b2c755fa7c46ea361d8",
+      "stage": "saved-only route exporter",
+      "terminal": "succeeded"
+    },
+    {
+      "error": "RuntimeError:RETAINED_STATE_CHANGED_DURING_READ_ONLY_RECONCILIATION",
+      "exit_code": 1,
+      "finished_utc": "2026-11-05T23:20:09.735369+00:00",
+      "independent_later_review": "All compared semantic ownership/media fields identical; only two relative duration literals differ in the activity block. Original observer FAILED unchanged.",
+      "job_id": "1a1ae031af3-fc05-5c99",
+      "mutations": 0,
+      "original_guard_after_present": false,
+      "result_bytes": 38390,
+      "result_sha256": "8f13efcbd0f8a3f80e11b648a9b2866c0d75b2d871c4ff329b36bd11b53e822d",
+      "stage": "readonly two-round live observer",
+      "started_utc": "2026-11-05T23:20:08.102717+00:00",
+      "terminal": "failed"
+    },
+    {
+      "all_pending_empty": true,
+      "current_helper_and_owned_paths_rows_absent": true,
+      "deleted_image_ids": [
+        100,
+        98
+      ],
+      "directory_ids": [
+        99,
+        97
+      ],
+      "exit_code": 0,
+      "finished_utc": "2026-11-05T23:34:53.322920+00:00",
+      "helper_uid": 10197,
+      "job_id": "1a1ae108431-fc05-5d11",
+      "normal_closed_tasks": [
+        1005
+      ],
+      "original_failed_and_unknown_unchanged": true,
+      "original_media_preserved": true,
+      "result_bytes": 14215,
+      "result_sha256": "e516969360562edbc59a13b6fab34c9976ea3e56b7e61577e36675364846a27a",
+      "stage": "new exact expired-fixture cleanup transaction",
+      "started_utc": "2026-11-05T23:34:41.683532+00:00",
+      "terminal": "succeeded"
+    }
+  ],
+  "whole_app_production_ready": false
+}

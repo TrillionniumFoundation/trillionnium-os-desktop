@@ -1,0 +1,77 @@
+{
+  "actual_DEX_sha256": "bf85e172e2286e2dd99c0ea36c0cdc43a7163d2e5f3414e4bd7d6dcbf9e0afed",
+  "actual_UI_performed_by_capture": 0,
+  "actual_apk_sha256": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0",
+  "authoritative_state": "succeeded",
+  "exit_code": 0,
+  "facts": [
+    "ActionBarAdapter binds an EditText with actual resource integer 0x7f09027a, installs SearchTextWatcher, and exposes a separate clear action",
+    "onTextChanged updates the query and notifies the existing listener; ContactEntryListFragment changes adapter query and reloads data",
+    "DefaultContactListAdapter builds the search URI using the nonempty query path and directory; empty search selects zero rows",
+    "Runtime controller must still observe the unique current PeopleActivity search control, exact query text, edited contact row, same raw/contact IDs and reopened detail"
+  ],
+  "job_id": "1a1ad118990-fc05-5859",
+  "method_bindings": [
+    {
+      "class": "Lcom/android/contacts/activities/ActionBarAdapter;",
+      "class_sha256": "1c432be33c05309e80cc713e396580d8f3ad88d9f384327ff7517a12591a5443",
+      "method_header": ".method private setupSearchAndSelectionViews()V",
+      "method_sha256": "3b15a57286c98c6356c9d752d0cf9e1bdeacccde76f5cfa34564249e30f25ac5"
+    },
+    {
+      "class": "Lcom/android/contacts/activities/ActionBarAdapter;",
+      "class_sha256": "1c432be33c05309e80cc713e396580d8f3ad88d9f384327ff7517a12591a5443",
+      "method_header": ".method public setQueryString(Ljava/lang/String;)V",
+      "method_sha256": "f50d6ac950db5c018a0496ccc785da10075993563f99657d03c71b06075464ac"
+    },
+    {
+      "class": "Lcom/android/contacts/activities/ActionBarAdapter$SearchTextWatcher;",
+      "class_sha256": "42b46b264a2d6be0860b38c0b162046862226f43ba85aee6ed41782713426d73",
+      "method_header": ".method public onTextChanged(Ljava/lang/CharSequence;III)V",
+      "method_sha256": "92104d0fa30c861aa0b5c28bfe031b3d1b7fb4b15074af75fbc363400d8a8f98"
+    },
+    {
+      "class": "Lcom/android/contacts/list/DefaultContactBrowseListFragment$2;",
+      "class_sha256": "b9bd5fb9438f8c4db3143edc72329c6211c31efb886d6a7a9c322aae26ac061d",
+      "method_header": ".method public onAction(I)V",
+      "method_sha256": "ef39e0335292bf61b48d3cdd1c0283d72d29b41cc4e7185753849e1350ab432c"
+    },
+    {
+      "class": "Lcom/android/contacts/list/DefaultContactBrowseListFragment;",
+      "class_sha256": "f33167096fa7fd9b51198749eff96caaf654fda00b752926cc5d4f6294275dec",
+      "method_header": ".method private configureContactListFragmentForRequest()V",
+      "method_sha256": "5d3e854860e4c3afe12f6fc4db381dc99b9e67f5af4d4f94c4993073faf290df"
+    },
+    {
+      "class": "Lcom/android/contacts/list/ContactBrowseListFragment;",
+      "class_sha256": "4b8d79044980f8367b4bf63372d380c04c34835f71f6cfff116a455daf433b6b",
+      "method_header": ".method public setQueryString(Ljava/lang/String;Z)V",
+      "method_sha256": "a8d0b5a1aa4ddbf5c2871280d11b4621b41802dfe5025503f1a07515e5a592aa"
+    },
+    {
+      "class": "Lcom/android/contacts/list/ContactEntryListFragment;",
+      "class_sha256": "90c06bcad3978882e5ccfb3d7d2978f64df0e22d3309ecc5806d2046256c3181",
+      "method_header": ".method public setQueryString(Ljava/lang/String;Z)V",
+      "method_sha256": "1b41b08a41e62756522882a5864a830a5affe4da6b225640d9009891db83317c"
+    },
+    {
+      "class": "Lcom/android/contacts/list/DefaultContactListAdapter;",
+      "class_sha256": "43d5966f21d560bdf918c0770b355810619eb3d1bf419c9c783ff9c076f77247",
+      "method_header": ".method public configureLoader(Landroid/content/CursorLoader;J)V",
+      "method_sha256": "885e549f8b3b5443b0e0317e0e2914c848a25b16560463b0416c93ab52e7dd66"
+    },
+    {
+      "class": "Lcom/android/contacts/list/DefaultContactListAdapter;",
+      "class_sha256": "43d5966f21d560bdf918c0770b355810619eb3d1bf419c9c783ff9c076f77247",
+      "method_header": ".method private appendSearchParameters(Landroid/net/Uri$Builder;Ljava/lang/String;J)V",
+      "method_sha256": "7fdb988f485b72ba5e1bc1e299ad5389e95abb0f70b2a896a068196171f4fb29"
+    }
+  ],
+  "resource_scope": "Optimized R$id and R$string definitions are absent from the selected installed DEX classes; no resource-name mapping is invented from their requested prefixes",
+  "runtime_business_success_claimed": false,
+  "schema": "contacts-search-actual-installed-contract/v1",
+  "source_class_count": 42,
+  "source_result_bytes": 595468,
+  "source_result_sha256": "12b41288e09edd624c49fc54ba1a2228b1663eff75e3e4222658c16935e83a58",
+  "whole_app_production_ready": false
+}

@@ -1,0 +1,82 @@
+--- draft/timer_core04.py
++++ bound/timer_core04.py
+@@ -9,16 +9,22 @@
+ HERE = Path(__file__).resolve().parent
+ CONTACT_TOOLS = Path('/home/alex/work/pocket4-contacts-session-tools-20261105-r12-01')
+ ROOT = Path('/home/alex/work/pocket4-clock-timer-20261105-r12-04')
+-CANDIDATE_BINDING_READY = False
++CANDIDATE_BINDING_READY = True
++INSTALL04_RESULT = Path('/home/alex/work/pocket4-clock-alarm-dispatch-20261105-r12-04/install-04/result.json')
++INSTALL04_SHA = 'efaf58417685c13d7abb6a2c1a9687ee0b70a998d5ded76cdb029376cef4e936'
++INSTALL04_IDENTITY = INSTALL04_RESULT.parent / 'latest-installed-identity.json'
++INSTALL04_IDENTITY_SHA = '1750f0c49dad70f0fb8178655ba82dcc5ef6e6b2a195c06c45e49571bca9c314'
+ PUBLIC = HERE / 'clock-timer04-result.json'
+ PACKAGE = 'com.android.deskclock'
+ DURATION = 900000  # Fifteen minutes, longer than the whole 360 + 35 second lease.
+ PINS = {
+     'base': (str(CONTACT_TOOLS / 'ui_preflight04.py'), 'd02821d751736a9e3cf275ec0b27383852e24362928fd4257ebb6d3dee7f6a58'),
+     'loop': (str(CONTACT_TOOLS / 'session_loop07.py'), 'c8cd713f3e323016dbfdce8e41a5c474ac58d365ebcd613dd539fc9568bb7784'),
+-    'model': (str(HERE / 'read_clock_expired_text02.py'), '93a25eacc015e5e87a12a0cd55a9b97c8a7fd7068dd6c691a56b9c77b2a1af6f'),
++    'model': (str(HERE / 'read_clock_expired_text02.py'), '4eae2c4540ce0710f225c875b025fad48d9e8a14bbc5b81f99aa1e0cb26c0905'),
+     'shared': ('/home/alex/work/pocket4-clock-session-tools-20261105-r12-01/stopwatch02.py', 'cab5252688463cd0527a3d8e4cb8d9e2b9d498d2cdd3016beda274ba16283cab'),
+     'timer': ('/home/alex/work/pocket4-clock-session-tools-20261105-r12-01/read_timer.py', 'c3bf02f38e05ab7a55285ca2245ffe2bda3eb528cc1f85d54723294047948b08'),
++    'installer': ('/home/alex/work/pocket4-clock-alarm-dispatch-20261105-r12-04/transaction04/clock_install04.py',
++        'eed5175a75668ae6a91ede71f93ab2c165d3b6903b2de2b79e7a67b36b3a3f9b'),
+ }
+ 
+ 
+@@ -326,16 +332,31 @@
+ def execute():
+     require(CANDIDATE_BINDING_READY, 'NEW_CLOCK_INSTALL_IDENTITY_NOT_BOUND')
+     modules = {name: load(*pin) for name, pin in PINS.items()}
+-    base, loop, model, shared, timer = [modules[x] for x in ('base', 'loop', 'model', 'shared', 'timer')]
++    base, loop, model, shared, timer, installer = [modules[x] for x in ('base', 'loop', 'model', 'shared', 'timer', 'installer')]
+     tx = model.load_session()
++    require(model.SOURCE_SHA == 'b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
++        and tx.ACTIVATION_SHA == '7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615',
++        'TIMER_REQUIRES_FROZEN_ORIGINAL_12288_PROFILE')
++    installed = json.loads(tx.read_regular(INSTALL04_RESULT, INSTALL04_SHA))
++    observed = json.loads(tx.read_regular(INSTALL04_IDENTITY, INSTALL04_IDENTITY_SHA))
++    require(installed['state'] == 'INSTALLED_VERIFIED' and installed['install_response_verified'] is True
++        and installed['protected_business_and_sound_state_preserved'] is True
++        and installed['installed_identity_observation'] == observed
++        and observed['uid'] == 10063 and observed['version_code'] == 37
++        and observed['installed_apk_sha256'] == model.APK_SHA == installer.NEW_SHA
++        and observed['all_observed_apk_files'] == [{'guest_path':model.APK_PATH,
++            'bytes':model.APK_BYTES,'sha256':model.APK_SHA}], 'ACTUAL_INSTALL04_IDENTITY_NOT_BOUND')
+     base.PACKAGE, base.COMPONENT, base.ROOT = PACKAGE, PACKAGE + '/.DeskClock', ROOT
++    base.SOURCE, base.SOURCE_SHA = model.SOURCE, model.SOURCE_SHA
+     loop.emit = lambda value: None
+     result = {'state': 'FAILED', 'phases': {}, 'business_success_verified': False,
+         'whole_app_production_ready': False, 'automatic_retry': False, 'source_pins': PINS,
+         'alarm_write_actions': 0, 'global_volume_or_ringtone_actions': 0,
+         'notification_permission_actions': 0, 'timer_expiry_qualification': False,
+-        'current_installed_dex_sha256': 'c6721db34c21c5bab07712a6ddc3eaaf9c6617196856f9abf29741c18f956d22',
+-        'prior_factory_binary_core_result_does_not_qualify_this_run': True,
++        'current_installed_dex_sha256': 'deff3873f215d97ab47908c7f60cb6ab62d4a6e4f6274dc3f3130023f0630c98',
++        'prior_binary_core_result_does_not_qualify_this_run': True,
++        'actual_install_binding':{'result_sha256':INSTALL04_SHA,'identity_sha256':INSTALL04_IDENTITY_SHA,
++            'installed_apk_sha256':model.APK_SHA},
+         'scheduler_cancellation_verified': False,
+         'scheduler_cancellation_requires_independent_saved_dump_review': True,
+         'lease_seconds': 360, 'cleanup_budget_seconds': 35, 'timer_duration_ms': DURATION,
+@@ -349,6 +370,7 @@
+                 trial = base.Trial(session, tx)
+                 flow = Flow(trial, loop, timer, result)
+                 try:
++                    result['protected_before'] = installer.snapshot(session,tx,model,timer,'before')
+                     result['identity_before'] = model.identity(session)
+                     result['alarms_before'] = model.state(session); model.verify_before(result['alarms_before'])
+                     require(result['alarms_before']['template-ids'] == [{'_id': 1}, {'_id': 2}], 'ORIGINAL_TEMPLATE_IDS_CHANGED')
+@@ -379,6 +401,11 @@
+                     result['timer_final'] = timer.read(session)
+                     require(result.get('alarms_before') == result['alarms_after']
+                         and result.get('templates_sha_before') == result['templates_sha_after'], 'ORIGINAL_ALARMS_CHANGED')
++                    if flow.c.pending is None and flow.effect_pending is None and flow.close_pending is None:
++                        result['protected_after'] = installer.snapshot(session,tx,model,timer,'after')
++                        require(installer.preserved(result['protected_before'],result['protected_after'],include_preferences=False),
++                            'PROTECTED_CLOCK_SOUND_PERMISSION_OR_DATA_STATE_CHANGED')
++                        result['protected_business_and_sound_state_preserved'] = True
+                     session.caller_status('clock-timer-final-caller')
+         if result['business_success_verified']:
+             timer.empty(result['timer_final'])

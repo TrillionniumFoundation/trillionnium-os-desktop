@@ -1,0 +1,153 @@
+--- revision03/run_video01.py
++++ revision04/run_video01.py
+@@ -6,7 +6,7 @@
+ import xml.etree.ElementTree as ET
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-gallery-video-flow-20261105-r12-03')
++ROOT=Path('/home/alex/work/pocket4-gallery-video-flow-20261105-r12-04')
+ BASE=HERE/'gallery_base.py'
+ BASE_SHA='06a182dae066e4d1c9d0387371711145754378747e561f16543e5315051aefb2'
+ CODE=Path('/home/alex/work/pocket4-gallery-movie-source-20261105-r12-01/result.json')
+@@ -56,6 +56,7 @@
+             self.result['guard_before']=self.s.guard();self.result['gallery_before']=self.gallery_identity()
+             need(any(line.startswith('android.permission.READ_MEDIA_VIDEO: granted=true,')
+                 for line in self.result['gallery_before']['permissions']),'GALLERY_VIDEO_PERMISSION_NOT_GRANTED')
++            self.result['native_actions_before']=self.doc.identity(self.s,'local.pocket4.actions.v2','a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058',10125,2)
+             self.original_rows=self.original_media('original-before')
+             need(self.namespace('namespace-before')==[],'GLOBAL_MEDIA_NAMESPACE_NOT_ABSENT')
+             self.folder_parent=self.s.target.open_root('/storage/emulated/0/DCIM',os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+@@ -180,60 +181,84 @@
+                 and n.get('enabled') is True and n.get('clickable') is True]
+             need(len(matches)<=1,'PLAYBACK_CONTROL_AMBIGUOUS');return matches[0] if matches else None
+ 
++        def native_controls(self,label):
++            # The exact installed runner revalidates the complete native tree,
++            # selected application window and unique node inside its own request.
++            focus=self.movie_focus();self.s.guard()
++            value=self.s.helper.ui({'op':'dump','expected_package':GALLERY,'display':0,'accessibility_mode':'none'})
++            self.s.guard();current=self.ui.focus(label+'-wm-after-native')
++            need(current==focus and self.ui.focus_allowed(current,False),'NATIVE_CONTROL_WINDOW_CHANGED')
++            context=value.get('window_context',{});window=context.get('selected_window',{});root=context.get('root',{})
++            need(value.get('ok') is True and value.get('accessibility_mode_restoration_verified') is True
++                and context.get('snapshot_complete') is True and context.get('truncated') is False
++                and context.get('display_id')==0 and window.get('display_id')==0
++                and window.get('active') is True and window.get('focused') is True and window.get('type')==1
++                and root.get('package')==GALLERY and root.get('visible') is True
++                and window.get('root',{}).get('package')==GALLERY
++                and root.get('window_id')==window.get('window_id'),'NATIVE_CONTROL_SCOPE_INCOMPLETE')
++            self.record(label,{'focus':focus,'native':value,'no_pixel_equality_required_for_semantic_selection':True})
++            return focus,[n for n in value.get('nodes',[]) if n.get('package')==GALLERY and n.get('visible') is True],window['bounds']
++
+         def ensure_controls(self):
+-            for decision in range(3):
+-                focus,nodes,shot=self.observe_movie('pause-control-observation-'+str(decision))
+-                button=self.control(nodes,PAUSE_LABELS)
+-                if button:return focus,button
+-                need(self.control(nodes,PLAY_LABELS) is None,'VIDEO_ALREADY_PAUSED_BEFORE_PAUSE_TEST')
+-                views=[n for n in nodes if n.get('class')=='android.widget.VideoView' and n.get('enabled') is True]
+-                need(len(views)==1,'OBSERVED_VIDEO_VIEW_REQUIRED_TO_SHOW_CONTROLS')
+-                bounds=views[0].get('bounds_array');scope=shot['scope_bounds']
+-                need(isinstance(bounds,list) and len(bounds)==4 and all(type(v) is int for v in bounds)
+-                    and scope[0]<=bounds[0]<bounds[2]<=scope[2] and scope[1]<=bounds[1]<bounds[3]<=scope[3],
+-                    'VIDEO_VIEW_NOT_FULLY_WITHIN_OWNED_WINDOW')
+-                point=[(3*bounds[0]+bounds[2])//4,(3*bounds[1]+bounds[3])//4]
+-                request={'op':'snapshot-tap','package':GALLERY,'display':0,'accessibility_mode':'none',
+-                    'window_token':focus['window_token'],'coords':point,'input_source':'touch',
+-                    **{key:shot[key] for key in ('frame_sha256','scope_sha256','context_token')}}
+-                need(self.pending is None and self.inputs<MAX_INPUTS and self.movie_focus()==focus,'INPUT_SCOPE_OR_BUDGET')
+-                token='show-controls-'+str(decision);self.record(token+'-intent',{'request':request,'observed_video_view':views[0],
+-                    'source_bound_to':'MovieControllerOverlay.onTouchEvent hidden -> show','automatic_retry':False})
+-                self.pending=token;self.inputs+=1
+-                try:reply=self.s.helper.dispatch(request)
+-                except BaseException as exc:
+-                    details=getattr(exc,'details',{})
+-                    if str(exc)=='STALE_FRAME' and details.get('action_taken') is False and details.get('outcome_unknown') is not True:
+-                        self.record(token+'-explicit-no-effect',{'error':str(exc),'details':details});self.pending=None;continue
+-                    raise
+-                self.record(token+'-receipt',reply)
+-                need(reply.get('ok') is True and reply.get('input_command_completed') is True,'SHOW_CONTROLS_INPUT_UNKNOWN')
+-                current,fresh,_=self.observe_movie(token+'-post')
+-                button=self.control(fresh,PAUSE_LABELS);need(current==focus and button is not None,'PLAYING_CONTROL_NOT_OBSERVED_AFTER_SHOW')
+-                self.pending=None;return current,button
+-            raise RuntimeError('SHOW_CONTROLS_FRESH_DECISION_LIMIT')
++            focus,nodes,scope=self.native_controls('show-controls-native-before')
++            button=self.control(nodes,PAUSE_LABELS)
++            if button:return focus,button
++            need(self.control(nodes,PLAY_LABELS) is None,'VIDEO_ALREADY_PAUSED_BEFORE_PAUSE_TEST')
++            views=[n for n in nodes if n.get('class')=='android.widget.VideoView'
++                and n.get('resource-id')==GALLERY+':id/surface_view' and n.get('enabled') is True
++                and n.get('focused') is True and n.get('clickable') is False]
++            need(len(views)==1,'UNIQUE_OBSERVED_NATIVE_VIDEO_VIEW_REQUIRED')
++            node=views[0];bounds=node.get('bounds_array')
++            need(isinstance(bounds,list) and len(bounds)==4 and all(type(v) is int for v in bounds)
++                and scope[0]<=bounds[0]<bounds[2]<=scope[2] and scope[1]<=bounds[1]<bounds[3]<=scope[3],
++                'NATIVE_VIDEO_VIEW_OUTSIDE_OWNED_WINDOW')
++            selector={'package':GALLERY,'id':GALLERY+':id/surface_view','class':'android.widget.VideoView',
++                'enabled':True,'focused':True,'clickable':False}
++            request={'op':'click','expected_package':GALLERY,'display':0,'accessibility_mode':'none','method':'mouse','selector':selector}
++            need(self.pending is None and self.inputs<MAX_INPUTS and self.movie_focus()==focus,'INPUT_SCOPE_OR_BUDGET')
++            self.record('show-controls-native-intent',{'request':request,'observed_video_view':node,'focus':focus,
++                'source_bound_to':'Actual v2 native bounds mouse; installed MoviePlayer$3.onTouch calls controller.show',
++                'automatic_retry':False})
++            self.pending='show-controls-native';self.inputs+=1
++            try:reply=self.s.helper.ui(request)
++            except BaseException as exc:
++                details=getattr(exc,'details',{})
++                if details.get('outcome_unknown') is False:
++                    self.record('show-controls-native-explicit-no-effect',{'error':str(exc),'details':details});self.pending=None
++                raise
++            self.record('show-controls-native-receipt',reply);target=reply.get('actual_target',{})
++            need(reply.get('ok') is True and reply.get('performed')=='click' and reply.get('method')=='mouse'
++                and reply.get('source')=='native_bounds_mouse' and reply.get('accessibility_mode_restoration_verified') is True
++                and target.get('package')==GALLERY and target.get('class')=='android.widget.VideoView'
++                and target.get('resource-id')==selector['id'] and target.get('bounds_array')==bounds
++                and reply.get('coordinates')==[(bounds[0]+bounds[2])//2,(bounds[1]+bounds[3])//2],
++                'NATIVE_MOUSE_RECEIPT_NOT_JOINED')
++            current,fresh,_=self.native_controls('show-controls-native-after')
++            button=self.control(fresh,PAUSE_LABELS)
++            need(current==focus and button is not None,'PLAYING_CONTROL_NOT_OBSERVED_AFTER_NATIVE_SHOW')
++            self.pending=None;self.result['inputs'].append({'label':'show-controls','method':'native_bounds_mouse',
++                'actual_target':target,'own_task':focus['task'],'Pause_control_observed':True})
++            return current,button
+ 
+         def click_control(self,label,focus,button,expected_labels):
+             need(self.pending is None and self.inputs<MAX_INPUTS and self.movie_focus()==focus,'PLAYBACK_CLICK_SCOPE')
+             selector={'package':GALLERY,'class':'android.widget.ImageView','desc':button['content-desc'],'clickable':True,'enabled':True}
+-            request={'op':'click','package':GALLERY,'display':0,'window_token':focus['window_token'],
+-                'accessibility_mode':'none','method':'accessibility','selector':selector}
+-            self.record(label+'-intent',{'request':request,'observed_control':button,'automatic_retry':False})
++            request={'op':'click','expected_package':GALLERY,'display':0,'accessibility_mode':'none',
++                'method':'accessibility','selector':selector}
++            self.record(label+'-intent',{'request':request,'observed_control':button,'focus':focus,'automatic_retry':False})
+             self.pending=label;self.inputs+=1
+-            try:reply=self.s.helper.dispatch(request)
++            try:reply=self.s.helper.ui(request)
+             except BaseException as exc:
+                 details=getattr(exc,'details',{})
+-                if details.get('outcome_unknown') is not True and (details.get('action_taken') is False
+-                    or details.get('outcome_unknown') is False):
++                if details.get('outcome_unknown') is False:
+                     self.record(label+'-explicit-no-effect',{'error':str(exc),'details':details});self.pending=None
+                 raise
+-            self.record(label+'-receipt',reply)
+-            target=reply.get('actual_target',{})
++            self.record(label+'-receipt',reply);target=reply.get('actual_target',{})
+             need(reply.get('ok') is True and reply.get('performed')=='click'
+                 and reply.get('accessibility_mode_restoration_verified') is True
+                 and target.get('package')==GALLERY and target.get('class')=='android.widget.ImageView'
+                 and target.get('content-desc')==button['content-desc'],'PLAYBACK_CLICK_NOT_JOINED')
+-            current,nodes,_=self.observe_movie(label+'-post');next_control=self.control(nodes,expected_labels)
++            current,nodes,_=self.native_controls(label+'-post');next_control=self.control(nodes,expected_labels)
+             need(current==focus and next_control is not None,'PLAYBACK_STATE_CONTROL_NOT_CHANGED')
+             self.pending=None;self.result['inputs'].append({'label':label,'before':button['content-desc'],
+                 'after':next_control['content-desc'],'actual_target':target,'owned_task':focus['task']})
+@@ -370,6 +395,8 @@
+                     result['diagnostics']=diag.fresh_crashes(flow.before_diag,after,10064,flow.before_diag['guest_seconds'])
+                     need(result['diagnostics']['clear'],'FRESH_GALLERY_CRASH_OR_ANR')
+                     result['gallery_after']=flow.gallery_identity();need(result['gallery_after']==result['gallery_before'],'GALLERY_IDENTITY_CHANGED')
++                    result['native_actions_after']=doc.identity(session,'local.pocket4.actions.v2','a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058',10125,2)
++                    need(result['native_actions_after']==result['native_actions_before'],'NATIVE_ACTIONS_APK_CHANGED')
+                     result['business_scope_completed']=True
+                 except BaseException as e:result['error']=type(e).__name__+':'+str(e)
+                 finally:

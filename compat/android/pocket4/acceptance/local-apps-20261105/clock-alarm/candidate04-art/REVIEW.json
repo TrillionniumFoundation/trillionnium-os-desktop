@@ -1,0 +1,133 @@
+{
+  "Clock_XML_JAR_OAT_before_after_byte_identical": true,
+  "UI_actions": 0,
+  "actual_ART_finished_utc": "2026-11-05T20:14:45.797997+00:00",
+  "actual_ART_job": "1a1ad596f63-fc05-5982",
+  "actual_ART_result_sha256": "cb6ebadca9c9736ce9e60877f13d33698d5f7a1bb918ae178e37d7c6da697ac9",
+  "actual_ART_started_utc": "2026-11-05T20:14:44.280741+00:00",
+  "actual_shared_library_FD_order": [
+    "/system_ext/framework/androidx.window.sidecar.jar",
+    "/system_ext/framework/androidx.window.extensions.jar"
+  ],
+  "all_descriptor_identities_exact": true,
+  "before_after_whole_sha256": "c35d1b4480be59ec10033cd660a15722cf983c80922feb74f7e4ee59e631f44d",
+  "boot_APEX_classpath_before_after_byte_identical": true,
+  "boot_classpath_files": 52,
+  "candidate_apk_sha256": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+  "candidate_dex_sha256": "deff3873f215d97ab47908c7f60cb6ab62d4a6e4f6274dc3f3130023f0630c98",
+  "candidate_installed": false,
+  "class_loader_context": "PCL[]{PCL[/system_ext/framework/androidx.window.extensions.jar]#PCL[/system_ext/framework/androidx.window.sidecar.jar]}",
+  "compiler": {
+    "joined": true,
+    "rc": 0,
+    "spawned": true,
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "timed_out": false
+  },
+  "context05_actual": {
+    "actual_executable": "/apex/com.android.art/bin/dexoptanalyzer",
+    "flatten_rc": 50,
+    "scope": "Only context parsing/flatten, not compilation or App execution",
+    "whole_result_sha256": "512380a0cca62cba61eb727edff500e23cf8cb365d6f189a01d1bb0aac5813af"
+  },
+  "current_stored_OAT_context_independently_byte_reviewed": true,
+  "currently_installed_Clock_sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172",
+  "guest_input_files": 87,
+  "historical_context04_retained": {
+    "dexoptanalyzer64_absent": true,
+    "flatten_executed": false,
+    "old_OAT_header_rc": 1,
+    "outer_state": "DECLARED_CONTEXT_METADATA_COLLECTED_NOT_ART_VERIFIED",
+    "whole_result_sha256": "7d74d136e4e49af81196a16254c9174ec346a2ab9a1e8be4e2171432d64f56d1"
+  },
+  "host_checks": {
+    "passed": 9,
+    "scope": "Captured inputs, production preconditions and inert default. No compiler/App simulation."
+  },
+  "includes_unexecuted_install": false,
+  "oatdump": {
+    "joined": true,
+    "rc": 0,
+    "spawned": true,
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 3065209,
+      "sha256": "0b8f66f044e85e8adc8ded41df3f64f074497941d9e332c9b9dd9b8965b3f8c8"
+    },
+    "timed_out": false
+  },
+  "old_timer_credit_inherited": false,
+  "private_data_excluded": [
+    "alarm table contents",
+    "full package/audio/notification dumps",
+    "private signing selectors",
+    "secret keys",
+    "process maps"
+  ],
+  "provider_mutations": 0,
+  "resource_usage": {
+    "cpu_stat": "usage_usec 1408154\nuser_usec 980714\nsystem_usec 427439\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 16\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "limits": {
+      "cpu.max": "200000 100000",
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "pids.max": "64"
+    },
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak_bytes": 183762944
+  },
+  "running_Java_classloader_heap_capture": false,
+  "runtime_alarm_success": false,
+  "schema": "clock-alarm-candidate04-public-art-delta-v1",
+  "scope": "Bounded isolated artifact verification only. No alarm/timer/notification/audio behavior credit, no installed identity advancement.",
+  "shared_before_after_whole_sha256": "7c20d5e1a2f335307b4974108851bff7db7421a58624b42bbdd706b5da735289",
+  "state": "CANDIDATE_ART_VERIFIED_NOT_INSTALLED",
+  "target_statuses": {
+    "expected_target_classes": 4,
+    "missing": [],
+    "other_nonverified_statuses": {},
+    "parsed_class_headers": 67,
+    "target_statuses": {
+      "Lcom/android/deskclock/alarms/AlarmService;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "1990: Lcom/android/deskclock/alarms/AlarmService; (offset=0x00006e14) (type_idx=2470) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/deskclock/alarms/AlarmStateManager$AlarmManagerStateChangeScheduler;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "1993: Lcom/android/deskclock/alarms/AlarmStateManager$AlarmManagerStateChangeScheduler; (offset=0x00006e20) (type_idx=2472) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/deskclock/alarms/AlarmStateManager$Companion;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "1996: Lcom/android/deskclock/alarms/AlarmStateManager$Companion; (offset=0x00006e2c) (type_idx=2475) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/deskclock/alarms/AlarmStateManager;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "1998: Lcom/android/deskclock/alarms/AlarmStateManager; (offset=0x00006e34) (type_idx=2478) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      }
+    },
+    "unverified": {}
+  },
+  "whole_app_production_ready": false
+}

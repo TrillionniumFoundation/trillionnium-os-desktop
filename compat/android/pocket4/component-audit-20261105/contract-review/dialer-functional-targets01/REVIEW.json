@@ -1,0 +1,65 @@
+{
+  "actual_declared_defined_targets": [
+    "com.android.dialer.calllog.config.CallLogConfigImpl$PollingJob",
+    "com.android.dialer.voicemail.settings.VoicemailChangePinActivity"
+  ],
+  "binary_changes": 0,
+  "decision": "EXTRA_UNRESOLVED_DECLARATIONS_WITH_SEPARATELY_DECLARED_DEFINED_FUNCTIONAL_TARGETS",
+  "facts": [
+    {
+      "caller": "AospDialerApplication.onCreate()V",
+      "condition": "UserManagerCompat.isUserUnlocked(appContext)",
+      "operation": "JobInfo.Builder jobId400 uses const-class com.android.dialer.calllog.config.CallLogConfigImpl$PollingJob; period86400000ms, persisted=true, charging=true, idle=true; JobScheduler.schedule invoked.",
+      "runtime_execution_observed": false,
+      "target_body": "Existing final JobService implements onStartJob/onStopJob, reads configuration and asynchronously updates call-log framework state."
+    },
+    {
+      "caller": "VoicemailSettingsFragment.onResume()V",
+      "enable_condition": "updateChangePinPreference disables without voicemail enabled or activation; enables only when both true.",
+      "operation": "Explicit Context/Class Intent to com.android.dialer.voicemail.settings.VoicemailChangePinActivity with phone_account_handle; assigned to voicemailChangePinPreference. Actual preference click listener returns false.",
+      "runtime_execution_observed": false
+    },
+    {
+      "caller": "android.support.v4.app.CoreComponentFactory",
+      "operation": "Only constructor; no instantiateActivity/instantiateService or class-name remapping override in this APK class.",
+      "scope": "Does not establish the behavior of every possible external class loader or caller."
+    }
+  ],
+  "limits": [
+    "Missing names have no exact dotted/slash/UTF16 literal occurrence in this DEX, and no exact target literal hit in the bounded compiled-XML scan. These counts are not a complete reflection/caller proof.",
+    "Both real implementation names are independently present as matching manifest activity/service declarations in the same exact APK audit.",
+    "No Dialer Activity, service, call, SIM, voicemail PIN, account or user-data operation was invoked. No business, reminder, runtime or production-readiness gate is awarded."
+  ],
+  "missing_declarations_preserved": [
+    "com.android.dialer.calllog.CallLogConfig$PollingJob",
+    "com.android.voicemail.impl.settings.VoicemailChangePinActivity"
+  ],
+  "next_step": "Retain the two missing declarations as unresolved legacy/internal contracts. Do not create placeholder classes, remove declarations, or change actual functional targets based only on this static audit. If a real caller or runtime failure reaches an old name, bind that exact path before a repair.",
+  "schema": "dialer-actual-component-contract-review-v1",
+  "source_evidence": [
+    {
+      "path": "source/installed/android/support/v4/app/CoreComponentFactory.smali",
+      "sha256": "c9b837c2f3e7d6765334c11d0862f3f94c4cb7bcad8864a712c5902d2edc5284"
+    },
+    {
+      "path": "source/installed/com/android/dialer/binary/aosp/AospDialerApplication.smali",
+      "sha256": "c76d887477ba1b7680672d1aea78fb6baaf560fe72770d268c8bd50f12c82da0"
+    },
+    {
+      "path": "source/installed/com/android/dialer/calllog/config/CallLogConfigImpl$PollingJob.smali",
+      "sha256": "0fc6cc71b0301237a4594e34b300aadee375a9563f8800a36943406ebf4bac7b"
+    },
+    {
+      "path": "source/installed/com/android/dialer/voicemail/settings/VoicemailSettingsFragment.smali",
+      "sha256": "14d455c476e068e0dd22e027630004a1013f00999cca511e50e2178797fc664d"
+    },
+    {
+      "path": "source/installed/com/android/dialer/voicemail/settings/VoicemailSettingsFragment$1.smali",
+      "sha256": "1117a847fdc3674431d193422bd0621613c3767cee0a25ef8bfd6bbea4e8709f"
+    },
+    {
+      "path": "source/installed/com/android/dialer/voicemail/settings/VoicemailChangePinActivity.smali",
+      "sha256": "2bbd181a9e3a01dc8d979fde6c43da4eef46b04882765ff22ea7ff551d23a99e"
+    }
+  ]
+}

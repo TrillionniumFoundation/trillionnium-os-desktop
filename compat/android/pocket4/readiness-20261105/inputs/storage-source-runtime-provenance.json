@@ -1,0 +1,105 @@
+{
+  "schema": "pocket4-storage-source-runtime-provenance-v1",
+  "observed_utc": "2026-11-05T08:07:33.004940+00:00",
+  "scope": "Read-only installed artifact identity and a separately pinned source variant; no framework deployment or Main restart.",
+  "running_artifacts": {
+    "framework.jar": {
+      "bytes": 48701049,
+      "sha256": "ca751279ee79fe4b406a70d2876eccadb09179c967d74b4bb487be672cca8421",
+      "identical_to_pinned_base_image_jar": true
+    },
+    "services.jar": {
+      "bytes": 34542267,
+      "sha256": "f33987e633e476f47ea043af3f7fb94907fd2431fa2b5b49df84cb586bce5c50",
+      "identical_to_pinned_base_image_jar": false,
+      "override_bundle_label": "pocket4-wifi-disabled-api-20261023-chat2-v2",
+      "override_identity_confirmed_by": [
+        "held Main root file descriptor",
+        "mount mapping",
+        "device/inode equality",
+        "SHA256"
+      ],
+      "java_source_commit_proved": false
+    },
+    "build_id": "CP2A.260605.016",
+    "sdk": 37
+  },
+  "installed_dex_type_evidence": {
+    "method_id_reference": "Lcom/android/server/storage/StorageSessionController;->onVolumeUnmount(Lcom/android/server/storage/ImmutableVolumeInfo;)V",
+    "limit": "The DEX method table establishes the referenced ABI. This collection does not reconstruct Java source or attest the complete method implementation."
+  },
+  "retained_override_history": {
+    "receipt_date": "2026-10-23T17:13:35.683758+00:00",
+    "reported_parent_sha256": "e954c8b2423c370d7f0ff6abdb26c26e1628924dc29a305732a83a51da50678e",
+    "reported_current_sha256": "f33987e633e476f47ea043af3f7fb94907fd2431fa2b5b49df84cb586bce5c50",
+    "reported_change": "22 zero-padding bytes for ZIP alignment; compressed and uncompressed contents reported equal.",
+    "qualification": "Historical receipt claim; current installed SHA matches its v2 output. No Java source commit or original compiler classpath is supplied by this receipt."
+  },
+  "source_reference": {
+    "frameworks_base_commit": "94b4c163b7dfe5ce3607f7bb8456f9573f7de57d",
+    "basis": "Confirmed m600 source manifest and actual local Git HEAD; complete files retrieved from the official AOSP mirror at that commit.",
+    "installed_java_commit_proved": false,
+    "files": [
+      {
+        "path": "frameworks/base/services/core/java/com/android/server/storage/StorageSessionController.java",
+        "git_blob": "0a1271611c8aa80e0de1857d97fbb4041465f78d",
+        "sha256": "05d0f2db32ca635e2a096ec11515e0bf201fb1869d6ead07e060aa893ed6c836",
+        "bytes": 19670,
+        "url": "https://android.googlesource.com/platform/frameworks/base/+/94b4c163b7dfe5ce3607f7bb8456f9573f7de57d/services/core/java/com/android/server/storage/StorageSessionController.java"
+      },
+      {
+        "path": "frameworks/base/services/core/java/com/android/server/storage/StorageUserConnection.java",
+        "git_blob": "e51ea286ff86c61b1b0766fb2e598cc9ed045a32",
+        "sha256": "56ad1318a997930a608c75b4e20fccc72117060577c79853f43d1ec10ffe7d21",
+        "bytes": 23742,
+        "url": "https://android.googlesource.com/platform/frameworks/base/+/94b4c163b7dfe5ce3607f7bb8456f9573f7de57d/services/core/java/com/android/server/storage/StorageUserConnection.java"
+      },
+      {
+        "path": "frameworks/base/services/core/java/com/android/server/storage/ImmutableVolumeInfo.java",
+        "git_blob": "0f8212e23c2043735c2bdbce82e57a771af6d77b",
+        "sha256": "e70e6e88762f1a4816f7ca2de75e522bd041cd184b437fcdafb6c3251ba65ca2",
+        "bytes": 3511,
+        "url": "https://android.googlesource.com/platform/frameworks/base/+/94b4c163b7dfe5ce3607f7bb8456f9573f7de57d/services/core/java/com/android/server/storage/ImmutableVolumeInfo.java"
+      },
+      {
+        "path": "frameworks/base/core/java/android/service/storage/ExternalStorageService.java",
+        "git_blob": "85c62bdc401c7c11b11060d9bc5506f73d821a34",
+        "sha256": "19e8baacf1f19aa7461144cf4946739cf3a0acf42415cdbc584342d57d77f843",
+        "bytes": 10678,
+        "url": "https://android.googlesource.com/platform/frameworks/base/+/94b4c163b7dfe5ce3607f7bb8456f9573f7de57d/core/java/android/service/storage/ExternalStorageService.java"
+      },
+      {
+        "path": "frameworks/base/services/core/Android.bp",
+        "git_blob": "a8fa5805ba52379fa23ba456ff10cb6fd691be11",
+        "sha256": "1c8e701380a377e034da9d5224d4040657666bedafeb862f4e6e7a0959a9717a",
+        "bytes": 12364,
+        "url": "https://android.googlesource.com/platform/frameworks/base/+/94b4c163b7dfe5ce3607f7bb8456f9573f7de57d/services/core/Android.bp"
+      }
+    ]
+  },
+  "candidate": {
+    "patch": "0001-storage-await-single-session-removal-immutable.patch",
+    "patch_sha256": "fdf31c73fad99b55b3479a7b496347a75ccfd2765fce3493b35edbdfa00b861c",
+    "preimage_sha256": "05d0f2db32ca635e2a096ec11515e0bf201fb1869d6ead07e060aa893ed6c836",
+    "candidate_complete_class_sha256": "a1972cb6e5b84303069250bf8289455505a5c48c270acf666e1ed7effafdb8e0",
+    "change": "Only onVolumeUnmount: retain the connection, and let removeSessionAndWait remove/end/wait once.",
+    "clean_apply_matches_complete_candidate": true,
+    "full_class_compile_with_real_dependencies": false,
+    "deployed": false
+  },
+  "dependency_gap": {
+    "runtime_jars_contain_class_files": false,
+    "system_sdk_sha256": "9b47bdf2061a2c7c5a136b4e994092abda910e1bac386b21d7fe91e2d8ad1d78",
+    "system_sdk_class_count": 8537,
+    "required_classes_absent_from_that_sdk": [
+      "android/os/IVold.class",
+      "android/os/storage/VolumeInfo.class",
+      "com/android/internal/annotations/GuardedBy.class",
+      "com/android/server/storage/ImmutableVolumeInfo.class",
+      "com/android/server/storage/StorageUserConnection.class"
+    ],
+    "complete_compiler_classpath_located": false,
+    "limit": "These missing classes are confirmed only for the inspected system SDK. No claim is made that no suitable dependencies exist elsewhere."
+  },
+  "prior_regression_scope": "The original nine-case host method regression in this bundle uses the separately pinned main/VolumeInfo reference variant. It is not a full compile or test of this ImmutableVolumeInfo candidate."
+}

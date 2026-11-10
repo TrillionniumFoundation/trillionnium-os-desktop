@@ -1,0 +1,143 @@
+--- revision06/run_features01.py
++++ revision07/run_features01.py
+@@ -4,8 +4,8 @@
+ from datetime import datetime,timezone
+ import argparse,hashlib,json,os,re,signal,time,types
+ 
+-ROOT=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-06')
+-TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-06')
++ROOT=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-07')
++TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-07')
+ TRANSPORT=Path('/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/camera_transaction.py')
+ TRANSPORT_SHA='e65a47bea8b3800d0b1a89247bd8c356dd291523c2d248d401d05d1d3b55fb83'
+ PINS={'features_ui.py': 'edaf39c50d6ff85748fef1b287bf3875fd51321a0a2a837ff6f30e59a8cd4417', 'package_fixture.py': '596dfb03273f2810cf9f98871668042bb62f85807d6cdad9a113b87003b8d932', 'owned_tree.py': 'e4b19adc1e47719413bfae5656bac8b04f5624c779ee7118b490327e2776a445', 'runtime_evidence.py': 'a8aa502e397187d0460c18efa1da09f46bafce9f019b1048046bfce8d2468c65', 'bounded_diagnostics.py': 'd3ab104ff92a942de1d45855ec3c8d44b742373ce67087e67773d15b46abf064'}
+@@ -14,6 +14,7 @@
+ ALPHA='alpha-'+RUN+'.txt';BETA='beta-'+RUN+'.txt';APP_LABEL='Pocket4 Owned Documents eeff7aa9'
+ DOCS='com.android.documentsui';CLIENT=(PACKAGE,PACKAGE+'.FeaturesActivity')
+ FILES=(DOCS,DOCS+'.files.FilesActivity');PICKER=(DOCS,DOCS+'.picker.PickActivity')
++PRIMARY_TITLE='Cuttlefish';PRIMARY_ROOT_FLAGS=1114139
+ MAX_SECONDS=900;CLEANUP_RESERVE=150
+ REQUIRED_GATES={'GET_CONTENT_CANCEL','TREE_CANCEL','EXACT_TREE_GRANT','FILES_NEW_FOLDER',
+     'FILES_MULTIPLE_COPY','FILES_MULTIPLE_MOVE','FILES_MULTIPLE_DELETE_COPIES',
+@@ -159,10 +160,110 @@
+         names=[n.get('text') for n in sorted(crumbs,key=lambda n:n['bounds_array'][0])]
+         need(names and FOLDER in names and names[-1] in (FOLDER,SOURCE,COPIES),'CURRENT_LOCATION_NOT_OWNED_TREE')
+         if names[-1]==FOLDER:self.location(obs);return obs
+-        node=self.ui.one(obs,lambda n:n.get('resource-id')==DOCS+':id/breadcrumb_text'
+-            and n.get('text')==FOLDER and n.get('enabled') is True and n.get('clickable') is True,
++        # The real flow06 breadcrumb titles are disabled for ancestor entries.
++        # Their enclosing enabled item is handled by the breadcrumb touch router;
++        # requiring a clickable TextView can never match the saved source path.
++        item=self.ui.one(obs,lambda n:n.get('resource-id')==DOCS+':id/breadcrumb_text'
++            and n.get('text')==FOLDER and n.get('class')=='android.widget.TextView'
++            and n.get('visible') is True,
+             'ONE_ACTUAL_OWNED_ROOT_BREADCRUMB')
++        bar=self.ui.one(obs,lambda n:n.get('resource-id')==DOCS+':id/horizontal_breadcrumb'
++            and n.get('class')=='androidx.recyclerview.widget.RecyclerView'
++            and n.get('enabled') is True,'ONE_ACTUAL_BREADCRUMB_BAR')
++        node=self.ui.one(obs,lambda n:n.get('package')==DOCS and n.get('resource-id')==''
++            and n.get('class')=='android.widget.LinearLayout' and n.get('enabled') is True
++            and n.get('visible') is True and n.get('window_id')==item.get('window_id')==bar.get('window_id')
++            and contains(bar.get('bounds_array'),n.get('bounds_array'))
++            and contains(n.get('bounds_array'),item.get('bounds_array')),
++            'ONE_ACTUAL_OWNED_BREADCRUMB_ITEM')
++        b=node['bounds_array'];point=((b[0]+b[2])//2,(b[1]+b[3])//2);t=item['bounds_array']
++        need(t[0]<=point[0]<t[2] and t[1]<=point[1]<t[3],'BREADCRUMB_TOUCH_OUTSIDE_OWNED_TITLE')
++        self.tree.guard()
+         self.ui.input(obs,label,node);out=self.ui.observe(label+'-result',routes);self.location(out);return out
++
++    def primary_root_metadata(self,label):
++        """Only the previously observed provider's root metadata; no file listing."""
++        self.s.guard()
++        raw=self.s.android(['/system/bin/content','query','--uri',
++            'content://com.android.externalstorage.documents/root','--projection',
++            'root_id:flags:title:document_id:available_bytes'],15).decode()
++        self.s.guard()
++        pattern=r'Row: 0 root_id=primary, flags=(\d+), title=Cuttlefish, document_id=primary:, available_bytes=(-?\d+)\n?'
++        match=re.fullmatch(pattern,raw)
++        need(match is not None and int(match[1])==PRIMARY_ROOT_FLAGS,'EXACT_PRIMARY_PROVIDER_ROOT_METADATA_REQUIRED')
++        value={'authority':'com.android.externalstorage.documents','root_id':'primary',
++            'document_id':'primary:','title':PRIMARY_TITLE,'flags':int(match[1]),
++            'available_bytes':int(match[2]),'raw_sha256':sha(raw.encode()),
++            'provider_uid':self.before_packages['com.android.externalstorage']['uid'],
++            'provider_apk_sha256':self.before_packages['com.android.externalstorage']['apk_sha256'],
++            'directory_entries_or_file_contents_queried':False}
++        self.ui.record(label+'-primary-root-metadata',value);return value
++
++    def destination_root(self,obs,label):
++        """Navigate the existing copy/move picker; never write into its default root."""
++        need((obs['focus']['package'],obs['focus']['activity'])==PICKER
++            and not obs['focus'].get('popup'),'OWNED_DESTINATION_PICKER_REQUIRED')
++        crumbs=[n for n in obs['nodes'] if n.get('resource-id')==DOCS+':id/breadcrumb_text']
++        names=[n.get('text') for n in sorted(crumbs,key=lambda n:n['bounds_array'][0])]
++        if FOLDER in names:return self.root_directory(obs,label,(PICKER,))
++        need(names in (['Downloads'],[PRIMARY_TITLE]),'UNRECOGNIZED_DEFAULT_DESTINATION_PRESERVED')
++        self.tree.expect(self.tree.expected,label+'-owned-namespace-before-navigation')
++        root=self.primary_root_metadata(label)
++        if names==['Downloads']:
++            toolbar=self.ui.one(obs,lambda n:n.get('resource-id')==DOCS+':id/toolbar'
++                and n.get('class')=='android.view.ViewGroup' and n.get('enabled') is True,
++                'ONE_ACTUAL_DESTINATION_TOOLBAR')
++            button=self.ui.one(obs,lambda n:n.get('class')=='android.widget.ImageButton'
++                and n.get('content-desc')=='Show roots' and n.get('enabled') is True
++                and n.get('clickable') is True and n.get('package')==DOCS
++                and n.get('window_id')==toolbar.get('window_id')
++                and contains(toolbar.get('bounds_array'),n.get('bounds_array')),
++                'ONE_ACTUAL_SHOW_ROOTS')
++            self.ui.input(obs,label+'-show-roots',button)
++            drawer=self.ui.observe(label+'-roots',[PICKER])
++            # Use the actual unique visible root title returned by the pinned
++            # provider, inside the actual roots list rather than behind it.
++            # No index, guessed position, URI grant or setting toggle.
++            panel=self.ui.one(drawer,lambda n:n.get('package')==DOCS
++                and n.get('resource-id')==DOCS+':id/container_roots'
++                and n.get('enabled') is True and n.get('visible') is True,
++                'ONE_ACTUAL_ROOTS_PANEL')
++            roots=self.ui.one(drawer,lambda n:n.get('package')==DOCS
++                and n.get('resource-id')==DOCS+':id/roots_list'
++                and n.get('enabled') is True and n.get('visible') is True
++                and n.get('window_id')==panel.get('window_id')
++                and contains(panel.get('bounds_array'),n.get('bounds_array')),
++                'ONE_ACTUAL_ROOTS_LIST')
++            title=self.ui.one(drawer,lambda n:n.get('package')==DOCS
++                and n.get('class')=='android.widget.TextView' and n.get('text')==root['title']
++                and n.get('enabled') is True and n.get('visible') is True
++                and n.get('editable') is False and n.get('window_id')==roots.get('window_id')
++                and contains(roots.get('bounds_array'),n.get('bounds_array')),
++                'ONE_ACTUAL_VERIFIED_PRIMARY_ROOT_TITLE')
++            self.ui.input(drawer,label+'-select-primary',title)
++            obs=self.ui.observe(label+'-primary-root',[PICKER])
++        crumbs=[n for n in obs['nodes'] if n.get('resource-id')==DOCS+':id/breadcrumb_text']
++        names=[n.get('text') for n in sorted(crumbs,key=lambda n:n['bounds_array'][0])]
++        need(names==[root['title']],'PRIMARY_ROOT_NAVIGATION_NOT_VERIFIED')
++        need(not any(n.get('resource-id')==DOCS+':id/roots_list'
++            and n.get('visible') is True for n in obs['nodes']),'ROOTS_DRAWER_NOT_CLOSED')
++        self.tree.guard()
++        title=self.ui.one(obs,lambda n:n.get('package')==DOCS and n.get('text')==FOLDER
++            and n.get('class')=='android.widget.TextView' and n.get('enabled') is True
++            and n.get('visible') is True and n.get('editable') is False,
++            'ONE_EXACT_OWNED_FOLDER_IN_PRIMARY_ROOT')
++        row=self.ui.one(obs,lambda n:n.get('resource-id')==DOCS+':id/item_root'
++            and n.get('package')==DOCS and n.get('enabled') is True and n.get('clickable') is True
++            and 16 in n.get('supported_actions',[]) and n.get('window_id')==title.get('window_id')
++            and contains(n.get('bounds_array'),title.get('bounds_array')),
++            'ONE_EXACT_OWNED_FOLDER_CONTAINER')
++        self.ui.input(obs,label+'-open-owned-folder',row)
++        out=self.ui.observe(label+'-owned-root',[PICKER]);self.location(out)
++        self.tree.expect(self.tree.expected,label+'-owned-namespace-after-navigation')
++        self.ui.record(label+'-navigation-verified',{'root_id':root['root_id'],
++            'authority':root['authority'],'owned_folder':FOLDER,'new_URI_grants':0,
++            'file_operation_committed':False,'broader_location_accepted_for_writes':False})
++        return out
+ 
+     def begin_operation(self,label,expected):
+         need(self.operation_pending is None and not self.ui.pending,'PREVIOUS_FILE_OPERATION_UNRESOLVED')
+@@ -262,7 +363,7 @@
+         texts={'Move to…','Move to...','Move to'} if move else {'Copy to…','Copy to...','Copy to'}
+         self.ui.input(menu,label+'-destination-picker',self.control(menu,texts),transition=PICKER)
+         picker=self.ui.observe(label+'-destination-picker',[PICKER],admit=True)
+-        picker=self.root_directory(picker,label+'-destination-root',(PICKER,))
++        picker=self.destination_root(picker,label+'-destination-root')
+         if not move:picker=self.enter_directory(picker,COPIES,label+'-destination-copies',(PICKER,))
+         self.location(picker,'' if move else COPIES)
+         expected=(self.tree.expected-{SOURCE+'/'+ALPHA,SOURCE+'/'+BETA})|{ALPHA,BETA} if move else (

@@ -1,0 +1,78 @@
+--- notification_ui03.py
++++ notification_ui04.py
+@@ -10,7 +10,7 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ CONTACT = Path('/home/alex/work/pocket4-contacts-session-tools-20261105-r12-01')
+-ROOT = Path('/home/alex/work/pocket4-clock-notification-ui-20261105-r12-03')
++ROOT = Path('/home/alex/work/pocket4-clock-notification-ui-20261105-r12-04')
+ SETTINGS = 'com.android.settings'
+ CLOCK = 'com.android.deskclock'
+ COMPONENT = SETTINGS + '/.Settings$AppNotificationSettingsActivity'
+@@ -64,9 +64,17 @@
+ def selected_switch(nodes):
+     visible = [n for n in nodes if n.get('package') == SETTINGS
+                and n.get('visible') is True and n.get('enabled') is True]
+-    require(any(n.get('text') == 'Clock' for n in visible), 'ACTUAL_CLOCK_APP_HEADER_REQUIRED')
+-    labels = [n for n in visible if n.get('text') in
+-              ('All Clock notifications', 'Allow notifications', 'Use notifications', 'Show notifications')]
++    # Actual trial03 exposes the App name as these two content descriptions,
++    # with no TextView whose text is Clock. Bind both exact observed roles.
++    bars = [n for n in visible if n.get('resource-id') == SETTINGS + ':id/collapsing_toolbar'
++            and n.get('class') == 'android.widget.FrameLayout' and n.get('content-desc') == 'Clock']
++    icons = [n for n in visible if n.get('resource-id') == SETTINGS + ':id/entity_header_icon'
++             and n.get('class') == 'android.widget.ImageView' and n.get('content-desc') == 'Clock']
++    require(len(bars) == len(icons) == 1 and type(bars[0].get('window_id')) is int
++            and bars[0]['window_id'] == icons[0].get('window_id'), 'ACTUAL_CLOCK_APP_HEADER_REQUIRED')
++    labels = [n for n in visible if n.get('resource-id') == SETTINGS + ':id/switch_text'
++              and n.get('class') == 'android.widget.TextView' and n.get('text') == 'All Clock notifications'
++              and n.get('window_id') == bars[0]['window_id']]
+     require(len(labels) == 1, 'ONE_EXPLICIT_APP_NOTIFICATION_LABEL_REQUIRED')
+     label = labels[0]
+     # The actual native node schema exposes checked, not checkable. The concrete
+@@ -85,7 +93,8 @@
+     lb = label.get('bounds_array')
+     require(isinstance(lb, list) and len(lb) == 4 and all(type(x) is int for x in lb)
+             and max(lb[1], bounds[1]) < min(lb[3], bounds[3]), 'NOTIFICATION_LABEL_ROW_MISMATCH')
+-    binding = {'label': label, 'switch': switch, 'tap_node': switch, 'clickable_container': None}
++    binding = {'header': {'toolbar': bars[0], 'icon': icons[0]}, 'label': label,
++               'switch': switch, 'tap_node': switch, 'clickable_container': None}
+     if switch.get('clickable') is not True:
+         # A visually explicit main Switch may delegate touches to its real
+         # parent. Keep the child's actual clickable=false value in evidence.
+@@ -106,6 +115,17 @@
+             'UNIQUE_INNER_NOTIFICATION_SWITCH_CONTAINER_REQUIRED')
+         binding.update(tap_node=label, clickable_container=inner[0])
+     return binding
++
++
++def stable_binding(value):
++    # Native IDs are scoped to each accessibility connection. Within every
++    # observation selected_switch requires one consistent native window; across
++    # observations the actual WM token/frame/scope/context remain mandatory.
++    if isinstance(value, dict):
++        return {k: stable_binding(v) for k, v in value.items() if k != 'window_id'}
++    if isinstance(value, list):
++        return [stable_binding(v) for v in value]
++    return value
+ 
+ 
+ def expired(signum, frame):
+@@ -187,7 +207,7 @@
+                     binding = selected_switch(nodes)
+                     oldshot = trial.last_observation['screenshot']
+                     second, fresh = observe('fresh-clock-notifications')
+-                    require(second == focus and selected_switch(fresh) == binding,
++                    require(second == focus and stable_binding(selected_switch(fresh)) == stable_binding(binding),
+                             'OBSERVED_NOTIFICATION_SWITCH_CHANGED')
+                     shot = trial.last_observation['screenshot']
+                     require(all(shot[k] == oldshot[k] for k in ('frame_sha256', 'scope_sha256', 'context_token')),
+@@ -256,7 +276,7 @@
+                       owned_task_remove_calls=trial.removals if trial else 0)
+         if ROOT.is_dir():
+             tx.write_new(ROOT / 'result.json', result)
+-        tx.write_new(HERE / 'clock-notification-ui03-result.json', result, alex_readable=True)
++        tx.write_new(HERE / 'clock-notification-ui04-result.json', result, alex_readable=True)
+         print(json.dumps({k: result.get(k) for k in ('state', 'error', 'terminal_error', 'setting_inputs', 'pending_effect')}))
+     return 0 if result['state'] == 'CLOCK_NOTIFICATION_ENABLED_VIA_EXACT_OWNED_SETTINGS_UI' else 1
+ 

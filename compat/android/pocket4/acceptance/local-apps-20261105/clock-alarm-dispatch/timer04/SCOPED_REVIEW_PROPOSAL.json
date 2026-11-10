@@ -1,0 +1,50 @@
+{
+  "clock_persist_gate_passed": false,
+  "clock_timer_complete_gate_passed": false,
+  "proposed_gate_review": {
+    "android_user": 0,
+    "apk_sha256": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+    "checks": {
+      "lifecycle": "passed",
+      "ui_observation": "passed"
+    },
+    "evidence": [
+      {
+        "bytes": 6241,
+        "path": "inputs/clock-timer04/TIMER04_TERMINAL_SELECTED.json",
+        "sha256": "dbbdeffb3382f24355ee667d65f69b905ed8513accfbbf3607418e66ebe6205d"
+      },
+      {
+        "bytes": 4322,
+        "path": "inputs/clock-timer04/SCHEDULER_INDEPENDENT_REVIEW04.json",
+        "sha256": "1215cc30cb7d21b29b42f06ef3a5525d7fd93412641e07b342de5beb4c95cb52"
+      },
+      {
+        "bytes": 326,
+        "path": "inputs/clock-timer04/TERMINAL_JOB_SELECTED.json",
+        "sha256": "46579fb8dea41fadd81bfa84c01059c53aa49b6362d0e03d46fd9bef2f6ca943"
+      }
+    ],
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "id": "clock_timer04_current433ff_ui_and_lifecycle",
+    "observed_at_utc": "2026-11-05T21:50:38.976796+00:00",
+    "package": "com.android.deskclock",
+    "qualification_scope": "This exact current APK: real owned timer controls, exact readback, two owned normal task closes and paused-state reopen.",
+    "reviewed_at_utc": "2026-11-05T22:01:09.916759+00:00",
+    "reviewer": "camera_runtime_review_actual_timer04_with_independent_root_result_review",
+    "scope": "scoped",
+    "uid": 10063,
+    "unresolved_findings": [
+      "clock.timer explicitly includes completion; this core trial deliberately did not expire.",
+      "clock.persist explicitly includes alarm/timezone behavior; timer persistence does not satisfy it.",
+      "The original scheduler_cancellation_verified=false is preserved; the separate saved review verifies the current cancellation records.",
+      "No stress, audio output, real desktop notification interaction or complete release-scope qualification is granted.",
+      "No business qualification from a prior APK is inherited."
+    ],
+    "version_code": 37
+  },
+  "registry_edits": 0,
+  "schema": "clock-timer04-scoped-review-proposal/v1",
+  "state": "PROPOSED_FOR_ROOT_REVIEW_NOT_APPLIED",
+  "whole_app_production_ready": false
+}

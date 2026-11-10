@@ -1,0 +1,19 @@
+{
+  "actual_schema_source_sha256": "e151cc6edc46f8bfed7fb7f2f730efa683ae9dc1679d8a04248f28936790075f",
+  "android_mutations": 0,
+  "changes": [
+    "build08.py",
+    "src/com/android/calendar/alerts/AlertIdentity.java",
+    "src/com/android/calendar/alerts/RestoredAlerts.java",
+    "tests/AlertIdentityTest.java"
+  ],
+  "defect": "Actual CalendarAlerts schema uses INTEGER PRIMARY KEY without AUTOINCREMENT. Old notification PendingIntent row ID alone does not bind event/occurrence if row ID is reused.",
+  "host_tests": "pending actual build",
+  "installed": false,
+  "preimage_source07_unchanged": true,
+  "repair": "Immutable action and content PendingIntent identifiers include complete alert identity; the authenticated consumer verifies that identity before Snooze/Dismiss/Open acknowledgement. An invalid stale action returns without cancelling a new notification.",
+  "schema": "calendar-notification-identity-build-review-v1",
+  "source_manifest_sha256": "7416e5a1b3542b76b230143e23cddde9caf95897d51bbe837aaec3da86d3a133",
+  "unchanged": "07 snooze journal/recovery policy, editor/detail/recurrence, original smali patch, manifest/resources/permissions",
+  "whole_app_production_ready": false
+}

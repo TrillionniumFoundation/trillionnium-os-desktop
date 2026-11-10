@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "state": "INSTALLED_VERIFIED_CAMERA_CONNECTION_BLOCKED",
+  "base_commit": "9b8f4fb09e6c9d12f23f83ccd7a0071b699a7f54",
+  "source_sha256": "0f35f1675d8977aed5b80141b380bd29bf995c8c48db73d688eff46b879c39ad",
+  "signed_candidate": {
+    "success": true,
+    "apk_name": "Camera2-pocket4-checked-disconnect.apk",
+    "apk_sha256": "0218041bc46f49c0c9622196e2a3610c641e0cc8f12386f23cdd88dc3a3ce18e",
+    "apk_bytes": 11892407,
+    "unsigned_sha256": "42caf9ca1d42069b3baf91a01d020f3001ee744061f655d01376dc851ede4894",
+    "source_sha256": "0f35f1675d8977aed5b80141b380bd29bf995c8c48db73d688eff46b879c39ad",
+    "certificate_sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+    "signature_v3_verified": true,
+    "alignment_16k_verified": true,
+    "payload_byte_preserved": true,
+    "commands": [
+      {
+        "label": "sign",
+        "returncode": 0,
+        "elapsed_seconds": 0.8315946750808507,
+        "executable_sha256": "52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f"
+      },
+      {
+        "label": "signature-verify",
+        "returncode": 0,
+        "elapsed_seconds": 0.3562187480274588,
+        "executable_sha256": "52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f"
+      },
+      {
+        "label": "alignment-verify",
+        "returncode": 0,
+        "elapsed_seconds": 0.0026420579524710774,
+        "executable_sha256": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758"
+      }
+    ],
+    "installed": true,
+    "production_ready": false,
+    "new_release_signing_identity_created": false
+  },
+  "host_tests": {
+    "original_cases": 15,
+    "new_cases": 11,
+    "candidate_passed": 26,
+    "preimage_expected_failures": 3
+  },
+  "main": "Existing R16 runtime; no native-engine or supervisor update performed by this increment",
+  "whole_app_production_ready": false,
+  "photo_persistence_verified": false,
+  "normal_sdk_build_job": "1a1aa2733b4-fc05-3e44",
+  "sign_job": "1a1aa29febd-fc05-3e7d",
+  "installed": true,
+  "installation_job": "1a1aa38d396-fc05-3f61",
+  "installation_evidence": "evidence/camera-installed-verified.json",
+  "data_identity_preserved": true,
+  "physical_preview_verified": false,
+  "acceptance": {
+    "job_id": "1a1aa3b19d3-fc05-3f91",
+    "success": false,
+    "error": "Camera error: Can't connect to the camera.",
+    "native_launch_calls": 1,
+    "shutter_calls": 0,
+    "normal_owned_remove_calls": 1,
+    "outcome_unknown": false,
+    "evidence": "evidence/camera-accept01-unready-shutter.json"
+  }
+}

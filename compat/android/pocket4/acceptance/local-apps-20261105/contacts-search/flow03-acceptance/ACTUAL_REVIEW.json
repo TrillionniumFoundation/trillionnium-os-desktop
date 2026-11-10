@@ -1,0 +1,84 @@
+{
+  "actual02_source": {
+    "bytes": 12432,
+    "path": "contacts-search08/flow02/actual-result.json",
+    "sha256": "bec1ffc28b2506656caac1d539c71a11a6ed07c8a966f6115fd0b2b0460c365f"
+  },
+  "actual03_business": {
+    "Main_before_after_equal": true,
+    "UI_delete_verified": true,
+    "actual_search_query_observed": true,
+    "all_pending_empty": true,
+    "created_contact_ids": {
+      "contact_id": "6",
+      "name_data_id": "6",
+      "raw_contact_id": "6"
+    },
+    "edited_name_persisted_after_normal_close_and_new_task": true,
+    "launched_and_normally_closed_tasks": [
+      992,
+      993
+    ],
+    "matching_result_opened_then_same_owned_detail_readback": true,
+    "native_helper_before_after_equal": true,
+    "native_inputs": 12,
+    "owned_tombstones": 0,
+    "provider_fallback_cleanup_calls": 0,
+    "raw_contact_baseline_restored": true,
+    "same_ids_across_all_owned_phases": true
+  },
+  "actual03_job": "1a1ad7f24e0-fc05-5a10",
+  "actual03_source": {
+    "bytes": 18101,
+    "path": "contacts-search08/flow03-prepared/actual-result03-original.json",
+    "sha256": "68bb2c2b70b94862f6032a3bd9de49321b275dcac3eac81953064a00057c3498"
+  },
+  "actual03_terminal": "succeeded/0, complete and durable",
+  "not_qualified": [
+    "Whole-app production readiness",
+    "General stress/stability",
+    "Complete data and permission behavior",
+    "Release qualification",
+    "Crash/ANR absence over an independently complete diagnostics window",
+    "Arbitrary pre-existing contact data or account synchronization"
+  ],
+  "original02_retained": {
+    "UI_delete_credit": false,
+    "cleanup_verified": true,
+    "closed_tasks": [
+      989,
+      990
+    ],
+    "contact_id": "5",
+    "error": "RuntimeError: REVIEWED_SNAPSHOT_CHANGED",
+    "inputs": 8,
+    "opened_search_result": false,
+    "provider_fallback_cleanup_calls": 1,
+    "state": "FAILED"
+  },
+  "privacy": {
+    "account_topology_and_raw_UI_not_published": true,
+    "originals_preserved": true,
+    "withheld_dependencies_have_original_sha_and_no_replacement_executable": true
+  },
+  "recommendation_to_root": {
+    "matrix_changed_by_this_review": false,
+    "no_automatic_credit": true,
+    "scope": [
+      "contacts.persist"
+    ]
+  },
+  "review_calls": {
+    "UI": 0,
+    "device": 0,
+    "mutation": 0,
+    "network": 0
+  },
+  "schema": "contacts03-independent-retained-evidence-review/v1",
+  "source_bound_success_requirements": {
+    "Contacts_and_ContactsProvider_full_APK_UID_version_rechecked_before_and_after": true,
+    "explanation": "These checks are in the exact frozen controller/verifier; a failure creates final_error/outer_error and forces failed exit. The result and terminal status satisfy that success path. No separate raw package/task dump is represented as part of this selected result.",
+    "final_exact_task_851_and_original_stack_required": true
+  },
+  "state": "SCOPED_CONTACT_PERSISTENCE_SEARCH_OPEN_AND_UI_DELETE_SUPPORTED"
+}

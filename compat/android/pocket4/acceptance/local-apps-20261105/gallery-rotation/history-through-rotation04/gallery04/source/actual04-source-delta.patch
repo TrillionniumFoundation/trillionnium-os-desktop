@@ -1,0 +1,77 @@
+--- controller03/run_rotation03.py
++++ controller04/run_rotation04.py
+@@ -5,13 +5,13 @@
+ import argparse,hashlib,io,json,os,re,signal,time,types,xml.etree.ElementTree as ET
+ from PIL import Image
+ 
+-ROOT=Path('/home/alex/work/pocket4-gallery-rotation-flow-20261105-r12-03')
+-TOOLS=Path('/home/alex/work/pocket4-gallery-rotation-tools-20261105-r12-03')
++ROOT=Path('/home/alex/work/pocket4-gallery-rotation-flow-20261105-r12-04')
++TOOLS=Path('/home/alex/work/pocket4-gallery-rotation-tools-20261105-r12-04')
+ TRANSPORT=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ TRANSPORT_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+-PREVIOUS_CLEANUP=Path('/home/alex/work/pocket4-gallery-rotation-flow-20261105-r12-02/result.json')
+-PREVIOUS_CLEANUP_SHA='924045a84d21877a2010552e4f1b5c42508a9193c5f47d709745420233bf1c88'
+-PINS={'rotation_ui.py': 'ac885a393ff6b3e6cc477bb9c0acf55284fe3e4c92474fb82571884d07d9b650', 'rotation_package.py': '44abbfe0193905a7b3a6137b4bb95dafc8d6cec4d795e8b258b97508cdd83dd4', 'owned_media.py': '95b6c90fbc9ac22c41ca2c35d9ba3a13ce140de9cc52f710f2b5fd080506ae9b', 'verify_rotation.py': '934c70dd3e3f9c4174aaafbbb47b5ee8b2eb195d15c4fa18d2891ec995973093', 'bounded_diagnostics.py': 'c0eaf47627b31793b3c90d875ce74761ae9c98e749fc437a422e73c2da66a947'}
++PREVIOUS_CLEANUP=Path('/home/alex/work/pocket4-gallery-rotation-cleanup-route03-20261105-r12-02/result.json')
++PREVIOUS_CLEANUP_SHA='e516969360562edbc59a13b6fab34c9976ea3e56b7e61577e36675364846a27a'
++PINS={'rotation_ui.py': '2ad57b62514cd0cc45056c34d5c30a3df0240d800394701f408b02f212be4ccf', 'rotation_package.py': '44abbfe0193905a7b3a6137b4bb95dafc8d6cec4d795e8b258b97508cdd83dd4', 'owned_media.py': '95b6c90fbc9ac22c41ca2c35d9ba3a13ce140de9cc52f710f2b5fd080506ae9b', 'verify_rotation.py': '934c70dd3e3f9c4174aaafbbb47b5ee8b2eb195d15c4fa18d2891ec995973093', 'bounded_diagnostics.py': 'c0eaf47627b31793b3c90d875ce74761ae9c98e749fc437a422e73c2da66a947'}
+ RUN='d24b61ed8f7c9a03';PACKAGE='org.droidloom.qa.galleryrotation.r12.n'+RUN
+ GALLERY='com.android.gallery3d'
+ GALLERY_SHA='347c376f07a4365fa3828ddf9f011994fe527a53fd2f5bd059997ffd3904d46e'
+@@ -33,23 +33,30 @@
+ 
+ def completed_previous_cleanup(tx,session):
+     value=json.loads(tx.read_regular(PREVIOUS_CLEANUP,PREVIOUS_CLEANUP_SHA,32768))
+-    cleanup=value.get('cleanup',{});media=cleanup.get('media_cleanup',{});package=cleanup.get('package_cleanup',{})
+-    need(value.get('state')=='FAILED' and value.get('error')=='RuntimeError:ONE_EXPLICIT_OWNED_ALBUM_BUTTON'
+-        and value.get('native_launches')==1 and value.get('normal_closed_tasks')==[1000]
+-        and value.get('owned_tasks')=={} and value.get('native_pending')=={}
+-        and all(value.get(key) is None for key in ('helper_pending','client_pending','rotation_pending',
+-            'album_pending','close_pending','directory_pending'))
++    media=value.get('media_cleanup',{});package=value.get('package_cleanup',{})
++    need(value.get('state')=='EXACT_RECONCILED_GALLERY03_TASK_AND_FIXTURE_CLEANED'
++        and value.get('cleanup_verified') is True and value.get('outcome_unknown') is False
++        and value.get('task_remove_calls')==1 and value.get('normal_closed_tasks')==[1005]
++        and value.get('task_set_restored') is True and value.get('owned_tasks')=={}
++        and value.get('native_pending')=={}
++        and all(value.get(key) is None for key in ('pending_effect','close_pending','directory_pending'))
+         and value.get('install_pending') is False and value.get('uninstall_pending') is False
+-        and value.get('rotation_input_calls')==0 and value.get('gates')=={}
+-        and value.get('instrument_calls')==['seed','delete']
+-        and cleanup.get('errors')==[] and cleanup.get('task_set_restored') is True
++        and value.get('image_delete_calls')==2 and value.get('deleted_image_ids')==[100,98]
++        and value.get('directory_rmdir_calls')==value.get('directory_delete_calls')==2
++        and value.get('uninstall_calls')==1
+         and media.get('physical_and_indexed_owned_directories_absent') is True
+         and media.get('owned_image_rows_absent') is True and media.get('physical_owned_image_files_absent') is True
+         and media.get('backing_unlink_and_both_path_views_verified') is True
+         and media.get('directory_rmdir_calls')==media.get('directory_provider_delete_calls')==2
+-        and package.get('package_absent_verified') is True and package.get('data_directories_absent') is True
+-        and cleanup.get('stage_cleanup',{}).get('staged_apk_removed') is True
+-        and value.get('original_media_preserved') is True
++        and package.get('package_absent_verified') is True
++        and package.get('package_uninstalled_verified') is True and package.get('data_directories_absent') is True
++        and value.get('Open_replayed') is False and value.get('lease_extended') is False
++        and value.get('helper_invocations')==value.get('rotation_input_calls')==value.get('UI_touch_inputs')==0
++        and value.get('original_failed_and_unknown_unchanged') is True
++        and value.get('original_history_bytes_unchanged') is True
++        and value.get('original_failed_result_sha256')=='41a2a9c45ab1e04fc70774f711384b701b7e495b8a46011f97cd18f0c0f0fb66'
++        and value.get('original_readonly_result_sha256')=='8f13efcbd0f8a3f80e11b648a9b2866c0d75b2d871c4ff329b36bd11b53e822d'
++        and value.get('original_media_preserved') is True and media.get('original_media_preserved') is True
+         and value.get('gallery_before')==value.get('gallery_after')
+         and value.get('guard_before')==value.get('guard_after')==session.guard(),
+         'PREVIOUS_GALLERY_FIXTURE_NOT_VERIFIABLY_CLEAN')
+--- controller03/rotation_ui.py
++++ controller04/rotation_ui.py
+@@ -318,8 +318,8 @@
+             and (foreground['package'],foreground['activity'],foreground['task'])==(GALLERY,FILES,task),
+             'ACTUAL_GALLERY_TOP_FOCUS_REQUIRED')
+         raw=self.s.android(['/system/bin/dumpsys','activity','activities',GALLERY],12).decode()
+-        blocks=re.split(r'(?=^\s*\* Hist #\d+: ActivityRecord\{)',raw,flags=re.M)
+-        expression=r'^\s*\* Hist #\d+: ActivityRecord\{[^\n]*\bu0 '+re.escape(GALLERY)+r'/(?:\.app\.GalleryActivity|com\.android\.gallery3d\.app\.GalleryActivity) t'+str(task)+r'\b'
++        blocks=re.split(r'(?=^[ \t]*\* Hist[ \t]+#\d+: ActivityRecord\{)',raw,flags=re.M)
++        expression=r'^[ \t]*\* Hist[ \t]+#\d+: ActivityRecord\{[^\n]*\bu0 '+re.escape(GALLERY)+r'/(?:\.app\.GalleryActivity|com\.android\.gallery3d\.app\.GalleryActivity) t'+str(task)+r'\b'
+         selected=[block for block in blocks if re.search(expression,block)]
+         need(len(selected)==1,'EXACT_TOP_GALLERY_ACTIVITY_RECORD_REQUIRED')
+         block=selected[0]

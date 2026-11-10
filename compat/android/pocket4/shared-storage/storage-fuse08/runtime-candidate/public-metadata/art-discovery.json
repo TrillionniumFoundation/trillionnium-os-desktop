@@ -1,0 +1,53 @@
+{
+  "UI_actions": 0,
+  "boot_classpath_files": 52,
+  "classpath_origin": "Actual fixed Main zygote and system_server environment; held root FDs prove the recorded init/zygote or init/system_server files have the same backing.",
+  "discovery_collector_sha256": "605a30fe58ad9fb49bb62d85750a2d558686ea5730d000b3d703e88dde9e8aa5",
+  "existing_artifacts_modified": false,
+  "exit_code": 0,
+  "help_outcomes": {
+    "dex2oat64": "Exit 1, directs usage text to the Android log; command did not verify a DEX.",
+    "oatdump": "Exit 1 for --help and prints actual usage/options."
+  },
+  "job_id": "1a1ab03fbb5-fc05-4972",
+  "mapped_artifact_count": 75,
+  "private_complete_result_sha256": "614f0c61ec4956a626edb06950bb6b7494ed856dc1dc2c45ac8bfd748421bab9",
+  "private_maps_and_complete_environments_included": false,
+  "scope": "Read-only installed ART/classpath discovery, not ART verification",
+  "system_server_classpath_files": 28,
+  "tools": {
+    "dex2oat": {
+      "bytes": 1385312,
+      "elf_machine": 62,
+      "interpreter": "/system/bin/linker64",
+      "path": "/apex/com.android.art/bin/dex2oat",
+      "sha256": "8e9e861e0cf4e1f74020172e7791c52c6f97939e72b99be6f4f8862049fc3b8e",
+      "system_server_same_backing": true
+    },
+    "dex2oat64": {
+      "bytes": 1385312,
+      "elf_machine": 62,
+      "interpreter": "/system/bin/linker64",
+      "path": "/apex/com.android.art/bin/dex2oat64",
+      "sha256": "8e9e861e0cf4e1f74020172e7791c52c6f97939e72b99be6f4f8862049fc3b8e",
+      "system_server_same_backing": true
+    },
+    "dexdump": {
+      "bytes": 134680,
+      "elf_machine": 62,
+      "interpreter": "/system/bin/linker64",
+      "path": "/apex/com.android.art/bin/dexdump",
+      "sha256": "c55ff2ad7fc14bc1af5f55412d5707d32256b58899beb9f48ac7a2c0d1bc991c",
+      "system_server_same_backing": true
+    },
+    "oatdump": {
+      "bytes": 367352,
+      "elf_machine": 62,
+      "interpreter": "/system/bin/linker64",
+      "path": "/apex/com.android.art/bin/oatdump",
+      "sha256": "4b95cedd2d66250d220a0d650de0a619fa7256099830e0e3fb273e4e99db0a3b",
+      "system_server_same_backing": true
+    }
+  },
+  "verifier_run": false
+}

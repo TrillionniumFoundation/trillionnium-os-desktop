@@ -1,0 +1,78 @@
+{
+  "android_user": 0,
+  "apk_sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172",
+  "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "limits": [
+    "These are historical observations on the identified APK, not a current runtime probe.",
+    "Historical Alarm Stats and App Alarm history are not current pending alarms.",
+    "Expiry04, host Notify delivery, audio output, alarm workflow, and whole-app readiness remain unqualified."
+  ],
+  "new_device_commands_or_UI_actions_during_review": 0,
+  "original_core_finished_utc": "2026-11-05T14:48:34.547728+00:00",
+  "original_core_result_modified": false,
+  "original_core_result_sha256": "ed01ff52b5dfee169a1218e23836ebe5eb6392cf8e589d3082fd172bc1223c6d",
+  "original_core_started_utc": "2026-11-05T14:46:50.460311+00:00",
+  "own_timer_deleted": true,
+  "owned_tasks_normally_closed": [
+    954,
+    955
+  ],
+  "owned_timer_id": 0,
+  "package": "com.android.deskclock",
+  "phases": [
+    {
+      "active_clock_pending_count": 0,
+      "clock_uid_pending_count": 0,
+      "phase": "before"
+    },
+    {
+      "active_clock_pending_count": 1,
+      "clock_uid_pending_count": 1,
+      "phase": "created-running"
+    },
+    {
+      "active_clock_pending_count": 0,
+      "clock_uid_pending_count": 0,
+      "phase": "paused"
+    },
+    {
+      "active_clock_pending_count": 1,
+      "clock_uid_pending_count": 1,
+      "phase": "resumed"
+    },
+    {
+      "active_clock_pending_count": 0,
+      "clock_uid_pending_count": 0,
+      "phase": "paused-after-resume"
+    },
+    {
+      "active_clock_pending_count": 0,
+      "clock_uid_pending_count": 0,
+      "phase": "deleted"
+    }
+  ],
+  "reader": {
+    "compressed_artifact_bytes": 18747,
+    "compressed_artifact_sha256": "2c335de6d88259a24392167ffca6fd0d5bd38acc043d07c73bb209cf744cd8cd",
+    "exit_code": 0,
+    "full_saved_export_bytes": 188550,
+    "full_saved_export_sha256": "ba1cdf550bc9bd3e80049ef0a6e8db7d3e86fc52eab3c6f8272adf896db5b78d",
+    "job_id": "1a1ac4c7c28-fc05-5372",
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "timed_out": false
+  },
+  "schema": "clock-core03-scheduler-independent-review-v1",
+  "state": "HISTORICAL_CURRENT_APK_SCHEDULE_AND_CANCEL_VERIFIED",
+  "timer_comprehensive_gate_passed": false,
+  "uid": 10063,
+  "verified": [
+    "creation registers one current foreground-service timer alarm",
+    "pause removes the current timer alarm",
+    "resume registers one new current timer alarm",
+    "second pause removes that current timer alarm",
+    "delete leaves no Clock pending alarm or timer object"
+  ],
+  "whole_app_production_ready": false
+}

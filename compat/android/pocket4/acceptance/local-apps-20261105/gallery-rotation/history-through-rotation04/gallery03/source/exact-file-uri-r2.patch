@@ -1,0 +1,20 @@
+--- unexecuted/cleanup_route03.py
++++ cleanup_route03_r2.py
+@@ -8,7 +8,7 @@
+ from datetime import datetime,timezone
+ import argparse,gzip,hashlib,json,os,re,signal,types,xml.etree.ElementTree as ET
+ 
+-OUT=Path('/home/alex/work/pocket4-gallery-rotation-cleanup-route03-20261105-r12-01')
++OUT=Path('/home/alex/work/pocket4-gallery-rotation-cleanup-route03-20261105-r12-02')
+ SOURCE=Path('/home/alex/work/pocket4-gallery-rotation-flow-20261105-r12-03')
+ TOOLS=Path('/home/alex/work/pocket4-gallery-rotation-tools-20261105-r12-03')
+ FAILED_SHA='41a2a9c45ab1e04fc70774f711384b701b7e495b8a46011f97cd18f0c0f0fb66'
+@@ -233,7 +233,7 @@
+                     need(media.file(role)==bound['media'][role]['file'],'EXACT_ORIGINAL_IMAGE_BYTES_OR_IDENTITY_CHANGED')
+                     need(private(session)==bound['private_state'],'PRIVATE_PHASE_CHANGED_BEFORE_IMAGE_DELETE')
+                     where=media_mod.exact_row_predicate(expected)
+-                    uri='content://media/external_primary/images/media/'+str(identity_id)
++                    uri='content://media/external_primary/file/'+str(identity_id)
+                     query=['/system/bin/content','query','--user','0','--uri',uri,'--projection','_id','--where',where]
+                     text=session.android(query,25).decode();record('exact-image-provider-query',{'role':role,'stdout':text,'where':where})
+                     need(re.fullmatch(r'Row: 0 _id='+str(identity_id)+r'[ \t\r\n]*',text),'EXACT_IMAGE_PROVIDER_QUERY_REQUIRED')

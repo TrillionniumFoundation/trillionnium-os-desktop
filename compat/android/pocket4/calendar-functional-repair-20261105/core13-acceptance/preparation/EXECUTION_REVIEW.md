@@ -1,0 +1,17 @@
+# Core13: same Calendar11 APK, bounded local UI decisions
+
+This is an unexecuted controller revision. Calendar11 remains installed at APK SHA256 `00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f`. No package install, permission change, account registration, or external communication is added.
+
+Core12's complete `CoreFlow` business class is AST-identical. The original private adapter is byte-identical (`e9839731…`). The one-event phases, exact Provider reads, unknown-effect fences, first-use requirement, normal-close checks and exact empty-calendar cleanup all remain. The 720-second lease, 90-second cleanup allowance, 48-command ceiling, 36-action ceiling and maximum two native launches are unchanged.
+
+The local driver makes 23 decisions through the existing `flow.step` interface using each current observation. Selectors come from the actual Core12 controls and remain exact and unique. Any exception ends the driver; neither unknown effects nor explicit pre-input rejections are automatically retried. Driver execution replaces remote JSONL round trips, so no separate controller daemon or RPC framework is introduced.
+
+The new adapter subclass changes only a small whitelist of already observed, visible, enabled, clickable `android.widget.Button` controls in the Calendar package. It retains full geometry within the owned scope, two real window/context/geometry captures, a fresh unique full node match, and final task/focus checks. Only connection-specific accessibility `window_id` differs across separate observations. The installed v2 action runner performs its own same-connection re-resolution, identity equality and refresh before one `ACTION_CLICK`. A returned target must equal the actual target and the original complete node. Pixel equality is not an input identity requirement for this semantic Button operation. All other inputs call the original adapter, including pointer inputs and the existing semantic text setter.
+
+The exact installed native action APK (`a5368465…`, UID10125/version2) is read before and after the flow. Its source contract was extracted earlier from that APK; the independent peer review and source hashes are included. The same strict b227 transport and original 12288 profile remain. No Main resource value or guard is modified.
+
+Eighteen host boundary tests passed. They use the full saved real Core12 Save node and selected saved Core12 controls; injected host transport outcomes test changed windows, duplicate or moved nodes, target mismatch, known no-effect, unknown effects, post-capture ambiguity and absence of automatic retries. These tests do not execute Android and do not grant a runtime or business gate.
+
+Execution is one create-only stage-and-exec request in a new remote tools directory and one new journal root. The stage verifies each source digest and uses exclusive file creation, then `execv` propagates the original controller exit status. The outer durable process timeout is 840 seconds, enclosing the unchanged 720+90 second internal limits. A timeout or unknown admission is reconciled against the original job without creating another request identity.
+
+The original Core12 failed result, late unknown terminal-write receipt, read-only reconciliation and independent cleanup are frozen separately. Core13 starts only from a fresh zero-calendar/event baseline after the current UI owner explicitly hands off. No earlier failure is overwritten or treated as passed.

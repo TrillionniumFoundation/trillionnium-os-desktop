@@ -1,0 +1,31 @@
+--- frozen04/timer_expiry04.py
++++ profile6144-05/timer_expiry05.py
+@@ -5,8 +5,8 @@
+ import argparse, copy, hashlib, json, re, signal, time, types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-clock-timer-expiry-20261105-r12-04')
+-PUBLIC = HERE / 'clock-timer-expiry04-result.json'
++ROOT = Path('/home/alex/work/pocket4-clock-timer-expiry-20261105-r12-05')
++PUBLIC = HERE / 'clock-timer-expiry05-result.json'
+ PACKAGE = 'com.android.deskclock'
+ ALERT = PACKAGE + '.timer.ExpiredTimersActivity'
+ DURATION = 60000
+@@ -14,7 +14,7 @@
+     'core': ('/home/alex/work/pocket4-clock-session-tools-20261105-r12-01/timer01.py', '873c5e61a0c87658d81cce5b2a085b3516515a8bbe61e4ba5e18f69d23a3b041'),
+     'notifications': ('/home/alex/work/pocket4-clock-session-tools-20261105-r12-01/notification_ui04.py', '1c986fab2058b3270320139a1346260be4e3313a3fdc9dc3dc82e07c52eab85d'),
+ }
+-OBSERVER_PINS = {'read_clock_expired_text02.py': '93a25eacc015e5e87a12a0cd55a9b97c8a7fd7068dd6c691a56b9c77b2a1af6f', 'notify_watch03.py': 'c85831423987f2cd5d1d1d2a37b14f9c3be2f8c6af62986ecafafb9c28a8c436', 'notify_proof.py': '9e8c5df6fda3ac2e80d8674f8717ad7916de99f4b945692c6c8bdccbfcd6ffdb', 'audio_observe.py': '5c6a49c7ee119c457d60072fbd25ea5ff1b23a577ad2504ba5fcbfc3fe01fdac'}
++OBSERVER_PINS = {'read_clock_expired_text02.py': '6f996dc4d8544d54520c76121308d7dba0cdbd58bbeda9a06fd84889dc3373b6', 'notify_watch03.py': 'c85831423987f2cd5d1d1d2a37b14f9c3be2f8c6af62986ecafafb9c28a8c436', 'notify_proof.py': '9e8c5df6fda3ac2e80d8674f8717ad7916de99f4b945692c6c8bdccbfcd6ffdb', 'audio_observe.py': '5c6a49c7ee119c457d60072fbd25ea5ff1b23a577ad2504ba5fcbfc3fe01fdac'}
+ ALARM_SHA = '655c545ee9487dc380100d6300376d0bb82d0d12beddd96f283ab7814ff19fea'
+ 
+ 
+@@ -445,7 +445,7 @@
+     proof = load(str(HERE/'notify_proof.py'), OBSERVER_PINS['notify_proof.py'])
+     audio = load(str(HERE/'audio_observe.py'), OBSERVER_PINS['audio_observe.py'])
+     core.PINS = dict(core.PINS)
+-    core.PINS['model'] = (str(HERE / 'read_clock_expired_text02.py'), '93a25eacc015e5e87a12a0cd55a9b97c8a7fd7068dd6c691a56b9c77b2a1af6f')
++    core.PINS['model'] = (str(HERE / 'read_clock_expired_text02.py'), '6f996dc4d8544d54520c76121308d7dba0cdbd58bbeda9a06fd84889dc3373b6')
+     core.DURATION = DURATION  # Private module only; frozen timer01 bytes stay unchanged.
+     modules = {name: core.load(*pin) for name, pin in core.PINS.items()}
+     base, loop, model, shared, timer = [modules[x] for x in ('base', 'loop', 'model', 'shared', 'timer')]

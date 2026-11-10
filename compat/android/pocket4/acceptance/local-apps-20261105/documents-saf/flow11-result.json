@@ -1,0 +1,240 @@
+{
+  "automatic_retry": false,
+  "business_flow_completed": true,
+  "cleanup": {
+    "errors": [],
+    "file_cleanup": {
+      "directory_removed_verified": true,
+      "fallback_file_unlink": false,
+      "file_contents_written_by_host": false
+    },
+    "package_absent_verified": true,
+    "package_uninstalled_verified": true,
+    "staged_apk_removed": true
+  },
+  "confirmed_no_effect_fresh_decisions": [
+    2,
+    3
+  ],
+  "elapsed_seconds": 110.69137823197525,
+  "final_guard": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  },
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "gates": {
+    "CREATE_WRITE_READ_OK": {
+      "client_status": {
+        "bytes": 87,
+        "content_readbacks": 1,
+        "content_writes": 1,
+        "create_picker_calls": 1,
+        "error": "",
+        "files_launch_calls": 0,
+        "files_view_results": 0,
+        "open_picker_calls": 0,
+        "pending": "",
+        "phase": "CREATE_WRITE_READ_OK",
+        "provider_delete_calls": 0,
+        "provider_rename_calls": 0,
+        "reopen_reads": 0,
+        "run": "69814e80ea71f485",
+        "sha256": "5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7",
+        "uri": "content://com.android.externalstorage.documents/document/primary%3APocket4_SAF_r12_69814e80ea71f485%2Fcreated-69814e80ea71f485.txt"
+      },
+      "passed": true
+    },
+    "DELETE_PROVIDER_ACK": {
+      "client_status": {
+        "bytes": 87,
+        "content_readbacks": 7,
+        "content_writes": 1,
+        "create_picker_calls": 1,
+        "error": "",
+        "files_launch_calls": 1,
+        "files_view_results": 1,
+        "open_picker_calls": 1,
+        "pending": "",
+        "phase": "DELETE_PROVIDER_ACK",
+        "provider_delete_calls": 1,
+        "provider_rename_calls": 1,
+        "reopen_reads": 1,
+        "run": "69814e80ea71f485",
+        "sha256": "5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7",
+        "uri": "content://com.android.externalstorage.documents/document/primary%3APocket4_SAF_r12_69814e80ea71f485%2Ffiles-ui-69814e80ea71f485.txt"
+      },
+      "passed": true
+    },
+    "FILES_UI_RENAME": {
+      "new_name": "files-ui-69814e80ea71f485.txt",
+      "old_name_absent": true,
+      "passed": true,
+      "sha256": "5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7"
+    },
+    "FILES_VIEW_OK": {
+      "client_status": {
+        "bytes": 87,
+        "content_readbacks": 4,
+        "content_writes": 1,
+        "create_picker_calls": 1,
+        "error": "",
+        "files_launch_calls": 1,
+        "files_view_results": 1,
+        "open_picker_calls": 0,
+        "pending": "",
+        "phase": "FILES_VIEW_OK",
+        "provider_delete_calls": 0,
+        "provider_rename_calls": 1,
+        "reopen_reads": 0,
+        "run": "69814e80ea71f485",
+        "sha256": "5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7",
+        "uri": "content://com.android.externalstorage.documents/document/primary%3APocket4_SAF_r12_69814e80ea71f485%2Ffiles-ui-69814e80ea71f485.txt"
+      },
+      "passed": true
+    },
+    "NEW": {
+      "client_status": {
+        "bytes": 0,
+        "content_readbacks": 0,
+        "content_writes": 0,
+        "create_picker_calls": 0,
+        "error": "",
+        "files_launch_calls": 0,
+        "files_view_results": 0,
+        "open_picker_calls": 0,
+        "pending": "",
+        "phase": "NEW",
+        "provider_delete_calls": 0,
+        "provider_rename_calls": 0,
+        "reopen_reads": 0,
+        "run": "69814e80ea71f485",
+        "sha256": "",
+        "uri": ""
+      },
+      "passed": true
+    },
+    "OPEN_OK": {
+      "client_status": {
+        "bytes": 87,
+        "content_readbacks": 5,
+        "content_writes": 1,
+        "create_picker_calls": 1,
+        "error": "",
+        "files_launch_calls": 1,
+        "files_view_results": 1,
+        "open_picker_calls": 1,
+        "pending": "",
+        "phase": "OPEN_OK",
+        "provider_delete_calls": 0,
+        "provider_rename_calls": 1,
+        "reopen_reads": 0,
+        "run": "69814e80ea71f485",
+        "sha256": "5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7",
+        "uri": "content://com.android.externalstorage.documents/document/primary%3APocket4_SAF_r12_69814e80ea71f485%2Ffiles-ui-69814e80ea71f485.txt"
+      },
+      "passed": true
+    },
+    "PROVIDER_DELETE_AND_ABSENCE": {
+      "all_exact_paths_errno_ENOENT": true,
+      "grants_empty": true,
+      "passed": true
+    },
+    "PROVIDER_RENAME_OK": {
+      "client_status": {
+        "bytes": 87,
+        "content_readbacks": 3,
+        "content_writes": 1,
+        "create_picker_calls": 1,
+        "error": "",
+        "files_launch_calls": 0,
+        "files_view_results": 0,
+        "open_picker_calls": 0,
+        "pending": "",
+        "phase": "PROVIDER_RENAME_OK",
+        "provider_delete_calls": 0,
+        "provider_rename_calls": 1,
+        "reopen_reads": 0,
+        "run": "69814e80ea71f485",
+        "sha256": "5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7",
+        "uri": "content://com.android.externalstorage.documents/document/primary%3APocket4_SAF_r12_69814e80ea71f485%2Fprovider-69814e80ea71f485.txt"
+      },
+      "passed": true
+    },
+    "REOPEN_OK": {
+      "client_status": {
+        "bytes": 87,
+        "content_readbacks": 6,
+        "content_writes": 1,
+        "create_picker_calls": 1,
+        "error": "",
+        "files_launch_calls": 1,
+        "files_view_results": 1,
+        "open_picker_calls": 1,
+        "pending": "",
+        "phase": "REOPEN_OK",
+        "provider_delete_calls": 0,
+        "provider_rename_calls": 1,
+        "reopen_reads": 1,
+        "run": "69814e80ea71f485",
+        "sha256": "5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7",
+        "uri": "content://com.android.externalstorage.documents/document/primary%3APocket4_SAF_r12_69814e80ea71f485%2Ffiles-ui-69814e80ea71f485.txt"
+      },
+      "passed": true
+    }
+  },
+  "install_pending": false,
+  "installed_identity": {
+    "apk_bytes": 16588,
+    "apk_path": "/data/app/~~EcZhYsUQoW-WhZk4w_3nsg==/org.droidloom.qa.saf.r12.n69814e80ea71f485-oVYlQcMBi7Hy9GD2Dz40SA==/base.apk",
+    "apk_sha256": "3b2b8d01b551f68256a25c351b34f2a6c74f74cbfc9b44b226ea708dba9fffe6",
+    "directories": {
+      "ce": {
+        "st_dev": 1811,
+        "st_gid": 10179,
+        "st_ino": 167123,
+        "st_mode": 16832,
+        "st_uid": 10179
+      },
+      "de": {
+        "st_dev": 1811,
+        "st_gid": 10179,
+        "st_ino": 167246,
+        "st_mode": 16832,
+        "st_uid": 10179
+      }
+    },
+    "package": "org.droidloom.qa.saf.r12.n69814e80ea71f485",
+    "uid": 10179,
+    "version_code": 1
+  },
+  "native_launch_calls": 2,
+  "new_trial_after_verified_cleanup": {
+    "original_stage02_fenced": true,
+    "previous_created_document_removed": true,
+    "previous_failures_preserved": true,
+    "previous_package_uninstalled": true,
+    "prior_cleanup_job": "1a1ab6bf6bb-fc05-4dac",
+    "prior_cleanup_result_sha256": "dae3c605fcf326eb00b8f0485dd092ebf9e2dd95464f3982c3f01b8a36342f9a"
+  },
+  "outcome_unknown": false,
+  "owned_remove_calls": 3,
+  "owned_task_ids_closed": [
+    942,
+    941,
+    943
+  ],
+  "package": "org.droidloom.qa.saf.r12.n69814e80ea71f485",
+  "pending_effects": {},
+  "run": "69814e80ea71f485",
+  "source_bound_adopted_tasks": [
+    942
+  ],
+  "state": "SCOPED_SAF_AND_FILES_BUSINESS_COMPLETED",
+  "temporary_package_excluded_from_launcher_denominator": true,
+  "ui_actions": 23,
+  "uninstall_pending": false,
+  "user_file_contents_read": false,
+  "whole_app_production_ready": false
+}

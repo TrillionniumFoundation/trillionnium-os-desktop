@@ -1,0 +1,11 @@
+--- cleanup_retained09.py
++++ cleanup_retained09_r2.py
+@@ -159,7 +159,7 @@
+             result.update(state='EXACT_RETAINED_FIXTURE_AND_PACKAGE_CLEANED',cleanup_pending=None,
+                 retained_helper_and_fixture=False,outcome_unknown=False)
+ 
+-    except BaseException as exc:result['error']=type(exc).__name__+':'+str(exc)
++    except BaseException as exc:result.update(state='FAILED',outcome_unknown=True,error=type(exc).__name__+':'+str(exc))
+     finally:
+         if tree is not None:tree.close()
+         if package is not None:

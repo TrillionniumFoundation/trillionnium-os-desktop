@@ -1,0 +1,60 @@
+--- run_saf03.py
++++ run_saf06.py
+@@ -6,9 +6,9 @@
+ 
+ SOURCE=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ SOURCE_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+-ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-03/ui_adapter01.py')
++ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-06/ui_adapter01.py')
+ ADAPTER_SHA='0dc186a9bc552b576a361b2c3e18128d31f2473ae9344ade1a1089f0f1d147d3'
+-ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-03')
++ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-06')
+ APK=Path('/home/alex/work/pocket4-documents-saf-build-20261105-r12-02/owned-saf.apk')
+ APK_SHA='3b2b8d01b551f68256a25c351b34f2a6c74f74cbfc9b44b226ea708dba9fffe6'
+ CERT_SHA='f772d334443bb5cd71abcc179d04e21ee3e70d424290df69828b94e42bc448f2'
+@@ -99,7 +99,16 @@
+         need(self.created and self.fd is not None and not self.removed,'NO_OWNED_DIRECTORY')
+         self.s.guard();info=os.stat(FOLDER,dir_fd=self.parent,follow_symlinks=False)
+         need(fp(info)==self.birth and fp(os.fstat(self.fd))==self.birth,'OWNED_DIRECTORY_REPLACED')
+-        names=os.listdir(self.fd);need(len(names)<=1 and set(names)<=NAMES,'UNEXPECTED_OWNED_DIRECTORY_ENTRY_PRESERVED')
++        # Keep the held directory as the identity anchor. A new open file
++        # description avoids reusing its pre-create enumeration snapshot.
++        fresh=os.open('.',os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=self.fd)
++        try:
++            need(fp(os.fstat(fresh))==self.birth,'FRESH_ENUMERATION_DIRECTORY_CHANGED')
++            names=os.listdir(fresh)
++        finally:os.close(fresh)
++        need(fp(os.stat(FOLDER,dir_fd=self.parent,follow_symlinks=False))==self.birth
++            and fp(os.fstat(self.fd))==self.birth,'OWNED_DIRECTORY_CHANGED_AFTER_ENUMERATION')
++        need(len(names)<=1 and set(names)<=NAMES,'UNEXPECTED_OWNED_DIRECTORY_ENTRY_PRESERVED')
+         return names
+ 
+     def verify(self,name,label):
+@@ -283,6 +292,27 @@
+             'exact_uri_grant_section':section,'package_filter':PACKAGE,'empty':empty});return empty
+ 
+     def business(self):
++        # This is a new trial only after the previous known document and package
++        # were removed. The indeterminate stage02 remains permanently fenced.
++        prior=json.loads(self.tx.read_regular(Path('/home/alex/work/pocket4-documents-flow-20261105-r12-05/result.json'),
++            '41ad815d545365a2419b06b2eced943f559308ad7305655a40c05cffba9da827',65536))
++        fence=json.loads(self.tx.read_regular(Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-02/NEVER_EXECUTE_OR_REUSE.json'),
++            '6a98cf8d82ead8506afeb1ff831d1e9fd99d1c8e112f5f750c828125dc6debe1',16384))
++        need(prior['state']=='DOCUMENTS_FLOW_STOPPED' and prior['error']=='RuntimeError: ORIGINAL_LEASE_INSUFFICIENT_CLEANUP_ONLY'
++            and prior['pending_effects']=={} and prior['outcome_unknown'] is False
++            and prior['ui_actions']==prior['native_launch_calls']==prior['owned_remove_calls']==0
++            and prior['cleanup']['errors']==[] and prior['cleanup']['package_absent_verified'] is True
++            and prior['cleanup']['package_uninstalled_verified'] is True
++            and prior['cleanup']['file_cleanup']['directory_removed_verified'] is True
++            and prior['cleanup']['file_cleanup']['fallback_file_unlink'] is True
++            and prior['final_guard']==self.s.guard(),'PRIOR_EXACT_CLEANUP_RECEIPT_CHANGED')
++        need(fence['state']=='OLD_STAGE_ENTRY_FENCED' and fence['job_id']=='1a1ab190ab3-fc05-4a51'
++            and fence['must_never_remove_or_reuse'] is True,'ORIGINAL_UNKNOWN_STAGE_FENCE_CHANGED')
++        self.result['new_trial_after_verified_cleanup']={'prior_cleanup_job':'1a1ab31f7dc-fc05-4b4e',
++            'prior_cleanup_result_sha256':'41ad815d545365a2419b06b2eced943f559308ad7305655a40c05cffba9da827',
++            'previous_created_document_removed':True,'previous_package_uninstalled':True,
++            'original_stage02_fenced':True,'previous_failures_preserved':True}
++        self.ui.record('prior-known-cleanup-and-old-entry-fence',self.result['new_trial_after_verified_cleanup'])
+         before=self.packages('target-identities-before');self.install();self.folder.setup()
+         self.grants('new-package-grants-empty',True)
+         self.ui.launch();obs=self.status_ui('NEW')

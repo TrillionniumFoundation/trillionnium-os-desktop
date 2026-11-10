@@ -1,0 +1,151 @@
+{
+  "schema": "contacts-search-result-normal-ui-source-review/v1",
+  "decision": "EXISTING_NATIVE_FRESH_NODE_MOUSE_PATH_IS_A_NARROW_CANDIDATE; ACCESSIBILITY_ANCESTOR_NOT_PROVEN_FOR_THIS_ROW",
+  "source_only": true,
+  "new_UI_inputs": 0,
+  "new_device_reads": 0,
+  "source_modified": false,
+  "implementation_prepared": false,
+  "actual_contacts_apk_sha256": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0",
+  "actual_contacts_dex_sha256": "bf85e172e2286e2dd99c0ea36c0cdc43a7163d2e5f3414e4bd7d6dcbf9e0afed",
+  "actual_native_apk_sha256": "a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058",
+  "native_class_sha256": "548dc51db06a267849eedf250847676f1f97641d58f73a3de0b940e9c22e0d42",
+  "helper_sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66",
+  "method_bindings": [
+    {
+      "source": "native-action-source08/actual01/smali/local/pocket4/actions/v2/ActionRunner.smali",
+      "class_descriptor": "Llocal/pocket4/actions/v2/ActionRunner;",
+      "class_sha256": "548dc51db06a267849eedf250847676f1f97641d58f73a3de0b940e9c22e0d42",
+      "method_header": ".method private execute(Lorg/json/JSONObject;)Lorg/json/JSONObject;",
+      "method_sha256": "397c63243be8db7563cbcd0749aad4a0feac095015e70d04551999496c2caade",
+      "method_bytes": 55184,
+      "local_full_method": "01-ActionRunner-execute.smali",
+      "source_start_line": 666
+    },
+    {
+      "source": "native-action-source08/actual01/smali/local/pocket4/actions/v2/ActionRunner.smali",
+      "class_descriptor": "Llocal/pocket4/actions/v2/ActionRunner;",
+      "class_sha256": "548dc51db06a267849eedf250847676f1f97641d58f73a3de0b940e9c22e0d42",
+      "method_header": ".method private mouseClick(Landroid/view/accessibility/AccessibilityNodeInfo;Lorg/json/JSONObject;)Lorg/json/JSONObject;",
+      "method_sha256": "5614a36238080f0dffc8f26d462b984a69cb07b50e7cbcf736bc3164e3d09b33",
+      "method_bytes": 8805,
+      "local_full_method": "02-ActionRunner-mouseClick.smali",
+      "source_start_line": 3618
+    },
+    {
+      "source": "native-action-source08/actual01/smali/local/pocket4/actions/v2/ActionRunner.smali",
+      "class_descriptor": "Llocal/pocket4/actions/v2/ActionRunner;",
+      "class_sha256": "548dc51db06a267849eedf250847676f1f97641d58f73a3de0b940e9c22e0d42",
+      "method_header": ".method private identity(Landroid/view/accessibility/AccessibilityNodeInfo;)Ljava/lang/String;",
+      "method_sha256": "0f314a2cec0f2a75cf655c5179382d61e699dc615267c0fe5c69b9a2bd335dc8",
+      "method_bytes": 4506,
+      "local_full_method": "03-ActionRunner-identity.smali",
+      "source_start_line": 3005
+    },
+    {
+      "source": "contacts-search08/source02/smali/com/android/contacts/list/ContactEntryListFragment.smali",
+      "class_descriptor": "Lcom/android/contacts/list/ContactEntryListFragment;",
+      "class_sha256": "90c06bcad3978882e5ccfb3d7d2978f64df0e22d3309ecc5806d2046256c3181",
+      "method_header": ".method protected onCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;)V",
+      "method_sha256": "7637b754fa801683630f7bd8c321fb429263400cb57eff06e0f1e8d138696a4f",
+      "method_bytes": 4091,
+      "local_full_method": "04-ContactEntryListFragment-onCreateView.smali",
+      "source_start_line": 1135
+    },
+    {
+      "source": "contacts-search08/source02/smali/com/android/contacts/list/ContactEntryListFragment.smali",
+      "class_descriptor": "Lcom/android/contacts/list/ContactEntryListFragment;",
+      "class_sha256": "90c06bcad3978882e5ccfb3d7d2978f64df0e22d3309ecc5806d2046256c3181",
+      "method_header": ".method public onItemClick(Landroid/widget/AdapterView;Landroid/view/View;IJ)V",
+      "method_sha256": "064025d6a8ebe1fe0711feca8b6c6ba37c322537ef165ffd302ca946c29b5e10",
+      "method_bytes": 648,
+      "local_full_method": "05-ContactEntryListFragment-onItemClick.smali",
+      "source_start_line": 1268
+    },
+    {
+      "source": "contacts-search08/source02/smali/com/android/contacts/list/DefaultContactBrowseListFragment.smali",
+      "class_descriptor": "Lcom/android/contacts/list/DefaultContactBrowseListFragment;",
+      "class_sha256": "f33167096fa7fd9b51198749eff96caaf654fda00b752926cc5d4f6294275dec",
+      "method_header": ".method protected onItemClick(IJ)V",
+      "method_sha256": "b5cc3f40be8e3795cb87dcbd67ea1f3aa5f2b99e2b974dd0473d0f0acc3bd681",
+      "method_bytes": 2037,
+      "local_full_method": "06-DefaultContactBrowseListFragment-onItemClick.smali",
+      "source_start_line": 3009
+    },
+    {
+      "source": "contacts-search08/source02/smali/com/android/contacts/list/ContactListAdapter.smali",
+      "class_descriptor": "Lcom/android/contacts/list/ContactListAdapter;",
+      "class_sha256": "806a1ab78161f356f7fb1579270895e0c442922da8632e712b5d2dbcbf075b98",
+      "method_header": ".method protected bindNameAndViewId(Lcom/android/contacts/list/ContactListItemView;Landroid/database/Cursor;)V",
+      "method_sha256": "4481265645a412728527f3f7bf8d3babcde65670e87d08b3c3ca8e1861ec9604",
+      "method_bytes": 681,
+      "local_full_method": "07-ContactListAdapter-bindNameAndViewId.smali",
+      "source_start_line": 85
+    },
+    {
+      "source": "contacts-search08/source02/smali/com/android/contacts/list/ContactListAdapter.smali",
+      "class_descriptor": "Lcom/android/contacts/list/ContactListAdapter;",
+      "class_sha256": "806a1ab78161f356f7fb1579270895e0c442922da8632e712b5d2dbcbf075b98",
+      "method_header": ".method public getContactUri(I)Landroid/net/Uri;",
+      "method_sha256": "cdc0f6093bb0c5a6285f53656a07bf6cde1f43ff9b63beb43eab7c8f94cd3e6c",
+      "method_bytes": 705,
+      "local_full_method": "08-ContactListAdapter-getContactUri.smali",
+      "source_start_line": 437
+    },
+    {
+      "source": "contacts-search08/source02/smali/com/android/contacts/list/ContactListAdapter.smali",
+      "class_descriptor": "Lcom/android/contacts/list/ContactListAdapter;",
+      "class_sha256": "806a1ab78161f356f7fb1579270895e0c442922da8632e712b5d2dbcbf075b98",
+      "method_header": ".method public getContactUri(ILandroid/database/Cursor;)Landroid/net/Uri;",
+      "method_sha256": "d57a15e8181fdaed2ae1e76ccf3913abcc583985933d643548c3f43eba5e2d1f",
+      "method_bytes": 1680,
+      "local_full_method": "09-ContactListAdapter-getContactUri.smali",
+      "source_start_line": 467
+    },
+    {
+      "source": "contacts-search08/source02/smali/com/android/contacts/list/ContactBrowseListFragment.smali",
+      "class_descriptor": "Lcom/android/contacts/list/ContactBrowseListFragment;",
+      "class_sha256": "4b8d79044980f8367b4bf63372d380c04c34835f71f6cfff116a455daf433b6b",
+      "method_header": ".method public viewContact(ILandroid/net/Uri;Z)V",
+      "method_sha256": "bbfe0eea2e59a3f03cfc70717912a25e8f9e4ecef46aa718b3c985590a679924",
+      "method_bytes": 723,
+      "local_full_method": "10-ContactBrowseListFragment-viewContact.smali",
+      "source_start_line": 1538
+    },
+    {
+      "source": "contacts-search08/source02/smali/com/android/contacts/list/DefaultContactBrowseListFragment$ContactBrowserActionListener.smali",
+      "class_descriptor": "Lcom/android/contacts/list/DefaultContactBrowseListFragment$ContactBrowserActionListener;",
+      "class_sha256": "1c9daed7d76efc51d177aa2ef2bf3f7436c9b583f921fac2bf290805b88a91b5",
+      "method_header": ".method public onViewContactAction(ILandroid/net/Uri;Z)V",
+      "method_sha256": "792a985f165e90b79dcd30c36dd35ac7c172d0ca7b2e4e68577d57bdcd513603",
+      "method_bytes": 3880,
+      "local_full_method": "11-DefaultContactBrowseListFragment_ContactBrowserActionListener-onViewContactAction.smali",
+      "source_start_line": 93
+    }
+  ],
+  "facts": [
+    "Existing shared loop requires complete frame/scope pixel equality for snapshot-tap, which also covers unrelated blinking search text cursor.",
+    "Actual native accessibility click first resolves and refreshes the exact leaf twice, but then climbs up to the first clickable ancestor (at most100); checks same package/window and ancestor visible/enabled/refresh. It does not bind that ancestor to a ContactList item or compare its full identity twice.",
+    "The frozen Contacts observed row contract explicitly permits non-clickable ViewGroup inside android:id/list and non-clickable cliv_name_textview. Therefore no actionable row ancestor has been established by this source alone.",
+    "Actual native click with method=mouse uses the same twice-unique-resolved and refreshed leaf, then the fresh leaf bounds center. It requires that center inside verified focused application-window bounds, injects one SOURCE_MOUSE down/up pair synchronously, and returns method=mouse/source=native_bounds_mouse/coordinates/target/actual_target.",
+    "Native actionAttempted is set before injection; failure retains unknown effect. A defensive UP on DOWN exception is release cleanup, not permission to replay the click. Mouse success does not prove business success.",
+    "Actual helper dispatch accepts method=mouse only for click and forwards it unchanged. It captures the scoped application before native action; post-capture failure is explicitly unknown. Shared snapshot-tap code need not change.",
+    "Installed Contacts binds android:id/list OnItemClickListener; generic item click hides keyboard, subtracts headers and dispatches adapter position. Default handler gets cursor-backed contact lookup URI, marks search-result click and calls viewContact; listener eventually invokes startQuickContact for that exact URI.",
+    "ContactListAdapter.bindNameAndViewId binds display name and cursor-backed view ID. Its ContactListItemView implementation was not included in this selected source capture; no custom accessibility action is assumed."
+  ],
+  "proposed_narrow_controller_boundaries": [
+    "Apply only to the single open-search-result decision after exact edited-name query readback and same-owned ContactID/rawID/name-row Provider proof.",
+    "Require PeopleActivity in exact owned task/window, current unique leaf id cliv_name_textview plus exact text==content-desc==owned edited marker, non-editable/password=false, visible/enabled, and one exact containing observed Contact row/list.",
+    "Preserve two captures with full WM/context/geometry checks and two fresh complete leaf/row/list/query-node comparisons (only connection-local window_id may be normalized); omit pixel equality only inside this new private decision.",
+    "Perform final owned tasks/focus check. Dispatch click method=mouse, accessibility_mode=none, with exact native selector, no index, no externally supplied coordinates, and no artificial clickable=true requirement.",
+    "Before dispatch durably set one unique intent/pending. Require one exact native receipt with mouse method/source, expected full target and actual_target, coordinates equal to fresh leaf center and within leaf/row/list/window; unknown or malformed receipt cannot be replayed.",
+    "Retain original post-action-unknown fence; fresh owned detail observation may reconcile only acknowledged input and exact current Provider same-ID/name proof completes business success.",
+    "All other operations remain byte-identical original loop; no global helper, WeChat, accessibility setting, retry budget or APK changes."
+  ],
+  "not_claimed": [
+    "Actual method=mouse Contacts result success",
+    "An accessibility ACTION_CLICK ancestor exists for this row",
+    "Pixel guard may be removed globally",
+    "Runtime or full App qualification"
+  ]
+}

@@ -1,0 +1,13 @@
+--- frozen-controller03/rotation_ui.py
++++ candidate/rotation_ui_hist03.py
+@@ -318,8 +318,8 @@
+             and (foreground['package'],foreground['activity'],foreground['task'])==(GALLERY,FILES,task),
+             'ACTUAL_GALLERY_TOP_FOCUS_REQUIRED')
+         raw=self.s.android(['/system/bin/dumpsys','activity','activities',GALLERY],12).decode()
+-        blocks=re.split(r'(?=^\s*\* Hist #\d+: ActivityRecord\{)',raw,flags=re.M)
+-        expression=r'^\s*\* Hist #\d+: ActivityRecord\{[^\n]*\bu0 '+re.escape(GALLERY)+r'/(?:\.app\.GalleryActivity|com\.android\.gallery3d\.app\.GalleryActivity) t'+str(task)+r'\b'
++        blocks=re.split(r'(?=^[ \t]*\* Hist[ \t]+#\d+: ActivityRecord\{)',raw,flags=re.M)
++        expression=r'^[ \t]*\* Hist[ \t]+#\d+: ActivityRecord\{[^\n]*\bu0 '+re.escape(GALLERY)+r'/(?:\.app\.GalleryActivity|com\.android\.gallery3d\.app\.GalleryActivity) t'+str(task)+r'\b'
+         selected=[block for block in blocks if re.search(expression,block)]
+         need(len(selected)==1,'EXACT_TOP_GALLERY_ACTIVITY_RECORD_REQUIRED')
+         block=selected[0]

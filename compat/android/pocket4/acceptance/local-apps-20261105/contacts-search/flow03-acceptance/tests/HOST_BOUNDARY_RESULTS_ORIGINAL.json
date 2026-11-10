@@ -1,0 +1,79 @@
+{
+  "menu": {
+    "actual_tool_chunk_id": "0df7df",
+    "cases": [
+      "Old method rejects this run marker; private method binds exact real current proof.",
+      "Wrong/stale marker, any mismatched durable ID, or non-LOCAL rejects.",
+      "Missing ownership or wrong package/QuickContact activity rejects.",
+      "Second bind rejects."
+    ],
+    "command": "python3 -B contacts-search08/flow03-draft/test_owned_menu03.py",
+    "returncode": 0,
+    "seconds": 0.001,
+    "test_source": {
+      "bytes": 2894,
+      "path": "contacts-search08/flow03-draft/test_owned_menu03.py",
+      "sha256": "b83757af3b8f5d3132557197322a5454609dff9861b66c87e262620a832ebce4"
+    },
+    "tests": 4
+  },
+  "mouse": {
+    "actual_pair": {
+      "before_nodes": 25,
+      "context_and_window_geometry_equal": true,
+      "fresh_nodes": 25,
+      "full_leaf_query_row_list_equal_except_connection_window_id": true,
+      "scope_sha256_before": "cf3233904f9f991d43dba6a521367a3a469b33bfbfe1461e4d31f7844f39cc06",
+      "scope_sha256_fresh": "c7e0bcf9c21de180ae8480bb09257bf6af63f0f823920f4a8c65fccf1142aa89"
+    },
+    "actual_tool_chunk_id": "58fc6c",
+    "cases": [
+      "Actual saved pair accepts changing pixels with all four full nodes and actual window unchanged.",
+      "Changed or duplicate leaf/query/row/list refuses before dispatch.",
+      "Changed context/geometry/final owned focus refuses before dispatch.",
+      "Native unknown/target/coordinate/restoration failures retain pending; second attempt cannot dispatch.",
+      "Known native input plus unavailable helper post-capture needs a fresh owned observation; original unknown receipt remains.",
+      "Failed fresh post-observation retains pending."
+    ],
+    "command": "python3 -B contacts-search08/flow03-draft/test_owned_search_mouse03.py",
+    "fixture": {
+      "bytes": 58489,
+      "path": "contacts-search08/flow03-draft/actual-search-observations02.json",
+      "sha256": "6a6ec6437d1cb0bb85f167c1b0f531d950c4a9f5314f1903c81508a1a580a18e"
+    },
+    "returncode": 0,
+    "seconds": 0.041,
+    "source_projection": {
+      "export_sha256": "8bf4cb41826cb87df9f6e99dceb15137b2a9c5be4786f9b8ce5ea1623a8c30b6",
+      "original_observations": [
+        {
+          "bytes": 26533,
+          "path": "contacts-search08/readback02/249-after-c08-search-edited-name.json",
+          "sha256": "cb9996cc747de3d9b5654e4fe2a819505450e871b6f13453980b6efdd87dd313"
+        },
+        {
+          "bytes": 26533,
+          "path": "contacts-search08/readback02/259-fresh-c09-open-search-result.json",
+          "sha256": "5e6bf9592814bbd8c055928495822d3a15ee144d633acfd940f24eb9a4e7a9eb"
+        }
+      ],
+      "original_result": {
+        "bytes": 12432,
+        "path": "contacts-search08/flow02/actual-result.json",
+        "sha256": "bec1ffc28b2506656caac1d539c71a11a6ed07c8a966f6115fd0b2b0460c365f"
+      },
+      "projection_is_not_original_remote_bytes": true
+    },
+    "test_source": {
+      "bytes": 7942,
+      "path": "contacts-search08/flow03-draft/test_owned_search_mouse03.py",
+      "sha256": "07ab14dc3b6d2b635d0cd0bd3327c1f2658d8d6196d4daab5a44277fb14ad6d2"
+    },
+    "tests": 6
+  },
+  "new_Android_commands": 0,
+  "new_UI_actions": 0,
+  "new_provider_writes": 0,
+  "scope": "These are execution of the private methods against retained actual nodes and controlled transport outcomes. They are not an Android search/open/delete business pass.",
+  "state": "HOST_BOUNDARY_TESTS_PASSED_NOT_DEVICE_EXECUTION"
+}

@@ -1,0 +1,100 @@
+{
+  "UI_actions": 0,
+  "actual_candidate08": {
+    "alignment_16k": true,
+    "apk_bytes": 2631117,
+    "apk_sha256": "95633138efb7209631638eef05ad54021b647740a6278d7de8976bb499f6b935",
+    "build_bytes": 38265,
+    "build_sha256": "ba572f71849781d142a9bcc80fe54325e6169d0425d7fbc7b41909e5b890e617",
+    "certificate_sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+    "only_added_payload": "classes2.dex",
+    "only_replaced_payload": "classes.dex",
+    "original_payloads": 663,
+    "signature_v3": true
+  },
+  "candidate07_installed": false,
+  "candidate08_execution_authorization": "Root controls stage/install/UI scheduling; this review executes none.",
+  "conclusion": "No new definite execution blocker found in execution07 profile rebinding or execution08 pin-only derivation. No claim that Calendar business is passed.",
+  "file_changes_to_owner_sources": 0,
+  "functions": {
+    "core06_to07_changed_methods": [
+      "__init__"
+    ],
+    "core07_to08_changed_methods": [],
+    "core07_to08_execute_change": "Only reader/adapter filenames; top-level candidate paths/hash/marker bindings updated.",
+    "installer07_to08_all_function_AST_same": true
+  },
+  "inputs": {
+    "calendar-repair08/calendar_install06.py": {
+      "bytes": 13517,
+      "sha256": "a8fa10cc6dd920060bacac056a046f5ce201a86f63e7ca2870bdd085ad6e1da9"
+    },
+    "calendar-repair08/execution07/calendar_accept_core07.py": {
+      "bytes": 28411,
+      "sha256": "fd1c0b4ab5dc9b2921a56b500c24c42eee8d41cd15d86238b693ed787b907b16"
+    },
+    "calendar-repair08/execution07/calendar_install07.py": {
+      "bytes": 14324,
+      "sha256": "3e75dc932cd2c685da82e015bed8e28d370ed2510dee87d82c9471d571d52697"
+    },
+    "calendar-repair08/execution07/execution06-to-execution07.patch": {
+      "bytes": 7628,
+      "sha256": "b91ee828c598417dff63bc7e879f432ce9d0e5e2dcd3d514edd50a1632bc9d2c"
+    },
+    "calendar-repair08/execution08/calendar_accept_core08.py": {
+      "bytes": 28411,
+      "sha256": "8d362345d71f872020d0ac10f3aba90b1058863c0c04af27ebdc555405bac9a8"
+    },
+    "calendar-repair08/execution08/calendar_install08.py": {
+      "bytes": 14324,
+      "sha256": "ffca74e302ee426f033759512479261a79c6857bf26bd2af2c93ba0cdaac976b"
+    },
+    "calendar-repair08/execution08/calendar_ui08.py": {
+      "bytes": 21463,
+      "sha256": "48103b75fc286997c1dff4a5fe0a8960de023babbe7179faad75dfd02f4c4032"
+    },
+    "calendar-repair08/execution08/execution07-to-execution08.patch": {
+      "bytes": 3661,
+      "sha256": "df3ec7a7d78077fe5e7f93dca95754ffc89de57fa4ce8618cddb44a12eccbd41"
+    },
+    "calendar-repair08/execution08/read_owned_calendar08.py": {
+      "bytes": 7415,
+      "sha256": "c002a256edc0c17a5f719e58baa08d88a20440a49f15070a9495d31aa3c5d1e5"
+    },
+    "calendar-repair08/revision07/build07-result.json": {
+      "bytes": 36861,
+      "sha256": "ac003401a25bea8d4bdae1ed6cd4c02a0c17277dd19f627a520302bf41c22fba"
+    },
+    "calendar-repair08/revision08/build08-result.json": {
+      "bytes": 38265,
+      "sha256": "ba572f71849781d142a9bcc80fe54325e6169d0425d7fbc7b41909e5b890e617"
+    }
+  },
+  "not_reviewed_as_pass": [
+    "Calendar08 actual installation",
+    "device event core behavior",
+    "cold-start reminder/snooze delivery",
+    "whole-App production readiness"
+  ],
+  "preserved_execution_boundaries": [
+    "Exact current original APK backup before one tx.install_once dispatch and its journal.",
+    "Unknown response/post-readback leaves install_pending, without automatic reinstall or rollback.",
+    "UID/user/version/SDK/permissions/first-install-time/CE-DE identity, provider identity/counts, Main epoch and task set remain checked.",
+    "Candidate acceptance requires verified install receipt and current exact APK before UI.",
+    "Unique current marker scopes the event/calendar; UI and business pending effects remain until exact readback.",
+    "Empty-calendar cleanup remains restricted by provider atomic-delete proof, fresh shell permission/ownership checks and exact empty baseline."
+  ],
+  "profile": {
+    "TX_SHA": "e65a47bea8b3800d0b1a89247bd8c356dd291523c2d248d401d05d1d3b55fb83",
+    "activation_SHA": "91c7a4a911a7bcf908726750f55f3fda66f40263ddf3fac457473e0a6c780435",
+    "findings": [
+      "Both installer and core verify original b227 TX mapping, replace exactly that PINS key before dependency load, and pass the resulting e65 module into CameraSession.",
+      "Private reader and adapter consume the passed session and do not open their own old TX session.",
+      "The activation hash is independently checked before entering the session; guard code is inherited unchanged."
+    ]
+  },
+  "remote_calls": 0,
+  "reviewer": "camera_runtime_review",
+  "schema": "calendar-execution07-08-independent-peer/v1",
+  "scope": "Pure local source, actual stored build-result and AST comparison. No Main/Android/UI/install action."
+}

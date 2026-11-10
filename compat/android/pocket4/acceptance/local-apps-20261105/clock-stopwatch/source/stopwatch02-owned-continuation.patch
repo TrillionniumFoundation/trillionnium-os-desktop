@@ -1,0 +1,191 @@
+--- clock-flow08/stopwatch01.py	2026-11-05 16:42:03.087701682 +0800
++++ clock-flow08/stopwatch02.py	2026-11-05 17:00:37.491444398 +0800
+@@ -1,5 +1,5 @@
+ #!/usr/bin/python3 -I
+-"""One idle-baseline stopwatch UI flow; no alarm or provider writes."""
++"""Continue only the exact paused stopwatch created by the completed 01 trial."""
+ from pathlib import Path
+ from datetime import datetime, timezone
+ import argparse, hashlib, json, re, signal, time, types
+@@ -7,8 +7,10 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ CONTACT_TOOLS = Path('/home/alex/work/pocket4-contacts-session-tools-20261105-r12-01')
+-ROOT = Path('/home/alex/work/pocket4-clock-stopwatch-20261105-r12-01')
+-PUBLIC = HERE / 'clock-stopwatch01-result.json'
++ROOT = Path('/home/alex/work/pocket4-clock-stopwatch-20261105-r12-02')
++PUBLIC = HERE / 'clock-stopwatch02-result.json'
++ORIGINAL = HERE / 'clock-stopwatch01-result.json'
++ORIGINAL_SHA = '9af4d7b19f8687563fc5fbe1bf526024d89e690a46d444d76af35884e52a95ed'
+ PACKAGE = 'com.android.deskclock'
+ PREFS = '/data/user_de/0/com.android.deskclock/shared_prefs/com.android.deskclock_preferences.xml'
+ PINS = {
+@@ -99,14 +101,49 @@
+         require(len(nodes) == 1, 'ONE_OBSERVED_CLOCK_CONTROL_REQUIRED_' + '_'.join(labels))
+         return nodes[0]
+ 
++    def stopwatch_tab(self):
++        parents = [n for n in self.visible() if n.get('class') == 'android.widget.LinearLayout'
++                   and n.get('content-desc') == 'Stopwatch' and n.get('text') == '']
++        require(len(parents) == 1, 'ACTUAL_STOPWATCH_TAB_PARENT_NOT_UNIQUE')
++        parent = parents[0]
++        if parent.get('selected') is True:
++            require(type(parent.get('window_id')) is int, 'SELECTED_TAB_WINDOW_ID_REQUIRED')
++            box = parent['bounds_array']
++            labels = [n for n in self.visible() if n.get('resource-id') == 'android:id/text1'
++                and n.get('class') == 'android.widget.TextView' and n.get('text') == 'STOPWATCH'
++                and n.get('selected') is True and n.get('window_id') == parent.get('window_id')
++                and box[0] <= n['bounds_array'][0] < n['bounds_array'][2] <= box[2]
++                and box[1] <= n['bounds_array'][1] < n['bounds_array'][3] <= box[3]]
++            require(len(labels) == 1, 'SELECTED_STOPWATCH_TAB_CHILD_NOT_VERIFIED')
++            require(sum(n.get('resource-id') == PACKAGE + ':id/stopwatch_time_wrapper'
++                        and n.get('window_id') == parent['window_id']
++                        for n in self.visible()) == 1, 'SELECTED_STOPWATCH_VIEW_NOT_PRESENT')
++        return parent
++
++    def settle_observed_notice(self):
++        for number in range(4):
++            notices = [n for n in self.visible() if n.get('resource-id') == PACKAGE + ':id/snackbar_text'
++                       and n.get('text') == 'Default alarm ringtone is silent']
++            if not notices:
++                return
++            require(number < 3 and time.monotonic() < self.deadline,
++                    'OBSERVED_TRANSIENT_NOTICE_DID_NOT_SETTLE')
++            self.c.observe('notice-settle-%02d-%d' % (self.number + 1, number))
++
+     def act(self, label, node):
+         require(time.monotonic() < self.deadline and self.number < 16 and self.c.pending is None,
+                 'STOPWATCH_ACTION_BUDGET_OR_PENDING')
+-        self.number += 1
+         selector = {k: node[n] for k, n in (('id', 'resource-id'), ('text', 'text'), ('desc', 'content-desc'))
+                     if node.get(n)}
+         require(selector, 'CLOCK_OBSERVED_SEMANTIC_IDENTITY_REQUIRED')
+         selector['class'] = node['class']
++        self.settle_observed_notice()  # Only reads; no previous action was dispatched.
++        fresh = self.loop.candidates(self.c.nodes, selector, PACKAGE)
++        require(len(fresh) == 1, 'CLOCK_CONTROL_AFTER_NOTICE_NOT_UNIQUE')
++        node = fresh[0]
++        if label not in ('stopwatch-tab', 'reopen-stopwatch-tab'):
++            require(self.stopwatch_tab().get('selected') is True, 'ACTION_REQUIRES_ACTUAL_SELECTED_STOPWATCH')
++        self.number += 1
+         op = 'click' if node.get('clickable') is True else 'snapshot-tap'
+         if op == 'snapshot-tap':
+             require(label in ('stopwatch-tab', 'reopen-stopwatch-tab'), 'ONLY_OBSERVED_TAB_LABEL_TOUCH_ALLOWED')
+@@ -137,7 +174,7 @@
+         self.c.nodes = self.t.observe(label, focus)
+         self.c.latest, self.c.package = label, focus['package']
+         require(focus['package'] == PACKAGE, 'CLOCK_PERMISSION_PROMPT_REQUIRES_OWNED_REVIEW')
+-        tab = self.node(('Stopwatch',), button=False)
++        tab = self.stopwatch_tab()
+         if tab.get('selected') is not True:
+             self.act('stopwatch-tab' if len(self.owned) == 1 else 'reopen-stopwatch-tab', tab)
+ 
+@@ -151,42 +188,30 @@
+         self.closed.append(task)
+ 
+     def run(self):
+-        baseline = self.state('before', 0)
+-        require(baseline['accumulated_ms'] == baseline['lap_count'] == 0,
+-                'PREEXISTING_STOPWATCH_PRESERVED')
+-        self.launch('initial')
+-        self.state('observed-reset', 0)
+-        self.act('start', self.node(('Start',)))
+-        self.started = True
+-        first = self.state('started', 1)
+-        require(first['values'].get('sw_start_time', -1) > 0, 'START_TIME_NOT_RECORDED')
+-        time.sleep(.4)
+-        self.act('pause', self.node(('Pause', 'Stop')))
+-        paused = self.state('paused', 2)
+-        require(paused['accumulated_ms'] > 0 and paused['lap_count'] == 0, 'STOPWATCH_DID_NOT_ADVANCE')
+-        time.sleep(.4)
+-        stable = self.state('pause-stable', 2)
+-        require(stable['accumulated_ms'] == paused['accumulated_ms'], 'PAUSED_TIME_CHANGED')
+-        self.close()
+-        require(self.state('persisted-after-close', 2)['values'] == paused['values'], 'CLOSE_CHANGED_PAUSED_STATE')
++        paused = self.r['original_owned_paused_state']
++        current = self.state('owned-paused-before-reopen', 2)
++        require(current == paused and current['accumulated_ms'] == 9170 and current['lap_count'] == 0,
++                'ORIGINAL_OWNED_STOPWATCH_CHANGED_NO_INPUT')
++        self.started = True  # Ownership comes from the pinned, completed original trial.
+         self.launch('reopen-initial')
+-        require(self.state('persisted-after-reopen', 2)['values'] == paused['values'], 'REOPEN_CHANGED_PAUSED_STATE')
++        require(self.state('owned-paused-after-reopen', 2) == paused, 'REOPEN_CHANGED_OWNED_PAUSED_STATE')
+         self.act('resume', self.node(('Start', 'Resume')))
+         resumed = self.state('resumed', 1)
+         require(resumed['accumulated_ms'] == paused['accumulated_ms']
+-                and resumed['values'].get('sw_start_time', 0) > first['values']['sw_start_time'],
+-                'RESUME_DID_NOT_CONTINUE_SAME_STOPWATCH')
++            and resumed['values'].get('sw_start_time', 0)
++                > self.r['original_started_state']['values']['sw_start_time'],
++            'RESUME_DID_NOT_CONTINUE_EXACT_OWNED_STOPWATCH')
+         time.sleep(.4)
+-        self.act('pause-again', self.node(('Pause', 'Stop')))
+-        later = self.state('paused-again', 2)
++        self.act('pause', self.node(('Pause', 'Stop')))
++        later = self.state('paused-after-resume', 2)
+         require(later['accumulated_ms'] > paused['accumulated_ms'] and later['lap_count'] == 0,
+                 'RESUMED_STOPWATCH_DID_NOT_ADVANCE')
+         self.act('reset', self.node(('Reset',)))
+         reset = self.state('reset', 0)
+-        require(reset['accumulated_ms'] == reset['lap_count'] == 0
+-                and not reset['values'] and reset['timer_content_sha256'] == baseline['timer_content_sha256'],
++        require(reset['accumulated_ms'] == reset['lap_count'] == 0 and not reset['values']
++                and reset['timer_content_sha256'] == paused['timer_content_sha256'],
+                 'STOPWATCH_RESET_OR_TIMER_PRESERVATION_UNVERIFIED')
+-        self.r['state'] = 'STOPWATCH_START_PAUSE_REOPEN_RESUME_RESET_VERIFIED'
++        self.r['state'] = 'OWNED_STOPWATCH_REOPEN_RESUME_PAUSE_RESET_VERIFIED'
+ 
+     def cleanup(self):
+         if not self.started or self.c.pending is not None or self.t.owned is None:
+@@ -208,13 +233,26 @@
+ 
+ def execute():
+     base, loop, model = [load(path, pin) for path, pin in PINS.items()]
++    original_raw = ORIGINAL.read_bytes()
++    require(hashlib.sha256(original_raw).hexdigest() == ORIGINAL_SHA, 'ORIGINAL_STOPWATCH_RESULT_CHANGED')
++    original = json.loads(original_raw)
++    require(original['owned_tasks'] == original['closed_tasks'] == [911, 912]
++        and original['pending_effect'] is None and original['ui_actions'] == 3
++        and original['phases']['before']['values'] == {}
++        and original['watch_final']['state'] == 2 and original['watch_final']['accumulated_ms'] == 9170
++        and original['watch_final']['lap_count'] == 0, 'ORIGINAL_STOPWATCH_OWNERSHIP_NOT_VERIFIED')
+     tx = model.load_session()
+     base.PACKAGE, base.COMPONENT, base.ROOT = PACKAGE, PACKAGE + '/.DeskClock', ROOT
+     loop.emit = lambda value: None
+     result = {'state': 'FAILED', 'phases': {}, 'business_success_verified': False,
+         'whole_app_production_ready': False, 'automatic_retry': False, 'source_pins': PINS,
+         'alarm_write_actions': 0, 'timer_write_actions': 0, 'lease_seconds': 240,
+-        'started_utc': datetime.now(timezone.utc).isoformat()}
++        'started_utc': datetime.now(timezone.utc).isoformat(),
++        'original_result_sha256': ORIGINAL_SHA, 'original_failed_result_retained': True,
++        'original_job': '1a1aae28f48-fc05-4871',
++        'original_started_state': original['phases']['started'],
++        'original_owned_paused_state': original['watch_final']}
++
+     prior = signal.signal(signal.SIGALRM, expired); trial = flow = None
+     try:
+         signal.setitimer(signal.ITIMER_REAL, 240)
+@@ -229,6 +267,11 @@
+                     require(result['alarms_before']['template-ids'] == [{'_id': 1}, {'_id': 2}], 'ORIGINAL_TEMPLATE_IDS_CHANGED')
+                     result['templates_sha_before'] = alarm_fingerprint(session, model)
+                     result['epoch_sha256'] = session.epoch_sha256
++                    require(result['identity_before'] == original['identity_after']
++                        and session.epoch_sha256 == original['epoch_sha256']
++                        and result['alarms_before'] == original['alarms_after']
++                        and result['templates_sha_before'] == original['templates_sha_after'],
++                        'ORIGINAL_CLOCK_OR_ALARM_BINDING_CHANGED_NO_INPUT')
+                     flow.run()
+                     result['business_success_verified'] = True
+                 except BaseException as exc:
+@@ -249,9 +292,9 @@
+                         and result.get('templates_sha_before') == result['templates_sha_after'], 'ORIGINAL_ALARMS_CHANGED')
+                     session.caller_status('clock-stopwatch-final-caller')
+         if result['business_success_verified']:
+-            require(flow.owned == flow.closed and len(set(flow.owned)) == 2
++            require(flow.owned == flow.closed and len(set(flow.owned)) == 1
+                     and flow.c.pending is None and result['identity_before'] == result['identity_after'],
+-                    'STOPWATCH_SUCCESS_REQUIRES_IDENTITY_AND_TWO_NORMAL_CLOSES')
++                    'STOPWATCH_SUCCESS_REQUIRES_IDENTITY_AND_ONE_NORMAL_CLOSE')
+     except BaseException as exc:
+         result.update(state='FAILED', business_success_verified=False, terminal_error=type(exc).__name__ + ': ' + str(exc))
+     finally:

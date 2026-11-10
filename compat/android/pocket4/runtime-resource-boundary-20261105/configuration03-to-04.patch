@@ -1,0 +1,73 @@
+--- inspect_configuration03.py
++++ inspect_configuration04.py
+@@ -14,7 +14,7 @@
+ import subprocess
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-main-runtime-boundary-20261105-r12-03')
++ROOT = Path('/home/alex/work/pocket4-main-runtime-boundary-20261105-r12-04')
+ TX = Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ TX_SHA = 'b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+ ACTIVATION = Path('/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json')
+@@ -23,6 +23,7 @@
+ EPOCH_SHA = 'f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288'
+ CELL_SHA = 'f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc'
+ CGROUP = Path('/sys/fs/cgroup/system.slice/droidloomd.service')
++OBSERVED = {}
+ PROPERTIES = ('TasksMax', 'EffectiveTasksMax', 'TasksAccounting', 'ControlGroup', 'FragmentPath', 'DropInPaths', 'NeedDaemonReload', 'InvocationID', 'ExecMainPID', 'ActiveEnterTimestampMonotonic', 'CPUQuotaPerSecUSec', 'MemoryHigh', 'MemoryMax', 'MemorySwapMax')
+ 
+ def require(value, reason):
+@@ -95,17 +96,24 @@
+                 'pids_current': (CGROUP / 'pids.current').read_text().strip(),
+                 'pids_events': (CGROUP / 'pids.events').read_text().strip()}
+     before = boundary()
++    OBSERVED['before'] = before
+     query = tool_query(['/usr/bin/systemctl', '--system', 'show', 'droidloomd.service', '--no-pager', '--property=' + ','.join(PROPERTIES)])
++    OBSERVED['systemd_query'] = query
+     require(query['exit_code'] == 0, 'SYSTEMD_QUERY_FAILED')
+     props = dict(line.split('=', 1) for line in query['stdout'].splitlines())
++    OBSERVED['systemd_properties'] = props
+     require(set(props) <= set(PROPERTIES) and props.get('ControlGroup') == '/system.slice/droidloomd.service' and props.get('TasksMax', '').isdigit(), 'SYSTEMD_PROPERTY_SCOPE')
+     names = [props['FragmentPath'], *props['DropInPaths'].split()]
+     require(0 < len(names) <= 16 and len(set(names)) == len(names), 'UNIT_FILE_COUNT')
+     configs = []
++    OBSERVED['configurations'] = configs
++    OBSERVED['configured_path_metadata'] = []
+     for name in names:
+         require(name.startswith(('/usr/lib/systemd/system/', '/etc/systemd/system/', '/run/systemd/system/', '/run/systemd/system.control/', '/etc/systemd/system.control/')) and '..' not in Path(name).parts, 'UNIT_FILE_SCOPE')
+         canonical = Path(name).resolve(strict=True)
+-        raw, identity = read(canonical, maximum=65536, single=False)
++        meta = canonical.stat()
++        OBSERVED['configured_path_metadata'].append({'path': name, 'canonical': str(canonical), 'uid': meta.st_uid, 'gid': meta.st_gid, 'mode': oct(stat.S_IMODE(meta.st_mode)), 'regular': stat.S_ISREG(meta.st_mode), 'bytes': meta.st_size, 'nlink': meta.st_nlink})
++        raw, identity = read(canonical, maximum=65536, single=False, require_root=False)
+         selected = []
+         section = ''
+         for n, line in enumerate(raw.decode('utf-8', 'strict').splitlines(), 1):
+@@ -117,13 +125,15 @@
+     journal = tool_query(['/usr/bin/journalctl', '--system', '--no-pager', '--utc', '-o', 'short-iso-precise',
+                           '--since=2026-11-05 14:45:00 UTC', '--until=2026-11-05 15:45:00 UTC',
+                           '_PID=1', '--grep=Reload|droidloomd|TasksMax', '-n', '160'])
++    OBSERVED['system_manager_journal_query'] = journal
+     require(journal['exit_code'] in (0, 1), 'SYSTEM_MANAGER_JOURNAL_QUERY_FAILED')
+     after = boundary()
++    OBSERVED['after'] = after
+     read(TX, TX_SHA, require_root=False)
+     read(ACTIVATION, ACTIVATION_SHA, require_root=False)
+     read(EPOCH, EPOCH_SHA, require_root=False)
+     for config in configs:
+-        _, current = read(config['canonical'], config['sha256'], maximum=65536, single=False)
++        _, current = read(config['canonical'], config['sha256'], maximum=65536, single=False, require_root=False)
+         require(all(current[k] == config[k] for k in current), 'UNIT_SOURCE_CHANGED_DURING_READ')
+     result = {'schema': 'pocket4-main-configured-task-limit-readonly/v1', 'before': before, 'after': after,
+               'expected_frozen_limits': activation['limits'], 'limit_consistency': before['limits'] == after['limits'],
+@@ -140,4 +150,9 @@
+                       'limits_stable': result['limit_consistency']}), flush=True)
+ 
+ if __name__ == '__main__':
+-    main()
++    try:
++        main()
++    except BaseException as exc:
++        record = write_result({'state': 'FAILED', 'error': type(exc).__name__ + ':' + str(exc), 'partial_readonly_observations': OBSERVED, 'android_commands': 0, 'ui_actions': 0, 'cgroup_writes': 0, 'guard_changes': 0})
++        print(json.dumps({'state': 'FAILED', 'error': type(exc).__name__ + ':' + str(exc), 'result': record}), flush=True)
++        raise SystemExit(1)

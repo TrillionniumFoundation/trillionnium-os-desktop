@@ -1,0 +1,23 @@
+# Gallery03: original failure, independent reconciliation, exact cleanup
+
+No rotation or new Gallery business gate is passed in this package. The executed Gallery03 trial failed while admitting its owned album route. Subsequent evidence identified a harness header parser mismatch and closed the retained fixture with a separately reviewed cleanup transaction. Earlier qualified Gallery scopes remain unchanged.
+
+## Actual sequence
+
+1. Gallery03 (`5b7c`, 22:49:32.996425–22:49:41.370943 UTC) installed its unique helper, created one controlled PNG and one JPEG in separate owned directories, launched task1005, and tapped its explicit album button once. The activity dump showed GalleryActivity in that same task, launched by the exact helper UID10197 with the owned JPEG bucket URI. The parser required `Hist #1`; actual output contained `Hist  #1`. The run stopped with `EXACT_TOP_GALLERY_ACTIVITY_RECORD_REQUIRED`, two recorded UI actions, zero rotation inputs, retained native/client pending, and no business gates. The original FAILED and unknown receipt is included unchanged.
+
+2. Saved-only export `5be8` preserved the original activity/WM/stack responses. The narrow parser patch accepts only horizontal spaces or tabs after `Hist`. Caller UID/package, task, exact album URI, activity and focus checks remain. Retained-record local cases include old parser rejection and newline, duplicate block, wrong caller, album and task counterexamples. This source diagnosis does not turn the original run into success.
+
+3. The fixed-scope readonly observer (`5c99`, 23:20:08.102717–23:20:09.735369 UTC) completed two actual snapshots and failed its aggregate equality check. The only compared differences were two relative duration strings, `lastLaunchTime` and `lastVisibleTime`, inside the activity block. An independent saved review proves that helper/Gallery identities, private record, media bytes/Exif/raw pixels, exact rows, held directory identities, caller, URI, task and focus were equal. The observer result remains FAILED. Its aggregate `guard_after` field was never assigned; this package explicitly preserves that limitation. The original 20-minute business lease had expired, so no Open/rotation continuation was attempted.
+
+4. A new exact cleanup (`5d11`, 23:34:41.683532–23:34:53.322920 UTC) performed fresh strict guards and identity/route checks, normally closed task1005 once, deleted exact image rows100/98 via the already observed `/file/<id>` route with full15 predicates, removed directories99/97 using held backing identities and both path-view absence, and uninstalled helper UID10197 last. Package, CE/DE, image files/rows and directory paths/index rows are absent. The original Home851 task set, Gallery identity/permissions and original media were preserved. All cleanup pending fields are empty and outcome_unknown=false for this new cleanup transaction. Root accepted the clean UI handback. This is cleanup evidence, not Gallery UI delete or rotation credit.
+
+## Evidence and serialization
+
+`evidence/gallery03-failed-original.json` is the binary-read original remote result, 16001 bytes, SHA-256 `41a2a9c45ab1e04fc70774f711384b701b7e495b8a46011f97cd18f0c0f0fb66`. Its stdout used a different JSON serialization; the included serialization proof distinguishes them. No stdout bytes are mislabeled as the remote file.
+
+`evidence/readonly01-selected.json` is an explicitly marked projection of the full 38390-byte original (`8f13efcb…`), whose bytes remain retained privately. The projection preserves its FAILED/error/pending fields and missing aggregate after-guard; full activity dump bodies are omitted. Stable-field digests and the independent exact two-literal block diff make the scoped conclusion reviewable without publishing raw activity dumps.
+
+`evidence/cleanup-r2-original.json` is the complete 14215-byte binary-read/decompressed original, SHA-256 `e516969360562edbc59a13b6fab34c9976ea3e56b7e61577e36675364846a27a`. The 2717-byte gzip was independently checked against `ebe062247b9ec8c1420a74dd0630d5da95d9d61de94f10631e7e96e75a0aa070`, EOF and stdout digest. Durable status, formal handoff and Root terminal review are included.
+
+Executed runner/observer/cleanup sources and the narrow parser/URI deltas are included. Unchanged previously published dependencies are bound in `source/SOURCE_BINDINGS.json`; no request base64, entire environment, raw UI trees, screenshots, user file contents or full APK/DEX is added. Gallery04 is a separate local-only candidate, with no stage or UI execution in this history package. Aggregate readiness/publication files were not changed.

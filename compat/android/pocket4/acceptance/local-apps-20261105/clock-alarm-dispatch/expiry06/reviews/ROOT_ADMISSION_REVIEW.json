@@ -1,0 +1,75 @@
+{
+  "Main_epoch": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "UI_actions_in_this_review": 0,
+  "all_15_frozen_files_verified": true,
+  "all_three_payload_sources_byte_equal": true,
+  "argv_stage_byte_equal": true,
+  "baseline_tasks": [
+    851
+  ],
+  "business_or_whole_app_credit_before_execution": false,
+  "controller": {
+    "bytes": 34300,
+    "path": "clock-flow08/timer-expiry06/timer_expiry06.py",
+    "sha256": "fba956b1b2a681d5181b60ab5fccad55964a46029b89970ad1c9ad646a0776fc"
+  },
+  "execution_bounds": {
+    "maximum_input_decisions": 12,
+    "maximum_normal_launches": 2,
+    "maximum_normal_removes": 2,
+    "single_cleanup_seconds": 45,
+    "supervisor_seconds": 330,
+    "timer_duration_ms": 60000,
+    "work_seconds": 240
+  },
+  "frozen_Timer04_and_model_unchanged": true,
+  "last_root_terminal_review": {
+    "bytes": 788,
+    "path": "calendar-repair08/discovery16/ROOT_TERMINAL_REVIEW.json",
+    "sha256": "7be26948cab74d576af8b995869f0112f4db46ac445d9d8fae852dbd69287157"
+  },
+  "last_terminal_handoff": {
+    "bytes": 2894,
+    "path": "calendar-repair08/discovery16/FORMAL_CLEAN_HANDOFF.json",
+    "sha256": "2295d9c358dc28a1ff6cc0bcfe6df9ec17d9a39eb3d671d835995ae9a0a5b871"
+  },
+  "manifest": {
+    "bytes": 2708,
+    "path": "clock-flow08/timer-expiry06/SOURCE_MANIFEST.json",
+    "sha256": "3afcb8185430f2989acad95102c8036b174dc0f4855659f41eb4316e10e91957"
+  },
+  "not_qualified": [
+    "Desktop notification interaction",
+    "Host popup display",
+    "Physical audio",
+    "Whole Clock production readiness"
+  ],
+  "peer": {
+    "bytes": 1791,
+    "path": "clock-flow08/timer-expiry06/DOCS_PEER_REVIEW.json",
+    "sha256": "4dbad4383075ff2f2a8dad1809c755b75df1e4b2b521edd1ce055a266400e6b9"
+  },
+  "pids_max": 12288,
+  "request": {
+    "bytes": 27169,
+    "path": "clock-flow08/timer-expiry06/stage-execute-request06.json",
+    "sha256": "f30068d10dc30ebde08747832cd99d876703e5fded20ed45426b32560355d564"
+  },
+  "result": "ADMITTED_FOR_EXACT_SINGLE_EXECUTION",
+  "reviewed_at_utc": "2026-11-05T22:37:14.402638+00:00",
+  "reviewed_source_fixes": [
+    "Negative cleanup Pause uses same-ID prior start/remaining plus actual pre/post uptime interval.",
+    "Only actual frozen helper ControlError and eight source-bound preinput error names with explicit restored/no-unknown/no-retry details may clear native pending; post-exception guard is required.",
+    "Native ACK actual_target matches every field in the fresh selector; exact reset readback separately clears timer effect."
+  ],
+  "schema": "pocket4-clock-expiry06-root-admission/v1",
+  "scope": "One UI-created 60-second timer on current433ff, actual persisted expiry and owned notification, real Stop and UI delete; original alarms retained.",
+  "source_review": {
+    "bytes": 2238,
+    "path": "clock-flow08/timer-expiry06/SOURCE_REVIEW.json",
+    "sha256": "1ab9a283204f5480bcce6f3aaf3620429d0baf683f07af58f11b76af8e51a39b"
+  },
+  "success_requires_both_context_exits": true,
+  "transaction_source_sha256": "b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470",
+  "unknown_outcome_policy": "Preserve original intent/results and pending state; no replay, alternate key, input or close until read-only reconciliation."
+}

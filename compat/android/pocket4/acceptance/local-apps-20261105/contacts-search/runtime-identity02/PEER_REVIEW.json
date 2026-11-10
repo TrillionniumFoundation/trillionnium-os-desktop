@@ -1,0 +1,445 @@
+{
+  "all_ELF_inventory": {
+    "bytes": 83249,
+    "objects": 381,
+    "path": "ELF_INVENTORY.json",
+    "sha256": "067fdb292c94c215f58034f04dda1bd648331f1e5601f291735f979cbe4a45b8"
+  },
+  "collector_and_exporter_pins": {
+    "contacts-search08/readback01/export_saved01.py": {
+      "bytes": 6278,
+      "sha256": "3e0c54326af8c958c7202791328664fddb6995558578d3c0af3cfbc89b583e6f"
+    },
+    "contacts-search08/runtime02/capture_runtime02.py": {
+      "bytes": 6545,
+      "sha256": "8504a777aea04d997a80aa08d8ca6e6bc749da42327c49c164465609855cecce"
+    },
+    "contacts-search08/runtime02/runtime_evidence.py": {
+      "bytes": 15870,
+      "sha256": "8018acc97132f3e417cbcb47a23071a45849f7e52f197a6aa250ccab7cce9422"
+    }
+  },
+  "distinct_phase_labels": [
+    "before-ui",
+    "interval-00",
+    "interval-01",
+    "interval-02"
+  ],
+  "guard": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  },
+  "identity_gate_granted_by_this_script": false,
+  "input_pins": [
+    {
+      "bytes": 2494512,
+      "path": "contacts-search08/readback01/saved-export.json",
+      "sha256": "302854134d6398abe331f94c9505d41cfd14389b9737addb4e4615ffe84eaa1c"
+    },
+    {
+      "bytes": 3991,
+      "path": "contacts-search08/runtime02/actual-result.json",
+      "sha256": "612e91ac38c9d07d1d27a16ada46c5b1215c7901ca56ee65900833605653405a"
+    },
+    {
+      "bytes": 183597,
+      "path": "app-identity08/public-metadata/installed-app-identities.json",
+      "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+    }
+  ],
+  "inventory_identical_across_all_five_saved_snapshots": true,
+  "limits": [
+    "The original aggregate completeness count remains zero; this is a separate classification and identity review.",
+    "Five selected stable snapshots bind this Contacts run. The other 99 index entries are not claimed as full mapping snapshots.",
+    "Four distinct phase labels contain five snapshots because interval-01 contains both process generations.",
+    "JIT caches, vDSO and vsyscall names and permissions are observed; their memory bytes are neither read nor hashed.",
+    "No claim covers arbitrary anonymous code, every future load, all-workload ARM translation exclusion, stress or leak qualification.",
+    "The failed search business flow remains failed. No business, visual, lifecycle, crash or whole-App gate is granted here.",
+    "Raw maps and full proc stat are absent from the public selected export; exact original sample hashes and the pinned selection source bind the preserved fields."
+  ],
+  "observations": [
+    {
+      "ELF_objects_hashed": 381,
+      "JIT_or_anonymous_bytes_read_or_verified": false,
+      "android_pid": 866709,
+      "android_uid": 10055,
+      "host_pid": 2919793,
+      "maps_bytes": 302835,
+      "maps_sha256": "93c3c8da289c4f9bdf3fc39325d98e03f6a7f9019aab334f1a21537da834b105",
+      "named_executable_maps": [
+        {
+          "path": "[anon_shmem:dalvik-zygote-jit-code-cache]",
+          "permissions": "r-xs"
+        },
+        {
+          "path": "[anon_shmem:dalvik-jit-code-cache]",
+          "permissions": "r-xs"
+        },
+        {
+          "path": "[vdso]",
+          "permissions": "r-xp"
+        },
+        {
+          "path": "[vsyscall]",
+          "permissions": "--xp"
+        }
+      ],
+      "non_executable_name_candidates": [
+        {
+          "classification": "Read-only shared non-executable name candidate; not a mapped executable engine claim.",
+          "mapping_count": 1,
+          "path": "/data/resource-cache/vendor@overlay@DroidloomFrameworkDisplayOverlay.apk@idmap",
+          "permissions": [
+            "r--s"
+          ]
+        },
+        {
+          "classification": "Read-only shared non-executable name candidate; not a mapped executable engine claim.",
+          "mapping_count": 1,
+          "path": "/dev/__properties__/u:object_r:qemu_sf_lcd_density_prop:s0",
+          "permissions": [
+            "r--s"
+          ]
+        },
+        {
+          "classification": "Read-only shared non-executable name candidate; not a mapped executable engine claim.",
+          "mapping_count": 2,
+          "path": "/vendor/overlay/DroidloomFrameworkDisplayOverlay.apk",
+          "permissions": [
+            "r--s"
+          ]
+        }
+      ],
+      "phase": "before-ui",
+      "pid_namespace": "pid:[4026533288]",
+      "selection": "before-ui:2919793:93469953",
+      "source_sample": {
+        "source_bytes": 1205743,
+        "source_name": "sample-000.json",
+        "source_sha256": "9c095bec880066f4dfcd7a0e2fdbf2b838bd843540236d5b093a415e6af41543"
+      },
+      "stable_maps": true,
+      "stable_process_identity": true,
+      "start_ticks": "93469953",
+      "utc": "2026-11-05T20:03:40.906801+00:00"
+    },
+    {
+      "ELF_objects_hashed": 381,
+      "JIT_or_anonymous_bytes_read_or_verified": false,
+      "android_pid": 866709,
+      "android_uid": 10055,
+      "host_pid": 2919793,
+      "maps_bytes": 302835,
+      "maps_sha256": "93c3c8da289c4f9bdf3fc39325d98e03f6a7f9019aab334f1a21537da834b105",
+      "named_executable_maps": [
+        {
+          "path": "[anon_shmem:dalvik-zygote-jit-code-cache]",
+          "permissions": "r-xs"
+        },
+        {
+          "path": "[anon_shmem:dalvik-jit-code-cache]",
+          "permissions": "r-xs"
+        },
+        {
+          "path": "[vdso]",
+          "permissions": "r-xp"
+        },
+        {
+          "path": "[vsyscall]",
+          "permissions": "--xp"
+        }
+      ],
+      "non_executable_name_candidates": [
+        {
+          "classification": "Read-only shared non-executable name candidate; not a mapped executable engine claim.",
+          "mapping_count": 1,
+          "path": "/data/resource-cache/vendor@overlay@DroidloomFrameworkDisplayOverlay.apk@idmap",
+          "permissions": [
+            "r--s"
+          ]
+        },
+        {
+          "classification": "Read-only shared non-executable name candidate; not a mapped executable engine claim.",
+          "mapping_count": 1,
+          "path": "/dev/__properties__/u:object_r:qemu_sf_lcd_density_prop:s0",
+          "permissions": [
+            "r--s"
+          ]
+        },
+        {
+          "classification": "Read-only shared non-executable name candidate; not a mapped executable engine claim.",
+          "mapping_count": 2,
+          "path": "/vendor/overlay/DroidloomFrameworkDisplayOverlay.apk",
+          "permissions": [
+            "r--s"
+          ]
+        }
+      ],
+      "phase": "interval-00",
+      "pid_namespace": "pid:[4026533288]",
+      "selection": "interval-00:2919793:93469953",
+      "source_sample": {
+        "source_bytes": 1205746,
+        "source_name": "sample-001.json",
+        "source_sha256": "9de4325105e7e6c9398984756da729288662ca32a580e2228f0ff2e38bd6a08a"
+      },
+      "stable_maps": true,
+      "stable_process_identity": true,
+      "start_ticks": "93469953",
+      "utc": "2026-11-05T20:03:41.816433+00:00"
+    },
+    {
+      "ELF_objects_hashed": 381,
+      "JIT_or_anonymous_bytes_read_or_verified": false,
+      "android_pid": 866709,
+      "android_uid": 10055,
+      "host_pid": 2919793,
+      "maps_bytes": 305483,
+      "maps_sha256": "a03dd77148b49a8ef03aeed43c7d6692ff6e135ff4622889688a8b74690a329c",
+      "named_executable_maps": [
+        {
+          "path": "[anon_shmem:dalvik-zygote-jit-code-cache]",
+          "permissions": "r-xs"
+        },
+        {
+          "path": "[anon_shmem:dalvik-jit-code-cache]",
+          "permissions": "r-xs"
+        },
+        {
+          "path": "[vdso]",
+          "permissions": "r-xp"
+        },
+        {
+          "path": "[vsyscall]",
+          "permissions": "--xp"
+        }
+      ],
+      "non_executable_name_candidates": [
+        {
+          "classification": "Read-only shared non-executable name candidate; not a mapped executable engine claim.",
+          "mapping_count": 1,
+          "path": "/data/resource-cache/vendor@overlay@DroidloomFrameworkDisplayOverlay.apk@idmap",
+          "permissions": [
+            "r--s"
+          ]
+        },
+        {
+          "classification": "Read-only shared non-executable name candidate; not a mapped executable engine claim.",
+          "mapping_count": 1,
+          "path": "/dev/__properties__/u:object_r:qemu_sf_lcd_density_prop:s0",
+          "permissions": [
+            "r--s"
+          ]
+        },
+        {
+          "classification": "Read-only shared non-executable name candidate; not a mapped executable engine claim.",
+          "mapping_count": 2,
+          "path": "/vendor/overlay/DroidloomFrameworkDisplayOverlay.apk",
+          "permissions": [
+            "r--s"
+          ]
+        }
+      ],
+      "phase": "interval-01",
+      "pid_namespace": "pid:[4026533288]",
+      "selection": "interval-01:2919793:93469953",
+      "source_sample": {
+        "source_bytes": 1215149,
+        "source_name": "sample-039.json",
+        "source_sha256": "f03b4bc183b51e1ae00471ee29922fea0e16e039a91a6d5dbdc8e864ac49acfa"
+      },
+      "stable_maps": true,
+      "stable_process_identity": true,
+      "start_ticks": "93469953",
+      "utc": "2026-11-05T20:04:01.504704+00:00"
+    },
+    {
+      "ELF_objects_hashed": 381,
+      "JIT_or_anonymous_bytes_read_or_verified": false,
+      "android_pid": 869932,
+      "android_uid": 10055,
+      "host_pid": 2924489,
+      "maps_bytes": 302009,
+      "maps_sha256": "9e4c73631716fb010cb8dc4d3d13f1382877105e03767c5925c0cb628774661b",
+      "named_executable_maps": [
+        {
+          "path": "[anon_shmem:dalvik-zygote-jit-code-cache]",
+          "permissions": "r-xs"
+        },
+        {
+          "path": "[anon_shmem:dalvik-jit-code-cache]",
+          "permissions": "r-xs"
+        },
+        {
+          "path": "[vdso]",
+          "permissions": "r-xp"
+        },
+        {
+          "path": "[vsyscall]",
+          "permissions": "--xp"
+        }
+      ],
+      "non_executable_name_candidates": [
+        {
+          "classification": "Read-only shared non-executable name candidate; not a mapped executable engine claim.",
+          "mapping_count": 1,
+          "path": "/data/resource-cache/vendor@overlay@DroidloomFrameworkDisplayOverlay.apk@idmap",
+          "permissions": [
+            "r--s"
+          ]
+        },
+        {
+          "classification": "Read-only shared non-executable name candidate; not a mapped executable engine claim.",
+          "mapping_count": 1,
+          "path": "/dev/__properties__/u:object_r:qemu_sf_lcd_density_prop:s0",
+          "permissions": [
+            "r--s"
+          ]
+        },
+        {
+          "classification": "Read-only shared non-executable name candidate; not a mapped executable engine claim.",
+          "mapping_count": 2,
+          "path": "/vendor/overlay/DroidloomFrameworkDisplayOverlay.apk",
+          "permissions": [
+            "r--s"
+          ]
+        }
+      ],
+      "phase": "interval-01",
+      "pid_namespace": "pid:[4026533288]",
+      "selection": "interval-01:2924489:93475876",
+      "source_sample": {
+        "source_bytes": 1202543,
+        "source_name": "sample-056.json",
+        "source_sha256": "2eeb51f918bd9f68dc1e75898ca04b47064a85d6c70cea0c6ade7fa54c02fead"
+      },
+      "stable_maps": true,
+      "stable_process_identity": true,
+      "start_ticks": "93475876",
+      "utc": "2026-11-05T20:04:10.375196+00:00"
+    },
+    {
+      "ELF_objects_hashed": 381,
+      "JIT_or_anonymous_bytes_read_or_verified": false,
+      "android_pid": 869932,
+      "android_uid": 10055,
+      "host_pid": 2924489,
+      "maps_bytes": 300458,
+      "maps_sha256": "d0b3b01195a8d69df9c526589803a1a3e77800234699b4a3ceb185d4a86e1609",
+      "named_executable_maps": [
+        {
+          "path": "[anon_shmem:dalvik-zygote-jit-code-cache]",
+          "permissions": "r-xs"
+        },
+        {
+          "path": "[anon_shmem:dalvik-jit-code-cache]",
+          "permissions": "r-xs"
+        },
+        {
+          "path": "[vdso]",
+          "permissions": "r-xp"
+        },
+        {
+          "path": "[vsyscall]",
+          "permissions": "--xp"
+        }
+      ],
+      "non_executable_name_candidates": [
+        {
+          "classification": "Read-only shared non-executable name candidate; not a mapped executable engine claim.",
+          "mapping_count": 1,
+          "path": "/data/resource-cache/vendor@overlay@DroidloomFrameworkDisplayOverlay.apk@idmap",
+          "permissions": [
+            "r--s"
+          ]
+        },
+        {
+          "classification": "Read-only shared non-executable name candidate; not a mapped executable engine claim.",
+          "mapping_count": 1,
+          "path": "/dev/__properties__/u:object_r:qemu_sf_lcd_density_prop:s0",
+          "permissions": [
+            "r--s"
+          ]
+        },
+        {
+          "classification": "Read-only shared non-executable name candidate; not a mapped executable engine claim.",
+          "mapping_count": 2,
+          "path": "/vendor/overlay/DroidloomFrameworkDisplayOverlay.apk",
+          "permissions": [
+            "r--s"
+          ]
+        }
+      ],
+      "phase": "interval-02",
+      "pid_namespace": "pid:[4026533288]",
+      "selection": "interval-02:2924489:93475876",
+      "source_sample": {
+        "source_bytes": 1197379,
+        "source_name": "sample-077.json",
+        "source_sha256": "9545acfdc9ce1d2a2bf3bccf5128aa457ed224ad2f619986fc4ac37d9225f8b5"
+      },
+      "stable_maps": true,
+      "stable_process_identity": true,
+      "start_ticks": "93475876",
+      "utc": "2026-11-05T20:04:21.248133+00:00"
+    }
+  ],
+  "original_collector_or_receipts_modified": false,
+  "original_stable_complete_mapping_samples": 0,
+  "package": {
+    "android_user": 0,
+    "apk_bytes": 11839391,
+    "apk_sha256": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0",
+    "package": "com.android.contacts",
+    "signature_source": "Earlier real signature verification of these exact unchanged APK bytes; no signature rerun in this peer",
+    "signer_certificate_sha256": [
+      "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
+    ],
+    "uid": 10055,
+    "version_code": 10734,
+    "version_name": "1.7.34"
+  },
+  "process_executable": {
+    "architecture": "x86_64",
+    "guest_path": "/system/bin/app_process64",
+    "machine": 62,
+    "sha256": "456322c6cc424d228d153623717e8a6b1ac7d0b3aa48f0f1948380412f54ac73"
+  },
+  "process_generations": [
+    {
+      "android_pid": 866709,
+      "host_pid": 2919793,
+      "start_ticks": "93469953"
+    },
+    {
+      "android_pid": 869932,
+      "host_pid": 2924489,
+      "start_ticks": "93475876"
+    }
+  ],
+  "recommendation": "ACCEPT_OBSERVED_RUNTIME_IDENTITY_ONLY_FOR_THIS_APK_AND_CAPTURE",
+  "review_UI_or_provider_or_package_mutations": 0,
+  "review_current_process_reads": 0,
+  "review_device_calls": 0,
+  "runtime_artifact_hashes": {
+    "/apex/com.android.art/lib64/libart.so": "3b53de051a3004be76078506f7a6924e50b467fd4b3277b867afc13328d082d0",
+    "/apex/com.android.art/lib64/libartbase.so": "a2766974a16b431dcee611975c49b8a30b7d181e3237d213dbe4482d84f0e407",
+    "/apex/com.android.art/lib64/libnativebridge.so": "800c7968a03e3d3c673771110aa1249c296c3a7963398c3a9856311db67252cc",
+    "/system/lib64/libandroid_runtime.so": "a2b1445b68a9bff4ab23687c66668579b57fbc5122df055d212a51a60049a64c",
+    "/system/lib64/libnativebridge_lazy.so": "5b1b02f4de4966ddd1dc817a1d36ac26f647bc201538e09ad8ab84f3faf0df7b"
+  },
+  "sample_index_entries": 104,
+  "schema": "contacts-runtime02-independent-saved-evidence-peer-v1",
+  "separate_UI_business_result_preserved": {
+    "UI_flow_business_success": false,
+    "UI_flow_cleanup_verified": true,
+    "bytes": 8669,
+    "finished_utc": "2026-11-05T20:04:34.853920+00:00",
+    "sha256": "0184620e924ae7dddb564b5e1e4399f90fc2fcc66e68bdbab173c33d98f26df4",
+    "state": "FAILED"
+  },
+  "stable_snapshots_reviewed": 5,
+  "whole_app_production_ready": false
+}

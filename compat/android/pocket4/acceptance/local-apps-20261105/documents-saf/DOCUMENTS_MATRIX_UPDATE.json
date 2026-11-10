@@ -1,0 +1,58 @@
+{
+  "package": "com.android.documentsui",
+  "version_code": 37,
+  "uid": 10022,
+  "apk_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "observed_terminal_utc": "2026-11-05T11:26:26.097000+00:00",
+  "status": "SCOPED_SAF_FILES_CREATE_RENAME_OPEN_REOPEN_PROVIDER_DELETE_PASSED",
+  "whole_app_production_ready": false,
+  "scoped_business_pass": true,
+  "current_owned_test_state": "CLEAN",
+  "pending_effects": {},
+  "business_scope": [
+    "actual_create_document_picker_save_and_exact_returned_uri",
+    "single_content_resolver_write_readback",
+    "independent_fresh_same_directory_file_readback",
+    "provider_rename",
+    "files_ui_selection_rename_and_open",
+    "open_document_picker_close_reopen_persisted_grant_and_hash",
+    "provider_delete_and_true_absence"
+  ],
+  "scope_limits": [
+    "one generated Unicode text file in primary ExternalStorageProvider",
+    "provider delete, not Files UI delete",
+    "normal task close/reopen, not process death or reboot",
+    "no copy/move/multiple-file/tree-grant/removable/remote-provider coverage",
+    "does not establish whole-App production readiness"
+  ],
+  "primary_evidence": {
+    "path": "FLOW11_SCOPED_REVIEW.json",
+    "bytes": 10233,
+    "sha256": "7f852dcb2e052234c395512fd60e2fbcedb8a4e4ad16dbb11fe071e88a6dc336"
+  },
+  "current_summary": {
+    "path": "SCOPED_RESULT.json",
+    "bytes": 12561,
+    "sha256": "ef4a35069142ab2980d0f475bc8a7c779fdd103fbdc52885c0b56456658031e4"
+  },
+  "evidence_refs": [
+    {
+      "path": "FLOW11_VERIFIED_RECEIPTS.json",
+      "bytes": 17472,
+      "sha256": "c70bd842f1eebdd9e32fe1773f49eee30e8516a9d4a9e1f96eee24e97f90967d"
+    },
+    {
+      "path": "flow11-result.json",
+      "bytes": 7790,
+      "sha256": "095fb0441fdf39d4fdd84f337b3a343ee556d384ec6aef3a6312863b114dc712"
+    },
+    {
+      "path": "flow11-job-status.json",
+      "bytes": 732,
+      "sha256": "8706489b7de97200c25ee4479c697bba9bfc9f45477e55b288e569ad82d42018"
+    }
+  ],
+  "temporary_package_excluded_from_tracked_45": true,
+  "existing_failed_attempts_preserved": true
+}

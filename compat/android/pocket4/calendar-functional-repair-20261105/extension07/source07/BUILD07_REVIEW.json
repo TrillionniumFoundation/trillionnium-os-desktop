@@ -1,0 +1,52 @@
+{
+  "actual_host_tests": "pending real pinned JDK/SDK build",
+  "android_mutations": 0,
+  "changes": [
+    {
+      "after": "build07.py",
+      "after_sha256": "9ce26dc763936834785cf9b059e3950af50c9ab987bceb2c3778b9449f479635",
+      "before": "build06.py",
+      "before_sha256": "d97eada0b6dfa4052a33899e5550f9fbfd99afebc1a6a7ebdfe43127a44c4410"
+    },
+    {
+      "after": "src/com/android/calendar/alerts/RestoredAlerts.java",
+      "after_sha256": "4a54be960f6dba533966911fb914a952f9717d4d8f2bc999d8313656847cc708",
+      "before": "src/com/android/calendar/alerts/RestoredAlerts.java",
+      "before_sha256": "8edf4c0270dc53f22b0d24b8bc3091d1d171d57140c4fd9b9bcee8139752351a"
+    },
+    {
+      "after": "src/com/android/calendar/alerts/SnoozeJournal.java",
+      "after_sha256": "4e0d80d06edadaa0231a55d0e4307f9f4d2fabf57ca2c0dd0466b53b3aa6c8b3",
+      "before": null,
+      "before_sha256": null
+    },
+    {
+      "after": "src/com/android/calendar/alerts/SnoozeState.java",
+      "after_sha256": "0f71f01bc6c5317a7b413798fcb00785b2a50b78de28db53724a466ee6323e4c",
+      "before": null,
+      "before_sha256": null
+    },
+    {
+      "after": "tests/SnoozeStateTest.java",
+      "after_sha256": "17db538fabc8b71494d557fdefcf53619c9243c2d8a511ba0c8bd393f1a2e11a",
+      "before": null,
+      "before_sha256": null
+    }
+  ],
+  "durable_authority": "private nonce record created only on authenticated user Snooze or existing non-exported service contract",
+  "ordinary_reminders_owner": "existing CalendarProvider",
+  "own_snoozes_only": true,
+  "publication": "FIRED alone does not retire journal; same target must have active notification, original dismissed anchor and unchanged event/occurrence",
+  "runtime_installed": false,
+  "schema": "calendar-snooze-recovery-build-review-v1",
+  "scope_limits": [
+    "No Android runtime/boot/reset/UI/notification/actual snooze qualification yet",
+    "REQUESTED plus dismissed source plus missing target after compound commit/reset remains explicitly unknown, not silently recreated",
+    "Exact alarms used only if existing permission allows; otherwise standard inexact idle alarm",
+    "Recovery wakeups are bounded; exhausted/ambiguous recovery surfaces a status notification",
+    "No account registration, sync request, permission changes, manifest/resource changes or unrelated original method changes"
+  ],
+  "source_manifest_sha256": "68a942bfa39efa7def3a4f4fe5e269d60fe034874f57f7b9c3e47cc382903923",
+  "unknown_write": "no repeated initial mutation; new observation may adopt one exact target including creationTime, or CONFIRMED intent may reconstruct after scheduled row reset",
+  "write_guard": "event + calendar + original alert snapshot assertions, exact unique-key absent assertion, insert and original dismiss in one no-yield batch"
+}

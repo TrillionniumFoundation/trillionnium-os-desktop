@@ -1,0 +1,65 @@
+{
+  "configuration_probe_job_id": "1a1ac6686b2-fc05-540b",
+  "configuration_probe_original": {
+    "bytes": 9882,
+    "sha256": "da54529e07d1434082773c387ef2b0333345f3d1f4fca81c75043705b8ddaa7c"
+  },
+  "configured_observed_utc": "2026-11-05T15:49:24.079879+00:00",
+  "current_limits": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "6144"
+  },
+  "first_observed_utc": "2026-11-05T15:25:23.141593+00:00",
+  "first_probe_job_id": "1a1ac508897-fc05-5384",
+  "first_probe_original": {
+    "bytes": 14426,
+    "sha256": "8e85dd5cbb7ab7d443048f1751ca114e21415c15a51090940fc5c978467f13fb"
+  },
+  "inference": "The later named6144 drop-in, the manager reload and the effective/kernel6144 observation explain the stale12288 activation guard. The writer identity of historical configuration files is not established.",
+  "manager_reported_request_unit": "apt-daily-upgrade.service",
+  "only_limit_difference": {
+    "pids.max": {
+      "after": "6144",
+      "before": "6144",
+      "expected": "12288"
+    }
+  },
+  "original_diagnostic_failures": [
+    {
+      "error": "READ_SCOPE",
+      "exit_code": 1,
+      "job_id": "1a1ac5796c9-fc05-53bb",
+      "location": "Pinned epoch source owner requirement; before systemd query."
+    },
+    {
+      "error": "READ_SCOPE",
+      "exit_code": 1,
+      "job_id": "1a1ac5e3fdc-fc05-53df",
+      "location": "Configured unit file owner requirement; after read-only systemd query."
+    }
+  ],
+  "original_gallery02_failure_sha256": "cac190d7f465e197c7e20192e56821b7aca57277e235c2455f5b74b1a6324891",
+  "pids_current": 3244,
+  "pids_events": "max 0",
+  "retained_configuration_conflict": {
+    "50-TasksMax.conf": "TasksMax=12288",
+    "90-digitalis-validation-resources.conf": "TasksMax=6144"
+  },
+  "same_original_framework_and_host_processes_verified": true,
+  "schema": "pocket4-configured-task-limit-change/v1",
+  "scope": {
+    "android_commands": 0,
+    "cgroup_writes": 0,
+    "guard_changes_by_these_diagnostics": 0,
+    "service_reloads_or_restarts": 0,
+    "ui_actions": 0
+  },
+  "systemd_manager_reload_window_utc": [
+    "2026-11-05T14:57:58.955152+00:00",
+    "2026-11-05T14:57:59.484306+00:00"
+  ],
+  "whole_app_production_ready": false
+}

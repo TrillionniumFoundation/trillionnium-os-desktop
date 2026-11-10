@@ -1,0 +1,120 @@
+{
+  "schema": "pocket4-platform-retained-native-update-v1",
+  "reviewed_at_utc": "2026-11-05T09:36:06.735899+00:00",
+  "source_reads_only": true,
+  "device_queries_by_this_review": 0,
+  "sources": [
+    {
+      "locator": "/workspace/scratch/94990735b266/native-recovery-20261105-02/candidate07-android-result-review01/report.json",
+      "bytes": 4423,
+      "sha256": "f149d0c08d6d5fe68981096e84223f2213cff67f5059125cf4500d2eca7f59cc",
+      "full_source_included": false
+    },
+    {
+      "locator": "/workspace/scratch/94990735b266/native-recovery-20261105-02/candidate07-android-raw-review02/report.json",
+      "bytes": 21119,
+      "sha256": "cc768add53b56a2f3a2905c23405768701ddd72a459345939f9ef1681b4b6de5",
+      "full_source_included": false
+    }
+  ],
+  "runtime_sha256": "4e1899db8d0f82a3d80df231f10b09fed644028440a1d77e820e50413c3378d1",
+  "host_counts": {
+    "completed": 3788,
+    "disabled": 2,
+    "executed": 3791,
+    "failed": 0,
+    "registered": 3793,
+    "skipped": 3
+  },
+  "mapped_engine_sha256": "3aa9b479a9b66f56ae827477cf9f957fdeb6dcb21f1f8f981e34a1089f80048a",
+  "cases": [
+    {
+      "case": "svc",
+      "status": "PASS",
+      "checks": "0x000000000007e001",
+      "required_checks": "0x000000000007e001",
+      "instruction_word": "0xd4000001",
+      "instrument_terminal": {
+        "automatic_retry": false,
+        "mutation_attempted": true,
+        "returncode": 0,
+        "timed_out": false
+      },
+      "precise_siginfo_observed": false,
+      "commercial_app_claim": false
+    },
+    {
+      "case": "smc-handler",
+      "status": "PASS",
+      "checks": "0x000000000007fffe",
+      "required_checks": "0x000000000007fffe",
+      "instruction_word": "0xd4000003",
+      "instrument_terminal": {
+        "automatic_retry": false,
+        "mutation_attempted": true,
+        "returncode": 0,
+        "timed_out": false
+      },
+      "precise_siginfo_observed": true,
+      "commercial_app_claim": false
+    },
+    {
+      "case": "smc-default",
+      "status": "PASS",
+      "checks": "0x0000000000fc0000",
+      "required_checks": "0x0000000000fc0000",
+      "instruction_word": "0xd4000003",
+      "instrument_terminal": {
+        "automatic_retry": false,
+        "mutation_attempted": true,
+        "returncode": 0,
+        "timed_out": false
+      },
+      "precise_siginfo_observed": false,
+      "commercial_app_claim": false
+    },
+    {
+      "case": "smc-mask-edit",
+      "status": "PASS",
+      "checks": "0x000000000707fffe",
+      "required_checks": "0x000000000707fffe",
+      "instruction_word": "0xd4000003",
+      "instrument_terminal": {
+        "automatic_retry": false,
+        "mutation_attempted": true,
+        "returncode": 0,
+        "timed_out": false
+      },
+      "precise_siginfo_observed": true,
+      "commercial_app_claim": false
+    }
+  ],
+  "raw_native_assertions_recomputed_by_retained_owner_assessor": true,
+  "assessor_sha256": "125547744b86686f80278bb7730fdb4352b4f3378376f03ea10f7553f879ec97",
+  "own_packages_removed": true,
+  "four_owned_service_hierarchies_retired": true,
+  "main_before_after_equal": true,
+  "main_resource_limits_unchanged": true,
+  "main_memory_event_delta_available": false,
+  "controller_memory_events": {
+    "high": 0,
+    "low": 0,
+    "max": 61356,
+    "oom": 0,
+    "oom_group_kill": 0,
+    "oom_kill": 0,
+    "sock_throttled": 0
+  },
+  "controller_memory_peak_bytes": 268435456,
+  "controller_cgroup_absence_after_terminal_independently_checked": false,
+  "metadata_generation_enabled": false,
+  "main_deployment": false,
+  "whole_app_qualification": false,
+  "limits": [
+    "No new tests or actual process/namespace observations occurred in this offline reassessment.",
+    "Source, host-suite, package cleanup and four service hierarchy review remain bound to the prior receipt.",
+    "Controller actor memory.max events were nonzero; Main memory.events deltas are absent from this runtime result.",
+    "The smc-default case proves owned child SIGILL termination/reaping, not precise default-fault siginfo.",
+    "Native register/check assertions retain the frozen probe and assessor meaning; this adds no new independent emulator oracle."
+  ]
+}

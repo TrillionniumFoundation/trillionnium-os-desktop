@@ -1,0 +1,51 @@
+--- editor_ui02.py
++++ editor_ui03.py
+@@ -5,13 +5,13 @@
+ import argparse, hashlib, json, os, re, signal, stat, time, types
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-editor-ui-20261105-r12-02')
++ROOT=Path('/home/alex/work/pocket4-editor-ui-20261105-r12-03')
+ CONTACT=Path('/home/alex/work/pocket4-contacts-session-tools-20261105-r12-01')
+ DIAGNOSTIC=Path('/home/alex/work/pocket4-qa-fixture-ui-tools-20261105-r12-01/diagnostics_source.py')
+ PACKAGE='org.droidloom.qa.editorcontract';COMPONENT=PACKAGE+'/.EditorContractActivity'
+ APK='/data/app/~~azb5Z9bqpcSnfR4fbzSWoA==/org.droidloom.qa.editorcontract-bpP3Aa1qzcaX1a7uHGVhTw==/base.apk'
+ APK_SHA='0d08f59024e4228e5d5b8f56742aafd1fbc04966d74224acd48542e09482743d'
+-UID=10149;RUN='p4r12_editor_9af372b0';LEASE=360;RESERVE=45
++UID=10149;RUN='p4r12_editor_d39107ac';LEASE=360;RESERVE=45
+ TASK_PROOF=HERE/'task-option-proof.json'
+ TASK_PROOF_SHA='9cb008b7050d3bb0b8da2221140c02b39ebde973833b5ee24039932e266e90a5'
+ PINS={str(CONTACT/'ui_preflight04.py'):'d02821d751736a9e3cf275ec0b27383852e24362928fd4257ebb6d3dee7f6a58',
+@@ -163,12 +163,20 @@
+         finalshot=self.t.last_observation['screenshot'];observed.append(key_context(current,finalshot))
+         self.current.read('app-ready-before-'+label,True)
+         focus=self.t.ready_focus(False)
+-        need(self.t.s.helper.stable_window(focus)==self.t.s.helper.stable_window(finalshot['scope']),
+-            'KEY_FOCUS_CHANGED')
++        # Trial's WM record and helper's native window metadata have distinct
++        # real schemas. Validate each directly; do not invent missing fields.
++        need(focus.get('verified') is True and focus.get('task')==self.t.owned[0]
++            and focus.get('user')==0
++            and all(focus.get(k)==finalshot['scope'][k] for k in ('package','activity','window_token')),
++            'KEY_OWNED_TASK_FOCUS_CHANGED')
++        window=self.t.s.helper.window_state(PACKAGE,focus['window_token'],0,'none')
++        need(self.t.s.helper.stable_window(window)==self.t.s.helper.stable_window(finalshot['scope']),
++            'KEY_NATIVE_WINDOW_CONTEXT_CHANGED')
+         argv=['/system/bin/input','keyboard','-d','0','keyevent',key]
+         self.t.record(label+'-intent',{'argv':argv,'node':final,'owned_task':self.t.owned[0],
+             'automatic_retry':False,'target_binding':'same native focused editor plus fixed window/task/context',
+-            'pixel_observations':observed,'pixel_equality_required_for_keyboard':False})
++            'pixel_observations':observed,'pixel_equality_required_for_keyboard':False,
++            'final_owned_task_focus':focus,'final_native_window_context':window})
+         self.c.pending=label;self.actions+=1
+         self.t.s.android(argv,12);self.t.s.guard();self.c.observe('after-'+label)
+         self.c.pending=None
+@@ -254,7 +262,7 @@
+             owned_tasks=flow.owned if flow else [],closed_tasks=flow.closed if flow else [],
+             native_launch_calls=flow.t.launches if flow else 0,nonce_intent_calls=flow.intent_calls if flow else 0)
+         if ROOT.is_dir():tx.write_new(ROOT/'result.json',result)
+-        tx.write_new(HERE/'editor-ui02-result.json',result,alex_readable=True)
++        tx.write_new(HERE/'editor-ui03-result.json',result,alex_readable=True)
+         print(json.dumps({k:result.get(k) for k in ('state','error','terminal_error','ui_actions','pending_effect','owned_tasks','closed_tasks','owned_nonces_requiring_reconciliation')}))
+     return 0 if result['state']=='UNICODE_KEYBOARD_ENTER_DELETE_REOPEN_CLEANUP_VERIFIED' else 1
+ 

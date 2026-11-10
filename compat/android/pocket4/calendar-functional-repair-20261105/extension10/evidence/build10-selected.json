@@ -1,0 +1,402 @@
+{
+  "Android_commands": 0,
+  "actual_changed_original_classes": [
+    "com/android/calendar/AllInOneActivity$QueryHandler.smali",
+    "com/android/calendar/AllInOneActivity.smali",
+    "com/android/calendar/CalendarController.smali",
+    "com/android/calendar/EventInfoActivity.smali",
+    "com/android/calendar/alerts/AlertReceiver.smali",
+    "com/android/calendar/alerts/AlertService.smali"
+  ],
+  "actual_job_id": "1a1acdc245b-fc05-5753",
+  "actual_patch_methods": [
+    {
+      "after_bytes": 4402,
+      "after_sha256": "91859283751bcbb10caed504a684209ba2e7b7ad804ddd48b45151be4e75c0db",
+      "before_bytes": 4296,
+      "before_sha256": "8d6f9de9a1ddf35f9a0fad0be1eab1aa65395466aa868f97cf3105bbd73dc0ef",
+      "class": "com/android/calendar/AllInOneActivity.smali",
+      "method": "onCreateOptionsMenu(Landroid/view/Menu;)Z"
+    },
+    {
+      "after_bytes": 5316,
+      "after_sha256": "09c3d9ee3f0e0cd5d1300ae33b04b1ffa710059c5e323868e7f0b0c93e66be95",
+      "before_bytes": 4675,
+      "before_sha256": "fea2e4813ebcc86b03baf1d03faca21c3c680a51e5eba0862626922e0fa50517",
+      "class": "com/android/calendar/AllInOneActivity.smali",
+      "method": "onOptionsItemSelected(Landroid/view/MenuItem;)Z"
+    },
+    {
+      "after_bytes": 9024,
+      "after_sha256": "b04cfbec2b0c746f702417576bbfdd3f96cc7907965aab1a077804185c7fbc90",
+      "before_bytes": 8909,
+      "before_sha256": "ba14ee836f5c0b09fd8fc70226c433d2ca29d12fdaaacc6346853b76ef038cbc",
+      "class": "com/android/calendar/AllInOneActivity.smali",
+      "method": "onResume()V"
+    },
+    {
+      "after_bytes": 1554,
+      "after_sha256": "81623ff608434d1cbfb1e2ef7cd7a073dc53228810e536b9425f44bdc3218e1a",
+      "before_bytes": 3302,
+      "before_sha256": "ae05b692ffc9b45ba18455527446c08bfa03aea340f7f4344d4507b8ade3d9cd",
+      "class": "com/android/calendar/AllInOneActivity$QueryHandler.smali",
+      "method": "onQueryComplete(ILjava/lang/Object;Landroid/database/Cursor;)V"
+    },
+    {
+      "after_bytes": 15853,
+      "after_sha256": "f188c1a45a74491f491c77a7614f58d43dc8ba8f390200c0421dd2817f1b8dd9",
+      "before_bytes": 15045,
+      "before_sha256": "b38c9643e3820f1cc9c80a764ca507661bc92a55feb27fd5555846b1f17cbb45",
+      "class": "com/android/calendar/CalendarController.smali",
+      "method": "sendEvent(Ljava/lang/Object;Lcom/android/calendar/CalendarController$EventInfo;)V"
+    },
+    {
+      "after": "Lcom/android/calendar/event/EditEventActivity;",
+      "before": "Landroid/app/Activity;",
+      "class": "com/android/calendar/EventInfoActivity.smali",
+      "declaration": "super"
+    },
+    {
+      "after_bytes": 635,
+      "after_sha256": "b552f10d8bed37052337f19ebad5e1336eb2b31733b04d4e89ac84b0f9a5f363",
+      "before_bytes": 611,
+      "before_sha256": "27115a8efd79102bb61ae4e0bce9081e83e2ec5badb4c2849a46bb7cdb61512b",
+      "class": "com/android/calendar/EventInfoActivity.smali",
+      "method": "<init>()V"
+    },
+    {
+      "after_bytes": 200,
+      "after_sha256": "bcaeb548d5aa4b5e95195a5ab8af3511b83d4e2c4290d7cbe12a9d3df0ac4563",
+      "before_bytes": 10568,
+      "before_sha256": "8075fc2515219e905014a4877733df89b45b7842a497d1480940030fdafb44e5",
+      "class": "com/android/calendar/EventInfoActivity.smali",
+      "method": "onCreate(Landroid/os/Bundle;)V"
+    },
+    {
+      "after_bytes": 158,
+      "after_sha256": "eed178d459224206dcef5a5988df8a9b9396a133ab5e7fa481d4ae17beed0e5c",
+      "before_bytes": 716,
+      "before_sha256": "99bc4136343a6c25c59baccb84eacfd2932c9451b6dae399c3b8b12ff75a3d0e",
+      "class": "com/android/calendar/EventInfoActivity.smali",
+      "method": "onResume()V"
+    },
+    {
+      "after_bytes": 156,
+      "after_sha256": "d2cfd7a28ab9db259dd32f01717620f39420da5c581d25d7190e1202343ccf46",
+      "before_bytes": 532,
+      "before_sha256": "f25eaf82041334f657ff8e99cb856bceb67f0187fd8cd2d183a57fff01716fe9",
+      "class": "com/android/calendar/EventInfoActivity.smali",
+      "method": "onPause()V"
+    },
+    {
+      "after_bytes": 160,
+      "after_sha256": "425d3e69d2e1502cc525dba64a34e417cc3ef23f13218684aef08c57cd16a326",
+      "before_bytes": 151,
+      "before_sha256": "828e0c2b047cee5b8314aa34e16de966b4f4a9b49ee2059186e0b5b63e1c8f4f",
+      "class": "com/android/calendar/EventInfoActivity.smali",
+      "method": "onDestroy()V"
+    },
+    {
+      "after_bytes": 222,
+      "after_sha256": "b2939b217c5fd79e7a89b5adcc3c6f11227b8b58f401d60636e2629ff8c74821",
+      "before_bytes": 287,
+      "before_sha256": "10a53b694f40a05d84b74cbeb505edd30773e39e600727607aac064e091799de",
+      "class": "com/android/calendar/EventInfoActivity.smali",
+      "method": "onSaveInstanceState(Landroid/os/Bundle;)V"
+    },
+    {
+      "after_bytes": 216,
+      "after_sha256": "22b65929e4874f62f80836ccc2030a7cc112958f352a1bfb863fbe8885aae917",
+      "before_bytes": 207,
+      "before_sha256": "2fdc2782f6310e732215fb3c255797a85b21ed8e1b49c176029cb876fe53dcf9",
+      "class": "com/android/calendar/EventInfoActivity.smali",
+      "method": "onNewIntent(Landroid/content/Intent;)V"
+    },
+    {
+      "after_bytes": 297,
+      "after_sha256": "9083acd14e603c59d6fe0682bf0b43009159a47e5bf983fe3fc789dc8d65d903",
+      "before_bytes": 1152,
+      "before_sha256": "daf8f0333f2737b52de3aaf6a529797cd161de2e5d526da9d1504cd18062b5aa",
+      "class": "com/android/calendar/alerts/AlertReceiver.smali",
+      "method": "onReceive(Landroid/content/Context;Landroid/content/Intent;)V"
+    },
+    {
+      "after_bytes": 263,
+      "after_sha256": "2cbf0c59ff027dbf20f7283558fbb99e921b6314f9348fff684cfe0009498631",
+      "before_bytes": 123,
+      "before_sha256": "7f44b0bc05eb81d62272810cb9a04b9518f230bd4ff71febbeea450e2c09600f",
+      "class": "com/android/calendar/alerts/AlertService.smali",
+      "method": "onStartCommand(Landroid/content/Intent;II)I"
+    }
+  ],
+  "against_previous09": {
+    "all_other_methods_IR_equal": true,
+    "all_other_non_signature_payloads_byte_equal": true,
+    "apk_sha256": "2f8ff1e09e572a7343433c7ab38e9929b3d43fd102562d0c7537471816a90234",
+    "changed_methods": [
+      [
+        "com/android/calendar/AllInOneActivity$QueryHandler.smali",
+        "onQueryComplete(ILjava/lang/Object;Landroid/database/Cursor;)V"
+      ]
+    ],
+    "classes2_dex_byte_equal": false,
+    "classes2_preserved_except_reviewed_CalendarActions": true,
+    "classes_compared": 445,
+    "compared_non_signature_payloads": 664,
+    "methods_compared": 2327
+  },
+  "alignment_16k_verified": true,
+  "authoritative_state": "succeeded",
+  "certificate_sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+  "dependency_pins": {
+    "aapt": {
+      "bytes": 30680,
+      "sha256": "d9c0d90fc4bcf03d57cbf4fe19ca66c80280ac760c53245c8678b9837844b972"
+    },
+    "android_jar": {
+      "bytes": 21998949,
+      "sha256": "2e71327d66d43cb85a6ac11029376c19067ccc0f15e73c90f2f6777f3be70fb5"
+    },
+    "apksigner_jar": {
+      "bytes": 521108,
+      "sha256": "98346a3200d6030e247ccba0e47b354b6113ec2068dcea6c43558b01fe5885c2"
+    },
+    "core_lambda_stubs": {
+      "bytes": 16741,
+      "sha256": "48ebd3b6614a8e4367d1dbda1222aed5ffb6b874214922412af5c9fbcd5e877a"
+    },
+    "java": {
+      "bytes": 8528,
+      "sha256": "cfa21aeadd00925925c9e1287f5c08f3e04ee7f26a9e23d9dbfb16149153d842"
+    },
+    "java_security": {
+      "bytes": 64249,
+      "sha256": "78f06ea1ce6fe10c188c99f6e4ca5631060e6e1b193ae598c0dfc6f3c3b6ac75"
+    },
+    "javac": {
+      "bytes": 8824,
+      "sha256": "18351d7a271f6b8bd17f9e8fef6bb04baa7cf008cbc8a3a782a93a2f5c48ecfa"
+    },
+    "jdk_modules": {
+      "bytes": 141608978,
+      "sha256": "4bddbec43a2fbf497528b9b0227a285e80c015c825921dc7a4181bdb4176ad36"
+    },
+    "jdk_release": {
+      "bytes": 1246,
+      "sha256": "d6854c41e3ef131089538dc4362452517b16061ebabb1931f2d287bf7ea78c3c"
+    },
+    "jvm_cfg": {
+      "bytes": 29,
+      "sha256": "aa9efb969444c1484e29adecab55a122458090616e766b2f1230ef05bc3867e0"
+    },
+    "libjava": {
+      "bytes": 163840,
+      "sha256": "39638b30e207d063cfe2c5bd19d36707f80843fe30481c8723f68e427ee4b331"
+    },
+    "libjimage": {
+      "bytes": 142408,
+      "sha256": "acbf04054075e886aa29fe24fb26e35c857ce5c7fc6b48ef2ffe7683c229e87e"
+    },
+    "libjli": {
+      "bytes": 93096,
+      "sha256": "0c59fc8823cf5c8d25f12516b8ca38cab8e83b9695715775fcfdd5fea1df75f1"
+    },
+    "libjvm": {
+      "bytes": 26010448,
+      "sha256": "53aebc862cb667bae382a429af95e06bd269b27ce3ddb0d7e39b922049156f16"
+    },
+    "r8": {
+      "bytes": 18294711,
+      "sha256": "33cab360b273b46ad47c3356cf1fb2ac715870fd3eecc55cbd9d508a7f609ce7"
+    },
+    "signer_companion_apksig-0.9.jar": {
+      "bytes": 489902,
+      "sha256": "61186f715a98cf2473544a4bbb1fae06ab84600cf2cd6adfa7ad50f4b0e2375e"
+    },
+    "zipalign": {
+      "bytes": 227416,
+      "sha256": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758"
+    }
+  },
+  "exit_code": 0,
+  "finished_utc": "2026-11-05T17:58:08.814797+00:00",
+  "host_tests": {
+    "AlertIdentityTest": "AlertIdentityTest: 9 checks passed\n",
+    "EventDraftTest": "EventDraftTest: 22 checks passed\n",
+    "EventReferenceTest": "EventReferenceTest: 17 checks passed\n",
+    "ProviderReceiptTest": "ProviderReceiptTest: 12 checks passed\n",
+    "SnoozeStateTest": "SnoozeStateTest: 31 checks passed\n"
+  },
+  "input_postcheck_passed": true,
+  "installed": false,
+  "limits": {
+    "cpu.max": "100000 100000",
+    "memory.max": "805306368",
+    "memory.swap.max": "0",
+    "pids.max": "128"
+  },
+  "new_class_definitions": [
+    "Lcom/android/calendar/alerts/AlertIdentity;",
+    "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda0;",
+    "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda1;",
+    "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda2;",
+    "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda3;",
+    "Lcom/android/calendar/alerts/RestoredAlerts$1;",
+    "Lcom/android/calendar/alerts/RestoredAlerts$Alert;",
+    "Lcom/android/calendar/alerts/RestoredAlerts$DueBatch;",
+    "Lcom/android/calendar/alerts/RestoredAlerts;",
+    "Lcom/android/calendar/alerts/SnoozeAlarmsService;",
+    "Lcom/android/calendar/alerts/SnoozeJournal$1;",
+    "Lcom/android/calendar/alerts/SnoozeJournal$EventSnapshot;",
+    "Lcom/android/calendar/alerts/SnoozeJournal$Record;",
+    "Lcom/android/calendar/alerts/SnoozeJournal$Target;",
+    "Lcom/android/calendar/alerts/SnoozeJournal;",
+    "Lcom/android/calendar/alerts/SnoozeState$Decision;",
+    "Lcom/android/calendar/alerts/SnoozeState;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda0;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda10;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda11;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda12;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda13;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda14;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda15;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda16;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda17;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda18;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda19;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda1;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda20;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda21;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda22;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda2;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda3;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda4;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda5;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda6;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda7;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda8;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda9;",
+    "Lcom/android/calendar/event/EditEventActivity$1;",
+    "Lcom/android/calendar/event/EditEventActivity$2;",
+    "Lcom/android/calendar/event/EditEventActivity$3;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda0;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda1;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda2;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda3;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda4;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda5;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda6;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda7;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker;",
+    "Lcom/android/calendar/event/EditEventActivity;",
+    "Lcom/android/calendar/event/EventDraft;",
+    "Lcom/android/calendar/event/EventEditorStore$CalendarChoice;",
+    "Lcom/android/calendar/event/EventEditorStore$Loaded;",
+    "Lcom/android/calendar/event/EventEditorStore;",
+    "Lcom/android/calendar/event/EventReference;",
+    "Lcom/android/calendar/event/ProviderReceipt;",
+    "Lcom/android/calendar/repair/CalendarActions;"
+  ],
+  "raw_sha256": "03634674b17dba7960948ba7c92bd326e59f3ec48dc6c48ed94913af2381320a",
+  "resource_usage": {
+    "cpu.stat": "usage_usec 16456235\nuser_usec 15609708\nsystem_usec 846526\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 169\nnr_throttled 4\nthrottled_usec 762\nnr_bursts 0\nburst_usec 0",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.peak": "595533824"
+  },
+  "restored_code_proof": {
+    "added_methods": [
+      "onNoCalendars(Landroid/app/Activity;)V"
+    ],
+    "changed_methods": [
+      "addNewEvent(Landroid/view/Menu;)V",
+      "onMenu(Landroid/app/Activity;Landroid/view/MenuItem;Ljava/lang/Long;)Z"
+    ],
+    "classes_compared": 60,
+    "only_changed_class": "com/android/calendar/repair/CalendarActions.smali",
+    "proof": {
+      "bytes": 17997,
+      "sha256": "0e84b12ec575875a456fa031fdd112d79bf3a3454c5bf635f410ac10176ddca5"
+    },
+    "unchanged_classes": 59
+  },
+  "runtime_business_verified": false,
+  "schema": "calendar-functional-build10-selected-v1",
+  "semantic_proof": {
+    "changed_methods": 14,
+    "classes": 445,
+    "methods": 2327,
+    "only_expected_methods_changed": true,
+    "proof": {
+      "bytes": 131597,
+      "sha256": "1776c516ee5e6264d7c1e16860a4c5278cfee3c1fe08d6993393bed69bdd3099"
+    },
+    "roundtrip_equal_all_classes": true
+  },
+  "signature_v3_verified": true,
+  "signed_apk": {
+    "bytes": 2631117,
+    "sha256": "7872aa56b6aa35f4509a27a2c3c0ebb8743da7096136155e425f5b1e4499ae8e"
+  },
+  "smali_tool_pins": {
+    "jars/antlr3-runtime": {
+      "bytes": 175393,
+      "sha256": "5368fa9993cc10faef6e08a12766f83135bf892817cf2ac1864489da8b0a0770"
+    },
+    "jars/baksmali": {
+      "bytes": 124714,
+      "sha256": "44f430d8f3e05e6c9f044190c946e7873768f7d5981608c30d8e67564fbf4ff5"
+    },
+    "jars/dexlib2": {
+      "bytes": 1116212,
+      "sha256": "0c09465b2264180f2d52d21c0b5aab6c407a4d8fa8fd8dbade68cf50c39b4bd5"
+    },
+    "jars/guava": {
+      "bytes": 3010670,
+      "sha256": "8dfa058dbce4082469e4147237cef974f3063db4aacbefe667be47770f5f6ddd"
+    },
+    "jars/jcommander": {
+      "bytes": 76198,
+      "sha256": "9dbeb89912a5b000d2b8a5ec2263f49fcab7405faf29b2a56a2766b0b1659f9c"
+    },
+    "jars/smali": {
+      "bytes": 303196,
+      "sha256": "786c6dde8c1d0d20d25d3fefca564add4d9e88b5e5cfe73fad2ceeb53466dbe0"
+    },
+    "jars/smali-util": {
+      "bytes": 27447,
+      "sha256": "ee8017ae11b7174a5eab4e3d7a773dd2cb660d3bced7c78a51430cdd32822e0e"
+    },
+    "jre/bin/java": {
+      "bytes": 14536,
+      "sha256": "00261dabda30e0dbf1a799d052a615fe404afff7530e50444eb75a30c4f8d9d5"
+    },
+    "jre/lib/libjava.so": {
+      "bytes": 176296,
+      "sha256": "bde93c7550daa132b2e69da656d8912a96c24825037a9abac84008e3ff91032f"
+    },
+    "jre/lib/libjli.so": {
+      "bytes": 82592,
+      "sha256": "eeb1058598570f8dfacc474afba5f80ef2a5e12cbc42d6295dc2967eaa66ad17"
+    },
+    "jre/lib/libzip.so": {
+      "bytes": 45328,
+      "sha256": "177626416603a7139f36f93dd28bcd0d50c380f8fe77c11cfc9658b58934ac12"
+    },
+    "jre/lib/modules": {
+      "bytes": 144454121,
+      "sha256": "d774e342cf437b015db1d777bfb84154b6ad6d361a0337edb42d54b792514f5e"
+    },
+    "jre/lib/server/libjvm.so": {
+      "bytes": 29830072,
+      "sha256": "9f7a6a0889058c297545666233b0d64e617b45b87a3289ab82d7751c9e951f34"
+    },
+    "jre/release": {
+      "bytes": 1203,
+      "sha256": "5e8f88ecaca92eeffcfb325b0123c3e46a004d3a3d9a15bcbc1c3df6248d7e5d"
+    }
+  },
+  "source_manifest_sha256": "bf45e021bdc522492cc54a6d18224160837b5df9fd0263a14131847e742373be",
+  "started_utc": "2026-11-05T17:57:51.969565+00:00",
+  "state": "BUILT_SIGNED_NOT_INSTALLED",
+  "whole_app_production_ready": false
+}

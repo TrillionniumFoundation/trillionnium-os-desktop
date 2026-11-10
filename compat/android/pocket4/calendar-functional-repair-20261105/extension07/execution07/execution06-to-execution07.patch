@@ -1,0 +1,110 @@
+--- calendar_install06.py
++++ execution07/calendar_install07.py
+@@ -4,12 +4,16 @@
+ from datetime import datetime, timezone
+ import argparse, hashlib, io, json, os, re, signal, stat, types, zipfile
+ 
+-ROOT=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-06')
+-BUILD=Path('/home/alex/work/pocket4-calendar-repair-build-20261105-r12-06')
+-BUILD_SHA='a5100a2d71d90ef3f20701a87239d5631b3c163afdd72706fdcdb846d03ba320'
++PROFILE_TX=Path('/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/camera_transaction.py')
++PROFILE_TX_SHA='e65a47bea8b3800d0b1a89247bd8c356dd291523c2d248d401d05d1d3b55fb83'
++PROFILE_ACTIVATION_SHA='91c7a4a911a7bcf908726750f55f3fda66f40263ddf3fac457473e0a6c780435'
++
++ROOT=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-07')
++BUILD=Path('/home/alex/work/pocket4-calendar-repair-build-20261105-r12-07')
++BUILD_SHA='ac003401a25bea8d4bdae1ed6cd4c02a0c17277dd19f627a520302bf41c22fba'
+ OLD_SHA='7522e88fe03f4997513b0e03591da215b8ebc67f6c933939a73addc3c75495a9'
+-NEW_SHA='cf06143a7f90aa28607dd32e85a41b897ef4634fc602c50da47a9a1352e095f7'
+-OLD_BYTES,NEW_BYTES=2532558,2622925
++NEW_SHA='3feed84a217f333639bdb14ac42c70b0bcf0a48b8b3458ebc5183bfc6f7596fd'
++OLD_BYTES,NEW_BYTES=2532558,2631117
+ PACKAGE='com.android.calendar'
+ PROVIDER='com.android.providers.calendar'
+ PROVIDER_SHA='eebf12f81981f7d8c59a9b9ed465945818d2ab0208c121d858cbc4e6426f5fff'
+@@ -94,14 +98,21 @@
+ def execute():
+     require(os.geteuid()==0 and not os.path.lexists(ROOT),'NEW_ROOT_REQUIRED')
+     m=load(FLOW,FLOW_SHA)
++    # Bind the independently approved 6144 profile; original helper and guard sources remain intact.
++    previous_tx=str(m.TX)
++    require(m.PINS[previous_tx]=='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470','ORIGINAL_TRANSPORT_PREIMAGE_CHANGED')
++    m.PINS={str(PROFILE_TX) if path==previous_tx else path: PROFILE_TX_SHA if path==previous_tx else pin
++            for path,pin in m.PINS.items()}
++    m.TX=PROFILE_TX
+     tx,base,doc,diag=[m.load(Path(path),pin,'calendar_install_dependency_'+str(i))
+                      for i,(path,pin) in enumerate(m.PINS.items())]
+-    require(m.PINS[str(m.TX)]=='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470',
+-            'ORIGINAL_HELD_GUARD_REQUIRED')
++    require(m.PINS[str(m.TX)]==PROFILE_TX_SHA and tx.ACTIVATION_SHA==PROFILE_ACTIVATION_SHA,
++            'REVIEWED_PROFILE_AND_UNCHANGED_GUARD_REQUIRED')
+     base.PACKAGE=base.DOCS=m.CALENDAR;base.CLIENT=m.MAIN;base.FILES=m.INFO;diag.PACKAGE=PACKAGE
+     m.ROOT=ROOT;m.TABLES=(*m.TABLES,'CalendarAlerts')
+     result={'schema':'calendar-data-preserving-install-v1','state':'NOT_DISPATCHED',
+         'source_sha256':sha(Path(__file__).read_bytes()),'started_utc':stamp(),
++        'transport_sha256':PROFILE_TX_SHA,'activation_sha256':PROFILE_ACTIVATION_SHA,
+         'package':PACKAGE,'old_sha256':OLD_SHA,'new_sha256':NEW_SHA,'build_result_sha256':BUILD_SHA,
+         'install_calls':0,'install_pending':False,'automatic_retry':False,'rollback_calls':0,
+         'ui_inputs':0,'provider_write_commands':0,'permission_changes':0,'data_clear_calls':0,
+--- acceptance/calendar_accept_core06.py
++++ execution07/calendar_accept_core07.py
+@@ -3,14 +3,18 @@
+ from pathlib import Path
+ import argparse, hashlib, json, os, re, signal, sys, time, types
+ 
++PROFILE_TX=Path('/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/camera_transaction.py')
++PROFILE_TX_SHA='e65a47bea8b3800d0b1a89247bd8c356dd291523c2d248d401d05d1d3b55fb83'
++PROFILE_ACTIVATION_SHA='91c7a4a911a7bcf908726750f55f3fda66f40263ddf3fac457473e0a6c780435'
++
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-calendar-accept-core-20261105-r12-06')
++ROOT=Path('/home/alex/work/pocket4-calendar-accept-core-20261105-r12-07')
+ ORIGINAL=Path('/home/alex/work/pocket4-calendar-flow-tools-20261105-r12-01/run_calendar01.py')
+ ORIGINAL_SHA='d307f4ceda9fc80e216f280cb1a9558fbe4e27b43cd659ecc83a1c6edab9c8fa'
+-INSTALL=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-06/result.json')
+-NEW_SHA='cf06143a7f90aa28607dd32e85a41b897ef4634fc602c50da47a9a1352e095f7'
++INSTALL=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-07/result.json')
++NEW_SHA='3feed84a217f333639bdb14ac42c70b0bcf0a48b8b3458ebc5183bfc6f7596fd'
+ PROVIDER_SHA='eebf12f81981f7d8c59a9b9ed465945818d2ab0208c121d858cbc4e6426f5fff'
+-READER_SHA='00c5306089ee9928d865980f74962528023d3d3f3616736ef0f827b220adca20'
++READER_SHA='079a3ec66d7eaa0510d0ab9fcb0da54648ecb14f551bc31742f12f1b80d8ee83'
+ ADAPTER_SHA='48103b75fc286997c1dff4a5fe0a8960de023babbe7179faad75dfd02f4c4032'
+ PROBE=Path('/home/alex/work/pocket4-calendar-shell-query-tools-20261105-r12-02/probe_shell_cleanup02.py')
+ PROBE_SHA='3696994fe45fba3152418e32667ac3ac6ed437cf5191189bfe65a27f21bccb88'
+@@ -38,6 +42,7 @@
+             self.cleanup_pending=False;self.cleanup_calls=0;self.roles={};self.role_tokens={};self.scrolls=0
+             self.result={'schema':'calendar-first-use-event-ui-v1','state':'FAILED','started_utc':m.stamp(),
+                 'run_id':model.RUN,'candidate_apk_sha256':NEW_SHA,'gates':{},'ui_roles':[],
++                'transport_sha256':PROFILE_TX_SHA,'activation_sha256':PROFILE_ACTIVATION_SHA,
+                 'automatic_retry':False,'whole_app_production_ready':False,'package_mutations':0,
+                 'permission_changes':0,'account_operations':0,'helper_event_writes':0,
+                 'provider_write_commands_excluding_empty_calendar_cleanup':0,
+@@ -291,17 +296,24 @@
+ 
+ def execute():
+     m=load(ORIGINAL,ORIGINAL_SHA,'calendar_original_owned_flow')
+-    model=load(HERE/'read_owned_calendar06.py',READER_SHA,'calendar_core_owned_reader')
++    # Bind the independently approved 6144 profile; original helper and guard sources remain intact.
++    previous_tx=str(m.TX)
++    need(m.PINS[previous_tx]=='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470','ORIGINAL_TRANSPORT_PREIMAGE_CHANGED')
++    m.PINS={str(PROFILE_TX) if path==previous_tx else path: PROFILE_TX_SHA if path==previous_tx else pin
++            for path,pin in m.PINS.items()}
++    m.TX=PROFILE_TX
++    model=load(HERE/'read_owned_calendar07.py',READER_SHA,'calendar_core_owned_reader')
+     tx,oldbase,doc,diag=[m.load(Path(p),pin,'calendar_core_dependency_'+str(i)) for i,(p,pin) in enumerate(m.PINS.items())]
+-    base=load(HERE/'calendar_ui06.py',ADAPTER_SHA,'calendar_private_ui')
++    base=load(HERE/'calendar_ui07.py',ADAPTER_SHA,'calendar_private_ui')
+     probe=load(PROBE,PROBE_SHA,'calendar_existing_shell_grants')
+     proof_raw=(HERE/'atomic-delete-review.json').read_bytes()
+     need(hashlib.sha256(proof_raw).hexdigest()==ATOMIC_SHA and
+          json.loads(proof_raw)['provider_apk_sha256']==PROVIDER_SHA,'ATOMIC_PROVIDER_CHAIN_CHANGED')
+     m.ROOT=ROOT;m.CALENDAR_SHA=NEW_SHA;m.TITLE=model.TITLE;m.EDITED=model.EDITED;m.TABLES=model.TABLES
+     base.PACKAGE=base.DOCS=m.CALENDAR;base.CLIENT=m.MAIN;base.FILES=m.INFO;diag.PACKAGE=m.CALENDAR
+-    # Retain the exact original transport and guard, including current limits hold.
+-    need(m.PINS[str(m.TX)]=='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470','FROZEN_MAIN_GUARD_REQUIRED')
++    # Profile creation changed only the activation binding; all guard logic is unchanged.
++    need(m.PINS[str(m.TX)]==PROFILE_TX_SHA and tx.ACTIVATION_SHA==PROFILE_ACTIVATION_SHA,
++         'REVIEWED_PROFILE_AND_UNCHANGED_GUARD_REQUIRED')
+     cls=flow_class(m,model,base,probe);flow=None;result={'state':'FAILED','whole_app_production_ready':False}
+     old=signal.signal(signal.SIGALRM,m.expired)
+     try:

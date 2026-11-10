@@ -1,0 +1,16 @@
+--- revision08/patch_original.py
++++ revision09/patch_original.py
+@@ -52,9 +52,10 @@
+         once(block,'    .registers 5\n','    .registers 5\n\n    invoke-static {p1}, '+ACTIONS+'->addNewEvent(Landroid/view/Menu;)V\n'))
+     menu='''    move-object/from16 v2, p0
+     move-object/from16 v3, p1
+-    iget-object v4, v2, Lcom/android/calendar/AllInOneActivity;->mController:Lcom/android/calendar/CalendarController;
+-    if-eqz v4, :restored_menu_time_ready
+-    invoke-virtual {v4}, Lcom/android/calendar/CalendarController;->getTime()Ljava/lang/Long;
++    const/4 v4, 0x0
++    iget-object v0, v2, Lcom/android/calendar/AllInOneActivity;->mController:Lcom/android/calendar/CalendarController;
++    if-eqz v0, :restored_menu_time_ready
++    invoke-virtual {v0}, Lcom/android/calendar/CalendarController;->getTime()Ljava/lang/Long;
+     move-result-object v4
+     :restored_menu_time_ready
+     invoke-static {v2, v3, v4}, ACTIONS->onMenu(Landroid/app/Activity;Landroid/view/MenuItem;Ljava/lang/Long;)Z

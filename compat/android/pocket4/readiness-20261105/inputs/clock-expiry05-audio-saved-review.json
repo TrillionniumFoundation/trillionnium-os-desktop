@@ -1,0 +1,309 @@
+{
+  "UI_actions": 0,
+  "audio_bytes_recorded": 0,
+  "controls": [
+    {
+      "case": "sample0_remove_current_rows_keep_completed_history_and_graph",
+      "passed": true
+    },
+    {
+      "case": "sample1_remove_current_rows_keep_completed_history_and_graph",
+      "passed": true
+    },
+    {
+      "case": "sample2_remove_current_rows_keep_completed_history_and_graph",
+      "passed": true
+    },
+    {
+      "case": "active_uid_changed_to_foreign_uid",
+      "passed": true
+    }
+  ],
+  "controls_passed": 4,
+  "due_utc_from_recorded_basis": "2026-11-05T16:17:51.155517+00:00",
+  "finding": "The executed parser only accepted completed 1000ms rows ending in ] sum(...). The saved HAL dumps contain ongoing open 1000ms and open/multiline 50ms rows after this timer due time; those rows were omitted.",
+  "independent_conclusions": {
+    "desktop_popup_visual_verified": false,
+    "matched_Main_namespace_Pulse_stream_observed": false,
+    "nonzero_HAL_power_contemporaneous_with_sole_Clock_active_track_snapshots": true,
+    "physical_speaker_audibility_verified": false,
+    "same_Clock_UID_track_and_output_frames_writes_progress": true,
+    "whole_app_production_ready": false
+  },
+  "input_pins": {
+    "audio_observe.py": {
+      "bytes": 8976,
+      "sha256": "5c6a49c7ee119c457d60072fbd25ea5ff1b23a577ad2504ba5fcbfc3fe01fdac"
+    },
+    "combined05-result-original.json": {
+      "bytes": 4608,
+      "sha256": "2c552c341e0c69400cc0f9a6a5b725f59eeb386b7b992830b8bfbcd8bfa0d9ec"
+    },
+    "expiry05-result-original.json": {
+      "bytes": 63508,
+      "sha256": "6c6d7e4c073e956c089ff3a7a63c1173771d76d4cea7c1e7c1936620f39752cf"
+    },
+    "saved-audio/expired-0-audio-flinger-private.txt": {
+      "bytes": 38078,
+      "sha256": "85d9a17072e1471da374cd37b30bef4a0fa73881fee0e772667369a0b2e2796e"
+    },
+    "saved-audio/expired-0.json": {
+      "bytes": 5838,
+      "sha256": "d1a0144a0cbb9d9d9eb0035c11cf10b7e511d202f424bd4bd95d054cdc855156"
+    },
+    "saved-audio/expired-1-audio-flinger-private.txt": {
+      "bytes": 38168,
+      "sha256": "5e51e05c5150283d0fbf015dea72c5d19015e171203913b67db9513b7283fe9e"
+    },
+    "saved-audio/expired-1.json": {
+      "bytes": 5646,
+      "sha256": "e08e31d365909b2c2d7d572e83ab2a9f57daf9ece937704d73ccca201f778d65"
+    },
+    "saved-audio/expired-2-audio-flinger-private.txt": {
+      "bytes": 38200,
+      "sha256": "633fae133ce449600a0876dab93315f763bab433060d110c0f70df57336e5ff8"
+    },
+    "saved-audio/expired-2.json": {
+      "bytes": 5646,
+      "sha256": "8b0cb17ebffe3d450157090a9657b3e047ffee49b81da7eec35b77f2cdaa8ea5"
+    }
+  },
+  "microphone_access": false,
+  "original_HAL_boolean_preserved": false,
+  "original_job_exit_code": 1,
+  "original_outer_state": "EXPIRY_UI_COMPLETE_DELIVERY_EVIDENCE_REVIEW_PENDING",
+  "original_results_modified": false,
+  "remote_commands": 0,
+  "review_type": "offline_reconciliation_of_unchanged_originals",
+  "samples": [
+    {
+      "active_track": {
+        "active": true,
+        "id": 75,
+        "pid": 735449,
+        "session": 6463953,
+        "uid": 10063
+      },
+      "frames_written": 143785984,
+      "fresh_nonzero_power_rows": [
+        {
+          "levels_db": [
+            "-13.2",
+            "-21.8",
+            "-92.9",
+            "-13.5",
+            "-18.9",
+            "-73.9",
+            "-13.3",
+            "-20.9",
+            "-21.1",
+            "-13.4"
+          ],
+          "resolution_ms": 50.0,
+          "row_form": "open",
+          "source_line_sha256": "13c622d92fc14a8fdcf389512537807dbc5123703032f89ff3869e06b99a826f",
+          "timestamp_UTC": "2026-11-05T16:17:51.498000+00:00"
+        },
+        {
+          "levels_db": [
+            "-65.1",
+            "-92.9",
+            "-93.0"
+          ],
+          "resolution_ms": 50.0,
+          "row_form": "continuation",
+          "source_line_sha256": "04e9541e47a042def314a3a8892f7a83bda2a7434a0cc2d6b67255d662d055e9",
+          "timestamp_UTC": "2026-11-05T16:17:52.006000+00:00"
+        }
+      ],
+      "host_stream_query": {
+        "guard_after": true,
+        "joined": true,
+        "rc": 0,
+        "timed_out": false
+      },
+      "master_muted": false,
+      "matched_main_namespace_host_stream_count": 0,
+      "observed_utc": "2026-11-05T16:17:52.196540+00:00",
+      "old_completed_1s_parser_fresh_count": 0,
+      "output_name": "Output thread 0x730528132790, name AudioOut_D, tid 762, type 0 (MIXER):",
+      "raw_sha256": "85d9a17072e1471da374cd37b30bef4a0fa73881fee0e772667369a0b2e2796e",
+      "total_writes": 35104
+    },
+    {
+      "active_track": {
+        "active": true,
+        "id": 75,
+        "pid": 735449,
+        "session": 6463953,
+        "uid": 10063
+      },
+      "frames_written": 143814656,
+      "fresh_nonzero_power_rows": [
+        {
+          "levels_db": [
+            "-18.6"
+          ],
+          "resolution_ms": 1000.0,
+          "row_form": "open",
+          "source_line_sha256": "8cf0f27b0df6f9fe7f6bcf346d7065897eb90d11b5b7c1d2bdd286fc9a08d29a",
+          "timestamp_UTC": "2026-11-05T16:17:51.498000+00:00"
+        },
+        {
+          "levels_db": [
+            "-13.2",
+            "-21.8",
+            "-92.9",
+            "-13.5",
+            "-18.9",
+            "-73.9",
+            "-13.3",
+            "-20.9",
+            "-21.1",
+            "-13.4"
+          ],
+          "resolution_ms": 50.0,
+          "row_form": "open",
+          "source_line_sha256": "13c622d92fc14a8fdcf389512537807dbc5123703032f89ff3869e06b99a826f",
+          "timestamp_UTC": "2026-11-05T16:17:51.498000+00:00"
+        },
+        {
+          "levels_db": [
+            "-65.1",
+            "-92.9",
+            "-93.0",
+            "-92.9",
+            "-92.9",
+            "-92.9",
+            "-92.9",
+            "-35.6",
+            "-13.1",
+            "-23.0"
+          ],
+          "resolution_ms": 50.0,
+          "row_form": "continuation",
+          "source_line_sha256": "8bdafbc447b27ebc76d47b8e827e2c6bc2e16711448847b6fe3438ceec933212",
+          "timestamp_UTC": "2026-11-05T16:17:52.006000+00:00"
+        },
+        {
+          "levels_db": [
+            "-44.5",
+            "-13.1",
+            "-23.1",
+            "-89.0",
+            "-13.2"
+          ],
+          "resolution_ms": 50.0,
+          "row_form": "continuation",
+          "source_line_sha256": "663e1a2aa8c1761ca737a60e6ae9c95eb11ff2f25ab61cfc079a6d0a1fa2f4bb",
+          "timestamp_UTC": "2026-11-05T16:17:52.498000+00:00"
+        }
+      ],
+      "host_stream_query": {
+        "guard_after": true,
+        "joined": true,
+        "rc": 0,
+        "timed_out": false
+      },
+      "master_muted": false,
+      "matched_main_namespace_host_stream_count": 0,
+      "observed_utc": "2026-11-05T16:17:52.740432+00:00",
+      "old_completed_1s_parser_fresh_count": 0,
+      "output_name": "Output thread 0x730528132790, name AudioOut_D, tid 762, type 0 (MIXER):",
+      "raw_sha256": "5e51e05c5150283d0fbf015dea72c5d19015e171203913b67db9513b7283fe9e",
+      "total_writes": 35111
+    },
+    {
+      "active_track": {
+        "active": true,
+        "id": 75,
+        "pid": 735449,
+        "session": 6463953,
+        "uid": 10063
+      },
+      "frames_written": 143839232,
+      "fresh_nonzero_power_rows": [
+        {
+          "levels_db": [
+            "-18.6"
+          ],
+          "resolution_ms": 1000.0,
+          "row_form": "open",
+          "source_line_sha256": "8cf0f27b0df6f9fe7f6bcf346d7065897eb90d11b5b7c1d2bdd286fc9a08d29a",
+          "timestamp_UTC": "2026-11-05T16:17:51.498000+00:00"
+        },
+        {
+          "levels_db": [
+            "-13.2",
+            "-21.8",
+            "-92.9",
+            "-13.5",
+            "-18.9",
+            "-73.9",
+            "-13.3",
+            "-20.9",
+            "-21.1",
+            "-13.4"
+          ],
+          "resolution_ms": 50.0,
+          "row_form": "open",
+          "source_line_sha256": "13c622d92fc14a8fdcf389512537807dbc5123703032f89ff3869e06b99a826f",
+          "timestamp_UTC": "2026-11-05T16:17:51.498000+00:00"
+        },
+        {
+          "levels_db": [
+            "-65.1",
+            "-92.9",
+            "-93.0",
+            "-92.9",
+            "-92.9",
+            "-92.9",
+            "-92.9",
+            "-35.6",
+            "-13.1",
+            "-23.0"
+          ],
+          "resolution_ms": 50.0,
+          "row_form": "continuation",
+          "source_line_sha256": "8bdafbc447b27ebc76d47b8e827e2c6bc2e16711448847b6fe3438ceec933212",
+          "timestamp_UTC": "2026-11-05T16:17:52.006000+00:00"
+        },
+        {
+          "levels_db": [
+            "-44.5",
+            "-13.1",
+            "-23.1",
+            "-89.0",
+            "-13.2",
+            "-21.2",
+            "-93.0",
+            "-14.0",
+            "-18.3",
+            "-92.9"
+          ],
+          "resolution_ms": 50.0,
+          "row_form": "continuation",
+          "source_line_sha256": "59e47b24a4f98107c4b3115230838384fb9c5d8f5fbc59b990f7cb3748cbb0b7",
+          "timestamp_UTC": "2026-11-05T16:17:52.498000+00:00"
+        }
+      ],
+      "host_stream_query": {
+        "guard_after": true,
+        "joined": true,
+        "rc": 0,
+        "timed_out": false
+      },
+      "master_muted": false,
+      "matched_main_namespace_host_stream_count": 0,
+      "observed_utc": "2026-11-05T16:17:53.262079+00:00",
+      "old_completed_1s_parser_fresh_count": 0,
+      "output_name": "Output thread 0x730528132790, name AudioOut_D, tid 762, type 0 (MIXER):",
+      "raw_sha256": "633fae133ce449600a0876dab93315f763bab433060d110c0f70df57336e5ff8",
+      "total_writes": 35117
+    }
+  ],
+  "schema": "clock-expiry05-saved-audio-review/v1",
+  "scope": "Output-level HAL signal-power telemetry contemporaneous with the sole active Clock track in these three snapshots. This does not prove physical speaker output, host sink delivery, every intervening instant, or audio-engine qualification.",
+  "settings_changes": 0,
+  "timer_due_uptime_ms": 921180436
+}

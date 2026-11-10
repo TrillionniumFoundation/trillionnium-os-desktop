@@ -1,0 +1,100 @@
+{
+  "state": "FAILED_TIMER_EXPIRY_NOT_OBSERVED_WITHIN_BOUNDED_TRIAL",
+  "business_success_verified": false,
+  "whole_app_production_ready": false,
+  "job_id": "1a1ab58da58-fc05-4cdd",
+  "exit_code": 1,
+  "output_complete": true,
+  "output_durable": true,
+  "started_utc": "2026-11-05T10:54:50.518914+00:00",
+  "finished_utc": "2026-11-05T10:57:22.846273+00:00",
+  "original_result": {
+    "bytes": 13554,
+    "sha256": "90617209a0ed0ca29f13872293f1d5ed33e82b1ba8825fc54c9c29b58a6ca7f2"
+  },
+  "controller_sha256": "57f8443066bc0200e02b00d029bc3651e0d606b282bc60b0770338c6c086cbeb",
+  "identity_before": {
+    "apk_sha256": "ded49b00e5045bdd184c2a4f09b1b8650ce8f708134ac9f0f8c4cf0594bb0fae",
+    "notifications_granted": true,
+    "uid": 10063,
+    "version_code": 37
+  },
+  "identity_after": {
+    "apk_sha256": "ded49b00e5045bdd184c2a4f09b1b8650ce8f708134ac9f0f8c4cf0594bb0fae",
+    "notifications_granted": true,
+    "uid": 10063,
+    "version_code": 37
+  },
+  "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "notification_prerequisite": {
+    "granted_before_and_after": true,
+    "appop_before": {
+      "allow_verified": true,
+      "evidence_kind": "service_reported_default_allow",
+      "observed_modes": [],
+      "raw": "No operations.\nDefault mode: allow\n"
+    },
+    "appop_after": {
+      "allow_verified": true,
+      "evidence_kind": "service_reported_default_allow",
+      "observed_modes": [],
+      "raw": "No operations.\nDefault mode: allow\n"
+    },
+    "prior_notification04_success_remains_valid": true,
+    "notification_enable_is_not_timer_expiry_qualification": true
+  },
+  "owned_timer": {
+    "id": 0,
+    "duration_ms": 60000,
+    "created_start_uptime_ms": 901836285,
+    "expected_due_uptime_ms": 901896285,
+    "sample_count": 82,
+    "all_sample_states": [
+      1
+    ],
+    "first_sample_uptime_ms": 901840470,
+    "last_sample_uptime_ms": 901924530,
+    "last_sample_past_due_ms": 28245,
+    "cleanup_UI_pause_state": 2,
+    "cleanup_UI_pause_remaining_ms": -42145
+  },
+  "cleanup": {
+    "exact_timer_removed": true,
+    "new_inputs": 2,
+    "original_failure_retained": true,
+    "pending_retained": null
+  },
+  "timer_final": {
+    "ids": [],
+    "stopwatch": {},
+    "timers": [],
+    "values": {}
+  },
+  "ui_actions": 6,
+  "pending_effect": null,
+  "normal_closed_tasks": [
+    934,
+    935
+  ],
+  "owned_task_remaining": null,
+  "task_set_restored": true,
+  "original_alarms": {
+    "ids": [
+      1,
+      2
+    ],
+    "enabled": 0,
+    "instances": 0,
+    "contents_sha256_before": "655c545ee9487dc380100d6300376d0bb82d0d12beddd96f283ab7814ff19fea",
+    "contents_sha256_after": "655c545ee9487dc380100d6300376d0bb82d0d12beddd96f283ab7814ff19fea",
+    "write_actions": 0
+  },
+  "limits": {
+    "global_sound_changes": 0,
+    "audio_qualified": false,
+    "actual_expired_alert_observed": false,
+    "alarm_delivery_qualified": false,
+    "cause_not_yet_established": true,
+    "no_wait_extension_to_hide_failure": true
+  }
+}

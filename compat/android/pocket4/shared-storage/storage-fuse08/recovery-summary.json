@@ -1,0 +1,73 @@
+{
+  "state": "RESTORED_READ_ONLY_VERIFIED",
+  "volume": "emulated;0",
+  "observed_at_utc": "2026-11-05T07:47:31.554913+00:00",
+  "actual_volume_calls": {
+    "unmount": 1,
+    "mount": 1
+  },
+  "subsequent_checks_read_only": true,
+  "qualification_scope": "Shared-storage path readability in the fixed Main; App write/save/reopen qualification is separate.",
+  "initial_disconnect_cause": "Not established. Double-removal behavior was observed during controlled unmount, but no prior failing transition history establishes it as the initial cause.",
+  "fresh_session": {
+    "started_epoch": 1793864213.525,
+    "thread_started_epoch": 1793864213.531,
+    "mounted_epoch": 1793864213.633,
+    "numeric_device_id_reused": true,
+    "serving_fuse_fd_count": 3,
+    "stable_post_mount_observations": 42
+  },
+  "retired_session": {
+    "consecutive_observations": 2,
+    "mount_namespace_count": 66,
+    "old_views_connection_fds_threads_absent": true
+  },
+  "readability": {
+    "storage_user_0_open_stat_statfs": true,
+    "sdcard_open_stat_statfs": true,
+    "pictures_directory_stat": true,
+    "filesystem_magic_hex": "65735546",
+    "block_bytes": 4096,
+    "available_blocks": 3750260,
+    "available_bytes": 15361064960
+  },
+  "preserved": {
+    "same_Main_epoch": true,
+    "existing_task_set": true,
+    "lower_directory_metadata": true,
+    "data_image_migration": false
+  },
+  "original_qualification_failure": {
+    "retained": true,
+    "reason": "NEW_FUSE_SESSION_NOT_READY_NO_RETRY",
+    "cause": "Verifier incorrectly required the new numerical FUSE device identifier to differ; the old identifier was reused after complete retirement.",
+    "later_read_only_verification": true,
+    "new_mount_attempts_after_failure": 0
+  },
+  "earlier_attempt": {
+    "unmount_calls": 0,
+    "mount_calls": 0,
+    "reason": "Terminal process retained its proc entry after losing its mount namespace."
+  },
+  "after_only_terminal_process_check": {
+    "timestamp": "2026-11-05T07:41:24.234815+00:00",
+    "same_process_birth": true,
+    "state": "Z",
+    "stat_num_threads": 1,
+    "status_threads": 1,
+    "task_id_count": 1,
+    "not_retroactive_preflight_evidence": true
+  },
+  "probe_corrections": [
+    "Temporary shell descriptor was not inherited by stat; final probes directly addressed the mounted path.",
+    "An underscore in a read-only transport label was rejected before the first path command; a separate corrected probe succeeded."
+  ],
+  "source_fix": {
+    "patch": "0001-storage-await-single-session-removal.patch",
+    "installed_behavior_seen_in_log": true,
+    "host_method_regression_candidate_cases_passed": 9,
+    "upstream_negative_controls_failed": 2,
+    "framework_build_performed": false,
+    "deployed_to_Main": false
+  }
+}

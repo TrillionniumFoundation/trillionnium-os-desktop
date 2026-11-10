@@ -1,0 +1,9 @@
+# Gallery owned video: retained failures and bounded frame review
+
+Flow01 inserted one generated silent60-second H.264 test clip, opened its owned Movie task, and stopped at its first frame because the original pixel check expected the PNG palette. No pause/resume/control input was dispatched. The only task closed normally and the video row/file/directory/helper/data/stage were all removed. The original failed/1 receipt remains unchanged.
+
+A separate read-only export preserved the original screenshot. The full four-quadrant video occupies about55.5% of the owned window and encodes visual second4. A standard SMPTE170M-to-sRGB transfer predicts its observed palette within2 channel values. The original strict tolerance6 and geometry checks are retained in the separate video-only validator. Independent negative cases reject swapped quadrants, thumbnails and inappropriate colour/timecode references. This supports the saved full video frame; it does not qualify motion, pause/resume, seeking, audio or the whole App. Exact live compositor implementation and colour fidelity are not established.
+
+The default transfer reference is the pinned Android native data-space header: [data_space.h](https://android.googlesource.com/platform/frameworks/native/+/db4192ada9dee591ec897a51c07c489c84c860c1/libs/nativewindow/include/android/data_space.h). The standard explains the palette observation; the causal implementation remains an inference.
+
+Revision02 also corrects the independent maps collector so a non-executable segment cannot suppress a later executable segment of the same file. Its business/cleanup function ASTs are unchanged. The actual second job stopped at the original Main resource guard before any Android command, Flow object, helper installation or UI action. That failed/1 state is preserved. Main resource diagnosis is recorded separately; no playback success is inferred from either failure.

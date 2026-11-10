@@ -1,0 +1,23 @@
+--- cleanup_retained09_r2.py
++++ cleanup_retained09_r3.py
+@@ -5,9 +5,9 @@
+ import argparse,hashlib,json,os,signal,types
+ 
+ OLD=Path('/home/alex/work/pocket4-documents-features-flow-20261105-r12-09')
+-OUT=Path('/home/alex/work/pocket4-documents-features-cleanup-20261105-r12-09-01')
++OUT=Path('/home/alex/work/pocket4-documents-features-cleanup-20261105-r12-09-02')
+ RECONCILED=Path('/home/alex/work/pocket4-documents-features-reconcile-20261105-r12-09-01/result.json')
+-RECONCILED_SHA='3204628b940400826a8adebcd1997e2390ed827a9ab24c6184a15c0f27d23bce'
++RECONCILED_SHA='09a29f432fc508959586af50fc36ca3ac589ee061a1aa2bddabefc85909fc524'
+ TOOLS=Path('/home/alex/work/pocket4-documents-features-tools-20261105-r12-09')
+ TX=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ TX_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+@@ -166,7 +166,7 @@
+             result['install_pending']=package.install_pending;result['uninstall_pending']=package.uninstall_pending
+         signal.setitimer(signal.ITIMER_REAL,0);signal.signal(signal.SIGALRM,old_handler)
+         result['finished_utc']=now();tx.write_new(OUT/'result.json',result)
+-        print(json.dumps(result,sort_keys=True))
++        print(json.dumps(result,indent=2,sort_keys=True))
+     return 0 if result.get('state')=='EXACT_RETAINED_FIXTURE_AND_PACKAGE_CLEANED' and not result.get('outcome_unknown') else 2
+ 
+ if __name__=='__main__':

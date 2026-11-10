@@ -1,0 +1,39 @@
+--- run_saf02.py
++++ run_saf03.py
+@@ -6,9 +6,9 @@
+ 
+ SOURCE=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ SOURCE_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+-ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-02/ui_adapter01.py')
++ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-03/ui_adapter01.py')
+ ADAPTER_SHA='0dc186a9bc552b576a361b2c3e18128d31f2473ae9344ade1a1089f0f1d147d3'
+-ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-02')
++ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-03')
+ APK=Path('/home/alex/work/pocket4-documents-saf-build-20261105-r12-02/owned-saf.apk')
+ APK_SHA='3b2b8d01b551f68256a25c351b34f2a6c74f74cbfc9b44b226ea708dba9fffe6'
+ CERT_SHA='f772d334443bb5cd71abcc179d04e21ee3e70d424290df69828b94e42bc448f2'
+--- stage_run02.py
++++ stage_run03.py
+@@ -3,10 +3,10 @@
+ from pathlib import Path
+ import ast, base64, hashlib, json, os, sys, zlib
+ 
+-TOOLS=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-02')
+-RUN=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-02')
++TOOLS=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-03')
++RUN=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-03')
+ PINS={'ui_adapter01.py':'0dc186a9bc552b576a361b2c3e18128d31f2473ae9344ade1a1089f0f1d147d3',
+-      'run_saf02.py':'a43001481cbd01bd38d4b261d72bf1e3ea8eca7a8d56f2ee1e67d65cb5d072a1'}
++      'run_saf03.py':'c00e0d61fdbcbe4473c77a09ee3cd388ca80f6bc907e0aa25b32cecb81109438'}
+ 
+ 
+ def need(value,reason):
+@@ -34,7 +34,7 @@
+         'temporary_package':'org.droidloom.qa.saf.r12.n69814e80ea71f485','max_seconds':720,'max_ui_actions':36}
+     fd=os.open(TOOLS/'stage-manifest.json',os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_CLOEXEC|os.O_NOFOLLOW,0o600)
+     with os.fdopen(fd,'w') as out:json.dump(manifest,out,indent=2);out.write('\n');out.flush();os.fsync(out.fileno())
+-    os.execve('/usr/bin/python3',['/usr/bin/python3','-I',str(TOOLS/'run_saf02.py'),'--execute'],
++    os.execve('/usr/bin/python3',['/usr/bin/python3','-I',str(TOOLS/'run_saf03.py'),'--execute'],
+         {'PATH':'/usr/bin:/bin','LANG':'C.UTF-8'})
+ 
+ 

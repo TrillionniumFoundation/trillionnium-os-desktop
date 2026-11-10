@@ -1,0 +1,96 @@
+{
+  "actions": {
+    "Main_Android_commands": 0,
+    "UI_actions": 0,
+    "app_source_edits": 0,
+    "builds": 0,
+    "installs": 0,
+    "manifest_edits": 0
+  },
+  "findings": [
+    "The five ordinary missing Chromium Activities have real upstream test contracts and appropriate resource prerequisites, but absence from this actual Browser2 APK is not, by itself, evidence that Pocket4 accidentally removed five previously supported production features.",
+    "A smaller AOSP Browser2 copy already has the same six top-level classes. The five-class restoration-scope01 document therefore identifies possible source restoration/feature expansion work only; it is not proof of five regressions.",
+    "The actual base APK has no missing-class references or custom classloader/factory override in its 19-class DEX/manifest. This does not prove instrumentation classpaths or explicit runtime routes are absent.",
+    "Contacts FragmentTestActivity and Chromium OnDeviceInstrumentationBroker have test/instrumentation source placement. Their absence from a production base APK must remain a contract/classloader review, not an assumed twelve-crash count."
+  ],
+  "installed_binary": {
+    "actual_apk_source_export_sha256": "53c3034885693c9b16b76abf9d8b26ffbbf0d51643981bcdfbd8353dbf26e70e",
+    "apk_bytes": 70877,
+    "apk_sha256": "0f9dbb8ef3af284a08eb86f9558cd6c21a35dbeca2482b4b6e4b85ea49c183df",
+    "certificate_sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+    "declared_top_level_activities_present": [
+      "JankActivity",
+      "StartupTimeActivity",
+      "TelemetryActivity",
+      "TelemetryMemoryPressureActivity",
+      "WebViewAnimationTestActivity",
+      "WebViewBrowserActivity"
+    ],
+    "dex_bytes": 27968,
+    "dex_sha256": "c1b969aba7363bebe8b54a83c6115165cc8bfca82ca3536cf6d8bdc9f29c624e",
+    "package": "org.chromium.webview_shell",
+    "uid": 10060,
+    "user": 0,
+    "version_code": 1,
+    "version_name": "1.0"
+  },
+  "next_action_scope": "Confirm the intended supported test-app role and exact upstream baseline before deciding whether any declared route needs implementation. Do not delete declarations or add empty Activities to satisfy a class count; do not silently expand Browser2 into a production browser.",
+  "primary_sources": [
+    {
+      "observation": "This AOSP Browser2 source directory lists the same six top-level Java Activities as the actual installed DEX. It is an Android14 branch reference, not a proved exact Android17/Pocket4 preimage.",
+      "observed_tree": "6771bb5907cd21032ba5b6859b7946a07977bf68",
+      "url": "https://android.googlesource.com/platform/packages/apps/Browser2.git/+/refs/heads/android14-qpr3-s13-release/src/org/chromium/webview_shell"
+    },
+    {
+      "blob": "cb30f33bbb1ef8adfa415ba360efb31ed55e8b00",
+      "commit": "fb2031c941153c9602a3de5ca8b7948648cecd43",
+      "observation": "The Browser2 android_app compiles src/**/*.java with current SDK, uses android.test.runner, and is product-specific.",
+      "url": "https://android.googlesource.com/platform/packages/apps/Browser2/+/fb2031c941153c9602a3de5ca8b7948648cecd43/Android.bp"
+    },
+    {
+      "blob": "6ed414ac88a99e718828c3b2a9d0ae858ce5d5d7",
+      "commit": "3449f9537bee60fbada2640cd120b0b9fe600677",
+      "observation": "Upstream describes Browser2 as an unsupported reference copy of a minimal WebView test browser. It lacks suitable browser security UI and is not intended as a production browser or the basis of one.",
+      "url": "https://android.googlesource.com/platform/packages/apps/Browser2/+/3449f9537bee60fbada2640cd120b0b9fe600677/README"
+    },
+    {
+      "observation": "The repository commit/tree metadata was retrieved. Follow-up reads of its exact source directory, Android.bp and README were unavailable; the six-class list is not asserted to have been retrieved from this commit.",
+      "observed_commit": "6d0cde40adf51b4ad289594e7ef42a6d0902ae9c",
+      "observed_tree": "38d59adfcbd461632ff1481884015dff7bc315b4",
+      "url": "https://android.googlesource.com/platform/packages/apps/Browser2/+/refs/heads/master"
+    }
+  ],
+  "prior_reviews_unchanged": {
+    "ACTUAL_SOURCE_MANIFEST01.json": {
+      "bytes": 7443,
+      "sha256": "a7c38e3e39866de2fb285be149dd77d64b40bbfe3c3308d54efab78df87d8ea4"
+    },
+    "CONTRACT_SOURCE_MANIFEST.json": {
+      "bytes": 2830,
+      "sha256": "e821adb5821b52f0075de9dce9a27b77eef59a8d68e44c0eb686108a23949680"
+    },
+    "actual-webview-source-review01.json": {
+      "bytes": 12778,
+      "sha256": "74833accd770b2156e083abc092b23c8e08434d66537f176e6349abd6e59d02a"
+    },
+    "contract-review01.json": {
+      "bytes": 17537,
+      "sha256": "f9be548bbf4930ed1f97e38592da0cbab5b1398763430f38075db47c9a042a84"
+    },
+    "restoration-scope01.json": {
+      "bytes": 6161,
+      "sha256": "b718a670ffc3a25c93564eceee7cd2ff842afa6e5bdfcb13a5b7cf2e1286d566"
+    }
+  },
+  "qualification_boundary": "Actual installed bytes and observed older upstream source contracts are distinguished. No unavailable main-commit source is claimed as read.",
+  "readiness_impact": {
+    "classloader_runtime_routes_verified": false,
+    "existing_scoped_webview_business_pass_overturned": false,
+    "five_Pocket4_regressions_proven": false,
+    "missing_manifest_classes_remain_recorded": true,
+    "release_scope_decision_required": true,
+    "whole_browser_production_ready": false
+  },
+  "review_type": "source-contract-clarification",
+  "schema": "Browser2-smaller-AOSP-contract-followup/v1"
+}

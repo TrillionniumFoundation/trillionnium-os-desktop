@@ -1,0 +1,151 @@
+{
+  "automatic_retry": false,
+  "business_flow_completed": false,
+  "cleanup": {
+    "errors": [
+      "fixture_or_package:RuntimeError:UI_OUTCOME_PENDING_PRESERVE_OWNED_FIXTURE_AND_PACKAGE"
+    ],
+    "file_cleanup": null,
+    "package_absent_verified": false,
+    "package_uninstalled_verified": false,
+    "staged_apk_removed": true
+  },
+  "elapsed_seconds": 65.58746291697025,
+  "error": "ControlError: INVALID_PACKAGE",
+  "final_guard": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  },
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "gates": {
+    "CREATE_WRITE_READ_OK": {
+      "client_status": {
+        "bytes": 87,
+        "content_readbacks": 1,
+        "content_writes": 1,
+        "create_picker_calls": 1,
+        "error": "",
+        "files_launch_calls": 0,
+        "files_view_results": 0,
+        "open_picker_calls": 0,
+        "pending": "",
+        "phase": "CREATE_WRITE_READ_OK",
+        "provider_delete_calls": 0,
+        "provider_rename_calls": 0,
+        "reopen_reads": 0,
+        "run": "69814e80ea71f485",
+        "sha256": "5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7",
+        "uri": "content://com.android.externalstorage.documents/document/primary%3APocket4_SAF_r12_69814e80ea71f485%2Fcreated-69814e80ea71f485.txt"
+      },
+      "passed": true
+    },
+    "FILES_UI_RENAME": {
+      "new_name": "files-ui-69814e80ea71f485.txt",
+      "old_name_absent": true,
+      "passed": true,
+      "sha256": "5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7"
+    },
+    "NEW": {
+      "client_status": {
+        "bytes": 0,
+        "content_readbacks": 0,
+        "content_writes": 0,
+        "create_picker_calls": 0,
+        "error": "",
+        "files_launch_calls": 0,
+        "files_view_results": 0,
+        "open_picker_calls": 0,
+        "pending": "",
+        "phase": "NEW",
+        "provider_delete_calls": 0,
+        "provider_rename_calls": 0,
+        "reopen_reads": 0,
+        "run": "69814e80ea71f485",
+        "sha256": "",
+        "uri": ""
+      },
+      "passed": true
+    },
+    "PROVIDER_RENAME_OK": {
+      "client_status": {
+        "bytes": 87,
+        "content_readbacks": 3,
+        "content_writes": 1,
+        "create_picker_calls": 1,
+        "error": "",
+        "files_launch_calls": 0,
+        "files_view_results": 0,
+        "open_picker_calls": 0,
+        "pending": "",
+        "phase": "PROVIDER_RENAME_OK",
+        "provider_delete_calls": 0,
+        "provider_rename_calls": 1,
+        "reopen_reads": 0,
+        "run": "69814e80ea71f485",
+        "sha256": "5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7",
+        "uri": "content://com.android.externalstorage.documents/document/primary%3APocket4_SAF_r12_69814e80ea71f485%2Fprovider-69814e80ea71f485.txt"
+      },
+      "passed": true
+    }
+  },
+  "install_pending": false,
+  "installed_identity": {
+    "apk_bytes": 16588,
+    "apk_path": "/data/app/~~cE9CLzrNkUjnPENaGImn3g==/org.droidloom.qa.saf.r12.n69814e80ea71f485-M-D9HGfxCMhTDor959rWmA==/base.apk",
+    "apk_sha256": "3b2b8d01b551f68256a25c351b34f2a6c74f74cbfc9b44b226ea708dba9fffe6",
+    "directories": {
+      "ce": {
+        "st_dev": 1811,
+        "st_gid": 10177,
+        "st_ino": 166467,
+        "st_mode": 16832,
+        "st_uid": 10177
+      },
+      "de": {
+        "st_dev": 1811,
+        "st_gid": 10177,
+        "st_ino": 167245,
+        "st_mode": 16832,
+        "st_uid": 10177
+      }
+    },
+    "package": "org.droidloom.qa.saf.r12.n69814e80ea71f485",
+    "uid": 10177,
+    "version_code": 1
+  },
+  "native_launch_calls": 1,
+  "new_trial_after_verified_cleanup": {
+    "original_stage02_fenced": true,
+    "previous_created_document_removed": true,
+    "previous_failures_preserved": true,
+    "previous_package_uninstalled": true,
+    "prior_cleanup_job": "1a1ab56e186-fc05-4cc4",
+    "prior_cleanup_result_sha256": "c23d0bc6786bd75598b3f2ecb6c432d480b61b8732d0921d839ad0ab7cae192e"
+  },
+  "outcome_unknown": true,
+  "owned_remove_calls": 2,
+  "owned_task_ids_closed": [
+    938,
+    937
+  ],
+  "package": "org.droidloom.qa.saf.r12.n69814e80ea71f485",
+  "pending_effects": {
+    "files-open-owned-file": {
+      "input_acknowledged": true,
+      "kind": "tap",
+      "post_capture_outcome_unknown": true
+    }
+  },
+  "run": "69814e80ea71f485",
+  "source_bound_adopted_tasks": [
+    938
+  ],
+  "state": "OWNED_CLEANUP_UNVERIFIED",
+  "temporary_package_excluded_from_launcher_denominator": true,
+  "ui_actions": 14,
+  "uninstall_pending": false,
+  "user_file_contents_read": false,
+  "whole_app_production_ready": false
+}

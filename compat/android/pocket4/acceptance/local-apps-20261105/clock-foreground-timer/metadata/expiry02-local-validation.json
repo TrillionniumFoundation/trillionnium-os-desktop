@@ -1,0 +1,22 @@
+{
+  "UI_actions": 0,
+  "prior_8_boundaries_inherited": true,
+  "read_only_new_observer_commands": [
+    "dumpsys activity services com.android.deskclock",
+    "logcat -b events -d -v threadtime -t 1500"
+  ],
+  "reader_sha256": "5591b37c256f1e8927f34cd1d7f89e6489add4bdde714198cf3f6d872c72b89e",
+  "same_60s_timer_and_original_wait_budget": true,
+  "source_sha256": "b5bfe7cbf40b7d88c966965c7d145e399049a59947efc7d4e0e63186736ce2c2",
+  "unchanged_guard_and_action_functions": [
+    "timer_owned",
+    "task_map",
+    "exact_alert",
+    "active_notifications",
+    "claim_alert",
+    "stop_expired",
+    "close",
+    "delete_reset",
+    "cleanup"
+  ]
+}

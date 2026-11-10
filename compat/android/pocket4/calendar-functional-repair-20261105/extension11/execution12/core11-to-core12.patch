@@ -1,0 +1,32 @@
+--- execution11/calendar_accept_core11.py
++++ execution12/calendar_accept_core12.py
+@@ -8,13 +8,13 @@
+ PROFILE_ACTIVATION_SHA='7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-calendar-accept-core-20261105-r12-11')
++ROOT=Path('/home/alex/work/pocket4-calendar-accept-core-20261105-r12-12')
+ ORIGINAL=Path('/home/alex/work/pocket4-calendar-flow-tools-20261105-r12-01/run_calendar01.py')
+ ORIGINAL_SHA='d307f4ceda9fc80e216f280cb1a9558fbe4e27b43cd659ecc83a1c6edab9c8fa'
+-INSTALL=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-10/result.json')
+-NEW_SHA='7872aa56b6aa35f4509a27a2c3c0ebb8743da7096136155e425f5b1e4499ae8e'
++INSTALL=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-11/result.json')
++NEW_SHA='00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f'
+ PROVIDER_SHA='eebf12f81981f7d8c59a9b9ed465945818d2ab0208c121d858cbc4e6426f5fff'
+-READER_SHA='1231e9c430a81b0af062c104b35516c3d2127e3e1cc43b78d15ffb2a5224f436'
++READER_SHA='5cae87cf11dab38ad838ee97b43d652fd9f772348030e3cacec138f3fe5fef4e'
+ ADAPTER_SHA='e983973141e4cb77cf5c26f9e9526fdec25fa3331cd3f24a313bef7704878aa9'
+ PROBE=Path('/home/alex/work/pocket4-calendar-shell-query-tools-20261105-r12-02/probe_shell_cleanup02.py')
+ PROBE_SHA='3696994fe45fba3152418e32667ac3ac6ed437cf5191189bfe65a27f21bccb88'
+@@ -302,9 +302,9 @@
+     m.PINS={str(PROFILE_TX) if path==previous_tx else path: PROFILE_TX_SHA if path==previous_tx else pin
+             for path,pin in m.PINS.items()}
+     m.TX=PROFILE_TX
+-    model=load(HERE/'read_owned_calendar11.py',READER_SHA,'calendar_core_owned_reader')
++    model=load(HERE/'read_owned_calendar12.py',READER_SHA,'calendar_core_owned_reader')
+     tx,oldbase,doc,diag=[m.load(Path(p),pin,'calendar_core_dependency_'+str(i)) for i,(p,pin) in enumerate(m.PINS.items())]
+-    base=load(HERE/'calendar_ui11.py',ADAPTER_SHA,'calendar_private_ui')
++    base=load(HERE/'calendar_ui12.py',ADAPTER_SHA,'calendar_private_ui')
+     probe=load(PROBE,PROBE_SHA,'calendar_existing_shell_grants')
+     proof_raw=(HERE/'atomic-delete-review.json').read_bytes()
+     need(hashlib.sha256(proof_raw).hexdigest()==ATOMIC_SHA and

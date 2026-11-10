@@ -1,0 +1,143 @@
+--- source07/build07.py
++++ source08/build08.py
+@@ -4,7 +4,7 @@
+ import argparse, datetime, gzip, hashlib, json, os, re, signal, subprocess, time, types, zipfile
+ 
+ HERE=Path(__file__).resolve().parent
+-OUT=Path('/home/alex/work/pocket4-calendar-repair-build-20261105-r12-07')
++OUT=Path('/home/alex/work/pocket4-calendar-repair-build-20261105-r12-08')
+ CAPTURE=Path('/home/alex/work/pocket4-calendar-code-readonly-20261105-r12-01/com.android.calendar')
+ PREIMAGE=Path('/home/alex/work/pocket4-calendar-repair-preimage-20261105-r12-03')
+ PREIMAGE_SHA='1b86909e5954f735ed16796d0ea044e374807dc37457cab0029186d9ab7f253e'
+@@ -110,7 +110,7 @@
+         run('test-javac',[javac,*javacvm,'-source','8','-target','8','-bootclasspath',deps['core_lambda_stubs']['path']+':'+sdk,'-cp',str(classes),'-d',str(testclasses),
+             *[str(p) for p in sorted((HERE/'tests').glob('*.java'))]])
+         result['host_tests']={}
+-        for test in ('EventDraftTest','ProviderReceiptTest','EventReferenceTest','SnoozeStateTest'):
++        for test in ('EventDraftTest','ProviderReceiptTest','EventReferenceTest','SnoozeStateTest','AlertIdentityTest'):
+             result['host_tests'][test]=run(test.lower(),[java,*vm,'-cp',str(classes)+':'+str(testclasses),test])
+         jar=OUT/'new-program.jar'
+         with zipfile.ZipFile(jar,'x',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as archive:
+--- /dev/null
++++ source08/src/com/android/calendar/alerts/AlertIdentity.java
+@@ -0,0 +1,12 @@
++/* Copyright 2026 The Droidloom Authors
++ * SPDX-License-Identifier: Apache-2.0
++ */
++package com.android.calendar.alerts;
++
++/** PendingIntent identity must survive reuse of a CalendarAlerts SQLite row ID. */
++public final class AlertIdentity {
++    private AlertIdentity() {}
++    public static String key(long id,long event,long begin,long end,long alarm,long created,int minutes) {
++        return id+":"+event+":"+begin+":"+end+":"+alarm+":"+created+":"+minutes;
++    }
++}
+--- source07/src/com/android/calendar/alerts/RestoredAlerts.java
++++ source08/src/com/android/calendar/alerts/RestoredAlerts.java
+@@ -54,6 +54,7 @@
+     private static final String DISMISS=PACKAGE+".restored.DISMISS";
+     private static final String TOKEN="calendar_action_token";
+     private static final String ROW_ID="calendar_alert_id";
++    private static final String ALERT_IDENTITY="calendar_alert_identity";
+     private static final String PREFS="calendar_restored_alert_actions";
+     private static final String TAG="CalendarAlerts";
+     private static final int MAX_VISIBLE=20;
+@@ -79,6 +80,7 @@
+             allDay=c.getInt(9)!=0; created=c.getLong(10);
+         }
+         String tag() { return "calendar-alert-"+id; }
++        String key() { return AlertIdentity.key(id,event,begin,end,alarm,created,minutes); }
+         ContentValues identity() {
+             ContentValues v=new ContentValues();
+             v.put(CalendarAlerts._ID,id); v.put(CalendarAlerts.EVENT_ID,event);
+@@ -108,6 +110,10 @@
+         String expected=context.getSharedPreferences(PREFS,Context.MODE_PRIVATE).getString(TOKEN,null);
+         return supplied!=null && expected!=null && MessageDigest.isEqual(
+             supplied.getBytes(StandardCharsets.UTF_8),expected.getBytes(StandardCharsets.UTF_8));
++    }
++    private static boolean sameAlert(Intent intent,Alert alert) {
++        return alert!=null && alert.key().equals(intent.getStringExtra(ALERT_IDENTITY)) &&
++            ("calendar-alert:"+alert.key()).equals(intent.getIdentifier());
+     }
+     private static boolean systemReminder(String action) {
+         return CalendarContract.ACTION_EVENT_REMINDER.equals(action) ||
+@@ -181,7 +187,7 @@
+         WORK.execute(() -> {
+             try {
+                 Alert row=one(app,intent.getLongExtra(ROW_ID,-1));
+-                if(row!=null && row.state==CalendarAlerts.STATE_FIRED && intent.getData()!=null &&
++                if(sameAlert(intent,row) && row.state==CalendarAlerts.STATE_FIRED && intent.getData()!=null &&
+                    ContentUris.withAppendedId(Events.CONTENT_URI,row.event).equals(intent.getData()) &&
+                    intent.getLongExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME,-1)==row.begin &&
+                    intent.getLongExtra(CalendarContract.EXTRA_EVENT_END_TIME,-1)==row.end) dismiss(app,row);
+@@ -195,7 +201,9 @@
+         if(SNOOZE.equals(action) || DISMISS.equals(action)) {
+             long id=intent.getLongExtra(ROW_ID,-1);
+             Alert alert=one(context,id);
+-            if(alert!=null && alert.state==CalendarAlerts.STATE_FIRED) {
++            // Old immutable PIs must not act on a new alert that reuses the row ID.
++            if(!sameAlert(intent,alert))return;
++            if(alert.state==CalendarAlerts.STATE_FIRED) {
+                 if(SNOOZE.equals(action)) snooze(context,alert); else dismiss(context,alert);
+             } else if(id>=0) manager(context).cancel("calendar-alert-"+id,0);
+         } else if(RECOVER.equals(action)) {
+@@ -288,10 +296,11 @@
+         return published;
+     }
+ 
+-    private static PendingIntent action(Context context,String action,long id) {
++    private static PendingIntent action(Context context,String action,Alert alert) {
+         Intent intent=new Intent(action).setClassName(PACKAGE,RECEIVER);
+-        intent.setData(CalendarAlerts.CONTENT_URI.buildUpon().appendPath(Long.toString(id)).appendPath(action).build());
+-        intent.putExtra(ROW_ID,id); intent.putExtra(TOKEN,token(context));
++        intent.setData(CalendarAlerts.CONTENT_URI.buildUpon().appendPath(Long.toString(alert.id)).appendPath(action).build());
++        intent.setIdentifier("calendar-alert:"+alert.key());
++        intent.putExtra(ROW_ID,alert.id);intent.putExtra(ALERT_IDENTITY,alert.key());intent.putExtra(TOKEN,token(context));
+         intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+         return PendingIntent.getBroadcast(context,0,intent,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
+     }
+@@ -307,6 +316,7 @@
+         open.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME,alert.begin);
+         open.putExtra(CalendarContract.EXTRA_EVENT_END_TIME,alert.end);
+         open.putExtra(ROW_ID,alert.id); open.putExtra(TOKEN,token(context));
++        open.setIdentifier("calendar-alert:"+alert.key());open.putExtra(ALERT_IDENTITY,alert.key());
+         open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+         PendingIntent content=PendingIntent.getActivity(context,(int)(alert.id^(alert.id>>>32)),open,
+             PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
+@@ -316,11 +326,11 @@
+             .setStyle(new Notification.BigTextStyle().bigText(body))
+             .setCategory(Notification.CATEGORY_EVENT).setVisibility(Notification.VISIBILITY_PRIVATE)
+             .setWhen(alert.begin).setShowWhen(true).setOnlyAlertOnce(true).setAutoCancel(true)
+-            .setContentIntent(content).setDeleteIntent(action(context,DISMISS,alert.id))
++            .setContentIntent(content).setDeleteIntent(action(context,DISMISS,alert))
+             .addAction(new Notification.Action.Builder(
+-                android.R.drawable.ic_lock_idle_alarm,"Snooze 10 min",action(context,SNOOZE,alert.id)).build())
++                android.R.drawable.ic_lock_idle_alarm,"Snooze 10 min",action(context,SNOOZE,alert)).build())
+             .addAction(new Notification.Action.Builder(
+-                android.R.drawable.ic_menu_close_clear_cancel,"Dismiss",action(context,DISMISS,alert.id)).build())
++                android.R.drawable.ic_menu_close_clear_cancel,"Dismiss",action(context,DISMISS,alert)).build())
+             .build();
+     }
+ 
+--- /dev/null
++++ source08/tests/AlertIdentityTest.java
+@@ -0,0 +1,18 @@
++import com.android.calendar.alerts.AlertIdentity;
++public final class AlertIdentityTest {
++    static int checks;
++    static void check(boolean value,String label){checks++;if(!value)throw new AssertionError(label);}
++    public static void main(String[] args) {
++        String old=AlertIdentity.key(1,4,1000,2000,900,800,10);
++        check(old.equals(AlertIdentity.key(1,4,1000,2000,900,800,10)),"same exact alert remains stable");
++        check(!old.equals(AlertIdentity.key(1,5,1000,2000,900,800,10)),"reused row ID for another event differs");
++        check(!old.equals(AlertIdentity.key(1,4,1001,2000,900,800,10)),"another occurrence begin differs");
++        check(!old.equals(AlertIdentity.key(1,4,1000,2001,900,800,10)),"changed occurrence end differs");
++        check(!old.equals(AlertIdentity.key(1,4,1000,2000,901,800,10)),"another due time differs");
++        check(!old.equals(AlertIdentity.key(1,4,1000,2000,900,801,10)),"recreated row creation identity differs");
++        check(!old.equals(AlertIdentity.key(1,4,1000,2000,900,800,15)),"another reminder definition differs");
++        check(!old.equals(AlertIdentity.key(4294967296L,4,1000,2000,900,800,10)),"request-code collision cannot merge full identity");
++        check(!AlertIdentity.key(1,23,4,5,6,7,8).equals(AlertIdentity.key(12,3,4,5,6,7,8)),"numeric fields cannot concatenate ambiguously");
++        System.out.println("AlertIdentityTest: "+checks+" checks passed");
++    }
++}

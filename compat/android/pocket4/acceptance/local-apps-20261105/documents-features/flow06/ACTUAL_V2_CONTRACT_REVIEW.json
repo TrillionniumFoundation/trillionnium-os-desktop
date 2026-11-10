@@ -1,0 +1,158 @@
+{
+  "actual_collection": {
+    "Android_commands": 2,
+    "Android_commands_scope": "exact package PM path and dumpsys package after ABX format detection",
+    "Main_resource_writes": 0,
+    "UI_actions": 0,
+    "apk_before_after_equal": true,
+    "app_starts": 0,
+    "epoch_after": {
+      "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "init_host_pid": 3588093,
+      "init_start_ticks": 80797014
+    },
+    "epoch_before": {
+      "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "init_host_pid": 3588093,
+      "init_start_ticks": 80797014
+    },
+    "exit_code": 0,
+    "job_id": "1a1ac9a7085-fc05-55bf",
+    "output_complete": true,
+    "output_durable": true,
+    "package_metadata_before_after_equal": true,
+    "package_mutations": 0,
+    "started_utc": "2026-11-05T16:46:06.119931+00:00",
+    "tool_dependency_hashes_before_after_equal": true
+  },
+  "frozen_installed_tool_modified": false,
+  "installed_identity": {
+    "apk_bytes": 20847,
+    "apk_sha256": "a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058",
+    "app_id": 10125,
+    "certificates_sha256": [
+      "7c36bafbdb2789384aeae9dabf69cca6b468f6c1a2d75952ab315288b77ff7f7"
+    ],
+    "class_descriptors": [
+      "Llocal/pocket4/actions/v2/ActionRunner;"
+    ],
+    "dex_sha256": "7abc25c6e4e6f297cdd23eaefe124b1359412cb8fbe129701cbb309775c9ac0d",
+    "first_apk_and_signer_observation": true,
+    "package": "local.pocket4.actions.v2",
+    "version_code": 2
+  },
+  "native_mouse": {
+    "ACTION_CLICK_support_required": false,
+    "ack_only": true,
+    "actionAttempted_set_before_first_injection": true,
+    "both_injection_results_required": true,
+    "business_success_verified": false,
+    "clickable_required": false,
+    "events": [
+      "ACTION_DOWN button 1",
+      "ACTION_UP button 0"
+    ],
+    "gallery_expected_effect_not_yet_observed": "MoviePlayer controls becoming visible after native mouse input",
+    "gallery_selector_from_saved_actual_node": {
+      "class": "android.widget.VideoView",
+      "clickable": false,
+      "enabled": true,
+      "focused": true,
+      "id": "com.android.gallery3d:id/surface_view",
+      "package": "com.android.gallery3d"
+    },
+    "mechanism": "method=mouse branches to mouseClick before the accessibility-click isClickable guard",
+    "point": "center of freshly resolved native node bounds; width/height positive and center inside verified focused window",
+    "source": 8194,
+    "supported_for_clickable_false": true,
+    "sync_injection": true,
+    "tool_type": 3,
+    "visual_verified": false
+  },
+  "native_set_text": {
+    "editable_required": true,
+    "extra_focus_action": false,
+    "failed_action_or_readback_outcome_unknown": true,
+    "focused_selector_supported": true,
+    "frame_pixel_comparison_in_native_set_text": false,
+    "mechanism": "one performAction(ACTION_SET_TEXT, value bundle)",
+    "original_text_match_available": true,
+    "readback": "non-password value equals requested value after refresh; showing hint yields empty value",
+    "readback_attempts_max": 20,
+    "readback_sleep_ms": 50,
+    "value_limit_UTF8_bytes": 4096,
+    "value_or_hint_selector_supported": false
+  },
+  "not_qualified": [
+    "new Gallery control appearance",
+    "new Documents text or directory operation",
+    "whole App readiness"
+  ],
+  "python_adapter_contract": {
+    "click": "dispatch first capture binds expected WM token; native ui mutation; then read-only capture. A failed postcapture sets outcome_unknown and prohibits automatic retry",
+    "no_absolute_atomic_binding_claim": "Native checks cover its own observation/revalidation interval; an outer WM token is not an argument to the native execute method.",
+    "outer_controller_still_required": [
+      "owned task and exact Activity/WM focus before dispatch",
+      "fresh complete semantic field/expected-value comparison before set-text",
+      "post-action actual readback of intended business effect",
+      "unknown outcome preserved without replay"
+    ],
+    "set_text": "dispatch forwards op/selector/value/display/accessibility mode and expected_package directly to ui(); no screenshot or WM token forwarding",
+    "ui_reply": "requires accessibility_mode_restoration_verified and protocol fields; native failures carry outcome_unknown from actionAttempted"
+  },
+  "schema": "pocket4-actual-v2-native-action-contract-review-v1",
+  "shared_native_action_guards": [
+    "Only display 0 is supported; expected_package must match the selected root.",
+    "No index means exactly one selector match; incomplete or truncated trees are refused.",
+    "Before mutation, clear cache and reacquire exactly one focused type-1 application window on display 0.",
+    "Reacquired accessibility window ID, window bounds and root package must equal those captured within the same native call.",
+    "Recollect a complete tree; selector must remain unique; full identity string must match the prior native selection.",
+    "Refresh the final node and match the selector again, then require visible and enabled."
+  ],
+  "source": {
+    "export_sha256": "765eca8b99e6ffadb7dec8a9d49dbba9a7ba2605cbae109bf36ebf224dfa1e86",
+    "methods": {
+      "editableValue": {
+        "first_line": 639,
+        "last_line": 664,
+        "sha256": "fae26f794e6be7ef81ef5b7e0175e32fb549f8dda8df48882db5f6667dbed724",
+        "signature": "private static editableValue(Landroid/view/accessibility/AccessibilityNodeInfo;)Ljava/lang/String;"
+      },
+      "execute": {
+        "first_line": 666,
+        "last_line": 3003,
+        "sha256": "397c63243be8db7563cbcd0749aad4a0feac095015e70d04551999496c2caade",
+        "signature": "private execute(Lorg/json/JSONObject;)Lorg/json/JSONObject;"
+      },
+      "identity": {
+        "first_line": 3005,
+        "last_line": 3163,
+        "sha256": "0f314a2cec0f2a75cf655c5179382d61e699dc615267c0fe5c69b9a2bd335dc8",
+        "signature": "private identity(Landroid/view/accessibility/AccessibilityNodeInfo;)Ljava/lang/String;"
+      },
+      "matches": {
+        "first_line": 3165,
+        "last_line": 3616,
+        "sha256": "664a6efd3f01ef546e0061f92534d0bfffb063aed823dceada63240e3f193ae0",
+        "signature": "private matches(Landroid/view/accessibility/AccessibilityNodeInfo;Lorg/json/JSONObject;)Z"
+      },
+      "mouseClick": {
+        "first_line": 3618,
+        "last_line": 3982,
+        "sha256": "5614a36238080f0dffc8f26d462b984a69cb07b50e7cbcf736bc3164e3d09b33",
+        "signature": "private mouseClick(Landroid/view/accessibility/AccessibilityNodeInfo;Lorg/json/JSONObject;)Lorg/json/JSONObject;"
+      },
+      "onStart": {
+        "first_line": 4145,
+        "last_line": 5456,
+        "sha256": "a33fd0a17f9a3ff8305616dbee653259d9ed8bf6c75e75815c86f9d5796b6c78",
+        "signature": "public onStart()V"
+      }
+    },
+    "path": "/workspace/scratch/4c1c408226df/native-action-source08/actual01/smali/local/pocket4/actions/v2/ActionRunner.smali",
+    "python_helper_path": "/workspace/scratch/4c1c408226df/camera-accept08/reference/android-app.py",
+    "python_helper_sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66",
+    "sha256": "548dc51db06a267849eedf250847676f1f97641d58f73a3de0b940e9c22e0d42"
+  },
+  "state": "ACTUAL_INSTALLED_SOURCE_REVIEWED_NO_NEW_UI_ACTIONS"
+}

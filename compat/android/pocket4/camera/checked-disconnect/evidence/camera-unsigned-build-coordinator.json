@@ -1,0 +1,57 @@
+{
+  "build_returncode": 0,
+  "elapsed_seconds": 30.356232810998335,
+  "builder_sha256": "faf18779d0fc00d6287cb3b49e7641946599c72254e0b10e70b7fe2d3b3615c5",
+  "dependency_lock_sha256": "b03b5425fe2e369d4b3fcf28ae3dccd3532a0f11aa7749a0310cebd5747628b0",
+  "admission": {
+    "MemAvailable": 15682314240,
+    "SwapFree": 3375558656
+  },
+  "resources": {
+    "memory_bytes": 2147483648,
+    "swap_bytes": 0,
+    "cpus": [
+      20,
+      21
+    ]
+  },
+  "main_before": {
+    "ok": true,
+    "backend": "droidloom-teto-digitalis-derived",
+    "running": true,
+    "host_pid": 3588089,
+    "android_init_host_pid": 3588093,
+    "boot_completed": "1",
+    "android": "17",
+    "sdk": "37",
+    "native_bridge": "libberberis_arm64.so",
+    "berberis_flags": "android-mmap-noreserve",
+    "adbd": "stopped",
+    "adb_tcp_port": "-1",
+    "persist_adb_tcp_port": "-1",
+    "usb_config": "none",
+    "persist_usb_config": "none"
+  },
+  "main_after": {
+    "ok": true,
+    "backend": "droidloom-teto-digitalis-derived",
+    "running": true,
+    "host_pid": 3588089,
+    "android_init_host_pid": 3588093,
+    "boot_completed": "1",
+    "android": "17",
+    "sdk": "37",
+    "native_bridge": "libberberis_arm64.so",
+    "berberis_flags": "android-mmap-noreserve",
+    "adbd": "stopped",
+    "adb_tcp_port": "-1",
+    "persist_adb_tcp_port": "-1",
+    "usb_config": "none",
+    "persist_usb_config": "none"
+  },
+  "main_status_equal": true,
+  "stdout": "{\n  \"schema\": \"pocket4-camera-portable-unsigned-rebuild-v1\",\n  \"started_at_utc\": \"2026-11-05T05:20:59.533078+00:00\",\n  \"success\": true,\n  \"production_ready\": false,\n  \"signed\": false,\n  \"installed\": false,\n  \"clean_full_apk_reproduction_verified\": false,\n  \"verified_external_inputs\": 60,\n  \"source_sha256\": \"0f35f1675d8977aed5b80141b380bd29bf995c8c48db73d688eff46b879c39ad\",\n  \"commands\": [\n    {\n      \"label\": \"javac\",\n      \"exit_code\": 0,\n      \"elapsed_seconds\": 0.5655605338979512\n    },\n    {\n      \"label\": \"d8\",\n      \"exit_code\": 0,\n      \"elapsed_seconds\": 27.190966763999313\n    },\n    {\n      \"label\": \"zipalign\",\n      \"exit_code\": 0,\n      \"elapsed_seconds\": 0.015632685041055083\n    },\n    {\n      \"label\": \"alignment_verify\",\n      \"exit_code\": 0,\n      \"elapsed_seconds\": 0.003372853039763868\n    }\n  ],\n  \"source_inputs_postcheck_passed\": true,\n  \"dependency_lock_sha256\": \"b03b5425fe2e369d4b3fcf28ae3dccd3532a0f11aa7749a0310cebd5747628b0\",\n  \"unsigned_apk\": {\n    \"name\": \"Camera2-aligned-unsigned.apk\",\n    \"sha256\": \"42caf9ca1d42069b3baf91a01d020f3001ee744061f655d01376dc851ede4894\",\n    \"bytes\": 11803921\n  },\n  \"program\": {\n    \"name\": \"program.jar\",\n    \"sha256\": \"c18e5862c53cb3d7f7cf13c8def3ec99f11de00d37936497bd43972733612ae8\",\n    \"bytes\": 14162795\n  },\n  \"class_sha256\": \"460b0ae8b949370e3a86ec2bae98cbb11900ecbe95732212958e1980b84bbe31\",\n  \"validation\": {\n    \"real_android_sdk_compile\": true,\n    \"recorded_manager_class_reproduced\": true,\n    \"recorded_program_jar_reproduced\": true,\n    \"one_reviewed_class_changed\": true,\n    \"dex_class_set_equal\": true,\n    \"class_count\": 9682,\n    \"test_bindings_absent\": true,\n    \"non_dex_payload_byte_equal\": true,\n    \"preserved_non_dex_entries\": 1045,\n    \"alignment_16k_verified\": true,\n    \"runtime_execution\": false\n  },\n  \"finished_at_utc\": \"2026-11-05T05:21:29.462999+00:00\"\n}\n",
+  "stderr": "Running as unit: p4-camera-release08-full-20261105-r12.service; invocation ID: e93903b04b934b27b57e8ba0da55fa99\n          Finished with result: success\nMain processes terminated with: code=exited, status=0/SUCCESS\n               Service runtime: 30.125s\n             CPU time consumed: 57.545s\n                   Memory peak: 1G (swap: 0B)\n",
+  "installed": false,
+  "production_ready": false
+}

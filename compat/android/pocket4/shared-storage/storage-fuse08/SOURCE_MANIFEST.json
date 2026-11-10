@@ -1,0 +1,251 @@
+{
+  "schema": "pocket4-storage-recovery-source-v1",
+  "scope": "Actual recovery, reference fixes, installed DEX candidate and exact installed ART target verification. Main deployment/live lifecycle remain open; boot warning retained.",
+  "device_recovery_actions": {
+    "standard_unmount": 1,
+    "standard_mount": 1,
+    "main_restarts": 0,
+    "provider_restarts": 0
+  },
+  "main_reference_host_cases": 9,
+  "original_expected_failures": 2,
+  "immutable_reference_clean_apply_only": true,
+  "files": {
+    "0001-storage-await-single-session-removal-immutable.patch": {
+      "bytes": 1299,
+      "sha256": "fdf31c73fad99b55b3479a7b496347a75ccfd2765fce3493b35edbdfa00b861c"
+    },
+    "0001-storage-await-single-session-removal.patch": {
+      "bytes": 1290,
+      "sha256": "79670cc72ab2e96a55eceedb2eaf17d780c4219f30353e9e87f129c8bdb2ec78"
+    },
+    "README.md": {
+      "bytes": 10665,
+      "sha256": "b1bd961f47ba729721e38994c7c68508959acce5c3be57511bab9ea4768ee894"
+    },
+    "candidate/frameworks/base/services/core/java/com/android/server/storage/StorageSessionController.java": {
+      "bytes": 19846,
+      "sha256": "e54b117dcc805ae20392b9b68c13223387c718c8972cc4314679799806cad424"
+    },
+    "evidence-digests.json": {
+      "bytes": 1265,
+      "sha256": "aa851727316d9919f71bed26057eab909e8b15d40b1fae6f91cb763534d16389"
+    },
+    "pinned-m600-candidate/frameworks/base/services/core/java/com/android/server/storage/StorageSessionController.java": {
+      "bytes": 19969,
+      "sha256": "a1972cb6e5b84303069250bf8289455505a5c48c270acf666e1ed7effafdb8e0"
+    },
+    "pinned-m600-reference/frameworks/base/core/java/android/service/storage/ExternalStorageService.java": {
+      "bytes": 10678,
+      "sha256": "19e8baacf1f19aa7461144cf4946739cf3a0acf42415cdbc584342d57d77f843"
+    },
+    "pinned-m600-reference/frameworks/base/services/core/Android.bp": {
+      "bytes": 12364,
+      "sha256": "1c8e701380a377e034da9d5224d4040657666bedafeb862f4e6e7a0959a9717a"
+    },
+    "pinned-m600-reference/frameworks/base/services/core/java/com/android/server/storage/ImmutableVolumeInfo.java": {
+      "bytes": 3511,
+      "sha256": "e70e6e88762f1a4816f7ca2de75e522bd041cd184b437fcdafb6c3251ba65ca2"
+    },
+    "pinned-m600-reference/frameworks/base/services/core/java/com/android/server/storage/StorageSessionController.java": {
+      "bytes": 19670,
+      "sha256": "05d0f2db32ca635e2a096ec11515e0bf201fb1869d6ead07e060aa893ed6c836"
+    },
+    "pinned-m600-reference/frameworks/base/services/core/java/com/android/server/storage/StorageUserConnection.java": {
+      "bytes": 23742,
+      "sha256": "56ad1318a997930a608c75b4e20fccc72117060577c79853f43d1ec10ffe7d21"
+    },
+    "recovery-summary.json": {
+      "bytes": 2753,
+      "sha256": "92b81d3da1ef1bb611a9325192bce6fdf7ec1f300b10c5a3acc2a2fd50995452"
+    },
+    "regression-summary.json": {
+      "bytes": 2791,
+      "sha256": "d2da135addb468934de633a7c410471c771996953c2b40ad5c48b000200ef0e2"
+    },
+    "runtime-candidate/0001-runtime-storage-single-removal.patch": {
+      "bytes": 3249,
+      "sha256": "c627cf426e402711119cc1c7ebac46e76daef4513d3f53fc909eb5496ca74557"
+    },
+    "runtime-candidate/JAVA_EQUIVALENCE.md": {
+      "bytes": 6026,
+      "sha256": "9ce62067718776a417722294379c4b5b15880f7f1189bb7fe17896c8e0df2875"
+    },
+    "runtime-candidate/README.md": {
+      "bytes": 3890,
+      "sha256": "b6dcb661e9e657199e2f591aacec5d7c05f37cb871f96353e68a213fe5b10e77"
+    },
+    "runtime-candidate/SOURCE_MANIFEST.json": {
+      "bytes": 4675,
+      "sha256": "9ec483e321047b6d08754ec0c3903f5ed8ac6a375b4c41eec96ca2db5e5b5fe4"
+    },
+    "runtime-candidate/StorageSessionController.smali": {
+      "bytes": 57239,
+      "sha256": "9c7070a802038cb1eaa4a18ebb3db12785aad1d7e96d37c50d5c62e92abe6e61"
+    },
+    "runtime-candidate/actual-build14/zip-payload-proof.json": {
+      "bytes": 21240,
+      "sha256": "86843bc17da1753c5f2f4acc1cafcc6a443a8758c86af2d0534ad5828bb29602"
+    },
+    "runtime-candidate/align_runtime15.py": {
+      "bytes": 5375,
+      "sha256": "f20b98082406abb352c965dfcaa589aa91c462f56bdadfe225c3c84ee6e03bce"
+    },
+    "runtime-candidate/art22-parser-regression.txt": {
+      "bytes": 840,
+      "sha256": "df693379a2536820764134db0395dca10396beebc65ec749239d82b2ddcebb24"
+    },
+    "runtime-candidate/build_runtime13.py": {
+      "bytes": 10061,
+      "sha256": "757dc7cd0c04ee1d7ddb6f4fa05457867b410e6f4c4ce30f5656eb590b25c5a8"
+    },
+    "runtime-candidate/candidate22-execution-review.json": {
+      "bytes": 3623,
+      "sha256": "52e205c38c51e8af25a0841eebed1465103b208ae793734644364023c3b23286"
+    },
+    "runtime-candidate/candidate22-review.patch": {
+      "bytes": 16752,
+      "sha256": "08ba99031b40913d937728e197e48c87a35976b52887c8eeaae6ed2a4753e803"
+    },
+    "runtime-candidate/execute_runtime14.py": {
+      "bytes": 2126,
+      "sha256": "46a08dc9d2fdd3b55a4c0f4f793e18e2f71aebdc15899136b9839a40128d16b5"
+    },
+    "runtime-candidate/fixtures/original-compiler-argv.json": {
+      "bytes": 4055,
+      "sha256": "f8b4bcd322ee3e55f8f9b94cc18fecbfe6851e0e1a8344126a3e754bc9bc49ac"
+    },
+    "runtime-candidate/fixtures/original-target-window.txt": {
+      "bytes": 12054,
+      "sha256": "ca8268b45d3b9ceae7ca87dc0d7164d9bc009c4bfd85adfbb0e6635113fbb3f2"
+    },
+    "runtime-candidate/method-ir-review.json": {
+      "bytes": 7507,
+      "sha256": "b5217450fd81df8bebdce731c3fd2d69521893af70248b8d2de49c39a77c78de"
+    },
+    "runtime-candidate/onVolumeUnmount.candidate.smali": {
+      "bytes": 4946,
+      "sha256": "f58cc62977a475d3f493e058db5a01f08e9d1beab24bb6a674ff8471b9ff2d2b"
+    },
+    "runtime-candidate/onVolumeUnmount.original.smali": {
+      "bytes": 3481,
+      "sha256": "2e22c6020b2fa78abd94d273f2e07aa09036fe1ef89e15d0630595fee2f0fe62"
+    },
+    "runtime-candidate/public-metadata/ART_VERIFICATION22.md": {
+      "bytes": 4840,
+      "sha256": "c9fd3cbbd502157fee4eeac991f765aef8ab013c821799a8e16dc7b95ff26a0e"
+    },
+    "runtime-candidate/public-metadata/alignment15-summary.json": {
+      "bytes": 4669,
+      "sha256": "e6f85b01979728191a79d42118434bb2dcc74c590c7757ef324af3707c2894d8"
+    },
+    "runtime-candidate/public-metadata/art-discovery.json": {
+      "bytes": 2149,
+      "sha256": "4490fa4864bc5814ae12fbd45b630d85a8a4752c3ad73128e8928737cfe4758a"
+    },
+    "runtime-candidate/public-metadata/art-verification22.json": {
+      "bytes": 10294,
+      "sha256": "a150317a28f8a0434509fa4318b345aee7a85ff22ce808c2d39a92ca092591ee"
+    },
+    "runtime-candidate/public-metadata/art22-source-manifest.json": {
+      "bytes": 2936,
+      "sha256": "2d7c07ef537c5b4473f5166f018d41cda0344a56b678461faefa18cd6575a35a"
+    },
+    "runtime-candidate/public-metadata/build14-summary.json": {
+      "bytes": 3398,
+      "sha256": "11ed9a6f4179390089b2919f1fddb9cab104bab25220a76bffa0d316467b3819"
+    },
+    "runtime-candidate/public-metadata/offline-candidate.json": {
+      "bytes": 3964,
+      "sha256": "6e031619cea0ca33b084fa064de791573d5dd2bbaa9d29f722af168e2bf3f701"
+    },
+    "runtime-candidate/read_baseline21.py": {
+      "bytes": 5000,
+      "sha256": "4e701d37c1e7ae399a6cb17e938ffcfa134f8a55af9f79816191cf1b4c8d134d"
+    },
+    "runtime-candidate/smali_equivalence.py": {
+      "bytes": 6289,
+      "sha256": "a895a4e3963f958ea6a6ff45b9d0c51f6239118b3a10fddff6d0f17e22e25f9f"
+    },
+    "runtime-candidate/test_art_target22.py": {
+      "bytes": 3003,
+      "sha256": "6528e376f7133ee6ac63bce639434c8cbfdb57032c25d3e7137f2961838e86da"
+    },
+    "runtime-candidate/test_smali_equivalence.py": {
+      "bytes": 2899,
+      "sha256": "c9260836a52e6c5de90c53232bdb21b59319e32600f7a6e2a7b7de00113df847"
+    },
+    "runtime-candidate/verify_art20.py": {
+      "bytes": 20053,
+      "sha256": "e2dfabd5a0b01316c05181c5c06e35ab980c108c8c40d51746a0f79a38ddf80b"
+    },
+    "runtime-candidate/verify_candidate22.py": {
+      "bytes": 27227,
+      "sha256": "e5de57780be072ced10a5beba049fe89e89e381d6a66a974a8f298ef34cf2742"
+    },
+    "runtime-lifecycle-events.json": {
+      "bytes": 992,
+      "sha256": "b87a2c6fae5a50f812d700c0e283ac42f2163445e21e23fc2995ee7ab7e4fff5"
+    },
+    "source-pins.json": {
+      "bytes": 2141,
+      "sha256": "bba7fd0d2f9d99c1f918aeaba292ab166feb9a94b8fb47a14fb2a7cac01ec55c"
+    },
+    "source-runtime-provenance.json": {
+      "bytes": 6147,
+      "sha256": "ede6a4bd49ec57545b403e445182161fe078453ec5c95e2bc1c58d473adf2d16"
+    },
+    "upstream/frameworks/base/core/java/android/service/storage/ExternalStorageService.java": {
+      "bytes": 10684,
+      "sha256": "d9afcd40a677ec57883d1247c6d4147f6328c7f23d2dadc968a9946210522fdb"
+    },
+    "upstream/frameworks/base/services/core/java/com/android/server/storage/StorageSessionController.java": {
+      "bytes": 19547,
+      "sha256": "715ca43a2debe5dc2f65d5492605c7652d1149923d02aed9c5f1002e94b90ca9"
+    },
+    "upstream/frameworks/base/services/core/java/com/android/server/storage/StorageUserConnection.java": {
+      "bytes": 22254,
+      "sha256": "abda5722992087d0edc1deeef0a3f16be9f3ce270595cde98d46b8c8982f95a3"
+    },
+    "upstream/packages/providers/MediaProvider/src/com/android/providers/media/fuse/ExternalStorageServiceImpl.java": {
+      "bytes": 7290,
+      "sha256": "9de0c7b17067083e48f6ec056033c11d0505b53d6447160300fef70fe1e15fa6"
+    },
+    "upstream/packages/providers/MediaProvider/src/com/android/providers/media/fuse/FuseDaemon.java": {
+      "bytes": 13477,
+      "sha256": "70c2442becad5412478f948aa6120642d17d013deae4df82ff28329106b662c3"
+    },
+    "upstream-sources.json": {
+      "bytes": 2261,
+      "sha256": "9dedd4eaa9fb12c92c4d99052237b018128bc6eb318b199bf516ab99c1089d33"
+    },
+    "validation/LifecycleHarness.java.in": {
+      "bytes": 16641,
+      "sha256": "8f27b34b7a4b62297b5955d9f2537c0f54715cd6776e0532d6fb5236d1cd3b9d"
+    },
+    "validation/apply-check.json": {
+      "bytes": 319,
+      "sha256": "9525927cc4790c93c0f8f678b967bf080a6f7960eb952490ca0cbe7cf1ebf2e7"
+    },
+    "validation/results/candidate/extracted-methods.json": {
+      "bytes": 8665,
+      "sha256": "f97bcc09c8b61898fc06e599204d38133780e0f408ca480ada5f51a89fd6e61a"
+    },
+    "validation/results/result.json": {
+      "bytes": 11618,
+      "sha256": "8d946aa1404952ddc5c52026149678ae008d1619da385d467de586bd3a2ff024"
+    },
+    "validation/results/upstream/extracted-methods.json": {
+      "bytes": 8665,
+      "sha256": "e3101535d191b2d27c8b9994d5048abb23e00bb51a6d34cc6db598a430bbb098"
+    },
+    "validation/retained-original-result.json": {
+      "bytes": 10418,
+      "sha256": "6b4708fbdc84a9a4308846eaf842b10fb7bd459e9e39940be412f5ecfb88b00f"
+    },
+    "validation/run_lifecycle_regression.py": {
+      "bytes": 7576,
+      "sha256": "39ec71d648accf92cc0c6d722b7ad1c2043bea702ab5a2613180340885075a9b"
+    }
+  }
+}

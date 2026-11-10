@@ -1,0 +1,80 @@
+{
+  "UI_handoff_to": "review_android_acceptance / Docs06",
+  "UI_lock_worker_exited": true,
+  "business_success": false,
+  "exact_launch_outcome": {
+    "activity": "com.android.calendar/.AllInOneActivity",
+    "actually_created_task": 963,
+    "completed_native_launches": 1,
+    "exit_reason": 4,
+    "guest_pid": 759628,
+    "joined": true,
+    "launch_replayed": false,
+    "native_rc": 1,
+    "normal_owned_close": false,
+    "task_removed_by": "Android force-crash then last-child task removal",
+    "timed_out": false,
+    "uid": 10061,
+    "verifier_error": "onOptionsItemSelected: v4 Object expected Long"
+  },
+  "final_saved_observation": {
+    "calendar_identity_preserved": true,
+    "event_or_calendar_fixture_created": false,
+    "final_reads_same_guarded_session": true,
+    "held_main_epoch": {
+      "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "host_pid": 3588089,
+      "init_pid": 3588093,
+      "init_start_ticks": 80797014
+    },
+    "helper_installed": false,
+    "launch_transport_after_guard_verified": true,
+    "original_top_level_guard_after_missing_because": "fresh crash check intentionally aborted final success branch",
+    "provider_identity_preserved": true,
+    "same_as_original_baseline": true,
+    "table_counts": {
+      "Attendees": 0,
+      "CalendarAlerts": 0,
+      "Calendars": 0,
+      "Events": 0,
+      "EventsRawTimes": 0,
+      "ExtendedProperties": 0,
+      "Instances": 0,
+      "Reminders": 0
+    },
+    "task_ids": [
+      851
+    ]
+  },
+  "inflight_Android_mutations": 0,
+  "new_cleanup_actions": 0,
+  "original_pty_terminal": {
+    "exit_code": 1,
+    "output_complete": true,
+    "receipt_sha256": "cd6bfaa33edfeb9b7a01082d87d380f24dabd3d9f00b956c6359cb13d7559e48",
+    "session_id": "dpty-43190fce24d524ed6a729c6bf60441c046dcb008147d82684ddc6036e36e567d"
+  },
+  "original_result": {
+    "error": "RuntimeError:NATIVE_LAUNCH_UNKNOWN",
+    "final_check_error": "RuntimeError:FRESH_CALENDAR_CRASH_OR_ANR",
+    "overwritten": false,
+    "path": "core09-result.json",
+    "sha256": "2f010f4e2633c07f92d349b3c9cbf755d9dd1c02e0e0eb1b1e04aaa6e9f031bb",
+    "state": "FAILED",
+    "ui_pending": {
+      "launch-1": {
+        "input_acknowledged": false
+      }
+    }
+  },
+  "retained_evidence": {
+    "new_Android_calls": 0,
+    "path": "core09-retained-result.json",
+    "reader_job": "1a1acb1131b-fc05-566b",
+    "reader_terminal": "succeeded/0",
+    "sha256": "0e450382bf4d8ce0131ddf2446df258735cc7d5358f54636bc525e0fd9d4d507"
+  },
+  "schema": "calendar-core09-readonly-terminal-reconciliation-v1",
+  "state": "FAILED_CRASH_EXIT_RECONCILED_NO_REMAINING_OWNED_TASK_OR_PROVIDER_FIXTURE",
+  "whole_app_production_ready": false
+}

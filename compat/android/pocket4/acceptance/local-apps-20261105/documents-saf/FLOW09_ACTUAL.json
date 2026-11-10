@@ -1,0 +1,99 @@
+{
+  "schema": "pocket4-documents-flow09-actual-v1",
+  "job_id": "1a1ab5d9616-fc05-4d05",
+  "process_state": "failed",
+  "exit_code": 1,
+  "output_complete": true,
+  "output_durable": true,
+  "timed_out": false,
+  "terminal_utc": "2026-11-05T11:01:06.605000+00:00",
+  "result": {
+    "path": "flow09-result.json",
+    "bytes": 4747,
+    "sha256": "6048be3b22be228dc6f1a845ab8c7d94afa4ceddd185900e402e93f004e62e15"
+  },
+  "status": {
+    "path": "flow09-job-status.json",
+    "bytes": 729,
+    "sha256": "9ccf10302cfa25eb29556d0db54cd13fd0f79bbb830306ffe5b407986078cd6c"
+  },
+  "runner": {
+    "path": "run_saf09.py",
+    "bytes": 35608,
+    "sha256": "93ce75cffa2ac2dadf70d5f10647f4ec0c9ef597baed7d06f96cbe0d5719056d"
+  },
+  "adapter": {
+    "path": "ui_adapter02.py",
+    "bytes": 17810,
+    "sha256": "74234c0a3db0659e4632ce3e76510d80fe8b015514c6a72dc9e34bca31a83a54"
+  },
+  "business_flow_completed": false,
+  "whole_app_production_ready": false,
+  "actual_new_gate": {
+    "new_name": "files-ui-69814e80ea71f485.txt",
+    "old_name_absent": true,
+    "passed": true,
+    "sha256": "5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7"
+  },
+  "earlier_gates_passed": [
+    "CREATE_WRITE_READ_OK",
+    "PROVIDER_RENAME_OK"
+  ],
+  "stop_reason": "ControlError: INVALID_PACKAGE",
+  "elapsed_seconds": 65.58746291697025,
+  "ui_actions": 14,
+  "native_launch_calls": 1,
+  "owned_task_ids_closed": [
+    938,
+    937
+  ],
+  "owned_remove_calls": 2,
+  "pending_effects": {
+    "files-open-owned-file": {
+      "input_acknowledged": true,
+      "kind": "tap",
+      "post_capture_outcome_unknown": true
+    }
+  },
+  "outcome_unknown": true,
+  "cleanup": {
+    "errors": [
+      "fixture_or_package:RuntimeError:UI_OUTCOME_PENDING_PRESERVE_OWNED_FIXTURE_AND_PACKAGE"
+    ],
+    "file_cleanup": null,
+    "package_absent_verified": false,
+    "package_uninstalled_verified": false,
+    "staged_apk_removed": true
+  },
+  "installed_identity": {
+    "apk_bytes": 16588,
+    "apk_path": "/data/app/~~cE9CLzrNkUjnPENaGImn3g==/org.droidloom.qa.saf.r12.n69814e80ea71f485-M-D9HGfxCMhTDor959rWmA==/base.apk",
+    "apk_sha256": "3b2b8d01b551f68256a25c351b34f2a6c74f74cbfc9b44b226ea708dba9fffe6",
+    "directories": {
+      "ce": {
+        "st_dev": 1811,
+        "st_gid": 10177,
+        "st_ino": 166467,
+        "st_mode": 16832,
+        "st_uid": 10177
+      },
+      "de": {
+        "st_dev": 1811,
+        "st_gid": 10177,
+        "st_ino": 167245,
+        "st_mode": 16832,
+        "st_uid": 10177
+      }
+    },
+    "package": "org.droidloom.qa.saf.r12.n69814e80ea71f485",
+    "uid": 10177,
+    "version_code": 1
+  },
+  "final_guard": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  },
+  "next_action": "Read-only reconciliation of original scope and saved observation. No replay of Save/rename/open; file and package deliberately preserved."
+}

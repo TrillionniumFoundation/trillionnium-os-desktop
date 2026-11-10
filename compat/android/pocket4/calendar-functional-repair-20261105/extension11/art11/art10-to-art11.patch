@@ -1,0 +1,149 @@
+--- art10/verify_calendar10.py
++++ art11/verify_calendar11.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/python3 -I
+-"""Verify the isolated Calendar10 APK with installed ART; inert without --execute.
++"""Verify the isolated Calendar11 APK with installed ART; inert without --execute.
+ 
+ Reuses the already executed ART22 descriptor transport and dependency snapshot,
+ but runs an APK PCL[] context and requires every added/modified class Verified.
+@@ -9,13 +9,13 @@
+ import argparse,contextlib,datetime,gzip,hashlib,json,os,re,resource,stat,time,zipfile
+ 
+ STORAGE=Path('/home/alex/work/pocket4-storage-session-candidate-20261105-r12')
+-OUT=Path('/home/alex/work/pocket4-calendar-art-verification-20261105-r12-10')
+-BUILD=Path('/home/alex/work/pocket4-calendar-repair-build-20261105-r12-10')
+-BUILD_SHA='03634674b17dba7960948ba7c92bd326e59f3ec48dc6c48ed94913af2381320a'
+-APK_SHA='7872aa56b6aa35f4509a27a2c3c0ebb8743da7096136155e425f5b1e4499ae8e'
+-INSTALLED_SHA='2f8ff1e09e572a7343433c7ab38e9929b3d43fd102562d0c7537471816a90234'
+-INSTALL=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-09/result.json')
+-INSTALL_SHA='fa8c2275a05cd3fe70ed5769b0a45f689af75ff240100d508f62dfed0ce7dc17'
++OUT=Path('/home/alex/work/pocket4-calendar-art-verification-20261105-r12-11')
++BUILD=Path('/home/alex/work/pocket4-calendar-repair-build-20261105-r12-11')
++BUILD_SHA='ec9ce6f9c8e31d021992d59d86ce4319743496debff50e24ef7da8be544c96e9'
++APK_SHA='00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f'
++INSTALLED_SHA='7872aa56b6aa35f4509a27a2c3c0ebb8743da7096136155e425f5b1e4499ae8e'
++INSTALL=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-10/result.json')
++INSTALL_SHA='253c98a9d27f1b5bb45e01cdda6042e0d43b2f268b3c0a228bf93a639b38f957'
+ TX=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ TX_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+ ACTIVATION_SHA='7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
+@@ -23,7 +23,7 @@
+ DISCOVERY_LIB_SHA='605a30fe58ad9fb49bb62d85750a2d558686ea5730d000b3d703e88dde9e8aa5'
+ DISCOVERY_SHA='614f0c61ec4956a626edb06950bb6b7494ed856dc1dc2c45ac8bfd748421bab9'
+ MANIFEST_SHA='4745f217753636e077e65c7308123ab636dfec719ab0826f759bb14a547927dd'
+-UNIT='pocket4-calendar-art-verify10-r12.service'
++UNIT='pocket4-calendar-art-verify11-r12.service'
+ 
+ def need(value,reason):
+     if not value:raise RuntimeError(reason)
+@@ -55,7 +55,7 @@
+     raw=tx.read_regular(BUILD/'Calendar-pocket4-functional.apk',APK_SHA,maximum=8*1024*1024)
+     art.own_file(directory/'candidate.apk',raw,stack,mode=0o444,uid=0)
+     source=os.open(directory/'candidate.apk',os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC);stack.callback(os.close,source)
+-    marker=('calendar-art10:'+APK_SHA+'\n').encode()
++    marker=('calendar-art11:'+APK_SHA+'\n').encode()
+     art.own_file(directory/'marker',marker,stack,mode=0o444,uid=0)
+     markfd=os.open(directory/'marker',os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC);stack.callback(os.close,markfd)
+     oat=art.own_file(directory/'candidate.odex',b'',stack)
+@@ -85,7 +85,7 @@
+         peer=s.held.HeldZygoteRoot(identity,art.DEADLINE);stack.callback(peer.close)
+         before=art.snapshot(s,peer,discovery_lib,discovery)
+         current_apk=art.pin_guest(s,peer,installed['after']['apk_path'])
+-        need(current_apk['sha256']==INSTALLED_SHA,'INSTALLED_CALENDAR09_CHANGED')
++        need(current_apk['sha256']==INSTALLED_SHA,'INSTALLED_CALENDAR10_CHANGED')
+         tx.write_new(OUT/'before.json',before,alex_readable=False)
+         cache_before=art.cache_inventory(s);tx.write_new(OUT/'cache-before.json',cache_before,alex_readable=False)
+         bcp=[]
+@@ -98,7 +98,7 @@
+         own=prepare(tx,art,stack)
+         extras=tuple([*bcp,own['source'],own['oat'],own['vdex'],own['directory'],own['marker']])
+         read_only=set(extras)-{own['oat'],own['vdex']}
+-        result['fd_proof']=art.prove_fds(s,'calendar10',extras,read_only,{own['oat'],own['vdex']},own['marker'],own['directory'])
++        result['fd_proof']=art.prove_fds(s,'calendar11',extras,read_only,{own['oat'],own['vdex']},own['marker'],own['directory'])
+         source_before=art.pin_fd(own['source'])
+         timestamp=datetime.datetime.now(datetime.timezone.utc).strftime('%m-%d %H:%M:%S.000')
+         args=[art.DEX2OAT,f"--zip-fd={own['source']}",'--zip-location='+installed['after']['apk_path'],
+@@ -116,16 +116,16 @@
+         result['expected_targets']=expected
+         try:
+             result['compiler_attempted']=True
+-            reply=art.command(s,'calendar10-compiler',args,extras,85)
+-            result['compiler']=art.record_command(tx,'calendar10-compiler',reply)
++            reply=art.command(s,'calendar11-compiler',args,extras,85)
++            result['compiler']=art.record_command(tx,'calendar11-compiler',reply)
+             need(reply['rc']==0,'ACTUAL_COMPILER_VERIFICATION_FAILED')
+             need(os.pread(own['oat'],4,0)==b'\x7fELF' and os.pread(own['vdex'],4,0)==b'vdex','ART_OUTPUT_HEADERS')
+             dump=[art.OATDUMP,f"--oat-file=/proc/self/fd/{own['directory']}/candidate.odex",
+                 f"--dex-file=/proc/self/fd/{own['directory']}/candidate.apk",
+                 '--class-filter=com.android.calendar','--no-disassemble','--no-dump:vmap']
+             result['oatdump_argv']=dump
+-            reply=art.command(s,'calendar10-all-targets',dump,extras,20)
+-            result['oatdump']=art.record_command(tx,'calendar10-all-targets',reply)
++            reply=art.command(s,'calendar11-all-targets',dump,extras,20)
++            result['oatdump']=art.record_command(tx,'calendar11-all-targets',reply)
+             need(reply['rc']==0,'ACTUAL_OATDUMP_FAILED')
+             proof=all_target_statuses(reply['stdout'].decode('utf-8','strict'),expected)
+             result['target_status_proof']=proof
+@@ -141,9 +141,9 @@
+                 try:action()
+                 except BaseException as exc:errors.append(name+':'+type(exc).__name__+':'+str(exc))
+             try:
+-                reply=art.command(s,'calendar10-art-log',['/system/bin/logcat','-d','-b','all','--uid=2000',
++                reply=art.command(s,'calendar11-art-log',['/system/bin/logcat','-d','-b','all','--uid=2000',
+                     '-v','threadtime','-T',timestamp,'dex2oat:V','dex2oat64:V','oatdump:V','art:V','*:S'],(),10)
+-                result['android_compiler_log']=art.record_command(tx,'calendar10-art-log',reply)
++                result['android_compiler_log']=art.record_command(tx,'calendar11-art-log',reply)
+                 need(reply['rc']==0,'COMPILER_LOG_UNAVAILABLE')
+             except BaseException as exc:errors.append('log:'+type(exc).__name__+':'+str(exc))
+             try:
+@@ -151,7 +151,7 @@
+                 result['input_boot_apex_classpaths_unchanged']=after==before
+                 need(after==before,'ART_DEPENDENCY_CLOSURE_CHANGED')
+                 need(art.pin_guest(s,peer,installed['after']['apk_path'])==current_apk,'INSTALLED_CALENDAR_CHANGED')
+-                result['installed_calendar09_unchanged']=True
++                result['installed_calendar10_unchanged']=True
+                 cache_after=art.cache_inventory(s);tx.write_new(OUT/'cache-after.json',cache_after,alex_readable=False)
+                 complete=cache_before['complete'] and cache_after['complete']
+                 result['cache_observation']={'complete':complete,'persistent_delta_observed':cache_before!=cache_after if complete else None,
+@@ -173,19 +173,32 @@
+     discovery=json.loads(tx.read_regular(STORAGE/'art-discovery16/result.json',DISCOVERY_SHA,maximum=1048576))
+     build=json.loads(tx.read_regular(BUILD/'result.json',BUILD_SHA,maximum=131072))
+     need(build['state']=='BUILT_SIGNED_NOT_INSTALLED' and build['signed_apk']['sha256']==APK_SHA and
+-        build['against_previous09']['classes2_preserved_except_reviewed_CalendarActions'] and
+-        build['against_previous09']['all_other_methods_IR_equal'] and
+-        build['against_previous09']['all_other_non_signature_payloads_byte_equal'] and
++        build['against_previous10']['apk_sha256']==INSTALLED_SHA and
++        build['against_previous10']['classes_compared']==445 and
++        build['against_previous10']['methods_compared']==2327 and
++        build['against_previous10']['changed_methods']==[] and
++        build['against_previous10']['classes_dex_byte_equal'] and
++        build['against_previous10']['classes2_preserved_except_reviewed_receipt_path'] and
++        build['against_previous10']['all_other_methods_IR_equal'] and
++        build['against_previous10']['all_other_non_signature_payloads_byte_equal'] and
+         build['restored_code_proof']['classes_compared']==60 and
+-        build['restored_code_proof']['unchanged_classes']==59 and
+-        build['restored_code_proof']['only_changed_class']=='com/android/calendar/repair/CalendarActions.smali',
+-        'ACTUAL_BUILD10_REQUIRED')
++        build['restored_code_proof']['unchanged_classes']==58 and
++        build['restored_code_proof']['original_generic_receipt_validator_IR_unchanged'] and
++        build['restored_code_proof']['changed_classes']==[
++            'com/android/calendar/event/EventEditorStore.smali',
++            'com/android/calendar/event/ProviderReceipt.smali'] and
++        build['restored_code_proof']['actual_method_changes']=={
++            'com/android/calendar/event/EventEditorStore.smali':{
++                'changed_methods':['createLocalCalendar(Ljava/lang/String;)J'],'added_methods':[]},
++            'com/android/calendar/event/ProviderReceipt.smali':{
++                'changed_methods':[],'added_methods':['calendarId(Ljava/lang/String;Ljava/lang/String;)J']}},
++        'ACTUAL_BUILD11_REQUIRED')
+     installed=json.loads(tx.read_regular(INSTALL,INSTALL_SHA,maximum=65536))
+-    need(installed['state']=='INSTALLED_VERIFIED_NOT_BUSINESS_QUALIFIED' and installed['after']['apk_sha256']==INSTALLED_SHA,'EXACT_INSTALL09_REQUIRED')
++    need(installed['state']=='INSTALLED_VERIFIED_NOT_BUSINESS_QUALIFIED' and installed['after']['apk_sha256']==INSTALLED_SHA,'EXACT_INSTALL10_REQUIRED')
+     with zipfile.ZipFile(BUILD/'Calendar-pocket4-functional.apk') as apk:
+         need(sha(apk.read('AndroidManifest.xml'))==MANIFEST_SHA,'APP_MANIFEST_CHANGED')
+     os.umask(0o077);OUT.mkdir(mode=0o750);os.chown(OUT,0,1000);os.chmod(OUT,0o750)
+-    result={'schema':'calendar10-installed-art-isolated-verification-v1','state':'FAILED','started_utc':stamp(),
++    result={'schema':'calendar11-installed-art-isolated-verification-v1','state':'FAILED','started_utc':stamp(),
+         'apk_sha256':APK_SHA,'build_result_sha256':BUILD_SHA,'transport_sha256':TX_SHA,
+         'activation_sha256':ACTIVATION_SHA,'reused_art_transport_sha256':ART_LIB_SHA,
+         'runner_sha256':sha(Path(__file__).read_bytes()),'installed':False,'UI_actions':0,'provider_mutations':0,

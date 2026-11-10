@@ -1,0 +1,66 @@
+{
+  "authorized_prior_same_certificate_build": {
+    "certificate_sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+    "key_filename": "testkey.pk8",
+    "public_certificate_filename": "testkey.x509.pem",
+    "receipt": {
+      "bytes": 43703,
+      "path": "calendar-repair08/revision11/build11-result.json",
+      "sha256": "ec9ce6f9c8e31d021992d59d86ce4319743496debff50e24ef7da8be544c96e9"
+    },
+    "sign_command_rc": 0,
+    "signature_command_rc": 0,
+    "signature_stdout_sha256": "f81156258ebd2a38fe5619d006c925d394ddfc5c37e9b44a99a8d23c4f6d455a",
+    "signed_apk": {
+      "bytes": 2635213,
+      "path": "/home/alex/work/pocket4-calendar-repair-build-20261105-r12-11/Calendar-pocket4-functional.apk",
+      "sha256": "00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f"
+    }
+  },
+  "captured_webview": {
+    "APK": {
+      "bytes": 70877,
+      "sha256": "0f9dbb8ef3af284a08eb86f9558cd6c21a35dbeca2482b4b6e4b85ea49c183df"
+    },
+    "observed_utc": "2026-11-05T15:55:43.217739+00:00",
+    "receipt": {
+      "bytes": 15163,
+      "path": "component-source-review08/actual01/result-original.json",
+      "sha256": "3f8782a97e3163ea090d3bbefab7264c74e795451a070d347dc5b0544238b6e8"
+    },
+    "signature": {
+      "actual_verify_stdout": "Verifies\nVerified using v1 scheme (JAR signing): false\nVerified using v2 scheme (APK Signature Scheme v2): false\nVerified using v3 scheme (APK Signature Scheme v3): true\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\nVerified using v4 scheme (APK Signature Scheme v4): false\nVerified for SourceStamp: false\nNumber of signers: 1\nSigner #1 certificate DN: EMAILADDRESS=android@android.com, CN=Android, OU=Android, O=Android, L=Mountain View, ST=California, C=US\nSigner #1 certificate SHA-256 digest: a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc\nSigner #1 certificate SHA-1 digest: 61ed377e85d386a8dfee6b864bd85b0bfaa5af81\nSigner #1 certificate MD5 digest: e89b158e4bcf988ebd09eb83f5378e87\nSigner #1 key algorithm: RSA\nSigner #1 key size (bits): 2048\nSigner #1 public key SHA-256 digest: ef57b690165cb561b5026922c00d2d6574e8b184fa7d161e076f06e06e6d35db\nSigner #1 public key SHA-1 digest: 0c2440c055c753a8f0493b4e602d3ea0096b1023\nSigner #1 public key MD5 digest: 452f8cfe026b30a8a3e99a6074e5f285\n",
+      "certificate_sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+      "command": {
+        "argv": [
+          "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+          "-Xmx256m",
+          "-XX:ActiveProcessorCount=1",
+          "-XX:-UsePerfData",
+          "-Djava.io.tmpdir=/home/alex/work/pocket4-webview-source-audit-20261105-r12-01/tmp",
+          "-Duser.home=/home/alex/work/pocket4-webview-source-audit-20261105-r12-01/tmp",
+          "-jar",
+          "/usr/share/java/apksigner-35.0.2.jar",
+          "verify",
+          "--verbose",
+          "--print-certs",
+          "/home/alex/work/pocket4-webview-source-audit-20261105-r12-01/Browser2-original.apk"
+        ],
+        "joined": true,
+        "rc": 0,
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 1027,
+        "stdout_sha256": "f81156258ebd2a38fe5619d006c925d394ddfc5c37e9b44a99a8d23c4f6d455a",
+        "timed_out": false,
+        "timeout_seconds": 35
+      }
+    }
+  },
+  "decision": "Exact verified same certificate as existing authorized Camera/Calendar build chain. The actual prior key filename is testkey.pk8, not platform.pk8. No signer substitution permitted.",
+  "limitation": "This binds the captured APK and previously successful signing recipe. It does not fresh-read current package state or read the current key file; a future build must reverify its input and output certificate and tool closure.",
+  "only_existing_local_receipts_read": true,
+  "private_key_bytes_read": false,
+  "schema": "webview-trace-signer-provenance.v1",
+  "signing_operations": 0
+}

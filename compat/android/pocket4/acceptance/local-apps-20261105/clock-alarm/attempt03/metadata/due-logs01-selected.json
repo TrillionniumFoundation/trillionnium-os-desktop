@@ -1,0 +1,88 @@
+{
+  "alarm_state_before_after_equal": true,
+  "command_metadata": {
+    "appop-run_any_in_background": {
+      "bytes": 35,
+      "sha256": "7b5be473db4bd1941aaedaf0bcee4e7102f60528d4f5145b620020148cc80727",
+      "text": "No operations.\nDefault mode: allow\n"
+    },
+    "appop-run_in_background": {
+      "bytes": 35,
+      "sha256": "7b5be473db4bd1941aaedaf0bcee4e7102f60528d4f5145b620020148cc80727",
+      "text": "No operations.\nDefault mode: allow\n"
+    },
+    "appop-schedule_exact_alarm": {
+      "bytes": 37,
+      "sha256": "9134eef52a7ddbef487890db0116e5637103910cf3c8b21b8f82221a15b50858",
+      "text": "No operations.\nDefault mode: default\n"
+    },
+    "clock-events": {
+      "bytes": 487979,
+      "first_timestamp": "11-05 18:20:45.595",
+      "last_timestamp": "11-05 19:14:06.746",
+      "selected_count": 88,
+      "selected_truncated": false,
+      "sha256": "f5979a5a8ef02ab68463121fe06c8fc3a40eb5cabb0b930eadf7ee79d8c8e2c3"
+    },
+    "clock-uid-log": {
+      "bytes": 0,
+      "first_timestamp": null,
+      "last_timestamp": null,
+      "selected_count": 0,
+      "selected_truncated": false,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "service-system-log": {
+      "bytes": 19815,
+      "first_timestamp": "11-05 19:13:49.007",
+      "last_timestamp": "11-05 19:14:06.608",
+      "selected_count": 0,
+      "selected_truncated": false,
+      "sha256": "c6d178d8db8322165327abc63d6c32adfad269156ae9696e4c37ca30c9f37f93"
+    }
+  },
+  "empty_uid_log_is_not_proof_of_absence": true,
+  "epoch": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "event_observations": [
+    {
+      "event": "am_kill",
+      "followed_by_uid_stopped": true,
+      "package": "com.android.deskclock",
+      "reason": "remove task",
+      "utc": "2026-11-05T18:50:42.535Z"
+    },
+    {
+      "component": "com.android.deskclock.alarms.AlarmStateManager",
+      "event": "am_proc_start",
+      "package": "com.android.deskclock",
+      "reason": "broadcast",
+      "uid": 10063,
+      "utc": "2026-11-05T18:54:00.007Z"
+    },
+    {
+      "event": "am_proc_bound",
+      "same_broadcast_process": true,
+      "utc": "2026-11-05T18:54:00.026Z"
+    },
+    {
+      "activity": "com.android.deskclock.DeskClock",
+      "event": "wm_on_create_called",
+      "same_process_as_due_broadcast": true,
+      "utc": "2026-11-05T19:02:51.374Z"
+    }
+  ],
+  "finished_utc": "2026-11-05T19:14:07.149809+00:00",
+  "guard_same": true,
+  "installed_clock": {
+    "apk_sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172",
+    "notifications_granted": true,
+    "uid": 10063,
+    "version_code": 37
+  },
+  "source": {
+    "bytes": 18842,
+    "sha256": "cdd074961d47df2729126819a5b63b3cf0b0fb717b2d4a7ce45024cf1c23eddf"
+  },
+  "started_utc": "2026-11-05T19:14:06.313892+00:00",
+  "system_due_window_not_retained": true
+}

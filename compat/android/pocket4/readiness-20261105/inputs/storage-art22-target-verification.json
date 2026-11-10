@@ -1,0 +1,277 @@
+{
+  "actual_tools": {
+    "dex2oat64": {
+      "bytes": 1385312,
+      "sha256": "8e9e861e0cf4e1f74020172e7791c52c6f97939e72b99be6f4f8862049fc3b8e"
+    },
+    "oatdump": {
+      "bytes": 367352,
+      "sha256": "4b95cedd2d66250d220a0d650de0a619fa7256099830e0e3fb273e4e99db0a3b"
+    }
+  },
+  "actual_unit_limits": {
+    "cpu.max": "200000 100000",
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "pids.max": "64"
+  },
+  "cache_observation": {
+    "after_sha256": "85487fdcafd55300dc3794851e7148418ffdea179542743ff94f759e908a1bd0",
+    "before_sha256": "85487fdcafd55300dc3794851e7148418ffdea179542743ff94f759e908a1bd0",
+    "complete": true,
+    "interpretation": "Metadata delta only in two scoped cache roots; not a trace of transient writes, not attributed to this compiler, and not retrospective evidence for ART20.",
+    "original_ART20_cache_census": false,
+    "persistent_delta_observed": false,
+    "root_existence_measured_not_assumed": true,
+    "scoped_candidate_roots": [
+      "/data/dalvik-cache",
+      "/data/misc/apexdata/com.android.art/dalvik-cache"
+    ]
+  },
+  "candidate_classes3_dex": {
+    "bytes": 10892756,
+    "sha256": "8f74a77571feed8bc011bbaaa369f1cc8d75b793d6c3993d6f3b1cca49f912e3"
+  },
+  "candidate_outputs": {
+    "oat": {
+      "bytes": 197376,
+      "sha256": "4a95095885361f6b24fd7c5317199330b51ccfbba4670fb8bbb5b714c2473268"
+    },
+    "vdex": {
+      "bytes": 35052304,
+      "sha256": "02ed47bfc6b0148f9f680cca6b5c1dcf2b0d727655b859281183ad32e3f29a60"
+    }
+  },
+  "candidate_resource_usage": {
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak_bytes": 389500928,
+    "scope": "this owned ART unit only"
+  },
+  "evidence": {
+    "actual-art21/observation-scope.json": {
+      "bytes": 3459,
+      "sha256": "290f11b3b23a0a614e313621fc2712966856976696dedf80d2540b1c0f52a928"
+    },
+    "actual-art21/original-compiler.log": {
+      "bytes": 5141,
+      "sha256": "5addd614e9a0e1df6e5c7ec2ceab8c97b0341057232c84fe0e78c1c7b58900ba"
+    },
+    "actual-art21/target-window.txt": {
+      "bytes": 12054,
+      "sha256": "ca8268b45d3b9ceae7ca87dc0d7164d9bc009c4bfd85adfbb0e6635113fbb3f2"
+    },
+    "actual-art22/candidate-compiler-log.stdout": {
+      "bytes": 5141,
+      "sha256": "49767e6e74eaf7ba08d8931f494f32ab0bb2626a49c4b4247ca8dead45aa1d98"
+    },
+    "actual-art22/candidate-target.txt": {
+      "bytes": 15242,
+      "sha256": "26da962aeeee15e954199fa98a726befd766f2d3449354022d8a19bbe6f4598d"
+    }
+  },
+  "executed_sequence": [
+    {
+      "actual_result": {
+        "bytes": 112326,
+        "sha256": "1138ea24880808e639112691c5e224497705a82b289aa646d1687c0117583292"
+      },
+      "candidate_executed": false,
+      "compiler_rc": 0,
+      "error": "RuntimeError:TARGET_DUMP_NOT_BOUNDED",
+      "explanation": "The observer selected 938 keyword-containing rows and exceeded its 128-row bound. This was an observer failure; its original terminal result is not rewritten.",
+      "original_exit2_preserved": true,
+      "stage": "ART20_original_compiler_and_target_dump",
+      "state": "PAIR_INCOMPLETE_UNQUALIFIED",
+      "target_dump_rc": 0,
+      "terminal": {
+        "exit_code": 2,
+        "job_id": "1a1ab434c42-fc05-4bc5",
+        "output_complete": true,
+        "output_durable": true,
+        "state": "failed",
+        "terminal_publication_confirmed": true,
+        "timed_out": false
+      }
+    },
+    {
+      "ART_invocations": 0,
+      "actual_result": {
+        "bytes": 3527,
+        "sha256": "dbf9b5d74fa4c58fc3e1a3126fb3bc82ce7632a71febba9febb176333970ed69"
+      },
+      "scope": "Rehashed existing original OAT, VDEX, full target stdout and input closure; extracted the exact outer class and method. No recompilation.",
+      "stage": "ART21_readonly_retained_output_reconciliation",
+      "target_status": "Verified",
+      "terminal": {
+        "exit_code": 0,
+        "job_id": "1a1ab481712-fc05-4bf5",
+        "output_complete": true,
+        "output_durable": true,
+        "state": "succeeded",
+        "terminal_publication_confirmed": true,
+        "timed_out": false
+      }
+    },
+    {
+      "actual_result": {
+        "bytes": 20115,
+        "sha256": "89276b32a4a2d40dd27524f92a8ff9afb1b7997e5136b0333e2a79232d94697c"
+      },
+      "all_commands_joined": true,
+      "compiler_rc": 0,
+      "no_command_timeout": true,
+      "original_reexecuted": false,
+      "stage": "ART22_candidate_only",
+      "target_dump_rc": 0,
+      "terminal": {
+        "exit_code": 0,
+        "job_id": "1a1ab52c383-fc05-4c8d",
+        "output_complete": true,
+        "output_durable": true,
+        "state": "succeeded",
+        "terminal_publication_confirmed": true,
+        "timed_out": false
+      }
+    }
+  ],
+  "finished_utc": "2026-11-05T10:48:13.552520+00:00",
+  "fixed_main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "input_closure": {
+    "allowed_argv_normalization": [
+      "held descriptor numbers",
+      "owned output phase basename"
+    ],
+    "boot_classpath_files": 52,
+    "fd_identity_proof": {
+      "all_descriptor_identities_exact": true,
+      "compiler_uid": 2000,
+      "marker_direct_and_directory_equal": true
+    },
+    "fresh_candidate_before_equal_to_retained_original": true,
+    "input_boot_apex_classpaths_unchanged": true,
+    "original_snapshot_before_after_sha256": "0fc09f9cbeaba50f128aaefc47bd2725a5bf4381ffb9f52452c7ad947c07f710",
+    "same_actual_tools_boot_classpaths_and_compiler_flags": true,
+    "selected_guest_dependencies": 87
+  },
+  "inputs": {
+    "candidate": {
+      "bytes": 34667535,
+      "sha256": "f1acb56e23cd9082a77ef686f2e840a736e7769dd8843830e53e56b1ac31566f"
+    },
+    "original": {
+      "bytes": 34542267,
+      "sha256": "f33987e633e476f47ea043af3f7fb94907fd2431fa2b5b49df84cb586bce5c50"
+    }
+  },
+  "limitations": [
+    "The source is a minimal repair of the exact installed DEX; it is not a complete Java/AOSP clean build, and the full installed Java or ART C++ source commit remains unproven.",
+    "The candidate has not been installed, loaded by system_server, or tested through a live volume unmount/remount lifecycle.",
+    "ART20 installed_runtime_writes=false was a requested-command-scope statement, not a cache write audit. The original raw result is preserved; ART21 observation-scope.json records the correction.",
+    "ART22 found no persistent metadata delta only in its two scoped cache candidates. It is not a syscall or transient-write trace, cannot backdate ART20 observations, and cannot attribute unrelated concurrent changes.",
+    "Whole-App production readiness is not established by this framework candidate check."
+  ],
+  "limits": {
+    "compile_threads": 2,
+    "compiler_inner_seconds": 80,
+    "compiler_seconds": 85,
+    "cpus": [
+      20,
+      21
+    ],
+    "internal_seconds": 225,
+    "memory_bytes": 2147483648,
+    "outer_seconds": 240,
+    "swap_bytes": 0
+  },
+  "mutation_scope": {
+    "Main_restart_requested": false,
+    "UI_actions": 0,
+    "all_runtime_writes_observed": false,
+    "deployed": false,
+    "installed_runtime_mutations_requested": false,
+    "original_reexecuted": false,
+    "volume_actions": 0
+  },
+  "original_outputs": {
+    "oat": {
+      "bytes": 197376,
+      "sha256": "03fe9f8954dbf5b3ed73792eb282aa629a8b842efe5f71770a7744ec8f740eb5"
+    },
+    "vdex": {
+      "bytes": 34927036,
+      "sha256": "a977ce10761bb7c6546190c832f8c6481ae078dddbbc1f41a6ca1a80380c4e64"
+    }
+  },
+  "original_resource_usage": {
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak_bytes": 339910656,
+    "scope": "this owned ART unit only"
+  },
+  "qualification": "EXACT_TARGET_ART_VERIFIED; NOT_DEPLOYED; LIVE_LIFECYCLE_PENDING",
+  "regression": {
+    "cases": 8,
+    "result": "PASS",
+    "scope": "Exact target parser and permitted command normalization, including real original target dump and negative cases. Not runtime lifecycle tests."
+  },
+  "retained_warnings": [
+    {
+      "actual_checksum": "0x5fde5b38",
+      "continuation": "Failed to verify inferred boot image; Dumping oat file with runtime; target dump rc0. The complete original and candidate logs remain retained.",
+      "inferred_extension": "boot-framework-adservices.oat",
+      "kind": "boot_image_checksum_mismatch",
+      "member": "framework-wifi.jar",
+      "observed_in": [
+        "original",
+        "candidate"
+      ],
+      "scope": "This does not qualify the entire inferred boot image. No boot/tool/flag change was used to suppress the warning.",
+      "stored_checksum": "0xd5474ab8"
+    },
+    {
+      "kind": "dex2oat_key_value_cmdline_truncation",
+      "scope": "The diagnostic concerns embedded key-value text; complete actual argv is retained separately."
+    },
+    {
+      "compiler_completed": true,
+      "kind": "worker_setpriority_permission_denied"
+    }
+  ],
+  "schema": "pocket4-storage-art-target-verification-v1",
+  "started_utc": "2026-11-05T10:48:11.554447+00:00",
+  "state": "CANDIDATE_TARGET_ART_VERIFIED_AGAINST_RETAINED_ORIGINAL",
+  "target": {
+    "class_header": "1962: Lcom/android/server/storage/StorageSessionController; (offset=0x000267f0) (type_idx=4527) (Verified) (NoneCompiled)",
+    "compilation_kind": "NoneCompiled",
+    "method_header": "20: void com.android.server.storage.StorageSessionController.onVolumeUnmount(com.android.server.storage.ImmutableVolumeInfo) (dex_method_idx=21963)",
+    "method_in_exact_class": true,
+    "scope": "Exact outer class containing the exact onVolumeUnmount(ImmutableVolumeInfo) method; no claim that every framework class or the whole boot image was verified.",
+    "status": "Verified",
+    "unique_exact_class": true
+  },
+  "verification_flags": {
+    "abort_on_hard_verifier_error": true,
+    "abort_on_soft_verifier_error": true,
+    "boot_image": "/system/framework/boot.art",
+    "class_loader_context": "PCL[/system/framework/com.android.location.provider.jar]",
+    "compile_threads": 2,
+    "compiler_filter": "verify",
+    "instruction_set": "x86_64",
+    "zip_location": "/system/framework/services.jar"
+  }
+}

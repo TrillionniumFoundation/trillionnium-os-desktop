@@ -1,0 +1,1016 @@
+{
+  "ART_verified": false,
+  "Android_commands": 0,
+  "Main_resource_writes": 0,
+  "UI_actions": 0,
+  "affinity_after": [
+    20
+  ],
+  "affinity_before": [
+    20
+  ],
+  "alignment_16k_verified": true,
+  "app_code_executed": false,
+  "certificate_sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+  "commands": [
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:-UsePerfData",
+        "-Djava.io.tmpdir=/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/tmp",
+        "-Duser.home=/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/tmp",
+        "-jar",
+        "/usr/share/java/apksigner-35.0.2.jar",
+        "verify",
+        "--verbose",
+        "--print-certs",
+        "/home/alex/work/pocket4-webview-source-audit-20261105-r12-01/Browser2-original.apk"
+      ],
+      "elapsed_seconds": 0.6458571879193187,
+      "joined": true,
+      "label": "original-signature",
+      "rc": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 1027,
+        "sha256": "f81156258ebd2a38fe5619d006c925d394ddfc5c37e9b44a99a8d23c4f6d455a"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:-UsePerfData",
+        "-Djava.io.tmpdir=/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/tmp",
+        "-Duser.home=/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/tmp",
+        "-cp",
+        "/usr/share/java/antlr3-runtime-3.5.3.jar:/usr/share/java/baksmali-2.5.2.git2771eae.jar:/usr/share/java/dexlib2-2.5.2.git2771eae.jar:/usr/share/java/guava-32.0.1-jre.jar:/usr/share/java/jcommander-1.71.jar:/usr/share/java/smali-2.5.2.git2771eae.jar:/usr/share/java/smali-util-2.5.2.git2771eae.jar",
+        "org.jf.baksmali.Main",
+        "disassemble",
+        "--jobs",
+        "1",
+        "--output",
+        "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/original-smali",
+        "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/original.dex"
+      ],
+      "elapsed_seconds": 1.1019909010501578,
+      "joined": true,
+      "label": "original-disassemble",
+      "rc": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:-UsePerfData",
+        "-Djava.io.tmpdir=/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/tmp",
+        "-Duser.home=/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/tmp",
+        "-cp",
+        "/usr/share/java/antlr3-runtime-3.5.3.jar:/usr/share/java/baksmali-2.5.2.git2771eae.jar:/usr/share/java/dexlib2-2.5.2.git2771eae.jar:/usr/share/java/guava-32.0.1-jre.jar:/usr/share/java/jcommander-1.71.jar:/usr/share/java/smali-2.5.2.git2771eae.jar:/usr/share/java/smali-util-2.5.2.git2771eae.jar",
+        "org.jf.smali.Main",
+        "assemble",
+        "--api",
+        "35",
+        "--jobs",
+        "1",
+        "--output",
+        "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/classes.dex",
+        "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/candidate-smali"
+      ],
+      "elapsed_seconds": 1.736346143996343,
+      "joined": true,
+      "label": "candidate-assemble",
+      "rc": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:-UsePerfData",
+        "-Djava.io.tmpdir=/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/tmp",
+        "-Duser.home=/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/tmp",
+        "-cp",
+        "/usr/share/java/antlr3-runtime-3.5.3.jar:/usr/share/java/baksmali-2.5.2.git2771eae.jar:/usr/share/java/dexlib2-2.5.2.git2771eae.jar:/usr/share/java/guava-32.0.1-jre.jar:/usr/share/java/jcommander-1.71.jar:/usr/share/java/smali-2.5.2.git2771eae.jar:/usr/share/java/smali-util-2.5.2.git2771eae.jar",
+        "org.jf.baksmali.Main",
+        "disassemble",
+        "--jobs",
+        "1",
+        "--output",
+        "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/roundtrip-smali",
+        "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/classes.dex"
+      ],
+      "elapsed_seconds": 1.2027261720504612,
+      "joined": true,
+      "label": "candidate-roundtrip",
+      "rc": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+        "-f",
+        "-P",
+        "16",
+        "4",
+        "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/Browser2-unsigned.apk",
+        "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/Browser2-aligned.apk"
+      ],
+      "elapsed_seconds": 0.008581903064623475,
+      "joined": true,
+      "label": "zipalign",
+      "rc": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:-UsePerfData",
+        "-Djava.io.tmpdir=/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/tmp",
+        "-Duser.home=/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/tmp",
+        "-jar",
+        "/usr/share/java/apksigner-35.0.2.jar",
+        "sign",
+        "--key",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/make/target/product/security/testkey.pk8",
+        "--cert",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/make/target/product/security/testkey.x509.pem",
+        "--min-sdk-version",
+        "37",
+        "--v1-signing-enabled",
+        "true",
+        "--v2-signing-enabled",
+        "true",
+        "--v3-signing-enabled",
+        "true",
+        "--out",
+        "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/Browser2-tracing-guard.apk",
+        "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/Browser2-aligned.apk"
+      ],
+      "elapsed_seconds": 1.1769868490519002,
+      "joined": true,
+      "label": "sign",
+      "rc": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:-UsePerfData",
+        "-Djava.io.tmpdir=/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/tmp",
+        "-Duser.home=/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/tmp",
+        "-jar",
+        "/usr/share/java/apksigner-35.0.2.jar",
+        "verify",
+        "--verbose",
+        "--print-certs",
+        "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/Browser2-tracing-guard.apk"
+      ],
+      "elapsed_seconds": 0.5987952810246497,
+      "joined": true,
+      "label": "candidate-signature",
+      "rc": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 1027,
+        "sha256": "f81156258ebd2a38fe5619d006c925d394ddfc5c37e9b44a99a8d23c4f6d455a"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+        "-c",
+        "-P",
+        "16",
+        "4",
+        "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/Browser2-tracing-guard.apk"
+      ],
+      "elapsed_seconds": 0.0035066279815509915,
+      "joined": true,
+      "label": "alignment-verify",
+      "rc": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    }
+  ],
+  "finished_utc": "2026-11-05T23:23:22.460150+00:00",
+  "input_postcheck_passed": true,
+  "inputs_after": {
+    "capture_receipt": {
+      "bytes": 15163,
+      "path": "/home/alex/work/pocket4-webview-source-audit-20261105-r12-01/result.json",
+      "sha256": "3f8782a97e3163ea090d3bbefab7264c74e795451a070d347dc5b0544238b6e8",
+      "stat": {
+        "st_ctime_ns": 1793894143217895896,
+        "st_dev": 66306,
+        "st_gid": 1000,
+        "st_ino": 44325486,
+        "st_mode": 33184,
+        "st_mtime_ns": 1793894143217895896,
+        "st_nlink": 1,
+        "st_size": 15163,
+        "st_uid": 0
+      }
+    },
+    "original_apk": {
+      "bytes": 70877,
+      "path": "/home/alex/work/pocket4-webview-source-audit-20261105-r12-01/Browser2-original.apk",
+      "sha256": "0f9dbb8ef3af284a08eb86f9558cd6c21a35dbeca2482b4b6e4b85ea49c183df",
+      "stat": {
+        "st_ctime_ns": 1793894142237859754,
+        "st_dev": 66306,
+        "st_gid": 1000,
+        "st_ino": 44325451,
+        "st_mode": 33184,
+        "st_mtime_ns": 1793894142237859754,
+        "st_nlink": 1,
+        "st_size": 70877,
+        "st_uid": 0
+      }
+    },
+    "public_certificate": {
+      "bytes": 1675,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/make/target/product/security/testkey.x509.pem",
+      "sha256": "a4384ba815b9499a5ce349b4e33c1755278873fe2eac150a068823f526e6dbde",
+      "stat": {
+        "st_ctime_ns": 1792770269780256497,
+        "st_dev": 66306,
+        "st_gid": 1000,
+        "st_ino": 40678517,
+        "st_mode": 33204,
+        "st_mtime_ns": 1792770269780256497,
+        "st_nlink": 1,
+        "st_size": 1675,
+        "st_uid": 1000
+      }
+    },
+    "sign_receipt": {
+      "bytes": 43703,
+      "path": "/home/alex/work/pocket4-calendar-repair-build-20261105-r12-11/result.json",
+      "sha256": "ec9ce6f9c8e31d021992d59d86ce4319743496debff50e24ef7da8be544c96e9",
+      "stat": {
+        "st_ctime_ns": 1793904906194329576,
+        "st_dev": 66306,
+        "st_gid": 1000,
+        "st_ino": 44347670,
+        "st_mode": 33184,
+        "st_mtime_ns": 1793904906193695297,
+        "st_nlink": 1,
+        "st_size": 43703,
+        "st_uid": 0
+      }
+    }
+  },
+  "inputs_before": {
+    "capture_receipt": {
+      "bytes": 15163,
+      "path": "/home/alex/work/pocket4-webview-source-audit-20261105-r12-01/result.json",
+      "sha256": "3f8782a97e3163ea090d3bbefab7264c74e795451a070d347dc5b0544238b6e8",
+      "stat": {
+        "st_ctime_ns": 1793894143217895896,
+        "st_dev": 66306,
+        "st_gid": 1000,
+        "st_ino": 44325486,
+        "st_mode": 33184,
+        "st_mtime_ns": 1793894143217895896,
+        "st_nlink": 1,
+        "st_size": 15163,
+        "st_uid": 0
+      }
+    },
+    "original_apk": {
+      "bytes": 70877,
+      "path": "/home/alex/work/pocket4-webview-source-audit-20261105-r12-01/Browser2-original.apk",
+      "sha256": "0f9dbb8ef3af284a08eb86f9558cd6c21a35dbeca2482b4b6e4b85ea49c183df",
+      "stat": {
+        "st_ctime_ns": 1793894142237859754,
+        "st_dev": 66306,
+        "st_gid": 1000,
+        "st_ino": 44325451,
+        "st_mode": 33184,
+        "st_mtime_ns": 1793894142237859754,
+        "st_nlink": 1,
+        "st_size": 70877,
+        "st_uid": 0
+      }
+    },
+    "public_certificate": {
+      "bytes": 1675,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/make/target/product/security/testkey.x509.pem",
+      "sha256": "a4384ba815b9499a5ce349b4e33c1755278873fe2eac150a068823f526e6dbde",
+      "stat": {
+        "st_ctime_ns": 1792770269780256497,
+        "st_dev": 66306,
+        "st_gid": 1000,
+        "st_ino": 40678517,
+        "st_mode": 33204,
+        "st_mtime_ns": 1792770269780256497,
+        "st_nlink": 1,
+        "st_size": 1675,
+        "st_uid": 1000
+      }
+    },
+    "sign_receipt": {
+      "bytes": 43703,
+      "path": "/home/alex/work/pocket4-calendar-repair-build-20261105-r12-11/result.json",
+      "sha256": "ec9ce6f9c8e31d021992d59d86ce4319743496debff50e24ef7da8be544c96e9",
+      "stat": {
+        "st_ctime_ns": 1793904906194329576,
+        "st_dev": 66306,
+        "st_gid": 1000,
+        "st_ino": 44347670,
+        "st_mode": 33184,
+        "st_mtime_ns": 1793904906193695297,
+        "st_nlink": 1,
+        "st_size": 43703,
+        "st_uid": 0
+      }
+    }
+  },
+  "installed": false,
+  "limits_after": {
+    "cpu.max": "50000 100000",
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "pids.max": "128"
+  },
+  "limits_before": {
+    "cpu.max": "50000 100000",
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "pids.max": "128"
+  },
+  "namespace_entries": 0,
+  "package_mutations": 0,
+  "payload_proof": {
+    "non_signature_entries": 15,
+    "only_changed_non_signature_payload": "classes.dex",
+    "original_manifest_resources_permissions_byte_equal": true,
+    "proof": {
+      "bytes": 5080,
+      "path": "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/payload-proof.json",
+      "sha256": "b6c5ec66ec4814e6d2ebfd5b5c477e599641e56806ef153b16827a2b526c8bdd"
+    }
+  },
+  "private_key_bytes_read_by_controller": false,
+  "provider_mutations": 0,
+  "resource_usage": {
+    "cpu.stat": "usage_usec 3627422\nuser_usec 3311693\nsystem_usec 315729\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 73\nnr_throttled 70\nthrottled_usec 3154305\nnr_bursts 0\nburst_usec 0",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.peak": "248360960"
+  },
+  "schema": "webview-one-method-host-build.v1",
+  "semantic_proof": {
+    "branches_and_exception_coverage_compared": true,
+    "changed_methods": [
+      [
+        "org/chromium/webview_shell/WebViewBrowserActivity$TracingLogger$1.smali",
+        "public run()V"
+      ]
+    ],
+    "classes": 19,
+    "fields_annotations_and_method_sets_equal": true,
+    "methods": 99,
+    "proof": {
+      "bytes": 11591,
+      "path": "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/class-ir-proof.json",
+      "sha256": "6bb573cecaa76029494549721e811b12e279397f2267d5895b8f6aeef6a7c815"
+    },
+    "roundtrip_all_classes_equal": true
+  },
+  "signature_v3_verified": true,
+  "signed_apk": {
+    "bytes": 75170,
+    "path": "/home/alex/work/pocket4-webview-tracing-guard-build-20261105-r12-01/Browser2-tracing-guard.apk",
+    "sha256": "45e7be6309d8675cce6e2281f00d887c2e297b770fa19378b34350971dc8a06b",
+    "stat": {
+      "st_ctime_ns": 1793921002188819421,
+      "st_dev": 66306,
+      "st_gid": 1000,
+      "st_ino": 50367521,
+      "st_mode": 33184,
+      "st_mtime_ns": 1793921001440440660,
+      "st_nlink": 1,
+      "st_size": 75170,
+      "st_uid": 0
+    }
+  },
+  "source_manifest_sha256": "746d9b20cf9a8dd9772e8aca26cdad7a659c92f75e3b2306baaab2a4eee9d8c1",
+  "started_utc": "2026-11-05T23:23:15.297672+00:00",
+  "state": "BUILT_SAME_CERTIFICATE_NOT_ART_VERIFIED_NOT_INSTALLED",
+  "tools_after": {
+    "apksig": {
+      "bytes": 489902,
+      "path": "/usr/share/java/apksig-0.9.jar",
+      "sha256": "61186f715a98cf2473544a4bbb1fae06ab84600cf2cd6adfa7ad50f4b0e2375e",
+      "stat": {
+        "st_ctime_ns": 1791415705113294282,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005156,
+        "st_mode": 33188,
+        "st_mtime_ns": 1741954421000000000,
+        "st_nlink": 1,
+        "st_size": 489902,
+        "st_uid": 0
+      }
+    },
+    "apksigner": {
+      "bytes": 521108,
+      "path": "/usr/share/java/apksigner-35.0.2.jar",
+      "sha256": "98346a3200d6030e247ccba0e47b354b6113ec2068dcea6c43558b01fe5885c2",
+      "stat": {
+        "st_ctime_ns": 1791415705147294650,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005159,
+        "st_mode": 33188,
+        "st_mtime_ns": 1741954421000000000,
+        "st_nlink": 1,
+        "st_size": 521108,
+        "st_uid": 0
+      }
+    },
+    "jar:antlr3-runtime": {
+      "bytes": 175393,
+      "path": "/usr/share/java/antlr3-runtime-3.5.3.jar",
+      "sha256": "5368fa9993cc10faef6e08a12766f83135bf892817cf2ac1864489da8b0a0770",
+      "stat": {
+        "st_ctime_ns": 1791415705275296033,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005172,
+        "st_mode": 33188,
+        "st_mtime_ns": 1768949101000000000,
+        "st_nlink": 1,
+        "st_size": 175393,
+        "st_uid": 0
+      }
+    },
+    "jar:baksmali": {
+      "bytes": 124714,
+      "path": "/usr/share/java/baksmali-2.5.2.git2771eae.jar",
+      "sha256": "44f430d8f3e05e6c9f044190c946e7873768f7d5981608c30d8e67564fbf4ff5",
+      "stat": {
+        "st_ctime_ns": 1791415706700311443,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005719,
+        "st_mode": 33188,
+        "st_mtime_ns": 1677703941000000000,
+        "st_nlink": 1,
+        "st_size": 124714,
+        "st_uid": 0
+      }
+    },
+    "jar:dexlib2": {
+      "bytes": 1116212,
+      "path": "/usr/share/java/dexlib2-2.5.2.git2771eae.jar",
+      "sha256": "0c09465b2264180f2d52d21c0b5aab6c407a4d8fa8fd8dbade68cf50c39b4bd5",
+      "stat": {
+        "st_ctime_ns": 1791415706700311443,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005720,
+        "st_mode": 33188,
+        "st_mtime_ns": 1677703941000000000,
+        "st_nlink": 1,
+        "st_size": 1116212,
+        "st_uid": 0
+      }
+    },
+    "jar:guava": {
+      "bytes": 3010670,
+      "path": "/usr/share/java/guava-32.0.1-jre.jar",
+      "sha256": "8dfa058dbce4082469e4147237cef974f3063db4aacbefe667be47770f5f6ddd",
+      "stat": {
+        "st_ctime_ns": 1791415706026304150,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005604,
+        "st_mode": 33188,
+        "st_mtime_ns": 1765231671000000000,
+        "st_nlink": 1,
+        "st_size": 3010670,
+        "st_uid": 0
+      }
+    },
+    "jar:jcommander": {
+      "bytes": 76198,
+      "path": "/usr/share/java/jcommander-1.71.jar",
+      "sha256": "9dbeb89912a5b000d2b8a5ec2263f49fcab7405faf29b2a56a2766b0b1659f9c",
+      "stat": {
+        "st_ctime_ns": 1791415706666311075,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005713,
+        "st_mode": 33188,
+        "st_mtime_ns": 1765831076000000000,
+        "st_nlink": 1,
+        "st_size": 76198,
+        "st_uid": 0
+      }
+    },
+    "jar:smali": {
+      "bytes": 303196,
+      "path": "/usr/share/java/smali-2.5.2.git2771eae.jar",
+      "sha256": "786c6dde8c1d0d20d25d3fefca564add4d9e88b5e5cfe73fad2ceeb53466dbe0",
+      "stat": {
+        "st_ctime_ns": 1791415706700311443,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005721,
+        "st_mode": 33188,
+        "st_mtime_ns": 1677703941000000000,
+        "st_nlink": 1,
+        "st_size": 303196,
+        "st_uid": 0
+      }
+    },
+    "jar:smali-util": {
+      "bytes": 27447,
+      "path": "/usr/share/java/smali-util-2.5.2.git2771eae.jar",
+      "sha256": "ee8017ae11b7174a5eab4e3d7a773dd2cb660d3bced7c78a51430cdd32822e0e",
+      "stat": {
+        "st_ctime_ns": 1791415706700311443,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005723,
+        "st_mode": 33188,
+        "st_mtime_ns": 1677703941000000000,
+        "st_nlink": 1,
+        "st_size": 27447,
+        "st_uid": 0
+      }
+    },
+    "jre:bin/java": {
+      "bytes": 14536,
+      "path": "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+      "sha256": "00261dabda30e0dbf1a799d052a615fe404afff7530e50444eb75a30c4f8d9d5",
+      "stat": {
+        "st_ctime_ns": 1791415704975292791,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108137067,
+        "st_mode": 33261,
+        "st_mtime_ns": 1788502766000000000,
+        "st_nlink": 1,
+        "st_size": 14536,
+        "st_uid": 0
+      }
+    },
+    "jre:lib/libjava.so": {
+      "bytes": 176296,
+      "path": "/usr/lib/jvm/java-25-openjdk-amd64/lib/libjava.so",
+      "sha256": "bde93c7550daa132b2e69da656d8912a96c24825037a9abac84008e3ff91032f",
+      "stat": {
+        "st_ctime_ns": 1791415704977292813,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108137580,
+        "st_mode": 33188,
+        "st_mtime_ns": 1788502766000000000,
+        "st_nlink": 1,
+        "st_size": 176296,
+        "st_uid": 0
+      }
+    },
+    "jre:lib/libjli.so": {
+      "bytes": 82592,
+      "path": "/usr/lib/jvm/java-25-openjdk-amd64/lib/libjli.so",
+      "sha256": "eeb1058598570f8dfacc474afba5f80ef2a5e12cbc42d6295dc2967eaa66ad17",
+      "stat": {
+        "st_ctime_ns": 1791415704977292813,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108137588,
+        "st_mode": 33188,
+        "st_mtime_ns": 1788502766000000000,
+        "st_nlink": 1,
+        "st_size": 82592,
+        "st_uid": 0
+      }
+    },
+    "jre:lib/libzip.so": {
+      "bytes": 45328,
+      "path": "/usr/lib/jvm/java-25-openjdk-amd64/lib/libzip.so",
+      "sha256": "177626416603a7139f36f93dd28bcd0d50c380f8fe77c11cfc9658b58934ac12",
+      "stat": {
+        "st_ctime_ns": 1791415704977292813,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108137798,
+        "st_mode": 33188,
+        "st_mtime_ns": 1788502766000000000,
+        "st_nlink": 1,
+        "st_size": 45328,
+        "st_uid": 0
+      }
+    },
+    "jre:lib/modules": {
+      "bytes": 144454121,
+      "path": "/usr/lib/jvm/java-25-openjdk-amd64/lib/modules",
+      "sha256": "d774e342cf437b015db1d777bfb84154b6ad6d361a0337edb42d54b792514f5e",
+      "stat": {
+        "st_ctime_ns": 1791415704978292824,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108137802,
+        "st_mode": 33188,
+        "st_mtime_ns": 1788502766000000000,
+        "st_nlink": 1,
+        "st_size": 144454121,
+        "st_uid": 0
+      }
+    },
+    "jre:lib/server/libjvm.so": {
+      "bytes": 29830072,
+      "path": "/usr/lib/jvm/java-25-openjdk-amd64/lib/server/libjvm.so",
+      "sha256": "9f7a6a0889058c297545666233b0d64e617b45b87a3289ab82d7751c9e951f34",
+      "stat": {
+        "st_ctime_ns": 1791415704979292835,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108137830,
+        "st_mode": 33188,
+        "st_mtime_ns": 1788502766000000000,
+        "st_nlink": 1,
+        "st_size": 29830072,
+        "st_uid": 0
+      }
+    },
+    "jre:release": {
+      "bytes": 1203,
+      "path": "/usr/lib/jvm/java-25-openjdk-amd64/release",
+      "sha256": "5e8f88ecaca92eeffcfb325b0123c3e46a004d3a3d9a15bcbc1c3df6248d7e5d",
+      "stat": {
+        "st_ctime_ns": 1791415704979292835,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108137838,
+        "st_mode": 33188,
+        "st_mtime_ns": 1788502766000000000,
+        "st_nlink": 1,
+        "st_size": 1203,
+        "st_uid": 0
+      }
+    },
+    "zipalign": {
+      "bytes": 227416,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "sha256": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758",
+      "stat": {
+        "st_ctime_ns": 1792770273118024093,
+        "st_dev": 66306,
+        "st_gid": 1000,
+        "st_ino": 40665197,
+        "st_mode": 33277,
+        "st_mtime_ns": 1792770273118024093,
+        "st_nlink": 1,
+        "st_size": 227416,
+        "st_uid": 1000
+      }
+    }
+  },
+  "tools_before": {
+    "apksig": {
+      "bytes": 489902,
+      "path": "/usr/share/java/apksig-0.9.jar",
+      "sha256": "61186f715a98cf2473544a4bbb1fae06ab84600cf2cd6adfa7ad50f4b0e2375e",
+      "stat": {
+        "st_ctime_ns": 1791415705113294282,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005156,
+        "st_mode": 33188,
+        "st_mtime_ns": 1741954421000000000,
+        "st_nlink": 1,
+        "st_size": 489902,
+        "st_uid": 0
+      }
+    },
+    "apksigner": {
+      "bytes": 521108,
+      "path": "/usr/share/java/apksigner-35.0.2.jar",
+      "sha256": "98346a3200d6030e247ccba0e47b354b6113ec2068dcea6c43558b01fe5885c2",
+      "stat": {
+        "st_ctime_ns": 1791415705147294650,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005159,
+        "st_mode": 33188,
+        "st_mtime_ns": 1741954421000000000,
+        "st_nlink": 1,
+        "st_size": 521108,
+        "st_uid": 0
+      }
+    },
+    "jar:antlr3-runtime": {
+      "bytes": 175393,
+      "path": "/usr/share/java/antlr3-runtime-3.5.3.jar",
+      "sha256": "5368fa9993cc10faef6e08a12766f83135bf892817cf2ac1864489da8b0a0770",
+      "stat": {
+        "st_ctime_ns": 1791415705275296033,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005172,
+        "st_mode": 33188,
+        "st_mtime_ns": 1768949101000000000,
+        "st_nlink": 1,
+        "st_size": 175393,
+        "st_uid": 0
+      }
+    },
+    "jar:baksmali": {
+      "bytes": 124714,
+      "path": "/usr/share/java/baksmali-2.5.2.git2771eae.jar",
+      "sha256": "44f430d8f3e05e6c9f044190c946e7873768f7d5981608c30d8e67564fbf4ff5",
+      "stat": {
+        "st_ctime_ns": 1791415706700311443,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005719,
+        "st_mode": 33188,
+        "st_mtime_ns": 1677703941000000000,
+        "st_nlink": 1,
+        "st_size": 124714,
+        "st_uid": 0
+      }
+    },
+    "jar:dexlib2": {
+      "bytes": 1116212,
+      "path": "/usr/share/java/dexlib2-2.5.2.git2771eae.jar",
+      "sha256": "0c09465b2264180f2d52d21c0b5aab6c407a4d8fa8fd8dbade68cf50c39b4bd5",
+      "stat": {
+        "st_ctime_ns": 1791415706700311443,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005720,
+        "st_mode": 33188,
+        "st_mtime_ns": 1677703941000000000,
+        "st_nlink": 1,
+        "st_size": 1116212,
+        "st_uid": 0
+      }
+    },
+    "jar:guava": {
+      "bytes": 3010670,
+      "path": "/usr/share/java/guava-32.0.1-jre.jar",
+      "sha256": "8dfa058dbce4082469e4147237cef974f3063db4aacbefe667be47770f5f6ddd",
+      "stat": {
+        "st_ctime_ns": 1791415706026304150,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005604,
+        "st_mode": 33188,
+        "st_mtime_ns": 1765231671000000000,
+        "st_nlink": 1,
+        "st_size": 3010670,
+        "st_uid": 0
+      }
+    },
+    "jar:jcommander": {
+      "bytes": 76198,
+      "path": "/usr/share/java/jcommander-1.71.jar",
+      "sha256": "9dbeb89912a5b000d2b8a5ec2263f49fcab7405faf29b2a56a2766b0b1659f9c",
+      "stat": {
+        "st_ctime_ns": 1791415706666311075,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005713,
+        "st_mode": 33188,
+        "st_mtime_ns": 1765831076000000000,
+        "st_nlink": 1,
+        "st_size": 76198,
+        "st_uid": 0
+      }
+    },
+    "jar:smali": {
+      "bytes": 303196,
+      "path": "/usr/share/java/smali-2.5.2.git2771eae.jar",
+      "sha256": "786c6dde8c1d0d20d25d3fefca564add4d9e88b5e5cfe73fad2ceeb53466dbe0",
+      "stat": {
+        "st_ctime_ns": 1791415706700311443,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005721,
+        "st_mode": 33188,
+        "st_mtime_ns": 1677703941000000000,
+        "st_nlink": 1,
+        "st_size": 303196,
+        "st_uid": 0
+      }
+    },
+    "jar:smali-util": {
+      "bytes": 27447,
+      "path": "/usr/share/java/smali-util-2.5.2.git2771eae.jar",
+      "sha256": "ee8017ae11b7174a5eab4e3d7a773dd2cb660d3bced7c78a51430cdd32822e0e",
+      "stat": {
+        "st_ctime_ns": 1791415706700311443,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108005723,
+        "st_mode": 33188,
+        "st_mtime_ns": 1677703941000000000,
+        "st_nlink": 1,
+        "st_size": 27447,
+        "st_uid": 0
+      }
+    },
+    "jre:bin/java": {
+      "bytes": 14536,
+      "path": "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+      "sha256": "00261dabda30e0dbf1a799d052a615fe404afff7530e50444eb75a30c4f8d9d5",
+      "stat": {
+        "st_ctime_ns": 1791415704975292791,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108137067,
+        "st_mode": 33261,
+        "st_mtime_ns": 1788502766000000000,
+        "st_nlink": 1,
+        "st_size": 14536,
+        "st_uid": 0
+      }
+    },
+    "jre:lib/libjava.so": {
+      "bytes": 176296,
+      "path": "/usr/lib/jvm/java-25-openjdk-amd64/lib/libjava.so",
+      "sha256": "bde93c7550daa132b2e69da656d8912a96c24825037a9abac84008e3ff91032f",
+      "stat": {
+        "st_ctime_ns": 1791415704977292813,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108137580,
+        "st_mode": 33188,
+        "st_mtime_ns": 1788502766000000000,
+        "st_nlink": 1,
+        "st_size": 176296,
+        "st_uid": 0
+      }
+    },
+    "jre:lib/libjli.so": {
+      "bytes": 82592,
+      "path": "/usr/lib/jvm/java-25-openjdk-amd64/lib/libjli.so",
+      "sha256": "eeb1058598570f8dfacc474afba5f80ef2a5e12cbc42d6295dc2967eaa66ad17",
+      "stat": {
+        "st_ctime_ns": 1791415704977292813,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108137588,
+        "st_mode": 33188,
+        "st_mtime_ns": 1788502766000000000,
+        "st_nlink": 1,
+        "st_size": 82592,
+        "st_uid": 0
+      }
+    },
+    "jre:lib/libzip.so": {
+      "bytes": 45328,
+      "path": "/usr/lib/jvm/java-25-openjdk-amd64/lib/libzip.so",
+      "sha256": "177626416603a7139f36f93dd28bcd0d50c380f8fe77c11cfc9658b58934ac12",
+      "stat": {
+        "st_ctime_ns": 1791415704977292813,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108137798,
+        "st_mode": 33188,
+        "st_mtime_ns": 1788502766000000000,
+        "st_nlink": 1,
+        "st_size": 45328,
+        "st_uid": 0
+      }
+    },
+    "jre:lib/modules": {
+      "bytes": 144454121,
+      "path": "/usr/lib/jvm/java-25-openjdk-amd64/lib/modules",
+      "sha256": "d774e342cf437b015db1d777bfb84154b6ad6d361a0337edb42d54b792514f5e",
+      "stat": {
+        "st_ctime_ns": 1791415704978292824,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108137802,
+        "st_mode": 33188,
+        "st_mtime_ns": 1788502766000000000,
+        "st_nlink": 1,
+        "st_size": 144454121,
+        "st_uid": 0
+      }
+    },
+    "jre:lib/server/libjvm.so": {
+      "bytes": 29830072,
+      "path": "/usr/lib/jvm/java-25-openjdk-amd64/lib/server/libjvm.so",
+      "sha256": "9f7a6a0889058c297545666233b0d64e617b45b87a3289ab82d7751c9e951f34",
+      "stat": {
+        "st_ctime_ns": 1791415704979292835,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108137830,
+        "st_mode": 33188,
+        "st_mtime_ns": 1788502766000000000,
+        "st_nlink": 1,
+        "st_size": 29830072,
+        "st_uid": 0
+      }
+    },
+    "jre:release": {
+      "bytes": 1203,
+      "path": "/usr/lib/jvm/java-25-openjdk-amd64/release",
+      "sha256": "5e8f88ecaca92eeffcfb325b0123c3e46a004d3a3d9a15bcbc1c3df6248d7e5d",
+      "stat": {
+        "st_ctime_ns": 1791415704979292835,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108137838,
+        "st_mode": 33188,
+        "st_mtime_ns": 1788502766000000000,
+        "st_nlink": 1,
+        "st_size": 1203,
+        "st_uid": 0
+      }
+    },
+    "zipalign": {
+      "bytes": 227416,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "sha256": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758",
+      "stat": {
+        "st_ctime_ns": 1792770273118024093,
+        "st_dev": 66306,
+        "st_gid": 1000,
+        "st_ino": 40665197,
+        "st_mode": 33277,
+        "st_mtime_ns": 1792770273118024093,
+        "st_nlink": 1,
+        "st_size": 227416,
+        "st_uid": 1000
+      }
+    }
+  },
+  "tracing_operations": 0,
+  "whole_app_production_ready": false
+}

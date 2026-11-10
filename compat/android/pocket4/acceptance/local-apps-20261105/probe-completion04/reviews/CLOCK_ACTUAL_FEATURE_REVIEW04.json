@@ -1,0 +1,460 @@
+{
+  "bounded_stability": {
+    "accepted_budget_source": {
+      "bytes": 2745,
+      "path": "qa-fixtures-common08/probe-completion04/SOURCE_REVIEW04.json",
+      "sha256": "62440caa3671e66df86125f0f888fa3d57448a641f1311a821e967ac1ed983e9"
+    },
+    "actual_diagnostic_intervals": 20,
+    "actual_diagnostic_snapshots": 21,
+    "actual_normal_close_exits": 3,
+    "contiguous_guest_time": [
+      1793922790,
+      1793922922
+    ],
+    "limitations": [
+      "Reviewed three >=30-second repeat budget for the five-class fixture only; no unmeasured long-duration/system-wide soak.",
+      "Historical/external log reset exclusion remains false; fresh covered retained intervals have zero unknown lines and no new exact-UID/package failure.",
+      "Root owns independent actual engine/file-map qualification."
+    ],
+    "live_seconds_total": 118.23846612707712,
+    "new_crash_ANR_or_unexplained_exits": 0,
+    "original_stable_complete_mapping_samples": 0,
+    "resource_review": {
+      "bounded_live_resource_budget_verified": true,
+      "engine_identity_automatically_passed": false,
+      "reviewed_budget": {
+        "maximum_adjacent_sample_gap_seconds": 12,
+        "maximum_fds": 512,
+        "maximum_late_fd_growth": 16,
+        "maximum_late_rss_growth_kib": 32768,
+        "maximum_late_thread_growth": 8,
+        "maximum_rss_kib": 524288,
+        "maximum_threads": 128,
+        "minimum_sample_span_seconds": 25,
+        "minimum_samples_each_round": 20
+      },
+      "rounds": [
+        {
+          "late_growth": {
+            "fds": 6,
+            "rss_kib": 4860,
+            "threads": 1
+          },
+          "maximum_fds": 137,
+          "maximum_rss_kib": 138120,
+          "maximum_sample_gap_seconds": 0.5443689823150635,
+          "maximum_threads": 32,
+          "process_generation_count": 1,
+          "round": 1,
+          "samples": 105,
+          "span_seconds": 53.843791007995605,
+          "stable_full_mapping_samples": 1
+        },
+        {
+          "late_growth": {
+            "fds": 0,
+            "rss_kib": 128,
+            "threads": 0
+          },
+          "maximum_fds": 132,
+          "maximum_rss_kib": 134716,
+          "maximum_sample_gap_seconds": 0.5917971134185791,
+          "maximum_threads": 32,
+          "process_generation_count": 1,
+          "round": 2,
+          "samples": 62,
+          "span_seconds": 31.619033098220825,
+          "stable_full_mapping_samples": 1
+        },
+        {
+          "late_growth": {
+            "fds": 0,
+            "rss_kib": 124,
+            "threads": 0
+          },
+          "maximum_fds": 132,
+          "maximum_rss_kib": 134704,
+          "maximum_sample_gap_seconds": 0.5642960071563721,
+          "maximum_threads": 31,
+          "process_generation_count": 1,
+          "round": 3,
+          "samples": 62,
+          "span_seconds": 31.5589120388031,
+          "stable_full_mapping_samples": 1
+        }
+      ],
+      "unmeasured_long_duration_claim": false
+    },
+    "rounds": [
+      {
+        "actual_empty_confirmation": true,
+        "both_fields_empty": true,
+        "live_seconds": 54.075609054998495,
+        "read_only_live_checks": 0,
+        "round": 1,
+        "task": 1008
+      },
+      {
+        "actual_empty_confirmation": true,
+        "both_fields_empty": true,
+        "live_seconds": 32.18477595807053,
+        "read_only_live_checks": 5,
+        "round": 2,
+        "task": 1009
+      },
+      {
+        "actual_empty_confirmation": true,
+        "both_fields_empty": true,
+        "live_seconds": 31.97808111400809,
+        "read_only_live_checks": 5,
+        "round": 3,
+        "task": 1010
+      }
+    ]
+  },
+  "complete_source_contract": {
+    "account_provider_network_file_operations_in_all_app_classes": [],
+    "all_five_Dex_classes_reviewed": [
+      {
+        "bytes": 2664,
+        "path": "qa-fixtures08/disassembled03/local.pocket4.fixture/smali/local/pocket4/fixture/ProbeActivity$1.smali",
+        "sha256": "6c549da7df489e196615c0e4d1e12b89b3092897eaa80d9b32b7c19174dd45ef"
+      },
+      {
+        "bytes": 3787,
+        "path": "qa-fixtures08/disassembled03/local.pocket4.fixture/smali/local/pocket4/fixture/ProbeActivity.smali",
+        "sha256": "54c76f76ec3f9f935d0bfc8a9d75ffbed433151d2040f61e9697aa55ce727070"
+      },
+      {
+        "bytes": 496,
+        "path": "qa-fixtures08/disassembled03/local.pocket4.fixture/smali/local/pocket4/fixture/R$attr.smali",
+        "sha256": "1f2eb28bddeac6f1902c5a99724524ef200e73961d265ea82430593c84f3c12b"
+      },
+      {
+        "bytes": 716,
+        "path": "qa-fixtures08/disassembled03/local.pocket4.fixture/smali/local/pocket4/fixture/R$id.smali",
+        "sha256": "833b1b63e95fc8178f31d3a62d3ed28342d20d67055d7cb1a61d04829290c833"
+      },
+      {
+        "bytes": 441,
+        "path": "qa-fixtures08/disassembled03/local.pocket4.fixture/smali/local/pocket4/fixture/R.smali",
+        "sha256": "21ba35bb0bee77a5e247e5bd46356cf74cd60675f1a8bf0d3214dcaba3e6a0e2"
+      }
+    ],
+    "behavior": "onCreate constructs view-only state. The actual sole OnClickListener concatenates a fixed prefix with first EditText.getText(); second EditText is deliberately independent. Empty text is valid. Three R classes contain only constants/constructors.",
+    "declared_business_controls": [
+      "first independent EditText",
+      "second independent EditText",
+      "Confirm Button",
+      "result TextView"
+    ],
+    "no_app_owned_persistent_model": true,
+    "purpose": "Tracked local QA action fixture, not an end-user messaging/editor/account App. No unimplemented error-validation branch or additional component found in this exact APK."
+  },
+  "conclusion": "ALL_DECLARED_QA_FEATURES_DATA_ISOLATION_AND_THREE_OWNED_LIFECYCLES_SUPPORTED_FOR_CURRENT_APK",
+  "control_coverage": [
+    {
+      "control": "local.pocket4.fixture:id/confirm",
+      "expected_readback_verified": true,
+      "id": "p02-confirm-empty-initial",
+      "operation": "click",
+      "source_bytes": 848,
+      "source_name": "084-effect-p02-confirm-empty-initial.json",
+      "source_sha256": "64c87f6a9c02a06829d852ae94ed33fc31613300416a771e82d1beaaf8b63a8d",
+      "task": 1008
+    },
+    {
+      "control": "local.pocket4.fixture:id/editor",
+      "expected_readback_verified": true,
+      "id": "p03-unicode",
+      "operation": "set-text",
+      "source_bytes": 1048,
+      "source_name": "114-effect-p03-unicode.json",
+      "source_sha256": "de5475085b1266c415c63517e60813b8baaaea8338bfc11e778ba36a1046491a",
+      "task": 1008
+    },
+    {
+      "control": "local.pocket4.fixture:id/other_editor",
+      "expected_readback_verified": true,
+      "id": "p04-second-field",
+      "operation": "set-text",
+      "source_bytes": 1218,
+      "source_name": "146-effect-p04-second-field.json",
+      "source_sha256": "b26e49a34752e69671d9d6c9b9ec5fd46251a9f641ddf24035f3ea82be739123",
+      "task": 1008
+    },
+    {
+      "control": "local.pocket4.fixture:id/confirm",
+      "expected_readback_verified": true,
+      "id": "p05-confirm-unicode",
+      "operation": "click",
+      "source_bytes": 1257,
+      "source_name": "176-effect-p05-confirm-unicode.json",
+      "source_sha256": "8e01037a73a0fa9c195c6207cd032687918f6f5d04c5d644268e56ec1af88f8f",
+      "task": 1008
+    },
+    {
+      "control": "local.pocket4.fixture:id/editor",
+      "expected_readback_verified": true,
+      "id": "p06-clear-first",
+      "operation": "set-text",
+      "source_bytes": 1251,
+      "source_name": "208-effect-p06-clear-first.json",
+      "source_sha256": "4cb55e29234f17e08dee23a22cac507edf0c48718f0ad3b6ee93c8ca077388b2",
+      "task": 1008
+    },
+    {
+      "control": "local.pocket4.fixture:id/confirm",
+      "expected_readback_verified": true,
+      "id": "p07-confirm-cleared",
+      "operation": "click",
+      "source_bytes": 1021,
+      "source_name": "238-effect-p07-confirm-cleared.json",
+      "source_sha256": "249d19d1cea6f51c36ebb0ceeb8f4ee79646ea721f3e0cbfa95c4bf9bf531379",
+      "task": 1008
+    },
+    {
+      "control": "local.pocket4.fixture:id/other_editor",
+      "expected_readback_verified": true,
+      "id": "p08-clear-second",
+      "operation": "set-text",
+      "source_bytes": 923,
+      "source_name": "270-effect-p08-clear-second.json",
+      "source_sha256": "b3707f7c76d4d1b3c42a0621fbb639f33fe8060d5cc6031e0c0e55b0fba66db0",
+      "task": 1008
+    },
+    {
+      "control": "local.pocket4.fixture:id/confirm",
+      "expected_readback_verified": true,
+      "id": "p09-reopen-empty-2",
+      "operation": "click",
+      "source_bytes": 841,
+      "source_name": "334-effect-p09-reopen-empty-2.json",
+      "source_sha256": "8267a1343f93323488d3e76374caa2eb4379696c79916f21c19ddd4f86b79b55",
+      "task": 1009
+    },
+    {
+      "control": "local.pocket4.fixture:id/confirm",
+      "expected_readback_verified": true,
+      "id": "p10-reopen-empty-3",
+      "operation": "click",
+      "source_bytes": 841,
+      "source_name": "459-effect-p10-reopen-empty-3.json",
+      "source_sha256": "8a51c9fc13972b52c29d8a5f526765e6a20e2d1bd5d982b222935ae156829a90",
+      "task": 1010
+    }
+  ],
+  "explicit_exclusions": [
+    "Does not claim completeness for other QA Apps, IME composition/EditorContract, Android framework, native action helper or all45apps.",
+    "Does not change fixed gate definitions, old receipts, release registry or CP11/CP12 publication."
+  ],
+  "gate_recommendations": {
+    "data_permissions": "SUPPORTED_FOR_REVIEWED_VIEW_ONLY_FIXTURE",
+    "fixture.contract": "SUPPORTED",
+    "fixture.controls": "SUPPORTED",
+    "fixture.isolation": "SUPPORTED",
+    "identity": "CURRENT_APK_CERT_UID_USER_VERSION_EPOCH_BOUND; add Root actual engine review before full gate",
+    "lifecycle": "SUPPORTED",
+    "release_scope": "DECLARED_QA_CONTRACT_COMPLETE; final whole-App acceptance belongs to Root and requires its engine review",
+    "stability": "SUPPORTED_WITHIN_PREAPPROVED_THREE_ROUND_REPEAT_AND_RESOURCE_BUDGET",
+    "ui_observation": "SUPPORTED"
+  },
+  "identity": {
+    "active_apk_path": "/data/app/~~7AyAiJrTjYxPxlzdUP7O9g==/local.pocket4.fixture-Rn2WJdjmmGRSmI5foe64RA==/base.apk",
+    "actual_engine_mapping_review": "SEPARATE_ROOT_REVIEW_REQUIRED; no stable_complete counter rewrite",
+    "android_user": 0,
+    "apk_bytes": 12713,
+    "apk_sha256": "91e352c25e7c6ef54aa53ce652931e40ad1437dfcd0ebad2529bc662558a3dd6",
+    "certificate_sha256": [
+      "df1baddab9b5bf8ec8581a35c5294519511e3bbeb709ce14dfee5e873afa3e1b"
+    ],
+    "data_dir": "/data/user/0/local.pocket4.fixture",
+    "declared_shared_libraries": [],
+    "dex_bytes": 3588,
+    "dex_sha256": "d478d42ec1aad8d05734e3ea8b817d89f20979b369656cda421b7080967ca559",
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "first_install_time": "2026-10-07 03:42:47",
+    "manifest_activity_count": 1,
+    "manifest_sha256": "0e88a89c95f2ea9ed512c82de398bf3ff3dc92ab58b3c22220920ad466395969",
+    "original_identity_audit_error_retained": "AAPT_PACKAGE_FIELDS/missing version attribute; supplemental identity was separately reconciled, original false fields remain unchanged.",
+    "package": "local.pocket4.fixture",
+    "permission_lines": [],
+    "signature_basis": "Original45 actual verifier rc0/v2+v3 qualified certificate, bound by identical wholeAPK hash to both current Probe04 held reads; no verifier rerun or ABI-only engine inference.",
+    "uid": 10115,
+    "version": 0
+  },
+  "inputs": [
+    {
+      "bytes": 41618,
+      "path": "qa-fixtures-common08/probe-completion04/result04-original.json",
+      "sha256": "3e94b99a354719380674a7115d8b202c613beee4e2d90fccc6d443c3d7664327"
+    },
+    {
+      "bytes": 2664820,
+      "path": "qa-fixtures-common08/probe-completion04/saved-runtime-export04.json",
+      "sha256": "c061b63f1fe43d115dfc3ab5ef7c085c1a7f5d54dee9460caf2e24c2f0420e0d"
+    },
+    {
+      "bytes": 25469,
+      "path": "qa-fixtures-common08/probe-completion04/probe_completion04.py",
+      "sha256": "cfe718cd1440c91a9fd4c3e963412d4f6444120edc7ae72153e4290fbd4b734a"
+    },
+    {
+      "bytes": 16279,
+      "path": "qa-fixtures-common08/probe-completion04/probe_evidence04.py",
+      "sha256": "6b8c461b2cb4b15b758ca991bdb5086741a89869148ee7eae4607772ed4f7a25"
+    },
+    {
+      "bytes": 2745,
+      "path": "qa-fixtures-common08/probe-completion04/SOURCE_REVIEW04.json",
+      "sha256": "62440caa3671e66df86125f0f888fa3d57448a641f1311a821e967ac1ed983e9"
+    },
+    {
+      "bytes": 24135,
+      "path": "all-app-readiness08/app-gates.json",
+      "sha256": "441289f9c04b46f38e1dd6e19f23ec6e4c6729b6a6f814cab81c0ae6fbbb1e78"
+    },
+    {
+      "bytes": 183597,
+      "path": "publication/compat/android/pocket4/identity-audit-20261105/public-metadata/installed-app-identities.json",
+      "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+    },
+    {
+      "bytes": 740124,
+      "path": "system-component-audit08/result01.json",
+      "sha256": "430e57ab0e72ab9a6162f9ff27f190caa5ece958a10621976a35b3d0cc61ff78"
+    },
+    {
+      "bytes": 3425,
+      "path": "qa-fixtures08/disassembly03-result.json",
+      "sha256": "6df51c5d608a8732706843021ba6132f79b75bd3ed02add7974cffbc1b4b9a79"
+    }
+  ],
+  "lifecycle": {
+    "actual_normal_closes": [
+      1008,
+      1009,
+      1010
+    ],
+    "actual_tasks": [
+      1008,
+      1009,
+      1010
+    ],
+    "close_pending": null,
+    "default_fresh_state": "Both fields empty, result initially \u5c1a\u672a\u70b9\u51fb; actual Confirm produces \u5df2\u70b9\u51fb\uff1a after each reopen. No persistent user model exists to carry across normal task removal.",
+    "final_task_ids": [
+      851
+    ],
+    "launch_pending": null,
+    "normal_exit_records": [
+      {
+        "description": "remove task",
+        "pid": 1014917,
+        "reason": 10,
+        "status": 0,
+        "subreason": 22,
+        "timestamp": "2026-11-05 23:54:08.949"
+      },
+      {
+        "description": "remove task",
+        "pid": 1018638,
+        "reason": 10,
+        "status": 0,
+        "subreason": 22,
+        "timestamp": "2026-11-05 23:54:45.850"
+      },
+      {
+        "description": "remove task",
+        "pid": 1020369,
+        "reason": 10,
+        "status": 0,
+        "subreason": 22,
+        "timestamp": "2026-11-05 23:55:22.433"
+      }
+    ],
+    "owned_task_remaining": null,
+    "pending_effect": null,
+    "separate_default_state_reopens": 2,
+    "task_set_restored": true
+  },
+  "negative_result": {
+    "error": "AMBIGUOUS_MATCH",
+    "no_successful_input_credit": true,
+    "same_full_semantic_tree_and_owned_window_after": true,
+    "scope": "The duplicate-selector rejection exercises the intended QA/native action interface; it is not an application-internal text validator. Empty/nonempty values and first/second independence cover all actual App controls.",
+    "source_name": "040-reply-p01-ambiguity.json",
+    "source_sha256": "4abc53ba3471f8663498b613b95d7c70f5ae67c888b46413c1fa343feb0de291",
+    "two_actual_editable_nodes": true
+  },
+  "new_Android_commands": 0,
+  "new_RPC_calls": 0,
+  "new_UI_inputs": 0,
+  "new_tests_executed": 0,
+  "original_or_publication_files_modified": false,
+  "positive_receipt_boundary": "The 9 exported effects are unchanged original controller records after source-enforced native ACK, complete fresh observation and exact state comparison. This export contains the raw negative native reply; it does not contain each separate raw positive native reply, so no independent reconstruction of unexported ACK fields is claimed.",
+  "protected_state": {
+    "CE_DE_before_after_equal": true,
+    "CE_DE_inodes": {
+      "ce": 132226,
+      "de": 132633
+    },
+    "exclusive_UID_package_census": {
+      "local.pocket4.fixture": [
+        "local.pocket4.fixture"
+      ]
+    },
+    "identity_before_after_equal": true,
+    "model_directories": [
+      "files",
+      "shared_prefs",
+      "databases",
+      "no_backup"
+    ],
+    "model_entries_before_after": [
+      0,
+      0
+    ],
+    "mutations": {
+      "account_actions": 0,
+      "package_changes": 0,
+      "permission_changes": 0,
+      "provider_writes": 0
+    },
+    "native_APK_before_after_equal": true,
+    "permissions_before_after": [],
+    "scope": "No app account/network/provider/file APIs in complete code and no such test mutations; no global account-content census is claimed. Framework cache/code_cache contents were deliberately excluded, not asserted byte-identical.",
+    "strict_Main_before_after_equal": true
+  },
+  "retained_attempt_reconciliation": [
+    {
+      "bytes": 801,
+      "path": "qa-fixtures08/probe-ui01-output.json",
+      "reconciliation": "Retained FAILED: active package-field parser rejected before launch; zero UI inputs/owned tasks. Current exact appId/version and byte identity independently observed.",
+      "sha256": "1833221c68c7f69f08b7485095bd87f8f60031c34d5b2176aafafa8d81efee8c"
+    },
+    {
+      "bytes": 612,
+      "path": "qa-fixtures08/probe-ui02-output.json",
+      "reconciliation": "Retained FAILED: empty EditText hint display was treated as text; zero UI inputs, task914 normally closed. Current native empty readback plus actual empty Confirm output resolves that observation assumption.",
+      "sha256": "4a3f0b6e9374bbd131eab31b2d60da9d5dbd7d41702fe062e4dd962768c5c7c1"
+    },
+    {
+      "bytes": 2779,
+      "path": "qa-fixtures08/probe-ui03-result.json",
+      "reconciliation": "Retained prior two-round scoped PASS on identical APK; does not replace current repeat/resource/ambiguity evidence.",
+      "sha256": "9c2526a4e717c1de0f2c52ef649dfe2de02be7a19442e33f68cfcd0e6cf2754f"
+    }
+  ],
+  "retained_original_fields": {
+    "release_scope_requires_independent_review": true,
+    "stable_complete_mapping_samples": 0,
+    "whole_app_production_ready": false
+  },
+  "reviewed_utc": "2026-11-06T00:14:04.991127+00:00",
+  "reviewer": "camera_runtime_review",
+  "schema": "pocket4-probe04-independent-actual-feature-review/v1",
+  "whole_app_decision": "Recommend whole declared QA fixture release after Root separately qualifies actual per-App engine mapping and binds its immutable runtime review; this file neither promotes registry gates nor changes any original result.",
+  "whole_app_promoted_by_this_review": false
+}

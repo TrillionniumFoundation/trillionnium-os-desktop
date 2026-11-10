@@ -1,0 +1,451 @@
+--- installed-smali/EditorContractActivity.smali
++++ candidate-smali/EditorContractActivity.smali
+@@ -30,7 +30,7 @@
+ 
+ .field private editorActions:I
+ 
+-.field private final events:Lorg/json/JSONArray;
++.field private events:Lorg/json/JSONArray;
+ 
+ .field private evidence:Landroid/util/AtomicFile;
+ 
+@@ -38,6 +38,10 @@
+ 
+ .field private runId:Ljava/lang/String;
+ 
++
++.field private sessionOwner:Lorg/droidloom/qa/editorcontract/SessionOwner;
++
++.field private restoreState:Lorg/droidloom/qa/editorcontract/RetainedEditorState;
+ 
+ # direct methods
+ .method public constructor <init>()V
+@@ -255,7 +259,7 @@
+     return-object p0
+ .end method
+ 
+-.method private declared-synchronized record(Ljava/lang/String;Landroid/view/KeyEvent;ILorg/json/JSONObject;)V
++.method private declared-synchronized recordOwned(Ljava/lang/String;Landroid/view/KeyEvent;ILorg/json/JSONObject;)V
+     .registers 11
+ 
+     monitor-enter p0
+@@ -760,9 +764,37 @@
+     goto :goto_1a1
+ .end method
+ 
++.method private record(Ljava/lang/String;Landroid/view/KeyEvent;ILorg/json/JSONObject;)V
++    .locals 3
++
++    move-object v0, p0
++
++    invoke-static {v0}, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->access$recoveryOwner(Lorg/droidloom/qa/editorcontract/EditorContractActivity;)Lorg/droidloom/qa/editorcontract/SessionOwner;
++    move-result-object v1
++    if-eqz v1, :recovery_inactive
++    monitor-enter v1
++    :recovery_try_start
++    invoke-virtual {v1, v0}, Lorg/droidloom/qa/editorcontract/SessionOwner;->owns(Ljava/lang/Object;)Z
++    move-result v2
++    if-eqz v2, :recovery_inactive_locked
++    invoke-direct/range {p0 .. p4}, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->recordOwned(Ljava/lang/String;Landroid/view/KeyEvent;ILorg/json/JSONObject;)V
++    monitor-exit v1
++    return-void
++    :recovery_inactive_locked
++    monitor-exit v1
++    :recovery_try_end
++    .catchall {:recovery_try_start .. :recovery_try_end} :recovery_catch
++    :recovery_inactive
++    return-void
++    :recovery_catch
++    move-exception v2
++    monitor-exit v1
++    throw v2
++.end method
++
+ 
+ # virtual methods
+-.method synthetic lambda$onCreate$0$org-droidloom-qa-editorcontract-EditorContractActivity(Landroid/widget/TextView;ILandroid/view/KeyEvent;)Z
++.method private editorActionOwned(Landroid/widget/TextView;ILandroid/view/KeyEvent;)Z
+     .registers 6
+ 
+     .line 128
+@@ -784,6 +816,36 @@
+     return v0
+ .end method
+ 
++.method synthetic lambda$onCreate$0$org-droidloom-qa-editorcontract-EditorContractActivity(Landroid/widget/TextView;ILandroid/view/KeyEvent;)Z
++    .locals 3
++
++    move-object v0, p0
++
++    invoke-static {v0}, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->access$recoveryOwner(Lorg/droidloom/qa/editorcontract/EditorContractActivity;)Lorg/droidloom/qa/editorcontract/SessionOwner;
++    move-result-object v1
++    if-eqz v1, :recovery_inactive
++    monitor-enter v1
++    :recovery_try_start
++    invoke-virtual {v1, v0}, Lorg/droidloom/qa/editorcontract/SessionOwner;->owns(Ljava/lang/Object;)Z
++    move-result v2
++    if-eqz v2, :recovery_inactive_locked
++    invoke-direct/range {p0 .. p3}, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->editorActionOwned(Landroid/widget/TextView;ILandroid/view/KeyEvent;)Z
++    move-result v2
++    monitor-exit v1
++    return v2
++    :recovery_inactive_locked
++    monitor-exit v1
++    :recovery_try_end
++    .catchall {:recovery_try_start .. :recovery_try_end} :recovery_catch
++    :recovery_inactive
++    const/4 v2, 0x0
++    return v2
++    :recovery_catch
++    move-exception v2
++    monitor-exit v1
++    throw v2
++.end method
++
+ .method synthetic lambda$onCreate$1$org-droidloom-qa-editorcontract-EditorContractActivity(Landroid/view/View;Z)V
+     .registers 5
+ 
+@@ -863,6 +925,10 @@
+ 
+     .line 101
+     :try_start_23
++    invoke-direct {p0}, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->restoreRetainedSession()Z
++    move-result v0
++    if-nez v0, :recovery_initialize_editor
++
+     new-instance v0, Ljava/io/File;
+ 
+     invoke-virtual {p0}, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->getFilesDir()Ljava/io/File;
+@@ -1012,6 +1078,11 @@
+ 
+     iput-object v0, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->evidence:Landroid/util/AtomicFile;
+ 
++    new-instance v0, Lorg/droidloom/qa/editorcontract/SessionOwner;
++    iget-object v2, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->runId:Ljava/lang/String;
++    invoke-direct {v0, v2, p0}, Lorg/droidloom/qa/editorcontract/SessionOwner;-><init>(Ljava/lang/String;Ljava/lang/Object;)V
++    iput-object v0, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->sessionOwner:Lorg/droidloom/qa/editorcontract/SessionOwner;
++
+     .line 110
+     const-string v0, "created"
+ 
+@@ -1023,6 +1094,9 @@
+     :try_end_ca
+     .catch Ljava/lang/Exception; {:try_start_23 .. :try_end_ca} :catch_13f
+ 
++    :recovery_initialize_editor
++    const/4 v1, -0x1
++
+     .line 116
+     new-instance v0, Landroid/widget/LinearLayout;
+ 
+@@ -1083,6 +1157,8 @@
+     const/4 v2, 0x0
+ 
+     invoke-virtual {p1, v2}, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;->setSaveEnabled(Z)V
++
++    invoke-direct {p0}, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->restoreEditorText()V
+ 
+     .line 127
+     iget-object p1, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->editor:Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;
+@@ -1191,3 +1267,132 @@
+ 
+     return-void
+ .end method
++
++# Recovery helpers: no durable claim/journal deletion or nonce substitution.
++.method static access$recoveryOwner(Lorg/droidloom/qa/editorcontract/EditorContractActivity;)Lorg/droidloom/qa/editorcontract/SessionOwner;
++    .locals 1
++    iget-object v0, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->sessionOwner:Lorg/droidloom/qa/editorcontract/SessionOwner;
++    return-object v0
++.end method
++
++.method private restoreRetainedSession()Z
++    .locals 3
++    invoke-virtual {p0}, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->getLastNonConfigurationInstance()Ljava/lang/Object;
++    move-result-object v0
++    instance-of v1, v0, Lorg/droidloom/qa/editorcontract/RetainedEditorState;
++    if-nez v1, :recovery_has_state
++    const/4 v0, 0x0
++    return v0
++    :recovery_has_state
++    check-cast v0, Lorg/droidloom/qa/editorcontract/RetainedEditorState;
++    iget-object v1, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->runId:Ljava/lang/String;
++    invoke-virtual {v0, v1, p0}, Lorg/droidloom/qa/editorcontract/RetainedEditorState;->take(Ljava/lang/String;Ljava/lang/Object;)Lorg/droidloom/qa/editorcontract/RetainedEditorState;
++    move-result-object v0
++    iget-object v1, v0, Lorg/droidloom/qa/editorcontract/RetainedEditorState;->lease:Lorg/droidloom/qa/editorcontract/SessionOwner;
++    iput-object v1, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->sessionOwner:Lorg/droidloom/qa/editorcontract/SessionOwner;
++    iget-object v1, v0, Lorg/droidloom/qa/editorcontract/RetainedEditorState;->evidence:Landroid/util/AtomicFile;
++    iput-object v1, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->evidence:Landroid/util/AtomicFile;
++    iget-object v1, v0, Lorg/droidloom/qa/editorcontract/RetainedEditorState;->events:Lorg/json/JSONArray;
++    iput-object v1, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->events:Lorg/json/JSONArray;
++    iget-wide v1, v0, Lorg/droidloom/qa/editorcontract/RetainedEditorState;->createdElapsed:J
++    iput-wide v1, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->createdElapsed:J
++    iget v1, v0, Lorg/droidloom/qa/editorcontract/RetainedEditorState;->editorActions:I
++    iput v1, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->editorActions:I
++    iget v1, v0, Lorg/droidloom/qa/editorcontract/RetainedEditorState;->connections:I
++    iput v1, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->connections:I
++    iget v1, v0, Lorg/droidloom/qa/editorcontract/RetainedEditorState;->droppedEvents:I
++    iput v1, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->droppedEvents:I
++    iput-object v0, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->restoreState:Lorg/droidloom/qa/editorcontract/RetainedEditorState;
++    const/4 v0, 0x1
++    return v0
++.end method
++
++.method private restoreEditorText()V
++    .locals 4
++    iget-object v0, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->restoreState:Lorg/droidloom/qa/editorcontract/RetainedEditorState;
++    if-eqz v0, :recovery_text_done
++    iget-object v1, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->editor:Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;
++    iget-object v2, v0, Lorg/droidloom/qa/editorcontract/RetainedEditorState;->text:Ljava/lang/String;
++    invoke-virtual {v1, v2}, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;->setText(Ljava/lang/CharSequence;)V
++    iget v2, v0, Lorg/droidloom/qa/editorcontract/RetainedEditorState;->selectionStart:I
++    iget v3, v0, Lorg/droidloom/qa/editorcontract/RetainedEditorState;->selectionEnd:I
++    if-ltz v2, :recovery_no_selection
++    invoke-virtual {v1, v2, v3}, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;->setSelection(II)V
++    goto :recovery_clear_restore_reference
++    :recovery_no_selection
++    invoke-virtual {v1}, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;->getText()Landroid/text/Editable;
++    move-result-object v2
++    invoke-static {v2}, Landroid/text/Selection;->removeSelection(Landroid/text/Spannable;)V
++    :recovery_clear_restore_reference
++    const/4 v0, 0x0
++    iput-object v0, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->restoreState:Lorg/droidloom/qa/editorcontract/RetainedEditorState;
++    :recovery_text_done
++    return-void
++.end method
++
++.method public onRetainNonConfigurationInstance()Ljava/lang/Object;
++    .registers 16
++    iget-object v1, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->sessionOwner:Lorg/droidloom/qa/editorcontract/SessionOwner;
++    if-eqz v1, :recovery_retain_none_unlocked
++    monitor-enter v1
++    :recovery_retain_try_start
++    invoke-virtual {v1, p0}, Lorg/droidloom/qa/editorcontract/SessionOwner;->owns(Ljava/lang/Object;)Z
++    move-result v0
++    if-eqz v0, :recovery_retain_none
++    iget-boolean v0, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->failed:Z
++    if-nez v0, :recovery_retain_none
++    iget-object v14, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->editor:Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;
++    if-eqz v14, :recovery_retain_none
++    new-instance v0, Lorg/droidloom/qa/editorcontract/RetainedEditorState;
++    move-object v2, p0
++    iget-object v3, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->runId:Ljava/lang/String;
++    iget-object v4, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->evidence:Landroid/util/AtomicFile;
++    iget-object v5, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->events:Lorg/json/JSONArray;
++    iget-wide v6, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->createdElapsed:J
++    iget v8, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->editorActions:I
++    iget v9, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->connections:I
++    iget v10, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->droppedEvents:I
++    invoke-virtual {v14}, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;->getText()Landroid/text/Editable;
++    move-result-object v11
++    invoke-virtual {v11}, Ljava/lang/Object;->toString()Ljava/lang/String;
++    move-result-object v11
++    invoke-virtual {v14}, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;->getSelectionStart()I
++    move-result v12
++    invoke-virtual {v14}, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;->getSelectionEnd()I
++    move-result v13
++    invoke-direct/range {v0 .. v13}, Lorg/droidloom/qa/editorcontract/RetainedEditorState;-><init>(Lorg/droidloom/qa/editorcontract/SessionOwner;Ljava/lang/Object;Ljava/lang/String;Landroid/util/AtomicFile;Lorg/json/JSONArray;JIIILjava/lang/String;II)V
++    monitor-exit v1
++    return-object v0
++    :recovery_retain_none
++    const/4 v0, 0x0
++    monitor-exit v1
++    return-object v0
++    :recovery_retain_try_end
++    .catchall {:recovery_retain_try_start .. :recovery_retain_try_end} :recovery_retain_catch
++    :recovery_retain_catch
++    move-exception v0
++    monitor-exit v1
++    throw v0
++    :recovery_retain_none_unlocked
++    const/4 v0, 0x0
++    return-object v0
++.end method
++
++.method protected onDestroy()V
++    .locals 1
++    iget-object v0, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->sessionOwner:Lorg/droidloom/qa/editorcontract/SessionOwner;
++    if-eqz v0, :recovery_destroy_super
++    invoke-virtual {v0, p0}, Lorg/droidloom/qa/editorcontract/SessionOwner;->closeIfOwner(Ljava/lang/Object;)V
++    const/4 v0, 0x0
++    iput-object v0, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->sessionOwner:Lorg/droidloom/qa/editorcontract/SessionOwner;
++    :recovery_destroy_super
++    invoke-super {p0}, Landroid/app/Activity;->onDestroy()V
++    return-void
++.end method
++
++.method protected onNewIntent(Landroid/content/Intent;)V
++    .locals 0
++    # Preserve the initial intent/session. A new Intent never takes writer ownership.
++    invoke-super {p0, p1}, Landroid/app/Activity;->onNewIntent(Landroid/content/Intent;)V
++    return-void
++.end method
+--- installed-smali/EditorContractActivity$ContractEditText.smali
++++ candidate-smali/EditorContractActivity$ContractEditText.smali
+@@ -40,7 +40,7 @@
+ 
+ 
+ # virtual methods
+-.method public dispatchKeyEvent(Landroid/view/KeyEvent;)Z
++.method private dispatchKeyEventOwned(Landroid/view/KeyEvent;)Z
+     .registers 6
+ 
+     .line 160
+@@ -63,7 +63,37 @@
+     return p0
+ .end method
+ 
+-.method public onCreateInputConnection(Landroid/view/inputmethod/EditorInfo;)Landroid/view/inputmethod/InputConnection;
++.method public dispatchKeyEvent(Landroid/view/KeyEvent;)Z
++    .locals 3
++
++    iget-object v0, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;->this$0:Lorg/droidloom/qa/editorcontract/EditorContractActivity;
++
++    invoke-static {v0}, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->access$recoveryOwner(Lorg/droidloom/qa/editorcontract/EditorContractActivity;)Lorg/droidloom/qa/editorcontract/SessionOwner;
++    move-result-object v1
++    if-eqz v1, :recovery_inactive
++    monitor-enter v1
++    :recovery_try_start
++    invoke-virtual {v1, v0}, Lorg/droidloom/qa/editorcontract/SessionOwner;->owns(Ljava/lang/Object;)Z
++    move-result v2
++    if-eqz v2, :recovery_inactive_locked
++    invoke-direct/range {p0 .. p1}, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;->dispatchKeyEventOwned(Landroid/view/KeyEvent;)Z
++    move-result v2
++    monitor-exit v1
++    return v2
++    :recovery_inactive_locked
++    monitor-exit v1
++    :recovery_try_end
++    .catchall {:recovery_try_start .. :recovery_try_end} :recovery_catch
++    :recovery_inactive
++    const/4 v2, 0x0
++    return v2
++    :recovery_catch
++    move-exception v2
++    monitor-exit v1
++    throw v2
++.end method
++
++.method private onCreateInputConnectionOwned(Landroid/view/inputmethod/EditorInfo;)Landroid/view/inputmethod/InputConnection;
+     .registers 9
+ 
+     .line 165
+@@ -166,7 +196,37 @@
+     throw p1
+ .end method
+ 
+-.method public onKeyPreIme(ILandroid/view/KeyEvent;)Z
++.method public onCreateInputConnection(Landroid/view/inputmethod/EditorInfo;)Landroid/view/inputmethod/InputConnection;
++    .locals 3
++
++    iget-object v0, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;->this$0:Lorg/droidloom/qa/editorcontract/EditorContractActivity;
++
++    invoke-static {v0}, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->access$recoveryOwner(Lorg/droidloom/qa/editorcontract/EditorContractActivity;)Lorg/droidloom/qa/editorcontract/SessionOwner;
++    move-result-object v1
++    if-eqz v1, :recovery_inactive
++    monitor-enter v1
++    :recovery_try_start
++    invoke-virtual {v1, v0}, Lorg/droidloom/qa/editorcontract/SessionOwner;->owns(Ljava/lang/Object;)Z
++    move-result v2
++    if-eqz v2, :recovery_inactive_locked
++    invoke-direct/range {p0 .. p1}, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;->onCreateInputConnectionOwned(Landroid/view/inputmethod/EditorInfo;)Landroid/view/inputmethod/InputConnection;
++    move-result-object v2
++    monitor-exit v1
++    return-object v2
++    :recovery_inactive_locked
++    monitor-exit v1
++    :recovery_try_end
++    .catchall {:recovery_try_start .. :recovery_try_end} :recovery_catch
++    :recovery_inactive
++    const/4 v2, 0x0
++    return-object v2
++    :recovery_catch
++    move-exception v2
++    monitor-exit v1
++    throw v2
++.end method
++
++.method private onKeyPreImeOwned(ILandroid/view/KeyEvent;)Z
+     .registers 7
+ 
+     .line 155
+@@ -188,3 +248,33 @@
+ 
+     return p0
+ .end method
++
++.method public onKeyPreIme(ILandroid/view/KeyEvent;)Z
++    .locals 3
++
++    iget-object v0, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;->this$0:Lorg/droidloom/qa/editorcontract/EditorContractActivity;
++
++    invoke-static {v0}, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->access$recoveryOwner(Lorg/droidloom/qa/editorcontract/EditorContractActivity;)Lorg/droidloom/qa/editorcontract/SessionOwner;
++    move-result-object v1
++    if-eqz v1, :recovery_inactive
++    monitor-enter v1
++    :recovery_try_start
++    invoke-virtual {v1, v0}, Lorg/droidloom/qa/editorcontract/SessionOwner;->owns(Ljava/lang/Object;)Z
++    move-result v2
++    if-eqz v2, :recovery_inactive_locked
++    invoke-direct/range {p0 .. p2}, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;->onKeyPreImeOwned(ILandroid/view/KeyEvent;)Z
++    move-result v2
++    monitor-exit v1
++    return v2
++    :recovery_inactive_locked
++    monitor-exit v1
++    :recovery_try_end
++    .catchall {:recovery_try_start .. :recovery_try_end} :recovery_catch
++    :recovery_inactive
++    const/4 v2, 0x0
++    return v2
++    :recovery_catch
++    move-exception v2
++    monitor-exit v1
++    throw v2
++.end method
+--- installed-smali/EditorContractActivity$ContractEditText$1.smali
++++ candidate-smali/EditorContractActivity$ContractEditText$1.smali
+@@ -44,7 +44,7 @@
+ 
+ 
+ # virtual methods
+-.method public performEditorAction(I)Z
++.method private performEditorActionOwned(I)Z
+     .registers 6
+ 
+     .line 175
+@@ -83,3 +83,34 @@
+ 
+     return v0
+ .end method
++
++.method public performEditorAction(I)Z
++    .locals 3
++
++    iget-object v0, p0, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText$1;->this$1:Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;
++    iget-object v0, v0, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText;->this$0:Lorg/droidloom/qa/editorcontract/EditorContractActivity;
++
++    invoke-static {v0}, Lorg/droidloom/qa/editorcontract/EditorContractActivity;->access$recoveryOwner(Lorg/droidloom/qa/editorcontract/EditorContractActivity;)Lorg/droidloom/qa/editorcontract/SessionOwner;
++    move-result-object v1
++    if-eqz v1, :recovery_inactive
++    monitor-enter v1
++    :recovery_try_start
++    invoke-virtual {v1, v0}, Lorg/droidloom/qa/editorcontract/SessionOwner;->owns(Ljava/lang/Object;)Z
++    move-result v2
++    if-eqz v2, :recovery_inactive_locked
++    invoke-direct/range {p0 .. p1}, Lorg/droidloom/qa/editorcontract/EditorContractActivity$ContractEditText$1;->performEditorActionOwned(I)Z
++    move-result v2
++    monitor-exit v1
++    return v2
++    :recovery_inactive_locked
++    monitor-exit v1
++    :recovery_try_end
++    .catchall {:recovery_try_start .. :recovery_try_end} :recovery_catch
++    :recovery_inactive
++    const/4 v2, 0x0
++    return v2
++    :recovery_catch
++    move-exception v2
++    monitor-exit v1
++    throw v2
++.end method
