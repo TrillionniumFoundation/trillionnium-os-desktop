@@ -68,13 +68,122 @@ def process_state(directory, pid):
         'cgroup': read_at(directory, 'cgroup', 65536).decode('ascii', 'strict').splitlines(),
         'command_sha256': hashlib.sha256(read_at(directory, 'cmdline', 131072)).hexdigest()}
 
+def id_map(raw):
+    """Parse the kernel's bounded, nonoverlapping user-namespace ID ranges."""
+    need(type(raw) is bytes and 0 < len(raw) <= 16384, 'BOUNDED_CURRENT_GUEST_ID_MAP')
+    lines = raw.splitlines(keepends=True)
+    need(0 < len(lines) <= 340, 'BOUNDED_CURRENT_GUEST_ID_MAP_ROWS')
+    rows = []
+    for line in lines:
+        match = re.fullmatch(rb'[ \t]*([0-9]{1,10})[ \t]+([0-9]{1,10})[ \t]+([0-9]{1,10})\n', line)
+        need(match is not None, 'EXACT_KERNEL_GUEST_ID_MAP_ROW')
+        inside, outside, count = map(int, match.groups())
+        need(count > 0 and inside + count <= 4294967295 and outside + count <= 4294967295,
+            'MAPPED_GUEST_IDS_MUST_NOT_OVERFLOW_OR_USE_UNMAPPED_SENTINEL')
+        rows.append((inside, outside, count))
+    for column in (0, 1):
+        ordered = sorted(rows, key=lambda row: row[column])
+        need(all(left[column] + left[2] <= right[column] for left, right in zip(ordered, ordered[1:])),
+            'NONOVERLAPPING_CURRENT_GUEST_ID_MAP')
+    return tuple(rows)
+
+class GuestCredentials:
+    """Bind Android IDs to the namespace observing /proc, stat and socket peers.
+
+    The second column of uid_map/gid_map is relative to the opener when its
+    namespace differs from the target's. In the same namespace it instead
+    names the parent, so the observed ID is the original Android ID. Never
+    guess a subordinate-ID offset or use overflowuid/overflowgid as a mapping.
+    """
+    def __init__(self, target):
+        self.proc = self.pidfd = self.target_user = self.observer_user = None
+        self.closed = False
+        try:
+            target.verify()
+            # Camera/Player scopes retire their MainView independently. Own
+            # these handles so a normal scope transition does not invalidate
+            # the unchanged Main's credential map or silently adopt a new Main.
+            self.proc = os.dup(target.proc_fd)
+            self.proc_identity = inode(os.fstat(self.proc))
+            raw = read_at(self.proc, 'stat', 65536).decode('ascii', 'strict')
+            fields = raw.rsplit(')', 1)[1].split()
+            need(len(fields) >= 20, 'COMPLETE_HELD_MAIN_CREDENTIAL_GENERATION')
+            self.pid = int(raw.split(' ', 1)[0]); self.start_ticks = int(fields[19])
+            self.pidfd = os.pidfd_open(self.pid, 0)
+            self.target_user = os.open('ns/user', os.O_RDONLY | os.O_CLOEXEC, dir_fd=self.proc)
+            self.observer_user = os.open('/proc/thread-self/ns/user', os.O_RDONLY | os.O_CLOEXEC)
+            self.target_identity = inode(os.fstat(self.target_user))
+            self.observer_identity = inode(os.fstat(self.observer_user))
+            self.raw = {kind: read_at(self.proc, kind + '_map', 16384) for kind in ('uid', 'gid')}
+            self.rows = {kind: id_map(raw) for kind, raw in self.raw.items()}
+            self.verify_for(target)
+        except BaseException:
+            self.close(); raise
+
+    @property
+    def receipt(self):
+        return {'schema': 'pocket4-held-guest-credential-map-v1',
+            'target_process': {'host_pid': self.pid, 'start_ticks': self.start_ticks,
+                'proc_directory': dict(self.proc_identity)},
+            'target_user_namespace': 'user:[' + str(self.target_identity['inode']) + ']',
+            'observer_user_namespace': 'user:[' + str(self.observer_identity['inode']) + ']',
+            'same_user_namespace': self.target_identity == self.observer_identity,
+            'maps': {kind: {'raw': raw.decode('ascii'), 'sha256': hashlib.sha256(raw).hexdigest()}
+                for kind, raw in self.raw.items()}}
+
+    def verify(self):
+        need(not self.closed, 'HELD_GUEST_CREDENTIAL_MAP_CLOSED')
+        poll = select.poll(); poll.register(self.pidfd, select.POLLIN)
+        need(not poll.poll(0), 'HELD_MAIN_CREDENTIAL_PROCESS_EXITED')
+        raw = read_at(self.proc, 'stat', 65536).decode('ascii', 'strict')
+        fields = raw.rsplit(')', 1)[1].split()
+        need(int(raw.split(' ', 1)[0]) == self.pid and len(fields) >= 20 and int(fields[19]) == self.start_ticks
+            and inode(os.fstat(self.proc)) == self.proc_identity, 'HELD_MAIN_CREDENTIAL_GENERATION_CHANGED')
+        need(inode(os.fstat(self.target_user)) == self.target_identity
+            == inode(os.stat('ns/user', dir_fd=self.proc))
+            and inode(os.fstat(self.observer_user)) == self.observer_identity
+            == inode(os.stat('/proc/thread-self/ns/user')), 'GUEST_OR_OBSERVER_USER_NAMESPACE_CHANGED')
+        need(all(read_at(self.proc, kind + '_map', 16384) == raw
+            for kind, raw in self.raw.items()), 'HELD_GUEST_CREDENTIAL_MAP_CHANGED')
+
+    def verify_for(self, target):
+        target.verify()
+        need(inode(os.fstat(target.proc_fd)) == self.proc_identity, 'CURRENT_FLOW_MAIN_DIFFERS_FROM_HELD_CREDENTIAL_MAIN')
+        self.verify(); target.verify()
+
+    def observer_id(self, kind, guest_id):
+        self.verify()
+        need(kind in ('uid', 'gid') and type(guest_id) is int and 0 <= guest_id < 4294967295,
+            'EXACT_ANDROID_CREDENTIAL_ID')
+        rows = [row for row in self.rows[kind] if row[0] <= guest_id < row[0] + row[2]]
+        need(len(rows) == 1, 'ANDROID_CREDENTIAL_NOT_MAPPED_IN_HELD_MAIN')
+        inside, outside, _ = rows[0]
+        return guest_id if self.target_identity == self.observer_identity else outside + guest_id - inside
+
+    def close(self):
+        first = None; mask = signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGINT, signal.SIGTERM})
+        try:
+            for name in ('observer_user', 'target_user', 'pidfd', 'proc'):
+                fd = getattr(self, name, None); setattr(self, name, None)
+                if fd is not None:
+                    try: os.close(fd)
+                    except BaseException as error:
+                        if first is None: first = error
+                        else: first.add_note('OTHER_GUEST_NAMESPACE_FD_CLOSE:' + str(error))
+            self.closed = True
+        finally: signal.pthread_sigmask(signal.SIG_SETMASK, mask)
+        if first is not None: raise first
+
 class HeldProcess:
     def __init__(self, pid, uid, expected_executable_inode, *, target=None, guest_pid=None, package=None, sha256=None):
         self.proc = self.pidfd = self.exe = self.root = None; self.closed = False
+        self.credentials = None; self.guest_uid = uid if target is not None else None
         try:
+            if target is not None: self.credentials = GuestCredentials(target)
+            observer_uid = uid if self.credentials is None else self.credentials.observer_id('uid', uid)
             self.proc = os.open('/proc/' + str(pid), os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
             self.pidfd = os.pidfd_open(pid, 0); self.identity = process_state(self.proc, pid)
-            need(self.identity['uids'] == [uid] * 4 and self.identity['namespace_pids'][0] == pid,
+            need(self.identity['uids'] == [observer_uid] * 4 and self.identity['namespace_pids'][0] == pid,
                 'EXACT_REAL_AUDIO_PROCESS_UID_AND_HOST_PID')
             self.exe = os.open('exe', os.O_RDONLY | os.O_CLOEXEC, dir_fd=self.proc)
             self.exe_identity = file_identity(os.fstat(self.exe))
@@ -85,14 +194,14 @@ class HeldProcess:
                 need(guest_pid is not None and self.identity['namespace_pids'][-1] == guest_pid
                     and len(self.identity['namespace_pids']) >= 2, 'ACTUAL_GUEST_TO_HOST_PID_MAPPING')
                 target.verify()
-                expected_user_namespace = os.readlink('ns/user', dir_fd=target.proc_fd)
+                expected_user_namespace = self.credentials.receipt['target_user_namespace']
                 need(self.identity['namespaces']['user'] == expected_user_namespace, 'AUDIO_PROCESS_NOT_IN_THIS_HELD_MAIN:user')
                 for key in ('pid', 'uts', 'ipc', 'net', 'cgroup'):
                     need(self.identity['namespaces'][key] == key + ':[' + str(os.fstat(target.namespaces[key]).st_ino) + ']',
                         'AUDIO_PROCESS_NOT_IN_THIS_HELD_MAIN:' + key)
                 need(self.root_identity == inode(os.fstat(target.root_fd)), 'AUDIO_PROCESS_ROOT_NOT_THIS_HELD_MAIN')
                 target.verify()
-                need(os.readlink('ns/user', dir_fd=target.proc_fd) == expected_user_namespace, 'HELD_MAIN_USER_NAMESPACE_CHANGED')
+                self.credentials.verify_for(target)
             if package is not None:
                 cmd = read_at(self.proc, 'cmdline', 131072).split(b'\0')
                 need(cmd[0].decode('ascii', 'strict') == package, 'NO_SHARED_UID_OR_OTHER_APP_PROCESS_ATTRIBUTION')
@@ -110,6 +219,7 @@ class HeldProcess:
 
     def verify(self):
         need(not self.closed and self.pidfd is not None, 'HELD_AUDIO_PROCESS_CLOSED')
+        if self.credentials is not None: self.credentials.verify()
         poll = select.poll(); poll.register(self.pidfd, select.POLLIN)
         need(not poll.poll(0) and process_state(self.proc, self.identity['host_pid']) == self.identity,
             'HELD_AUDIO_PROCESS_EXITED_OR_CHANGED')
@@ -124,6 +234,10 @@ class HeldProcess:
     def close(self):
         first = None; mask = signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGINT, signal.SIGTERM})
         try:
+            if self.credentials is not None:
+                try: self.credentials.close()
+                except BaseException as error: first = error
+                self.credentials = None
             for name in ('root', 'exe', 'pidfd', 'proc'):
                 fd = getattr(self, name, None); setattr(self, name, None)
                 if fd is not None:
@@ -136,28 +250,35 @@ class HeldProcess:
         if first is not None: raise first
 
 def find_guest(target, uid, *, guest_pid=None, executable_inode=None, deadline):
-    wanted_namespace = 'pid:[' + str(os.fstat(target.namespaces['pid']).st_ino) + ']'
-    names = [n for n in os.listdir('/proc') if n.isdecimal()]
-    need(len(names) <= 65536, 'BOUNDED_HOST_PID_DIRECTORY'); found = []
-    for name in names:
-        need(time.monotonic() < deadline, 'CURRENT_MAIN_PROCESS_SCAN_DEADLINE')
-        proc = None
-        try:
-            proc = os.open('/proc/' + name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
-            if os.readlink('ns/pid', dir_fd=proc) != wanted_namespace: continue
-            row = process_state(proc, int(name))
-            if row['uids'] != [uid] * 4 or (guest_pid is not None and row['namespace_pids'][-1] != guest_pid): continue
-            if executable_inode is not None:
-                fd = os.open('exe', os.O_PATH | os.O_CLOEXEC, dir_fd=proc)
-                try: match = inode(os.fstat(fd)) == executable_inode
-                finally: os.close(fd)
-                if not match: continue
-            found.append(row)
-        except (FileNotFoundError, ProcessLookupError): pass
-        finally:
-            if proc is not None: os.close(proc)
-    need(len(found) == 1, 'ONE_EXACT_CURRENT_MAIN_PROCESS_FOR_AUDIO_ATTRIBUTION')
-    return found[0]
+    credentials = GuestCredentials(target)
+    try:
+        observer_uid = credentials.observer_id('uid', uid)
+        wanted_user = credentials.receipt['target_user_namespace']
+        wanted_namespace = 'pid:[' + str(os.fstat(target.namespaces['pid']).st_ino) + ']'
+        names = [n for n in os.listdir('/proc') if n.isdecimal()]
+        need(len(names) <= 65536, 'BOUNDED_HOST_PID_DIRECTORY'); found = []
+        for name in names:
+            need(time.monotonic() < deadline, 'CURRENT_MAIN_PROCESS_SCAN_DEADLINE')
+            proc = None
+            try:
+                proc = os.open('/proc/' + name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+                if os.readlink('ns/pid', dir_fd=proc) != wanted_namespace: continue
+                row = process_state(proc, int(name))
+                if (row['namespaces']['user'] != wanted_user or row['uids'] != [observer_uid] * 4
+                        or (guest_pid is not None and row['namespace_pids'][-1] != guest_pid)): continue
+                if executable_inode is not None:
+                    fd = os.open('exe', os.O_PATH | os.O_CLOEXEC, dir_fd=proc)
+                    try: match = inode(os.fstat(fd)) == executable_inode
+                    finally: os.close(fd)
+                    if not match: continue
+                found.append(row)
+            except (FileNotFoundError, ProcessLookupError): pass
+            finally:
+                if proc is not None: os.close(proc)
+        credentials.verify_for(target)
+        need(len(found) == 1, 'ONE_EXACT_CURRENT_MAIN_PROCESS_FOR_AUDIO_ATTRIBUTION')
+        return found[0]
+    finally: credentials.close()
 
 class AudioRuntime:
     def __init__(self, session):
@@ -165,6 +286,14 @@ class AudioRuntime:
         self.handles = {}; self.units = {}; self.host_intent = None; self.preflight_result = None
         self.hardware_before = None; self.windows = {}; self.samples = {}; self.closed = False
         self.failure_cleanup_attempted = self.failure_cleanup_unknown = False
+        self.guest_credentials = None
+
+    def credentials(self):
+        need(not self.closed, 'CURRENT_AUDIO_RUNTIME_CLOSED')
+        if self.guest_credentials is None:
+            self.guest_credentials = GuestCredentials(self.s.flow.view.target)
+        self.guest_credentials.verify_for(self.s.flow.view.target)
+        return self.guest_credentials
 
     def admit_host(self, label, argv, timeout):
         need(self.host_intent == (label, list(argv), timeout), 'ONLY_CURRENT_READONLY_AUDIO_HOST_QUERY')
@@ -179,8 +308,10 @@ class AudioRuntime:
     def preflight(self):
         need(self.preflight_result is None, 'ONCE_FRESH_AUDIO_SOURCE_ADMISSION')
         s, c = self.s, self.c; s.guard(); manifest = s.baseline.docs['deployment_manifest']; life = manifest['audio_lifecycle']
+        credentials = self.credentials()
+        hal_uid, hal_gid = credentials.observer_id('uid', 1041), credentials.observer_id('gid', 1041)
         need(life['schema'] == 'pocket4-final-audio-lifecycle-v1' and life['helper_paths'] == {UNITS[role]: path for role, path in HELPERS.items()}
-            and life['peer_uid'] == life['peer_gid'] == life['socket_gid'] == 1041
+            and life['peer_uid'] == hal_uid and life['peer_gid'] == life['socket_gid'] == hal_gid
             and life['peer_cgroup'] == '/system.slice/droidloomd.service'
             and life['guest_endpoints'] == ['/dev/socket/droidloom/audio', '/dev/socket/droidloom/audio-input'],
             'EXACT_DEPLOYED_AUDIO_APEX_AND_SOCKET_CONTRACT')
@@ -213,6 +344,7 @@ class AudioRuntime:
         self.preflight_result = s.record('current-audio-source-admission', {'source_qualification': life['source_qualification'],
             'apex_qualification': packet['evidence']['apex_qualification'], 'hal_source': self.hal_source,
             'actual_guest_hal_file': meta, 'hardware': self.hardware_before, 'audio_before': before_audio_ref,
+            'guest_credential_map': credentials.receipt,
             'android_tracks_before': quiet_before,
             'started_monotonic_ns': before_start, 'finished_monotonic_ns': before_finish,
             'runtime_qualified': False,
@@ -253,7 +385,10 @@ class AudioRuntime:
         handle = HeldProcess(row['host_pid'], uid, expected, target=target, guest_pid=row['namespace_pids'][-1],
             package=package, sha256=self.hal_source['sha256'] if key == 'hal' else None)
         self.handles[key] = handle; need(handle.identity == row, 'SAME_GUEST_GENERATION_DURING_HELD_BINDING')
-        if key == 'hal': need(handle.identity['gids'] == [1041] * 4 and handle.identity['cgroup'] == ['0::' + self.lifecycle['peer_cgroup']],
+        credentials = self.credentials()
+        need(handle.credentials.receipt == credentials.receipt, 'SAME_CURRENT_MAIN_CREDENTIAL_MAP_FOR_AUDIO')
+        if key == 'hal': need(handle.identity['gids'] == [credentials.observer_id('gid', 1041)] * 4
+            and handle.identity['cgroup'] == ['0::' + self.lifecycle['peer_cgroup']],
             'EXACT_HAL_UID_GID_AND_MANAGER_CGROUP_FOR_SO_PEERPIDFD')
         return handle
 
@@ -276,6 +411,10 @@ class AudioRuntime:
             self.handles[role] = handle
             need(handle.identity['gids'] == [1000] * 4 and handle.identity['cgroup'] == ['0::' + v['ControlGroup']],
                 'CURRENT_HELPER_UID_GID_AND_EXACT_SERVICE_CGROUP')
+            need(handle.identity['namespaces']['user'] == self.credentials().receipt['observer_user_namespace'],
+                'AUDIO_HELPER_AND_PROCESS_OBSERVER_MUST_USE_SAME_CREDENTIAL_NAMESPACE')
+            need(handle.identity['namespaces']['pid'] == os.readlink('/proc/thread-self/ns/pid'),
+                'AUDIO_HELPER_AND_PROCESS_OBSERVER_MUST_USE_SAME_PID_NAMESPACE')
             self.units[role] = {'value': v, 'observation': ref, 'process': handle.identity}
         return v
 
@@ -300,6 +439,7 @@ class AudioRuntime:
         self.handles['hal'].verify(); unit = self.helper(role)
         value = {'role': role, 'label': label, 'started_monotonic_ns': start, 'finished_monotonic_ns': finish,
             'flinger': dump, 'raw': rawref, 'selected': track, 'app': h.identity,
+            'guest_credential_map': self.credentials().receipt,
             'activity_scope': 'one-active-android-track-all-uids-at-this-sample',
             'host_audio_quiescence_qualified': False, 'continuous_exclusivity_qualified': False,
             'hal': self.handles['hal'].identity, 'helper': self.units[role], 'scope': s.flow.scope_ref,
@@ -310,6 +450,7 @@ class AudioRuntime:
         s = self.s; uid, direction = (10062, 'Input') if role == 'input' else (10064, 'Output')
         need(first['role'] == second['role'] == role and first['scope'] == second['scope'] == s.flow.scope_ref
             and first['phase'] == second['phase'] == s.phase_ref and first['app'] == second['app']
+            and first['guest_credential_map'] == second['guest_credential_map'] == self.credentials().receipt
             and first['hal'] == second['hal'] and first['helper']['value'] == second['helper']['value'],
             'SAME_CURRENT_APP_HAL_HELPER_AND_SCOPE_DURING_AUDIO')
         live = self.binding.advancing(first['flinger'], second['flinger'], direction=direction, uid=uid,
@@ -323,6 +464,7 @@ class AudioRuntime:
         document = self.binding.journal(raw, unit=UNITS[role], invocation=unit['InvocationID'],
             manager_pid=int(unit['MainPID']), boot_id=s.host.boot())
         protocol = self.binding.protocol_window(document, role=role, hal_pid=self.handles['hal'].identity['host_pid'],
+            hal_uid=self.credentials().observer_id('uid', 1041), hal_gid=self.credentials().observer_id('gid', 1041),
             hal_cgroup=self.lifecycle['peer_cgroup'], begin_ns=start, end_ns=end)
         stream = self.pulse_stream(role, protocol['stream_ready'], int(unit['MainPID']))
         value = {'schema': 'pocket4-current-camera-audio-runtime-window-v1', 'role': role,
@@ -439,6 +581,10 @@ class AudioRuntime:
         for key, handle in reversed(list(self.handles.items())):
             try: handle.close()
             except BaseException as error: errors.append((key, error))
+        if self.guest_credentials is not None:
+            try: self.guest_credentials.close()
+            except BaseException as error: errors.append(('guest_credentials', error))
+            self.guest_credentials = None
         self.closed = True
         if errors:
             first = errors[0][1]

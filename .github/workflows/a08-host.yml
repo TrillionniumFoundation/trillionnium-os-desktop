@@ -647,12 +647,12 @@ jobs:
           report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
           if report.get("schema") != "pocket4-camera-current-source-controls-v1":
               raise SystemExit("Unexpected current Camera source report schema")
-          if report.get("inventory_sha256") != "28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00":
+          if report.get("inventory_sha256") != "12c7591d2491d346cda679cd1f314cba375f54e6bab7809e6ab7352c4ec18181":
               raise SystemExit("Current Camera source inventory changed")
-          for key, expected in (("tests_run", 38), ("expected_tests", 38), ("uid", 0), ("euid", 0)):
+          for key, expected in (("tests_run", 59), ("expected_tests", 59), ("uid", 0), ("euid", 0)):
               if type(report.get(key)) is not int or report[key] != expected:
                   raise SystemExit("Current Camera source count or construction identity mismatch: " + key)
-          expected_suites = [("preparation", 11), ("display_contract", 18), ("state_public_api", 9)]
+          expected_suites = [("preparation", 11), ("display_contract", 18), ("state_public_api", 9), ("guest_credentials", 21)]
           suites = report.get("suites")
           if type(suites) is not list or len(suites) != len(expected_suites):
               raise SystemExit("Current Camera source suite inventory changed")
@@ -665,7 +665,7 @@ jobs:
           if report.get("passed") is not True or report.get("source_bytes_unchanged") is not True:
               raise SystemExit("Current Camera source controls did not preserve their inputs")
           before = report.get("source_and_control_inputs_before")
-          if type(before) is not list or len(before) != 41 or before != report.get("source_and_control_inputs_after"):
+          if type(before) is not list or len(before) != 42 or before != report.get("source_and_control_inputs_after"):
               raise SystemExit("Current Camera source input inventory changed")
           for key in ("prior_host_qualification_transferred", "real_UID_1000_decoder_qualified", "real_display_lease_qualified", "runtime_qualified", "whole_app_business_accepted"):
               if report.get(key) is not False:
@@ -673,7 +673,7 @@ jobs:
           for key in ("Main_actions", "Android_UI_actions", "physical_audio_stream_actions"):
               if type(report.get(key)) is not int or report[key] != 0:
                   raise SystemExit("Unexpected device or Main action: " + key)
-          print(json.dumps({"Camera_current_source_tests": 38, "passed": True,
+          print(json.dumps({"Camera_current_source_tests": 59, "passed": True,
                             "runtime_qualified": False, "historical_host_qualification_transferred": False}, sort_keys=True))
           PYCURRENT
       - name: Verify continuation inputs and literal defaults regression

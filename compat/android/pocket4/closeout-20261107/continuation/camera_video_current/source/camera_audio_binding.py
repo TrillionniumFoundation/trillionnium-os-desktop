@@ -254,8 +254,9 @@ def journal(raw, *, unit, invocation, manager_pid, boot_id):
         'raw_sha256': hashlib.sha256(raw).hexdigest(), 'rows': rows}
 
 
-def protocol_window(document, *, role, hal_pid, hal_cgroup, begin_ns, end_ns):
+def protocol_window(document, *, role, hal_pid, hal_uid, hal_gid, hal_cgroup, begin_ns, end_ns):
     need(role in ('input', 'output') and type(hal_pid) is int and hal_pid > 1
+        and type(hal_uid) is type(hal_gid) is int and 0 <= hal_uid < 4294967295 and 0 <= hal_gid < 4294967295
         and type(begin_ns) is type(end_ns) is int and 0 < begin_ns < end_ns
         and 200_000_000 <= end_ns - begin_ns <= 25_000_000_000,
          'CURRENT_HELD_HAL_AND_FINITE_BUSINESS_AUDIO_INTERVAL')
@@ -265,7 +266,10 @@ def protocol_window(document, *, role, hal_pid, hal_cgroup, begin_ns, end_ns):
     peers = [i for i, r in enumerate(rows) if r['value'].get('event') == 'peer']
     need(peers, 'ACTUAL_HAL_PEER_BOUNDARY_REQUIRED')
     start = peers[-1]; peer = rows[start]['value']
-    need(peer.get('pid') == hal_pid and peer.get('uid') == 1041 and peer.get('gid') == 1041
+    # The helper's SO_PEERCRED values use its observing user namespace. The
+    # caller binds that namespace to the held /proc observer and maps guest
+    # HAL UID/GID 1041 there; Android AudioFlinger continues to use guest IDs.
+    need(peer.get('pid') == hal_pid and peer.get('uid') == hal_uid and peer.get('gid') == hal_gid
         and peer.get('expected_cgroup') == hal_cgroup and peer.get('identity') == 'SO_PEERPIDFD',
          'SO_PEERPIDFD_MUST_BE_CURRENT_AUDIO_APEX_HAL_PROCESS')
     connection = rows[start + 1:]

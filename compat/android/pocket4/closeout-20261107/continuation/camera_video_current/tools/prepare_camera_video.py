@@ -14,7 +14,7 @@ import re
 import stat
 import types
 
-INVENTORY_SHA256 = '28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00'
+INVENTORY_SHA256 = '12c7591d2491d346cda679cd1f314cba375f54e6bab7809e6ab7352c4ec18181'
 TESTED_ARCHIVE_SHA256 = '318bddb268df84955a2e4ce79b8c363066813d22e01a068f4ece7deb7299a434'
 R4_MANIFEST_SHA256 = '963b8724906da54e70147b3a3268dd29640a85b45b947274fda7d5e61a55c5c4'
 R4_PUBLICATION_SHA256 = '81083b43e21cdf0cf09167ba3ee3038af5e23b847579c73200aa685f05187a68'
@@ -182,6 +182,8 @@ def prepare(source, inventory, expected_sha256, output):
                 'r4_source_controls_commit': 'a355e81a753cdc1aed198424d87d0a8b6e4b2ebc'},
             'previous_canonical_inventory_sha256':
                 '2444a7f3dcbeace9a3a9c5b86d2fc815a59ae965b626ddb80ba99b6f4d13520f',
+            'previous_combined_inventory_sha256':
+                '28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00',
             'prior_host_qualification_transferred': False,
             'current_host_qualification': 'pending_for_exact_merged_source_bytes',
             'historical_locations_are_documentary_only': True, 'old_runtime_authority_transferred': False,

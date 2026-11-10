@@ -68,7 +68,7 @@ def main():
     result = assignment(result, 'SOURCES', sources)
     globals_text = """
 VIDEO_CONTEXT = None
-VIDEO_INVENTORY_SHA256 = '28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00'
+VIDEO_INVENTORY_SHA256 = '12c7591d2491d346cda679cd1f314cba375f54e6bab7809e6ab7352c4ec18181'
 VIDEO_ENTRY_PIN = (9811, '55607f576146c9adc8792fdeb510c1992512ac4d782ccd0efcb75415c81ac4f9')
 """
     result = result.replace('\nMAX_PACKET = 65536', globals_text + '\nMAX_PACKET = 65536', 1)

@@ -237,16 +237,21 @@ class Driver:
         c.need(str(Path(paths[0][8:]).parent) == one(r'^    codePath=(.*)$'), 'ACTUAL_GALLERY_CODE_PATH')
         permissions = re.findall(r'^        (android\.permission\.[A-Z_]+): granted=(true|false), flags=\[(.*?)\]$', block, re.M)
         c.need(permissions and len({r[0] for r in permissions}) == len(permissions), 'COMPLETE_GALLERY_PERMISSION_ROWS')
+        credentials = s.audio.credentials()
+        owner_uid, owner_gid = credentials.observer_id('uid', uid), credentials.observer_id('gid', uid)
         dirs = {}
         for key, path in (('ce', '/data/user/0/' + PLAYER), ('de', '/data/user_de/0/' + PLAYER)):
             fd = s.target.open_root(path, os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW)
             try: info = os.fstat(fd)
             finally: os.close(fd)
             match = re.search(r'\b' + key + r'DataInode=(\d+)\b', user)
-            c.need(match is not None and info.st_ino == int(match[1]) and info.st_uid == info.st_gid == uid,
+            c.need(match is not None and info.st_ino == int(match[1])
+                and info.st_uid == owner_uid and info.st_gid == owner_gid,
                 'ACTUAL_GALLERY_CE_DE_INODE_AND_OWNER')
             dirs[key] = {k: getattr(info, k) for k in ('st_dev', 'st_ino', 'st_uid', 'st_gid', 'st_mode')}
+        credentials.verify()
         value = {'uid': uid, 'version': version, 'directories': dirs, 'permissions': sorted(permissions),
+            'guest_credential_map': credentials.receipt,
             'first_install_time': one(r'^      firstInstallTime=(.*)$'), 'apk_sha256': c.sha(apk), 'apk_bytes': len(apk)}
         self.record(label + '-gallery-identity', value); return value
 

@@ -10,11 +10,12 @@ import types
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-INVENTORY_SHA256 = '28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00'
+INVENTORY_SHA256 = '12c7591d2491d346cda679cd1f314cba375f54e6bab7809e6ab7352c4ec18181'
 SUITES = (
     ('preparation', 'test_preparation_entry.py', 11),
     ('display_contract', 'test_video_display_contract.py', 18),
     ('state_public_api', 'camera_video_state_test.py', 9),
+    ('guest_credentials', 'test_guest_credentials.py', 21),
 )
 
 
@@ -83,7 +84,7 @@ def main():
     report = {'schema': 'pocket4-camera-current-source-controls-v1',
               'inventory_sha256': INVENTORY_SHA256, 'suites': results,
               'tests_run': sum(r['tests_run'] for r in results),
-              'expected_tests': 38, 'source_and_control_inputs_before': before,
+              'expected_tests': 59, 'source_and_control_inputs_before': before,
               'source_and_control_inputs_after': after, 'source_bytes_unchanged': before == after,
               'passed': passed, 'uid': os.getuid(), 'euid': os.geteuid(),
               'interpreter': sys.executable, 'python_version': sys.version.split()[0],

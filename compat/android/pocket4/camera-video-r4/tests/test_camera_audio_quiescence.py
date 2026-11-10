@@ -289,12 +289,26 @@ class FakeSession:
         return {'fixture_record': label}
 
 
+class FixtureCredentials:
+    """Explicit identity namespace for these synthetic quiescence fixtures."""
+    receipt = {'fixture_only': True, 'uid_map': 'identity', 'gid_map': 'identity'}
+
+    def observer_id(self, kind, guest_id):
+        if kind not in ('uid', 'gid') or type(guest_id) is not int or not 0 <= guest_id < 4294967295:
+            raise AssertionError('invalid synthetic credential request')
+        return guest_id
+
+
 class FakeRuntime(R.AudioRuntime):
     def __init__(self, session):
         super().__init__(session)
         self.hardware_calls = []
         self.bind_calls = []
         self.helper_calls = []
+        self.fixture_credentials = FixtureCredentials()
+
+    def credentials(self):
+        return self.fixture_credentials
 
     def hardware(self, label):
         self.hardware_calls.append(label)

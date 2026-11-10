@@ -482,7 +482,7 @@ class FailureCleanupControls(unittest.TestCase):
         self.assertFalse(result['failure_path_android_audio_quiet_verified'])
         self.assertEqual(result['error']['message'], 'ORIGINAL_BUSINESS_FAILURE')
 
-    def test_17_complete_source_inventory_and_24_unchanged_production_files(self):
+    def test_17_complete_source_inventory_and_22_unchanged_production_files(self):
         self.assertEqual(set(SOURCE_ROWS), {'source/' + f.name for f in (ROOT / 'source').iterdir()})
         self.assertEqual(len(SOURCE_ROWS), 29)
         changed = set()
@@ -495,7 +495,8 @@ class FailureCleanupControls(unittest.TestCase):
             else:
                 self.assertEqual((row['bytes'], row['sha256']), (original['bytes'], original['sha256']))
         self.assertEqual(changed, {'source/camera_audio_runtime.py', 'source/camera_video_driver.py',
-            'source/camera_case.py', 'source/camera_decode.py', 'source/camera_video_state.py'})
+            'source/camera_case.py', 'source/camera_decode.py', 'source/camera_video_state.py',
+            'source/camera_audio_binding.py', 'source/camera_base_session.py'})
         expected_owner_merge = {
             'source/camera_decode.py': (16169, '7421cdd38bd45eff8c0697ce11b1372958a4a5f749c8097e3c0203ed5758056b'),
             'source/camera_video_state.py': (21072, '68c6369a068d822b0ea4e849cf2172d0180bbe69b3c576e7aa74ba2f6e7d66fc'),
@@ -503,8 +504,22 @@ class FailureCleanupControls(unittest.TestCase):
         for path, pin in expected_owner_merge.items():
             self.assertEqual((SOURCE_ROWS[path]['bytes'], SOURCE_ROWS[path]['sha256']), pin)
 
-    def test_18_only_declared_ast_additions_change_existing_production_bodies(self):
+    def test_18_reviewed_credentials_preserve_declared_failure_cleanup_bodies(self):
         pins = json.loads((FIXTURES / 'original-ast-pins.json').read_bytes())
+        # Keep the original fixture immutable. Only the two explicitly reviewed
+        # credential successors use a new baseline for this structural check;
+        # all behavioral failure-cleanup controls above continue to execute.
+        successor = json.loads((FIXTURES / 'guest-credential-ast-pins.json').read_bytes())
+        self.assertEqual(successor['schema'], 'pocket4-reviewed-guest-credential-ast-successor-v1')
+        original_raw = (FIXTURES / 'original-ast-pins.json').read_bytes()
+        self.assertEqual(successor['original_ast_fixture'], {
+            'bytes': len(original_raw), 'sha256': hashlib.sha256(original_raw).hexdigest()})
+        self.assertEqual(set(successor['files']), {'camera_audio_runtime.py', 'camera_video_driver.py'})
+        for name, expected in successor['files'].items():
+            raw_source = (ROOT / 'source' / name).read_bytes()
+            self.assertEqual((len(raw_source), hashlib.sha256(raw_source).hexdigest()),
+                             (expected['bytes'], expected['sha256']))
+            pins[name] = expected
         for name, expected in pins.items():
             tree = ast.parse((ROOT / 'source' / name).read_text())
             if name == 'camera_audio_runtime.py':

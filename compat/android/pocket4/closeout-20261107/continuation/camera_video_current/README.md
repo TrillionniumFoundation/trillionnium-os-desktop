@@ -4,7 +4,9 @@ This is the canonical Camera video source for Pocket4's Linux local Android repa
 It combines the current-host and audio/decoder admission changes from `a355e81`
 with the sealed read-only decoder input and state restoration changes in `f9c5064`.
 It also includes the bounded Android quiet check on a failed business operation.
-The 29 modules in `source/` are one exact inventory. The r4 test capsule must
+The guest-credential successor changes four runtime modules to compare host
+observations with IDs mapped from the held Android Main. The other 25 modules
+retain their preceding bytes. The 29 modules in `source/` are one exact inventory. The r4 test capsule must
 contain the same 29 bytes; its CI entry refuses a divergent canonical source.
 
 **This is source integration. Android deployment, current Main, real display and
@@ -43,6 +45,43 @@ identical bytes. Relative to `f9c5064`'s canonical folder, eight files change an
 `68c6369a...` source; the merged decoder has a new hash and inherits no previous
 host qualification.
 
+## Guest and observer credentials
+
+Android package and AudioFlinger IDs remain guest IDs. Host `/proc`, file-owner
+observations and the audio helper's socket credentials use the observing
+namespace. Previously, the Camera/Gallery owner checks and audio process scan
+compared these different IDs directly. A map `0 200000 100000` makes Camera
+10062 appear as 210062 and the audio HAL 1041 appear as 201041 to the host.
+
+The current implementation reads both maps through the held Main's proc
+directory, pins its process generation with an owned pidfd, and holds both user
+namespaces. It handles independent and segmented UID/GID ranges, rejects holes,
+overlap, overflow, missing maps and namespace drift, and never guesses an
+identity mapping. For the same user namespace, map column two describes the
+parent namespace, so the observer keeps the original guest ID. See the
+[Linux user namespace mapping contract](https://man7.org/linux/man-pages/man7/user_namespaces.7.html).
+
+These independent handles survive the normal Camera-to-Player scope transition;
+the next scope must prove that it still holds the same Main proc inode. Existing
+guest PID, pidfd liveness, namespace, executable, package, root and cgroup checks
+remain. Camera/Gallery directory checks still require the exact observed CE/DE
+inodes and compare their owners against the mapped UID and GID separately.
+
+The helper must share the verifier's user and PID namespaces. Protocol checks
+receive explicit observer UID/GID values for the held HAL; Android track checks
+continue using 1041/10062/10064 where appropriate. This follows Linux's
+[`cred_to_ucred` conversion through `current_user_ns()`](https://linux.googlesource.com/linux/kernel/git/torvalds/linux/+/bfe8eb3b85c571f7e94e1039f59b462505b8e0fc/net/core/sock.c).
+An old deployment lifecycle that still specifies host peer/socket IDs 1041
+fails admission when the held guest maps those IDs elsewhere. This repair does
+not modify services, socket ownership, subordinate-ID grants or production data.
+
+The focused controls reproduce the old process-scan and directory-owner failures
+against the original source. Foreign namespace/proc trees are explicit fixtures;
+same-namespace observation, file descriptors, directory metadata, pidfds and
+owned child exit are real Linux operations. They do not qualify an actual mapped
+Android process or a live audio socket. Final Main, helper deployment, actual
+recording/playback, recovery and all application acceptance remain pending.
+
 ## Formal source preparation and display consumer
 
 `tools/prepare_camera_video.py` verifies the externally pinned inventory, copies
@@ -60,8 +99,8 @@ budgets, release checks, three-principal identity checks and owned retirement
 requirements remain. `review/display-union-pin-adaptation.json` records the exact
 comparison. This structural proof is not a new actual display-host execution.
 
-The current inventory is 5173 bytes, SHA256
-`28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00`.
+The current inventory is 5281 bytes, SHA256
+`12c7591d2491d346cda679cd1f314cba375f54e6bab7809e6ab7352c4ec18181`.
 Use a new output root; the consumed earlier `c1` preparation is not updated or
 replayed. A reviewer-approved preparation can be created with:
 
@@ -69,7 +108,7 @@ replayed. A reviewer-approved preparation can be created with:
 sudo -n /usr/bin/python3 -I -B <bundle>/tools/prepare_camera_video.py \
   --source <bundle>/source \
   --inventory <bundle>/reviewed-source-inventory.json \
-  --expect-inventory-sha256 28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00 \
+  --expect-inventory-sha256 12c7591d2491d346cda679cd1f314cba375f54e6bab7809e6ab7352c4ec18181 \
   --output <new-directory>
 ```
 
@@ -81,7 +120,7 @@ lease admission. No such runtime request is supplied by this bundle.
 
 ## Current source controls
 
-`tests/run_current_source_controls.py` runs three exact suites and rejects a
+`tests/run_current_source_controls.py` runs four exact suites and rejects a
 missing test or any skip. The checked-in source report binds before/after hashes
 of every input used by those suites.
 
@@ -90,8 +129,9 @@ of every input used by those suites.
 | Formal preparation and entry | 11 | Exact real temporary files/FDs, both role packets, stale source/inventory/role rejection, create-only behavior, no transfer of historical host authority |
 | Display contract and source entry | 18 | Actual source constructor/rejection and explicitly synthetic terminal contracts, old entry/inventory refusal, unchanged ownership/release methods and budgets |
 | State public API | 9 | Both valid restoration orders, seven failed-state cases, 28 binding-negative subcases, and exact reproduction of the old restoration-order regression |
+| Guest/observer credentials | 21 | Mapped UID/GID ranges, unmapped and malformed IDs, namespace/Main drift, scope changes, real pidfd exit and directory ownership, and explicit socket credentials |
 
-These 38 controls use no Main, Android UI, physical camera, physical audio or real
+These 59 controls use no Main, Android UI, physical camera, physical audio or real
 display lease. The original owner state fixture remains exact under `tests/fixtures/`;
 its old one-method wrapper is not counted again. The r4 capsule separately
 contains current-host, quiescence, failure-cleanup and Linux decoder controls.
@@ -110,7 +150,11 @@ UID/GID 1000 in the scratch user namespace (`EINVAL`; only UID/GID 0 are mapped)
 It did verify rejection cleanup without changing the original input. It is not
 counted as a UID1000 decoder pass. That boundary requires the actual Pocket4 host.
 
-## Fresh canonical Pocket4 host controls
+## Prior canonical Pocket4 host controls
+
+The following receipts retain their original inventory and source bindings.
+They do not qualify the changed credential modules or a new display wrapper.
+A fresh preparation and current host/runtime admission are still required.
 
 The exact merged decoder now passed eight real host controls on Pocket4 in a
 bounded root-to-UID-1000 execution. These cover full synthetic video/audio
@@ -162,8 +206,9 @@ as a merged-decoder pass.
 `source-bundle-index.json` describes the files actually in this Git bundle.
 `publish-source-manifest.json` records the exact current deliverable bytes;
 previous host journals that were never published are not falsely listed as
-present files. `review/merged-source-validation.json` is the current source-only
-summary. Old summaries remain explicitly historical.
+present files. `review/merged-source-validation.json` and the previous 38-control
+report describe the preceding inventory; they do not admit this credential
+successor. All historical summaries retain their original result and bindings.
 
 Before final acceptance the owner must maintain the separate disposition of
 the prior unknown experiment, qualify the owned supervisor/display path, create

@@ -201,6 +201,8 @@ class Session:
         self.tx.write_new(self.evidence_root / (label + '-package.txt'), raw)
         identity = o.parse_identity(raw.decode('utf-8', 'strict'), guest)
         apk, _ = self.target.read_file(guest, 33554432, single_link=True)
+        credentials = self.audio.credentials()
+        owner_uid, owner_gid = credentials.observer_id('uid', 10062), credentials.observer_id('gid', 10062)
         dirs = {}
         for key, path in [('ce', '/data/user/0/com.android.camera2'), ('de', '/data/user_de/0/com.android.camera2')]:
             fd = self.target.open_root(path, os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW)
@@ -210,10 +212,11 @@ class Session:
                              'gid': s.st_gid, 'mode': stat.S_IMODE(s.st_mode)}
             finally:
                 os.close(fd)
-            c.need(dirs[key]['uid'] == dirs[key]['gid'] == 10062
+            c.need(dirs[key]['uid'] == owner_uid and dirs[key]['gid'] == owner_gid
                 and dirs[key]['inode'] == identity[key + '_inode'], 'ORIGINAL_CAMERA_DATA_INODE_UID_GATE')
-        self.guard()
+        credentials.verify(); self.guard()
         value = {'package': 'com.android.camera2', 'epoch_sha256': self.active['framework_epoch_sha256'],
+            'guest_credential_map': credentials.receipt,
             'identity': identity, 'directories': dirs, 'apk': {'guest_path': guest, 'bytes': len(apk), 'sha256': c.sha(apk)}}
         self.tx.write_new(self.evidence_root / (label + '.json'), value)
         return value

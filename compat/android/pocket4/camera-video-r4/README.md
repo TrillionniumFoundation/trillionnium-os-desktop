@@ -9,7 +9,7 @@ byte lengths and SHA256 values to match the canonical source directory and its
 fixed reviewed inventory before it imports any test module.
 
 The publication base is commit
-`f9c506431b389c941fbb05f5875166fcd8a7b763`. The merged source includes the
+`f9c506431b389c941fbb05f5875166fcd8a7b763`. The preceding merged source included the
 current owner's sealed UID/GID 1000 input and playback/restore ordering fixes,
 the earlier host-support and retirement fixes, and failure-path Android audio
 quiet verification. No historical host result is transferred to these merged
@@ -58,7 +58,7 @@ inactive-session preservation or audio-focus preservation.
 
 ## Actual source-control results
 
-The current merged capsule was exercised by a new local 70-control run,
+The preceding merged capsule was exercised by a new local 70-control run,
 with zero failures, errors or skips and unchanged source/test inputs:
 
 | Family | Count | Execution scope |
@@ -153,3 +153,21 @@ display lease, recovery, complete full dumpsys ABI and whole-app business
 acceptance remain pending. No success dictionary, missing-dependency bypass,
 stub, relaxed retirement gate or removed negative control supplies those
 results.
+
+## Current guest-credential successor
+
+The four credential-observation modules now match the canonical successor
+`12c7591d2491d346cda679cd1f314cba375f54e6bab7809e6ab7352c4ec18181`.
+Camera/Gallery host directory ownership and audio-process/socket credentials
+are mapped through the held Main UID/GID namespaces. No identity fallback
+is added to production. The existing quiescence fixture declares its identity
+map explicitly; the canonical suite separately exercises mapped and negative
+cases. All 29 modules must still match the canonical bytes before import.
+
+The canonical gate now expects 59 controls in four suites. This capsule
+still expects 59 portable controls plus 11 Linux decoder controls. Older
+reports above keep their original source bindings. The immutable original
+AST pins remain in place; a separate fixture records the reviewed credential
+successor after removing only the already-tested failure-cleanup additions.
+Current tests continue to exercise the failure path, its bounds and denial
+behavior. These checks provide no Android, hardware or whole-app acceptance.
