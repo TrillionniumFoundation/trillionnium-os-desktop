@@ -82,21 +82,34 @@ enum InputCheckpoint {
 }
 
 impl InputCheckpoint {
-    fn into_document_fields(self) -> Result<(LegacyCheckpoint, Option<NotesFenceResponse>, bool), NotesProtocolError> {
+    fn into_document_fields(
+        self,
+    ) -> Result<(LegacyCheckpoint, Option<NotesFenceResponse>, bool), NotesProtocolError> {
         match self {
-            Self::Fence(value) if value.schema_version == 3 => Ok((LegacyCheckpoint {
-                schema_version: value.schema_version, target: value.target,
-                text: value.text, revision: value.revision,
-                pending_receipt: value.pending_receipt, retired_receipt: value.retired_receipt,
-            }, value.pending_fence_receipt.into_option(), true)),
-            Self::Current(value) if value.schema_version == 2 => Ok((LegacyCheckpoint {
-                schema_version: value.schema_version,
-                target: value.target,
-                text: value.text,
-                revision: value.revision,
-                pending_receipt: value.pending_receipt,
-                retired_receipt: value.retired_receipt,
-            }, None, false)),
+            Self::Fence(value) if value.schema_version == 3 => Ok((
+                LegacyCheckpoint {
+                    schema_version: value.schema_version,
+                    target: value.target,
+                    text: value.text,
+                    revision: value.revision,
+                    pending_receipt: value.pending_receipt,
+                    retired_receipt: value.retired_receipt,
+                },
+                value.pending_fence_receipt.into_option(),
+                true,
+            )),
+            Self::Current(value) if value.schema_version == 2 => Ok((
+                LegacyCheckpoint {
+                    schema_version: value.schema_version,
+                    target: value.target,
+                    text: value.text,
+                    revision: value.revision,
+                    pending_receipt: value.pending_receipt,
+                    retired_receipt: value.retired_receipt,
+                },
+                None,
+                false,
+            )),
             Self::Legacy(value) if value.schema_version == 1 => Ok((value, None, false)),
             _ => Err(NotesProtocolError::Version),
         }
@@ -110,14 +123,19 @@ impl NotesDocument {
     pub fn checkpoint(&self) -> Result<Vec<u8>, NotesProtocolError> {
         if self.fence_checkpoint {
             let value = FenceCheckpoint {
-                format: CheckpointFormat::Notes, schema_version: 3,
-                target: self.target.clone(), text: self.text.clone(), revision: self.revision,
+                format: CheckpointFormat::Notes,
+                schema_version: 3,
+                target: self.target.clone(),
+                text: self.text.clone(),
+                revision: self.revision,
                 pending_receipt: self.last_applied.clone().into(),
                 retired_receipt: self.last_retired.clone().into(),
                 pending_fence_receipt: self.last_fence.clone().into(),
             };
             let bytes = serde_json::to_vec(&value).map_err(|_| NotesProtocolError::Schema)?;
-            if bytes.len() > MAX_CHECKPOINT_BYTES { return Err(NotesProtocolError::FrameBound); }
+            if bytes.len() > MAX_CHECKPOINT_BYTES {
+                return Err(NotesProtocolError::FrameBound);
+            }
             return Ok(bytes);
         }
         let value = Checkpoint {
@@ -162,7 +180,10 @@ impl NotesDocument {
             return Err(NotesProtocolError::TextBound);
         }
         if value.revision == 0
-            && (!value.text.is_empty() || pending_receipt.is_some() || retired_receipt.is_some() || pending_fence.is_some())
+            && (!value.text.is_empty()
+                || pending_receipt.is_some()
+                || retired_receipt.is_some()
+                || pending_fence.is_some())
         {
             return Err(NotesProtocolError::Receipt);
         }
@@ -186,15 +207,26 @@ impl NotesDocument {
             }
         }
         if let Some(receipt) = &pending_fence {
-            if pending_receipt.is_some() { return Err(NotesProtocolError::Receipt); }
+            if pending_receipt.is_some() {
+                return Err(NotesProtocolError::Receipt);
+            }
             let bytes = serde_json::to_vec(receipt).map_err(|_| NotesProtocolError::Receipt)?;
             NotesFenceResponse::parse_exact(&bytes)?;
-            let NotesFenceResult::Fenced { revision, text_sha256, .. } = &receipt.result else {
+            let NotesFenceResult::Fenced {
+                revision,
+                text_sha256,
+                ..
+            } = &receipt.result
+            else {
                 return Err(NotesProtocolError::Receipt);
             };
-            if &receipt.target != target || *revision > value.revision
-                || (*revision == value.revision && *text_sha256 != sha256_hex(value.text.as_bytes()))
-            { return Err(NotesProtocolError::Receipt); }
+            if &receipt.target != target
+                || *revision > value.revision
+                || (*revision == value.revision
+                    && *text_sha256 != sha256_hex(value.text.as_bytes()))
+            {
+                return Err(NotesProtocolError::Receipt);
+            }
         }
         if let Some(retired) = &retired_receipt {
             let raw = serde_json::to_vec(retired).map_err(|_| NotesProtocolError::Receipt)?;
@@ -218,4 +250,3 @@ impl NotesDocument {
 #[cfg(test)]
 #[path = "notes_checkpoint_tests.rs"]
 mod tests;
-

@@ -118,7 +118,9 @@ struct ObserveFence {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")]
-enum ObserveFenceAction { ObserveFence }
+enum ObserveFenceAction {
+    ObserveFence,
+}
 
 impl NotesDocument {
     /// The private effect owner must authorize these exact bytes first. The
@@ -133,9 +135,12 @@ impl NotesDocument {
             payload_sha256: digest.clone(),
             result,
         };
-        let refusal = |reason| response(NotesFenceResult::NotFenced {
-            reason, current_revision: self.revision,
-        });
+        let refusal = |reason| {
+            response(NotesFenceResult::NotFenced {
+                reason,
+                current_revision: self.revision,
+            })
+        };
         if request.target != self.target {
             return Ok(refusal(NotesNotAppliedReason::TargetMismatch));
         }
@@ -143,7 +148,9 @@ impl NotesDocument {
             if previous.operation_id == request.operation_id {
                 return Ok(if previous.payload_sha256 == digest {
                     previous.clone()
-                } else { refusal(NotesNotAppliedReason::OperationConflict) });
+                } else {
+                    refusal(NotesNotAppliedReason::OperationConflict)
+                });
             }
         }
         if request.expected_revision != self.revision {
@@ -168,24 +175,38 @@ impl NotesDocument {
         Ok(receipt)
     }
 
-    pub(super) fn observe_fence_exact(&self, raw: &[u8]) -> Option<Result<Vec<u8>, NotesProtocolError>> {
+    pub(super) fn observe_fence_exact(
+        &self,
+        raw: &[u8],
+    ) -> Option<Result<Vec<u8>, NotesProtocolError>> {
         let query: ObserveFence = serde_json::from_slice(raw).ok()?;
         Some((|| {
             let _ = query.action;
             check_frame(raw)?;
             check_version(query.schema_version)?;
             query.target.validate()?;
-            if query.target != self.target { return Err(NotesProtocolError::Target); }
+            if query.target != self.target {
+                return Err(NotesProtocolError::Target);
+            }
             if !valid_operation_id(&query.operation_id) || !lower_hex(&query.payload_sha256, 64) {
                 return Err(NotesProtocolError::Digest);
             }
-            let response = self.last_fence.as_ref().filter(|r| {
-                r.operation_id == query.operation_id && r.payload_sha256 == query.payload_sha256
-            }).cloned().unwrap_or(NotesFenceResponse {
-                schema_version: 1, target: self.target.clone(),
-                operation_id: query.operation_id, payload_sha256: query.payload_sha256,
-                result: NotesFenceResult::Unknown { current_revision: self.revision },
-            });
+            let response = self
+                .last_fence
+                .as_ref()
+                .filter(|r| {
+                    r.operation_id == query.operation_id && r.payload_sha256 == query.payload_sha256
+                })
+                .cloned()
+                .unwrap_or(NotesFenceResponse {
+                    schema_version: 1,
+                    target: self.target.clone(),
+                    operation_id: query.operation_id,
+                    payload_sha256: query.payload_sha256,
+                    result: NotesFenceResult::Unknown {
+                        current_revision: self.revision,
+                    },
+                });
             serde_json::to_vec(&response).map_err(|_| NotesProtocolError::Receipt)
         })())
     }

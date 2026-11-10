@@ -490,4 +490,3 @@ fn replace_checkpoint(directory: &File, bytes: &[u8]) -> io::Result<()> {
 #[cfg(test)]
 #[path = "notes_store_lock_tests.rs"]
 mod lock_tests;
-

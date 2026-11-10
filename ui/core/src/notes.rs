@@ -10,7 +10,9 @@ use sha2::{Digest, Sha256};
 
 #[path = "notes_fence.rs"]
 mod fence;
-pub use fence::{NotesFence, NotesFenceAction, NotesFenceResponse, NotesFenceResult, NOTES_FENCE_TOPIC};
+pub use fence::{
+    NotesFence, NotesFenceAction, NotesFenceResponse, NotesFenceResult, NOTES_FENCE_TOPIC,
+};
 
 pub const NOTES_SCHEMA_VERSION: u16 = 1;
 pub const NOTES_TOPIC: &str = "trill.notes.replace.v1";
@@ -653,4 +655,3 @@ mod recovery_tests;
 
 #[path = "notes_checkpoint.rs"]
 mod checkpoint;
-

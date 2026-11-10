@@ -237,4 +237,3 @@ fn run(
 #[cfg(test)]
 #[path = "notes_worker_tests.rs"]
 mod tests;
-
