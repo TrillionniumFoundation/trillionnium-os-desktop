@@ -252,6 +252,15 @@ impl NotesStore {
         Ok(receipt)
     }
 
+    /// Return a fence receipt only after the revision and receipt are durable.
+    pub fn fence_exact(&mut self, raw: &[u8]) -> io::Result<crate::notes::NotesFenceResponse> {
+        self.require_application()?;
+        let mut next = self.document.clone();
+        let receipt = next.fence_exact(raw).map_err(protocol_error)?;
+        self.commit(next)?;
+        Ok(receipt)
+    }
+
     /// A local edit participates in the same persisted CAS revision domain.
     pub fn local_edit(&mut self, text: String) -> io::Result<()> {
         self.require_application()?;

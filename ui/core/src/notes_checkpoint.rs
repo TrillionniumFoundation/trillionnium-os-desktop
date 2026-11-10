@@ -60,25 +60,57 @@ struct Checkpoint {
     retired_receipt: Nullable<NotesAcknowledge>,
 }
 
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct FenceCheckpoint {
+    format: CheckpointFormat,
+    schema_version: u16,
+    target: NotesTargetIdentity,
+    text: String,
+    revision: u64,
+    pending_receipt: Nullable<NotesResponse>,
+    retired_receipt: Nullable<NotesAcknowledge>,
+    pending_fence_receipt: Nullable<NotesFenceResponse>,
+}
+
 #[derive(Deserialize)]
 #[serde(untagged)]
 enum InputCheckpoint {
+    Fence(FenceCheckpoint),
     Current(Checkpoint),
     Legacy(LegacyCheckpoint),
 }
 
 impl InputCheckpoint {
-    fn into_document_fields(self) -> Result<LegacyCheckpoint, NotesProtocolError> {
+    fn into_document_fields(
+        self,
+    ) -> Result<(LegacyCheckpoint, Option<NotesFenceResponse>, bool), NotesProtocolError> {
         match self {
-            Self::Current(value) if value.schema_version == 2 => Ok(LegacyCheckpoint {
-                schema_version: value.schema_version,
-                target: value.target,
-                text: value.text,
-                revision: value.revision,
-                pending_receipt: value.pending_receipt,
-                retired_receipt: value.retired_receipt,
-            }),
-            Self::Legacy(value) if value.schema_version == 1 => Ok(value),
+            Self::Fence(value) if value.schema_version == 3 => Ok((
+                LegacyCheckpoint {
+                    schema_version: value.schema_version,
+                    target: value.target,
+                    text: value.text,
+                    revision: value.revision,
+                    pending_receipt: value.pending_receipt,
+                    retired_receipt: value.retired_receipt,
+                },
+                value.pending_fence_receipt.into_option(),
+                true,
+            )),
+            Self::Current(value) if value.schema_version == 2 => Ok((
+                LegacyCheckpoint {
+                    schema_version: value.schema_version,
+                    target: value.target,
+                    text: value.text,
+                    revision: value.revision,
+                    pending_receipt: value.pending_receipt,
+                    retired_receipt: value.retired_receipt,
+                },
+                None,
+                false,
+            )),
+            Self::Legacy(value) if value.schema_version == 1 => Ok((value, None, false)),
             _ => Err(NotesProtocolError::Version),
         }
     }
@@ -89,6 +121,23 @@ impl NotesDocument {
     /// This does not attest persistence; the storage owner must sync the file
     /// and its containing directory before returning an effect/retirement ACK.
     pub fn checkpoint(&self) -> Result<Vec<u8>, NotesProtocolError> {
+        if self.fence_checkpoint {
+            let value = FenceCheckpoint {
+                format: CheckpointFormat::Notes,
+                schema_version: 3,
+                target: self.target.clone(),
+                text: self.text.clone(),
+                revision: self.revision,
+                pending_receipt: self.last_applied.clone().into(),
+                retired_receipt: self.last_retired.clone().into(),
+                pending_fence_receipt: self.last_fence.clone().into(),
+            };
+            let bytes = serde_json::to_vec(&value).map_err(|_| NotesProtocolError::Schema)?;
+            if bytes.len() > MAX_CHECKPOINT_BYTES {
+                return Err(NotesProtocolError::FrameBound);
+            }
+            return Ok(bytes);
+        }
         let value = Checkpoint {
             format: CheckpointFormat::Notes,
             schema_version: 2,
@@ -109,7 +158,7 @@ impl NotesDocument {
     /// the saved receipt to a fresh Session, task or application generation.
     /// Restoring these bytes conveys no permission to execute another effect.
     /// Legacy version-one bytes are read without rewriting their file. A later
-    /// legitimate state change uses version two while retaining the exact old
+    /// legitimate fence uses version three while retaining the exact old
     /// target and receipts; this is not an identity or authority migration.
     pub fn restore_checkpoint(
         raw: &[u8],
@@ -120,7 +169,7 @@ impl NotesDocument {
         }
         let value: InputCheckpoint =
             serde_json::from_slice(raw).map_err(|_| NotesProtocolError::Schema)?;
-        let value = value.into_document_fields()?;
+        let (value, pending_fence, fence_checkpoint) = value.into_document_fields()?;
         let pending_receipt = value.pending_receipt.into_option();
         let retired_receipt = value.retired_receipt.into_option();
         value.target.validate()?;
@@ -131,7 +180,10 @@ impl NotesDocument {
             return Err(NotesProtocolError::TextBound);
         }
         if value.revision == 0
-            && (!value.text.is_empty() || pending_receipt.is_some() || retired_receipt.is_some())
+            && (!value.text.is_empty()
+                || pending_receipt.is_some()
+                || retired_receipt.is_some()
+                || pending_fence.is_some())
         {
             return Err(NotesProtocolError::Receipt);
         }
@@ -139,6 +191,28 @@ impl NotesDocument {
             let raw = serde_json::to_vec(receipt).map_err(|_| NotesProtocolError::Receipt)?;
             NotesResponse::parse_exact(&raw)?;
             let NotesResult::Applied {
+                revision,
+                text_sha256,
+                ..
+            } = &receipt.result
+            else {
+                return Err(NotesProtocolError::Receipt);
+            };
+            if &receipt.target != target
+                || *revision > value.revision
+                || (*revision == value.revision
+                    && *text_sha256 != sha256_hex(value.text.as_bytes()))
+            {
+                return Err(NotesProtocolError::Receipt);
+            }
+        }
+        if let Some(receipt) = &pending_fence {
+            if pending_receipt.is_some() {
+                return Err(NotesProtocolError::Receipt);
+            }
+            let bytes = serde_json::to_vec(receipt).map_err(|_| NotesProtocolError::Receipt)?;
+            NotesFenceResponse::parse_exact(&bytes)?;
+            let NotesFenceResult::Fenced {
                 revision,
                 text_sha256,
                 ..
@@ -167,6 +241,8 @@ impl NotesDocument {
             revision: value.revision,
             last_applied: pending_receipt,
             last_retired: retired_receipt,
+            last_fence: pending_fence,
+            fence_checkpoint,
         })
     }
 }
