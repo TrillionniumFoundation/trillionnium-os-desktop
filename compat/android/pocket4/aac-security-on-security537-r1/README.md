@@ -125,3 +125,7 @@ runtime acceptance. The fixed two-target build compiles the regression target;
 running that original regression is a separate recorded action. APEX content,
 ELF identities and the original library consumer chain must be checked on the
 actual generated artifacts. All such acceptance fields remain false here.
+
+The two `official/commit/*.gitiles-raw` files preserve complete original Gitiles
+responses, including the anti-XSSI prefix. They are raw transport evidence;
+removing the prefix would change the authenticated upstream response bytes.
