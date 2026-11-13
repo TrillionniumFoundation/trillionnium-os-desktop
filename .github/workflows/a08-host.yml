@@ -1312,3 +1312,72 @@ jobs:
             ${{ runner.temp }}/audio537-tests.json
             ${{ runner.temp }}/audio537-tests-logs/*.stdout
             ${{ runner.temp }}/audio537-tests-logs/*.stderr
+
+  intentresolver-security537-current-producer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.93.0'
+      CARGO_TERM_COLOR: never
+      GIT_CONFIG_NOSYSTEM: '1'
+      GIT_CONFIG_GLOBAL: /dev/null
+      GIT_TERMINAL_PROMPT: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Prepare exact Rust toolchain and original rsync
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal
+          if ! command -v rsync >/dev/null; then
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends rsync
+          fi
+          rsync --version
+          rustc --version
+      - name: Verify externally pinned Audio and security inventories and controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          audio="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+          security="$GITHUB_WORKSPACE/compat/android/pocket4/intentresolver-security-on-audio537-r1"
+          cd "$audio"
+          printf '%s  %s\n' 486300e2a033679a87776c68bff4324eff11b53459de3c9712122788f2a76572 FILES.sha256 | sha256sum --check --status
+          sha256sum --quiet -c FILES.sha256
+          cd "$security"
+          printf '%s  %s\n' dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd FILES.sha256 | sha256sum --check --status
+          sha256sum --quiet -c FILES.sha256
+          python3 -I -B "$security/test_verifier.py"
+          python3 -I -B "$security/verify.py" --inventory-sha256 dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd
+      - name: Reconstruct the complete Audio537 baseline and security1511 producer
+        shell: bash
+        run: |
+          set -euo pipefail
+          audio="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+          security="$GITHUB_WORKSPACE/compat/android/pocket4/intentresolver-security-on-audio537-r1"
+          python3 -I -B "$audio/replay_capsule.py" --capsule "$audio" --work "$RUNNER_TEMP/security537-audio-base" --report "$RUNNER_TEMP/security537-audio-replay.json"
+          python3 -I -B "$security/verify.py" --inventory-sha256 dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd --audio-source "$RUNNER_TEMP/security537-audio-base" --output "$RUNNER_TEMP/security537-producer" --report "$RUNNER_TEMP/security537-source-replay.json"
+      - name: Compile four actual security tests and both fresh release tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          security="$GITHUB_WORKSPACE/compat/android/pocket4/intentresolver-security-on-audio537-r1"
+          python3 -I -B "$security/run_ci.py" --inventory-sha256 dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd --producer "$RUNNER_TEMP/security537-producer" --target "$RUNNER_TEMP/security537-cargo-target" --report "$RUNNER_TEMP/security537-tests.json" --jobs 2
+          python3 -I -B "$security/verify.py" --inventory-sha256 dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd --producer "$RUNNER_TEMP/security537-producer" --tests-log "$RUNNER_TEMP/security537-tests-logs/security-four-tests.stdout" --report "$RUNNER_TEMP/security537-source-after.json"
+      - name: Preserve complete source and actual security build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-intentresolver-security537-evidence
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/security537-audio-replay.json
+            ${{ runner.temp }}/security537-source-replay.json
+            ${{ runner.temp }}/security537-tests.json
+            ${{ runner.temp }}/security537-source-after.json
+            ${{ runner.temp }}/security537-tests-logs/*.stdout
+            ${{ runner.temp }}/security537-tests-logs/*.stderr
