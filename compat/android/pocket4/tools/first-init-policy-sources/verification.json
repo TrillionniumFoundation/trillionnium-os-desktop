@@ -1,0 +1,178 @@
+{
+  "verification": {
+    "Android_starts": 0,
+    "ExecutionAdmission_issued": false,
+    "MAC_policy_loads": 0,
+    "all_19_actual_members_nonempty": true,
+    "binary": {
+      "bytes": 687240,
+      "path": "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/droidloom-first-init-policy-sources",
+      "sha256": "e6d3a6bc4a3dac078d76eafc8152148312a6ce9d9e94b05f4523c55026dab52e"
+    },
+    "commands": [
+      {
+        "argv": [
+          "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "build",
+          "--release",
+          "--manifest-path",
+          "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/producer-source/Cargo.toml",
+          "--locked",
+          "--offline",
+          "-j",
+          "2",
+          "--bin",
+          "droidloom-first-init-policy-sources",
+          "--message-format=json"
+        ],
+        "ended_ns": 1794583564680158700,
+        "name": "release-build",
+        "returncode": 0,
+        "started_ns": 1794583546839660800,
+        "stderr": {
+          "bytes": 838,
+          "path": "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/release-build.stderr",
+          "sha256": "f5978de27566fff53d338419ac5b248e43e0c1abc96abfeae43f0f39084034a7"
+        },
+        "stdout": {
+          "bytes": 32488,
+          "path": "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/release-build.stdout",
+          "sha256": "f746de1dc3b291c6a5351aecb3bc503be29c733ffa8dc464c15c719ba3c6d10a"
+        }
+      },
+      {
+        "argv": [
+          "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "test",
+          "--release",
+          "--manifest-path",
+          "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/producer-source/Cargo.toml",
+          "--locked",
+          "--offline",
+          "-j",
+          "2",
+          "--lib",
+          "--",
+          "--test-threads=1"
+        ],
+        "ended_ns": 1794583569907349200,
+        "name": "format-tests",
+        "returncode": 0,
+        "started_ns": 1794583564685372000,
+        "stderr": {
+          "bytes": 589,
+          "path": "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/format-tests.stderr",
+          "sha256": "2afd581fcd1b1a922b3b8c2de2d7e24796d742eff12f579015ddadf347869125"
+        },
+        "stdout": {
+          "bytes": 253,
+          "path": "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/format-tests.stdout",
+          "sha256": "78752923641263d7761786884cfcba0cec49696eed342c30e4b7758621e805a0"
+        }
+      },
+      {
+        "argv": [
+          "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/droidloom-first-init-policy-sources",
+          "--inspect-original-platform-policy",
+          "/home/alex/work/p4-runtime-r8-api19-readonly-20261113-r4/public-source-copies",
+          "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/actual-platform-policy-sources"
+        ],
+        "ended_ns": 1794583580210768600,
+        "name": "original-image-extraction",
+        "returncode": 0,
+        "started_ns": 1794583569907646500,
+        "stderr": {
+          "bytes": 0,
+          "path": "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/original-image-extraction.stderr",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 18978,
+          "path": "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/original-image-extraction.stdout",
+          "sha256": "862769e88d77617d9d4f0f5cec39ddb2c3b5f05671e0ade8e45063b8368a4d34"
+        }
+      }
+    ],
+    "confined_cargo_hardlinks": [
+      "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/target/release/droidloom-first-init-policy-sources",
+      "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/target/release/deps/droidloom_first_init_policy_sources-91a46fffe8c23b5c"
+    ],
+    "corrected_gsi_rc": {
+      "actual_output": {
+        "bytes": 132,
+        "identity": {
+          "bytes": 132,
+          "ctime": 1794583576,
+          "ctime_ns": 368051772,
+          "dev": 66306,
+          "gid": 1000,
+          "ino": 62800332,
+          "links": 1,
+          "mode": 33152,
+          "mtime": 1794583576,
+          "mtime_ns": 368051772,
+          "uid": 1000
+        },
+        "path": "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/actual-platform-policy-sources/original_init.gsi.rc",
+        "sha256": "fb08d2d291cdb989ca023fea1edd342afbc0cb6ffbeb4c40aa49ffc5344478c3"
+      },
+      "member": "/system/system_ext/etc/init/init.gsi.rc",
+      "shape": {
+        "bytes": 132,
+        "semantic_or_runtime_qualification": false,
+        "source_format": "POLICY_METADATA_TEXT"
+      },
+      "stderr_utf8": "debugfs 1.47.2 (1-Jan-2025)\n"
+    },
+    "ended_ns": 1794583580216122000,
+    "errors": [],
+    "original_cargo_binary": {
+      "bytes": 687240,
+      "path": "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/target/release/droidloom-first-init-policy-sources",
+      "sha256": "e6d3a6bc4a3dac078d76eafc8152148312a6ce9d9e94b05f4523c55026dab52e"
+    },
+    "prior_receipt": {
+      "bytes": 18329,
+      "path": "/home/alex/work/p4-runtime-r14-policy-sources-linux-20261113-r1/actual-platform-policy-sources/POLICY-SOURCE-RECEIPT.json",
+      "sha256": "97da4899becc261574f04d2a4d01945efce00cdf99af99ce12615a09abcfe011"
+    },
+    "production_ready": false,
+    "public_cache_manifest": {
+      "bytes": 52156,
+      "path": "/home/alex/work/p4-runtime-r14-policy-sources-linux-20261113-r1/PUBLIC-CACHE-MANIFEST.json",
+      "sha256": "6ab7cdfda33b97a7e5028c2b72db06599d5bf4ae42e49226deb8330bbf3d856e"
+    },
+    "receipt": {
+      "bytes": 18978,
+      "path": "/home/alex/work/p4-runtime-policy-source-current-20261113-e2a3-r2/actual-platform-policy-sources/POLICY-SOURCE-RECEIPT.json",
+      "sha256": "862769e88d77617d9d4f0f5cec39ddb2c3b5f05671e0ade8e45063b8368a4d34"
+    },
+    "resources": {
+      "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+      "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-policy-source-e2a3-r2.service",
+      "invocation_id": "871d823ac5a843c789c63820ffd6b73a",
+      "uid": 1000,
+      "values": {
+        "cpu.max": "200000 100000",
+        "memory.max": "4294967296",
+        "memory.swap.max": "0"
+      }
+    },
+    "runtime_qualified": false,
+    "schema": "p4_corrected_policy_source_verification_v1",
+    "started_ns": 1794583546645051000,
+    "state": "CORRECTED_GSI_PATH_VERIFIED_AGAINST_ORIGINAL_CP3A_IMAGE",
+    "tools_manifest": {
+      "bytes": 2042,
+      "path": "/home/alex/work/p4-runtime-r14-policy-sources-linux-20261113-r1/TOOLS.json",
+      "sha256": "4606b32fcca1c679388362106b0648508326302fdfbd65c16bc2769017943a87"
+    },
+    "unchanged_member_count": 18
+  },
+  "retirement": {
+    "returncode": 0,
+    "stdout": "LoadState=not-found\nActiveState=inactive\nSubState=dead\nMainPID=0\nControlGroup=\n",
+    "stderr": "",
+    "cgroup_exists": false
+  }
+}
