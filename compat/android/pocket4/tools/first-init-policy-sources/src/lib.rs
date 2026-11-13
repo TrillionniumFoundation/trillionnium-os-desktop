@@ -303,6 +303,43 @@ const DIRECTORIES: [(&str, &str); 3] = [
         "/system/product/etc/selinux/mapping",
     ),
 ];
+// These are the original compatibility mappings for the 202604 vendor policy
+// version. The system_ext and product files in this exact image each contain
+// one newline. Preserve those real files without treating empty policy input as
+// a policy, or manufacturing a replacement for a missing image member.
+const MAPPINGS: [(&str, &str, u64); 3] = [
+    (
+        "plat_mapping_202604.cil",
+        "/system/etc/selinux/mapping/202604.cil",
+        234191,
+    ),
+    (
+        "system_ext_mapping_202604.cil",
+        "/system/system_ext/etc/selinux/mapping/202604.cil",
+        1,
+    ),
+    (
+        "product_mapping_202604.cil",
+        "/system/product/etc/selinux/mapping/202604.cil",
+        1,
+    ),
+];
+fn original_mapping_shape(name: &str, bytes: &[u8]) -> Result<Value> {
+    let expected = MAPPINGS
+        .iter()
+        .find(|(role, _, _)| *role == name)
+        .ok_or("fixed original mapping role required")?;
+    need(
+        bytes.len() as u64 == expected.2,
+        "original mapping byte count differs",
+    )?;
+    if expected.2 == 1 {
+        need(bytes == b"\n", "original blank mapping must be one newline")?;
+        Ok(json!({"source_format":"ORIGINAL_BLANK_COMPATIBILITY_MAPPING","mapping_version":"202604","bytes":1,"top_level_forms":0,"secilc_compiled":false,"MAC_loaded_or_enforcing":false,"runtime_authority":false}))
+    } else {
+        cil_shape(bytes)
+    }
+}
 #[cfg(target_os = "linux")]
 fn ordinary_dump(
     tool: &HeldOutput,
@@ -455,7 +492,11 @@ pub fn inspect_original_platform_sources(input: &Path, output: &Path) -> Result<
     )?;
     fs::create_dir(output)?;
     let mut files = Vec::new();
-    for (name, path) in FILES.into_iter().chain(DIRECTORIES) {
+    for (name, path) in FILES
+        .into_iter()
+        .chain(DIRECTORIES)
+        .chain(MAPPINGS.map(|(name, path, _)| (name, path)))
+    {
         let directory = name.ends_with("_directory");
         ordinary_dump(
             &tool,
@@ -479,7 +520,9 @@ pub fn inspect_original_platform_sources(input: &Path, output: &Path) -> Result<
             continue;
         }
         let held = HeldOutput::capture(output, name, 64 * 1024 * 1024)?;
-        let shape = if name.ends_with(".cil") {
+        let shape = if MAPPINGS.iter().any(|(role, _, _)| *role == name) {
+            original_mapping_shape(name, &bytes)?
+        } else if name.ends_with(".cil") {
             cil_shape(&bytes)?
         } else {
             need(
@@ -492,7 +535,7 @@ pub fn inspect_original_platform_sources(input: &Path, output: &Path) -> Result<
     }
     image.revalidate()?;
     tool.revalidate()?;
-    let report = json!({"schema":"actual_original_CP3A_platform_policy_sources_v1","state":"READONLY_ORIGINAL_PLATFORM_POLICY_SOURCES_ONLY","image":image.reference(),"extractor":tool.reference(),"files":files,"required_real_normal_vendor_policy_inputs":["vendor/etc/selinux/vendor_sepolicy.cil","vendor/etc/selinux/plat_pub_versioned.cil","vendor/etc/selinux/plat_sepolicy_vers.txt","vendor/etc/selinux/precompiled_sepolicy and matching platform hashes if used","actual selected normal vendor VINTF and product artifact receipt"],"CP3A_GSI_contains_qualified_final_vendor":false,"secilc_policy_compile_passed":false,"guest_SELinux_active_loaded_enforcing":false,"MAC_policy_loads":0,"Android_starts":0,"ExecutionAdmission_issued":false,"production_ready":false});
+    let report = json!({"schema":"actual_original_CP3A_platform_policy_sources_v2","state":"READONLY_ORIGINAL_PLATFORM_POLICY_SOURCES_ONLY","image":image.reference(),"extractor":tool.reference(),"files":files,"original_mapping_version":"202604","original_mapping_count":3,"selected_final_vendor_policy_version_verified":false,"required_real_normal_vendor_policy_inputs":["vendor/etc/selinux/vendor_sepolicy.cil","vendor/etc/selinux/plat_pub_versioned.cil","vendor/etc/selinux/plat_sepolicy_vers.txt matching the collected original mapping version","vendor/etc/selinux/precompiled_sepolicy and matching platform hashes if used","actual selected normal vendor VINTF and product artifact receipt"],"CP3A_GSI_contains_qualified_final_vendor":false,"secilc_policy_compile_passed":false,"guest_SELinux_active_loaded_enforcing":false,"MAC_policy_loads":0,"Android_starts":0,"ExecutionAdmission_issued":false,"production_ready":false});
     create(&output.join("POLICY-SOURCE-RECEIPT.json"), &report)?;
     Ok(report)
 }
@@ -519,6 +562,23 @@ mod tests {
         ] {
             assert!(cil_shape(value).is_err());
         }
+    }
+    #[test]
+    fn original_blank_mapping_cannot_substitute_for_policy_or_missing_input() {
+        for role in [
+            "system_ext_mapping_202604.cil",
+            "product_mapping_202604.cil",
+        ] {
+            let shape = original_mapping_shape(role, b"\n").unwrap();
+            assert_eq!(shape["top_level_forms"], 0);
+            assert_eq!(shape["runtime_authority"], false);
+            for invalid in [&b""[..], &b" "[..], &b"\r\n"[..], &b"\0"[..]] {
+                assert!(original_mapping_shape(role, invalid).is_err());
+            }
+        }
+        assert!(original_mapping_shape("plat_mapping_202604.cil", b"\n").is_err());
+        assert!(original_mapping_shape("plat_sepolicy.cil", b"\n").is_err());
+        assert!(cil_shape(b"\n").is_err());
     }
 }
 /// Produces a private-guest boot requirement from this actual kernel's complete

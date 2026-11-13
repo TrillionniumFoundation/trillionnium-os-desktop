@@ -1,8 +1,10 @@
 # Original CP3A platform policy source reader
 
-This Rust tool reads the pinned public CP3A system image and extracts the platform policy, context, mapping-directory and init inputs required by Pocket4's Linux Android work.
+This Rust tool reads the pinned public CP3A system image and extracts the platform policy, contexts, compatibility mappings and init inputs required by Pocket4's Linux Android work.
 
 The GSI init file is at `/system/system_ext/etc/init/init.gsi.rc` in this image. The earlier `/system/etc/init/init.gsi.rc` lookup returned an empty member. The fixed table uses the actual system_ext location.
+
+The reader also collects the three original compatibility mappings for vendor policy version `202604`. The platform mapping contains CIL forms. The system_ext and product mappings in this exact image each contain one newline; the reader preserves those original bytes. Only those two fixed mapping roles allow that representation. Empty, missing or whitespace-only policy inputs still cannot qualify as CIL policy.
 
 ## Inputs and execution
 
@@ -28,12 +30,14 @@ systemd-run --user --wait --collect --pipe \
   /absolute/path/to/public-source-copies /absolute/path/to/new-output
 ```
 
-The output directory must not already exist. The tool records every fixed member and reader exit, including explicit missing or empty members.
+The output directory must not already exist. The tool records every fixed member and reader exit, including explicit missing or empty members. The v2 source receipt identifies the mapping version; the final vendor producer must independently prove that its actual policy version matches.
 
 ## Verification
 
-The ordinary Linux release build and the two existing CIL format tests passed on Pocket4 on 2026-11-13. Actual extraction from the pinned image produced all 19 nonempty members. The corrected GSI init script was 132 bytes with SHA-256 `fb08d2d291cdb989ca023fea1edd342afbc0cb6ffbeb4c40aa49ffc5344478c3`, matching an independent read from the image. The other 18 member hashes matched the previous extraction.
+The ordinary Linux release build, two existing CIL format tests and a regression test for original blank mappings passed on Pocket4 on 2026-11-13. Actual extraction from the pinned image produced all 22 nonempty members. The hashes of the previous 19 members were unchanged, including the corrected 132-byte GSI init script.
 
-The verification used two CPUs, a 4 GiB memory ceiling and zero swap. Its unit exited successfully and its cgroup was removed. [verification.json](verification.json) preserves the measured commands and result.
+The original platform mapping is 234191 bytes with SHA-256 `34f9db1571f43aab25ee785130fb2a080c99a49bd87a8a8a4f5c574969b5365e`. It has 4347 structurally balanced top-level CIL forms. The system_ext and product mappings each preserve their original one-byte newline, with SHA-256 `01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b`. All three sizes match the independently retained original image directory entries.
 
-These are source extraction results. The tool does not compile or load SELinux policy, execute Android init, issue ExecutionAdmission, or grant runtime or production qualification. A real normal vendor policy, VINTF/product receipts, policy compilation and enforcing runtime validation remain required.
+The verification used two CPUs, a 4 GiB memory ceiling and zero swap. Its unit exited successfully and its cgroup was removed. [verification.json](verification.json) preserves the measured commands and result; [verification-retirement.json](verification-retirement.json) records retirement.
+
+These are source extraction results. The tool does not compile or load SELinux policy, execute Android init, issue ExecutionAdmission, or grant runtime or production qualification. A real normal vendor policy, matching policy version, VINTF/product receipts, policy compilation and enforcing runtime validation remain required.
