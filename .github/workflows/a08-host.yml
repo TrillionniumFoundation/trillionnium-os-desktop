@@ -1196,7 +1196,7 @@ jobs:
 
   native643-current-producer:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 35
     env:
       PYTHONDONTWRITEBYTECODE: '1'
       RUSTUP_TOOLCHAIN: '1.93.0'
@@ -1220,28 +1220,27 @@ jobs:
           fi
           rsync --version
           rustc --version
-      - name: Replay Native601 to current Native643 source
+      - name: Verify pinned Native643 source and both exact replay paths
         shell: bash
         run: |
           set -euo pipefail
-          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/native643-original-provider-source-r1"
-          work="$RUNNER_TEMP/a08-native643"
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/native643-global-compat-source-r1"
+          work="$RUNNER_TEMP/a08-native643-global"
           mkdir "$work"
-          python3 -I -B "$capsule/verify.py" \
-            --maintained-repo "$GITHUB_WORKSPACE" \
-            --inventory-sha256 31dfd012420e7239af408425e49d5eb9122a1cce38c7ad4c7f009fa5eff8bf4c \
-            --output "$work/producer" \
-            --report "$work/source-replay.json"
-      - name: Compile real Native643 producers and execute all 86 controls
+          cd "$capsule"
+          printf '%s  %s\n' 95dbc4e94925927c536527da6fe57bad205a0fe97aced1e2e5d9b7e104dfec51 FILES.sha256 | sha256sum --check --status
+          sha256sum --quiet -c FILES.sha256
+          python3 -I -B "$capsule/test_verifier.py"
+          python3 -I -B "$capsule/verify.py" --inventory-sha256 95dbc4e94925927c536527da6fe57bad205a0fe97aced1e2e5d9b7e104dfec51 --maintained-repo "$GITHUB_WORKSPACE" --output "$work/producer" --predecessor-output "$work/predecessor-replay" --report "$work/source-replay.json"
+      - name: Compile real Native643 producers and execute all 89 controls
         shell: bash
         run: |
           set -euo pipefail
-          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/native643-original-provider-source-r1"
-          work="$RUNNER_TEMP/a08-native643"
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/native643-global-compat-source-r1"
+          work="$RUNNER_TEMP/a08-native643-global"
           cargo fetch --locked --manifest-path "$work/producer/Cargo.toml"
-          python3 -I -B "$capsule/run-normal-controls.py" \
-            --workspace "$work/producer" --output "$work/normal" --offline \
-            --inventory-sha256 31dfd012420e7239af408425e49d5eb9122a1cce38c7ad4c7f009fa5eff8bf4c
+          python3 -I -B "$capsule/run-normal-controls.py" --workspace "$work/producer" --output "$work/normal" --offline --inventory-sha256 95dbc4e94925927c536527da6fe57bad205a0fe97aced1e2e5d9b7e104dfec51
+          python3 -I -B "$capsule/verify.py" --inventory-sha256 95dbc4e94925927c536527da6fe57bad205a0fe97aced1e2e5d9b7e104dfec51 --producer "$work/producer" --report "$work/source-after.json"
       - name: Preserve Native source and ordinary build evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -1249,10 +1248,11 @@ jobs:
           name: a08-native643-current-producer-evidence
           if-no-files-found: warn
           path: |
-            ${{ runner.temp }}/a08-native643/source-replay.json
-            ${{ runner.temp }}/a08-native643/normal/*.json
-            ${{ runner.temp }}/a08-native643/normal/*.stdout
-            ${{ runner.temp }}/a08-native643/normal/*.stderr
+            ${{ runner.temp }}/a08-native643-global/source-replay.json
+            ${{ runner.temp }}/a08-native643-global/source-after.json
+            ${{ runner.temp }}/a08-native643-global/normal/*.json
+            ${{ runner.temp }}/a08-native643-global/normal/*.stdout
+            ${{ runner.temp }}/a08-native643-global/normal/*.stderr
 
   audio537-current-producer:
     runs-on: ubuntu-24.04

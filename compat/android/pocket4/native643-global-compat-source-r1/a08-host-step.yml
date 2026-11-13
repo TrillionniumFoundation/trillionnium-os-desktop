@@ -1,0 +1,20 @@
+# Independent Native643 CI job. Set NATIVE643_GLOBAL_INVENTORY_SHA256 in the
+# containing workflow to the reviewed FILES.sha256 digest, not a self-read pin.
+- name: Replay current Native643 global compatibility producer
+  shell: bash
+  run: |
+    set -euo pipefail
+    : "${NATIVE643_GLOBAL_INVENTORY_SHA256:?external Native inventory pin required}"
+    capsule="$GITHUB_WORKSPACE/compat/android/pocket4/native643-global-compat-source-r1"
+    python3 -I -B "$capsule/verify.py" --inventory-sha256 "$NATIVE643_GLOBAL_INVENTORY_SHA256" --maintained-repo "$GITHUB_WORKSPACE" --output "$RUNNER_TEMP/native643-global-producer" --predecessor-output "$RUNNER_TEMP/native643-global-predecessor-replay" --report "$RUNNER_TEMP/native643-global-replay.json"
+    python3 -I -B "$capsule/test_verifier.py"
+    cargo +1.93.0 fetch --locked --manifest-path "$RUNNER_TEMP/native643-global-producer/Cargo.toml"
+- name: Compile and execute actual Native643 89 current controls
+  timeout-minutes: 30
+  shell: bash
+  run: |
+    set -euo pipefail
+    export RUSTUP_TOOLCHAIN=1.93.0
+    capsule="$GITHUB_WORKSPACE/compat/android/pocket4/native643-global-compat-source-r1"
+    python3 -I -B "$capsule/run-normal-controls.py" --inventory-sha256 "$NATIVE643_GLOBAL_INVENTORY_SHA256" --workspace "$RUNNER_TEMP/native643-global-producer" --output "$RUNNER_TEMP/native643-global-normal" --offline
+    python3 -I -B "$capsule/verify.py" --inventory-sha256 "$NATIVE643_GLOBAL_INVENTORY_SHA256" --producer "$RUNNER_TEMP/native643-global-producer" --report "$RUNNER_TEMP/native643-global-complete-after.json"
