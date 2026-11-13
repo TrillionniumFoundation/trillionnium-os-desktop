@@ -238,8 +238,12 @@ pub fn cil_shape(bytes: &[u8]) -> Result<Value> {
         json!({"source_format":"CIL_TEXT_STRUCTURAL_ONLY","bytes":bytes.len(),"top_level_forms":forms,"maximum_depth":maximum,"secilc_compiled":false,"MAC_loaded_or_enforcing":false,"runtime_authority":false}),
     )
 }
-const FILES: [(&str, &str); 16] = [
+const FILES: [(&str, &str); 17] = [
     ("plat_sepolicy.cil", "/system/etc/selinux/plat_sepolicy.cil"),
+    (
+        "plat_sepolicy_genfs_202604.cil",
+        "/system/etc/selinux/plat_sepolicy_genfs_202604.cil",
+    ),
     (
         "plat_file_contexts",
         "/system/etc/selinux/plat_file_contexts",
@@ -535,7 +539,7 @@ pub fn inspect_original_platform_sources(input: &Path, output: &Path) -> Result<
     }
     image.revalidate()?;
     tool.revalidate()?;
-    let report = json!({"schema":"actual_original_CP3A_platform_policy_sources_v2","state":"READONLY_ORIGINAL_PLATFORM_POLICY_SOURCES_ONLY","image":image.reference(),"extractor":tool.reference(),"files":files,"original_mapping_version":"202604","original_mapping_count":3,"selected_final_vendor_policy_version_verified":false,"required_real_normal_vendor_policy_inputs":["vendor/etc/selinux/vendor_sepolicy.cil","vendor/etc/selinux/plat_pub_versioned.cil","vendor/etc/selinux/plat_sepolicy_vers.txt matching the collected original mapping version","vendor/etc/selinux/precompiled_sepolicy and matching platform hashes if used","actual selected normal vendor VINTF and product artifact receipt"],"CP3A_GSI_contains_qualified_final_vendor":false,"secilc_policy_compile_passed":false,"guest_SELinux_active_loaded_enforcing":false,"MAC_policy_loads":0,"Android_starts":0,"ExecutionAdmission_issued":false,"production_ready":false});
+    let report = json!({"schema":"actual_original_CP3A_platform_policy_sources_v3","state":"READONLY_ORIGINAL_PLATFORM_POLICY_SOURCES_ONLY","image":image.reference(),"extractor":tool.reference(),"files":files,"original_mapping_version":"202604","original_mapping_count":3,"original_genfs_labels_version":"202604","original_genfs_policy_member":"/system/etc/selinux/plat_sepolicy_genfs_202604.cil","selected_final_vendor_genfs_labels_version_verified":false,"selected_final_vendor_policy_version_verified":false,"required_real_normal_vendor_policy_inputs":["vendor/etc/selinux/vendor_sepolicy.cil","vendor/etc/selinux/plat_pub_versioned.cil","vendor/etc/selinux/plat_sepolicy_vers.txt matching the collected original mapping version","vendor/etc/selinux/precompiled_sepolicy and matching platform hashes if used","actual selected normal vendor VINTF and product artifact receipt"],"CP3A_GSI_contains_qualified_final_vendor":false,"secilc_policy_compile_passed":false,"guest_SELinux_active_loaded_enforcing":false,"MAC_policy_loads":0,"Android_starts":0,"ExecutionAdmission_issued":false,"production_ready":false});
     create(&output.join("POLICY-SOURCE-RECEIPT.json"), &report)?;
     Ok(report)
 }
