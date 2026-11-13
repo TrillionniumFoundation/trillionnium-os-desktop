@@ -1452,3 +1452,79 @@ jobs:
             ${{ runner.temp }}/aac330-complete-after.json
             ${{ runner.temp }}/aac330-ci-logs/*.stdout
             ${{ runner.temp }}/aac330-ci-logs/*.stderr
+
+  audio538-current-producer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.93.0'
+      CARGO_TERM_COLOR: never
+      GIT_CONFIG_NOSYSTEM: '1'
+      GIT_CONFIG_GLOBAL: /dev/null
+      GIT_TERMINAL_PROMPT: '0'
+      AUDIO538_INVENTORY_SHA256: 41c50621d1d8359be7f18594247f8ccdee4d44b92f3e9b8398b8b67efca5b4d8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Prepare exact Rust toolchain and original rsync
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal
+          if ! command -v rsync >/dev/null; then
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends rsync
+          fi
+          rsync --version
+          rustc --version
+      # Independent current Android-tool A08 job. Checkout, Rust and the same host
+      # build dependencies precede these steps. AUDIO538_INVENTORY_SHA256 is the
+      # reviewed containing-workflow pin; every ancestor capsule has a fixed pin.
+      - name: Reconstruct complete Audio537, Security537, AAC330 and unified Audio538
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${AUDIO538_INVENTORY_SHA256:?external Audio538 inventory pin required}"
+          audio="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+          security="$GITHUB_WORKSPACE/compat/android/pocket4/intentresolver-security-on-audio537-r1"
+          aac="$GITHUB_WORKSPACE/compat/android/pocket4/aac-security-on-security537-r1"
+          current="$GITHUB_WORKSPACE/compat/android/pocket4/audio538-unified-security-source-r1"
+          printf '%s  %s\n' "$AUDIO538_INVENTORY_SHA256" "$current/FILES.sha256" | sha256sum --check --status
+          (cd "$current" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' 'b8877b88a3968b5407852844260e163d4859be275207ea4f8cc44b8f256e6bff' "$aac/FILES.sha256" | sha256sum --check --status
+          (cd "$aac" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' 'dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd' "$security/FILES.sha256" | sha256sum --check --status
+          (cd "$security" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' '486300e2a033679a87776c68bff4324eff11b53459de3c9712122788f2a76572' "$audio/FILES.sha256" | sha256sum --check --status
+          (cd "$audio" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B "$audio/replay_capsule.py" --capsule "$audio" --work "$RUNNER_TEMP/audio538-audio-base" --report "$RUNNER_TEMP/audio538-audio-replay.json"
+          python3 -I -B "$security/verify.py" --inventory-sha256 dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd --audio-source "$RUNNER_TEMP/audio538-audio-base" --output "$RUNNER_TEMP/audio538-security-base" --report "$RUNNER_TEMP/audio538-security-replay.json"
+          python3 -I -B "$aac/verify.py" --inventory-sha256 b8877b88a3968b5407852844260e163d4859be275207ea4f8cc44b8f256e6bff --security-source "$RUNNER_TEMP/audio538-security-base" --output "$RUNNER_TEMP/audio538-aac-base" --report "$RUNNER_TEMP/audio538-aac-replay.json"
+          python3 -I -B "$current/verify.py" --inventory-sha256 "$AUDIO538_INVENTORY_SHA256" --parent-source "$RUNNER_TEMP/audio538-aac-base" --output "$RUNNER_TEMP/audio538-producer" --report "$RUNNER_TEMP/audio538-replay.json"
+          python3 -I -B "$current/test_verifier.py"
+      - name: Run one source and three updater tests and build both current release tools
+        timeout-minutes: 45
+        shell: bash
+        run: |
+          set -euo pipefail
+          current="$GITHUB_WORKSPACE/compat/android/pocket4/audio538-unified-security-source-r1"
+          python3 -I -B "$current/run_ci.py" --inventory-sha256 "$AUDIO538_INVENTORY_SHA256" --producer "$RUNNER_TEMP/audio538-producer" --target "$RUNNER_TEMP/audio538-fresh-cargo-target" --report "$RUNNER_TEMP/audio538-ci.json" --jobs 2
+          python3 -I -B "$current/verify.py" --inventory-sha256 "$AUDIO538_INVENTORY_SHA256" --producer "$RUNNER_TEMP/audio538-producer" --report "$RUNNER_TEMP/audio538-complete-after.json"
+      - name: Preserve complete Audio538 source and fresh build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-audio538-evidence
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/audio538-audio-replay.json
+            ${{ runner.temp }}/audio538-security-replay.json
+            ${{ runner.temp }}/audio538-aac-replay.json
+            ${{ runner.temp }}/audio538-replay.json
+            ${{ runner.temp }}/audio538-ci.json
+            ${{ runner.temp }}/audio538-complete-after.json
+            ${{ runner.temp }}/audio538-ci-logs/*.stdout
+            ${{ runner.temp }}/audio538-ci-logs/*.stderr

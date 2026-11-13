@@ -1,0 +1,112 @@
+{
+  "adopted_normal_exit": {
+    "children": [],
+    "complete": true,
+    "deadline": 1687467.030097948,
+    "elapsed_seconds": 0.0003972959239035845,
+    "leader_pid": 3262451,
+    "leader_reaped_here": false,
+    "remaining_adopted_children": [],
+    "signals_sent": 0
+  },
+  "argv": [
+    "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-update",
+    "--source",
+    "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/recipe",
+    "-j6",
+    "vendor-policy-bundle-build",
+    "--work",
+    "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work"
+  ],
+  "driver": {
+    "argv": [
+      "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-update",
+      "--source",
+      "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/recipe",
+      "-j6",
+      "vendor-policy-bundle-build",
+      "--work",
+      "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work"
+    ],
+    "cgroup": "0::/system.slice/p4-audio537-libexif-vendor-bundle-user-full-desktop-e2a3-r2.service\n",
+    "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-update",
+    "pid": 3262451,
+    "start_ticks": 168676014
+  },
+  "errors": [
+    {
+      "message": "owned command exited unsuccessfully",
+      "stage": "execution",
+      "type": "RuntimeError"
+    }
+  ],
+  "finished_ns": 1794609796042193900,
+  "lifecycle": {
+    "child_reaped": true,
+    "cleanup_elapsed_seconds": 0.0005271791014820337,
+    "descendants": [],
+    "group_signal_unneeded_exited_only_child": true,
+    "leader_alive_before_group_cleanup": false,
+    "leader_observed_before_reap": {
+      "code": 1,
+      "pid": 3262451,
+      "status": 1
+    },
+    "leader_unreaped_before_group_cleanup": true,
+    "owned_tree_cleanup_complete": true,
+    "pidfd_closed": true,
+    "remaining_owned_children": [],
+    "returncode": 1
+  },
+  "name": "normal-full-vendor-policy",
+  "observed_before_reap": {
+    "code": 1,
+    "pid": 3262451,
+    "status": 1
+  },
+  "owned_retirement_complete": true,
+  "reaper": {
+    "begin_passed": true,
+    "cleanup_deadline_supplied_by_caller": true,
+    "final_children_empty": true,
+    "max_adopted_per_command": 128,
+    "original_subreaper_flag": 0,
+    "pid": 3112788,
+    "protected_pid_count": 0,
+    "restored": true,
+    "signals_only_to_kernel_proven_owned_children": true
+  },
+  "started_ns": 1794609094150610474,
+  "stderr": {
+    "bytes": 530039,
+    "identity": [
+      2067,
+      3719743,
+      33188,
+      1000,
+      1000,
+      1,
+      530039,
+      1794609796008553175,
+      1794609796008553175
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/vendor-policy537-libexif-bundle-20261113-e2a3-r2/commands/normal-full-vendor-policy.stderr",
+    "sha256": "91789665a7ca052c51918d68af59d5c8676a916ff3dd94a4d7a72b21350fe521"
+  },
+  "stdout": {
+    "bytes": 11396,
+    "identity": [
+      2067,
+      3719742,
+      33188,
+      1000,
+      1000,
+      1,
+      11396,
+      1794609795650564160,
+      1794609795650564160
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/vendor-policy537-libexif-bundle-20261113-e2a3-r2/commands/normal-full-vendor-policy.stdout",
+    "sha256": "02cbef41b147b31b8092b8f06227d8237bd2b653c20850ce0abd60a326028406"
+  }
+}
