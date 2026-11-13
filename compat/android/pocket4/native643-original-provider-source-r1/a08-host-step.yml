@@ -1,0 +1,22 @@
+# Insert in the existing A08 Linux job after its Rust toolchain and rsync setup.
+# Pin the final FILES.sha256 digest in the maintained workflow; do not use a
+# digest read from the capsule itself as the external trust anchor.
+- name: Verify current Native643 source replay and ordinary controls
+  shell: bash
+  run: |
+    set -euo pipefail
+    capsule="$GITHUB_WORKSPACE/compat/android/pocket4/native643-original-provider-source-r1"
+    work="$RUNNER_TEMP/a08-native643"
+    mkdir -p "$work" "$RUNNER_TEMP/a08"
+    python3 -I -B "$capsule/verify.py" \
+      --maintained-repo "$GITHUB_WORKSPACE" \
+      --inventory-sha256 REPLACE_WITH_REVIEWED_FINAL_FILES_SHA256 \
+      --output "$work/producer" \
+      --report "$RUNNER_TEMP/a08/native643-source-replay.json"
+    rustup toolchain install 1.93.0 --profile minimal
+    cargo +1.93.0 fetch --locked --manifest-path "$work/producer/Cargo.toml"
+    export RUSTUP_TOOLCHAIN=1.93.0
+    python3 -I -B "$capsule/run-normal-controls.py" \
+      --workspace "$work/producer" --output "$work/normal" --offline \
+      --inventory-sha256 REPLACE_WITH_REVIEWED_FINAL_FILES_SHA256
+    cp "$work/normal/result.json" "$RUNNER_TEMP/a08/native643-normal-controls.json"

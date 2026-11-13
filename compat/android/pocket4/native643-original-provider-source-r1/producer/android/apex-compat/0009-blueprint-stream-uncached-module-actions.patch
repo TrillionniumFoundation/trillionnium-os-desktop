@@ -1,0 +1,16 @@
+--- a/context.go
++++ b/context.go
+@@ -5623,7 +5623,12 @@
+ 					}
+ 				}()
+ 				writer := newNinjaWriter(buf)
+-				err = c.writeIncrementalModules(batchModules, writer)
++				if c.GetIncrementalEnabled() {
++					err = c.writeIncrementalModules(batchModules, writer)
++				} else {
++					// Uncached modules can be streamed without retaining whole-module buffers.
++					err = c.writeModuleAction(batchModules, writer)
++				}
+ 				if err != nil {
+ 					errorCh <- err
+ 				}
