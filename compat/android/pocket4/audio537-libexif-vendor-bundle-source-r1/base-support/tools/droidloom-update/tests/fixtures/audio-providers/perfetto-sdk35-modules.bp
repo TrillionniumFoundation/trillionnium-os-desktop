@@ -1,0 +1,27 @@
+// GN: //src/java_sdk/main:perfetto_lib
+android_library {
+    name: "perfetto_src_java_sdk_main_perfetto_lib",
+    srcs: [
+        "src/java_sdk/main/java/com/google/perfetto/sdk/PerfettoExampleWrapper.java",
+    ],
+    manifest: "src/java_sdk/main/LibraryAndroidManifest.xml",
+    sdk_version: "35",
+}
+
+// GN: //src/java_sdk/test:perfetto_test_lib
+android_library {
+    name: "perfetto_src_java_sdk_test_perfetto_test_lib",
+    srcs: [
+        "src/java_sdk/test/java/com/google/perfetto/sdk/test/SimpleInstrumentationTest.java",
+    ],
+    manifest: "src/java_sdk/test/TestLibraryAndroidManifest.xml",
+    static_libs: [
+        "androidx.test.ext.junit",
+        "androidx.test.runner",
+        "junit",
+        "perfetto_src_java_sdk_main_perfetto_lib",
+        "truth",
+    ],
+    sdk_version: "35",
+}
+

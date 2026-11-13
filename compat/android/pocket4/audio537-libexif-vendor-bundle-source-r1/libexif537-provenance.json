@@ -1,0 +1,654 @@
+{
+  "actual_failed_full_H": "desktop/1a1d64f13a7-392-927",
+  "existing_original_Blueprints": [
+    {
+      "bytes": 10592,
+      "path": "frameworks/av/services/camera/libcameraservice/Android.bp",
+      "sha256": "0cefe30c4a76dfd0e9a24092908ad22c4520b20281e8d6992149072309c9721a"
+    },
+    {
+      "bytes": 1986,
+      "path": "external/dynamic_depth/Android.bp",
+      "sha256": "3e4fdba538c06b65e2a37c4a0e83730e3bf6b2c5fd950fc142bf49588b4b0bbf"
+    },
+    {
+      "bytes": 10518,
+      "path": "external/libjpeg-turbo/Android.bp",
+      "sha256": "a1c573b0948772b666021a83000688ec9f92ff8c316a3eac294559b97660b7a6"
+    },
+    {
+      "bytes": 39154,
+      "path": "external/libxml2/Android.bp",
+      "sha256": "23118f1d9f88e910e92bc5d3bfc329b8b489a1ed9d8b90d79de1c127c76bbcfe"
+    },
+    {
+      "bytes": 6764,
+      "path": "frameworks/av/camera/Android.bp",
+      "sha256": "99fdf64377ab08f959d5263ff3803c622ffb68b84f9a0aaa7d766a4839ae916c"
+    },
+    {
+      "bytes": 29180,
+      "path": "frameworks/native/libs/binder/Android.bp",
+      "sha256": "f984bc90258c3b343a48033c9dcd450814c804af67ddd0152b6bfa5307127e87"
+    },
+    {
+      "bytes": 5167,
+      "path": "packages/modules/StatsD/lib/libstatspull/Android.bp",
+      "sha256": "fde52e11594a382862d4b3d11e9a38f3655a877c78c9629d2f5aa4bdc37e7682"
+    },
+    {
+      "bytes": 8090,
+      "path": "system/core/libutils/Android.bp",
+      "sha256": "dd6de537de330cb420b63883da38c739aa1ab7f9256fa22c2bb630e28909a3bb"
+    },
+    {
+      "bytes": 6804,
+      "path": "system/libbase/Android.bp",
+      "sha256": "2e3f7e52769a44e4b0f7d3c6557776e9d939da2733118574f2b350e63cd3894d"
+    },
+    {
+      "bytes": 6450,
+      "path": "system/logging/liblog/Android.bp",
+      "sha256": "6d338a6006e1b7aff334cca19930f45c6c5d7fcd67823591ad0636e29be7c1b4"
+    },
+    {
+      "bytes": 2029,
+      "path": "system/media/camera/Android.bp",
+      "sha256": "b3347c3ec5dab27f6fa84d6c41690d121a5d04a4b1c14be25c8649aad509821b"
+    }
+  ],
+  "generic_file_max_bytes": 16777216,
+  "new_complete_selected_original_bytes": 1500241,
+  "new_complete_selected_original_files": 68,
+  "new_large_body_exceptions": 0,
+  "new_project_count": 1,
+  "new_source_lock_sha256": "84bdef58aa934bcaa1926f9ea901186017c5f53118db1683fec1283489e0f31b",
+  "old_source_lock_sha256": "56ea7b952f508629ec8e518de368922e5991f07adf6cde470f96f043a6ff1794",
+  "original_camera_direct_dependencies": {
+    "header_libs": [
+      "libdynamic_depth-internal_headers",
+      "libdynamic_depth-public_headers"
+    ],
+    "shared_libs": [
+      "camera_platform_flags_c_lib",
+      "camera_platform_flags_c_lib_for_test",
+      "libbase",
+      "libbinder",
+      "libcamera_metadata",
+      "libdynamic_depth",
+      "libexif",
+      "libjpeg",
+      "liblog",
+      "libstatspull",
+      "libutils",
+      "libxml2"
+    ]
+  },
+  "original_camera_module": "libcameraservice_device_independent",
+  "original_contrib_cone_captured_for_comparison_but_not_selected": true,
+  "original_libexif_shared_dependencies": [
+    "liblog"
+  ],
+  "project": {
+    "commit": "e180c53a25cc0f26e6e0caf4a2708c41b8ec5214",
+    "name": "platform/external/libexif",
+    "path": "external/libexif",
+    "purpose": "Pinned same-superproject original shared libexif and complete native source/header/license closure required by the actual strict libcameraservice_device_independent dependency",
+    "sparse_paths": [
+      "libexif"
+    ]
+  },
+  "schema": "audio537-same-superproject-libexif-native-provider-originals-v1",
+  "source_build_or_runtime_qualification": false,
+  "source_files": [
+    {
+      "bytes": 53838,
+      "git_blob": "2f50c6693eff1c55f5696c5bd593f328cc0f0f95",
+      "mode": "100644",
+      "relative": "ABOUT-NLS",
+      "sha256": "7cdde3110b8642b4ff7a76a870b006c0db599f9b9429059f765986418d049155",
+      "source_path": "external/libexif/ABOUT-NLS"
+    },
+    {
+      "bytes": 162,
+      "git_blob": "127a5b494ba5a1ee095a34499b4c99fea9e260d7",
+      "mode": "100644",
+      "relative": "AUTHORS",
+      "sha256": "fe4e264840222918a17b78014fa5aa4c438b9a7e81639fb9b2ff6d9a0c4d61cc",
+      "source_path": "external/libexif/AUTHORS"
+    },
+    {
+      "bytes": 3545,
+      "git_blob": "27b0895ca35d7a800cf1a58c2351363fbae4e9cf",
+      "mode": "100644",
+      "relative": "Android.bp",
+      "sha256": "341ccf904de372b9c5b5a8eefcf3f5c9b8e4de09729bd7631a63ebcc367fb1a2",
+      "source_path": "external/libexif/Android.bp"
+    },
+    {
+      "bytes": 26434,
+      "git_blob": "602bfc94635ddf8f1bf2b00419a85ead645a5b67",
+      "mode": "100644",
+      "relative": "COPYING",
+      "sha256": "36b6d3fa47916943fd5fec313c584784946047ec1337a78b440e5992cb595f89",
+      "source_path": "external/libexif/COPYING"
+    },
+    {
+      "bytes": 67816,
+      "git_blob": "b9b01d70cb13e2928f342c4749876b7c54a06bff",
+      "mode": "100644",
+      "relative": "ChangeLog",
+      "sha256": "ac473d6f80080dfa64e21b6a90267f4b8b6873383045b468598a0dd9e881b669",
+      "source_path": "external/libexif/ChangeLog"
+    },
+    {
+      "bytes": 15578,
+      "git_blob": "7d1c323beae76333f523f6df31c47a87f5597edb",
+      "mode": "100644",
+      "relative": "INSTALL",
+      "sha256": "91826b889739b720e0da7055b74a5a579dd31ad2f3b683b15302039df676e34f",
+      "source_path": "external/libexif/INSTALL"
+    },
+    {
+      "bytes": 577,
+      "git_blob": "3ced8ef959fa03f88639ebe214332253db0c200c",
+      "mode": "100644",
+      "relative": "METADATA",
+      "sha256": "7b1f086a9e9296973ab2389df5c89fdccb302c3cc5652675522172b788231ea6",
+      "source_path": "external/libexif/METADATA"
+    },
+    {
+      "bytes": 0,
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "mode": "100644",
+      "relative": "MODULE_LICENSE_LGPL",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_path": "external/libexif/MODULE_LICENSE_LGPL"
+    },
+    {
+      "bytes": 1533,
+      "git_blob": "ed10b687f059cf8065885eefa8b8f2d3d0fd317f",
+      "mode": "100644",
+      "relative": "Makefile.am",
+      "sha256": "36c40ef62b625cc98d588091ddb9008f4559f77e4cd1eed6d0bd3ddadf575374",
+      "source_path": "external/libexif/Makefile.am"
+    },
+    {
+      "bytes": 29398,
+      "git_blob": "152ea26062b06ceffc057542ebb3e2fa938fdfe8",
+      "mode": "100644",
+      "relative": "Makefile.in",
+      "sha256": "009c4af1241176f4804926b9ed087cfd53e4f7b69a455eb040a0a06bc550dbc3",
+      "source_path": "external/libexif/Makefile.in"
+    },
+    {
+      "bytes": 6173,
+      "git_blob": "b7aceb16e4280d221fff5c63c1662d55525f1f21",
+      "mode": "100644",
+      "relative": "NEWS",
+      "sha256": "4b10f762e6ce468f6b5feb73a57a7c62938b707d22d1a6bc562a1fddfbc78f8e",
+      "source_path": "external/libexif/NEWS"
+    },
+    {
+      "bytes": 26434,
+      "git_blob": "602bfc94635ddf8f1bf2b00419a85ead645a5b67",
+      "mode": "100644",
+      "relative": "NOTICE",
+      "sha256": "36b6d3fa47916943fd5fec313c584784946047ec1337a78b440e5992cb595f89",
+      "source_path": "external/libexif/NOTICE"
+    },
+    {
+      "bytes": 212,
+      "git_blob": "8697f51b5407d63e90d2001aa5f428a1c94841d6",
+      "mode": "100644",
+      "relative": "OWNERS",
+      "sha256": "c2e5b2410bf0689e3c63c39b753772b6cbc9456a6276d4ef1f196115f1aa64a3",
+      "source_path": "external/libexif/OWNERS"
+    },
+    {
+      "bytes": 6142,
+      "git_blob": "13683cc3d7d2d5a82bd90aeac08f5ed19b26c246",
+      "mode": "100644",
+      "relative": "README",
+      "sha256": "b6883a3ee10ee2c6aa3fc7ee5627e4543360564cec3303e8a65592ef658dd9d6",
+      "source_path": "external/libexif/README"
+    },
+    {
+      "bytes": 946,
+      "git_blob": "45a16af9933370cf2190ca8a0fe657e9be220af8",
+      "mode": "100644",
+      "relative": "README-Win32.txt",
+      "sha256": "38303da59b042bf99d5508832483cc1d1518a3d3d0526771ab68dfe9b4f7d99b",
+      "source_path": "external/libexif/README-Win32.txt"
+    },
+    {
+      "bytes": 153,
+      "git_blob": "7d0393c94da58cd336d646ffb2bd01524f14e1f0",
+      "mode": "100644",
+      "relative": "README.android",
+      "sha256": "becf72cf3772dc8f76d8f6b25534d532d4a7465146266e2546f5482a4be9e8ce",
+      "source_path": "external/libexif/README.android"
+    },
+    {
+      "bytes": 132,
+      "git_blob": "1f8298290de03bc1fbd26cfc46de5877db4619d3",
+      "mode": "100644",
+      "relative": "README.version",
+      "sha256": "68d12b5e05653c99cea1bd7850ee681b4fbfb931edd5a60927976c522e81734f",
+      "source_path": "external/libexif/README.version"
+    },
+    {
+      "bytes": 37911,
+      "git_blob": "86f9372e791f4f94fe59f490c14d35742e29872f",
+      "mode": "100644",
+      "relative": "aclocal.m4",
+      "sha256": "1b6af4ead408eb9bccff44485c71cc493eda499167f98d520bce10b2e48a5d00",
+      "source_path": "external/libexif/aclocal.m4"
+    },
+    {
+      "bytes": 44941,
+      "git_blob": "dc84c68ef798c6a5000c78c6dd7380d34c9e0218",
+      "mode": "100755",
+      "relative": "config.guess",
+      "sha256": "8486189f55971e6bde5ace26d97a2a51470fe49222160647d258be15d1e693b2",
+      "source_path": "external/libexif/config.guess"
+    },
+    {
+      "bytes": 2809,
+      "git_blob": "cdb6f0460bfb1d710d5dce903762259a3a40c62c",
+      "mode": "100644",
+      "relative": "config.h",
+      "sha256": "6c572c9a3509e24830fe0cf2874de5847ca70e894522544398f606c90421f675",
+      "source_path": "external/libexif/config.h"
+    },
+    {
+      "bytes": 2440,
+      "git_blob": "527bd6138f68971269b029489196048edb00c21d",
+      "mode": "100644",
+      "relative": "config.h.in",
+      "sha256": "c5bd3eb491f27ae85580e7f336d5080cad9ead38fc96a903807f3ac2e3381aef",
+      "source_path": "external/libexif/config.h.in"
+    },
+    {
+      "bytes": 14987,
+      "git_blob": "4db13e50f66ff3cb15db9f82394b13aa48a7d8e6",
+      "mode": "100755",
+      "relative": "config.rpath",
+      "sha256": "e0380c868ff060c190b3f56d7f30dde939b8a529f5a980f355f3080a56c1594d",
+      "source_path": "external/libexif/config.rpath"
+    },
+    {
+      "bytes": 34423,
+      "git_blob": "2a55a50751c1aaf99de876b404ed613005dfcce1",
+      "mode": "100755",
+      "relative": "config.sub",
+      "sha256": "4b046cb76957a1a683f30014263c0672b02d8425086a721e6ef25aede80ff861",
+      "source_path": "external/libexif/config.sub"
+    },
+    {
+      "bytes": 490200,
+      "git_blob": "98b5c5295a3c983f00888a66c138b87d3f1271ae",
+      "mode": "100755",
+      "relative": "configure",
+      "sha256": "7aedbde73fbae06cf90bbf1a669b8ca51b234a20dbaa96354d521e43452d1471",
+      "source_path": "external/libexif/configure"
+    },
+    {
+      "bytes": 7619,
+      "git_blob": "eef68ec553ad3c6d3e2d706dd0d9051ebc690959",
+      "mode": "100644",
+      "relative": "configure.ac",
+      "sha256": "997208f03149c83264f799b75e03f686db1eb65e20aa44a62589015af09b7feb",
+      "source_path": "external/libexif/configure.ac"
+    },
+    {
+      "bytes": 18615,
+      "git_blob": "df8eea7e4ce8862105fcd7929b20bdb45488048b",
+      "mode": "100755",
+      "relative": "depcomp",
+      "sha256": "20efdbd4f295e6b759a024fe045671de5db6066e2a210be3296eeb9c38a1b238",
+      "source_path": "external/libexif/depcomp"
+    },
+    {
+      "bytes": 13663,
+      "git_blob": "6781b987bdbcbc23efe6bbe1654a1e3637b9af07",
+      "mode": "100755",
+      "relative": "install-sh",
+      "sha256": "a42cce53f5b376a4b1251e8d06e96dead9e858396d07333ed0cc83aa4b510023",
+      "source_path": "external/libexif/install-sh"
+    },
+    {
+      "bytes": 168,
+      "git_blob": "41a8e74e3fa805d65603e60d3ffdb90aa42d57f0",
+      "mode": "100644",
+      "relative": "libexif-uninstalled.pc.in",
+      "sha256": "dc0c30f39c1ba2346263a5ea144c686b361f6bb72d54ea5518c2aefd3bae832a",
+      "source_path": "external/libexif/libexif-uninstalled.pc.in"
+    },
+    {
+      "bytes": 243,
+      "git_blob": "107ab89ae29cbe5a0e7c939fa0355c9a1cc723e2",
+      "mode": "100644",
+      "relative": "libexif.pc.in",
+      "sha256": "e0e9a5d0e7ebbcdd72140935668b381d192e92612ee7d5ed8f82df0f94fbe0a4",
+      "source_path": "external/libexif/libexif.pc.in"
+    },
+    {
+      "bytes": 1323,
+      "git_blob": "6337f2ecda1df9c67e6f2da4ec975c5663c27303",
+      "mode": "100644",
+      "relative": "libexif.spec",
+      "sha256": "a5ee6dda2f1ec9d4f7308c832ce5d117cd9f2ef7bf9fab3c4ad6cbb5623a9369",
+      "source_path": "external/libexif/libexif.spec"
+    },
+    {
+      "bytes": 1328,
+      "git_blob": "48930b162c53ddca0a7a1def81f78018c2bbff2e",
+      "mode": "100644",
+      "relative": "libexif.spec.in",
+      "sha256": "c9016206c771dbff7b8199c7cfe6623daebed67d16945b811d1900709fea9907",
+      "source_path": "external/libexif/libexif.spec.in"
+    },
+    {
+      "bytes": 1481,
+      "git_blob": "dde00ac6fe64b7cef7fe3a78616eb68e171aa91f",
+      "mode": "100644",
+      "relative": "libexif/Makefile.am",
+      "sha256": "f496001ddfc67351049d212ffbfa1104a6f92488f3e571c024605679509fa026",
+      "source_path": "external/libexif/libexif/Makefile.am"
+    },
+    {
+      "bytes": 40273,
+      "git_blob": "1156f649b1d5e1a583bbc5b23b3aee9fb561310a",
+      "mode": "100644",
+      "relative": "libexif/Makefile.in",
+      "sha256": "2d2c6ece425cc4c9b5c815c5c1e654b655747453f5262cf951ad7e28226bc02d",
+      "source_path": "external/libexif/libexif/Makefile.in"
+    },
+    {
+      "bytes": 76,
+      "git_blob": "80ecf419bdfda4ca424ad134a119b09733598342",
+      "mode": "100644",
+      "relative": "libexif/_stdint.h",
+      "sha256": "4f0de7785dd7e001a7d6f6d949d756d42727dab4cb80cb10a376ac8c64fd8982",
+      "source_path": "external/libexif/libexif/_stdint.h"
+    },
+    {
+      "bytes": 1168,
+      "git_blob": "05164e0862f5d5d2f6eedb9be5e4c1a71db0514d",
+      "mode": "100644",
+      "relative": "libexif/exif-byte-order.c",
+      "sha256": "8f823138d75d1c0a7e14ce164513483b2f3d1e25c590d4af60040faaa880d3ec",
+      "source_path": "external/libexif/libexif/exif-byte-order.c"
+    },
+    {
+      "bytes": 1521,
+      "git_blob": "10ded499eae282d203f590267342e89f03910870",
+      "mode": "100644",
+      "relative": "libexif/exif-byte-order.h",
+      "sha256": "4fbdd09da28c99a4cd50f85387efd8f4a4bd5ea1f6fea68d66ce440109aa8ddf",
+      "source_path": "external/libexif/libexif/exif-byte-order.h"
+    },
+    {
+      "bytes": 7865,
+      "git_blob": "6d6c589d07b89fc42c994d6b2ef1c0d0e53b7486",
+      "mode": "100644",
+      "relative": "libexif/exif-content.c",
+      "sha256": "6be7b4ec9fec61a652891566ae50dc2a566ea6f162c5df12f0e35bf8b05e7b8d",
+      "source_path": "external/libexif/libexif/exif-content.c"
+    },
+    {
+      "bytes": 4721,
+      "git_blob": "d912ccf15d74b387945a0dd550285680cde77883",
+      "mode": "100644",
+      "relative": "libexif/exif-content.h",
+      "sha256": "1f10cb036f01ee9374c03e934134bd6ad649e2c1c622172a3089094429aa675c",
+      "source_path": "external/libexif/libexif/exif-content.h"
+    },
+    {
+      "bytes": 1433,
+      "git_blob": "05d4f95b036b306fd94f98cb58784478ca2a62f0",
+      "mode": "100644",
+      "relative": "libexif/exif-data-type.h",
+      "sha256": "52d0c29b9fceb770460de5162851e280cd3040d0a7a47f16900445f4a1ec5fff",
+      "source_path": "external/libexif/libexif/exif-data-type.h"
+    },
+    {
+      "bytes": 31713,
+      "git_blob": "3ad2bb4c6ed08eca24729c3b9e2fadc8fa1a8174",
+      "mode": "100644",
+      "relative": "libexif/exif-data.c",
+      "sha256": "f5b7d988d67dce3f8bc1be2ab200b09fbb00c2a0b2b78de1e1c5840f7833ade9",
+      "source_path": "external/libexif/libexif/exif-data.c"
+    },
+    {
+      "bytes": 8876,
+      "git_blob": "eeee7826748db241fc0e0606f938b50035bffc36",
+      "mode": "100644",
+      "relative": "libexif/exif-data.h",
+      "sha256": "eb29be3d7e90e99b033e288efcd04d40646715b2c55b378415e2c653778ecb20",
+      "source_path": "external/libexif/libexif/exif-data.h"
+    },
+    {
+      "bytes": 52859,
+      "git_blob": "347539cffda8f34abe5a6194a4d022983cd768df",
+      "mode": "100644",
+      "relative": "libexif/exif-entry.c",
+      "sha256": "3d426db5af95f9d541f97a4002087abb8c81f924d7e2cec645ec4fcfbaa7ba38",
+      "source_path": "external/libexif/libexif/exif-entry.c"
+    },
+    {
+      "bytes": 6215,
+      "git_blob": "1dcdc7364e5e2b34b218c7256d17cfdbe80deecc",
+      "mode": "100644",
+      "relative": "libexif/exif-entry.h",
+      "sha256": "7e5a4c26fe20072612532ce26c4ea600bd55baba4ccbf1eb7161caf73b1de367",
+      "source_path": "external/libexif/libexif/exif-entry.h"
+    },
+    {
+      "bytes": 2623,
+      "git_blob": "2c63c331ef459b5d9fc0f898a3e078c2c7c71f22",
+      "mode": "100644",
+      "relative": "libexif/exif-format.c",
+      "sha256": "395c2076ea49b4db81eac43616b84a436fc58818867228ba71235189885b3019",
+      "source_path": "external/libexif/libexif/exif-format.c"
+    },
+    {
+      "bytes": 1939,
+      "git_blob": "b7a79a430135d158126ef5a4a59ba3b4acfe9bcb",
+      "mode": "100644",
+      "relative": "libexif/exif-format.h",
+      "sha256": "604ad147d03605f92a7846dac98d3acbf5eccf3ce5120c3db9307329b28487c3",
+      "source_path": "external/libexif/libexif/exif-format.h"
+    },
+    {
+      "bytes": 1325,
+      "git_blob": "f0f8816c01ee2d148e38407a84c772a295740b9a",
+      "mode": "100644",
+      "relative": "libexif/exif-ifd.c",
+      "sha256": "843a2f2a204d53cb53f03d8554ddab2920bfa1dcdf49c151f94e4c6381dba646",
+      "source_path": "external/libexif/libexif/exif-ifd.c"
+    },
+    {
+      "bytes": 1528,
+      "git_blob": "26c4053473a8f5b7c8b61cc0d111ef4a2aaa3ed7",
+      "mode": "100644",
+      "relative": "libexif/exif-ifd.h",
+      "sha256": "9fdf3cd24b787b2bd343309ac8efe61f0e6807a6a5123d1e1300988d5bc898cf",
+      "source_path": "external/libexif/libexif/exif-ifd.h"
+    },
+    {
+      "bytes": 9858,
+      "git_blob": "7aebf1eeb0c01ca169368376325bb8234c23f55b",
+      "mode": "100644",
+      "relative": "libexif/exif-loader.c",
+      "sha256": "5149ef0f7a051956a16f54efddeb0cc0934b44ae585d8cff96eaf04a5e7144a2",
+      "source_path": "external/libexif/libexif/exif-loader.c"
+    },
+    {
+      "bytes": 4279,
+      "git_blob": "62ee87c65d52ad307d7c91b6c933336b1a119db7",
+      "mode": "100644",
+      "relative": "libexif/exif-loader.h",
+      "sha256": "a0ac25eddc4aae52b71e0bec560e8f2b6908f7c12bbdf13c3e399a4859eb1191",
+      "source_path": "external/libexif/libexif/exif-loader.h"
+    },
+    {
+      "bytes": 3239,
+      "git_blob": "2db18e3e9bf67b4037e822452353fc6dbcb80873",
+      "mode": "100644",
+      "relative": "libexif/exif-log.c",
+      "sha256": "6e8aa7dabc3af18aeec55e3ff07ab9c40c5d37a6fd1964a3a575132238d733f8",
+      "source_path": "external/libexif/libexif/exif-log.c"
+    },
+    {
+      "bytes": 3390,
+      "git_blob": "9e71ad6b4f87d1f60d6870abfa308e1cd08f7a0a",
+      "mode": "100644",
+      "relative": "libexif/exif-log.h",
+      "sha256": "2ebaf52339822e89804c8b42b0f39eae4a388b257df466ace326dd158ea5df68",
+      "source_path": "external/libexif/libexif/exif-log.h"
+    },
+    {
+      "bytes": 1821,
+      "git_blob": "b4d7ece727fc7b3e9ce69f6d037bb8fb117818dc",
+      "mode": "100644",
+      "relative": "libexif/exif-mem.c",
+      "sha256": "41c643ffbf3f59014110bb0686d5278e9c334007d3e91b1b1b50a047392f874e",
+      "source_path": "external/libexif/libexif/exif-mem.c"
+    },
+    {
+      "bytes": 2584,
+      "git_blob": "fd8f2fabd6f1b78fac7bd50b2b73911381864d2b",
+      "mode": "100644",
+      "relative": "libexif/exif-mem.h",
+      "sha256": "febf0e90c69b30837b7c69b98cee1e83f23e8813470cf0bbe5ef9018fab285e1",
+      "source_path": "external/libexif/libexif/exif-mem.h"
+    },
+    {
+      "bytes": 2572,
+      "git_blob": "7462c97c9f8122eae06f40baf2b139518df6b68e",
+      "mode": "100644",
+      "relative": "libexif/exif-mnote-data-priv.h",
+      "sha256": "feec6183a731192f4f00a630ff5e000b0184f4d581233101bedc60c16a4a8094",
+      "source_path": "external/libexif/libexif/exif-mnote-data-priv.h"
+    },
+    {
+      "bytes": 3670,
+      "git_blob": "248056ef05190e9ce3e3fe162c7feda8bcb4c755",
+      "mode": "100644",
+      "relative": "libexif/exif-mnote-data.c",
+      "sha256": "68cc3e375898220c95cee6f6b54bc248dcf46ec9cc060144f2a9e794807f3210",
+      "source_path": "external/libexif/libexif/exif-mnote-data.c"
+    },
+    {
+      "bytes": 4256,
+      "git_blob": "19e1de5a4f7a2c5a636dfd9b7ea365cdc3d46281",
+      "mode": "100644",
+      "relative": "libexif/exif-mnote-data.h",
+      "sha256": "5e1a011964bf50d5ce07316c5e02508a4d7a730df33f0a011c60b0b79f056741",
+      "source_path": "external/libexif/libexif/exif-mnote-data.h"
+    },
+    {
+      "bytes": 1147,
+      "git_blob": "81fa703a1652fbc34e253359aec3179559a25502",
+      "mode": "100644",
+      "relative": "libexif/exif-system.h",
+      "sha256": "115c607051faf5d050616dc617bdf9de3a677831d42186ece5fec5d4d6bc1baf",
+      "source_path": "external/libexif/libexif/exif-system.h"
+    },
+    {
+      "bytes": 58433,
+      "git_blob": "60f8331ca7cb7bcb7edbfa6975199c014d94bff4",
+      "mode": "100644",
+      "relative": "libexif/exif-tag.c",
+      "sha256": "4552558b9c83cde7e208b0b4b886c4c4324956dad71fb6715bcc82b6d275d34b",
+      "source_path": "external/libexif/libexif/exif-tag.c"
+    },
+    {
+      "bytes": 10470,
+      "git_blob": "d8b8657f3b8910d1a9bb7afb1d60769a5f0f0593",
+      "mode": "100644",
+      "relative": "libexif/exif-tag.h",
+      "sha256": "95d71967c1c413e31e615697f00f32e230a7b1c11c07c3fb53b33116d4538b38",
+      "source_path": "external/libexif/libexif/exif-tag.h"
+    },
+    {
+      "bytes": 5997,
+      "git_blob": "f375de1c748ce4373b68aeb679f1128a260037b2",
+      "mode": "100644",
+      "relative": "libexif/exif-utils.c",
+      "sha256": "a79e512890e7d33f9aabcbd7748c570b4f3e4510352714377e121c7f830583a4",
+      "source_path": "external/libexif/libexif/exif-utils.c"
+    },
+    {
+      "bytes": 5930,
+      "git_blob": "7861564f21cc22027637bf5d2caa212154837153",
+      "mode": "100644",
+      "relative": "libexif/exif-utils.h",
+      "sha256": "1676c9d6e61f56c3ba5b55588d19c8fa127204568f355bb054001653e616192f",
+      "source_path": "external/libexif/libexif/exif-utils.h"
+    },
+    {
+      "bytes": 3403,
+      "git_blob": "1c8e0f668dfa91e6fe66297a611f7346ff84f507",
+      "mode": "100644",
+      "relative": "libexif/exif.h",
+      "sha256": "603f05b7e647fdf3fece47a64de85516bb25f5502512b581012d1f6e7ac5e25b",
+      "source_path": "external/libexif/libexif/exif.h"
+    },
+    {
+      "bytes": 1694,
+      "git_blob": "dbfe258af2e8604506d9cf94945bf184839237ae",
+      "mode": "100644",
+      "relative": "libexif/i18n.h",
+      "sha256": "84e68a1fe5cb99864f86fa8ff62ac134b7ebc0abf6bcef2117a286c0601f575a",
+      "source_path": "external/libexif/libexif/i18n.h"
+    },
+    {
+      "bytes": 2690,
+      "git_blob": "f1d77cf429b60f1b8ca61d47be89f3529b7b3198",
+      "mode": "100644",
+      "relative": "libexif/libexif.sym",
+      "sha256": "bf260817bbdcfdda0db76443bc7fd8a8ba4237e597594ca22972cdbc811dc88f",
+      "source_path": "external/libexif/libexif/libexif.sym"
+    },
+    {
+      "bytes": 989,
+      "git_blob": "2c838a7de9e0a6d1283540bf7a850a053f85d86c",
+      "mode": "100644",
+      "relative": "libexif_blocklist.txt",
+      "sha256": "356c96ecc730fdb9f8fc156dbe034ba053ad040a7567c6c8111f5ffca5df2ab1",
+      "source_path": "external/libexif/libexif_blocklist.txt"
+    },
+    {
+      "bytes": 283503,
+      "git_blob": "2d3e045dd6cc3877e783c359c511e32c907d41ad",
+      "mode": "100755",
+      "relative": "ltmain.sh",
+      "sha256": "b76ab504b03b76dff3efc3693fc036b3174a39ff70c5abfee009206d032d2171",
+      "source_path": "external/libexif/ltmain.sh"
+    },
+    {
+      "bytes": 11419,
+      "git_blob": "28055d2ae6f2a2c584afcd769d7881e11f62ecd9",
+      "mode": "100755",
+      "relative": "missing",
+      "sha256": "fd08cdce99a06aeb2308dd3b78499edc15c29ebc2da23b059a931b38cc5b90f3",
+      "source_path": "external/libexif/missing"
+    },
+    {
+      "bytes": 3538,
+      "git_blob": "4191a45dbd72ecd24c25b45a53e94ea0a4b5baf7",
+      "mode": "100755",
+      "relative": "mkinstalldirs",
+      "sha256": "e99c53f339aae38b0b2320d2e15d8a92ffe6028da0ab485b17bf57fda149110a",
+      "source_path": "external/libexif/mkinstalldirs"
+    }
+  ],
+  "superproject": {
+    "commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+    "name": "platform/superproject",
+    "ref": "refs/heads/android-17.0.0_r1"
+  }
+}

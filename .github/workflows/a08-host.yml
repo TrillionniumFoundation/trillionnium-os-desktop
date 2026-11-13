@@ -1253,3 +1253,62 @@ jobs:
             ${{ runner.temp }}/a08-native643/normal/*.json
             ${{ runner.temp }}/a08-native643/normal/*.stdout
             ${{ runner.temp }}/a08-native643/normal/*.stderr
+
+  audio537-current-producer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.93.0'
+      CARGO_TERM_COLOR: never
+      GIT_CONFIG_NOSYSTEM: '1'
+      GIT_CONFIG_GLOBAL: /dev/null
+      GIT_TERMINAL_PROMPT: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Prepare exact Rust toolchain and original rsync
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal
+          if ! command -v rsync >/dev/null; then
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends rsync
+          fi
+          rsync --version
+          rustc --version
+      - name: Verify externally pinned complete Audio537 inventory and parser controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+          cd "$capsule"
+          printf '%s  %s\n' 486300e2a033679a87776c68bff4324eff11b53459de3c9712122788f2a76572 FILES.sha256 | sha256sum --check --status
+          sha256sum --quiet -c FILES.sha256
+          python3 -I -B "$capsule/test_verifiers.py"
+      - name: Reconstruct the exact complete current Audio537 producer
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+          python3 -I -B "$capsule/replay_capsule.py" --capsule "$capsule" --work "$RUNNER_TEMP/a08-audio537-producer" --report "$RUNNER_TEMP/audio537-replay.json"
+      - name: Compile current source and execute all 153 selected ordinary tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+          python3 -I -B "$capsule/run_ci_tests.py" --capsule "$capsule" --recipe "$RUNNER_TEMP/a08-audio537-producer" --report "$RUNNER_TEMP/audio537-tests.json" --target "$RUNNER_TEMP/audio537-cargo-target" --jobs 2
+      - name: Preserve current Audio source and actual ordinary test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-audio537-current-producer-evidence
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/audio537-replay.json
+            ${{ runner.temp }}/audio537-tests.json
+            ${{ runner.temp }}/audio537-tests-logs/*.stdout
+            ${{ runner.temp }}/audio537-tests-logs/*.stderr

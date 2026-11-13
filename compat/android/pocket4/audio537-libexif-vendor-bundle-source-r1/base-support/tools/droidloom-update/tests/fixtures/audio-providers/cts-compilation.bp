@@ -1,0 +1,240 @@
+// Copyright (C) 2016 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+    default_team: "trendy_team_art_mainline",
+}
+
+java_defaults {
+    name: "CompilationTestCases_defaults",
+    srcs: ["src/**/*.java"],
+    data: [
+        ":apksigner",
+        ":cts-compilation-testkey-files",
+        ":cts-compilation-testkey2-files",
+    ],
+    java_resource_dirs: ["assets/"],
+    device_common_java_resources: [
+        ":AppUsedByOtherApp",
+        ":AppUsedByOtherApp_1_disable_embedded_profile_dm",
+        ":AppUsedByOtherApp_1_dm",
+        ":AppUsedByOtherApp_2_prof",
+        ":AppUsingOtherApp",
+        ":CompilationTestCases-package-dex-usage",
+        ":CtsCompilationApp",
+        ":CtsCompilationApp_profile",
+        ":CtsCompilationApp_dm",
+        ":CtsCompilationApp_with_bad_profile",
+        ":CtsCompilationApp_with_good_profile",
+        ":CtsCompilationApp_debuggable",
+        ":StatusCheckerApp",
+        ":StatusCheckerApp_profile",
+        ":disable_embedded_profile_dm",
+        ":empty_config_dm",
+    ],
+    libs: [
+        "cts-tradefed",
+        "tradefed",
+        "compatibility-host-util",
+        "guava",
+        "truth",
+    ],
+    static_libs: [
+        // Test cases with flag checks are excluded from CTS through an option in
+        // CtsCompilationTestCases.xml.
+        "android.content.pm.flags-aconfig-java-host",
+        "art-aconfig-flags-java-lib-host",
+        "flag-junit-host",
+    ],
+    enable_static_aconfig_pb: false,
+}
+
+java_test_host {
+    name: "CtsCompilationTestCases",
+    defaults: ["CompilationTestCases_defaults"],
+    // tag this module as a cts test artifact
+    test_suites: [
+        "cts",
+        "general-tests",
+    ],
+    test_config: "CtsCompilationTestCases.xml",
+}
+
+java_test_host {
+    name: "CompilationTestCases",
+    defaults: ["CompilationTestCases_defaults"],
+    test_suites: [
+        "general-tests",
+    ],
+    test_config: "CompilationTestCases.xml",
+}
+
+// Generates a binary profile from a text profile for an APK.
+// The first input must be the text profile.
+// The second input must be the APK.
+genrule_defaults {
+    name: "profile_defaults",
+    tools: ["profman"],
+    cmd: "inputs=($(in)) && " +
+        "$(location profman) " +
+        "--create-profile-from=$${inputs[0]} " +
+        "--apk=$${inputs[1]} " +
+        "--dex-location=base.apk " +
+        "--reference-profile-file=$(out)",
+}
+
+sh_binary {
+    name: "generate_dm",
+    host_supported: true,
+    src: "scripts/generate_dm.sh",
+}
+
+// Generates a DM file.
+// Each input must be a binary profile or a config file in binary protobuf
+// format.
+genrule_defaults {
+    name: "dm_defaults",
+    tools: [
+        "generate_dm",
+        "soong_zip",
+    ],
+    cmd: "$(location generate_dm) $(location soong_zip) $(out) $(in)",
+}
+
+java_genrule {
+    name: "CtsCompilationApp_profile",
+    defaults: ["profile_defaults"],
+    srcs: [
+        "assets/primary.prof.txt",
+        ":CtsCompilationApp",
+    ],
+    out: ["CtsCompilationApp.prof"],
+}
+
+java_genrule {
+    name: "CtsCompilationApp_dm",
+    defaults: ["dm_defaults"],
+    srcs: [
+        ":CtsCompilationApp_profile",
+    ],
+    out: ["CtsCompilationApp.dm"],
+}
+
+java_genrule {
+    name: "AppUsedByOtherApp_1_prof",
+    defaults: ["profile_defaults"],
+    srcs: [
+        "assets/app_used_by_other_app_1.prof.txt",
+        ":AppUsedByOtherApp",
+    ],
+    out: ["AppUsedByOtherApp_1.prof"],
+}
+
+java_genrule {
+    name: "AppUsedByOtherApp_1_dm",
+    defaults: ["dm_defaults"],
+    srcs: [
+        ":AppUsedByOtherApp_1_prof",
+    ],
+    out: ["AppUsedByOtherApp_1.dm"],
+}
+
+java_genrule {
+    name: "AppUsedByOtherApp_2_prof",
+    defaults: ["profile_defaults"],
+    srcs: [
+        "assets/app_used_by_other_app_2.prof.txt",
+        ":AppUsedByOtherApp",
+    ],
+    out: ["AppUsedByOtherApp_2.prof"],
+}
+
+java_genrule {
+    name: "StatusCheckerApp_profile",
+    defaults: ["profile_defaults"],
+    srcs: [
+        "assets/status_checker_app.prof.txt",
+        ":StatusCheckerApp",
+    ],
+    out: ["StatusCheckerApp.prof"],
+}
+
+genrule {
+    name: "CompilationTestCases-package-dex-usage",
+    srcs: [
+        ":libartservice_protos",
+        "assets/package-dex-usage.textproto",
+    ],
+    tools: ["aprotoc"],
+    cmd: "$(location aprotoc) " +
+        "--encode=com.android.server.art.proto.DexUseProto " +
+        "$(locations :libartservice_protos) " +
+        "< $(location assets/package-dex-usage.textproto) > $(out)",
+    out: ["package-dex-usage.pb"],
+}
+
+genrule {
+    name: "CompilationTestCases-config-empty",
+    srcs: [
+        ":libartservice_protos",
+    ],
+    tools: ["aprotoc"],
+    cmd: "$(location aprotoc) " +
+        "--encode=com.android.server.art.proto.DexMetadataConfig " +
+        "$(locations :libartservice_protos) " +
+        "<<<'' > $(out)",
+    out: ["config-empty.pb"],
+}
+
+genrule {
+    name: "empty_config_dm",
+    defaults: ["dm_defaults"],
+    srcs: [
+        ":CompilationTestCases-config-empty",
+    ],
+    out: ["empty_config.dm"],
+}
+
+genrule {
+    name: "CompilationTestCases-config-disable_embedded_profile",
+    srcs: [
+        ":libartservice_protos",
+    ],
+    tools: ["aprotoc"],
+    cmd: "$(location aprotoc) " +
+        "--encode=com.android.server.art.proto.DexMetadataConfig " +
+        "$(locations :libartservice_protos) " +
+        "<<<'enable_embedded_profile: false' > $(out)",
+    out: ["config-disable_embedded_profile.pb"],
+}
+
+genrule {
+    name: "disable_embedded_profile_dm",
+    defaults: ["dm_defaults"],
+    srcs: [
+        ":CompilationTestCases-config-disable_embedded_profile",
+    ],
+    out: ["disable_embedded_profile.dm"],
+}
+
+java_genrule {
+    name: "AppUsedByOtherApp_1_disable_embedded_profile_dm",
+    defaults: ["dm_defaults"],
+    srcs: [
+        ":AppUsedByOtherApp_1_prof",
+        ":CompilationTestCases-config-disable_embedded_profile",
+    ],
+    out: ["AppUsedByOtherApp_1_disable_embedded_profile.dm"],
+}

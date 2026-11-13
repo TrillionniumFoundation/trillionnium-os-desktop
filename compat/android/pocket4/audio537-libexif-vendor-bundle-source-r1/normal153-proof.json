@@ -1,0 +1,3993 @@
+{
+  "CURRENT_written": false,
+  "actual_release_recovery": {
+    "actual_release_v2_recovery_passed": true,
+    "original_absence_restored": true,
+    "original_mode_cases": [
+      448,
+      416
+    ],
+    "original_nanosecond_mtime_restored": true,
+    "second_recovery_idempotent": true,
+    "shared_source_mutations": 0
+  },
+  "all1427_old_recipe_F9_unchanged": true,
+  "all1508_new_recipe_F9_SHA_mode_Gitblob_unchanged": true,
+  "all_owned_commands_retired": true,
+  "budget_after": {
+    "affinity": [
+      10,
+      11
+    ],
+    "boot_id": "14f92beb-43c6-4786-839e-b57307ae8048",
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service",
+    "cpu.max": "200000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "8589934592",
+    "memory.peak": "1352544256",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "pid": 2306678,
+    "starttime": "167847130"
+  },
+  "budget_before": {
+    "affinity": [
+      10,
+      11
+    ],
+    "boot_id": "14f92beb-43c6-4786-839e-b57307ae8048",
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service",
+    "cpu.max": "200000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "8589934592",
+    "memory.peak": "25448448",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "pid": 2306678,
+    "starttime": "167847130"
+  },
+  "build_variant": "user",
+  "commands": [
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678480.666569174,
+        "elapsed_seconds": 0.0003114091232419014,
+        "leader_pid": 2306780,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "rev-parse",
+        "HEAD",
+        "HEAD^{tree}"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "rev-parse",
+          "HEAD",
+          "HEAD^{tree}"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2306780,
+        "start_ticks": 167847565
+      },
+      "errors": [],
+      "finished_ns": 1794600809680123661,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0003487591166049242,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2306780,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "old-recipe-head",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2306780,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600809661224962,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3817509,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794600809660701010,
+          1794600809660701010
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/old-recipe-head.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 82,
+        "identity": [
+          2067,
+          3817508,
+          33152,
+          1000,
+          1000,
+          1,
+          82,
+          1794600809672700656,
+          1794600809672700656
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/old-recipe-head.stdout",
+        "sha256": "55ced0be36d2722b20a84274fabc9fffae97dc5262c5d8ab904daf63aa490b72"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678480.938477206,
+        "elapsed_seconds": 0.00035499315708875656,
+        "leader_pid": 2306781,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "status",
+        "--porcelain=v1"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "status",
+          "--porcelain=v1"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2306781,
+        "start_ticks": 167847568
+      },
+      "errors": [],
+      "finished_ns": 1794600809954165313,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00040039001032710075,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2306781,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "old-recipe-clean",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2306781,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600809687278074,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3817512,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794600809685700274,
+          1794600809685700274
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/old-recipe-clean.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3817511,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794600809685700274,
+          1794600809685700274
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/old-recipe-clean.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678481.630678815,
+        "elapsed_seconds": 0.00040754303336143494,
+        "leader_pid": 2306784,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "clone",
+        "--local",
+        "--no-hardlinks",
+        "--single-branch",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio536-sdk14-vendor-bundle-20261113-e2a3-r2/recipe",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/recipe"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "clone",
+          "--local",
+          "--no-hardlinks",
+          "--single-branch",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio536-sdk14-vendor-bundle-20261113-e2a3-r2/recipe",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/recipe"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2306784,
+        "start_ticks": 167847595
+      },
+      "errors": [],
+      "finished_ns": 1794600810709493318,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00031494093127548695,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2306784,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "independent-private-clone",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2306784,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600809960644758,
+      "stderr": {
+        "bytes": 204,
+        "identity": [
+          2067,
+          3817515,
+          33188,
+          1000,
+          1000,
+          1,
+          204,
+          1794600809966692007,
+          1794600809966692007
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/independent-private-clone.stderr",
+        "sha256": "b151f53658e91f7b898de8734ab0ffcb18faabd90dd602fb106d0912b3ce0566"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3817514,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600809959692213,
+          1794600809959692213
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/independent-private-clone.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678481.713108125,
+        "elapsed_seconds": 0.00033116480335593224,
+        "leader_pid": 2306868,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "checkout",
+        "-b",
+        "fix/p4-audio537-libexif-native-closure-e2a3-r2"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "checkout",
+          "-b",
+          "fix/p4-audio537-libexif-native-closure-e2a3-r2"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2306868,
+        "start_ticks": 167847670
+      },
+      "errors": [],
+      "finished_ns": 1794600810775738365,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0002123930025845766,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2306868,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "independent-private-branch",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2306868,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600810715428819,
+      "stderr": {
+        "bytes": 74,
+        "identity": [
+          2067,
+          3820230,
+          33188,
+          1000,
+          1000,
+          1,
+          74,
+          1794600810719909723,
+          1794600810719909723
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/independent-private-branch.stderr",
+        "sha256": "cbd276eba1f95bc789048547834bf678f5292d0034acb90ad8d7ade29881ed02"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3820229,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600810715669972,
+          1794600810715669972
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/independent-private-branch.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678481.941968952,
+        "elapsed_seconds": 0.0003969550598412752,
+        "leader_pid": 2306869,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/control/apply_delta.py",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/recipe",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/python3",
+          "-I",
+          "-B",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/control/apply_delta.py",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/recipe",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/usr/bin/python3.12",
+        "pid": 2306869,
+        "start_ticks": 167847677
+      },
+      "errors": [],
+      "finished_ns": 1794600810956509893,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00030932878144085407,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2306869,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "apply-reviewed-delta",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2306869,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600810782024808,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3820235,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600810781668030,
+          1794600810781668030
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/apply-reviewed-delta.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 8355,
+        "identity": [
+          2067,
+          3820234,
+          33188,
+          1000,
+          1000,
+          1,
+          8355,
+          1794600810940663353,
+          1794600810940663353
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/apply-reviewed-delta.stdout",
+        "sha256": "1a338ed9bea6f77f314c5421633151892aab87d1cc8a1b5298a4c53f8cd63fd8"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678482.088615836,
+        "elapsed_seconds": 0.00036374013870954514,
+        "leader_pid": 2306872,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "diff",
+        "--check"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "diff",
+          "--check"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2306872,
+        "start_ticks": 167847696
+      },
+      "errors": [],
+      "finished_ns": 1794600811105310898,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00031269295141100883,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2306872,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "diff-check",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2306872,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600810967351975,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3820348,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600810967662558,
+          1794600810967662558
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/diff-check.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3820347,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600810967662558,
+          1794600810967662558
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/diff-check.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678482.327190816,
+        "elapsed_seconds": 0.0002574990503489971,
+        "leader_pid": 2306877,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "add",
+        "--",
+        "android/audio-bridge/libexif537-originals.json",
+        "android/manifest/audio-bridge-source-lock.json",
+        "tools/droidloom-source/src/lib.rs",
+        "tools/droidloom-source/tests/fixtures/audio-source536-before-libexif.json",
+        "tools/droidloom-update/src/android.rs",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/dynamic_depth/Android.bp",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/ABOUT-NLS",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/AUTHORS",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/Android.bp",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/COPYING",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/ChangeLog",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/INSTALL",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/METADATA",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/MODULE_LICENSE_LGPL",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/Makefile.am",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/Makefile.in",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/NEWS",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/NOTICE",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/OWNERS",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/README",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/README-Win32.txt",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/README.android",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/README.version",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/aclocal.m4",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/config.guess",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/config.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/config.h.in",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/config.rpath",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/config.sub",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/configure",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/configure.ac",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/depcomp",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/install-sh",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif-uninstalled.pc.in",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif.pc.in",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif.spec",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif.spec.in",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/Makefile.am",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/Makefile.in",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/_stdint.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-byte-order.c",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-byte-order.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-content.c",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-content.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-data-type.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-data.c",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-data.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-entry.c",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-entry.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-format.c",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-format.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-ifd.c",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-ifd.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-loader.c",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-loader.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-log.c",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-log.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-mem.c",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-mem.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-mnote-data-priv.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-mnote-data.c",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-mnote-data.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-system.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-tag.c",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-tag.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-utils.c",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-utils.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/i18n.h",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/libexif.sym",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif_blocklist.txt",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/ltmain.sh",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/missing",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/mkinstalldirs",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libjpeg-turbo/Android.bp",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libxml2/Android.bp",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/frameworks/av/camera/Android.bp",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/frameworks/av/services/camera/libcameraservice/Android.bp",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/frameworks/native/libs/binder/Android.bp",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/packages/modules/StatsD/lib/libstatspull/Android.bp",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/system/core/libutils/Android.bp",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/system/libbase/Android.bp",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/system/logging/liblog/Android.bp",
+        "tools/droidloom-update/tests/fixtures/audio-libexif537-original/system/media/camera/Android.bp"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "add",
+          "--",
+          "android/audio-bridge/libexif537-originals.json",
+          "android/manifest/audio-bridge-source-lock.json",
+          "tools/droidloom-source/src/lib.rs",
+          "tools/droidloom-source/tests/fixtures/audio-source536-before-libexif.json",
+          "tools/droidloom-update/src/android.rs",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/dynamic_depth/Android.bp",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/ABOUT-NLS",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/AUTHORS",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/Android.bp",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/COPYING",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/ChangeLog",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/INSTALL",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/METADATA",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/MODULE_LICENSE_LGPL",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/Makefile.am",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/Makefile.in",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/NEWS",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/NOTICE",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/OWNERS",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/README",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/README-Win32.txt",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/README.android",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/README.version",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/aclocal.m4",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/config.guess",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/config.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/config.h.in",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/config.rpath",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/config.sub",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/configure",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/configure.ac",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/depcomp",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/install-sh",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif-uninstalled.pc.in",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif.pc.in",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif.spec",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif.spec.in",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/Makefile.am",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/Makefile.in",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/_stdint.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-byte-order.c",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-byte-order.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-content.c",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-content.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-data-type.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-data.c",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-data.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-entry.c",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-entry.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-format.c",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-format.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-ifd.c",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-ifd.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-loader.c",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-loader.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-log.c",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-log.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-mem.c",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-mem.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-mnote-data-priv.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-mnote-data.c",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-mnote-data.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-system.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-tag.c",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-tag.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-utils.c",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-utils.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/i18n.h",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/libexif.sym",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif_blocklist.txt",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/ltmain.sh",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/missing",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/mkinstalldirs",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libjpeg-turbo/Android.bp",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libxml2/Android.bp",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/frameworks/av/camera/Android.bp",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/frameworks/av/services/camera/libcameraservice/Android.bp",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/frameworks/native/libs/binder/Android.bp",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/packages/modules/StatsD/lib/libstatspull/Android.bp",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/system/core/libutils/Android.bp",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/system/libbase/Android.bp",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/system/logging/liblog/Android.bp",
+          "tools/droidloom-update/tests/fixtures/audio-libexif537-original/system/media/camera/Android.bp"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2306877,
+        "start_ticks": 167847710
+      },
+      "errors": [],
+      "finished_ns": 1794600811372835786,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00023878179490566254,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2306877,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "add-reviewed-delta",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2306877,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600811114196487,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3820351,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600811114658234,
+          1794600811114658234
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/add-reviewed-delta.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3820350,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600811113658263,
+          1794600811113658263
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/add-reviewed-delta.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678482.429929785,
+        "elapsed_seconds": 0.00037719402462244034,
+        "leader_pid": 2306885,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "user.name=Droidloom build continuation",
+        "-c",
+        "user.email=build-continuation@localhost",
+        "commit",
+        "-m",
+        "build(android): include the original libexif camera dependency"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "-c",
+          "user.name=Droidloom build continuation",
+          "-c",
+          "user.email=build-continuation@localhost",
+          "commit",
+          "-m",
+          "build(android): include the original libexif camera dependency"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2306885,
+        "start_ticks": 167847737
+      },
+      "errors": [],
+      "finished_ns": 1794600811444000013,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0003114878199994564,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2306885,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "commit-independent-delta",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2306885,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600811380136362,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3820497,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600811380650408,
+          1794600811380650408
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/commit-independent-delta.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 9645,
+        "identity": [
+          2067,
+          3820496,
+          33188,
+          1000,
+          1000,
+          1,
+          9645,
+          1794600811436772246,
+          1794600811436772246
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/commit-independent-delta.stdout",
+        "sha256": "36251a801b6f2e48552ae87d29893492a661c2795d38d7f198d8ee4ea7138707"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678482.460845776,
+        "elapsed_seconds": 0.0003488389775156975,
+        "leader_pid": 2306893,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "rev-parse",
+        "HEAD",
+        "HEAD^{tree}"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "rev-parse",
+          "HEAD",
+          "HEAD^{tree}"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2306893,
+        "start_ticks": 167847745
+      },
+      "errors": [],
+      "finished_ns": 1794600811474431382,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0003067899961024523,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2306893,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-identity",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2306893,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600811463549244,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3820570,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600811463647966,
+          1794600811463647966
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/recipe-identity.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 82,
+        "identity": [
+          2067,
+          3820568,
+          33188,
+          1000,
+          1000,
+          1,
+          82,
+          1794600811467647848,
+          1794600811467647848
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/recipe-identity.stdout",
+        "sha256": "56d87b03dca2a8b5bfa78a5e3be94f2326bf63cea431226d85f1c72fbeb12665"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678482.511762858,
+        "elapsed_seconds": 0.0002741049975156784,
+        "leader_pid": 2306894,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "status",
+        "--porcelain=v1"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "status",
+          "--porcelain=v1"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2306894,
+        "start_ticks": 167847747
+      },
+      "errors": [],
+      "finished_ns": 1794600811526510384,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00018465309403836727,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2306894,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-clean-before",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2306894,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600811480481573,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3820573,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600811480647466,
+          1794600811480647466
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/recipe-clean-before.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3820572,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600811480647466,
+          1794600811480647466
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/recipe-clean-before.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678482.534818454,
+        "elapsed_seconds": 0.00019179284572601318,
+        "leader_pid": 2306898,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "ls-files",
+        "--stage",
+        "-z"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "ls-files",
+          "--stage",
+          "-z"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2306898,
+        "start_ticks": 167847752
+      },
+      "errors": [],
+      "finished_ns": 1794600811557503959,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0001640738919377327,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2306898,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-recipe-full-index",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2306898,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600811536079083,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3820576,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600811535645848,
+          1794600811535645848
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/new-recipe-full-index.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 213187,
+        "identity": [
+          2067,
+          3820575,
+          33188,
+          1000,
+          1000,
+          1,
+          213187,
+          1794600811541907802,
+          1794600811541907802
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/new-recipe-full-index.stdout",
+        "sha256": "fc88500bd6f0fd8017a9308fd0e7eb6bbc11d414e9563b8d8a495c8e3d2b926a"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678515.239171288,
+        "elapsed_seconds": 0.00023388699628412724,
+        "leader_pid": 2306908,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-j",
+        "2",
+        "-p",
+        "droidloom-source",
+        "--lib",
+        "--",
+        "--test-threads=1",
+        "--color",
+        "never"
+      ],
+      "driver": {
+        "argv": [],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/home/qian-qi/.cargo/bin/rustup",
+        "pid": 2306908,
+        "start_ticks": 167847848
+      },
+      "errors": [],
+      "finished_ns": 1794600844258211354,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00018763612024486065,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2306908,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "source-tests",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2306908,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600812492541741,
+      "stderr": {
+        "bytes": 1805,
+        "identity": [
+          2067,
+          3820582,
+          33188,
+          1000,
+          1000,
+          1,
+          1805,
+          1794600838872841471,
+          1794600838872841471
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/source-tests.stderr",
+        "sha256": "9c3f2df0bd1bac90aae76f93e8eb24a0194a21e1abb6b03c016084374cc67700"
+      },
+      "stdout": {
+        "bytes": 3564,
+        "identity": [
+          2067,
+          3820581,
+          33188,
+          1000,
+          1000,
+          1,
+          3564,
+          1794600844232683740,
+          1794600844232683740
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/source-tests.stdout",
+        "sha256": "eba289f37ddaaae9395bf7f1017d2df953c15f8e5aa80fa699c378937f32c794"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678553.434783516,
+        "elapsed_seconds": 0.0004032561555504799,
+        "leader_pid": 2308865,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-j",
+        "2",
+        "-p",
+        "droidloom-update",
+        "--bin",
+        "droidloom-update",
+        "audio_",
+        "--",
+        "--test-threads=1",
+        "--color",
+        "never"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qian-qi/.cargo/bin/cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "-j",
+          "2",
+          "-p",
+          "droidloom-update",
+          "--bin",
+          "droidloom-update",
+          "audio_",
+          "--",
+          "--test-threads=1",
+          "--color",
+          "never"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/home/qian-qi/.cargo/bin/rustup",
+        "pid": 2308865,
+        "start_ticks": 167851025
+      },
+      "errors": [],
+      "finished_ns": 1794600882475939818,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0003384859301149845,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2308865,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "audio-tests",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2308865,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600844264362659,
+      "stderr": {
+        "bytes": 1649,
+        "identity": [
+          2067,
+          3821304,
+          33188,
+          1000,
+          1000,
+          1,
+          1649,
+          1794600860405207765,
+          1794600860405207765
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/audio-tests.stderr",
+        "sha256": "86f970ad1db4e6cf0b79462f5346eeb9118f5d44532a709dd4ddf3d776645593"
+      },
+      "stdout": {
+        "bytes": 8389,
+        "identity": [
+          2067,
+          3821303,
+          33188,
+          1000,
+          1000,
+          1,
+          8389,
+          1794600882434110213,
+          1794600882434110213
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/audio-tests.stdout",
+        "sha256": "11fe0214da1796c3a19dcb495c9d2ac3d0c7a04670531bdb04df5e87f30c2af2"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678553.913097554,
+        "elapsed_seconds": 0.000250054057687521,
+        "leader_pid": 2310941,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-j",
+        "2",
+        "-p",
+        "droidloom-update",
+        "--bin",
+        "droidloom-update",
+        "vendor_policy",
+        "--",
+        "--test-threads=1",
+        "--color",
+        "never"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qian-qi/.cargo/bin/cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "-j",
+          "2",
+          "-p",
+          "droidloom-update",
+          "--bin",
+          "droidloom-update",
+          "vendor_policy",
+          "--",
+          "--test-threads=1",
+          "--color",
+          "never"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/home/qian-qi/.cargo/bin/rustup",
+        "pid": 2310941,
+        "start_ticks": 167854849
+      },
+      "errors": [],
+      "finished_ns": 1794600882935973932,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00020644208416342735,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2310941,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "vendor-tests",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2310941,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600882501398691,
+      "stderr": {
+        "bytes": 875,
+        "identity": [
+          2067,
+          3822027,
+          33188,
+          1000,
+          1000,
+          1,
+          875,
+          1794600882664552546,
+          1794600882664552546
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/vendor-tests.stderr",
+        "sha256": "c4c27e4407fd97f6a17d5c8319f96907f3694ff22e5e5968fccae181a2aa19cf"
+      },
+      "stdout": {
+        "bytes": 1153,
+        "identity": [
+          2067,
+          3822026,
+          33188,
+          1000,
+          1000,
+          1,
+          1153,
+          1794600882914323108,
+          1794600882914323108
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/vendor-tests.stdout",
+        "sha256": "981fa66efb490558e41cd79ff96a775fbae4bfbba94a2280750d9e7ef4fe80ed"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678554.1171841,
+        "elapsed_seconds": 0.00022102799266576767,
+        "leader_pid": 2311022,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-j",
+        "2",
+        "-p",
+        "droidloom-update",
+        "--bin",
+        "droidloom-update",
+        "production_",
+        "--",
+        "--test-threads=1",
+        "--color",
+        "never"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qian-qi/.cargo/bin/cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "-j",
+          "2",
+          "-p",
+          "droidloom-update",
+          "--bin",
+          "droidloom-update",
+          "production_",
+          "--",
+          "--test-threads=1",
+          "--color",
+          "never"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/home/qian-qi/.cargo/bin/rustup",
+        "pid": 2311022,
+        "start_ticks": 167854893
+      },
+      "errors": [],
+      "finished_ns": 1794600883143005536,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00018757604993879795,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2311022,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "production-tests",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2311022,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600882944562061,
+      "stderr": {
+        "bytes": 875,
+        "identity": [
+          2067,
+          3822031,
+          33188,
+          1000,
+          1000,
+          1,
+          875,
+          1794600883105539564,
+          1794600883105539564
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/production-tests.stderr",
+        "sha256": "c4c27e4407fd97f6a17d5c8319f96907f3694ff22e5e5968fccae181a2aa19cf"
+      },
+      "stdout": {
+        "bytes": 855,
+        "identity": [
+          2067,
+          3822030,
+          33188,
+          1000,
+          1000,
+          1,
+          855,
+          1794600883119539152,
+          1794600883119539152
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/production-tests.stdout",
+        "sha256": "e35e9e1baec566e001f62ab5e4e392f01dd85e5250c2661180ff1a2cfab09618"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678555.348986256,
+        "elapsed_seconds": 0.00027627008967101574,
+        "leader_pid": 2311047,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-j",
+        "2",
+        "-p",
+        "droidloom-update",
+        "--bin",
+        "droidloom-update",
+        "projection_v2_",
+        "--",
+        "--test-threads=1",
+        "--color",
+        "never"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qian-qi/.cargo/bin/cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "-j",
+          "2",
+          "-p",
+          "droidloom-update",
+          "--bin",
+          "droidloom-update",
+          "projection_v2_",
+          "--",
+          "--test-threads=1",
+          "--color",
+          "never"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/home/qian-qi/.cargo/bin/rustup",
+        "pid": 2311047,
+        "start_ticks": 167854914
+      },
+      "errors": [],
+      "finished_ns": 1794600884371176120,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00021717301569879055,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2311047,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "permissions-tests",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2311047,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600883151438804,
+      "stderr": {
+        "bytes": 875,
+        "identity": [
+          2067,
+          3822034,
+          33188,
+          1000,
+          1000,
+          1,
+          875,
+          1794600883315533383,
+          1794600883315533383
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/permissions-tests.stderr",
+        "sha256": "c4c27e4407fd97f6a17d5c8319f96907f3694ff22e5e5968fccae181a2aa19cf"
+      },
+      "stdout": {
+        "bytes": 838,
+        "identity": [
+          2067,
+          3822033,
+          33188,
+          1000,
+          1000,
+          1,
+          838,
+          1794600884349596783,
+          1794600884349596783
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/permissions-tests.stdout",
+        "sha256": "8ab2432a3702ef89415783a3987d02b1b920607f2b552058ae892501f7a06831"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678555.554851226,
+        "elapsed_seconds": 0.00022260798141360283,
+        "leader_pid": 2311110,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-j",
+        "2",
+        "-p",
+        "droidloom-update",
+        "--bin",
+        "droidloom-update",
+        "source_recovery",
+        "--",
+        "--test-threads=1",
+        "--color",
+        "never"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qian-qi/.cargo/bin/cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "-j",
+          "2",
+          "-p",
+          "droidloom-update",
+          "--bin",
+          "droidloom-update",
+          "source_recovery",
+          "--",
+          "--test-threads=1",
+          "--color",
+          "never"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/home/qian-qi/.cargo/bin/rustup",
+        "pid": 2311110,
+        "start_ticks": 167855037
+      },
+      "errors": [],
+      "finished_ns": 1794600884573020002,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00016970792785286903,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2311110,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recovery-tests",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2311110,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600884377130465,
+      "stderr": {
+        "bytes": 875,
+        "identity": [
+          2067,
+          3822037,
+          33188,
+          1000,
+          1000,
+          1,
+          875,
+          1794600884551496998,
+          1794600884551496998
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/recovery-tests.stderr",
+        "sha256": "c4c27e4407fd97f6a17d5c8319f96907f3694ff22e5e5968fccae181a2aa19cf"
+      },
+      "stdout": {
+        "bytes": 276,
+        "identity": [
+          2067,
+          3822036,
+          33188,
+          1000,
+          1000,
+          1,
+          276,
+          1794600884557496821,
+          1794600884557496821
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/recovery-tests.stdout",
+        "sha256": "8a2b8c09c068f010fa2e4eed8d88297754617eb07f7b61a1350250133c0ffbee"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678603.596787814,
+        "elapsed_seconds": 0.0002603998873382807,
+        "leader_pid": 2311142,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "--release",
+        "-j",
+        "2",
+        "-p",
+        "droidloom-source",
+        "-p",
+        "droidloom-update"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qian-qi/.cargo/bin/cargo",
+          "build",
+          "--offline",
+          "--locked",
+          "--release",
+          "-j",
+          "2",
+          "-p",
+          "droidloom-source",
+          "-p",
+          "droidloom-update"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/home/qian-qi/.cargo/bin/rustup",
+        "pid": 2311142,
+        "start_ticks": 167855057
+      },
+      "errors": [],
+      "finished_ns": 1794600932691424458,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00020786398090422153,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2311142,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "release",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2311142,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600884578965910,
+      "stderr": {
+        "bytes": 2115,
+        "identity": [
+          2067,
+          3822040,
+          33188,
+          1000,
+          1000,
+          1,
+          2115,
+          1794600932590082548,
+          1794600932590082548
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/release.stderr",
+        "sha256": "05465daff7da7b6e8d8ffc4718ae8c8f3957c0c0be4198670868f7c55813702c"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3822039,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600884578496203,
+          1794600884578496203
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/release.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678603.81933933,
+        "elapsed_seconds": 0.00029624486342072487,
+        "leader_pid": 2313268,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-source",
+        "verify-lock",
+        "--lock",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/recipe/android/manifest/audio-bridge-source-lock.json"
+      ],
+      "driver": {
+        "argv": [
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-source",
+          "verify-lock",
+          "--lock",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/recipe/android/manifest/audio-bridge-source-lock.json"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-source",
+        "pid": 2313268,
+        "start_ticks": 167859880
+      },
+      "errors": [],
+      "finished_ns": 1794600932896137593,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0002776230685412884,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2313268,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "verify-lock",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2313268,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600932815501997,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3822640,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600932815075922,
+          1794600932815075922
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/verify-lock.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 107,
+        "identity": [
+          2067,
+          3822639,
+          33188,
+          1000,
+          1000,
+          1,
+          107,
+          1794600932825075627,
+          1794600932825075627
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/verify-lock.stdout",
+        "sha256": "f4d03a3e03bd4ef0f7d56ee25a709a8e6840987cedbb352be49f557edb41c213"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678603.977219684,
+        "elapsed_seconds": 0.00029346905648708344,
+        "leader_pid": 2313276,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-source",
+        "plan",
+        "--lock",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/recipe/android/manifest/audio-bridge-source-lock.json"
+      ],
+      "driver": {
+        "argv": [
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-source",
+          "plan",
+          "--lock",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/recipe/android/manifest/audio-bridge-source-lock.json"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-source",
+        "pid": 2313276,
+        "start_ticks": 167859896
+      },
+      "errors": [],
+      "finished_ns": 1794600933146495548,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0002699419856071472,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2313276,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "plan",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2313276,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600932972713318,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3822644,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600932972071298,
+          1794600932972071298
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/plan.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 302836,
+        "identity": [
+          2067,
+          3822642,
+          33188,
+          1000,
+          1000,
+          1,
+          302836,
+          1794600932983070974,
+          1794600932983070974
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/plan.stdout",
+        "sha256": "884a69f349d72252d34dbe94f4b26369d64b31b8dd203ed3d561792f7600bcf2"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678604.231336714,
+        "elapsed_seconds": 0.00026033399626612663,
+        "leader_pid": 2313277,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-update",
+        "vendor-policy-bundle-build",
+        "--help"
+      ],
+      "driver": {
+        "argv": [
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-update",
+          "vendor-policy-bundle-build",
+          "--help"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-update",
+        "pid": 2313277,
+        "start_ticks": 167859922
+      },
+      "errors": [],
+      "finished_ns": 1794600933344982540,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00027311290614306927,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2313277,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "actual-release-fixed-bundle-help",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2313277,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600933236024938,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3822647,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600933235063553,
+          1794600933235063553
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/actual-release-fixed-bundle-help.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 327,
+        "identity": [
+          2067,
+          3822646,
+          33188,
+          1000,
+          1000,
+          1,
+          327,
+          1794600933238063465,
+          1794600933238063465
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/actual-release-fixed-bundle-help.stdout",
+        "sha256": "87beab3684695dc6cd8fce97152d221e78c48cdaf50e24c1baac5715dcde29cd"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678604.442841848,
+        "elapsed_seconds": 0.0003196960315108299,
+        "leader_pid": 2313278,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-update",
+        "recover-source",
+        "--work",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tmp/release-recovery"
+      ],
+      "driver": {
+        "argv": [
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-update",
+          "recover-source",
+          "--work",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tmp/release-recovery"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-update",
+        "pid": 2313278,
+        "start_ticks": 167859944
+      },
+      "errors": [],
+      "finished_ns": 1794600933807910409,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0002684590872377157,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2313278,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "actual-new-release-recover-source",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2313278,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600933447176067,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3822657,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600933447063250,
+          1794600933447063250
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/actual-new-release-recover-source.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3822656,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600933447063250,
+          1794600933447063250
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/actual-new-release-recover-source.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678604.809752841,
+        "elapsed_seconds": 0.0003345839213579893,
+        "leader_pid": 2313295,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-update",
+        "recover-source",
+        "--work",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tmp/release-recovery"
+      ],
+      "driver": {
+        "argv": [
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-update",
+          "recover-source",
+          "--work",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tmp/release-recovery"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-update",
+        "pid": 2313295,
+        "start_ticks": 167859980
+      },
+      "errors": [],
+      "finished_ns": 1794600933822844250,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0002808410208672285,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2313295,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "actual-new-release-recover-idempotent",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2313295,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600933814079738,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3822660,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600933813046532,
+          1794600933813046532
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/actual-new-release-recover-idempotent.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3822655,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600933813046532,
+          1794600933813046532
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/actual-new-release-recover-idempotent.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678604.961412686,
+        "elapsed_seconds": 0.00039487797766923904,
+        "leader_pid": 2313297,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "format-patch",
+        "--full-index",
+        "-1",
+        "--stdout"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "format-patch",
+          "--full-index",
+          "-1",
+          "--stdout"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2313297,
+        "start_ticks": 167859984
+      },
+      "errors": [],
+      "finished_ns": 1794600933979544405,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0003711329773068428,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2313297,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "normal-recipe-patch",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2313297,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600933853512352,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3822663,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600933853045354,
+          1794600933853045354
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/normal-recipe-patch.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 2093167,
+        "identity": [
+          2067,
+          3822662,
+          33188,
+          1000,
+          1000,
+          1,
+          2093167,
+          1794600933968477251,
+          1794600933968477251
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/normal-recipe-patch.stdout",
+        "sha256": "df913e751d05c6e10dfe20ce19e03c026993fd02d8dfdfdb21c22f1924392451"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1678605.036340369,
+        "elapsed_seconds": 0.00017585488967597485,
+        "leader_pid": 2313309,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "status",
+        "--porcelain=v1"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "status",
+          "--porcelain=v1"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d68b1d58-392-950.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2313309,
+        "start_ticks": 167860000
+      },
+      "errors": [],
+      "finished_ns": 1794600934048946016,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00017329398542642593,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2313309,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-clean-after",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2313309,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2306678,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794600934012704184,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3822667,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600934012040672,
+          1794600934012040672
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/recipe-clean-after.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3822666,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794600934012040672,
+          1794600934012040672
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/recipe-clean-after.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "complete_private_cache_inputs_unchanged": true,
+  "complete_recipe_after": {
+    "bytes": 496499,
+    "identity": [
+      2067,
+      3822669,
+      33024,
+      1000,
+      1000,
+      1,
+      496499,
+      1794600934846016112,
+      1794600934846016112
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/complete-recipe-after.json",
+    "sha256": "cdf087f8947b1b95b4e0371020589bc615634d4a29c805a52d03dc235e81c19e"
+  },
+  "complete_recipe_before": {
+    "bytes": 496499,
+    "identity": [
+      2067,
+      3820578,
+      33024,
+      1000,
+      1000,
+      1,
+      496499,
+      1794600812458618693,
+      1794600812458618693
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/complete-recipe-before.json",
+    "sha256": "cdf087f8947b1b95b4e0371020589bc615634d4a29c805a52d03dc235e81c19e"
+  },
+  "complete_recipe_inventory": {
+    "bytes": 448243,
+    "identity": [
+      2067,
+      3820579,
+      33024,
+      1000,
+      1000,
+      1,
+      448243,
+      1794600812474618222,
+      1794600812474618222
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/head-files.json",
+    "sha256": "86dffb3012b84b09851d2ec067195a0e3ef7ca0242c37f2c2209f47354adbf94"
+  },
+  "complete_test_terminals": [
+    {
+      "name": "source-tests",
+      "stdout": {
+        "bytes": 3564,
+        "identity": [
+          2067,
+          3820581,
+          33188,
+          1000,
+          1000,
+          1,
+          3564,
+          1794600844232683740,
+          1794600844232683740
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/source-tests.stdout",
+        "sha256": "eba289f37ddaaae9395bf7f1017d2df953c15f8e5aa80fa699c378937f32c794"
+      },
+      "terminal": {
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "measured": 0,
+        "names": [
+          "exact_audio_depmod_source::depmod536_extends_actual535_only_with_the_exact_same_sp_kmod_four_cones",
+          "exact_audio_generic_source::exact_new_official_trusty_repositories_reject_other_names_and_traversal",
+          "exact_audio_generic_source::generic535_extends_actual458_preserving_all_original_project_pins_and_cones",
+          "exact_audio_libexif537_source::audio_libexif537_extends_actual536_only_with_one_same_sp_original_cone",
+          "exact_audio_sdk14_source::audio_sdk14_extends_actual536_only_with_the_same_sp_public_cone",
+          "exact_trusty_names::exact_official_trusty_names_reject_unknown_projects_and_traversal",
+          "tests::actual_git_checkout_preserves_355_cones_and_hidden_blueprints",
+          "tests::audio_adb_webrtc_extends446_with_exact_original_provider_cones",
+          "tests::audio_allgraph_extends_the_actual_previous_source_without_changing_commits",
+          "tests::audio_api35_cts_extension_preserves_the_previous_materialized_plan",
+          "tests::audio_bcc_tools_extend444_without_repinning",
+          "tests::audio_chre_providers_extend444_without_repinning",
+          "tests::audio_cts_compilation_is_one_monotonic_same_commit_cone",
+          "tests::audio_cts_sts_recursive_closure_is_a_monotonic_pinned_extension",
+          "tests::audio_error_prone_jimfs_is_one_monotonic_pinned_project",
+          "tests::audio_host_tools_extends454_with_exact_original_provider_cones",
+          "tests::audio_junit_extension_keeps_the_actual_previous_projects_unchanged",
+          "tests::audio_lint_fonttools_extends_actual_r13_without_repinning",
+          "tests::audio_ondeviceintelligence_extends_actual_430_by_four_original_api_inputs",
+          "tests::audio_pasit_extends_the_actual_425_source_with_only_five_original_projects",
+          "tests::audio_reconciliation_preserves_existing_gatekeeper_purpose",
+          "tests::audio_released_sdks_extend_the_actual_r11_lock_without_repinning",
+          "tests::audio_rkpd_apex_extends_the_actual_425_source_by_one_original_cone",
+          "tests::audio_sdk33_zygote_extends_actual_r12_by_three_original_cones",
+          "tests::audio_source_capacity_is_bound_to_the_exact_frozen_lock",
+          "tests::audio_trusty_storage_extends455_with_complete_same_commit_parent_headers",
+          "tests::audio_vendor_test_tools_extend_failed431_without_repinning",
+          "tests::audio_vintf_vts_extends445_without_repinning",
+          "tests::audio_watchdog_extends453_without_repinning",
+          "tests::bounded_sparse_paths_reject_duplicates_and_escapes_at_the_new_boundary",
+          "tests::duplicate_projects_and_moving_refs_are_rejected",
+          "tests::exact_local_git_fetch_and_manifest_link_are_verified",
+          "tests::materialized_verification_rejects_dirty_projects",
+          "tests::plan_uses_only_exact_official_projects",
+          "tests::platform_compat_uses_its_official_tools_namespace",
+          "tests::project_bound_admits_superproject_gitlink_extensions_but_not_unbounded_sync",
+          "tests::reconciliation_accepts_bounded_sparse_path_expansion",
+          "tests::reconciliation_accepts_only_monotonic_plan_expansion",
+          "tests::root_links_are_relative_to_their_parent",
+          "tests::source_lock_preserves_exact_sparse_paths_through_the_368_bound",
+          "tests::source_lock_rejects_369_sparse_paths_without_truncating_them",
+          "tests::traversal_and_full_sync_policy_are_rejected_together"
+        ],
+        "passed": 42
+      }
+    },
+    {
+      "name": "audio-tests",
+      "stdout": {
+        "bytes": 8389,
+        "identity": [
+          2067,
+          3821303,
+          33188,
+          1000,
+          1000,
+          1,
+          8389,
+          1794600882434110213,
+          1794600882434110213
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/audio-tests.stdout",
+        "sha256": "11fe0214da1796c3a19dcb495c9d2ac3d0c7a04670531bdb04df5e87f30c2af2"
+      },
+      "terminal": {
+        "failed": 0,
+        "filtered": 191,
+        "ignored": 0,
+        "measured": 0,
+        "names": [
+          "android::tests::audio_actual_three_defaults_regression_preserves_original_consumers_and_providers",
+          "android::tests::audio_adb_webrtc_rejects_failed446_missing_repinned_and_narrow_sources",
+          "android::tests::audio_adb_webrtc_rejects_missing_modified_and_symlinked_original_inputs",
+          "android::tests::audio_allgraph_preserves_exact_original_provider_bytes_and_scopes",
+          "android::tests::audio_allgraph_reproduces_old_provider_removal",
+          "android::tests::audio_allgraph_required_discovery_preserves_sources_and_rejects_foreign_markers",
+          "android::tests::audio_apex_scope_excludes_only_the_explicit_target_list",
+          "android::tests::audio_apex_target_closure_is_explicit_and_preserves_native_dependencies",
+          "android::tests::audio_apex_target_closure_rejects_other_or_mixed_targets",
+          "android::tests::audio_api35_cts_keeps_real_consumers_and_original_provider_modules",
+          "android::tests::audio_api35_cts_rejects_the_observed_missing_original_inputs",
+          "android::tests::audio_bcc_rejects_failed444_and_missing_original_cone",
+          "android::tests::audio_bcc_rejects_missing_modified_and_symlinked_originals",
+          "android::tests::audio_build_source_lock_is_scoped_and_exact",
+          "android::tests::audio_chre_rejects_failed444_and_incomplete_or_repinned_providers",
+          "android::tests::audio_chre_rejects_missing_modified_and_symlinked_originals",
+          "android::tests::audio_connectivity_normal_patch_chain_preserves_providers_and_recovers",
+          "android::tests::audio_connectivity_projection_guard_keeps_other_modes_unchanged",
+          "android::tests::audio_connectivity_projection_guard_rejects_unapplied_and_partial_chain",
+          "android::tests::audio_connectivity_projection_guard_rejects_unbound_or_changed_inputs",
+          "android::tests::audio_cts_compilation_requires_original_defaults_without_deleting_consumers",
+          "android::tests::audio_cts_sts_keeps_original_provider_and_sibling_modules",
+          "android::tests::audio_cts_sts_recursive_closure_requires_all_original_source_cones",
+          "android::tests::audio_depmod536_requires_the_actual_same_sp_host_provider_and_exact_cones",
+          "android::tests::audio_depmod536_whole_original_factory_tools_and_package_reject_drift_missing_or_alias",
+          "android::tests::audio_error_prone_jimfs_requires_original_full_cone_and_commit",
+          "android::tests::audio_error_prone_projection_preserves_original_bytes_and_recovers_journal",
+          "android::tests::audio_error_prone_requires_pinned_complete_provider_and_keeps_other_scope",
+          "android::tests::audio_error_prone_restores_original_provider_and_retained_consumer_edge",
+          "android::tests::audio_gatekeeper_requires_the_complete_locked_rust_provider_cones",
+          "android::tests::audio_generic535_complete_original_blueprints_are_real_inputs_and_reject_drift_or_missing",
+          "android::tests::audio_generic535_exact_discovery_keeps_required_providers_and_rejects_foreign_markers",
+          "android::tests::audio_generic535_original_blueprints_reject_source_aliases",
+          "android::tests::audio_host_tools_rejects_failed454_missing_repinned_and_bp_only_cones",
+          "android::tests::audio_host_tools_rejects_missing_modified_and_symlinked_original_inputs",
+          "android::tests::audio_junit_provider_keeps_the_real_icu_consumer_and_all_original_dependencies",
+          "android::tests::audio_junit_provider_requires_complete_original_sources_and_prebuilt_jar",
+          "android::tests::audio_kms_scope_preserves_the_real_local_signing_chain",
+          "android::tests::audio_launcher_tapl_preserves_original_generator_chain_and_dependency_bodies",
+          "android::tests::audio_libexif537_exact_original_project_and_cone_reject_pin_or_scope_drift",
+          "android::tests::audio_libexif537_real_shared_provider_keeps_camera_and_all_direct_native_definitions",
+          "android::tests::audio_libexif537_whole_original_closure_rejects_changed_missing_aliased_or_wrong_mode_inputs",
+          "android::tests::audio_lint_fonttools_original_provider_guard_rejects_missing_drift_and_links",
+          "android::tests::audio_lint_fonttools_rejects_the_actual_r13_lock",
+          "android::tests::audio_lint_fonttools_requires_complete_cones_and_original_commits",
+          "android::tests::audio_new_crossdevice_roots_preserve_license_and_independent_original_flags",
+          "android::tests::audio_new_launcher_ancestor_tests_keep_only_the_unselected_root_scope",
+          "android::tests::audio_npumanager_sdk_uses_exact_original_three_scopes",
+          "android::tests::audio_ondeviceintelligence_original_api_guard_rejects_drift_missing_and_links",
+          "android::tests::audio_ondeviceintelligence_rejects_the_actual_r10_430_lock",
+          "android::tests::audio_ondeviceintelligence_requires_both_original_scopes_at_same_commit",
+          "android::tests::audio_pasit_old_425_lock_reproduces_missing_original_project",
+          "android::tests::audio_pasit_original_provider_guard_rejects_drift_missing_and_links",
+          "android::tests::audio_pasit_requires_all_five_complete_same_commit_sources",
+          "android::tests::audio_pasit_retains_original_consumer_defaults_and_transitive_edges",
+          "android::tests::audio_pcm_patches_are_private_and_keep_lifecycle_order",
+          "android::tests::audio_platform_test_scope_preserves_metadata_and_real_library_provider",
+          "android::tests::audio_power_provider_requires_complete_original_cone_without_changing_other_routes",
+          "android::tests::audio_prebuilt_tradefed_selection_preserves_other_product_configuration",
+          "android::tests::audio_released_sdk_rejects_the_actual_r11_source_lock",
+          "android::tests::audio_released_sdk_requires_jar_aidl_and_system_module_inputs",
+          "android::tests::audio_required_settings_discovery_rejects_foreign_markers_without_removing_them",
+          "android::tests::audio_resource_projection_preserves_all_original_bytes_and_mtimes_on_restore",
+          "android::tests::audio_resource_projection_rejects_changed_inputs_and_does_not_touch_other_modes",
+          "android::tests::audio_rkpd_sdk_requires_the_complete_original_apex_provider",
+          "android::tests::audio_room_processor_keeps_original_transitive_dependencies",
+          "android::tests::audio_sdk14_source_paths_keep_fixed_provider_and_only_public_cone",
+          "android::tests::audio_sdk33_zygote_rejects_the_actual_r12_lock",
+          "android::tests::audio_sdk33_zygote_requires_full_original_cones_and_commits",
+          "android::tests::audio_sdk_fallback_preserves_original_scopes_and_other_modes",
+          "android::tests::audio_serialservice_metadata_preserves_license_without_inventing_a_team",
+          "android::tests::audio_shared_provider_visibility_is_exact_and_scoped",
+          "android::tests::audio_trusty_rejects_failed455_and_missing_wrong_or_bp_only_header_closure",
+          "android::tests::audio_trusty_rejects_missing_modified_or_linked_originals_and_retains_storageproxyd_edge",
+          "android::tests::audio_vendor_test_tools_reject_failed431_and_incomplete_cones",
+          "android::tests::audio_vendor_test_tools_reject_missing_modified_and_symlinked_originals",
+          "android::tests::audio_vintf_vts_rejects_failed445_and_incomplete_or_repinned_provider",
+          "android::tests::audio_vintf_vts_rejects_missing_modified_and_symlinked_originals",
+          "android::tests::audio_watchdog_rejects_failed453_missing_repinned_and_narrow_sources",
+          "android::tests::audio_watchdog_rejects_missing_modified_and_symlinked_original_inputs",
+          "android::tests::audio_zygote_original_provider_guard_rejects_missing_drift_and_links",
+          "android::tests::m953_private_audio_hal_session_scopes_only_unselected_modules",
+          "android::tests::private_audio_preprocessing_benchmark_scope_is_not_product_scope",
+          "android::tests::private_audio_preprocessing_test_scope_preserves_production_modules",
+          "android::tests::vendor_policy_bundle_typed_request_keeps_audio_scope_and_distinct_receipt",
+          "android::tests::vendor_policy_typed_request_keeps_audio_lock_and_rejects_widening"
+        ],
+        "passed": 86
+      }
+    },
+    {
+      "name": "vendor-tests",
+      "stdout": {
+        "bytes": 1153,
+        "identity": [
+          2067,
+          3822026,
+          33188,
+          1000,
+          1000,
+          1,
+          1153,
+          1794600882914323108,
+          1794600882914323108
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/vendor-tests.stdout",
+        "sha256": "981fa66efb490558e41cd79ff96a775fbae4bfbba94a2280750d9e7ef4fe80ed"
+      },
+      "terminal": {
+        "failed": 0,
+        "filtered": 266,
+        "ignored": 0,
+        "measured": 0,
+        "names": [
+          "android::tests::vendor_policy_bundle_original_producers_reject_drift_missing_and_aliases",
+          "android::tests::vendor_policy_bundle_real_command_overrides_inherited_debug_environment",
+          "android::tests::vendor_policy_bundle_typed_request_keeps_audio_scope_and_distinct_receipt",
+          "android::tests::vendor_policy_origin_guard_and_receipt_cannot_claim_apex_or_qpr1",
+          "android::tests::vendor_policy_real_command_overrides_inherited_debug_environment",
+          "android::tests::vendor_policy_scope_uses_normal_and_interrupted_projection_restore",
+          "android::tests::vendor_policy_typed_request_keeps_audio_lock_and_rejects_widening",
+          "tests::vendor_policy_bundle_cli_is_fixed_without_source_target_or_variant_overrides",
+          "tests::vendor_policy_bundle_output_rejects_directory_and_ancestor_aliases",
+          "tests::vendor_policy_cli_is_fixed_and_has_no_cleanup_or_target_override",
+          "tests::vendor_policy_output_rejects_aliases_and_uses_existing_two_lock_recovery"
+        ],
+        "passed": 11
+      }
+    },
+    {
+      "name": "production-tests",
+      "stdout": {
+        "bytes": 855,
+        "identity": [
+          2067,
+          3822030,
+          33188,
+          1000,
+          1000,
+          1,
+          855,
+          1794600883119539152,
+          1794600883119539152
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/production-tests.stdout",
+        "sha256": "e35e9e1baec566e001f62ab5e4e392f01dd85e5250c2661180ff1a2cfab09618"
+      },
+      "terminal": {
+        "failed": 0,
+        "filtered": 269,
+        "ignored": 0,
+        "measured": 0,
+        "names": [
+          "android::tests::m839_apksig_and_cts_scope_preserve_production_interfaces",
+          "android::tests::private_audio_preprocessing_test_scope_preserves_production_modules",
+          "android::tests::private_service_manager_test_scope_does_not_hide_production_services",
+          "android::tests::private_tethering_apex_preserves_production_jar_defaults_in_native_scope",
+          "android::tests::production_soong_command_preserves_exact_targets_and_dependency_mode",
+          "android::tests::production_soong_commands_fix_user_for_every_normal_entry",
+          "android::tests::production_soong_inherited_environment_cannot_select_debug",
+          "android::tests::production_soong_lunch_choices_match_fixed_release_and_variant"
+        ],
+        "passed": 8
+      }
+    },
+    {
+      "name": "permissions-tests",
+      "stdout": {
+        "bytes": 838,
+        "identity": [
+          2067,
+          3822033,
+          33188,
+          1000,
+          1000,
+          1,
+          838,
+          1794600884349596783,
+          1794600884349596783
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/permissions-tests.stdout",
+        "sha256": "8ab2432a3702ef89415783a3987d02b1b920607f2b552058ae892501f7a06831"
+      },
+      "terminal": {
+        "failed": 0,
+        "filtered": 270,
+        "ignored": 0,
+        "measured": 0,
+        "names": [
+          "android::tests::projection_v2_drop_after_business_error_restores_modes_and_original_absence",
+          "android::tests::projection_v2_failed_recovery_keeps_journal_and_retries_exact_original_mode",
+          "android::tests::projection_v2_pre_mirror_alias_is_rejected_before_any_journal_or_copy",
+          "android::tests::projection_v2_pre_mirror_capture_restores_after_actual_rsync_and_interruption",
+          "android::tests::projection_v2_refuses_symlink_original_without_reading_or_mutating_target",
+          "android::tests::projection_v2_rejects_legacy_or_incomplete_journals_before_source_mutation",
+          "android::tests::projection_v2_restores_deleted_recreated_exec_and_private_permissions_exactly"
+        ],
+        "passed": 7
+      }
+    },
+    {
+      "name": "recovery-tests",
+      "stdout": {
+        "bytes": 276,
+        "identity": [
+          2067,
+          3822036,
+          33188,
+          1000,
+          1000,
+          1,
+          276,
+          1794600884557496821,
+          1794600884557496821
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/recovery-tests.stdout",
+        "sha256": "8a2b8c09c068f010fa2e4eed8d88297754617eb07f7b61a1350250133c0ffbee"
+      },
+      "terminal": {
+        "failed": 0,
+        "filtered": 275,
+        "ignored": 0,
+        "measured": 0,
+        "names": [
+          "tests::source_recovery_cli_is_explicit_and_has_no_build_path",
+          "tests::source_recovery_requires_both_normal_locks_and_only_restores_journal"
+        ],
+        "passed": 2
+      }
+    }
+  ],
+  "delta": {
+    "changed_files": [
+      "android/audio-bridge/libexif537-originals.json",
+      "android/manifest/audio-bridge-source-lock.json",
+      "tools/droidloom-source/src/lib.rs",
+      "tools/droidloom-source/tests/fixtures/audio-source536-before-libexif.json",
+      "tools/droidloom-update/src/android.rs",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/dynamic_depth/Android.bp",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/ABOUT-NLS",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/AUTHORS",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/Android.bp",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/COPYING",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/ChangeLog",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/INSTALL",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/METADATA",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/MODULE_LICENSE_LGPL",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/Makefile.am",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/Makefile.in",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/NEWS",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/NOTICE",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/OWNERS",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/README",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/README-Win32.txt",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/README.android",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/README.version",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/aclocal.m4",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/config.guess",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/config.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/config.h.in",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/config.rpath",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/config.sub",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/configure",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/configure.ac",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/depcomp",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/install-sh",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif-uninstalled.pc.in",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif.pc.in",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif.spec",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif.spec.in",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/Makefile.am",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/Makefile.in",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/_stdint.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-byte-order.c",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-byte-order.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-content.c",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-content.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-data-type.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-data.c",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-data.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-entry.c",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-entry.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-format.c",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-format.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-ifd.c",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-ifd.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-loader.c",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-loader.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-log.c",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-log.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-mem.c",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-mem.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-mnote-data-priv.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-mnote-data.c",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-mnote-data.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-system.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-tag.c",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-tag.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-utils.c",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif-utils.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/exif.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/i18n.h",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif/libexif.sym",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/libexif_blocklist.txt",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/ltmain.sh",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/missing",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libexif/mkinstalldirs",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libjpeg-turbo/Android.bp",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/external/libxml2/Android.bp",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/frameworks/av/camera/Android.bp",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/frameworks/av/services/camera/libcameraservice/Android.bp",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/frameworks/native/libs/binder/Android.bp",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/packages/modules/StatsD/lib/libstatspull/Android.bp",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/system/core/libutils/Android.bp",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/system/libbase/Android.bp",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/system/logging/liblog/Android.bp",
+      "tools/droidloom-update/tests/fixtures/audio-libexif537-original/system/media/camera/Android.bp"
+    ],
+    "full_builds_started": 0,
+    "shared_source_mutations": 0,
+    "state": "EXACT_LIBEXIF537_NATIVE_PROVIDER_DELTA_APPLIED"
+  },
+  "distinct_tests": {
+    "all153_current_independent_compilation": true,
+    "all_original149_retained": true,
+    "every_harness_complete_identity_and_summary_verified": true,
+    "prebuilt_ELF_test_reuse": false,
+    "source": [
+      "exact_audio_depmod_source::depmod536_extends_actual535_only_with_the_exact_same_sp_kmod_four_cones",
+      "exact_audio_generic_source::exact_new_official_trusty_repositories_reject_other_names_and_traversal",
+      "exact_audio_generic_source::generic535_extends_actual458_preserving_all_original_project_pins_and_cones",
+      "exact_audio_libexif537_source::audio_libexif537_extends_actual536_only_with_one_same_sp_original_cone",
+      "exact_audio_sdk14_source::audio_sdk14_extends_actual536_only_with_the_same_sp_public_cone",
+      "exact_trusty_names::exact_official_trusty_names_reject_unknown_projects_and_traversal",
+      "tests::actual_git_checkout_preserves_355_cones_and_hidden_blueprints",
+      "tests::audio_adb_webrtc_extends446_with_exact_original_provider_cones",
+      "tests::audio_allgraph_extends_the_actual_previous_source_without_changing_commits",
+      "tests::audio_api35_cts_extension_preserves_the_previous_materialized_plan",
+      "tests::audio_bcc_tools_extend444_without_repinning",
+      "tests::audio_chre_providers_extend444_without_repinning",
+      "tests::audio_cts_compilation_is_one_monotonic_same_commit_cone",
+      "tests::audio_cts_sts_recursive_closure_is_a_monotonic_pinned_extension",
+      "tests::audio_error_prone_jimfs_is_one_monotonic_pinned_project",
+      "tests::audio_host_tools_extends454_with_exact_original_provider_cones",
+      "tests::audio_junit_extension_keeps_the_actual_previous_projects_unchanged",
+      "tests::audio_lint_fonttools_extends_actual_r13_without_repinning",
+      "tests::audio_ondeviceintelligence_extends_actual_430_by_four_original_api_inputs",
+      "tests::audio_pasit_extends_the_actual_425_source_with_only_five_original_projects",
+      "tests::audio_reconciliation_preserves_existing_gatekeeper_purpose",
+      "tests::audio_released_sdks_extend_the_actual_r11_lock_without_repinning",
+      "tests::audio_rkpd_apex_extends_the_actual_425_source_by_one_original_cone",
+      "tests::audio_sdk33_zygote_extends_actual_r12_by_three_original_cones",
+      "tests::audio_source_capacity_is_bound_to_the_exact_frozen_lock",
+      "tests::audio_trusty_storage_extends455_with_complete_same_commit_parent_headers",
+      "tests::audio_vendor_test_tools_extend_failed431_without_repinning",
+      "tests::audio_vintf_vts_extends445_without_repinning",
+      "tests::audio_watchdog_extends453_without_repinning",
+      "tests::bounded_sparse_paths_reject_duplicates_and_escapes_at_the_new_boundary",
+      "tests::duplicate_projects_and_moving_refs_are_rejected",
+      "tests::exact_local_git_fetch_and_manifest_link_are_verified",
+      "tests::materialized_verification_rejects_dirty_projects",
+      "tests::plan_uses_only_exact_official_projects",
+      "tests::platform_compat_uses_its_official_tools_namespace",
+      "tests::project_bound_admits_superproject_gitlink_extensions_but_not_unbounded_sync",
+      "tests::reconciliation_accepts_bounded_sparse_path_expansion",
+      "tests::reconciliation_accepts_only_monotonic_plan_expansion",
+      "tests::root_links_are_relative_to_their_parent",
+      "tests::source_lock_preserves_exact_sparse_paths_through_the_368_bound",
+      "tests::source_lock_rejects_369_sparse_paths_without_truncating_them",
+      "tests::traversal_and_full_sync_policy_are_rejected_together"
+    ],
+    "total": 153,
+    "update": [
+      "android::tests::audio_actual_three_defaults_regression_preserves_original_consumers_and_providers",
+      "android::tests::audio_adb_webrtc_rejects_failed446_missing_repinned_and_narrow_sources",
+      "android::tests::audio_adb_webrtc_rejects_missing_modified_and_symlinked_original_inputs",
+      "android::tests::audio_allgraph_preserves_exact_original_provider_bytes_and_scopes",
+      "android::tests::audio_allgraph_reproduces_old_provider_removal",
+      "android::tests::audio_allgraph_required_discovery_preserves_sources_and_rejects_foreign_markers",
+      "android::tests::audio_apex_scope_excludes_only_the_explicit_target_list",
+      "android::tests::audio_apex_target_closure_is_explicit_and_preserves_native_dependencies",
+      "android::tests::audio_apex_target_closure_rejects_other_or_mixed_targets",
+      "android::tests::audio_api35_cts_keeps_real_consumers_and_original_provider_modules",
+      "android::tests::audio_api35_cts_rejects_the_observed_missing_original_inputs",
+      "android::tests::audio_bcc_rejects_failed444_and_missing_original_cone",
+      "android::tests::audio_bcc_rejects_missing_modified_and_symlinked_originals",
+      "android::tests::audio_build_source_lock_is_scoped_and_exact",
+      "android::tests::audio_chre_rejects_failed444_and_incomplete_or_repinned_providers",
+      "android::tests::audio_chre_rejects_missing_modified_and_symlinked_originals",
+      "android::tests::audio_connectivity_normal_patch_chain_preserves_providers_and_recovers",
+      "android::tests::audio_connectivity_projection_guard_keeps_other_modes_unchanged",
+      "android::tests::audio_connectivity_projection_guard_rejects_unapplied_and_partial_chain",
+      "android::tests::audio_connectivity_projection_guard_rejects_unbound_or_changed_inputs",
+      "android::tests::audio_cts_compilation_requires_original_defaults_without_deleting_consumers",
+      "android::tests::audio_cts_sts_keeps_original_provider_and_sibling_modules",
+      "android::tests::audio_cts_sts_recursive_closure_requires_all_original_source_cones",
+      "android::tests::audio_depmod536_requires_the_actual_same_sp_host_provider_and_exact_cones",
+      "android::tests::audio_depmod536_whole_original_factory_tools_and_package_reject_drift_missing_or_alias",
+      "android::tests::audio_error_prone_jimfs_requires_original_full_cone_and_commit",
+      "android::tests::audio_error_prone_projection_preserves_original_bytes_and_recovers_journal",
+      "android::tests::audio_error_prone_requires_pinned_complete_provider_and_keeps_other_scope",
+      "android::tests::audio_error_prone_restores_original_provider_and_retained_consumer_edge",
+      "android::tests::audio_gatekeeper_requires_the_complete_locked_rust_provider_cones",
+      "android::tests::audio_generic535_complete_original_blueprints_are_real_inputs_and_reject_drift_or_missing",
+      "android::tests::audio_generic535_exact_discovery_keeps_required_providers_and_rejects_foreign_markers",
+      "android::tests::audio_generic535_original_blueprints_reject_source_aliases",
+      "android::tests::audio_host_tools_rejects_failed454_missing_repinned_and_bp_only_cones",
+      "android::tests::audio_host_tools_rejects_missing_modified_and_symlinked_original_inputs",
+      "android::tests::audio_junit_provider_keeps_the_real_icu_consumer_and_all_original_dependencies",
+      "android::tests::audio_junit_provider_requires_complete_original_sources_and_prebuilt_jar",
+      "android::tests::audio_kms_scope_preserves_the_real_local_signing_chain",
+      "android::tests::audio_launcher_tapl_preserves_original_generator_chain_and_dependency_bodies",
+      "android::tests::audio_libexif537_exact_original_project_and_cone_reject_pin_or_scope_drift",
+      "android::tests::audio_libexif537_real_shared_provider_keeps_camera_and_all_direct_native_definitions",
+      "android::tests::audio_libexif537_whole_original_closure_rejects_changed_missing_aliased_or_wrong_mode_inputs",
+      "android::tests::audio_lint_fonttools_original_provider_guard_rejects_missing_drift_and_links",
+      "android::tests::audio_lint_fonttools_rejects_the_actual_r13_lock",
+      "android::tests::audio_lint_fonttools_requires_complete_cones_and_original_commits",
+      "android::tests::audio_new_crossdevice_roots_preserve_license_and_independent_original_flags",
+      "android::tests::audio_new_launcher_ancestor_tests_keep_only_the_unselected_root_scope",
+      "android::tests::audio_npumanager_sdk_uses_exact_original_three_scopes",
+      "android::tests::audio_ondeviceintelligence_original_api_guard_rejects_drift_missing_and_links",
+      "android::tests::audio_ondeviceintelligence_rejects_the_actual_r10_430_lock",
+      "android::tests::audio_ondeviceintelligence_requires_both_original_scopes_at_same_commit",
+      "android::tests::audio_pasit_old_425_lock_reproduces_missing_original_project",
+      "android::tests::audio_pasit_original_provider_guard_rejects_drift_missing_and_links",
+      "android::tests::audio_pasit_requires_all_five_complete_same_commit_sources",
+      "android::tests::audio_pasit_retains_original_consumer_defaults_and_transitive_edges",
+      "android::tests::audio_pcm_patches_are_private_and_keep_lifecycle_order",
+      "android::tests::audio_platform_test_scope_preserves_metadata_and_real_library_provider",
+      "android::tests::audio_power_provider_requires_complete_original_cone_without_changing_other_routes",
+      "android::tests::audio_prebuilt_tradefed_selection_preserves_other_product_configuration",
+      "android::tests::audio_released_sdk_rejects_the_actual_r11_source_lock",
+      "android::tests::audio_released_sdk_requires_jar_aidl_and_system_module_inputs",
+      "android::tests::audio_required_settings_discovery_rejects_foreign_markers_without_removing_them",
+      "android::tests::audio_resource_projection_preserves_all_original_bytes_and_mtimes_on_restore",
+      "android::tests::audio_resource_projection_rejects_changed_inputs_and_does_not_touch_other_modes",
+      "android::tests::audio_rkpd_sdk_requires_the_complete_original_apex_provider",
+      "android::tests::audio_room_processor_keeps_original_transitive_dependencies",
+      "android::tests::audio_sdk14_source_paths_keep_fixed_provider_and_only_public_cone",
+      "android::tests::audio_sdk33_zygote_rejects_the_actual_r12_lock",
+      "android::tests::audio_sdk33_zygote_requires_full_original_cones_and_commits",
+      "android::tests::audio_sdk_fallback_preserves_original_scopes_and_other_modes",
+      "android::tests::audio_serialservice_metadata_preserves_license_without_inventing_a_team",
+      "android::tests::audio_shared_provider_visibility_is_exact_and_scoped",
+      "android::tests::audio_trusty_rejects_failed455_and_missing_wrong_or_bp_only_header_closure",
+      "android::tests::audio_trusty_rejects_missing_modified_or_linked_originals_and_retains_storageproxyd_edge",
+      "android::tests::audio_vendor_test_tools_reject_failed431_and_incomplete_cones",
+      "android::tests::audio_vendor_test_tools_reject_missing_modified_and_symlinked_originals",
+      "android::tests::audio_vintf_vts_rejects_failed445_and_incomplete_or_repinned_provider",
+      "android::tests::audio_vintf_vts_rejects_missing_modified_and_symlinked_originals",
+      "android::tests::audio_watchdog_rejects_failed453_missing_repinned_and_narrow_sources",
+      "android::tests::audio_watchdog_rejects_missing_modified_and_symlinked_original_inputs",
+      "android::tests::audio_zygote_original_provider_guard_rejects_missing_drift_and_links",
+      "android::tests::m839_apksig_and_cts_scope_preserve_production_interfaces",
+      "android::tests::m953_private_audio_hal_session_scopes_only_unselected_modules",
+      "android::tests::private_audio_preprocessing_benchmark_scope_is_not_product_scope",
+      "android::tests::private_audio_preprocessing_test_scope_preserves_production_modules",
+      "android::tests::private_service_manager_test_scope_does_not_hide_production_services",
+      "android::tests::private_tethering_apex_preserves_production_jar_defaults_in_native_scope",
+      "android::tests::production_soong_command_preserves_exact_targets_and_dependency_mode",
+      "android::tests::production_soong_commands_fix_user_for_every_normal_entry",
+      "android::tests::production_soong_inherited_environment_cannot_select_debug",
+      "android::tests::production_soong_lunch_choices_match_fixed_release_and_variant",
+      "android::tests::projection_v2_drop_after_business_error_restores_modes_and_original_absence",
+      "android::tests::projection_v2_failed_recovery_keeps_journal_and_retries_exact_original_mode",
+      "android::tests::projection_v2_pre_mirror_alias_is_rejected_before_any_journal_or_copy",
+      "android::tests::projection_v2_pre_mirror_capture_restores_after_actual_rsync_and_interruption",
+      "android::tests::projection_v2_refuses_symlink_original_without_reading_or_mutating_target",
+      "android::tests::projection_v2_rejects_legacy_or_incomplete_journals_before_source_mutation",
+      "android::tests::projection_v2_restores_deleted_recreated_exec_and_private_permissions_exactly",
+      "android::tests::vendor_policy_bundle_original_producers_reject_drift_missing_and_aliases",
+      "android::tests::vendor_policy_bundle_real_command_overrides_inherited_debug_environment",
+      "android::tests::vendor_policy_bundle_typed_request_keeps_audio_scope_and_distinct_receipt",
+      "android::tests::vendor_policy_origin_guard_and_receipt_cannot_claim_apex_or_qpr1",
+      "android::tests::vendor_policy_real_command_overrides_inherited_debug_environment",
+      "android::tests::vendor_policy_scope_uses_normal_and_interrupted_projection_restore",
+      "android::tests::vendor_policy_typed_request_keeps_audio_lock_and_rejects_widening",
+      "tests::source_recovery_cli_is_explicit_and_has_no_build_path",
+      "tests::source_recovery_requires_both_normal_locks_and_only_restores_journal",
+      "tests::vendor_policy_bundle_cli_is_fixed_without_source_target_or_variant_overrides",
+      "tests::vendor_policy_bundle_output_rejects_directory_and_ancestor_aliases",
+      "tests::vendor_policy_cli_is_fixed_and_has_no_cleanup_or_target_override",
+      "tests::vendor_policy_output_rejects_aliases_and_uses_existing_two_lock_recovery"
+    ]
+  },
+  "errors": [],
+  "finished_ns": 1794600937001541557,
+  "full_builds_started": 0,
+  "generic_regular_max_bytes": 16777216,
+  "new_large_original_exceptions": 0,
+  "new_lock": {
+    "bytes": 286171,
+    "identity": [
+      2067,
+      3817786,
+      33188,
+      1000,
+      1000,
+      1,
+      286171,
+      1794600810833975964,
+      1794600810833975964
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/recipe/android/manifest/audio-bridge-source-lock.json",
+    "sha256": "84bdef58aa934bcaa1926f9ea901186017c5f53118db1683fec1283489e0f31b"
+  },
+  "new_original_source_bytes": 1500241,
+  "new_original_source_files": 68,
+  "new_requested_targets": [
+    "selinux_policy_vendor",
+    "vendor_manifest.xml",
+    "vendor_compatibility_matrix.xml",
+    "checkvintf"
+  ],
+  "new_source_projects": 1,
+  "normal_plan": {
+    "bytes": 302836,
+    "identity": [
+      2067,
+      3822642,
+      33188,
+      1000,
+      1000,
+      1,
+      302836,
+      1794600932983070974,
+      1794600932983070974
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/qualification-normal-r1/commands/plan.stdout",
+    "sha256": "884a69f349d72252d34dbe94f4b26369d64b31b8dd203ed3d561792f7600bcf2"
+  },
+  "normal_tools": [
+    {
+      "bytes": 1490200,
+      "identity": [
+        2067,
+        3822636,
+        33088,
+        1000,
+        1000,
+        1,
+        1490200,
+        1794600932777077041,
+        1794600932777077041
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-source",
+      "sha256": "1accfd0f32662689326fc1c857a240c5cfd943984cb2b722b182674811673674"
+    },
+    {
+      "bytes": 3315776,
+      "identity": [
+        2067,
+        3822637,
+        33088,
+        1000,
+        1000,
+        1,
+        3315776,
+        1794600932781076923,
+        1794600932781076923
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/tools/droidloom-update",
+      "sha256": "04c2babfcd4230742ba107caff234a52cd81ff84c691471e50d9abfbf17957b1"
+    }
+  ],
+  "original_three_EX_leases_closed": true,
+  "patch": {
+    "bytes": 2093167,
+    "identity": [
+      2067,
+      3822665,
+      33024,
+      1000,
+      1000,
+      1,
+      2093167,
+      1794600933993041231,
+      1794600933993041231
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/libexif537-native-provider.patch",
+    "sha256": "df913e751d05c6e10dfe20ce19e03c026993fd02d8dfdfdb21c22f1924392451"
+  },
+  "prior149_result": {
+    "bytes": 115005,
+    "identity": [
+      2067,
+      3808054,
+      33024,
+      1000,
+      1000,
+      1,
+      115005,
+      1794592529852170507,
+      1794592529852170507
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio536-sdk14-vendor-bundle-20261113-e2a3-r2/qualification-normal-r1/RESULT.json",
+    "sha256": "0babf7da0571969fcc6119b8d083a4fe5e657dda19244189f734f03e624d7f53"
+  },
+  "private_cache": {
+    "archives": 51,
+    "complete_refs": 242,
+    "credential_files_read_or_copied": 0,
+    "global_cache_writes": 0,
+    "locked_registry_versions": 193,
+    "original_private_prepare_lock": [
+      2067,
+      3057953,
+      33152,
+      1000,
+      1000,
+      1,
+      0,
+      1794476958886836090,
+      1794476958886836090
+    ],
+    "preparation_H": "desktop/1a1cf295876-2564-19b0",
+    "private_CARGO_HOME": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio455-private-cargo-cache-01a1ca08-r2",
+    "ready": {
+      "bytes": 324808,
+      "identity": [
+        2067,
+        3057956,
+        33024,
+        1000,
+        1000,
+        1,
+        324808,
+        1794476959986804065,
+        1794476959986804065
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio455-private-cargo-cache-01a1ca08-r2/READY.json",
+      "sha256": "86901bb22ba20b73fc086be5ef07d1beb973291aea20c56b92a44ac0fef293ff"
+    },
+    "sparse_indices": 188
+  },
+  "private_cache_lease_closed": true,
+  "production_ready": false,
+  "recipe_commit": "e85ad204e6286be5cba173cc5037884e9fa1ac83",
+  "recipe_tree": "e680ae246de9a0edfb1c8aaa9b3e1be392e5d465",
+  "runtime_qualified": false,
+  "schema": "audio537-libexif-independent153-normal-v1",
+  "shared_source_mutations": 0,
+  "signals": [],
+  "source_after": {
+    "all_predecessor_whole_hash_qualified_F9_unchanged": true,
+    "current_baseline": {
+      "bytes": 39330705,
+      "identity": [
+        2067,
+        3817227,
+        33024,
+        1000,
+        1000,
+        1,
+        39330705,
+        1794598783665554275,
+        1794598783665554275
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio536-sdk14-vendor-bundle-20261113-e2a3-r2/restored-full927-baseline.json",
+      "sha256": "652576a901f032da1ebf251c64ed1885358ccf5159b1dfc25b25f524e4ea4759"
+    },
+    "new_libexif_shared_source_absent": true,
+    "original_three_EX_leases": [
+      {
+        "bytes": 0,
+        "identity": [
+          2067,
+          48352,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794167144514000698,
+          1794167144514000698
+        ],
+        "path": "/data/pocket4-production-build-20261108-8b88.serial.lock",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 8,
+        "identity": [
+          2067,
+          1883370,
+          33152,
+          1000,
+          1000,
+          1,
+          8,
+          1794597198319797866,
+          1794597198319797866
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/package-build.lock",
+        "sha256": "1ed93e817942eca4bafcc7bd12273a27210194d131779dc67f17378f509e76b4"
+      },
+      {
+        "bytes": 8,
+        "identity": [
+          2067,
+          1883371,
+          33152,
+          1000,
+          1000,
+          1,
+          8,
+          1794597198320797839,
+          1794597198320797839
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source-update.lock",
+        "sha256": "1ed93e817942eca4bafcc7bd12273a27210194d131779dc67f17378f509e76b4"
+      }
+    ],
+    "previous_failed927_retirement": {
+      "bytes": 233523,
+      "identity": [
+        2067,
+        3817228,
+        33024,
+        1000,
+        1000,
+        1,
+        233523,
+        1794598785181508231,
+        1794598785181508231
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio536-sdk14-vendor-bundle-20261113-e2a3-r2/FULL927-RETIREMENT.json",
+      "sha256": "17cc9e505ec3161cccc81ae3ef8962cd96beaf73bb760e620261bd107f03d703"
+    },
+    "qualified_whole_original_bodies": 84258,
+    "restored_projection_original_paths": 173,
+    "schema": "audio536-restored927-source-held-through-private537-normal-v1",
+    "shared_source_writes": 0,
+    "source_manifest": {
+      "bytes": 317708,
+      "identity": [
+        2067,
+        1851938,
+        33152,
+        1000,
+        1000,
+        1,
+        317708,
+        1794597562568456210,
+        1794597562572456069
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+      "sha256": "502b27a39d53d82d17fe0ed2cbb1b8ded3ccee97a66a1962e77fa63d53f239b2"
+    },
+    "source_writers_started": 0,
+    "unchanged_complete_fixed_indexes": 120
+  },
+  "source_before": {
+    "all_predecessor_whole_hash_qualified_F9_unchanged": true,
+    "current_baseline": {
+      "bytes": 39330705,
+      "identity": [
+        2067,
+        3817227,
+        33024,
+        1000,
+        1000,
+        1,
+        39330705,
+        1794598783665554275,
+        1794598783665554275
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio536-sdk14-vendor-bundle-20261113-e2a3-r2/restored-full927-baseline.json",
+      "sha256": "652576a901f032da1ebf251c64ed1885358ccf5159b1dfc25b25f524e4ea4759"
+    },
+    "new_libexif_shared_source_absent": true,
+    "original_three_EX_leases": [
+      {
+        "bytes": 0,
+        "identity": [
+          2067,
+          48352,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794167144514000698,
+          1794167144514000698
+        ],
+        "path": "/data/pocket4-production-build-20261108-8b88.serial.lock",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 8,
+        "identity": [
+          2067,
+          1883370,
+          33152,
+          1000,
+          1000,
+          1,
+          8,
+          1794597198319797866,
+          1794597198319797866
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/package-build.lock",
+        "sha256": "1ed93e817942eca4bafcc7bd12273a27210194d131779dc67f17378f509e76b4"
+      },
+      {
+        "bytes": 8,
+        "identity": [
+          2067,
+          1883371,
+          33152,
+          1000,
+          1000,
+          1,
+          8,
+          1794597198320797839,
+          1794597198320797839
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source-update.lock",
+        "sha256": "1ed93e817942eca4bafcc7bd12273a27210194d131779dc67f17378f509e76b4"
+      }
+    ],
+    "previous_failed927_retirement": {
+      "bytes": 233523,
+      "identity": [
+        2067,
+        3817228,
+        33024,
+        1000,
+        1000,
+        1,
+        233523,
+        1794598785181508231,
+        1794598785181508231
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio536-sdk14-vendor-bundle-20261113-e2a3-r2/FULL927-RETIREMENT.json",
+      "sha256": "17cc9e505ec3161cccc81ae3ef8962cd96beaf73bb760e620261bd107f03d703"
+    },
+    "qualified_whole_original_bodies": 84258,
+    "restored_projection_original_paths": 173,
+    "schema": "audio536-restored927-source-held-through-private537-normal-v1",
+    "shared_source_writes": 0,
+    "source_manifest": {
+      "bytes": 317708,
+      "identity": [
+        2067,
+        1851938,
+        33152,
+        1000,
+        1000,
+        1,
+        317708,
+        1794597562568456210,
+        1794597562572456069
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+      "sha256": "502b27a39d53d82d17fe0ed2cbb1b8ded3ccee97a66a1962e77fa63d53f239b2"
+    },
+    "source_writers_started": 0,
+    "unchanged_complete_fixed_indexes": 120
+  },
+  "source_manifest": {
+    "bytes": 78189,
+    "identity": [
+      2067,
+      3817503,
+      33024,
+      1000,
+      1000,
+      1,
+      78189,
+      1794600778851607290,
+      1794600778851607290
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/control/source-manifest.json",
+    "sha256": "8c74923dfca84e4b9edf7b4a493b43cc4893eafd103aad21dfc142ce174e74fa"
+  },
+  "source_project_count": 537,
+  "source_release": "cp2a",
+  "source_writers_started": 0,
+  "started_ns": 1794600805521746138,
+  "state": "INDEPENDENT153_TESTS_RELEASE_LIBEXIF_NATIVE_CLOSURE_AND_BUNDLE_PRODUCER_PASSED",
+  "test_catalog": {
+    "bytes": 13414,
+    "identity": [
+      2067,
+      3820580,
+      33024,
+      1000,
+      1000,
+      1,
+      13414,
+      1794600812482617987,
+      1794600812482617987
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio537-libexif-native-closure-20261113-e2a3-r2/test-catalog.json",
+    "sha256": "dbfd24d4ce9ed74335c52c22d9ad1d2e53e618d83d3a5f7bf7dbe74ecb9270f6"
+  }
+}

@@ -1,0 +1,80 @@
+/*
+ * Copyright (C) 2023 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package {
+    default_team: "trendy_team_fwk_thread_network",
+}
+
+python_library_host {
+    name: "mobly_device_flags",
+    srcs: ["tools/device_flags.py"],
+    libs: [
+        "libaconfig_python_proto",
+        "mobly",
+    ],
+    pkg_path: "mobly",
+}
+
+python_test_host {
+    name: "mobly_device_flags_test",
+    srcs: ["tools/device_flags_test.py"],
+    main: "tools/device_flags_test.py",
+    libs: [
+        "libaconfig_python_proto",
+        "mobly_device_flags",
+    ],
+}
+
+python_library_host {
+    name: "mobly_coverage_device_utils",
+    srcs: ["coverage/device_utils.py"],
+    libs: [
+        "mobly",
+    ],
+    pkg_path: "mobly",
+}
+
+python_test_host {
+    name: "mobly_coverage_device_utils_test",
+    srcs: ["coverage/device_utils_test.py"],
+    main: "coverage/device_utils_test.py",
+    libs: [
+        "mobly",
+        "mobly_coverage_device_utils",
+    ],
+}
+
+python_library_host {
+    name: "mobly_coverage_options",
+    srcs: ["coverage/coverage_options.py"],
+    libs: [
+        "mobly",
+    ],
+    pkg_path: "mobly",
+}
+
+python_library_host {
+    name: "mobly_java_coverage",
+    srcs: ["coverage/java_coverage.py"],
+    libs: [
+        "mobly",
+    ],
+    pkg_path: "mobly",
+}
+
+test_suite_package {
+    name: "mobly-tests",
+}
