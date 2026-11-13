@@ -1,0 +1,94 @@
+cc_library {
+    name: "libFraunhoferAAC",
+    vendor_available: true,
+    host_supported: true,
+    srcs: [
+        "libAACdec/src/*.cpp",
+        "libAACenc/src/*.cpp",
+        "libPCMutils/src/*.cpp",
+        "libFDK/src/*.cpp",
+        "libSYS/src/*.cpp",
+        "libMpegTPDec/src/*.cpp",
+        "libMpegTPEnc/src/*.cpp",
+        "libSBRdec/src/*.cpp",
+        "libSBRenc/src/*.cpp",
+        "libArithCoding/src/*.cpp",
+        "libDRCdec/src/*.cpp",
+        "libSACdec/src/*.cpp",
+        "libSACenc/src/*.cpp",
+    ],
+    cflags: [
+        "-Werror",
+        "-Wno-unused-parameter",
+        "-Wno-#warnings",
+        "-Wuninitialized",
+        "-Wno-self-assign",
+        "-Wno-implicit-fallthrough",
+        "-DSUPPRESS_BUILD_DATE_INFO",
+    ],
+    sanitize: {
+        misc_undefined: [
+            "unsigned-integer-overflow",
+            "signed-integer-overflow",
+            "bounds",
+        ],
+        cfi: true,
+    },
+    shared_libs: [
+        "liblog",
+    ],
+    export_include_dirs: [
+        "libAACdec/include",
+        "libAACenc/include",
+        "libPCMutils/include",
+        "libFDK/include",
+        "libSYS/include",
+        "libMpegTPDec/include",
+        "libMpegTPEnc/include",
+        "libSBRdec/include",
+        "libSBRenc/include",
+        "libArithCoding/include",
+        "libDRCdec/include",
+        "libSACdec/include",
+        "libSACenc/include",
+    ],
+
+    target: {
+        darwin: {
+            enabled: false,
+        },
+    },
+
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.bt",
+        "com.android.media.swcodec",
+    ],
+    min_sdk_version: "29",
+}
+
+cc_test {
+    name: "libSBRdec_test",
+    team: "trendy_team_android_media_audio_framework",
+    host_supported: true,
+    srcs: [
+        "libSBRdec/tests/libSBRdec_test.cpp",
+    ],
+    static_libs: [
+        "libFraunhoferAAC",
+    ],
+    shared_libs: [
+        "liblog",
+    ],
+    local_include_dirs: [
+        "libSBRdec/src",
+    ],
+    cflags: [
+        "-Werror",
+        "-Wall",
+    ],
+    sanitize: {
+        cfi: true,
+    },
+    test_suites: ["device-tests"],
+}
