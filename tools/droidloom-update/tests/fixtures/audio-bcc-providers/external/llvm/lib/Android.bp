@@ -1,0 +1,38 @@
+package {
+    // See: http://go/android-license-faq
+    // A large-scale-change added 'default_applicable_licenses' to import
+    // all of the 'license_kinds' from "external_llvm_license"
+    // to get the below license kinds:
+    //   SPDX-license-identifier-BSD
+    //   SPDX-license-identifier-MIT
+    //   SPDX-license-identifier-NCSA
+    //   legacy_permissive
+    //   legacy_unencumbered
+    default_applicable_licenses: ["external_llvm_license"],
+}
+
+cc_defaults {
+    name: "llvm-lib-defaults",
+    vendor_available: true,
+    product_available: true,
+    defaults: ["llvm-defaults"],
+    cflags: [
+        "-Wno-bitwise-instead-of-logical",
+        "-Wno-deprecated-copy-with-user-provided-copy",
+        "-Wno-cast-function-type-mismatch",
+        "-Wno-unqualified-std-cast-call",
+        "-Wno-unused-but-set-parameter",
+        "-Wno-unused-but-set-variable",
+        "-Wno-unused-lambda-capture",
+        "-Wno-unused-parameter",
+        "-Wno-nonnull",
+    ],
+    export_header_lib_headers: ["llvm-headers"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+}
+
+subdirs = ["*"]

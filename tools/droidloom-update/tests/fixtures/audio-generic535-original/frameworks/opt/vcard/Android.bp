@@ -1,0 +1,152 @@
+// Copyright (C) 2010 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+java_library {
+    name: "com.android.vcard",
+
+    // 4.0
+    sdk_version: "14",
+
+    srcs: ["java/**/*.java"],
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.bt",
+    ],
+
+    libs: [
+        "framework-annotations-lib",
+    ],
+
+    errorprone: {
+        enabled: true,
+        javacflags: [
+            "-Xep:AlmostJavadoc:ERROR",
+            "-Xep:AlreadyChecked:ERROR",
+            "-Xep:AmbiguousMethodReference:ERROR",
+            "-Xep:ArrayRecordComponent:ERROR",
+            "-Xep:AssignmentExpression:ERROR",
+            "-Xep:AttemptedNegativeZero:ERROR",
+            "-Xep:BadImport:ERROR",
+            "-Xep:BadInstanceof:ERROR",
+            "-Xep:CatchAndPrintStackTrace:ERROR",
+            "-Xep:CatchFail:ERROR",
+            "-Xep:CheckReturnValue:ERROR",
+            "-Xep:ClassCanBeStatic:ERROR",
+            "-Xep:DateFormatConstant:ERROR",
+            "-Xep:DirectInvocationOnMock:ERROR",
+            "-Xep:DuplicateBranches:ERROR",
+            "-Xep:EmptyBlockTag:ERROR",
+            "-Xep:EmptyCatch:ERROR",
+            "-Xep:EnumOrdinal:ERROR",
+            "-Xep:EqualsGetClass:ERROR",
+            "-Xep:EqualsHashCode:ERROR",
+            "-Xep:EqualsIncompatibleType:ERROR",
+            "-Xep:FallThrough:ERROR",
+            // "-Xep:FieldCanBeFinal:ERROR", // TODO: b/410743019 - enable this check
+            "-Xep:FieldCanBeLocal:ERROR",
+            "-Xep:FieldCanBeStatic:ERROR",
+            "-Xep:Finalize:ERROR",
+            "-Xep:ForEachIterable:ERROR",
+            "-Xep:FutureReturnValueIgnored:ERROR",
+            "-Xep:GuardedBy:ERROR",
+            "-Xep:HidingField:ERROR",
+            "-Xep:InconsistentHashCode:ERROR",
+            "-Xep:IncrementInForLoopAndHeader:ERROR",
+            "-Xep:InlineFormatString:ERROR",
+            "-Xep:InlineMeInliner:ERROR",
+            "-Xep:InvalidBlockTag:ERROR",
+            "-Xep:InvalidInlineTag:ERROR",
+            "-Xep:InvalidLink:ERROR",
+            "-Xep:InvalidParam:ERROR",
+            "-Xep:JUnit4EmptyMethods:ERROR",
+            "-Xep:JavaLangClash:ERROR",
+            "-Xep:JavaUtilDate:ERROR",
+            "-Xep:JdkObsolete:ERROR",
+            "-Xep:LockOnNonEnclosingClassLiteral:ERROR",
+            "-Xep:LongFloatConversion:ERROR",
+            "-Xep:LoopOverCharArray:ERROR",
+            "-Xep:MethodCanBeStatic:ERROR",
+            "-Xep:MissingCasesInEnumSwitch:ERROR",
+            "-Xep:MissingDefault:ERROR",
+            "-Xep:MixedMutabilityReturnType:ERROR",
+            "-Xep:MockNotUsedInProduction:ERROR",
+            "-Xep:ModifiedButNotUsed:ERROR",
+            "-Xep:ModifyCollectionInEnhancedForLoop:ERROR",
+            "-Xep:NarrowCalculation:ERROR",
+            "-Xep:NarrowingCompoundAssignment:ERROR",
+            "-Xep:NonAtomicVolatileUpdate:ERROR",
+            "-Xep:NonCanonicalStaticMemberImport:ERROR",
+            "-Xep:NonCanonicalType:ERROR",
+            "-Xep:NotJavadoc:ERROR",
+            "-Xep:NullOptional:ERROR",
+            "-Xep:NullableOptional:ERROR",
+            "-Xep:NullablePrimitive:ERROR",
+            "-Xep:NullableVoid:ERROR",
+            "-Xep:ObjectEqualsForPrimitives:ERROR",
+            // "-Xep:ObjectToString:ERROR", // Wrongfully reporting errors
+            "-Xep:OperatorPrecedence:ERROR",
+            "-Xep:RedundantControlFlow:ERROR",
+            "-Xep:ReferenceEquality:ERROR",
+            "-Xep:ReturnAtTheEndOfVoidFunction:ERROR",
+            "-Xep:ReturnFromVoid:ERROR",
+            "-Xep:SelfAssertion:ERROR",
+            "-Xep:StatementSwitchToExpressionSwitch:ERROR",
+            "-Xep:StaticAssignmentInConstructor:ERROR",
+            "-Xep:StaticGuardedByInstance:ERROR",
+            // "-Xep:StringCaseLocaleUsage:ERROR", // TODO in vcard but require knowledge of the data being converted
+            "-Xep:StringCharset:ERROR",
+            "-Xep:StringConcatToTextBlock:ERROR",
+            // "-Xep:StringSplitter:ERROR", // Not enabled in android platform
+            "-Xep:SwitchDefault:ERROR",
+            "-Xep:SynchronizeOnNonFinalField:ERROR",
+            "-Xep:ThreadJoinLoop:ERROR",
+            "-Xep:ToStringReturnsNull:ERROR",
+            "-Xep:TraditionalSwitchExpression:ERROR",
+            "-Xep:TruthAssertExpected:ERROR",
+            "-Xep:TruthConstantAsserts:ERROR",
+            "-Xep:TruthGetOrDefault:ERROR",
+            "-Xep:TruthIncompatibleType:ERROR",
+            "-Xep:UndefinedEquals:ERROR",
+            "-Xep:UnnecessaryAssignment:ERROR",
+            "-Xep:UnnecessaryAsync:ERROR",
+            "-Xep:UnnecessaryBreakInSwitch:ERROR",
+            "-Xep:UnnecessaryDefaultInEnumSwitch:ERROR",
+            "-Xep:UnnecessaryStringBuilder:ERROR",
+            "-Xep:UnrecognisedJavadocTag:ERROR",
+            "-Xep:UnusedMethod:ERROR",
+            "-Xep:UnusedNestedClass:ERROR",
+            "-Xep:UnusedTypeParameter:ERROR",
+            "-Xep:UnusedVariable:ERROR",
+            "-Xep:UseEnumSwitch:ERROR",
+            "-Xep:VariableNameSameAsType:ERROR",
+            "-Xep:WaitNotInLoop:ERROR",
+            "-Xep:WakelockReleasedDangerously:ERROR",
+
+            // Exclude generated files
+            "-XepExcludedPaths:.*/srcjars/.*",
+
+            // The @InlineMe annotation could be made available, but it would
+            // apply on external facing API. This is not desired.
+            // For more context, see https://r.android.com/3303475
+            "-Xep:InlineMeSuggester:OFF",
+
+            // ArrayList is Heavily used in vcard due to external API
+            "-Xep:NonApiType:OFF",
+        ],
+    },
+}

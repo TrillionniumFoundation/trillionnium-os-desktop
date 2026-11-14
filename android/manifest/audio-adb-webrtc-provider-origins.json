@@ -1,0 +1,999 @@
+{
+  "schema": "audio453-original-adb-webrtc-provider-closure-v1",
+  "project_count": 453,
+  "prior_lock_sha256": "665e8bfd6bd5b3be50024655dc1ea78797aaf214f633b37082d47296cd2e491c",
+  "superproject": {
+    "name": "platform/superproject",
+    "ref": "refs/heads/android-17.0.0_r1",
+    "commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039"
+  },
+  "added_projects": [
+    {
+      "path": "external/openscreen",
+      "name": "platform/external/openscreen",
+      "commit": "3f982cf4871df8771c9d4abe6e9a6f8d829b2736",
+      "purpose": "Original ADB discovery and platform implementation plus their original Abseil source dependency",
+      "sparse_paths": [
+        "discovery",
+        "platform",
+        "third_party/abseil",
+        "util"
+      ]
+    },
+    {
+      "path": "external/libusb",
+      "name": "platform/external/libusb",
+      "commit": "70460fc2b43c3948f9caae1fd4eacd2d666a872b",
+      "purpose": "Original host USB provider and original Linux, Android, Darwin and Windows source/configuration branches",
+      "sparse_paths": [
+        "android/config.h",
+        "darwin",
+        "include",
+        "libusb",
+        "linux",
+        "windows"
+      ]
+    },
+    {
+      "path": "external/webrtc",
+      "name": "platform/external/webrtc",
+      "commit": "1895dc1134c158561e0ef668734d86d6bb20d993",
+      "purpose": "Original audio preprocessing implementation, complete declared source/header cones and original conditional SDK headers",
+      "sparse_paths": [
+        "api",
+        "audio",
+        "call",
+        "common_audio",
+        "common_video",
+        "logging",
+        "media",
+        "modules",
+        "net",
+        "p2p",
+        "pc",
+        "rtc_base",
+        "stats",
+        "system_wrappers",
+        "test",
+        "third_party",
+        "video",
+        "webrtc",
+        "sdk"
+      ]
+    },
+    {
+      "path": "external/pffft",
+      "name": "platform/external/pffft",
+      "commit": "9bc003aef1c0c120735aeeb1098ef830c265c98c",
+      "purpose": "Original FFT provider used by WebRTC defaults and audio processing whole-static dependencies",
+      "sparse_paths": [
+        "simd"
+      ]
+    },
+    {
+      "path": "external/rnnoise",
+      "name": "platform/external/rnnoise",
+      "commit": "1295d6828459cc82c3c29cc5d7d297215250a74b",
+      "purpose": "Original RNN VAD provider used by WebRTC defaults and audio processing whole-static dependencies",
+      "sparse_paths": [
+        "include",
+        "src"
+      ]
+    },
+    {
+      "path": "external/libsrtp2",
+      "name": "platform/external/libsrtp2",
+      "commit": "f50e3237d9f6d20e95293ffce692aaa60b7c81be",
+      "purpose": "Original SRTP provider in WebRTC defaults, including the retained original fuzzer and exported header symlink",
+      "sparse_paths": [
+        "crypto",
+        "exported_include",
+        "fuzzer",
+        "include",
+        "srtp"
+      ]
+    },
+    {
+      "path": "tools/security",
+      "name": "platform/tools/security",
+      "commit": "e4e7ba1dabe64f33b9894624e43763bd8a3cbca5",
+      "purpose": "Original unsanitized device-fuzzer crash-handler dependency required by the unmodified Soong rule",
+      "sparse_paths": [
+        "fuzzing/libFuzzer_mte_crash_handler"
+      ]
+    }
+  ],
+  "added_sparse_cones": {
+    "external/libevent": [
+      "compat",
+      "include"
+    ],
+    "packages/modules/adb": [
+      "client",
+      "fdevent",
+      "sysdeps",
+      "daemon",
+      "fastdeploy",
+      "test_utils"
+    ]
+  },
+  "selected_original_trees": [
+    {
+      "commit": "3f982cf4871df8771c9d4abe6e9a6f8d829b2736",
+      "full_original_tree_bytes": 265023,
+      "full_original_tree_sha256": "96c066bd534f62c70355136bbd30073922bd3a4b296df4f8889fd6028a222ae4",
+      "path": "external/openscreen",
+      "selected_original_blueprints": [
+        {
+          "git_blob": "cef50828ca125f5ca141203847abc7c5cc56bcc1",
+          "mode": "100644",
+          "path": "Android.bp"
+        },
+        {
+          "git_blob": "fbb14c8f00bbf5d9f3084be6445eb8ca070823fe",
+          "mode": "100644",
+          "path": "third_party/abseil/Android.bp"
+        }
+      ],
+      "selected_original_files": 1610,
+      "selected_original_symlinks": [],
+      "selected_original_tree_record_bytes": 228865,
+      "selected_original_tree_record_sha256": "98d9d244451c4897e22aa450682f132cc62aefd1c9edeb43083b37447c59a18a",
+      "sparse_paths": [
+        "discovery",
+        "platform",
+        "third_party/abseil",
+        "util"
+      ]
+    },
+    {
+      "commit": "70460fc2b43c3948f9caae1fd4eacd2d666a872b",
+      "full_original_tree_bytes": 12633,
+      "full_original_tree_sha256": "8227adc9643832bb68c87c0c72cc11844460373add8a528571b0aa47a063e9a3",
+      "path": "external/libusb",
+      "selected_original_blueprints": [
+        {
+          "git_blob": "5c3af1cfb06bc6d36ed127a7a4cd4fcf3c8c7386",
+          "mode": "100644",
+          "path": "Android.bp"
+        }
+      ],
+      "selected_original_files": 86,
+      "selected_original_symlinks": [
+        {
+          "git_blob": "100b93820ade4c16225673b4ca62bb3ade63c313",
+          "mode": "120000",
+          "path": "README.md"
+        },
+        {
+          "git_blob": "04954bd05d58e2d83cebe4bcb9ea7d32dad68a98",
+          "mode": "120000",
+          "path": "include/libusb/libusb.h"
+        },
+        {
+          "git_blob": "335b54ca8284c69eae322b5eacf428ebd1a96451",
+          "mode": "120000",
+          "path": "include/libusb/libusbi.h"
+        },
+        {
+          "git_blob": "28b7fe4bcd675f89546f97ba0caefd2f98d9075a",
+          "mode": "120000",
+          "path": "include/libusb/version.h"
+        },
+        {
+          "git_blob": "3380ebd64985d9999261e9f43a75b469aa20357f",
+          "mode": "120000",
+          "path": "include/libusb/version_nano.h"
+        }
+      ],
+      "selected_original_tree_record_bytes": 8579,
+      "selected_original_tree_record_sha256": "71ea15d11cbcea26005b009743b1c07b4ef3f504721c75fd32cefc3d2cf025a8",
+      "sparse_paths": [
+        "android/config.h",
+        "darwin",
+        "include",
+        "libusb",
+        "linux",
+        "windows"
+      ]
+    },
+    {
+      "commit": "1895dc1134c158561e0ef668734d86d6bb20d993",
+      "full_original_tree_bytes": 731581,
+      "full_original_tree_sha256": "7de3670141ce76797fa1a50a8842172f1a9f94905b0131dab912cf3243d0d6ae",
+      "path": "external/webrtc",
+      "selected_original_blueprints": [
+        {
+          "git_blob": "3dd5608aae12717de70460f69321b9ce708f8772",
+          "mode": "100644",
+          "path": "Android.bp"
+        },
+        {
+          "git_blob": "049b7dc7fdfd4ade5c2b3eda4844e86e14ebeb1f",
+          "mode": "100644",
+          "path": "third_party/crc32c/Android.bp"
+        }
+      ],
+      "selected_original_files": 6368,
+      "selected_original_symlinks": [],
+      "selected_original_tree_record_bytes": 799556,
+      "selected_original_tree_record_sha256": "dd14bd95efb264534f6c66d1b32e4c3745d47be582c62f10faa7938c4c5050cc",
+      "sparse_paths": [
+        "api",
+        "audio",
+        "call",
+        "common_audio",
+        "common_video",
+        "logging",
+        "media",
+        "modules",
+        "net",
+        "p2p",
+        "pc",
+        "rtc_base",
+        "stats",
+        "system_wrappers",
+        "test",
+        "third_party",
+        "video",
+        "webrtc",
+        "sdk"
+      ]
+    },
+    {
+      "commit": "9bc003aef1c0c120735aeeb1098ef830c265c98c",
+      "full_original_tree_bytes": 5197,
+      "full_original_tree_sha256": "d73e57a53c699a212d9db7888fe6166bf8c962b2980aba4f961b009be38e4c75",
+      "path": "external/pffft",
+      "selected_original_blueprints": [
+        {
+          "git_blob": "49694e3e67ee99bde06353b31bc7e3175fe3c941",
+          "mode": "100644",
+          "path": "Android.bp"
+        }
+      ],
+      "selected_original_files": 59,
+      "selected_original_symlinks": [],
+      "selected_original_tree_record_bytes": 5684,
+      "selected_original_tree_record_sha256": "751fd23f0bc83951278778e5a5f5dc7fe8fcc7394d666ce6caffe2b1da5fafb3",
+      "sparse_paths": [
+        "simd"
+      ]
+    },
+    {
+      "commit": "1295d6828459cc82c3c29cc5d7d297215250a74b",
+      "full_original_tree_bytes": 2879,
+      "full_original_tree_sha256": "10f25f61098a726ae522e2827bc8e975f76b467868a73c29e88d71ee6effbb7f",
+      "path": "external/rnnoise",
+      "selected_original_blueprints": [
+        {
+          "git_blob": "6c673682dca3965b4cd478546146717e81eba926",
+          "mode": "100644",
+          "path": "Android.bp"
+        }
+      ],
+      "selected_original_files": 36,
+      "selected_original_symlinks": [],
+      "selected_original_tree_record_bytes": 3450,
+      "selected_original_tree_record_sha256": "8aa02435d7a822ed66ae1122e863949b1e4e2be56548406eb1f681e314b243ae",
+      "sparse_paths": [
+        "include",
+        "src"
+      ]
+    },
+    {
+      "commit": "f50e3237d9f6d20e95293ffce692aaa60b7c81be",
+      "full_original_tree_bytes": 251687,
+      "full_original_tree_sha256": "7ba094d274c2f78a426073d52ae19c0649fe443729253da1c06c899ae2998d32",
+      "path": "external/libsrtp2",
+      "selected_original_blueprints": [
+        {
+          "git_blob": "6e50155830579493518a0254a497a32c0a93b6da",
+          "mode": "100644",
+          "path": "Android.bp"
+        }
+      ],
+      "selected_original_files": 2349,
+      "selected_original_symlinks": [
+        {
+          "git_blob": "f5030fe889982444316aa710b12026d377e187e0",
+          "mode": "120000",
+          "path": "exported_include/srtp2"
+        }
+      ],
+      "selected_original_tree_record_bytes": 315929,
+      "selected_original_tree_record_sha256": "641931e2a5f865c09532f32a552fd4117e995d869e5bb17063d5e948964132ba",
+      "sparse_paths": [
+        "crypto",
+        "exported_include",
+        "fuzzer",
+        "include",
+        "srtp"
+      ]
+    },
+    {
+      "commit": "44754c0dfee5dc81723013498398034176e6d81e",
+      "full_original_tree_bytes": 16914,
+      "full_original_tree_sha256": "07b22800044ae25de9a5481f159d8652ab420346766d1a05c75b490f2f873172",
+      "path": "external/libevent",
+      "selected_original_blueprints": [
+        {
+          "git_blob": "6288113b780124dee4bf3e292f2881a254b6324d",
+          "mode": "100644",
+          "path": "Android.bp"
+        }
+      ],
+      "selected_original_files": 129,
+      "selected_original_symlinks": [],
+      "selected_original_tree_record_bytes": 12775,
+      "selected_original_tree_record_sha256": "7a3c7f35ae99ff86c6bd52715fe9beb78522a9910b2b6c7e7e91feba19bbe225",
+      "sparse_paths": [
+        "Android.bp",
+        "compat",
+        "include"
+      ]
+    },
+    {
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d",
+      "full_original_tree_bytes": 28509,
+      "full_original_tree_sha256": "365922f7aca8ab2db65bed3f875fcfdf8fcac2dd5f1dddc0b3d95f027a5f62be",
+      "path": "packages/modules/adb",
+      "selected_original_blueprints": [
+        {
+          "git_blob": "5beeb638ecc8e93430602edf3a380c1203d293cc",
+          "mode": "100644",
+          "path": "Android.bp"
+        },
+        {
+          "git_blob": "4a926e1362bbbeb0f3391a6c223245c9bed6d29a",
+          "mode": "100644",
+          "path": "client/adbmdns/Android.bp"
+        },
+        {
+          "git_blob": "fffda7b0cfb3ad35b10ca43d72f1414a465e8725",
+          "mode": "100644",
+          "path": "crypto/Android.bp"
+        },
+        {
+          "git_blob": "74f3e203bca3d3d570076e0cd6e8e5ef6e16d419",
+          "mode": "100644",
+          "path": "crypto/tests/Android.bp"
+        },
+        {
+          "git_blob": "86e1fdf230f5603397263a50327bc0c665fa53b7",
+          "mode": "100644",
+          "path": "fastdeploy/Android.bp"
+        },
+        {
+          "git_blob": "3ae868c9be949e7c794949e1018c0f24da62f233",
+          "mode": "100644",
+          "path": "libs/adbconnection/Android.bp"
+        },
+        {
+          "git_blob": "9d74d5dec71ccd5487b2c10bb5fa7968340c0ade",
+          "mode": "100644",
+          "path": "libs/libadbd_fs/Android.bp"
+        },
+        {
+          "git_blob": "1d6dd986f5d4719920cae6ef37b2fe96bd9f8df5",
+          "mode": "100644",
+          "path": "pairing_auth/Android.bp"
+        },
+        {
+          "git_blob": "49ec8014daab572eb659dc205575573b9bb4b1e7",
+          "mode": "100644",
+          "path": "pairing_auth/tests/Android.bp"
+        },
+        {
+          "git_blob": "bc9c6b29c7bd8f2b1c84e899ca93ecc99bb4644d",
+          "mode": "100644",
+          "path": "pairing_connection/Android.bp"
+        },
+        {
+          "git_blob": "24171dacd9e3f18da438cf02dba28c3b01b54c93",
+          "mode": "100644",
+          "path": "pairing_connection/tests/Android.bp"
+        },
+        {
+          "git_blob": "1c14a36dc978b028b390cf840d3ad95d443f7900",
+          "mode": "100644",
+          "path": "proto/Android.bp"
+        },
+        {
+          "git_blob": "0c8bec6209687ce652c50b961dba95dfd7304916",
+          "mode": "100644",
+          "path": "tls/Android.bp"
+        },
+        {
+          "git_blob": "5e0f2ae04b62a0a2299a9565c02eb7fe80c37acc",
+          "mode": "100644",
+          "path": "tls/tests/Android.bp"
+        }
+      ],
+      "selected_original_files": 309,
+      "selected_original_symlinks": [
+        {
+          "git_blob": "475ba8fde76f71f9974bbc4626091747e35ec757",
+          "mode": "120000",
+          "path": "rustfmt.toml"
+        }
+      ],
+      "selected_original_tree_record_bytes": 33393,
+      "selected_original_tree_record_sha256": "c1822714d192b64f5bca36ebae24e895cef7852bcd5a11aabf01f3d44a8dc1a9",
+      "sparse_paths": [
+        "Android.bp",
+        "NOTICE",
+        "libs/adbconnection",
+        "proto",
+        "crypto",
+        "pairing_connection",
+        "tls",
+        "libs/libadbd_fs",
+        "pairing_auth",
+        "client",
+        "fdevent",
+        "sysdeps",
+        "daemon",
+        "fastdeploy",
+        "test_utils"
+      ]
+    },
+    {
+      "commit": "e4e7ba1dabe64f33b9894624e43763bd8a3cbca5",
+      "full_original_tree_bytes": 72635,
+      "full_original_tree_sha256": "9913c7def5a53402bdbd893c9de36f7fa6322fba522692caa42759b46391cc43",
+      "path": "tools/security",
+      "selected_original_blueprints": [
+        {
+          "git_blob": "e4ed42e9a2dead46fba7d4432207b106d2a4bb07",
+          "mode": "100644",
+          "path": "fuzzing/libFuzzer_mte_crash_handler/Android.bp"
+        }
+      ],
+      "selected_original_files": 7,
+      "selected_original_symlinks": [
+        {
+          "git_blob": "ee92d9efc5adbd6231e48048cf7132eda522f44e",
+          "mode": "120000",
+          "path": "rustfmt.toml"
+        }
+      ],
+      "selected_original_tree_record_bytes": 732,
+      "selected_original_tree_record_sha256": "1ddb28175ac2770d27cf33859797e37ae1595a90568bea5a9fb186493958c0ff",
+      "sparse_paths": [
+        "fuzzing/libFuzzer_mte_crash_handler"
+      ]
+    }
+  ],
+  "original_inputs": [
+    {
+      "path": "build/soong/cc/fuzz.go",
+      "mode": "100644",
+      "git_blob": "63d85da08cee6a243780dbf45032cc5eee344aef",
+      "bytes": 22465,
+      "sha256": "5a784754990ffe297fcdfd832ec6279754220648b061583c56f6b0571a9dc115",
+      "project": "build/soong",
+      "commit": "6722dd8833db7482df1a2543ca3fcf67ddf0f7b1"
+    },
+    {
+      "path": "external/libevent/Android.bp",
+      "mode": "100644",
+      "git_blob": "6288113b780124dee4bf3e292f2881a254b6324d",
+      "bytes": 3364,
+      "sha256": "998ca72d3151814ba2af8736171325cb372bcfba8a2cd77cca2a32d18e7af0e6",
+      "project": "external/libevent",
+      "commit": "44754c0dfee5dc81723013498398034176e6d81e"
+    },
+    {
+      "path": "external/libsrtp2/Android.bp",
+      "mode": "100644",
+      "git_blob": "6e50155830579493518a0254a497a32c0a93b6da",
+      "bytes": 3018,
+      "sha256": "348434ba864251d76528ce0f850d767d632244be163563a965d7d754647a2331",
+      "project": "external/libsrtp2",
+      "commit": "f50e3237d9f6d20e95293ffce692aaa60b7c81be"
+    },
+    {
+      "path": "external/libusb/Android.bp",
+      "mode": "100644",
+      "git_blob": "5c3af1cfb06bc6d36ed127a7a4cd4fcf3c8c7386",
+      "bytes": 4545,
+      "sha256": "3001992a167843dcedb0fe1411d25b11bff6289aba054ace8872fee56b64fca6",
+      "project": "external/libusb",
+      "commit": "70460fc2b43c3948f9caae1fd4eacd2d666a872b"
+    },
+    {
+      "path": "external/openscreen/Android.bp",
+      "mode": "100644",
+      "git_blob": "cef50828ca125f5ca141203847abc7c5cc56bcc1",
+      "bytes": 6519,
+      "sha256": "d081703fe3c8c2c13dc87074c7d348694eb6122b9948c6d63b1816bb28069c0a",
+      "project": "external/openscreen",
+      "commit": "3f982cf4871df8771c9d4abe6e9a6f8d829b2736"
+    },
+    {
+      "path": "external/openscreen/third_party/abseil/Android.bp",
+      "mode": "100644",
+      "git_blob": "fbb14c8f00bbf5d9f3084be6445eb8ca070823fe",
+      "bytes": 2079,
+      "sha256": "464b1cf29838623f7354f3db433c2a8cab6a216dc618fc4975111ed5dd1cda79",
+      "project": "external/openscreen",
+      "commit": "3f982cf4871df8771c9d4abe6e9a6f8d829b2736"
+    },
+    {
+      "path": "external/pffft/Android.bp",
+      "mode": "100644",
+      "git_blob": "49694e3e67ee99bde06353b31bc7e3175fe3c941",
+      "bytes": 1939,
+      "sha256": "ee7a1baa29a10223bf091cbf1e82e065a1520adf1a415dfd08bb80eae4606193",
+      "project": "external/pffft",
+      "commit": "9bc003aef1c0c120735aeeb1098ef830c265c98c"
+    },
+    {
+      "path": "external/rnnoise/Android.bp",
+      "mode": "100644",
+      "git_blob": "6c673682dca3965b4cd478546146717e81eba926",
+      "bytes": 666,
+      "sha256": "5a8e68158c697ed8ceb9d95407142818a3ff5138b90f39188bfa4c8119897b4c",
+      "project": "external/rnnoise",
+      "commit": "1295d6828459cc82c3c29cc5d7d297215250a74b"
+    },
+    {
+      "path": "external/webrtc/Android.bp",
+      "mode": "100644",
+      "git_blob": "3dd5608aae12717de70460f69321b9ce708f8772",
+      "bytes": 186479,
+      "sha256": "3deab91c64d1f5bcf50fcb3ba2801e5ab230daa5e4e2a28ef4c3d4869e61135d",
+      "project": "external/webrtc",
+      "commit": "1895dc1134c158561e0ef668734d86d6bb20d993"
+    },
+    {
+      "path": "external/webrtc/sdk/objc/base/RTCMacros.h",
+      "mode": "100644",
+      "git_blob": "469e3c93bd0b44467ac0bbd4e01d7cf08fcdb84c",
+      "bytes": 1965,
+      "sha256": "44d6203968801af27a7e92620c9f021cf1e6d3b177bf378ec02d2ae057f66c7a",
+      "project": "external/webrtc",
+      "commit": "1895dc1134c158561e0ef668734d86d6bb20d993"
+    },
+    {
+      "path": "external/webrtc/sdk/objc/native/src/audio/audio_device_ios.h",
+      "mode": "100644",
+      "git_blob": "a86acb56fe7351c7512f7ab5cb98b257025c5c92",
+      "bytes": 13346,
+      "sha256": "0347a89ed338d2799838e994b220782775eae728661ca8755e5abd8715eea0b6",
+      "project": "external/webrtc",
+      "commit": "1895dc1134c158561e0ef668734d86d6bb20d993"
+    },
+    {
+      "path": "external/webrtc/sdk/objc/native/src/audio/audio_session_observer.h",
+      "mode": "100644",
+      "git_blob": "f7c44c8184bacd7267581bfe640d7f65b34c7ce5",
+      "bytes": 1259,
+      "sha256": "f72e0a9d4d1f78133a401ac2340b3464cdb7c81921a743c29566f7ab992f7671",
+      "project": "external/webrtc",
+      "commit": "1895dc1134c158561e0ef668734d86d6bb20d993"
+    },
+    {
+      "path": "external/webrtc/sdk/objc/native/src/audio/voice_processing_audio_unit.h",
+      "mode": "100644",
+      "git_blob": "ed9dd985685af0be49835bd9cae609da0e545f36",
+      "bytes": 5979,
+      "sha256": "5cbaf39de22823fd3ede5309f0516b6ae188eab8ced6ec9fa230c5863ec6fa9b",
+      "project": "external/webrtc",
+      "commit": "1895dc1134c158561e0ef668734d86d6bb20d993"
+    },
+    {
+      "path": "external/webrtc/third_party/crc32c/Android.bp",
+      "mode": "100644",
+      "git_blob": "049b7dc7fdfd4ade5c2b3eda4844e86e14ebeb1f",
+      "bytes": 366,
+      "sha256": "606966a55944866a8d173d658b24043e7f3bcd3add9dc055741213f2b0471cc6",
+      "project": "external/webrtc",
+      "commit": "1895dc1134c158561e0ef668734d86d6bb20d993"
+    },
+    {
+      "path": "frameworks/av/media/libeffects/preprocessing/Android.bp",
+      "mode": "100644",
+      "git_blob": "01fa47b1d8ffd7727211c6ad26d5c7f619ddb728",
+      "bytes": 2064,
+      "sha256": "bc76ee824a0f504accf731d6524df84e758eb47bfab2386b4f42ae3c7085665a",
+      "project": "frameworks/av",
+      "commit": "475269ec44acec82792be6b01fb8e16357d4d2c8"
+    },
+    {
+      "path": "packages/modules/adb/Android.bp",
+      "mode": "100644",
+      "git_blob": "5beeb638ecc8e93430602edf3a380c1203d293cc",
+      "bytes": 27549,
+      "sha256": "485922ab5a3742db71c9da7819b2b87821acdbc56c423f0feb244b3d21315be7",
+      "project": "packages/modules/adb",
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d"
+    },
+    {
+      "path": "packages/modules/adb/client/adbmdns/Android.bp",
+      "mode": "100644",
+      "git_blob": "4a926e1362bbbeb0f3391a6c223245c9bed6d29a",
+      "bytes": 1154,
+      "sha256": "893d912872bf7f92447527e0aec2bd15c79206356460f3a82537b4d7118717a7",
+      "project": "packages/modules/adb",
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d"
+    },
+    {
+      "path": "packages/modules/adb/crypto/Android.bp",
+      "mode": "100644",
+      "git_blob": "fffda7b0cfb3ad35b10ca43d72f1414a465e8725",
+      "bytes": 2195,
+      "sha256": "785e311f34cb1113e3156d94ccfc6d103f5d648510941b4ca48c7a8a15936f32",
+      "project": "packages/modules/adb",
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d"
+    },
+    {
+      "path": "packages/modules/adb/crypto/tests/Android.bp",
+      "mode": "100644",
+      "git_blob": "74f3e203bca3d3d570076e0cd6e8e5ef6e16d419",
+      "bytes": 1262,
+      "sha256": "6b6e8aa0206253d6920838c891158ac93f845aa862f31d7ce1118eee9a01d5da",
+      "project": "packages/modules/adb",
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d"
+    },
+    {
+      "path": "packages/modules/adb/fastdeploy/Android.bp",
+      "mode": "100644",
+      "git_blob": "86e1fdf230f5603397263a50327bc0c665fa53b7",
+      "bytes": 2666,
+      "sha256": "e0e9911181a2c8d5648044b1ba1b7e8bd974eedff7052d26d2143b031d552de3",
+      "project": "packages/modules/adb",
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d"
+    },
+    {
+      "path": "packages/modules/adb/libs/adbconnection/Android.bp",
+      "mode": "100644",
+      "git_blob": "3ae868c9be949e7c794949e1018c0f24da62f233",
+      "bytes": 2735,
+      "sha256": "27f64796bf1c17e7524a7f6fe709e594e02b21998cfcea9c9f1a907630cae554",
+      "project": "packages/modules/adb",
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d"
+    },
+    {
+      "path": "packages/modules/adb/libs/libadbd_fs/Android.bp",
+      "mode": "100644",
+      "git_blob": "9d74d5dec71ccd5487b2c10bb5fa7968340c0ade",
+      "bytes": 1025,
+      "sha256": "b40d89e420601e465220495fff965a1dc7d4a485b6961b27ace8b76a9d346a40",
+      "project": "packages/modules/adb",
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d"
+    },
+    {
+      "path": "packages/modules/adb/pairing_auth/Android.bp",
+      "mode": "100644",
+      "git_blob": "1d6dd986f5d4719920cae6ef37b2fe96bd9f8df5",
+      "bytes": 2353,
+      "sha256": "50e328864936955cdf54715be49fef2c651f307ad58047fe35a0fc21c6dc4eb0",
+      "project": "packages/modules/adb",
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d"
+    },
+    {
+      "path": "packages/modules/adb/pairing_auth/tests/Android.bp",
+      "mode": "100644",
+      "git_blob": "49ec8014daab572eb659dc205575573b9bb4b1e7",
+      "bytes": 1154,
+      "sha256": "a529c42ca2902f3fd8b0fee033caa85816ffda5bdfbbeff8e8a067f17e540219",
+      "project": "packages/modules/adb",
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d"
+    },
+    {
+      "path": "packages/modules/adb/pairing_connection/Android.bp",
+      "mode": "100644",
+      "git_blob": "bc9c6b29c7bd8f2b1c84e899ca93ecc99bb4644d",
+      "bytes": 4914,
+      "sha256": "dfac1357dc2381f45ccff5c6bba99e72259c9bd9ed84a02b2ea4f07537da28d6",
+      "project": "packages/modules/adb",
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d"
+    },
+    {
+      "path": "packages/modules/adb/pairing_connection/tests/Android.bp",
+      "mode": "100644",
+      "git_blob": "24171dacd9e3f18da438cf02dba28c3b01b54c93",
+      "bytes": 1517,
+      "sha256": "56aac62791510c102c00067fe8a3e793449bb17531b80e7c9f066defc6143e0f",
+      "project": "packages/modules/adb",
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d"
+    },
+    {
+      "path": "packages/modules/adb/proto/Android.bp",
+      "mode": "100644",
+      "git_blob": "1c14a36dc978b028b390cf840d3ad95d443f7900",
+      "bytes": 4238,
+      "sha256": "09c3b00c40e2d3ac52fdb3fc888873d5b141e34c0a2799a4efeb0d2ba6cc70ff",
+      "project": "packages/modules/adb",
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d"
+    },
+    {
+      "path": "packages/modules/adb/tls/Android.bp",
+      "mode": "100644",
+      "git_blob": "0c8bec6209687ce652c50b961dba95dfd7304916",
+      "bytes": 2068,
+      "sha256": "a432e3e7408032be9dba76c077622f1e808737eb58c1ea24bc5561ed39d597f1",
+      "project": "packages/modules/adb",
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d"
+    },
+    {
+      "path": "packages/modules/adb/tls/tests/Android.bp",
+      "mode": "100644",
+      "git_blob": "5e0f2ae04b62a0a2299a9565c02eb7fe80c37acc",
+      "bytes": 1269,
+      "sha256": "acacd6e8e4921057fa0d575a99c46734d4852af7b301e2cefe1e48696b43aa56",
+      "project": "packages/modules/adb",
+      "commit": "9084198a2d4b0f6a0f174260fb42da33485b684d"
+    },
+    {
+      "path": "prebuilts/clang/host/linux-x86/Android.bp",
+      "mode": "100644",
+      "git_blob": "6737260dc5dc8321d20de99c2f5759d409bbb8e7",
+      "bytes": 17607,
+      "sha256": "d6c17476ae87bdd901e07bb2cc5ddbaeff4ce70569aa476ea40c7e119d521e1b",
+      "project": "prebuilts/clang/host/linux-x86",
+      "commit": "29182889399818f97baa65ea238c80e8117981eb"
+    },
+    {
+      "path": "tools/security/fuzzing/libFuzzer_mte_crash_handler/Android.bp",
+      "mode": "100644",
+      "git_blob": "e4ed42e9a2dead46fba7d4432207b106d2a4bb07",
+      "bytes": 836,
+      "sha256": "1a7fc157fdb0e65ac2dd53fecab46e7917f6b7e4b6d6c0abf89d7794ef15924c",
+      "project": "tools/security",
+      "commit": "e4e7ba1dabe64f33b9894624e43763bd8a3cbca5"
+    },
+    {
+      "path": "tools/security/fuzzing/libFuzzer_mte_crash_handler/crash_handler.cpp",
+      "mode": "100644",
+      "git_blob": "3bfb4d9141c8dfc7e8f5751b9d95b9ce482a3160",
+      "bytes": 3424,
+      "sha256": "e06ce2812001d86bfccb118540cf27037e3a8e108c4f13a076224f15a96d6e00",
+      "project": "tools/security",
+      "commit": "e4e7ba1dabe64f33b9894624e43763bd8a3cbca5"
+    }
+  ],
+  "why_needed": [
+    {
+      "project": "external/openscreen",
+      "reason": "Original ADB discovery and platform implementation plus their original Abseil source dependency",
+      "original_providers": [
+        "libopenscreen-discovery",
+        "libopenscreen-platform-impl",
+        "libopenscreen_absl",
+        "libopenscreen_absl_headers"
+      ],
+      "original_consumers": [
+        "libadb_host"
+      ]
+    },
+    {
+      "project": "external/libusb",
+      "reason": "Original host USB provider and original Linux, Android, Darwin and Windows source/configuration branches",
+      "original_providers": [
+        "libusb",
+        "libusb_platform"
+      ],
+      "original_consumers": [
+        "libadb_host"
+      ]
+    },
+    {
+      "project": "external/webrtc",
+      "reason": "Original audio preprocessing implementation, complete declared source/header cones and original conditional SDK headers",
+      "original_providers": [
+        "webrtc_audio_processing",
+        "webrtc_defaults"
+      ],
+      "original_consumers": [
+        "libaudiopreprocessing"
+      ]
+    },
+    {
+      "project": "external/pffft",
+      "reason": "Original FFT provider used by WebRTC defaults and audio processing whole-static dependencies",
+      "original_providers": [
+        "libpffft"
+      ],
+      "original_consumers": [
+        "webrtc_defaults",
+        "webrtc_audio_processing"
+      ]
+    },
+    {
+      "project": "external/rnnoise",
+      "reason": "Original RNN VAD provider used by WebRTC defaults and audio processing whole-static dependencies",
+      "original_providers": [
+        "rnnoise_rnn_vad"
+      ],
+      "original_consumers": [
+        "webrtc_defaults",
+        "webrtc_audio_processing"
+      ]
+    },
+    {
+      "project": "external/libsrtp2",
+      "reason": "Original SRTP provider in WebRTC defaults, including the retained original fuzzer and exported header symlink",
+      "original_providers": [
+        "libsrtp2",
+        "libsrtp2-fuzzer"
+      ],
+      "original_consumers": [
+        "webrtc_defaults"
+      ]
+    },
+    {
+      "project": "tools/security",
+      "reason": "Original unsanitized device-fuzzer crash-handler dependency required by the unmodified Soong rule",
+      "original_providers": [
+        "libFuzzer_mte_crash_handler"
+      ],
+      "original_consumers": [
+        "libsrtp2-fuzzer",
+        "build/soong/cc/fuzz.go:linkerDeps"
+      ]
+    },
+    {
+      "project": "external/libevent",
+      "reason": "The original WebRTC defaults require libevent; the old Audio lock selected its Blueprint alone. Retain root sources plus actual compat and exported include trees.",
+      "original_providers": [
+        "libevent"
+      ],
+      "original_consumers": [
+        "webrtc_defaults"
+      ]
+    },
+    {
+      "project": "packages/modules/adb",
+      "reason": "Audio retains the original root Blueprint. Restore libadb_host client/fdevent/sysdeps sources, original daemon library sources, fastdeploy/deployagent generation and the declared test utilities without modifying consumers.",
+      "original_providers": [
+        "libadb_host",
+        "libadbd_core",
+        "libadbd_services",
+        "libfastdeploy_host",
+        "deployagent",
+        "libadbmdns_bridge"
+      ],
+      "original_consumers": [
+        "adb",
+        "adb_test",
+        "libadb_host"
+      ]
+    }
+  ],
+  "retained_external_provider_projects": [
+    {
+      "path": "external/abseil-cpp",
+      "name": "platform/external/abseil-cpp",
+      "commit": "474258796bcf112de75a1f89d022ba80b6d0b746"
+    },
+    {
+      "path": "external/boringssl",
+      "name": "platform/external/boringssl",
+      "commit": "0cd1f6a94b670e6b61af95a06e71e690ae8e3262"
+    },
+    {
+      "path": "external/libaom",
+      "name": "platform/external/libaom",
+      "commit": "6fee3c0be559ce785a5491d46e0b5eb3bd5f34b1"
+    },
+    {
+      "path": "external/libopus",
+      "name": "platform/external/libopus",
+      "commit": "31712864928e8c681b383eddbc0e9b9d58596b0c"
+    },
+    {
+      "path": "external/libvpx",
+      "name": "platform/external/libvpx",
+      "commit": "a928fb11c99d88c4daf3ee03b7c329bfde509535"
+    },
+    {
+      "path": "external/libyuv",
+      "name": "platform/external/libyuv",
+      "commit": "49130481509c59cdd486a05595fd809adafedf39"
+    },
+    {
+      "path": "external/protobuf",
+      "name": "platform/external/protobuf",
+      "commit": "db06feae31e2a10ffc7ddaccd9e285ff7c13c0ab"
+    },
+    {
+      "path": "external/rust/android-crates-io",
+      "name": "platform/external/rust/android-crates-io",
+      "commit": "1f5e95cd6e996995023c9c0f7df0f15a8a43269e"
+    },
+    {
+      "path": "external/rust/cxx",
+      "name": "platform/external/rust/cxx",
+      "commit": "41972f6ebbe9c21eeed3fdf5c1b0805f2c8b824c"
+    },
+    {
+      "path": "prebuilts/clang/host/linux-x86",
+      "name": "platform/prebuilts/clang/host/linux-x86",
+      "commit": "29182889399818f97baa65ea238c80e8117981eb"
+    }
+  ],
+  "original_fuzzer_condition": {
+    "rule": "ctx.Device() && !module.IsSanitizerEnabled(Hwasan) && !module.IsSanitizerEnabled(Asan)",
+    "source_path": "build/soong/cc/fuzz.go",
+    "source_sha256": "5a784754990ffe297fcdfd832ec6279754220648b061583c56f6b0571a9dc115",
+    "actual_failed_Audio446_variables_bytes": 111596,
+    "actual_failed_Audio446_variables_sha256": "48b76a192100b037132a899910c1ec9f617d441b7a03427b778f0248af5f6a40",
+    "observed": {
+      "DeviceArch": "x86_64",
+      "NativeBridgeArch": "arm64",
+      "SanitizeDevice": [],
+      "SanitizeHost": [],
+      "SanitizeDeviceDiag": [],
+      "SanitizeDeviceArch": [],
+      "Debuggable": false,
+      "Eng": false
+    }
+  },
+  "actual_failure_preserved": {
+    "job_id": "1a1c4730aa6-cf39-34c",
+    "exit_code": 1,
+    "inner_result_bytes": 358383,
+    "inner_result_sha256": "0ea02ea0adc26ee1e68e734b0ddd164bf3413cc3a977ab4b69633f4a21d9b975",
+    "full_qualified": false
+  },
+  "original_audits": [
+    {
+      "job_id": "1a1c4d548d8-cf39-465",
+      "exit_code": 0,
+      "ordinary_git_commands": 86,
+      "result_bytes": 426449,
+      "result_sha256": "3654bf81dd2bcea33a95079320d565ec3432affd628c7b1334174391c5d2b342"
+    },
+    {
+      "job_id": "1a1c4dee2c1-cf39-49c",
+      "exit_code": 0,
+      "ordinary_git_commands": 30,
+      "result_bytes": 60220,
+      "result_sha256": "9eebfb2dde64eb376156965f38d85f783cb461b929e26ba256e6dbccbaa2dd98"
+    }
+  ],
+  "reference_checkout_unavailable_objects_preserved": [
+    {
+      "project": "external/libsrtp2",
+      "paths": [
+        "exported_include/srtp2"
+      ]
+    },
+    {
+      "project": "packages/modules/adb",
+      "paths": [
+        "crypto/tests/rsa_2048_key_test.cpp",
+        "crypto/tests/x509_generator_test.cpp",
+        "pairing_auth/tests/aes_128_gcm_test.cpp",
+        "pairing_auth/tests/pairing_auth_test.cpp",
+        "tls/tests/adb_ca_list_test.cpp",
+        "tls/tests/tls_connection_test.cpp"
+      ]
+    }
+  ],
+  "full_original_source_byte_verification_required_after_reconcile": true,
+  "expected_selected_original_file_count": 10953,
+  "prior_failed_readonly_audits": [
+    {
+      "job_id": "1a1c4c67377-cf39-439",
+      "exit_code": 1,
+      "reason": "unavailable sparse Git blob size parsed as integer; result preserved"
+    },
+    {
+      "job_id": "1a1c4d07813-cf39-451",
+      "exit_code": 1,
+      "reason": "own temporary metadata save failed ENOSPC; original stderr preserved"
+    }
+  ],
+  "source_materialized": false,
+  "vendor_CIL_qualified": false,
+  "full_APEX_qualified": false,
+  "runtime_qualified": false,
+  "CP3A_source_equivalence_qualified": false,
+  "global_Native_capacity_changed": false,
+  "current_lock_sha256": "433fa10169c9586ea7b21e3af5297223543a241b85dd2c40640b36c1eeea5c71",
+  "original_closure_record_sha256": "3102fee588822e7b302aafad9f298402d3aac6377569cb7e9d13993f4c12ac5a"
+}

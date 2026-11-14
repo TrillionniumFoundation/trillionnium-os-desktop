@@ -1,0 +1,70 @@
+// Copyright (C) 2025 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_team: "trendy_team_android_gpu",
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+android_test_helper_app {
+    name: "AngleEnd2EndTestsHelper",
+    srcs: [
+        "helper_app/**/*.java",
+    ],
+    manifest: "helper_app/AndroidManifest.xml",
+    sdk_version: "current",
+    min_sdk_version: "28",
+    target_sdk_version: "33",
+    compile_multilib: "both",
+    jni_libs: [
+        "libangle_end2end_tests__library",
+        "libangle_util",
+    ],
+    static_libs: [
+        "androidx.test.core",
+        "androidx.test.ext.junit",
+        "androidx.test.rules",
+        "flag-junit",
+        "platform-test-annotations",
+    ],
+}
+
+tradefed_java_library_host {
+    name: "AngleEnd2EndTestsHostLibrary",
+    srcs: ["src/**/*.java"],
+    libs: [
+        "compatibility-host-util",
+        "cts-tradefed",
+        "junit",
+        "tradefed",
+    ],
+}
+
+java_test_host {
+    name: "CtsAngleEnd2EndTestCases",
+    test_suites: [
+        "cts",
+        "dts",
+        "general-tests",
+    ],
+    static_libs: [
+        "AngleEnd2EndTestsHostLibrary",
+    ],
+    device_common_data: [
+        ":AngleEnd2EndTestsHelper",
+    ],
+    data: [
+        "angle_end2end_tests_expectations.txt",
+    ],
+}

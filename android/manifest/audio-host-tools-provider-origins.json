@@ -1,0 +1,312 @@
+{
+  "schema": "audio455-original-host-tools-provider-closure-v1",
+  "project_count": 455,
+  "previous_project_count": 454,
+  "superproject": {
+    "name": "platform/superproject",
+    "ref": "refs/heads/android-17.0.0_r1",
+    "commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039"
+  },
+  "current_lock_sha256": "6d414b554b03b351ef789f5750f795db089f7b46aff19740489b57507d544bf7",
+  "prior_lock_sha256": "305939bf6aba1bcdd1560f482908579357b4b4da6734f09ccb41b4dc5ba48aae",
+  "added_projects": [
+    {
+      "path": "external/f2fs-tools",
+      "name": "platform/external/f2fs-tools",
+      "commit": "c64468cb6397fb63bded0f549438b472f7e7cf88",
+      "purpose": "Original platform-tools make_f2fs and make_f2fs_casefold providers plus complete selected formatter/fsck/tool input cones",
+      "sparse_paths": [
+        "fsck",
+        "include",
+        "lib",
+        "mkfs",
+        "tools"
+      ]
+    }
+  ],
+  "added_sparse_cones": {
+    "development": [
+      "tools/etc1tool",
+      "tools/emulator/skins",
+      "tools/templates"
+    ],
+    "dalvik": [
+      "tools/hprof-conv"
+    ],
+    "system/extras": [
+      "partition_tools"
+    ],
+    "external/e2fsprogs": [
+      "contrib/android"
+    ]
+  },
+  "selected_original_trees": [
+    {
+      "path": "development",
+      "commit": "4dafd114fab3c3d9543a5aff0ad097f479915176",
+      "sparse_paths": [
+        "tools/etc1tool",
+        "tools/emulator/skins",
+        "tools/templates"
+      ],
+      "full_original_tree_bytes": 1333018,
+      "full_original_tree_sha256": "9129ca9c0dde056fb7a3b813112a84221db6b20a445481d2bd7d00084e37bb71",
+      "selected_original_files": 161,
+      "selected_original_tree_record_bytes": 19503,
+      "selected_original_tree_record_sha256": "6eb40b943d34513f39541d9ec7e98345d410b92bbec16ae6e029fbd91251a4fb",
+      "selected_original_blueprints": [
+        {
+          "path": "Android.bp",
+          "mode": "100644",
+          "git_blob": "4d9a48664c5f10beb6b3a2e03ba7610cf46c3f2a"
+        },
+        {
+          "path": "tools/Android.bp",
+          "mode": "100644",
+          "git_blob": "b3d6122d1fb4ac8fbc8288c29c34ccec9f50e74b"
+        },
+        {
+          "path": "tools/etc1tool/Android.bp",
+          "mode": "100644",
+          "git_blob": "35383da9d26f308d565e08f364b6ea04e7040ba4"
+        }
+      ],
+      "selected_original_symlinks": [
+        {
+          "path": "rustfmt.toml",
+          "mode": "120000",
+          "git_blob": "239055a553ae39b0477509c63dfc0617034a981a"
+        }
+      ]
+    },
+    {
+      "path": "dalvik",
+      "commit": "5013071e756f89aa2cea97b437af12aacb8d4485",
+      "sparse_paths": [
+        "tools/hprof-conv"
+      ],
+      "full_original_tree_bytes": 185263,
+      "full_original_tree_sha256": "6ece9484205232c233bab5c6474d53a5aa823eda25f378b7fe5f5ce1bcc4e58a",
+      "selected_original_files": 7,
+      "selected_original_tree_record_bytes": 680,
+      "selected_original_tree_record_sha256": "ad02dbe3a934ba82f8426091b64a383833ef37634a786020a806bbe8cdfd19f6",
+      "selected_original_blueprints": [
+        {
+          "path": "Android.bp",
+          "mode": "100644",
+          "git_blob": "72c293855de9a0d21f67e72d539739d71866c78a"
+        },
+        {
+          "path": "tools/hprof-conv/Android.bp",
+          "mode": "100644",
+          "git_blob": "ca5343e071056b1e6ba514ca650b55575ace9ce6"
+        }
+      ],
+      "selected_original_symlinks": []
+    },
+    {
+      "path": "system/extras",
+      "commit": "1289e9b3f282909eec6e80414e14dcc207bda439",
+      "sparse_paths": [
+        "partition_tools"
+      ],
+      "full_original_tree_bytes": 118027,
+      "full_original_tree_sha256": "9e177cf059b821233f53451f3764be39bddc17a6fbafbf71d92b1d1271974994",
+      "selected_original_files": 21,
+      "selected_original_tree_record_bytes": 2245,
+      "selected_original_tree_record_sha256": "1032c5f07f169d048b4ca216c5e6340521ce23f11d705e40e31b37077fde71b4",
+      "selected_original_blueprints": [
+        {
+          "path": "partition_tools/Android.bp",
+          "mode": "100644",
+          "git_blob": "e1d286a7315c4fc6d0c4ce9dea3af38b41947138"
+        },
+        {
+          "path": "partition_tools/aidl/Android.bp",
+          "mode": "100644",
+          "git_blob": "e1a17769a6f805f5222a32a4fd7c023de562a3fc"
+        }
+      ],
+      "selected_original_symlinks": [
+        {
+          "path": ".clang-format",
+          "mode": "120000",
+          "git_blob": "9b45e0ae8db2fbfa0c74824d4f6ff8bf2f86f157"
+        },
+        {
+          "path": ".clang-format-2",
+          "mode": "120000",
+          "git_blob": "7ab20d4fc9df93b6d99723bf1a0e94d03ed5ae1b"
+        },
+        {
+          "path": ".clang-format-4",
+          "mode": "120000",
+          "git_blob": "ddcf5a2915ce3624f70db43416b525699cbf58a7"
+        },
+        {
+          "path": "rustfmt.toml",
+          "mode": "120000",
+          "git_blob": "ee92d9efc5adbd6231e48048cf7132eda522f44e"
+        }
+      ]
+    },
+    {
+      "path": "external/f2fs-tools",
+      "commit": "c64468cb6397fb63bded0f549438b472f7e7cf88",
+      "sparse_paths": [
+        "fsck",
+        "include",
+        "lib",
+        "mkfs",
+        "tools"
+      ],
+      "full_original_tree_bytes": 5980,
+      "full_original_tree_sha256": "2dbbc6ae8c6df9cf4f91c3f773c0b20050c549efe3c9e2b7028909775d872895",
+      "selected_original_files": 71,
+      "selected_original_tree_record_bytes": 6838,
+      "selected_original_tree_record_sha256": "b45033659a90b8e1f9a9bc0d90ba0a69865daefac264f51a7d78359d21e6df47",
+      "selected_original_blueprints": [
+        {
+          "path": "Android.bp",
+          "mode": "100644",
+          "git_blob": "082fa8ee4fc883dba66a939f980c31b3c21b592e"
+        },
+        {
+          "path": "tools/f2fs_io/Android.bp",
+          "mode": "100644",
+          "git_blob": "b6b946b42b8a55bffe3df6ab3aca39c8c507086c"
+        }
+      ],
+      "selected_original_symlinks": []
+    },
+    {
+      "path": "external/e2fsprogs",
+      "commit": "3eb17241db7cd4408cc1bce9d25b602465ace8ff",
+      "sparse_paths": [
+        "contrib/android"
+      ],
+      "full_original_tree_bytes": 186727,
+      "full_original_tree_sha256": "7cfdcff4b7cd3a9da66b7b4f528d50efe1001b060538e08d2ce6f38fd1806f7b",
+      "selected_original_files": 56,
+      "selected_original_tree_record_bytes": 5561,
+      "selected_original_tree_record_sha256": "2be3c014bdafe3cfddbeb1d40c44152085889ffe40d3db8431876ee28051a57e",
+      "selected_original_blueprints": [
+        {
+          "path": "Android.bp",
+          "mode": "100644",
+          "git_blob": "46f63348c31eb690a76008ef73114dc559544c41"
+        },
+        {
+          "path": "contrib/Android.bp",
+          "mode": "100644",
+          "git_blob": "7f9cfe96335f8a60081230d22bd2ca5cd8616e47"
+        },
+        {
+          "path": "contrib/android/Android.bp",
+          "mode": "100644",
+          "git_blob": "7032a2a0144bcffe81ca8f47f1169f56589f53ed"
+        }
+      ],
+      "selected_original_symlinks": [
+        {
+          "path": "RELEASE-NOTES",
+          "mode": "120000",
+          "git_blob": "5fc5f475677aadae8bb4d2235b21f387c70073d5"
+        }
+      ]
+    }
+  ],
+  "expected_selected_original_file_count": 316,
+  "original_inputs": [
+    {
+      "path": "dalvik/tools/hprof-conv/Android.bp",
+      "bytes": 1117,
+      "sha256": "269a6745e536a5370fa2b509623a003e1f6b194a681b6364f1189a86560fc0fb",
+      "git_blob": "ca5343e071056b1e6ba514ca650b55575ace9ce6",
+      "project": "dalvik",
+      "commit": "5013071e756f89aa2cea97b437af12aacb8d4485",
+      "mode": "100644"
+    },
+    {
+      "path": "development/tools/Android.bp",
+      "bytes": 1092,
+      "sha256": "a6f071651ca38f9f6bbd2fe6c2a9bc22288a69c8662c20c28e2e7b9ce9cd5655",
+      "git_blob": "b3d6122d1fb4ac8fbc8288c29c34ccec9f50e74b",
+      "project": "development",
+      "commit": "4dafd114fab3c3d9543a5aff0ad097f479915176",
+      "mode": "100644"
+    },
+    {
+      "path": "development/tools/etc1tool/Android.bp",
+      "bytes": 462,
+      "sha256": "a19ad99745b88cb0e8334c21cbcc1b8688153b511d98e2f47d284573e9888780",
+      "git_blob": "35383da9d26f308d565e08f364b6ea04e7040ba4",
+      "project": "development",
+      "commit": "4dafd114fab3c3d9543a5aff0ad097f479915176",
+      "mode": "100644"
+    },
+    {
+      "path": "external/e2fsprogs/contrib/Android.bp",
+      "bytes": 775,
+      "sha256": "19c341127f6aa3d58f59e0d5bd7fd51e49a8010e6cfcf8e0adc3ab94e95a4fd4",
+      "git_blob": "7f9cfe96335f8a60081230d22bd2ca5cd8616e47",
+      "project": "external/e2fsprogs",
+      "commit": "3eb17241db7cd4408cc1bce9d25b602465ace8ff",
+      "mode": "100644"
+    },
+    {
+      "path": "external/e2fsprogs/contrib/android/Android.bp",
+      "bytes": 2148,
+      "sha256": "cbfe8e11a12a072d6708c2a3e34bd69cf67b6bb758a9c531440e4e50b087f124",
+      "git_blob": "7032a2a0144bcffe81ca8f47f1169f56589f53ed",
+      "project": "external/e2fsprogs",
+      "commit": "3eb17241db7cd4408cc1bce9d25b602465ace8ff",
+      "mode": "100644"
+    },
+    {
+      "path": "external/f2fs-tools/Android.bp",
+      "bytes": 9489,
+      "sha256": "ad9c356b284fd10a4d6700e721aeb77c831495d9efaa6ab33572455d16a3902b",
+      "git_blob": "082fa8ee4fc883dba66a939f980c31b3c21b592e",
+      "project": "external/f2fs-tools",
+      "commit": "c64468cb6397fb63bded0f549438b472f7e7cf88",
+      "mode": "100644"
+    },
+    {
+      "path": "external/f2fs-tools/tools/f2fs_io/Android.bp",
+      "bytes": 802,
+      "sha256": "00094d01539246db80ef64cd2077dd7db66d406d3f805e2a135f3c5d65e3c8eb",
+      "git_blob": "b6b946b42b8a55bffe3df6ab3aca39c8c507086c",
+      "project": "external/f2fs-tools",
+      "commit": "c64468cb6397fb63bded0f549438b472f7e7cf88",
+      "mode": "100644"
+    },
+    {
+      "path": "system/extras/partition_tools/Android.bp",
+      "bytes": 3648,
+      "sha256": "db1e21844d8771bb314781cddde8f05a043b5766db7691b85f5b9cf68dfc9d1a",
+      "git_blob": "e1d286a7315c4fc6d0c4ce9dea3af38b41947138",
+      "project": "system/extras",
+      "commit": "1289e9b3f282909eec6e80414e14dcc207bda439",
+      "mode": "100644"
+    },
+    {
+      "path": "system/extras/partition_tools/aidl/Android.bp",
+      "bytes": 949,
+      "sha256": "5ea87b0a71f80afe8eee837c6c71ee3f7759ab3d3a6e728eefde1e262256968d",
+      "git_blob": "e1a17769a6f805f5222a32a4fd7c023de562a3fc",
+      "project": "system/extras",
+      "commit": "1289e9b3f282909eec6e80414e14dcc207bda439",
+      "mode": "100644"
+    }
+  ],
+  "newly_exposed_declaration_count": 47,
+  "complete_recursive_explicit_provider_graph_required": true,
+  "full_original_source_byte_verification_required_after_reconcile": true,
+  "production_variant": "user",
+  "source_release": "cp2a",
+  "full_build_qualified": false,
+  "runtime_qualified": false,
+  "CURRENT_written": false,
+  "global_Native_capacity_changed": false
+}

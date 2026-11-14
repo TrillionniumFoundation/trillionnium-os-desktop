@@ -1,0 +1,61 @@
+package {
+    default_team: "trendy_team_android_data_aegis",
+    default_applicable_licenses: ["packages_apps_PrivateSpace_license"],
+}
+
+license {
+    name: "packages_apps_PrivateSpace_license",
+    visibility: [":__subpackages__"],
+    license_kinds: [
+        "SPDX-license-identifier-Apache-2.0",
+    ],
+    license_text: [
+        "NOTICE",
+    ],
+}
+
+android_library {
+    name: "PrivateSpaceLibrary",
+    manifest: "AndroidManifest.xml",
+    srcs: [
+        "src/**/*.kt",
+        ":statslog-privatespace-java-gen",
+    ],
+    static_libs: [
+        "androidx.appcompat_appcompat",
+        "androidx.compose.foundation_foundation",
+        "androidx.compose.ui_ui",
+        "androidx.compose.material3_material3",
+        "androidx.compose.runtime_runtime",
+        "androidx.datastore_datastore-preferences",
+        "dynamiccolors",
+    ],
+    resource_dirs: ["res"],
+    platform_apis: true,
+    flags_packages: [
+        "android.multiuser.flags-aconfig",
+    ],
+}
+
+android_app {
+    name: "PrivateSpace",
+    certificate: "platform",
+    privileged: true,
+    platform_apis: true,
+    optimize: {
+        enabled: true,
+        optimize: true,
+        shrink_resources: true,
+    },
+    static_libs: [
+        "PrivateSpaceLibrary",
+    ],
+}
+
+genrule {
+    name: "statslog-privatespace-java-gen",
+    tools: ["stats-log-api-gen"],
+    cmd: "$(location stats-log-api-gen) --java $(out) --module privatespace" +
+        " --javaPackage com.android.privatespace --javaClass PrivateSpaceStatsLog",
+    out: ["com/android/privatespace/PrivateSpaceStatsLog.java"],
+}

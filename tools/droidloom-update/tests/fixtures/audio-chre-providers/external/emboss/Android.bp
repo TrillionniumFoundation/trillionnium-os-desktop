@@ -1,0 +1,85 @@
+// Copyright (C) 2024 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_applicable_licenses: ["external_emboss_license"],
+}
+
+license {
+    name: "external_emboss_license",
+    visibility: [":__subpackages__"],
+    license_kinds: [
+        "SPDX-license-identifier-Apache-2.0",
+    ],
+    license_text: [
+        "LICENSE",
+    ],
+}
+
+python_library_host {
+    name: "emboss_compiler",
+    srcs: [
+        "compiler/**/*.py",
+    ],
+    data: [
+        "compiler/back_end/cpp/generated_code_templates",
+        "compiler/front_end/error_examples",
+        "compiler/front_end/prelude.emb",
+        "compiler/front_end/reserved_words",
+    ],
+}
+
+// This is a python script that is dependent on the emboss_compiler library.
+// Since it is not a .py file, it cannot be included as a src file in a
+// python_binary_host module. Instead, a genrule invoking this script will need
+// to create a python_binary_host with a wrapper python file which calls this
+// script. The wrapper file will need to include the emboss_compiler library in
+// its libs. This script should be included in the tool_files of the genrule and
+// passed to the python wrapper as an argument in the cmd field.
+filegroup {
+    name: "embossc_script",
+    srcs: [
+        "embossc",
+    ],
+}
+
+cc_library_headers {
+    name: "emboss_runtime_headers",
+    cpp_std: "c++20",
+    export_include_dirs: [
+        ".",
+    ],
+    cmake_snapshot_supported: true,
+    host_supported: true,
+    native_bridge_supported: true,
+    product_available: true,
+    recovery_available: true,
+    vendor_available: true,
+    vendor_ramdisk_available: true,
+
+    apex_available: [
+        "//apex_available:anyapex",
+        "//apex_available:platform",
+    ],
+    min_sdk_version: "apex_inherit",
+
+    target: {
+        linux_bionic: {
+            enabled: true,
+        },
+        windows: {
+            enabled: true,
+        },
+    },
+}

@@ -1,0 +1,89 @@
+/*
+ * Copyright (C) 2025 Android Open Source Project
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package {
+    // See: http://go/android-license-faq
+    // A large-scale-change added 'default_applicable_licenses' to import
+    // all of the 'license_kinds' from "external_crosvm_license"
+    // to get the below license kinds:
+    //   SPDX-license-identifier-BSD
+    default_applicable_licenses: ["external_rutabaga_gfx_license"],
+}
+
+license {
+    name: "external_rutabaga_gfx_license",
+    visibility: [":__subpackages__"],
+    license_kinds: [
+        "SPDX-license-identifier-BSD",
+        "SPDX-license-identifier-MIT",
+    ],
+    license_text: [
+        "LICENSE",
+    ],
+}
+
+common_host_properties = {
+    features: ["vulkano"],
+    shared_libs: [
+        "libgfxstream_backend",
+    ],
+    rustlibs: [
+        "libvulkano",
+    ],
+}
+
+rust_library {
+    name: "librutabaga_gfx",
+    host_supported: true,
+    vendor_available: true,
+    crate_name: "rutabaga_gfx",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.1.62",
+    crate_root: "src/lib.rs",
+    edition: "2021",
+    features: [
+        "gfxstream",
+    ],
+    rustlibs: [
+        "libcfg_if",
+        "liblibc",
+        "liblog_rust",
+        "libmesa3d_util_rutabaga",
+        "libmesa3d_magma_android_rutabaga",
+        "libserde",
+        "libserde_json",
+        "libthiserror",
+        "libzerocopy",
+    ],
+    proc_macros: ["libremain"],
+    apex_available: ["com.android.virt"],
+    cfgs: [
+        "fence_passing_option1",
+        "gfxstream_unstable",
+    ],
+    shared_libs: [
+        "libc++",
+        "libbase",
+    ],
+    target: {
+        android: {
+            compile_multilib: "64",
+            static_libs: [
+                "libgfxstream_backend",
+            ],
+            shared_libs: [
+                "libnativewindow",
+                "libcutils",
+                "liblog",
+            ],
+            rustlibs: [
+                "libnativewindow_rs",
+            ],
+        },
+        linux_musl_arm64: common_host_properties,
+        linux_musl_x86_64: common_host_properties,
+        linux_glibc_x86_64: common_host_properties,
+    },
+}

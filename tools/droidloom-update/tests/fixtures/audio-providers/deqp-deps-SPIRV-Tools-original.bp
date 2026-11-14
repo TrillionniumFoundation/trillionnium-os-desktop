@@ -1,0 +1,125 @@
+
+package {
+    default_applicable_licenses: ["external_deqp-deps_SPIRV-Tools_license"],
+}
+
+// Added automatically by a large-scale-change that took the approach of
+// 'apply every license found to every target'. While this makes sure we respect
+// every license restriction, it may not be entirely correct.
+//
+// e.g. GPL in an MIT project might only apply to the contrib/ directory.
+//
+// Please consider splitting the single license below into multiple licenses,
+// taking care not to lose any license_kind information, and overriding the
+// default license using the 'licenses: [...]' property on targets as needed.
+//
+// For unused files, consider creating a 'fileGroup' with "//visibility:private"
+// to attach the license to, and including a comment whether the files may be
+// used in the current project.
+// See: http://go/android-license-faq
+license {
+    name: "external_deqp-deps_SPIRV-Tools_license",
+    visibility: [":__subpackages__"],
+    license_kinds: [
+        "SPDX-license-identifier-Apache-2.0",
+        "SPDX-license-identifier-BSD",
+        "SPDX-license-identifier-MIT",
+    ],
+    license_text: [
+        "LICENSE",
+    ],
+}
+
+genrule {
+    name: "deqp_spvtools_ggt",
+    out: [
+        "core_tables_body.inc",
+        "core_tables_header.inc",
+    ],
+    srcs: [
+        ":deqp_spirv_headers_unified1_extinst.debuginfo.grammar.json",
+        ":deqp_spirv_headers_unified1_extinst.glsl.std.450.grammar.json",
+        ":deqp_spirv_headers_unified1_extinst.nonsemantic.clspvreflection.grammar.json",
+        ":deqp_spirv_headers_unified1_extinst.nonsemantic.vkspreflection.grammar.json",
+        ":deqp_spirv_headers_unified1_extinst.nonsemantic.shader.debuginfo.100.grammar.json",
+        ":deqp_spirv_headers_unified1_extinst.opencl.debuginfo.100.grammar.json",
+        ":deqp_spirv_headers_unified1_extinst.opencl.std.100.grammar.json",
+        ":deqp_spirv_headers_unified1_extinst.spv-amd-gcn-shader.grammar.json",
+        ":deqp_spirv_headers_unified1_extinst.spv-amd-shader-ballot.grammar.json",
+        ":deqp_spirv_headers_unified1_extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json",
+        ":deqp_spirv_headers_unified1_extinst.spv-amd-shader-trinary-minmax.grammar.json",
+        ":deqp_spirv_headers_unified1_spirv.core.grammar.json",
+    ],
+    tool_files: ["utils/ggt.py", "utils/Table/Context.py", "utils/Table/IndexRange.py", "utils/Table/StringList.py", "utils/Table/Operand.py"],
+    cmd: "$(location) --core-tables-body-output=$(location core_tables_body.inc) --core-tables-header-output=$(location core_tables_header.inc) --spirv-core-grammar=$(location :deqp_spirv_headers_unified1_spirv.core.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.glsl.std.450.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.opencl.std.100.grammar.json) --extinst=CLDEBUG100_,$(location :deqp_spirv_headers_unified1_extinst.opencl.debuginfo.100.grammar.json) --extinst=SHDEBUG100_,$(location :deqp_spirv_headers_unified1_extinst.nonsemantic.shader.debuginfo.100.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.spv-amd-shader-trinary-minmax.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.spv-amd-gcn-shader.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.spv-amd-shader-ballot.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.debuginfo.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.nonsemantic.clspvreflection.grammar.json) --extinst=,$(location :deqp_spirv_headers_unified1_extinst.nonsemantic.vkspreflection.grammar.json) ",
+}
+
+genrule {
+    name: "deqp_spvtools_generate_language_headers",
+    out: [
+        "DebugInfo.h",
+        "NonSemanticShaderDebugInfo100.h",
+        "OpenCLDebugInfo100.h",
+    ],
+    srcs: [
+        ":deqp_spirv_headers_unified1_extinst.debuginfo.grammar.json",
+        ":deqp_spirv_headers_unified1_extinst.nonsemantic.shader.debuginfo.100.grammar.json",
+        ":deqp_spirv_headers_unified1_extinst.opencl.debuginfo.100.grammar.json",
+    ],
+    tool_files: ["utils/generate_language_headers.py"],
+    cmd:
+        "$(location) --extinst-grammar=$(location :deqp_spirv_headers_unified1_extinst.debuginfo.grammar.json) --extinst-output-path=$(location DebugInfo.h); "+
+        "$(location) --extinst-grammar=$(location :deqp_spirv_headers_unified1_extinst.nonsemantic.shader.debuginfo.100.grammar.json) --extinst-output-path=$(location NonSemanticShaderDebugInfo100.h); "+
+        "$(location) --extinst-grammar=$(location :deqp_spirv_headers_unified1_extinst.opencl.debuginfo.100.grammar.json) --extinst-output-path=$(location OpenCLDebugInfo100.h); "
+}
+
+genrule {
+    name: "deqp_spvtools_generate_registry_tables",
+    out: [
+        "generators.inc"
+    ],
+    srcs: [
+        ":deqp_spirv_headers_spir-v.xml"
+    ],
+    tool_files: ["utils/generate_registry_tables.py"],
+    cmd: "$(location) --xml=$(location :deqp_spirv_headers_spir-v.xml) --generator-output=$(location generators.inc)",
+}
+
+genrule { // FIXME this relies on `git` which is no good on build machines
+    name: "deqp_spvtools_update_build_version",
+    out: ["build-version.inc"],
+    srcs: ["CHANGES"],
+    tool_files: ["utils/update_build_version.py"],
+    cmd: "$(location) $(location CHANGES) $(location build-version.inc)",
+}
+
+cc_library {
+    name: "deqp_spirv-tools",
+    defaults: ["deqp_and_deps_defaults"],
+    srcs: [
+        "source/*.cpp",
+        "source/util/*.cpp",
+        "source/val/*.cpp",
+        "source/opt/*.cpp",
+    ],
+    local_include_dirs: [
+        ".",
+    ],
+    export_include_dirs: [
+        "include",
+    ],
+    include_dirs: [
+        "external/deqp-deps/SPIRV-Headers/include"
+    ],
+    generated_headers: [
+        "deqp_spvtools_ggt",
+        "deqp_spvtools_generate_language_headers",
+        "deqp_spvtools_update_build_version",
+        "deqp_spvtools_generate_registry_tables",
+    ],
+    cppflags: [
+        "-Wno-implicit-fallthrough",
+        "-Wno-sign-conversion",
+        "-Wno-switch",
+    ],
+}

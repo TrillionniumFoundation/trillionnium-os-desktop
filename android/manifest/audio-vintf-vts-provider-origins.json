@@ -1,0 +1,310 @@
+{
+  "schema_version": 1,
+  "superproject": {
+    "name": "platform/superproject",
+    "ref": "refs/heads/android-17.0.0_r1",
+    "commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039"
+  },
+  "source_project_count": 446,
+  "prior_lock_sha256": "86298fbf2e30e0e7e612c0bb815ae180699eaab985005b533c8220b5d29f22e1",
+  "current_lock_sha256": "665e8bfd6bd5b3be50024655dc1ea78797aaf214f633b37082d47296cd2e491c",
+  "added_sparse_cones": {},
+  "added_projects": [
+    {
+      "path": "test/vts-testcase/hal",
+      "name": "platform/test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "purpose": "Pinned original VINTF VTS library, parent defaults and complete AIDL/test inputs required by original libassemblevintf consumers",
+      "sparse_paths": [
+        "treble/vintf"
+      ]
+    }
+  ],
+  "original_providers": [
+    {
+      "path": "system/libbase/Android.bp",
+      "mode": "100644",
+      "project": "system/libbase",
+      "commit": "fef4173e19d97cd4b4fc09a06bccbf800d0d3937",
+      "git_blob": "728b7ae871c699ee01d37901542040b27922694d",
+      "bytes": 6804,
+      "sha256": "2e3f7e52769a44e4b0f7d3c6557776e9d939da2733118574f2b350e63cd3894d"
+    },
+    {
+      "path": "system/libvintf/Android.bp",
+      "mode": "100644",
+      "project": "system/libvintf",
+      "commit": "df89ad736e14ac375f61d50fa543ae7cd746a140",
+      "git_blob": "dc57f3e7aa87267a207cef8f4fb1819465a01694",
+      "bytes": 6296,
+      "sha256": "e9a91645f7a13b096242acd1e511ef07cf42845a51d62010cde99d8568702853"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/Android.bp",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "8275f24ddcdac4162af18b4f04350e7db5f3a92a",
+      "bytes": 717,
+      "sha256": "2690e6d734b18fba5fff3238e8266736d50fb17f9d2e630e82348f1521ab945a"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/Android.bp",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "1c58237e5cc0baba6f1a278f270a91ad0783ad8f",
+      "bytes": 4324,
+      "sha256": "69291d2ef340ad2a3776a1be2b18222a3f941b2628f9cc797a48e02ce9e671ea"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/DeviceManifestTest.cpp",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "e326d06dceeb3e1f20847e028c9f801cabff01b5",
+      "bytes": 20018,
+      "sha256": "430b85f25368733499b7b4770ed3ae760ebb7fd797c046a88b9ae7929fa1ccfa"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/DeviceManifestTest.h",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "fd680c16c52f94eb61133b120f5b875a6f13cb82",
+      "bytes": 1300,
+      "sha256": "efba10687463c874e58e8c25e11b30328d50c41dbf95eff180ffd05a5f60bd99"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/DeviceMatrixTest.cpp",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "a3e9c952edc84abc41cf2b3389a8db713a8243a1",
+      "bytes": 3216,
+      "sha256": "461c6cbd783b885026c265ad9b4ae7d8c6237bc177cea9295f8e64fb1c20dbc8"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/DeviceMatrixTest.h",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "5942b77f43c41ae47c87ced348a7fa695074d1c5",
+      "bytes": 1172,
+      "sha256": "32d20a54c7b129182a1c7e538e99948b01ffda3b385aa43cce8242a6d7ddf551"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/OWNERS",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "4cc69ec32f3479bb85d27b4a5184d49516e0870d",
+      "bytes": 62,
+      "sha256": "c718c10861fc554276f518d5a6fc199bf57070372ae68ce59377f9577dfaa58d"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/SingleManifestTest.cpp",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "82747cf97ee8972c3097f26e44781bd98ab963ae",
+      "bytes": 44443,
+      "sha256": "340642cfbec3ea07f876457273b5bebdafd6880efe770b003dbfcdf888c33ba4"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/SingleManifestTest.h",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "09967f3bfe3b13190b6086ae1350b6efe265b3f8",
+      "bytes": 2483,
+      "sha256": "8b0801e0bbfd6675d201e0ac9421f8fecd6b52bc3d0c3277e99ee58a3a1a569a"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/SystemVendorTest.cpp",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "cf832cd34c56e1889d34b1e82dc6b3aa51e18ec0",
+      "bytes": 7734,
+      "sha256": "e4592f2a23caf8c8df1a1a6115fa2126f12de0131e22cd31739f033a675519ad"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/SystemVendorTest.h",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "53cfd4d727f46b49c0c6a1072c7b05c9cd175fcb",
+      "bytes": 1655,
+      "sha256": "0485d6c24fc6f6ab6a4d8420baaaf4ba80485b7b883483d59b446ccbfa6a46d9"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/TEST_MAPPING",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "cdcbc7d436a014d6c5e9aa4912cc5f768dd6f149",
+      "bytes": 387,
+      "sha256": "59c2308f450acdc62584cea91ce61067e6c5f1c130cb0170adecaaeac6799e6d"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/VtsNoHidl.cpp",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "85d5462d64f0a909761562a366786cd3a1181eac",
+      "bytes": 3949,
+      "sha256": "b0d2d09d2c7bc9454e716b667559d41113a13d9262a193d2b687d5ae23128ee7"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/VtsTrebleVintfTestBase.cpp",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "ba2497ae2f0b4235d1bf1bbffbb5b7f49b646a12",
+      "bytes": 9194,
+      "sha256": "6c1fcdc1f518bed92e863cabc94892afeb83424c7764a84779c5ebbf4ee4df7e"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/VtsTrebleVintfTestBase.h",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "6dff045ddcba2c5725c5576f658176ecd3e7c10b",
+      "bytes": 2739,
+      "sha256": "ef87f7c3b71c245637297d0fac1f521ebb1c975ef24f4e6fd3070ea82c18aee1"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/aidl/Android.bp",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "48424a372be05d23dcfc8fdefd3ea7a49df51e11",
+      "bytes": 156,
+      "sha256": "0c8b470e7fff2671818d442f2e372864ff26c6a9118baff37da7c436a3b4ba42"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/aidl/android/vintf/IServiceInfoFetcher.aidl",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "59f8c74cbfcddf74c3375187153bc921bb23ebf0",
+      "bytes": 1279,
+      "sha256": "b9cbc95820fddbe27f8d412c6de511eff8d65077151f62eb98fe7c63dd812a4b"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/aidl/android/vintf/ServiceInfo.aidl",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "b82d129f3c1344e280255c0662113cedf406d8f0",
+      "bytes": 1719,
+      "sha256": "12d11d6597f3f135aa86f9ea2e61a42a53b58d494292a6b33de753eeda6f968a"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/aidl/android/vintf/StabilityLevel.aidl",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "aaa5b06da8e1877d20ff43f08a2933e20038da28",
+      "bytes": 783,
+      "sha256": "a10a5b3024308ff962f46bc18ab5d38b80947e37d6013dcfb7b3b85beebff9cf"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/libvts_vintf_test_common/Android.bp",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "ac075929af79c79ae4e93c2af8be8a410469af27",
+      "bytes": 930,
+      "sha256": "d0ec7e7a9a493a455c3203ba2971b4f0bf59c7dfe4b253b863fa78e9278d1ef5"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/libvts_vintf_test_common/common.cpp",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "de488b15d4afd212a7cfde85be8866a4ec8c97f7",
+      "bytes": 4141,
+      "sha256": "87f575934f7cb356209ea7c0f5b27fd62bd88b889236d7e39b0d92060450a003"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/libvts_vintf_test_common/include/libvts_vintf_test_common/common.h",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "5504c7878de20968bf458f8e2ce19f698799f3e1",
+      "bytes": 1309,
+      "sha256": "61fa7188204d51a52b16b6bf38939ded618cd5aff6e39ce6507f780ee8af8e2c"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/main.cpp",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "cfe7da30f9b1f17f05068c1975ed9fd114eaff4f",
+      "bytes": 915,
+      "sha256": "fabd1a6ed2e71e774971295f37e7224b721f3af761e9d57e5677134b6824563b"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/utils.cpp",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "e26e6dcbee1a121eb63b5b8522b63681fc89d5cb",
+      "bytes": 5773,
+      "sha256": "08b9ab60c326b6d1b7e56aa89cde51a8478b3d2262369df2f37a6fbccf42eb0b"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/utils.h",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "7db042d3594fd99eece269bf73475cd9683ee9cb",
+      "bytes": 7510,
+      "sha256": "46d5e8ec53bd02b53c5f0ad3fe3ecb4a5d59879785c621789a757b56d6ac4e51"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/vts_treble_vintf_framework_test.xml",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "5ad4021fa42d9a19da47b0b7068a3f8b07b047dd",
+      "bytes": 2124,
+      "sha256": "891b054c65909e7e12f56923f555843bb71c963645777a2ffa9660ea26e664b4"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/vts_treble_vintf_trusted_hal_test.xml",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "ed5cb5f7373d3928ff490da356880786eec88313",
+      "bytes": 3841,
+      "sha256": "c42d9336d6b8300d4ed97d20040536109b6495f89d16474f3a2fd4b7906156a5"
+    },
+    {
+      "path": "test/vts-testcase/hal/treble/vintf/vts_treble_vintf_vendor_test.xml",
+      "mode": "100644",
+      "project": "test/vts-testcase/hal",
+      "commit": "61df1bdbc6b596dafeee213c04f5d2c8d7131b98",
+      "git_blob": "901f19b4fc6fba8a14ba82e74b0882f6e6dd359f",
+      "bytes": 2112,
+      "sha256": "38a00f6a812adfaa3edd9c28b2a520017c21cf62608b5824ffd853879ab812ea"
+    }
+  ],
+  "selected_original_vintf_file_count": 27,
+  "original_consumer_modules": [
+    "libassemblevintf",
+    "assemble_vintf"
+  ],
+  "original_missing_providers": [
+    "libvts_vintf_test_common"
+  ],
+  "retained_provider_dependencies": [
+    "libbase",
+    "libvintf"
+  ],
+  "source_materialized": false,
+  "full_build_qualified": false,
+  "runtime_qualified": false
+}

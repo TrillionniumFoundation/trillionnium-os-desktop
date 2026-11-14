@@ -1,0 +1,54 @@
+/*
+ * Copyright (C) 2025-2026 The Magma GPU Project
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Generated via:
+ *   https://github.com/mesonbuild/meson/tree/master/mesonbuild/convert
+ *
+ * Submit patches, do not hand-edit.
+ *
+ */
+
+package {
+    // See: http://go/android-license-faq
+    default_applicable_licenses: ["external_mesa3d_license"],
+}
+
+cc_library_static {
+    name: "_mesa_u_gralloc",
+    vendor: true,
+    c_std: "c11",
+    defaults: [
+        "aosp_mesa3d_c_link_args",
+        "aosp_mesa3d_c_project_args",
+    ],
+    header_libs: select(os(), {
+        "android": [
+            "hwvulkan_headers",
+            "inc_include",
+            "inc_util",
+        ],
+        default: [],
+    }),
+    srcs: select(os(), {
+        "android": [
+            "u_gralloc.c",
+            "u_gralloc_cros_api.c",
+            "u_gralloc_fallback.c",
+            "u_gralloc_internal.c",
+            "u_gralloc_libdrm.c",
+            "u_gralloc_qcom.c",
+        ],
+        default: [],
+    }),
+    shared_libs: select(os(), {
+        "android": [
+            "libcutils",
+            "libhardware",
+            "liblog",
+            "libnativewindow",
+            "libsync",
+        ],
+        default: [],
+    }),
+}

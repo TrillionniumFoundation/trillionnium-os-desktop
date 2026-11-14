@@ -1,0 +1,19 @@
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+android_app {
+    name: "DeviceDiagnostics",
+    privileged: true,
+    platform_apis: true,
+    srcs: ["java/**/*.kt"],
+    static_libs: [
+        "DeviceDiagnosticsLib",
+    ],
+    certificate: "platform",
+    optimize: {
+        enabled: true,
+        optimize: true,
+        shrink_resources: true,
+    },
+}

@@ -1,0 +1,131 @@
+// Copyright (C) 2024 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+apex_key {
+    name: "com.android.uprobestats.key",
+    public_key: "com.android.uprobestats.avbpubkey",
+    private_key: "com.android.uprobestats.pem",
+}
+
+android_app_certificate {
+    name: "com.android.uprobestats.certificate",
+    certificate: "com.android.uprobestats",
+}
+
+prebuilt_etc {
+    name: "com.android.uprobestats.init.rc",
+    src: select(release_flag("RELEASE_UPROBESTATS_SERVICE"), {
+        true: "UprobeStats-service-mainline.rc",
+        default: "UprobeStats-mainline.rc",
+    }),
+    filename: "init.rc",
+    installable: false,
+}
+
+apex {
+    name: "com.android.uprobestats",
+    binaries: [
+        "uprobestats",
+        "uprobestatsbpfload",
+    ],
+
+    prebuilts: [
+        "com.android.uprobestats.init.rc",
+    ],
+
+    bpfs: [
+        "BitmapAllocation.o",
+        "GenericInstrumentation.o",
+        "ProcessManagement.o",
+        "DisruptiveApp.o",
+        "Binder.o",
+        "Accessibility.o",
+    ] + select(product_variable("debuggable"), {
+        true: [
+            "ArtTest.o",
+        ],
+        false: [],
+    }),
+
+    native_shared_libs: [
+        "libuprobestats_client",
+    ],
+    manifest: "manifest.json",
+    file_contexts: ":com.android.uprobestats-file_contexts",
+    key: "com.android.uprobestats.key",
+    certificate: ":com.android.uprobestats.certificate",
+    defaults: ["b-launched-apex-module"],
+    licenses: [
+        "Android-Apache-2.0",
+        "opensourcerequest",
+    ],
+    systemserverclasspath_fragments: select(release_flag("RELEASE_UPROBESTATS_BRIDGE_SERVICE"), {
+        true: ["com.android.uprobestats-systemserverclasspath-fragment"],
+        false: [],
+    }),
+    bootclasspath_fragments: select(release_flag("RELEASE_UPROBESTATS_BRIDGE_SERVICE"), {
+        true: ["com.android.uprobestats-bootclasspath-fragment"],
+        false: [],
+    }),
+}
+
+sdk {
+    name: "uprobestats-module-sdk",
+    apexes: ["com.android.uprobestats"],
+}
+
+bootclasspath_fragment {
+    enabled: select(release_flag("RELEASE_UPROBESTATS_BRIDGE_SERVICE"), {
+        true: true,
+        false: false,
+    }),
+    name: "com.android.uprobestats-bootclasspath-fragment",
+    contents: [
+        "framework-uprobestats",
+    ],
+    apex_available: ["com.android.uprobestats"],
+
+    // The bootclasspath_fragments that provide APIs on which this depends.
+    fragments: [
+        // Needed to access core java APIs.
+        {
+            apex: "com.android.art",
+            module: "art-bootclasspath-fragment",
+        },
+    ],
+
+    // Additional stubs libraries that this fragment's contents use which are
+    // not provided by another bootclasspath_fragment.
+    additional_stubs: [
+        // Needed to access platform APIs.
+        "android-non-updatable",
+    ],
+    hidden_api: {
+        split_packages: ["*"],
+    },
+}
+
+systemserverclasspath_fragment {
+    enabled: select(release_flag("RELEASE_UPROBESTATS_BRIDGE_SERVICE"), {
+        true: true,
+        false: false,
+    }),
+    name: "com.android.uprobestats-systemserverclasspath-fragment",
+    standalone_contents: ["service-uprobestats-bridge"],
+    apex_available: ["com.android.uprobestats"],
+}

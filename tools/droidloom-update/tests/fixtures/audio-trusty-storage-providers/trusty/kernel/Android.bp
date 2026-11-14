@@ -1,0 +1,32 @@
+package {
+    default_applicable_licenses: ["trusty_kernel_license"],
+    default_team: "trendy_team_trusty",
+}
+
+license {
+    name: "trusty_kernel_license",
+    license_kinds: ["SPDX-license-identifier-MIT"],
+    license_text: ["LICENSE"],
+}
+
+dirgroup {
+    name: "trusty_dirgroup_trusty_kernel",
+    dirs: ["."],
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+}
+
+cc_library_headers {
+    name: "trusty_kernel_headers_shared",
+    host_supported: true,
+    export_include_dirs: [
+        "include/shared",
+    ],
+}
+
+cc_library_headers {
+    name: "trusty_kernel_headers_uapi",
+    host_supported: true,
+    export_include_dirs: [
+        "include/uapi",
+    ],
+}

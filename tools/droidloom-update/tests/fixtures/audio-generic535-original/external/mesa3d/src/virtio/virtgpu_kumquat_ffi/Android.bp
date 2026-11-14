@@ -1,0 +1,42 @@
+/*
+ * Copyright (C) 2025-2026 The Magma GPU Project
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Generated via:
+ *   https://github.com/mesonbuild/meson/tree/master/mesonbuild/convert
+ *
+ * Submit patches, do not hand-edit.
+ *
+ */
+
+package {
+    // See: http://go/android-license-faq
+    default_applicable_licenses: ["external_mesa3d_license"],
+}
+
+rust_ffi_static {
+    name: "libvirtgpu_kumquat_ffi",
+    vendor: true,
+    edition: "2021",
+    crate_root: "lib.rs",
+    crate_name: "virtgpu_kumquat_ffi",
+    host_supported: true,
+    defaults: [
+        "rust_2024_lint_args",
+        "rust_global_args",
+    ],
+    rustlibs: [
+        "libcfg_if",
+        "liblibc",
+        "liblog_rust",
+        "libmesa3d_protocols",
+        "libmesa3d_util",
+        "librustix",
+        "libthiserror",
+        "libvirtgpu_kumquat",
+        "libzerocopy",
+    ],
+    proc_macros: [
+        "libremain",
+    ],
+}
