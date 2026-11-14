@@ -32,6 +32,8 @@ mod process_filesystems;
 mod runtime;
 #[path = "production_namespace_writable_proc_child.rs"]
 mod writable_proc;
+#[path = "production_namespace_cgroup_child.rs"]
+mod guest_cgroup;
 
 #[derive(Clone, Copy)]
 #[repr(u32)]
@@ -65,6 +67,8 @@ pub(super) enum Phase {
     ExecArmed = 37,
     PrepareWritableProc = 38,
     WritableProcReady = 39,
+    PrepareCgroup = 44,
+    CgroupReady = 45,
     #[cfg(test)]
     ProbeWritableProc = 40,
     #[cfg(test)]
@@ -134,6 +138,8 @@ pub(super) enum Mode {
     WritableProcControl = 12,
     #[cfg(test)]
     PostExecProcControl = 13,
+    #[cfg(test)]
+    CgroupControl = 14,
     #[cfg(test)]
     ExitWithPrivateDiagnostic = 255,
 }
@@ -895,6 +901,10 @@ unsafe fn isolated_child_main(
             finish(0);
         }
         send(nonce, Phase::TreeReady, 0, 1);
+        #[cfg(test)]
+        if matches!(_mode, Mode::CgroupControl) {
+            guest_cgroup::private_control(nonce, parent_pid);
+        }
         // Only a fixed, admitted pair of base mount descriptors can enter the
         // empty-data assembler. It has no runtime/dev/APEX or exec authority.
         empty_root::run(nonce, parent_pid, _mode);

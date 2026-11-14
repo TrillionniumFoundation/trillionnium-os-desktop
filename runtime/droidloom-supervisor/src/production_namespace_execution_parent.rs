@@ -162,6 +162,7 @@ impl IsolatedNamespaces {
             .revalidate_tree(selection, &self.witness()?)
             .map_err(|error| NamespaceError::RuntimeResource(error.to_string()))?;
         self.verify_live_admission()?;
+        self.require_cgroup_hierarchy_ready()?;
         let child = self
             .init
             .as_ref()

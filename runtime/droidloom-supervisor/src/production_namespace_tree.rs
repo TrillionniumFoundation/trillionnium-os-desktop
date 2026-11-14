@@ -23,6 +23,8 @@ mod private_postexec;
 mod runtime;
 #[path = "production_namespace_writable_proc_parent.rs"]
 mod writable_proc;
+#[path = "production_namespace_cgroup_parent.rs"]
+mod guest_cgroup;
 
 enum BaseMounts {
     Admitted(PreparedMounts),
@@ -798,30 +800,6 @@ impl IsolatedNamespaces {
         self.process_filesystems = Some(observed);
         self.verify_live_admission()?;
         Ok(self)
-    }
-
-    pub(crate) fn configure_cgroup_hierarchy(&self) -> Result<()> {
-        self.verify_live_admission()?;
-        let r = self
-            .keeper
-            .as_ref()
-            .ok_or(NamespaceError::RetirementUnproven)?
-            .owner
-            .held()?;
-        let witness = CgroupTreeReadyWitness { tree: self };
-        match &r.authority {
-            HeldAuthority::Budgeted(cgroup) => {
-                cgroup
-                    .move_keeper_outside(&witness)
-                    .map_err(|e| NamespaceError::CgroupResource(e.to_string()))?;
-                cgroup
-                    .delegate_guest_hierarchy(&witness)
-                    .map_err(|e| NamespaceError::CgroupResource(e.to_string()))?;
-                self.verify_live_admission()
-            }
-            #[cfg(test)]
-            _ => Err(NamespaceError::HostAdmissionRequired),
-        }
     }
 
     pub(crate) fn witness(&self) -> Result<OwnedNamespaceWitness<'_>> {

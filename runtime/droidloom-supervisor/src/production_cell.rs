@@ -123,8 +123,9 @@ impl ProductionCell {
             let tree = tree.prepare_writable_proc().map_err(rejected)?;
 
             step("Checking the exact owned cgroup hierarchy...")?;
-            // This operation moves only the attested keeper and delegates the
-            // private hierarchy. It does not qualify Android task profiles.
+            // This operation moves only the attested keeper, delegates the
+            // private hierarchy and verifies PID1's actual init leaf before
+            // enabling its controllers. It does not qualify Android task profiles.
             // The separately required execution contracts still cover their
             // guest-side activation and final confinement.
             tree.configure_cgroup_hierarchy().map_err(rejected)?;

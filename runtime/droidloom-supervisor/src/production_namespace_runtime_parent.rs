@@ -317,6 +317,7 @@ impl IsolatedNamespaces {
     /// failure retains its resources until actual tree reap or quarantine.
     pub(crate) fn attach_runtime(mut self, mut runtime: PreparedRuntime) -> Result<Self> {
         self.verify_live_admission()?;
+        self.require_cgroup_hierarchy_ready()?;
         if self.runtime.is_some()
             || self.runtime_observation.is_some()
             || self.writable_proc.is_none()

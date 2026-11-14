@@ -455,6 +455,7 @@ pub(super) unsafe fn run(nonce: [u8; 16], parent_pid: u32, mode: Mode) -> ! {
             super::private_postexec::run(nonce, parent_pid);
         }
         if matches!(mode, Mode::UserNamespace) {
+            super::guest_cgroup::run(nonce, parent_pid);
             super::runtime::run(nonce, parent_pid, mode);
         }
         command(nonce, parent_pid, Phase::Stop);
