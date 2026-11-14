@@ -7,9 +7,9 @@
 //! so waitid(P_PIDFD) proves its reap rather than trusting an intermediate exit.
 
 use super::*;
-use crate::production_devices::PreparedDevices;
-use crate::production_mounts::PreparedMounts;
-use crate::production_runtime_assets::PreparedRuntime;
+use crate::production_devices::{DeviceRetirement, PreparedDevices};
+use crate::production_mounts::{MountRetirement, PreparedMounts};
+use crate::production_runtime_assets::{PreparedRuntime, RuntimeRetirement};
 use std::os::fd::BorrowedFd;
 #[path = "production_namespace_binder_parent.rs"]
 mod binder;
@@ -35,6 +35,14 @@ enum BaseMounts {
     PrivateControl(crate::production_mounts::private_control::PrivateControlMounts),
 }
 impl BaseMounts {
+    fn preparation(&self) -> ResourcePreparation {
+        match self {
+            Self::Admitted(_) => ResourcePreparation::Admitted,
+            #[cfg(test)]
+            Self::PrivateControl(_) => ResourcePreparation::PrivateControl,
+        }
+    }
+
     fn descriptors<'a>(
         &'a mut self,
         witness: &OwnedNamespaceWitness<'_>,
@@ -46,13 +54,12 @@ impl BaseMounts {
         }
         .map_err(|error| NamespaceError::MountResource(error.to_string()))
     }
-    fn retire(self, retired: &RetiredTreeWitness<'_>) -> Result<()> {
+    fn retire(self, retired: &RetiredTreeWitness<'_>) -> Result<MountRetirement> {
         match self {
             Self::Admitted(value) => value.retire_after_tree(retired),
             #[cfg(test)]
             Self::PrivateControl(value) => value.retire_after_tree(retired),
         }
-        .map(|_| ())
         .map_err(|error| NamespaceError::MountResource(error.to_string()))
     }
 }
@@ -63,6 +70,14 @@ enum DeviceMounts {
     PrivateControl(crate::production_devices::private_control::PrivateControlDevices),
 }
 impl DeviceMounts {
+    fn preparation(&self) -> ResourcePreparation {
+        match self {
+            Self::Admitted(_) => ResourcePreparation::Admitted,
+            #[cfg(test)]
+            Self::PrivateControl(_) => ResourcePreparation::PrivateControl,
+        }
+    }
+
     fn descriptor<'a>(&'a mut self, witness: &OwnedNamespaceWitness<'_>) -> Result<BorrowedFd<'a>> {
         match self {
             Self::Admitted(value) => value.descriptor_for_transfer(witness),
@@ -71,13 +86,12 @@ impl DeviceMounts {
         }
         .map_err(|error| NamespaceError::DeviceResource(error.to_string()))
     }
-    fn retire(self, retired: &RetiredTreeWitness<'_>) -> Result<()> {
+    fn retire(self, retired: &RetiredTreeWitness<'_>) -> Result<DeviceRetirement> {
         match self {
             Self::Admitted(value) => value.retire_after_tree(retired),
             #[cfg(test)]
             Self::PrivateControl(value) => value.retire_after_tree(retired),
         }
-        .map(|_| ())
         .map_err(|error| NamespaceError::DeviceResource(error.to_string()))
     }
 }
@@ -263,6 +277,9 @@ pub(crate) struct IsolatedNamespaces {
     writable_proc: Option<writable_proc::WritableProc>,
     runtime: Option<PreparedRuntime>,
     runtime_observation: Option<runtime::RuntimeObservation>,
+    // Actual resource return values survive an earlier reap_init() call.
+    // This owner never reconstructs them from a status message or a receipt.
+    retirement: ResourceRetirements,
 }
 
 /// Borrow created only from the READY owner, never from a numeric PID list.
@@ -519,10 +536,53 @@ pub(super) struct TreeChild {
     exited_before_barrier: std::cell::Cell<bool>,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum ResourcePreparation {
+    Admitted,
+    #[cfg(test)]
+    PrivateControl,
+}
+
+/// Record custody even when descriptor transfer fails before its READY reply.
+/// An absent role means it was never attached, not that a required production
+/// role was successfully retired. Private controls never become admitted roles.
+#[derive(Debug, Default, Eq, PartialEq)]
+struct PreparedResourceInventory {
+    bases: Option<ResourcePreparation>,
+    devices: Option<ResourcePreparation>,
+    runtime: Option<ResourcePreparation>,
+}
+
+/// Closed, in-memory evidence, not a deserializable replacement permission.
+/// Each value below comes only from that resource owner's actual retirement.
+/// No Clone/Serialize/Deserialize implementation or external constructor exists.
+#[derive(Debug, Default)]
+struct ResourceRetirements {
+    prepared: PreparedResourceInventory,
+    bases: Option<MountRetirement>,
+    devices: Option<DeviceRetirement>,
+    runtime: Option<RuntimeRetirement>,
+}
+
+impl ResourceRetirements {
+    fn verify_complete(&self) -> Result<()> {
+        if self.prepared.bases.is_some() != self.bases.is_some()
+            || self.prepared.devices.is_some() != self.devices.is_some()
+            || self.prepared.runtime.is_some() != self.runtime.is_some()
+        {
+            return Err(NamespaceError::RetirementUnproven);
+        }
+        Ok(())
+    }
+}
+
+/// Preserve actual resource evidence through execution and cell teardown.
+/// Process exits alone are not complete resource or package replacement proof.
 #[derive(Debug)]
 pub(crate) struct TreeExit {
     pub(crate) init: ChildExit,
     pub(crate) keeper: ChildExit,
+    resources: ResourceRetirements,
 }
 
 impl IsolatedNamespaces {
@@ -586,6 +646,7 @@ impl IsolatedNamespaces {
                     writable_proc: None,
                     runtime: None,
                     runtime_observation: None,
+                    retirement: ResourceRetirements::default(),
                 };
                 // Only now may the live audit consume the PID-namespace scope.
                 // A rejection drops this whole owner and reaps PID 1 first.
@@ -625,7 +686,7 @@ impl IsolatedNamespaces {
 
     fn attach_base_inner(mut self, mut bases: BaseMounts) -> Result<Self> {
         self.verify_live_admission()?;
-        if self.bases.is_some() || self.empty_root {
+        if self.bases.is_some() || self.retirement.prepared.bases.is_some() || self.empty_root {
             return Err(NamespaceError::Rejected(
                 "base descriptors already transferred",
             ));
@@ -647,6 +708,7 @@ impl IsolatedNamespaces {
         })();
         // A send failure may still have reached the peer. The mount owner must
         // stay attached to this exact tree until its real PIDFD exit is proven.
+        self.retirement.prepared.bases = Some(bases.preparation());
         self.bases = Some(bases);
         let devices = transfer?;
         self.init
@@ -667,7 +729,11 @@ impl IsolatedNamespaces {
 
     fn attach_device_inner(mut self, mut devices: DeviceMounts) -> Result<Self> {
         self.verify_live_admission()?;
-        if !self.empty_root || self.devices.is_some() || self.private_devices {
+        if !self.empty_root
+            || self.devices.is_some()
+            || self.retirement.prepared.devices.is_some()
+            || self.private_devices
+        {
             return Err(NamespaceError::Rejected(
                 "private devices require one empty-root barrier",
             ));
@@ -689,6 +755,7 @@ impl IsolatedNamespaces {
         })();
         // A failed send may have delivered the mount; retain its real guard
         // before returning any error so only actual tree reap permits cleanup.
+        self.retirement.prepared.devices = Some(devices.preparation());
         self.devices = Some(devices);
         let expected = transferred?;
         self.init
@@ -899,13 +966,26 @@ impl IsolatedNamespaces {
         if self.reaped_init.is_none() {
             return Err(NamespaceError::RetirementUnproven);
         }
+        if self.runtime.is_some()
+            && (self.retirement.runtime.is_some()
+                || self.retirement.prepared.runtime != Some(ResourcePreparation::Admitted))
+        {
+            return Err(NamespaceError::RetirementUnproven);
+        }
         // These held role/source FDs pin the same runtime mount. Close them
         // only after actual PIDFD reap and before asking loop/mount retirement.
         self.runtime_observation.take();
         if let Some(runtime) = self.runtime.take() {
-            runtime
-                .retire_after_tree(&RetiredTreeWitness { tree: self })
-                .map_err(|error| NamespaceError::RuntimeResource(error.to_string()))?;
+            self.retirement.runtime = Some(
+                runtime
+                    .retire_after_tree(&RetiredTreeWitness { tree: self })
+                    .map_err(|error| NamespaceError::RuntimeResource(error.to_string()))?,
+            );
+        }
+        // A second reap observes the cached original return value. It cannot
+        // turn a consumed/missing runtime into a successful empty retirement.
+        if self.retirement.prepared.runtime.is_some() != self.retirement.runtime.is_some() {
+            return Err(NamespaceError::RetirementUnproven);
         }
         Ok(())
     }
@@ -937,11 +1017,12 @@ impl IsolatedNamespaces {
             .release_live_views_after_reap();
         self.retire_runtime_after_reap()?;
         if let Some(devices) = self.devices.take() {
-            devices.retire(&RetiredTreeWitness { tree: self })?;
+            self.retirement.devices = Some(devices.retire(&RetiredTreeWitness { tree: self })?);
         }
         if let Some(bases) = self.bases.take() {
-            bases.retire(&RetiredTreeWitness { tree: self })?;
+            self.retirement.bases = Some(bases.retire(&RetiredTreeWitness { tree: self })?);
         }
+        self.retirement.verify_complete()?;
         let prior = self.reaped_init.as_ref().unwrap();
         let init = ChildExit {
             pid: prior.pid,
@@ -959,7 +1040,11 @@ impl IsolatedNamespaces {
             .retire()?;
         self.init.take();
         self.keeper.take();
-        Ok(TreeExit { init, keeper })
+        Ok(TreeExit {
+            init,
+            keeper,
+            resources: std::mem::take(&mut self.retirement),
+        })
     }
 
     fn quarantine(&mut self) {
@@ -2594,6 +2679,39 @@ mod tests {
     use crate::production_identity::tests::broker_fixture;
     use std::fs;
 
+    #[test]
+    fn resource_retirement_inventory_rejects_missing_owned_results() {
+        // This test never fabricates a resource retirement. A role recorded
+        // as held must retain its actual owner's return value before the
+        // whole tree can return terminal evidence, including private controls.
+        for preparation in [
+            ResourcePreparation::Admitted,
+            ResourcePreparation::PrivateControl,
+        ] {
+            for role in 0..3 {
+                let mut retired = ResourceRetirements::default();
+                match role {
+                    0 => retired.prepared.bases = Some(preparation),
+                    1 => retired.prepared.devices = Some(preparation),
+                    2 => retired.prepared.runtime = Some(preparation),
+                    _ => unreachable!(),
+                }
+                assert!(matches!(
+                    retired.verify_complete(),
+                    Err(NamespaceError::RetirementUnproven)
+                ));
+            }
+        }
+        let unprepared = ResourceRetirements::default();
+        unprepared.verify_complete().unwrap();
+        assert_eq!(unprepared.prepared, PreparedResourceInventory::default());
+        assert!(
+            unprepared.bases.is_none()
+                && unprepared.devices.is_none()
+                && unprepared.runtime.is_none()
+        );
+    }
+
     fn proc_test_channel(passcred: bool) -> (OwnedFd, OwnedFd) {
         let mut raw = [-1_i32; 2];
         assert_eq!(
@@ -2942,6 +3060,13 @@ mod tests {
         assert_eq!(exit.init.status, 0);
         assert_eq!(exit.keeper.reason, libc::CLD_EXITED);
         assert_eq!(exit.keeper.status, 0);
+        assert_eq!(
+            exit.resources.prepared,
+            PreparedResourceInventory::default()
+        );
+        assert!(exit.resources.bases.is_none());
+        assert!(exit.resources.devices.is_none());
+        assert!(exit.resources.runtime.is_none());
         assert_eq!(children(), original_children);
         assert!(lease_available(root.path()));
         println!(
@@ -2992,6 +3117,10 @@ mod tests {
             .attach_base_inner(BaseMounts::PrivateControl(controls))
             .unwrap();
         assert!(tree.empty_root);
+        assert_eq!(
+            tree.retirement.prepared.bases,
+            Some(ResourcePreparation::PrivateControl)
+        );
         let init = tree.init.as_ref().unwrap();
         let init_pid = init.identity.pid;
         let pidns = Node::of(init.pid_namespace()).unwrap();
@@ -3033,12 +3162,29 @@ mod tests {
             assert_eq!(Node::of(&views[0].3).unwrap(), pidns);
             assert!(!lease_available(identity_root.path()));
         }
+        // reap_init may run before final retirement. It must neither erase
+        // the actual prepared inventory nor pre-claim base/DEV teardown.
+        tree.reap_init().unwrap();
+        assert_eq!(
+            tree.retirement.prepared.bases,
+            Some(ResourcePreparation::PrivateControl)
+        );
+        assert!(tree.retirement.bases.is_none());
+        assert!(tree.retirement.devices.is_none());
+        assert!(tree.retirement.runtime.is_none());
         let exit = tree.retire().unwrap();
         assert_eq!((exit.init.reason, exit.init.status), (libc::CLD_EXITED, 0));
         assert_eq!(
             (exit.keeper.reason, exit.keeper.status),
             (libc::CLD_EXITED, 0)
         );
+        assert_eq!(
+            exit.resources.prepared.bases,
+            Some(ResourcePreparation::PrivateControl)
+        );
+        assert!(exit.resources.bases.is_some());
+        assert!(exit.resources.prepared.devices.is_none() && exit.resources.devices.is_none());
+        assert!(exit.resources.prepared.runtime.is_none() && exit.resources.runtime.is_none());
         assert!(lease_available(identity_root.path()));
         assert_eq!(children(), original_children);
         println!(
@@ -3073,6 +3219,7 @@ mod tests {
                 };
                 send_base_fds(init.control.as_raw_fd(), &packet, fds).unwrap();
             }
+            tree.retirement.prepared.bases = Some(ResourcePreparation::PrivateControl);
             tree.bases = Some(BaseMounts::PrivateControl(controls));
             assert!(
                 tree.init
@@ -3084,6 +3231,11 @@ mod tests {
             let exit = tree.retire().unwrap();
             assert_eq!(exit.init.reason, libc::CLD_EXITED);
             assert_ne!(exit.init.status, 0);
+            assert_eq!(
+                exit.resources.prepared.bases,
+                Some(ResourcePreparation::PrivateControl)
+            );
+            assert!(exit.resources.bases.is_some());
             assert_eq!(
                 (exit.keeper.reason, exit.keeper.status),
                 (libc::CLD_EXITED, 0)
@@ -3183,6 +3335,10 @@ mod tests {
             .attach_device_inner(DeviceMounts::PrivateControl(devices))
             .unwrap();
         assert!(tree.empty_root && tree.private_devices);
+        assert_eq!(
+            tree.retirement.prepared.devices,
+            Some(ResourcePreparation::PrivateControl)
+        );
         // This borrow comes from the exact owned fields, not a numeric PID or
         // a fabricated witness. The descriptor guard must reject a second send.
         {
@@ -3235,6 +3391,16 @@ mod tests {
             (exit.keeper.reason, exit.keeper.status),
             (libc::CLD_EXITED, 0)
         );
+        assert_eq!(
+            exit.resources.prepared.bases,
+            Some(ResourcePreparation::PrivateControl)
+        );
+        assert_eq!(
+            exit.resources.prepared.devices,
+            Some(ResourcePreparation::PrivateControl)
+        );
+        assert!(exit.resources.bases.is_some() && exit.resources.devices.is_some());
+        assert!(exit.resources.prepared.runtime.is_none() && exit.resources.runtime.is_none());
         assert!(lease_available(identity_root.path()));
         assert_eq!(children(), original_children);
         println!(
@@ -3289,6 +3455,7 @@ mod tests {
                     .unwrap();
                 }
             }
+            tree.retirement.prepared.devices = Some(ResourcePreparation::PrivateControl);
             tree.devices = Some(DeviceMounts::PrivateControl(devices));
             assert!(
                 tree.init
@@ -3300,6 +3467,11 @@ mod tests {
             let exit = tree.retire().unwrap();
             assert_eq!(exit.init.reason, libc::CLD_EXITED);
             assert_ne!(exit.init.status, 0);
+            assert_eq!(
+                exit.resources.prepared.devices,
+                Some(ResourcePreparation::PrivateControl)
+            );
+            assert!(exit.resources.bases.is_some() && exit.resources.devices.is_some());
             assert_eq!(
                 (exit.keeper.reason, exit.keeper.status),
                 (libc::CLD_EXITED, 0)

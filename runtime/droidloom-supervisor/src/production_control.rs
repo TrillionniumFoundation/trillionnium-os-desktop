@@ -3,6 +3,7 @@
 //! its numeric-PID Android command helpers.
 use super::*;
 use crate::production_cell::{CellPoll, ProductionCell};
+use crate::production_namespace::TreeExit;
 use crate::production_readiness::BootProperty;
 use crate::production_selection::ProductionSelection;
 use std::ffi::CString;
@@ -306,6 +307,9 @@ fn bind_production_listener(socket: &Path) -> Result<OwnedListener, ControlError
 
 struct ProductionDaemon {
     active: Option<ProductionCell>,
+    // Kept only by this original daemon. Neither ControlResponse nor an on-disk
+    // status record can reconstruct or grant authority from these return values.
+    last_retirement: Option<TreeExit>,
     state: CellState,
     last_result: String,
     progress: Reporter,
@@ -315,6 +319,7 @@ impl ProductionDaemon {
     fn new() -> Self {
         Self {
             active: None,
+            last_retirement: None,
             state: CellState::Stopped,
             last_result: "production cell is stopped".into(),
             progress: Reporter::default(),
@@ -361,17 +366,20 @@ impl ProductionDaemon {
             Ok(CellPoll::Live(_)) => self.state = CellState::Starting,
             Ok(CellPoll::Exited(exit)) => {
                 self.last_result = format!("owned production cell exited and retired: {exit:?}");
+                self.last_retirement = Some(exit);
                 self.active = None;
                 self.state = CellState::Stopped;
             }
             Ok(CellPoll::FailedAfterRetirement { message, exit }) => {
                 self.last_result =
                     format!("production cell failed: {message}; actual retirement: {exit:?}");
+                self.last_retirement = Some(exit);
                 self.active = None;
                 self.state = CellState::Stopped;
             }
             Err(error) => {
                 self.last_result = error.to_string();
+                self.last_retirement = None;
                 self.active = None;
                 self.state = CellState::Quarantined;
             }
@@ -404,6 +412,10 @@ impl ProductionDaemon {
             }
             return Ok(self.success("selected production cell is already owned"));
         }
+        // Only a validated new Start reaches this boundary. A previous owner's
+        // terminal evidence cannot stand for any resources this attempt creates,
+        // even if preparation subsequently fails or quarantines.
+        self.last_retirement = None;
         self.state = CellState::Starting;
         let progress = &self.progress;
         match ProductionCell::start(selected, |message| progress.report(message)) {
@@ -440,11 +452,13 @@ impl ProductionDaemon {
             Ok(exit) => {
                 self.state = CellState::Stopped;
                 self.last_result = format!("owned production cell retired: {exit:?}");
+                self.last_retirement = Some(exit);
                 Ok(self.success(self.last_result.clone()))
             }
             Err(error) => {
                 self.state = CellState::Quarantined;
                 self.last_result = error.to_string();
+                self.last_retirement = None;
                 Err(ControlError::Invalid(self.last_result.clone()))
             }
         }
@@ -615,6 +629,22 @@ pub(super) fn serve(config: &DaemonConfig, shutdown: &AtomicBool) -> Result<(), 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn production_stopped_response_does_not_create_resource_retirement() {
+        let mut daemon = ProductionDaemon::new();
+        // These calls have no cell and therefore make no native Stop or other
+        // host operation. Their existing idempotent response is not a proof.
+        for _ in 0..2 {
+            assert!(daemon.stop(0).unwrap().ok);
+            assert_eq!(daemon.state, CellState::Stopped);
+            assert!(daemon.active.is_none());
+            assert!(daemon.last_retirement.is_none());
+        }
+        daemon.state = CellState::Quarantined;
+        assert!(daemon.stop(0).is_err());
+        assert!(daemon.last_retirement.is_none());
+    }
 
     fn socket_owner(socket: &Path) -> OwnedListener {
         let (parent, name) = ordinary_socket_parent(socket).unwrap();

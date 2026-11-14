@@ -444,6 +444,7 @@ impl IsolatedNamespaces {
         self.verify_live_admission()?;
         self.require_cgroup_hierarchy_ready()?;
         if self.runtime.is_some()
+            || self.retirement.prepared.runtime.is_some()
             || self.runtime_observation.is_some()
             || self.writable_proc.is_none()
         {
@@ -473,6 +474,7 @@ impl IsolatedNamespaces {
             }
             Ok(observation)
         })();
+        self.retirement.prepared.runtime = Some(ResourcePreparation::Admitted);
         self.runtime = Some(runtime);
         let mut observation = transferred?;
         let child = self
