@@ -1583,3 +1583,89 @@ jobs:
             ${{ runner.temp }}/runtime-d6-complete-after.json
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stdout
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
+
+  runtime-d7-unified-current-producer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.93.0'
+      CARGO_TERM_COLOR: never
+      GIT_CONFIG_NOSYSTEM: '1'
+      GIT_CONFIG_GLOBAL: /dev/null
+      GIT_TERMINAL_PROMPT: '0'
+      D7_INVENTORY_SHA256: 765c888f7684171ca2df9f8ed1ce7c2c09c05bf0413d709708d6e98ad1e21ed4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Prepare exact Rust toolchain and original rsync
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal
+          if ! command -v rsync >/dev/null; then
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends rsync
+          fi
+          rsync --version
+          rustc --version
+      # Independent complete D7 job. The containing workflow supplies checkout,
+      # pinned Rust, normal Linux build dependencies and the reviewed D7 inventory
+      # hash. Every source ancestor has its own external fixed inventory pin.
+      - name: Reconstruct both complete D7 source parents and the unified 1595 files
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${D7_INVENTORY_SHA256:?external D7 inventory pin required}"
+          audio="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+          security="$GITHUB_WORKSPACE/compat/android/pocket4/intentresolver-security-on-audio537-r1"
+          aac="$GITHUB_WORKSPACE/compat/android/pocket4/aac-security-on-security537-r1"
+          tools="$GITHUB_WORKSPACE/compat/android/pocket4/audio538-unified-security-source-r1"
+          runtime="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-d6-init-security-metadata-source-r1"
+          current="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-d7-unified538-source-r1"
+          printf '%s  %s\n' "$D7_INVENTORY_SHA256" "$current/FILES.sha256" | sha256sum --check --status
+          (cd "$current" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' '41c50621d1d8359be7f18594247f8ccdee4d44b92f3e9b8398b8b67efca5b4d8' "$tools/FILES.sha256" | sha256sum --check --status
+          (cd "$tools" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' '52f3362f9c5099538bf71e71256f9c7207882dff8cd4703f61dc6ebcdbaa0888' "$runtime/FILES.sha256" | sha256sum --check --status
+          (cd "$runtime" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' 'b8877b88a3968b5407852844260e163d4859be275207ea4f8cc44b8f256e6bff' "$aac/FILES.sha256" | sha256sum --check --status
+          (cd "$aac" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' 'dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd' "$security/FILES.sha256" | sha256sum --check --status
+          (cd "$security" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' '486300e2a033679a87776c68bff4324eff11b53459de3c9712122788f2a76572' "$audio/FILES.sha256" | sha256sum --check --status
+          (cd "$audio" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B "$audio/replay_capsule.py" --capsule "$audio" --work "$RUNNER_TEMP/d7-audio537-parent" --report "$RUNNER_TEMP/d7-audio537-replay.json"
+          python3 -I -B "$security/verify.py" --inventory-sha256 dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd --audio-source "$RUNNER_TEMP/d7-audio537-parent" --output "$RUNNER_TEMP/d7-security537-parent" --report "$RUNNER_TEMP/d7-security537-replay.json"
+          python3 -I -B "$aac/verify.py" --inventory-sha256 b8877b88a3968b5407852844260e163d4859be275207ea4f8cc44b8f256e6bff --security-source "$RUNNER_TEMP/d7-security537-parent" --output "$RUNNER_TEMP/d7-aac330-parent" --report "$RUNNER_TEMP/d7-aac330-replay.json"
+          python3 -I -B "$tools/verify.py" --inventory-sha256 41c50621d1d8359be7f18594247f8ccdee4d44b92f3e9b8398b8b67efca5b4d8 --parent-source "$RUNNER_TEMP/d7-aac330-parent" --output "$RUNNER_TEMP/d7-audio538-parent" --report "$RUNNER_TEMP/d7-audio538-replay.json"
+          python3 -I -B "$runtime/verify.py" --inventory-sha256 52f3362f9c5099538bf71e71256f9c7207882dff8cd4703f61dc6ebcdbaa0888 --output "$RUNNER_TEMP/d7-runtime-d6-parent" --report "$RUNNER_TEMP/d7-runtime-d6-replay.json"
+          python3 -I -B "$current/verify.py" --inventory-sha256 "$D7_INVENTORY_SHA256" --audio-source "$RUNNER_TEMP/d7-audio538-parent" --runtime-source "$RUNNER_TEMP/d7-runtime-d6-parent" --output "$RUNNER_TEMP/d7-unified-producer" --report "$RUNNER_TEMP/d7-full-replay.json"
+          python3 -I -B "$current/test_verifier.py"
+      - name: Test runtime 289 and current tools 4 and build four fresh unified releases
+        timeout-minutes: 60
+        shell: bash
+        run: |
+          set -euo pipefail
+          current="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-d7-unified538-source-r1"
+          python3 -I -B "$current/run_ci.py" --inventory-sha256 "$D7_INVENTORY_SHA256" --producer "$RUNNER_TEMP/d7-unified-producer" --target "$RUNNER_TEMP/d7-fresh-cargo-target" --report "$RUNNER_TEMP/d7-ci.json" --jobs 2
+          python3 -I -B "$current/verify.py" --inventory-sha256 "$D7_INVENTORY_SHA256" --producer "$RUNNER_TEMP/d7-unified-producer" --report "$RUNNER_TEMP/d7-complete-after.json"
+      - name: Preserve complete D7 source and fresh unified build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-runtime-d7-evidence
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/d7-audio537-replay.json
+            ${{ runner.temp }}/d7-security537-replay.json
+            ${{ runner.temp }}/d7-aac330-replay.json
+            ${{ runner.temp }}/d7-audio538-replay.json
+            ${{ runner.temp }}/d7-runtime-d6-replay.json
+            ${{ runner.temp }}/d7-full-replay.json
+            ${{ runner.temp }}/d7-ci.json
+            ${{ runner.temp }}/d7-complete-after.json
+            ${{ runner.temp }}/d7-ci-logs/*.stdout
+            ${{ runner.temp }}/d7-ci-logs/*.stderr

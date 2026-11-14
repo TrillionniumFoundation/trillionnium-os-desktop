@@ -1,0 +1,27 @@
+Build, verify, install and restart all Droidloom components
+
+Usage: droidloom-update [OPTIONS] [COMMAND]
+
+Commands:
+  native-bridge-build            Rebuild the ARM64 translator in an already prepared Android workspace
+  target-closure-build           Build only NativeBridge targets, deferring missing modules to Ninja errors
+  native-engine-build            Build only the Android ARM64 translation engine; does not install it
+  audio-apex-build               Build the complete AIDL audio APEX with strict dependency validation. Does not install artifacts or start services
+  vendor-policy-build            Build the original final vendor policy on the fixed Audio source profile. Does not build an APEX, install a policy or load SELinux policy
+  vendor-policy-bundle-build     Build native vendor SELinux policy, contexts, version, VINTF declarations and checkvintf
+  intentresolver-security-build  Build the original IntentResolver module with its official caller-package security patch. Does not install the APK or qualify production signing
+  aac-security-build             Build swcodec and the original AAC regression with the complete official security fix. Does not install the APEX or qualify runtime and signing
+  recover-source                 Restore an interrupted source projection under the normal two workspace locks. Does not compile, install, bootstrap dependencies, or start services
+  minigbm-build                  Build the native AMD allocator candidate without installing anything
+  package-stage                  Compile and stage a portable pacman payload; does not install or start services
+  plan                           Show the complete build plan without changing anything
+  verify                         Verify an already built bundle
+  help                           Print this message or the help of the given subcommand(s)
+
+Options:
+      --source <SOURCE>  Droidloom checkout (remembered automatically after installation)
+      --clean            Delete this updater's build outputs before compiling
+      --build-only       Build and verify a complete bundle without installing it
+  -j, --jobs <JOBS>      Maximum parallel jobs, capped at available CPUs minus two
+  -h, --help             Print help
+  -V, --version          Print version
