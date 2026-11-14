@@ -66,7 +66,7 @@ unsafe fn rejected(nonce: [u8; 16]) -> ! {
     }
 }
 
-unsafe fn receive_runtime(nonce: [u8; 16], parent_pid: u32) -> [RawFd; 2] {
+unsafe fn receive_runtime(nonce: [u8; 16], parent_pid: u32) -> [RawFd; 3] {
     let mut packet = Packet::zeroed();
     let mut iov = libc::iovec {
         iov_base: (&mut packet as *mut Packet).cast(),
@@ -109,34 +109,41 @@ unsafe fn receive_runtime(nonce: [u8; 16], parent_pid: u32) -> [RawFd; 2] {
     let h = unsafe { &*header };
     if h.cmsg_level != libc::SOL_SOCKET
         || h.cmsg_type != libc::SCM_RIGHTS
-        || h.cmsg_len != unsafe { libc::CMSG_LEN(8) } as usize
+        || ![
+            unsafe { libc::CMSG_LEN(8) } as usize,
+            unsafe { libc::CMSG_LEN(12) } as usize,
+        ]
+        .contains(&h.cmsg_len)
         || !unsafe { libc::CMSG_NXTHDR(&msg, header) }.is_null()
     {
         unsafe { rejected(nonce) }
     }
-    let p = unsafe { libc::CMSG_DATA(header).cast::<i32>() };
-    let raw = unsafe {
-        [
-            std::ptr::read_unaligned(p),
-            std::ptr::read_unaligned(p.add(1)),
-        ]
+    let count = if h.cmsg_len == unsafe { libc::CMSG_LEN(12) } as usize {
+        3
+    } else {
+        2
     };
-    if raw[0] < 0 || raw[1] < 0 || raw[0] == raw[1] || raw.contains(&CHILD_FD) {
-        unsafe { rejected(nonce) }
+    let p = unsafe { libc::CMSG_DATA(header).cast::<i32>() };
+    let mut raw = [-1; 3];
+    for i in 0..count {
+        raw[i] = unsafe { std::ptr::read_unaligned(p.add(i)) };
+        if raw[i] < 0 || raw[i] == CHILD_FD || raw[..i].contains(&raw[i]) {
+            unsafe { rejected(nonce) }
+        }
     }
     // Stdio was closed before TreeReady. Received FDs may therefore be 0/1.
     // Duplicate both before closing either, never overwrite a live peer FD.
-    let mut held = [-1; 2];
-    for i in 0..2 {
+    let mut held = [-1; 3];
+    for i in 0..count {
         let fd = unsafe { libc::syscall(libc::SYS_fcntl, raw[i], libc::F_DUPFD_CLOEXEC, 4) };
         if fd < 4 || fd > i32::MAX as libc::c_long {
             unsafe { failed(nonce, line!()) }
         }
         held[i] = fd as i32;
     }
-    for fd in raw {
+    for fd in &raw[..count] {
         unsafe {
-            libc::syscall(libc::SYS_close, fd);
+            libc::syscall(libc::SYS_close, *fd);
         }
     }
     held
@@ -222,6 +229,77 @@ unsafe fn require_root(fd: RawFd, nonce: [u8; 16]) {
     let s = unsafe { meta(fd, nonce) };
     if s.st_uid != 0 || s.st_gid != 0 || s.st_mode & 0o022 != 0 {
         unsafe { rejected(nonce) }
+    }
+}
+
+unsafe fn query_label(fd: RawFd, nonce: [u8; 16]) {
+    const LABEL: &[u8; 35] = b"u:object_r:droidloom_query_exec:s0\0";
+    let mut bytes = [0_u8; 35];
+    let n = unsafe {
+        libc::syscall(
+            libc::SYS_fgetxattr,
+            fd,
+            c"security.selinux".as_ptr(),
+            bytes.as_mut_ptr(),
+            bytes.len(),
+        )
+    };
+    if n != LABEL.len() as libc::c_long || &bytes != LABEL {
+        unsafe { rejected(nonce) }
+    }
+    let n = unsafe {
+        libc::syscall(
+            libc::SYS_fgetxattr,
+            fd,
+            c"security.capability".as_ptr(),
+            std::ptr::null_mut::<u8>(),
+            0_usize,
+        )
+    };
+    if n != -1 || unsafe { *libc::__errno_location() } != libc::ENODATA {
+        unsafe { rejected(nonce) }
+    }
+}
+
+unsafe fn require_query_root(fd: RawFd, nonce: [u8; 16]) {
+    let node = unsafe { meta(fd, nonce) };
+    let filesystem = unsafe { fs(fd, nonce) };
+    if filesystem.f_type != TMPFS_MAGIC
+        || filesystem.f_flags as u64 & RO_IMAGE != RO_IMAGE
+        || filesystem.f_flags as u64 & NOEXEC != 0
+        || node.st_mode != libc::S_IFDIR | 0o555
+        || node.st_uid != 0
+        || node.st_gid != 0
+    {
+        unsafe { rejected(nonce) }
+    }
+    unsafe {
+        exact_names(fd, &[b"cmd", b"toybox"], nonce);
+    }
+    let root = unsafe { opened(fd, c".", libc::O_RDONLY | libc::O_DIRECTORY, nonce) };
+    unsafe {
+        query_label(root, nonce);
+        close(root);
+    }
+    for name in [c"cmd", c"toybox"] {
+        let file = unsafe { opened(fd, name, libc::O_RDONLY, nonce) };
+        let node = unsafe { meta(file, nonce) };
+        let filesystem = unsafe { fs(file, nonce) };
+        if node.st_mode != libc::S_IFREG | 0o555
+            || node.st_nlink != 1
+            || node.st_uid != 0
+            || node.st_gid != 0
+            || !(64..=128 * 1024 * 1024).contains(&node.st_size)
+            || filesystem.f_type != TMPFS_MAGIC
+            || filesystem.f_flags as u64 & RO_IMAGE != RO_IMAGE
+            || filesystem.f_flags as u64 & NOEXEC != 0
+        {
+            unsafe { rejected(nonce) }
+        }
+        unsafe {
+            query_label(file, nonce);
+            close(file);
+        }
     }
 }
 unsafe fn exact_names(dir: RawFd, expected: &[&[u8]], nonce: [u8; 16]) {
@@ -473,6 +551,30 @@ pub(super) unsafe fn run(nonce: [u8; 16], parent_pid: u32, _mode: Mode) -> ! {
         if fs(root, nonce).f_type != TMPFS_MAGIC {
             rejected(nonce)
         }
+        if inputs[2] >= 0 {
+            // The only optional input is the one selected, already sealed
+            // private query filesystem. No mount is added after readiness.
+            require_query_root(inputs[2], nonce);
+            let original = meta(inputs[2], nonce);
+            if libc::syscall(
+                libc::SYS_mkdirat,
+                root,
+                c".droidloom-query".as_ptr(),
+                0o700_u32,
+            ) != 0
+            {
+                failed(nonce, line!())
+            }
+            let target = directory(root, c".droidloom-query", nonce);
+            attach(inputs[2], target, nonce);
+            close(target);
+            let target = directory(root, c".droidloom-query", nonce);
+            if !same_inode(&original, &meta(target, nonce)) {
+                rejected(nonce)
+            }
+            require_query_root(target, nonce);
+            close(target);
+        }
         if libc::syscall(
             libc::SYS_mkdirat,
             root,
@@ -544,6 +646,14 @@ pub(super) unsafe fn run(nonce: [u8; 16], parent_pid: u32, _mode: Mode) -> ! {
         );
         if final_caps != 0 {
             *libc::__errno_location() = final_caps;
+            failed(nonce, line!())
+        }
+        // NNP retains the enforcing broker profile. Arm the fixed Android
+        // profile as an additional on-exec layer using the explicit LSM
+        // proc interface, then let the parent observe the actual full stack.
+        let pending_mac = super::final_exec::arm_android_stack();
+        if pending_mac != 0 {
+            *libc::__errno_location() = pending_mac;
             failed(nonce, line!())
         }
         let policy = crate::production_runtime_seccomp::install();

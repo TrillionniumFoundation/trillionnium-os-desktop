@@ -10,6 +10,21 @@ use std::ffi::CStr;
 const BOOT_PROPERTY: &CStr = c"u:object_r:boot_status_prop:s0";
 const TMPFS_MAGIC: libc::c_long = 0x0102_1994;
 
+#[path = "production_namespace_execution_identity.rs"]
+mod identity;
+pub(crate) use identity::{ExecutedInitGeneration, ExecutedInitWitness};
+#[path = "production_namespace_activation_peer.rs"]
+mod activation_peer;
+pub(crate) use activation_peer::OwnedActivationPeer;
+#[path = "production_namespace_activation_broker.rs"]
+mod activation_broker;
+#[path = "production_namespace_activation_channel.rs"]
+mod activation_channel;
+
+#[path = "production_namespace_application_parent.rs"]
+mod application;
+pub(crate) use application::{ApplicationAuthority, FrameworkObservation};
+
 pub(crate) struct ExecutedNamespaces {
     tree: IsolatedNamespaces,
 }
@@ -17,7 +32,9 @@ pub(crate) struct ExecutedNamespaces {
 /// A borrow of one actually executed, live and ready tree. No caller can
 /// construct it from a PID, a property value, a digest or a test declaration.
 pub(crate) struct ReadyTreeWitness<'a> {
-    owner: &'a ExecutedNamespaces,
+    owner: &'a mut ExecutedNamespaces,
+    selection: &'a ProductionSelection,
+    admission: &'a ExecutionAdmission,
 }
 
 impl ReadyTreeWitness<'_> {
@@ -304,11 +321,15 @@ impl ExecutedNamespaces {
 
     pub(crate) fn ready_witness<'a>(
         &'a mut self,
-        selection: &ProductionSelection,
-        admission: &ExecutionAdmission,
+        selection: &'a ProductionSelection,
+        admission: &'a ExecutionAdmission,
     ) -> Result<Option<ReadyTreeWitness<'a>>> {
         if self.readiness(selection, admission)? == BootProperty::Complete {
-            Ok(Some(ReadyTreeWitness { owner: self }))
+            Ok(Some(ReadyTreeWitness {
+                owner: self,
+                selection,
+                admission,
+            }))
         } else {
             Ok(None)
         }

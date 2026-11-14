@@ -14,7 +14,14 @@ use thiserror::Error;
 
 use crate::IdRange;
 use crate::production_identity::IdentityError;
+use crate::production_mac::{MacError, MacPreflight};
 use crate::production_namespace::{NamespaceError, OwnedNamespaceWitness, RetiredTreeWitness};
+use crate::production_selection::ProductionSelection;
+
+#[path = "production_devices_activation.rs"]
+mod activation;
+use activation::ActivationListener;
+pub(crate) use activation::{OwnedActivationListener, PreparedActivationDevices};
 
 const TMPFS_MAGIC: libc::c_long = 0x0102_1994;
 const NSFS_MAGIC: libc::c_long = 0x6e73_6673;
@@ -46,6 +53,10 @@ pub(crate) enum DeviceError {
     Namespace(#[from] NamespaceError),
     #[error(transparent)]
     Identity(#[from] IdentityError),
+    #[error(transparent)]
+    Mac(#[from] MacError),
+    #[error("activation device selection changed: {0}")]
+    Selection(String),
 }
 type Result<T> = std::result::Result<T, DeviceError>;
 
@@ -396,6 +407,9 @@ impl Drop for Directory {
     }
 }
 fn directory_names(root: &File) -> Result<Vec<Vec<u8>>> {
+    directory_names_bounded(root, DEVICES.len())
+}
+fn directory_names_bounded(root: &File, maximum: usize) -> Result<Vec<Vec<u8>>> {
     let file = open_at(root, c".", libc::O_RDONLY | libc::O_DIRECTORY)?;
     let raw = file.into_raw_fd();
     let dir = unsafe { libc::fdopendir(raw) };
@@ -426,7 +440,7 @@ fn directory_names(root: &File) -> Result<Vec<Vec<u8>>> {
         if name == b"." || name == b".." {
             continue;
         }
-        need(names.len() < DEVICES.len(), "unexpected private dev entry")?;
+        need(names.len() < maximum, "unexpected private dev entry")?;
         names.push(name.to_vec());
     }
     names.sort();
@@ -530,6 +544,18 @@ fn verify_devices(root: &File, uid: u32, gid: u32, identities: &[DeviceIdentity]
         directory_names(root)? == expected,
         "only the exact seven private device nodes",
     )?;
+    verify_device_nodes(root, uid, gid, identities)
+}
+fn verify_device_nodes(
+    root: &File,
+    uid: u32,
+    gid: u32,
+    identities: &[DeviceIdentity],
+) -> Result<()> {
+    need(
+        identities.len() == DEVICES.len(),
+        "complete fixed seven-node input",
+    )?;
     let fs = root.metadata()?.dev();
     for (spec, expected) in DEVICES.iter().zip(identities) {
         let file = open_at(root, spec.name, libc::O_PATH)?;
@@ -565,6 +591,7 @@ struct DeviceResources {
     mount_id: u64,
     root_node: (u64, u64),
     nodes: Vec<DeviceIdentity>,
+    activation: Option<ActivationListener>,
     userns: File,
     userns_node: (u64, u64),
     pidns: File,
@@ -604,7 +631,11 @@ impl DeviceResources {
             "same detached private mount and root",
         )?;
         verify_root(mount, self.uids.start, self.gids.start)?;
-        verify_devices(mount, self.uids.start, self.gids.start, &self.nodes)
+        if let Some(listener) = &self.activation {
+            listener.verify_complete(mount, self.uids.start, self.gids.start, &self.nodes)
+        } else {
+            verify_devices(mount, self.uids.start, self.gids.start, &self.nodes)
+        }
     }
     fn close_owned_mount(&mut self) -> Result<()> {
         if let Some(mount) = self.mount.as_ref() {
@@ -621,6 +652,7 @@ impl DeviceResources {
                 require_detached(mount)?;
             }
         }
+        drop(self.activation.take());
         drop(self.mount.take());
         Ok(())
     }
@@ -649,8 +681,17 @@ impl PreparedDevices {
         Ok(result)
     }
     fn prepare_bound(witness: &OwnedNamespaceWitness<'_>) -> Result<Self> {
+        Self::prepare_bound_with_activation(witness, None)
+    }
+    fn prepare_bound_with_activation(
+        witness: &OwnedNamespaceWitness<'_>,
+        activation: Option<(&ProductionSelection, &MacPreflight)>,
+    ) -> Result<Self> {
         require_initial_broker()?;
         require_tree(witness)?;
+        if let Some((selection, mac)) = activation {
+            mac.revalidate(selection)?;
+        }
         let lease = witness.identity_lease()?;
         let retention = lease.broker_retain_reservation()?;
         let (uids, gids) = lease.broker_ranges();
@@ -666,6 +707,7 @@ impl PreparedDevices {
                 mount_id: 0,
                 root_node: (0, 0),
                 nodes: Vec::new(),
+                activation: None,
                 userns_node: node(&userns)?,
                 pidns_node: node(&pidns)?,
                 userns,
@@ -690,6 +732,12 @@ impl PreparedDevices {
         resources.mount_id = require_detached(mount)?;
         resources.root_node = node(mount)?;
         resources.nodes = create_devices(mount)?;
+        if activation.is_some() {
+            // Create on the new still-unmapped filesystem as initial root.
+            // The following idmap projects that same inode to guest root;
+            // no chown or credential proxy substitutes for that transition.
+            resources.activation = Some(ActivationListener::bind_new(mount)?);
+        }
         idmap_mount(mount, &resources.userns)?;
         resources.verify_for_transfer()?;
         resources.matches(witness)?;

@@ -40,6 +40,23 @@ mod production;
 
 use progress::{LOG_HINT, Reporter};
 
+#[path = "application_probe.rs"]
+pub mod application_probe;
+
+#[path = "application_command.rs"]
+mod application_command;
+
+/// Run a finite prepared application leaf from the native applications CLI.
+/// The caller validates the frozen route, source and request. This is not a
+/// remotely callable generic command and performs no namespace entry.
+pub fn run_prepared_application_leaf(
+    command: std::process::Command,
+    epoch: &application_probe::RuntimeEpoch,
+    budget: std::time::Duration,
+) -> Result<std::process::Output, String> {
+    application_command::run_prepared_host_leaf(command, epoch, budget)
+}
+
 /// Default root-owned lifecycle socket.
 pub const DEFAULT_CONTROL_SOCKET: &str = "/run/droidloom/control.sock";
 /// Default package-installed cell specification.
@@ -125,6 +142,20 @@ pub enum ControlRequest {
         /// Android user identifier.
         user: u32,
     },
+    /// Observe dynamic PM UID/version and installed APK byte identities.
+    InspectApplication {
+        /// Exact package to inspect.
+        package: String,
+        /// Android user owning the package.
+        user: u32,
+    },
+    /// Open a reviewed HTTPS fixture via the current implicit Firefox resolver.
+    OpenBrowser {
+        /// Exact current package and physical Main observation to recheck.
+        expected: application_probe::ApplicationInspection,
+        /// Reviewed public HTTPS fixture URL.
+        url: String,
+    },
     /// List enabled Android MAIN/LAUNCHER activities.
     ListApplications {
         /// Android user identifier.
@@ -201,6 +232,9 @@ pub struct ControlResponse {
     /// Android log snapshot or crash report, when requested.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub diagnostics: Option<String>,
+    /// Current package observation; never a whole-application qualification.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inspection: Option<application_probe::ApplicationInspection>,
 }
 
 /// Daemon filesystem and executable configuration.
@@ -320,6 +354,12 @@ impl Daemon {
                 resolution.as_deref(),
                 user,
             ),
+            ControlRequest::InspectApplication { package, user } => {
+                self.inspect_application(peer_uid, &package, user)
+            }
+            ControlRequest::OpenBrowser { expected, url } => {
+                self.open_browser(peer_uid, &expected, &url)
+            }
             ControlRequest::ListApplications { user } => self.list_applications(peer_uid, user),
             ControlRequest::ApplicationIcon {
                 component,
@@ -363,6 +403,7 @@ impl Daemon {
             applications: None,
             application_icon: None,
             diagnostics: None,
+            inspection: None,
         })
     }
 
@@ -465,7 +506,44 @@ impl Daemon {
             applications: None,
             application_icon: None,
             diagnostics: None,
+            inspection: None,
         })
+    }
+
+    fn inspect_application(
+        &self,
+        peer_uid: u32,
+        package: &str,
+        user: u32,
+    ) -> Result<ControlResponse, ControlError> {
+        validate_package(package)?;
+        validate_android_user(user)?;
+        let active = self.require_active_cell(peer_uid, None)?;
+        let mut probe = LiveApplicationProbe::new(active)?;
+        let observed =
+            application_probe::inspect(&mut probe, package, user).map_err(ControlError::Invalid)?;
+        let mut response = self.success(
+            "Installed package metadata and APK bytes observed; no application acceptance granted",
+        );
+        response.inspection = Some(observed);
+        Ok(response)
+    }
+
+    fn open_browser(
+        &self,
+        peer_uid: u32,
+        expected: &application_probe::ApplicationInspection,
+        url: &str,
+    ) -> Result<ControlResponse, ControlError> {
+        validate_android_user(expected.user)?;
+        let active = self.require_active_cell(peer_uid, None)?;
+        let mut probe = LiveApplicationProbe::new(active)?;
+        let (observed, output) = application_probe::open_firefox(&mut probe, expected, url)
+            .map_err(ControlError::Invalid)?;
+        let mut response = self.success("Implicit Firefox HTTPS activity opened; content, media and whole-app acceptance remain pending");
+        response.inspection = Some(observed);
+        response.launch = Some(output);
+        Ok(response)
     }
 
     fn list_applications(&self, peer_uid: u32, user: u32) -> Result<ControlResponse, ControlError> {
@@ -496,6 +574,7 @@ impl Daemon {
             applications: Some(applications),
             application_icon: None,
             diagnostics: None,
+            inspection: None,
         })
     }
 
@@ -594,6 +673,7 @@ impl Daemon {
             applications: None,
             application_icon: Some(icon),
             diagnostics: None,
+            inspection: None,
         })
     }
 
@@ -622,6 +702,7 @@ impl Daemon {
             applications: None,
             application_icon: None,
             diagnostics: None,
+            inspection: None,
         })
     }
 
@@ -710,6 +791,7 @@ impl Daemon {
             applications: None,
             application_icon: None,
             diagnostics: None,
+            inspection: None,
         }
     }
 
@@ -1259,6 +1341,118 @@ fn android_boot_snapshot(spec: &CellSpec) -> Result<(Option<u32>, Option<String>
     ))
 }
 
+struct LiveApplicationProbe<'a> {
+    active: &'a ActiveCell,
+    initial: application_probe::RuntimeEpoch,
+    target: application_command::NamespaceTarget,
+    deadline: Instant,
+}
+
+impl<'a> LiveApplicationProbe<'a> {
+    fn new(active: &'a ActiveCell) -> Result<Self, ControlError> {
+        let (_, phase) = android_boot_snapshot(&active.spec)?;
+        if let Some(phase) = phase {
+            return Err(ControlError::Invalid(format!(
+                "Application runtime precondition failed: {phase}"
+            )));
+        }
+        let initial = application_runtime_epoch(active)?;
+        let target = application_command::NamespaceTarget::capture(
+            initial.cell_host_pid,
+            initial.framework_host_pid,
+            initial.framework_start_ticks,
+        )
+        .map_err(|e| io_error("bind application namespace identities", e))?;
+        Ok(Self {
+            active,
+            initial,
+            target,
+            deadline: Instant::now() + Duration::from_secs(90),
+        })
+    }
+}
+
+impl application_probe::AndroidProbe for LiveApplicationProbe<'_> {
+    fn epoch(&mut self) -> Result<application_probe::RuntimeEpoch, String> {
+        if Instant::now() >= self.deadline {
+            return Err("Application observation deadline exceeded".into());
+        }
+        self.target.validate().map_err(|e| e.to_string())?;
+        let now = application_runtime_epoch(self.active).map_err(|e| e.to_string())?;
+        if now != self.initial {
+            return Err("Application runtime framework generation changed".into());
+        }
+        if Instant::now() >= self.deadline {
+            return Err("Application observation deadline exceeded during epoch check".into());
+        }
+        Ok(now)
+    }
+
+    fn command(&mut self, args: &[String]) -> Result<String, String> {
+        self.epoch()?;
+        let command_deadline = self.deadline.min(Instant::now() + Duration::from_secs(20));
+        let output = self.target.execute(args, command_deadline)?;
+        self.epoch()?;
+        if !output.status.success() {
+            return Err(format!(
+                "Application command failed ({}): {}",
+                output.status,
+                String::from_utf8_lossy(&output.stderr)
+                    .chars()
+                    .take(512)
+                    .collect::<String>()
+            ));
+        }
+        String::from_utf8(output.stdout)
+            .map(|s| s.trim().to_owned())
+            .map_err(|_| "Application command returned non-UTF-8 data".into())
+    }
+}
+
+fn application_runtime_epoch(
+    active: &ActiveCell,
+) -> Result<application_probe::RuntimeEpoch, ControlError> {
+    let mut framework = Vec::new();
+    for pid in android_namespace_pids(&active.spec)? {
+        let stat = match fs::read_to_string(format!("/proc/{pid}/stat")) {
+            Ok(value) => value,
+            Err(error) if error.kind() == io::ErrorKind::NotFound => continue,
+            Err(error) => {
+                return Err(io_error(
+                    "read application framework process identity",
+                    error,
+                ));
+            }
+        };
+        let Some((prefix, tail)) = stat.rsplit_once(") ") else {
+            continue;
+        };
+        if !prefix.ends_with("(system_server") {
+            continue;
+        }
+        let start = tail
+            .split_whitespace()
+            .nth(19)
+            .ok_or_else(|| ControlError::Invalid("system_server stat lacks start time".into()))?
+            .parse::<u64>()
+            .map_err(|_| ControlError::Invalid("system_server start time is invalid".into()))?;
+        framework.push((pid, start));
+    }
+    if framework.len() != 1 {
+        return Err(ControlError::Invalid(
+            "Application observation requires exactly one live system_server".into(),
+        ));
+    }
+    let boot_id = fs::read_to_string("/proc/sys/kernel/random/boot_id")
+        .map_err(|e| io_error("read application host boot identity", e))?;
+    Ok(application_probe::RuntimeEpoch {
+        boot_id: boot_id.trim().into(),
+        cell_host_pid: active.cell.host_pid(),
+        framework_host_pid: framework[0].0,
+        framework_start_ticks: framework[0].1,
+    })
+}
+
 fn android_properties(init_pid: u32) -> Result<Option<Vec<u8>>, ControlError> {
     let pid = init_pid.to_string();
     let output = droidloom_cpu_placement::command("timeout")
@@ -1611,6 +1805,7 @@ mod tests {
                         applications: None,
                         application_icon: None,
                         diagnostics: None,
+                        inspection: None,
                     },
                 )
                 .unwrap();
@@ -1673,6 +1868,7 @@ mod tests {
                         applications: None,
                         application_icon: None,
                         diagnostics: None,
+                        inspection: None,
                     },
                 )
                 .unwrap();

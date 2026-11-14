@@ -35,8 +35,9 @@ mod child;
 mod tree;
 use child::{Packet, Phase};
 pub(crate) use tree::{
-    CgroupTreeReadyWitness, ExecutedNamespaces, IsolatedNamespaces, ReadyTreeWitness,
-    RetiredTreeWitness, TreeExit,
+    ApplicationAuthority, CgroupTreeReadyWitness, ExecutedInitGeneration, ExecutedInitWitness,
+    ExecutedNamespaces, FrameworkObservation, IsolatedNamespaces, OwnedActivationPeer,
+    ReadyTreeWitness, RetiredTreeWitness, TreeExit,
 };
 
 const PROC_MAGIC: libc::c_long = 0x9fa0;
@@ -409,6 +410,12 @@ impl OwnedNamespaceWitness<'_> {
     /// This is never populated by the ordinary map-construction witness.
     pub(crate) fn descendant_pid_namespace(&self) -> Option<&File> {
         self.tree.map(tree::TreeChild::pid_namespace)
+    }
+
+    /// Borrow the original init PIDFD for bounded liveness observation. This
+    /// never looks up a numeric PID and cannot detach the tree's ownership.
+    pub(crate) fn descendant_pidfd(&self) -> Option<std::os::fd::BorrowedFd<'_>> {
+        self.tree.map(tree::TreeChild::as_pidfd)
     }
 
     // Only kernel ownership is checked here; admission calls this method and

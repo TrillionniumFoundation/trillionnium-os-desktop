@@ -33,7 +33,7 @@ mod android_overrides;
 mod guest_dirs;
 
 #[path = "development_process.rs"]
-mod owned_process;
+pub(crate) mod owned_process;
 use owned_process::OwnedNamespaceChild;
 
 const DEVELOPMENT_UNSHARE_ARGUMENTS: &[&str] = &[

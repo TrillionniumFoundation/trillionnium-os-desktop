@@ -44,6 +44,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     {
         let mut arguments = std::env::args_os().skip(1);
         let action = arguments.next();
+        if action.as_deref() == Some(std::ffi::OsStr::new("__production-application-read")) {
+            if arguments.next().is_some() {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    "private application worker accepts no parameters",
+                )
+                .into());
+            }
+            droidloom_supervisor::production_application::run_application_read_worker()?;
+            return Ok(());
+        }
         if action.as_deref() == Some(std::ffi::OsStr::new("__production-nss-observe"))
             || action.as_deref() == Some(std::ffi::OsStr::new("__production-nss-observe-owned"))
         {

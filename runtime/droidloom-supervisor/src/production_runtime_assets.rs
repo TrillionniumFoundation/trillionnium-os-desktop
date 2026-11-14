@@ -3,16 +3,28 @@
 //! The installed manifest is selected by a root-owned production selection.
 //! Its digest is not itself an admission capability: every preparation and
 //! export also requires the same live namespace witness and reservation.
-//! The two exported roles are a detached read-only runtime filesystem and
-//! a detached, idmapped single-file mount of the held original Android init
-//! ELF. No guest-supplied path is opened here. The mapped child only attaches
-//! the latter to its fixed /system/bin/init target, then reopens that same
-//! inode for exec; it cannot clone a mount from an arbitrary host file FD.
+//! The two base roles are a detached read-only runtime filesystem and an
+//! idmapped mount of the held original Android init ELF. A manifest with
+//! fixed query inputs also exports one owned read-only tmpfs containing only
+//! the two byte-verified query executable copies. No guest-supplied path is
+//! opened here. The mapped child attaches only the fixed roles and reopens
+//! their same inodes; it cannot clone an arbitrary host file descriptor.
 //!
 //! This is a child of production_mounts so its reviewed sealed-file, exact
 //! loop-binding and idmapped detached-mount primitives remain private.
 use super::*;
 use std::collections::BTreeSet;
+
+#[path = "production_runtime_activation_assets.rs"]
+mod activation;
+use activation::{ActivationDeclaration, ActivationResources};
+#[path = "production_runtime_query_assets.rs"]
+mod query;
+pub(crate) use activation::{
+    RuntimeLinkerconfigInputs, RuntimeOriginalLinkerconfig, RuntimeTrampoline,
+};
+pub(crate) use query::RuntimeQueryExecutable;
+use query::{QueryDeclaration, QueryResources};
 
 const RUNTIME_MANIFEST_ROOT: &str = "/etc/droidloom/runtime-cohorts";
 const RUNTIME_IMAGE_ROOT: &str = "/var/lib/droidloom/runtime-cohorts";
@@ -56,6 +68,10 @@ struct RuntimeDeclaration {
     reviewed_adapter_sha256: String,
     runtime_tree_inventory_sha256: String,
     apexes: Vec<ApexInput>,
+    #[serde(default)]
+    activation: Option<ActivationDeclaration>,
+    #[serde(default)]
+    query: Option<QueryDeclaration>,
 }
 
 fn safe_module_name(name: &str) -> bool {
@@ -151,6 +167,12 @@ impl RuntimeDeclaration {
                     "an uncompressed APEX is the original container itself",
                 )?;
             }
+        }
+        if let Some(activation) = &self.activation {
+            activation.validate(self)?;
+        }
+        if let Some(query) = &self.query {
+            query.validate(self)?;
         }
         Ok(())
     }
@@ -378,6 +400,9 @@ struct RuntimeResources {
     gids: IdRange,
     host_uid: u32,
     cohort: String,
+    runtime_manifest_sha256: String,
+    activation: Option<ActivationResources>,
+    query: Option<QueryResources>,
     // This duplicate shares the actual flock description, not a JSON claim.
     _reservation_retention: File,
 }
@@ -400,9 +425,17 @@ impl RuntimeResources {
             sealed.revalidate()?;
         }
         verify_init_security_metadata(&self.init)?;
+        if let Some(activation) = &self.activation {
+            activation.revalidate(self.uids, self.gids)?;
+        }
+        if let Some(query) = &self.query {
+            query.revalidate(self.uids, self.gids)?;
+        }
         Ok(())
     }
     fn cleanup(&mut self) -> Result<Vec<u64>> {
+        drop(self.activation.take());
+        drop(self.query.take());
         drop(self.mount.take());
         drop(self.init_mount.take());
         let mut released = Vec::new();
@@ -423,11 +456,29 @@ pub(crate) struct PreparedRuntime {
     exported: bool,
 }
 
+/// The selected manifest alone determines whether the one fixed query
+/// filesystem is present. A base-only runtime cannot issue query input roles.
+pub(crate) enum RuntimeTransfer<'a> {
+    Base([BorrowedFd<'a>; 2]),
+    WithQuery([BorrowedFd<'a>; 3]),
+}
+impl RuntimeTransfer<'_> {
+    pub(crate) fn as_slice(&self) -> &[BorrowedFd<'_>] {
+        match self {
+            Self::Base(files) => files,
+            Self::WithQuery(files) => files,
+        }
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub(crate) struct RuntimeRetirement {
     detached_runtime_descriptor_closed: bool,
     detached_init_mount_descriptor_closed: bool,
     original_init_descriptor_closed: bool,
+    activation_executable_mounts_closed: usize,
+    query_executable_files_closed: usize,
+    query_private_filesystem_closed: bool,
     owned_loop_devices_observed_unbound: Vec<u64>,
     after_owned_tree_exit: bool,
 }
@@ -524,6 +575,9 @@ impl PreparedRuntime {
                 gids,
                 host_uid: lease.host_uid(),
                 cohort,
+                runtime_manifest_sha256: runtime_manifest_sha256.to_owned(),
+                activation: None,
+                query: None,
                 mount: None,
                 init_mount: None,
                 binding: None,
@@ -553,6 +607,26 @@ impl PreparedRuntime {
         let init_mount = detached_init_mount(&resources.init, &resources.userns, uids, gids)?;
         resources.init_mount_id = require_detached(&init_mount)?;
         resources.init_mount = Some(init_mount);
+        if let Some(activation) = &declaration.activation {
+            resources.activation = Some(ActivationResources::prepare(
+                activation,
+                &parent,
+                witness,
+                &resources.userns,
+                uids,
+                gids,
+            )?);
+        }
+        if let Some(query) = &declaration.query {
+            resources.query = Some(QueryResources::prepare(
+                query,
+                &parent,
+                witness,
+                &resources.userns,
+                uids,
+                gids,
+            )?);
+        }
         resources.matches_witness(witness)?;
         Ok(result)
     }
@@ -560,7 +634,7 @@ impl PreparedRuntime {
     pub(crate) fn descriptors_for_transfer<'a>(
         &'a mut self,
         witness: &OwnedNamespaceWitness<'_>,
-    ) -> Result<[BorrowedFd<'a>; 2]> {
+    ) -> Result<RuntimeTransfer<'a>> {
         require(!self.exported, "single runtime descriptor transfer")?;
         let resources = self
             .resources
@@ -599,7 +673,12 @@ impl PreparedRuntime {
             resources.init_mount_id,
         )?;
         self.exported = true;
-        Ok([mount.as_fd(), init_mount.as_fd()])
+        Ok(match resources.query.as_ref() {
+            Some(query) => {
+                RuntimeTransfer::WithQuery([mount.as_fd(), init_mount.as_fd(), query.mount()])
+            }
+            None => RuntimeTransfer::Base([mount.as_fd(), init_mount.as_fd()]),
+        })
     }
 
     pub(crate) fn retire_untransferred(mut self) -> Result<RuntimeRetirement> {
@@ -631,12 +710,19 @@ impl PreparedRuntime {
             .resources
             .as_mut()
             .ok_or(MountError::Rejected("runtime already retired"))?;
+        let activation_executable_mounts_closed =
+            if resources.activation.is_some() { 2 } else { 0 };
+        let query_executable_files_closed = if resources.query.is_some() { 2 } else { 0 };
+        let query_private_filesystem_closed = resources.query.is_some();
         let released = resources.cleanup()?;
         drop(self.resources.take());
         Ok(RuntimeRetirement {
             detached_runtime_descriptor_closed: true,
             detached_init_mount_descriptor_closed: true,
             original_init_descriptor_closed: true,
+            activation_executable_mounts_closed,
+            query_executable_files_closed,
+            query_private_filesystem_closed,
             owned_loop_devices_observed_unbound: released,
             after_owned_tree_exit,
         })
@@ -834,6 +920,41 @@ mod tests {
         let mut value = declaration();
         value["reviewed_adapter_sha256"] = serde_json::json!("");
         assert!(!accepted(value));
+    }
+    #[test]
+    fn runtime_query_sources_bind_fixed_roles_and_complete_selected_system() {
+        let mut value = declaration();
+        value["query"] = serde_json::json!({
+            "scope":"fixed_application_query_v1", "source_system_sha256":"a".repeat(64),
+            "cmd":{"original":{"file":"cmd-original","bytes":4096,"sha256":"5".repeat(64)},
+                "source_path":"/system/bin/cmd","interpreter":"/system/bin/linker64"},
+            "toybox":{"original":{"file":"toybox-original","bytes":8192,"sha256":"6".repeat(64)},
+                "source_path":"/system/bin/toybox","interpreter":null}
+        });
+        assert!(accepted(value.clone()));
+        let mut changed = value.clone();
+        changed["query"]["source_system_sha256"] = serde_json::json!("9".repeat(64));
+        assert!(!accepted(changed));
+        for (field, replacement) in [
+            ("source_path", serde_json::json!("/system/bin/sh")),
+            ("interpreter", serde_json::json!("/host/ld.so")),
+            ("preverified", serde_json::json!(true)),
+        ] {
+            let mut changed = value.clone();
+            changed["query"]["cmd"][field] = replacement;
+            assert!(!accepted(changed));
+        }
+        for (field, replacement) in [
+            ("file", serde_json::json!("../cmd-original")),
+            ("bytes", serde_json::json!(0)),
+            ("bytes", serde_json::json!(128 * 1024 * 1024 + 1_u64)),
+            ("bytes", serde_json::json!(true)),
+            ("sha256", serde_json::json!("6".repeat(64))),
+        ] {
+            let mut changed = value.clone();
+            changed["query"]["cmd"]["original"][field] = replacement;
+            assert!(!accepted(changed));
+        }
     }
     fn elf() -> Vec<u8> {
         let mut bytes = vec![0u8; 4096];

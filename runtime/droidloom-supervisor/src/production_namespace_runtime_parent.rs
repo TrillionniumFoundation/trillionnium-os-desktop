@@ -1,12 +1,13 @@
 //! Consume only the same-tree PreparedRuntime capability. This establishes
 //! fixed mount roles, not permission to execute Android or a Running state.
 use super::*;
-use crate::production_runtime_assets::PreparedRuntime;
+use crate::production_runtime_assets::{PreparedRuntime, RuntimeTransfer};
 use std::collections::{BTreeMap, BTreeSet};
 use std::ffi::CStr;
 
 const RO_IMAGE: u64 = 1 | 2 | 4;
 const NOEXEC: u64 = 8;
+const QUERY_TARGET: &str = "/.droidloom-query";
 const ROLES: [(&str, &[&CStr], bool); 8] = [
     ("/.droidloom-runtime", &[], false),
     ("/apex", &[c"apex"], false),
@@ -67,6 +68,80 @@ pub(super) struct RuntimeObservation {
     before: writable_proc::MountInventory,
     after: Option<writable_proc::MountInventory>,
     private_root: Node,
+    query: Option<QueryProjection>,
+}
+
+struct QueryProjection {
+    files: [File; 2],
+    nodes: [ImmutableNode; 2],
+}
+
+fn query_flags(file: &File) -> Result<()> {
+    if filesystem_kind(file)? != 0x0102_1994 {
+        return Err(NamespaceError::Rejected(
+            "query role is not the owned private tmpfs",
+        ));
+    }
+    verify_process_statfs(file, 0x0102_1994, RO_IMAGE, NOEXEC)
+}
+
+impl QueryProjection {
+    fn before(root: &File, child: &TreeChild) -> Result<Self> {
+        query_flags(root)?;
+        if names(root)? != BTreeSet::from(["cmd".into(), "toybox".into()])
+            || root.metadata()?.mode() != libc::S_IFDIR | 0o555
+        {
+            return Err(NamespaceError::Rejected(
+                "query filesystem has undeclared leaves or writable root",
+            ));
+        }
+        let files = [
+            source_path(root, &[c"cmd"], false)?,
+            source_path(root, &[c"toybox"], false)?,
+        ];
+        let nodes = [
+            role_node(&files[0], child.uids.start, child.gids.start, false)?,
+            role_node(&files[1], child.uids.start, child.gids.start, false)?,
+        ];
+        for (file, node) in files.iter().zip(nodes) {
+            query_flags(file)?;
+            if node.mode != libc::S_IFREG | 0o555 || !(64..=128 * 1024 * 1024).contains(&node.bytes)
+            {
+                return Err(NamespaceError::Rejected(
+                    "private query leaf metadata differs",
+                ));
+            }
+        }
+        if (nodes[0].dev, nodes[0].ino) == (nodes[1].dev, nodes[1].ino) {
+            return Err(NamespaceError::Rejected(
+                "query executable roles alias one inode",
+            ));
+        }
+        Ok(Self { files, nodes })
+    }
+
+    fn verify(&self, root: &File) -> Result<()> {
+        query_flags(root)?;
+        if names(root)? != BTreeSet::from(["cmd".into(), "toybox".into()]) {
+            return Err(NamespaceError::Rejected("query filesystem leaves changed"));
+        }
+        let mount = writable_proc::held_mount_id(root)?;
+        for (i, name) in [c"cmd", c"toybox"].into_iter().enumerate() {
+            let target = source_path(root, &[name], false)?;
+            query_flags(&self.files[i])?;
+            query_flags(&target)?;
+            if ImmutableNode::of(&self.files[i])? != self.nodes[i]
+                || ImmutableNode::of(&target)? != self.nodes[i]
+                || writable_proc::held_mount_id(&target)? != mount
+                || writable_proc::held_mount_id(&self.files[i])? != mount
+            {
+                return Err(NamespaceError::Rejected(
+                    "query role changed after original-owner projection",
+                ));
+            }
+        }
+        Ok(())
+    }
 }
 
 fn opened(parent: &File, name: &CStr, directory: bool) -> Result<File> {
@@ -148,6 +223,7 @@ fn role_node(file: &File, uid: u32, gid: u32, directory: bool) -> Result<Immutab
 fn verify_transition(
     before: &writable_proc::MountInventory,
     after: &writable_proc::MountInventory,
+    has_query: bool,
 ) -> Result<()> {
     for (id, row) in &before.records {
         if after.records.get(id) != Some(row) {
@@ -162,8 +238,11 @@ fn verify_transition(
         .filter(|(id, _)| !before.records.contains_key(id))
         .map(|(_, r)| r)
         .collect();
-    let wanted: BTreeSet<_> = ROLES.iter().map(|r| r.0).collect();
-    if added.len() != ROLES.len()
+    let mut wanted: BTreeSet<_> = ROLES.iter().map(|r| r.0).collect();
+    if has_query {
+        wanted.insert(QUERY_TARGET);
+    }
+    if added.len() != ROLES.len() + usize::from(has_query)
         || added
             .iter()
             .map(|r| r.target.as_str())
@@ -174,9 +253,18 @@ fn verify_transition(
             "runtime added an undeclared or duplicate mount",
         ));
     }
+    let mut expected_visible = before.visible.clone();
     for row in added {
         if after.visible.get(&row.target) != Some(&row.id)
-            || !["ext4", "erofs"].contains(&row.filesystem.as_str())
+            || if row.target == QUERY_TARGET {
+                !has_query
+                    || row.filesystem != "tmpfs"
+                    || row.root != "/"
+                    || !row.options.split(',').any(|option| option == "ro")
+                    || row.options.split(',').any(|option| option == "rw")
+            } else {
+                !["ext4", "erofs"].contains(&row.filesystem.as_str())
+            }
             || !["ro", "nosuid", "nodev"]
                 .iter()
                 .all(|f| row.flags.contains(*f))
@@ -186,12 +274,22 @@ fn verify_transition(
                 "runtime mount is not its fixed visible readonly role",
             ));
         }
-        let noexec = ROLES.iter().find(|r| r.0 == row.target).unwrap().2;
+        let noexec = if row.target == QUERY_TARGET {
+            false
+        } else {
+            ROLES.iter().find(|r| r.0 == row.target).unwrap().2
+        };
         if row.flags.contains("noexec") != noexec {
             return Err(NamespaceError::Rejected(
                 "runtime role execute policy differs",
             ));
         }
+        expected_visible.insert(row.target.clone(), row.id);
+    }
+    if after.visible != expected_visible {
+        return Err(NamespaceError::Rejected(
+            "runtime changed an undeclared visible mount or introduced an alias",
+        ));
     }
     Ok(())
 }
@@ -214,8 +312,13 @@ impl RuntimeObservation {
         image_flags(target, false)
     }
 
-    fn before(child: &TreeChild, fds: [BorrowedFd<'_>; 2]) -> Result<Self> {
+    fn before(child: &TreeChild, fds: &[BorrowedFd<'_>]) -> Result<Self> {
         child.verify()?;
+        if ![2, 3].contains(&fds.len()) {
+            return Err(NamespaceError::Rejected(
+                "runtime descriptor role count differs",
+            ));
+        }
         let runtime = File::from(fds[0].try_clone_to_owned()?);
         let init = File::from(fds[1].try_clone_to_owned()?);
         image_flags(&runtime, false)?;
@@ -264,6 +367,20 @@ impl RuntimeObservation {
                 noexec,
             });
         }
+        let query = if fds.len() == 3 {
+            let source = File::from(fds[2].try_clone_to_owned()?);
+            let node = role_node(&source, child.uids.start, child.gids.start, true)?;
+            let query = QueryProjection::before(&source, child)?;
+            roles.push(Role {
+                target: QUERY_TARGET,
+                source,
+                node,
+                noexec: false,
+            });
+            Some(query)
+        } else {
+            None
+        };
         let before = writable_proc::MountInventory::observe(child, "before-runtime-transfer")?;
         let private_root = Node::of(&held_child_root(child)?)?;
         child.verify()?;
@@ -272,13 +389,14 @@ impl RuntimeObservation {
             before,
             after: None,
             private_root,
+            query,
         })
     }
 
     pub(super) fn verify(&mut self, child: &TreeChild) -> Result<()> {
         child.verify()?;
         let now = writable_proc::MountInventory::observe(child, "after-runtime-ready")?;
-        verify_transition(&self.before, &now)?;
+        verify_transition(&self.before, &now, self.query.is_some())?;
         if self.after.as_ref().is_some_and(|old| old != &now) {
             return Err(NamespaceError::Rejected(
                 "prepared runtime mount inventory changed",
@@ -304,7 +422,14 @@ impl RuntimeObservation {
                     "runtime projection differs from held input",
                 ));
             }
-            image_flags(&target, role.noexec)?;
+            if role.target == QUERY_TARGET {
+                self.query
+                    .as_ref()
+                    .ok_or(NamespaceError::Rejected("query role lost owner custody"))?
+                    .verify(&target)?;
+            } else {
+                image_flags(&target, role.noexec)?;
+            }
         }
         child.verify()?;
         self.after = Some(now);
@@ -336,12 +461,16 @@ impl IsolatedNamespaces {
             let fds = runtime
                 .descriptors_for_transfer(&witness)
                 .map_err(|e| NamespaceError::RuntimeResource(e.to_string()))?;
-            let observation = RuntimeObservation::before(child, fds)?;
-            send_base_fds(
-                child.control.as_raw_fd(),
-                &Packet::new(child.nonce, Phase::MountRuntime, 0, child.parent_pid),
-                fds,
-            )?;
+            let observation = RuntimeObservation::before(child, fds.as_slice())?;
+            let packet = Packet::new(child.nonce, Phase::MountRuntime, 0, child.parent_pid);
+            match fds {
+                RuntimeTransfer::Base(files) => {
+                    send_base_fds(child.control.as_raw_fd(), &packet, files)?
+                }
+                RuntimeTransfer::WithQuery(files) => {
+                    send_query_runtime_fds(child.control.as_raw_fd(), &packet, files)?
+                }
+            }
             Ok(observation)
         })();
         self.runtime = Some(runtime);
@@ -358,13 +487,55 @@ impl IsolatedNamespaces {
     }
 }
 
+fn send_query_runtime_fds(
+    socket: RawFd,
+    packet: &Packet,
+    files: [BorrowedFd<'_>; 3],
+) -> Result<()> {
+    // The base-image two-FD transport remains unchanged. This one additional
+    // fixed protocol shape is used only by the selected query runtime role.
+    let mut iov = libc::iovec {
+        iov_base: (packet as *const Packet).cast_mut().cast(),
+        iov_len: std::mem::size_of::<Packet>(),
+    };
+    let mut control = [0_usize; 8];
+    let mut message: libc::msghdr = unsafe { std::mem::zeroed() };
+    message.msg_iov = &mut iov;
+    message.msg_iovlen = 1;
+    message.msg_control = control.as_mut_ptr().cast();
+    message.msg_controllen = unsafe { libc::CMSG_SPACE(12) } as usize;
+    let header = unsafe { libc::CMSG_FIRSTHDR(&message) };
+    if header.is_null() {
+        return Err(NamespaceError::Rejected(
+            "query runtime ancillary header absent",
+        ));
+    }
+    unsafe {
+        (*header).cmsg_level = libc::SOL_SOCKET;
+        (*header).cmsg_type = libc::SCM_RIGHTS;
+        (*header).cmsg_len = libc::CMSG_LEN(12) as usize;
+        let data = libc::CMSG_DATA(header).cast::<i32>();
+        for (i, file) in files.iter().enumerate() {
+            std::ptr::write_unaligned(data.add(i), file.as_raw_fd());
+        }
+    }
+    let sent = unsafe { libc::sendmsg(socket, &message, libc::MSG_NOSIGNAL | libc::MSG_DONTWAIT) };
+    if sent < 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    if sent as usize != std::mem::size_of::<Packet>() {
+        return Err(NamespaceError::Rejected(
+            "incomplete fixed query-runtime descriptor transfer",
+        ));
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn production_runtime_roles_reject_extra_targets_and_mutated_existing_ids() {
-        let before = writable_proc::MountInventory::default();
-        let mut after = before.clone();
+    fn base_roles() -> writable_proc::MountInventory {
+        let mut after = writable_proc::MountInventory::default();
         for (i, (target, _, noexec)) in ROLES.iter().enumerate() {
             let id = i as u64 + 1;
             let mut flags = BTreeSet::from(["ro".into(), "nosuid".into(), "nodev".into()]);
@@ -387,23 +558,80 @@ mod tests {
                 },
             );
         }
-        verify_transition(&before, &after).unwrap();
+        after
+    }
+    #[test]
+    fn production_runtime_roles_reject_extra_targets_and_mutated_existing_ids() {
+        let before = writable_proc::MountInventory::default();
+        let after = base_roles();
+        verify_transition(&before, &after, false).unwrap();
         let mut bad = after.clone();
         bad.records.get_mut(&1).unwrap().target = "/arbitrary".into();
-        assert!(verify_transition(&before, &bad).is_err());
+        assert!(verify_transition(&before, &bad, false).is_err());
         let mut bad = after.clone();
         bad.visible.insert("/apex".into(), 99);
-        assert!(verify_transition(&before, &bad).is_err());
+        assert!(verify_transition(&before, &bad, false).is_err());
         let mut bad = after.clone();
         bad.records
             .get_mut(&8)
             .unwrap()
             .flags
             .insert("noexec".into());
-        assert!(verify_transition(&before, &bad).is_err());
+        assert!(verify_transition(&before, &bad, false).is_err());
         let mut existing = before;
         existing.records.insert(99, after.records[&1].clone());
-        assert!(verify_transition(&existing, &after).is_err());
+        assert!(verify_transition(&existing, &after, false).is_err());
+    }
+    #[test]
+    fn production_runtime_query_mount_requires_selected_fixed_readonly_tmpfs() {
+        let before = writable_proc::MountInventory::default();
+        let mut after = base_roles();
+        // Declaring query roles cannot silently accept a base-only mount set.
+        assert!(verify_transition(&before, &after, true).is_err());
+        after.visible.insert(QUERY_TARGET.into(), 9);
+        after.records.insert(
+            9,
+            writable_proc::MountRecord {
+                id: 9,
+                parent: 1,
+                device: 2,
+                root: "/".into(),
+                target: QUERY_TARGET.into(),
+                flags: BTreeSet::from(["ro".into(), "nosuid".into(), "nodev".into()]),
+                filesystem: "tmpfs".into(),
+                source: "owned-query".into(),
+                options: "ro".into(),
+            },
+        );
+        verify_transition(&before, &after, true).unwrap();
+        assert!(verify_transition(&before, &after, false).is_err());
+        for flag in ["ro", "nosuid", "nodev"] {
+            let mut bad = after.clone();
+            bad.records.get_mut(&9).unwrap().flags.remove(flag);
+            assert!(verify_transition(&before, &bad, true).is_err());
+        }
+        let mut bad = after.clone();
+        bad.records
+            .get_mut(&9)
+            .unwrap()
+            .flags
+            .insert("noexec".into());
+        assert!(verify_transition(&before, &bad, true).is_err());
+        let mut bad = after.clone();
+        bad.records.get_mut(&9).unwrap().filesystem = "ext4".into();
+        assert!(verify_transition(&before, &bad, true).is_err());
+        let mut bad = after.clone();
+        bad.records.get_mut(&9).unwrap().options = "rw,size=1048576".into();
+        assert!(verify_transition(&before, &bad, true).is_err());
+        let mut bad = after.clone();
+        bad.records.get_mut(&9).unwrap().root = "/subtree".into();
+        assert!(verify_transition(&before, &bad, true).is_err());
+        let mut bad = after.clone();
+        bad.records.get_mut(&9).unwrap().target = "/system/bin".into();
+        assert!(verify_transition(&before, &bad, true).is_err());
+        let mut bad = after;
+        bad.visible.insert("/undeclared-query".into(), 9);
+        assert!(verify_transition(&before, &bad, true).is_err());
     }
     #[test]
     fn production_runtime_fixed_component_walk_rejects_actual_symlinks() {

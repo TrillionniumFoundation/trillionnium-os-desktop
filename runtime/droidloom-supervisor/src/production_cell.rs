@@ -194,4 +194,22 @@ impl ProductionCell {
         tree.retire()
             .map_err(|error| CellError::Retirement(error.to_string()))
     }
+
+    pub(crate) fn inspect_application(
+        &mut self,
+        package: &str,
+        user: u32,
+    ) -> Result<crate::control::application_probe::ApplicationInspection> {
+        let tree = self
+            .tree
+            .as_mut()
+            .ok_or_else(|| rejected("production owner was retired"))?;
+        let ready = tree
+            .ready_witness(&self.selection, &self.execution)
+            .map_err(rejected)?
+            .ok_or_else(|| {
+                rejected("production application inspection requires actual current readiness")
+            })?;
+        crate::production_application::inspect(ready, package, user).map_err(rejected)
+    }
 }

@@ -24,6 +24,14 @@ use thiserror::Error;
 use crate::production_host_admission::HostAdmission;
 use crate::production_namespace::{CgroupTreeReadyWitness, OwnedAuthorityRetired};
 
+#[path = "production_application_cgroup.rs"]
+mod application;
+pub(crate) use application::ApplicationLeaf;
+
+#[path = "production_unit_lifetime.rs"]
+mod unit_lifetime;
+pub(crate) use unit_lifetime::{SystemdOwnerGeneration, SystemdOwnerWitness};
+
 const UNIT: &str = "droidloom-production.service";
 const UNIT_CGROUP: &str = "/system.slice/droidloom-production.service";
 const EXPECTED_CPUS: &str = "2-23";
@@ -127,10 +135,11 @@ struct UnitAuthority {
     identities: Vec<NodeIdentity>,
     file: File,
     seal: Metadata,
+    effective: unit_lifetime::EffectiveUnit,
 }
 
 impl UnitAuthority {
-    fn open() -> Result<Self> {
+    fn open(unit: &File) -> Result<Self> {
         let mut directories = vec![open_absolute(c"/", libc::O_RDONLY | libc::O_DIRECTORY)?];
         for name in [c"etc", c"systemd", c"system"] {
             trusted_directory(directories.last().unwrap())?;
@@ -170,12 +179,13 @@ impl UnitAuthority {
             identities,
             file,
             seal,
+            effective: unit_lifetime::EffectiveUnit::open(unit)?,
         };
-        value.check()?;
+        value.check(unit)?;
         Ok(value)
     }
 
-    fn check(&self) -> Result<()> {
+    fn check(&self, unit: &File) -> Result<()> {
         let names = [c"etc", c"systemd", c"system"];
         require(
             self.directories.len() == 4 && self.identities.len() == 4,
@@ -213,7 +223,8 @@ impl UnitAuthority {
             file_seal(&self.seal) == file_seal(&self.file.metadata()?)
                 && file_seal(&self.seal) == file_seal(&named.metadata()?),
             "installed unit changed",
-        )
+        )?;
+        self.effective.check(unit)
     }
 }
 
@@ -266,6 +277,8 @@ struct Resources {
     placement: Cell<Placement>,
     clone_target_lent: Cell<bool>,
     retired: Cell<bool>,
+    application_active: Cell<bool>,
+    application_quarantined: Cell<bool>,
     _thread_bound: PhantomData<Rc<()>>,
 }
 
@@ -290,7 +303,6 @@ impl PreparedCgroup {
             available_memory()? >= MIN_AVAILABLE,
             "10 GiB fresh host admission required",
         )?;
-        let unit_authority = UnitAuthority::open()?;
         let root = open_absolute(c"/sys/fs/cgroup", libc::O_RDONLY | libc::O_DIRECTORY)?;
         cgroup_filesystem(&root)?;
         trusted_directory(&root)?;
@@ -298,6 +310,7 @@ impl PreparedCgroup {
         trusted_directory(&slice.file)?;
         let unit = Directory::at(&slice.file, c"droidloom-production.service")?;
         trusted_directory(&unit.file)?;
+        let unit_authority = UnitAuthority::open(&unit.file)?;
         let own = read_absolute(c"/proc/self/cgroup")?;
         require(
             parse_unified_cgroup(&own)? == format!("{UNIT_CGROUP}/broker"),
@@ -368,6 +381,8 @@ impl PreparedCgroup {
                 placement: Cell::new(Placement::Prepared),
                 clone_target_lent: Cell::new(false),
                 retired: Cell::new(false),
+                application_active: Cell::new(false),
+                application_quarantined: Cell::new(false),
                 _thread_bound: PhantomData,
             })),
         };
@@ -476,11 +491,15 @@ impl PreparedCgroup {
     pub(crate) fn revalidate(&self) -> Result<()> {
         let r = self.get();
         require(!r.retired.get(), "cgroup is retired")?;
+        require(
+            !r.application_quarantined.get(),
+            "application worker custody is quarantined",
+        )?;
         require_initial_broker()?;
         r.admission
             .revalidate()
             .map_err(|e| CgroupError::Admission(e.to_string()))?;
-        r.unit_authority.check()?;
+        r.unit_authority.check(&r.unit.file)?;
         r.slice.check(&r.root, c"system.slice")?;
         r.unit
             .check(&r.slice.file, c"droidloom-production.service")?;
@@ -506,7 +525,10 @@ impl PreparedCgroup {
         }
         if let Some(payload) = &r.payload {
             payload.check(&r.budget.file, c"payload")?;
-            if !matches!(r.placement.get(), Placement::GuestDelegated | Placement::GuestActive) {
+            if !matches!(
+                r.placement.get(),
+                Placement::GuestDelegated | Placement::GuestActive
+            ) {
                 trusted_directory(&payload.file)?;
             } else {
                 self.check_delegation()?;
@@ -518,7 +540,9 @@ impl PreparedCgroup {
         require(
             !matches!(
                 r.placement.get(),
-                Placement::MigrationInProgress | Placement::DelegationInProgress | Placement::ActivationInProgress
+                Placement::MigrationInProgress
+                    | Placement::DelegationInProgress
+                    | Placement::ActivationInProgress
             ),
             "cgroup transition result has not been proven",
         )
@@ -639,36 +663,65 @@ impl PreparedCgroup {
     ) -> Result<[File; 2]> {
         self.revalidate()?;
         let r = self.get();
-        require(r.placement.get() == Placement::GuestDelegated,
-            "guest cgroup activation is single use")?;
-        let payload = &r.payload.as_ref().ok_or(CgroupError::Rejected("payload absent"))?.file;
-        witness.revalidate_for_migration(payload).map_err(|e| CgroupError::Owner(e.to_string()))?;
+        require(
+            r.placement.get() == Placement::GuestDelegated,
+            "guest cgroup activation is single use",
+        )?;
+        let payload = &r
+            .payload
+            .as_ref()
+            .ok_or(CgroupError::Rejected("payload absent"))?
+            .file;
+        witness
+            .revalidate_for_migration(payload)
+            .map_err(|e| CgroupError::Owner(e.to_string()))?;
         self.check_after_migration(witness)?;
-        require(list_directories(payload)?.is_empty(), "delegated payload already has a child")?;
-        require(r.guest_init.borrow().is_none(), "guest init was already retained")?;
-        require(read_control(payload, c"cgroup.subtree_control")?.is_empty(),
-            "guest root controllers were enabled before PID1 migration")?;
+        require(
+            list_directories(payload)?.is_empty(),
+            "delegated payload already has a child",
+        )?;
+        require(
+            r.guest_init.borrow().is_none(),
+            "guest init was already retained",
+        )?;
+        require(
+            read_control(payload, c"cgroup.subtree_control")?.is_empty(),
+            "guest root controllers were enabled before PID1 migration",
+        )?;
         r.placement.set(Placement::ActivationInProgress);
         mkdir_at(payload, c"init", 0o775)?;
         *r.guest_init.borrow_mut() = Some(Directory::at(payload, c"init")?);
         let held = r.guest_init.borrow();
-        let init = held.as_ref().ok_or(CgroupError::Rejected("init custody absent"))?;
+        let init = held
+            .as_ref()
+            .ok_or(CgroupError::Rejected("init custody absent"))?;
         init.check(payload, c"init")?;
         let (uids, gids) = r.admission.lease().broker_ranges();
-        let system_gid = gids.start.checked_add(1000)
+        let system_gid = gids
+            .start
+            .checked_add(1000)
             .ok_or(CgroupError::Rejected("mapped system group overflow"))?;
-        require(read_pids(&init.file)?.is_empty()
-            && read_control(&init.file, c"cgroup.type")? == "domain"
-            && read_control(&init.file, c"cgroup.subtree_control")?.is_empty(),
-            "new init leaf is not empty domain cgroup")?;
+        require(
+            read_pids(&init.file)?.is_empty()
+                && read_control(&init.file, c"cgroup.type")? == "domain"
+                && read_control(&init.file, c"cgroup.subtree_control")?.is_empty(),
+            "new init leaf is not empty domain cgroup",
+        )?;
         // cgroupfs belongs to the initial user namespace. Only this original
         // broker performs chown; guest CAP_CHOWN cannot grant this authority.
         for name in DELEGATED_CONTROLS {
-            change_owner_mode(&open_at(&init.file, name, libc::O_RDONLY)?, uids.start, system_gid, 0o664)?;
+            change_owner_mode(
+                &open_at(&init.file, name, libc::O_RDONLY)?,
+                uids.start,
+                system_gid,
+                0o664,
+            )?;
         }
         change_owner_mode(&init.file, uids.start, system_gid, 0o775)?;
         init.check(payload, c"init")?;
-        witness.revalidate_for_migration(payload).map_err(|e| CgroupError::Owner(e.to_string()))?;
+        witness
+            .revalidate_for_migration(payload)
+            .map_err(|e| CgroupError::Owner(e.to_string()))?;
         self.check_after_migration(witness)?;
         Ok([payload.try_clone()?, init.file.try_clone()?])
     }
@@ -680,28 +733,57 @@ impl PreparedCgroup {
         witness: &CgroupTreeReadyWitness<'_>,
     ) -> Result<()> {
         let r = self.get();
-        require(r.placement.get() == Placement::ActivationInProgress,
-            "guest activation has no outstanding original transfer")?;
-        let payload = &r.payload.as_ref().ok_or(CgroupError::Rejected("payload absent"))?.file;
-        witness.revalidate_for_migration(payload).map_err(|e| CgroupError::Owner(e.to_string()))?;
+        require(
+            r.placement.get() == Placement::ActivationInProgress,
+            "guest activation has no outstanding original transfer",
+        )?;
+        let payload = &r
+            .payload
+            .as_ref()
+            .ok_or(CgroupError::Rejected("payload absent"))?
+            .file;
+        witness
+            .revalidate_for_migration(payload)
+            .map_err(|e| CgroupError::Owner(e.to_string()))?;
         self.check_delegation()?;
-        require(list_directories(payload)? == vec![CString::new("init").unwrap()],
-            "guest activation created an extra or missing cgroup")?;
+        require(
+            list_directories(payload)? == vec![CString::new("init").unwrap()],
+            "guest activation created an extra or missing cgroup",
+        )?;
         let held = r.guest_init.borrow();
-        let init = held.as_ref().ok_or(CgroupError::Rejected("original init custody absent"))?;
+        let init = held
+            .as_ref()
+            .ok_or(CgroupError::Rejected("original init custody absent"))?;
         init.check(payload, c"init")?;
         let (uids, gids) = r.admission.lease().broker_ranges();
-        check_activated_guest(payload, &init.file, uids.start,
-            gids.start.checked_add(1000).ok_or(CgroupError::Rejected("mapped system group overflow"))?)?;
-        check_task_cgroup(witness.keeper_proc_directory(), &format!("{UNIT_CGROUP}/cell-u1000/keeper"))?;
-        check_task_cgroup(witness.tree_proc_directory(), &format!("{UNIT_CGROUP}/cell-u1000/payload/init"))?;
-        require(read_pids(&r.keeper.as_ref().unwrap().file)? == BTreeSet::from([witness.keeper_host_pid()])
-            && read_pids(&init.file)? == BTreeSet::from([witness.tree_host_pid()]),
-            "guest activation task ownership differs")?;
+        check_activated_guest(
+            payload,
+            &init.file,
+            uids.start,
+            gids.start
+                .checked_add(1000)
+                .ok_or(CgroupError::Rejected("mapped system group overflow"))?,
+        )?;
+        check_task_cgroup(
+            witness.keeper_proc_directory(),
+            &format!("{UNIT_CGROUP}/cell-u1000/keeper"),
+        )?;
+        check_task_cgroup(
+            witness.tree_proc_directory(),
+            &format!("{UNIT_CGROUP}/cell-u1000/payload/init"),
+        )?;
+        require(
+            read_pids(&r.keeper.as_ref().unwrap().file)?
+                == BTreeSet::from([witness.keeper_host_pid()])
+                && read_pids(&init.file)? == BTreeSet::from([witness.tree_host_pid()]),
+            "guest activation task ownership differs",
+        )?;
         check_limits(&r.unit.file)?;
         check_limits(&r.budget.file)?;
         check_placement_masks(&r.budget.file, &r.mems)?;
-        witness.revalidate_for_migration(payload).map_err(|e| CgroupError::Owner(e.to_string()))?;
+        witness
+            .revalidate_for_migration(payload)
+            .map_err(|e| CgroupError::Owner(e.to_string()))?;
         r.placement.set(Placement::GuestActive);
         let result = self.revalidate();
         if result.is_err() {
@@ -712,13 +794,25 @@ impl PreparedCgroup {
 
     fn check_active_configuration(&self) -> Result<()> {
         let r = self.get();
-        let payload = &r.payload.as_ref().ok_or(CgroupError::Rejected("payload absent"))?.file;
+        let payload = &r
+            .payload
+            .as_ref()
+            .ok_or(CgroupError::Rejected("payload absent"))?
+            .file;
         let held = r.guest_init.borrow();
-        let init = held.as_ref().ok_or(CgroupError::Rejected("active guest init custody absent"))?;
+        let init = held
+            .as_ref()
+            .ok_or(CgroupError::Rejected("active guest init custody absent"))?;
         init.check(payload, c"init")?;
         let (uids, gids) = r.admission.lease().broker_ranges();
-        check_activated_guest(payload, &init.file, uids.start,
-            gids.start.checked_add(1000).ok_or(CgroupError::Rejected("mapped system group overflow"))?)
+        check_activated_guest(
+            payload,
+            &init.file,
+            uids.start,
+            gids.start
+                .checked_add(1000)
+                .ok_or(CgroupError::Rejected("mapped system group overflow"))?,
+        )
     }
 
     /// The non-serializable parent state can only come from actual migration
@@ -726,10 +820,18 @@ impl PreparedCgroup {
     pub(crate) fn require_guest_active(&self, witness: &CgroupTreeReadyWitness<'_>) -> Result<()> {
         self.revalidate()?;
         let r = self.get();
-        require(r.placement.get() == Placement::GuestActive, "guest cgroup hierarchy is not active")?;
+        require(
+            r.placement.get() == Placement::GuestActive,
+            "guest cgroup hierarchy is not active",
+        )?;
         let payload = &r.payload.as_ref().unwrap().file;
-        witness.revalidate_for_migration(payload).map_err(|e| CgroupError::Owner(e.to_string()))?;
-        check_task_cgroup(witness.tree_proc_directory(), &format!("{UNIT_CGROUP}/cell-u1000/payload/init"))?;
+        witness
+            .revalidate_for_migration(payload)
+            .map_err(|e| CgroupError::Owner(e.to_string()))?;
+        check_task_cgroup(
+            witness.tree_proc_directory(),
+            &format!("{UNIT_CGROUP}/cell-u1000/payload/init"),
+        )?;
         Ok(())
     }
 
@@ -1051,30 +1153,50 @@ fn check_task_cgroup(proc_directory: &File, expected: &str) -> Result<()> {
 fn check_activated_guest(payload: &File, init: &File, uid: u32, gid: u32) -> Result<()> {
     cgroup_filesystem(payload)?;
     cgroup_filesystem(init)?;
-    require(NodeIdentity::of(payload)? != NodeIdentity::of(init)?, "init must be a distinct cgroup")?;
+    require(
+        NodeIdentity::of(payload)? != NodeIdentity::of(init)?,
+        "init must be a distinct cgroup",
+    )?;
     for dir in [payload, init] {
         let m = dir.metadata()?;
-        require(m.is_dir() && m.uid() == uid && m.gid() == gid && m.mode() & 0o7777 == 0o775,
-            "activated cgroup owner or mode differs")?;
-        require(read_control(dir, c"cgroup.type")? == "domain", "activated guest must be domain cgroup")?;
+        require(
+            m.is_dir() && m.uid() == uid && m.gid() == gid && m.mode() & 0o7777 == 0o775,
+            "activated cgroup owner or mode differs",
+        )?;
+        require(
+            read_control(dir, c"cgroup.type")? == "domain",
+            "activated guest must be domain cgroup",
+        )?;
         for name in DELEGATED_CONTROLS {
             let control = open_at(dir, name, libc::O_RDONLY)?;
             let m = control.metadata()?;
-            require(m.is_file() && m.uid() == uid && m.gid() == gid && m.mode() & 0o7777 == 0o664,
-                "activated delegation control owner or mode differs")?;
+            require(
+                m.is_file() && m.uid() == uid && m.gid() == gid && m.mode() & 0o7777 == 0o664,
+                "activated delegation control owner or mode differs",
+            )?;
         }
     }
-    let required = REQUIRED_CONTROLLERS.iter().map(|s| (*s).to_owned()).collect::<BTreeSet<_>>();
-    require(words(&read_control(payload, c"cgroup.subtree_control")?) == required
-        && words(&read_control(init, c"cgroup.controllers")?) == required
-        && read_control(init, c"cgroup.subtree_control")?.is_empty(),
-        "actual guest controllers differ")?;
-    require(read_pids(payload)?.is_empty(), "guest root must have no internal tasks")?;
-    require(parse_id_list(&read_control(init, c"cpuset.cpus.effective")?)?
-        == parse_id_list(&read_control(payload, c"cpuset.cpus.effective")?)?
-        && parse_id_list(&read_control(init, c"cpuset.mems.effective")?)?
-        == parse_id_list(&read_control(payload, c"cpuset.mems.effective")?)?,
-        "init effective placement differs from its owned parent")?;
+    let required = REQUIRED_CONTROLLERS
+        .iter()
+        .map(|s| (*s).to_owned())
+        .collect::<BTreeSet<_>>();
+    require(
+        words(&read_control(payload, c"cgroup.subtree_control")?) == required
+            && words(&read_control(init, c"cgroup.controllers")?) == required
+            && read_control(init, c"cgroup.subtree_control")?.is_empty(),
+        "actual guest controllers differ",
+    )?;
+    require(
+        read_pids(payload)?.is_empty(),
+        "guest root must have no internal tasks",
+    )?;
+    require(
+        parse_id_list(&read_control(init, c"cpuset.cpus.effective")?)?
+            == parse_id_list(&read_control(payload, c"cpuset.cpus.effective")?)?
+            && parse_id_list(&read_control(init, c"cpuset.mems.effective")?)?
+                == parse_id_list(&read_control(payload, c"cpuset.mems.effective")?)?,
+        "init effective placement differs from its owned parent",
+    )?;
     Ok(())
 }
 fn read_pids(dir: &File) -> Result<BTreeSet<u32>> {
@@ -1343,17 +1465,29 @@ pub(crate) mod private_control {
 
     impl PrivateCgroup {
         pub(crate) fn prepare() -> Result<Self> {
-            require(unsafe { libc::getuid() == 0 && libc::geteuid() == 0 }, "private control requires root")?;
+            require(
+                unsafe { libc::getuid() == 0 && libc::geteuid() == 0 },
+                "private control requires root",
+            )?;
             let map = read_absolute(c"/proc/self/uid_map")?;
-            require(map.split_whitespace().collect::<Vec<_>>() == ["0", "0", "4294967295"],
-                "private control requires initial user namespace")?;
+            require(
+                map.split_whitespace().collect::<Vec<_>>() == ["0", "0", "4294967295"],
+                "private control requires initial user namespace",
+            )?;
             let root = open_absolute(c"/sys/fs/cgroup", libc::O_RDONLY | libc::O_DIRECTORY)?;
             cgroup_filesystem(&root)?;
             trusted_directory(&root)?;
             let enabled = words(&read_control(&root, c"cgroup.subtree_control")?);
-            require(REQUIRED_CONTROLLERS.iter().all(|name| enabled.contains(*name)),
-                "reviewed VM must already enable four root controllers")?;
-            let name = CString::new(format!("droidloom-private-cgroup-phase44-{}", unsafe { libc::getpid() })).unwrap();
+            require(
+                REQUIRED_CONTROLLERS
+                    .iter()
+                    .all(|name| enabled.contains(*name)),
+                "reviewed VM must already enable four root controllers",
+            )?;
+            let name = CString::new(format!("droidloom-private-cgroup-phase44-{}", unsafe {
+                libc::getpid()
+            }))
+            .unwrap();
             // Exclusive mkdir: never adopt or remove a pre-existing test tree.
             mkdir_at(&root, &name, 0o700)?;
             let budget = Directory::at(&root, &name)?;
@@ -1363,13 +1497,26 @@ pub(crate) mod private_control {
                 (c"memory.swap.max", "0"),
                 (c"pids.max", "16"),
                 (c"cpu.max", "100000 100000"),
-            ] { write_control(&budget.file, name, value)?; }
-            write_control(&budget.file, c"cgroup.subtree_control", "+cpu +cpuset +memory +pids")?;
+            ] {
+                write_control(&budget.file, name, value)?;
+            }
+            write_control(
+                &budget.file,
+                c"cgroup.subtree_control",
+                "+cpu +cpuset +memory +pids",
+            )?;
             mkdir_at(&budget.file, c"payload", 0o755)?;
             let payload = Directory::at(&budget.file, c"payload")?;
             mkdir_at(&budget.file, c"keeper", 0o755)?;
             let keeper = Directory::at(&budget.file, c"keeper")?;
-            let value = Self { root, name, budget, payload, keeper, init: None };
+            let value = Self {
+                root,
+                name,
+                budget,
+                payload,
+                keeper,
+                init: None,
+            };
             value.check_budget()?;
             Ok(value)
         }
@@ -1378,7 +1525,10 @@ pub(crate) mod private_control {
             self.budget.check(&self.root, &self.name)?;
             self.payload.check(&self.budget.file, c"payload")?;
             self.keeper.check(&self.budget.file, c"keeper")?;
-            require(read_pids(&self.budget.file)?.is_empty(), "private budget root occupied")?;
+            require(
+                read_pids(&self.budget.file)?.is_empty(),
+                "private budget root occupied",
+            )?;
             for (name, value) in [
                 (c"memory.max", "268435456"),
                 (c"memory.high", "201326592"),
@@ -1386,31 +1536,73 @@ pub(crate) mod private_control {
                 (c"memory.swap.current", "0"),
                 (c"pids.max", "16"),
                 (c"cpu.max", "100000 100000"),
-            ] { require(read_control(&self.budget.file, name)? == value, "private hard budget changed")?; }
+            ] {
+                require(
+                    read_control(&self.budget.file, name)? == value,
+                    "private hard budget changed",
+                )?;
+            }
             Ok(())
         }
 
-        pub(crate) fn payload(&self) -> &File { &self.payload.file }
-        pub(crate) fn init(&self) -> &File { &self.init.as_ref().unwrap().file }
+        pub(crate) fn payload(&self) -> &File {
+            &self.payload.file
+        }
+        pub(crate) fn init(&self) -> &File {
+            &self.init.as_ref().unwrap().file
+        }
 
         /// Test setup moves only the already created and kernel-verified
         /// keeper before user-map installation. Production uses CLONE_INTO_CGROUP.
-        pub(crate) fn place_created_keeper(&self, keeper: &crate::production_namespace::OwnedNamespaceWitness<'_>) -> Result<()> {
-            keeper.revalidate().map_err(|e| CgroupError::Owner(e.to_string()))?;
-            require(read_pids(&self.payload.file)?.is_empty(), "private payload occupied")?;
-            write_control(&self.payload.file, c"cgroup.procs", &keeper.host_pid().to_string())?;
-            keeper.revalidate().map_err(|e| CgroupError::Owner(e.to_string()))?;
-            require(read_pids(&self.payload.file)? == BTreeSet::from([keeper.host_pid()]), "private keeper placement differs")
+        pub(crate) fn place_created_keeper(
+            &self,
+            keeper: &crate::production_namespace::OwnedNamespaceWitness<'_>,
+        ) -> Result<()> {
+            keeper
+                .revalidate()
+                .map_err(|e| CgroupError::Owner(e.to_string()))?;
+            require(
+                read_pids(&self.payload.file)?.is_empty(),
+                "private payload occupied",
+            )?;
+            write_control(
+                &self.payload.file,
+                c"cgroup.procs",
+                &keeper.host_pid().to_string(),
+            )?;
+            keeper
+                .revalidate()
+                .map_err(|e| CgroupError::Owner(e.to_string()))?;
+            require(
+                read_pids(&self.payload.file)? == BTreeSet::from([keeper.host_pid()]),
+                "private keeper placement differs",
+            )
         }
 
-        pub(crate) fn delegate(&mut self, witness: &CgroupTreeReadyWitness<'_>, uid: u32, gid: u32) -> Result<()> {
-            witness.revalidate_for_migration(&self.payload.file).map_err(|e| CgroupError::Owner(e.to_string()))?;
-            require(read_pids(&self.payload.file)? == BTreeSet::from([witness.keeper_host_pid(), witness.tree_host_pid()]),
-                "private tree lacks original two tasks")?;
-            write_control(&self.keeper.file, c"cgroup.procs", &witness.keeper_host_pid().to_string())?;
-            require(read_pids(&self.payload.file)? == BTreeSet::from([witness.tree_host_pid()])
-                && read_pids(&self.keeper.file)? == BTreeSet::from([witness.keeper_host_pid()]),
-                "private keeper migration differs")?;
+        pub(crate) fn delegate(
+            &mut self,
+            witness: &CgroupTreeReadyWitness<'_>,
+            uid: u32,
+            gid: u32,
+        ) -> Result<()> {
+            witness
+                .revalidate_for_migration(&self.payload.file)
+                .map_err(|e| CgroupError::Owner(e.to_string()))?;
+            require(
+                read_pids(&self.payload.file)?
+                    == BTreeSet::from([witness.keeper_host_pid(), witness.tree_host_pid()]),
+                "private tree lacks original two tasks",
+            )?;
+            write_control(
+                &self.keeper.file,
+                c"cgroup.procs",
+                &witness.keeper_host_pid().to_string(),
+            )?;
+            require(
+                read_pids(&self.payload.file)? == BTreeSet::from([witness.tree_host_pid()])
+                    && read_pids(&self.keeper.file)? == BTreeSet::from([witness.keeper_host_pid()]),
+                "private keeper migration differs",
+            )?;
             mkdir_at(&self.payload.file, c"init", 0o775)?;
             self.init = Some(Directory::at(&self.payload.file, c"init")?);
             for dir in [&self.payload.file, self.init()] {
@@ -1419,43 +1611,77 @@ pub(crate) mod private_control {
                 }
                 change_owner_mode(dir, uid, gid, 0o775)?;
             }
-            witness.revalidate_for_migration(&self.payload.file).map_err(|e| CgroupError::Owner(e.to_string()))?;
+            witness
+                .revalidate_for_migration(&self.payload.file)
+                .map_err(|e| CgroupError::Owner(e.to_string()))?;
             self.check_budget()
         }
 
         pub(crate) fn withhold_controller(&self) -> Result<()> {
             write_control(&self.budget.file, c"cgroup.subtree_control", "-pids")?;
-            require(!words(&read_control(&self.payload.file, c"cgroup.controllers")?).contains("pids"), "negative controller remained available")?;
+            require(
+                !words(&read_control(&self.payload.file, c"cgroup.controllers")?).contains("pids"),
+                "negative controller remained available",
+            )?;
             self.check_budget()
         }
 
-        pub(crate) fn verify_active(&self, witness: &CgroupTreeReadyWitness<'_>, uid: u32, gid: u32) -> Result<()> {
-            witness.revalidate_for_migration(&self.payload.file).map_err(|e| CgroupError::Owner(e.to_string()))?;
-            self.init.as_ref().unwrap().check(&self.payload.file, c"init")?;
+        pub(crate) fn verify_active(
+            &self,
+            witness: &CgroupTreeReadyWitness<'_>,
+            uid: u32,
+            gid: u32,
+        ) -> Result<()> {
+            witness
+                .revalidate_for_migration(&self.payload.file)
+                .map_err(|e| CgroupError::Owner(e.to_string()))?;
+            self.init
+                .as_ref()
+                .unwrap()
+                .check(&self.payload.file, c"init")?;
             check_activated_guest(&self.payload.file, self.init(), uid, gid)?;
-            require(read_pids(self.init())? == BTreeSet::from([witness.tree_host_pid()])
-                && read_pids(&self.keeper.file)? == BTreeSet::from([witness.keeper_host_pid()]),
-                "private active task membership differs")?;
-            check_task_cgroup(witness.tree_proc_directory(),
-                &format!("/{}/payload/init", self.name.to_str().unwrap()))?;
+            require(
+                read_pids(self.init())? == BTreeSet::from([witness.tree_host_pid()])
+                    && read_pids(&self.keeper.file)? == BTreeSet::from([witness.keeper_host_pid()]),
+                "private active task membership differs",
+            )?;
+            check_task_cgroup(
+                witness.tree_proc_directory(),
+                &format!("/{}/payload/init", self.name.to_str().unwrap()),
+            )?;
             self.check_budget()
         }
 
         pub(crate) fn verify_not_activated(&self) -> Result<()> {
-            require(read_control(&self.payload.file, c"cgroup.subtree_control")?.is_empty()
-                && read_pids(self.init())?.is_empty(), "failed phase activated its cgroup")?;
+            require(
+                read_control(&self.payload.file, c"cgroup.subtree_control")?.is_empty()
+                    && read_pids(self.init())?.is_empty(),
+                "failed phase activated its cgroup",
+            )?;
             self.check_budget()
         }
 
         pub(crate) fn retire(self) -> Result<()> {
             self.check_budget()?;
-            require(!populated(&self.budget.file)?, "private tree is still populated")?;
-            require(list_directories(&self.payload.file)? == vec![CString::new("init").unwrap()], "private leaf inventory changed")?;
-            self.init.as_ref().unwrap().check(&self.payload.file, c"init")?;
+            require(
+                !populated(&self.budget.file)?,
+                "private tree is still populated",
+            )?;
+            require(
+                list_directories(&self.payload.file)? == vec![CString::new("init").unwrap()],
+                "private leaf inventory changed",
+            )?;
+            self.init
+                .as_ref()
+                .unwrap()
+                .check(&self.payload.file, c"init")?;
             unlink_directory(&self.payload.file, c"init")?;
             unlink_directory(&self.budget.file, c"payload")?;
             unlink_directory(&self.budget.file, c"keeper")?;
-            require(list_directories(&self.budget.file)?.is_empty(), "private budget gained extra cgroups")?;
+            require(
+                list_directories(&self.budget.file)?.is_empty(),
+                "private budget gained extra cgroups",
+            )?;
             self.budget.check(&self.root, &self.name)?;
             unlink_directory(&self.root, &self.name)?;
             match open_at(&self.root, &self.name, libc::O_RDONLY | libc::O_DIRECTORY) {

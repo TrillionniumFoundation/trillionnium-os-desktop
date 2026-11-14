@@ -1,0 +1,1698 @@
+//! Kernel-backed MAC preflight for the production Android owner.
+//!
+//! A root installation record selects exact bytes, not qualification. Issuance
+//! also requires the running kernel, both actual LSM identities, a stable
+//! enforcing SELinux epoch, complete loaded policy and real kernel decisions.
+//! Loader input and the expected kernel export are separately sealed identities:
+//! the target kernel serializes its policy database and need not reproduce the
+//! loader's byte order. Neither identity may be inferred from the other at runtime.
+//! This module never loads policy, relabels a file or changes enforcement.
+
+use crate::production_selection::ProductionSelection;
+use crate::production_namespace::{ExecutedInitGeneration, ExecutedInitWitness, OwnedActivationPeer};
+use serde::Deserialize;
+use sha2::{Digest, Sha256};
+use std::collections::BTreeSet;
+use std::ffi::{CStr, CString};
+use std::fs::File;
+use std::io::{self, Read, Write};
+use std::marker::PhantomData;
+use std::os::fd::{AsFd, AsRawFd, BorrowedFd, FromRawFd, RawFd};
+use std::os::unix::fs::MetadataExt;
+use std::ptr::NonNull;
+use std::rc::Rc;
+use std::sync::atomic::{Ordering, fence};
+use std::time::{Duration, Instant};
+use thiserror::Error;
+
+const CONTRACT: &str = "/etc/droidloom/host-mac/contract.json";
+const POLICY: &str = "/etc/droidloom/host-mac/policy.bin";
+const POLICY_EXPORT: &str = "/etc/droidloom/host-mac/policy-export.bin";
+const DERIVATION: &str = "/etc/droidloom/host-mac/derivation.json";
+const SELINUX_ROOT: &str = "/sys/fs/selinux";
+const SELINUX_MAGIC: u64 = 0xf97c_ff8c;
+const PROC_MAGIC: u64 = 0x9fa0;
+const SYSFS_MAGIC: u64 = 0x6265_6572;
+const SECURITYFS_MAGIC: u64 = 0x7363_6673;
+const AAFS_MAGIC: u64 = 0x5a3c_69f0;
+const MAX_RECORD: usize = 64 * 1024;
+const MAX_DERIVATION: usize = 4 * 1024 * 1024;
+const MAX_POLICY: usize = 64 * 1024 * 1024;
+const BROKER: &str = "u:r:droidloom_broker:s0";
+const HOST: &str = "u:r:droidloom_host:s0";
+const HOST_FILE: &str = "u:object_r:droidloom_host_file:s0";
+const INIT: &str = "u:r:init:s0";
+const INIT_EXEC: &str = "u:object_r:init_exec:s0";
+const KERNEL: &str = "u:r:kernel:s0";
+const AA_BROKER: &[u8] = b"droidloom-production-broker (enforce)\n";
+// The target kernel permits only further confinement after NNP. Retain the
+// broker profile and stack the Android profile. The initial-namespace label
+// vector is sorted by profile hname; both reviewed profiles must enforce.
+// This exact source-derived expectation still requires a real VM observation.
+const AA_ANDROID: &[u8] =
+    b"droidloom-production-android//&droidloom-production-broker (enforce)\n";
+const LINKERCONFIG: &str = "u:r:linkerconfig:s0";
+const LINKERCONFIG_EXEC: &str = "u:object_r:linkerconfig_exec:s0";
+
+#[path = "production_mac_listener.rs"]
+mod listener;
+pub(crate) use listener::MacListenerWitness;
+
+#[path = "production_mac_systemd.rs"]
+mod systemd;
+pub(crate) use systemd::MacSystemdWitness;
+
+#[derive(Debug, Error)]
+pub(crate) enum MacError {
+    #[error("production MAC preflight rejected: {0}")]
+    Rejected(&'static str),
+    #[error("production MAC selection: {0}")]
+    Selection(String),
+    #[error("production MAC original process owner: {0}")]
+    Owner(String),
+    #[error("production MAC observation: {0}")]
+    Io(#[from] io::Error),
+    #[error("production MAC installation record: {0}")]
+    Record(#[from] serde_json::Error),
+}
+type Result<T> = std::result::Result<T, MacError>;
+fn require(value: bool, message: &'static str) -> Result<()> {
+    if value {
+        Ok(())
+    } else {
+        Err(MacError::Rejected(message))
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Declaration {
+    schema: u32,
+    scope: String,
+    base_cohort_sha256: String,
+    runtime_manifest_sha256: String,
+    kernel_release: String,
+    kernel_notes_bytes: u64,
+    kernel_notes_sha256: String,
+    active_lsms: Vec<String>,
+    apparmor_broker_policy_sha256: String,
+    apparmor_android_policy_sha256: String,
+    policy_input_bytes: u64,
+    policy_input_sha256: String,
+    policy_export_bytes: u64,
+    policy_export_sha256: String,
+    derivation_bytes: u64,
+    derivation_sha256: String,
+}
+fn digest(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
+}
+fn lsm_list(value: &str) -> Result<Vec<&str>> {
+    let text = value.strip_suffix('\n').unwrap_or(value);
+    let entries: Vec<_> = text.split(',').collect();
+    let known = [
+        "capability",
+        "landlock",
+        "lockdown",
+        "yama",
+        "integrity",
+        "ima",
+        "evm",
+        "selinux",
+        "apparmor",
+        "bpf",
+    ];
+    require(
+        (2..=known.len()).contains(&entries.len()),
+        "bounded complete active LSM list",
+    )?;
+    let mut seen = BTreeSet::new();
+    for entry in &entries {
+        require(
+            known.contains(entry) && seen.insert(*entry),
+            "unknown or repeated active LSM",
+        )?;
+    }
+    let selinux = entries.iter().position(|v| *v == "selinux");
+    let apparmor = entries.iter().position(|v| *v == "apparmor");
+    require(
+        matches!((selinux, apparmor), (Some(s), Some(a)) if s < a),
+        "SELinux must precede AppArmor for original Android context APIs",
+    )?;
+    if let Some(bpf) = entries.iter().position(|v| *v == "bpf") {
+        require(
+            bpf > apparmor.unwrap(),
+            "BPF LSM must follow both identity providers",
+        )?;
+    }
+    Ok(entries)
+}
+impl Declaration {
+    fn validate(&self, selection: &ProductionSelection) -> Result<()> {
+        require(
+            self.schema == 2 && self.scope == "droidloom_linux_android_mac_v2",
+            "fixed MAC installation schema",
+        )?;
+        for value in [
+            &self.base_cohort_sha256,
+            &self.runtime_manifest_sha256,
+            &self.kernel_notes_sha256,
+            &self.policy_input_sha256,
+            &self.policy_export_sha256,
+            &self.derivation_sha256,
+            &self.apparmor_broker_policy_sha256,
+            &self.apparmor_android_policy_sha256,
+        ] {
+            require(digest(value), "lowercase complete installation digest")?;
+        }
+        require(
+            self.base_cohort_sha256 == selection.base_cohort()
+                && self.runtime_manifest_sha256 == selection.runtime_manifest(),
+            "installed MAC policy is for another selected runtime",
+        )?;
+        require(
+            !self.kernel_release.is_empty()
+                && self.kernel_release.len() <= 128
+                && self
+                    .kernel_release
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b"._+-".contains(&b)),
+            "exact bounded kernel release",
+        )?;
+        require(
+            (16..=1024 * 1024).contains(&self.kernel_notes_bytes),
+            "bounded running-kernel notes",
+        )?;
+        require(
+            (1024..=MAX_POLICY as u64).contains(&self.policy_input_bytes)
+                && (1024..=MAX_POLICY as u64).contains(&self.policy_export_bytes),
+            "bounded complete policy input and kernel export",
+        )?;
+        require(
+            (2..=MAX_DERIVATION as u64).contains(&self.derivation_bytes),
+            "bounded complete derivation record",
+        )?;
+        let joined = self.active_lsms.join(",");
+        require(
+            lsm_list(&joined)?.len() == self.active_lsms.len(),
+            "one fixed name per declared LSM",
+        )
+    }
+}
+
+// A sealed installation chooses both complete representations for the selected
+// kernel and full derivation. It is not a live-policy witness. In particular,
+// using a previously exported policy as a new loader input selects a different
+// pair; it must not silently reuse the first input's expected export.
+fn exact_policy_bytes(bytes: &[u8], expected_bytes: u64, expected_sha256: &str) -> Result<()> {
+    require(
+        (1024..=MAX_POLICY as u64).contains(&expected_bytes)
+            && digest(expected_sha256)
+            && bytes.len() as u64 == expected_bytes
+            && sha(bytes) == expected_sha256,
+        "complete policy representation differs from its selected identity",
+    )
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct Node {
+    dev: u64,
+    ino: u64,
+    mode: u32,
+    uid: u32,
+    gid: u32,
+    links: u64,
+    bytes: u64,
+    mtime: i64,
+    mtime_ns: i64,
+    ctime: i64,
+    ctime_ns: i64,
+}
+impl Node {
+    fn of(file: &File) -> Result<Self> {
+        let m = file.metadata()?;
+        Ok(Self {
+            dev: m.dev(),
+            ino: m.ino(),
+            mode: m.mode(),
+            uid: m.uid(),
+            gid: m.gid(),
+            links: m.nlink(),
+            bytes: m.len(),
+            mtime: m.mtime(),
+            mtime_ns: m.mtime_nsec(),
+            ctime: m.ctime(),
+            ctime_ns: m.ctime_nsec(),
+        })
+    }
+    fn same_inode(self, other: Self) -> bool {
+        (self.dev, self.ino, self.mode & libc::S_IFMT)
+            == (other.dev, other.ino, other.mode & libc::S_IFMT)
+    }
+}
+fn open_at(parent: RawFd, name: &CStr, flags: i32) -> Result<File> {
+    let fd = unsafe {
+        libc::openat(
+            parent,
+            name.as_ptr(),
+            flags | libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK,
+        )
+    };
+    if fd < 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    let file = unsafe { File::from_raw_fd(fd) };
+    require(
+        file.metadata()?.mode() & libc::S_IFMT != libc::S_IFLNK,
+        "symlink is not a MAC input",
+    )?;
+    Ok(file)
+}
+fn open_absolute(path: &str, flags: i32) -> Result<File> {
+    require(
+        path.starts_with('/') && !path.ends_with('/'),
+        "fixed absolute MAC path",
+    )?;
+    let mut current = open_at(libc::AT_FDCWD, c"/", libc::O_PATH | libc::O_DIRECTORY)?;
+    let pieces: Vec<_> = path[1..].split('/').collect();
+    for (index, part) in pieces.iter().enumerate() {
+        require(
+            !part.is_empty() && *part != "." && *part != "..",
+            "normalized fixed MAC path",
+        )?;
+        let parent = current.metadata()?;
+        require(
+            parent.uid() == 0 && parent.mode() & 0o022 == 0,
+            "MAC parent must be root owned and not writable by other users",
+        )?;
+        let name = CString::new(*part).map_err(|_| MacError::Rejected("NUL in fixed MAC path"))?;
+        current = open_at(
+            current.as_raw_fd(),
+            &name,
+            if index + 1 == pieces.len() {
+                flags
+            } else {
+                libc::O_PATH | libc::O_DIRECTORY
+            },
+        )?;
+    }
+    Ok(current)
+}
+fn kind(file: &File) -> Result<u64> {
+    let mut raw = std::mem::MaybeUninit::<libc::statfs>::uninit();
+    if unsafe { libc::fstatfs(file.as_raw_fd(), raw.as_mut_ptr()) } != 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    Ok(unsafe { raw.assume_init() }.f_type as u64)
+}
+fn bounded(file: &File, limit: usize) -> Result<Vec<u8>> {
+    let mut bytes = Vec::new();
+    file.take((limit + 1) as u64).read_to_end(&mut bytes)?;
+    require(bytes.len() <= limit, "MAC record exceeds its fixed bound")?;
+    Ok(bytes)
+}
+fn sha(bytes: &[u8]) -> String {
+    format!("{:x}", Sha256::digest(bytes))
+}
+struct Sealed {
+    path: &'static str,
+    file: File,
+    node: Node,
+}
+impl Sealed {
+    fn read(path: &'static str, limit: usize) -> Result<(Self, Vec<u8>)> {
+        let file = open_absolute(path, libc::O_RDONLY)?;
+        let node = Node::of(&file)?;
+        require(
+            node.mode & libc::S_IFMT == libc::S_IFREG
+                && node.uid == 0
+                && node.gid == 0
+                && node.links == 1
+                && node.mode & 0o7222 == 0,
+            "MAC installation must be single-link, root owned and sealed",
+        )?;
+        require(
+            node.bytes > 0 && node.bytes <= limit as u64,
+            "bounded complete sealed MAC file",
+        )?;
+        let bytes = bounded(&file, limit)?;
+        require(
+            bytes.len() as u64 == node.bytes && Node::of(&file)? == node,
+            "MAC installation changed during complete read",
+        )?;
+        let value = Self { path, file, node };
+        value.revalidate()?;
+        Ok((value, bytes))
+    }
+    fn revalidate(&self) -> Result<()> {
+        require(
+            Node::of(&self.file)? == self.node,
+            "held MAC installation inode changed",
+        )?;
+        require(
+            Node::of(&open_absolute(self.path, libc::O_RDONLY)?)? == self.node,
+            "MAC installation path was replaced",
+        )
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct Epoch {
+    version: u32,
+    sequence: u32,
+    enforcing: u32,
+    policyload: u32,
+    deny_unknown: u32,
+}
+impl Epoch {
+    fn valid(self) -> Result<Self> {
+        require(
+            self.version == 1
+                && self.sequence & 1 == 0
+                && self.enforcing == 1
+                && self.deny_unknown == 1,
+            "stable enforcing SELinux status with unknown permissions denied",
+        )?;
+        // When first opened after policy load, status policyload may be zero.
+        // Nonzero compute_av seqno and the complete loaded policy are separate
+        // mandatory observations; zero is never interpreted as their success.
+        Ok(self)
+    }
+}
+struct StatusMap {
+    address: NonNull<u32>,
+    length: usize,
+    _file: File,
+}
+impl StatusMap {
+    fn open(root: &File) -> Result<Self> {
+        let file = open_at(root.as_raw_fd(), c"status", libc::O_RDONLY)?;
+        require(
+            kind(&file)? == SELINUX_MAGIC,
+            "status must come from actual selinuxfs",
+        )?;
+        let page = unsafe { libc::sysconf(libc::_SC_PAGESIZE) };
+        require(
+            (4096..=65536).contains(&page),
+            "supported kernel status page size",
+        )?;
+        let raw = unsafe {
+            libc::mmap(
+                std::ptr::null_mut(),
+                page as usize,
+                libc::PROT_READ,
+                libc::MAP_SHARED,
+                file.as_raw_fd(),
+                0,
+            )
+        };
+        if raw == libc::MAP_FAILED {
+            return Err(io::Error::last_os_error().into());
+        }
+        let Some(address) = NonNull::new(raw.cast::<u32>()) else {
+            unsafe {
+                libc::munmap(raw, page as usize);
+            }
+            return Err(MacError::Rejected("null SELinux status mapping"));
+        };
+        Ok(Self {
+            address,
+            length: page as usize,
+            _file: file,
+        })
+    }
+    fn read(&self) -> Result<Epoch> {
+        let end = Instant::now() + Duration::from_millis(50);
+        loop {
+            let base = self.address.as_ptr();
+            let first = unsafe { base.add(1).read_volatile() };
+            fence(Ordering::Acquire);
+            if first & 1 == 0 {
+                let value = unsafe {
+                    Epoch {
+                        version: base.read_volatile(),
+                        sequence: first,
+                        enforcing: base.add(2).read_volatile(),
+                        policyload: base.add(3).read_volatile(),
+                        deny_unknown: base.add(4).read_volatile(),
+                    }
+                };
+                fence(Ordering::Acquire);
+                if unsafe { base.add(1).read_volatile() } == first {
+                    return value.valid();
+                }
+            }
+            require(Instant::now() < end, "SELinux status seqlock deadline")?;
+            std::hint::spin_loop();
+        }
+    }
+}
+impl Drop for StatusMap {
+    fn drop(&mut self) {
+        unsafe {
+            libc::munmap(self.address.as_ptr().cast(), self.length);
+        }
+    }
+}
+fn kernel_bytes(path: &str, fs: u64, limit: usize) -> Result<Vec<u8>> {
+    let file = open_absolute(path, libc::O_RDONLY)?;
+    require(
+        kind(&file)? == fs,
+        "kernel observation came from another filesystem",
+    )?;
+    bounded(&file, limit)
+}
+fn kernel_text(path: &str, fs: u64, limit: usize) -> Result<String> {
+    String::from_utf8(kernel_bytes(path, fs, limit)?)
+        .map_err(|_| MacError::Rejected("non-UTF8 kernel MAC observation"))
+}
+fn own_proc() -> Result<File> {
+    let proc = open_absolute("/proc", libc::O_PATH | libc::O_DIRECTORY)?;
+    require(kind(&proc)? == PROC_MAGIC, "actual procfs required")?;
+    // One intentional kernel magic-link follow, for the current thread only.
+    let fd = unsafe {
+        libc::openat(
+            proc.as_raw_fd(),
+            c"thread-self".as_ptr(),
+            libc::O_RDONLY | libc::O_DIRECTORY | libc::O_CLOEXEC,
+        )
+    };
+    if fd < 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    let file = unsafe { File::from_raw_fd(fd) };
+    require(
+        kind(&file)? == PROC_MAGIC,
+        "thread proc directory changed filesystem",
+    )?;
+    Ok(file)
+}
+fn proc_attr(proc: &File, apparmor: bool) -> Result<Vec<u8>> {
+    require(
+        kind(proc)? == PROC_MAGIC,
+        "held process directory is not procfs",
+    )?;
+    let attr = open_at(proc.as_raw_fd(), c"attr", libc::O_PATH | libc::O_DIRECTORY)?;
+    let parent = if apparmor {
+        open_at(
+            attr.as_raw_fd(),
+            c"apparmor",
+            libc::O_PATH | libc::O_DIRECTORY,
+        )?
+    } else {
+        attr
+    };
+    let file = open_at(parent.as_raw_fd(), c"current", libc::O_RDONLY)?;
+    require(
+        kind(&file)? == PROC_MAGIC,
+        "process attribute came from another filesystem",
+    )?;
+    bounded(&file, 1024)
+}
+fn context_matches(value: &[u8], expected: &str) -> bool {
+    value == expected.as_bytes()
+        || value.strip_suffix(b"\n") == Some(expected.as_bytes())
+        || value.strip_suffix(b"\0") == Some(expected.as_bytes())
+}
+fn socket_identity() -> Result<()> {
+    let mut fds = [-1; 2];
+    if unsafe {
+        libc::socketpair(
+            libc::AF_UNIX,
+            libc::SOCK_SEQPACKET | libc::SOCK_CLOEXEC,
+            0,
+            fds.as_mut_ptr(),
+        )
+    } != 0
+    {
+        return Err(io::Error::last_os_error().into());
+    }
+    let pair = unsafe { [File::from_raw_fd(fds[0]), File::from_raw_fd(fds[1])] };
+    for file in &pair {
+        let mut bytes = [0_u8; 1024];
+        let mut length = bytes.len() as libc::socklen_t;
+        if unsafe {
+            libc::getsockopt(
+                file.as_raw_fd(),
+                libc::SOL_SOCKET,
+                libc::SO_PEERSEC,
+                bytes.as_mut_ptr().cast(),
+                &mut length,
+            )
+        } != 0
+        {
+            return Err(io::Error::last_os_error().into());
+        }
+        require(
+            length as usize <= bytes.len() && context_matches(&bytes[..length as usize], BROKER),
+            "socket peer identity is not the actual broker SELinux context",
+        )?;
+    }
+    Ok(())
+}
+
+struct AaProfile {
+    name: &'static str,
+    directory_name: CString,
+    directory: File,
+    node: Node,
+    policy_sha256: String,
+}
+struct AaPolicy {
+    security: File,
+    policy: File,
+    profiles_directory: File,
+    profiles: [AaProfile; 2],
+    revision: i64,
+}
+
+fn aa_read(parent: &File, name: &CStr, fs: u64, limit: usize) -> Result<Vec<u8>> {
+    let file = open_at(parent.as_raw_fd(), name, libc::O_RDONLY)?;
+    require(
+        kind(&file)? == fs,
+        "AppArmor observation crossed filesystems",
+    )?;
+    bounded(&file, limit)
+}
+fn aa_revision(security: &File) -> Result<i64> {
+    let mut file = open_at(security.as_raw_fd(), c"revision", libc::O_RDONLY)?;
+    require(
+        kind(&file)? == SECURITYFS_MAGIC,
+        "AppArmor revision is not from securityfs",
+    )?;
+    // The real revision ABI is an event stream: a second read can block or
+    // return EAGAIN. A single bounded read obtains its complete current line.
+    let mut raw = [0_u8; 64];
+    let count = loop {
+        match file.read(&mut raw) {
+            Err(e) if e.kind() == io::ErrorKind::Interrupted => continue,
+            other => break other?,
+        }
+    };
+    require(
+        count > 1 && count < raw.len() && raw[count - 1] == b'\n',
+        "complete current AppArmor revision",
+    )?;
+    let text = std::str::from_utf8(&raw[..count - 1])
+        .map_err(|_| MacError::Rejected("AppArmor revision UTF-8"))?;
+    require(
+        text.bytes().all(|b| b.is_ascii_digit()),
+        "positive exact AppArmor revision",
+    )?;
+    let value = text
+        .parse::<i64>()
+        .map_err(|_| MacError::Rejected("AppArmor revision overflow"))?;
+    require(value > 0, "loaded AppArmor policy revision required")?;
+    Ok(value)
+}
+fn aa_policy_root(security: &File) -> Result<File> {
+    require(
+        kind(security)? == SECURITYFS_MAGIC,
+        "actual AppArmor securityfs directory",
+    )?;
+    require(
+        aa_read(security, c".ns_level", SECURITYFS_MAGIC, 16)? == b"0\n"
+            && aa_read(security, c".ns_stacked", SECURITYFS_MAGIC, 16)? == b"no\n",
+        "initial unstacked AppArmor policy namespace required",
+    )?;
+    // A second, explicitly fixed kernel magic-link operation: AppArmor's
+    // policy link selects the calling task's policy namespace. The above
+    // observation requires the initial namespace, and the target must be the
+    // actual internal AppArmor filesystem, never a caller's pathname.
+    let fd = unsafe {
+        libc::openat(
+            security.as_raw_fd(),
+            c"policy".as_ptr(),
+            libc::O_RDONLY | libc::O_DIRECTORY | libc::O_CLOEXEC | libc::O_NONBLOCK,
+        )
+    };
+    if fd < 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    let file = unsafe { File::from_raw_fd(fd) };
+    require(
+        kind(&file)? == AAFS_MAGIC,
+        "actual AppArmor policy filesystem required",
+    )?;
+    Ok(file)
+}
+struct DirectoryStream(NonNull<libc::DIR>);
+impl Drop for DirectoryStream {
+    fn drop(&mut self) {
+        unsafe {
+            libc::closedir(self.0.as_ptr());
+        }
+    }
+}
+fn aa_profile_names(directory: &File) -> Result<Vec<CString>> {
+    require(
+        kind(directory)? == AAFS_MAGIC,
+        "AppArmor profile directory filesystem",
+    )?;
+    // Open '.' to obtain an independent enumeration offset on this held dir.
+    let fd = open_at(
+        directory.as_raw_fd(),
+        c".",
+        libc::O_RDONLY | libc::O_DIRECTORY,
+    )?;
+    let duplicate = unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_DUPFD_CLOEXEC, 3) };
+    if duplicate < 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    let raw = unsafe { libc::fdopendir(duplicate) };
+    let Some(pointer) = NonNull::new(raw) else {
+        let error = io::Error::last_os_error();
+        unsafe {
+            libc::close(duplicate);
+        }
+        return Err(error.into());
+    };
+    let stream = DirectoryStream(pointer);
+    let mut names = Vec::new();
+    let mut count = 0;
+    loop {
+        unsafe {
+            *libc::__errno_location() = 0;
+        }
+        let entry = unsafe { libc::readdir(stream.0.as_ptr()) };
+        if entry.is_null() {
+            let errno = unsafe { *libc::__errno_location() };
+            if errno != 0 {
+                return Err(io::Error::from_raw_os_error(errno).into());
+            }
+            break;
+        }
+        count += 1;
+        require(count <= 4096, "bounded AppArmor profile inventory")?;
+        let name = unsafe { CStr::from_ptr((*entry).d_name.as_ptr()) };
+        let value = name.to_bytes();
+        if value.starts_with(b"droidloom-production-broker.")
+            || value.starts_with(b"droidloom-production-android.")
+        {
+            require(
+                value.len() <= 255
+                    && value
+                        .iter()
+                        .all(|b| b.is_ascii_alphanumeric() || b"._-".contains(b)),
+                "fixed AppArmor profile directory name",
+            )?;
+            names.push(name.to_owned());
+        }
+    }
+    Ok(names)
+}
+impl AaProfile {
+    fn revalidate(&self, profiles: &File) -> Result<()> {
+        let named = open_at(
+            profiles.as_raw_fd(),
+            &self.directory_name,
+            libc::O_RDONLY | libc::O_DIRECTORY,
+        )?;
+        require(
+            kind(&named)? == AAFS_MAGIC
+                && self.node.same_inode(Node::of(&named)?)
+                && self.node.same_inode(Node::of(&self.directory)?),
+            "held AppArmor profile directory changed",
+        )?;
+        require(
+            aa_read(&named, c"name", AAFS_MAGIC, 256)? == format!("{}\n", self.name).as_bytes(),
+            "actual AppArmor profile name changed",
+        )?;
+        require(
+            aa_read(&named, c"mode", AAFS_MAGIC, 32)? == b"enforce\n",
+            "actual AppArmor profile is not enforcing",
+        )?;
+        require(
+            aa_read(&named, c"sha256", AAFS_MAGIC, 128)?
+                == format!("{}\n", self.policy_sha256).as_bytes(),
+            "actual loaded AppArmor profile bytes differ",
+        )
+    }
+}
+impl AaPolicy {
+    fn acquire(declaration: &Declaration) -> Result<Self> {
+        let security = open_absolute(
+            "/sys/kernel/security/apparmor",
+            libc::O_RDONLY | libc::O_DIRECTORY,
+        )?;
+        let policy = aa_policy_root(&security)?;
+        let revision = aa_revision(&security)?;
+        let profiles_directory = open_at(
+            policy.as_raw_fd(),
+            c"profiles",
+            libc::O_RDONLY | libc::O_DIRECTORY,
+        )?;
+        let mut broker = None;
+        let mut android = None;
+        for directory_name in aa_profile_names(&profiles_directory)? {
+            let directory = open_at(
+                profiles_directory.as_raw_fd(),
+                &directory_name,
+                libc::O_RDONLY | libc::O_DIRECTORY,
+            )?;
+            require(
+                kind(&directory)? == AAFS_MAGIC,
+                "AppArmor profile directory must be kernel owned",
+            )?;
+            let name = aa_read(&directory, c"name", AAFS_MAGIC, 256)?;
+            let (slot, expected, hash) = if name == b"droidloom-production-broker\n" {
+                (
+                    &mut broker,
+                    "droidloom-production-broker",
+                    &declaration.apparmor_broker_policy_sha256,
+                )
+            } else if name == b"droidloom-production-android\n" {
+                (
+                    &mut android,
+                    "droidloom-production-android",
+                    &declaration.apparmor_android_policy_sha256,
+                )
+            } else {
+                continue;
+            };
+            require(slot.is_none(), "ambiguous current AppArmor profile")?;
+            let node = Node::of(&directory)?;
+            let profile = AaProfile {
+                name: expected,
+                directory_name,
+                directory,
+                node,
+                policy_sha256: hash.clone(),
+            };
+            profile.revalidate(&profiles_directory)?;
+            *slot = Some(profile);
+        }
+        let profiles = [
+            broker.ok_or(MacError::Rejected(
+                "reviewed broker AppArmor profile absent",
+            ))?,
+            android.ok_or(MacError::Rejected(
+                "reviewed Android AppArmor profile absent",
+            ))?,
+        ];
+        let value = Self {
+            security,
+            policy,
+            profiles_directory,
+            profiles,
+            revision,
+        };
+        value.revalidate()?;
+        Ok(value)
+    }
+    fn revalidate(&self) -> Result<()> {
+        require(
+            aa_revision(&self.security)? == self.revision,
+            "AppArmor policy load generation changed",
+        )?;
+        let security = open_absolute(
+            "/sys/kernel/security/apparmor",
+            libc::O_RDONLY | libc::O_DIRECTORY,
+        )?;
+        require(
+            Node::of(&security)?.same_inode(Node::of(&self.security)?),
+            "AppArmor securityfs mount changed",
+        )?;
+        let policy = aa_policy_root(&security)?;
+        require(
+            Node::of(&policy)?.same_inode(Node::of(&self.policy)?),
+            "AppArmor policy namespace changed",
+        )?;
+        let profiles = open_at(
+            policy.as_raw_fd(),
+            c"profiles",
+            libc::O_RDONLY | libc::O_DIRECTORY,
+        )?;
+        require(
+            Node::of(&profiles)?.same_inode(Node::of(&self.profiles_directory)?),
+            "AppArmor profiles root changed",
+        )?;
+        for profile in &self.profiles {
+            profile.revalidate(&profiles)?;
+        }
+        require(
+            aa_revision(&self.security)? == self.revision,
+            "AppArmor generation changed during revalidation",
+        )
+    }
+}
+fn decimal(bytes: &[u8], maximum: u32) -> Result<u32> {
+    let text =
+        std::str::from_utf8(bytes).map_err(|_| MacError::Rejected("non-UTF8 kernel number"))?;
+    let text = text.strip_suffix('\n').unwrap_or(text);
+    require(
+        !text.is_empty() && text.len() <= 10 && text.bytes().all(|b| b.is_ascii_digit()),
+        "one exact kernel number",
+    )?;
+    let n: u32 = text
+        .parse()
+        .map_err(|_| MacError::Rejected("kernel number overflow"))?;
+    require(
+        (1..=maximum).contains(&n),
+        "kernel number outside supported range",
+    )?;
+    Ok(n)
+}
+fn relative(root: &File, parts: &[&str], flags: i32) -> Result<File> {
+    require(!parts.is_empty(), "nonempty fixed selinuxfs path")?;
+    let mut directory = root.try_clone()?;
+    for (index, name) in parts.iter().enumerate() {
+        require(
+            !name.is_empty() && name.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_'),
+            "fixed selinuxfs component",
+        )?;
+        let name = CString::new(*name).unwrap();
+        directory = open_at(
+            directory.as_raw_fd(),
+            &name,
+            if index + 1 == parts.len() {
+                flags
+            } else {
+                libc::O_PATH | libc::O_DIRECTORY
+            },
+        )?;
+        require(
+            kind(&directory)? == SELINUX_MAGIC,
+            "selinuxfs path crossed filesystems",
+        )?;
+    }
+    Ok(directory)
+}
+fn class_number(root: &File, class: &str) -> Result<u32> {
+    decimal(
+        &bounded(
+            &relative(root, &["class", class, "index"], libc::O_RDONLY)?,
+            16,
+        )?,
+        u16::MAX as u32,
+    )
+}
+fn permission_mask(root: &File, class: &str, permissions: &[&str]) -> Result<u32> {
+    let mut mask = 0;
+    for permission in permissions {
+        let file = relative(root, &["class", class, "perms", permission], libc::O_RDONLY)?;
+        let bit = decimal(&bounded(&file, 16)?, 32)? - 1;
+        require(mask & (1 << bit) == 0, "repeated kernel permission bit")?;
+        mask |= 1 << bit;
+    }
+    require(mask != 0, "nonempty exact access query")?;
+    Ok(mask)
+}
+fn transaction(root: &File, name: &str, payload: &[u8]) -> Result<Vec<u8>> {
+    require(
+        !payload.is_empty() && payload.len() <= 1024,
+        "bounded fixed kernel MAC query",
+    )?;
+    let mut file = relative(root, &[name], libc::O_RDWR)?;
+    // selinuxfs accepts one request per open. Never retry a short-write tail
+    // as though that were a continuation of the original transaction.
+    let written = loop {
+        match file.write(payload) {
+            Err(e) if e.kind() == io::ErrorKind::Interrupted => continue,
+            other => break other?,
+        }
+    };
+    require(
+        written == payload.len(),
+        "incomplete kernel MAC query write",
+    )?;
+    bounded(&file, 1024)
+}
+#[derive(Debug, Eq, PartialEq)]
+struct Decision {
+    allowed: u32,
+    decided: u32,
+    sequence: u32,
+    flags: u32,
+}
+fn parse_decision(bytes: &[u8]) -> Result<Decision> {
+    let text =
+        std::str::from_utf8(bytes).map_err(|_| MacError::Rejected("non-UTF8 kernel decision"))?;
+    require(
+        text.len() <= 128 && !text.contains('\0'),
+        "bounded complete kernel access decision",
+    )?;
+    let parts: Vec<_> = text.split_ascii_whitespace().collect();
+    require(
+        parts.len() == 6,
+        "six complete actual kernel decision fields",
+    )?;
+    let hex = |index: usize| -> Result<u32> {
+        let item = parts[index];
+        require(
+            !item.is_empty() && item.len() <= 8 && item.bytes().all(|b| b.is_ascii_hexdigit()),
+            "kernel hexadecimal field",
+        )?;
+        u32::from_str_radix(item, 16).map_err(|_| MacError::Rejected("kernel hexadecimal overflow"))
+    };
+    let allowed = hex(0)?;
+    let decided = hex(1)?;
+    let _auditallow = hex(2)?;
+    let _auditdeny = hex(3)?;
+    let sequence = decimal(parts[4].as_bytes(), u32::MAX)?;
+    let flags = hex(5)?;
+    require(
+        decided == u32::MAX && flags == 0,
+        "partial, permissive or unknown decision flags",
+    )?;
+    Ok(Decision {
+        allowed,
+        decided,
+        sequence,
+        flags,
+    })
+}
+fn access(
+    root: &File,
+    source: &str,
+    target: &str,
+    class: &str,
+    permissions: &[&str],
+    allowed: bool,
+    expected_sequence: &mut Option<u32>,
+) -> Result<()> {
+    let number = class_number(root, class)?;
+    let mask = permission_mask(root, class, permissions)?;
+    let query = format!("{source} {target} {number}");
+    let decision = parse_decision(&transaction(root, "access", query.as_bytes())?)?;
+    match *expected_sequence {
+        Some(value) => require(
+            value == decision.sequence,
+            "policy changed between actual decisions",
+        )?,
+        None => *expected_sequence = Some(decision.sequence),
+    }
+    require(
+        if allowed {
+            decision.allowed & mask == mask
+        } else {
+            decision.allowed & mask == 0
+        },
+        "actual kernel decision differs from fixed MAC contract",
+    )
+}
+fn transition(root: &File, source: &str, object: &str, expected: &str) -> Result<()> {
+    let number = class_number(root, "process")?;
+    let query = format!("{source} {object} {number}");
+    require(
+        context_matches(&transaction(root, "create", query.as_bytes())?, expected),
+        "actual automatic exec context differs from reviewed transition",
+    )
+}
+fn required_decisions(root: &File, sequence: &mut Option<u32>) -> Result<()> {
+    access(
+        root,
+        BROKER,
+        INIT,
+        "process",
+        &["transition"],
+        true,
+        sequence,
+    )?;
+    access(
+        root,
+        BROKER,
+        INIT,
+        "process2",
+        &["nnp_transition", "nosuid_transition"],
+        true,
+        sequence,
+    )?;
+    access(
+        root,
+        BROKER,
+        INIT_EXEC,
+        "file",
+        &["read", "open", "map", "execute"],
+        true,
+        sequence,
+    )?;
+    access(
+        root,
+        INIT,
+        INIT_EXEC,
+        "file",
+        &["entrypoint"],
+        true,
+        sequence,
+    )?;
+    for target in ["u:r:apexd:s0", "u:r:linkerconfig:s0"] {
+        access(
+            root,
+            INIT,
+            target,
+            "process",
+            &["transition"],
+            true,
+            sequence,
+        )?;
+        access(
+            root,
+            INIT,
+            target,
+            "process2",
+            &["nnp_transition", "nosuid_transition"],
+            true,
+            sequence,
+        )?;
+    }
+    access(
+        root,
+        HOST,
+        INIT,
+        "process",
+        &["transition", "dyntransition"],
+        false,
+        sequence,
+    )?;
+    for target in [HOST, BROKER] {
+        access(
+            root,
+            INIT,
+            target,
+            "process",
+            &["transition", "dyntransition", "ptrace", "sigkill", "signal"],
+            false,
+            sequence,
+        )?;
+    }
+    access(
+        root,
+        INIT,
+        HOST_FILE,
+        "file",
+        &[
+            "read",
+            "write",
+            "append",
+            "map",
+            "execute",
+            "open",
+            "relabelfrom",
+            "relabelto",
+        ],
+        false,
+        sequence,
+    )?;
+    access(
+        root,
+        INIT,
+        HOST_FILE,
+        "dir",
+        &[
+            "read",
+            "write",
+            "search",
+            "add_name",
+            "remove_name",
+            "relabelfrom",
+            "relabelto",
+        ],
+        false,
+        sequence,
+    )?;
+    for source in [INIT, BROKER] {
+        access(
+            root,
+            source,
+            KERNEL,
+            "security",
+            &[
+                "load_policy",
+                "setenforce",
+                "setbool",
+                "setsecparam",
+                "setcheckreqprot",
+            ],
+            false,
+            sequence,
+        )?;
+    }
+    transition(root, BROKER, INIT_EXEC, INIT)?;
+    transition(root, HOST, INIT_EXEC, HOST)?;
+    transition(root, BROKER, HOST_FILE, BROKER)
+}
+
+/// Same-thread live observation, never constructed from a caller's digest,
+/// JSON/PID or earlier test result. Activation and post-exec are separate.
+pub(crate) struct MacPreflight {
+    declaration: Declaration,
+    contract: Sealed,
+    policy: Sealed,
+    policy_export: Sealed,
+    derivation: Sealed,
+    root: File,
+    root_node: Node,
+    status: StatusMap,
+    epoch: Epoch,
+    av_sequence: u32,
+    apparmor: AaPolicy,
+    boot: String,
+    own_proc: File,
+    own_proc_node: Node,
+    tid: libc::pid_t,
+    host_uid: u32,
+    _same_thread: PhantomData<Rc<()>>,
+}
+impl MacPreflight {
+    pub(crate) fn acquire(selection: &ProductionSelection) -> Result<Self> {
+        selection
+            .revalidate()
+            .map_err(|e| MacError::Selection(e.to_string()))?;
+        require(
+            unsafe { libc::getuid() == 0 && libc::geteuid() == 0 },
+            "actual root broker required",
+        )?;
+        let (contract, raw) = Sealed::read(CONTRACT, MAX_RECORD)?;
+        let declaration: Declaration = serde_json::from_slice(&raw)?;
+        declaration.validate(selection)?;
+        let (policy, policy_bytes) = Sealed::read(POLICY, MAX_POLICY)?;
+        exact_policy_bytes(
+            &policy_bytes,
+            declaration.policy_input_bytes,
+            &declaration.policy_input_sha256,
+        )?;
+        let (policy_export, expected_export) = Sealed::read(POLICY_EXPORT, MAX_POLICY)?;
+        exact_policy_bytes(
+            &expected_export,
+            declaration.policy_export_bytes,
+            &declaration.policy_export_sha256,
+        )?;
+        require(
+            !policy.node.same_inode(policy_export.node),
+            "policy input and expected kernel export require distinct sealed files",
+        )?;
+        let (derivation, derivation_bytes) = Sealed::read(DERIVATION, MAX_DERIVATION)?;
+        require(
+            derivation_bytes.len() as u64 == declaration.derivation_bytes
+                && sha(&derivation_bytes) == declaration.derivation_sha256,
+            "installed derivation differs from exact selection",
+        )?;
+        let root = open_absolute(SELINUX_ROOT, libc::O_PATH | libc::O_DIRECTORY)?;
+        require(
+            kind(&root)? == SELINUX_MAGIC,
+            "actual SELinux filesystem required",
+        )?;
+        let root_node = Node::of(&root)?;
+        let status = StatusMap::open(&root)?;
+        let epoch = status.read()?;
+        let loaded = relative(&root, &["policy"], libc::O_RDONLY)?;
+        let loaded_bytes = bounded(&loaded, MAX_POLICY)?;
+        exact_policy_bytes(
+            &loaded_bytes,
+            declaration.policy_export_bytes,
+            &declaration.policy_export_sha256,
+        )?;
+        require(
+            loaded_bytes == expected_export,
+            "complete actually loaded policy differs from the sealed kernel export",
+        )?;
+        for capability in [
+            "nnp_nosuid_transition",
+            "userspace_initial_context",
+            "netlink_xperm",
+        ] {
+            let file = relative(&root, &["policy_capabilities", capability], libc::O_RDONLY)?;
+            require(
+                bounded(&file, 16)? == b"1",
+                "required actual policy capability is absent",
+            )?;
+        }
+        let own_proc = own_proc()?;
+        let own_proc_node = Node::of(&own_proc)?;
+        let boot = kernel_text("/proc/sys/kernel/random/boot_id", PROC_MAGIC, 64)?;
+        require(valid_boot(&boot), "complete current boot identity")?;
+        let apparmor = AaPolicy::acquire(&declaration)?;
+        let mut sequence = None;
+        required_decisions(&root, &mut sequence)?;
+        let av_sequence = sequence.ok_or(MacError::Rejected("no actual kernel decision"))?;
+        require(
+            status.read()? == epoch && (epoch.policyload == 0 || epoch.policyload == av_sequence),
+            "policy and status observations did not share one epoch",
+        )?;
+        let value = Self {
+            declaration,
+            contract,
+            policy,
+            policy_export,
+            derivation,
+            root,
+            root_node,
+            status,
+            epoch,
+            av_sequence,
+            apparmor,
+            boot,
+            own_proc,
+            own_proc_node,
+            tid: unsafe { libc::syscall(libc::SYS_gettid) as libc::pid_t },
+            host_uid: selection.spec().host_uid,
+            _same_thread: PhantomData,
+        };
+        value.revalidate(selection)?;
+        socket_identity()?;
+        require(
+            value.status.read()? == value.epoch,
+            "epoch changed during actual socket identity control",
+        )?;
+        Ok(value)
+    }
+    pub(crate) fn revalidate(&self, selection: &ProductionSelection) -> Result<()> {
+        require(
+            unsafe { libc::syscall(libc::SYS_gettid) as libc::pid_t } == self.tid,
+            "MAC owner moved threads",
+        )?;
+        require(
+            unsafe { libc::getuid() == 0 && libc::geteuid() == 0 },
+            "MAC broker credentials changed",
+        )?;
+        selection
+            .revalidate()
+            .map_err(|e| MacError::Selection(e.to_string()))?;
+        require(
+            selection.spec().host_uid == self.host_uid,
+            "MAC selection owner changed",
+        )?;
+        self.declaration.validate(selection)?;
+        self.contract.revalidate()?;
+        self.policy.revalidate()?;
+        self.policy_export.revalidate()?;
+        self.derivation.revalidate()?;
+        self.apparmor.revalidate()?;
+        require(
+            self.status.read()? == self.epoch,
+            "SELinux policy/enforcement epoch changed",
+        )?;
+        let root = open_absolute(SELINUX_ROOT, libc::O_PATH | libc::O_DIRECTORY)?;
+        require(
+            kind(&root)? == SELINUX_MAGIC && self.root_node.same_inode(Node::of(&root)?),
+            "SELinux mount was replaced",
+        )?;
+        require(
+            kernel_text("/proc/sys/kernel/random/boot_id", PROC_MAGIC, 64)? == self.boot,
+            "kernel boot changed",
+        )?;
+        let release = kernel_text("/proc/sys/kernel/osrelease", PROC_MAGIC, 256)?;
+        require(
+            release.strip_suffix('\n').unwrap_or(&release) == self.declaration.kernel_release,
+            "kernel release differs from installed MAC contract",
+        )?;
+        let notes = kernel_bytes("/sys/kernel/notes", SYSFS_MAGIC, 1024 * 1024)?;
+        require(
+            notes.len() as u64 == self.declaration.kernel_notes_bytes
+                && sha(&notes) == self.declaration.kernel_notes_sha256,
+            "running kernel notes differ from exact MAC build",
+        )?;
+        let lsms = kernel_text("/sys/kernel/security/lsm", SECURITYFS_MAGIC, 4096)?;
+        require(
+            lsm_list(&lsms)?
+                == self
+                    .declaration
+                    .active_lsms
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<Vec<_>>(),
+            "registered LSM providers or order differ",
+        )?;
+        require(
+            kernel_bytes("/sys/module/apparmor/parameters/enabled", SYSFS_MAGIC, 16)? == b"Y\n",
+            "AppArmor is not actually enabled",
+        )?;
+        require(
+            self.own_proc_node.same_inode(Node::of(&self.own_proc)?)
+                && self.own_proc_node.same_inode(Node::of(&own_proc()?)?),
+            "original broker thread proc identity changed",
+        )?;
+        require(
+            context_matches(&proc_attr(&self.own_proc, false)?, BROKER),
+            "actual broker SELinux identity differs",
+        )?;
+        require(
+            proc_attr(&self.own_proc, true)? == AA_BROKER,
+            "broker AppArmor profile is not the reviewed enforcing profile",
+        )?;
+        let mut sequence = Some(self.av_sequence);
+        // Necessary also when the status page began at policyload=0.
+        access(
+            &self.root,
+            BROKER,
+            INIT,
+            "process",
+            &["transition"],
+            true,
+            &mut sequence,
+        )?;
+        require(
+            self.status.read()? == self.epoch,
+            "MAC epoch changed during revalidation",
+        )
+    }
+}
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct DescriptorIdentity {
+    device: u64,
+    inode: u64,
+    kind: u32,
+}
+fn descriptor_identity(fd: BorrowedFd<'_>) -> Result<DescriptorIdentity> {
+    let mut metadata: libc::stat = unsafe { std::mem::zeroed() };
+    if unsafe { libc::fstat(fd.as_raw_fd(), &mut metadata) } != 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    Ok(DescriptorIdentity {
+        device: metadata.st_dev,
+        inode: metadata.st_ino,
+        kind: metadata.st_mode & libc::S_IFMT,
+    })
+}
+
+/// This is an equality binding for a live provider, never an installation
+/// certificate. Only successful observations below can issue a witness.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct ProviderBinding {
+    contract: Node,
+    policy: Node,
+    policy_export: Node,
+    derivation: Node,
+    selinux_root: Node,
+    broker_proc: Node,
+    tid: libc::pid_t,
+    epoch: Epoch,
+    av_sequence: u32,
+    apparmor_revision: i64,
+}
+
+fn original_owner<T>(value: std::result::Result<T, crate::production_namespace::NamespaceError>) -> Result<T> {
+    value.map_err(|error| MacError::Owner(error.to_string()))
+}
+
+fn process_execution_state(proc: &File, domain: &str) -> Result<()> {
+    require(
+        context_matches(&proc_attr(proc, false)?, domain),
+        "actual original process SELinux domain differs",
+    )?;
+    require(
+        proc_attr(proc, true)? == AA_ANDROID,
+        "actual Android process AppArmor identity is not the reviewed enforcing profile",
+    )?;
+    let status = open_at(proc.as_raw_fd(), c"status", libc::O_RDONLY)?;
+    require(kind(&status)? == PROC_MAGIC, "actual process status must remain procfs")?;
+    let bytes = bounded(&status, 64 * 1024)?;
+    let text = std::str::from_utf8(&bytes)
+        .map_err(|_| MacError::Rejected("invalid actual process status bytes"))?;
+    for (name, expected) in [("NoNewPrivs:", "1"), ("Seccomp:", "2")] {
+        let mut values = text.lines().filter_map(|line| line.strip_prefix(name));
+        require(
+            values.next().is_some_and(|value| value.trim() == expected)
+                && values.next().is_none(),
+            "actual Android process lost NNP or its seccomp filter",
+        )?;
+    }
+    Ok(())
+}
+
+fn actual_socket_security(socket: BorrowedFd<'_>) -> Result<Vec<u8>> {
+    let mut bytes = [0_u8; 1024];
+    let mut length = bytes.len() as libc::socklen_t;
+    if unsafe {
+        libc::getsockopt(socket.as_raw_fd(), libc::SOL_SOCKET, libc::SO_PEERSEC,
+            bytes.as_mut_ptr().cast(), &mut length)
+    } != 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    require(length > 0 && length as usize <= bytes.len(), "bounded actual socket security identity")?;
+    Ok(bytes[..length as usize].to_vec())
+}
+
+/// Binds the actual, executed original init to the actual MAC provider. It
+/// grants no Ready state, namespace operation, command or helper permission.
+pub(crate) struct MacInitWitness {
+    generation: ExecutedInitGeneration,
+    provider: ProviderBinding,
+    _same_thread: PhantomData<Rc<()>>,
+}
+
+impl MacPreflight {
+    fn binding(&self) -> ProviderBinding {
+        ProviderBinding {
+            contract: self.contract.node,
+            policy: self.policy.node,
+            policy_export: self.policy_export.node,
+            derivation: self.derivation.node,
+            selinux_root: self.root_node,
+            broker_proc: self.own_proc_node,
+            tid: self.tid,
+            epoch: self.epoch,
+            av_sequence: self.av_sequence,
+            apparmor_revision: self.apparmor.revision,
+        }
+    }
+
+    fn actual_init(&self, init: &ExecutedInitWitness<'_>) -> Result<ExecutedInitGeneration> {
+        // The selection is borrowed by the original executed owner itself;
+        // a caller cannot substitute cohort hashes or a separate selection.
+        self.revalidate(init.selection())?;
+        original_owner(init.revalidate())?;
+        let generation = original_owner(init.generation())?;
+        process_execution_state(init.proc_directory(), INIT)?;
+        original_owner(init.revalidate())?;
+        require(original_owner(init.generation())? == generation, "original init generation changed")?;
+        self.revalidate(init.selection())?;
+        Ok(generation)
+    }
+
+    pub(crate) fn observe_init(&self, init: &ExecutedInitWitness<'_>) -> Result<MacInitWitness> {
+        let value = MacInitWitness {
+            generation: self.actual_init(init)?,
+            provider: self.binding(),
+            _same_thread: PhantomData,
+        };
+        value.revalidate(self, init)?;
+        Ok(value)
+    }
+
+    pub(crate) fn observe_linkerconfig_peer(
+        &self,
+        init: &ExecutedInitWitness<'_>,
+        peer: &OwnedActivationPeer<'_>,
+    ) -> Result<MacHelperWitness> {
+        let init_mac = self.observe_init(init)?;
+        original_owner(peer.revalidate())?;
+        require(peer.generation() == init_mac.generation, "helper is owned by another original init")?;
+        let value = MacHelperWitness {
+            init: init_mac,
+            proc: descriptor_identity(peer.proc_directory().as_fd())?,
+            pidfd: descriptor_identity(peer.pidfd())?,
+            socket: descriptor_identity(peer.socket())?,
+        };
+        value.revalidate(self, init, peer)?;
+        Ok(value)
+    }
+}
+
+impl MacInitWitness {
+    pub(crate) fn revalidate(&self, mac: &MacPreflight, init: &ExecutedInitWitness<'_>) -> Result<()> {
+        require(self.provider == mac.binding(), "post-exec witness belongs to another MAC provider")?;
+        require(self.generation == mac.actual_init(init)?, "post-exec witness belongs to another original init")
+    }
+}
+
+/// Fixed linkerconfig trampoline observation. No numeric-PID, caller-supplied
+/// label, serialized record or previous test result can construct this value.
+pub(crate) struct MacHelperWitness {
+    init: MacInitWitness,
+    proc: DescriptorIdentity,
+    pidfd: DescriptorIdentity,
+    socket: DescriptorIdentity,
+}
+impl MacHelperWitness {
+    pub(crate) fn revalidate(
+        &self,
+        mac: &MacPreflight,
+        init: &ExecutedInitWitness<'_>,
+        peer: &OwnedActivationPeer<'_>,
+    ) -> Result<()> {
+        self.init.revalidate(mac, init)?;
+        original_owner(peer.revalidate())?;
+        require(peer.generation() == self.init.generation, "linkerconfig peer owner changed")?;
+        require(
+            descriptor_identity(peer.proc_directory().as_fd())? == self.proc
+                && descriptor_identity(peer.pidfd())? == self.pidfd
+                && descriptor_identity(peer.socket())? == self.socket,
+            "original helper proc/PIDFD/socket identity changed",
+        )?;
+        process_execution_state(peer.proc_directory(), LINKERCONFIG)?;
+        require(
+            context_matches(&actual_socket_security(peer.socket())?, LINKERCONFIG),
+            "actual socket peer is not in the original linkerconfig domain",
+        )?;
+        original_owner(peer.revalidate())?;
+        self.init.revalidate(mac, init)
+    }
+
+    /// The caller separately retains the selected original ELF and its full
+    /// byte/metadata custody. This checks that exact passed descriptor's
+    /// actual label and loaded-policy execute edge before AUTH or GO; it
+    /// neither opens an alternate path nor relabels or executes anything.
+    pub(crate) fn revalidate_original(
+        &self,
+        mac: &MacPreflight,
+        init: &ExecutedInitWitness<'_>,
+        peer: &OwnedActivationPeer<'_>,
+        original: &File,
+    ) -> Result<()> {
+        self.revalidate(mac, init, peer)?;
+        let before = Node::of(original)?;
+        require(before.mode & libc::S_IFMT == libc::S_IFREG, "original linkerconfig must be a regular ELF")?;
+        let mut label = [0_u8; 1024];
+        let count = unsafe {
+            libc::fgetxattr(original.as_raw_fd(), c"security.selinux".as_ptr(),
+                label.as_mut_ptr().cast(), label.len())
+        };
+        if count < 0 { return Err(io::Error::last_os_error().into()); }
+        require(
+            count > 0 && count as usize <= label.len()
+                && context_matches(&label[..count as usize], LINKERCONFIG_EXEC),
+            "held original linkerconfig ELF has another actual SELinux label",
+        )?;
+        let mut sequence = Some(mac.av_sequence);
+        access(&mac.root, LINKERCONFIG, LINKERCONFIG_EXEC, "file",
+            &["getattr", "read", "open", "map", "execute", "execute_no_trans"], true, &mut sequence)?;
+        transition(&mac.root, LINKERCONFIG, LINKERCONFIG_EXEC, LINKERCONFIG)?;
+        require(Node::of(original)? == before, "held original linkerconfig changed during MAC validation")?;
+        self.revalidate(mac, init, peer)
+    }
+}
+
+fn valid_boot(value: &str) -> bool {
+    let value = value.strip_suffix('\n').unwrap_or(value);
+    value.len() == 36
+        && value.bytes().enumerate().all(|(i, b)| {
+            if [8, 13, 18, 23].contains(&i) {
+                b == b'-'
+            } else {
+                b.is_ascii_digit() || (b'a'..=b'f').contains(&b)
+            }
+        })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn separately_selected_policy_representations_reject_role_swap_and_same_size_change() {
+        // The real target serializes an extended-permission table in a different
+        // order. Requiring input == export rejected that valid representation;
+        // accepting either digest for either role would instead lose identity.
+        let mut input = vec![0x41; 2048];
+        input[42] = 0x42;
+        input[43] = 0x43;
+        let mut export = input.clone();
+        export[23] = 0x01;
+        export.swap(42, 43);
+        let input_hash = sha(&input);
+        let export_hash = sha(&export);
+        assert_ne!(input_hash, export_hash);
+        assert!(exact_policy_bytes(&input, input.len() as u64, &input_hash).is_ok());
+        assert!(exact_policy_bytes(&export, export.len() as u64, &export_hash).is_ok());
+        assert!(exact_policy_bytes(&input, export.len() as u64, &export_hash).is_err());
+        assert!(exact_policy_bytes(&export, input.len() as u64, &input_hash).is_err());
+        let mut changed = export.clone();
+        changed[export.len() - 1] ^= 1;
+        assert!(exact_policy_bytes(&changed, export.len() as u64, &export_hash).is_err());
+        assert!(exact_policy_bytes(&export[..export.len() - 1], export.len() as u64, &export_hash).is_err());
+        assert!(exact_policy_bytes(&export, 0, &export_hash).is_err());
+        assert!(exact_policy_bytes(&export, export.len() as u64, &export_hash.to_uppercase()).is_err());
+    }
+    #[test]
+    fn kernel_decision_wire_rejects_permissive_partial_or_zero_epoch() {
+        let d = parse_decision(b"2 ffffffff 0 ffffffff 17 0").unwrap();
+        assert_eq!(d.sequence, 17);
+        assert_eq!(d.allowed, 2);
+        for value in [
+            b"2 ffffffff 0 ffffffff 0 0".as_slice(),
+            b"2 ffffffff 0 ffffffff 17 1",
+            b"2 ffffffff 0 ffffffff 17 2",
+            b"2 2 0 ffffffff 17 0",
+            b"2 ffffffff 0 ffffffff 17",
+            b"2 ffffffff 0 ffffffff 17 0 trailing",
+            b"2 ffffffff 0 ffffffff 17 0\0",
+            b"100000000 ffffffff 0 ffffffff 17 0",
+        ] {
+            assert!(parse_decision(value).is_err());
+        }
+    }
+    #[test]
+    fn status_zero_counter_is_not_confused_with_a_loaded_policy_witness() {
+        let e = Epoch {
+            version: 1,
+            sequence: 0,
+            enforcing: 1,
+            policyload: 0,
+            deny_unknown: 1,
+        };
+        assert_eq!(e.valid().unwrap(), e);
+        for invalid in [
+            Epoch { sequence: 1, ..e },
+            Epoch { enforcing: 0, ..e },
+            Epoch {
+                deny_unknown: 0,
+                ..e
+            },
+            Epoch { version: 2, ..e },
+        ] {
+            assert!(invalid.valid().is_err());
+        }
+        assert_ne!(e, Epoch { sequence: 2, ..e });
+        assert_ne!(e, Epoch { policyload: 1, ..e });
+    }
+    #[test]
+    fn original_context_apis_require_selinux_first_and_exact_context() {
+        assert!(lsm_list("capability,selinux,apparmor,bpf\n").is_ok());
+        for bad in [
+            "apparmor,selinux",
+            "selinux,selinux,apparmor",
+            "selinux,apparmor,smack",
+            "bpf,selinux,apparmor",
+            "selinux,apparmor\n\n",
+            "selinux,apparmor,",
+        ] {
+            assert!(lsm_list(bad).is_err(), "{bad}");
+        }
+        for good in [
+            BROKER.as_bytes().to_vec(),
+            format!("{BROKER}\n").into_bytes(),
+            format!("{BROKER}\0").into_bytes(),
+        ] {
+            assert!(context_matches(&good, BROKER));
+        }
+        for bad in [
+            b"unconfined".as_slice(),
+            b"u:r:droidloom_broker:s0\0extra",
+            b"u:r:droidloom_broker:s0\n\n",
+            b"u:r:droidloom_host:s0",
+        ] {
+            assert!(!context_matches(bad, BROKER));
+        }
+    }
+    #[test]
+    fn fixed_inode_reader_rejects_real_symlink_and_input_growth() {
+        let temp = tempfile::tempdir().unwrap();
+        std::fs::write(temp.path().join("real"), b"abc").unwrap();
+        std::os::unix::fs::symlink("real", temp.path().join("alias")).unwrap();
+        let directory = File::open(temp.path()).unwrap();
+        assert!(open_at(directory.as_raw_fd(), c"alias", libc::O_RDONLY).is_err());
+        let file = open_at(directory.as_raw_fd(), c"real", libc::O_RDONLY).unwrap();
+        assert!(bounded(&file, 2).is_err());
+        let before = Node::of(&file).unwrap();
+        std::fs::write(temp.path().join("real"), b"changed").unwrap();
+        assert_ne!(Node::of(&file).unwrap(), before);
+        assert!(valid_boot("97d9600f-e081-465c-9e6e-62651e09806b\n"));
+        assert!(!valid_boot(
+            "97d9600f-e081-465c-9e6e-62651e09806b\ntrailing"
+        ));
+    }
+}

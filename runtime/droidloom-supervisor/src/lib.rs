@@ -15,6 +15,12 @@ mod image_layout;
 pub mod linux_plan;
 mod package_cache;
 #[cfg(target_os = "linux")]
+mod production_activation_command;
+#[cfg(target_os = "linux")]
+mod production_activation_protocol;
+#[cfg(target_os = "linux")]
+pub mod production_application;
+#[cfg(target_os = "linux")]
 mod production_cell;
 #[cfg(target_os = "linux")]
 mod production_cgroup;
@@ -26,6 +32,8 @@ mod production_execution;
 pub mod production_host_admission;
 #[cfg(target_os = "linux")]
 pub mod production_identity;
+#[cfg(target_os = "linux")]
+mod production_mac;
 #[cfg(target_os = "linux")]
 mod production_mounts;
 #[cfg(target_os = "linux")]

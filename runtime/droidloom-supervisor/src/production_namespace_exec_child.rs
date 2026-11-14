@@ -3,6 +3,16 @@
 //! Android capability contract. The latter remains explicitly unqualified.
 use std::os::fd::RawFd;
 
+#[path = "production_namespace_mac_child.rs"]
+mod mac;
+
+/// Arm only the additional fixed Android AppArmor profile on the current
+/// owned init's next exec. The separate Android capability gate must already
+/// have passed; this pending action cannot produce execution admission.
+pub(super) unsafe fn arm_android_stack() -> i32 {
+    unsafe { mac::arm_android_stack() }
+}
+
 #[derive(Clone, Copy)]
 pub(super) enum FinalCapabilityProfile {
     AndroidUnqualified,

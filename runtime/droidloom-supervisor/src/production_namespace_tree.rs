@@ -15,7 +15,12 @@ use std::os::fd::BorrowedFd;
 mod binder;
 #[path = "production_namespace_execution_parent.rs"]
 mod execution;
-pub(crate) use execution::{ExecutedNamespaces, ReadyTreeWitness};
+pub(crate) use execution::{
+    ApplicationAuthority, ExecutedInitGeneration, ExecutedInitWitness, ExecutedNamespaces,
+    FrameworkObservation, OwnedActivationPeer, ReadyTreeWitness,
+};
+#[path = "production_namespace_cgroup_parent.rs"]
+mod guest_cgroup;
 #[cfg(test)]
 #[path = "production_namespace_postexec_parent.rs"]
 mod private_postexec;
@@ -23,8 +28,6 @@ mod private_postexec;
 mod runtime;
 #[path = "production_namespace_writable_proc_parent.rs"]
 mod writable_proc;
-#[path = "production_namespace_cgroup_parent.rs"]
-mod guest_cgroup;
 
 enum BaseMounts {
     Admitted(PreparedMounts),
@@ -1077,6 +1080,10 @@ impl TreeChild {
             .find(|row| row.1 == libc::CLONE_NEWPID)
             .expect("bound PID namespace")
             .3
+    }
+
+    pub(super) fn as_pidfd(&self) -> BorrowedFd<'_> {
+        self.pidfd.as_fd()
     }
 
     pub(super) fn verify(&self) -> Result<()> {

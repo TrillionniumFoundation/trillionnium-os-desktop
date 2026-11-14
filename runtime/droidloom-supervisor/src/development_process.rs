@@ -173,7 +173,7 @@ impl OwnedNamespaceChild {
     }
 }
 
-fn open_pidfd(pid: u32) -> io::Result<OwnedFd> {
+pub(crate) fn open_pidfd(pid: u32) -> io::Result<OwnedFd> {
     let pid = i32::try_from(pid).map_err(|_| invalid("PID exceeds Linux pid_t"))?;
     // SAFETY: this syscall returns a new descriptor or -1; flags are zero.
     let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, pid, 0) };
@@ -184,7 +184,7 @@ fn open_pidfd(pid: u32) -> io::Result<OwnedFd> {
     Ok(unsafe { OwnedFd::from_raw_fd(fd as libc::c_int) })
 }
 
-fn pidfd_exited(fd: &OwnedFd) -> io::Result<bool> {
+pub(crate) fn pidfd_exited(fd: &OwnedFd) -> io::Result<bool> {
     let mut event = libc::pollfd {
         fd: fd.as_raw_fd(),
         events: libc::POLLIN,

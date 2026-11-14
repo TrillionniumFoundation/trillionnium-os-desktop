@@ -2295,6 +2295,12 @@ fn self_executable() -> Result<(File, Node, String)> {
     }
     Ok((file, Node::of(&before), format!("{:x}", hash.finalize())))
 }
+/// Reuse the same root-sealed running image check for the fixed application
+/// worker. This returns custody of the checked file, never an executable path.
+pub(crate) fn application_worker_executable() -> Result<File> {
+    self_executable().map(|(file, _, _)| file)
+}
+
 fn no_children_filter(deny_exec: bool) -> Vec<libc::sock_filter> {
     // Native x86_64 is the supported Pocket4 host ABI. Refuse x32 and foreign
     // syscall ABIs rather than allowing their fork/exec numbers through.

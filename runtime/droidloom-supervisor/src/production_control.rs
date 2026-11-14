@@ -331,6 +331,7 @@ impl ProductionDaemon {
             applications: None,
             application_icon: None,
             diagnostics: None,
+            inspection: None,
         }
     }
 
@@ -497,6 +498,37 @@ impl ProductionDaemon {
         }
     }
 
+    fn inspect_application(
+        &mut self,
+        peer_uid: u32,
+        package: &str,
+        user: u32,
+    ) -> Result<ControlResponse, ControlError> {
+        self.authorize_active(peer_uid)?;
+        if self.state != CellState::Running {
+            return Err(ControlError::Invalid(
+                "production inspection requires current Android readiness".into(),
+            ));
+        }
+        let observed = self
+            .active
+            .as_mut()
+            .expect("authorized active owner")
+            .inspect_application(package, user)
+            .map_err(|error| ControlError::Invalid(error.to_string()));
+        // Any unproven command retirement fences the same original owner.
+        self.poll();
+        let observed = observed?;
+        if self.state != CellState::Running {
+            return Err(ControlError::Invalid(
+                "production tree changed after application inspection".into(),
+            ));
+        }
+        let mut response = self.success("Installed package metadata and APK bytes observed in the owned production tree; application acceptance remains pending");
+        response.inspection = Some(observed);
+        Ok(response)
+    }
+
     fn handle(
         &mut self,
         peer_uid: u32,
@@ -517,10 +549,13 @@ impl ProductionDaemon {
             }
             ControlRequest::Status | ControlRequest::Readiness => self.status(peer_uid),
             ControlRequest::WaitReady => self.wait_ready(peer_uid, shutdown),
+            ControlRequest::InspectApplication { package, user } => {
+                self.inspect_application(peer_uid, &package, user)
+            }
             _ => {
-                // No fallback to development's find-by-PID, nsenter, shell,
-                // APK helper or automatic Start. A future application bridge
-                // must consume a ReadyTreeWitness from this exact owner.
+                // Additional app/business actions need dedicated owned-tree
+                // adapters. The fixed inspection bridge does not authorize
+                // development PID lookup, nsenter, shell, or automatic Start.
                 self.authorize_active(peer_uid).and_then(|_| {
                     Err(ControlError::Invalid(
                         "production application bridge has no qualified owned-tree capability"
@@ -787,6 +822,18 @@ mod tests {
         );
         assert!(!response.ok);
         assert_eq!(response.state, CellState::Stopped);
+        assert!(daemon.active.is_none());
+        let inspected = daemon.handle(
+            1000,
+            ControlRequest::InspectApplication {
+                package: "org.example.app".into(),
+                user: 0,
+            },
+            None,
+            &stopped,
+        );
+        assert!(!inspected.ok && inspected.inspection.is_none());
+        assert_eq!(inspected.state, CellState::Stopped);
         assert!(daemon.active.is_none());
         daemon.state = CellState::Starting;
         assert_eq!(daemon.status(1000).unwrap().state, CellState::Starting);
