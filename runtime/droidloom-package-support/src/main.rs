@@ -841,7 +841,7 @@ fn stable_stop_state(state: &UnitState) -> Result<()> {
         return Err("native unit has a pending job; fixed-name stop refused".into());
     }
     match (state.active.as_str(), state.sub.as_str()) {
-        ("active", "running" | "exited") => {
+        ("active", "running") => {
             if state.load == "not-found"
                 || state.invocation.is_empty()
                 || state.group.is_empty()
@@ -849,6 +849,20 @@ fn stable_stop_state(state: &UnitState) -> Result<()> {
             {
                 return Err("active native unit has no stable complete original identity".into());
             }
+        }
+        ("active", "exited") => {
+            if state.load == "not-found"
+                || state.invocation.is_empty()
+                || state.main != 0
+                || state.control != 0
+            {
+                return Err(
+                    "exited native unit has a live actor or missing original identity".into(),
+                );
+            }
+            // A completed RemainAfterExit service may have no cgroup. The
+            // original held-group and fresh-path checks still run before Stop;
+            // an empty group is accepted there only when both remain absent.
         }
         ("inactive", "dead") | ("failed", "failed") => {
             terminal_unit(state, state)?;
@@ -1530,5 +1544,49 @@ mod tests {
         terminal_unit(&terminal, &terminal).unwrap();
         unpopulated(b"populated 0\nfrozen 0\n").unwrap();
         assert!(require_production_resource_retirement().is_err());
+    }
+    #[test]
+    fn native_stop_accepts_original_exited_oneshot_and_rejects_identity_changes() {
+        // The active/exited, MainPID=0, absent-group and InvocationID shape is
+        // observed in the Pocket4 MAC carrier's original retirement evidence.
+        // ControlPID=0 and an empty Job remain additional required observations.
+        let exited = terminal_properties()
+            .replace(
+                "Id=droidloom-production.service",
+                "Id=droidloom-manager-label.service",
+            )
+            .replace("ActiveState=inactive", "ActiveState=active")
+            .replace("SubState=dead", "SubState=exited")
+            .replace(&"a".repeat(32), "03c26bb6e98941cdbb45ef79cbbecafc");
+        let original = parse_unit(NativeUnit::ManagerLabel, exited.as_bytes()).unwrap();
+        assert!(original.group.is_empty());
+        assert!(stable_stop_state(&original).is_ok());
+        assert!(same_stop_generation(&original, &original).is_ok());
+        for changed in [
+            exited.replace("MainPID=0", "MainPID=42"),
+            exited.replace("ControlPID=0", "ControlPID=43"),
+            exited.replace("Job=\n", "Job=44\n"),
+            exited.replace("03c26bb6e98941cdbb45ef79cbbecafc", &"b".repeat(32)),
+            exited.replace(
+                "InvocationID=03c26bb6e98941cdbb45ef79cbbecafc",
+                "InvocationID=",
+            ),
+            exited.replace(
+                "ControlGroup=\n",
+                "ControlGroup=/system.slice/droidloom-manager-label.service\n",
+            ),
+            exited.replace("SubState=exited", "SubState=running"),
+        ] {
+            let current = parse_unit(NativeUnit::ManagerLabel, changed.as_bytes()).unwrap();
+            assert!(same_stop_generation(&original, &current).is_err());
+        }
+        let with_group = exited.replace(
+            "ControlGroup=\n",
+            "ControlGroup=/system.slice/droidloom-manager-label.service\n",
+        );
+        let with_group = parse_unit(NativeUnit::ManagerLabel, with_group.as_bytes()).unwrap();
+        assert!(same_stop_generation(&with_group, &with_group).is_ok());
+        // These state checks alone cannot prove the held cgroup/absence gates
+        // or authorize production replacement; those checks are unchanged.
     }
 }
