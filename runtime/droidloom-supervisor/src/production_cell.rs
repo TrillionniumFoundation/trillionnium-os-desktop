@@ -1,17 +1,18 @@
 //! Normal production lifecycle. Every owner stays on the broker's one thread.
 //!
-//! The preparation chain is real, but its entry first requires an execution
-//! capability that cannot currently be issued. No development runtime is
-//! adopted, no user-data image is mounted, and Prepared never means Running.
+//! Preparation first observes the actual installed MAC provider, then binds
+//! the exact original systemd/cgroup owner before arming init. A separate final
+//! activation gate remains required for Running and every application query.
+//! No development runtime or previously recorded qualification is adopted.
 
 use std::fmt;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 use thiserror::Error;
 
 use crate::CellSpec;
 use crate::production_devices::PreparedDevices;
-use crate::production_execution::ExecutionAdmission;
+use crate::production_execution::{ExecutionAdmission, PreparationAdmission};
 use crate::production_host_admission::HostAdmission;
 use crate::production_identity::IdentityAuthority;
 use crate::production_mounts::{PreparedMounts, VerifiedCohort};
@@ -21,8 +22,6 @@ use crate::production_namespace::{
 use crate::production_readiness::BootProperty;
 use crate::production_runtime_assets::PreparedRuntime;
 use crate::production_selection::ProductionSelection;
-
-const PREPARATION_LIMIT: Duration = Duration::from_secs(120);
 
 #[derive(Debug, Error)]
 pub(crate) enum CellError {
@@ -68,33 +67,37 @@ impl ProductionCell {
         selection: ProductionSelection,
         report: impl Fn(&str),
     ) -> std::result::Result<Self, StartFailure> {
-        let execution = ExecutionAdmission::acquire(&selection).map_err(|error| StartFailure {
+        let preparation = PreparationAdmission::acquire(&selection).map_err(|error| StartFailure {
             error: rejected(error),
             retirement_requires_review: false,
         })?;
-        execution
+        preparation
             .revalidate(&selection)
             .map_err(|error| StartFailure {
                 error: rejected(error),
                 retirement_requires_review: false,
             })?;
+        let deadline = preparation.deadline();
         let authority =
             IdentityAuthority::inspect(selection.spec()).map_err(|error| StartFailure {
                 error: rejected(error),
                 retirement_requires_review: false,
             })?;
-        // Acquire the exact selected reservation only after actual execution
-        // contracts exist. No disposable fixture is reserved for host UID1000.
+        preparation.revalidate(&selection).map_err(|error| StartFailure {
+            error: rejected(error),
+            retirement_requires_review: false,
+        })?;
+        // Reserve only after actual live MAC preflight. This is bounded
+        // preparation, not completed Android activation or application Ready.
         let lease = authority
             .reserve(selection.spec(), selection.base_cohort())
             .map_err(|error| StartFailure {
                 error: rejected(error),
                 retirement_requires_review: false,
             })?;
-        let began = Instant::now();
-        let admitted: Result<ExecutedNamespaces> = (|| {
+        let admitted: Result<(ExecutedNamespaces, ExecutionAdmission)> = (|| {
             let step = |text| -> Result<()> {
-                if began.elapsed() >= PREPARATION_LIMIT {
+                if Instant::now() >= deadline {
                     return Err(CellError::Deadline);
                 }
                 selection.revalidate().map_err(rejected)?;
@@ -105,6 +108,10 @@ impl ProductionCell {
             let admission = HostAdmission::acquire(lease).map_err(rejected)?;
             let mapped = prepare_admitted_user_namespace(admission).map_err(rejected)?;
             let tree = IsolatedNamespaces::from_mapped(mapped).map_err(rejected)?;
+            step("Checking MAC for the original systemd lifetime owner...")?;
+            let prepared = preparation
+                .bind_tree(&selection, &tree.witness().map_err(rejected)?)
+                .map_err(rejected)?;
 
             step("Preparing the selected immutable Android bases...")?;
             let bases = {
@@ -126,8 +133,8 @@ impl ProductionCell {
             // This operation moves only the attested keeper, delegates the
             // private hierarchy and verifies PID1's actual init leaf before
             // enabling its controllers. It does not qualify Android task profiles.
-            // The separately required execution contracts still cover their
-            // guest-side activation and final confinement.
+            // The later final admission still requires guest-side task
+            // profiles and actual final confinement after init execution.
             tree.configure_cgroup_hierarchy().map_err(rejected)?;
 
             step("Preparing the selected same-cohort runtime inputs...")?;
@@ -138,10 +145,17 @@ impl ProductionCell {
             .map_err(rejected)?;
             let tree = tree.attach_runtime(runtime).map_err(rejected)?;
             step("Checking the final Android execution boundary...")?;
-            tree.execute_runtime(&selection, &execution)
-                .map_err(rejected)
+            let mut tree = tree.execute_runtime(&selection, &prepared).map_err(rejected)?;
+            step("Observing original init and complete Android activation...")?;
+            let execution = {
+                let init = tree.init_witness(&selection, &prepared).map_err(rejected)?;
+                let observed = prepared.observe_init(&init).map_err(rejected)?;
+                ExecutionAdmission::acquire(&selection, observed, &init).map_err(rejected)?
+            };
+            execution.revalidate(&selection).map_err(rejected)?;
+            Ok((tree, execution))
         })();
-        let tree = admitted.map_err(|error| StartFailure {
+        let (tree, execution) = admitted.map_err(|error| StartFailure {
             error,
             // Every consuming tree method attempts its real retirement on
             // error. Until a full result is returned, the controller does not

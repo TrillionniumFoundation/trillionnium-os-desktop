@@ -90,9 +90,9 @@ fn server_label(server: BorrowedFd<'_>) -> Result<Vec<u8>> {
 }
 
 fn decisions(mac: &MacPreflight) -> Result<()> {
-    let mut sequence = Some(mac.av_sequence);
+    let mut sequence = Some(mac.loaded.av_sequence);
     access(
-        &mac.root,
+        &mac.loaded.root,
         BROKER,
         BROKER,
         "unix_stream_socket",
@@ -103,7 +103,7 @@ fn decisions(mac: &MacPreflight) -> Result<()> {
         &mut sequence,
     )?;
     access(
-        &mac.root,
+        &mac.loaded.root,
         BROKER,
         LISTENER_FILE,
         "sock_file",
@@ -112,7 +112,7 @@ fn decisions(mac: &MacPreflight) -> Result<()> {
         &mut sequence,
     )?;
     access(
-        &mac.root,
+        &mac.loaded.root,
         LINKERCONFIG,
         BROKER,
         "unix_stream_socket",
@@ -121,7 +121,7 @@ fn decisions(mac: &MacPreflight) -> Result<()> {
         &mut sequence,
     )?;
     access(
-        &mac.root,
+        &mac.loaded.root,
         LINKERCONFIG,
         LISTENER_FILE,
         "sock_file",
@@ -131,7 +131,7 @@ fn decisions(mac: &MacPreflight) -> Result<()> {
     )?;
     // The original ELF's passed file description was opened by this broker.
     access(
-        &mac.root,
+        &mac.loaded.root,
         LINKERCONFIG,
         BROKER,
         "fd",
@@ -140,7 +140,7 @@ fn decisions(mac: &MacPreflight) -> Result<()> {
         &mut sequence,
     )?;
     access(
-        &mac.root,
+        &mac.loaded.root,
         HOST,
         BROKER,
         "unix_stream_socket",
@@ -149,7 +149,7 @@ fn decisions(mac: &MacPreflight) -> Result<()> {
         &mut sequence,
     )?;
     access(
-        &mac.root,
+        &mac.loaded.root,
         HOST,
         LISTENER_FILE,
         "sock_file",

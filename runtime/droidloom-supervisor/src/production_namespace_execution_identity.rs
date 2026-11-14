@@ -89,6 +89,14 @@ impl ExecutedInitWitness<'_> {
         child.verify()
     }
 
+    /// Reborrow the same original tree for the MAC/manager observer. This
+    /// performs kernel/host admission only, never calls execution admission,
+    /// and therefore cannot recursively authorize its own MAC observation.
+    pub(crate) fn namespace_witness(&self) -> Result<OwnedNamespaceWitness<'_>> {
+        self.revalidate()?;
+        self.owner.tree.witness()
+    }
+
     /// The init PIDFD, not the user-namespace keeper's PIDFD.
     pub(crate) fn pidfd(&self) -> BorrowedFd<'_> {
         self.init().pidfd.as_fd()
@@ -182,9 +190,19 @@ impl ExecutedNamespaces {
     pub(crate) fn init_witness<'a>(
         &'a mut self,
         selection: &'a ProductionSelection,
-        admission: &ExecutionAdmission,
+        admission: &PreparedExecution,
     ) -> Result<ExecutedInitWitness<'a>> {
-        self.verify_exec(selection, admission)?;
+        self.verify_prepared_exec(selection, admission)?;
+        self.original_init_witness(selection)
+    }
+
+    /// Only the actually executed owner can create this kernel-only borrow.
+    /// Keeping it separate lets the final admission recheck actual init MAC
+    /// without calling itself through verify_exec(). It grants no Ready state.
+    pub(super) fn original_init_witness<'a>(
+        &'a self,
+        selection: &'a ProductionSelection,
+    ) -> Result<ExecutedInitWitness<'a>> {
         let witness = ExecutedInitWitness {
             owner: self,
             selection,

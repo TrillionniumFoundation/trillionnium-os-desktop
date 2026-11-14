@@ -51,8 +51,17 @@ const AA_BROKER: &[u8] = b"droidloom-production-broker (enforce)\n";
 // This exact source-derived expectation still requires a real VM observation.
 const AA_ANDROID: &[u8] =
     b"droidloom-production-android//&droidloom-production-broker (enforce)\n";
+const LOADER: &str = "u:r:droidloom_policy_loader:s0";
+const AA_LOADER: &[u8] = b"droidloom-policy-loader (enforce)\n";
 const LINKERCONFIG: &str = "u:r:linkerconfig:s0";
 const LINKERCONFIG_EXEC: &str = "u:object_r:linkerconfig_exec:s0";
+
+#[path = "production_mac_policy.rs"]
+mod policy;
+pub(crate) use policy::LoadedPolicyWitness;
+#[path = "production_mac_loader.rs"]
+mod loader;
+pub(crate) use loader::LoaderMacWitness;
 
 #[path = "production_mac_listener.rs"]
 mod listener;
@@ -97,6 +106,7 @@ struct Declaration {
     active_lsms: Vec<String>,
     apparmor_broker_policy_sha256: String,
     apparmor_android_policy_sha256: String,
+    apparmor_loader_policy_sha256: String,
     policy_input_bytes: u64,
     policy_input_sha256: String,
     policy_export_bytes: u64,
@@ -152,8 +162,17 @@ fn lsm_list(value: &str) -> Result<Vec<&str>> {
 }
 impl Declaration {
     fn validate(&self, selection: &ProductionSelection) -> Result<()> {
+        self.validate_shape()?;
         require(
-            self.schema == 2 && self.scope == "droidloom_linux_android_mac_v2",
+            self.base_cohort_sha256 == selection.base_cohort()
+                && self.runtime_manifest_sha256 == selection.runtime_manifest(),
+            "installed MAC policy is for another selected runtime",
+        )?;
+        Ok(())
+    }
+    fn validate_shape(&self) -> Result<()> {
+        require(
+            self.schema == 3 && self.scope == "droidloom_linux_android_mac_v3",
             "fixed MAC installation schema",
         )?;
         for value in [
@@ -165,14 +184,10 @@ impl Declaration {
             &self.derivation_sha256,
             &self.apparmor_broker_policy_sha256,
             &self.apparmor_android_policy_sha256,
+            &self.apparmor_loader_policy_sha256,
         ] {
             require(digest(value), "lowercase complete installation digest")?;
         }
-        require(
-            self.base_cohort_sha256 == selection.base_cohort()
-                && self.runtime_manifest_sha256 == selection.runtime_manifest(),
-            "installed MAC policy is for another selected runtime",
-        )?;
         require(
             !self.kernel_release.is_empty()
                 && self.kernel_release.len() <= 128
@@ -565,7 +580,7 @@ struct AaPolicy {
     security: File,
     policy: File,
     profiles_directory: File,
-    profiles: [AaProfile; 2],
+    profiles: [AaProfile; 3],
     revision: i64,
 }
 
@@ -691,6 +706,7 @@ fn aa_profile_names(directory: &File) -> Result<Vec<CString>> {
         let value = name.to_bytes();
         if value.starts_with(b"droidloom-production-broker.")
             || value.starts_with(b"droidloom-production-android.")
+            || value.starts_with(b"droidloom-policy-loader.")
         {
             require(
                 value.len() <= 255
@@ -747,6 +763,7 @@ impl AaPolicy {
         )?;
         let mut broker = None;
         let mut android = None;
+        let mut loader = None;
         for directory_name in aa_profile_names(&profiles_directory)? {
             let directory = open_at(
                 profiles_directory.as_raw_fd(),
@@ -770,6 +787,12 @@ impl AaPolicy {
                     "droidloom-production-android",
                     &declaration.apparmor_android_policy_sha256,
                 )
+            } else if name == b"droidloom-policy-loader\n" {
+                (
+                    &mut loader,
+                    "droidloom-policy-loader",
+                    &declaration.apparmor_loader_policy_sha256,
+                )
             } else {
                 continue;
             };
@@ -792,6 +815,7 @@ impl AaPolicy {
             android.ok_or(MacError::Rejected(
                 "reviewed Android AppArmor profile absent",
             ))?,
+            loader.ok_or(MacError::Rejected("reviewed loader AppArmor profile absent"))?,
         ];
         let value = Self {
             security,
@@ -1136,219 +1160,33 @@ fn required_decisions(root: &File, sequence: &mut Option<u32>) -> Result<()> {
     transition(root, BROKER, HOST_FILE, BROKER)
 }
 
-/// Same-thread live observation, never constructed from a caller's digest,
-/// JSON/PID or earlier test result. Activation and post-exec are separate.
+/// Fixed broker role over a complete current loaded-policy observation.
+/// No constructor accepts a role string, PID, supplied proc FD or prior result.
 pub(crate) struct MacPreflight {
-    declaration: Declaration,
-    contract: Sealed,
-    policy: Sealed,
-    policy_export: Sealed,
-    derivation: Sealed,
-    root: File,
-    root_node: Node,
-    status: StatusMap,
-    epoch: Epoch,
-    av_sequence: u32,
-    apparmor: AaPolicy,
-    boot: String,
-    own_proc: File,
-    own_proc_node: Node,
-    tid: libc::pid_t,
-    host_uid: u32,
-    _same_thread: PhantomData<Rc<()>>,
+    loaded: LoadedPolicyWitness,
 }
 impl MacPreflight {
     pub(crate) fn acquire(selection: &ProductionSelection) -> Result<Self> {
-        selection
-            .revalidate()
-            .map_err(|e| MacError::Selection(e.to_string()))?;
-        require(
-            unsafe { libc::getuid() == 0 && libc::geteuid() == 0 },
-            "actual root broker required",
-        )?;
-        let (contract, raw) = Sealed::read(CONTRACT, MAX_RECORD)?;
-        let declaration: Declaration = serde_json::from_slice(&raw)?;
-        declaration.validate(selection)?;
-        let (policy, policy_bytes) = Sealed::read(POLICY, MAX_POLICY)?;
-        exact_policy_bytes(
-            &policy_bytes,
-            declaration.policy_input_bytes,
-            &declaration.policy_input_sha256,
-        )?;
-        let (policy_export, expected_export) = Sealed::read(POLICY_EXPORT, MAX_POLICY)?;
-        exact_policy_bytes(
-            &expected_export,
-            declaration.policy_export_bytes,
-            &declaration.policy_export_sha256,
-        )?;
-        require(
-            !policy.node.same_inode(policy_export.node),
-            "policy input and expected kernel export require distinct sealed files",
-        )?;
-        let (derivation, derivation_bytes) = Sealed::read(DERIVATION, MAX_DERIVATION)?;
-        require(
-            derivation_bytes.len() as u64 == declaration.derivation_bytes
-                && sha(&derivation_bytes) == declaration.derivation_sha256,
-            "installed derivation differs from exact selection",
-        )?;
-        let root = open_absolute(SELINUX_ROOT, libc::O_PATH | libc::O_DIRECTORY)?;
-        require(
-            kind(&root)? == SELINUX_MAGIC,
-            "actual SELinux filesystem required",
-        )?;
-        let root_node = Node::of(&root)?;
-        let status = StatusMap::open(&root)?;
-        let epoch = status.read()?;
-        let loaded = relative(&root, &["policy"], libc::O_RDONLY)?;
-        let loaded_bytes = bounded(&loaded, MAX_POLICY)?;
-        exact_policy_bytes(
-            &loaded_bytes,
-            declaration.policy_export_bytes,
-            &declaration.policy_export_sha256,
-        )?;
-        require(
-            loaded_bytes == expected_export,
-            "complete actually loaded policy differs from the sealed kernel export",
-        )?;
-        for capability in [
-            "nnp_nosuid_transition",
-            "userspace_initial_context",
-            "netlink_xperm",
-        ] {
-            let file = relative(&root, &["policy_capabilities", capability], libc::O_RDONLY)?;
-            require(
-                bounded(&file, 16)? == b"1",
-                "required actual policy capability is absent",
-            )?;
-        }
-        let own_proc = own_proc()?;
-        let own_proc_node = Node::of(&own_proc)?;
-        let boot = kernel_text("/proc/sys/kernel/random/boot_id", PROC_MAGIC, 64)?;
-        require(valid_boot(&boot), "complete current boot identity")?;
-        let apparmor = AaPolicy::acquire(&declaration)?;
-        let mut sequence = None;
-        required_decisions(&root, &mut sequence)?;
-        let av_sequence = sequence.ok_or(MacError::Rejected("no actual kernel decision"))?;
-        require(
-            status.read()? == epoch && (epoch.policyload == 0 || epoch.policyload == av_sequence),
-            "policy and status observations did not share one epoch",
-        )?;
-        let value = Self {
-            declaration,
-            contract,
-            policy,
-            policy_export,
-            derivation,
-            root,
-            root_node,
-            status,
-            epoch,
-            av_sequence,
-            apparmor,
-            boot,
-            own_proc,
-            own_proc_node,
-            tid: unsafe { libc::syscall(libc::SYS_gettid) as libc::pid_t },
-            host_uid: selection.spec().host_uid,
-            _same_thread: PhantomData,
-        };
+        let value = Self { loaded: LoadedPolicyWitness::acquire(selection)? };
         value.revalidate(selection)?;
         socket_identity()?;
-        require(
-            value.status.read()? == value.epoch,
-            "epoch changed during actual socket identity control",
-        )?;
+        value.revalidate(selection)?;
         Ok(value)
     }
     pub(crate) fn revalidate(&self, selection: &ProductionSelection) -> Result<()> {
+        self.loaded.revalidate(selection)?;
         require(
-            unsafe { libc::syscall(libc::SYS_gettid) as libc::pid_t } == self.tid,
-            "MAC owner moved threads",
-        )?;
-        require(
-            unsafe { libc::getuid() == 0 && libc::geteuid() == 0 },
-            "MAC broker credentials changed",
-        )?;
-        selection
-            .revalidate()
-            .map_err(|e| MacError::Selection(e.to_string()))?;
-        require(
-            selection.spec().host_uid == self.host_uid,
-            "MAC selection owner changed",
-        )?;
-        self.declaration.validate(selection)?;
-        self.contract.revalidate()?;
-        self.policy.revalidate()?;
-        self.policy_export.revalidate()?;
-        self.derivation.revalidate()?;
-        self.apparmor.revalidate()?;
-        require(
-            self.status.read()? == self.epoch,
-            "SELinux policy/enforcement epoch changed",
-        )?;
-        let root = open_absolute(SELINUX_ROOT, libc::O_PATH | libc::O_DIRECTORY)?;
-        require(
-            kind(&root)? == SELINUX_MAGIC && self.root_node.same_inode(Node::of(&root)?),
-            "SELinux mount was replaced",
-        )?;
-        require(
-            kernel_text("/proc/sys/kernel/random/boot_id", PROC_MAGIC, 64)? == self.boot,
-            "kernel boot changed",
-        )?;
-        let release = kernel_text("/proc/sys/kernel/osrelease", PROC_MAGIC, 256)?;
-        require(
-            release.strip_suffix('\n').unwrap_or(&release) == self.declaration.kernel_release,
-            "kernel release differs from installed MAC contract",
-        )?;
-        let notes = kernel_bytes("/sys/kernel/notes", SYSFS_MAGIC, 1024 * 1024)?;
-        require(
-            notes.len() as u64 == self.declaration.kernel_notes_bytes
-                && sha(&notes) == self.declaration.kernel_notes_sha256,
-            "running kernel notes differ from exact MAC build",
-        )?;
-        let lsms = kernel_text("/sys/kernel/security/lsm", SECURITYFS_MAGIC, 4096)?;
-        require(
-            lsm_list(&lsms)?
-                == self
-                    .declaration
-                    .active_lsms
-                    .iter()
-                    .map(String::as_str)
-                    .collect::<Vec<_>>(),
-            "registered LSM providers or order differ",
-        )?;
-        require(
-            kernel_bytes("/sys/module/apparmor/parameters/enabled", SYSFS_MAGIC, 16)? == b"Y\n",
-            "AppArmor is not actually enabled",
-        )?;
-        require(
-            self.own_proc_node.same_inode(Node::of(&self.own_proc)?)
-                && self.own_proc_node.same_inode(Node::of(&own_proc()?)?),
-            "original broker thread proc identity changed",
-        )?;
-        require(
-            context_matches(&proc_attr(&self.own_proc, false)?, BROKER),
+            context_matches(&proc_attr(&self.loaded.own_proc, false)?, BROKER),
             "actual broker SELinux identity differs",
         )?;
         require(
-            proc_attr(&self.own_proc, true)? == AA_BROKER,
+            proc_attr(&self.loaded.own_proc, true)? == AA_BROKER,
             "broker AppArmor profile is not the reviewed enforcing profile",
         )?;
-        let mut sequence = Some(self.av_sequence);
-        // Necessary also when the status page began at policyload=0.
-        access(
-            &self.root,
-            BROKER,
-            INIT,
-            "process",
-            &["transition"],
-            true,
-            &mut sequence,
-        )?;
-        require(
-            self.status.read()? == self.epoch,
-            "MAC epoch changed during revalidation",
-        )
+        self.loaded.stable_epoch()
+    }
+    pub(crate) fn loaded_policy(&self) -> &LoadedPolicyWitness {
+        &self.loaded
     }
 }
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -1438,16 +1276,16 @@ pub(crate) struct MacInitWitness {
 impl MacPreflight {
     fn binding(&self) -> ProviderBinding {
         ProviderBinding {
-            contract: self.contract.node,
-            policy: self.policy.node,
-            policy_export: self.policy_export.node,
-            derivation: self.derivation.node,
-            selinux_root: self.root_node,
-            broker_proc: self.own_proc_node,
-            tid: self.tid,
-            epoch: self.epoch,
-            av_sequence: self.av_sequence,
-            apparmor_revision: self.apparmor.revision,
+            contract: self.loaded.contract.node,
+            policy: self.loaded.policy.node,
+            policy_export: self.loaded.policy_export.node,
+            derivation: self.loaded.derivation.node,
+            selinux_root: self.loaded.root_node,
+            broker_proc: self.loaded.own_proc_node,
+            tid: self.loaded.tid,
+            epoch: self.loaded.epoch,
+            av_sequence: self.loaded.av_sequence,
+            apparmor_revision: self.loaded.apparmor.revision,
         }
     }
 
@@ -1558,10 +1396,10 @@ impl MacHelperWitness {
                 && context_matches(&label[..count as usize], LINKERCONFIG_EXEC),
             "held original linkerconfig ELF has another actual SELinux label",
         )?;
-        let mut sequence = Some(mac.av_sequence);
-        access(&mac.root, LINKERCONFIG, LINKERCONFIG_EXEC, "file",
+        let mut sequence = Some(mac.loaded.av_sequence);
+        access(&mac.loaded.root, LINKERCONFIG, LINKERCONFIG_EXEC, "file",
             &["getattr", "read", "open", "map", "execute", "execute_no_trans"], true, &mut sequence)?;
-        transition(&mac.root, LINKERCONFIG, LINKERCONFIG_EXEC, LINKERCONFIG)?;
+        transition(&mac.loaded.root, LINKERCONFIG, LINKERCONFIG_EXEC, LINKERCONFIG)?;
         require(Node::of(original)? == before, "held original linkerconfig changed during MAC validation")?;
         self.revalidate(mac, init, peer)
     }
@@ -1582,6 +1420,49 @@ fn valid_boot(value: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn loader_profile_contract_is_required_without_implicit_schema_upgrade() {
+        // This validates untrusted declaration syntax only. No configuration
+        // document can construct either actual role or loaded-policy witness.
+        let declared = serde_json::json!({
+            "schema": 3,
+            "scope": "droidloom_linux_android_mac_v3",
+            "base_cohort_sha256": "a".repeat(64),
+            "runtime_manifest_sha256": "b".repeat(64),
+            "kernel_release": "7.0.14-p4ctx3",
+            "kernel_notes_bytes": 32,
+            "kernel_notes_sha256": "c".repeat(64),
+            "active_lsms": ["capability", "selinux", "apparmor", "bpf"],
+            "apparmor_broker_policy_sha256": "d".repeat(64),
+            "apparmor_android_policy_sha256": "e".repeat(64),
+            "apparmor_loader_policy_sha256": "f".repeat(64),
+            "policy_input_bytes": 2048,
+            "policy_input_sha256": "1".repeat(64),
+            "policy_export_bytes": 2048,
+            "policy_export_sha256": "2".repeat(64),
+            "derivation_bytes": 2,
+            "derivation_sha256": "3".repeat(64),
+        });
+        let parsed: Declaration = serde_json::from_value(declared.clone()).unwrap();
+        assert!(parsed.validate_shape().is_ok());
+        let mut missing = declared.clone();
+        missing.as_object_mut().unwrap().remove("apparmor_loader_policy_sha256");
+        assert!(serde_json::from_value::<Declaration>(missing).is_err());
+        for (key, value) in [
+            ("schema", serde_json::json!(2)),
+            ("scope", serde_json::json!("droidloom_linux_android_mac_v2")),
+            ("apparmor_loader_policy_sha256", serde_json::json!("")),
+            ("apparmor_loader_policy_sha256", serde_json::json!("F".repeat(64))),
+        ] {
+            let mut invalid = declared.clone();
+            invalid[key] = value;
+            let invalid: Declaration = serde_json::from_value(invalid).unwrap();
+            assert!(invalid.validate_shape().is_err());
+        }
+        let mut supplied_role = declared;
+        supplied_role["role"] = serde_json::json!("droidloom_policy_loader");
+        assert!(serde_json::from_value::<Declaration>(supplied_role).is_err());
+    }
     #[test]
     fn separately_selected_policy_representations_reject_role_swap_and_same_size_change() {
         // The real target serializes an extended-permission table in a different

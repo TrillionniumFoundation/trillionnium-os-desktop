@@ -406,6 +406,24 @@ impl OwnedNamespaceWitness<'_> {
         self.owner.held()?.authority.revalidate_live(self)
     }
 
+    /// Lend only the existing live production cgroup's original systemd
+    /// owner. A private-control fixture, a PID, or an external manager
+    /// descriptor cannot acquire this borrow. The connection and all process
+    /// descriptors remain in the same owner and its retirement machinery.
+    pub(crate) fn systemd_owner<'b>(
+        &'b self,
+        selection: &'b crate::production_selection::ProductionSelection,
+    ) -> Result<crate::production_cgroup::SystemdOwnerWitness<'b>> {
+        self.revalidate_live_admission()?;
+        match &self.owner.held()?.authority {
+            HeldAuthority::Budgeted(group) => group
+                .systemd_owner(selection)
+                .map_err(|error| NamespaceError::CgroupResource(error.to_string())),
+            #[cfg(test)]
+            _ => Err(NamespaceError::HostAdmissionRequired),
+        }
+    }
+
     /// Exact borrowed PID namespace of an attested owned PID 1, if present.
     /// This is never populated by the ordinary map-construction witness.
     pub(crate) fn descendant_pid_namespace(&self) -> Option<&File> {

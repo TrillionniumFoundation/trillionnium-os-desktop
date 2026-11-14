@@ -65,9 +65,9 @@ fn manager_file_context(file: &File) -> Result<Vec<u8>> {
 }
 
 fn systemd_decisions(mac: &MacPreflight) -> Result<()> {
-    let mut sequence = Some(mac.av_sequence);
+    let mut sequence = Some(mac.loaded.av_sequence);
     access(
-        &mac.root,
+        &mac.loaded.root,
         BROKER,
         BROKER,
         "unix_stream_socket",
@@ -78,7 +78,7 @@ fn systemd_decisions(mac: &MacPreflight) -> Result<()> {
         &mut sequence,
     )?;
     access(
-        &mac.root,
+        &mac.loaded.root,
         BROKER,
         HOST,
         "unix_stream_socket",
@@ -87,7 +87,7 @@ fn systemd_decisions(mac: &MacPreflight) -> Result<()> {
         &mut sequence,
     )?;
     access(
-        &mac.root,
+        &mac.loaded.root,
         BROKER,
         MANAGER_FILE,
         "sock_file",
@@ -96,9 +96,9 @@ fn systemd_decisions(mac: &MacPreflight) -> Result<()> {
         &mut sequence,
     )?;
     // GetUnitByPIDFD actually receives the original broker-created PIDFD.
-    access(&mac.root, HOST, BROKER, "fd", &["use"], true, &mut sequence)?;
+    access(&mac.loaded.root, HOST, BROKER, "fd", &["use"], true, &mut sequence)?;
     access(
-        &mac.root,
+        &mac.loaded.root,
         BROKER,
         HOST,
         "process",
@@ -117,7 +117,7 @@ fn systemd_decisions(mac: &MacPreflight) -> Result<()> {
         "u:r:droidloom_query:s0",
     ] {
         access(
-            &mac.root,
+            &mac.loaded.root,
             HOST,
             target,
             "process",
@@ -128,7 +128,7 @@ fn systemd_decisions(mac: &MacPreflight) -> Result<()> {
     }
     for source in [INIT, "u:r:apexd:s0", LINKERCONFIG, "u:r:droidloom_query:s0"] {
         access(
-            &mac.root,
+            &mac.loaded.root,
             source,
             HOST,
             "unix_stream_socket",
@@ -137,7 +137,7 @@ fn systemd_decisions(mac: &MacPreflight) -> Result<()> {
             &mut sequence,
         )?;
         access(
-            &mac.root,
+            &mac.loaded.root,
             source,
             MANAGER_FILE,
             "sock_file",
@@ -175,7 +175,7 @@ impl MacPreflight {
         let value = MacSystemdWitness {
             provider: self.binding(),
             generation: original_systemd(owner.generation())?,
-            boot: self.boot.clone(),
+            boot: self.loaded.boot.clone(),
             manager_pidfd: descriptor_identity(owner.manager_pidfd())?,
             manager_proc: descriptor_identity(owner.manager_proc().as_fd())?,
             broker_pidfd: descriptor_identity(owner.broker_pidfd())?,
@@ -208,7 +208,7 @@ impl MacSystemdWitness {
         owner: &SystemdOwnerWitness<'_>,
     ) -> Result<()> {
         require(
-            self.provider == mac.binding() && self.boot == mac.boot,
+            self.provider == mac.binding() && self.boot == mac.loaded.boot,
             "systemd MAC witness belongs to another provider or boot",
         )?;
         mac.revalidate(owner.selection())?;

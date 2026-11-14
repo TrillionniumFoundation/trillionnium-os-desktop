@@ -2,7 +2,7 @@
 //! construct this type: the same owned child must pass the final admission,
 //! authenticated ExecArmed, control CLOEXEC and actual executable checks.
 use super::*;
-use crate::production_execution::ExecutionAdmission;
+use crate::production_execution::{ExecutionAdmission, PreparedExecution};
 use crate::production_readiness::{BootProperty, ReadinessError, read_boot_complete};
 use crate::production_selection::ProductionSelection;
 use std::ffi::CStr;
@@ -173,7 +173,7 @@ impl IsolatedNamespaces {
     pub(crate) fn execute_runtime(
         mut self,
         selection: &ProductionSelection,
-        admission: &ExecutionAdmission,
+        admission: &PreparedExecution,
     ) -> Result<ExecutedNamespaces> {
         admission
             .revalidate_tree(selection, &self.witness()?)
@@ -239,14 +239,9 @@ impl ExecutedNamespaces {
         Ok(pidfd_exited(&init.pidfd)? || pidfd_exited(&resources.pidfd)?)
     }
 
-    fn verify_exec(
-        &mut self,
-        selection: &ProductionSelection,
-        admission: &ExecutionAdmission,
-    ) -> Result<()> {
-        admission
-            .revalidate_tree(selection, &self.tree.witness()?)
-            .map_err(|error| NamespaceError::RuntimeResource(error.to_string()))?;
+    fn verify_original_exec(&mut self) -> Result<()> {
+        self.tree.verify_live_admission()?;
+        self.tree.require_cgroup_hierarchy_ready()?;
         let child = self
             .tree
             .init
@@ -265,6 +260,35 @@ impl ExecutedNamespaces {
         // init's required transitions need their own reviewed typed adapter;
         // this observer does not adopt a new numeric PID or namespace FD.
         runtime.verify(child)
+    }
+
+    fn verify_prepared_exec(
+        &mut self,
+        selection: &ProductionSelection,
+        admission: &PreparedExecution,
+    ) -> Result<()> {
+        admission
+            .revalidate_tree(selection, &self.tree.witness()?)
+            .map_err(|error| NamespaceError::RuntimeResource(error.to_string()))?;
+        self.verify_original_exec()?;
+        admission
+            .revalidate_tree(selection, &self.tree.witness()?)
+            .map_err(|error| NamespaceError::RuntimeResource(error.to_string()))
+    }
+
+    fn verify_exec(
+        &mut self,
+        selection: &ProductionSelection,
+        admission: &ExecutionAdmission,
+    ) -> Result<()> {
+        admission
+            .revalidate_tree(selection, &self.tree.witness()?)
+            .map_err(|error| NamespaceError::RuntimeResource(error.to_string()))?;
+        self.verify_original_exec()?;
+        let init = self.original_init_witness(selection)?;
+        admission
+            .revalidate_init(&init)
+            .map_err(|error| NamespaceError::RuntimeResource(error.to_string()))
     }
 
     pub(crate) fn readiness(

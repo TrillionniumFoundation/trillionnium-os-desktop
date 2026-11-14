@@ -28,6 +28,10 @@ use crate::production_namespace::{CgroupTreeReadyWitness, OwnedAuthorityRetired}
 mod application;
 pub(crate) use application::ApplicationLeaf;
 
+#[path = "production_systemd_endpoint.rs"]
+mod systemd_endpoint;
+pub(crate) use systemd_endpoint::AuthenticatedManagerEndpoint;
+
 #[path = "production_unit_lifetime.rs"]
 mod unit_lifetime;
 pub(crate) use unit_lifetime::{SystemdOwnerGeneration, SystemdOwnerWitness};
