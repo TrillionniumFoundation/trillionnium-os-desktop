@@ -19,11 +19,7 @@ fn diagnostics_send_typed_requests_and_render_text_or_json() {
     ] {
         let directory = tempfile::tempdir().unwrap();
         let socket = directory.path().join("control.sock");
-        let listener = match UnixListener::bind(&socket) {
-            Ok(listener) => listener,
-            Err(error) if error.kind() == std::io::ErrorKind::PermissionDenied => return,
-            Err(error) => panic!("bind test socket: {error}"),
-        };
+        let listener = UnixListener::bind(&socket).expect("bind test socket");
         let server = std::thread::spawn(move || {
             let (mut stream, _) = listener.accept().unwrap();
             let mut bytes = Vec::new();
