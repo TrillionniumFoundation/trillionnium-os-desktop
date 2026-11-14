@@ -1528,3 +1528,58 @@ jobs:
             ${{ runner.temp }}/audio538-complete-after.json
             ${{ runner.temp }}/audio538-ci-logs/*.stdout
             ${{ runner.temp }}/audio538-ci-logs/*.stderr
+
+  runtime-d6-init-security-metadata:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.93.0'
+      CARGO_TERM_COLOR: never
+      GIT_CONFIG_NOSYSTEM: '1'
+      GIT_CONFIG_GLOBAL: /dev/null
+      GIT_TERMINAL_PROMPT: '0'
+      RUNTIME_D6_INVENTORY_SHA256: 52f3362f9c5099538bf71e71256f9c7207882dff8cd4703f61dc6ebcdbaa0888
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Prepare exact Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal
+          rustc --version
+      # Independent Linux job; configure Rust and the existing host dependencies first.
+      # Pin RUNTIME_D6_INVENTORY_SHA256 in the containing workflow, outside this capsule.
+      - name: Authenticate and replay complete D6 component
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${RUNTIME_D6_INVENTORY_SHA256:?external D6 inventory pin required}"
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-d6-init-security-metadata-source-r1"
+          printf '%s  %s\n' "$RUNTIME_D6_INVENTORY_SHA256" "$capsule/FILES.sha256" | sha256sum --check --status
+          (cd "$capsule" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B "$capsule/verify.py" --inventory-sha256 "$RUNTIME_D6_INVENTORY_SHA256" --output "$RUNNER_TEMP/runtime-d6-producer" --report "$RUNNER_TEMP/runtime-d6-replay.json"
+          python3 -I -B "$capsule/test_verifier.py"
+      - name: Compile nine D6 controls and both normal release tools
+        timeout-minutes: 45
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-d6-init-security-metadata-source-r1"
+          python3 -I -B "$capsule/run_ci.py" --inventory-sha256 "$RUNTIME_D6_INVENTORY_SHA256" --producer "$RUNNER_TEMP/runtime-d6-producer" --target "$RUNNER_TEMP/runtime-d6-fresh-cargo-target" --report "$RUNNER_TEMP/runtime-d6-ci.json" --jobs 2
+          python3 -I -B "$capsule/verify.py" --inventory-sha256 "$RUNTIME_D6_INVENTORY_SHA256" --producer "$RUNNER_TEMP/runtime-d6-producer" --tests-log "$RUNNER_TEMP/runtime-d6-ci-logs/nine-runtime-input-controls.stdout" --report "$RUNNER_TEMP/runtime-d6-complete-after.json"
+      - name: Preserve complete D6 source and fresh runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-runtime-d6-evidence
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/runtime-d6-replay.json
+            ${{ runner.temp }}/runtime-d6-ci.json
+            ${{ runner.temp }}/runtime-d6-complete-after.json
+            ${{ runner.temp }}/runtime-d6-ci-logs/*.stdout
+            ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
