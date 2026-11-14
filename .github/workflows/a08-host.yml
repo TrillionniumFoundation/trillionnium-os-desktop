@@ -40,6 +40,12 @@ jobs:
           mkdir -p "$RUNNER_TEMP/a08"
           python3 support/android/verify_source_integrity.py \
             --out "$RUNNER_TEMP/a08/source-integrity.json"
+      - name: Verify current IHG app acceptance source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/current-app-acceptance/business/test_source.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-app-business.log"
       - name: Install Java, JNI and media host test tools
         shell: bash
         run: |
