@@ -647,9 +647,16 @@ impl IsolatedNamespaces {
 }
 
 #[cfg(test)]
-pub(super) fn receive_xattr_observation(child: &TreeChild) -> Result<i32> {
-    // Both records share the original three-second protocol budget. The
-    // metadata record never satisfies the original success barrier.
+pub(super) struct PreExecProcObservation {
+    pub(super) own_score_open_errno: i32,
+    pub(super) xattr_errno: i32,
+}
+
+#[cfg(test)]
+pub(super) fn receive_preexec_observation(child: &TreeChild) -> Result<PreExecProcObservation> {
+    // All three records share the original three-second protocol budget.
+    // Dumpability and the exact denied open cannot replace the final xattr
+    // observation, and no authenticated Failed record counts as a denial.
     let deadline = Instant::now() + PROTOCOL_TIMEOUT;
     wait_readable_until(&child.control, &child.pidfd, deadline)?;
     let dumpable = receive_dumpability_record(
@@ -668,6 +675,15 @@ pub(super) fn receive_xattr_observation(child: &TreeChild) -> Result<i32> {
         })
     );
     wait_readable_until(&child.control, &child.pidfd, deadline)?;
+    receive_preexec_denial_record(
+        child.control.as_raw_fd(),
+        child.nonce,
+        child.identity.pid,
+        child.uids.start,
+        child.gids.start,
+        || child.verify(),
+    )?;
+    wait_readable_until(&child.control, &child.pidfd, deadline)?;
     let observed = receive_xattr_record(
         child.control.as_raw_fd(),
         child.nonce,
@@ -681,7 +697,29 @@ pub(super) fn receive_xattr_observation(child: &TreeChild) -> Result<i32> {
             io::Error::new(io::ErrorKind::TimedOut, "private proc observation deadline").into(),
         );
     }
-    Ok(observed)
+    trace_private_proc_authority(child)?;
+    Ok(PreExecProcObservation {
+        own_score_open_errno: libc::EACCES,
+        xattr_errno: observed,
+    })
+}
+
+#[cfg(test)]
+fn receive_preexec_denial_record(
+    control: RawFd,
+    nonce: [u8; 16],
+    host_pid: u32,
+    uid: u32,
+    gid: u32,
+    verify_live: impl FnOnce() -> Result<()>,
+) -> Result<()> {
+    let packet = authenticated_private_record(control, nonce, host_pid, uid, gid)?;
+    if packet.phase != Phase::PrivateProcOwnScoreDenied as u32 || packet.errno != libc::EACCES {
+        return Err(NamespaceError::Rejected(
+            "pre-exec score open was not exact EACCES",
+        ));
+    }
+    verify_live()
 }
 
 #[cfg(test)]
@@ -748,7 +786,7 @@ fn receive_dumpability_record(
     gid: u32,
 ) -> Result<i32> {
     let packet = authenticated_private_record(control, nonce, host_pid, uid, gid)?;
-    if packet.phase != Phase::PrivateProcDumpability as u32 || !(0..=2).contains(&packet.errno) {
+    if packet.phase != Phase::PrivateProcDumpability as u32 || packet.errno != 0 {
         return Err(NamespaceError::Rejected(
             "fixed proc dumpability observation",
         ));
@@ -857,6 +895,10 @@ pub(super) fn trace_private_proc_authority(child: &TreeChild) -> Result<()> {
     let mount_id = held_mount_id(&score)?;
     let snapshot = (m.dev(), m.ino(), m.mode(), m.uid(), m.gid(), m.nlink());
     if m.mode() != libc::S_IFREG | 0o644
+        || m.uid() != 0
+        || m.gid() != 0
+        || child.uids.start == 0
+        || child.gids.start == 0
         || m.dev() != proc.metadata()?.dev()
         || mount_id != held_mount_id(&proc)?
     {
@@ -1289,6 +1331,107 @@ mod tests {
     }
 
     #[test]
+    fn production_runtime_proc_preexec_denial_keeps_live_and_final_observation_barriers() {
+        let nonce = [0x79; 16];
+        let pid = unsafe { libc::getpid() } as u32;
+        let uid = unsafe { libc::getuid() };
+        let gid = unsafe { libc::getgid() };
+        let packet = Packet::new(nonce, Phase::PrivateProcOwnScoreDenied, libc::EACCES, 1);
+        let (receiver, sender) = observation_channel(true);
+        send_packet(sender.as_raw_fd(), &packet).unwrap();
+        let calls = std::cell::Cell::new(0);
+        receive_preexec_denial_record(receiver.as_raw_fd(), nonce, pid, uid, gid, || {
+            calls.set(calls.get() + 1);
+            Ok(())
+        })
+        .unwrap();
+        assert_eq!(calls.get(), 1);
+
+        // A typed denial cannot replace the independently required xattr result.
+        send_packet(sender.as_raw_fd(), &packet).unwrap();
+        assert!(matches!(
+            receive_xattr_record(receiver.as_raw_fd(), nonce, pid, uid, gid, || panic!(
+                "repeated denial cannot complete xattr observation"
+            )),
+            Err(NamespaceError::Rejected(
+                "fixed xattr observation phase or errno"
+            ))
+        ));
+
+        // Even an authentic exact denial requires the same live owned sender.
+        send_packet(sender.as_raw_fd(), &packet).unwrap();
+        assert!(matches!(
+            receive_preexec_denial_record(receiver.as_raw_fd(), nonce, pid, uid, gid, || {
+                Err(NamespaceError::Rejected("PID 1 exited"))
+            }),
+            Err(NamespaceError::Rejected("PID 1 exited"))
+        ));
+    }
+
+    #[test]
+    fn production_runtime_proc_preexec_denial_rejects_failure_substitution_and_wrong_peer() {
+        let nonce = [0x7a; 16];
+        let pid = unsafe { libc::getpid() } as u32;
+        let uid = unsafe { libc::getuid() };
+        let gid = unsafe { libc::getgid() };
+        for case in 0..15 {
+            let (receiver, sender) = observation_channel(case != 13);
+            let mut packet = Packet::new(nonce, Phase::PrivateProcOwnScoreDenied, libc::EACCES, 1);
+            let (mut expected_pid, mut expected_uid, mut expected_gid) = (pid, uid, gid);
+            match case {
+                0 => {
+                    packet = Packet::new(
+                        [0x99; 16],
+                        Phase::PrivateProcOwnScoreDenied,
+                        libc::EACCES,
+                        1,
+                    )
+                }
+                1 => packet = Packet::new(nonce, Phase::PrivateProcOwnScoreDenied, libc::EACCES, 2),
+                2 => expected_pid += 1,
+                3 => expected_uid += 1,
+                4 => expected_gid += 1,
+                5 => packet.phase = Phase::WritableProcChecked as u32,
+                6 => packet.phase = Phase::PrivateProcDumpability as u32,
+                7 => packet.errno = 0,
+                8 => packet.errno = libc::EPERM,
+                9 => packet.errno = libc::EROFS,
+                10 => packet.errno = -1,
+                11 => packet.errno = 4096,
+                12 => {
+                    packet.phase = Phase::Failed as u32;
+                    packet.errno =
+                        (0x3000_0000_u32 | (4 << 24) | (485 << 12) | libc::EACCES as u32) as i32;
+                }
+                _ => (),
+            }
+            let file = File::open("/dev/null").unwrap();
+            let count = || std::fs::read_dir("/proc/self/fd").unwrap().count();
+            let before = count();
+            if case == 14 {
+                send_one_fd(sender.as_raw_fd(), &packet, file.as_fd()).unwrap();
+            } else {
+                send_packet(sender.as_raw_fd(), &packet).unwrap();
+            }
+            let calls = std::cell::Cell::new(0);
+            let result = receive_preexec_denial_record(
+                receiver.as_raw_fd(),
+                nonce,
+                expected_pid,
+                expected_uid,
+                expected_gid,
+                || {
+                    calls.set(calls.get() + 1);
+                    Ok(())
+                },
+            );
+            assert!(result.is_err(), "invalid pre-exec denial case {case}");
+            assert_eq!(calls.get(), 0);
+            assert_eq!(count(), before);
+        }
+    }
+
+    #[test]
     fn production_runtime_proc_dumpability_keeps_original_authenticated_failure() {
         let nonce = [0x77; 16];
         let (receiver, sender) = observation_channel(true);
@@ -1328,7 +1471,7 @@ mod tests {
         let pid = unsafe { libc::getpid() } as u32;
         let uid = unsafe { libc::getuid() };
         let gid = unsafe { libc::getgid() };
-        for case in 0..8 {
+        for case in 0..10 {
             let (receiver, sender) = observation_channel(case != 7);
             let mut packet = Packet::new(nonce, Phase::PrivateProcDumpability, 0, 1);
             let mut expected_pid = pid;
@@ -1338,6 +1481,8 @@ mod tests {
                 2 => packet.phase = Phase::WritableProcChecked as u32,
                 3 => packet = Packet::new([0x99; 16], Phase::PrivateProcDumpability, 0, 1),
                 4 => expected_pid += 1,
+                8 => packet.errno = 1,
+                9 => packet.errno = 2,
                 _ => (),
             }
             let file = File::open("/dev/null").unwrap();

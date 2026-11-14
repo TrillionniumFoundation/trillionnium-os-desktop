@@ -76,6 +76,8 @@ pub(super) enum Phase {
     #[cfg(test)]
     PrivateProcDumpability = 42,
     #[cfg(test)]
+    PrivateProcOwnScoreDenied = 46,
+    #[cfg(test)]
     ProbeProcessFilesystems = 26,
     #[cfg(test)]
     ProcessFilesystemsChecked = 27,

@@ -3754,7 +3754,9 @@ mod tests {
                     &Packet::new(init.nonce, Phase::ProbeWritableProc, 0, init.parent_pid),
                 )
                 .unwrap();
-                let xattr_errno = writable_proc::receive_xattr_observation(init).unwrap();
+                let observed = writable_proc::receive_preexec_observation(init).unwrap();
+                assert_eq!(observed.own_score_open_errno, libc::EACCES);
+                let xattr_errno = observed.xattr_errno;
                 let mut observation = tree.writable_proc.take().unwrap();
                 observation.verify(tree.init.as_ref().unwrap()).unwrap();
                 tree.writable_proc = Some(observation);
@@ -3775,7 +3777,7 @@ mod tests {
                 drop(dev);
                 drop(root);
                 println!(
-                    "private writable-proc observation: exact owned PID1 oom_score_adj original bytes restored; global sysctl write opens denied without writes; fixed private DEV security.selinux boot_status_prop set/get errno={xattr_errno}; attribute_storage_supported={}; MAC_qualified=false Android=0",
+                    "private pre-exec writable-proc observation: dumpable0 inherited-mm host-root score inode; exact owned PID1 oom_score_adj open denied EACCES without body reads or writes; global sysctl write opens denied without writes; fixed private DEV security.selinux boot_status_prop set/get errno={xattr_errno}; attribute_storage_supported={}; same-PID sealed post-exec original-value write remains separately required; MAC_qualified=false Android=0",
                     xattr_errno == 0
                 );
             }

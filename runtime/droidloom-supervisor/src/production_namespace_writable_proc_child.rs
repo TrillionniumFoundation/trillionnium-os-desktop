@@ -444,7 +444,7 @@ pub(super) unsafe fn run(nonce: [u8; 16], parent_pid: u32, mode: Mode) -> ! {
         if matches!(mode, Mode::WritableProcControl) {
             command(nonce, parent_pid, Phase::ProbeWritableProc);
             STAGE.store(4, std::sync::atomic::Ordering::Relaxed);
-            let observed = private_write_and_xattr_observation(nonce);
+            let observed = private_preexec_denial_and_xattr_observation(nonce);
             descriptor_barrier(nonce);
             // errno carries only this fixed observation at this test-only phase.
             // It never grants execution, changes an identity or reports MAC.
@@ -464,17 +464,18 @@ pub(super) unsafe fn run(nonce: [u8; 16], parent_pid: u32, mode: Mode) -> ! {
 }
 
 #[cfg(test)]
-unsafe fn private_write_and_xattr_observation(nonce: [u8; 16]) -> i32 {
+unsafe fn private_preexec_denial_and_xattr_observation(nonce: [u8; 16]) -> i32 {
     unsafe {
-        // Read-only diagnostic of the actual raw child, before the unchanged
-        // open/write probe. This does not change dumpability or credentials.
+        // This raw child still has the inherited pre-exec mm. With dumpable0,
+        // its proc score inode is owned by host root, outside its mapped IDs.
+        // Require the exact denied open without reading or writing the body.
+        // The separate sealed same-PID post-exec control must still demonstrate
+        // an actual original-value write after exec creates the owned mm.
         let dumpable = libc::syscall(libc::SYS_prctl, libc::PR_GET_DUMPABLE, 0, 0, 0, 0);
-        if !(0..=2).contains(&dumpable) {
-            failed(nonce, line!());
+        if dumpable != 0 {
+            rejected(nonce);
         }
         send(nonce, Phase::PrivateProcDumpability, dumpable as i32, 1);
-        // Write back only this owned PID 1's original score. No global proc
-        // file is opened for a successful write or receives any contents.
         let score = libc::syscall(
             libc::SYS_openat,
             libc::AT_FDCWD,
@@ -482,27 +483,15 @@ unsafe fn private_write_and_xattr_observation(nonce: [u8; 16]) -> i32 {
             libc::O_RDWR | libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK,
             0,
         );
-        if score < 0 || score > i32::MAX as libc::c_long {
-            failed(nonce, line!());
-        }
-        let mut before = [0_u8; 32];
-        let n = libc::syscall(libc::SYS_read, score, before.as_mut_ptr(), before.len());
-        if n <= 0 || n >= before.len() as libc::c_long || before[n as usize - 1] != b'\n' {
+        if score >= 0 {
+            libc::syscall(libc::SYS_close, score);
             rejected(nonce);
         }
-        if libc::syscall(libc::SYS_lseek, score, 0, libc::SEEK_SET) != 0
-            || libc::syscall(libc::SYS_write, score, before.as_ptr(), n) != n
-            || libc::syscall(libc::SYS_lseek, score, 0, libc::SEEK_SET) != 0
-        {
+        let score_errno = *libc::__errno_location();
+        if score_errno != libc::EACCES {
             failed(nonce, line!());
         }
-        let mut after = [0_u8; 32];
-        if libc::syscall(libc::SYS_read, score, after.as_mut_ptr(), after.len()) != n
-            || before[..n as usize] != after[..n as usize]
-        {
-            rejected(nonce);
-        }
-        libc::syscall(libc::SYS_close, score);
+        send(nonce, Phase::PrivateProcOwnScoreDenied, score_errno, 1);
         for protected in [c"/proc/sys/kernel/hostname", c"/proc/sysrq-trigger"] {
             let raw = libc::syscall(
                 libc::SYS_openat,
