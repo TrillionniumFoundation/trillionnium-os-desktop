@@ -4,9 +4,14 @@
 //! peer PIDFD must identify initial-namespace root PID1; this same process holds
 //! the original manager, observer, namespace, directory and server inode owners.
 //! A loaded-policy observer must separately authenticate their current labels.
-//! No endpoint or generation value admits Android or permits a label mutation.
+//! No endpoint or generation value admits Android. The distinct consumed label
+//! operation also requires the actual fixed loader role and installed inputs.
 use super::*;
 use std::time::Instant;
+
+#[path = "production_systemd_label.rs"]
+mod label;
+pub(crate) use label::ManagerLabelReport;
 
 const SO_PEERPIDFD: i32 = 77;
 const PROC_MAGIC: libc::c_long = 0x9fa0;
@@ -198,11 +203,11 @@ impl Task {
     }
 }
 
-pub(crate) struct AuthenticatedManagerEndpoint {
+struct EndpointCustody {
     socket: File,
     socket_node: NodeIdentity,
     file: File,
-    file_seal: Metadata,
+    server_node: NodeIdentity,
     directories: Vec<File>,
     directory_nodes: Vec<NodeIdentity>,
     manager: Task,
@@ -384,8 +389,8 @@ impl Task {
     }
 }
 
-impl AuthenticatedManagerEndpoint {
-    pub(crate) fn capture(deadline: Instant) -> Result<Self> {
+impl EndpointCustody {
+    fn capture(deadline: Instant) -> Result<(Self, Metadata)> {
         before(deadline)?;
         let namespaces = initial_namespaces()?;
         let mut directories = vec![open_absolute(c"/", libc::O_RDONLY | libc::O_DIRECTORY)?];
@@ -421,8 +426,8 @@ impl AuthenticatedManagerEndpoint {
         let value = Self {
             socket_node: NodeIdentity::of(&socket)?,
             socket,
+            server_node: NodeIdentity::of(&file)?,
             file,
-            file_seal,
             directory_nodes: directories
                 .iter()
                 .map(NodeIdentity::of)
@@ -434,10 +439,10 @@ impl AuthenticatedManagerEndpoint {
             thread: unsafe { libc::syscall(libc::SYS_gettid) } as libc::pid_t,
             _same_thread: PhantomData,
         };
-        value.revalidate_until(deadline)?;
-        Ok(value)
+        value.check_until(deadline)?;
+        Ok((value, file_seal))
     }
-    pub(crate) fn revalidate_until(&self, deadline: Instant) -> Result<()> {
+    fn check_until(&self, deadline: Instant) -> Result<()> {
         before(deadline)?;
         require(
             unsafe { libc::syscall(libc::SYS_gettid) } as libc::pid_t == self.thread
@@ -481,8 +486,8 @@ impl AuthenticatedManagerEndpoint {
         }
         let named = open_at(self.directories.last().unwrap(), c"private", libc::O_PATH)?;
         require(
-            file_seal(&self.file.metadata()?) == file_seal(&self.file_seal)
-                && file_seal(&named.metadata()?) == file_seal(&self.file_seal)
+            NodeIdentity::of(&self.file)? == self.server_node
+                && NodeIdentity::of(&named)? == self.server_node
                 && NodeIdentity::of(&self.socket)? == self.socket_node,
             "fixed manager socket inode changed",
         )?;
@@ -529,5 +534,96 @@ impl AuthenticatedManagerEndpoint {
             observer_executable: NodeIdentity::of(&self.observer.executable)?,
             connection: self.socket_node,
         })
+    }
+}
+
+/// Ordinary manager observations always retain the complete immutable server
+/// seal. The label operation consumes this type; it never manufactures a new
+/// ordinary endpoint with a changed ctime.
+pub(crate) struct AuthenticatedManagerEndpoint {
+    custody: EndpointCustody,
+    file_seal: Metadata,
+}
+
+impl EndpointCustody {
+    fn check_seal_until(&self, seal: &Metadata, deadline: Instant) -> Result<()> {
+        self.check_until(deadline)?;
+        let named = open_at(self.directories.last().unwrap(), c"private", libc::O_PATH)?;
+        require(
+            file_seal(&self.file.metadata()?) == file_seal(seal)
+                && file_seal(&named.metadata()?) == file_seal(seal),
+            "immutable manager server inode changed",
+        )?;
+        before(deadline)
+    }
+}
+
+impl AuthenticatedManagerEndpoint {
+    pub(crate) fn capture(deadline: Instant) -> Result<Self> {
+        let (custody, file_seal) = EndpointCustody::capture(deadline)?;
+        let value = Self { custody, file_seal };
+        value.revalidate_until(deadline)?;
+        Ok(value)
+    }
+    pub(crate) fn revalidate_until(&self, deadline: Instant) -> Result<()> {
+        self.custody.check_seal_until(&self.file_seal, deadline)
+    }
+    pub(crate) fn manager_pidfd(&self) -> BorrowedFd<'_> {
+        self.custody.manager_pidfd()
+    }
+    pub(crate) fn manager_proc(&self) -> &File {
+        self.custody.manager_proc()
+    }
+    pub(crate) fn observer_pidfd(&self) -> BorrowedFd<'_> {
+        self.custody.observer_pidfd()
+    }
+    pub(crate) fn observer_proc(&self) -> &File {
+        self.custody.observer_proc()
+    }
+    pub(super) fn observer_pid(&self) -> u32 {
+        self.custody.observer_pid()
+    }
+    pub(crate) fn connection(&self) -> &File {
+        self.custody.connection()
+    }
+    pub(crate) fn server_inode(&self) -> &File {
+        self.custody.server_inode()
+    }
+    pub(crate) fn generation(&self) -> Result<ManagerEndpointGeneration> {
+        self.custody.generation()
+    }
+}
+
+/// Read-only borrow for the fixed labeler's actual MAC observation. Its only
+/// constructors are the original immutable owner and the consumed label stage.
+/// Neither this borrow nor a label report is accepted by the unit RPC owner.
+pub(crate) struct ManagerLabelObservation<'a> {
+    custody: &'a EndpointCustody,
+    seal: &'a Metadata,
+}
+impl ManagerLabelObservation<'_> {
+    pub(crate) fn revalidate_until(&self, deadline: Instant) -> Result<()> {
+        self.custody.check_seal_until(self.seal, deadline)
+    }
+    pub(crate) fn manager_proc(&self) -> &File {
+        &self.custody.manager.proc
+    }
+    pub(crate) fn observer_proc(&self) -> &File {
+        &self.custody.observer.proc
+    }
+    pub(crate) fn manager_executable(&self) -> &File {
+        &self.custody.manager.executable
+    }
+    pub(crate) fn observer_executable(&self) -> &File {
+        &self.custody.observer.executable
+    }
+    pub(crate) fn connection(&self) -> &File {
+        &self.custody.socket
+    }
+    pub(crate) fn server_inode(&self) -> &File {
+        &self.custody.file
+    }
+    pub(crate) fn generation(&self) -> Result<ManagerEndpointGeneration> {
+        self.custody.generation()
     }
 }

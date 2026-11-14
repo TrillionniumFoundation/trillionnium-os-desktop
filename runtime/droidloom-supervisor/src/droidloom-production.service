@@ -1,6 +1,7 @@
 [Unit]
 Description=Droidloom production cell broker
-After=local-fs.target
+Requires=droidloom-manager-label.service
+After=local-fs.target droidloom-manager-label.service
 
 [Service]
 Type=exec

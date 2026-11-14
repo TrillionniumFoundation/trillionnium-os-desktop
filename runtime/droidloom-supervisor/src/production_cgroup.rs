@@ -30,7 +30,10 @@ pub(crate) use application::ApplicationLeaf;
 
 #[path = "production_systemd_endpoint.rs"]
 mod systemd_endpoint;
-pub(crate) use systemd_endpoint::AuthenticatedManagerEndpoint;
+pub(crate) use systemd_endpoint::{
+    AuthenticatedManagerEndpoint, ManagerEndpointGeneration, ManagerLabelObservation,
+    ManagerLabelReport,
+};
 
 #[path = "production_unit_lifetime.rs"]
 mod unit_lifetime;

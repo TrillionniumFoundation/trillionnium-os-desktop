@@ -22,7 +22,7 @@ fn original_systemd<T>(value: std::result::Result<T, CgroupError>) -> Result<T> 
 /// This is the O_PATH inode of /run/systemd/private held by the original
 /// manager channel. Its connected client socket is a different kernel object
 /// and cannot be used as evidence for the server sock_file label.
-fn manager_file_context(file: &File) -> Result<Vec<u8>> {
+pub(super) fn manager_file_context(file: &File) -> Result<Vec<u8>> {
     let before = Node::of(file)?;
     require(
         before.mode & libc::S_IFMT == libc::S_IFSOCK,

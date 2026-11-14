@@ -35,6 +35,8 @@ pub mod production_identity;
 #[cfg(target_os = "linux")]
 mod production_mac;
 #[cfg(target_os = "linux")]
+pub mod production_mac_install;
+#[cfg(target_os = "linux")]
 mod production_mounts;
 #[cfg(target_os = "linux")]
 pub mod production_namespace;

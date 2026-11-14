@@ -63,6 +63,10 @@ pub(crate) use policy::LoadedPolicyWitness;
 mod loader;
 pub(crate) use loader::LoaderMacWitness;
 
+#[path = "production_mac_manager_label.rs"]
+mod manager_label;
+pub(crate) use manager_label::ManagerLabelPermit;
+
 #[path = "production_mac_listener.rs"]
 mod listener;
 pub(crate) use listener::MacListenerWitness;
