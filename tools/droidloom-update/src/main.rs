@@ -159,6 +159,31 @@ enum Action {
         #[arg(long)]
         work: PathBuf,
     },
+    /// Build original libpng and pngtest with the complete official ownership fix.
+    /// Does not install a library or execute the regression.
+    #[command(name = "libpng-security-build")]
+    LibpngSecurityBuild {
+        #[arg(long)]
+        work: PathBuf,
+    },
+    /// Build services and upstream WmTests on the complete exact Native source profile.
+    /// Does not install framework artifacts or execute device tests.
+    #[command(name = "wm-security-build")]
+    WmSecurityBuild {
+        #[arg(long)]
+        work: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+    },
+    /// Build the actual fixed user vendor image on the complete Native source profile.
+    /// Does not install an image, alter MAC policy or qualify production signing.
+    #[command(name = "vendor-image-build")]
+    VendorImageBuild {
+        #[arg(long)]
+        work: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+    },
     /// Restore an interrupted source projection under the normal two workspace locks.
     /// Does not compile, install, bootstrap dependencies, or start services.
     RecoverSource {
@@ -244,6 +269,9 @@ fn native_pair_job_capacity(available: usize, pair: bool, reserved: bool) -> usi
 }
 
 fn selected_build_out(command: Option<&Action>, work: &std::path::Path) -> Result<PathBuf> {
+    if let Some(Action::WmSecurityBuild { out, .. } | Action::VendorImageBuild { out, .. }) = command {
+        return native_generation_art::validated_output(work, out);
+    }
     if let Some(Action::NativeRoleIngressBuild { out, .. }) = command {
         return native_role_ingress::validated_output(work, out);
     }
@@ -254,11 +282,12 @@ fn selected_build_out(command: Option<&Action>, work: &std::path::Path) -> Resul
         return native_generation_art::validated_output(work, out);
     }
 
-    if matches!(command, Some(Action::VendorPolicyBuild { .. } | Action::VendorPolicyBundleBuild { .. } | Action::IntentResolverSecurityBuild { .. } | Action::AacSecurityBuild { .. })) {
+    if matches!(command, Some(Action::VendorPolicyBuild { .. } | Action::VendorPolicyBundleBuild { .. } | Action::IntentResolverSecurityBuild { .. } | Action::AacSecurityBuild { .. } | Action::LibpngSecurityBuild { .. })) {
         let out = work.join(match command {
             Some(Action::VendorPolicyBundleBuild { .. }) => "android-user-vendor-policy-bundle-out",
             Some(Action::IntentResolverSecurityBuild { .. }) => "android-user-intentresolver-security-out",
             Some(Action::AacSecurityBuild { .. }) => "android-user-aac-security-out",
+            Some(Action::LibpngSecurityBuild { .. }) => "android-user-libpng-security-out",
             _ => "android-user-vendor-policy-out",
         });
         if !work.is_absolute() {
@@ -321,7 +350,7 @@ fn recover_source_workspace(work: &std::path::Path) -> Result<()> {
 }
 
 fn execute(args: Args) -> Result<()> {
-    if matches!(&args.command, Some(Action::VendorPolicyBuild { .. } | Action::VendorPolicyBundleBuild { .. } | Action::IntentResolverSecurityBuild { .. } | Action::AacSecurityBuild { .. }))
+    if matches!(&args.command, Some(Action::VendorPolicyBuild { .. } | Action::VendorPolicyBundleBuild { .. } | Action::IntentResolverSecurityBuild { .. } | Action::AacSecurityBuild { .. } | Action::LibpngSecurityBuild { .. } | Action::WmSecurityBuild { .. } | Action::VendorImageBuild { .. }))
         && (args.clean || args.build_only || args.bootstrapped) {
         return fail("fixed vendor policy does not accept cleanup, bundle or bootstrap options");
     }
@@ -409,6 +438,9 @@ fn execute(args: Args) -> Result<()> {
         | Some(Action::VendorPolicyBundleBuild { work })
         | Some(Action::IntentResolverSecurityBuild { work })
         | Some(Action::AacSecurityBuild { work })
+        | Some(Action::LibpngSecurityBuild { work })
+        | Some(Action::WmSecurityBuild { work, .. })
+        | Some(Action::VendorImageBuild { work, .. })
         | Some(Action::NativeEngineBuild { work, .. })
         | Some(Action::NativeGenerationArtBuild { work, .. })
         | Some(Action::NativeGenerationBuild { work, .. })
@@ -505,6 +537,17 @@ fn execute(args: Args) -> Result<()> {
         return android::build_aac_security_on_audio_source(
             &repo, &source, &out, &work, product, jobs,
         );
+    }
+    if matches!(args.command, Some(Action::LibpngSecurityBuild { .. })) {
+        return android::build_libpng_security_on_audio_source(
+            &repo, &source, &out, &work, product, jobs,
+        );
+    }
+    if matches!(args.command, Some(Action::WmSecurityBuild { .. })) {
+        return android::build_wm_security(&repo, &source, &out, &work, product, jobs);
+    }
+    if matches!(args.command, Some(Action::VendorImageBuild { .. })) {
+        return android::build_vendor_image(&repo, &source, &out, &work, product, jobs);
     }
     if matches!(args.command, Some(Action::VendorPolicyBuild { .. })) {
         eprintln!("Building the original final vendor_sepolicy.cil with the exact Audio source profile; APEX, selected-cohort policy compatibility and runtime remain separate.");
@@ -635,6 +678,71 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn vendor_image_cli_keeps_one_target_and_explicit_output() {
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path().join("work"); fs::create_dir(&work).unwrap();
+        let out = d.path().join("vendor-out");
+        let valid = ["droidloom-update", "vendor-image-build", "--work", work.to_str().unwrap(), "--out", out.to_str().unwrap()];
+        let args = Args::try_parse_from(valid).unwrap();
+        assert!(matches!(args.command, Some(Action::VendorImageBuild { .. })));
+        assert_eq!(selected_build_out(args.command.as_ref(), &work).unwrap(), out);
+        assert!(Args::try_parse_from(["droidloom-update", "vendor-image-build", "--work", work.to_str().unwrap()]).is_err());
+        for extra in [&["vendorimage"][..], &["--variant", "userdebug"][..], &["--source-lock", "/other"][..]] {
+            let mut argv = valid.to_vec(); argv.extend_from_slice(extra);
+            assert!(Args::try_parse_from(argv).is_err());
+        }
+        for option in ["--clean", "--build-only", "--bootstrapped"] {
+            let args = Args::try_parse_from(["droidloom-update", option, "vendor-image-build", "--work", work.to_str().unwrap(), "--out", out.to_str().unwrap()]).unwrap();
+            assert!(execute(args).unwrap_err().to_string().contains("does not accept cleanup"));
+        }
+        std::os::unix::fs::symlink(&work, &out).unwrap();
+        assert!(selected_build_out(args.command.as_ref(), &work).is_err());
+    }
+
+    #[test]
+    fn libpng_security_cli_rejects_widening_and_output_aliases() {
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path();
+        let valid = ["droidloom-update", "libpng-security-build", "--work", work.to_str().unwrap()];
+        let args = Args::try_parse_from(valid).unwrap();
+        assert!(matches!(args.command, Some(Action::LibpngSecurityBuild { .. })));
+        let out = work.join("android-user-libpng-security-out");
+        assert_eq!(selected_build_out(args.command.as_ref(), work).unwrap(), out);
+        for extra in [&["services"][..], &["--out", "/another"][..], &["--variant", "eng"][..], &["--source-lock", "/other"][..]] {
+            let mut argv = valid.to_vec(); argv.extend_from_slice(extra);
+            assert!(Args::try_parse_from(argv).is_err());
+        }
+        for option in ["--clean", "--build-only", "--bootstrapped"] {
+            let args = Args::try_parse_from(["droidloom-update", option, "libpng-security-build", "--work", work.to_str().unwrap()]).unwrap();
+            assert!(execute(args).unwrap_err().to_string().contains("does not accept cleanup"));
+        }
+        std::os::unix::fs::symlink(work, out).unwrap();
+        assert!(selected_build_out(args.command.as_ref(), work).is_err());
+    }
+
+    #[test]
+    fn wm_security_cli_keeps_fixed_scope_and_explicit_output() {
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path().join("work"); fs::create_dir(&work).unwrap();
+        let out = d.path().join("wm-out");
+        let valid = ["droidloom-update", "wm-security-build", "--work", work.to_str().unwrap(), "--out", out.to_str().unwrap()];
+        let args = Args::try_parse_from(valid).unwrap();
+        assert!(matches!(args.command, Some(Action::WmSecurityBuild { .. })));
+        assert_eq!(selected_build_out(args.command.as_ref(), &work).unwrap(), out);
+        assert!(Args::try_parse_from(["droidloom-update", "wm-security-build", "--work", work.to_str().unwrap()]).is_err());
+        for extra in [&["services"][..], &["--variant", "eng"][..], &["--source-lock", "/other"][..]] {
+            let mut argv = valid.to_vec(); argv.extend_from_slice(extra);
+            assert!(Args::try_parse_from(argv).is_err());
+        }
+        for option in ["--clean", "--build-only", "--bootstrapped"] {
+            let args = Args::try_parse_from(["droidloom-update", option, "wm-security-build", "--work", work.to_str().unwrap(), "--out", out.to_str().unwrap()]).unwrap();
+            assert!(execute(args).unwrap_err().to_string().contains("does not accept cleanup"));
+        }
+        std::os::unix::fs::symlink(&work, &out).unwrap();
+        assert!(selected_build_out(args.command.as_ref(), &work).is_err());
+    }
+
     #[test]
     fn vendor_policy_bundle_cli_is_fixed_without_source_target_or_variant_overrides() {
         let valid=["droidloom-update","vendor-policy-bundle-build","--work","/not-executed"];

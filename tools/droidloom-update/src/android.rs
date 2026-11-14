@@ -2303,6 +2303,8 @@ fn enforce_strict_soong_dependencies(command: &mut Command) {
 
 #[path = "aac_security.rs"]
 mod aac_security;
+#[path = "libpng_security.rs"]
+mod libpng_security;
 #[path = "wm_security.rs"]
 mod wm_security;
 
@@ -2325,74 +2327,98 @@ enum FixedProductionRequest<'a> {
     VendorPolicyBundleOnAudioSource,
     IntentResolverSecurityOnAudioSource,
     AacSecurityOnAudioSource,
+    LibpngSecurityOnAudioSource,
+    WmSecurityOnNativeSource,
+    VendorImageOnNativeSource,
     NativePair,
     NativeArt(crate::native_generation_art::Flavor),
     NativeRoleIngress(Option<&'a Path>),
 }
 
 impl FixedProductionRequest<'_> {
+    fn uses_complete_native_source(&self) -> bool {
+        matches!(self, Self::NativePair | Self::WmSecurityOnNativeSource | Self::VendorImageOnNativeSource)
+    }
+    fn source_lock(&self, repo: &Path) -> Result<PathBuf> {
+        match self {
+            Self::NativePair | Self::WmSecurityOnNativeSource | Self::VendorImageOnNativeSource =>
+                crate::native_generation_pair_build::source_lock_path(repo),
+            Self::Existing(SoongDependencyMode::Strict, targets) if *targets == TARGETS =>
+                fail("full product requires the independently qualified 651-project Audio/Native source union; the historical 214-project lock cannot produce a complete bundle"),
+            Self::NativeRoleIngress(_) => crate::native_role_ingress::source_lock_path(repo),
+            Self::NativeArt(_) => Ok(repo.join("android/manifest/m2-sparse-source-lock.json")),
+            _ => selected_source_lock(repo, self.source_mode()),
+        }
+    }
     fn source_mode(&self) -> SoongDependencyMode {
         match self {
             Self::Existing(mode, _) => *mode,
-            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) => SoongDependencyMode::Strict,
-            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource => SoongDependencyMode::AudioApexTargetClosure,
+            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) | Self::WmSecurityOnNativeSource | Self::VendorImageOnNativeSource => SoongDependencyMode::Strict,
+            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource | Self::LibpngSecurityOnAudioSource => SoongDependencyMode::AudioApexTargetClosure,
         }
     }
     fn projection_targets(&self) -> &[&str] {
         match self {
             Self::Existing(_, targets) => targets,
             Self::NativePair => crate::native_generation_pair_build::TARGETS,
+            Self::WmSecurityOnNativeSource => wm_security::TARGETS,
+            Self::VendorImageOnNativeSource => TARGETS,
             Self::NativeArt(_) => crate::native_generation_art::TARGETS,
             Self::NativeRoleIngress(_) => crate::native_role_ingress::TARGETS,
-            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource => &["com.android.hardware.audio.droidloom"],
+            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource | Self::LibpngSecurityOnAudioSource => &["com.android.hardware.audio.droidloom"],
         }
     }
     fn requested_targets(&self) -> &[&str] {
         match self {
             Self::Existing(_, targets) => targets,
             Self::NativePair => crate::native_generation_pair_build::TARGETS,
+            Self::WmSecurityOnNativeSource => wm_security::TARGETS,
+            Self::VendorImageOnNativeSource => &["vendorimage"],
             Self::NativeArt(_) => crate::native_generation_art::TARGETS,
             Self::NativeRoleIngress(_) => crate::native_role_ingress::TARGETS,
             Self::VendorPolicyOnAudioSource => &["vendor_sepolicy.cil"],
             Self::VendorPolicyBundleOnAudioSource => VENDOR_POLICY_BUNDLE_TARGETS,
             Self::IntentResolverSecurityOnAudioSource => &["IntentResolver"],
             Self::AacSecurityOnAudioSource => aac_security::TARGETS,
+            Self::LibpngSecurityOnAudioSource => libpng_security::TARGETS,
         }
     }
     fn validate(&self, product: &str) -> Result<()> {
         match self {
             Self::Existing(mode, targets) => validate_soong_dependency_mode(*mode, targets),
-            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) => {
+            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) | Self::WmSecurityOnNativeSource | Self::VendorImageOnNativeSource => {
                 if product != "droidloom_x86_64" {
                     return fail("fixed Native generation source requires droidloom_x86_64");
                 }
                 validate_soong_dependency_mode(SoongDependencyMode::Strict, self.projection_targets())
             }
-            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource if product == "droidloom_x86_64" => Ok(()),
+            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource | Self::LibpngSecurityOnAudioSource if product == "droidloom_x86_64" => Ok(()),
             Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource => fail("fixed Audio-source vendor policy requires droidloom_x86_64"),
             Self::IntentResolverSecurityOnAudioSource => fail("fixed IntentResolver security target requires droidloom_x86_64"),
             Self::AacSecurityOnAudioSource => fail("fixed AAC security targets require droidloom_x86_64"),
+            Self::LibpngSecurityOnAudioSource => fail("fixed libpng security targets require droidloom_x86_64"),
         }
     }
     fn soong_targets(&self, out: &Path, product: &str) -> Result<Vec<PathBuf>> {
         self.validate(product)?;
         match self {
             Self::Existing(mode, targets) => selected_soong_targets(*mode, targets, out, product),
-            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) =>
+            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) | Self::WmSecurityOnNativeSource | Self::VendorImageOnNativeSource =>
                 selected_soong_targets(SoongDependencyMode::Strict, self.requested_targets(), out, product),
             Self::VendorPolicyOnAudioSource => Ok(vec![PathBuf::from("vendor_sepolicy.cil")]),
             Self::VendorPolicyBundleOnAudioSource => Ok(VENDOR_POLICY_BUNDLE_TARGETS.iter().map(|target|PathBuf::from(*target)).collect()),
             Self::IntentResolverSecurityOnAudioSource => Ok(vec![PathBuf::from("IntentResolver")]),
             Self::AacSecurityOnAudioSource => Ok(aac_security::TARGETS.iter().map(|target| PathBuf::from(*target)).collect()),
+            Self::LibpngSecurityOnAudioSource => Ok(libpng_security::TARGETS.iter().map(|target| PathBuf::from(*target)).collect()),
         }
     }
     fn configure_dependencies(&self, command: &mut Command, product: &str) -> Result<()> {
         self.validate(product)?;
         match self {
             Self::Existing(mode, targets) => configure_soong_dependencies(command, *mode, targets),
-            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) =>
+            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) | Self::WmSecurityOnNativeSource | Self::VendorImageOnNativeSource =>
                 configure_soong_dependencies(command, SoongDependencyMode::Strict, self.requested_targets()),
-            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource => {
+            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource | Self::LibpngSecurityOnAudioSource => {
                 enforce_strict_soong_dependencies(command);
                 command.env("SELINUX_IGNORE_NEVERALLOWS", "false");
                 Ok(())
@@ -2404,7 +2430,8 @@ impl FixedProductionRequest<'_> {
             Self::VendorPolicyOnAudioSource => Some(("droidloom-vendor-policy-build-inputs.json", "droidloom-fixed-user-vendor-policy-inputs-v1", "droidloom-vendor-policy-normal-result.json", "droidloom-fixed-user-vendor-policy-normal-result-v1")),
             Self::VendorPolicyBundleOnAudioSource => Some(("droidloom-vendor-policy-bundle-build-inputs.json", "droidloom-fixed-user-vendor-policy-bundle-inputs-v1", "droidloom-vendor-policy-bundle-normal-result.json", "droidloom-fixed-user-vendor-policy-bundle-normal-result-v1")),
             Self::Existing(_, _) | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource
-            | Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) => None,
+            | Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_)
+            | Self::LibpngSecurityOnAudioSource | Self::WmSecurityOnNativeSource | Self::VendorImageOnNativeSource => None,
         }
     }
     fn description(&self, product: &str) -> Result<serde_json::Value> {
@@ -2417,8 +2444,11 @@ impl FixedProductionRequest<'_> {
                 Self::VendorPolicyBundleOnAudioSource => "exact-audio541-jca-source-vendor-policy-bundle",
                 Self::IntentResolverSecurityOnAudioSource => "exact-audio-source-intentresolver-security-target",
                 Self::AacSecurityOnAudioSource => "exact-audio541-source-aac-official-security-targets",
+                Self::LibpngSecurityOnAudioSource => "exact-audio541-source-libpng-official-security-targets",
+                Self::WmSecurityOnNativeSource => "exact-native645-source-wm-official-security-targets",
+                Self::VendorImageOnNativeSource => "exact-native645-source-user-vendor-image",
                 Self::Existing(_, _) => "existing-normal-entry",
-                Self::NativePair => "exact-native643-pair-source",
+                Self::NativePair => "exact-native645-pair-source",
                 Self::NativeArt(_) => "exact-native-art-source",
                 Self::NativeRoleIngress(_) => "exact-native-role-ingress-source",
             },
@@ -2517,12 +2547,31 @@ pub fn build_aac_security_on_audio_source(
         FixedProductionRequest::AacSecurityOnAudioSource)
 }
 
+/// Build the original libpng library and pngtest with all four official fixes.
+/// This command does not install a library or execute a device regression.
+pub fn build_libpng_security_on_audio_source(
+    repo: &Path, source: &Path, out: &Path, work: &Path, product: &str, jobs: usize,
+) -> Result<()> {
+    build_targets_with_fixed_request(repo, source, out, work, product, jobs,
+        FixedProductionRequest::LibpngSecurityOnAudioSource)
+}
+
+/// Build the actual user vendor image with the complete explicit Native profile.
+/// Preserve the normal product projection; no native-only provider pruning applies.
+pub fn build_vendor_image(
+    repo: &Path, source: &Path, out: &Path, work: &Path, product: &str, jobs: usize,
+) -> Result<()> {
+    build_targets_with_fixed_request(repo, source, out, work, product, jobs,
+        FixedProductionRequest::VendorImageOnNativeSource)
+}
+
 /// Build services and the existing upstream WmTests through the normal strict producer.
 /// This shares the same official WM projection as the default full services build.
 pub fn build_wm_security(
     repo: &Path, source: &Path, out: &Path, work: &Path, product: &str, jobs: usize,
 ) -> Result<()> {
-    build_targets(repo, source, out, work, product, jobs, wm_security::TARGETS)
+    build_targets_with_fixed_request(repo, source, out, work, product, jobs,
+        FixedProductionRequest::WmSecurityOnNativeSource)
 }
 
 fn validate_vendor_policy_original(source: &Path) -> Result<()> {
@@ -5295,6 +5344,10 @@ fn build_targets_with_fixed_request(
     // existing profile targets below control projection only, never final argv.
     request.validate(product)?;
     let dependency_mode = request.source_mode();
+    let libpng_security_requested = libpng_security::required_for_targets(request.requested_targets());
+    if libpng_security_requested {
+        libpng_security::validate_request(request, product)?;
+    }
     let wm_security_requested = wm_security::required_for_targets(request.requested_targets());
     if wm_security_requested {
         wm_security::validate_request(request, product)?;
@@ -5302,7 +5355,8 @@ fn build_targets_with_fixed_request(
     let targets = request.projection_targets();
     let ordinary_pair = matches!(request, FixedProductionRequest::NativePair);
     let typed_ingress = matches!(request, FixedProductionRequest::NativeRoleIngress(_));
-    let native_source = matches!(request, FixedProductionRequest::NativePair | FixedProductionRequest::NativeArt(_) | FixedProductionRequest::NativeRoleIngress(_));
+    let native_projection_scope = matches!(request, FixedProductionRequest::NativePair | FixedProductionRequest::NativeArt(_) | FixedProductionRequest::NativeRoleIngress(_));
+    let native_source = request.uses_complete_native_source() || native_projection_scope;
     let art_flavor = match request {
         FixedProductionRequest::NativePair => Some(crate::native_generation_art::Flavor::EnabledBuildOnly),
         FixedProductionRequest::NativeArt(flavor) => Some(flavor),
@@ -5326,14 +5380,9 @@ fn build_targets_with_fixed_request(
     if dependency_mode == SoongDependencyMode::NativeEngineTargetClosure {
         crate::native_engine::begin_attempt(out, product)?;
     }
-    let lock = match request {
-        FixedProductionRequest::NativePair => crate::native_generation_pair_build::source_lock_path(repo)?,
-        FixedProductionRequest::NativeRoleIngress(_) => crate::native_role_ingress::source_lock_path(repo)?,
-        FixedProductionRequest::NativeArt(_) => repo.join("android/manifest/m2-sparse-source-lock.json"),
-        _ => selected_source_lock(repo, dependency_mode)?,
-    };
+    let lock = request.source_lock(repo)?;
     let source_lock = droidloom_source::load_lock(&lock)?;
-    if ordinary_pair {
+    if request.uses_complete_native_source() {
         crate::native_generation_pair_build::verify_source_workspace(&lock, &source_lock, source)?;
     } else if typed_ingress {
         crate::native_role_ingress::verify_source_workspace(&lock, &source_lock, source)?;
@@ -5375,7 +5424,11 @@ fn build_targets_with_fixed_request(
         FixedProductionRequest::IntentResolverSecurityOnAudioSource => validate_intentresolver_security_original(repo, source)?,
         FixedProductionRequest::AacSecurityOnAudioSource => aac_security::validate_original(repo, source)?,
         FixedProductionRequest::Existing(_, _) | FixedProductionRequest::NativePair
-        | FixedProductionRequest::NativeArt(_) | FixedProductionRequest::NativeRoleIngress(_) => (),
+        | FixedProductionRequest::NativeArt(_) | FixedProductionRequest::NativeRoleIngress(_)
+        | FixedProductionRequest::LibpngSecurityOnAudioSource | FixedProductionRequest::WmSecurityOnNativeSource | FixedProductionRequest::VendorImageOnNativeSource => (),
+    }
+    if libpng_security_requested {
+        libpng_security::validate_original(repo, source)?;
     }
     if wm_security_requested {
         wm_security::validate_original(repo, source)?;
@@ -5432,6 +5485,9 @@ fn build_targets_with_fixed_request(
     if matches!(request, FixedProductionRequest::AacSecurityOnAudioSource) {
         aac_security::project(&mut p, repo, source)?;
     }
+    if libpng_security_requested {
+        libpng_security::project(&mut p, repo, source)?;
+    }
     if wm_security_requested {
         wm_security::project(&mut p, repo, source)?;
     }
@@ -5478,7 +5534,7 @@ fn build_targets_with_fixed_request(
         p.put(&apex, private_without_named_java_module(
             &original, "apex", "com.android.tethering")?)?;
     }
-    if native_source {
+    if native_projection_scope {
         native_projection::project_blueprints(&mut p, source, typed_ingress || ordinary_pair, ordinary_pair, dependency_mode)?;
     } else {
         project_blueprints(&mut p, source, dependency_mode)?;
@@ -5878,6 +5934,9 @@ fn build_targets_with_fixed_request(
     if matches!(request, FixedProductionRequest::AacSecurityOnAudioSource) {
         aac_security::input_receipt(repo, source, &lock, out, product, &p)?;
     }
+    if libpng_security_requested {
+        libpng_security::input_receipt(repo, source, &lock, out, product, request, &p)?;
+    }
     if wm_security_requested {
         wm_security::input_receipt(repo, source, &lock, out, product, request, &p)?;
     }
@@ -5899,6 +5958,9 @@ fn build_targets_with_fixed_request(
     )?;
     let mut cmd = production_soong_command(source, out, work, product, jobs, &selected_targets)?;
     request.configure_dependencies(&mut cmd, product)?;
+    if libpng_security_requested {
+        libpng_security::configure_command(request, product, &mut cmd)?;
+    }
     if wm_security_requested {
         wm_security::configure_command(request, product, &mut cmd)?;
     }
@@ -5957,6 +6019,9 @@ fn build_targets_with_fixed_request(
     }
     if matches!(request, FixedProductionRequest::AacSecurityOnAudioSource) {
         aac_security::normal_result(repo, source, out, product)?;
+    }
+    if libpng_security_requested {
+        libpng_security::normal_result(repo, source, out, product, request)?;
     }
     if wm_security_requested {
         wm_security::normal_result(repo, source, out, product, request)?;

@@ -7883,7 +7883,7 @@ fn validate_source_extension(base: &Value, extended: &Value) -> Result<()> {
     Ok(())
 }
 
-/// Only this complete pair command selects the monotonic provider extension.
+/// Explicit consumers of the complete Native profile select this monotonic provider extension.
 /// Every historical typed lock and every existing project/revision remains exact.
 pub fn source_lock_path(repo: &Path) -> Result<PathBuf> {
     let base_path = crate::native_role_ingress::source_lock_path(repo)?;
