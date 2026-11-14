@@ -1,0 +1,118 @@
+{
+  "adopted_normal_exit": {
+    "children": [],
+    "complete": true,
+    "deadline": 1639035.753917375,
+    "elapsed_seconds": 1.5969155356287956e-05,
+    "leader_pid": 2503634,
+    "leader_reaped_here": false,
+    "remaining_adopted_children": [],
+    "signals_sent": 0
+  },
+  "argv": [
+    "/usr/bin/git",
+    "--no-replace-objects",
+    "--no-optional-locks",
+    "-c",
+    "core.hooksPath=/dev/null",
+    "-c",
+    "gc.auto=0",
+    "-c",
+    "maintenance.auto=false",
+    "-C",
+    "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe",
+    "rev-parse",
+    "HEAD^{tree}"
+  ],
+  "driver": {
+    "argv": [
+      "/usr/bin/git",
+      "--no-replace-objects",
+      "--no-optional-locks",
+      "-c",
+      "core.hooksPath=/dev/null",
+      "-c",
+      "gc.auto=0",
+      "-c",
+      "maintenance.auto=false",
+      "-C",
+      "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe",
+      "rev-parse",
+      "HEAD^{tree}"
+    ],
+    "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+    "exe": "/usr/bin/git",
+    "pid": 2503634,
+    "start_ticks": 163903075
+  },
+  "errors": [],
+  "finished_ns": 1794613269098740452,
+  "lifecycle": {
+    "child_reaped": true,
+    "cleanup_elapsed_seconds": 2.7118949219584465e-05,
+    "descendants": [],
+    "group_signal_unneeded_exited_only_child": true,
+    "leader_alive_before_group_cleanup": false,
+    "leader_observed_before_reap": {
+      "code": 1,
+      "pid": 2503634,
+      "status": 0
+    },
+    "leader_unreaped_before_group_cleanup": true,
+    "owned_tree_cleanup_complete": true,
+    "pidfd_closed": true,
+    "remaining_owned_children": [],
+    "returncode": 0
+  },
+  "name": "recipe-tree-after",
+  "observed_before_reap": {
+    "code": 1,
+    "pid": 2503634,
+    "status": 0
+  },
+  "owned_retirement_complete": true,
+  "reaper": {
+    "begin_passed": true,
+    "cleanup_deadline_supplied_by_caller": true,
+    "final_children_empty": true,
+    "max_adopted_per_command": 128,
+    "original_subreaper_flag": 0,
+    "pid": 2500012,
+    "protected_pid_count": 0,
+    "restored": true,
+    "signals_only_to_kernel_proven_owned_children": true
+  },
+  "started_ns": 1794613269097435005,
+  "stderr": {
+    "bytes": 0,
+    "identity": [
+      66306,
+      64014353,
+      33152,
+      1000,
+      1000,
+      1,
+      0,
+      1794613269096274409,
+      1794613269096274409
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/recipe-tree-after.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 41,
+    "identity": [
+      66306,
+      64014352,
+      33152,
+      1000,
+      1000,
+      1,
+      41,
+      1794613269098058225,
+      1794613269098058225
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/recipe-tree-after.stdout",
+    "sha256": "459409cf506c914bc531fd1dbcb52ad46b923107298f813222f8e23f1a31b99d"
+  }
+}

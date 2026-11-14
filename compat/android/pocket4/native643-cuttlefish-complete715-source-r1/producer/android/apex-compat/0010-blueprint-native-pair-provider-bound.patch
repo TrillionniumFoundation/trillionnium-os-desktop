@@ -1,0 +1,11 @@
+--- a/context.go
++++ b/context.go
+@@ -5229,7 +5229,7 @@
+ 		return []error{ErrBuildActionsNotReady}
+ 	}
+ 
+-	errors := parallelVisitSimple(c.iterateAllVariants(), 1000, func(m *moduleInfo, _ int) []error {
++	errors := parallelVisitSimple(c.iterateAllVariants(), parallelVisitLimit, func(m *moduleInfo, _ int) []error {
+ 		var errors []error
+ 		for i, provider := range m.providers {
+ 			if provider != nil {

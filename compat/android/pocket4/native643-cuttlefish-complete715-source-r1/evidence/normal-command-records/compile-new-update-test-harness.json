@@ -1,0 +1,112 @@
+{
+  "adopted_normal_exit": {
+    "children": [],
+    "complete": true,
+    "deadline": 1639004.759438123,
+    "elapsed_seconds": 0.00014162505976855755,
+    "leader_pid": 2500018,
+    "leader_reaped_here": false,
+    "remaining_adopted_children": [],
+    "signals_sent": 0
+  },
+  "argv": [
+    "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "-j",
+    "1",
+    "-p",
+    "droidloom-update",
+    "--no-run",
+    "--message-format=json"
+  ],
+  "driver": {
+    "argv": [
+      "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-j",
+      "1",
+      "-p",
+      "droidloom-update",
+      "--no-run",
+      "--message-format=json"
+    ],
+    "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+    "exe": "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "pid": 2500018,
+    "start_ticks": 163897918
+  },
+  "errors": [],
+  "finished_ns": 1794613238107256172,
+  "lifecycle": {
+    "child_reaped": true,
+    "cleanup_elapsed_seconds": 0.00010898592881858349,
+    "descendants": [],
+    "group_signal_unneeded_exited_only_child": true,
+    "leader_alive_before_group_cleanup": false,
+    "leader_observed_before_reap": {
+      "code": 1,
+      "pid": 2500018,
+      "status": 0
+    },
+    "leader_unreaped_before_group_cleanup": true,
+    "owned_tree_cleanup_complete": true,
+    "pidfd_closed": true,
+    "remaining_owned_children": [],
+    "returncode": 0
+  },
+  "name": "compile-new-update-test-harness",
+  "observed_before_reap": {
+    "code": 1,
+    "pid": 2500018,
+    "status": 0
+  },
+  "owned_retirement_complete": true,
+  "reaper": {
+    "begin_passed": true,
+    "cleanup_deadline_supplied_by_caller": true,
+    "final_children_empty": true,
+    "max_adopted_per_command": 128,
+    "original_subreaper_flag": 0,
+    "pid": 2500012,
+    "protected_pid_count": 0,
+    "restored": true,
+    "signals_only_to_kernel_proven_owned_children": true
+  },
+  "started_ns": 1794613217526202415,
+  "stderr": {
+    "bytes": 2146,
+    "identity": [
+      66306,
+      64012439,
+      33152,
+      1000,
+      1000,
+      1,
+      2146,
+      1794613238096318565,
+      1794613238096318565
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-new-update-test-harness.stderr",
+    "sha256": "b136310550c0520261e7588b19ca7d9cd24b7622c831922e4482091af3a8a36f"
+  },
+  "stdout": {
+    "bytes": 67014,
+    "identity": [
+      66306,
+      64012438,
+      33152,
+      1000,
+      1000,
+      1,
+      67014,
+      1794613238096318565,
+      1794613238096318565
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-new-update-test-harness.stdout",
+    "sha256": "7bc0cc057174ca45e655db2f251244ad859e6fd90eea4f06d8fe85ea527623eb"
+  }
+}

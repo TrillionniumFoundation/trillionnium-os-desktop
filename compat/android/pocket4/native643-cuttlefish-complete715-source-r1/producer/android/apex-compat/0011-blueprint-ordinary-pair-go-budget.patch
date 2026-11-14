@@ -1,0 +1,48 @@
+--- a/bootstrap/command.go
++++ b/bootstrap/command.go
+@@ -22,8 +22,10 @@
+ 	"os"
+ 	"runtime"
+ 	"runtime/debug"
++	"runtime/metrics"
+ 	"runtime/pprof"
+ 	"runtime/trace"
++	"strconv"
+ 	"strings"
+ 
+ 	"github.com/google/blueprint"
+@@ -68,11 +70,33 @@
+ // so that it is correctly rebuilt when needed in case Blueprint is itself
+ // invoked from Ninja
+ func RunBlueprint(args Args, stopBefore StopBefore, ctx *blueprint.Context, config interface{}) ([]string, error) {
+-	runtime.GOMAXPROCS(runtime.NumCPU())
++	if configured := os.Getenv("GOMAXPROCS"); configured == "" {
++		runtime.GOMAXPROCS(runtime.NumCPU())
++	} else {
++		requested, err := strconv.Atoi(configured)
++		if err != nil || requested < 1 || runtime.GOMAXPROCS(0) != requested {
++			return nil, fmt.Errorf("explicit GOMAXPROCS budget was not honored: %q", configured)
++		}
++	}
+ 
+ 	if args.NoGC {
+ 		debug.SetGCPercent(-1)
+ 	}
++
++	// Read the effective runtime limits, including after analysis or an error.
++	// Environment values alone do not prove the active Go scheduler budget.
++	reportGoBudget := func(phase string) {
++		samples := []metrics.Sample{
++			{Name: "/sched/gomaxprocs:threads"},
++			{Name: "/gc/gomemlimit:bytes"},
++			{Name: "/gc/gogc:percent"},
++		}
++		metrics.Read(samples)
++		fmt.Fprintf(os.Stderr, "DROIDLOOM_GO_BUDGET phase=%s pid=%d gomaxprocs=%d gomemlimit_bytes=%d gogc_percent=%d\n",
++			phase, os.Getpid(), samples[0].Value.Uint64(), samples[1].Value.Uint64(), samples[2].Value.Uint64())
++	}
++	reportGoBudget("enter")
++	defer reportGoBudget("leave")
+ 
+ 	if args.Cpuprofile != "" {
+ 		f, err := os.Create(blueprint.JoinPath(ctx.SrcDir(), args.Cpuprofile))

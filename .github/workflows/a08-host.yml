@@ -1196,7 +1196,7 @@ jobs:
 
   native643-current-producer:
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 45
     env:
       PYTHONDONTWRITEBYTECODE: '1'
       RUSTUP_TOOLCHAIN: '1.93.0'
@@ -1204,6 +1204,7 @@ jobs:
       GIT_CONFIG_NOSYSTEM: '1'
       GIT_CONFIG_GLOBAL: /dev/null
       GIT_TERMINAL_PROMPT: '0'
+      NATIVE715_INVENTORY_SHA256: 02a6dda5e0ce714dcc8ad70ec363d999118eb00ca06cc680633d02c064240ab1
     steps:
       - uses: actions/checkout@v4
         with:
@@ -1220,39 +1221,38 @@ jobs:
           fi
           rsync --version
           rustc --version
-      - name: Verify pinned Native643 source and both exact replay paths
+      - name: Verify all 715 Native source files and replay both complete roots
         shell: bash
         run: |
           set -euo pipefail
-          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/native643-global-compat-source-r1"
-          work="$RUNNER_TEMP/a08-native643-global"
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/native643-cuttlefish-complete715-source-r1"
+          work="$RUNNER_TEMP/a08-native715-complete"
           mkdir "$work"
-          cd "$capsule"
-          printf '%s  %s\n' 95dbc4e94925927c536527da6fe57bad205a0fe97aced1e2e5d9b7e104dfec51 FILES.sha256 | sha256sum --check --status
-          sha256sum --quiet -c FILES.sha256
+          printf '%s  %s\n' "$NATIVE715_INVENTORY_SHA256" "$capsule/FILES.sha256" | sha256sum --check --status
+          (cd "$capsule" && sha256sum --quiet -c FILES.sha256)
           python3 -I -B "$capsule/test_verifier.py"
-          python3 -I -B "$capsule/verify.py" --inventory-sha256 95dbc4e94925927c536527da6fe57bad205a0fe97aced1e2e5d9b7e104dfec51 --maintained-repo "$GITHUB_WORKSPACE" --output "$work/producer" --predecessor-output "$work/predecessor-replay" --report "$work/source-replay.json"
-      - name: Compile real Native643 producers and execute all 89 controls
+          python3 -I -B "$capsule/verify.py" --inventory-sha256 "$NATIVE715_INVENTORY_SHA256" --output "$work/producer" --report "$work/source-replay.json"
+      - name: Compile current Native tools and execute 92 controls with 98 executions
         shell: bash
         run: |
           set -euo pipefail
-          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/native643-global-compat-source-r1"
-          work="$RUNNER_TEMP/a08-native643-global"
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/native643-cuttlefish-complete715-source-r1"
+          work="$RUNNER_TEMP/a08-native715-complete"
           cargo fetch --locked --manifest-path "$work/producer/Cargo.toml"
-          python3 -I -B "$capsule/run-normal-controls.py" --workspace "$work/producer" --output "$work/normal" --offline --inventory-sha256 95dbc4e94925927c536527da6fe57bad205a0fe97aced1e2e5d9b7e104dfec51
-          python3 -I -B "$capsule/verify.py" --inventory-sha256 95dbc4e94925927c536527da6fe57bad205a0fe97aced1e2e5d9b7e104dfec51 --producer "$work/producer" --report "$work/source-after.json"
-      - name: Preserve Native source and ordinary build evidence
+          python3 -I -B "$capsule/run-normal-controls.py" --workspace "$work/producer" --output "$work/normal" --offline --inventory-sha256 "$NATIVE715_INVENTORY_SHA256"
+          python3 -I -B "$capsule/verify.py" --inventory-sha256 "$NATIVE715_INVENTORY_SHA256" --producer "$work/producer" --report "$work/source-after.json"
+      - name: Preserve complete Native source and actual current build evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: a08-native643-current-producer-evidence
           if-no-files-found: warn
           path: |
-            ${{ runner.temp }}/a08-native643-global/source-replay.json
-            ${{ runner.temp }}/a08-native643-global/source-after.json
-            ${{ runner.temp }}/a08-native643-global/normal/*.json
-            ${{ runner.temp }}/a08-native643-global/normal/*.stdout
-            ${{ runner.temp }}/a08-native643-global/normal/*.stderr
+            ${{ runner.temp }}/a08-native715-complete/source-replay.json
+            ${{ runner.temp }}/a08-native715-complete/source-after.json
+            ${{ runner.temp }}/a08-native715-complete/normal/*.json
+            ${{ runner.temp }}/a08-native715-complete/normal/*.stdout
+            ${{ runner.temp }}/a08-native715-complete/normal/*.stderr
 
   audio537-current-producer:
     runs-on: ubuntu-24.04
