@@ -3851,13 +3851,37 @@ mod tests {
             .unwrap()
             .prepare_writable_proc()
             .unwrap();
-        let observed = private_postexec::run_private(&mut tree).unwrap();
-        match tree.bases.as_ref().unwrap() {
-            BaseMounts::PrivateControl(value) => value.verify_images_unchanged().unwrap(),
-            _ => panic!("no production admission in private post-exec control"),
+        let report = private_postexec::run_private(&mut tree);
+        // The exact init PIDFD has already been reaped (or the original error
+        // retained). Bulk image hashing and diagnostic sinks are outside the
+        // sealed peer's three-second STOP command window.
+        let images_unchanged = if report.init_retirement.is_ok() {
+            match tree.bases.as_ref() {
+                Some(BaseMounts::PrivateControl(value)) => value
+                    .verify_images_unchanged()
+                    .map_err(|error| NamespaceError::MountResource(error.to_string())),
+                _ => Err(NamespaceError::Rejected(
+                    "no production admission in private post-exec control",
+                )),
+            }
+        } else {
+            Err(NamespaceError::RetirementUnproven)
+        };
+        let lease_held = !lease_available(identity_root.path());
+        let exit = tree.retire();
+        if let Ok(lines) = &report.diagnostics {
+            for line in lines {
+                eprintln!("{line}");
+            }
         }
-        assert!(!lease_available(identity_root.path()));
-        let exit = tree.retire().unwrap();
+        // Keep observation and retirement errors separate. Cleanup success
+        // must never turn a failed live/probe check into a passed control.
+        let observed = report.observation.unwrap();
+        report.init_retirement.unwrap();
+        report.diagnostics.unwrap();
+        images_unchanged.unwrap();
+        assert!(lease_held);
+        let exit = exit.unwrap();
         assert_eq!((exit.init.reason, exit.init.status), (libc::CLD_EXITED, 0));
         assert_eq!(
             (exit.keeper.reason, exit.keeper.status),

@@ -261,6 +261,75 @@ fn checked_visible(
 }
 
 #[cfg(test)]
+thread_local! {
+    static PRIVATE_TRACE: std::cell::RefCell<Option<Vec<String>>> = const {
+        std::cell::RefCell::new(None)
+    };
+}
+
+/// A same-thread diagnostic buffer for a finite private control. In particular,
+/// a serial sink must not consume the sealed peer's command deadline. Drop only
+/// discards an unfinished buffer; it never flushes while the peer may be live.
+#[cfg(test)]
+pub(super) struct DeferredPrivateTrace {
+    active: bool,
+    _same_thread: std::marker::PhantomData<std::rc::Rc<()>>,
+}
+
+#[cfg(test)]
+impl DeferredPrivateTrace {
+    pub(super) fn begin() -> Result<Self> {
+        PRIVATE_TRACE.with(|slot| {
+            let mut slot = slot.borrow_mut();
+            if slot.is_some() {
+                return Err(NamespaceError::Rejected("private trace already deferred"));
+            }
+            *slot = Some(Vec::new());
+            Ok(Self {
+                active: true,
+                _same_thread: std::marker::PhantomData,
+            })
+        })
+    }
+
+    pub(super) fn finish(mut self) -> Result<Vec<String>> {
+        let lines = PRIVATE_TRACE.with(|slot| slot.borrow_mut().take());
+        self.active = false;
+        lines.ok_or(NamespaceError::Rejected("private trace custody absent"))
+    }
+}
+
+#[cfg(test)]
+impl Drop for DeferredPrivateTrace {
+    fn drop(&mut self) {
+        if self.active {
+            PRIVATE_TRACE.with(|slot| slot.borrow_mut().take());
+        }
+    }
+}
+
+#[cfg(test)]
+pub(super) fn trace_private_with(line: String, sink: impl FnOnce(&str)) {
+    let immediate = PRIVATE_TRACE.with(|slot| {
+        let mut slot = slot.borrow_mut();
+        if let Some(lines) = slot.as_mut() {
+            lines.push(line);
+            None
+        } else {
+            Some(line)
+        }
+    });
+    if let Some(line) = immediate {
+        sink(&line);
+    }
+}
+
+#[cfg(test)]
+pub(super) fn trace_private(line: String) {
+    trace_private_with(line, |line| eprintln!("{line}"));
+}
+
+#[cfg(test)]
 fn trace_inventory(stage: &str, bytes: &[u8]) {
     use sha2::Digest;
     let text = std::str::from_utf8(bytes);
@@ -269,14 +338,14 @@ fn trace_inventory(stage: &str, bytes: &[u8]) {
     } else {
         None
     };
-    eprintln!(
+    trace_private(format!(
         "private owned writable-proc mount inventory: {}",
         serde_json::json!({
             "stage": stage, "bytes": bytes.len(), "sha256": format!("{:x}", sha2::Sha256::digest(bytes)),
             "utf8": text.ok(), "non_utf8_hex": hex,
             "source": "held actual owned PID1 proc-directory descriptor"
         })
-    );
+    ));
 }
 
 impl MountInventory {
@@ -666,14 +735,14 @@ pub(super) fn receive_preexec_observation(child: &TreeChild) -> Result<PreExecPr
         child.uids.start,
         child.gids.start,
     )?;
-    eprintln!(
+    trace_private(format!(
         "private owned writable-proc dumpability: {}",
         serde_json::json!({
             "source": "authenticated fixed raw PID1 PR_GET_DUMPABLE",
             "dumpable": dumpable, "credentials_changed": false,
             "dumpability_changed": false, "authority_issued": false
         })
-    );
+    ));
     wait_readable_until(&child.control, &child.pidfd, deadline)?;
     receive_preexec_denial_record(
         child.control.as_raw_fd(),
@@ -930,7 +999,7 @@ pub(super) fn trace_private_proc_authority(child: &TreeChild) -> Result<()> {
         ));
     }
     child.verify()?;
-    eprintln!(
+    trace_private(format!(
         "private owned writable-proc authority metadata: {}",
         serde_json::json!({
             "source": "held owned PIDFD/proc-directory/root; O_PATH/statx only",
@@ -941,7 +1010,7 @@ pub(super) fn trace_private_proc_authority(child: &TreeChild) -> Result<()> {
             "status": before, "score_body_read": false, "score_body_written": false,
             "credentials_changed": false, "dumpability_changed": false, "authority_issued": false
         })
-    );
+    ));
     Ok(())
 }
 

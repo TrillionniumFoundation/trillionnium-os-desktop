@@ -288,7 +288,46 @@ fn actual_postexec(child: &TreeChild, probe: &SealedProbe) -> Result<serde_json:
     )
 }
 
-pub(super) fn run_private(tree: &mut IsolatedNamespaces) -> Result<i32> {
+pub(super) struct PrivatePostExecRun {
+    pub(super) observation: Result<i32>,
+    pub(super) init_retirement: Result<()>,
+    pub(super) diagnostics: Result<Vec<String>>,
+}
+
+fn observe_then_reap<O, T>(
+    owner: &mut O,
+    observe: impl FnOnce(&mut O) -> Result<T>,
+    reap: impl FnOnce(&mut O) -> Result<()>,
+) -> (Result<T>, Result<()>) {
+    let observation = observe(owner);
+    // A failed observation still requires real retirement and stays failed.
+    // Neither a successful cleanup nor a queued diagnostic replaces it.
+    let retirement = reap(owner);
+    (observation, retirement)
+}
+
+pub(super) fn run_private(tree: &mut IsolatedNamespaces) -> PrivatePostExecRun {
+    let mut trace = None;
+    let (observation, init_retirement) = observe_then_reap(
+        tree,
+        |tree| {
+            trace = Some(writable_proc::DeferredPrivateTrace::begin()?);
+            observe_private(tree)
+        },
+        // This is the sole STOP sender. reap_init records the actual original
+        // PIDFD wait result, so later full tree retirement does not send again.
+        // No diagnostic sink or bulk base-image hash runs before this call.
+        |tree| tree.reap_init().map(|_| ()),
+    );
+    let diagnostics = trace.map_or_else(|| Ok(Vec::new()), |trace| trace.finish());
+    PrivatePostExecRun {
+        observation,
+        init_retirement,
+        diagnostics,
+    }
+}
+
+fn observe_private(tree: &mut IsolatedNamespaces) -> Result<i32> {
     let probe = SealedProbe::load()?;
     let child = tree
         .init
@@ -322,10 +361,10 @@ pub(super) fn run_private(tree: &mut IsolatedNamespaces) -> Result<i32> {
         || child.verify(),
     )?;
     let after = actual_postexec(child, &probe)?;
-    eprintln!(
+    writable_proc::trace_private(format!(
         "private fixed post-exec ready: {}",
         serde_json::json!({"preexec_score":before,"postexec":after,"dumpable_zero_report_from_sealed_image":true,"private_zero_profile_only":true})
-    );
+    ));
     send_packet(
         child.control.as_raw_fd(),
         &Packet::new(child.nonce, Phase::CheckPostExecProbe, 0, child.parent_pid),
@@ -365,10 +404,10 @@ pub(super) fn run_private(tree: &mut IsolatedNamespaces) -> Result<i32> {
             "xattr observation filesystem differs",
         ));
     }
-    eprintln!(
+    writable_proc::trace_private(format!(
         "private fixed post-exec checked: {}",
         serde_json::json!({"actual":checked,"own_oom_original_value_restored":true,"global_write_opens_denied_without_writes":true,"private_filesystem":"tmpfs","security_selinux_set_get_errno":observed,"mac_qualified":false,"production_admission":false,"Android":0})
-    );
+    ));
     probe.revalidate()?;
     Ok(observed)
 }
@@ -376,6 +415,232 @@ pub(super) fn run_private(tree: &mut IsolatedNamespaces) -> Result<i32> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::{Read, Write};
+
+    // A real, ordinary child that accepts only one fixed STOP packet. It uses
+    // no namespace, mount, Android input or privilege and owns no descendants.
+    struct StopPeer {
+        pidfd: OwnedFd,
+        control: OwnedFd,
+        pid: u32,
+        parent: u32,
+        nonce: [u8; 16],
+        stop_attempts: usize,
+        reaped: bool,
+    }
+
+    impl StopPeer {
+        fn spawn() -> Self {
+            let (parent_end, child_end) = channel();
+            let parent = unsafe { libc::getpid() } as u32;
+            let nonce = [91; 16];
+            let mut pidfd = -1_i32;
+            // clone_args v0; CLONE_PIDFD binds custody atomically with fork.
+            let args = [
+                libc::CLONE_PIDFD as u64,
+                (&mut pidfd as *mut i32) as u64,
+                0,
+                0,
+                libc::SIGCHLD as u64,
+                0,
+                0,
+                0,
+            ];
+            let pid = unsafe { libc::syscall(libc::SYS_clone3, args.as_ptr(), 64_usize) };
+            assert!(pid >= 0, "{}", io::Error::last_os_error());
+            if pid == 0 {
+                // Raw syscalls only after fork in the multithreaded test host.
+                unsafe {
+                    libc::syscall(libc::SYS_close, parent_end.as_raw_fd());
+                    let mut event = libc::pollfd {
+                        fd: child_end.as_raw_fd(),
+                        events: libc::POLLIN,
+                        revents: 0,
+                    };
+                    let ready = libc::syscall(libc::SYS_poll, &mut event, 1, 3000);
+                    let mut packet = Packet::zeroed();
+                    let n = if ready == 1 && event.revents == libc::POLLIN {
+                        libc::syscall(
+                            libc::SYS_recvfrom,
+                            child_end.as_raw_fd(),
+                            &mut packet as *mut Packet,
+                            std::mem::size_of::<Packet>(),
+                            libc::MSG_DONTWAIT,
+                            std::ptr::null_mut::<libc::sockaddr>(),
+                            std::ptr::null_mut::<libc::socklen_t>(),
+                        )
+                    } else {
+                        -1
+                    };
+                    let ok = n == std::mem::size_of::<Packet>() as libc::c_long
+                        && packet.matches(nonce, parent)
+                        && packet.phase == Phase::Stop as u32
+                        && packet.errno == 0;
+                    libc::syscall(libc::SYS_exit_group, if ok { 0 } else { 127 });
+                    std::hint::unreachable_unchecked();
+                }
+            }
+            assert!(pidfd >= 0);
+            drop(child_end);
+            Self {
+                pidfd: unsafe { OwnedFd::from_raw_fd(pidfd) },
+                control: parent_end,
+                pid: pid as u32,
+                parent,
+                nonce,
+                stop_attempts: 0,
+                reaped: false,
+            }
+        }
+
+        fn stop_and_reap(&mut self) -> Result<()> {
+            self.stop_attempts += 1;
+            let sent = send_packet(
+                self.control.as_raw_fd(),
+                &Packet::new(self.nonce, Phase::Stop, 0, self.parent),
+            );
+            if !wait_exited(&self.pidfd, Duration::from_secs(4))? {
+                return Err(NamespaceError::RetirementUnproven);
+            }
+            let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
+            if unsafe {
+                libc::waitid(
+                    libc::P_PIDFD,
+                    self.pidfd.as_raw_fd() as u32,
+                    &mut info,
+                    libc::WEXITED | libc::WNOHANG,
+                )
+            } != 0
+                || unsafe { info.si_pid() } != self.pid as i32
+            {
+                return Err(NamespaceError::RetirementUnproven);
+            }
+            self.reaped = true;
+            sent?;
+            if info.si_code != libc::CLD_EXITED || unsafe { info.si_status() } != 0 {
+                return Err(NamespaceError::Rejected(
+                    "ordinary STOP peer did not exit normally",
+                ));
+            }
+            Ok(())
+        }
+    }
+
+    impl Drop for StopPeer {
+        fn drop(&mut self) {
+            if !self.reaped {
+                let _ = signal_owned(&self.pidfd, libc::SIGKILL);
+                if wait_exited(&self.pidfd, Duration::from_secs(4)).unwrap_or(false) {
+                    let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
+                    unsafe {
+                        libc::waitid(
+                            libc::P_PIDFD,
+                            self.pidfd.as_raw_fd() as u32,
+                            &mut info,
+                            libc::WEXITED | libc::WNOHANG,
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn production_postexec_stop_and_reap_precede_a_full_diagnostic_pipe() {
+        for failed_observation in [false, true] {
+            let mut peer = StopPeer::spawn();
+            assert!(!pidfd_exited(&peer.pidfd).unwrap());
+            let mut pipe = [-1; 2];
+            assert_eq!(
+                unsafe { libc::pipe2(pipe.as_mut_ptr(), libc::O_CLOEXEC | libc::O_NONBLOCK) },
+                0
+            );
+            let mut reader = unsafe { File::from_raw_fd(pipe[0]) };
+            let mut writer = unsafe { File::from_raw_fd(pipe[1]) };
+            let mut filled = 0;
+            loop {
+                match writer.write(&[b'x'; 4096]) {
+                    Ok(n) => {
+                        assert!(n > 0);
+                        filled += n;
+                        assert!(filled <= 1024 * 1024);
+                    }
+                    Err(e) if e.kind() == io::ErrorKind::WouldBlock => break,
+                    Err(e) => panic!("fill diagnostic sink: {e}"),
+                }
+            }
+            for fd in [reader.as_raw_fd(), writer.as_raw_fd()] {
+                let flags = unsafe { libc::fcntl(fd, libc::F_GETFL) };
+                assert!(flags >= 0);
+                assert_eq!(
+                    unsafe { libc::fcntl(fd, libc::F_SETFL, flags & !libc::O_NONBLOCK) },
+                    0
+                );
+            }
+            let observed_pidfd = peer.pidfd.try_clone().unwrap();
+            let drain = std::thread::spawn(move || {
+                // A premature diagnostic write blocks until this same peer's
+                // finite watchdog exits; that produces a real nonzero failure.
+                assert!(wait_exited(&observed_pidfd, Duration::from_secs(5)).unwrap());
+                let mut bytes = Vec::new();
+                reader.read_to_end(&mut bytes).unwrap();
+                bytes
+            });
+            let trace = writable_proc::DeferredPrivateTrace::begin().unwrap();
+            let mut early_sink = false;
+            let (observation, retirement) = observe_then_reap(
+                &mut peer,
+                |_| {
+                    writable_proc::trace_private_with(
+                        "diagnostic after retirement".into(),
+                        |line| {
+                            early_sink = true;
+                            writer.write_all(line.as_bytes()).unwrap();
+                        },
+                    );
+                    if failed_observation {
+                        Err(NamespaceError::Rejected(
+                            "original post-exec observation failed",
+                        ))
+                    } else {
+                        Ok(17)
+                    }
+                },
+                StopPeer::stop_and_reap,
+            );
+            let lines = trace.finish().unwrap();
+            retirement.unwrap();
+            assert_eq!(peer.stop_attempts, 1);
+            assert!(peer.reaped);
+            let mut event = libc::pollfd {
+                fd: peer.pidfd.as_raw_fd(),
+                events: 0,
+                revents: 0,
+            };
+            assert_eq!(unsafe { libc::poll(&mut event, 1, 0) }, 1);
+            assert_eq!(event.revents, libc::POLLHUP);
+            assert!(!early_sink);
+            if failed_observation {
+                assert!(matches!(
+                    observation,
+                    Err(NamespaceError::Rejected(
+                        "original post-exec observation failed"
+                    ))
+                ));
+            } else {
+                assert_eq!(observation.unwrap(), 17);
+            }
+            assert_eq!(lines, ["diagnostic after retirement"]);
+            for line in &lines {
+                writer.write_all(line.as_bytes()).unwrap();
+            }
+            drop(writer);
+            let bytes = drain.join().unwrap();
+            assert_eq!(bytes.len(), filled + lines[0].len());
+            assert_eq!(&bytes[filled..], lines[0].as_bytes());
+        }
+    }
+
     fn channel() -> (OwnedFd, OwnedFd) {
         let mut f = [-1; 2];
         assert_eq!(
