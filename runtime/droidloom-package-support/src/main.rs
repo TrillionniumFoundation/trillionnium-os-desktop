@@ -1,5 +1,6 @@
 //! Package setup and pacman lifecycle integration. No shell interpreter is used.
 use clap::{Parser, Subcommand};
+use droidloom_supervisor::production_configuration::PackageConfigurationLock;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::{
@@ -127,41 +128,22 @@ fn legacy_layout(value: Layout) -> Result<()> {
     Ok(())
 }
 
-fn setup_lock_at(base: &fs::File, custody: Custody) -> Result<fs::File> {
-    safe_directory(base, custody)?;
-    let fd = unsafe {
-        libc::openat(
-            base.as_raw_fd(),
-            c"setup.lock".as_ptr(),
-            libc::O_RDWR | libc::O_CREAT | libc::O_NONBLOCK | libc::O_NOFOLLOW | libc::O_CLOEXEC,
-            0o600,
-        )
-    };
-    if fd < 0 {
-        return Err(std::io::Error::last_os_error().into());
-    }
-    let lock = unsafe { fs::File::from_raw_fd(fd) };
-    let m = lock.metadata()?;
-    if !m.is_file()
-        || m.uid() != custody.uid
-        || m.gid() != custody.gid
-        || m.nlink() != 1
-        || m.mode() & 0o6022 != 0
-    {
-        return Err("unsafe package setup lock".into());
-    }
-    if unsafe { libc::flock(lock.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
-        return Err("another configuration transaction owns setup.lock".into());
-    }
-    Ok(lock)
+#[cfg(test)]
+fn setup_lock_at(
+    base: &fs::File,
+    custody: Custody,
+) -> Result<droidloom_supervisor::production_configuration::DirectorySetupLock> {
+    Ok(
+        droidloom_supervisor::production_configuration::DirectorySetupLock::exclusive_at(
+            base,
+            custody.uid,
+            custody.gid,
+        )?,
+    )
 }
 
-fn setup_lock() -> Result<fs::File> {
-    let root = host_root()?;
-    let etc = directory_at(&root, c"etc", ROOT_CUSTODY)?.ok_or("/etc absent")?;
-    let base =
-        directory_at(&etc, c"droidloom", ROOT_CUSTODY)?.ok_or("configuration directory absent")?;
-    setup_lock_at(&base, ROOT_CUSTODY)
+fn setup_lock() -> Result<PackageConfigurationLock> {
+    Ok(PackageConfigurationLock::acquire()?)
 }
 
 #[derive(Parser)]
@@ -446,7 +428,8 @@ fn setup(
     }
     let account = user(uid)?;
     root_directory(Path::new(BASE), 0o755)?;
-    let _lock = setup_lock()?;
+    let lock = setup_lock()?;
+    lock.revalidate()?;
     require_legacy()?;
     let previous = optional_json(Path::new(SPEC))?;
     let renderer = if hook {
@@ -465,6 +448,7 @@ fn setup(
         &renderer,
     )?;
     let data = Path::new(spec["data_dir"].as_str().unwrap());
+    lock.revalidate()?;
     require_legacy()?;
     root_directory(data, 0o700)?;
     for (name, bytes) in [
@@ -480,6 +464,7 @@ fn setup(
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
             Err(error) => return Err(error.into()),
         }
+        lock.revalidate()?;
         require_legacy()?;
         let file = tempfile::NamedTempFile::new_in(data)?;
         file.as_file().set_len(bytes)?;
@@ -487,6 +472,7 @@ fn setup(
             .args(["-F", "-q"])
             .arg(file.path()))?;
         file.as_file().sync_all()?;
+        lock.revalidate()?;
         require_legacy()?;
         file.persist_noclobber(&path)?;
     }
@@ -510,11 +496,16 @@ fn setup(
     let rule = format!(
         "// Generated for Droidloom's configured desktop user.\npolkit.addRule(function(action, subject) {{\n  if (action.id === \"org.freedesktop.systemd1.manage-units\" && subject.user === {username} && action.lookup(\"unit\") === \"droidloomd.service\" && (action.lookup(\"verb\") === \"start\" || action.lookup(\"verb\") === \"stop\")) return polkit.Result.YES;\n}});\n"
     );
+    lock.revalidate()?;
     require_legacy()?;
     atomic_write(Path::new(SPEC), &serde_json::to_vec_pretty(&spec)?, 0o644)?;
+    lock.revalidate()?;
     atomic_write(Path::new(ENVIRONMENT), format!("DROIDLOOM_HOST_PEER_PID=0\nDROIDLOOM_HOST_PEER_UID=1000\nDROIDLOOM_HOST_PEER_GID=1000\nDROIDLOOM_RENDER_NODE={renderer}\n").as_bytes(), 0o644)?;
+    lock.revalidate()?;
     atomic_write(Path::new(RULE), rule.as_bytes(), 0o644)?;
+    lock.revalidate()?;
     atomic_write(Path::new(STATE), &serde_json::to_vec_pretty(&state)?, 0o644)?;
+    lock.revalidate()?;
     println!(
         "Droidloom is configured for {}. Automatic startup remains disabled.",
         account.name
@@ -1178,9 +1169,10 @@ fn require_production_resource_retirement() -> Result<()> {
 fn before(remove: bool) -> Result<()> {
     require_root()?;
     root_directory(Path::new(BASE), 0o755)?;
-    let _lock = setup_lock()?;
-    // A future production selector must take this same lock. No such writer
-    // is integrated yet, so this helper does not claim cross-writer atomicity.
+    let lock = setup_lock()?;
+    lock.revalidate()?;
+    // Production Start/Restart and manager-label activation share this lock.
+    // Selection publication and the live retirement RPC remain separate gates.
     let protected = layout()? == Layout::Production;
     // Refuse before any Stop or legacy STATE/CellSpec read. The missing
     // resource-owner contract cannot justify interrupting a live session.
@@ -1188,7 +1180,9 @@ fn before(remove: bool) -> Result<()> {
         return require_production_resource_retirement();
     }
     let spec = optional_json(Path::new(SPEC))?;
+    lock.revalidate()?;
     stop_runtime(spec.as_ref(), protected)?;
+    lock.revalidate()?;
     require_legacy()?;
     if remove {
         if let Some(value) = optional_json(Path::new(STATE))? {
@@ -1217,6 +1211,7 @@ fn after_install() -> Result<()> {
     require_root()?;
     root_directory(Path::new(BASE), 0o755)?;
     let lock = setup_lock()?;
+    lock.revalidate()?;
     if layout()? == Layout::Production {
         println!(
             "Package update preserved the production selection, cell configuration and Android data."

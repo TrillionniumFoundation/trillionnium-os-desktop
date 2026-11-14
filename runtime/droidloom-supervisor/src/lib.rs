@@ -25,6 +25,8 @@ mod production_cell;
 #[cfg(target_os = "linux")]
 mod production_cgroup;
 #[cfg(target_os = "linux")]
+pub mod production_configuration;
+#[cfg(target_os = "linux")]
 mod production_devices;
 #[cfg(target_os = "linux")]
 mod production_execution;

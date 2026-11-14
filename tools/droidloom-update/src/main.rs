@@ -100,7 +100,7 @@ enum Action {
         /// Use an existing package build workspace (containing aosp-source).
         #[arg(long)]
         work: Option<PathBuf>,
-    /// Also build Teto's ARM64 host regression suite.
+        /// Also build Teto's ARM64 host regression suite.
         #[arg(long)]
         tests: bool,
     },
@@ -170,6 +170,15 @@ enum Action {
     /// Does not install framework artifacts or execute device tests.
     #[command(name = "wm-security-build")]
     WmSecurityBuild {
+        #[arg(long)]
+        work: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+    },
+    /// Build services and the original framework/WM test modules with official fixes.
+    /// Does not install artifacts, execute device tests or qualify production signing.
+    #[command(name = "framework-security-build")]
+    FrameworkSecurityBuild {
         #[arg(long)]
         work: PathBuf,
         #[arg(long)]
@@ -269,7 +278,12 @@ fn native_pair_job_capacity(available: usize, pair: bool, reserved: bool) -> usi
 }
 
 fn selected_build_out(command: Option<&Action>, work: &std::path::Path) -> Result<PathBuf> {
-    if let Some(Action::WmSecurityBuild { out, .. } | Action::VendorImageBuild { out, .. }) = command {
+    if let Some(
+        Action::WmSecurityBuild { out, .. }
+        | Action::FrameworkSecurityBuild { out, .. }
+        | Action::VendorImageBuild { out, .. },
+    ) = command
+    {
         return native_generation_art::validated_output(work, out);
     }
     if let Some(Action::NativeRoleIngressBuild { out, .. }) = command {
@@ -282,10 +296,21 @@ fn selected_build_out(command: Option<&Action>, work: &std::path::Path) -> Resul
         return native_generation_art::validated_output(work, out);
     }
 
-    if matches!(command, Some(Action::VendorPolicyBuild { .. } | Action::VendorPolicyBundleBuild { .. } | Action::IntentResolverSecurityBuild { .. } | Action::AacSecurityBuild { .. } | Action::LibpngSecurityBuild { .. })) {
+    if matches!(
+        command,
+        Some(
+            Action::VendorPolicyBuild { .. }
+                | Action::VendorPolicyBundleBuild { .. }
+                | Action::IntentResolverSecurityBuild { .. }
+                | Action::AacSecurityBuild { .. }
+                | Action::LibpngSecurityBuild { .. }
+        )
+    ) {
         let out = work.join(match command {
             Some(Action::VendorPolicyBundleBuild { .. }) => "android-user-vendor-policy-bundle-out",
-            Some(Action::IntentResolverSecurityBuild { .. }) => "android-user-intentresolver-security-out",
+            Some(Action::IntentResolverSecurityBuild { .. }) => {
+                "android-user-intentresolver-security-out"
+            }
             Some(Action::AacSecurityBuild { .. }) => "android-user-aac-security-out",
             Some(Action::LibpngSecurityBuild { .. }) => "android-user-libpng-security-out",
             _ => "android-user-vendor-policy-out",
@@ -295,10 +320,11 @@ fn selected_build_out(command: Option<&Action>, work: &std::path::Path) -> Resul
         }
         for path in out.ancestors() {
             match fs::symlink_metadata(path) {
-                Ok(meta) if !meta.is_dir() || meta.file_type().is_symlink() =>
-                    return fail("vendor policy output and parents must be real directories"),
-                Ok(_) => {},
-                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {},
+                Ok(meta) if !meta.is_dir() || meta.file_type().is_symlink() => {
+                    return fail("vendor policy output and parents must be real directories");
+                }
+                Ok(_) => {}
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
                 Err(error) => return Err(error.into()),
             }
         }
@@ -307,20 +333,30 @@ fn selected_build_out(command: Option<&Action>, work: &std::path::Path) -> Resul
     if let Some(Action::NativeEngineBuild { out: Some(out), .. }) = command {
         let source = work.join("aosp-source");
         if !out.is_absolute()
-            || out.components().any(|part| matches!(part,
-                std::path::Component::ParentDir | std::path::Component::CurDir))
-            || out.starts_with(&source) || source.starts_with(out)
+            || out.components().any(|part| {
+                matches!(
+                    part,
+                    std::path::Component::ParentDir | std::path::Component::CurDir
+                )
+            })
+            || out.starts_with(&source)
+            || source.starts_with(out)
         {
-            return fail("native-engine --out must be absolute and separate from the prepared source tree");
+            return fail(
+                "native-engine --out must be absolute and separate from the prepared source tree",
+            );
         }
         // Do not let an output alias redirect receipt cleanup or compilation
         // into a source tree. Missing final directories are allowed.
         for part in out.ancestors() {
             match fs::symlink_metadata(part) {
-                Ok(metadata) if metadata.file_type().is_symlink() || !metadata.is_dir() =>
-                    return fail("native-engine --out and its existing parents must be real directories"),
-                Ok(_) => {},
-                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {},
+                Ok(metadata) if metadata.file_type().is_symlink() || !metadata.is_dir() => {
+                    return fail(
+                        "native-engine --out and its existing parents must be real directories",
+                    );
+                }
+                Ok(_) => {}
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
                 Err(error) => return Err(error.into()),
             }
         }
@@ -345,13 +381,27 @@ fn recover_source_workspace(work: &std::path::Path) -> Result<()> {
     let _lock = Lock::acquire(&work.join("package-build.lock"))?;
     let _source_lock = Lock::acquire(&work.join("aosp-source-update.lock"))?;
     let journal = work.join("source-projection.json");
-    if journal.exists() { android::recover(&journal, &source)?; }
+    if journal.exists() {
+        android::recover(&journal, &source)?;
+    }
     Ok(())
 }
 
 fn execute(args: Args) -> Result<()> {
-    if matches!(&args.command, Some(Action::VendorPolicyBuild { .. } | Action::VendorPolicyBundleBuild { .. } | Action::IntentResolverSecurityBuild { .. } | Action::AacSecurityBuild { .. } | Action::LibpngSecurityBuild { .. } | Action::WmSecurityBuild { .. } | Action::VendorImageBuild { .. }))
-        && (args.clean || args.build_only || args.bootstrapped) {
+    if matches!(
+        &args.command,
+        Some(
+            Action::VendorPolicyBuild { .. }
+                | Action::VendorPolicyBundleBuild { .. }
+                | Action::IntentResolverSecurityBuild { .. }
+                | Action::AacSecurityBuild { .. }
+                | Action::LibpngSecurityBuild { .. }
+                | Action::WmSecurityBuild { .. }
+                | Action::FrameworkSecurityBuild { .. }
+                | Action::VendorImageBuild { .. }
+        )
+    ) && (args.clean || args.build_only || args.bootstrapped)
+    {
         return fail("fixed vendor policy does not accept cleanup, bundle or bootstrap options");
     }
     match &args.command {
@@ -440,6 +490,7 @@ fn execute(args: Args) -> Result<()> {
         | Some(Action::AacSecurityBuild { work })
         | Some(Action::LibpngSecurityBuild { work })
         | Some(Action::WmSecurityBuild { work, .. })
+        | Some(Action::FrameworkSecurityBuild { work, .. })
         | Some(Action::VendorImageBuild { work, .. })
         | Some(Action::NativeEngineBuild { work, .. })
         | Some(Action::NativeGenerationArtBuild { work, .. })
@@ -477,8 +528,11 @@ fn execute(args: Args) -> Result<()> {
     let reserved = std::env::var_os("DROIDLOOM_COMPILER_CPUS_RESERVED").as_deref()
         == Some(std::ffi::OsStr::new("1"));
     let capacity = native_pair_job_capacity(
-        std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1),
-        pair, reserved,
+        std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(1),
+        pair,
+        reserved,
     );
     let jobs = args.jobs.unwrap_or(capacity).min(capacity);
     if jobs == 0 {
@@ -502,33 +556,58 @@ fn execute(args: Args) -> Result<()> {
     if work.join("source-projection.json").exists() {
         android::recover(&work.join("source-projection.json"), &source)?;
     }
-    if let Some(Action::NativeRoleIngressBuild { resume_source_staging, .. }) = &args.command {
+    if let Some(Action::NativeRoleIngressBuild {
+        resume_source_staging,
+        ..
+    }) = &args.command
+    {
         return android::build_native_role_ingress(
-            &repo, &source, &out, &work, product, jobs, resume_source_staging.as_deref(),
+            &repo,
+            &source,
+            &out,
+            &work,
+            product,
+            jobs,
+            resume_source_staging.as_deref(),
         );
     }
     if matches!(args.command, Some(Action::NativeGenerationBuild { .. })) {
-        return android::build_native_generation_pair(
-            &repo, &source, &out, &work, product, jobs,
-        );
+        return android::build_native_generation_pair(&repo, &source, &out, &work, product, jobs);
     }
-    if let Some(Action::NativeGenerationArtBuild { enabled_build_only, .. }) = args.command {
+    if let Some(Action::NativeGenerationArtBuild {
+        enabled_build_only, ..
+    }) = args.command
+    {
         return android::build_native_generation_art(
-            &repo, &source, &out, &work, product, jobs,
+            &repo,
+            &source,
+            &out,
+            &work,
+            product,
+            jobs,
             native_generation_art::Flavor::from_build_only_flag(enabled_build_only),
         );
     }
     if let Some(Action::TargetClosureBuild { tests, .. }) = args.command {
-        eprintln!("Building only the NativeBridge target closure; full-product validation and runtime tests remain separate.");
+        eprintln!(
+            "Building only the NativeBridge target closure; full-product validation and runtime tests remain separate."
+        );
         return android::build_native_bridge_target_closure(
             &repo, &source, &out, &work, product, jobs, tests,
         );
     }
     if matches!(args.command, Some(Action::VendorPolicyBundleBuild { .. })) {
-        eprintln!("Building native vendor policy, contexts, versions and VINTF declarations; compatibility qualification follows the actual artifacts.");
-        return android::build_vendor_policy_bundle_on_audio_source(&repo,&source,&out,&work,product,jobs);
+        eprintln!(
+            "Building native vendor policy, contexts, versions and VINTF declarations; compatibility qualification follows the actual artifacts."
+        );
+        return android::build_vendor_policy_bundle_on_audio_source(
+            &repo, &source, &out, &work, product, jobs,
+        );
     }
-    if matches!(args.command, Some(Action::IntentResolverSecurityBuild { .. })) {
+    if matches!(
+        args.command,
+        Some(Action::IntentResolverSecurityBuild { .. })
+    ) {
         return android::build_intentresolver_security_on_audio_source(
             &repo, &source, &out, &work, product, jobs,
         );
@@ -546,31 +625,38 @@ fn execute(args: Args) -> Result<()> {
     if matches!(args.command, Some(Action::WmSecurityBuild { .. })) {
         return android::build_wm_security(&repo, &source, &out, &work, product, jobs);
     }
+    if matches!(args.command, Some(Action::FrameworkSecurityBuild { .. })) {
+        return android::build_framework_security(&repo, &source, &out, &work, product, jobs);
+    }
     if matches!(args.command, Some(Action::VendorImageBuild { .. })) {
         return android::build_vendor_image(&repo, &source, &out, &work, product, jobs);
     }
     if matches!(args.command, Some(Action::VendorPolicyBuild { .. })) {
-        eprintln!("Building the original final vendor_sepolicy.cil with the exact Audio source profile; APEX, selected-cohort policy compatibility and runtime remain separate.");
+        eprintln!(
+            "Building the original final vendor_sepolicy.cil with the exact Audio source profile; APEX, selected-cohort policy compatibility and runtime remain separate."
+        );
         return android::build_vendor_policy_on_audio_source(
             &repo, &source, &out, &work, product, jobs,
         );
     }
     if matches!(args.command, Some(Action::AudioApexBuild { .. })) {
-        eprintln!("Building the AIDL audio APEX target closure with PCM bridge patches; runtime audio verification remains separate.");
+        eprintln!(
+            "Building the AIDL audio APEX target closure with PCM bridge patches; runtime audio verification remains separate."
+        );
         return android::build_audio_apex_target_closure(
             &repo, &source, &out, &work, product, jobs,
         );
     }
     if let Some(Action::NativeEngineBuild { tests, .. }) = args.command {
-        eprintln!("Building only the Android translation engine and optional host-test artifacts; installation and runtime qualification remain separate.");
+        eprintln!(
+            "Building only the Android translation engine and optional host-test artifacts; installation and runtime qualification remain separate."
+        );
         return android::build_native_engine_target_closure(
             &repo, &source, &out, &work, product, jobs, tests,
         );
     }
     if matches!(args.command, Some(Action::MinigbmBuild { .. })) {
-        return android::build_minigbm_target_closure(
-            &repo, &source, &out, &work, product, jobs,
-        );
+        return android::build_minigbm_target_closure(&repo, &source, &out, &work, product, jobs);
     }
     if let Some(Action::NativeBridgeBuild { tests, .. }) = args.command {
         return android::build_targets(
@@ -681,20 +767,61 @@ mod tests {
     #[test]
     fn vendor_image_cli_keeps_fixed_targets_and_explicit_output() {
         let d = tempfile::tempdir().unwrap();
-        let work = d.path().join("work"); fs::create_dir(&work).unwrap();
+        let work = d.path().join("work");
+        fs::create_dir(&work).unwrap();
         let out = d.path().join("vendor-out");
-        let valid = ["droidloom-update", "vendor-image-build", "--work", work.to_str().unwrap(), "--out", out.to_str().unwrap()];
+        let valid = [
+            "droidloom-update",
+            "vendor-image-build",
+            "--work",
+            work.to_str().unwrap(),
+            "--out",
+            out.to_str().unwrap(),
+        ];
         let args = Args::try_parse_from(valid).unwrap();
-        assert!(matches!(args.command, Some(Action::VendorImageBuild { .. })));
-        assert_eq!(selected_build_out(args.command.as_ref(), &work).unwrap(), out);
-        assert!(Args::try_parse_from(["droidloom-update", "vendor-image-build", "--work", work.to_str().unwrap()]).is_err());
-        for extra in [&["vendorimage"][..], &["--variant", "userdebug"][..], &["--source-lock", "/other"][..]] {
-            let mut argv = valid.to_vec(); argv.extend_from_slice(extra);
+        assert!(matches!(
+            args.command,
+            Some(Action::VendorImageBuild { .. })
+        ));
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), &work).unwrap(),
+            out
+        );
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "vendor-image-build",
+                "--work",
+                work.to_str().unwrap()
+            ])
+            .is_err()
+        );
+        for extra in [
+            &["vendorimage"][..],
+            &["--variant", "userdebug"][..],
+            &["--source-lock", "/other"][..],
+        ] {
+            let mut argv = valid.to_vec();
+            argv.extend_from_slice(extra);
             assert!(Args::try_parse_from(argv).is_err());
         }
         for option in ["--clean", "--build-only", "--bootstrapped"] {
-            let args = Args::try_parse_from(["droidloom-update", option, "vendor-image-build", "--work", work.to_str().unwrap(), "--out", out.to_str().unwrap()]).unwrap();
-            assert!(execute(args).unwrap_err().to_string().contains("does not accept cleanup"));
+            let args = Args::try_parse_from([
+                "droidloom-update",
+                option,
+                "vendor-image-build",
+                "--work",
+                work.to_str().unwrap(),
+                "--out",
+                out.to_str().unwrap(),
+            ])
+            .unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
         }
         std::os::unix::fs::symlink(&work, &out).unwrap();
         assert!(selected_build_out(args.command.as_ref(), &work).is_err());
@@ -704,18 +831,47 @@ mod tests {
     fn libpng_security_cli_rejects_widening_and_output_aliases() {
         let d = tempfile::tempdir().unwrap();
         let work = d.path();
-        let valid = ["droidloom-update", "libpng-security-build", "--work", work.to_str().unwrap()];
+        let valid = [
+            "droidloom-update",
+            "libpng-security-build",
+            "--work",
+            work.to_str().unwrap(),
+        ];
         let args = Args::try_parse_from(valid).unwrap();
-        assert!(matches!(args.command, Some(Action::LibpngSecurityBuild { .. })));
+        assert!(matches!(
+            args.command,
+            Some(Action::LibpngSecurityBuild { .. })
+        ));
         let out = work.join("android-user-libpng-security-out");
-        assert_eq!(selected_build_out(args.command.as_ref(), work).unwrap(), out);
-        for extra in [&["services"][..], &["--out", "/another"][..], &["--variant", "eng"][..], &["--source-lock", "/other"][..]] {
-            let mut argv = valid.to_vec(); argv.extend_from_slice(extra);
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), work).unwrap(),
+            out
+        );
+        for extra in [
+            &["services"][..],
+            &["--out", "/another"][..],
+            &["--variant", "eng"][..],
+            &["--source-lock", "/other"][..],
+        ] {
+            let mut argv = valid.to_vec();
+            argv.extend_from_slice(extra);
             assert!(Args::try_parse_from(argv).is_err());
         }
         for option in ["--clean", "--build-only", "--bootstrapped"] {
-            let args = Args::try_parse_from(["droidloom-update", option, "libpng-security-build", "--work", work.to_str().unwrap()]).unwrap();
-            assert!(execute(args).unwrap_err().to_string().contains("does not accept cleanup"));
+            let args = Args::try_parse_from([
+                "droidloom-update",
+                option,
+                "libpng-security-build",
+                "--work",
+                work.to_str().unwrap(),
+            ])
+            .unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
         }
         std::os::unix::fs::symlink(work, out).unwrap();
         assert!(selected_build_out(args.command.as_ref(), work).is_err());
@@ -724,20 +880,121 @@ mod tests {
     #[test]
     fn wm_security_cli_keeps_fixed_scope_and_explicit_output() {
         let d = tempfile::tempdir().unwrap();
-        let work = d.path().join("work"); fs::create_dir(&work).unwrap();
+        let work = d.path().join("work");
+        fs::create_dir(&work).unwrap();
         let out = d.path().join("wm-out");
-        let valid = ["droidloom-update", "wm-security-build", "--work", work.to_str().unwrap(), "--out", out.to_str().unwrap()];
+        let valid = [
+            "droidloom-update",
+            "wm-security-build",
+            "--work",
+            work.to_str().unwrap(),
+            "--out",
+            out.to_str().unwrap(),
+        ];
         let args = Args::try_parse_from(valid).unwrap();
         assert!(matches!(args.command, Some(Action::WmSecurityBuild { .. })));
-        assert_eq!(selected_build_out(args.command.as_ref(), &work).unwrap(), out);
-        assert!(Args::try_parse_from(["droidloom-update", "wm-security-build", "--work", work.to_str().unwrap()]).is_err());
-        for extra in [&["services"][..], &["--variant", "eng"][..], &["--source-lock", "/other"][..]] {
-            let mut argv = valid.to_vec(); argv.extend_from_slice(extra);
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), &work).unwrap(),
+            out
+        );
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "wm-security-build",
+                "--work",
+                work.to_str().unwrap()
+            ])
+            .is_err()
+        );
+        for extra in [
+            &["services"][..],
+            &["--variant", "eng"][..],
+            &["--source-lock", "/other"][..],
+        ] {
+            let mut argv = valid.to_vec();
+            argv.extend_from_slice(extra);
             assert!(Args::try_parse_from(argv).is_err());
         }
         for option in ["--clean", "--build-only", "--bootstrapped"] {
-            let args = Args::try_parse_from(["droidloom-update", option, "wm-security-build", "--work", work.to_str().unwrap(), "--out", out.to_str().unwrap()]).unwrap();
-            assert!(execute(args).unwrap_err().to_string().contains("does not accept cleanup"));
+            let args = Args::try_parse_from([
+                "droidloom-update",
+                option,
+                "wm-security-build",
+                "--work",
+                work.to_str().unwrap(),
+                "--out",
+                out.to_str().unwrap(),
+            ])
+            .unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
+        }
+        std::os::unix::fs::symlink(&work, &out).unwrap();
+        assert!(selected_build_out(args.command.as_ref(), &work).is_err());
+    }
+
+    #[test]
+    fn framework_security_cli_keeps_fixed_scope_and_explicit_output() {
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path().join("work");
+        fs::create_dir(&work).unwrap();
+        let out = d.path().join("framework-out");
+        let valid = [
+            "droidloom-update",
+            "framework-security-build",
+            "--work",
+            work.to_str().unwrap(),
+            "--out",
+            out.to_str().unwrap(),
+        ];
+        let args = Args::try_parse_from(valid).unwrap();
+        assert!(matches!(
+            args.command,
+            Some(Action::FrameworkSecurityBuild { .. })
+        ));
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), &work).unwrap(),
+            out
+        );
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "framework-security-build",
+                "--work",
+                work.to_str().unwrap()
+            ])
+            .is_err()
+        );
+        for extra in [
+            &["services"][..],
+            &["--variant", "eng"][..],
+            &["--source-lock", "/other"][..],
+        ] {
+            let mut argv = valid.to_vec();
+            argv.extend_from_slice(extra);
+            assert!(Args::try_parse_from(argv).is_err());
+        }
+        for option in ["--clean", "--build-only", "--bootstrapped"] {
+            let args = Args::try_parse_from([
+                "droidloom-update",
+                option,
+                "framework-security-build",
+                "--work",
+                work.to_str().unwrap(),
+                "--out",
+                out.to_str().unwrap(),
+            ])
+            .unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
         }
         std::os::unix::fs::symlink(&work, &out).unwrap();
         assert!(selected_build_out(args.command.as_ref(), &work).is_err());
@@ -745,61 +1002,175 @@ mod tests {
 
     #[test]
     fn vendor_policy_bundle_cli_is_fixed_without_source_target_or_variant_overrides() {
-        let valid=["droidloom-update","vendor-policy-bundle-build","--work","/not-executed"];
-        let args=Args::try_parse_from(valid).unwrap();assert!(matches!(args.command,Some(Action::VendorPolicyBundleBuild{..})));
-        assert_eq!(selected_build_out(args.command.as_ref(),std::path::Path::new("/not-executed")).unwrap(),PathBuf::from("/not-executed/android-user-vendor-policy-bundle-out"));
-        assert!(Args::try_parse_from(["droidloom-update","vendor-policy-bundle-build"]).is_err());
-        for extra in [&["vendorimage"][..],&["selinux_policy_vendor"][..],&["--out","/another"][..],&["--variant","userdebug"][..],&["--source-lock","/another"][..]] {let mut argv=valid.to_vec();argv.extend_from_slice(extra);assert!(Args::try_parse_from(argv).is_err());}
-        for option in ["--clean","--build-only","--bootstrapped"] {let args=Args::try_parse_from(["droidloom-update",option,"vendor-policy-bundle-build","--work","/not-executed"]).unwrap();assert!(execute(args).unwrap_err().to_string().contains("does not accept cleanup"));}
+        let valid = [
+            "droidloom-update",
+            "vendor-policy-bundle-build",
+            "--work",
+            "/not-executed",
+        ];
+        let args = Args::try_parse_from(valid).unwrap();
+        assert!(matches!(
+            args.command,
+            Some(Action::VendorPolicyBundleBuild { .. })
+        ));
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), std::path::Path::new("/not-executed"))
+                .unwrap(),
+            PathBuf::from("/not-executed/android-user-vendor-policy-bundle-out")
+        );
+        assert!(Args::try_parse_from(["droidloom-update", "vendor-policy-bundle-build"]).is_err());
+        for extra in [
+            &["vendorimage"][..],
+            &["selinux_policy_vendor"][..],
+            &["--out", "/another"][..],
+            &["--variant", "userdebug"][..],
+            &["--source-lock", "/another"][..],
+        ] {
+            let mut argv = valid.to_vec();
+            argv.extend_from_slice(extra);
+            assert!(Args::try_parse_from(argv).is_err());
+        }
+        for option in ["--clean", "--build-only", "--bootstrapped"] {
+            let args = Args::try_parse_from([
+                "droidloom-update",
+                option,
+                "vendor-policy-bundle-build",
+                "--work",
+                "/not-executed",
+            ])
+            .unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
+        }
     }
 
     #[test]
     fn vendor_policy_bundle_output_rejects_directory_and_ancestor_aliases() {
         use std::os::unix::fs::symlink;
-        let d=tempfile::tempdir().unwrap();let work=d.path().join("work");fs::create_dir(&work).unwrap();
-        let args=Args::try_parse_from(["droidloom-update","vendor-policy-bundle-build","--work",work.to_str().unwrap()]).unwrap();
-        let output=work.join("android-user-vendor-policy-bundle-out");symlink(&work,&output).unwrap();assert!(selected_build_out(args.command.as_ref(),&work).is_err());fs::remove_file(output).unwrap();
-        let alias=d.path().join("alias");symlink(&work,&alias).unwrap();assert!(selected_build_out(args.command.as_ref(),&alias).is_err());
-        assert!(selected_build_out(args.command.as_ref(),std::path::Path::new("relative-work")).is_err());
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path().join("work");
+        fs::create_dir(&work).unwrap();
+        let args = Args::try_parse_from([
+            "droidloom-update",
+            "vendor-policy-bundle-build",
+            "--work",
+            work.to_str().unwrap(),
+        ])
+        .unwrap();
+        let output = work.join("android-user-vendor-policy-bundle-out");
+        symlink(&work, &output).unwrap();
+        assert!(selected_build_out(args.command.as_ref(), &work).is_err());
+        fs::remove_file(output).unwrap();
+        let alias = d.path().join("alias");
+        symlink(&work, &alias).unwrap();
+        assert!(selected_build_out(args.command.as_ref(), &alias).is_err());
+        assert!(
+            selected_build_out(args.command.as_ref(), std::path::Path::new("relative-work"))
+                .is_err()
+        );
     }
 
     use super::*;
 
     #[test]
     fn intentresolver_security_cli_rejects_widening_and_output_aliases() {
-        let d=tempfile::tempdir().unwrap();let work=d.path();
-        let valid=["droidloom-update","intentresolver-security-build","--work",work.to_str().unwrap()];
-        let args=Args::try_parse_from(valid).unwrap();
-        assert!(matches!(args.command,Some(Action::IntentResolverSecurityBuild { .. })));
-        assert_eq!(selected_build_out(args.command.as_ref(),work).unwrap(),work.join("android-user-intentresolver-security-out"));
-        for extra in [&["services"][..], &["--out","/another"][..], &["--variant","eng"][..], &["--source-lock","/other"][..]] {
-            let mut argv=valid.to_vec();argv.extend_from_slice(extra);assert!(Args::try_parse_from(argv).is_err());
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path();
+        let valid = [
+            "droidloom-update",
+            "intentresolver-security-build",
+            "--work",
+            work.to_str().unwrap(),
+        ];
+        let args = Args::try_parse_from(valid).unwrap();
+        assert!(matches!(
+            args.command,
+            Some(Action::IntentResolverSecurityBuild { .. })
+        ));
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), work).unwrap(),
+            work.join("android-user-intentresolver-security-out")
+        );
+        for extra in [
+            &["services"][..],
+            &["--out", "/another"][..],
+            &["--variant", "eng"][..],
+            &["--source-lock", "/other"][..],
+        ] {
+            let mut argv = valid.to_vec();
+            argv.extend_from_slice(extra);
+            assert!(Args::try_parse_from(argv).is_err());
         }
-        for option in ["--clean","--build-only","--bootstrapped"] {
-            let args=Args::try_parse_from(["droidloom-update",option,"intentresolver-security-build","--work",work.to_str().unwrap()]).unwrap();
-            assert!(execute(args).unwrap_err().to_string().contains("does not accept cleanup"));
+        for option in ["--clean", "--build-only", "--bootstrapped"] {
+            let args = Args::try_parse_from([
+                "droidloom-update",
+                option,
+                "intentresolver-security-build",
+                "--work",
+                work.to_str().unwrap(),
+            ])
+            .unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
         }
-        std::os::unix::fs::symlink(work,work.join("android-user-intentresolver-security-out")).unwrap();
-        assert!(selected_build_out(args.command.as_ref(),work).is_err());
+        std::os::unix::fs::symlink(work, work.join("android-user-intentresolver-security-out"))
+            .unwrap();
+        assert!(selected_build_out(args.command.as_ref(), work).is_err());
     }
 
     #[test]
     fn aac_security_cli_rejects_widening_and_output_aliases() {
         let d = tempfile::tempdir().unwrap();
         let work = d.path();
-        let valid = ["droidloom-update", "aac-security-build", "--work", work.to_str().unwrap()];
+        let valid = [
+            "droidloom-update",
+            "aac-security-build",
+            "--work",
+            work.to_str().unwrap(),
+        ];
         let args = Args::try_parse_from(valid).unwrap();
-        assert!(matches!(args.command, Some(Action::AacSecurityBuild { .. })));
+        assert!(matches!(
+            args.command,
+            Some(Action::AacSecurityBuild { .. })
+        ));
         let out = work.join("android-user-aac-security-out");
-        assert_eq!(selected_build_out(args.command.as_ref(), work).unwrap(), out);
-        for extra in [&["services"][..], &["--out", "/another"][..], &["--variant", "eng"][..], &["--source-lock", "/other"][..]] {
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), work).unwrap(),
+            out
+        );
+        for extra in [
+            &["services"][..],
+            &["--out", "/another"][..],
+            &["--variant", "eng"][..],
+            &["--source-lock", "/other"][..],
+        ] {
             let mut argv = valid.to_vec();
             argv.extend_from_slice(extra);
             assert!(Args::try_parse_from(argv).is_err());
         }
         for option in ["--clean", "--build-only", "--bootstrapped"] {
-            let args = Args::try_parse_from(["droidloom-update", option, "aac-security-build", "--work", work.to_str().unwrap()]).unwrap();
-            assert!(execute(args).unwrap_err().to_string().contains("does not accept cleanup"));
+            let args = Args::try_parse_from([
+                "droidloom-update",
+                option,
+                "aac-security-build",
+                "--work",
+                work.to_str().unwrap(),
+            ])
+            .unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
         }
         std::os::unix::fs::symlink(work, out).unwrap();
         assert!(selected_build_out(args.command.as_ref(), work).is_err());
@@ -807,109 +1178,234 @@ mod tests {
 
     #[test]
     fn vendor_policy_cli_is_fixed_and_has_no_cleanup_or_target_override() {
-        let valid = ["droidloom-update", "vendor-policy-build", "--work", "/not-executed"];
+        let valid = [
+            "droidloom-update",
+            "vendor-policy-build",
+            "--work",
+            "/not-executed",
+        ];
         let args = Args::try_parse_from(valid).unwrap();
-        assert!(matches!(args.command, Some(Action::VendorPolicyBuild { .. })));
-        assert_eq!(selected_build_out(args.command.as_ref(), std::path::Path::new("/not-executed")).unwrap(),
-            PathBuf::from("/not-executed/android-user-vendor-policy-out"));
+        assert!(matches!(
+            args.command,
+            Some(Action::VendorPolicyBuild { .. })
+        ));
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), std::path::Path::new("/not-executed"))
+                .unwrap(),
+            PathBuf::from("/not-executed/android-user-vendor-policy-out")
+        );
         assert!(Args::try_parse_from(["droidloom-update", "vendor-policy-build"]).is_err());
-        for extra in [&["services"][..], &["vendor_sepolicy.cil"][..], &["--out", "/another-out"][..],
-                      &["--variant", "userdebug"][..], &["--source-lock", "/another-lock"][..]] {
-            let mut argv = valid.to_vec(); argv.extend_from_slice(extra);
+        for extra in [
+            &["services"][..],
+            &["vendor_sepolicy.cil"][..],
+            &["--out", "/another-out"][..],
+            &["--variant", "userdebug"][..],
+            &["--source-lock", "/another-lock"][..],
+        ] {
+            let mut argv = valid.to_vec();
+            argv.extend_from_slice(extra);
             assert!(Args::try_parse_from(argv).is_err());
         }
         for option in ["--clean", "--build-only", "--bootstrapped"] {
-            let argv = ["droidloom-update", option, "vendor-policy-build", "--work", "/not-executed"];
+            let argv = [
+                "droidloom-update",
+                option,
+                "vendor-policy-build",
+                "--work",
+                "/not-executed",
+            ];
             let args = Args::try_parse_from(argv).unwrap();
-            assert!(execute(args).unwrap_err().to_string().contains("does not accept cleanup"));
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
         }
     }
 
     #[cfg(unix)]
     #[test]
     fn vendor_policy_output_rejects_aliases_and_uses_existing_two_lock_recovery() {
-        let d = tempfile::tempdir().unwrap(); let work = d.path();
-        let args = Args::try_parse_from(["droidloom-update", "vendor-policy-build", "--work", work.to_str().unwrap()]).unwrap();
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path();
+        let args = Args::try_parse_from([
+            "droidloom-update",
+            "vendor-policy-build",
+            "--work",
+            work.to_str().unwrap(),
+        ])
+        .unwrap();
         let output = work.join("android-user-vendor-policy-out");
         std::os::unix::fs::symlink(work, &output).unwrap();
-        assert!(selected_build_out(args.command.as_ref(), work).is_err()); fs::remove_file(&output).unwrap();
-        let source = work.join("aosp-source"); fs::create_dir(&source).unwrap();
-        let input = source.join("original"); fs::write(&input, b"original").unwrap();
+        assert!(selected_build_out(args.command.as_ref(), work).is_err());
+        fs::remove_file(&output).unwrap();
+        let source = work.join("aosp-source");
+        fs::create_dir(&source).unwrap();
+        let input = source.join("original");
+        fs::write(&input, b"original").unwrap();
         use std::os::unix::fs::PermissionsExt;
-        let original_metadata=fs::metadata(&input).unwrap();fs::write(&input,b"projected").unwrap();
+        let original_metadata = fs::metadata(&input).unwrap();
+        fs::write(&input, b"projected").unwrap();
         let journal = work.join("source-projection.json");
         let raw = serde_json::to_vec(&serde_json::json!({"schema_version":2,"originals":[{"path":input,"bytes":b"original".to_vec(),"modified":original_metadata.modified().unwrap(),"permissions_mode":original_metadata.permissions().mode()}]})).unwrap();
         fs::write(&journal, &raw).unwrap();
         for name in ["package-build.lock", "aosp-source-update.lock"] {
             let held = Lock::acquire(&work.join(name)).unwrap();
             assert!(recover_source_workspace(work).is_err());
-            assert_eq!(fs::read(&input).unwrap(), b"projected"); assert_eq!(fs::read(&journal).unwrap(), raw);
+            assert_eq!(fs::read(&input).unwrap(), b"projected");
+            assert_eq!(fs::read(&journal).unwrap(), raw);
             drop(held);
         }
         recover_source_workspace(work).unwrap();
-        assert_eq!(fs::read(&input).unwrap(), b"original"); assert!(!journal.exists()); assert!(!output.exists());
+        assert_eq!(fs::read(&input).unwrap(), b"original");
+        assert!(!journal.exists());
+        assert!(!output.exists());
     }
-
 
     #[test]
     fn source_recovery_cli_is_explicit_and_has_no_build_path() {
         assert!(Args::try_parse_from(["droidloom-update", "recover-source"]).is_err());
-        assert!(Args::try_parse_from(["droidloom-update", "recover-source", "--work", "/not-executed", "services"]).is_err());
-        let args = Args::try_parse_from(["droidloom-update", "recover-source", "--work", "/not-executed"]).unwrap();
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "recover-source",
+                "--work",
+                "/not-executed",
+                "services"
+            ])
+            .is_err()
+        );
+        let args = Args::try_parse_from([
+            "droidloom-update",
+            "recover-source",
+            "--work",
+            "/not-executed",
+        ])
+        .unwrap();
         assert!(matches!(args.command, Some(Action::RecoverSource { .. })));
-        let args = Args::try_parse_from(["droidloom-update", "--clean", "recover-source", "--work", "/not-executed"]).unwrap();
-        assert!(execute(args).unwrap_err().to_string().contains("does not accept build"));
+        let args = Args::try_parse_from([
+            "droidloom-update",
+            "--clean",
+            "recover-source",
+            "--work",
+            "/not-executed",
+        ])
+        .unwrap();
+        assert!(
+            execute(args)
+                .unwrap_err()
+                .to_string()
+                .contains("does not accept build")
+        );
     }
 
     #[test]
     fn source_recovery_requires_both_normal_locks_and_only_restores_journal() {
-        let d = tempfile::tempdir().unwrap(); let work = d.path(); let source = work.join("aosp-source");
-        fs::create_dir(&source).unwrap(); let input = source.join("original");
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path();
+        let source = work.join("aosp-source");
+        fs::create_dir(&source).unwrap();
+        let input = source.join("original");
         fs::write(&input, b"original").unwrap();
         use std::os::unix::fs::PermissionsExt;
-        let original_metadata=fs::metadata(&input).unwrap();fs::write(&input,b"projected").unwrap();let journal = work.join("source-projection.json");
+        let original_metadata = fs::metadata(&input).unwrap();
+        fs::write(&input, b"projected").unwrap();
+        let journal = work.join("source-projection.json");
         let raw = serde_json::to_vec(&serde_json::json!({"schema_version":2,"originals":[{"path":input,"bytes":b"original".to_vec(),"modified":original_metadata.modified().unwrap(),"permissions_mode":original_metadata.permissions().mode()}]})).unwrap();
         fs::write(&journal, &raw).unwrap();
         for name in ["package-build.lock", "aosp-source-update.lock"] {
             let held = Lock::acquire(&work.join(name)).unwrap();
             assert!(recover_source_workspace(work).is_err());
             assert_eq!(fs::read(&input).unwrap(), b"projected");
-            assert_eq!(fs::read(&journal).unwrap(), raw); drop(held);
+            assert_eq!(fs::read(&journal).unwrap(), raw);
+            drop(held);
         }
-        recover_source_workspace(work).unwrap(); assert_eq!(fs::read(&input).unwrap(), b"original");
-        assert!(!journal.exists()); recover_source_workspace(work).unwrap();
-        let mut entries: Vec<_> = fs::read_dir(work).unwrap().map(|x| x.unwrap().file_name()).collect(); entries.sort();
-        assert_eq!(entries, ["aosp-source", "aosp-source-update.lock", "package-build.lock"].map(std::ffi::OsString::from));
+        recover_source_workspace(work).unwrap();
+        assert_eq!(fs::read(&input).unwrap(), b"original");
+        assert!(!journal.exists());
+        recover_source_workspace(work).unwrap();
+        let mut entries: Vec<_> = fs::read_dir(work)
+            .unwrap()
+            .map(|x| x.unwrap().file_name())
+            .collect();
+        entries.sort();
+        assert_eq!(
+            entries,
+            [
+                "aosp-source",
+                "aosp-source-update.lock",
+                "package-build.lock"
+            ]
+            .map(std::ffi::OsString::from)
+        );
     }
-
 
     #[test]
     fn native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets() {
         assert!(Args::try_parse_from(["droidloom-update", "native-engine-build"]).is_err());
-        assert!(Args::try_parse_from(["droidloom-update", "native-engine-build",
-            "--work", "/not-executed", "services"]).is_err());
-        let args = Args::try_parse_from(["droidloom-update", "-j", "2", "native-engine-build",
-            "--work", "/not-executed", "--tests"]).unwrap();
-        assert!(matches!(args.command, Some(Action::NativeEngineBuild { tests: true, .. })));
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "native-engine-build",
+                "--work",
+                "/not-executed",
+                "services"
+            ])
+            .is_err()
+        );
+        let args = Args::try_parse_from([
+            "droidloom-update",
+            "-j",
+            "2",
+            "native-engine-build",
+            "--work",
+            "/not-executed",
+            "--tests",
+        ])
+        .unwrap();
+        assert!(matches!(
+            args.command,
+            Some(Action::NativeEngineBuild { tests: true, .. })
+        ));
     }
 
     #[test]
     fn native_engine_output_selector_keeps_default_or_exact_explicit_directory() {
         let work = std::path::Path::new("/prepared");
         let parse = |extra: &[&str]| {
-            let mut argv = vec!["droidloom-update", "native-engine-build", "--work", "/prepared", "--tests"];
+            let mut argv = vec![
+                "droidloom-update",
+                "native-engine-build",
+                "--work",
+                "/prepared",
+                "--tests",
+            ];
             argv.extend_from_slice(extra);
             Args::try_parse_from(argv).unwrap()
         };
         let args = parse(&[]);
-        assert_eq!(selected_build_out(args.command.as_ref(), work).unwrap(),
-            work.join("android-native-engine-out"));
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), work).unwrap(),
+            work.join("android-native-engine-out")
+        );
         let args = parse(&["--out", "/prepared/android-native-engine-out-r9"]);
-        assert_eq!(selected_build_out(args.command.as_ref(), work).unwrap(),
-            PathBuf::from("/prepared/android-native-engine-out-r9"));
-        for path in ["relative-out", "/prepared", "/prepared/aosp-source", "/prepared/aosp-source/out", "/prepared/new/../old"] {
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), work).unwrap(),
+            PathBuf::from("/prepared/android-native-engine-out-r9")
+        );
+        for path in [
+            "relative-out",
+            "/prepared",
+            "/prepared/aosp-source",
+            "/prepared/aosp-source/out",
+            "/prepared/new/../old",
+        ] {
             let args = parse(&["--out", path]);
-            assert!(selected_build_out(args.command.as_ref(), work).is_err(), "{path}");
+            assert!(
+                selected_build_out(args.command.as_ref(), work).is_err(),
+                "{path}"
+            );
         }
         let temp = tempfile::tempdir().unwrap();
         let alias = temp.path().join("alias");
@@ -926,12 +1422,27 @@ mod native_cli_tests {
     #[test]
     fn native_generation_pair_cli_requires_one_explicit_product() {
         assert!(Args::try_parse_from(["droidloom-update", "native-generation-pair"]).is_err());
-        assert!(Args::try_parse_from(["droidloom-update", "native-generation-pair",
-            "--product", "/not-executed", "libart"]).is_err());
-        let args = Args::try_parse_from(["droidloom-update", "native-generation-pair",
-            "--product", "/not-executed"]).unwrap();
-        assert!(matches!(args.command, Some(Action::NativeGenerationPair { product })
-            if product == PathBuf::from("/not-executed")));
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "native-generation-pair",
+                "--product",
+                "/not-executed",
+                "libart"
+            ])
+            .is_err()
+        );
+        let args = Args::try_parse_from([
+            "droidloom-update",
+            "native-generation-pair",
+            "--product",
+            "/not-executed",
+        ])
+        .unwrap();
+        assert!(
+            matches!(args.command, Some(Action::NativeGenerationPair { product })
+            if product == PathBuf::from("/not-executed"))
+        );
     }
 
     #[test]
@@ -946,12 +1457,45 @@ mod native_cli_tests {
     #[test]
     fn ordinary_generation_cli_has_fixed_scope_and_explicit_fresh_output() {
         assert!(Args::try_parse_from(["droidloom-update", "native-generation-build"]).is_err());
-        assert!(Args::try_parse_from(["droidloom-update", "native-generation-build",
-            "--work", "/prepared", "--out", "/fresh", "services"]).is_err());
-        assert!(Args::try_parse_from(["droidloom-update", "native-generation-build",
-            "--work", "/prepared", "--out", "/fresh", "--resume-source-staging", "/old"]).is_err());
-        let parsed=Args::try_parse_from(["droidloom-update", "-j", "1", "native-generation-build",
-            "--work", "/prepared", "--out", "/fresh"]).unwrap();
-        assert!(matches!(parsed.command, Some(Action::NativeGenerationBuild { .. })));
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "native-generation-build",
+                "--work",
+                "/prepared",
+                "--out",
+                "/fresh",
+                "services"
+            ])
+            .is_err()
+        );
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "native-generation-build",
+                "--work",
+                "/prepared",
+                "--out",
+                "/fresh",
+                "--resume-source-staging",
+                "/old"
+            ])
+            .is_err()
+        );
+        let parsed = Args::try_parse_from([
+            "droidloom-update",
+            "-j",
+            "1",
+            "native-generation-build",
+            "--work",
+            "/prepared",
+            "--out",
+            "/fresh",
+        ])
+        .unwrap();
+        assert!(matches!(
+            parsed.command,
+            Some(Action::NativeGenerationBuild { .. })
+        ));
     }
 }

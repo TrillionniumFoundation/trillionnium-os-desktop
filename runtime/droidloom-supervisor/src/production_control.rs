@@ -3,6 +3,7 @@
 //! its numeric-PID Android command helpers.
 use super::*;
 use crate::production_cell::{CellPoll, ProductionCell};
+use crate::production_configuration::ConfigurationReadGuard;
 use crate::production_namespace::TreeExit;
 use crate::production_readiness::BootProperty;
 use crate::production_selection::ProductionSelection;
@@ -387,6 +388,17 @@ impl ProductionDaemon {
     }
 
     fn start(&mut self, peer_uid: u32, spec: &Path) -> Result<ControlResponse, ControlError> {
+        let guard = ConfigurationReadGuard::acquire()
+            .map_err(|error| ControlError::Invalid(error.to_string()))?;
+        self.start_under_guard(peer_uid, spec, &guard)
+    }
+
+    fn start_under_guard(
+        &mut self,
+        peer_uid: u32,
+        spec: &Path,
+        guard: &ConfigurationReadGuard,
+    ) -> Result<ControlResponse, ControlError> {
         if self.state == CellState::Quarantined {
             return Err(ControlError::Invalid(
                 "previous production ownership is quarantined; independent retirement is required"
@@ -401,7 +413,7 @@ impl ProductionDaemon {
                 "production Start requires the root broker".into(),
             ));
         }
-        let selected = ProductionSelection::load(spec, peer_uid)
+        let selected = ProductionSelection::load(guard, spec, peer_uid)
             .map_err(|error| ControlError::Invalid(error.to_string()))?;
         if let Some(active) = &self.active {
             authorize_uid(peer_uid, active.spec().host_uid)?;
@@ -415,12 +427,21 @@ impl ProductionDaemon {
         // Only a validated new Start reaches this boundary. A previous owner's
         // terminal evidence cannot stand for any resources this attempt creates,
         // even if preparation subsequently fails or quarantines.
+        guard
+            .revalidate()
+            .map_err(|error| ControlError::Invalid(error.to_string()))?;
         self.last_retirement = None;
         self.state = CellState::Starting;
         let progress = &self.progress;
         match ProductionCell::start(selected, |message| progress.report(message)) {
             Ok(cell) => {
                 self.active = Some(cell);
+                if let Err(error) = guard.revalidate() {
+                    // A changed configuration chain must not leave a newly
+                    // created owner running after Start reports failure.
+                    self.stop(0)?;
+                    return Err(ControlError::Invalid(error.to_string()));
+                }
                 self.last_result =
                     "original init executed; waiting for genuine Android readiness".into();
                 // Never call a parked/prepared child Running. A later poll
@@ -437,6 +458,17 @@ impl ProductionDaemon {
                 Err(ControlError::Invalid(self.last_result.clone()))
             }
         }
+    }
+
+    fn restart(&mut self, peer_uid: u32, spec: &Path) -> Result<ControlResponse, ControlError> {
+        let guard = ConfigurationReadGuard::acquire()
+            .map_err(|error| ControlError::Invalid(error.to_string()))?;
+        // One shared lock spans prevalidation, original-owner retirement and
+        // the next Start. An exclusive package writer cannot enter the gap.
+        ProductionSelection::load(&guard, spec, peer_uid)
+            .map_err(|error| ControlError::Invalid(error.to_string()))?;
+        self.stop(peer_uid)?;
+        self.start_under_guard(peer_uid, spec, &guard)
     }
 
     fn stop(&mut self, peer_uid: u32) -> Result<ControlResponse, ControlError> {
@@ -554,13 +586,7 @@ impl ProductionDaemon {
         let result = match request {
             ControlRequest::Start { spec } => self.start(peer_uid, &spec),
             ControlRequest::Stop => self.stop(peer_uid),
-            ControlRequest::Restart { spec } => {
-                // Validate the next exact selection before stopping any owner.
-                ProductionSelection::load(&spec, peer_uid)
-                    .map_err(|error| ControlError::Invalid(error.to_string()))
-                    .and_then(|_| self.stop(peer_uid))
-                    .and_then(|_| self.start(peer_uid, &spec))
-            }
+            ControlRequest::Restart { spec } => self.restart(peer_uid, &spec),
             ControlRequest::Status | ControlRequest::Readiness => self.status(peer_uid),
             ControlRequest::WaitReady => self.wait_ready(peer_uid, shutdown),
             ControlRequest::InspectApplication { package, user } => {

@@ -17,6 +17,7 @@ use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use thiserror::Error;
 
+use crate::production_configuration::ConfigurationReadGuard;
 use crate::{AndroidImageLayout, CellSpec};
 
 const SELECTION: &str = "/etc/droidloom/production/selected.json";
@@ -98,7 +99,12 @@ pub(crate) struct ProductionSelection {
 }
 
 impl ProductionSelection {
-    pub(crate) fn load(spec_path: &Path, peer_uid: u32) -> Result<Self> {
+    pub(crate) fn load(
+        guard: &ConfigurationReadGuard,
+        spec_path: &Path,
+        peer_uid: u32,
+    ) -> Result<Self> {
+        guard.revalidate()?;
         if spec_path.as_os_str() != OsStr::new(SPECIFICATION) {
             return Err(SelectionError::Rejected(
                 "production accepts only the fixed package cell specification",
@@ -127,6 +133,7 @@ impl ProductionSelection {
         validate_spec(&record, &spec)?;
         selected.revalidate()?;
         specification.revalidate()?;
+        guard.revalidate()?;
         Ok(Self {
             selected,
             specification,
