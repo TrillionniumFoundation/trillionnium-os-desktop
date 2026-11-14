@@ -110,7 +110,7 @@ pub(super) fn request(
     )
 }
 
-fn connect(path: &Path) -> io::Result<UnixStream> {
+pub(super) fn connect(path: &Path) -> io::Result<UnixStream> {
     // Blocking connect can wait indefinitely when a busy daemon's accept queue
     // fills. A nonblocking AF_UNIX connect reports that condition as EAGAIN.
     // SAFETY: zero initializes a valid sockaddr_un. The pathname is bounded

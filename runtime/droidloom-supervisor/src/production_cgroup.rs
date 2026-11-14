@@ -37,7 +37,7 @@ pub(crate) use systemd_endpoint::{
 
 #[path = "production_unit_lifetime.rs"]
 mod unit_lifetime;
-pub(crate) use unit_lifetime::{SystemdOwnerGeneration, SystemdOwnerWitness};
+pub(crate) use unit_lifetime::{PackageBrokerUnit, SystemdOwnerGeneration, SystemdOwnerWitness};
 
 const UNIT: &str = "droidloom-production.service";
 const UNIT_CGROUP: &str = "/system.slice/droidloom-production.service";

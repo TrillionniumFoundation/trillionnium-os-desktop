@@ -1,4 +1,4 @@
-//! Apply four complete official framework corrections in the normal services producer.
+//! Apply seven framework correction families through eight complete official patches in the normal services producer.
 //! These are source and build records; device tests, DEX semantics and whole-CVE
 //! acceptance remain separate from a successful ordinary build.
 use super::*;
@@ -9,6 +9,7 @@ pub(super) const TARGETS: &[&str] = &[
     "WmTests",
     "FrameworksServicesTests",
     "UsbTests",
+    "AudioServiceTests",
     "module-info",
 ];
 const PROJECT: &str = "frameworks/base";
@@ -18,6 +19,9 @@ const CVES: &[&str] = &[
     "CVE-2026-58866",
     "CVE-2026-28645",
     "CVE-2026-45514",
+    "CVE-2026-58965",
+    "CVE-2026-58970",
+    "CVE-2026-49935",
 ];
 const PATCHES: &[(&str, u64, &str, &str)] = &[
     (
@@ -44,6 +48,30 @@ const PATCHES: &[(&str, u64, &str, &str)] = &[
         "3efaf6b185d90b0c711d3d738ed06e026ba8c0ab60f441d25ed59266996d8d1f",
         "4d1f600cbcbbeb990e19bec4a386fb64f922ddd1",
     ),
+    (
+        "android/security/framework-asb/2e373a0e5bc7d0b6feb0d5c461c44455c92e6805.patch",
+        7378,
+        "9cb931129b609df8b26a2ca413c1d9dc342b973e22b2ab2adad5fb17cdacc111",
+        "2e373a0e5bc7d0b6feb0d5c461c44455c92e6805",
+    ),
+    (
+        "android/security/framework-asb/a9f3330b0f82042931a896ed78ae588d049390eb.patch",
+        1143,
+        "37c99d7569176f56f6def4bfc8e0ef1389b798606349e099f41f8749e64751f5",
+        "a9f3330b0f82042931a896ed78ae588d049390eb",
+    ),
+    (
+        "android/security/framework-asb/45c98d34046991dd9d08fc6a32a47b2e8c2ceb98.patch",
+        7487,
+        "48e55830e93ae4ba7a86e6cabf96579dea4814703c936479fedf1b5b7654c1e6",
+        "45c98d34046991dd9d08fc6a32a47b2e8c2ceb98",
+    ),
+    (
+        "android/security/framework-asb/65d449f82c90589edf53546649a82ece1e8992b1.patch",
+        3362,
+        "d8368ebe335755e0e084e841ebcd87fcb894d04ff797421e220860f2c3c9a53f",
+        "65d449f82c90589edf53546649a82ece1e8992b1",
+    ),
 ];
 const ALIASES_NOT_REPLAYED: &[(&str, &str)] = &[
     (
@@ -61,6 +89,22 @@ const ALIASES_NOT_REPLAYED: &[(&str, &str)] = &[
     (
         "4d1f600cbcbbeb990e19bec4a386fb64f922ddd1",
         "fb6a81e33d54baecf5b05ad81b4522433f710b94",
+    ),
+    (
+        "2e373a0e5bc7d0b6feb0d5c461c44455c92e6805",
+        "7925fecbf857e3463f71e26ca808d19848eaa994",
+    ),
+    (
+        "a9f3330b0f82042931a896ed78ae588d049390eb",
+        "e532173df93d6ffe6e38a5185b05450afd7f4bde",
+    ),
+    (
+        "45c98d34046991dd9d08fc6a32a47b2e8c2ceb98",
+        "35058d93a551f115a314a1b52e9a55c4745153d8",
+    ),
+    (
+        "65d449f82c90589edf53546649a82ece1e8992b1",
+        "1b9a78c1ed8dc1dfde7e1062e829890423d827aa",
     ),
 ];
 const ORIGINALS: &[(&str, u64, &str)] = &[
@@ -119,6 +163,36 @@ const ORIGINALS: &[(&str, u64, &str)] = &[
         1706,
         "4cde9add294521d36a98c56ce0861745e2d0845e8448ec58bc5ff0a0d0263258",
     ),
+    (
+        "services/core/java/com/android/server/am/AppTimeTracker.java",
+        5401,
+        "404482615b4261b2cba0c09ed7bd9b31e42af8bb852a9640ec80742ed9cdabe9",
+    ),
+    (
+        "services/core/java/com/android/server/audio/MusicFxHelper.java",
+        18657,
+        "e39364e9f8f0296b57d1ce824d1d53700877bfbaa867da476f9194e2d320fb7b",
+    ),
+    (
+        "services/core/java/com/android/server/locales/LocaleManagerService.java",
+        38680,
+        "81fdae01625e752e1842a43da13728968a7b41239fe7ac28cc103be394c4fdaa",
+    ),
+    (
+        "services/tests/audio/Android.bp",
+        2359,
+        "e0022a1fdfd254bdeb1321181d70dea354840a966f89193738ebbd4afd48de12",
+    ),
+    (
+        "services/tests/audio/src/com/android/server/audio/MusicFxHelperTest.java",
+        29700,
+        "aa8e3626ccc79c7869cc0f861a33d0b281a82b818f4d4fde206cee858f471aa4",
+    ),
+    (
+        "services/tests/servicestests/src/com/android/server/locales/LocaleManagerServiceTest.java",
+        19313,
+        "cca73e13e9bef811720213b3eeecc25c6f2f90ba59d10c456dcb46f8b18a3f64",
+    ),
 ];
 const FIXED: &[(&str, u64, &str)] = &[
     (
@@ -156,6 +230,31 @@ const FIXED: &[(&str, u64, &str)] = &[
         254629,
         "4994cdfeb29aa136f6889c3d2ef4a531e9a05fc80f8a45387fa5e2da633b826f",
     ),
+    (
+        "services/core/java/com/android/server/am/AppTimeTracker.java",
+        5847,
+        "e64b2901c75c8db4bdc388417739c2744f20217266e04e72f43fe3d75fb5a7fb",
+    ),
+    (
+        "services/core/java/com/android/server/audio/MusicFxHelper.java",
+        19442,
+        "3600c1e8d69f0ef9a53300c6318a29f5bd6887b75c29d8e7873bdc475773a3e8",
+    ),
+    (
+        "services/core/java/com/android/server/locales/LocaleManagerService.java",
+        39944,
+        "5abcab5e1732b4b5609b96460ba8bb4985878467e10b3e20ea1b1f22985014f4",
+    ),
+    (
+        "services/tests/audio/src/com/android/server/audio/MusicFxHelperTest.java",
+        33309,
+        "caf7ea07b2bbd814fe7e64da09347fbc8536ac92f681dfde340f015e47c9e8ee",
+    ),
+    (
+        "services/tests/servicestests/src/com/android/server/locales/LocaleManagerServiceTest.java",
+        23612,
+        "cecbc779a16dff9a5d04640643932e2850dbde2b13f371c289ceefb0eafe4889",
+    ),
 ];
 const PROVIDERS: &[(&str, u64, &str)] = &[
     (
@@ -178,6 +277,11 @@ const PROVIDERS: &[(&str, u64, &str)] = &[
         1706,
         "4cde9add294521d36a98c56ce0861745e2d0845e8448ec58bc5ff0a0d0263258",
     ),
+    (
+        "services/tests/audio/Android.bp",
+        2359,
+        "e0022a1fdfd254bdeb1321181d70dea354840a966f89193738ebbd4afd48de12",
+    ),
 ];
 
 /// The ordinary full TARGETS set contains services. This is not confined to an
@@ -194,6 +298,7 @@ pub(super) fn required_for_targets(targets: &[&str]) -> bool {
                 | "WmTests"
                 | "FrameworksServicesTests"
                 | "UsbTests"
+                | "AudioServiceTests"
         )
     })
 }
@@ -329,7 +434,8 @@ pub(super) fn input_receipt(
     inputs["original_frameworks_base_pin"] = PROJECT_PIN.into();
     inputs["official_complete_patches"] = patches.into();
     inputs["same_fix_aliases_not_replayed"] = serde_json::json!(ALIASES_NOT_REPLAYED);
-    inputs["official_test_modules"] = serde_json::json!(["FrameworksServicesTests", "UsbTests"]);
+    inputs["official_test_modules"] =
+        serde_json::json!(["FrameworksServicesTests", "UsbTests", "AudioServiceTests"]);
     inputs["effective_upstream_files_and_providers"] = effective.into();
     inputs["effective_projection"] = projection.effective_inventory(repo, source)?;
     inputs["strict_allow_missing_dependencies"] = "false".into();
@@ -465,6 +571,7 @@ fn completed_artifacts(
                 "frameworks/base/services/tests/servicestests",
             ),
             ("UsbTests", "frameworks/base/tests/UsbTests"),
+            ("AudioServiceTests", "frameworks/base/services/tests/audio"),
         ] {
             let row = info
                 .get(module)
@@ -527,12 +634,22 @@ mod tests {
             ("services/core/Android.bp", include_bytes!("../../../android/security/framework-asb/fixtures/services/core/Android.bp").as_slice()),
             ("services/tests/servicestests/Android.bp", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/servicestests/Android.bp").as_slice()),
             ("tests/UsbTests/Android.bp", include_bytes!("../../../android/security/framework-asb/fixtures/tests/UsbTests/Android.bp").as_slice()),
+            ("services/core/java/com/android/server/am/AppTimeTracker.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/core/java/com/android/server/am/AppTimeTracker.java").as_slice()),
+            ("services/core/java/com/android/server/audio/MusicFxHelper.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/core/java/com/android/server/audio/MusicFxHelper.java").as_slice()),
+            ("services/core/java/com/android/server/locales/LocaleManagerService.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/core/java/com/android/server/locales/LocaleManagerService.java").as_slice()),
+            ("services/tests/audio/Android.bp", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/audio/Android.bp").as_slice()),
+            ("services/tests/audio/src/com/android/server/audio/MusicFxHelperTest.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/audio/src/com/android/server/audio/MusicFxHelperTest.java").as_slice()),
+            ("services/tests/servicestests/src/com/android/server/locales/LocaleManagerServiceTest.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/servicestests/src/com/android/server/locales/LocaleManagerServiceTest.java").as_slice()),
         ] { write(&source.join(PROJECT).join(name), bytes).unwrap(); }
         for (name, bytes) in [
             ("android/security/framework-asb/9444f519c4e55123c11a7ce92a960bb38486dbab.patch", include_bytes!("../../../android/security/framework-asb/9444f519c4e55123c11a7ce92a960bb38486dbab.patch").as_slice()),
             ("android/security/framework-asb/8e0e0f7728ff147c2aecc24fca1a6b53e3b62b54.patch", include_bytes!("../../../android/security/framework-asb/8e0e0f7728ff147c2aecc24fca1a6b53e3b62b54.patch").as_slice()),
             ("android/security/framework-asb/7a1a896e52d35ee502fd7140d37bed53651a6daa.patch", include_bytes!("../../../android/security/framework-asb/7a1a896e52d35ee502fd7140d37bed53651a6daa.patch").as_slice()),
             ("android/security/framework-asb/4d1f600cbcbbeb990e19bec4a386fb64f922ddd1.patch", include_bytes!("../../../android/security/framework-asb/4d1f600cbcbbeb990e19bec4a386fb64f922ddd1.patch").as_slice()),
+            ("android/security/framework-asb/2e373a0e5bc7d0b6feb0d5c461c44455c92e6805.patch", include_bytes!("../../../android/security/framework-asb/2e373a0e5bc7d0b6feb0d5c461c44455c92e6805.patch").as_slice()),
+            ("android/security/framework-asb/a9f3330b0f82042931a896ed78ae588d049390eb.patch", include_bytes!("../../../android/security/framework-asb/a9f3330b0f82042931a896ed78ae588d049390eb.patch").as_slice()),
+            ("android/security/framework-asb/45c98d34046991dd9d08fc6a32a47b2e8c2ceb98.patch", include_bytes!("../../../android/security/framework-asb/45c98d34046991dd9d08fc6a32a47b2e8c2ceb98.patch").as_slice()),
+            ("android/security/framework-asb/65d449f82c90589edf53546649a82ece1e8992b1.patch", include_bytes!("../../../android/security/framework-asb/65d449f82c90589edf53546649a82ece1e8992b1.patch").as_slice()),
         ] { write(&repo.join(name), bytes).unwrap(); }
         (repo, source)
     }
@@ -551,7 +668,7 @@ mod tests {
             let journal = d.path().join("source-projection.json");
             let mut projection = Projection::new(journal.clone()).unwrap();
             project(&mut projection, &repo, &source).unwrap();
-            assert_eq!(projection.originals.len(), 6);
+            assert_eq!(projection.originals.len(), 11);
             validate_fixed(&source).unwrap();
             if interrupted {
                 std::mem::forget(projection);
@@ -564,6 +681,68 @@ mod tests {
                 let after = fs::metadata(path).unwrap();
                 assert_eq!(after.permissions().mode(), mode);
                 assert_eq!(after.modified().unwrap(), modified);
+            }
+            assert!(!journal.exists());
+        }
+    }
+
+    #[test]
+    fn framework_locale_two_stage_projection_recovers_originals_after_interruption() {
+        // Exercise actual official patch application and journal recovery at
+        // both Locale stages. No Java/DEX execution or attack input is used.
+        // The first stage alone must not satisfy the complete producer pin.
+        for last_patch in [6_usize, 7_usize] {
+            let directory = tempfile::tempdir().unwrap();
+            let (repo, source) = fixture(directory.path());
+            let mut original_metadata = Vec::new();
+            for (relative, _, _) in ORIGINALS {
+                let path = source.join(PROJECT).join(relative);
+                fs::set_permissions(&path, fs::Permissions::from_mode(0o640)).unwrap();
+                let metadata = fs::metadata(&path).unwrap();
+                original_metadata.push((
+                    path,
+                    metadata.permissions().mode(),
+                    metadata.modified().unwrap(),
+                ));
+            }
+            validate_original(&repo, &source).unwrap();
+            let journal = directory.path().join("locale-stage-projection.json");
+            let mut projection = Projection::new(journal.clone()).unwrap();
+            for (relative, _, _, _) in &PATCHES[..=last_patch] {
+                projection
+                    .patch(&source, PROJECT, &repo.join(relative))
+                    .unwrap();
+            }
+            // The follow-up modifies the same two files. Their original
+            // bytes must be journaled once, before the first official patch.
+            assert_eq!(projection.originals.len(), 11);
+            assert_eq!(projection.applied_patches.len(), last_patch + 1);
+            if last_patch == 6 {
+                for (relative, bytes, expected) in [
+                    (
+                        "services/core/java/com/android/server/locales/LocaleManagerService.java",
+                        39851,
+                        "a568f36de1e0f130450126f8d4f2677a70b7db1a5b1448d581ea0e495ff4e907",
+                    ),
+                    (
+                        "services/tests/servicestests/src/com/android/server/locales/LocaleManagerServiceTest.java",
+                        22494,
+                        "c57c32981c90a7007ca9c428e893f6c2108d42e7982b67bb20c9caeb140760ef",
+                    ),
+                ] {
+                    exact(&source, &format!("{PROJECT}/{relative}"), bytes, expected).unwrap();
+                }
+                assert!(validate_fixed(&source).is_err());
+            } else {
+                validate_fixed(&source).unwrap();
+            }
+            std::mem::forget(projection);
+            recover(&journal, &source).unwrap();
+            validate_original(&repo, &source).unwrap();
+            for (path, permissions, modified) in original_metadata {
+                let actual = fs::metadata(path).unwrap();
+                assert_eq!(actual.permissions().mode(), permissions);
+                assert_eq!(actual.modified().unwrap(), modified);
             }
             assert!(!journal.exists());
         }
@@ -592,6 +771,14 @@ mod tests {
         assert_eq!(request.projection_targets(), TARGETS);
         assert_eq!(request.requested_targets(), TARGETS);
         assert_eq!(TARGETS.last(), Some(&"module-info"));
+        assert_eq!(CVES.len(), 7);
+        assert_eq!(PATCHES.len(), 8);
+        assert!(TARGETS.contains(&"AudioServiceTests"));
+        assert!(
+            PROVIDERS
+                .iter()
+                .any(|(name, _, _)| *name == "services/tests/audio/Android.bp")
+        );
         assert!(!TARGETS.contains(&"module-info.json"));
         assert_eq!(request.source_mode(), SoongDependencyMode::Strict);
         assert_eq!(hash(&selected).unwrap(), production_source::LOCK_SHA);

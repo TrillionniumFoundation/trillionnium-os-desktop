@@ -564,7 +564,26 @@ struct ResourceRetirements {
     runtime: Option<RuntimeRetirement>,
 }
 
+impl PreparedResourceInventory {
+    // This predicate checks only the prepared roles, never retirement. Its
+    // caller must still possess each actual opaque resource-owner result.
+    fn require_package_roles(&self) -> Result<()> {
+        if self.bases != Some(ResourcePreparation::Admitted)
+            || self.devices != Some(ResourcePreparation::Admitted)
+            || self.runtime != Some(ResourcePreparation::Admitted)
+        {
+            return Err(NamespaceError::RetirementUnproven);
+        }
+        Ok(())
+    }
+}
+
 impl ResourceRetirements {
+    fn verify_package_inventory(&self) -> Result<()> {
+        self.prepared.require_package_roles()?;
+        self.verify_complete()
+    }
+
     fn verify_complete(&self) -> Result<()> {
         if self.prepared.bases.is_some() != self.bases.is_some()
             || self.prepared.devices.is_some() != self.devices.is_some()
@@ -583,6 +602,14 @@ pub(crate) struct TreeExit {
     pub(crate) init: ChildExit,
     pub(crate) keeper: ChildExit,
     resources: ResourceRetirements,
+}
+
+impl TreeExit {
+    /// Requires the real returned resource objects for all three admitted roles.
+    /// A no-owner stop, incomplete preparation or PrivateControl cannot pass.
+    pub(crate) fn verify_package_retirement(&self) -> Result<()> {
+        self.resources.verify_package_inventory()
+    }
 }
 
 impl IsolatedNamespaces {
@@ -2678,6 +2705,39 @@ mod tests {
     use super::*;
     use crate::production_identity::tests::broker_fixture;
     use std::fs;
+
+    #[test]
+    fn package_retirement_rejects_absent_and_private_preparation_inventory() {
+        let empty = ResourceRetirements::default();
+        assert!(empty.verify_complete().is_ok());
+        assert!(empty.verify_package_inventory().is_err());
+        let admitted = PreparedResourceInventory {
+            bases: Some(ResourcePreparation::Admitted),
+            devices: Some(ResourcePreparation::Admitted),
+            runtime: Some(ResourcePreparation::Admitted),
+        };
+        admitted.require_package_roles().unwrap();
+        // Prepared roles alone cannot stand for their actual retirement.
+        let missing_results = ResourceRetirements {
+            prepared: admitted,
+            ..ResourceRetirements::default()
+        };
+        assert!(missing_results.verify_package_inventory().is_err());
+        for role in 0..3 {
+            let mut private = PreparedResourceInventory {
+                bases: Some(ResourcePreparation::Admitted),
+                devices: Some(ResourcePreparation::Admitted),
+                runtime: Some(ResourcePreparation::Admitted),
+            };
+            match role {
+                0 => private.bases = Some(ResourcePreparation::PrivateControl),
+                1 => private.devices = Some(ResourcePreparation::PrivateControl),
+                2 => private.runtime = Some(ResourcePreparation::PrivateControl),
+                _ => unreachable!(),
+            }
+            assert!(private.require_package_roles().is_err());
+        }
+    }
 
     #[test]
     fn resource_retirement_inventory_rejects_missing_owned_results() {

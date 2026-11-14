@@ -12,6 +12,10 @@ use std::time::{Duration, Instant};
 mod bus;
 use bus::{Interface, Invocation, PrivateBus, Properties, Value};
 
+#[path = "production_package_unit.rs"]
+mod package;
+pub(crate) use package::PackageBrokerUnit;
+
 use super::systemd_endpoint::{before, proc_read};
 #[cfg(test)]
 use super::systemd_endpoint::{pidfd_pid, proc_start};
@@ -449,7 +453,8 @@ mod tests {
             &Value::U32(channel.endpoint.observer_pid())
         );
         let own =
-            parse_unified_cgroup(&proc_read(channel.endpoint.observer_proc(), c"cgroup").unwrap()).unwrap();
+            parse_unified_cgroup(&proc_read(channel.endpoint.observer_proc(), c"cgroup").unwrap())
+                .unwrap();
         assert_eq!(
             property(&service, "ControlGroup").unwrap(),
             &Value::Text(own)
@@ -466,7 +471,13 @@ mod tests {
         // A real transient fixture must never issue the fixed production
         // observation, even though its original manager and PIDFD are valid.
         assert!(matches!(
-            validate_configuration(&invocation, &unit, &service, channel.endpoint.observer_pid(), 0),
+            validate_configuration(
+                &invocation,
+                &unit,
+                &service,
+                channel.endpoint.observer_pid(),
+                0
+            ),
             Err(CgroupError::Rejected(
                 "original broker belongs to another systemd unit"
             ))

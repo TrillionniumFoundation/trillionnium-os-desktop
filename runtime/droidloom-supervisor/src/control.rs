@@ -35,6 +35,10 @@ mod apk_set;
 mod progress;
 
 #[cfg(target_os = "linux")]
+#[path = "production_package.rs"]
+pub mod package;
+
+#[cfg(target_os = "linux")]
 #[path = "production_control.rs"]
 mod production;
 

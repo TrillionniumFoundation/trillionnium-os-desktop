@@ -7,7 +7,11 @@
 //! independently observe the same live manager and the fixed server inode.
 
 use super::*;
-use crate::production_cgroup::{CgroupError, SystemdOwnerGeneration, SystemdOwnerWitness};
+use crate::control::package::PackageProcess;
+use crate::production_cgroup::{
+    CgroupError, PackageBrokerUnit, SystemdOwnerGeneration, SystemdOwnerWitness,
+};
+use std::time::Instant;
 
 const MANAGER_FILE: &str = "u:object_r:droidloom_manager_private_socket:s0";
 const AA_MANAGER: &[u8] = b"unconfined\n";
@@ -64,10 +68,10 @@ pub(super) fn manager_file_context(file: &File) -> Result<Vec<u8>> {
     Ok(bytes[..count as usize].to_vec())
 }
 
-fn systemd_decisions(mac: &MacPreflight) -> Result<()> {
-    let mut sequence = Some(mac.loaded.av_sequence);
+fn systemd_decisions(loaded: &LoadedPolicyWitness) -> Result<()> {
+    let mut sequence = Some(loaded.av_sequence);
     access(
-        &mac.loaded.root,
+        &loaded.root,
         BROKER,
         BROKER,
         "unix_stream_socket",
@@ -78,7 +82,7 @@ fn systemd_decisions(mac: &MacPreflight) -> Result<()> {
         &mut sequence,
     )?;
     access(
-        &mac.loaded.root,
+        &loaded.root,
         BROKER,
         HOST,
         "unix_stream_socket",
@@ -87,7 +91,7 @@ fn systemd_decisions(mac: &MacPreflight) -> Result<()> {
         &mut sequence,
     )?;
     access(
-        &mac.loaded.root,
+        &loaded.root,
         BROKER,
         MANAGER_FILE,
         "sock_file",
@@ -96,9 +100,17 @@ fn systemd_decisions(mac: &MacPreflight) -> Result<()> {
         &mut sequence,
     )?;
     // GetUnitByPIDFD actually receives the original broker-created PIDFD.
-    access(&mac.loaded.root, HOST, BROKER, "fd", &["use"], true, &mut sequence)?;
     access(
-        &mac.loaded.root,
+        &loaded.root,
+        HOST,
+        BROKER,
+        "fd",
+        &["use"],
+        true,
+        &mut sequence,
+    )?;
+    access(
+        &loaded.root,
         BROKER,
         HOST,
         "process",
@@ -117,7 +129,7 @@ fn systemd_decisions(mac: &MacPreflight) -> Result<()> {
         "u:r:droidloom_query:s0",
     ] {
         access(
-            &mac.loaded.root,
+            &loaded.root,
             HOST,
             target,
             "process",
@@ -128,7 +140,7 @@ fn systemd_decisions(mac: &MacPreflight) -> Result<()> {
     }
     for source in [INIT, "u:r:apexd:s0", LINKERCONFIG, "u:r:droidloom_query:s0"] {
         access(
-            &mac.loaded.root,
+            &loaded.root,
             source,
             HOST,
             "unix_stream_socket",
@@ -137,7 +149,7 @@ fn systemd_decisions(mac: &MacPreflight) -> Result<()> {
             &mut sequence,
         )?;
         access(
-            &mac.loaded.root,
+            &loaded.root,
             source,
             MANAGER_FILE,
             "sock_file",
@@ -147,6 +159,84 @@ fn systemd_decisions(mac: &MacPreflight) -> Result<()> {
         )?;
     }
     Ok(())
+}
+
+// Both variants borrow actual fixed providers. This private adapter cannot
+// adopt arbitrary descriptors or turn the package helper into a MacPreflight.
+enum ActualSystemdOwner<'a, 'prepared> {
+    Prepared(&'a SystemdOwnerWitness<'prepared>),
+    Package {
+        unit: &'a PackageBrokerUnit,
+        broker: &'a PackageProcess,
+        deadline: Instant,
+    },
+}
+
+impl ActualSystemdOwner<'_, '_> {
+    fn revalidate(&self) -> Result<()> {
+        original_systemd(match self {
+            Self::Prepared(owner) => owner.revalidate(),
+            Self::Package {
+                unit,
+                broker,
+                deadline,
+            } => unit.revalidate(broker, *deadline),
+        })
+    }
+    fn generation(&self) -> Result<SystemdOwnerGeneration> {
+        original_systemd(match self {
+            Self::Prepared(owner) => owner.generation(),
+            Self::Package {
+                unit,
+                broker,
+                deadline,
+            } => unit.generation(broker, *deadline),
+        })
+    }
+    fn manager_pidfd(&self) -> BorrowedFd<'_> {
+        match self {
+            Self::Prepared(owner) => owner.manager_pidfd(),
+            Self::Package { unit, .. } => unit.manager_pidfd(),
+        }
+    }
+    fn manager_proc(&self) -> &File {
+        match self {
+            Self::Prepared(owner) => owner.manager_proc(),
+            Self::Package { unit, .. } => unit.manager_proc(),
+        }
+    }
+    fn broker_pidfd(&self) -> BorrowedFd<'_> {
+        match self {
+            Self::Prepared(owner) => owner.broker_pidfd(),
+            Self::Package { broker, .. } => broker.pidfd(),
+        }
+    }
+    fn broker_proc(&self) -> &File {
+        match self {
+            Self::Prepared(owner) => owner.broker_proc(),
+            Self::Package { broker, .. } => broker.proc(),
+        }
+    }
+    fn manager_connection(&self) -> &File {
+        match self {
+            Self::Prepared(owner) => owner.manager_connection(),
+            Self::Package { unit, .. } => unit.manager_connection(),
+        }
+    }
+    fn manager_socket_file(&self) -> &File {
+        match self {
+            Self::Prepared(owner) => owner.manager_socket_file(),
+            Self::Package { unit, .. } => unit.manager_socket_file(),
+        }
+    }
+    fn within_deadline(&self) -> Result<()> {
+        if let Self::Package { deadline, .. } = self {
+            if Instant::now() >= *deadline {
+                return Err(io::Error::from_raw_os_error(libc::ETIMEDOUT).into());
+            }
+        }
+        Ok(())
+    }
 }
 
 /// Equality binding of live kernel observations only. Successful validation
@@ -171,11 +261,20 @@ impl MacPreflight {
         owner: &SystemdOwnerWitness<'_>,
     ) -> Result<MacSystemdWitness> {
         self.revalidate(owner.selection())?;
-        original_systemd(owner.revalidate())?;
-        let value = MacSystemdWitness {
-            provider: self.binding(),
-            generation: original_systemd(owner.generation())?,
-            boot: self.loaded.boot.clone(),
+        let value = MacSystemdWitness::capture(&self.loaded, &ActualSystemdOwner::Prepared(owner))?;
+        value.revalidate(self, owner)?;
+        Ok(value)
+    }
+}
+
+impl MacSystemdWitness {
+    fn capture(loaded: &LoadedPolicyWitness, owner: &ActualSystemdOwner<'_, '_>) -> Result<Self> {
+        owner.within_deadline()?;
+        owner.revalidate()?;
+        let value = Self {
+            provider: loaded.binding(),
+            generation: owner.generation()?,
+            boot: loaded.boot.clone(),
             manager_pidfd: descriptor_identity(owner.manager_pidfd())?,
             manager_proc: descriptor_identity(owner.manager_proc().as_fd())?,
             broker_pidfd: descriptor_identity(owner.broker_pidfd())?,
@@ -184,13 +283,10 @@ impl MacPreflight {
             server_file: Node::of(owner.manager_socket_file())?,
             _same_thread: PhantomData,
         };
-        value.revalidate(self, owner)?;
+        owner.within_deadline()?;
         Ok(value)
     }
-}
-
-impl MacSystemdWitness {
-    fn original_descriptors(&self, owner: &SystemdOwnerWitness<'_>) -> Result<()> {
+    fn original_descriptors(&self, owner: &ActualSystemdOwner<'_, '_>) -> Result<()> {
         require(
             descriptor_identity(owner.manager_pidfd())? == self.manager_pidfd
                 && descriptor_identity(owner.manager_proc().as_fd())? == self.manager_proc
@@ -207,14 +303,69 @@ impl MacSystemdWitness {
         mac: &MacPreflight,
         owner: &SystemdOwnerWitness<'_>,
     ) -> Result<()> {
+        // Keep the broker-only MacPreflight gate on the original prepared
+        // owner path. Package observation below cannot create or borrow it.
+        mac.revalidate(owner.selection())?;
+        self.revalidate_actual(
+            &mac.loaded,
+            owner.selection(),
+            &ActualSystemdOwner::Prepared(owner),
+        )?;
+        mac.revalidate(owner.selection())
+    }
+
+    pub(super) fn observe_package_owner(
+        loaded: &LoadedPolicyWitness,
+        selection: &ProductionSelection,
+        unit: &PackageBrokerUnit,
+        broker: &PackageProcess,
+        deadline: Instant,
+    ) -> Result<Self> {
+        let owner = ActualSystemdOwner::Package {
+            unit,
+            broker,
+            deadline,
+        };
+        owner.within_deadline()?;
+        loaded.revalidate(selection)?;
+        let value = Self::capture(loaded, &owner)?;
+        value.revalidate_actual(loaded, selection, &owner)?;
+        owner.within_deadline()?;
+        Ok(value)
+    }
+
+    pub(super) fn revalidate_package_owner(
+        &self,
+        loaded: &LoadedPolicyWitness,
+        selection: &ProductionSelection,
+        unit: &PackageBrokerUnit,
+        broker: &PackageProcess,
+        deadline: Instant,
+    ) -> Result<()> {
+        let owner = ActualSystemdOwner::Package {
+            unit,
+            broker,
+            deadline,
+        };
+        self.revalidate_actual(loaded, selection, &owner)?;
+        owner.within_deadline()
+    }
+
+    fn revalidate_actual(
+        &self,
+        loaded: &LoadedPolicyWitness,
+        selection: &ProductionSelection,
+        owner: &ActualSystemdOwner<'_, '_>,
+    ) -> Result<()> {
+        owner.within_deadline()?;
         require(
-            self.provider == mac.binding() && self.boot == mac.loaded.boot,
+            self.provider == loaded.binding() && self.boot == loaded.boot,
             "systemd MAC witness belongs to another provider or boot",
         )?;
-        mac.revalidate(owner.selection())?;
-        original_systemd(owner.revalidate())?;
+        loaded.revalidate(selection)?;
+        owner.revalidate()?;
         require(
-            original_systemd(owner.generation())? == self.generation,
+            owner.generation()? == self.generation,
             "original systemd manager/broker start or unit Invocation changed",
         )?;
         self.original_descriptors(owner)?;
@@ -252,14 +403,15 @@ impl MacSystemdWitness {
             ),
             "actual manager server sock_file lacks its fixed dedicated label",
         )?;
-        systemd_decisions(mac)?;
-        original_systemd(owner.revalidate())?;
+        systemd_decisions(loaded)?;
+        owner.revalidate()?;
         require(
-            original_systemd(owner.generation())? == self.generation,
+            owner.generation()? == self.generation,
             "systemd generation changed during live MAC observations",
         )?;
         self.original_descriptors(owner)?;
-        mac.revalidate(owner.selection())
+        loaded.revalidate(selection)?;
+        owner.within_deadline()
     }
 }
 

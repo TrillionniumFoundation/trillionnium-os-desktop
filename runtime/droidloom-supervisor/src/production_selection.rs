@@ -17,7 +17,9 @@ use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use thiserror::Error;
 
-use crate::production_configuration::ConfigurationReadGuard;
+use crate::production_configuration::{
+    ConfigurationReadGuard, PackageConfigurationLock, ReceivedPackageConfigurationLock,
+};
 use crate::{AndroidImageLayout, CellSpec};
 
 const SELECTION: &str = "/etc/droidloom/production/selected.json";
@@ -105,6 +107,26 @@ impl ProductionSelection {
         peer_uid: u32,
     ) -> Result<Self> {
         guard.revalidate()?;
+        let value = Self::load_fixed(spec_path, peer_uid)?;
+        guard.revalidate()?;
+        Ok(value)
+    }
+
+    pub(crate) fn for_package(guard: &PackageConfigurationLock) -> Result<Self> {
+        guard.revalidate()?;
+        let value = Self::load_fixed(Path::new(SPECIFICATION), 0)?;
+        guard.revalidate()?;
+        Ok(value)
+    }
+
+    pub(crate) fn for_received_package(guard: &ReceivedPackageConfigurationLock) -> Result<Self> {
+        guard.revalidate()?;
+        let value = Self::load_fixed(Path::new(SPECIFICATION), 0)?;
+        guard.revalidate()?;
+        Ok(value)
+    }
+
+    fn load_fixed(spec_path: &Path, peer_uid: u32) -> Result<Self> {
         if spec_path.as_os_str() != OsStr::new(SPECIFICATION) {
             return Err(SelectionError::Rejected(
                 "production accepts only the fixed package cell specification",
@@ -133,7 +155,6 @@ impl ProductionSelection {
         validate_spec(&record, &spec)?;
         selected.revalidate()?;
         specification.revalidate()?;
-        guard.revalidate()?;
         Ok(Self {
             selected,
             specification,
@@ -141,6 +162,58 @@ impl ProductionSelection {
             base_cohort: record.base_cohort_sha256,
             runtime_manifest: record.runtime_manifest_sha256,
         })
+    }
+
+    /// Retain these same actual sealed descriptors for this daemon generation.
+    /// It is not a constructor from a prior record, path or caller identity.
+    pub(crate) fn retain_for_retirement(&self) -> Result<Self> {
+        self.revalidate()?;
+        let duplicate = |source: &SealedFile| -> Result<SealedFile> {
+            Ok(SealedFile {
+                path: source.path.clone(),
+                file: source.file.try_clone()?,
+                node: source.node.clone(),
+                sha256: source.sha256.clone(),
+                limit: source.limit,
+            })
+        };
+        let value = Self {
+            selected: duplicate(&self.selected)?,
+            specification: duplicate(&self.specification)?,
+            spec: self.spec.clone(),
+            base_cohort: self.base_cohort.clone(),
+            runtime_manifest: self.runtime_manifest.clone(),
+        };
+        value.revalidate()?;
+        self.revalidate()?;
+        Ok(value)
+    }
+
+    /// Equality data copied from live sealed objects; it cannot construct one.
+    pub(crate) fn package_binding(&self) -> [u8; 32] {
+        let mut hash = Sha256::new();
+        hash.update(b"droidloom-package-selection-v1\0");
+        for file in [&self.selected, &self.specification] {
+            let n = &file.node;
+            for value in [
+                n.device,
+                n.inode,
+                n.mode as u64,
+                n.uid as u64,
+                n.gid as u64,
+                n.links,
+                n.bytes,
+            ] {
+                hash.update(value.to_le_bytes());
+            }
+            for value in [n.modified.0, n.modified.1, n.changed.0, n.changed.1] {
+                hash.update(value.to_le_bytes());
+            }
+            hash.update(file.sha256.as_bytes());
+        }
+        hash.update(self.base_cohort.as_bytes());
+        hash.update(self.runtime_manifest.as_bytes());
+        hash.finalize().into()
     }
 
     pub(crate) fn spec(&self) -> &CellSpec {

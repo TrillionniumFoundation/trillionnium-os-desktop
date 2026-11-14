@@ -8,8 +8,10 @@
 //! loader's byte order. Neither identity may be inferred from the other at runtime.
 //! This module never loads policy, relabels a file or changes enforcement.
 
+use crate::production_namespace::{
+    ExecutedInitGeneration, ExecutedInitWitness, OwnedActivationPeer,
+};
 use crate::production_selection::ProductionSelection;
-use crate::production_namespace::{ExecutedInitGeneration, ExecutedInitWitness, OwnedActivationPeer};
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
@@ -49,8 +51,7 @@ const AA_BROKER: &[u8] = b"droidloom-production-broker (enforce)\n";
 // broker profile and stack the Android profile. The initial-namespace label
 // vector is sorted by profile hname; both reviewed profiles must enforce.
 // This exact source-derived expectation still requires a real VM observation.
-const AA_ANDROID: &[u8] =
-    b"droidloom-production-android//&droidloom-production-broker (enforce)\n";
+const AA_ANDROID: &[u8] = b"droidloom-production-android//&droidloom-production-broker (enforce)\n";
 const LOADER: &str = "u:r:droidloom_policy_loader:s0";
 const AA_LOADER: &[u8] = b"droidloom-policy-loader (enforce)\n";
 const LINKERCONFIG: &str = "u:r:linkerconfig:s0";
@@ -59,6 +60,9 @@ const LINKERCONFIG_EXEC: &str = "u:object_r:linkerconfig_exec:s0";
 #[path = "production_mac_policy.rs"]
 mod policy;
 pub(crate) use policy::LoadedPolicyWitness;
+#[path = "production_package_mac.rs"]
+mod package;
+pub(crate) use package::PackageMacWitness;
 #[path = "production_mac_loader.rs"]
 mod loader;
 pub(crate) use loader::LoaderMacWitness;
@@ -819,7 +823,9 @@ impl AaPolicy {
             android.ok_or(MacError::Rejected(
                 "reviewed Android AppArmor profile absent",
             ))?,
-            loader.ok_or(MacError::Rejected("reviewed loader AppArmor profile absent"))?,
+            loader.ok_or(MacError::Rejected(
+                "reviewed loader AppArmor profile absent",
+            ))?,
         ];
         let value = Self {
             security,
@@ -1171,7 +1177,9 @@ pub(crate) struct MacPreflight {
 }
 impl MacPreflight {
     pub(crate) fn acquire(selection: &ProductionSelection) -> Result<Self> {
-        let value = Self { loaded: LoadedPolicyWitness::acquire(selection)? };
+        let value = Self {
+            loaded: LoadedPolicyWitness::acquire(selection)?,
+        };
         value.revalidate(selection)?;
         socket_identity()?;
         value.revalidate(selection)?;
@@ -1227,7 +1235,9 @@ struct ProviderBinding {
     apparmor_revision: i64,
 }
 
-fn original_owner<T>(value: std::result::Result<T, crate::production_namespace::NamespaceError>) -> Result<T> {
+fn original_owner<T>(
+    value: std::result::Result<T, crate::production_namespace::NamespaceError>,
+) -> Result<T> {
     value.map_err(|error| MacError::Owner(error.to_string()))
 }
 
@@ -1241,15 +1251,17 @@ fn process_execution_state(proc: &File, domain: &str) -> Result<()> {
         "actual Android process AppArmor identity is not the reviewed enforcing profile",
     )?;
     let status = open_at(proc.as_raw_fd(), c"status", libc::O_RDONLY)?;
-    require(kind(&status)? == PROC_MAGIC, "actual process status must remain procfs")?;
+    require(
+        kind(&status)? == PROC_MAGIC,
+        "actual process status must remain procfs",
+    )?;
     let bytes = bounded(&status, 64 * 1024)?;
     let text = std::str::from_utf8(&bytes)
         .map_err(|_| MacError::Rejected("invalid actual process status bytes"))?;
     for (name, expected) in [("NoNewPrivs:", "1"), ("Seccomp:", "2")] {
         let mut values = text.lines().filter_map(|line| line.strip_prefix(name));
         require(
-            values.next().is_some_and(|value| value.trim() == expected)
-                && values.next().is_none(),
+            values.next().is_some_and(|value| value.trim() == expected) && values.next().is_none(),
             "actual Android process lost NNP or its seccomp filter",
         )?;
     }
@@ -1260,12 +1272,21 @@ fn actual_socket_security(socket: BorrowedFd<'_>) -> Result<Vec<u8>> {
     let mut bytes = [0_u8; 1024];
     let mut length = bytes.len() as libc::socklen_t;
     if unsafe {
-        libc::getsockopt(socket.as_raw_fd(), libc::SOL_SOCKET, libc::SO_PEERSEC,
-            bytes.as_mut_ptr().cast(), &mut length)
-    } != 0 {
+        libc::getsockopt(
+            socket.as_raw_fd(),
+            libc::SOL_SOCKET,
+            libc::SO_PEERSEC,
+            bytes.as_mut_ptr().cast(),
+            &mut length,
+        )
+    } != 0
+    {
         return Err(io::Error::last_os_error().into());
     }
-    require(length > 0 && length as usize <= bytes.len(), "bounded actual socket security identity")?;
+    require(
+        length > 0 && length as usize <= bytes.len(),
+        "bounded actual socket security identity",
+    )?;
     Ok(bytes[..length as usize].to_vec())
 }
 
@@ -1277,20 +1298,26 @@ pub(crate) struct MacInitWitness {
     _same_thread: PhantomData<Rc<()>>,
 }
 
-impl MacPreflight {
+impl LoadedPolicyWitness {
     fn binding(&self) -> ProviderBinding {
         ProviderBinding {
-            contract: self.loaded.contract.node,
-            policy: self.loaded.policy.node,
-            policy_export: self.loaded.policy_export.node,
-            derivation: self.loaded.derivation.node,
-            selinux_root: self.loaded.root_node,
-            broker_proc: self.loaded.own_proc_node,
-            tid: self.loaded.tid,
-            epoch: self.loaded.epoch,
-            av_sequence: self.loaded.av_sequence,
-            apparmor_revision: self.loaded.apparmor.revision,
+            contract: self.contract.node,
+            policy: self.policy.node,
+            policy_export: self.policy_export.node,
+            derivation: self.derivation.node,
+            selinux_root: self.root_node,
+            broker_proc: self.own_proc_node,
+            tid: self.tid,
+            epoch: self.epoch,
+            av_sequence: self.av_sequence,
+            apparmor_revision: self.apparmor.revision,
         }
+    }
+}
+
+impl MacPreflight {
+    fn binding(&self) -> ProviderBinding {
+        self.loaded.binding()
     }
 
     fn actual_init(&self, init: &ExecutedInitWitness<'_>) -> Result<ExecutedInitGeneration> {
@@ -1301,7 +1328,10 @@ impl MacPreflight {
         let generation = original_owner(init.generation())?;
         process_execution_state(init.proc_directory(), INIT)?;
         original_owner(init.revalidate())?;
-        require(original_owner(init.generation())? == generation, "original init generation changed")?;
+        require(
+            original_owner(init.generation())? == generation,
+            "original init generation changed",
+        )?;
         self.revalidate(init.selection())?;
         Ok(generation)
     }
@@ -1323,7 +1353,10 @@ impl MacPreflight {
     ) -> Result<MacHelperWitness> {
         let init_mac = self.observe_init(init)?;
         original_owner(peer.revalidate())?;
-        require(peer.generation() == init_mac.generation, "helper is owned by another original init")?;
+        require(
+            peer.generation() == init_mac.generation,
+            "helper is owned by another original init",
+        )?;
         let value = MacHelperWitness {
             init: init_mac,
             proc: descriptor_identity(peer.proc_directory().as_fd())?,
@@ -1336,9 +1369,19 @@ impl MacPreflight {
 }
 
 impl MacInitWitness {
-    pub(crate) fn revalidate(&self, mac: &MacPreflight, init: &ExecutedInitWitness<'_>) -> Result<()> {
-        require(self.provider == mac.binding(), "post-exec witness belongs to another MAC provider")?;
-        require(self.generation == mac.actual_init(init)?, "post-exec witness belongs to another original init")
+    pub(crate) fn revalidate(
+        &self,
+        mac: &MacPreflight,
+        init: &ExecutedInitWitness<'_>,
+    ) -> Result<()> {
+        require(
+            self.provider == mac.binding(),
+            "post-exec witness belongs to another MAC provider",
+        )?;
+        require(
+            self.generation == mac.actual_init(init)?,
+            "post-exec witness belongs to another original init",
+        )
     }
 }
 
@@ -1359,7 +1402,10 @@ impl MacHelperWitness {
     ) -> Result<()> {
         self.init.revalidate(mac, init)?;
         original_owner(peer.revalidate())?;
-        require(peer.generation() == self.init.generation, "linkerconfig peer owner changed")?;
+        require(
+            peer.generation() == self.init.generation,
+            "linkerconfig peer owner changed",
+        )?;
         require(
             descriptor_identity(peer.proc_directory().as_fd())? == self.proc
                 && descriptor_identity(peer.pidfd())? == self.pidfd
@@ -1388,23 +1434,55 @@ impl MacHelperWitness {
     ) -> Result<()> {
         self.revalidate(mac, init, peer)?;
         let before = Node::of(original)?;
-        require(before.mode & libc::S_IFMT == libc::S_IFREG, "original linkerconfig must be a regular ELF")?;
+        require(
+            before.mode & libc::S_IFMT == libc::S_IFREG,
+            "original linkerconfig must be a regular ELF",
+        )?;
         let mut label = [0_u8; 1024];
         let count = unsafe {
-            libc::fgetxattr(original.as_raw_fd(), c"security.selinux".as_ptr(),
-                label.as_mut_ptr().cast(), label.len())
+            libc::fgetxattr(
+                original.as_raw_fd(),
+                c"security.selinux".as_ptr(),
+                label.as_mut_ptr().cast(),
+                label.len(),
+            )
         };
-        if count < 0 { return Err(io::Error::last_os_error().into()); }
+        if count < 0 {
+            return Err(io::Error::last_os_error().into());
+        }
         require(
-            count > 0 && count as usize <= label.len()
+            count > 0
+                && count as usize <= label.len()
                 && context_matches(&label[..count as usize], LINKERCONFIG_EXEC),
             "held original linkerconfig ELF has another actual SELinux label",
         )?;
         let mut sequence = Some(mac.loaded.av_sequence);
-        access(&mac.loaded.root, LINKERCONFIG, LINKERCONFIG_EXEC, "file",
-            &["getattr", "read", "open", "map", "execute", "execute_no_trans"], true, &mut sequence)?;
-        transition(&mac.loaded.root, LINKERCONFIG, LINKERCONFIG_EXEC, LINKERCONFIG)?;
-        require(Node::of(original)? == before, "held original linkerconfig changed during MAC validation")?;
+        access(
+            &mac.loaded.root,
+            LINKERCONFIG,
+            LINKERCONFIG_EXEC,
+            "file",
+            &[
+                "getattr",
+                "read",
+                "open",
+                "map",
+                "execute",
+                "execute_no_trans",
+            ],
+            true,
+            &mut sequence,
+        )?;
+        transition(
+            &mac.loaded.root,
+            LINKERCONFIG,
+            LINKERCONFIG_EXEC,
+            LINKERCONFIG,
+        )?;
+        require(
+            Node::of(original)? == before,
+            "held original linkerconfig changed during MAC validation",
+        )?;
         self.revalidate(mac, init, peer)
     }
 }
@@ -1450,13 +1528,19 @@ mod tests {
         let parsed: Declaration = serde_json::from_value(declared.clone()).unwrap();
         assert!(parsed.validate_shape().is_ok());
         let mut missing = declared.clone();
-        missing.as_object_mut().unwrap().remove("apparmor_loader_policy_sha256");
+        missing
+            .as_object_mut()
+            .unwrap()
+            .remove("apparmor_loader_policy_sha256");
         assert!(serde_json::from_value::<Declaration>(missing).is_err());
         for (key, value) in [
             ("schema", serde_json::json!(2)),
             ("scope", serde_json::json!("droidloom_linux_android_mac_v2")),
             ("apparmor_loader_policy_sha256", serde_json::json!("")),
-            ("apparmor_loader_policy_sha256", serde_json::json!("F".repeat(64))),
+            (
+                "apparmor_loader_policy_sha256",
+                serde_json::json!("F".repeat(64)),
+            ),
         ] {
             let mut invalid = declared.clone();
             invalid[key] = value;
@@ -1488,9 +1572,18 @@ mod tests {
         let mut changed = export.clone();
         changed[export.len() - 1] ^= 1;
         assert!(exact_policy_bytes(&changed, export.len() as u64, &export_hash).is_err());
-        assert!(exact_policy_bytes(&export[..export.len() - 1], export.len() as u64, &export_hash).is_err());
+        assert!(
+            exact_policy_bytes(
+                &export[..export.len() - 1],
+                export.len() as u64,
+                &export_hash
+            )
+            .is_err()
+        );
         assert!(exact_policy_bytes(&export, 0, &export_hash).is_err());
-        assert!(exact_policy_bytes(&export, export.len() as u64, &export_hash.to_uppercase()).is_err());
+        assert!(
+            exact_policy_bytes(&export, export.len() as u64, &export_hash.to_uppercase()).is_err()
+        );
     }
     #[test]
     fn kernel_decision_wire_rejects_permissive_partial_or_zero_epoch() {

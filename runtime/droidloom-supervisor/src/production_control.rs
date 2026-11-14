@@ -311,6 +311,9 @@ struct ProductionDaemon {
     // Kept only by this original daemon. Neither ControlResponse nor an on-disk
     // status record can reconstruct or grant authority from these return values.
     last_retirement: Option<TreeExit>,
+    // Actual duplicate descriptors from the same selection passed to this
+    // daemon's successful Start; retained with its terminal owner result.
+    owned_selection: Option<ProductionSelection>,
     state: CellState,
     last_result: String,
     progress: Reporter,
@@ -321,6 +324,7 @@ impl ProductionDaemon {
         Self {
             active: None,
             last_retirement: None,
+            owned_selection: None,
             state: CellState::Stopped,
             last_result: "production cell is stopped".into(),
             progress: Reporter::default(),
@@ -381,6 +385,7 @@ impl ProductionDaemon {
             Err(error) => {
                 self.last_result = error.to_string();
                 self.last_retirement = None;
+                self.owned_selection = None;
                 self.active = None;
                 self.state = CellState::Quarantined;
             }
@@ -430,12 +435,17 @@ impl ProductionDaemon {
         guard
             .revalidate()
             .map_err(|error| ControlError::Invalid(error.to_string()))?;
+        let retained_selection = selected
+            .retain_for_retirement()
+            .map_err(|error| ControlError::Invalid(error.to_string()))?;
         self.last_retirement = None;
+        self.owned_selection = None;
         self.state = CellState::Starting;
         let progress = &self.progress;
         match ProductionCell::start(selected, |message| progress.report(message)) {
             Ok(cell) => {
                 self.active = Some(cell);
+                self.owned_selection = Some(retained_selection);
                 if let Err(error) = guard.revalidate() {
                     // A changed configuration chain must not leave a newly
                     // created owner running after Start reports failure.
@@ -491,9 +501,70 @@ impl ProductionDaemon {
                 self.state = CellState::Quarantined;
                 self.last_result = error.to_string();
                 self.last_retirement = None;
+                self.owned_selection = None;
                 Err(ControlError::Invalid(self.last_result.clone()))
             }
         }
+    }
+
+    fn original_package_selection(&self) -> Result<&ProductionSelection, ControlError> {
+        if self.state == CellState::Quarantined
+            || (self.active.is_none() && self.last_retirement.is_none())
+        {
+            return Err(ControlError::Invalid(
+                "no complete original package resource owner is retained".into(),
+            ));
+        }
+        self.owned_selection.as_ref().ok_or_else(|| {
+            ControlError::Invalid("original owner has no retained sealed selection".into())
+        })
+    }
+
+    fn package_retirement(
+        &mut self,
+        transaction: &mut super::package::ServerTransaction,
+    ) -> Result<(), ControlError> {
+        let invalid = |error: &dyn std::fmt::Display| ControlError::Invalid(error.to_string());
+        // Authenticate and preflight before creating a deny fence or stopping
+        // anything. A fresh daemon or ordinary already-stopped reply cannot pass.
+        transaction.revalidate().map_err(|e| invalid(&e))?;
+        let selected = self.original_package_selection()?;
+        selected.revalidate().map_err(|e| invalid(&e))?;
+        if selected.package_binding() != transaction.selection().package_binding() {
+            return Err(ControlError::Invalid(
+                "package request differs from this actual owner's selection".into(),
+            ));
+        }
+        if self.active.is_none() {
+            self.last_retirement
+                .as_ref()
+                .expect("retained original owner checked")
+                .verify_package_retirement()
+                .map_err(|e| invalid(&e))?;
+        }
+        transaction
+            .fence_before_retirement()
+            .map_err(|e| invalid(&e))?;
+        self.original_package_selection()?
+            .revalidate()
+            .map_err(|e| invalid(&e))?;
+        transaction.revalidate().map_err(|e| invalid(&e))?;
+        self.stop(0)?;
+        let selected = self.original_package_selection()?;
+        selected.revalidate().map_err(|e| invalid(&e))?;
+        if selected.package_binding() != transaction.selection().package_binding() {
+            return Err(ControlError::Invalid(
+                "original selected inputs changed during retirement".into(),
+            ));
+        }
+        let exit = self.last_retirement.as_ref().ok_or_else(|| {
+            ControlError::Invalid(
+                "original owner did not produce actual resource retirement".into(),
+            )
+        })?;
+        // TreeExit and every resource proof remain retained by this original
+        // daemon even if the final reply is lost. No new peer is auto-adopted.
+        transaction.complete(exit).map_err(|e| invalid(&e))
     }
 
     fn status(&self, peer_uid: u32) -> Result<ControlResponse, ControlError> {
@@ -628,6 +699,25 @@ pub(super) fn serve(config: &DaemonConfig, shutdown: &AtomicBool) -> Result<(), 
             daemon.poll();
             match listener.accept() {
                 Ok((mut stream, _)) => {
+                    match super::package::is_package(&stream) {
+                        Ok(true) => {
+                            let result = super::package::ServerTransaction::receive(stream)
+                                .map_err(|e| ControlError::Invalid(e.to_string()))
+                                .and_then(|mut transaction| {
+                                    daemon.package_retirement(&mut transaction)
+                                });
+                            if let Err(error) = result {
+                                eprintln!("fixed package transaction refused: {error}");
+                            }
+                            daemon.progress = Reporter::default();
+                            continue;
+                        }
+                        Ok(false) => {}
+                        Err(error) => {
+                            eprintln!("could not classify bounded production request: {error}");
+                            continue;
+                        }
+                    }
                     let response = match receive_request(&mut stream) {
                         Ok((peer, request, file, streaming)) => {
                             daemon.progress = Reporter::new(&stream, streaming)?;
@@ -669,6 +759,18 @@ mod tests {
         }
         daemon.state = CellState::Quarantined;
         assert!(daemon.stop(0).is_err());
+        assert!(daemon.last_retirement.is_none());
+    }
+
+    #[test]
+    fn package_retirement_requires_the_original_resource_owner_before_any_fence_or_stop() {
+        let mut daemon = ProductionDaemon::new();
+        assert!(daemon.original_package_selection().is_err());
+        assert!(daemon.stop(0).unwrap().ok);
+        assert!(daemon.original_package_selection().is_err());
+        daemon.state = CellState::Quarantined;
+        assert!(daemon.original_package_selection().is_err());
+        assert!(daemon.owned_selection.is_none());
         assert!(daemon.last_retirement.is_none());
     }
 
