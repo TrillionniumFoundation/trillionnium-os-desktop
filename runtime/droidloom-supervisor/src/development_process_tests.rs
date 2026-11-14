@@ -1,6 +1,7 @@
 use super::super::{DEVELOPMENT_UNSHARE_ARGUMENTS, DevelopmentCell, arm_development_parent_death};
 use super::*;
 use crate::CellSpec;
+use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 use std::os::unix::process::{CommandExt, ExitStatusExt};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -121,18 +122,132 @@ fn ready(path: &Path, owner: &mut Child) {
     }
 }
 
-fn wait_exited(fd: &OwnedFd) {
-    let deadline = Instant::now() + Duration::from_secs(3);
-    while !pidfd_exited(fd).unwrap() {
+// Exit notification and retirement are separate kernel events. POLLIN may be
+// visible before the actual parent/PID1 has reaped the task. Bind both handles
+// while the original parent is still alive; no later numeric PID lookup may
+// stand in for the process generation or its namespace membership.
+struct RetirementWitness {
+    fd: OwnedFd,
+    directory: fs::File,
+    pid: u32,
+    generation: Identity,
+}
+
+fn held_pid_namespace(directory: &fs::File) -> io::Result<Vec<u8>> {
+    let mut name = [0_u8; 128];
+    // SAFETY: directory is held open; name is writable for its full length.
+    let count = unsafe {
+        libc::readlinkat(
+            directory.as_raw_fd(),
+            c"ns/pid".as_ptr(),
+            name.as_mut_ptr().cast(),
+            name.len(),
+        )
+    };
+    if count < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    if count == 0 || count as usize == name.len() {
+        return Err(invalid("incomplete held PID namespace identity"));
+    }
+    Ok(name[..count as usize].to_vec())
+}
+
+impl RetirementWitness {
+    fn capture(pid: u32, parent: u32) -> Self {
+        let generation = identity(pid).unwrap();
+        assert_eq!(generation.parent, parent);
+        let fd = open_pidfd(pid).unwrap();
+        let path = format!("/proc/{pid}");
+        let directory = fs::OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
+            .open(&path)
+            .unwrap();
+        held_pid_namespace(&directory).unwrap();
+        let held = directory.metadata().unwrap();
+        let current = fs::metadata(&path).unwrap();
+        assert_eq!((held.dev(), held.ino()), (current.dev(), current.ino()));
+        assert_eq!(identity(pid).unwrap(), generation);
         assert!(
-            Instant::now() < deadline,
-            "exact held process is still alive"
+            !pidfd_exited(&fd).unwrap(),
+            "bind the original live process"
         );
-        thread::sleep(Duration::from_millis(5));
+        Self {
+            fd,
+            directory,
+            pid,
+            generation,
+        }
+    }
+
+    fn wait_retired(&self) {
+        self.wait_retired_until(Instant::now() + Duration::from_secs(3))
+            .unwrap();
+    }
+
+    fn wait_retired_until(&self, deadline: Instant) -> io::Result<()> {
+        let timed_out = || {
+            io::Error::new(
+                io::ErrorKind::TimedOut,
+                format!(
+                    "original PID {} generation {:?} was not reaped before the deadline",
+                    self.pid, self.generation
+                ),
+            )
+        };
+        loop {
+            let now = Instant::now();
+            if now >= deadline {
+                return Err(timed_out());
+            }
+            let remaining = deadline.duration_since(now);
+            let milliseconds =
+                remaining.as_millis() + u128::from(remaining.subsec_nanos() % 1_000_000 != 0);
+            let mut event = libc::pollfd {
+                fd: self.fd.as_raw_fd(),
+                // Do not subscribe to persistent POLLIN: only HUP proves that
+                // the actual parent/PID1 has removed this task from its PID.
+                events: 0,
+                revents: 0,
+            };
+            // SAFETY: one live pidfd, one writable event, a bounded timeout.
+            let result =
+                unsafe { libc::poll(&mut event, 1, milliseconds.min(i32::MAX as u128) as i32) };
+            if Instant::now() >= deadline {
+                return Err(timed_out());
+            }
+            if result < 0 {
+                let error = io::Error::last_os_error();
+                if error.kind() != io::ErrorKind::Interrupted {
+                    return Err(error);
+                }
+            } else {
+                if event.revents & (libc::POLLERR | libc::POLLNVAL) != 0 {
+                    return Err(invalid("held retirement pidfd poll failed"));
+                }
+                if event.revents & libc::POLLHUP != 0 {
+                    let retired = match held_pid_namespace(&self.directory) {
+                        // proc_pid_permission returns ESRCH when the original
+                        // held proc directory no longer has a task. ENOENT from
+                        // a fresh numeric PID lookup is not this contract.
+                        Err(error) if error.raw_os_error() == Some(libc::ESRCH) => Ok(()),
+                        Err(error) => Err(error),
+                        Ok(_) => Err(invalid(
+                            "reaped original process still retains PID namespace membership",
+                        )),
+                    };
+                    if Instant::now() >= deadline {
+                        return Err(timed_out());
+                    }
+                    return retired;
+                }
+            }
+        }
     }
 }
 
-fn descendant_pidfd(init: u32) -> OwnedFd {
+fn descendant_retirement(init: u32) -> RetirementWitness {
     let mut descendants = Vec::new();
     for entry in fs::read_dir(format!("/proc/{init}/task")).unwrap() {
         let entry = entry.unwrap();
@@ -151,11 +266,56 @@ fn descendant_pidfd(init: u32) -> OwnedFd {
         "fixture has exactly its owned sleep descendant"
     );
     let pid = descendants[0];
-    let before = identity(pid).unwrap();
-    assert_eq!(before.parent, init);
-    let fd = open_pidfd(pid).unwrap();
-    assert_eq!(identity(pid).unwrap(), before);
-    fd
+    RetirementWitness::capture(pid, init)
+}
+
+#[test]
+fn pidfd_retirement_requires_reaping_of_original_process() {
+    let child = Command::new("/usr/bin/sleep").arg("60").spawn().unwrap();
+    let mut fixture = OwnedFixture { child, init: None };
+    let original = RetirementWitness::capture(fixture.child.id(), std::process::id());
+    fixture.child.kill().unwrap();
+    let mut event = libc::pollfd {
+        fd: original.fd.as_raw_fd(),
+        events: libc::POLLIN,
+        revents: 0,
+    };
+    // SAFETY: one held pidfd and one writable event; never an unbounded wait.
+    assert_eq!(unsafe { libc::poll(&mut event, 1, 3000) }, 1);
+    assert_ne!(event.revents & libc::POLLIN, 0);
+    assert_eq!(
+        event.revents & (libc::POLLHUP | libc::POLLERR | libc::POLLNVAL),
+        0
+    );
+    let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
+    // Observe this owned child's exit without consuming its wait status.
+    // SAFETY: the original pidfd remains held and info is writable.
+    assert_eq!(
+        unsafe {
+            libc::waitid(
+                libc::P_PIDFD,
+                original.fd.as_raw_fd() as libc::id_t,
+                &mut info,
+                libc::WEXITED | libc::WNOWAIT | libc::WNOHANG,
+            )
+        },
+        0
+    );
+    assert_eq!(unsafe { info.si_pid() }, fixture.child.id() as libc::pid_t);
+    assert!(
+        pidfd_exited(&original.fd).unwrap(),
+        "actual POLLIN exit observed"
+    );
+    assert_eq!(
+        original
+            .wait_retired_until(Instant::now() + Duration::from_millis(1))
+            .unwrap_err()
+            .kind(),
+        io::ErrorKind::TimedOut,
+        "an exited but unreaped task cannot satisfy retirement",
+    );
+    assert_eq!(fixture.child.wait().unwrap().signal(), Some(libc::SIGKILL));
+    original.wait_retired();
 }
 
 #[test]
@@ -268,8 +428,9 @@ fn actual_namespace_term_and_force_retire_owned_processes() {
         ready(&directory.path().join("ready"), &mut fixture.child);
         let init = fixture.init.as_ref().unwrap();
         let init_pid = init.pid;
-        let init_fd = open_pidfd(init_pid).unwrap();
-        let descendant = descendant_pidfd(init_pid);
+        let owner = RetirementWitness::capture(fixture.child.id(), std::process::id());
+        let init_retirement = RetirementWitness::capture(init_pid, fixture.child.id());
+        let descendant = descendant_retirement(init_pid);
         for (name, original) in namespaces.iter().zip(&before) {
             assert_ne!(
                 fs::read_link(format!("/proc/{init_pid}/ns/{name}")).unwrap(),
@@ -290,16 +451,9 @@ fn actual_namespace_term_and_force_retire_owned_processes() {
         cell.stop().unwrap();
         let elapsed = started.elapsed();
         let status = cell.child.wait().unwrap();
-        assert!(
-            !Path::new(&format!("/proc/{outer_pid}")).exists(),
-            "direct owner must actually be reaped"
-        );
-        wait_exited(&init_fd);
-        wait_exited(&descendant);
-        assert!(
-            fs::read_link(format!("/proc/{init_pid}/ns/pid")).is_err(),
-            "init must no longer retain namespace membership"
-        );
+        owner.wait_retired();
+        init_retirement.wait_retired();
+        descendant.wait_retired();
         if mode == "term" {
             assert!(status.success());
             assert!(directory.path().join("term-observed").exists());
@@ -338,22 +492,20 @@ fn actual_daemon_death_after_fork_before_android_enter() {
         .map(|p| p.parse().unwrap())
         .collect();
     assert_eq!(pids.len(), 2);
-    assert_eq!(identity(pids[0]).unwrap().parent, launcher.child.id());
-    let owner_fd = open_pidfd(pids[0]).unwrap();
-    let init_fd = open_pidfd(pids[1]).unwrap();
+    let owner = RetirementWitness::capture(pids[0], launcher.child.id());
+    let init = RetirementWitness::capture(pids[1], pids[0]);
     // On a test assertion failure, the guard still kills this exact bound init
     // after reaping our launcher; it never selects any process by name.
     launcher.init = Some(OwnedNamespaceChild {
-        fd: open_pidfd(pids[1]).unwrap(),
+        fd: init.fd.try_clone().unwrap(),
         pid: pids[1],
     });
-    let descendant = descendant_pidfd(pids[1]);
+    let descendant = descendant_retirement(pids[1]);
     launcher.child.kill().unwrap();
     launcher.child.wait().unwrap();
-    wait_exited(&owner_fd);
-    wait_exited(&init_fd);
-    wait_exited(&descendant);
-    assert!(fs::read_link(format!("/proc/{}/ns/pid", pids[1])).is_err());
+    owner.wait_retired();
+    init.wait_retired();
+    descendant.wait_retired();
     println!(
         "{}",
         serde_json::json!({"control":"daemon-death-after-fork-before-enter","launcher_reaped":true,"owner_exited":true,"init_exited":true,"descendant_exited":true,"android_started":false})
@@ -378,8 +530,7 @@ fn actual_daemon_death_before_unshare_exec_and_fork() {
     }
     let bytes: [u8; 4] = fs::read(&path).unwrap().try_into().unwrap();
     let pid = u32::from_ne_bytes(bytes);
-    assert_eq!(identity(pid).unwrap().parent, launcher.child.id());
-    let fd = open_pidfd(pid).unwrap();
+    let original = RetirementWitness::capture(pid, launcher.child.id());
     assert_eq!(
         fs::read_link(format!("/proc/{pid}/exe")).unwrap(),
         std::env::current_exe().unwrap()
@@ -392,7 +543,7 @@ fn actual_daemon_death_before_unshare_exec_and_fork() {
     );
     launcher.child.kill().unwrap();
     launcher.child.wait().unwrap();
-    wait_exited(&fd);
+    original.wait_retired();
     assert!(!directory.path().join("ready").exists());
     println!(
         "{}",
