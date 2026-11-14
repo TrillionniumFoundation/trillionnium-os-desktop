@@ -95,3 +95,11 @@ missing-dependency tolerance enabled for the deliberately sparse AOSP tree.
 Before entering AOSP it runs the Rust `droidloom-mesa` tool, which verifies both
 pinned archive digests, applies the bounded local patches, and verifies the
 complete prepared-source tree.
+
+The current Audio and Native pair source locks also include the complete original
+Jetpack Camera App tree and its original accompanist-permissions dependency,
+at the same pinned Android superproject. This keeps CtsVerifier's real camera
+consumer and all 32 JCA Soong modules. The Audio profile has 541 projects; the
+Native pair has 645. The JCA provider fixture origins record the official
+Gitlinks, complete JCA source inventory and bounded Accompanist permissions
+source. Source inclusion does not qualify an Android build or application runtime.

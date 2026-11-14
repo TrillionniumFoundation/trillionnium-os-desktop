@@ -1,10 +1,10 @@
 //! Explicit bounded source API for the original Native generation pair.
 //!
-//! This scope does not alter the default Audio539 API. The pair producer also
+//! This scope does not alter the default Audio541 API. The pair producer also
 //! authenticates the complete lock and every historical source extension.
 use super::*;
 
-const NATIVE_SOURCE_PROJECT_COUNT: usize = 643;
+const NATIVE_SOURCE_PROJECT_COUNT: usize = 645;
 pub(super) const MAX_PROJECTS: usize = NATIVE_SOURCE_PROJECT_COUNT.div_ceil(16) * 16;
 pub(super) const MAX_SPARSE_PATHS: usize = 336;
 
@@ -109,8 +109,8 @@ mod tests {
         let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
         let audio = load_lock(&repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
         let native = load_lock(&repo.join("android/native-generation-pair/source-lock.json")).unwrap();
-        assert_eq!(crate::build_plan(&audio).unwrap().projects.len(), 539);
-        assert_eq!(build_plan(&native).unwrap().projects.len(), 643);
+        assert_eq!(crate::build_plan(&audio).unwrap().projects.len(), 541);
+        assert_eq!(build_plan(&native).unwrap().projects.len(), 645);
         assert!(crate::build_plan(&native).is_err());
         // The current Audio lock has 355 exact CTS cones. Native retains its
         // independently bounded 336-cone contract rather than adopting Audio's.

@@ -10446,6 +10446,21 @@
         "prebuilts/gradle",
         "prebuilts/androidtv"
       ]
+    },
+    {
+      "commit": "bb818454ac4029c9bb073d029b526730d510fb0f",
+      "name": "platform/external/jetpack-camera-app",
+      "path": "external/jetpack-camera-app",
+      "purpose": "Complete original Jetpack Camera App and all internal Soong modules required by retained CtsVerifier camera tests"
+    },
+    {
+      "commit": "948612768f72052191bd0f1b951b1f9ae5bbe28e",
+      "name": "platform/external/accompanist",
+      "path": "external/accompanist",
+      "purpose": "Original accompanist-permissions implementation required by the complete Jetpack Camera App provider",
+      "sparse_paths": [
+        "permissions"
+      ]
     }
   ],
   "remote_base": "https://android.googlesource.com/",

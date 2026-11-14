@@ -11,7 +11,7 @@ use std::path::Path;
 #[derive(Debug, Parser)]
 #[command(name = "droidloom-source", version, about)]
 struct Cli {
-    /// Select the independent bounded source contract; the default stays Audio539.
+    /// Select the independent bounded source contract; the default stays Audio541.
     #[arg(long, global = true, value_enum, default_value_t = Profile::Audio)]
     profile: Profile,
     #[command(subcommand)]

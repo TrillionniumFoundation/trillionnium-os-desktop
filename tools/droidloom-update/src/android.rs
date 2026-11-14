@@ -2411,10 +2411,10 @@ impl FixedProductionRequest<'_> {
             "requested_targets": self.requested_targets(),
             "projection_scope_targets": self.projection_targets(),
             "source_profile": match self {
-                Self::VendorPolicyOnAudioSource => "exact-audio539-original-compose-source-policy-target",
-                Self::VendorPolicyBundleOnAudioSource => "exact-audio539-compose-source-vendor-policy-bundle",
+                Self::VendorPolicyOnAudioSource => "exact-audio541-original-jca-source-policy-target",
+                Self::VendorPolicyBundleOnAudioSource => "exact-audio541-jca-source-vendor-policy-bundle",
                 Self::IntentResolverSecurityOnAudioSource => "exact-audio-source-intentresolver-security-target",
-                Self::AacSecurityOnAudioSource => "exact-audio539-source-aac-official-security-targets",
+                Self::AacSecurityOnAudioSource => "exact-audio541-source-aac-official-security-targets",
                 Self::Existing(_, _) => "existing-normal-entry",
                 Self::NativePair => "exact-native643-pair-source",
                 Self::NativeArt(_) => "exact-native-art-source",
@@ -3561,12 +3561,12 @@ fn validate_audio_sdk14_source_paths(lock:&droidloom_source::SparseSourceLock, m
     }
     Ok(())
 }
-const AUDIO_SOURCE_LOCK_SHA256: &str = "61d6affb9c27faccef58af6962c079e61297437288583dcffff7467d7dfd666a";
+const AUDIO_SOURCE_LOCK_SHA256: &str = "4961c8dad811536fa38eba0a1ccf03e0075a4286f99bc0c6ea7dbff7d7f881db";
 fn selected_source_lock(repo: &Path, mode: SoongDependencyMode) -> Result<PathBuf> {
     if mode == SoongDependencyMode::AudioApexTargetClosure {
         let lock = repo.join("android/manifest/audio-bridge-source-lock.json");
         if hash(&lock)? != AUDIO_SOURCE_LOCK_SHA256 {
-            return fail("audio build requires its exact independent 539-project source lock");
+            return fail("audio build requires its exact independent 541-project source lock");
         }
         Ok(lock)
     } else {
@@ -9984,7 +9984,7 @@ mod tests {
         let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
         let lock = selected_source_lock(repo, SoongDependencyMode::AudioApexTargetClosure).unwrap();
         let parsed = droidloom_source::load_lock(&lock).unwrap();
-        assert_eq!(parsed.projects.len(), 539);
+        assert_eq!(parsed.projects.len(), 541);
         assert!(droidloom_source::build_plan(&parsed).is_ok());
         for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
                      SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {

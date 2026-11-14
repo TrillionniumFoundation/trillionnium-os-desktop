@@ -26,26 +26,26 @@ pub mod native_pair;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum SourceProfile {
-    Audio539,
+    Audio541,
     NativePair656,
 }
 
 impl SourceProfile {
     fn maximum_projects(self) -> usize {
         match self {
-            Self::Audio539 => MAX_PROJECTS,
+            Self::Audio541 => MAX_PROJECTS,
             Self::NativePair656 => native_pair::MAX_PROJECTS,
         }
     }
     fn maximum_sparse_paths(self) -> usize {
         match self {
-            Self::Audio539 => MAX_SPARSE_PATHS,
+            Self::Audio541 => MAX_SPARSE_PATHS,
             Self::NativePair656 => native_pair::MAX_SPARSE_PATHS,
         }
     }
     fn accepts_project_name(self, name: &str) -> bool {
         match self {
-            Self::Audio539 => is_project_name(name),
+            Self::Audio541 => is_project_name(name),
             Self::NativePair656 => native_pair::is_project_name(name),
         }
     }
@@ -54,7 +54,7 @@ impl SourceProfile {
 const MAX_LOCK_BYTES: u64 = 1024 * 1024;
 // This independent audio builder consumes the exact pinned audio lock below.
 // Keep the exact finite Audio project bound; URL/commit/path checks remain.
-const AUDIO_SOURCE_PROJECT_COUNT: usize = 539;
+const AUDIO_SOURCE_PROJECT_COUNT: usize = 541;
 const MAX_PROJECTS: usize = AUDIO_SOURCE_PROJECT_COUNT;
 const MAX_LINKS: usize = 64;
 // The fixed original-provider closure retains 355 exact CTS paths.
@@ -259,7 +259,7 @@ pub fn load_lock(path: &Path) -> Result<SparseSourceLock, SourceError> {
 ///
 /// Returns every structural or source-expansion policy violation discovered.
 pub fn build_plan(lock: &SparseSourceLock) -> Result<MaterializationPlan, SourceError> {
-    build_plan_with_profile(lock, SourceProfile::Audio539)
+    build_plan_with_profile(lock, SourceProfile::Audio541)
 }
 
 fn build_plan_with_profile(lock: &SparseSourceLock, profile: SourceProfile) -> Result<MaterializationPlan, SourceError> {
@@ -446,7 +446,7 @@ pub fn materialize(
     lock: &SparseSourceLock,
     destination: &Path,
 ) -> Result<MaterializedManifest, SourceError> {
-    materialize_with_profile(lock_path, lock, destination, SourceProfile::Audio539)
+    materialize_with_profile(lock_path, lock, destination, SourceProfile::Audio541)
 }
 
 fn materialize_with_profile(
@@ -513,7 +513,7 @@ pub fn reconcile(
     lock: &SparseSourceLock,
     destination: &Path,
 ) -> Result<MaterializedManifest, SourceError> {
-    reconcile_with_profile(lock_path, lock, destination, SourceProfile::Audio539)
+    reconcile_with_profile(lock_path, lock, destination, SourceProfile::Audio541)
 }
 
 fn reconcile_with_profile(
@@ -571,7 +571,7 @@ pub fn verify_materialized(
     lock: &SparseSourceLock,
     destination: &Path,
 ) -> Result<MaterializedManifest, SourceError> {
-    verify_materialized_with_profile(lock_path, lock, destination, SourceProfile::Audio539)
+    verify_materialized_with_profile(lock_path, lock, destination, SourceProfile::Audio541)
 }
 
 fn verify_materialized_with_profile(
@@ -1048,7 +1048,7 @@ mod tests {
         assert_eq!(p.name, "platform/external/f2fs-tools");
         assert_eq!(p.commit, "c64468cb6397fb63bded0f549438b472f7e7cf88");
         assert_eq!(p.sparse_paths, vec!["fsck", "include", "lib", "mkfs", "tools"].into_iter().map(PathBuf::from).collect::<Vec<_>>());
-        assert_eq!(MAX_PROJECTS, 539);
+        assert_eq!(MAX_PROJECTS, 541);
         assert_eq!(MAX_SPARSE_PATHS, 368);
     }
 
@@ -1076,7 +1076,7 @@ mod tests {
         assert_eq!(new.projects[453].name, "platform/external/python/watchdog");
         assert_eq!(new.projects[453].commit, "0b66557116f53002852d98db711d5488e838c966");
         assert_eq!(new.projects[453].sparse_paths, vec![PathBuf::from("src")]);
-        assert_eq!(MAX_PROJECTS, 539);
+        assert_eq!(MAX_PROJECTS, 541);
         assert_eq!(MAX_SPARSE_PATHS, 368);
     }
 
@@ -1146,7 +1146,7 @@ mod tests {
         for key in ["superproject", "links", "policy", "remote_base", "schema_version", "selected_at", "status"] {
             assert_eq!(a[key], b[key]);
         }
-        assert_eq!(MAX_PROJECTS, 539);
+        assert_eq!(MAX_PROJECTS, 541);
         assert_eq!(MAX_SPARSE_PATHS, 368);
     }
 
@@ -1176,7 +1176,7 @@ mod tests {
         for key in ["superproject", "links", "policy", "remote_base", "schema_version", "selected_at", "status"] {
             assert_eq!(a[key], b[key]);
         }
-        assert_eq!(MAX_PROJECTS, 539);
+        assert_eq!(MAX_PROJECTS, 541);
         assert_eq!(MAX_SPARSE_PATHS, 368);
     }
 
@@ -1214,7 +1214,7 @@ mod tests {
         for key in ["superproject", "links", "policy", "remote_base", "schema_version", "selected_at", "status"] {
             assert_eq!(a[key], b[key]);
         }
-        assert_eq!(MAX_PROJECTS, 539);
+        assert_eq!(MAX_PROJECTS, 541);
         assert_eq!(MAX_SPARSE_PATHS, 368);
     }
 
@@ -1247,7 +1247,7 @@ mod tests {
         for key in ["superproject", "links", "policy", "remote_base", "schema_version", "selected_at", "status"] {
             assert_eq!(a[key], b[key]);
         }
-        assert_eq!(MAX_PROJECTS, 539);
+        assert_eq!(MAX_PROJECTS, 541);
         assert_eq!(MAX_SPARSE_PATHS, 368);
     }
 
@@ -1285,7 +1285,7 @@ mod tests {
         for key in ["superproject", "links", "policy", "remote_base", "schema_version", "selected_at", "status"] {
             assert_eq!(a[key], b[key]);
         }
-        assert_eq!(MAX_PROJECTS, 539);
+        assert_eq!(MAX_PROJECTS, 541);
         assert_eq!(MAX_SPARSE_PATHS, 368);
     }
 
@@ -1324,7 +1324,7 @@ mod tests {
         for key in ["superproject", "links", "policy", "remote_base", "schema_version", "selected_at", "status"] {
             assert_eq!(a[key], b[key]);
         }
-        assert_eq!(MAX_PROJECTS, 539);
+        assert_eq!(MAX_PROJECTS, 541);
         assert_eq!(MAX_SPARSE_PATHS, 368);
     }
 
@@ -1362,7 +1362,7 @@ mod tests {
         for key in ["superproject", "links", "policy", "remote_base", "schema_version", "selected_at", "status"] {
             assert_eq!(a[key], b[key]);
         }
-        assert_eq!(MAX_PROJECTS, 539);
+        assert_eq!(MAX_PROJECTS, 541);
         assert_eq!(MAX_SPARSE_PATHS, 368);
     }
 
@@ -1436,7 +1436,7 @@ mod tests {
         for key in ["superproject", "links", "policy", "remote_base", "schema_version", "selected_at", "status"] {
             assert_eq!(old_value[key], new_value[key], "{key}");
         }
-        assert_eq!(MAX_PROJECTS, 539);
+        assert_eq!(MAX_PROJECTS, 541);
         assert_eq!(MAX_SPARSE_PATHS, 368);
         assert_eq!(new.projects.iter().map(|p| p.sparse_paths.len()).max(), Some(355));
     }
@@ -2773,16 +2773,16 @@ mod tests {
         let before = build_plan(&old).unwrap(); let after = build_plan(&new).unwrap();
         validate_plan_extension(&before, &after).unwrap();
         assert!(validate_plan_extension(&after, &before).is_err());
-        assert_eq!(MAX_PROJECTS, 539); assert_eq!(MAX_SPARSE_PATHS, 368);
+        assert_eq!(MAX_PROJECTS, 541); assert_eq!(MAX_SPARSE_PATHS, 368);
     }
     #[test]
     fn audio_source_capacity_is_bound_to_the_exact_frozen_lock() {
         let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
         assert_eq!(format!("{:x}", Sha256::digest(raw.as_bytes())),
-            "61d6affb9c27faccef58af6962c079e61297437288583dcffff7467d7dfd666a");
+            "4961c8dad811536fa38eba0a1ccf03e0075a4286f99bc0c6ea7dbff7d7f881db");
         let lock: SparseSourceLock = serde_json::from_str(raw).unwrap();
         assert_eq!(lock.projects.len(), AUDIO_SOURCE_PROJECT_COUNT);
-        assert_eq!(MAX_PROJECTS, 539);
+        assert_eq!(MAX_PROJECTS, 541);
         assert_eq!(MAX_PROJECTS, AUDIO_SOURCE_PROJECT_COUNT);
         assert_eq!(lock.projects.len(), MAX_PROJECTS);
         assert!(build_plan(&lock).is_ok());
@@ -3341,8 +3341,14 @@ mod exact_audio_libexif537_source {
         assert_eq!(p.sparse_paths,vec![PathBuf::from("libexif")]);
         validate_plan_extension(&build_plan(&old).unwrap(),&build_plan(&new).unwrap()).unwrap();
         assert!(validate_plan_extension(&build_plan(&new).unwrap(),&build_plan(&old).unwrap()).is_err());
-        assert_eq!(MAX_PROJECTS,539);assert_eq!(MAX_SPARSE_PATHS,368);
+        assert_eq!(MAX_PROJECTS, 541);assert_eq!(MAX_SPARSE_PATHS,368);
         let mut forbidden=new.clone();let mut extra=forbidden.projects[536].clone();extra.path="external/forbidden_extra".into();extra.name="platform/external/forbidden_extra".into();forbidden.projects.push(extra.clone());extra.path="external/forbidden_extra_539".into();extra.name="platform/external/forbidden_extra_539".into();forbidden.projects.push(extra.clone());extra.path="external/forbidden_extra_540".into();extra.name="platform/external/forbidden_extra_540".into();forbidden.projects.push(extra);
+        while forbidden.projects.len() <= MAX_PROJECTS {
+            let mut overflow = forbidden.projects.last().unwrap().clone();
+            overflow.name = format!("platform/external/forbidden_capacity_{}", forbidden.projects.len());
+            overflow.path = PathBuf::from(format!("external/forbidden_capacity_{}", forbidden.projects.len()));
+            forbidden.projects.push(overflow);
+        }
         assert!(build_plan(&forbidden).is_err());
     }
 }
@@ -3367,9 +3373,15 @@ mod exact_audio_libueventd538_source {
         assert_eq!(p.sparse_paths,vec![PathBuf::from("examples"),PathBuf::from("src")]);
         validate_plan_extension(&build_plan(&old).unwrap(),&build_plan(&new).unwrap()).unwrap();
         assert!(validate_plan_extension(&build_plan(&new).unwrap(),&build_plan(&old).unwrap()).is_err());
-        assert_eq!(MAX_PROJECTS,539);assert_eq!(MAX_SPARSE_PATHS,368);
+        assert_eq!(MAX_PROJECTS, 541);assert_eq!(MAX_SPARSE_PATHS,368);
         let mut forbidden=new.clone();let mut extra=forbidden.projects[537].clone();
         extra.path="system/forbidden_extra".into();extra.name="platform/system/forbidden_extra".into();forbidden.projects.push(extra.clone());extra.path="system/forbidden_extra_540".into();extra.name="platform/system/forbidden_extra_540".into();forbidden.projects.push(extra);
+        while forbidden.projects.len() <= MAX_PROJECTS {
+            let mut overflow = forbidden.projects.last().unwrap().clone();
+            overflow.name = format!("platform/external/forbidden_capacity_{}", forbidden.projects.len());
+            overflow.path = PathBuf::from(format!("external/forbidden_capacity_{}", forbidden.projects.len()));
+            forbidden.projects.push(overflow);
+        }
         assert!(build_plan(&forbidden).is_err());
     }
 }
@@ -3381,7 +3393,7 @@ mod exact_audio_compose539_source {
     fn audio_compose539_extends_actual538_only_with_the_original_compiler_project() {
         let old_raw=include_str!("../tests/fixtures/audio-source538-before-compose.json");
         assert_eq!(format!("{:x}",Sha256::digest(old_raw.as_bytes())),"241f9d04c27dca9e001cb465f833af26ed6473cd3a6e705c4a66745805112a74");
-        let new_raw=include_str!("../../../android/manifest/audio-bridge-source-lock.json");
+        let new_raw=include_str!("../tests/fixtures/audio-source539-before-jca.json");
         let old:SparseSourceLock=serde_json::from_str(old_raw).unwrap();
         let new:SparseSourceLock=serde_json::from_str(new_raw).unwrap();
         let old_value:serde_json::Value=serde_json::from_str(old_raw).unwrap();
@@ -3394,9 +3406,63 @@ mod exact_audio_compose539_source {
         assert_eq!(p.sparse_paths,vec![PathBuf::from("org")]);
         validate_plan_extension(&build_plan(&old).unwrap(),&build_plan(&new).unwrap()).unwrap();
         assert!(validate_plan_extension(&build_plan(&new).unwrap(),&build_plan(&old).unwrap()).is_err());
-        assert_eq!(MAX_PROJECTS,539);assert_eq!(MAX_SPARSE_PATHS,368);
+        assert_eq!(MAX_PROJECTS, 541);assert_eq!(MAX_SPARSE_PATHS,368);
         let mut forbidden=new.clone();let mut extra=forbidden.projects[538].clone();
         extra.path="external/forbidden_extra".into();extra.name="platform/external/forbidden_extra".into();forbidden.projects.push(extra);
+        while forbidden.projects.len() <= MAX_PROJECTS {
+            let mut overflow = forbidden.projects.last().unwrap().clone();
+            overflow.name = format!("platform/external/forbidden_capacity_{}", forbidden.projects.len());
+            overflow.path = PathBuf::from(format!("external/forbidden_capacity_{}", forbidden.projects.len()));
+            forbidden.projects.push(overflow);
+        }
         assert!(build_plan(&forbidden).is_err());
+    }
+}
+
+#[cfg(test)]
+mod exact_jca_provider_closure {
+    use super::*;
+    #[test]
+    fn audio_jca_extends539_with_complete_same_superproject_providers_only() {
+        let old_raw = include_str!("../tests/fixtures/audio-source539-before-jca.json");
+        assert_eq!(format!("{:x}", Sha256::digest(old_raw.as_bytes())),
+                   "61d6affb9c27faccef58af6962c079e61297437288583dcffff7467d7dfd666a");
+        let old: SparseSourceLock = serde_json::from_str(old_raw).unwrap();
+        let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
+        let new: SparseSourceLock = serde_json::from_str(raw).unwrap();
+        let mut previous: serde_json::Value = serde_json::from_str(old_raw).unwrap();
+        let mut current: serde_json::Value = serde_json::from_str(raw).unwrap();
+        let added = current["projects"].as_array_mut().unwrap().split_off(539);
+        assert_eq!(previous, current); assert_eq!(added.len(), 2);
+        assert_eq!(new.projects.len(), 541);
+        let jca = &new.projects[539];
+        assert_eq!(jca.path, Path::new("external/jetpack-camera-app"));
+        assert_eq!(jca.name, "platform/external/jetpack-camera-app");
+        assert_eq!(jca.commit, "bb818454ac4029c9bb073d029b526730d510fb0f");
+        assert!(jca.sparse_paths.is_empty(), "all32 real JCA modules require the complete tree");
+        let permissions = &new.projects[540];
+        assert_eq!(permissions.path, Path::new("external/accompanist"));
+        assert_eq!(permissions.name, "platform/external/accompanist");
+        assert_eq!(permissions.commit, "948612768f72052191bd0f1b951b1f9ae5bbe28e");
+        assert_eq!(permissions.sparse_paths, vec![PathBuf::from("permissions")]);
+        validate_plan_extension(&build_plan(&old).unwrap(), &build_plan(&new).unwrap()).unwrap();
+        assert!(validate_plan_extension(&build_plan(&new).unwrap(), &build_plan(&old).unwrap()).is_err());
+        previous["projects"].as_array_mut().unwrap().extend(added);
+        assert_eq!(previous, serde_json::from_str::<serde_json::Value>(raw).unwrap());
+    }
+    #[test]
+    fn jca_original_manifest_keeps_all_official_blueprints_and_sources() {
+        let origin: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../android/jca-provider-fixtures/origins.json")).unwrap();
+        assert_eq!(origin["superproject"], "28f0bbddc24d56c8ec5a8df5342ac7a292184039");
+        let projects = origin["projects"].as_array().unwrap();
+        assert_eq!(projects.len(), 2);
+        assert_eq!(projects[0]["tree"], "91cf9b7e0fda9a63f1d721b398d818732667448c");
+        assert_eq!(projects[0]["files"].as_array().unwrap().len(), 481);
+        assert_eq!(projects[0]["files"].as_array().unwrap().iter()
+            .filter(|f| f["path"].as_str().unwrap().ends_with("Android.bp")).count(), 27);
+        assert_eq!(projects[1]["tree"], "639baae397f7bf4e1c58ac2b7f2f2b2d0159b00f");
+        assert_eq!(origin["Android_build_qualified"], false);
+        assert_eq!(origin["runtime_qualified"], false);
     }
 }

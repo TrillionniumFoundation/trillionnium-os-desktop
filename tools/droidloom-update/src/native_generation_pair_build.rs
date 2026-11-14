@@ -20,8 +20,8 @@ const ENGINE_BP_SHA: &str = "bfd8ee63943b331ff09c67879065f9794bae7c7b897ba049961
 const ENGINE_BP_BYTES: usize = 25403;
 const BASE_SOURCE_LOCK_SHA: &str = "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d";
 const PAIR_SOURCE_LOCK: &str = "android/native-generation-pair/source-lock.json";
-const SOURCE_LOCK_BYTES: usize = 369279;
-const SOURCE_LOCK_SHA: &str = "e4bc640833bbdee16a1e84bd8314cc81c44351e4b03c03e6439bc31318d0a5bf";
+const SOURCE_LOCK_BYTES: usize = 369917;
+const SOURCE_LOCK_SHA: &str = "e07f2fac7e7a22c331cffc9a37d57706d64a4550165823afb2ef65c12b0d4a40";
 // Exact original additions from frozen manifest SHA-256 d88549bc89076017baffcc28e39695431993cc12516238278e015f23325d9596.
 // Closure qualification remains separate from this source attestation.
 const PAIR_ADDITIONS_JSON: &str = r#"[
@@ -7818,7 +7818,7 @@ fn validate_source_extension643_global_compat(base: &Value, extended: &Value) ->
 
 
 // Select the complete original helper of the already selected graphics tests.
-fn validate_source_extension(base: &Value, extended: &Value) -> Result<()> {
+fn validate_source_extension643_hotplug(base: &Value, extended: &Value) -> Result<()> {
     let old_raw = include_bytes!("../../../android/native-generation-pair/cuttlefish-graphics-fixtures/original643-global-compat-source-lock.json");
     if old_raw.len() != 369245 || digest(old_raw) != "e8b359276e49d6f520344284cbf2876f403d03150018d286ab8b0df362817e71" { return fail("immutable global compatibility643 predecessor changed"); }
     let previous: Value = serde_json::from_slice(old_raw)?;
@@ -7829,7 +7829,7 @@ fn validate_source_extension(base: &Value, extended: &Value) -> Result<()> {
     if delta["schema"] != "native643-exact-cuttlefish-hotplug-original-cone-extension-v1"
         || delta["previous_projects"] != 643 || delta["current_projects"] != 643
         || delta["previous_lock_sha256"] != "e8b359276e49d6f520344284cbf2876f403d03150018d286ab8b0df362817e71"
-        || delta["current_lock_sha256"] != SOURCE_LOCK_SHA || delta["added_projects"] != json!([])
+        || delta["current_lock_sha256"] != "e4bc640833bbdee16a1e84bd8314cc81c44351e4b03c03e6439bc31318d0a5bf" || delta["added_projects"] != json!([])
         || delta["added_sparse_cones"] != json!({"device/google/cuttlefish": ["tests/graphics/hotplug"]})
         || delta["new_original_files"] != 3 || delta["new_primary_BP"] != 1 || delta["source_and_full_qualified"] != false { return fail("only the exact original complete hotplug provider cone is admitted"); }
     let mut expected = previous;
@@ -7844,6 +7844,45 @@ fn validate_source_extension(base: &Value, extended: &Value) -> Result<()> {
     Ok(())
 }
 
+
+fn validate_source_extension(base: &Value, extended: &Value) -> Result<()> {
+    let raw = include_bytes!("../../../android/native-generation-pair/jetpack-camera-fixtures/original643-hotplug-source-lock.json");
+    if raw.len() != 369279 || digest(raw) != "e4bc640833bbdee16a1e84bd8314cc81c44351e4b03c03e6439bc31318d0a5bf" {
+        return fail("immutable complete hotplug643 predecessor changed");
+    }
+    let mut previous: Value = serde_json::from_slice(raw)?;
+    validate_source_extension643_hotplug(base, &previous)?;
+    let added: Vec<Value> = serde_json::from_str(r#"[
+    {
+        "commit": "bb818454ac4029c9bb073d029b526730d510fb0f",
+        "name": "platform/external/jetpack-camera-app",
+        "path": "external/jetpack-camera-app",
+        "purpose": "Complete original Jetpack Camera App and all internal Soong modules required by retained CtsVerifier camera tests"
+    },
+    {
+        "commit": "948612768f72052191bd0f1b951b1f9ae5bbe28e",
+        "name": "platform/external/accompanist",
+        "path": "external/accompanist",
+        "purpose": "Original accompanist-permissions implementation required by the complete Jetpack Camera App provider",
+        "sparse_paths": [
+            "permissions"
+        ]
+    }
+]"#)?;
+    let projects = previous["projects"].as_array_mut().ok_or("previous643 projects absent")?;
+    if projects.len() != 643 || added.len() != 2 { return fail("JCA extension requires its exact predecessor and two providers"); }
+    for project in added {
+        if projects.iter().any(|existing| existing["path"] == project["path"]) {
+            return fail("JCA provider already exists in predecessor");
+        }
+        projects.push(project);
+    }
+    if projects.len() != 645 || previous != *extended {
+        return fail("source differs beyond complete original JCA and accompanist-permissions providers");
+    }
+    Ok(())
+}
+
 /// Only this complete pair command selects the monotonic provider extension.
 /// Every historical typed lock and every existing project/revision remains exact.
 pub fn source_lock_path(repo: &Path) -> Result<PathBuf> {
@@ -7854,7 +7893,7 @@ pub fn source_lock_path(repo: &Path) -> Result<PathBuf> {
     validate_source_extension(&serde_json::from_slice(&base)?, &serde_json::from_slice(&extended)?)?;
     let lock = droidloom_source::native_pair::load_lock(&path)?;
     let plan = droidloom_source::native_pair::build_plan(&lock)?;
-    if plan.projects.len() != 643 || plan.links.len() != 8 || plan.unrestricted_repo_sync {
+    if plan.projects.len() != 645 || plan.links.len() != 8 || plan.unrestricted_repo_sync {
         return fail("ordinary pair source plan widened");
     }
     Ok(path)
@@ -10114,7 +10153,7 @@ mod cuttlefish_hotplug_provider_tests {
         validate_source_extension(&base(), &current()).unwrap();
         let lock: droidloom_source::SparseSourceLock = serde_json::from_slice(raw).unwrap();
         let plan = droidloom_source::native_pair::build_plan(&lock).unwrap();
-        assert_eq!((plan.projects.len(), plan.links.len(), plan.unrestricted_repo_sync), (643,8,false));
+        assert_eq!((plan.projects.len(), plan.links.len(), plan.unrestricted_repo_sync), (645,8,false));
         assert_eq!(plan.superproject_commit, "28f0bbddc24d56c8ec5a8df5342ac7a292184039");
         let old: Value = serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/cuttlefish-graphics-fixtures/original643-global-compat-source-lock.json")).unwrap();
         assert!(validate_source_extension(&base(), &old).is_err());
@@ -10214,5 +10253,32 @@ mod cuttlefish_hotplug_provider_tests {
         let java = std::str::from_utf8(include_bytes!("../../../android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/hotplug/src/com/android/cuttlefish/DisplayHotplugHelperApp.java")).unwrap(); assert!(java.contains("package com.android.cuttlefish.displayhotplughelper;")); assert!(java.contains("public class DisplayHotplugHelperApp extends Activity"));
         let current = current(); let project = current["projects"].as_array().unwrap().iter().find(|p| p["path"] == "device/google/cuttlefish").unwrap(); let cones = project["sparse_paths"].as_array().unwrap(); assert!(cones.contains(&json!("tests/graphics/hotplug"))); assert!(!cones.contains(&json!("tests/graphics/display"))); assert!(!cones.contains(&json!("tests/graphics")));
         let sibling_bp = std::str::from_utf8(include_bytes!("../../../android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/Android.bp")).unwrap(); assert!(sibling_bp.contains("name: \"CfVkmsConnectorsTest\"")); assert!(!sibling_bp.contains("CuttlefishDisplayHotplugHelperApp"));
+    }
+}
+
+#[cfg(test)]
+mod exact_jca_extension_tests {
+    use super::*;
+    #[test]
+    fn jca_extension_rejects_missing_provider_partial_tree_pin_and_scope_drift() {
+        let base: Value = serde_json::from_slice(include_bytes!("../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+        let good: Value = serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/source-lock.json")).unwrap();
+        validate_source_extension(&base, &good).unwrap();
+        for index in [643, 644] {
+            let mut bad = good.clone(); bad["projects"].as_array_mut().unwrap().remove(index);
+            assert!(validate_source_extension(&base, &bad).is_err());
+            for key in ["commit", "name", "path", "purpose"] {
+                let mut bad = good.clone(); bad["projects"][index][key] = json!("changed");
+                assert!(validate_source_extension(&base, &bad).is_err());
+            }
+        }
+        let mut bad = good.clone(); bad["projects"][643]["sparse_paths"] = json!(["app/src/main"]);
+        assert!(validate_source_extension(&base, &bad).is_err());
+        let mut bad = good.clone(); bad["projects"][644]["sparse_paths"] = json!([]);
+        assert!(validate_source_extension(&base, &bad).is_err());
+        let mut bad = good.clone(); bad["projects"][644]["sparse_paths"].as_array_mut().unwrap().push(json!("pager"));
+        assert!(validate_source_extension(&base, &bad).is_err());
+        let mut bad = good; bad["projects"].as_array_mut().unwrap().swap(643, 644);
+        assert!(validate_source_extension(&base, &bad).is_err());
     }
 }
